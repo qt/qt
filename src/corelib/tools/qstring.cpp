@@ -195,6 +195,142 @@ static int ucstrnicmp(const ushort *a, const ushort *b, int l)
     return ucstricmp(a, a + l, b, b + l);
 }
 
+#if 0
+static bool qMemEquals(const quint8 *a, const quint8 *b, int bytes)
+{
+    if (a == b)
+        return true;
+
+    // check alignement
+    qptrdiff align = ((quintptr)a - (quintptr)b);
+//     if (sizeof(void *) == 8 && !(align & 7)) {
+//     } else
+    if (!(align & 3)) {
+        quintptr pa = (quintptr)a;
+        if (pa & 3) {
+            if (pa & 1) {
+                if (*a != *b)
+                    return false;
+                ++a;
+                ++b;
+                --bytes;
+            }
+            if (pa & 2) {
+                if (*reinterpret_cast<const quint16 *>(a) != *reinterpret_cast<const quint16 *>(b))
+                    return false;
+                a += 2;
+                b += 2;
+                bytes -= 2;
+            }
+        }
+        int tail = (bytes & 3);
+        const quint32 *sa = reinterpret_cast<const quint32 *>(a);
+        const quint32 *sb = reinterpret_cast<const quint32 *>(b);
+        const quint32 *e = sa + (bytes >> 2);
+        while (sa < e) {
+            if (*sa != *sb)
+                return false;
+            ++sa;
+            ++sb;
+        }
+        a = reinterpret_cast<const quint8 *>(sa);
+        b = reinterpret_cast<const quint8 *>(sb);
+        if (tail) {
+            if (tail & 2) {
+                if (*reinterpret_cast<const quint16 *>(a) != *reinterpret_cast<const quint16 *>(b))
+                    return false;
+                sa += 2;
+                sb += 2;
+            }
+            if (tail & 1) {
+                if (*a != *b)
+                    return false;
+            }
+        }
+    } else if (!(align & 1)) {
+        quintptr pa = (quintptr)a;
+        if (pa & 1) {
+            if (*a != *b)
+                return false;
+            ++a;
+            ++b;
+            --bytes;
+        }
+        bool tail = (bytes & 1);
+        const quint16 *sa = reinterpret_cast<const quint16 *>(a);
+        const quint16 *sb = reinterpret_cast<const quint16 *>(b);
+        const quint16 *e = sa + (bytes >> 1);
+        while (sa < e) {
+            if (*sa != *sb)
+                return false;
+            ++sa;
+            ++sb;
+        }
+        a = reinterpret_cast<const quint8 *>(sa);
+        b = reinterpret_cast<const quint8 *>(sb);
+        if (tail) {
+            if (*a != *b)
+                return false;
+        }
+    } else {
+        const quint8 *e = a + bytes;
+        while (a < e) {
+            if (*a != *b)
+                return false;
+            ++a;
+            ++b;
+        }
+    }
+    return true;
+}
+#endif
+
+static bool qMemEquals(const quint16 *a, const quint16 *b, int length)
+{
+    if (a == b)
+        return true;
+    
+    // check alignement
+    qptrdiff align = ((quintptr)a - (quintptr)b);
+    Q_ASSERT(!(align & 1));
+//     if (sizeof(void *) == 8 && !(align & 7)) {
+//     } else
+    if (!(align & 3)) {
+        quintptr pa = (quintptr)a;
+        if (pa & 2) {
+            if (*a != *b)
+                return false;
+            ++a;
+            ++b;
+            --length;
+        }
+        int tail = (length & 1);
+        const quint32 *sa = reinterpret_cast<const quint32 *>(a);
+        const quint32 *sb = reinterpret_cast<const quint32 *>(b);
+        const quint32 *e = sa + (length >> 1);
+        while (sa < e) {
+            if (*sa != *sb)
+                return false;
+            ++sa;
+            ++sb;
+        }
+        a = reinterpret_cast<const quint16 *>(sa);
+        b = reinterpret_cast<const quint16 *>(sb);
+        if (tail) {
+            if (*a != *b)
+                return false;
+        }
+    } else if (!(align & 1)) {
+        const quint16 *e = a + length;
+        while (a < e) {
+            if (*a != *b)
+                return false;
+            ++a;
+            ++b;
+        }
+    }
+    return true;
+}
 
 /*!
     \internal
@@ -1908,8 +2044,10 @@ QString &QString::replace(QChar c, const QLatin1String &after, Qt::CaseSensitivi
 */
 bool QString::operator==(const QString &other) const
 {
-    return (size() == other.size()) &&
-        (memcmp((char*)unicode(),(char*)other.unicode(), size()*sizeof(QChar))==0);
+    if (d->size != other.d->size)
+        return false;
+
+    return qMemEquals(d->data, other.d->data, d->size);
 }
 
 /*!
@@ -3136,7 +3274,7 @@ bool QString::startsWith(const QString& s, Qt::CaseSensitivity cs) const
     if (s.d->size > d->size)
         return false;
     if (cs == Qt::CaseSensitive) {
-        return memcmp((char*)d->data, (char*)s.d->data, s.d->size*sizeof(QChar)) == 0;
+        return qMemEquals(d->data, s.d->data, s.d->size);
     } else {
         uint last = 0;
         uint olast = 0;
@@ -3207,7 +3345,7 @@ bool QString::endsWith(const QString& s, Qt::CaseSensitivity cs) const
     if (pos < 0)
         return false;
     if (cs == Qt::CaseSensitive) {
-        return memcmp((char*)&d->data[pos], (char*)s.d->data, s.d->size*sizeof(QChar)) == 0;
+        return qMemEquals(d->data + pos, s.d->data, s.d->size);
     } else {
         uint last = 0;
         uint olast = 0;
@@ -7692,7 +7830,8 @@ QString QStringRef::toString() const {
 */
 bool operator==(const QStringRef &s1,const QStringRef &s2)
 { return (s1.size() == s2.size() &&
-          (memcmp((char*)s1.unicode(), (char*)s2.unicode(), s1.size()*sizeof(QChar))==0)); }
+          qMemEquals((const ushort *)s1.unicode(), (const ushort *)s2.unicode(), s1.size()));
+}
 
 /*! \relates QStringRef
 
@@ -7701,7 +7840,8 @@ bool operator==(const QStringRef &s1,const QStringRef &s2)
 */
 bool operator==(const QString &s1,const QStringRef &s2)
 { return (s1.size() == s2.size() &&
-          (memcmp((char*)s1.unicode(), (char*)s2.unicode(), s1.size()*sizeof(QChar))==0)); }
+          qMemEquals((const ushort *)s1.unicode(), (const ushort *)s2.unicode(), s1.size()));
+}
 
 /*! \relates QStringRef
 
