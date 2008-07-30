@@ -41,8 +41,13 @@
 
 #include "qcore_unix_p.h"
 
-#include <sys/select.h>
-#include <sys/time.h>
+#ifndef Q_OS_VXWORKS
+#  include <sys/select.h>
+#  include <sys/time.h>
+#else
+#  include <selectLib.h>
+#endif
+
 #include <stdlib.h>
 
 #include "qeventdispatcher_unix_p.h" // for the timeval operators

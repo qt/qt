@@ -101,7 +101,11 @@
 #include <locale.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/time.h>
+#ifdef Q_OS_VXWORKS
+#  include <sys/times.h>
+#else
+#  include <sys/time.h>
+#endif
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -208,7 +212,7 @@ QString qws_dataDir()
     if (!S_ISDIR(buf.st_mode))
         qFatal("%s is not a directory", dataDir.constData());
 
-#ifndef Q_OS_INTEGRITY
+#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_VXWORKS)
     if (buf.st_uid != getuid())
         qFatal("Qt for Embedded Linux data directory is not owned by user %d", getuid());
 

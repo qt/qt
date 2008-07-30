@@ -119,6 +119,7 @@ embedded {
 		SOURCES += embedded/qscreenvfb_qws.cpp
 	}
 
+
 	contains( gfx-drivers, vnc ) {
 		VNCDIR = $$QT_SOURCE_TREE/src/plugins/gfxdrivers/vnc
 		INCLUDEPATH += $$VNCDIR

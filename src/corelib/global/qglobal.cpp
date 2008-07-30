@@ -62,6 +62,10 @@
 #  endif
 #endif
 
+#if defined(Q_OS_VXWORKS)
+#  include <envLib.h>
+#endif
+
 #ifdef Q_CC_MWERKS
 #include <CoreServices/CoreServices.h>
 #endif

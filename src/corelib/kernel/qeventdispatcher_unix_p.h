@@ -59,9 +59,13 @@
 #include "private/qpodlist_p.h"
 
 #include <sys/types.h>
-#include <sys/time.h>
-#if !defined(Q_OS_HPUX) || defined(__ia64)
-#include <sys/select.h>
+#if defined(Q_OS_VXWORKS)
+#  include <sys/times.h>
+#else
+#  include <sys/time.h>
+#  if !defined(Q_OS_HPUX) || defined(__ia64)
+#    include <sys/select.h>
+#  endif
 #endif
 #include <unistd.h>
 

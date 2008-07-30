@@ -1,0 +1,127 @@
+/*!
+    \page platform-notes-vxworks.html
+    \title Platform Notes - VxWorks
+    \contentspage Platform Notes
+    \target VxWorks
+
+    \note VxWorks is a community supported platform. See the
+    \l{Supported Platforms} page for more information.
+
+    This page contains information about the Qt for VxWorks port. More
+    information about the combinations of platforms and compilers supported
+    by Qt can be found on the \l{Supported Platforms} page.
+
+    \tableofcontents
+
+    \section1 Supported Versions
+
+    Qt has been tested on WindRiver VxWorks 6.7 in kernel mode using the
+    vendor supplied GCC compiler, targetting both the x86 simulator
+    (simpentium) and Power-PC devices (ppc).
+
+    \section1 Limitations
+
+    The VxWorks kernel has an optional POSIX compatibility layer, but this
+    layer does not implement all POSIX functionality needed for a complete
+    Qt port.
+
+    \table
+    \header \o Class \o Notes
+    \row \o QProcess
+         \o Not available - VxWorks has no concept of processes
+    \row \o QSharedMemory
+         \o Not available - VxWorks has only a global, flat address space
+    \row \o QSystemSemaphore
+         \o Not available - VxWorks has no concept of processes
+    \row \o QLibrary
+         \o QLibrary is only a small stub to make it possible to build
+            static plugins
+    \row \o QCoreApplication
+         \o Can only be instantiated once. Qt's Q(CoreE)Application is
+            tightly coupled to one address space and process, while VxWorks
+            only supports one global address space and has no concept of
+            processes.
+
+    \endtable
+
+    \section1 Build Instructions
+
+    Qt for VxWorks needs to be \l{Cross-Compiling Qt for Embedded Linux
+    Applications}{cross-compiled} on a Linux host.  \c configure and \c make
+    the build like you would with a standard \l{Cross-Compiling Qt for
+    Embedded Linux Applications}{embedded Linux cross build}.  Building the
+    VxWorks simulator would be done like this:
+
+    \code
+    <path/to/qt/sources>/configure -xplatform unsupported/vxworks-simpentium-g++ -embedded vxworks -exceptions -no-gfx-linuxfb -no-mouse-linuxtp -no-mouse-pc -no-kbd-tty
+    make
+    \endcode
+
+    \list
+    \o \c{-xplatform unsupported/qws/vxworks-simpentium-g++} - selects the x86 simulator mkspec for VxWorks
+    \o \c{-embedded vxworks} - builds the embedded version of Qt and sets the architecture to VxWorks
+    \o \c{-exceptions} - see General Notes below
+    \o \c{-no-gfx-linuxfb}, \c{-no-mouse-linuxtp}, \c{-no-mouse-pc} and \c{-no-kbd-tty} are Linux specific and won't work on VxWorks
+    \endlist
+
+    \section1 General Notes
+
+    \list
+
+    \o Configuring with \c{-exceptions} is necessary, because the VxWorks
+    6.7 g++ headers require exceptions to be enabled when compiling C++
+    code.
+
+    \o Configure's \c{-xplatform} can be any of
+    \c{unsupported/vxworks-(simpentium|ppc)-(g++|dcc)}, but \c{dcc}
+    (WindRiver DIAB compiler) has not yet tested been tested with Qt 4.6 and
+    VxWorks 6.7.
+
+    \o Building shared libraries with \c{-shared} (the default) doesn't
+    really build shared libraries, like e.g.  on Linux, since these are not
+    supported by VxWorks.  Instead, qmake will created partially linked
+    objects, that can be loaded at runtime with \c{ld}.
+
+    \o Creating static builds with \c{-static} is fully supported.
+
+    \o "Munching" (generating constructors/destructors for static C++
+    objects) is done automatically by a special qmake extension (for both
+    shared libraries and executables)
+
+    \o VxWorks does not have a file system layer, but the low level storage
+    drivers have to supply a file system like interface to the applications.
+    Since each driver implements a different subset of the functionality
+    supported by this interface, Qt's file system auto-tests show wildly
+    differing results running on different "file systems".  The best results
+    can be achieved when running on a (writable) NFS mount, since that
+    provides the most Unix-ish interface.  The worst results come from the
+    FTP file system driver, which may crash when accessed by a
+    \c{QFileInfo}.
+
+    \o Keep in mind that VxWorks doesn't call your \c{main()} function with
+    the standard \c{argc}/\c{argv} parameters.  So either add a special
+    \c{vxmain()} function or use a tool like \c{callmain} to translate
+    VxWorks' commandline arguments to an \c{argc}/\c{argv} array.
+
+    \o Some example will fail to build, due to some missing dependencies
+    (e.g. shared memory) - this will be fixed in a later release.
+
+    \endlist
+*/
+
+/*!
+    \page platform-notes-qnx.html
+    \title Platform Notes - QNX
+    \contentspage Platform Notes
+    \target QNX
+
+    \note QNX is a community supported platform. See the
+    \l{Supported Platforms} page for more information.
+
+    This page contains information about the Qt for QNX port. More
+    information about the combinations of platforms and compilers supported
+    by Qt can be found on the \l{Supported Platforms} page.
+
+    \tableofcontents
+
+*/

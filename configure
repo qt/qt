@@ -5723,6 +5723,13 @@ case "$PLATFORM,$CFG_MAC_COCOA" in
 	;;
 esac
 
+# disable Qt 3 support on VxWorks
+case "$XPLATFORM" in
+    unsupported/vxworks*)
+	CFG_QT3SUPPORT="no"
+    ;;
+esac
+
 # enable Qt 3 support functionality
 if [ "$CFG_QT3SUPPORT" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG qt3support"
@@ -6091,6 +6098,13 @@ case "$XPLATFORM" in
 		canBuildQtXmlPatterns="no"
 		;;
 	esac
+	;;
+    unsupported/vxworks-*-g++*)
+	canBuildWebKit="no"
+	;;
+    unsupported/vxworks-*-dcc*)
+	canBuildWebKit="no"
+	canBuildQtXmlPatterns="no"
 	;;
     *-g++*)
 	# Check gcc's version

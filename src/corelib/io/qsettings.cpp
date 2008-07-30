@@ -74,6 +74,10 @@
 #endif // Q_OS_WIN
 #endif // QT_NO_QOBJECT
 
+#ifdef Q_OS_VXWORKS
+#  include <ioLib.h>
+#endif
+
 #include <stdlib.h>
 
 #ifndef CSIDL_COMMON_APPDATA

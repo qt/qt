@@ -67,6 +67,10 @@
 #include <errno.h>
 #include <fcntl.h>
 
+#if defined(Q_OS_VXWORKS)
+#  include <ioLib.h>
+#endif
+
 struct sockaddr;
 
 #if defined(Q_OS_LINUX) && defined(__GLIBC__) && (__GLIBC__ * 0x100 + __GLIBC_MINOR__) >= 0x0204
@@ -129,6 +133,7 @@ static inline int qt_safe_open(const char *pathname, int flags, mode_t mode = 07
 #undef QT_OPEN
 #define QT_OPEN         qt_safe_open
 
+#ifndef Q_OS_VXWORKS // no POSIX pipes in VxWorks
 // don't call ::pipe
 // call qt_safe_pipe
 static inline int qt_safe_pipe(int pipefd[2], int flags = 0)
@@ -163,6 +168,8 @@ static inline int qt_safe_pipe(int pipefd[2], int flags = 0)
 
     return 0;
 }
+
+#endif // Q_OS_VXWORKS
 
 // don't call dup or fcntl(F_DUPFD)
 static inline int qt_safe_dup(int oldfd, int atleast = 0, int flags = FD_CLOEXEC)
@@ -238,6 +245,8 @@ static inline int qt_safe_close(int fd)
 #undef QT_CLOSE
 #define QT_CLOSE qt_safe_close
 
+#ifndef Q_OS_VXWORKS // no processes in VxWorks
+
 static inline int qt_safe_execve(const char *filename, char *const argv[],
                                  char *const envp[])
 {
@@ -266,6 +275,8 @@ static inline pid_t qt_safe_waitpid(pid_t pid, int *status, int options)
     EINTR_LOOP(ret, ::waitpid(pid, status, options));
     return ret;
 }
+
+#endif // Q_OS_VXWORKS
 
 bool qt_gettime_is_monotonic();
 timeval qt_gettime();

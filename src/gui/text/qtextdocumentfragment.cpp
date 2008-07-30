@@ -54,7 +54,11 @@
 QT_BEGIN_NAMESPACE
 
 QTextCopyHelper::QTextCopyHelper(const QTextCursor &_source, const QTextCursor &_destination, bool forceCharFormat, const QTextCharFormat &fmt)
+#if defined(Q_CC_DIAB) // compiler bug
+    : formatCollection(*_destination.d->priv->formatCollection()), originalText((const QString)_source.d->priv->buffer())
+#else
     : formatCollection(*_destination.d->priv->formatCollection()), originalText(_source.d->priv->buffer())
+#endif
 {
     src = _source.d->priv;
     dst = _destination.d->priv;
