@@ -47,12 +47,9 @@
 #include <qdir.h>
 #include <qdebug.h>
 
-#include <errno.h>
-
-QT_BEGIN_NAMESPACE
-
 #ifndef QT_NO_SHAREDMEMORY
 
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -60,6 +57,8 @@ QT_BEGIN_NAMESPACE
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+
+QT_BEGIN_NAMESPACE
 
 QSharedMemoryPrivate::QSharedMemoryPrivate()
     : QObjectPrivate(), memory(0), size(0), error(QSharedMemory::NoError),
