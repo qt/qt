@@ -55,6 +55,7 @@
 
 #include "QtCore/qprocess.h"
 #include "QtCore/qstringlist.h"
+#include "QtCore/qhash.h"
 #include "private/qringbuffer_p.h"
 #include "private/qiodevice_p.h"
 
@@ -75,6 +76,20 @@ class QSocketNotifier;
 class QWindowsPipeWriter;
 class QWinEventNotifier;
 class QTimer;
+
+class QProcessEnvironmentPrivate: public QSharedData
+{
+public:
+#ifdef Q_OS_WIN
+    typedef QString Unit;
+#else
+    typedef QByteArray Unit;
+#endif
+    QHash<Unit, Unit> hash;
+
+    static QProcessEnvironment fromList(const QStringList &list);
+    QStringList toList() const;
+};
 
 class QProcessPrivate : public QIODevicePrivate
 {
@@ -161,7 +176,7 @@ public:
 
     QString program;
     QStringList arguments;
-    QHash<QString, QString> *environment;
+    QProcessEnvironment environment;
 
     QRingBuffer outputReadBuffer;
     QRingBuffer errorReadBuffer;

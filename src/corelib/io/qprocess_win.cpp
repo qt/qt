@@ -278,17 +278,17 @@ static QString qt_create_commandline(const QString &program, const QStringList &
     return args;
 }
 
-static QByteArray qt_create_environment(const QHash<QString, QString> *environment)
+static QByteArray qt_create_environment(const QHash<QString, QString> &environment)
 {
     QByteArray envlist;
-    if (environment) {
-        QHash<QString, QString> copy = *environment;
+    if (!environment.isEmpty()) {
+        QHash<QString, QString> copy = environment;
 
         // add PATH if necessary (for DLL loading)
         if (!copy.contains(QLatin1String("PATH"))) {
             QByteArray path = qgetenv("PATH");
             if (!path.isEmpty())
-            copy.insert(QLatin1String("PATH"), QString::fromLocal8Bit(path));
+                copy.insert(QLatin1String("PATH"), QString::fromLocal8Bit(path));
         }
 
         // add systemroot if needed
@@ -362,7 +362,9 @@ void QProcessPrivate::startProcess()
     QString args = qt_create_commandline(QString(), arguments);
 #else
     QString args = qt_create_commandline(program, arguments);
-    QByteArray envlist = qt_create_environment(environment);
+    QByteArray envlist;
+    if (environment.d.constData())
+        envlist = qt_create_environment(environment.d.constData()->hash);
 #endif
 
 #if defined QPROCESS_DEBUG
@@ -393,7 +395,7 @@ void QProcessPrivate::startProcess()
     };
     success = CreateProcess(0, (wchar_t*)args.utf16(),
                             0, 0, TRUE, dwCreationFlags,
-                            environment ? envlist.data() : 0,
+                            environment.isEmpty() ? 0 : envlist.data(),
                             workingDirectory.isEmpty() ? 0 : (wchar_t*)QDir::toNativeSeparators(workingDirectory).utf16(),
                             &startupInfo, pid);
 

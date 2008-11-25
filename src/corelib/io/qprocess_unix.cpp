@@ -458,11 +458,11 @@ bool QProcessPrivate::createChannel(Channel &channel)
     }
 }
 
-static char **_q_dupEnvironment(const QHash<QString, QString> *environment, int *envc)
+static char **_q_dupEnvironment(const QHash<QByteArray, QByteArray> &environment, int *envc)
 {
     *envc = 0;
-    if (!environment)
-        return 0;               // use the default environment
+    if (environment.isEmpty())
+        return 0;
 
     // if LD_LIBRARY_PATH exists in the current environment, but
     // not in the environment list passed by the programmer, then
@@ -474,17 +474,17 @@ static char **_q_dupEnvironment(const QHash<QString, QString> *environment, int 
 #endif
     const QByteArray envLibraryPath = qgetenv(libraryPath);
     bool needToAddLibraryPath = !envLibraryPath.isEmpty() &&
-                                !environment->contains(QLatin1String(libraryPath));
+                                !environment.contains(libraryPath);
 
-    char **envp = new char *[environment->count() + 2];
-    envp[environment->count()] = 0;
-    envp[environment->count() + 1] = 0;
+    char **envp = new char *[environment.count() + 2];
+    envp[environment.count()] = 0;
+    envp[environment.count() + 1] = 0;
 
-    QHash<QString, QString>::ConstIterator it = environment->constBegin();
-    const QHash<QString, QString>::ConstIterator end = environment->constEnd();
+    QHash<QByteArray, QByteArray>::ConstIterator it = environment.constBegin();
+    const QHash<QByteArray, QByteArray>::ConstIterator end = environment.constEnd();
     for ( ; it != end; ++it) {
-        QByteArray key = it.key().toLocal8Bit();
-        QByteArray value = it.value().toLocal8Bit();
+        QByteArray key = it.key();
+        QByteArray value = it.value();
         key.reserve(key.length() + 1 + value.length());
         key.append('=');
         key.append(value);
@@ -590,7 +590,9 @@ void QProcessPrivate::startProcess()
 
     // Duplicate the environment.
     int envc = 0;
-    char **envp = _q_dupEnvironment(environment, &envc);
+    char **envp = 0;
+    if (environment.d.constData())
+        envp = _q_dupEnvironment(environment.d.constData()->hash, &envc);
 
     // Encode the working directory if it's non-empty, otherwise just pass 0.
     const char *workingDirPtr = 0;
