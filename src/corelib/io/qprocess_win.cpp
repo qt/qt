@@ -398,6 +398,10 @@ void QProcessPrivate::startProcess()
                             environment.isEmpty() ? 0 : envlist.data(),
                             workingDirectory.isEmpty() ? 0 : (wchar_t*)QDir::toNativeSeparators(workingDirectory).utf16(),
                             &startupInfo, pid);
+    if (!success) {
+        // Capture the error string before we do CloseHandle below
+        q->setErrorString(QProcess::tr("Process failed to start: %1").arg(qt_error_string()));
+    }
 
     if (stdinChannel.pipe[0] != INVALID_Q_PIPE) {
         CloseHandle(stdinChannel.pipe[0]);
@@ -416,7 +420,6 @@ void QProcessPrivate::startProcess()
     if (!success) {
         cleanup();
         processError = QProcess::FailedToStart;
-        q->setErrorString(QProcess::tr("Process failed to start"));
         emit q->error(processError);
         q->setProcessState(QProcess::NotRunning);
         return;
