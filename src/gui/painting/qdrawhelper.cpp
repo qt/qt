@@ -425,10 +425,8 @@ static const DestStoreProc destStoreProc[QImage::NImageFormats] =
 
   We need 5 fetch methods per surface type:
   untransformed
-  transformed
-  transformed tiled
-  transformed bilinear
-  transformed bilinear tiled
+  transformed (tiled and not tiled)
+  transformed bilinear (tiled and not tiled)
 
   We don't need bounds checks for untransformed, but we need them for the other ones.
 
@@ -671,7 +669,9 @@ qt_fetchUntransformed<QImage::Format_ARGB32_Premultiplied>(uint *, const Operato
     return ((const uint *)scanLine) + x;
 }
 
-static const uint * QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, const QSpanData *data,
+template<TextureBlendType blendType>  /* either BlendTransformed or BlendTransformedTiled */
+Q_STATIC_TEMPLATE_FUNCTION
+const uint * QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, const QSpanData *data,
                                                          int y, int x, int length)
 {
     FetchPixelProc fetch = fetchPixelProc[data->texture.format];
@@ -698,84 +698,23 @@ static const uint * QT_FASTCALL fetchTransformed(uint *buffer, const Operator *,
             int px = fx >> 16;
             int py = fy >> 16;
 
-            bool out = (px < 0) || (px >= image_width)
-                       || (py < 0) || (py >= image_height);
+            if (blendType == BlendTransformedTiled) {
+                px %= image_width;
+                py %= image_height;
+                if (px < 0) px += image_width;
+                if (py < 0) py += image_height;
 
-            const uchar *scanLine = data->texture.scanLine(py);
-            *b = out ? uint(0) : fetch(scanLine, px, data->texture.colorTable);
-            fx += fdx;
-            fy += fdy;
-            ++b;
-        }
-    } else {
-        const qreal fdx = data->m11;
-        const qreal fdy = data->m12;
-        const qreal fdw = data->m13;
-
-        qreal fx = data->m21 * cy + data->m11 * cx + data->dx;
-        qreal fy = data->m22 * cy + data->m12 * cx + data->dy;
-        qreal fw = data->m23 * cy + data->m13 * cx + data->m33;
-
-        while (b < end) {
-            const qreal iw = fw == 0 ? 1 : 1 / fw;
-            const qreal tx = fx * iw;
-            const qreal ty = fy * iw;
-            const int px = int(tx) - (tx < 0);
-            const int py = int(ty) - (ty < 0);
-
-            bool out = (px < 0) || (px >= image_width)
-                       || (py < 0) || (py >= image_height);
-
-            const uchar *scanLine = data->texture.scanLine(py);
-            *b = out ? uint(0) : fetch(scanLine, px, data->texture.colorTable);
-            fx += fdx;
-            fy += fdy;
-            fw += fdw;
-            //force increment to avoid /0
-            if (!fw) {
-                fw += fdw;
+                const uchar *scanLine = data->texture.scanLine(py);
+                *b = fetch(scanLine, px, data->texture.colorTable);
+            } else {
+                if ((px < 0) || (px >= image_width)
+                    || (py < 0) || (py >= image_height)) {
+                    *b = uint(0);
+                } else {
+                    const uchar *scanLine = data->texture.scanLine(py);
+                    *b = fetch(scanLine, px, data->texture.colorTable);
+                }
             }
-            ++b;
-        }
-    }
-
-    return buffer;
-}
-
-static const uint * QT_FASTCALL fetchTransformedTiled(uint *buffer, const Operator *, const QSpanData *data,
-                                                              int y, int x, int length)
-{
-    FetchPixelProc fetch = fetchPixelProc[data->texture.format];
-
-    int image_width = data->texture.width;
-    int image_height = data->texture.height;
-
-    const qreal cx = x + 0.5;
-    const qreal cy = y + 0.5;
-
-    const uint *end = buffer + length;
-    uint *b = buffer;
-    if (data->fast_matrix) {
-        // The increment pr x in the scanline
-        int fdx = (int)(data->m11 * fixed_scale);
-        int fdy = (int)(data->m12 * fixed_scale);
-
-        int fx = int((data->m21 * cy
-                      + data->m11 * cx + data->dx) * fixed_scale);
-        int fy = int((data->m22 * cy
-                      + data->m12 * cx + data->dy) * fixed_scale);
-
-        while (b < end) {
-            int px = fx >> 16;
-            int py = fy >> 16;
-
-            px %= image_width;
-            py %= image_height;
-            if (px < 0) px += image_width;
-            if (py < 0) py += image_height;
-
-            const uchar *scanLine = data->texture.scanLine(py);
-            *b = fetch(scanLine, px, data->texture.colorTable);
             fx += fdx;
             fy += fdy;
             ++b;
@@ -796,13 +735,23 @@ static const uint * QT_FASTCALL fetchTransformedTiled(uint *buffer, const Operat
             int px = int(tx) - (tx < 0);
             int py = int(ty) - (ty < 0);
 
-            px %= image_width;
-            py %= image_height;
-            if (px < 0) px += image_width;
-            if (py < 0) py += image_height;
+            if (blendType == BlendTransformedTiled) {
+                px %= image_width;
+                py %= image_height;
+                if (px < 0) px += image_width;
+                if (py < 0) py += image_height;
 
-            const uchar *scanLine = data->texture.scanLine(py);
-            *b = fetch(scanLine, px, data->texture.colorTable);
+                const uchar *scanLine = data->texture.scanLine(py);
+                *b = fetch(scanLine, px, data->texture.colorTable);
+            } else {
+                if ((px < 0) || (px >= image_width)
+                    || (py < 0) || (py >= image_height)) {
+                    *b = uint(0);
+                } else {
+                    const uchar *scanLine = data->texture.scanLine(py);
+                    *b = fetch(scanLine, px, data->texture.colorTable);
+                }
+            }
             fx += fdx;
             fy += fdy;
             fw += fdw;
@@ -817,8 +766,10 @@ static const uint * QT_FASTCALL fetchTransformedTiled(uint *buffer, const Operat
     return buffer;
 }
 
-static const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *, const QSpanData *data,
-                                                                 int y, int x, int length)
+template<TextureBlendType blendType> /* BlendTransformedBilinear or BlendTransformedBilinearTiled */
+Q_STATIC_TEMPLATE_FUNCTION
+const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *, const QSpanData *data,
+                                                  int y, int x, int length)
 {
     FetchPixelProc fetch = fetchPixelProc[data->texture.format];
 
@@ -853,130 +804,27 @@ static const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Ope
             int idistx = 256 - distx;
             int idisty = 256 - disty;
 
-            x1 = qBound(0, x1, image_width - 1);
-            x2 = qBound(0, x2, image_width - 1);
-            y1 = qBound(0, y1, image_height - 1);
-            y2 = qBound(0, y2, image_height - 1);
+            if (blendType == BlendTransformedBilinearTiled) {
+                x1 %= image_width;
+                x2 %= image_width;
+                y1 %= image_height;
+                y2 %= image_height;
 
-            const uchar *s1 = data->texture.scanLine(y1);
-            const uchar *s2 = data->texture.scanLine(y2);
+                if (x1 < 0) x1 += image_width;
+                if (x2 < 0) x2 += image_width;
+                if (y1 < 0) y1 += image_height;
+                if (y2 < 0) y2 += image_height;
 
-            uint tl = fetch(s1, x1, data->texture.colorTable);
-            uint tr = fetch(s1, x2, data->texture.colorTable);
-            uint bl = fetch(s2, x1, data->texture.colorTable);
-            uint br = fetch(s2, x2, data->texture.colorTable);
-
-            uint xtop = INTERPOLATE_PIXEL_256(tl, idistx, tr, distx);
-            uint xbot = INTERPOLATE_PIXEL_256(bl, idistx, br, distx);
-            *b = INTERPOLATE_PIXEL_256(xtop, idisty, xbot, disty);
-
-            fx += fdx;
-            fy += fdy;
-            ++b;
-        }
-    } else {
-        const qreal fdx = data->m11;
-        const qreal fdy = data->m12;
-        const qreal fdw = data->m13;
-
-        qreal fx = data->m21 * cy + data->m11 * cx + data->dx;
-        qreal fy = data->m22 * cy + data->m12 * cx + data->dy;
-        qreal fw = data->m23 * cy + data->m13 * cx + data->m33;
-
-        while (b < end) {
-            const qreal iw = fw == 0 ? 1 : 1 / fw;
-            const qreal px = fx * iw - 0.5;
-            const qreal py = fy * iw - 0.5;
-
-            int x1 = int(px) - (px < 0);
-            int x2 = x1 + 1;
-            int y1 = int(py) - (py < 0);
-            int y2 = y1 + 1;
-
-            int distx = int((px - x1) * 256);
-            int disty = int((py - y1) * 256);
-            int idistx = 256 - distx;
-            int idisty = 256 - disty;
-
-            x1 = qBound(0, x1, image_width - 1);
-            x2 = qBound(0, x2, image_width - 1);
-            y1 = qBound(0, y1, image_height - 1);
-            y2 = qBound(0, y2, image_height - 1);
-
-            const uchar *s1 = data->texture.scanLine(y1);
-            const uchar *s2 = data->texture.scanLine(y2);
-
-            uint tl = fetch(s1, x1, data->texture.colorTable);
-            uint tr = fetch(s1, x2, data->texture.colorTable);
-            uint bl = fetch(s2, x1, data->texture.colorTable);
-            uint br = fetch(s2, x2, data->texture.colorTable);
-
-            uint xtop = INTERPOLATE_PIXEL_256(tl, idistx, tr, distx);
-            uint xbot = INTERPOLATE_PIXEL_256(bl, idistx, br, distx);
-            *b = INTERPOLATE_PIXEL_256(xtop, idisty, xbot, disty);
-
-            fx += fdx;
-            fy += fdy;
-            fw += fdw;
-            //force increment to avoid /0
-            if (!fw) {
-                fw += fdw;
+                Q_ASSERT(x1 >= 0 && x1 < image_width);
+                Q_ASSERT(x2 >= 0 && x2 < image_width);
+                Q_ASSERT(y1 >= 0 && y1 < image_height);
+                Q_ASSERT(y2 >= 0 && y2 < image_height);
+            } else {
+                x1 = qBound(0, x1, image_width - 1);
+                x2 = qBound(0, x2, image_width - 1);
+                y1 = qBound(0, y1, image_height - 1);
+                y2 = qBound(0, y2, image_height - 1);
             }
-            ++b;
-        }
-    }
-
-    return buffer;
-}
-
-static const uint * QT_FASTCALL fetchTransformedBilinearTiled(uint *buffer, const Operator *, const QSpanData *data,
-                                                                     int y, int x, int length)
-{
-    FetchPixelProc fetch = fetchPixelProc[data->texture.format];
-
-    int image_width = data->texture.width;
-    int image_height = data->texture.height;
-
-    const qreal cx = x + 0.5;
-    const qreal cy = y + 0.5;
-
-    const uint *end = buffer + length;
-    uint *b = buffer;
-    if (data->fast_matrix) {
-        // The increment pr x in the scanline
-        int fdx = (int)(data->m11 * fixed_scale);
-        int fdy = (int)(data->m12 * fixed_scale);
-
-        int fx = int((data->m21 * cy + data->m11 * cx + data->dx) * fixed_scale);
-        int fy = int((data->m22 * cy + data->m12 * cx + data->dy) * fixed_scale);
-
-        fx -= half_point;
-        fy -= half_point;
-        while (b < end) {
-            int x1 = (fx >> 16);
-            int x2 = x1 + 1;
-            int y1 = (fy >> 16);
-            int y2 = y1 + 1;
-
-            int distx = ((fx - (x1 << 16)) >> 8);
-            int disty = ((fy - (y1 << 16)) >> 8);
-            int idistx = 256 - distx;
-            int idisty = 256 - disty;
-
-            x1 %= image_width;
-            x2 %= image_width;
-            y1 %= image_height;
-            y2 %= image_height;
-
-            if (x1 < 0) x1 += image_width;
-            if (x2 < 0) x2 += image_width;
-            if (y1 < 0) y1 += image_height;
-            if (y2 < 0) y2 += image_height;
-
-            Q_ASSERT(x1 >= 0 && x1 < image_width);
-            Q_ASSERT(x2 >= 0 && x2 < image_width);
-            Q_ASSERT(y1 >= 0 && y1 < image_height);
-            Q_ASSERT(y2 >= 0 && y2 < image_height);
 
             const uchar *s1 = data->texture.scanLine(y1);
             const uchar *s2 = data->texture.scanLine(y2);
@@ -1018,20 +866,27 @@ static const uint * QT_FASTCALL fetchTransformedBilinearTiled(uint *buffer, cons
             int idistx = 256 - distx;
             int idisty = 256 - disty;
 
-            x1 %= image_width;
-            x2 %= image_width;
-            y1 %= image_height;
-            y2 %= image_height;
+            if (blendType == BlendTransformedBilinearTiled) {
+                x1 %= image_width;
+                x2 %= image_width;
+                y1 %= image_height;
+                y2 %= image_height;
 
-            if (x1 < 0) x1 += image_width;
-            if (x2 < 0) x2 += image_width;
-            if (y1 < 0) y1 += image_height;
-            if (y2 < 0) y2 += image_height;
+                if (x1 < 0) x1 += image_width;
+                if (x2 < 0) x2 += image_width;
+                if (y1 < 0) y1 += image_height;
+                if (y2 < 0) y2 += image_height;
 
-            Q_ASSERT(x1 >= 0 && x1 < image_width);
-            Q_ASSERT(x2 >= 0 && x2 < image_width);
-            Q_ASSERT(y1 >= 0 && y1 < image_height);
-            Q_ASSERT(y2 >= 0 && y2 < image_height);
+                Q_ASSERT(x1 >= 0 && x1 < image_width);
+                Q_ASSERT(x2 >= 0 && x2 < image_width);
+                Q_ASSERT(y1 >= 0 && y1 < image_height);
+                Q_ASSERT(y2 >= 0 && y2 < image_height);
+            } else {
+                x1 = qBound(0, x1, image_width - 1);
+                x2 = qBound(0, x2, image_width - 1);
+                y1 = qBound(0, y1, image_height - 1);
+                y2 = qBound(0, y2, image_height - 1);
+            }
 
             const uchar *s1 = data->texture.scanLine(y1);
             const uchar *s2 = data->texture.scanLine(y2);
@@ -1135,75 +990,75 @@ static const SourceFetchProc sourceFetch[NBlendTypes][QImage::NImageFormats] = {
     // Transformed
     {
         0, // Invalid
-        fetchTransformed,   // Mono
-        fetchTransformed,   // MonoLsb
-        fetchTransformed,   // Indexed8
-        fetchTransformed,   // RGB32
-        fetchTransformed,   // ARGB32
-        fetchTransformed,   // ARGB32_Premultiplied
-        fetchTransformed,   // RGB16
-        fetchTransformed,   // ARGB8565_Premultiplied
-        fetchTransformed,   // RGB666
-        fetchTransformed,   // ARGB6666_Premultiplied
-        fetchTransformed,   // RGB555
-        fetchTransformed,   // ARGB8555_Premultiplied
-        fetchTransformed,   // RGB888
-        fetchTransformed,   // RGB444
-        fetchTransformed,   // ARGB4444_Premultiplied
+        fetchTransformed<BlendTransformed>,   // Mono
+        fetchTransformed<BlendTransformed>,   // MonoLsb
+        fetchTransformed<BlendTransformed>,   // Indexed8
+        fetchTransformed<BlendTransformed>,   // RGB32
+        fetchTransformed<BlendTransformed>,   // ARGB32
+        fetchTransformed<BlendTransformed>,   // ARGB32_Premultiplied
+        fetchTransformed<BlendTransformed>,   // RGB16
+        fetchTransformed<BlendTransformed>,   // ARGB8565_Premultiplied
+        fetchTransformed<BlendTransformed>,   // RGB666
+        fetchTransformed<BlendTransformed>,   // ARGB6666_Premultiplied
+        fetchTransformed<BlendTransformed>,   // RGB555
+        fetchTransformed<BlendTransformed>,   // ARGB8555_Premultiplied
+        fetchTransformed<BlendTransformed>,   // RGB888
+        fetchTransformed<BlendTransformed>,   // RGB444
+        fetchTransformed<BlendTransformed>,   // ARGB4444_Premultiplied
     },
     {
         0, // TransformedTiled
-        fetchTransformedTiled,   // Mono
-        fetchTransformedTiled,   // MonoLsb
-        fetchTransformedTiled,   // Indexed8
-        fetchTransformedTiled,   // RGB32
-        fetchTransformedTiled,   // ARGB32
-        fetchTransformedTiled,   // ARGB32_Premultiplied
-        fetchTransformedTiled,   // RGB16
-        fetchTransformedTiled,   // ARGB8565_Premultiplied
-        fetchTransformedTiled,   // RGB666
-        fetchTransformedTiled,   // ARGB6666_Premultiplied
-        fetchTransformedTiled,   // RGB555
-        fetchTransformedTiled,   // ARGB8555_Premultiplied
-        fetchTransformedTiled,   // RGB888
-        fetchTransformedTiled,   // RGB444
-        fetchTransformedTiled,   // ARGB4444_Premultiplied
+        fetchTransformed<BlendTransformedTiled>,   // Mono
+        fetchTransformed<BlendTransformedTiled>,   // MonoLsb
+        fetchTransformed<BlendTransformedTiled>,   // Indexed8
+        fetchTransformed<BlendTransformedTiled>,   // RGB32
+        fetchTransformed<BlendTransformedTiled>,   // ARGB32
+        fetchTransformed<BlendTransformedTiled>,   // ARGB32_Premultiplied
+        fetchTransformed<BlendTransformedTiled>,   // RGB16
+        fetchTransformed<BlendTransformedTiled>,   // ARGB8565_Premultiplied
+        fetchTransformed<BlendTransformedTiled>,   // RGB666
+        fetchTransformed<BlendTransformedTiled>,   // ARGB6666_Premultiplied
+        fetchTransformed<BlendTransformedTiled>,   // RGB555
+        fetchTransformed<BlendTransformedTiled>,   // ARGB8555_Premultiplied
+        fetchTransformed<BlendTransformedTiled>,   // RGB888
+        fetchTransformed<BlendTransformedTiled>,   // RGB444
+        fetchTransformed<BlendTransformedTiled>,   // ARGB4444_Premultiplied
     },
     {
         0, // Bilinear
-        fetchTransformedBilinear,   // Mono
-        fetchTransformedBilinear,   // MonoLsb
-        fetchTransformedBilinear,   // Indexed8
-        fetchTransformedBilinear,   // RGB32
-        fetchTransformedBilinear,   // ARGB32
-        fetchTransformedBilinear,   // ARGB32_Premultiplied
-        fetchTransformedBilinear,   // RGB16
-        fetchTransformedBilinear,   // ARGB8565_Premultiplied
-        fetchTransformedBilinear,   // RGB666
-        fetchTransformedBilinear,   // ARGB6666_Premultiplied
-        fetchTransformedBilinear,   // RGB555
-        fetchTransformedBilinear,   // ARGB8555_Premultiplied
-        fetchTransformedBilinear,   // RGB888
-        fetchTransformedBilinear,   // RGB444
-        fetchTransformedBilinear    // ARGB4444_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear>,   // Mono
+        fetchTransformedBilinear<BlendTransformedBilinear>,   // MonoLsb
+        fetchTransformedBilinear<BlendTransformedBilinear>,   // Indexed8
+        fetchTransformedBilinear<BlendTransformedBilinear>,   // RGB32
+        fetchTransformedBilinear<BlendTransformedBilinear>,   // ARGB32
+        fetchTransformedBilinear<BlendTransformedBilinear>,   // ARGB32_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear>,   // RGB16
+        fetchTransformedBilinear<BlendTransformedBilinear>,   // ARGB8565_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear>,   // RGB666
+        fetchTransformedBilinear<BlendTransformedBilinear>,   // ARGB6666_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear>,   // RGB555
+        fetchTransformedBilinear<BlendTransformedBilinear>,   // ARGB8555_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear>,   // RGB888
+        fetchTransformedBilinear<BlendTransformedBilinear>,   // RGB444
+        fetchTransformedBilinear<BlendTransformedBilinear>    // ARGB4444_Premultiplied
     },
     {
         0, // BilinearTiled
-        fetchTransformedBilinearTiled,   // Mono
-        fetchTransformedBilinearTiled,   // MonoLsb
-        fetchTransformedBilinearTiled,   // Indexed8
-        fetchTransformedBilinearTiled,   // RGB32
-        fetchTransformedBilinearTiled,   // ARGB32
-        fetchTransformedBilinearTiled,   // ARGB32_Premultiplied
-        fetchTransformedBilinearTiled,   // RGB16
-        fetchTransformedBilinearTiled,   // ARGB8565_Premultiplied
-        fetchTransformedBilinearTiled,   // RGB666
-        fetchTransformedBilinearTiled,   // ARGB6666_Premultiplied
-        fetchTransformedBilinearTiled,   // RGB555
-        fetchTransformedBilinearTiled,   // ARGB8555_Premultiplied
-        fetchTransformedBilinearTiled,   // RGB888
-        fetchTransformedBilinearTiled,   // RGB444
-        fetchTransformedBilinearTiled    // ARGB4444_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // Mono
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // MonoLsb
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // Indexed8
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // RGB32
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // ARGB32
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // ARGB32_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // RGB16
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // ARGB8565_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // RGB666
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // ARGB6666_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // RGB555
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // ARGB8555_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // RGB888
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // RGB444
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>    // ARGB4444_Premultiplied
     },
 };
 
