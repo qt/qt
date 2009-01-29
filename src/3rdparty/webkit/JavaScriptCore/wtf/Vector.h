@@ -67,10 +67,11 @@ namespace WTF {
     template <size_t size, size_t> struct AlignedBuffer
     {
         AlignedBufferChar oversizebuffer[size + 64];
-        AlignedBufferChar *buffer;
-        inline AlignedBuffer() : buffer(oversizebuffer)
+        AlignedBufferChar *buffer()
         {
-            buffer += 64 - (reinterpret_cast<size_t>(buffer) & 0x3f);
+            AlignedBufferChar *ptr = oversizebuffer;
+            ptr += 64 - (reinterpret_cast<size_t>(ptr) & 0x3f);
+            return ptr;
         }
     };
     #endif
@@ -440,7 +441,11 @@ namespace WTF {
         using Base::m_capacity;
 
         static const size_t m_inlineBufferSize = inlineCapacity * sizeof(T);
+        #ifdef WTF_ALIGNED
         T* inlineBuffer() { return reinterpret_cast<T*>(m_inlineBuffer.buffer); }
+        #else
+        T* inlineBuffer() { return reinterpret_cast<T*>(m_inlineBuffer.buffer()); }
+        #endif
 
         AlignedBuffer<m_inlineBufferSize, WTF_ALIGN_OF(T)> m_inlineBuffer;
     };
