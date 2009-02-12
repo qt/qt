@@ -69,7 +69,11 @@
 
 #include <private/qglpixelbuffer_p.h>
 #include <private/qgraphicssystem_gl_p.h>
+#if 1 || defined(QT_OPENGL_ES_2)
+#include <private/qpaintengineex_opengl2_p.h>
+#else
 #include <private/qpaintengine_opengl_p.h>
+#endif
 
 #ifndef GLX_ARB_multisample
 #define GLX_SAMPLE_BUFFERS_ARB  100000
@@ -283,7 +287,9 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     qDebug() << "hijackWindow() context created for" << widget << d_ptr->contexts.size();
 }
 
-#if !defined(QT_OPENGL_ES_2)
+#if 1 || defined(QT_OPENGL_ES_2)
+Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_window_surface_paintengine)
+#else
 Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_window_surface_paintengine)
 #endif
 

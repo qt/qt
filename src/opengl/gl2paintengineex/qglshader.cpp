@@ -49,7 +49,11 @@
                     return false; \
                 ctx->makeCurrent(); \
 
-
+#if !defined(QT_OPENGL_ES_2)
+static const char *qglslDefines = "#define lowp\n#define mediump\n#define highp\n";
+#else
+static const char *qglslDefines = "";
+#endif
 
 
 class QGLShaderPrivate
@@ -131,9 +135,13 @@ bool QGLShader::compile()
         return false;
 
     const QByteArray src_ba = d->source.toAscii();
-    const char* src = src_ba.constData();
+    const char* src[2];
+    src[0] = qglslDefines;
+    src[1] = src_ba.constData();
 
-    glShaderSource(d->shaderId, 1, &src, 0);
+
+    QGLContext *ctx = d->ctx;
+    glShaderSource(d->shaderId, 2, src, 0);
 
     glCompileShader(d->shaderId);
 
@@ -160,6 +168,7 @@ QString QGLShader::log()
     GLint  logSize;
     GLint  logLength;
 
+    QGLContext *ctx = d->ctx;
     glGetShaderiv(d->shaderId, GL_INFO_LOG_LENGTH, &logSize);
 
     if (!logSize)
@@ -377,6 +386,7 @@ void QGLShaderProgram::use()
     if (!d->valid)
         return;
 
+    QGLContext *ctx = d->ctx;
     glUseProgram(d->programId);
 }
 

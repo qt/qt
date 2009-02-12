@@ -845,6 +845,7 @@ void QGL2PaintEngineEx::transformChanged()
 void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, const QRectF & src)
 {
     Q_D(QGL2PaintEngineEx);
+    QGLContext *ctx = d->ctx;
     glActiveTexture(QT_BRUSH_TEXTURE_UNIT);
 
     d->ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, true);
@@ -862,6 +863,7 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
                         Qt::ImageConversionFlags)
 {
     Q_D(QGL2PaintEngineEx);
+    QGLContext *ctx = d->ctx;
     glActiveTexture(QT_BRUSH_TEXTURE_UNIT);
     d->ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
 
@@ -926,6 +928,7 @@ void QGL2PaintEngineEx::drawCachedGlyphs(const QPointF &p, const QTextItemInt &t
     const QImage &image = cache->image();
     int margin = cache->glyphMargin();
 
+    QGLContext *ctx = d->ctx;
     glActiveTexture(QT_BRUSH_TEXTURE_UNIT);
     d->ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
 
@@ -999,6 +1002,9 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->ctx->makeCurrent();
     d->width = widget->width();
     d->height = widget->height();
+
+    qt_resolve_version_1_3_functions(d->ctx);
+    qt_resolve_glsl_extensions(d->ctx);
 
     if (!d->shaderManager)
         d->shaderManager = new QGLPEXShaderManager(d->ctx);

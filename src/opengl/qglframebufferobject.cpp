@@ -43,7 +43,11 @@
 
 #include <qdebug.h>
 #include <private/qgl_p.h>
+#if 1 || defined(QT_OPENGL_ES_2)
+#include <private/qpaintengineex_opengl2_p.h>
+#else
 #include <private/qpaintengine_opengl_p.h>
+#endif
 #include <qglframebufferobject.h>
 #include <qlibrary.h>
 #include <qimage.h>
@@ -573,7 +577,9 @@ QImage QGLFramebufferObject::toImage() const
     return image;
 }
 
-#if !defined(QT_OPENGL_ES_2)
+#if 1 || defined(QT_OPENGL_ES_2)
+Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_buffer_paintengine)
+#else
 Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_buffer_paintengine)
 #endif
 

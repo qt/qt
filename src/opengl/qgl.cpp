@@ -65,7 +65,7 @@
 #include "qimage.h"
 #include "qgl_p.h"
 
-#if defined(QT_OPENGL_ES_2)
+#if 1 || defined(QT_OPENGL_ES_2)
 #include "gl2paintengineex/qpaintengineex_opengl2_p.h"
 #else
 #include <private/qpaintengine_opengl_p.h>
@@ -2041,7 +2041,24 @@ void QGLContext::deleteTexture(QMacCompatGLuint id)
 
 // qpaintengine_opengl.cpp
 #if !defined(QT_OPENGL_ES_2)
-extern void qt_add_rect_to_array(const QRectF &r, q_vertexType *array);
+//extern void qt_add_rect_to_array(const QRectF &r, q_vertexType *array);
+void qt_add_rect_to_array(const QRectF &r, q_vertexType *array)
+{
+    qreal left = r.left();
+    qreal right = r.right();
+    qreal top = r.top();
+    qreal bottom = r.bottom();
+
+    array[0] = f2vt(left);
+    array[1] = f2vt(top);
+    array[2] = f2vt(right);
+    array[3] = f2vt(top);
+    array[4] = f2vt(right);
+    array[5] = f2vt(bottom);
+    array[6] = f2vt(left);
+    array[7] = f2vt(bottom);
+}
+
 #else
 void qt_add_rect_to_array(const QRectF &r, q_vertexType *array) {};
 #endif
@@ -4039,14 +4056,14 @@ void QGLWidget::drawTexture(const QPointF &point, QMacCompatGLuint textureId, QM
 }
 #endif
 
-#if defined(QT_OPENGL_ES_2)
+#if 1 || defined(QT_OPENGL_ES_2)
 Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_engine)
 #else
 Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_engine)
 #endif
 
 #ifdef Q_WS_QWS
-Q_OPENGL_EXPORT QOpenGLPaintEngine* qt_qgl_paint_engine()
+Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine()
 {
 #if !defined(QT_OPENGL_ES_2)
     return qt_gl_engine();
