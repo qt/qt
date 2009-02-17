@@ -399,8 +399,8 @@ void QGL2PaintEngineExPrivate::updateMatrix()
     // Use the (3x3) transform for the Model~View matrix:
     const QTransform& transform = q->state()->matrix;
     GLfloat MV[4][4] = {
-        {transform.m11(), transform.m21(), 0.0, transform.dx() + 0.5},
-        {transform.m12(), transform.m22(), 0.0, transform.dy() + 0.5},
+        {transform.m11(), transform.m21(), 0.0, transform.dx()},
+        {transform.m12(), transform.m22(), 0.0, transform.dy()},
         {0.0,             0.0,             1.0, 0.0},
         {transform.m13(), transform.m23(), 0.0, transform.m33()}
     };
