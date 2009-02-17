@@ -134,8 +134,8 @@ public:
 
     QGL2PaintEngineEx* q;
     QGLDrawable drawable;
-    QGLContext *ctx;
     int width, height;
+    QGLContext *ctx;
 
     // Dirty flags
     bool matrixDirty; // Implies matrix uniforms are also dirty
