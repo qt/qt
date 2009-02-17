@@ -282,6 +282,39 @@ Q_SIGNALS:
     void aboutToDestroyContext(const QGLContext *context);
 };
 
+class QGLPixelBuffer;
+class QGLFramebufferObject;
+class QWSGLWindowSurface;
+class QGLWindowSurface;
+class QGLDrawable {
+public:
+    QGLDrawable() : widget(0), buffer(0), fbo(0)
+                  , wsurf(0)
+        {}
+    void setDevice(QPaintDevice *pdev);
+    void swapBuffers();
+    void makeCurrent();
+    void doneCurrent();
+    QSize size() const;
+    QGLFormat format() const;
+    GLuint bindTexture(const QImage &image, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA);
+    GLuint bindTexture(const QPixmap &pixmap, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA);
+    QColor backgroundColor() const;
+    QGLContext *context() const;
+    bool autoFillBackground() const;
+
+private:
+    bool wasBound;
+    QGLWidget *widget;
+    QGLPixelBuffer *buffer;
+    QGLFramebufferObject *fbo;
+#ifdef Q_WS_QWS
+    QWSGLWindowSurface *wsurf;
+#else
+    QGLWindowSurface *wsurf;
+#endif
+};
+
 // GL extension definitions
 class QGLExtensions {
 public:

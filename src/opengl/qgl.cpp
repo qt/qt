@@ -71,9 +71,14 @@
 #include <private/qpaintengine_opengl_p.h>
 #endif
 
+#include <qglpixelbuffer.h>
+#include <qglframebufferobject.h>
+
 #include <private/qimage_p.h>
 #include <private/qpixmapdata_p.h>
 #include <private/qpixmapdata_gl_p.h>
+#include <private/qglpixelbuffer_p.h>
+#include <private/qwindowsurface_gl_p.h>
 #include "qcolormap.h"
 #include "qcache.h"
 #include "qfile.h"
@@ -4218,5 +4223,150 @@ Q_OPENGL_EXPORT const QString qt_gl_library_name()
     return *qt_gl_lib_name();
 }
 #endif
+
+void QGLDrawable::setDevice(QPaintDevice *pdev)
+{
+    wasBound = false;
+    widget = 0;
+    buffer = 0;
+    fbo = 0;
+#ifdef Q_WS_QWS
+    wsurf = 0;
+#endif
+    if (pdev->devType() == QInternal::Widget)
+        widget = static_cast<QGLWidget *>(pdev);
+    else if (pdev->devType() == QInternal::Pbuffer)
+        buffer = static_cast<QGLPixelBuffer *>(pdev);
+    else if (pdev->devType() == QInternal::FramebufferObject)
+        fbo = static_cast<QGLFramebufferObject *>(pdev);
+    else if (pdev->devType() == QInternal::UnknownDevice)
+#ifdef Q_WS_QWS
+        wsurf = static_cast<QWSGLPaintDevice*>(pdev)->windowSurface();
+#else
+        wsurf = static_cast<QGLWindowSurface *>(pdev);
+#endif
+}
+
+void QGLDrawable::swapBuffers()
+{
+    if (widget) {
+        if (widget->autoBufferSwap())
+            widget->swapBuffers();
+    } else {
+        glFlush();
+    }
+}
+
+void QGLDrawable::makeCurrent()
+{
+    if (widget)
+        widget->makeCurrent();
+    else if (buffer)
+        buffer->makeCurrent();
+    else if (wsurf)
+        wsurf->context()->makeCurrent();
+    else if (fbo) {
+        wasBound = fbo->isBound();
+        if (!wasBound)
+            fbo->bind();
+    }
+}
+
+void QGLDrawable::doneCurrent()
+{
+    if (fbo && !wasBound)
+        fbo->release();
+}
+
+QSize QGLDrawable::size() const
+{
+    if (widget) {
+        return QSize(widget->d_func()->glcx->device()->width(),
+                     widget->d_func()->glcx->device()->height());
+    } else if (buffer) {
+        return buffer->size();
+    } else if (fbo) {
+        return fbo->size();
+    } else if (wsurf) {
+#ifdef Q_WS_QWS
+        return wsurf->window()->frameSize();
+#else
+        return QSize(wsurf->width(), wsurf->height());
+#endif
+    }
+    return QSize();
+}
+
+QGLFormat QGLDrawable::format() const
+{
+    if (widget)
+        return widget->format();
+    else if (buffer)
+        return buffer->format();
+    else if (wsurf)
+        return wsurf->context()->format();
+    else if (fbo && QGLContext::currentContext()) {
+        QGLFormat fmt = QGLContext::currentContext()->format();
+        fmt.setStencil(fbo->attachment() == QGLFramebufferObject::CombinedDepthStencil);
+        fmt.setDepth(fbo->attachment() != QGLFramebufferObject::NoAttachment);
+        return fmt;
+    }
+
+    return QGLFormat();
+}
+
+GLuint QGLDrawable::bindTexture(const QImage &image, GLenum target, GLint format)
+{
+    if (widget)
+        return widget->d_func()->glcx->d_func()->bindTexture(image, target, format, true);
+    else if (buffer)
+        return buffer->d_func()->qctx->d_func()->bindTexture(image, target, format, true);
+    else if (fbo && QGLContext::currentContext())
+        return const_cast<QGLContext *>(QGLContext::currentContext())->d_func()->bindTexture(image, target, format, true);
+    else if (wsurf)
+        return wsurf->context()->d_func()->bindTexture(image, target, format, true);
+    return 0;
+}
+
+GLuint QGLDrawable::bindTexture(const QPixmap &pixmap, GLenum target, GLint format)
+{
+    if (widget)
+        return widget->d_func()->glcx->d_func()->bindTexture(pixmap, target, format, true);
+    else if (buffer)
+        return buffer->d_func()->qctx->d_func()->bindTexture(pixmap, target, format, true);
+    else if (fbo && QGLContext::currentContext())
+        return const_cast<QGLContext *>(QGLContext::currentContext())->d_func()->bindTexture(pixmap, target, format, true);
+    else if (wsurf)
+        return wsurf->context()->d_func()->bindTexture(pixmap, target, format, true);
+    return 0;
+}
+
+QColor QGLDrawable::backgroundColor() const
+{
+    if (widget)
+        return widget->palette().brush(widget->backgroundRole()).color();
+    return QApplication::palette().brush(QPalette::Background).color();
+}
+
+QGLContext *QGLDrawable::context() const
+{
+    if (widget)
+        return widget->d_func()->glcx;
+    else if (buffer)
+        return buffer->d_func()->qctx;
+    else if (fbo)
+        return const_cast<QGLContext *>(QGLContext::currentContext());
+    else if (wsurf)
+        return wsurf->context();
+    return 0;
+}
+
+bool QGLDrawable::autoFillBackground() const
+{
+    if (widget)
+        return widget->autoFillBackground();
+    else
+        return false;
+}
 
 QT_END_NAMESPACE

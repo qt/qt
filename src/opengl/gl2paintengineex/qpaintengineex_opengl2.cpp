@@ -133,10 +133,9 @@ public:
     inline QColor premultiplyColor(QColor c, GLfloat opacity);
 
     QGL2PaintEngineEx* q;
-
-    //### Move into QGLDrawable
+    QGLDrawable drawable;
+    QGLContext *ctx;
     int width, height;
-    QGLContext* ctx;
 
     // Dirty flags
     bool matrixDirty; // Implies matrix uniforms are also dirty
@@ -997,11 +996,12 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 
 //     qDebug("QGL2PaintEngineEx::begin()");
 
-    QGLWidget* widget = static_cast<QGLWidget*>(pdev);
-    d->ctx = const_cast<QGLContext*>(widget->context());
-    d->ctx->makeCurrent();
-    d->width = widget->width();
-    d->height = widget->height();
+    d->drawable.setDevice(pdev);
+    d->drawable.makeCurrent();
+    d->ctx = d->drawable.context();
+    QSize sz = d->drawable.size();
+    d->width = sz.width();
+    d->height = sz.height();
 
     qt_resolve_version_1_3_functions(d->ctx);
     qt_resolve_glsl_extensions(d->ctx);
@@ -1033,7 +1033,8 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 bool QGL2PaintEngineEx::end()
 {
     Q_D(QGL2PaintEngineEx);
-    d->ctx->swapBuffers();
+    d->drawable.swapBuffers();
+    d->drawable.doneCurrent();
     return false;
 }
 
