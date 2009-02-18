@@ -418,9 +418,13 @@ inline GLenum qt_gl_preferredTextureFormat()
 
 inline GLenum qt_gl_preferredTextureTarget()
 {
+#if 1 || defined(QT_OPENGL_ES_2)
+    return GL_TEXTURE_2D;
+#else
     return (QGLExtensions::glExtensions & QGLExtensions::TextureRectangle)
            ? GL_TEXTURE_RECTANGLE_NV
            : GL_TEXTURE_2D;
+#endif
 }
 
 

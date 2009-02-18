@@ -97,6 +97,7 @@ private:
     int m_width;
     int m_height;
 
+    mutable QGLContext *m_ctx;
     mutable GLuint m_texture;
     mutable bool m_dirty;
     mutable QImage m_source;

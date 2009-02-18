@@ -1888,14 +1888,14 @@ GLuint QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint 
 /*! \internal */
 GLuint QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target, GLint format, bool clean)
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (target == qt_gl_preferredTextureTarget() && pixmap.pixmapData()->classId() == QPixmapData::OpenGLClass) {
-        const QGLPixmapData *data = static_cast<const QGLPixmapData *>(pixmap.pixmapData());
+    Q_Q(QGLContext);
+    QPixmapData *pd = pixmap.pixmapData();
+    if (target == qt_gl_preferredTextureTarget() && pd->classId() == QPixmapData::OpenGLClass) {
+        const QGLPixmapData *data = static_cast<const QGLPixmapData *>(pd);
 
-        if (data->isValidContext(QGLContext::currentContext()))
+        if (data->isValidContext(q))
             return data->bind();
     }
-#endif
 
     const qint64 key = pixmap.cacheKey();
     GLuint id;
