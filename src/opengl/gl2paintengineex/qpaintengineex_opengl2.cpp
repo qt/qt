@@ -86,6 +86,11 @@ extern QImage qt_imageForBrush(int brushStyle, bool invert); //in qbrush.cpp
 
 #include <QDebug>
 
+enum EngineMode {
+    ImageDrawingMode,
+    TextDrawingMode,
+    DefaultMode
+};
 
 static const GLuint QT_VERTEX_COORDS_ATTR  = 0;
 static const GLuint QT_TEXTURE_COORDS_ATTR = 1;
@@ -114,7 +119,9 @@ public:
 
     void setBrush(const QBrush* brush);
 
-    void drawTexture(const QGLRect& dest, const QGLRect& src, int txtWidth, int txtHeight);
+    void transferMode(EngineMode newMode);
+
+    void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize);
     void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
 
     void fill(const QVectorPath &path);
@@ -138,6 +145,8 @@ public:
     int width, height;
     QGLContext *ctx;
 
+    EngineMode mode;
+
     // Dirty flags
     bool matrixDirty; // Implies matrix uniforms are also dirty
     bool compositionModeDirty;
@@ -155,6 +164,9 @@ public:
 
     QGL2PEXVertexArray vertexCoordinateArray;
     QGL2PEXVertexArray textureCoordinateArray;
+
+    GLfloat staticVertexCoordinateArray[8];
+    GLfloat staticTextureCoordinateArray[8];
 
     GLfloat pmvMatrix[4][4];
 
@@ -486,14 +498,21 @@ void QGL2PaintEngineExPrivate::updateCompositionMode()
     compositionModeDirty = false;
 }
 
+static inline void setCoords(GLfloat *coords, const QGLRect &rect)
+{
+    coords[0] = rect.left;
+    coords[1] = rect.top;
+    coords[2] = rect.right;
+    coords[3] = rect.top;
+    coords[4] = rect.right;
+    coords[5] = rect.bottom;
+    coords[6] = rect.left;
+    coords[7] = rect.bottom;
+}
 
-void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& src, int txtWidth, int txtHeight)
+void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize)
 {
 //     qDebug("QGL2PaintEngineExPrivate::drawImage()");
-
-    // We have a shader specifically for drawPixmap/drawImage...
-    shaderManager->imageShader()->use();
-
     updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
     if (compositionModeDirty)
@@ -507,45 +526,66 @@ void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& s
         imageShaderMatrixUniformDirty = false;
     }
 
-    shaderManager->imageShader()->uniforms()[QLatin1String("textureSampler")] = QT_BRUSH_TEXTURE_UNIT;
-
-//    if (q->state()->opacity < 0.99f)
+    if (q->state()->opacity < 0.99f)
         shaderManager->imageShader()->uniforms()[QLatin1String("opacity")] = (GLfloat)q->state()->opacity;
 
-    GLfloat vertexCoords[] = {
-        dest.left,  dest.top,
-        dest.left,  dest.bottom,
-        dest.right, dest.bottom,
-        dest.right, dest.top
-    };
-
-    glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
-    glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoords);
-
-    GLfloat dx = 1.0 / txtWidth;
-    GLfloat dy = 1.0 / txtHeight;
+    GLfloat dx = 1.0 / textureSize.width();
+    GLfloat dy = 1.0 / textureSize.height();
 
     QGLRect srcTextureRect(src.left*dx, 1.0 - src.top*dy, src.right*dx, 1.0 - src.bottom*dy);
 
-    GLfloat textureCoords[] = {
-        srcTextureRect.left,  srcTextureRect.top,
-        srcTextureRect.left,  srcTextureRect.bottom,
-        srcTextureRect.right, srcTextureRect.bottom,
-        srcTextureRect.right, srcTextureRect.top
-    };
-
-    glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
-    glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoords);
+    setCoords(staticVertexCoordinateArray, dest);
+    setCoords(staticTextureCoordinateArray, srcTextureRect);
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-    glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
-    glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
 }
 
+void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
+{
+    if (newMode == mode)
+        return;
+
+    if (mode == TextDrawingMode || mode == ImageDrawingMode) {
+        glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
+        glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+    }
+
+    if (newMode == TextDrawingMode) {
+        glEnable(GL_BLEND);
+        glActiveTexture(QT_BRUSH_TEXTURE_UNIT);
+
+        glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+        glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
+
+        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
+        glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
+
+        shaderManager->textShader()->use();
+        shaderManager->textShader()->uniforms()[QLatin1String("textureSampler")] = QT_BRUSH_TEXTURE_UNIT;
+    }
+
+    if (newMode == ImageDrawingMode) {
+        // We have a shader specifically for drawPixmap/drawImage...
+        shaderManager->imageShader()->use();
+        shaderManager->imageShader()->uniforms()[QLatin1String("textureSampler")] = QT_BRUSH_TEXTURE_UNIT;
+        shaderManager->imageShader()->uniforms()[QLatin1String("opacity")] = (GLfloat)1.0;
+
+        glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+        glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
+
+        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, staticVertexCoordinateArray);
+        glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, staticTextureCoordinateArray);
+
+        glActiveTexture(QT_BRUSH_TEXTURE_UNIT);
+    }
+
+    mode = newMode;
+}
 
 void QGL2PaintEngineExPrivate::drawOutline(const QVectorPath& path)
 {
+    transferMode(DefaultMode);
+
 //     qDebug("QGL2PaintEngineExPrivate::drawOutline()");
     if (matrixDirty)
         updateMatrix();
@@ -567,6 +607,8 @@ void QGL2PaintEngineExPrivate::drawOutline(const QVectorPath& path)
 // Assumes everything is configured for the brush you want to use
 void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 {
+    transferMode(DefaultMode);
+
     if (matrixDirty)
         updateMatrix();
 
@@ -846,10 +888,10 @@ void QGL2PaintEngineEx::transformChanged()
 void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, const QRectF & src)
 {
     Q_D(QGL2PaintEngineEx);
-    QGLContext *ctx = d->ctx;
-    glActiveTexture(QT_BRUSH_TEXTURE_UNIT);
+    d->transferMode(ImageDrawingMode);
 
-    d->ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, true);
+    QGLContext *ctx = d->ctx;
+    ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, true);
 
     //FIXME: we should use hasAlpha() instead, but that's SLOW at the moment
     if ((state()->opacity < 0.99f) || pixmap.hasAlphaChannel())
@@ -857,23 +899,24 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
     else
         glDisable(GL_BLEND);
 
-    d->drawTexture(dest, src, pixmap.width(), pixmap.height());
+    d->drawTexture(dest, src, pixmap.size());
 }
 
 void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const QRectF& src,
                         Qt::ImageConversionFlags)
 {
     Q_D(QGL2PaintEngineEx);
+    d->transferMode(ImageDrawingMode);
+
     QGLContext *ctx = d->ctx;
-    glActiveTexture(QT_BRUSH_TEXTURE_UNIT);
-    d->ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
+    ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
 
     if ((state()->opacity < 0.99f) || image.hasAlphaChannel())
         glEnable(GL_BLEND);
     else
         glDisable(GL_BLEND);
 
-    d->drawTexture(dest, src, image.width(), image.height());
+    d->drawTexture(dest, src, image.size());
 }
 
 void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem)
@@ -908,6 +951,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
     Q_Q(QGL2PaintEngineEx);
     QOpenGLPaintEngineState *s = q->state();
 
+    transferMode(TextDrawingMode);
+
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
     QTransform matrix;
@@ -930,12 +975,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
     const QImage &image = cache->image();
     int margin = cache->glyphMargin();
 
-    glActiveTexture(QT_BRUSH_TEXTURE_UNIT);
     ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
 
-    glEnable(GL_BLEND);
-
-    shaderManager->textShader()->use();
     updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
     if (compositionModeDirty)
@@ -949,12 +990,14 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
         textShaderMatrixUniformDirty = false;
     }
 
-    shaderManager->textShader()->uniforms()[QLatin1String("textureSampler")] = QT_BRUSH_TEXTURE_UNIT;
     QColor col = premultiplyColor(s->pen.color(), (GLfloat)s->opacity);
     shaderManager->textShader()->uniforms()[QLatin1String("fragmentColor")] = col;
 
     GLfloat dx = 1.0 / image.width();
     GLfloat dy = 1.0 / image.height();
+
+    QGLPoint *oldVertexCoordinateDataPtr = vertexCoordinateArray.data();
+    QGLPoint *oldTextureCoordinateDataPtr = textureCoordinateArray.data();
 
     vertexCoordinateArray.clear();
     textureCoordinateArray.clear();
@@ -968,15 +1011,12 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
         textureCoordinateArray.addRect(QRectF(c.x*dx, 1 - c.y*dy, c.w * dx, -c.h * dy));
     }
 
-    glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
-    glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
+    if (vertexCoordinateArray.data() != oldVertexCoordinateDataPtr)
+        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
+    if (textureCoordinateArray.data() != oldTextureCoordinateDataPtr)
+        glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
 
-    glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
-    glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
     glDrawArrays(GL_TRIANGLES, 0, 6 * glyphs.size());
-
-    glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
-    glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
 }
 
 bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
@@ -991,6 +1031,7 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     QSize sz = d->drawable.size();
     d->width = sz.width();
     d->height = sz.height();
+    d->mode = DefaultMode;
 
     qt_resolve_version_1_3_functions(d->ctx);
     qt_resolve_glsl_extensions(d->ctx);
