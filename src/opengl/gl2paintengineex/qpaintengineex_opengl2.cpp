@@ -115,6 +115,7 @@ public:
     void setBrush(const QBrush* brush);
 
     void drawTexture(const QGLRect& dest, const QGLRect& src, int txtWidth, int txtHeight);
+    void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
 
     void fill(const QVectorPath &path);
     void drawOutline(const QVectorPath& path);
@@ -152,7 +153,8 @@ public:
 
     GLfloat     inverseScale;
 
-    QGL2PEXVertexArray pathVertexArray;
+    QGL2PEXVertexArray vertexCoordinateArray;
+    QGL2PEXVertexArray textureCoordinateArray;
 
     GLfloat pmvMatrix[4][4];
 
@@ -548,17 +550,17 @@ void QGL2PaintEngineExPrivate::drawOutline(const QVectorPath& path)
     if (matrixDirty)
         updateMatrix();
 
-    pathVertexArray.clear();
-    pathVertexArray.addPath(path, inverseScale);
+    vertexCoordinateArray.clear();
+    vertexCoordinateArray.addPath(path, inverseScale);
 
     if (path.hasImplicitClose()) {
         // Close the path's outline
-        pathVertexArray.lineToArray(path.points()[0], path.points()[1]);
-        pathVertexArray.stops().last() += 1;
+        vertexCoordinateArray.lineToArray(path.points()[0], path.points()[1]);
+        vertexCoordinateArray.stops().last() += 1;
     }
 
     prepareForDraw();
-    drawVertexArrays(pathVertexArray, GL_LINE_STRIP);
+    drawVertexArrays(vertexCoordinateArray, GL_LINE_STRIP);
 }
 
 
@@ -578,26 +580,26 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
         composite(rect);
     }
     else if (path.shape() == QVectorPath::EllipseHint) {
-        pathVertexArray.clear();
-        pathVertexArray.addPath(path, inverseScale);
+        vertexCoordinateArray.clear();
+        vertexCoordinateArray.addPath(path, inverseScale);
         prepareForDraw();
-        drawVertexArrays(pathVertexArray, GL_TRIANGLE_FAN);
+        drawVertexArrays(vertexCoordinateArray, GL_TRIANGLE_FAN);
     }
     else {
         // The path is too complicated & needs the stencil technique
-        pathVertexArray.clear();
-        pathVertexArray.addPath(path, inverseScale);
+        vertexCoordinateArray.clear();
+        vertexCoordinateArray.addPath(path, inverseScale);
 
-        fillStencilWithVertexArray(pathVertexArray, path.hasWindingFill());
+        fillStencilWithVertexArray(vertexCoordinateArray, path.hasWindingFill());
 
         // Stencil the brush onto the dest buffer
         glStencilFunc(GL_NOTEQUAL, 0, 0xFFFF); // Pass if stencil buff value != 0
         glEnable(GL_STENCIL_TEST);
         prepareForDraw();
-        composite(pathVertexArray.boundingRect());
+        composite(vertexCoordinateArray.boundingRect());
         glDisable(GL_STENCIL_TEST);
 
-        cleanStencilBuffer(pathVertexArray.boundingRect());
+        cleanStencilBuffer(vertexCoordinateArray.boundingRect());
     }
 }
 
@@ -876,6 +878,7 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
 
 void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem)
 {
+    Q_D(QGL2PaintEngineEx);
     QOpenGLPaintEngineState *s = state();
 
     const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
@@ -893,17 +896,17 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
         drawCached = false;
 
     if (drawCached) {
-        drawCachedGlyphs(p, ti);
+        d->drawCachedGlyphs(p, ti);
         return;
     }
 
     QPaintEngineEx::drawTextItem(p, ti);
 }
 
-void QGL2PaintEngineEx::drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti)
+void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti)
 {
-    Q_D(QGL2PaintEngineEx);
-    QOpenGLPaintEngineState *s = state();
+    Q_Q(QGL2PaintEngineEx);
+    QOpenGLPaintEngineState *s = q->state();
 
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
@@ -927,65 +930,51 @@ void QGL2PaintEngineEx::drawCachedGlyphs(const QPointF &p, const QTextItemInt &t
     const QImage &image = cache->image();
     int margin = cache->glyphMargin();
 
-    QGLContext *ctx = d->ctx;
     glActiveTexture(QT_BRUSH_TEXTURE_UNIT);
-    d->ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
+    ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
 
     glEnable(GL_BLEND);
 
-    d->shaderManager->textShader()->use();
-    d->updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
+    shaderManager->textShader()->use();
+    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
-    if (d->compositionModeDirty)
-        d->updateCompositionMode();
+    if (compositionModeDirty)
+        updateCompositionMode();
 
-    if (d->matrixDirty)
-        d->updateMatrix();
+    if (matrixDirty)
+        updateMatrix();
 
-    if (d->textShaderMatrixUniformDirty) {
-        d->shaderManager->textShader()->uniforms()[QLatin1String("pmvMatrix")] = d->pmvMatrix;
-        d->textShaderMatrixUniformDirty = false;
+    if (textShaderMatrixUniformDirty) {
+        shaderManager->textShader()->uniforms()[QLatin1String("pmvMatrix")] = pmvMatrix;
+        textShaderMatrixUniformDirty = false;
     }
 
-    d->shaderManager->textShader()->uniforms()[QLatin1String("textureSampler")] = QT_BRUSH_TEXTURE_UNIT;
-    QColor col = d->premultiplyColor(state()->pen.color(), (GLfloat)state()->opacity);
-    d->shaderManager->textShader()->uniforms()[QLatin1String("fragmentColor")] = col;
+    shaderManager->textShader()->uniforms()[QLatin1String("textureSampler")] = QT_BRUSH_TEXTURE_UNIT;
+    QColor col = premultiplyColor(s->pen.color(), (GLfloat)s->opacity);
+    shaderManager->textShader()->uniforms()[QLatin1String("fragmentColor")] = col;
 
     GLfloat dx = 1.0 / image.width();
     GLfloat dy = 1.0 / image.height();
 
-    glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
-    glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
+    vertexCoordinateArray.clear();
+    textureCoordinateArray.clear();
+
     for (int i=0; i<glyphs.size(); ++i) {
         const QTextureGlyphCache::Coord &c = cache->coords.value(glyphs[i]);
         int x = positions[i].x.toInt() + c.baseLineX - margin;
         int y = positions[i].y.toInt() - c.baseLineY - margin;
 
-        QGLRect dest = QRectF(x, y, c.w, c.h);
-        QGLRect src = QRectF(c.x, c.y, c.w, c.h);
-
-        GLfloat vertexCoords[] = {
-            dest.left,  dest.top,
-            dest.left,  dest.bottom,
-            dest.right, dest.bottom,
-            dest.right, dest.top
-        };
-
-        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoords);
-
-        QGLRect srcTextureRect(src.left*dx, 1.0 - src.top*dy, src.right*dx, 1.0 - src.bottom*dy);
-
-        GLfloat textureCoords[] = {
-            srcTextureRect.left,  srcTextureRect.top,
-            srcTextureRect.left,  srcTextureRect.bottom,
-            srcTextureRect.right, srcTextureRect.bottom,
-            srcTextureRect.right, srcTextureRect.top
-        };
-
-        glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoords);
-
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+        vertexCoordinateArray.addRect(QRectF(x, y, c.w, c.h));
+        textureCoordinateArray.addRect(QRectF(c.x*dx, 1 - c.y*dy, c.w * dx, -c.h * dy));
     }
+
+    glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+    glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
+
+    glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
+    glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
+    glDrawArrays(GL_TRIANGLES, 0, 6 * glyphs.size());
+
     glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
     glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
 }

@@ -100,7 +100,6 @@ public:
     virtual void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
                            Qt::ImageConversionFlags flags = Qt::AutoColor);
     virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
-    void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
 
     Type type() const { return OpenGL; }
 

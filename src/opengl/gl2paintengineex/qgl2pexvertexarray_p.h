@@ -98,6 +98,7 @@ public:
         maxX(-2e10), maxY(-2e10), minX(2e10), minY(2e10),
         boundingRectDirty(true) {}
 
+    void addRect(const QRectF &rect);
     void addPath(const QVectorPath &path, GLfloat curveInverseScale);
     void clear();
 
