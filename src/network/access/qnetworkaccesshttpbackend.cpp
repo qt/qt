@@ -888,8 +888,6 @@ bool QNetworkAccessHttpBackend::sendCacheContents(const QNetworkCacheMetaData &m
     if (status < 100)
         status = 200;           // fake it
 
-    checkForRedirect(status);
-
     setAttribute(QNetworkRequest::HttpStatusCodeAttribute, status);
     setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, attributes.value(QNetworkRequest::HttpReasonPhraseAttribute));
     setAttribute(QNetworkRequest::SourceIsFromCacheAttribute, true);
@@ -899,6 +897,8 @@ bool QNetworkAccessHttpBackend::sendCacheContents(const QNetworkCacheMetaData &m
                                                        end = rawHeaders.constEnd();
     for ( ; it != end; ++it)
         setRawHeader(it->first, it->second);
+
+    checkForRedirect(status);
 
     writeDownstreamData(contents);
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
