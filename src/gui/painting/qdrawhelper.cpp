@@ -766,12 +766,12 @@ const uint * QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, const 
     return buffer;
 }
 
-template<TextureBlendType blendType> /* BlendTransformedBilinear or BlendTransformedBilinearTiled */
+template<TextureBlendType blendType, QImage::Format format> /* blendType = BlendTransformedBilinear or BlendTransformedBilinearTiled */
 Q_STATIC_TEMPLATE_FUNCTION
 const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *, const QSpanData *data,
                                                   int y, int x, int length)
 {
-    FetchPixelProc fetch = fetchPixelProc[data->texture.format];
+    FetchPixelProc fetch = (format != QImage::Format_Invalid) ? FetchPixelProc(qt_fetchPixel<format>) : fetchPixelProc[data->texture.format];
 
     int image_width = data->texture.width;
     int image_height = data->texture.height;
@@ -1026,39 +1026,39 @@ static const SourceFetchProc sourceFetch[NBlendTypes][QImage::NImageFormats] = {
     },
     {
         0, // Bilinear
-        fetchTransformedBilinear<BlendTransformedBilinear>,   // Mono
-        fetchTransformedBilinear<BlendTransformedBilinear>,   // MonoLsb
-        fetchTransformedBilinear<BlendTransformedBilinear>,   // Indexed8
-        fetchTransformedBilinear<BlendTransformedBilinear>,   // RGB32
-        fetchTransformedBilinear<BlendTransformedBilinear>,   // ARGB32
-        fetchTransformedBilinear<BlendTransformedBilinear>,   // ARGB32_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinear>,   // RGB16
-        fetchTransformedBilinear<BlendTransformedBilinear>,   // ARGB8565_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinear>,   // RGB666
-        fetchTransformedBilinear<BlendTransformedBilinear>,   // ARGB6666_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinear>,   // RGB555
-        fetchTransformedBilinear<BlendTransformedBilinear>,   // ARGB8555_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinear>,   // RGB888
-        fetchTransformedBilinear<BlendTransformedBilinear>,   // RGB444
-        fetchTransformedBilinear<BlendTransformedBilinear>    // ARGB4444_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // Mono
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // MonoLsb
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // Indexed8
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_ARGB32_Premultiplied>,   // RGB32
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_ARGB32>,   // ARGB32
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_ARGB32_Premultiplied>,   // ARGB32_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // RGB16
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // ARGB8565_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // RGB666
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // ARGB6666_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // RGB555
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // ARGB8555_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // RGB888
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // RGB444
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>    // ARGB4444_Premultiplied
     },
     {
         0, // BilinearTiled
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // Mono
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // MonoLsb
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // Indexed8
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // RGB32
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // ARGB32
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // ARGB32_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // RGB16
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // ARGB8565_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // RGB666
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // ARGB6666_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // RGB555
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // ARGB8555_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // RGB888
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,   // RGB444
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>    // ARGB4444_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // Mono
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // MonoLsb
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // Indexed8
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_ARGB32_Premultiplied>,   // RGB32
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_ARGB32>,   // ARGB32
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_ARGB32_Premultiplied>,   // ARGB32_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // RGB16
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // ARGB8565_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // RGB666
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // ARGB6666_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // RGB555
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // ARGB8555_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // RGB888
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // RGB444
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>    // ARGB4444_Premultiplied
     },
 };
 
