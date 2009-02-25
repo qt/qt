@@ -804,10 +804,17 @@ void QGraphicsViewPrivate::itemUpdated(QGraphicsItem *item, const QRectF &rect)
     if (item->isClipped()) {
         // Minimize unnecessary redraw.
         QGraphicsItem *p = item;
+        QTransform xform;
+        QGraphicsItem *lastTransformItem = 0;
         while ((p = p->d_ptr->parent)) {
             if (p->flags() & QGraphicsItem::ItemClipsChildrenToShape) {
-                updateRect &= p->itemTransform(item).mapRect(p->boundingRect());
-                if (updateRect.isNull())
+                if (!lastTransformItem)
+                    xform = item->itemTransform(p);
+                else
+                    xform *= lastTransformItem->itemTransform(p);
+                lastTransformItem = p;
+                updateRect &= xform.inverted().mapRect(p->boundingRect());
+                if (updateRect.isEmpty())
                     return;
             }
 
@@ -815,7 +822,7 @@ void QGraphicsViewPrivate::itemUpdated(QGraphicsItem *item, const QRectF &rect)
                 break;
         }
 
-        if (updateRect.isNull())
+        if (updateRect.isEmpty())
             return;
     }
 
