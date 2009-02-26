@@ -829,17 +829,10 @@ void QGraphicsViewPrivate::itemUpdated(QGraphicsItem *item, const QRectF &rect)
     // Map the rect to view coordinates.
     QRect vr = viewport->rect();
 
-    if (!item->d_ptr->hasBoundingRegionGranularity) {
-        QRect r = mapToViewRect(item, updateRect) & vr;
-        if (r.isNull())
-            return;
-        this->updateRect(r);
-    } else {
-        QRegion r = mapToViewRegion(item, updateRect) & vr;
-        if (r.isEmpty())
-            return;
-        updateRegion(r);
-    }
+    if (!item->d_ptr->hasBoundingRegionGranularity)
+        this->updateRect(mapToViewRect(item, updateRect) & vr);
+    else
+        updateRegion(mapToViewRegion(item, updateRect) & vr);
 }
 
 void QGraphicsViewPrivate::updateLater()
@@ -863,9 +856,7 @@ void QGraphicsViewPrivate::_q_updateLaterSlot()
     for (int i = 0; i < dirtyItems.size(); ++i) {
         const QGraphicsItem *item = dirtyItems.at(i);
         QTransform x = item->sceneTransform() * viewTransform;
-        QRect viewRect = x.mapRect(item->boundingRect()).toAlignedRect() & vr;
-        if (!viewRect.isNull())
-            updateRect(viewRect);
+        updateRect(x.mapRect(item->boundingRect()).toAlignedRect() & vr);
     }
 
     dirtyRectCount += dirtyRects.size();
