@@ -57,6 +57,7 @@
 #include "private/qobject_p.h"
 #include "QtCore/qrect.h"
 #include "QtCore/qlocale.h"
+#include "QtCore/qset.h"
 #include "QtGui/qregion.h"
 #include "QtGui/qsizepolicy.h"
 #include "QtGui/qstyle.h"
@@ -591,6 +592,8 @@ public:
     uint needWindowChange : 1;
     uint isGLWidget : 1;
 #endif
+
+    QSet<Qt::GestureType> gestures;
 
 #if defined(Q_WS_X11) || defined (Q_WS_WIN) || defined(Q_WS_MAC)
 #ifdef Q_WS_MAC

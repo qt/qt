@@ -374,6 +374,7 @@ private:
     friend class QDirectPainter;
     friend class QDirectPainterPrivate;
 #endif
+    friend class QGestureManager;
 
 #if defined(Q_WS_WIN)
     friend QApplicationPrivate* getQApplicationPrivateInternal();

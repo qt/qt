@@ -4414,7 +4414,6 @@ bool QETWidget::translateMouseEvent(const XEvent *event)
         QMouseEvent e(type, pos, globalPos, button, buttons, modifiers);
         QApplicationPrivate::sendMouseEvent(widget, &e, alienWidget, this, &qt_button_down,
                                             qt_last_mouse_receiver);
-
         if (type == QEvent::MouseButtonPress
             && button == Qt::RightButton
             && (openPopupCount == oldOpenPopupCount)) {
@@ -5021,6 +5020,7 @@ bool QETWidget::translatePropertyEvent(const XEvent *event)
 
     return true;
 }
+
 
 //
 // Paint event translation

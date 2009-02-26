@@ -3310,6 +3310,9 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
     case QEvent::ChildRemoved: n = n ? n : "ChildRemoved";
         dbg.nospace() << "QChildEvent(" << n << ", " << (static_cast<const QChildEvent*>(e))->child();
         return dbg.space();
+    case QEvent::Gesture:
+        n = "Gesture";
+        break;
     default:
         dbg.nospace() << "QEvent(" << (const void *)e << ", type = " << e->type() << ')';
         return dbg.space();
@@ -3505,6 +3508,27 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
 */
 
 #endif
+
+QGestureEvent::QGestureEvent(QWidget *targetWidget, const QList<QGesture*> &gestures,
+                             const QSet<Qt::GestureType> &cancelledGestures)
+    : QEvent(QEvent::Gesture), m_targetWidget(targetWidget),
+      m_cancelledGestures(cancelledGestures)
+{
+    foreach(QGesture *r, gestures)
+        m_gestures.insert(r->gestureType(), QSharedPointer<QGesture>(r));
+}
+
+QGestureEvent::QGestureEvent(const QGestureEvent &event, const QPoint &offset)
+    : QEvent(QEvent::Gesture), m_targetWidget(event.m_targetWidget),
+      m_gestures(event.m_gestures),
+      m_cancelledGestures(event.m_cancelledGestures)
+{
+    //### use offset!
+}
+
+QGestureEvent::~QGestureEvent()
+{
+}
 
 /*! \class QTouchEvent
     \brief The QTouchEvent class contains parameters that describe a touch event

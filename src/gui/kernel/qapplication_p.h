@@ -428,6 +428,7 @@ public:
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif
 
+    QMap<Qt::GestureType, int> grabbedGestures;
     static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
 
 #if defined(Q_WS_WIN)

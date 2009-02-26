@@ -41,7 +41,13 @@ HEADERS += \
 	kernel/qwidgetaction.h \
 	kernel/qwidgetaction_p.h \
 	kernel/qwindowdefs.h \
-	kernel/qkeymapper_p.h
+	kernel/qkeymapper_p.h \
+	kernel/qgesture.h \
+	kernel/qgesturemanager_p.h \
+	kernel/qgesturerecognizer.h \
+	kernel/qgesturestandardrecognizers_p.h \
+	kernel/qdirectionrecognizer_p.h \
+	kernel/qdirectionsimplificator_p.h
 
 SOURCES += \
 	kernel/qaction.cpp \
@@ -70,7 +76,11 @@ SOURCES += \
 	kernel/qwhatsthis.cpp \
 	kernel/qwidget.cpp \
 	kernel/qwidgetaction.cpp \
-	kernel/qkeymapper.cpp
+	kernel/qkeymapper.cpp \
+	kernel/qgesture.cpp \
+	kernel/qgesturemanager.cpp \
+	kernel/qgesturestandardrecognizers.cpp \
+	kernel/qdirectionrecognizer.cpp
 
 win32 {
 	DEFINES += QT_NO_DIRECTDRAW

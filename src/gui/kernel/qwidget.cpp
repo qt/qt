@@ -7532,6 +7532,7 @@ bool QWidget::event(QEvent *event)
 #ifndef QT_NO_WHEELEVENT
         case QEvent::Wheel:
 #endif
+        case QEvent::Gesture:
             return false;
         default:
             break;
@@ -7927,6 +7928,9 @@ bool QWidget::event(QEvent *event)
         d->needWindowChange = false;
         break;
 #endif
+    case QEvent::Gesture:
+        gestureEvent((QGestureEvent*)event);
+        break;
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
@@ -8731,6 +8735,11 @@ bool QWidget::qwsEvent(QWSEvent *)
 }
 
 #endif
+
+void QWidget::gestureEvent(QGestureEvent *event)
+{
+    event->ignore();
+}
 
 
 /*!
@@ -11014,6 +11023,42 @@ QWindowSurface *QWidget::windowSurface() const
 #endif // Q_BACKINGSTORE_SUBSURFACES
 
     return bs ? bs->windowSurface : 0;
+}
+
+void QWidget::grabGesture(Qt::GestureType gesture)
+{
+    Q_D(QWidget);
+    if (d->gestures.contains(gesture))
+        return;
+    d->gestures << gesture;
+    ++qApp->d_func()->grabbedGestures[gesture];
+}
+
+void QWidget::grabGestures(const QSet<Qt::GestureType> &gestures)
+{
+    Q_D(QWidget);
+    foreach(const Qt::GestureType &gesture, gestures) {
+        if (!d->gestures.contains(gesture))
+            ++qApp->d_func()->grabbedGestures[gesture];
+    }
+    d->gestures.unite(gestures);
+}
+
+void QWidget::releaseGesture(Qt::GestureType gesture)
+{
+    Q_D(QWidget);
+    QMap<Qt::GestureType, int>::iterator it =
+        qApp->d_func()->grabbedGestures.find(gesture);
+    if (it != qApp->d_func()->grabbedGestures.end() &&
+        d->gestures.contains(gesture))
+        ++it.value();
+    d->gestures.remove(gesture);
+}
+
+QSet<Qt::GestureType> QWidget::gestures()
+{
+    Q_D(const QWidget);
+    return d->gestures;
 }
 
 void QWidgetPrivate::getLayoutItemMargins(int *left, int *top, int *right, int *bottom) const

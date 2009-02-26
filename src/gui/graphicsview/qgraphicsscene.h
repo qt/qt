@@ -50,6 +50,7 @@
 #include <QtGui/qtransform.h>
 #include <QtGui/qmatrix.h>
 #include <QtGui/qpen.h>
+#include <QtGui/qevent.h>
 
 QT_BEGIN_HEADER
 
@@ -254,6 +255,7 @@ protected:
     virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     virtual void wheelEvent(QGraphicsSceneWheelEvent *event);
     virtual void inputMethodEvent(QInputMethodEvent *event);
+    virtual void gestureEvent(QGestureEvent *event);
 
     virtual void drawBackground(QPainter *painter, const QRectF &rect);
     virtual void drawForeground(QPainter *painter, const QRectF &rect);

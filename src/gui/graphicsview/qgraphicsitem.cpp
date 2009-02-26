@@ -5788,6 +5788,20 @@ QVariant QGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
     return QVariant();
 }
 
+void QGraphicsItem::grabGesture(const Qt::GestureType &type)
+{
+    d_ptr->gestures.insert(type);
+    if (d_ptr->scene)
+        d_ptr->scene->d_func()->grabGesture(this, type);
+}
+
+void QGraphicsItem::releaseGesture(const Qt::GestureType &type)
+{
+    d_ptr->gestures.remove(type);
+    if (d_ptr->scene)
+        d_ptr->scene->d_func()->releaseGesture(this, type);
+}
+
 /*!
     This virtual function is called by QGraphicsItem to notify custom items
     that some part of the item's state changes. By reimplementing this
@@ -5812,6 +5826,20 @@ QVariant QGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
 QVariant QGraphicsItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     Q_UNUSED(change);
+    if (change == QGraphicsItem::ItemSceneChange) {
+        if (!qVariantValue<QGraphicsScene*>(value)) {
+            // the item has been removed from a scene, unsubscribe gestures.
+            Q_ASSERT(d_ptr->scene);
+            foreach(const Qt::GestureType &gesture, d_ptr->gestures)
+                d_ptr->scene->d_func()->releaseGesture(this, gesture);
+        }
+    } else if (change == QGraphicsItem::ItemSceneHasChanged) {
+        if (QGraphicsScene *scene = qVariantValue<QGraphicsScene*>(value)) {
+            // item has been added to the scene
+            foreach(const Qt::GestureType &gesture, d_ptr->gestures)
+                scene->d_func()->grabGesture(this, gesture);
+        }
+    }
     return value;
 }
 

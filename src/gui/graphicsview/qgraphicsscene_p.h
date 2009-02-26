@@ -182,6 +182,9 @@ public:
     void storeMouseButtonsForMouseGrabber(QGraphicsSceneMouseEvent *event);
 
     QList<QGraphicsView *> views;
+    void addView(QGraphicsView *view);
+    void removeView(QGraphicsView *view);
+
     bool painterStateProtection;
 
     QMultiMap<QGraphicsItem *, QGraphicsItem *> sceneEventFilters;
@@ -263,6 +266,12 @@ public:
     void setPalette_helper(const QPalette &palette);
     void resolvePalette();
     void updatePalette(const QPalette &palette);
+
+    QSet<QGraphicsItem*> itemsWithGestures;
+    QSet<Qt::GestureType> grabbedGestures;
+    void grabGesture(QGraphicsItem *item, const Qt::GestureType &type);
+    void releaseGesture(QGraphicsItem *item, const Qt::GestureType &type);
+    void sendGestureEvent(QGraphicsItem *item, QGestureEvent *event);
 
     mutable QVector<QTransform> sceneTransformCache;
     mutable QBitArray validTransforms;

@@ -52,6 +52,10 @@
 #include <QtGui/qmime.h>
 #include <QtGui/qdrag.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/qmap.h>
+#include <QtCore/qset.h>
+#include <QtCore/qsharedpointer.h>
+#include <QtGui/qgesture.h>
 
 QT_BEGIN_HEADER
 
@@ -709,6 +713,36 @@ private:
     QMenuBar *m_menuBar;
 };
 #endif
+
+class Q_GUI_EXPORT QGestureEvent : public QEvent
+{
+public:
+    QGestureEvent(QWidget *targetWidget, const QList<QGesture*> &gestures,
+                  const QSet<Qt::GestureType> &cancelledGestures = QSet<Qt::GestureType>());
+    // internal ctor
+    QGestureEvent(const QGestureEvent &gestures, const QPoint &offset);
+    ~QGestureEvent();
+
+    QWidget *targetWidget() const
+    { return m_targetWidget; }
+
+    inline bool contains(const Qt::GestureType &gestureType) const
+    { return gesture(gestureType) != 0; }
+    inline QList<Qt::GestureType> gestureTypes() const
+    { return m_gestures.keys(); }
+    inline const QGesture* gesture(const Qt::GestureType &gestureType) const
+    { return m_gestures.value(gestureType, QSharedPointer<QGesture>()).data(); }
+
+    inline QSet<Qt::GestureType> cancelledGestures() const
+    { return m_cancelledGestures; }
+
+protected:
+    QWidget *m_targetWidget;
+    QHash<Qt::GestureType, QSharedPointer<QGesture> > m_gestures;
+    QSet<Qt::GestureType> m_cancelledGestures;
+
+    friend class QApplication;
+};
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QEvent *);

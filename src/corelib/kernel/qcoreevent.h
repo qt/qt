@@ -273,6 +273,8 @@ public:
         GraphicsSceneTouchUpdate = 197,
         GraphicsSceneTouchEnd = 198,
 
+        Gesture = 191,
+
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 

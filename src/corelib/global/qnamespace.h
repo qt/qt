@@ -1550,6 +1550,21 @@ public:
         TouchPointStationary,
         TouchPointReleased
     };
+
+    typedef QString GestureType;
+    static const char UnknownGesture[] = "???";
+    static const char Tap[] = "Tap";
+    static const char DoubleTap[] = "DoubleTap";
+    static const char LongTap[] = "LongTap";
+    static const char Pan[] = "Pan";
+    static const char Pinch[] = "Pinch";
+
+    enum GestureState
+    {
+        GestureStarted = 0,
+        GestureFinished = 1
+    };
+
 }
 #ifdef Q_MOC_RUN
  ;

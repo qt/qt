@@ -3950,6 +3950,9 @@ bool QGraphicsScene::event(QEvent *event)
         // geometries that do not have an explicit style set.
         update();
         break;
+    case QEvent::Gesture:
+        gestureEvent(static_cast<QGestureEvent*>(event));
+        break;
     case QEvent::GraphicsSceneTouchBegin:
         d->touchBeginEvent(static_cast<QGraphicsSceneTouchEvent *>(event));
         break;
@@ -5584,6 +5587,65 @@ void QGraphicsScene::setActiveWindow(QGraphicsWidget *widget)
         if (QGraphicsWidget *focusChild = window->focusWidget())
             focusChild->setFocus(Qt::ActiveWindowFocusReason);
     }
+}
+
+void QGraphicsScenePrivate::addView(QGraphicsView *view)
+{
+    views << view;
+    foreach(const Qt::GestureType &gesture, grabbedGestures)
+        view->grabGesture(gesture);
+}
+
+void QGraphicsScenePrivate::removeView(QGraphicsView *view)
+{
+    views.removeAll(view);
+    foreach(const Qt::GestureType &gesture, grabbedGestures)
+        view->releaseGesture(gesture);
+}
+
+void QGraphicsScenePrivate::sendGestureEvent(QGraphicsItem *item, QGestureEvent *event)
+{
+    //### TODO: position translation
+    sendEvent(item, event);
+}
+
+void QGraphicsScene::gestureEvent(QGestureEvent *event)
+{
+    Q_D(QGraphicsScene);
+    QList<Qt::GestureType> gestureTypes = event->gestureTypes();
+    QList<QPointF> pts;
+    QGraphicsView *view = qobject_cast<QGraphicsView*>(event->targetWidget());
+    if (!view) {
+        // something is wrong.
+        Q_ASSERT(view);
+        return;
+    }
+    foreach(const Qt::GestureType &type, gestureTypes)
+        pts << view->mapToScene(event->gesture(type)->hotSpot());
+    foreach(QGraphicsItem *item, d->itemsWithGestures) {
+        for (int i = 0; i < pts.size(); ++i) {
+            if (item->contains(item->mapFromScene(pts.at(i)))) {
+                d->sendGestureEvent(item, event);
+                if (event->isAccepted())
+                    break;
+            }
+        }
+    }
+}
+
+void QGraphicsScenePrivate::grabGesture(QGraphicsItem *item, const Qt::GestureType &type)
+{
+    if (!grabbedGestures.contains(type)) {
+        foreach(QGraphicsView *view, views)
+            view->grabGesture(type);
+    }
+    itemsWithGestures << item;
+    grabbedGestures << type;
+}
+
+void QGraphicsScenePrivate::releaseGesture(QGraphicsItem *item, const Qt::GestureType &type)
+{
+    //###
 }
 
 // ### FIXME: the code for touch event support is mosly copied from

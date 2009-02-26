@@ -54,6 +54,7 @@
 //
 
 #include "qgraphicsitem.h"
+#include "qset.h"
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
@@ -297,6 +298,7 @@ public:
     int siblingIndex;
     int index;
     int depth;
+    QSet<Qt::GestureType> gestures;
 
     // Packed 32 bytes
     quint32 acceptedMouseButtons : 5;

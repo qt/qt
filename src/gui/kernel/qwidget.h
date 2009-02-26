@@ -59,6 +59,8 @@
 #include <QtGui/qevent.h>
 #endif
 
+#include <QtGui/qgesture.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -90,6 +92,7 @@ class QDragLeaveEvent;
 class QDropEvent;
 class QShowEvent;
 class QHideEvent;
+class QGestureEvent;
 class QInputContext;
 class QIcon;
 class QWindowSurface;
@@ -610,6 +613,11 @@ public:
     void setWindowSurface(QWindowSurface *surface);
     QWindowSurface *windowSurface() const;
 
+    void grabGesture(Qt::GestureType gesture);
+    void grabGestures(const QSet<Qt::GestureType> &gestures);
+    void releaseGesture(Qt::GestureType gesture);
+    QSet<Qt::GestureType> gestures();
+
 Q_SIGNALS:
     void customContextMenuRequested(const QPoint &pos);
 
@@ -668,6 +676,8 @@ protected:
 
     // Misc. protected functions
     virtual void changeEvent(QEvent *);
+
+    virtual void gestureEvent(QGestureEvent *);
 
     int metric(PaintDeviceMetric) const;
 

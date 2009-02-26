@@ -1690,7 +1690,7 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
                    this, SLOT(updateScene(QList<QRectF>)));
         disconnect(d->scene, SIGNAL(sceneRectChanged(QRectF)),
                    this, SLOT(updateSceneRect(QRectF)));
-        d->scene->d_func()->views.removeAll(this);
+        d->scene->d_func()->removeView(this);
     }
 
     // Assign the new scene and update the contents (scrollbars, etc.)).
@@ -1698,7 +1698,7 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
         connect(d->scene, SIGNAL(sceneRectChanged(QRectF)),
                 this, SLOT(updateSceneRect(QRectF)));
         d->updateSceneSlotReimplementedChecked = false;
-        d->scene->d_func()->views << this;
+        d->scene->d_func()->addView(this);
         d->recalculateContentSize();
         d->lastCenterPoint = sceneRect().center();
         d->keepLastCenterPoint = true;
@@ -2859,6 +2859,11 @@ bool QGraphicsView::event(QEvent *event)
                     event->accept();
                 }
             }
+            break;
+        case QEvent::Gesture:
+            QApplication::sendEvent(d->scene, event);
+            if (event->isAccepted())
+                return true;
             break;
         default:
             break;

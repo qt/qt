@@ -90,6 +90,8 @@
 
 #include "qapplication.h"
 
+#include <private/qgesturemanager_p.h>
+
 #ifdef Q_WS_WINCE
 #include "qdatetime.h"
 #include "qguifunctions_wince.h"
@@ -97,6 +99,8 @@ extern bool qt_wince_is_smartphone(); //qguifunctions_wince.cpp
 extern bool qt_wince_is_mobile();     //qguifunctions_wince.cpp
 extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 #endif
+
+#include "qdatetime.h"
 
 //#define ALIEN_DEBUG
 
@@ -132,6 +136,8 @@ bool QApplicationPrivate::quitOnLastWindowClosed = true;
 int QApplicationPrivate::autoMaximizeThreshold = -1;
 bool QApplicationPrivate::autoSipEnabled = false;
 #endif
+
+QGestureManager *gestureManager = 0;
 
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::Type type)
     : QCoreApplicationPrivate(argc, argv)
@@ -3700,6 +3706,27 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QMouseEvent* mouse = static_cast<QMouseEvent*>(e);
             QPoint relpos = mouse->pos();
 
+            if (QApplication::testAttribute(Qt::AA_EnableGestures)) {
+                if (!gestureManager)
+                    gestureManager = new QGestureManager;
+                // if we are in gesture mode, we send all mouse events
+                // directly to gesture recognizer.
+                if (gestureManager->inGestureMode()) {
+                    // ### should I send events through all application event filters?
+                    if (gestureManager->filterEvent(e))
+                        return true;
+                }
+                if (w && (mouse->type() != QEvent::MouseMove || mouse->buttons() != 0)) {
+                    // find the gesture target widget
+                    QWidget *target = w;
+                    while (target && target->gestures().isEmpty())
+                        target = target->parentWidget();
+                    if (target) {
+                        gestureManager->setGestureTargetWidget(target);
+                        res = gestureManager->filterEvent(e);
+                    }
+                }
+            }
             if (e->spontaneous()) {
                 if (e->type() == QEvent::MouseButtonPress) {
                     QApplicationPrivate::giveFocusAccordingToFocusPolicy(w,
@@ -3993,6 +4020,35 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         }
         break;
 #endif
+
+    case QEvent::Gesture: {
+        QWidget *w = static_cast<QWidget*>(receiver);
+        QGestureEvent *g = static_cast<QGestureEvent*>(e);
+        bool eventAccepted = g->isAccepted();
+        // Q_ASSERT(g->gesture() != 0);
+        // const QGesture &gesture = *g->gesture();
+        QPoint relPos(0,0);
+        while (w) {
+            // QGesture qge(gesture.gestureType(), gesture.startPos()+relPos, gesture.lastPos()+relPos,
+            //              gesture.currentPos()+relPos, gesture.direction(), gesture.rect().translated(relPos),
+            //              gesture.hotSpot()+relPos, gesture.state(), gesture.startTime());
+            // QGestureEvent ge(&qge, false);
+            // ### TODO: fix widget-relative positions in gesture event.
+            QGestureEvent ge = *g;
+            ge.m_targetWidget = w;
+            ge.spont = g->spontaneous();
+            res = d->notify_helper(w, w == receiver ? g : &ge);
+            g->spont = false;
+            eventAccepted = (w == receiver ? g : &ge)->isAccepted();
+            if (res && eventAccepted)
+                break;
+            if (w->isWindow())
+                break;
+            relPos += w->pos();
+            w = w->parentWidget();
+        }
+        break;
+    }
     case QEvent::TouchBegin:
     // Note: TouchUpdate and TouchEnd events are sent to d->currentMultitouchWidget and never propagated
     {
@@ -4000,7 +4056,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         QWidget *origin = widget;
         QTouchEvent *touchEvent = static_cast<QTouchEvent *>(e);
         bool eventAccepted = touchEvent->isAccepted();
-
         if (widget->testAttribute(Qt::WA_AcceptTouchEvents) && e->spontaneous()) {
             // give the widget focus if the focus policy allows it
             QApplicationPrivate::giveFocusAccordingToFocusPolicy(widget,
