@@ -3757,7 +3757,7 @@ bool QGraphicsItemPrivate::isProxyWidget() const
 */
 void QGraphicsItem::update(const QRectF &rect)
 {
-    if (d_ptr->dirty)
+    if (d_ptr->dirty || (rect.isEmpty() && !rect.isNull()))
         return;
     if (d_ptr->scene && isVisible()) {
         if (CacheMode(d_ptr->cacheMode) != NoCache) {
