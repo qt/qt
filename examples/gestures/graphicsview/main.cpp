@@ -53,7 +53,7 @@ protected:
     {
         if (event->type() == QEvent::Gesture) {
             QGestureEvent *ge = static_cast<QGestureEvent*>(event);
-            if (const QGesture *g = ge->gesture(Qt::Pan)) {
+            if (const QPannableGesture *g = dynamic_cast<const QPannableGesture*>(ge->gesture(Qt::Pan))) {
                 QPoint pt = g->pos() - g->lastPos();
                 horizontalScrollBar()->setValue(horizontalScrollBar()->value() - pt.x());
                 verticalScrollBar()->setValue(verticalScrollBar()->value() - pt.y());

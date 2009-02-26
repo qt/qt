@@ -101,6 +101,7 @@ private:
     bool mousePressed;
     bool gestureFinished;
     Direction::DirectionType lastDirection;
+    Direction::DirectionType currentDirection;
     QDirectionDiagonalRecognizer diagonalRecognizer;
     QDirectionSimpleRecognizer simpleRecognizer;
 };
