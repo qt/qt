@@ -862,7 +862,7 @@ void QGraphicsViewPrivate::_q_updateLaterSlot()
     dirtyRectCount += dirtyRects.size();
 
     bool noUpdate = !fullUpdatePending && viewportUpdateMode == QGraphicsView::FullViewportUpdate;
-    if ((dirtyRectCount > 0 || !dirtyBoundingRect.isNull()) && !fullUpdatePending && !noUpdate) {
+    if ((dirtyRectCount > 0 || !dirtyBoundingRect.isEmpty()) && !fullUpdatePending && !noUpdate) {
         if (viewportUpdateMode == QGraphicsView::BoundingRectViewportUpdate
             || (viewportUpdateMode == QGraphicsView::SmartViewportUpdate
                 && dirtyRectCount >= QGRAPHICSVIEW_REGION_RECT_THRESHOLD)) {
@@ -3284,7 +3284,7 @@ void QGraphicsView::mouseMoveEvent(QMouseEvent *event)
             }
 
             // Update old rubberband
-            if (d->viewportUpdateMode != QGraphicsView::NoViewportUpdate && !d->rubberBandRect.isNull()) {
+            if (d->viewportUpdateMode != QGraphicsView::NoViewportUpdate && !d->rubberBandRect.isEmpty()) {
                 if (d->viewportUpdateMode != FullViewportUpdate)
                     viewport()->update(d->rubberBandRegion(viewport(), d->rubberBandRect));
                 else
@@ -3466,7 +3466,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     QPainter painter(viewport());
     QTransform original = painter.worldTransform();
 #ifndef QT_NO_RUBBERBAND
-    if (d->rubberBanding && !d->rubberBandRect.isNull())
+    if (d->rubberBanding && !d->rubberBandRect.isEmpty())
         painter.save();
 #endif
     // Set up render hints
@@ -3561,7 +3561,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
 #ifndef QT_NO_RUBBERBAND
     // Rubberband
-    if (d->rubberBanding && !d->rubberBandRect.isNull()) {
+    if (d->rubberBanding && !d->rubberBandRect.isEmpty()) {
         painter.restore();
         QStyleOptionRubberBand option;
         option.initFrom(viewport());
@@ -3645,7 +3645,7 @@ void QGraphicsView::scrollContentsBy(int dx, int dy)
 
 #ifndef QT_NO_RUBBERBAND
     // Update old rubberband
-    if (d->viewportUpdateMode != QGraphicsView::NoViewportUpdate && !d->rubberBandRect.isNull()) {
+    if (d->viewportUpdateMode != QGraphicsView::NoViewportUpdate && !d->rubberBandRect.isEmpty()) {
         if (d->viewportUpdateMode != FullViewportUpdate)
             viewport()->update(d->rubberBandRegion(viewport(), d->rubberBandRect));
         else

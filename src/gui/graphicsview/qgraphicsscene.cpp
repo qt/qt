@@ -3455,7 +3455,7 @@ QVariant QGraphicsScene::inputMethodQuery(Qt::InputMethodQuery query) const
 void QGraphicsScene::update(const QRectF &rect)
 {
     Q_D(QGraphicsScene);
-    if (d->updateAll)
+    if (d->updateAll || (rect.isEmpty() && !rect.isNull()))
         return;
 
     // Check if anyone's connected; if not, we can send updates directly to
