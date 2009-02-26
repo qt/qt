@@ -928,6 +928,9 @@ void QGraphicsViewPrivate::updateAll()
 
 void QGraphicsViewPrivate::updateRegion(const QRegion &r)
 {
+    if (r.isEmpty())
+        return;
+
     Q_Q(QGraphicsView);
 
     // Rect intersects viewport - update everything?
@@ -976,6 +979,9 @@ void QGraphicsViewPrivate::updateRegion(const QRegion &r)
 
 void QGraphicsViewPrivate::updateRect(const QRect &r)
 {
+    if (r.isEmpty())
+        return;
+
     Q_Q(QGraphicsView);
 
     // Rect intersects viewport - update everything?
