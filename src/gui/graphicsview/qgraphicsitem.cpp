@@ -4587,7 +4587,9 @@ QPainterPath QGraphicsItem::mapToItem(const QGraphicsItem *item, const QPainterP
 */
 QPainterPath QGraphicsItem::mapToParent(const QPainterPath &path) const
 {
-    return d_ptr->parent ? itemTransform(d_ptr->parent).map(path) : mapToScene(path);
+    QPainterPath p(path);
+    p.translate(d_ptr->pos);
+    return d_ptr->hasTransform ? transform().map(p) : p;
 }
 
 /*!
@@ -4802,9 +4804,9 @@ QPainterPath QGraphicsItem::mapFromItem(const QGraphicsItem *item, const QPainte
 */
 QPainterPath QGraphicsItem::mapFromParent(const QPainterPath &path) const
 {
-    if (d_ptr->parent)
-        return d_ptr->parent->itemTransform(this).map(path);
-    return mapFromScene(path);
+    QPainterPath p(path);
+    p.translate(-d_ptr->pos);
+    return d_ptr->hasTransform ? transform().inverted().map(p) : p;
 }
 
 /*!
