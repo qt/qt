@@ -613,10 +613,10 @@ public:
     void setWindowSurface(QWindowSurface *surface);
     QWindowSurface *windowSurface() const;
 
-    void grabGesture(Qt::GestureType gesture);
+    void grabGesture(const Qt::GestureType &gesture);
     void grabGestures(const QSet<Qt::GestureType> &gestures);
-    void releaseGesture(Qt::GestureType gesture);
-    QSet<Qt::GestureType> gestures();
+    void releaseGesture(const Qt::GestureType &gesture);
+    QSet<Qt::GestureType> gestures() const;
 
 Q_SIGNALS:
     void customContextMenuRequested(const QPoint &pos);

@@ -2675,3 +2675,19 @@
 
   \sa QPixmapBorders, qDrawBorderPixmap()
 */
+
+/*! \typedef Qt::GestureType
+
+    A string representing a type of a gesture.
+*/
+
+/*!
+    \enum Qt::GestureState
+
+    This enum type describes the state of a gesture.
+
+    \value GestureStarted   The continuous gesture has started.
+    \value GestureFinished  The gesture has finished.
+
+    \sa QGesture
+*/

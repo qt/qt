@@ -726,12 +726,12 @@ public:
     QWidget *targetWidget() const
     { return m_targetWidget; }
 
-    inline bool contains(const Qt::GestureType &gestureType) const
-    { return gesture(gestureType) != 0; }
+    inline bool contains(const Qt::GestureType &type) const
+    { return gesture(type) != 0; }
     inline QList<Qt::GestureType> gestureTypes() const
     { return m_gestures.keys(); }
-    inline const QGesture* gesture(const Qt::GestureType &gestureType) const
-    { return m_gestures.value(gestureType, QSharedPointer<QGesture>()).data(); }
+    inline const QGesture* gesture(const Qt::GestureType &type) const
+    { return m_gestures.value(type, QSharedPointer<QGesture>()).data(); }
 
     inline QSet<Qt::GestureType> cancelledGestures() const
     { return m_cancelledGestures; }

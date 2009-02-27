@@ -3509,6 +3509,50 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
 
 #endif
 
+/*!
+    \class QGestureEvent
+    \ingroup events
+
+    \brief The QGestureEvent class provides the parameters used for
+    gesture recognition.
+
+    The QGestureEvent class contains a list of gestures that are being
+    executed right now (QGestureEvent::gestureTypes()) and a list of
+    gestures that are cancelled (the gesture might be cancelled
+    because the window lost focus, or because of timeout, etc).
+
+    \sa QGesture
+*/
+
+/*! \fn QWidget *QGestureEvent::targetWidget() const
+
+    Returns the widget the gesture event is send to.
+*/
+
+/*! \fn bool contains(const Qt::GestureType &type) const
+
+    Checks if the gesture event contains gesture of specific \a type.
+*/
+
+/*! \fn QList<Qt::GestureType> gestureTypes() const
+
+    Returns a list of gesture names that the event contains.
+*/
+
+/*! \fn const QGesture* gesture(const Qt::GestureType &type) const
+
+    Returns extended information about a gesture of specific \a type.
+*/
+
+/*! \fn QSet<Qt::GestureType> cancelledGestures() const
+
+    Returns a set of gesture names that used to be executed, but got
+    cancelled (i.e. they were not finished properly).
+*/
+
+
+
+
 QGestureEvent::QGestureEvent(QWidget *targetWidget, const QList<QGesture*> &gestures,
                              const QSet<Qt::GestureType> &cancelledGestures)
     : QEvent(QEvent::Gesture), m_targetWidget(targetWidget),

@@ -11025,7 +11025,13 @@ QWindowSurface *QWidget::windowSurface() const
     return bs ? bs->windowSurface : 0;
 }
 
-void QWidget::grabGesture(Qt::GestureType gesture)
+/*!
+    \fn void QWidget::grabGesture(const Qt::GestureType &gesture)
+
+    Subscribes the widget to the specified \a gesture type.
+*/
+
+void QWidget::grabGesture(const Qt::GestureType &gesture)
 {
     Q_D(QWidget);
     if (d->gestures.contains(gesture))
@@ -11034,6 +11040,11 @@ void QWidget::grabGesture(Qt::GestureType gesture)
     ++qApp->d_func()->grabbedGestures[gesture];
 }
 
+/*!
+    \fn void QWidget::grabGestures(const QSet<Qt::GestureType> &gestures)
+
+    Subscribes the widget to the specified list of \a gestures.
+*/
 void QWidget::grabGestures(const QSet<Qt::GestureType> &gestures)
 {
     Q_D(QWidget);
@@ -11044,7 +11055,12 @@ void QWidget::grabGestures(const QSet<Qt::GestureType> &gestures)
     d->gestures.unite(gestures);
 }
 
-void QWidget::releaseGesture(Qt::GestureType gesture)
+/*!
+    \fn void QWidget::releaseGesture(const Qt::GestureType &gesture)
+
+    Unsubscribes the widget from the specified \a gesture type.
+*/
+void QWidget::releaseGesture(const Qt::GestureType &gesture)
 {
     Q_D(QWidget);
     QMap<Qt::GestureType, int>::iterator it =
@@ -11055,7 +11071,12 @@ void QWidget::releaseGesture(Qt::GestureType gesture)
     d->gestures.remove(gesture);
 }
 
-QSet<Qt::GestureType> QWidget::gestures()
+/*!
+    \fn QSet<Qt::GestureType> QWidget::gestures() const
+
+    Returns a list of gestures that the widget is subscribed to.
+*/
+QSet<Qt::GestureType> QWidget::gestures() const
 {
     Q_D(const QWidget);
     return d->gestures;
