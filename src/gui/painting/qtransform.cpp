@@ -1222,7 +1222,8 @@ static QPolygonF mapProjective(const QTransform &transform, const QPolygonF &pol
 */
 QPolygonF QTransform::map(const QPolygonF &a) const
 {
-    if (type() >= QTransform::TxProject)
+    TransformationType t = type();
+    if (t >= QTransform::TxProject)
         return mapProjective(*this, a);
 
     int size = a.size();
@@ -1231,7 +1232,6 @@ QPolygonF QTransform::map(const QPolygonF &a) const
     const QPointF *da = a.constData();
     QPointF *dp = p.data();
 
-    TransformationType t = type();
     for(i = 0; i < size; ++i) {
         MAP(da[i].xp, da[i].yp, dp[i].xp, dp[i].yp);
     }
@@ -1249,7 +1249,8 @@ QPolygonF QTransform::map(const QPolygonF &a) const
 */
 QPolygon QTransform::map(const QPolygon &a) const
 {
-    if (type() >= QTransform::TxProject)
+    TransformationType t = type();
+    if (t >= QTransform::TxProject)
         return mapProjective(*this, QPolygonF(a)).toPolygon();
 
     int size = a.size();
@@ -1258,7 +1259,6 @@ QPolygon QTransform::map(const QPolygon &a) const
     const QPoint *da = a.constData();
     QPoint *dp = p.data();
 
-    TransformationType t = type();
     for(i = 0; i < size; ++i) {
         qreal nx = 0, ny = 0;
         MAP(da[i].xp, da[i].yp, nx, ny);
@@ -2061,10 +2061,11 @@ QTransform::operator QVariant() const
 Q_GUI_EXPORT
 bool qt_scaleForTransform(const QTransform &transform, qreal *scale)
 {
-    if (transform.type() <= QTransform::TxTranslate) {
+    const QTransform::TransformationType type = transform.type();
+    if (type <= QTransform::TxTranslate) {
         *scale = 1;
         return true;
-    } else if (transform.type() == QTransform::TxScale) {
+    } else if (type == QTransform::TxScale) {
         const qreal xScale = qAbs(transform.m11());
         const qreal yScale = qAbs(transform.m22());
         *scale = qMax(xScale, yScale);
@@ -2076,7 +2077,7 @@ bool qt_scaleForTransform(const QTransform &transform, qreal *scale)
     const qreal yScale = transform.m12() * transform.m12()
                          + transform.m22() * transform.m22();
     *scale = qSqrt(qMax(xScale, yScale));
-    return transform.type() == QTransform::TxRotate && qFuzzyCompare(xScale, yScale);
+    return type == QTransform::TxRotate && qFuzzyCompare(xScale, yScale);
 }
 
 QT_END_NAMESPACE
