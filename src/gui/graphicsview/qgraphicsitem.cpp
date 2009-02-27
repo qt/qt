@@ -2511,10 +2511,10 @@ QTransform QGraphicsItem::sceneTransform() const
     QTransform m;
     if (d_ptr->hasTransform) {
         m = transform();
-        m *= QTransform::fromTranslate(d_ptr->pos.x(), d_ptr->pos.y());
-    } else {
-        // ### ? QTransform::fromTranslate(d_ptr->pos.x(), d_ptr->pos.y())
-        m.translate(d_ptr->pos.x(), d_ptr->pos.y());
+        if (!d_ptr->pos.isNull())
+            m *= QTransform::fromTranslate(d_ptr->pos.x(), d_ptr->pos.y());
+    } else if (!d_ptr->pos.isNull()) {
+        m = QTransform::fromTranslate(d_ptr->pos.x(), d_ptr->pos.y());
     }
 
     // Combine with parent and add to cache.
@@ -2639,6 +2639,8 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
         if (ok)
             *ok = true;
         const QPointF &itemPos = d_ptr->pos;
+        if (itemPos.isNull())
+            return d_ptr->hasTransform ? transform() : QTransform();
         if (d_ptr->hasTransform)
             return transform() * QTransform::fromTranslate(itemPos.x(), itemPos.y());
         return QTransform::fromTranslate(itemPos.x(), itemPos.y());
@@ -2649,7 +2651,8 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
         const QPointF &otherPos = other->d_ptr->pos;
         if (other->d_ptr->hasTransform) {
             QTransform otherToParent = other->transform();
-            otherToParent *= QTransform::fromTranslate(otherPos.x(), otherPos.y());
+            if (!otherPos.isNull())
+                otherToParent *= QTransform::fromTranslate(otherPos.x(), otherPos.y());
             return otherToParent.inverted(ok);
         } else {
             if (ok)
@@ -2674,11 +2677,11 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
 
         QTransform itemToParent = QTransform::fromTranslate(itemPos.x(), itemPos.y());
         if (hasTr)
-            itemToParent = transform() * itemToParent;
+            itemToParent = itemPos.isNull() ? transform() : transform() * itemToParent;
 
         QTransform otherToParent = QTransform::fromTranslate(otherPos.x(), otherPos.y());
         if (otherHasTr)
-            otherToParent = other->transform() * otherToParent;
+            otherToParent = otherPos.isNull() ? other->transform() : other->transform() * otherToParent;
 
         return itemToParent * otherToParent.inverted(ok);
     }
@@ -2718,7 +2721,8 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
         const QGraphicsItemPrivate *pd = p->d_ptr;
         if (pd->hasTransform)
             x *= p->transform();
-        x *= QTransform::fromTranslate(pd->pos.x(), pd->pos.y());
+        if (!pd->pos.isNull())
+            x *= QTransform::fromTranslate(pd->pos.x(), pd->pos.y());
     } while ((p = p->d_ptr->parent) && p != root);
     if (parentOfOther)
         return x.inverted(ok);
@@ -2995,7 +2999,9 @@ QRectF QGraphicsItem::childrenBoundingRect() const
     QRectF childRect;
     foreach (QGraphicsItem *child, children()) {
         QPointF childPos = child->pos();
-        QTransform matrix = child->transform() * QTransform::fromTranslate(childPos.x(), childPos.y());
+        QTransform matrix = child->transform();
+        if (!childPos.isNull())
+            matrix *= QTransform::fromTranslate(childPos.x(), childPos.y());
         childRect |= matrix.mapRect(child->boundingRect() | child->childrenBoundingRect());
     }
     return childRect;
@@ -8544,13 +8550,17 @@ void QGraphicsItemGroup::addToGroup(QGraphicsItem *item)
     QTransform oldSceneMatrix = item->sceneTransform();
     item->setPos(mapFromItem(item, 0, 0));
     item->setParentItem(this);
-    item->setTransform(oldSceneMatrix
-                       * sceneTransform().inverted()
-                       * QTransform::fromTranslate(-item->x(), -item->y()));
+    QTransform newItemTransform(oldSceneMatrix);
+    newItemTransform *= sceneTransform().inverted();
+    if (!item->pos().isNull())
+        newItemTransform *= QTransform::fromTranslate(-item->x(), -item->y());
+    item->setTransform(newItemTransform);
     item->d_func()->setIsMemberOfGroup(true);
     prepareGeometryChange();
-    d->itemsBoundingRect |= (item->transform() * QTransform::fromTranslate(item->x(), item->y()))
-                            .mapRect(item->boundingRect() | item->childrenBoundingRect());
+    QTransform itemTransform(item->transform());
+    if (!item->pos().isNull())
+        itemTransform *= QTransform::fromTranslate(item->x(), item->y());
+    d->itemsBoundingRect |= itemTransform.mapRect(item->boundingRect() | item->childrenBoundingRect());
     update();
 }
 

@@ -4772,8 +4772,9 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         if (itemCache->allExposed || !itemCache->exposed.isEmpty() || !scrollExposure.isEmpty()) {
             // Construct an item-to-pixmap transform.
             QPointF p = deviceRect.topLeft();
-            QTransform itemToPixmap = QTransform::fromTranslate(-p.x(), -p.y());
-            itemToPixmap = painter->worldTransform() * itemToPixmap;
+            QTransform itemToPixmap = painter->worldTransform();
+            if (!p.isNull())
+                itemToPixmap *= QTransform::fromTranslate(-p.x(), -p.y());
 
             // Map the item's logical expose to pixmap coordinates.
             QRegion pixmapExposed = scrollExposure;
