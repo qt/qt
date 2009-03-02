@@ -257,6 +257,8 @@ inline qreal QTransform::dy() const
 
 inline QTransform &QTransform::operator*=(qreal num)
 {
+    if (num == 1.)
+        return *this;
     affine._m11 *= num;
     affine._m12 *= num;
     m_13        *= num;
@@ -271,11 +273,15 @@ inline QTransform &QTransform::operator*=(qreal num)
 }
 inline QTransform &QTransform::operator/=(qreal div)
 {
+    if (div == 0)
+        return *this;
     div = 1/div;
     return operator*=(div);
 }
 inline QTransform &QTransform::operator+=(qreal num)
 {
+    if (num == 0)
+        return *this;
     affine._m11 += num;
     affine._m12 += num;
     m_13        += num;
@@ -290,6 +296,8 @@ inline QTransform &QTransform::operator+=(qreal num)
 }
 inline QTransform &QTransform::operator-=(qreal num)
 {
+    if (num == 0)
+        return *this;
     affine._m11 -= num;
     affine._m12 -= num;
     m_13        -= num;
