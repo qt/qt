@@ -399,6 +399,9 @@ QTransform QTransform::inverted(bool *invertible) const
 */
 QTransform & QTransform::translate(qreal dx, qreal dy)
 {
+    if (dx == 0 && dy == 0)
+        return *this;
+
     switch(type()) {
     case TxNone:
         affine._dx = dx;
@@ -435,7 +438,10 @@ QTransform & QTransform::translate(qreal dx, qreal dy)
 QTransform QTransform::fromTranslate(qreal dx, qreal dy)
 {
     QTransform transform(1, 0, 0, 1, dx, dy);
-    transform.m_dirty = TxTranslate;
+    if (dx == 0 && dy == 0)
+        transform.m_dirty = TxNone;
+    else
+        transform.m_dirty = TxTranslate;
     return transform;
 }
 
@@ -447,6 +453,9 @@ QTransform QTransform::fromTranslate(qreal dx, qreal dy)
 */
 QTransform & QTransform::scale(qreal sx, qreal sy)
 {
+    if (sx == 1 && sy == 1)
+        return *this;
+
     switch(type()) {
     case TxNone:
     case TxTranslate:
@@ -481,7 +490,10 @@ QTransform & QTransform::scale(qreal sx, qreal sy)
 QTransform QTransform::fromScale(qreal sx, qreal sy)
 {
     QTransform transform(sx, 0, 0, sy, 0, 0);
-    transform.m_dirty = TxScale;
+    if (sx == 1 && sy == 1)
+        transform.m_dirty = TxNone;
+    else
+        transform.m_dirty = TxScale;
     return transform;
 }
 
@@ -544,6 +556,9 @@ const qreal inv_dist_to_plane = 1. / 1024.;
 */
 QTransform & QTransform::rotate(qreal a, Qt::Axis axis)
 {
+    if (a == 0)
+        return *this;
+
     qreal sina = 0;
     qreal cosa = 0;
     if (a == 90. || a == -270.)
@@ -715,7 +730,15 @@ bool QTransform::operator!=(const QTransform &o) const
 */
 QTransform & QTransform::operator*=(const QTransform &o)
 {
-    TransformationType t = qMax(type(), o.type());
+    const TransformationType otherType = o.type();
+    if (otherType == TxNone)
+        return *this;
+
+    const TransformationType thisType = type();
+    if (thisType == TxNone)
+        return operator=(o);
+
+    TransformationType t = qMax(thisType, otherType);
     switch(t) {
     case TxNone:
         break;
