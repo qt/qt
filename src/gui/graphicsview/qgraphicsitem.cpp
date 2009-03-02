@@ -1862,6 +1862,9 @@ qreal QGraphicsItem::opacity() const
 */
 qreal QGraphicsItem::effectiveOpacity() const
 {
+    if (!d_ptr->hasEffectiveOpacity)
+        return qreal(1.0);
+
     QVariant effectiveOpacity = d_ptr->extra(QGraphicsItemPrivate::ExtraEffectiveOpacity);
     return effectiveOpacity.isNull() ? qreal(1.0) : qreal(effectiveOpacity.toDouble());
 }
@@ -3680,7 +3683,14 @@ void QGraphicsItemPrivate::resolveEffectiveOpacity(qreal parentEffectiveOpacity)
     }
 
     // Set this item's resolved opacity.
-    setExtra(ExtraEffectiveOpacity, myEffectiveOpacity);
+    if (qFuzzyCompare(myEffectiveOpacity, qreal(1.0))) {
+        // Opaque, unset effective opacity.
+        hasEffectiveOpacity = 0;
+        unsetExtra(ExtraEffectiveOpacity);
+    } else {
+        hasEffectiveOpacity = 1;
+        setExtra(ExtraEffectiveOpacity, myEffectiveOpacity);
+    }
 
     // Resolve children always.
     for (int i = 0; i < children.size(); ++i)
