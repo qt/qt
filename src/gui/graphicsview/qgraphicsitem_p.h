@@ -133,6 +133,7 @@ public:
         hasBoundingRegionGranularity(0),
         flags(0),
         hasOpacity(0),
+        hasEffectiveOpacity(0),
         isWidget(0),
         dirty(0),
         dirtyChildren(0),
@@ -262,6 +263,7 @@ public:
 
     // New 32 bytes
     quint32 hasOpacity : 1;
+    quint32 hasEffectiveOpacity : 1;
     quint32 isWidget : 1;
     quint32 dirty : 1;    
     quint32 dirtyChildren : 1;    
