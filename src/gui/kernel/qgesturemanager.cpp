@@ -137,7 +137,7 @@ bool QGestureManager::filterEvent(QEvent *event)
         }
         activeGestures -= newMaybeGestures;
         activeGestures += startedGestures;
-        foreach(QGestureRecognizer *r, startedGestures+notGestures) {
+        foreach(QGestureRecognizer *r, startedGestures+finishedGestures+notGestures) {
             QMap<QGestureRecognizer*, int>::iterator it = maybeGestures.find(r);
             if (it != maybeGestures.end()) {
                 killTimer(it.value());
