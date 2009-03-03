@@ -86,6 +86,7 @@ public:
           inheritedFontResolveMask(0),
           inSetGeometry(0),
           polished(0),
+          inSetPos(0),
           focusPolicy(Qt::NoFocus),
           focusNext(0),
           focusPrev(0),
@@ -195,6 +196,7 @@ public:
     quint32 attributes : 10;
     quint32 inSetGeometry : 1;
     quint32 polished: 1;
+    quint32 inSetPos : 1;
 
     // Focus
     Qt::FocusPolicy focusPolicy;

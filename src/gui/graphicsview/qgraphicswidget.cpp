@@ -366,32 +366,33 @@ void QGraphicsWidget::resize(const QSizeF &size)
 void QGraphicsWidget::setGeometry(const QRectF &rect)
 {
     QGraphicsWidgetPrivate *wd = QGraphicsWidget::d_func();
-    const QGraphicsLayoutItemPrivate *d = QGraphicsLayoutItem::d_ptr;
-    setAttribute(Qt::WA_Resized);
-    QRectF newGeom = rect;
-    newGeom.setSize(rect.size().expandedTo(effectiveSizeHint(Qt::MinimumSize))
-                               .boundedTo(effectiveSizeHint(Qt::MaximumSize)));
-    if (newGeom == d->geom)
-        return;
-
-    // Update and prepare to change the geometry (remove from index).
-    if (wd->scene) {
-        if (rect.topLeft() != d->geom.topLeft())
-            wd->fullUpdateHelper(true);
-        else
-            update();
-    }
-    prepareGeometryChange();
-
-    // setPos triggers ItemPositionChange, which can adjust position
+    QGraphicsLayoutItemPrivate *d = QGraphicsLayoutItem::d_ptr;
+    QRectF newGeom;
     QPointF oldPos = d->geom.topLeft();
-    wd->inSetGeometry = 1;
-    wd->setPosHelper(newGeom.topLeft(), /* update = */ false);
-    wd->inSetGeometry = 0;
-    newGeom.moveTopLeft(pos());
+    if (!wd->inSetPos) {
+        setAttribute(Qt::WA_Resized);
+        newGeom = rect;
+        newGeom.setSize(rect.size().expandedTo(effectiveSizeHint(Qt::MinimumSize))
+                                   .boundedTo(effectiveSizeHint(Qt::MaximumSize)));
+        if (newGeom == d->geom)
+            return;
 
-    if (newGeom == d->geom)
-        return;
+        // setPos triggers ItemPositionChange, which can adjust position
+        wd->inSetGeometry = 1;
+        wd->setPosHelper(newGeom.topLeft());
+        wd->inSetGeometry = 0;
+        newGeom.moveTopLeft(pos());
+
+        if (newGeom == d->geom)
+           return;
+
+         // Update and prepare to change the geometry (remove from index) if the size has changed.
+        if (wd->scene) {
+            if (rect.topLeft() == d->geom.topLeft()) {
+                prepareGeometryChange();
+            }
+        }
+    }
 
     // Update the layout item geometry
     bool moved = oldPos != pos();
@@ -401,6 +402,11 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
         event.setOldPos(oldPos);
         event.setNewPos(pos());
         QApplication::sendEvent(this, &event);
+        if (wd->inSetPos) {
+            //set the new pos
+            d->geom.moveTopLeft(pos());
+            return;
+        }
     }
     QSizeF oldSize = size();
     QGraphicsLayoutItem::setGeometry(newGeom);
@@ -1016,9 +1022,11 @@ QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &
         break;
     case ItemPositionHasChanged:
         if (!d->inSetGeometry) {
+            d->inSetPos = 1;
             // Ensure setGeometry is called (avoid recursion when setPos is
             // called from within setGeometry).
             setGeometry(QRectF(pos(), size()));
+            d->inSetPos = 0 ;
         }
         break;
     case ItemParentChange: {
