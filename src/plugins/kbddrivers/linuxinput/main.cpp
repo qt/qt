@@ -40,38 +40,38 @@
 ****************************************************************************/
 
 #include <qkbddriverplugin_qws.h>
-#include <qkbdusb_qws.h>
+#include <qkbdlinuxinput_qws.h>
 
 QT_BEGIN_NAMESPACE
 
-class QUsbKbdDriver : public QKbdDriverPlugin
+class QLinuxInputKbdDriver : public QKbdDriverPlugin
 {
 public:
-    QUsbKbdDriver();
+    QLinuxInputKbdDriver();
 
     QStringList keys() const;
     QWSKeyboardHandler* create(const QString &driver, const QString &device);
 };
 
-QUsbKbdDriver::QUsbKbdDriver()
+QLinuxInputKbdDriver::QLinuxInputKbdDriver()
     : QKbdDriverPlugin()
 {
 }
 
-QStringList QUsbKbdDriver::keys() const
+QStringList QLinuxInputKbdDriver::keys() const
 {
-    return (QStringList() << QLatin1String("Usb"));
+    return (QStringList() << QLatin1String("LinuxInput"));
 }
 
-QWSKeyboardHandler* QUsbKbdDriver::create(const QString &driver,
-                                          const QString &device)
+QWSKeyboardHandler* QLinuxInputKbdDriver::create(const QString &driver,
+                                                 const QString &device)
 {
     Q_UNUSED(device);
-    if (driver.compare(QLatin1String("Usb"), Qt::CaseInsensitive))
+    if (driver.compare(QLatin1String("LinuxInput"), Qt::CaseInsensitive))
         return 0;
-    return new QWSUsbKeyboardHandler(driver);
+    return new QWSLinuxInputKeyboardHandler(driver, device);
 }
 
-Q_EXPORT_PLUGIN2(qwsusbkbddriver, QUsbKbdDriver)
+Q_EXPORT_PLUGIN2(qwslinuxinputkbddriver, QLinuxInputKbdDriver)
 
 QT_END_NAMESPACE
