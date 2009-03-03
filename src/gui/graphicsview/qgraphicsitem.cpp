@@ -3259,8 +3259,8 @@ bool QGraphicsItem::collidesWithPath(const QPainterPath &path, Qt::ItemSelection
         return false;
     }
 
-    QRectF rectA = _q_adjustedRect(boundingRect());
-    QRectF rectB = _q_adjustedRect(path.controlPointRect());
+    const QRectF rectA = _q_adjustedRect(boundingRect());
+    const QRectF rectB = _q_adjustedRect(path.controlPointRect());
     if (!rectA.intersects(rectB)) {
         // This we can determine efficiently. If the two rects neither
         // intersect nor contain eachother, then the two items do not collide.
@@ -3269,12 +3269,11 @@ bool QGraphicsItem::collidesWithPath(const QPainterPath &path, Qt::ItemSelection
 
     // For further testing, we need this item's shape or bounding rect.
     QPainterPath thisShape;
-    if (mode == Qt::IntersectsItemShape || mode == Qt::ContainsItemShape) {
+    if (mode == Qt::IntersectsItemShape || mode == Qt::ContainsItemShape)
         thisShape = (isClipped() && !d_ptr->localCollisionHack) ? clipPath() : shape();
-    } else {
-        thisShape.addPolygon(_q_adjustedRect(boundingRect()));
-        thisShape.closeSubpath();
-    }
+    else
+        thisShape.addRect(rectA);
+
     if (thisShape == QPainterPath()) {
         // Empty shape? No collision.
         return false;
