@@ -3143,48 +3143,32 @@ QPainterPath QGraphicsItem::clipPath() const
     // Start with the item's bounding rect.
     clip.addRect(boundingRect());
 
-    bool clipAway = false;
     if (d->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
-        // Make list of parents up to the farthest ancestor that clips its
-        // children to its shape.
-        QVarLengthArray<const QGraphicsItem *, 32> clippingAncestors;
-        const QGraphicsItem *parent = parentItem();
-        const QGraphicsItem *clipOwner = 0;
-        do {
+        const QGraphicsItem *parent = this;
+        const QGraphicsItem *lastParent = this;
+
+        // Intersect any in-between clips starting at the top and moving downwards.
+        while ((parent = parent->d_ptr->parent)) {
             if (parent->d_ptr->flags & ItemClipsChildrenToShape) {
-                clippingAncestors.append(parent);
-                clipOwner = parent;
+                // Map clip to the current parent and intersect with its shape.
+                clip = (lastParent->itemTransform(parent).map(clip)).intersected(parent->shape());
+                if (clip.isEmpty())
+                    return clip;
+                lastParent = parent;
             }
-        } while ((parent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) && (parent = parent->parentItem()));
 
-        // Start with the topmost clip.
-        QPainterPath parentClip = clipOwner->shape();
-
-        // Intersect any in-between clips starting at the bottom and moving
-        // upwards.
-        for (int i = clippingAncestors.size() - 2; i >= 0; --i) {
-            const QGraphicsItem *item = clippingAncestors[i];
-            // ### what if itemtransform fails
-            if (clipOwner)
-                parentClip = clipOwner->itemTransform(item).map(parentClip);
-            parentClip = parentClip.intersected(item->shape());
-            if (parentClip.isEmpty()) {
-                clip = parentClip;
-                clipAway = true;
+            if (!(parent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
                 break;
-            }
-            clipOwner = item;
         }
 
-        if (!clipAway) {
+        if (lastParent != this) {
+            // Map clip back to the item's transform.
             // ### what if itemtransform fails
-            clip = clip.intersected(clipOwner->itemTransform(this).map(parentClip));
-            if (clip.isEmpty())
-                clipAway = true;
+            clip = lastParent->itemTransform(this).map(clip);
         }
     }
 
-    if (!clipAway && d->flags & ItemClipsToShape)
+    if (d->flags & ItemClipsToShape)
         clip = clip.intersected(shape());
 
     return clip;
