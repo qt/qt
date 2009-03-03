@@ -228,7 +228,6 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     QObject::connect(preview, SIGNAL(previewChanged()), q, SLOT(_q_previewChanged()));
     setupActions();
 
-
     pageNumEdit = new LineEdit;
     pageNumEdit->setAlignment(Qt::AlignRight);
     pageNumEdit->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
@@ -265,13 +264,18 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     toolbar->addAction(firstPageAction);
     toolbar->addAction(prevPageAction);
 
-    // this is to ensure the label text and the editor text
-    // are aligned in all styles
+    // this is to ensure the label text and the editor text are
+    // aligned in all styles - the extra QVBoxLayout is a workaround
+    // for bug in QFormLayout
     QWidget *pageEdit = new QWidget(toolbar);
+    QVBoxLayout *vboxLayout = new QVBoxLayout;
+    vboxLayout->setContentsMargins(0, 0, 0, 0);
     QFormLayout *formLayout = new QFormLayout;
     formLayout->setWidget(0, QFormLayout::LabelRole, pageNumEdit);
     formLayout->setWidget(0, QFormLayout::FieldRole, pageNumLabel);
-    pageEdit->setLayout(formLayout);
+    vboxLayout->addLayout(formLayout);
+    vboxLayout->setAlignment(Qt::AlignVCenter);
+    pageEdit->setLayout(vboxLayout);
     toolbar->addWidget(pageEdit);
 
     toolbar->addAction(nextPageAction);
@@ -318,6 +322,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
 #endif
         )
         pageSetupAction->setEnabled(false);
+    preview->setFocus();
 }
 
 static inline void qt_setupActionIcon(QAction *action, const QLatin1String &name)
