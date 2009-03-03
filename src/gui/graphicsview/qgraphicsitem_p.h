@@ -158,7 +158,7 @@ public:
     virtual QVariant inputMethodQueryHelper(Qt::InputMethodQuery query) const;
     static bool movableAncestorIsSelected(const QGraphicsItem *item);
 
-    void setPosHelper(const QPointF &pos, bool update);
+    void setPosHelper(const QPointF &pos);
     void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
     void updateHelper(const QRectF &rect = QRectF(), bool force = false);

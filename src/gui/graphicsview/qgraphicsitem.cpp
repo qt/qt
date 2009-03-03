@@ -2352,7 +2352,7 @@ QPointF QGraphicsItem::scenePos() const
     the item is also updated; otherwise it is not updated before and after the
     change.
 */
-void QGraphicsItemPrivate::setPosHelper(const QPointF &pos, bool update)
+void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
 {
     Q_Q(QGraphicsItem);
     if (this->pos == pos)
@@ -2364,7 +2364,7 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos, bool update)
         return;
 
     // Update and repositition.
-    if (scene && update) {
+    if (scene) {
         fullUpdateHelper(true);
         q->prepareGeometryChange();
     }
@@ -2387,7 +2387,7 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos, bool update)
 */
 void QGraphicsItem::setPos(const QPointF &pos)
 {
-    d_ptr->setPosHelper(pos, /* update = */ true);
+    d_ptr->setPosHelper(pos);
 }
 
 /*!
