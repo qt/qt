@@ -1706,12 +1706,17 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 
 static inline QRect toNormalizedFillRect(const QRectF &rect)
 {
-    const int x1 = qRound(rect.x() + aliasedCoordinateDelta);
-    const int y1 = qRound(rect.y() + aliasedCoordinateDelta);
-    const int x2 = qRound(rect.right() + aliasedCoordinateDelta);
-    const int y2 = qRound(rect.bottom() + aliasedCoordinateDelta);
+    int x1 = int(rect.x() + aliasedCoordinateDelta);
+    int y1 = int(rect.y() + aliasedCoordinateDelta);
+    int x2 = int(rect.right() + aliasedCoordinateDelta);
+    int y2 = int(rect.bottom() + aliasedCoordinateDelta);
 
-    return QRect(x1, y1, x2 - x1, y2 - y1).normalized();
+    if (x2 < x1)
+        qSwap(x1, x2);
+    if (y2 < y1)
+        qSwap(y1, y2);
+
+    return QRect(x1, y1, x2 - x1, y2 - y1);
 }
 
 /*!
