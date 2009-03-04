@@ -58,6 +58,7 @@
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
 #include "qgraphicsscene_bsp_p.h"
+#include "qgraphicssceneindex.h"
 #include "qgraphicsitem_p.h"
 
 #include <private/qobject_p.h>
@@ -94,6 +95,8 @@ public:
     QGraphicsSceneBspTree bspTree;
     void _q_updateIndex();
     int lastItemCount;
+
+    QGraphicsSceneIndex *customIndex;
 
     QRectF sceneRect;
     bool hasSceneRect;

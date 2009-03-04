@@ -219,6 +219,7 @@ static const int QGRAPHICSSCENE_INDEXTIMER_TIMEOUT = 2000;
 #include "qgraphicsview_p.h"
 #include "qgraphicswidget.h"
 #include "qgraphicswidget_p.h"
+#include "qgraphicssceneindex.h"
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qlist.h>
@@ -330,6 +331,7 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       indexMethod(QGraphicsScene::BspTreeIndex),
       bspTreeDepth(0),
       lastItemCount(0),
+      customIndex(0),
       hasSceneRect(false),
       updateAll(false),
       calledEmitUpdated(false),
@@ -381,12 +383,18 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::estimateItemsInRect(const QRectF &
     const_cast<QGraphicsScenePrivate *>(this)->purgeRemovedItems();
     const_cast<QGraphicsScenePrivate *>(this)->_q_updateSortCache();
 
-    if (indexMethod == QGraphicsScene::BspTreeIndex) {
+    if (indexMethod != QGraphicsScene::NoIndex) {
         // ### Only do this once in a while.
         QGraphicsScenePrivate *that = const_cast<QGraphicsScenePrivate *>(this);
 
-        // Get items from BSP tree
-        QList<QGraphicsItem *> items = that->bspTree.items(rect);
+        QList<QGraphicsItem *> items;
+        if (indexMethod == QGraphicsScene::BspTreeIndex) {
+            // Get items from BSP tree
+            items = that->bspTree.items(rect);
+        } else {
+            //ask to the custom indexing
+            items = that->customIndex->items(rect);
+        }
 
         // Fill in with any unindexed items
         for (int i = 0; i < unindexedItems.size(); ++i) {
@@ -444,6 +452,12 @@ void QGraphicsScenePrivate::addToIndex(QGraphicsItem *item)
             // size.
             startIndexTimer();
         }
+    } else if (indexMethod == QGraphicsScene::CustomIndex) {
+        if (item->d_func()->index != -1) {
+            customIndex->insertItem(item, item->sceneBoundingRect());
+            foreach (QGraphicsItem *child, item->children())
+                child->addToIndex();
+        }
     }
 }
 
@@ -452,10 +466,13 @@ void QGraphicsScenePrivate::addToIndex(QGraphicsItem *item)
 */
 void QGraphicsScenePrivate::removeFromIndex(QGraphicsItem *item)
 {
-    if (indexMethod == QGraphicsScene::BspTreeIndex) {
+    if (indexMethod != QGraphicsScene::NoIndex) {
         int index = item->d_func()->index;
         if (index != -1) {
-            bspTree.removeItem(item, item->sceneBoundingRect());
+            if (indexMethod == QGraphicsScene::CustomIndex)
+                customIndex->removeItem(item, item->sceneBoundingRect());
+            else
+                bspTree.removeItem(item, item->sceneBoundingRect());
             freeItemIndexes << index;
             indexedItems[index] = 0;
             item->d_func()->index = -1;
@@ -464,7 +481,6 @@ void QGraphicsScenePrivate::removeFromIndex(QGraphicsItem *item)
             foreach (QGraphicsItem *child, item->children())
                 child->removeFromIndex();
         }
-
         startIndexTimer();
     }
 }
@@ -564,6 +580,8 @@ void QGraphicsScenePrivate::_q_updateIndex()
                 continue;
             if (indexMethod == QGraphicsScene::BspTreeIndex)
                 bspTree.insertItem(item, rect);
+            if (indexMethod == QGraphicsScene::CustomIndex)
+                customIndex->insertItem(item,rect);
 
             // If the item ignores view transformations, update our
             // largest-item-counter to ensure that the view can accurately
@@ -2359,8 +2377,29 @@ QGraphicsScene::ItemIndexMethod QGraphicsScene::itemIndexMethod() const
 void QGraphicsScene::setItemIndexMethod(ItemIndexMethod method)
 {
     Q_D(QGraphicsScene);
+    if (method == CustomIndex) {
+        qWarning("QGraphicsScene: Invalid index type %d", CustomIndex);
+        return;
+    }
     d->resetIndex();
     d->indexMethod = method;
+}
+
+void QGraphicsScene::setSceneIndex(QGraphicsSceneIndex *index)
+{
+    Q_D(QGraphicsScene);
+    if (!index) {
+        qWarning("QGraphicsScene::setSceneIndex: Attempt to insert a null indexer");
+    } else {
+        d->indexMethod = CustomIndex;
+        d->customIndex = index;
+    }
+}
+
+QGraphicsSceneIndex* QGraphicsScene::sceneIndex()
+{
+    Q_D(QGraphicsScene);
+    return d->customIndex;
 }
 
 /*!

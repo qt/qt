@@ -83,6 +83,7 @@ class QGraphicsSimpleTextItem;
 class QGraphicsTextItem;
 class QGraphicsView;
 class QGraphicsWidget;
+class QGraphicsSceneIndex;
 class QHelpEvent;
 class QInputMethodEvent;
 class QKeyEvent;
@@ -113,6 +114,7 @@ class Q_GUI_EXPORT QGraphicsScene : public QObject
 public:
     enum ItemIndexMethod {
         BspTreeIndex,
+        CustomIndex,
         NoIndex = -1
     };
 
@@ -142,6 +144,8 @@ public:
 
     ItemIndexMethod itemIndexMethod() const;
     void setItemIndexMethod(ItemIndexMethod method);
+    void setSceneIndex(QGraphicsSceneIndex *index);
+    QGraphicsSceneIndex* sceneIndex();
 
     bool isSortCacheEnabled() const;
     void setSortCacheEnabled(bool enabled);
