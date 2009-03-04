@@ -295,6 +295,8 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
 
 QT_BEGIN_NAMESPACE
 
+bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
+
 inline int q_round_bound(qreal d) //### (int)(qreal) INT_MAX != INT_MAX for single precision
 {
     if (d <= (qreal) INT_MIN)
@@ -602,7 +604,7 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
     lastMouseMoveScenePoint = mouseEvent.scenePos();
     lastMouseMoveScreenPoint = mouseEvent.screenPos();
     mouseEvent.setAccepted(false);
-    QApplication::sendEvent(scene, &mouseEvent);
+    qt_sendSpontaneousEvent(scene, &mouseEvent);
 
     // Remember whether the last event was accepted or not.
     lastMouseEvent.setAccepted(mouseEvent.isAccepted());
@@ -3225,7 +3227,7 @@ void QGraphicsView::mouseDoubleClickEvent(QMouseEvent *event)
     mouseEvent.setAccepted(false);
     mouseEvent.setButton(event->button());
     mouseEvent.setModifiers(event->modifiers());
-    QApplication::sendEvent(d->scene, &mouseEvent);
+    qt_sendSpontaneousEvent(d->scene, &mouseEvent);
 }
 
 /*!
@@ -3264,7 +3266,7 @@ void QGraphicsView::mousePressEvent(QMouseEvent *event)
             mouseEvent.setButton(event->button());
             mouseEvent.setModifiers(event->modifiers());
             mouseEvent.setAccepted(false);
-            QApplication::sendEvent(d->scene, &mouseEvent);
+            qt_sendSpontaneousEvent(d->scene, &mouseEvent);
 
             // Update the original mouse event accepted state.
             bool isAccepted = mouseEvent.isAccepted();
@@ -3434,7 +3436,7 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
     mouseEvent.setButton(event->button());
     mouseEvent.setModifiers(event->modifiers());
     mouseEvent.setAccepted(false);
-    QApplication::sendEvent(d->scene, &mouseEvent);
+    qt_sendSpontaneousEvent(d->scene, &mouseEvent);
 
     // Update the last mouse event selected state.
     d->lastMouseEvent.setAccepted(mouseEvent.isAccepted());
