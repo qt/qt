@@ -64,14 +64,13 @@ public:
     QGraphicsSceneIndex();
     virtual ~QGraphicsSceneIndex();
 
+    virtual void initialize(const QRectF &rect) = 0;
     virtual void clear() = 0;
 
     virtual void insertItem(QGraphicsItem *item, const QRectF &rect) = 0;
     virtual void removeItem(QGraphicsItem *item, const QRectF &rect) = 0;
-    virtual void removeItems(const QSet<QGraphicsItem *> &items) = 0;
 
     virtual QList<QGraphicsItem *> items(const QRectF &rect) = 0;
-    virtual QList<QGraphicsItem *> items(const QPointF &pos) = 0;
 };
 
 #endif // QT_NO_GRAPHICSVIEW
