@@ -951,6 +951,7 @@ QNetworkCacheMetaData QNetworkAccessHttpBackend::fetchCacheMetaData(const QNetwo
 
     QList<QByteArray> newHeaders = rawHeaderList();
     foreach (QByteArray header, newHeaders) {
+        QByteArray originalHeader = header;
         header = header.toLower();
         bool hop_by_hop =
             (header == "connection"
@@ -974,19 +975,32 @@ QNetworkCacheMetaData QNetworkAccessHttpBackend::fetchCacheMetaData(const QNetwo
                 continue;
         }
 
+        it = cacheHeaders.findRawHeader(header);
+        if (it != cacheHeaders.rawHeaders.constEnd()) {
+            // Match the behavior of Firefox and assume Cache-Control: "no-transform"
+            if (header == "content-encoding"
+                || header == "content-range"
+                || header == "content-type")
+                continue;
+
+            // For MS servers that send "Content-Length: 0" on 304 responses
+            // ignore this too
+            if (header == "content-length")
+                continue;
+        }
+
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
         QByteArray n = rawHeader(header);
         QByteArray o;
-        it = cacheHeaders.findRawHeader(header);
         if (it != cacheHeaders.rawHeaders.constEnd())
             o = (*it).second;
-        if (n != o && header != "Date") {
+        if (n != o && header != "date") {
             qDebug() << "replacing" << header;
             qDebug() << "new" << n;
             qDebug() << "old" << o;
         }
 #endif
-        cacheHeaders.setRawHeader(header, rawHeader(header));
+        cacheHeaders.setRawHeader(originalHeader, rawHeader(header));
     }
     metaData.setRawHeaders(cacheHeaders.rawHeaders);
 
