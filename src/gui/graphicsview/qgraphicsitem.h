@@ -340,6 +340,7 @@ public:
 
     void grabGesture(const Qt::GestureType &type);
     void releaseGesture(const Qt::GestureType &type);
+    QSet<Qt::GestureType> gestures() const;
 
     enum {
         Type = 1,

@@ -5614,18 +5614,25 @@ void QGraphicsScene::gestureEvent(QGestureEvent *event)
 {
     Q_D(QGraphicsScene);
     QList<Qt::GestureType> gestureTypes = event->gestureTypes();
-    QList<QPointF> pts;
     QGraphicsView *view = qobject_cast<QGraphicsView*>(event->targetWidget());
     if (!view) {
         // something is wrong.
         Q_ASSERT(view);
         return;
     }
-    foreach(const Qt::GestureType &type, gestureTypes)
-        pts << view->mapToScene(event->gesture(type)->hotSpot());
-    foreach(QGraphicsItem *item, d->itemsWithGestures) {
-        for (int i = 0; i < pts.size(); ++i) {
-            if (item->contains(item->mapFromScene(pts.at(i)))) {
+    QPolygonF poly;
+    QMap<Qt::GestureType, QPointF> hotSpots;
+    foreach(const Qt::GestureType &type, gestureTypes) {
+        QPointF pt = view->mapToScene(event->gesture(type)->hotSpot());
+        hotSpots.insert(type, pt);
+        poly << pt;
+    }
+
+    foreach(QGraphicsItem *item, items(poly, Qt::IntersectsItemBoundingRect)) {
+        QMap<Qt::GestureType, QPointF>::const_iterator it = hotSpots.begin(),
+                                                        e = hotSpots.end();
+        for(; it != e; ++it) {
+            if (item->contains(item->mapFromScene(it.value())) && item->gestures().contains(it.key())) {
                 d->sendGestureEvent(item, event);
                 if (event->isAccepted())
                     break;

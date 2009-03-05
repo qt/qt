@@ -3706,28 +3706,31 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QMouseEvent* mouse = static_cast<QMouseEvent*>(e);
             QPoint relpos = mouse->pos();
 
-            if (QApplication::testAttribute(Qt::AA_EnableGestures)) {
-                if (!gestureManager)
-                    gestureManager = new QGestureManager;
-                // if we are in gesture mode, we send all mouse events
-                // directly to gesture recognizer.
-                if (gestureManager->inGestureMode()) {
-                    // ### should I send events through all application event filters?
-                    if (gestureManager->filterEvent(e))
-                        return true;
-                }
-                if (w && (mouse->type() != QEvent::MouseMove || mouse->buttons() != 0)) {
-                    // find the gesture target widget
-                    QWidget *target = w;
-                    while (target && target->gestures().isEmpty())
-                        target = target->parentWidget();
-                    if (target) {
-                        gestureManager->setGestureTargetWidget(target);
-                        res = gestureManager->filterEvent(e);
+            if (e->spontaneous()) {
+                if (QApplication::testAttribute(Qt::AA_EnableGestures)) {
+                    QWidget *w = static_cast<QWidget*>(receiver);
+                    if (!gestureManager)
+                        gestureManager = new QGestureManager;
+                    // if we are in gesture mode, we send all mouse events
+                    // directly to gesture recognizer.
+                    if (gestureManager->inGestureMode()) {
+                        if (gestureManager->filterEvent(e))
+                            return true;
+                    } else {
+                        QMouseEvent* mouse = static_cast<QMouseEvent*>(e);
+                        if (w && (mouse->type() != QEvent::MouseMove || mouse->buttons() != 0)) {
+                            // find the gesture target widget
+                            QWidget *target = w;
+                            while (target && target->gestures().isEmpty())
+                                target = target->parentWidget();
+                            if (target) {
+                                gestureManager->setGestureTargetWidget(target);
+                                if (gestureManager->filterEvent(e))
+                                    return true;
+                            }
+                        }
                     }
                 }
-            }
-            if (e->spontaneous()) {
                 if (e->type() == QEvent::MouseButtonPress) {
                     QApplicationPrivate::giveFocusAccordingToFocusPolicy(w,
                                                                          Qt::ClickFocus,

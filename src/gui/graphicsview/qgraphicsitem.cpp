@@ -5802,6 +5802,11 @@ void QGraphicsItem::releaseGesture(const Qt::GestureType &type)
         d_ptr->scene->d_func()->releaseGesture(this, type);
 }
 
+QSet<Qt::GestureType> QGraphicsItem::gestures() const
+{
+    return d_ptr->gestures;
+}
+
 /*!
     This virtual function is called by QGraphicsItem to notify custom items
     that some part of the item's state changes. By reimplementing this
