@@ -1,8 +1,12 @@
 HEADERS += \
-	mouse.h
+	mouse.h \
+        gesturerecognizerlinjazax.h \
+        linjazaxgesture.h
+
 SOURCES += \
 	main.cpp \
-        mouse.cpp
+        mouse.cpp \
+        gesturerecognizerlinjazax.cpp
 
 RESOURCES += \
 	mice.qrc

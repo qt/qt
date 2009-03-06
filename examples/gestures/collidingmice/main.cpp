@@ -41,6 +41,9 @@
 
 #include "mouse.h"
 
+#include "gesturerecognizerlinjazax.h"
+#include "linjazaxgesture.h"
+
 #include <QtGui>
 
 #include <math.h>
@@ -53,14 +56,25 @@ public:
     PannableGraphicsView(QGraphicsScene *scene, QWidget *parent = 0)
         : QGraphicsView(scene, parent)
     {
-        grabGesture(Qt::Pan);
+        grabGesture("LinjaZax");
     }
 protected:
     bool event(QEvent *event)
     {
         if (event->type() == QEvent::Gesture) {
             QGestureEvent *ge = static_cast<QGestureEvent*>(event);
-            if (const QPannableGesture *g = dynamic_cast<const QPannableGesture*>(ge->gesture(Qt::Pan))) {
+            const LinjaZaxGesture *g = dynamic_cast<const LinjaZaxGesture*>(ge->gesture("LinjaZax"));
+            if (g) {
+                switch (g->zoomState()) {
+                case LinjaZaxGesture::ZoomingIn:
+                    scale(1.5, 1.5);
+                    break;
+                case LinjaZaxGesture::ZoomingOut:
+                    scale(0.6, 0.6);
+                    break;
+                default:
+                    break;
+                };
                 QPoint pt = g->pos() - g->lastPos();
                 horizontalScrollBar()->setValue(horizontalScrollBar()->value() - pt.x());
                 verticalScrollBar()->setValue(verticalScrollBar()->value() - pt.y());
@@ -77,6 +91,7 @@ int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
     QApplication::setAttribute(Qt::AA_EnableGestures);
+    app.addGestureRecognizer(new GestureRecognizerLinjaZax);
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 //! [0]
 
