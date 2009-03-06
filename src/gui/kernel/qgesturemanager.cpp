@@ -169,7 +169,8 @@ bool QGestureManager::filterEvent(QEvent *event)
             }
             Q_ASSERT(!gestures.isEmpty());
             QGestureEvent event(targetWidget, gestures);
-            qt_sendGestureEvent(targetWidget, &event);
+            ret = qt_sendGestureEvent(targetWidget, &event);
+            ret = ret && event.isAccepted();
 
             if (!activeGestures.isEmpty()) {
                 DEBUG() << "QGestureManager: new state = Gesture";
@@ -273,7 +274,8 @@ bool QGestureManager::filterEvent(QEvent *event)
             cancelledGestureNames << r->gestureType();
         if(!gestures.isEmpty()) {
             QGestureEvent event(targetWidget, gestures, cancelledGestureNames);
-            qt_sendGestureEvent(targetWidget, &event);
+            ret = qt_sendGestureEvent(targetWidget, &event);
+            ret = ret && event.isAccepted();
         }
 
         foreach(QGestureRecognizer *r, finishedGestures)
@@ -291,7 +293,6 @@ bool QGestureManager::filterEvent(QEvent *event)
             DEBUG() << "QGestureManager: new state = NotGesture";
             state = NotGesture;
         }
-        ret = true;
     }
 
     lastPos = currentPos;
