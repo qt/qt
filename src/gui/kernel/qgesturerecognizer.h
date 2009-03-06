@@ -101,7 +101,7 @@ QT_BEGIN_NAMESPACE
     received.
 */
 
-class QGestureRecognizer : public QObject
+class Q_GUI_EXPORT QGestureRecognizer : public QObject
 {
     Q_OBJECT
 public:
