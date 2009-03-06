@@ -71,6 +71,7 @@ class QStyle;
 class QEventLoop;
 class QIcon;
 class QInputContext;
+class QGestureRecognizer;
 template <typename T> class QList;
 class QLocale;
 #if defined(Q_WS_QWS)
@@ -265,6 +266,9 @@ public:
     static void setKeypadNavigationEnabled(bool);
     static bool keypadNavigationEnabled();
 #endif
+
+    void addGestureRecognizer(QGestureRecognizer *recognizer);
+    void removeGestureRecognizer(QGestureRecognizer *recognizer);
 
 Q_SIGNALS:
     void lastWindowClosed();

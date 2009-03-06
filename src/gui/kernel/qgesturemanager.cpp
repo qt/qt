@@ -83,6 +83,16 @@ QGestureManager::QGestureManager()
                 this, SLOT(recognizerTriggered(QGestureRecognizer::Result)));
 }
 
+void QGestureManager::addRecognizer(QGestureRecognizer *recognizer)
+{
+    recognizers << recognizer;
+}
+
+void QGestureManager::removeRecognizer(QGestureRecognizer *recognizer)
+{
+    recognizers.remove(recognizer);
+}
+
 bool QGestureManager::filterEvent(QEvent *event)
 {
     if (!QApplication::testAttribute(Qt::AA_EnableGestures))

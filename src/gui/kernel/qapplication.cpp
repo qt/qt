@@ -137,7 +137,7 @@ int QApplicationPrivate::autoMaximizeThreshold = -1;
 bool QApplicationPrivate::autoSipEnabled = false;
 #endif
 
-QGestureManager *gestureManager = 0;
+Q_GLOBAL_STATIC(QGestureManager, gestureManager);
 
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::Type type)
     : QCoreApplicationPrivate(argc, argv)
@@ -3709,12 +3709,11 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             if (e->spontaneous()) {
                 if (QApplication::testAttribute(Qt::AA_EnableGestures)) {
                     QWidget *w = static_cast<QWidget*>(receiver);
-                    if (!gestureManager)
-                        gestureManager = new QGestureManager;
+                    QGestureManager *gm = gestureManager();
                     // if we are in gesture mode, we send all mouse events
                     // directly to gesture recognizer.
-                    if (gestureManager->inGestureMode()) {
-                        if (gestureManager->filterEvent(e))
+                    if (gm->inGestureMode()) {
+                        if (gm->filterEvent(e))
                             return true;
                     } else {
                         QMouseEvent* mouse = static_cast<QMouseEvent*>(e);
@@ -3724,8 +3723,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                             while (target && target->gestures().isEmpty())
                                 target = target->parentWidget();
                             if (target) {
-                                gestureManager->setGestureTargetWidget(target);
-                                if (gestureManager->filterEvent(e))
+                                gm->setGestureTargetWidget(target);
+                                if (gm->filterEvent(e))
                                     return true;
                             }
                         }
@@ -5088,6 +5087,16 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
     if (w != f && (f->focusPolicy() & policy) != policy)
         return false;
     return true;
+}
+
+void QApplication::addGestureRecognizer(QGestureRecognizer *recognizer)
+{
+    gestureManager()->addRecognizer(recognizer);
+}
+
+void QApplication::removeGestureRecognizer(QGestureRecognizer *recognizer)
+{
+    gestureManager()->removeRecognizer(recognizer);
 }
 
 /*! \fn QDecoration &QApplication::qwsDecoration()

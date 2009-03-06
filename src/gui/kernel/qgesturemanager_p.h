@@ -72,6 +72,9 @@ public:
     // should be internal
     void setGestureTargetWidget(QWidget *widget);
 
+    void addRecognizer(QGestureRecognizer *recognizer);
+    void removeRecognizer(QGestureRecognizer *recognizer);
+
     bool filterEvent(QEvent *event);
     bool inGestureMode();
 
