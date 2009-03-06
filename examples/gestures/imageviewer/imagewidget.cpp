@@ -148,10 +148,12 @@ void ImageWidget::gestureEvent(QGestureEvent *event)
     } else if (const QGesture *g = event->gesture(Qt::Pan)) {
         if (zoomedIn) {
             // usual panning
+#ifndef QT_NO_CURSOR
             if (g->state() == Qt::GestureStarted)
                 setCursor(Qt::SizeAllCursor);
             else
                 setCursor(Qt::ArrowCursor);
+#endif
             const int dx = g->pos().x() - g->lastPos().x();
             const int dy = g->pos().y() - g->lastPos().y();
             horizontalOffset += dx;

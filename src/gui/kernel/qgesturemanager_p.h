@@ -53,6 +53,7 @@
 // We mean it.
 //
 
+#include "qwidget.h"
 #include "qlist.h"
 #include "qset.h"
 #include "qevent.h"
