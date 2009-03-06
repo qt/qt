@@ -125,14 +125,13 @@ QGestureRecognizer::Result GestureRecognizerLinjaZax::recognize(const QList<QEve
                 result = QGestureRecognizer::GestureStarted;
             }
             if (!direction.isEmpty()) {
-                if (currentDirection != direction)
-                    lastDirections.append(direction);
+                lastDirections.append(direction);
                 currentDirection = direction;
                 if (lastDirections.length() > 5)
                     lastDirections.remove(0, 1);
-                if (lastDirections.contains("248"))
+                if (lastDirections.contains("248") || lastDirections.contains("2448"))
                     zoomState = LinjaZaxGesture::ZoomingIn;
-                else if (lastDirections.contains("268"))
+                else if (lastDirections.contains("268") || lastDirections.contains("2668"))
                     zoomState = LinjaZaxGesture::ZoomingOut;
             }
         }

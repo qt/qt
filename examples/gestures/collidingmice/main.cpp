@@ -48,15 +48,26 @@
 
 #include <math.h>
 
+#define ZOOMING_ANIMATION
+#ifdef ZOOMING_ANIMATION
+static const int AnimationSteps = 10;
+#endif
+
 static const int MouseCount = 7;
 
 class PannableGraphicsView : public QGraphicsView
 {
+    Q_OBJECT
 public:
     PannableGraphicsView(QGraphicsScene *scene, QWidget *parent = 0)
         : QGraphicsView(scene, parent)
     {
         grabGesture("LinjaZax");
+#ifdef ZOOMING_ANIMATION
+        timeline = new QTimeLine(700, this);
+        timeline->setFrameRange(0, AnimationSteps);
+        connect(timeline, SIGNAL(frameChanged(int)), this, SLOT(animationStep(int)));
+#endif
     }
 protected:
     bool event(QEvent *event)
@@ -67,10 +78,22 @@ protected:
             if (g) {
                 switch (g->zoomState()) {
                 case LinjaZaxGesture::ZoomingIn:
+#ifdef ZOOMING_ANIMATION
+                    scaleStep = 1. + 0.5/AnimationSteps;
+                    timeline->stop();
+                    timeline->start();
+#else
                     scale(1.5, 1.5);
+#endif
                     break;
                 case LinjaZaxGesture::ZoomingOut:
+#ifdef ZOOMING_ANIMATION
+                    scaleStep = 1. - 0.5/AnimationSteps;
+                    timeline->stop();
+                    timeline->start();
+#else
                     scale(0.6, 0.6);
+#endif
                     break;
                 default:
                     break;
@@ -84,6 +107,16 @@ protected:
         }
         return QGraphicsView::event(event);
     }
+private slots:
+#ifdef ZOOMING_ANIMATION
+    void animationStep(int step)
+    {
+        scale(scaleStep, scaleStep);
+    }
+private:
+    qreal scaleStep;
+    QTimeLine *timeline;
+#endif
 };
 
 //! [0]
@@ -127,3 +160,5 @@ int main(int argc, char **argv)
     return app.exec();
 }
 //! [6]
+
+#include "main.moc"
