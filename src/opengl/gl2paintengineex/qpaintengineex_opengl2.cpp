@@ -794,8 +794,6 @@ void QGL2PaintEngineExPrivate::drawVertexArrays(QGL2PEXVertexArray& vertexArray,
 QGL2PaintEngineEx::QGL2PaintEngineEx()
     : QPaintEngineEx(*(new QGL2PaintEngineExPrivate(this)))
 {
-    qDebug("QGL2PaintEngineEx::QGL2PaintEngineEx()");
-
 }
 
 QGL2PaintEngineEx::~QGL2PaintEngineEx()
