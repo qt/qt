@@ -1057,6 +1057,7 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 
     glDisable(GL_DEPTH_TEST);
 
+    updateClipRegion(QRegion(), Qt::NoClip);
     return true;
 }
 
