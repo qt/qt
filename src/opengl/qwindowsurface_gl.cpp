@@ -315,6 +315,8 @@ QGLContext *QGLWindowSurface::context() const
 
 QPaintDevice *QGLWindowSurface::paintDevice()
 {
+    updateGeometry();
+
     if (d_ptr->pb)
         return d_ptr->pb;
 
@@ -330,6 +332,7 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
 
 void QGLWindowSurface::beginPaint(const QRegion &)
 {
+    updateGeometry();
 }
 
 void QGLWindowSurface::endPaint(const QRegion &rgn)
@@ -460,9 +463,9 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         d_ptr->fbo->bind();
 }
 
-void QGLWindowSurface::setGeometry(const QRect &rect)
+void QGLWindowSurface::updateGeometry()
 {
-    QWindowSurface::setGeometry(rect);
+    QRect rect = QWindowSurface::geometry();
 
     const GLenum target = qt_gl_preferredTextureTarget();
 
@@ -496,7 +499,7 @@ void QGLWindowSurface::setGeometry(const QRect &rect)
                                         qt_gl_share_widget());
 
         if (d_ptr->pb->isValid()) {
-            qDebug() << "PB Sample buffers:" << d_ptr->pb->format().sampleBuffers();
+            qDebug() << "Created Window Surface Pixelbuffer, Sample buffers:" << d_ptr->pb->format().sampleBuffers();
             d_ptr->pb->makeCurrent();
 
             glGenTextures(1, &d_ptr->pb_tex_id);
@@ -559,6 +562,11 @@ void QGLWindowSurface::setGeometry(const QRect &rect)
     qDebug() << "QGLWindowSurface: Using plain widget as window surface" << this;;
     d_ptr->ctx = ctx;
     d_ptr->ctx->d_ptr->internal_context = true;
+}
+
+void QGLWindowSurface::setGeometry(const QRect &rect)
+{
+    QWindowSurface::setGeometry(rect);
 }
 
 bool QGLWindowSurface::scroll(const QRegion &area, int dx, int dy)
