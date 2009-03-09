@@ -424,7 +424,9 @@ void QGL2PaintEngineExPrivate::updateMatrix()
     for (int row = 0; row < 4; ++row) {
         for (int col = 0; col < 4; ++col) {
             pmvMatrix[col][row] = 0.0;
-            for (int n = 0; n < 4; ++n)
+
+            // P[row][n] is 0.0 for n < row
+            for (int n = row; n < 4; ++n)
                 pmvMatrix[col][row] += P[row][n] * MV[n][col];
         }
     }
@@ -803,8 +805,6 @@ QGL2PaintEngineEx::~QGL2PaintEngineEx()
 void QGL2PaintEngineEx::fill(const QVectorPath &path, const QBrush &brush)
 {
     Q_D(QGL2PaintEngineEx);
-
-    QTime startTime = QTime::currentTime();
 
     d->setBrush(&brush);
     d->fill(path);
