@@ -1062,6 +1062,9 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 bool QGL2PaintEngineEx::end()
 {
     Q_D(QGL2PaintEngineEx);
+    QGLContext *ctx = d->ctx;
+    glUseProgram(0);
+    d->transferMode(DefaultMode);
     d->drawable.swapBuffers();
     d->drawable.doneCurrent();
     return false;

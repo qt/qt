@@ -439,6 +439,9 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
     if (d_ptr->fbo)
         d_ptr->fbo->release();
 
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_SCISSOR_TEST);
+
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
@@ -539,6 +542,7 @@ void QGLWindowSurface::updateGeometry()
 
         d_ptr->fbo->bind();
         if (d_ptr->fbo->isValid()) {
+            qDebug() << "Created Window Surface FBO" << rect.size();
             return;
         } else {
             qDebug() << "QGLWindowSurface: Failed to create valid FBO, falling back";
