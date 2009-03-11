@@ -515,7 +515,7 @@ static inline void setCoords(GLfloat *coords, const QGLRect &rect)
 void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize)
 {
 //     qDebug("QGL2PaintEngineExPrivate::drawImage()");
-    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
+    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
 
     if (compositionModeDirty)
         updateCompositionMode();
