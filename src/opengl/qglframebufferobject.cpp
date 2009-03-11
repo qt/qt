@@ -918,7 +918,8 @@ QPaintEngine *QGLFramebufferObject::paintEngine() const
 */
 bool QGLFramebufferObject::hasOpenGLFramebufferObjects()
 {
-    QGLWidget dmy; // needed to detect and init the QGLExtensions object
+    if (!QGLContext::currentContext())
+        QGLWidget dmy; // needed to detect and init the QGLExtensions object
     return (QGLExtensions::glExtensions & QGLExtensions::FramebufferObject);
 }
 
@@ -1079,7 +1080,8 @@ bool QGLFramebufferObject::isBound() const
 */
 bool QGLFramebufferObject::hasOpenGLFramebufferBlit()
 {
-    QGLWidget dmy; // needed to detect and init the QGLExtensions object
+    if (!QGLContext::currentContext())
+        QGLWidget dmy; // needed to detect and init the QGLExtensions object
     return (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit);
 }
 
