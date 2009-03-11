@@ -138,6 +138,7 @@ public:
         dirty(0),
         dirtyChildren(0),
         localCollisionHack(0),
+        dirtyClipPath(1),
         globalStackingOrder(-1),
         sceneTransformIndex(-1),
         q_ptr(0)
@@ -234,6 +235,18 @@ public:
     QGraphicsItemCache *extraItemCache() const;
     void removeExtraItemCache();
 
+    inline void setCachedClipPath(const QPainterPath &path)
+    {
+        cachedClipPath = path;
+        dirtyClipPath = 0;
+    }
+
+    inline void invalidateCachedClipPath()
+    { dirtyClipPath = 1; }
+
+    void invalidateCachedClipPathRecursively(bool childrenOnly = false);
+
+    QPainterPath cachedClipPath;
     QPointF pos;
     qreal z;
     QGraphicsScene *scene;
@@ -268,6 +281,7 @@ public:
     quint32 dirty : 1;    
     quint32 dirtyChildren : 1;    
     quint32 localCollisionHack : 1;
+    quint32 dirtyClipPath : 1;
 
     // Optional stacking order
     int globalStackingOrder;
