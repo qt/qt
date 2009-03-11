@@ -631,6 +631,7 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
         case QGraphicsItem::ItemClipsChildrenToShape:
             flag = AncestorClipsChildren;
             enabled = flags & QGraphicsItem::ItemClipsChildrenToShape;
+            invalidateCachedClipPathRecursively(/*childrenOnly=*/true);
             break;
         case QGraphicsItem::ItemIgnoresTransformations:
             flag = AncestorIgnoresTransformations;
@@ -1269,6 +1270,9 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
         // all children.
         d_ptr->updateAncestorFlag(ItemClipsChildrenToShape);
     }
+
+    if ((flags & ItemClipsToShape) != (oldFlags & ItemClipsToShape))
+        d_ptr->invalidateCachedClipPath();
 
     if ((flags & ItemIgnoresTransformations) != (oldFlags & ItemIgnoresTransformations)) {
         // Item children clipping changes. Propagate the ancestor flag to
@@ -3136,10 +3140,15 @@ bool QGraphicsItem::isClipped() const
 QPainterPath QGraphicsItem::clipPath() const
 {
     Q_D(const QGraphicsItem);
-    QPainterPath clip;
-    if (!isClipped())
-        return clip;
+    if (!d->dirtyClipPath)
+        return d->cachedClipPath;
 
+    if (!isClipped()) {
+        d_ptr->setCachedClipPath(QPainterPath());
+        return d->cachedClipPath;
+    }
+
+    QPainterPath clip;
     // Start with the item's bounding rect.
     clip.addRect(boundingRect());
 
@@ -3150,15 +3159,27 @@ QPainterPath QGraphicsItem::clipPath() const
         // Intersect any in-between clips starting at the top and moving downwards.
         while ((parent = parent->d_ptr->parent)) {
             if (parent->d_ptr->flags & ItemClipsChildrenToShape) {
-                // Map clip to the current parent and intersect with its shape.
-                clip = (lastParent->itemTransform(parent).map(clip)).intersected(parent->shape());
-                if (clip.isEmpty())
+                // Map clip to the current parent and intersect with its shape/clipPath
+                clip = lastParent->itemTransform(parent).map(clip);
+                if (!parent->d_ptr->dirtyClipPath) {
+                    clip = clip.intersected(parent->d_ptr->cachedClipPath);
+                    if (!(parent->d_ptr->flags & ItemClipsToShape))
+                        clip = clip.intersected(parent->shape());
+                } else {
+                    clip = clip.intersected(parent->shape());
+                }
+
+                if (clip.isEmpty()) {
+                    d_ptr->setCachedClipPath(clip);
                     return clip;
+                }
                 lastParent = parent;
             }
 
-            if (!(parent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
+            if (!(parent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
+                || !parent->d_ptr->dirtyClipPath) {
                 break;
+            }
         }
 
         if (lastParent != this) {
@@ -3171,6 +3192,7 @@ QPainterPath QGraphicsItem::clipPath() const
     if (d->flags & ItemClipsToShape)
         clip = clip.intersected(shape());
 
+    d_ptr->setCachedClipPath(clip);
     return clip;
 }
 
@@ -3724,6 +3746,15 @@ void QGraphicsItemPrivate::removeExtraItemCache()
         delete c;
     }
     unsetExtra(ExtraCacheData);
+}
+
+void QGraphicsItemPrivate::invalidateCachedClipPathRecursively(bool childrenOnly)
+{
+    if (!childrenOnly)
+        invalidateCachedClipPath();
+    // ### Return if this item doesn't clip its children?
+    for (int i = 0; i < children.size(); ++i)
+        children.at(i)->d_ptr->invalidateCachedClipPathRecursively(false);
 }
 
 /*!
@@ -5505,6 +5536,7 @@ void QGraphicsItem::prepareGeometryChange()
 
         QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
         scenePrivate->removeFromIndex(this);
+        d_ptr->invalidateCachedClipPathRecursively();
     }
 }
 
