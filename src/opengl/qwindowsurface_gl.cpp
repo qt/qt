@@ -436,34 +436,39 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 #ifdef Q_WS_MAC
     ctx->updatePaintDevice();
 #endif
-    if (d_ptr->fbo)
-        d_ptr->fbo->release();
-
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_SCISSOR_TEST);
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+    if (d_ptr->fbo && QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit) {
+        QGLFramebufferObject::blitFramebuffer(0, rect, d_ptr->fbo, rect);
+        d_ptr->fbo->bind();
+    } else {
+        if (d_ptr->fbo)
+            d_ptr->fbo->release();
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
 #ifndef QT_OPENGL_ES
-    glOrtho(0, size.width(), size.height(), 0, -999999, 999999);
+        glOrtho(0, size.width(), size.height(), 0, -999999, 999999);
 #else
-    glOrthof(0, size.width(), size.height(), 0, -999999, 999999);
+        glOrthof(0, size.width(), size.height(), 0, -999999, 999999);
 #endif
-    glViewport(0, 0, size.width(), size.height());
+        glViewport(0, 0, size.width(), size.height());
 
-    glColor4f(1, 1, 1, 1);
-    drawTexture(rect, texture, window()->size(), br);
+        glColor4f(1, 1, 1, 1);
+        drawTexture(rect, texture, window()->size(), br);
+
+        if (d_ptr->fbo)
+            d_ptr->fbo->bind();
+    }
 
     if (ctx->format().doubleBuffer())
         ctx->swapBuffers();
     else
         glFlush();
-
-    if (d_ptr->fbo)
-        d_ptr->fbo->bind();
 }
 
 void QGLWindowSurface::updateGeometry()
@@ -537,12 +542,20 @@ void QGLWindowSurface::updateGeometry()
         ctx->d_ptr->internal_context = true;
         ctx->makeCurrent();
         delete d_ptr->fbo;
-        d_ptr->fbo = new QGLFramebufferObject(rect.size(), QGLFramebufferObject::CombinedDepthStencil,
-                                              GLenum(target), GLenum(GL_RGBA));
 
+        QGLFramebufferObjectFormat format;
+        format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+        format.setInternalFormat(GL_RGBA);
+        format.setTextureTarget(target);
+
+        if (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)
+            format.setSamples(8);
+
+        d_ptr->fbo = new QGLFramebufferObject(rect.size(), format);
         d_ptr->fbo->bind();
         if (d_ptr->fbo->isValid()) {
-            qDebug() << "Created Window Surface FBO" << rect.size();
+            qDebug() << "Created Window Surface FBO" << rect.size()
+                     << "with samples" << d_ptr->fbo->format().samples();
             return;
         } else {
             qDebug() << "QGLWindowSurface: Failed to create valid FBO, falling back";
