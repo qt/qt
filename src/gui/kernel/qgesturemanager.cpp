@@ -178,7 +178,7 @@ bool QGestureManager::filterEvent(QEvent *event)
                     gestures << gesture;
             }
             Q_ASSERT(!gestures.isEmpty());
-            QGestureEvent event(targetWidget, gestures);
+            QGestureEvent event(gestures);
             ret = qt_sendGestureEvent(targetWidget, &event);
             ret = ret && event.isAccepted();
 
@@ -283,7 +283,7 @@ bool QGestureManager::filterEvent(QEvent *event)
         foreach(QGestureRecognizer *r, cancelledGestures)
             cancelledGestureNames << r->gestureType();
         if(!gestures.isEmpty()) {
-            QGestureEvent event(targetWidget, gestures, cancelledGestureNames);
+            QGestureEvent event(gestures, cancelledGestureNames);
             ret = qt_sendGestureEvent(targetWidget, &event);
             ret = ret && event.isAccepted();
         }
@@ -375,7 +375,7 @@ void QGestureManager::recognizerTriggered(QGestureRecognizer::Result result)
         if (QGesture *gesture = recognizer->makeEvent())
             gestures << gesture;
         if(!gestures.isEmpty()) {
-            QGestureEvent event(targetWidget, gestures);
+            QGestureEvent event(gestures);
             qt_sendGestureEvent(targetWidget, &event);
         }
         if (result == QGestureRecognizer::GestureFinished)
@@ -385,7 +385,7 @@ void QGestureManager::recognizerTriggered(QGestureRecognizer::Result result)
     case QGestureRecognizer::MaybeGesture: {
         DEBUG() << "QGestureManager: maybe gesture: " << recognizer;
         if (activeGestures.contains(recognizer)) {
-            QGestureEvent event(targetWidget, QList<QGesture*>(),
+            QGestureEvent event(QList<QGesture*>(),
                                 QSet<Qt::GestureType>() << recognizer->gestureType());
             qt_sendGestureEvent(targetWidget, &event);
         }

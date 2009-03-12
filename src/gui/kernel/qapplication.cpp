@@ -4037,7 +4037,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             // QGestureEvent ge(&qge, false);
             // ### TODO: fix widget-relative positions in gesture event.
             QGestureEvent ge = *g;
-            ge.m_targetWidget = w;
             ge.spont = g->spontaneous();
             res = d->notify_helper(w, w == receiver ? g : &ge);
             g->spont = false;

@@ -80,6 +80,7 @@ class QGraphicsSceneHelpEvent;
 class QGraphicsSceneHoverEvent;
 class QGraphicsSceneMouseEvent;
 class QGraphicsSceneWheelEvent;
+class QGraphicsSceneGestureEvent;
 class QGraphicsSimpleTextItem;
 class QGraphicsTextItem;
 class QGraphicsView;
@@ -255,7 +256,7 @@ protected:
     virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     virtual void wheelEvent(QGraphicsSceneWheelEvent *event);
     virtual void inputMethodEvent(QInputMethodEvent *event);
-    virtual void gestureEvent(QGestureEvent *event);
+    virtual void gestureEvent(QGraphicsSceneGestureEvent *event);
 
     virtual void drawBackground(QPainter *painter, const QRectF &rect);
     virtual void drawForeground(QPainter *painter, const QRectF &rect);

@@ -2862,10 +2862,16 @@ bool QGraphicsView::event(QEvent *event)
                 }
             }
             break;
-        case QEvent::Gesture:
-            QApplication::sendEvent(d->scene, event);
-            if (event->isAccepted())
+        case QEvent::Gesture: {
+            QGraphicsSceneGestureEvent gestureEvent;
+            gestureEvent.setWidget(this);
+            QGestureEvent *ev = static_cast<QGestureEvent*>(event);
+            gestureEvent.setGestures(ev->gestures());
+            gestureEvent.setCancelledGestures(ev->cancelledGestures());
+            QApplication::sendEvent(d->scene, &gestureEvent);
+            if (gestureEvent.isAccepted())
                 return true;
+        }
             break;
         default:
             break;

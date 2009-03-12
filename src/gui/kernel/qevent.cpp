@@ -3524,27 +3524,27 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
     \sa QGesture
 */
 
-/*! \fn QWidget *QGestureEvent::targetWidget() const
-
-    Returns the widget the gesture event is send to.
-*/
-
-/*! \fn bool contains(const Qt::GestureType &type) const
+/*! \fn bool QGestureEvent::contains(const Qt::GestureType &type) const
 
     Checks if the gesture event contains gesture of specific \a type.
 */
 
-/*! \fn QList<Qt::GestureType> gestureTypes() const
+/*! \fn QList<Qt::GestureType> QGestureEvent::gestureTypes() const
 
     Returns a list of gesture names that the event contains.
 */
 
-/*! \fn const QGesture* gesture(const Qt::GestureType &type) const
+/*! \fn const QGesture* QGestureEvent::gesture(const Qt::GestureType &type) const
 
     Returns extended information about a gesture of specific \a type.
 */
 
-/*! \fn QSet<Qt::GestureType> cancelledGestures() const
+/*! \fn QList<QSharedPointer<QGesture> > QGestureEvent::gestures() const
+
+    Returns extended information about all triggered gestures.
+*/
+
+/*! \fn QSet<Qt::GestureType> QGestureEvent::cancelledGestures() const
 
     Returns a set of gesture names that used to be executed, but got
     cancelled (i.e. they were not finished properly).
@@ -3553,18 +3553,16 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
 
 
 
-QGestureEvent::QGestureEvent(QWidget *targetWidget, const QList<QGesture*> &gestures,
+QGestureEvent::QGestureEvent(const QList<QGesture*> &gestures,
                              const QSet<Qt::GestureType> &cancelledGestures)
-    : QEvent(QEvent::Gesture), m_targetWidget(targetWidget),
-      m_cancelledGestures(cancelledGestures)
+    : QEvent(QEvent::Gesture), m_cancelledGestures(cancelledGestures)
 {
     foreach(QGesture *r, gestures)
         m_gestures.insert(r->gestureType(), QSharedPointer<QGesture>(r));
 }
 
 QGestureEvent::QGestureEvent(const QGestureEvent &event, const QPoint &offset)
-    : QEvent(QEvent::Gesture), m_targetWidget(event.m_targetWidget),
-      m_gestures(event.m_gestures),
+    : QEvent(QEvent::Gesture), m_gestures(event.m_gestures),
       m_cancelledGestures(event.m_cancelledGestures)
 {
     //### use offset!

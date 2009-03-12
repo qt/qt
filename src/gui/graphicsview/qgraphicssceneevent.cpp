@@ -299,6 +299,8 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qstring.h>
+#include "qgraphicsview.h"
+#include "qgraphicsitem.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -1702,6 +1704,152 @@ void QGraphicsSceneMoveEvent::setNewPos(const QPointF &pos)
 {
     Q_D(QGraphicsSceneMoveEvent);
     d->newPos = pos;
+}
+
+/*!
+    \class QGraphicsSceneGestureEvent
+    \brief The QGraphicsSceneGestureEvent class provides gesture events for
+           the graphics view framework. 
+    \since 4.6
+    \ingroup graphicsview-api
+
+    QGraphicsSceneGestureEvent extends information provided by
+    QGestureEvent by adding some convenience functions like
+    \l{QGraphicsSceneEvent::}{widget()} to get a widget that received
+    original gesture event, and convenience functions mapToScene(),
+    mapToItem() for converting positions of the gesture into
+    QGraphicsScene and QGraphicsItem coordinate system respectively.
+
+    The scene sends the event to the first QGraphicsItem under the
+    mouse cursor that accepts gestures; a graphics item is set to accept
+    gestures with \l{QGraphicsItem::}{grabGesture()}.
+*/
+
+/*! \fn bool QGraphicsSceneGestureEvent::contains(const Qt::GestureType &type) const
+
+    Checks if the gesture event contains gesture of specific \a type.
+*/
+
+/*! \fn QList<Qt::GestureType> QGraphicsSceneGestureEvent::gestureTypes() const
+
+    Returns a list of gesture names that the event contains.
+*/
+
+/*! \fn const QGesture* QGraphicsSceneGestureEvent::gesture(const Qt::GestureType &type) const
+
+    Returns extended information about a gesture of specific \a type.
+*/
+
+/*! \fn QList<QSharedPointer<QGesture> > QGraphicsSceneGestureEvent::gestures() const
+
+    Returns extended information about all triggered gestures.
+*/
+
+/*! \fn QSet<Qt::GestureType> QGraphicsSceneGestureEvent::cancelledGestures() const
+
+    Returns a set of gesture names that used to be executed, but got
+    cancelled (i.e. they were not finished properly).
+*/
+
+/*! \fn void QGraphicsSceneGestureEvent::setCancelledGestures(const QSet<Qt::GestureType> &)
+
+    Returns a set of gesture names that used to be executed, but got
+    cancelled (i.e. they were not finished properly).
+*/
+
+QGraphicsSceneGestureEvent::QGraphicsSceneGestureEvent()
+    : QGraphicsSceneEvent(QEvent::GraphicsSceneGesture)
+{
+}
+
+QGraphicsSceneGestureEvent::~QGraphicsSceneGestureEvent()
+{
+}
+
+/*!
+    Maps the point \a point, which is in a view coordinate system, to
+    scene coordinate system, and returns the mapped coordinate.
+
+    \a Point is in coordinate system of the widget that received
+    gesture event.
+
+    \sa mapToScene(const QRect &rect),
+    mapToItem(const QPoint &point, QGraphicsItem *item),
+    mapToItem(const QRect &rect, QGraphicsItem *item),
+    {The Graphics View Coordinate System}
+*/
+QPointF QGraphicsSceneGestureEvent::mapToScene(const QPoint &point) const
+{
+    if (QGraphicsView *view = qobject_cast<QGraphicsView*>(widget()))
+        return view->mapToScene(point);
+    return QPointF();
+}
+
+/*!
+    Maps the rectangular \a rect, which is in a view coordinate system, to
+    scene coordinate system, and returns the mapped coordinate.
+
+    \a Point is in coordinate system of the widget that received
+    gesture event.
+
+    \sa mapToScene(const QPoint &rect),
+    mapToItem(const QPoint &point, QGraphicsItem *item),
+    mapToItem(const QRect &rect, QGraphicsItem *item),
+    {The Graphics View Coordinate System}
+*/
+QPolygonF QGraphicsSceneGestureEvent::mapToScene(const QRect &rect) const
+{
+    if (QGraphicsView *view = qobject_cast<QGraphicsView*>(widget()))
+        return view->mapToScene(rect);
+    return QPolygonF();
+}
+
+/*!
+    Maps the point \a point, which is in a view coordinate system, to
+    item's \a item coordinate system, and returns the mapped coordinate.
+
+    If \a item is 0, this function returns the same as mapToScene().
+
+    \sa mapToScene(const QPoint &rect), mapToScene(const QRect &rect),
+    mapToItem(const QRect &, QGraphicsItem *item),
+    {The Graphics View Coordinate System}
+*/
+QPointF QGraphicsSceneGestureEvent::mapToItem(const QPoint &point, QGraphicsItem *item) const
+{
+    if (item) {
+        if (QGraphicsView *view = qobject_cast<QGraphicsView*>(widget()))
+            return item->mapFromScene(view->mapToScene(point));
+    } else {
+        return mapToScene(point);
+    }
+    return QPointF();
+}
+
+/*!
+    Maps the point \a point, which is in a view coordinate system, to
+    item's \a item coordinate system, and returns the mapped coordinate.
+
+    If \a item is 0, this function returns the same as mapToScene().
+
+    \sa mapToScene(const QPoint &rect), mapToScene(const QRect &rect),
+    mapToItem(const QPoint &point, QGraphicsItem *item),
+    {The Graphics View Coordinate System}
+*/
+QPolygonF QGraphicsSceneGestureEvent::mapToItem(const QRect &rect, QGraphicsItem *item) const
+{
+    if (item) {
+        if (QGraphicsView *view = qobject_cast<QGraphicsView*>(widget()))
+            return item->mapFromScene(view->mapToScene(rect));
+    } else {
+        return mapToScene(rect);
+    }
+    return QPolygonF();
+}
+
+void QGraphicsSceneGestureEvent::setGestures(const QList<QSharedPointer<QGesture> > &gestures)
+{
+    foreach(const QSharedPointer<QGesture> &g, gestures)
+        m_gestures.insert(g->gestureType(), g);
 }
 
 class QGraphicsSceneTouchEventPrivate : public QGraphicsSceneEventPrivate

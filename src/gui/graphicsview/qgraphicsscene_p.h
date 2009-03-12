@@ -271,7 +271,6 @@ public:
     QSet<Qt::GestureType> grabbedGestures;
     void grabGesture(QGraphicsItem *item, const Qt::GestureType &type);
     void releaseGesture(QGraphicsItem *item, const Qt::GestureType &type);
-    void sendGestureEvent(QGraphicsItem *item, QGestureEvent *event);
 
     mutable QVector<QTransform> sceneTransformCache;
     mutable QBitArray validTransforms;

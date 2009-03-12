@@ -3951,8 +3951,8 @@ bool QGraphicsScene::event(QEvent *event)
         // geometries that do not have an explicit style set.
         update();
         break;
-    case QEvent::Gesture:
-        gestureEvent(static_cast<QGestureEvent*>(event));
+    case QEvent::GraphicsSceneGesture:
+        gestureEvent(static_cast<QGraphicsSceneGestureEvent*>(event));
         break;
     case QEvent::GraphicsSceneTouchBegin:
         d->touchBeginEvent(static_cast<QGraphicsSceneTouchEvent *>(event));
@@ -5604,36 +5604,32 @@ void QGraphicsScenePrivate::removeView(QGraphicsView *view)
         view->releaseGesture(gesture);
 }
 
-void QGraphicsScenePrivate::sendGestureEvent(QGraphicsItem *item, QGestureEvent *event)
-{
-    //### TODO: position translation
-    sendEvent(item, event);
-}
-
-void QGraphicsScene::gestureEvent(QGestureEvent *event)
+void QGraphicsScene::gestureEvent(QGraphicsSceneGestureEvent *event)
 {
     Q_D(QGraphicsScene);
     QList<Qt::GestureType> gestureTypes = event->gestureTypes();
-    QGraphicsView *view = qobject_cast<QGraphicsView*>(event->targetWidget());
+    QGraphicsView *view = qobject_cast<QGraphicsView*>(event->widget());
     if (!view) {
-        // something is wrong.
-        Q_ASSERT(view);
+        qWarning("QGraphicsScene::gestureEvent: gesture event was received without a view");
         return;
     }
+
+    // find graphics items that intersects with gestures hot spots.
     QPolygonF poly;
-    QMap<Qt::GestureType, QPointF> hotSpots;
+    QMap<Qt::GestureType, QPointF> sceneHotSpots;
     foreach(const Qt::GestureType &type, gestureTypes) {
-        QPointF pt = view->mapToScene(event->gesture(type)->hotSpot());
-        hotSpots.insert(type, pt);
+        QPointF pt = event->mapToScene(event->gesture(type)->hotSpot());
+        sceneHotSpots.insert(type, pt);
         poly << pt;
     }
+    QList<QGraphicsItem*> itemsInGestureArea = items(poly, Qt::IntersectsItemBoundingRect);
 
-    foreach(QGraphicsItem *item, items(poly, Qt::IntersectsItemBoundingRect)) {
-        QMap<Qt::GestureType, QPointF>::const_iterator it = hotSpots.begin(),
-                                                        e = hotSpots.end();
+    foreach(QGraphicsItem *item, itemsInGestureArea) {
+        QMap<Qt::GestureType, QPointF>::const_iterator it = sceneHotSpots.begin(),
+                                                        e = sceneHotSpots.end();
         for(; it != e; ++it) {
             if (item->contains(item->mapFromScene(it.value())) && item->gestures().contains(it.key())) {
-                d->sendGestureEvent(item, event);
+                d->sendEvent(item, event);
                 if (event->isAccepted())
                     break;
             }

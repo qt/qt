@@ -94,8 +94,8 @@ public:
 
     bool sceneEvent(QEvent *event)
     {
-        if (event->type() == QEvent::Gesture) {
-            QGestureEvent *gestureEvent = static_cast<QGestureEvent*>(event);
+        if (event->type() == QEvent::GraphicsSceneGesture) {
+            QGraphicsSceneGestureEvent *gestureEvent = static_cast<QGraphicsSceneGestureEvent*>(event);
             if (gestureEvent->gesture(Qt::DoubleTap)) {
                 event->accept();
                 colored = !colored;

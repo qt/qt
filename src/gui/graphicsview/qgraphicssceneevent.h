@@ -44,6 +44,11 @@
 
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qpoint.h>
+#include <QtCore/qrect.h>
+#include <QtGui/qpolygon.h>
+#include <QtCore/qset.h>
+#include <QtCore/qhash.h>
+#include <QtCore/qsharedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -300,6 +305,41 @@ public:
 
     QPointF newPos() const;
     void setNewPos(const QPointF &pos);
+};
+
+class QGesture;
+class QGraphicsItem;
+class QGraphicsSceneGestureEventPrivate;
+class Q_GUI_EXPORT QGraphicsSceneGestureEvent : public QGraphicsSceneEvent
+{
+    Q_DECLARE_PRIVATE(QGraphicsSceneGestureEvent)
+public:
+    QGraphicsSceneGestureEvent();
+    ~QGraphicsSceneGestureEvent();
+
+    inline bool contains(const Qt::GestureType &type) const
+    { return gesture(type) != 0; }
+    inline QList<Qt::GestureType> gestureTypes() const
+    { return m_gestures.keys(); }
+    inline const QGesture* gesture(const Qt::GestureType &type) const
+    { return m_gestures.value(type, QSharedPointer<QGesture>()).data(); }
+    inline QList<QSharedPointer<QGesture> > gestures() const
+    { return m_gestures.values(); }
+    void setGestures(const QList<QSharedPointer<QGesture> > &gestures);
+
+    inline QSet<Qt::GestureType> cancelledGestures() const
+    { return m_cancelledGestures; }
+    void setCancelledGestures(const QSet<Qt::GestureType> &cancelledGestures)
+    { m_cancelledGestures = cancelledGestures; }
+
+    QPointF mapToScene(const QPoint &point) const;
+    QPolygonF mapToScene(const QRect &rect) const;
+    QPointF mapToItem(const QPoint &point, QGraphicsItem *item) const;
+    QPolygonF mapToItem(const QRect &rect, QGraphicsItem *item) const;
+
+protected:
+    QHash<Qt::GestureType, QSharedPointer<QGesture> > m_gestures;
+    QSet<Qt::GestureType> m_cancelledGestures;
 };
 
 class QGraphicsSceneTouchEventPrivate;
