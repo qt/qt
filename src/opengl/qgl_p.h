@@ -330,7 +330,8 @@ public:
         StencilWrap             = 0x00000100,
         PackedDepthStencil      = 0x00000200,
         NVFloatBuffer           = 0x00000400,
-        PixelBufferObject       = 0x00000800
+        PixelBufferObject       = 0x00000800,
+        FramebufferBlit         = 0x00001000
     };
     Q_DECLARE_FLAGS(Extensions, Extension)
 

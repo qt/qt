@@ -4175,6 +4175,8 @@ void QGLExtensions::init_extensions()
     glExtensions |= FramebufferObject;
     glExtensions |= GenerateMipmap;
 #endif
+    if (extensions.contains(QLatin1String("EXT_framebuffer_blit")))
+        glExtensions |= FramebufferBlit;
 
     QGLContext cx(QGLFormat::defaultFormat());
     if (glExtensions & TextureCompression) {

@@ -162,6 +162,15 @@ typedef void (APIENTRY *_glGetFramebufferAttachmentParameterivEXT) (GLenum targe
                                                                           GLint *params);
 typedef void (APIENTRY *_glGenerateMipmapEXT) (GLenum target);
 
+// EXT_GL_framebuffer_blit
+typedef void (APIENTRY *_glBlitFramebufferEXT) (int srcX0, int srcY0, int srcX1, int srcY1,
+                                                int dstX0, int dstY0, int dstX1, int dstY1,
+                                                GLbitfield mask, GLenum filter);
+
+// EXT_GL_framebuffer_multisample
+typedef void (APIENTRY *_glRenderbufferStorageMultisampleEXT) (GLenum target, GLsizei samples,
+                                                               GLenum internalformat, GLsizei width, GLsizei height);
+
 QT_BEGIN_NAMESPACE
 
 struct QGLExtensionFuncs
@@ -220,6 +229,8 @@ struct QGLExtensionFuncs
         qt_glGetFramebufferAttachmentParameterivEXT = 0;
         qt_glGenerateMipmapEXT = 0;
 #endif
+        qt_glBlitFramebufferEXT = 0;
+        qt_glRenderbufferStorageMultisampleEXT = 0;
 
         qt_glBindBufferARB = 0;
         qt_glDeleteBuffersARB = 0;
@@ -298,6 +309,8 @@ struct QGLExtensionFuncs
     _glGetFramebufferAttachmentParameterivEXT qt_glGetFramebufferAttachmentParameterivEXT;
     _glGenerateMipmapEXT qt_glGenerateMipmapEXT;
 #endif
+    _glBlitFramebufferEXT qt_glBlitFramebufferEXT;
+    _glRenderbufferStorageMultisampleEXT qt_glRenderbufferStorageMultisampleEXT;
 
     _glBindBufferARB qt_glBindBufferARB;
     _glDeleteBuffersARB qt_glDeleteBuffersARB;
@@ -447,6 +460,28 @@ struct QGLExtensionFuncs
 #define GL_RENDERBUFFER_STENCIL_SIZE_EXT                        0x8D55
 #endif
 
+// GL_EXT_framebuffer_blit
+#ifndef GL_READ_FRAMEBUFFER_EXT
+#define GL_READ_FRAMEBUFFER_EXT                                 0x8CA8
+#endif
+
+// GL_EXT_framebuffer_multisample
+#ifndef GL_RENDERBUFFER_SAMPLES_EXT
+#define GL_RENDERBUFFER_SAMPLES_EXT                             0x8CAB
+#endif
+
+#ifndef GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT
+#define GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT               0x8D56
+#endif
+
+#ifndef GL_MAX_SAMPLES_EXT
+#define GL_MAX_SAMPLES_EXT                                      0x8D5
+#endif
+
+#ifndef GL_DRAW_FRAMEBUFFER_EXT
+#define GL_DRAW_FRAMEBUFFER_EXT                                 0x8CA9
+#endif
+
 #ifndef GL_EXT_packed_depth_stencil
 #define GL_DEPTH_STENCIL_EXT                                    0x84F9
 #define GL_UNSIGNED_INT_24_8_EXT                                0x84FA
@@ -533,6 +568,8 @@ struct QGLExtensionFuncs
 #define glFramebufferRenderbufferEXT QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glFramebufferRenderbufferEXT
 #define glGetFramebufferAttachmentParameterivEXT QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetFramebufferAttachmentParameterivEXT
 #define glGenerateMipmapEXT QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGenerateMipmapEXT
+#define glBlitFramebufferEXT QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glBlitFramebufferEXT
+#define glRenderbufferStorageMultisampleEXT QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glRenderbufferStorageMultisampleEXT
 
 #else // QT_OPENGL_ES_2
 

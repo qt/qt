@@ -74,6 +74,9 @@ bool qt_resolve_framebufferobject_extensions(QGLContext *ctx)
     glGetFramebufferAttachmentParameterivEXT =
         (_glGetFramebufferAttachmentParameterivEXT) ctx->getProcAddress(QLatin1String("glGetFramebufferAttachmentParameterivEXT"));
     glGenerateMipmapEXT = (_glGenerateMipmapEXT) ctx->getProcAddress(QLatin1String("glGenerateMipmapEXT"));
+    glBlitFramebufferEXT = (_glBlitFramebufferEXT) ctx->getProcAddress(QLatin1String("glBlitFramebufferEXT"));
+    glRenderbufferStorageMultisampleEXT =
+        (_glRenderbufferStorageMultisampleEXT) ctx->getProcAddress(QLatin1String("glRenderbufferStorageMultisampleEXT"));
     return glIsRenderbufferEXT;
 #else
     Q_UNUSED(ctx);
