@@ -7,6 +7,7 @@ HEADERS += \
         graphicsview/qgraphicsscene.h \
         graphicsview/qgraphicsscene_p.h \
         graphicsview/qgraphicsscene_bsp_p.h \
+        graphicsview/qgraphicsscene_linear_p.h \
         graphicsview/qgraphicssceneindex.h \
         graphicsview/qgraphicssceneevent.h \
         graphicsview/qgraphicsview_p.h \

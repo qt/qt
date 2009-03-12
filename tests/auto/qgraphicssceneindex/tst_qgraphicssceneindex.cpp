@@ -44,6 +44,7 @@
 #include <QtGui/qgraphicsscene.h>
 #include <QtGui/qgraphicssceneindex.h>
 #include <private/qgraphicsscene_bsp_p.h>
+#include <private/qgraphicsscene_linear_p.h>
 
 
 //TESTED_CLASS=
@@ -77,6 +78,7 @@ void tst_QGraphicsSceneIndex::common_data()
     QTest::addColumn<QString>("indexMethod");
 
     QTest::newRow("BSP") << QString("bsp");
+    QTest::newRow("Linear") << QString("linear");
 }
 
 QGraphicsSceneIndex *tst_QGraphicsSceneIndex::createIndex(const QString &indexMethod)
@@ -85,6 +87,9 @@ QGraphicsSceneIndex *tst_QGraphicsSceneIndex::createIndex(const QString &indexMe
 
     if (indexMethod == "bsp")
         index = new QGraphicsSceneBspTree;
+
+    if (indexMethod == "linear")
+        index = new QGraphicsSceneLinearIndex;
 
     return index;
 }
