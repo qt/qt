@@ -140,6 +140,7 @@ SUBDIRS += bic \
            qgraphicsitem \
            qgraphicsitemanimation \
            qgraphicsscene \
+           qgraphicssceneindex \
            qgraphicsview \
            qgridlayout \
            qgroupbox \
