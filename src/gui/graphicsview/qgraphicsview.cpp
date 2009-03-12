@@ -2862,16 +2862,8 @@ bool QGraphicsView::event(QEvent *event)
                 }
             }
             break;
-        case QEvent::Gesture: {
-            QGraphicsSceneGestureEvent gestureEvent;
-            gestureEvent.setWidget(this);
-            QGestureEvent *ev = static_cast<QGestureEvent*>(event);
-            gestureEvent.setGestures(ev->gestures());
-            gestureEvent.setCancelledGestures(ev->cancelledGestures());
-            QApplication::sendEvent(d->scene, &gestureEvent);
-            if (gestureEvent.isAccepted())
-                return true;
-        }
+        case QEvent::Gesture:
+            viewportEvent(event);
             break;
         default:
             break;
@@ -2952,6 +2944,17 @@ bool QGraphicsView::viewportEvent(QEvent *event)
             }
             d->scene->d_func()->updateAll = false;
         }
+        break;
+    case QEvent::Gesture: {
+        QGraphicsSceneGestureEvent gestureEvent;
+        gestureEvent.setWidget(this);
+        QGestureEvent *ev = static_cast<QGestureEvent*>(event);
+        gestureEvent.setGestures(ev->gestures());
+        gestureEvent.setCancelledGestures(ev->cancelledGestures());
+        QApplication::sendEvent(d->scene, &gestureEvent);
+        if (gestureEvent.isAccepted())
+            return true;
+    }
         break;
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
