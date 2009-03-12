@@ -70,7 +70,7 @@ class QGraphicsSceneInsertItemBspTreeVisitor;
 class QGraphicsSceneRemoveItemBspTreeVisitor;
 class QGraphicsSceneFindItemBspTreeVisitor;
 
-class QGraphicsSceneBspTree : public QGraphicsSceneIndex
+class Q_AUTOTEST_EXPORT QGraphicsSceneBspTree : public QGraphicsSceneIndex
 {
 public:
     struct Node
