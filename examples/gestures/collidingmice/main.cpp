@@ -62,7 +62,7 @@ public:
     PannableGraphicsView(QGraphicsScene *scene, QWidget *parent = 0)
         : QGraphicsView(scene, parent)
     {
-        grabGesture("LinjaZax");
+        grabGesture(QLatin1String("LinjaZax"));
 #ifdef ZOOMING_ANIMATION
         timeline = new QTimeLine(700, this);
         timeline->setFrameRange(0, AnimationSteps);
@@ -74,7 +74,7 @@ protected:
     {
         if (event->type() == QEvent::Gesture) {
             QGestureEvent *ge = static_cast<QGestureEvent*>(event);
-            const LinjaZaxGesture *g = dynamic_cast<const LinjaZaxGesture*>(ge->gesture("LinjaZax"));
+            const LinjaZaxGesture *g = static_cast<const LinjaZaxGesture*>(ge->gesture("LinjaZax"));
             if (g) {
                 switch (g->zoomState()) {
                 case LinjaZaxGesture::ZoomingIn:

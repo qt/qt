@@ -46,14 +46,14 @@ class PannableGraphicsView : public QGraphicsView
 public:
     PannableGraphicsView()
     {
-        grabGesture(Qt::Pan);
+        grabGesture(Qt::PanGesture);
     }
 protected:
     bool event(QEvent *event)
     {
         if (event->type() == QEvent::Gesture) {
-            QGestureEvent *ge = static_cast<QGestureEvent*>(event);
-            if (const QPannableGesture *g = dynamic_cast<const QPannableGesture*>(ge->gesture(Qt::Pan))) {
+            QGestureEvent *gestureEvent = static_cast<QGestureEvent*>(event);
+            if (const QGesture *g = gestureEvent->gesture(Qt::PanGesture)) {
                 QPoint pt = g->pos() - g->lastPos();
                 horizontalScrollBar()->setValue(horizontalScrollBar()->value() - pt.x());
                 verticalScrollBar()->setValue(verticalScrollBar()->value() - pt.y());
@@ -71,7 +71,7 @@ public:
     ImageItem()
         : colored(false)
     {
-        grabGesture(Qt::DoubleTap);
+        grabGesture(Qt::DoubleTapGesture);
     }
 
     QRectF boundingRect() const
@@ -96,7 +96,7 @@ public:
     {
         if (event->type() == QEvent::GraphicsSceneGesture) {
             QGraphicsSceneGestureEvent *gestureEvent = static_cast<QGraphicsSceneGestureEvent*>(event);
-            if (gestureEvent->gesture(Qt::DoubleTap)) {
+            if (gestureEvent->gesture(Qt::DoubleTapGesture)) {
                 event->accept();
                 colored = !colored;
                 update();

@@ -61,9 +61,9 @@ ImageWidget::ImageWidget(QWidget *parent)
     horizontalOffset = 0;
     verticalOffset = 0;
 
-    grabGesture(Qt::DoubleTap);
-    grabGesture(Qt::Pan);
-    grabGesture(Qt::LongTap);
+    grabGesture(Qt::DoubleTapGesture);
+    grabGesture(Qt::PanGesture);
+    grabGesture(Qt::TapAndHoldGesture);
 }
 
 void ImageWidget::paintEvent(QPaintEvent*)
@@ -136,16 +136,16 @@ void ImageWidget::gestureEvent(QGestureEvent *event)
     touchFeedback.doubleTapped = false;
 
     Q_ASSERT(event);
-    if (event->contains(Qt::Tap)) {
+    if (event->contains(Qt::TapGesture)) {
         //
-    } else if (const QGesture *g = event->gesture(Qt::DoubleTap)) {
+    } else if (const QGesture *g = event->gesture(Qt::DoubleTapGesture)) {
         touchFeedback.doubleTapped = true;
         horizontalOffset = g->hotSpot().x() - currentImage.width()*1.0*g->hotSpot().x()/width();
         verticalOffset = g->hotSpot().y() - currentImage.height()*1.0*g->hotSpot().y()/height();
         setZoomedIn(!zoomedIn);
         zoomed = rotated = false;
         updateImage();
-    } else if (const QGesture *g = event->gesture(Qt::Pan)) {
+    } else if (const QGesture *g = event->gesture(Qt::PanGesture)) {
         if (zoomedIn) {
             // usual panning
 #ifndef QT_NO_CURSOR
@@ -161,8 +161,8 @@ void ImageWidget::gestureEvent(QGestureEvent *event)
             update();
         } else {
             // only slide gesture should be accepted
-            const QPannableGesture *pg = dynamic_cast<const QPannableGesture*>(g);
-            if (pg && pg->direction() != pg->lastDirection()) {
+            const QPannableGesture *pg = static_cast<const QPannableGesture*>(g);
+            if (pg->direction() != pg->lastDirection()) {
                 // ###: event->cancel();
             }
             if (g->state() == Qt::GestureFinished) {
@@ -178,7 +178,7 @@ void ImageWidget::gestureEvent(QGestureEvent *event)
                 updateImage();
             }
         }
-    } else if (const QGesture *g = event->gesture(Qt::LongTap)) {
+    } else if (const QGesture *g = event->gesture(Qt::TapAndHoldGesture)) {
         if (g->state() == Qt::GestureFinished) {
             qDebug() << "tap and hold detected";
             touchFeedback.reset();
@@ -190,8 +190,6 @@ void ImageWidget::gestureEvent(QGestureEvent *event)
             menu.addAction("Action 3");
             menu.exec(mapToGlobal(g->hotSpot()));
         }
-    } else if (const QGesture *g = event->gesture(Qt::LongTap)) {
-        qDebug() << "long tap: " << (g->state() == Qt::GestureStarted ? "started" : "finished");
     } else {
         qDebug() << "unknown gesture";
     }

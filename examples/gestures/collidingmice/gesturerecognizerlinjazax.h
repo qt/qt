@@ -43,8 +43,8 @@ class GestureRecognizerLinjaZax : public QGestureRecognizer
 public:
     GestureRecognizerLinjaZax();
 
-    QGestureRecognizer::Result recognize(const QList<QEvent*> &inputEvents);
-    QGesture* makeEvent() const;
+    QGestureRecognizer::Result filterEvent(const QEvent *event);
+    QGesture* getGesture();
 
     void reset();
 

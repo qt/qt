@@ -60,83 +60,67 @@ void DirectionSimpleRecognizer::reset()
 ///////////////////////////////////////////////////////////////////////////
 
 GestureRecognizerLinjaZax::GestureRecognizerLinjaZax()
-    : QGestureRecognizer("LinjaZax"), mousePressed(false), gestureFinished(false),
+    : QGestureRecognizer(QLatin1String("LinjaZax")), mousePressed(false), gestureFinished(false),
       zoomState(LinjaZaxGesture::NoZoom)
 {
 }
 
-QGestureRecognizer::Result GestureRecognizerLinjaZax::recognize(const QList<QEvent*> &inputEvents)
+QGestureRecognizer::Result GestureRecognizerLinjaZax::filterEvent(const QEvent *event)
 {
-    // get all mouse events
-    QList<QMouseEvent*> events;
-    for(int i = 0; i < inputEvents.count(); ++i) {
-        QEvent *event = inputEvents.at(i);
-        switch (event->type()) {
-        case QEvent::MouseButtonPress:
-        case QEvent::MouseButtonRelease:
-        case QEvent::MouseMove:
-            events.push_back(static_cast<QMouseEvent*>(event));
-        default:
-            break;
-        }
-    }
-
     if (zoomState != LinjaZaxGesture::NoZoom && !lastDirections.isEmpty()) {
         lastDirections = lastDirections.right(1);
         zoomState = LinjaZaxGesture::NoZoom;
     }
 
-    QGestureRecognizer::Result result = QGestureRecognizer::NotGesture;
-    for(int i = 0; i < events.count(); ++i) {
-        QMouseEvent *event = events.at(i);
-        if (event->type() == QEvent::MouseButtonPress) {
-            if (!currentDirection.isEmpty()) {
-                result = QGestureRecognizer::NotGesture;
-                reset();
-                break;
-            }
-            result = QGestureRecognizer::MaybeGesture;
-            mousePressed = true;
-            pressedPos = lastPos = currentPos = event->pos();
-        } else if (event->type() == QEvent::MouseButtonRelease) {
-            if (mousePressed && !currentDirection.isEmpty()) {
-                result = QGestureRecognizer::GestureFinished;
-                gestureFinished = true;
-                currentPos = event->pos();
-                internalReset();
-                break;
-            }
-            result = QGestureRecognizer::NotGesture;
+    if (event->type() == QEvent::MouseButtonPress) {
+        if (!currentDirection.isEmpty()) {
             reset();
-            break;
-        } else if (event->type() == QEvent::MouseMove) {
-            if (!mousePressed)
-                continue;
-            lastPos = currentPos;
-            currentPos = event->pos();
-            QString direction =
-                simpleRecognizer.addPosition(event->pos()).direction;
-            if (currentDirection.isEmpty()) {
-                if (direction.isEmpty())
-                    result = QGestureRecognizer::MaybeGesture;
-                else
-                    result = QGestureRecognizer::GestureStarted;
-            } else {
-                result = QGestureRecognizer::GestureStarted;
-            }
-            if (!direction.isEmpty()) {
-                lastDirections.append(direction);
-                currentDirection = direction;
-                if (lastDirections.length() > 5)
-                    lastDirections.remove(0, 1);
-                if (lastDirections.contains("248") || lastDirections.contains("2448"))
-                    zoomState = LinjaZaxGesture::ZoomingIn;
-                else if (lastDirections.contains("268") || lastDirections.contains("2668"))
-                    zoomState = LinjaZaxGesture::ZoomingOut;
-            }
+            return QGestureRecognizer::NotGesture;
         }
+        mousePressed = true;
+        const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
+        pressedPos = lastPos = currentPos = ev->pos();
+        return QGestureRecognizer::MaybeGesture;
+    } else if (event->type() == QEvent::MouseButtonRelease) {
+        const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
+        if (mousePressed && !currentDirection.isEmpty()) {
+            gestureFinished = true;
+            currentPos = ev->pos();
+            internalReset();
+            return QGestureRecognizer::GestureFinished;
+        }
+        reset();
+        return QGestureRecognizer::NotGesture;
+    } else if (event->type() == QEvent::MouseMove) {
+        if (!mousePressed)
+            return QGestureRecognizer::NotGesture;
+        lastPos = currentPos;
+        const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
+        currentPos = ev->pos();
+        QString direction =
+            simpleRecognizer.addPosition(ev->pos()).direction;
+        QGestureRecognizer::Result result = QGestureRecognizer::NotGesture;
+        if (currentDirection.isEmpty()) {
+            if (direction.isEmpty())
+                result = QGestureRecognizer::MaybeGesture;
+            else
+                result = QGestureRecognizer::GestureStarted;
+        } else {
+            result = QGestureRecognizer::GestureStarted;
+        }
+        if (!direction.isEmpty()) {
+            lastDirections.append(direction);
+            currentDirection = direction;
+            if (lastDirections.length() > 5)
+                lastDirections.remove(0, 1);
+            if (lastDirections.contains("248") || lastDirections.contains("2448"))
+                zoomState = LinjaZaxGesture::ZoomingIn;
+            else if (lastDirections.contains("268") || lastDirections.contains("2668"))
+                zoomState = LinjaZaxGesture::ZoomingOut;
+        }
+        return result;
     }
-    return result;
+    return QGestureRecognizer::NotGesture;
 }
 
 static inline LinjaZaxGesture::DirectionType convertPanningDirection(const QString &direction)
@@ -154,14 +138,14 @@ static inline LinjaZaxGesture::DirectionType convertPanningDirection(const QStri
     return LinjaZaxGesture::None;
 }
 
-QGesture* GestureRecognizerLinjaZax::makeEvent() const
+QGesture* GestureRecognizerLinjaZax::getGesture()
 {
     LinjaZaxGesture::DirectionType dir = convertPanningDirection(currentDirection);
     LinjaZaxGesture::DirectionType lastDir = convertPanningDirection(lastDirections.right(1));
     if (dir == LinjaZaxGesture::None)
         return 0;
     LinjaZaxGesture *g =
-        new LinjaZaxGesture("LinjaZax", pressedPos, lastPos, currentPos,
+        new LinjaZaxGesture(this, pressedPos, lastPos, currentPos,
                             QRect(), pressedPos, QDateTime(), 0,
                             gestureFinished ? Qt::GestureFinished : Qt::GestureStarted);
     g->lastDirection_ = lastDir;

@@ -31,13 +31,16 @@ public:
     };
 
 public:
-    explicit LinjaZaxGesture(const Qt::GestureType &type, Qt::GestureState state = Qt::GestureStarted)
-        : QGesture(type, state), lastDirection_(None), direction_(None), zoomState_(NoZoom) { }
-    LinjaZaxGesture(const Qt::GestureType &type, const QPoint &startPos,
-                     const QPoint &lastPos, const QPoint &pos, const QRect &rect,
-                     const QPoint &hotSpot, const QDateTime &startTime,
-                     uint duration, Qt::GestureState state)
-        : QGesture(type, startPos, lastPos, pos, rect, hotSpot, startTime, duration, state) { }
+    explicit LinjaZaxGesture(QObject *parent,
+                             Qt::GestureState state = Qt::GestureStarted)
+        : QGesture(parent, QLatin1String("LinjaZax"), state), lastDirection_(None),
+        direction_(None), zoomState_(NoZoom) { }
+    LinjaZaxGesture(QObject *parent, const QPoint &startPos,
+                    const QPoint &lastPos, const QPoint &pos, const QRect &rect,
+                    const QPoint &hotSpot, const QDateTime &startTime,
+                    uint duration, Qt::GestureState state)
+        : QGesture(parent, QLatin1String("LinjaZax"), startPos, lastPos,
+                   pos, rect, hotSpot, startTime, duration, state) { }
     ~LinjaZaxGesture() { }
 
     DirectionType lastDirection() const
