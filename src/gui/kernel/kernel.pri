@@ -44,6 +44,7 @@ HEADERS += \
 	kernel/qkeymapper_p.h \
 	kernel/qgesture.h \
 	kernel/qgesturemanager_p.h \
+	kernel/qgesturerecognizer_p.h \
 	kernel/qgesturerecognizer.h \
 	kernel/qgesturestandardrecognizers_p.h \
 	kernel/qdirectionrecognizer_p.h \
@@ -79,6 +80,7 @@ SOURCES += \
 	kernel/qkeymapper.cpp \
 	kernel/qgesture.cpp \
 	kernel/qgesturemanager.cpp \
+	kernel/qgesturerecognizer.cpp \
 	kernel/qgesturestandardrecognizers.cpp \
 	kernel/qdirectionrecognizer.cpp
 

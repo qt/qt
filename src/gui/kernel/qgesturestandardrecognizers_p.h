@@ -62,34 +62,14 @@
 
 QT_BEGIN_NAMESPACE
 
-/*
-class QGestureRecognizerMouseTwoButtons : public QGestureRecognizer
-{
-    Q_OBJECT
-public:
-    QGestureRecognizerMouseTwoButtons();
-    QGestureRecognizer::Result recognize(const QList<QEvent*> &inputEvents);
-
-    QGesture* makeEvent() const;
-    void reset();
-
-private:
-    void clear();
-
-    // find the last two button click events
-    QMouseEvent* userEvents[4];
-};
-*/
-
 class QGestureRecognizerPan : public QGestureRecognizer
 {
     Q_OBJECT
 public:
     QGestureRecognizerPan();
 
-    QGestureRecognizer::Result recognize(const QList<QEvent*> &inputEvents);
-    QGesture* makeEvent() const;
-
+    QGestureRecognizer::Result filterEvent(const QEvent *event);
+    QGesture* getGesture();
     void reset();
 
 private:
@@ -112,22 +92,22 @@ class QDoubleTapGestureRecognizer : public QGestureRecognizer
 public:
     QDoubleTapGestureRecognizer();
 
-    QGestureRecognizer::Result recognize(const QList<QEvent*> &inputEvents);
-    QGesture* makeEvent() const;
+    QGestureRecognizer::Result filterEvent(const QEvent *event);
+    QGesture* getGesture();
     void reset();
 
 private:
     QPoint pressedPosition;
 };
 
-class QLongTapGestureRecognizer : public QGestureRecognizer
+class QTapAndHoldGestureRecognizer : public QGestureRecognizer
 {
     Q_OBJECT
 public:
-    QLongTapGestureRecognizer();
+    QTapAndHoldGestureRecognizer();
 
-    QGestureRecognizer::Result recognize(const QList<QEvent*> &inputEvents);
-    QGesture* makeEvent() const;
+    QGestureRecognizer::Result filterEvent(const QEvent *event);
+    QGesture* getGesture();
     void reset();
 
 protected:
@@ -140,30 +120,6 @@ private:
     static const int iterationCount;
     static const int iterationTimeout;
 };
-
-/*
-class QMultiTouchGestureRecognizer : public QGestureRecognizer
-{
-    Q_OBJECT
-public:
-    QMultiTouchGestureRecognizer();
-
-    QMap<Qt::GestureType, int> maybeGestureCompletion();
-    QGestureRecognizer::Result recognize(const QList<QEvent*> &inputEvents);
-    QGesture* makeEvent() const;
-    void reset();
-
-private:
-    struct Tap {
-        //### should I use QPointF everywhere internally ??
-        QPointF startPosition;
-        QPointF lastPosition;
-        QPointF currentPosition;
-    };
-    typedef QMap<int, Tap> TapMap;
-    TapMap touches;
-};
-*/
 
 QT_END_NAMESPACE
 

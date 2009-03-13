@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGESTUREMANAGER_P_H
-#define QGESTUREMANAGER_P_H
+#ifndef QGESTURERECOGNIZER_P_H
+#define QGESTURERECOGNIZER_P_H
 
 //
 //  W A R N I N G
@@ -53,56 +53,20 @@
 // We mean it.
 //
 
-#include "qwidget.h"
-#include "qlist.h"
-#include "qset.h"
-#include "qevent.h"
-#include "qbasictimer.h"
-
-#include "qgesturerecognizer.h"
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QGestureManager : public QObject
+class QGestureRecognizerPrivate : public QObjectPrivate
 {
-    Q_OBJECT
 public:
-    QGestureManager();
+    QGestureRecognizerPrivate();
 
-    // should be internal
-    void setGestureTargetWidget(QWidget *widget);
-
-    void addRecognizer(QGestureRecognizer *recognizer);
-    void removeRecognizer(QGestureRecognizer *recognizer);
-
-    bool filterEvent(QEvent *event);
-    bool inGestureMode();
-
-protected:
-    void timerEvent(QTimerEvent *event);
-
-private slots:
-    void recognizerStateChanged(QGestureRecognizer::Result);
-
-private:
-    bool sendGestureEvent(QWidget *receiver, QGestureEvent *event);
-
-    QSet<QGestureRecognizer*> activeGestures;
-    QMap<QGestureRecognizer*, int> maybeGestures;
-    QSet<QGestureRecognizer*> recognizers;
-
-    QWidget *targetWidget;
-    QPoint lastPos;
-
-    enum State {
-        Gesture,
-        NotGesture,
-        MaybeGesture // that mean timers are up and waiting for some
-                     // more events, and input events are handled by
-                     // gesture recognizer explicitely
-    } state;
+public:
+    Qt::GestureType gestureType;
+    QString customGestureType;
 };
 
 QT_END_NAMESPACE
 
-#endif // QGESTUREMANAGER_P_H
+#endif // QGESTURERECOGNIZER_P_H

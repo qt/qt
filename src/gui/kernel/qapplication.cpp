@@ -3720,7 +3720,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                         if (w && (mouse->type() != QEvent::MouseMove || mouse->buttons() != 0)) {
                             // find the gesture target widget
                             QWidget *target = w;
-                            while (target && target->gestures().isEmpty())
+                            while (target && target->d_func()->gestures.isEmpty())
                                 target = target->parentWidget();
                             if (target) {
                                 gm->setGestureTargetWidget(target);

@@ -561,6 +561,8 @@ public:
 };
 Q_GLOBAL_STATIC(QGraphicsItemCustomDataStore, qt_dataStore)
 
+QString qt_getStandardGestureTypeName(Qt::GestureType type);
+
 /*!
     \internal
 
@@ -5788,23 +5790,27 @@ QVariant QGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
     return QVariant();
 }
 
-void QGraphicsItem::grabGesture(const Qt::GestureType &type)
+int QGraphicsItem::grabGesture(Qt::GestureType type)
 {
-    d_ptr->gestures.insert(type);
-    if (d_ptr->scene)
-        d_ptr->scene->d_func()->grabGesture(this, type);
+    return grabGesture(qt_getStandardGestureTypeName(type));
 }
 
-void QGraphicsItem::releaseGesture(const Qt::GestureType &type)
+int QGraphicsItem::grabGesture(const QString &type)
 {
-    d_ptr->gestures.remove(type);
+    int id = qHash(type);
+    QSet<int>::iterator it = d_ptr->gestures.find(id);
+    if (it != d_ptr->gestures.end())
+        return *it;
+    d_ptr->gestures << id;
     if (d_ptr->scene)
-        d_ptr->scene->d_func()->releaseGesture(this, type);
+        d_ptr->scene->d_func()->grabGesture(this, id);
 }
 
-QSet<Qt::GestureType> QGraphicsItem::gestures() const
+void QGraphicsItem::releaseGesture(int id)
 {
-    return d_ptr->gestures;
+    d_ptr->gestures.remove(id);
+    if (d_ptr->scene)
+        d_ptr->scene->d_func()->releaseGesture(this, id);
 }
 
 /*!
@@ -5835,14 +5841,14 @@ QVariant QGraphicsItem::itemChange(GraphicsItemChange change, const QVariant &va
         if (!qVariantValue<QGraphicsScene*>(value)) {
             // the item has been removed from a scene, unsubscribe gestures.
             Q_ASSERT(d_ptr->scene);
-            foreach(const Qt::GestureType &gesture, d_ptr->gestures)
-                d_ptr->scene->d_func()->releaseGesture(this, gesture);
+            foreach(int id, d_ptr->gestures)
+                d_ptr->scene->d_func()->releaseGesture(this, id);
         }
     } else if (change == QGraphicsItem::ItemSceneHasChanged) {
         if (QGraphicsScene *scene = qVariantValue<QGraphicsScene*>(value)) {
             // item has been added to the scene
-            foreach(const Qt::GestureType &gesture, d_ptr->gestures)
-                scene->d_func()->grabGesture(this, gesture);
+            foreach(int id, d_ptr->gestures)
+                scene->d_func()->grabGesture(this, id);
         }
     }
     return value;

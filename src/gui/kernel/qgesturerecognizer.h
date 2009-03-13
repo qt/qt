@@ -42,7 +42,6 @@
 #ifndef QGESTURERECOGNIZER_H
 #define QGESTURERECOGNIZER_H
 
-#include "qgesture.h"
 #include "qevent.h"
 #include "qlist.h"
 #include "qset.h"
@@ -59,18 +58,18 @@ QT_BEGIN_NAMESPACE
 
     Usually gesture recognizer implements state machine, storing its
     state internally in the recognizer object. The recognizer receives
-    input events through the QGestureRecognizer::recognize() virtual
+    input events through the QGestureRecognizer::filterEvent() virtual
     function and decides whether the parsed event should change the
     state of the recognizer - i.e. if the event starts or ends a
     gesture or if it isn't related to gesture at all.
 */
 
-/*! \fn Qt::GestureType gestureType() const
+/*! \fn QString gestureType() const
 
     Returns the name of the gesture that is handled by the recognizer.
 */
 
-/*! \fn Result recognize(const QList<QEvent*> &events)
+/*! \fn Result filterEvent(const QEvent *event)
 
     This is a pure virtual function that need to be implemented in
     subclasses.
@@ -79,7 +78,7 @@ QT_BEGIN_NAMESPACE
     sequence is a gesture or not.
 */
 
-/*! \fn QGesture* makeEvent() const
+/*! \fn QGesture* getGesture()
 
     Creates a new gesture object that will be send to the widget. This
     function is called when the gesture recognizer returned a
@@ -94,16 +93,20 @@ QT_BEGIN_NAMESPACE
     Resets the internal state of the gesture recognizer.
 */
 
-/*! \fn void triggered(QGestureRecognizer::Result result)
+/*! \fn void stateChanged(QGestureRecognizer::Result result)
 
     The gesture recognizer might emit the signal when the gesture
     state changes asynchronously, i.e. without any event being
     received.
 */
 
+class QGesture;
+class QGestureRecognizerPrivate;
 class Q_GUI_EXPORT QGestureRecognizer : public QObject
 {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QGestureRecognizer)
+
 public:
     enum Result
     {
@@ -113,21 +116,21 @@ public:
         MaybeGesture
     };
 
-    inline QGestureRecognizer() { }
-    //### remove this ctor
-    inline QGestureRecognizer(const char *type) : type_(QLatin1String(type)) { }
-    inline QGestureRecognizer(const Qt::GestureType &type) : type_(type) { }
-    inline Qt::GestureType gestureType() const { return type_; }
+    explicit QGestureRecognizer(const QString &type);
 
-    virtual Result recognize(const QList<QEvent*> &events) = 0;
-    virtual QGesture* makeEvent() const = 0;
+    QString gestureType() const;
+
+    virtual Result filterEvent(const QEvent* event) = 0;
+    virtual QGesture* getGesture() = 0;
     virtual void reset() = 0;
 
 signals:
-    void triggered(QGestureRecognizer::Result result);
+    void stateChanged(QGestureRecognizer::Result result);
 
-protected:
-    Qt::GestureType type_;
+private:
+    friend class QDoubleTapGestureRecognizer;
+    friend class QTapAndHoldGestureRecognizer;
+    friend class QGestureRecognizerPan;
 };
 
 QT_END_NAMESPACE

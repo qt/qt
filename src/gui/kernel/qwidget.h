@@ -613,10 +613,10 @@ public:
     void setWindowSurface(QWindowSurface *surface);
     QWindowSurface *windowSurface() const;
 
-    void grabGesture(const Qt::GestureType &gesture);
-    void grabGestures(const QSet<Qt::GestureType> &gestures);
-    void releaseGesture(const Qt::GestureType &gesture);
-    QSet<Qt::GestureType> gestures() const;
+    int grabGesture(const QString &gesture);
+    int grabGesture(Qt::GestureType gesture);
+    void releaseGesture(int gestureId);
+    void setGestureEnabled(int gestureId, bool enable);
 
 Q_SIGNALS:
     void customContextMenuRequested(const QPoint &pos);
@@ -755,6 +755,7 @@ private:
     friend bool isWidgetOpaque(const QWidget *);
     friend class QGLWidgetPrivate;
 #endif
+    friend class QGestureManager;
 #ifdef Q_WS_X11
     friend void qt_net_update_user_time(QWidget *tlw, unsigned long timestamp);
     friend void qt_net_remove_user_time(QWidget *tlw);

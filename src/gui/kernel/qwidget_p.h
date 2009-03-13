@@ -593,7 +593,8 @@ public:
     uint isGLWidget : 1;
 #endif
 
-    QSet<Qt::GestureType> gestures;
+    QSet<int> gestures;
+    int grabGesture(int gestureId);
 
 #if defined(Q_WS_X11) || defined (Q_WS_WIN) || defined(Q_WS_MAC)
 #ifdef Q_WS_MAC

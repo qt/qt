@@ -44,9 +44,10 @@
 #include "qevent.h"
 
 #include "qapplication.h"
-#include "private/qapplication_p.h"
+#include "qapplication_p.h"
+#include "qwidget_p.h"
 
-#include "private/qgesturestandardrecognizers_p.h"
+#include "qgesturestandardrecognizers_p.h"
 
 #include "qdebug.h"
 
@@ -60,13 +61,6 @@
 QT_BEGIN_NAMESPACE
 
 bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
-static bool qt_sendGestureEvent(QWidget *receiver, QGestureEvent *event)
-{
-    QSet<Qt::GestureType> eventGestures = event->gestureTypes().toSet();
-    while (receiver && (receiver->gestures() & eventGestures).isEmpty())
-        receiver = receiver->parentWidget();
-    return receiver ? qt_sendSpontaneousEvent(receiver, event) : false;
-}
 
 static const unsigned int maximumGestureRecognitionTimeout = 2000;
 
@@ -74,13 +68,12 @@ QGestureManager::QGestureManager()
     : targetWidget(0), state(NotGesture)
 {
     recognizers << new QDoubleTapGestureRecognizer();
-    recognizers << new QLongTapGestureRecognizer();
+    recognizers << new QTapAndHoldGestureRecognizer();
     recognizers << new QGestureRecognizerPan();
-    // recognizers << new QMultiTouchGestureRecognizer();
 
     foreach(QGestureRecognizer *r, recognizers)
-        connect(r, SIGNAL(triggered(QGestureRecognizer::Result)),
-                this, SLOT(recognizerTriggered(QGestureRecognizer::Result)));
+        connect(r, SIGNAL(stateChanged(QGestureRecognizer::Result)),
+                this, SLOT(recognizerStateChanged(QGestureRecognizer::Result)));
 }
 
 void QGestureManager::addRecognizer(QGestureRecognizer *recognizer)
@@ -98,9 +91,6 @@ bool QGestureManager::filterEvent(QEvent *event)
     if (!QApplication::testAttribute(Qt::AA_EnableGestures))
         return false;
 
-    QList<QEvent*> events;
-    events << event;
-
     QPoint currentPos;
     switch (event->type()) {
     case QEvent::MouseButtonPress:
@@ -111,7 +101,7 @@ bool QGestureManager::filterEvent(QEvent *event)
     default: break;
     }
 
-    const QMap<Qt::GestureType, int> &grabbedGestures = qApp->d_func()->grabbedGestures;
+    const QMap<int, int> &grabbedGestures = qApp->d_func()->grabbedGestures;
 
     bool ret = false;
     QSet<QGestureRecognizer*> startedGestures;
@@ -127,9 +117,9 @@ bool QGestureManager::filterEvent(QEvent *event)
         QSet<QGestureRecognizer*> stillMaybeGestures;
         // try other recognizers.
         foreach(QGestureRecognizer *r, recognizers) {
-            if (grabbedGestures.value(r->gestureType(), 0) <= 0)
+            if (grabbedGestures.value(qHash(r->gestureType()), 0) <= 0)
                 continue;
-            QGestureRecognizer::Result result = r->recognize(events);
+            QGestureRecognizer::Result result = r->filterEvent(event);
             if (result == QGestureRecognizer::GestureStarted) {
                 DEBUG() << "QGestureManager: gesture started: " << r;
                 startedGestures << r;
@@ -170,16 +160,16 @@ bool QGestureManager::filterEvent(QEvent *event)
 
             QList<QGesture*> gestures;
             foreach(QGestureRecognizer *r, finishedGestures) {
-                if (QGesture *gesture = r->makeEvent())
+                if (QGesture *gesture = r->getGesture())
                     gestures << gesture;
             }
             foreach(QGestureRecognizer *r, activeGestures) {
-                if (QGesture *gesture = r->makeEvent())
+                if (QGesture *gesture = r->getGesture())
                     gestures << gesture;
             }
             Q_ASSERT(!gestures.isEmpty());
             QGestureEvent event(gestures);
-            ret = qt_sendGestureEvent(targetWidget, &event);
+            ret = sendGestureEvent(targetWidget, &event);
             ret = ret && event.isAccepted();
 
             if (!activeGestures.isEmpty()) {
@@ -220,9 +210,9 @@ bool QGestureManager::filterEvent(QEvent *event)
         Q_ASSERT(!activeGestures.isEmpty());
 
         foreach(QGestureRecognizer *r, recognizers) {
-            if (grabbedGestures.value(r->gestureType(), 0) <= 0)
+            if (grabbedGestures.value(qHash(r->gestureType()), 0) <= 0)
                 continue;
-            QGestureRecognizer::Result result = r->recognize(events);
+            QGestureRecognizer::Result result = r->filterEvent(event);
             if (result == QGestureRecognizer::GestureStarted) {
                 DEBUG() << "QGestureManager: gesture started: " << r;
                 startedGestures << r;
@@ -271,20 +261,20 @@ bool QGestureManager::filterEvent(QEvent *event)
                     << activeGestures << " and " << finishedGestures;
 
             foreach(QGestureRecognizer *r, finishedGestures) {
-                if (QGesture *gesture = r->makeEvent())
+                if (QGesture *gesture = r->getGesture())
                     gestures << gesture;
             }
             foreach(QGestureRecognizer *r, activeGestures) {
-                if (QGesture *gesture = r->makeEvent())
+                if (QGesture *gesture = r->getGesture())
                     gestures << gesture;
             }
         }
-        QSet<Qt::GestureType> cancelledGestureNames;
+        QSet<QString> cancelledGestureNames;
         foreach(QGestureRecognizer *r, cancelledGestures)
             cancelledGestureNames << r->gestureType();
         if(!gestures.isEmpty()) {
             QGestureEvent event(gestures, cancelledGestureNames);
-            ret = qt_sendGestureEvent(targetWidget, &event);
+            ret = sendGestureEvent(targetWidget, &event);
             ret = ret && event.isAccepted();
         }
 
@@ -343,7 +333,7 @@ void QGestureManager::setGestureTargetWidget(QWidget *widget)
     targetWidget = widget;
 }
 
-void QGestureManager::recognizerTriggered(QGestureRecognizer::Result result)
+void QGestureManager::recognizerStateChanged(QGestureRecognizer::Result result)
 {
     if (!QApplication::testAttribute(Qt::AA_EnableGestures))
         return;
@@ -351,7 +341,7 @@ void QGestureManager::recognizerTriggered(QGestureRecognizer::Result result)
     QGestureRecognizer *recognizer = qobject_cast<QGestureRecognizer*>(sender());
     if (!recognizer)
         return;
-    if (qApp->d_func()->grabbedGestures.value(recognizer->gestureType(), 0) <= 0) {
+    if (qApp->d_func()->grabbedGestures.value(qHash(recognizer->gestureType()), 0) <= 0) {
         recognizer->reset();
         return;
     }
@@ -372,11 +362,11 @@ void QGestureManager::recognizerTriggered(QGestureRecognizer::Result result)
             maybeGestures.remove(recognizer);
         }
         QList<QGesture*> gestures;
-        if (QGesture *gesture = recognizer->makeEvent())
+        if (QGesture *gesture = recognizer->getGesture())
             gestures << gesture;
         if(!gestures.isEmpty()) {
             QGestureEvent event(gestures);
-            qt_sendGestureEvent(targetWidget, &event);
+            sendGestureEvent(targetWidget, &event);
         }
         if (result == QGestureRecognizer::GestureFinished)
             recognizer->reset();
@@ -386,8 +376,8 @@ void QGestureManager::recognizerTriggered(QGestureRecognizer::Result result)
         DEBUG() << "QGestureManager: maybe gesture: " << recognizer;
         if (activeGestures.contains(recognizer)) {
             QGestureEvent event(QList<QGesture*>(),
-                                QSet<Qt::GestureType>() << recognizer->gestureType());
-            qt_sendGestureEvent(targetWidget, &event);
+                                QSet<QString>() << recognizer->gestureType());
+            sendGestureEvent(targetWidget, &event);
         }
         if (!maybeGestures.contains(recognizer)) {
             int timerId = startTimer(maximumGestureRecognitionTimeout);
@@ -408,6 +398,17 @@ void QGestureManager::recognizerTriggered(QGestureRecognizer::Result result)
     default:
         Q_ASSERT(false);
     }
+}
+
+bool QGestureManager::sendGestureEvent(QWidget *receiver, QGestureEvent *event)
+{
+    QSet<int> eventGestures;
+    foreach(const QString &gesture, event->gestureTypes())
+        eventGestures << qHash(gesture);
+
+    while (receiver && (receiver->d_func()->gestures & eventGestures).isEmpty())
+        receiver = receiver->parentWidget();
+    return receiver ? qt_sendSpontaneousEvent(receiver, event) : false;
 }
 
 QT_END_NAMESPACE

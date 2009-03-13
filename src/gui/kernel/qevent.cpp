@@ -3554,7 +3554,7 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
 
 
 QGestureEvent::QGestureEvent(const QList<QGesture*> &gestures,
-                             const QSet<Qt::GestureType> &cancelledGestures)
+                             const QSet<QString> &cancelledGestures)
     : QEvent(QEvent::Gesture), m_cancelledGestures(cancelledGestures)
 {
     foreach(QGesture *r, gestures)

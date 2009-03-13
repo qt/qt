@@ -56,17 +56,21 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QGesturePrivate;
-class Q_GUI_EXPORT QGesture
+class Q_GUI_EXPORT QGesture : public QObject
 {
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QGesture)
 public:
-    explicit QGesture(const Qt::GestureType &type, Qt::GestureState state = Qt::GestureStarted);
-    QGesture(const Qt::GestureType &type, const QPoint &startPos,
+    explicit QGesture(QObject *parent, const QString &type,
+                      Qt::GestureState state = Qt::GestureStarted);
+    QGesture(QObject *parent,
+             const QString &type, const QPoint &startPos,
              const QPoint &lastPos, const QPoint &pos, const QRect &rect,
              const QPoint &hotSpot, const QDateTime &startTime,
              uint duration, Qt::GestureState state);
     virtual ~QGesture();
 
-    inline Qt::GestureType gestureType() const { return gestureType_; }
+    inline QString gestureType() const { return gestureType_; }
     inline Qt::GestureState state() const { return gestureState_; }
 
     QRect rect() const;
@@ -79,16 +83,20 @@ public:
     QPoint pos() const;
 
 protected:
-    QGesture(QGesturePrivate &dd, const Qt::GestureType &type, Qt::GestureState state = Qt::GestureStarted);
-    QGesturePrivate *d;
+    QGesture(QGesturePrivate &dd, QObject *parent, const QString &type, Qt::GestureState state);
+    //### virtual void translateCoordinates(const QPoint &offset);
 
 private:
-    Qt::GestureType gestureType_;
+    QString gestureType_;
     Qt::GestureState gestureState_;
 };
 
+class QPannableGesturePrivate;
 class Q_GUI_EXPORT QPannableGesture : public QGesture
 {
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QPannableGesture)
+
 public:
     enum DirectionType
     {
@@ -108,8 +116,7 @@ public:
     };
 
 public:
-    explicit QPannableGesture(const Qt::GestureType &type, Qt::GestureState state = Qt::GestureStarted);
-    QPannableGesture(const Qt::GestureType &type, const QPoint &startPos,
+    QPannableGesture(QObject *parent, const QPoint &startPos,
                      const QPoint &lastPos, const QPoint &pos, const QRect &rect,
                      const QPoint &hotSpot, const QDateTime &startTime,
                      uint duration, Qt::GestureState state);

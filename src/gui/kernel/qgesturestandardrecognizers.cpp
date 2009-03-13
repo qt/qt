@@ -41,6 +41,7 @@
 
 #include "qgesturestandardrecognizers_p.h"
 #include "qgesture_p.h"
+#include "qgesturerecognizer_p.h"
 
 // #define GESTURE_RECOGNIZER_DEBUG
 #ifndef GESTURE_RECOGNIZER_DEBUG
@@ -50,205 +51,92 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-/*
-QGestureRecognizerMouseTwoButtons::QGestureRecognizerMouseTwoButtons()
-    : QGestureRecognizer(Qt::MouseTwoButtonClick)
-{
-    clear();
-}
 
-QGestureRecognizer::Result QGestureRecognizerMouseTwoButtons::recognize(const QList<QEvent*> &inputEvents)
+QString qt_getStandardGestureTypeName(Qt::GestureType gestureType)
 {
-    // get all mouse events
-    QList<QMouseEvent*> events;
-    for(int i = 0; i < inputEvents.count(); ++i) {
-        QEvent *event = inputEvents.at(i);
-        switch (event->type()) {
-        case QEvent::MouseButtonPress:
-        case QEvent::MouseButtonRelease:
-            events.push_back(static_cast<QMouseEvent*>(event));
-        default:
-            break;
-        }
+    switch (gestureType) {
+    case Qt::TapGesture:
+        return QLatin1String("__QTapGesture");
+    case Qt::DoubleTapGesture:
+        return QLatin1String("__QDoubleTapGesture");
+    case Qt::TrippleTapGesture:
+        return QLatin1String("__QTrippleTapGesture");
+    case Qt::TapAndHoldGesture:
+        return QLatin1String("__QTapAndHoldGesture");
+    case Qt::PanGesture:
+        return QLatin1String("__QPanGesture");
+    case Qt::PinchGesture:
+        return QLatin1String("__QPinchGesture");
+    case Qt::UnknownGesture:
+        break;
     }
-
-    QGestureRecognizer::Result result = QGestureRecognizer::NotGesture;
-    for(int i = 0; i < events.count(); ++i) {
-        QMouseEvent *event = events.at(i);
-        if (event->type() == QEvent::MouseButtonPress) {
-            if (userEvents[3]) {
-                // something wrong, we already has a gesture.
-                clear();
-            } else if (userEvents[2]) {
-                // 1d, 2d, 1u, and user press another button. not gesture.
-                DEBUG() << "1";
-                result = QGestureRecognizer::NotGesture;
-                clear();
-                break;
-            } else if (userEvents[1]) {
-                // 1d, 2d, and user pressed third button. not gesture.
-                DEBUG() << "2";
-                result = QGestureRecognizer::NotGesture;
-                clear();
-                break;
-            } else if (userEvents[0]) {
-                // second button press.
-                DEBUG() << "3";
-                userEvents[1] = event;
-                result = QGestureRecognizer::MaybeGesture;
-            } else {
-                // first button press.
-                DEBUG() << "4";
-                userEvents[0] = event;
-                result = QGestureRecognizer::MaybeGesture;
-            }
-        } else if (event->type() == QEvent::MouseButtonRelease) {
-            if (userEvents[3]) {
-                // something wrong, we already has a gesture.
-                clear();
-            } else if (userEvents[2]) {
-                // 1d, 2d, 1u, and button release
-                DEBUG() << "5";
-                if (userEvents[1]->button() != event->button()) {
-                    // got weird buttonreleased event. doesn't look like gesture.
-                    result = QGestureRecognizer::NotGesture;
-                    clear();
-                    break;
-                }
-                // gesture!
-                userEvents[3] = event;
-                result = QGestureRecognizer::GestureFinished;
-                break;
-            } else if (userEvents[1]) {
-                // 1d, 2d, and button release
-                DEBUG() << "6";
-                if (userEvents[0]->button() != event->button()) {
-                    // user released the wrong button. not gesture.
-                    result = QGestureRecognizer::NotGesture;
-                    clear();
-                    break;
-                }
-                // user released the right button! looks like gesture
-                userEvents[2] = event;
-                result = QGestureRecognizer::MaybeGesture;
-            } else if (userEvents[0]) {
-                // 1d, and some button was released. not a gesture.
-                DEBUG() << "7";
-                result = QGestureRecognizer::NotGesture;
-                clear();
-                break;
-            }
-        }
-    }
-    return result;
+    qFatal("QGestureRecognizer::gestureType: got an unhandled gesture type.");
+    return QLatin1String("__unknown_gesture");
 }
-
-QGesture* QGestureRecognizerMouseTwoButtons::makeEvent() const
-{
-    if (!userEvents[0] || !userEvents[1] || !userEvents[2] || !userEvents[3])
-        return 0;
-    QGesture::Direction direction =
-        (userEvents[0]->button() < userEvents[1]->button() ?
-         QGesture::Left : QGesture::Right);
-    QList<QPoint> points;
-    points.push_back(userEvents[0]->globalPos());
-    points.push_back(userEvents[1]->globalPos());
-    QGesture *gesture =
-        new QGesture(Qt::MouseTwoButtonClick, points.at(0), points.at(1), points.at(1),
-                     direction,
-                     QRect(points.at(0), points.at(1)),
-                     points.at(0));
-    return gesture;
-}
-
-void QGestureRecognizerMouseTwoButtons::reset()
-{
-    clear();
-}
-
-void QGestureRecognizerMouseTwoButtons::clear()
-{
-    userEvents[0] = userEvents[1] = userEvents[2] = userEvents[3] = 0;
-}
-*/
 
 //
 // QGestureRecognizerPan
 //
 
 QGestureRecognizerPan::QGestureRecognizerPan()
-    : QGestureRecognizer(Qt::Pan), mousePressed(false), gestureFinished(false),
+    : QGestureRecognizer(QString()), mousePressed(false), gestureFinished(false),
       lastDirection(Direction::None), currentDirection(Direction::None)
 {
+    Q_D(QGestureRecognizer);
+    d->gestureType = Qt::PanGesture;
 }
 
-QGestureRecognizer::Result QGestureRecognizerPan::recognize(const QList<QEvent*> &inputEvents)
+QGestureRecognizer::Result QGestureRecognizerPan::filterEvent(const QEvent *event)
 {
-    // get all mouse events
-    QList<QMouseEvent*> events;
-    for(int i = 0; i < inputEvents.count(); ++i) {
-        QEvent *event = inputEvents.at(i);
-        switch (event->type()) {
-        case QEvent::MouseButtonPress:
-        case QEvent::MouseButtonRelease:
-        case QEvent::MouseMove:
-            events.push_back(static_cast<QMouseEvent*>(event));
-        default:
-            break;
-        }
-    }
-
-    QGestureRecognizer::Result result = QGestureRecognizer::NotGesture;
-    for(int i = 0; i < events.count(); ++i) {
-        QMouseEvent *event = events.at(i);
-        if (event->type() == QEvent::MouseButtonPress) {
-            if (currentDirection != Direction::None) {
-                DEBUG() << "Pan: MouseButtonPress: fail. another press during pan";
-                result = QGestureRecognizer::NotGesture;
-                reset();
-                break;
-            }
-            DEBUG() << "Pan: MouseButtonPress: maybe gesture started";
-            result = QGestureRecognizer::MaybeGesture;
-            mousePressed = true;
-            pressedPos = lastPos = currentPos = event->pos();
-        } else if (event->type() == QEvent::MouseButtonRelease) {
-            if (mousePressed && currentDirection != Direction::None) {
-                DEBUG() << "Pan: MouseButtonRelease: pan detected";
-                result = QGestureRecognizer::GestureFinished;
-                gestureFinished = true;
-                currentPos = event->pos();
-                internalReset();
-                break;
-            }
-            DEBUG() << "Pan: MouseButtonRelease: some weird release detected, ignoring";
-            result = QGestureRecognizer::NotGesture;
+    if (event->type() == QEvent::MouseButtonPress) {
+        const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
+        if (currentDirection != Direction::None) {
+            DEBUG() << "Pan: MouseButtonPress: fail. another press during pan";
             reset();
-            break;
-        } else if (event->type() == QEvent::MouseMove) {
-            if (!mousePressed)
-                continue;
-            lastPos = currentPos;
-            currentPos = event->pos();
-            Direction::DirectionType direction =
-                simpleRecognizer.addPosition(event->pos()).direction;
-            DEBUG() << "Pan: MouseMove: simplerecognizer result = " << direction;
-            if (currentDirection == Direction::None) {
-                if (direction == Direction::None)
-                    result = QGestureRecognizer::MaybeGesture;
-                else
-                    result = QGestureRecognizer::GestureStarted;
-            } else {
-                result = QGestureRecognizer::GestureStarted;
-            }
-            if (direction != Direction::None) {
-                if (currentDirection != direction)
-                    lastDirection = currentDirection;
-                currentDirection = direction;
-            }
+            return QGestureRecognizer::NotGesture;
         }
+        DEBUG() << "Pan: MouseButtonPress: maybe gesture started";
+        mousePressed = true;
+        pressedPos = lastPos = currentPos = ev->pos();
+        return QGestureRecognizer::MaybeGesture;
+    } else if (event->type() == QEvent::MouseButtonRelease) {
+        if (mousePressed && currentDirection != Direction::None) {
+            DEBUG() << "Pan: MouseButtonRelease: pan detected";
+            gestureFinished = true;
+            const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
+            currentPos = ev->pos();
+            internalReset();
+            return QGestureRecognizer::GestureFinished;
+        }
+        DEBUG() << "Pan: MouseButtonRelease: some weird release detected, ignoring";
+        reset();
+        return QGestureRecognizer::NotGesture;
+    } else if (event->type() == QEvent::MouseMove) {
+        if (!mousePressed)
+            return QGestureRecognizer::NotGesture;
+        const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
+        lastPos = currentPos;
+        currentPos = ev->pos();
+        Direction::DirectionType direction =
+            simpleRecognizer.addPosition(ev->pos()).direction;
+        DEBUG() << "Pan: MouseMove: simplerecognizer result = " << direction;
+        QGestureRecognizer::Result result = QGestureRecognizer::NotGesture;
+        if (currentDirection == Direction::None) {
+            if (direction == Direction::None)
+                result = QGestureRecognizer::MaybeGesture;
+            else
+                result = QGestureRecognizer::GestureStarted;
+        } else {
+            result = QGestureRecognizer::GestureStarted;
+        }
+        if (direction != Direction::None) {
+            if (currentDirection != direction)
+                lastDirection = currentDirection;
+            currentDirection = direction;
+        }
+        return result;
     }
-    return result;
+    return QGestureRecognizer::NotGesture;
 }
 
 static inline QPannableGesture::DirectionType convertPanningDirection(const Direction::DirectionType direction)
@@ -268,17 +156,18 @@ static inline QPannableGesture::DirectionType convertPanningDirection(const Dire
     return QPannableGesture::None;
 }
 
-QGesture* QGestureRecognizerPan::makeEvent() const
+QGesture* QGestureRecognizerPan::getGesture()
 {
     QPannableGesture::DirectionType dir = convertPanningDirection(currentDirection);
     QPannableGesture::DirectionType lastDir = convertPanningDirection(lastDirection);
     if (dir == QPannableGesture::None)
         return 0;
     QPannableGesture *g =
-        new QPannableGesture(Qt::Pan, pressedPos, lastPos, currentPos,
+        new QPannableGesture(this,
+                             pressedPos, lastPos, currentPos,
                              QRect(), pressedPos, QDateTime(), 0,
                              gestureFinished ? Qt::GestureFinished : Qt::GestureStarted);
-    QPannableGesturePrivate *d = (QPannableGesturePrivate*)g->d;
+    QPannableGesturePrivate *d = g->d_func();
     d->lastDirection = lastDir;
     d->direction = dir;
     
@@ -307,52 +196,37 @@ void QGestureRecognizerPan::internalReset()
 // QDoubleTapGestureRecognizer
 //
 QDoubleTapGestureRecognizer::QDoubleTapGestureRecognizer()
-    : QGestureRecognizer(Qt::DoubleTap)
+    : QGestureRecognizer(QString())
 {
+    Q_D(QGestureRecognizer);
+    d->gestureType = Qt::DoubleTapGesture;
 }
 
-QGestureRecognizer::Result QDoubleTapGestureRecognizer::recognize(const QList<QEvent*> &inputEvents)
+QGestureRecognizer::Result QDoubleTapGestureRecognizer::filterEvent(const QEvent *event)
 {
-    // get all mouse events
-    QList<QMouseEvent*> events;
-    for(int i = 0; i < inputEvents.count(); ++i) {
-        QEvent *event = inputEvents.at(i);
-        switch (event->type()) {
-        case QEvent::MouseButtonPress:
-        case QEvent::MouseButtonRelease:
-        case QEvent::MouseButtonDblClick:
-        case QEvent::MouseMove:
-            events.push_back(static_cast<QMouseEvent*>(event));
-        default:
-            break;
+    if (event->type() == QEvent::MouseButtonPress) {
+        const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
+        if (pressedPosition.isNull()) {
+            pressedPosition = ev->pos();
+            return QGestureRecognizer::MaybeGesture;
+        } else if ((pressedPosition - ev->pos()).manhattanLength() < 10) {
+            return QGestureRecognizer::GestureFinished;
         }
+    } else if (event->type() == QEvent::MouseButtonRelease) {
+        const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
+        if (!pressedPosition.isNull() && (pressedPosition - ev->pos()).manhattanLength() < 10)
+            return QGestureRecognizer::MaybeGesture;
+    } else if (event->type() == QEvent::MouseButtonDblClick) {
+        const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
+        pressedPosition = ev->pos();
+        return QGestureRecognizer::GestureFinished;
     }
-
-    QGestureRecognizer::Result result = QGestureRecognizer::NotGesture;
-    for(int i = 0; i < events.count(); ++i) {
-        QMouseEvent *event = events.at(i);
-        if (event->type() == QEvent::MouseButtonPress) {
-            if (pressedPosition.isNull()) {
-                result = QGestureRecognizer::MaybeGesture;
-                pressedPosition = event->pos();
-            } else if ((pressedPosition - event->pos()).manhattanLength() < 10) {
-                result = QGestureRecognizer::GestureFinished;
-            }
-        } else if (event->type() == QEvent::MouseButtonRelease) {
-            if (!pressedPosition.isNull() && (pressedPosition - event->pos()).manhattanLength() < 10)
-                result = QGestureRecognizer::MaybeGesture;
-        } else if (event->type() == QEvent::MouseButtonDblClick) {
-            result = QGestureRecognizer::GestureFinished;
-            pressedPosition = event->pos();
-            break;
-        }
-    }
-    return result;
+    return QGestureRecognizer::NotGesture;
 }
 
-QGesture* QDoubleTapGestureRecognizer::makeEvent() const
+QGesture* QDoubleTapGestureRecognizer::getGesture()
 {
-    return new QGesture(Qt::DoubleTap,
+    return new QGesture(this, qt_getStandardGestureTypeName(Qt::DoubleTapGesture),
                         pressedPosition, pressedPosition, pressedPosition,
                         QRect(), pressedPosition, QDateTime(), 0, Qt::GestureFinished);
 }
@@ -363,195 +237,66 @@ void QDoubleTapGestureRecognizer::reset()
 }
 
 //
-// QLongTapGestureRecognizer
+// QTapAndHoldGestureRecognizer
 //
-const int QLongTapGestureRecognizer::iterationCount = 40;
-const int QLongTapGestureRecognizer::iterationTimeout = 50;
+const int QTapAndHoldGestureRecognizer::iterationCount = 40;
+const int QTapAndHoldGestureRecognizer::iterationTimeout = 50;
 
-QLongTapGestureRecognizer::QLongTapGestureRecognizer()
-    : QGestureRecognizer(Qt::LongTap), iteration(0)
+QTapAndHoldGestureRecognizer::QTapAndHoldGestureRecognizer()
+    : QGestureRecognizer(QString()), iteration(0)
 {
+    Q_D(QGestureRecognizer);
+    d->gestureType = Qt::TapAndHoldGesture;
 }
 
-QGestureRecognizer::Result QLongTapGestureRecognizer::recognize(const QList<QEvent*> &inputEvents)
+QGestureRecognizer::Result QTapAndHoldGestureRecognizer::filterEvent(const QEvent *event)
 {
-    // get all mouse events
-    QList<QMouseEvent*> events;
-    for(int i = 0; i < inputEvents.count(); ++i) {
-        QEvent *event = inputEvents.at(i);
-        switch (event->type()) {
-        case QEvent::MouseButtonPress:
-        case QEvent::MouseButtonRelease:
-        case QEvent::MouseMove:
-            events.push_back(static_cast<QMouseEvent*>(event));
-        default:
-            break;
-        }
-    }
-
-    QGestureRecognizer::Result result = QGestureRecognizer::NotGesture;
-    for(int i = 0; i < events.count(); ++i) {
-        QMouseEvent *event = events.at(i);
-        if (event->type() == QEvent::MouseButtonPress) {
-            if (timer.isActive())
-                timer.stop();
-            timer.start(QLongTapGestureRecognizer::iterationTimeout, this);
-            pressedPosition = event->pos();
-            result = QGestureRecognizer::MaybeGesture;
-        } else if (event->type() == QEvent::MouseMove) {
-            if ((pressedPosition - event->pos()).manhattanLength() < 15)
-                result = QGestureRecognizer::GestureStarted;
-            else
-                result = QGestureRecognizer::NotGesture;
-        } else if (event->type() == QEvent::MouseButtonRelease) {
-            result = QGestureRecognizer::NotGesture;
+    if (event->type() == QEvent::MouseButtonPress) {
+        const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
+        if (timer.isActive())
             timer.stop();
-            break;
-        }
+        timer.start(QTapAndHoldGestureRecognizer::iterationTimeout, this);
+        pressedPosition = ev->pos();
+        return QGestureRecognizer::MaybeGesture;
+    } else if (event->type() == QEvent::MouseMove) {
+        const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
+        if ((pressedPosition - ev->pos()).manhattanLength() < 15)
+            return QGestureRecognizer::GestureStarted;
+        else
+            return QGestureRecognizer::NotGesture;
+    } else if (event->type() == QEvent::MouseButtonRelease) {
+        timer.stop();
+        return QGestureRecognizer::NotGesture;
     }
-    return result;
+    return QGestureRecognizer::NotGesture;
 }
 
-void QLongTapGestureRecognizer::timerEvent(QTimerEvent *event)
+void QTapAndHoldGestureRecognizer::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() != timer.timerId())
         return;
-    if (++iteration == QLongTapGestureRecognizer::iterationCount) {
-        emit triggered(QGestureRecognizer::GestureFinished);
+    if (++iteration == QTapAndHoldGestureRecognizer::iterationCount) {
+        emit stateChanged(QGestureRecognizer::GestureFinished);
         timer.stop();
     } else {
-        emit triggered(QGestureRecognizer::GestureStarted);
+        emit stateChanged(QGestureRecognizer::GestureStarted);
     }
 }
 
-QGesture* QLongTapGestureRecognizer::makeEvent() const
+QGesture* QTapAndHoldGestureRecognizer::getGesture()
 {
-    return new QGesture(Qt::LongTap,
+    return new QGesture(this, qt_getStandardGestureTypeName(Qt::TapAndHoldGesture),
                         pressedPosition, pressedPosition, pressedPosition,
                         QRect(), pressedPosition, QDateTime(), 0,
-                        iteration >= QLongTapGestureRecognizer::iterationCount ?
+                        iteration >= QTapAndHoldGestureRecognizer::iterationCount ?
                         Qt::GestureFinished :  Qt::GestureStarted);
 }
 
-void QLongTapGestureRecognizer::reset()
+void QTapAndHoldGestureRecognizer::reset()
 {
     pressedPosition = QPoint();
     timer.stop();
     iteration = 0;
 }
-
-//
-// QMultiTouchGestureRecognizer
-//
-
-/*
-QMultiTouchGestureRecognizer::QMultiTouchGestureRecognizer()
-    : QGestureRecognizer(Qt::Pinch)
-{
-}
-
-QGestureRecognizer::Result QMultiTouchGestureRecognizer::recognize(const QList<QEvent*> &inputEvents)
-{
-    QGestureRecognizer::Result result = QGestureRecognizer::NotGesture;
-    for(int i = 0; i < inputEvents.count(); ++i) {
-        QEvent *inputEvent = inputEvents.at(i);
-        if (inputEvent->type() != QEvent::Pointer) {
-            if (touches.size() == 2)
-                result = QGestureRecognizer::GestureStarted;
-            else if (touches.size() == 1)
-                result = QGestureRecognizer::MaybeGesture;
-            continue;
-        }
-        QPointerEvent *event = static_cast<QPointerEvent*>(inputEvent);
-        Q_ASSERT(event->pointerCount() > 0);
-        for (int idx = 0; idx < event->pointerCount(); ++idx) {
-            switch (event->state(idx)) {
-            case QPointerEvent::Begin:
-                qDebug() << "Begin" << idx;
-                if (touches.size() == 2) {
-                    // too many touches
-                    qDebug() << "too many touches";
-                    result = QGestureRecognizer::MaybeGesture;
-                    continue;
-                }
-                touches[event->pointerId(idx)].startPosition = event->pos(idx);
-                if (touches.size() == 1) {
-                    result = QGestureRecognizer::MaybeGesture;
-                } else if (touches.size() == 2) {
-                    result = QGestureRecognizer::GestureStarted;
-                } else {
-                    result = QGestureRecognizer::NotGesture;
-                }
-                break;
-
-            case QPointerEvent::Move:
-                qDebug() << "Move" << idx;
-                touches[event->pointerId(idx)].lastPosition = touches[event->pointerId(idx)].currentPosition;
-                touches[event->pointerId(idx)].currentPosition = event->pos(idx);
-                if (touches.size() == 1)
-                    result = QGestureRecognizer::MaybeGesture;
-                else if (touches.size() == 2)
-                    result = QGestureRecognizer::GestureStarted;
-                else
-                    result = QGestureRecognizer::NotGesture;
-                break;
-
-            case QPointerEvent::End:
-                qDebug() << "End" << idx;
-                touches.remove(event->pointerId(idx));
-                if (touches.size() == 1) {
-                    result = QGestureRecognizer::MaybeGesture;
-                } else if (touches.size() == 0) {
-                    result = QGestureRecognizer::NotGesture;
-                } else {
-                    qDebug() << "unexpected touch end event";
-                    return QGestureRecognizer::NotGesture;
-                }
-                break;
-
-            case QPointerEvent::Stationary:
-                qDebug() << "Stationary" << idx;
-                if (touches.size() == 2)
-                    result = QGestureRecognizer::GestureStarted;
-                else if (touches.size() == 1)
-                    result = QGestureRecognizer::MaybeGesture;
-                break;
-
-            default:
-                break;
-            }
-        }
-    }
-    return result;
-}
-
-QGesture* QMultiTouchGestureRecognizer::makeEvent() const
-{
-    if (touches.size() != 2)
-        return 0;
-
-    QGesture *g = new QGesture(Qt::Pinch);
-    QGesture::Data data;
-
-    TapMap::const_iterator it = touches.begin();
-    data.startPos = it->startPosition.toPoint();
-    data.lastPos = it->lastPosition.toPoint();
-    data.currentPos = it->currentPosition.toPoint();
-    g->datas.push_back(data);
-
-    ++it;
-    data.startPos = it->startPosition.toPoint();
-    data.lastPos = it->lastPosition.toPoint();
-    data.currentPos = it->currentPosition.toPoint();
-    g->datas.push_back(data);
-
-    return g;
-}
-
-void QMultiTouchGestureRecognizer::reset()
-{
-    touches.clear();
-}
-*/
 
 QT_END_NAMESPACE

@@ -1551,13 +1551,17 @@ public:
         TouchPointReleased
     };
 
-    typedef QString GestureType;
-    static const char UnknownGesture[] = "???";
-    static const char Tap[] = "Tap";
-    static const char DoubleTap[] = "DoubleTap";
-    static const char LongTap[] = "LongTap";
-    static const char Pan[] = "Pan";
-    static const char Pinch[] = "Pinch";
+    enum GestureType
+    {
+        UnknownGesture,
+        TapGesture,
+        DoubleTapGesture,
+        TrippleTapGesture,
+        TapAndHoldGesture,
+        PanGesture,
+        PinchGesture
+    };
+
 
     enum GestureState
     {

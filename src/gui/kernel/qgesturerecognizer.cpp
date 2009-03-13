@@ -39,70 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef QGESTUREMANAGER_P_H
-#define QGESTUREMANAGER_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of other Qt classes.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qwidget.h"
-#include "qlist.h"
-#include "qset.h"
-#include "qevent.h"
-#include "qbasictimer.h"
-
 #include "qgesturerecognizer.h"
+#include "qgesture.h"
+
+#include <private/qobject_p.h>
+#include <private/qgesturerecognizer_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QGestureManager : public QObject
+QString qt_getStandardGestureTypeName(Qt::GestureType gestureType);
+
+QGestureRecognizerPrivate::QGestureRecognizerPrivate()
+    : gestureType(Qt::UnknownGesture)
 {
-    Q_OBJECT
-public:
-    QGestureManager();
+}
 
-    // should be internal
-    void setGestureTargetWidget(QWidget *widget);
+QGestureRecognizer::QGestureRecognizer(const QString &type)
+    : QObject(*new QGestureRecognizerPrivate, 0)
+{
+    d_func()->customGestureType = type;
+}
 
-    void addRecognizer(QGestureRecognizer *recognizer);
-    void removeRecognizer(QGestureRecognizer *recognizer);
-
-    bool filterEvent(QEvent *event);
-    bool inGestureMode();
-
-protected:
-    void timerEvent(QTimerEvent *event);
-
-private slots:
-    void recognizerStateChanged(QGestureRecognizer::Result);
-
-private:
-    bool sendGestureEvent(QWidget *receiver, QGestureEvent *event);
-
-    QSet<QGestureRecognizer*> activeGestures;
-    QMap<QGestureRecognizer*, int> maybeGestures;
-    QSet<QGestureRecognizer*> recognizers;
-
-    QWidget *targetWidget;
-    QPoint lastPos;
-
-    enum State {
-        Gesture,
-        NotGesture,
-        MaybeGesture // that mean timers are up and waiting for some
-                     // more events, and input events are handled by
-                     // gesture recognizer explicitely
-    } state;
-};
+QString QGestureRecognizer::gestureType() const
+{
+    Q_D(const QGestureRecognizer);
+    if (d->gestureType == Qt::UnknownGesture)
+        return d->customGestureType;
+    return qt_getStandardGestureTypeName(d->gestureType);
+}
 
 QT_END_NAMESPACE
-
-#endif // QGESTUREMANAGER_P_H

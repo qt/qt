@@ -428,7 +428,9 @@ public:
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif
 
-    QMap<Qt::GestureType, int> grabbedGestures;
+    // map<gesture id -> number of grabbed widgets (something like refcount)
+    QMap<int, int> grabbedGestures;
+
     static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
 
 #if defined(Q_WS_WIN)

@@ -56,11 +56,14 @@
 #include "qrect.h"
 #include "qpoint.h"
 #include "qdatetime.h"
+#include "private/qobject_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QGesturePrivate
+class QGesturePrivate : public QObjectPrivate
 {
+    Q_DECLARE_PUBLIC(QGesture)
+
 public:
     QGesturePrivate()
         : duration(0) { }
@@ -90,6 +93,8 @@ public:
 
 class QPannableGesturePrivate : public QGesturePrivate
 {
+    Q_DECLARE_PUBLIC(QPannableGesture)
+
 public:
     QPannableGesture::DirectionType lastDirection;
     QPannableGesture::DirectionType direction;

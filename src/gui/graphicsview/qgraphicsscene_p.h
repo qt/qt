@@ -268,9 +268,9 @@ public:
     void updatePalette(const QPalette &palette);
 
     QSet<QGraphicsItem*> itemsWithGestures;
-    QSet<Qt::GestureType> grabbedGestures;
-    void grabGesture(QGraphicsItem *item, const Qt::GestureType &type);
-    void releaseGesture(QGraphicsItem *item, const Qt::GestureType &type);
+    QSet<int> grabbedGestures;
+    void grabGesture(QGraphicsItem *item, int gestureId);
+    void releaseGesture(QGraphicsItem *item, int gestureId);
 
     mutable QVector<QTransform> sceneTransformCache;
     mutable QBitArray validTransforms;

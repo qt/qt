@@ -298,7 +298,7 @@ public:
     int siblingIndex;
     int index;
     int depth;
-    QSet<Qt::GestureType> gestures;
+    QSet<int> gestures;
 
     // Packed 32 bytes
     quint32 acceptedMouseButtons : 5;
