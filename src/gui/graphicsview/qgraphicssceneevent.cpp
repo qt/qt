@@ -304,6 +304,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QString qt_getStandardGestureTypeName(Qt::GestureType type);
+
 class QGraphicsSceneEventPrivate
 {
 public:
@@ -1725,37 +1727,6 @@ void QGraphicsSceneMoveEvent::setNewPos(const QPointF &pos)
     gestures with \l{QGraphicsItem::}{grabGesture()}.
 */
 
-/*! \fn bool QGraphicsSceneGestureEvent::contains(const Qt::GestureType &type) const
-
-    Checks if the gesture event contains gesture of specific \a type.
-*/
-
-/*! \fn QList<Qt::GestureType> QGraphicsSceneGestureEvent::gestureTypes() const
-
-    Returns a list of gesture names that the event contains.
-*/
-
-/*! \fn const QGesture* QGraphicsSceneGestureEvent::gesture(const Qt::GestureType &type) const
-
-    Returns extended information about a gesture of specific \a type.
-*/
-
-/*! \fn QList<QSharedPointer<QGesture> > QGraphicsSceneGestureEvent::gestures() const
-
-    Returns extended information about all triggered gestures.
-*/
-
-/*! \fn QSet<Qt::GestureType> QGraphicsSceneGestureEvent::cancelledGestures() const
-
-    Returns a set of gesture names that used to be executed, but got
-    cancelled (i.e. they were not finished properly).
-*/
-
-/*! \fn void QGraphicsSceneGestureEvent::setCancelledGestures(const QSet<Qt::GestureType> &)
-
-    Returns a set of gesture names that used to be executed, but got
-    cancelled (i.e. they were not finished properly).
-*/
 
 QGraphicsSceneGestureEvent::QGraphicsSceneGestureEvent()
     : QGraphicsSceneEvent(QEvent::GraphicsSceneGesture)
@@ -1764,6 +1735,72 @@ QGraphicsSceneGestureEvent::QGraphicsSceneGestureEvent()
 
 QGraphicsSceneGestureEvent::~QGraphicsSceneGestureEvent()
 {
+}
+
+/*!
+    Checks if the gesture event contains gesture of specific \a type.
+*/
+bool QGraphicsSceneGestureEvent::contains(const QString &type) const
+{
+    return gesture(type) != 0;
+}
+
+/*!
+    Checks if the gesture event contains gesture of specific \a type.
+*/
+bool QGraphicsSceneGestureEvent::contains(Qt::GestureType type) const
+{
+    return contains(qt_getStandardGestureTypeName(type));
+}
+
+/*!
+    Returns a list of gesture names that the event contains.
+*/
+QList<QString> QGraphicsSceneGestureEvent::gestureTypes() const
+{
+    return m_gestures.keys();
+}
+
+/*!
+    Returns extended information about a gesture of specific \a type.
+*/
+const QGesture* QGraphicsSceneGestureEvent::gesture(const QString &type) const
+{
+    return m_gestures.value(type, QSharedPointer<QGesture>()).data();
+}
+
+/*!
+    Returns extended information about a gesture of specific \a type.
+*/
+const QGesture* QGraphicsSceneGestureEvent::gesture(Qt::GestureType type) const
+{
+    return gesture(qt_getStandardGestureTypeName(type));
+}
+
+/*!
+    Returns extended information about all triggered gestures.
+*/
+QList<QSharedPointer<QGesture> > QGraphicsSceneGestureEvent::gestures() const
+{
+    return m_gestures.values();
+}
+
+/*!
+    Returns a set of gesture names that used to be executed, but got
+    cancelled (i.e. they were not finished properly).
+*/
+QSet<QString> QGraphicsSceneGestureEvent::cancelledGestures() const
+{
+    return m_cancelledGestures;
+}
+
+/*!
+    Returns a set of gesture names that used to be executed, but got
+    cancelled (i.e. they were not finished properly).
+*/
+void QGraphicsSceneGestureEvent::setCancelledGestures(const QSet<QString> &cancelledGestures)
+{
+    m_cancelledGestures = cancelledGestures;
 }
 
 /*!

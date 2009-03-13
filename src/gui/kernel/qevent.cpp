@@ -52,6 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QString qt_getStandardGestureTypeName(Qt::GestureType type);
+
 /*!
     \class QInputEvent
     \ingroup events
@@ -3570,6 +3572,41 @@ QGestureEvent::QGestureEvent(const QGestureEvent &event, const QPoint &offset)
 
 QGestureEvent::~QGestureEvent()
 {
+}
+
+bool QGestureEvent::contains(Qt::GestureType type) const
+{
+    return contains(qt_getStandardGestureTypeName(type));
+}
+
+bool QGestureEvent::contains(const QString &type) const
+{
+    return gesture(type) != 0;
+}
+
+QList<QString> QGestureEvent::gestureTypes() const
+{
+    return m_gestures.keys();
+}
+
+const QGesture* QGestureEvent::gesture(Qt::GestureType type) const
+{
+    return gesture(qt_getStandardGestureTypeName(type));
+}
+
+const QGesture* QGestureEvent::gesture(const QString &type) const
+{
+    return m_gestures.value(type, QSharedPointer<QGesture>()).data();
+}
+
+QList<QSharedPointer<QGesture> > QGestureEvent::gestures() const
+{
+    return m_gestures.values();
+}
+
+QSet<QString> QGestureEvent::cancelledGestures() const
+{
+    return m_cancelledGestures;
 }
 
 /*! \class QTouchEvent

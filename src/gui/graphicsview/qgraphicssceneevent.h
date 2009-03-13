@@ -317,20 +317,18 @@ public:
     QGraphicsSceneGestureEvent();
     ~QGraphicsSceneGestureEvent();
 
-    inline bool contains(const QString &type) const
-    { return gesture(type) != 0; }
-    inline QList<QString> gestureTypes() const
-    { return m_gestures.keys(); }
-    inline const QGesture* gesture(const QString &type) const
-    { return m_gestures.value(type, QSharedPointer<QGesture>()).data(); }
-    inline QList<QSharedPointer<QGesture> > gestures() const
-    { return m_gestures.values(); }
+    bool contains(const QString &type) const;
+    bool contains(Qt::GestureType type) const;
+
+    QList<QString> gestureTypes() const;
+
+    const QGesture* gesture(Qt::GestureType type) const;
+    const QGesture* gesture(const QString &type) const;
+    QList<QSharedPointer<QGesture> > gestures() const;
     void setGestures(const QList<QSharedPointer<QGesture> > &gestures);
 
-    inline QSet<QString> cancelledGestures() const
-    { return m_cancelledGestures; }
-    void setCancelledGestures(const QSet<QString> &cancelledGestures)
-    { m_cancelledGestures = cancelledGestures; }
+    QSet<QString> cancelledGestures() const;
+    void setCancelledGestures(const QSet<QString> &cancelledGestures);
 
     QPointF mapToScene(const QPoint &point) const;
     QPolygonF mapToScene(const QRect &rect) const;

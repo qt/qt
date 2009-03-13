@@ -723,18 +723,16 @@ public:
     QGestureEvent(const QGestureEvent &gestures, const QPoint &offset);
     ~QGestureEvent();
 
-    inline bool contains(const QString &type) const
-    { return gesture(type) != 0; }
-    inline QList<QString> gestureTypes() const
-    { return m_gestures.keys(); }
+    bool contains(Qt::GestureType type) const;
+    bool contains(const QString &type) const;
 
-    inline const QGesture* gesture(const QString &type) const
-    { return m_gestures.value(type, QSharedPointer<QGesture>()).data(); }
-    inline QList<QSharedPointer<QGesture> > gestures() const
-    { return m_gestures.values(); }
+    QList<QString> gestureTypes() const;
 
-    inline QSet<QString> cancelledGestures() const
-    { return m_cancelledGestures; }
+    const QGesture* gesture(Qt::GestureType type) const;
+    const QGesture* gesture(const QString &type) const;
+    QList<QSharedPointer<QGesture> > gestures() const;
+
+    QSet<QString> cancelledGestures() const;
 
 protected:
     QHash<QString, QSharedPointer<QGesture> > m_gestures;
