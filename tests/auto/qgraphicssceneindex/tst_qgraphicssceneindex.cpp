@@ -44,7 +44,6 @@
 #include <QtGui/qgraphicssceneindex.h>
 #include <private/qgraphicsscene_bsp_p.h>
 
-#include <QtGui>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -56,11 +55,38 @@ public slots:
     void initTestCase();
 
 private slots:
+    void sceneRect_data();
     void sceneRect();
+
+private:
+    void common_data();
+    QGraphicsSceneIndex *createIndex(const QString &name);
 };
 
 void tst_QGraphicsSceneIndex::initTestCase()
 {
+}
+
+void tst_QGraphicsSceneIndex::common_data()
+{
+    QTest::addColumn<QString>("indexMethod");
+
+    QTest::newRow("BSP") << QString("bsp");
+}
+
+QGraphicsSceneIndex *tst_QGraphicsSceneIndex::createIndex(const QString &indexMethod)
+{
+    QGraphicsSceneIndex *index = 0;
+
+    if (indexMethod == "bsp")
+        index = new QGraphicsSceneBspTree;
+
+    return index;
+}
+
+void tst_QGraphicsSceneIndex::sceneRect_data()
+{
+    common_data();
 }
 
 void tst_QGraphicsSceneIndex::sceneRect()
