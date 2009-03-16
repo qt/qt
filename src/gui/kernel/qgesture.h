@@ -101,11 +101,11 @@ private:
     Qt::GestureState gestureState_;
 };
 
-class QPannableGesturePrivate;
-class Q_GUI_EXPORT QPannableGesture : public QGesture
+class QPanningGesturePrivate;
+class Q_GUI_EXPORT QPanningGesture : public QGesture
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QPannableGesture)
+    Q_DECLARE_PRIVATE(QPanningGesture)
 
     Q_PROPERTY(Qt::DirectionType lastDirection READ lastDirection)
     Q_PROPERTY(Qt::DirectionType direction READ direction)

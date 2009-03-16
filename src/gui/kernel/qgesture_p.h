@@ -91,9 +91,9 @@ public:
     QPoint pos;
 };
 
-class QPannableGesturePrivate : public QGesturePrivate
+class QPanningGesturePrivate : public QGesturePrivate
 {
-    Q_DECLARE_PUBLIC(QPannableGesture)
+    Q_DECLARE_PUBLIC(QPanningGesture)
 };
 
 QT_END_NAMESPACE

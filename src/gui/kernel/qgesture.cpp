@@ -221,9 +221,9 @@ QPoint QGesture::pos() const
 }
 
 /*!
-    \class QPannableGesture
+    \class QPanningGesture
 
-    \brief The QPannableGesture class represents a Pan gesture,
+    \brief The QPanningGesture class represents a Pan gesture,
     providing additional information related to panning.
 
     This class is provided for convenience, panning direction
@@ -232,21 +232,21 @@ QPoint QGesture::pos() const
 */
 
 /*!
-    \property QPannableGesture::lastDirection
+    \property QPanningGesture::lastDirection
 
     \brief The last recorded direction of panning.
 */
-Qt::DirectionType QPannableGesture::lastDirection() const
+Qt::DirectionType QPanningGesture::lastDirection() const
 {
     return qVariantValue<Qt::DirectionType>(property("lastDirection"));
 }
 
 /*!
-    \property QPannableGesture::direction
+    \property QPanningGesture::direction
 
     \brief The current direction of panning.
 */
-Qt::DirectionType QPannableGesture::direction() const
+Qt::DirectionType QPanningGesture::direction() const
 {
     return qVariantValue<Qt::DirectionType>(property("direction"));
 }
