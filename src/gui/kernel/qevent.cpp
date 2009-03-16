@@ -3537,7 +3537,7 @@ QGestureEvent::QGestureEvent(const QList<QGesture*> &gestures,
     : QEvent(QEvent::Gesture), m_cancelledGestures(cancelledGestures)
 {
     foreach(QGesture *r, gestures)
-        m_gestures.insert(r->gestureType(), QSharedPointer<QGesture>(r));
+        m_gestures.insert(r->gestureType(), r);
 }
 
 /*!
@@ -3586,13 +3586,13 @@ const QGesture* QGestureEvent::gesture(Qt::GestureType type) const
 */
 const QGesture* QGestureEvent::gesture(const QString &type) const
 {
-    return m_gestures.value(type, QSharedPointer<QGesture>()).data();
+    return m_gestures.value(type, 0);
 }
 
 /*!
     Returns extended information about all gestures in the event.
 */
-QList<QSharedPointer<QGesture> > QGestureEvent::gestures() const
+QList<QGesture*> QGestureEvent::gestures() const
 {
     return m_gestures.values();
 }

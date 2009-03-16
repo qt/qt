@@ -48,7 +48,6 @@
 #include <QtGui/qpolygon.h>
 #include <QtCore/qset.h>
 #include <QtCore/qhash.h>
-#include <QtCore/qsharedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -324,8 +323,8 @@ public:
 
     const QGesture* gesture(Qt::GestureType type) const;
     const QGesture* gesture(const QString &type) const;
-    QList<QSharedPointer<QGesture> > gestures() const;
-    void setGestures(const QList<QSharedPointer<QGesture> > &gestures);
+    QList<QGesture*> gestures() const;
+    void setGestures(const QList<QGesture*> &gestures);
 
     QSet<QString> cancelledGestures() const;
     void setCancelledGestures(const QSet<QString> &cancelledGestures);
@@ -336,7 +335,7 @@ public:
     QPolygonF mapToItem(const QRect &rect, QGraphicsItem *item) const;
 
 protected:
-    QHash<QString, QSharedPointer<QGesture> > m_gestures;
+    QHash<QString, QGesture*> m_gestures;
     QSet<QString> m_cancelledGestures;
 };
 

@@ -47,7 +47,6 @@
 #include "qdatetime.h"
 #include "qpoint.h"
 #include "qrect.h"
-#include "qsharedpointer.h"
 #include "qmetatype.h"
 
 QT_BEGIN_HEADER

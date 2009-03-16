@@ -54,7 +54,6 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qset.h>
-#include <QtCore/qsharedpointer.h>
 #include <QtGui/qgesture.h>
 
 QT_BEGIN_HEADER
@@ -728,12 +727,12 @@ public:
 
     const QGesture* gesture(Qt::GestureType type) const;
     const QGesture* gesture(const QString &type) const;
-    QList<QSharedPointer<QGesture> > gestures() const;
+    QList<QGesture*> gestures() const;
 
     QSet<QString> cancelledGestures() const;
 
 protected:
-    QHash<QString, QSharedPointer<QGesture> > m_gestures;
+    QHash<QString, QGesture*> m_gestures;
     QSet<QString> m_cancelledGestures;
 
     friend class QApplication;

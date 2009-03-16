@@ -1773,7 +1773,7 @@ QList<QString> QGraphicsSceneGestureEvent::gestureTypes() const
 */
 const QGesture* QGraphicsSceneGestureEvent::gesture(const QString &type) const
 {
-    return m_gestures.value(type, QSharedPointer<QGesture>()).data();
+    return m_gestures.value(type, 0);
 }
 
 /*!
@@ -1787,7 +1787,7 @@ const QGesture* QGraphicsSceneGestureEvent::gesture(Qt::GestureType type) const
 /*!
     Returns extended information about all gestures in the event.
 */
-QList<QSharedPointer<QGesture> > QGraphicsSceneGestureEvent::gestures() const
+QList<QGesture*> QGraphicsSceneGestureEvent::gestures() const
 {
     return m_gestures.values();
 }
@@ -1884,9 +1884,9 @@ QPolygonF QGraphicsSceneGestureEvent::mapToItem(const QRect &rect, QGraphicsItem
 /*!
     Set a list of gesture objects containing extended information about \a gestures.
 */
-void QGraphicsSceneGestureEvent::setGestures(const QList<QSharedPointer<QGesture> > &gestures)
+void QGraphicsSceneGestureEvent::setGestures(const QList<QGesture*> &gestures)
 {
-    foreach(const QSharedPointer<QGesture> &g, gestures)
+    foreach(QGesture *g, gestures)
         m_gestures.insert(g->gestureType(), g);
 }
 
