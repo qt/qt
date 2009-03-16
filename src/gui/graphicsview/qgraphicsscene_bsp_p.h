@@ -96,8 +96,12 @@ public:
     void removeItems(const QList<QGraphicsItem *> &items);
 
     QList<QGraphicsItem *> items(const QRectF &rect);
-    QList<QGraphicsItem *> items(const QPointF &pos);
+
     int leafCount() const;
+
+private:
+
+    QList<QGraphicsItem *> items(const QPointF &pos);
 
     inline int firstChildIndex(int index) const
     { return index * 2 + 1; }
@@ -107,7 +111,6 @@ public:
 
     QString debug(int index) const;
 
-private:
     void initialize(const QRectF &rect, int depth, int index);
     void climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QPointF &pos, int index = 0);
     void climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QRectF &rect, int index = 0);
