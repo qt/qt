@@ -2,7 +2,8 @@ TEMPLATE      = \
               subdirs
 SUBDIRS       = \
               imageviewer \
-              graphicsview
+              graphicsview \
+              collidingmice
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/gestures
