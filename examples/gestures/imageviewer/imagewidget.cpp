@@ -161,17 +161,17 @@ void ImageWidget::gestureEvent(QGestureEvent *event)
             update();
         } else {
             // only slide gesture should be accepted
-            const QPannableGesture *pg = static_cast<const QPannableGesture*>(g);
+            const QPanningGesture *pg = static_cast<const QPanningGesture*>(g);
             if (pg->direction() != pg->lastDirection()) {
                 // ###: event->cancel();
             }
             if (g->state() == Qt::GestureFinished) {
                 touchFeedback.sliding = false;
                 zoomed = rotated = false;
-                if (pg->direction() == QPannableGesture::Right) {
+                if (pg->direction() == Qt::RightDirection) {
                     qDebug() << "slide right";
                     goNextImage();
-                } else if (pg->direction() == QPannableGesture::Left) {
+                } else if (pg->direction() == Qt::LeftDirection) {
                     qDebug() << "slide left";
                     goPrevImage();
                 }
