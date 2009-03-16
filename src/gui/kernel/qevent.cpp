@@ -3540,13 +3540,6 @@ QGestureEvent::QGestureEvent(const QList<QGesture*> &gestures,
         m_gestures.insert(r->gestureType(), QSharedPointer<QGesture>(r));
 }
 
-QGestureEvent::QGestureEvent(const QGestureEvent &event, const QPoint &offset)
-    : QEvent(QEvent::Gesture), m_gestures(event.m_gestures),
-      m_cancelledGestures(event.m_cancelledGestures)
-{
-    //### use offset!
-}
-
 /*!
     Destroys the QGestureEvent object.
 */
@@ -3555,7 +3548,8 @@ QGestureEvent::~QGestureEvent()
 }
 
 /*!
-    Checks if the gesture event contains gesture of specific \a type.
+    Returns true if the gesture event contains gesture of specific \a
+    type; returns false otherwise.
 */
 bool QGestureEvent::contains(Qt::GestureType type) const
 {
@@ -3563,7 +3557,8 @@ bool QGestureEvent::contains(Qt::GestureType type) const
 }
 
 /*!
-    Checks if the gesture event contains gesture of specific \a type.
+    Returns true if the gesture event contains gesture of specific \a
+    type; returns false otherwise.
 */
 bool QGestureEvent::contains(const QString &type) const
 {

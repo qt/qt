@@ -2676,9 +2676,17 @@
   \sa QPixmapBorders, qDrawBorderPixmap()
 */
 
-/*! \typedef Qt::GestureType
+/*! \enum Qt::GestureType
 
-    A string representing a type of a gesture.
+    This enum lists standard gestures.
+
+    \value UnknownGesture An unknown gesture. This enum value shouldn't be used.
+    \value TapGesture A single tap gesture.
+    \value DoubleTapGesture A double tap gesture.
+    \value TrippleTapGesture A tripple tap gesture.
+    \value TapAndHoldGesture A tap-and-hold (long tap) gesture.
+    \value PanGesture A pan gesture.
+    \value PinchGesture A pinch gesture.
 */
 
 /*!
@@ -2690,4 +2698,25 @@
     \value GestureFinished  The gesture has finished.
 
     \sa QGesture
+*/
+
+/*!
+    \enum Qt::DirectionType
+
+    This enum type describes directions. This could be used by the
+    gesture recognizers.
+
+    \value NoDirection Non-specific direction.
+    \value LeftDownDirection
+    \value DownLeftDirection
+    \value DownDirection
+    \value RightDownDirection
+    \value DownRightDirection
+    \value LeftDirection
+    \value RightDirection
+    \value LeftUpDirection
+    \value UpLeftDirection
+    \value UpDirection
+    \value RightUpDirection
+    \value UpRightDirection
 */

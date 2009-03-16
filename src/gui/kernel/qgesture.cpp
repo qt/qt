@@ -64,11 +64,21 @@ QString qt_getStandardGestureTypeName(Qt::GestureType type);
     information. However, if the gesture developer wants to add a new
     property to the gesture object that describe coordinate (like a
     QPoint or QRect), it is required to subclass the QGesture and
-    re-implement the \l{QGesture::}{translate} function to make sure
+    re-implement the \l{QGesture::}{translate()} function to make sure
     the coordinates are translated properly when the gesture event is
     propagated to parent widgets.
 
     \sa QGestureEvent, QGestureRecognizer
+*/
+
+/*! \fn QString QGesture::gestureType() const
+
+    Returns the type of the gesture.
+*/
+
+/*! \fn Qt::GestureState QGesture::state() const
+
+    Returns the current state of the gesture.
 */
 
 /*!
@@ -141,7 +151,9 @@ void QGesture::translate(const QPoint &offset)
 }
 
 /*!
-    Returns a bounding rect of a gesture.
+    \property QGesture::rect
+
+    \brief The bounding rect of a gesture.
 */
 QRect QGesture::rect() const
 {
@@ -149,7 +161,9 @@ QRect QGesture::rect() const
 }
 
 /*!
-    Returns a center point of a gesture.
+    \property QGesture::hotSpot
+
+    \brief The center point of a gesture.
 */
 QPoint QGesture::hotSpot() const
 {
@@ -157,7 +171,9 @@ QPoint QGesture::hotSpot() const
 }
 
 /*!
-    Returns a time when the gesture has started.
+    \property QGesture::startTime
+
+    \brief The time when the gesture has started.
 */
 QDateTime QGesture::startTime() const
 {
@@ -165,7 +181,9 @@ QDateTime QGesture::startTime() const
 }
 
 /*!
-    Returns a duration time of a gesture.
+    \property QGesture::duration
+
+    \brief The duration time of a gesture.
 */
 uint QGesture::duration() const
 {
@@ -173,7 +191,9 @@ uint QGesture::duration() const
 }
 
 /*!
-    Returns the start position of the pointer.
+    \property QGesture::startPos
+
+    \brief The start position of the pointer.
 */
 QPoint QGesture::startPos() const
 {
@@ -181,7 +201,9 @@ QPoint QGesture::startPos() const
 }
 
 /*!
-    Returns the last recorded position of the pointer.
+    \property QGesture::lastPos
+
+    \brief The last recorded position of the pointer.
 */
 QPoint QGesture::lastPos() const
 {
@@ -189,7 +211,9 @@ QPoint QGesture::lastPos() const
 }
 
 /*!
-    Returns the position of the pointer.
+    \property QGesture::pos
+
+    \brief The current position of the pointer.
 */
 QPoint QGesture::pos() const
 {
@@ -206,28 +230,11 @@ QPoint QGesture::pos() const
     information is also contained in the QGesture object in it's
     properties.
 */
-QPannableGesture::QPannableGesture(QObject *parent, const QPoint &startPos,
-                   const QPoint &lastPos, const QPoint &pos, const QRect &rect,
-                   const QPoint &hotSpot, const QDateTime &startTime,
-                   uint duration, Qt::GestureState state)
-    : QGesture(*new QPannableGesturePrivate, parent,
-               qt_getStandardGestureTypeName(Qt::PanGesture), state)
-{
-    Q_D(QPannableGesture);
-    d->init(startPos, lastPos, pos, rect, hotSpot, startTime, duration);
-    setProperty("lastDirection", QVariant::fromValue(Qt::NoDirection));
-    setProperty("direction", QVariant::fromValue(Qt::NoDirection));
-}
 
 /*!
-    Destroys the QPannableGesture object.
-*/
-QPannableGesture::~QPannableGesture()
-{
-}
+    \property QPannableGesture::lastDirection
 
-/*!
-    Returns the last recorded direction of panning.
+    \brief The last recorded direction of panning.
 */
 Qt::DirectionType QPannableGesture::lastDirection() const
 {
@@ -235,7 +242,9 @@ Qt::DirectionType QPannableGesture::lastDirection() const
 }
 
 /*!
-    Returns the current direction of panning.
+    \property QPannableGesture::direction
+
+    \brief The current direction of panning.
 */
 Qt::DirectionType QPannableGesture::direction() const
 {

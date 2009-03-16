@@ -338,9 +338,10 @@ public:
     QVariant data(int key) const;
     void setData(int key, const QVariant &value);
 
-    int grabGesture(Qt::GestureType type);
-    int grabGesture(const QString &type);
+    int grabGesture(Qt::GestureType gesture);
+    int grabGesture(const QString &gesture);
     void releaseGesture(int gestureId);
+    void setGestureEnabled(int gestureId, bool enable = true);
 
     enum {
         Type = 1,

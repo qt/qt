@@ -107,13 +107,10 @@ class Q_GUI_EXPORT QPannableGesture : public QGesture
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPannableGesture)
 
-public:
-    QPannableGesture(QObject *parent, const QPoint &startPos,
-                     const QPoint &lastPos, const QPoint &pos, const QRect &rect,
-                     const QPoint &hotSpot, const QDateTime &startTime,
-                     uint duration, Qt::GestureState state);
-    ~QPannableGesture();
+    Q_PROPERTY(Qt::DirectionType lastDirection READ lastDirection)
+    Q_PROPERTY(Qt::DirectionType direction READ direction)
 
+public:
     Qt::DirectionType lastDirection() const;
     Qt::DirectionType direction() const;
 };

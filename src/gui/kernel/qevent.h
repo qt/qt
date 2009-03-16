@@ -719,8 +719,6 @@ class Q_GUI_EXPORT QGestureEvent : public QEvent
 public:
     QGestureEvent(const QList<QGesture*> &gestures,
                   const QSet<QString> &cancelledGestures = QSet<QString>());
-    // internal ctor
-    QGestureEvent(const QGestureEvent &gestures, const QPoint &offset);
     ~QGestureEvent();
 
     bool contains(Qt::GestureType type) const;

@@ -5790,27 +5790,61 @@ QVariant QGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
     return QVariant();
 }
 
-int QGraphicsItem::grabGesture(Qt::GestureType type)
+/*!
+    Subscribes the graphics item to the specified \a gesture type.
+
+    Returns the id of the gesture.
+
+    \sa releaseGesture(), setGestureEnabled()
+*/
+int QGraphicsItem::grabGesture(Qt::GestureType gesture)
 {
-    return grabGesture(qt_getStandardGestureTypeName(type));
+    return grabGesture(qt_getStandardGestureTypeName(gesture));
 }
 
-int QGraphicsItem::grabGesture(const QString &type)
+/*!
+    Subscribes the graphics item to the specified \a gesture type.
+
+    Returns the id of the gesture.
+
+    \sa releaseGesture(), setGestureEnabled()
+*/
+int QGraphicsItem::grabGesture(const QString &gesture)
 {
-    int id = qHash(type);
+    int id = qHash(gesture);
     QSet<int>::iterator it = d_ptr->gestures.find(id);
     if (it != d_ptr->gestures.end())
         return *it;
     d_ptr->gestures << id;
     if (d_ptr->scene)
         d_ptr->scene->d_func()->grabGesture(this, id);
+    return id;
 }
 
-void QGraphicsItem::releaseGesture(int id)
+/*!
+    Unsubscribes the graphics item from a gesture, which is specified
+    by the \a gestureId.
+
+    \sa grabGesture(), setGestureEnabled()
+*/
+void QGraphicsItem::releaseGesture(int gestureId)
 {
-    d_ptr->gestures.remove(id);
+    d_ptr->gestures.remove(gestureId);
     if (d_ptr->scene)
-        d_ptr->scene->d_func()->releaseGesture(this, id);
+        d_ptr->scene->d_func()->releaseGesture(this, gestureId);
+}
+
+/*!
+    If \a enable is true, the gesture with the given \a gestureId is
+    enabled; otherwise the gesture is disabled.
+
+    The id of the gesture is returned by the grabGesture().
+
+    \sa grabGesture(), releaseGesture()
+*/
+void QGraphicsItem::setGestureEnabled(int gestureId, bool enable)
+{
+    //###
 }
 
 /*!

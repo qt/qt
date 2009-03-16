@@ -11032,7 +11032,7 @@ QWindowSurface *QWidget::windowSurface() const
 
     Returns the id of the gesture.
 
-    \sa grabGesture(), releaseGesture(), setGestureEnabled()
+    \sa releaseGesture(), setGestureEnabled()
 */
 int QWidget::grabGesture(const QString &gesture)
 {
@@ -11055,7 +11055,7 @@ int QWidgetPrivate::grabGesture(int id)
 
     Returns the id of the gesture.
 
-    \sa grabGesture(), releaseGesture(), setGestureEnabled()
+    \sa releaseGesture(), setGestureEnabled()
 */
 int QWidget::grabGesture(Qt::GestureType gesture)
 {
@@ -11066,7 +11066,7 @@ int QWidget::grabGesture(Qt::GestureType gesture)
     Unsubscribes the widget from a gesture, which is specified by the
     \a gestureId.
 
-    \sa grabGesture(),setGestureEnabled()
+    \sa grabGesture(), setGestureEnabled()
 */
 void QWidget::releaseGesture(int gestureId)
 {
@@ -11087,7 +11087,7 @@ void QWidget::releaseGesture(int gestureId)
 
     \sa grabGesture(), releaseGesture()
 */
-void setGestureEnabled(int gestureId, bool enable)
+void QWidget::setGestureEnabled(int gestureId, bool enable)
 {
     //###
 }
