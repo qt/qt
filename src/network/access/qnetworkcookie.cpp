@@ -543,11 +543,17 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
     while (position < length) {
         QNetworkCookie cookie;
 
+        // When there are multiple SetCookie headers they are join with a new line
+        // \n will always be the start of a new cookie
+        int endOfSetCookie = cookieString.indexOf('\n');
+        if (endOfSetCookie == -1)
+            endOfSetCookie = length;
+
         // The first part is always the "NAME=VALUE" part
         QPair<QByteArray,QByteArray> field = nextField(cookieString, position);
         if (field.first.isEmpty() || field.second.isNull())
             // parsing error
-            return QList<QNetworkCookie>();
+            break;
         cookie.setName(field.first);
         cookie.setValue(field.second);
 
@@ -664,6 +670,8 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
                 }
 
                 position = nextNonWhitespace(cookieString, position);
+                if (position > endOfSetCookie)
+                    endOfCookie = true;
             }
 
         result += cookie;

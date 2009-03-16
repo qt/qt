@@ -769,8 +769,12 @@ void QNetworkAccessHttpBackend::replyHeaderChanged()
 
     for (; it != end; ++it) {
         QByteArray value = rawHeader(it->first);
-        if (!value.isEmpty())
-            value += ", ";
+        if (!value.isEmpty()) {
+            if (it->first.toLower() == "set-cookie")
+                value += "\n";
+            else
+                value += ", ";
+        }
         value += it->second;
         setRawHeader(it->first, value);
     }
