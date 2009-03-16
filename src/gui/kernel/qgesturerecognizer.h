@@ -48,58 +48,6 @@
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QGestureRecognizer
-
-    \brief The base class for implementing custom gestures.
-
-    This is a base class, to create a custom gesture type, you should
-    subclass it and implement pure virtual functions.
-
-    Usually gesture recognizer implements state machine, storing its
-    state internally in the recognizer object. The recognizer receives
-    input events through the QGestureRecognizer::filterEvent() virtual
-    function and decides whether the parsed event should change the
-    state of the recognizer - i.e. if the event starts or ends a
-    gesture or if it isn't related to gesture at all.
-*/
-
-/*! \fn QString gestureType() const
-
-    Returns the name of the gesture that is handled by the recognizer.
-*/
-
-/*! \fn Result filterEvent(const QEvent *event)
-
-    This is a pure virtual function that need to be implemented in
-    subclasses.
-
-    Parses input \a events and returns the result, saying if the event
-    sequence is a gesture or not.
-*/
-
-/*! \fn QGesture* getGesture()
-
-    Creates a new gesture object that will be send to the widget. This
-    function is called when the gesture recognizer returned a
-    QGestureRecognizer::GestureStarted or
-    QGestureRecognizer::GestureFinished state.
-
-    Created gesture object is owned by the caller.
- */
-
-/*! \fn void reset()
-
-    Resets the internal state of the gesture recognizer.
-*/
-
-/*! \fn void stateChanged(QGestureRecognizer::Result result)
-
-    The gesture recognizer might emit the signal when the gesture
-    state changes asynchronously, i.e. without any event being
-    received.
-*/
-
 class QGesture;
 class QGestureRecognizerPrivate;
 class Q_GUI_EXPORT QGestureRecognizer : public QObject
@@ -120,7 +68,7 @@ public:
 
     QString gestureType() const;
 
-    virtual Result filterEvent(const QEvent* event) = 0;
+    virtual QGestureRecognizer::Result filterEvent(const QEvent* event) = 0;
     virtual QGesture* getGesture() = 0;
     virtual void reset() = 0;
 

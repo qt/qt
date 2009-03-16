@@ -94,10 +94,6 @@ public:
 class QPannableGesturePrivate : public QGesturePrivate
 {
     Q_DECLARE_PUBLIC(QPannableGesture)
-
-public:
-    QPannableGesture::DirectionType lastDirection;
-    QPannableGesture::DirectionType direction;
 };
 
 QT_END_NAMESPACE

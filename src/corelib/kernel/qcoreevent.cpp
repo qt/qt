@@ -228,6 +228,8 @@ QT_BEGIN_NAMESPACE
     \value GraphicsSceneTouchBegin          Beginning of a sequence of touch-screen and/or track-pad events in a graphics scene (QGraphicsSceneTouchEvent)
     \value GraphicsSceneTouchUpdate         Touch-screen event in a graphics scene (QGraphicsSceneTouchEvent)
     \value GraphicsSceneTouchEnd            End of touch-event sequence in a graphics scene (QGraphicsSceneTouchEvent)
+    \value Gesture                          A gesture has occured.
+    \value GraphicsSceneGesture             A gesture has occured on a graphics scene.
 
     User events should have values between \c User and \c{MaxUser}:
 

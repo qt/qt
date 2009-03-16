@@ -48,6 +48,7 @@
 #include "qpoint.h"
 #include "qrect.h"
 #include "qsharedpointer.h"
+#include "qmetatype.h"
 
 QT_BEGIN_HEADER
 
@@ -93,7 +94,7 @@ public:
 
 protected:
     QGesture(QGesturePrivate &dd, QObject *parent, const QString &type, Qt::GestureState state);
-    //### virtual void translateCoordinates(const QPoint &offset);
+    virtual void translate(const QPoint &offset);
 
 private:
     QString gestureType_;
@@ -107,35 +108,17 @@ class Q_GUI_EXPORT QPannableGesture : public QGesture
     Q_DECLARE_PRIVATE(QPannableGesture)
 
 public:
-    enum DirectionType
-    {
-        None = 0,
-        LeftDown = 1,
-        DownLeft = LeftDown,
-        Down = 2,
-        RightDown = 3,
-        DownRight = RightDown,
-        Left = 4,
-        Right = 6,
-        LeftUp = 7,
-        UpLeft = LeftUp,
-        Up = 8,
-        RightUp = 9,
-        UpRight = RightUp
-    };
-
-public:
     QPannableGesture(QObject *parent, const QPoint &startPos,
                      const QPoint &lastPos, const QPoint &pos, const QRect &rect,
                      const QPoint &hotSpot, const QDateTime &startTime,
                      uint duration, Qt::GestureState state);
     ~QPannableGesture();
 
-    DirectionType lastDirection() const;
-    DirectionType direction() const;
-
-    friend class QGestureRecognizerPan;
+    Qt::DirectionType lastDirection() const;
+    Qt::DirectionType direction() const;
 };
+
+Q_DECLARE_METATYPE(Qt::DirectionType)
 
 QT_END_NAMESPACE
 

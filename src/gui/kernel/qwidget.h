@@ -616,7 +616,7 @@ public:
     int grabGesture(const QString &gesture);
     int grabGesture(Qt::GestureType gesture);
     void releaseGesture(int gestureId);
-    void setGestureEnabled(int gestureId, bool enable);
+    void setGestureEnabled(int gestureId, bool enable = true);
 
 Q_SIGNALS:
     void customContextMenuRequested(const QPoint &pos);

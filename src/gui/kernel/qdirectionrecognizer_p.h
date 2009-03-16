@@ -60,32 +60,16 @@ QT_BEGIN_NAMESPACE
 
 struct Direction
 {
-    enum DirectionType
-    {
-        None = 0,
-        LeftDown = 1,
-        DownLeft = LeftDown,
-        Down = 2,
-        RightDown = 3,
-        DownRight = RightDown,
-        Left = 4,
-        Right = 6,
-        LeftUp = 7,
-        UpLeft = LeftUp,
-        Up = 8,
-        RightUp = 9,
-        UpRight = RightUp
-    };
-    DirectionType direction;
+    Qt::DirectionType direction;
     QPoint point;
 
-    Direction(DirectionType dir, const QPoint &pt)
+    Direction(Qt::DirectionType dir, const QPoint &pt)
         : direction(dir), point(pt) { }
     Direction()
-        : direction(None) { }
+        : direction(Qt::NoDirection) { }
 
-    inline bool isEmpty() const { return direction == None; }
-    inline bool isNull() const { return direction == None; }
+    inline bool isEmpty() const { return direction == Qt::NoDirection; }
+    inline bool isNull() const { return direction == Qt::NoDirection; }
 };
 
 typedef QList<Direction> DirectionList;

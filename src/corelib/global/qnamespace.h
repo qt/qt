@@ -1569,6 +1569,23 @@ public:
         GestureFinished = 1
     };
 
+    enum DirectionType
+    {
+        NoDirection = 0,
+        LeftDownDirection = 1,
+        DownLeftDirection = LeftDownDirection,
+        DownDirection = 2,
+        RightDownDirection = 3,
+        DownRightDirection = RightDownDirection,
+        LeftDirection = 4,
+        RightDirection = 6,
+        LeftUpDirection = 7,
+        UpLeftDirection = LeftUpDirection,
+        UpDirection = 8,
+        RightUpDirection = 9,
+        UpRightDirection = RightUpDirection
+    };
+
 }
 #ifdef Q_MOC_RUN
  ;

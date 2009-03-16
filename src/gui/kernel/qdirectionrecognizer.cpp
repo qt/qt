@@ -64,22 +64,22 @@ Direction QDirectionSimpleRecognizer::addPosition(const QPoint &pos)
     }
     int dx = pos.x() - lastPoint.x();
     int dy = pos.y() - lastPoint.y();
-    Direction::DirectionType direction = Direction::None;
+    Qt::DirectionType direction = Qt::NoDirection;
     if (dx < 0) {
         if (-1*dx >= SIZE/2)
-            direction = Direction::Left;
+            direction = Qt::LeftDirection;
     } else {
         if (dx >= SIZE/2)
-            direction = Direction::Right;
+            direction = Qt::RightDirection;
     }
     if (dy < 0) {
         if (-1*dy >= SIZE/2)
-            direction = Direction::Up;
+            direction = Qt::UpDirection;
     } else {
         if (dy >= SIZE/2)
-            direction = Direction::Down;
+            direction = Qt::DownDirection;
     }
-    if (direction == Direction::None)
+    if (direction == Qt::NoDirection)
         return Direction();
 
     lastPoint = pos;
@@ -123,7 +123,7 @@ Direction QDirectionDiagonalRecognizer::addPosition(const QPoint &pos)
     if (distance < SIZE/2)
         return Direction();
 
-    Direction::DirectionType direction = Direction::None;
+    Qt::DirectionType direction = Qt::NoDirection;
     double angle = atan(1.0*qAbs(lastPoint.y() - pos.y())/qAbs(pos.x() - lastPoint.x())) * 180. / M_PI;
     if (dx < 0 && dy <= 0) {
         angle = 180 - angle;
@@ -135,25 +135,25 @@ Direction QDirectionDiagonalRecognizer::addPosition(const QPoint &pos)
     if (angle < 0)
         angle += 360;
     if (angle <= 20)
-        direction = Direction::Right;
+        direction = Qt::RightDirection;
     else if (angle <= 65)
-        direction = Direction::RightUp;
+        direction = Qt::RightUpDirection;
     else if (angle <= 110)
-        direction = Direction::Up;
+        direction = Qt::UpDirection;
     else if (angle <= 155)
-        direction = Direction::LeftUp;
+        direction = Qt::LeftUpDirection;
     else if (angle <= 200)
-        direction = Direction::Left;
+        direction = Qt::LeftDirection;
     else if (angle <= 245)
-        direction = Direction::LeftDown;
+        direction = Qt::LeftDownDirection;
     else if (angle <= 290)
-        direction = Direction::Down;
+        direction = Qt::DownDirection;
     else if (angle <= 335)
-        direction = Direction::RightDown;
+        direction = Qt::RightDownDirection;
     else
-        direction = Direction::Right;
+        direction = Qt::RightDirection;
 
-    if (direction == Direction::None)
+    if (direction == Qt::NoDirection)
         return Direction();
 
     lastPoint = pos;

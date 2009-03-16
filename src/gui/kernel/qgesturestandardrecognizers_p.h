@@ -80,8 +80,8 @@ private:
     QPoint currentPos;
     bool mousePressed;
     bool gestureFinished;
-    Direction::DirectionType lastDirection;
-    Direction::DirectionType currentDirection;
+    Qt::DirectionType lastDirection;
+    Qt::DirectionType currentDirection;
     QDirectionDiagonalRecognizer diagonalRecognizer;
     QDirectionSimpleRecognizer simpleRecognizer;
 };

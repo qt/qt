@@ -5088,11 +5088,21 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
     return true;
 }
 
+/*!
+    Adds custom gesture \a recognizer object.
+
+    \sa Qt::AA_EnableGestures, QGestureEvent
+*/
 void QApplication::addGestureRecognizer(QGestureRecognizer *recognizer)
 {
     gestureManager()->addRecognizer(recognizer);
 }
 
+/*!
+    Removes custom gesture \a recognizer object.
+
+    \sa Qt::AA_EnableGestures, QGestureEvent
+*/
 void QApplication::removeGestureRecognizer(QGestureRecognizer *recognizer)
 {
     gestureManager()->removeRecognizer(recognizer);

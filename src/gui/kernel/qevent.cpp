@@ -3519,42 +3519,19 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
     gesture recognition.
 
     The QGestureEvent class contains a list of gestures that are being
-    executed right now (QGestureEvent::gestureTypes()) and a list of
-    gestures that are cancelled (the gesture might be cancelled
-    because the window lost focus, or because of timeout, etc).
+    executed right now (\l{QGestureEvent::}{gestureTypes()}) and a
+    list of gestures that are cancelled (the gesture might be
+    cancelled because the window lost focus, or because of timeout,
+    etc).
 
     \sa QGesture
 */
 
-/*! \fn bool QGestureEvent::contains(const Qt::GestureType &type) const
-
-    Checks if the gesture event contains gesture of specific \a type.
+/*!
+    Creates new QGestureEvent containing a list of \a gestures that
+    are being executed and a list of gesture that were cancelled (\a
+    cancelledGestures).
 */
-
-/*! \fn QList<Qt::GestureType> QGestureEvent::gestureTypes() const
-
-    Returns a list of gesture names that the event contains.
-*/
-
-/*! \fn const QGesture* QGestureEvent::gesture(const Qt::GestureType &type) const
-
-    Returns extended information about a gesture of specific \a type.
-*/
-
-/*! \fn QList<QSharedPointer<QGesture> > QGestureEvent::gestures() const
-
-    Returns extended information about all triggered gestures.
-*/
-
-/*! \fn QSet<Qt::GestureType> QGestureEvent::cancelledGestures() const
-
-    Returns a set of gesture names that used to be executed, but got
-    cancelled (i.e. they were not finished properly).
-*/
-
-
-
-
 QGestureEvent::QGestureEvent(const QList<QGesture*> &gestures,
                              const QSet<QString> &cancelledGestures)
     : QEvent(QEvent::Gesture), m_cancelledGestures(cancelledGestures)
@@ -3570,40 +3547,65 @@ QGestureEvent::QGestureEvent(const QGestureEvent &event, const QPoint &offset)
     //### use offset!
 }
 
+/*!
+    Destroys the QGestureEvent object.
+*/
 QGestureEvent::~QGestureEvent()
 {
 }
 
+/*!
+    Checks if the gesture event contains gesture of specific \a type.
+*/
 bool QGestureEvent::contains(Qt::GestureType type) const
 {
     return contains(qt_getStandardGestureTypeName(type));
 }
 
+/*!
+    Checks if the gesture event contains gesture of specific \a type.
+*/
 bool QGestureEvent::contains(const QString &type) const
 {
     return gesture(type) != 0;
 }
 
+/*!
+    Returns a list of gesture names that this event contains.
+*/
 QList<QString> QGestureEvent::gestureTypes() const
 {
     return m_gestures.keys();
 }
 
+/*!
+    Returns extended information about a gesture of specific \a type.
+*/
 const QGesture* QGestureEvent::gesture(Qt::GestureType type) const
 {
     return gesture(qt_getStandardGestureTypeName(type));
 }
 
+/*!
+    Returns extended information about a gesture of specific \a type.
+*/
 const QGesture* QGestureEvent::gesture(const QString &type) const
 {
     return m_gestures.value(type, QSharedPointer<QGesture>()).data();
 }
 
+/*!
+    Returns extended information about all gestures in the event.
+*/
 QList<QSharedPointer<QGesture> > QGestureEvent::gestures() const
 {
     return m_gestures.values();
 }
 
+/*!
+    Returns a set of gesture names that used to be executed, but were
+    cancelled (i.e. they were not finished properly).
+*/
 QSet<QString> QGestureEvent::cancelledGestures() const
 {
     return m_cancelledGestures;

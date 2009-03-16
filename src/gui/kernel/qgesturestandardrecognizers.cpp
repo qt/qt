@@ -80,17 +80,19 @@ QString qt_getStandardGestureTypeName(Qt::GestureType gestureType)
 
 QGestureRecognizerPan::QGestureRecognizerPan()
     : QGestureRecognizer(QString()), mousePressed(false), gestureFinished(false),
-      lastDirection(Direction::None), currentDirection(Direction::None)
+      lastDirection(Qt::NoDirection), currentDirection(Qt::NoDirection)
 {
     Q_D(QGestureRecognizer);
     d->gestureType = Qt::PanGesture;
+
+    qRegisterMetaType<Qt::DirectionType>();
 }
 
 QGestureRecognizer::Result QGestureRecognizerPan::filterEvent(const QEvent *event)
 {
     if (event->type() == QEvent::MouseButtonPress) {
         const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
-        if (currentDirection != Direction::None) {
+        if (currentDirection != Qt::NoDirection) {
             DEBUG() << "Pan: MouseButtonPress: fail. another press during pan";
             reset();
             return QGestureRecognizer::NotGesture;
@@ -100,7 +102,7 @@ QGestureRecognizer::Result QGestureRecognizerPan::filterEvent(const QEvent *even
         pressedPos = lastPos = currentPos = ev->pos();
         return QGestureRecognizer::MaybeGesture;
     } else if (event->type() == QEvent::MouseButtonRelease) {
-        if (mousePressed && currentDirection != Direction::None) {
+        if (mousePressed && currentDirection != Qt::NoDirection) {
             DEBUG() << "Pan: MouseButtonRelease: pan detected";
             gestureFinished = true;
             const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
@@ -117,19 +119,19 @@ QGestureRecognizer::Result QGestureRecognizerPan::filterEvent(const QEvent *even
         const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
         lastPos = currentPos;
         currentPos = ev->pos();
-        Direction::DirectionType direction =
+        Qt::DirectionType direction =
             simpleRecognizer.addPosition(ev->pos()).direction;
         DEBUG() << "Pan: MouseMove: simplerecognizer result = " << direction;
         QGestureRecognizer::Result result = QGestureRecognizer::NotGesture;
-        if (currentDirection == Direction::None) {
-            if (direction == Direction::None)
+        if (currentDirection == Qt::NoDirection) {
+            if (direction == Qt::NoDirection)
                 result = QGestureRecognizer::MaybeGesture;
             else
                 result = QGestureRecognizer::GestureStarted;
         } else {
             result = QGestureRecognizer::GestureStarted;
         }
-        if (direction != Direction::None) {
+        if (direction != Qt::NoDirection) {
             if (currentDirection != direction)
                 lastDirection = currentDirection;
             currentDirection = direction;
@@ -139,37 +141,16 @@ QGestureRecognizer::Result QGestureRecognizerPan::filterEvent(const QEvent *even
     return QGestureRecognizer::NotGesture;
 }
 
-static inline QPannableGesture::DirectionType convertPanningDirection(const Direction::DirectionType direction)
-{
-    switch (direction) {
-    case Direction::Left:
-        return QPannableGesture::Left;
-    case Direction::Right:
-        return QPannableGesture::Right;
-    case Direction::Up:
-        return QPannableGesture::Up;
-    case Direction::Down:
-        return QPannableGesture::Down;
-    default:
-        break;
-    }
-    return QPannableGesture::None;
-}
-
 QGesture* QGestureRecognizerPan::getGesture()
 {
-    QPannableGesture::DirectionType dir = convertPanningDirection(currentDirection);
-    QPannableGesture::DirectionType lastDir = convertPanningDirection(lastDirection);
-    if (dir == QPannableGesture::None)
+    if (currentDirection == Qt::NoDirection)
         return 0;
-    QPannableGesture *g =
-        new QPannableGesture(this,
-                             pressedPos, lastPos, currentPos,
-                             QRect(), pressedPos, QDateTime(), 0,
-                             gestureFinished ? Qt::GestureFinished : Qt::GestureStarted);
-    QPannableGesturePrivate *d = g->d_func();
-    d->lastDirection = lastDir;
-    d->direction = dir;
+    QGesture *g = new QGesture(this, qt_getStandardGestureTypeName(Qt::PanGesture),
+                               pressedPos, lastPos, currentPos,
+                               QRect(), pressedPos, QDateTime(), 0,
+                               gestureFinished ? Qt::GestureFinished : Qt::GestureStarted);
+    g->setProperty("lastDirection", QVariant::fromValue(lastDirection));
+    g->setProperty("direction", QVariant::fromValue(currentDirection));
     
     return g;
 }
@@ -177,8 +158,8 @@ QGesture* QGestureRecognizerPan::getGesture()
 void QGestureRecognizerPan::reset()
 {
     mousePressed = false;
-    lastDirection = Direction::None;
-    currentDirection = Direction::None;
+    lastDirection = Qt::NoDirection;
+    currentDirection = Qt::NoDirection;
     gestureFinished = false;
     diagonalRecognizer.reset();
     simpleRecognizer.reset();
