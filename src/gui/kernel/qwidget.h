@@ -677,8 +677,6 @@ protected:
     // Misc. protected functions
     virtual void changeEvent(QEvent *);
 
-    virtual void gestureEvent(QGestureEvent *);
-
     int metric(PaintDeviceMetric) const;
 
     virtual void inputMethodEvent(QInputMethodEvent *);

@@ -56,6 +56,7 @@ public:
     void openDirectory(const QString &path);
 
 protected:
+    bool event(QEvent *event);
     void paintEvent(QPaintEvent*);
     void gestureEvent(QGestureEvent *event);
     void resizeEvent(QResizeEvent*);

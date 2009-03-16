@@ -131,6 +131,15 @@ void ImageWidget::paintEvent(QPaintEvent*)
     p.restore();
 }
 
+bool ImageWidget::event(QEvent *event)
+{
+    if (event->type() == QEvent::Gesture) {
+        gestureEvent(static_cast<QGestureEvent*>(event));
+        return true;
+    }
+    return QWidget::event(event);
+}
+
 void ImageWidget::gestureEvent(QGestureEvent *event)
 {
     touchFeedback.doubleTapped = false;

@@ -7931,7 +7931,7 @@ bool QWidget::event(QEvent *event)
         break;
 #endif
     case QEvent::Gesture:
-        gestureEvent((QGestureEvent*)event);
+        event->ignore();
         break;
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
@@ -8737,11 +8737,6 @@ bool QWidget::qwsEvent(QWSEvent *)
 }
 
 #endif
-
-void QWidget::gestureEvent(QGestureEvent *event)
-{
-    event->ignore();
-}
 
 
 /*!
