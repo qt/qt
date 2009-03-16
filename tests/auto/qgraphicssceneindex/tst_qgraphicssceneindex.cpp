@@ -60,6 +60,8 @@ private slots:
     void sceneRect();
     void customIndex_data();
     void customIndex();
+    void scatteredItems_data();
+    void scatteredItems();
 
 private:
     void common_data();
@@ -116,6 +118,26 @@ void tst_QGraphicsSceneIndex::customIndex()
     QCOMPARE(scene.items(QRectF(0, 0, 10, 10)).count(), 1);
 }
 
+void tst_QGraphicsSceneIndex::scatteredItems_data()
+{
+    common_data();
+}
+
+void tst_QGraphicsSceneIndex::scatteredItems()
+{
+    QFETCH(QString, indexMethod);
+    QGraphicsSceneIndex *index = createIndex(indexMethod);
+
+    QGraphicsScene scene;
+    scene.setSceneIndex(index);
+
+    for (int i = 0; i < 10; ++i)
+        scene.addRect(i*50, i*50, 40, 35);
+
+    QCOMPARE(scene.items(QRectF(0, 0, 10, 10)).count(), 1);
+    QCOMPARE(scene.items(QRectF(0, 0, 1000, 1000)).count(), 10);
+    QCOMPARE(scene.items(QRectF(-100, -1000, 0, 0)).count(), 0);
+}
 
 QTEST_MAIN(tst_QGraphicsSceneIndex)
 #include "tst_qgraphicssceneindex.moc"
