@@ -60,6 +60,15 @@ class Q_GUI_EXPORT QGesture : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QGesture)
+
+    Q_PROPERTY(QRect rect READ rect)
+    Q_PROPERTY(QPoint hotSpot READ hotSpot)
+    Q_PROPERTY(QDateTime startTime READ startTime)
+    Q_PROPERTY(uint duration READ duration)
+    Q_PROPERTY(QPoint startPos READ startPos)
+    Q_PROPERTY(QPoint lastPos READ lastPos)
+    Q_PROPERTY(QPoint pos READ pos)
+
 public:
     explicit QGesture(QObject *parent, const QString &type,
                       Qt::GestureState state = Qt::GestureStarted);
