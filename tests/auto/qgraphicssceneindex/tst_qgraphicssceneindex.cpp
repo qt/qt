@@ -41,6 +41,7 @@
 
 
 #include <QtTest/QtTest>
+#include <QtGui/qgraphicsscene.h>
 #include <QtGui/qgraphicssceneindex.h>
 #include <private/qgraphicsscene_bsp_p.h>
 
@@ -57,6 +58,8 @@ public slots:
 private slots:
     void sceneRect_data();
     void sceneRect();
+    void customIndex_data();
+    void customIndex();
 
 private:
     void common_data();
@@ -95,6 +98,24 @@ void tst_QGraphicsSceneIndex::sceneRect()
     index->setRect(QRectF(0, 0, 2000, 2000));
     QCOMPARE(index->rect(), QRectF(0, 0, 2000, 2000));
 }
+
+void tst_QGraphicsSceneIndex::customIndex_data()
+{
+    common_data();
+}
+
+void tst_QGraphicsSceneIndex::customIndex()
+{
+    QFETCH(QString, indexMethod);
+    QGraphicsSceneIndex *index = createIndex(indexMethod);
+
+    QGraphicsScene scene;
+    scene.setSceneIndex(index);
+
+    scene.addRect(0, 0, 30, 40);
+    QCOMPARE(scene.items(QRectF(0, 0, 10, 10)).count(), 1);
+}
+
 
 QTEST_MAIN(tst_QGraphicsSceneIndex)
 #include "tst_qgraphicssceneindex.moc"
