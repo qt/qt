@@ -247,8 +247,10 @@ void QGraphicsSceneBspTree::initialize(const QRectF &rect, int depth, int index)
 
 void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QPointF &pos, int index)
 {
-    if (nodes.isEmpty())
-        return;
+    if (nodes.isEmpty()) {
+        // should never happen for bsp tree internal to QGraphicsScene
+        initialize(sceneRect, 0);
+    }
 
     const Node &node = nodes.at(index);
     int childIndex = firstChildIndex(index);
@@ -277,8 +279,10 @@ void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, con
 
 void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QRectF &rect, int index)
 {
-    if (nodes.isEmpty())
-        return;
+    if (nodes.isEmpty()) {
+        // should never happen for bsp tree internal to QGraphicsScene
+        initialize(sceneRect, 0);
+    }
 
     const Node &node = nodes.at(index);
     int childIndex = firstChildIndex(index);
