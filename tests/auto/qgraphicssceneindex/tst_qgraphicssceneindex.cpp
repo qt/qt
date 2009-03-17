@@ -63,6 +63,8 @@ private slots:
     void customIndex();
     void scatteredItems_data();
     void scatteredItems();
+    void overlappedItems_data();
+    void overlappedItems();
 
 private:
     void common_data();
@@ -143,6 +145,33 @@ void tst_QGraphicsSceneIndex::scatteredItems()
     QCOMPARE(scene.items(QRectF(0, 0, 1000, 1000)).count(), 10);
     QCOMPARE(scene.items(QRectF(-100, -1000, 0, 0)).count(), 0);
 }
+
+void tst_QGraphicsSceneIndex::overlappedItems_data()
+{
+    common_data();
+}
+
+void tst_QGraphicsSceneIndex::overlappedItems()
+{
+    QFETCH(QString, indexMethod);
+    QGraphicsSceneIndex *index = createIndex(indexMethod);
+
+    QGraphicsScene scene;
+    scene.setSceneIndex(index);
+
+    for (int i = 0; i < 10; ++i)
+        for (int j = 0; j < 10; ++j)
+            scene.addRect(i*50, j*50, 200, 200);
+
+    QCOMPARE(scene.items(QRectF(0, 0, 1000, 1000)).count(), 100);
+    QCOMPARE(scene.items(QRectF(-100, -1000, 0, 0)).count(), 0);
+    QCOMPARE(scene.items(QRectF(0, 0, 200, 200)).count(), 16);
+    QCOMPARE(scene.items(QRectF(0, 0, 100, 100)).count(), 4);
+    QCOMPARE(scene.items(QRectF(0, 0, 1, 100)).count(), 2);
+    QCOMPARE(scene.items(QRectF(0, 0, 1, 1000)).count(), 10);
+}
+
+
 
 QTEST_MAIN(tst_QGraphicsSceneIndex)
 #include "tst_qgraphicssceneindex.moc"
