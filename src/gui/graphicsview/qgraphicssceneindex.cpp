@@ -46,38 +46,118 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    Constructs an abstract scene index.
+*/
 QGraphicsSceneIndex::QGraphicsSceneIndex()
 {
 }
 
+/*!
+    Destroys the scene index.
+*/
 QGraphicsSceneIndex::~QGraphicsSceneIndex()
 {
 
 }
 
+/*!
+    \fn virtual void setRect(const QRectF &rect) = 0
+
+    This pure virtual function is called when the scene changes its bounding
+    rectangle.
+
+    \sa rect(), QGraphicsScene::setSceneRect
+*/
+
+/*!
+    \fn virtual QRectF rect() const = 0
+
+    This pure virtual function returns the bounding rectangle of this
+    scene index. It could be as large as or larger than the scene
+    bounding rectangle, depending on the implementation of the
+    scene index.
+
+    \sa setRect(), QGraphicsScene::sceneRect
+*/
+
+/*!
+    \fn virtual void clear() = 0
+
+    This pure virtual function removes all items in the scene index.
+*/
+
+/*!
+    \fn virtual void insertItem(QGraphicsItem *item) = 0
+
+    This pure virtual function inserts an item to the scene index.
+
+    \sa removeItem(), updateItem(), insertItems()
+*/
+
+/*!
+    \fn virtual void removeItem(QGraphicsItem *item) = 0
+
+    This pure virtual function removes an item to the scene index.
+
+    \sa insertItem(), updateItem(), removeItems()
+*/
+
+/*!
+    Returns the scene of this scene index.
+*/
 QGraphicsScene* QGraphicsSceneIndex::scene()
 {
      return mscene;
 }
 
+/*!
+    Updates an item when its geometry has changed.
+
+    The default implemention will remove the item from the index
+    and then insert it again.
+
+    \sa insertItem(), removeItem(), updateItems()
+*/
 void QGraphicsSceneIndex::updateItem(QGraphicsItem *item)
 {
     removeItem(item);
     insertItem(item);
 }
 
+/*!
+    Inserts a list of items to the index.
+
+    The default implemention will insert the items one by one.
+
+    \sa insertItem(), removeItems(), updateItems()
+*/
 void QGraphicsSceneIndex::insertItems(const QList<QGraphicsItem *> &items)
 {
     foreach (QGraphicsItem *item, items)
         insertItem(item);
 }
 
+/*!
+    Removes a list of items from the index.
+
+    The default implemention will remove the items one by one.
+
+    \sa removeItem(), removeItems(), updateItems()
+*/
 void QGraphicsSceneIndex::removeItems(const QList<QGraphicsItem *> &items)
 {
     foreach (QGraphicsItem *item, items)
         removeItem(item);
 }
 
+/*!
+    Update a list of items which have changed the geometry.
+
+    The default implemention will update the items one by one.
+
+    \sa updateItem(), insertItems(), removeItems()
+*/
 void QGraphicsSceneIndex::updateItems(const QList<QGraphicsItem *> &items)
 {
     foreach (QGraphicsItem *item, items)
