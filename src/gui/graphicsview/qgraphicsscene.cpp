@@ -822,8 +822,13 @@ void QGraphicsScenePrivate::purgeRemovedItems()
         return;
 
     // Remove stale items from the BSP tree.
-    if (indexMethod != QGraphicsScene::NoIndex)
-        bspTree.removeItems(removedItems);
+    if (indexMethod != QGraphicsScene::NoIndex) {
+        if (indexMethod == QGraphicsScene::BspTreeIndex) {
+            bspTree.removeItems(removedItems);
+        } else {
+            customIndex->removeItems(removedItems);
+        }
+    }
 
     // Purge this list.
     removedItems.clear();
