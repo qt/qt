@@ -58,6 +58,7 @@
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
 #include "qgraphicsscene_bsp_p.h"
+#include "qgraphicsscene_linear_p.h"
 #include "qgraphicssceneindex.h"
 #include "qgraphicsitem_p.h"
 
@@ -80,6 +81,7 @@ class QGraphicsScenePrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QGraphicsScene)
 public:
     QGraphicsScenePrivate();
+    ~QGraphicsScenePrivate();
     void init();
 
     quint32 changedSignalMask;
@@ -92,11 +94,11 @@ public:
     void removeFromIndex(QGraphicsItem *item);
     void resetIndex();
 
-    QGraphicsSceneBspTree bspTree;
     void _q_updateIndex();
     int lastItemCount;
 
-    QGraphicsSceneIndex *customIndex;
+    QGraphicsSceneIndex *index;
+    QGraphicsSceneLinearIndex *linearIndex;
 
     QRectF sceneRect;
     bool hasSceneRect;

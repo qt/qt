@@ -331,7 +331,7 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       indexMethod(QGraphicsScene::BspTreeIndex),
       bspTreeDepth(0),
       lastItemCount(0),
-      customIndex(0),
+      index(new QGraphicsSceneBspTree()),
       hasSceneRect(false),
       updateAll(false),
       calledEmitUpdated(false),
@@ -361,7 +361,11 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       style(0)
 {
 }
-
+QGraphicsScenePrivate::~QGraphicsScenePrivate()
+{
+    if (index)
+        delete index;
+}
 /*!
     \internal
 */
@@ -388,13 +392,8 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::estimateItemsInRect(const QRectF &
         QGraphicsScenePrivate *that = const_cast<QGraphicsScenePrivate *>(this);
 
         QList<QGraphicsItem *> items;
-        if (indexMethod == QGraphicsScene::BspTreeIndex) {
-            // Get items from BSP tree
-            items = that->bspTree.items(rect);
-        } else {
-            //ask to the custom indexing
-            items = that->customIndex->items(rect);
-        }
+        // Get items from index
+        items = that->index->items(rect);
 
         // Fill in with any unindexed items
         for (int i = 0; i < unindexedItems.size(); ++i) {
@@ -443,7 +442,7 @@ void QGraphicsScenePrivate::addToIndex(QGraphicsItem *item)
 {
     if (indexMethod == QGraphicsScene::BspTreeIndex) {
         if (item->d_func()->index != -1) {
-            bspTree.insertItem(item);
+            index->insertItem(item);
             foreach (QGraphicsItem *child, item->children())
                 child->addToIndex();
         } else {
@@ -454,7 +453,7 @@ void QGraphicsScenePrivate::addToIndex(QGraphicsItem *item)
         }
     } else if (indexMethod == QGraphicsScene::CustomIndex) {
         if (item->d_func()->index != -1) {
-            customIndex->insertItem(item);
+            index->insertItem(item);
             foreach (QGraphicsItem *child, item->children())
                 child->addToIndex();
         }
@@ -469,10 +468,7 @@ void QGraphicsScenePrivate::removeFromIndex(QGraphicsItem *item)
     if (indexMethod != QGraphicsScene::NoIndex) {
         int index = item->d_func()->index;
         if (index != -1) {
-            if (indexMethod == QGraphicsScene::CustomIndex)
-                customIndex->removeItem(item);
-            else
-                bspTree.removeItem(item);
+            this->index->removeItem(item);
             freeItemIndexes << index;
             indexedItems[index] = 0;
             item->d_func()->index = -1;
@@ -551,7 +547,9 @@ void QGraphicsScenePrivate::_q_updateIndex()
             int oldDepth = intmaxlog(lastItemCount);
             depth = intmaxlog(indexedItems.size());
             static const int slack = 100;
-            if (bspTree.leafCount() == 0 || (oldDepth != depth && qAbs(lastItemCount - indexedItems.size()) > slack)) {
+            //### do something better
+            QGraphicsSceneBspTree *bsp = static_cast<QGraphicsSceneBspTree *>(index);
+            if (bsp->leafCount() == 0 || (oldDepth != depth && qAbs(lastItemCount - indexedItems.size()) > slack)) {
                 // ### Crude algorithm.
                 regenerateIndex = true;
             }
@@ -560,7 +558,9 @@ void QGraphicsScenePrivate::_q_updateIndex()
         // Regenerate the tree.
         if (regenerateIndex) {
             regenerateIndex = false;
-            bspTree.initialize(q->sceneRect(), depth);
+            //### do something better
+            QGraphicsSceneBspTree *bsp = static_cast<QGraphicsSceneBspTree *>(index);
+            bsp->initialize(q->sceneRect(), depth);
             unindexedItems = indexedItems;
             lastItemCount = indexedItems.size();
             q->update();
@@ -578,10 +578,9 @@ void QGraphicsScenePrivate::_q_updateIndex()
             QRectF rect = item->sceneBoundingRect();
             if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
                 continue;
-            if (indexMethod == QGraphicsScene::BspTreeIndex)
-                bspTree.insertItem(item);
-            if (indexMethod == QGraphicsScene::CustomIndex)
-                customIndex->insertItem(item);
+
+            if (indexMethod != QGraphicsScene::NoIndex)
+                index->insertItem(item);
 
             // If the item ignores view transformations, update our
             // largest-item-counter to ensure that the view can accurately
@@ -823,11 +822,7 @@ void QGraphicsScenePrivate::purgeRemovedItems()
 
     // Remove stale items from the BSP tree.
     if (indexMethod != QGraphicsScene::NoIndex) {
-        if (indexMethod == QGraphicsScene::BspTreeIndex) {
-            bspTree.removeItems(removedItems);
-        } else {
-            customIndex->removeItems(removedItems);
-        }
+        index->removeItems(removedItems);
     }
 
     // Purge this list.
@@ -2386,8 +2381,18 @@ void QGraphicsScene::setItemIndexMethod(ItemIndexMethod method)
         qWarning("QGraphicsScene: Invalid index type %d", CustomIndex);
         return;
     }
+    if (d->indexMethod == method) {
+        return;
+    }
     d->resetIndex();
+    if (d->indexMethod != NoIndex) {
+        delete d->index;
+    }
     d->indexMethod = method;
+    if (method == BspTreeIndex) {
+        d->index = new QGraphicsSceneBspTree();
+    }
+
 }
 
 void QGraphicsScene::setSceneIndex(QGraphicsSceneIndex *index)
@@ -2396,8 +2401,11 @@ void QGraphicsScene::setSceneIndex(QGraphicsSceneIndex *index)
     if (!index) {
         qWarning("QGraphicsScene::setSceneIndex: Attempt to insert a null indexer");
     } else {
+        if (d->indexMethod == BspTreeIndex) {
+            delete d->index;
+        }
         d->indexMethod = CustomIndex;
-        d->customIndex = index;
+        d->index = index;
         index->mscene = this;
     }
 }
@@ -2405,7 +2413,7 @@ void QGraphicsScene::setSceneIndex(QGraphicsSceneIndex *index)
 QGraphicsSceneIndex* QGraphicsScene::sceneIndex() const
 {
     Q_D(const QGraphicsScene);
-    return d->customIndex;
+    return d->index;
 }
 
 /*!
@@ -2814,7 +2822,7 @@ void QGraphicsScene::clear()
     d->indexedItems.clear();
     d->freeItemIndexes.clear();
     d->lastItemCount = 0;
-    d->bspTree.clear();
+    d->index->clear();
     d->largestUntransformableItem = QRectF();
     d->allItemsIgnoreHoverEvents = true;
     d->allItemsUseDefaultCursor = true;
