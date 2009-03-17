@@ -60,6 +60,12 @@ QGraphicsScene* QGraphicsSceneIndex::scene()
      return mscene;
 }
 
+void QGraphicsSceneIndex::updateItem(QGraphicsItem *item)
+{
+    removeItem(item);
+    insertItem(item);
+}
+
 void QGraphicsSceneIndex::insertItems(const QList<QGraphicsItem *> &items)
 {
     foreach (QGraphicsItem *item, items)
@@ -72,6 +78,11 @@ void QGraphicsSceneIndex::removeItems(const QList<QGraphicsItem *> &items)
         removeItem(item);
 }
 
+void QGraphicsSceneIndex::updateItems(const QList<QGraphicsItem *> &items)
+{
+    foreach (QGraphicsItem *item, items)
+        updateItem(item);
+}
 
 QT_END_NAMESPACE
 

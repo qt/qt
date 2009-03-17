@@ -70,9 +70,11 @@ public:
 
     virtual void insertItem(QGraphicsItem *item) = 0;
     virtual void removeItem(QGraphicsItem *item) = 0;
+    virtual void updateItem(QGraphicsItem *item);
 
     virtual void insertItems(const QList<QGraphicsItem *> &items);
     virtual void removeItems(const QList<QGraphicsItem *> &items);
+    virtual void updateItems(const QList<QGraphicsItem *> &items);
 
     virtual QList<QGraphicsItem *> items(const QRectF &rect) = 0;
 
