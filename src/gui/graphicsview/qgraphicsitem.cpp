@@ -3157,11 +3157,12 @@ QPainterPath QGraphicsItem::clipPath() const
         const QGraphicsItem *lastParent = this;
 
         // Intersect any in-between clips starting at the top and moving downwards.
+        bool foundValidClipPath = false;
         while ((parent = parent->d_ptr->parent)) {
             if (parent->d_ptr->flags & ItemClipsChildrenToShape) {
                 // Map clip to the current parent and intersect with its shape/clipPath
                 clip = lastParent->itemTransform(parent).map(clip);
-                if (!parent->d_ptr->dirtyClipPath) {
+                if ((foundValidClipPath = !parent->d_ptr->dirtyClipPath && parent->isClipped())) {
                     clip = clip.intersected(parent->d_ptr->cachedClipPath);
                     if (!(parent->d_ptr->flags & ItemClipsToShape))
                         clip = clip.intersected(parent->shape());
@@ -3177,7 +3178,7 @@ QPainterPath QGraphicsItem::clipPath() const
             }
 
             if (!(parent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
-                || !parent->d_ptr->dirtyClipPath) {
+                || foundValidClipPath) {
                 break;
             }
         }
