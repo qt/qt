@@ -2412,9 +2412,7 @@ void tst_QUrl::hasQueryItem()
 void tst_QUrl::nameprep()
 {
     QUrl url(QString::fromUtf8("http://www.fu""\xc3""\x9f""ball.de/"));
-    QUrl url2 = QUrl::fromEncoded("http://www.xn--fuball-cta.de/");
-    QCOMPARE(url2.toString(), QString::fromLatin1("http://www.fussball.de/"));
-    QCOMPARE(url.toString(), url2.toString()); // should be identical
+    QCOMPARE(url.toString(), QString::fromLatin1("http://www.fussball.de/"));
 }
 
 void tst_QUrl::isValid()
