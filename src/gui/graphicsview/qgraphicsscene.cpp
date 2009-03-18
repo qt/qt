@@ -363,8 +363,7 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
 }
 QGraphicsScenePrivate::~QGraphicsScenePrivate()
 {
-    if (index)
-        delete index;
+    delete index;
 }
 /*!
     \internal
