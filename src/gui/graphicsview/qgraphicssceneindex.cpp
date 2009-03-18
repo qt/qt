@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 /*!
     Constructs an abstract scene index.
 */
-QGraphicsSceneIndex::QGraphicsSceneIndex()
+QGraphicsSceneIndex::QGraphicsSceneIndex(QObject *parent): QObject(parent)
 {
 }
 
@@ -166,6 +166,6 @@ void QGraphicsSceneIndex::updateItems(const QList<QGraphicsItem *> &items)
 
 QT_END_NAMESPACE
 
-//#include "moc_qgraphicssceneindex.cpp"
+#include "moc_qgraphicssceneindex.cpp"
 
 #endif // QT_NO_GRAPHICSVIEW

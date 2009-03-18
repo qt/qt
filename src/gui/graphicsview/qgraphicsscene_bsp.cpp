@@ -83,8 +83,8 @@ public:
     }
 };
 
-QGraphicsSceneBspTree::QGraphicsSceneBspTree()
-    : leafCnt(0)
+QGraphicsSceneBspTree::QGraphicsSceneBspTree(QObject *parent)
+    : QGraphicsSceneIndex(parent), leafCnt(0)
 {
     insertVisitor = new QGraphicsSceneInsertItemBspTreeVisitor;
     removeVisitor = new QGraphicsSceneRemoveItemBspTreeVisitor;

@@ -66,12 +66,14 @@ QT_BEGIN_NAMESPACE
 
 class Q_AUTOTEST_EXPORT QGraphicsSceneLinearIndex : public QGraphicsSceneIndex
 {
+    Q_OBJECT
+
 private:
     QRectF m_sceneRect;
     QList<QGraphicsItem*> m_items;
 
 public:
-    QGraphicsSceneLinearIndex(): QGraphicsSceneIndex() {
+    QGraphicsSceneLinearIndex(QObject *parent = 0): QGraphicsSceneIndex(parent) {
     }
 
     virtual void setRect(const QRectF &rect) {

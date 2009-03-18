@@ -72,6 +72,8 @@ class QGraphicsSceneFindItemBspTreeVisitor;
 
 class Q_AUTOTEST_EXPORT QGraphicsSceneBspTree : public QGraphicsSceneIndex
 {
+    Q_OBJECT
+
 public:
     struct Node
     {
@@ -83,7 +85,7 @@ public:
         Type type;
     };
 
-    QGraphicsSceneBspTree();
+    QGraphicsSceneBspTree(QObject *parent = 0);
     ~QGraphicsSceneBspTree();
 
     void initialize(const QRectF &rect, int depth);

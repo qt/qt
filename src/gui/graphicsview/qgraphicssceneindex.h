@@ -43,6 +43,7 @@
 #define QGRAPHICSSCENEINDEX_H
 
 #include <QtCore/qnamespace.h>
+#include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
 
@@ -58,10 +59,12 @@ class QRectF;
 class QPointF;
 template<typename T> class QList;
 
-class Q_GUI_EXPORT QGraphicsSceneIndex
+class Q_GUI_EXPORT QGraphicsSceneIndex: public QObject
 {
+    Q_OBJECT
+
 public:
-    QGraphicsSceneIndex();
+    QGraphicsSceneIndex(QObject *parent = 0);
     virtual ~QGraphicsSceneIndex();
 
     virtual void setRect(const QRectF &rect) = 0;
