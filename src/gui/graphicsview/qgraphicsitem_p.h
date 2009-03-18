@@ -246,6 +246,12 @@ public:
 
     void invalidateCachedClipPathRecursively(bool childrenOnly = false);
 
+    inline bool isInvisible() const
+    {
+        return !visible || (hasEffectiveOpacity
+                            && qFuzzyCompare(q_func()->effectiveOpacity() + 1.0, qreal(1.0)));
+    }
+
     QPainterPath cachedClipPath;
     QPointF pos;
     qreal z;
