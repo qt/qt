@@ -1561,7 +1561,7 @@ void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
             continue;
 
         // Skip invisible items and all their children.
-        if (!item->d_ptr->visible || qFuzzyCompare(item->effectiveOpacity(), qreal(0.0)))
+        if (item->d_ptr->isInvisible())
             continue;
 
         // ### _q_adjustedRect is only needed because QRectF::intersects,
@@ -1621,7 +1621,7 @@ void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
             continue;
 
         // Skip invisible items.
-        if (!item->d_ptr->visible || qFuzzyCompare(item->effectiveOpacity() + 1, qreal(1.0)))
+        if (item->d_ptr->isInvisible())
             continue;
 
         // ### _q_adjustedRect is only needed because QRectF::intersects,
@@ -1675,7 +1675,7 @@ void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
             continue;
 
         // Skip invisible items.
-        if (!item->d_ptr->visible || qFuzzyCompare(item->effectiveOpacity(), qreal(0.0)))
+        if (item->d_ptr->isInvisible())
             continue;
 
         // ### _q_adjustedRect is only needed because QRectF::intersects,
