@@ -3061,7 +3061,8 @@ void tst_QUrl::nameprep_testsuite_data()
 
 #ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
-extern QString qt_nameprep(const QString &source);
+extern void qt_nameprep(QString *source, int from);
+extern bool qt_check_std3rules(const QStringRef &);
 QT_END_NAMESPACE
 #endif
 
@@ -3086,7 +3087,8 @@ void tst_QUrl::nameprep_testsuite()
                  "Investigate further", Continue);
     QEXPECT_FAIL("Larger test (expanding)",
                  "Investigate further", Continue);
-    QCOMPARE(qt_nameprep(in), out);
+    qt_nameprep(&in, 0);
+    QCOMPARE(in, out);
 #endif
 }
 
@@ -3210,11 +3212,9 @@ void tst_QUrl::std3violations()
 {
     QFETCH(QString, source);
 
-    extern QString qt_nameprep(const QString &);
-    extern bool qt_check_std3rules(const QStringRef &);
-
     {
-        QString prepped = qt_nameprep(source);
+        QString prepped = source;
+        qt_nameprep(&prepped, 0);
         QVERIFY(!qt_check_std3rules(QStringRef(&prepped)));
     }
 

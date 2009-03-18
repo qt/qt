@@ -2336,12 +2336,12 @@ static const NameprepCaseFoldingEntry NameprepCaseFolding[] = {
 	{ 0x1D7BB, { 0x03C3, 0x0000, 0x0000, 0x0000 } }
 };
 
-static void mapToLowerCase(QString *str)
+static void mapToLowerCase(QString *str, int from)
 {
     int N = sizeof(NameprepCaseFolding) / sizeof(NameprepCaseFolding[0]);
 
     QChar *d = 0;
-    for (int i = 0; i < str->size(); ++i) {
+    for (int i = from; i < str->size(); ++i) {
         int uc = str->at(i).unicode();
         if (uc < 0x80) {
             if (uc <= 'Z' && uc >= 'A') {
@@ -2388,11 +2388,11 @@ static bool isMappedToNothing(const QChar &ch)
 }
 
 
-static void stripProhibitedOutput(QString *str)
+static void stripProhibitedOutput(QString *str, int from)
 {
-    ushort *out = (ushort *)str->data(); 
+    ushort *out = (ushort *)str->data() + from;
     const ushort *in = out;
-    const ushort *end = out + str->size();
+    const ushort *end = (ushort *)str->data() + str->size();
     while (in < end) {
         ushort uc = *in;
         if (uc < 0x80 ||
@@ -2903,36 +2903,34 @@ static bool isBidirectionalL(const QChar &ch)
 
 #ifdef QT_BUILD_INTERNAL
 // export for tst_qurl.cpp
-Q_AUTOTEST_EXPORT QString qt_nameprep(const QString &);
+Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from);
 Q_AUTOTEST_EXPORT bool qt_check_std3rules(const QStringRef &);
 #else
 // non-test build, keep the symbols for ourselves
-static QString qt_nameprep(const QString &);
+static QString void qt_nameprep(QString *source, int from)
 static bool qt_check_std3rules(const QStringRef &);
 #endif
 
-QString qt_nameprep(const QString &source)
+void qt_nameprep(QString *source, int from)
 {
-    QString mapped = source;
+    QString &mapped = *source;
     
-    bool simple = true;
-    for (int i = 0; i < mapped.size(); ++i) {
-        ushort uc = mapped.at(i).unicode();
+    for ( ; from < mapped.size(); ++from) {
+        ushort uc = mapped.at(from).unicode();
         if (uc > 0x80) {
-            simple = false;
             break;
         } else if (uc >= 'A' && uc <= 'Z') {
-            mapped[i] = QChar(uc | 0x20);
+            mapped[from] = QChar(uc | 0x20);
         }
     }
-    if (simple)
-        return mapped;
+    if (from == mapped.size())
+        return; // everything was mapped easily (lowercased, actually)
     
     // Characters commonly mapped to nothing are simply removed
     // (Table B.1)
-    QChar *out = mapped.data();
+    QChar *out = mapped.data() + from;
     const QChar *in = out;
-    const QChar *e = in + mapped.size();
+    const QChar *e = mapped.constData() + mapped.size();
     while (in < e) {
         if (!isMappedToNothing(*in))
             *out++ = *in;
@@ -2942,30 +2940,30 @@ QString qt_nameprep(const QString &source)
         mapped.truncate(out - mapped.constData());
 
     // Map to lowercase (Table B.2)
-    mapToLowerCase(&mapped);
+    mapToLowerCase(&mapped, from);
 
     // Normalize to Unicode 3.2 form KC
-    mapped = mapped.normalized(QString::NormalizationForm_KC, QChar::Unicode_3_2);
+    extern void qt_string_normalize(QString *data, QString::NormalizationForm mode,
+                                    QChar::UnicodeVersion version, int from);
+    qt_string_normalize(&mapped, QString::NormalizationForm_KC, QChar::Unicode_3_2, from);
 
     // Strip prohibited output
-    stripProhibitedOutput(&mapped);
+    stripProhibitedOutput(&mapped, from);
 
     // Check for valid bidirectional characters
     bool containsLCat = false;
     bool containsRandALCat = false;
-    for (int j = 0; j < mapped.size() && (!containsLCat || !containsRandALCat); ++j) {
+    for (int j = from; j < mapped.size() && (!containsLCat || !containsRandALCat); ++j) {
         if (isBidirectionalL(mapped.at(j)))
             containsLCat = true;
         else if (isBidirectionalRorAL(mapped.at(j)))
             containsRandALCat = true;
     }
     if (containsRandALCat) {
-        if (containsLCat || (!isBidirectionalRorAL(mapped.at(0))
+        if (containsLCat || (!isBidirectionalRorAL(mapped.at(from))
                              || !isBidirectionalRorAL(mapped.at(mapped.size() - 1))))
             mapped.clear();
     }
-
-    return mapped;
 }
 
 bool qt_check_std3rules(const QStringRef &source)
@@ -3281,7 +3279,7 @@ static QString qt_ACE_do(const QString &domainMC, AceOperation op)
             // Nameprep the host. If the labels in the hostname are Punycode
             // encoded, we decode them immediately, then nameprep them.
             QString tmp = domain.mid(lastIdx, idx - lastIdx);
-            tmp = qt_nameprep(tmp);
+            qt_nameprep(&tmp, 0);
 
             if (isIdnEnabled) {
                 toPunycodeHelper(tmp.constData(), tmp.size(), &aux);
