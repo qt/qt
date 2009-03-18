@@ -2372,6 +2372,17 @@ QGraphicsScene::ItemIndexMethod QGraphicsScene::itemIndexMethod() const
     Q_D(const QGraphicsScene);
     return d->indexMethod;
 }
+
+// Possibilities
+//      NoIndex -> CustomIndex  : warning
+// BspTreeIndex -> CustomIndex  : warning
+//  CustomIndex -> CustomIndex  : warning
+//      NoIndex -> BspTreeIndex : create an empty BSP if necessary
+// BspTreeIndex -> BspTreeIndex : nothing
+//  CustomIndex -> BspTreeIndex : create BSP and transfer items
+//      NoIndex -> NoIndex      : nothing
+// BspTreeIndex -> NoIndex      : nothing
+//  CustomIndex -> NoIndex      : create BSP tree but do not populate
 void QGraphicsScene::setItemIndexMethod(ItemIndexMethod method)
 {
     Q_D(QGraphicsScene);
@@ -2383,11 +2394,25 @@ void QGraphicsScene::setItemIndexMethod(ItemIndexMethod method)
         return;
     }
     d->resetIndex();
-    if (method == BspTreeIndex) {
-        delete d->index;
-        d->index = new QGraphicsSceneBspTree(this);
-        // ### FIXME: transfer the items
+
+    if (d->indexMethod == NoIndex && method == BspTreeIndex) {
+        QGraphicsSceneBspTree *tree = qobject_cast<QGraphicsSceneBspTree*>(d->index);
+        if (!tree) {
+            delete d->index;
+            d->index = new QGraphicsSceneBspTree(this);
+        }
     }
+
+    if (d->indexMethod == CustomIndex && method == BspTreeIndex) {
+        QGraphicsSceneIndex *oldIndex = d->index;
+        d->index = new QGraphicsSceneBspTree(this);
+        d->index->insertItems(oldIndex->items(oldIndex->rect()));
+    }
+
+    if (d->indexMethod == CustomIndex && method == NoIndex) {
+        d->index = new QGraphicsSceneBspTree(this);
+    }
+
     d->indexMethod = method;
 }
 
