@@ -678,6 +678,8 @@ void QVFb::configure()
 	int d;
 	if ( config->depth_1->isChecked() )
 	    d=1;
+	else if ( config->depth_2gray->isChecked() )
+	    d=2;
 	else if ( config->depth_4gray->isChecked() )
 	    d=4;
 	else if ( config->depth_8->isChecked() )
@@ -741,6 +743,7 @@ void QVFb::chooseSize(const QSize& sz)
 void QVFb::chooseDepth(int depth, QVFbView::PixelFormat displayFormat)
 {
     config->depth_1->setChecked(depth==1);
+    config->depth_2gray->setChecked(depth==2);
     config->depth_4gray->setChecked(depth==4);
     config->depth_8->setChecked(depth==8);
     config->depth_12->setChecked(depth==12);
