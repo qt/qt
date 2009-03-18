@@ -1421,16 +1421,15 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
 // ---------------------------------------------------------------------------
 
 
-static QString decomposeHelper
-    (const QString &str, bool canonical, QChar::UnicodeVersion version)
+static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion version, int from)
 {
     unsigned short buffer[3];
 
-    QString s = str;
+    QString &s = *str;
 
     const unsigned short *utf16 = s.utf16();
     const unsigned short *uc = utf16 + s.length();
-    while (uc != utf16) {
+    while (uc != utf16 + from) {
         uint ucs4 = *(--uc);
         if (QChar(ucs4).isLowSurrogate() && uc != utf16) {
             ushort high = *(uc - 1);
@@ -1453,8 +1452,6 @@ static QString decomposeHelper
         utf16 = s.utf16();
         uc = utf16 + pos + length;
     }
-
-    return s;
 }
 
 
@@ -1489,17 +1486,17 @@ static ushort ligatureHelper(ushort u1, ushort u2)
     return 0;
 }
 
-static QString composeHelper(const QString &str)
+static void composeHelper(QString *str, int from)
 {
-    QString s = str;
+    QString &s = *str;
 
-    if (s.length() < 2)
-        return s;
+    if (s.length() - from < 2)
+        return;
 
     // the loop can partly ignore high Unicode as all ligatures are in the BMP
     int starter = 0;
     int lastCombining = 0;
-    int pos = 0;
+    int pos = from;
     while (pos < s.length()) {
         uint uc = s.utf16()[pos];
         if (QChar(uc).isHighSurrogate() && pos < s.length()-1) {
@@ -1524,16 +1521,14 @@ static QString composeHelper(const QString &str)
         lastCombining = combining;
         ++pos;
     }
-    return s;
 }
 
 
-static QString canonicalOrderHelper
-    (const QString &str, QChar::UnicodeVersion version)
+static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, int from)
 {
-    QString s = str;
+    QString &s = *str;
     const int l = s.length()-1;
-    int pos = 0;
+    int pos = from;
     while (pos < l) {
         int p2 = pos+1;
         uint u1 = s.at(pos).unicode();
@@ -1593,7 +1588,6 @@ static QString canonicalOrderHelper
                 ++pos;
         }
     }
-    return s;
 }
 
 int QT_FASTCALL QUnicodeTables::script(unsigned int uc)
