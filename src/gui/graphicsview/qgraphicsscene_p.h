@@ -81,7 +81,6 @@ class QGraphicsScenePrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QGraphicsScene)
 public:
     QGraphicsScenePrivate();
-    ~QGraphicsScenePrivate();
     void init();
 
     quint32 changedSignalMask;

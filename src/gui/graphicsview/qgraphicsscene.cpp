@@ -361,16 +361,15 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       style(0)
 {
 }
-QGraphicsScenePrivate::~QGraphicsScenePrivate()
-{
-    delete index;
-}
+
 /*!
     \internal
 */
 void QGraphicsScenePrivate::init()
 {
     Q_Q(QGraphicsScene);
+
+    index->setParent(q);
 
     // Keep this index so we can check for connected slots later on.
     changedSignalMask = (1 << q->metaObject()->indexOfSignal("changed(QList<QRectF>)"));
