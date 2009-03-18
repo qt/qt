@@ -2383,14 +2383,12 @@ void QGraphicsScene::setItemIndexMethod(ItemIndexMethod method)
         return;
     }
     d->resetIndex();
-    if (d->indexMethod != NoIndex) {
+    if (method == BspTreeIndex) {
         delete d->index;
+        d->index = new QGraphicsSceneBspTree(this);
+        // ### FIXME: transfer the items
     }
     d->indexMethod = method;
-    if (method == BspTreeIndex) {
-        d->index = new QGraphicsSceneBspTree();
-    }
-
 }
 
 void QGraphicsScene::setSceneIndex(QGraphicsSceneIndex *index)
