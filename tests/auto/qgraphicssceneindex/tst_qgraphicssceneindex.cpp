@@ -143,6 +143,10 @@ void tst_QGraphicsSceneIndex::scatteredItems()
     for (int i = 0; i < 10; ++i)
         scene.addRect(i*50, i*50, 40, 35);
 
+    QCOMPARE(scene.items(QPointF(5, 5)).count(), 1);
+    QCOMPARE(scene.items(QPointF(55, 55)).count(), 1);
+    QCOMPARE(scene.items(QPointF(-100, -100)).count(), 0);
+
     QCOMPARE(scene.items(QRectF(0, 0, 10, 10)).count(), 1);
     QCOMPARE(scene.items(QRectF(0, 0, 1000, 1000)).count(), 10);
     QCOMPARE(scene.items(QRectF(-100, -1000, 0, 0)).count(), 0);
@@ -164,6 +168,11 @@ void tst_QGraphicsSceneIndex::overlappedItems()
     for (int i = 0; i < 10; ++i)
         for (int j = 0; j < 10; ++j)
             scene.addRect(i*50, j*50, 200, 200);
+
+    QCOMPARE(scene.items(QPointF(5, 5)).count(), 1);
+    QCOMPARE(scene.items(QPointF(55, 55)).count(), 4);
+    QCOMPARE(scene.items(QPointF(105, 105)).count(), 9);
+    QCOMPARE(scene.items(QPointF(-100, -100)).count(), 0);
 
     QCOMPARE(scene.items(QRectF(0, 0, 1000, 1000)).count(), 100);
     QCOMPARE(scene.items(QRectF(-100, -1000, 0, 0)).count(), 0);
@@ -190,12 +199,17 @@ void tst_QGraphicsSceneIndex::movingItems()
         scene.addRect(i*50, i*50, 40, 35);
 
     QGraphicsRectItem *box = scene.addRect(0, 0, 10, 10);
+    QCOMPARE(scene.items(QPointF(5, 5)).count(), 2);
+    QCOMPARE(scene.items(QPointF(-1, -1)).count(), 0);
     QCOMPARE(scene.items(QRectF(0, 0, 5, 5)).count(), 2);
 
     box->setPos(10, 10);
+    QCOMPARE(scene.items(QPointF(9, 9)).count(), 1);
+    QCOMPARE(scene.items(QPointF(15, 15)).count(), 2);
     QCOMPARE(scene.items(QRectF(0, 0, 1, 1)).count(), 1);
 
     box->setPos(-5, -5);
+    QCOMPARE(scene.items(QPointF(-1, -1)).count(), 1);
     QCOMPARE(scene.items(QRectF(0, 0, 1, 1)).count(), 2);
 
     QCOMPARE(scene.items(QRectF(0, 0, 1000, 1000)).count(), 11);
