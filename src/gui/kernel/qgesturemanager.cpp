@@ -409,8 +409,13 @@ bool QGestureManager::sendGestureEvent(QWidget *receiver, QGestureEvent *event)
     foreach(const QString &gesture, event->gestureTypes())
         eventGestures << qHash(gesture);
 
-    while (receiver && (receiver->d_func()->gestures & eventGestures).isEmpty())
+    QPoint offset;
+    while (receiver && (receiver->d_func()->gestures & eventGestures).isEmpty()) {
+        offset += receiver->pos();
         receiver = receiver->parentWidget();
+    }
+    foreach(QGesture *gesture, event->gestures())
+        gesture->translate(offset);
     return receiver ? qt_sendSpontaneousEvent(receiver, event) : false;
 }
 

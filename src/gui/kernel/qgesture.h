@@ -99,6 +99,7 @@ protected:
     virtual void translate(const QPoint &offset);
 
 private:
+    friend class QGestureManager;
     friend class QGestureRecognizerPan;
     friend class QDoubleTapGestureRecognizer;
     friend class QTapAndHoldGestureRecognizer;
