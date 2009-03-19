@@ -41,13 +41,8 @@
 #ifndef TESTCOMPILER_H
 #define TESTCOMPILER_H
 
-
-#ifdef QT3_SUPPORT
-
 #include <qobject.h>
 #include <qstringlist.h>
-
-QT_FORWARD_DECLARE_CLASS(Q3Process)
 
 #define COMPILE_ERROR "Compile error"
 #define COMPILE_SUCCESS "Compile successfull"
@@ -64,7 +59,7 @@ public:
     TestCompiler();
     virtual ~TestCompiler();
 
-    void setBaseCommands( QString makeCmd, QString qmakeCmd, bool qwsMode );
+    void setBaseCommands( QString makeCmd, QString qmakeCmd );
 
     // builds a complete project, e.g. qmake, make clean, make and exists.
     bool buildProject( const QString &project, BuildType buildType, const QString &targetName, const QString &destPath, const QString &version );
@@ -86,25 +81,13 @@ public:
     bool removeMakefile( const QString &workPath );
 
 private:
-    QString     make_cmd;
-    QString     qmake_cmd;
+    bool runCommand( QString cmdLine );
 
-    Q3Process	*childProc;
-    QStringList env_list;
+    QString makeCmd_;
+    QString qmakeCmd_;
 
-    bool	child_show;
-    bool        qws_mode;
-    bool	exit_ok;
-
-private:
-    bool runChild( bool showOutput, QStringList argList, QStringList *envList );
-    void addMakeResult( const QString &result );
-    QStringList make_result;
-
-private slots:
-    void childReady();
-    void childHasData();
+    // need to make this available somewhere
+    QStringList testOutput_;
 };
 
-#endif // QT3_SUPPORT
 #endif // TESTCOMPILER_H

@@ -42,11 +42,9 @@
 
 #include <QtTest/QtTest>
 
-#if !defined(QMAKE_CROSS_COMPILED) && defined(QT3_SUPPORT)
+#if !defined(QMAKE_CROSS_COMPILED)
 
 #include <qdir.h>
-#include <qprocess.h>
-
 
 #include "testcompiler.h"
 
@@ -104,16 +102,16 @@ tst_qmake::tst_qmake()
 {
     QString cmd = QString("qmake \"QT_VERSION=%1\"").arg(QT_VERSION);
 #ifdef Q_CC_MSVC
-    test_compiler.setBaseCommands( "nmake", cmd, FALSE );
+    test_compiler.setBaseCommands( "nmake", cmd );
 #elif defined(Q_CC_MINGW)
-    test_compiler.setBaseCommands( "mingw32-make", cmd, FALSE );
+    test_compiler.setBaseCommands( "mingw32-make", cmd );
 #elif defined(Q_OS_WIN) && defined(Q_CC_GNU)
-    test_compiler.setBaseCommands( "mmmake", cmd, FALSE );
+    test_compiler.setBaseCommands( "mmmake", cmd );
 #else
-    test_compiler.setBaseCommands( "make", cmd, FALSE );
+    test_compiler.setBaseCommands( "make", cmd );
 #endif
     QDir dir;
-    base_path = dir.currentDirPath();
+    base_path = dir.currentPath();
 }
 
 tst_qmake::~tst_qmake()
@@ -406,7 +404,7 @@ void tst_qmake::bundle_spaces()
     // make (-n).
 
     TestCompiler local_tc;
-    local_tc.setBaseCommands("make -n", "qmake -macx -spec macx-g++", FALSE);
+    local_tc.setBaseCommands("make -n", "qmake -macx -spec macx-g++");
 
     QVERIFY( local_tc.qmake(workDir, "bundle-spaces") );
 
