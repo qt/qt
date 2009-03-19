@@ -241,7 +241,7 @@ public:
     void end();
 
     SurfaceCache *surfaceCache;
-
+    QTransform transform;
 private:
 //    QRegion rectsToClippedRegion(const QRect *rects, int n) const;
 //    QRegion rectsToClippedRegion(const QRectF *rects, int n) const;
@@ -252,7 +252,6 @@ private:
     int fbHeight;
 
     quint8 opacity;
-    QTransform transform;
 
     quint32 drawFlags;
     quint32 blitFlags;
@@ -1191,12 +1190,14 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
     d->updateClip();
     if (d->dfbCanHandleClip(rect) && !d->matrixRotShear) {
         switch (brush.style()) {
-        case Qt::SolidPattern:
+        case Qt::SolidPattern: {
             d->unlock();
             d->updateFlags();
             d->setDFBColor(brush.color());
-            d->fillRects(&rect, 1);
-            return;
+            const QRect r = ::mapRect(d->transform, rect);
+            d->surface->FillRectangle(d->surface, r.x(), r.y(),
+                                      r.width(), r.height());
+            return; }
         case Qt::TexturePattern:
             if (state()->brushOrigin == QPointF() && brush.transform().isIdentity()) {
                 //could handle certain types of brush.transform() E.g. scale
@@ -1225,7 +1226,9 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QColor &color)
         d->unlock();
         d->updateFlags();
         d->setDFBColor(color);
-        d->fillRects(&rect, 1);
+        const QRect r = ::mapRect(d->transform, rect);
+        d->surface->FillRectangle(d->surface, r.x(), r.y(),
+                                  r.width(), r.height());
     }
 }
 
