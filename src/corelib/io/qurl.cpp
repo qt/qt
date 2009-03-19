@@ -3234,9 +3234,12 @@ static QString qt_ACE_do(const QString &domain, AceOperation op)
 
     const bool isIdnEnabled = op == NormalizeAce ? qt_is_idn_enabled(domain) : false;
     int lastIdx = 0;
+    QString aceForm; // this variable is here for caching
+
     while (1) {
         int idx = nextDotDelimiter(domain, lastIdx);
-        if (idx == lastIdx)
+        int labelLength = idx - lastIdx;
+        if (labelLength == 0)
             return QString(); // two delimiters in a row -- empty label not allowed
 
         // RFC 3490 says, about the ToASCII operation:
@@ -3264,13 +3267,15 @@ static QString qt_ACE_do(const QString &domain, AceOperation op)
         // copy the label to the destination, which also serves as our scratch area
         // then nameprep it (in the case of "simple", it will cause a simple lowercasing)
         int prevLen = result.size();
-        result.resize(prevLen + idx - lastIdx);
-        memcpy(result.data() + prevLen, domain.constData() + lastIdx, (idx - lastIdx) * sizeof(QChar));
+        result.resize(prevLen + labelLength);
+        memcpy(result.data() + prevLen, domain.constData() + lastIdx, labelLength * sizeof(QChar));
         qt_nameprep(&result, prevLen);
+        labelLength = result.length() - prevLen;
 
-        if (simple && idx > lastIdx + 4) {
+        if (simple && labelLength > 6) {
             // ACE form domains contain only ASCII characters, but we can't consider them simple
             // is this an ACE form?
+            // the shortest valid ACE domain is 6 characters long (U+0080 would be 1, but it's not allowed)
             static const ushort acePrefixUtf16[] = { 'x', 'n', '-', '-' };
             if (memcmp(result.constData() + prevLen, acePrefixUtf16, sizeof acePrefixUtf16) == 0)
                 simple = false;
@@ -3279,15 +3284,17 @@ static QString qt_ACE_do(const QString &domain, AceOperation op)
         if (simple) {
             // fastest case: this is the common case (non IDN-domains)
             // so we're done
-            if (!qt_check_std3rules(result.constData() + prevLen, result.length() - prevLen))
+            if (!qt_check_std3rules(result.constData() + prevLen, labelLength))
                 return QString();
         } else { 
             // Punycode encoding and decoding cannot be done in-place
             // That means we need one or two temporaries
-            QString aceForm;
-            aceForm.reserve(result.size() - prevLen + 4 + 4); // "xn--" and "-xyz"
+            register int toReserve = labelLength + 4 + 6; // "xn--" plus some extra bytes
+            if (toReserve > aceForm.capacity())
+                aceForm.reserve(toReserve);
             toPunycodeHelper(result.constData() + prevLen, result.size() - prevLen, &aceForm);
 
+            // We use resize()+memcpy() here because we're overwriting the data we've copied
             if (isIdnEnabled) {
                 QString tmp = QUrl::fromPunycode(aceForm.toLatin1());
                 if (tmp.isEmpty())
