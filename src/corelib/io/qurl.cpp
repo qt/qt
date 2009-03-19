@@ -3255,22 +3255,24 @@ static QString qt_ACE_do(const QString &domain, AceOperation op)
         //   8. Verify that the number of code points is in the range 1 to 63
         //      inclusive.
 
+        // copy the label to the destination, which also serves as our scratch area, lowercasing it
+        int prevLen = result.size();
         bool simple = true;
-        for (int i = lastIdx; i < idx; ++i) {
-            ushort ch = domain.at(i).unicode();
-            if (ch > 0x7f) {
-                simple = false;
-                break;
+        result.resize(prevLen + labelLength);
+        {
+            QChar *out = result.data() + prevLen;
+            const QChar *in = domain.constData() + lastIdx;
+            const QChar *e = in + labelLength;
+            for (; in < e; ++in, ++out) {
+                register ushort uc = in->unicode();
+                if (uc > 0x7f)
+                    simple = false;
+                if (uc >= 'A' && uc <= 'Z')
+                    *out = QChar(uc | 0x20);
+                else
+                    *out = *in;
             }
         }
-
-        // copy the label to the destination, which also serves as our scratch area
-        // then nameprep it (in the case of "simple", it will cause a simple lowercasing)
-        int prevLen = result.size();
-        result.resize(prevLen + labelLength);
-        memcpy(result.data() + prevLen, domain.constData() + lastIdx, labelLength * sizeof(QChar));
-        qt_nameprep(&result, prevLen);
-        labelLength = result.length() - prevLen;
 
         if (simple && labelLength > 6) {
             // ACE form domains contain only ASCII characters, but we can't consider them simple
@@ -3289,6 +3291,8 @@ static QString qt_ACE_do(const QString &domain, AceOperation op)
         } else { 
             // Punycode encoding and decoding cannot be done in-place
             // That means we need one or two temporaries
+            qt_nameprep(&result, prevLen);
+            labelLength = result.length() - prevLen;
             register int toReserve = labelLength + 4 + 6; // "xn--" plus some extra bytes
             if (toReserve > aceForm.capacity())
                 aceForm.reserve(toReserve);
