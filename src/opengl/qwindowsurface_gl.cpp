@@ -493,6 +493,35 @@ void QGLWindowSurface::updateGeometry()
         return;
     }
 
+    if ((QGLExtensions::glExtensions & QGLExtensions::FramebufferObject) && (d_ptr->fbo || !d_ptr->tried_fbo)) {
+        d_ptr->tried_fbo = true;
+        hijackWindow(window());
+        QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
+        ctx->d_ptr->internal_context = true;
+        ctx->makeCurrent();
+        delete d_ptr->fbo;
+
+        QGLFramebufferObjectFormat format;
+        format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+        format.setInternalFormat(GL_RGBA);
+        format.setTextureTarget(target);
+
+        if (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)
+            format.setSamples(8);
+
+        d_ptr->fbo = new QGLFramebufferObject(rect.size(), format);
+        d_ptr->fbo->bind();
+        if (d_ptr->fbo->isValid()) {
+            qDebug() << "Created Window Surface FBO" << rect.size()
+                     << "with samples" << d_ptr->fbo->format().samples();
+            return;
+        } else {
+            qDebug() << "QGLWindowSurface: Failed to create valid FBO, falling back";
+            delete d_ptr->fbo;
+            d_ptr->fbo = 0;
+        }
+    }
+
     if (d_ptr->pb || !d_ptr->tried_pb) {
         d_ptr->tried_pb = true;
 
@@ -536,34 +565,6 @@ void QGLWindowSurface::updateGeometry()
         }
     }
 
-    if ((QGLExtensions::glExtensions & QGLExtensions::FramebufferObject) && (d_ptr->fbo || !d_ptr->tried_fbo)) {
-        d_ptr->tried_fbo = true;
-        hijackWindow(window());
-        QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
-        ctx->d_ptr->internal_context = true;
-        ctx->makeCurrent();
-        delete d_ptr->fbo;
-
-        QGLFramebufferObjectFormat format;
-        format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
-        format.setInternalFormat(GL_RGBA);
-        format.setTextureTarget(target);
-
-        if (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)
-            format.setSamples(8);
-
-        d_ptr->fbo = new QGLFramebufferObject(rect.size(), format);
-        d_ptr->fbo->bind();
-        if (d_ptr->fbo->isValid()) {
-            qDebug() << "Created Window Surface FBO" << rect.size()
-                     << "with samples" << d_ptr->fbo->format().samples();
-            return;
-        } else {
-            qDebug() << "QGLWindowSurface: Failed to create valid FBO, falling back";
-            delete d_ptr->fbo;
-            d_ptr->fbo = 0;
-        }
-    }
 
     hijackWindow(window());
     QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
