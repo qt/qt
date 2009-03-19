@@ -111,6 +111,10 @@ public:
                 result << item;
         return result;
     }
+
+    QList<QGraphicsItem *> indexedItems() {
+        return m_items;
+    }
 };
 
 QT_END_NAMESPACE

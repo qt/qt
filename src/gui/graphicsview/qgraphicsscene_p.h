@@ -112,7 +112,6 @@ public:
     QPainterPath selectionArea;
     int selectionChanging;
     QSet<QGraphicsItem *> selectedItems;
-    QList<QGraphicsItem *> unindexedItems;
     QList<QGraphicsItem *> indexedItems;
     QList<QGraphicsItem *> dirtyItems;
     QList<QGraphicsItem *> pendingUpdateItems;

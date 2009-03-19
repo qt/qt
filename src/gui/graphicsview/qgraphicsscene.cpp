@@ -331,6 +331,7 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       indexMethod(QGraphicsScene::BspTreeIndex),
       lastItemCount(0),
       index(new QGraphicsSceneBspTree()),
+      linearIndex(new QGraphicsSceneLinearIndex()),
       hasSceneRect(false),
       updateAll(false),
       calledEmitUpdated(false),
@@ -369,6 +370,7 @@ void QGraphicsScenePrivate::init()
     Q_Q(QGraphicsScene);
 
     index->setParent(q);
+    linearIndex->setParent(q);
 
     // Keep this index so we can check for connected slots later on.
     changedSignalMask = (1 << q->metaObject()->indexOfSignal("changed(QList<QRectF>)"));
@@ -392,16 +394,13 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::estimateItemsInRect(const QRectF &
         // Get items from index
         items = that->index->items(rect);
 
+        //### Why there are items indexed and not at some point?
+
         // Fill in with any unindexed items
-        for (int i = 0; i < unindexedItems.size(); ++i) {
-            if (QGraphicsItem *item = unindexedItems.at(i)) {
-                if (!item->d_ptr->itemDiscovered && item->d_ptr->visible && !(item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)) {
-                    QRectF boundingRect = item->sceneBoundingRect();
-                    if (QRectF_intersects(boundingRect, rect)) {
-                        item->d_ptr->itemDiscovered = 1;
-                        items << item;
-                    }
-                }
+        foreach (QGraphicsItem *item, linearIndex->items(rect)) {
+             if (!item->d_ptr->itemDiscovered && item->d_ptr->visible && !(item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)) {
+                item->d_ptr->itemDiscovered = 1;
+                items << item;
             }
         }
 
@@ -412,14 +411,15 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::estimateItemsInRect(const QRectF &
     }
 
     QList<QGraphicsItem *> itemsInRect;
-    for (int i = 0; i < unindexedItems.size(); ++i) {
-        if (QGraphicsItem *item = unindexedItems.at(i)) {
-            if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
-                continue;
-            if (item->d_ptr->visible && item->effectiveOpacity() > qreal(0.0))
-                itemsInRect << item;
-        }
+    foreach (QGraphicsItem *item, linearIndex->items(rect)) {
+        if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
+            continue;
+        if (item->d_ptr->visible && item->effectiveOpacity() > qreal(0.0))
+            itemsInRect << item;
     }
+
+    //### Why there are items indexed and not at some point?
+
     for (int i = 0; i < indexedItems.size(); ++i) {
         if (QGraphicsItem *item = indexedItems.at(i)) {
             if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
@@ -469,7 +469,7 @@ void QGraphicsScenePrivate::removeFromIndex(QGraphicsItem *item)
             freeItemIndexes << index;
             indexedItems[index] = 0;
             item->d_func()->index = -1;
-            unindexedItems << item;
+            linearIndex->insertItem(item);
 
             foreach (QGraphicsItem *child, item->children())
                 child->removeFromIndex();
@@ -488,7 +488,7 @@ void QGraphicsScenePrivate::resetIndex()
         for (int i = 0; i < indexedItems.size(); ++i) {
             if (QGraphicsItem *item = indexedItems.at(i)) {
                 item->d_ptr->index = -1;
-                unindexedItems << item;
+                linearIndex->insertItem(item);
             }
         }
         indexedItems.clear();
@@ -519,17 +519,15 @@ void QGraphicsScenePrivate::_q_updateIndex()
 
     // Add unindexedItems to indexedItems
     QRectF unindexedItemsBoundingRect;
-    for (int i = 0; i < unindexedItems.size(); ++i) {
-        if (QGraphicsItem *item = unindexedItems.at(i)) {
-            unindexedItemsBoundingRect |= item->sceneBoundingRect();
-            if (!freeItemIndexes.isEmpty()) {
-                int freeIndex = freeItemIndexes.takeFirst();
-                item->d_func()->index = freeIndex;
-                indexedItems[freeIndex] = item;
-            } else {
-                item->d_func()->index = indexedItems.size();
-                indexedItems << item;
-            }
+    foreach (QGraphicsItem *item, linearIndex->indexedItems()) {
+        unindexedItemsBoundingRect |= item->sceneBoundingRect();
+        if (!freeItemIndexes.isEmpty()) {
+            int freeIndex = freeItemIndexes.takeFirst();
+            item->d_func()->index = freeIndex;
+            indexedItems[freeIndex] = item;
+        } else {
+            item->d_func()->index = indexedItems.size();
+            indexedItems << item;
         }
     }
 
@@ -560,7 +558,8 @@ void QGraphicsScenePrivate::_q_updateIndex()
             //### do something better
             QGraphicsSceneBspTree *bsp = static_cast<QGraphicsSceneBspTree *>(index);
             bsp->initialize(q->sceneRect(), depth);
-            unindexedItems = indexedItems;
+            foreach (QGraphicsItem *item, indexedItems)
+                linearIndex->insertItem(item);
             lastItemCount = indexedItems.size();
             q->update();
 
@@ -572,30 +571,28 @@ void QGraphicsScenePrivate::_q_updateIndex()
     }
 
     // Insert all unindexed items into the tree.
-    for (int i = 0; i < unindexedItems.size(); ++i) {
-        if (QGraphicsItem *item = unindexedItems.at(i)) {
-            QRectF rect = item->sceneBoundingRect();
-            if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
-                continue;
+    foreach (QGraphicsItem *item, linearIndex->indexedItems()) {
+        QRectF rect = item->sceneBoundingRect();
+        if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
+            continue;
 
-            if (indexMethod != QGraphicsScene::NoIndex)
-                index->insertItem(item);
+        if (indexMethod != QGraphicsScene::NoIndex)
+            index->insertItem(item);
 
-            // If the item ignores view transformations, update our
-            // largest-item-counter to ensure that the view can accurately
-            // discover untransformable items when drawing.
-            if (item->d_ptr->itemIsUntransformable()) {
-                QGraphicsItem *topmostUntransformable = item;
-                while (topmostUntransformable && (topmostUntransformable->d_ptr->ancestorFlags
-                                                  & QGraphicsItemPrivate::AncestorIgnoresTransformations)) {
-                    topmostUntransformable = topmostUntransformable->parentItem();
-                }
-                // ### Verify that this is the correct largest untransformable rectangle.
-                largestUntransformableItem |= item->mapToItem(topmostUntransformable, item->boundingRect()).boundingRect();
+        // If the item ignores view transformations, update our
+        // largest-item-counter to ensure that the view can accurately
+        // discover untransformable items when drawing.
+        if (item->d_ptr->itemIsUntransformable()) {
+            QGraphicsItem *topmostUntransformable = item;
+            while (topmostUntransformable && (topmostUntransformable->d_ptr->ancestorFlags
+                                              & QGraphicsItemPrivate::AncestorIgnoresTransformations)) {
+                topmostUntransformable = topmostUntransformable->parentItem();
             }
+            // ### Verify that this is the correct largest untransformable rectangle.
+            largestUntransformableItem |= item->mapToItem(topmostUntransformable, item->boundingRect()).boundingRect();
         }
     }
-    unindexedItems.clear();
+    linearIndex->clear();
 
     // Notify scene rect changes.
     if (!hasSceneRect && growingItemsBoundingRect != oldGrowingItemsBoundingRect)
@@ -756,7 +753,7 @@ void QGraphicsScenePrivate::_q_removeItemLater(QGraphicsItem *item)
     } else {
         // Recently added items are purged immediately. unindexedItems() never
         // contains stale items.
-        unindexedItems.removeAll(item);
+        linearIndex->removeItem(item);
         q->update();
     }
 
@@ -1982,8 +1979,7 @@ void QGraphicsScenePrivate::_q_updateSortCache()
         if (item && item->parentItem() == 0)
             topLevels << item;
     }
-    for (int i = 0; i < unindexedItems.size(); ++i) {
-        QGraphicsItem *item = unindexedItems.at(i);
+    foreach (QGraphicsItem *item, linearIndex->indexedItems()) {
         if (item->parentItem() == 0)
             topLevels << item;
     }
@@ -2552,15 +2548,15 @@ QList<QGraphicsItem *> QGraphicsScene::items() const
     // If freeItemIndexes is empty, we know there are no holes in indexedItems and
     // unindexedItems.
     if (d->freeItemIndexes.isEmpty()) {
-        if (d->unindexedItems.isEmpty())
+        if (d->linearIndex->indexedItems().isEmpty())
             return d->indexedItems;
-        return d->indexedItems + d->unindexedItems;
+        return d->indexedItems + d->linearIndex->indexedItems();
     }
 
     // Rebuild the list of items to avoid holes. ### We could also just
     // compress the item lists at this point.
     QList<QGraphicsItem *> itemList;
-    foreach (QGraphicsItem *item, d->indexedItems + d->unindexedItems) {
+    foreach (QGraphicsItem *item, d->indexedItems + d->linearIndex->indexedItems()) {
         if (item)
             itemList << item;
     }
@@ -2841,12 +2837,11 @@ void QGraphicsScene::clear()
         }
     }
     QList<QGraphicsItem *> unindexedParents;
-    for (int i = 0; i < d->unindexedItems.size(); ++i) {
-        QGraphicsItem *item = d->unindexedItems.at(i);
+    foreach (QGraphicsItem *item, d->linearIndex->indexedItems()) {
         if (!item->parentItem())
             unindexedParents << item;
     }
-    d->unindexedItems.clear();
+    d->linearIndex->clear();
     qDeleteAll(unindexedParents);
     d->indexedItems.clear();
     d->freeItemIndexes.clear();
@@ -2994,7 +2989,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     // Indexing requires sceneBoundingRect(), but because \a item might
     // not be completely constructed at this point, we need to store it in
     // a temporary list and schedule an indexing for later.
-    d->unindexedItems << item;
+    d->linearIndex->insertItem(item);
     item->d_func()->index = -1;
     d->startIndexTimer();
 
@@ -3382,7 +3377,7 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
         d->freeItemIndexes << index;
         d->indexedItems[index] = 0;
     } else {
-        d->unindexedItems.removeAll(item);
+        d->linearIndex->removeItem(item);
     }
 
     // Remove from scene transform cache
