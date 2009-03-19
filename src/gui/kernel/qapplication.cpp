@@ -137,8 +137,6 @@ int QApplicationPrivate::autoMaximizeThreshold = -1;
 bool QApplicationPrivate::autoSipEnabled = false;
 #endif
 
-Q_GLOBAL_STATIC(QGestureManager, gestureManager);
-
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::Type type)
     : QCoreApplicationPrivate(argc, argv)
 {
@@ -161,6 +159,8 @@ QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::T
 #if defined(Q_WS_QWS) && !defined(QT_NO_DIRECTPAINTER)
     directPainters = 0;
 #endif
+
+    gestureManager = 0;
 
     if (!self)
         self = this;
@@ -3709,22 +3709,22 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             if (e->spontaneous()) {
                 if (QApplication::testAttribute(Qt::AA_EnableGestures)) {
                     QWidget *w = static_cast<QWidget*>(receiver);
-                    QGestureManager *gm = gestureManager();
                     // if we are in gesture mode, we send all mouse events
                     // directly to gesture recognizer.
-                    if (gm->inGestureMode()) {
-                        if (gm->filterEvent(e))
+                    if (!d->gestureManager)
+                        d->gestureManager = new QGestureManager(this);
+                    if (d->gestureManager->inGestureMode()) {
+                        if (d->gestureManager->filterEvent(e))
                             return true;
                     } else {
-                        QMouseEvent* mouse = static_cast<QMouseEvent*>(e);
                         if (w && (mouse->type() != QEvent::MouseMove || mouse->buttons() != 0)) {
                             // find the gesture target widget
                             QWidget *target = w;
                             while (target && target->d_func()->gestures.isEmpty())
                                 target = target->parentWidget();
                             if (target) {
-                                gm->setGestureTargetWidget(target);
-                                if (gm->filterEvent(e))
+                                d->gestureManager->setGestureTargetWidget(target);
+                                if (d->gestureManager->filterEvent(e))
                                     return true;
                             }
                         }
@@ -5095,7 +5095,10 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
 */
 void QApplication::addGestureRecognizer(QGestureRecognizer *recognizer)
 {
-    gestureManager()->addRecognizer(recognizer);
+    Q_D(QApplication);
+    if (!d->gestureManager)
+        d->gestureManager = new QGestureManager(this);
+    d->gestureManager->addRecognizer(recognizer);
 }
 
 /*!
@@ -5105,7 +5108,10 @@ void QApplication::addGestureRecognizer(QGestureRecognizer *recognizer)
 */
 void QApplication::removeGestureRecognizer(QGestureRecognizer *recognizer)
 {
-    gestureManager()->removeRecognizer(recognizer);
+    Q_D(QApplication);
+    if (!d->gestureManager)
+        return;
+    d->gestureManager->removeRecognizer(recognizer);
 }
 
 /*! \fn QDecoration &QApplication::qwsDecoration()

@@ -64,8 +64,8 @@ bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
 
 static const unsigned int maximumGestureRecognitionTimeout = 2000;
 
-QGestureManager::QGestureManager()
-    : targetWidget(0), state(NotGesture)
+QGestureManager::QGestureManager(QObject *parent)
+    : QObject(parent), targetWidget(0), state(NotGesture)
 {
     recognizers << new QDoubleTapGestureRecognizer();
     recognizers << new QTapAndHoldGestureRecognizer();

@@ -67,7 +67,7 @@ class Q_GUI_EXPORT QGestureManager : public QObject
 {
     Q_OBJECT
 public:
-    QGestureManager();
+    QGestureManager(QObject *parent);
 
     // should be internal
     void setGestureTargetWidget(QWidget *widget);
