@@ -3062,7 +3062,7 @@ void tst_QUrl::nameprep_testsuite_data()
 #ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
 extern void qt_nameprep(QString *source, int from);
-extern bool qt_check_std3rules(const QStringRef &);
+extern bool qt_check_std3rules(const QChar *, int);
 QT_END_NAMESPACE
 #endif
 
@@ -3215,7 +3215,7 @@ void tst_QUrl::std3violations()
     {
         QString prepped = source;
         qt_nameprep(&prepped, 0);
-        QVERIFY(!qt_check_std3rules(QStringRef(&prepped)));
+        QVERIFY(!qt_check_std3rules(prepped.constData(), prepped.length()));
     }
 
     if (source.contains('.'))

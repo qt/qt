@@ -2904,11 +2904,11 @@ static bool isBidirectionalL(const QChar &ch)
 #ifdef QT_BUILD_INTERNAL
 // export for tst_qurl.cpp
 Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from);
-Q_AUTOTEST_EXPORT bool qt_check_std3rules(const QStringRef &);
+Q_AUTOTEST_EXPORT bool qt_check_std3rules(const QChar *uc, int len);
 #else
 // non-test build, keep the symbols for ourselves
-static QString void qt_nameprep(QString *source, int from)
-static bool qt_check_std3rules(const QStringRef &);
+static void qt_nameprep(QString *source, int from);
+static bool qt_check_std3rules(const QChar *uc, int len);
 #endif
 
 void qt_nameprep(QString *source, int from)
@@ -2966,14 +2966,13 @@ void qt_nameprep(QString *source, int from)
     }
 }
 
-bool qt_check_std3rules(const QStringRef &source)
+bool qt_check_std3rules(const QChar *uc, int len)
 {
-    int len = source.length();
     if (len > 63)
         return false;
 
     for (int i = 0; i < len; ++i) {
-        register ushort c = source.at(i).unicode();
+        register ushort c = uc[i].unicode();
         if (c == '-' && (i == 0 || i == len - 1))
             return false;
 
@@ -3264,41 +3263,43 @@ static QString qt_ACE_do(const QString &domainMC, AceOperation op)
                 simple = false;
         }
 
-        QString aux;
-        QStringRef label;
-        if (simple) {
-            // fastest conversion: this is the common case (non IDN-domains)
-            // just memcpy from source (domain) to destination (result)
-            // there's no need to nameprep since everything is ASCII already
-            int prevLen = result.size();
-            result.resize(prevLen + idx - lastIdx);
-            memcpy(result.data() + prevLen, domain.constData() + lastIdx, (idx - lastIdx) * sizeof(QChar));
+        // copy the label to the destination, which also serves as our scratch area
+        int prevLen = result.size();
+        result.resize(prevLen + idx - lastIdx);
+        memcpy(result.data() + prevLen, domain.constData() + lastIdx, (idx - lastIdx) * sizeof(QChar));
 
-            label = QStringRef(&result, prevLen, result.length() - prevLen);
-        } else {
+        if (simple) {
+            // fastest case: this is the common case (non IDN-domains)
+            // there's no need to nameprep since everything is ASCII already
+            // so we're done
+            if (!qt_check_std3rules(result.constData() + prevLen, result.length() - prevLen))
+                return QString();
+        } else { 
             // Nameprep the host. If the labels in the hostname are Punycode
-            // encoded, we decode them immediately, then nameprep them.
-            QString tmp = domain.mid(lastIdx, idx - lastIdx);
-            qt_nameprep(&tmp, 0);
+            // encoded, we decode them immediately.
+            qt_nameprep(&result, prevLen);
+
+            // Punycode encoding and decoding cannot be done in-place
+            // That means we need one or two temporaries
+            QString aceForm;
+            aceForm.reserve(result.size() - prevLen + 4 + 4); // "xn--" and "-xyz"
+            toPunycodeHelper(result.constData() + prevLen, result.size() - prevLen, &aceForm);
 
             if (isIdnEnabled) {
-                toPunycodeHelper(tmp.constData(), tmp.size(), &aux);
-                label = QStringRef(&aux);
-
-                tmp = QUrl::fromPunycode(aux.toLatin1());
+                QString tmp = QUrl::fromPunycode(aceForm.toLatin1());
                 if (tmp.isEmpty())
-                    return QString();
-                result += tmp;
+                    return QString(); // shouldn't happen, since we've just punycode-encoded it
+                result.resize(prevLen + tmp.size());
+                memcpy(result.data() + prevLen, tmp.constData(), tmp.size() * sizeof(QChar));
             } else {
-                int prevLen = result.size();
-                toPunycodeHelper(tmp.constData(), tmp.size(), &result);
-
-                label = QStringRef(&result, prevLen, result.length() - prevLen);
+                result.resize(prevLen + aceForm.size());
+                memcpy(result.data() + prevLen, aceForm.constData(), aceForm.size() * sizeof(QChar));
             }
+
+            if (!qt_check_std3rules(aceForm.constData(), aceForm.size()))
+                return QString();
         }
 
-        if (!qt_check_std3rules(label))
-            return QString();
 
         lastIdx = idx + 1;
         if (lastIdx < domain.size() + 1)
