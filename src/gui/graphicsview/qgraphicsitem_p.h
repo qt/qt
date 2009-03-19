@@ -249,7 +249,7 @@ public:
     inline bool isInvisible() const
     {
         return !visible || (hasEffectiveOpacity
-                            && qFuzzyCompare(q_func()->effectiveOpacity() + 1.0, qreal(1.0)));
+                            && qFuzzyCompare(q_func()->effectiveOpacity() + 1, qreal(1.0)));
     }
 
     QPainterPath cachedClipPath;
