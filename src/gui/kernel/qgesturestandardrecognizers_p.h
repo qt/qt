@@ -75,6 +75,8 @@ public:
 private:
     void internalReset();
 
+    QPanningGesture gesture;
+
     QPoint pressedPos;
     QPoint lastPos;
     QPoint currentPos;
@@ -97,6 +99,7 @@ public:
     void reset();
 
 private:
+    QGesture gesture;
     QPoint pressedPosition;
 };
 
@@ -114,6 +117,7 @@ protected:
     void timerEvent(QTimerEvent *event);
 
 private:
+    QGesture gesture;
     QPoint pressedPosition;
     QBasicTimer timer;
     int iteration;

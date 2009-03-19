@@ -67,6 +67,9 @@ static const unsigned int maximumGestureRecognitionTimeout = 2000;
 QGestureManager::QGestureManager(QObject *parent)
     : QObject(parent), targetWidget(0), state(NotGesture)
 {
+    qRegisterMetaType<Qt::DirectionType>();
+    qRegisterMetaType<Qt::GestureState>();
+
     recognizers << new QDoubleTapGestureRecognizer();
     recognizers << new QTapAndHoldGestureRecognizer();
     recognizers << new QGestureRecognizerPan();

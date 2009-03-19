@@ -61,6 +61,9 @@ class Q_GUI_EXPORT QGesture : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QGesture)
 
+    Q_PROPERTY(QString gestureType READ gestureType)
+    Q_PROPERTY(Qt::GestureState state READ state)
+
     Q_PROPERTY(QRect rect READ rect)
     Q_PROPERTY(QPoint hotSpot READ hotSpot)
     Q_PROPERTY(QDateTime startTime READ startTime)
@@ -79,8 +82,8 @@ public:
              uint duration, Qt::GestureState state);
     virtual ~QGesture();
 
-    inline QString gestureType() const { return gestureType_; }
-    inline Qt::GestureState state() const { return gestureState_; }
+    QString gestureType() const;
+    Qt::GestureState state() const;
 
     QRect rect() const;
     QPoint hotSpot() const;
@@ -96,8 +99,9 @@ protected:
     virtual void translate(const QPoint &offset);
 
 private:
-    QString gestureType_;
-    Qt::GestureState gestureState_;
+    friend class QGestureRecognizerPan;
+    friend class QDoubleTapGestureRecognizer;
+    friend class QTapAndHoldGestureRecognizer;
 };
 
 class QPanningGesturePrivate;
@@ -112,9 +116,16 @@ class Q_GUI_EXPORT QPanningGesture : public QGesture
 public:
     Qt::DirectionType lastDirection() const;
     Qt::DirectionType direction() const;
+
+private:
+    QPanningGesture(QObject *parent = 0);
+    ~QPanningGesture();
+
+    friend class QGestureRecognizerPan;
 };
 
 Q_DECLARE_METATYPE(Qt::DirectionType)
+Q_DECLARE_METATYPE(Qt::GestureState)
 
 QT_END_NAMESPACE
 

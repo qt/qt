@@ -71,16 +71,6 @@ QString qt_getStandardGestureTypeName(Qt::GestureType type);
     \sa QGestureEvent, QGestureRecognizer
 */
 
-/*! \fn QString QGesture::gestureType() const
-
-    Returns the type of the gesture.
-*/
-
-/*! \fn Qt::GestureState QGesture::state() const
-
-    Returns the current state of the gesture.
-*/
-
 /*!
     Creates a new gesture object of type \a type in a \a state and
     marks it as a child of \a parent.
@@ -89,8 +79,11 @@ QString qt_getStandardGestureTypeName(Qt::GestureType type);
     QGestureRecognizer classes.
 */
 QGesture::QGesture(QObject *parent, const QString &type, Qt::GestureState state)
-    : QObject(*new QGesturePrivate, parent), gestureType_(type), gestureState_(state)
+    : QObject(*new QGesturePrivate, parent)
 {
+    Q_D(QGesture);
+    d->type = type;
+    d->state = state;
 }
 
 /*!
@@ -112,17 +105,23 @@ QGesture::QGesture(QObject *parent, const QString &type, const QPoint &startPos,
                    const QPoint &lastPos, const QPoint &pos, const QRect &rect,
                    const QPoint &hotSpot, const QDateTime &startTime,
                    uint duration, Qt::GestureState state)
-    : QObject(*new QGesturePrivate, parent), gestureType_(type), gestureState_(state)
+    : QObject(*new QGesturePrivate, parent)
 {
-    d_func()->init(startPos, lastPos, pos, rect, hotSpot, startTime, duration);
+    Q_D(QGesture);
+    d->type = type;
+    d->state = state;
+    d->init(startPos, lastPos, pos, rect, hotSpot, startTime, duration);
 }
 
 /*! \internal
 */
 QGesture::QGesture(QGesturePrivate &dd, QObject *parent, const QString &type,
                    Qt::GestureState state)
-    : QObject(dd, parent), gestureType_(type), gestureState_(state)
+    : QObject(dd, parent)
 {
+    Q_D(QGesture);
+    d->type = type;
+    d->state = state;
 }
 
 /*!
@@ -130,6 +129,23 @@ QGesture::QGesture(QGesturePrivate &dd, QObject *parent, const QString &type,
 */
 QGesture::~QGesture()
 {
+}
+
+/*!
+    Returns the type of the gesture.
+*/
+QString QGesture::gestureType() const
+{
+    return d_func()->type;
+}
+
+
+/*!
+    Returns the current state of the gesture.
+*/
+Qt::GestureState QGesture::state() const
+{
+    return d_func()->state;
 }
 
 /*!
@@ -231,6 +247,19 @@ QPoint QGesture::pos() const
     properties.
 */
 
+/*! \internal
+*/
+QPanningGesture::QPanningGesture(QObject *parent)
+    : QGesture(parent, qt_getStandardGestureTypeName(Qt::PanGesture))
+{
+}
+
+/*! \internal
+*/
+QPanningGesture::~QPanningGesture()
+{
+}
+
 /*!
     \property QPanningGesture::lastDirection
 
@@ -238,7 +267,7 @@ QPoint QGesture::pos() const
 */
 Qt::DirectionType QPanningGesture::lastDirection() const
 {
-    return qVariantValue<Qt::DirectionType>(property("lastDirection"));
+    return d_func()->lastDirection;
 }
 
 /*!
@@ -248,7 +277,7 @@ Qt::DirectionType QPanningGesture::lastDirection() const
 */
 Qt::DirectionType QPanningGesture::direction() const
 {
-    return qVariantValue<Qt::DirectionType>(property("direction"));
+    return d_func()->direction;
 }
 
 QT_END_NAMESPACE

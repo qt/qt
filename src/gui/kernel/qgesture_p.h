@@ -82,6 +82,9 @@ public:
         this->pos = pos;
     }
 
+    QString type;
+    Qt::GestureState state;
+
     QRect rect;
     QPoint hotSpot;
     QDateTime startTime;
@@ -94,6 +97,10 @@ public:
 class QPanningGesturePrivate : public QGesturePrivate
 {
     Q_DECLARE_PUBLIC(QPanningGesture)
+
+public:
+    Qt::DirectionType lastDirection;
+    Qt::DirectionType direction;
 };
 
 QT_END_NAMESPACE

@@ -79,13 +79,12 @@ QString qt_getStandardGestureTypeName(Qt::GestureType gestureType)
 //
 
 QGestureRecognizerPan::QGestureRecognizerPan()
-    : QGestureRecognizer(QString()), mousePressed(false), gestureFinished(false),
+    : QGestureRecognizer(QString()),
+      mousePressed(false), gestureFinished(false),
       lastDirection(Qt::NoDirection), currentDirection(Qt::NoDirection)
 {
     Q_D(QGestureRecognizer);
     d->gestureType = Qt::PanGesture;
-
-    qRegisterMetaType<Qt::DirectionType>();
 }
 
 QGestureRecognizer::Result QGestureRecognizerPan::filterEvent(const QEvent *event)
@@ -145,14 +144,16 @@ QGesture* QGestureRecognizerPan::getGesture()
 {
     if (currentDirection == Qt::NoDirection)
         return 0;
-    QGesture *g = new QGesture(this, qt_getStandardGestureTypeName(Qt::PanGesture),
-                               pressedPos, lastPos, currentPos,
-                               QRect(), pressedPos, QDateTime(), 0,
-                               gestureFinished ? Qt::GestureFinished : Qt::GestureStarted);
-    g->setProperty("lastDirection", QVariant::fromValue(lastDirection));
-    g->setProperty("direction", QVariant::fromValue(currentDirection));
+    QPanningGesturePrivate *d = gesture.d_func();
+    d->startPos = pressedPos;
+    d->lastPos = lastPos;
+    d->pos = currentPos;
+    d->hotSpot = pressedPos;
+    d->state = gestureFinished ? Qt::GestureFinished : Qt::GestureStarted;
+    d->lastDirection = lastDirection;
+    d->direction = currentDirection;
     
-    return g;
+    return &gesture;
 }
 
 void QGestureRecognizerPan::reset()
@@ -177,7 +178,8 @@ void QGestureRecognizerPan::internalReset()
 // QDoubleTapGestureRecognizer
 //
 QDoubleTapGestureRecognizer::QDoubleTapGestureRecognizer()
-    : QGestureRecognizer(QString())
+    : QGestureRecognizer(QString()),
+      gesture(0, qt_getStandardGestureTypeName(Qt::DoubleTapGesture))
 {
     Q_D(QGestureRecognizer);
     d->gestureType = Qt::DoubleTapGesture;
@@ -207,9 +209,13 @@ QGestureRecognizer::Result QDoubleTapGestureRecognizer::filterEvent(const QEvent
 
 QGesture* QDoubleTapGestureRecognizer::getGesture()
 {
-    return new QGesture(this, qt_getStandardGestureTypeName(Qt::DoubleTapGesture),
-                        pressedPosition, pressedPosition, pressedPosition,
-                        QRect(), pressedPosition, QDateTime(), 0, Qt::GestureFinished);
+    QGesturePrivate *d = gesture.d_func();
+    d->startPos = pressedPosition;
+    d->lastPos = pressedPosition;
+    d->pos = pressedPosition;
+    d->hotSpot = pressedPosition;
+    d->state = Qt::GestureFinished;
+    return &gesture;
 }
 
 void QDoubleTapGestureRecognizer::reset()
@@ -224,7 +230,8 @@ const int QTapAndHoldGestureRecognizer::iterationCount = 40;
 const int QTapAndHoldGestureRecognizer::iterationTimeout = 50;
 
 QTapAndHoldGestureRecognizer::QTapAndHoldGestureRecognizer()
-    : QGestureRecognizer(QString()), iteration(0)
+    : QGestureRecognizer(QString()), iteration(0),
+      gesture(0, qt_getStandardGestureTypeName(Qt::TapAndHoldGesture))
 {
     Q_D(QGestureRecognizer);
     d->gestureType = Qt::TapAndHoldGesture;
@@ -266,11 +273,16 @@ void QTapAndHoldGestureRecognizer::timerEvent(QTimerEvent *event)
 
 QGesture* QTapAndHoldGestureRecognizer::getGesture()
 {
-    return new QGesture(this, qt_getStandardGestureTypeName(Qt::TapAndHoldGesture),
-                        pressedPosition, pressedPosition, pressedPosition,
-                        QRect(), pressedPosition, QDateTime(), 0,
-                        iteration >= QTapAndHoldGestureRecognizer::iterationCount ?
-                        Qt::GestureFinished :  Qt::GestureStarted);
+    QGesturePrivate *d = gesture.d_func();
+    d->startPos = pressedPosition;
+    d->lastPos = pressedPosition;
+    d->pos = pressedPosition;
+    d->hotSpot = pressedPosition;
+    if (iteration >= QTapAndHoldGestureRecognizer::iterationCount)
+        d->state = Qt::GestureFinished;
+    else
+        d->state = Qt::GestureStarted;
+    return &gesture;
 }
 
 void QTapAndHoldGestureRecognizer::reset()
