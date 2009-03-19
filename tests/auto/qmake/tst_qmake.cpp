@@ -247,10 +247,10 @@ void tst_qmake::duplicateLibraryEntries()
 void tst_qmake::export_across_file_boundaries()
 {
     // This relies on features so we need to set the QMAKEFEATURES environment variable
-    putenv("QMAKEFEATURES=.");
+    test_compiler.addToEnvironment("QMAKEFEATURES=.");
     QString workDir = base_path + "/testdata/export_across_file_boundaries";
     QVERIFY( test_compiler.qmake( workDir, "foo" ));
-    putenv("QMAKEFEATURES=");
+    test_compiler.resetEnvironment();
 }
 
 void tst_qmake::include_dir()

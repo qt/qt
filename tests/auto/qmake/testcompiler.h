@@ -55,6 +55,8 @@ public:
     virtual ~TestCompiler();
 
     void setBaseCommands( QString makeCmd, QString qmakeCmd );
+    void resetEnvironment();
+    void addToEnvironment( QString varAssignment );
 
     // executes a make clean in the specified workPath
     bool makeClean( const QString &workPath );
@@ -74,6 +76,7 @@ private:
 
     QString makeCmd_;
     QString qmakeCmd_;
+    QStringList environment_;
 
     // need to make this available somewhere
     QStringList testOutput_;

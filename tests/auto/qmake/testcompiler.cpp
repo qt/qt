@@ -133,6 +133,9 @@ bool TestCompiler::runCommand( QString cmdline )
     testOutput_.append("Running command: " + cmdline);
 
     QProcess child;
+    if (!environment_.empty())
+        child.setEnvironment(QProcess::systemEnvironment() + environment_);
+
     child.start(cmdline);
     if (!child.waitForStarted(-1)) {
         testOutput_.append( "Unable to start child process." );
@@ -164,6 +167,16 @@ void TestCompiler::setBaseCommands( QString makeCmd, QString qmakeCmd )
 {
     makeCmd_ = makeCmd;
     qmakeCmd_ = qmakeCmd;
+}
+
+void TestCompiler::resetEnvironment()
+{
+    environment_.clear();
+}
+
+void TestCompiler::addToEnvironment( QString varAssignment )
+{
+    environment_.push_back(varAssignment);
 }
 
 bool TestCompiler::makeClean( const QString &workPath )
