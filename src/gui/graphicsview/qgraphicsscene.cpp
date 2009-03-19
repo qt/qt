@@ -329,7 +329,6 @@ static void _q_hoverFromMouseEvent(QGraphicsSceneHoverEvent *hover, const QGraph
 QGraphicsScenePrivate::QGraphicsScenePrivate()
     : changedSignalMask(0),
       indexMethod(QGraphicsScene::BspTreeIndex),
-      bspTreeDepth(0),
       lastItemCount(0),
       index(new QGraphicsSceneBspTree()),
       hasSceneRect(false),
@@ -540,7 +539,9 @@ void QGraphicsScenePrivate::_q_updateIndex()
 
     // Determine whether we should regenerate the BSP tree.
     if (indexMethod == QGraphicsScene::BspTreeIndex) {
-        int depth = bspTreeDepth;
+        QGraphicsSceneBspTree *bspTree = qobject_cast<QGraphicsSceneBspTree*>(index);
+        Q_ASSERT(bspTree);
+        int depth = bspTree->depth;
         if (depth == 0) {
             int oldDepth = intmaxlog(lastItemCount);
             depth = intmaxlog(indexedItems.size());
@@ -2472,7 +2473,8 @@ QGraphicsSceneIndex* QGraphicsScene::sceneIndex() const
 int QGraphicsScene::bspTreeDepth() const
 {
     Q_D(const QGraphicsScene);
-    return d->bspTreeDepth;
+    QGraphicsSceneBspTree *bspTree = qobject_cast<QGraphicsSceneBspTree*>(d->index);
+    return bspTree ? bspTree->depth : 0;
 }
 void QGraphicsScene::setBspTreeDepth(int depth)
 {
@@ -2485,7 +2487,13 @@ void QGraphicsScene::setBspTreeDepth(int depth)
         return;
     }
 
-    d->bspTreeDepth = depth;
+    QGraphicsSceneBspTree *bspTree = qobject_cast<QGraphicsSceneBspTree*>(d->index);
+    if (!bspTree) {
+        qWarning("QGraphicsScene::setBspTreeDepth: can not apply if indexing method is not BSP");
+        return;
+    }
+
+    bspTree->depth = depth;
     d->resetIndex();
 }
 

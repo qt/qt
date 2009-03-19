@@ -84,7 +84,7 @@ public:
 };
 
 QGraphicsSceneBspTree::QGraphicsSceneBspTree(QObject *parent)
-    : QGraphicsSceneIndex(parent), leafCnt(0)
+    : QGraphicsSceneIndex(parent), depth(0), leafCnt(0)
 {
     insertVisitor = new QGraphicsSceneInsertItemBspTreeVisitor;
     removeVisitor = new QGraphicsSceneRemoveItemBspTreeVisitor;

@@ -102,6 +102,8 @@ public:
 
     int leafCount() const;
 
+    int depth;
+
 private:
 
     inline int firstChildIndex(int index) const
