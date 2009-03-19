@@ -2913,56 +2913,59 @@ static bool qt_check_std3rules(const QChar *uc, int len);
 
 void qt_nameprep(QString *source, int from)
 {
-    QString &mapped = *source;
-    
-    for ( ; from < mapped.size(); ++from) {
-        ushort uc = mapped.at(from).unicode();
+    QChar *src = source->data(); // causes a detach, so we're sure the only one using it
+    QChar *out = src + from;
+    const QChar *e = src + source->size();
+
+    for ( ; out < e; ++out) {
+        register ushort uc = out->unicode();
         if (uc > 0x80) {
             break;
         } else if (uc >= 'A' && uc <= 'Z') {
-            mapped[from] = QChar(uc | 0x20);
+            *out = QChar(uc | 0x20);
         }
     }
-    if (from == mapped.size())
+    if (out == e)
         return; // everything was mapped easily (lowercased, actually)
-    
+    int firstNonAscii = out - src;
+
     // Characters commonly mapped to nothing are simply removed
     // (Table B.1)
-    QChar *out = mapped.data() + from;
     const QChar *in = out;
-    const QChar *e = mapped.constData() + mapped.size();
     while (in < e) {
         if (!isMappedToNothing(*in))
             *out++ = *in;
         ++in;
     }
     if (out != in)
-        mapped.truncate(out - mapped.constData());
+        source->truncate(out - src);
 
     // Map to lowercase (Table B.2)
-    mapToLowerCase(&mapped, from);
+    mapToLowerCase(source, firstNonAscii);
 
     // Normalize to Unicode 3.2 form KC
     extern void qt_string_normalize(QString *data, QString::NormalizationForm mode,
                                     QChar::UnicodeVersion version, int from);
-    qt_string_normalize(&mapped, QString::NormalizationForm_KC, QChar::Unicode_3_2, from);
+    qt_string_normalize(source, QString::NormalizationForm_KC, QChar::Unicode_3_2, firstNonAscii);
 
     // Strip prohibited output
-    stripProhibitedOutput(&mapped, from);
+    stripProhibitedOutput(source, firstNonAscii);
 
     // Check for valid bidirectional characters
     bool containsLCat = false;
     bool containsRandALCat = false;
-    for (int j = from; j < mapped.size() && (!containsLCat || !containsRandALCat); ++j) {
-        if (isBidirectionalL(mapped.at(j)))
+    src = source->data();
+    e = src + source->size();
+    for (in = src + from; in < e && (!containsLCat || !containsRandALCat); ++in) {
+        if (isBidirectionalL(*in))
             containsLCat = true;
-        else if (isBidirectionalRorAL(mapped.at(j)))
+        else if (isBidirectionalRorAL(*in))
             containsRandALCat = true;
     }
     if (containsRandALCat) {
-        if (containsLCat || (!isBidirectionalRorAL(mapped.at(from))
-                             || !isBidirectionalRorAL(mapped.at(mapped.size() - 1))))
-            mapped.clear();
+        if (containsLCat || (!isBidirectionalRorAL(src[from])
+                             || !isBidirectionalRorAL(e[-1])))
+            source->resize(from); // not allowed, clear the label
     }
 }
 
@@ -3269,7 +3272,7 @@ static QString qt_ACE_do(const QString &domain, AceOperation op)
             // ACE form domains contain only ASCII characters, but we can't consider them simple
             // is this an ACE form?
             static const ushort acePrefixUtf16[] = { 'x', 'n', '-', '-' };
-            if (memcmp(result.utf16() + prevLen, acePrefixUtf16, sizeof acePrefixUtf16) == 0)
+            if (memcmp(result.constData() + prevLen, acePrefixUtf16, sizeof acePrefixUtf16) == 0)
                 simple = false;
         }
 

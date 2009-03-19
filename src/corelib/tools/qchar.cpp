@@ -1427,7 +1427,7 @@ static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion 
 
     QString &s = *str;
 
-    const unsigned short *utf16 = s.utf16();
+    const unsigned short *utf16 = reinterpret_cast<unsigned short *>(s.data());
     const unsigned short *uc = utf16 + s.length();
     while (uc != utf16 + from) {
         uint ucs4 = *(--uc);
@@ -1449,7 +1449,7 @@ static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion 
         s.replace(uc - utf16, ucs4 > 0x10000 ? 2 : 1, (const QChar *)d, length);
         // since the insert invalidates the pointers and we do decomposition recursive
         int pos = uc - utf16;
-        utf16 = s.utf16();
+        utf16 = reinterpret_cast<unsigned short *>(s.data());
         uc = utf16 + pos + length;
     }
 }
@@ -1498,9 +1498,9 @@ static void composeHelper(QString *str, int from)
     int lastCombining = 0;
     int pos = from;
     while (pos < s.length()) {
-        uint uc = s.utf16()[pos];
+        uint uc = s.at(pos).unicode();
         if (QChar(uc).isHighSurrogate() && pos < s.length()-1) {
-            ushort low = s.utf16()[pos+1];
+            ushort low = s.at(pos+1).unicode();
             if (QChar(low).isLowSurrogate()) {
                 uc = QChar::surrogateToUcs4(uc, low);
                 ++pos;
@@ -1509,7 +1509,7 @@ static void composeHelper(QString *str, int from)
         int combining = QChar::combiningClass(uc);
         if (starter == pos - 1 || combining > lastCombining) {
             // allowed to form ligature with S
-            QChar ligature = ligatureHelper(s.utf16()[starter], uc);
+            QChar ligature = ligatureHelper(s.at(starter).unicode(), uc);
             if (ligature.unicode()) {
                 s[starter] = ligature;
                 s.remove(pos, 1);
