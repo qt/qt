@@ -3174,11 +3174,15 @@ static bool qt_is_idn_enabled(const QString &domain)
     int idx = domain.lastIndexOf(QLatin1Char('.'));
     if (idx == -1)
         return false;
-    const QChar *tld = domain.constData() + idx + 1;
+
     int len = domain.size() - idx - 1;
+    QString tldString(domain.constData() + idx + 1, len);
+    qt_nameprep(&tldString, 0);
+
+    const QChar *tld = tldString.constData();
 
     if (user_idn_whitelist)
-        return user_idn_whitelist->contains(QString::fromRawData(tld, len).toLower());
+        return user_idn_whitelist->contains(tldString);
 
     int l = 0;
     int r = sizeof(idn_whitelist)/sizeof(const char *) - 1;
