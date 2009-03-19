@@ -3178,7 +3178,7 @@ static bool qt_is_idn_enabled(const QString &domain)
     int len = domain.size() - idx - 1;
 
     if (user_idn_whitelist)
-        return user_idn_whitelist->contains(QString(tld, len));
+        return user_idn_whitelist->contains(QString::fromRawData(tld, len).toLower());
 
     int l = 0;
     int r = sizeof(idn_whitelist)/sizeof(const char *) - 1;
@@ -3217,11 +3217,10 @@ static int nextDotDelimiter(const QString &domain, int from = 0)
 }
 
 enum AceOperation { ToAceOnly, NormalizeAce };
-static QString qt_ACE_do(const QString &domainMC, AceOperation op)
+static QString qt_ACE_do(const QString &domain, AceOperation op)
 {
-    if (domainMC.isEmpty())
-        return domainMC;
-    QString domain = domainMC.toLower();
+    if (domain.isEmpty())
+        return domain;
 
     QString result;
     result.reserve(domain.length());
@@ -3255,30 +3254,27 @@ static QString qt_ACE_do(const QString &domainMC, AceOperation op)
             }
         }
 
-        if (simple && idx > lastIdx + 4) {
-            // ACE form domains are simple, but we can't consider them simple
-            // is this an ACE form?
-            static const ushort acePrefixUtf16[] = { 'x', 'n', '-', '-' };
-            if (memcmp(domain.utf16() + lastIdx, acePrefixUtf16, sizeof acePrefixUtf16) == 0)
-                simple = false;
-        }
-
         // copy the label to the destination, which also serves as our scratch area
+        // then nameprep it (in the case of "simple", it will cause a simple lowercasing)
         int prevLen = result.size();
         result.resize(prevLen + idx - lastIdx);
         memcpy(result.data() + prevLen, domain.constData() + lastIdx, (idx - lastIdx) * sizeof(QChar));
+        qt_nameprep(&result, prevLen);
+
+        if (simple && idx > lastIdx + 4) {
+            // ACE form domains contain only ASCII characters, but we can't consider them simple
+            // is this an ACE form?
+            static const ushort acePrefixUtf16[] = { 'x', 'n', '-', '-' };
+            if (memcmp(result.utf16() + prevLen, acePrefixUtf16, sizeof acePrefixUtf16) == 0)
+                simple = false;
+        }
 
         if (simple) {
             // fastest case: this is the common case (non IDN-domains)
-            // there's no need to nameprep since everything is ASCII already
             // so we're done
             if (!qt_check_std3rules(result.constData() + prevLen, result.length() - prevLen))
                 return QString();
         } else { 
-            // Nameprep the host. If the labels in the hostname are Punycode
-            // encoded, we decode them immediately.
-            qt_nameprep(&result, prevLen);
-
             // Punycode encoding and decoding cannot be done in-place
             // That means we need one or two temporaries
             QString aceForm;
