@@ -95,7 +95,8 @@ public:
     QPoint pos() const;
 
 protected:
-    QGesture(QGesturePrivate &dd, QObject *parent, const QString &type, Qt::GestureState state);
+    QGesture(QGesturePrivate &dd, QObject *parent, const QString &type,
+             Qt::GestureState state = Qt::GestureStarted);
     virtual void translate(const QPoint &offset);
 
 private:

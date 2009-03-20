@@ -250,7 +250,8 @@ QPoint QGesture::pos() const
 /*! \internal
 */
 QPanningGesture::QPanningGesture(QObject *parent)
-    : QGesture(parent, qt_getStandardGestureTypeName(Qt::PanGesture))
+    : QGesture(*new QPanningGesturePrivate, parent,
+               qt_getStandardGestureTypeName(Qt::PanGesture))
 {
 }
 
