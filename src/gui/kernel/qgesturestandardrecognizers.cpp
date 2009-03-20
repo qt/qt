@@ -118,12 +118,12 @@ QGestureRecognizer::Result QGestureRecognizerPan::filterEvent(const QEvent *even
         const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
         lastPos = currentPos;
         currentPos = ev->pos();
-        Qt::DirectionType direction =
+        Qt::DirectionType newDirection =
             simpleRecognizer.addPosition(ev->pos()).direction;
-        DEBUG() << "Pan: MouseMove: simplerecognizer result = " << direction;
+        DEBUG() << "Pan: MouseMove: simplerecognizer result = " << newDirection;
         QGestureRecognizer::Result result = QGestureRecognizer::NotGesture;
         if (currentDirection == Qt::NoDirection) {
-            if (direction == Qt::NoDirection) {
+            if (newDirection == Qt::NoDirection) {
                 result = QGestureRecognizer::MaybeGesture;
             } else {
                 result = QGestureRecognizer::GestureStarted;
@@ -133,10 +133,10 @@ QGestureRecognizer::Result QGestureRecognizerPan::filterEvent(const QEvent *even
             result = QGestureRecognizer::GestureStarted;
             gestureState = Qt::GestureUpdated;
         }
-        if (direction != Qt::NoDirection) {
-            if (currentDirection != direction)
+        if (newDirection != Qt::NoDirection) {
+            if (currentDirection != newDirection)
                 lastDirection = currentDirection;
-            currentDirection = direction;
+            currentDirection = newDirection;
         }
         return result;
     }
