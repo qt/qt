@@ -527,8 +527,10 @@ void QNetworkAccessHttpBackend::postRequest()
     foreach (const QByteArray &header, headers)
         httpRequest.setHeaderField(header, request().rawHeader(header));
 
-    if (loadedFromCache)
+    if (loadedFromCache) {
+        QNetworkAccessBackend::finished();
         return;    // no need to send the request! :)
+    }
 
     httpReply = http->sendRequest(httpRequest);
     httpReply->setParent(this);
