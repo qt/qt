@@ -73,18 +73,19 @@ QString qt_getStandardGestureTypeName(Qt::GestureType gestureType);
 
     \value NotGesture              Not a gesture.
 
-    \value GestureStarted The long-term gesture has started. When the
-    recognizer is in started state, a gesture event containing
-    QGesture objects returned by the
+    \value GestureStarted The continuous gesture has started. When the
+    recognizer is in this state, a \l{QGestureEvent}{gesture event}
+    containing QGesture objects returned by the
     \l{QGestureRecognizer::}{getGesture()} will be sent to a widget.
 
-    \value GestureFinished A gesture has ended. The gesture event will
-    be sent to a widget.
+    \value GestureFinished The gesture has ended. A
+    \l{QGestureEvent}{gesture event} will be sent to a widget.
 
-    \value MaybeGesture Gesture hasn't started yet, but it might start
-    soon after next events are received by the recognizer. That means
-    that gesture manager shouldn't reset() the internal state of the
-    gesture recognizer.
+    \value MaybeGesture Gesture recognizer hasn't decided yet if a
+    gesture has started, but it might start soon after the following
+    events are received by the recognizer. This means that gesture
+    manager shouldn't reset() the internal state of the gesture
+    recognizer.
 */
 
 /*! \fn QGestureRecognizer::Result QGestureRecognizer::filterEvent(const QEvent *event)

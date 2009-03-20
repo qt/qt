@@ -80,7 +80,7 @@ QString qt_getStandardGestureTypeName(Qt::GestureType gestureType)
 
 QGestureRecognizerPan::QGestureRecognizerPan(QObject *parent)
     : QGestureRecognizer(QString(), parent),
-      mousePressed(false), gestureFinished(false),
+      mousePressed(false), gestureState(Qt::NoGesture),
       lastDirection(Qt::NoDirection), currentDirection(Qt::NoDirection)
 {
     Q_D(QGestureRecognizer);
@@ -103,7 +103,7 @@ QGestureRecognizer::Result QGestureRecognizerPan::filterEvent(const QEvent *even
     } else if (event->type() == QEvent::MouseButtonRelease) {
         if (mousePressed && currentDirection != Qt::NoDirection) {
             DEBUG() << "Pan: MouseButtonRelease: pan detected";
-            gestureFinished = true;
+            gestureState = Qt::GestureFinished;
             const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
             currentPos = ev->pos();
             internalReset();
@@ -123,12 +123,15 @@ QGestureRecognizer::Result QGestureRecognizerPan::filterEvent(const QEvent *even
         DEBUG() << "Pan: MouseMove: simplerecognizer result = " << direction;
         QGestureRecognizer::Result result = QGestureRecognizer::NotGesture;
         if (currentDirection == Qt::NoDirection) {
-            if (direction == Qt::NoDirection)
+            if (direction == Qt::NoDirection) {
                 result = QGestureRecognizer::MaybeGesture;
-            else
+            } else {
                 result = QGestureRecognizer::GestureStarted;
+                gestureState = Qt::GestureStarted;
+            }
         } else {
             result = QGestureRecognizer::GestureStarted;
+            gestureState = Qt::GestureUpdated;
         }
         if (direction != Qt::NoDirection) {
             if (currentDirection != direction)
@@ -149,7 +152,7 @@ QGesture* QGestureRecognizerPan::getGesture()
     d->lastPos = lastPos;
     d->pos = currentPos;
     d->hotSpot = pressedPos;
-    d->state = gestureFinished ? Qt::GestureFinished : Qt::GestureStarted;
+    d->state = gestureState;
     d->lastDirection = lastDirection;
     d->direction = currentDirection;
     
@@ -161,7 +164,7 @@ void QGestureRecognizerPan::reset()
     mousePressed = false;
     lastDirection = Qt::NoDirection;
     currentDirection = Qt::NoDirection;
-    gestureFinished = false;
+    gestureState = Qt::NoGesture;
     diagonalRecognizer.reset();
     simpleRecognizer.reset();
 }
@@ -230,8 +233,9 @@ const int QTapAndHoldGestureRecognizer::iterationCount = 40;
 const int QTapAndHoldGestureRecognizer::iterationTimeout = 50;
 
 QTapAndHoldGestureRecognizer::QTapAndHoldGestureRecognizer(QObject *parent)
-    : QGestureRecognizer(QString(), parent), iteration(0),
-      gesture(0, qt_getStandardGestureTypeName(Qt::TapAndHoldGesture))
+    : QGestureRecognizer(QString(), parent),
+      gesture(0, qt_getStandardGestureTypeName(Qt::TapAndHoldGesture)),
+      iteration(0)
 {
     Q_D(QGestureRecognizer);
     d->gestureType = Qt::TapAndHoldGesture;
@@ -263,12 +267,13 @@ void QTapAndHoldGestureRecognizer::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() != timer.timerId())
         return;
-    if (++iteration == QTapAndHoldGestureRecognizer::iterationCount) {
-        emit stateChanged(QGestureRecognizer::GestureFinished);
+    if (iteration == QTapAndHoldGestureRecognizer::iterationCount) {
         timer.stop();
+        emit stateChanged(QGestureRecognizer::GestureFinished);
     } else {
         emit stateChanged(QGestureRecognizer::GestureStarted);
     }
+    ++iteration;
 }
 
 QGesture* QTapAndHoldGestureRecognizer::getGesture()
@@ -281,7 +286,7 @@ QGesture* QTapAndHoldGestureRecognizer::getGesture()
     if (iteration >= QTapAndHoldGestureRecognizer::iterationCount)
         d->state = Qt::GestureFinished;
     else
-        d->state = Qt::GestureStarted;
+        d->state = iteration == 0 ? Qt::GestureStarted : Qt::GestureUpdated;
     return &gesture;
 }
 

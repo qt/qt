@@ -1565,8 +1565,10 @@ public:
 
     enum GestureState
     {
-        GestureStarted = 0,
-        GestureFinished = 1
+        NoGesture,
+        GestureStarted = 1,
+        GestureUpdated = 2,
+        GestureFinished = 3
     };
 
     enum DirectionType
