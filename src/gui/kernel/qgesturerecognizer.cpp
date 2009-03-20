@@ -125,13 +125,13 @@ QGestureRecognizerPrivate::QGestureRecognizerPrivate()
 
 /*!
     Creates a new gesture recognizer object that handles gestures of
-    the specific \a type.
+    the specific \a type as a child of \a parent.
 
     \sa QApplication::addGestureRecognizer(),
     QApplication::removeGestureRecognizer(),
 */
-QGestureRecognizer::QGestureRecognizer(const QString &type)
-    : QObject(*new QGestureRecognizerPrivate, 0)
+QGestureRecognizer::QGestureRecognizer(const QString &type, QObject *parent)
+    : QObject(*new QGestureRecognizerPrivate, parent)
 {
     d_func()->customGestureType = type;
 }

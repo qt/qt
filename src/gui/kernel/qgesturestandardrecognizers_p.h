@@ -66,7 +66,7 @@ class QGestureRecognizerPan : public QGestureRecognizer
 {
     Q_OBJECT
 public:
-    QGestureRecognizerPan();
+    QGestureRecognizerPan(QObject *parent);
 
     QGestureRecognizer::Result filterEvent(const QEvent *event);
     QGesture* getGesture();
@@ -92,7 +92,7 @@ class QDoubleTapGestureRecognizer : public QGestureRecognizer
 {
     Q_OBJECT
 public:
-    QDoubleTapGestureRecognizer();
+    QDoubleTapGestureRecognizer(QObject *parent);
 
     QGestureRecognizer::Result filterEvent(const QEvent *event);
     QGesture* getGesture();
@@ -107,7 +107,7 @@ class QTapAndHoldGestureRecognizer : public QGestureRecognizer
 {
     Q_OBJECT
 public:
-    QTapAndHoldGestureRecognizer();
+    QTapAndHoldGestureRecognizer(QObject *parent);
 
     QGestureRecognizer::Result filterEvent(const QEvent *event);
     QGesture* getGesture();

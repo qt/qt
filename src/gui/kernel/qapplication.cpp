@@ -5091,6 +5091,8 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
 /*!
     Adds custom gesture \a recognizer object.
 
+    Qt takes ownership of the provided \a recognizer.
+
     \sa Qt::AA_EnableGestures, QGestureEvent
 */
 void QApplication::addGestureRecognizer(QGestureRecognizer *recognizer)

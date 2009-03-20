@@ -78,8 +78,8 @@ QString qt_getStandardGestureTypeName(Qt::GestureType gestureType)
 // QGestureRecognizerPan
 //
 
-QGestureRecognizerPan::QGestureRecognizerPan()
-    : QGestureRecognizer(QString()),
+QGestureRecognizerPan::QGestureRecognizerPan(QObject *parent)
+    : QGestureRecognizer(QString(), parent),
       mousePressed(false), gestureFinished(false),
       lastDirection(Qt::NoDirection), currentDirection(Qt::NoDirection)
 {
@@ -177,8 +177,8 @@ void QGestureRecognizerPan::internalReset()
 //
 // QDoubleTapGestureRecognizer
 //
-QDoubleTapGestureRecognizer::QDoubleTapGestureRecognizer()
-    : QGestureRecognizer(QString()),
+QDoubleTapGestureRecognizer::QDoubleTapGestureRecognizer(QObject *parent)
+    : QGestureRecognizer(QString(), parent),
       gesture(0, qt_getStandardGestureTypeName(Qt::DoubleTapGesture))
 {
     Q_D(QGestureRecognizer);
@@ -229,8 +229,8 @@ void QDoubleTapGestureRecognizer::reset()
 const int QTapAndHoldGestureRecognizer::iterationCount = 40;
 const int QTapAndHoldGestureRecognizer::iterationTimeout = 50;
 
-QTapAndHoldGestureRecognizer::QTapAndHoldGestureRecognizer()
-    : QGestureRecognizer(QString()), iteration(0),
+QTapAndHoldGestureRecognizer::QTapAndHoldGestureRecognizer(QObject *parent)
+    : QGestureRecognizer(QString(), parent), iteration(0),
       gesture(0, qt_getStandardGestureTypeName(Qt::TapAndHoldGesture))
 {
     Q_D(QGestureRecognizer);

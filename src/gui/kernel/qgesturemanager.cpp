@@ -70,9 +70,9 @@ QGestureManager::QGestureManager(QObject *parent)
     qRegisterMetaType<Qt::DirectionType>();
     qRegisterMetaType<Qt::GestureState>();
 
-    recognizers << new QDoubleTapGestureRecognizer();
-    recognizers << new QTapAndHoldGestureRecognizer();
-    recognizers << new QGestureRecognizerPan();
+    recognizers << new QDoubleTapGestureRecognizer(this);
+    recognizers << new QTapAndHoldGestureRecognizer(this);
+    recognizers << new QGestureRecognizerPan(this);
 
     foreach(QGestureRecognizer *r, recognizers)
         connect(r, SIGNAL(stateChanged(QGestureRecognizer::Result)),
@@ -81,6 +81,7 @@ QGestureManager::QGestureManager(QObject *parent)
 
 void QGestureManager::addRecognizer(QGestureRecognizer *recognizer)
 {
+    recognizer->setParent(this);
     recognizers << recognizer;
 }
 

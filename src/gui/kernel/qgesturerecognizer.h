@@ -64,7 +64,7 @@ public:
         MaybeGesture
     };
 
-    explicit QGestureRecognizer(const QString &type);
+    explicit QGestureRecognizer(const QString &type, QObject *parent = 0);
 
     QString gestureType() const;
 
