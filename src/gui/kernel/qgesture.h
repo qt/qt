@@ -61,7 +61,7 @@ class Q_GUI_EXPORT QGesture : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QGesture)
 
-    Q_PROPERTY(QString gestureType READ gestureType)
+    Q_PROPERTY(QString type READ type)
     Q_PROPERTY(Qt::GestureState state READ state)
 
     Q_PROPERTY(QRect rect READ rect)
@@ -82,7 +82,7 @@ public:
              uint duration, Qt::GestureState state);
     virtual ~QGesture();
 
-    QString gestureType() const;
+    QString type() const;
     Qt::GestureState state() const;
 
     QRect rect() const;

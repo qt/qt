@@ -132,16 +132,20 @@ QGesture::~QGesture()
 }
 
 /*!
-    Returns the type of the gesture.
+    \property QGesture::type
+
+    \brief The type of the gesture.
 */
-QString QGesture::gestureType() const
+QString QGesture::type() const
 {
     return d_func()->type;
 }
 
 
 /*!
-    Returns the current state of the gesture.
+    \property QGesture::state
+
+    \brief The current state of the gesture.
 */
 Qt::GestureState QGesture::state() const
 {

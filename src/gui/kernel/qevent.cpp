@@ -3537,7 +3537,7 @@ QGestureEvent::QGestureEvent(const QList<QGesture*> &gestures,
     : QEvent(QEvent::Gesture), m_cancelledGestures(cancelledGestures)
 {
     foreach(QGesture *r, gestures)
-        m_gestures.insert(r->gestureType(), r);
+        m_gestures.insert(r->type(), r);
 }
 
 /*!

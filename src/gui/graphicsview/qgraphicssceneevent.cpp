@@ -1887,7 +1887,7 @@ QPolygonF QGraphicsSceneGestureEvent::mapToItem(const QRect &rect, QGraphicsItem
 void QGraphicsSceneGestureEvent::setGestures(const QList<QGesture*> &gestures)
 {
     foreach(QGesture *g, gestures)
-        m_gestures.insert(g->gestureType(), g);
+        m_gestures.insert(g->type(), g);
 }
 
 class QGraphicsSceneTouchEventPrivate : public QGraphicsSceneEventPrivate
