@@ -2368,15 +2368,18 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
         return;
 
     // Update and repositition.
+    inSetPosHelper = 1;
     if (scene) {
         fullUpdateHelper(true);
         q->prepareGeometryChange();
     }
     this->pos = newPos;
     invalidateSceneTransformCache();
+    updateCachedClipPathFromSetPosHelper();
 
     // Send post-notification.
     q->itemChange(QGraphicsItem::ItemPositionHasChanged, newPos);
+    inSetPosHelper = 0;
 }
 
 /*!
@@ -3141,7 +3144,7 @@ QPainterPath QGraphicsItem::clipPath() const
 {
     Q_D(const QGraphicsItem);
     if (!d->dirtyClipPath)
-        return d->cachedClipPath;
+        return d->emptyClipPath ? QPainterPath() : d->cachedClipPath;
 
     if (!isClipped()) {
         d_ptr->setCachedClipPath(QPainterPath());
@@ -3163,6 +3166,13 @@ QPainterPath QGraphicsItem::clipPath() const
                 // Map clip to the current parent and intersect with its shape/clipPath
                 clip = lastParent->itemTransform(parent).map(clip);
                 if ((foundValidClipPath = !parent->d_ptr->dirtyClipPath && parent->isClipped())) {
+                    if (parent->d_ptr->emptyClipPath) {
+                        if (d_ptr->flags & ItemClipsChildrenToShape)
+                            d_ptr->setEmptyCachedClipPathRecursively();
+                        else
+                            d_ptr->setEmptyCachedClipPath();
+                        return QPainterPath();
+                    }
                     clip = clip.intersected(parent->d_ptr->cachedClipPath);
                     if (!(parent->d_ptr->flags & ItemClipsToShape))
                         clip = clip.intersected(parent->shape());
@@ -3171,7 +3181,10 @@ QPainterPath QGraphicsItem::clipPath() const
                 }
 
                 if (clip.isEmpty()) {
-                    d_ptr->setCachedClipPath(clip);
+                    if (d_ptr->flags & ItemClipsChildrenToShape)
+                        d_ptr->setEmptyCachedClipPathRecursively();
+                    else
+                        d_ptr->setEmptyCachedClipPath();
                     return clip;
                 }
                 lastParent = parent;
@@ -3749,13 +3762,95 @@ void QGraphicsItemPrivate::removeExtraItemCache()
     unsetExtra(ExtraCacheData);
 }
 
-void QGraphicsItemPrivate::invalidateCachedClipPathRecursively(bool childrenOnly)
+void QGraphicsItemPrivate::setEmptyCachedClipPathRecursively(const QRectF &emptyIfOutsideThisRect)
+{
+    setEmptyCachedClipPath();
+
+    const bool checkRect = !emptyIfOutsideThisRect.isNull()
+                           && !(flags & QGraphicsItem::ItemClipsChildrenToShape);
+    for (int i = 0; i < children.size(); ++i) {
+        if (!checkRect) {
+            children.at(i)->d_ptr->setEmptyCachedClipPathRecursively();
+            continue;
+        }
+
+        QGraphicsItem *child = children.at(i);
+        const QRectF rect = child->mapRectFromParent(emptyIfOutsideThisRect);
+        if (rect.intersects(child->boundingRect()))
+            child->d_ptr->invalidateCachedClipPathRecursively(false, rect);
+        else
+            child->d_ptr->setEmptyCachedClipPathRecursively(rect);
+    }
+}
+
+void QGraphicsItemPrivate::invalidateCachedClipPathRecursively(bool childrenOnly, const QRectF &emptyIfOutsideThisRect)
 {
     if (!childrenOnly)
         invalidateCachedClipPath();
-    // ### Return if this item doesn't clip its children?
-    for (int i = 0; i < children.size(); ++i)
-        children.at(i)->d_ptr->invalidateCachedClipPathRecursively(false);
+
+    const bool checkRect = !emptyIfOutsideThisRect.isNull();
+    for (int i = 0; i < children.size(); ++i) {
+        if (!checkRect) {
+            children.at(i)->d_ptr->invalidateCachedClipPathRecursively(false);
+            continue;
+        }
+
+        QGraphicsItem *child = children.at(i);
+        const QRectF rect = child->mapRectFromParent(emptyIfOutsideThisRect);
+        if (rect.intersects(child->boundingRect()))
+            child->d_ptr->invalidateCachedClipPathRecursively(false, rect);
+        else
+            child->d_ptr->setEmptyCachedClipPathRecursively(rect);
+    }
+}
+
+void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper()
+{
+    Q_ASSERT(inSetPosHelper);
+
+    if (!(ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
+        return; // Not clipped by any ancestor.
+
+    // Find closest clip ancestor.
+    QGraphicsItem *clipParent = parent;
+    while (clipParent && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape))
+        clipParent = clipParent->d_ptr->parent;
+
+    Q_ASSERT(clipParent);
+    Q_Q(QGraphicsItem);
+
+    // From here everything is calculated in clip parent's coordinates.
+    const QTransform thisToParentTransform(q->itemTransform(clipParent));
+    const QRectF parentBoundingRect(clipParent->boundingRect());
+    const QRectF thisBoundingRect(thisToParentTransform.mapRect(q->boundingRect()));
+
+    if (!parentBoundingRect.intersects(thisBoundingRect)) {
+        // Item is moved outside the clip parent's bounding rect,
+        // i.e. it is fully clipped and the clip path is empty.
+        if (flags & QGraphicsItem::ItemClipsChildrenToShape)
+            setEmptyCachedClipPathRecursively();
+        else
+            setEmptyCachedClipPathRecursively(thisToParentTransform.inverted().mapRect(parentBoundingRect));
+        return;
+    }
+
+    const QPainterPath parentClip(clipParent->isClipped() ? clipParent->clipPath() : clipParent->shape());
+    if (parentClip.contains(thisBoundingRect))
+        return; // Item is inside the clip parent's shape. No update required.
+
+    const QRectF parentClipRect(parentClip.controlPointRect());
+    if (!parentClipRect.intersects(thisBoundingRect)) {
+        // Item is moved outside the clip parent's shape,
+        // i.e. it is fully clipped and the clip path is empty.
+        if (flags & QGraphicsItem::ItemClipsChildrenToShape)
+            setEmptyCachedClipPathRecursively();
+        else
+            setEmptyCachedClipPathRecursively(thisToParentTransform.inverted().mapRect(parentClipRect));
+    } else {
+        // Item is partially inside the clip parent's shape,
+        // i.e. the cached clip path must be invalidated.
+        invalidateCachedClipPathRecursively(false, thisToParentTransform.inverted().mapRect(parentClipRect));
+    }
 }
 
 /*!
@@ -5532,13 +5627,20 @@ void QGraphicsItem::removeFromIndex()
 */
 void QGraphicsItem::prepareGeometryChange()
 {
-    if (d_ptr->scene) {
-        d_ptr->updateHelper();
+    if (!d_ptr->scene)
+        return;
 
-        QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
-        scenePrivate->removeFromIndex(this);
+    d_ptr->updateHelper();
+    QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
+    scenePrivate->removeFromIndex(this);
+
+    if (d_ptr->inSetPosHelper)
+        return;
+
+    if (d_ptr->flags & ItemClipsChildrenToShape)
         d_ptr->invalidateCachedClipPathRecursively();
-    }
+    else
+        d_ptr->invalidateCachedClipPath();
 }
 
 /*!
