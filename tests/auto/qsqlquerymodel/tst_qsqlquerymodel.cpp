@@ -182,7 +182,7 @@ void tst_QSqlQueryModel::populateTestTables(QSqlDatabase db)
     QVERIFY_SQL(q, exec(QString("insert into " + qTableName("test3") + " values(0)")));
     QVERIFY_SQL(q, prepare("insert into "+qTableName("test3")+"(id) select id + ? from "+qTableName("test3tmp")));
     for (int i=1; i<260; i*=2) {
-        QVERIFY_SQL(q2, exec("delete from "+qTableName("test3tmp")));
+        q2.exec("delete from "+qTableName("test3tmp"));
         QVERIFY_SQL(q2, exec("insert into "+qTableName("test3tmp")+"(id) select id from "+qTableName("test3")));
         q.bindValue(0, i);
         QVERIFY_SQL(q, exec());
@@ -191,7 +191,7 @@ void tst_QSqlQueryModel::populateTestTables(QSqlDatabase db)
     QVERIFY_SQL(q, exec(QString("insert into " + qTableName("many") + "(id, name) values (0, \'harry\')")));
     QVERIFY_SQL(q, prepare("insert into "+qTableName("many")+"(id, name) select id + ?, name from "+qTableName("manytmp")));
     for (int i=1; i < 2048; i*=2) {
-        QVERIFY_SQL(q2, exec("delete from "+qTableName("manytmp")));
+        q2.exec("delete from "+qTableName("manytmp"));
         QVERIFY_SQL(q2, exec("insert into "+qTableName("manytmp")+"(id, name) select id, name from "+qTableName("many")));
         q.bindValue(0, i);
         QVERIFY_SQL(q, exec());
@@ -368,7 +368,7 @@ void tst_QSqlQueryModel::insertColumn()
     QCOMPARE(model.indexInQuery(model.index(0, 5)).column(), -1);
     QCOMPARE(model.indexInQuery(model.index(0, 6)).column(), -1);
 
-    bool isToUpper = db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI");
+    bool isToUpper = db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2");
     QCOMPARE(model.record().field(0).name(), QString());
     QCOMPARE(model.record().field(1).name(), isToUpper ? QString("ID") : QString("id"));
     QCOMPARE(model.record().field(2).name(), QString());
@@ -389,7 +389,7 @@ void tst_QSqlQueryModel::record()
 
     QSqlRecord rec = model.record();
 
-    bool isToUpper = db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI");
+    bool isToUpper = db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2");
 
     QCOMPARE(rec.count(), 3);
     QCOMPARE(rec.fieldName(0), isToUpper ? QString("ID") : QString("id"));
@@ -433,7 +433,7 @@ void tst_QSqlQueryModel::setHeaderData()
 
     model.setQuery(QSqlQuery("select * from " + qTableName("test"), db));
 
-    bool isToUpper = db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI");
+    bool isToUpper = db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2");
     QCOMPARE(model.headerData(0, Qt::Horizontal).toString(), isToUpper ? QString("ID") : QString("id"));
     QCOMPARE(model.headerData(1, Qt::Horizontal).toString(), isToUpper ? QString("NAME") : QString("name"));
     QCOMPARE(model.headerData(2, Qt::Horizontal).toString(), QString("bar"));

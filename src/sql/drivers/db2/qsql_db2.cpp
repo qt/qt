@@ -1594,4 +1594,15 @@ QVariant QDB2Driver::handle() const
     return QVariant(qRegisterMetaType<SQLHANDLE>("SQLHANDLE"), &d->hDbc);
 }
 
+QString QDB2Driver::escapeIdentifier(const QString &identifier, IdentifierType) const
+{
+    QString res = identifier;
+    if(!identifier.isEmpty() && identifier.left(1) != QString(QLatin1Char('"')) && identifier.right(1) != QString(QLatin1Char('"')) ) {
+        res.replace(QLatin1Char('"'), QLatin1String("\"\""));
+        res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
+        res.replace(QLatin1Char('.'), QLatin1String("\".\""));
+    }
+    return res;
+}
+
 QT_END_NAMESPACE

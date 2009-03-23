@@ -307,7 +307,7 @@ void tst_QSqlDatabase::createTestTables(QSqlDatabase db)
             + db.driver()->escapeIdentifier(qTableName("qtest") + " test", QSqlDriver::TableName)
             + '('
             + db.driver()->escapeIdentifier(QLatin1String("test test"), QSqlDriver::FieldName)
-            + " int primary key)";
+            + " int not null primary key)";
         QVERIFY_SQL(q, exec(qry));
     }
 }

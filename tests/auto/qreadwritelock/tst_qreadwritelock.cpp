@@ -943,10 +943,10 @@ void tst_QReadWriteLock::uncontendedLocks()
         }
     }
 
-    printf("during %d millisecs:\n", millisecs);
-    printf("counted to %u\n", count);
-    printf("%u uncontended read locks/unlocks\n", read);
-    printf("%u uncontended write locks/unlocks\n", write);
+    qDebug("during %d millisecs:", millisecs);
+    qDebug("counted to %u", count);
+    qDebug("%u uncontended read locks/unlocks", read);
+    qDebug("%u uncontended write locks/unlocks", write);
 }
 
 enum { RecursiveLockCount = 10 };
