@@ -96,8 +96,10 @@ typedef void (APIENTRY *_glProgramLocalParameter4fvARB) (GLenum, GLuint, const G
 // GLSL
 typedef GLuint (APIENTRY *_glCreateShader) (GLenum);
 typedef void (APIENTRY *_glShaderSource) (GLuint, GLsizei, const char **, const GLint *);
+typedef void (APIENTRY *_glShaderBinary) (GLint, const GLuint*, GLenum, const void*, GLint);
 typedef void (APIENTRY *_glCompileShader) (GLuint);
 typedef void (APIENTRY *_glDeleteShader) (GLuint);
+typedef GLboolean (APIENTRY *_glIsShader) (GLuint);
 
 typedef GLuint (APIENTRY *_glCreateProgram) ();
 typedef void (APIENTRY *_glAttachShader) (GLuint, GLuint);
@@ -105,10 +107,13 @@ typedef void (APIENTRY *_glDetachShader) (GLuint, GLuint);
 typedef void (APIENTRY *_glLinkProgram) (GLuint);
 typedef void (APIENTRY *_glUseProgram) (GLuint);
 typedef void (APIENTRY *_glDeleteProgram) (GLuint);
+typedef GLboolean (APIENTRY *_glIsProgram) (GLuint);
 
 typedef void (APIENTRY *_glGetShaderInfoLog) (GLuint, GLsizei, GLsizei *, char *);
 typedef void (APIENTRY *_glGetShaderiv) (GLuint, GLenum, GLint *);
+typedef void (APIENTRY *_glGetShaderSource) (GLuint, GLsizei, GLsizei *, char *);
 typedef void (APIENTRY *_glGetProgramiv) (GLuint, GLenum, GLint *);
+typedef void (APIENTRY *_glGetProgramInfoLog) (GLuint, GLsizei, GLsizei *, char *);
 
 typedef GLuint (APIENTRY *_glGetUniformLocation) (GLuint, const char*);
 typedef void (APIENTRY *_glUniform4fv) (GLint, GLsizei, const GLfloat *);
@@ -116,6 +121,29 @@ typedef void (APIENTRY *_glUniform3fv) (GLint, GLsizei, const GLfloat *);
 typedef void (APIENTRY *_glUniform2fv) (GLint, GLsizei, const GLfloat *);
 typedef void (APIENTRY *_glUniform1fv) (GLint, GLsizei, const GLfloat *);
 typedef void (APIENTRY *_glUniform1i) (GLint, GLint);
+typedef void (APIENTRY *_glUniform1iv) (GLint, GLsizei, const GLint *);
+typedef void (APIENTRY *_glUniformMatrix2fv) (GLint, GLsizei, GLboolean, const GLfloat *);
+typedef void (APIENTRY *_glUniformMatrix3fv) (GLint, GLsizei, GLboolean, const GLfloat *);
+typedef void (APIENTRY *_glUniformMatrix4fv) (GLint, GLsizei, GLboolean, const GLfloat *);
+typedef void (APIENTRY *_glUniformMatrix2x3fv) (GLint, GLsizei, GLboolean, const GLfloat *);
+typedef void (APIENTRY *_glUniformMatrix2x4fv) (GLint, GLsizei, GLboolean, const GLfloat *);
+typedef void (APIENTRY *_glUniformMatrix3x2fv) (GLint, GLsizei, GLboolean, const GLfloat *);
+typedef void (APIENTRY *_glUniformMatrix3x4fv) (GLint, GLsizei, GLboolean, const GLfloat *);
+typedef void (APIENTRY *_glUniformMatrix4x2fv) (GLint, GLsizei, GLboolean, const GLfloat *);
+typedef void (APIENTRY *_glUniformMatrix4x3fv) (GLint, GLsizei, GLboolean, const GLfloat *);
+
+typedef void (APIENTRY *_glBindAttribLocation) (GLuint, GLuint, const char *);
+typedef GLint (APIENTRY *_glGetAttribLocation) (GLuint, const char *);
+typedef void (APIENTRY *_glVertexAttrib1fv) (GLuint, const GLfloat *);
+typedef void (APIENTRY *_glVertexAttrib2fv) (GLuint, const GLfloat *);
+typedef void (APIENTRY *_glVertexAttrib3fv) (GLuint, const GLfloat *);
+typedef void (APIENTRY *_glVertexAttrib4fv) (GLuint, const GLfloat *);
+typedef void (APIENTRY *_glVertexAttribPointer) (GLuint, GLint, GLenum, GLboolean, GLsizei, const GLvoid *);
+typedef void (APIENTRY *_glDisableVertexAttribArray) (GLuint);
+typedef void (APIENTRY *_glEnableVertexAttribArray) (GLuint);
+
+typedef void (APIENTRY *_glGetProgramBinaryOES) (GLuint, GLsizei, GLsizei *, GLenum *, void *);
+typedef void (APIENTRY *_glProgramBinaryOES) (GLuint, GLenum, const void *, GLint);
 
 typedef void (APIENTRY *_glActiveStencilFaceEXT) (GLenum );
 
@@ -182,10 +210,13 @@ struct QGLExtensionFuncs
         qt_glGenProgramsARB = 0;
         qt_glProgramLocalParameter4fvARB = 0;
 
+#if !defined(QT_OPENGL_ES_2)
         qt_glCreateShader = 0;
         qt_glShaderSource = 0;
+        qt_glShaderBinary = 0;
         qt_glCompileShader = 0;
         qt_glDeleteShader = 0;
+        qt_glIsShader = 0;
 
         qt_glCreateProgram = 0;
         qt_glAttachShader = 0;
@@ -193,10 +224,13 @@ struct QGLExtensionFuncs
         qt_glLinkProgram = 0;
         qt_glUseProgram = 0;
         qt_glDeleteProgram = 0;
+        qt_glIsProgram = 0;
 
         qt_glGetShaderInfoLog = 0;
         qt_glGetShaderiv = 0;
+        qt_glGetShaderSource = 0;
         qt_glGetProgramiv = 0;
+        qt_glGetProgramInfoLog = 0;
 
         qt_glGetUniformLocation = 0;
         qt_glUniform4fv = 0;
@@ -204,6 +238,32 @@ struct QGLExtensionFuncs
         qt_glUniform2fv = 0;
         qt_glUniform1fv = 0;
         qt_glUniform1i = 0;
+        qt_glUniform1iv = 0;
+        qt_glUniformMatrix2fv = 0;
+        qt_glUniformMatrix3fv = 0;
+        qt_glUniformMatrix4fv = 0;
+        qt_glUniformMatrix2x3fv = 0;
+        qt_glUniformMatrix2x4fv = 0;
+        qt_glUniformMatrix3x2fv = 0;
+        qt_glUniformMatrix3x4fv = 0;
+        qt_glUniformMatrix4x2fv = 0;
+        qt_glUniformMatrix4x3fv = 0;
+
+        qt_glBindAttribLocation = 0;
+        qt_glGetAttribLocation = 0;
+        qt_glVertexAttrib1fv = 0;
+        qt_glVertexAttrib2fv = 0;
+        qt_glVertexAttrib3fv = 0;
+        qt_glVertexAttrib4fv = 0;
+        qt_glVertexAttribPointer = 0;
+        qt_glDisableVertexAttribArray = 0;
+        qt_glEnableVertexAttribArray = 0;
+#else
+        qt_glslResolved = false;
+
+        qt_glGetProgramBinaryOES = 0;
+        qt_glProgramBinaryOES = 0;
+#endif
 
         qt_glActiveStencilFaceEXT = 0;
 
@@ -261,11 +321,14 @@ struct QGLExtensionFuncs
     _glGenProgramsARB qt_glGenProgramsARB;
     _glProgramLocalParameter4fvARB qt_glProgramLocalParameter4fvARB;
 
+#if !defined(QT_OPENGL_ES_2)
     // GLSL definitions
     _glCreateShader qt_glCreateShader;
     _glShaderSource qt_glShaderSource;
+    _glShaderBinary qt_glShaderBinary;
     _glCompileShader qt_glCompileShader;
     _glDeleteShader qt_glDeleteShader;
+    _glIsShader qt_glIsShader;
 
     _glCreateProgram qt_glCreateProgram;
     _glAttachShader qt_glAttachShader;
@@ -273,10 +336,13 @@ struct QGLExtensionFuncs
     _glLinkProgram qt_glLinkProgram;
     _glUseProgram qt_glUseProgram;
     _glDeleteProgram qt_glDeleteProgram;
+    _glIsProgram qt_glIsProgram;
 
     _glGetShaderInfoLog qt_glGetShaderInfoLog;
     _glGetShaderiv qt_glGetShaderiv;
+    _glGetShaderSource qt_glGetShaderSource;
     _glGetProgramiv qt_glGetProgramiv;
+    _glGetProgramInfoLog qt_glGetProgramInfoLog;
 
     _glGetUniformLocation qt_glGetUniformLocation;
     _glUniform4fv qt_glUniform4fv;
@@ -284,6 +350,32 @@ struct QGLExtensionFuncs
     _glUniform2fv qt_glUniform2fv;
     _glUniform1fv qt_glUniform1fv;
     _glUniform1i qt_glUniform1i;
+    _glUniform1iv qt_glUniform1iv;
+    _glUniformMatrix2fv qt_glUniformMatrix2fv;
+    _glUniformMatrix3fv qt_glUniformMatrix3fv;
+    _glUniformMatrix4fv qt_glUniformMatrix4fv;
+    _glUniformMatrix2x3fv qt_glUniformMatrix2x3fv;
+    _glUniformMatrix2x4fv qt_glUniformMatrix2x4fv;
+    _glUniformMatrix3x2fv qt_glUniformMatrix3x2fv;
+    _glUniformMatrix3x4fv qt_glUniformMatrix3x4fv;
+    _glUniformMatrix4x2fv qt_glUniformMatrix4x2fv;
+    _glUniformMatrix4x3fv qt_glUniformMatrix4x3fv;
+
+    _glBindAttribLocation qt_glBindAttribLocation;
+    _glGetAttribLocation qt_glGetAttribLocation;
+    _glVertexAttrib1fv qt_glVertexAttrib1fv;
+    _glVertexAttrib2fv qt_glVertexAttrib2fv;
+    _glVertexAttrib3fv qt_glVertexAttrib3fv;
+    _glVertexAttrib4fv qt_glVertexAttrib4fv;
+    _glVertexAttribPointer qt_glVertexAttribPointer;
+    _glDisableVertexAttribArray qt_glDisableVertexAttribArray;
+    _glEnableVertexAttribArray qt_glEnableVertexAttribArray;
+#else
+    bool qt_glslResolved;
+
+    _glGetProgramBinaryOES qt_glGetProgramBinaryOES;
+    _glProgramBinaryOES qt_glProgramBinaryOES;
+#endif
 
     _glActiveStencilFaceEXT qt_glActiveStencilFaceEXT;
 
@@ -600,10 +692,14 @@ struct QGLExtensionFuncs
 #define glMapBufferARB QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glMapBufferARB
 #define glUnmapBufferARB QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUnmapBufferARB
 
+#if !defined(QT_OPENGL_ES_2)
+
 #define glCreateShader QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glCreateShader
 #define glShaderSource QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glShaderSource
+#define glShaderBinary QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glShaderBinary
 #define glCompileShader QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glCompileShader
 #define glDeleteShader QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glDeleteShader
+#define glIsShader QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glIsShader
 
 #define glCreateProgram QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glCreateProgram
 #define glAttachShader QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glAttachShader
@@ -611,10 +707,13 @@ struct QGLExtensionFuncs
 #define glLinkProgram QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glLinkProgram
 #define glUseProgram QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUseProgram
 #define glDeleteProgram QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glDeleteProgram
+#define glIsProgram QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glIsProgram
 
 #define glGetShaderInfoLog QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetShaderInfoLog
 #define glGetShaderiv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetShaderiv
+#define glGetShaderSource QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetShaderSource
 #define glGetProgramiv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetProgramiv
+#define glGetProgramInfoLog QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetProgramInfoLog
 
 #define glGetUniformLocation QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetUniformLocation
 #define glUniform4fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniform4fv
@@ -622,6 +721,33 @@ struct QGLExtensionFuncs
 #define glUniform2fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniform2fv
 #define glUniform1fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniform1fv
 #define glUniform1i QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniform1i
+#define glUniform1iv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniform1iv
+#define glUniformMatrix2fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniformMatrix2fv
+#define glUniformMatrix3fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniformMatrix3fv
+#define glUniformMatrix4fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniformMatrix4fv
+#define glUniformMatrix2x3fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniformMatrix2x3fv
+#define glUniformMatrix2x4fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniformMatrix2x4fv
+#define glUniformMatrix3x2fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniformMatrix3x2fv
+#define glUniformMatrix3x4fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniformMatrix3x4fv
+#define glUniformMatrix4x2fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniformMatrix4x2fv
+#define glUniformMatrix4x3fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniformMatrix4x3fv
+
+#define glBindAttribLocation QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glBindAttribLocation
+#define glGetAttribLocation QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetAttribLocation
+#define glVertexAttrib1fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glVertexAttrib1fv
+#define glVertexAttrib2fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glVertexAttrib2fv
+#define glVertexAttrib3fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glVertexAttrib3fv
+#define glVertexAttrib4fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glVertexAttrib4fv
+#define glVertexAttribPointer QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glVertexAttribPointer
+#define glDisableVertexAttribArray QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glDisableVertexAttribArray
+#define glEnableVertexAttribArray QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glEnableVertexAttribArray
+
+#else // QT_OPENGL_ES_2
+
+#define glGetProgramBinaryOES QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetProgramBinaryOES
+#define glProgramBinaryOES QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glProgramBinaryOES
+
+#endif // QT_OPENGL_ES_2
 
 #define glGetActiveAttrib QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetActiveAttrib
 #define glGetAttribLocation QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetAttribLocation

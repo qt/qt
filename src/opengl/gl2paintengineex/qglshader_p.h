@@ -81,7 +81,8 @@ SAMPLER_2D_SHADOW.
 
 #include <QtOpenGL>
 
-#include <private/qgl_p.h>
+#define QGLShader           QGLEngineShader
+#define QGLShaderProgram    QGLEngineShaderProgram
 
 typedef struct {
     GLfloat a;

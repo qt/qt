@@ -87,35 +87,6 @@ public:
     }
 };
 
-class Q_OPENGL_EXPORT QGLSLProgram
-{
-public:
-    QGLSLProgram(const QString &src);
-    ~QGLSLProgram();
-
-    bool success() const;
-
-    void enable();
-    void disable();
-
-    int getUniformLocation(const QString &name);
-
-    void setUniform(int uniform, int value);
-    void setUniform(int uniform, qreal value);
-    void setUniform(int uniform, qreal v1, qreal v2);
-    void setUniform(int uniform, qreal v1, qreal v2, qreal v3);
-    void setUniform(int uniform, qreal v1, qreal v2, qreal v3, qreal v4);
-    void setUniform(int uniform, int count, float *v);
-
-private:
-    GLuint m_shader;
-    GLuint m_program;
-
-    GLint m_valid;
-
-    const QGLContext *ctx;
-};
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
