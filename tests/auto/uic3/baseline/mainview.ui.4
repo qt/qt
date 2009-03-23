@@ -1,0 +1,725 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>MainView</class>
+  <widget class="QDialog" name="MainView">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>552</width>
+        <height>456</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Form1</string>
+    </property>
+    <layout class="QVBoxLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item>
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <widget class="QLabel" name="TextLabel1">
+              <property name="text">
+                <string>URL</string>
+              </property>
+              <property name="wordWrap">
+                <bool>false</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QLineEdit" name="urlEdit"/>
+          </item>
+        </layout>
+      </item>
+      <item>
+        <widget class="QTabWidget" name="TabWidget2">
+          <property name="sizePolicy">
+            <sizepolicy>
+              <hsizetype>7</hsizetype>
+              <vsizetype>1</vsizetype>
+            </sizepolicy>
+          </property>
+          <widget class="QWidget" name="tab">
+            <attribute name="title">
+              <string>Copy</string>
+            </attribute>
+            <layout class="QGridLayout">
+              <property name="margin">
+                <number>11</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item row="4" column="0">
+                <widget class="QPushButton" name="PushButton3_2">
+                  <property name="text">
+                    <string>Start</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="0" column="0" rowspan="1" colspan="2">
+                <layout class="QHBoxLayout">
+                  <property name="margin">
+                    <number>0</number>
+                  </property>
+                  <property name="spacing">
+                    <number>6</number>
+                  </property>
+                  <item>
+                    <widget class="QLabel" name="TextLabel1_2_2_3_2">
+                      <property name="text">
+                        <string>From</string>
+                      </property>
+                      <property name="wordWrap">
+                        <bool>false</bool>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QLineEdit" name="copyFrom"/>
+                  </item>
+                </layout>
+              </item>
+              <item row="1" column="0" rowspan="1" colspan="2">
+                <layout class="QHBoxLayout">
+                  <property name="margin">
+                    <number>0</number>
+                  </property>
+                  <property name="spacing">
+                    <number>6</number>
+                  </property>
+                  <item>
+                    <widget class="QLabel" name="TextLabel1_2_2_3_3">
+                      <property name="text">
+                        <string>To</string>
+                      </property>
+                      <property name="wordWrap">
+                        <bool>false</bool>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QLineEdit" name="copyTo"/>
+                  </item>
+                </layout>
+              </item>
+              <item row="2" column="0">
+                <widget class="QCheckBox" name="copyMove">
+                  <property name="text">
+                    <string>move</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="3" column="0">
+                <spacer name="Spacer14_2">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                </spacer>
+              </item>
+              <item row="4" column="1">
+                <spacer name="Spacer15_2">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                  </property>
+                </spacer>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="tab">
+            <attribute name="title">
+              <string>Get</string>
+            </attribute>
+            <layout class="QGridLayout">
+              <property name="margin">
+                <number>11</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item row="2" column="0">
+                <widget class="QPushButton" name="PushButton3_3">
+                  <property name="text">
+                    <string>Start</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="0" column="0" rowspan="1" colspan="2">
+                <layout class="QHBoxLayout">
+                  <property name="margin">
+                    <number>0</number>
+                  </property>
+                  <property name="spacing">
+                    <number>6</number>
+                  </property>
+                  <item>
+                    <widget class="QLabel" name="TextLabel1_2">
+                      <property name="text">
+                        <string>Location</string>
+                      </property>
+                      <property name="wordWrap">
+                        <bool>false</bool>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QLineEdit" name="getLocation"/>
+                  </item>
+                </layout>
+              </item>
+              <item row="1" column="0">
+                <spacer name="Spacer4">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                </spacer>
+              </item>
+              <item row="2" column="1">
+                <spacer name="Spacer5">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                  </property>
+                </spacer>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="tab">
+            <attribute name="title">
+              <string>ListChildren</string>
+            </attribute>
+            <layout class="QGridLayout">
+              <property name="margin">
+                <number>11</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item row="1" column="0">
+                <widget class="QPushButton" name="PushButton3">
+                  <property name="text">
+                    <string>Start</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="0" column="0">
+                <spacer name="Spacer2">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                </spacer>
+              </item>
+              <item row="1" column="1">
+                <spacer name="Spacer3">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                  </property>
+                </spacer>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="tab">
+            <attribute name="title">
+              <string>Mkdir</string>
+            </attribute>
+            <layout class="QGridLayout">
+              <property name="margin">
+                <number>11</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item row="2" column="0">
+                <widget class="QPushButton" name="PushButton3_4">
+                  <property name="text">
+                    <string>Start</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="0" column="0" rowspan="1" colspan="2">
+                <layout class="QHBoxLayout">
+                  <property name="margin">
+                    <number>0</number>
+                  </property>
+                  <property name="spacing">
+                    <number>6</number>
+                  </property>
+                  <item>
+                    <widget class="QLabel" name="TextLabel1_2_2">
+                      <property name="text">
+                        <string>Dir name</string>
+                      </property>
+                      <property name="wordWrap">
+                        <bool>false</bool>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QLineEdit" name="mkdirDirName"/>
+                  </item>
+                </layout>
+              </item>
+              <item row="1" column="0">
+                <spacer name="Spacer6">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                </spacer>
+              </item>
+              <item row="2" column="1">
+                <spacer name="Spacer7">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                  </property>
+                </spacer>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="tab">
+            <attribute name="title">
+              <string>Put</string>
+            </attribute>
+            <layout class="QGridLayout">
+              <property name="margin">
+                <number>11</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item row="2" column="0">
+                <widget class="QPushButton" name="PushButton3_5">
+                  <property name="text">
+                    <string>Start</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="0" column="0" rowspan="1" colspan="2">
+                <layout class="QHBoxLayout">
+                  <property name="margin">
+                    <number>0</number>
+                  </property>
+                  <property name="spacing">
+                    <number>6</number>
+                  </property>
+                  <item>
+                    <widget class="QLabel" name="TextLabel1_2_4">
+                      <property name="text">
+                        <string>Location</string>
+                      </property>
+                      <property name="wordWrap">
+                        <bool>false</bool>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QLineEdit" name="putLocation"/>
+                  </item>
+                </layout>
+              </item>
+              <item row="1" column="0">
+                <spacer name="Spacer14">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                </spacer>
+              </item>
+              <item row="2" column="1">
+                <spacer name="Spacer15">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                  </property>
+                </spacer>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="tab">
+            <attribute name="title">
+              <string>Remove</string>
+            </attribute>
+            <layout class="QGridLayout">
+              <property name="margin">
+                <number>11</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item row="2" column="0">
+                <widget class="QPushButton" name="PushButton3_6">
+                  <property name="text">
+                    <string>Start</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="0" column="0" rowspan="1" colspan="2">
+                <layout class="QHBoxLayout">
+                  <property name="margin">
+                    <number>0</number>
+                  </property>
+                  <property name="spacing">
+                    <number>6</number>
+                  </property>
+                  <item>
+                    <widget class="QLabel" name="TextLabel1_2_2_2">
+                      <property name="text">
+                        <string>File name</string>
+                      </property>
+                      <property name="wordWrap">
+                        <bool>false</bool>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QLineEdit" name="removeFileName"/>
+                  </item>
+                </layout>
+              </item>
+              <item row="1" column="0">
+                <spacer name="Spacer12">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                </spacer>
+              </item>
+              <item row="2" column="1">
+                <spacer name="Spacer13">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                  </property>
+                </spacer>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="tab">
+            <attribute name="title">
+              <string>Rename</string>
+            </attribute>
+            <layout class="QGridLayout">
+              <property name="margin">
+                <number>11</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item row="3" column="0">
+                <widget class="QPushButton" name="PushButton3_7">
+                  <property name="text">
+                    <string>Start</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="1" column="0" rowspan="1" colspan="2">
+                <layout class="QHBoxLayout">
+                  <property name="margin">
+                    <number>0</number>
+                  </property>
+                  <property name="spacing">
+                    <number>6</number>
+                  </property>
+                  <item>
+                    <widget class="QLabel" name="TextLabel1_2_2_4">
+                      <property name="text">
+                        <string>New name</string>
+                      </property>
+                      <property name="wordWrap">
+                        <bool>false</bool>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QLineEdit" name="renameNewName"/>
+                  </item>
+                </layout>
+              </item>
+              <item row="0" column="0" rowspan="1" colspan="2">
+                <layout class="QHBoxLayout">
+                  <property name="margin">
+                    <number>0</number>
+                  </property>
+                  <property name="spacing">
+                    <number>6</number>
+                  </property>
+                  <item>
+                    <widget class="QLabel" name="TextLabel1_2_2_3">
+                      <property name="text">
+                        <string>Old name</string>
+                      </property>
+                      <property name="wordWrap">
+                        <bool>false</bool>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QLineEdit" name="renameOldName"/>
+                  </item>
+                </layout>
+              </item>
+              <item row="2" column="0">
+                <spacer name="Spacer10">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                </spacer>
+              </item>
+              <item row="3" column="1">
+                <spacer name="Spacer11">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                  </property>
+                </spacer>
+              </item>
+            </layout>
+          </widget>
+        </widget>
+      </item>
+      <item>
+        <widget class="Q3TextEdit" name="logWindow">
+          <property name="readOnly">
+            <bool>true</bool>
+          </property>
+        </widget>
+      </item>
+      <item>
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <widget class="QPushButton" name="PushButton2">
+              <property name="text">
+                <string>Stop</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <spacer name="Spacer1">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="PushButton1">
+              <property name="text">
+                <string>Quit</string>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <includes>
+    <include location="local">q3networkprotocol.h</include>
+    <include location="local">q3urloperator.h</include>
+  </includes>
+  <connections>
+    <connection>
+      <sender>PushButton1</sender>
+      <signal>clicked()</signal>
+      <receiver>MainView</receiver>
+      <slot>quit()</slot>
+    </connection>
+    <connection>
+      <sender>PushButton3</sender>
+      <signal>clicked()</signal>
+      <receiver>MainView</receiver>
+      <slot>start_listChildren()</slot>
+    </connection>
+    <connection>
+      <sender>PushButton3_3</sender>
+      <signal>clicked()</signal>
+      <receiver>MainView</receiver>
+      <slot>start_get()</slot>
+    </connection>
+    <connection>
+      <sender>PushButton3_2</sender>
+      <signal>clicked()</signal>
+      <receiver>MainView</receiver>
+      <slot>start_copy()</slot>
+    </connection>
+    <connection>
+      <sender>PushButton3_4</sender>
+      <signal>clicked()</signal>
+      <receiver>MainView</receiver>
+      <slot>start_mkdir()</slot>
+    </connection>
+    <connection>
+      <sender>PushButton3_5</sender>
+      <signal>clicked()</signal>
+      <receiver>MainView</receiver>
+      <slot>start_put()</slot>
+    </connection>
+    <connection>
+      <sender>PushButton3_6</sender>
+      <signal>clicked()</signal>
+      <receiver>MainView</receiver>
+      <slot>start_remove()</slot>
+    </connection>
+    <connection>
+      <sender>PushButton3_7</sender>
+      <signal>clicked()</signal>
+      <receiver>MainView</receiver>
+      <slot>start_rename()</slot>
+    </connection>
+    <connection>
+      <sender>PushButton2</sender>
+      <signal>clicked()</signal>
+      <receiver>MainView</receiver>
+      <slot>stop()</slot>
+    </connection>
+  </connections>
+</ui>

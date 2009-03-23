@@ -1,0 +1,8 @@
+//! [0]
+#include <QtOpenGL>
+//! [0]
+
+
+//! [1]
+QT += opengl
+//! [1]

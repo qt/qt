@@ -1,0 +1,4 @@
+qquerytransformparser.cpp -diff Unset
+qquerytransformparser_p.h -diff Unset
+qxslttokenlookup.cpp -diff Unset
+qxslttokenlookup_p.h -diff Unset

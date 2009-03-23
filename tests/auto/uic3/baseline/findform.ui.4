@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>FindForm</class>
+  <widget class="QDialog" name="FindForm">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>353</width>
+        <height>124</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Color Tool -- Find</string>
+    </property>
+    <layout class="QVBoxLayout">
+      <item>
+        <layout class="QHBoxLayout">
+          <item>
+            <widget class="QLabel" name="TextLabel1">
+              <property name="text">
+                <string>&amp;Look for</string>
+              </property>
+              <property name="buddy" stdset="0">
+                <cstring>findLineEdit</cstring>
+              </property>
+              <property name="wordWrap">
+                <bool>false</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QLineEdit" name="findLineEdit"/>
+          </item>
+        </layout>
+      </item>
+      <item>
+        <layout class="QHBoxLayout">
+          <item>
+            <spacer name="Spacer1">
+              <property name="sizeHint">
+                <size>
+                  <width>0</width>
+                  <height>16</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="findPushButton">
+              <property name="text">
+                <string>&amp;Find</string>
+              </property>
+              <property name="default">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="closePushButton">
+              <property name="text">
+                <string>Close</string>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>closePushButton</sender>
+      <signal>clicked()</signal>
+      <receiver>FindForm</receiver>
+      <slot>accept()</slot>
+    </connection>
+    <connection>
+      <sender>findPushButton</sender>
+      <signal>clicked()</signal>
+      <receiver>FindForm</receiver>
+      <slot>find()</slot>
+    </connection>
+  </connections>
+</ui>

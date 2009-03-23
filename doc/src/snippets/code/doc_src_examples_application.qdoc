@@ -1,0 +1,5 @@
+//! [0]
+application -style=windows
+application -style=motif
+application -style=cde
+//! [0]

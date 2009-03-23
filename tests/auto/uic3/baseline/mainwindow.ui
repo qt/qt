@@ -1,0 +1,84 @@
+<!DOCTYPE UI><UI version="3.1" stdsetdef="1">
+<class>MainWindow</class>
+<widget class="QMainWindow">
+    <property name="name">
+        <cstring>MainWindow</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>600</width>
+            <height>480</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Main Window</string>
+    </property>
+</widget>
+<menubar>
+    <property name="name">
+        <cstring>menubar</cstring>
+    </property>
+    <item text="&amp;File" name="PopupMenu">
+        <action name="actionFileExit"/>
+    </item>
+    <item text="&amp;Options" name="PopupMenu_2">
+        <action name="actionOptionsTranslate"/>
+    </item>
+</menubar>
+<toolbars>
+</toolbars>
+<actions>
+    <action>
+        <property name="name">
+            <cstring>actionFileExit</cstring>
+        </property>
+        <property name="text">
+            <string>Exit</string>
+        </property>
+        <property name="menuText">
+            <string>E&amp;xit</string>
+        </property>
+        <property name="statusTip">
+            <string>Exit the application</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>actionOptionsTranslate</cstring>
+        </property>
+        <property name="text">
+            <string>Translate</string>
+        </property>
+        <property name="menuText">
+            <string>Load Translation...</string>
+        </property>
+        <property name="statusTip">
+            <string>Load translation</string>
+        </property>
+    </action>
+</actions>
+<connections>
+    <connection>
+        <sender>actionFileExit</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>close()</slot>
+    </connection>
+    <connection>
+        <sender>actionOptionsTranslate</sender>
+        <signal>activated()</signal>
+        <receiver>MainWindow</receiver>
+        <slot>loadTranslation()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in implementation">mainwindow.ui.h</include>
+</includes>
+<slots>
+    <slot>loadTranslation()</slot>
+</slots>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

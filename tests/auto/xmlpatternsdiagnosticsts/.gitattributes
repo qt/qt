@@ -1,0 +1,6 @@
+TestSuite/DiagnosticsCatalog.xml -crlf
+TestSuite/Queries/XQuery/ShouldSucceed/succeed-11.xq -crlf
+TestSuite/Queries/XQuery/ShouldSucceed/succeed-12.xq -crlf
+TestSuite/Queries/XQuery/ShouldSucceed/succeed-13.xq -crlf
+TestSuite/Queries/XQuery/ShouldSucceed/succeed-8.xq -crlf
+TestSuite/Queries/XQuery/ShouldSucceed/succeed-9.xq -crlf

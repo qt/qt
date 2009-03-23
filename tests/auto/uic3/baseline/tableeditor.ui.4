@@ -1,0 +1,746 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment>*********************************************************************
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).  All rights reserved.
+**
+** This file is part of Qt Designer.
+**
+** This file may be used under the terms of the GNU General
+** Public License versions 2.0 or 3.0 as published by the Free
+** Software Foundation and appearing in the files LICENSE.GPL2
+** and LICENSE.GPL3 included in the packaging of this file.
+** Alternatively you may (at your option) use any later version
+** of the GNU General Public License if such license has been
+** publicly approved by Nokia Corporation and/or its subsidiary(-ies) (or its successors, if any)
+** and the KDE Free Qt Foundation.
+**
+** Please review the following information to ensure GNU General
+** Public Licensing requirements will be met:
+** http://trolltech.com/products/qt/licenses/licensing/opensource/.
+** If you are unsure which license is appropriate for your use, please
+** review the following information:
+** http://trolltech.com/products/qt/licenses/licensing/licensingoverview
+** or contact the sales department at sales@trolltech.com.
+**
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with
+** the Software.
+**
+** This file is provided &quot;AS IS&quot; with NO WARRANTY OF ANY KIND,
+** INCLUDING THE WARRANTIES OF DESIGN, MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE. Trolltech reserves all rights not granted
+** herein.
+**
+*********************************************************************</comment>
+  <exportmacro></exportmacro>
+  <class>TableEditorBase</class>
+  <widget class="QDialog" name="TableEditorBase">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>484</width>
+        <height>406</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Edit Table</string>
+    </property>
+    <property name="sizeGripEnabled">
+      <bool>true</bool>
+    </property>
+    <layout class="QGridLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item row="0" column="0">
+        <widget class="Q3Table" name="table">
+          <property name="numRows">
+            <number>1</number>
+          </property>
+          <property name="numCols">
+            <number>1</number>
+          </property>
+          <property name="readOnly">
+            <bool>true</bool>
+          </property>
+        </widget>
+      </item>
+      <item row="1" column="0" rowspan="1" colspan="2">
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <widget class="QPushButton" name="buttonHelp">
+              <property name="text">
+                <string>&amp;Help</string>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <spacer name="Horizontal Spacing2">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonApply">
+              <property name="text">
+                <string>&amp;Apply</string>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>Apply all changes.</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonOk">
+              <property name="text">
+                <string>&amp;OK</string>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+              <property name="default">
+                <bool>true</bool>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>Close the dialog and apply all the changes.</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonCancel">
+              <property name="text">
+                <string>&amp;Cancel</string>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>Close the dialog and discard any changes.</string>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+      <item row="0" column="1">
+        <widget class="QTabWidget" name="TabWidget">
+          <widget class="QWidget" name="columns_tab">
+            <attribute name="title">
+              <string>Co&amp;lumns</string>
+            </attribute>
+            <layout class="QGridLayout">
+              <property name="margin">
+                <number>11</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item row="4" column="2">
+                <spacer name="Spacer3">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                  </property>
+                </spacer>
+              </item>
+              <item row="0" column="0" rowspan="6" colspan="1">
+                <widget class="Q3ListBox" name="listColumns"/>
+              </item>
+              <item row="3" column="1">
+                <spacer name="Spacer2">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                </spacer>
+              </item>
+              <item row="4" column="1">
+                <widget class="QPushButton" name="buttonColumnUp">
+                  <property name="text">
+                    <string/>
+                  </property>
+                  <property name="icon">
+                    <pixmap>designer_s_up.png</pixmap>
+                  </property>
+                  <property name="toolTip" stdset="0">
+                    <string>Move up</string>
+                  </property>
+                  <property name="whatsThis" stdset="0">
+                    <string>&lt;b&gt;Move the selected item up.&lt;/b&gt;&lt;p&gt;The top-most column will be the first column of the list.&lt;/p&gt;</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="5" column="1">
+                <widget class="QPushButton" name="buttonColumnDown">
+                  <property name="text">
+                    <string/>
+                  </property>
+                  <property name="icon">
+                    <pixmap>designer_s_down.png</pixmap>
+                  </property>
+                  <property name="toolTip" stdset="0">
+                    <string>Move down</string>
+                  </property>
+                  <property name="whatsThis" stdset="0">
+                    <string>&lt;b&gt;Move the selected item down.&lt;/b&gt;&lt;p&gt;The top-most column will be the first column of the list.&lt;/p&gt;</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="1" column="1">
+                <widget class="QPushButton" name="buttonDeleteColumn">
+                  <property name="text">
+                    <string>&amp;Delete Column</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="0" column="1">
+                <widget class="QPushButton" name="buttonNewColumn">
+                  <property name="text">
+                    <string>&amp;New Column</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="2" column="1" rowspan="1" colspan="2">
+                <layout class="QGridLayout">
+                  <property name="margin">
+                    <number>0</number>
+                  </property>
+                  <property name="spacing">
+                    <number>6</number>
+                  </property>
+                  <item row="0" column="0">
+                    <widget class="QLabel" name="labelTable">
+                      <property name="text">
+                        <string>Table:</string>
+                      </property>
+                      <property name="wordWrap">
+                        <bool>false</bool>
+                      </property>
+                    </widget>
+                  </item>
+                  <item row="3" column="1">
+                    <layout class="QHBoxLayout">
+                      <property name="margin">
+                        <number>0</number>
+                      </property>
+                      <property name="spacing">
+                        <number>6</number>
+                      </property>
+                      <item>
+                        <widget class="QLabel" name="labelColumnPixmap">
+                          <property name="text">
+                            <string>Label4</string>
+                          </property>
+                          <property name="wordWrap">
+                            <bool>false</bool>
+                          </property>
+                        </widget>
+                      </item>
+                      <item>
+                        <widget class="QPushButton" name="buttonDeleteColPixmap">
+                          <property name="maximumSize">
+                            <size>
+                              <width>30</width>
+                              <height>22</height>
+                            </size>
+                          </property>
+                          <property name="text">
+                            <string/>
+                          </property>
+                          <property name="icon">
+                            <pixmap>designer_s_editcut.png</pixmap>
+                          </property>
+                          <property name="toolTip" stdset="0">
+                            <string>Delete Pixmap</string>
+                          </property>
+                          <property name="whatsThis" stdset="0">
+                            <string>&lt;b&gt;Delete the selected item's pixmap.&lt;/b&gt;&lt;p&gt;The pixmap in the current column of the selected item will be deleted.&lt;/p&gt;</string>
+                          </property>
+                        </widget>
+                      </item>
+                      <item>
+                        <widget class="QPushButton" name="buttonChooseColPixmap">
+                          <property name="maximumSize">
+                            <size>
+                              <width>30</width>
+                              <height>22</height>
+                            </size>
+                          </property>
+                          <property name="text">
+                            <string>...</string>
+                          </property>
+                          <property name="toolTip" stdset="0">
+                            <string>Select a Pixmap</string>
+                          </property>
+                          <property name="whatsThis" stdset="0">
+                            <string>&lt;b&gt;Select a pixmap file for the item.&lt;/b&gt;&lt;p&gt;The pixmap will be changed in the current column of the selected item.&lt;/p&gt;</string>
+                          </property>
+                        </widget>
+                      </item>
+                    </layout>
+                  </item>
+                  <item row="2" column="0">
+                    <widget class="QLabel" name="TextLabel2">
+                      <property name="text">
+                        <string>&amp;Label:</string>
+                      </property>
+                      <property name="buddy" stdset="0">
+                        <cstring>editColumnText</cstring>
+                      </property>
+                      <property name="wordWrap">
+                        <bool>false</bool>
+                      </property>
+                    </widget>
+                  </item>
+                  <item row="3" column="0">
+                    <widget class="QLabel" name="Label2">
+                      <property name="text">
+                        <string>Pixmap:</string>
+                      </property>
+                      <property name="buddy" stdset="0">
+                        <cstring>itemChoosePixmap</cstring>
+                      </property>
+                      <property name="wordWrap">
+                        <bool>false</bool>
+                      </property>
+                    </widget>
+                  </item>
+                  <item row="1" column="0">
+                    <widget class="QLabel" name="labelFields">
+                      <property name="text">
+                        <string>&amp;Field:</string>
+                      </property>
+                      <property name="buddy" stdset="0">
+                        <cstring>comboFields</cstring>
+                      </property>
+                      <property name="wordWrap">
+                        <bool>false</bool>
+                      </property>
+                    </widget>
+                  </item>
+                  <item row="2" column="1">
+                    <widget class="QLineEdit" name="editColumnText"/>
+                  </item>
+                  <item row="1" column="1">
+                    <widget class="QComboBox" name="comboFields">
+                      <property name="editable">
+                        <bool>true</bool>
+                      </property>
+                    </widget>
+                  </item>
+                  <item row="0" column="1">
+                    <widget class="QLabel" name="labelTableValue">
+                      <property name="text">
+                        <string>&lt;no table&gt;</string>
+                      </property>
+                      <property name="wordWrap">
+                        <bool>false</bool>
+                      </property>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="rows_tab">
+            <attribute name="title">
+              <string>&amp;Rows</string>
+            </attribute>
+            <layout class="QGridLayout">
+              <property name="margin">
+                <number>11</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item row="4" column="2">
+                <spacer name="Spacer3_2">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                  </property>
+                </spacer>
+              </item>
+              <item row="4" column="1">
+                <widget class="QPushButton" name="buttonRowUp">
+                  <property name="text">
+                    <string/>
+                  </property>
+                  <property name="icon">
+                    <pixmap>designer_s_up.png</pixmap>
+                  </property>
+                  <property name="toolTip" stdset="0">
+                    <string>Move up</string>
+                  </property>
+                  <property name="whatsThis" stdset="0">
+                    <string>&lt;b&gt;Move the selected item up.&lt;/b&gt;&lt;p&gt;The top-most column will be the first column of the list.&lt;/p&gt;</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="0" column="0" rowspan="6" colspan="1">
+                <widget class="Q3ListBox" name="listRows"/>
+              </item>
+              <item row="5" column="1">
+                <widget class="QPushButton" name="buttonRowDown">
+                  <property name="text">
+                    <string/>
+                  </property>
+                  <property name="icon">
+                    <pixmap>designer_s_down.png</pixmap>
+                  </property>
+                  <property name="toolTip" stdset="0">
+                    <string>Move down</string>
+                  </property>
+                  <property name="whatsThis" stdset="0">
+                    <string>&lt;b&gt;Move the selected item down.&lt;/b&gt;&lt;p&gt;The top-most column will be the first column of the list.&lt;/p&gt;</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="3" column="1">
+                <spacer name="Spacer2_2">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                </spacer>
+              </item>
+              <item row="0" column="1">
+                <widget class="QPushButton" name="buttonNewRow">
+                  <property name="text">
+                    <string>&amp;New Row</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="1" column="1">
+                <widget class="QPushButton" name="buttonDeleteRow">
+                  <property name="text">
+                    <string>&amp;Delete Row</string>
+                  </property>
+                </widget>
+              </item>
+              <item row="2" column="1" rowspan="1" colspan="2">
+                <layout class="QGridLayout">
+                  <property name="margin">
+                    <number>0</number>
+                  </property>
+                  <property name="spacing">
+                    <number>6</number>
+                  </property>
+                  <item row="0" column="0">
+                    <widget class="QLabel" name="TextLabel2_3">
+                      <property name="text">
+                        <string>&amp;Label:</string>
+                      </property>
+                      <property name="buddy" stdset="0">
+                        <cstring>editRowText</cstring>
+                      </property>
+                      <property name="wordWrap">
+                        <bool>false</bool>
+                      </property>
+                    </widget>
+                  </item>
+                  <item row="1" column="0">
+                    <widget class="QLabel" name="Label2_2">
+                      <property name="text">
+                        <string>Pixmap:</string>
+                      </property>
+                      <property name="buddy" stdset="0">
+                        <cstring>itemChoosePixmap</cstring>
+                      </property>
+                      <property name="wordWrap">
+                        <bool>false</bool>
+                      </property>
+                    </widget>
+                  </item>
+                  <item row="1" column="1">
+                    <layout class="QHBoxLayout">
+                      <property name="margin">
+                        <number>0</number>
+                      </property>
+                      <property name="spacing">
+                        <number>6</number>
+                      </property>
+                      <item>
+                        <widget class="QLabel" name="labelRowPixmap">
+                          <property name="text">
+                            <string>Label4</string>
+                          </property>
+                          <property name="wordWrap">
+                            <bool>false</bool>
+                          </property>
+                        </widget>
+                      </item>
+                      <item>
+                        <widget class="QPushButton" name="buttonDeleteRowPixmap">
+                          <property name="maximumSize">
+                            <size>
+                              <width>30</width>
+                              <height>22</height>
+                            </size>
+                          </property>
+                          <property name="text">
+                            <string/>
+                          </property>
+                          <property name="icon">
+                            <pixmap>designer_s_editcut.png</pixmap>
+                          </property>
+                          <property name="toolTip" stdset="0">
+                            <string>Delete Pixmap</string>
+                          </property>
+                          <property name="whatsThis" stdset="0">
+                            <string>&lt;b&gt;Delete the selected item's pixmap.&lt;/b&gt;&lt;p&gt;The pixmap in the current column of the selected item will be deleted.&lt;/p&gt;</string>
+                          </property>
+                        </widget>
+                      </item>
+                      <item>
+                        <widget class="QPushButton" name="buttonChooseRowPixmap">
+                          <property name="maximumSize">
+                            <size>
+                              <width>30</width>
+                              <height>22</height>
+                            </size>
+                          </property>
+                          <property name="text">
+                            <string>...</string>
+                          </property>
+                          <property name="toolTip" stdset="0">
+                            <string>Select a Pixmap</string>
+                          </property>
+                          <property name="whatsThis" stdset="0">
+                            <string>&lt;b&gt;Select a pixmap file for the item.&lt;/b&gt;&lt;p&gt;The pixmap will be changed in the current column of the selected item.&lt;/p&gt;</string>
+                          </property>
+                        </widget>
+                      </item>
+                    </layout>
+                  </item>
+                  <item row="0" column="1">
+                    <widget class="QLineEdit" name="editRowText"/>
+                  </item>
+                </layout>
+              </item>
+            </layout>
+          </widget>
+        </widget>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <tabstops>
+    <tabstop>buttonOk</tabstop>
+    <tabstop>buttonCancel</tabstop>
+    <tabstop>table</tabstop>
+    <tabstop>TabWidget</tabstop>
+    <tabstop>listColumns</tabstop>
+    <tabstop>buttonNewColumn</tabstop>
+    <tabstop>buttonDeleteColumn</tabstop>
+    <tabstop>comboFields</tabstop>
+    <tabstop>editColumnText</tabstop>
+    <tabstop>buttonDeleteColPixmap</tabstop>
+    <tabstop>buttonChooseColPixmap</tabstop>
+    <tabstop>buttonColumnUp</tabstop>
+    <tabstop>buttonColumnDown</tabstop>
+    <tabstop>buttonApply</tabstop>
+    <tabstop>listRows</tabstop>
+    <tabstop>buttonNewRow</tabstop>
+    <tabstop>buttonDeleteRow</tabstop>
+    <tabstop>editRowText</tabstop>
+    <tabstop>buttonDeleteRowPixmap</tabstop>
+    <tabstop>buttonChooseRowPixmap</tabstop>
+    <tabstop>buttonRowUp</tabstop>
+    <tabstop>buttonRowDown</tabstop>
+    <tabstop>buttonHelp</tabstop>
+  </tabstops>
+  <connections>
+    <connection>
+      <sender>buttonApply</sender>
+      <signal>clicked()</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>applyClicked()</slot>
+    </connection>
+    <connection>
+      <sender>buttonOk</sender>
+      <signal>clicked()</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>okClicked()</slot>
+    </connection>
+    <connection>
+      <sender>listColumns</sender>
+      <signal>currentChanged(Q3ListBoxItem*)</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>currentColumnChanged(Q3ListBoxItem*)</slot>
+    </connection>
+    <connection>
+      <sender>listColumns</sender>
+      <signal>selectionChanged(Q3ListBoxItem*)</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>currentColumnChanged(Q3ListBoxItem*)</slot>
+    </connection>
+    <connection>
+      <sender>editColumnText</sender>
+      <signal>textChanged(QString)</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>columnTextChanged(QString)</slot>
+    </connection>
+    <connection>
+      <sender>buttonNewColumn</sender>
+      <signal>clicked()</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>newColumnClicked()</slot>
+    </connection>
+    <connection>
+      <sender>buttonDeleteColumn</sender>
+      <signal>clicked()</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>deleteColumnClicked()</slot>
+    </connection>
+    <connection>
+      <sender>buttonColumnUp</sender>
+      <signal>clicked()</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>columnUpClicked()</slot>
+    </connection>
+    <connection>
+      <sender>buttonColumnDown</sender>
+      <signal>clicked()</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>columnDownClicked()</slot>
+    </connection>
+    <connection>
+      <sender>comboFields</sender>
+      <signal>activated(QString)</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>currentFieldChanged(QString)</slot>
+    </connection>
+    <connection>
+      <sender>listRows</sender>
+      <signal>selectionChanged(Q3ListBoxItem*)</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>currentRowChanged(Q3ListBoxItem*)</slot>
+    </connection>
+    <connection>
+      <sender>listRows</sender>
+      <signal>currentChanged(Q3ListBoxItem*)</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>currentRowChanged(Q3ListBoxItem*)</slot>
+    </connection>
+    <connection>
+      <sender>buttonNewRow</sender>
+      <signal>clicked()</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>newRowClicked()</slot>
+    </connection>
+    <connection>
+      <sender>buttonDeleteRow</sender>
+      <signal>clicked()</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>deleteRowClicked()</slot>
+    </connection>
+    <connection>
+      <sender>buttonRowUp</sender>
+      <signal>clicked()</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>rowUpClicked()</slot>
+    </connection>
+    <connection>
+      <sender>buttonRowDown</sender>
+      <signal>clicked()</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>rowDownClicked()</slot>
+    </connection>
+    <connection>
+      <sender>buttonChooseRowPixmap</sender>
+      <signal>clicked()</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>chooseRowPixmapClicked()</slot>
+    </connection>
+    <connection>
+      <sender>buttonDeleteColPixmap</sender>
+      <signal>clicked()</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>deleteColPixmapClicked()</slot>
+    </connection>
+    <connection>
+      <sender>editRowText</sender>
+      <signal>textChanged(QString)</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>rowTextChanged(QString)</slot>
+    </connection>
+    <connection>
+      <sender>buttonCancel</sender>
+      <signal>clicked()</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>reject()</slot>
+    </connection>
+    <connection>
+      <sender>buttonChooseColPixmap</sender>
+      <signal>clicked()</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>chooseColPixmapClicked()</slot>
+    </connection>
+    <connection>
+      <sender>buttonDeleteRowPixmap</sender>
+      <signal>clicked()</signal>
+      <receiver>TableEditorBase</receiver>
+      <slot>deleteRowPixmapClicked()</slot>
+    </connection>
+  </connections>
+</ui>

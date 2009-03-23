@@ -1,0 +1,5 @@
+IDI_ICON1               ICON    DISCARDABLE     "install.ico"
+LICENSE			RCDATA	"../../../dist/trial/LICENSE"
+LICENSE_QSA		RCDATA	"../../../../qsa/dist/eval/LICENSE.EVAL"
+QT_ARQ			RCDATA	"qt.arq"
+QSA_ARQ			RCDATA	"qt.arq"

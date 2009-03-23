@@ -1,0 +1,239 @@
+<!DOCTYPE UI><UI version="3.2" stdsetdef="1">
+<class>HelpDemoBase</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>HelpDemoBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>315</width>
+            <height>346</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Help Example</string>
+    </property>
+    <grid>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QLayoutWidget" row="3" column="0">
+            <property name="name">
+                <cstring>layout2</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <spacer>
+                    <property name="name">
+                        <cstring>spacer1</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>301</width>
+                            <height>20</height>
+                        </size>
+                    </property>
+                </spacer>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>closeButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Close</string>
+                    </property>
+                    <property name="accel">
+                        <string>Alt+C</string>
+                    </property>
+                    <property name="autoDefault">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+        <widget class="QFrame" row="1" column="0">
+            <property name="name">
+                <cstring>frame5</cstring>
+            </property>
+            <property name="frameShape">
+                <enum>StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+                <enum>Sunken</enum>
+            </property>
+            <grid>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QPushButton" row="1" column="0" rowspan="1" colspan="2">
+                    <property name="name">
+                        <cstring>openQAButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Open Assistant</string>
+                    </property>
+                    <property name="accel">
+                        <string>Alt+L</string>
+                    </property>
+                    <property name="autoDefault">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget class="QPushButton" row="4" column="3">
+                    <property name="name">
+                        <cstring>displayButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Display</string>
+                    </property>
+                    <property name="accel">
+                        <string>Alt+D</string>
+                    </property>
+                    <property name="autoDefault">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget class="QCheckBox" row="3" column="0" rowspan="1" colspan="4">
+                    <property name="name">
+                        <cstring>checkHide</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Hide Sidebar when Opening</string>
+                    </property>
+                    <property name="accel">
+                        <string>Alt+H</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton" row="1" column="2" rowspan="1" colspan="2">
+                    <property name="name">
+                        <cstring>closeQAButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>C&amp;lose Assistant</string>
+                    </property>
+                    <property name="accel">
+                        <string>Alt+L</string>
+                    </property>
+                    <property name="autoDefault">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="4" column="0">
+                    <property name="name">
+                        <cstring>textLabel3</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Filename:</string>
+                    </property>
+                    <property name="buddy" stdset="0">
+                        <cstring>leFileName</cstring>
+                    </property>
+                </widget>
+                <widget class="QLineEdit" row="4" column="1" rowspan="1" colspan="2">
+                    <property name="name">
+                        <cstring>leFileName</cstring>
+                    </property>
+                </widget>
+                <widget class="QCheckBox" row="2" column="0" rowspan="1" colspan="4">
+                    <property name="name">
+                        <cstring>checkOnlyExampleDoc</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Run Qt Assistant customized for HelpDemo</string>
+                    </property>
+                    <property name="accel">
+                        <string></string>
+                    </property>
+                </widget>
+            </grid>
+        </widget>
+        <widget class="QTextEdit" row="0" column="0">
+            <property name="name">
+                <cstring>textEdit1</cstring>
+            </property>
+            <property name="text">
+                <string>&lt;p&gt;
+This example demonstrates how Qt Assistant can be used as a help system for your application. If the button &lt;i&gt;"Run Qt Assistant customized for HelpDemo"&lt;/i&gt; is checked Qt Assistant will be customized for this application.
+&lt;/p&gt;</string>
+            </property>
+            <property name="wordWrap">
+                <enum>WidgetWidth</enum>
+            </property>
+            <property name="readOnly">
+                <bool>true</bool>
+            </property>
+        </widget>
+        <spacer row="2" column="0">
+            <property name="name">
+                <cstring>spacer2</cstring>
+            </property>
+            <property name="orientation">
+                <enum>Vertical</enum>
+            </property>
+            <property name="sizeType">
+                <enum>Expanding</enum>
+            </property>
+            <property name="sizeHint">
+                <size>
+                    <width>31</width>
+                    <height>30</height>
+                </size>
+            </property>
+        </spacer>
+    </grid>
+</widget>
+<connections>
+    <connection>
+        <sender>closeButton</sender>
+        <signal>clicked()</signal>
+        <receiver>HelpDemoBase</receiver>
+        <slot>close()</slot>
+    </connection>
+    <connection>
+        <sender>openQAButton</sender>
+        <signal>clicked()</signal>
+        <receiver>HelpDemoBase</receiver>
+        <slot>openAssistant()</slot>
+    </connection>
+    <connection>
+        <sender>closeQAButton</sender>
+        <signal>clicked()</signal>
+        <receiver>HelpDemoBase</receiver>
+        <slot>closeAssistant()</slot>
+    </connection>
+    <connection>
+        <sender>displayButton</sender>
+        <signal>clicked()</signal>
+        <receiver>HelpDemoBase</receiver>
+        <slot>displayPage()</slot>
+    </connection>
+    <connection>
+        <sender>checkOnlyExampleDoc</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>HelpDemoBase</receiver>
+        <slot>setAssistantArguments()</slot>
+    </connection>
+    <connection>
+        <sender>checkHide</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>HelpDemoBase</receiver>
+        <slot>setAssistantArguments()</slot>
+    </connection>
+</connections>
+<slots>
+    <slot>displayPage()</slot>
+    <slot>openAssistant()</slot>
+    <slot>closeAssistant()</slot>
+    <slot>setAssistantArguments()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

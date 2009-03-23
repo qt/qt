@@ -1,0 +1,22 @@
+StartDocument( )
+DTD( text="<!DOCTYPE footype [
+ <!ATTLIST foo xmlns CDATA #FIXED "http://www.trolltech.com">
+ <!ATTLIST pre:bar xmlns:pre CDATA #FIXED "http://www.trolltech.com">
+]>" dtdName="footype" )
+StartElement( name="body" qualifiedName="body" )
+Characters( whitespace text="
+" )
+StartElement( name="foo" namespaceUri="http://www.trolltech.com" qualifiedName="foo"
+    NamespaceDeclaration( namespaceUri="http://www.trolltech.com" )
+ )
+EndElement( name="foo" namespaceUri="http://www.trolltech.com" qualifiedName="foo" )
+Characters( whitespace text="
+" )
+StartElement( name="bar" namespaceUri="http://www.trolltech.com" qualifiedName="pre:bar" prefix="pre"
+    NamespaceDeclaration( prefix="pre" namespaceUri="http://www.trolltech.com" )
+ )
+EndElement( name="bar" namespaceUri="http://www.trolltech.com" qualifiedName="pre:bar" )
+Characters( whitespace text="
+" )
+EndElement( name="body" qualifiedName="body" )
+EndDocument( )

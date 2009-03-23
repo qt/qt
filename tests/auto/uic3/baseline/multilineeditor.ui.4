@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment>*********************************************************************
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).  All rights reserved.
+**
+** This file is part of Qt Designer.
+**
+** This file may be used under the terms of the GNU General
+** Public License versions 2.0 or 3.0 as published by the Free
+** Software Foundation and appearing in the files LICENSE.GPL2
+** and LICENSE.GPL3 included in the packaging of this file.
+** Alternatively you may (at your option) use any later version
+** of the GNU General Public License if such license has been
+** publicly approved by Nokia Corporation and/or its subsidiary(-ies) (or its successors, if any)
+** and the KDE Free Qt Foundation.
+**
+** Please review the following information to ensure GNU General
+** Public Licensing requirements will be met:
+** http://trolltech.com/products/qt/licenses/licensing/opensource/.
+** If you are unsure which license is appropriate for your use, please
+** review the following information:
+** http://trolltech.com/products/qt/licenses/licensing/licensingoverview
+** or contact the sales department at sales@trolltech.com.
+**
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with
+** the Software.
+**
+** This file is provided &quot;AS IS&quot; with NO WARRANTY OF ANY KIND,
+** INCLUDING THE WARRANTIES OF DESIGN, MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE. Trolltech reserves all rights not granted
+** herein.
+**
+*********************************************************************</comment>
+  <exportmacro></exportmacro>
+  <class>MultiLineEditorBase</class>
+  <widget class="Q3MainWindow" name="MultiLineEditorBase">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>598</width>
+        <height>307</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Edit Text</string>
+    </property>
+    <property name="whatsThis" stdset="0">
+      <string>&lt;b&gt;Multiline Edit&lt;/b&gt;&lt;p&gt;This is a simple richtext editor. For an easier working, it provides the most common html tags in form of toolbar items respectively shortcuts. By clicking on such an icon, the regarding tag will be written to the editor and you can insert your text. If you have already written a text and want to format it, just mark it and click on the wished tag button. For a better visualization this editor supports also a simple html syntax highlighting.</string>
+    </property>
+    <widget class="QWidget">
+      <layout class="QHBoxLayout">
+        <property name="margin">
+          <number>11</number>
+        </property>
+        <property name="spacing">
+          <number>6</number>
+        </property>
+        <item>
+          <layout class="QHBoxLayout">
+            <property name="margin">
+              <number>0</number>
+            </property>
+            <property name="spacing">
+              <number>6</number>
+            </property>
+            <item>
+              <layout class="QVBoxLayout">
+                <property name="margin">
+                  <number>0</number>
+                </property>
+                <property name="spacing">
+                  <number>6</number>
+                </property>
+                <item>
+                  <widget class="QPushButton" name="OkButton">
+                    <property name="text">
+                      <string>&amp;OK</string>
+                    </property>
+                    <property name="checked">
+                      <bool>false</bool>
+                    </property>
+                    <property name="autoDefault">
+                      <bool>true</bool>
+                    </property>
+                    <property name="default">
+                      <bool>true</bool>
+                    </property>
+                  </widget>
+                </item>
+                <item>
+                  <widget class="QPushButton" name="applyButton">
+                    <property name="text">
+                      <string>&amp;Apply</string>
+                    </property>
+                  </widget>
+                </item>
+                <item>
+                  <widget class="QPushButton" name="cancelButton">
+                    <property name="text">
+                      <string>&amp;Cancel</string>
+                    </property>
+                  </widget>
+                </item>
+                <item>
+                  <spacer name="Spacer3">
+                    <property name="sizeHint">
+                      <size>
+                        <width>20</width>
+                        <height>20</height>
+                      </size>
+                    </property>
+                    <property name="sizeType">
+                      <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                    </property>
+                  </spacer>
+                </item>
+                <item>
+                  <widget class="QPushButton" name="helpButton">
+                    <property name="text">
+                      <string>&amp;Help</string>
+                    </property>
+                  </widget>
+                </item>
+              </layout>
+            </item>
+          </layout>
+        </item>
+      </layout>
+    </widget>
+    <widget class="QMenuBar" name="menuBar"/>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>OkButton</sender>
+      <signal>clicked()</signal>
+      <receiver>MultiLineEditorBase</receiver>
+      <slot>okClicked()</slot>
+    </connection>
+    <connection>
+      <sender>applyButton</sender>
+      <signal>clicked()</signal>
+      <receiver>MultiLineEditorBase</receiver>
+      <slot>applyClicked()</slot>
+    </connection>
+    <connection>
+      <sender>cancelButton</sender>
+      <signal>clicked()</signal>
+      <receiver>MultiLineEditorBase</receiver>
+      <slot>cancelClicked()</slot>
+    </connection>
+  </connections>
+</ui>

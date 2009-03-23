@@ -1,0 +1,4 @@
+uic3: signal `stateChanged(int)' for widget `RadioButton1' of type `QRadioButton' is not supported; connection may fail. Line: 533 Column: 16
+uic3: signal `stateChanged(int)' for widget `RadioButton1_2' of type `QRadioButton' is not supported; connection may fail. Line: 539 Column: 16
+uic3: signal `stateChanged(int)' for widget `RadioButton1_3' of type `QRadioButton' is not supported; connection may fail. Line: 551 Column: 16
+uic3: signal `stateChanged(int)' for widget `RadioButton1_3_2' of type `QRadioButton' is not supported; connection may fail. Line: 587 Column: 16

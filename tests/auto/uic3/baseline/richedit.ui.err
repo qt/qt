@@ -1,0 +1,11 @@
+uic3: property `text' for widget `alignActionGroup' of type `QActionGroup' is not supported. 
+uic3: property `usesDropDown' for widget `alignActionGroup' of type `QActionGroup' is not supported. 
+uic3: slot `fileNew()' for widget `EditorForm' of type `Q3MainWindow' is not supported; connection may fail. Line: 480 Column: 31
+uic3: slot `fileOpen()' for widget `EditorForm' of type `Q3MainWindow' is not supported; connection may fail. Line: 486 Column: 31
+uic3: slot `fileSave()' for widget `EditorForm' of type `Q3MainWindow' is not supported; connection may fail. Line: 492 Column: 31
+uic3: slot `fileSaveAs()' for widget `EditorForm' of type `Q3MainWindow' is not supported; connection may fail. Line: 498 Column: 31
+uic3: slot `fileExit()' for widget `EditorForm' of type `Q3MainWindow' is not supported; connection may fail. Line: 504 Column: 31
+uic3: slot `helpIndex()' for widget `EditorForm' of type `Q3MainWindow' is not supported; connection may fail. Line: 510 Column: 31
+uic3: slot `helpContents()' for widget `EditorForm' of type `Q3MainWindow' is not supported; connection may fail. Line: 516 Column: 31
+uic3: slot `helpAbout()' for widget `EditorForm' of type `Q3MainWindow' is not supported; connection may fail. Line: 522 Column: 31
+uic3: slot `changeAlignment(QAction*)' for widget `EditorForm' of type `Q3MainWindow' is not supported; connection may fail. Line: 564 Column: 31

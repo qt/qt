@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>RemoteCtrl</class>
+  <widget class="QDialog" name="RemoteCtrl">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>279</width>
+        <height>185</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Remote control</string>
+    </property>
+    <property name="sizeGripEnabled">
+      <bool>true</bool>
+    </property>
+    <layout class="QHBoxLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item>
+        <layout class="QVBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <widget class="QLineEdit" name="textToSend"/>
+          </item>
+          <item>
+            <spacer name="Spacer5_2">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Vertical</enum>
+              </property>
+            </spacer>
+          </item>
+        </layout>
+      </item>
+      <item>
+        <layout class="QVBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <widget class="QPushButton" name="sText">
+              <property name="text">
+                <string>Send &amp;Text</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="sImage">
+              <property name="text">
+                <string>Send &amp;Image...</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="sPalette">
+              <property name="text">
+                <string>Send &amp;Palette...</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <spacer name="Spacer6">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Vertical</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="quitButton">
+              <property name="text">
+                <string>&amp;Quit</string>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>quitButton</sender>
+      <signal>clicked()</signal>
+      <receiver>RemoteCtrl</receiver>
+      <slot>close()</slot>
+    </connection>
+  </connections>
+</ui>

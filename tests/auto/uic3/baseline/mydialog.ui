@@ -1,0 +1,32 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>MyDialog</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>MyDialog</cstring>
+    </property>
+    <property name="caption">
+        <string>Mach 2!</string>
+    </property>
+    <vbox>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>aLabel</cstring>
+            </property>
+            <property name="text">
+                <string>Join the life in the fastlane; - PCH enable your project today! -</string>
+            </property>
+        </widget>
+        <widget class="QPushButton">
+            <property name="name">
+                <cstring>aButton</cstring>
+            </property>
+            <property name="text">
+                <string>&amp;Quit</string>
+            </property>
+            <property name="accel">
+                <string>Alt+Q</string>
+            </property>
+        </widget>
+    </vbox>
+</widget>
+</UI>

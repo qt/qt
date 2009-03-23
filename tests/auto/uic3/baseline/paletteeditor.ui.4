@@ -1,0 +1,469 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment>********************************************************************* 
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).  All rights reserved. 
+** 
+** This file is part of Qt Designer. 
+** 
+** This file may be used under the terms of the GNU General
+** Public License versions 2.0 or 3.0 as published by the Free
+** Software Foundation and appearing in the files LICENSE.GPL2
+** and LICENSE.GPL3 included in the packaging of this file.
+** Alternatively you may (at your option) use any later version
+** of the GNU General Public License if such license has been
+** publicly approved by Nokia Corporation and/or its subsidiary(-ies) (or its successors, if any)
+** and the KDE Free Qt Foundation.
+**
+** Please review the following information to ensure GNU General
+** Public Licensing requirements will be met:
+** http://trolltech.com/products/qt/licenses/licensing/opensource/.
+** If you are unsure which license is appropriate for your use, please
+** review the following information:
+** http://trolltech.com/products/qt/licenses/licensing/licensingoverview
+** or contact the sales department at sales@trolltech.com.
+**
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with
+** the Software.
+**
+** This file is provided &quot;AS IS&quot; with NO WARRANTY OF ANY KIND,
+** INCLUDING THE WARRANTIES OF DESIGN, MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE. Trolltech reserves all rights not granted
+** herein.
+** 
+*********************************************************************</comment>
+  <exportmacro></exportmacro>
+  <class>PaletteEditorBase</class>
+  <widget class="QDialog" name="PaletteEditorBase">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>449</width>
+        <height>443</height>
+      </rect>
+    </property>
+    <property name="sizePolicy">
+      <sizepolicy>
+        <hsizetype>7</hsizetype>
+        <vsizetype>7</vsizetype>
+      </sizepolicy>
+    </property>
+    <property name="windowTitle">
+      <string>Edit Palette</string>
+    </property>
+    <layout class="QVBoxLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item>
+        <widget class="Q3GroupBox" name="groupAutoPalette">
+          <property name="sizePolicy">
+            <sizepolicy>
+              <hsizetype>5</hsizetype>
+              <vsizetype>4</vsizetype>
+            </sizepolicy>
+          </property>
+          <property name="title">
+            <string>Build Palette</string>
+          </property>
+          <layout class="QHBoxLayout">
+            <property name="margin">
+              <number>11</number>
+            </property>
+            <property name="spacing">
+              <number>6</number>
+            </property>
+            <item>
+              <widget class="QLabel" name="labelMainColor">
+                <property name="sizePolicy">
+                  <sizepolicy>
+                    <hsizetype>1</hsizetype>
+                    <vsizetype>1</vsizetype>
+                  </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                  <size>
+                    <width>50</width>
+                    <height>0</height>
+                  </size>
+                </property>
+                <property name="lineWidth">
+                  <number>1</number>
+                </property>
+                <property name="margin">
+                  <number>0</number>
+                </property>
+                <property name="midLineWidth">
+                  <number>0</number>
+                </property>
+                <property name="text">
+                  <string>&amp;3-D Effects:</string>
+                </property>
+                <property name="alignment">
+                  <set>Qt::AlignVCenter</set>
+                </property>
+                <property name="buddy" stdset="0">
+                  <cstring>buttonMainColor</cstring>
+                </property>
+                <property name="wordWrap">
+                  <bool>false</bool>
+                </property>
+              </widget>
+            </item>
+            <item>
+              <widget class="StyledButton" name="buttonMainColor">
+                <property name="sizePolicy">
+                  <sizepolicy>
+                    <hsizetype>0</hsizetype>
+                    <vsizetype>0</vsizetype>
+                  </sizepolicy>
+                </property>
+                <property name="focusPolicy">
+                  <enum>Qt::StrongFocus</enum>
+                </property>
+                <property name="scale" stdset="0">
+                  <bool>false</bool>
+                </property>
+                <property name="toolTip" stdset="0">
+                  <string>Choose a color</string>
+                </property>
+                <property name="whatsThis" stdset="0">
+                  <string>Choose the effect-color for the generated palette.</string>
+                </property>
+              </widget>
+            </item>
+            <item>
+              <widget class="QLabel" name="labelMainColor2">
+                <property name="sizePolicy">
+                  <sizepolicy>
+                    <hsizetype>1</hsizetype>
+                    <vsizetype>1</vsizetype>
+                  </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                  <size>
+                    <width>50</width>
+                    <height>0</height>
+                  </size>
+                </property>
+                <property name="lineWidth">
+                  <number>1</number>
+                </property>
+                <property name="margin">
+                  <number>0</number>
+                </property>
+                <property name="midLineWidth">
+                  <number>0</number>
+                </property>
+                <property name="text">
+                  <string>Back&amp;ground:</string>
+                </property>
+                <property name="alignment">
+                  <set>Qt::AlignVCenter</set>
+                </property>
+                <property name="buddy" stdset="0">
+                  <cstring>buttonMainColor2</cstring>
+                </property>
+                <property name="wordWrap">
+                  <bool>false</bool>
+                </property>
+              </widget>
+            </item>
+            <item>
+              <widget class="StyledButton" name="buttonMainColor2">
+                <property name="sizePolicy">
+                  <sizepolicy>
+                    <hsizetype>0</hsizetype>
+                    <vsizetype>0</vsizetype>
+                  </sizepolicy>
+                </property>
+                <property name="focusPolicy">
+                  <enum>Qt::StrongFocus</enum>
+                </property>
+                <property name="scale" stdset="0">
+                  <bool>false</bool>
+                </property>
+                <property name="toolTip" stdset="0">
+                  <string>Choose a color</string>
+                </property>
+                <property name="whatsThis" stdset="0">
+                  <string>Choose the background color for the generated palette.</string>
+                </property>
+              </widget>
+            </item>
+            <item>
+              <spacer name="Spacer1">
+                <property name="sizeHint">
+                  <size>
+                    <width>20</width>
+                    <height>20</height>
+                  </size>
+                </property>
+                <property name="sizeType">
+                  <enum>QSizePolicy::Expanding</enum>
+                </property>
+                <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                </property>
+              </spacer>
+            </item>
+            <item>
+              <widget class="QPushButton" name="btnAdvanced">
+                <property name="text">
+                  <string>&amp;Tune Palette...</string>
+                </property>
+              </widget>
+            </item>
+          </layout>
+        </widget>
+      </item>
+      <item>
+        <widget class="Q3GroupBox" name="GroupBox126">
+          <property name="sizePolicy">
+            <sizepolicy>
+              <hsizetype>5</hsizetype>
+              <vsizetype>7</vsizetype>
+            </sizepolicy>
+          </property>
+          <property name="title">
+            <string>Preview</string>
+          </property>
+          <layout class="QVBoxLayout">
+            <property name="margin">
+              <number>11</number>
+            </property>
+            <property name="spacing">
+              <number>6</number>
+            </property>
+            <item>
+              <layout class="QHBoxLayout">
+                <property name="margin">
+                  <number>0</number>
+                </property>
+                <property name="spacing">
+                  <number>6</number>
+                </property>
+                <item>
+                  <widget class="QLabel" name="TextLabel1">
+                    <property name="text">
+                      <string>Select &amp;Palette:</string>
+                    </property>
+                    <property name="buddy" stdset="0">
+                      <cstring>paletteCombo</cstring>
+                    </property>
+                    <property name="wordWrap">
+                      <bool>false</bool>
+                    </property>
+                  </widget>
+                </item>
+                <item>
+                  <widget class="QComboBox" name="paletteCombo">
+                    <item>
+                      <property name="text">
+                        <string>Active Palette</string>
+                      </property>
+                    </item>
+                    <item>
+                      <property name="text">
+                        <string>Inactive Palette</string>
+                      </property>
+                    </item>
+                    <item>
+                      <property name="text">
+                        <string>Disabled Palette</string>
+                      </property>
+                    </item>
+                  </widget>
+                </item>
+              </layout>
+            </item>
+            <item>
+              <widget class="PreviewFrame" name="previewFrame">
+                <property name="sizePolicy">
+                  <sizepolicy>
+                    <hsizetype>7</hsizetype>
+                    <vsizetype>7</vsizetype>
+                  </sizepolicy>
+                </property>
+              </widget>
+            </item>
+          </layout>
+        </widget>
+      </item>
+      <item>
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <widget class="QPushButton" name="buttonHelp">
+              <property name="text">
+                <string>&amp;Help</string>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <spacer name="Horizontal Spacing11">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonOk">
+              <property name="text">
+                <string>&amp;OK</string>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+              <property name="default">
+                <bool>true</bool>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>Close the dialog and apply all the changes.</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonCancel">
+              <property name="text">
+                <string>&amp;Cancel</string>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>Close the dialog and discard any changes.</string>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <customwidgets>
+    <customwidget>
+      <class>StyledButton</class>
+      <extends>QWidget</extends>
+      <header location="local">styledbutton.h</header>
+      <sizehint>
+        <width>40</width>
+        <height>25</height>
+      </sizehint>
+      <container>0</container>
+      <sizepolicy>
+        <hordata>5</hordata>
+        <verdata>5</verdata>
+      </sizepolicy>
+      <pixmap>image0</pixmap>
+      <properties>
+        <property type="Color">color</property>
+        <property type="Pixmap">pixmap</property>
+        <property type="Bool">scale</property>
+      </properties>
+    </customwidget>
+    <customwidget>
+      <class>PreviewFrame</class>
+      <extends>QWidget</extends>
+      <header location="local">previewframe.h</header>
+      <sizehint>
+        <width>200</width>
+        <height>200</height>
+      </sizehint>
+      <container>0</container>
+      <sizepolicy>
+        <hordata>5</hordata>
+        <verdata>5</verdata>
+      </sizepolicy>
+      <pixmap>image1</pixmap>
+    </customwidget>
+  </customwidgets>
+  <tabstops>
+    <tabstop>buttonOk</tabstop>
+    <tabstop>buttonCancel</tabstop>
+    <tabstop>buttonMainColor</tabstop>
+    <tabstop>buttonMainColor2</tabstop>
+    <tabstop>btnAdvanced</tabstop>
+    <tabstop>paletteCombo</tabstop>
+    <tabstop>buttonHelp</tabstop>
+  </tabstops>
+  <images>
+    <image name="image0">
+      <data format="XPM.GZ" length="1112">789c9dd2cb8e9b301406e07d9e0225bba89a09601350d505302c5b7559a9eac23e6672b363620c0ca9faeef53949da2e2a55eab123f9e38f2f217e5e475f3e7f8cd6cf8bde0b7f8008f6c2456b3518337ffdf6e1fb62992451e8691ac5cb778be55304d1277b6e71fc12c6ab0d157222e61bd8e4c812196f6216535a13f318624a6764b2495842e99558249014c81e99c6294b69d3376291424ae9806431638cd28628183081f4489e70ce13e4852878c129ad905992f18cd291283295517a466ed32ddfa64847945bb595c80e99a739cf29d54499ab9c528b2c58c10b86344428540148400a26b8a0541241b482d215523299494a0551c9562ae409091c32e0c82351410b942aa4e22a53941e882d36e41ed966d8903b2215f215f99a6143b6442afaafff5aff485658622584a091941256948443d1cabbdd6ebf3f28753c09a9e9cdc1fe703c9e4ea19f689a0430fa4c8908082be093d08d016bbb0bbd5e7ceafade5b30de19d083b3fa9e008cd39b9fafd69495b473af7fcfb15325c1d61eea0afaf005ddf97b5295c658a866338f97591babef7340fa396c6c5ca9e7fe650807d0bf566b4262299986ba335a3b4a2cc84b69ac85b1b673037d8fabf95b023a9c09cc7530e104dd5419ed6e27083fb09a7c752db5a9bd31cde4ec634ed8a39aebbe337618c3f6fdc5dee6d8b0bb0d6b5b8b1fad43d78fe4e14e3f6aace8e29d9d736777fea3c686eee0138c9726d4d00c548df7a315ff750f7ebc5ffc04a0e5308d</data>
+    </image>
+    <image name="image1">
+      <data format="XPM.GZ" length="646">789c6dd2c10ac2300c00d07bbf2234b7229d1be245fc04c5a3201e4615f430059d0711ff5ddb2e6bb236ec90eed134cb5a19d8ef36602af5ecdbfeeac05dda0798d3abebde87e3faa374d3807fa0d633a52d38d8de6f679fe33fc776e196f53cd010188256a3600a292882096246517815ca99884606e18044a3a40d91824820924265a7923a2e8bcd05f33db1173e002913175f2a6be6d3294871a2d95fa00e8a94ee017b69d339d90df1e77c57ea072ede6758</data>
+    </image>
+  </images>
+  <connections>
+    <connection>
+      <sender>buttonMainColor2</sender>
+      <signal>clicked()</signal>
+      <receiver>PaletteEditorBase</receiver>
+      <slot>onChoose2ndMainColor()</slot>
+    </connection>
+    <connection>
+      <sender>paletteCombo</sender>
+      <signal>activated(int)</signal>
+      <receiver>PaletteEditorBase</receiver>
+      <slot>paletteSelected(int)</slot>
+    </connection>
+    <connection>
+      <sender>btnAdvanced</sender>
+      <signal>clicked()</signal>
+      <receiver>PaletteEditorBase</receiver>
+      <slot>onTune()</slot>
+    </connection>
+    <connection>
+      <sender>buttonOk</sender>
+      <signal>clicked()</signal>
+      <receiver>PaletteEditorBase</receiver>
+      <slot>accept()</slot>
+    </connection>
+    <connection>
+      <sender>buttonCancel</sender>
+      <signal>clicked()</signal>
+      <receiver>PaletteEditorBase</receiver>
+      <slot>reject()</slot>
+    </connection>
+    <connection>
+      <sender>buttonMainColor</sender>
+      <signal>changed()</signal>
+      <receiver>PaletteEditorBase</receiver>
+      <slot>onChooseMainColor()</slot>
+    </connection>
+    <connection>
+      <sender>buttonMainColor</sender>
+      <signal>clicked()</signal>
+      <receiver>PaletteEditorBase</receiver>
+      <slot>onChooseMainColor()</slot>
+    </connection>
+    <connection>
+      <sender>buttonMainColor2</sender>
+      <signal>changed()</signal>
+      <receiver>PaletteEditorBase</receiver>
+      <slot>onChoose2ndMainColor()</slot>
+    </connection>
+  </connections>
+</ui>

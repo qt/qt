@@ -1,0 +1,665 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment>*********************************************************************
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).  All rights reserved.
+**
+** This file is part of Qt Designer.
+**
+** This file may be used under the terms of the GNU General
+** Public License versions 2.0 or 3.0 as published by the Free
+** Software Foundation and appearing in the files LICENSE.GPL2
+** and LICENSE.GPL3 included in the packaging of this file.
+** Alternatively you may (at your option) use any later version
+** of the GNU General Public License if such license has been
+** publicly approved by Nokia Corporation and/or its subsidiary(-ies) (or its successors, if any)
+** and the KDE Free Qt Foundation.
+**
+** Please review the following information to ensure GNU General
+** Public Licensing requirements will be met:
+** http://trolltech.com/products/qt/licenses/licensing/opensource/.
+** If you are unsure which license is appropriate for your use, please
+** review the following information:
+** http://trolltech.com/products/qt/licenses/licensing/licensingoverview
+** or contact the sales department at sales@trolltech.com.
+**
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with
+** the Software.
+**
+** This file is provided &quot;AS IS&quot; with NO WARRANTY OF ANY KIND,
+** INCLUDING THE WARRANTIES OF DESIGN, MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE. Trolltech reserves all rights not granted
+** herein.
+**
+*********************************************************************</comment>
+  <exportmacro></exportmacro>
+  <class>EditFunctionsBase</class>
+  <widget class="QDialog" name="EditFunctionsBase">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>600</width>
+        <height>371</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Edit Functions</string>
+    </property>
+    <property name="sizeGripEnabled">
+      <bool>true</bool>
+    </property>
+    <property name="whatsThis" stdset="0">
+      <string>&lt;b&gt;Edit Functions&lt;/b&gt;&lt;p&gt;Add, edit or delete the current form's slots or functions.&lt;/p&gt;&lt;p&gt;Click the &lt;b&gt;Add Function&lt;/b&gt;-button to create a new function; enter a name, choose an access mode and specify if it should be a slot or normal function.&lt;/p&gt;&lt;p&gt;Select an entry from the list and click the &lt;b&gt;Delete Function&lt;/b&gt;-button to remove a function; in case of a slot all connections using this slot will also be removed.&lt;/p&gt;</string>
+    </property>
+    <layout class="QVBoxLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item>
+        <widget class="Q3ListView" name="functionListView">
+          <property name="sizePolicy">
+            <sizepolicy>
+              <hsizetype>7</hsizetype>
+              <vsizetype>7</vsizetype>
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+            </sizepolicy>
+          </property>
+          <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+            <enum>QFrame::Sunken</enum>
+          </property>
+          <property name="allColumnsShowFocus">
+            <bool>true</bool>
+          </property>
+          <property name="showSortIndicator">
+            <bool>true</bool>
+          </property>
+          <property name="whatsThis" stdset="0">
+            <string>&lt;b&gt;This form's functions.&lt;/b&gt;&lt;p&gt;Select the function you want to change or delete.&lt;/p&gt;</string>
+          </property>
+          <column>
+            <property name="text">
+              <string>Function</string>
+            </property>
+            <property name="clickable">
+              <bool>true</bool>
+            </property>
+            <property name="resizable">
+              <bool>true</bool>
+            </property>
+          </column>
+          <column>
+            <property name="text">
+              <string>Return Type</string>
+            </property>
+            <property name="clickable">
+              <bool>true</bool>
+            </property>
+            <property name="resizable">
+              <bool>true</bool>
+            </property>
+          </column>
+          <column>
+            <property name="text">
+              <string>Specifier</string>
+            </property>
+            <property name="clickable">
+              <bool>true</bool>
+            </property>
+            <property name="resizable">
+              <bool>true</bool>
+            </property>
+          </column>
+          <column>
+            <property name="text">
+              <string>Access</string>
+            </property>
+            <property name="clickable">
+              <bool>true</bool>
+            </property>
+            <property name="resizable">
+              <bool>true</bool>
+            </property>
+          </column>
+          <column>
+            <property name="text">
+              <string>Type</string>
+            </property>
+            <property name="clickable">
+              <bool>true</bool>
+            </property>
+            <property name="resizable">
+              <bool>true</bool>
+            </property>
+          </column>
+          <column>
+            <property name="text">
+              <string>In Use</string>
+            </property>
+            <property name="clickable">
+              <bool>true</bool>
+            </property>
+            <property name="resizable">
+              <bool>true</bool>
+            </property>
+          </column>
+        </widget>
+      </item>
+      <item>
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>6</number>
+          </property>
+          <item>
+            <widget class="QCheckBox" name="showOnlySlots">
+              <property name="focusPolicy">
+                <enum>Qt::StrongFocus</enum>
+              </property>
+              <property name="text">
+                <string>Only d&amp;isplay slots</string>
+              </property>
+              <property name="toolTip" stdset="0">
+                <string>Change displaying mode for functions</string>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>&lt;b&gt;Check this button if only the slots should be displayed&lt;/b&gt;&lt;p&gt;Otherwise all functions, i.e. normal C++ functions and slots are displayed.&lt;/p&gt;
+</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <spacer name="Vertical Spacing1">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="addFunction">
+              <property name="text">
+                <string>&amp;New Function</string>
+              </property>
+              <property name="toolTip" stdset="0">
+                <string>Add new function</string>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>&lt;b&gt;Add a new function.&lt;/b&gt;&lt;p&gt;New functions have a default name and public access.&lt;/p&gt;</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="deleteFunction">
+              <property name="text">
+                <string>&amp;Delete Function</string>
+              </property>
+              <property name="toolTip" stdset="0">
+                <string>Delete function</string>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>&lt;b&gt;Delete the selected function.&lt;/b&gt;&lt;p&gt;All connections using this function are also removed.&lt;/p&gt;</string>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+      <item>
+        <widget class="Q3GroupBox" name="boxProperties">
+          <property name="sizePolicy">
+            <sizepolicy>
+              <hsizetype>5</hsizetype>
+              <vsizetype>5</vsizetype>
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+            </sizepolicy>
+          </property>
+          <property name="title">
+            <string>Function Properties</string>
+          </property>
+          <layout class="QVBoxLayout">
+            <property name="margin">
+              <number>11</number>
+            </property>
+            <property name="spacing">
+              <number>6</number>
+            </property>
+            <item>
+              <layout class="QVBoxLayout">
+                <property name="margin">
+                  <number>0</number>
+                </property>
+                <item>
+                  <layout class="QHBoxLayout">
+                    <property name="margin">
+                      <number>0</number>
+                    </property>
+                    <property name="spacing">
+                      <number>6</number>
+                    </property>
+                    <item>
+                      <widget class="QLabel" name="Label8">
+                        <property name="text">
+                          <string>&amp;Function:</string>
+                        </property>
+                        <property name="alignment">
+                          <set>Qt::AlignVCenter|Qt::AlignRight</set>
+                        </property>
+                        <property name="buddy" stdset="0">
+                          <cstring>functionName</cstring>
+                        </property>
+                        <property name="wordWrap">
+                          <bool>false</bool>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QLineEdit" name="functionName">
+                        <property name="sizePolicy">
+                          <sizepolicy>
+                            <hsizetype>7</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                          </sizepolicy>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                          <string>Change function name</string>
+                        </property>
+                        <property name="whatsThis" stdset="0">
+                          <string>&lt;b&gt;Change the name of the selected function.&lt;/b&gt;&lt;p&gt;The name should include the argument list and must be syntactically correct.&lt;/p&gt;</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QLabel" name="labelType">
+                        <property name="text">
+                          <string>&amp;Return type:</string>
+                        </property>
+                        <property name="alignment">
+                          <set>Qt::AlignVCenter|Qt::AlignRight</set>
+                        </property>
+                        <property name="buddy" stdset="0">
+                          <cstring>editType</cstring>
+                        </property>
+                        <property name="wordWrap">
+                          <bool>false</bool>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QLineEdit" name="editType">
+                        <property name="sizePolicy">
+                          <sizepolicy>
+                            <hsizetype>5</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                          </sizepolicy>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                          <string>Change the return type of the function</string>
+                        </property>
+                        <property name="whatsThis" stdset="0">
+                          <string>&lt;b&gt;Change the return type of the selected function.&lt;/b&gt;&lt;p&gt;Specifiy here the datatype which should be returned by the function.&lt;/p&gt;</string>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </item>
+                <item>
+                  <spacer name="Spacer6_2">
+                    <property name="sizeHint">
+                      <size>
+                        <width>20</width>
+                        <height>16</height>
+                      </size>
+                    </property>
+                    <property name="sizeType">
+                      <enum>QSizePolicy::Fixed</enum>
+                    </property>
+                    <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                    </property>
+                  </spacer>
+                </item>
+                <item>
+                  <layout class="QHBoxLayout">
+                    <property name="margin">
+                      <number>0</number>
+                    </property>
+                    <item>
+                      <widget class="QLabel" name="Label9_2">
+                        <property name="text">
+                          <string>S&amp;pecifier:</string>
+                        </property>
+                        <property name="alignment">
+                          <set>Qt::AlignVCenter|Qt::AlignRight</set>
+                        </property>
+                        <property name="buddy" stdset="0">
+                          <cstring>functionSpecifier</cstring>
+                        </property>
+                        <property name="wordWrap">
+                          <bool>false</bool>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QComboBox" name="functionSpecifier">
+                        <property name="sizePolicy">
+                          <sizepolicy>
+                            <hsizetype>1</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                          </sizepolicy>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                          <string>Change function access</string>
+                        </property>
+                        <property name="whatsThis" stdset="0">
+                          <string>&lt;b&gt;Change the access policy of the function&lt;/b&gt;&lt;p&gt;All functions are created virtual and should be reimplemented in subclasses.&lt;/p&gt;</string>
+                        </property>
+                        <item>
+                          <property name="text">
+                            <string>non virtual</string>
+                          </property>
+                        </item>
+                        <item>
+                          <property name="text">
+                            <string>virtual</string>
+                          </property>
+                        </item>
+                        <item>
+                          <property name="text">
+                            <string>pure virtual</string>
+                          </property>
+                        </item>
+                        <item>
+                          <property name="text">
+                            <string>static</string>
+                          </property>
+                        </item>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QLabel" name="TextLabel1">
+                        <property name="text">
+                          <string>&amp;Access:</string>
+                        </property>
+                        <property name="alignment">
+                          <set>Qt::AlignVCenter|Qt::AlignRight</set>
+                        </property>
+                        <property name="buddy" stdset="0">
+                          <cstring>functionAccess</cstring>
+                        </property>
+                        <property name="wordWrap">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QComboBox" name="functionAccess">
+                        <property name="sizePolicy">
+                          <sizepolicy>
+                            <hsizetype>1</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                          </sizepolicy>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                          <string>Change function access</string>
+                        </property>
+                        <property name="whatsThis" stdset="0">
+                          <string>&lt;b&gt;Change the access policy of the function&lt;/b&gt;&lt;p&gt;All functions are created virtual and should be reimplemented in subclasses.&lt;/p&gt;</string>
+                        </property>
+                        <item>
+                          <property name="text">
+                            <string>public</string>
+                          </property>
+                        </item>
+                        <item>
+                          <property name="text">
+                            <string>protected</string>
+                          </property>
+                        </item>
+                        <item>
+                          <property name="text">
+                            <string>private</string>
+                          </property>
+                        </item>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QLabel" name="TextLabel1_2">
+                        <property name="text">
+                          <string>&amp;Type:</string>
+                        </property>
+                        <property name="alignment">
+                          <set>Qt::AlignVCenter|Qt::AlignRight</set>
+                        </property>
+                        <property name="buddy" stdset="0">
+                          <cstring>functionType</cstring>
+                        </property>
+                        <property name="wordWrap">
+                          <bool>false</bool>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QComboBox" name="functionType">
+                        <property name="toolTip" stdset="0">
+                          <string>Change function type</string>
+                        </property>
+                        <property name="whatsThis" stdset="0">
+                          <string>&lt;b&gt;Change the type of the function.&lt;/b&gt;&lt;p&gt;The type specifies if the function is either a slot or a normal C++ function.&lt;/p&gt;</string>
+                        </property>
+                        <item>
+                          <property name="text">
+                            <string>slot</string>
+                          </property>
+                        </item>
+                        <item>
+                          <property name="text">
+                            <string>function</string>
+                          </property>
+                        </item>
+                      </widget>
+                    </item>
+                    <item>
+                      <spacer name="Spacer5">
+                        <property name="sizeHint">
+                          <size>
+                            <width>20</width>
+                            <height>20</height>
+                          </size>
+                        </property>
+                        <property name="sizeType">
+                          <enum>QSizePolicy::Expanding</enum>
+                        </property>
+                        <property name="orientation">
+                          <enum>Qt::Horizontal</enum>
+                        </property>
+                      </spacer>
+                    </item>
+                  </layout>
+                </item>
+              </layout>
+            </item>
+          </layout>
+        </widget>
+      </item>
+      <item>
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <widget class="QPushButton" name="helpButton">
+              <property name="text">
+                <string>&amp;Help</string>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <spacer name="Horizontal Spacing2">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="okButton">
+              <property name="text">
+                <string>&amp;OK</string>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+              <property name="default">
+                <bool>true</bool>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>Close the dialog and apply all the changes.</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="cancelButton">
+              <property name="text">
+                <string>&amp;Cancel</string>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>Close the dialog and discard any changes.</string>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <tabstops>
+    <tabstop>functionName</tabstop>
+    <tabstop>editType</tabstop>
+    <tabstop>functionSpecifier</tabstop>
+    <tabstop>functionAccess</tabstop>
+    <tabstop>functionType</tabstop>
+    <tabstop>helpButton</tabstop>
+    <tabstop>okButton</tabstop>
+    <tabstop>cancelButton</tabstop>
+    <tabstop>functionListView</tabstop>
+    <tabstop>showOnlySlots</tabstop>
+    <tabstop>addFunction</tabstop>
+    <tabstop>deleteFunction</tabstop>
+  </tabstops>
+  <connections>
+    <connection>
+      <sender>cancelButton</sender>
+      <signal>clicked()</signal>
+      <receiver>EditFunctionsBase</receiver>
+      <slot>reject()</slot>
+    </connection>
+    <connection>
+      <sender>okButton</sender>
+      <signal>clicked()</signal>
+      <receiver>EditFunctionsBase</receiver>
+      <slot>okClicked()</slot>
+    </connection>
+    <connection>
+      <sender>deleteFunction</sender>
+      <signal>clicked()</signal>
+      <receiver>EditFunctionsBase</receiver>
+      <slot>functionRemove()</slot>
+    </connection>
+    <connection>
+      <sender>addFunction</sender>
+      <signal>clicked()</signal>
+      <receiver>EditFunctionsBase</receiver>
+      <slot>functionAdd()</slot>
+    </connection>
+    <connection>
+      <sender>functionName</sender>
+      <signal>textChanged(QString)</signal>
+      <receiver>EditFunctionsBase</receiver>
+      <slot>currentTextChanged(QString)</slot>
+    </connection>
+    <connection>
+      <sender>functionListView</sender>
+      <signal>selectionChanged(Q3ListViewItem*)</signal>
+      <receiver>EditFunctionsBase</receiver>
+      <slot>currentItemChanged(Q3ListViewItem*)</slot>
+    </connection>
+    <connection>
+      <sender>functionListView</sender>
+      <signal>currentChanged(Q3ListViewItem*)</signal>
+      <receiver>EditFunctionsBase</receiver>
+      <slot>currentItemChanged(Q3ListViewItem*)</slot>
+    </connection>
+    <connection>
+      <sender>editType</sender>
+      <signal>textChanged(QString)</signal>
+      <receiver>EditFunctionsBase</receiver>
+      <slot>currentReturnTypeChanged(QString)</slot>
+    </connection>
+    <connection>
+      <sender>functionSpecifier</sender>
+      <signal>activated(QString)</signal>
+      <receiver>EditFunctionsBase</receiver>
+      <slot>currentSpecifierChanged(QString)</slot>
+    </connection>
+    <connection>
+      <sender>functionAccess</sender>
+      <signal>activated(QString)</signal>
+      <receiver>EditFunctionsBase</receiver>
+      <slot>currentAccessChanged(QString)</slot>
+    </connection>
+    <connection>
+      <sender>functionType</sender>
+      <signal>activated(QString)</signal>
+      <receiver>EditFunctionsBase</receiver>
+      <slot>currentTypeChanged(QString)</slot>
+    </connection>
+    <connection>
+      <sender>showOnlySlots</sender>
+      <signal>toggled(bool)</signal>
+      <receiver>EditFunctionsBase</receiver>
+      <slot>displaySlots(bool)</slot>
+    </connection>
+  </connections>
+</ui>

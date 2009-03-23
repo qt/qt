@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>CreditFormBase</class>
+  <widget class="QDialog" name="CreditFormBase">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>276</width>
+        <height>224</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Credit Rating</string>
+    </property>
+    <layout class="QVBoxLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item>
+        <widget class="Q3ButtonGroup" name="creditButtonGroup">
+          <property name="title">
+            <string>Credit Rating</string>
+          </property>
+          <layout class="QVBoxLayout">
+            <property name="margin">
+              <number>11</number>
+            </property>
+            <property name="spacing">
+              <number>6</number>
+            </property>
+            <item>
+              <widget class="QRadioButton" name="stdRadioButton">
+                <property name="text">
+                  <string>&amp;Standard</string>
+                </property>
+                <property name="checked">
+                  <bool>true</bool>
+                </property>
+              </widget>
+            </item>
+            <item>
+              <widget class="QRadioButton" name="noneRadioButton">
+                <property name="text">
+                  <string>&amp;None</string>
+                </property>
+              </widget>
+            </item>
+            <item>
+              <widget class="QRadioButton" name="specialRadioButton">
+                <property name="text">
+                  <string>Sp&amp;ecial</string>
+                </property>
+              </widget>
+            </item>
+          </layout>
+        </widget>
+      </item>
+      <item>
+        <widget class="QSpinBox" name="amountSpinBox">
+          <property name="enabled">
+            <bool>false</bool>
+          </property>
+          <property name="prefix">
+            <string>$ </string>
+          </property>
+          <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::UpDownArrows</enum>
+          </property>
+          <property name="maximum">
+            <number>100000</number>
+          </property>
+          <property name="singleStep">
+            <number>10000</number>
+          </property>
+        </widget>
+      </item>
+      <item>
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <spacer name="Spacer1">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="okPushButton">
+              <property name="text">
+                <string>OK</string>
+              </property>
+              <property name="default">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <spacer name="Spacer1_2">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="cancelPushButton">
+              <property name="text">
+                <string>Cancel</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <spacer name="Spacer1_3">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>okPushButton</sender>
+      <signal>clicked()</signal>
+      <receiver>CreditFormBase</receiver>
+      <slot>accept()</slot>
+    </connection>
+    <connection>
+      <sender>cancelPushButton</sender>
+      <signal>clicked()</signal>
+      <receiver>CreditFormBase</receiver>
+      <slot>reject()</slot>
+    </connection>
+    <connection>
+      <sender>creditButtonGroup</sender>
+      <signal>clicked(int)</signal>
+      <receiver>CreditFormBase</receiver>
+      <slot>setAmount()</slot>
+    </connection>
+    <connection>
+      <sender>specialRadioButton</sender>
+      <signal>toggled(bool)</signal>
+      <receiver>amountSpinBox</receiver>
+      <slot>setEnabled(bool)</slot>
+    </connection>
+  </connections>
+</ui>

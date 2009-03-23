@@ -1,0 +1,204 @@
+<!DOCTYPE UI><UI version="3.2" stdsetdef="1">
+<class>Form1</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>Form1</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>584</width>
+            <height>331</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Form1</string>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>layout10</cstring>
+            </property>
+            <grid>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QLabel" row="1" column="0">
+                    <property name="name">
+                        <cstring>textLabel3</cstring>
+                    </property>
+                    <property name="frameShape">
+                        <enum>NoFrame</enum>
+                    </property>
+                    <property name="frameShadow">
+                        <enum>Plain</enum>
+                    </property>
+                    <property name="text">
+                        <string>Size</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="1" column="2">
+                    <property name="name">
+                        <cstring>textLabel4</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Stretch</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="0" column="0">
+                    <property name="name">
+                        <cstring>textLabel1</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Family</string>
+                    </property>
+                </widget>
+                <widget class="QComboBox" row="0" column="3">
+                    <property name="name">
+                        <cstring>styles</cstring>
+                    </property>
+                </widget>
+                <widget class="QComboBox" row="0" column="1">
+                    <property name="name">
+                        <cstring>families</cstring>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="1" column="1">
+                    <property name="name">
+                        <cstring>sizebox</cstring>
+                    </property>
+                    <property name="suffix">
+                        <string> pt</string>
+                    </property>
+                    <property name="specialValueText">
+                        <string></string>
+                    </property>
+                    <property name="maxValue">
+                        <number>1000</number>
+                    </property>
+                    <property name="minValue">
+                        <number>10</number>
+                    </property>
+                    <property name="lineStep">
+                        <number>10</number>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="0" column="2">
+                    <property name="name">
+                        <cstring>textLabel2</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Style</string>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="1" column="3">
+                    <property name="name">
+                        <cstring>stretchbox</cstring>
+                    </property>
+                    <property name="suffix">
+                        <string> %</string>
+                    </property>
+                    <property name="maxValue">
+                        <number>4000</number>
+                    </property>
+                    <property name="minValue">
+                        <number>1</number>
+                    </property>
+                    <property name="value">
+                        <number>100</number>
+                    </property>
+                </widget>
+            </grid>
+        </widget>
+        <widget class="Line">
+            <property name="name">
+                <cstring>line1</cstring>
+            </property>
+            <property name="frameShape">
+                <enum>HLine</enum>
+            </property>
+            <property name="frameShadow">
+                <enum>Sunken</enum>
+            </property>
+            <property name="orientation">
+                <enum>Horizontal</enum>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>viewer</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>3</hsizetype>
+                    <vsizetype>3</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="maximumSize">
+                <size>
+                    <width>500</width>
+                    <height>32767</height>
+                </size>
+            </property>
+            <property name="text">
+                <string>Andy,
+
+I'm sorry but that does not quite help me.  I've already seen that the new functional equivalent is drawPrimitive witrh a PE_ArrowDown flag.  The problem is that I do not see how to translate the parameters used in the old function to the QRect parameter that is required in the new function.  Sinve there is no one-to-one correspondance in parameters I do not see how to move form the old function to the new.
+
+The purpose of this method is to pain t a combobox-like down arrow to the right of a QLineEdit widget that is contained in the class.  How do I convert the old code to the new?
+
+Thanks!
+
+...Jake</string>
+            </property>
+            <property name="alignment">
+                <set>WordBreak|AlignTop</set>
+            </property>
+        </widget>
+    </vbox>
+</widget>
+<connections>
+    <connection>
+        <sender>families</sender>
+        <signal>activated(const QString&amp;)</signal>
+        <receiver>Form1</receiver>
+        <slot>changeFamily(const QString&amp;)</slot>
+    </connection>
+    <connection>
+        <sender>sizebox</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>Form1</receiver>
+        <slot>changeSize(int)</slot>
+    </connection>
+    <connection>
+        <sender>stretchbox</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>Form1</receiver>
+        <slot>changeStretch(int)</slot>
+    </connection>
+</connections>
+<tabstops>
+    <tabstop>families</tabstop>
+    <tabstop>styles</tabstop>
+    <tabstop>sizebox</tabstop>
+    <tabstop>stretchbox</tabstop>
+</tabstops>
+<includes>
+    <include location="local" impldecl="in implementation">form1.ui.h</include>
+</includes>
+<slots>
+    <slot>changeFamily( const QString &amp; newfamily )</slot>
+    <slot>changeSize( int newsize )</slot>
+    <slot>changeStretch( int newstretch )</slot>
+</slots>
+<functions>
+    <function access="private" specifier="non virtual">init()</function>
+</functions>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

@@ -1,0 +1,5 @@
+uic3: slot `primeUpdateBook(QSqlRecord*)' for widget `EditBookForm' of type `QDialog' is not supported; connection may fail. Line: 337 Column: 31
+uic3: slot `beforeUpdateBook(QSqlRecord*)' for widget `EditBookForm' of type `QDialog' is not supported; connection may fail. Line: 343 Column: 31
+uic3: slot `beforeUpdateBook(QSqlRecord*)' for widget `EditBookForm' of type `QDialog' is not supported; connection may fail. Line: 349 Column: 31
+uic3: slot `primeInsertBook(QSqlRecord*)' for widget `EditBookForm' of type `QDialog' is not supported; connection may fail. Line: 355 Column: 31
+uic3: slot `primeInsertBook(QSqlRecord*)' for widget `EditBookForm' of type `QDialog' is not supported; connection may fail. Line: 361 Column: 31

@@ -1,0 +1,110 @@
+//! [0]
+assistant -collectionFile file
+//! [0]
+
+
+//! [1]
+<?xml version="1.0" encoding="utf-8" ?>
+<QHelpCollectionProject version="1.0">
+    <assistant>
+        <title>My Application Help</title>
+        <startPage>qthelp://com.mycompany.1_0_0/doc/index.html</startPage>
+        <currentFilter>myfilter</currentFilter>
+        <applicationIcon>application.png</applicationIcon>
+        <enableFilterFunctionality>false</enableFilterFunctionality>
+        <enableDocumentationManager>false</enableDocumentationManager>
+        <enableAddressBar visible="true">true</enableAddressBar>
+        <cacheDirectory>mycompany/myapplication</cacheDirectory>
+        <aboutMenuText>
+            <text>About My Application</text>
+            <text language="de">Über meine Applikation...</text>
+        </aboutMenuText>
+        <aboutDialog>
+            <file>about.txt</file>
+            <file language="de">ueber.txt</file>
+            <icon>about.png</icon>
+        </aboutDialog>
+    </assistant>
+    <docFiles>
+        <generate>
+            <file>
+                <input>myapplication-manual.qhp</input>
+                <output>myapplication-manual.qch</output>
+            </file>
+        </generate>
+        <register>
+            <file>myapplication-manual.qch</file>
+        </register>
+    </docFiles>
+</QHelpCollectionProject>
+//! [1]
+
+
+//! [2]
+QProcess *process = new QProcess;
+QStringList args;
+args << QLatin1String("-collectionFile")
+    << QLatin1String("mycollection.qhc")
+    << QLatin1String("-enableRemoteControl");
+process->start(QLatin1String("assistant"), args);
+if (!process->waitForStarted())
+    return;
+//! [2]
+
+
+//! [3]
+QByteArray ba;
+ba.append("setSource qthelp://com.mycompany.1_0_0/doc/index.html");
+ba.append('\0');
+process->write(ba);
+//! [3]
+
+
+//! [4]
+QByteArray ba;
+ba.append("hide bookmarks;");
+ba.append("hide index;");
+ba.append("setSource qthelp://com.mycompany.1_0_0/doc/index.html");
+ba.append('\0');
+process->write(ba);
+//! [4]
+
+//! [5]
+<?xml version="1.0" encoding="utf-8" ?>
+<QHelpCollectionProject version="1.0">
+    ...
+    <docFiles>
+        <register>
+            <file>myapplication-manual.qch</file>
+            <file>another-manual.qch</file>
+        </register>
+    </docFiles>
+</QHelpCollectionProject>
+//! [5]
+
+//! [6]
+assistant -collectionFile mycollection.qhc -register myapplication-manual.qch
+//! [6]
+
+//! [7]
+<?xml version="1.0" encoding="utf-8" ?>
+<QHelpCollectionProject version="1.0">
+    <assistant>
+        <title>My Application Help</title>
+        <cacheDirectory>mycompany/myapplication</cacheDirectory>
+        ...
+    </assistant>
+</QHelpCollectionProject>
+//! [7]
+
+//! [8]
+assistant -collectionFile mycollection.qhc
+//! [8]
+
+//! [9]
+%QDesktopServices::DataLocation%/mycompany/myapplication/mycollection.qhc
+//! [9]
+
+//! [10]
+qcollectiongenerator mycollection.qhcp -o mycollection.qhc
+//! [10]

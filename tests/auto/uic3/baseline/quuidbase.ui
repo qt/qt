@@ -1,0 +1,300 @@
+<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
+<class>QUuidBase</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>QUuidBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>671</width>
+            <height>246</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Create UUID</string>
+    </property>
+    <property name="sizeGripEnabled">
+        <bool>true</bool>
+    </property>
+    <grid>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>11</number>
+        </property>
+        <property name="spacing">
+            <number>6</number>
+        </property>
+        <spacer row="1" column="0">
+            <property name="name">
+                <cstring>Spacer1_2</cstring>
+            </property>
+            <property name="orientation">
+                <enum>Vertical</enum>
+            </property>
+            <property name="sizeType">
+                <enum>Expanding</enum>
+            </property>
+            <property name="sizeHint">
+                <size>
+                    <width>20</width>
+                    <height>20</height>
+                </size>
+            </property>
+        </spacer>
+        <widget class="QLabel" row="0" column="0">
+            <property name="name">
+                <cstring>TextLabel1</cstring>
+            </property>
+            <property name="text">
+                <string>Choose the desired format below, then select "Copy" to copy the results to the clipboard (the results can then be pasted into your source code). Choose "Exit" when done.</string>
+            </property>
+            <property name="alignment">
+                <set>WordBreak|AlignAuto|AlignVCenter</set>
+            </property>
+            <property name="wordwrap" stdset="0">
+            </property>
+        </widget>
+        <widget class="QButtonGroup" row="0" column="1" rowspan="2" colspan="1">
+            <property name="name">
+                <cstring>formats</cstring>
+            </property>
+            <property name="title">
+                <string>UUID Format</string>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>11</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <widget class="QRadioButton">
+                    <property name="name">
+                        <cstring>formatMacro</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;1. #define &lt;&lt;name&gt;&gt;( ... )</string>
+                    </property>
+                </widget>
+                <widget class="QRadioButton">
+                    <property name="name">
+                        <cstring>formatStatic</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;2. static const struct QUuid &lt;&lt;name&gt;&gt; = { ... }</string>
+                    </property>
+                </widget>
+                <widget class="QRadioButton">
+                    <property name="name">
+                        <cstring>formatRegistry</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;3. Registry Format, ie. {xxxxxxxx-xxxx ... xxxx }</string>
+                    </property>
+                </widget>
+            </vbox>
+        </widget>
+        <widget class="QGroupBox" row="2" column="0" rowspan="1" colspan="2">
+            <property name="name">
+                <cstring>GroupBox1</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>7</hsizetype>
+                    <vsizetype>3</vsizetype>
+                </sizepolicy>
+            </property>
+            <property name="title">
+                <string>Result</string>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>11</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>Layout3</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <property name="margin">
+                            <number>0</number>
+                        </property>
+                        <property name="spacing">
+                            <number>6</number>
+                        </property>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>TextLabel1_2</cstring>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>5</hsizetype>
+                                    <vsizetype>1</vsizetype>
+                                </sizepolicy>
+                            </property>
+                            <property name="text">
+                                <string>N&amp;ame:</string>
+                            </property>
+                            <property name="buddy" stdset="0">
+                                <cstring>nameEdit</cstring>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit">
+                            <property name="name">
+                                <cstring>nameEdit</cstring>
+                            </property>
+                        </widget>
+                    </hbox>
+                </widget>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>resultLabel</cstring>
+                    </property>
+                    <property name="text">
+                        <string>RESULT
+A
+B
+C</string>
+                    </property>
+                    <property name="textFormat">
+                        <enum>PlainText</enum>
+                    </property>
+                    <property name="alignment">
+                        <set>WordBreak|AlignAuto|AlignVCenter</set>
+                    </property>
+                    <property name="wordwrap" stdset="0">
+                    </property>
+                </widget>
+            </vbox>
+        </widget>
+        <widget class="QLayoutWidget" row="0" column="2" rowspan="3" colspan="1">
+            <property name="name">
+                <cstring>Layout2</cstring>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>0</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>PushButton5</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>0</hsizetype>
+                            <vsizetype>0</vsizetype>
+                        </sizepolicy>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Copy</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>newButton</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>0</hsizetype>
+                            <vsizetype>0</vsizetype>
+                        </sizepolicy>
+                    </property>
+                    <property name="text">
+                        <string>&amp;New UUID</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>PushButton7</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>0</hsizetype>
+                            <vsizetype>0</vsizetype>
+                        </sizepolicy>
+                    </property>
+                    <property name="text">
+                        <string>E&amp;xit</string>
+                    </property>
+                </widget>
+                <spacer>
+                    <property name="name">
+                        <cstring>Spacer1</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Vertical</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>20</width>
+                            <height>20</height>
+                        </size>
+                    </property>
+                </spacer>
+            </vbox>
+        </widget>
+    </grid>
+</widget>
+<connections>
+    <connection language="C++">
+        <sender>PushButton5</sender>
+        <signal>clicked()</signal>
+        <receiver>QUuidBase</receiver>
+        <slot>copyUuid()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>PushButton7</sender>
+        <signal>clicked()</signal>
+        <receiver>QUuidBase</receiver>
+        <slot>accept()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>nameEdit</sender>
+        <signal>textChanged(const QString&amp;)</signal>
+        <receiver>QUuidBase</receiver>
+        <slot>formatChanged()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>newButton</sender>
+        <signal>clicked()</signal>
+        <receiver>QUuidBase</receiver>
+        <slot>newUuid()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>formats</sender>
+        <signal>clicked(int)</signal>
+        <receiver>QUuidBase</receiver>
+        <slot>formatChanged()</slot>
+    </connection>
+    <slot access="protected" language="C++" returnType="void">init()</slot>
+    <slot access="protected" language="C++" returnType="void">destroy()</slot>
+    <slot access="protected" language="C++" returnType="void">formatChanged()</slot>
+    <slot access="protected" language="C++" returnType="void">newUuid()</slot>
+    <slot access="protected" language="C++" returnType="void">copyUuid()</slot>
+</connections>
+</UI>
