@@ -77,6 +77,9 @@ protected:
     IDirectFBSurface *dfbSurface;
     QImage *lockedImage;
     QDirectFBScreen *screen;
+    int bpl;
+private:
+    Q_DISABLE_COPY(QDirectFBPaintDevice)
 };
 
 QT_END_HEADER
