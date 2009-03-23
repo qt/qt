@@ -1548,12 +1548,14 @@ void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
                                               const QRectF &rect,
                                               Qt::ItemSelectionMode mode) const
 {
-    QPainterPath path;
     bool parentClip = (parent->flags() & QGraphicsItem::ItemClipsChildrenToShape);
+    if (parentClip && parent->d_ptr->isClippedAway())
+        return;
     QRectF r = !parentClip ? _q_adjustedRect(rect) : _q_adjustedRect(rect).intersected(_q_adjustedRect(parent->boundingRect()));
     if (r.isEmpty())
         return;
 
+    QPainterPath path;
     QList<QGraphicsItem *> &children = parent->d_ptr->children;
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *item = children.at(i);
@@ -1564,27 +1566,29 @@ void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
         if (item->d_ptr->isInvisible())
             continue;
 
-        // ### _q_adjustedRect is only needed because QRectF::intersects,
-        // QRectF::contains and QTransform::map() and friends don't work with
-        // flat rectangles.
-        QRectF br = _q_adjustedRect(item->boundingRect());
-        QRectF mbr = item->mapRectToParent(br);
         bool keep = false;
-        if (mode >= Qt::ContainsItemBoundingRect) {
-            // Rect intersects/contains item's bounding rect
-            if ((mode == Qt::IntersectsItemBoundingRect && QRectF_intersects(rect, mbr))
-                || (mode == Qt::ContainsItemBoundingRect && rect != mbr && rect.contains(br))) {
-                items->append(item);
-                keep = true;
-            }
-        } else {
-            // Rect intersects/contains item's shape
-            if (QRectF_intersects(rect, mbr)) {
-                if (path == QPainterPath())
-                    path.addRect(rect);
-                if (itemCollidesWithPath(item, item->mapFromParent(path), mode)) {
+        if (!item->d_ptr->isClippedAway()) {
+            // ### _q_adjustedRect is only needed because QRectF::intersects,
+            // QRectF::contains and QTransform::map() and friends don't work with
+            // flat rectangles.
+            QRectF br = _q_adjustedRect(item->boundingRect());
+            QRectF mbr = item->mapRectToParent(br);
+            if (mode >= Qt::ContainsItemBoundingRect) {
+                // Rect intersects/contains item's bounding rect
+                if ((mode == Qt::IntersectsItemBoundingRect && QRectF_intersects(rect, mbr))
+                    || (mode == Qt::ContainsItemBoundingRect && rect != mbr && rect.contains(br))) {
                     items->append(item);
                     keep = true;
+                }
+            } else {
+                // Rect intersects/contains item's shape
+                if (QRectF_intersects(rect, mbr)) {
+                    if (path == QPainterPath())
+                        path.addRect(rect);
+                    if (itemCollidesWithPath(item, item->mapFromParent(path), mode)) {
+                        items->append(item);
+                        keep = true;
+                    }
                 }
             }
         }
@@ -1607,13 +1611,15 @@ void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
                                               const QPolygonF &polygon,
                                               Qt::ItemSelectionMode mode) const
 {
-    QPainterPath path;
     bool parentClip = (parent->flags() & QGraphicsItem::ItemClipsChildrenToShape);
+    if (parentClip && parent->d_ptr->isClippedAway())
+        return;
     QRectF polyRect = _q_adjustedRect(polygon.boundingRect());
     QRectF r = !parentClip ? polyRect : polyRect.intersected(_q_adjustedRect(parent->boundingRect()));
     if (r.isEmpty())
         return;
 
+    QPainterPath path;
     QList<QGraphicsItem *> &children = parent->d_ptr->children;
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *item = children.at(i);
@@ -1624,28 +1630,30 @@ void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
         if (item->d_ptr->isInvisible())
             continue;
 
-        // ### _q_adjustedRect is only needed because QRectF::intersects,
-        // QRectF::contains and QTransform::map() and friends don't work with
-        // flat rectangles.
-        QRectF br = _q_adjustedRect(item->boundingRect());
         bool keep = false;
-        if (mode >= Qt::ContainsItemBoundingRect) {
-            // Polygon contains/intersects item's bounding rect
-            if (path == QPainterPath())
-                path.addPolygon(polygon);
-            if ((mode == Qt::IntersectsItemBoundingRect && path.intersects(item->mapRectToParent(br)))
-                || (mode == Qt::ContainsItemBoundingRect && path.contains(item->mapRectToParent(br)))) {
-                items->append(item);
-                keep = true;
-            }
-        } else {
-            // Polygon contains/intersects item's shape
-            if (QRectF_intersects(polyRect, item->mapRectToParent(br))) {
+        if (!item->d_ptr->isClippedAway()) {
+            // ### _q_adjustedRect is only needed because QRectF::intersects,
+            // QRectF::contains and QTransform::map() and friends don't work with
+            // flat rectangles.
+            QRectF br = _q_adjustedRect(item->boundingRect());
+            if (mode >= Qt::ContainsItemBoundingRect) {
+                // Polygon contains/intersects item's bounding rect
                 if (path == QPainterPath())
                     path.addPolygon(polygon);
-                if (itemCollidesWithPath(item, item->mapFromParent(path), mode)) {
+                if ((mode == Qt::IntersectsItemBoundingRect && path.intersects(item->mapRectToParent(br)))
+                    || (mode == Qt::ContainsItemBoundingRect && path.contains(item->mapRectToParent(br)))) {
                     items->append(item);
                     keep = true;
+                }
+            } else {
+                // Polygon contains/intersects item's shape
+                if (QRectF_intersects(polyRect, item->mapRectToParent(br))) {
+                    if (path == QPainterPath())
+                        path.addPolygon(polygon);
+                    if (itemCollidesWithPath(item, item->mapFromParent(path), mode)) {
+                        items->append(item);
+                        keep = true;
+                    }
                 }
             }
         }
@@ -1663,6 +1671,8 @@ void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
                                               Qt::ItemSelectionMode mode) const
 {
     bool parentClip = (parent->flags() & QGraphicsItem::ItemClipsChildrenToShape);
+    if (parentClip && parent->d_ptr->isClippedAway())
+        return;
     QRectF pathRect = _q_adjustedRect(path.boundingRect());
     QRectF r = !parentClip ? pathRect : pathRect.intersected(_q_adjustedRect(parent->boundingRect()));
     if (r.isEmpty())
@@ -1678,24 +1688,26 @@ void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
         if (item->d_ptr->isInvisible())
             continue;
 
-        // ### _q_adjustedRect is only needed because QRectF::intersects,
-        // QRectF::contains and QTransform::map() and friends don't work with
-        // flat rectangles.
-        QRectF br = _q_adjustedRect(item->boundingRect());
         bool keep = false;
-        if (mode >= Qt::ContainsItemBoundingRect) {
-            // Polygon contains/intersects item's bounding rect
-            if ((mode == Qt::IntersectsItemBoundingRect && path.intersects(item->mapRectToParent(br)))
-                || (mode == Qt::ContainsItemBoundingRect && path.contains(item->mapRectToParent(br)))) {
-                items->append(item);
-                keep = true;
-            }
-        } else {
-            // Path contains/intersects item's shape
-            if (QRectF_intersects(pathRect, item->mapRectToParent(br))) {
-                if (itemCollidesWithPath(item, item->mapFromParent(path), mode)) {
+        if (!item->d_ptr->isClippedAway()) {
+            // ### _q_adjustedRect is only needed because QRectF::intersects,
+            // QRectF::contains and QTransform::map() and friends don't work with
+            // flat rectangles.
+            QRectF br = _q_adjustedRect(item->boundingRect());
+            if (mode >= Qt::ContainsItemBoundingRect) {
+                // Polygon contains/intersects item's bounding rect
+                if ((mode == Qt::IntersectsItemBoundingRect && path.intersects(item->mapRectToParent(br)))
+                    || (mode == Qt::ContainsItemBoundingRect && path.contains(item->mapRectToParent(br)))) {
                     items->append(item);
                     keep = true;
+                }
+            } else {
+                // Path contains/intersects item's shape
+                if (QRectF_intersects(pathRect, item->mapRectToParent(br))) {
+                    if (itemCollidesWithPath(item, item->mapFromParent(path), mode)) {
+                        items->append(item);
+                        keep = true;
+                    }
                 }
             }
         }
