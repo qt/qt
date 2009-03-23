@@ -1833,7 +1833,7 @@ enum { /* TYPEINFO flags */
 
 #define Q_DECLARE_TYPEINFO(TYPE, FLAGS) \
 template <> \
-class QTypeInfo<TYPE> \
+class QTypeInfo<TYPE > \
 { \
 public: \
     enum { \

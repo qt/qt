@@ -31,6 +31,7 @@ include(itemviews/itemviews.pri)
 include(inputmethod/inputmethod.pri)
 include(graphicsview/graphicsview.pri)
 include(util/util.pri)
+include(math3d/math3d.pri)
 
 embedded: QT += network
 

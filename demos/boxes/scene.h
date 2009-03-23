@@ -53,7 +53,6 @@
 #include "vector.h"
 #include "trackball.h"
 #include "glbuffers.h"
-#include "glshaders.h"
 #include "qtbox.h"
 
 #define PI 3.14159265358979
@@ -231,11 +230,11 @@ private:
     GLTexture3D *m_noise;
     GLRenderTargetCube *m_mainCubemap;
     QVector<GLRenderTargetCube *> m_cubemaps;
-    QVector<GLProgram *> m_programs;
-    GLVertexShader *m_vertexShader;
-    QVector<GLFragmentShader *> m_fragmentShaders;
-    GLFragmentShader *m_environmentShader;
-    GLProgram *m_environmentProgram;
+    QVector<QGLShaderProgram *> m_programs;
+    QGLShader *m_vertexShader;
+    QVector<QGLShader *> m_fragmentShaders;
+    QGLShader *m_environmentShader;
+    QGLShaderProgram *m_environmentProgram;
 };
 
 

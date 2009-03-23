@@ -432,3 +432,4 @@ contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebframe \
            qwebpage
 
+SUBDIRS += math3d
