@@ -264,6 +264,7 @@ extern "C" {
                                                   qic->standardFormat(QInputContext::PreeditFormat));
         attrs << QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, cursor, sellen ? 0 : 1, QVariant());
         QInputMethodEvent e(data->text, attrs);
+        data->preeditEmpty = data->text.isEmpty();
 	qic->sendEvent(e);
 
 	return 0;
@@ -286,6 +287,7 @@ void QXIMInputContext::ICData::clear()
     text = QString();
     selectedChars.clear();
     composing = false;
+    preeditEmpty = true;
 }
 
 QXIMInputContext::ICData *QXIMInputContext::icData() const
@@ -537,9 +539,12 @@ void QXIMInputContext::reset()
         if (mb) {
             e.setCommitString(QString::fromLocal8Bit(mb));
             XFree(mb);
+            data->preeditEmpty = false; // force sending an event
         }
-        sendEvent(e);
-        update();
+        if (!data->preeditEmpty) {
+            sendEvent(e);
+            update();
+        }
     }
     data->clear();
 }
@@ -686,6 +691,7 @@ QXIMInputContext::ICData *QXIMInputContext::createICData(QWidget *w)
 {
     ICData *data = new ICData;
     data->widget = w;
+    data->preeditEmpty = true;
 
     XVaNestedList preedit_attr = 0;
     XIMCallback startcallback, drawcallback, donecallback;
