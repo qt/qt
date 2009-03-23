@@ -264,6 +264,9 @@ public:
                             && qFuzzyCompare(q_func()->effectiveOpacity() + 1, qreal(1.0)));
     }
 
+    inline bool isClippedAway() const
+    { return !dirtyClipPath && q_func()->isClipped() && (emptyClipPath || cachedClipPath.isEmpty()); }
+
     QPainterPath cachedClipPath;
     QPointF pos;
     qreal z;
