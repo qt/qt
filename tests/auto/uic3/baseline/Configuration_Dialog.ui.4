@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>MyDialog2</class>
+  <widget class="QDialog" name="MyDialog2">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>597</width>
+        <height>364</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>MyDialog2</string>
+    </property>
+    <property name="sizeGripEnabled">
+      <bool>true</bool>
+    </property>
+    <layout class="QGridLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item row="0" column="0">
+        <widget class="Q3ListBox" name="listBox">
+          <property name="sizePolicy">
+            <sizepolicy>
+              <hsizetype>0</hsizetype>
+              <vsizetype>7</vsizetype>
+            </sizepolicy>
+          </property>
+          <item>
+            <property name="text">
+              <string>New Item</string>
+            </property>
+          </item>
+        </widget>
+      </item>
+      <item row="0" column="1">
+        <widget class="QTabWidget" name="tabWidget">
+          <widget class="QWidget" name="Widget2">
+            <attribute name="title">
+              <string>Tab</string>
+            </attribute>
+          </widget>
+          <widget class="QWidget" name="Widget3">
+            <attribute name="title">
+              <string>Tab</string>
+            </attribute>
+          </widget>
+        </widget>
+      </item>
+      <item row="1" column="0" rowspan="1" colspan="2">
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <widget class="QPushButton" name="buttonHelp">
+              <property name="text">
+                <string>&amp;Help</string>
+              </property>
+              <property name="shortcut">
+                <number>4144</number>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <spacer name="Horizontal Spacing2">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonOk">
+              <property name="text">
+                <string>&amp;OK</string>
+              </property>
+              <property name="shortcut">
+                <number>0</number>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+              <property name="default">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonCancel">
+              <property name="text">
+                <string>&amp;Cancel</string>
+              </property>
+              <property name="shortcut">
+                <number>0</number>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>buttonOk</sender>
+      <signal>clicked()</signal>
+      <receiver>MyDialog2</receiver>
+      <slot>accept()</slot>
+    </connection>
+    <connection>
+      <sender>buttonCancel</sender>
+      <signal>clicked()</signal>
+      <receiver>MyDialog2</receiver>
+      <slot>reject()</slot>
+    </connection>
+  </connections>
+</ui>

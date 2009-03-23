@@ -1,0 +1,182 @@
+<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
+<class>Skinable</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>Skinable</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>330</width>
+            <height>130</height>
+        </rect>
+    </property>
+    <property name="sizePolicy">
+        <sizepolicy>
+            <hsizetype>0</hsizetype>
+            <vsizetype>0</vsizetype>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+    </property>
+    <property name="minimumSize">
+        <size>
+            <width>330</width>
+            <height>130</height>
+        </size>
+    </property>
+    <property name="caption">
+        <string>Sound player</string>
+    </property>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>Forward</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>190</x>
+                <y>9</y>
+                <width>40</width>
+                <height>50</height>
+            </rect>
+        </property>
+        <property name="focusPolicy">
+            <enum>NoFocus</enum>
+        </property>
+        <property name="text">
+            <string>Forward</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>Stop</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>130</x>
+                <y>9</y>
+                <width>50</width>
+                <height>50</height>
+            </rect>
+        </property>
+        <property name="focusPolicy">
+            <enum>NoFocus</enum>
+        </property>
+        <property name="text">
+            <string>Stop</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>Back</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>9</y>
+                <width>50</width>
+                <height>50</height>
+            </rect>
+        </property>
+        <property name="focusPolicy">
+            <enum>NoFocus</enum>
+        </property>
+        <property name="text">
+            <string>back</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>Play</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>70</x>
+                <y>9</y>
+                <width>50</width>
+                <height>50</height>
+            </rect>
+        </property>
+        <property name="focusPolicy">
+            <enum>NoFocus</enum>
+        </property>
+        <property name="text">
+            <string>Play</string>
+        </property>
+        <property name="toggleButton">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>QuitButton</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>80</y>
+                <width>101</width>
+                <height>31</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Quit</string>
+        </property>
+    </widget>
+    <widget class="QSkinDial">
+        <property name="name">
+            <cstring>Volume</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>250</x>
+                <y>30</y>
+                <width>61</width>
+                <height>61</height>
+            </rect>
+        </property>
+        <property name="focusPolicy">
+            <enum>NoFocus</enum>
+        </property>
+    </widget>
+</widget>
+<customwidgets>
+    <customwidget>
+        <class>QSkinDial</class>
+        <header location="local">qskin.h</header>
+        <sizehint>
+            <width>80</width>
+            <height>80</height>
+        </sizehint>
+        <container>0</container>
+        <sizepolicy>
+            <hordata>5</hordata>
+            <verdata>5</verdata>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        <pixmap>image0</pixmap>
+    </customwidget>
+</customwidgets>
+<images>
+    <image name="image0">
+        <data format="XPM.GZ" length="646">789c6dd2c10ac2300c00d07bbf2234b7229d1d78123f41f128888752053d4c41b78388ffae6d97b5591b7648f7689a656d141cf65b508d78f5b6bf397057fb04751ebaee7d3c6d3e42b62df8078c5c08a9c1c1ee71bff81cff395ae3566619680c0c41ab49300517649109624151f22a9467c21a192507249a246d8814840311172a3b97d4715d742958ee89bde403e03273f6a5bc66399d8a54275afc05eaa04ae91e642f753aa7b821fe9cef5afc0025cc6754</data>
+    </image>
+</images>
+<connections>
+    <connection>
+        <sender>QuitButton</sender>
+        <signal>pressed()</signal>
+        <receiver>Skinable</receiver>
+        <slot>close()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in implementation">demo.ui.h</include>
+</includes>
+<slots>
+    <slot>init()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

@@ -1,0 +1,8 @@
+<!DOCTYPE footype [
+ <!ATTLIST foo xmlns CDATA #FIXED "http://www.trolltech.com">
+ <!ATTLIST pre:bar xmlns:pre CDATA #FIXED "http://www.trolltech.com">
+]>
+<body>
+<foo/>
+<pre:bar/>
+</body>

@@ -1,0 +1,427 @@
+<!DOCTYPE UI><UI version="3.2" stdsetdef="1">
+<class>Distributor</class>
+<widget class="QWizard">
+    <property name="name">
+        <cstring>Distributor</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>522</width>
+            <height>422</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Qt Distribution Wizard</string>
+    </property>
+    <widget class="QWidget">
+        <property name="name">
+            <cstring>selectLibrary</cstring>
+        </property>
+        <attribute name="title">
+            <string>&lt;b&gt;Select Qt Library File&lt;/b&gt;</string>
+        </attribute>
+        <grid>
+            <property name="name">
+                <cstring>unnamed</cstring>
+            </property>
+            <spacer row="2" column="0">
+                <property name="name">
+                    <cstring>spacer2</cstring>
+                </property>
+                <property name="orientation">
+                    <enum>Vertical</enum>
+                </property>
+                <property name="sizeType">
+                    <enum>Expanding</enum>
+                </property>
+                <property name="sizeHint">
+                    <size>
+                        <width>20</width>
+                        <height>40</height>
+                    </size>
+                </property>
+            </spacer>
+            <widget class="QLineEdit" row="1" column="0">
+                <property name="name">
+                    <cstring>libFilename</cstring>
+                </property>
+                <property name="frameShape">
+                    <enum>LineEditPanel</enum>
+                </property>
+                <property name="frameShadow">
+                    <enum>Sunken</enum>
+                </property>
+            </widget>
+            <widget class="QPushButton" row="1" column="1">
+                <property name="name">
+                    <cstring>libBrowseButton</cstring>
+                </property>
+                <property name="text">
+                    <string>&amp;Browse...</string>
+                </property>
+            </widget>
+            <widget class="QLabel" row="0" column="0" rowspan="1" colspan="2">
+                <property name="name">
+                    <cstring>textLabel1</cstring>
+                </property>
+                <property name="text">
+                    <string>&lt;p&gt;Enter the filename of the Qt library to modify, or use the &lt;i&gt;Browse&lt;/i&gt; button to browse for the library.&lt;/p&gt;
+&lt;p&gt;This wizard will allow you to modify the installation paths stored in the library.&lt;/p&gt;</string>
+                </property>
+            </widget>
+        </grid>
+    </widget>
+    <widget class="QWidget">
+        <property name="name">
+            <cstring>modifyPaths</cstring>
+        </property>
+        <attribute name="title">
+            <string>&lt;b&gt;Modify Installation Paths&lt;/b&gt;</string>
+        </attribute>
+        <grid>
+            <property name="name">
+                <cstring>unnamed</cstring>
+            </property>
+            <spacer row="11" column="1">
+                <property name="name">
+                    <cstring>spacer2_2</cstring>
+                </property>
+                <property name="orientation">
+                    <enum>Vertical</enum>
+                </property>
+                <property name="sizeType">
+                    <enum>Expanding</enum>
+                </property>
+                <property name="sizeHint">
+                    <size>
+                        <width>20</width>
+                        <height>40</height>
+                    </size>
+                </property>
+            </spacer>
+            <widget class="QLabel" row="1" column="0">
+                <property name="name">
+                    <cstring>prefixBuddy</cstring>
+                </property>
+                <property name="text">
+                    <string>Installation &amp;Prefix</string>
+                </property>
+                <property name="buddy" stdset="0">
+                    <cstring>prefixPath</cstring>
+                </property>
+            </widget>
+            <widget class="QLineEdit" row="8" column="1" rowspan="1" colspan="2">
+                <property name="name">
+                    <cstring>libPath</cstring>
+                </property>
+                <property name="enabled">
+                    <bool>false</bool>
+                </property>
+                <property name="maxLength">
+                    <number>255</number>
+                </property>
+            </widget>
+            <widget class="QLineEdit" row="1" column="1">
+                <property name="name">
+                    <cstring>prefixPath</cstring>
+                </property>
+                <property name="maxLength">
+                    <number>255</number>
+                </property>
+            </widget>
+            <widget class="QLineEdit" row="9" column="1" rowspan="1" colspan="2">
+                <property name="name">
+                    <cstring>plgPath</cstring>
+                </property>
+                <property name="enabled">
+                    <bool>false</bool>
+                </property>
+                <property name="maxLength">
+                    <number>255</number>
+                </property>
+            </widget>
+            <widget class="QPushButton" row="1" column="2">
+                <property name="name">
+                    <cstring>prefixBrowseButton</cstring>
+                </property>
+                <property name="text">
+                    <string>&amp;Browse...</string>
+                </property>
+            </widget>
+            <widget class="QLineEdit" row="10" column="1" rowspan="1" colspan="2">
+                <property name="name">
+                    <cstring>datPath</cstring>
+                </property>
+                <property name="enabled">
+                    <bool>false</bool>
+                </property>
+                <property name="maxLength">
+                    <number>255</number>
+                </property>
+            </widget>
+            <widget class="QLabel" row="0" column="0" rowspan="1" colspan="3">
+                <property name="name">
+                    <cstring>textLabel2</cstring>
+                </property>
+                <property name="text">
+                    <string>&lt;p&gt;Enter the new &lt;i&gt;Installation Prefix&lt;/i&gt; for the selected Qt library, or use the &lt;i&gt;Browse&lt;/i&gt; button to browse for the desired directory.&lt;/p&gt;
+&lt;p&gt;Use the &lt;i&gt;Next&lt;/i&gt; button to review your choices and perform the modification.&lt;/p&gt;</string>
+                </property>
+            </widget>
+            <widget class="Line" row="2" column="0" rowspan="1" colspan="3">
+                <property name="name">
+                    <cstring>line1</cstring>
+                </property>
+                <property name="frameShape">
+                    <enum>HLine</enum>
+                </property>
+                <property name="frameShadow">
+                    <enum>Sunken</enum>
+                </property>
+                <property name="orientation">
+                    <enum>Horizontal</enum>
+                </property>
+            </widget>
+            <widget class="QLineEdit" row="6" column="1" rowspan="1" colspan="2">
+                <property name="name">
+                    <cstring>docPath</cstring>
+                </property>
+                <property name="enabled">
+                    <bool>false</bool>
+                </property>
+                <property name="maxLength">
+                    <number>255</number>
+                </property>
+            </widget>
+            <widget class="QLineEdit" row="7" column="1" rowspan="1" colspan="2">
+                <property name="name">
+                    <cstring>hdrPath</cstring>
+                </property>
+                <property name="enabled">
+                    <bool>false</bool>
+                </property>
+                <property name="maxLength">
+                    <number>255</number>
+                </property>
+            </widget>
+            <widget class="QLabel" row="3" column="0" rowspan="1" colspan="3">
+                <property name="name">
+                    <cstring>textLabel3</cstring>
+                </property>
+                <property name="text">
+                    <string>&lt;p&gt;The various paths below are set automatically according to the chosen &lt;i&gt;Installation Prefix&lt;/i&gt;.  Uncheck the &lt;i&gt;Set paths from Installation Prefix&lt;/i&gt; box to enter custom values.&lt;/p&gt;</string>
+                </property>
+            </widget>
+            <widget class="QLineEdit" row="5" column="1" rowspan="1" colspan="2">
+                <property name="name">
+                    <cstring>binPath</cstring>
+                </property>
+                <property name="enabled">
+                    <bool>false</bool>
+                </property>
+                <property name="maxLength">
+                    <number>255</number>
+                </property>
+            </widget>
+            <widget class="QCheckBox" row="4" column="0" rowspan="1" colspan="3">
+                <property name="name">
+                    <cstring>autoSet</cstring>
+                </property>
+                <property name="text">
+                    <string>Set paths from Installation Prefix</string>
+                </property>
+                <property name="checked">
+                    <bool>true</bool>
+                </property>
+            </widget>
+            <widget class="QLabel" row="6" column="0">
+                <property name="name">
+                    <cstring>docBuddy</cstring>
+                </property>
+                <property name="text">
+                    <string>Documentation</string>
+                </property>
+            </widget>
+            <widget class="QLabel" row="10" column="0">
+                <property name="name">
+                    <cstring>datBuddy</cstring>
+                </property>
+                <property name="text">
+                    <string>Data</string>
+                </property>
+            </widget>
+            <widget class="QLabel" row="7" column="0">
+                <property name="name">
+                    <cstring>hdrBuddy</cstring>
+                </property>
+                <property name="text">
+                    <string>Headers</string>
+                </property>
+            </widget>
+            <widget class="QLabel" row="8" column="0">
+                <property name="name">
+                    <cstring>libBuddy</cstring>
+                </property>
+                <property name="text">
+                    <string>Libraries</string>
+                </property>
+            </widget>
+            <widget class="QLabel" row="9" column="0">
+                <property name="name">
+                    <cstring>plgBuddy</cstring>
+                </property>
+                <property name="text">
+                    <string>Plugins</string>
+                </property>
+            </widget>
+            <widget class="QLabel" row="5" column="0">
+                <property name="name">
+                    <cstring>binBuddy</cstring>
+                </property>
+                <property name="text">
+                    <string>Binaries</string>
+                </property>
+            </widget>
+        </grid>
+    </widget>
+    <widget class="QWidget">
+        <property name="name">
+            <cstring>verifyMods</cstring>
+        </property>
+        <attribute name="title">
+            <string>&lt;b&gt;Verify Modifications&lt;/b&gt;</string>
+        </attribute>
+        <hbox>
+            <property name="name">
+                <cstring>unnamed</cstring>
+            </property>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel4</cstring>
+                </property>
+                <property name="text">
+                    <string>&lt;p&gt;&lt;b&gt;Current Library File:&lt;/b&gt; %1&lt;/p&gt;
+&lt;table border=0&gt;
+ &lt;tr&gt;&lt;td&gt;&lt;b&gt;New Installation Prefix:&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%2&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;&lt;b&gt;Binaries Path:&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%3&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;&lt;b&gt;Documentation Path:&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%4&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;&lt;b&gt;Headers Path:&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%5&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;&lt;b&gt;Libraries Path:&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%6&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;&lt;b&gt;Plugins Path:&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%7&lt;/td&gt;&lt;/tr&gt;
+ &lt;tr&gt;&lt;td&gt;&lt;b&gt;Data Path:&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%8&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Please verify that these options are correct.  Press the &lt;i&gt;Finish&lt;/i&gt; button to apply these modifications to the Qt library.  Use the &lt;i&gt;Back&lt;/i&gt; button to make corrections.  Use the &lt;i&gt;Cancel&lt;/i&gt; button to abort.&lt;/p&gt;</string>
+                </property>
+                <property name="alignment">
+                    <set>WordBreak|AlignTop</set>
+                </property>
+            </widget>
+        </hbox>
+    </widget>
+</widget>
+<connections>
+    <connection>
+        <sender>autoSet</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>binPath</receiver>
+        <slot>setDisabled(bool)</slot>
+    </connection>
+    <connection>
+        <sender>autoSet</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>docPath</receiver>
+        <slot>setDisabled(bool)</slot>
+    </connection>
+    <connection>
+        <sender>autoSet</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>hdrPath</receiver>
+        <slot>setDisabled(bool)</slot>
+    </connection>
+    <connection>
+        <sender>autoSet</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>libPath</receiver>
+        <slot>setDisabled(bool)</slot>
+    </connection>
+    <connection>
+        <sender>autoSet</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>plgPath</receiver>
+        <slot>setDisabled(bool)</slot>
+    </connection>
+    <connection>
+        <sender>autoSet</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>datPath</receiver>
+        <slot>setDisabled(bool)</slot>
+    </connection>
+    <connection>
+        <sender>libFilename</sender>
+        <signal>textChanged(const QString&amp;)</signal>
+        <receiver>Distributor</receiver>
+        <slot>checkLibFilename(const QString&amp;)</slot>
+    </connection>
+    <connection>
+        <sender>libBrowseButton</sender>
+        <signal>clicked()</signal>
+        <receiver>Distributor</receiver>
+        <slot>browseLibFilename()</slot>
+    </connection>
+    <connection>
+        <sender>prefixPath</sender>
+        <signal>textChanged(const QString&amp;)</signal>
+        <receiver>Distributor</receiver>
+        <slot>checkInstallationPrefix(const QString&amp;)</slot>
+    </connection>
+    <connection>
+        <sender>prefixBrowseButton</sender>
+        <signal>clicked()</signal>
+        <receiver>Distributor</receiver>
+        <slot>browseInstallationPrefix()</slot>
+    </connection>
+    <connection>
+        <sender>autoSet</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>Distributor</receiver>
+        <slot>toggleAutoSet(bool)</slot>
+    </connection>
+</connections>
+<tabstops>
+    <tabstop>libFilename</tabstop>
+    <tabstop>libBrowseButton</tabstop>
+    <tabstop>prefixPath</tabstop>
+    <tabstop>prefixBrowseButton</tabstop>
+    <tabstop>autoSet</tabstop>
+    <tabstop>binPath</tabstop>
+    <tabstop>docPath</tabstop>
+    <tabstop>hdrPath</tabstop>
+    <tabstop>libPath</tabstop>
+    <tabstop>plgPath</tabstop>
+    <tabstop>datPath</tabstop>
+</tabstops>
+<includes>
+    <include location="local" impldecl="in implementation">distributor.ui.h</include>
+</includes>
+<variables>
+    <variable access="private">QTimer *timer;</variable>
+</variables>
+<slots>
+    <slot>checkLibFilename( const QString &amp; filename )</slot>
+    <slot>browseLibFilename()</slot>
+    <slot>checkLibData()</slot>
+    <slot>checkInstallationPrefix( const QString &amp;filename )</slot>
+    <slot>browseInstallationPrefix()</slot>
+    <slot>toggleAutoSet( bool autoset )</slot>
+    <slot>accept()</slot>
+</slots>
+<functions>
+    <function access="private" specifier="non virtual">init()</function>
+    <function>showPage( QWidget * page )</function>
+</functions>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

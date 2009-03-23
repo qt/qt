@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment>*********************************************************************
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).  All rights reserved.
+**
+** This file is part of Qt Designer.
+**
+** This file may be used under the terms of the GNU General
+** Public License versions 2.0 or 3.0 as published by the Free
+** Software Foundation and appearing in the files LICENSE.GPL2
+** and LICENSE.GPL3 included in the packaging of this file.
+** Alternatively you may (at your option) use any later version
+** of the GNU General Public License if such license has been
+** publicly approved by Nokia Corporation and/or its subsidiary(-ies) (or its successors, if any)
+** and the KDE Free Qt Foundation.
+**
+** Please review the following information to ensure GNU General
+** Public Licensing requirements will be met:
+** http://trolltech.com/products/qt/licenses/licensing/opensource/.
+** If you are unsure which license is appropriate for your use, please
+** review the following information:
+** http://trolltech.com/products/qt/licenses/licensing/licensingoverview
+** or contact the sales department at sales@trolltech.com.
+**
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with
+** the Software.
+**
+** This file is provided &quot;AS IS&quot; with NO WARRANTY OF ANY KIND,
+** INCLUDING THE WARRANTIES OF DESIGN, MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE. Trolltech reserves all rights not granted
+** herein.
+**
+*********************************************************************</comment>
+  <exportmacro></exportmacro>
+  <class>ActionEditorBase</class>
+  <widget class="QWidget" name="ActionEditorBase">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>206</width>
+        <height>227</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Edit Actions</string>
+    </property>
+    <layout class="QVBoxLayout">
+      <property name="margin">
+        <number>4</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item>
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <widget class="QToolButton" name="buttonNewAction">
+              <property name="text">
+                <string/>
+              </property>
+              <property name="icon">
+                <pixmap>designer_filenew.png</pixmap>
+              </property>
+              <property name="autoRaise">
+                <bool>true</bool>
+              </property>
+              <property name="toolTip" stdset="0">
+                <string>Create new Action</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QToolButton" name="buttonDeleteAction">
+              <property name="text">
+                <string/>
+              </property>
+              <property name="icon">
+                <pixmap>designer_s_editcut.png</pixmap>
+              </property>
+              <property name="autoRaise">
+                <bool>true</bool>
+              </property>
+              <property name="toolTip" stdset="0">
+                <string>Delete current Action</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QToolButton" name="buttonConnect">
+              <property name="text">
+                <string/>
+              </property>
+              <property name="icon">
+                <pixmap>designer_connecttool.png</pixmap>
+              </property>
+              <property name="autoRaise">
+                <bool>true</bool>
+              </property>
+              <property name="toolTip" stdset="0">
+                <string>Connect current Action</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <spacer name="Spacer1">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+        </layout>
+      </item>
+      <item>
+        <widget class="ActionListView" name="listActions"/>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <customwidgets>
+    <customwidget>
+      <class>ActionListView</class>
+      <extends>QWidget</extends>
+      <header location="local">actionlistview.h</header>
+      <sizehint>
+        <width>200</width>
+        <height>200</height>
+      </sizehint>
+      <container>0</container>
+      <sizepolicy>
+        <hordata>7</hordata>
+        <verdata>7</verdata>
+      </sizepolicy>
+      <pixmap>image0</pixmap>
+    </customwidget>
+  </customwidgets>
+  <images>
+    <image name="image0">
+      <data format="XPM.GZ" length="646">789c6dd2c10ac2300c00d07bbf2234b7229d1be245fc04c5a3201e4615f430059d0711ff5ddb2e6bb236ec90eed134cb5a19d8ef36602af5ecdbfeeac05dda0798d3abebde87e3faa374d3807fa0d633a52d38d8de6f679fe33fc776e196f53cd010188256a3600a292882096246517815ca99884606e18044a3a40d91824820924265a7923a2e8bcd05f33db1173e002913175f2a6be6d3294871a2d95fa00e8a94ee017b69d339d90df1e77c57ea072ede6758</data>
+    </image>
+  </images>
+  <connections>
+    <connection>
+      <sender>listActions</sender>
+      <signal>currentChanged(Q3ListViewItem*)</signal>
+      <receiver>ActionEditorBase</receiver>
+      <slot>currentActionChanged(Q3ListViewItem*)</slot>
+    </connection>
+    <connection>
+      <sender>listActions</sender>
+      <signal>clicked(Q3ListViewItem*)</signal>
+      <receiver>ActionEditorBase</receiver>
+      <slot>currentActionChanged(Q3ListViewItem*)</slot>
+    </connection>
+    <connection>
+      <sender>listActions</sender>
+      <signal>selectionChanged(Q3ListViewItem*)</signal>
+      <receiver>ActionEditorBase</receiver>
+      <slot>currentActionChanged(Q3ListViewItem*)</slot>
+    </connection>
+    <connection>
+      <sender>buttonNewAction</sender>
+      <signal>clicked()</signal>
+      <receiver>ActionEditorBase</receiver>
+      <slot>newAction()</slot>
+    </connection>
+    <connection>
+      <sender>buttonConnect</sender>
+      <signal>clicked()</signal>
+      <receiver>ActionEditorBase</receiver>
+      <slot>connectionsClicked()</slot>
+    </connection>
+    <connection>
+      <sender>buttonDeleteAction</sender>
+      <signal>clicked()</signal>
+      <receiver>ActionEditorBase</receiver>
+      <slot>deleteAction()</slot>
+    </connection>
+  </connections>
+</ui>

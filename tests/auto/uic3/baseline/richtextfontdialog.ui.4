@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment>*********************************************************************
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).  All rights reserved.
+**
+** This file is part of Qt Designer.
+**
+** This file may be used under the terms of the GNU General
+** Public License versions 2.0 or 3.0 as published by the Free
+** Software Foundation and appearing in the files LICENSE.GPL2
+** and LICENSE.GPL3 included in the packaging of this file.
+** Alternatively you may (at your option) use any later version
+** of the GNU General Public License if such license has been
+** publicly approved by Nokia Corporation and/or its subsidiary(-ies) (or its successors, if any)
+** and the KDE Free Qt Foundation.
+**
+** Please review the following information to ensure GNU General
+** Public Licensing requirements will be met:
+** http://trolltech.com/products/qt/licenses/licensing/opensource/.
+** If you are unsure which license is appropriate for your use, please
+** review the following information:
+** http://trolltech.com/products/qt/licenses/licensing/licensingoverview
+** or contact the sales department at sales@trolltech.com.
+**
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with
+** the Software.
+**
+** This file is provided &quot;AS IS&quot; with NO WARRANTY OF ANY KIND,
+** INCLUDING THE WARRANTIES OF DESIGN, MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE. Trolltech reserves all rights not granted
+** herein.
+**
+*********************************************************************</comment>
+  <exportmacro></exportmacro>
+  <class>RichTextFontDialog</class>
+  <widget class="QDialog" name="RichTextFontDialog">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>255</width>
+        <height>158</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Font Properties</string>
+    </property>
+    <property name="sizeGripEnabled">
+      <bool>true</bool>
+    </property>
+    <layout class="QGridLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item row="0" column="0">
+        <layout class="QGridLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item row="0" column="1" rowspan="1" colspan="2">
+            <widget class="QComboBox" name="fontCombo">
+              <item>
+                <property name="text">
+                  <string>default</string>
+                </property>
+              </item>
+            </widget>
+          </item>
+          <item row="0" column="0">
+            <widget class="QLabel" name="TextLabel1_2">
+              <property name="text">
+                <string>&amp;Font:</string>
+              </property>
+              <property name="buddy" stdset="0">
+                <cstring>fontCombo</cstring>
+              </property>
+              <property name="wordWrap">
+                <bool>false</bool>
+              </property>
+            </widget>
+          </item>
+          <item row="1" column="0">
+            <widget class="QLabel" name="TextLabel2">
+              <property name="text">
+                <string>Rel. &amp;Size:</string>
+              </property>
+              <property name="buddy" stdset="0">
+                <cstring>fontSizeCombo</cstring>
+              </property>
+              <property name="wordWrap">
+                <bool>false</bool>
+              </property>
+            </widget>
+          </item>
+          <item row="2" column="2">
+            <spacer name="Spacer13">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item row="2" column="0">
+            <widget class="QLabel" name="TextLabel1">
+              <property name="text">
+                <string>C&amp;olor:</string>
+              </property>
+              <property name="buddy" stdset="0">
+                <cstring>colorButton</cstring>
+              </property>
+              <property name="wordWrap">
+                <bool>false</bool>
+              </property>
+            </widget>
+          </item>
+          <item row="1" column="1" rowspan="1" colspan="2">
+            <widget class="QComboBox" name="fontSizeCombo">
+              <property name="editable">
+                <bool>true</bool>
+              </property>
+              <property name="insertPolicy">
+                <enum>QComboBox::InsertAtTop</enum>
+              </property>
+              <item>
+                <property name="text">
+                  <string>0</string>
+                </property>
+              </item>
+              <item>
+                <property name="text">
+                  <string>-4</string>
+                </property>
+              </item>
+              <item>
+                <property name="text">
+                  <string>-3</string>
+                </property>
+              </item>
+              <item>
+                <property name="text">
+                  <string>-2</string>
+                </property>
+              </item>
+              <item>
+                <property name="text">
+                  <string>-1</string>
+                </property>
+              </item>
+              <item>
+                <property name="text">
+                  <string>+1</string>
+                </property>
+              </item>
+              <item>
+                <property name="text">
+                  <string>+2</string>
+                </property>
+              </item>
+              <item>
+                <property name="text">
+                  <string>+3</string>
+                </property>
+              </item>
+              <item>
+                <property name="text">
+                  <string>+4</string>
+                </property>
+              </item>
+            </widget>
+          </item>
+          <item row="2" column="1">
+            <widget class="QToolButton" name="colorButton">
+              <property name="sizePolicy">
+                <sizepolicy>
+                  <hsizetype>0</hsizetype>
+                  <vsizetype>0</vsizetype>
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                </sizepolicy>
+              </property>
+              <property name="minimumSize">
+                <size>
+                  <width>40</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="focusPolicy">
+                <enum>Qt::TabFocus</enum>
+              </property>
+              <property name="text">
+                <string/>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+      <item row="1" column="0">
+        <spacer name="Spacer14">
+          <property name="sizeHint">
+            <size>
+              <width>20</width>
+              <height>16</height>
+            </size>
+          </property>
+          <property name="sizeType">
+            <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="orientation">
+            <enum>Qt::Vertical</enum>
+          </property>
+        </spacer>
+      </item>
+      <item row="2" column="0">
+        <widget class="Line" name="Line1">
+          <property name="frameShape">
+            <enum>QFrame::HLine</enum>
+          </property>
+          <property name="frameShadow">
+            <enum>QFrame::Sunken</enum>
+          </property>
+        </widget>
+      </item>
+      <item row="3" column="0">
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <spacer name="Spacer12">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="okButton">
+              <property name="text">
+                <string>&amp;OK</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="cancelButton">
+              <property name="text">
+                <string>&amp;Cancel</string>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <tabstops>
+    <tabstop>fontCombo</tabstop>
+    <tabstop>fontSizeCombo</tabstop>
+    <tabstop>colorButton</tabstop>
+    <tabstop>okButton</tabstop>
+    <tabstop>cancelButton</tabstop>
+  </tabstops>
+  <connections>
+    <connection>
+      <sender>colorButton</sender>
+      <signal>clicked()</signal>
+      <receiver>RichTextFontDialog</receiver>
+      <slot>selectColor()</slot>
+    </connection>
+    <connection>
+      <sender>okButton</sender>
+      <signal>clicked()</signal>
+      <receiver>RichTextFontDialog</receiver>
+      <slot>accept()</slot>
+    </connection>
+    <connection>
+      <sender>cancelButton</sender>
+      <signal>clicked()</signal>
+      <receiver>RichTextFontDialog</receiver>
+      <slot>reject()</slot>
+    </connection>
+  </connections>
+</ui>

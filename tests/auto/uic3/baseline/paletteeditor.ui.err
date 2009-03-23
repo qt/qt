@@ -1,0 +1,9 @@
+uic3: slot `onChoose2ndMainColor()' for widget `PaletteEditorBase' of type `QDialog' is not supported; connection may fail. Line: 439 Column: 16
+uic3: slot `paletteSelected(int)' for widget `PaletteEditorBase' of type `QDialog' is not supported; connection may fail. Line: 445 Column: 16
+uic3: slot `onTune()' for widget `PaletteEditorBase' of type `QDialog' is not supported; connection may fail. Line: 451 Column: 16
+uic3: slot `onChooseMainColor()' for widget `PaletteEditorBase' of type `QDialog' is not supported; connection may fail. Line: 469 Column: 16
+uic3: slot `onChooseMainColor()' for widget `PaletteEditorBase' of type `QDialog' is not supported; connection may fail. Line: 475 Column: 16
+uic3: slot `onChoose2ndMainColor()' for widget `PaletteEditorBase' of type `QDialog' is not supported; connection may fail. Line: 481 Column: 16
+uic3: flag 'AlignAuto' for widget 'Q3GroupBox' is not supported
+uic3: flag 'AlignAuto' for widget 'QLabel' is not supported
+uic3: flag 'AlignAuto' for widget 'QLabel' is not supported

@@ -1,0 +1,114 @@
+<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
+<class>Extension</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>Extension</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>258</width>
+            <height>128</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Extension</string>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>Layout6</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>TextLabel1</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Log &amp;File</string>
+                    </property>
+                    <property name="buddy" stdset="0">
+                        <cstring>logfileLineEdit</cstring>
+                    </property>
+                </widget>
+                <widget class="QLineEdit">
+                    <property name="name">
+                        <cstring>logfileLineEdit</cstring>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>browsePushButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Browse...</string>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+        <widget class="QButtonGroup">
+            <property name="name">
+                <cstring>ButtonGroup1</cstring>
+            </property>
+            <property name="title">
+                <string>Log What?</string>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>Layout7</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <property name="margin">
+                            <number>0</number>
+                        </property>
+                        <property name="spacing">
+                            <number>0</number>
+                        </property>
+                        <widget class="QCheckBox">
+                            <property name="name">
+                                <cstring>logActionsCheckBox</cstring>
+                            </property>
+                            <property name="text">
+                                <string>&amp;Actions</string>
+                            </property>
+                            <property name="checked">
+                                <bool>true</bool>
+                            </property>
+                        </widget>
+                        <widget class="QCheckBox">
+                            <property name="name">
+                                <cstring>logErrorsCheckBox</cstring>
+                            </property>
+                            <property name="text">
+                                <string>&amp;Errors</string>
+                            </property>
+                            <property name="checked">
+                                <bool>true</bool>
+                            </property>
+                        </widget>
+                    </hbox>
+                </widget>
+            </hbox>
+        </widget>
+    </vbox>
+</widget>
+<includes>
+    <include location="local" impldecl="in implementation">extension.ui.h</include>
+</includes>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

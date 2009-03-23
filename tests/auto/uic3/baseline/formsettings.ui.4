@@ -1,0 +1,557 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment>*********************************************************************
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).  All rights reserved.
+**
+** This file is part of Qt Designer.
+**
+** This file may be used under the terms of the GNU General
+** Public License versions 2.0 or 3.0 as published by the Free
+** Software Foundation and appearing in the files LICENSE.GPL2
+** and LICENSE.GPL3 included in the packaging of this file.
+** Alternatively you may (at your option) use any later version
+** of the GNU General Public License if such license has been
+** publicly approved by Nokia Corporation and/or its subsidiary(-ies) (or its successors, if any)
+** and the KDE Free Qt Foundation.
+**
+** Please review the following information to ensure GNU General
+** Public Licensing requirements will be met:
+** http://trolltech.com/products/qt/licenses/licensing/opensource/.
+** If you are unsure which license is appropriate for your use, please
+** review the following information:
+** http://trolltech.com/products/qt/licenses/licensing/licensingoverview
+** or contact the sales department at sales@trolltech.com.
+**
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with
+** the Software.
+**
+** This file is provided &quot;AS IS&quot; with NO WARRANTY OF ANY KIND,
+** INCLUDING THE WARRANTIES OF DESIGN, MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE. Trolltech reserves all rights not granted
+** herein.
+**
+*********************************************************************</comment>
+  <exportmacro></exportmacro>
+  <class>FormSettingsBase</class>
+  <widget class="QDialog" name="FormSettingsBase">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>597</width>
+        <height>458</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Form Settings</string>
+    </property>
+    <property name="sizeGripEnabled">
+      <bool>true</bool>
+    </property>
+    <property name="whatsThis" stdset="0">
+      <string>&lt;b&gt;Form Settings&lt;/b&gt;&lt;p&gt;Change settings for the form. Settings like &lt;b&gt;Comment&lt;/b&gt; and &lt;b&gt;Author&lt;/b&gt; are for your own use and are not required.&lt;/p&gt;</string>
+    </property>
+    <layout class="QGridLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item row="1" column="0">
+        <widget class="Q3ButtonGroup" name="ButtonGroup1">
+          <property name="title">
+            <string>Pixmaps</string>
+          </property>
+          <layout class="QGridLayout">
+            <property name="margin">
+              <number>11</number>
+            </property>
+            <property name="spacing">
+              <number>6</number>
+            </property>
+            <item row="0" column="0">
+              <widget class="QRadioButton" name="radioPixmapInline">
+                <property name="text">
+                  <string>Save In&amp;line</string>
+                </property>
+                <property name="checked">
+                  <bool>true</bool>
+                </property>
+                <property name="toolTip" stdset="0">
+                  <string>Save pixmaps in the .ui files</string>
+                </property>
+                <property name="whatsThis" stdset="0">
+                  <string>&lt;b&gt;Save Inline&lt;/b&gt;&lt;p&gt;Saves the pixmaps as binary data in the .ui files. Pixmaps saved like this are not shared between forms. We recommend using Project image files instead.</string>
+                </property>
+              </widget>
+            </item>
+            <item row="2" column="0">
+              <widget class="QRadioButton" name="radioProjectImageFile">
+                <property name="text">
+                  <string>Project &amp;Imagefile</string>
+                </property>
+                <property name="toolTip" stdset="0">
+                  <string>Use the Project's Image file for pixmaps</string>
+                </property>
+                <property name="whatsThis" stdset="0">
+                  <string>&lt;b&gt;Use the Project's Image file for pixmaps&lt;/b&gt;
+&lt;p&gt;Each project may have a collection of pixmaps. If you use a project, we recommend that you use this option since it shares the images and is the fastest and most efficient way to use pixmaps in your forms.&lt;/p&gt;</string>
+                </property>
+              </widget>
+            </item>
+            <item row="1" column="1">
+              <widget class="QLineEdit" name="editPixmapFunction">
+                <property name="enabled">
+                  <bool>false</bool>
+                </property>
+                <property name="toolTip" stdset="0">
+                  <string>Specify Pixmap-Loader function (only the function's name, no parentheses!)</string>
+                </property>
+                <property name="whatsThis" stdset="0">
+                  <string>&lt;b&gt;Specify Pixmap-Loader function&lt;/b&gt;&lt;p&gt;Specify the function which should be used for loading a pixmap in the generated code. &lt;em&gt;Only enter the function's name, with no parentheses.&lt;/em&gt;</string>
+                </property>
+              </widget>
+            </item>
+            <item row="1" column="0">
+              <widget class="QRadioButton" name="radioPixmapFunction">
+                <property name="text">
+                  <string>Use &amp;Function:</string>
+                </property>
+                <property name="toolTip" stdset="0">
+                  <string>Use the given function for pixmaps</string>
+                </property>
+                <property name="whatsThis" stdset="0">
+                  <string>&lt;b&gt;Use a given function for pixmaps&lt;/b&gt;&lt;p&gt;If you choose this option you must define a function in the line edit at the right which will be used in the generated code for loading pixmaps. When choosing a pixmap in &lt;i&gt;Qt Designer&lt;/i&gt; you will be asked to specify the arguments which will be passed to the function in the generated code.&lt;p&gt; This approach makes it possible to use your own icon-loader function for loading pixmaps.  &lt;i&gt;Qt Designer&lt;/i&gt; can't preview the correct image if you use your own function.</string>
+                </property>
+              </widget>
+            </item>
+          </layout>
+        </widget>
+      </item>
+      <item row="0" column="0" rowspan="1" colspan="2">
+        <widget class="Q3GroupBox" name="GroupBox1">
+          <property name="frameShape">
+            <enum>Q3GroupBox::Box</enum>
+          </property>
+          <property name="frameShadow">
+            <enum>Q3GroupBox::Sunken</enum>
+          </property>
+          <property name="title">
+            <string>Settings</string>
+          </property>
+          <layout class="QGridLayout">
+            <property name="margin">
+              <number>11</number>
+            </property>
+            <property name="spacing">
+              <number>6</number>
+            </property>
+            <item row="0" column="1">
+              <widget class="QLineEdit" name="editClassName">
+                <property name="toolTip" stdset="0">
+                  <string>Change class name</string>
+                </property>
+                <property name="whatsThis" stdset="0">
+                  <string>&lt;b&gt;Enter the name of the class that will be created.&lt;/b&gt;&lt;p&gt;&lt;em&gt;classname.h&lt;/em&gt; and &lt;em&gt;classname.cpp&lt;/em&gt; will be generated as C++ output when it is compiled by uic.&lt;/p&gt;</string>
+                </property>
+              </widget>
+            </item>
+            <item row="3" column="0">
+              <widget class="QLabel" name="TextLabel1_2">
+                <property name="text">
+                  <string>A&amp;uthor:</string>
+                </property>
+                <property name="buddy" stdset="0">
+                  <cstring>editAuthor</cstring>
+                </property>
+                <property name="wordWrap">
+                  <bool>false</bool>
+                </property>
+              </widget>
+            </item>
+            <item row="3" column="1">
+              <widget class="QLineEdit" name="editAuthor">
+                <property name="toolTip" stdset="0">
+                  <string>Enter your name</string>
+                </property>
+                <property name="whatsThis" stdset="0">
+                  <string>Enter your name.</string>
+                </property>
+              </widget>
+            </item>
+            <item row="0" column="0">
+              <widget class="QLabel" name="TextLabel1">
+                <property name="text">
+                  <string>Class &amp;Name:</string>
+                </property>
+                <property name="buddy" stdset="0">
+                  <cstring>editClassName</cstring>
+                </property>
+                <property name="wordWrap">
+                  <bool>false</bool>
+                </property>
+              </widget>
+            </item>
+            <item row="1" column="0">
+              <widget class="QLabel" name="TextLabel2">
+                <property name="text">
+                  <string>Co&amp;mment:</string>
+                </property>
+                <property name="buddy" stdset="0">
+                  <cstring>editComment</cstring>
+                </property>
+                <property name="wordWrap">
+                  <bool>false</bool>
+                </property>
+              </widget>
+            </item>
+            <item row="1" column="1" rowspan="2" colspan="1">
+              <widget class="Q3MultiLineEdit" name="editComment">
+                <property name="whatsThis" stdset="0">
+                  <string>Enter a comment about the form.</string>
+                </property>
+              </widget>
+            </item>
+            <item row="2" column="0">
+              <spacer name="Spacer1">
+                <property name="sizeHint">
+                  <size>
+                    <width>0</width>
+                    <height>0</height>
+                  </size>
+                </property>
+                <property name="sizeType">
+                  <enum>QSizePolicy::Expanding</enum>
+                </property>
+                <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                </property>
+              </spacer>
+            </item>
+          </layout>
+        </widget>
+      </item>
+      <item row="1" column="1">
+        <widget class="Q3GroupBox" name="GroupBox2">
+          <property name="title">
+            <string>La&amp;youts</string>
+          </property>
+          <layout class="QGridLayout">
+            <property name="margin">
+              <number>11</number>
+            </property>
+            <property name="spacing">
+              <number>6</number>
+            </property>
+            <item row="0" column="2">
+              <widget class="QSpinBox" name="spinMargin">
+                <property name="value">
+                  <number>11</number>
+                </property>
+              </widget>
+            </item>
+            <item row="0" column="3">
+              <spacer name="Spacer3">
+                <property name="sizeHint">
+                  <size>
+                    <width>0</width>
+                    <height>0</height>
+                  </size>
+                </property>
+                <property name="sizeType">
+                  <enum>QSizePolicy::Expanding</enum>
+                </property>
+                <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                </property>
+              </spacer>
+            </item>
+            <item row="1" column="0" rowspan="1" colspan="2">
+              <widget class="QLabel" name="TextLabel2_2">
+                <property name="text">
+                  <string>D&amp;efault Spacing:</string>
+                </property>
+                <property name="buddy" stdset="0">
+                  <cstring>spinSpacing</cstring>
+                </property>
+                <property name="wordWrap">
+                  <bool>false</bool>
+                </property>
+              </widget>
+            </item>
+            <item row="2" column="0" rowspan="1" colspan="2">
+              <widget class="QCheckBox" name="checkLayoutFunctions">
+                <property name="text">
+                  <string>Use Func&amp;tions:</string>
+                </property>
+                <property name="toolTip" stdset="0">
+                  <string>Use functions to get the margin and spacing</string>
+                </property>
+                <property name="whatsThis" stdset="0">
+                  <string>&lt;b&gt;Use a given function for margin and/or spacing&lt;/b&gt;&lt;p&gt;If you choose this option you must define functions in the line edit below which will be used in the generated code for getting the margin and spacing value. &lt;i&gt;Qt Designer&lt;/i&gt; can't preview the correct margin or spacing if you use your own function. Instead, the default values will be used for preview.</string>
+                </property>
+              </widget>
+            </item>
+            <item row="1" column="2">
+              <widget class="QSpinBox" name="spinSpacing">
+                <property name="value">
+                  <number>6</number>
+                </property>
+              </widget>
+            </item>
+            <item row="1" column="3">
+              <spacer name="Spacer4">
+                <property name="sizeHint">
+                  <size>
+                    <width>0</width>
+                    <height>0</height>
+                  </size>
+                </property>
+                <property name="sizeType">
+                  <enum>QSizePolicy::Expanding</enum>
+                </property>
+                <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                </property>
+              </spacer>
+            </item>
+            <item row="0" column="0" rowspan="1" colspan="2">
+              <widget class="QLabel" name="TextLabel1_3">
+                <property name="text">
+                  <string>Default Mar&amp;gin:</string>
+                </property>
+                <property name="buddy" stdset="0">
+                  <cstring>spinMargin</cstring>
+                </property>
+                <property name="wordWrap">
+                  <bool>false</bool>
+                </property>
+              </widget>
+            </item>
+            <item row="4" column="0">
+              <widget class="QLabel" name="spaFuLabel">
+                <property name="enabled">
+                  <bool>false</bool>
+                </property>
+                <property name="text">
+                  <string>S&amp;pacing:</string>
+                </property>
+                <property name="buddy" stdset="0">
+                  <cstring>editSpacingFunction</cstring>
+                </property>
+                <property name="wordWrap">
+                  <bool>false</bool>
+                </property>
+              </widget>
+            </item>
+            <item row="3" column="0">
+              <widget class="QLabel" name="marFuLabel">
+                <property name="enabled">
+                  <bool>false</bool>
+                </property>
+                <property name="sizePolicy">
+                  <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>5</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+                <property name="text">
+                  <string>Ma&amp;rgin:</string>
+                </property>
+                <property name="buddy" stdset="0">
+                  <cstring>editMarginFunction</cstring>
+                </property>
+                <property name="wordWrap">
+                  <bool>false</bool>
+                </property>
+              </widget>
+            </item>
+            <item row="2" column="2" rowspan="1" colspan="2">
+              <spacer name="Spacer5">
+                <property name="sizeHint">
+                  <size>
+                    <width>0</width>
+                    <height>0</height>
+                  </size>
+                </property>
+                <property name="sizeType">
+                  <enum>QSizePolicy::Expanding</enum>
+                </property>
+                <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                </property>
+              </spacer>
+            </item>
+            <item row="4" column="1" rowspan="1" colspan="3">
+              <widget class="QLineEdit" name="editSpacingFunction">
+                <property name="enabled">
+                  <bool>false</bool>
+                </property>
+                <property name="toolTip" stdset="0">
+                  <string>Specify spacing function (only the function's name, no parentheses!)</string>
+                </property>
+                <property name="whatsThis" stdset="0">
+                  <string>&lt;b&gt;Specify spacing function&lt;/b&gt;&lt;p&gt;Specify the function which should be used for getting the spacing in the generated code. &lt;em&gt;Only enter the function's name, with no parentheses.&lt;/em&gt;</string>
+                </property>
+              </widget>
+            </item>
+            <item row="3" column="1" rowspan="1" colspan="3">
+              <widget class="QLineEdit" name="editMarginFunction">
+                <property name="enabled">
+                  <bool>false</bool>
+                </property>
+                <property name="sizePolicy">
+                  <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+                <property name="toolTip" stdset="0">
+                  <string>Specify margin function (only the function's name, no parentheses!)</string>
+                </property>
+                <property name="whatsThis" stdset="0">
+                  <string>&lt;b&gt;Specify margin function&lt;/b&gt;&lt;p&gt;Specify the function which should be used for getting the margin in the generated code. &lt;em&gt;Only enter the function's name, with no parentheses.&lt;/em&gt;</string>
+                </property>
+              </widget>
+            </item>
+          </layout>
+        </widget>
+      </item>
+      <item row="2" column="0" rowspan="1" colspan="2">
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <widget class="QPushButton" name="buttonHelp">
+              <property name="text">
+                <string>&amp;Help</string>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <spacer name="Horizontal Spacing2">
+              <property name="sizeHint">
+                <size>
+                  <width>0</width>
+                  <height>0</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonOk">
+              <property name="text">
+                <string>&amp;OK</string>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+              <property name="default">
+                <bool>true</bool>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>Close the dialog and apply all the changes.</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonCancel">
+              <property name="text">
+                <string>&amp;Cancel</string>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>Close the dialog and discard any changes.</string>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <tabstops>
+    <tabstop>editClassName</tabstop>
+    <tabstop>editComment</tabstop>
+    <tabstop>editAuthor</tabstop>
+    <tabstop>radioPixmapInline</tabstop>
+    <tabstop>radioPixmapFunction</tabstop>
+    <tabstop>editPixmapFunction</tabstop>
+    <tabstop>radioProjectImageFile</tabstop>
+    <tabstop>spinMargin</tabstop>
+    <tabstop>spinSpacing</tabstop>
+    <tabstop>checkLayoutFunctions</tabstop>
+    <tabstop>editMarginFunction</tabstop>
+    <tabstop>editSpacingFunction</tabstop>
+    <tabstop>buttonOk</tabstop>
+    <tabstop>buttonCancel</tabstop>
+    <tabstop>buttonHelp</tabstop>
+  </tabstops>
+  <connections>
+    <connection>
+      <sender>buttonCancel</sender>
+      <signal>clicked()</signal>
+      <receiver>FormSettingsBase</receiver>
+      <slot>reject()</slot>
+    </connection>
+    <connection>
+      <sender>buttonOk</sender>
+      <signal>clicked()</signal>
+      <receiver>FormSettingsBase</receiver>
+      <slot>okClicked()</slot>
+    </connection>
+    <connection>
+      <sender>radioPixmapFunction</sender>
+      <signal>toggled(bool)</signal>
+      <receiver>editPixmapFunction</receiver>
+      <slot>setEnabled(bool)</slot>
+    </connection>
+    <connection>
+      <sender>checkLayoutFunctions</sender>
+      <signal>toggled(bool)</signal>
+      <receiver>editSpacingFunction</receiver>
+      <slot>setEnabled(bool)</slot>
+    </connection>
+    <connection>
+      <sender>checkLayoutFunctions</sender>
+      <signal>toggled(bool)</signal>
+      <receiver>editMarginFunction</receiver>
+      <slot>setEnabled(bool)</slot>
+    </connection>
+    <connection>
+      <sender>checkLayoutFunctions</sender>
+      <signal>toggled(bool)</signal>
+      <receiver>marFuLabel</receiver>
+      <slot>setEnabled(bool)</slot>
+    </connection>
+    <connection>
+      <sender>checkLayoutFunctions</sender>
+      <signal>toggled(bool)</signal>
+      <receiver>spaFuLabel</receiver>
+      <slot>setEnabled(bool)</slot>
+    </connection>
+  </connections>
+</ui>

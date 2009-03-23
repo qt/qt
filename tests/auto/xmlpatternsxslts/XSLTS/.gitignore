@@ -1,0 +1,8 @@
+ExpectedTestResults/
+TestInputs/
+TestSuiteStagingArea/
+XSLTS_1_1_0.zip
+cat/
+catalog.xml
+catalog.xsd
+catalogResolved.xml

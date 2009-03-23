@@ -1,0 +1,85 @@
+<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
+<class>Form1</class>
+<include location="global" impldecl="in implementation">qdatetime.h</include>
+<variable>QListViewItem *item;</variable>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>Form1</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>281</width>
+            <height>455</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Form1</string>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>11</number>
+        </property>
+        <property name="spacing">
+            <number>6</number>
+        </property>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>number</cstring>
+            </property>
+        </widget>
+        <widget class="QListView">
+            <column>
+                <property name="text">
+                    <string>Column 1</string>
+                </property>
+                <property name="clickable">
+                    <bool>true</bool>
+                </property>
+                <property name="resizeable">
+                    <bool>true</bool>
+                </property>
+            </column>
+            <property name="name">
+                <cstring>listview</cstring>
+            </property>
+        </widget>
+    </vbox>
+</widget>
+<connections>
+    <connection>
+        <sender>number</sender>
+        <signal>returnPressed()</signal>
+        <receiver>Form1</receiver>
+        <slot>doInsert()</slot>
+    </connection>
+    <slot access="protected" language="C++" returnType="void">init()</slot>
+    <slot access="protected" language="C++" returnType="void">destroy()</slot>
+    <slot access="public" language="C++" returnType="void">doInsert()</slot>
+</connections>
+<functions>
+    <function name="init()" >{
+    qDebug( "here" );
+    item = 0;
+}</function>
+    <function name="destroy()" >{
+
+}</function>
+    <function name="doInsert()" >{  
+    item = new QListViewItem( listview, "Hallo" ); 
+    item-&gt;setOpen( TRUE );
+    listview-&gt;clear();  
+    int num = number-&gt;text().toInt();  
+    QTime t;
+    t.start();
+    qDebug( "start" );
+    for ( int i = 0; i &lt; num; ++i )  
+	(void)new QListViewItem( listview, "Item " );  
+    qDebug( "end items: %d took %d msec", num, t.elapsed() );
+}</function>
+</functions>
+</UI>

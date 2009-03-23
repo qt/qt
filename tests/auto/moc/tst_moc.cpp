@@ -1,0 +1,1205 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the test suite of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+
+
+#include <QtTest/QtTest>
+#include <stdio.h>
+#include <qobject.h>
+
+#include "using-namespaces.h"
+#include "assign-namespace.h"
+#include "no-keywords.h"
+#include "single_function_keyword.h"
+#include "backslash-newlines.h"
+#include "slots-with-void-template.h"
+#include "pure-virtual-signals.h"
+#include "qinvokable.h"
+// msvc and friends crap out on it
+#if !defined(Q_CC_GNU) || defined(Q_OS_IRIX) || defined(Q_OS_WIN)
+#define SKIP_NEWLINE_TEST
+#endif
+#if !defined(SKIP_NEWLINE_TEST)
+#include "os9-newlines.h"
+// msvc and friends crap out on this file too,
+// it seems to contain Mac 9 EOLs, and not windows EOLs.
+#include "win-newlines.h"
+#endif
+#include "escapes-in-string-literals.h"
+#include "cstyle-enums.h"
+
+
+#if defined(PARSE_BOOST)
+#include "parse-boost.h"
+#endif
+
+// No such thing as "long long" in Microsoft's compiler 13.0 and before
+#if defined Q_CC_MSVC && _MSC_VER <= 1310
+#  define NOLONGLONG
+#endif
+
+QT_USE_NAMESPACE
+
+struct MyStruct {};
+struct MyStruct2 {};
+
+struct SuperClass {};
+
+// Try to avoid inserting for instance a comment with a quote between the following line and the Q_OBJECT
+// That will make the test give a false positive.
+const char* test_multiple_number_of_escapes =   "\\\"";
+namespace MyNamespace
+{
+    class TestSuperClass : public QObject
+    {
+        Q_OBJECT
+        public:
+            inline TestSuperClass() {}
+    };
+}
+
+namespace String
+{
+    typedef QString Type;
+}
+
+namespace Int
+{
+    typedef int Type;
+}
+
+typedef struct {
+    int doNotConfuseMoc;
+} OldStyleCStruct;
+
+class Sender : public QObject
+{
+    Q_OBJECT
+
+public:
+    void sendValue(const String::Type& value)
+    {
+        emit send(value);
+    }
+    void sendValue(const Int::Type& value)
+    {
+        emit send(value);
+    }
+
+signals:
+    void send(const String::Type&);
+    void send(const Int::Type&);
+};
+
+class Receiver : public QObject
+{
+    Q_OBJECT
+public:
+    Receiver() : stringCallCount(0), intCallCount(0) {}
+
+    int stringCallCount;
+    int intCallCount;
+
+public slots:
+    void receive(const String::Type&) { stringCallCount++; }
+    void receive(const Int::Type&)    { intCallCount++; }
+};
+
+#define MACRO_WITH_POSSIBLE_COMPILER_SPECIFIC_ATTRIBUTES
+
+#define DONT_CONFUSE_MOC(klass) klass
+#define DONT_CONFUSE_MOC_EVEN_MORE(klass, dummy, dummy2) klass
+
+Q_DECLARE_METATYPE(MyStruct)
+Q_DECLARE_METATYPE(MyStruct*)
+
+#if QT_VERSION >= 0x040200
+namespace myNS {
+    struct Points
+    {
+        Points() : p1(0xBEEF), p2(0xBABE) { }
+        int p1, p2;
+    };
+}
+
+Q_DECLARE_METATYPE(myNS::Points)
+#endif
+
+class TestClassinfoWithEscapes: public QObject
+{
+    Q_OBJECT
+    Q_CLASSINFO("escaped", "\"bar\"")
+    Q_CLASSINFO("\"escaped\"", "foo")
+public slots:
+    void slotWithAReallyLongName(int)
+    { }
+};
+
+struct ForwardDeclaredStruct;
+
+struct StructQObject : public QObject
+{
+    Q_OBJECT
+public:
+    void foo(struct ForwardDeclaredStruct *);
+};
+
+void StructQObject::foo(struct ForwardDeclaredStruct *)
+{
+    struct Inner {
+        bool field;
+    };
+
+    struct Inner unusedVariable;
+}
+
+class TestClass : public MyNamespace::TestSuperClass, public DONT_CONFUSE_MOC(MyStruct),
+                  public DONT_CONFUSE_MOC_EVEN_MORE(MyStruct2, dummy, ignored)
+{
+    Q_OBJECT
+#if QT_VERSION >= 0x040101
+    Q_CLASSINFO("help", QT_TR_NOOP("Opening this will let you configure something"))
+#endif
+#if QT_VERSION >= 0x040102
+    Q_PROPERTY(short int shortIntProperty READ shortIntProperty)
+    Q_PROPERTY(unsigned short int unsignedShortIntProperty READ unsignedShortIntProperty)
+    Q_PROPERTY(signed short int signedShortIntProperty READ signedShortIntProperty)
+    Q_PROPERTY(long int longIntProperty READ longIntProperty)
+    Q_PROPERTY(unsigned long int unsignedLongIntProperty READ unsignedLongIntProperty)
+    Q_PROPERTY(signed long int signedLongIntProperty READ signedLongIntProperty)
+    Q_PROPERTY(long double longDoubleProperty READ longDoubleProperty)
+#endif
+#if QT_VERSION >= 0x040200
+    Q_PROPERTY(myNS::Points points READ points WRITE setPoints)
+#endif
+
+    Q_CLASSINFO("Multi"
+                "line",
+                ""
+                "This is a "
+                "multiline Q_CLASSINFO"
+                "")
+
+    // a really really long string that we have to cut into pieces in the generated stringdata
+    // table, otherwise msvc craps out
+    Q_CLASSINFO("D-Bus Introspection", ""
+"  <interface name=\"org.kde.KCookieServer\" >\n"
+"    <method name=\"findCookies\" >\n"
+"      <arg direction=\"in\" type=\"s\" name=\"url\" />\n"
+"      <arg direction=\"in\" type=\"x\" name=\"windowId\" />\n"
+"      <arg direction=\"out\" type=\"s\" name=\"cookies\" />\n"
+"    </method>\n"
+"    <method name=\"findDomains\" >\n"
+"      <arg direction=\"out\" type=\"as\" name=\"domains\" />\n"
+"    </method>\n"
+"    <method name=\"findCookies\" >\n"
+"      <arg direction=\"in\" type=\"ai\" name=\"fields\" />\n"
+"      <arg direction=\"in\" type=\"s\" name=\"domain\" />\n"
+"      <arg direction=\"in\" type=\"s\" name=\"fqdn\" />\n"
+"      <arg direction=\"in\" type=\"s\" name=\"path\" />\n"
+"      <arg direction=\"in\" type=\"s\" name=\"name\" />\n"
+"      <arg direction=\"out\" type=\"as\" name=\"cookies\" />\n"
+"      <annotation value=\"QList&lt;int>\" name=\"com.trolltech.QtDBus.QtTypeName.In0\" />\n"
+"    </method>\n"
+"    <method name=\"findDOMCookies\" >\n"
+"      <arg direction=\"in\" type=\"s\" name=\"url\" />\n"
+"      <arg direction=\"in\" type=\"x\" name=\"windowId\" />\n"
+"      <arg direction=\"out\" type=\"s\" name=\"cookies\" />\n"
+"    </method>\n"
+"    <method name=\"addCookies\" >\n"
+"      <arg direction=\"in\" type=\"s\" name=\"url\" />\n"
+"      <arg direction=\"in\" type=\"ay\" name=\"cookieHeader\" />\n"
+"      <arg direction=\"in\" type=\"x\" name=\"windowId\"  />\n"
+"    </method>\n"
+"    <method name=\"deleteCookie\" >\n"
+"      <arg direction=\"in\" type=\"s\" name=\"domain\" />\n"
+"      <arg direction=\"in\" type=\"s\" name=\"fqdn\" />\n"
+"      <arg direction=\"in\" type=\"s\" name=\"path\" />\n"
+"      <arg direction=\"in\" type=\"s\" name=\"name\" />\n"
+"    </method>\n"
+"    <method name=\"deleteCookiesFromDomain\" >\n"
+"      <arg direction=\"in\" type=\"s\" name=\"domain\" />\n"
+"    </method>\n"
+"    <method name=\"deleteSessionCookies\" >\n"
+"      <arg direction=\"in\" type=\"x\" name=\"windowId\" />\n"
+"    </method>\n"
+"    <method name=\"deleteSessionCookiesFor\" >\n"
+"      <arg direction=\"in\" type=\"s\" name=\"fqdn\" />\n"
+"      <arg direction=\"in\" type=\"x\" name=\"windowId\" />\n"
+"    </method>\n"
+"    <method name=\"deleteAllCookies\" />\n"
+"    <method name=\"addDOMCookies\" >\n"
+"      <arg direction=\"in\" type=\"s\" name=\"url\" />\n"
+"      <arg direction=\"in\" type=\"ay\" name=\"cookieHeader\" />\n"
+"      <arg direction=\"in\" type=\"x\" name=\"windowId\" />\n"
+"    </method>\n"
+"    <method name=\"setDomainAdvice\" >\n"
+"      <arg direction=\"in\" type=\"s\" name=\"url\" />\n"
+"      <arg direction=\"in\" type=\"s\" name=\"advice\" />\n"
+"    </method>\n"
+"    <method name=\"getDomainAdvice\" >\n"
+"      <arg direction=\"in\" type=\"s\" name=\"url\" />\n"
+"      <arg direction=\"out\" type=\"s\" name=\"advice\" />\n"
+"    </method>\n"
+"    <method name=\"reloadPolicy\" />\n"
+"    <method name=\"shutdown\" />\n"
+"  </interface>\n"
+        "")
+
+public:
+    inline TestClass() {}
+
+private slots:
+    inline void dummy1() MACRO_WITH_POSSIBLE_COMPILER_SPECIFIC_ATTRIBUTES {}
+    inline void dummy2() MACRO_WITH_POSSIBLE_COMPILER_SPECIFIC_ATTRIBUTES const {}
+    inline void dummy3() const MACRO_WITH_POSSIBLE_COMPILER_SPECIFIC_ATTRIBUTES {}
+
+#ifndef NOLONGLONG
+    void slotWithULongLong(unsigned long long) {}
+#if QT_VERSION >= 0x040101
+    void slotWithULongLongP(unsigned long long*) {}
+#endif
+    void slotWithULong(unsigned long) {}
+    void slotWithLongLong(long long) {}
+    void slotWithLong(long) {}
+#endif
+
+    void slotWithColonColonType(::Int::Type) {}
+
+#if QT_VERSION >= 0x040101
+    TestClass &slotWithReferenceReturnType() { return *this; }
+#endif
+
+#if (0 && 1) || 1
+    void expressionEvaluationShortcut1() {}
+#endif
+#if (1 || 0) && 0
+#else
+    void expressionEvaluationShortcut2() {}
+#endif
+
+public slots:
+    void slotWithArray(const double[3]) {}
+    void slotWithNamedArray(const double namedArray[3]) {}
+    void slotWithMultiArray(const double[3][4]) {}
+
+#if QT_VERSION >= 0x040102
+    short int shortIntProperty() { return 0; }
+    unsigned short int unsignedShortIntProperty() { return 0; }
+    signed short int signedShortIntProperty() { return 0; }
+    long int longIntProperty() { return 0; }
+    unsigned long int unsignedLongIntProperty() { return 0; }
+    signed long int signedLongIntProperty() { return 0; }
+    long double longDoubleProperty() { return 0.0; }
+#endif
+
+#if QT_VERSION >= 0x040200
+    myNS::Points points() { return m_points; }
+    void setPoints(myNS::Points points) { m_points = points; }
+#endif
+
+signals:
+    void signalWithArray(const double[3]);
+    void signalWithNamedArray(const double namedArray[3]);
+
+private slots:
+    // for tst_Moc::preprocessorConditionals
+#if 0
+    void invalidSlot() {}
+#else
+    void slotInElse() {}
+#endif
+
+#if 1
+    void slotInIf() {}
+#else
+    void invalidSlot() {}
+#endif
+
+#if 0
+    void invalidSlot() {}
+#elif 0
+#else
+    void slotInLastElse() {}
+#endif
+
+#if 0
+    void invalidSlot() {}
+#elif 1
+    void slotInElif() {}
+#else
+    void invalidSlot() {}
+#endif
+
+
+    friend class Receiver; // task #85783
+signals:
+    friend class Sender; // task #85783
+
+public slots:
+    void const slotWithSillyConst() {}
+
+public:
+    Q_INVOKABLE void const slotWithSillyConst2() {}
+
+    // that one however should be fine
+public slots:
+    void slotWithVoidStar(void *) {}
+
+#if QT_VERSION >= 0x040200
+private:
+     myNS::Points m_points;
+#endif
+
+private slots:
+     inline virtual void blub1() {}
+     virtual inline void blub2() {}
+};
+
+class PropertyTestClass : public QObject
+{
+    Q_OBJECT
+public:
+
+    enum TestEnum { One, Two, Three };
+
+    Q_ENUMS(TestEnum)
+};
+
+class PropertyUseClass : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(PropertyTestClass::TestEnum foo READ foo)
+public:
+
+    inline PropertyTestClass::TestEnum foo() const { return PropertyTestClass::One; }
+};
+
+#if defined(Q_MOC_RUN)
+// Task #119503
+#define _TASK_119503
+#if !_TASK_119503
+#endif
+#endif
+
+static QString srcify(const char *path)
+{
+#ifndef Q_OS_IRIX
+    return QString(SRCDIR) + QLatin1Char('/') + QLatin1String(path);
+#else
+    return QString(QLatin1String(path));
+#endif
+}
+
+class CtorTestClass : public QObject
+{
+    Q_OBJECT
+public:
+    Q_INVOKABLE CtorTestClass(QObject *parent = 0);
+
+    CtorTestClass(int foo);
+
+    inline Q_INVOKABLE CtorTestClass(const QString &str)
+        { m_str = str; }
+
+    QString m_str;
+
+protected:
+    CtorTestClass(int foo, int bar, int baz);
+private:
+    CtorTestClass(float, float) {}
+};
+
+CtorTestClass::CtorTestClass(QObject *parent)
+    : QObject(parent) {}
+
+CtorTestClass::CtorTestClass(int, int, int) {}
+
+
+class tst_Moc : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(bool user1 READ user1 USER true )
+    Q_PROPERTY(bool user2 READ user2 USER false)
+    Q_PROPERTY(bool user3 READ user3 USER userFunction())
+
+public:
+    inline tst_Moc() {}
+
+private slots:
+    void slotWithException() throw(MyStruct);
+    void dontStripNamespaces();
+    void oldStyleCasts();
+    void warnOnExtraSignalSlotQualifiaction();
+    void uLongLong();
+    void inputFileNameWithDotsButNoExtension();
+    void userProperties();
+    void supportConstSignals();
+    void task87883();
+    void multilineComments();
+    void classinfoWithEscapes();
+    void trNoopInClassInfo();
+    void ppExpressionEvaluation();
+    void arrayArguments();
+    void preprocessorConditionals();
+    void blackslashNewlines();
+    void slotWithSillyConst();
+    void testExtraData();
+    void namespaceTypeProperty();
+    void slotsWithVoidTemplate();
+    void structQObject();
+    void namespacedFlags();
+    void warnOnMultipleInheritance();
+    void forgottenQInterface();
+    void os9Newline();
+    void winNewline();
+    void escapesInStringLiterals();
+    void frameworkSearchPath();
+    void cstyleEnums();
+    void defineMacroViaCmdline();
+    void invokable();
+    void singleFunctionKeywordSignalAndSlot();
+    void templateGtGt();
+    void qprivateslots();
+    void inlineSlotsWithThrowDeclaration();
+    void warnOnPropertyWithoutREAD();
+    void constructors();
+    void typenameWithUnsigned();
+
+signals:
+    void sigWithUnsignedArg(unsigned foo);
+    void sigWithSignedArg(signed foo);
+    void sigWithConstSignedArg(const signed foo);
+    void sigWithVolatileConstSignedArg(volatile const signed foo);
+    void sigWithCustomType(const MyStruct);
+    void constSignal1() const;
+    void constSignal2(int arg) const;
+
+private:
+    bool user1() { return true; };
+    bool user2() { return false; };
+    bool user3() { return false; };
+    bool userFunction(){ return false; };
+};
+
+void tst_Moc::slotWithException() throw(MyStruct)
+{
+    // be happy
+    QVERIFY(true);
+}
+
+void tst_Moc::dontStripNamespaces()
+{
+    Sender sender;
+    Receiver receiver;
+
+    connect(&sender, SIGNAL(send(const String::Type &)),
+            &receiver, SLOT(receive(const String::Type &)));
+    connect(&sender, SIGNAL(send(const Int::Type &)),
+            &receiver, SLOT(receive(const Int::Type &)));
+
+    sender.sendValue(String::Type("Hello"));
+    QCOMPARE(receiver.stringCallCount, 1);
+    QCOMPARE(receiver.intCallCount, 0);
+    sender.sendValue(Int::Type(42));
+    QCOMPARE(receiver.stringCallCount, 1);
+    QCOMPARE(receiver.intCallCount, 1);
+}
+
+
+void tst_Moc::oldStyleCasts()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled", SkipAll);
+#endif
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
+    QVERIFY(!qgetenv("QTDIR").isNull());
+
+    QProcess proc;
+    proc.start("moc", QStringList(srcify("/oldstyle-casts.h")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 0);
+    QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(!mocOut.isEmpty());
+    QCOMPARE(proc.readAllStandardError(), QByteArray());
+
+    QStringList args;
+    args << "-c" << "-x" << "c++" << "-Wold-style-cast" << "-I" << "."
+         << "-I" << qgetenv("QTDIR") + "/include" << "-o" << "/dev/null" << "-";
+    proc.start("gcc", args);
+    QVERIFY(proc.waitForStarted());
+    proc.write(mocOut);
+    proc.closeWriteChannel();
+
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 0);
+    QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardError()), QString());
+#else
+    QSKIP("Only tested on linux/gcc", SkipAll);
+#endif
+}
+
+void tst_Moc::warnOnExtraSignalSlotQualifiaction()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled", SkipAll);
+#endif
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
+    QVERIFY(!qgetenv("QTDIR").isNull());
+
+    QProcess proc;
+    proc.start("moc", QStringList(srcify("extraqualification.h")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 0);
+    QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(!mocOut.isEmpty());
+    QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
+    QCOMPARE(mocWarning, QString(SRCDIR) +
+                QString("/extraqualification.h:53: Warning: Function declaration Test::badFunctionDeclaration contains extra qualification. Ignoring as signal or slot.\n") +
+                QString(SRCDIR) + QString("/extraqualification.h:56: Warning: parsemaybe: Function declaration Test::anotherOne contains extra qualification. Ignoring as signal or slot.\n"));
+#else
+    QSKIP("Only tested on linux/gcc", SkipAll);
+#endif
+}
+
+void tst_Moc::uLongLong()
+{
+#ifndef NOLONGLONG
+    TestClass tst;
+    const QMetaObject *mobj = tst.metaObject();
+    int idx = mobj->indexOfSlot("slotWithULong(ulong)");
+    QVERIFY(idx != -1);
+    idx = mobj->indexOfSlot("slotWithULongLong(unsigned long long)");
+    QVERIFY(idx != -1);
+#if QT_VERSION >= 0x040101
+    idx = mobj->indexOfSlot("slotWithULongLongP(unsigned long long*)");
+    QVERIFY(idx != -1);
+#endif
+
+    idx = mobj->indexOfSlot("slotWithLong(long)");
+    QVERIFY(idx != -1);
+    idx = mobj->indexOfSlot("slotWithLongLong(long long)");
+    QVERIFY(idx != -1);
+#else
+    QSKIP("long long doesn't work on MSVC6 & .NET 2002, also skipped on 2003 due to compiler version issue with moc", SkipAll);
+#endif
+}
+
+void tst_Moc::inputFileNameWithDotsButNoExtension()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled", SkipAll);
+#endif
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
+    QVERIFY(!qgetenv("QTDIR").isNull());
+
+    QProcess proc;
+    proc.setWorkingDirectory(QString(SRCDIR) + "/task71021");
+    proc.start("moc", QStringList("../Header"));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 0);
+    QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(!mocOut.isEmpty());
+    QCOMPARE(proc.readAllStandardError(), QByteArray());
+
+    QStringList args;
+    args << "-c" << "-x" << "c++" << "-I" << ".."
+         << "-I" << qgetenv("QTDIR") + "/include" << "-o" << "/dev/null" << "-";
+    proc.start("gcc", args);
+    QVERIFY(proc.waitForStarted());
+    proc.write(mocOut);
+    proc.closeWriteChannel();
+
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardError()), QString());
+    QCOMPARE(proc.exitCode(), 0);
+#else
+    QSKIP("Only tested on linux/gcc", SkipAll);
+#endif
+}
+
+void tst_Moc::userProperties()
+{
+    const QMetaObject *mobj = metaObject();
+    QMetaProperty property = mobj->property(mobj->indexOfProperty("user1"));
+    QVERIFY(property.isValid());
+    QVERIFY(property.isUser());
+
+    property = mobj->property(mobj->indexOfProperty("user2"));
+    QVERIFY(property.isValid());
+    QVERIFY(!property.isUser());
+
+    property = mobj->property(mobj->indexOfProperty("user3"));
+    QVERIFY(property.isValid());
+    QVERIFY(!property.isUser(this));
+}
+
+void tst_Moc::supportConstSignals()
+{
+    QSignalSpy spy1(this, SIGNAL(constSignal1()));
+    QVERIFY(spy1.isEmpty());
+    emit constSignal1();
+    QCOMPARE(spy1.count(), 1);
+
+    QSignalSpy spy2(this, SIGNAL(constSignal2(int)));
+    QVERIFY(spy2.isEmpty());
+    emit constSignal2(42);
+    QCOMPARE(spy2.count(), 1);
+    QCOMPARE(spy2.at(0).at(0).toInt(), 42);
+}
+
+#include "task87883.h"
+
+void tst_Moc::task87883()
+{
+#if QT_VERSION >= 0x040101
+    QVERIFY(Task87883::staticMetaObject.className());
+#else
+    QSKIP("Fixed in >= 4.1.1", SkipAll);
+#endif
+}
+
+#include "c-comments.h"
+
+void tst_Moc::multilineComments()
+{
+#if QT_VERSION >= 0x040101
+    QVERIFY(IfdefedClass::staticMetaObject.className());
+#else
+    QSKIP("Fixed in >= 4.1.1", SkipAll);
+#endif
+}
+
+void tst_Moc::classinfoWithEscapes()
+{
+    const QMetaObject *mobj = &TestClassinfoWithEscapes::staticMetaObject;
+    QCOMPARE(mobj->methodCount() - mobj->methodOffset(), 1);
+
+    QMetaMethod mm = mobj->method(mobj->methodOffset());
+    QCOMPARE(mm.signature(), "slotWithAReallyLongName(int)");
+}
+
+void tst_Moc::trNoopInClassInfo()
+{
+    TestClass t;
+    const QMetaObject *mobj = t.metaObject();
+    QVERIFY(mobj);
+    QCOMPARE(mobj->classInfoCount(), 3);
+    QCOMPARE(mobj->indexOfClassInfo("help"), 0);
+    QCOMPARE(QString(mobj->classInfo(0).value()), QString("Opening this will let you configure something"));
+}
+
+void tst_Moc::ppExpressionEvaluation()
+{
+    TestClass tst;
+    const QMetaObject *mobj = tst.metaObject();
+    int idx = mobj->indexOfSlot("expressionEvaluationShortcut1()");
+    QVERIFY(idx != -1);
+
+    idx = mobj->indexOfSlot("expressionEvaluationShortcut2()");
+    QVERIFY(idx != -1);
+}
+
+void tst_Moc::arrayArguments()
+{
+    TestClass tst;
+    const QMetaObject *mobj = tst.metaObject();
+    QVERIFY(mobj->indexOfSlot("slotWithArray(const double[3])") != -1);
+    QVERIFY(mobj->indexOfSlot("slotWithNamedArray(const double[3])") != -1);
+    QVERIFY(mobj->indexOfSlot("slotWithMultiArray(const double[3][4])") != -1);
+    QVERIFY(mobj->indexOfSignal("signalWithArray(const double[3])") != -1);
+    QVERIFY(mobj->indexOfSignal("signalWithNamedArray(const double[3])") != -1);
+}
+
+void tst_Moc::preprocessorConditionals()
+{
+    TestClass tst;
+    const QMetaObject *mobj = tst.metaObject();
+    QVERIFY(mobj->indexOfSlot("slotInElse()") != -1);
+    QVERIFY(mobj->indexOfSlot("slotInIf()") != -1);
+    QVERIFY(mobj->indexOfSlot("slotInLastElse()") != -1);
+    QVERIFY(mobj->indexOfSlot("slotInElif()") != -1);
+}
+
+void tst_Moc::blackslashNewlines()
+{
+    BackslashNewlines tst;
+    const QMetaObject *mobj = tst.metaObject();
+    QVERIFY(mobj->indexOfSlot("works()") != -1);
+    QVERIFY(mobj->indexOfSlot("buggy()") == -1);
+}
+
+void tst_Moc::slotWithSillyConst()
+{
+    TestClass tst;
+    const QMetaObject *mobj = tst.metaObject();
+    QVERIFY(mobj->indexOfSlot("slotWithSillyConst()") != -1);
+    QVERIFY(mobj->indexOfMethod("slotWithSillyConst2()") != -1);
+    QVERIFY(mobj->indexOfSlot("slotWithVoidStar(void*)") != -1);
+}
+
+void tst_Moc::testExtraData()
+{
+    const QMetaObject *mobj = &PropertyTestClass::staticMetaObject;
+    QCOMPARE(mobj->enumeratorCount(), 1);
+    QCOMPARE(QByteArray(mobj->enumerator(0).name()), QByteArray("TestEnum"));
+
+    mobj = &PropertyUseClass::staticMetaObject;
+    const int idx = mobj->indexOfProperty("foo");
+    QVERIFY(idx != -1);
+    const QMetaProperty prop = mobj->property(idx);
+    QVERIFY(prop.isValid());
+    QVERIFY(prop.isEnumType());
+    const QMetaEnum en = prop.enumerator();
+    QCOMPARE(QByteArray(en.name()), QByteArray("TestEnum"));
+}
+
+void tst_Moc::namespaceTypeProperty()
+{
+    qRegisterMetaType<myNS::Points>("myNS::Points");
+    TestClass tst;
+    QByteArray ba = QByteArray("points");
+    QVariant v = tst.property(ba);
+    QVERIFY(v.isValid());
+    myNS::Points p = qVariantValue<myNS::Points>(v);
+    QCOMPARE(p.p1, 0xBEEF);
+    QCOMPARE(p.p2, 0xBABE);
+    p.p1 = 0xCAFE;
+    p.p2 = 0x1EE7;
+    QVERIFY(tst.setProperty(ba, qVariantFromValue(p)));
+    myNS::Points pp = qVariantValue<myNS::Points>(tst.property(ba));
+    QCOMPARE(p.p1, pp.p1);
+    QCOMPARE(p.p2, pp.p2);
+}
+
+void tst_Moc::slotsWithVoidTemplate()
+{
+    SlotsWithVoidTemplateTest test;
+    QVERIFY(QObject::connect(&test, SIGNAL(myVoidSignal(void)),
+                             &test, SLOT(dummySlot(void))));
+    QVERIFY(QObject::connect(&test, SIGNAL(mySignal(const TestTemplate<void> &)),
+                             &test, SLOT(anotherSlot(const TestTemplate<void> &))));
+}
+
+void tst_Moc::structQObject()
+{
+    StructQObject o;
+    QCOMPARE(QByteArray(o.metaObject()->className()), QByteArray("StructQObject"));
+}
+
+#include "namespaced-flags.h"
+
+void tst_Moc::namespacedFlags()
+{
+    Foo::Baz baz;
+    Foo::Bar bar;
+
+    bar.setFlags(Foo::Bar::Read | Foo::Bar::Write);
+    QVERIFY(baz.flags() != bar.flags());
+
+    const QVariant v = bar.property("flags");
+    QVERIFY(v.isValid());
+    QVERIFY(baz.setProperty("flags", v));
+    QVERIFY(baz.flags() == bar.flags());
+}
+
+void tst_Moc::warnOnMultipleInheritance()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled", SkipAll);
+#endif
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
+    QVERIFY(!qgetenv("QTDIR").isNull());
+
+    QProcess proc;
+    proc.start("moc", QStringList(srcify("warn-on-multiple-qobject-subclasses.h")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 0);
+    QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(!mocOut.isEmpty());
+    QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
+    QCOMPARE(mocWarning, QString(SRCDIR) +
+                QString("/warn-on-multiple-qobject-subclasses.h:53: Warning: Class Bar inherits from two QObject subclasses QWidget and Foo. This is not supported!\n"));
+#else
+    QSKIP("Only tested on linux/gcc", SkipAll);
+#endif
+}
+
+void tst_Moc::forgottenQInterface()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled", SkipAll);
+#endif
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
+    QVERIFY(!qgetenv("QTDIR").isNull());
+
+    QProcess proc;
+    proc.start("moc", QStringList(srcify("forgotten-qinterface.h")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 0);
+    QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(!mocOut.isEmpty());
+    QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
+    QCOMPARE(mocWarning, QString(SRCDIR) +
+                QString("/forgotten-qinterface.h:53: Warning: Class Test implements the interface MyInterface but does not list it in Q_INTERFACES. qobject_cast to MyInterface will not work!\n"));
+#else
+    QSKIP("Only tested on linux/gcc", SkipAll);
+#endif
+}
+
+void tst_Moc::os9Newline()
+{
+#if !defined(SKIP_NEWLINE_TEST)
+    const QMetaObject &mo = Os9Newlines::staticMetaObject;
+    QVERIFY(mo.indexOfSlot("testSlot()") != -1);
+    QFile f(srcify("os9-newlines.h"));
+    QVERIFY(f.open(QIODevice::ReadOnly)); // no QIODevice::Text!
+    QByteArray data = f.readAll();
+    f.close();
+    QVERIFY(!data.contains('\n'));
+    QVERIFY(data.contains('\r'));
+#endif
+}
+
+void tst_Moc::winNewline()
+{
+#if !defined(SKIP_NEWLINE_TEST)
+    const QMetaObject &mo = WinNewlines::staticMetaObject;
+    QVERIFY(mo.indexOfSlot("testSlot()") != -1);
+    QFile f(srcify("win-newlines.h"));
+    QVERIFY(f.open(QIODevice::ReadOnly)); // no QIODevice::Text!
+    QByteArray data = f.readAll();
+    f.close();
+    for (int i = 0; i < data.count(); ++i) {
+        if (data.at(i) == QLatin1Char('\r')) {
+            QVERIFY(i < data.count() - 1);
+            ++i;
+            QVERIFY(data.at(i) == '\n');
+        } else {
+            QVERIFY(data.at(i) != '\n');
+        }
+    }
+#endif
+}
+
+void tst_Moc::escapesInStringLiterals()
+{
+    const QMetaObject &mo = StringLiterals::staticMetaObject;
+    QCOMPARE(mo.classInfoCount(), 3);
+
+    int idx = mo.indexOfClassInfo("Test");
+    QVERIFY(idx != -1);
+    QMetaClassInfo info = mo.classInfo(idx);
+    QCOMPARE(QByteArray(info.value()),
+             QByteArray("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\x53"));
+
+    QVERIFY(idx != -1);
+    idx = mo.indexOfClassInfo("Test2");
+    info = mo.classInfo(idx);
+    QCOMPARE(QByteArray(info.value()),
+             QByteArray("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\123"));
+
+    QVERIFY(idx != -1);
+    idx = mo.indexOfClassInfo("Test3");
+    info = mo.classInfo(idx);
+    QCOMPARE(QByteArray(info.value()),
+             QByteArray("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nb"));
+}
+
+void tst_Moc::frameworkSearchPath()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled", SkipAll);
+#endif
+#if defined(Q_OS_UNIX)
+    QVERIFY(!qgetenv("QTDIR").isNull());
+
+    QStringList args;
+    args << "-F" << srcify(".")
+         << srcify("interface-from-framework.h")
+         ;
+
+    QProcess proc;
+    proc.start("moc", args);
+    bool finished = proc.waitForFinished();
+    if (!finished)
+        qWarning("waitForFinished failed. QProcess error: %d", (int)proc.error());
+    QVERIFY(finished);
+    if (proc.exitCode() != 0) {
+        qDebug() << proc.readAllStandardError();
+    }
+    QCOMPARE(proc.exitCode(), 0);
+    QCOMPARE(proc.readAllStandardError(), QByteArray());
+#else
+    QSKIP("Only tested/relevant on unixy platforms", SkipAll);
+#endif
+}
+
+void tst_Moc::cstyleEnums()
+{
+    const QMetaObject &obj = CStyleEnums::staticMetaObject;
+    QCOMPARE(obj.enumeratorCount(), 1);
+    QMetaEnum metaEnum = obj.enumerator(0);
+    QCOMPARE(metaEnum.name(), "Baz");
+    QCOMPARE(metaEnum.keyCount(), 2);
+    QCOMPARE(metaEnum.key(0), "Foo");
+    QCOMPARE(metaEnum.key(1), "Bar");
+}
+
+void tst_Moc::templateGtGt()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled", SkipAll);
+#endif
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
+    QVERIFY(!qgetenv("QTDIR").isNull());
+
+    QProcess proc;
+    proc.start("moc", QStringList(srcify("template-gtgt.h")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 0);
+    QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(!mocOut.isEmpty());
+    QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
+    QVERIFY(mocWarning.isEmpty());
+#else
+    QSKIP("Only tested on linux/gcc", SkipAll);
+#endif
+}
+
+void tst_Moc::defineMacroViaCmdline()
+{
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
+    QVERIFY(!qgetenv("QTDIR").isNull());
+
+    QProcess proc;
+
+    QStringList args;
+    args << "-DFOO";
+    args << srcify("macro-on-cmdline.h");
+
+    proc.start("moc", args);
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 0);
+    QCOMPARE(proc.readAllStandardError(), QByteArray());
+    QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(!mocOut.isEmpty());
+#else
+    QSKIP("Only tested on linux/gcc", SkipAll);
+#endif
+}
+
+void tst_Moc::invokable()
+{
+    {
+        const QMetaObject &mobj = InvokableBeforeReturnType::staticMetaObject;
+        QCOMPARE(mobj.methodCount(), 5);
+        QVERIFY(mobj.method(4).signature() == QByteArray("foo()"));
+    }
+
+    {
+        const QMetaObject &mobj = InvokableBeforeInline::staticMetaObject;
+        QCOMPARE(mobj.methodCount(), 6);
+        QVERIFY(mobj.method(4).signature() == QByteArray("foo()"));
+        QVERIFY(mobj.method(5).signature() == QByteArray("bar()"));
+    }
+}
+
+void tst_Moc::singleFunctionKeywordSignalAndSlot()
+{
+    {
+        const QMetaObject &mobj = SingleFunctionKeywordBeforeReturnType::staticMetaObject;
+        QCOMPARE(mobj.methodCount(), 6);
+        QVERIFY(mobj.method(4).signature() == QByteArray("mySignal()"));
+        QVERIFY(mobj.method(5).signature() == QByteArray("mySlot()"));
+    }
+
+    {
+        const QMetaObject &mobj = SingleFunctionKeywordBeforeInline::staticMetaObject;
+        QCOMPARE(mobj.methodCount(), 6);
+        QVERIFY(mobj.method(4).signature() == QByteArray("mySignal()"));
+        QVERIFY(mobj.method(5).signature() == QByteArray("mySlot()"));
+    }
+
+    {
+        const QMetaObject &mobj = SingleFunctionKeywordAfterInline::staticMetaObject;
+        QCOMPARE(mobj.methodCount(), 6);
+        QVERIFY(mobj.method(4).signature() == QByteArray("mySignal()"));
+        QVERIFY(mobj.method(5).signature() == QByteArray("mySlot()"));
+    }
+}
+
+#include "qprivateslots.h"
+
+void tst_Moc::qprivateslots()
+{
+    TestQPrivateSlots tst;
+    const QMetaObject *mobj = tst.metaObject();
+    QVERIFY(mobj->indexOfSlot("_q_privateslot()") != -1);
+    QVERIFY(mobj->indexOfMethod("method1()") != -1); //tast204730
+}
+
+#include "task189996.h"
+
+void InlineSlotsWithThrowDeclaration::c() throw() {}
+
+void tst_Moc::inlineSlotsWithThrowDeclaration()
+{
+    InlineSlotsWithThrowDeclaration tst;
+    const QMetaObject *mobj = tst.metaObject();
+    QVERIFY(mobj->indexOfSlot("a()") != -1);
+    QVERIFY(mobj->indexOfSlot("b()") != -1);
+    QVERIFY(mobj->indexOfSlot("c()") != -1);
+    QVERIFY(mobj->indexOfSlot("d()") != -1);
+    QVERIFY(mobj->indexOfSlot("e()") != -1);
+}
+
+void tst_Moc::warnOnPropertyWithoutREAD()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled", SkipAll);
+#endif
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
+    QVERIFY(!qgetenv("QTDIR").isNull());
+
+    QProcess proc;
+    proc.start("moc", QStringList(srcify("warn-on-property-without-read.h")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 0);
+    QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(!mocOut.isEmpty());
+    QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
+    QCOMPARE(mocWarning, QString(SRCDIR) +
+                QString("/warn-on-property-without-read.h:46: Warning: Property declaration foo has no READ accessor function. The property will be invalid.\n"));
+#else
+    QSKIP("Only tested on linux/gcc", SkipAll);
+#endif
+}
+
+void tst_Moc::constructors()
+{
+    const QMetaObject *mo = &CtorTestClass::staticMetaObject;
+    QCOMPARE(mo->constructorCount(), 3);
+    {
+        QMetaMethod mm = mo->constructor(0);
+        QCOMPARE(mm.access(), QMetaMethod::Public);
+        QCOMPARE(mm.methodType(), QMetaMethod::Constructor);
+        QCOMPARE(mm.signature(), "CtorTestClass(QObject*)");
+        QCOMPARE(mm.typeName(), "");
+        QList<QByteArray> paramNames = mm.parameterNames();
+        QCOMPARE(paramNames.size(), 1);
+        QCOMPARE(paramNames.at(0), QByteArray("parent"));
+        QList<QByteArray> paramTypes = mm.parameterTypes();
+        QCOMPARE(paramTypes.size(), 1);
+        QCOMPARE(paramTypes.at(0), QByteArray("QObject*"));
+    }
+    {
+        QMetaMethod mm = mo->constructor(1);
+        QCOMPARE(mm.access(), QMetaMethod::Public);
+        QCOMPARE(mm.methodType(), QMetaMethod::Constructor);
+        QCOMPARE(mm.signature(), "CtorTestClass()");
+        QCOMPARE(mm.typeName(), "");
+        QCOMPARE(mm.parameterNames().size(), 0);
+        QCOMPARE(mm.parameterTypes().size(), 0);
+    }
+    {
+        QMetaMethod mm = mo->constructor(2);
+        QCOMPARE(mm.access(), QMetaMethod::Public);
+        QCOMPARE(mm.methodType(), QMetaMethod::Constructor);
+        QCOMPARE(mm.signature(), "CtorTestClass(QString)");
+        QCOMPARE(mm.typeName(), "");
+        QList<QByteArray> paramNames = mm.parameterNames();
+        QCOMPARE(paramNames.size(), 1);
+        QCOMPARE(paramNames.at(0), QByteArray("str"));
+        QList<QByteArray> paramTypes = mm.parameterTypes();
+        QCOMPARE(paramTypes.size(), 1);
+        QCOMPARE(paramTypes.at(0), QByteArray("QString"));
+    }
+
+    QCOMPARE(mo->indexOfConstructor("CtorTestClass(QObject*)"), 0);
+    QCOMPARE(mo->indexOfConstructor("CtorTestClass()"), 1);
+    QCOMPARE(mo->indexOfConstructor("CtorTestClass(QString)"), 2);
+    QCOMPARE(mo->indexOfConstructor("CtorTestClass2(QObject*)"), -1);
+    QCOMPARE(mo->indexOfConstructor("CtorTestClass(float,float)"), -1);
+
+    QObject *o1 = mo->newInstance();
+    QVERIFY(o1 != 0);
+    QCOMPARE(o1->parent(), (QObject*)0);
+    QVERIFY(qobject_cast<CtorTestClass*>(o1) != 0);
+
+    QObject *o2 = mo->newInstance(Q_ARG(QObject*, o1));
+    QVERIFY(o2 != 0);
+    QCOMPARE(o2->parent(), o1);
+
+    QString str = QString::fromLatin1("hello");
+    QObject *o3 = mo->newInstance(Q_ARG(QString, str));
+    QVERIFY(o3 != 0);
+    QCOMPARE(qobject_cast<CtorTestClass*>(o3)->m_str, str);
+}
+
+#include "task234909.h"
+
+#include "task240368.h"
+
+void tst_Moc::typenameWithUnsigned()
+{
+    TypenameWithUnsigned tst;
+    const QMetaObject *mobj = tst.metaObject();
+    QVERIFY(mobj->indexOfSlot("a(uint)") != -1);
+    QVERIFY(mobj->indexOfSlot("b(uint)") != -1);
+    QVERIFY(mobj->indexOfSlot("c(uint*)") != -1);
+    QVERIFY(mobj->indexOfSlot("d(uint*)") != -1);
+    QVERIFY(mobj->indexOfSlot("e(uint&)") != -1);
+    QVERIFY(mobj->indexOfSlot("f(uint&)") != -1);
+    QVERIFY(mobj->indexOfSlot("g(unsigned1)") != -1);
+    QVERIFY(mobj->indexOfSlot("h(unsigned1)") != -1);
+    QVERIFY(mobj->indexOfSlot("i(uint,unsigned1)") != -1);
+    QVERIFY(mobj->indexOfSlot("j(unsigned1,uint)") != -1);
+    QVERIFY(mobj->indexOfSlot("k(unsignedQImage)") != -1);
+    QVERIFY(mobj->indexOfSlot("l(unsignedQImage)") != -1);
+}
+
+QTEST_MAIN(tst_Moc)
+#include "tst_moc.moc"
+
+
+

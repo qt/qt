@@ -1,0 +1,128 @@
+<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
+<class>ControlInfo</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>ControlInfo</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>600</width>
+            <height>480</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Control Details</string>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>11</number>
+        </property>
+        <property name="spacing">
+            <number>6</number>
+        </property>
+        <widget class="QListView">
+            <column>
+                <property name="text">
+                    <string>Item</string>
+                </property>
+                <property name="clickable">
+                    <bool>true</bool>
+                </property>
+                <property name="resizeable">
+                    <bool>true</bool>
+                </property>
+            </column>
+            <column>
+                <property name="text">
+                    <string>Value</string>
+                </property>
+                <property name="clickable">
+                    <bool>true</bool>
+                </property>
+                <property name="resizeable">
+                    <bool>true</bool>
+                </property>
+            </column>
+            <property name="name">
+                <cstring>listInfo</cstring>
+            </property>
+            <property name="dragAutoScroll">
+                <bool>false</bool>
+            </property>
+            <property name="selectionMode">
+                <enum>NoSelection</enum>
+            </property>
+            <property name="allColumnsShowFocus">
+                <bool>true</bool>
+            </property>
+            <property name="rootIsDecorated">
+                <bool>true</bool>
+            </property>
+            <property name="resizeMode">
+                <enum>AllColumns</enum>
+            </property>
+        </widget>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>Layout1</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>0</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <spacer>
+                    <property name="name">
+                        <cstring>Spacer1</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                </spacer>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>PushButton1</cstring>
+                    </property>
+                    <property name="text">
+                        <string>C&amp;lose</string>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+    </vbox>
+</widget>
+<connections>
+    <connection>
+        <sender>PushButton1</sender>
+        <signal>clicked()</signal>
+        <receiver>ControlInfo</receiver>
+        <slot>close()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="global" impldecl="in implementation">qmetaobject.h</include>
+    <include location="global" impldecl="in implementation">qaxwidget.h</include>
+    <include location="local" impldecl="in implementation">controlinfo.ui.h</include>
+</includes>
+<forwards>
+    <forward>class QAxWidget;</forward>
+</forwards>
+<slots>
+    <slot>setControl( QAxWidget * activex )</slot>
+</slots>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

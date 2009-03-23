@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>ChangeProperties</class>
+  <widget class="QDialog" name="ChangeProperties">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>728</width>
+        <height>584</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Change Control Properties</string>
+    </property>
+    <layout class="QVBoxLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item>
+        <widget class="QTabWidget" name="tabWidget">
+          <widget class="QWidget" name="tab">
+            <attribute name="title">
+              <string>&amp;Properties</string>
+            </attribute>
+            <layout class="QVBoxLayout">
+              <property name="margin">
+                <number>11</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item>
+                <widget class="Q3ListView" name="listProperties">
+                  <property name="allColumnsShowFocus">
+                    <bool>true</bool>
+                  </property>
+                  <property name="resizeMode">
+                    <enum>Q3ListView::AllColumns</enum>
+                  </property>
+                  <column>
+                    <property name="text">
+                      <string>Property</string>
+                    </property>
+                    <property name="clickable">
+                      <bool>false</bool>
+                    </property>
+                    <property name="resizeable">
+                      <bool>true</bool>
+                    </property>
+                  </column>
+                  <column>
+                    <property name="text">
+                      <string>Type</string>
+                    </property>
+                    <property name="clickable">
+                      <bool>false</bool>
+                    </property>
+                    <property name="resizeable">
+                      <bool>true</bool>
+                    </property>
+                  </column>
+                  <column>
+                    <property name="text">
+                      <string>Value</string>
+                    </property>
+                    <property name="clickable">
+                      <bool>false</bool>
+                    </property>
+                    <property name="resizeable">
+                      <bool>true</bool>
+                    </property>
+                  </column>
+                </widget>
+              </item>
+              <item>
+                <layout class="QHBoxLayout">
+                  <property name="margin">
+                    <number>0</number>
+                  </property>
+                  <property name="spacing">
+                    <number>6</number>
+                  </property>
+                  <item>
+                    <widget class="QLabel" name="valueLabel">
+                      <property name="text">
+                        <string>Property &amp;Value:</string>
+                      </property>
+                      <property name="buddy" stdset="0">
+                        <cstring>editValue</cstring>
+                      </property>
+                      <property name="wordWrap">
+                        <bool>false</bool>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QLineEdit" name="editValue"/>
+                  </item>
+                  <item>
+                    <widget class="QToolButton" name="buttonSet">
+                      <property name="text">
+                        <string>&amp;Set</string>
+                      </property>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="tab">
+            <attribute name="title">
+              <string>Property Edit &amp;Requests</string>
+            </attribute>
+            <layout class="QVBoxLayout">
+              <property name="margin">
+                <number>11</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item>
+                <widget class="Q3ListView" name="listEditRequests">
+                  <property name="resizeMode">
+                    <enum>Q3ListView::LastColumn</enum>
+                  </property>
+                  <column>
+                    <property name="text">
+                      <string>Property</string>
+                    </property>
+                    <property name="clickable">
+                      <bool>false</bool>
+                    </property>
+                    <property name="resizeable">
+                      <bool>false</bool>
+                    </property>
+                  </column>
+                </widget>
+              </item>
+            </layout>
+          </widget>
+        </widget>
+      </item>
+      <item>
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <spacer name="Spacer7">
+              <property name="sizeHint">
+                <size>
+                  <width>0</width>
+                  <height>0</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="PushButton7">
+              <property name="text">
+                <string>C&amp;lose</string>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>editValue</sender>
+      <signal>returnPressed()</signal>
+      <receiver>buttonSet</receiver>
+      <slot>animateClick()</slot>
+    </connection>
+    <connection>
+      <sender>buttonSet</sender>
+      <signal>clicked()</signal>
+      <receiver>ChangeProperties</receiver>
+      <slot>setValue()</slot>
+    </connection>
+    <connection>
+      <sender>listProperties</sender>
+      <signal>currentChanged(Q3ListViewItem*)</signal>
+      <receiver>ChangeProperties</receiver>
+      <slot>propertySelected(Q3ListViewItem*)</slot>
+    </connection>
+    <connection>
+      <sender>PushButton7</sender>
+      <signal>clicked()</signal>
+      <receiver>ChangeProperties</receiver>
+      <slot>close()</slot>
+    </connection>
+  </connections>
+</ui>

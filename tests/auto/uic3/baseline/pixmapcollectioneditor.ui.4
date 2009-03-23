@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment>*********************************************************************
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).  All rights reserved.
+**
+** This file is part of Qt Designer.
+**
+** This file may be used under the terms of the GNU General
+** Public License versions 2.0 or 3.0 as published by the Free
+** Software Foundation and appearing in the files LICENSE.GPL2
+** and LICENSE.GPL3 included in the packaging of this file.
+** Alternatively you may (at your option) use any later version
+** of the GNU General Public License if such license has been
+** publicly approved by Nokia Corporation and/or its subsidiary(-ies) (or its successors, if any)
+** and the KDE Free Qt Foundation.
+**
+** Please review the following information to ensure GNU General
+** Public Licensing requirements will be met:
+** http://trolltech.com/products/qt/licenses/licensing/opensource/.
+** If you are unsure which license is appropriate for your use, please
+** review the following information:
+** http://trolltech.com/products/qt/licenses/licensing/licensingoverview
+** or contact the sales department at sales@trolltech.com.
+**
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with
+** the Software.
+**
+** This file is provided &quot;AS IS&quot; with NO WARRANTY OF ANY KIND,
+** INCLUDING THE WARRANTIES OF DESIGN, MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE. Trolltech reserves all rights not granted
+** herein.
+**
+*********************************************************************</comment>
+  <exportmacro></exportmacro>
+  <class>PixmapCollectionEditor</class>
+  <widget class="QDialog" name="PixmapCollectionEditor">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>455</width>
+        <height>260</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Manage Image Collection</string>
+    </property>
+    <layout class="QVBoxLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item>
+        <widget class="Q3IconView" name="viewPixmaps">
+          <property name="resizeMode">
+            <enum>Q3IconView::Adjust</enum>
+          </property>
+          <property name="itemsMovable">
+            <bool>false</bool>
+          </property>
+        </widget>
+      </item>
+      <item>
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <widget class="QPushButton" name="PushButton2">
+              <property name="text">
+                <string>&amp;Add...</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="PushButton3">
+              <property name="text">
+                <string>&amp;Delete</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <spacer name="Spacer2">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonOk">
+              <property name="text">
+                <string>&amp;OK</string>
+              </property>
+              <property name="default">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonCancel">
+              <property name="text">
+                <string>&amp;Cancel</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonClose">
+              <property name="text">
+                <string>C&amp;lose</string>
+              </property>
+              <property name="default">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <tabstops>
+    <tabstop>PushButton2</tabstop>
+    <tabstop>PushButton3</tabstop>
+    <tabstop>viewPixmaps</tabstop>
+    <tabstop>buttonClose</tabstop>
+  </tabstops>
+  <includes>
+    <include location="global">qpixmap.h</include>
+  </includes>
+  <connections>
+    <connection>
+      <sender>PushButton2</sender>
+      <signal>clicked()</signal>
+      <receiver>PixmapCollectionEditor</receiver>
+      <slot>addPixmap()</slot>
+    </connection>
+    <connection>
+      <sender>PushButton3</sender>
+      <signal>clicked()</signal>
+      <receiver>PixmapCollectionEditor</receiver>
+      <slot>removePixmap()</slot>
+    </connection>
+    <connection>
+      <sender>viewPixmaps</sender>
+      <signal>currentChanged(Q3IconViewItem*)</signal>
+      <receiver>PixmapCollectionEditor</receiver>
+      <slot>currentChanged(Q3IconViewItem*)</slot>
+    </connection>
+    <connection>
+      <sender>buttonOk</sender>
+      <signal>clicked()</signal>
+      <receiver>PixmapCollectionEditor</receiver>
+      <slot>accept()</slot>
+    </connection>
+    <connection>
+      <sender>buttonCancel</sender>
+      <signal>clicked()</signal>
+      <receiver>PixmapCollectionEditor</receiver>
+      <slot>reject()</slot>
+    </connection>
+    <connection>
+      <sender>buttonClose</sender>
+      <signal>clicked()</signal>
+      <receiver>PixmapCollectionEditor</receiver>
+      <slot>accept()</slot>
+    </connection>
+  </connections>
+</ui>

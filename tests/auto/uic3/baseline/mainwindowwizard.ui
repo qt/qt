@@ -1,0 +1,757 @@
+<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
+<class>MainWindowWizardBase</class>
+<comment>*********************************************************************
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).  All rights reserved.
+**
+** This file is part of Qt Designer.
+**
+** This file may be used under the terms of the GNU General
+** Public License versions 2.0 or 3.0 as published by the Free
+** Software Foundation and appearing in the files LICENSE.GPL2
+** and LICENSE.GPL3 included in the packaging of this file.
+** Alternatively you may (at your option) use any later version
+** of the GNU General Public License if such license has been
+** publicly approved by Nokia Corporation and/or its subsidiary(-ies) (or its successors, if any)
+** and the KDE Free Qt Foundation.
+**
+** Please review the following information to ensure GNU General
+** Public Licensing requirements will be met:
+** http://trolltech.com/products/qt/licenses/licensing/opensource/.
+** If you are unsure which license is appropriate for your use, please
+** review the following information:
+** http://trolltech.com/products/qt/licenses/licensing/licensingoverview
+** or contact the sales department at sales@trolltech.com.
+**
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with
+** the Software.
+**
+** This file is provided "AS IS" with NO WARRANTY OF ANY KIND,
+** INCLUDING THE WARRANTIES OF DESIGN, MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE. Trolltech reserves all rights not granted
+** herein.
+**
+*********************************************************************</comment>
+<include location="global" impldecl="in implementation">designerinterface.h</include>
+<include location="global" impldecl="in implementation">qiconset.h</include>
+<include location="global" impldecl="in implementation">qaction.h</include>
+<include location="global" impldecl="in implementation">qpixmap.h</include>
+<include location="global" impldecl="in implementation">qdict.h</include>
+<include location="local" implDecl="in declaration">mainwindowwizard.ui.h</include>
+<forward>struct DesignerFormWindow;</forward>
+<forward>struct DesignerInterface;</forward>
+<forward>struct QUnknownInterface;</forward>
+<forward>class QWidget;</forward>
+<variable>QWidget *widget;</variable>
+<variable>DesignerInterface *dIface;</variable>
+<variable>DesignerFormWindow *dfw;</variable>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+<widget class="QWizard">
+    <property name="name">
+        <cstring>MainWindowWizardBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>604</width>
+            <height>392</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Main Window Wizard</string>
+    </property>
+    <property name="layoutMargin" stdset="0">
+    </property>
+    <widget class="QWidget">
+        <property name="name">
+            <cstring>menuToolbarPage</cstring>
+        </property>
+        <attribute name="title">
+            <string>Choose available menus and toolbars</string>
+        </attribute>
+        <grid>
+            <property name="name">
+                <cstring>unnamed</cstring>
+            </property>
+            <property name="margin">
+                <number>0</number>
+            </property>
+            <property name="spacing">
+                <number>6</number>
+            </property>
+            <spacer row="4" column="1">
+                <property name="name">
+                    <cstring>Spacer7</cstring>
+                </property>
+                <property name="orientation">
+                    <enum>Vertical</enum>
+                </property>
+                <property name="sizeType">
+                    <enum>Expanding</enum>
+                </property>
+                <property name="sizeHint">
+                    <size>
+                        <width>20</width>
+                        <height>20</height>
+                    </size>
+                </property>
+            </spacer>
+            <widget class="QLabel" row="0" column="0" rowspan="5" colspan="1">
+                <property name="name">
+                    <cstring>TextLabel4_2</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>0</hsizetype>
+                        <vsizetype>7</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+                <property name="pixmap">
+                    <pixmap>qtwizards_menu_1.png</pixmap>
+                </property>
+            </widget>
+            <widget class="QGroupBox" row="1" column="1">
+                <property name="name">
+                    <cstring>GroupBox1</cstring>
+                </property>
+                <property name="title">
+                    <string>File Actions</string>
+                </property>
+                <grid>
+                    <property name="name">
+                        <cstring>unnamed</cstring>
+                    </property>
+                    <property name="margin">
+                        <number>11</number>
+                    </property>
+                    <property name="spacing">
+                        <number>6</number>
+                    </property>
+                    <widget class="QCheckBox" row="1" column="0">
+                        <property name="name">
+                            <cstring>checkFileMenu</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Menu</string>
+                        </property>
+                        <property name="checked">
+                            <bool>true</bool>
+                        </property>
+                    </widget>
+                    <widget class="QCheckBox" row="1" column="1">
+                        <property name="name">
+                            <cstring>checkFileToolbar</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Toolbar</string>
+                        </property>
+                        <property name="checked">
+                            <bool>true</bool>
+                        </property>
+                    </widget>
+                    <spacer row="1" column="2">
+                        <property name="name">
+                            <cstring>Spacer4</cstring>
+                        </property>
+                        <property name="orientation">
+                            <enum>Horizontal</enum>
+                        </property>
+                        <property name="sizeType">
+                            <enum>Expanding</enum>
+                        </property>
+                        <property name="sizeHint">
+                            <size>
+                                <width>20</width>
+                                <height>20</height>
+                            </size>
+                        </property>
+                    </spacer>
+                    <widget class="QCheckBox" row="1" column="3">
+                        <property name="name">
+                            <cstring>checkCreateConnectionsFile</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Create Slots and Connections for the actions</string>
+                        </property>
+                        <property name="checked">
+                            <bool>true</bool>
+                        </property>
+                    </widget>
+                    <widget class="QLabel" row="0" column="0" rowspan="1" colspan="4">
+                        <property name="name">
+                            <cstring>TextLabel2</cstring>
+                        </property>
+                        <property name="text">
+                            <string>like New, Open File, Save, Print, etc.</string>
+                        </property>
+                    </widget>
+                </grid>
+            </widget>
+            <widget class="QGroupBox" row="2" column="1">
+                <property name="name">
+                    <cstring>GroupBox2</cstring>
+                </property>
+                <property name="title">
+                    <string>Edit Actions</string>
+                </property>
+                <grid>
+                    <property name="name">
+                        <cstring>unnamed</cstring>
+                    </property>
+                    <property name="margin">
+                        <number>11</number>
+                    </property>
+                    <property name="spacing">
+                        <number>6</number>
+                    </property>
+                    <widget class="QCheckBox" row="1" column="1">
+                        <property name="name">
+                            <cstring>checkEditToolbar</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Toolbar</string>
+                        </property>
+                        <property name="checked">
+                            <bool>true</bool>
+                        </property>
+                    </widget>
+                    <widget class="QCheckBox" row="1" column="0">
+                        <property name="name">
+                            <cstring>checkEditMenu</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Menu</string>
+                        </property>
+                        <property name="checked">
+                            <bool>true</bool>
+                        </property>
+                    </widget>
+                    <spacer row="1" column="2">
+                        <property name="name">
+                            <cstring>Spacer5</cstring>
+                        </property>
+                        <property name="orientation">
+                            <enum>Horizontal</enum>
+                        </property>
+                        <property name="sizeType">
+                            <enum>Expanding</enum>
+                        </property>
+                        <property name="sizeHint">
+                            <size>
+                                <width>20</width>
+                                <height>20</height>
+                            </size>
+                        </property>
+                    </spacer>
+                    <widget class="QCheckBox" row="1" column="3">
+                        <property name="name">
+                            <cstring>checkCreateConnectionsEdit</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Create Slots and Connections for the actions</string>
+                        </property>
+                        <property name="checked">
+                            <bool>true</bool>
+                        </property>
+                    </widget>
+                    <widget class="QLabel" row="0" column="0" rowspan="1" colspan="4">
+                        <property name="name">
+                            <cstring>TextLabel2_2</cstring>
+                        </property>
+                        <property name="sizePolicy">
+                            <sizepolicy>
+                                <hsizetype>3</hsizetype>
+                                <vsizetype>5</vsizetype>
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                            </sizepolicy>
+                        </property>
+                        <property name="text">
+                            <string>like Cut, Copy, Paste, Undo and Redo, etc.</string>
+                        </property>
+                    </widget>
+                </grid>
+            </widget>
+            <widget class="QGroupBox" row="3" column="1">
+                <property name="name">
+                    <cstring>GroupBox3</cstring>
+                </property>
+                <property name="title">
+                    <string>Help Actions</string>
+                </property>
+                <grid>
+                    <property name="name">
+                        <cstring>unnamed</cstring>
+                    </property>
+                    <property name="margin">
+                        <number>11</number>
+                    </property>
+                    <property name="spacing">
+                        <number>6</number>
+                    </property>
+                    <widget class="QLabel" row="0" column="0" rowspan="1" colspan="4">
+                        <property name="name">
+                            <cstring>TextLabel2_2_2</cstring>
+                        </property>
+                        <property name="sizePolicy">
+                            <sizepolicy>
+                                <hsizetype>3</hsizetype>
+                                <vsizetype>5</vsizetype>
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                            </sizepolicy>
+                        </property>
+                        <property name="text">
+                            <string>like Contents and About, etc.</string>
+                        </property>
+                    </widget>
+                    <widget class="QCheckBox" row="1" column="0">
+                        <property name="name">
+                            <cstring>checkHelpMenu</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Menu</string>
+                        </property>
+                        <property name="checked">
+                            <bool>true</bool>
+                        </property>
+                    </widget>
+                    <widget class="QCheckBox" row="1" column="1">
+                        <property name="name">
+                            <cstring>checkHelpToolbar</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Toolbar</string>
+                        </property>
+                        <property name="checked">
+                            <bool>true</bool>
+                        </property>
+                    </widget>
+                    <spacer row="1" column="2">
+                        <property name="name">
+                            <cstring>Spacer6</cstring>
+                        </property>
+                        <property name="orientation">
+                            <enum>Horizontal</enum>
+                        </property>
+                        <property name="sizeType">
+                            <enum>Expanding</enum>
+                        </property>
+                        <property name="sizeHint">
+                            <size>
+                                <width>20</width>
+                                <height>20</height>
+                            </size>
+                        </property>
+                    </spacer>
+                    <widget class="QCheckBox" row="1" column="3">
+                        <property name="name">
+                            <cstring>checkCreateConnectionsHelp</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Create Slots and Connections for the actions</string>
+                        </property>
+                        <property name="checked">
+                            <bool>true</bool>
+                        </property>
+                    </widget>
+                </grid>
+            </widget>
+        </grid>
+    </widget>
+    <widget class="QWidget">
+        <property name="name">
+            <cstring>toolbarsPage</cstring>
+        </property>
+        <attribute name="title">
+            <string>Setup Toolbar</string>
+        </attribute>
+        <grid>
+            <property name="name">
+                <cstring>unnamed</cstring>
+            </property>
+            <property name="margin">
+                <number>0</number>
+            </property>
+            <property name="spacing">
+                <number>6</number>
+            </property>
+            <widget class="QPushButton" row="7" column="2">
+                <property name="name">
+                    <cstring>buttonToolbarActionUp</cstring>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+                <property name="pixmap">
+                    <pixmap>designer_up.png</pixmap>
+                </property>
+            </widget>
+            <widget class="QLabel" row="2" column="3">
+                <property name="name">
+                    <cstring>TextLabel4_3_2</cstring>
+                </property>
+                <property name="text">
+                    <string>&amp;Toolbar</string>
+                </property>
+                <property name="buddy" stdset="0">
+                    <cstring>listToolbar</cstring>
+                </property>
+            </widget>
+            <widget class="QPushButton" row="8" column="2">
+                <property name="name">
+                    <cstring>buttonToolbarActionDown</cstring>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+                <property name="pixmap">
+                    <pixmap>designer_down.png</pixmap>
+                </property>
+            </widget>
+            <widget class="QListBox" row="3" column="1" rowspan="7" colspan="1">
+                <property name="name">
+                    <cstring>listToolbarActions</cstring>
+                </property>
+            </widget>
+            <widget class="QListBox" row="3" column="3" rowspan="7" colspan="1">
+                <property name="name">
+                    <cstring>listToolbar</cstring>
+                </property>
+            </widget>
+            <widget class="QLayoutWidget" row="1" column="1" rowspan="1" colspan="2">
+                <property name="name">
+                    <cstring>Layout20_2</cstring>
+                </property>
+                <hbox>
+                    <property name="name">
+                        <cstring>unnamed</cstring>
+                    </property>
+                    <property name="margin">
+                        <number>0</number>
+                    </property>
+                    <property name="spacing">
+                        <number>6</number>
+                    </property>
+                    <widget class="QLabel">
+                        <property name="name">
+                            <cstring>TextLabel5_2</cstring>
+                        </property>
+                        <property name="text">
+                            <string>&amp;Category</string>
+                        </property>
+                        <property name="buddy" stdset="0">
+                            <cstring>comboToolbar</cstring>
+                        </property>
+                    </widget>
+                    <widget class="QComboBox">
+                        <property name="name">
+                            <cstring>comboToolbar</cstring>
+                        </property>
+                        <property name="sizePolicy">
+                            <sizepolicy>
+                                <hsizetype>7</hsizetype>
+                                <vsizetype>0</vsizetype>
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                            </sizepolicy>
+                        </property>
+                    </widget>
+                </hbox>
+            </widget>
+            <widget class="QLabel" row="2" column="1">
+                <property name="name">
+                    <cstring>TextLabel4_4</cstring>
+                </property>
+                <property name="text">
+                    <string>&amp;Actions</string>
+                </property>
+                <property name="buddy" stdset="0">
+                    <cstring>listToolbarActions</cstring>
+                </property>
+            </widget>
+            <widget class="QPushButton" row="5" column="2">
+                <property name="name">
+                    <cstring>buttonToolbarRemoveAction</cstring>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+                <property name="pixmap">
+                    <pixmap>designer_left.png</pixmap>
+                </property>
+            </widget>
+            <widget class="QLabel" row="0" column="0" rowspan="10" colspan="1">
+                <property name="name">
+                    <cstring>TextLabel4_2_2_2</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>0</hsizetype>
+                        <vsizetype>7</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+                <property name="pixmap">
+                    <pixmap>qtwizards_menu_2.png</pixmap>
+                </property>
+            </widget>
+            <widget class="QPushButton" row="4" column="2">
+                <property name="name">
+                    <cstring>buttonToolbarAddAction</cstring>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+                <property name="pixmap">
+                    <pixmap>designer_right.png</pixmap>
+                </property>
+            </widget>
+            <spacer row="3" column="2">
+                <property name="name">
+                    <cstring>Spacer11</cstring>
+                </property>
+                <property name="orientation">
+                    <enum>Vertical</enum>
+                </property>
+                <property name="sizeType">
+                    <enum>Expanding</enum>
+                </property>
+                <property name="sizeHint">
+                    <size>
+                        <width>20</width>
+                        <height>20</height>
+                    </size>
+                </property>
+            </spacer>
+            <spacer row="6" column="2">
+                <property name="name">
+                    <cstring>Spacer12</cstring>
+                </property>
+                <property name="orientation">
+                    <enum>Vertical</enum>
+                </property>
+                <property name="sizeType">
+                    <enum>Expanding</enum>
+                </property>
+                <property name="sizeHint">
+                    <size>
+                        <width>20</width>
+                        <height>20</height>
+                    </size>
+                </property>
+            </spacer>
+            <spacer row="9" column="2">
+                <property name="name">
+                    <cstring>Spacer13</cstring>
+                </property>
+                <property name="orientation">
+                    <enum>Vertical</enum>
+                </property>
+                <property name="sizeType">
+                    <enum>Expanding</enum>
+                </property>
+                <property name="sizeHint">
+                    <size>
+                        <width>20</width>
+                        <height>20</height>
+                    </size>
+                </property>
+            </spacer>
+        </grid>
+    </widget>
+    <widget class="QWidget">
+        <property name="name">
+            <cstring>finishPage</cstring>
+        </property>
+        <attribute name="title">
+            <string>Finish</string>
+        </attribute>
+        <grid>
+            <property name="name">
+                <cstring>unnamed</cstring>
+            </property>
+            <property name="margin">
+                <number>0</number>
+            </property>
+            <property name="spacing">
+                <number>6</number>
+            </property>
+            <widget class="QLabel" row="0" column="0" rowspan="3" colspan="1">
+                <property name="name">
+                    <cstring>TextLabel4_2_2_2_2</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>0</hsizetype>
+                        <vsizetype>7</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+                <property name="pixmap">
+                    <pixmap>qtwizards_menu_3.png</pixmap>
+                </property>
+            </widget>
+            <widget class="QLabel" row="1" column="1">
+                <property name="name">
+                    <cstring>TextLabel1_5</cstring>
+                </property>
+                <property name="text">
+                    <string>Press Finish to populate the main window.</string>
+                </property>
+            </widget>
+            <spacer row="0" column="1">
+                <property name="name">
+                    <cstring>Spacer1</cstring>
+                </property>
+                <property name="orientation">
+                    <enum>Vertical</enum>
+                </property>
+                <property name="sizeType">
+                    <enum>Expanding</enum>
+                </property>
+                <property name="sizeHint">
+                    <size>
+                        <width>20</width>
+                        <height>20</height>
+                    </size>
+                </property>
+            </spacer>
+            <spacer row="2" column="1">
+                <property name="name">
+                    <cstring>Spacer1_2</cstring>
+                </property>
+                <property name="orientation">
+                    <enum>Vertical</enum>
+                </property>
+                <property name="sizeType">
+                    <enum>Expanding</enum>
+                </property>
+                <property name="sizeHint">
+                    <size>
+                        <width>20</width>
+                        <height>20</height>
+                    </size>
+                </property>
+            </spacer>
+        </grid>
+    </widget>
+</widget>
+<connections>
+    <connection language="C++">
+        <sender>comboToolbar</sender>
+        <signal>activated(const QString&amp;)</signal>
+        <receiver>MainWindowWizardBase</receiver>
+        <slot>currentToolbarChanged(const QString&amp;)</slot>
+    </connection>
+    <connection language="C++">
+        <sender>buttonToolbarAddAction</sender>
+        <signal>clicked()</signal>
+        <receiver>MainWindowWizardBase</receiver>
+        <slot>toolbarAddAction()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>buttonToolbarRemoveAction</sender>
+        <signal>clicked()</signal>
+        <receiver>MainWindowWizardBase</receiver>
+        <slot>toolbarRemoveAction()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>buttonToolbarActionUp</sender>
+        <signal>clicked()</signal>
+        <receiver>MainWindowWizardBase</receiver>
+        <slot>toolbarActionUp()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>buttonToolbarActionDown</sender>
+        <signal>clicked()</signal>
+        <receiver>MainWindowWizardBase</receiver>
+        <slot>toolbarActionDown()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>MainWindowWizardBase</sender>
+        <signal>selected(const QString&amp;)</signal>
+        <receiver>MainWindowWizardBase</receiver>
+        <slot>pageSelected(const QString&amp;)</slot>
+    </connection>
+    <connection language="C++">
+        <sender>checkHelpMenu</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>MainWindowWizardBase</receiver>
+        <slot>currentSettingChanged()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>checkHelpToolbar</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>MainWindowWizardBase</receiver>
+        <slot>currentSettingChanged()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>checkEditMenu</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>MainWindowWizardBase</receiver>
+        <slot>currentSettingChanged()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>checkEditToolbar</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>MainWindowWizardBase</receiver>
+        <slot>currentSettingChanged()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>checkFileMenu</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>MainWindowWizardBase</receiver>
+        <slot>currentSettingChanged()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>checkFileToolbar</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>MainWindowWizardBase</receiver>
+        <slot>currentSettingChanged()</slot>
+    </connection>
+    <slot access="protected" specifier="virtual" language="C++" returnType="void">init()</slot>
+    <slot access="protected" specifier="virtual" language="C++" returnType="void">destroy()</slot>
+    <slot access="protected" specifier="virtual" language="C++" returnType="void">currentSettingChanged()</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">setupToolbarPage()</slot>
+    <slot access="protected" specifier="virtual" language="C++" returnType="void">toolbarActionDown()</slot>
+    <slot access="protected" specifier="virtual" language="C++" returnType="void">toolbarActionUp()</slot>
+    <slot access="protected" specifier="virtual" language="C++" returnType="void">toolbarAddAction()</slot>
+    <slot access="protected" specifier="virtual" language="C++" returnType="void">toolbarRemoveAction()</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">accept()</slot>
+    <slot access="protected" specifier="virtual" language="C++" returnType="void">currentToolbarChanged( const QString &amp; s )</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">getPixmap( const QString &amp; n, QPixmap &amp; pix )</slot>
+    <slot access="protected" specifier="virtual" language="C++" returnType="void">pageSelected( const QString &amp; )</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">setAppInterface( QUnknownInterface * iface, DesignerFormWindow * fw, QWidget * w )</slot>
+</connections>
+<tabstops>
+    <tabstop>checkFileMenu</tabstop>
+    <tabstop>checkFileToolbar</tabstop>
+    <tabstop>checkEditMenu</tabstop>
+    <tabstop>checkEditToolbar</tabstop>
+    <tabstop>checkHelpMenu</tabstop>
+    <tabstop>checkHelpToolbar</tabstop>
+    <tabstop>comboToolbar</tabstop>
+    <tabstop>listToolbarActions</tabstop>
+    <tabstop>buttonToolbarAddAction</tabstop>
+    <tabstop>buttonToolbarRemoveAction</tabstop>
+    <tabstop>buttonToolbarActionUp</tabstop>
+    <tabstop>buttonToolbarActionDown</tabstop>
+    <tabstop>listToolbar</tabstop>
+</tabstops>
+</UI>

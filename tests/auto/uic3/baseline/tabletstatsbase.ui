@@ -1,0 +1,298 @@
+<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
+<class>TabletStatsBase</class>
+<layoutdefaults spacing="6" margin="11"/>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>TabletStatsBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>657</width>
+            <height>527</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Form1</string>
+    </property>
+    <hbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>11</number>
+        </property>
+        <property name="spacing">
+            <number>6</number>
+        </property>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>Layout7</cstring>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>0</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>Layout5</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <property name="margin">
+                            <number>0</number>
+                        </property>
+                        <property name="spacing">
+                            <number>6</number>
+                        </property>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>TextLabel1</cstring>
+                            </property>
+                            <property name="text">
+                                <string>X Pos:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>lblXPos</cstring>
+                            </property>
+                            <property name="text">
+                                <string>0</string>
+                            </property>
+                        </widget>
+                    </hbox>
+                </widget>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>Layout4</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <property name="margin">
+                            <number>0</number>
+                        </property>
+                        <property name="spacing">
+                            <number>6</number>
+                        </property>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>TextLabel3</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Y Pos:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>lblYPos</cstring>
+                            </property>
+                            <property name="text">
+                                <string>0</string>
+                            </property>
+                        </widget>
+                    </hbox>
+                </widget>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>Layout3</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <property name="margin">
+                            <number>0</number>
+                        </property>
+                        <property name="spacing">
+                            <number>6</number>
+                        </property>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>TextLabel5</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Pressure:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>lblPressure</cstring>
+                            </property>
+                            <property name="text">
+                                <string>0</string>
+                            </property>
+                        </widget>
+                    </hbox>
+                </widget>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>Layout2</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <property name="margin">
+                            <number>0</number>
+                        </property>
+                        <property name="spacing">
+                            <number>6</number>
+                        </property>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>TextLabel7</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Device:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>lblDev</cstring>
+                            </property>
+                            <property name="text">
+                                <string>0</string>
+                            </property>
+                        </widget>
+                    </hbox>
+                </widget>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>TextLabel9</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Tilt Information</string>
+                    </property>
+                    <property name="alignment">
+                        <set>AlignAuto|AlignCenter</set>
+                    </property>
+                </widget>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>Layout1</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <property name="margin">
+                            <number>0</number>
+                        </property>
+                        <property name="spacing">
+                            <number>6</number>
+                        </property>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>TextLabel10</cstring>
+                            </property>
+                            <property name="text">
+                                <string>X Tilt:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>lblXTilt</cstring>
+                            </property>
+                            <property name="text">
+                                <string>000</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>TextLabel12</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Y Tilt:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>lblYTilt</cstring>
+                            </property>
+                            <property name="text">
+                                <string>000</string>
+                            </property>
+                        </widget>
+                    </hbox>
+                </widget>
+                <widget class="MyOrientation">
+                    <property name="name">
+                        <cstring>orient</cstring>
+                    </property>
+                </widget>
+            </vbox>
+        </widget>
+        <widget class="StatsCanvas">
+            <property name="name">
+                <cstring>statCan</cstring>
+            </property>
+        </widget>
+    </hbox>
+</widget>
+<customwidgets>
+    <customwidget>
+        <class>MyOrientation</class>
+        <header location="local">tabletstats.h</header>
+        <sizehint>
+            <width>-1</width>
+            <height>-1</height>
+        </sizehint>
+        <container>0</container>
+        <sizepolicy>
+            <hordata>7</hordata>
+            <verdata>7</verdata>
+        </sizepolicy>
+        <pixmap>image0</pixmap>
+        <slot access="public" specifier="">slotNewOrient( int, int )</slot>
+        <slot access="public" specifier="">slotNewOrient( int, int )</slot>
+        <slot access="public" specifier="">slotNewOrient( int, int )</slot>
+        <slot access="public" specifier="">slotNewOrient( int, int )</slot>
+    </customwidget>
+    <customwidget>
+        <class>StatsCanvas</class>
+        <header location="local">tabletstats.h</header>
+        <sizehint>
+            <width>-1</width>
+            <height>-1</height>
+        </sizehint>
+        <container>0</container>
+        <sizepolicy>
+            <hordata>7</hordata>
+            <verdata>7</verdata>
+        </sizepolicy>
+        <pixmap>image1</pixmap>
+        <signal>signalNewPressure( int )</signal>
+        <signal>signalNewTilt( int, int )</signal>
+        <signal>signalNewDev( int )</signal>
+        <signal>signalNewLoc( int, int )</signal>
+    </customwidget>
+</customwidgets>
+<images>
+    <image name="image0">
+        <data format="XPM.GZ" length="45">789cd3d7528808f055d0d2e72a2e492cc94c5648ce482c52d04a29cdcdad8c8eb5ade6523250004143a55a6b2e0026630c4f</data>
+    </image>
+    <image name="image1">
+        <data format="XPM.GZ" length="4366">789c6dd7596fe3460c07f0f7fd14c1f26d51702dd9b22d147dc81de776eea4e80375f84a9cd3499c14fdeea5867f0e9a62e30ac6af43cd509c43de9f3f56ae8e0f567efcfcf6b290c5b45c2927f2bcf2a37a9dcf3ffefceb8fbfbf7d4fd395e6bf566725fdfedbb7efc3c54ab972f8705f37e09182d23c2d935670616eb7e032ba1f2c8ddb895bda7027cd1b1704f753bbff32385787761ab8db49889fc2a5c517e3688b7f70237e64eeb4103f89b6f8307e27f1785a8d0eedbc61ee74ac9d37e13e9e8fdcc8ffde8dfb2b18f9d269b0783bb1bb13fa970eece35fb8ad9d42ff599a65663e8f96f07c355ce17939dac6fb0c168fe71ccee1757716269f76e00ae3bf4687785ab811df327713f477e6467bbf7137f578b932c7f6398cfc64c38df84318f9ca96dbdaf934dac67f80f1fc5cbb31df9b6ed4ff39daea59997b09eeb7fcc4fb97118c78eebb91cf89bb6bf9df9b7b09c6aba3adbf0cce905fee467c0ae736bff2d4b8d7eea13ef402e7585f891bf7cfdca8e72eecf53888b6fd29e67e82f13ea3adff1337f65b096788ef455bfdd6828b5ede6b07afc215bc63ee27663987bd1ebde8d09f5cc0785e1ebaf1bc398cfd401f6eece7f03c7dcdbf57847881339b2fbe73a37d0fced1fe116df377067b3ddfcc79827caf61d4438edcd85f29ecf37beab6fee412f6e7b17cf579fba15ed481bd9e63b7b5f3ad394f10bf05fb7e9f9805f35d147066e71d8ddc187f1c6debe10e169cf7095cb7cc7d37de178f8df38ee7c3b3e8506f9ec019bc84bdde5d73cc671a6deba1070beab98cb6fa6fbb313f27708dfcc7e622b57c6923dace7fbbbfccf3bc13fc0257c8f7d98df6697419fabb300bd61f1dc219d6ff3a5c637db4cd458ae7a1687bde63379ea7057791ff73b43ddf0d2c989f81dbe285a3adfdc08df18730e697a2311eea53a27e1cce7be94862f5a002ceccb26a2e529c979bb0cfcf07ecfdcfdcd86f4bb38f276f6e9c0f5dd8ebb11f6df319f68368bdc5e6eb29dae66bcd5ca4c8770ad738ffdfdd589f73b38f4f68f7f165df8df558b9118ff14bd49b6ea22dfe18aeb1ff6a37ceb770be149d52701ebeb8edfd45b730eee7d48df3e63ddac6db71e37df5e8c6fbae6daebcde1d377eaf84f928aa52709e3ec035ced3cc1ce393681befd58df7d71adcc5ef917337ceb3eb689b9ff07ba5cc4ac1fcbec235f6ebc06df3cd8766bf5f166eaccf891bfbf718467df9c08de76b455bbe7b30d60b87f55056558dfecedc961f1d99eb14f5bb73e33c0feff34afbb7e7a347736cafa2edfec28df82bb88b7aecb9b15fc3fc54759d16b6fe6f616f5f8fb6faedba51cf1bd8f3bb8c0eed127e3fd45d374517557017f6f909f35beb5f9985f755380f46e1aff170d17c9858b8e052af5f7d571665f15cf388c73ce1a95e33befdcf35d6cf1dcff95eef7988f1053ff2133f6bdb23bff0825ff98ddf79c91ffcc9abbca6f1ebbcc1a5c5f3a6c66df136ef68ec8077798ff7f9800ff9888f79c8277cca677cce177cc914e245b378d69eaef89a6fb8c509a7dce60e67fadde51ef739e79c98886dbe463c25a1824aaaa8e62e8d684c139ad28c6e35be4b7734a77bbea007b6fa95daff95463fd2133dd30b2de8355c737aa3775aeae7833eb5ffd5d8ff8cd6689d53daa04d5ae8d8cdb5c543bdeb43a3b7b5971d8d1f205e347e97f6689f0e62df877444c7e18e916634a4133afdd2ff199d6befdef7055dd2155dd30db528d1fe979486fe3dff19559c501b7d7728a3aed634a11ef529d7e8a1e8f4ebf3c6fe799f8e859abe45a410ad141f4825b57aa4e32e65fc357f9968fb945e45ef945bb9d359c8b82d737d27dc37f973ef6bfef2a0f18ff224cff2220b79953779d7194bf45beb231ff2f925ff5b59d5b63559970ded719387b225dbb2d3cc70537f19c8ee97fcc7b227fb3a5b4f722087a8d1428ee438440fe5e47ff5bfe33539d53c97dc15963339970beac932cced50b319cba5e63f88fdcff954aee43acca55e7ae736226f349781b4249154dac8bf928eaeef73ad9dfe234fe772896b28039a484fa3fb92175c90ade7b05f3674fd9d86ab2e84ee8ae6af647de3ea22ae34ba2e463c8afb4b576a31b61d3a5cd02a3d84cf2a3c2826c5b4d9c3c5cce28b5931d3091f696547faff7ff5bdd9c468fffffcfeed5fd8c2e305</data>
+    </image>
+</images>
+<connections>
+    <connection language="C++">
+        <sender>statCan</sender>
+        <signal>signalNewPressure( int )</signal>
+        <receiver>lblPressure</receiver>
+        <slot>setNum(int)</slot>
+    </connection>
+</connections>
+</UI>

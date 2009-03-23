@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment>*********************************************************************
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).  All rights reserved.
+**
+** This file is part of Qt Designer.
+**
+** This file may be used under the terms of the GNU General
+** Public License versions 2.0 or 3.0 as published by the Free
+** Software Foundation and appearing in the files LICENSE.GPL2
+** and LICENSE.GPL3 included in the packaging of this file.
+** Alternatively you may (at your option) use any later version
+** of the GNU General Public License if such license has been
+** publicly approved by Nokia Corporation and/or its subsidiary(-ies) (or its successors, if any)
+** and the KDE Free Qt Foundation.
+**
+** Please review the following information to ensure GNU General
+** Public Licensing requirements will be met:
+** http://trolltech.com/products/qt/licenses/licensing/opensource/.
+** If you are unsure which license is appropriate for your use, please
+** review the following information:
+** http://trolltech.com/products/qt/licenses/licensing/licensingoverview
+** or contact the sales department at sales@trolltech.com.
+**
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with
+** the Software.
+**
+** This file is provided &quot;AS IS&quot; with NO WARRANTY OF ANY KIND,
+** INCLUDING THE WARRANTIES OF DESIGN, MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE. Trolltech reserves all rights not granted
+** herein.
+**
+*********************************************************************</comment>
+  <exportmacro></exportmacro>
+  <class>CreateTemplate</class>
+  <widget class="QDialog" name="CreateTemplate">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>347</width>
+        <height>248</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Create Template</string>
+    </property>
+    <property name="sizeGripEnabled">
+      <bool>true</bool>
+    </property>
+    <layout class="QGridLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item row="0" column="0">
+        <widget class="QLabel" name="TextLabel1">
+          <property name="text">
+            <string>Template &amp;Name:</string>
+          </property>
+          <property name="buddy">
+            <cstring>editName</cstring>
+          </property>
+          <property name="wordWrap">
+            <bool>false</bool>
+          </property>
+        </widget>
+      </item>
+      <item row="0" column="1">
+        <widget class="QLineEdit" name="editName">
+          <property name="toolTip">
+            <string>Name of the new template</string>
+          </property>
+          <property name="whatsThis">
+            <string>Enter the name of the new template</string>
+          </property>
+        </widget>
+      </item>
+      <item row="1" column="1" rowspan="2" colspan="1">
+        <widget class="Q3ListBox" name="listClass">
+          <property name="toolTip">
+            <string>Class of the new template</string>
+          </property>
+          <property name="whatsThis">
+            <string>Enter the name of the class which should be used as the template's base class</string>
+          </property>
+        </widget>
+      </item>
+      <item row="3" column="0" rowspan="1" colspan="2">
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <spacer name="Spacer1">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonCreate">
+              <property name="text">
+                <string>C&amp;reate</string>
+              </property>
+              <property name="default">
+                <bool>true</bool>
+              </property>
+              <property name="whatsThis">
+                <string>Creates the new template</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="PushButton1">
+              <property name="text">
+                <string>&amp;Cancel</string>
+              </property>
+              <property name="whatsThis">
+                <string>Closes the Dialog</string>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+      <item row="1" column="0">
+        <widget class="QLabel" name="TextLabel2">
+          <property name="text">
+            <string>&amp;Baseclass for Template:</string>
+          </property>
+          <property name="buddy">
+            <cstring>listClass</cstring>
+          </property>
+          <property name="wordWrap">
+            <bool>false</bool>
+          </property>
+        </widget>
+      </item>
+      <item row="2" column="0">
+        <spacer name="Spacer2">
+          <property name="sizeHint">
+            <size>
+              <width>20</width>
+              <height>20</height>
+            </size>
+          </property>
+          <property name="sizeType">
+            <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="orientation">
+            <enum>Qt::Vertical</enum>
+          </property>
+        </spacer>
+      </item>
+    </layout>
+  </widget>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>buttonCreate</sender>
+      <signal>clicked()</signal>
+      <receiver>CreateTemplate</receiver>
+      <slot>accept()</slot>
+    </connection>
+    <connection>
+      <sender>PushButton1</sender>
+      <signal>clicked()</signal>
+      <receiver>CreateTemplate</receiver>
+      <slot>reject()</slot>
+    </connection>
+  </connections>
+</ui>

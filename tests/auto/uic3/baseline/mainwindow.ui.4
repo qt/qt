@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>MainWindow</class>
+  <widget class="Q3MainWindow" name="MainWindow">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>600</width>
+        <height>480</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Main Window</string>
+    </property>
+    <widget class="QWidget"/>
+    <widget class="QMenuBar" name="menubar">
+      <widget class="QMenu" name="PopupMenu">
+        <property name="title">
+          <string>&amp;File</string>
+        </property>
+        <addaction name="actionFileExit"/>
+      </widget>
+      <widget class="QMenu" name="PopupMenu_2">
+        <property name="title">
+          <string>&amp;Options</string>
+        </property>
+        <addaction name="actionOptionsTranslate"/>
+      </widget>
+      <addaction name="PopupMenu"/>
+      <addaction name="PopupMenu_2"/>
+    </widget>
+    <action name="actionFileExit">
+      <property name="name">
+        <cstring>actionFileExit</cstring>
+      </property>
+      <property name="iconText">
+        <string>Exit</string>
+      </property>
+      <property name="text">
+        <string>E&amp;xit</string>
+      </property>
+      <property name="statusTip">
+        <string>Exit the application</string>
+      </property>
+    </action>
+    <action name="actionOptionsTranslate">
+      <property name="name">
+        <cstring>actionOptionsTranslate</cstring>
+      </property>
+      <property name="iconText">
+        <string>Translate</string>
+      </property>
+      <property name="text">
+        <string>Load Translation...</string>
+      </property>
+      <property name="statusTip">
+        <string>Load translation</string>
+      </property>
+    </action>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>actionFileExit</sender>
+      <signal>activated()</signal>
+      <receiver>MainWindow</receiver>
+      <slot>close()</slot>
+    </connection>
+    <connection>
+      <sender>actionOptionsTranslate</sender>
+      <signal>activated()</signal>
+      <receiver>MainWindow</receiver>
+      <slot>loadTranslation()</slot>
+    </connection>
+  </connections>
+</ui>

@@ -1,0 +1,212 @@
+<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
+<class>CreditFormBase</class>
+<include location="local" implDecl="in declaration">creditformbase.ui.h</include>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>CreditFormBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>276</width>
+            <height>224</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Credit Rating</string>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>11</number>
+        </property>
+        <property name="spacing">
+            <number>6</number>
+        </property>
+        <widget class="QButtonGroup">
+            <property name="name">
+                <cstring>creditButtonGroup</cstring>
+            </property>
+            <property name="title">
+                <string>Credit Rating</string>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>11</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <widget class="QRadioButton">
+                    <property name="name">
+                        <cstring>stdRadioButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Standard</string>
+                    </property>
+                    <property name="checked">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget class="QRadioButton">
+                    <property name="name">
+                        <cstring>noneRadioButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;None</string>
+                    </property>
+                </widget>
+                <widget class="QRadioButton">
+                    <property name="name">
+                        <cstring>specialRadioButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Sp&amp;ecial</string>
+                    </property>
+                </widget>
+            </vbox>
+        </widget>
+        <widget class="QSpinBox">
+            <property name="name">
+                <cstring>amountSpinBox</cstring>
+            </property>
+            <property name="enabled">
+                <bool>false</bool>
+            </property>
+            <property name="prefix">
+                <string>$ </string>
+            </property>
+            <property name="buttonSymbols">
+                <enum>UpDownArrows</enum>
+            </property>
+            <property name="maxValue">
+                <number>100000</number>
+            </property>
+            <property name="lineStep">
+                <number>10000</number>
+            </property>
+        </widget>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>Layout4</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>0</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <spacer>
+                    <property name="name">
+                        <cstring>Spacer1</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>20</width>
+                            <height>20</height>
+                        </size>
+                    </property>
+                </spacer>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>okPushButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>OK</string>
+                    </property>
+                    <property name="default">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <spacer>
+                    <property name="name">
+                        <cstring>Spacer1_2</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>20</width>
+                            <height>20</height>
+                        </size>
+                    </property>
+                </spacer>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>cancelPushButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Cancel</string>
+                    </property>
+                </widget>
+                <spacer>
+                    <property name="name">
+                        <cstring>Spacer1_3</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>20</width>
+                            <height>20</height>
+                        </size>
+                    </property>
+                </spacer>
+            </hbox>
+        </widget>
+    </vbox>
+</widget>
+<connections>
+    <connection language="C++">
+        <sender>okPushButton</sender>
+        <signal>clicked()</signal>
+        <receiver>CreditFormBase</receiver>
+        <slot>accept()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>cancelPushButton</sender>
+        <signal>clicked()</signal>
+        <receiver>CreditFormBase</receiver>
+        <slot>reject()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>creditButtonGroup</sender>
+        <signal>clicked(int)</signal>
+        <receiver>CreditFormBase</receiver>
+        <slot>setAmount()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>specialRadioButton</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>amountSpinBox</receiver>
+        <slot>setEnabled(bool)</slot>
+    </connection>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">setAmount()</slot>
+</connections>
+</UI>
