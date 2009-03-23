@@ -3151,9 +3151,18 @@ QPainterPath QGraphicsItem::clipPath() const
         return d->cachedClipPath;
     }
 
+    const QRectF thisBoundingRect(boundingRect());
+    if (thisBoundingRect.isEmpty()) {
+        if (d_ptr->flags & ItemClipsChildrenToShape)
+            d_ptr->setEmptyCachedClipPathRecursively();
+        else
+            d_ptr->setEmptyCachedClipPath();
+        return QPainterPath();
+    }
+
     QPainterPath clip;
     // Start with the item's bounding rect.
-    clip.addRect(boundingRect());
+    clip.addRect(thisBoundingRect);
 
     if (d->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
         const QGraphicsItem *parent = this;
