@@ -485,6 +485,8 @@ public:
         WA_WState_WindowOpacitySet = 119, // internal
         WA_TranslucentBackground = 120,
 
+        WA_AcceptTouchEvents = 121,
+
         // Add new attributes before this line
         WA_AttributeCount
     };
