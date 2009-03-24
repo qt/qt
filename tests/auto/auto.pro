@@ -209,6 +209,7 @@ SUBDIRS += bic \
            qnumeric \
            qobject \
            qobjectrace \
+           qoffsetvector \
            qpaintengine \
            qpainter \
            qpainterpath \

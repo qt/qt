@@ -5,6 +5,7 @@ SUBDIRS       = codecs \
                 customcompleter \
                 echoplugin \
                 i18n \
+                offsetvector \
                 plugandpaintplugins \
                 plugandpaint \
                 regexp \
