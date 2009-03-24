@@ -56,6 +56,10 @@ QT_FORWARD_DECLARE_CLASS(QAction)
 QT_FORWARD_DECLARE_CLASS(QWidget)
 QT_FORWARD_DECLARE_CLASS(QApplication)
 
+QT_BEGIN_NAMESPACE
+extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); //qapplication.cpp
+QT_END_NAMESPACE
+
 @implementation QT_MANGLE_NAMESPACE(QCocoaMenu)
 
 - (id)initWithQMenu:(QMenu*)menu
