@@ -1200,11 +1200,6 @@ void QGL2PaintEngineEx::updateClipRegion(const QRegion &clipRegion, Qt::ClipOper
         state()->hasClipping = op != Qt::NoClip || d->use_system_clip;
     }
 
-    if (state()->hasClipping && state()->clipRegion.rects().size() == 1)
-        state()->fastClip = state()->clipRegion.rects().at(0);
-    else
-        state()->fastClip = QRect();
-
     d->updateDepthClip();
 }
 
@@ -1221,14 +1216,10 @@ void QGL2PaintEngineExPrivate::updateDepthClip()
     if (!q->state()->hasClipping)
         return;
 
-    QRect fastClip;
-    if (q->state()->clipEnabled) {
-        fastClip = q->state()->fastClip;
-    } else if (use_system_clip && q->systemClip().rects().count() == 1) {
-        fastClip = q->systemClip().rects().at(0);
-    }
+    const QVector<QRect> rects = q->state()->clipEnabled ? q->state()->clipRegion.rects() : q->systemClip().rects();
+    if (rects.size() == 1) {
+        QRect fastClip = rects.at(0);
 
-    if (!fastClip.isEmpty()) {
         glEnable(GL_SCISSOR_TEST);
 
         const int left = fastClip.left();
@@ -1245,7 +1236,6 @@ void QGL2PaintEngineExPrivate::updateDepthClip()
     glClear(GL_DEPTH_BUFFER_BIT);
     glClearDepthf(0x1);
 
-    const QVector<QRect> rects = q->state()->clipEnabled ? q->state()->clipRegion.rects() : q->systemClip().rects();
     glEnable(GL_SCISSOR_TEST);
     for (int i = 0; i < rects.size(); ++i) {
         QRect rect = rects.at(i);
@@ -1268,14 +1258,23 @@ void QGL2PaintEngineExPrivate::updateDepthClip()
 
 
 
-void QGL2PaintEngineEx::setState(QPainterState *s)
+void QGL2PaintEngineEx::setState(QPainterState *new_state)
 {
 //     qDebug("QGL2PaintEngineEx::setState()");
 
     Q_D(QGL2PaintEngineEx);
+
+    QOpenGLPaintEngineState *s = static_cast<QOpenGLPaintEngineState *>(new_state);
+
+    QOpenGLPaintEngineState *old_state = state();
+    const bool needsDepthClipUpdate = !old_state
+            || s->clipEnabled != old_state->clipEnabled
+            || s->clipEnabled && s->clipRegion != old_state->clipRegion;
+
     QPaintEngineEx::setState(s);
 
-    d->updateDepthClip();
+    if (needsDepthClipUpdate)
+        d->updateDepthClip();
 
     d->matrixDirty = true;
     d->compositionModeDirty = true;
@@ -1303,7 +1302,6 @@ QOpenGLPaintEngineState::QOpenGLPaintEngineState(QOpenGLPaintEngineState &other)
 {
     clipRegion = other.clipRegion;
     hasClipping = other.hasClipping;
-    fastClip = other.fastClip;
 }
 
 QOpenGLPaintEngineState::QOpenGLPaintEngineState()
