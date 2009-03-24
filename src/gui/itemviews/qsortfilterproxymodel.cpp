@@ -1893,7 +1893,7 @@ QSize QSortFilterProxyModel::span(const QModelIndex &index) const
 void QSortFilterProxyModel::sort(int column, Qt::SortOrder order)
 {
     Q_D(QSortFilterProxyModel);
-    if (d->proxy_sort_column == column && d->sort_order == order)
+    if (d->dynamic_sortfilter && d->proxy_sort_column == column && d->sort_order == order)
         return;
     d->sort_order = order;
     d->proxy_sort_column = column;
