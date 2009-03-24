@@ -719,6 +719,47 @@ inline bool operator==(QKeyEvent *e, QKeySequence::StandardKey key){return (e ? 
 inline bool operator==(QKeySequence::StandardKey key, QKeyEvent *e){return (e ? e->matches(key) : false);}
 #endif // QT_NO_SHORTCUT
 
+class QTouchEventTouchPointPrivate;
+class Q_GUI_EXPORT QTouchEvent : public QInputEvent
+{
+public:
+    class Q_GUI_EXPORT TouchPoint
+    {
+    public:
+        TouchPoint(int id = -1);
+        ~TouchPoint();
+
+        int id() const;
+
+        Qt::TouchPointState state() const;
+
+        const QPointF &pos() const;
+        const QPointF &startPos() const;
+        const QPointF &lastPos() const;
+
+        const QPointF &globalPos() const;
+        const QPointF &startGlobalPos() const;
+        const QPointF &lastGlobalPos() const;
+
+        qreal pressure() const; // 0.0 -> 1.0
+
+    private:
+        QTouchEventTouchPointPrivate *d;
+
+        friend class QApplicationPrivate;
+    };
+
+    QTouchEvent(QEvent::Type type,
+                Qt::KeyboardModifiers modifiers,
+                const QList<TouchPoint *> &touchPoints);
+
+    inline const QList<TouchPoint *> &touchPoints() const { return _touchPoints;
+ }
+
+protected:
+    QList<TouchPoint *> _touchPoints;
+};
+
 QT_END_NAMESPACE
 
 QT_END_HEADER

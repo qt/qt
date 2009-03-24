@@ -1535,6 +1535,13 @@ public:
         BottomLeftSection,
         TitleBarArea    // For move
     };
+
+    enum TouchPointState {
+        TouchPointPressed,
+        TouchPointMoved,
+        TouchPointStationary,
+        TouchPointReleased
+    };
 }
 #ifdef Q_MOC_RUN
  ;

@@ -3506,4 +3506,168 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
 
 #endif
 
+/*! \class QTouchEvent
+    \brief The QTouchEvent class contains parameters that describe a touch event
+.
+    \since 4.6
+    \ingroup events
+
+    Touch events occur when pressing, releasing, or moving one or more
+    touch points on a touch device (such as a touch-screen or
+    track-pad), and if the widget has the Qt::WA_AcceptTouchEvents
+    attribute.
+
+    Like QMouseEvent, Qt automatically grabs the touch device on the
+    first press inside a widget; the widget will receive all touch
+    events until the last touch point is released.
+
+    A touch event contains a special accept flag that indicates
+    whether the receiver wants the event. By default, the event is
+    ignored. You should call accept() if the touch event is handled by
+    your widget. A touch event is propagated up the parent widget
+    chain until a widget accepts it with accept(), or an event filter
+    consumes it. If the touch event is neither accepted nor consumed,
+    then mouse events are simulated from the state of the first touch
+    point.
+
+    All touch events are of type QEvent::Touch. The touchPoints()
+    function returns a list of all touch points contained in the
+    event. Information about each touch point can be retreived using
+    the QTouchEvent::TouchPoint class.
+
+    The Qt::TouchPointState enum describes the different states that a
+    touch point may have.
+
+    QTouchEvent::TouchPoint Qt::TouchPointState Qt::WA_AcceptTouchEvents
+*/
+
+/*! \enum Qt::TouchPointState
+    \since 4.6
+
+    This enum represents the state of a touch point at the time the
+    QTouchEvent occurred.
+
+    \value TouchPointPressed The touch point is now pressed.
+    \value TouchPointMoved The touch point moved.
+    \value TouchPointStationary The touch point did not move.
+    \value TouchPointReleased The touch point was released.
+*/
+
+/*! \class QTouchEvent::TouchPoint
+    \brief The QTouchEvent::TouchPoint class provide information about a touch point in a QTouchEvent.
+    \since 4.6
+*/
+
+/*!
+    Constructs a QTouchEvent with the given \a type and \a
+    touchPoints. The \a modifiers are the current keyboard modifiers
+    at the time of the event.
+*/
+QTouchEvent::QTouchEvent(QEvent::Type type,
+                         Qt::KeyboardModifiers modifiers,
+                         const QList<TouchPoint *> &touchPoints)
+    : QInputEvent(type, modifiers), _touchPoints(touchPoints)
+{ }
+
+/*! \fn const QList<QTouchEvent::TouchPoint *> &QTouchEvent::touchPoints() const
+
+    Returns the list of touch points contained in the touch event.
+*/
+
+/*! \internal
+
+    Constructs a QTouchEvent::TouchPoint for use in a QTouchEvent.
+*/
+QTouchEvent::TouchPoint::TouchPoint(int id)
+    : d(new QTouchEventTouchPointPrivate(id))
+{ }
+
+/*! \internal
+
+    Destroys the QTouchEvent::TouchPoint.
+*/
+QTouchEvent::TouchPoint::~TouchPoint()
+{
+    delete d;
+}
+
+/*!
+    Returns the id number of this touch point. Id numbers are
+    sequential, starting at zero, meaning the first touch point has id
+    0, the second has id 1, and so on...
+*/
+int QTouchEvent::TouchPoint::id() const
+{
+    return d->id;
+}
+
+/*!
+    Returns the current state of this touch point.
+*/
+Qt::TouchPointState QTouchEvent::TouchPoint::state() const
+{
+    return d->state;
+}
+
+/*!
+    Returns the position of this touch point, relative to the widget
+    that received the event.
+*/
+const QPointF &QTouchEvent::TouchPoint::pos() const
+{
+    return d->pos;
+}
+
+/*!
+    Returns the starting position of this touch point, relative to the
+    widget that received the event.
+*/
+const QPointF &QTouchEvent::TouchPoint::startPos() const
+{
+    return d->startPos;
+}
+
+/*!
+    Returns the position of this touch point from the previous touch
+    event, relative to the widget that received the event.
+*/
+const QPointF &QTouchEvent::TouchPoint::lastPos() const
+{
+    return d->lastPos;
+}
+
+/*!
+    Returns the global position of this touch point.
+*/
+const QPointF &QTouchEvent::TouchPoint::globalPos() const
+{
+    return d->globalPos;
+}
+
+/*!
+    Returns the global starting position of this touch point.
+*/
+const QPointF &QTouchEvent::TouchPoint::startGlobalPos() const
+{
+    return d->startGlobalPos;
+}
+
+/*!
+    Returns the global position of this touch point from the previous
+    touch event.
+*/
+const QPointF &QTouchEvent::TouchPoint::lastGlobalPos() const
+{
+    return d->lastGlobalPos;
+}
+
+/*!
+    Returns the pressure of this touch point. The return value is in
+    the range 0.0 to 1.0.
+*/
+qreal QTouchEvent::TouchPoint::pressure() const
+{
+    return d->pressure;
+}
+
 QT_END_NAMESPACE

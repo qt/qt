@@ -76,14 +76,14 @@
     received by the view (see
     \l{QGraphicsSceneMouseEvent::}{lastScreenPos()},
     \l{QGraphicsSceneMouseEvent::}{lastScenePos()}, and
-    \l{QGraphicsSceneMouseEvent::}{lastPos()}). 
+    \l{QGraphicsSceneMouseEvent::}{lastPos()}).
 
     \sa QEvent
 */
 
 /*!
     \class QGraphicsSceneMouseEvent
-    \brief The QGraphicsSceneMouseEvent class provides mouse events 
+    \brief The QGraphicsSceneMouseEvent class provides mouse events
            in the graphics view framework.
     \since 4.2
     \ingroup multimedia
@@ -106,7 +106,7 @@
 
 /*!
     \class QGraphicsSceneWheelEvent
-    \brief The QGraphicsSceneWheelEvent class provides wheel events 
+    \brief The QGraphicsSceneWheelEvent class provides wheel events
            in the graphics view framework.
     \brief The QGraphicsSceneWheelEvent class provides wheel events in the
     graphics view framework.
@@ -157,7 +157,7 @@
 
 /*!
     \class QGraphicsSceneHoverEvent
-    \brief The QGraphicsSceneHoverEvent class provides hover events 
+    \brief The QGraphicsSceneHoverEvent class provides hover events
            in the graphics view framework.
     \since 4.2
     \ingroup multimedia
@@ -173,7 +173,7 @@
 
 /*!
     \class QGraphicsSceneHelpEvent
-    \brief The QGraphicsSceneHelpEvent class provides events when a 
+    \brief The QGraphicsSceneHelpEvent class provides events when a
            tooltip is requested.
     \since 4.2
     \ingroup multimedia
@@ -199,7 +199,7 @@
 /*!
     \class QGraphicsSceneDragDropEvent
     \brief The QGraphicsSceneDragDropEvent class provides events for
-           drag and drop in the graphics view framework. 
+           drag and drop in the graphics view framework.
     \since 4.2
     \ingroup multimedia
     \ingroup graphicsview-api
@@ -255,6 +255,37 @@
 
     \sa QGraphicsItem::setPos(), QGraphicsItem::ItemPositionChange,
     QGraphicsItem::ItemPositionHasChanged
+*/
+
+/*!
+    \class QGraphicsSceneTouchEvent
+    \brief The QGraphicsSceneTouchEvent class provides touch events in the graphics view framework.
+    \since 4.6
+    \ingroup multimedia
+    \ingroup graphicsview-api
+
+    When a QGraphicsView receives a QTouchEvent, it translates it to a
+    QGraphicsSceneTouchEvent. The event is then forwarded to the
+    QGraphicsScene associated with the view.
+
+    The touchPoints() function returns a list of touch points for the
+    event. In addition to containing the item, scene, and screen
+    coordinates, each touch point also contains its starting and
+    previous coordinates.
+
+    \sa QTouchEvent
+*/
+
+/*!
+    \class QGraphicsSceneTouchEvent::TouchPoint
+    \brief The QGraphicsSceneTouchEvent::TouchPoint class represents a single touch point in a QGraphicsSceneTouchEvent.
+    \since 4.6
+    \ingroup multimedia
+    \ingroup graphicsview-api
+
+    Each touch point in a QGraphicsSceneTouchEvent has an id() and
+    state() in addition to current, starting, and previous coordinates
+    for the touch point in item, scene, and screen coordinates.
 */
 
 #include "qgraphicssceneevent.h"
@@ -522,7 +553,7 @@ void QGraphicsSceneMouseEvent::setLastPos(const QPointF &pos)
 }
 
 /*!
-    Returns the last recorded mouse cursor position in scene 
+    Returns the last recorded mouse cursor position in scene
     coordinates. The last recorded position is the position of
     the previous mouse event received by the view that created
     the event.
@@ -545,7 +576,7 @@ void QGraphicsSceneMouseEvent::setLastScenePos(const QPointF &pos)
 }
 
 /*!
-    Returns the last recorded mouse cursor position in screen 
+    Returns the last recorded mouse cursor position in screen
     coordinates. The last recorded position is the position of
     the previous mouse event received by the view that created
     the event.
@@ -1275,7 +1306,7 @@ QGraphicsSceneDragDropEvent::~QGraphicsSceneDragDropEvent()
 /*!
     Returns the mouse position of the event relative to the
     view that sent the event.
-    
+
     \sa QGraphicsView, screenPos(), scenePos()
 */
 QPointF QGraphicsSceneDragDropEvent::pos() const
@@ -1373,7 +1404,7 @@ void QGraphicsSceneDragDropEvent::setButtons(Qt::MouseButtons buttons)
 
 /*!
     Returns the keyboard modifiers that were pressed when the drag
-    and drop event was created. 
+    and drop event was created.
 
     \sa Qt::KeyboardModifiers
 */
@@ -1428,7 +1459,7 @@ void QGraphicsSceneDragDropEvent::setPossibleActions(Qt::DropActions actions)
     The action must be one of the possible actions as defined by
     \c possibleActions().
 
-    \sa Qt::DropAction, possibleActions()    
+    \sa Qt::DropAction, possibleActions()
 */
 
 Qt::DropAction QGraphicsSceneDragDropEvent::proposedAction() const
@@ -1671,6 +1702,291 @@ void QGraphicsSceneMoveEvent::setNewPos(const QPointF &pos)
 {
     Q_D(QGraphicsSceneMoveEvent);
     d->newPos = pos;
+}
+
+class QGraphicsSceneTouchEventPrivate : public QGraphicsSceneEventPrivate
+{
+    Q_DECLARE_PUBLIC(QGraphicsSceneTouchEvent)
+public:
+    inline QGraphicsSceneTouchEventPrivate()
+        : modifiers(Qt::NoModifier)
+    { }
+
+    QList<QGraphicsSceneTouchEvent::TouchPoint *> touchPoints;
+    Qt::KeyboardModifiers modifiers;
+};
+
+/*!
+    \internal
+
+    Constructs a generic QGraphicsSceneTouchEvent of type \a type.
+*/
+QGraphicsSceneTouchEvent::QGraphicsSceneTouchEvent(Type type)
+    : QGraphicsSceneEvent(*new QGraphicsSceneTouchEventPrivate, type)
+{ }
+
+/*!
+    Destroys the QGraphicsSceneTouchEvent.
+*/
+QGraphicsSceneTouchEvent::~QGraphicsSceneTouchEvent()
+{
+    Q_D(QGraphicsSceneTouchEvent);
+    qDeleteAll(d->touchPoints);
+}
+
+/*!
+    Returns the list of touch points for this event.
+
+    \sa QGraphicsSceneTouchEvent::TouchPoint
+*/
+const QList<QGraphicsSceneTouchEvent::TouchPoint *> &QGraphicsSceneTouchEvent::touchPoints() const
+{
+    Q_D(const QGraphicsSceneTouchEvent);
+    return d->touchPoints;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::setTouchPoints(const QList<QGraphicsSceneTouchEvent::TouchPoint *> &touchPoints)
+{
+    Q_D(QGraphicsSceneTouchEvent);
+    d->touchPoints = touchPoints;
+}
+
+/*!
+    Returns the keyboard modifiers in use at the time the event was
+    sent.
+*/
+Qt::KeyboardModifiers QGraphicsSceneTouchEvent::modifiers() const
+{
+    Q_D(const QGraphicsSceneTouchEvent);
+    return d->modifiers;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::setModifiers(Qt::KeyboardModifiers modifiers)
+{
+    Q_D(QGraphicsSceneTouchEvent);
+    d->modifiers = modifiers;
+}
+
+class QGraphicsSceneTouchEventTouchPointPrivate
+{
+public:
+    inline QGraphicsSceneTouchEventTouchPointPrivate()
+        : id(-1), state(Qt::TouchPointReleased), pressure(qreal(0.))
+    { }
+
+    int id;
+    Qt::TouchPointState state;
+    QPointF pos, startPos, lastPos;
+    QPointF scenePos, startScenePos, lastScenePos;
+    QPointF screenPos, startScreenPos, lastScreenPos;
+    qreal pressure;
+};
+
+/*! \internal
+
+    Constructs a new touch point for use in a QGraphicsSceneTouchEvent.
+*/
+QGraphicsSceneTouchEvent::TouchPoint::TouchPoint()
+    : d(new QGraphicsSceneTouchEventTouchPointPrivate)
+{
+}
+
+/*! \internal
+
+    Destroys the QGraphicsSceneTouchEvent::TouchPoint.
+*/
+QGraphicsSceneTouchEvent::TouchPoint::~TouchPoint()
+{
+    delete d;
+}
+
+/*!
+    Returns the identifier for this touch point.
+*/
+int QGraphicsSceneTouchEvent::TouchPoint::id() const
+{
+    return d->id;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setId(int id)
+{
+    d->id = id;
+}
+
+/*!
+    Returns the state of this touch point at the time the
+    QGraphicsSceneTouchEvent occurred.
+*/
+Qt::TouchPointState QGraphicsSceneTouchEvent::TouchPoint::state() const
+{
+    return d->state;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setState(Qt::TouchPointState state)
+{
+    d->state = state;
+}
+
+/*!
+    Returns the current position of this touch point in item coordinates.
+
+    \sa scenePos(), screenPos()
+*/
+QPointF QGraphicsSceneTouchEvent::TouchPoint::pos() const
+{
+    return d->pos;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setPos(const QPointF &pos)
+{
+    d->pos = pos;
+}
+
+/*!
+    Returns the starting position of this touch point in item coordinates.
+
+    \sa startScenePos(), startScreenPos()
+*/
+QPointF QGraphicsSceneTouchEvent::TouchPoint::startPos() const
+{
+    return d->startPos;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setStartPos(const QPointF &startPos)
+{
+    d->startPos = startPos;
+}
+
+/*!
+    Returns the previous position of this touch point in item coordinates.
+
+    \sa lastScenePos(), lastScreenPos()
+*/
+QPointF QGraphicsSceneTouchEvent::TouchPoint::lastPos() const
+{
+    return d->lastPos;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setLastPos(const QPointF &lastPos)
+{
+    d->lastPos = lastPos;
+}
+
+/*!
+    Returns the current position of this touch point in scene coordinates.
+
+    \sa pos(), screenPos()
+*/
+QPointF QGraphicsSceneTouchEvent::TouchPoint::scenePos() const
+{
+    return d->scenePos;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setScenePos(const QPointF &scenePos)
+{
+    d->scenePos = scenePos;
+}
+
+/*!
+    Returns the starting position of this touch point in scene coordinates.
+
+    \sa startPos(), startScreenPos()
+*/
+QPointF QGraphicsSceneTouchEvent::TouchPoint::startScenePos() const
+{
+    return d->startScenePos;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setStartScenePos(const QPointF &startScenePos)
+{
+    d->startScenePos = startScenePos;
+}
+
+/*!
+    Returns the previous position of this touch point in scene coordinates.
+
+    \sa lastPos(), lastScreenPos()
+*/
+QPointF QGraphicsSceneTouchEvent::TouchPoint::lastScenePos() const
+{
+    return d->lastScenePos;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setLastScenePos(const QPointF &lastScenePos)
+{
+    d->lastScenePos = lastScenePos;
+}
+
+/*!
+    Returns the current position of this touch point in screen coordinates.
+
+    \sa pos(), scenePos()
+*/
+QPointF QGraphicsSceneTouchEvent::TouchPoint::screenPos() const
+{
+    return d->screenPos;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setScreenPos(const QPointF &screenPos)
+{
+    d->screenPos = screenPos;
+}
+
+/*!
+    Returns the starting position of this touch point in screen coordinates.
+
+    \sa startPos(), startScenePos()
+*/
+QPointF QGraphicsSceneTouchEvent::TouchPoint::startScreenPos() const
+{
+    return d->startScreenPos;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setStartScreenPos(const QPointF &startScreenPos)
+{
+    d->startScreenPos = startScreenPos;
+}
+
+/*!
+    Returns the previous position of this touch point in screen coordinates.
+
+    \sa lastPos(), lastScenePos()
+*/
+QPointF QGraphicsSceneTouchEvent::TouchPoint::lastScreenPos() const
+{
+    return d->lastScreenPos;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setLastScreenPos(const QPointF &lastScreenPos)
+{
+    d->lastScreenPos = lastScreenPos;
+}
+
+/*!
+    Returns the pressure of this touch point.
+*/
+qreal QGraphicsSceneTouchEvent::TouchPoint::pressure() const
+{
+    return d->pressure;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setPressure(qreal pressure)
+{
+    d->pressure = pressure;
 }
 
 QT_END_NAMESPACE

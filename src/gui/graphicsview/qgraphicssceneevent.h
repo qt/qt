@@ -302,6 +302,70 @@ public:
     void setNewPos(const QPointF &pos);
 };
 
+class QGraphicsSceneTouchEventPrivate;
+class QGraphicsSceneTouchEventTouchPointPrivate;
+class Q_GUI_EXPORT QGraphicsSceneTouchEvent : public QGraphicsSceneEvent
+{
+public:
+    QGraphicsSceneTouchEvent(Type type = None);
+    ~QGraphicsSceneTouchEvent();
+
+    class Q_GUI_EXPORT TouchPoint
+    {
+    public:
+        TouchPoint();
+        ~TouchPoint();
+
+        int id() const;
+        void setId(int id);
+
+        Qt::TouchPointState state() const;
+        void setState(Qt::TouchPointState state);
+
+        QPointF pos() const;
+        void setPos(const QPointF &pos);
+
+        QPointF startPos() const;
+        void setStartPos(const QPointF &startPos);
+
+        QPointF lastPos() const;
+        void setLastPos(const QPointF &lastPos);
+
+        QPointF scenePos() const;
+        void setScenePos(const QPointF &scenePos);
+
+        QPointF startScenePos() const;
+        void setStartScenePos(const QPointF &startScenePos);
+
+        QPointF lastScenePos() const;
+        void setLastScenePos(const QPointF &lastScenePos);
+
+        QPointF screenPos() const;
+        void setScreenPos(const QPointF &screenPos);
+
+        QPointF startScreenPos() const;
+        void setStartScreenPos(const QPointF &startScreenPos);
+
+        QPointF lastScreenPos() const;
+        void setLastScreenPos(const QPointF &lastScreenPos);
+
+        qreal pressure() const; // 0.0 -> 1.0
+        void setPressure(qreal pressure);
+
+    private:
+        QGraphicsSceneTouchEventTouchPointPrivate *d;
+    };
+
+    const QList<TouchPoint *> &touchPoints() const;
+    void setTouchPoints(const QList<TouchPoint *> &touchPoints);
+
+    Qt::KeyboardModifiers modifiers() const;
+    void setModifiers(Qt::KeyboardModifiers modifiers);
+
+private:
+    Q_DECLARE_PRIVATE(QGraphicsSceneTouchEvent);
+};
+
 #endif // QT_NO_GRAPHICSVIEW
 
 QT_END_NAMESPACE

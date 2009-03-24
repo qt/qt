@@ -89,6 +89,22 @@ protected:
     friend class QMouseEvent;
 };
 
+class QTouchEventTouchPointPrivate
+{
+public:
+    inline QTouchEventTouchPointPrivate(int id)
+        : id(id),
+          state(Qt::TouchPointReleased),
+          pressure(qreal(-1.))
+    { }
+
+    int id;
+    Qt::TouchPointState state;
+    QPointF pos, startPos, lastPos;
+    QPointF globalPos, startGlobalPos, lastGlobalPos;
+    qreal pressure;
+};
+
 QT_END_NAMESPACE
 
 #endif // QEVENT_P_H
