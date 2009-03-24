@@ -84,12 +84,12 @@ static void printUsage()
 {
     printOut(QObject::tr(
         "Usage:\n"
-        "    lupdate [options] [project-file]\n"
+        "    lupdate [options] [project-file]...\n"
         "    lupdate [options] [source-file|path]... -ts ts-files\n\n"
-        "lupdate is part of Qt's Linguist tool chain. It can be used as a\n"
-        "stand-alone tool to create XML based translations files in the .ts\n"
-        "format from translatable messages in C++ and Java source code.\n\n"
-        "lupdate can also merge such messages into existing .ts files.\n\n"
+        "lupdate is part of Qt's Linguist tool chain. It extracts translatable\n"
+        "messages from Qt UI files, C++, Java and JavaScript/QtScript source code.\n"
+        "Extracted messages are stored in textual translation source files (typically\n"
+        "Qt TS XML). New and modified messages can be merged into existing TS files.\n\n"
         "Options:\n"
         "    -help  Display this information and exit.\n"
         "    -no-obsolete\n"
