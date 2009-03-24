@@ -168,6 +168,20 @@ void QFileInfoGatherer::clear()
 }
 
 /*
+    Remove a \a path from the watcher
+
+    \sa listed()
+*/
+void QFileInfoGatherer::removePath(const QString &path)
+{
+#ifndef QT_NO_FILESYSTEMWATCHER
+    mutex.lock();
+    watcher->removePath(path);
+    mutex.unlock();
+#endif
+}
+
+/*
     List all files in \a directoryPath
 
     \sa listed()
@@ -286,15 +300,9 @@ QString QFileInfoGatherer::translateDriveName(const QFileInfo &drive) const
 void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &files)
 {
 #ifndef QT_NO_FILESYSTEMWATCHER
-    //### We test here if the path still exist before adding it in the watcher
-    //### because sometime the file is deleted just before enter here so QStringList files is not up to date
-    //### It is not a proper fix, perhaps in 4.6 we should have a better way to avoid that
-    //### to ensure the gatherer have fresh information
-    QFileInfo info(path);
     if (files.isEmpty()
         && !watcher->directories().contains(path)
         && !path.isEmpty()
-        && info.exists()
         && !path.startsWith(QLatin1String("//")) /*don't watch UNC path*/) {
         watcher->addPath(path);
     }
