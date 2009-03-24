@@ -3,7 +3,7 @@
 
 #include <QGesture>
 
-class Q_GUI_EXPORT LinjaZaxGesture : public QGesture
+class LinjaZaxGesture : public QGesture
 {
 public:
     enum DirectionType
