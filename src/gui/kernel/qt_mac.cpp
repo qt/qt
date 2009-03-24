@@ -93,6 +93,8 @@ static QColor qcolorFromCGColor(CGColorRef cgcolor)
         pc.setRgbF(components[0], components[1], components[2], components[3]);
     } else if (model == kCGColorSpaceModelCMYK) {
         pc.setCmykF(components[0], components[1], components[2], components[3]);
+    } else if (model == kCGColorSpaceModelMonochrome) {
+        pc.setRgbF(components[0], components[0], components[0], components[1]);
     } else {
         // Colorspace we can't deal with.
         qWarning("Qt: qcolorFromCGColor: cannot convert from colorspace model: %d", model);
