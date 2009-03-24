@@ -2609,70 +2609,8 @@ pixmap property in the property editor.
 
            This library would then be used by the application as well as by the
            \QD plugin. Care must be taken to ensure that the plugin can locate
-          the library at runtime.
+          the library at run-time.
     \endlist
-
-
-
-\omit
-    \section1 Using Qt Script to Aid in Building Forms
-
-    Starting with Qt 4.3, \c .ui files may contain
-    \l{QtScript}{Qt Script} snippets that are executed by \l uic or QUiLoader
-    when building forms.
-
-    The snippets are executed per widget. The snippet may modify properties
-    or invoke slots on the widget.
-
-    Special variables are used to access the widget:
-
-    \table
-    \header
-    \o Name
-    \o Value
-    \row \o \c  widget
-         \o The widget being built.
-    \row \o \c  childWidgets
-         \o An array containing the child widgets. This is useful
-         for QDesignerContainerExtension subclasses.
-    \endtable
-
-    If scripts are present in an \c {uic}-generated form, the application
-    must be configured with Qt Script support.
-
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 5
-
-    For security reasons, the execution of scripts is disabled
-    by default in QUiLoader. You can enable it by
-    calling the QUiLoader::setScriptingEnabled() method.
-
-    The resulting script snippet is concatenated from snippets occurring in
-    several places:
-
-    \table
-    \header
-    \o Source
-    \o Usage
-    \row \o The \c codeTemplate() function of QDesignerCustomWidgetInterface
-         \o Allows snippets to be run on a per-class basis; for example, to set up a
-            container using the QDesignerContainerExtension.
-    \row \o The \c script() method of QDesignerScriptExtension
-         \o Allows snippets to be run on a per-widget basis; for example,
-            to set up the internal state of a custom widget.
-
-            Such an internal state might be, for example, the contents of
-            a custom item view container widget, for which an editor
-            is provided by an QDesignerTaskMenuExtension object.
-
-    \row \o Snippets entered at run-time using the \gui{Change script...}
-            option of the form's context menu
-         \o Fast prototyping. To get an idea,
-            drag a QLineEdit onto the form, enter the script
-            \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 6
-            and preview the form.
-    \endtable
-\endomit
-
 
     \section1 Related Examples
 

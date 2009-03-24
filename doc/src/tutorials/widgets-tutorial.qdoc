@@ -80,7 +80,7 @@
 
     \raw HTML
     <table align="left" width="100%">
-    <tr><td>
+    <tr class="qt-code"><td>
     \endraw
     \snippet snippets/widgets-tutorial/toplevel/main.cpp create, resize and show
     \raw HTML
@@ -98,7 +98,7 @@
 
     \raw HTML
     <table align="left" width="100%">
-    <tr><td>
+    <tr class="qt-code"><td>
     \endraw
     \snippet snippets/widgets-tutorial/childwidget/main.cpp create, position and show
     \raw HTML
@@ -123,7 +123,7 @@
 
     \raw HTML
     <table align="left" width="100%">
-    <tr><td>
+    <tr class="qt-code"><td>
     \endraw
     \snippet snippets/widgets-tutorial/windowlayout/main.cpp create, lay out widgets and show
     \raw HTML
@@ -157,7 +157,7 @@
 
     \raw HTML
     <table align="left" width="100%">
-    <tr><td>
+    <tr class="qt-code"><td>
     \endraw
     \snippet snippets/widgets-tutorial/nestedlayouts/main.cpp create, lay out widgets and show
     \raw HTML
@@ -171,23 +171,4 @@
 
     As well as QHBoxLayout and QVBoxLayout, Qt also provides QGridLayout
     and QFormLayout classes to help with more complex user interfaces.
-
-    
-
-    \omit
-    In the simple example below, the widget is created on the stack and will
-    automatically be deleted when the \c{main()} function exits.
-
-    {{{#include <QtGui>
-
-    int main(int argc, char *argv[])
-    {
-        QApplication app(argc, argv);
-        QWidget window;
-        window.resize(480, 360);
-        window.show();
-        return app.exec();
-    }
-    }}}
-    \endomit
 */
