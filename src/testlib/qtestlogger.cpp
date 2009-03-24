@@ -11,6 +11,8 @@
 
 #include <string.h>
 
+QT_BEGIN_NAMESPACE
+
 QTestLogger::QTestLogger(int fm)
     :listOfTestcases(0), currentLogElement(0),
     logFormatter(0), format( (TestLoggerFormat)fm ), filelogger(new QTestFileLogger),
@@ -332,4 +334,6 @@ int QTestLogger::infoCount() const
 {
     return infoCounter;
 }
+
+QT_END_NAMESPACE
 

@@ -1,5 +1,7 @@
 #include "qtestelement.h"
 
+QT_BEGIN_NAMESPACE
+
 QTestElement::QTestElement(int type)
     :QTestCoreElement<QTestElement>(type),
     listOfChildren(0),
@@ -40,3 +42,6 @@ void QTestElement::setParent(const QTestElement *p)
 {
     parent = p;
 }
+
+QT_END_NAMESPACE
+

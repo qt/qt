@@ -9,6 +9,8 @@
 #include <string.h>
 #include <stdio.h>
 
+QT_BEGIN_NAMESPACE
+
 QTestXmlStreamer::QTestXmlStreamer()
     :QTestBasicStreamer()
 {
@@ -171,3 +173,6 @@ void QTestXmlStreamer::output(QTestElement *element) const
     QTest::qt_snprintf(buf, sizeof(buf), "</TestCase>\n");
     outputString(buf);
 }
+
+QT_END_NAMESPACE
+

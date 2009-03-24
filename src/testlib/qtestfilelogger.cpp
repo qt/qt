@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+QT_BEGIN_NAMESPACE
+
 namespace QTest
 {
     static FILE *stream = 0;
@@ -47,3 +49,6 @@ void QTestFileLogger::flush(const char *msg)
     ::fputs(msg, QTest::stream);
     ::fflush(QTest::stream);
 }
+
+QT_END_NAMESPACE
+

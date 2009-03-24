@@ -3,11 +3,11 @@
 
 #include <QtTest/private/qabstracttestlogger_p.h>
 
+QT_BEGIN_NAMESPACE
+
 class QTestBasicStreamer;
 class QTestElement;
 class QTestFileLogger;
-
-QT_BEGIN_NAMESPACE
 
 class QTestLogger : public QAbstractTestLogger
 {

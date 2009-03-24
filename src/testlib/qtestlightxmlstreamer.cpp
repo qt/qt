@@ -8,6 +8,8 @@
 
 #include <string.h>
 
+QT_BEGIN_NAMESPACE
+
 QTestLightXmlStreamer::QTestLightXmlStreamer()
     :QTestBasicStreamer()
 {
@@ -137,3 +139,6 @@ void QTestLightXmlStreamer::output(QTestElement *element) const
 
     QTestBasicStreamer::output(element);
 }
+
+QT_END_NAMESPACE
+

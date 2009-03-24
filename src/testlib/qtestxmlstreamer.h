@@ -3,6 +3,8 @@
 
 #include "qtestbasicstreamer.h"
 
+QT_BEGIN_NAMESPACE
+
 class QTestElement;
 class QTestElementAttribute;
 
@@ -17,5 +19,7 @@ class QTestXmlStreamer: public QTestBasicStreamer
         void formatBeforeAttributes(const QTestElement *element = 0, char *formatted = 0) const;
         void output(QTestElement *element) const;
 };
+
+QT_END_NAMESPACE
 
 #endif

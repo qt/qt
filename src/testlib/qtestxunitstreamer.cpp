@@ -5,6 +5,8 @@
 #include "QtTest/private/qtestresult_p.h"
 #include "QtTest/private/qxmltestlogger_p.h"
 
+QT_BEGIN_NAMESPACE
+
 QTestXunitStreamer::QTestXunitStreamer()
     :QTestBasicStreamer()
 {}
@@ -134,3 +136,6 @@ void QTestXunitStreamer::outputElements(QTestElement *element, bool) const
         element = element->previousElement();
     }
 }
+
+QT_END_NAMESPACE
+

@@ -12,6 +12,8 @@
 #include <unistd.h>
 #endif
 
+QT_BEGIN_NAMESPACE
+
 namespace QTest
 {
     static FILE *stream = 0;
@@ -171,3 +173,6 @@ const QTestLogger *QTestBasicStreamer::logger() const
 {
     return testLogger;
 }
+
+QT_END_NAMESPACE
+

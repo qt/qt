@@ -3,6 +3,8 @@
 
 #include "qtestbasicstreamer.h"
 
+QT_BEGIN_NAMESPACE
+
 class QTestLogger;
 
 class QTestXunitStreamer: public QTestBasicStreamer
@@ -22,5 +24,7 @@ class QTestXunitStreamer: public QTestBasicStreamer
         void displayXunitXmlHeader() const;
         static void indentForElement(const QTestElement* element, char* buf, int size);
 };
+
+QT_END_NAMESPACE
 
 #endif

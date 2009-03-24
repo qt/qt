@@ -1,6 +1,10 @@
 #ifndef QTESTCORELIST_H
 #define QTESTCORELIST_H
 
+#include <QtCore/qglobal.h>
+
+QT_BEGIN_NAMESPACE
+
 template <class T>
 class QTestCoreList
 {
@@ -79,5 +83,7 @@ int QTestCoreList<T>::count()
 
     return numOfElements;
 }
+
+QT_END_NAMESPACE
 
 #endif

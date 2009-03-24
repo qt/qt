@@ -4,6 +4,8 @@
 #include "qtestcorelist.h"
 #include "qtestelementattribute.h"
 
+QT_BEGIN_NAMESPACE
+
 template <class ElementType>
 class QTestCoreElement: public QTestCoreList<ElementType>
 {
@@ -116,5 +118,7 @@ const QTestElementAttribute *QTestCoreElement<ElementType>::attribute(QTest::Att
 
     return 0;
 }
+
+QT_END_NAMESPACE
 
 #endif
