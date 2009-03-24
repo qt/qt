@@ -1269,6 +1269,8 @@ bool QGraphicsWidget::event(QEvent *event)
         break;
     case QEvent::Polish:
         polishEvent();
+        d->polished = true;
+        d->updateFont(d->font);
         break;
     case QEvent::WindowActivate:
     case QEvent::WindowDeactivate:
