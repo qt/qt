@@ -164,8 +164,8 @@ public:
     void setPosHelper(const QPointF &pos);
     void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
-    void updateHelper(const QRectF &rect = QRectF(), bool force = false);
-    void fullUpdateHelper(bool childrenOnly = false);
+    void updateHelper(const QRectF &rect = QRectF(), bool force = false, bool maybeDirtyClipPath = false);
+    void fullUpdateHelper(bool childrenOnly = false, bool maybeDirtyClipPath = false);
     void resolveEffectiveOpacity(qreal effectiveParentOpacity);
     void resolveDepth(int parentDepth);
     void invalidateSceneTransformCache();
@@ -256,7 +256,7 @@ public:
     { /*static int count = 0 ;qWarning("%i", ++count);*/ dirtyClipPath = 1; emptyClipPath = 0; }
 
     void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
-    void updateCachedClipPathFromSetPosHelper();
+    void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
 
     inline bool isInvisible() const
     {
@@ -266,6 +266,9 @@ public:
 
     inline bool isClippedAway() const
     { return !dirtyClipPath && q_func()->isClipped() && (emptyClipPath || cachedClipPath.isEmpty()); }
+
+    inline bool discardUpdateRequest() const
+    { return ((flags & QGraphicsItem::ItemClipsChildrenToShape) || children.isEmpty()) && isClippedAway(); }
 
     QPainterPath cachedClipPath;
     QPointF pos;

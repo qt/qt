@@ -1063,7 +1063,7 @@ void QGraphicsItem::setParentItem(QGraphicsItem *parent)
         qVariantSetValue<QGraphicsItem *>(variant, this);
         d_ptr->parent->itemChange(ItemChildAddedChange, variant);
         if (!implicitUpdate)
-            d_ptr->updateHelper();
+            d_ptr->updateHelper(QRectF(), false, true);
 
         // Inherit ancestor flags from the new parent.
         d_ptr->updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-1));
@@ -1092,7 +1092,7 @@ void QGraphicsItem::setParentItem(QGraphicsItem *parent)
         if (!d_ptr->enabled && !d_ptr->explicitlyDisabled)
             d_ptr->setEnabledHelper(true, /* explicit = */ false);
 
-        d_ptr->updateHelper();
+        d_ptr->updateHelper(QRectF(), false, true);
     }
 
     if (d_ptr->scene) {
@@ -1236,7 +1236,7 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
     int geomChangeFlagsMask = (ItemClipsChildrenToShape | ItemClipsToShape | ItemIgnoresTransformations);
     bool fullUpdate = (flags & geomChangeFlagsMask) != (d_ptr->flags & geomChangeFlagsMask);
     if (fullUpdate)
-        d_ptr->fullUpdateHelper();
+        d_ptr->fullUpdateHelper(false, true);
 
     // Keep the old flags to compare the diff.
     GraphicsItemFlags oldFlags = this->flags();
@@ -1281,7 +1281,7 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
     }
 
     // ### Why updateHelper?
-    d_ptr->updateHelper();
+    d_ptr->updateHelper(QRectF(), false, true);
 
     // Notify change.
     itemChange(ItemFlagsHaveChanged, quint32(flags));
@@ -2369,13 +2369,13 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
 
     // Update and repositition.
     inSetPosHelper = 1;
+    updateCachedClipPathFromSetPosHelper(newPos);
     if (scene) {
         fullUpdateHelper(true);
         q->prepareGeometryChange();
     }
     this->pos = newPos;
     invalidateSceneTransformCache();
-    updateCachedClipPathFromSetPosHelper();
 
     // Send post-notification.
     q->itemChange(QGraphicsItem::ItemPositionHasChanged, newPos);
@@ -2771,7 +2771,7 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
         return;
 
     // Update and set the new transformation.
-    d_ptr->fullUpdateHelper(true);
+    d_ptr->fullUpdateHelper(true, true);
     prepareGeometryChange();
     d_ptr->hasTransform = !newTransform.isIdentity();
     d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, newTransform);
@@ -2817,7 +2817,7 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
         return;
 
     // Update and set the new transformation.
-    d_ptr->fullUpdateHelper(true);
+    d_ptr->fullUpdateHelper(true, true);
     prepareGeometryChange();
     d_ptr->hasTransform = !newTransform.isIdentity();
     d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, newTransform);
@@ -3626,13 +3626,15 @@ void QGraphicsItem::setBoundingRegionGranularity(qreal granularity)
     only case where the item's background should be marked as dirty even when
     the item isn't visible.
 */
-void QGraphicsItemPrivate::updateHelper(const QRectF &rect, bool force)
+void QGraphicsItemPrivate::updateHelper(const QRectF &rect, bool force, bool maybeDirtyClipPath)
 {
     // No scene, or if the scene is updating everything, means we have nothing
     // to do. The only exception is if the scene tracks the growing scene rect.
     if (dirty)
         return;
     if (!scene || (scene && scene->d_func()->updateAll && scene->d_func()->hasSceneRect))
+        return;
+    if (!force && !maybeDirtyClipPath && discardUpdateRequest())
         return;
     if (scene && (visible || force)) {
         if (rect.isNull())
@@ -3646,17 +3648,19 @@ void QGraphicsItemPrivate::updateHelper(const QRectF &rect, bool force)
 
     Propagates updates to \a item and all its children.
 */
-void QGraphicsItemPrivate::fullUpdateHelper(bool childrenOnly)
+void QGraphicsItemPrivate::fullUpdateHelper(bool childrenOnly, bool maybeDirtyClipPath)
 {
+    if (!maybeDirtyClipPath && discardUpdateRequest())
+        return;
     // No scene, or if the scene is updating everything, means we have nothing
     // to do. The only exception is if the scene tracks the growing scene rect.
     if (!scene || (scene && scene->d_func()->updateAll && scene->d_func()->hasSceneRect))
         return;
     if (!childrenOnly && !dirty)
-        updateHelper();
+        updateHelper(QRectF(), false, maybeDirtyClipPath);
     if (children.isEmpty() || dirtyChildren)
         return;
-    if (flags & QGraphicsItem::ItemClipsChildrenToShape) {
+    if (flags & QGraphicsItem::ItemClipsChildrenToShape || children.isEmpty()) {
         // ### mark all children dirty?
         // Unnecessary to update children as well.
         return;
@@ -3683,7 +3687,7 @@ void QGraphicsItemPrivate::fullUpdateHelper(bool childrenOnly)
         }
     }
     foreach (QGraphicsItem *child, children)
-        child->d_ptr->fullUpdateHelper();
+        child->d_ptr->fullUpdateHelper(false, maybeDirtyClipPath);
     dirtyChildren = 1;
 }
 
@@ -3813,23 +3817,35 @@ void QGraphicsItemPrivate::invalidateCachedClipPathRecursively(bool childrenOnly
     }
 }
 
-void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper()
+void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(const QPointF &newPos)
 {
     Q_ASSERT(inSetPosHelper);
 
     if (!(ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
         return; // Not clipped by any ancestor.
 
-    // Find closest clip ancestor.
-    QGraphicsItem *clipParent = parent;
-    while (clipParent && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape))
-        clipParent = clipParent->d_ptr->parent;
-
-    Q_ASSERT(clipParent);
+    // Find closest clip ancestor and transform.
     Q_Q(QGraphicsItem);
+    QTransform thisToParentTransform = hasTransform
+                                       ? q->transform() * QTransform::fromTranslate(newPos.x(), newPos.y())
+                                       : QTransform::fromTranslate(newPos.x(), newPos.y());
+    QGraphicsItem *clipParent = parent;
+    while (clipParent && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)) {
+        if (clipParent->d_ptr->hasTransform)
+            thisToParentTransform *= clipParent->transform();
+        if (!clipParent->d_ptr->pos.isNull()) {
+            thisToParentTransform *= QTransform::fromTranslate(clipParent->d_ptr->pos.x(),
+                                                               clipParent->d_ptr->pos.y());
+        }
+        clipParent = clipParent->d_ptr->parent;
+    }
+
+    // thisToParentTransform is now the same as q->itemTransform(clipParent), except
+    // that the new position (which is not yet set on the item) is taken into account.
+    Q_ASSERT(clipParent);
+    Q_ASSERT(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
 
     // From here everything is calculated in clip parent's coordinates.
-    const QTransform thisToParentTransform(q->itemTransform(clipParent));
     const QRectF parentBoundingRect(clipParent->boundingRect());
     const QRectF thisBoundingRect(thisToParentTransform.mapRect(q->boundingRect()));
 
@@ -3893,6 +3909,8 @@ bool QGraphicsItemPrivate::isProxyWidget() const
 void QGraphicsItem::update(const QRectF &rect)
 {
     if (d_ptr->dirty || (rect.isEmpty() && !rect.isNull()))
+        return;
+    if (d_ptr->discardUpdateRequest())
         return;
     if (d_ptr->scene && isVisible()) {
         if (CacheMode(d_ptr->cacheMode) != NoCache) {
@@ -5639,7 +5657,7 @@ void QGraphicsItem::prepareGeometryChange()
     if (!d_ptr->scene)
         return;
 
-    d_ptr->updateHelper();
+    d_ptr->updateHelper(QRectF(), false, /*maybeDirtyClipPath=*/!d_ptr->inSetPosHelper);
     QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
     scenePrivate->removeFromIndex(this);
 

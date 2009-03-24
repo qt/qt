@@ -855,6 +855,8 @@ void QGraphicsViewPrivate::_q_updateLaterSlot()
     const QList<QGraphicsItem *> &dirtyItems = scene->d_func()->dirtyItems;
     for (int i = 0; i < dirtyItems.size(); ++i) {
         const QGraphicsItem *item = dirtyItems.at(i);
+        if (item->d_ptr->discardUpdateRequest())
+            continue;
         QTransform x = item->sceneTransform() * viewTransform;
         updateRect(x.mapRect(item->boundingRect()).toAlignedRect() & vr);
     }
