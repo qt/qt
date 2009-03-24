@@ -2063,6 +2063,31 @@ void QGraphicsItem::setAcceptsHoverEvents(bool enabled)
     d_ptr->acceptsHover = quint32(enabled);
 }
 
+/*! \since 4.6
+
+    Returns true if an item accepts touch events
+    (QGraphicsSceneTouchEvent); otherwise, returns false. By default,
+    items do not accept touch events.
+
+    \sa setAcceptTouchEvents()
+*/
+bool QGraphicsItem::acceptTouchEvents() const
+{
+    return d_ptr->acceptTouchEvents;
+}
+
+/*!
+    \since 4.6
+
+    If \a enabled is true, this item will accept touch events;
+    otherwise, it will ignore them. By default, items do not accept
+    touch events.
+*/
+void QGraphicsItem::setAcceptTouchEvents(bool enabled)
+{
+    d_ptr->acceptTouchEvents = quint32(enabled);
+}
+
 /*!
     Returns true if this item handles child events (i.e., all events
     intended for any of its children are instead sent to this item);

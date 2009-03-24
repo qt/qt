@@ -203,6 +203,8 @@ public:
     void setAcceptsHoverEvents(bool enabled); // obsolete
     bool acceptHoverEvents() const;
     void setAcceptHoverEvents(bool enabled);
+    bool acceptTouchEvents() const;
+    void setAcceptTouchEvents(bool enabled);
 
     bool handlesChildEvents() const;
     void setHandlesChildEvents(bool enabled);

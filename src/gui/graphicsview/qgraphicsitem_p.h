@@ -138,6 +138,7 @@ public:
         dirty(0),
         dirtyChildren(0),
         localCollisionHack(0),
+        acceptTouchEvents(0),
         globalStackingOrder(-1),
         sceneTransformIndex(-1),
         q_ptr(0)
@@ -272,6 +273,7 @@ public:
     quint32 dirty : 1;    
     quint32 dirtyChildren : 1;    
     quint32 localCollisionHack : 1;
+    quint32 acceptTouchEvents : 1;
 
     // Optional stacking order
     int globalStackingOrder;
