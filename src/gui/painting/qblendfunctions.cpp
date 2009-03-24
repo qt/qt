@@ -535,6 +535,8 @@ static void qt_blend_argb32_on_rgb16(uchar *destPixels, int dbpl,
                     s += BYTE_MUL_RGB16(*dst, 255 - alpha);
                 *dst = s;
             }
+            ++dst;
+            ++src;
         }
         dst += dstExtraStride;
         src += srcExtraStride;

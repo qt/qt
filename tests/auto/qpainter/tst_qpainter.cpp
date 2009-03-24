@@ -204,6 +204,9 @@ private slots:
     void drawImage_task217400();
     void drawRect_task215378();
 
+    void drawImage_data();
+    void drawImage();
+
     void clippedImage();
 
     void stateResetBetweenQPainters();
@@ -3586,6 +3589,77 @@ void tst_QPainter::drawRect_task215378()
     QVERIFY(img.pixel(0, 0) != img.pixel(1, 1));
 }
 
+void tst_QPainter::drawImage_data()
+{
+    QTest::addColumn<int>("x");
+    QTest::addColumn<int>("y");
+    QTest::addColumn<int>("w");
+    QTest::addColumn<int>("h");
+    QTest::addColumn<QImage::Format>("srcFormat");
+    QTest::addColumn<QImage::Format>("dstFormat");
+
+    for (int srcFormat = QImage::Format_Mono; srcFormat < QImage::NImageFormats; ++srcFormat) {
+        for (int dstFormat = QImage::Format_Mono; dstFormat < QImage::NImageFormats; ++dstFormat) {
+            if (dstFormat == QImage::Format_Indexed8)
+                continue;
+            for (int odd_x = 0; odd_x <= 1; ++odd_x) {
+                for (int odd_width = 0; odd_width <= 1; ++odd_width) {
+                    QString description =
+                        QString("srcFormat %1, dstFormat %2, odd x: %3, odd width: %4")
+                            .arg(srcFormat).arg(dstFormat).arg(odd_x).arg(odd_width);
+
+                    QTest::newRow(description) << (10 + odd_x) << 10 << (20 + odd_width) << 20
+                        << QImage::Format(srcFormat)
+                        << QImage::Format(dstFormat);
+                }
+            }
+        }
+    }
+}
+
+bool verifyImage(const QImage &img, int x, int y, int w, int h, uint background)
+{
+    int imgWidth = img.width();
+    int imgHeight = img.height();
+    for (int i = 0; i < imgHeight; ++i) {
+        for (int j = 0; j < imgWidth; ++j) {
+            uint pixel = img.pixel(j, i);
+            bool outside = j < x || j >= (x + w) || i < y || i >= (y + h);
+            if (outside != (pixel == background)) {
+                //printf("%d %d, expected %x, got %x, outside: %d\n", x, y, background, pixel, outside);
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+void tst_QPainter::drawImage()
+{
+    QFETCH(int, x);
+    QFETCH(int, y);
+    QFETCH(int, w);
+    QFETCH(int, h);
+    QFETCH(QImage::Format, srcFormat);
+    QFETCH(QImage::Format, dstFormat);
+
+    QImage dst(40, 40, QImage::Format_RGB32);
+    dst.fill(0xffffffff);
+
+    dst = dst.convertToFormat(dstFormat);
+    uint background = dst.pixel(0, 0);
+
+    QImage src(w, h, QImage::Format_RGB32);
+    src.fill(0xff000000);
+    src = src.convertToFormat(srcFormat);
+
+    QPainter p(&dst);
+    p.drawImage(x, y, src);
+    p.end();
+
+    QVERIFY(verifyImage(dst, x, y, w, h, background));
+}
 
 void tst_QPainter::imageCoordinateLimit()
 {

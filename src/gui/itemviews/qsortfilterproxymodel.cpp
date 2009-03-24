@@ -1103,6 +1103,8 @@ void QSortFilterProxyModelPrivate::_q_sourceReset()
     // All internal structures are deleted in clear()
     q->reset();
     update_source_sort_column();
+    if (dynamic_sortfilter)
+        sort();
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceLayoutAboutToBeChanged()
@@ -1495,6 +1497,7 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
 
     d->clear_mapping();
     reset();
+    d->update_source_sort_column();
 }
 
 /*!
@@ -1893,7 +1896,7 @@ QSize QSortFilterProxyModel::span(const QModelIndex &index) const
 void QSortFilterProxyModel::sort(int column, Qt::SortOrder order)
 {
     Q_D(QSortFilterProxyModel);
-    if (d->proxy_sort_column == column && d->sort_order == order)
+    if (d->dynamic_sortfilter && d->proxy_sort_column == column && d->sort_order == order)
         return;
     d->sort_order = order;
     d->proxy_sort_column = column;
@@ -2107,6 +2110,8 @@ void QSortFilterProxyModel::setDynamicSortFilter(bool enable)
 {
     Q_D(QSortFilterProxyModel);
     d->dynamic_sortfilter = enable;
+    if (enable)
+        d->sort();
 }
 
 /*!

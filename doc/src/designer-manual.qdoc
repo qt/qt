@@ -2537,6 +2537,10 @@ pixmap property in the property editor.
     \target BuildingandInstallingthePlugin
     \section1 Building and Installing the Plugin
 
+    \section2 A Simple Plugin
+
+    The \l{Custom Widget Plugin Example} demonstrates a simple \QD plugin.
+
     The \c{.pro} file for a plugin must specify the headers and sources for
     both the custom widget and the plugin interface. Typically, this file only
     has to specify that the plugin's project is to be built as a library, but
@@ -2570,6 +2574,45 @@ pixmap property in the property editor.
 
     See QCoreApplication::libraryPaths() for more information about customizing
     paths for libraries and plugins with Qt applications.
+
+    \section2 Splitting up the Plugin
+
+    In a real world scenario, you do not want to have dependencies of the
+    application making use of the custom widgets to the \QD headers and
+    libraries as introduced by the simple approach explained above.
+
+    There are two ways to resolve this:
+
+    \list
+        \i Create a \c{.pri} file that contains the headers sources and sources
+           of the custom widget:
+
+           \code
+           INCLUDEPATH += $$PWD
+           HEADERS += $$PWD/analogclock.h
+           SOURCES += $$PWD/analogclock.cpp
+           \endcode
+
+           This file would then be included by the \c{.pro} file of the plugin and
+           the application:
+
+           \code
+           include(customwidget.pri)
+           \endcode
+
+           Running \c{qmake -Wall} on the \c{.pro} files causes a warning to be
+           printed if an included \c{.pri} file cannot be found.
+
+        \i Create a standalone shared library containing the custom widgets only
+           as described in
+           \l{sharedlibrary.html}{Creating Shared Libraries}.
+
+           This library would then be used by the application as well as by the
+           \QD plugin. Care must be taken to ensure that the plugin can locate
+          the library at runtime.
+    \endlist
+
+
 
 \omit
     \section1 Using Qt Script to Aid in Building Forms
