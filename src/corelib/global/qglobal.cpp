@@ -2961,4 +2961,24 @@ bool QInternal::callFunction(InternalFunction func, void **args)
     \snippet doc/src/snippets/code/src_gui_dialogs_qmessagebox.cpp 4
 */
 
+/*!
+    \macro Q_DECL_EXPORT
+    \relates <QtGlobal>
+
+    This macro marks a symbol for shared library export (see
+     \l{sharedlibrary.html}{Creating Shared Libraries}).
+
+    \sa Q_DECL_IMPORT
+*/
+
+/*!
+    \macro Q_DECL_IMPORT
+    \relates <QtGlobal>
+
+    This macro declares a symbol to be an import from a shared library (see
+    \l{sharedlibrary.html}{Creating Shared Libraries}).
+
+    \sa Q_DECL_EXPORT
+*/
+
 QT_END_NAMESPACE
