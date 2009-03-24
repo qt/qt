@@ -43,6 +43,7 @@ HEADERS += \
 	kernel/qwindowdefs.h \
 	kernel/qkeymapper_p.h \
 	kernel/qgesture.h \
+	kernel/qgesture_p.h \
 	kernel/qgesturemanager_p.h \
 	kernel/qgesturerecognizer_p.h \
 	kernel/qgesturerecognizer.h \
