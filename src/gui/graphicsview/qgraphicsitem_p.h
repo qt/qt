@@ -141,6 +141,7 @@ public:
         dirtyClipPath(1),
         emptyClipPath(0),
         inSetPosHelper(0),
+        allChildrenCombineOpacity(1),
         globalStackingOrder(-1),
         sceneTransformIndex(-1),
         q_ptr(0)
@@ -166,6 +167,7 @@ public:
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
     void updateHelper(const QRectF &rect = QRectF(), bool force = false, bool maybeDirtyClipPath = false);
     void fullUpdateHelper(bool childrenOnly = false, bool maybeDirtyClipPath = false);
+    void updateEffectiveOpacity();
     void resolveEffectiveOpacity(qreal effectiveParentOpacity);
     void resolveDepth(int parentDepth);
     void invalidateSceneTransformCache();
@@ -264,6 +266,9 @@ public:
                             && qFuzzyCompare(q_func()->effectiveOpacity() + 1, qreal(1.0)));
     }
 
+    inline bool childrenCombineOpacity() const
+    { return allChildrenCombineOpacity || children.isEmpty(); }
+
     inline bool isClippedAway() const
     { return !dirtyClipPath && q_func()->isClipped() && (emptyClipPath || cachedClipPath.isEmpty()); }
 
@@ -308,6 +313,7 @@ public:
     quint32 dirtyClipPath : 1;
     quint32 emptyClipPath : 1;
     quint32 inSetPosHelper : 1;
+    quint32 allChildrenCombineOpacity : 1;
 
     // Optional stacking order
     int globalStackingOrder;

@@ -1102,10 +1102,7 @@ void QGraphicsItem::setParentItem(QGraphicsItem *parent)
     }
 
     // Resolve opacity.
-    if (QGraphicsItem *p = d_ptr->parent)
-        d_ptr->resolveEffectiveOpacity(p->effectiveOpacity());
-    else
-        d_ptr->resolveEffectiveOpacity(1.0);
+    d_ptr->updateEffectiveOpacity();
 
     // Resolve depth.
     d_ptr->resolveDepth(parent ? parent->d_ptr->depth : -1);
@@ -1246,12 +1243,8 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
 
     // Reresolve effective opacity if the opacity flags change.
     static const quint32 opacityFlagsMask = ItemIgnoresParentOpacity | ItemDoesntPropagateOpacityToChildren;
-    if ((flags & opacityFlagsMask) != (oldFlags & opacityFlagsMask)) {
-        if (QGraphicsItem *p = d_ptr->parent)
-            d_ptr->resolveEffectiveOpacity(p->effectiveOpacity());
-        else
-            d_ptr->resolveEffectiveOpacity(1.0);
-    }
+    if ((flags & opacityFlagsMask) != (oldFlags & opacityFlagsMask))
+        d_ptr->updateEffectiveOpacity();
 
     if (!(d_ptr->flags & ItemIsFocusable) && hasFocus()) {
         // Clear focus on the item if it has focus when the focusable flag
@@ -3691,6 +3684,32 @@ void QGraphicsItemPrivate::fullUpdateHelper(bool childrenOnly, bool maybeDirtyCl
     foreach (QGraphicsItem *child, children)
         child->d_ptr->fullUpdateHelper(false, maybeDirtyClipPath);
     dirtyChildren = 1;
+}
+
+static inline bool allChildrenCombineOpacity(QGraphicsItem *parent)
+{
+    Q_ASSERT(parent);
+    if (parent->flags() & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)
+        return false;
+
+    const QList<QGraphicsItem *> children(parent->childItems());
+    for (int i = 0; i < children.size(); ++i) {
+        if (children.at(i)->flags() & QGraphicsItem::ItemIgnoresParentOpacity)
+            return false;
+    }
+    return true;
+}
+
+void QGraphicsItemPrivate::updateEffectiveOpacity()
+{
+    Q_Q(QGraphicsItem);
+    if (parent) {
+        resolveEffectiveOpacity(parent->effectiveOpacity());
+        parent->d_ptr->allChildrenCombineOpacity = ::allChildrenCombineOpacity(parent);
+    } else {
+        resolveEffectiveOpacity(1.0);
+    }
+    allChildrenCombineOpacity = ::allChildrenCombineOpacity(q);
 }
 
 /*!
