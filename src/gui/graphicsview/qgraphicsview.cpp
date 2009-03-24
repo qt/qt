@@ -2926,6 +2926,28 @@ bool QGraphicsView::viewportEvent(QEvent *event)
             d->scene->d_func()->updateAll = false;
         }
         break;
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+    {
+        if (!isEnabled())
+            return false;
+        QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
+        switch (touchEvent->type()) {
+        case QEvent::TouchBegin:
+            d->touchBeginEvent(touchEvent);
+            break;
+        case QEvent::TouchUpdate:
+            d->touchUpdateEvent(touchEvent);
+            break;
+        case QEvent::TouchEnd:
+            d->touchEndEvent(touchEvent);
+            break;
+        default:
+            break;
+        }
+        return true;
+    }
     default:
         break;
     }
@@ -3862,6 +3884,90 @@ void QGraphicsView::setTransform(const QTransform &matrix, bool combine )
 void QGraphicsView::resetTransform()
 {
     setTransform(QTransform());
+}
+
+static void qt_convertTouchEventToGraphicsSceneTouchEvent(QGraphicsViewPrivate *d, QTouchEvent *originalEvent, QGraphicsSceneTouchEvent *touchEvent)
+{
+    QList<QTouchEvent::TouchPoint *> originalTouchPoints = originalEvent->touchPoints();
+    QList<QGraphicsSceneTouchEvent::TouchPoint *> touchPoints;
+    for (int i = 0; i < originalTouchPoints.count(); ++i) {
+        QTouchEvent::TouchPoint *originalTouchPoint = originalTouchPoints.at(i);
+
+        QGraphicsSceneTouchEvent::TouchPoint *touchPoint = new QGraphicsSceneTouchEvent::TouchPoint();
+        touchPoint->setId(originalTouchPoint->id());
+        touchPoint->setState(originalTouchPoint->state());
+        // the scene will set the pos before delivering to an item
+        touchPoint->setScenePos(d->mapToScene(originalTouchPoint->pos()));
+        touchPoint->setScreenPos(originalTouchPoint->globalPos());
+        // the scene will set the startPos before delivering to an item
+        touchPoint->setStartScenePos(d->mapToScene(originalTouchPoint->startPos()));
+        touchPoint->setStartScreenPos(originalTouchPoint->startGlobalPos());
+        // the scene will set the lastPos before delivering to an item
+        touchPoint->setLastScenePos(d->mapToScene(originalTouchPoint->lastPos()));
+        touchPoint->setLastScreenPos(originalTouchPoint->lastGlobalPos());
+        touchPoint->setPressure(originalTouchPoint->pressure());
+
+        touchPoints.append(touchPoint);
+    }
+
+    touchEvent->setTouchPoints(touchPoints);
+    touchEvent->setModifiers(originalEvent->modifiers());
+}
+
+QPointF QGraphicsViewPrivate::mapToScene(const QPointF &point) const
+{
+    QPointF p = point;
+    p.rx() += horizontalScroll();
+    p.ry() += verticalScroll();
+    return identityMatrix ? p : matrix.inverted().map(p);
+}
+
+void QGraphicsViewPrivate::touchBeginEvent(QTouchEvent *event)
+{
+    Q_Q(QGraphicsView);
+
+    if (!scene || !sceneInteractionAllowed)
+        return;
+
+    // Convert and deliver the touch event to the scene.
+    QGraphicsSceneTouchEvent touchEvent(QEvent::GraphicsSceneTouchBegin);
+    touchEvent.setWidget(q->viewport());
+    qt_convertTouchEventToGraphicsSceneTouchEvent(this, event, &touchEvent);
+    touchEvent.setAccepted(false);
+    QApplication::sendEvent(scene, &touchEvent);
+    event->setAccepted(touchEvent.isAccepted());
+}
+
+void QGraphicsViewPrivate::touchUpdateEvent(QTouchEvent *event)
+{
+    Q_Q(QGraphicsView);
+
+    if (!scene || !sceneInteractionAllowed)
+        return;
+
+    // Convert and deliver the touch event to the scene.
+    QGraphicsSceneTouchEvent touchEvent(QEvent::GraphicsSceneTouchUpdate);
+    touchEvent.setWidget(q->viewport());
+    qt_convertTouchEventToGraphicsSceneTouchEvent(this, event, &touchEvent);
+    touchEvent.setAccepted(false);
+    QApplication::sendEvent(scene, &touchEvent);
+    event->setAccepted(touchEvent.isAccepted());
+}
+
+void QGraphicsViewPrivate::touchEndEvent(QTouchEvent *event)
+{
+    Q_Q(QGraphicsView);
+
+    if (!scene || !sceneInteractionAllowed)
+        return;
+
+    // Convert and deliver the touch event to the scene.
+    QGraphicsSceneTouchEvent touchEvent(QEvent::GraphicsSceneTouchEnd);
+    touchEvent.setWidget(q->viewport());
+    qt_convertTouchEventToGraphicsSceneTouchEvent(this, event, &touchEvent);
+    touchEvent.setAccepted(false);
+    QApplication::sendEvent(scene, &touchEvent);
+    event->setAccepted(touchEvent.isAccepted());
 }
 
 QT_END_NAMESPACE

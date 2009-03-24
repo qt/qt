@@ -182,6 +182,11 @@ public:
 			      const QTransform &worldTransform,
 			      bool allItems,
 			      const QRegion &exposedRegion) const;
+
+    QPointF mapToScene(const QPointF &point) const;
+    void touchBeginEvent(QTouchEvent *event);
+    void touchUpdateEvent(QTouchEvent *event);
+    void touchEndEvent(QTouchEvent *event);
 };
 
 QT_END_NAMESPACE

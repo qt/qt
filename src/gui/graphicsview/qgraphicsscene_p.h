@@ -73,6 +73,7 @@ QT_BEGIN_NAMESPACE
 
 class QGraphicsView;
 class QGraphicsWidget;
+class QGraphicsSceneTouchEvent;
 
 class QGraphicsScenePrivate : public QObjectPrivate
 {
@@ -259,6 +260,11 @@ public:
     mutable QVector<QTransform> sceneTransformCache;
     mutable QBitArray validTransforms;
     mutable QVector<int> freeSceneTransformSlots;
+
+    void sendTouchEvent(QGraphicsSceneTouchEvent *touchEvent);
+    void touchBeginEvent(QGraphicsSceneTouchEvent *touchEvent);
+    void touchUpdateEvent(QGraphicsSceneTouchEvent *touchEvent);
+    void touchEndEvent(QGraphicsSceneTouchEvent *touchEvent);
 };
 
 QT_END_NAMESPACE

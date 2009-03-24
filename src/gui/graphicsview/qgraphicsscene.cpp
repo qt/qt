@@ -3609,6 +3609,9 @@ bool QGraphicsScene::event(QEvent *event)
     case QEvent::GraphicsSceneHoverEnter:
     case QEvent::GraphicsSceneHoverLeave:
     case QEvent::GraphicsSceneHoverMove:
+    case QEvent::GraphicsSceneTouchBegin:
+    case QEvent::GraphicsSceneTouchUpdate:
+    case QEvent::GraphicsSceneTouchEnd:
         // Reset the under-mouse list to ensure that this event gets fresh
         // item-under-mouse data. Be careful about this list; if people delete
         // items from inside event handlers, this list can quickly end up
@@ -3759,6 +3762,15 @@ bool QGraphicsScene::event(QEvent *event)
         // Reresolve all widgets' styles. Update all top-level widgets'
         // geometries that do not have an explicit style set.
         update();
+        break;
+    case QEvent::GraphicsSceneTouchBegin:
+        d->touchBeginEvent(static_cast<QGraphicsSceneTouchEvent *>(event));
+        break;
+    case QEvent::GraphicsSceneTouchUpdate:
+        d->touchUpdateEvent(static_cast<QGraphicsSceneTouchEvent *>(event));
+        break;
+    case QEvent::GraphicsSceneTouchEnd:
+        d->touchEndEvent(static_cast<QGraphicsSceneTouchEvent *>(event));
         break;
     case QEvent::Timer:
         if (d->indexTimerId && static_cast<QTimerEvent *>(event)->timerId() == d->indexTimerId) {
@@ -5367,6 +5379,160 @@ void QGraphicsScene::setActiveWindow(QGraphicsWidget *widget)
 
         if (QGraphicsWidget *focusChild = window->focusWidget())
             focusChild->setFocus(Qt::ActiveWindowFocusReason);
+    }
+}
+
+// ### FIXME: the code for touch event support is mosly copied from
+// ### QGraphicsScenePrivate::mousePressEventHandler() and friends, need to
+// ### refactor to reduce code duplication
+
+void QGraphicsScenePrivate::sendTouchEvent(QGraphicsSceneTouchEvent *touchEvent)
+{
+    if (touchEvent->type() == QEvent::GraphicsSceneTouchEnd && lastMouseGrabberItemHasImplicitMouseGrab) {
+        clearMouseGrabber();
+        return;
+    }
+
+    QGraphicsItem *item = mouseGrabberItems.last();
+    QList<QGraphicsSceneTouchEvent::TouchPoint *> touchPoints = touchEvent->touchPoints();
+    for (int i = 0; i < touchPoints.count(); ++i) {
+        QGraphicsSceneTouchEvent::TouchPoint *touchPoint = touchPoints.at(i);
+        touchPoint->setPos(item->d_ptr->genericMapFromScene(touchPoint->scenePos(), touchEvent->widget()));
+        touchPoint->setStartPos(item->d_ptr->genericMapFromScene(touchPoint->startScenePos(), touchEvent->widget()));
+        touchPoint->setLastPos(item->d_ptr->genericMapFromScene(touchPoint->lastScenePos(), touchEvent->widget()));
+    }
+    sendEvent(item, touchEvent);
+}
+
+void QGraphicsScenePrivate::touchBeginEvent(QGraphicsSceneTouchEvent *touchEvent)
+{
+    Q_Q(QGraphicsScene);
+
+    // Ignore by default, unless we find a mouse grabber that accepts it.
+    touchEvent->ignore();
+
+    // Deliver to any existing mouse grabber.
+    if (!mouseGrabberItems.isEmpty()) {
+        // The event is ignored by default, but we disregard the event's
+        // accepted state after delivery; the mouse is grabbed, after all.
+        sendTouchEvent(touchEvent);
+        return;
+    }
+
+    // Start by determining the number of items at the current position.
+    // Reuse value from earlier calculations if possible.
+    if (cachedItemsUnderMouse.isEmpty()) {
+        QGraphicsSceneTouchEvent::TouchPoint *touchPoint = touchEvent->touchPoints().first();
+        // ### FIXME: should the itemsAtPosition() function support sub-pixel screenPos?
+        cachedItemsUnderMouse = itemsAtPosition(touchPoint->screenPos().toPoint(),
+                                                touchPoint->scenePos(),
+                                                touchEvent->widget());
+    }
+
+    // Update window activation.
+    QGraphicsWidget *newActiveWindow = windowForItem(cachedItemsUnderMouse.value(0));
+    if (newActiveWindow != activeWindow)
+        q->setActiveWindow(newActiveWindow);
+
+    // Set focus on the topmost enabled item that can take focus.
+    bool setFocus = false;
+    foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
+        if (item->isEnabled() && (item->flags() & QGraphicsItem::ItemIsFocusable)) {
+            if (!item->isWidget() || ((QGraphicsWidget *)item)->focusPolicy() & Qt::ClickFocus) {
+                setFocus = true;
+                if (item != q->focusItem())
+                    q->setFocusItem(item, Qt::MouseFocusReason);
+                break;
+            }
+        }
+    }
+
+    // If nobody could take focus, clear it.
+    if (!stickyFocus && !setFocus)
+        q->setFocusItem(0, Qt::MouseFocusReason);
+
+    // Find a mouse grabber by sending touch events to all mouse grabber
+    // candidates one at a time, until the event is accepted. It's accepted by
+    // default, so the receiver has to explicitly ignore it for it to pass
+    // through.
+    foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
+        if (!item->acceptTouchEvents()) {
+            // Skip items that don't accept the touch events
+            continue;
+        }
+
+        grabMouse(item, /* implicit = */ true);
+        touchEvent->accept();
+
+        // check if the item we are sending to are disabled (before we send the event)
+        bool disabled = !item->isEnabled();
+        bool isWindow = item->isWindow();
+        sendTouchEvent(touchEvent);
+
+        bool dontSendUngrabEvents = mouseGrabberItems.isEmpty() || mouseGrabberItems.last() != item;
+        if (disabled) {
+            ungrabMouse(item, /* itemIsDying = */ dontSendUngrabEvents);
+            break;
+        }
+        if (touchEvent->isAccepted()) {
+            lastMouseGrabberItem = item;
+            return;
+        }
+        ungrabMouse(item, /* itemIsDying = */ dontSendUngrabEvents);
+
+        // Don't propagate through windows.
+        if (isWindow)
+            break;
+    }
+
+    // Is the event still ignored? Then the mouse press goes to the scene.
+    // Reset the mouse grabber, clear the selection, clear focus, and leave
+    // the event ignored so that it can propagate through the originating
+    // view.
+    if (!touchEvent->isAccepted()) {
+        clearMouseGrabber();
+
+        QGraphicsView *view = touchEvent->widget() ? qobject_cast<QGraphicsView *>(touchEvent->widget()->parentWidget()) : 0;
+        bool dontClearSelection = view && view->dragMode() == QGraphicsView::ScrollHandDrag;
+        if (!dontClearSelection) {
+            // Clear the selection if the originating view isn't in scroll
+            // hand drag mode. The view will clear the selection if no drag
+            // happened.
+            q->clearSelection();
+        }
+    }
+}
+
+void QGraphicsScenePrivate::touchUpdateEvent(QGraphicsSceneTouchEvent *touchEvent)
+{
+    if (mouseGrabberItems.isEmpty()) {
+        touchEvent->ignore();
+        return;
+    }
+
+    // Forward the event to the mouse grabber
+    sendTouchEvent(touchEvent);
+    touchEvent->accept();
+}
+
+void QGraphicsScenePrivate::touchEndEvent(QGraphicsSceneTouchEvent *touchEvent)
+{
+    if (mouseGrabberItems.isEmpty()) {
+        touchEvent->ignore();
+        return;
+    }
+
+    // Forward the event to the mouse grabber
+    sendTouchEvent(touchEvent);
+    touchEvent->accept();
+
+    // Reset the mouse grabber
+    if (!mouseGrabberItems.isEmpty()) {
+        lastMouseGrabberItem = mouseGrabberItems.last();
+        if (lastMouseGrabberItemHasImplicitMouseGrab)
+            mouseGrabberItems.last()->ungrabMouse();
+    } else {
+        lastMouseGrabberItem = 0;
     }
 }
 
