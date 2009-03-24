@@ -130,6 +130,7 @@ private slots:
     void task236755_hiddenColumns();
     void task247867_insertRowsSort();
     void task248868_staticSorting();
+    void task248868_dynamicSorting();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
@@ -2538,6 +2539,57 @@ void tst_QSortFilterProxyModel::task248868_staticSorting()
     }
 
 }
+
+void tst_QSortFilterProxyModel::task248868_dynamicSorting()
+{
+    QStringListModel model1;
+    const QStringList initial = QString("bateau avion dragon hirondelle flamme camion elephant").split(" ");
+    model1.setStringList(initial);
+    QSortFilterProxyModel proxy1;
+    proxy1.sort(0);
+    proxy1.setSourceModel(&model1);
+
+    QCOMPARE(proxy1.columnCount(QModelIndex()), 1);
+    //the model should not be sorted because sorting has not been set to dynamic yet.
+    QCOMPARE(proxy1.rowCount(QModelIndex()), initial.count());
+    for (int row = 0; row < proxy1.rowCount(QModelIndex()); ++row) {
+        QModelIndex index = proxy1.index(row, 0, QModelIndex());
+        QCOMPARE(proxy1.data(index, Qt::DisplayRole).toString(), initial.at(row));
+    }
+
+    proxy1.setDynamicSortFilter(true);
+
+    //now the model should be sorted.
+    QStringList expected = initial;
+    expected.sort();
+    for (int row = 0; row < proxy1.rowCount(QModelIndex()); ++row) {
+        QModelIndex index = proxy1.index(row, 0, QModelIndex());
+        QCOMPARE(proxy1.data(index, Qt::DisplayRole).toString(), expected.at(row));
+    }
+
+    QStringList initial2 = initial;
+    initial2.replaceInStrings("bateau", "girafe");
+    model1.setStringList(initial2); //this will cause a reset
+    
+    QStringList expected2 = initial2;
+    expected2.sort();
+
+    //now the model should still be sorted.
+    for (int row = 0; row < proxy1.rowCount(QModelIndex()); ++row) {
+        QModelIndex index = proxy1.index(row, 0, QModelIndex());
+        QCOMPARE(proxy1.data(index, Qt::DisplayRole).toString(), expected2.at(row));
+    }
+
+    QStringListModel model2(initial);
+    proxy1.setSourceModel(&model2);
+
+    //the model should again be sorted
+    for (int row = 0; row < proxy1.rowCount(QModelIndex()); ++row) {
+        QModelIndex index = proxy1.index(row, 0, QModelIndex());
+        QCOMPARE(proxy1.data(index, Qt::DisplayRole).toString(), expected.at(row));
+    }
+}
+
 
 QTEST_MAIN(tst_QSortFilterProxyModel)
 #include "tst_qsortfilterproxymodel.moc"
