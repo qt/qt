@@ -105,13 +105,14 @@ void Translator::extend(const TranslatorMessage &msg)
     if (index == -1) {
         m_messages.append(msg);
     } else {
-        m_messages[index].addReferenceUniq(msg.fileName(), msg.lineNumber());
+        TranslatorMessage &emsg = m_messages[index];
+        emsg.addReferenceUniq(msg.fileName(), msg.lineNumber());
         if (!msg.extraComment().isEmpty()) {
-            QString cmt = m_messages[index].extraComment();
+            QString cmt = emsg.extraComment();
             if (!cmt.isEmpty())
                 cmt.append(QLatin1String("\n----------\n"));
             cmt.append(msg.extraComment());
-            m_messages[index].setExtraComment(cmt);
+            emsg.setExtraComment(cmt);
         }
     }
 }
