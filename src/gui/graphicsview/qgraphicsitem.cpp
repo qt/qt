@@ -2363,7 +2363,8 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
         return;
 
     // Notify the item that the position is changing.
-    QPointF newPos = q->itemChange(QGraphicsItem::ItemPositionChange, pos).toPointF();
+    const QVariant newPosVariant(q->itemChange(QGraphicsItem::ItemPositionChange, pos));
+    QPointF newPos = newPosVariant.toPointF();
     if (newPos == this->pos)
         return;
 
@@ -2378,7 +2379,7 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
     invalidateSceneTransformCache();
 
     // Send post-notification.
-    q->itemChange(QGraphicsItem::ItemPositionHasChanged, newPos);
+    q->itemChange(QGraphicsItem::ItemPositionHasChanged, newPosVariant);
     inSetPosHelper = 0;
 }
 
