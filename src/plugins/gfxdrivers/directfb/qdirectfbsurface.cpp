@@ -126,14 +126,15 @@ void QDirectFBSurface::setGeometry(const QRect &rect, const QRegion &mask)
         // If we're in a resize, the surface shouldn't be locked
         Q_ASSERT( (lockedImage == 0) || (isResize == false));
 
-        IDirectFBSurface *s = screen->dfbSurface();
-        if (onscreen && s) {
+        if (onscreen) {
             if (dfbSurface)
                 dfbSurface->Release(dfbSurface);
 
             DFBRectangle r = { rect.x(), rect.y(),
                                rect.width(), rect.height() };
-            result = s->GetSubSurface(s, &r, &dfbSurface);
+            IDirectFBSurface *primarySurface = screen->dfbSurface();
+            Q_ASSERT(primarySurface);
+            result = primarySurface->GetSubSurface(primarySurface, &r, &dfbSurface);
         } else {
 #ifdef QT_NO_DIRECTFB_WM
             if (isResize) {

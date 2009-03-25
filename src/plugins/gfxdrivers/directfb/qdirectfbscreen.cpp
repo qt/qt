@@ -362,50 +362,6 @@ void QDirectFBScreen::setSurfaceColorTable(IDirectFBSurface *surface,
     palette->Release(palette);
 }
 
-void QDirectFBScreen::setImageColorTable(QImage *image, IDirectFBSurface *surface)
-{
-    if (!image || !surface || image->depth() > 8)
-        return;
-
-    IDirectFBPalette *palette = 0;
-    unsigned int numColors = 0;
-    DFBResult result;
-    do {
-        result = surface->GetPalette(surface, &palette);
-        if (result != DFB_OK) {
-            DirectFBError("QDirectFBScreen::setImageColorTable GetPalette", result);
-            break;
-        }
-
-        result = palette->GetSize(palette, &numColors);
-        if (result != DFB_OK) {
-            DirectFBError("QDirectFBScreen::setImageColorTable GetPalette", result);
-            break;
-        }
-
-        if (numColors == 0)
-            break;
-
-        QVarLengthArray<DFBColor> dfbColors(numColors);
-        result = palette->GetEntries(palette, dfbColors.data(), numColors, 0);
-        if (result != DFB_OK) {
-            DirectFBError("QDirectFBScreen::setImageColorTable GetPalette", result);
-            break;
-        }
-
-        QVector<QRgb> qtColors(numColors);
-        for (unsigned int i=0; i<numColors; ++i) {
-            const DFBColor &col = dfbColors[i];
-            qtColors[i] = qRgba(col.r, col.g, col.b, col.a);
-        }
-        image->setColorTable(qtColors);
-
-    } while (0);
-
-    if (palette)
-        palette->Release(palette);
-}
-
 #endif // QT_NO_DIRECTFB_PALETTE
 
 #if !defined(QT_NO_DIRECTFB_LAYER) && !defined(QT_NO_QWS_CURSOR)

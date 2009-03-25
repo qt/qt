@@ -64,7 +64,6 @@ void QDirectFBPaintDevice::lockDirectFB() {
 
     void *mem;
     int w, h;
-    int bpl;
     DFBSurfacePixelFormat format;
 
     DFBResult result = dfbSurface->Lock(dfbSurface, DSLF_WRITE, &mem, &bpl);
@@ -111,11 +110,15 @@ QImage::Format QDirectFBPaintDevice::format() const
 
 int QDirectFBPaintDevice::bytesPerLine() const
 {
-    // Can only get the stride when we lock the surface
-    QDirectFBPaintDevice* that = const_cast<QDirectFBPaintDevice*>(this);
-    that->lockDirectFB();
-    Q_ASSERT(that->lockedImage);
-    return that->lockedImage->bytesPerLine();
+    if (bpl == -1) {
+        // Can only get the stride when we lock the surface
+        Q_ASSERT(!lockedImage);
+        QDirectFBPaintDevice* that = const_cast<QDirectFBPaintDevice*>(this);
+        that->lockDirectFB();
+        Q_ASSERT(bpl != -1);
+        that->unlockDirectFB();
+    }
+    return bpl;
 }
 
 

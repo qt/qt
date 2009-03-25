@@ -61,6 +61,7 @@
 #endif
 #include <private/qcombobox_p.h>
 #include <private/qabstractitemmodel_p.h>
+#include <private/qabstractscrollarea_p.h>
 #include <qdebug.h>
 
 #ifdef Q_WS_X11
@@ -2273,7 +2274,6 @@ void QComboBox::showPopup()
     bool boundToScreen = !window()->testAttribute(Qt::WA_DontShowOnScreen);
 
     const bool usePopup = style->styleHint(QStyle::SH_ComboBox_Popup, &opt, this);
-
     {
         int listHeight = 0;
         int count = 0;
@@ -2305,11 +2305,23 @@ void QComboBox::showPopup()
         listRect.setHeight(listHeight);
     }
 
-    // add the frame size to the height.  (+the spacing for the top and the bottom item)
-    int marginTop, marginBottom;
-    view()->getContentsMargins(0, &marginTop, 0, &marginBottom);
-    listRect.setHeight(listRect.height() + 2*container->spacing()
-                       + marginTop + marginBottom);
+    {
+        // add the spacing for the grid on the top and the bottom;
+        int heightMargin = 2*container->spacing();
+
+        // add the frame of the container
+        int marginTop, marginBottom;
+        container->getContentsMargins(0, &marginTop, 0, &marginBottom);
+        heightMargin += marginTop + marginBottom;
+
+        //add the frame of the view
+        view()->getContentsMargins(0, &marginTop, 0, &marginBottom);
+        marginTop += static_cast<QAbstractScrollAreaPrivate *>(QObjectPrivate::get(view()))->top;
+        marginBottom += static_cast<QAbstractScrollAreaPrivate *>(QObjectPrivate::get(view()))->bottom;
+        heightMargin += marginTop + marginBottom;
+
+        listRect.setHeight(listRect.height() + heightMargin);
+    }
 
     // Add space for margin at top and bottom if the style wants it.
     if (usePopup)

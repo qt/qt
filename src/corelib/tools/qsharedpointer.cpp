@@ -842,15 +842,19 @@ QT_BEGIN_NAMESPACE
 */
 void QtSharedPointer::internalSafetyCheckAdd(const volatile void *ptr)
 {
-    QMutexLocker lock(&knownPointers()->mutex);
+    KnownPointers *const kp = knownPointers();
+    if (!kp)
+        return;                 // end-game: the application is being destroyed already
+
+    QMutexLocker lock(&kp->mutex);
     void *actual = const_cast<void*>(ptr);
-    if (knownPointers()->values.contains(actual)) {
+    if (kp->values.contains(actual)) {
         printBacktrace(knownPointers()->values.value(actual));
         qFatal("QSharedPointerData: internal self-check failed: pointer %p was already tracked "
                "by another QSharedPointerData object", actual);
     }
 
-    knownPointers()->values.insert(actual, saveBacktrace());
+    kp->values.insert(actual, saveBacktrace());
 }
 
 /*!
@@ -858,9 +862,13 @@ void QtSharedPointer::internalSafetyCheckAdd(const volatile void *ptr)
 */
 void QtSharedPointer::internalSafetyCheckRemove(const volatile void *ptr)
 {
-    QMutexLocker lock(&knownPointers()->mutex);
+    KnownPointers *const kp = knownPointers();
+    if (!kp)
+        return;                 // end-game: the application is being destroyed already
+
+    QMutexLocker lock(&kp->mutex);
     void *actual = const_cast<void*>(ptr);
-    knownPointers()->values.remove(actual);
+    kp->values.remove(actual);
 }
 
 QT_END_NAMESPACE
