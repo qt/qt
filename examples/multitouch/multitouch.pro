@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = pinchzoom
+SUBDIRS = pinchzoom fingerpaint
