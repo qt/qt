@@ -125,6 +125,13 @@ static const QColor titlebarSeparatorLineInactive(131, 131, 131);
 static const QColor mainWindowGradientBegin(240, 240, 240);
 static const QColor mainWindowGradientEnd(200, 200, 200);
 
+#if (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5)
+enum {
+    kThemePushButtonTextured = 31,
+    kThemePushButtonTexturedSmall = 32,
+    kThemePushButtonTexturedMini = 33
+};
+#endif
 
 // Resolve these at run-time, since the functions was moved in Leopard.
 typedef HIRect * (*PtrHIShapeGetBounds)(HIShapeRef, HIRect *);
