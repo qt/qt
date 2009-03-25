@@ -55,6 +55,7 @@
 //
 
 #include "QtGui/qapplication.h"
+#include "QtGui/qevent.h"
 #include "QtGui/qfont.h"
 #include "QtGui/qcursor.h"
 #include "QtGui/qregion.h"
@@ -77,10 +78,7 @@ class QClipboard;
 class QGraphicsScene;
 class QGraphicsSystem;
 class QInputContext;
-class QKeyEvent;
-class QMouseEvent;
 class QObject;
-class QWheelEvent;
 class QWidget;
 
 extern bool qt_is_gui_used;
@@ -187,6 +185,12 @@ extern "C" {
     typedef bool (*Ptrqt_tryComposeUnicode)(QWidget *w, QKeyEvent *e);
     typedef bool (*Ptrqt_dispatchAccelEvent)(QWidget *w, QKeyEvent *e);
 }
+#endif
+
+#if defined(Q_WS_WIN)
+typedef BOOL (WINAPI *qt_RegisterTouchWindowPtr)(HWND, ULONG);
+typedef BOOL (WINAPI *qt_GetTouchInputInfoPtr)(HANDLE, UINT, PVOID, int);
+typedef BOOL (WINAPI *qt_CloseTouchInputHandlePtr)(HANDLE);
 #endif
 
 class QScopedLoopLevelCounter
@@ -426,6 +430,23 @@ public:
 
     QPointer<QWidget> currentMultitouchWidget;
     static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
+
+#if defined(Q_WS_WIN)
+    static qt_RegisterTouchWindowPtr RegisterTouchWindow;
+    static qt_GetTouchInputInfoPtr GetTouchInputInfo;
+    static qt_CloseTouchInputHandlePtr CloseTouchInputHandle;
+
+    QMap<DWORD, int> touchInputIDToTouchPointID;
+    QVector<QTouchEvent::TouchPoint *> allTouchPoints;
+    QList<QTouchEvent::TouchPoint *> currentTouchPoints, activeTouchPoints;
+
+    static bool sendTouchEvent(QWidget *widget, QTouchEvent *touchEvent);
+
+    void initializeMultitouch();
+    void insertActiveTouch(QTouchEvent::TouchPoint *touchPoint);
+    void removeActiveTouch(QTouchEvent::TouchPoint *touchPoint);
+    bool translateTouchEvent(const MSG &msg);
+#endif
 
 private:
 #ifdef Q_WS_QWS

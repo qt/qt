@@ -503,6 +503,10 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         }
     }
 
+    // ### don't always register for touch events
+    if (QApplicationPrivate::RegisterTouchWindow && !desktop)
+        QApplicationPrivate::RegisterTouchWindow(id, 0);
+
     q->setAttribute(Qt::WA_WState_Created);                // accept move/resize events
     hd = 0;                                        // no display context
 

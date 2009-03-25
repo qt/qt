@@ -88,6 +88,7 @@ extern void qt_wince_hide_taskbar(HWND hwnd); //defined in qguifunctions_wince.c
 #include "qdebug.h"
 #include <private/qkeymapper_p.h>
 #include <private/qlocale_p.h>
+#include "qevent_p.h"
 
 //#define ALIEN_DEBUG
 
@@ -112,6 +113,39 @@ extern void qt_wince_hide_taskbar(HWND hwnd); //defined in qguifunctions_wince.c
 #  include <winable.h>
 #endif
 
+#ifndef WM_TOUCHMOVE
+
+#  define WM_TOUCHMOVE 0x0240
+#  define WM_TOUCHDOWN 0x0241
+#  define WM_TOUCHUP   0x0242
+
+#  define TOUCHEVENTF_MOVE       0x0001
+#  define TOUCHEVENTF_DOWN       0x0002
+#  define TOUCHEVENTF_UP         0x0004
+#  define TOUCHEVENTF_INRANGE    0x0008
+#  define TOUCHEVENTF_PRIMARY    0x0010
+#  define TOUCHEVENTF_NOCOALESCE 0x0020
+#  define TOUCHEVENTF_PEN        0x0040
+
+#  define TOUCHINPUTMASKF_TIMEFROMSYSTEM 0x0001
+#  define TOUCHINPUTMASKF_EXTRAINFO      0x0002
+#  define TOUCHINPUTMASKF_CONTACTAREA    0x0004
+
+typedef struct tagTOUCHINPUT
+{
+    LONG x;
+    LONG y;
+    HANDLE hSource;
+    DWORD dwID;
+    DWORD dwFlags;
+    DWORD dwMask;
+    DWORD dwTime;
+    ULONG_PTR dwExtraInfo;
+    DWORD cxContact;
+    DWORD cyContact;
+} TOUCHINPUT, *PTOUCHINPUT;
+
+#endif
 
 #ifndef FLASHW_STOP
 typedef struct {
@@ -856,6 +890,8 @@ void qt_init(QApplicationPrivate *priv, int)
     if (ptrUpdateLayeredWindow && !ptrUpdateLayeredWindowIndirect)
         ptrUpdateLayeredWindowIndirect = qt_updateLayeredWindowIndirect;
 #endif
+
+    priv->initializeMultitouch();
 }
 
 /*****************************************************************************
@@ -1726,6 +1762,11 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
         result = widget->translateWheelEvent(msg);
     } else {
         switch (message) {
+        case WM_TOUCHMOVE:
+        case WM_TOUCHDOWN:
+        case WM_TOUCHUP:
+            result = getQApplicationPrivateInternal()->translateTouchEvent(msg);
+            break;
         case WM_KEYDOWN:                        // keyboard event
         case WM_SYSKEYDOWN:
             qt_keymapper_private()->updateKeyMap(msg);
@@ -3952,5 +3993,156 @@ void QSessionManager::cancel()
 }
 
 #endif //QT_NO_SESSIONMANAGER
+
+qt_RegisterTouchWindowPtr QApplicationPrivate::RegisterTouchWindow = 0;
+qt_GetTouchInputInfoPtr QApplicationPrivate::GetTouchInputInfo = 0;
+qt_CloseTouchInputHandlePtr QApplicationPrivate::CloseTouchInputHandle = 0;
+
+void QApplicationPrivate::initializeMultitouch()
+{
+    QLibrary library(QLatin1String("user32"));
+    RegisterTouchWindow = static_cast<qt_RegisterTouchWindowPtr>(library.resolve("RegisterTouchWindow"));
+    GetTouchInputInfo = static_cast<qt_GetTouchInputInfoPtr>(library.resolve("GetTouchInputInfo"));
+    CloseTouchInputHandle = static_cast<qt_CloseTouchInputHandlePtr>(library.resolve("CloseTouchInputHandle"));
+
+    currentMultitouchWidget = 0;
+    touchInputIDToTouchPointID.clear();
+    allTouchPoints.clear();
+    currentTouchPoints.clear();
+    activeTouchPoints.clear();
+}
+
+void QApplicationPrivate::insertActiveTouch(QTouchEvent::TouchPoint *touchPoint)
+{
+    // insort deviceNumber
+    int at = 0;
+    for (; at < currentTouchPoints.count(); ++at) {
+        if (currentTouchPoints.at(at)->id() > touchPoint->id())
+            break;
+    }
+    currentTouchPoints.insert(at, touchPoint);
+    activeTouchPoints = currentTouchPoints;
+
+    if (currentTouchPoints.count() > allTouchPoints.count()) {
+        qFatal("Qt: INTERNAL ERROR: currentTouchPoints.count() (%d) > allTouchPoints.count() (%d)",
+               currentTouchPoints.count(),
+               allTouchPoints.count());
+    }
+}
+
+void QApplicationPrivate::removeActiveTouch(QTouchEvent::TouchPoint *touchPoint)
+{
+    for (int i = qMin(currentTouchPoints.count() - 1, touchPoint->id()); i >= 0; --i) {
+        if (currentTouchPoints.at(i) == touchPoint) {
+            currentTouchPoints.removeAt(i);
+            break;
+        }
+    }
+
+    // leave activeTouchPoints unchanged, since we need to make sure
+    // that the Release for deviceNumber is sent
+}
+
+bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
+{
+    Q_Q(QApplication);
+
+    bool sendTouchBegin = currentTouchPoints.isEmpty();
+    activeTouchPoints = currentTouchPoints;
+
+    QVector<TOUCHINPUT> winTouchInputs(msg.wParam);
+    memset(winTouchInputs.data(), 0, sizeof(TOUCHINPUT) * winTouchInputs.count());
+    QApplicationPrivate::GetTouchInputInfo((HANDLE) msg.lParam, msg.wParam, winTouchInputs.data(), sizeof(TOUCHINPUT));
+    for (int i = 0; i < winTouchInputs.count(); ++i) {
+        const TOUCHINPUT &touchInput = winTouchInputs.at(i);
+
+        int touchPointID = touchInputIDToTouchPointID.value(touchInput.dwID, -1);
+        if (touchPointID == -1) {
+            touchPointID = touchInputIDToTouchPointID.count();
+            touchInputIDToTouchPointID.insert(touchInput.dwID, touchPointID);
+        }
+
+        if (allTouchPoints.count() <= touchPointID)
+            allTouchPoints.resize(touchPointID + 1);
+
+        QTouchEvent::TouchPoint *touchPoint = allTouchPoints.at(touchPointID);
+        if (!touchPoint)
+            touchPoint = allTouchPoints[touchPointID] = new QTouchEvent::TouchPoint(touchPointID);
+
+        // update state
+        bool down = touchPoint->d->state != Qt::TouchPointReleased;
+        QPointF globalPos(qreal(touchInput.x) / qreal(100.), qreal(touchInput.y) / qreal(100.));
+        if (!down && (touchInput.dwFlags & TOUCHEVENTF_DOWN)) {
+            insertActiveTouch(touchPoint);
+            touchPoint->d->state = Qt::TouchPointPressed;
+            touchPoint->d->globalPos = touchPoint->d->startGlobalPos = touchPoint->d->lastGlobalPos = globalPos;
+            touchPoint->d->pressure = qreal(1.);
+        } else if (down && (touchInput.dwFlags & TOUCHEVENTF_UP)) {
+            removeActiveTouch(touchPoint);
+            touchPoint->d->state = Qt::TouchPointReleased;
+            touchPoint->d->lastGlobalPos = touchPoint->d->globalPos;
+            touchPoint->d->globalPos = globalPos;
+            touchPoint->d->pressure = qreal(0.);
+        } else if (down) {
+            touchPoint->d->state = globalPos == touchPoint->d->globalPos
+                                   ? Qt::TouchPointStationary
+                                   : Qt::TouchPointMoved;
+            touchPoint->d->lastGlobalPos = touchPoint->d->globalPos;
+            touchPoint->d->globalPos = globalPos;
+            // pressure should still be 1.
+        }
+    }
+    QApplicationPrivate::CloseTouchInputHandle((HANDLE) msg.lParam);
+
+    bool sendTouchEnd = currentTouchPoints.isEmpty();
+
+    if (activeTouchPoints.isEmpty())
+        return false;
+
+    if (sendTouchBegin) {
+        // the window under the first touch point gets the touch event
+        int firstTouchId = activeTouchPoints.first()->id();
+        const QPoint &globalPos = allTouchPoints.at(firstTouchId)->d->globalPos.toPoint();
+        QWidget *window = q->topLevelAt(globalPos);
+        if (window) {
+            QWidget *child = window->childAt(window->mapFromGlobal(globalPos));
+            if (!child)
+                child = window;
+            currentMultitouchWidget = child;
+        }
+    }
+
+    QWidget *widget = q->activePopupWidget();
+    if (!widget)
+        widget = currentMultitouchWidget;
+
+    if (sendTouchEnd) {
+        // reset currentMultitouchWindow when the last touch is released
+        currentMultitouchWidget = 0;
+        if (!currentTouchPoints.isEmpty()) {
+            qFatal("Qt: INTERNAL ERROR, currentTouchPoints should be empty!");
+        }
+    }
+
+    // deliver the event
+    if (widget && QApplicationPrivate::tryModalHelper(widget, 0)) {
+        QTouchEvent touchEvent((sendTouchBegin
+                                ? QEvent::TouchBegin
+                                : sendTouchEnd
+                                ? QEvent::TouchEnd
+                                : QEvent::TouchUpdate),
+                               q->keyboardModifiers(), activeTouchPoints);
+        updateTouchPointsForWidget(widget, &touchEvent);
+        return (qt_tabletChokeMouse = sendTouchEvent(widget, &touchEvent));
+    }
+
+    return false;
+}
+
+bool QApplicationPrivate::sendTouchEvent(QWidget *widget, QTouchEvent *touchEvent)
+{
+    bool res = QApplication::sendSpontaneousEvent(widget, touchEvent);
+    return res && touchEvent->isAccepted();
+}
 
 QT_END_NAMESPACE
