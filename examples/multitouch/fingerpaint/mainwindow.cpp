@@ -53,7 +53,7 @@ MainWindow::MainWindow()
     createActions();
     createMenus();
 
-    setWindowTitle(tr("Scribble"));
+    setWindowTitle(tr("Finger Paint"));
     resize(500, 500);
 }
 //! [0]
