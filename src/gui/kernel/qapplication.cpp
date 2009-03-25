@@ -4231,7 +4231,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
     them.
 
     We recommend setting the restart hint in QApplication::saveState() because
-    most session managers perform a checkpoint shortly after an application's   
+    most session managers perform a checkpoint shortly after an application's
     startup.
 
     \sa restartHint()
