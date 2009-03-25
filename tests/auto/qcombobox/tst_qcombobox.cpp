@@ -2132,7 +2132,7 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
 
     QFrame *container = qFindChild<QComboBoxPrivateContainer *>(&comboBox);
     QVERIFY(container);
-    QVERIFY(desktop.availableGeometry().contains(container->geometry()));
+    QVERIFY(desktop.screenGeometry(container).contains(container->geometry()));
 }
 
 void tst_QComboBox::task247863_keyBoardSelection()
