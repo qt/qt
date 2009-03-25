@@ -3735,19 +3735,10 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QPoint relpos = mouse->pos();
 
             if (e->spontaneous()) {
-
                 if (e->type() == QEvent::MouseButtonPress) {
-                    QWidget *fw = w;
-                    while (fw) {
-                        if (fw->isEnabled()
-                            && QApplicationPrivate::shouldSetFocus(fw, Qt::ClickFocus)) {
-                            fw->setFocus(Qt::MouseFocusReason);
-                            break;
-                        }
-                        if (fw->isWindow())
-                            break;
-                        fw = fw->parentWidget();
-                    }
+                    QApplicationPrivate::giveFocusAccordingToFocusPolicy(w,
+                                                                         Qt::ClickFocus,
+                                                                         Qt::MouseFocusReason);
                 }
 
                 if (e->type() == QEvent::MouseMove && mouse->buttons() == 0) {
@@ -3829,17 +3820,9 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             bool eventAccepted = wheel->isAccepted();
 
             if (e->spontaneous()) {
-                QWidget *fw = w;
-                while (fw) {
-                    if (fw->isEnabled()
-                        && QApplicationPrivate::shouldSetFocus(fw, Qt::WheelFocus)) {
-                        fw->setFocus(Qt::MouseFocusReason);
-                        break;
-                    }
-                    if (fw->isWindow())
-                        break;
-                    fw = fw->parentWidget();
-                }
+                QApplicationPrivate::giveFocusAccordingToFocusPolicy(w,
+                                                                     Qt::WheelFocus,
+                                                                     Qt::MouseFocusReason);
             }
 
             while (w) {
@@ -5031,6 +5014,23 @@ Qt::LayoutDirection QApplication::keyboardInputDirection()
     if (!QApplicationPrivate::checkInstance("keyboardInputDirection"))
         return Qt::LeftToRight;
     return qt_keymapper_private()->keyboardInputDirection;
+}
+
+void QApplicationPrivate::giveFocusAccordingToFocusPolicy(QWidget *widget,
+                                                          Qt::FocusPolicy focusPolicy,
+                                                          Qt::FocusReason focusReason)
+{
+    QWidget *focusWidget = widget;
+    while (focusWidget) {
+        if (focusWidget->isEnabled()
+            && QApplicationPrivate::shouldSetFocus(focusWidget, focusPolicy)) {
+            focusWidget->setFocus(focusReason);
+            break;
+        }
+        if (focusWidget->isWindow())
+            break;
+        focusWidget = focusWidget->parentWidget();
+    }
 }
 
 bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)

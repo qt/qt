@@ -430,6 +430,10 @@ private:
 #endif
 
     static QApplicationPrivate *self;
+
+    static void giveFocusAccordingToFocusPolicy(QWidget *w,
+                                                Qt::FocusPolicy focusPolicy,
+                                                Qt::FocusReason focusReason);
     static bool shouldSetFocus(QWidget *w, Qt::FocusPolicy policy);
 };
 
