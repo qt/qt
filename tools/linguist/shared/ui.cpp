@@ -151,7 +151,7 @@ bool UiReader::fatalError(const QXmlParseException &exception)
     msg.sprintf("XML error: Parse error at line %d, column %d (%s).",
                  exception.lineNumber(), exception.columnNumber(),
                  exception.message().toLatin1().data());
-    m_cd.appendError(msg); 
+    m_cd.appendError(msg);
     return false;
 }
 
@@ -188,7 +188,7 @@ bool loadUI(Translator &translator, QIODevice &dev, ConversionData &cd)
     return result;
 }
 
-bool saveUI(const Translator &translator, QIODevice &dev, ConversionData &cd) 
+bool saveUI(const Translator &translator, QIODevice &dev, ConversionData &cd)
 {
     Q_UNUSED(dev);
     Q_UNUSED(translator);

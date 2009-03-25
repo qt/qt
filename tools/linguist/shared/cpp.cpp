@@ -784,7 +784,7 @@ static void parse(Translator *tor, const QString &initialContext, const QString 
                     if (yyTok == Tok_ColonColon)
                         fullName.append(QString());
                     while (yyTok == Tok_ColonColon || yyTok == Tok_Ident) {
-                        if (yyTok == Tok_Ident) 
+                        if (yyTok == Tok_Ident)
                             fullName.append(yyIdent);
                         yyTok = getToken();
                     }

@@ -711,7 +711,7 @@ QStringList ProFileEvaluator::Private::qmakeFeaturePaths()
     //        if (!specdir.cdUp() || specdir.isRoot())
     //            break;
     //        if (QFile::exists(specdir.path() + QDir::separator() + "features")) {
-    //            foreach (const QString &concat_it, concat) 
+    //            foreach (const QString &concat_it, concat)
     //                feature_roots << (specdir.path() + concat_it);
     //            break;
     //        }
@@ -1373,7 +1373,7 @@ bool ProFileEvaluator::Private::evaluateConditionalFunction(const QString &funct
                     parents.append(proFile->fileName());
                 if (!parents.isEmpty())
                     parents.takeLast();
-                if (parents.isEmpty()) 
+                if (parents.isEmpty())
                     q->fileMessage(format("Project ERROR: %1").arg(msg));
                 else
                     q->fileMessage(format("Project ERROR: %1. File was included from: '%2'")

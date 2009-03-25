@@ -2382,7 +2382,7 @@ bool loadQScript(Translator &translator, QIODevice &dev, ConversionData &cd)
     return true;
 }
 
-bool saveQScript(const Translator &translator, QIODevice &dev, ConversionData &cd) 
+bool saveQScript(const Translator &translator, QIODevice &dev, ConversionData &cd)
 {
     Q_UNUSED(dev);
     Q_UNUSED(translator);

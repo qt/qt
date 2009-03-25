@@ -373,7 +373,7 @@ bool TSReader::read(Translator &translator)
                                 } else if (elementStarts(strtranslation)) {
                                     // <translation>
                                     QXmlStreamAttributes atts = attributes();
-                                    QStringRef type = atts.value(strtype); 
+                                    QStringRef type = atts.value(strtype);
                                     if (type == strunfinished)
                                         msg.setType(TranslatorMessage::Unfinished);
                                     else if (type == strobsolete)
@@ -440,7 +440,7 @@ static QString protect(const QString &str)
     QString result;
     result.reserve(str.length() * 12 / 10);
     for (int i = 0; i != str.size(); ++i) {
-        uint c = str.at(i).unicode(); 
+        uint c = str.at(i).unicode();
         switch (c) {
         case '\"':
             result += QLatin1String("&quot;");
@@ -708,12 +708,12 @@ bool loadTS(Translator &translator, QIODevice &dev, ConversionData &cd)
     return reader.read(translator);
 }
 
-bool saveTS11(const Translator &translator, QIODevice &dev, ConversionData &cd) 
+bool saveTS11(const Translator &translator, QIODevice &dev, ConversionData &cd)
 {
     return saveTS(translator, dev, cd, 11);
 }
 
-bool saveTS20(const Translator &translator, QIODevice &dev, ConversionData &cd) 
+bool saveTS20(const Translator &translator, QIODevice &dev, ConversionData &cd)
 {
     return saveTS(translator, dev, cd, 20);
 }

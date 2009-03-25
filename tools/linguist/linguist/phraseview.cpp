@@ -135,7 +135,7 @@ void PhraseView::contextMenuEvent(QContextMenuEvent *event)
 void PhraseView::mouseDoubleClickEvent(QMouseEvent *event)
 {
     QModelIndex index = indexAt(event->pos());
-    if (!index.isValid()) 
+    if (!index.isValid())
         return;
 
     emit phraseSelected(m_modelIndex, m_phraseModel->phrase(index)->target());

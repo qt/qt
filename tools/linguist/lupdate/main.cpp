@@ -73,7 +73,7 @@ static void recursiveFileInfoList(const QDir &dir,
         if (fname != QLatin1String(".") && fname != QLatin1String("..")) {
             if (it->isDir())
                 recursiveFileInfoList(QDir(it->absoluteFilePath()), nameFilters, filter, recursive, fileinfolist);
-            else 
+            else
                 fileinfolist->append(*it);
         }
     }

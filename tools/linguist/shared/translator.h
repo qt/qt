@@ -88,7 +88,7 @@ public:
     QString m_targetFileName;
     QDir m_sourceDir;
     QDir m_targetDir; // FIXME: TS spefic
-    QStringList m_dropTags;  // tags to be dropped 
+    QStringList m_dropTags;  // tags to be dropped
     QStringList m_errors;
     bool m_verbose;
     bool m_ignoreUnfinished;

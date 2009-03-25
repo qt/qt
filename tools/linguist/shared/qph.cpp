@@ -101,7 +101,7 @@ bool QPHReader::read(Translator &translator)
                 m_currentField = TargetField;
             else if (name() == QLatin1String("definition"))
                 m_currentField = DefinitionField;
-            else 
+            else
                 m_currentField = NoField;
         } else if (isWhiteSpace()) {
             // ignore these
