@@ -650,6 +650,8 @@ static bool saveQM(const Translator &translator, QIODevice &dev, ConversionData 
                     ++untranslated;
                     continue;
                 } else {
+                    if (cd.ignoreUnfinished())
+                        continue;
                     ++unfinished;
                 }
             } else {
@@ -660,7 +662,6 @@ static bool saveQM(const Translator &translator, QIODevice &dev, ConversionData 
             QString comment = msg.comment();
             QStringList translations = msg.translations();
 
-            if (!cd.ignoreUnfinished() || typ != TranslatorMessage::Unfinished) {
                 /*
                 Drop the comment in (context, sourceText, comment),
                 unless the context is empty,
@@ -680,7 +681,6 @@ static bool saveQM(const Translator &translator, QIODevice &dev, ConversionData 
                     //filename and lineNumbers will be ignored from now.
                     releaser.insert(tm);
                 }
-            }
         }
     }
 
