@@ -801,38 +801,36 @@ void QGraphicsViewPrivate::itemUpdated(QGraphicsItem *item, const QRectF &rect)
         updateLater();
 
     QRectF updateRect = rect;
-    if (item->isClipped()) {
-        // Minimize unnecessary redraw.
-        QGraphicsItem *p = item;
-        QTransform xform;
-        QGraphicsItem *lastTransformItem = 0;
-        while ((p = p->d_ptr->parent)) {
-            if (p->flags() & QGraphicsItem::ItemClipsChildrenToShape) {
-                if (!lastTransformItem)
-                    xform = item->itemTransform(p);
-                else
-                    xform *= lastTransformItem->itemTransform(p);
-                lastTransformItem = p;
-                updateRect &= xform.inverted().mapRect(p->boundingRect());
-                if (updateRect.isEmpty())
-                    return;
-            }
-
-            if (!(p->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
-                break;
-        }
-
+    if ((item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape) || item->d_ptr->children.isEmpty()) {
+        updateRect &= item->boundingRect();
         if (updateRect.isEmpty())
             return;
     }
 
-    // Map the rect to view coordinates.
-    QRect vr = viewport->rect();
+    QGraphicsItem *clipItem = item;
+    if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
+        // Minimize unnecessary redraw.
+        QGraphicsItem *parent = item;
+        while ((parent = parent->d_ptr->parent)) {
+            if (parent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape) {
+                // Map update rect to the current parent and itersect with its bounding rect.
+                updateRect = clipItem->itemTransform(parent).mapRect(updateRect) & parent->boundingRect();
+                if (updateRect.isEmpty())
+                    return;
+                clipItem = parent;
+            }
 
+            if (!(parent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
+                break;
+        }
+    }
+
+    // Map update rect from clipItem coordinates to view coordinates.
+    Q_ASSERT(clipItem);
     if (!item->d_ptr->hasBoundingRegionGranularity)
-        this->updateRect(mapToViewRect(item, updateRect) & vr);
+        this->updateRect(mapToViewRect(clipItem, updateRect) & viewport->rect());
     else
-        updateRegion(mapToViewRegion(item, updateRect) & vr);
+        updateRegion(mapToViewRegion(clipItem, updateRect) & viewport->rect());
 }
 
 void QGraphicsViewPrivate::updateLater()
