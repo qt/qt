@@ -646,10 +646,12 @@ static bool saveQM(const Translator &translator, QIODevice &dev, ConversionData 
         TranslatorMessage::Type typ = msg.type();
         if (typ != TranslatorMessage::Obsolete) {
             if (typ == TranslatorMessage::Unfinished) {
-                if (msg.translation().isEmpty())
+                if (msg.translation().isEmpty()) {
                     ++untranslated;
-                else
+                    continue;
+                } else {
                     ++unfinished;
+                }
             } else {
                 ++finished;
             }
