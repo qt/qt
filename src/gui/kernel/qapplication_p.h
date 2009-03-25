@@ -424,6 +424,9 @@ public:
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif
 
+    QPointer<QWidget> currentMultitouchWidget;
+    static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
+
 private:
 #ifdef Q_WS_QWS
     QMap<const QScreen*, QRect> maxWindowRects;

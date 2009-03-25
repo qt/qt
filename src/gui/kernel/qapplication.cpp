@@ -85,6 +85,7 @@
 #include <stdlib.h>
 
 #include "qapplication_p.h"
+#include "qevent_p.h"
 #include "qwidget_p.h"
 
 #include "qapplication.h"
@@ -4027,7 +4028,41 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         }
         break;
 #endif
+    case QEvent::TouchBegin:
+    // Note: TouchUpdate and TouchEnd events are sent to d->currentMultitouchWidget and never propagated
+    {
+        QWidget *widget = static_cast<QWidget *>(receiver);
+        QTouchEvent *touchEvent = static_cast<QTouchEvent *>(e);
+        bool eventAccepted = touchEvent->isAccepted();
 
+        if (widget->testAttribute(Qt::WA_AcceptTouchEvents) && e->spontaneous()) {
+            // give the widget focus if the focus policy allows it
+            QApplicationPrivate::giveFocusAccordingToFocusPolicy(widget,
+                                                                 Qt::ClickFocus,
+                                                                 Qt::MouseFocusReason);
+        }
+
+        while (widget) {
+            // first, try to deliver the touch event
+            touchEvent->ignore();
+            res = widget->testAttribute(Qt::WA_AcceptTouchEvents)
+                  && d->notify_helper(widget, touchEvent);
+            eventAccepted = touchEvent->isAccepted();
+            touchEvent->spont = false;
+            if (res && eventAccepted) {
+                // the first widget to accept the TouchBegin gets an implicit grab.
+                d->currentMultitouchWidget = widget;
+                break;
+            } else if (widget->isWindow() || widget->testAttribute(Qt::WA_NoMousePropagation)) {
+                break;
+            }
+            widget = widget->parentWidget();
+            d->updateTouchPointsForWidget(widget, touchEvent);
+        }
+
+        touchEvent->setAccepted(eventAccepted);
+        break;
+    }
     default:
         res = d->notify_helper(receiver, e);
         break;
@@ -5044,6 +5079,19 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
     if (w != f && (f->focusPolicy() & policy) != policy)
         return false;
     return true;
+}
+
+void QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent)
+{
+    for (int i = 0; i < touchEvent->_touchPoints.count(); ++i) {
+        QTouchEvent::TouchPoint *touchPoint = touchEvent->_touchPoints.at(i);
+
+        // preserve the sub-pixel resolution
+        const QPointF delta = touchPoint->d->globalPos - touchPoint->d->globalPos.toPoint();
+        touchPoint->d->pos = widget->mapFromGlobal(touchPoint->d->globalPos.toPoint()) + delta;
+        touchPoint->d->startPos = widget->mapFromGlobal(touchPoint->d->startGlobalPos.toPoint()) + delta;
+        touchPoint->d->lastPos = widget->mapFromGlobal(touchPoint->d->lastGlobalPos.toPoint()) + delta;
+    }
 }
 
 QT_END_NAMESPACE

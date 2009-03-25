@@ -758,6 +758,8 @@ public:
 
 protected:
     QList<TouchPoint *> _touchPoints;
+
+    friend class QApplicationPrivate;
 };
 
 QT_END_NAMESPACE
