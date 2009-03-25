@@ -51,20 +51,16 @@ static int usage(const QStringList &args)
     Q_UNUSED(args);
 
     QString loaders;
-    QString savers;
-    QString line = QString(QLatin1String("    %1 - %2\n"));
-    foreach (Translator::FileFormat format, Translator::registeredFileFormats()) {
+    QString line(QLatin1String("    %1 - %2\n"));
+    foreach (Translator::FileFormat format, Translator::registeredFileFormats())
         loaders += line.arg(format.extension, -5).arg(format.description);
-        savers += line.arg(format.extension, -5).arg(format.description);
-    }
 
     qWarning("%s", qPrintable(QString(QLatin1String("\nUsage:\n"
         "    lconvert [options] <infile> [<infile>...]\n\n"
         "lconvert is part of Qt's Linguist tool chain. It can be used as a\n"
-        "stand-alone tool to convert translation data files from one of the\n"
-        "following input formats\n\n%1\n"
-        "to one of the following output formats\n\n%2\n"
-        "If multiple input files are specified the translations are merged with\n"
+        "stand-alone tool to convert and filter translation data files.\n"
+        "The following file formats are supported:\n\n%1\n"
+        "If multiple input files are specified, they are merged with\n"
         "translations from later files taking precedence.\n\n"
         "Options:\n"
         "    -h\n"
@@ -92,7 +88,7 @@ static int usage(const QStringList &args)
         "           Note: this implies --no-obsolete.\n\n"
         "    --source-language <language>[_<region>]\n"
         "           Specify/override the language of the source strings. Defaults to\n"
-        "           POSIX if not specified and the file does not name it yet.\n"
+        "           POSIX if not specified and the file does not name it yet.\n\n"
         "    --target-language <language>[_<region>]\n"
         "           Specify/override the language of the translation.\n"
         "           The target language is guessed from the file name if this option\n"
@@ -108,7 +104,7 @@ static int usage(const QStringList &args)
         "    0 on success\n"
         "    1 on command line parse failures\n"
         "    2 on read failures\n"
-        "    3 on write failures\n")).arg(loaders).arg(savers)));
+        "    3 on write failures\n")).arg(loaders)));
     return 1;
 }
 

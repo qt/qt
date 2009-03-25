@@ -1656,7 +1656,7 @@ Qt::ButtonState QContextMenuEvent::state() const
     The variant contains a QLocale object specifying the language of a
     certain part of the preedit string. There should be at most one
     language set for every part of the preedit string. If several are
-    specified for any character in the string the behaviour is undefined.
+    specified for any character in the string the behavior is undefined.
 
     \value Ruby
     The ruby text for a part of the preedit string. There should be at

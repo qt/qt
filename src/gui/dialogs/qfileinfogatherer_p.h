@@ -161,6 +161,7 @@ public:
     ~QFileInfoGatherer();
 
     void clear();
+    void removePath(const QString &path);
     QExtendedInformation getInfo(const QFileInfo &info) const;
 
 public Q_SLOTS:

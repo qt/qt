@@ -89,8 +89,9 @@
     of Qt, you get Qt as a shared library.
 
     The disadvantage with the shared library approach is that you
-    will get more files to deploy.
-
+    will get more files to deploy. For more information, see
+    \l{sharedlibrary.html}{Creating Shared Libraries}.
+    
     \section1 Deploying Qt's Libraries
 
     \table

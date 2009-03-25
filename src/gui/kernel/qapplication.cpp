@@ -2462,7 +2462,9 @@ void QApplication::setActiveWindow(QWidget* act)
                 } else {
                     // If the focus widget is not in the activate_window, clear the focus
                     w = QApplicationPrivate::focus_widget;
-                    if (w && !QApplicationPrivate::active_window->isAncestorOf(w))
+                    if (!w && QApplicationPrivate::active_window->focusPolicy() != Qt::NoFocus)
+                        QApplicationPrivate::setFocusWidget(QApplicationPrivate::active_window, Qt::ActiveWindowFocusReason);
+                    else if (!QApplicationPrivate::active_window->isAncestorOf(w))
                         QApplicationPrivate::setFocusWidget(0, Qt::ActiveWindowFocusReason);
                 }
             }

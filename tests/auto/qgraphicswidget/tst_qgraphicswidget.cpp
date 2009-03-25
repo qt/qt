@@ -259,6 +259,35 @@ void tst_QGraphicsWidget::cleanup()
 {
 }
 
+class SizeHinter : public QGraphicsWidget
+{
+public:
+    SizeHinter(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0,
+                const QSizeF &min = QSizeF(5,5), 
+                const QSizeF &pref = QSizeF(50, 50), 
+                const QSizeF &max = QSizeF(500, 500)) 
+        : QGraphicsWidget(parent, wFlags) 
+    {
+        m_sizes[Qt::MinimumSize] = min;
+        m_sizes[Qt::PreferredSize] = pref;
+        m_sizes[Qt::MaximumSize] = max;
+        
+    }
+    void setSizeHint(Qt::SizeHint which, const QSizeF &newSizeHint)
+    {
+        m_sizes[which] = newSizeHint;
+    }
+
+protected:
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const
+    {
+        Q_UNUSED(constraint);
+        return m_sizes[which];
+    }
+private:
+    QSizeF m_sizes[4];
+};
+
 void tst_QGraphicsWidget::qgraphicswidget()
 {
     SubQGraphicsWidget widget;
@@ -282,6 +311,12 @@ void tst_QGraphicsWidget::qgraphicswidget()
     QCOMPARE(widget.type(), (int)QGraphicsWidget::Type);
     QCOMPARE(widget.call_propertyChange(QString(), QVariant()), QVariant());
     widget.call_sizeHint(Qt::PreferredSize, QSizeF());
+    
+    QGraphicsScene scene;
+    QGraphicsWidget *parent = new QGraphicsWidget;
+    SizeHinter *child = new SizeHinter(parent);
+    
+    QCOMPARE(child->minimumSize(), QSizeF(5, 5));
 }
 
 void tst_QGraphicsWidget::activation()
@@ -1514,35 +1549,6 @@ enum WhichSize {
     MaximumSizeHint,
     Size,
     None,
-};
-
-class SizeHinter : public QGraphicsWidget
-{
-public:
-    SizeHinter(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0,
-                const QSizeF &min = QSizeF(5,5), 
-                const QSizeF &pref = QSizeF(50, 50), 
-                const QSizeF &max = QSizeF(500, 500)) 
-        : QGraphicsWidget(parent, wFlags) 
-    {
-        m_sizes[Qt::MinimumSize] = min;
-        m_sizes[Qt::PreferredSize] = pref;
-        m_sizes[Qt::MaximumSize] = max;
-        
-    }
-    void setSizeHint(Qt::SizeHint which, const QSizeF &newSizeHint)
-    {
-        m_sizes[which] = newSizeHint;
-    }
-
-protected:
-    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const
-    {
-        Q_UNUSED(constraint);
-        return m_sizes[which];
-    }
-private:
-    QSizeF m_sizes[4];
 };
 
 typedef QPair<int, QVariant> Inst;

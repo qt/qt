@@ -343,6 +343,7 @@ private slots:
     void paintOutsidePaintEvent();
 #endif
     void updateOnDestroyedSignal();
+    void toplevelLineEditFocus();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -8725,6 +8726,19 @@ void tst_QWidget::updateOnDestroyedSignal()
     // Please do not crash.
     MyEvilObject evil(child);
     QTest::qWait(200);
+}
+
+void tst_QWidget::toplevelLineEditFocus()
+{
+    testWidget->hide();
+
+    QLineEdit w;
+    w.show();
+    qt_x11_wait_for_window_manager(&w);
+    QTest::qWait(200);
+
+    QCOMPARE(QApplication::activeWindow(), &w);
+    QCOMPARE(QApplication::focusWidget(), &w);
 }
 
 QTEST_MAIN(tst_QWidget)

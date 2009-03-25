@@ -1478,7 +1478,8 @@ void QTextEditPrivate::paint(QPainter *p, QPaintEvent *e)
         layout->setViewport(QRect());
 }
 
-/*! \reimp
+/*! \warning The underlying text document must not be modified from within a reimplementation
+of this function.
 */
 void QTextEdit::paintEvent(QPaintEvent *e)
 {

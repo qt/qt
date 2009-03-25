@@ -166,6 +166,8 @@ bool QFileSystemModel::remove(const QModelIndex &aindex) const
 {
     //### TODO optim
     QString path = filePath(aindex);
+    QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());
+    d->fileInfoGatherer.removePath(path);
     QDirIterator it(path,
             QDir::AllDirs | QDir:: Files | QDir::NoDotAndDotDot,
             QDirIterator::Subdirectories);
@@ -375,7 +377,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
             if (!info.exists())
                 return rootNode;
             QFileSystemModelPrivate *p = const_cast<QFileSystemModelPrivate*>(this);
-            p->addNode(rootNode, host);
+            p->addNode(rootNode, host,info);
             p->addVisibleFiles(rootNode, QStringList(host));
         }
         r = rootNode->visibleLocation(host);
@@ -395,6 +397,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
 #endif
 
     QFileSystemModelPrivate::QFileSystemNode *parent = node(index);
+
     for (int i = 0; i < pathElements.count(); ++i) {
         QString element = pathElements.at(i);
 #ifdef Q_OS_WIN
@@ -423,7 +426,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
             if (!info.exists())
                 return const_cast<QFileSystemModelPrivate::QFileSystemNode*>(&root);
             QFileSystemModelPrivate *p = const_cast<QFileSystemModelPrivate*>(this);
-            node = p->addNode(parent, element);
+            node = p->addNode(parent, element,info);
 #ifndef QT_NO_FILESYSTEMWATCHER
             node->populate(fileInfoGatherer.getInfo(info));
 #endif
@@ -843,7 +846,7 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
         QFileSystemModelPrivate::QFileSystemNode *parentNode = indexNode->parent;
         int visibleLocation = parentNode->visibleLocation(parentNode->children.value(indexNode->fileName)->fileName);
 
-        d->addNode(parentNode, newName);
+        d->addNode(parentNode, newName,indexNode->info->fileInfo());
         parentNode->visibleChildren.removeAt(visibleLocation);
         QFileSystemModelPrivate::QFileSystemNode * oldValue = parentNode->children.value(oldName);
         parentNode->children[newName] = oldValue;
@@ -1282,7 +1285,7 @@ QModelIndex QFileSystemModel::mkdir(const QModelIndex &parent, const QString &na
     if (!dir.mkdir(name))
         return QModelIndex();
     QFileSystemModelPrivate::QFileSystemNode *parentNode = d->node(parent);
-    d->addNode(parentNode, name);
+    d->addNode(parentNode, name, QFileInfo());
     Q_ASSERT(parentNode->children.contains(name));
     QFileSystemModelPrivate::QFileSystemNode *node = parentNode->children[name];
     node->populate(d->fileInfoGatherer.getInfo(QFileInfo(dir.absolutePath() + QDir::separator() + name)));
@@ -1601,10 +1604,13 @@ void QFileSystemModelPrivate::_q_directoryChanged(const QString &directory, cons
 
     *WARNING* this will change the count of children
 */
-QFileSystemModelPrivate::QFileSystemNode* QFileSystemModelPrivate::addNode(QFileSystemNode *parentNode, const QString &fileName)
+QFileSystemModelPrivate::QFileSystemNode* QFileSystemModelPrivate::addNode(QFileSystemNode *parentNode, const QString &fileName, const QFileInfo& info)
 {
     // In the common case, itemLocation == count() so check there first
     QFileSystemModelPrivate::QFileSystemNode *node = new QFileSystemModelPrivate::QFileSystemNode(fileName, parentNode);
+#ifndef QT_NO_FILESYSTEMWATCHER
+    node->populate(info);
+#endif
     parentNode->children.insert(fileName, node);
     return node;
 }
@@ -1722,7 +1728,7 @@ void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path, const QL
         QExtendedInformation info = fileInfoGatherer.getInfo(updates.at(i).second);
         bool previouslyHere = parentNode->children.contains(fileName);
         if (!previouslyHere) {
-            addNode(parentNode, fileName);
+            addNode(parentNode, fileName, info.fileInfo());
         }
         QFileSystemModelPrivate::QFileSystemNode * node = parentNode->children.value(fileName);
         bool isCaseSensitive = parentNode->caseSensitive();

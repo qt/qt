@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qregion.h"
+#include "qpainterpath.h"
 #include "qpolygon.h"
 #include "qbuffer.h"
 #include "qdatastream.h"
@@ -49,7 +50,6 @@
 #include <qdebug.h>
 
 #if defined(Q_OS_UNIX) || defined(Q_OS_WINCE)
-#include "qpainterpath.h"
 #include "qimage.h"
 #include "qbitmap.h"
 #include <stdlib.h>

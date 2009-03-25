@@ -2033,11 +2033,12 @@ void qt_message_output(QtMsgType msgType, const char *buf)
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 25
 
-    This syntax automatically puts a single space between each item,
-    and outputs a newline at the end. It supports many C++ and Qt
-    types.
+    With this syntax, the function returns a QDebug object that is
+    configured to use the QtDebugMsg message type. It automatically
+    puts a single space between each item, and outputs a newline at
+    the end. It supports many C++ and Qt types.
 
-    To supress the output at runtime, install your own message handler
+    To suppress the output at run-time, install your own message handler
     with qInstallMsgHandler().
 
     \sa qWarning(), qCritical(), qFatal(), qInstallMsgHandler(),
@@ -2964,6 +2965,26 @@ bool QInternal::callFunction(InternalFunction func, void **args)
     Example:
 
     \snippet doc/src/snippets/code/src_gui_dialogs_qmessagebox.cpp 4
+*/
+
+/*!
+    \macro Q_DECL_EXPORT
+    \relates <QtGlobal>
+
+    This macro marks a symbol for shared library export (see
+     \l{sharedlibrary.html}{Creating Shared Libraries}).
+
+    \sa Q_DECL_IMPORT
+*/
+
+/*!
+    \macro Q_DECL_IMPORT
+    \relates <QtGlobal>
+
+    This macro declares a symbol to be an import from a shared library (see
+    \l{sharedlibrary.html}{Creating Shared Libraries}).
+
+    \sa Q_DECL_EXPORT
 */
 
 QT_END_NAMESPACE

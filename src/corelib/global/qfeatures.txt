@@ -1085,6 +1085,13 @@ Requires:
 Name: QNetworkInterface
 SeeAlso: ???
 
+Feature: NETWORKDISKCACHE
+Description: Supports a disk cache for network resources
+Section: Networking
+Requires: TEMPORARYFILE
+Name: QNetworkDiskCache
+SeeAlso: ???
+
 # Utilities
 
 Feature: COMPLETER
