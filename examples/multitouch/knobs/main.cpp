@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     scene.addItem(knob1);
     scene.addItem(knob2);
 
-    view.showFullScreen();
+    view.showMaximized();
     view.fitInView(scene.sceneRect().adjusted(-20, -20, 20, 20), Qt::KeepAspectRatio);
 
     return app.exec();
