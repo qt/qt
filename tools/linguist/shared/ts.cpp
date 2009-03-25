@@ -277,7 +277,9 @@ bool TSReader::read(Translator &translator)
                     // ignore these, just whitespace
                 } else if (elementStarts(strdefaultcodec)) {
                     // <defaultcodec>
-                    translator.setCodecName(readElementText().toLatin1());
+                    const QString &codec = readElementText();
+                    if (!codec.isEmpty())
+                        translator.setCodecName(codec.toLatin1());
                     // </defaultcodec>
                 } else if (isStartElement()
                         && name().toString().startsWith(strextrans)) {

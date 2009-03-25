@@ -545,7 +545,7 @@ void Translator::setCodecName(const QByteArray &name)
     if (!codec) {
         if (!name.isEmpty())
             qWarning("No QTextCodec for %s available. Using Latin1\n", name.constData());
-        m_codecName.clear();
+        m_codecName = "ISO-8859-1";
     } else {
         m_codecName = codec->name();
     }
