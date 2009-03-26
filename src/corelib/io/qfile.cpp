@@ -731,10 +731,16 @@ QFile::rename(const QString &newName)
                 }
                 if (read == -1) {
                     d->setError(QFile::RenameError, in.errorString());
-                    return true;
+                    error = true;
                 }
-                if(!error)
-                    in.remove();
+                if(!error) {
+                    if (!in.remove()) {
+                        d->setError(QFile::RenameError, tr("Cannot remove source file"));
+                        error = true;
+                    }
+                }
+                if (error)
+                    out.remove();
                 return !error;
             }
         }
