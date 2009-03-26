@@ -187,9 +187,10 @@ public:
     }
 
     void cleanup() {
-        delete widget;
-        widget = 0;
+        QGLWidget *w = widget;
         cleanedUp = true;
+        widget = 0;
+        delete w;
     }
 
     static bool cleanedUp;
