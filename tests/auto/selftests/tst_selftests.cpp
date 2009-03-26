@@ -198,7 +198,7 @@ void tst_Selftests::doRunSubTest(QString &subdir, QStringList &arguments )
 {
     QProcess proc;
     proc.setEnvironment(QStringList(""));
-    proc.start(subdir + "/tst_" + subdir, arguments);
+    proc.start(subdir + "/" + subdir, arguments);
     QVERIFY2(proc.waitForFinished(), qPrintable(proc.errorString()));
 
     const QByteArray out(proc.readAllStandardOutput());
@@ -329,7 +329,7 @@ void tst_Selftests::checkXML() const
 
     QProcess proc;
     proc.setEnvironment(QStringList(""));
-    proc.start(subdir + "/tst_" + subdir, arguments);
+    proc.start(subdir + "/" + subdir, arguments);
     QVERIFY(proc.waitForFinished());
 
     QByteArray out(proc.readAllStandardOutput());
@@ -367,7 +367,7 @@ void tst_Selftests::checkXunitxml() const
 
     QProcess proc;
     proc.setEnvironment(QStringList(""));
-    proc.start(subdir + "/tst_" + subdir, arguments);
+    proc.start(subdir + "/" + subdir, arguments);
     QVERIFY(proc.waitForFinished());
 
     QByteArray out(proc.readAllStandardOutput());
