@@ -52,8 +52,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_TYPEINFO(TranslatorMessage, Q_MOVABLE_TYPE);
-
 class QIODevice;
 
 // A struct of "interesting" data passed to and from the load and save routines

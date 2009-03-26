@@ -175,6 +175,8 @@ private:
     bool m_plural;
 };
 
+Q_DECLARE_TYPEINFO(TranslatorMessage, Q_MOVABLE_TYPE);
+
 int qHash(const TranslatorMessage &msg);
 
 QT_END_NAMESPACE
