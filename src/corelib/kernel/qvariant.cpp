@@ -71,27 +71,6 @@ QT_BEGIN_NAMESPACE
 #  define FLT_DIG 6
 #endif
 
-
-static const void *constDataHelper(const QVariant::Private &d)
-{
-    switch (d.type) {
-    case QVariant::Int:
-        return &d.data.i;
-    case QVariant::UInt:
-        return &d.data.u;
-    case QVariant::Bool:
-        return &d.data.b;
-    case QVariant::LongLong:
-        return &d.data.ll;
-    case QVariant::ULongLong:
-        return &d.data.ull;
-    case QVariant::Double:
-        return &d.data.d;
-    default:
-        return d.is_shared ? d.data.shared->ptr : reinterpret_cast<const void *>(&d.data.ptr);
-    }
-}
-
 static void construct(QVariant::Private *x, const void *copy)
 {
     x->is_shared = false;
@@ -1907,7 +1886,7 @@ void QVariant::load(QDataStream &s)
     }
 
     // const cast is safe since we operate on a newly constructed variant
-    if (!QMetaType::load(s, d.type, const_cast<void *>(constDataHelper(d)))) {
+    if (!QMetaType::load(s, d.type, const_cast<void *>(constData()))) {
         s.setStatus(QDataStream::ReadCorruptData);
         qWarning("QVariant::load: unable to load type %d.", d.type);
     }
@@ -1947,7 +1926,7 @@ void QVariant::save(QDataStream &s) const
         return;
     }
 
-    if (!QMetaType::save(s, d.type, constDataHelper(d))) {
+    if (!QMetaType::save(s, d.type, constData())) {
         Q_ASSERT_X(false, "QVariant::save", "Invalid type to save");
         qWarning("QVariant::save: unable to save type %d.", d.type);
     }
@@ -2726,7 +2705,7 @@ bool QVariant::cmp(const QVariant &v) const
 
 const void *QVariant::constData() const
 {
-    return constDataHelper(d);
+    return d.is_shared ? d.data.shared->ptr : reinterpret_cast<const void *>(&d.data.ptr);
 }
 
 /*!
@@ -2739,7 +2718,7 @@ const void *QVariant::constData() const
 void* QVariant::data()
 {
     detach();
-    return const_cast<void *>(constDataHelper(d));
+    return const_cast<void *>(constData());
 }
 
 
