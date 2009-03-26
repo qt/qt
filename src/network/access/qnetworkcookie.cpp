@@ -559,7 +559,7 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
 
         position = nextNonWhitespace(cookieString, position);
         bool endOfCookie = false;
-        while (!endOfCookie && position < length)
+        while (!endOfCookie && position < endOfSetCookie)
             switch (cookieString.at(position++)) {
             case ',':
                 // end of the cookie
