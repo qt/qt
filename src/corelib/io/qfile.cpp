@@ -712,6 +712,9 @@ QFile::rename(const QString &newName)
     if(error() == QFile::NoError) {
         if (fileEngine()->rename(newName)) {
             unsetError();
+            // engine was able to handle the new name so we just reset it
+            fileEngine()->setFileName(newName);
+            d->fileName = newName;
             return true;
         }
 
@@ -741,6 +744,8 @@ QFile::rename(const QString &newName)
                 }
                 if (error)
                     out.remove();
+                else
+                    setFileName(newName);
                 return !error;
             }
         }
