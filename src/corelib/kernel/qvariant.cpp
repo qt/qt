@@ -158,6 +158,9 @@ static void construct(QVariant::Private *x, const void *copy)
     case QVariant::Double:
         x->data.d = copy ? *static_cast<const double*>(copy) : 0.0;
         break;
+    case QMetaType::Float:
+        x->data.f = copy ? *static_cast<const float*>(copy) : 0.0f;
+        break;
     case QVariant::LongLong:
         x->data.ll = copy ? *static_cast<const qlonglong *>(copy) : Q_INT64_C(0);
         break;
@@ -253,6 +256,7 @@ static void clear(QVariant::Private *d)
     case QVariant::LongLong:
     case QVariant::ULongLong:
     case QVariant::Double:
+    case QMetaType::Float:
         break;
     case QVariant::Invalid:
     case QVariant::UserType:
@@ -470,7 +474,7 @@ static qlonglong qMetaTypeNumber(const QVariant::Private *d)
     case QMetaType::Long:
         return qlonglong(*static_cast<long *>(d->data.shared->ptr));
     case QMetaType::Float:
-        return qRound64(*static_cast<float *>(d->data.shared->ptr));
+        return qRound64(d->data.f);
     case QVariant::Double:
         return qRound64(d->data.d);
     }
@@ -607,7 +611,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
             *str = QString::number(qMetaTypeUNumber(d));
             break;
         case QMetaType::Float:
-            *str = QString::number(*static_cast<float *>(d->data.shared->ptr), 'g', FLT_DIG);
+            *str = QString::number(d->data.f, 'g', FLT_DIG);
             break;
         case QVariant::Double:
             *str = QString::number(d->data.d, 'g', DBL_DIG);
@@ -778,7 +782,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
             *ba = QByteArray::number(d->data.d, 'g', DBL_DIG);
             break;
         case QMetaType::Float:
-            *ba = QByteArray::number(*static_cast<float *>(d->data.shared->ptr), 'g', FLT_DIG);
+            *ba = QByteArray::number(d->data.f, 'g', FLT_DIG);
             break;
         case QMetaType::Char:
         case QMetaType::UChar:
@@ -880,7 +884,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
             *f = double(d->data.b);
             break;
         case QMetaType::Float:
-            *f = *static_cast<float *>(d->data.shared->ptr);
+            *f = double(d->data.f);
             break;
         case QVariant::LongLong:
         case QVariant::Int:
@@ -1334,7 +1338,7 @@ void QVariant::create(int type, const void *copy)
 
 QVariant::~QVariant()
 {
-    if (d.type > Char && (!d.is_shared || !d.data.shared->ref.deref()))
+    if (d.type > Char && d.type != QMetaType::Float && (!d.is_shared || !d.data.shared->ref.deref()))
         handler->clear(&d);
 }
 
@@ -1350,7 +1354,7 @@ QVariant::QVariant(const QVariant &p)
 {
     if (d.is_shared) {
         d.data.shared->ref.ref();
-    } else if (p.d.type > Char) {
+    } else if (p.d.type > Char && p.d.type != QMetaType::Float) {
         handler->construct(&d, p.constData());
         d.is_null = p.d.is_null;
     }
@@ -1544,6 +1548,12 @@ QVariant::QVariant(const char *val)
 */
 
 /*!
+  \fn QVariant::QVariant(float val)
+
+    Constructs a new variant with a floating point value, \a val.
+*/
+
+/*!
     \fn QVariant::QVariant(const QList<QVariant> &val)
 
     Constructs a new variant with a list value, \a val.
@@ -1596,6 +1606,8 @@ QVariant::QVariant(bool val)
 { d.is_null = false; d.type = Bool; d.data.b = val; }
 QVariant::QVariant(double val)
 { d.is_null = false; d.type = Double; d.data.d = val; }
+QVariant::QVariant(float val)
+{ d.is_null = false; d.type = QMetaType::Float; d.data.f = val; }
 
 QVariant::QVariant(const QByteArray &val)
 { d.is_null = false; d.type = ByteArray; v_construct<QByteArray>(&d, &val); }
@@ -1700,7 +1712,7 @@ QVariant& QVariant::operator=(const QVariant &variant)
     if (variant.d.is_shared) {
         variant.d.data.shared->ref.ref();
         d = variant.d;
-    } else if (variant.d.type > Char) {
+    } else if (variant.d.type > Char && variant.d.type != QMetaType::Float) {
         d.type = variant.d.type;
         handler->construct(&d, variant.constData());
         d.is_null = variant.d.is_null;
