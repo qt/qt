@@ -399,6 +399,17 @@ int QGtkStyle::pixelMetric(PixelMetric metric,
         return QCleanlooksStyle::pixelMetric(metric, option, widget);
 
     switch (metric) {
+    case PM_DefaultFrameWidth:
+        if (qobject_cast<const QFrame*>(widget)) {
+            if (GtkStyle *style =
+                QGtk::gtk_rc_get_style_by_paths(QGtk::gtk_settings_get_default(),
+                                                "*.GtkScrolledWindow",
+                                                "*.GtkScrolledWindow",
+                                                Q_GTK_TYPE_WINDOW))
+                return qMax(style->xthickness, style->ythickness);
+        }
+        return 2;
+
     case PM_MenuButtonIndicator:
         return 20;
 
@@ -635,6 +646,60 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
     QGtkPainter gtkPainter(painter);
 
     switch (element) {
+      case PE_Frame: {
+        // Drawing the entire itemview frame is very expensive, especially on the native X11 engine
+        // Instead we cheat a bit and draw a border image without the center part, hence only scaling
+        // thin rectangular images
+        const int pmSize = 64;
+        const int border = pixelMetric(PM_DefaultFrameWidth, option, widget);
+        const QString pmKey = QString(QLS("windowframe %0")).arg(option->state);
+
+        QPixmap pixmap;
+        QPixmapCache::find(pmKey, pixmap);
+        QRect pmRect(QPoint(0,0), QSize(pmSize, pmSize));
+
+        // Only draw through style once
+        if (pixmap.isNull()) {
+            pixmap = QPixmap(pmSize, pmSize);
+            pixmap.fill(Qt::transparent);
+            QPainter pmPainter(&pixmap);
+            QGtkPainter gtkFramePainter(&pmPainter);
+            gtkFramePainter.setUsePixmapCache(false); // Don't cache twice
+
+            GtkShadowType shadow_type = GTK_SHADOW_NONE;
+            if (option->state & State_Sunken)
+                shadow_type = GTK_SHADOW_IN;
+            else if (option->state & State_Raised)
+                shadow_type = GTK_SHADOW_OUT;
+
+            GtkStyle *style = QGtk::gtk_rc_get_style_by_paths(QGtk::gtk_settings_get_default(),
+                                     "*.GtkScrolledWindow", "*.GtkScrolledWindow", Q_GTK_TYPE_WINDOW);
+            if (style)
+                gtkFramePainter.paintShadow(QGtk::gtkWidget(QLS("GtkFrame")), "viewport", pmRect,
+                                         option->state & State_Enabled ? GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE,
+                                         shadow_type, style);
+            QPixmapCache::insert(pmKey, pixmap);
+        }
+
+        QRect rect = option->rect;
+        const int rw = rect.width() - border;
+        const int rh = rect.height() - border;
+        const int pw = pmRect.width() - border;
+        const int ph = pmRect.height() - border;
+
+        // Sidelines
+        painter->drawPixmap(rect.adjusted(border, 0, -border, -rh), pixmap, pmRect.adjusted(border, 0, -border,-ph));
+        painter->drawPixmap(rect.adjusted(border, rh, -border, 0), pixmap, pmRect.adjusted(border, ph,-border,0));
+        painter->drawPixmap(rect.adjusted(0, border, -rw, -border), pixmap, pmRect.adjusted(0, border, -pw, -border));
+        painter->drawPixmap(rect.adjusted(rw, border, 0, -border), pixmap, pmRect.adjusted(pw, border, 0, -border));
+
+        // Corners
+        painter->drawPixmap(rect.adjusted(0, 0, -rw, -rh), pixmap, pmRect.adjusted(0, 0, -pw,-ph));
+        painter->drawPixmap(rect.adjusted(rw, 0, 0, -rh), pixmap, pmRect.adjusted(pw, 0, 0,-ph));
+        painter->drawPixmap(rect.adjusted(0, rh, -rw, 0), pixmap, pmRect.adjusted(0, ph, -pw,0));
+        painter->drawPixmap(rect.adjusted(rw, rh, 0, 0), pixmap, pmRect.adjusted(pw, ph, 0,0));
+    }
+    break;
 
     case PE_PanelTipLabel: {
         GtkWidget *gtkWindow = QGtk::gtkWidget(QLS("GtkWindow")); // The Murrine Engine currently assumes a widget is passed

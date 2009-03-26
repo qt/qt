@@ -140,6 +140,7 @@ private slots:
     // task-specific tests below me
     void task178797_activatedOnReturn();
     void task189564_omitNonSelectableItems();
+    void task246056_setCompletionPrefix();
 
 private:
     void filter();
@@ -1091,6 +1092,38 @@ void tst_QCompleter::task189564_omitNonSelectableItems()
     QModelIndexList matches2 =
         completionModel->match(completionModel->index(0, 0), Qt::DisplayRole, omitString);
     QVERIFY(matches2.isEmpty());
+}
+
+class task246056_ComboBox : public QComboBox
+{
+    Q_OBJECT
+public:
+    task246056_ComboBox()
+    {
+        setEditable(true);
+        setInsertPolicy(NoInsert);
+        Q_ASSERT(completer());
+        completer()->setCompletionMode(QCompleter::PopupCompletion);
+        completer()->setCompletionRole(Qt::DisplayRole);
+        connect(lineEdit(), SIGNAL(editingFinished()), SLOT(setCompletionPrefix()));
+    }
+private slots:
+    void setCompletionPrefix() { completer()->setCompletionPrefix(lineEdit()->text()); }
+};
+
+void tst_QCompleter::task246056_setCompletionPrefix()
+{
+    task246056_ComboBox *comboBox = new task246056_ComboBox;
+    comboBox->addItem("");
+    comboBox->addItem("a1");
+    comboBox->addItem("a2");
+    comboBox->show();
+    comboBox->setFocus();
+    QTest::qWait(100);
+    QTest::keyPress(comboBox, 'a');
+    QTest::keyPress(comboBox->completer()->popup(), Qt::Key_Down);
+    QTest::keyPress(comboBox->completer()->popup(), Qt::Key_Down);
+    QTest::keyPress(comboBox->completer()->popup(), Qt::Key_Enter); // don't crash!
 }
 
 QTEST_MAIN(tst_QCompleter)

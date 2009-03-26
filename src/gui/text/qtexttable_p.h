@@ -62,7 +62,7 @@ class QTextTablePrivate : public QTextFramePrivate
 {
     Q_DECLARE_PUBLIC(QTextTable)
 public:
-    QTextTablePrivate() : grid(0), nRows(0), dirty(true), blockFragmentUpdates(false) {}
+    QTextTablePrivate(QTextDocument *document) : QTextFramePrivate(document), grid(0), nRows(0), dirty(true), blockFragmentUpdates(false) {}
     ~QTextTablePrivate();
 
     static QTextTable *createTable(QTextDocumentPrivate *, int pos, int rows, int cols, const QTextTableFormat &tableFormat);

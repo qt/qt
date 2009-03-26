@@ -54,11 +54,6 @@ QT_MODULE(Gui)
 class QDirectFBPaintDevice : public QCustomRasterPaintDevice
 {
 public:
-    QDirectFBPaintDevice(QDirectFBScreen *scr = QDirectFBScreen::instance())
-        : QCustomRasterPaintDevice(0),
-          dfbSurface(0),
-          lockedImage(0),
-          screen(scr) {}
     ~QDirectFBPaintDevice();
 
     IDirectFBSurface *directFbSurface() const;
@@ -74,9 +69,19 @@ public:
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
 
 protected:
+    // Shouldn't create QDirectFBPaintDevice by itself but only sub-class it:
+    QDirectFBPaintDevice(QDirectFBScreen *scr = QDirectFBScreen::instance())
+        : QCustomRasterPaintDevice(0),
+          dfbSurface(0),
+          lockedImage(0),
+          screen(scr) {}
+
     IDirectFBSurface *dfbSurface;
     QImage *lockedImage;
     QDirectFBScreen *screen;
+    int bpl;
+private:
+    Q_DISABLE_COPY(QDirectFBPaintDevice)
 };
 
 QT_END_HEADER

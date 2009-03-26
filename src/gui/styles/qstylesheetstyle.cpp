@@ -4840,7 +4840,8 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
         if (subRule.hasContentsSize())
             return subRule.size().height();
         else if (subRule.hasBox() || subRule.hasBorder()) {
-            return subRule.size(QSize(0, opt->fontMetrics.lineSpacing())).height();
+            QFontMetrics fm = opt ?  opt->fontMetrics : w->fontMetrics();
+            return subRule.size(QSize(0, fm.lineSpacing())).height();
         }
         break;
                             }

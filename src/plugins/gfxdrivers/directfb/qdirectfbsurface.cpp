@@ -126,14 +126,15 @@ void QDirectFBSurface::setGeometry(const QRect &rect, const QRegion &mask)
         // If we're in a resize, the surface shouldn't be locked
         Q_ASSERT( (lockedImage == 0) || (isResize == false));
 
-        IDirectFBSurface *s = screen->dfbSurface();
-        if (onscreen && s) {
+        if (onscreen) {
             if (dfbSurface)
                 dfbSurface->Release(dfbSurface);
 
             DFBRectangle r = { rect.x(), rect.y(),
                                rect.width(), rect.height() };
-            result = s->GetSubSurface(s, &r, &dfbSurface);
+            IDirectFBSurface *primarySurface = screen->dfbSurface();
+            Q_ASSERT(primarySurface);
+            result = primarySurface->GetSubSurface(primarySurface, &r, &dfbSurface);
         } else {
 #ifdef QT_NO_DIRECTFB_WM
             if (isResize) {
@@ -337,11 +338,22 @@ void QDirectFBSurface::flush(QWidget *widget, const QRegion &region,
     QWSWindowSurface::flush(widget, region, offset);
 
 #ifndef QT_NO_DIRECTFB_WM
-    const QRect br = region.boundingRect().translated(painterOffset());
-    const DFBRegion r = { br.x(), br.y(),
-                          br.x() + br.width(), br.y() + br.height() };
-
-    dfbSurface->Flip(dfbSurface, &r, DSFLIP_NONE);
+    if (region.numRects() > 1) {
+        const QVector<QRect> rects = region.rects();
+        for (int i=0; i<rects.size(); ++i) {
+            const QRect &r = rects.at(i);
+            const DFBRegion dfbReg = { r.x() + offset.x(), r.y() + offset.y(),
+                                       r.x() + r.width() + offset.x(),
+                                       r.y() + r.height() + offset.y() };
+            dfbSurface->Flip(dfbSurface, &dfbReg, DSFLIP_ONSYNC);
+        }
+    } else {
+        const QRect r = region.boundingRect();
+        const DFBRegion dfbReg = { r.x() + offset.x(), r.y() + offset.y(),
+                                   r.x() + r.width() + offset.x(),
+                                   r.y() + r.height() + offset.y() };
+        dfbSurface->Flip(dfbSurface, &dfbReg, DSFLIP_ONSYNC);
+    }
 #endif
 }
 

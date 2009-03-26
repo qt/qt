@@ -169,189 +169,174 @@ QApplicationPrivate::~QApplicationPrivate()
 }
 
 /*!
-  \class QApplication
-  \brief The QApplication class manages the GUI application's control
-  flow and main settings.
+    \class QApplication
+    \brief The QApplication class manages the GUI application's control
+    flow and main settings.
 
-  \ingroup application
-  \mainclass
+    \ingroup application
+    \mainclass
 
-  It contains the main event loop, where all events from the window
-  system and other sources are processed and dispatched. It also
-  handles the application's initialization and finalization, and
-  provides session management. It also handles most system-wide and
-  application-wide settings.
+    QApplication contains the main event loop, where all events from the window
+    system and other sources are processed and dispatched. It also handles the
+    application's initialization and finalization, and provides session
+    management. In addition, it handles most system-wide and application-wide
+    settings.
 
-  For any GUI application that uses Qt, there is precisely one
-  QApplication object, no matter whether the application has 0, 1, 2
-  or more windows at any time. For non-GUI Qt applications, use
-  QCoreApplication instead, which doesn't depend on the \l QtGui
-  library.
+    For any GUI application using Qt, there is precisely one QApplication
+    object, no matter whether the application has 0, 1, 2 or more windows at
+    any given time. For non-GUI Qt applications, use QCoreApplication instead,
+    as it does not depend on the \l QtGui library.
 
-  The QApplication object is accessible through the instance()
-  function which return a pointer equivalent to the global qApp
-  pointer.
+    The QApplication object is accessible through the instance() function that
+    returns a pointer equivalent to the global qApp pointer.
 
-  QApplication's main areas of responsibility are:
-  \list
+    QApplication's main areas of responsibility are:
+        \list
+            \o  It initializes the application with the user's desktop settings
+                such as palette(), font() and doubleClickInterval(). It keeps
+                track of these properties in case the user changes the desktop
+                globally, for example through some kind of control panel.
 
-  \o It initializes the application with the user's desktop settings
-  such as palette(), font() and doubleClickInterval(). It keeps track
-  of these properties in case the user changes the desktop globally, for
-  example through some kind of control panel.
+            \o  It performs event handling, meaning that it receives events
+                from the underlying window system and dispatches them to the
+                relevant widgets. By using sendEvent() and postEvent() you can
+                send your own events to widgets.
 
-  \o It performs event handling, meaning that it receives events
-  from the underlying window system and dispatches them to the relevant
-  widgets. By using sendEvent() and postEvent() you can send your own
-  events to widgets.
+            \o  It parses common command line arguments and sets its internal
+                state accordingly. See the \l{QApplication::QApplication()}
+                {constructor documentation} below for more details.
 
-  \o It parses common command line arguments and sets its internal
-  state accordingly. See the \link QApplication::QApplication()
-  constructor documentation\endlink below for more details about this.
+            \o  It defines the application's look and feel, which is
+                encapsulated in a QStyle object. This can be changed at runtime
+                with setStyle().
 
-  \o It defines the application's look and feel, which is
-  encapsulated in a QStyle object. This can be changed at runtime
-  with setStyle().
+            \o  It specifies how the application is to allocate colors. See
+                setColorSpec() for details.
 
-  \o It specifies how the application is to allocate colors.
-  See setColorSpec() for details.
+            \o  It provides localization of strings that are visible to the
+                user via translate().
 
-  \o It provides localization of strings that are visible to the user
-  via translate().
+            \o  It provides some magical objects like the desktop() and the
+                clipboard().
 
-  \o It provides some magical objects like the desktop() and the
-  clipboard().
+            \o  It knows about the application's windows. You can ask which
+                widget is at a certain position using widgetAt(), get a list of
+                topLevelWidgets() and closeAllWindows(), etc.
 
-  \o It knows about the application's windows. You can ask which
-  widget is at a certain position using widgetAt(), get a list of
-  topLevelWidgets() and closeAllWindows(), etc.
+            \o  It manages the application's mouse cursor handling, see
+                setOverrideCursor()
 
-  \o It manages the application's mouse cursor handling,
-  see setOverrideCursor()
+            \o  On the X window system, it provides functions to flush and sync
+                the communication stream, see flushX() and syncX().
 
-  \o On the X window system, it provides functions to flush and sync
-  the communication stream, see flushX() and syncX().
+            \o  It provides support for sophisticated \l{Session Management}
+                {session management}. This makes it possible for applications
+                to terminate gracefully when the user logs out, to cancel a
+                shutdown process if termination isn't possible and even to
+                preserve the entire application's state for a future session.
+                See isSessionRestored(), sessionId() and commitData() and
+                saveState() for details.
+        \endlist
 
-  \o It provides support for sophisticated \link
-  session.html session management \endlink. This makes it possible
-  for applications to terminate gracefully when the user logs out, to
-  cancel a shutdown process if termination isn't possible and even to
-  preserve the entire application's state for a future session. See
-  isSessionRestored(), sessionId() and commitData() and saveState()
-  for details.
+    The QApplication object does so much initialization. Hence, it \e{must} be
+    created before any other objects related to the user interface are created.
+    Since QApplication also deals with common command line arguments, it is
+    usually a good idea to create it \e before any interpretation or
+    modification of \c argv is done in the application itself.
 
-  \endlist
+    \table
+    \header
+        \o{2,1} Groups of functions
 
-  Since the QApplication object does so much initialization, it
-  \e{must} be created before any other objects related to the user
-  interface are created.
+        \row
+        \o  System settings
+        \o  desktopSettingsAware(),
+            setDesktopSettingsAware(),
+            cursorFlashTime(),
+            setCursorFlashTime(),
+            doubleClickInterval(),
+            setDoubleClickInterval(),
+            setKeyboardInputInterval(),
+            wheelScrollLines(),
+            setWheelScrollLines(),
+            palette(),
+            setPalette(),
+            font(),
+            setFont(),
+            fontMetrics().
 
-  Since it also deals with common command line arguments, it is
-  usually a good idea to create it \e before any interpretation or
-  modification of \c argv is done in the application itself.
+        \row
+        \o  Event handling
+        \o  exec(),
+            processEvents(),
+            exit(),
+            quit().
+            sendEvent(),
+            postEvent(),
+            sendPostedEvents(),
+            removePostedEvents(),
+            hasPendingEvents(),
+            notify(),
+            macEventFilter(),
+            qwsEventFilter(),
+            x11EventFilter(),
+            x11ProcessEvent(),
+            winEventFilter().
 
-  \table
-    \header \o{2,1} Groups of functions
-    \row
-     \o System settings
-     \o
-        desktopSettingsAware(),
-        setDesktopSettingsAware(),
-        cursorFlashTime(),
-        setCursorFlashTime(),
-        doubleClickInterval(),
-        setDoubleClickInterval(),
-        setKeyboardInputInterval(),
-        wheelScrollLines(),
-        setWheelScrollLines(),
-        palette(),
-        setPalette(),
-        font(),
-        setFont(),
-        fontMetrics().
+        \row
+        \o  GUI Styles
+        \o  style(),
+            setStyle().
 
-    \row
-     \o Event handling
-     \o
-        exec(),
-        processEvents(),
-        exit(),
-        quit().
-        sendEvent(),
-        postEvent(),
-        sendPostedEvents(),
-        removePostedEvents(),
-        hasPendingEvents(),
-        notify(),
-        macEventFilter(),
-        qwsEventFilter(),
-        x11EventFilter(),
-        x11ProcessEvent(),
-        winEventFilter().
+        \row
+        \o  Color usage
+        \o  colorSpec(),
+            setColorSpec(),
+            qwsSetCustomColors().
 
-    \row
-     \o GUI Styles
-     \o
-        style(),
-        setStyle().
+        \row
+        \o  Text handling
+        \o  installTranslator(),
+            removeTranslator()
+            translate().
 
-    \row
-     \o Color usage
-     \o
-        colorSpec(),
-        setColorSpec(),
-        qwsSetCustomColors().
+        \row
+        \o  Widgets
+        \o  allWidgets(),
+            topLevelWidgets(),
+            desktop(),
+            activePopupWidget(),
+            activeModalWidget(),
+            clipboard(),
+            focusWidget(),
+            activeWindow(),
+            widgetAt().
 
-    \row
-     \o Text handling
-     \o
-        installTranslator(),
-        removeTranslator()
-        translate().
+        \row
+        \o  Advanced cursor handling
+        \o  overrideCursor(),
+            setOverrideCursor(),
+            restoreOverrideCursor().
 
-    \row
-     \o Widgets
-     \o
-        allWidgets(),
-        topLevelWidgets(),
-        desktop(),
-        activePopupWidget(),
-        activeModalWidget(),
-        clipboard(),
-        focusWidget(),
-        winFocus(),
-        activeWindow(),
-        widgetAt().
+        \row
+        \o  X Window System synchronization
+        \o  flushX(),
+            syncX().
 
-    \row
-     \o Advanced cursor handling
-     \o
-        overrideCursor(),
-        setOverrideCursor(),
-        restoreOverrideCursor().
+        \row
+        \o  Session management
+        \o  isSessionRestored(),
+            sessionId(),
+            commitData(),
+            saveState().
 
-    \row
-     \o X Window System synchronization
-     \o
-        flushX(),
-        syncX().
-
-    \row
-     \o Session management
-     \o
-        isSessionRestored(),
-        sessionId(),
-        commitData(),
-        saveState().
-
-    \row
-     \o Miscellaneous
-     \o
-        closeAllWindows(),
-        startingUp(),
-        closingDown(),
-        type().
-  \endtable
+        \row
+        \o  Miscellaneous
+        \o  closeAllWindows(),
+            startingUp(),
+            closingDown(),
+            type().
+    \endtable
 
     \sa QCoreApplication, QAbstractEventDispatcher, QEventLoop, QSettings
 */
@@ -382,6 +367,7 @@ QApplicationPrivate::~QApplicationPrivate()
     Returns the top-level widget at the given \a point; returns 0 if
     there is no such widget.
 */
+
 /*!
     \fn QWidget *QApplication::topLevelAt(int x, int y)
 
@@ -393,8 +379,8 @@ QApplicationPrivate::~QApplicationPrivate()
 
 
 /*
-  The qt_init() and qt_cleanup() functions are implemented in the
-  qapplication_xyz.cpp file.
+    The qt_init() and qt_cleanup() functions are implemented in the
+    qapplication_xyz.cpp file.
 */
 
 void qt_init(QApplicationPrivate *priv, int type
@@ -580,99 +566,100 @@ void QApplicationPrivate::process_cmdline()
 }
 
 /*!
-  Initializes the window system and constructs an application object
-  with \a argc command line arguments in \a argv.
+    Initializes the window system and constructs an application object with
+    \a argc command line arguments in \a argv.
 
-  \warning The data referred to by \a argc and \a argv must stay valid
-  for the entire lifetime of the QApplication object. In addition,
-  \a argc must be greater than zero and \a argv must contain at least
-  one valid character string.
+    \warning The data referred to by \a argc and \a argv must stay valid for
+    the entire lifetime of the QApplication object. In addition, \a argc must
+    be greater than zero and \a argv must contain at least one valid character
+    string.
 
-  The global \c qApp pointer refers to this application object. Only
-  one application object should be created.
+    The global \c qApp pointer refers to this application object. Only one
+    application object should be created.
 
-  This application object must be constructed before any \link
-  QPaintDevice paint devices\endlink (including widgets, pixmaps, bitmaps
-  etc.).
+    This application object must be constructed before any \l{QPaintDevice}
+    {paint devices} (including widgets, pixmaps, bitmaps etc.).
 
-  Note that \a argc and \a argv might be changed. Qt removes command
-  line arguments that it recognizes.
+    \note \a argc and \a argv might be changed as Qt removes command line
+    arguments that it recognizes.
 
-  Qt debugging options (not available if Qt was compiled without the
-  QT_DEBUG flag defined):
-  \list
-  \o -nograb, tells Qt that it must never grab the mouse or the keyboard.
-  \o -dograb (only under X11), running under a debugger can cause
-  an implicit -nograb, use -dograb to override.
-  \o -sync (only under X11), switches to synchronous mode for
-        debugging.
-  \endlist
+    Qt debugging options (not available if Qt was compiled without the QT_DEBUG
+    flag defined):
+    \list
+        \o  -nograb, tells Qt that it must never grab the mouse or the
+            keyboard.
+        \o  -dograb (only under X11), running under a debugger can cause an
+            implicit -nograb, use -dograb to override.
+        \o  -sync (only under X11), switches to synchronous mode for
+            debugging.
+    \endlist
 
-  See \link debug.html Debugging Techniques \endlink for a more
-  detailed explanation.
+    See \l{Debugging Techniques} for a more detailed explanation.
 
-  All Qt programs automatically support the following command line options:
-  \list
-  \o -style= \e style, sets the application GUI style. Possible values
-       are \c motif, \c windows, and \c platinum. If you compiled Qt
-       with additional styles or have additional styles as plugins these
-       will be available to the \c -style command line option.
-  \o -style \e style, is the same as listed above.
-  \o -stylesheet= \e stylesheet, sets the application \l styleSheet. The value
-       must be a path to a file that contains the Style Sheet. Note that relative URLs
-       in the Style Sheet file are relative to the Style Sheet file's path.
-  \o -stylesheet \e stylesheet, is the same as listed above.
-  \o -session= \e session, restores the application from an earlier
-       \link session.html session \endlink.
-  \o -session \e session, is the same as listed above.
-  \o -widgetcount, prints debug message at the end about number of widgets left
-        undestroyed and maximum number of widgets existed at the same time
-  \o -reverse, sets the application's layout direction to Qt::RightToLeft
-  \o -graphicssystem, sets the backend to be used for on-screen
-      widgets and QPixmaps. Available options are \c{raster} and \c{opengl}.
+    All Qt programs automatically support the following command line options:
+    \list
+        \o  -style= \e style, sets the application GUI style. Possible values
+            are \c motif, \c windows, and \c platinum. If you compiled Qt with
+            additional styles or have additional styles as plugins these will
+            be available to the \c -style command line option.
+        \o  -style \e style, is the same as listed above.
+        \o  -stylesheet= \e stylesheet, sets the application \l styleSheet. The
+            value must be a path to a file that contains the Style Sheet.
+            \note Relative URLs in the Style Sheet file are relative to the
+            Style Sheet file's path.
+        \o  -stylesheet \e stylesheet, is the same as listed above.
+        \o  -session= \e session, restores the application from an earlier
+            \l{Session Management}{session}.
+        \o  -session \e session, is the same as listed above.
+        \o  -widgetcount, prints debug message at the end about number of
+            widgets left undestroyed and maximum number of widgets existed at
+            the same time
+        \o  -reverse, sets the application's layout direction to
+            Qt::RightToLeft
+        \o  -graphicssystem, sets the backend to be used for on-screen widgets
+            and QPixmaps. Available options are \c{raster} and \c{opengl}.
+    \endlist
 
-  \endlist
+    The Windows version of Qt supports an additional command line  option, if
+    Direct3D support has been compiled into Qt:
+    \list
+        \o  -direct3d will make the Direct3D paint engine the default widget
+            paint engine in Qt. \bold {This functionality is experimental.}
+    \endlist
 
-  The Windows version of Qt also support one additional command line
-  option, if Direct3D support has been compiled into Qt:
-  \list
-  \o -direct3d will make the Direct3D paint engine the default widget
-               paint engine in Qt. \bold {This functionality is experimental.}
-  \endlist
+    The X11 version of Qt supports some traditional X11 command line options:
+    \list
+        \o  -display \e display, sets the X display (default is $DISPLAY).
+        \o  -geometry \e geometry, sets the client geometry of the first window
+            that is shown.
+        \o  -fn or \c -font \e font, defines the application font. The font
+            should be specified using an X logical font description.
+        \o  -bg or \c -background \e color, sets the default background color
+            and an application palette (light and dark shades are calculated).
+        \o  -fg or \c -foreground \e color, sets the default foreground color.
+        \o  -btn or \c -button \e color, sets the default button color.
+        \o  -name \e name, sets the application name.
+        \o  -title \e title, sets the application title.
+        \o  -visual \c TrueColor, forces the application to use a TrueColor
+            visual on an 8-bit display.
+        \o  -ncols \e count, limits the number of colors allocated in the color
+            cube on an 8-bit display, if the application is using the
+            QApplication::ManyColor color specification. If \e count is 216
+            then a 6x6x6 color cube is used (i.e. 6 levels of red, 6 of green,
+            and 6 of blue); for other values, a cube approximately proportional
+            to a 2x3x1 cube is used.
+        \o  -cmap, causes the application to install a private color map on an
+            8-bit display.
+        \o  -im, sets the input method server (equivalent to setting the
+            XMODIFIERS environment variable)
+        \o  -inputstyle, defines how the input is inserted into the given
+            widget, e.g., \c onTheSpot makes the input appear directly in the
+            widget, while \c overTheSpot makes the input appear in a box
+            floating over the widget and is not inserted until the editing is
+            done.
+    \endlist
 
-  The X11 version of Qt also supports some traditional X11
-  command line options:
-  \list
-  \o -display \e display, sets the X display (default is $DISPLAY).
-  \o -geometry \e geometry, sets the client geometry of the
-        first window that is shown.
-  \o -fn or \c -font \e font, defines the application font. The
-  font should be specified using an X logical font description.
-  \o -bg or \c -background \e color, sets the default background color
-        and an application palette (light and dark shades are calculated).
-  \o -fg or \c -foreground \e color, sets the default foreground color.
-  \o -btn or \c -button \e color, sets the default button color.
-  \o -name \e name, sets the application name.
-  \o -title \e title, sets the application title.
-  \o -visual \c TrueColor, forces the application to use a TrueColor visual
-       on an 8-bit display.
-  \o -ncols \e count, limits the number of colors allocated in the
-       color cube on an 8-bit display, if the application is using the
-       QApplication::ManyColor color specification. If \e count is
-       216 then a 6x6x6 color cube is used (i.e. 6 levels of red, 6 of green,
-       and 6 of blue); for other values, a cube
-       approximately proportional to a 2x3x1 cube is used.
-  \o -cmap, causes the application to install a private color map
-       on an 8-bit display.
-  \o -im, sets the input method server (equivalent to setting the XMODIFIERS
-       environment variable)
-  \o -inputstyle, defines how the input is inserted into the given widget. E.g.,
-       \c onTheSpot makes the input appear directly in the widget, while
-       \c overTheSpot makes the input appear in a box floating over the
-       widget and is not inserted until the editing is done.
-  \endlist
-
-  \sa arguments()
+    \sa arguments()
 */
 
 QApplication::QApplication(int &argc, char **argv)
@@ -685,26 +672,26 @@ QApplication::QApplication(int &argc, char **argv, int _internal)
 
 
 /*!
-    Constructs an application object with \a argc command line arguments
-    in \a argv. If \a GUIenabled is true, a GUI application is
-    constructed, otherwise a non-GUI (console) application is created.
+    Constructs an application object with \a argc command line arguments in
+    \a argv. If \a GUIenabled is true, a GUI application is constructed,
+    otherwise a non-GUI (console) application is created.
 
-    \warning The data referred to by \a argc and \a argv must stay valid
-    for the entire lifetime of the QApplication object. In addition,
-    \a argc must be greater than zero and \a argv must contain at least
-    one valid character string.
+    \warning The data referred to by \a argc and \a argv must stay valid for
+    the entire lifetime of the QApplication object. In addition, \a argc must
+    be greater than zero and \a argv must contain at least one valid character
+    string.
 
-    Set \a GUIenabled to false for programs without a graphical user
-    interface that should be able to run without a window system.
+    Set \a GUIenabled to false for programs without a graphical user interface
+    that should be able to run without a window system.
 
-    On X11, the window system is initialized if \a GUIenabled is true.
-    If \a GUIenabled is false, the application does not connect to the
-    X server. On Windows and Macintosh, currently the window system is
-    always initialized, regardless of the value of GUIenabled. This may
-    change in future versions of Qt.
+    On X11, the window system is initialized if \a GUIenabled is true. If
+    \a GUIenabled is false, the application does not connect to the X server.
+    On Windows and Macintosh, currently the window system is always
+    initialized, regardless of the value of GUIenabled. This may change in
+    future versions of Qt.
 
-    The following example shows how to create an application that
-    uses a graphical interface when available.
+    The following example shows how to create an application that uses a
+    graphical interface when available.
 
     \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 0
 */
@@ -720,17 +707,17 @@ QApplication::QApplication(int &argc, char **argv, bool GUIenabled , int _intern
 
 
 /*!
-  Constructs an application object with \a argc command line arguments
-  in \a argv.
+    Constructs an application object with \a argc command line arguments in
+    \a argv.
 
-  \warning The data referred to by \a argc and \a argv must stay valid
-  for the entire lifetime of the QApplication object. In addition,
-  \a argc must be greater than zero and \a argv must contain at least
-  one valid character string.
+    \warning The data referred to by \a argc and \a argv must stay valid for
+    the entire lifetime of the QApplication object. In addition, \a argc must
+    be greater than zero and \a argv must contain at least one valid character
+    string.
 
-  With Qt for Embedded Linux, passing QApplication::GuiServer for \a type
-  makes this application the server (equivalent to running with the
-  \c -qws option).
+    With Qt for Embedded Linux, passing QApplication::GuiServer for \a type
+    makes this application the server (equivalent to running with the
+    \c -qws option).
 */
 QApplication::QApplication(int &argc, char **argv, Type type)
     : QCoreApplication(*new QApplicationPrivate(argc, argv, type))
@@ -778,16 +765,16 @@ static int aargc = 1;
 static char *aargv[] = { (char*)"unknown", 0 };
 
 /*!
-  \fn QApplication::QApplication(Display* display, Qt::HANDLE visual, Qt::HANDLE colormap)
+    \fn QApplication::QApplication(Display* display, Qt::HANDLE visual, Qt::HANDLE colormap)
 
-  Create an application, given an already open display \a display. If \a
-  visual and \a colormap are non-zero, the application will use those as
-  the default Visual and Colormap contexts.
+    Creates an application, given an already open display \a display. If
+    \a visual and \a colormap are non-zero, the application will use those
+    values as the default Visual and Colormap contexts.
 
-  \warning Qt only supports TrueColor visuals at depths higher than 8
-  bits-per-pixel.
+    \warning Qt only supports TrueColor visuals at depths higher than 8
+    bits-per-pixel.
 
-  This is available only on X11.
+    This function is only available on X11.
 */
 QApplication::QApplication(Display* dpy, Qt::HANDLE visual, Qt::HANDLE colormap)
     : QCoreApplication(*new QApplicationPrivate(aargc, aargv, GuiClient))
@@ -809,19 +796,18 @@ QApplication::QApplication(Display* dpy, Qt::HANDLE visual, Qt::HANDLE colormap,
 }
 
 /*!
-  \fn QApplication::QApplication(Display *display, int &argc, char **argv,
-                           Qt::HANDLE visual, Qt::HANDLE colormap)
+    \fn QApplication::QApplication(Display *display, int &argc, char **argv,
+        Qt::HANDLE visual, Qt::HANDLE colormap)
 
-  Create an application, given an already open \a display and using \a
-  argc command line arguments in \a argv. If \a visual and \a colormap
-  are non-zero, the application will use those as the default Visual
-  and Colormap contexts.
+    Creates an application, given an already open \a display and using \a argc
+    command line arguments in \a argv. If \a visual and \a colormap are
+    non-zero, the application will use those values as the default Visual
+    and Colormap contexts.
 
-  \warning Qt only supports TrueColor visuals at depths higher than 8
-  bits-per-pixel.
+    \warning Qt only supports TrueColor visuals at depths higher than 8
+    bits-per-pixel.
 
-  This is available only on X11.
-
+    This function is only available on X11.
 */
 QApplication::QApplication(Display *dpy, int &argc, char **argv,
                            Qt::HANDLE visual, Qt::HANDLE colormap)
@@ -923,19 +909,18 @@ QApplication::Type QApplication::type()
  *****************************************************************************/
 
 /*!
-  Returns the active popup widget.
+    Returns the active popup widget.
 
-  A popup widget is a special top-level widget that sets the \c
-  Qt::WType_Popup widget flag, e.g. the QMenu widget. When the
-  application opens a popup widget, all events are sent to the popup.
-  Normal widgets and modal widgets cannot be accessed before the popup
-  widget is closed.
+    A popup widget is a special top-level widget that sets the \c
+    Qt::WType_Popup widget flag, e.g. the QMenu widget. When the application
+    opens a popup widget, all events are sent to the popup. Normal widgets and
+    modal widgets cannot be accessed before the popup widget is closed.
 
-  Only other popup widgets may be opened when a popup widget is shown.
-  The popup widgets are organized in a stack. This function returns
-  the active popup widget at the top of the stack.
+    Only other popup widgets may be opened when a popup widget is shown. The
+    popup widgets are organized in a stack. This function returns the active
+    popup widget at the top of the stack.
 
-  \sa activeModalWidget(), topLevelWidgets()
+    \sa activeModalWidget(), topLevelWidgets()
 */
 
 QWidget *QApplication::activePopupWidget()
@@ -946,17 +931,17 @@ QWidget *QApplication::activePopupWidget()
 
 
 /*!
-  Returns the active modal widget.
+    Returns the active modal widget.
 
-  A modal widget is a special top-level widget which is a subclass of
-  QDialog that specifies the modal parameter of the constructor as
-  true. A modal widget must be closed before the user can continue
-  with other parts of the program.
+    A modal widget is a special top-level widget which is a subclass of QDialog
+    that specifies the modal parameter of the constructor as true. A modal
+    widget must be closed before the user can continue with other parts of the
+    program.
 
-  Modal widgets are organized in a stack. This function returns
-  the active modal widget at the top of the stack.
+    Modal widgets are organized in a stack. This function returns the active
+    modal widget at the top of the stack.
 
-  \sa activePopupWidget(), topLevelWidgets()
+    \sa activePopupWidget(), topLevelWidgets()
 */
 
 QWidget *QApplication::activeModalWidget()
@@ -965,8 +950,8 @@ QWidget *QApplication::activeModalWidget()
 }
 
 /*!
-  Cleans up any window system resources that were allocated by this
-  application. Sets the global variable \c qApp to 0.
+    Cleans up any window system resources that were allocated by this
+    application. Sets the global variable \c qApp to 0.
 */
 
 QApplication::~QApplication()
@@ -1092,8 +1077,8 @@ QApplication::~QApplication()
 /*!
     \fn QWidget *QApplication::widgetAt(const QPoint &point)
 
-    Returns the widget at global screen position \a point, or 0 if there
-    is no Qt widget there.
+    Returns the widget at global screen position \a point, or 0 if there is no
+    Qt widget there.
 
     This function can be slow.
 
@@ -1141,8 +1126,8 @@ QWidget *QApplication::widgetAt(const QPoint &p)
 
     \overload
 
-    Returns the widget at global screen position (\a x, \a y), or 0
-    if there is no Qt widget there.
+    Returns the widget at global screen position (\a x, \a y), or 0 if there is
+    no Qt widget there.
 */
 
 /*!
@@ -1211,16 +1196,17 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     \since 4.4
     \brief defines a threshold for auto maximizing widgets
 
-    The auto maximize threshold is only available
-    as part of Qt for Windows CE.
+    The auto maximize threshold is only available as part of Qt for Windows CE.
 
     This property defines a threshold for the size of a window as a percentage
-    of the screen size. If the minimum size hint of a window exceeds the threshold,
-    calling show() will then cause the window to be maximized automatically.
+    of the screen size. If the minimum size hint of a window exceeds the
+    threshold, calling show() will then cause the window to be maximized
+    automatically.
 
-    Setting the threshold to be 100 or greater means that it will cause it to always
-    be maximized. Setting it to be 50 means that the widget is maximized if the vertical
-    minimum size hint is at least 50% of the vertical screen size.
+    Setting the threshold to be 100 or greater means that it will cause it to
+    always be maximized. Setting it to be 50 means that the widget is maximized
+    if the vertical minimum size hint is at least 50% of the vertical screen
+    size.
 
     If -1 is specified then this will disable the feature.
 
@@ -1233,12 +1219,11 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     \since 4.5
     \brief toggles automatic SIP (software input panel) visibility
 
-    The auto SIP property is only available
-    as part of Qt for Windows CE.
+    The auto SIP property is only available as part of Qt for Windows CE.
 
     Set this property to true to automatically display the SIP when entering
-    widgets that accept keyboard input. This only affects widgets that have the
-    attribute WA_InputMethodEnabled set.
+    widgets that accept keyboard input. This property only affects widgets with
+    the WA_InputMethodEnabled attribute set.
 */
 
 #ifdef Q_OS_WINCE
@@ -1290,9 +1275,9 @@ void QApplication::setStyleSheet(const QString& styleSheet)
 #endif // QT_NO_STYLE_STYLESHEET
 
 /*!
-  Returns the application's style object.
+    Returns the application's style object.
 
-  \sa setStyle(), QStyle
+    \sa setStyle(), QStyle
 */
 QStyle *QApplication::style()
 {
@@ -1375,22 +1360,21 @@ QStyle *QApplication::style()
 }
 
 /*!
-    Sets the application's GUI style to \a style. Ownership of the style
-    object is transferred to QApplication, so QApplication will delete
-    the style object on application exit or when a new style is set and
-    the old style is still the parent of the application object.
+    Sets the application's GUI style to \a style. Ownership of the style object
+    is transferred to QApplication, so QApplication will delete the style
+    object on application exit or when a new style is set and the old style is
+    still the parent of the application object.
 
     Example usage:
     \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 1
 
-    When switching application styles, the color palette is set back to
-    the initial colors or the system defaults. This is necessary since
-    certain styles have to adapt the color palette to be fully
-    style-guide compliant.
+    When switching application styles, the color palette is set back to the
+    initial colors or the system defaults. This is necessary since certain
+    styles have to adapt the color palette to be fully style-guide compliant.
 
-    Note that setting the style before a palette has been set
-    (i.e. before creating QApplication) will cause the application to
-    use QStyle::standardPalette() for the palette.
+    Setting the style before a palette has been se, i.e., before creating
+    QApplication, will cause the application to use QStyle::standardPalette()
+    for the palette.
 
     \warning Qt style sheets are currently not supported for custom QStyle
     subclasses. We plan to address this in some future release.
@@ -1493,20 +1477,20 @@ void QApplication::setStyle(QStyle *style)
 }
 
 /*!
-  \overload
+    \overload
 
-  Requests a QStyle object for \a style from the QStyleFactory.
+    Requests a QStyle object for \a style from the QStyleFactory.
 
-  The string must be one of the QStyleFactory::keys(), typically one
-  of "windows", "motif", "cde", "plastique", "windowsxp", or
-  "macintosh". Style names are case insensitive.
+    The string must be one of the QStyleFactory::keys(), typically one of
+    "windows", "motif", "cde", "plastique", "windowsxp", or "macintosh". Style
+    names are case insensitive.
 
-  Returns 0 if an unknown \a style is passed, otherwise the QStyle object
-  returned is set as the application's GUI style.
+    Returns 0 if an unknown \a style is passed, otherwise the QStyle object
+    returned is set as the application's GUI style.
 
-  \warning To ensure that the application's style is set correctly, it is
-  best to call this function before the QApplication constructor, if
-  possible.
+    \warning To ensure that the application's style is set correctly, it is
+    best to call this function before the QApplication constructor, if
+    possible.
 */
 QStyle* QApplication::setStyle(const QString& style)
 {
@@ -1519,20 +1503,19 @@ QStyle* QApplication::setStyle(const QString& style)
 }
 
 /*!
-   \since 4.5
+    \since 4.5
 
-   Sets the default graphics backend to \a system, which will be used
-   for on-screen widgets and QPixmaps. The available systems are
-   \c{"native"}, \c{"raster"} and \c{"opengl"}.
+    Sets the default graphics backend to \a system, which will be used for
+    on-screen widgets and QPixmaps. The available systems are \c{"native"},
+    \c{"raster"} and \c{"opengl"}.
 
-   Note that this function call overrides both the application
-   commandline \c{-graphicssystem} switch and the configure
-   \c{-graphicssystem} switch.
+    This function call overrides both the application commandline
+    \c{-graphicssystem} switch and the configure \c{-graphicssystem} switch.
 
-   \warning This function must be called before the QApplication
-   constructor is called.
+    \warning This function must be called before the QApplication constructor
+    is called.
 
-   The \c{"opengl"} option is currently considered experimental.
+    \note The \c{"opengl"} option is currently experimental.
 */
 
 void QApplication::setGraphicsSystem(const QString &system)
@@ -1541,9 +1524,10 @@ void QApplication::setGraphicsSystem(const QString &system)
 }
 
 /*!
-  Returns the color specification.
-  \sa QApplication::setColorSpec()
- */
+    Returns the color specification.
+
+    \sa QApplication::setColorSpec()
+*/
 
 int QApplication::colorSpec()
 {
@@ -1551,54 +1535,54 @@ int QApplication::colorSpec()
 }
 
 /*!
-  Sets the color specification for the application to \a spec.
+    Sets the color specification for the application to \a spec.
 
-  The color specification controls how the application allocates colors
-  when run on a display with a limited amount of colors, e.g. 8 bit / 256
-  color displays.
+    The color specification controls how the application allocates colors when
+    run on a display with a limited amount of colors, e.g. 8 bit / 256 color
+    displays.
 
-  The color specification must be set before you create the QApplication
-  object.
+    The color specification must be set before you create the QApplication
+    object.
 
-  The options are:
-  \list
-  \o QApplication::NormalColor.
-    This is the default color allocation strategy. Use this option if
-    your application uses buttons, menus, texts and pixmaps with few
-    colors. With this option, the application uses system global
-    colors. This works fine for most applications under X11, but on
-    Windows machines it may cause dithering of non-standard colors.
-  \o QApplication::CustomColor.
-    Use this option if your application needs a small number of custom
-    colors. On X11, this option is the same as NormalColor. On Windows, Qt
-    creates a Windows palette, and allocates colors to it on demand.
-  \o QApplication::ManyColor.
-    Use this option if your application is very color hungry
-    (e.g. it requires thousands of colors).
-    Under X11 the effect is:
+    The options are:
     \list
-    \o For 256-color displays which have at best a 256 color true
-       color visual, the default visual is used, and colors are
-       allocated from a color cube. The color cube is the 6x6x6 (216
-       color) "Web palette" (the red, green, and blue components
-       always have one of the following values: 0x00, 0x33, 0x66,
-       0x99, 0xCC, or 0xFF), but the number of colors can be changed
-       by the \e -ncols option. The user can force the application to
-       use the true color visual with the \link
-       QApplication::QApplication() -visual \endlink option.
-    \o For 256-color displays which have a true color visual with more
-       than 256 colors, use that visual. Silicon Graphics X servers
-       have this feature, for example. They provide an 8 bit visual
-       by default but can deliver true color when asked.
+        \o  QApplication::NormalColor. This is the default color allocation
+            strategy. Use this option if your application uses buttons, menus,
+            texts and pixmaps with few colors. With this option, the
+            application uses system global colors. This works fine for most
+            applications under X11, but on Windows machines it may cause
+            dithering of non-standard colors.
+        \o  QApplication::CustomColor. Use this option if your application
+            needs a small number of custom colors. On X11, this option is the
+            same as NormalColor. On Windows, Qt creates a Windows palette, and
+            allocates colors to it on demand.
+        \o  QApplication::ManyColor. Use this option if your application is
+            very color hungry, e.g., it requires thousands of colors. \br
+            Under X11 the effect is:
+            \list
+                \o  For 256-color displays which have at best a 256 color true
+                    color visual, the default visual is used, and colors are
+                    allocated from a color cube. The color cube is the 6x6x6
+                    (216 color) "Web palette" (the red, green, and blue
+                    components always have one of the following values: 0x00,
+                    0x33, 0x66, 0x99, 0xCC, or 0xFF), but the number of colors
+                    can be changed by the \e -ncols option. The user can force
+                    the application to use the true color visual with the
+                    \l{QApplication::QApplication()}{-visual} option.
+                \o  For 256-color displays which have a true color visual with
+                    more than 256 colors, use that visual. Silicon Graphics X
+                    servers this feature, for example. They provide an 8 bit
+                    visual by default but can deliver true color when asked.
+            \endlist
+            On Windows, Qt creates a Windows palette, and fills it with a color
+            cube.
     \endlist
-    On Windows, Qt creates a Windows palette, and fills it with a color cube.
-  \endlist
 
-  Be aware that the CustomColor and ManyColor choices may lead to colormap
-  flashing: The foreground application gets (most) of the available
-  colors, while the background windows will look less attractive.
+    Be aware that the CustomColor and ManyColor choices may lead to colormap
+    flashing: The foreground application gets (most) of the available colors,
+    while the background windows will look less attractive.
 
-  Example:
+    Example:
 
     \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 2
 
@@ -1618,10 +1602,9 @@ void QApplication::setColorSpec(int spec)
     \brief the minimum size that any GUI element that the user can interact
            with should have
 
-    For example, no button should be resized to be smaller than the
-    global strut size. The strut size should be considered when
-    reimplementing GUI controls that may be used on touch-screens or
-    similar I/O devices.
+    For example, no button should be resized to be smaller than the global
+    strut size. The strut size should be considered when reimplementing GUI
+    controls that may be used on touch-screens or similar I/O devices.
 
     Example:
 
@@ -1655,12 +1638,11 @@ QPalette QApplication::palette()
     \fn QPalette QApplication::palette(const QWidget* widget)
     \overload
 
-    If a \a widget is passed, the default palette for the
-    widget's class is returned. This may or may not be the application
-    palette. In most cases there isn't a special palette for certain
-    types of widgets, but one notable exception is the popup menu
-    under Windows, if the user has defined a special background color
-    for menus in the display settings.
+    If a \a widget is passed, the default palette for the widget's class is
+    returned. This may or may not be the application palette. In most cases
+    there is no special palette for certain types of widgets, but one notable
+    exception is the popup menu under Windows, if the user has defined a
+    special background color for menus in the display settings.
 
     \sa setPalette(), QWidget::palette()
 */
@@ -1754,26 +1736,26 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
 }
 
 /*!
-  Changes the default application palette to \a palette.
+    Changes the default application palette to \a palette.
 
-  If \a className is passed, the change applies only to widgets that
-  inherit \a className (as reported by QObject::inherits()). If
-  \a className is left 0, the change affects all widgets, thus overriding
-  any previously set class specific palettes.
+    If \a className is passed, the change applies only to widgets that inherit
+    \a className (as reported by QObject::inherits()). If \a className is left
+    0, the change affects all widgets, thus overriding any previously set class
+    specific palettes.
 
-  The palette may be changed according to the current GUI style in
-  QStyle::polish().
+    The palette may be changed according to the current GUI style in
+    QStyle::polish().
 
-  \warning Do not use this function in conjunction with \l{Qt Style Sheets}.
-  When using style sheets, the palette of a widget can be customized using the "color",
-  "background-color", "selection-color", "selection-background-color" and
-  "alternate-background-color".
+    \warning Do not use this function in conjunction with \l{Qt Style Sheets}.
+    When using style sheets, the palette of a widget can be customized using
+    the "color", "background-color", "selection-color",
+    "selection-background-color" and "alternate-background-color".
 
-    Note that some styles do not use the palette for all drawing,
-    for instance, if they make use of native theme engines. This is
-    the case for the Windows XP, Windows Vista, and Mac OS X styles.
+    \note Some styles do not use the palette for all drawing, for instance, if
+    they make use of native theme engines. This is the case for the Windows XP,
+    Windows Vista, and Mac OS X styles.
 
-  \sa QWidget::setPalette(), palette(), QStyle::polish()
+    \sa QWidget::setPalette(), palette(), QStyle::polish()
 */
 
 void QApplication::setPalette(const QPalette &palette, const char* className)
@@ -1878,15 +1860,15 @@ QFont QApplication::font(const char *className)
 
 
 /*!
-    Changes the default application font to \a font. If \a className
-    is passed, the change applies only to classes that inherit \a
-    className (as reported by QObject::inherits()).
+    Changes the default application font to \a font. If \a className is passed,
+    the change applies only to classes that inherit \a className (as reported
+    by QObject::inherits()).
 
-    On application start-up, the default font depends on the window
-    system. It can vary depending on both the window system version and
-    the locale. This function lets you override the default font; but
-    overriding may be a bad idea because, for example, some locales need
-    extra large fonts to support their special characters.
+    On application start-up, the default font depends on the window system. It
+    can vary depending on both the window system version and the locale. This
+    function lets you override the default font; but overriding may be a bad
+    idea because, for example, some locales need extra large fonts to support
+    their special characters.
 
     \warning Do not use this function in conjunction with \l{Qt Style Sheets}.
     The font of an application can be customized using the "font" style sheet
@@ -1988,11 +1970,10 @@ void QApplication::setWindowIcon(const QIcon &icon)
 }
 
 /*!
-    Returns a list of the top-level widgets (windows) in the
-    application.
+    Returns a list of the top-level widgets (windows) in the application.
 
-    Note that some of the top-level widgets may be hidden, for
-    example a tooltip if no tooltip is currently shown.
+    \note Some of the top-level widgets may be hidden, for example a tooltip if
+    no tooltip is currently shown.
 
     Example:
 
@@ -2018,7 +1999,7 @@ QWidgetList QApplication::topLevelWidgets()
 
     The list is empty (QList::isEmpty()) if there are no widgets.
 
-    Note that some of the widgets may be hidden.
+    \note Some of the widgets may be hidden.
 
     Example:
     \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 5
@@ -2037,10 +2018,10 @@ QWidgetList QApplication::allWidgets()
 }
 
 /*!
-  Returns the application widget that has the keyboard input focus, or
-  0 if no widget in this application has the focus.
+    Returns the application widget that has the keyboard input focus, or 0 if
+    no widget in this application has the focus.
 
-  \sa QWidget::setFocus(), QWidget::hasFocus(), activeWindow(), focusChanged()
+    \sa QWidget::setFocus(), QWidget::hasFocus(), activeWindow(), focusChanged()
 */
 
 QWidget *QApplication::focusWidget()
@@ -2121,12 +2102,12 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
 
 
 /*!
-  Returns the application top-level window that has the keyboard input
-  focus, or 0 if no application window has the focus. Note that
-  there might be an activeWindow() even if there is no focusWidget(),
-  for example if no widget in that window accepts key events.
+    Returns the application top-level window that has the keyboard input focus,
+    or 0 if no application window has the focus. There might be an
+    activeWindow() even if there is no focusWidget(), for example if no widget
+    in that window accepts key events.
 
-  \sa QWidget::setFocus(), QWidget::hasFocus(), focusWidget()
+    \sa QWidget::setFocus(), QWidget::hasFocus(), focusWidget()
 */
 
 QWidget *QApplication::activeWindow()
@@ -2135,9 +2116,9 @@ QWidget *QApplication::activeWindow()
 }
 
 /*!
-  Returns display (screen) font metrics for the application font.
+    Returns display (screen) font metrics for the application font.
 
-  \sa font(), setFont(), QWidget::fontMetrics(), QPainter::fontMetrics()
+    \sa font(), setFont(), QWidget::fontMetrics(), QPainter::fontMetrics()
 */
 
 QFontMetrics QApplication::fontMetrics()
@@ -2149,19 +2130,20 @@ QFontMetrics QApplication::fontMetrics()
 /*!
     Closes all top-level windows.
 
-    This function is particularly useful for applications with many
-    top-level windows. It could, for example, be connected to a
-    \gui{Exit} entry in the \gui{File} menu:
+    This function is particularly useful for applications with many top-level
+    windows. It could, for example, be connected to a \gui{Exit} entry in the
+    \gui{File} menu:
 
     \snippet examples/mainwindows/mdi/mainwindow.cpp 0
 
-    The windows are closed in random order, until one window does not
-    accept the close event. The application quits when the last window
-    was successfully closed; this can be turned off by setting \l
-    quitOnLastWindowClosed to false.
+    The windows are closed in random order, until one window does not accept
+    the close event. The application quits when the last window was
+    successfully closed; this can be turned off by setting
+    \l quitOnLastWindowClosed to false.
 
-    \sa quitOnLastWindowClosed, lastWindowClosed()  QWidget::close(), QWidget::closeEvent(), lastWindowClosed(),
-        quit(), topLevelWidgets(), QWidget::isWindow()
+    \sa quitOnLastWindowClosed, lastWindowClosed(), QWidget::close(),
+    QWidget::closeEvent(), lastWindowClosed(), quit(), topLevelWidgets(),
+    QWidget::isWindow()
 */
 void QApplication::closeAllWindows()
 {
@@ -2184,11 +2166,11 @@ void QApplication::closeAllWindows()
 }
 
 /*!
-    Displays a simple message box about Qt. The message includes the
-    version number of Qt being used by the application.
+    Displays a simple message box about Qt. The message includes the version
+    number of Qt being used by the application.
 
-    This is useful for inclusion in the \gui Help menu of an application,
-    as shown in the \l{mainwindows/menus}{Menus} example.
+    This is useful for inclusion in the \gui Help menu of an application, as
+    shown in the \l{mainwindows/menus}{Menus} example.
 
     This function is a convenience slot for QMessageBox::aboutQt().
 */
@@ -2209,22 +2191,20 @@ void QApplication::aboutQt()
 /*!
     \fn void QApplication::lastWindowClosed()
 
-    This signal is emitted from QApplication::exec() when the last
-    visible primary window (i.e. window with no parent) with the
-    Qt::WA_QuitOnClose attribute set is closed.
+    This signal is emitted from QApplication::exec() when the last visible
+    primary window (i.e. window with no parent) with the Qt::WA_QuitOnClose
+    attribute set is closed.
 
     By default,
 
     \list
+        \o  this attribute is set for all widgets except transient windows such
+            as splash screens, tool windows, and popup menus
 
-    \i this attribute is set for all widgets except transient windows
-    such as splash screens, tool windows, and popup menus
-
-    \i QApplication implicitly quits when this signal is emitted.
-
+        \o  QApplication implicitly quits when this signal is emitted.
     \endlist
 
-    This feature be turned off by setting \l quitOnLastWindowClosed to
+    This feature can be turned off by setting \l quitOnLastWindowClosed to
     false.
 
     \sa QWidget::close()
@@ -2234,15 +2214,15 @@ void QApplication::aboutQt()
     \since 4.1
     \fn void QApplication::focusChanged(QWidget *old, QWidget *now)
 
-    This signal is emitted when the widget that has keyboard focus
-    changed from \a old to \a now, i.e. because the user pressed the
-    tab-key, clicked into a widget or changed the active window. Note
-    that both \a old and \a now can be the null-pointer.
+    This signal is emitted when the widget that has keyboard focus changed from
+    \a old to \a now, i.e., because the user pressed the tab-key, clicked into
+    a widget or changed the active window. Both \a old and \a now can be the
+    null-pointer.
 
-    The signal is emitted after both widget have been notified about
-    the change through QFocusEvent.
+    The signal is emitted after both widget have been notified about the change
+    through QFocusEvent.
 
-    \sa QWidget::setFocus() QWidget::clearFocus() Qt::FocusReason
+    \sa QWidget::setFocus(), QWidget::clearFocus(), Qt::FocusReason
 */
 
 /*!
@@ -2251,10 +2231,10 @@ void QApplication::aboutQt()
 
     This signal is emitted when application fonts are loaded or removed.
 
-   \sa QFontDatabase::addApplicationFont()
-   \sa QFontDatabase::addApplicationFontFromData()
-   \sa QFontDatabase::removeAllApplicationFonts()
-   \sa QFontDatabase::removeApplicationFont()
+    \sa QFontDatabase::addApplicationFont(),
+    QFontDatabase::addApplicationFontFromData(),
+    QFontDatabase::removeAllApplicationFonts(),
+    QFontDatabase::removeApplicationFont()
 */
 
 #ifndef QT_NO_TRANSLATION
@@ -2351,18 +2331,17 @@ void QApplication::syncX()        {}                // do nothing
     \fn void QApplication::setActiveWindow(QWidget* active)
 
     Sets the active window to the \a active widget in response to a system
-    event. The function is called from the platform specific event
-    handlers.
+    event. The function is called from the platform specific event handlers.
 
-    \warning This function does \e not set the keyboard focus to the
-    active widget. Call QWidget::activateWindow() instead.
+    \warning This function does \e not set the keyboard focus to the active
+    widget. Call QWidget::activateWindow() instead.
 
-    It sets the activeWindow() and focusWidget() attributes and sends
-    proper \l{QEvent::WindowActivate}{WindowActivate}/\l{QEvent::WindowDeactivate}{WindowDeactivate}
-    and \l{QEvent::FocusIn}{FocusIn}/\l{QEvent::FocusOut}{FocusOut} events
-    to all appropriate widgets. The window will then be painted in
-    active state (e.g. cursors in line edits will blink), and it will
-    have tool tips enabled.
+    It sets the activeWindow() and focusWidget() attributes and sends proper
+    \l{QEvent::WindowActivate}{WindowActivate}/\l{QEvent::WindowDeactivate}
+    {WindowDeactivate} and \l{QEvent::FocusIn}{FocusIn}/\l{QEvent::FocusOut}
+    {FocusOut} events to all appropriate widgets. The window will then be
+    painted in active state (e.g. cursors in line edits will blink), and it
+    will have tool tips enabled.
 
     \sa activeWindow(), QWidget::activateWindow()
 */
@@ -2508,11 +2487,11 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
 }
 
 /*!
-   \fn void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave)
-   \internal
+    \fn void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave)
+    \internal
 
-  Creates the proper Enter/Leave event when widget \a enter is entered
-  and widget \a leave is left.
+    Creates the proper Enter/Leave event when widget \a enter is entered and
+    widget \a leave is left.
  */
 #if defined(Q_WS_WIN)
   extern void qt_win_set_cursor(QWidget *, bool);
@@ -3029,11 +3008,11 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
 /*!
     Returns the desktop widget (also called the root window).
 
-    Note that the desktop may be composed of multiple screens, so it would be
-    incorrect, for example, to attempt to \e center some widget in the
-    desktop's geometry. QDesktopWidget has various functions for obtaining
-    useful geometries upon the desktop, such as QDesktopWidget::screenGeometry()
-    and QDesktopWidget::availableGeometry().
+    The desktop may be composed of multiple screens, so it would be incorrect,
+    for example, to attempt to \e center some widget in the desktop's geometry.
+    QDesktopWidget has various functions for obtaining useful geometries upon
+    the desktop, such as QDesktopWidget::screenGeometry() and
+    QDesktopWidget::availableGeometry().
 
     On X11, it is also possible to draw on the desktop.
 */
@@ -3048,10 +3027,10 @@ QDesktopWidget *QApplication::desktop()
 
 #ifndef QT_NO_CLIPBOARD
 /*!
-  Returns a pointer to the application global clipboard.
+    Returns a pointer to the application global clipboard.
 
-  \note The QApplication object should already be constructed before
-  accessing the clipboard.
+    \note The QApplication object should already be constructed before
+    accessing the clipboard.
 */
 QClipboard *QApplication::clipboard()
 {
@@ -3067,11 +3046,11 @@ QClipboard *QApplication::clipboard()
 #endif // QT_NO_CLIPBOARD
 
 /*!
-    Sets whether Qt should use the system's standard colors, fonts,
-    etc., to \a on. By default, this is true.
+    Sets whether Qt should use the system's standard colors, fonts, etc., to
+    \a on. By default, this is true.
 
-    This function must be called before creating the QApplication
-    object, like this:
+    This function must be called before creating the QApplication object, like
+    this:
 
     \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 6
 
@@ -3083,8 +3062,8 @@ void QApplication::setDesktopSettingsAware(bool on)
 }
 
 /*!
-    Returns true if Qt is set to use the system's standard colors,
-    fonts, etc.; otherwise returns false. The default is true.
+    Returns true if Qt is set to use the system's standard colors, fonts, etc.;
+    otherwise returns false. The default is true.
 
     \sa setDesktopSettingsAware()
 */
@@ -3094,17 +3073,17 @@ bool QApplication::desktopSettingsAware()
 }
 
 /*!
-  Returns the current state of the modifier keys on the keyboard. The
-  current state is updated sychronously as the event queue is emptied
-  of events that will spontaneously change the keyboard state
-  (QEvent::KeyPress and QEvent::KeyRelease events).
+    Returns the current state of the modifier keys on the keyboard. The current
+    state is updated sychronously as the event queue is emptied of events that
+    will spontaneously change the keyboard state (QEvent::KeyPress and
+    QEvent::KeyRelease events).
 
-  It should be noted this may not reflect the actual keys held on the
-  input device at the time of calling but rather the modifiers as
-  last reported in one of the above events. If no keys are being held
-  Qt::NoModifier is returned.
+    It should be noted this may not reflect the actual keys held on the input
+    device at the time of calling but rather the modifiers as last reported in
+    one of the above events. If no keys are being held Qt::NoModifier is
+    returned.
 
-  \sa mouseButtons()
+    \sa mouseButtons()
 */
 
 Qt::KeyboardModifiers QApplication::keyboardModifiers()
@@ -3113,17 +3092,17 @@ Qt::KeyboardModifiers QApplication::keyboardModifiers()
 }
 
 /*!
-  Returns the current state of the buttons on the mouse. The current
-  state is updated syncronously as the event queue is emptied of
-  events that will spontaneously change the mouse state
-  (QEvent::MouseButtonPress and QEvent::MouseButtonRelease events).
+    Returns the current state of the buttons on the mouse. The current state is
+    updated syncronously as the event queue is emptied of events that will
+    spontaneously change the mouse state (QEvent::MouseButtonPress and
+    QEvent::MouseButtonRelease events).
 
-  It should be noted this may not reflect the actual buttons held on
-  theinput device at the time of calling but rather the mouse buttons
-  as last reported in one of the above events. If no mouse buttons are
-  being held Qt::NoButton is returned.
+    It should be noted this may not reflect the actual buttons held on the
+    input device at the time of calling but rather the mouse buttons as last
+    reported in one of the above events. If no mouse buttons are being held
+    Qt::NoButton is returned.
 
-  \sa keyboardModifiers()
+    \sa keyboardModifiers()
 */
 
 Qt::MouseButtons QApplication::mouseButtons()
@@ -3132,43 +3111,40 @@ Qt::MouseButtons QApplication::mouseButtons()
 }
 
 /*!
-  \fn bool QApplication::isSessionRestored() const
+    \fn bool QApplication::isSessionRestored() const
 
-  Returns true if the application has been restored from an earlier
-  \link session.html session\endlink; otherwise returns false.
+    Returns true if the application has been restored from an earlier
+    \l{Session Management}{session}; otherwise returns false.
 
-  \sa sessionId(), commitData(), saveState()
+    \sa sessionId(), commitData(), saveState()
 */
 
 
 /*!
-  \fn QString QApplication::sessionId() const
+    \fn QString QApplication::sessionId() const
 
-  Returns the current \link session.html session's\endlink identifier.
+    Returns the current \l{Session Management}{session's} identifier.
 
-  If the application has been restored from an earlier session, this
-  identifier is the same as it was in that previous session.
+    If the application has been restored from an earlier session, this
+    identifier is the same as it was in that previous session. The session
+    identifier is guaranteed to be unique both for different applications
+    and for different instances of the same application.
 
-  The session identifier is guaranteed to be unique both for different
-  applications and for different instances of the same application.
-
-  \sa isSessionRestored(), sessionKey(), commitData(), saveState()
- */
+    \sa isSessionRestored(), sessionKey(), commitData(), saveState()
+*/
 
 /*!
-  \fn QString QApplication::sessionKey() const
+    \fn QString QApplication::sessionKey() const
 
-  Returns the session key in the current \link session.html
-  session\endlink.
+    Returns the session key in the current \l{Session Management}{session}.
 
-  If the application has been restored from an earlier session, this
-  key is the same as it was when the previous session ended.
+    If the application has been restored from an earlier session, this key is
+    the same as it was when the previous session ended.
 
-  The session key changes with every call of commitData() or
-  saveState().
+    The session key changes with every call of commitData() or saveState().
 
-  \sa isSessionRestored(), sessionId(), commitData(), saveState()
- */
+    \sa isSessionRestored(), sessionId(), commitData(), saveState()
+*/
 #ifndef QT_NO_SESSIONMANAGER
 bool QApplication::isSessionRestored() const
 {
@@ -3191,59 +3167,57 @@ QString QApplication::sessionKey() const
 
 
 
-
-
 /*!
-  \since 4.2
-  \fn void QApplication::commitDataRequest(QSessionManager &manager)
+    \since 4.2
+    \fn void QApplication::commitDataRequest(QSessionManager &manager)
 
-  This signal deals with \link session.html session
-  management\endlink. It is emitted when the QSessionManager wants the
-  application to commit all its data.
+    This signal deals with \l{Session Management}{session management}. It is
+    emitted when the QSessionManager wants the application to commit all its
+    data.
 
-  Usually this means saving all open files, after getting
-  permission from the user. Furthermore you may want to provide a means
-  by which the user can cancel the shutdown.
+    Usually this means saving all open files, after getting permission from
+    the user. Furthermore you may want to provide a means by which the user
+    can cancel the shutdown.
 
-  Note that you should not exit the application when called.
-  Instead, the session manager may or may not do this afterwards,
-  depending on the context.
+    You should not exit the application within this signal. Instead,
+    the session manager may or may not do this afterwards, depending on the
+    context.
 
-  \warning Within this signal, no user interaction is possible, \e
-  unless you ask the \a manager for explicit permission. See
-  QSessionManager::allowsInteraction() and
-  QSessionManager::allowsErrorInteraction() for details and example
-  usage.
+    \warning Within this signal, no user interaction is possible, \e
+    unless you ask the \a manager for explicit permission. See
+    QSessionManager::allowsInteraction() and
+    QSessionManager::allowsErrorInteraction() for details and example
+    usage.
 
-  Note: You should use Qt::DirectConnection when connecting to this signal.
+    \note You should use Qt::DirectConnection when connecting to this signal.
 
-  \sa isSessionRestored(), sessionId(), saveState(), {Session Management}
+    \sa isSessionRestored(), sessionId(), saveState(), {Session Management}
 */
 
 /*!
-  This function deals with \link session.html session
-  management\endlink. It is invoked when the QSessionManager wants the
-  application to commit all its data.
+    This function deals with \l{Session Management}{session management}. It is
+    invoked when the QSessionManager wants the application to commit all its
+    data.
 
-  Usually this means saving all open files, after getting
-  permission from the user. Furthermore you may want to provide a means
-  by which the user can cancel the shutdown.
+    Usually this means saving all open files, after getting permission from the
+    user. Furthermore you may want to provide a means by which the user can
+    cancel the shutdown.
 
-  Note that you should not exit the application within this function.
-  Instead, the session manager may or may not do this afterwards,
-  depending on the context.
+    You should not exit the application within this function. Instead, the
+    session manager may or may not do this afterwards, depending on the
+    context.
 
-  \warning Within this function, no user interaction is possible, \e
-  unless you ask the \a manager for explicit permission. See
-  QSessionManager::allowsInteraction() and
-  QSessionManager::allowsErrorInteraction() for details and example
-  usage.
+    \warning Within this function, no user interaction is possible, \e
+    unless you ask the \a manager for explicit permission. See
+    QSessionManager::allowsInteraction() and
+    QSessionManager::allowsErrorInteraction() for details and example
+    usage.
 
-  The default implementation requests interaction and sends a close
-  event to all visible top-level widgets. If any event was
-  rejected, the shutdown is canceled.
+    The default implementation requests interaction and sends a close event to
+    all visible top-level widgets. If any event was rejected, the shutdown is
+    canceled.
 
-  \sa isSessionRestored(), sessionId(), saveState(), {Session Management}
+    \sa isSessionRestored(), sessionId(), saveState(), {Session Management}
 */
 #ifndef QT_NO_SESSIONMANAGER
 void QApplication::commitData(QSessionManager& manager )
@@ -3269,58 +3243,54 @@ void QApplication::commitData(QSessionManager& manager )
 }
 
 /*!
-  \since 4.2
-  \fn void QApplication::saveStateRequest(QSessionManager &manager)
+    \since 4.2
+    \fn void QApplication::saveStateRequest(QSessionManager &manager)
 
-  This signal deals with \link session.html session
-  management\endlink. It is invoked when the
-  \link QSessionManager session manager \endlink wants the application
-  to preserve its state for a future session.
+    This signal deals with \l{Session Management}{session management}. It is
+    invoked when the \l{QSessionManager}{session manager} wants the application
+    to preserve its state for a future session.
 
-  For example, a text editor would create a temporary file that
-  includes the current contents of its edit buffers, the location of
-  the cursor and other aspects of the current editing session.
+    For example, a text editor would create a temporary file that includes the
+    current contents of its edit buffers, the location of the cursor and other
+    aspects of the current editing session.
 
-  Note that you should never exit the application within this
-  signal. Instead, the session manager may or may not do this
-  afterwards, depending on the context. Futhermore, most session
-  managers will very likely request a saved state immediately after
-  the application has been started. This permits the session manager
-  to learn about the application's restart policy.
+    You should never exit the application within this signal. Instead, the
+    session manager may or may not do this afterwards, depending on the
+    context. Futhermore, most session managers will very likely request a saved
+    state immediately after the application has been started. This permits the
+    session manager to learn about the application's restart policy.
 
-  \warning Within this function, no user interaction is possible, \e
-  unless you ask the \a manager for explicit permission. See
-  QSessionManager::allowsInteraction() and
-  QSessionManager::allowsErrorInteraction() for details.
+    \warning Within this function, no user interaction is possible, \e
+    unless you ask the \a manager for explicit permission. See
+    QSessionManager::allowsInteraction() and
+    QSessionManager::allowsErrorInteraction() for details.
 
-  Note:: You should use Qt::DirectConnection when connecting to this signal.
+    \note You should use Qt::DirectConnection when connecting to this signal.
 
-  \sa isSessionRestored(), sessionId(), commitData(), {Session Management}
+    \sa isSessionRestored(), sessionId(), commitData(), {Session Management}
 */
 
 /*!
-  This function deals with \link session.html session
-  management\endlink. It is invoked when the
-  \link QSessionManager session manager \endlink wants the application
-  to preserve its state for a future session.
+    This function deals with \l{Session Management}{session management}. It is
+    invoked when the \l{QSessionManager}{session manager} wants the application
+    to preserve its state for a future session.
 
-  For example, a text editor would create a temporary file that
-  includes the current contents of its edit buffers, the location of
-  the cursor and other aspects of the current editing session.
+    For example, a text editor would create a temporary file that includes the
+    current contents of its edit buffers, the location of the cursor and other
+    aspects of the current editing session.
 
-  Note that you should never exit the application within this
-  function. Instead, the session manager may or may not do this
-  afterwards, depending on the context. Futhermore, most session
-  managers will very likely request a saved state immediately after
-  the application has been started. This permits the session manager
-  to learn about the application's restart policy.
+    You should never exit the application within this function. Instead, the
+    session manager may or may not do this afterwards, depending on the
+    context. Futhermore, most session managers will very likely request a saved
+    state immediately after the application has been started. This permits the
+    session manager to learn about the application's restart policy.
 
-  \warning Within this function, no user interaction is possible, \e
-  unless you ask the \a manager for explicit permission. See
-  QSessionManager::allowsInteraction() and
-  QSessionManager::allowsErrorInteraction() for details.
+    \warning Within this function, no user interaction is possible, \e
+    unless you ask the \a manager for explicit permission. See
+    QSessionManager::allowsInteraction() and
+    QSessionManager::allowsErrorInteraction() for details.
 
-  \sa isSessionRestored(), sessionId(), commitData(), {Session Management}
+    \sa isSessionRestored(), sessionId(), commitData(), {Session Management}
 */
 
 void QApplication::saveState(QSessionManager &manager)
@@ -3344,13 +3314,12 @@ void QApplication::setStartDragTime(int ms)
     \brief the time in milliseconds that a mouse button must be held down
     before a drag and drop operation will begin
 
-    If you support drag and drop in your application, and want to start a
-    drag and drop operation after the user has held down a mouse button for
-    a certain amount of time, you should use this property's value as the
-    delay.
+    If you support drag and drop in your application, and want to start a drag
+    and drop operation after the user has held down a mouse button for a
+    certain amount of time, you should use this property's value as the delay.
 
-    Qt also uses this delay internally, e.g. in QTextEdit and QLineEdit,
-    for starting a drag.
+    Qt also uses this delay internally, e.g. in QTextEdit and QLineEdit, for
+    starting a drag.
 
     The default value is 500 ms.
 
@@ -3363,9 +3332,9 @@ int QApplication::startDragTime()
 }
 
 /*
-  Sets the distance after which a drag should start to \a l pixels.
+    Sets the distance after which a drag should start to \a l pixels.
 
-  \sa startDragDistance()
+    \sa startDragDistance()
 */
 
 void QApplication::setStartDragDistance(int l)
@@ -3376,15 +3345,14 @@ void QApplication::setStartDragDistance(int l)
 /*!
     \property QApplication::startDragDistance
 
-    If you support drag and drop in your application, and want to start a
-    drag and drop operation after the user has moved the cursor a certain
-    distance with a button held down, you should use this property's value
-    as the minimum distance required.
+    If you support drag and drop in your application, and want to start a drag
+    and drop operation after the user has moved the cursor a certain distance
+    with a button held down, you should use this property's value as the
+    minimum distance required.
 
-    For example, if the mouse position of the click is stored in \c
-    startPos and the current position (e.g. in the mouse move event) is
-    \c currentPos, you can find out if a drag should be started with code
-    like this:
+    For example, if the mouse position of the click is stored in \c startPos
+    and the current position (e.g. in the mouse move event) is \c currentPos,
+    you can find out if a drag should be started with code like this:
 
     \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 7
 
@@ -3430,14 +3398,14 @@ int QApplication::startDragDistance()
     \sa layoutDirection(), isRightToLeft()
 */
 
-/*! \property QApplication::layoutDirection
+/*!
+    \property QApplication::layoutDirection
+    \brief the default layout direction for this application
 
-   \brief the default layout direction for this application
+    On system start-up, the default layout direction depends on the
+    application's language.
 
-   On system start-up, the default layout direction depends on the
-   application's language.
-
-   \sa QWidget::layoutDirection, isLeftToRight(), isRightToLeft()
+    \sa QWidget::layoutDirection, isLeftToRight(), isRightToLeft()
  */
 
 void QApplication::setLayoutDirection(Qt::LayoutDirection direction)
@@ -3461,11 +3429,12 @@ Qt::LayoutDirection QApplication::layoutDirection()
 }
 
 
-/*! \obsolete
+/*!
+    \obsolete
 
-  Strips out vertical alignment flags and transforms an
-  alignment \a align of Qt::AlignLeft into Qt::AlignLeft or
-  Qt::AlignRight according to the language used.
+    Strips out vertical alignment flags and transforms an alignment \a align
+    of Qt::AlignLeft into Qt::AlignLeft or Qt::AlignRight according to the
+    language used.
 */
 
 #ifdef QT3_SUPPORT
@@ -3481,8 +3450,8 @@ Qt::Alignment QApplication::horizontalAlignment(Qt::Alignment align)
 
     Returns the active application override cursor.
 
-    This function returns 0 if no application cursor has been defined
-    (i.e. the internal cursor stack is empty).
+    This function returns 0 if no application cursor has been defined (i.e. the
+    internal cursor stack is empty).
 
     \sa setOverrideCursor(), restoreOverrideCursor()
 */
@@ -3495,9 +3464,10 @@ QCursor *QApplication::overrideCursor()
 /*!
     Changes the currently active application override cursor to \a cursor.
 
-    This function has no effect if setOverrideCursor() wasn't called.
+    This function has no effect if setOverrideCursor() was not called.
 
-    \sa setOverrideCursor() overrideCursor() restoreOverrideCursor() QWidget::setCursor()
+    \sa setOverrideCursor(), overrideCursor(), restoreOverrideCursor(),
+    QWidget::setCursor()
  */
 void QApplication::changeOverrideCursor(const QCursor &cursor)
 {
@@ -3511,8 +3481,8 @@ void QApplication::changeOverrideCursor(const QCursor &cursor)
 /*!
     \fn void QApplication::setOverrideCursor(const QCursor &cursor, bool replace)
 
-    Use changeOverrideCursor(\a cursor) (if \a replace is true)
-    or setOverrideCursor(\a cursor) (if \a replace is false).
+    Use changeOverrideCursor(\a cursor) (if \a replace is true) or
+    setOverrideCursor(\a cursor) (if \a replace is false).
 */
 
 /*!
@@ -3520,29 +3490,26 @@ void QApplication::changeOverrideCursor(const QCursor &cursor)
     the value that was set to exit() (which is 0 if exit() is called via
     quit()).
 
-    It is necessary to call this function to start event handling. The
-    main event loop receives events from the window system and
-    dispatches these to the application widgets.
+    It is necessary to call this function to start event handling. The main
+    event loop receives events from the window system and dispatches these to
+    the application widgets.
+ 
+    Generally, no user interaction can take place before calling exec(). As a
+    special case, modal widgets like QMessageBox can be used before calling
+    exec(), because modal widgets call exec() to start a local event loop.
 
-    Generally speaking, no user interaction can take place before
-    calling exec(). As a special case, modal widgets like QMessageBox
-    can be used before calling exec(), because modal widgets call
-    exec() to start a local event loop.
-
-    To make your application perform idle processing, i.e. executing a
-    special function whenever there are no pending events, use a
-    QTimer with 0 timeout. More advanced idle processing schemes can
-    be achieved using processEvents().
+    To make your application perform idle processing, i.e., executing a special
+    function whenever there are no pending events, use a QTimer with 0 timeout.
+    More advanced idle processing schemes can be achieved using processEvents().
 
     We recommend that you connect clean-up code to the
-    \l{QCoreApplication::}{aboutToQuit()} signal, instead of putting it in
-    your application's \c{main()} function because on some platforms the
-    QApplication::exec() call may not return. For example, on Windows
-    when the user logs off, the system terminates the process after Qt
-    closes all top-level windows. Hence, there is no guarantee that the
-    application will have time to exit its event loop and execute code at
-    the end of the \c{main()} function after the QApplication::exec()
-    call.
+    \l{QCoreApplication::}{aboutToQuit()} signal, instead of putting it in your
+    application's \c{main()} function because on some platforms the
+    QApplication::exec() call may not return. For example, on Windows when the
+    user logs off, the system terminates the process after Qt closes all
+    top-level windows. Hence, there is no guarantee that the application will
+    have time to exit its event loop and execute code at the end of the
+    \c{main()} function after the QApplication::exec() call.
 
     \sa quitOnLastWindowClosed, quit(), exit(), processEvents(),
         QCoreApplication::exec()
@@ -4090,101 +4057,98 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 
 
 /*!
-  \class QSessionManager
-  \brief The QSessionManager class provides access to the session manager.
+    \class QSessionManager
+    \brief The QSessionManager class provides access to the session manager.
 
-  \ingroup application
-  \ingroup environment
+    \ingroup application
+    \ingroup environment
 
-  A session manager in a desktop environment (in which Qt GUI
-  applications live) keeps track of a session, which is a group of
-  running applications, each of which has a particular state. The
-  state of an application contains (most notably) the documents the
-  application has open and the position and size of its windows.
+    A session manager in a desktop environment (in which Qt GUI applications
+    live) keeps track of a session, which is a group of running applications,
+    each of which has a particular state. The state of an application contains
+    (most notably) the documents the application has open and the position and
+    size of its windows.
 
-  The session manager is used to save the session, e.g. when the
-  machine is shut down, and to restore a session, e.g. when the
-  machine is started up. We recommend that you use QSettings to save
-  an individual application's settings, e.g. window positions,
-  recently used files, etc. When the application is restarted by the
-  session manager, you can restore the settings.
+    The session manager is used to save the session, e.g., when the machine is
+    shut down, and to restore a session, e.g., when the machine is started up.
+    We recommend that you use QSettings to save an application's settings,
+    for example, window positions, recently used files, etc. When the
+    application is restarted by the session manager, you can restore the
+    settings.
 
-  QSessionManager provides an interface between the application
-  and the session manager so that the program can work well with the
-  session manager. In Qt, session management requests for action are
-  handled by the two virtual functions QApplication::commitData()
-  and QApplication::saveState(). Both provide a reference to a
-  session manager object as argument, to allow the application to
-  communicate with the session manager. The session manager can only
-  be accessed through these functions.
+    QSessionManager provides an interface between the application and the
+    session manager so that the program can work well with the session manager.
+    In Qt, session management requests for action are handled by the two
+    virtual functions QApplication::commitData() and QApplication::saveState().
+    Both provide a reference to a session manager object as argument, to allow
+    the application to communicate with the session manager. The session
+    manager can only be accessed through these functions.
 
-  No user interaction is possible \e unless the application gets
-  explicit permission from the session manager. You ask for permission
-  by calling allowsInteraction() or, if it's really urgent,
-  allowsErrorInteraction(). Qt does not enforce this, but the session
-  manager may.
+    No user interaction is possible \e unless the application gets explicit
+    permission from the session manager. You ask for permission by calling
+    allowsInteraction() or, if it is really urgent, allowsErrorInteraction().
+    Qt does not enforce this, but the session manager may.
 
-  You can try to abort the shutdown process by calling cancel(). The
-  default commitData() function does this if some top-level window
-  rejected its closeEvent().
+    You can try to abort the shutdown process by calling cancel(). The default
+    commitData() function does this if some top-level window rejected its
+    closeEvent().
 
-  For sophisticated session managers provided on Unix/X11, QSessionManager
-  offers further possibilities to fine-tune an application's session
-  management behavior: setRestartCommand(), setDiscardCommand(),
-  setRestartHint(), setProperty(), requestPhase2(). See the respective
-  function descriptions for further details.
+    For sophisticated session managers provided on Unix/X11, QSessionManager
+    offers further possibilities to fine-tune an application's session
+    management behavior: setRestartCommand(), setDiscardCommand(),
+    setRestartHint(), setProperty(), requestPhase2(). See the respective
+    function descriptions for further details.
 
-  \sa QApplication, {Session Management}
+    \sa QApplication, {Session Management}
 */
 
 /*! \enum QSessionManager::RestartHint
 
-  This enum type defines the circumstances under which this
-  application wants to be restarted by the session manager. The
-  current values are
+    This enum type defines the circumstances under which this application wants
+    to be restarted by the session manager. The current values are:
 
-  \value RestartIfRunning  if the application is still running when
-  the session is shut down, it wants to be restarted at the start of
-  the next session.
+    \value  RestartIfRunning    If the application is still running when the
+                                session is shut down, it wants to be restarted
+                                at the start of the next session.
 
-  \value RestartAnyway  the application wants to be started at the
-  start of the next session, no matter what. (This is useful for
-  utilities that run just after startup and then quit.)
+    \value  RestartAnyway       The application wants to be started at the
+                                start of the next session, no matter what.
+                                (This is useful for utilities that run just
+                                after startup and then quit.)
 
-  \value RestartImmediately  the application wants to be started
-  immediately whenever it is not running.
+    \value  RestartImmediately  The application wants to be started immediately
+                                whenever it is not running.
 
-  \value RestartNever  the application does not want to be restarted
-  automatically.
+    \value  RestartNever        The application does not want to be restarted
+                                automatically.
 
-  The default hint is \c RestartIfRunning.
+    The default hint is \c RestartIfRunning.
 */
 
 
 /*!
-  \fn QString QSessionManager::sessionId() const
+    \fn QString QSessionManager::sessionId() const
 
-  Returns the identifier of the current session.
+    Returns the identifier of the current session.
 
-  If the application has been restored from an earlier session, this
-  identifier is the same as it was in that earlier session.
+    If the application has been restored from an earlier session, this
+    identifier is the same as it was in the earlier session.
 
-  \sa sessionKey(), QApplication::sessionId()
- */
+    \sa sessionKey(), QApplication::sessionId()
+*/
 
 /*!
-  \fn QString QSessionManager::sessionKey() const
+    \fn QString QSessionManager::sessionKey() const
 
-  Returns the session key in the current session.
+    Returns the session key in the current session.
 
-  If the application has been restored from an earlier session, this
-  key is the same as it was when the previous session ended.
+    If the application has been restored from an earlier session, this key is
+    the same as it was when the previous session ended.
 
-  The session key changes with every call of commitData() or
-  saveState().
+    The session key changes with every call of commitData() or saveState().
 
-  \sa sessionId(), QApplication::sessionKey()
- */
+    \sa sessionId(), QApplication::sessionKey()
+*/
 
 /*!
     \fn void* QSessionManager::handle() const
@@ -4193,120 +4157,116 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 */
 
 /*!
-  \fn bool QSessionManager::allowsInteraction()
+    \fn bool QSessionManager::allowsInteraction()
 
-  Asks the session manager for permission to interact with the
-  user. Returns true if interaction is permitted; otherwise
-  returns false.
+    Asks the session manager for permission to interact with the user. Returns
+    true if interaction is permitted; otherwise returns false.
 
-  The rationale behind this mechanism is to make it possible to
-  synchronize user interaction during a shutdown. Advanced session
-  managers may ask all applications simultaneously to commit their
-  data, resulting in a much faster shutdown.
+    The rationale behind this mechanism is to make it possible to synchronize
+    user interaction during a shutdown. Advanced session managers may ask all
+    applications simultaneously to commit their data, resulting in a much
+    faster shutdown.
 
-  When the interaction is completed we strongly recommend releasing the
-  user interaction semaphore with a call to release(). This way, other
-  applications may get the chance to interact with the user while your
-  application is still busy saving data. (The semaphore is implicitly
-  released when the application exits.)
+    When the interaction is completed we strongly recommend releasing the user
+    interaction semaphore with a call to release(). This way, other
+    applications may get the chance to interact with the user while your
+    application is still busy saving data. (The semaphore is implicitly
+    released when the application exits.)
 
-  If the user decides to cancel the shutdown process during the
-  interaction phase, you must tell the session manager that this has
-  happened by calling cancel().
+    If the user decides to cancel the shutdown process during the interaction
+    phase, you must tell the session manager that this has happened by calling
+    cancel().
 
-  Here's an example of how an application's QApplication::commitData()
-  might be implemented:
+    Here's an example of how an application's QApplication::commitData() might
+    be implemented:
 
-  \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 8
+    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 8
 
-  If an error occurred within the application while saving its data,
-  you may want to try allowsErrorInteraction() instead.
+    If an error occurred within the application while saving its data, you may
+    want to try allowsErrorInteraction() instead.
 
-  \sa QApplication::commitData(), release(), cancel()
+    \sa QApplication::commitData(), release(), cancel()
 */
 
 
 /*!
-  \fn bool QSessionManager::allowsErrorInteraction()
+    \fn bool QSessionManager::allowsErrorInteraction()
 
-  Returns true if error interaction is permitted; otherwise returns false.
+    Returns true if error interaction is permitted; otherwise returns false.
 
-  This is similar to allowsInteraction(), but also enables the application
-  to tell the user about any errors that occur. Session managers
-  may give error interaction requests higher priority, which means that it
-  is more likely that an error interaction is permitted. However, you are
-  still not guaranteed that the session manager will allow interaction.
+    This is similar to allowsInteraction(), but also enables the application to
+    tell the user about any errors that occur. Session managers may give error
+    interaction requests higher priority, which means that it is more likely
+    that an error interaction is permitted. However, you are still not
+    guaranteed that the session manager will allow interaction.
 
-  \sa allowsInteraction(), release(), cancel()
+    \sa allowsInteraction(), release(), cancel()
 */
 
 /*!
-  \fn void QSessionManager::release()
+    \fn void QSessionManager::release()
 
-  Releases the session manager's interaction semaphore after an
-  interaction phase.
+    Releases the session manager's interaction semaphore after an interaction
+    phase.
 
-  \sa allowsInteraction(), allowsErrorInteraction()
+    \sa allowsInteraction(), allowsErrorInteraction()
 */
 
 /*!
-  \fn void QSessionManager::cancel()
+    \fn void QSessionManager::cancel()
 
-  Tells the session manager to cancel the shutdown process.  Applications
-  should not call this function without first asking the user.
+    Tells the session manager to cancel the shutdown process.  Applications
+    should not call this function without asking the user first.
 
-  \sa allowsInteraction(), allowsErrorInteraction()
-
+    \sa allowsInteraction(), allowsErrorInteraction()
 */
 
 /*!
-  \fn void QSessionManager::setRestartHint(RestartHint hint)
+    \fn void QSessionManager::setRestartHint(RestartHint hint)
 
-  Sets the application's restart hint to \a hint. On application
-  startup the hint is set to \c RestartIfRunning.
+    Sets the application's restart hint to \a hint. On application startup, the
+    hint is set to \c RestartIfRunning.
 
-  Note that these flags are only hints, a session manager may or may
-  not respect them.
+    \note These flags are only hints, a session manager may or may not respect
+    them.
 
-  We recommend setting the restart hint in QApplication::saveState()
-  because most session managers perform a checkpoint shortly after an
-  application's startup.
+    We recommend setting the restart hint in QApplication::saveState() because
+    most session managers perform a checkpoint shortly after an application's
+    startup.
 
-  \sa restartHint()
+    \sa restartHint()
 */
 
 /*!
-  \fn QSessionManager::RestartHint QSessionManager::restartHint() const
+    \fn QSessionManager::RestartHint QSessionManager::restartHint() const
 
-  Returns the application's current restart hint. The default is
-  \c RestartIfRunning.
+    Returns the application's current restart hint. The default is
+    \c RestartIfRunning.
 
-  \sa setRestartHint()
+    \sa setRestartHint()
 */
 
 /*!
-  \fn void QSessionManager::setRestartCommand(const QStringList& command)
+    \fn void QSessionManager::setRestartCommand(const QStringList& command)
 
-  If the session manager is capable of restoring sessions it will
-  execute \a command in order to restore the application. The command
-  defaults to
+    If the session manager is capable of restoring sessions it will execute
+    \a command in order to restore the application. The command defaults to
 
     \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 9
 
-  The \c -session option is mandatory; otherwise QApplication cannot
-  tell whether it has been restored or what the current session
-  identifier is. See QApplication::isSessionRestored() and
-  QApplication::sessionId() for details.
+    The \c -session option is mandatory; otherwise QApplication cannot tell
+    whether it has been restored or what the current session identifier is.
+    See QApplication::isSessionRestored() and QApplication::sessionId() for
+    details.
 
-  If your application is very simple, it may be possible to store the
-  entire application state in additional command line options. This
-  is usually a very bad idea because command lines are often limited
-  to a few hundred bytes. Instead, use QSettings, or temporary files
-  or a database for this purpose. By marking the data with the unique
-  sessionId(), you will be able to restore the application in a future
-  session.
+    If your application is very simple, it may be possible to store the entire
+    application state in additional command line options. This is usually a
+    very bad idea because command lines are often limited to a few hundred
+    bytes. Instead, use QSettings, temporary files, or a database for this
+    purpose. By marking the data with the unique sessionId(), you will be able
+    to restore the application in a future  session.
 
-  \sa restartCommand(), setDiscardCommand(), setRestartHint()
+    \sa restartCommand(), setDiscardCommand(), setRestartHint()
 */
 
 /*!
@@ -4314,8 +4274,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 
     Returns the currently set restart command.
 
-    To iterate over the list, you can use the \l foreach
-    pseudo-keyword:
+    To iterate over the list, you can use the \l foreach pseudo-keyword:
 
     \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 10
 
@@ -4323,11 +4282,11 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 */
 
 /*!
-  \fn void QSessionManager::setDiscardCommand(const QStringList& list)
+    \fn void QSessionManager::setDiscardCommand(const QStringList& list)
 
-  Sets the discard command to the given \a list.
+    Sets the discard command to the given \a list.
 
-  \sa discardCommand(), setRestartCommand()
+    \sa discardCommand(), setRestartCommand()
 */
 
 
@@ -4336,8 +4295,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 
     Returns the currently set discard command.
 
-    To iterate over the list, you can use the \l foreach
-    pseudo-keyword:
+    To iterate over the list, you can use the \l foreach pseudo-keyword:
 
     \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 11
 
@@ -4345,53 +4303,51 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 */
 
 /*!
-  \fn void QSessionManager::setManagerProperty(const QString &name, const QString &value)
-  \overload
+    \fn void QSessionManager::setManagerProperty(const QString &name, const QString &value)
+    \overload
 
-  Low-level write access to the application's identification and state
-  records are kept in the session manager.
+    Low-level write access to the application's identification and state
+    records are kept in the session manager.
 
-  The property called \a name has its value set to the string \a value.
+    The property called \a name has its value set to the string \a value.
 */
 
 /*!
-  \fn void QSessionManager::setManagerProperty(const QString& name,
-                                                const QStringList& value)
+    \fn void QSessionManager::setManagerProperty(const QString& name,
+                                                 const QStringList& value)
 
-  Low-level write access to the application's identification and state
-  record are kept in the session manager.
+    Low-level write access to the application's identification and state record
+    are kept in the session manager.
 
-  The property called \a name has its value set to the string list \a value.
+    The property called \a name has its value set to the string list \a value.
 */
 
 /*!
-  \fn bool QSessionManager::isPhase2() const
+    \fn bool QSessionManager::isPhase2() const
 
-  Returns true if the session manager is currently performing a second
-  session management phase; otherwise returns false.
+    Returns true if the session manager is currently performing a second
+    session management phase; otherwise returns false.
 
-  \sa requestPhase2()
+    \sa requestPhase2()
 */
 
 /*!
-  \fn void QSessionManager::requestPhase2()
+    \fn void QSessionManager::requestPhase2()
 
-  Requests a second session management phase for the application. The
-  application may then return immediately from the
-  QApplication::commitData() or QApplication::saveState() function,
-  and they will be called again once most or all other applications have
-  finished their session management.
+    Requests a second session management phase for the application. The
+    application may then return immediately from the QApplication::commitData()
+    or QApplication::saveState() function, and they will be called again once
+    most or all other applications have finished their session management.
 
-  The two phases are useful for applications such as the X11 window manager
-  that need to store information about another application's windows
-  and therefore have to wait until these applications have completed their
-  respective session management tasks.
+    The two phases are useful for applications such as the X11 window manager
+    that need to store information about another application's windows and
+    therefore have to wait until these applications have completed their
+    respective session management tasks.
 
-  Note that if another application has requested a second phase it
-  may get called before, simultaneously with, or after your
-  application's second phase.
+    \note If another application has requested a second phase it may get called
+    before, simultaneously with, or after your application's second phase.
 
-  \sa isPhase2()
+    \sa isPhase2()
 */
 
 /*****************************************************************************
@@ -4584,15 +4540,14 @@ void QSessionManager::requestPhase2()
 /*!
     \fn bool QApplication::hasGlobalMouseTracking()
 
-    This feature does not exist anymore. This function
-    always returns true in Qt 4.
+    This feature does not exist anymore. This function always returns true
+    in Qt 4.
 */
 
 /*!
     \fn void QApplication::setGlobalMouseTracking(bool dummy)
 
-    This function does nothing in Qt 4. The \a dummy parameter
-    is ignored.
+    This function does nothing in Qt 4. The \a dummy parameter is ignored.
 */
 
 /*!
@@ -4630,15 +4585,14 @@ void QSessionManager::requestPhase2()
 /*!
     \fn const QColor &QApplication::winStyleHighlightColor()
 
-    Use qApp->palette().color(QPalette::Active, QPalette::Highlight)
-    instead.
+    Use qApp->palette().color(QPalette::Active, QPalette::Highlight) instead.
 */
 
 /*!
     \fn QWidget *QApplication::widgetAt(int x, int y, bool child)
 
-    Use the two-argument widgetAt() overload to get the child widget.
-    To get the top-level widget do this:
+    Use the two-argument widgetAt() overload to get the child widget. To get
+    the top-level widget do this:
 
     \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 12
 */
@@ -4646,8 +4600,8 @@ void QSessionManager::requestPhase2()
 /*!
     \fn QWidget *QApplication::widgetAt(const QPoint &point, bool child)
 
-    Use the single-argument widgetAt() overload to get the child widget.
-    To get the top-level widget do this:
+    Use the single-argument widgetAt() overload to get the child widget. To get
+    the top-level widget do this:
 
     \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 13
 */
@@ -4719,10 +4673,9 @@ void QApplicationPrivate::emitLastWindowClosed()
     Sets whether Qt should use focus navigation suitable for use with a
     minimal keypad.
 
-    If \a enable is true, Qt::Key_Up and Qt::Key_Down are used to
-    change focus.
+    If \a enable is true, Qt::Key_Up and Qt::Key_Down are used to change focus.
 
-    This feature is only available in Qt for Embedded Linux.
+    This feature is available in Qt for Embedded Linux only.
 
     \sa keypadNavigationEnabled()
 */
@@ -4735,7 +4688,8 @@ void QApplication::setKeypadNavigationEnabled(bool enable)
     Returns true if Qt is set to use keypad navigation; otherwise returns
     false. The default is false.
 
-    This feature is only available in Qt for Embedded Linux.
+    This feature is available in Qt for Embedded Linux only.
+
     \sa setKeypadNavigationEnabled()
 */
 bool QApplication::keypadNavigationEnabled()
@@ -4758,12 +4712,12 @@ bool QApplication::keypadNavigationEnabled()
     On Mac OS X, this works more at the application level and will cause the
     application icon to bounce in the dock.
 
-    On Windows this causes the window's taskbar entry to flash for a time. If \a
-    msec is zero, the flashing will stop and the taskbar entry will turn a
+    On Windows this causes the window's taskbar entry to flash for a time. If
+    \a msec is zero, the flashing will stop and the taskbar entry will turn a
     different color (currently orange).
 
-    On X11, this will cause the window to be marked as "demands attention",
-    the window must not be hidden (i.e. not have hide() called on it, but be
+    On X11, this will cause the window to be marked as "demands attention", the
+    window must not be hidden (i.e. not have hide() called on it, but be
     visible in some sort of way) in order for this to work.
 */
 
@@ -4771,18 +4725,16 @@ bool QApplication::keypadNavigationEnabled()
     \property QApplication::cursorFlashTime
     \brief the text cursor's flash (blink) time in milliseconds
 
-    The flash time is the time required to display, invert and
-    restore the caret display. Usually the text cursor is displayed
-    for half the cursor flash time, then hidden for the same amount
-    of time, but this may vary.
+    The flash time is the time required to display, invert and restore the
+    caret display. Usually the text cursor is displayed for half the cursor
+    flash time, then hidden for the same amount of time, but this may vary.
 
-    The default value on X11 is 1000 milliseconds. On Windows, the
-    control panel value is used. Widgets should not cache this value
-    since it may be changed at any time by the user changing the
-    global desktop settings.
+    The default value on X11 is 1000 milliseconds. On Windows, the control
+    panel value is used. Widgets should not cache this value since it may be
+    changed at any time by the user changing the global desktop settings.
 
-    Note that on Microsoft Windows, setting this property sets the
-    cursor flash time for all applications.
+    \note On Microsoft Windows, setting this property sets the cursor flash
+    time for all applications.
 */
 
 /*!
@@ -4790,11 +4742,11 @@ bool QApplication::keypadNavigationEnabled()
     \brief the time limit in milliseconds that distinguishes a double click from two
     consecutive mouse clicks
 
-    The default value on X11 is 400 milliseconds. On Windows and Mac
-    OS X, the operating system's value is used.
+    The default value on X11 is 400 milliseconds. On Windows and Mac OS X, the
+    operating system's value is used.
 
-    On Microsoft Windows, calling this function sets the
-    double click interval for all applications.
+    On Microsoft Windows, calling this function sets the double click interval
+    for all applications.
 */
 
 /*!
@@ -4812,15 +4764,13 @@ bool QApplication::keypadNavigationEnabled()
     \brief the number of lines to scroll a widget, when the
     mouse wheel is rotated.
 
-    If the value exceeds the widget's number of visible lines, the
-    widget should interpret the scroll operation as a single \e{page
-    up} or \e{page down}. If the widget is an \l{QAbstractItemView}
-    {item view class}, then the result of scrolling one \e line
-    depends on the setting of the widget's
-    \l{QAbstractItemView::verticalScrollMode()} {scroll mode}. Scroll
-    one \e line can mean \l{QAbstractItemView::ScrollPerItem} {scroll
-    one item} or \l{QAbstractItemView::ScrollPerPixel} {scroll one
-    pixel}.
+    If the value exceeds the widget's number of visible lines, the widget
+    should interpret the scroll operation as a single \e{page up} or
+    \e{page down}. If the widget is an \l{QAbstractItemView}{item view class},
+    then the result of scrolling one \e line depends on the setting of the
+    widget's \l{QAbstractItemView::verticalScrollMode()}{scroll mode}. Scroll
+    one \e line can mean \l{QAbstractItemView::ScrollPerItem}{scroll one item}
+    or \l{QAbstractItemView::ScrollPerPixel}{scroll one pixel}.
 
     By default, this property has a value of 3.
 */
@@ -4828,11 +4778,11 @@ bool QApplication::keypadNavigationEnabled()
 /*!
     \fn void QApplication::setEffectEnabled(Qt::UIEffect effect, bool enable)
 
-    Enables the UI effect \a effect if \a enable is true, otherwise
-    the effect will not be used.
+    Enables the UI effect \a effect if \a enable is true, otherwise the effect
+    will not be used.
 
-    Note: All effects are disabled on screens running at less than
-    16-bit color depth.
+    \note All effects are disabled on screens running at less than 16-bit color
+    depth.
 
     \sa isEffectEnabled(), Qt::UIEffect, setDesktopSettingsAware()
 */
@@ -4842,11 +4792,11 @@ bool QApplication::keypadNavigationEnabled()
 
     Returns true if \a effect is enabled; otherwise returns false.
 
-    By default, Qt will try to use the desktop settings. Call
-    setDesktopSettingsAware(false) to prevent this.
+    By default, Qt will try to use the desktop settings. To prevent this, call
+    setDesktopSettingsAware(false).
 
-    Note: All effects are disabled on screens running at less than
-    16-bit color depth.
+    \note All effects are disabled on screens running at less than 16-bit color
+    depth.
 
     \sa setEffectEnabled(), Qt::UIEffect
 */
@@ -4854,8 +4804,7 @@ bool QApplication::keypadNavigationEnabled()
 /*!
     \fn QWidget *QApplication::mainWidget()
 
-    Returns the main application widget, or 0 if there is no main
-    widget.
+    Returns the main application widget, or 0 if there is no main widget.
 */
 
 /*!
@@ -4863,19 +4812,17 @@ bool QApplication::keypadNavigationEnabled()
 
     Sets the application's main widget to \a mainWidget.
 
-    In most respects the main widget is like any other widget, except
-    that if it is closed, the application exits. Note that
-    QApplication does \e not take ownership of the \a mainWidget, so
-    if you create your main widget on the heap you must delete it
-    yourself.
+    In most respects the main widget is like any other widget, except that if
+    it is closed, the application exits. QApplication does \e not take
+    ownership of the \a mainWidget, so if you create your main widget on the
+    heap you must delete it yourself.
 
-    You need not have a main widget; connecting lastWindowClosed() to
-    quit() is an alternative.
+    You need not have a main widget; connecting lastWindowClosed() to quit()
+    is an alternative.
 
-    For X11, this function also resizes and moves the main widget
-    according to the \e -geometry command-line option, so you should
-    set the default geometry (using \l QWidget::setGeometry()) before
-    calling setMainWidget().
+    For X11, this function also resizes and moves the main widget according
+    to the \e -geometry command-line option, so you should set the default
+    geometry (using \l QWidget::setGeometry()) before calling setMainWidget().
 
     \sa mainWidget(), exec(), quit()
 */
@@ -4883,8 +4830,8 @@ bool QApplication::keypadNavigationEnabled()
 /*!
     \fn void QApplication::beep()
 
-    Sounds the bell, using the default volume and sound. The function
-    is \e not available in Qt for Embedded Linux.
+    Sounds the bell, using the default volume and sound. The function is \e not
+    available in Qt for Embedded Linux.
 */
 
 /*!
@@ -4892,26 +4839,25 @@ bool QApplication::keypadNavigationEnabled()
 
     Sets the application override cursor to \a cursor.
 
-    Application override cursors are intended for showing the user
-    that the application is in a special state, for example during an
-    operation that might take some time.
+    Application override cursors are intended for showing the user that the
+    application is in a special state, for example during an operation that
+    might take some time.
 
-    This cursor will be displayed in all the application's widgets
-    until restoreOverrideCursor() or another setOverrideCursor() is
-    called.
+    This cursor will be displayed in all the application's widgets until
+    restoreOverrideCursor() or another setOverrideCursor() is called.
 
-    Application cursors are stored on an internal stack.
-    setOverrideCursor() pushes the cursor onto the stack, and
-    restoreOverrideCursor() pops the active cursor off the
-    stack. changeOverrideCursor() changes the curently active
-    application override cursor. Every setOverrideCursor() must
+    Application cursors are stored on an internal stack. setOverrideCursor()
+    pushes the cursor onto the stack, and restoreOverrideCursor() pops the
+    active cursor off the stack. changeOverrideCursor() changes the curently
+    active application override cursor. Every setOverrideCursor() must
     eventually be followed by a corresponding restoreOverrideCursor(),
     otherwise the stack will never be emptied.
 
     Example:
     \snippet doc/src/snippets/code/src_gui_kernel_qapplication_x11.cpp 0
 
-    \sa overrideCursor() restoreOverrideCursor() changeOverrideCursor() QWidget::setCursor()
+    \sa overrideCursor(), restoreOverrideCursor(), changeOverrideCursor(),
+    QWidget::setCursor()
 */
 
 /*!
@@ -4920,9 +4866,8 @@ bool QApplication::keypadNavigationEnabled()
     Undoes the last setOverrideCursor().
 
     If setOverrideCursor() has been called twice, calling
-    restoreOverrideCursor() will activate the first cursor set.
-    Calling this function a second time restores the original widgets'
-    cursors.
+    restoreOverrideCursor() will activate the first cursor set. Calling this
+    function a second time restores the original widgets' cursors.
 
     \sa setOverrideCursor(), overrideCursor()
 */
@@ -4932,9 +4877,9 @@ bool QApplication::keypadNavigationEnabled()
     \relates QApplication
 
     A global pointer referring to the unique application object. It is
-    equivalent to the pointer returned by the
-    QCoreApplication::instance() function except that, in GUI applications,
-    it is a pointer to a QApplication instance.
+    equivalent to the pointer returned by the QCoreApplication::instance()
+    function except that, in GUI applications, it is a pointer to a
+    QApplication instance.
 
     Only one application object can be created.
 
@@ -4946,8 +4891,8 @@ bool QApplication::keypadNavigationEnabled()
 // ************************************************************************
 
 /*!
-    This function replaces the QInputContext instance used by the
-    application with \a inputContext.
+    This function replaces the QInputContext instance used by the application
+    with \a inputContext.
 
     \sa inputContext()
 */

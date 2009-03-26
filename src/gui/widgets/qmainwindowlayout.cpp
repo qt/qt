@@ -1542,8 +1542,8 @@ bool QMainWindowLayout::plug(QLayoutItem *widgetItem)
     if (!previousPath.isEmpty())
         layoutState.remove(previousPath);
 
+    pluggingWidget = widget;
     if (dockOptions & QMainWindow::AnimatedDocks) {
-        pluggingWidget = widget;
         QRect globalRect = currentGapRect;
         globalRect.moveTopLeft(parentWidget()->mapToGlobal(globalRect.topLeft()));
 #ifndef QT_NO_DOCKWIDGET
@@ -1575,6 +1575,7 @@ bool QMainWindowLayout::plug(QLayoutItem *widgetItem)
 #endif
         currentGapPos.clear();
         updateGapIndicator();
+        pluggingWidget = 0;
     }
 
     return true;
