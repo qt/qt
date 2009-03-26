@@ -798,7 +798,7 @@ void MainWindow::showAboutDialog()
             "of proprietary (closed source) applications. Please see "
             "<a href=\"http://qtsoftware.com/company/about/businessmodel"
             "\">http://qtsoftware.com/company/about/businessmodel</a> for an "
-            overview of Qt licensing.");
+            "overview of Qt licensing.");
 #else
         QString edition;
         QString info;
