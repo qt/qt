@@ -549,17 +549,25 @@ static const char months[] =
     "dec\0"
     "\0";
 
-static inline bool isNumber(char s) { return s >= '0' && s <= '9'; }
-static inline bool isTerminator     (char c) { return c == '\n' || c == '\r'; }
-static inline bool isValueSeparator (char c) { return isTerminator(c) || c == ';'; }
-static inline bool isWhitespace     (char c) { return c == ' '  || c == '\t'; }
+static inline bool isNumber(char s)
+{ return s >= '0' && s <= '9'; }
 
-static bool checkStaticArray(int &val, const QByteArray &dateString, int at, const char *array, size_t size) {
+static inline bool isTerminator(char c)
+{ return c == '\n' || c == '\r'; }
+
+static inline bool isValueSeparator(char c)
+{ return isTerminator(c) || c == ';'; }
+
+static inline bool isWhitespace(char c)
+{ return c == ' '  || c == '\t'; }
+
+static bool checkStaticArray(int &val, const QByteArray &dateString, int at, const char *array, int size)
+{
     if (dateString[at] < 'a' || dateString[at] > 'z')
         return false;
     if (val == -1 && dateString.length() >= at + 3) {
         int j = 0;
-        size_t i = 0;
+        int i = 0;
         while (i <= size) {
             const char *str(array + i);
             if (str[0] == dateString[at]
@@ -652,8 +660,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
                 || (dateString[at - 1] == 't'))) {
 
             int end = 1;
-            while (dateString[at + end] >= '0' && dateString[at + end] <= '9'
-                   && end < 5)
+            while (end < 5 && dateString[at + end] >= '0' && dateString[at + end] <= '9')
                 ++end;
             int minutes = 0;
             int hours = 0;
@@ -879,13 +886,9 @@ static QDateTime parseDateString(const QByteArray &dateString)
     if (!date.isValid())
         date = QDate(day + y2k, month, year);
 
-    QDateTime dateTime;
+    QDateTime dateTime(date, time, Qt::UTC);
 
-    if (zoneOffset == -1) {
-        dateTime = QDateTime(date, time);
-        dateTime = dateTime.toTimeSpec(Qt::UTC);
-    } else {
-        dateTime = QDateTime(date, time, Qt::UTC);
+    if (zoneOffset != -1) {
         dateTime = dateTime.addSecs(zoneOffset);
     }
     if (!dateTime.isValid())
@@ -961,6 +964,11 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
                     QByteArray dateString = cookieString.mid(position, end - position).trimmed();
                     position = end;
                     QDateTime dt = parseDateString(dateString.toLower());
+                    if (!dt.isValid()) {
+                        cookie = QNetworkCookie();
+                        endOfCookie = true;
+                        continue;
+                    }
                     cookie.setExpirationDate(dt);
                 } else if (field.first == "domain") {
                     QByteArray rawDomain = field.second;
@@ -1005,7 +1013,8 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
                     endOfCookie = true;
             }
 
-        result += cookie;
+        if (!cookie.name().isEmpty())
+            result += cookie;
     }
 
     return result;

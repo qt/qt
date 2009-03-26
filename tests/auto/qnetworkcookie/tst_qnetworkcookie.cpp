@@ -315,6 +315,9 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     cookie.setExpirationDate(QDateTime(QDate(9999, 12, 31), QTime(23, 59, 59), Qt::UTC));
     QTest::newRow("network2") << "__siteid=1; expires=Fri, 31-Dec-9999 23:59:59 GMT; path=/" << cookie;
 
+    cookie = QNetworkCookie("YM.LC", "v=2&m=9993_262838_159_1558_1063_0_5649_4012_3776161073,9426_260205_549_1295_1336_0_5141_4738_3922731647,6733_258196_952_1364_643_0_3560_-1_0,3677_237633_1294_1294_19267_0_3244_29483_4102206176,1315_235149_1693_1541_941_0_3224_1691_1861378060,1858_214311_2100_1298_19538_0_2873_30900_716411652,6258_212007_2506_1285_1017_0_2868_3606_4288540264,3743_207884_2895_1362_2759_0_2545_7114_3388520216,2654_205253_3257_1297_1332_0_2504_4682_3048534803,1891_184881_3660_1291_19079_0_978_29178_2592538685&f=1&n=20&s=date&o=down&e=1196548712&b=Inbox&u=removed");
+    cookie.setPath("/");
+    cookie.setDomain("mail.yahoo.com");
     QTest::newRow("network3") << "YM.LC=v=2&m=9993_262838_159_1558_1063_0_5649_4012_3776161073,9426_260205_549_1295_1336_0_5141_4738_3922731647,6733_258196_952_1364_643_0_3560_-1_0,3677_237633_1294_1294_19267_0_3244_29483_4102206176,1315_235149_1693_1541_941_0_3224_1691_1861378060,1858_214311_2100_1298_19538_0_2873_30900_716411652,6258_212007_2506_1285_1017_0_2868_3606_4288540264,3743_207884_2895_1362_2759_0_2545_7114_3388520216,2654_205253_3257_1297_1332_0_2504_4682_3048534803,1891_184881_3660_1291_19079_0_978_29178_2592538685&f=1&n=20&s=date&o=down&e=1196548712&b=Inbox&u=removed; path=/; domain=mail.yahoo.com" << cookie;
 
     cookie = QNetworkCookie("__ac", "c2hhdXNtYW46U2FTYW80Wm8%3D");
@@ -330,9 +333,9 @@ void tst_QNetworkCookie::parseSingleCookie()
 
     QList<QNetworkCookie> result = QNetworkCookie::parseCookies(cookieString.toLatin1());
 
-    QEXPECT_FAIL("network2", "QDateTime parsing problem: the date is beyond year 8000", Abort);
-    QEXPECT_FAIL("network3", "Cookie value contains commas, violating the HTTP spec", Abort);
+    //QEXPECT_FAIL("network2", "QDateTime parsing problem: the date is beyond year 8000", Abort);
     QCOMPARE(result.count(), 1);
+    QEXPECT_FAIL("network3", "Cookie value contains commas, violating the HTTP spec", Abort);
     QCOMPARE(result.at(0), expectedCookie);
 
     result = QNetworkCookie::parseCookies(result.at(0).toRawForm());
@@ -358,9 +361,7 @@ void tst_QNetworkCookie::parseMultipleCookies_data()
     // reason: malformed NAME=VALUE pair
     QTest::newRow("invalid-05") << "foo" << list;
     QTest::newRow("invalid-06") << "=b" << list;
-    QTest::newRow("invalid-08") << "a=b,foo" << list;
     QTest::newRow("invalid-09") << "foo,a=b" << list;
-    QTest::newRow("invalid-10") << "a=b,=b" << list;
     QTest::newRow("invalid-11") << ";path=/" << list;
 
     // reason: malformed expiration date string
@@ -369,8 +370,6 @@ void tst_QNetworkCookie::parseMultipleCookies_data()
     QTest::newRow("invalid-14") << "a=b;expires=foobar, abc" << list;
     QTest::newRow("invalid-15") << "a=b;expires=foobar, dd-mmm-yyyy hh:mm:ss GMT; path=/" << list;
     QTest::newRow("invalid-16") << "a=b;expires=foobar, 32-Caz-1999 24:01:60 GMT; path=/" << list;
-    QTest::newRow("invalid-17") << "a=b,c=d;expires=" << list;
-    QTest::newRow("invalid-18") << "a=b, c=d; expires=foobar, 32-Caz-1999 24:01:60 GMT; path=/" << list;
 
     QNetworkCookie cookie;
     cookie.setName("a");
