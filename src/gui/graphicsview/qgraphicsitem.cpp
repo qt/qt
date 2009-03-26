@@ -8090,6 +8090,8 @@ void QGraphicsTextItem::setTabChangesFocus(bool b)
     Returns true if the \gui Tab key will cause the widget to change focus;
     otherwise, false is returned.
 
+    By default, this behavior is disabled, and this function will return false.
+
     \sa setTabChangesFocus()
 */
 bool QGraphicsTextItem::tabChangesFocus() const
