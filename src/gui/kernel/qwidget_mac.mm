@@ -2514,6 +2514,8 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     }
 
     updateIsOpaque();
+    if (q->hasFocus())
+        setFocus_sys();
     if (!topLevel && initializeWindow)
         setWSGeometry();
 
