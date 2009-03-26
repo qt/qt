@@ -662,7 +662,8 @@ static QDateTime parseDateString(const QByteArray &dateString)
                 || (dateString[at - 1] == 't'))) {
 
             int end = 1;
-            while (end < 5 && dateString[at + end] >= '0' && dateString[at + end] <= '9')
+            while (end < 5 && dateString.length() > at+end
+                   && dateString[at + end] >= '0' && dateString[at + end] <= '9')
                 ++end;
             int minutes = 0;
             int hours = 0;
@@ -736,7 +737,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
         // Could be month, day or year
         if (isNum) {
             int length = 1;
-            if (dateString.length() >= at + 1
+            if (dateString.length() > at + 1
                 && isNumber(dateString[at + 1]))
                 ++length;
             int x = atoi(dateString.mid(at, length).constData());
