@@ -680,6 +680,26 @@ void tst_QNetworkCookie::parseMultipleCookies_data()
     list << cookie;
     QTest::newRow("network1") << "id=51706646077999719 bb=\"K14144t\"_AAQ\"ototrK_A_ttot44AQ4KwoRQtoto| adv=; Domain=.bluestreak.com; expires=Tuesday 05-Dec-2017 09:11:07 GMT; path=/;" << list;
 
+    QNetworkCookie cookieA;
+    cookieA.setName("a");
+    cookieA.setValue("b");
+
+    QNetworkCookie cookieB;
+    cookieB.setName("c");
+    cookieB.setValue("d");
+
+    // NewLine
+    cookieA.setExpirationDate(QDateTime(QDate(2009, 3, 10), QTime(7, 0, 0, 0), Qt::UTC));
+    cookieB.setExpirationDate(QDateTime(QDate(2009, 3, 20), QTime(7, 0, 0, 0), Qt::UTC));
+    list = QList<QNetworkCookie>() << cookieA << cookieB;
+    QTest::newRow("real-0") << "a=b; expires=Tue Mar 10 07:00:00 2009 GMT\nc=d; expires=Fri Mar 20 07:00:00 2009 GMT" << list;
+    QTest::newRow("real-1") << "a=b; expires=Tue Mar 10 07:00:00 2009 GMT\n\nc=d; expires=Fri Mar 20 07:00:00 2009 GMT" << list;
+    QTest::newRow("real-2") << "a=b; expires=Mar 10 07:00:00 2009 GMT, Tue\nc=d; expires=Fri Mar 20 07:00:00 2009 GMT" << list;
+
+    // Match firefox's behavior
+    cookieA.setPath("/foo");
+    list = QList<QNetworkCookie>() << cookieA << cookieB;
+    QTest::newRow("real-3") << "a=b; expires=Mar 10 07:00:00 2009 GMT, Tue; path=/foo\nc=d; expires=Fri Mar 20 07:00:00 2009 GMT" << list;
 }
 
 void tst_QNetworkCookie::parseMultipleCookies()

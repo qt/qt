@@ -931,7 +931,7 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
 
         // When there are multiple SetCookie headers they are join with a new line
         // \n will always be the start of a new cookie
-        int endOfSetCookie = cookieString.indexOf('\n');
+        int endOfSetCookie = cookieString.indexOf('\n', position);
         if (endOfSetCookie == -1)
             endOfSetCookie = length;
 
