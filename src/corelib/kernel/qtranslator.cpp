@@ -765,8 +765,6 @@ void QTranslatorPrivate::clear()
 }
 
 /*!
-    \since 4.5
-
     Returns the translation for the key (\a context, \a sourceText,
     \a disambiguation). If none is found, also tries (\a context, \a
     sourceText, ""). If that still fails, returns an empty string.
