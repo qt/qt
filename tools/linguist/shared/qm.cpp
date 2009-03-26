@@ -187,9 +187,9 @@ private:
 
     void insertInternal(const TranslatorMessage &message, bool forceComment, bool isUtf8);
 
-    Prefix commonPrefix(const ByteTranslatorMessage &m1, const ByteTranslatorMessage &m2) const;
+    static Prefix commonPrefix(const ByteTranslatorMessage &m1, const ByteTranslatorMessage &m2);
 
-    uint msgHash(const ByteTranslatorMessage &msg) const;
+    static uint msgHash(const ByteTranslatorMessage &msg);
 
     void writeMessage(const ByteTranslatorMessage & msg, QDataStream & stream,
         TranslatorSaveMode strip, Prefix prefix) const;
@@ -217,12 +217,12 @@ QByteArray Releaser::originalBytes(const QString &str, bool isUtf8) const
     return m_codec ? m_codec->fromUnicode(str) : str.toLatin1();
 }
 
-uint Releaser::msgHash(const ByteTranslatorMessage &msg) const
+uint Releaser::msgHash(const ByteTranslatorMessage &msg)
 {
     return elfHash(msg.sourceText() + msg.comment());
 }
 
-Prefix Releaser::commonPrefix(const ByteTranslatorMessage &m1, const ByteTranslatorMessage &m2) const
+Prefix Releaser::commonPrefix(const ByteTranslatorMessage &m1, const ByteTranslatorMessage &m2)
 {
     if (msgHash(m1) != msgHash(m2))
         return NoPrefix;
