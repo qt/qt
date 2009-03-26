@@ -164,7 +164,7 @@ bool QNetworkCookie::operator==(const QNetworkCookie &other) const
         return true;
     return d->name == other.d->name &&
         d->value == other.d->value &&
-        d->expirationDate == other.d->expirationDate &&
+        d->expirationDate.toUTC() == other.d->expirationDate.toUTC() &&
         d->domain == other.d->domain &&
         d->path == other.d->path &&
         d->secure == other.d->secure &&
