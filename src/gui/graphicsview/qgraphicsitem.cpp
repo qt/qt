@@ -3635,7 +3635,7 @@ void QGraphicsItemPrivate::updateHelper(const QRectF &rect, bool force, bool may
         return;
     if (!scene || (scene && scene->d_func()->updateAll && scene->d_func()->hasSceneRect))
         return;
-    if (!force && !maybeDirtyClipPath && discardUpdateRequest())
+    if (!maybeDirtyClipPath && discardUpdateRequest())
         return;
     if (scene && (visible || force)) {
         if (rect.isNull())
