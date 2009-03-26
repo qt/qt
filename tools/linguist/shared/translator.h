@@ -130,6 +130,7 @@ public:
     void stripIdenticalSourceTranslations();
     void dropTranslations();
     QList<TranslatorMessage> findDuplicates() const;
+    void resolveDualEncoded();
     void makeFileNamesAbsolute(const QDir &originalPath);
 
     void setCodecName(const QByteArray &name);

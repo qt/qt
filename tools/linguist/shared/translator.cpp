@@ -114,6 +114,10 @@ void Translator::extend(const TranslatorMessage &msg)
             cmt.append(msg.extraComment());
             emsg.setExtraComment(cmt);
         }
+        if (msg.isUtf8() != emsg.isUtf8()) {
+            emsg.setUtf8(true);
+            emsg.setNonUtf8(true);
+        }
     }
 }
 
@@ -423,6 +427,28 @@ QList<TranslatorMessage> Translator::findDuplicates() const
         if (it.value() > 1)
             ret.append(it.key());
     return ret;
+}
+
+void Translator::resolveDualEncoded()
+{
+    QHash<TranslatorMessage, int> dups;
+    for (int i = 0; i < m_messages.count();) {
+        const TranslatorMessage &msg = m_messages.at(i);
+        QHash<TranslatorMessage, int>::ConstIterator it = dups.constFind(msg);
+        if (it != dups.constEnd()) {
+            TranslatorMessage &omsg = m_messages[*it];
+            if (omsg.isUtf8() != msg.isUtf8() && !omsg.isNonUtf8()) {
+                omsg.setUtf8(true);
+                omsg.setNonUtf8(true);
+                m_messages.removeAt(i);
+                continue;
+            }
+            // Regular dupe; will complain later
+        } else {
+            dups[msg] = i;
+        }
+        ++i;
+    }
 }
 
 // Used by lupdate to be able to search using absolute paths during merging
