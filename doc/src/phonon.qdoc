@@ -566,7 +566,8 @@
     framework, but rather use exchangeable backends to do the work.
 
     See the \l{Phonon Module} page for general information about the
-    framework.
+    framework and the \l{Phonon Overview} for an introductory tour of its
+    features.
 */
 
 /*!
