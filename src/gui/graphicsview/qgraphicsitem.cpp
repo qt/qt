@@ -3652,7 +3652,7 @@ void QGraphicsItemPrivate::updateHelper(const QRectF &rect, bool force, bool may
 */
 void QGraphicsItemPrivate::fullUpdateHelper(bool childrenOnly, bool maybeDirtyClipPath)
 {
-    if (!maybeDirtyClipPath && discardUpdateRequest())
+    if (!visible || (!maybeDirtyClipPath && discardUpdateRequest()))
         return;
     // No scene, or if the scene is updating everything, means we have nothing
     // to do. The only exception is if the scene tracks the growing scene rect.
