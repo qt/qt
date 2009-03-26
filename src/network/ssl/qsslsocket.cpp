@@ -398,9 +398,12 @@ void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port, O
 
 /*!
     \since 4.6
+    \overload
 
-    Variant of connectToHostEncrypted that enables to use a different hostname (\a sslPeerName)
-    for the certificate validation than the one used for the TCP connection (\a hostName).
+    In addition to the original behaviour of connectToHostEncrypted,
+    this overloaded method enables the usage of a different hostname 
+    (\a sslPeerName) for the certificate validation instead of
+    the one used for the TCP connection (\a hostName).
 
     \sa connectToHostEncrypted()
 */

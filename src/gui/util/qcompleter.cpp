@@ -824,9 +824,9 @@ void QCompleterPrivate::_q_complete(QModelIndex index, bool highlighted)
     Q_Q(QCompleter);
     QString completion;
 
-    if (!index.isValid())
+    if (!index.isValid() || (index.row() >= proxy->engine->matchCount())) {
         completion = prefix;
-    else {
+    } else {
         QModelIndex si = proxy->mapToSource(index);
         si = si.sibling(si.row(), column); // for clicked()
         completion = q->pathFromIndex(si);

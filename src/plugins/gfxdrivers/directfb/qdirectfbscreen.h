@@ -104,7 +104,6 @@ public:
 #ifndef QT_NO_DIRECTFB_PALETTE
     static void setSurfaceColorTable(IDirectFBSurface *surface,
                                      const QImage &image);
-    static void setImageColorTable(QImage *image, IDirectFBSurface *surface);
 #endif
 
 private:

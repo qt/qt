@@ -56,6 +56,7 @@
 #include <qlistwidget.h>
 #include <qtreewidget.h>
 #include <qtablewidget.h>
+#include <qscrollbar.h>
 #ifdef Q_WS_MAC
 #include <qmacstyle_mac.h>
 #elif defined Q_WS_X11
@@ -138,6 +139,8 @@ private slots:
     void task248169_popupWithMinimalSize();
     void task247863_keyBoardSelection();
     void setModelColumn();
+    void noScrollbar_data();
+    void noScrollbar();
 
 protected slots:
     void onEditTextChanged( const QString &newString );
@@ -2129,7 +2132,7 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
 
     QFrame *container = qFindChild<QComboBoxPrivateContainer *>(&comboBox);
     QVERIFY(container);
-    QVERIFY(desktop.availableGeometry().contains(container->geometry()));
+    QVERIFY(desktop.screenGeometry(container).contains(container->geometry()));
 }
 
 void tst_QComboBox::task247863_keyBoardSelection()
@@ -2176,6 +2179,57 @@ void tst_QComboBox::setModelColumn()
     QCOMPARE(box.currentText(), QString("0"));
     box.setModelColumn(1);
     QCOMPARE(box.currentText(), QString("zero"));
+}
+
+void tst_QComboBox::noScrollbar_data()
+{
+    QTest::addColumn<QString>("stylesheet");
+
+    QTest::newRow("normal") << QString();
+    QTest::newRow("border") << QString::fromLatin1("QAbstractItemView { border: 12px solid blue;}");
+    QTest::newRow("margin") << QString::fromLatin1("QAbstractItemView { margin: 12px 15px 13px 10px; }");
+    QTest::newRow("padding") << QString::fromLatin1("QAbstractItemView { padding: 12px 15px 13px 10px;}");
+    QTest::newRow("everything") << QString::fromLatin1("QAbstractItemView {  border: 12px  solid blue; "
+                                                       " padding: 12px 15px 13px 10px; margin: 12px 15px 13px 10px;  }");
+    QTest::newRow("everything and more") << QString::fromLatin1("QAbstractItemView {  border: 1px 3px 5px 1px solid blue; "
+                                                       " padding: 2px 5px 3px 1px; margin: 2px 5px 3px 1px;  } "
+                                                       " QAbstractItemView::item {  border: 2px solid green; "
+                                                       "                      padding: 1px 1px 2px 2px margin: 1px; } " );
+}
+
+void tst_QComboBox::noScrollbar()
+{
+    QStringList initialContent;
+    initialContent << "foo" << "bar" << "foobar" << "moo";
+    QFETCH(QString, stylesheet);
+
+    {
+        QComboBox comboBox;
+        comboBox.setStyleSheet(stylesheet);
+        comboBox.addItems(initialContent);
+        comboBox.show();
+        comboBox.resize(200, comboBox.height());
+        QTest::qWait(100);
+        comboBox.showPopup();
+        QTest::qWait(100);
+        QVERIFY(!comboBox.view()->horizontalScrollBar()->isVisible());
+        QVERIFY(!comboBox.view()->verticalScrollBar()->isVisible());
+    }
+    
+    {
+        QTableWidget *table = new QTableWidget(2,2);
+        QComboBox comboBox;
+        comboBox.setStyleSheet(stylesheet);
+        comboBox.setView(table);
+        comboBox.setModel(table->model());
+        comboBox.show();
+        QTest::qWait(100);
+        comboBox.resize(200, comboBox.height());
+        comboBox.showPopup();
+        QTest::qWait(100);
+        QVERIFY(!comboBox.view()->horizontalScrollBar()->isVisible());
+        QVERIFY(!comboBox.view()->verticalScrollBar()->isVisible());
+    }
 }
 
 QTEST_MAIN(tst_QComboBox)
