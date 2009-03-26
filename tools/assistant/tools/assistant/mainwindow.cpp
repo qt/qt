@@ -795,7 +795,7 @@ void MainWindow::showAboutDialog()
             "Qt is a comprehensive C++ framework for cross-platform application "
             "development.");
         QString moreInfo = tr("You need a commercial Qt license for development "
-            of proprietary (closed source) applications. Please see "
+            "of proprietary (closed source) applications. Please see "
             "<a href=\"http://qtsoftware.com/company/about/businessmodel"
             "\">http://qtsoftware.com/company/about/businessmodel</a> for an "
             overview of Qt licensing.");
