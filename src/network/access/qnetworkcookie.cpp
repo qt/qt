@@ -636,6 +636,8 @@ static QDateTime parseDateString(const QByteArray &dateString)
             qDebug() << "Month:" << month;
 #endif
             at += 3;
+            if (at < dateString.length() && dateString[at] == '-')
+                ++at;
             continue;
         }
         // Zone
