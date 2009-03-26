@@ -4133,16 +4133,12 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
                                 : QEvent::TouchUpdate),
                                q->keyboardModifiers(), activeTouchPoints);
         updateTouchPointsForWidget(widget, &touchEvent);
-        return (qt_tabletChokeMouse = sendTouchEvent(widget, &touchEvent));
+
+        bool res = QApplication::sendSpontaneousEvent(widget, &touchEvent);
+        return (qt_tabletChokeMouse = res && touchEvent.isAccepted());
     }
 
     return false;
-}
-
-bool QApplicationPrivate::sendTouchEvent(QWidget *widget, QTouchEvent *touchEvent)
-{
-    bool res = QApplication::sendSpontaneousEvent(widget, touchEvent);
-    return res && touchEvent->isAccepted();
 }
 
 QT_END_NAMESPACE

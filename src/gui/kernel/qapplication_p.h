@@ -440,8 +440,6 @@ public:
     QVector<QTouchEvent::TouchPoint *> allTouchPoints;
     QList<QTouchEvent::TouchPoint *> currentTouchPoints, activeTouchPoints;
 
-    static bool sendTouchEvent(QWidget *widget, QTouchEvent *touchEvent);
-
     void initializeMultitouch();
     void insertActiveTouch(QTouchEvent::TouchPoint *touchPoint);
     void removeActiveTouch(QTouchEvent::TouchPoint *touchPoint);
