@@ -1484,7 +1484,6 @@ QTextObject *QTextDocumentPrivate::createObject(const QTextFormat &f, int object
     QTextObject *obj = document()->createObject(f);
 
     if (obj) {
-        obj->d_func()->pieceTable = this;
         obj->d_func()->objectIndex = objectIndex == -1 ? formats.createObjectIndex(f) : objectIndex;
         objects[obj->d_func()->objectIndex] = obj;
     }

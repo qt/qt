@@ -88,7 +88,7 @@ QT_BEGIN_NAMESPACE
     from QTextDocument::createObject().
 */
 QTextObject::QTextObject(QTextDocument *doc)
-    : QObject(*new QTextObjectPrivate, doc)
+    : QObject(*new QTextObjectPrivate(doc), doc)
 {
 }
 
@@ -98,7 +98,7 @@ QTextObject::QTextObject(QTextDocument *doc)
   \internal
 */
 QTextObject::QTextObject(QTextObjectPrivate &p, QTextDocument *doc)
-    :QObject(p, doc)
+    : QObject(p, doc)
 {
 }
 
@@ -221,7 +221,7 @@ void QTextBlockGroupPrivate::markBlocksDirty()
     QTextDocument::createObject().
 */
 QTextBlockGroup::QTextBlockGroup(QTextDocument *doc)
-    : QTextObject(*new QTextBlockGroupPrivate, doc)
+    : QTextObject(*new QTextBlockGroupPrivate(doc), doc)
 {
 }
 
@@ -410,7 +410,7 @@ QTextFrameLayoutData::~QTextFrameLayoutData()
     Creates a new empty frame for the text \a document.
 */
 QTextFrame::QTextFrame(QTextDocument *doc)
-    : QTextObject(*new QTextFramePrivate, doc)
+    : QTextObject(*new QTextFramePrivate(doc), doc)
 {
     Q_D(QTextFrame);
     d->fragment_start = 0;

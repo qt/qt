@@ -55,6 +55,7 @@
 
 #include "QtGui/qtextobject.h"
 #include "private/qobject_p.h"
+#include "QtGui/qtextdocument.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -64,6 +65,10 @@ class QTextObjectPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QTextObject)
 public:
+    QTextObjectPrivate(QTextDocument *doc)
+        : pieceTable(doc->d_func()), objectIndex(-1)
+    {
+    }
     QTextDocumentPrivate *pieceTable;
     int objectIndex;
 };
@@ -72,7 +77,10 @@ class QTextBlockGroupPrivate : public QTextObjectPrivate
 {
     Q_DECLARE_PUBLIC(QTextBlockGroup)
 public:
-
+    QTextBlockGroupPrivate(QTextDocument *doc)
+        : QTextObjectPrivate(doc)
+    {
+    }
     typedef QList<QTextBlock> BlockList;
     BlockList blocks;
     void markBlocksDirty();
@@ -85,7 +93,10 @@ class QTextFramePrivate : public QTextObjectPrivate
     friend class QTextDocumentPrivate;
     Q_DECLARE_PUBLIC(QTextFrame)
 public:
-
+    QTextFramePrivate(QTextDocument *doc)
+        : QTextObjectPrivate(doc)
+    {
+    }
     virtual void fragmentAdded(const QChar &type, uint fragment);
     virtual void fragmentRemoved(const QChar &type, uint fragment);
     void remove_me();
