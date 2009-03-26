@@ -2806,7 +2806,7 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
     }
     if(ret.isEmpty())
         ret = ".";
-    debug_msg(3, "Fixed[%d] %s :: to :: %s [%s::%s] [%s::%s]", fix, orig_file.toLatin1().constData(),
+    debug_msg(3, "Fixed[%d,%d] %s :: to :: %s [%s::%s] [%s::%s]", fix, canon, orig_file.toLatin1().constData(),
               ret.toLatin1().constData(), in_d.toLatin1().constData(), out_d.toLatin1().constData(),
               pwd.toLatin1().constData(), Option::output_dir.toLatin1().constData());
     cache->insert(cacheKey, ret);
