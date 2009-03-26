@@ -86,6 +86,12 @@ extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.
     return YES;
 }
 
+/***********************************************************************
+  BEGIN Copy and Paste between QCocoaWindow and QCocoaPanel
+  This is a bit unfortunate, but thanks to the dynamic dispatch we
+  have to duplicate this code or resort to really silly forwarding methods
+**************************************************************************/
+
 /*
     The methods keyDown, keyUp, and flagsChanged... These really shouldn't ever
     get hit. We automatically say we can be first responder if we are a window.
@@ -172,6 +178,18 @@ extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.
 
     [self release];
 }
+
+
+- (BOOL)makeFirstResponder:(NSResponder *)responder
+{
+    if (responder == nil)
+        return NO;
+    return [super makeFirstResponder:responder];
+}
+
+/***********************************************************************
+  END Copy and Paste between QCocoaWindow and QCocoaPanel
+***********************************************************************/
 
 + (Class)frameViewClassForStyleMask:(NSUInteger)styleMask
 {
