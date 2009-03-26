@@ -5174,6 +5174,9 @@ void QGraphicsScene::itemUpdated(QGraphicsItem *item, const QRectF &rect)
         d->resetDirtyItemsLater();
     }
 
+    if (!item->isVisible())
+        return; // Hiding an item won't effect the largestUntransformableItem/sceneRect.
+
     // Update d->largestUntransformableItem by mapping this item's bounding
     // rect back to the topmost untransformable item's untransformed
     // coordinate system (which sort of equals the 1:1 coordinate system of an
