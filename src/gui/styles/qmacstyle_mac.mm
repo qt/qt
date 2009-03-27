@@ -50,6 +50,7 @@
 #include <private/qpaintengine_mac_p.h>
 #include <private/qpainter_p.h>
 #include <private/qprintengine_mac_p.h>
+#include <private/qstylehelper_p.h>
 #include <qapplication.h>
 #include <qbitmap.h>
 #include <qcheckbox.h>
@@ -5377,6 +5378,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 drawControl(CE_ToolButtonLabel, &label, p, widget);
             }
         }
+        break;
+    case CC_Dial:
+        if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(opt))
+            QStyleHelper::drawDial(dial, p);
         break;
     default:
         QWindowsStyle::drawComplexControl(cc, opt, p, widget);

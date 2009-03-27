@@ -46,6 +46,7 @@
 #include <private/qobject_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <private/qapplication_p.h>
+#include <private/qstylehelper_p.h>
 #include <qlibrary.h>
 #include <qpainter.h>
 #include <qpaintengine.h>
@@ -3164,6 +3165,12 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         }
         break;
 #endif //QT_NO_WORKSPACE
+#ifndef QT_NO_DIAL
+    case CC_Dial:
+        if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(option))
+            QStyleHelper::drawDial(dial, painter);
+        break;
+#endif // QT_NO_DIAL
     default:
         QWindowsStyle::drawComplexControl(cc, option, p, widget);
         break;
