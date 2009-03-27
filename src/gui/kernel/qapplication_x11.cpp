@@ -3351,15 +3351,24 @@ int QApplication::x11ProcessEvent(XEvent* event)
 
         // update the size for desktop widget
         int scr = X11->ptrXRRRootToScreen(X11->display, event->xany.window);
-        QWidget *w = desktop()->screen(scr);
+        QDesktopWidget *desktop = QApplication::desktop();
+        QWidget *w = desktop->screen(scr);
         QSize oldSize(w->size());
         w->data->crect.setWidth(DisplayWidth(X11->display, scr));
         w->data->crect.setHeight(DisplayHeight(X11->display, scr));
-        if (w->size() != oldSize) {
-            QResizeEvent e(w->size(), oldSize);
-            QApplication::sendEvent(w, &e);
-            emit desktop()->resized(scr);
+        QVarLengthArray<QRect> oldSizes(desktop->numScreens());
+        for (int i = 0; i < desktop->numScreens(); ++i)
+            oldSizes[i] = desktop->screenGeometry(i);
+        QResizeEvent e(w->size(), oldSize);
+        QApplication::sendEvent(w, &e);
+        for (int i = 0; i < qMin(oldSizes.count(), desktop->numScreens()); ++i) {
+            if (oldSizes[i] != desktop->screenGeometry(i))
+                emit desktop->resized(i);
         }
+        for (int i = oldSizes.count(); i < desktop->numScreens(); ++i)
+            emit desktop->resized(i); // added
+        for (int i = desktop->numScreens(); i < oldSizes.count(); ++i)
+            emit desktop->resized(i); // removed
     }
 #endif // QT_NO_XRANDR
 
