@@ -1367,6 +1367,48 @@ QGraphicsWidget *QGraphicsScenePrivate::windowForItem(const QGraphicsItem *item)
     return 0;
 }
 
+
+QList<QGraphicsItem *> QGraphicsScenePrivate::items_helper(const QPointF &pos) const
+{
+    QList<QGraphicsItem *> items;
+
+    // The index returns a rough estimate of what items are inside the rect.
+    // Refine it by iterating through all returned items.
+    QRectF adjustedRect = QRectF(pos, QSize(1,1));
+    foreach (QGraphicsItem *item, estimateItemsInRect(adjustedRect)) {
+        // Find the item's scene transform in a clever way.
+        QTransform x = item->sceneTransform();
+        bool keep = false;
+
+        // ### _q_adjustedRect is only needed because QRectF::intersects,
+        // QRectF::contains and QTransform::map() and friends don't work with
+        // flat rectangles.
+        QRectF br = _q_adjustedRect(item->boundingRect());
+            // Rect intersects/contains item's shape
+        if (QRectF_intersects(adjustedRect, x.mapRect(br))) {
+            bool ok;
+            QTransform xinv = x.inverted(&ok);
+            if (ok) {
+                if (item->contains(xinv.map(pos))) {
+                    items << item;
+                    keep = true;
+                }
+            }
+        }
+
+        if (keep && (item->flags() & QGraphicsItem::ItemClipsChildrenToShape)) {
+            // Recurse into children that clip children.
+            bool ok;
+            QTransform xinv = x.inverted(&ok);
+            if (ok)
+                childItems_helper(&items, item, xinv.map(pos));
+        }
+    }
+
+    sortItems(&items, Qt::AscendingOrder, sortCacheEnabled);
+    return items;
+}
+
 QList<QGraphicsItem *> QGraphicsScenePrivate::items_helper(const QRectF &rect,
                                                            Qt::ItemSelectionMode mode,
                                                            Qt::SortOrder order) const
@@ -1401,7 +1443,7 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::items_helper(const QRectF &rect,
                 bool ok;
                 QTransform xinv = x.inverted(&ok);
                 if (ok) {
-                    if (path == QPainterPath())
+                    if (path.isEmpty())
                         path.addRect(rect);
                     if (itemCollidesWithPath(item, xinv.map(path), mode)) {
                         items << item;
@@ -1545,6 +1587,42 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::items_helper(const QPainterPath &p
 
 void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
                                               const QGraphicsItem *parent,
+                                              const QPointF &pos) const
+{
+    bool parentClip = (parent->flags() & QGraphicsItem::ItemClipsChildrenToShape);
+    if (parentClip && parent->d_ptr->isClippedAway())
+        return;
+    // ### is this needed?
+    if (parentClip && !parent->boundingRect().contains(pos))
+        return;
+
+    QList<QGraphicsItem *> &children = parent->d_ptr->children;
+    for (int i = 0; i < children.size(); ++i) {
+        QGraphicsItem *item = children.at(i);
+        if (item->d_ptr->hasTransform && !item->transform().isInvertible())
+            continue;
+
+        // Skip invisible items and all their children.
+        if (item->d_ptr->isInvisible())
+            continue;
+
+        bool keep = false;
+        if (!item->d_ptr->isClippedAway()) {
+            if (item->contains(item->mapFromParent(pos))) {
+                items->append(item);
+                keep = true;
+            }
+        }
+
+        if ((keep || !(item->flags() & QGraphicsItem::ItemClipsChildrenToShape)) && !item->d_ptr->children.isEmpty())
+            // Recurse into children.
+            childItems_helper(items, item, item->mapFromParent(pos));
+    }
+}
+
+
+void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
+                                              const QGraphicsItem *parent,
                                               const QRectF &rect,
                                               Qt::ItemSelectionMode mode) const
 {
@@ -1605,6 +1683,7 @@ void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
         }
     }
 }
+
 
 void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
                                               const QGraphicsItem *parent,
@@ -2389,17 +2468,8 @@ QList<QGraphicsItem *> QGraphicsScene::items() const
 */
 QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos) const
 {
-    QList<QGraphicsItem *> itemsAtPoint;
-
-    // Find all items within a 1x1 rect area starting at pos. This can be
-    // inefficient for scenes that use small coordinates (like unity
-    // coordinates), or for detailed graphs. ### The index should support
-    // fetching items at a pos to avoid this limitation.
-    foreach (QGraphicsItem *item, items(QRectF(pos, QSizeF(1, 1)), Qt::IntersectsItemBoundingRect)) {
-        if (item->contains(item->mapFromScene(pos)))
-            itemsAtPoint << item;
-    }
-    return itemsAtPoint;
+    Q_D(const QGraphicsScene);
+    return d->items_helper(pos);
 }
 
 
