@@ -61,8 +61,19 @@
 #include <qdebug.h>
 
 #include <private/qvectorpath_p.h>
+#include <private/qstroker_p.h>
 
 QT_BEGIN_NAMESPACE
+
+class QPainterPathStrokerPrivate
+{
+public:
+    QPainterPathStrokerPrivate();
+
+    QStroker stroker;
+    QVector<qfixed> dashPattern;
+    qreal dashOffset;
+};
 
 class QPolygonF;
 class QVectorPathConverter;

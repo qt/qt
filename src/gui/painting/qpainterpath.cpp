@@ -2387,21 +2387,13 @@ void qt_path_stroke_cubic_to(qfixed c1x, qfixed c1y,
     \sa QPen, QBrush
 */
 
-class QPainterPathStrokerPrivate
+QPainterPathStrokerPrivate::QPainterPathStrokerPrivate()
+    : dashOffset(0)
 {
-public:
-    QPainterPathStrokerPrivate()
-        : dashOffset(0)
-    {
-        stroker.setMoveToHook(qt_path_stroke_move_to);
-        stroker.setLineToHook(qt_path_stroke_line_to);
-        stroker.setCubicToHook(qt_path_stroke_cubic_to);
-    }
-
-    QStroker stroker;
-    QVector<qfixed> dashPattern;
-    qreal dashOffset;
-};
+    stroker.setMoveToHook(qt_path_stroke_move_to);
+    stroker.setLineToHook(qt_path_stroke_line_to);
+    stroker.setCubicToHook(qt_path_stroke_cubic_to);
+}
 
 /*!
    Creates a new stroker.
@@ -2445,6 +2437,7 @@ QPainterPath QPainterPathStroker::createStroke(const QPainterPath &path) const
         QDashStroker dashStroker(&d->stroker);
         dashStroker.setDashPattern(d->dashPattern);
         dashStroker.setDashOffset(d->dashOffset);
+        dashStroker.setClipRect(d->stroker.clipRect());
         dashStroker.strokePath(path, &stroke, QTransform());
     }
     stroke.setFillRule(Qt::WindingFill);
