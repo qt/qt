@@ -137,6 +137,7 @@ static dbus_bool_t qDBusAddTimeout(DBusTimeout *timeout, void *data)
     if (!q_dbus_timeout_get_enabled(timeout))
         return true;
 
+    QDBusWatchAndTimeoutLocker locker(AddTimeoutAction, d);
     if (QCoreApplication::instance() && QThread::currentThread() == d->thread()) {
         // correct thread
         return qDBusRealAddTimeout(d, timeout, q_dbus_timeout_get_interval(timeout));
@@ -152,7 +153,6 @@ static dbus_bool_t qDBusAddTimeout(DBusTimeout *timeout, void *data)
 
 static bool qDBusRealAddTimeout(QDBusConnectionPrivate *d, DBusTimeout *timeout, int ms)
 {
-    QDBusWatchAndTimeoutLocker locker(AddTimeoutAction, d);
     Q_ASSERT(d->timeouts.keys(timeout).isEmpty());
 
     int timerId = d->startTimer(ms);
@@ -1035,12 +1035,14 @@ void QDBusConnectionPrivate::customEvent(QEvent *e)
                                         QDBusLockerBase::BeforeDeliver, this);
     switch (ev->subtype)
     {
-    case QDBusConnectionCallbackEvent::AddTimeout:
+    case QDBusConnectionCallbackEvent::AddTimeout: {
+        QDBusWatchAndTimeoutLocker locker(RealAddTimeoutAction, this);
         while (!timeoutsPendingAdd.isEmpty()) {
             QPair<DBusTimeout *, int> entry = timeoutsPendingAdd.takeFirst();
             qDBusRealAddTimeout(this, entry.first, entry.second);
         }
         break;
+    }
 
     case QDBusConnectionCallbackEvent::KillTimer:
         qDebug() << QThread::currentThread() << "RemoveTimeout: killing timer" << (ev->timerId & 0xffffff);
