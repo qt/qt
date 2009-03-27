@@ -1045,7 +1045,6 @@ void QDBusConnectionPrivate::customEvent(QEvent *e)
     }
 
     case QDBusConnectionCallbackEvent::KillTimer:
-        qDebug() << QThread::currentThread() << "RemoveTimeout: killing timer" << (ev->timerId & 0xffffff);
         killTimer(ev->timerId);
         break;
 
