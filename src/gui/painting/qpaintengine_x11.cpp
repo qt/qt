@@ -1479,14 +1479,10 @@ void QX11PaintEngine::drawEllipse(const QRect &rect)
         return;
     }
     d->setupAdaptedOrigin(rect.topLeft());
-    if (d->has_brush) {          // draw filled ellipse
-        if (!d->has_pen) {
-            XFillArc(d->dpy, d->hd, d->gc_brush, x, y, w-1, h-1, 0, 360*64);
+    if (d->has_brush) {             // draw filled ellipse
+        XFillArc(d->dpy, d->hd, d->gc_brush, x, y, w, h, 0, 360*64);
+        if (!d->has_pen)            // make smoother outline
             XDrawArc(d->dpy, d->hd, d->gc_brush, x, y, w-1, h-1, 0, 360*64);
-            return;
-        } else{
-            XFillArc(d->dpy, d->hd, d->gc_brush, x, y, w, h, 0, 360*64);
-        }
     }
     if (d->has_pen)                // draw outline
         XDrawArc(d->dpy, d->hd, d->gc, x, y, w, h, 0, 360*64);
