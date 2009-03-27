@@ -164,6 +164,7 @@ static inline bool bypassGraphicsProxyWidget(QWidget *p)
 #endif
 
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); // qapplication.cpp
+extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
 QWidgetPrivate::QWidgetPrivate(int version) :
         QObjectPrivate(version), extra(0), focus_child(0)
@@ -1400,7 +1401,13 @@ int QWidgetPrivate::maxInstances = 0;     // Maximum number of widget instances
 void QWidgetPrivate::setWinId(WId id)                // set widget identifier
 {
     Q_Q(QWidget);
-    if (mapper && data.winid) {
+    // the user might create a widget with Qt::Desktop window
+    // attribute (or create another QDesktopWidget instance), which
+    // will have the same windowid (the root window id) as the
+    // qt_desktopWidget. We should not add the second desktop widget
+    // to the mapper.
+    bool userDesktopWidget = qt_desktopWidget != 0 && qt_desktopWidget != q && q->windowType() == Qt::Desktop;
+    if (mapper && data.winid && !userDesktopWidget) {
         mapper->remove(data.winid);
         uncreatedWidgets->insert(q);
     }
@@ -1409,7 +1416,7 @@ void QWidgetPrivate::setWinId(WId id)                // set widget identifier
 #if defined(Q_WS_X11)
     hd = id; // X11: hd == ident
 #endif
-    if (mapper && id) {
+    if (mapper && id && !userDesktopWidget) {
         mapper->insert(data.winid, q);
         uncreatedWidgets->remove(q);
     }
