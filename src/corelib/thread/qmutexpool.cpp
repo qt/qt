@@ -96,9 +96,8 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutexPool, globalMutexPool, (true))
     QMutexPool is destructed.
 */
 QMutexPool::QMutexPool(bool recursive, int size)
-    : count(size), recurs(recursive)
+    : mutexes(size), count(size), recurs(recursive)
 {
-    mutexes = new QMutex*[count];
     for (int index = 0; index < count; ++index) {
         mutexes[index] = 0;
     }
@@ -110,13 +109,10 @@ QMutexPool::QMutexPool(bool recursive, int size)
 */
 QMutexPool::~QMutexPool()
 {
-    QMutexLocker locker(&mutex);
     for (int index = 0; index < count; ++index) {
         delete mutexes[index];
         mutexes[index] = 0;
     }
-    delete [] mutexes;
-    mutexes = 0;
 }
 
 /*!
@@ -138,12 +134,9 @@ QMutex *QMutexPool::get(const void *address)
 
     if (!mutexes[index]) {
         // mutex not created, create one
-
-        QMutexLocker locker(&mutex);
-        // we need to check once again that the mutex hasn't been created, since
-        // 2 threads could be trying to create a mutex at the same index...
-        if (!mutexes[index])
-            mutexes[index] = new QMutex(recurs ? QMutex::Recursive : QMutex::NonRecursive);
+        QMutex *newMutex = new QMutex(recurs ? QMutex::Recursive : QMutex::NonRecursive);
+        if (!mutexes[index].testAndSetOrdered(0, newMutex))
+            delete newMutex;
     }
 
     return mutexes[index];

@@ -69,7 +69,7 @@ static int numberLength(const QString &s, int i)
     int pos = i;
     do {
         ++i;
-    } while (i < s.size() 
+    } while (i < s.size()
              && (s.at(i).isDigit()
                  || (isDigitFriendly(s[i])
                      && i + 1 < s.size()
@@ -445,7 +445,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
         if (mv.sourceText().isEmpty()) {
             if (tor.contains(mv.context()))
                 continue;
-        } else { 
+        } else {
             if (tor.contains(mv.context(), mv.sourceText(), mv.comment()))
                 continue;
             if (options & HeuristicSimilarText) {

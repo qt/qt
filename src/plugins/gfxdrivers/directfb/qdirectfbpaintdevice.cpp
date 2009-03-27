@@ -64,8 +64,6 @@ void QDirectFBPaintDevice::lockDirectFB() {
 
     void *mem;
     int w, h;
-    DFBSurfacePixelFormat format;
-
     DFBResult result = dfbSurface->Lock(dfbSurface, DSLF_WRITE, &mem, &bpl);
     if (result != DFB_OK || !mem) {
         DirectFBError("QDirectFBPixmapData::buffer()", result);
@@ -73,10 +71,8 @@ void QDirectFBPaintDevice::lockDirectFB() {
     }
 
     dfbSurface->GetSize(dfbSurface, &w, &h);
-    dfbSurface->GetPixelFormat(dfbSurface, &format);
-
     lockedImage = new QImage(static_cast<uchar*>(mem), w, h, bpl,
-                             QDirectFBScreen::getImageFormat(format));
+                             QDirectFBScreen::getImageFormat(dfbSurface));
 }
 
 
@@ -102,9 +98,7 @@ void* QDirectFBPaintDevice::memory() const
 
 QImage::Format QDirectFBPaintDevice::format() const
 {
-    DFBSurfacePixelFormat dfbFormat;
-    dfbSurface->GetPixelFormat(dfbSurface, &dfbFormat);
-    return QDirectFBScreen::getImageFormat(dfbFormat);
+    return QDirectFBScreen::getImageFormat(dfbSurface);
 }
 
 

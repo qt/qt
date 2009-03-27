@@ -212,6 +212,7 @@ QString TSReader::readTransContents()
 
 bool TSReader::read(Translator &translator)
 {
+    STRING(both);
     STRING(byte);
     STRING(comment);
     STRING(context);
@@ -265,19 +266,23 @@ bool TSReader::read(Translator &translator)
             QString currentFile;
 
             QXmlStreamAttributes atts = attributes();
-            //QString version = atts.value(strversion).toString();
+            QString version = atts.value(strversion).toString();
             translator.setLanguageCode(atts.value(strlanguage).toString());
             translator.setSourceLanguageCode(atts.value(strsourcelanguage).toString());
             while (!atEnd()) {
                 readNext();
                 if (isEndElement()) {
                     // </TS> found, finish local loop
+                    if (version == QLatin1String("1.1"))
+                        translator.resolveDualEncoded();
                     break;
                 } else if (isWhiteSpace()) {
                     // ignore these, just whitespace
                 } else if (elementStarts(strdefaultcodec)) {
                     // <defaultcodec>
-                    translator.setCodecName(readElementText().toLatin1());
+                    const QString &codec = readElementText();
+                    if (!codec.isEmpty())
+                        translator.setCodecName(codec.toLatin1());
                     // </defaultcodec>
                 } else if (isStartElement()
                         && name().toString().startsWith(strextrans)) {
@@ -309,7 +314,9 @@ bool TSReader::read(Translator &translator)
                             msg.setContext(context);
                             msg.setType(TranslatorMessage::Finished);
                             msg.setPlural(attributes().value(strnumerus) == stryes);
-                            msg.setUtf8(attributes().value(strutf8) == strtrue
+                            const QStringRef &utf8Attr = attributes().value(strutf8);
+                            msg.setNonUtf8(utf8Attr == strboth);
+                            msg.setUtf8(msg.isNonUtf8() || utf8Attr == strtrue
                                  ||  attributes().value(strencoding) == strUtf8);
                             while (!atEnd()) {
                                 readNext();
@@ -373,7 +380,7 @@ bool TSReader::read(Translator &translator)
                                 } else if (elementStarts(strtranslation)) {
                                     // <translation>
                                     QXmlStreamAttributes atts = attributes();
-                                    QStringRef type = atts.value(strtype); 
+                                    QStringRef type = atts.value(strtype);
                                     if (type == strunfinished)
                                         msg.setType(TranslatorMessage::Unfinished);
                                     else if (type == strobsolete)
@@ -440,7 +447,7 @@ static QString protect(const QString &str)
     QString result;
     result.reserve(str.length() * 12 / 10);
     for (int i = 0; i != str.size(); ++i) {
-        uint c = str.at(i).unicode(); 
+        uint c = str.at(i).unicode();
         switch (c) {
         case '\"':
             result += QLatin1String("&quot;");
@@ -592,107 +599,126 @@ bool saveTS(const Translator &translator, QIODevice &dev, ConversionData &cd, in
         foreach (const TranslatorMessage &msg, messageOrder[context]) {
             //msg.dump();
 
-            t << "    <message";
-            if (!msg.id().isEmpty())
-                t << " id=\"" << msg.id() << "\"";
-            if (format == 11 && !trIsUtf8 && msg.isUtf8())
-                t << " encoding=\"UTF-8\"";
-            if (format == 20 && !trIsUtf8 && msg.isUtf8()) 
-                t << " utf8=\"true\"";
-            if (msg.isPlural())
-                t << " numerus=\"yes\"";
-            t << ">\n";
-            if (translator.locationsType() != Translator::NoLocations) {
-                QString cfile = currentFile;
-                bool first = true;
-                foreach (const TranslatorMessage::Reference &ref, msg.allReferences()) {
-                    QString fn = cd.m_targetDir.relativeFilePath(ref.fileName())
-                                .replace(QLatin1Char('\\'),QLatin1Char('/'));
-                    int ln = ref.lineNumber();
-                    QString ld;
-                    if (translator.locationsType() == Translator::RelativeLocations) {
-                        if (ln != -1) {
-                            int dlt = ln - currentLine[fn];
-                            if (dlt >= 0)
-                                ld.append(QLatin1Char('+'));
-                            ld.append(QString::number(dlt));
-                            currentLine[fn] = ln;
-                        }
+            bool isUtf8 = msg.isUtf8();
+            bool second = false;
+            forever {
 
-                        if (fn != cfile) {
-                            if (first)
-                                currentFile = fn;
-                            cfile = fn;
-                        } else {
-                            fn.clear();
-                        }
-                        first = false;
+                t << "    <message";
+                if (!msg.id().isEmpty())
+                    t << " id=\"" << msg.id() << "\"";
+                if (!trIsUtf8) {
+                    if (format == 11) {
+                        if (isUtf8)
+                            t << " encoding=\"UTF-8\"";
                     } else {
-                        if (ln != -1)
-                            ld = QString::number(ln);
+                        if (msg.isUtf8()) {
+                            if (msg.isNonUtf8())
+                                t << " utf8=\"both\"";
+                            else
+                                t << " utf8=\"true\"";
+                        }
                     }
-                    t << "        <location";
-                    if (!fn.isEmpty())
-                        t << " filename=\"" << fn << "\"";
-                    if (!ld.isEmpty())
-                        t << " line=\"" << ld << "\"";
-                    t << "/>\n";
                 }
-            }
+                if (msg.isPlural())
+                    t << " numerus=\"yes\"";
+                t << ">\n";
+                if (translator.locationsType() != Translator::NoLocations) {
+                    QString cfile = currentFile;
+                    bool first = true;
+                    foreach (const TranslatorMessage::Reference &ref, msg.allReferences()) {
+                        QString fn = cd.m_targetDir.relativeFilePath(ref.fileName())
+                                    .replace(QLatin1Char('\\'),QLatin1Char('/'));
+                        int ln = ref.lineNumber();
+                        QString ld;
+                        if (translator.locationsType() == Translator::RelativeLocations) {
+                            if (ln != -1) {
+                                int dlt = ln - currentLine[fn];
+                                if (dlt >= 0)
+                                    ld.append(QLatin1Char('+'));
+                                ld.append(QString::number(dlt));
+                                currentLine[fn] = ln;
+                            }
 
-            t << "        <source>"
-              << evilBytes(msg.sourceText(), msg.isUtf8(), format, codecName)
-              << "</source>\n";
-
-            if (format != 11 && !msg.oldSourceText().isEmpty())
-                t << "        <oldsource>" << protect(msg.oldSourceText()) << "</oldsource>\n";
-
-            if (!msg.comment().isEmpty()) {
-                t << "        <comment>"
-                  << evilBytes(msg.comment(), msg.isUtf8(), format, codecName)
-                  << "</comment>\n";
-            }
-
-            if (format != 11) {
-
-                if (!msg.oldComment().isEmpty())
-                    t << "        <oldcomment>" << protect(msg.oldComment()) << "</oldcomment>\n";
-
-                if (!msg.extraComment().isEmpty())
-                    t << "        <extracomment>" << protect(msg.extraComment())
-                      << "</extracomment>\n";
-
-                if (!msg.translatorComment().isEmpty())
-                    t << "        <translatorcomment>" << protect(msg.translatorComment())
-                      << "</translatorcomment>\n";
-
-            }
-
-            t << "        <translation";
-            if (msg.type() == TranslatorMessage::Unfinished)
-                t << " type=\"unfinished\"";
-            else if (msg.type() == TranslatorMessage::Obsolete)
-                t << " type=\"obsolete\"";
-            if (msg.isPlural()) {
-                t << ">";
-                QStringList translns = translator.normalizedTranslations(msg, cd, &result);
-                for (int j = 0; j < qMax(1, translns.count()); ++j) {
-                    t << "\n            <numerusform";
-                    writeVariants(t, "            ", translns[j]);
-                    t << "</numerusform>";
+                            if (fn != cfile) {
+                                if (first)
+                                    currentFile = fn;
+                                cfile = fn;
+                            } else {
+                                fn.clear();
+                            }
+                            first = false;
+                        } else {
+                            if (ln != -1)
+                                ld = QString::number(ln);
+                        }
+                        t << "        <location";
+                        if (!fn.isEmpty())
+                            t << " filename=\"" << fn << "\"";
+                        if (!ld.isEmpty())
+                            t << " line=\"" << ld << "\"";
+                        t << "/>\n";
+                    }
                 }
-                t << "\n        ";
-            } else {
-                writeVariants(t, "        ", msg.translation());
+
+                t << "        <source>"
+                  << evilBytes(msg.sourceText(), isUtf8, format, codecName)
+                  << "</source>\n";
+
+                if (format != 11 && !msg.oldSourceText().isEmpty())
+                    t << "        <oldsource>" << protect(msg.oldSourceText()) << "</oldsource>\n";
+
+                if (!msg.comment().isEmpty()) {
+                    t << "        <comment>"
+                      << evilBytes(msg.comment(), isUtf8, format, codecName)
+                      << "</comment>\n";
+                }
+
+                if (format != 11) {
+
+                    if (!msg.oldComment().isEmpty())
+                        t << "        <oldcomment>" << protect(msg.oldComment()) << "</oldcomment>\n";
+
+                    if (!msg.extraComment().isEmpty())
+                        t << "        <extracomment>" << protect(msg.extraComment())
+                          << "</extracomment>\n";
+
+                    if (!msg.translatorComment().isEmpty())
+                        t << "        <translatorcomment>" << protect(msg.translatorComment())
+                          << "</translatorcomment>\n";
+
+                }
+
+                t << "        <translation";
+                if (msg.type() == TranslatorMessage::Unfinished)
+                    t << " type=\"unfinished\"";
+                else if (msg.type() == TranslatorMessage::Obsolete)
+                    t << " type=\"obsolete\"";
+                if (msg.isPlural()) {
+                    t << ">";
+                    QStringList translns = translator.normalizedTranslations(msg, cd, &result);
+                    for (int j = 0; j < qMax(1, translns.count()); ++j) {
+                        t << "\n            <numerusform";
+                        writeVariants(t, "            ", translns[j]);
+                        t << "</numerusform>";
+                    }
+                    t << "\n        ";
+                } else {
+                    writeVariants(t, "        ", msg.translation());
+                }
+                t << "</translation>\n";
+
+                if (format != 11)
+                    writeExtras(t, "        ", msg.extras(), drops);
+
+                if (!msg.userData().isEmpty())
+                    t << "        <userdata>" << msg.userData() << "</userdata>\n";
+                t << "    </message>\n";
+
+                if (format != 11 || second || !msg.isUtf8() || !msg.isNonUtf8())
+                    break;
+                isUtf8 = false;
+                second = true;
             }
-            t << "</translation>\n";
-
-            if (format != 11)
-                writeExtras(t, "        ", msg.extras(), drops);
-
-            if (!msg.userData().isEmpty())
-                t << "        <userdata>" << msg.userData() << "</userdata>\n";
-            t << "    </message>\n";
         }
         t << "</context>\n";
     }
@@ -708,12 +734,12 @@ bool loadTS(Translator &translator, QIODevice &dev, ConversionData &cd)
     return reader.read(translator);
 }
 
-bool saveTS11(const Translator &translator, QIODevice &dev, ConversionData &cd) 
+bool saveTS11(const Translator &translator, QIODevice &dev, ConversionData &cd)
 {
     return saveTS(translator, dev, cd, 11);
 }
 
-bool saveTS20(const Translator &translator, QIODevice &dev, ConversionData &cd) 
+bool saveTS20(const Translator &translator, QIODevice &dev, ConversionData &cd)
 {
     return saveTS(translator, dev, cd, 20);
 }

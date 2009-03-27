@@ -105,13 +105,18 @@ void Translator::extend(const TranslatorMessage &msg)
     if (index == -1) {
         m_messages.append(msg);
     } else {
-        m_messages[index].addReferenceUniq(msg.fileName(), msg.lineNumber());
+        TranslatorMessage &emsg = m_messages[index];
+        emsg.addReferenceUniq(msg.fileName(), msg.lineNumber());
         if (!msg.extraComment().isEmpty()) {
-            QString cmt = m_messages[index].extraComment();
+            QString cmt = emsg.extraComment();
             if (!cmt.isEmpty())
                 cmt.append(QLatin1String("\n----------\n"));
             cmt.append(msg.extraComment());
-            m_messages[index].setExtraComment(cmt);
+            emsg.setExtraComment(cmt);
+        }
+        if (msg.isUtf8() != emsg.isUtf8()) {
+            emsg.setUtf8(true);
+            emsg.setNonUtf8(true);
         }
     }
 }
@@ -424,6 +429,28 @@ QList<TranslatorMessage> Translator::findDuplicates() const
     return ret;
 }
 
+void Translator::resolveDualEncoded()
+{
+    QHash<TranslatorMessage, int> dups;
+    for (int i = 0; i < m_messages.count();) {
+        const TranslatorMessage &msg = m_messages.at(i);
+        QHash<TranslatorMessage, int>::ConstIterator it = dups.constFind(msg);
+        if (it != dups.constEnd()) {
+            TranslatorMessage &omsg = m_messages[*it];
+            if (omsg.isUtf8() != msg.isUtf8() && !omsg.isNonUtf8()) {
+                omsg.setUtf8(true);
+                omsg.setNonUtf8(true);
+                m_messages.removeAt(i);
+                continue;
+            }
+            // Regular dupe; will complain later
+        } else {
+            dups[msg] = i;
+        }
+        ++i;
+    }
+}
+
 // Used by lupdate to be able to search using absolute paths during merging
 void Translator::makeFileNamesAbsolute(const QDir &originalPath)
 {
@@ -544,7 +571,7 @@ void Translator::setCodecName(const QByteArray &name)
     if (!codec) {
         if (!name.isEmpty())
             qWarning("No QTextCodec for %s available. Using Latin1\n", name.constData());
-        m_codecName.clear();
+        m_codecName = "ISO-8859-1";
     } else {
         m_codecName = codec->name();
     }
