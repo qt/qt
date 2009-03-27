@@ -9793,12 +9793,21 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         }
         break;
 #endif
-    case Qt::WA_NativeWindow:
+    case Qt::WA_NativeWindow: {
+        QInputContext *ic = 0;
+        if (on && !internalWinId() && testAttribute(Qt::WA_InputMethodEnabled) && hasFocus()) {
+            ic = d->inputContext();
+            ic->reset();
+            ic->setFocusWidget(0);
+        }
         if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget())
             parentWidget()->d_func()->enforceNativeChildren();
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
+        if (ic)
+            ic->setFocusWidget(this);
         break;
+    }
     case Qt::WA_PaintOnScreen:
         d->updateIsOpaque();
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
