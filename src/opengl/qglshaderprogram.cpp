@@ -849,13 +849,16 @@ bool QGLShaderProgram::addShader(QGLShader *shader)
         return false;
     if (d->shaders.contains(shader))
         return true;    // Already added to this shader program.
-    if (d->program && shader && shader->d->shader) {
+    if (d->program && shader) {
         if (!shader->d->compiled)
             return false;
-        if (!shader->d->isPartial)
+        if (!shader->d->isPartial) {
+            if (!shader->d->shader)
+                return false;
             glAttachShader(d->program, shader->d->shader);
-        else
+        } else {
             d->hasPartialShaders = true;
+        }
         d->linked = false;  // Program needs to be relinked.
         d->shaders.append(shader);
         return true;
