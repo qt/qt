@@ -2251,9 +2251,9 @@ QList<QGraphicsItem *> QGraphicsView::items(const QPoint &pos) const
     if (d->scene->d_func()->largestUntransformableItem.isNull()) {
         if ((d->identityMatrix || d->matrix.type() <= QTransform::TxScale)) {
             QTransform xinv = viewportTransform().inverted();
-            return d->scene->items(xinv.mapRect(QRectF(pos.x(), pos.y(), 1, 1)));
+            return d->scene->items(xinv.map(pos));
         }
-        return d->scene->items(mapToScene(pos.x(), pos.y(), 2, 2));
+        return d->scene->items(mapToScene(pos));
     }
 
     QPainterPath path;
