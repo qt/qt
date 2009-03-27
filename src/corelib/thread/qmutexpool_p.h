@@ -53,6 +53,7 @@
 // We mean it.
 //
 
+#include "QtCore/qatomic.h"
 #include "QtCore/qmutex.h"
 #include "QtCore/qvarlengtharray.h"
 
