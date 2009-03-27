@@ -1725,7 +1725,7 @@ static void qt_painterpath_isect_curve(const QBezier &bezier, const QPointF &pt,
 */
 bool QPainterPath::contains(const QPointF &pt) const
 {
-    if (isEmpty())
+    if (isEmpty() || !controlPointRect().contains(pt))
         return false;
 
     QPainterPathData *d = d_func();
