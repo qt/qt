@@ -3613,6 +3613,24 @@ void QGraphicsItem::setBoundingRegionGranularity(qreal granularity)
 
 /*!
     \internal
+    Returns true if we can discard an update request; otherwise false.
+*/
+bool QGraphicsItemPrivate::discardUpdateRequest(bool ignoreClipping,
+                                                bool ignoreVisibleBit,
+                                                bool ignoreDirtyBit) const
+{
+    // No scene, or if the scene is updating everything, means we have nothing
+    // to do. The only exception is if the scene tracks the growing scene rect.
+    return (!visible && !ignoreVisibleBit)
+           || (dirty && !ignoreDirtyBit)
+           || !scene
+           || (scene->d_func()->updateAll && scene->d_func()->hasSceneRect)
+           || (!ignoreClipping && (childrenClippedToShape() && isClippedAway()))
+           || (childrenCombineOpacity() && isFullyTransparent());
+}
+
+/*!
+    \internal
 
     Asks the scene to mark this item's scene rect as dirty, requesting a
     redraw.  This does not invalidate any cache.
@@ -3625,17 +3643,12 @@ void QGraphicsItemPrivate::updateHelper(const QRectF &rect, bool force, bool may
 {
     // No scene, or if the scene is updating everything, means we have nothing
     // to do. The only exception is if the scene tracks the growing scene rect.
-    if (dirty)
+    if (discardUpdateRequest(/*ignoreClipping=*/maybeDirtyClipPath, /*ignoreVisibleBit=*/force))
         return;
-    if (!scene || (scene && scene->d_func()->updateAll && scene->d_func()->hasSceneRect))
-        return;
-    if (!maybeDirtyClipPath && discardUpdateRequest())
-        return;
-    if (scene && (visible || force)) {
-        if (rect.isNull())
-            dirty = 1;
-        scene->itemUpdated(q_ptr, rect);
-    }
+
+    if (rect.isNull())
+        dirty = 1;
+    scene->itemUpdated(q_ptr, rect);
 }
 
 /*!
@@ -3645,21 +3658,23 @@ void QGraphicsItemPrivate::updateHelper(const QRectF &rect, bool force, bool may
 */
 void QGraphicsItemPrivate::fullUpdateHelper(bool childrenOnly, bool maybeDirtyClipPath)
 {
-    if (!visible || (!maybeDirtyClipPath && discardUpdateRequest()))
+    if (discardUpdateRequest(/*ignoreClipping=*/maybeDirtyClipPath,
+                             /*ignoreVisibleBit=*/false,
+                             /*ignoreDirtyBit=*/true)) {
         return;
-    // No scene, or if the scene is updating everything, means we have nothing
-    // to do. The only exception is if the scene tracks the growing scene rect.
-    if (!scene || (scene && scene->d_func()->updateAll && scene->d_func()->hasSceneRect))
-        return;
-    if (!childrenOnly && !dirty)
-        updateHelper(QRectF(), false, maybeDirtyClipPath);
-    if (children.isEmpty() || dirtyChildren)
-        return;
-    if (flags & QGraphicsItem::ItemClipsChildrenToShape || children.isEmpty()) {
-        // ### mark all children dirty?
+    }
+
+    if (!childrenOnly && !dirty) {
+        // Effectively the same as updateHelper(QRectF(), false, maybeDirtyClipPath).
+        dirty = 1;
+        scene->itemUpdated(q_ptr, QRectF());
+    }
+
+    if (dirtyChildren || childrenClippedToShape()) {
         // Unnecessary to update children as well.
         return;
     }
+
     if (ancestorFlags & AncestorClipsChildren) {
         Q_Q(QGraphicsItem);
         // Check if we can avoid updating all children.
@@ -3929,22 +3944,23 @@ bool QGraphicsItemPrivate::isProxyWidget() const
 */
 void QGraphicsItem::update(const QRectF &rect)
 {
-    if (d_ptr->dirty || (rect.isEmpty() && !rect.isNull()))
+    if ((rect.isEmpty() && !rect.isNull()) || d_ptr->discardUpdateRequest())
         return;
-    if (d_ptr->discardUpdateRequest())
-        return;
-    if (d_ptr->scene && isVisible()) {
-        if (CacheMode(d_ptr->cacheMode) != NoCache) {
-            QGraphicsItemCache *cache = d_ptr->extraItemCache();
-            if (rect.isNull()) {
-                cache->allExposed = true;
-                cache->exposed.clear();
-            } else {
-                cache->exposed.append(rect);
-            }
+
+    if (CacheMode(d_ptr->cacheMode) != NoCache) {
+        QGraphicsItemCache *cache = d_ptr->extraItemCache();
+        if (rect.isNull()) {
+            cache->allExposed = true;
+            cache->exposed.clear();
+        } else {
+            cache->exposed.append(rect);
         }
-        d_ptr->updateHelper(rect);
     }
+
+    // Effectively the same as updateHelper(rect);
+    if (rect.isNull())
+        d_ptr->dirty = 1;
+    d_ptr->scene->itemUpdated(this, rect);
 }
 
 

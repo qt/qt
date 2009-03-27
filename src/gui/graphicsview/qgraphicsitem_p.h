@@ -165,6 +165,9 @@ public:
     void setPosHelper(const QPointF &pos);
     void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
+    bool discardUpdateRequest(bool ignoreClipping = false,
+                              bool ignoreVisibleBit = false,
+                              bool ignoreDirtyBit = false) const;
     void updateHelper(const QRectF &rect = QRectF(), bool force = false, bool maybeDirtyClipPath = false);
     void fullUpdateHelper(bool childrenOnly = false, bool maybeDirtyClipPath = false);
     void updateEffectiveOpacity();
@@ -260,11 +263,8 @@ public:
     void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
 
-    inline bool isInvisible() const
-    {
-        return !visible || (hasEffectiveOpacity
-                            && qFuzzyCompare(q_func()->effectiveOpacity() + 1, qreal(1.0)));
-    }
+    inline bool isFullyTransparent() const
+    { return hasEffectiveOpacity && qFuzzyCompare(q_func()->effectiveOpacity() + 1, qreal(1.0)); }
 
     inline bool childrenCombineOpacity() const
     { return allChildrenCombineOpacity || children.isEmpty(); }
@@ -272,8 +272,15 @@ public:
     inline bool isClippedAway() const
     { return !dirtyClipPath && q_func()->isClipped() && (emptyClipPath || cachedClipPath.isEmpty()); }
 
-    inline bool discardUpdateRequest() const
-    { return ((flags & QGraphicsItem::ItemClipsChildrenToShape) || children.isEmpty()) && isClippedAway(); }
+    inline bool childrenClippedToShape() const
+    { return (flags & QGraphicsItem::ItemClipsChildrenToShape) || children.isEmpty(); }
+
+    inline bool isInvisible() const
+    {
+        return !visible
+               || (childrenClippedToShape() && isClippedAway())
+               || (childrenCombineOpacity() && isFullyTransparent());
+    }
 
     QPainterPath cachedClipPath;
     QPointF pos;
