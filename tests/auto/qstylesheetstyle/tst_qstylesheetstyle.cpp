@@ -94,6 +94,7 @@ private slots:
     void embeddedFonts();
     void opaquePaintEvent_data();
     void opaquePaintEvent();
+    void task188195_baseBackground();
 
     //at the end because it mess with the style.
     void widgetStyle();
@@ -1352,6 +1353,28 @@ void tst_QStyleSheetStyle::opaquePaintEvent()
     QCOMPARE(cl.testAttribute(Qt::WA_OpaquePaintEvent), !transparent);
     QCOMPARE(cl.testAttribute(Qt::WA_StyledBackground), styled);
     QCOMPARE(cl.autoFillBackground(), !styled );
+}
+
+void tst_QStyleSheetStyle::task188195_baseBackground()
+{
+    QTreeView tree;
+    tree.setStyleSheet( "QTreeView:disabled { background-color:#ab1251; }" );
+    tree.show();
+    QTest::qWait(20);
+    QImage image(tree.width(), tree.height(), QImage::Format_ARGB32);
+    
+    tree.render(&image);
+    QVERIFY(testForColors(image, tree.palette().base().color()));
+    QVERIFY(!testForColors(image, QColor(0xab, 0x12, 0x51)));
+
+    tree.setEnabled(false);
+    tree.render(&image);
+    QVERIFY(testForColors(image, QColor(0xab, 0x12, 0x51)));
+
+    tree.setEnabled(true);
+    tree.render(&image);
+    QVERIFY(testForColors(image, tree.palette().base().color()));
+    QVERIFY(!testForColors(image, QColor(0xab, 0x12, 0x51)));
 }
 
 

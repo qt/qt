@@ -2916,6 +2916,10 @@ void QStyleSheetStyle::polish(QWidget *w)
         if (ew->autoFillBackground()) {
             ew->setAutoFillBackground(false);
             autoFillDisabledWidgets->insert(w);
+            if (ew != w) { //eg. viewport of a scrollarea
+                //(in order to draw the background anyway in case we don't.)
+                ew->setAttribute(Qt::WA_StyledBackground, true);
+            }
         }
         if (!rule.hasBackground() || rule.background()->isTransparent() || rule.hasBox()
             || (!rule.hasNativeBorder() && !rule.border()->isOpaque()))
@@ -4345,8 +4349,16 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         return;
 
     case PE_Widget:
-        if (!rule.hasBackground())
+        if (!rule.hasBackground()) {
+            QWidget *container = containerWidget(w);
+            if (autoFillDisabledWidgets->contains(container)
+                && (container == w || !renderRule(container, opt).hasBackground())) {
+                //we do not have a background, but we disabled the autofillbackground anyway. so fill the background now.
+                // (this may happen if we have rules like :focus)
+                p->fillRect(opt->rect, opt->palette.brush(w->backgroundRole()));
+            }
             break;
+        }
 
 #ifndef QT_NO_SCROLLAREA
         if (const QAbstractScrollArea *sa = qobject_cast<const QAbstractScrollArea *>(w)) {
