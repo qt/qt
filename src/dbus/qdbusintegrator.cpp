@@ -921,10 +921,9 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
       rootNode(QString(QLatin1Char('/')))
 {
     static const bool threads = qDBusInitThreads();
-    static const int debugging = qgetenv("QDBUS_DEBUG").toInt();
+    static const int debugging = ::isDebugging = qgetenv("QDBUS_DEBUG").toInt();
     Q_UNUSED(threads)
 
-    ::isDebugging = debugging;
 #ifdef QDBUS_THREAD_DEBUG
     if (debugging > 1)
         qdbusThreadDebug = qdbusDefaultThreadDebug;
