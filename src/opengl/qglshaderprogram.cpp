@@ -573,9 +573,6 @@ bool QGLShader::setSourceCode(const QString& source)
 */
 bool QGLShader::setSourceCodeFile(const QString& fileName)
 {
-    if (!d->shader)
-        return false;
-
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly)) {
         qWarning() << "QGLShader: Unable to open file" << fileName;
