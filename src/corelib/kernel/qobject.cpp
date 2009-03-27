@@ -2179,13 +2179,29 @@ void QObject::deleteLater()
   Signals and slots
  *****************************************************************************/
 
+// list taken from http://en.wikipedia.org/wiki/Thread-Specific_Storage
+#if defined(Q_OS_WIN)
+// Some people like to dynamically load Qt (LoadLibrary), so we can't use this
+#elif defined(Q_CC_GNU) && !defined(Q_WS_QWS)
+// GCC has warnings about this not being ported to all archs
+// So we only enable what we know to work. More archs can be added later, like Mac
+# if defined(Q_OS_LINUX) && (defined(QT_ARCH_I386) || defined(QT_ARCH_X86_64) || defined(QT_ARCH_IA64))
+#  define THRSPECIFIC   __thread __attribute__((tls_model("local-dynamic")))
+# endif
+#elif defined(Q_CC_SUN) || defined(Q_CC_INTEL) || defined(Q_CC_XLC)
+#  define THRSPECIFIC   __thread
+#endif
+
+#ifndef THRSPECIFIC
+# define THRSPECIFIC
+#endif
 
 const int flagged_locations_count = 2;
-static const char* flagged_locations[flagged_locations_count] = {0};
+static THRSPECIFIC const char* flagged_locations[flagged_locations_count] = {0};
 
 const char *qFlagLocation(const char *method)
 {
-    static int idx = 0;
+    static THRSPECIFIC int idx = 0;
     flagged_locations[idx] = method;
     idx = (idx+1) % flagged_locations_count;
     return method;
