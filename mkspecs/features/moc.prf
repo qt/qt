@@ -61,7 +61,7 @@ QMAKE_EXTRA_COMPILERS += moc_source
 INCREDIBUILD_XGE += moc_source
 
 #make sure we can include these files
-INCLUDEPATH += $$OUT_PWD/$$MOC_DIR
+INCLUDEPATH += $$MOC_DIR
 
 #auto depend on moc
 unix:!no_mocdepend {
