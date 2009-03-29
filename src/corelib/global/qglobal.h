@@ -1706,6 +1706,22 @@ static inline bool qFuzzyCompare(float p1, float p2)
     return (qAbs(p1 - p2) <= 0.00001f * qMin(qAbs(p1), qAbs(p2)));
 }
 
+/*!
+  \internal
+*/
+static inline bool qIsFuzzyNull(double d)
+{
+    return qAbs(d) <= 0.000000000001;
+}
+
+/*!
+  \internal
+*/
+static inline bool qIsFuzzyNull(float f)
+{
+    return qAbs(f) <= 0.00001f;
+}
+
 /*
    This function tests a double for a null value. It doesn't
    check whether the actual value is 0 or close to 0, but whether
