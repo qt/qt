@@ -5155,9 +5155,6 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
 
     Q_D(QPainter);
 
-    if (!d->engine || pm.isNull())
-        return;
-
 #ifndef QT_NO_DEBUG
     qt_painter_thread_test(d->device->devType(), "drawPixmap()");
 #endif
@@ -5167,11 +5164,17 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
         return;
     }
 
+    if (!d->engine)
+        return;
+
     qreal x = p.x();
     qreal y = p.y();
 
     int w = pm.width();
     int h = pm.height();
+
+    if (w <= 0)
+        return;
 
     // Emulate opaque background for bitmaps
     if (d->state->bgMode == Qt::OpaqueMode && pm.isQBitmap()) {
