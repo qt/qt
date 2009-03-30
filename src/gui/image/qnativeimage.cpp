@@ -100,7 +100,9 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool is
         bmi.blueMask = 0;
     }
 
-    hdc = CreateCompatibleDC(qt_win_display_dc());
+    HDC display_dc = GetDC(0);
+    hdc = CreateCompatibleDC(display_dc);
+    ReleaseDC(0, display_dc);
     Q_ASSERT(hdc);
 
     uchar *bits = 0;
