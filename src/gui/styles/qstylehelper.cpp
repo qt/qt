@@ -84,13 +84,13 @@ int QStyleHelper::calcBigLineSize(int radius)
     return bigLineSize;
 }
 
-static QPointF calcRadialPos(const QStyleOptionSlider *dial, float offset)
+static QPointF calcRadialPos(const QStyleOptionSlider *dial, qreal offset)
 {
     const int width = dial->rect.width();
     const int height = dial->rect.height();
     const int r = qMin(width, height) / 2;
     const int currentSliderPosition = dial->upsideDown ? dial->sliderPosition : (dial->maximum - dial->sliderPosition);
-    float a = 0;
+    qreal a = 0;
     if (dial->maximum == dial->minimum)
         a = Q_PI / 2;
     else if (dial->dialWrapping)
@@ -99,10 +99,10 @@ static QPointF calcRadialPos(const QStyleOptionSlider *dial, float offset)
     else
         a = (Q_PI * 8 - (currentSliderPosition - dial->minimum) * 10 * Q_PI
             / (dial->maximum - dial->minimum)) / 6;
-    float xc = width / 2.0;
-    float yc = height / 2.0;
-    float len = r - QStyleHelper::calcBigLineSize(r) - 3;
-    float back = offset * len;
+    qreal xc = width / 2.0;
+    qreal yc = height / 2.0;
+    qreal len = r - QStyleHelper::calcBigLineSize(r) - 3;
+    qreal back = offset * len;
     QPointF pos(QPointF(xc + back * qCos(a), yc - back * qSin(a)));
     return pos;
 }
@@ -268,7 +268,7 @@ void QStyleHelper::drawDial(const QStyleOptionSlider *option, QPainter *painter)
     QPointF dp = calcRadialPos(option, 0.70);
     buttonColor = buttonColor.lighter(104);
     buttonColor.setAlphaF(0.8);
-    const float ds = r/7.0;
+    const qreal ds = r/7.0;
     QRectF dialRect(dp.x() - ds, dp.y() - ds, 2*ds, 2*ds);
     QRadialGradient dialGradient(dialRect.center().x() + dialRect.width()/2,
                                  dialRect.center().y() + dialRect.width(),
