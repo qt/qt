@@ -4864,7 +4864,8 @@ QString QString::toUpper() const
     a pointer to a zero-terminated array of unicode characters of type
     ushort (as returned by QString::utf16()).
 
-    \note This function expects a UTF-8 string for %s.
+    \note This function expects a UTF-8 string for %s and Latin-1 for
+    the format string.
 
     The format string supports most of the conversion specifiers
     provided by printf() in the standard C++ library. It doesn't

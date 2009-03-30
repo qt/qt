@@ -161,13 +161,13 @@ IDirectFBSurface* QDirectFBScreen::createDFBSurface(const QImage &img, SurfaceCr
     if (surface) {
         char *mem;
         int bpl;
-        surface->Lock(dfbSurface, DSLF_WRITE, (void**)&mem, &bpl);
+        surface->Lock(surface, DSLF_WRITE, (void**)&mem, &bpl);
         const int h = img.height();
         for (int i = 0; i < h; ++i) {
             memcpy(mem, img.scanLine(i), bpl);
             mem += bpl;
         }
-        surface->Unlock(ret);
+        surface->Unlock(surface);
     }
 #endif
 #ifndef QT_NO_DIRECTFB_PALETTE
@@ -1033,7 +1033,7 @@ void QDirectFBScreen::compose(const QRegion &region)
 
             if (surface->key() == QLatin1String("directfb")) {
                 QDirectFBSurface *s = static_cast<QDirectFBSurface*>(surface);
-                blit(s->directFbSurface(), offset, r);
+                blit(s->directFBSurface(), offset, r);
             } else {
                 blit(surface->image(), offset, r);
             }
@@ -1082,7 +1082,7 @@ void QDirectFBScreen::compose(const QRegion &region)
 
         if (surface->key() == QLatin1String("directfb")) {
             QDirectFBSurface *s = static_cast<QDirectFBSurface*>(surface);
-            blit(s->directFbSurface(), offset, r);
+            blit(s->directFBSurface(), offset, r);
         } else {
             blit(surface->image(), offset, r);
         }
