@@ -168,10 +168,10 @@ QT_BEGIN_NAMESPACE
 
     \image qtransform-representation.png
 
-    A QTransform object contains a 3 x 3 matrix.  The \c dx and \c dy
-    elements specify horizontal and vertical translation. The \c m11
-    and \c m22 elements specify horizontal and vertical scaling. The
-    \c m21 and \c m12 elements specify horizontal and vertical \e shearing.
+    A QTransform object contains a 3 x 3 matrix.  The \c m31 (\c dx) and
+    \c m32 (\c dy) elements specify horizontal and vertical translation.
+    The \c m11 and \c m22 elements specify horizontal and vertical scaling.
+    The \c m21 and \c m12 elements specify horizontal and vertical \e shearing.
     And finally, the \c m13 and \c m23 elements specify horizontal and vertical
     projection, with \c m33 as an additional projection factor.
 
@@ -246,8 +246,10 @@ QTransform::QTransform()
 }
 
 /*!
-    Constructs a matrix with the elements, \a h11, \a h12, \a h13,
-    \a h21, \a h22, \a h23, \a h31, \a h32, \a h33.
+    \fn QTransform::QTransform(qreal m11, qreal m12, qreal m13, qreal m21, qreal m22, qreal m23, qreal m31, qreal m32, qreal m33)
+
+    Constructs a matrix with the elements, \a m11, \a m12, \a m13,
+    \a m21, \a m22, \a m23, \a m31, \a m32, \a m33.
 
     \sa setMatrix()
 */
@@ -263,8 +265,9 @@ QTransform::QTransform(qreal h11, qreal h12, qreal h13,
 }
 
 /*!
-    Constructs a matrix with the elements, \a h11, \a h12, \a h21, \a
-    h22, \a dx and \a dy.
+    \fn QTransform::QTransform(qreal m11, qreal m12, qreal m21, qreal m22, qreal dx, qreal dy)
+
+    Constructs a matrix with the elements, \a m11, \a m12, \a m21, \a m22, \a dx and \a dy.
 
     \sa setMatrix()
 */
