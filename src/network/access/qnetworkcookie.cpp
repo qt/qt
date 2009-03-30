@@ -636,8 +636,6 @@ static QDateTime parseDateString(const QByteArray &dateString)
             qDebug() << "Month:" << month;
 #endif
             at += 3;
-            if (at < dateString.length() && dateString[at] == '-')
-                ++at;
             continue;
         }
         // Zone
@@ -659,7 +657,10 @@ static QDateTime parseDateString(const QByteArray &dateString)
             && (at == 0
                 || isWhitespace(dateString[at - 1])
                 || dateString[at - 1] == ','
-                || (dateString[at - 1] == 't'))) {
+                || (at >= 3
+                    && (dateString[at - 3] == 'g')
+                    && (dateString[at - 2] == 'm')
+                    && (dateString[at - 1] == 't')))) {
 
             int end = 1;
             while (end < 5 && dateString.length() > at+end
