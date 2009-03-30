@@ -140,10 +140,12 @@ QFont QCommandLinkButtonPrivate::titleFont() const
     Q_Q(const QCommandLinkButton);
     QFont font = q->font();
     if (usingVistaStyle()) {
-        font.setPointSizeF(12.0);
+        if (!q->testAttribute(Qt::WA_SetFont))
+            font.setPointSizeF(12.0);
     } else {
         font.setBold(true);
-        font.setPointSizeF(9.0);
+        if (!q->testAttribute(Qt::WA_SetFont))
+            font.setPointSizeF(9.0);
     }
     return font;
 }
@@ -152,7 +154,8 @@ QFont QCommandLinkButtonPrivate::descriptionFont() const
 {
     Q_Q(const QCommandLinkButton);
     QFont font = q->font();
-    font.setPointSizeF(9.0);
+    if (!q->testAttribute(Qt::WA_SetFont))
+        font.setPointSizeF(9.0);
     return font;
 }
 
