@@ -4450,14 +4450,6 @@ void QWidgetPrivate::setMask_sys(const QRegion &region)
 #endif
 }
 
-extern "C" {
-    typedef struct CGSConnection *CGSConnectionRef;
-    typedef struct CGSWindow *CGSWindowRef;
-    extern OSStatus CGSSetWindowAlpha(CGSConnectionRef, CGSWindowRef, float);
-    extern CGSWindowRef GetNativeWindowFromWindowRef(WindowRef);
-    extern CGSConnectionRef _CGSDefaultConnection();
-}
-
 void QWidgetPrivate::setWindowOpacity_sys(qreal level)
 {
     Q_Q(QWidget);
@@ -4470,12 +4462,11 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal level)
     if (!q->testAttribute(Qt::WA_WState_Created))
         return;
 
-#if QT_MAC_USE_COCOA
     OSWindowRef oswindow = qt_mac_window_for(q);
+#if QT_MAC_USE_COCOA
     [oswindow setAlphaValue:level];
 #else
-    CGSSetWindowAlpha(_CGSDefaultConnection(),
-                      GetNativeWindowFromWindowRef(qt_mac_window_for(q)), level);
+    SetWindowAlpha(oswindow, level);
 #endif
 }
 
