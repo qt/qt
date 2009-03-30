@@ -6,8 +6,5 @@ incredibuild_xge {
     CONFIG = incredibuild_xge $$CONFIG
 }
 
-# It's in the default config. Get rid of it now if unused.
-!contains(QT, [Gg][Uu][Ii]):!CONFIG(force_uic):CONFIG -= uic
-
 QMAKE_INCDIR += $$QMAKE_INCDIR_POST
 QMAKE_LIBDIR += $$QMAKE_LIBDIR_POST

@@ -2692,6 +2692,18 @@ if [ "$QT_CROSS_COMPILE" = "yes" ]; then
     fi
 fi
 
+# check -arch arguments for validity.
+if [ "$PLATFORM_MAC" = "yes" ]; then
+    ALLOWED="x86 ppc x86_64 ppc64"
+    for i in $CFG_MAC_ARCHS 
+    do 
+        if echo "$ALLOWED" | grep -w -v "$i" > /dev/null 2>&1; then
+            echo "Unknown architecture: \"$i\". Supported architechtures: x86 ppc x86_64 ppc64";
+            exit 2;
+        fi
+    done
+fi
+
 # find the default framework value
 if [ "$PLATFORM_MAC" = "yes" ] && [ "$PLATFORM" != "macx-xlc" ]; then
     if [ "$CFG_FRAMEWORK" = "auto" ]; then

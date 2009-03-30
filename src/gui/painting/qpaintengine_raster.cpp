@@ -1529,7 +1529,7 @@ void QRasterPaintEngine::drawRects(const QRectF *rects, int rectCount)
             d->initializeRasterizer(&s->brushData);
             for (int i = 0; i < rectCount; ++i) {
                 const QRectF &rect = rects[i].normalized();
-                if (rects[i].isEmpty())
+                if (rect.isEmpty())
                     continue;
                 const QPointF a = s->matrix.map((rect.topLeft() + rect.bottomLeft()) * 0.5f);
                 const QPointF b = s->matrix.map((rect.topRight() + rect.bottomRight()) * 0.5f);

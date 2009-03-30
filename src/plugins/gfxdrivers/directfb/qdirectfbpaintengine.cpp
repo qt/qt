@@ -195,6 +195,7 @@ public:
     QBrush brush;
 
     bool antialiased;
+    bool forceRasterPrimitives;
 
     bool simplePen;
     bool simpleBrush;
@@ -265,7 +266,7 @@ private:
 };
 
 QDirectFBPaintEnginePrivate::QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p)
-    : surface(0), antialiased(false), simplePen(false),
+    : surface(0), antialiased(false), forceRasterPrimitives(false), simplePen(false),
       simpleBrush(false), matrixRotShear(false), matrixScale(false), fbWidth(-1), fbHeight(-1),
       opacity(255), drawFlags(0), blitFlags(0), duffFlags(0), dirtyFlags(false), dirtyClip(true),
       dfbHandledClip(false), dfbDevice(0), q(p)
@@ -345,6 +346,7 @@ void QDirectFBPaintEnginePrivate::begin(QPaintDevice *device)
         qFatal("QDirectFBPaintEngine used on an invalid device: 0x%x",
                device->devType());
     }
+    forceRasterPrimitives = dfbDevice->forceRasterPrimitives();
 
     surface->GetSize(surface, &fbWidth, &fbHeight);
 
@@ -945,7 +947,8 @@ void QDirectFBPaintEngine::drawRects(const QRect *rects, int rectCount)
 {
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
-    if (!d->dfbCanHandleClip() || d->matrixRotShear || !d->simpleBrush || !d->simplePen) {
+    if (!d->dfbCanHandleClip() || d->matrixRotShear || !d->simpleBrush
+        || !d->simplePen || d->forceRasterPrimitives) {
         d->lock();
         QRasterPaintEngine::drawRects(rects, rectCount);
         return;
@@ -969,7 +972,8 @@ void QDirectFBPaintEngine::drawRects(const QRectF *rects, int rectCount)
 {
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
-    if (!d->dfbCanHandleClip() || d->matrixRotShear || !d->simpleBrush || !d->simplePen) {
+    if (!d->dfbCanHandleClip() || d->matrixRotShear || !d->simpleBrush
+        || !d->simplePen || d->forceRasterPrimitives) {
         d->lock();
         QRasterPaintEngine::drawRects(rects, rectCount);
         return;
@@ -993,7 +997,7 @@ void QDirectFBPaintEngine::drawLines(const QLine *lines, int lineCount)
 {
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
-    if (!d->simplePen || !d->dfbCanHandleClip()) {
+    if (!d->simplePen || !d->dfbCanHandleClip() || d->forceRasterPrimitives) {
         d->lock();
         QRasterPaintEngine::drawLines(lines, lineCount);
         return;
@@ -1011,7 +1015,7 @@ void QDirectFBPaintEngine::drawLines(const QLineF *lines, int lineCount)
 {
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
-    if (!d->simplePen || !d->dfbCanHandleClip()) {
+    if (!d->simplePen || !d->dfbCanHandleClip() || d->forceRasterPrimitives) {
         d->lock();
         QRasterPaintEngine::drawLines(lines, lineCount);
         return;
@@ -1181,6 +1185,8 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
     if (d->dfbCanHandleClip(rect) && !d->matrixRotShear) {
         switch (brush.style()) {
         case Qt::SolidPattern: {
+            if (d->forceRasterPrimitives)
+                break;
             d->unlock();
             d->updateFlags();
             d->setDFBColor(brush.color());
@@ -1209,7 +1215,7 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QColor &color)
 {
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
-    if (!d->dfbCanHandleClip() || d->matrixRotShear) {
+    if (!d->dfbCanHandleClip() || d->matrixRotShear || d->forceRasterPrimitives) {
         d->lock();
         QRasterPaintEngine::fillRect(rect, color);
     } else {
@@ -1226,30 +1232,35 @@ void QDirectFBPaintEngine::drawColorSpans(const QSpan *spans, int count,
                                           uint color)
 {
     Q_D(QDirectFBPaintEngine);
-    color = INV_PREMUL(color);
+    if (d->forceRasterPrimitives) {
+        d->lock();
+        QRasterPaintEngine::drawColorSpans(spans, count, color);
+    } else {
+        color = INV_PREMUL(color);
 
-    QVarLengthArray<DFBRegion> lines(count);
-    int j = 0;
-    for (int i = 0; i < count; ++i) {
-        if (spans[i].coverage == 255) {
-            lines[j].x1 = spans[i].x;
-            lines[j].y1 = spans[i].y;
-            lines[j].x2 = spans[i].x + spans[i].len - 1;
-            lines[j].y2 = spans[i].y;
-            ++j;
-        } else {
-            DFBSpan span = { spans[i].x, spans[i].len };
-            uint c = BYTE_MUL(color, spans[i].coverage);
-            d->surface->SetColor(d->surface,
-                                 qRed(c), qGreen(c), qBlue(c), qAlpha(c));
-            d->surface->FillSpans(d->surface, spans[i].y, &span, 1);
+        QVarLengthArray<DFBRegion> lines(count);
+        int j = 0;
+        for (int i = 0; i < count; ++i) {
+            if (spans[i].coverage == 255) {
+                lines[j].x1 = spans[i].x;
+                lines[j].y1 = spans[i].y;
+                lines[j].x2 = spans[i].x + spans[i].len - 1;
+                lines[j].y2 = spans[i].y;
+                ++j;
+            } else {
+                DFBSpan span = { spans[i].x, spans[i].len };
+                uint c = BYTE_MUL(color, spans[i].coverage);
+                d->surface->SetColor(d->surface,
+                                     qRed(c), qGreen(c), qBlue(c), qAlpha(c));
+                d->surface->FillSpans(d->surface, spans[i].y, &span, 1);
+            }
         }
-    }
-    if (j > 0) {
-        d->surface->SetColor(d->surface,
-                             qRed(color), qGreen(color), qBlue(color),
-                             qAlpha(color));
-        d->surface->DrawLines(d->surface, lines.data(), j);
+        if (j > 0) {
+            d->surface->SetColor(d->surface,
+                                 qRed(color), qGreen(color), qBlue(color),
+                                 qAlpha(color));
+            d->surface->DrawLines(d->surface, lines.data(), j);
+        }
     }
 }
 

@@ -158,6 +158,7 @@ public:
     QRect override_rect;
     QPaintEngine *paintEngine;
     bool in_memory_only;
+    QList<QImage> image_list;
     QList<QPixmap> pixmap_list;
     QList<QBrush> brush_list;
     QList<QPen> pen_list;
