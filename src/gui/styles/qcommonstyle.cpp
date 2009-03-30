@@ -2268,7 +2268,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             drawPrimitive(PE_PanelItemViewItem, opt, p, widget);
 
             // draw the check mark
-            if (checkRect.isValid()) {
+            if (vopt->features & QStyleOptionViewItemV2::HasCheckIndicator) {
                 QStyleOptionViewItemV4 option(*vopt);
                 option.rect = checkRect;
                 option.state = option.state & ~QStyle::State_HasFocus;
