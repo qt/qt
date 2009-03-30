@@ -392,21 +392,15 @@ QWidget *qt_mac_find_window(OSWindowRef window)
 
 inline static void qt_mac_set_fullscreen_mode(bool b)
 {
-    extern bool qt_mac_app_fullscreen; //qapplication_mac.cpp
+    extern bool qt_mac_app_fullscreen; //qapplication_mac.mm
     if(qt_mac_app_fullscreen == b)
         return;
     qt_mac_app_fullscreen = b;
-#if QT_MAC_USE_COCOA
-    if(b)
-        SetSystemUIMode(kUIModeAllHidden, kUIOptionAutoShowMenuBar);
-    else
+    if (b) {
+        SetSystemUIMode(kUIModeAllSuppressed, 0);
+    } else {
         SetSystemUIMode(kUIModeNormal, 0);
-#else
-    if(b)
-        HideMenuBar();
-    else
-        ShowMenuBar();
-#endif
+    }
 }
 
 Q_GUI_EXPORT OSViewRef qt_mac_nativeview_for(const QWidget *w)
