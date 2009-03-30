@@ -107,6 +107,8 @@ static void cleanupCocoaApplicationDelegate()
 - (id)init
 {
     self = [super init];
+    if (self)
+        inLaunch = true;
     return self;
 }
 
@@ -198,12 +200,26 @@ static void cleanupCocoaApplicationDelegate()
     return reply;
 }
 
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
+{
+    Q_UNUSED(aNotification);
+    inLaunch = false;
+}
+
 - (void)application:(NSApplication *)sender openFiles:(NSArray *)filenames
 {
-    unsigned int ix;
-    for( ix = 0; ix < [filenames count]; ix++) {
-        NSString *fileName = [filenames objectAtIndex:ix];
-        qApp->postEvent(qApp, new QFileOpenEvent(QCFString::toQString((CFStringRef)fileName)));
+    for (NSString *fileName in filenames) {
+        QString qtFileName = qt_mac_NSStringToQString(fileName);
+        if (inLaunch) {
+            // We need to be careful because Cocoa will be nice enough to take
+            // command line arguments and send them to us as events. Given the history
+            // of Qt Applications, this will result in behavior people don't want, as
+            // they might be doing the opening themselves with the command line parsing.
+            if (qApp->arguments().contains(qtFileName))
+                continue;
+        }
+        QFileOpenEvent foe(qtFileName);
+        qt_sendSpontaneousEvent(qAppInstance(), &foe);
     }
 
     if (reflectionDelegate &&
