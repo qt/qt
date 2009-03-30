@@ -1255,7 +1255,7 @@ void QMetaType::destroy(int type, void *data)
     \relates QMetaType
     \threadsafe
 
-    Registers the type name \a typeName to the type \c{T}. Returns
+    Registers the type name \a typeName for the type \c{T}. Returns
     the internal ID used by QMetaType. Any class or struct that has a
     public default constructor, a public copy constructor and a public
     destructor can be registered.
