@@ -62,6 +62,7 @@
 #include <private/qpaintengine_x11_p.h>
 #include <private/qfontengine_x11_p.h>
 #include <private/qwidget_p.h>
+#include <private/qpainterpath_p.h>
 
 #include "qpen.h"
 #include "qcolor.h"
@@ -1479,14 +1480,10 @@ void QX11PaintEngine::drawEllipse(const QRect &rect)
         return;
     }
     d->setupAdaptedOrigin(rect.topLeft());
-    if (d->has_brush) {          // draw filled ellipse
-        if (!d->has_pen) {
-            XFillArc(d->dpy, d->hd, d->gc_brush, x, y, w-1, h-1, 0, 360*64);
+    if (d->has_brush) {             // draw filled ellipse
+        XFillArc(d->dpy, d->hd, d->gc_brush, x, y, w, h, 0, 360*64);
+        if (!d->has_pen)            // make smoother outline
             XDrawArc(d->dpy, d->hd, d->gc_brush, x, y, w-1, h-1, 0, 360*64);
-            return;
-        } else{
-            XFillArc(d->dpy, d->hd, d->gc_brush, x, y, w, h, 0, 360*64);
-        }
     }
     if (d->has_pen)                // draw outline
         XDrawArc(d->dpy, d->hd, d->gc, x, y, w, h, 0, 360*64);
@@ -1760,9 +1757,11 @@ void QX11PaintEngine::drawPath(const QPainterPath &path)
         QPainterPath stroke;
         qreal width = d->cpen.widthF();
         QPolygonF poly;
+        QRectF deviceRect(0, 0, d->pdev->width(), d->pdev->height());
         // necessary to get aliased alphablended primitives to be drawn correctly
         if (d->cpen.isCosmetic() || d->has_scaling_xform) {
             stroker.setWidth(width == 0 ? 1 : width * d->xform_scale);
+            stroker.d_ptr->stroker.setClipRect(deviceRect);
             stroke = stroker.createStroke(path * d->matrix);
             if (stroke.isEmpty())
                 return;
@@ -1770,6 +1769,7 @@ void QX11PaintEngine::drawPath(const QPainterPath &path)
             d->fillPath(stroke, QX11PaintEnginePrivate::PenGC, false);
         } else {
             stroker.setWidth(width);
+            stroker.d_ptr->stroker.setClipRect(d->matrix.inverted().mapRect(deviceRect));
             stroke = stroker.createStroke(path);
             if (stroke.isEmpty())
                 return;

@@ -1,3 +1,46 @@
+2009-03-27  Zack Rusin <zack@kde.org>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=24280
+
+        Fix propagation of fill rules when rendering paths in the Qt build.
+
+        * platform/graphics/qt/GraphicsContextQt.cpp:
+        (WebCore::toQtFillRule):
+        (WebCore::GraphicsContext::fillPath):
+        (WebCore::GraphicsContext::strokePath):
+
+2009-03-27  Zack Rusin <zack@kde.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        https://bugs.webkit.org/show_bug.cgi?id=24275
+
+        Fix text field theming in the Qt build with the KDE 4 Oxygen
+        style by adjusting the size vertically and horizontally to
+        set padding on the element equal to the width of the style painted border.
+
+        * platform/qt/RenderThemeQt.cpp:
+        (WebCore::RenderThemeQt::RenderThemeQt):
+        (WebCore::RenderThemeQt::computeSizeBasedOnStyle):
+        (WebCore::RenderThemeQt::adjustTextFieldStyle):
+        (WebCore::RenderThemeQt::paintTextField):
+        * platform/qt/RenderThemeQt.h:
+
+2009-02-06  Dirk Schulze  <krit@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        Fix bug in clearRect(). Use fillRect() instead of eraseRect() to get
+        the context transparent.
+
+        [QT] clearRect fill's a given rect with white
+        https://bugs.webkit.org/show_bug.cgi?id=23728
+
+        * platform/graphics/qt/GraphicsContextQt.cpp:
+        (WebCore::GraphicsContext::clearRect):
+
 2009-03-19  Simon Hausmann  <simon.hausmann@nokia.com>
 
         Reviewed by Tor Arne Vestbø.

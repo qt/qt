@@ -88,18 +88,38 @@ public:
 #endif
 
     // Track surface creation/release so we can release all on exit
-    IDirectFBSurface* createDFBSurface(const DFBSurfaceDescription* desc, bool track = true);
+    enum SurfaceCreationOption {
+        DontTrackSurface = 0,
+        TrackSurface = 1
+    };
+    Q_DECLARE_FLAGS(SurfaceCreationOptions, SurfaceCreationOption);
+    IDirectFBSurface *createDFBSurface(const DFBSurfaceDescription *desc,
+                                       SurfaceCreationOptions options);
+    IDirectFBSurface *createDFBSurface(const QImage &image,
+                                       SurfaceCreationOptions options);
+    IDirectFBSurface *createDFBSurface(const QSize &size,
+                                       QImage::Format format,
+                                       SurfaceCreationOptions options);
+    IDirectFBSurface *copyDFBSurface(IDirectFBSurface *src,
+                                     QImage::Format format,
+                                     SurfaceCreationOptions options);
+    IDirectFBSurface *copyToDFBSurface(const QImage &image,
+                                     QImage::Format format,
+                                     SurfaceCreationOptions options);
     void releaseDFBSurface(IDirectFBSurface* surface);
+
     bool preferVideoOnly() const;
 
     static int depth(DFBSurfacePixelFormat format);
 
-    static DFBSurfacePixelFormat getSurfacePixelFormat(const QImage &image);
+    static DFBSurfacePixelFormat getSurfacePixelFormat(QImage::Format format);
     static DFBSurfaceDescription getSurfaceDescription(const QImage &image);
     static DFBSurfaceDescription getSurfaceDescription(const uint *buffer,
                                                        int length);
-    static QImage::Format getImageFormat(DFBSurfacePixelFormat  format);
+    static QImage::Format getImageFormat(IDirectFBSurface *surface);
+    static bool initSurfaceDescriptionPixelFormat(DFBSurfaceDescription *description, QImage::Format format);
     static inline bool isPremultiplied(QImage::Format format);
+    QImage::Format alphaPixmapFormat() const;
 
 #ifndef QT_NO_DIRECTFB_PALETTE
     static void setSurfaceColorTable(IDirectFBSurface *surface,
@@ -113,6 +133,8 @@ private:
 
     QDirectFBScreenPrivate *d_ptr;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDirectFBScreen::SurfaceCreationOptions);
 
 inline bool QDirectFBScreen::isPremultiplied(QImage::Format format)
 {

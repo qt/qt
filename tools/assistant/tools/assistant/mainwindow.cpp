@@ -186,9 +186,11 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
             m_helpEngine->setCustomValue(QLatin1String("useAppFont"), false);
             m_helpEngine->setCustomValue(QLatin1String("useBrowserFont"), false);
             m_helpEngine->setCustomValue(QLatin1String("appFont"), qApp->font());
-            m_helpEngine->setCustomValue(QLatin1String("appWritingSystem"), QFontDatabase::Latin);
+            m_helpEngine->setCustomValue(QLatin1String("appWritingSystem"),
+                QFontDatabase::Latin);
             m_helpEngine->setCustomValue(QLatin1String("browserFont"), qApp->font());
-            m_helpEngine->setCustomValue(QLatin1String("browserWritingSystem"), QFontDatabase::Latin);
+            m_helpEngine->setCustomValue(QLatin1String("browserWritingSystem"),
+                QFontDatabase::Latin);
         } else {
             updateApplicationFont();
         }
@@ -377,118 +379,107 @@ void MainWindow::insertLastPages()
 
 void MainWindow::setupActions()
 {
-    QString system = QLatin1String("win");
+    QString resourcePath = QLatin1String(":/trolltech/assistant/images/");
 #ifdef Q_OS_MAC
-    system = QLatin1String("mac");
     setUnifiedTitleAndToolBarOnMac(true);
+    resourcePath.append(QLatin1String("mac"));
+#else
+    resourcePath.append(QLatin1String("win"));
 #endif
 
     QMenu *menu = menuBar()->addMenu(tr("&File"));
 
-    m_pageSetupAction = menu->addAction(tr("Page Set&up..."), m_centralWidget, SLOT(pageSetup()));
-    m_printPreviewAction = menu->addAction(tr("Print Preview..."), m_centralWidget, SLOT(printPreview()));
+    m_pageSetupAction = menu->addAction(tr("Page Set&up..."), m_centralWidget,
+        SLOT(pageSetup()));
+    m_printPreviewAction = menu->addAction(tr("Print Preview..."), m_centralWidget,
+        SLOT(printPreview()));
+
     m_printAction = menu->addAction(tr("&Print..."), m_centralWidget, SLOT(print()));
-    m_printAction->setIcon(QIcon(
-        QString::fromUtf8(":/trolltech/assistant/images/%1/print.png").arg(system)));
-    m_printAction->setShortcut(tr("CTRL+P"));
+    m_printAction->setIcon(QIcon(resourcePath + QLatin1String("/print.png")));
+    m_printAction->setShortcut(QKeySequence::Print);
 
     menu->addSeparator();
 
     m_newTabAction = menu->addAction(tr("New &Tab"), m_centralWidget, SLOT(newTab()));
-    m_newTabAction->setShortcut(tr("CTRL+T"));
-    m_closeTabAction = menu->addAction(tr("&Close Tab"), m_centralWidget, SLOT(closeTab()));
-    m_closeTabAction->setShortcut(tr("CTRL+W"));
+    m_newTabAction->setShortcut(QKeySequence::AddTab);
+
+    m_closeTabAction = menu->addAction(tr("&Close Tab"), m_centralWidget,
+        SLOT(closeTab()));
+    m_closeTabAction->setShortcuts(QKeySequence::Close);
 
     QAction *tmp = menu->addAction(tr("&Quit"), this, SLOT(close()));
     tmp->setShortcut(tr("CTRL+Q"));
     tmp->setMenuRole(QAction::QuitRole);
 
     menu = menuBar()->addMenu(tr("&Edit"));
-    m_copyAction = menu->addAction(tr("&Copy selected Text"),
-        m_centralWidget, SLOT(copySelection()));
-    m_copyAction->setIcon(QIcon(
-        QString::fromUtf8(":/trolltech/assistant/images/%1/editcopy.png").arg(system)));
-    m_copyAction->setShortcut(tr("Ctrl+C"));
+    m_copyAction = menu->addAction(tr("&Copy selected Text"), m_centralWidget,
+        SLOT(copySelection()));
+    m_copyAction->setIcon(QIcon(resourcePath + QLatin1String("/editcopy.png")));
+    m_copyAction->setShortcuts(QKeySequence::Copy);
     m_copyAction->setEnabled(false);
 
-    m_findAction = menu->addAction(tr("&Find in Text..."),
-        m_centralWidget, SLOT(showTextSearch()));
-    m_findAction->setIcon(QIcon(
-        QString::fromUtf8(":/trolltech/assistant/images/%1/find.png").arg(system)));
-    m_findAction->setShortcut(tr("Ctrl+F"));
-    m_findAction->setShortcut(QKeySequence::Find);
+    m_findAction = menu->addAction(tr("&Find in Text..."), m_centralWidget,
+        SLOT(showTextSearch()));
+    m_findAction->setIcon(QIcon(resourcePath + QLatin1String("/find.png")));
+    m_findAction->setShortcuts(QKeySequence::Find);
 
-    QAction *findNextAction = menu->addAction(tr("Find &Next"),
-        m_centralWidget, SLOT(findNext()));
-    findNextAction->setShortcuts(QList<QKeySequence>() << QKeySequence(tr("F3"))
-        << QKeySequence(tr("CTRL+G")));
+    QAction *findNextAction = menu->addAction(tr("Find &Next"), m_centralWidget,
+        SLOT(findNext()));
+    findNextAction->setShortcuts(QKeySequence::FindNext);
 
     QAction *findPreviousAction = menu->addAction(tr("Find &Previous"),
         m_centralWidget, SLOT(findPrevious()));
-    findPreviousAction->setShortcuts(QList<QKeySequence>() <<
-        QKeySequence(tr("Shift+F3")) << QKeySequence(tr("CTRL+SHIFT+G")));
+    findPreviousAction->setShortcuts(QKeySequence::FindPrevious);
 
     menu->addSeparator();
     tmp = menu->addAction(tr("Preferences..."), this, SLOT(showPreferences()));
     tmp->setMenuRole(QAction::PreferencesRole);
 
     m_viewMenu = menuBar()->addMenu(tr("&View"));
-    m_zoomInAction = m_viewMenu->addAction(tr("Zoom &in"),
-        m_centralWidget, SLOT(zoomIn()));
-    m_zoomInAction->setIcon(QIcon(
-        QString::fromUtf8(":/trolltech/assistant/images/%1/zoomin.png").arg(system)));
-    m_zoomInAction->setShortcut(tr("Ctrl++"));
+    m_zoomInAction = m_viewMenu->addAction(tr("Zoom &in"), m_centralWidget,
+        SLOT(zoomIn()));
+    m_zoomInAction->setIcon(QIcon(resourcePath + QLatin1String("/zoomin.png")));
+    m_zoomInAction->setShortcut(QKeySequence::ZoomIn);
 
-    m_zoomOutAction = m_viewMenu->addAction(tr("Zoom &out"),
-        m_centralWidget, SLOT(zoomOut()));
-    m_zoomOutAction->setIcon(QIcon(
-        QString::fromUtf8(":/trolltech/assistant/images/%1/zoomout.png").arg(system)));
-    m_zoomOutAction->setShortcut(tr("Ctrl+-"));
+    m_zoomOutAction = m_viewMenu->addAction(tr("Zoom &out"), m_centralWidget,
+        SLOT(zoomOut()));
+    m_zoomOutAction->setIcon(QIcon(resourcePath + QLatin1String("/zoomout.png")));
+    m_zoomOutAction->setShortcut(QKeySequence::ZoomOut);
 
-    m_resetZoomAction = m_viewMenu->addAction(tr("Normal &Size"),
-        m_centralWidget, SLOT(resetZoom()));
-    m_resetZoomAction->setIcon(QIcon(
-        QString::fromUtf8(":/trolltech/assistant/images/%1/resetzoom.png").arg(system)));
+    m_resetZoomAction = m_viewMenu->addAction(tr("Normal &Size"), m_centralWidget,
+        SLOT(resetZoom()));
+    m_resetZoomAction->setIcon(QIcon(resourcePath + QLatin1String("/resetzoom.png")));
     m_resetZoomAction->setShortcut(tr("Ctrl+0"));
 
     m_viewMenu->addSeparator();
 
-    m_viewMenu->addAction(tr("Contents"), this,
-        SLOT(showContents()), QKeySequence(tr("ALT+C")));
-    m_viewMenu->addAction(tr("Index"), this,
-        SLOT(showIndex()), QKeySequence(tr("ALT+I")));
-    m_viewMenu->addAction(tr("Bookmarks"), this,
-        SLOT(showBookmarks()), QKeySequence(tr("ALT+O")));
-    m_viewMenu->addAction(tr("Search"), this,
-        SLOT(showSearch()), QKeySequence(tr("ALT+S")));
+    m_viewMenu->addAction(tr("Contents"), this, SLOT(showContents()),
+        QKeySequence(tr("ALT+C")));
+    m_viewMenu->addAction(tr("Index"), this, SLOT(showIndex()),
+        QKeySequence(tr("ALT+I")));
+    m_viewMenu->addAction(tr("Bookmarks"), this, SLOT(showBookmarks()),
+        QKeySequence(tr("ALT+O")));
+    m_viewMenu->addAction(tr("Search"), this, SLOT(showSearch()),
+        QKeySequence(tr("ALT+S")));
 
     menu = menuBar()->addMenu(tr("&Go"));
-    m_homeAction = menu->addAction(tr("&Home"),
-        m_centralWidget, SLOT(home()));
+    m_homeAction = menu->addAction(tr("&Home"), m_centralWidget, SLOT(home()));
     m_homeAction->setShortcut(tr("Ctrl+Home"));
-    m_homeAction->setIcon(QIcon(
-        QString::fromUtf8(":/trolltech/assistant/images/%1/home.png").arg(system)));
+    m_homeAction->setIcon(QIcon(resourcePath + QLatin1String("/home.png")));
 
-    m_backAction = menu->addAction(tr("&Back"),
-        m_centralWidget, SLOT(backward()));
+    m_backAction = menu->addAction(tr("&Back"), m_centralWidget, SLOT(backward()));
     m_backAction->setEnabled(false);
-    m_backAction->setShortcuts(QList<QKeySequence>()
-        << QKeySequence(Qt::CTRL|Qt::Key_Left) << QKeySequence::Back);
-    m_backAction->setIcon(QIcon(
-        QString::fromUtf8(":/trolltech/assistant/images/%1/previous.png").arg(system)));
+    m_backAction->setShortcuts(QKeySequence::Back);
+    m_backAction->setIcon(QIcon(resourcePath + QLatin1String("/previous.png")));
 
-    m_nextAction = menu->addAction(tr("&Forward"),
-        m_centralWidget, SLOT(forward()));
+    m_nextAction = menu->addAction(tr("&Forward"), m_centralWidget, SLOT(forward()));
     m_nextAction->setEnabled(false);
-    m_nextAction->setShortcuts(QList<QKeySequence>()
-        << QKeySequence(Qt::CTRL|Qt::Key_Right) << QKeySequence::Forward);
-    m_nextAction->setIcon(QIcon(
-        QString::fromUtf8(":/trolltech/assistant/images/%1/next.png").arg(system)));
+    m_nextAction->setShortcuts(QKeySequence::Forward);
+    m_nextAction->setIcon(QIcon(resourcePath + QLatin1String("/next.png")));
 
-    m_syncAction = menu->addAction(tr("Sync with Table of Contents"),
-        this, SLOT(syncContents()));
-    m_syncAction->setIcon(QIcon(
-        QString::fromUtf8(":/trolltech/assistant/images/%1/synctoc.png").arg(system)));
+    m_syncAction = menu->addAction(tr("Sync with Table of Contents"), this,
+        SLOT(syncContents()));
+    m_syncAction->setIcon(QIcon(resourcePath + QLatin1String("/synctoc.png")));
 
     menu->addSeparator();
 
@@ -496,8 +487,7 @@ void MainWindow::setupActions()
     tmp->setShortcuts(QList<QKeySequence>() << QKeySequence(tr("Ctrl+Alt+Right"))
         << QKeySequence(Qt::CTRL + Qt::Key_PageDown));
 
-    tmp = menu->addAction(tr("Previous Page"),
-        m_centralWidget, SLOT(previousPage()));
+    tmp = menu->addAction(tr("Previous Page"), m_centralWidget, SLOT(previousPage()));
     tmp->setShortcuts(QList<QKeySequence>() << QKeySequence(tr("Ctrl+Alt+Left"))
         << QKeySequence(Qt::CTRL + Qt::Key_PageUp));
 
@@ -525,53 +515,52 @@ void MainWindow::setupActions()
     navigationBar->addAction(m_resetZoomAction);
 
     QList<QAction*> actionList;
-    actionList << m_backAction << m_nextAction << m_homeAction;
-    actionList << sep << m_zoomInAction << m_zoomOutAction;
-    actionList << sep2 << m_copyAction << m_printAction << m_findAction;
+    actionList << m_backAction << m_nextAction << m_homeAction << sep
+        << m_zoomInAction << m_zoomOutAction << sep2 << m_copyAction
+        << m_printAction << m_findAction;
     m_centralWidget->setGlobalActions(actionList);
 
 #if defined(Q_WS_MAC)
     QMenu *windowMenu = new QMenu(tr("&Window"), this);
     menuBar()->insertMenu(menu->menuAction(), windowMenu);
-    windowMenu->addAction(tr("Minimize"), this,
-        SLOT(showMinimized()), QKeySequence(tr("Ctrl+M")));
-    windowMenu->addAction(tr("Zoom"), this,
-        SLOT(showMaximized()));
+    windowMenu->addAction(tr("Zoom"), this, SLOT(showMaximized()));
+    windowMenu->addAction(tr("Minimize"), this, SLOT(showMinimized()),
+        QKeySequence(tr("Ctrl+M")));
 #endif
 
     // content viewer connections
-    connect(m_centralWidget, SIGNAL(copyAvailable(bool)),
-        this, SLOT(copyAvailable(bool)));
-    connect(m_centralWidget, SIGNAL(currentViewerChanged()),
-        this, SLOT(updateNavigationItems()));
-    connect(m_centralWidget, SIGNAL(forwardAvailable(bool)),
-        this, SLOT(updateNavigationItems()));
-    connect(m_centralWidget, SIGNAL(backwardAvailable(bool)),
-        this, SLOT(updateNavigationItems()));
-    connect(m_centralWidget, SIGNAL(highlighted(const QString&)),
-        statusBar(), SLOT(showMessage(const QString&)));
-    connect(m_centralWidget, SIGNAL(addNewBookmark(const QString&,
-        const QString&)), this, SLOT(addNewBookmark(const QString&, const QString&)));
+    connect(m_centralWidget, SIGNAL(copyAvailable(bool)), this,
+        SLOT(copyAvailable(bool)));
+    connect(m_centralWidget, SIGNAL(currentViewerChanged()), this,
+        SLOT(updateNavigationItems()));
+    connect(m_centralWidget, SIGNAL(forwardAvailable(bool)), this,
+        SLOT(updateNavigationItems()));
+    connect(m_centralWidget, SIGNAL(backwardAvailable(bool)), this,
+        SLOT(updateNavigationItems()));
+    connect(m_centralWidget, SIGNAL(highlighted(QString)), statusBar(),
+        SLOT(showMessage(QString)));
+    connect(m_centralWidget, SIGNAL(addNewBookmark(QString, QString)), this,
+        SLOT(addNewBookmark(QString, QString)));
 
     // bookmarks
-    connect(m_bookmarkWidget, SIGNAL(requestShowLink(const QUrl&)),
-        m_centralWidget, SLOT(setSource(const QUrl&)));
-    connect(m_bookmarkWidget, SIGNAL(escapePressed()),
-        this, SLOT(activateCurrentCentralWidgetTab()));
+    connect(m_bookmarkWidget, SIGNAL(requestShowLink(QUrl)), m_centralWidget,
+        SLOT(setSource(QUrl)));
+    connect(m_bookmarkWidget, SIGNAL(escapePressed()), this,
+        SLOT(activateCurrentCentralWidgetTab()));
 
     // index window
-    connect(m_indexWindow, SIGNAL(linkActivated(const QUrl&)),
-        m_centralWidget, SLOT(setSource(const QUrl&)));
-    connect(m_indexWindow, SIGNAL(linksActivated(const QMap<QString, QUrl>&, const QString&)),
-            this, SLOT(showTopicChooser(const QMap<QString, QUrl>&, const QString&)));
-    connect(m_indexWindow, SIGNAL(escapePressed()),
-        this, SLOT(activateCurrentCentralWidgetTab()));
+    connect(m_indexWindow, SIGNAL(linkActivated(QUrl)), m_centralWidget,
+        SLOT(setSource(QUrl)));
+    connect(m_indexWindow, SIGNAL(linksActivated(QMap<QString, QUrl>, QString)),
+        this, SLOT(showTopicChooser(QMap<QString, QUrl>, QString)));
+    connect(m_indexWindow, SIGNAL(escapePressed()), this,
+        SLOT(activateCurrentCentralWidgetTab()));
 
     // content window
-    connect(m_contentWindow, SIGNAL(linkActivated(const QUrl&)),
-        m_centralWidget, SLOT(setSource(const QUrl&)));
-    connect(m_contentWindow, SIGNAL(escapePressed()),
-        this, SLOT(activateCurrentCentralWidgetTab()));
+    connect(m_contentWindow, SIGNAL(linkActivated(QUrl)), m_centralWidget,
+        SLOT(setSource(QUrl)));
+    connect(m_contentWindow, SIGNAL(escapePressed()), this,
+        SLOT(activateCurrentCentralWidgetTab()));
 
 #if defined(QT_NO_PRINTER)
         m_pageSetupAction->setVisible(false);
@@ -601,17 +590,19 @@ void MainWindow::setupFilterToolbar()
 
     QToolBar *filterToolBar = addToolBar(tr("Filter Toolbar"));
     filterToolBar->setObjectName(QLatin1String("FilterToolBar"));
-    filterToolBar->addWidget(new QLabel(tr("Filtered by:").append(QLatin1String(" ")), this));
+    filterToolBar->addWidget(new QLabel(tr("Filtered by:").append(QLatin1Char(' ')),
+        this));
     filterToolBar->addWidget(m_filterCombo);
 
-    if (m_helpEngine->customValue(QLatin1String("HideFilterFunctionality"), true).toBool())
+    const QLatin1String hideFilter("HideFilterFunctionality");
+    if (m_helpEngine->customValue(hideFilter, true).toBool())
         filterToolBar->hide();
     toolBarMenu()->addAction(filterToolBar->toggleViewAction());
 
-    connect(m_helpEngine, SIGNAL(setupFinished()),
-        this, SLOT(setupFilterCombo()));
-    connect(m_filterCombo, SIGNAL(activated(const QString&)),
-        this, SLOT(filterDocumentation(const QString&)));
+    connect(m_helpEngine, SIGNAL(setupFinished()), this,
+        SLOT(setupFilterCombo()));
+    connect(m_filterCombo, SIGNAL(activated(const QString&)), this,
+        SLOT(filterDocumentation(const QString&)));
 
     setupFilterCombo();
 }
@@ -626,7 +617,8 @@ void MainWindow::setupAddressToolbar()
     addressToolBar->setObjectName(QLatin1String("AddressToolBar"));
     insertToolBarBreak(addressToolBar);
 
-    addressToolBar->addWidget(new QLabel(tr("Address:").append(QLatin1String(" ")), this));
+    addressToolBar->addWidget(new QLabel(tr("Address:").append(QLatin1String(" ")),
+        this));
     addressToolBar->addWidget(m_addressLineEdit);
 
     if (m_helpEngine->customValue(QLatin1String("HideAddressBar"), true).toBool())
@@ -684,7 +676,8 @@ void MainWindow::showNewAddress(const QUrl &url)
 
 void MainWindow::addBookmark()
 {
-    addNewBookmark(m_centralWidget->currentTitle(), m_centralWidget->currentSource().toString());
+    addNewBookmark(m_centralWidget->currentTitle(),
+        m_centralWidget->currentSource().toString());
 }
 
 void MainWindow::gotoAddress()
@@ -784,7 +777,8 @@ void MainWindow::showAboutDialog()
     if (!contents.isEmpty()) {
         iconArray = m_helpEngine->customValue(QLatin1String("AboutIcon"),
             QByteArray()).toByteArray();
-        QByteArray resources = m_helpEngine->customValue(QLatin1String("AboutImages"),
+        QByteArray resources =
+            m_helpEngine->customValue(QLatin1String("AboutImages"),
             QByteArray()).toByteArray();
         QPixmap pix;
         pix.loadFromData(iconArray);
@@ -795,13 +789,16 @@ void MainWindow::showAboutDialog()
     } else {
 #if QT_EDITION == QT_EDITION_OPENSOURCE
         QString edition = tr("Open Source Edition");
-        QString info = tr("This version of Qt Assistant is part of the Qt Open Source Edition, for use "
+        QString info = tr("This version of Qt Assistant is part of the Qt Open "
+            "Source Edition, for use "
             "in the development of Open Source applications. "
             "Qt is a comprehensive C++ framework for cross-platform application "
             "development.");
-        QString moreInfo = tr("You need a commercial Qt license for development of proprietary (closed "
-            "source) applications. Please see <a href=\"http://qtsoftware.com/company/about/businessmodel"
-            "\">http://qtsoftware.com/company/about/businessmodel</a> for an overview of Qt licensing.");
+        QString moreInfo = tr("You need a commercial Qt license for development "
+            "of proprietary (closed source) applications. Please see "
+            "<a href=\"http://qtsoftware.com/company/about/businessmodel"
+            "\">http://qtsoftware.com/company/about/businessmodel</a> for an "
+            "overview of Qt licensing.");
 #else
         QString edition;
         QString info;
@@ -816,13 +813,14 @@ void MainWindow::showAboutDialog()
             "<p>Version %2 %3</p></center>"
             "<p>%4</p>"
             "<p>%5</p>"
-            "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>"
-            "<p>The program is provided AS IS with NO WARRANTY OF ANY KIND,"
+            "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)"
+            ".</p><p>The program is provided AS IS with NO WARRANTY OF ANY KIND,"
             " INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A"
             " PARTICULAR PURPOSE.<p/>")
             .arg(tr("Qt Assistant")).arg(QLatin1String(QT_VERSION_STR))
             .arg(edition).arg(info).arg(moreInfo), resources);
-        aboutDia.setPixmap(QString::fromLatin1(":/trolltech/assistant/images/assistant-128.png"));
+        QLatin1String path(":/trolltech/assistant/images/assistant-128.png");
+        aboutDia.setPixmap(QString(path));
     }
     if (aboutDia.windowTitle().isEmpty())
         aboutDia.setWindowTitle(tr("About %1").arg(windowTitle()));
@@ -974,20 +972,19 @@ QWidget* MainWindow::setupBookmarkWidget()
 
 QString MainWindow::collectionFileDirectory(bool createDir, const QString &cacheDir)
 {
-    QString collectionPath = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
+    QString collectionPath =
+        QDesktopServices::storageLocation(QDesktopServices::DataLocation);
     if (collectionPath.isEmpty()) {
         if (cacheDir.isEmpty())
             collectionPath = QDir::homePath() + QDir::separator()
                 + QLatin1String(".assistant");
         else
-            collectionPath = QDir::homePath() + QLatin1String("/.")
-                + cacheDir;
+            collectionPath = QDir::homePath() + QLatin1String("/.") + cacheDir;
     } else {
         if (cacheDir.isEmpty())
             collectionPath = collectionPath + QLatin1String("/Trolltech/Assistant");
         else
-            collectionPath = collectionPath + QDir::separator()
-                + cacheDir;
+            collectionPath = collectionPath + QDir::separator() + cacheDir;
     }
     collectionPath = QDir::cleanPath(collectionPath);
     if (createDir) {
@@ -1001,8 +998,8 @@ QString MainWindow::collectionFileDirectory(bool createDir, const QString &cache
 QString MainWindow::defaultHelpCollectionFileName()
 {
     return collectionFileDirectory() + QDir::separator() +
-            QString(QLatin1String("qthelpcollection_%1.qhc")).
-            arg(QLatin1String(QT_VERSION_STR));
+        QString(QLatin1String("qthelpcollection_%1.qhc")).
+        arg(QLatin1String(QT_VERSION_STR));
 }
 
 QT_END_NAMESPACE

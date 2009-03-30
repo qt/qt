@@ -137,6 +137,7 @@
     <example filename="fontsampler" name="Font Sampler" />
     <example filename="imagecomposition" name="Image Composition" />
     <example filename="painterpaths" name="Painter Paths" />
+    <example filename="svggenerator" name="SVG Generator" />
     <example filename="svgviewer" name="SVG Viewer" />
     <example filename="transformations" name="Transformations" />
   </category>

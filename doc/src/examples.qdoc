@@ -234,6 +234,7 @@
     \o \l{painting/fontsampler}{Font Sampler}
     \o \l{painting/imagecomposition}{Image Composition}\raisedaster
     \o \l{painting/painterpaths}{Painter Paths}\raisedaster
+    \o \l{painting/svggenerator}{SVG Generator}\raisedaster
     \o \l{painting/svgviewer}{SVG Viewer}
     \o \l{painting/transformations}{Transformations}\raisedaster
     \endlist
@@ -309,6 +310,7 @@
     \section1 Threads
 
     \list
+    \o \l{threads/queuedcustomtype}{Queued Custom Type}\raisedaster
     \o \l{threads/mandelbrot}{Mandelbrot}\raisedaster
     \o \l{threads/semaphores}{Semaphores}\raisedaster
     \o \l{threads/waitconditions}{Wait Conditions}\raisedaster
@@ -320,6 +322,8 @@
     \o \l{tools/codecs}{Codecs}
     \o \l{tools/completer}{Completer}\raisedaster
     \o \l{tools/customcompleter}{Custom Completer}\raisedaster
+    \o \l{tools/customtype}{Custom Type}\raisedaster
+    \o \l{tools/customtypesending}{Custom Type Sending}\raisedaster
     \o \l{tools/echoplugin}{Echo Plugin}\raisedaster
     \o \l{tools/i18n}{I18N}
     \o \l{tools/plugandpaint}{Plug & Paint}\raisedaster

@@ -188,7 +188,7 @@ private:
 
 static const QVariant &pxObsolete()
 {
-    static const QVariant v = 
+    static const QVariant v =
         qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_obsolete.png")));
     return v;
 }

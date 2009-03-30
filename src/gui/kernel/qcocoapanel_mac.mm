@@ -43,9 +43,13 @@
 #ifdef QT_MAC_USE_COCOA
 #import <private/qt_cocoa_helpers_mac_p.h>
 #import <private/qcocoawindow_mac_p.h>
+#import <private/qcocoawindowdelegate_mac_p.h>
+#import <private/qcocoaview_mac_p.h>
 #import <private/qcocoawindowcustomthemeframe_mac_p.h>
 
 #include <QtGui/QWidget>
+
+extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.mm
 
 QT_USE_NAMESPACE
 
@@ -60,14 +64,110 @@ QT_USE_NAMESPACE
     return !(isPopup || isToolTip);
 }
 
+/***********************************************************************
+  BEGIN Copy and Paste between QCocoaWindow and QCocoaPanel
+  This is a bit unfortunate, but thanks to the dynamic dispatch we
+  have to duplicate this code or resort to really silly forwarding methods
+**************************************************************************/
+
+/*
+    The methods keyDown, keyUp, and flagsChanged... These really shouldn't ever
+    get hit. We automatically say we can be first responder if we are a window.
+    So, the handling should get handled by the view. This is here more as a
+    last resort (i.e., this is code that can potentially be removed).
+ */
+
+- (void)keyDown:(NSEvent *)theEvent
+{
+    bool keyOK = qt_dispatchKeyEvent(theEvent, [self QT_MANGLE_NAMESPACE(qt_qwidget)]);
+    if (!keyOK)
+        [super keyDown:theEvent];
+}
+
+- (void)keyUp:(NSEvent *)theEvent
+{
+    bool keyOK = qt_dispatchKeyEvent(theEvent, [self QT_MANGLE_NAMESPACE(qt_qwidget)]);
+    if (!keyOK)
+        [super keyUp:theEvent];
+}
+
+- (void)flagsChanged:(NSEvent *)theEvent
+{
+    qt_dispatchModifiersChanged(theEvent, [self QT_MANGLE_NAMESPACE(qt_qwidget)]);
+    [super flagsChanged:theEvent];
+}
+
+
+- (void)tabletProximity:(NSEvent *)tabletEvent
+{
+    qt_dispatchTabletProximityEvent(tabletEvent);
+}
+
 - (void)sendEvent:(NSEvent *)event
 {
     [self retain];
-    [super sendEvent:event];
+
+    QWidget *widget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];
+    QCocoaView *view = static_cast<QCocoaView *>(qt_mac_nativeview_for(widget));
+    Qt::MouseButton mouseButton = cocoaButton2QtButton([event buttonNumber]);
+
+    // sometimes need to redirect mouse events to the popup.
+    QWidget *popup = qAppInstance()->activePopupWidget();
+    if (popup && popup != widget) {
+        switch([event type])
+        {
+        case NSLeftMouseDown:
+            qt_mac_handleMouseEvent(view, event, QEvent::MouseButtonPress, mouseButton);
+            // Don't call super here. This prevents us from getting the mouseUp event,
+            // which we need to send even if the mouseDown event was not accepted.
+            // (this is standard Qt behavior.)
+            break;
+        case NSRightMouseDown:
+        case NSOtherMouseDown:
+            if (!qt_mac_handleMouseEvent(view, event, QEvent::MouseButtonPress, mouseButton))
+                [super sendEvent:event];
+            break;
+        case NSLeftMouseUp:
+        case NSRightMouseUp:
+        case NSOtherMouseUp:
+            if (!qt_mac_handleMouseEvent(view, event, QEvent::MouseButtonRelease, mouseButton))
+                [super sendEvent:event];
+            break;
+        case NSMouseMoved:
+            qt_mac_handleMouseEvent(view, event, QEvent::MouseMove, Qt::NoButton);
+            break;
+        case NSLeftMouseDragged:
+        case NSRightMouseDragged:
+        case NSOtherMouseDragged:
+            [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent]->view = view;
+            [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent]->theEvent = event;
+            if (!qt_mac_handleMouseEvent(view, event, QEvent::MouseMove, mouseButton))
+                [super sendEvent:event];
+            break;
+        default:
+            [super sendEvent:event];
+            break;
+        }
+    } else {
+        [super sendEvent:event];
+    }
     qt_mac_dispatchNCMouseMessage(self, event, [self QT_MANGLE_NAMESPACE(qt_qwidget)], leftButtonIsRightButton);
+
+
     [self release];
 }
 
+
+- (BOOL)makeFirstResponder:(NSResponder *)responder
+{
+    if (responder == nil)
+        return NO;
+    return [super makeFirstResponder:responder];
+}
+
+/***********************************************************************
+  END Copy and Paste between QCocoaWindow and QCocoaPanel
+***********************************************************************/
 + (Class)frameViewClassForStyleMask:(NSUInteger)styleMask
 {
     if (styleMask & QtMacCustomizeWindow)

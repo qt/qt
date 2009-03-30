@@ -50,6 +50,7 @@
 #include <private/qpaintengine_mac_p.h>
 #include <private/qpainter_p.h>
 #include <private/qprintengine_mac_p.h>
+#include <private/qstylehelper_p.h>
 #include <qapplication.h>
 #include <qbitmap.h>
 #include <qcheckbox.h>
@@ -3888,13 +3889,16 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         }
         break;
     case CE_TabBarTabShape:
-        if (const QStyleOptionTabV3 *tabOpt = qstyleoption_cast<const QStyleOptionTabV3 *>(opt)) {
-            if (tabOpt->documentMode) {
-                p->save();
-                QRect tabRect = tabOpt->rect;
-                drawTabShape(p, tabOpt);
-                p->restore();
-                return;
+        if (const QStyleOptionTab *tabOpt = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
+
+            if (const QStyleOptionTabV3 *tabOptV3 = qstyleoption_cast<const QStyleOptionTabV3 *>(opt)) {
+                if (tabOptV3->documentMode) {
+                    p->save();
+                    QRect tabRect = tabOptV3->rect;
+                    drawTabShape(p, tabOptV3);
+                    p->restore();
+                    return;
+                }
             }
 
 #if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
@@ -5374,6 +5378,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 drawControl(CE_ToolButtonLabel, &label, p, widget);
             }
         }
+        break;
+    case CC_Dial:
+        if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(opt))
+            QStyleHelper::drawDial(dial, p);
         break;
     default:
         QWindowsStyle::drawComplexControl(cc, opt, p, widget);

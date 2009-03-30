@@ -303,7 +303,7 @@ void QMacPixmapData::fromImage(const QImage &img,
                 else
                     one_bit = one_bit >> (x % 8);
                 if ((one_bit & 0x01))
-                    *(drow+x) = 0x00000000;
+                    *(drow+x) = 0xFF000000;
                 else
                     *(drow+x) = 0xFFFFFFFF;
             }

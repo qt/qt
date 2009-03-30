@@ -136,6 +136,8 @@ public:
     void setType(Type t) { m_type = t; }
     bool isUtf8() const { return m_utf8; } // codecForTr override
     void setUtf8(bool on) { m_utf8 = on; }
+    bool isNonUtf8() const { return m_nonUtf8; } // codecForTr override
+    void setNonUtf8(bool on) { m_nonUtf8 = on; }
     bool isPlural() const { return m_plural; }
     void setPlural(bool isplural) { m_plural = isplural; }
 
@@ -169,8 +171,11 @@ private:
 
     Type m_type;
     bool m_utf8;
+    bool m_nonUtf8;
     bool m_plural;
 };
+
+Q_DECLARE_TYPEINFO(TranslatorMessage, Q_MOVABLE_TYPE);
 
 int qHash(const TranslatorMessage &msg);
 
