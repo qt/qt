@@ -1140,7 +1140,7 @@ void QTreeView::scrollTo(const QModelIndex &index, ScrollHint hint)
         if (rect.isEmpty()) {
             // nothing to do
         } else if (hint == EnsureVisible && area.contains(rect)) {
-            d->setDirtyRegion(rect);
+            d->viewport->update(rect);
             // nothing to do
         } else {
             bool above = (hint == EnsureVisible

@@ -2010,7 +2010,7 @@ void QTableView::scrollTo(const QModelIndex &index, ScrollHint hint)
         }
     }
 
-    d->setDirtyRegion(visualRect(index));
+    update(index);
 }
 
 /*!
