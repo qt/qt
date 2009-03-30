@@ -2022,7 +2022,8 @@ void qt_message_output(QtMsgType msgType, const char *buf)
     during compilation.
 
     If you pass the function a format string and a list of arguments,
-    it works in similar way to the C printf() function.
+    it works in similar way to the C printf() function. The format
+    should be a Latin-1 string.
 
     Example:
 
@@ -2068,7 +2069,8 @@ void qDebug(const char *msg, ...)
     QT_FATAL_WARNINGS is defined.
 
     This function takes a format string and a list of arguments,
-    similar to the C printf() function.
+    similar to the C printf() function. The format should be a Latin-1
+    string.
 
     Example:
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 26
@@ -2106,8 +2108,9 @@ void qWarning(const char *msg, ...)
     message handler has been installed, the message is printed to
     stderr. Under Windows, the message is sent to the debugger.
 
-    This function takes a format string and a list of arguments, similar
-    to the C printf() function.
+    This function takes a format string and a list of arguments,
+    similar to the C printf() function. The format should be a Latin-1
+    string.
 
     Example:
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 28
