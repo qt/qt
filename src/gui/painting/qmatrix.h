@@ -121,6 +121,20 @@ public:
 #endif
 
 private:
+    inline QMatrix(bool)
+            : _m11(1.)
+            , _m12(0.)
+            , _m21(0.)
+            , _m22(1.)
+            , _dx(0.)
+            , _dy(0.) {}
+    inline QMatrix(qreal m11, qreal m12, qreal m21, qreal m22, qreal dx, qreal dy, bool)
+            : _m11(m11)
+            , _m12(m12)
+            , _m21(m21)
+            , _m22(m22)
+            , _dx(dx)
+            , _dy(dy) {}
     friend class QTransform;
     qreal _m11, _m12;
     qreal _m21, _m22;
@@ -147,8 +161,8 @@ Q_GUI_EXPORT QPainterPath operator *(const QPainterPath &p, const QMatrix &m);
 
 inline bool QMatrix::isIdentity() const
 {
-    return qFuzzyCompare(_m11, 1) && qFuzzyCompare(_m22, 1) && qFuzzyCompare(_m12 + 1, 1)
-           && qFuzzyCompare(_m21 + 1, 1) && qFuzzyCompare(_dx + 1, 1) && qFuzzyCompare(_dy + 1, 1);
+    return qIsFuzzyNull(_m11 - 1) && qIsFuzzyNull(_m22 - 1) && qIsFuzzyNull(_m12)
+           && qIsFuzzyNull(_m21) && qIsFuzzyNull(_dx) && qIsFuzzyNull(_dy);
 }
 
 /*****************************************************************************
