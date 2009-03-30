@@ -203,6 +203,7 @@ private slots:
     void drawImage_task217400_data();
     void drawImage_task217400();
     void drawRect_task215378();
+    void drawRect_task247505();
 
     void drawImage_data();
     void drawImage();
@@ -3587,6 +3588,26 @@ void tst_QPainter::drawRect_task215378()
     QCOMPARE(img.pixel(0, 0), img.pixel(1, 0));
     QCOMPARE(img.pixel(0, 0), img.pixel(0, 1));
     QVERIFY(img.pixel(0, 0) != img.pixel(1, 1));
+}
+
+void tst_QPainter::drawRect_task247505()
+{
+    QImage a(10, 10, QImage::Format_ARGB32_Premultiplied);
+    a.fill(0);
+    QImage b = a;
+
+    QPainter p(&a);
+    p.setPen(Qt::NoPen);
+    p.setBrush(Qt::black);
+    p.drawRect(QRectF(10, 0, -10, 10));
+    p.end();
+    p.begin(&b);
+    p.setPen(Qt::NoPen);
+    p.setBrush(Qt::black);
+    p.drawRect(QRectF(0, 0, 10, 10));
+    p.end();
+
+    QCOMPARE(a, b);
 }
 
 void tst_QPainter::drawImage_data()
