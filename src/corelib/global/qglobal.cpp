@@ -1934,9 +1934,11 @@ QString qt_error_string(int errorCode)
 
     The message handler is a function that prints out debug messages,
     warnings, critical and fatal error messages. The Qt library (debug
-    version) contains hundreds of warning messages that are printed
+    mode) contains hundreds of warning messages that are printed
     when internal errors (usually invalid function arguments)
-    occur. If you implement your own message handler, you get total
+    occur. Qt built in release mode also contains such warnings unless 
+    QT_NO_WARNING_OUTPUT and/or QT_NO_DEBUG_OUTPUT have been set during 
+    compilation. If you implement your own message handler, you get total
     control of these messages.
 
     The default message handler prints the message to the standard
