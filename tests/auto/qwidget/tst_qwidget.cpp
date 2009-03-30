@@ -1544,6 +1544,10 @@ void tst_QWidget::focusChainOnReparent()
         QCOMPARE(w, expectedOriginalChain[i]);
         w = w->nextInFocusChain();
     }
+    for (int i = 7; i >= 0; --i) {
+        w = w->previousInFocusChain();
+        QCOMPARE(w, expectedOriginalChain[i]);
+    }
 
     QWidget window2;
     child2->setParent(&window2);
@@ -1554,12 +1558,20 @@ void tst_QWidget::focusChainOnReparent()
         QCOMPARE(w, expectedNewChain[i]);
         w = w->nextInFocusChain();
     }
+    for (int i = 4; i >= 0; --i) {
+        w = w->previousInFocusChain();
+        QCOMPARE(w, expectedNewChain[i]);
+    }
 
     QWidget *expectedOldChain[5] = {&window, child1,  child3, child4, &window};
     w = &window;
     for (int i = 0; i <5; ++i) {
         QCOMPARE(w, expectedOldChain[i]);
         w = w->nextInFocusChain();
+    }
+    for (int i = 4; i >= 0; --i) {
+        w = w->previousInFocusChain();
+        QCOMPARE(w, expectedOldChain[i]);
     }
 }
 

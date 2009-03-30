@@ -5897,10 +5897,24 @@ QWidget *QWidget::focusWidget() const
 
 /*!
     Returns the next widget in this widget's focus chain.
+
+    \sa previousInFocusChain
 */
 QWidget *QWidget::nextInFocusChain() const
 {
     return const_cast<QWidget *>(d_func()->focus_next);
+}
+
+/*!
+    Returns the previous widget in this widget's focus chain.
+
+    \sa nextInFocusChain
+
+    \since 4.6
+*/
+QWidget *QWidget::previousInFocusChain() const
+{
+    return const_cast<QWidget *>(d_func()->focus_prev);
 }
 
 /*!
