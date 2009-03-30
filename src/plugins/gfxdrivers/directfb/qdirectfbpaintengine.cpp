@@ -340,7 +340,7 @@ void QDirectFBPaintEnginePrivate::begin(QPaintDevice *device)
     }
 
     if (dfbDevice)
-        surface = dfbDevice->directFbSurface();
+        surface = dfbDevice->directFBSurface();
 
     if (!surface) {
         qFatal("QDirectFBPaintEngine used on an invalid device: 0x%x",
@@ -641,7 +641,7 @@ void QDirectFBPaintEnginePrivate::drawPixmap(const QRectF &dest,
     QPixmapData *data = pixmap.pixmapData();
     Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
     QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
-    IDirectFBSurface *s = dfbData->directFbSurface();
+    IDirectFBSurface *s = dfbData->directFBSurface();
     const QRect sr = src.toRect();
     const QRect dr = ::mapRect(transform, dest);
     const DFBRectangle sRect = { sr.x(), sr.y(), sr.width(), sr.height() };
@@ -674,7 +674,7 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest,
     QPixmapData *data = pixmap.pixmapData();
     Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
     QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
-    IDirectFBSurface *s = dfbData->directFbSurface();
+    IDirectFBSurface *s = dfbData->directFBSurface();
     const QRect dr = ::mapRect(transform, dest);
     DFBResult result = DFB_OK;
 

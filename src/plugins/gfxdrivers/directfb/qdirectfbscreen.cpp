@@ -1033,7 +1033,7 @@ void QDirectFBScreen::compose(const QRegion &region)
 
             if (surface->key() == QLatin1String("directfb")) {
                 QDirectFBSurface *s = static_cast<QDirectFBSurface*>(surface);
-                blit(s->directFbSurface(), offset, r);
+                blit(s->directFBSurface(), offset, r);
             } else {
                 blit(surface->image(), offset, r);
             }
@@ -1082,7 +1082,7 @@ void QDirectFBScreen::compose(const QRegion &region)
 
         if (surface->key() == QLatin1String("directfb")) {
             QDirectFBSurface *s = static_cast<QDirectFBSurface*>(surface);
-            blit(s->directFbSurface(), offset, r);
+            blit(s->directFBSurface(), offset, r);
         } else {
             blit(surface->image(), offset, r);
         }

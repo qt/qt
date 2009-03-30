@@ -56,7 +56,7 @@ class QDirectFBPaintDevice : public QCustomRasterPaintDevice
 public:
     ~QDirectFBPaintDevice();
 
-    IDirectFBSurface *directFbSurface() const;
+    IDirectFBSurface *directFBSurface() const;
 
     void lockDirectFB();
     void unlockDirectFB();
