@@ -1523,10 +1523,10 @@ static const Qt::WindowFlags DefaultWindowFlags =
     If you require a modeless dialog, use the QColorDialog constructor.
     \endomit
 
-    The static getColor() function shows the dialog, and allows the
-    user to specify a color. The getRgba() function does the same, but
-    also allows the user to specify a color with an alpha channel
-    (transparency) value.
+    The static getColor() function shows the dialog, and allows the user to
+    specify a color. This function can also be used to let users choose a
+    color with a level of transparency: pass the ShowAlphaChannel option as
+    an additional argument.
 
     The user can store customCount() different custom colors. The
     custom colors are shared by all color dialogs, and remembered
