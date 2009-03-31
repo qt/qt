@@ -574,8 +574,14 @@ inline QString QResourceRoot::name(int node) const
                               (names[name_offset+1] << 0);
     name_offset += 2;
     name_offset += 4; //jump past hash
-    for(int i = 0; i < name_length*2; i+=2)
-        ret += QChar(names[name_offset+i+1], names[name_offset+i]);
+
+    ret.resize(name_length);
+    QChar *strData = ret.data();
+    for(int i = 0; i < name_length*2; i+=2) {
+        QChar c(names[name_offset+i+1], names[name_offset+i]);
+        *strData = c;
+        ++strData;
+    }
     return ret;
 }
 
