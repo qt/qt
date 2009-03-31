@@ -380,7 +380,6 @@ void QDirectFBPaintEnginePrivate::setPen(const QPen &p)
 
 void QDirectFBPaintEnginePrivate::setBrush(const QBrush &b)
 {
-    // TODO: accelerate texture pattern
     brush = b;
     simpleBrush = (brush.style() == Qt::NoBrush) ||
                   (brush.style() == Qt::SolidPattern && !antialiased);
@@ -509,8 +508,6 @@ void QDirectFBPaintEnginePrivate::drawLines(const QLine *lines, int n) const
     for (int i = 0; i < n; ++i) {
         const QLine l = transform.map(lines[i]);
 
-        // TODO: clip!
-
         regions[i].x1 = l.x1();
         regions[i].y1 = l.y1();
         regions[i].x2 = l.x2();
@@ -525,8 +522,6 @@ void QDirectFBPaintEnginePrivate::drawLines(const QLineF *lines, int n) const
 
     for (int i = 0; i < n; ++i) {
         const QLine l = transform.map(lines[i]).toLine();
-
-        // TODO: clip!
 
         regions[i].x1 = l.x1();
         regions[i].y1 = l.y1();

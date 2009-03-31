@@ -148,8 +148,10 @@ private slots:
     void psql_schemas();
     void psql_escapedIdentifiers_data(){ psql_schemas_data(); }
     void psql_escapedIdentifiers();
-    void psql_escapeBytea_data() { generic_data(); }
+    void psql_escapeBytea_data() { psql_schemas_data(); }
     void psql_escapeBytea();
+    void bug_249059_data() { psql_schemas_data(); }
+    void bug_249059();
 
     void mysqlOdbc_unsignedIntegers_data() { generic_data(); }
     void mysqlOdbc_unsignedIntegers();
@@ -337,7 +339,8 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
             << qTableName("qtestBindBool")
             << qTableName("qtest_sqlguid")
             << qTableName("uint_table")
-            << qTableName("uint_test");
+            << qTableName("uint_test")
+            << qTableName("bug_249059");
 
     QSqlQuery q(0, db);
     if (db.driverName().startsWith("QPSQL"))
@@ -1594,7 +1597,6 @@ void tst_QSqlDatabase::psql_escapeBytea()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QPSQL");
 
     const char dta[4] = {'\x71', '\x14', '\x32', '\x81'};
     QByteArray ba(dta, 4);
@@ -1619,6 +1621,38 @@ void tst_QSqlDatabase::psql_escapeBytea()
     }
 
     QCOMPARE(i, 4);
+}
+
+void tst_QSqlDatabase::bug_249059()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q(db);
+    QString tableName = qTableName("bug_249059");
+    QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (dt timestamp, t time)").arg(tableName)));
+
+    QSqlQuery iq(db);
+    QVERIFY_SQL(iq, prepare(QString("INSERT INTO %1 VALUES (?, ?)").arg(tableName)));
+    iq.bindValue(0, QVariant(QString("2001-09-09 04:05:06.789 -5:00")));
+    iq.bindValue(1, QVariant(QString("04:05:06.789 -5:00")));
+    QVERIFY_SQL(iq, exec());
+    iq.bindValue(0, QVariant(QString("2001-09-09 04:05:06.789 +5:00")));
+    iq.bindValue(1, QVariant(QString("04:05:06.789 +5:00")));
+    QVERIFY_SQL(iq, exec());
+
+    QVERIFY_SQL(q, exec(QString("SELECT dt, t FROM %1").arg(tableName)));
+    QVERIFY_SQL(q, next());
+    QDateTime dt1=q.value(0).toDateTime();
+    QTime t1=q.value(1).toTime();
+    QVERIFY_SQL(q, next());
+    QDateTime dt2=q.value(0).toDateTime();
+    QTime t2=q.value(1).toTime();
+
+    // These will fail when timezone support is added, when that's the case, set the second record to 14:05:06.789 and it should work correctly
+    QCOMPARE(dt1, dt2);
+    QCOMPARE(t1, t2);
 }
 
 // This test should be rewritten to work with Oracle as well - or the Oracle driver

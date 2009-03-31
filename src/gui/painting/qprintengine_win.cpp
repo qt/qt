@@ -369,7 +369,7 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
     QRgb brushColor = state->pen().brush().color().rgb();
     bool fallBack = state->pen().brush().style() != Qt::SolidPattern
                     || qAlpha(brushColor) != 0xff
-                    || QT_WA_INLINE(false, d->txop >= QTransform::TxScale)
+                    || QT_WA_INLINE(d->txop >= QTransform::TxProject, d->txop >= QTransform::TxScale)
                     || ti.fontEngine->type() != QFontEngine::Win;
 
 

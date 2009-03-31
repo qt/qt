@@ -1051,7 +1051,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph, Glyph
             Q_ASSERT(antialias);
             uchar *convoluted = new uchar[bitmap.rows*bitmap.pitch];
             bool useLegacyLcdFilter = false;
-#if defined(FT_LCD_FILTER_H)
+#if defined(FC_LCD_FILTER) && defined(FT_LCD_FILTER_H)
             useLegacyLcdFilter = (lcdFilterType == FT_LCD_FILTER_LEGACY);
 #endif
             uchar *buffer = bitmap.buffer;
