@@ -1538,6 +1538,11 @@ QSplitter::handle:horizontal {
 QSplitter::handle:vertical {
     height: 2px;
 }
+
+QSplitter::handle:pressed {
+    url(images/splitter_pressed.png);
+}
+
 //! [142]
 
 

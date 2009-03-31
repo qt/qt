@@ -2197,7 +2197,7 @@ void QMacStyle::polish(QWidget* w)
     }
 
     if (qobject_cast<QMenu*>(w) || qobject_cast<QComboBoxPrivateContainer *>(w)) {
-        w->setWindowOpacity(0.94);
+        w->setWindowOpacity(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5 ? 0.985 : 0.94);
         if (!w->testAttribute(Qt::WA_SetPalette)) {
             QPixmap px(64, 64);
             HIThemeMenuDrawInfo mtinfo;

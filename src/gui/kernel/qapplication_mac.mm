@@ -1638,15 +1638,6 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
         bool inNonClientArea = false;
         GetEventParameter(event, kEventParamMouseLocation, typeQDPoint, 0,
                           sizeof(where), 0, &where);
-        if(ekind == kEventMouseMoved && qt_mac_app_fullscreen &&
-            QApplication::desktop()->screenNumber(QPoint(where.h, where.v)) ==
-            QApplication::desktop()->primaryScreen()) {
-            if(where.v <= 0)
-                ShowMenuBar();
-            else if(qt_mac_window_at(where.h, where.v, 0) != inMenuBar)
-                HideMenuBar();
-        }
-
 #if defined(DEBUG_MOUSE_MAPS)
         const char *edesc = 0;
         switch(ekind) {

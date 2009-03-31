@@ -1971,20 +1971,19 @@ void QHeaderView::currentChanged(const QModelIndex &current, const QModelIndex &
 
     if (d->orientation == Qt::Horizontal && current.column() != old.column()) {
         if (old.isValid() && old.parent() == d->root)
-            d->setDirtyRegion(QRect(sectionViewportPosition(old.column()), 0,
+            d->viewport->update(QRect(sectionViewportPosition(old.column()), 0,
                                     sectionSize(old.column()), d->viewport->height()));
         if (current.isValid() && current.parent() == d->root)
-            d->setDirtyRegion(QRect(sectionViewportPosition(current.column()), 0,
+            d->viewport->update(QRect(sectionViewportPosition(current.column()), 0,
                                     sectionSize(current.column()), d->viewport->height()));
     } else if (d->orientation == Qt::Vertical && current.row() != old.row()) {
         if (old.isValid() && old.parent() == d->root)
-            d->setDirtyRegion(QRect(0, sectionViewportPosition(old.row()),
+            d->viewport->update(QRect(0, sectionViewportPosition(old.row()),
                                     d->viewport->width(), sectionSize(old.row())));
         if (current.isValid() && current.parent() == d->root)
-            d->setDirtyRegion(QRect(0, sectionViewportPosition(current.row()),
+            d->viewport->update(QRect(0, sectionViewportPosition(current.row()),
                                     d->viewport->width(), sectionSize(current.row())));
     }
-    d->updateDirtyRegion();
 }
 
 
