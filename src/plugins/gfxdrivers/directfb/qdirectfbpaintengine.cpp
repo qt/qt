@@ -61,17 +61,6 @@ static inline uint ALPHA_MUL(uint x, uint a)
     return t;
 }
 
-static inline QRect mapRect(const QTransform &transform, const QRect &rect)
-{
-    return (transform.isIdentity() ? rect : transform.mapRect(rect));
-}
-
-static inline QRect mapRect(const QTransform &transform, const QRectF &rect)
-{
-    return (transform.isIdentity() ? rect : transform.mapRect(rect)).
-        toRect();
-}
-
 class SurfaceCache
 {
 public:
@@ -542,7 +531,7 @@ QRegion QDirectFBPaintEnginePrivate::rectsToClippedRegion(const QRect *rects,
     QRegion region;
 
     for (int i = 0; i < n; ++i) {
-        const QRect r = ::mapRect(transform, rects[i]);
+        const QRect r = transform.mapRect(rects[i]);
         region += clip & r;
     }
 
@@ -555,7 +544,7 @@ QRegion QDirectFBPaintEnginePrivate::rectsToClippedRegion(const QRectF *rects,
     QRegion region;
 
     for (int i = 0; i < n; ++i) {
-        const QRect r = ::mapRect(transform, rects[i]);
+        const QRect r = transform.mapRect(rects[i]).toRect();
         region += clip & r;
     }
 
@@ -584,7 +573,7 @@ void QDirectFBPaintEnginePrivate::fillRects(const QRect *rects, int n) const
 {
     QVarLengthArray<DFBRectangle> dfbRects(n);
     for (int i = 0; i < n; ++i) {
-        const QRect r = ::mapRect(transform, rects[i]);
+        const QRect r = transform.mapRect(rects[i]);
         dfbRects[i].x = r.x();
         dfbRects[i].y = r.y();
         dfbRects[i].w = r.width();
@@ -597,7 +586,7 @@ void QDirectFBPaintEnginePrivate::fillRects(const QRectF *rects, int n) const
 {
     QVarLengthArray<DFBRectangle> dfbRects(n);
     for (int i = 0; i < n; ++i) {
-        const QRect r = ::mapRect(transform, rects[i]);
+        const QRect r = transform.mapRect(rects[i]).toRect();
         dfbRects[i].x = r.x();
         dfbRects[i].y = r.y();
         dfbRects[i].w = r.width();
@@ -609,7 +598,7 @@ void QDirectFBPaintEnginePrivate::fillRects(const QRectF *rects, int n) const
 void QDirectFBPaintEnginePrivate::drawRects(const QRect *rects, int n) const
 {
     for (int i = 0; i < n; ++i) {
-        const QRect r = ::mapRect(transform, rects[i]);
+        const QRect r = transform.mapRect(rects[i]);
         surface->DrawRectangle(surface, r.x(), r.y(),
                                r.width() + 1, r.height() + 1);
     }
@@ -618,7 +607,7 @@ void QDirectFBPaintEnginePrivate::drawRects(const QRect *rects, int n) const
 void QDirectFBPaintEnginePrivate::drawRects(const QRectF *rects, int n) const
 {
     for (int i = 0; i < n; ++i) {
-        const QRect r = ::mapRect(transform, rects[i]);
+        const QRect r = transform.mapRect(rects[i]).toRect();
         surface->DrawRectangle(surface, r.x(), r.y(),
                                r.width() + 1, r.height() + 1);
     }
@@ -642,7 +631,7 @@ void QDirectFBPaintEnginePrivate::drawPixmap(const QRectF &dest,
     QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
     IDirectFBSurface *s = dfbData->directFBSurface();
     const QRect sr = src.toRect();
-    const QRect dr = ::mapRect(transform, dest);
+    const QRect dr = transform.mapRect(dest).toRect();
     const DFBRectangle sRect = { sr.x(), sr.y(), sr.width(), sr.height() };
     DFBResult result;
 
@@ -674,6 +663,7 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest,
     Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
     QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
     IDirectFBSurface *s = dfbData->directFBSurface();
+    const QRect dr = transform.mapRect(dest).toRect();
     const QRect dr = ::mapRect(transform, dest);
     DFBResult result = DFB_OK;
 
@@ -696,7 +686,7 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest,
         result = surface->BatchBlit(surface, s, rects.constData(),
                                     points.constData(), points.size());
     } else {
-        const QRect sr = ::mapRect(transform, QRect(0, 0, pixmap.width(), pixmap.height()));
+        const QRect sr = transform.mapRect(QRect(0, 0, pixmap.width(), pixmap.height()));
         const int dx = sr.width();
         const int dy = sr.height();
         const DFBRectangle sRect = { 0, 0, dx, dy };
@@ -769,7 +759,7 @@ void QDirectFBPaintEnginePrivate::drawImage(const QRectF &dest,
     }
 
     const QRect sr = src.toRect();
-    const QRect dr = ::mapRect(transform, dest);
+    const QRect dr = transform.mapRect(dest).toRect();
     const DFBRectangle sRect = { sr.x(), sr.y(), sr.width(), sr.height() };
 
     surface->SetColor(surface, 0xff, 0xff, 0xff, opacity);
@@ -1197,7 +1187,7 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
             d->unlock();
             d->updateFlags();
             d->setDFBColor(brush.color());
-            const QRect r = ::mapRect(d->transform, rect);
+            const QRect r = d->transform.mapRect(rect).toRect();
             d->surface->FillRectangle(d->surface, r.x(), r.y(),
                                       r.width(), r.height());
             return; }
@@ -1229,7 +1219,7 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QColor &color)
         d->unlock();
         d->updateFlags();
         d->setDFBColor(color);
-        const QRect r = ::mapRect(d->transform, rect);
+        const QRect r = d->transform.mapRect(rect).toRect();
         d->surface->FillRectangle(d->surface, r.x(), r.y(),
                                   r.width(), r.height());
     }
