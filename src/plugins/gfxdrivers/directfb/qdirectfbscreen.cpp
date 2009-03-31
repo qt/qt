@@ -249,14 +249,10 @@ IDirectFBSurface* QDirectFBScreen::createDFBSurface(const DFBSurfaceDescription 
 }
 
 IDirectFBSurface *QDirectFBScreen::copyToDFBSurface(const QImage &img,
-                                                    QImage::Format format,
+                                                    QImage::Format pixmapFormat,
                                                     SurfaceCreationOptions options)
 {
     QImage image = img;
-    const QImage::Format pixmapFormat = image.hasAlphaChannel()
-                                        ? QDirectFBScreen::alphaPixmapFormat()
-                                        : QDirectFBScreen::pixelFormat();
-
     if (QDirectFBScreen::getSurfacePixelFormat(image.format()) == DSPF_UNKNOWN
 #ifdef QT_NO_DIRECTFB_PREALLOCATED
         || image.format() != pixmapFormat
@@ -266,7 +262,7 @@ IDirectFBSurface *QDirectFBScreen::copyToDFBSurface(const QImage &img,
     }
 
 
-    IDirectFBSurface *dfbSurface = createDFBSurface(img.size(), format, options);
+    IDirectFBSurface *dfbSurface = createDFBSurface(img.size(), pixmapFormat, options);
     if (!dfbSurface) {
         qWarning("QDirectFBPixmapData::fromImage() Couldn't create surface");
         return 0;
