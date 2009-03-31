@@ -48,6 +48,10 @@
 #include "qstringlist.h"
 #include <limits.h>
 
+#ifdef QIODEVICE_DEBUG
+#  include <ctype.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifdef QIODEVICE_DEBUG
@@ -362,7 +366,7 @@ QIODevice::QIODevice()
 {
 #if defined QIODEVICE_DEBUG
     QFile *file = qobject_cast<QFile *>(this);
-    printf("%p QIODevice::QIODevice(\"%s\") %s\n", this, className(),
+    printf("%p QIODevice::QIODevice(\"%s\") %s\n", this, metaObject()->className(),
            qPrintable(file ? file->fileName() : QString()));
 #endif
 }
@@ -375,7 +379,7 @@ QIODevice::QIODevice(QObject *parent)
     : QObject(*new QIODevicePrivate, parent)
 {
 #if defined QIODEVICE_DEBUG
-    printf("%p QIODevice::QIODevice(%p \"%s\")\n", this, parent, className());
+    printf("%p QIODevice::QIODevice(%p \"%s\")\n", this, parent, metaObject()->className());
 #endif
 }
 
