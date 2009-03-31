@@ -3041,39 +3041,113 @@ static void blend_color_rgb16(int count, const QSpan *spans, void *userData)
     blend_color_generic(count, spans, userData);
 }
 
-template <SpanMethod spanMethod>
-Q_STATIC_TEMPLATE_FUNCTION void blend_src_generic(int count, const QSpan *spans, void *userData)
+template <typename T>
+void handleSpans(int count, const QSpan *spans, const QSpanData *data, T &handler)
 {
-    QSpanData *data = reinterpret_cast<QSpanData *>(userData);
-
-    uint buffer[buffer_size];
-    uint src_buffer[buffer_size];
-    Operator op = getOperator(data, spans, count);
-
     uint const_alpha = 256;
     if (data->type == QSpanData::Texture)
         const_alpha = data->texture.const_alpha;
 
-    while (count--) {
+    int coverage = 0;
+    while (count) {
         int x = spans->x;
-        int length = spans->len;
-        const int coverage = (spans->coverage * const_alpha) >> 8;
+        const int y = spans->y;
+        int right = x + spans->len;
+
+        // compute length of adjacent spans
+        for (int i = 1; i < count && spans[i].y == y && spans[i].x == right; ++i)
+            right += spans[i].len;
+        int length = right - x;
+
         while (length) {
             int l = qMin(buffer_size, length);
-            const uint *src = op.src_fetch(src_buffer, &op, data, spans->y, x, l);
-            if (spanMethod == RegularSpans) {
-                uint *dest = op.dest_fetch ? op.dest_fetch(buffer, data->rasterBuffer, x, spans->y, l) : buffer;
-                op.func(dest, src, l, coverage);
-                if (op.dest_store)
-                    op.dest_store(data->rasterBuffer, x, spans->y, dest, l);
-            } else {
-                drawBufferSpan(data, src, l, x, spans->y, l, coverage);
-            }
-            x += l;
             length -= l;
+
+            int process_length = l;
+            int process_x = x;
+
+            const uint *src = handler.fetch(process_x, y, process_length);
+            int offset = 0;
+            while (l > 0) {
+                if (x == spans->x) // new span?
+                    coverage = (spans->coverage * const_alpha) >> 8;
+
+                int right = spans->x + spans->len;
+                int len = qMin(l, right - x);
+
+                handler.process(x, y, len, coverage, src, offset);
+
+                l -= len;
+                x += len;
+                offset += len;
+
+                if (x == right) { // done with current span?
+                    ++spans;
+                    --count;
+                }
+            }
+            handler.store(process_x, y, process_length);
         }
-        ++spans;
     }
+}
+
+struct QBlendBase
+{
+    QBlendBase(QSpanData *d, Operator o)
+        : data(d)
+        , op(o)
+        , dest(0)
+    {
+    }
+
+    QSpanData *data;
+    Operator op;
+
+    uint *dest;
+
+    uint buffer[buffer_size];
+    uint src_buffer[buffer_size];
+};
+
+template <SpanMethod spanMethod>
+class BlendSrcGeneric : public QBlendBase
+{
+public:
+    BlendSrcGeneric(QSpanData *d, Operator o)
+        : QBlendBase(d, o)
+    {
+    }
+
+    const uint *fetch(int x, int y, int len)
+    {
+        if (spanMethod == RegularSpans)
+            dest = op.dest_fetch ? op.dest_fetch(buffer, data->rasterBuffer, x, y, len) : buffer;
+
+        return op.src_fetch(src_buffer, &op, data, y, x, len);
+    }
+
+    void process(int x, int y, int len, int coverage, const uint *src, int offset)
+    {
+        if (spanMethod == RegularSpans)
+            op.func(dest + offset, src + offset, len, coverage);
+        else
+            drawBufferSpan(data, src + offset, len, x, y, len, coverage);
+    }
+
+    void store(int x, int y, int len)
+    {
+        if (spanMethod == RegularSpans && op.dest_store) {
+            op.dest_store(data->rasterBuffer, x, y, dest, len);
+        }
+    }
+};
+
+template <SpanMethod spanMethod>
+Q_STATIC_TEMPLATE_FUNCTION void blend_src_generic(int count, const QSpan *spans, void *userData)
+{
+    QSpanData *data = reinterpret_cast<QSpanData *>(userData);
+    BlendSrcGeneric<spanMethod> blend(data, getOperator(data, spans, count));
+    handleSpans(count, spans, data, blend);
 }
 
 template <SpanMethod spanMethod>
