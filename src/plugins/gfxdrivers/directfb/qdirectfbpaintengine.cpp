@@ -243,6 +243,7 @@ public:
 
     SurfaceCache *surfaceCache;
     QTransform transform;
+    int lastLockedHeight;
 private:
 //    QRegion rectsToClippedRegion(const QRect *rects, int n) const;
 //    QRegion rectsToClippedRegion(const QRectF *rects, int n) const;
@@ -267,9 +268,9 @@ private:
 
 QDirectFBPaintEnginePrivate::QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p)
     : surface(0), antialiased(false), forceRasterPrimitives(false), simplePen(false),
-      simpleBrush(false), matrixRotShear(false), matrixScale(false), fbWidth(-1), fbHeight(-1),
-      opacity(255), drawFlags(0), blitFlags(0), duffFlags(0), dirtyFlags(false), dirtyClip(true),
-      dfbHandledClip(false), dfbDevice(0), q(p)
+      simpleBrush(false), matrixRotShear(false), matrixScale(false), lastLockedHeight(-1),
+      fbWidth(-1), fbHeight(-1), opacity(255), drawFlags(0), blitFlags(0), duffFlags(0),
+      dirtyFlags(false), dirtyClip(true), dfbHandledClip(false), dfbDevice(0), q(p)
 {
     fb = QDirectFBScreen::instance()->dfb();
     surfaceCache = new SurfaceCache;
@@ -311,6 +312,8 @@ void QDirectFBPaintEnginePrivate::lock()
     // We will potentially get a new pointer to the buffer after a
     // lock so we need to call the base implementation of prepare so
     // it updates its rasterBuffer to point to the new buffer address.
+    lastLockedHeight = dfbDevice->height();
+
     Q_ASSERT(dfbDevice);
     prepare(dfbDevice);
 }
@@ -330,6 +333,7 @@ void QDirectFBPaintEnginePrivate::setTransform(const QTransform &m)
 
 void QDirectFBPaintEnginePrivate::begin(QPaintDevice *device)
 {
+    lastLockedHeight = -1;
     if (device->devType() == QInternal::CustomRaster)
         dfbDevice = static_cast<QDirectFBPaintDevice*>(device);
     else if (device->devType() == QInternal::Pixmap) {
@@ -927,6 +931,9 @@ void QDirectFBPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 {
     Q_D(QDirectFBPaintEngine);
     d->setClipDirty();
+    const QPoint bottom = d->transform.map(QPoint(0, path.controlPointRect().y2));
+    if (bottom.y() >= d->lastLockedHeight)
+        d->lock();
     QRasterPaintEngine::clip(path, op);
 }
 
@@ -934,9 +941,14 @@ void QDirectFBPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
 {
     Q_D(QDirectFBPaintEngine);
     d->setClipDirty();
+    if (!d->clip()->hasRectClip && d->clip()->enabled) {
+        const QPoint bottom = d->transform.map(QPoint(0, rect.bottom()));
+        if (bottom.y() >= d->lastLockedHeight)
+            d->lock();
+    }
+
     QRasterPaintEngine::clip(rect, op);
 }
-
 
 void QDirectFBPaintEngine::drawRects(const QRect *rects, int rectCount)
 {
