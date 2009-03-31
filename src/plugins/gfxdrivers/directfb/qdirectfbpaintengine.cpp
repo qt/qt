@@ -664,7 +664,6 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest,
     QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
     IDirectFBSurface *s = dfbData->directFBSurface();
     const QRect dr = transform.mapRect(dest).toRect();
-    const QRect dr = ::mapRect(transform, dest);
     DFBResult result = DFB_OK;
 
     if (!matrixScale && dr == QRect(0, 0, fbWidth, fbHeight)) {
