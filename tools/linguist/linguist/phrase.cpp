@@ -243,7 +243,7 @@ bool PhraseBook::load(const QString &fileName, bool *langGuessed)
     // don't click on these!
     reader.setFeature(QLatin1String("http://xml.org/sax/features/namespaces"), false);
     reader.setFeature(QLatin1String("http://xml.org/sax/features/namespace-prefixes"), true);
-    reader.setFeature(QLatin1String("http://qtsoftware.com/xml/features/report-whitespace"
+    reader.setFeature(QLatin1String("http://trolltech.com/xml/features/report-whitespace"
                                     "-only-CharData"), false);
     QphHandler *hand = new QphHandler(this);
     reader.setContentHandler(hand);
