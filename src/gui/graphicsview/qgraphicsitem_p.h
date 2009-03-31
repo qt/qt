@@ -269,7 +269,7 @@ public:
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
 
     inline bool isFullyTransparent() const
-    { return hasEffectiveOpacity && qFuzzyCompare(q_func()->effectiveOpacity() + 1, qreal(1.0)); }
+    { return hasEffectiveOpacity && qIsFuzzyNull(q_func()->effectiveOpacity()); }
 
     inline bool childrenCombineOpacity() const
     { return allChildrenCombineOpacity || children.isEmpty(); }

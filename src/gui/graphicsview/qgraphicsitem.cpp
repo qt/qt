@@ -1904,11 +1904,11 @@ void QGraphicsItem::setOpacity(qreal opacity)
     newOpacity = qBound<qreal>(0.0, newOpacity, 1.0);
 
     // No change? Done.
-    if (qFuzzyCompare(newOpacity, this->opacity()))
+    if (qIsFuzzyNull(newOpacity - this->opacity()))
         return;
 
     // Assign local opacity.
-    if (qFuzzyCompare(newOpacity, qreal(1.0))) {
+    if (qIsFuzzyNull(newOpacity - 1)) {
         // Opaque, unset opacity.
         d_ptr->hasOpacity = 0;
         d_ptr->unsetExtra(QGraphicsItemPrivate::ExtraOpacity);
@@ -3763,7 +3763,7 @@ void QGraphicsItemPrivate::resolveEffectiveOpacity(qreal parentEffectiveOpacity)
     }
 
     // Set this item's resolved opacity.
-    if (qFuzzyCompare(myEffectiveOpacity, qreal(1.0))) {
+    if (qIsFuzzyNull(myEffectiveOpacity - 1)) {
         // Opaque, unset effective opacity.
         hasEffectiveOpacity = 0;
         unsetExtra(ExtraEffectiveOpacity);
@@ -5846,7 +5846,7 @@ static void qt_graphicsItem_highlightSelected(
     QGraphicsItem *item, QPainter *painter, const QStyleOptionGraphicsItem *option)
 {
     const QRectF murect = painter->transform().mapRect(QRectF(0, 0, 1, 1));
-    if (qFuzzyCompare(qMax(murect.width(), murect.height()) + 1, 1))
+    if (qIsFuzzyNull(qMax(murect.width(), murect.height())))
         return;
 
     const QRectF mbrect = painter->transform().mapRect(item->boundingRect());

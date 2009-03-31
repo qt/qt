@@ -4618,7 +4618,7 @@ static void _q_paintItem(QGraphicsItem *item, QPainter *painter,
                                 ? proxy->widget()->windowOpacity() : 1.0;
     const qreal oldPainterOpacity = painter->opacity();
 
-    if (qFuzzyCompare(windowOpacity + 1, qreal(1.0)))
+    if (qIsFuzzyNull(windowOpacity))
         return;
     // Set new painter opacity.
     if (windowOpacity < 1.0)
@@ -5258,7 +5258,7 @@ void QGraphicsScene::itemUpdated(QGraphicsItem *item, const QRectF &rect)
     // Deliver the actual update.
     if (!d->updateAll) {
         if (d->views.isEmpty() || ((d->connectedSignals & d->changedSignalMask) && !item->d_ptr->itemIsUntransformable()
-                                   && qFuzzyCompare(item->boundingRegionGranularity(), qreal(0.0)))) {
+                                   && qIsFuzzyNull(item->boundingRegionGranularity()))) {
             // This block of code is kept for compatibility. Since 4.5, by default
             // QGraphicsView does not connect the signal and we use the below
             // method of delivering updates.
