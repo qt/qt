@@ -65,9 +65,17 @@ QT_BEGIN_NAMESPACE
     \ingroup shared
 
     QRegion is used with QPainter::setClipRegion() to limit the paint
-    area to what needs to be painted. There is also a
-    QWidget::repaint() function that takes a QRegion parameter.
-    QRegion is the best tool for reducing flicker.
+    area to what needs to be painted. There is also a QWidget::repaint()
+    function that takes a QRegion parameter. QRegion is the best tool for
+    minimizing the amount of screen area to be updated by a repaint.
+
+    This class is not suitable for constructing shapes for rendering, especially
+    as outlines. Use QPainterPath to create paths and shapes for use with
+    QPainter.
+
+    QRegion is an \l{implicitly shared} class.
+
+    \section1 Creating and Using Regions
 
     A region can be created from a rectangle, an ellipse, a polygon or
     a bitmap. Complex regions may be created by combining simple
@@ -84,8 +92,6 @@ QT_BEGIN_NAMESPACE
     Example of using complex regions:
     \snippet doc/src/snippets/code/src_gui_painting_qregion.cpp 0
 
-    QRegion is an \l{implicitly shared} class.
-
     \warning Due to window system limitations, the whole coordinate space for a
     region is limited to the points between -32767 and 32767 on Windows
     95/98/ME. You can circumvent this limitation by using a QPainterPath.
@@ -93,7 +99,7 @@ QT_BEGIN_NAMESPACE
     \section1 Additional License Information
 
     On Embedded Linux, Windows CE and X11 platforms, parts of this class rely on
-    code obtained under the following license:
+    code obtained under the following licenses:
 
     \legalese
     Copyright (c) 1987  X Consortium
@@ -120,9 +126,7 @@ QT_BEGIN_NAMESPACE
     in this Software without prior written authorization from the X Consortium.
     \endlegalese
 
-    \raw HTML
-    <hr />
-    \endraw
+    \br
 
     \legalese
     Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
