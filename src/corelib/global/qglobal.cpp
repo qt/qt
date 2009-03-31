@@ -1054,6 +1054,7 @@ bool qSharedBuild()
     \value WV_XP    Windows XP (operating system version 5.1)
     \value WV_2003  Windows Server 2003, Windows Server 2003 R2, Windows Home Server, Windows XP Professional x64 Edition (operating system version 5.2)
     \value WV_VISTA Windows Vista, Windows Server 2008 (operating system version 6.0)
+    \value WV_WINDOWS7 Windows 7 (operating system version 6.1)
 
     Alternatively, you may use the following macros which correspond directly to the Windows operating system version number:
 
@@ -1062,6 +1063,7 @@ bool qSharedBuild()
     \value WV_5_1   Operating system version 5.1, corresponds to Windows XP
     \value WV_5_2   Operating system version 5.2, corresponds to Windows Server 2003, Windows Server 2003 R2, Windows Home Server, and Windows XP Professional x64 Edition
     \value WV_6_0   Operating system version 6.0, corresponds to Windows Vista and Windows Server 2008
+    \value WV_6_1   Operation system version 6.1, corresponds to Windows 7
 
     CE-based versions:
 
@@ -1632,7 +1634,10 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
         if (osver.dwMajorVersion < 5) {
             winver = QSysInfo::WV_NT;
         } else if (osver.dwMajorVersion == 6) {
-            winver = QSysInfo::WV_VISTA;
+            if (osver.dwMinorVersion == 0)
+                winver = QSysInfo::WV_VISTA;
+            else
+                winver = QSysInfo::WV_WINDOWS7;
         } else if (osver.dwMinorVersion == 0) {
             winver = QSysInfo::WV_2000;
         } else if (osver.dwMinorVersion == 1) {
@@ -1667,6 +1672,8 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
             winver = QSysInfo::WV_XP;
         else if (override == "VISTA")
             winver = QSysInfo::WV_VISTA;
+        else if (override == "WINDOWS7")
+            winver = QSysInfo::WV_WINDOWS7;
     }
 #endif
 
