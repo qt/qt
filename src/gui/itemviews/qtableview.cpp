@@ -1344,7 +1344,7 @@ QRegion QTableView::visualRegionForSelection(const QItemSelection &selection) co
     bool verticalMoved = verticalHeader()->sectionsMoved();
     bool horizontalMoved = horizontalHeader()->sectionsMoved();
 
-    if ((verticalMoved && horizontalMoved) || d->hasSpans()) {
+    if ((verticalMoved && horizontalMoved) || (d->hasSpans() && (verticalMoved || horizontalMoved))) {
         for (int i = 0; i < selection.count(); ++i) {
             QItemSelectionRange range = selection.at(i);
             if (range.parent() != d->root || !range.isValid())
@@ -1387,9 +1387,19 @@ QRegion QTableView::visualRegionForSelection(const QItemSelection &selection) co
             if (range.parent() != d->root || !range.isValid())
                 continue;
             d->trimHiddenSelections(&range);
-            QRect tl = visualRect(range.topLeft());
-            QRect br = visualRect(range.bottomRight());
-            selectionRegion += QRegion(tl|br);
+
+            const int rtop = rowViewportPosition(range.top());
+            const int rbottom = rowViewportPosition(range.bottom()) + rowHeight(range.bottom());
+            const int rleft = columnViewportPosition(range.left());
+            const int rright = columnViewportPosition(range.right()) + columnWidth(range.right());
+            selectionRegion += QRect(QPoint(rleft, rtop), QPoint(rright, rbottom));
+            if (d->hasSpans()) {
+                foreach (QSpanCollection::Span *s,
+                         d->spans.spansInRect(range.left(), range.top(), range.width(), range.height())) {
+                    if (range.contains(s->top(), s->left(), range.parent()))
+                        selectionRegion += d->visualSpanRect(*s);
+                }
+            }
         }
     }
 
