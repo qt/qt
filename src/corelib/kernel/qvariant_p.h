@@ -105,6 +105,17 @@ private:
 
 // constructs a new variant if copy is 0, otherwise copy-constructs
 template <class T>
+inline void v_construct(QVariant::Private *x, const T &t)
+{
+    if (sizeof(T) > sizeof(QVariant::Private::Data)) {
+        x->data.shared = new QVariantPrivateSharedEx<T>(t);
+        x->is_shared = true;
+    } else {
+        new (&x->data.ptr) T(t);
+    }
+}
+
+template <class T>
 inline void v_construct(QVariant::Private *x, const void *copy, T * = 0)
 {
     if (sizeof(T) > sizeof(QVariant::Private::Data)) {

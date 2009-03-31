@@ -1608,44 +1608,44 @@ QVariant::QVariant(double val)
 { d.is_null = false; d.type = Double; d.data.d = val; }
 
 QVariant::QVariant(const QByteArray &val)
-{ d.is_null = false; d.type = ByteArray; v_construct<QByteArray>(&d, &val); }
+{ d.is_null = false; d.type = ByteArray; v_construct<QByteArray>(&d, val); }
 QVariant::QVariant(const QBitArray &val)
-{ d.is_null = false; d.type = BitArray; v_construct<QBitArray>(&d, &val);  }
+{ d.is_null = false; d.type = BitArray; v_construct<QBitArray>(&d, val);  }
 QVariant::QVariant(const QString &val)
-{ d.is_null = false; d.type = String; v_construct<QString>(&d, &val);  }
+{ d.is_null = false; d.type = String; v_construct<QString>(&d, val);  }
 QVariant::QVariant(const QChar &val)
-{ d.is_null = false; d.type = Char; v_construct<QChar>(&d, &val);  }
+{ d.is_null = false; d.type = Char; v_construct<QChar>(&d, val);  }
 QVariant::QVariant(const QLatin1String &val)
-{ QString str(val); d.is_null = false; d.type = String; v_construct<QString>(&d, &str); }
+{ QString str(val); d.is_null = false; d.type = String; v_construct<QString>(&d, str); }
 QVariant::QVariant(const QStringList &val)
-{ d.is_null = false; d.type = StringList; v_construct<QStringList>(&d, &val); }
+{ d.is_null = false; d.type = StringList; v_construct<QStringList>(&d, val); }
 
 QVariant::QVariant(const QDate &val)
-{ d.is_null = false; d.type = Date; v_construct<QDate>(&d, &val); }
+{ d.is_null = false; d.type = Date; v_construct<QDate>(&d, val); }
 QVariant::QVariant(const QTime &val)
-{ d.is_null = false; d.type = Time; v_construct<QTime>(&d, &val); }
+{ d.is_null = false; d.type = Time; v_construct<QTime>(&d, val); }
 QVariant::QVariant(const QDateTime &val)
-{ d.is_null = false; d.type = DateTime; v_construct<QDateTime>(&d, &val); }
+{ d.is_null = false; d.type = DateTime; v_construct<QDateTime>(&d, val); }
 QVariant::QVariant(const QList<QVariant> &list)
-{ d.is_null = false; d.type = List; v_construct<QVariantList>(&d, &list); }
+{ d.is_null = false; d.type = List; v_construct<QVariantList>(&d, list); }
 QVariant::QVariant(const QMap<QString, QVariant> &map)
-{ d.is_null = false; d.type = Map; v_construct<QVariantMap>(&d, &map); }
+{ d.is_null = false; d.type = Map; v_construct<QVariantMap>(&d, map); }
 QVariant::QVariant(const QHash<QString, QVariant> &hash)
-{ d.is_null = false; d.type = Hash; v_construct<QVariantHash>(&d, &hash); }
+{ d.is_null = false; d.type = Hash; v_construct<QVariantHash>(&d, hash); }
 #ifndef QT_NO_GEOM_VARIANT
-QVariant::QVariant(const QPoint &pt) { d.is_null = false; d.type = Point; v_construct<QPoint>(&d, &pt); }
-QVariant::QVariant(const QPointF &pt) { d.is_null = false; d.type = PointF; v_construct<QPointF>(&d, &pt); }
-QVariant::QVariant(const QRectF &r) { d.is_null = false; d.type = RectF; v_construct<QRectF>(&d, &r); }
-QVariant::QVariant(const QLineF &l) { d.is_null = false; d.type = LineF; v_construct<QLineF>(&d, &l); }
-QVariant::QVariant(const QLine &l) { d.is_null = false; d.type = Line; v_construct<QLine>(&d, &l); }
-QVariant::QVariant(const QRect &r) { d.is_null = false; d.type = Rect; v_construct<QRect>(&d, &r); }
-QVariant::QVariant(const QSize &s) { d.is_null = false; d.type = Size; v_construct<QSize>(&d, &s); }
-QVariant::QVariant(const QSizeF &s) { d.is_null = false; d.type = SizeF; v_construct<QSizeF>(&d, &s); }
+QVariant::QVariant(const QPoint &pt) { d.is_null = false; d.type = Point; v_construct<QPoint>(&d, pt); }
+QVariant::QVariant(const QPointF &pt) { d.is_null = false; d.type = PointF; v_construct<QPointF>(&d, pt); }
+QVariant::QVariant(const QRectF &r) { d.is_null = false; d.type = RectF; v_construct<QRectF>(&d, r); }
+QVariant::QVariant(const QLineF &l) { d.is_null = false; d.type = LineF; v_construct<QLineF>(&d, l); }
+QVariant::QVariant(const QLine &l) { d.is_null = false; d.type = Line; v_construct<QLine>(&d, l); }
+QVariant::QVariant(const QRect &r) { d.is_null = false; d.type = Rect; v_construct<QRect>(&d, r); }
+QVariant::QVariant(const QSize &s) { d.is_null = false; d.type = Size; v_construct<QSize>(&d, s); }
+QVariant::QVariant(const QSizeF &s) { d.is_null = false; d.type = SizeF; v_construct<QSizeF>(&d, s); }
 #endif
-QVariant::QVariant(const QUrl &u) { d.is_null = false; d.type = Url; v_construct<QUrl>(&d, &u); }
-QVariant::QVariant(const QLocale &l) { d.is_null = false; d.type = Locale; v_construct<QLocale>(&d, &l); }
+QVariant::QVariant(const QUrl &u) { d.is_null = false; d.type = Url; v_construct<QUrl>(&d, u); }
+QVariant::QVariant(const QLocale &l) { d.is_null = false; d.type = Locale; v_construct<QLocale>(&d, l); }
 #ifndef QT_NO_REGEXP
-QVariant::QVariant(const QRegExp &regExp) { d.is_null = false; d.type = RegExp; v_construct<QRegExp>(&d, &regExp); }
+QVariant::QVariant(const QRegExp &regExp) { d.is_null = false; d.type = RegExp; v_construct<QRegExp>(&d, regExp); }
 #endif
 QVariant::QVariant(Qt::GlobalColor color) { create(62, &color); }
 
