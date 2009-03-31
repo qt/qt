@@ -123,11 +123,15 @@ inline void v_construct(QVariant::Private *x, const void *copy, T * = 0)
 template <class T>
 inline void v_clear(QVariant::Private *d, T* = 0)
 {
-    //now we need to call the destructor in any case
-    //because QVariant::PrivateShared doesn't have a virtual destructor
-    v_cast<T>(d)->~T();
-    if (sizeof(T) > sizeof(QVariant::Private::Data))
-        delete d->data.shared;
+    
+    if (sizeof(T) > sizeof(QVariant::Private::Data)) {
+        //now we need to cast
+        //because QVariant::PrivateShared doesn't have a virtual destructor
+        delete static_cast<QVariantPrivateSharedEx<T>*>(d->data.shared);
+    } else {
+        v_cast<T>(d)->~T();
+    }
+
 }
 
 QT_END_NAMESPACE
