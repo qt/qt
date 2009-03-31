@@ -1601,6 +1601,13 @@ static QStringList parseCombinedArgString(const QString &program)
 void QProcess::start(const QString &program, OpenMode mode)
 {
     QStringList args = parseCombinedArgString(program);
+    if (args.isEmpty()) {
+        Q_D(QProcess);
+        d->processError = QProcess::FailedToStart;
+        setErrorString(tr("No program defined"));
+        emit error(d->processError);
+        return;
+    }
 
     QString prog = args.first();
     args.removeFirst();
@@ -1769,6 +1776,8 @@ bool QProcess::startDetached(const QString &program,
 bool QProcess::startDetached(const QString &program)
 {
     QStringList args = parseCombinedArgString(program);
+    if (args.isEmpty())
+        return false;
 
     QString prog = args.first();
     args.removeFirst();
