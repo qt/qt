@@ -1606,8 +1606,6 @@ QVariant::QVariant(bool val)
 { d.is_null = false; d.type = Bool; d.data.b = val; }
 QVariant::QVariant(double val)
 { d.is_null = false; d.type = Double; d.data.d = val; }
-QVariant::QVariant(float val)
-{ d.is_null = false; d.type = QMetaType::Float; d.data.f = val; }
 
 QVariant::QVariant(const QByteArray &val)
 { d.is_null = false; d.type = ByteArray; v_construct<QByteArray>(&d, &val); }
