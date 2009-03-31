@@ -60,6 +60,37 @@
 
 QT_BEGIN_NAMESPACE
 
+
+class QStringSplitter
+{
+public:
+    QStringSplitter(const QString &s)
+        : m_string(s), m_data(m_string.constData()), m_len(s.length()), m_pos(0)
+    {
+        m_splitChar = QLatin1Char('/');
+    }
+
+    inline bool hasNext() {
+        while (m_pos < m_len && m_data[m_pos] == m_splitChar)
+            ++m_pos;
+        return m_pos < m_len;
+    }
+
+    inline QStringRef next() {
+        int start = m_pos;
+        while (m_pos < m_len && m_data[m_pos] != m_splitChar)
+            ++m_pos;
+        return QStringRef(&m_string, start, m_pos - start);
+    }
+
+    QString m_string;
+    const QChar *m_data;
+    QChar m_splitChar;
+    int m_len;
+    int m_pos;
+};
+
+
 //resource glue
 class QResourceRoot
 {
@@ -618,12 +649,11 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
 
     //now iterate up the tree
     int node = -1;
-    QStringList segments = path.split(QLatin1Char('/'), QString::SkipEmptyParts);
-#ifdef DEBUG_RESOURCE_MATCH
-    qDebug() << "****" << segments;
-#endif
-    for(int i = 0; child_count && i < segments.size(); ++i) {
-        const QString &segment = segments[i];
+
+    QStringSplitter splitter(path);
+    while (child_count && splitter.hasNext()) {
+        QStringRef segment = splitter.next();
+
 #ifdef DEBUG_RESOURCE_MATCH
         qDebug() << "  CHILDREN" << segment;
         for(int j = 0; j < child_count; ++j) {
@@ -665,7 +695,7 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
                                         (tree[offset+1] << 0);
                     offset += 2;
 
-                    if(i == segments.size()-1) {
+                    if(!splitter.hasNext()) {
                         if(!(flags & Directory)) {
                             const short country = (tree[offset+0] << 8) +
                                                   (tree[offset+1] << 0);
