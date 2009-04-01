@@ -2967,10 +2967,6 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 #if defined(Q_WS_MAC)
     setEnabled_helper_sys(enable);
 #endif
-#if defined (Q_WS_WIN)
-    if (q->hasFocus())
-        QInputContextPrivate::updateImeStatus(q, true);
-#endif
     QEvent e(QEvent::EnabledChange);
     QApplication::sendEvent(q, &e);
 #ifdef QT3_SUPPORT
@@ -7644,16 +7640,10 @@ bool QWidget::event(QEvent *event)
         }
         break;
     case QEvent::FocusIn:
-#if defined(Q_WS_WIN)
-        QInputContextPrivate::updateImeStatus(this, true);
-#endif
         focusInEvent((QFocusEvent*)event);
         break;
 
     case QEvent::FocusOut:
-#if defined(Q_WS_WIN)
-        QInputContextPrivate::updateImeStatus(this, false);
-#endif
         focusOutEvent((QFocusEvent*)event);
         break;
 
@@ -9849,10 +9839,6 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 #endif
         break;
     case Qt::WA_InputMethodEnabled: {
-#if defined(Q_WS_WIN) || (defined(Q_WS_QWS) && !defined(QT_NO_QWS_INPUTMETHODS))
-        if (hasFocus())
-            QInputContextPrivate::updateImeStatus(this, true);
-#endif
         QInputContext *ic = d->ic;
         if (!ic) {
             // implicitly create input context only if we have a focus
