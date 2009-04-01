@@ -10,7 +10,7 @@ excluded_directories="$excluded_directories PlanetWebKit"
 excluded_directories="$excluded_directories SunSpider"
 excluded_directories="$excluded_directories WebKitExamplePlugins"
 
-excluded_directories="$excluded_directories symbols.filter"
+excluded_directories="$excluded_directories autotools"
 excluded_directories="$excluded_directories JavaScriptCore/Makefile"
 excluded_directories="$excluded_directories Makefile"
 excluded_directories="$excluded_directories Makefile.shared"
