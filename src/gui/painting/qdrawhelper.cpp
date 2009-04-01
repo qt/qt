@@ -7077,7 +7077,7 @@ static void qt_alphamapblit_quint32(QRasterBuffer *rasterBuffer,
 #endif
                     {
                         int ialpha = 255 - coverage;
-                        dest[i] = BYTE_MUL(c, uint(coverage)) + BYTE_MUL(dest[i], ialpha);
+                        dest[i] = INTERPOLATE_PIXEL_255(c, coverage, dest[i], ialpha);
                     }
                 }
             }
@@ -7118,7 +7118,7 @@ static void qt_alphamapblit_quint32(QRasterBuffer *rasterBuffer,
 #endif
                         {
                             int ialpha = 255 - coverage;
-                            dest[xp] = BYTE_MUL(c, uint(coverage)) + BYTE_MUL(dest[xp], ialpha);
+                            dest[xp] = INTERPOLATE_PIXEL_255(c, coverage, dest[xp], ialpha);
                         }
                     }
 
