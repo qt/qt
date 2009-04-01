@@ -416,59 +416,52 @@ void Translator::dropTranslations()
     }
 }
 
-struct TranslatorMessagePtr {
-    TranslatorMessagePtr(const TranslatorMessage &tm)
-    {
-        ptr = &tm;
-    }
-
-    const TranslatorMessage *ptr;
-};
-
-Q_DECLARE_TYPEINFO(TranslatorMessagePtr, Q_MOVABLE_TYPE);
-
-static inline int qHash(TranslatorMessagePtr tmp)
+QSet<TranslatorMessagePtr> Translator::resolveDuplicates()
 {
-    return qHash(*tmp.ptr);
-}
-
-static inline bool operator==(TranslatorMessagePtr tmp1, TranslatorMessagePtr tmp2)
-{
-    return *tmp1.ptr == *tmp2.ptr;
-}
-
-QList<TranslatorMessage> Translator::findDuplicates() const
-{
-    QHash<TranslatorMessagePtr, int> dups;
-    foreach (const TranslatorMessage &msg, m_messages)
-        dups[msg]++;
-    QList<TranslatorMessage> ret;
-    QHash<TranslatorMessagePtr, int>::ConstIterator it = dups.constBegin(), end = dups.constEnd();
-    for (; it != end; ++it)
-        if (it.value() > 1)
-            ret.append(*it.key().ptr);
-    return ret;
-}
-
-void Translator::resolveDualEncoded()
-{
-    QHash<TranslatorMessagePtr, int> dups;
+    QSet<TranslatorMessagePtr> dups;
+    QHash<TranslatorMessagePtr, int> refs;
     for (int i = 0; i < m_messages.count();) {
         const TranslatorMessage &msg = m_messages.at(i);
-        QHash<TranslatorMessagePtr, int>::ConstIterator it = dups.constFind(msg);
-        if (it != dups.constEnd()) {
+        QHash<TranslatorMessagePtr, int>::ConstIterator it = refs.constFind(msg);
+        if (it != refs.constEnd()) {
             TranslatorMessage &omsg = m_messages[*it];
             if (omsg.isUtf8() != msg.isUtf8() && !omsg.isNonUtf8()) {
+                // Dual-encoded message
                 omsg.setUtf8(true);
                 omsg.setNonUtf8(true);
-                m_messages.removeAt(i);
-                continue;
+            } else {
+                // Duplicate
+                dups.insert(omsg);
             }
-            // Regular dupe; will complain later
+            if (!omsg.isTranslated() && msg.isTranslated())
+                omsg.setTranslations(msg.translations());
+            m_messages.removeAt(i);
         } else {
-            dups[msg] = i;
+            refs[msg] = i;
+            ++i;
         }
-        ++i;
+    }
+    return dups;
+}
+
+void Translator::reportDuplicates(const QSet<TranslatorMessagePtr> &dupes,
+                                  const QString &fileName, bool verbose)
+{
+    if (!dupes.isEmpty()) {
+        if (!verbose) {
+            qWarning("Warning: dropping duplicate messages in '%s'\n(try -verbose for more info).",
+                     qPrintable(fileName));
+        } else {
+            qWarning("Warning: dropping duplicate messages in '%s':", qPrintable(fileName));
+            foreach (const TranslatorMessagePtr &msg, dupes) {
+                qWarning("\n* Context: %s\n* Source: %s",
+                        qPrintable(msg->context()),
+                        qPrintable(msg->sourceText()));
+                if (!msg->comment().isEmpty())
+                    qWarning("* Comment: %s", qPrintable(msg->comment()));
+            }
+            qWarning();
+        }
     }
 }
 

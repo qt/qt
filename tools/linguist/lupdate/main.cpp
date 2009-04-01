@@ -146,6 +146,7 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
                 *fail = true;
                 continue;
             }
+            tor.resolveDuplicates();
             cd.clearErrors();
             if (!codecForTr.isEmpty() && codecForTr != tor.codecName())
                 qWarning("lupdate warning: Codec for tr() '%s' disagrees with "
