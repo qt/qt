@@ -92,9 +92,6 @@ void QGestureManager::removeRecognizer(QGestureRecognizer *recognizer)
 
 bool QGestureManager::filterEvent(QEvent *event)
 {
-    if (!QApplication::testAttribute(Qt::AA_EnableGestures))
-        return false;
-
     QPoint currentPos;
     switch (event->type()) {
     case QEvent::MouseButtonPress:
@@ -339,9 +336,6 @@ void QGestureManager::setGestureTargetWidget(QWidget *widget)
 
 void QGestureManager::recognizerStateChanged(QGestureRecognizer::Result result)
 {
-    if (!QApplication::testAttribute(Qt::AA_EnableGestures))
-        return;
-
     QGestureRecognizer *recognizer = qobject_cast<QGestureRecognizer*>(sender());
     if (!recognizer)
         return;

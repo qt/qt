@@ -3707,7 +3707,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QPoint relpos = mouse->pos();
 
             if (e->spontaneous()) {
-                if (QApplication::testAttribute(Qt::AA_EnableGestures)) {
+                if (!d->grabbedGestures.isEmpty()) {
                     QWidget *w = static_cast<QWidget*>(receiver);
                     // if we are in gesture mode, we send all mouse events
                     // directly to gesture recognizer.
