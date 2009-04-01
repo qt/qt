@@ -235,28 +235,6 @@ QWindowSurface *QWidgetPrivate::createDefaultWindowSurface()
 
 /*!
     \internal
-    This is an internal function, you should never call this.
-
-    This function is called to focus associated input context. The
-    code intends to eliminate duplicate focus for the context even if
-    the context is shared between widgets
-
-    \sa QInputContext::setFocus()
- */
-void QWidgetPrivate::focusInputContext()
-{
-#ifndef QT_NO_IM
-    Q_Q(QWidget);
-    QInputContext *qic = q->inputContext();
-    if (qic) {
-        if(qic->focusWidget() != q)
-            qic->setFocusWidget(q);
-    }
-#endif // QT_NO_IM
-}
-
-/*!
-    \internal
 */
 void QWidgetPrivate::scrollChildren(int dx, int dy)
 {
@@ -330,20 +308,24 @@ void QWidget::setInputContext(QInputContext *context)
 
 
 /*!
+    \obsolete
+
     This function can be called on the widget that currently has focus
     to reset the input method operating on it.
 
-    \sa QInputContext, QInputContext::reset()
+    This function is providing for convenience, instead you should use
+    \l{QInputContext::}{reset()} on the input context that was
+    returned by inputContext().
+
+    \sa QInputContext, inputContext(), QInputContext::reset()
 */
 void QWidget::resetInputContext()
 {
     if (!hasFocus())
         return;
 #ifndef QT_NO_IM
-    if (!d_func()->ic)
-        return;
     QInputContext *qic = this->inputContext();
-    if( qic )
+    if(qic)
         qic->reset();
 #endif // QT_NO_IM
 }

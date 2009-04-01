@@ -161,13 +161,13 @@ IDirectFBSurface* QDirectFBScreen::createDFBSurface(const QImage &img, SurfaceCr
     if (surface) {
         char *mem;
         int bpl;
-        surface->Lock(dfbSurface, DSLF_WRITE, (void**)&mem, &bpl);
+        surface->Lock(surface, DSLF_WRITE, (void**)&mem, &bpl);
         const int h = img.height();
         for (int i = 0; i < h; ++i) {
             memcpy(mem, img.scanLine(i), bpl);
             mem += bpl;
         }
-        surface->Unlock(ret);
+        surface->Unlock(surface);
     }
 #endif
 #ifndef QT_NO_DIRECTFB_PALETTE
@@ -249,14 +249,10 @@ IDirectFBSurface* QDirectFBScreen::createDFBSurface(const DFBSurfaceDescription 
 }
 
 IDirectFBSurface *QDirectFBScreen::copyToDFBSurface(const QImage &img,
-                                                    QImage::Format format,
+                                                    QImage::Format pixmapFormat,
                                                     SurfaceCreationOptions options)
 {
     QImage image = img;
-    const QImage::Format pixmapFormat = image.hasAlphaChannel()
-                                        ? QDirectFBScreen::alphaPixmapFormat()
-                                        : QDirectFBScreen::pixelFormat();
-
     if (QDirectFBScreen::getSurfacePixelFormat(image.format()) == DSPF_UNKNOWN
 #ifdef QT_NO_DIRECTFB_PREALLOCATED
         || image.format() != pixmapFormat
@@ -266,7 +262,7 @@ IDirectFBSurface *QDirectFBScreen::copyToDFBSurface(const QImage &img,
     }
 
 
-    IDirectFBSurface *dfbSurface = createDFBSurface(img.size(), format, options);
+    IDirectFBSurface *dfbSurface = createDFBSurface(img.size(), pixmapFormat, options);
     if (!dfbSurface) {
         qWarning("QDirectFBPixmapData::fromImage() Couldn't create surface");
         return 0;
@@ -1033,7 +1029,7 @@ void QDirectFBScreen::compose(const QRegion &region)
 
             if (surface->key() == QLatin1String("directfb")) {
                 QDirectFBSurface *s = static_cast<QDirectFBSurface*>(surface);
-                blit(s->directFbSurface(), offset, r);
+                blit(s->directFBSurface(), offset, r);
             } else {
                 blit(surface->image(), offset, r);
             }
@@ -1082,7 +1078,7 @@ void QDirectFBScreen::compose(const QRegion &region)
 
         if (surface->key() == QLatin1String("directfb")) {
             QDirectFBSurface *s = static_cast<QDirectFBSurface*>(surface);
-            blit(s->directFbSurface(), offset, r);
+            blit(s->directFBSurface(), offset, r);
         } else {
             blit(surface->image(), offset, r);
         }

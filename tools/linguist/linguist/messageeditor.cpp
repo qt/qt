@@ -786,6 +786,7 @@ void MessageEditor::selectAll()
 
 void MessageEditor::emitTranslationChanged()
 {
+    static_cast<FormWidget *>(sender())->getEditor()->setFocus(); // DND proofness
     updateBeginFromSource();
     updateUndoRedo();
     emit translationChanged(translations(m_currentModel));
@@ -793,6 +794,7 @@ void MessageEditor::emitTranslationChanged()
 
 void MessageEditor::emitTranslatorCommentChanged()
 {
+    static_cast<FormWidget *>(sender())->getEditor()->setFocus(); // DND proofness
     updateUndoRedo();
     emit translatorCommentChanged(m_editors[m_currentModel].transCommentText->getTranslation());
 }

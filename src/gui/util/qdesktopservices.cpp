@@ -157,6 +157,11 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
     If the URL is a reference to a local file (i.e., the URL scheme is "file") then
     it will be opened with a suitable application instead of a Web browser.
 
+    The following example opens a file on the Windows file system residing on a path
+    that contains spaces:
+
+    \snippet doc/src/snippets/code/src_gui_util_qdesktopservices.cpp 2
+
     If a \c mailto URL is specified, the user's e-mail client will be used to open a
     composer window containing the options specified in the URL, similar to the way
     \c mailto links are handled by a Web browser.
