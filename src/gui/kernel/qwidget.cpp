@@ -9417,11 +9417,13 @@ void QWidget::repaint(const QRect &rect)
     if (!isVisible() || !updatesEnabled() || rect.isEmpty())
         return;
 
-    QTLWExtra *tlwExtra = !d->paintOnScreen() ? window()->d_func()->maybeTopData() : 0;
-    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
-        tlwExtra->inRepaint = true;
-        tlwExtra->backingStore->markDirty(rect, this, true);
-        tlwExtra->inRepaint = false;
+    if (hasBackingStoreSupport()) {
+        QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
+        if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
+            tlwExtra->inRepaint = true;
+            tlwExtra->backingStore->markDirty(rect, this, true);
+            tlwExtra->inRepaint = false;
+        }
     } else {
         d->repaint_sys(rect);
     }
@@ -9444,11 +9446,13 @@ void QWidget::repaint(const QRegion &rgn)
     if (!isVisible() || !updatesEnabled() || rgn.isEmpty())
         return;
 
-    QTLWExtra *tlwExtra = !d->paintOnScreen() ? window()->d_func()->maybeTopData() : 0;
-    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
-        tlwExtra->inRepaint = true;
-        tlwExtra->backingStore->markDirty(rgn, this, true);
-        tlwExtra->inRepaint = false;
+    if (hasBackingStoreSupport()) {
+        QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
+        if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
+            tlwExtra->inRepaint = true;
+            tlwExtra->backingStore->markDirty(rgn, this, true);
+            tlwExtra->inRepaint = false;
+        }
     } else {
         d->repaint_sys(rgn);
     }
