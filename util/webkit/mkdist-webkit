@@ -114,7 +114,6 @@ files_to_remove="$files_to_remove WebKit/qt/Api/qcookiejar.h"
 files_to_remove="$files_to_remove WebKit/qt/Api/qcookiejar.cpp"
 
 files_to_remove="$files_to_remove WebCore/rendering/RenderThemeMac.mm"
-files_to_remove="$files_to_remove acinclude.m4"
 files_to_remove="$files_to_remove autogen.sh"
 files_to_remove="$files_to_remove configure.ac"
 
