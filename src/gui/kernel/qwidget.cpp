@@ -2967,6 +2967,15 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 #if defined(Q_WS_MAC)
     setEnabled_helper_sys(enable);
 #endif
+    if (q->testAttribute(Qt::WA_InputMethodEnabled) && q->hasFocus()) {
+        QInputContext *qic = inputContext();
+        if (enable) {
+            qic->setFocusWidget(q);
+        } else {
+            qic->reset();
+            qic->setFocusWidget(0);
+        }
+    }
     QEvent e(QEvent::EnabledChange);
     QApplication::sendEvent(q, &e);
 #ifdef QT3_SUPPORT
@@ -9808,7 +9817,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             parentWidget()->d_func()->enforceNativeChildren();
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
-        if (ic)
+        if (ic && isEnabled())
             ic->setFocusWidget(this);
         break;
     }
@@ -9846,7 +9855,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
                 ic = d->inputContext();
         }
         if (ic) {
-            if (on && hasFocus() && ic->focusWidget() != this) {
+            if (on && hasFocus() && ic->focusWidget() != this && isEnabled()) {
                 ic->setFocusWidget(this);
             } else if (!on && ic->focusWidget() == this) {
                 ic->reset();
