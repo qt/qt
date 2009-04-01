@@ -87,7 +87,6 @@ excluded_directories="$excluded_directories WebCore/platform/image-decoders/ico"
 excluded_directories="$excluded_directories WebCore/platform/image-decoders/jpeg"
 excluded_directories="$excluded_directories WebCore/platform/image-decoders/xbm"
 
-excluded_directories="$excluded_directories WebCore/plugins/wx"
 excluded_directories="$excluded_directories WebCore/plugins/gtk"
 
 excluded_directories="$excluded_directories WebCore/platform/symbian WebCore/platform/wx"
