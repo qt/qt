@@ -93,7 +93,7 @@ private slots:
     void transaction();
     void record_data() { generic_data(); }
     void record();
-    void record_sqlite_data() { generic_data(); }
+    void record_sqlite_data() { generic_data("QSQLITE"); }
     void record_sqlite();
     void finish_data() { generic_data(); }
     void finish();
@@ -107,13 +107,13 @@ private slots:
     void forwardOnly();
 
     // bug specific tests
-    void bitField_data();
+    void bitField_data() {generic_data("QTDS"); }
     void bitField();
-    void nullBlob_data();
+    void nullBlob_data() { generic_data("QOCI"); }
     void nullBlob();
     void blob_data() { generic_data(); }
     void blob();
-    void rawField_data();
+    void rawField_data() { generic_data("QOCI"); }
     void rawField();
     void precision_data() { generic_data(); }
     void precision();
@@ -129,19 +129,19 @@ private slots:
     void char1SelectUnicode();
     void synonyms_data() { generic_data(); }
     void synonyms();
-    void oraOutValues_data();
+    void oraOutValues_data() { generic_data("QOCI"); }
     void oraOutValues();
-    void mysqlOutValues_data();
+    void mysqlOutValues_data() { generic_data("QMYSQL"); }
     void mysqlOutValues();
-    void oraClob_data() { oraOutValues_data(); }
+    void oraClob_data() { generic_data("QOCI"); }
     void oraClob();
-    void oraLong_data() { oraOutValues_data(); }
+    void oraLong_data() { generic_data("QOCI"); }
     void oraLong();
-    void outValuesDB2_data();
+    void outValuesDB2_data() { generic_data("QDB2"); }
     void outValuesDB2();
-    void storedProceduresIBase_data();
+    void storedProceduresIBase_data() {generic_data("QIBASE"); }
     void storedProceduresIBase();
-    void oraRowId_data();
+    void oraRowId_data() { generic_data("QOCI"); }
     void oraRowId();
     void prepare_bind_exec_data() { generic_data(); }
     void prepare_bind_exec();
@@ -175,13 +175,13 @@ private slots:
     void emptyTableNavigate();
 
 #ifdef NOT_READY_YET
-    void bug217003_data() { generic_data(); }
-    void bug217003();
+    void task_217003_data() { generic_data(); }
+    void task_217003();
 #endif
 
 private:
     // returns all database connections
-    void generic_data();
+    void generic_data(const QString &engine=QString());
     void dropTestTables( QSqlDatabase db );
     void createTestTables( QSqlDatabase db );
     void populateTestTables( QSqlDatabase db );
@@ -247,28 +247,14 @@ void tst_QSqlQuery::cleanup()
     }
 }
 
-void tst_QSqlQuery::bitField_data()
+void tst_QSqlQuery::generic_data(const QString& engine)
 {
-    if ( dbs.fillTestTable( "QTDS" ) == 0 )
-        QSKIP( "No TDS database drivers are available in this Qt configuration", SkipAll );
-}
-
-void tst_QSqlQuery::nullBlob_data()
-{
-    if ( dbs.fillTestTable( "QOCI" ) == 0 )
-        QSKIP( "No Oracle database drivers are available in this Qt configuration", SkipAll );
-}
-
-void tst_QSqlQuery::rawField_data()
-{
-    if ( dbs.fillTestTable( "QOCI" ) == 0 )
-        QSKIP( "No Oracle database drivers are available in this Qt configuration", SkipAll );
-}
-
-void tst_QSqlQuery::generic_data()
-{
-    if ( dbs.fillTestTable() == 0 )
-        QSKIP( "No database drivers are available in this Qt configuration", SkipAll );
+    if ( dbs.fillTestTable(engine) == 0 ) {
+        if(engine.isEmpty())
+           QSKIP( "No database drivers are available in this Qt configuration", SkipAll );
+        else
+           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit(), SkipAll );
+    }
 }
 
 void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
@@ -421,12 +407,6 @@ void tst_QSqlQuery::char1SelectUnicode()
         QSKIP( "Database not unicode capable", SkipSingle );
 }
 
-void tst_QSqlQuery::oraRowId_data()
-{
-    if ( dbs.fillTestTable( "QOCI" ) == 0 )
-        QSKIP( "No Oracle database drivers are available in this Qt configuration", SkipAll );
-}
-
 void tst_QSqlQuery::oraRowId()
 {
     QFETCH( QString, dbName );
@@ -459,12 +439,6 @@ void tst_QSqlQuery::oraRowId()
     QVERIFY_SQL( q, exec() );
     QVERIFY( q.next() );
     QCOMPARE( q.value( 0 ).toString(), QString( "b" ) );
-}
-
-void tst_QSqlQuery::mysqlOutValues_data()
-{
-    if ( dbs.fillTestTable( "QMYSQL" ) == 0 )
-        QSKIP( "No MySQL database drivers are available in this Qt configuration", SkipAll );
 }
 
 void tst_QSqlQuery::mysqlOutValues()
@@ -515,12 +489,6 @@ void tst_QSqlQuery::mysqlOutValues()
     QCOMPARE( q.value( 0 ).toInt(), 42 );
 
     QVERIFY_SQL( q, exec( "drop procedure " + qTableName( "qtestproc" ) ) );
-}
-
-void tst_QSqlQuery::oraOutValues_data()
-{
-    if ( dbs.fillTestTable( "QOCI" ) == 0 )
-        QSKIP( "No Oracle database drivers are available in this Qt configuration", SkipAll );
 }
 
 void tst_QSqlQuery::oraOutValues()
@@ -670,18 +638,11 @@ void tst_QSqlQuery::oraClob()
     QVERIFY( q.value( 1 ).toByteArray() == loong.toLatin1() );
 }
 
-void tst_QSqlQuery::storedProceduresIBase_data()
-{
-    if ( dbs.fillTestTable( "QIBASE" ) == 0 )
-        QSKIP( "No Interbase database drivers are available in this Qt configuration", SkipAll );
-}
-
 void tst_QSqlQuery::storedProceduresIBase()
 {
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
-    DBMS_SPECIFIC( db, "QIBASE" );
 
     QSqlQuery q( db );
     q.exec( "drop procedure " + qTableName( "TESTPROC" ) );
@@ -711,12 +672,6 @@ void tst_QSqlQuery::storedProceduresIBase()
     QVERIFY( !q.next() );
 
     q.exec( "drop procedure " + qTableName( "TestProc" ) );
-}
-
-void tst_QSqlQuery::outValuesDB2_data()
-{
-    if ( dbs.fillTestTable( "QDB2" ) == 0 )
-        QSKIP( "No DB2 database drivers are available in this Qt configuration", SkipAll );
 }
 
 void tst_QSqlQuery::outValuesDB2()
@@ -1355,7 +1310,6 @@ void tst_QSqlQuery::nullBlob()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
-    DBMS_SPECIFIC( db, "QOCI" );
 
     QSqlQuery q( db );
     QVERIFY_SQL( q, exec( "create table " + qTableName( "qtest_nullblob" ) + " (id int primary key, bb blob)" ) );
@@ -1385,7 +1339,6 @@ void tst_QSqlQuery::rawField()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
-    DBMS_SPECIFIC( db, "QOCI" );
 
     QSqlQuery q( db );
     q.setForwardOnly( true );
@@ -2103,7 +2056,6 @@ void tst_QSqlQuery::record_sqlite()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
-    DBMS_SPECIFIC( db, "QSQLITE" );
 
     QSqlQuery q( db );
 
@@ -2131,7 +2083,6 @@ void tst_QSqlQuery::oraLong()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
-    DBMS_SPECIFIC( db, "QOCI" );
 
     QSqlQuery q( db );
 
@@ -2158,7 +2109,7 @@ void tst_QSqlQuery::execErrorRecovery()
 
     QSqlQuery q( db );
 
-    QVERIFY_SQL( q, exec( "create table " + qTableName( "qtest_exerr" ) + " (id int primary key)" ) );
+    QVERIFY_SQL( q, exec( "create table " + qTableName( "qtest_exerr" ) + " (id int not null primary key)" ) );
     QVERIFY_SQL( q, prepare( "insert into " + qTableName( "qtest_exerr" ) + " values (?)" ) );
 
     q.addBindValue( 1 );
@@ -2698,7 +2649,7 @@ void tst_QSqlQuery::emptyTableNavigate()
 }
 
 #ifdef NOT_READY_YET
-void tst_QSqlQuery::bug217003()
+void tst_QSqlQuery::task_217003()
 {
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );

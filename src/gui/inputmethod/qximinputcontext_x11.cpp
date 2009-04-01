@@ -437,7 +437,8 @@ void QXIMInputContext::create_xim()
                 // reinitialize input context after the input method
                 // server (like SCIM) has been launched without
                 // requiring the user to manually switch focus.
-                if (focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
+                if (focusWidget->testAttribute(Qt::WA_InputMethodEnabled)
+                    && focusWidget->testAttribute(Qt::WA_WState_Created))
                     setFocusWidget(focusWidget);
             }
             // following code fragment is not required for immodule

@@ -201,10 +201,14 @@ bool HelpPage::acceptNavigationRequest(QWebFrame *,
 {
     const QUrl &url = request.url();
     if (isLocalUrl(url)) {
-        if (url.path().endsWith(QLatin1String("pdf"))) {
-            QString fileName = url.toString();
-            fileName = QDir::tempPath() + QDir::separator() + fileName.right
-                (fileName.length() - fileName.lastIndexOf(QChar('/')));
+        const QString& path = url.path();
+        if (path.endsWith(QLatin1String(".pdf"))) {
+            const int lastDash = path.lastIndexOf(QChar('/'));
+            QString fileName = QDir::tempPath() + QDir::separator();
+            if (lastDash < 0)
+                fileName += path;
+            else
+                fileName += path.mid(lastDash + 1, path.length());
 
             QFile tmpFile(QDir::cleanPath(fileName));
             if (tmpFile.open(QIODevice::ReadWrite)) {
@@ -396,15 +400,19 @@ void HelpViewer::zoomOut(int range)
 
 bool HelpViewer::launchedWithExternalApp(const QUrl &url)
 {
-    bool isPdf = url.path().endsWith(QLatin1String("pdf"));
+    bool isPdf = url.path().endsWith(QLatin1String(".pdf"));
     if (url.scheme() == QLatin1String("http")
         || url.scheme() == QLatin1String("ftp")
         || url.scheme() == QLatin1String("mailto") || isPdf) {
         bool launched = false;
         if (isPdf && url.scheme() == QLatin1String("qthelp")) {
-            QString fileName = url.toString();
-            fileName = QDir::tempPath() + QDir::separator() + fileName.right
-                (fileName.length() - fileName.lastIndexOf(QLatin1Char('/')));
+            const QString& path = url.path();
+            const int lastDash = path.lastIndexOf(QChar('/'));
+            QString fileName = QDir::tempPath() + QDir::separator();
+            if (lastDash < 0)
+                fileName += path;
+            else
+                fileName += path.mid(lastDash + 1, path.length());
 
             QFile tmpFile(QDir::cleanPath(fileName));
             if (tmpFile.open(QIODevice::ReadWrite)) {

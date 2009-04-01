@@ -2055,9 +2055,13 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
         QWidget *prev = focus_widget;
         focus_widget = focus;
 
-        if (prev && reason != Qt::PopupFocusReason && reason != Qt::MenuBarFocusReason &&
-            prev->testAttribute(Qt::WA_InputMethodEnabled)) {
-            QInputContext *qic = prev->inputContext();
+        if (prev && ((reason != Qt::PopupFocusReason && reason != Qt::MenuBarFocusReason
+            && prev->testAttribute(Qt::WA_InputMethodEnabled))
+            // Do reset the input context, in case the new focus widget won't accept keyboard input
+            // or it is not created fully yet.
+            || (focus_widget && (!focus_widget->testAttribute(Qt::WA_InputMethodEnabled)
+            || !focus_widget->testAttribute(Qt::WA_WState_Created))))) {
+             QInputContext *qic = prev->inputContext();
             if(qic) {
                 qic->reset();
                 qic->setFocusWidget(0);

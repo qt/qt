@@ -1516,7 +1516,6 @@ void QWidget::activateWindow()
             X11->userTime = X11->time;
         qt_net_update_user_time(tlw, X11->userTime);
         XSetInputFocus(X11->display, tlw->internalWinId(), XRevertToParent, X11->time);
-        d->focusInputContext();
     }
 }
 
