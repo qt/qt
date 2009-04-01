@@ -235,28 +235,6 @@ QWindowSurface *QWidgetPrivate::createDefaultWindowSurface()
 
 /*!
     \internal
-    This is an internal function, you should never call this.
-
-    This function is called to focus associated input context. The
-    code intends to eliminate duplicate focus for the context even if
-    the context is shared between widgets
-
-    \sa QInputContext::setFocus()
- */
-void QWidgetPrivate::focusInputContext()
-{
-#ifndef QT_NO_IM
-    Q_Q(QWidget);
-    QInputContext *qic = q->inputContext();
-    if (qic) {
-        if(qic->focusWidget() != q)
-            qic->setFocusWidget(q);
-    }
-#endif // QT_NO_IM
-}
-
-/*!
-    \internal
 */
 void QWidgetPrivate::scrollChildren(int dx, int dy)
 {
