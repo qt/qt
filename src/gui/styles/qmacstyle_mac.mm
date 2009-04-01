@@ -138,7 +138,7 @@ enum {
     kHIThemeFrameTextFieldRound = 1000,
     kHIThemeFrameTextFieldRoundSmall = 1001,
     kHIThemeFrameTextFieldRoundMini = 1002
-}
+};
 #endif
 
 // Resolve these at run-time, since the functions was moved in Leopard.
