@@ -416,25 +416,46 @@ void Translator::dropTranslations()
     }
 }
 
+struct TranslatorMessagePtr {
+    TranslatorMessagePtr(const TranslatorMessage &tm)
+    {
+        ptr = &tm;
+    }
+
+    const TranslatorMessage *ptr;
+};
+
+Q_DECLARE_TYPEINFO(TranslatorMessagePtr, Q_MOVABLE_TYPE);
+
+static inline int qHash(TranslatorMessagePtr tmp)
+{
+    return qHash(*tmp.ptr);
+}
+
+static inline bool operator==(TranslatorMessagePtr tmp1, TranslatorMessagePtr tmp2)
+{
+    return *tmp1.ptr == *tmp2.ptr;
+}
+
 QList<TranslatorMessage> Translator::findDuplicates() const
 {
-    QHash<TranslatorMessage, int> dups;
+    QHash<TranslatorMessagePtr, int> dups;
     foreach (const TranslatorMessage &msg, m_messages)
         dups[msg]++;
     QList<TranslatorMessage> ret;
-    QHash<TranslatorMessage, int>::ConstIterator it = dups.constBegin(), end = dups.constEnd();
+    QHash<TranslatorMessagePtr, int>::ConstIterator it = dups.constBegin(), end = dups.constEnd();
     for (; it != end; ++it)
         if (it.value() > 1)
-            ret.append(it.key());
+            ret.append(*it.key().ptr);
     return ret;
 }
 
 void Translator::resolveDualEncoded()
 {
-    QHash<TranslatorMessage, int> dups;
+    QHash<TranslatorMessagePtr, int> dups;
     for (int i = 0; i < m_messages.count();) {
         const TranslatorMessage &msg = m_messages.at(i);
-        QHash<TranslatorMessage, int>::ConstIterator it = dups.constFind(msg);
+        QHash<TranslatorMessagePtr, int>::ConstIterator it = dups.constFind(msg);
         if (it != dups.constEnd()) {
             TranslatorMessage &omsg = m_messages[*it];
             if (omsg.isUtf8() != msg.isUtf8() && !omsg.isNonUtf8()) {
