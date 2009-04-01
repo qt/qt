@@ -49,7 +49,7 @@
     \section1 Introduction
 
     Qt uses the Phonon multimedia framework to provide functionality
-    for playback of the most common multimedia formats.The media can
+    for playback of the most common multimedia formats. The media can
     be read from files or streamed over a network, using a QURL to a
     file.
 
