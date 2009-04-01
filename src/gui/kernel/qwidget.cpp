@@ -308,20 +308,24 @@ void QWidget::setInputContext(QInputContext *context)
 
 
 /*!
+    \obsolete
+
     This function can be called on the widget that currently has focus
     to reset the input method operating on it.
 
-    \sa QInputContext, QInputContext::reset()
+    This function is providing for convenience, instead you should use
+    \l{QInputContext::}{reset()} on the input context that was
+    returned by inputContext().
+
+    \sa QInputContext, inputContext(), QInputContext::reset()
 */
 void QWidget::resetInputContext()
 {
     if (!hasFocus())
         return;
 #ifndef QT_NO_IM
-    if (!d_func()->ic)
-        return;
     QInputContext *qic = this->inputContext();
-    if( qic )
+    if(qic)
         qic->reset();
 #endif // QT_NO_IM
 }
