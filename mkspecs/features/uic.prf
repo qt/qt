@@ -36,7 +36,7 @@ isEmpty(QMAKE_MOD_UIC):QMAKE_MOD_UIC = ui_
 
 ui_dir_short = $$UI_HEADERS_DIR
 win32:ui_dir_short ~= s,^.:,/,
-contains(ui_dir_short, ^[/\\].*):INCLUDEPATH += $$UI_HEADERS_DIR
+contains(ui_dir_short, ^[/\\\\].*):INCLUDEPATH += $$UI_HEADERS_DIR
 else:INCLUDEPATH += $$OUT_PWD/$$UI_HEADERS_DIR
 
 uic3 {
