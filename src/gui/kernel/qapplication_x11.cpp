@@ -887,11 +887,15 @@ bool QApplicationPrivate::x11_apply_settings()
         }
     }
 
+    static QString currentStyleName = stylename;
     if (QCoreApplication::startingUp()) {
         if (!stylename.isEmpty() && !QApplicationPrivate::styleOverride)
             QApplicationPrivate::styleOverride = new QString(stylename);
     } else {
-        QApplication::setStyle(stylename);
+        if (currentStyleName != stylename) {
+            currentStyleName = stylename;
+            QApplication::setStyle(stylename);
+        }
     }
 
     int num =
