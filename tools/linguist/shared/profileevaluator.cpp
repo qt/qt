@@ -157,11 +157,6 @@ ProFileEvaluator::Private::Private(ProFileEvaluator *q_)
     m_prevLineNo = 0;
     m_prevProFile = 0;
     m_verbose = true;
-    m_block = 0;
-    m_commentItem = 0;
-    m_syntaxError = 0;
-    m_lineNo = 0;
-    m_contNextLine = false;
 }
 
 bool ProFileEvaluator::Private::read(ProFile *pro)
@@ -172,8 +167,12 @@ bool ProFileEvaluator::Private::read(ProFile *pro)
         return false;
     }
 
+    m_block = 0;
+    m_commentItem = 0;
+    m_contNextLine = false;
     m_syntaxError = false;
     m_lineNo = 1;
+    m_blockstack.clear();
     m_blockstack.push(pro);
 
     QTextStream ts(&file);
