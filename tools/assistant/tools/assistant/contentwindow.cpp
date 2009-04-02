@@ -132,7 +132,7 @@ bool ContentWindow::eventFilter(QObject *o, QEvent *e)
                     qobject_cast<QHelpContentModel*>(m_contentWidget->model());
                 if (contentModel) {
                     QHelpContentItem *itm = contentModel->contentItemAt(index);
-                    if (itm)
+                    if (itm && !isPdfFile(itm))
                         CentralWidget::instance()->setSourceInNewTab(itm->url());
                 }
             }
@@ -146,15 +146,18 @@ void ContentWindow::showContextMenu(const QPoint &pos)
     if (!m_contentWidget->indexAt(pos).isValid())
         return;
 
-    QMenu menu;
-    QAction *curTab = menu.addAction(tr("Open Link"));
-    QAction *newTab = menu.addAction(tr("Open Link in New Tab"));
-    menu.move(m_contentWidget->mapToGlobal(pos));
-
     QHelpContentModel *contentModel =
         qobject_cast<QHelpContentModel*>(m_contentWidget->model());
     QHelpContentItem *itm =
         contentModel->contentItemAt(m_contentWidget->currentIndex());
+
+    QMenu menu;
+    QAction *curTab = menu.addAction(tr("Open Link"));
+    QAction *newTab = menu.addAction(tr("Open Link in New Tab"));
+    if (isPdfFile(itm))
+        newTab->setEnabled(false);
+    
+    menu.move(m_contentWidget->mapToGlobal(pos));
 
     QAction *action = menu.exec();
     if (curTab == action)
@@ -173,6 +176,12 @@ void ContentWindow::itemClicked(const QModelIndex &index)
         if (itm)
             emit linkActivated(itm->url());
     }
+}
+
+bool ContentWindow::isPdfFile(QHelpContentItem *item) const
+{
+    const QString &path = item->url().path();
+    return path.endsWith(QLatin1String(".pdf"), Qt::CaseInsensitive);
 }
 
 QT_END_NAMESPACE
