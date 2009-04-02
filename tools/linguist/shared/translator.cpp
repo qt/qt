@@ -416,38 +416,52 @@ void Translator::dropTranslations()
     }
 }
 
-QList<TranslatorMessage> Translator::findDuplicates() const
+QSet<TranslatorMessagePtr> Translator::resolveDuplicates()
 {
-    QHash<TranslatorMessage, int> dups;
-    foreach (const TranslatorMessage &msg, m_messages)
-        dups[msg]++;
-    QList<TranslatorMessage> ret;
-    QHash<TranslatorMessage, int>::ConstIterator it = dups.constBegin(), end = dups.constEnd();
-    for (; it != end; ++it)
-        if (it.value() > 1)
-            ret.append(it.key());
-    return ret;
-}
-
-void Translator::resolveDualEncoded()
-{
-    QHash<TranslatorMessage, int> dups;
+    QSet<TranslatorMessagePtr> dups;
+    QHash<TranslatorMessagePtr, int> refs;
     for (int i = 0; i < m_messages.count();) {
         const TranslatorMessage &msg = m_messages.at(i);
-        QHash<TranslatorMessage, int>::ConstIterator it = dups.constFind(msg);
-        if (it != dups.constEnd()) {
+        QHash<TranslatorMessagePtr, int>::ConstIterator it = refs.constFind(msg);
+        if (it != refs.constEnd()) {
             TranslatorMessage &omsg = m_messages[*it];
             if (omsg.isUtf8() != msg.isUtf8() && !omsg.isNonUtf8()) {
+                // Dual-encoded message
                 omsg.setUtf8(true);
                 omsg.setNonUtf8(true);
-                m_messages.removeAt(i);
-                continue;
+            } else {
+                // Duplicate
+                dups.insert(omsg);
             }
-            // Regular dupe; will complain later
+            if (!omsg.isTranslated() && msg.isTranslated())
+                omsg.setTranslations(msg.translations());
+            m_messages.removeAt(i);
         } else {
-            dups[msg] = i;
+            refs[msg] = i;
+            ++i;
         }
-        ++i;
+    }
+    return dups;
+}
+
+void Translator::reportDuplicates(const QSet<TranslatorMessagePtr> &dupes,
+                                  const QString &fileName, bool verbose)
+{
+    if (!dupes.isEmpty()) {
+        if (!verbose) {
+            qWarning("Warning: dropping duplicate messages in '%s'\n(try -verbose for more info).",
+                     qPrintable(fileName));
+        } else {
+            qWarning("Warning: dropping duplicate messages in '%s':", qPrintable(fileName));
+            foreach (const TranslatorMessagePtr &msg, dupes) {
+                qWarning("\n* Context: %s\n* Source: %s",
+                        qPrintable(msg->context()),
+                        qPrintable(msg->sourceText()));
+                if (!msg->comment().isEmpty())
+                    qWarning("* Comment: %s", qPrintable(msg->comment()));
+            }
+            qWarning();
+        }
     }
 }
 

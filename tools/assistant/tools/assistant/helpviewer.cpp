@@ -164,6 +164,7 @@ public:
 
 protected:
     virtual QWebPage *createWindow(QWebPage::WebWindowType);
+    virtual void triggerAction(WebAction action, bool checked = false);
 
     virtual bool acceptNavigationRequest(QWebFrame *frame,
         const QNetworkRequest &request, NavigationType type);
@@ -171,16 +172,30 @@ protected:
 private:
     CentralWidget *centralWidget;
     QHelpEngine *helpEngine;
+    bool closeNewTabIfNeeded;
+
+    friend class HelpViewer;
+    Qt::MouseButtons m_pressedButtons;
+    Qt::KeyboardModifiers m_keyboardModifiers;
 };
 
 HelpPage::HelpPage(CentralWidget *central, QHelpEngine *engine, QObject *parent)
-    : QWebPage(parent), centralWidget(central), helpEngine(engine)
+    : QWebPage(parent)
+    , centralWidget(central)
+    , helpEngine(engine)
+    , closeNewTabIfNeeded(false)
+    , m_pressedButtons(Qt::NoButton)
+    , m_keyboardModifiers(Qt::NoModifier)
 {
 }
 
 QWebPage *HelpPage::createWindow(QWebPage::WebWindowType)
 {
-    return centralWidget->newEmptyTab()->page();
+    HelpPage* newPage = static_cast<HelpPage*>(centralWidget->newEmptyTab()->page());
+    if (newPage)
+        newPage->closeNewTabIfNeeded = closeNewTabIfNeeded;
+    closeNewTabIfNeeded = false;
+    return newPage;
 }
 
 static bool isLocalUrl(const QUrl &url)
@@ -196,10 +211,24 @@ static bool isLocalUrl(const QUrl &url)
     return false;
 }
 
+void HelpPage::triggerAction(WebAction action, bool checked)
+{
+    switch (action) {
+        case OpenLinkInNewWindow:
+            closeNewTabIfNeeded = true;
+        default:        // fall through
+            QWebPage::triggerAction(action, checked);
+            break;
+    }
+}
+
 bool HelpPage::acceptNavigationRequest(QWebFrame *,
-    const QNetworkRequest &request, QWebPage::NavigationType)
+    const QNetworkRequest &request, QWebPage::NavigationType type)
 {
     const QUrl &url = request.url();
+    const bool closeNewTab = closeNewTabIfNeeded;
+    closeNewTabIfNeeded = false;
+
     if (isLocalUrl(url)) {
         const QString& path = url.path();
         if (path.endsWith(QLatin1String(".pdf"))) {
@@ -216,7 +245,21 @@ bool HelpPage::acceptNavigationRequest(QWebFrame *,
                 tmpFile.close();
             }
             QDesktopServices::openUrl(QUrl(tmpFile.fileName()));
+
+            if (closeNewTab)
+                QMetaObject::invokeMethod(CentralWidget::instance(), "closeTab");
             return false;
+        }
+
+        if (type == QWebPage::NavigationTypeLinkClicked
+            && (m_keyboardModifiers & Qt::ControlModifier
+            || m_pressedButtons == Qt::MidButton)) {
+                HelpViewer* viewer = centralWidget->newEmptyTab();
+                if (viewer)
+                    CentralWidget::instance()->setSource(url);
+                m_pressedButtons = Qt::NoButton;
+                m_keyboardModifiers = Qt::NoModifier;
+                return false;
         }
         return true;
     }
@@ -330,6 +373,16 @@ void HelpViewer::actionChanged()
         emit backwardAvailable(a->isEnabled());
     else if (a == pageAction(QWebPage::Forward))
         emit forwardAvailable(a->isEnabled());
+}
+
+void HelpViewer::mousePressEvent(QMouseEvent *event)
+{
+    HelpPage *currentPage = static_cast<HelpPage*>(page());
+    if (currentPage) {
+        currentPage->m_pressedButtons = event->buttons();
+        currentPage->m_keyboardModifiers = event->modifiers();
+    }
+    QWebView::mousePressEvent(event);
 }
 
 #else  // !defined(QT_NO_WEBKIT)

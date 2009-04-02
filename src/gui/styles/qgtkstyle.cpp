@@ -2593,16 +2593,24 @@ void QGtkStyle::drawControl(ControlElement element,
                     opt.rect = vCheckRect;
                     drawPrimitive(PE_PanelButtonCommand, &opt, painter, widget);
                 }
-
                 painter->drawPixmap(pmr.topLeft(), pixmap);
             }
 
             GdkColor gdkText = gtkMenuItem->style->fg[GTK_STATE_NORMAL];
             GdkColor gdkDText = gtkMenuItem->style->fg[GTK_STATE_INSENSITIVE];
             GdkColor gdkHText = gtkMenuItem->style->fg[GTK_STATE_PRELIGHT];
+            uint resolve_mask = option->palette.resolve();
             QColor textColor = QColor(gdkText.red>>8, gdkText.green>>8, gdkText.blue>>8);
             QColor disabledTextColor = QColor(gdkDText.red>>8, gdkDText.green>>8, gdkDText.blue>>8);
+            if (resolve_mask & (1 << QPalette::ButtonText)) {
+                textColor = option->palette.buttonText().color();
+                disabledTextColor = option->palette.brush(QPalette::Disabled, QPalette::ButtonText);;
+            }
+
             QColor highlightedTextColor = QColor(gdkHText.red>>8, gdkHText.green>>8, gdkHText.blue>>8);
+            if (resolve_mask & (1 << QPalette::HighlightedText)) {
+                highlightedTextColor = option->palette.highlightedText().color();
+            }
 
             if (selected)
                 painter->setPen(highlightedTextColor);

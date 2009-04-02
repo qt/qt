@@ -480,7 +480,7 @@ private:
 
     uint fontIndexForFont(CTFontRef id) const;
     CTFontRef ctfont;
-    mutable QCFType<CFDictionaryRef> attributeDict;
+    mutable QCFType<CFMutableDictionaryRef> attributeDict;
 
     friend class QFontDialogPrivate;
 };

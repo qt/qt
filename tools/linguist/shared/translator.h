@@ -132,9 +132,10 @@ public:
     void stripNonPluralForms();
     void stripIdenticalSourceTranslations();
     void dropTranslations();
-    QList<TranslatorMessage> findDuplicates() const;
-    void resolveDualEncoded();
     void makeFileNamesAbsolute(const QDir &originalPath);
+    QSet<TranslatorMessagePtr> resolveDuplicates();
+    static void reportDuplicates(const QSet<TranslatorMessagePtr> &dupes,
+                                 const QString &fileName, bool verbose);
 
     void setCodecName(const QByteArray &name);
     QByteArray codecName() const { return m_codecName; }

@@ -107,6 +107,7 @@ Q_SIGNALS:
 protected:
     virtual void wheelEvent(QWheelEvent *);
     void mouseReleaseEvent(QMouseEvent *e);
+    void mousePressEvent(QMouseEvent *event);
 
 private Q_SLOTS:
     void actionChanged();

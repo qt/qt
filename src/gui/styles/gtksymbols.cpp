@@ -529,14 +529,14 @@ void QGtk::applyGtkSystemPalette(QWidget *widget)
         ensureWidgetPalette(menubar, QLS("GtkMenuBar"));
     else if (QToolBar *toolbar = qobject_cast<QToolBar*> (widget))
         ensureWidgetPalette(toolbar, QLS("GtkToolbar"));
-    else if (QMenu *menubar = qobject_cast<QMenu*> (widget)) {
+    else if (QMenu *menu = qobject_cast<QMenu*> (widget)) {
         // This really applies to the combo box rendering since
         // QComboBox copies the palette from a QMenu
         QPalette pal = widget->palette();
         GdkColor gdkBg = QGtk::gtkWidget(QLS("GtkMenu"))->style->bg[GTK_STATE_NORMAL];
         QColor bgColor(gdkBg.red>>8, gdkBg.green>>8, gdkBg.blue>>8);
         pal.setBrush(QPalette::Base, bgColor);
-        menubar->setPalette(pal);
+        menu->setPalette(pal);
     }
     widget->setAttribute(Qt::WA_SetPalette, false);
 }

@@ -258,8 +258,12 @@ bool ProFileEvaluator::Private::read(ProFile *pro)
         return false;
     }
 
+    m_block = 0;
+    m_commentItem = 0;
+    m_contNextLine = false;
     m_syntaxError = false;
     m_lineNo = 1;
+    m_blockstack.clear();
     m_blockstack.push(pro);
 
     QTextStream ts(&file);
@@ -1204,9 +1208,10 @@ bool ProFileEvaluator::Private::isActiveConfig(const QString &config, bool regex
 QStringList ProFileEvaluator::Private::evaluateExpandFunction(const QString &func, const QString &arguments)
 {
     QStringList argumentsList = split_arg_list(arguments);
+
     QStringList args;
     for (int i = 0; i < argumentsList.count(); ++i)
-        args += expandVariableReferences(argumentsList[i]);
+        args += expandVariableReferences(argumentsList[i]).join(Option::field_sep);
 
     enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST,
                       E_SPRINTF, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
@@ -1693,10 +1698,11 @@ bool ProFileEvaluator::Private::evaluateConditionalFunction(const QString &funct
                 for (int mut = 0; mut < mutuals.count(); mut++) {
                     if (configs[i] == mutuals[mut].trimmed()) {
                         cond = (configs[i] == args[0]);
-                        break;
+                        goto done_T_CONFIG;
                     }
                 }
             }
+          done_T_CONFIG:
             break;
         }
         case T_CONTAINS: {
@@ -1723,12 +1729,12 @@ bool ProFileEvaluator::Private::evaluateConditionalFunction(const QString &funct
                     for (int mut = 0; mut < mutuals.count(); mut++) {
                         if (val == mutuals[mut].trimmed()) {
                             cond = (regx.exactMatch(val) || val == args[1]);
-                            break;
+                            goto done_T_CONTAINS;
                         }
                     }
                 }
             }
-
+          done_T_CONTAINS:
             break;
         }
         case T_COUNT: {

@@ -189,13 +189,20 @@ void IndexWindow::open(QHelpIndexWidget* indexWidget, const QModelIndex &index)
     if (model) {
         QString keyword = model->data(index, Qt::DisplayRole).toString();
         QMap<QString, QUrl> links = model->linksForKeyword(keyword);
+
+        QUrl url;
         if (links.count() > 1) {
             TopicChooser tc(this, keyword, links);
-            if (tc.exec() == QDialog::Accepted)
-                CentralWidget::instance()->setSourceInNewTab(tc.link());
+            if (tc.exec() == QDialog::Accepted) 
+                url = tc.link();
         } else if (links.count() == 1) {
-            CentralWidget::instance()->setSourceInNewTab(links.constBegin().value());
+            url = links.constBegin().value();
         }
+
+        if (url.path().endsWith(QLatin1String(".pdf"), Qt::CaseInsensitive))
+            CentralWidget::instance()->setSource(url);
+        else
+            CentralWidget::instance()->setSourceInNewTab(url);
     }
 }
 
