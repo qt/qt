@@ -1007,6 +1007,11 @@ enum { MaximumParamCount = 11 }; // up to 10 arguments + 1 return value
        a QEvent will be sent and the member is invoked as soon as the application
        enters the main event loop.
 
+    \o If \a type is Qt::BlockingQueuedConnection, the method will be invoked in
+       the same way as for Qt::QueuedConnection, except that the current thread
+       will block until the event is delivered. Using this connection type to
+       communicate between objects in the same thread will lead to deadlocks.
+
     \o If \a type is Qt::AutoConnection, the member is invoked
        synchronously if \a obj lives in the same thread as the
        caller; otherwise it will invoke the member asynchronously.
@@ -1897,6 +1902,12 @@ static QByteArray qualifiedName(const QMetaEnum &e)
 
     \ingroup objectmodel
 
+    Property meta-data is obtained from an object's meta-object. See
+    QMetaObject::property() and QMetaObject::propertyCount() for
+    details.
+
+    \section1 Property Meta-Data
+
     A property has a name() and a type(), as well as various
     attributes that specify its behavior: isReadable(), isWritable(),
     isDesignable(), isScriptable(), and isStored().
@@ -1912,9 +1923,10 @@ static QByteArray qualifiedName(const QMetaEnum &e)
     functions. See QObject::setProperty() and QObject::property() for
     details.
 
-    You get property meta-data through an object's meta-object. See
-    QMetaObject::property() and QMetaObject::propertyCount() for
-    details.
+    \section1 Copying and Assignment
+
+    QMetaProperty objects can be copied by value. However, each copy will
+    refer to the same underlying property meta-data.
 
     \sa QMetaObject, QMetaEnum, QMetaMethod, {Qt's Property System}
 */
