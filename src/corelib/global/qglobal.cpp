@@ -2944,12 +2944,12 @@ bool QInternal::callFunction(InternalFunction func, void **args)
 
  Compares the floating point value \a p1 and \a p2 and
  returns \c true if they are considered equal, otherwise \c false.
- 
+
  Note that comparing values where either \a p1 or \a p2 is 0.0 will not work. 
- The solution to this is to compare against values greater than or equal to 1.0
- 
+ The solution to this is to compare against values greater than or equal to 1.0.
+
  \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 46
- 
+
  The two numbers are compared in a relative way, where the
  exactness is stronger the smaller the numbers are.
  */
