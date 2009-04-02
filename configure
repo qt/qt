@@ -6177,6 +6177,9 @@ TARGET_OPERATING_SYSTEM=`echo $XPLATFORM | cut -f 2- -d/ | cut -f -1 -d-`
 
 # when cross-compiling, don't include build-host information (build key is target specific)
 QT_BUILD_KEY="$CFG_USER_BUILD_KEY $CFG_ARCH $TARGET_OPERATING_SYSTEM $COMPILER $BUILD_OPTIONS"
+if [ -n "$QT_NAMESPACE" ]; then
+    QT_BUILD_KEY="$QT_BUILD_KEY $QT_NAMESPACE"
+fi
 MAC_NEED_TWO_BUILD_KEYS="no"
 if [ "$PLATFORM_MAC" = "yes" -a "$CFG_MAC_COCOA" = "yes" ]; then
     QT_BUILD_KEY_CARBON=$QT_BUILD_KEY
