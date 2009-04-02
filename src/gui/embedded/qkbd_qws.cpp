@@ -46,6 +46,7 @@
 
 #include <QFile>
 #include <QDataStream>
+#include <QStringList>
 
 #include "qwindowsystem_qws.h"
 #include "qscreen_qws.h"
