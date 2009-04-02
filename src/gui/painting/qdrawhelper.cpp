@@ -488,6 +488,15 @@ uint QT_FASTCALL qt_fetchPixel<QImage::Format_ARGB4444_Premultiplied>(const ucha
     return qt_colorConvert<quint32, qargb4444>(color, 0);
 }
 
+template<>
+Q_STATIC_TEMPLATE_SPECIALIZATION
+uint QT_FASTCALL qt_fetchPixel<QImage::Format_Invalid>(const uchar *,
+                                                     int ,
+                                                     const QVector<QRgb> *)
+{
+    return 0;
+}
+
 typedef uint (QT_FASTCALL *FetchPixelProc)(const uchar *scanLine, int x, const QVector<QRgb> *);
 
 #define SPANFUNC_POINTER_FETCHPIXEL(Arg) qt_fetchPixel<QImage::Arg>
