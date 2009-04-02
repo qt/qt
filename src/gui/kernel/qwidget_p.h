@@ -354,8 +354,6 @@ public:
     void setWindowIcon_sys(bool forceReset = false);
     void setWindowOpacity_sys(qreal opacity);
 
-    void focusInputContext();
-
     void adjustQuitOnCloseAttribute();
 
 #if defined(Q_WS_X11)

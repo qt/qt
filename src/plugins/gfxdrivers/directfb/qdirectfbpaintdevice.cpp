@@ -50,7 +50,7 @@ QDirectFBPaintDevice::~QDirectFBPaintDevice()
 }
 
 
-IDirectFBSurface *QDirectFBPaintDevice::directFbSurface() const
+IDirectFBSurface *QDirectFBPaintDevice::directFBSurface() const
 {
     return dfbSurface;
 }

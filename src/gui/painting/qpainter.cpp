@@ -1293,7 +1293,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     destination.
 
     Note that composition transformation operates pixelwise. For that
-    reason, there is a difference between using the grahic primitive
+    reason, there is a difference between using the graphic primitive
     itself and its bounding rectangle: The bounding rect contains
     pixels with alpha == 0 (i.e the pixels surrounding the
     primitive). These pixels will overwrite the other image's pixels,

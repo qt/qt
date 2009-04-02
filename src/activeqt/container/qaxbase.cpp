@@ -1660,11 +1660,15 @@ private:
     QMap<QByteArray, Property> property_list;
     void addProperty(const QByteArray &type, const QByteArray &name, uint flags)
     {
+        QByteArray propertyType(type);
+        if (propertyType.endsWith("&"))
+            propertyType.chop(1);
+
         Property &prop = property_list[name];
-        if (!type.isEmpty() && type != "HRESULT") {
-            prop.type = replaceType(type);
-            if (prop.type != type)
-                prop.realType = type;
+        if (!propertyType.isEmpty() && propertyType != "HRESULT") {
+            prop.type = replaceType(propertyType);
+            if (prop.type != propertyType)
+                prop.realType = propertyType;
         }
         if (flags & Writable)
             flags |= Stored;

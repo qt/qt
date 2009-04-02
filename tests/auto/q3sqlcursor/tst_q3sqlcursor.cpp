@@ -89,7 +89,7 @@ private slots:
     void unicode();
     void precision_data() { generic_data(); }
     void precision();
-    void insertORA_data();
+    void insertORA_data() { generic_data("QOCI"); }
     void insertORA();
     void batchInsert_data() { generic_data(); }
     void batchInsert();
@@ -101,7 +101,7 @@ private slots:
     void insertFieldNameContainsWS(); // For task 117996
 
 private:
-    void generic_data();
+    void generic_data(const QString &engine=QString());
     void createTestTables( QSqlDatabase db );
     void dropTestTables( QSqlDatabase db );
     void populateTestTables( QSqlDatabase db );
@@ -117,10 +117,14 @@ tst_Q3SqlCursor::~tst_Q3SqlCursor()
 {
 }
 
-void tst_Q3SqlCursor::generic_data()
+void tst_Q3SqlCursor::generic_data(const QString &engine)
 {
-    if ( dbs.fillTestTable() == 0 )
-	QSKIP( "No database drivers are available in this Qt configuration", SkipAll );
+    if ( dbs.fillTestTable(engine) == 0 ) {
+        if(engine.isEmpty())
+	   QSKIP( "No database drivers are available in this Qt configuration", SkipAll );
+        else
+           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit(), SkipAll );
+    }
 }
 
 void tst_Q3SqlCursor::createTestTables( QSqlDatabase db )
@@ -427,12 +431,6 @@ static QString dumpUtf8( const QString& str )
 	res += "0x" + QString::number( str[ i ].unicode(), 16 ) + ' ';
     }
     return res;
-}
-
-void tst_Q3SqlCursor::insertORA_data()
-{
-    if ( dbs.fillTestTable( "QOCI" ) == 0 )
-	QSKIP( "No Oracle database drivers are available in this Qt configuration", SkipAll );
 }
 
 void tst_Q3SqlCursor::insertORA()

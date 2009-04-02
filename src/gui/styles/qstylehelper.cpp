@@ -252,6 +252,7 @@ void QStyleHelper::drawDial(const QStyleOptionSlider *option, QPainter *painter)
     p->setBrush(Qt::NoBrush);
     p->setPen(buttonColor.lighter(110));
     p->drawEllipse(br.adjusted(1, 1, -1, -1));
+
     if (option->state & QStyle::State_HasFocus) {
         QColor highlight = pal.highlight().color();
         highlight.setHsv(highlight.hue(),
@@ -274,20 +275,19 @@ void QStyleHelper::drawDial(const QStyleOptionSlider *option, QPainter *painter)
                                  dialRect.center().y() + dialRect.width(),
                                  dialRect.width()*2,
                                  dialRect.center().x(), dialRect.center().y());
-    dialGradient.setColorAt(1, buttonColor.darker(130));
-    dialGradient.setColorAt(0.201, buttonColor.darker(105));
-    dialGradient.setColorAt(0.2, buttonColor.darker(104));
-    dialGradient.setColorAt(0, buttonColor.darker(102));
+    dialGradient.setColorAt(1, buttonColor.darker(140));
+    dialGradient.setColorAt(0.4, buttonColor.darker(120));
+    dialGradient.setColorAt(0, buttonColor.darker(110));
+    if (penSize > 3.0) {
+        painter->setPen(QPen(QColor(0, 0, 0, 25), penSize));
+        painter->drawLine(calcRadialPos(option, 0.90), calcRadialPos(option, 0.96));
+    }
 
     painter->setBrush(dialGradient);
     painter->setPen(QColor(255, 255, 255, 150));
     painter->drawEllipse(dialRect.adjusted(-1, -1, 1, 1));
-    painter->setPen(QColor(0, 0, 0, 50));
+    painter->setPen(QColor(0, 0, 0, 80));
     painter->drawEllipse(dialRect);
-    if (penSize > 3.0) {
-        painter->setPen(QPen(QColor(0, 0, 0, 16), penSize/2.0));
-        painter->drawLine(calcRadialPos(option, 0.95), calcRadialPos(option, 0.97));
-    }
     painter->restore();
 }
 #endif //QT_NO_DIAL

@@ -154,7 +154,7 @@ void QDirectFBSurface::setGeometry(const QRect &rect, const QRegion &mask)
                 description.width = rect.width();
                 description.height = rect.height();
                 QDirectFBScreen::initSurfaceDescriptionPixelFormat(&description,
-                                                                   QDirectFBSurface::instance()->pixelFormat());
+                                                                   QDirectFBScreen::instance()->pixelFormat());
                 dfbSurface = QDirectFBScreen::instance()->createDFBSurface(&description, false);
             } else {
                 Q_ASSERT(dfbSurface);

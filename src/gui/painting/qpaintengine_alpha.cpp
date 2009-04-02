@@ -80,6 +80,7 @@ bool QAlphaPaintEngine::begin(QPaintDevice *pdev)
     d->m_advancedPen = false;
     d->m_advancedBrush = false;
     d->m_complexTransform = false;
+    d->m_emulateProjectiveTransforms = false;
 
     // clear alpha region
     d->m_alphargn = QRegion();
@@ -116,6 +117,9 @@ void QAlphaPaintEngine::updateState(const QPaintEngineState &state)
     if (flags & QPaintEngine::DirtyTransform) {
         d->m_transform = state.transform();
         d->m_complexTransform = (d->m_transform.type() > QTransform::TxScale);
+        d->m_emulateProjectiveTransforms = !(d->m_savedcaps & QPaintEngine::PerspectiveTransform)
+                                           && !(d->m_savedcaps & QPaintEngine::AlphaBlend)
+                                           && (d->m_transform.type() >= QTransform::TxProject);
     }
     if (flags & QPaintEngine::DirtyPen) {
         d->m_pen = state.pen();
@@ -163,7 +167,9 @@ void QAlphaPaintEngine::drawPath(const QPainterPath &path)
 
     if (d->m_pass == 0) {
         d->m_continueCall = false;
-        if (d->m_hasalpha || d->m_advancedPen || d->m_advancedBrush) {
+        if (d->m_hasalpha || d->m_advancedPen || d->m_advancedBrush
+            || d->m_emulateProjectiveTransforms)
+        {
             d->addAlphaRect(tr);
         }
         if (d->m_picengine)
@@ -187,7 +193,9 @@ void QAlphaPaintEngine::drawPolygon(const QPointF *points, int pointCount, Polyg
 
     if (d->m_pass == 0) {
         d->m_continueCall = false;
-        if (d->m_hasalpha || d->m_advancedPen || d->m_advancedBrush) {
+        if (d->m_hasalpha || d->m_advancedPen || d->m_advancedBrush
+            || d->m_emulateProjectiveTransforms)
+        {
             d->addAlphaRect(tr);
         }
 
