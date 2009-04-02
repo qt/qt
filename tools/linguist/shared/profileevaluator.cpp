@@ -1266,10 +1266,11 @@ bool ProFileEvaluator::Private::evaluateConditionalFunction(const QString &funct
                 for (int mut = 0; mut < mutuals.count(); mut++) {
                     if (configs[i] == mutuals[mut].trimmed()) {
                         cond = (configs[i] == args[0]);
-                        break;
+                        goto done_T_CONFIG;
                     }
                 }
             }
+          done_T_CONFIG:
             break;
         }
         case CF_CONTAINS: {
@@ -1296,12 +1297,12 @@ bool ProFileEvaluator::Private::evaluateConditionalFunction(const QString &funct
                     for (int mut = 0; mut < mutuals.count(); mut++) {
                         if (val == mutuals[mut].trimmed()) {
                             cond = (regx.exactMatch(val) || val == args[1]);
-                            break;
+                            goto done_T_CONTAINS;
                         }
                     }
                 }
             }
-
+          done_T_CONTAINS:
             break;
         }
         case CF_COUNT: {
