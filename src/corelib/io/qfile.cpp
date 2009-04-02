@@ -900,7 +900,10 @@ QFile::copy(const QString &newName)
                         error = true;
                         d->setError(QFile::CopyError, tr("Cannot create %1 for output").arg(newName));
                     }
-#ifndef QT_NO_TEMPORARYFILE
+#ifdef QT_NO_TEMPORARYFILE
+                    if (error)
+                        out.remove();
+#else
                     if (!error)
                         out.setAutoRemove(false);
 #endif
