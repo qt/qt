@@ -105,10 +105,11 @@ inline static QString qTableName( const QString& prefix, QSqlDriver* driver = 0 
 
 inline static bool testWhiteSpaceNames( const QString &name )
 {
-    return name.startsWith( "QPSQL" )
+/*    return name.startsWith( "QPSQL" )
            || name.startsWith( "QODBC" )
            || name.startsWith( "QSQLITE" )
-           || name.startsWith( "QMYSQL" );
+           || name.startsWith( "QMYSQL" );*/
+    return name != QLatin1String("QSQLITE2");
 }
 
 inline static QString toHex( const QString& binary )
@@ -203,14 +204,14 @@ public:
     {
 //         addDb( "QOCI8", "//horsehead.nokia.troll.no:1521/pony.troll.no", "scott", "tiger" ); // Oracle 9i on horsehead
 //         addDb( "QOCI8", "//horsehead.nokia.troll.no:1521/ustest.troll.no", "scott", "tiger", "" ); // Oracle 9i on horsehead
-//         addDb( "QOCI8", "ICE", "scott", "tiger", "" ); // Oracle 8 on iceblink
+//         addDb( "QOCI8", "//iceblink.nokia.troll.no:1521/ice.troll.no", "scott", "tiger", "" ); // Oracle 8 on iceblink (not currently working)
 //         addDb( "QOCI", "//silence.nokia.troll.no:1521/testdb", "scott", "tiger" ); // Oracle 10g on silence
 //         addDb( "QOCI", "//oracle10g-nokia.trolltech.com.au:1521/XE", "scott", "tiger" ); // Oracle 10gexpress on xen
 
 //      This requires a local ODBC data source to be configured( pointing to a MySql database )
 //         addDb( "QODBC", "mysqlodbc", "troll", "trond" );
 //         addDb( "QODBC", "SqlServer", "troll", "trond" );
-//         addDb( "QTDS7", "testdb", "troll", "trondk", "horsehead" );
+//         addDb( "QTDS7", "testdb", "troll", "trondk", "horsehead.nokia.troll.no" );
 //         addDb( "QODBC", "silencetestdb", "troll", "trond", "silence" );
 //         addDb( "QODBC", "horseheadtestdb", "troll", "trondk", "horsehead" );
 
@@ -231,7 +232,7 @@ public:
 //         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "postgres74-nokia.trolltech.com.au" );         // Version 7.4.19-1.el4_6.1
 //         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "postgres81-nokia.trolltech.com.au" );         // Version 8.1.11-1.el5_1.1
 
-//         addDb( "QDB2", "testdb", "troll", "trond", "silence" ); // DB2 v9.1 on silence
+//         addDb( "QDB2", "testdb", "troll", "trond", "silence.nokia.troll.no" ); // DB2 v9.1 on silence
 
 //      yes - interbase really wants the physical path on the host machine.
 //         addDb( "QIBASE", "/opt/interbase/qttest.gdb", "SYSDBA", "masterkey", "horsehead.nokia.troll.no" );
@@ -239,10 +240,6 @@ public:
 //         addDb( "QIBASE", "silence.troll.no:c:\\ibase\\testdb_ascii", "SYSDBA", "masterkey", "" ); // InterBase 7.5 on silence
 //         addDb( "QIBASE", "/opt/firebird/databases/testdb.fdb", "testuser", "Ee4Gabf6_", "firebird1-nokia.trolltech.com.au" ); // Firebird 1.5.5
 //         addDb( "QIBASE", "/opt/firebird/databases/testdb.fdb", "testuser", "Ee4Gabf6_", "firebird2-nokia.trolltech.com.au" ); // Firebird 2.1.1
-
-//      Anders' local Firebird and InterBase test databases
-//         addDb("QIBASE", "localhost:c:\\Firebird\\Firebird_2_0\\TESTDB.FDB", "SYSDBA", "masterkey", ""); // FireBird 2.0
-//         addDb("QIBASE", "localhost:c:\\Borland\\InterBase\\TESTDB_UTF8.IB", "SYSDBA", "masterkey", ""); // InterBase 2007 Developer
 
 //      use in-memory database to prevent local files
 //         addDb("QSQLITE", ":memory:");
@@ -312,20 +309,22 @@ public:
     // drop a table only if it exists to prevent warnings
     static void safeDropTables( QSqlDatabase db, const QStringList& tableNames )
     {
-        int wasDropped = true;
+        bool wasDropped;
         QSqlQuery q( db );
         QStringList dbtables=db.tables();
 
-        foreach(QString tableName, tableNames)
-        {
-
-            if ( dbtables.contains( tableName, Qt::CaseSensitive ) )
-                wasDropped = q.exec( "drop table " + db.driver()->escapeIdentifier( tableName, QSqlDriver::TableName ) );
-            else if ( dbtables.contains( tableName, Qt::CaseInsensitive ) )
-                wasDropped = q.exec( "drop table " + tableName );
-
+        foreach(const QString &tableName, tableNames) {
+            wasDropped = true;
+            foreach(const QString dbtablesName, dbtables) {
+                if(dbtablesName.toUpper() == tableName.toUpper()) {
+                    dbtables.removeAll(dbtablesName);
+                    wasDropped = q.exec("drop table " + db.driver()->escapeIdentifier( dbtablesName, QSqlDriver::TableName ));
+                    if(!wasDropped)
+                        wasDropped = q.exec("drop table " + dbtablesName);
+                }
+            }
             if ( !wasDropped )
-                qWarning() << "unable to drop table" << tableName << ':' << q.lastError().text();
+                qWarning() << dbToString(db) << "unable to drop table" << tableName << ':' << q.lastError().text() << "tables:" << dbtables;
         }
     }
 
@@ -401,7 +400,7 @@ public:
 
     static QByteArray printError( const QSqlError& err, const QSqlDatabase& db )
     {
-        return QString( db.driverName() + ": '" + err.driverText() + "' || '" + err.databaseText() + "'" ).toLocal8Bit();
+        return QString( dbToString(db) + ": '" + err.driverText() + "' || '" + err.databaseText() + "'" ).toLocal8Bit();
     }
 
     static bool isSqlServer( QSqlDatabase db )
