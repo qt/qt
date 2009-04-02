@@ -80,7 +80,13 @@ Qt for Windows CE
 
 
 - Designer
-
+    * [249097] Fixed a crash related to undoing a QGridLayout re-layouting
+      operation.
+    * [247995] Fixed a crash occurring after layout operations that cause
+      an instance of QGridLayout or QFormLayout to shrink.
+    * [248000] Fixed a crash ocurring when re-layouting empty grid layouts.
+    * [245961] Restricted objectname-validation to known object name
+      properties only.
 
 - Linguist
   - Linguist GUI
@@ -97,7 +103,11 @@ Qt for Windows CE
 
 
 - uic
-
+    * [244998] Fixed include file generation for phonon widgets.
+    * [248070] Fixed code generation for QStringList-type properties to use
+      encoding properly.
+    * [242447] Made uic generate class-specific code correctly in the case
+      of multiple levels of inheritance.
 
 - uic3
 
