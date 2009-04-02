@@ -1635,6 +1635,11 @@ void QGraphicsWidget::setWindowFlags(Qt::WindowFlags wFlags)
         else
             d->scene->d_func()->addPopup(this);
     }
+
+    if (d->scene && d->scene->d_func()->allItemsIgnoreHoverEvents && d->hasDecoration()) {
+        d->scene->d_func()->allItemsIgnoreHoverEvents = false;
+        d->scene->d_func()->enableMouseTrackingOnViews();
+    }
 }
 
 /*!

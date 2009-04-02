@@ -351,6 +351,8 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       dragDropItem(0),
       enterWidget(0),
       lastDropAction(Qt::IgnoreAction),
+      allItemsIgnoreHoverEvents(true),
+      allItemsUseDefaultCursor(true),
       painterStateProtection(true),
       sortCacheEnabled(false),
       updatingSortCache(false),
@@ -1045,6 +1047,12 @@ void QGraphicsScenePrivate::clearKeyboardGrabber()
 {
     if (!keyboardGrabberItems.isEmpty())
         ungrabKeyboard(keyboardGrabberItems.first());
+}
+
+void QGraphicsScenePrivate::enableMouseTrackingOnViews()
+{
+    foreach (QGraphicsView *view, views)
+        view->viewport()->setMouseTracking(true);
 }
 
 /*!
@@ -2763,6 +2771,8 @@ void QGraphicsScene::clear()
     d->lastItemCount = 0;
     d->bspTree.clear();
     d->largestUntransformableItem = QRectF();
+    d->allItemsIgnoreHoverEvents = true;
+    d->allItemsUseDefaultCursor = true;
 }
 
 /*!
@@ -2926,6 +2936,17 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     // Disable selectionChanged() for individual items
     ++d->selectionChanging;
     int oldSelectedItemSize = d->selectedItems.size();
+
+    // Enable mouse tracking if the item accepts hover events or has a cursor set.
+    if (d->allItemsIgnoreHoverEvents && d->itemAcceptsHoverEvents_helper(item)) {
+        d->allItemsIgnoreHoverEvents = false;
+        d->enableMouseTrackingOnViews();
+    }
+    if (d->allItemsUseDefaultCursor && item->hasCursor()) {
+        d->allItemsUseDefaultCursor = false;
+        if (d->allItemsIgnoreHoverEvents) // already enabled otherwise
+            d->enableMouseTrackingOnViews();
+    }
 
     // Update selection lists
     if (item->isSelected())
@@ -4219,6 +4240,9 @@ bool QGraphicsScenePrivate::itemAcceptsHoverEvents_helper(const QGraphicsItem *i
 */
 bool QGraphicsScenePrivate::dispatchHoverEvent(QGraphicsSceneHoverEvent *hoverEvent)
 {
+    if (allItemsIgnoreHoverEvents)
+        return false;
+
     // Find the first item that accepts hover events, reusing earlier
     // calculated data is possible.
     if (cachedItemsUnderMouse.isEmpty()) {

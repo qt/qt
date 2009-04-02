@@ -587,6 +587,10 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
         return;
     if (!scene)
         return;
+    if (scene->d_func()->allItemsIgnoreHoverEvents && scene->d_func()->allItemsUseDefaultCursor
+        && !event->buttons()) { // forward event to the scene if something is pressed.
+        return; // No need to process this event further.
+    }
 
     QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
     mouseEvent.setWidget(q->viewport());
@@ -614,6 +618,16 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
     }
 
 #ifndef QT_NO_CURSOR
+    // If all the items ignore hover events, we don't look-up any items
+    // in QGraphicsScenePrivate::dispatchHoverEvent, hence the
+    // cachedItemsUnderMouse list will be empty. We therefore do the look-up
+    // for cursor items here if not all items use the default cursor.
+    if (scene->d_func()->allItemsIgnoreHoverEvents && !scene->d_func()->allItemsUseDefaultCursor
+        && scene->d_func()->cachedItemsUnderMouse.isEmpty()) {
+        scene->d_func()->cachedItemsUnderMouse = scene->d_func()->itemsAtPosition(mouseEvent.screenPos(),
+                                                                                  mouseEvent.scenePos(),
+                                                                                  mouseEvent.widget());
+    }
     // Find the topmost item under the mouse with a cursor.
     foreach (QGraphicsItem *item, scene->d_func()->cachedItemsUnderMouse) {
         if (item->hasCursor()) {
@@ -1688,6 +1702,12 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
         d->recalculateContentSize();
         d->lastCenterPoint = sceneRect().center();
         d->keepLastCenterPoint = true;
+        // We are only interested in mouse tracking if items accept
+        // hover events or use non-default cursors.
+        if (!d->scene->d_func()->allItemsIgnoreHoverEvents
+            || !d->scene->d_func()->allItemsUseDefaultCursor) {
+            d->viewport->setMouseTracking(true);
+        }
     } else {
         d->recalculateContentSize();
     }
@@ -2799,7 +2819,12 @@ void QGraphicsView::setupViewport(QWidget *widget)
         widget->setAutoFillBackground(true);
     }
 
-    widget->setMouseTracking(true);
+    // We are only interested in mouse tracking if items
+    // accept hover events or use non-default cursors.
+    if (d->scene && (!d->scene->d_func()->allItemsIgnoreHoverEvents
+                     || !d->scene->d_func()->allItemsUseDefaultCursor)) {
+        widget->setMouseTracking(true);
+    }
     widget->setAcceptDrops(acceptDrops());
 }
 

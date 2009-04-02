@@ -168,6 +168,9 @@ public:
     Qt::DropAction lastDropAction;
     QList<QGraphicsItem *> cachedItemsUnderMouse;
     QList<QGraphicsItem *> hoverItems;
+    bool allItemsIgnoreHoverEvents;
+    bool allItemsUseDefaultCursor;
+    void enableMouseTrackingOnViews();
     QMap<Qt::MouseButton, QPointF> mouseGrabberButtonDownPos;
     QMap<Qt::MouseButton, QPointF> mouseGrabberButtonDownScenePos;
     QMap<Qt::MouseButton, QPoint> mouseGrabberButtonDownScreenPos;

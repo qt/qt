@@ -1421,7 +1421,9 @@ void QGraphicsItem::setCursor(const QCursor &cursor)
     d_ptr->setExtra(QGraphicsItemPrivate::ExtraCursor, qVariantValue<QCursor>(cursorVariant));
     d_ptr->hasCursor = 1;
     if (d_ptr->scene) {
+        d_ptr->scene->d_func()->allItemsUseDefaultCursor = false;
         foreach (QGraphicsView *view, d_ptr->scene->views()) {
+            view->viewport()->setMouseTracking(true);
             // Note: Some of this logic is duplicated in QGraphicsView's mouse events.
             if (view->underMouse()) {
                 foreach (QGraphicsItem *itemUnderCursor, view->items(view->mapFromGlobal(QCursor::pos()))) {
@@ -2053,7 +2055,13 @@ bool QGraphicsItem::acceptsHoverEvents() const
 */
 void QGraphicsItem::setAcceptHoverEvents(bool enabled)
 {
+    if (d_ptr->acceptsHover == quint32(enabled))
+        return;
     d_ptr->acceptsHover = quint32(enabled);
+    if (d_ptr->acceptsHover && d_ptr->scene && d_ptr->scene->d_func()->allItemsIgnoreHoverEvents) {
+        d_ptr->scene->d_func()->allItemsIgnoreHoverEvents = false;
+        d_ptr->scene->d_func()->enableMouseTrackingOnViews();
+    }
 }
 
 /*!
@@ -2063,7 +2071,7 @@ void QGraphicsItem::setAcceptHoverEvents(bool enabled)
 */
 void QGraphicsItem::setAcceptsHoverEvents(bool enabled)
 {
-    d_ptr->acceptsHover = quint32(enabled);
+    setAcceptHoverEvents(enabled);
 }
 
 /*!
