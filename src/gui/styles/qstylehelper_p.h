@@ -32,6 +32,9 @@ namespace QStyleHelper
     int calcBigLineSize(int radius);
     void drawDial(const QStyleOptionSlider *dial, QPainter *painter);
 #endif //QT_NO_DIAL
+    void drawBorderPixmap(const QPixmap &pixmap, QPainter *painter, const QRect &rect,
+                     int left = 0, int top = 0, int right = 0,
+                     int bottom = 0);
 }
 
 QT_END_NAMESPACE
