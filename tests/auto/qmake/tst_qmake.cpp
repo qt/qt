@@ -39,19 +39,13 @@
 **
 ****************************************************************************/
 
-
-#include <QtTest/QtTest>
-
 #if !defined(QMAKE_CROSS_COMPILED)
-
-#include <qdir.h>
 
 #include "testcompiler.h"
 
-#include <stdlib.h>
-
-//TESTED_CLASS=
-//TESTED_FILES=corelib/tools/qlocale.h corelib/tools/qlocale.cpp
+#include <QObject>
+#include <QDir>
+#include <QtTest/QtTest>
 
 class tst_qmake : public QObject
 {
@@ -61,12 +55,12 @@ public:
     tst_qmake();
     virtual ~tst_qmake();
 
-
 public slots:
     void initTestCase();
     void cleanupTestCase();
     void init();
     void cleanup();
+
 private slots:
     void simple_app();
     void simple_lib();
@@ -253,10 +247,10 @@ void tst_qmake::duplicateLibraryEntries()
 void tst_qmake::export_across_file_boundaries()
 {
     // This relies on features so we need to set the QMAKEFEATURES environment variable
-	putenv("QMAKEFEATURES=.");
+    putenv("QMAKEFEATURES=.");
     QString workDir = base_path + "/testdata/export_across_file_boundaries";
     QVERIFY( test_compiler.qmake( workDir, "foo" ));
-	putenv("QMAKEFEATURES=");
+    putenv("QMAKEFEATURES=");
 }
 
 void tst_qmake::include_dir()

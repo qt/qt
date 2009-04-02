@@ -39,23 +39,12 @@
 **
 ****************************************************************************/
 
-
 #include "testcompiler.h"
-#include <stdlib.h>
-#include <qapplication.h>
 
-#include <qprocess.h>
-#include <qtimer.h>
-#ifdef Q_OS_WIN32
-#   include <windows.h>
-#endif
+#include <QProcess>
+#include <QDir>
 
-#include <QtTest/QtTest>
-
-#undef SHOW_QDEBUG
-#undef SHOW_COMPLETENESS
-
-QString targetName( BuildType buildMode, const QString& target, const QString& version )
+static QString targetName( BuildType buildMode, const QString& target, const QString& version )
 {
     Q_UNUSED(version);
     QString targetName = target;
@@ -64,23 +53,23 @@ QString targetName( BuildType buildMode, const QString& target, const QString& v
     switch (buildMode)
     {
     case Exe: // app
-	targetName.append(".exe");
-	break;
+        targetName.append(".exe");
+        break;
     case Dll: // dll
-	if (version != "") {
-	    QStringList ver = QStringList::split(".", version);
-	    targetName.append(ver.first());
-	}
+        if (version != "") {
+            QStringList ver = QStringList::split(".", version);
+            targetName.append(ver.first());
+        }
         targetName.append(".dll");
-	break;
+        break;
     case Lib: // lib
 #ifdef Q_CC_GNU
         targetName.prepend("lib");
         targetName.append(".a");
 #else
-	targetName.append(".lib");
+        targetName.append(".lib");
 #endif
-	break;
+        break;
     case Plain:
         // no conversion
         break;
@@ -89,16 +78,16 @@ QString targetName( BuildType buildMode, const QString& target, const QString& v
     switch (buildMode)
     {
     case Exe: // app
-	targetName += ".app/Contents/MacOS/" + target.section('/', -1);
-	break;
+        targetName += ".app/Contents/MacOS/" + target.section('/', -1);
+        break;
     case Dll: // dll
-	targetName.prepend("lib");
+        targetName.prepend("lib");
         targetName.append("." + version + ".dylib");
-	break;
+        break;
     case Lib: // lib
-	targetName.prepend("lib");
-	targetName.append(".a");
-	break;
+        targetName.prepend("lib");
+        targetName.append(".a");
+        break;
     case Plain:
         // no conversion
         break;
@@ -107,9 +96,9 @@ QString targetName( BuildType buildMode, const QString& target, const QString& v
     switch (buildMode)
     {
     case Exe: // app
-	break;
+        break;
     case Dll: // dll
-	targetName.prepend("lib");
+        targetName.prepend("lib");
 #if defined (Q_OS_HPUX) && !defined (__ia64)
         targetName.append(".sl");
 #elif defined (Q_OS_AIX)
@@ -117,11 +106,11 @@ QString targetName( BuildType buildMode, const QString& target, const QString& v
 #else
         targetName.append(".so");
 #endif
-	break;
+        break;
     case Lib: // lib
-	targetName.prepend("lib");
-	targetName.append(".a");
-	break;
+        targetName.prepend("lib");
+        targetName.append(".a");
+        break;
     case Plain:
         // no conversion
         break;
@@ -129,8 +118,6 @@ QString targetName( BuildType buildMode, const QString& target, const QString& v
 #endif
     return targetName;
 }
-
-
 
 TestCompiler::TestCompiler()
 {
@@ -179,48 +166,21 @@ void TestCompiler::setBaseCommands( QString makeCmd, QString qmakeCmd )
     qmakeCmd_ = qmakeCmd;
 }
 
-bool TestCompiler::cleanAll( const QString &workPath, const QString &destPath, const QString &exeName, const QString &exeExt )
-{
-    QDir D(workPath);
-    if (!D.exists()) {
-
-        testOutput_.append( "Directory '" + workPath + "' doesn't exist" );
-        return FALSE;
-    }
-
-    D.setCurrent(workPath);
-    // must delete at least the executable file to be able to easily and safely
-    // verify that the compilation was a success.
-    D.remove( destPath + "/" + exeName + exeExt );
-    D.remove( workPath + "/Makefile");
-    QFileInfo Fi( workPath + "/Makefile");
-    if (Fi.exists()) {
-
-	// Run make clean
-	return runCommand( makeCmd_ + " clean" );
-    }
-
-    return TRUE;
-}
-
 bool TestCompiler::makeClean( const QString &workPath )
 {
     QDir D;
     if (!D.exists(workPath)) {
-
         testOutput_.append( "Directory '" + workPath + "' doesn't exist" );
-        return FALSE;
+        return false;
     }
 
     D.setCurrent(workPath);
     QFileInfo Fi( workPath + "/Makefile");
-    if (Fi.exists()) {
+    if (Fi.exists())
+        // Run make clean
+        return runCommand( makeCmd_ + " clean" );
 
-	// Run make clean
-	return runCommand( makeCmd_ + " clean" );
-    }
-
-    return TRUE;
+    return true;
 }
 
 bool TestCompiler::makeDistClean( const QString &workPath )
@@ -228,7 +188,7 @@ bool TestCompiler::makeDistClean( const QString &workPath )
     QDir D;
     if (!D.exists(workPath)) {
         testOutput_.append( "Directory '" + workPath + "' doesn't exist" );
-        return FALSE;
+        return false;
     }
 
     D.setCurrent(workPath);
@@ -237,7 +197,7 @@ bool TestCompiler::makeDistClean( const QString &workPath )
         // Run make distclean
         return runCommand( makeCmd_ + " distclean" );
 
-    return TRUE;
+    return true;
 
 }
 
@@ -281,13 +241,12 @@ bool TestCompiler::exists( const QString &destDir, const QString &exeName, Build
     return f.exists();
 }
 
-
 bool TestCompiler::removeMakefile( const QString &workPath )
 {
     QDir D;
     D.setCurrent( workPath );
     if ( D.exists( "Makefile" ) )
-	return D.remove( "Makefile" );
+        return D.remove( "Makefile" );
     else
-	return TRUE;
+        return true;
 }
