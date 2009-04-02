@@ -234,15 +234,15 @@ public:
 ProFileEvaluator::Private::Private(ProFileEvaluator *q_)
   : q(q_)
 {
+    // Global parser state
     m_prevLineNo = 0;
     m_prevProFile = 0;
+
+    // Configuration, more or less
     m_verbose = true;
-    m_block = 0;
-    m_commentItem = 0;
-    m_syntaxError = 0;
-    m_lineNo = 0;
-    m_contNextLine = false;
     m_cumulative = true;
+
+    // Evaluator state
     m_updateCondition = false;
     m_condition = ConditionFalse;
     m_invertNext = false;
@@ -258,6 +258,7 @@ bool ProFileEvaluator::Private::read(ProFile *pro)
         return false;
     }
 
+    // Parser state
     m_block = 0;
     m_commentItem = 0;
     m_contNextLine = false;
