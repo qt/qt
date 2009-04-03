@@ -114,7 +114,7 @@ Q_GUI_EXPORT _qt_image_cleanup_hook qt_image_cleanup_hook = 0;
 typedef void (*_qt_image_cleanup_hook_64)(qint64);
 Q_GUI_EXPORT _qt_image_cleanup_hook_64 qt_image_cleanup_hook_64 = 0;
 
-static QImage rotated90(const QImage &src);
+static QImage rotated90(const QImage &src);=
 static QImage rotated180(const QImage &src);
 static QImage rotated270(const QImage &src);
 
@@ -3607,6 +3607,9 @@ int QImage::pixelIndex(int x, int y) const
 
     If the \a position is not valid, the results are undefined.
 
+    \warning This function is expensive when used for massive pixel
+    manipulations.
+
     \sa setPixel(), valid(), {QImage#Pixel Manipulation}{Pixel
     Manipulation}
 */
@@ -5581,6 +5584,8 @@ bool QImage::isDetached() const
 
     Use one of the composition mods in QPainter::CompositionMode instead.
 
+    \warning This function is expensive.
+
     \sa alphaChannel(), {QImage#Image Transformations}{Image
     Transformations}, {QImage#Image Formats}{Image Formats}
 */
@@ -5662,6 +5667,11 @@ void QImage::setAlphaChannel(const QImage &alphaChannel)
     You can see an example of use of this function in QPixmap's
     \l{QPixmap::}{alphaChannel()}, which works in the same way as
     this function on QPixmaps.
+
+    Most usecases for this function can be replaced with QPainter and
+    using composition modes.
+
+    \warning This is an expensive function.
 
     \sa setAlphaChannel(), hasAlphaChannel(),
     {QPixmap#Pixmap Information}{Pixmap},

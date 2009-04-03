@@ -2371,6 +2371,11 @@ void QPainter::setClipping(bool enable)
     Returns the currently set clip region. Note that the clip region
     is given in logical coordinates.
 
+    \warning QPainter does not store the combined clip explicitly as
+    this is handled by the underlying QPaintEngine, so the path is
+    recreated on demand and transformed to the current logical
+    coordinate system. This is potentially an expensive operation.
+
     \sa setClipRegion(), clipPath(), setClipping()
 */
 
@@ -2485,6 +2490,11 @@ extern QPainterPath qt_regionToPath(const QRegion &region);
 /*!
     Returns the currently clip as a path. Note that the clip path is
     given in logical coordinates.
+
+    \warning QPainter does not store the combined clip explicitly as
+    this is handled by the underlying QPaintEngine, so the path is
+    recreated on demand and transformed to the current logical
+    coordinate system. This is potentially an expensive operation.
 
     \sa setClipPath(), clipRegion(), setClipping()
 */
