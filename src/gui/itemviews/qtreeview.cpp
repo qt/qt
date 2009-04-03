@@ -3507,6 +3507,7 @@ void QTreeViewPrivate::updateScrollBars()
 
 int QTreeViewPrivate::itemDecorationAt(const QPoint &pos) const
 {
+    const_cast<QTreeView *>(q_func())->executeDelayedItemsLayout();
     int x = pos.x();
     int column = header->logicalIndexAt(x);
     if (column != 0)
