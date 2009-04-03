@@ -1079,7 +1079,14 @@ void QCompleter::setPopup(QAbstractItemView *popup)
         popup->setModel(d->proxy);
     popup->hide();
     popup->setParent(0, Qt::Popup);
+
+    Qt::FocusPolicy origPolicy;
+    if (d->widget)
+        origPolicy = d->widget->focusPolicy();
     popup->setFocusPolicy(Qt::NoFocus);
+    if (d->widget)
+        d->widget->setFocusPolicy(origPolicy);
+
     popup->setFocusProxy(d->widget);
     popup->installEventFilter(this);
     popup->setItemDelegate(new QCompleterItemDelegate(popup));
