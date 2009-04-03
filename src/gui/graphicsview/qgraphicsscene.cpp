@@ -292,15 +292,21 @@ static inline bool QRectF_intersects(const QRectF &s, const QRectF &r)
 
 // QRectF::intersects() returns false always if either the source or target
 // rectangle's width or height are 0. This works around that problem.
-static QRectF _q_adjustedRect(const QRectF &rect)
+static inline void _q_adjustRect(QRectF *rect)
 {
-    static const qreal p = (qreal)0.00001;
-    QRectF r = rect;
-    if (!r.width())
-        r.adjust(-p, 0, p, 0);
-    if (!r.height())
-        r.adjust(0, -p, 0, p);
-    return r;
+    Q_ASSERT(rect);
+    if (!rect->width())
+        rect->adjust(-0.00001, 0, 0.00001, 0);
+    if (!rect->height())
+        rect->adjust(0, -0.00001, 0, 0.00001);
+}
+
+static inline QRectF adjustedItemBoundingRect(const QGraphicsItem *item)
+{
+    Q_ASSERT(item);
+    QRectF boundingRect(item->boundingRect());
+    _q_adjustRect(&boundingRect);
+    return boundingRect;
 }
 
 static void _q_hoverFromMouseEvent(QGraphicsSceneHoverEvent *hover, const QGraphicsSceneMouseEvent *mouseEvent)
@@ -1383,7 +1389,7 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::items_helper(const QPointF &pos) c
         // ### _q_adjustedRect is only needed because QRectF::intersects,
         // QRectF::contains and QTransform::map() and friends don't work with
         // flat rectangles.
-        QRectF br = _q_adjustedRect(item->boundingRect());
+        const QRectF br(adjustedItemBoundingRect(item));
             // Rect intersects/contains item's shape
         if (QRectF_intersects(adjustedRect, x.mapRect(br))) {
             bool ok;
@@ -1419,7 +1425,8 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::items_helper(const QRectF &rect,
 
     // The index returns a rough estimate of what items are inside the rect.
     // Refine it by iterating through all returned items.
-    QRectF adjustedRect = _q_adjustedRect(rect);
+    QRectF adjustedRect(rect);
+    _q_adjustRect(&adjustedRect);
     foreach (QGraphicsItem *item, estimateItemsInRect(adjustedRect)) {
         // Find the item's scene transform in a clever way.
         QTransform x = item->sceneTransform();
@@ -1428,7 +1435,7 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::items_helper(const QRectF &rect,
         // ### _q_adjustedRect is only needed because QRectF::intersects,
         // QRectF::contains and QTransform::map() and friends don't work with
         // flat rectangles.
-        QRectF br = _q_adjustedRect(item->boundingRect());
+        const QRectF br(adjustedItemBoundingRect(item));
         if (mode >= Qt::ContainsItemBoundingRect) {
             // Rect intersects/contains item's bounding rect
             QRectF mbr = x.mapRect(br);
@@ -1480,7 +1487,8 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::items_helper(const QPolygonF &poly
 {
     QList<QGraphicsItem *> items;
 
-    QRectF polyRect = _q_adjustedRect(polygon.boundingRect());
+    QRectF polyRect(polygon.boundingRect());
+     _q_adjustRect(&polyRect);
     QPainterPath path;
 
     // The index returns a rough estimate of what items are inside the rect.
@@ -1493,7 +1501,7 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::items_helper(const QPolygonF &poly
         // ### _q_adjustedRect is only needed because QRectF::intersects,
         // QRectF::contains and QTransform::map() and friends don't work with
         // flat rectangles.
-        QRectF br = _q_adjustedRect(item->boundingRect());
+        const QRectF br(adjustedItemBoundingRect(item));
         if (mode >= Qt::ContainsItemBoundingRect) {
             // Polygon contains/intersects item's bounding rect
             if (path == QPainterPath())
@@ -1538,7 +1546,8 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::items_helper(const QPainterPath &p
                                                            Qt::SortOrder order) const
 {
     QList<QGraphicsItem *> items;
-    const QRectF pathRect = _q_adjustedRect(path.controlPointRect());
+    QRectF pathRect(path.controlPointRect());
+    _q_adjustRect(&pathRect);
 
     // The index returns a rough estimate of what items are inside the rect.
     // Refine it by iterating through all returned items.
@@ -1550,7 +1559,7 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::items_helper(const QPainterPath &p
         // ### _q_adjustedRect is only needed because QRectF::intersects,
         // QRectF::contains and QTransform::map() and friends don't work with
         // flat rectangles.
-        QRectF br = _q_adjustedRect(item->boundingRect());
+        const QRectF br(adjustedItemBoundingRect(item));
         if (mode >= Qt::ContainsItemBoundingRect) {
             // Path contains/intersects item's bounding rect
             if ((mode == Qt::IntersectsItemBoundingRect && path.intersects(x.mapRect(br)))
@@ -1629,7 +1638,9 @@ void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
     bool parentClip = (parent->flags() & QGraphicsItem::ItemClipsChildrenToShape);
     if (parentClip && parent->d_ptr->isClippedAway())
         return;
-    QRectF r = !parentClip ? _q_adjustedRect(rect) : _q_adjustedRect(rect).intersected(_q_adjustedRect(parent->boundingRect()));
+    QRectF adjustedRect(rect);
+    _q_adjustRect(&adjustedRect);
+    QRectF r = !parentClip ? adjustedRect : adjustedRect.intersected(adjustedItemBoundingRect(parent));
     if (r.isEmpty())
         return;
 
@@ -1649,7 +1660,7 @@ void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
             // ### _q_adjustedRect is only needed because QRectF::intersects,
             // QRectF::contains and QTransform::map() and friends don't work with
             // flat rectangles.
-            QRectF br = _q_adjustedRect(item->boundingRect());
+            const QRectF br(adjustedItemBoundingRect(item));
             QRectF mbr = item->mapRectToParent(br);
             if (mode >= Qt::ContainsItemBoundingRect) {
                 // Rect intersects/contains item's bounding rect
@@ -1693,8 +1704,9 @@ void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
     bool parentClip = (parent->flags() & QGraphicsItem::ItemClipsChildrenToShape);
     if (parentClip && parent->d_ptr->isClippedAway())
         return;
-    QRectF polyRect = _q_adjustedRect(polygon.boundingRect());
-    QRectF r = !parentClip ? polyRect : polyRect.intersected(_q_adjustedRect(parent->boundingRect()));
+    QRectF polyRect(polygon.boundingRect());
+    _q_adjustRect(&polyRect);
+    QRectF r = !parentClip ? polyRect : polyRect.intersected(adjustedItemBoundingRect(parent));
     if (r.isEmpty())
         return;
 
@@ -1714,7 +1726,7 @@ void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
             // ### _q_adjustedRect is only needed because QRectF::intersects,
             // QRectF::contains and QTransform::map() and friends don't work with
             // flat rectangles.
-            QRectF br = _q_adjustedRect(item->boundingRect());
+            const QRectF br(adjustedItemBoundingRect(item));
             if (mode >= Qt::ContainsItemBoundingRect) {
                 // Polygon contains/intersects item's bounding rect
                 if (path == QPainterPath())
@@ -1752,8 +1764,9 @@ void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
     bool parentClip = (parent->flags() & QGraphicsItem::ItemClipsChildrenToShape);
     if (parentClip && parent->d_ptr->isClippedAway())
         return;
-    QRectF pathRect = _q_adjustedRect(path.boundingRect());
-    QRectF r = !parentClip ? pathRect : pathRect.intersected(_q_adjustedRect(parent->boundingRect()));
+    QRectF pathRect(path.boundingRect());
+    _q_adjustRect(&pathRect);
+    QRectF r = !parentClip ? pathRect : pathRect.intersected(adjustedItemBoundingRect(parent));
     if (r.isEmpty())
         return;
 
@@ -1772,7 +1785,7 @@ void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
             // ### _q_adjustedRect is only needed because QRectF::intersects,
             // QRectF::contains and QTransform::map() and friends don't work with
             // flat rectangles.
-            QRectF br = _q_adjustedRect(item->boundingRect());
+            const QRectF br(adjustedItemBoundingRect(item));
             if (mode >= Qt::ContainsItemBoundingRect) {
                 // Polygon contains/intersects item's bounding rect
                 if ((mode == Qt::IntersectsItemBoundingRect && path.intersects(item->mapRectToParent(br)))
@@ -4709,7 +4722,9 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 
     // Item's (local) bounding rect
     QRectF brect = item->boundingRect();
-    if (_q_adjustedRect(brect).isEmpty())
+    QRectF adjustedBrect(brect);
+    _q_adjustRect(&adjustedBrect);
+    if (adjustedBrect.isEmpty())
         return;
 
     // Fetch the off-screen transparent buffer and exposed area info.
@@ -5251,9 +5266,12 @@ void QGraphicsScene::itemUpdated(QGraphicsItem *item, const QRectF &rect)
             update(item->sceneBoundingRect());
         } else {
             // ### Remove _q_adjustedRects().
-            QRectF boundingRect = _q_adjustedRect(item->boundingRect());
-            if (!rect.isNull())
-                boundingRect &= _q_adjustedRect(rect);
+            QRectF boundingRect(adjustedItemBoundingRect(item));
+            if (!rect.isNull()) {
+                QRectF adjustedRect(rect);
+                _q_adjustRect(&adjustedRect);
+                boundingRect &= adjustedRect;
+            }
 
             // Update each view directly.
             for (int i = 0; i < d->views.size(); ++i)
@@ -5283,7 +5301,9 @@ void QGraphicsScene::itemUpdated(QGraphicsItem *item, const QRectF &rect)
     // defined scene rect.
     if (!d->hasSceneRect) {
         QRectF oldGrowingItemsBoundingRect = d->growingItemsBoundingRect;
-        d->growingItemsBoundingRect |= _q_adjustedRect(item->sceneBoundingRect());
+        QRectF adjustedItemSceneBoundingRect(item->sceneBoundingRect());
+        _q_adjustRect(&adjustedItemSceneBoundingRect);
+        d->growingItemsBoundingRect |= adjustedItemSceneBoundingRect;
         if (d->growingItemsBoundingRect != oldGrowingItemsBoundingRect)
             emit sceneRectChanged(d->growingItemsBoundingRect);
     }

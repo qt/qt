@@ -528,25 +528,22 @@ QT_BEGIN_NAMESPACE
 
 // QRectF::intersects() returns false always if either the source or target
 // rectangle's width or height are 0. This works around that problem.
-static QRectF _q_adjustedRect(const QRectF &rect)
+static inline void _q_adjustRect(QRectF *rect)
 {
-    static const qreal p = (qreal)0.00001;
-    QRectF r = rect;
-    if (!r.width())
-        r.adjust(-p, 0, p, 0);
-    if (!r.height())
-        r.adjust(0, -p, 0, p);
-    return r;
+    Q_ASSERT(rect);
+    if (!rect->width())
+        rect->adjust(-0.00001, 0, 0.00001, 0);
+    if (!rect->height())
+        rect->adjust(0, -0.00001, 0, 0.00001);
 }
 
-static QRect _q_adjustedRect(const QRect &rect)
+static inline void _q_adjustRect(QRect *rect)
 {
-    QRect r = rect;
-    if (!r.width())
-        r.adjust(0, 0, 1, 0);
-    if (!r.height())
-        r.adjust(0, 0, 0, 1);
-    return r;
+    Q_ASSERT(rect);
+    if (!rect->width())
+        rect->adjust(0, 0, 1, 0);
+    if (!rect->height())
+        rect->adjust(0, 0, 0, 1);
 }
 
 /*
@@ -3305,8 +3302,10 @@ bool QGraphicsItem::collidesWithPath(const QPainterPath &path, Qt::ItemSelection
         return false;
     }
 
-    const QRectF rectA = _q_adjustedRect(boundingRect());
-    const QRectF rectB = _q_adjustedRect(path.controlPointRect());
+    QRectF rectA(boundingRect());
+    _q_adjustRect(&rectA);
+    QRectF rectB(path.controlPointRect());
+    _q_adjustRect(&rectB);
     if (!rectA.intersects(rectB)) {
         // This we can determine efficiently. If the two rects neither
         // intersect nor contain eachother, then the two items do not collide.
@@ -3489,7 +3488,9 @@ QRegion QGraphicsItem::boundingRegion(const QTransform &itemToDeviceTransform) c
     // into the bitmap, converts the result to a QRegion and scales the region
     // back to device space with inverse granularity.
     qreal granularity = boundingRegionGranularity();
-    QRect deviceRect = _q_adjustedRect(itemToDeviceTransform.mapRect(boundingRect()).toRect());
+    QRectF adjustedMappedBoundingRect(itemToDeviceTransform.mapRect(boundingRect()));
+    _q_adjustRect(&adjustedMappedBoundingRect);
+    QRect deviceRect = adjustedMappedBoundingRect.toRect();
     if (granularity == 0.0)
         return QRegion(deviceRect);
 
