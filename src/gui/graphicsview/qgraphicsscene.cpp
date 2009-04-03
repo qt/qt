@@ -1496,20 +1496,45 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::items_helper(const QPainterPath &p
                                                            Qt::SortOrder order) const
 {
     QList<QGraphicsItem *> items;
+    const QRectF pathRect = _q_adjustedRect(path.controlPointRect());
+
     // The index returns a rough estimate of what items are inside the rect.
     // Refine it by iterating through all returned items.
-    foreach (QGraphicsItem *item, estimateItemsInRect(_q_adjustedRect(path.controlPointRect()))) {
+    foreach (QGraphicsItem *item, estimateItemsInRect(pathRect)) {
         // Find the item's scene transform in a clever way.
         QTransform x = item->sceneTransform();
-        bool ok;
-        QTransform xinv = x.inverted(&ok);
-        if (ok) {
-            QPainterPath mappedPath = xinv.map(path);
-            if (itemCollidesWithPath(item, mappedPath, mode)) {
+        bool keep = false;
+
+        // ### _q_adjustedRect is only needed because QRectF::intersects,
+        // QRectF::contains and QTransform::map() and friends don't work with
+        // flat rectangles.
+        QRectF br = _q_adjustedRect(item->boundingRect());
+        if (mode >= Qt::ContainsItemBoundingRect) {
+            // Path contains/intersects item's bounding rect
+            if ((mode == Qt::IntersectsItemBoundingRect && path.intersects(x.mapRect(br)))
+                || (mode == Qt::ContainsItemBoundingRect && path.contains(x.mapRect(br)))) {
                 items << item;
-                if (item->flags() & QGraphicsItem::ItemClipsChildrenToShape)
-                    childItems_helper(&items, item, mappedPath, mode);
+                keep = true;
             }
+        } else {
+            // Path contains/intersects item's shape
+            if (QRectF_intersects(pathRect, x.mapRect(br))) {
+                bool ok;
+                QTransform xinv = x.inverted(&ok);
+                if (ok) {
+                    if (itemCollidesWithPath(item, xinv.map(path), mode)) {
+                        items << item;
+                        keep = true;
+                    }
+                }
+            }
+        }
+
+        if (keep && (item->flags() & QGraphicsItem::ItemClipsChildrenToShape)) {
+            bool ok;
+            QTransform xinv = x.inverted(&ok);
+            if (ok)
+                childItems_helper(&items, item, xinv.map(path), mode);
         }
     }
 
@@ -1638,29 +1663,46 @@ void QGraphicsScenePrivate::childItems_helper(QList<QGraphicsItem *> *items,
                                               Qt::ItemSelectionMode mode) const
 {
     bool parentClip = (parent->flags() & QGraphicsItem::ItemClipsChildrenToShape);
-    QPainterPath intersectedPath = !parentClip ? path : path.intersected(parent->shape());
-    if (intersectedPath.isEmpty())
+    QRectF pathRect = _q_adjustedRect(path.boundingRect());
+    QRectF r = !parentClip ? pathRect : pathRect.intersected(_q_adjustedRect(parent->boundingRect()));
+    if (r.isEmpty())
         return;
 
     QList<QGraphicsItem *> &children = parent->d_ptr->children;
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *item = children.at(i);
+        if (item->d_ptr->hasTransform && !item->transform().isInvertible())
+            continue;
 
         // Skip invisible items.
         if (!item->d_ptr->visible || qFuzzyCompare(item->effectiveOpacity(), qreal(0.0)))
             continue;
 
-        QTransform x = item->sceneTransform();
-
-        bool ok;
-        QTransform xinv = x.inverted(&ok);
-        if (ok) {
-            QPainterPath mappedPath = xinv.map(path);
-            if (itemCollidesWithPath(item, mappedPath, mode)) {
+        // ### _q_adjustedRect is only needed because QRectF::intersects,
+        // QRectF::contains and QTransform::map() and friends don't work with
+        // flat rectangles.
+        QRectF br = _q_adjustedRect(item->boundingRect());
+        bool keep = false;
+        if (mode >= Qt::ContainsItemBoundingRect) {
+            // Polygon contains/intersects item's bounding rect
+            if ((mode == Qt::IntersectsItemBoundingRect && path.intersects(item->mapRectToParent(br)))
+                || (mode == Qt::ContainsItemBoundingRect && path.contains(item->mapRectToParent(br)))) {
                 items->append(item);
-                if (!item->d_ptr->children.isEmpty())
-                    childItems_helper(items, item, mappedPath, mode);
+                keep = true;
             }
+        } else {
+            // Path contains/intersects item's shape
+            if (QRectF_intersects(pathRect, item->mapRectToParent(br))) {
+                if (itemCollidesWithPath(item, item->mapFromParent(path), mode)) {
+                    items->append(item);
+                    keep = true;
+                }
+            }
+        }
+
+        if ((keep || !(item->flags() & QGraphicsItem::ItemClipsChildrenToShape)) && !item->d_ptr->children.isEmpty()) {
+            // Recurse into children that clip children.
+            childItems_helper(items, item, item->mapFromParent(path), mode);
         }
     }
 }

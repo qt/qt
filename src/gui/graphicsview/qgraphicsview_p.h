@@ -85,7 +85,8 @@ public:
     qint64 verticalScroll() const;
 
     QList<QGraphicsItem *> itemsInArea(const QPainterPath &path,
-                                       Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const;
+                                       Qt::ItemSelectionMode mode = Qt::IntersectsItemShape,
+                                       Qt::SortOrder = Qt::AscendingOrder) const;
 
     QPointF mousePressItemPoint;
     QPointF mousePressScenePoint;
@@ -172,9 +173,7 @@ public:
     void updateRegion(const QRegion &region);
     bool updateSceneSlotReimplementedChecked;
 
-    QList<QGraphicsItem *> findItems(const QRegion &exposedRegion,
-				     const QTransform &worldTransform,
-                                     bool *allItems) const;
+    QList<QGraphicsItem *> findItems(const QRegion &exposedRegion, bool *allItems) const;
 
     void generateStyleOptions(const QList<QGraphicsItem *> &itemList,
 			      QGraphicsItem **itemArray,

@@ -1029,103 +1029,40 @@ void QGraphicsViewPrivate::freeStyleOptionsArray(QStyleOptionGraphicsItem *array
 
 extern QPainterPath qt_regionToPath(const QRegion &region);
 
-QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedRegion,
-                                                       const QTransform &worldTransform,
-                                                       bool *allItems) const
+QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedRegion, bool *allItems) const
 {
     Q_Q(const QGraphicsView);
-    QList<QGraphicsItem *> itemList;
-    QSet<QGraphicsItem *> tmp;
-    bool simpleTransform = worldTransform.type() <= QTransform::TxScale;
+    const QPainterPath exposedPath(qt_regionToPath(exposedRegion));
+    const QPainterPath exposedScenePath(q->mapToScene(exposedPath));
 
-    QPainterPath path = qt_regionToPath(exposedRegion);
-    *allItems = path.contains(q->mapFromScene(scene->d_func()->growingItemsBoundingRect).boundingRect());
-    QList<QRectF> exposedRects;
-    QList<QPolygonF> exposedPolys;
+    if (exposedScenePath.contains(scene->d_func()->growingItemsBoundingRect)) {
+        Q_ASSERT(allItems);
+        *allItems = true;
 
-    // Transform the exposed viewport rects to scene rects or polygons
-    foreach (const QRect &rect, exposedRegion.rects()) {
-        QPolygonF exposedPoly = q->mapToScene(rect.adjusted(-1, -1, 1, 1));
-        QRectF exposedRect = exposedPoly.boundingRect();
-        if (!simpleTransform)
-            exposedPolys << exposedPoly;
-        exposedRects << exposedRect;
-    }
-
-    // Find which items need to be drawn.
-    if (*allItems) {
         // All items are guaranteed within the exposed region, don't bother using the index.
-        foreach (QGraphicsItem *item, scene->items()) {
+        QList<QGraphicsItem *> itemList(scene->items());
+        int i = 0;
+        while (i < itemList.size()) {
             // But we only want to include items that are visible
-            if (item->isVisible())
-                itemList << item;
+            if (!itemList.at(i)->isVisible())
+                itemList.removeAt(i);
+            else
+                ++i;
         }
-    } else if (simpleTransform) {
-        // Simple rect lookups will do.
-        if (exposedRects.size() > 1) {
-            foreach (const QRectF &rect, exposedRects) {
-                foreach (QGraphicsItem *item, scene->d_func()->items_helper(rect, Qt::IntersectsItemBoundingRect, Qt::SortOrder(-1) /* don't sort */)) {
-                    if (!tmp.contains(item)) {
-                        tmp << item;
-                        itemList << item;
-                    }
-                }
-            }
-        } else {
-            itemList += scene->d_func()->items_helper(exposedRects[0], Qt::IntersectsItemBoundingRect, Qt::SortOrder(-1) /* don't sort */);
-        }
-    } else {
-        // Polygon lookup is necessary.
-        if (exposedRects.size() > 1) {
-            foreach (const QPolygonF &poly, exposedPolys) {
-                foreach (QGraphicsItem *item, scene->d_func()->items_helper(poly, Qt::IntersectsItemBoundingRect, Qt::SortOrder(-1) /* don't sort */)) {
-                    if (!tmp.contains(item)) {
-                        tmp << item;
-                        itemList << item;
-                    }
-                }
-            }
-        } else {
-            itemList += scene->d_func()->items_helper(exposedPolys[0], Qt::IntersectsItemBoundingRect, Qt::SortOrder(-1) /* don't sort */);
-        }
+
+        // Sort the items.
+        QGraphicsScenePrivate::sortItems(&itemList, Qt::DescendingOrder, scene->d_func()->sortCacheEnabled);
+        return itemList;
     }
 
-    // Check for items that ignore inherited transformations, and add them if
-    // necessary.
-    QRectF untr = scene->d_func()->largestUntransformableItem;
-    if (!*allItems && !untr.isNull()) {
-        // Map the largest untransformable item subtree boundingrect from view
-        // to scene coordinates, and use this to expand all exposed rects in
-        // search for untransformable items.
-        QRectF ltri = matrix.inverted().mapRect(untr);
-        ltri.adjust(-untr.width(), -untr.height(), untr.width(), untr.height());
-
-        foreach (const QRect &rect, exposedRegion.rects()) {
-            QRectF exposed = q->mapToScene(rect.adjusted(-1, -1, 1, 1)).boundingRect();
-            exposed.adjust(-ltri.width(), -ltri.height(), ltri.width(), ltri.height());
-
-            foreach (QGraphicsItem *item, scene->d_func()->estimateItemsInRect(exposed)) {
-                if (item->d_ptr->itemIsUntransformable()) {
-                    if (!tmp.contains(item)) {
-                        QPainterPath rectPath;
-                        rectPath.addRect(rect);
-                        QPainterPath path = item->deviceTransform(q->viewportTransform()).inverted().map(rectPath);
-                        if (item->collidesWithPath(path, Qt::IntersectsItemBoundingRect)) {
-                            itemList << item;
-                            tmp << item;
-                        }
-                    }
-                }
-            }
-        }
+    if (scene->d_func()->largestUntransformableItem.isNull()) {
+        return scene->d_func()->items_helper(exposedScenePath,
+                                             Qt::IntersectsItemBoundingRect,
+                                             Qt::DescendingOrder);
     }
-    tmp.clear();
 
-    // Sort the items.
-    QGraphicsScenePrivate::sortItems(&itemList, Qt::DescendingOrder,
-                                     scene->d_func()->sortCacheEnabled);
-
-    return itemList;
+    // NB! Path must be in viewport coordinates.
+    return itemsInArea(exposedPath, Qt::IntersectsItemBoundingRect, Qt::DescendingOrder);
 }
 
 void QGraphicsViewPrivate::generateStyleOptions(const QList<QGraphicsItem *> &itemList,
@@ -2228,7 +2165,8 @@ QList<QGraphicsItem *> QGraphicsView::items() const
     certainly room for improvement.
 */
 QList<QGraphicsItem *> QGraphicsViewPrivate::itemsInArea(const QPainterPath &path,
-                                                         Qt::ItemSelectionMode mode) const
+                                                         Qt::ItemSelectionMode mode,
+                                                         Qt::SortOrder order) const
 {
     Q_Q(const QGraphicsView);
 
@@ -2278,8 +2216,8 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::itemsInArea(const QPainterPath &pat
     }
 
     // ### Insertion sort would be faster.
-    QGraphicsScenePrivate::sortItems(&result, Qt::AscendingOrder,
-                                     scene->d_func()->sortCacheEnabled);
+    if (order != Qt::SortOrder(-1))
+        QGraphicsScenePrivate::sortItems(&result, order, scene->d_func()->sortCacheEnabled);
     return result;
 }
 
@@ -3485,7 +3423,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
     // Find all exposed items
     bool allItems = false;
-    QList<QGraphicsItem *> itemList = d->findItems(exposedRegion, viewTransform, &allItems);
+    QList<QGraphicsItem *> itemList = d->findItems(exposedRegion, &allItems);
 
 #ifdef QGRAPHICSVIEW_DEBUG
     int exposedTime = stopWatch.elapsed();
