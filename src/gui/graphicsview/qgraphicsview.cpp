@@ -1056,6 +1056,11 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
     }
 
     if (scene->d_func()->largestUntransformableItem.isNull()) {
+        if (exposedRegion.numRects() == 1 && matrix.type() <= QTransform::TxScale) {
+            return scene->d_func()->items_helper(exposedScenePath.controlPointRect(),
+                                                 Qt::IntersectsItemBoundingRect,
+                                                 Qt::DescendingOrder);
+        }
         return scene->d_func()->items_helper(exposedScenePath,
                                              Qt::IntersectsItemBoundingRect,
                                              Qt::DescendingOrder);
