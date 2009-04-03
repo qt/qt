@@ -3488,9 +3488,8 @@ QRegion QGraphicsItem::boundingRegion(const QTransform &itemToDeviceTransform) c
     // into the bitmap, converts the result to a QRegion and scales the region
     // back to device space with inverse granularity.
     qreal granularity = boundingRegionGranularity();
-    QRectF adjustedMappedBoundingRect(itemToDeviceTransform.mapRect(boundingRect()));
-    _q_adjustRect(&adjustedMappedBoundingRect);
-    QRect deviceRect = adjustedMappedBoundingRect.toRect();
+    QRect deviceRect = itemToDeviceTransform.mapRect(boundingRect()).toRect();
+    _q_adjustRect(&deviceRect);
     if (granularity == 0.0)
         return QRegion(deviceRect);
 
