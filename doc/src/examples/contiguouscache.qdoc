@@ -10,24 +10,24 @@
 ****************************************************************************/
 
 /*!
-    \example tools/offsetvector
-    \title Offset Vector Example
+    \example tools/contiguouscache
+    \title Contiguous Cache Example
 
-    The Offset Vector example shows how to use QOffsetVector to manage memory usage for
+    The Contiguous Cache example shows how to use QContiguousCache to manage memory usage for
     very large models.  In some environments memory is limited, and even when it
     isn't users still dislike an application using
-    excessive memory.  Using QOffsetVector to manage a list rather than loading
+    excessive memory.  Using QContiguousCache to manage a list rather than loading
     the entire list into memory allows the application to limit the amount
     of memory it uses regardless of the size of the data set it accesses
 
-    The simplest way to use QOffsetVector is to cache as items are requested. When
+    The simplest way to use QContiguousCache is to cache as items are requested. When
     a view requests an item at row N it is also likely to ask for items at rows near
     to N.
 
-    \snippet examples/tools/offsetvector/randomlistmodel.cpp 0
+    \snippet examples/tools/contiguouscache/randomlistmodel.cpp 0
 
     After getting the row the class determines if the row is in the bounds
-    of the offset vector's current range.  It would have been equally valid to
+    of the contiguous cache's current range.  It would have been equally valid to
     simply have the following code instead.
 
     \code
@@ -37,27 +37,26 @@
         m_words.prepend(fetchWord(m_words.firstIndex()-1);
     \endcode
 
-    However a list will often jump rows if the scroll bar is used directly, and
-    the above code would cause every row between where the cache was last centered
-    to where the cache is currently centered to be cached before the requested
-    row is reached.
+    However a list will often jump rows if the scroll bar is used directly, resulting in
+    the code above to cause every row between where the cache was last centered
+    to the requested row to be fetched before the requested row is fetched.
 
-    Using QOffsetVector::lastIndex() and QOffsetVector::firstIndex() allows
-    the example to determine where the list the vector is currently over.  These values
-    don't represent the indexes into the vector own memory, but rather a virtual
-    infinite array that the vector represents.
+    Using QContiguousCache::lastIndex() and QContiguousCache::firstIndex() allows
+    the example to determine where in the list the cache is currently over.  These values
+    don't represent the indexes into the cache own memory, but rather a virtual
+    infinite array that the cache represents.
 
-    By using QOffsetVector::append() and QOffsetVector::prepend() the code ensures
+    By using QContiguousCache::append() and QContiguousCache::prepend() the code ensures
     that items that may be still on the screen are not lost when the requested row
-    has not moved far from the current vector range.  QOffsetVector::insert() can
-    potentially remove more than one item from the cache as QOffsetVector does not
+    has not moved far from the current cache range.  QContiguousCache::insert() can
+    potentially remove more than one item from the cache as QContiguousCache does not
     allow for gaps.  If your cache needs to quickly jump back and forth between
     rows with significant gaps between them consider using QCache instead.
 
     And thats it.  A perfectly reasonable cache, using minimal memory for a very large
     list.  In this case the accessor for getting the words into cache:
 
-    \snippet examples/tools/offsetvector/randomlistmodel.cpp 1
+    \snippet examples/tools/contiguouscache/randomlistmodel.cpp 1
 
     Generates random information rather than fixed information.  This allows you 
     to see how the cache range is kept for a local number of rows when running the
@@ -66,5 +65,5 @@
     It is also worth considering pre-fetching items into the cache outside of the
     applications paint routine.  This can be done either with a separate thread
     or using a QTimer to incrementally expand the range of the thread prior to
-    rows being requested out of the current vector range.
+    rows being requested out of the current cache range.
 */

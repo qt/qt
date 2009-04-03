@@ -13,7 +13,7 @@
 #include <QList>
 #include <QString>
 #include <QCache>
-#include <QOffsetVector>
+#include <QContiguousCache>
 
 #include <QDebug>
 #include <stdio.h>
@@ -21,16 +21,16 @@
 
 #if defined(FORCE_UREF)
 template <class aT>
-inline QDebug &operator<<(QDebug debug, const QOffsetVector<aT> &offsetVector)
+inline QDebug &operator<<(QDebug debug, const QContiguousCache<aT> &contiguousCache)
 #else
 template <class aT>
-inline QDebug operator<<(QDebug debug, const QOffsetVector<aT> &offsetVector)
+inline QDebug operator<<(QDebug debug, const QContiguousCache<aT> &contiguousCache)
 #endif
 {
-    debug.nospace() << "QOffsetVector(";
-    for (int i = offsetVector.firstIndex(); i <= offsetVector.lastIndex(); ++i) {
-        debug << offsetVector[i];
-        if (i != offsetVector.lastIndex())
+    debug.nospace() << "QContiguousCache(";
+    for (int i = contiguousCache.firstIndex(); i <= contiguousCache.lastIndex(); ++i) {
+        debug << contiguousCache[i];
+        if (i != contiguousCache.lastIndex())
             debug << ", ";
     }
     debug << ")";
@@ -42,12 +42,12 @@ inline QDebug operator<<(QDebug debug, const QOffsetVector<aT> &offsetVector)
 #define QBENCHMARK
 #endif
 
-class tst_QOffsetVector : public QObject
+class tst_QContiguousCache : public QObject
 {
     Q_OBJECT
 public:
-    tst_QOffsetVector() {}
-    virtual ~tst_QOffsetVector() {}
+    tst_QContiguousCache() {}
+    virtual ~tst_QContiguousCache() {}
 private slots:
     void empty();
     void forwardBuffer();
@@ -58,16 +58,16 @@ private slots:
     void operatorAt();
 
     void cacheBenchmark();
-    void offsetVectorBenchmark();
+    void contiguousCacheBenchmark();
 
     void setCapacity();
 };
 
-QTEST_MAIN(tst_QOffsetVector)
+QTEST_MAIN(tst_QContiguousCache)
 
-void tst_QOffsetVector::empty()
+void tst_QContiguousCache::empty()
 {
-    QOffsetVector<int> c(10);
+    QContiguousCache<int> c(10);
     QCOMPARE(c.capacity(), 10);
     QCOMPARE(c.count(), 0);
     QVERIFY(c.isEmpty());
@@ -85,10 +85,10 @@ void tst_QOffsetVector::empty()
     QCOMPARE(c.capacity(), 10);
 }
 
-void tst_QOffsetVector::forwardBuffer()
+void tst_QContiguousCache::forwardBuffer()
 {
     int i;
-    QOffsetVector<int> c(10);
+    QContiguousCache<int> c(10);
     for(i = 1; i < 30; ++i) {
         c.append(i);
         QCOMPARE(c.first(), qMax(1, i-9));
@@ -106,12 +106,12 @@ void tst_QOffsetVector::forwardBuffer()
     }
 }
 
-void tst_QOffsetVector::scrollingList()
+void tst_QContiguousCache::scrollingList()
 {
     int i;
-    QOffsetVector<int> c(10);
+    QContiguousCache<int> c(10);
 
-    // Once allocated QOffsetVector should not
+    // Once allocated QContiguousCache should not
     // allocate any additional memory for non
     // complex data types.
     QBENCHMARK {
@@ -223,81 +223,81 @@ private:
     RefCountingClassData *d;
 };
 
-void tst_QOffsetVector::complexType()
+void tst_QContiguousCache::complexType()
 {
     RefCountingClass original;
 
-    QOffsetVector<RefCountingClass> offsetVector(10);
-    offsetVector.append(original);
+    QContiguousCache<RefCountingClass> contiguousCache(10);
+    contiguousCache.append(original);
     QCOMPARE(original.refCount(), 3);
-    offsetVector.removeFirst();
+    contiguousCache.removeFirst();
     QCOMPARE(original.refCount(), 2); // shared null, 'original'.
-    offsetVector.append(original);
+    contiguousCache.append(original);
     QCOMPARE(original.refCount(), 3);
-    offsetVector.clear();
+    contiguousCache.clear();
     QCOMPARE(original.refCount(), 2);
 
     for(int i = 0; i < 100; ++i)
-        offsetVector.insert(i, original);
+        contiguousCache.insert(i, original);
 
-    QCOMPARE(original.refCount(), 12); // shared null, 'original', + 10 in offsetVector.
+    QCOMPARE(original.refCount(), 12); // shared null, 'original', + 10 in contiguousCache.
 
-    offsetVector.clear();
+    contiguousCache.clear();
     QCOMPARE(original.refCount(), 2);
     for (int i = 0; i < 100; i++)
-        offsetVector.append(original);
+        contiguousCache.append(original);
 
-    QCOMPARE(original.refCount(), 12); // shared null, 'original', + 10 in offsetVector.
-    offsetVector.clear();
-    QCOMPARE(original.refCount(), 2);
-
-    for (int i = 0; i < 100; i++)
-        offsetVector.prepend(original);
-
-    QCOMPARE(original.refCount(), 12); // shared null, 'original', + 10 in offsetVector.
-    offsetVector.clear();
+    QCOMPARE(original.refCount(), 12); // shared null, 'original', + 10 in contiguousCache.
+    contiguousCache.clear();
     QCOMPARE(original.refCount(), 2);
 
     for (int i = 0; i < 100; i++)
-        offsetVector.append(original);
+        contiguousCache.prepend(original);
 
-    offsetVector.takeLast();
+    QCOMPARE(original.refCount(), 12); // shared null, 'original', + 10 in contiguousCache.
+    contiguousCache.clear();
+    QCOMPARE(original.refCount(), 2);
+
+    for (int i = 0; i < 100; i++)
+        contiguousCache.append(original);
+
+    contiguousCache.takeLast();
     QCOMPARE(original.refCount(), 11);
 
-    offsetVector.takeFirst();
+    contiguousCache.takeFirst();
     QCOMPARE(original.refCount(), 10);
 }
 
-void tst_QOffsetVector::operatorAt()
+void tst_QContiguousCache::operatorAt()
 {
     RefCountingClass original;
-    QOffsetVector<RefCountingClass> offsetVector(10);
+    QContiguousCache<RefCountingClass> contiguousCache(10);
 
     for (int i = 25; i < 35; ++i)
-        offsetVector[i] = original;
+        contiguousCache[i] = original;
 
-    QCOMPARE(original.refCount(), 12); // shared null, orig, items in vector
+    QCOMPARE(original.refCount(), 12); // shared null, orig, items in cache
 
     // verify const access does not copy items.
-    const QOffsetVector<RefCountingClass> copy(offsetVector);
+    const QContiguousCache<RefCountingClass> copy(contiguousCache);
     for (int i = 25; i < 35; ++i)
         QCOMPARE(copy[i].refCount(), 12);
 
     // verify modifying the original increments ref count (e.g. does a detach)
-    offsetVector[25] = original;
+    contiguousCache[25] = original;
     QCOMPARE(original.refCount(), 22);
 }
 
 /*
     Benchmarks must be near identical in tasks to be fair.
     QCache uses pointers to ints as its a requirement of QCache,
-    whereas QOffsetVector doesn't support pointers (won't free them).
+    whereas QContiguousCache doesn't support pointers (won't free them).
     Given the ability to use simple data types is a benefit, its
     fair.  Although this obviously must take into account we are
-    testing QOffsetVector use cases here, QCache has its own
+    testing QContiguousCache use cases here, QCache has its own
     areas where it is the more sensible class to use.
 */
-void tst_QOffsetVector::cacheBenchmark()
+void tst_QContiguousCache::cacheBenchmark()
 {
     QBENCHMARK {
         QCache<int, int> cache;
@@ -308,54 +308,54 @@ void tst_QOffsetVector::cacheBenchmark()
     }
 }
 
-void tst_QOffsetVector::offsetVectorBenchmark()
+void tst_QContiguousCache::contiguousCacheBenchmark()
 {
     QBENCHMARK {
-        QOffsetVector<int> offsetVector(100);
+        QContiguousCache<int> contiguousCache(100);
         for (int i = 0; i < 1000; i++)
-            offsetVector.insert(i, i);
+            contiguousCache.insert(i, i);
     }
 }
 
-void tst_QOffsetVector::setCapacity()
+void tst_QContiguousCache::setCapacity()
 {
     int i;
-    QOffsetVector<int> offsetVector(100);
+    QContiguousCache<int> contiguousCache(100);
     for (i = 280; i < 310; ++i)
-        offsetVector.insert(i, i);
-    QCOMPARE(offsetVector.capacity(), 100);
-    QCOMPARE(offsetVector.count(), 30);
-    QCOMPARE(offsetVector.firstIndex(), 280);
-    QCOMPARE(offsetVector.lastIndex(), 309);
+        contiguousCache.insert(i, i);
+    QCOMPARE(contiguousCache.capacity(), 100);
+    QCOMPARE(contiguousCache.count(), 30);
+    QCOMPARE(contiguousCache.firstIndex(), 280);
+    QCOMPARE(contiguousCache.lastIndex(), 309);
 
-    for (i = offsetVector.firstIndex(); i <= offsetVector.lastIndex(); ++i) {
-        QVERIFY(offsetVector.containsIndex(i));
-        QCOMPARE(offsetVector.at(i), i);
+    for (i = contiguousCache.firstIndex(); i <= contiguousCache.lastIndex(); ++i) {
+        QVERIFY(contiguousCache.containsIndex(i));
+        QCOMPARE(contiguousCache.at(i), i);
     }
 
-    offsetVector.setCapacity(150);
+    contiguousCache.setCapacity(150);
 
-    QCOMPARE(offsetVector.capacity(), 150);
-    QCOMPARE(offsetVector.count(), 30);
-    QCOMPARE(offsetVector.firstIndex(), 280);
-    QCOMPARE(offsetVector.lastIndex(), 309);
+    QCOMPARE(contiguousCache.capacity(), 150);
+    QCOMPARE(contiguousCache.count(), 30);
+    QCOMPARE(contiguousCache.firstIndex(), 280);
+    QCOMPARE(contiguousCache.lastIndex(), 309);
 
-    for (i = offsetVector.firstIndex(); i <= offsetVector.lastIndex(); ++i) {
-        QVERIFY(offsetVector.containsIndex(i));
-        QCOMPARE(offsetVector.at(i), i);
+    for (i = contiguousCache.firstIndex(); i <= contiguousCache.lastIndex(); ++i) {
+        QVERIFY(contiguousCache.containsIndex(i));
+        QCOMPARE(contiguousCache.at(i), i);
     }
 
-    offsetVector.setCapacity(20);
+    contiguousCache.setCapacity(20);
 
-    QCOMPARE(offsetVector.capacity(), 20);
-    QCOMPARE(offsetVector.count(), 20);
-    QCOMPARE(offsetVector.firstIndex(), 290);
-    QCOMPARE(offsetVector.lastIndex(), 309);
+    QCOMPARE(contiguousCache.capacity(), 20);
+    QCOMPARE(contiguousCache.count(), 20);
+    QCOMPARE(contiguousCache.firstIndex(), 290);
+    QCOMPARE(contiguousCache.lastIndex(), 309);
 
-    for (i = offsetVector.firstIndex(); i <= offsetVector.lastIndex(); ++i) {
-        QVERIFY(offsetVector.containsIndex(i));
-        QCOMPARE(offsetVector.at(i), i);
+    for (i = contiguousCache.firstIndex(); i <= contiguousCache.lastIndex(); ++i) {
+        QVERIFY(contiguousCache.containsIndex(i));
+        QCOMPARE(contiguousCache.at(i), i);
     }
 }
 
-#include "tst_qoffsetvector.moc"
+#include "tst_qcontiguouscache.moc"

@@ -1,7 +1,7 @@
 #ifndef RANDOMLISTMODEL_H
 #define RANDOMLISTMODEL_H
 
-#include <QOffsetVector>
+#include <QContiguousCache>
 #include <QAbstractListModel>
 
 class QTimer;
@@ -19,7 +19,7 @@ private:
     void cacheRows(int, int) const;
     QString fetchRow(int) const;
 
-    mutable QOffsetVector<QString> m_rows;
+    mutable QContiguousCache<QString> m_rows;
     const int m_count;
 };
 

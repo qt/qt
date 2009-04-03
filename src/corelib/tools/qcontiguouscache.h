@@ -9,12 +9,12 @@
 **
 ****************************************************************************/
 
-#ifndef QCIRCULARBUFFER_H
-#define QCIRCULARBUFFER_H
+#ifndef QCONTIGUOUSCACHE_H
+#define QCONTIGUOUSCACHE_H
 
 #include <QtCore/qatomic.h>
 
-struct QOffsetVectorData
+struct QContiguousCacheData
 {
     QBasicAtomicInt ref;
     int alloc;
@@ -27,7 +27,7 @@ struct QOffsetVectorData
 };
 
 template <typename T>
-struct QOffsetVectorTypedData
+struct QContiguousCacheTypedData
 {
     QBasicAtomicInt ref;
     int alloc;
@@ -39,25 +39,25 @@ struct QOffsetVectorTypedData
     T array[1];
 };
 
-class QOffsetVectorDevice;
+class QContiguousCacheDevice;
 
 template<typename T>
-class QOffsetVector {
-    typedef QOffsetVectorTypedData<T> Data;
-    union { QOffsetVectorData *p; QOffsetVectorTypedData<T> *d; };
+class QContiguousCache {
+    typedef QContiguousCacheTypedData<T> Data;
+    union { QContiguousCacheData *p; QContiguousCacheTypedData<T> *d; };
 public:
-    explicit QOffsetVector(int capacity = 0);
-    QOffsetVector(const QOffsetVector<T> &v) : d(v.d) { d->ref.ref(); if (!d->sharable) detach_helper(); }
+    explicit QContiguousCache(int capacity = 0);
+    QContiguousCache(const QContiguousCache<T> &v) : d(v.d) { d->ref.ref(); if (!d->sharable) detach_helper(); }
 
-    inline ~QOffsetVector() { if (!d) return; if (!d->ref.deref()) free(d); }
+    inline ~QContiguousCache() { if (!d) return; if (!d->ref.deref()) free(d); }
 
     inline void detach() { if (d->ref != 1) detach_helper(); }
     inline bool isDetached() const { return d->ref == 1; }
     inline void setSharable(bool sharable) { if (!sharable) detach(); d->sharable = sharable; }
 
-    QOffsetVector<T> &operator=(const QOffsetVector<T> &other);
-    bool operator==(const QOffsetVector<T> &other) const;
-    inline bool operator!=(const QOffsetVector<T> &other) const { return !(*this == other); }
+    QContiguousCache<T> &operator=(const QContiguousCache<T> &other);
+    bool operator==(const QContiguousCache<T> &other) const;
+    inline bool operator!=(const QContiguousCache<T> &other) const { return !(*this == other); }
 
     inline int capacity() const {return d->alloc; }
     inline int count() const { return d->count; }
@@ -97,7 +97,7 @@ public:
 private:
     void detach_helper();
 
-    QOffsetVectorData *malloc(int alloc);
+    QContiguousCacheData *malloc(int alloc);
     void free(Data *d);
     int sizeOfTypedData() {
         // this is more or less the same as sizeof(Data), except that it doesn't
@@ -107,9 +107,9 @@ private:
 };
 
 template <typename T>
-void QOffsetVector<T>::detach_helper()
+void QContiguousCache<T>::detach_helper()
 {
-    union { QOffsetVectorData *p; QOffsetVectorTypedData<T> *d; } x;
+    union { QContiguousCacheData *p; QContiguousCacheTypedData<T> *d; } x;
 
     x.p = malloc(d->alloc);
     x.d->ref = 1;
@@ -142,12 +142,12 @@ void QOffsetVector<T>::detach_helper()
 }
 
 template <typename T>
-void QOffsetVector<T>::setCapacity(int asize)
+void QContiguousCache<T>::setCapacity(int asize)
 {
     if (asize == d->alloc)
         return;
     detach();
-    union { QOffsetVectorData *p; QOffsetVectorTypedData<T> *d; } x;
+    union { QContiguousCacheData *p; QContiguousCacheTypedData<T> *d; } x;
     x.p = malloc(asize);
     x.d->alloc = asize;
     x.d->count = qMin(d->count, asize);
@@ -179,7 +179,7 @@ void QOffsetVector<T>::setCapacity(int asize)
 }
 
 template <typename T>
-void QOffsetVector<T>::clear()
+void QContiguousCache<T>::clear()
 {
     if (d->ref == 1) {
         if (QTypeInfo<T>::isComplex) {
@@ -195,7 +195,7 @@ void QOffsetVector<T>::clear()
         }
         d->count = d->start = d->offset = 0;
     } else {
-        union { QOffsetVectorData *p; QOffsetVectorTypedData<T> *d; } x;
+        union { QContiguousCacheData *p; QContiguousCacheTypedData<T> *d; } x;
         x.p = malloc(d->alloc);
         x.d->ref = 1;
         x.d->alloc = d->alloc;
@@ -207,13 +207,13 @@ void QOffsetVector<T>::clear()
 }
 
 template <typename T>
-inline QOffsetVectorData *QOffsetVector<T>::malloc(int aalloc)
+inline QContiguousCacheData *QContiguousCache<T>::malloc(int aalloc)
 {
-    return static_cast<QOffsetVectorData *>(qMalloc(sizeOfTypedData() + (aalloc - 1) * sizeof(T)));
+    return static_cast<QContiguousCacheData *>(qMalloc(sizeOfTypedData() + (aalloc - 1) * sizeof(T)));
 }
 
 template <typename T>
-QOffsetVector<T>::QOffsetVector(int asize)
+QContiguousCache<T>::QContiguousCache(int asize)
 {
     p = malloc(asize);
     d->ref = 1;
@@ -223,7 +223,7 @@ QOffsetVector<T>::QOffsetVector(int asize)
 }
 
 template <typename T>
-QOffsetVector<T> &QOffsetVector<T>::operator=(const QOffsetVector<T> &other)
+QContiguousCache<T> &QContiguousCache<T>::operator=(const QContiguousCache<T> &other)
 {
     other.d->ref.ref();
     if (!d->ref.deref())
@@ -235,7 +235,7 @@ QOffsetVector<T> &QOffsetVector<T>::operator=(const QOffsetVector<T> &other)
 }
 
 template <typename T>
-bool QOffsetVector<T>::operator==(const QOffsetVector<T> &other) const
+bool QContiguousCache<T>::operator==(const QContiguousCache<T> &other) const
 {
     if (other.d == d)
         return true;
@@ -251,7 +251,7 @@ bool QOffsetVector<T>::operator==(const QOffsetVector<T> &other) const
 }
 
 template <typename T>
-void QOffsetVector<T>::free(Data *x)
+void QContiguousCache<T>::free(Data *x)
 {
     if (QTypeInfo<T>::isComplex) {
         int count = d->count;
@@ -268,7 +268,7 @@ void QOffsetVector<T>::free(Data *x)
 }
 
 template <typename T>
-void QOffsetVector<T>::append(const T &value)
+void QContiguousCache<T>::append(const T &value)
 {
     detach();
     if (QTypeInfo<T>::isComplex) {
@@ -289,7 +289,7 @@ void QOffsetVector<T>::append(const T &value)
 }
 
 template<typename T>
-void QOffsetVector<T>::prepend(const T &value)
+void QContiguousCache<T>::prepend(const T &value)
 {
     detach();
     if (d->start)
@@ -311,7 +311,7 @@ void QOffsetVector<T>::prepend(const T &value)
 }
 
 template<typename T>
-void QOffsetVector<T>::insert(int pos, const T &value)
+void QContiguousCache<T>::insert(int pos, const T &value)
 {
     detach();
     if (containsIndex(pos)) {
@@ -337,15 +337,15 @@ void QOffsetVector<T>::insert(int pos, const T &value)
 }
 
 template <typename T>
-inline const T &QOffsetVector<T>::at(int pos) const
-{ Q_ASSERT_X(pos >= d->offset && pos - d->offset < d->count, "QOffsetVector<T>::at", "index out of range"); return d->array[pos % d->alloc]; }
+inline const T &QContiguousCache<T>::at(int pos) const
+{ Q_ASSERT_X(pos >= d->offset && pos - d->offset < d->count, "QContiguousCache<T>::at", "index out of range"); return d->array[pos % d->alloc]; }
 template <typename T>
-inline const T &QOffsetVector<T>::operator[](int pos) const
-{ Q_ASSERT_X(pos >= d->offset && pos - d->offset < d->count, "QOffsetVector<T>::at", "index out of range"); return d->array[pos % d->alloc]; }
+inline const T &QContiguousCache<T>::operator[](int pos) const
+{ Q_ASSERT_X(pos >= d->offset && pos - d->offset < d->count, "QContiguousCache<T>::at", "index out of range"); return d->array[pos % d->alloc]; }
 template <typename T>
 
 // can use the non-inline one to modify the index range.
-inline T &QOffsetVector<T>::operator[](int pos)
+inline T &QContiguousCache<T>::operator[](int pos)
 {
     detach();
     if (!containsIndex(pos))
@@ -354,7 +354,7 @@ inline T &QOffsetVector<T>::operator[](int pos)
 }
 
 template <typename T>
-inline void QOffsetVector<T>::removeFirst()
+inline void QContiguousCache<T>::removeFirst()
 {
     Q_ASSERT(d->count > 0);
     detach();
@@ -366,7 +366,7 @@ inline void QOffsetVector<T>::removeFirst()
 }
 
 template <typename T>
-inline void QOffsetVector<T>::removeLast()
+inline void QContiguousCache<T>::removeLast()
 {
     Q_ASSERT(d->count > 0);
     detach();
@@ -376,11 +376,11 @@ inline void QOffsetVector<T>::removeLast()
 }
 
 template <typename T>
-inline T QOffsetVector<T>::takeFirst()
+inline T QContiguousCache<T>::takeFirst()
 { T t = first(); removeFirst(); return t; }
 
 template <typename T>
-inline T QOffsetVector<T>::takeLast()
+inline T QContiguousCache<T>::takeLast()
 { T t = last(); removeLast(); return t; }
 
 #endif
