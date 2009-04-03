@@ -43,7 +43,7 @@
 #include <qgl.h>
 #include <private/qgl_p.h>
 
-#include <qglpixelbuffer_p.h>
+#include <private/qglpixelbuffer_p.h>
 
 #include <qimage.h>
 #include <qdebug.h>
