@@ -255,7 +255,6 @@ void QWSTtyKbPrivate::readKeycode()
         ka = m_handler->processKeycode(buffer[i] & 0x7f, (buffer[i] & 0x80) == 0x00, buffer[i] == m_last_keycode);
         m_last_keycode = buffer[i];
 
-qWarning("Special: %08x", ka);
         switch (ka) {
         case QWSKeyboardHandler::CapsLockOn:
         case QWSKeyboardHandler::CapsLockOff:
