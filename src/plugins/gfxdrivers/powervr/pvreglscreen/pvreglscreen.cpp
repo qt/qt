@@ -381,7 +381,7 @@ void PvrEglSurfaceHolder::removeSurface()
             // create the temporary surface again.
             if (surface == EGL_NO_SURFACE && dpy != EGL_NO_DISPLAY) {
                 surface = eglCreateWindowSurface
-                    (dpy, config, (EGLNativeWindowType)tempSurface, NULL);
+                    (dpy, config, (EGLNativeWindowType)(-1), NULL);
                 if (surface == EGL_NO_SURFACE)
                     qWarning("Could not re-create the temporary EGL surface");
             }
