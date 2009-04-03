@@ -57,12 +57,14 @@ class QGLShareContextScope
 public:
     QGLShareContextScope(const QGLContext *ctx)
         : m_oldContext(0)
-        , m_ctx(const_cast<QGLContext *>(ctx))
     {
-        const QGLContext *currentContext = QGLContext::currentContext();
+        QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
         if (currentContext != ctx && !qgl_share_reg()->checkSharing(ctx, currentContext)) {
-            m_oldContext = const_cast<QGLContext *>(currentContext);
+            m_oldContext = currentContext;
+            m_ctx = const_cast<QGLContext *>(ctx);
             m_ctx->makeCurrent();
+        } else {
+            m_ctx = currentContext;
         }
     }
 
@@ -127,6 +129,7 @@ QGLPixmapData::QGLPixmapData(PixelType type)
     : QPixmapData(type, OpenGLClass)
     , m_width(0)
     , m_height(0)
+    , m_ctx(0)
     , m_texture(0)
     , m_dirty(false)
 {
@@ -148,6 +151,9 @@ bool QGLPixmapData::isValid() const
 
 bool QGLPixmapData::isValidContext(const QGLContext *ctx) const
 {
+    if (ctx == m_ctx)
+        return true;
+
     const QGLContext *share_ctx = qt_gl_share_widget()->context();
     return ctx == share_ctx || qgl_share_reg()->checkSharing(ctx, share_ctx);
 }
@@ -173,6 +179,7 @@ void QGLPixmapData::ensureCreated() const
     m_dirty = false;
 
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
+    m_ctx = ctx;
 
     const GLenum format = qt_gl_preferredTextureFormat();
     const GLenum target = qt_gl_preferredTextureTarget();

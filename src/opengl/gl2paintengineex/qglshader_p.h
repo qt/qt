@@ -81,6 +81,7 @@ SAMPLER_2D_SHADOW.
 
 #include <QtOpenGL>
 
+#include <private/qgl_p.h>
 
 typedef struct {
     GLfloat a;

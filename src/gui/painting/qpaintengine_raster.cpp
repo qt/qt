@@ -483,12 +483,12 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
     d->rasterizer->setClipRect(d->deviceRect);
 
     s->penData.init(d->rasterBuffer, this);
-    s->penData.setup(s->pen.brush(), s->intOpacity);
+    s->penData.setup(s->pen.brush(), s->intOpacity, s);
     s->stroker = &d->basicStroker;
     d->basicStroker.setClipRect(d->deviceRect);
 
     s->brushData.init(d->rasterBuffer, this);
-    s->brushData.setup(s->brush, s->intOpacity);
+    s->brushData.setup(s->brush, s->intOpacity, s);
 
     d->rasterBuffer->compositionMode = QPainter::CompositionMode_SourceOver;
 
@@ -769,7 +769,7 @@ void QRasterPaintEngine::updatePen(const QPen &pen)
     s->strokeFlags = 0;
 
     s->penData.clip = d->clip();
-    s->penData.setup(pen_style == Qt::NoPen ? QBrush() : pen.brush(), s->intOpacity);
+    s->penData.setup(pen_style == Qt::NoPen ? QBrush() : pen.brush(), s->intOpacity, s);
 
     if (s->strokeFlags & QRasterPaintEngine::DirtyTransform
         || pen.brush().transform().type() >= QTransform::TxNone) {
@@ -869,7 +869,7 @@ void QRasterPaintEngine::updateBrush(const QBrush &brush)
     QRasterPaintEngineState *s = state();
     // must set clip prior to setup, as setup uses it...
     s->brushData.clip = d->clip();
-    s->brushData.setup(brush, s->intOpacity);
+    s->brushData.setup(brush, s->intOpacity, s);
     if (s->fillFlags & DirtyTransform
         || brush.transform().type() >= QTransform::TxNone)
         d_func()->updateMatrixData(&s->brushData, brush, d->brushMatrix());
@@ -1024,6 +1024,10 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
 {
     if (!clip.isValid())
         return;
+
+    if (alpha ==0)
+        return;
+
     Q_ASSERT(img.depth() >= 8);
 
     int srcBPL = img.bytesPerLine();
@@ -1702,12 +1706,17 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 
 static inline QRect toNormalizedFillRect(const QRectF &rect)
 {
-    const int x1 = qRound(rect.x() + aliasedCoordinateDelta);
-    const int y1 = qRound(rect.y() + aliasedCoordinateDelta);
-    const int x2 = qRound(rect.right() + aliasedCoordinateDelta);
-    const int y2 = qRound(rect.bottom() + aliasedCoordinateDelta);
+    int x1 = int(rect.x() + aliasedCoordinateDelta);
+    int y1 = int(rect.y() + aliasedCoordinateDelta);
+    int x2 = int(rect.right() + aliasedCoordinateDelta);
+    int y2 = int(rect.bottom() + aliasedCoordinateDelta);
 
-    return QRect(x1, y1, x2 - x1, y2 - y1).normalized();
+    if (x2 < x1)
+        qSwap(x1, x2);
+    if (y2 < y1)
+        qSwap(y1, y2);
+
+    return QRect(x1, y1, x2 - x1, y2 - y1);
 }
 
 /*!
@@ -1867,9 +1876,12 @@ void QRasterPaintEngine::fillRect(const QRectF &r, const QColor &color)
     QRasterPaintEngineState *s = state();
 
     d->solid_color_filler.solid.color = PREMUL(ARGB_COMBINE_ALPHA(color.rgba(), s->intOpacity));
+    if ((d->solid_color_filler.solid.color & 0xff000000) == 0
+        && s->composition_mode == QPainter::CompositionMode_SourceOver) {
+        return;
+    }
     d->solid_color_filler.clip = d->clip();
     d->solid_color_filler.adjustSpanMethods();
-
     fillRect(r, &d->solid_color_filler);
 }
 
@@ -4906,7 +4918,7 @@ void QSpanData::init(QRasterBuffer *rb, const QRasterPaintEngine *pe)
 
 extern QImage qt_imageForBrush(int brushStyle, bool invert);
 
-void QSpanData::setup(const QBrush &brush, int alpha)
+void QSpanData::setup(const QBrush &brush, int alpha, const QRasterPaintEngineState *s)
 {
     Qt::BrushStyle brushStyle = qbrush_style(brush);
     switch (brushStyle) {
@@ -4914,6 +4926,10 @@ void QSpanData::setup(const QBrush &brush, int alpha)
         type = Solid;
         QColor c = qbrush_color(brush);
         solid.color = PREMUL(ARGB_COMBINE_ALPHA(c.rgba(), alpha));
+        if ((solid.color & 0xff000000) == 0
+            && s->composition_mode == QPainter::CompositionMode_SourceOver) {
+            type = None;
+        }
         break;
     }
 

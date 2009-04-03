@@ -62,7 +62,7 @@ public:
     QGLPoint(GLfloat new_x, GLfloat new_y) :
         x(new_x), y(new_y) {};
 
-    QGLPoint(QPointF p) :
+    QGLPoint(const QPointF &p) :
         x(p.x()), y(p.y()) {};
 
     QGLPoint(const QPointF* p) :
@@ -77,7 +77,7 @@ public:
 
 struct QGLRect
 {
-    QGLRect(QRectF r)
+    QGLRect(const QRectF &r)
         :  left(r.left()), top(r.top()), right(r.right()), bottom(r.bottom()) {}
 
     QGLRect(GLfloat l, GLfloat t, GLfloat r, GLfloat b)
@@ -98,6 +98,7 @@ public:
         maxX(-2e10), maxY(-2e10), minX(2e10), minY(2e10),
         boundingRectDirty(true) {}
 
+    void addRect(const QRectF &rect);
     void addPath(const QVectorPath &path, GLfloat curveInverseScale);
     void clear();
 

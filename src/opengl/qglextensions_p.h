@@ -74,6 +74,10 @@
 typedef ptrdiff_t GLsizeiptrARB;
 #endif
 
+#ifndef GL_VERSION_2_0
+typedef char GLchar;
+#endif
+
 // ARB_pixel_buffer_object
 typedef void (APIENTRY *_glBindBufferARB) (GLenum, GLuint);
 typedef void (APIENTRY *_glDeleteBuffersARB) (GLsizei, const GLuint *);
@@ -107,16 +111,32 @@ typedef void (APIENTRY *_glGetShaderiv) (GLuint, GLenum, GLint *);
 typedef void (APIENTRY *_glGetProgramiv) (GLuint, GLenum, GLint *);
 
 typedef GLuint (APIENTRY *_glGetUniformLocation) (GLuint, const char*);
-typedef void (APIENTRY *_glUniform4fv) (GLint, GLsizei, GLfloat *);
-typedef void (APIENTRY *_glUniform3fv) (GLint, GLsizei, GLfloat *);
-typedef void (APIENTRY *_glUniform2fv) (GLint, GLsizei, GLfloat *);
-typedef void (APIENTRY *_glUniform1fv) (GLint, GLsizei, GLfloat *);
+typedef void (APIENTRY *_glUniform4fv) (GLint, GLsizei, const GLfloat *);
+typedef void (APIENTRY *_glUniform3fv) (GLint, GLsizei, const GLfloat *);
+typedef void (APIENTRY *_glUniform2fv) (GLint, GLsizei, const GLfloat *);
+typedef void (APIENTRY *_glUniform1fv) (GLint, GLsizei, const GLfloat *);
 typedef void (APIENTRY *_glUniform1i) (GLint, GLint);
 
 typedef void (APIENTRY *_glActiveStencilFaceEXT) (GLenum );
 
 typedef void (APIENTRY *_glMultiTexCoord4f) (GLenum, GLfloat, GLfloat, GLfloat, GLfloat);
 typedef void (APIENTRY *_glActiveTexture) (GLenum);
+
+typedef void (APIENTRY *_glGetActiveAttrib) (GLuint program, GLuint index, GLsizei maxLength, GLsizei* length, GLint* size, GLenum* type, GLchar* name);
+typedef GLint (APIENTRY *_glGetAttribLocation) (GLuint program, const GLchar* name);
+typedef void (APIENTRY *_glGetActiveUniform) (GLuint program, GLuint index, GLsizei maxLength, GLsizei* length, GLint* size, GLenum* type, GLchar* name);
+typedef void (APIENTRY *_glGetProgramInfoLog) (GLuint program, GLsizei bufSize, GLsizei* length, GLchar* infoLog);
+typedef void (APIENTRY *_glUniform1f) (GLint location, GLfloat v0);
+typedef void (APIENTRY *_glUniform2f) (GLint location, GLfloat v0, GLfloat v1);
+typedef void (APIENTRY *_glUniform4f) (GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+typedef void (APIENTRY *_glUniformMatrix2fv) (GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
+typedef void (APIENTRY *_glUniformMatrix3fv) (GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
+typedef void (APIENTRY *_glUniformMatrix4fv) (GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
+typedef void (APIENTRY *_glEnableVertexAttribArray) (GLuint);
+typedef void (APIENTRY *_glDisableVertexAttribArray) (GLuint);
+typedef void (APIENTRY *_glVertexAttribPointer) (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* pointer);
+typedef void (APIENTRY *_glStencilOpSeparate) (GLenum face, GLenum sfail, GLenum dpfail, GLenum dppass);
+
 
 // EXT_GL_framebuffer_object
 typedef GLboolean (APIENTRY *_glIsRenderbufferEXT) (GLuint renderbuffer);
@@ -141,6 +161,15 @@ typedef void (APIENTRY *_glFramebufferRenderbufferEXT) (GLenum target, GLenum at
 typedef void (APIENTRY *_glGetFramebufferAttachmentParameterivEXT) (GLenum target, GLenum attachment, GLenum pname,
                                                                           GLint *params);
 typedef void (APIENTRY *_glGenerateMipmapEXT) (GLenum target);
+
+// EXT_GL_framebuffer_blit
+typedef void (APIENTRY *_glBlitFramebufferEXT) (int srcX0, int srcY0, int srcX1, int srcY1,
+                                                int dstX0, int dstY0, int dstX1, int dstY1,
+                                                GLbitfield mask, GLenum filter);
+
+// EXT_GL_framebuffer_multisample
+typedef void (APIENTRY *_glRenderbufferStorageMultisampleEXT) (GLenum target, GLsizei samples,
+                                                               GLenum internalformat, GLsizei width, GLsizei height);
 
 QT_BEGIN_NAMESPACE
 
@@ -200,6 +229,8 @@ struct QGLExtensionFuncs
         qt_glGetFramebufferAttachmentParameterivEXT = 0;
         qt_glGenerateMipmapEXT = 0;
 #endif
+        qt_glBlitFramebufferEXT = 0;
+        qt_glRenderbufferStorageMultisampleEXT = 0;
 
         qt_glBindBufferARB = 0;
         qt_glDeleteBuffersARB = 0;
@@ -207,6 +238,21 @@ struct QGLExtensionFuncs
         qt_glBufferDataARB = 0;
         qt_glMapBufferARB = 0;
         qt_glUnmapBufferARB = 0;
+
+        qt_glGetActiveAttrib = 0;
+        qt_glGetAttribLocation = 0;
+        qt_glGetActiveUniform = 0;
+        qt_glGetProgramInfoLog = 0;
+        qt_glUniform1f = 0;
+        qt_glUniform2f = 0;
+        qt_glUniform4f = 0;
+        qt_glUniformMatrix2fv = 0;
+        qt_glUniformMatrix3fv = 0;
+        qt_glUniformMatrix4fv = 0;
+        qt_glEnableVertexAttribArray = 0;
+        qt_glDisableVertexAttribArray = 0;
+        qt_glVertexAttribPointer = 0;
+        qt_glStencilOpSeparate = 0;
     }
 
     _glProgramStringARB qt_glProgramStringARB;
@@ -263,6 +309,8 @@ struct QGLExtensionFuncs
     _glGetFramebufferAttachmentParameterivEXT qt_glGetFramebufferAttachmentParameterivEXT;
     _glGenerateMipmapEXT qt_glGenerateMipmapEXT;
 #endif
+    _glBlitFramebufferEXT qt_glBlitFramebufferEXT;
+    _glRenderbufferStorageMultisampleEXT qt_glRenderbufferStorageMultisampleEXT;
 
     _glBindBufferARB qt_glBindBufferARB;
     _glDeleteBuffersARB qt_glDeleteBuffersARB;
@@ -270,6 +318,21 @@ struct QGLExtensionFuncs
     _glBufferDataARB qt_glBufferDataARB;
     _glMapBufferARB qt_glMapBufferARB;
     _glUnmapBufferARB qt_glUnmapBufferARB;
+
+    _glGetActiveAttrib qt_glGetActiveAttrib;
+    _glGetAttribLocation qt_glGetAttribLocation;
+    _glGetActiveUniform qt_glGetActiveUniform;
+    _glGetProgramInfoLog qt_glGetProgramInfoLog;
+    _glUniform1f qt_glUniform1f;
+    _glUniform2f qt_glUniform2f;
+    _glUniform4f qt_glUniform4f;
+    _glUniformMatrix2fv qt_glUniformMatrix2fv;
+    _glUniformMatrix3fv qt_glUniformMatrix3fv;
+    _glUniformMatrix4fv qt_glUniformMatrix4fv;
+    _glEnableVertexAttribArray qt_glEnableVertexAttribArray;
+    _glDisableVertexAttribArray qt_glDisableVertexAttribArray;
+    _glVertexAttribPointer qt_glVertexAttribPointer;
+    _glStencilOpSeparate qt_glStencilOpSeparate;
 };
 
 
@@ -397,6 +460,28 @@ struct QGLExtensionFuncs
 #define GL_RENDERBUFFER_STENCIL_SIZE_EXT                        0x8D55
 #endif
 
+// GL_EXT_framebuffer_blit
+#ifndef GL_READ_FRAMEBUFFER_EXT
+#define GL_READ_FRAMEBUFFER_EXT                                 0x8CA8
+#endif
+
+// GL_EXT_framebuffer_multisample
+#ifndef GL_RENDERBUFFER_SAMPLES_EXT
+#define GL_RENDERBUFFER_SAMPLES_EXT                             0x8CAB
+#endif
+
+#ifndef GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT
+#define GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT               0x8D56
+#endif
+
+#ifndef GL_MAX_SAMPLES_EXT
+#define GL_MAX_SAMPLES_EXT                                      0x8D5
+#endif
+
+#ifndef GL_DRAW_FRAMEBUFFER_EXT
+#define GL_DRAW_FRAMEBUFFER_EXT                                 0x8CA9
+#endif
+
 #ifndef GL_EXT_packed_depth_stencil
 #define GL_DEPTH_STENCIL_EXT                                    0x84F9
 #define GL_UNSIGNED_INT_24_8_EXT                                0x84FA
@@ -414,6 +499,40 @@ struct QGLExtensionFuncs
 #define GL_PACK_IMAGE_HEIGHT              0x806C
 #define GL_UNPACK_SKIP_IMAGES             0x806D
 #define GL_UNPACK_IMAGE_HEIGHT            0x806E
+#endif
+
+#ifndef GL_VERSION_1_4
+#define GL_INCR_WRAP 0x8507
+#define GL_DECR_WRAP 0x8508
+#endif
+
+#ifndef GL_VERSION_2_0
+#define GL_FRAGMENT_SHADER 0x8B30
+#define GL_VERTEX_SHADER 0x8B31
+#define GL_FLOAT_VEC2 0x8B50
+#define GL_FLOAT_VEC3 0x8B51
+#define GL_FLOAT_VEC4 0x8B52
+#define GL_INT_VEC2 0x8B53
+#define GL_INT_VEC3 0x8B54
+#define GL_INT_VEC4 0x8B55
+#define GL_BOOL 0x8B56
+#define GL_BOOL_VEC2 0x8B57
+#define GL_BOOL_VEC3 0x8B58
+#define GL_BOOL_VEC4 0x8B59
+#define GL_FLOAT_MAT2 0x8B5A
+#define GL_FLOAT_MAT3 0x8B5B
+#define GL_FLOAT_MAT4 0x8B5C
+#define GL_SAMPLER_1D 0x8B5D
+#define GL_SAMPLER_2D 0x8B5E
+#define GL_SAMPLER_3D 0x8B5F
+#define GL_SAMPLER_CUBE 0x8B60
+#define GL_COMPILE_STATUS 0x8B81
+#define GL_LINK_STATUS 0x8B82
+#define GL_INFO_LOG_LENGTH 0x8B84
+#define GL_ACTIVE_UNIFORMS 0x8B86
+#define GL_ACTIVE_UNIFORM_MAX_LENGTH 0x8B87
+#define GL_ACTIVE_ATTRIBUTES 0x8B89
+#define GL_ACTIVE_ATTRIBUTE_MAX_LENGTH 0x8B8A
 #endif
 
 #define glProgramStringARB QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glProgramStringARB
@@ -449,6 +568,8 @@ struct QGLExtensionFuncs
 #define glFramebufferRenderbufferEXT QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glFramebufferRenderbufferEXT
 #define glGetFramebufferAttachmentParameterivEXT QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetFramebufferAttachmentParameterivEXT
 #define glGenerateMipmapEXT QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGenerateMipmapEXT
+#define glBlitFramebufferEXT QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glBlitFramebufferEXT
+#define glRenderbufferStorageMultisampleEXT QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glRenderbufferStorageMultisampleEXT
 
 #else // QT_OPENGL_ES_2
 
@@ -501,6 +622,25 @@ struct QGLExtensionFuncs
 #define glUniform2fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniform2fv
 #define glUniform1fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniform1fv
 #define glUniform1i QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniform1i
+
+#define glGetActiveAttrib QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetActiveAttrib
+#define glGetAttribLocation QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetAttribLocation
+#define glGetActiveUniform QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetActiveUniform
+#define glGetProgramInfoLog QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetProgramInfoLog
+#define glUniform1f QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniform1f
+#define glUniform2f QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniform2f
+#define glUniform4f QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniform4f
+#define glUniformMatrix2fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniformMatrix2fv
+#define glUniformMatrix3fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniformMatrix3fv
+#define glUniformMatrix4fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniformMatrix4fv
+#define glEnableVertexAttribArray QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glEnableVertexAttribArray
+#define glDisableVertexAttribArray QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glDisableVertexAttribArray
+#define glVertexAttribPointer QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glVertexAttribPointer
+#define glStencilOpSeparate QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glStencilOpSeparate
+
+#if !defined(QT_OPENGL_ES_2)
+#define glClearDepthf(x) glClearDepth(GLdouble(x))
+#endif
 
 extern bool qt_resolve_framebufferobject_extensions(QGLContext *ctx);
 bool qt_resolve_buffer_extensions(QGLContext *ctx);

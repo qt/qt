@@ -74,6 +74,9 @@ bool qt_resolve_framebufferobject_extensions(QGLContext *ctx)
     glGetFramebufferAttachmentParameterivEXT =
         (_glGetFramebufferAttachmentParameterivEXT) ctx->getProcAddress(QLatin1String("glGetFramebufferAttachmentParameterivEXT"));
     glGenerateMipmapEXT = (_glGenerateMipmapEXT) ctx->getProcAddress(QLatin1String("glGenerateMipmapEXT"));
+    glBlitFramebufferEXT = (_glBlitFramebufferEXT) ctx->getProcAddress(QLatin1String("glBlitFramebufferEXT"));
+    glRenderbufferStorageMultisampleEXT =
+        (_glRenderbufferStorageMultisampleEXT) ctx->getProcAddress(QLatin1String("glRenderbufferStorageMultisampleEXT"));
     return glIsRenderbufferEXT;
 #else
     Q_UNUSED(ctx);
@@ -176,10 +179,29 @@ bool qt_resolve_glsl_extensions(QGLContext *ctx)
     glUniform1fv = (_glUniform1fv) ctx->getProcAddress(QLatin1String("glUniform1fv"));
     glUniform1i = (_glUniform1i) ctx->getProcAddress(QLatin1String("glUniform1i"));
 
+    glGetActiveAttrib = (_glGetActiveAttrib) ctx->getProcAddress(QLatin1String("glGetActiveAttrib"));
+    glGetAttribLocation = (_glGetAttribLocation) ctx->getProcAddress(QLatin1String("glGetAttribLocation"));
+    glGetActiveUniform = (_glGetActiveUniform) ctx->getProcAddress(QLatin1String("glGetActiveUniform"));
+    glGetProgramInfoLog = (_glGetProgramInfoLog) ctx->getProcAddress(QLatin1String("glGetProgramInfoLog"));
+    glUniform1f = (_glUniform1f) ctx->getProcAddress(QLatin1String("glUniform1f"));
+    glUniform2f = (_glUniform2f) ctx->getProcAddress(QLatin1String("glUniform2f"));
+    glUniform4f = (_glUniform4f) ctx->getProcAddress(QLatin1String("glUniform4f"));
+    glUniformMatrix2fv = (_glUniformMatrix2fv) ctx->getProcAddress(QLatin1String("glUniformMatrix2fv"));
+    glUniformMatrix3fv = (_glUniformMatrix3fv) ctx->getProcAddress(QLatin1String("glUniformMatrix3fv"));
+    glUniformMatrix4fv = (_glUniformMatrix4fv) ctx->getProcAddress(QLatin1String("glUniformMatrix4fv"));
+    glEnableVertexAttribArray = (_glEnableVertexAttribArray) ctx->getProcAddress(QLatin1String("glEnableVertexAttribArray"));
+    glDisableVertexAttribArray = (_glDisableVertexAttribArray) ctx->getProcAddress(QLatin1String("glDisableVertexAttribArray"));
+    glVertexAttribPointer = (_glVertexAttribPointer) ctx->getProcAddress(QLatin1String("glVertexAttribPointer"));
+    glStencilOpSeparate = (_glStencilOpSeparate) ctx->getProcAddress(QLatin1String("glStencilOpSeparate"));
+
     return glCreateShader && glShaderSource && glCompileShader && glDeleteProgram &&
         glCreateProgram && glAttachShader && glDetachShader && glLinkProgram && glUseProgram &&
         glDeleteProgram && glGetShaderInfoLog && glGetShaderiv && glGetProgramiv && glGetUniformLocation &&
-        glUniform1i && glUniform1fv && glUniform2fv && glUniform3fv && glUniform4fv;
+        glUniform1i && glUniform1fv && glUniform2fv && glUniform3fv && glUniform4fv &&
+        glGetActiveAttrib && glGetAttribLocation && glGetActiveUniform && glGetProgramInfoLog &&
+        glUniform1f && glUniform2f && glUniform4f &&
+        glUniformMatrix2fv && glUniformMatrix3fv && glUniformMatrix4fv &&
+        glEnableVertexAttribArray && glDisableVertexAttribArray && glVertexAttribPointer && glStencilOpSeparate;
 }
 
 QT_END_NAMESPACE

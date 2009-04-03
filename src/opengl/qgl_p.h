@@ -282,6 +282,39 @@ Q_SIGNALS:
     void aboutToDestroyContext(const QGLContext *context);
 };
 
+class QGLPixelBuffer;
+class QGLFramebufferObject;
+class QWSGLWindowSurface;
+class QGLWindowSurface;
+class QGLDrawable {
+public:
+    QGLDrawable() : widget(0), buffer(0), fbo(0)
+                  , wsurf(0)
+        {}
+    void setDevice(QPaintDevice *pdev);
+    void swapBuffers();
+    void makeCurrent();
+    void doneCurrent();
+    QSize size() const;
+    QGLFormat format() const;
+    GLuint bindTexture(const QImage &image, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA);
+    GLuint bindTexture(const QPixmap &pixmap, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA);
+    QColor backgroundColor() const;
+    QGLContext *context() const;
+    bool autoFillBackground() const;
+
+private:
+    bool wasBound;
+    QGLWidget *widget;
+    QGLPixelBuffer *buffer;
+    QGLFramebufferObject *fbo;
+#ifdef Q_WS_QWS
+    QWSGLWindowSurface *wsurf;
+#else
+    QGLWindowSurface *wsurf;
+#endif
+};
+
 // GL extension definitions
 class QGLExtensions {
 public:
@@ -297,7 +330,8 @@ public:
         StencilWrap             = 0x00000100,
         PackedDepthStencil      = 0x00000200,
         NVFloatBuffer           = 0x00000400,
-        PixelBufferObject       = 0x00000800
+        PixelBufferObject       = 0x00000800,
+        FramebufferBlit         = 0x00001000
     };
     Q_DECLARE_FLAGS(Extensions, Extension)
 
@@ -385,9 +419,13 @@ inline GLenum qt_gl_preferredTextureFormat()
 
 inline GLenum qt_gl_preferredTextureTarget()
 {
+#if 1 || defined(QT_OPENGL_ES_2)
+    return GL_TEXTURE_2D;
+#else
     return (QGLExtensions::glExtensions & QGLExtensions::TextureRectangle)
            ? GL_TEXTURE_RECTANGLE_NV
            : GL_TEXTURE_2D;
+#endif
 }
 
 

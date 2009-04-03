@@ -43,7 +43,11 @@
 
 #include <qdebug.h>
 #include <private/qgl_p.h>
+#if 1 || defined(QT_OPENGL_ES_2)
+#include <private/qpaintengineex_opengl2_p.h>
+#else
 #include <private/qpaintengine_opengl_p.h>
+#endif
 #include <qglframebufferobject.h>
 #include <qlibrary.h>
 #include <qimage.h>
@@ -63,6 +67,216 @@ extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
     }                                                     \
 }
 
+class QGLFramebufferObjectFormatPrivate
+{
+public:
+    int samples;
+    QGLFramebufferObject::Attachment attachment;
+    GLenum target;
+    GLenum internal_format;
+};
+
+/*!
+    \class QGLFramebufferObjectFormat
+    \brief The QGLFramebufferObjectFormat class specifies the format of an OpenGL
+    framebuffer object.
+
+    \since 4.6
+
+    \ingroup multimedia
+
+    A framebuffer object has several characteristics:
+    \list
+    \i \link setSamples() Number of samples per pixels.\endlink
+    \i \link setAttachment() Depth and/or stencil attachments.\endlink
+    \i \link setTextureTarget() Texture target.\endlink
+    \i \link setInternalFormat() Internal format.\endlink
+    \endlist
+
+    Note that the desired attachments or number of samples per pixels might not
+    be supported by the hardware driver. Call QGLFramebufferObject::format()
+    after creating a QGLFramebufferObject to find the exact format that was
+    used to create the frame buffer object.
+
+    \sa QGLFramebufferObject
+*/
+
+/*!
+    \since 4.6
+
+    Creates a QGLFramebufferObjectFormat object with properties specifying
+    the format of an OpenGL framebuffer object.
+
+    A multisample framebuffer object is specified by setting \a samples
+    to a value different from zero. If the desired amount of samples per pixel is
+    not supported by the hardware then the maximum number of samples per pixel
+    will be used. Note that multisample framebuffer objects can not be bound as
+    textures. Also, the \c{GL_EXT_framebuffer_multisample} extension is required
+    to create a framebuffer with more than one sample per pixel.
+
+    For multisample framebuffer objects a color render buffer is created,
+    otherwise a texture with the texture target \a target is created.
+    The color render buffer or texture will have the internal format
+    \a internalFormat, and will be bound to the \c GL_COLOR_ATTACHMENT0
+    attachment in the framebuffer object.
+
+    The \a attachment parameter describes the depth/stencil buffer
+    configuration.
+
+    \sa samples(), attachment(), target(), internalFormat()
+*/
+
+QGLFramebufferObjectFormat::QGLFramebufferObjectFormat(int samples,
+                                                       QGLFramebufferObject::Attachment attachment,
+                                                       GLenum target,
+                                                       GLenum internalFormat)
+{
+    d = new QGLFramebufferObjectFormatPrivate;
+    d->samples = samples;
+    d->attachment = attachment;
+    d->target = target;
+    d->internal_format = internalFormat;
+}
+
+/*!
+    \since 4.6
+
+    Constructs a copy of \a other.
+*/
+
+QGLFramebufferObjectFormat::QGLFramebufferObjectFormat(const QGLFramebufferObjectFormat &other)
+{
+    d = new QGLFramebufferObjectFormatPrivate;
+    *d = *other.d;
+}
+
+/*!
+    \since 4.6
+
+    Assigns \a other to this object.
+*/
+
+QGLFramebufferObjectFormat::QGLFramebufferObjectFormat &
+QGLFramebufferObjectFormat::operator=(const QGLFramebufferObjectFormat &other)
+{
+    *d = *other.d;
+    return *this;
+}
+
+/*!
+    \since 4.6
+
+    Destroys the QGLFramebufferObjectFormat.
+*/
+QGLFramebufferObjectFormat::~QGLFramebufferObjectFormat()
+{
+    delete d;
+}
+
+/*!
+    \since 4.6
+
+    Sets the number of samples per pixel for a multisample framebuffer object
+    to \a samples.
+    A sample count of 0 represents a regular non-multisample framebuffer object.
+
+    \sa samples()
+*/
+void QGLFramebufferObjectFormat::setSamples(int samples)
+{
+    d->samples = samples;
+}
+
+/*!
+    \since 4.6
+
+    Returns the number of samples per pixel if a framebuffer object
+    is a multisample framebuffer object. Otherwise, returns 0.
+
+    \sa setSamples()
+*/
+int QGLFramebufferObjectFormat::samples() const
+{
+    return d->samples;
+}
+
+/*!
+    \since 4.6
+
+    Sets the attachments a framebuffer object should have to \a attachment.
+
+    \sa attachment()
+*/
+void QGLFramebufferObjectFormat::setAttachment(QGLFramebufferObject::Attachment attachment)
+{
+    d->attachment = attachment;
+}
+
+/*!
+    \since 4.6
+
+    Returns the status of the depth and stencil buffers attached to
+    a framebuffer object.
+
+    \sa setAttachment()
+*/
+QGLFramebufferObject::Attachment QGLFramebufferObjectFormat::attachment() const
+{
+    return d->attachment;
+}
+
+/*!
+    \since 4.6
+
+    Sets the texture target of the texture attached to a framebuffer object to
+    \a target. Ignored for multisample framebuffer objects.
+
+    \sa textureTarget(), samples()
+*/
+void QGLFramebufferObjectFormat::setTextureTarget(GLenum target)
+{
+    d->target = target;
+}
+
+/*!
+    \since 4.6
+
+    Returns the texture target of the texture attached to a framebuffer object.
+    Ignored for multisample framebuffer objects.
+
+    \sa setTextureTarget(), samples()
+*/
+GLenum QGLFramebufferObjectFormat::textureTarget() const
+{
+    return d->target;
+}
+
+/*!
+    \since 4.6
+
+    Sets the internal format of a framebuffer object's texture or multisample
+    framebuffer object's color buffer to \a internalFormat.
+
+    \sa internalFormat()
+*/
+void QGLFramebufferObjectFormat::setInternalFormat(GLenum internalFormat)
+{
+    d->internal_format = internalFormat;
+}
+
+/*!
+    \since 4.6
+
+    Returns the internal format of a framebuffer object's texture or
+    multisample framebuffer object's color buffer.
+
+    \sa setInternalFormat()
+*/
+GLenum QGLFramebufferObjectFormat::internalFormat() const
+{
+    return d->internal_format;
+}
+
 class QGLFramebufferObjectPrivate
 {
 public:
@@ -70,13 +284,16 @@ public:
     ~QGLFramebufferObjectPrivate() {}
 
     void init(const QSize& sz, QGLFramebufferObject::Attachment attachment,
-              GLenum internal_format, GLenum texture_target);
+              GLenum internal_format, GLenum texture_target, int samples = 0);
     bool checkFramebufferStatus() const;
     GLuint texture;
     GLuint fbo;
     GLuint depth_stencil_buffer;
+    GLuint color_buffer;
     GLenum target;
     QSize size;
+    QGLFramebufferObjectFormat format;
+    int samples;
     uint valid : 1;
     uint bound : 1;
     QGLFramebufferObject::Attachment fbo_attachment;
@@ -118,6 +335,9 @@ bool QGLFramebufferObjectPrivate::checkFramebufferStatus() const
     case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
         qDebug("QGLFramebufferObject: Framebuffer incomplete, missing read buffer.");
         break;
+    case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT:
+        qDebug("QGLFramebufferObject: Framebuffer incomplete, attachments must have same number of samples per pixel.");
+        break;
     default:
         qDebug() <<"QGLFramebufferObject: An undefined error has occurred: "<< status;
         break;
@@ -126,7 +346,7 @@ bool QGLFramebufferObjectPrivate::checkFramebufferStatus() const
 }
 
 void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::Attachment attachment,
-                                       GLenum texture_target, GLenum internal_format)
+                                       GLenum texture_target, GLenum internal_format, int samples)
 {
     ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     bool ext_detected = (QGLExtensions::glExtensions & QGLExtensions::FramebufferObject);
@@ -143,26 +363,56 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
 
     QT_CHECK_GLERROR();
     // init texture
-    glGenTextures(1, &texture);
-    glBindTexture(target, texture);
-    glTexImage2D(target, 0, internal_format, size.width(), size.height(), 0,
-                 GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    if (samples == 0) {
+        glGenTextures(1, &texture);
+        glBindTexture(target, texture);
+        glTexImage2D(target, 0, internal_format, size.width(), size.height(), 0,
+                GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 #ifndef QT_OPENGL_ES
-    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 #else
-    glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameterf(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameterf(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameterf(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 #endif
-    glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                              target, texture, 0);
+        glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                target, texture, 0);
 
-    QT_CHECK_GLERROR();
-    valid = checkFramebufferStatus();
+        QT_CHECK_GLERROR();
+        valid = checkFramebufferStatus();
+
+        color_buffer = 0;
+        samples = 0;
+    } else {
+        GLint maxSamples;
+        glGetIntegerv(GL_MAX_SAMPLES_EXT, &maxSamples);
+
+        samples = qBound(1, samples, int(maxSamples));
+
+        glGenRenderbuffersEXT(1, &color_buffer);
+        glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, color_buffer);
+        if (glRenderbufferStorageMultisampleEXT) {
+            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples,
+                internal_format, size.width(), size.height());
+        } else {
+            samples = 0;
+            glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, internal_format,
+                size.width(), size.height());
+        }
+
+        glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                                     GL_RENDERBUFFER_EXT, color_buffer);
+
+        QT_CHECK_GLERROR();
+        valid = checkFramebufferStatus();
+
+        if (valid)
+            glGetRenderbufferParameterivEXT(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_SAMPLES_EXT, &samples);
+    }
 
     if (attachment == QGLFramebufferObject::CombinedDepthStencil
         && (QGLExtensions::glExtensions & QGLExtensions::PackedDepthStencil)) {
@@ -171,7 +421,13 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
         Q_ASSERT(!glIsRenderbufferEXT(depth_stencil_buffer));
         glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_stencil_buffer);
         Q_ASSERT(glIsRenderbufferEXT(depth_stencil_buffer));
-        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH24_STENCIL8_EXT, size.width(), size.height());
+        if (samples != 0 && glRenderbufferStorageMultisampleEXT)
+            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples,
+                GL_DEPTH24_STENCIL8_EXT, size.width(), size.height());
+        else
+            glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
+                GL_DEPTH24_STENCIL8_EXT, size.width(), size.height());
+
         GLint i = 0;
         glGetRenderbufferParameterivEXT(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_DEPTH_SIZE_EXT, &i);
         glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
@@ -179,6 +435,7 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
         glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
                                      GL_RENDERBUFFER_EXT, depth_stencil_buffer);
         fbo_attachment = QGLFramebufferObject::CombinedDepthStencil;
+
         valid = checkFramebufferStatus();
         if (!valid)
             glDeleteRenderbuffersEXT(1, &depth_stencil_buffer);
@@ -189,12 +446,23 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
         Q_ASSERT(!glIsRenderbufferEXT(depth_stencil_buffer));
         glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_stencil_buffer);
         Q_ASSERT(glIsRenderbufferEXT(depth_stencil_buffer));
+        if (samples != 0 && glRenderbufferStorageMultisampleEXT) {
 #ifdef QT_OPENGL_ES
 #define GL_DEPTH_COMPONENT16 0x81A5
-        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT16, size.width(), size.height());
+            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples,
+                GL_DEPTH_COMPONENT16, size.width(), size.height());
 #else
-        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, size.width(), size.height());
+            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples,
+                GL_DEPTH_COMPONENT, size.width(), size.height());
 #endif
+        } else {
+#ifdef QT_OPENGL_ES
+#define GL_DEPTH_COMPONENT16 0x81A5
+            glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT16, size.width(), size.height());
+#else
+            glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, size.width(), size.height());
+#endif
+        }
         GLint i = 0;
         glGetRenderbufferParameterivEXT(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_DEPTH_SIZE_EXT, &i);
         glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
@@ -209,10 +477,18 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
 
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
     if (!valid) {
-        glDeleteTextures(1, &texture);
+        if (color_buffer)
+            glDeleteRenderbuffersEXT(1, &color_buffer);
+        else
+            glDeleteTextures(1, &texture);
         glDeleteFramebuffersEXT(1, &fbo);
     }
     QT_CHECK_GLERROR();
+
+    format.setTextureTarget(target);
+    format.setSamples(samples);
+    format.setAttachment(fbo_attachment);
+    format.setInternalFormat(internal_format);
 }
 
 /*!
@@ -260,13 +536,18 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
     framebuffer objects more portable.
     \endlist
 
-    Note that primitives drawn to a QGLFramebufferObject with QPainter
-    will only be antialiased if the QPainter::HighQualityAntialiasing
-    render hint is set. This is because there is currently no support
-    for the \c{GL_EXT_framebuffer_multisample} extension, which is
-    required to do multisample based antialiasing. Also note that the
-    QPainter::HighQualityAntialiasing render hint requires the
-    \c{GL_ARB_fragment_program} extension to work in OpenGL.
+    Note that you need to create a QGLFramebufferObject with more than one
+    sample per pixel for primitives to be antialiased when drawing using a
+    QPainter, unless if the QPainter::HighQualityAntialiasing render hint is
+    set. The QPainter::HighQualityAntialiasing render hint will enable
+    antialiasing as long as the \c{GL_ARB_fragment_program} extension is
+    present. To create a multisample framebuffer object you should use one of
+    the constructors that take a QGLFramebufferObject parameter, and set the
+    QGLFramebufferObject::samples() property to a non-zero value.
+
+    If you want to use a framebuffer object with multisampling enabled
+    as a texture, you first need to copy from it to a regular framebuffer
+    object using QGLContext::blitFramebuffer().
 
     \sa {Framebuffer Object Example}
 */
@@ -352,6 +633,32 @@ QGLFramebufferObject::QGLFramebufferObject(int width, int height, GLenum target)
 {
     Q_D(QGLFramebufferObject);
     d->init(QSize(width, height), NoAttachment, target, DEFAULT_FORMAT);
+}
+
+/*! \overload
+
+    Constructs an OpenGL framebuffer object of the given \a size based on the
+    supplied \a format.
+*/
+
+QGLFramebufferObject::QGLFramebufferObject(const QSize &size, const QGLFramebufferObjectFormat &format)
+    : d_ptr(new QGLFramebufferObjectPrivate)
+{
+    Q_D(QGLFramebufferObject);
+    d->init(size, format.attachment(), format.textureTarget(), format.internalFormat(), format.samples());
+}
+
+/*! \overload
+
+    Constructs an OpenGL framebuffer object of the given \a width and \a height
+    based on the supplied \a format.
+*/
+
+QGLFramebufferObject::QGLFramebufferObject(int width, int height, const QGLFramebufferObjectFormat &format)
+    : d_ptr(new QGLFramebufferObjectPrivate)
+{
+    Q_D(QGLFramebufferObject);
+    d->init(QSize(width, height), format.attachment(), format.textureTarget(), format.internalFormat(), format.samples());
 }
 
 #ifdef Q_MAC_COMPAT_GL_FUNCTIONS
@@ -441,6 +748,8 @@ QGLFramebufferObject::~QGLFramebufferObject()
             || qgl_share_reg()->checkSharing(d->ctx, QGLContext::currentContext())))
     {
         glDeleteTextures(1, &d->texture);
+        if (d->color_buffer)
+            glDeleteRenderbuffersEXT(1, &d->color_buffer);
         if (d->depth_stencil_buffer)
             glDeleteRenderbuffersEXT(1, &d->depth_stencil_buffer);
         glDeleteFramebuffersEXT(1, &d->fbo);
@@ -536,6 +845,9 @@ bool QGLFramebufferObject::release()
     Returns the texture id for the texture attached as the default
     rendering target in this framebuffer object. This texture id can
     be bound as a normal texture in your own GL code.
+
+    If a multisample framebuffer object is used then the value returned
+    from this function will be invalid.
 */
 GLuint QGLFramebufferObject::texture() const
 {
@@ -556,6 +868,15 @@ QSize QGLFramebufferObject::size() const
 }
 
 /*!
+    Returns the format of this framebuffer object.
+*/
+const QGLFramebufferObjectFormat &QGLFramebufferObject::format() const
+{
+    Q_D(const QGLFramebufferObject);
+    return d->format;
+}
+
+/*!
     \fn QImage QGLFramebufferObject::toImage() const
 
     Returns the contents of this framebuffer object as a QImage.
@@ -573,7 +894,9 @@ QImage QGLFramebufferObject::toImage() const
     return image;
 }
 
-#if !defined(QT_OPENGL_ES_2)
+#if 1 || defined(QT_OPENGL_ES_2)
+Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_buffer_paintengine)
+#else
 Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_buffer_paintengine)
 #endif
 
@@ -595,7 +918,8 @@ QPaintEngine *QGLFramebufferObject::paintEngine() const
 */
 bool QGLFramebufferObject::hasOpenGLFramebufferObjects()
 {
-    QGLWidget dmy; // needed to detect and init the QGLExtensions object
+    if (!QGLContext::currentContext())
+        QGLWidget dmy; // needed to detect and init the QGLExtensions object
     return (QGLExtensions::glExtensions & QGLExtensions::FramebufferObject);
 }
 
@@ -744,6 +1068,88 @@ bool QGLFramebufferObject::isBound() const
 {
     Q_D(const QGLFramebufferObject);
     return d->bound;
+}
+
+/*!
+    \fn bool QGLFramebufferObject::hasOpenGLFramebufferBlit()
+
+    \since 4.6
+
+    Returns true if the OpenGL \c{GL_EXT_framebuffer_blit} extension
+    is present on this system; otherwise returns false.
+*/
+bool QGLFramebufferObject::hasOpenGLFramebufferBlit()
+{
+    if (!QGLContext::currentContext())
+        QGLWidget dmy; // needed to detect and init the QGLExtensions object
+    return (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit);
+}
+
+/*!
+    \since 4.6
+
+    Blits from the \a sourceRect rectangle in the \a source framebuffer
+    object to the \a targetRect rectangle in the \a target framebuffer object.
+
+    If \a source or \a target is 0, the default framebuffer will be used
+    instead of a framebuffer object as source or target respectively.
+
+    The \a buffers parameter should be a mask consisting of any combination of
+    COLOR_BUFFER_BIT, DEPTH_BUFFER_BIT, and STENCIL_BUFFER_BIT. Any buffer type
+    that is not present both in the source and target buffers is ignored.
+
+    The \a sourceRect and \a targetRect rectangles may have different sizes;
+    in this case \a buffers should not contain DEPTH_BUFFER_BIT or
+    STENCIL_BUFFER_BIT. The \a filter parameter should be set to GL_LINEAR or
+    GL_NEAREST, and specifies whether linear or nearest interpolation should
+    be used when scaling is performed.
+
+    If \a source equals \a target a copy is performed within the same buffer.
+    Results are undefined if the source and target rectangles overlap and
+    have different sizes. The sizes must also be the same if any of the
+    framebuffer objects are multisample framebuffers.
+
+    Note that the scissor test will restrict the blit area if enabled.
+
+    This function will have no effect unless hasOpenGLFramebufferBlit() returns
+    true.
+*/
+void QGLFramebufferObject::blitFramebuffer(QGLFramebufferObject *target, const QRect &targetRect,
+                                           QGLFramebufferObject *source, const QRect &sourceRect,
+                                           GLbitfield buffers,
+                                           GLenum filter)
+{
+    if (!(QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit))
+        return;
+
+    const QGLContext *ctx = QGLContext::currentContext();
+    if (!ctx)
+        return;
+
+    const int height = ctx->device()->height();
+
+    const int sh = source ? source->height() : height;
+    const int th = target ? target->height() : height;
+
+    const int sx0 = sourceRect.left();
+    const int sx1 = sourceRect.right();
+    const int sy0 = sh - sourceRect.bottom() - 1;
+    const int sy1 = sh - sourceRect.top() - 1;
+
+    const int tx0 = targetRect.left();
+    const int tx1 = targetRect.right();
+    const int ty0 = th - targetRect.bottom() - 1;
+    const int ty1 = th - targetRect.top() - 1;
+
+    glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, source ? source->handle() : 0);
+    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, target ? target->handle() : 0);
+
+    glBlitFramebufferEXT(sx0, sy0, sx1, sy1,
+                         tx0, ty0, tx1, ty1,
+                         buffers, filter);
+
+    glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, 0);
+    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, 0);
 }
 
 QT_END_NAMESPACE

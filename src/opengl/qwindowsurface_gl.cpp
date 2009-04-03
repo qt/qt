@@ -69,7 +69,11 @@
 
 #include <private/qglpixelbuffer_p.h>
 #include <private/qgraphicssystem_gl_p.h>
+#if 1 || defined(QT_OPENGL_ES_2)
+#include <private/qpaintengineex_opengl2_p.h>
+#else
 #include <private/qpaintengine_opengl_p.h>
+#endif
 
 #ifndef GLX_ARB_multisample
 #define GLX_SAMPLE_BUFFERS_ARB  100000
@@ -283,7 +287,9 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     qDebug() << "hijackWindow() context created for" << widget << d_ptr->contexts.size();
 }
 
-#if !defined(QT_OPENGL_ES_2)
+#if 1 || defined(QT_OPENGL_ES_2)
+Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_window_surface_paintengine)
+#else
 Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_window_surface_paintengine)
 #endif
 
@@ -309,6 +315,8 @@ QGLContext *QGLWindowSurface::context() const
 
 QPaintDevice *QGLWindowSurface::paintDevice()
 {
+    updateGeometry();
+
     if (d_ptr->pb)
         return d_ptr->pb;
 
@@ -324,6 +332,7 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
 
 void QGLWindowSurface::beginPaint(const QRegion &)
 {
+    updateGeometry();
 }
 
 void QGLWindowSurface::endPaint(const QRegion &rgn)
@@ -427,36 +436,44 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 #ifdef Q_WS_MAC
     ctx->updatePaintDevice();
 #endif
-    if (d_ptr->fbo)
-        d_ptr->fbo->release();
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_SCISSOR_TEST);
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+    if (d_ptr->fbo && QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit) {
+        QGLFramebufferObject::blitFramebuffer(0, rect, d_ptr->fbo, rect);
+        d_ptr->fbo->bind();
+    } else {
+        if (d_ptr->fbo)
+            d_ptr->fbo->release();
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
 #ifndef QT_OPENGL_ES
-    glOrtho(0, size.width(), size.height(), 0, -999999, 999999);
+        glOrtho(0, size.width(), size.height(), 0, -999999, 999999);
 #else
-    glOrthof(0, size.width(), size.height(), 0, -999999, 999999);
+        glOrthof(0, size.width(), size.height(), 0, -999999, 999999);
 #endif
-    glViewport(0, 0, size.width(), size.height());
+        glViewport(0, 0, size.width(), size.height());
 
-    glColor4f(1, 1, 1, 1);
-    drawTexture(rect, texture, window()->size(), br);
+        glColor4f(1, 1, 1, 1);
+        drawTexture(rect, texture, window()->size(), br);
+
+        if (d_ptr->fbo)
+            d_ptr->fbo->bind();
+    }
 
     if (ctx->format().doubleBuffer())
         ctx->swapBuffers();
     else
         glFlush();
-
-    if (d_ptr->fbo)
-        d_ptr->fbo->bind();
 }
 
-void QGLWindowSurface::setGeometry(const QRect &rect)
+void QGLWindowSurface::updateGeometry()
 {
-    QWindowSurface::setGeometry(rect);
+    QRect rect = QWindowSurface::geometry();
 
     const GLenum target = qt_gl_preferredTextureTarget();
 
@@ -490,7 +507,7 @@ void QGLWindowSurface::setGeometry(const QRect &rect)
                                         qt_gl_share_widget());
 
         if (d_ptr->pb->isValid()) {
-            qDebug() << "PB Sample buffers:" << d_ptr->pb->format().sampleBuffers();
+            qDebug() << "Created Window Surface Pixelbuffer, Sample buffers:" << d_ptr->pb->format().sampleBuffers();
             d_ptr->pb->makeCurrent();
 
             glGenTextures(1, &d_ptr->pb_tex_id);
@@ -525,11 +542,20 @@ void QGLWindowSurface::setGeometry(const QRect &rect)
         ctx->d_ptr->internal_context = true;
         ctx->makeCurrent();
         delete d_ptr->fbo;
-        d_ptr->fbo = new QGLFramebufferObject(rect.size(), QGLFramebufferObject::CombinedDepthStencil,
-                                              GLenum(target), GLenum(GL_RGBA));
 
+        QGLFramebufferObjectFormat format;
+        format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+        format.setInternalFormat(GL_RGBA);
+        format.setTextureTarget(target);
+
+        if (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)
+            format.setSamples(8);
+
+        d_ptr->fbo = new QGLFramebufferObject(rect.size(), format);
         d_ptr->fbo->bind();
         if (d_ptr->fbo->isValid()) {
+            qDebug() << "Created Window Surface FBO" << rect.size()
+                     << "with samples" << d_ptr->fbo->format().samples();
             return;
         } else {
             qDebug() << "QGLWindowSurface: Failed to create valid FBO, falling back";
@@ -553,6 +579,11 @@ void QGLWindowSurface::setGeometry(const QRect &rect)
     qDebug() << "QGLWindowSurface: Using plain widget as window surface" << this;;
     d_ptr->ctx = ctx;
     d_ptr->ctx->d_ptr->internal_context = true;
+}
+
+void QGLWindowSurface::setGeometry(const QRect &rect)
+{
+    QWindowSurface::setGeometry(rect);
 }
 
 bool QGLWindowSurface::scroll(const QRegion &area, int dx, int dy)
