@@ -790,6 +790,19 @@ QRegion QGraphicsViewPrivate::mapToViewRegion(const QGraphicsItem *item, const Q
     return item->boundingRegion(itv) & itv.mapRect(rect).toAlignedRect();
 }
 
+// QRectF::intersects() returns false always if either the source or target
+// rectangle's width or height are 0. This works around that problem.
+static inline QRectF adjustedItemBoundingRect(const QGraphicsItem *item)
+{
+    Q_ASSERT(item);
+    QRectF boundingRect(item->boundingRect());
+    if (!boundingRect.width())
+        boundingRect.adjust(-0.00001, 0, 0.00001, 0);
+    if (!boundingRect.height())
+        boundingRect.adjust(0, -0.00001, 0, 0.00001);
+    return boundingRect;
+}
+
 /*!
     \internal
 */
@@ -802,7 +815,7 @@ void QGraphicsViewPrivate::itemUpdated(QGraphicsItem *item, const QRectF &rect)
 
     QRectF updateRect = rect;
     if ((item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape) || item->d_ptr->children.isEmpty()) {
-        updateRect &= item->boundingRect();
+        updateRect &= adjustedItemBoundingRect(item);
         if (updateRect.isEmpty())
             return;
     }
@@ -814,7 +827,8 @@ void QGraphicsViewPrivate::itemUpdated(QGraphicsItem *item, const QRectF &rect)
         while ((parent = parent->d_ptr->parent)) {
             if (parent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape) {
                 // Map update rect to the current parent and itersect with its bounding rect.
-                updateRect = clipItem->itemTransform(parent).mapRect(updateRect) & parent->boundingRect();
+                updateRect = clipItem->itemTransform(parent).mapRect(updateRect)
+                             & adjustedItemBoundingRect(parent);
                 if (updateRect.isEmpty())
                     return;
                 clipItem = parent;
