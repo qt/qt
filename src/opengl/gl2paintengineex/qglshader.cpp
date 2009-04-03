@@ -51,6 +51,7 @@
 
 #if !defined(QT_OPENGL_ES_2)
 static const char *qglslDefines = "#define lowp\n#define mediump\n#define highp\n";
+#include "private/qgl_p.h"
 #else
 static const char *qglslDefines = "";
 #endif

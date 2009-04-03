@@ -412,18 +412,10 @@ struct QGLExtensionFuncs
     _glUnmapBufferARB qt_glUnmapBufferARB;
 
     _glGetActiveAttrib qt_glGetActiveAttrib;
-    _glGetAttribLocation qt_glGetAttribLocation;
     _glGetActiveUniform qt_glGetActiveUniform;
-    _glGetProgramInfoLog qt_glGetProgramInfoLog;
     _glUniform1f qt_glUniform1f;
     _glUniform2f qt_glUniform2f;
     _glUniform4f qt_glUniform4f;
-    _glUniformMatrix2fv qt_glUniformMatrix2fv;
-    _glUniformMatrix3fv qt_glUniformMatrix3fv;
-    _glUniformMatrix4fv qt_glUniformMatrix4fv;
-    _glEnableVertexAttribArray qt_glEnableVertexAttribArray;
-    _glDisableVertexAttribArray qt_glDisableVertexAttribArray;
-    _glVertexAttribPointer qt_glVertexAttribPointer;
     _glStencilOpSeparate qt_glStencilOpSeparate;
 };
 
