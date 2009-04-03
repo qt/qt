@@ -91,6 +91,26 @@ class QCompleter;
 class QHBoxLayout;
 class Ui_QFileDialog;
 
+#ifndef QT_NO_COMPLETER
+/*!
+    QCompleter that can deal with QFileSystemModel
+  */
+class QFSCompletor :  public QCompleter {
+public:
+    QFSCompletor(QAbstractItemModel *model, QObject *parent = 0) : QCompleter(model, parent), proxyModel(0), sourceModel(0)
+    {
+#ifdef Q_OS_WIN
+        setCaseSensitivity(Qt::CaseInsensitive);
+#endif
+    }
+    QString pathFromIndex(const QModelIndex &index) const;
+    QStringList splitPath(const QString& path) const;
+
+    QAbstractProxyModel *proxyModel;
+    QFileSystemModel *sourceModel;
+};
+#endif // QT_NO_COMPLETER
+
 struct QFileDialogArgs
 {
     QFileDialogArgs() : parent(0), mode(QFileDialog::AnyFile) {}
@@ -255,7 +275,7 @@ public:
     // data
     QStringList watching;
     QFileSystemModel *model;
-    QCompleter *completer;
+    QFSCompletor *completer;
 
     QFileDialog::FileMode fileMode;
     QFileDialog::AcceptMode acceptMode;
@@ -433,23 +453,6 @@ inline QString QFileDialogPrivate::rootPath() const {
     inline void QFileDialogPrivate::selectNameFilter_sys(const QString &) {}
     inline QString QFileDialogPrivate::selectedNameFilter_sys() const { return QString(); }
 #endif
-
-#ifndef QT_NO_COMPLETER
-/*!
-    QCompleter that can deal with QFileSystemModel
-  */
-class QFSCompletor :  public QCompleter {
-public:
-    QFSCompletor(QAbstractItemModel *model, QObject *parent = 0) : QCompleter(model, parent)
-    {
-#ifdef Q_OS_WIN
-        setCaseSensitivity(Qt::CaseInsensitive);
-#endif
-    }
-    QString pathFromIndex(const QModelIndex &index) const;
-    QStringList splitPath(const QString& path) const;
-};
-#endif // QT_NO_COMPLETER
 
 QT_END_NAMESPACE
 
