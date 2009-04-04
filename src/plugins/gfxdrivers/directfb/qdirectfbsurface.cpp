@@ -332,11 +332,6 @@ void QDirectFBSurface::flush(QWidget *widget, const QRegion &region,
             dfbWindow->SetOpacity(dfbWindow, winOpacity);
     }
 #endif
-
-    // XXX: have to call the base function first as the decoration is
-    // currently painted there
-    QWSWindowSurface::flush(widget, region, offset);
-
 #ifndef QT_NO_DIRECTFB_WM
     if (region.numRects() > 1) {
         const QVector<QRect> rects = region.rects();
