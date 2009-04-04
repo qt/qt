@@ -58,6 +58,10 @@ QDirectFBSurface::QDirectFBSurface(QDirectFBScreen* scr)
     , engine(0)
 {
     setSurfaceFlags(Opaque | Buffered);
+#ifdef QT_DIRECTFB_TIMING
+    frames = 0;
+    timer.start();
+#endif
 }
 
 QDirectFBSurface::QDirectFBSurface(QDirectFBScreen* scr, QWidget *widget)
@@ -72,6 +76,10 @@ QDirectFBSurface::QDirectFBSurface(QDirectFBScreen* scr, QWidget *widget)
         setSurfaceFlags(Opaque | RegionReserved);
     else
         setSurfaceFlags(Opaque | Buffered);
+#ifdef QT_DIRECTFB_TIMING
+    frames = 0;
+    timer.start();
+#endif
 }
 
 QDirectFBSurface::~QDirectFBSurface()
@@ -307,7 +315,6 @@ inline bool isWidgetOpaque(const QWidget *w)
 
     return false;
 }
-
 void QDirectFBSurface::flush(QWidget *widget, const QRegion &region,
                              const QPoint &offset)
 {
@@ -348,6 +355,15 @@ void QDirectFBSurface::flush(QWidget *widget, const QRegion &region,
                                    r.x() + r.width() + offset.x(),
                                    r.y() + r.height() + offset.y() };
         dfbSurface->Flip(dfbSurface, &dfbReg, DSFLIP_ONSYNC);
+    }
+#endif
+#ifdef QT_DIRECTFB_TIMING
+    enum { Secs = 3 };
+    ++frames;
+    if (timer.elapsed() >= Secs * 1000) {
+        qDebug("%d fps", int(double(frames) / double(Secs)));
+        frames = 0;
+        timer.restart();
     }
 #endif
 }

@@ -50,6 +50,10 @@
 #include <private/qwindowsurface_qws_p.h>
 #include <directfb.h>
 
+#ifdef QT_DIRECTFB_TIMING
+#include <qdatetime.h>
+#endif
+
 QT_BEGIN_HEADER
 
 QT_MODULE(Gui)
@@ -95,6 +99,10 @@ private:
     bool onscreen;
 
     QList<QImage*> bufferImages;
+#ifdef QT_DIRECTFB_TIMING
+    int frames;
+    QTime timer;
+#endif
 };
 
 QT_END_HEADER
