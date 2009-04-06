@@ -1045,6 +1045,7 @@ void tst_QSqlDatabase::recordMySQL()
     int minor = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 1, 1 ).toInt();
     int revision = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 2, 2 ).toInt();
 
+#ifdef QT3_SUPPORT
     /* The below is broken in mysql below 5.0.15
         see http://dev.mysql.com/doc/refman/5.0/en/binary-varbinary.html
         specifically: Before MySQL 5.0.15, the pad value is space. Values are right-padded
@@ -1054,6 +1055,7 @@ void tst_QSqlDatabase::recordMySQL()
         bin10 = FieldDef("binary(10)", QVariant::ByteArray, QByteArray(Q3CString("123abc    ")));
         varbin10 = FieldDef("varbinary(10)", QVariant::ByteArray, QByteArray(Q3CString("123abcv   ")));
     }
+#endif
 
     static QDateTime dt(QDate::currentDate(), QTime(1, 2, 3, 0));
     static const FieldDef fieldDefs[] = {
