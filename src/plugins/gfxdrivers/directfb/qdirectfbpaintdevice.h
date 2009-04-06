@@ -78,6 +78,15 @@ protected:
           screen(scr),
           forceRaster(false) {}
 
+    inline int dotsPerMeterX() const
+    {
+        return (screen->deviceWidth() * 1000) / screen->physicalWidth();
+    }
+    inline int dotsPerMeterY() const
+    {
+        return (screen->deviceHeight() * 1000) / screen->physicalHeight();
+    }
+
     IDirectFBSurface *dfbSurface;
     QImage *lockedImage;
     QDirectFBScreen *screen;

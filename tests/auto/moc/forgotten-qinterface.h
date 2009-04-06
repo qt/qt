@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include <QObject>
+
 struct MyInterface
 {
     virtual ~MyInterface() {}

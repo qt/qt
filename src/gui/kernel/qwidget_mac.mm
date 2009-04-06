@@ -295,9 +295,7 @@ bool qt_mac_is_macsheet(const QWidget *w)
     Qt::WindowModality modality = w->windowModality();
     if (modality == Qt::ApplicationModal)
         return false;
-    if (modality == Qt::WindowModal || w->windowType() == Qt::Sheet)
-        return true;
-    return false;
+    return w->parentWidget() && (modality == Qt::WindowModal || w->windowType() == Qt::Sheet);
 }
 
 bool qt_mac_is_macdrawer(const QWidget *w)
@@ -4568,11 +4566,11 @@ void QWidgetPrivate::setModal_sys()
     OSWindowRef windowRef = qt_mac_window_for(q);
 
 #ifdef QT_MAC_USE_COCOA
-    bool windowIsSheet = [windowRef styleMask] & NSDocModalWindowMask;
+    bool alreadySheet = [windowRef styleMask] & NSDocModalWindowMask;
 
-    if (q->windowModality() == Qt::WindowModal){
+    if (windowParent && q->windowModality() == Qt::WindowModal){
         // Window should be window-modal, which implies a sheet.
-        if (!windowIsSheet)
+        if (!alreadySheet)
             recreateMacWindow();
         if ([windowRef isKindOfClass:[NSPanel class]]){
             // If the primary window of the sheet parent is a child of a modal dialog,
@@ -4586,7 +4584,7 @@ void QWidgetPrivate::setModal_sys()
         }
     } else {
         // Window shold not be window-modal, and as such, not a sheet.
-        if (windowIsSheet){
+        if (alreadySheet){
             // NB: the following call will call setModal_sys recursivly:
             recreateMacWindow();
             windowRef = qt_mac_window_for(q);
