@@ -1,3 +1,41 @@
+2009-04-06  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Don't show and hide the platformPluginWidget, as it's our QWebView
+
+        * plugins/mac/PluginViewMac.cpp:
+        (WebCore::PluginView::show):
+        (WebCore::PluginView::hide):
+        (WebCore::PluginView::setParentVisible):
+
+2009-04-06  Mike Belshe <mike@belshe.com>
+
+        Reviewed by Eric Seidel.
+
+        HTMLCanvasElement crash when ImageBuffer creation fails.
+        https://bugs.webkit.org/show_bug.cgi?id=23212
+
+        Check for NULL before using the ImageBuffer as we might
+        be low on memory and creation may have failed.
+
+        Test case creation blocked by:
+        https://bugs.webkit.org/show_bug.cgi?id=25055
+
+        * html/HTMLCanvasElement.cpp:
+        (WebCore::HTMLCanvasElement::createImageBuffer):
+
+2009-04-05  Erik L. Bunce  <elbunce@xendom.com>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=25050
+
+        Fix an assert failure when dropping an 'empty' text/uri-list on a QWebView. 
+
+        * platform/qt/DragDataQt.cpp:
+        (WebCore::DragData::asURL):
+
 2009-03-27  Zack Rusin <zack@kde.org>
 
         Reviewed by Simon Hausmann.

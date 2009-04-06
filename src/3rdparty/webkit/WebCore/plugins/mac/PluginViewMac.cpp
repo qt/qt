@@ -299,9 +299,6 @@ void PluginView::show()
 
     setSelfVisible(true);
 
-    if (isParentVisible() && platformPluginWidget())
-        platformPluginWidget()->setVisible(true);
-
     Widget::show();
 }
 
@@ -310,9 +307,6 @@ void PluginView::hide()
     LOG(Plugin, "PluginView::hide()");
 
     setSelfVisible(false);
-
-    if (isParentVisible() && platformPluginWidget())
-        platformPluginWidget()->setVisible(false);
 
     Widget::hide();
 }
@@ -345,9 +339,6 @@ void PluginView::setParentVisible(bool visible)
         return;
 
     Widget::setParentVisible(visible);
-
-    if (isSelfVisible() && platformPluginWidget())
-        platformPluginWidget()->setVisible(visible);
 }
 
 void PluginView::setNPWindowRect(const IntRect&)
