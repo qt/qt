@@ -3274,6 +3274,20 @@ void QWidgetPrivate::show_sys()
     qt_event_request_window_change(q);
 }
 
+
+QPoint qt_mac_nativeMapFromParent(const QWidget *child, const QPoint &pt)
+{
+#ifndef QT_MAC_USE_COCOA
+    CGPoint nativePoint = CGPointMake(pt.x(), pt.y());
+    HIViewConvertPoint(&nativePoint, qt_mac_nativeview_for(child->parentWidget()),
+                       qt_mac_nativeview_for(child));
+#else
+    NSPoint nativePoint = [qt_mac_nativeview_for(child) convertPoint:NSMakePoint(pt.x(), pt.y()) fromView:qt_mac_nativeview_for(child->parentWidget())];
+#endif
+    return QPoint(nativePoint.x, nativePoint.y);
+}
+
+
 void QWidgetPrivate::hide_sys()
 {
     Q_Q(QWidget);
