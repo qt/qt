@@ -1046,13 +1046,24 @@ void QGraphicsViewPrivate::freeStyleOptionsArray(QStyleOptionGraphicsItem *array
 
 extern QPainterPath qt_regionToPath(const QRegion &region);
 
+/*!
+    ### Adjustments in findItems: mapToScene(QRect) forces us to adjust the
+    input rectangle by (0, 0, 1, 1), because it uses QRect::bottomRight()
+    (etc) when mapping the rectangle to a polygon (which is _wrong_). In
+    addition, as QGraphicsItem::boundingRect() is defined in logical space,
+    but the default pen for QPainter is cosmetic with a width of 0, QPainter
+    is at risk of painting 1 pixel outside the bounding rect. Therefore we
+    must search for items with an adjustment of (-1, -1, 1, 1).
+*/
 QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedRegion, bool *allItems) const
 {
     Q_Q(const QGraphicsView);
-    const QPainterPath exposedPath(qt_regionToPath(exposedRegion));
-    const QPainterPath exposedScenePath(q->mapToScene(exposedPath));
 
-    if (exposedScenePath.contains(scene->d_func()->growingItemsBoundingRect)) {
+    // Step 1) If all items are contained within the expose region, then
+    // return a list of all visible items.
+    const QRectF exposedRegionSceneBounds = q->mapToScene(exposedRegion.boundingRect().adjusted(-1, -1, 2, 2))
+                                            .boundingRect();
+    if (exposedRegionSceneBounds.contains(scene->d_func()->growingItemsBoundingRect)) {
         Q_ASSERT(allItems);
         *allItems = true;
 
@@ -1072,12 +1083,27 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
         return itemList;
     }
 
+    // Step 2) If the expose region is a simple rect and the view is only
+    // translated or scaled, search for items using
+    // QGraphicsScene::items(QRectF).
+    bool simpleRectLookup =  (scene->d_func()->largestUntransformableItem.isNull()
+                              && exposedRegion.numRects() == 1 && matrix.type() <= QTransform::TxScale);
+    if (simpleRectLookup) {
+        return scene->d_func()->items_helper(exposedRegionSceneBounds,
+                                             Qt::IntersectsItemBoundingRect,
+                                             Qt::DescendingOrder);
+    }
+
+    // If the region is complex or the view has a complex transform, adjust
+    // the expose region, convert it to a path, and then search for items
+    // using QGraphicsScene::items(QPainterPath);
+    QRegion adjustedRegion;
+    foreach (const QRect &r, exposedRegion.rects())
+        adjustedRegion += r.adjusted(-1, -1, 1, 1);
+
+    const QPainterPath exposedPath(qt_regionToPath(adjustedRegion));
     if (scene->d_func()->largestUntransformableItem.isNull()) {
-        if (exposedRegion.numRects() == 1 && matrix.type() <= QTransform::TxScale) {
-            return scene->d_func()->items_helper(exposedScenePath.controlPointRect(),
-                                                 Qt::IntersectsItemBoundingRect,
-                                                 Qt::DescendingOrder);
-        }
+        const QPainterPath exposedScenePath(q->mapToScene(exposedPath));
         return scene->d_func()->items_helper(exposedScenePath,
                                              Qt::IntersectsItemBoundingRect,
                                              Qt::DescendingOrder);
