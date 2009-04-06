@@ -85,8 +85,8 @@ public:
 
     QHttpNetworkHeaderPrivate(const QUrl &newUrl = QUrl());
     QHttpNetworkHeaderPrivate(const QHttpNetworkHeaderPrivate &other);
-    inline qint64 contentLength() const;
-    inline void setContentLength(qint64 length);
+    qint64 contentLength() const;
+    void setContentLength(qint64 length);
 
     inline QByteArray headerField(const QByteArray &name, const QByteArray &defaultValue = QByteArray()) const;
     inline QList<QByteArray> headerFieldValues(const QByteArray &name) const;
