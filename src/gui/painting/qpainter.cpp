@@ -7486,12 +7486,14 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
     int *underlinePositions = underlinePositionStack;
 
     QFontMetricsF fm(fnt);
-
     QString text = str;
+    int offset = 0;
+start_lenghtVariant:
+    bool hasMoreLenghtVariants = false;
     // compatible behaviour to the old implementation. Replace
     // tabs by spaces
-    QChar *chr = text.data();
-    const QChar *end = chr + str.length();
+    QChar *chr = text.data() + offset;
+    QChar *end = text.data() + text.length();
     bool has_tab = false;
     while (chr != end) {
         if (*chr == QLatin1Char('\r') || (singleline && *chr == QLatin1Char('\n'))) {
@@ -7502,12 +7504,17 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
             ++maxUnderlines;
         } else if (*chr == QLatin1Char('\t')) {
             has_tab = true;
+        } else if (*chr == QChar(ushort(0x9c))) {
+            // string with multiple length variants
+            end = chr;
+            hasMoreLenghtVariants = true;
+            break;
         }
         ++chr;
     }
     if (has_tab) {
         if (!expandtabs) {
-            chr = text.data();
+            chr = text.data() + offset;
             while (chr != end) {
                 if (*chr == QLatin1Char('\t'))
                     *chr = QLatin1Char(' ');
@@ -7518,12 +7525,13 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
         }
     }
 
+    QChar *cout = end;
     if (hidemnmemonic || showmnemonic) {
         if (maxUnderlines > 32)
             underlinePositions = new int[maxUnderlines];
-        QChar *cout = text.data();
+        cout = text.data() + offset;
         QChar *cin = cout;
-        int l = str.length();
+        int l = end - cout;
         while (l) {
             if (*cin == QLatin1Char('&')) {
                 ++cin;
@@ -7538,9 +7546,6 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
             ++cin;
             --l;
         }
-        int newlen = cout - text.unicode();
-        if (newlen != text.length())
-            text.resize(newlen);
     }
 
     // no need to do extra work for underlines if we don't paint
@@ -7551,12 +7556,11 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
     qreal height = 0;
     qreal width = 0;
 
-    QStackTextEngine engine(text, fnt);
+    QString finalText = text.mid(offset, cout - (text.data() + offset));
+    QStackTextEngine engine(finalText, fnt);
     if (option) {
         engine.option = *option;
     }
-
-
 
     engine.option.setTextDirection(layout_direction);
     if (tf & Qt::AlignJustify)
@@ -7573,7 +7577,7 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
     textLayout.setCacheEnabled(true);
     textLayout.engine()->underlinePositions = underlinePositions;
 
-    if (text.isEmpty()) {
+    if (finalText.isEmpty()) {
         height = fm.height();
         width = 0;
         tf |= Qt::TextDontPrint;
@@ -7638,6 +7642,10 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
         }
     }
     QRectF bounds = QRectF(r.x() + xoff, r.y() + yoff, width, height);
+    if (hasMoreLenghtVariants && !r.contains(bounds)) {
+        offset = end - text.data() + 1;
+        goto start_lenghtVariant;
+    }
     if (brect)
         *brect = bounds;
 
