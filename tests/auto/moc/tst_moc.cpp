@@ -851,7 +851,10 @@ void tst_Moc::warnOnMultipleInheritance()
     QVERIFY(!qgetenv("QTDIR").isNull());
 
     QProcess proc;
-    proc.start("moc", QStringList(srcify("warn-on-multiple-qobject-subclasses.h")));
+    QStringList args;
+    args << "-I" << qgetenv("QTDIR") + "/include/QtGui"
+         << srcify("warn-on-multiple-qobject-subclasses.h");
+    proc.start("moc", args);
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
@@ -873,14 +876,17 @@ void tst_Moc::forgottenQInterface()
     QVERIFY(!qgetenv("QTDIR").isNull());
 
     QProcess proc;
-    proc.start("moc", QStringList(srcify("forgotten-qinterface.h")));
+    QStringList args;
+    args << "-I" << qgetenv("QTDIR") + "/include/QtCore"
+         << srcify("forgotten-qinterface.h");
+    proc.start("moc", args);
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, QString(SRCDIR) +
-                QString("/forgotten-qinterface.h:53: Warning: Class Test implements the interface MyInterface but does not list it in Q_INTERFACES. qobject_cast to MyInterface will not work!\n"));
+                QString("/forgotten-qinterface.h:55: Warning: Class Test implements the interface MyInterface but does not list it in Q_INTERFACES. qobject_cast to MyInterface will not work!\n"));
 #else
     QSKIP("Only tested on linux/gcc", SkipAll);
 #endif
