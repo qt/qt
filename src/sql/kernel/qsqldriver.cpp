@@ -406,9 +406,14 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
         break;
     case WhereStatement:
         if (preparedStatement) {
-            for (int i = 0; i < rec.count(); ++i)
-                s.append(escapeIdentifier(rec.fieldName(i), FieldName)).append(
-                         QLatin1String(" = ? AND "));
+            for (int i = 0; i < rec.count(); ++i) {
+                s.append(escapeIdentifier(rec.fieldName(i), FieldName));
+                if (rec.isNull(i))
+                    s.append(QLatin1String(" IS NULL"));
+                else
+                    s.append(QLatin1String(" = ?"));
+                s.append(QLatin1String(" AND "));
+            }
         } else {
             for (i = 0; i < rec.count(); ++i) {
                 s.append(escapeIdentifier(rec.fieldName(i), FieldName));
