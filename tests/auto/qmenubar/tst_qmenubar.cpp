@@ -1337,7 +1337,6 @@ tst_QMenuBar::allowActiveAndDisabled()
     // disabled menu items are added
 
     QMenu fileMenu("&File");
-    QAction disabledAction()    ;      
     // Task 241043 : check that second menu is activated 
     // if all items are disabled
     QAction *act = fileMenu.addAction("Disabled");
