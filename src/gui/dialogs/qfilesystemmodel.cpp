@@ -1430,7 +1430,10 @@ void QFileSystemModel::setFilter(QDir::Filters filters)
 }
 
 /*!
-    Returns the filter specification for the directory model.
+    Returns the filter specified for the directory model.
+
+    If a filter has not been set, the default filter is QDir::AllEntries |
+    QDir::NoDotAndDotDot | QDir::AllDirs.
 
     \sa QDir::Filters
 */
