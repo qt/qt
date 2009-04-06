@@ -466,6 +466,8 @@ public:
     inline tst_Moc() {}
 
 private slots:
+    void initTestCase();
+
     void slotWithException() throw(MyStruct);
     void dontStripNamespaces();
     void oldStyleCasts();
@@ -519,7 +521,27 @@ private:
     bool user2() { return false; };
     bool user3() { return false; };
     bool userFunction(){ return false; };
+
+private:
+    QString qtIncludePath;
 };
+
+void tst_Moc::initTestCase()
+{
+#if defined(Q_OS_UNIX)
+    QProcess proc;
+    proc.start("qmake", QStringList() << "-query" << "QT_INSTALL_HEADERS");
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 0);
+    QByteArray output = proc.readAllStandardOutput();
+    QVERIFY(!output.isEmpty());
+    QCOMPARE(proc.readAllStandardError(), QByteArray());
+    qtIncludePath = QString::fromLocal8Bit(output).trimmed();
+    QFileInfo fi(qtIncludePath);
+    QVERIFY(fi.exists());
+    QVERIFY(fi.isDir());
+#endif
+}
 
 void tst_Moc::slotWithException() throw(MyStruct)
 {
@@ -552,8 +574,6 @@ void tst_Moc::oldStyleCasts()
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QProcess proc;
     proc.start("moc", QStringList(srcify("/oldstyle-casts.h")));
     QVERIFY(proc.waitForFinished());
@@ -564,7 +584,7 @@ void tst_Moc::oldStyleCasts()
 
     QStringList args;
     args << "-c" << "-x" << "c++" << "-Wold-style-cast" << "-I" << "."
-         << "-I" << qgetenv("QTDIR") + "/include" << "-o" << "/dev/null" << "-";
+         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-";
     proc.start("gcc", args);
     QVERIFY(proc.waitForStarted());
     proc.write(mocOut);
@@ -639,7 +659,7 @@ void tst_Moc::inputFileNameWithDotsButNoExtension()
 
     QStringList args;
     args << "-c" << "-x" << "c++" << "-I" << ".."
-         << "-I" << qgetenv("QTDIR") + "/include" << "-o" << "/dev/null" << "-";
+         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-";
     proc.start("gcc", args);
     QVERIFY(proc.waitForStarted());
     proc.write(mocOut);
@@ -844,11 +864,9 @@ void tst_Moc::warnOnMultipleInheritance()
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QProcess proc;
     QStringList args;
-    args << "-I" << qgetenv("QTDIR") + "/include/QtGui"
+    args << "-I" << qtIncludePath + "/QtGui"
          << srcify("warn-on-multiple-qobject-subclasses.h");
     proc.start("moc", args);
     QVERIFY(proc.waitForFinished());
@@ -869,11 +887,9 @@ void tst_Moc::forgottenQInterface()
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QProcess proc;
     QStringList args;
-    args << "-I" << qgetenv("QTDIR") + "/include/QtCore"
+    args << "-I" << qtIncludePath + "/QtCore"
          << srcify("forgotten-qinterface.h");
     proc.start("moc", args);
     QVERIFY(proc.waitForFinished());
