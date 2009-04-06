@@ -1362,8 +1362,10 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
             pal.setColor(QPalette::Disabled, QPalette::Highlight, Qt::darkBlue);
         }
 
-        QApplicationPrivate::setSystemPalette(pal);
-
+        // QGtkStyle sets it's own system palette
+        if (!(QApplicationPrivate::app_style && QApplicationPrivate::app_style->inherits("QGtkStyle"))) {
+            QApplicationPrivate::setSystemPalette(pal);
+        }
         QColor::setAllowX11ColorNames(allowX11ColorNames);
     }
 
