@@ -584,8 +584,6 @@ void tst_Moc::warnOnExtraSignalSlotQualifiaction()
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QProcess proc;
     proc.start("moc", QStringList(srcify("extraqualification.h")));
     QVERIFY(proc.waitForFinished());
@@ -630,8 +628,6 @@ void tst_Moc::inputFileNameWithDotsButNoExtension()
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QProcess proc;
     proc.setWorkingDirectory(QString(SRCDIR) + "/task71021");
     proc.start("moc", QStringList("../Header"));
@@ -957,8 +953,6 @@ void tst_Moc::frameworkSearchPath()
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
 #if defined(Q_OS_UNIX)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QStringList args;
     args << "-F" << srcify(".")
          << srcify("interface-from-framework.h")
@@ -997,8 +991,6 @@ void tst_Moc::templateGtGt()
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QProcess proc;
     proc.start("moc", QStringList(srcify("template-gtgt.h")));
     QVERIFY(proc.waitForFinished());
@@ -1015,8 +1007,6 @@ void tst_Moc::templateGtGt()
 void tst_Moc::defineMacroViaCmdline()
 {
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QProcess proc;
 
     QStringList args;
@@ -1105,8 +1095,6 @@ void tst_Moc::warnOnPropertyWithoutREAD()
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QProcess proc;
     proc.start("moc", QStringList(srcify("warn-on-property-without-read.h")));
     QVERIFY(proc.waitForFinished());
