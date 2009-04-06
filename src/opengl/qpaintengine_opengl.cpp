@@ -5328,6 +5328,9 @@ void QOpenGLPaintEnginePrivate::composite(GLuint primitive, const q_vertexType *
     Q_Q(QOpenGLPaintEngine);
     QGL_FUNC_CONTEXT;
 
+    if (current_style == Qt::NoBrush)
+        return;
+
     DEBUG_ONCE qDebug() << "QOpenGLPaintEnginePrivate: Using compositing program: fragment_brush ="
                         << fragment_brush << ", fragment_composition_mode =" << fragment_composition_mode;
 

@@ -3,6 +3,8 @@
 
 #include "qtestcoreelement.h"
 
+QT_BEGIN_NAMESPACE
+
 class QTestElement: public QTestCoreElement<QTestElement>
 {
     public:
@@ -20,5 +22,7 @@ class QTestElement: public QTestCoreElement<QTestElement>
         const QTestElement * parent;
 
 };
+
+QT_END_NAMESPACE
 
 #endif

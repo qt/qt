@@ -295,9 +295,7 @@ bool qt_mac_is_macsheet(const QWidget *w)
     Qt::WindowModality modality = w->windowModality();
     if (modality == Qt::ApplicationModal)
         return false;
-    if (modality == Qt::WindowModal || w->windowType() == Qt::Sheet)
-        return true;
-    return false;
+    return w->parentWidget() && (modality == Qt::WindowModal || w->windowType() == Qt::Sheet);
 }
 
 bool qt_mac_is_macdrawer(const QWidget *w)
@@ -392,21 +390,15 @@ QWidget *qt_mac_find_window(OSWindowRef window)
 
 inline static void qt_mac_set_fullscreen_mode(bool b)
 {
-    extern bool qt_mac_app_fullscreen; //qapplication_mac.cpp
+    extern bool qt_mac_app_fullscreen; //qapplication_mac.mm
     if(qt_mac_app_fullscreen == b)
         return;
     qt_mac_app_fullscreen = b;
-#if QT_MAC_USE_COCOA
-    if(b)
-        SetSystemUIMode(kUIModeAllHidden, kUIOptionAutoShowMenuBar);
-    else
+    if (b) {
+        SetSystemUIMode(kUIModeAllSuppressed, 0);
+    } else {
         SetSystemUIMode(kUIModeNormal, 0);
-#else
-    if(b)
-        HideMenuBar();
-    else
-        ShowMenuBar();
-#endif
+    }
 }
 
 Q_GUI_EXPORT OSViewRef qt_mac_nativeview_for(const QWidget *w)
@@ -2514,6 +2506,8 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     }
 
     updateIsOpaque();
+    if (q->hasFocus())
+        setFocus_sys();
     if (!topLevel && initializeWindow)
         setWSGeometry();
 
@@ -4448,14 +4442,6 @@ void QWidgetPrivate::setMask_sys(const QRegion &region)
 #endif
 }
 
-extern "C" {
-    typedef struct CGSConnection *CGSConnectionRef;
-    typedef struct CGSWindow *CGSWindowRef;
-    extern OSStatus CGSSetWindowAlpha(CGSConnectionRef, CGSWindowRef, float);
-    extern CGSWindowRef GetNativeWindowFromWindowRef(WindowRef);
-    extern CGSConnectionRef _CGSDefaultConnection();
-}
-
 void QWidgetPrivate::setWindowOpacity_sys(qreal level)
 {
     Q_Q(QWidget);
@@ -4468,12 +4454,11 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal level)
     if (!q->testAttribute(Qt::WA_WState_Created))
         return;
 
-#if QT_MAC_USE_COCOA
     OSWindowRef oswindow = qt_mac_window_for(q);
+#if QT_MAC_USE_COCOA
     [oswindow setAlphaValue:level];
 #else
-    CGSSetWindowAlpha(_CGSDefaultConnection(),
-                      GetNativeWindowFromWindowRef(qt_mac_window_for(q)), level);
+    SetWindowAlpha(oswindow, level);
 #endif
 }
 
@@ -4581,11 +4566,11 @@ void QWidgetPrivate::setModal_sys()
     OSWindowRef windowRef = qt_mac_window_for(q);
 
 #ifdef QT_MAC_USE_COCOA
-    bool windowIsSheet = [windowRef styleMask] & NSDocModalWindowMask;
+    bool alreadySheet = [windowRef styleMask] & NSDocModalWindowMask;
 
-    if (q->windowModality() == Qt::WindowModal){
+    if (windowParent && q->windowModality() == Qt::WindowModal){
         // Window should be window-modal, which implies a sheet.
-        if (!windowIsSheet)
+        if (!alreadySheet)
             recreateMacWindow();
         if ([windowRef isKindOfClass:[NSPanel class]]){
             // If the primary window of the sheet parent is a child of a modal dialog,
@@ -4599,7 +4584,7 @@ void QWidgetPrivate::setModal_sys()
         }
     } else {
         // Window shold not be window-modal, and as such, not a sheet.
-        if (windowIsSheet){
+        if (alreadySheet){
             // NB: the following call will call setModal_sys recursivly:
             recreateMacWindow();
             windowRef = qt_mac_window_for(q);

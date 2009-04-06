@@ -68,13 +68,15 @@ void AudioNode::createAndConnectAUNodes()
         << QString(!FindNextComponent(0, &description) ? "ERROR: COMPONENT NOT FOUND!" : "OK!"))
 
     OSStatus err = noErr;
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5)
-        err = AUGraphAddNode(m_audioGraph->audioGraphRef(), &description, &m_auNode);
-    else
-#endif
-        err = AUGraphNewNode(m_audioGraph->audioGraphRef(), &description, 0, 0, &m_auNode);
-        
+
+    // The proper function to call here is AUGraphAddNode() but the type has
+    // changed between 10.5 and 10.6. it's still OK to call this function, but
+    // if we want to use the proper thing we need to move over to
+    // AudioComponentDescription everywhere, which is very similar to the
+    // ComponentDescription, but a different size.  however,
+    // AudioComponentDescription only exists on 10.6+. More fun than we need to
+    // deal with at the moment, so we'll take the "deprecated" warning instead.
+    err = AUGraphNewNode(m_audioGraph->audioGraphRef(), &description, 0, 0, &m_auNode);
     BACKEND_ASSERT2(err != kAUGraphErr_OutputNodeErr, "A MediaObject can only be connected to one audio output device.", FATAL_ERROR)
     BACKEND_ASSERT2(err == noErr, "Could not create new AUNode.", FATAL_ERROR)
 }

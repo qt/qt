@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,20 +39,41 @@
 **
 ****************************************************************************/
 
-#ifndef LINUXISKBDDRIVERPLUGIN_H
-#define LINUXISKBDDRIVERPLUGIN_H
+#ifndef QKBDLINUXINPUT_QWS_H
+#define QKBDLINUXINPUT_QWS_H
 
-#include <QtGui/QWSKeyboardHandlerFactoryInterface>
+#include <QtGui/qkbd_qws.h>
 
-class LinuxInputSubsystemKbdDriverPlugin : public QKbdDriverPlugin {
-    Q_OBJECT
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
+
+#ifndef QT_NO_QWS_KEYBOARD
+
+#ifndef QT_NO_QWS_KBD_LINUXINPUT
+
+class QWSLinuxInputKbPrivate;
+
+class QWSLinuxInputKeyboardHandler : public QWSKeyboardHandler
+{
 public:
-    LinuxInputSubsystemKbdDriverPlugin( QObject *parent  = 0 );
-    ~LinuxInputSubsystemKbdDriverPlugin();
+    QWSLinuxInputKeyboardHandler(const QString&);
+    virtual ~QWSLinuxInputKeyboardHandler();
 
-    QWSKeyboardHandler* create(const QString& driver, const QString& device);
-    QWSKeyboardHandler* create(const QString& driver);
-    QStringList keys()const;
+    virtual bool filterInputEvent(quint16 &input_code, qint32 &input_value);
+
+private:
+    QWSLinuxInputKbPrivate *d;
 };
 
-#endif // LINUXISKBDDRIVERPLUGIN_H
+#endif // QT_NO_QWS_KBD_LINUXINPUT
+
+#endif // QT_NO_QWS_KEYBOARD
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QKBDLINUXINPUT_QWS_H

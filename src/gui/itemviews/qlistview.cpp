@@ -588,7 +588,7 @@ void QListView::scrollTo(const QModelIndex &index, ScrollHint hint)
 
     const QRect rect = visualRect(index);
     if (hint == EnsureVisible && d->viewport->rect().contains(rect)) {
-        d->setDirtyRegion(rect);
+        d->viewport->update(rect);
         return;
     }
 
@@ -755,7 +755,7 @@ void QListView::scrollContentsBy(int dx, int dy)
     // update the dragged items
     if (d->viewMode == IconMode) // ### move to dynamic class
     if (!d->dynamicListView->draggedItems.isEmpty())
-        d->setDirtyRegion(d->dynamicListView->draggedItemsRect().translated(dx, dy));
+        d->viewport->update(d->dynamicListView->draggedItemsRect().translated(dx, dy));
 }
 
 /*!
@@ -835,7 +835,7 @@ void QListView::mouseMoveEvent(QMouseEvent *e)
         && d->selectionMode != NoSelection) {
         QRect rect(d->pressedPosition, e->pos() + QPoint(horizontalOffset(), verticalOffset()));
         rect = rect.normalized();
-        d->setDirtyRegion(d->mapToViewport(rect.united(d->elasticBand), d->viewMode == QListView::ListMode));
+        d->viewport->update(d->mapToViewport(rect.united(d->elasticBand), d->viewMode == QListView::ListMode));
         d->elasticBand = rect;
     }
 }
@@ -849,7 +849,7 @@ void QListView::mouseReleaseEvent(QMouseEvent *e)
     QAbstractItemView::mouseReleaseEvent(e);
     // #### move this implementation into a dynamic class
     if (d->showElasticBand && d->elasticBand.isValid()) {
-        d->setDirtyRegion(d->mapToViewport(d->elasticBand, d->viewMode == QListView::ListMode));
+        d->viewport->update(d->mapToViewport(d->elasticBand, d->viewMode == QListView::ListMode));
         d->elasticBand = QRect();
     }
 }
@@ -914,11 +914,11 @@ void QListView::dragMoveEvent(QDragMoveEvent *e)
         if (d->canDecode(e)) {
             // get old dragged items rect
             QRect itemsRect = d->dynamicListView->itemsRect(d->dynamicListView->draggedItems);
-            d->setDirtyRegion(itemsRect.translated(d->dynamicListView->draggedItemsDelta()));
+            d->viewport->update(itemsRect.translated(d->dynamicListView->draggedItemsDelta()));
             // update position
             d->dynamicListView->draggedItemsPos = e->pos();
             // get new items rect
-            d->setDirtyRegion(itemsRect.translated(d->dynamicListView->draggedItemsDelta()));
+            d->viewport->update(itemsRect.translated(d->dynamicListView->draggedItemsDelta()));
             // set the item under the cursor to current
             QModelIndex index;
             if (d->movement == Snap) {
@@ -1007,12 +1007,12 @@ void QListView::internalDrop(QDropEvent *event)
     for (int i = 0; i < indexes.count(); ++i) {
         QModelIndex index = indexes.at(i);
         QRect rect = rectForIndex(index);
-        d->setDirtyRegion(d->mapToViewport(rect, d->viewMode == QListView::ListMode));
+        d->viewport->update(d->mapToViewport(rect, d->viewMode == QListView::ListMode));
         QPoint dest = rect.topLeft() + delta;
         if (isRightToLeft())
             dest.setX(d->flipX(dest.x()) - rect.width());
         d->dynamicListView->moveItem(index.row(), dest);
-        d->setDirtyRegion(visualRect(index));
+        update(index);
     }
     stopAutoScroll();
     d->dynamicListView->draggedItems.clear();
@@ -1455,9 +1455,9 @@ void QListView::setPositionForIndex(const QPoint &position, const QModelIndex &i
     if (index.row() >= d->dynamicListView->items.count())
         return;
     const QSize oldContents = d->contentsSize();
-    d->setDirtyRegion(visualRect(index)); // update old position
+    update(index); // update old position
     d->dynamicListView->moveItem(index.row(), position);
-    d->setDirtyRegion(visualRect(index)); // update new position
+    update(index); // update new position
 
     if (d->contentsSize() != oldContents)
         updateGeometries(); // update the scroll bars

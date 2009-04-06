@@ -1,6 +1,10 @@
 #ifndef QTESTBASICSTREAMER_H
 #define QTESTBASICSTREAMER_H
 
+#include <QtCore/qglobal.h>
+
+QT_BEGIN_NAMESPACE
+
 class QTestElement;
 class QTestElementAttribute;
 class QTestLogger;
@@ -33,4 +37,7 @@ class QTestBasicStreamer
     private:
         const QTestLogger *testLogger;
 };
+
+QT_END_NAMESPACE
+
 #endif

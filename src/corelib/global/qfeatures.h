@@ -120,6 +120,9 @@
 // QMovie
 //#define QT_NO_MOVIE
 
+// QNetworkInterface
+//#define QT_NO_NETWORKINTERFACE
+
 // QNetworkProxy
 //#define QT_NO_NETWORKPROXY
 
@@ -198,11 +201,11 @@
 // Qt Prerendered Font Format
 //#define QT_NO_QWS_QPF
 
-// Raster Paint Engine callback functions
-//#define QT_NO_RASTERCALLBACKS
-
 // Qt Prerendered Font Format 2
 //#define QT_NO_QWS_QPF2
+
+// Raster Paint Engine callback functions
+//#define QT_NO_RASTERCALLBACKS
 
 // Resize Handler
 //#define QT_NO_RESIZEHANDLER
@@ -273,9 +276,6 @@
 // HtmlParser
 //#define QT_NO_TEXTHTMLPARSER
 
-// OdfWriter
-//#define QT_NO_TEXTODFWRITER
-
 // QTextStream
 //#define QT_NO_TEXTSTREAM
 
@@ -316,6 +316,11 @@
 #define QT_NO_BUTTONGROUP
 #endif
 
+// QClipboard
+#if !defined(QT_NO_CLIPBOARD) && (defined(QT_NO_QWS_PROPERTIES))
+#define QT_NO_CLIPBOARD
+#endif
+
 // Codecs
 #if !defined(QT_NO_CODECS) && (defined(QT_NO_TEXTCODEC))
 #define QT_NO_CODECS
@@ -354,6 +359,11 @@
 // QMenu
 #if !defined(QT_NO_MENU) && (defined(QT_NO_ACTION))
 #define QT_NO_MENU
+#endif
+
+// QNetworkDiskCache
+#if !defined(QT_NO_NETWORKDISKCACHE) && (defined(QT_NO_TEMPORARYFILE))
+#define QT_NO_NETWORKDISKCACHE
 #endif
 
 // Phonon::SeekSlider
@@ -481,11 +491,6 @@
 #define QT_NO_XMLSTREAMWRITER
 #endif
 
-// Odf Writer 
-#if !defined(QT_NO_TEXTODFWRITER) && (defined(QT_NO_XMLSTREAMWRITER)) 
-#define QT_NO_TEXTODFWRITER 
-#endif 
-
 // Context menu
 #if !defined(QT_NO_CONTEXTMENU) && (defined(QT_NO_MENU))
 #define QT_NO_CONTEXTMENU
@@ -514,6 +519,11 @@
 // QScrollArea
 #if !defined(QT_NO_SCROLLAREA) && (defined(QT_NO_SCROLLBAR))
 #define QT_NO_SCROLLAREA
+#endif
+
+// OdfWriter
+#if !defined(QT_NO_TEXTODFWRITER) && (defined(QT_NO_XMLSTREAMWRITER))
+#define QT_NO_TEXTODFWRITER
 #endif
 
 // QToolButton
@@ -634,11 +644,6 @@
 // QWhatsThis
 #if !defined(QT_NO_WHATSTHIS) && (defined(QT_NO_TOOLBUTTON) || defined(QT_NO_ACTION))
 #define QT_NO_WHATSTHIS
-#endif
-
-// QClipboard
-#if !defined(QT_NO_CLIPBOARD) && (defined(QT_NO_QWS_PROPERTIES))
-#define QT_NO_CLIPBOARD
 #endif
 
 // Common UNIX Printing System

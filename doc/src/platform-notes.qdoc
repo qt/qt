@@ -493,7 +493,6 @@
     \row
     \row    \o aCC series 3     \o            \o             \o          \o \bold{X} \o \bold{X}
     \row    \o aCC series 6     \o \bold{X}   \o \bold{X}    \o \bold{X} \o \bold{X} \o \bold{X}
-    \row    \o MIPSpro 7.4.2m   \o{5,1} \e{Unsupported - see the Unsupported Platforms table}
     \row    \o xlC 6            \o            \o             \o          \o \bold{X} \o \bold{X}
     \row    \o \l{Known Issues in %VERSION%}{Intel CC 10 (see note)}
                                 \o \bold{X}   \o \bold{X}    \o \bold{X} \o \bold{X} \o \bold{X}

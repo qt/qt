@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
 // Allow translators to provide localized names for QLocale::languageToString
 // At least the own language should be translated ... This is a "hack" until
 // functionality is provided within Qt (see task 196275).
-static const char * language_strings[] = 
+static const char * language_strings[] =
 {
     QT_TRANSLATE_NOOP("MessageEditor", "German"),
     QT_TRANSLATE_NOOP("MessageEditor", "Japanese"),
@@ -786,6 +786,7 @@ void MessageEditor::selectAll()
 
 void MessageEditor::emitTranslationChanged()
 {
+    static_cast<FormWidget *>(sender())->getEditor()->setFocus(); // DND proofness
     updateBeginFromSource();
     updateUndoRedo();
     emit translationChanged(translations(m_currentModel));
@@ -793,6 +794,7 @@ void MessageEditor::emitTranslationChanged()
 
 void MessageEditor::emitTranslatorCommentChanged()
 {
+    static_cast<FormWidget *>(sender())->getEditor()->setFocus(); // DND proofness
     updateUndoRedo();
     emit translatorCommentChanged(m_editors[m_currentModel].transCommentText->getTranslation());
 }

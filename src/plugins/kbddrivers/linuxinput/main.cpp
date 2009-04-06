@@ -39,42 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef LINUXISKBDHANDLER_H
-#define LINUXISKBDHANDLER_H
+#include <qkbddriverplugin_qws.h>
+#include <qkbdlinuxinput_qws.h>
 
-#include <QObject>
-#include <QWSKeyboardHandler>
+QT_BEGIN_NAMESPACE
 
-class QSocketNotifier;
-class LinuxInputSubsystemKbdHandler : public QObject, public QWSKeyboardHandler {
-    Q_OBJECT
+class QLinuxInputKbdDriver : public QKbdDriverPlugin
+{
 public:
-    LinuxInputSubsystemKbdHandler(const QString &device = QString("/dev/input/event0"));
-    ~LinuxInputSubsystemKbdHandler();
+    QLinuxInputKbdDriver();
 
-    struct keytable_s {
-	int code;
-	int unicode;
-	int keycode;
-    };
-
-    struct keymap_s {
-	int unicode;
-	int keycode;
-    };
-
-private:
-    void initmap();
-
-    QSocketNotifier *m_notify;
-    int  kbdFD;
-    bool shift;
-
-    static struct keytable_s keytable[];
-    static struct keymap_s keymap[];
-
-private Q_SLOTS:
-    void readKbdData();
+    QStringList keys() const;
+    QWSKeyboardHandler* create(const QString &driver, const QString &device);
 };
 
-#endif // LINUXISKBDHANDLER_H
+QLinuxInputKbdDriver::QLinuxInputKbdDriver()
+    : QKbdDriverPlugin()
+{
+}
+
+QStringList QLinuxInputKbdDriver::keys() const
+{
+    return (QStringList() << QLatin1String("LinuxInput"));
+}
+
+QWSKeyboardHandler* QLinuxInputKbdDriver::create(const QString &driver,
+                                                 const QString &device)
+{
+    Q_UNUSED(device);
+    if (driver.compare(QLatin1String("LinuxInput"), Qt::CaseInsensitive))
+        return 0;
+    return new QWSLinuxInputKeyboardHandler(driver, device);
+}
+
+Q_EXPORT_PLUGIN2(qwslinuxinputkbddriver, QLinuxInputKbdDriver)
+
+QT_END_NAMESPACE

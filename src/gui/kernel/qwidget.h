@@ -539,6 +539,7 @@ public:
 
     QWidget *focusWidget() const;
     QWidget *nextInFocusChain() const;
+    QWidget *previousInFocusChain() const;
 
     // drag and drop
     bool acceptDrops() const;

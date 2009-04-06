@@ -67,6 +67,9 @@
 #include "qpixmapcache.h"
 #include "qwizard.h"
 #include "qlistview.h"
+#include <private/qmath_p.h>
+#include <qmath.h>
+
 
 #ifdef Q_WS_X11
 #include "qfileinfo.h"
@@ -3177,6 +3180,7 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
         }
         break;
 #endif // QT_NO_SPINBOX
+
     default:
         QCommonStyle::drawComplexControl(cc, opt, p, widget);
     }

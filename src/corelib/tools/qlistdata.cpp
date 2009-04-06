@@ -1193,7 +1193,7 @@ void **QListData::erase(void **xi)
     Constructs an uninitialized iterator.
 
     Functions like operator*() and operator++() should not be called
-    on an uninitialized iterartor. Use operator=() to assign a value
+    on an uninitialized iterator. Use operator=() to assign a value
     to it before using it.
 
     \sa QList::begin() QList::end()
@@ -1416,7 +1416,7 @@ void **QListData::erase(void **xi)
     Constructs an uninitialized iterator.
 
     Functions like operator*() and operator++() should not be called
-    on an uninitialized iterartor. Use operator=() to assign a value
+    on an uninitialized iterator. Use operator=() to assign a value
     to it before using it.
 
     \sa QList::constBegin() QList::constEnd()

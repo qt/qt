@@ -753,7 +753,7 @@ inline void enableIme(QWidget *w,  bool value)
 }
 
 
-void QInputContextPrivate::updateImeStatus(QWidget *w, bool hasFocus)
+void QWinInputContext::updateImeStatus(QWidget *w, bool hasFocus)
 {
     if (!w)
         return;
@@ -822,6 +822,15 @@ void QWinInputContext::enable(QWidget *w, bool e)
 
 void QWinInputContext::setFocusWidget(QWidget *w)
 {
+    QWidget *oldFocus = focusWidget();
+    if (oldFocus == w)
+        return;
+    if (w) {
+        QWinInputContext::updateImeStatus(w, true);
+    } else {
+        if (oldFocus)
+            QWinInputContext::updateImeStatus(oldFocus , false);
+    }
     QInputContext::setFocusWidget(w);
     update();
 }

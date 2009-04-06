@@ -3523,6 +3523,8 @@ void QLineEditPrivate::redo() {
         case RemoveSelection:
         case DeleteSelection:
             text.remove(cmd.pos, 1);
+            selstart = cmd.selStart;
+            selend = cmd.selEnd;
             cursor = cmd.pos;
             break;
         case Separator:

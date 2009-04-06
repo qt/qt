@@ -884,15 +884,15 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
 
         if (timeout > 0) {
             // recalculate the timeout
-            timeout -= timer.elapsed();
-            tv.tv_sec = timeout / 1000;
-            tv.tv_usec = (timeout % 1000) * 1000;
-
-            if (timeout < 0) {
+            int t = timeout - timer.elapsed();
+            if (t < 0) {
                 // oops, timeout turned negative?
                 retval = -1;
                 break;
             }
+
+            tv.tv_sec = t / 1000;
+            tv.tv_usec = (t % 1000) * 1000;
         }
     } while (true);
 
@@ -927,15 +927,15 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
 
         if (timeout > 0) {
             // recalculate the timeout
-            timeout -= timer.elapsed();
-            tv.tv_sec = timeout / 1000;
-            tv.tv_usec = (timeout % 1000) * 1000;
-
-            if (timeout < 0) {
+            int t = timeout - timer.elapsed();
+            if (t < 0) {
                 // oops, timeout turned negative?
                 ret = -1;
                 break;
             }
+
+            tv.tv_sec = t / 1000;
+            tv.tv_usec = (t % 1000) * 1000;
         }
     } while (true);
     if (ret <= 0)

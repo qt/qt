@@ -38,7 +38,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #include "qgtkstyle.h"
 
 #if !defined(QT_NO_STYLE_GTK)
@@ -138,6 +137,30 @@ static const char * const dock_widget_restore_xpm[] =
     };
 
 
+class QGtkStyleFilter : public QObject
+{
+public:
+    QGtkStyleFilter() {
+        qApp->installEventFilter(this);
+    }
+
+private:
+    bool eventFilter(QObject *obj, QEvent *e);
+};
+
+bool QGtkStyleFilter::eventFilter(QObject *obj, QEvent *e)
+{
+    if (e->type() == QEvent::ApplicationPaletteChange) {
+        // Only do this the first time since this will also
+        // generate applicationPaletteChange events
+        extern QHash<QByteArray, QPalette> *qt_app_palettes_hash(); //qapplication.cpp
+        if (!qt_app_palettes_hash() ||  qt_app_palettes_hash()->isEmpty()) {
+            QGtk::applyCustomPaletteHash();
+        }
+    }
+    return QObject::eventFilter(obj, e);
+}
+
 class QGtkStylePrivate : public QCleanlooksStylePrivate
 {
     Q_DECLARE_PUBLIC(QGtkStyle)
@@ -145,6 +168,7 @@ public:
     QGtkStylePrivate()
             : QCleanlooksStylePrivate()
     {}
+    QGtkStyleFilter filter;
 };
 
 static const int groupBoxBottomMargin    =  2;  // space below the groupbox
@@ -217,6 +241,7 @@ static QString uniqueName(const QString &key, const QStyleOption *option, const 
     Constructs a QGtkStyle object.
 */
 QGtkStyle::QGtkStyle()
+    : QCleanlooksStyle(*new QGtkStylePrivate)
 {
     QGtk::initGtkWidgets();
 }
@@ -313,7 +338,7 @@ void QGtkStyle::polish(QPalette &palette)
     if (!QGtk::isThemeAvailable())
         QCleanlooksStyle::polish(palette);
     else
-        palette = standardPalette();
+        palette = palette.resolve(standardPalette());
 }
 
 /*!
@@ -328,6 +353,7 @@ void QGtkStyle::polish(QApplication *app)
     if (app->desktopSettingsAware() && QGtk::isThemeAvailable()) {
         QApplicationPrivate::setSystemPalette(standardPalette());
         QApplicationPrivate::setSystemFont(QGtk::getThemeFont());
+        QGtk::applyCustomPaletteHash();
         if (!QGtk::isKDE4Session()) {
             qt_filedialog_open_filename_hook = &QGtk::openFilename;
             qt_filedialog_save_filename_hook = &QGtk::saveFilename;
@@ -357,12 +383,12 @@ void QGtkStyle::unpolish(QApplication *app)
 /*!
     \reimp
 */
+
 void QGtkStyle::polish(QWidget *widget)
 {
     QCleanlooksStyle::polish(widget);
     if (!QGtk::isThemeAvailable())
         return;
-
     if (qobject_cast<QAbstractButton*>(widget)
             || qobject_cast<QToolButton*>(widget)
             || qobject_cast<QComboBox*>(widget)
@@ -375,8 +401,6 @@ void QGtkStyle::polish(QWidget *widget)
         widget->setAttribute(Qt::WA_Hover);
     else if (QTreeView *tree = qobject_cast<QTreeView *> (widget))
         tree->viewport()->setAttribute(Qt::WA_Hover);
-
-    QGtk::applyGtkSystemPalette(widget);
 }
 
 /*!
@@ -399,6 +423,17 @@ int QGtkStyle::pixelMetric(PixelMetric metric,
         return QCleanlooksStyle::pixelMetric(metric, option, widget);
 
     switch (metric) {
+    case PM_DefaultFrameWidth:
+        if (qobject_cast<const QFrame*>(widget)) {
+            if (GtkStyle *style =
+                QGtk::gtk_rc_get_style_by_paths(QGtk::gtk_settings_get_default(),
+                                                "*.GtkScrolledWindow",
+                                                "*.GtkScrolledWindow",
+                                                Q_GTK_TYPE_WINDOW))
+                return qMax(style->xthickness, style->ythickness);
+        }
+        return 2;
+
     case PM_MenuButtonIndicator:
         return 20;
 
@@ -635,6 +670,66 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
     QGtkPainter gtkPainter(painter);
 
     switch (element) {
+      case PE_Frame: {
+        if (widget && widget->inherits("QComboBoxPrivateContainer")){
+            QStyleOption copy = *option;
+            copy.state |= State_Raised;
+            drawPrimitive(PE_PanelMenu, &copy, painter, widget);
+            break;
+        }
+        // Drawing the entire itemview frame is very expensive, especially on the native X11 engine
+        // Instead we cheat a bit and draw a border image without the center part, hence only scaling
+        // thin rectangular images
+        const int pmSize = 64;
+        const int border = pixelMetric(PM_DefaultFrameWidth, option, widget);
+        const QString pmKey = QString(QLS("windowframe %0")).arg(option->state);
+
+        QPixmap pixmap;
+        QPixmapCache::find(pmKey, pixmap);
+        QRect pmRect(QPoint(0,0), QSize(pmSize, pmSize));
+
+        // Only draw through style once
+        if (pixmap.isNull()) {
+            pixmap = QPixmap(pmSize, pmSize);
+            pixmap.fill(Qt::transparent);
+            QPainter pmPainter(&pixmap);
+            QGtkPainter gtkFramePainter(&pmPainter);
+            gtkFramePainter.setUsePixmapCache(false); // Don't cache twice
+
+            GtkShadowType shadow_type = GTK_SHADOW_NONE;
+            if (option->state & State_Sunken)
+                shadow_type = GTK_SHADOW_IN;
+            else if (option->state & State_Raised)
+                shadow_type = GTK_SHADOW_OUT;
+
+            GtkStyle *style = QGtk::gtk_rc_get_style_by_paths(QGtk::gtk_settings_get_default(),
+                                     "*.GtkScrolledWindow", "*.GtkScrolledWindow", Q_GTK_TYPE_WINDOW);
+            if (style)
+                gtkFramePainter.paintShadow(QGtk::gtkWidget(QLS("GtkFrame")), "viewport", pmRect,
+                                         option->state & State_Enabled ? GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE,
+                                         shadow_type, style);
+            QPixmapCache::insert(pmKey, pixmap);
+        }
+
+        QRect rect = option->rect;
+        const int rw = rect.width() - border;
+        const int rh = rect.height() - border;
+        const int pw = pmRect.width() - border;
+        const int ph = pmRect.height() - border;
+
+        // Sidelines
+        painter->drawPixmap(rect.adjusted(border, 0, -border, -rh), pixmap, pmRect.adjusted(border, 0, -border,-ph));
+        painter->drawPixmap(rect.adjusted(border, rh, -border, 0), pixmap, pmRect.adjusted(border, ph,-border,0));
+        painter->drawPixmap(rect.adjusted(0, border, -rw, -border), pixmap, pmRect.adjusted(0, border, -pw, -border));
+        painter->drawPixmap(rect.adjusted(rw, border, 0, -border), pixmap, pmRect.adjusted(pw, border, 0, -border));
+
+        // Corners
+        painter->drawPixmap(rect.adjusted(0, 0, -rw, -rh), pixmap, pmRect.adjusted(0, 0, -pw,-ph));
+        painter->drawPixmap(rect.adjusted(rw, 0, 0, -rh), pixmap, pmRect.adjusted(pw, 0, 0,-ph));
+        painter->drawPixmap(rect.adjusted(0, rh, -rw, 0), pixmap, pmRect.adjusted(0, ph, -pw,0));
+        painter->drawPixmap(rect.adjusted(rw, rh, 0, 0), pixmap, pmRect.adjusted(pw, ph, 0,0));
+    }
+    break;
 
     case PE_PanelTipLabel: {
         GtkWidget *gtkWindow = QGtk::gtkWidget(QLS("GtkWindow")); // The Murrine Engine currently assumes a widget is passed
@@ -2528,16 +2623,24 @@ void QGtkStyle::drawControl(ControlElement element,
                     opt.rect = vCheckRect;
                     drawPrimitive(PE_PanelButtonCommand, &opt, painter, widget);
                 }
-
                 painter->drawPixmap(pmr.topLeft(), pixmap);
             }
 
             GdkColor gdkText = gtkMenuItem->style->fg[GTK_STATE_NORMAL];
             GdkColor gdkDText = gtkMenuItem->style->fg[GTK_STATE_INSENSITIVE];
             GdkColor gdkHText = gtkMenuItem->style->fg[GTK_STATE_PRELIGHT];
+            uint resolve_mask = option->palette.resolve();
             QColor textColor = QColor(gdkText.red>>8, gdkText.green>>8, gdkText.blue>>8);
             QColor disabledTextColor = QColor(gdkDText.red>>8, gdkDText.green>>8, gdkDText.blue>>8);
+            if (resolve_mask & (1 << QPalette::ButtonText)) {
+                textColor = option->palette.buttonText().color();
+                disabledTextColor = option->palette.brush(QPalette::Disabled, QPalette::ButtonText);;
+            }
+
             QColor highlightedTextColor = QColor(gdkHText.red>>8, gdkHText.green>>8, gdkHText.blue>>8);
+            if (resolve_mask & (1 << QPalette::HighlightedText)) {
+                highlightedTextColor = option->palette.highlightedText().color();
+            }
 
             if (selected)
                 painter->setPen(highlightedTextColor);

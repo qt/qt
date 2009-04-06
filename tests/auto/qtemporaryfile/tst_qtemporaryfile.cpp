@@ -77,6 +77,7 @@ private slots:
     void resize();
     void openOnRootDrives();
     void stressTest();
+    void rename();
 public:
 };
 
@@ -333,6 +334,31 @@ void tst_QTemporaryFile::stressTest()
     for (QSet<QString>::const_iterator it = names.constBegin(); it != names.constEnd(); ++it) {
         QFile::remove(*it);
     }
+}
+
+void tst_QTemporaryFile::rename()
+{
+    // This test checks that the temporary file is deleted, even after a
+    // rename.
+
+    QDir dir;
+    QVERIFY(!dir.exists("temporary-file.txt"));
+
+    QString tempname;
+    {
+        QTemporaryFile file(dir.filePath("temporary-file.XXXXXX"));
+
+        QVERIFY(file.open());
+        tempname = file.fileName();
+        QVERIFY(dir.exists(tempname));
+
+        QVERIFY(file.rename("temporary-file.txt"));
+        QVERIFY(!dir.exists(tempname));
+        QVERIFY(dir.exists("temporary-file.txt"));
+    }
+
+    QVERIFY(!dir.exists(tempname));
+    QVERIFY(!dir.exists("temporary-file.txt"));
 }
 
 QTEST_MAIN(tst_QTemporaryFile)

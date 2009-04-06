@@ -9,7 +9,7 @@ url                     = ./
 # Ensures that the documentation for the tools is not included in the generated
 # .qhp file.
 
-qhp.Qt.excluded   = $QT_SOURCE_TREE/doc/src/assistant-manual.qdoc \
+qhp.Qt.excluded  += $QT_SOURCE_TREE/doc/src/assistant-manual.qdoc \
                     $QT_SOURCE_TREE/doc/src/examples/simpletextviewer.qdoc \
                     $QT_SOURCE_TREE/doc/src/designer-manual.qdoc \
                     $QT_SOURCE_TREE/doc/src/examples/calculatorbuilder.qdoc \

@@ -435,7 +435,7 @@ void QNetmaskAddress::setPrefixLength(QAbstractSocket::NetworkLayerProtocol prot
     The class also supports common predefined addresses: \l Null, \l
     LocalHost, \l LocalHostIPv6, \l Broadcast, and \l Any.
 
-    \sa QTcpSocket, QTcpServer, QUdpSocket
+    \sa QHostInfo, QTcpSocket, QTcpServer, QUdpSocket
 */
 
 /*! \enum QHostAddress::SpecialAddress

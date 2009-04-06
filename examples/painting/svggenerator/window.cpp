@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,39 +39,63 @@
 **
 ****************************************************************************/
 
-#include <qkbddriverplugin_qws.h>
-#include <qkbdusb_qws.h>
+#include <QColorDialog>
+#include <QFileDialog>
+#include <QPainter>
+#include <QSvgGenerator>
+#include "window.h"
+#include "displaywidget.h"
 
-QT_BEGIN_NAMESPACE
-
-class QUsbKbdDriver : public QKbdDriverPlugin
+Window::Window(QWidget *parent)
+    : QWidget(parent)
 {
-public:
-    QUsbKbdDriver();
-
-    QStringList keys() const;
-    QWSKeyboardHandler* create(const QString &driver, const QString &device);
-};
-
-QUsbKbdDriver::QUsbKbdDriver()
-    : QKbdDriverPlugin()
-{
+    setupUi(this);
 }
 
-QStringList QUsbKbdDriver::keys() const
+void Window::updateBackground(int background)
 {
-    return (QStringList() << QLatin1String("Usb"));
+    displayWidget->setBackground(DisplayWidget::Background(background));
 }
 
-QWSKeyboardHandler* QUsbKbdDriver::create(const QString &driver,
-                                          const QString &device)
+void Window::updateColor()
 {
-    Q_UNUSED(device);
-    if (driver.compare(QLatin1String("Usb"), Qt::CaseInsensitive))
-        return 0;
-    return new QWSUsbKeyboardHandler(driver);
+    QColor color = QColorDialog::getColor(displayWidget->color());
+    if (color.isValid())
+        displayWidget->setColor(color);
 }
 
-Q_EXPORT_PLUGIN2(qwsusbkbddriver, QUsbKbdDriver)
+void Window::updateShape(int shape)
+{
+    displayWidget->setShape(DisplayWidget::Shape(shape));
+}
 
-QT_END_NAMESPACE
+//! [save SVG]
+void Window::saveSvg()
+{
+    QString newPath = QFileDialog::getSaveFileName(this, tr("Save SVG"),
+        path, tr("SVG files (*.svg)"));
+
+    if (newPath.isEmpty())
+        return;
+
+    path = newPath;
+
+//![configure SVG generator]
+    QSvgGenerator generator;
+    generator.setFileName(path);
+    generator.setSize(QSize(200, 200));
+    generator.setViewBox(QRect(0, 0, 200, 200));
+    generator.setTitle(tr("SVG Generator Example Drawing"));
+    generator.setDescription(tr("An SVG drawing created by the SVG Generator "
+                                "Example provided with Qt."));
+//![configure SVG generator]
+//![begin painting]
+    QPainter painter;
+    painter.begin(&generator);
+//![begin painting]
+    displayWidget->paint(painter);
+//![end painting]
+    painter.end();
+//![end painting]
+}
+//! [save SVG]

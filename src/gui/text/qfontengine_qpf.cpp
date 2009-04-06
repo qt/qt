@@ -252,7 +252,7 @@ QList<QByteArray> QFontEngineQPF::cleanUpAfterClientCrash(const QList<int> &cras
     for (int i = 0; i < int(dir.count()); ++i) {
         const QByteArray fileName = QFile::encodeName(dir.absoluteFilePath(dir[i]));
 
-        int fd = ::open(fileName.constData(), O_RDONLY);
+        int fd = ::open(fileName.constData(), O_RDONLY, 0);
         if (fd >= 0) {
             void *header = ::mmap(0, sizeof(QFontEngineQPF::Header), PROT_READ, MAP_SHARED, fd, 0);
             if (header && header != MAP_FAILED) {
@@ -331,9 +331,9 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
             qDebug() << "found existing qpf:" << fileName;
 #endif
             if (::access(encodedName, W_OK | R_OK) == 0)
-                fd = ::open(encodedName, O_RDWR);
+                fd = ::open(encodedName, O_RDWR, 0);
             else if (::access(encodedName, R_OK) == 0)
-                fd = ::open(encodedName, O_RDONLY);
+                fd = ::open(encodedName, O_RDONLY, 0);
         } else {
 #if defined(DEBUG_FONTENGINE)
             qDebug() << "creating qpf on the fly:" << fileName;
@@ -347,7 +347,7 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
                 generator.generate();
                 buffer.close();
                 const QByteArray &data = buffer.data();
-                ::write(fd, data.constData(), data.size());
+                QT_WRITE(fd, data.constData(), data.size());
             }
         }
     }
@@ -893,8 +893,8 @@ void QFontEngineQPF::loadGlyph(glyph_t glyph)
     g.y = qRound(metrics.y);
     g.advance = qRound(metrics.xoff);
 
-    ::write(fd, &g, sizeof(g));
-    ::write(fd, img.bits(), img.numBytes());
+    QT_WRITE(fd, &g, sizeof(g));
+    QT_WRITE(fd, img.bits(), img.numBytes());
 
     glyphPos = oldSize - glyphDataOffset;
 #if 0 && defined(DEBUG_FONTENGINE)

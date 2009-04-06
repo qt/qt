@@ -343,6 +343,7 @@ private slots:
     void paintOutsidePaintEvent();
 #endif
     void updateOnDestroyedSignal();
+    void toplevelLineEditFocus();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -1543,6 +1544,10 @@ void tst_QWidget::focusChainOnReparent()
         QCOMPARE(w, expectedOriginalChain[i]);
         w = w->nextInFocusChain();
     }
+    for (int i = 7; i >= 0; --i) {
+        w = w->previousInFocusChain();
+        QCOMPARE(w, expectedOriginalChain[i]);
+    }
 
     QWidget window2;
     child2->setParent(&window2);
@@ -1553,12 +1558,20 @@ void tst_QWidget::focusChainOnReparent()
         QCOMPARE(w, expectedNewChain[i]);
         w = w->nextInFocusChain();
     }
+    for (int i = 4; i >= 0; --i) {
+        w = w->previousInFocusChain();
+        QCOMPARE(w, expectedNewChain[i]);
+    }
 
     QWidget *expectedOldChain[5] = {&window, child1,  child3, child4, &window};
     w = &window;
     for (int i = 0; i <5; ++i) {
         QCOMPARE(w, expectedOldChain[i]);
         w = w->nextInFocusChain();
+    }
+    for (int i = 4; i >= 0; --i) {
+        w = w->previousInFocusChain();
+        QCOMPARE(w, expectedOldChain[i]);
     }
 }
 
@@ -8725,6 +8738,19 @@ void tst_QWidget::updateOnDestroyedSignal()
     // Please do not crash.
     MyEvilObject evil(child);
     QTest::qWait(200);
+}
+
+void tst_QWidget::toplevelLineEditFocus()
+{
+    testWidget->hide();
+
+    QLineEdit w;
+    w.show();
+    qt_x11_wait_for_window_manager(&w);
+    QTest::qWait(200);
+
+    QCOMPARE(QApplication::activeWindow(), &w);
+    QCOMPARE(QApplication::focusWidget(), &w);
 }
 
 QTEST_MAIN(tst_QWidget)

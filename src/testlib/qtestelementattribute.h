@@ -3,6 +3,8 @@
 
 #include "qtestcorelist.h"
 
+QT_BEGIN_NAMESPACE
+
 namespace QTest {
 
     enum AttributeIndex
@@ -55,5 +57,7 @@ class QTestElementAttribute: public QTestCoreList<QTestElementAttribute>
         char *attributeValue;
         QTest::AttributeIndex attributeIndex;
 };
+
+QT_END_NAMESPACE
 
 #endif

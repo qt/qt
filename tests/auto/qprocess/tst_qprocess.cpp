@@ -141,6 +141,8 @@ private slots:
     void switchReadChannels();
     void setWorkingDirectory();
     void startFinishStartFinish();
+    void invalidProgramString_data();
+    void invalidProgramString();
 
     // keep these at the end, since they use lots of processes and sometimes
     // caused obscure failures to occur in tests that followed them (esp. on the Mac)
@@ -2104,6 +2106,30 @@ void tst_QProcess::startFinishStartFinish()
         if (process.state() != QProcess::NotRunning)
             QVERIFY(process.waitForFinished(10000));
     }
+}
+
+//-----------------------------------------------------------------------------
+void tst_QProcess::invalidProgramString_data()
+{
+    QTest::addColumn<QString>("programString");
+    QTest::newRow("null string") << QString();
+    QTest::newRow("empty string") << QString("");
+    QTest::newRow("only blank string") << QString("  ");
+}
+
+void tst_QProcess::invalidProgramString()
+{
+    QFETCH(QString, programString);
+    QProcess process;
+
+    qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
+    QSignalSpy spy(&process, SIGNAL(error(QProcess::ProcessError)));
+
+    process.start(programString);
+    QCOMPARE(process.error(), QProcess::FailedToStart);
+    QCOMPARE(spy.count(), 1);
+
+    QVERIFY(!QProcess::startDetached(programString));
 }
 
 QTEST_MAIN(tst_QProcess)

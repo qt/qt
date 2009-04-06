@@ -512,6 +512,17 @@ void tst_QGraphicsItem::destruction()
         QCOMPARE(itemDeleted, 59);
     }
     QCOMPARE(itemDeleted, 109);
+    {
+        QGraphicsScene *scene = new QGraphicsScene;
+        QGraphicsRectItem *parent = new QGraphicsRectItem;
+        Item *child = new Item;
+        child->setParentItem(parent);
+        parent->setVisible(false);
+        scene->addItem(parent);
+        QCOMPARE(child->parentItem(), parent);
+        delete scene;
+        QCOMPARE(itemDeleted, 110);
+    }
 }
 
 void tst_QGraphicsItem::deleteChildItem()
@@ -4499,7 +4510,7 @@ void tst_QGraphicsItem::itemClipsChildrenToShape2()
     QPainter painter(&image);
     scene.render(&painter);
     painter.end();
-    
+
     QCOMPARE(image.pixel(5, 5), QColor(0, 0, 255).rgba());
     QCOMPARE(image.pixel(5, 10), QRgb(0));
     QCOMPARE(image.pixel(10, 5), QRgb(0));
@@ -5156,7 +5167,7 @@ void tst_QGraphicsItem::task240400_clickOnTextItem()
 
     QVERIFY(selectable ? item->isSelected() : !item->isSelected());
 
-    // 
+    //
     if (textFlags & Qt::TextEditorInteraction)
         QVERIFY(item->textCursor().columnNumber() > column);
     else
@@ -5169,7 +5180,7 @@ void tst_QGraphicsItem::task243707_addChildBeforeParent()
     // inconsistent internal state that can cause a crash.  This test shows
     // one such crash.
     QGraphicsScene scene;
-    QGraphicsWidget *widget = new QGraphicsWidget; 
+    QGraphicsWidget *widget = new QGraphicsWidget;
     QGraphicsWidget *widget2 = new QGraphicsWidget(widget);
     scene.addItem(widget2);
     QVERIFY(!widget2->parentItem());
@@ -5285,7 +5296,7 @@ void tst_QGraphicsItem::itemTransform_unrelated()
     QCOMPARE(stranger1->itemTransform(stranger2).map(QPointF(10, 10)), QPointF(10, 10));
     QCOMPARE(stranger2->itemTransform(stranger1).map(QPointF(10, 10)), QPointF(10, 10));
 }
-        
+
 void tst_QGraphicsItem::opacity_data()
 {
     QTest::addColumn<qreal>("p_opacity");
@@ -5494,7 +5505,7 @@ void tst_QGraphicsItem::nestedClipping()
     l1->setData(0, "l1");
     l2->setData(0, "l2");
     l3->setData(0, "l3");
-    
+
     QGraphicsView view(&scene);
     view.show();
 #ifdef Q_WS_X11
@@ -5522,7 +5533,7 @@ void tst_QGraphicsItem::nestedClipping()
     QCOMPARE(image.pixel(80, 130), qRgba(255, 255, 0, 255));
     QCOMPARE(image.pixel(92, 105), qRgba(0, 255, 0, 255));
     QCOMPARE(image.pixel(105, 105), qRgba(0, 0, 255, 255));
-#if 0 
+#if 0
     // Enable this to compare if the test starts failing.
     image.save("nestedClipping_reference.png");
 #endif
@@ -5664,7 +5675,7 @@ void tst_QGraphicsItem::tabChangesFocus_data()
 void tst_QGraphicsItem::tabChangesFocus()
 {
     QFETCH(bool, tabChangesFocus);
-    
+
     QGraphicsScene scene;
     QGraphicsTextItem *item = scene.addText("Hello");
     item->setTabChangesFocus(tabChangesFocus);

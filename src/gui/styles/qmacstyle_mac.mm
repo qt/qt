@@ -50,6 +50,7 @@
 #include <private/qpaintengine_mac_p.h>
 #include <private/qpainter_p.h>
 #include <private/qprintengine_mac_p.h>
+#include <private/qstylehelper_p.h>
 #include <qapplication.h>
 #include <qbitmap.h>
 #include <qcheckbox.h>
@@ -125,6 +126,20 @@ static const QColor titlebarSeparatorLineInactive(131, 131, 131);
 static const QColor mainWindowGradientBegin(240, 240, 240);
 static const QColor mainWindowGradientEnd(200, 200, 200);
 
+#if (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5)
+enum {
+    kThemePushButtonTextured = 31,
+    kThemePushButtonTexturedSmall = 32,
+    kThemePushButtonTexturedMini = 33
+};
+
+/* Search fields */
+enum {
+    kHIThemeFrameTextFieldRound = 1000,
+    kHIThemeFrameTextFieldRoundSmall = 1001,
+    kHIThemeFrameTextFieldRoundMini = 1002
+};
+#endif
 
 // Resolve these at run-time, since the functions was moved in Leopard.
 typedef HIRect * (*PtrHIShapeGetBounds)(HIShapeRef, HIRect *);
@@ -2189,7 +2204,7 @@ void QMacStyle::polish(QWidget* w)
     }
 
     if (qobject_cast<QMenu*>(w) || qobject_cast<QComboBoxPrivateContainer *>(w)) {
-        w->setWindowOpacity(0.94);
+        w->setWindowOpacity(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5 ? 0.985 : 0.94);
         if (!w->testAttribute(Qt::WA_SetPalette)) {
             QPixmap px(64, 64);
             HIThemeMenuDrawInfo mtinfo;
@@ -3629,7 +3644,10 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 QRect cr = tb->rect;
                 int shiftX = 0;
                 int shiftY = 0;
-                if (tb->state & (State_Sunken | State_On)) {
+                bool needText = false;
+                int alignment = 0;
+                bool down = tb->state & (State_Sunken | State_On);
+                if (down) {
                     shiftX = pixelMetric(PM_ButtonShiftHorizontal, tb, w);
                     shiftY = pixelMetric(PM_ButtonShiftVertical, tb, w);
                 }
@@ -3637,30 +3655,29 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 // The text is a bit bolder and gets a drop shadow and the icons are also darkened.
                 // This doesn't really fit into any particular case in QIcon, so we
                 // do the majority of the work ourselves.
-                if (tb->state & State_Sunken
-                        && !(tb->features & QStyleOptionToolButton::Arrow)) {
+                if (!(tb->features & QStyleOptionToolButton::Arrow)) {
                     Qt::ToolButtonStyle tbstyle = tb->toolButtonStyle;
                     if (tb->icon.isNull() && !tb->text.isEmpty())
                         tbstyle = Qt::ToolButtonTextOnly;
 
                     switch (tbstyle) {
-                    case Qt::ToolButtonTextOnly:
-                        drawItemText(p, cr, Qt::AlignCenter, tb->palette,
-                                     tb->state & State_Enabled, tb->text);
-                        break;
+                    case Qt::ToolButtonTextOnly: {
+                        needText = true;
+                        alignment = Qt::AlignCenter;
+                        break; }
                     case Qt::ToolButtonIconOnly:
                     case Qt::ToolButtonTextBesideIcon:
                     case Qt::ToolButtonTextUnderIcon: {
                         QRect pr = cr;
                         QIcon::Mode iconMode = (tb->state & State_Enabled) ? QIcon::Normal
-                                                                                   : QIcon::Disabled;
+                                                                            : QIcon::Disabled;
                         QIcon::State iconState = (tb->state & State_On) ? QIcon::On
-                                                                                : QIcon::Off;
+                                                                         : QIcon::Off;
                         QPixmap pixmap = tb->icon.pixmap(tb->rect.size().boundedTo(tb->iconSize), iconMode, iconState);
 
                         // Draw the text if it's needed.
                         if (tb->toolButtonStyle != Qt::ToolButtonIconOnly) {
-                            int alignment = 0;
+                            needText = true;
                             if (tb->toolButtonStyle == Qt::ToolButtonTextUnderIcon) {
                                 pr.setHeight(pixmap.size().height() + 6);
                                 cr.adjust(0, pr.bottom(), 0, -3);
@@ -3670,17 +3687,42 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                                 cr.adjust(pr.right(), 0, 0, 0);
                                 alignment |= Qt::AlignLeft | Qt::AlignVCenter;
                             }
-                            cr.translate(shiftX, shiftY);
-                            drawItemText(p, cr, alignment, tb->palette,
-                                         tb->state & State_Enabled, tb->text);
-                            cr.adjust(0, 3, 0, -3); // the drop shadow
-                            drawItemText(p, cr, alignment, tb->palette,
-                                         tb->state & State_Enabled, tb->text);
                         }
-                        pr.translate(shiftX, shiftY);
-                        pixmap = darkenPixmap(pixmap);
+                        if (down) {
+                            pr.translate(shiftX, shiftY);
+                            pixmap = darkenPixmap(pixmap);
+                        }
                         drawItemPixmap(p, pr, Qt::AlignCenter, pixmap);
                         break; }
+                    }
+
+                    if (needText) {
+                        QPalette pal = tb->palette;
+                        QPalette::ColorRole role = QPalette::NoRole;
+                        if (down)
+                            cr.translate(shiftX, shiftY);
+                        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5
+                            && (tbstyle == Qt::ToolButtonTextOnly
+                                || (tbstyle != Qt::ToolButtonTextOnly && !down))) {
+                            QPen pen = p->pen();
+                            QColor light = down ? Qt::black : Qt::white;
+                            light.setAlphaF(0.375f);
+                            p->setPen(light);
+                            p->drawText(cr.adjusted(0, 1, 0, 1), alignment, tb->text);
+                            p->setPen(pen);
+                            if (down && tbstyle == Qt::ToolButtonTextOnly) {
+                                pal = QApplication::palette("QMenu");
+                                pal.setCurrentColorGroup(tb->palette.currentColorGroup());
+                                role = QPalette::HighlightedText;
+                            }
+                        }
+                        drawItemText(p, cr, alignment, pal,
+                                     tb->state & State_Enabled, tb->text, role);
+                        if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_5 && down) {
+                            // Draw a "drop shadow" in earlier versions.
+                            drawItemText(p, cr.adjusted(0, 1, 0, 1), alignment,
+                                         tb->palette, tb->state & State_Enabled, tb->text);
+                        }
                     }
                 } else {
                     QWindowsStyle::drawControl(ce, &myTb, p, w);
@@ -3854,13 +3896,16 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         }
         break;
     case CE_TabBarTabShape:
-        if (const QStyleOptionTabV3 *tabOpt = qstyleoption_cast<const QStyleOptionTabV3 *>(opt)) {
-            if (tabOpt->documentMode) {
-                p->save();
-                QRect tabRect = tabOpt->rect;
-                drawTabShape(p, tabOpt);
-                p->restore();
-                return;
+        if (const QStyleOptionTab *tabOpt = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
+
+            if (const QStyleOptionTabV3 *tabOptV3 = qstyleoption_cast<const QStyleOptionTabV3 *>(opt)) {
+                if (tabOptV3->documentMode) {
+                    p->save();
+                    QRect tabRect = tabOptV3->rect;
+                    drawTabShape(p, tabOptV3);
+                    p->restore();
+                    return;
+                }
             }
 
 #if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
@@ -5340,6 +5385,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 drawControl(CE_ToolButtonLabel, &label, p, widget);
             }
         }
+        break;
+    case CC_Dial:
+        if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(opt))
+            QStyleHelper::drawDial(dial, p);
         break;
     default:
         QWindowsStyle::drawComplexControl(cc, opt, p, widget);

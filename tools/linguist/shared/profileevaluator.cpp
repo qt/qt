@@ -234,15 +234,15 @@ public:
 ProFileEvaluator::Private::Private(ProFileEvaluator *q_)
   : q(q_)
 {
+    // Global parser state
     m_prevLineNo = 0;
     m_prevProFile = 0;
+
+    // Configuration, more or less
     m_verbose = true;
-    m_block = 0;
-    m_commentItem = 0;
-    m_syntaxError = 0;
-    m_lineNo = 0;
-    m_contNextLine = false;
     m_cumulative = true;
+
+    // Evaluator state
     m_updateCondition = false;
     m_condition = ConditionFalse;
     m_invertNext = false;
@@ -258,8 +258,13 @@ bool ProFileEvaluator::Private::read(ProFile *pro)
         return false;
     }
 
+    // Parser state
+    m_block = 0;
+    m_commentItem = 0;
+    m_contNextLine = false;
     m_syntaxError = false;
     m_lineNo = 1;
+    m_blockstack.clear();
     m_blockstack.push(pro);
 
     QTextStream ts(&file);
@@ -913,7 +918,7 @@ QStringList ProFileEvaluator::Private::qmakeFeaturePaths()
     //        if (!specdir.cdUp() || specdir.isRoot())
     //            break;
     //        if (QFile::exists(specdir.path() + QDir::separator() + "features")) {
-    //            foreach (const QString &concat_it, concat) 
+    //            foreach (const QString &concat_it, concat)
     //                feature_roots << (specdir.path() + concat_it);
     //            break;
     //        }
@@ -1204,9 +1209,10 @@ bool ProFileEvaluator::Private::isActiveConfig(const QString &config, bool regex
 QStringList ProFileEvaluator::Private::evaluateExpandFunction(const QString &func, const QString &arguments)
 {
     QStringList argumentsList = split_arg_list(arguments);
+
     QStringList args;
     for (int i = 0; i < argumentsList.count(); ++i)
-        args += expandVariableReferences(argumentsList[i]);
+        args += expandVariableReferences(argumentsList[i]).join(Option::field_sep);
 
     enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST,
                       E_SPRINTF, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
@@ -1693,10 +1699,11 @@ bool ProFileEvaluator::Private::evaluateConditionalFunction(const QString &funct
                 for (int mut = 0; mut < mutuals.count(); mut++) {
                     if (configs[i] == mutuals[mut].trimmed()) {
                         cond = (configs[i] == args[0]);
-                        break;
+                        goto done_T_CONFIG;
                     }
                 }
             }
+          done_T_CONFIG:
             break;
         }
         case T_CONTAINS: {
@@ -1723,12 +1730,12 @@ bool ProFileEvaluator::Private::evaluateConditionalFunction(const QString &funct
                     for (int mut = 0; mut < mutuals.count(); mut++) {
                         if (val == mutuals[mut].trimmed()) {
                             cond = (regx.exactMatch(val) || val == args[1]);
-                            break;
+                            goto done_T_CONTAINS;
                         }
                     }
                 }
             }
-
+          done_T_CONTAINS:
             break;
         }
         case T_COUNT: {
@@ -1808,7 +1815,7 @@ bool ProFileEvaluator::Private::evaluateConditionalFunction(const QString &funct
                     parents.append(proFile->fileName());
                 if (!parents.isEmpty())
                     parents.takeLast();
-                if (parents.isEmpty()) 
+                if (parents.isEmpty())
                     q->fileMessage(format("Project ERROR: %1").arg(msg));
                 else
                     q->fileMessage(format("Project ERROR: %1. File was included from: '%2'")

@@ -406,10 +406,14 @@ int QDockWidgetLayout::minimumTitleWidth() const
 
     QSize closeSize(0, 0);
     QSize floatSize(0, 0);
-    if (QLayoutItem *item = item_list[CloseButton])
-        closeSize = item->sizeHint();
-    if (QLayoutItem *item = item_list[FloatButton])
-        floatSize = item->sizeHint();
+    if (hasFeature(q, QDockWidget::DockWidgetClosable)) {
+        if (QLayoutItem *item = item_list[CloseButton])
+            closeSize = item->widget()->sizeHint();
+    }
+    if (hasFeature(q, QDockWidget::DockWidgetFloatable)) {
+        if (QLayoutItem *item = item_list[FloatButton])
+            floatSize = item->widget()->sizeHint();
+    }
 
     int titleHeight = this->titleHeight();
 

@@ -4612,16 +4612,17 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
     if (cacheMode == QGraphicsItem::ItemCoordinateCache) {
         QSize pixmapSize;
         bool fixedCacheSize = false;
+        QRectF brectAligned = brect.toAlignedRect();
         if ((fixedCacheSize = itemCache->fixedSize.isValid())) {
             pixmapSize = itemCache->fixedSize;
         } else {
-            pixmapSize = brect.toAlignedRect().size();
+            pixmapSize = brectAligned.size().toSize();
         }
 
         // Create or recreate the pixmap.
         int adjust = itemCache->fixedSize.isValid() ? 0 : 2;
         QSize adjustSize(adjust*2, adjust*2);
-        QRectF br = brect.adjusted(-adjust, -adjust, adjust, adjust);
+        QRectF br = brectAligned.adjusted(-adjust, -adjust, adjust, adjust);
         if (pix.isNull() || (!fixedCacheSize && (pixmapSize + adjustSize) != pix.size())) {
             pix = QPixmap(pixmapSize + adjustSize);
             itemCache->exposed.clear();
@@ -4631,9 +4632,11 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         // Redraw any newly exposed areas.
         if (itemCache->allExposed || !itemCache->exposed.isEmpty()) {
             // Fit the item's bounding rect into the pixmap's coordinates.
-            const QPointF scale(pixmapSize.width() / brect.width(), pixmapSize.height() / brect.height());
             QTransform itemToPixmap;
-            itemToPixmap.scale(scale.x(), scale.y());
+            if (fixedCacheSize) {
+                const QPointF scale(pixmapSize.width() / brect.width(), pixmapSize.height() / brect.height());
+                itemToPixmap.scale(scale.x(), scale.y());
+            }
             itemToPixmap.translate(-br.x(), -br.y());
 
             // Generate the item's exposedRect and map its list of expose

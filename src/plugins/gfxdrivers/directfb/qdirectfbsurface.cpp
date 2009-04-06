@@ -58,6 +58,10 @@ QDirectFBSurface::QDirectFBSurface(QDirectFBScreen* scr)
     , engine(0)
 {
     setSurfaceFlags(Opaque | Buffered);
+#ifdef QT_DIRECTFB_TIMING
+    frames = 0;
+    timer.start();
+#endif
 }
 
 QDirectFBSurface::QDirectFBSurface(QDirectFBScreen* scr, QWidget *widget)
@@ -72,6 +76,10 @@ QDirectFBSurface::QDirectFBSurface(QDirectFBScreen* scr, QWidget *widget)
         setSurfaceFlags(Opaque | RegionReserved);
     else
         setSurfaceFlags(Opaque | Buffered);
+#ifdef QT_DIRECTFB_TIMING
+    frames = 0;
+    timer.start();
+#endif
 }
 
 QDirectFBSurface::~QDirectFBSurface()
@@ -126,14 +134,15 @@ void QDirectFBSurface::setGeometry(const QRect &rect, const QRegion &mask)
         // If we're in a resize, the surface shouldn't be locked
         Q_ASSERT( (lockedImage == 0) || (isResize == false));
 
-        IDirectFBSurface *s = screen->dfbSurface();
-        if (onscreen && s) {
+        if (onscreen) {
             if (dfbSurface)
                 dfbSurface->Release(dfbSurface);
 
             DFBRectangle r = { rect.x(), rect.y(),
                                rect.width(), rect.height() };
-            result = s->GetSubSurface(s, &r, &dfbSurface);
+            IDirectFBSurface *primarySurface = screen->dfbSurface();
+            Q_ASSERT(primarySurface);
+            result = primarySurface->GetSubSurface(primarySurface, &r, &dfbSurface);
         } else {
 #ifdef QT_NO_DIRECTFB_WM
             if (isResize) {
@@ -152,8 +161,8 @@ void QDirectFBSurface::setGeometry(const QRect &rect, const QRegion &mask)
                                                                DSDESC_PIXELFORMAT);
                 description.width = rect.width();
                 description.height = rect.height();
-                description.pixelformat = DSPF_ARGB;
-
+                QDirectFBScreen::initSurfaceDescriptionPixelFormat(&description,
+                                                                   QDirectFBScreen::instance()->pixelFormat());
                 dfbSurface = QDirectFBScreen::instance()->createDFBSurface(&description, false);
             } else {
                 Q_ASSERT(dfbSurface);
@@ -306,7 +315,6 @@ inline bool isWidgetOpaque(const QWidget *w)
 
     return false;
 }
-
 void QDirectFBSurface::flush(QWidget *widget, const QRegion &region,
                              const QPoint &offset)
 {
@@ -331,17 +339,32 @@ void QDirectFBSurface::flush(QWidget *widget, const QRegion &region,
             dfbWindow->SetOpacity(dfbWindow, winOpacity);
     }
 #endif
-
-    // XXX: have to call the base function first as the decoration is
-    // currently painted there
-    QWSWindowSurface::flush(widget, region, offset);
-
 #ifndef QT_NO_DIRECTFB_WM
-    const QRect br = region.boundingRect().translated(painterOffset());
-    const DFBRegion r = { br.x(), br.y(),
-                          br.x() + br.width(), br.y() + br.height() };
-
-    dfbSurface->Flip(dfbSurface, &r, DSFLIP_NONE);
+    if (region.numRects() > 1) {
+        const QVector<QRect> rects = region.rects();
+        for (int i=0; i<rects.size(); ++i) {
+            const QRect &r = rects.at(i);
+            const DFBRegion dfbReg = { r.x() + offset.x(), r.y() + offset.y(),
+                                       r.x() + r.width() + offset.x(),
+                                       r.y() + r.height() + offset.y() };
+            dfbSurface->Flip(dfbSurface, &dfbReg, DSFLIP_ONSYNC);
+        }
+    } else {
+        const QRect r = region.boundingRect();
+        const DFBRegion dfbReg = { r.x() + offset.x(), r.y() + offset.y(),
+                                   r.x() + r.width() + offset.x(),
+                                   r.y() + r.height() + offset.y() };
+        dfbSurface->Flip(dfbSurface, &dfbReg, DSFLIP_ONSYNC);
+    }
+#endif
+#ifdef QT_DIRECTFB_TIMING
+    enum { Secs = 3 };
+    ++frames;
+    if (timer.elapsed() >= Secs * 1000) {
+        qDebug("%d fps", int(double(frames) / double(Secs)));
+        frames = 0;
+        timer.restart();
+    }
 #endif
 }
 

@@ -54,8 +54,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_TYPEINFO(TranslatorMessage, Q_MOVABLE_TYPE);
-
 class QIODevice;
 
 // A struct of "interesting" data passed to and from the load and save routines
@@ -93,7 +91,7 @@ public:
     QSet<QString> m_projectRoots;
     QMultiHash<QString, QString> m_allCSources;
     QStringList m_includePath;
-    QStringList m_dropTags;  // tags to be dropped 
+    QStringList m_dropTags;  // tags to be dropped
     QStringList m_errors;
     bool m_verbose;
     bool m_ignoreUnfinished;
@@ -134,8 +132,10 @@ public:
     void stripNonPluralForms();
     void stripIdenticalSourceTranslations();
     void dropTranslations();
-    QList<TranslatorMessage> findDuplicates() const;
     void makeFileNamesAbsolute(const QDir &originalPath);
+    QSet<TranslatorMessagePtr> resolveDuplicates();
+    static void reportDuplicates(const QSet<TranslatorMessagePtr> &dupes,
+                                 const QString &fileName, bool verbose);
 
     void setCodecName(const QByteArray &name);
     QByteArray codecName() const { return m_codecName; }

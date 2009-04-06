@@ -76,7 +76,7 @@ private slots:
     void _exec();
 
 private:
-    void generic_data();
+    void generic_data(const QString &engine=QString());
     void createTestTables( QSqlDatabase db );
     void dropTestTables( QSqlDatabase db );
     void populateTestTables( QSqlDatabase db );
@@ -92,10 +92,14 @@ tst_Q3SqlSelectCursor::~tst_Q3SqlSelectCursor()
 {
 }
 
-void tst_Q3SqlSelectCursor::generic_data()
+void tst_Q3SqlSelectCursor::generic_data(const QString& engine)
 {
-    if ( dbs.fillTestTable() == 0 )
-        QSKIP( "No database drivers are available in this Qt configuration", SkipAll );
+    if ( dbs.fillTestTable(engine) == 0 ) {
+        if(engine.isEmpty())
+           QSKIP( "No database drivers are available in this Qt configuration", SkipAll );
+        else
+           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit(), SkipAll );
+    }
 }
 
 void tst_Q3SqlSelectCursor::createTestTables( QSqlDatabase db )

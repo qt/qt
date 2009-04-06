@@ -854,15 +854,16 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool de
         updateAncestorFlag(QGraphicsItem::ItemClipsChildrenToShape);
         updateAncestorFlag(QGraphicsItem::ItemIgnoresTransformations);
 
-        // Update item visible / enabled.
-        if (!visible && !explicitlyHidden)
-            setVisibleHelper(true, /* explicit = */ false);
-        if (!enabled && !explicitlyDisabled)
-            setEnabledHelper(true, /* explicit = */ false);
+        if (!deleting) {
+            // Update item visible / enabled.
+            if (!visible && !explicitlyHidden)
+                setVisibleHelper(true, /* explicit = */ false);
+            if (!enabled && !explicitlyDisabled)
+                setEnabledHelper(true, /* explicit = */ false);
 
-        // If the item is being deleted, the whole scene will be updated.
-        if (!deleting)
+            // If the item is being deleted, the whole scene will be updated.
             updateHelper();
+        }
     }
 
     if (scene) {
@@ -8203,6 +8204,8 @@ void QGraphicsTextItem::setTabChangesFocus(bool b)
 
     Returns true if the \gui Tab key will cause the widget to change focus;
     otherwise, false is returned.
+
+    By default, this behavior is disabled, and this function will return false.
 
     \sa setTabChangesFocus()
 */

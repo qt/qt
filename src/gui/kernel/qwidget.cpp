@@ -164,6 +164,7 @@ static inline bool bypassGraphicsProxyWidget(QWidget *p)
 #endif
 
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); // qapplication.cpp
+extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
 QWidgetPrivate::QWidgetPrivate(int version) :
         QObjectPrivate(version), extra(0), focus_child(0)
@@ -230,28 +231,6 @@ QWindowSurface *QWidgetPrivate::createDefaultWindowSurface()
     if (QApplicationPrivate::graphicsSystem())
         return QApplicationPrivate::graphicsSystem()->createWindowSurface(q);
     return createDefaultWindowSurface_sys();
-}
-
-/*!
-    \internal
-    This is an internal function, you should never call this.
-
-    This function is called to focus associated input context. The
-    code intends to eliminate duplicate focus for the context even if
-    the context is shared between widgets
-
-    \sa QInputContext::setFocus()
- */
-void QWidgetPrivate::focusInputContext()
-{
-#ifndef QT_NO_IM
-    Q_Q(QWidget);
-    QInputContext *qic = q->inputContext();
-    if (qic) {
-        if(qic->focusWidget() != q)
-            qic->setFocusWidget(q);
-    }
-#endif // QT_NO_IM
 }
 
 /*!
@@ -329,20 +308,24 @@ void QWidget::setInputContext(QInputContext *context)
 
 
 /*!
+    \obsolete
+
     This function can be called on the widget that currently has focus
     to reset the input method operating on it.
 
-    \sa QInputContext, QInputContext::reset()
+    This function is providing for convenience, instead you should use
+    \l{QInputContext::}{reset()} on the input context that was
+    returned by inputContext().
+
+    \sa QInputContext, inputContext(), QInputContext::reset()
 */
 void QWidget::resetInputContext()
 {
     if (!hasFocus())
         return;
 #ifndef QT_NO_IM
-    if (!d_func()->ic)
-        return;
     QInputContext *qic = this->inputContext();
-    if( qic )
+    if(qic)
         qic->reset();
 #endif // QT_NO_IM
 }
@@ -1400,7 +1383,13 @@ int QWidgetPrivate::maxInstances = 0;     // Maximum number of widget instances
 void QWidgetPrivate::setWinId(WId id)                // set widget identifier
 {
     Q_Q(QWidget);
-    if (mapper && data.winid) {
+    // the user might create a widget with Qt::Desktop window
+    // attribute (or create another QDesktopWidget instance), which
+    // will have the same windowid (the root window id) as the
+    // qt_desktopWidget. We should not add the second desktop widget
+    // to the mapper.
+    bool userDesktopWidget = qt_desktopWidget != 0 && qt_desktopWidget != q && q->windowType() == Qt::Desktop;
+    if (mapper && data.winid && !userDesktopWidget) {
         mapper->remove(data.winid);
         uncreatedWidgets->insert(q);
     }
@@ -1409,7 +1398,7 @@ void QWidgetPrivate::setWinId(WId id)                // set widget identifier
 #if defined(Q_WS_X11)
     hd = id; // X11: hd == ident
 #endif
-    if (mapper && id) {
+    if (mapper && id && !userDesktopWidget) {
         mapper->insert(data.winid, q);
         uncreatedWidgets->remove(q);
     }
@@ -2960,10 +2949,15 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 #if defined(Q_WS_MAC)
     setEnabled_helper_sys(enable);
 #endif
-#if defined (Q_WS_WIN)
-    if (q->hasFocus())
-        QInputContextPrivate::updateImeStatus(q, true);
-#endif
+    if (q->testAttribute(Qt::WA_InputMethodEnabled) && q->hasFocus()) {
+        QInputContext *qic = inputContext();
+        if (enable) {
+            qic->setFocusWidget(q);
+        } else {
+            qic->reset();
+            qic->setFocusWidget(0);
+        }
+    }
     QEvent e(QEvent::EnabledChange);
     QApplication::sendEvent(q, &e);
 #ifdef QT3_SUPPORT
@@ -5890,10 +5884,24 @@ QWidget *QWidget::focusWidget() const
 
 /*!
     Returns the next widget in this widget's focus chain.
+
+    \sa previousInFocusChain
 */
 QWidget *QWidget::nextInFocusChain() const
 {
     return const_cast<QWidget *>(d_func()->focus_next);
+}
+
+/*!
+    Returns the previous widget in this widget's focus chain.
+
+    \sa nextInFocusChain
+
+    \since 4.6
+*/
+QWidget *QWidget::previousInFocusChain() const
+{
+    return const_cast<QWidget *>(d_func()->focus_prev);
 }
 
 /*!
@@ -7623,16 +7631,10 @@ bool QWidget::event(QEvent *event)
         }
         break;
     case QEvent::FocusIn:
-#if defined(Q_WS_WIN)
-        QInputContextPrivate::updateImeStatus(this, true);
-#endif
         focusInEvent((QFocusEvent*)event);
         break;
 
     case QEvent::FocusOut:
-#if defined(Q_WS_WIN)
-        QInputContextPrivate::updateImeStatus(this, false);
-#endif
         focusOutEvent((QFocusEvent*)event);
         break;
 
@@ -9786,12 +9788,21 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         }
         break;
 #endif
-    case Qt::WA_NativeWindow:
+    case Qt::WA_NativeWindow: {
+        QInputContext *ic = 0;
+        if (on && !internalWinId() && testAttribute(Qt::WA_InputMethodEnabled) && hasFocus()) {
+            ic = d->inputContext();
+            ic->reset();
+            ic->setFocusWidget(0);
+        }
         if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget())
             parentWidget()->d_func()->enforceNativeChildren();
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
+        if (ic && isEnabled())
+            ic->setFocusWidget(this);
         break;
+    }
     case Qt::WA_PaintOnScreen:
         d->updateIsOpaque();
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
@@ -9819,10 +9830,6 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 #endif
         break;
     case Qt::WA_InputMethodEnabled: {
-#if defined(Q_WS_WIN) || (defined(Q_WS_QWS) && !defined(QT_NO_QWS_INPUTMETHODS))
-        if (hasFocus())
-            QInputContextPrivate::updateImeStatus(this, true);
-#endif
         QInputContext *ic = d->ic;
         if (!ic) {
             // implicitly create input context only if we have a focus
@@ -9830,7 +9837,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
                 ic = d->inputContext();
         }
         if (ic) {
-            if (on && hasFocus() && ic->focusWidget() != this) {
+            if (on && hasFocus() && ic->focusWidget() != this && isEnabled()) {
                 ic->setFocusWidget(this);
             } else if (!on && ic->focusWidget() == this) {
                 ic->reset();

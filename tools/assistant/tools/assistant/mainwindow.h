@@ -72,7 +72,7 @@ public:
     MainWindow(CmdLineParser *cmdLine, QWidget *parent = 0);
     ~MainWindow();
 
-    static void activateCurrentBrowser();    
+    static void activateCurrentBrowser();
     static QString collectionFileDirectory(bool createDir = false,
         const QString &cacheDir = QString());
     static QString defaultHelpCollectionFileName();
@@ -103,12 +103,12 @@ private slots:
     void gotoAddress();
     void showPreferences();
     void showNewAddress();
-    void showAboutDialog();    
+    void showAboutDialog();
     void copyAvailable(bool yes);
     void updateNavigationItems();
     void showNewAddress(const QUrl &url);
     void addNewBookmark(const QString &title, const QString &url);
-    void showTopicChooser(const QMap<QString, QUrl> &links, const QString &keyword);    
+    void showTopicChooser(const QMap<QString, QUrl> &links, const QString &keyword);
     void updateApplicationFont();
     void filterDocumentation(const QString &customFilter);
     void setupFilterCombo();
@@ -128,7 +128,7 @@ private:
     void setupFilterToolbar();
     void setupAddressToolbar();
     QMenu *toolBarMenu();
-    QWidget *setupBookmarkWidget();    
+    QWidget *setupBookmarkWidget();
 
     QHelpEngine *m_helpEngine;
     CentralWidget *m_centralWidget;

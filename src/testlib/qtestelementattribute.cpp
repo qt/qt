@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+QT_BEGIN_NAMESPACE
+
 QTestElementAttribute::QTestElementAttribute()
     :attributeValue(0),
     attributeIndex(QTest::AI_Undefined)
@@ -69,3 +71,6 @@ bool QTestElementAttribute::setPair(QTest::AttributeIndex index, const char *val
 
     return (attributeValue!=0) ? true:false;
 }
+
+QT_END_NAMESPACE
+

@@ -41,6 +41,8 @@
 
 //#define QNETWORKDISKCACHE_DEBUG
 
+#ifndef QT_NO_NETWORKDISKCACHE
+
 #include "qnetworkdiskcache.h"
 #include "qnetworkdiskcache_p.h"
 
@@ -664,3 +666,5 @@ bool QCacheItem::read(QFile *device, bool readData)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_NETWORKDISKCACHE

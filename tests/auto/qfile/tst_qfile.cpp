@@ -169,6 +169,8 @@ private slots:
     void rename_data();
     void rename();
     void renameWithAtEndSpecialFile() const;
+    void renameFallback();
+    void renameMultiple();
     void appendAndRead();
     void miscWithUncPathAsCurrentDir();
     void standarderror();
@@ -214,6 +216,14 @@ void tst_QFile::cleanup()
 {
 // TODO: Add cleanup code here.
 // This will be executed immediately after each test is run.
+
+    // for renameFallback()
+    QFile::remove("file-rename-destination.txt");
+
+    // for renameMultiple()
+    QFile::remove("file-to-be-renamed.txt");
+    QFile::remove("file-renamed-once.txt");
+    QFile::remove("file-renamed-twice.txt");
 }
 
 void tst_QFile::initTestCase()
@@ -2089,6 +2099,42 @@ void tst_QFile::renameWithAtEndSpecialFile() const
     /* Guess what, we have to rename it back, otherwise we'll fail on second
      * invocation. */
     QVERIFY(QFile::rename(newName, originalName));
+}
+
+void tst_QFile::renameFallback()
+{
+    // Using a resource file both to trigger QFile::rename's fallback handling
+    // and as a *read-only* source whose move should fail.
+    QFile file(":/rename-fallback.qrc");
+    QVERIFY(file.exists() && "(test-precondition)");
+    QFile::remove("file-rename-destination.txt");
+
+    QVERIFY(!file.rename("file-rename-destination.txt"));
+    QVERIFY(!QFile::exists("file-rename-destination.txt"));
+}
+
+void tst_QFile::renameMultiple()
+{
+    // create the file if it doesn't exist
+    QFile file("file-to-be-renamed.txt");
+    QVERIFY(file.open(QIODevice::ReadWrite) && "(test-precondition)");
+
+    // any stale files from previous test failures?
+    QFile::remove("file-renamed-once.txt");
+    QFile::remove("file-renamed-twice.txt");
+
+    // begin testing
+    QVERIFY(file.rename("file-renamed-once.txt"));
+    QCOMPARE(file.fileName(), QString("file-renamed-once.txt"));
+    QVERIFY(file.rename("file-renamed-twice.txt"));
+    QCOMPARE(file.fileName(), QString("file-renamed-twice.txt"));
+
+    QVERIFY(!QFile::exists("file-to-be-renamed.txt"));
+    QVERIFY(!QFile::exists("file-renamed-once.txt"));
+    QVERIFY(QFile::exists("file-renamed-twice.txt"));
+
+    file.remove();
+    QVERIFY(!QFile::exists("file-renamed-twice.txt"));
 }
 
 void tst_QFile::appendAndRead()

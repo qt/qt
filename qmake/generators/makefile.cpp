@@ -2735,16 +2735,9 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
             ret.prepend(pwd);
         ret = Option::fixPathToTargetOS(ret, false, canon);
     } else { //fix it..
-        QString qfile(Option::fixPathToLocalOS(ret, true, canon)), in_dir(in_d), out_dir(out_d);
+        QString out_dir = QDir(Option::output_dir).absoluteFilePath(out_d);
+        QString in_dir  = QDir(pwd).absoluteFilePath(in_d);
         {
-            if(out_dir.isNull() || QDir::isRelativePath(out_dir))
-                out_dir.prepend(Option::output_dir + "/");
-            else if(out_dir == ".")
-                out_dir = pwd;
-            if(in_dir.isEmpty() || QDir::isRelativePath(in_dir))
-                in_dir.prepend(pwd);
-            else if(in_dir == ".")
-                in_dir = pwd;
             QFileInfo in_fi(fileInfo(in_dir));
             if(in_fi.exists())
                 in_dir = in_fi.canonicalFilePath();
@@ -2753,6 +2746,7 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
                 out_dir = out_fi.canonicalFilePath();
         }
 
+        QString qfile(Option::fixPathToLocalOS(ret, true, canon));
         QFileInfo qfileinfo(fileInfo(qfile));
         if(out_dir != in_dir || !qfileinfo.isRelative()) {
             if(qfileinfo.isRelative()) {
@@ -2806,7 +2800,7 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
     }
     if(ret.isEmpty())
         ret = ".";
-    debug_msg(3, "Fixed[%d] %s :: to :: %s [%s::%s] [%s::%s]", fix, orig_file.toLatin1().constData(),
+    debug_msg(3, "Fixed[%d,%d] %s :: to :: %s [%s::%s] [%s::%s]", fix, canon, orig_file.toLatin1().constData(),
               ret.toLatin1().constData(), in_d.toLatin1().constData(), out_d.toLatin1().constData(),
               pwd.toLatin1().constData(), Option::output_dir.toLatin1().constData());
     cache->insert(cacheKey, ret);

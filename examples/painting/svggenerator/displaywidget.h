@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,39 +39,42 @@
 **
 ****************************************************************************/
 
-#ifndef QKBDUSB_QWS_H
-#define QKBDUSB_QWS_H
+#ifndef DISPLAYWIDGET_H
+#define DISPLAYWIDGET_H
 
-#include <QtGui/qkbdpc101_qws.h>
+#include <QColor>
+#include <QHash>
+#include <QWidget>
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
-
-#ifndef QT_NO_QWS_KEYBOARD
-
-#ifndef QT_NO_QWS_KBD_USB
-
-class QWSUsbKbPrivate;
-
-class QWSUsbKeyboardHandler : public QWSPC101KeyboardHandler
+//! [DisplayWidget class definition]
+class DisplayWidget : public QWidget
 {
+    Q_OBJECT
+
 public:
-    QWSUsbKeyboardHandler(const QString&);
-    virtual ~QWSUsbKeyboardHandler();
+    enum Shape { House = 0, Car = 1 };
+    enum Background { Sky = 0, Trees = 1, Road = 2 };
+
+    DisplayWidget(QWidget *parent = 0);
+    QColor color() const;
+    void paint(QPainter &painter);
+
+public slots:
+    void setBackground(Background background);
+    void setColor(const QColor &color);
+    void setShape(Shape shape);
+
+protected:
+    void paintEvent(QPaintEvent *event);
 
 private:
-    QWSUsbKbPrivate *d;
+    Background background;
+    QColor shapeColor;
+    Shape shape;
+    QHash<Shape,QPainterPath> shapeMap;
+    QPainterPath moon;
+    QPainterPath tree;
 };
+//! [DisplayWidget class definition]
 
-#endif // QT_NO_QWS_KBD_USB
-
-#endif // QT_NO_QWS_KEYBOARD
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QKBDUSB_QWS_H
+#endif

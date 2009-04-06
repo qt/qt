@@ -50,7 +50,7 @@ QDirectFBPaintDevice::~QDirectFBPaintDevice()
 }
 
 
-IDirectFBSurface *QDirectFBPaintDevice::directFbSurface() const
+IDirectFBSurface *QDirectFBPaintDevice::directFBSurface() const
 {
     return dfbSurface;
 }
@@ -64,9 +64,6 @@ void QDirectFBPaintDevice::lockDirectFB() {
 
     void *mem;
     int w, h;
-    int bpl;
-    DFBSurfacePixelFormat format;
-
     DFBResult result = dfbSurface->Lock(dfbSurface, DSLF_WRITE, &mem, &bpl);
     if (result != DFB_OK || !mem) {
         DirectFBError("QDirectFBPixmapData::buffer()", result);
@@ -74,10 +71,8 @@ void QDirectFBPaintDevice::lockDirectFB() {
     }
 
     dfbSurface->GetSize(dfbSurface, &w, &h);
-    dfbSurface->GetPixelFormat(dfbSurface, &format);
-
     lockedImage = new QImage(static_cast<uchar*>(mem), w, h, bpl,
-                             QDirectFBScreen::getImageFormat(format));
+                             QDirectFBScreen::getImageFormat(dfbSurface));
 }
 
 
@@ -103,19 +98,21 @@ void* QDirectFBPaintDevice::memory() const
 
 QImage::Format QDirectFBPaintDevice::format() const
 {
-    DFBSurfacePixelFormat dfbFormat;
-    dfbSurface->GetPixelFormat(dfbSurface, &dfbFormat);
-    return QDirectFBScreen::getImageFormat(dfbFormat);
+    return QDirectFBScreen::getImageFormat(dfbSurface);
 }
 
 
 int QDirectFBPaintDevice::bytesPerLine() const
 {
-    // Can only get the stride when we lock the surface
-    QDirectFBPaintDevice* that = const_cast<QDirectFBPaintDevice*>(this);
-    that->lockDirectFB();
-    Q_ASSERT(that->lockedImage);
-    return that->lockedImage->bytesPerLine();
+    if (bpl == -1) {
+        // Can only get the stride when we lock the surface
+        Q_ASSERT(!lockedImage);
+        QDirectFBPaintDevice* that = const_cast<QDirectFBPaintDevice*>(this);
+        that->lockDirectFB();
+        Q_ASSERT(bpl != -1);
+        that->unlockDirectFB();
+    }
+    return bpl;
 }
 
 
@@ -126,7 +123,6 @@ QSize QDirectFBPaintDevice::size() const
     return QSize(w, h);
 }
 
-
 int QDirectFBPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
     if (!dfbSurface)
@@ -135,40 +131,21 @@ int QDirectFBPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
     int w, h;
     dfbSurface->GetSize(dfbSurface, &w, &h);
 
-    int dpmX, dpmY; // Dots-per-meter ;-)
-
-    // Do some common calculations:
-    switch (metric) {
-    case QPaintDevice::PdmWidthMM:
-    case QPaintDevice::PdmPhysicalDpiX:
-    case QPaintDevice::PdmDpiX:
-        dpmX = (screen->deviceWidth() * 1000) / screen->physicalWidth();
-        break;
-    case QPaintDevice::PdmHeightMM:
-    case QPaintDevice::PdmPhysicalDpiY:
-    case QPaintDevice::PdmDpiY:
-        dpmY = (screen->deviceHeight() * 1000) / screen->physicalHeight();
-        break;
-    default:
-        break;
-    }
-
-    // Now use those calculations
     switch (metric) {
     case QPaintDevice::PdmWidth:
         return w;
     case QPaintDevice::PdmHeight:
         return h;
     case QPaintDevice::PdmWidthMM:
-        return (w * 1000) / dpmX;
+        return (w * 1000) / dotsPerMeterX();
     case QPaintDevice::PdmHeightMM:
-        return (h * 1000) / dpmY;
+        return (h * 1000) / dotsPerMeterY();
     case QPaintDevice::PdmPhysicalDpiX:
     case QPaintDevice::PdmDpiX:
-        return (dpmX * 254) / 10000; // 0.0254 meters-per-inch
+        return (dotsPerMeterX() * 254) / 10000; // 0.0254 meters-per-inch
     case QPaintDevice::PdmPhysicalDpiY:
     case QPaintDevice::PdmDpiY:
-        return (dpmY * 254) / 10000; // 0.0254 meters-per-inch
+        return (dotsPerMeterY() * 254) / 10000; // 0.0254 meters-per-inch
     case QPaintDevice::PdmDepth:
         DFBSurfacePixelFormat format;
         dfbSurface->GetPixelFormat(dfbSurface, &format);

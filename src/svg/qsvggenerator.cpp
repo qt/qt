@@ -516,7 +516,34 @@ public:
     \brief The QSvgGenerator class provides a paint device that is used to create SVG drawings.
     \reentrant
 
-    \sa QSvgRenderer, QSvgWidget
+    This paint device represents a Scalable Vector Graphics (SVG) drawing. Like QPrinter, it is
+    designed as a write-only device that generates output in a specific format.
+
+    To write an SVG file, you first need to configure the output by setting the \l fileName
+    or \l outputDevice properties. It is usually necessary to specify the size of the drawing
+    by setting the \l size property, and in some cases where the drawing will be included in
+    another, the \l viewBox property also needs to be set.
+
+    \snippet examples/painting/svggenerator/window.cpp configure SVG generator
+
+    Other meta-data can be specified by setting the \a title, \a description and \a resolution
+    properties.
+
+    As with other QPaintDevice subclasses, a QPainter object is used to paint onto an instance
+    of this class:
+
+    \snippet examples/painting/svggenerator/window.cpp begin painting
+    \dots
+    \snippet examples/painting/svggenerator/window.cpp end painting
+
+    Painting is performed in the same way as for any other paint device. However,
+    it is necessary to use the QPainter::begin() and \l{QPainter::}{end()} to
+    explicitly begin and end painting on the device.
+
+    The \l{SVG Generator Example} shows how the same painting commands can be used
+    for painting a widget and writing an SVG file.
+
+    \sa QSvgRenderer, QSvgWidget, {About SVG}
 */
 
 /*!
