@@ -61,7 +61,7 @@ protected:
     QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const;
 
 private:
-    qreal doLayout(const QRectF &geom, bool applyNewGeometry);
+    qreal doLayout(const QRectF &geom, bool applyNewGeometry) const;
     QSizeF minSize(const QSizeF &constraint) const;
     QSizeF prefSize() const;
     QSizeF maxSize() const;

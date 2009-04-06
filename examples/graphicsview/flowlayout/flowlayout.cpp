@@ -74,6 +74,7 @@ QGraphicsLayoutItem *FlowLayout::itemAt(int index) const
 void FlowLayout::removeAt(int index)
 {
     m_items.removeAt(index);
+    invalidate();
 }
 
 qreal FlowLayout::spacing(Qt::Orientation o) const
@@ -95,7 +96,7 @@ void FlowLayout::setGeometry(const QRectF &geom)
     doLayout(geom, true);
 }
 
-qreal FlowLayout::doLayout(const QRectF &geom, bool applyNewGeometry)
+qreal FlowLayout::doLayout(const QRectF &geom, bool applyNewGeometry) const
 {
     QPointF tl = geom.topLeft();
     qreal maxw = geom.width();
@@ -139,8 +140,7 @@ QSizeF FlowLayout::minSize(const QSizeF &constraint) const
     qreal left, top, right, bottom;
     getContentsMargins(&left, &top, &right, &bottom);
     if (constraint.width() > 0) {   // height for width
-        FlowLayout *that = const_cast<FlowLayout *>(this);
-        qreal height = that->doLayout(QRectF(QPointF(0,0), constraint), false);
+        qreal height = doLayout(QRectF(QPointF(0,0), constraint), false);
         size = QSizeF(constraint.width(), height);
     } else {
         QGraphicsLayoutItem *item;
