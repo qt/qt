@@ -8734,7 +8734,9 @@ void tst_QWidget::toplevelLineEditFocus()
 
     QLineEdit w;
     w.show();
+#ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&w);
+#endif
     QTest::qWait(200);
 
     QCOMPARE(QApplication::activeWindow(), &w);
