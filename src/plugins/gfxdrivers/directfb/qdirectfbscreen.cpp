@@ -384,16 +384,6 @@ DFBSurfacePixelFormat QDirectFBScreen::getSurfacePixelFormat(QImage::Format form
     };
 }
 
-static inline bool isPremultiplied(IDirectFBSurface *surface)
-{
-    Q_ASSERT(surface);
-    DFBSurfaceCapabilities caps;
-    const DFBResult result = surface->GetCapabilities(surface, &caps);
-    Q_ASSERT(result == DFB_OK);
-    Q_UNUSED(result);
-    return caps & DSCAPS_PREMULTIPLIED;
-}
-
 QImage::Format QDirectFBScreen::getImageFormat(IDirectFBSurface *surface)
 {
     DFBSurfacePixelFormat format;
