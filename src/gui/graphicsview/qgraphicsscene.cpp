@@ -454,7 +454,7 @@ void QGraphicsScenePrivate::addToIndex(QGraphicsItem *item)
         }
     } else if (indexMethod == QGraphicsScene::CustomIndex) {
         if (item->d_func()->index != -1) {
-            customIndex->insertItem(item, item->sceneBoundingRect());
+            customIndex->insertItem(item);
             foreach (QGraphicsItem *child, item->children())
                 child->addToIndex();
         }
@@ -470,7 +470,7 @@ void QGraphicsScenePrivate::removeFromIndex(QGraphicsItem *item)
         int index = item->d_func()->index;
         if (index != -1) {
             if (indexMethod == QGraphicsScene::CustomIndex)
-                customIndex->removeItem(item, item->sceneBoundingRect());
+                customIndex->removeItem(item);
             else
                 bspTree.removeItem(item, item->sceneBoundingRect());
             freeItemIndexes << index;
@@ -581,7 +581,7 @@ void QGraphicsScenePrivate::_q_updateIndex()
             if (indexMethod == QGraphicsScene::BspTreeIndex)
                 bspTree.insertItem(item, rect);
             if (indexMethod == QGraphicsScene::CustomIndex)
-                customIndex->insertItem(item,rect);
+                customIndex->insertItem(item);
 
             // If the item ignores view transformations, update our
             // largest-item-counter to ensure that the view can accurately
