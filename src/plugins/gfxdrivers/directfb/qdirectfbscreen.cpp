@@ -85,7 +85,7 @@ public:
 };
 
 QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen* screen)
-    : QWSGraphicsSystem(screen), dfb(0), dfbSurface(0), flipFlags(DSFLIP_BLIT)
+    : QWSGraphicsSystem(screen), dfb(0), dfbSurface(0), flipFlags(DSFLIP_NONE)
 #ifndef QT_NO_DIRECTFB_LAYER
     , dfbLayer(0)
 #endif
@@ -710,7 +710,7 @@ int QDirectFBScreen::depth(DFBSurfacePixelFormat format)
 
 void QDirectFBScreenPrivate::setFlipFlags(const QStringList &args)
 {
-    QRegExp flipRegexp(QLatin1String("^flip=([\\w,]+)$"));
+    QRegExp flipRegexp(QLatin1String("^flip=([\\w,]*)$"));
     int index = args.indexOf(flipRegexp);
     if (index >= 0) {
         const QStringList flips = flipRegexp.cap(1).split(QLatin1Char(','),
@@ -729,6 +729,8 @@ void QDirectFBScreenPrivate::setFlipFlags(const QStringList &args)
                 qWarning("QDirectFBScreen: Unknown flip argument: %s",
                          qPrintable(flip));
         }
+    } else {
+        flipFlags = DFBSurfaceFlipFlags(DSFLIP_BLIT);
     }
 }
 
@@ -994,19 +996,21 @@ void QDirectFBScreen::blank(bool on)
 QWSWindowSurface* QDirectFBScreen::createSurface(QWidget *widget) const
 {
 #ifdef QT_NO_DIRECTFB_WM
-    if (QApplication::type() == QApplication::GuiServer)
-        return new QDirectFBSurface(const_cast<QDirectFBScreen*>(this), widget);
-    else
+    if (QApplication::type() == QApplication::GuiServer) {
+        return new QDirectFBSurface(d_ptr->flipFlags, const_cast<QDirectFBScreen*>(this), widget);
+    } else {
         return QScreen::createSurface(widget);
+    }
 #else
-    return new QDirectFBSurface(const_cast<QDirectFBScreen*>(this), widget);
+    return new QDirectFBSurface(d_ptr->flipFlags, const_cast<QDirectFBScreen*>(this), widget);
 #endif
 }
 
 QWSWindowSurface* QDirectFBScreen::createSurface(const QString &key) const
 {
-    if (key == QLatin1String("directfb"))
-        return new QDirectFBSurface(const_cast<QDirectFBScreen*>(this));
+    if (key == QLatin1String("directfb")) {
+        return new QDirectFBSurface(d_ptr->flipFlags, const_cast<QDirectFBScreen*>(this));
+    }
     return QScreen::createSurface(key);
 }
 
