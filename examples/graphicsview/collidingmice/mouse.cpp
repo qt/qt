@@ -65,7 +65,6 @@ Mouse::Mouse()
       color(qrand() % 256, qrand() % 256, qrand() % 256)
 {
     rotate(qrand() % (360 * 16));
-    startTimer(1000 / 33);
 }
 //! [0]
 
@@ -123,8 +122,10 @@ void Mouse::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *
 //! [3]
 
 //! [4]
-void Mouse::timerEvent(QTimerEvent *)
+void Mouse::advance(int step)
 {
+    if (!step)
+        return;
 //! [4]
     // Don't move too far away
 //! [5]

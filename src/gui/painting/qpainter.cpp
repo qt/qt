@@ -2371,6 +2371,11 @@ void QPainter::setClipping(bool enable)
     Returns the currently set clip region. Note that the clip region
     is given in logical coordinates.
 
+    \warning QPainter does not store the combined clip explicitly as
+    this is handled by the underlying QPaintEngine, so the path is
+    recreated on demand and transformed to the current logical
+    coordinate system. This is potentially an expensive operation.
+
     \sa setClipRegion(), clipPath(), setClipping()
 */
 
@@ -2485,6 +2490,11 @@ extern QPainterPath qt_regionToPath(const QRegion &region);
 /*!
     Returns the currently clip as a path. Note that the clip path is
     given in logical coordinates.
+
+    \warning QPainter does not store the combined clip explicitly as
+    this is handled by the underlying QPaintEngine, so the path is
+    recreated on demand and transformed to the current logical
+    coordinate system. This is potentially an expensive operation.
 
     \sa setClipPath(), clipRegion(), setClipping()
 */
@@ -5155,9 +5165,6 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
 
     Q_D(QPainter);
 
-    if (!d->engine || pm.isNull())
-        return;
-
 #ifndef QT_NO_DEBUG
     qt_painter_thread_test(d->device->devType(), "drawPixmap()");
 #endif
@@ -5167,11 +5174,17 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
         return;
     }
 
+    if (!d->engine)
+        return;
+
     qreal x = p.x();
     qreal y = p.y();
 
     int w = pm.width();
     int h = pm.height();
+
+    if (w <= 0)
+        return;
 
     // Emulate opaque background for bitmaps
     if (d->state->bgMode == Qt::OpaqueMode && pm.isQBitmap()) {

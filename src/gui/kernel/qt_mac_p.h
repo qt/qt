@@ -233,6 +233,7 @@ extern QPaintDevice *qt_mac_safe_pdev; //qapplication_mac.cpp
 
 extern OSWindowRef qt_mac_window_for(const QWidget*); //qwidget_mac.mm
 extern OSViewRef qt_mac_nativeview_for(const QWidget *); //qwidget_mac.mm
+extern QPoint qt_mac_nativeMapFromParent(const QWidget *child, const QPoint &pt); //qwidget_mac.mm
 
 #ifdef check
 # undef check

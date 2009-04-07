@@ -94,14 +94,26 @@ bool QDirectFBSurface::isValid() const
 #ifndef QT_NO_DIRECTFB_WM
 void QDirectFBSurface::createWindow()
 {
+#ifdef QT_NO_DIRECTFB_LAYER
+#warning QT_NO_DIRECTFB_LAYER requires QT_NO_DIRECTFB_WM
+#else
     IDirectFBDisplayLayer *layer = screen->dfbDisplayLayer();
     if (!layer)
         qFatal("QDirectFBWindowSurface: Unable to get primary display layer!");
 
-    DFBWindowDescription  description;
-    description.caps = DFBWindowCapabilities(DWCAPS_NODECORATION |
-                                             DWCAPS_ALPHACHANNEL);
-    description.flags = DWDESC_CAPS;
+    DFBWindowDescription description;
+    description.caps = DFBWindowCapabilities(DWCAPS_NODECORATION);
+    description.flags = DFBWindowDescriptionFlags(DWDESC_CAPS
+                                                  |DWDESC_SURFACE_CAPS
+                                                  |DWDESC_PIXELFORMAT);
+
+    description.surface_caps = DSCAPS_NONE;
+    if (screen->preferVideoOnly())
+        description.surface_caps = DFBSurfaceCapabilities(description.surface_caps|DSCAPS_VIDEOONLY);
+    const QImage::Format format = screen->pixelFormat();
+    description.pixelformat = QDirectFBScreen::getSurfacePixelFormat(format);
+    if (QDirectFBScreen::isPremultiplied(format))
+        description.surface_caps = DFBSurfaceCapabilities(DSCAPS_PREMULTIPLIED|description.caps);
 
     DFBResult result = layer->CreateWindow(layer, &description, &dfbWindow);
     if (result != DFB_OK)
@@ -111,6 +123,8 @@ void QDirectFBSurface::createWindow()
         dfbSurface->Release(dfbSurface);
 
     dfbWindow->GetSurface(dfbWindow, &dfbSurface);
+    forceRaster = (format == QImage::Format_RGB32);
+#endif
 }
 #endif // QT_NO_DIRECTFB_WM
 
@@ -143,6 +157,7 @@ void QDirectFBSurface::setGeometry(const QRect &rect, const QRegion &mask)
             IDirectFBSurface *primarySurface = screen->dfbSurface();
             Q_ASSERT(primarySurface);
             result = primarySurface->GetSubSurface(primarySurface, &r, &dfbSurface);
+            forceRaster = (dfbSurface && QDirectFBScreen::getImageFormat(dfbSurface) == QImage::Format_RGB32);
         } else {
 #ifdef QT_NO_DIRECTFB_WM
             if (isResize) {
@@ -162,8 +177,9 @@ void QDirectFBSurface::setGeometry(const QRect &rect, const QRegion &mask)
                 description.width = rect.width();
                 description.height = rect.height();
                 QDirectFBScreen::initSurfaceDescriptionPixelFormat(&description,
-                                                                   QDirectFBScreen::instance()->pixelFormat());
-                dfbSurface = QDirectFBScreen::instance()->createDFBSurface(&description, false);
+                                                                   screen->pixelFormat());
+                dfbSurface = screen->createDFBSurface(&description, false);
+                forceRaster = (dfbSurface && QDirectFBScreen::getImageFormat(dfbSurface) == QImage::Format_RGB32);
             } else {
                 Q_ASSERT(dfbSurface);
             }
@@ -250,7 +266,7 @@ bool QDirectFBSurface::scroll(const QRegion &region, int dx, int dy)
     dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
     dfbSurface->BatchBlit(dfbSurface, dfbSurface,
                           dfbRects.data(), dfbPoints.data(), n);
-
+    dfbSurface->ReleaseSource(dfbSurface);
     return true;
 }
 
@@ -318,6 +334,12 @@ inline bool isWidgetOpaque(const QWidget *w)
 void QDirectFBSurface::flush(QWidget *widget, const QRegion &region,
                              const QPoint &offset)
 {
+    Q_UNUSED(widget);
+#ifdef QT_NO_DIRECTFB_WM
+    Q_UNUSED(region);
+    Q_UNUSED(offset);
+#endif
+
     QWidget *win = window();
 
     // hw: make sure opacity information is updated before compositing

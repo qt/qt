@@ -3956,7 +3956,25 @@ void tst_QGraphicsItem::itemChange()
         tester.itemSceneChangeTargetScene = 0;
         tester.itemChangeReturnValue = QVariant();
         scene.removeItem(&tester);
+        ++changeCount; // ItemSceneChange
+        ++changeCount; // ItemSceneHasChanged
         QCOMPARE(tester.scene(), (QGraphicsScene *)0);
+    }
+    {
+        // ItemToolTipChange/ItemToolTipHasChanged
+        const QString toolTip(QLatin1String("I'm soo cool"));
+        const QString overridenToolTip(QLatin1String("No, you are not soo cool"));
+        tester.itemChangeReturnValue = overridenToolTip;
+        tester.setToolTip(toolTip);
+        ++changeCount; // ItemToolTipChange
+        ++changeCount; // ItemToolTipHasChanged
+        QCOMPARE(tester.changes.size(), changeCount);
+        QCOMPARE(tester.changes.at(changeCount - 2), QGraphicsItem::ItemToolTipChange);
+        QCOMPARE(tester.values.at(changeCount - 2).toString(), toolTip);
+        QCOMPARE(tester.changes.at(changeCount - 1), QGraphicsItem::ItemToolTipHasChanged);
+        QCOMPARE(tester.values.at(changeCount - 1).toString(), overridenToolTip);
+        QCOMPARE(tester.toolTip(), overridenToolTip);
+        tester.itemChangeReturnValue = QVariant();
     }
 }
 

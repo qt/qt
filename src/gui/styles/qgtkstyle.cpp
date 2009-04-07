@@ -2634,7 +2634,7 @@ void QGtkStyle::drawControl(ControlElement element,
             QColor disabledTextColor = QColor(gdkDText.red>>8, gdkDText.green>>8, gdkDText.blue>>8);
             if (resolve_mask & (1 << QPalette::ButtonText)) {
                 textColor = option->palette.buttonText().color();
-                disabledTextColor = option->palette.brush(QPalette::Disabled, QPalette::ButtonText);;
+                disabledTextColor = option->palette.brush(QPalette::Disabled, QPalette::ButtonText).color();
             }
 
             QColor highlightedTextColor = QColor(gdkHText.red>>8, gdkHText.green>>8, gdkHText.blue>>8);

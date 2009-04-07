@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,54 +39,73 @@
 **
 ****************************************************************************/
 
-#include "mouse.h"
+#ifndef QHTTPNETWORKHEADER_H
+#define QHTTPNETWORKHEADER_H
 
-#include <QtGui>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of the Network Access API.  This header file may change from
+// version to version without notice, or even be removed.
+//
+// We mean it.
+//
+#ifndef QT_NO_HTTP
 
-#include <math.h>
+#include <qshareddata.h>
+#include <qurl.h>
 
-static const int MouseCount = 7;
+QT_BEGIN_NAMESPACE
 
-//! [0]
-int main(int argc, char **argv)
+class Q_AUTOTEST_EXPORT QHttpNetworkHeader
 {
-    QApplication app(argc, argv);
-    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
-//! [0]
+public:
+    virtual ~QHttpNetworkHeader() {};
+    virtual QUrl url() const = 0;
+    virtual void setUrl(const QUrl &url) = 0;
 
-//! [1]
-    QGraphicsScene scene;
-    scene.setSceneRect(-300, -300, 600, 600);
-//! [1] //! [2]
-    scene.setItemIndexMethod(QGraphicsScene::NoIndex);
-//! [2]
+    virtual int majorVersion() const = 0;
+    virtual int minorVersion() const = 0;
 
-//! [3]
-    for (int i = 0; i < MouseCount; ++i) {
-        Mouse *mouse = new Mouse;
-        mouse->setPos(::sin((i * 6.28) / MouseCount) * 200,
-                      ::cos((i * 6.28) / MouseCount) * 200);
-        scene.addItem(mouse);
-    }
-//! [3]
+    virtual qint64 contentLength() const = 0;
+    virtual void setContentLength(qint64 length) = 0;
 
-//! [4]
-    QGraphicsView view(&scene);
-    view.setRenderHint(QPainter::Antialiasing);
-    view.setBackgroundBrush(QPixmap(":/images/cheese.jpg"));
-//! [4] //! [5]
-    view.setCacheMode(QGraphicsView::CacheBackground);
-    view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    view.setDragMode(QGraphicsView::ScrollHandDrag);
-//! [5] //! [6]
-    view.setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Colliding Mice"));
-    view.resize(400, 300);
-    view.show();
+    virtual QList<QPair<QByteArray, QByteArray> > header() const = 0;
+    virtual QByteArray headerField(const QByteArray &name, const QByteArray &defaultValue = QByteArray()) const = 0;
+    virtual void setHeaderField(const QByteArray &name, const QByteArray &data) = 0;
+};
 
-    QTimer timer;
-    QObject::connect(&timer, SIGNAL(timeout()), &scene, SLOT(advance()));
-    timer.start(1000 / 33);
+class QHttpNetworkHeaderPrivate : public QSharedData
+{
+public:
+    QUrl url;
+    QList<QPair<QByteArray, QByteArray> > fields;
 
-    return app.exec();
-}
-//! [6]
+    QHttpNetworkHeaderPrivate(const QUrl &newUrl = QUrl());
+    QHttpNetworkHeaderPrivate(const QHttpNetworkHeaderPrivate &other);
+    qint64 contentLength() const;
+    void setContentLength(qint64 length);
+
+    QByteArray headerField(const QByteArray &name, const QByteArray &defaultValue = QByteArray()) const;
+    QList<QByteArray> headerFieldValues(const QByteArray &name) const;
+    void setHeaderField(const QByteArray &name, const QByteArray &data);
+    bool operator==(const QHttpNetworkHeaderPrivate &other) const;
+
+};
+
+
+QT_END_NAMESPACE
+
+
+#endif // QT_NO_HTTP
+
+
+#endif // QHTTPNETWORKHEADER_H
+
+
+
+
+
+

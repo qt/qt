@@ -66,6 +66,7 @@
 #ifdef Q_WS_MAC
 # include "qt_mac_p.h"
 # include "qt_cocoa_helpers_mac_p.h"
+# include "qmainwindow.h"
 #endif
 #if defined(Q_WS_QWS)
 # include "qwsdisplay_qws.h"
@@ -8979,17 +8980,36 @@ QWidget *QWidget::childAt(const QPoint &p) const
 QWidget *QWidgetPrivate::childAt_helper(const QPoint &p, bool ignoreChildrenInDestructor) const
 {
     Q_Q(const QWidget);
-    if (!q->rect().contains(p))
+#ifdef Q_WS_MAC
+    bool includeFrame = q->isWindow() && qobject_cast<const QMainWindow *>(q)
+                        && static_cast<const QMainWindow *>(q)->unifiedTitleAndToolBarOnMac();
+#endif
+
+    if (
+#ifdef Q_WS_MAC
+            !includeFrame &&
+#endif
+            !q->rect().contains(p))
         return 0;
+
     for (int i = children.size(); i > 0 ;) {
         --i;
         QWidget *w = qobject_cast<QWidget *>(children.at(i));
-        if (w && !w->isWindow() && !w->isHidden() && w->geometry().contains(p)) {
+        if (w && !w->isWindow() && !w->isHidden()
+                && (w->geometry().contains(p)
+#ifdef Q_WS_MAC
+                    || (includeFrame && w->geometry().contains(qt_mac_nativeMapFromParent(w, p)))
+#endif
+               )) {
             if (ignoreChildrenInDestructor && w->data->in_destructor)
                 continue;
             if (w->testAttribute(Qt::WA_TransparentForMouseEvents))
                 continue;
             QPoint childPoint = w->mapFromParent(p);
+#ifdef Q_WS_MAC
+            if (includeFrame && !w->geometry().contains(p))
+                childPoint = qt_mac_nativeMapFromParent(w, p);
+#endif
             if (QWidget *t = w->d_func()->childAt_helper(childPoint, ignoreChildrenInDestructor))
                 return t;
             // if WMouseNoMask is set the widget mask is ignored, if
@@ -9430,11 +9450,13 @@ void QWidget::repaint(const QRect &rect)
     if (!isVisible() || !updatesEnabled() || rect.isEmpty())
         return;
 
-    QTLWExtra *tlwExtra = !d->paintOnScreen() ? window()->d_func()->maybeTopData() : 0;
-    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
-        tlwExtra->inRepaint = true;
-        tlwExtra->backingStore->markDirty(rect, this, true);
-        tlwExtra->inRepaint = false;
+    if (hasBackingStoreSupport()) {
+        QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
+        if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
+            tlwExtra->inRepaint = true;
+            tlwExtra->backingStore->markDirty(rect, this, true);
+            tlwExtra->inRepaint = false;
+        }
     } else {
         d->repaint_sys(rect);
     }
@@ -9457,11 +9479,13 @@ void QWidget::repaint(const QRegion &rgn)
     if (!isVisible() || !updatesEnabled() || rgn.isEmpty())
         return;
 
-    QTLWExtra *tlwExtra = !d->paintOnScreen() ? window()->d_func()->maybeTopData() : 0;
-    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
-        tlwExtra->inRepaint = true;
-        tlwExtra->backingStore->markDirty(rgn, this, true);
-        tlwExtra->inRepaint = false;
+    if (hasBackingStoreSupport()) {
+        QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
+        if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
+            tlwExtra->inRepaint = true;
+            tlwExtra->backingStore->markDirty(rgn, this, true);
+            tlwExtra->inRepaint = false;
+        }
     } else {
         d->repaint_sys(rgn);
     }
