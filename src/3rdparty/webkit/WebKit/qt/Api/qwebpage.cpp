@@ -896,14 +896,14 @@ void QWebPagePrivate::inputMethodEvent(QInputMethodEvent *ev)
         return;
     }
 
-    if (!ev->preeditString().isEmpty()) {
+    if (!ev->commitString().isEmpty())
+        editor->confirmComposition(ev->commitString());
+    else {
         QString preedit = ev->preeditString();
         // ### FIXME: use the provided QTextCharFormat (use color at least)
         Vector<CompositionUnderline> underlines;
         underlines.append(CompositionUnderline(0, preedit.length(), Color(0,0,0), false));
         editor->setComposition(preedit, underlines, preedit.length(), 0);
-    } else if (!ev->commitString().isEmpty()) {
-        editor->confirmComposition(ev->commitString());
     }
     ev->accept();
 }
@@ -1095,7 +1095,7 @@ QVariant QWebPage::inputMethodQuery(Qt::InputMethodQuery property) const
     This enum describes the types of action which can be performed on the web page.
 
     Actions only have an effect when they are applicable. The availability of
-    actions can be be determined by checking \l{QAction::}{enabled()} on the
+    actions can be be determined by checking \l{QAction::}{isEnabled()} on the
     action returned by \l{QWebPage::}{action()}.
 
     One method of enabling the text editing, cursor movement, and text selection actions

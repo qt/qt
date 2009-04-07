@@ -456,3 +456,11 @@ class MyClass : public QObject
 //! [45]
   QWidget w = QWidget();
 //! [45]
+
+//! [46]
+	// Instead of comparing with 0.0
+		qFuzzyCompare(0.0,1.0e-200); // This will return false
+	// Compare adding 1 to both values will fix the problem
+		qFuzzyCompare(1 + 0.0, 1 + 1.0e-200); // This will return true
+//! [46]
+

@@ -829,8 +829,11 @@ bool QApplicationPrivate::x11_apply_settings()
                          QColor(strlist[i]));
     }
 
-    if (groupCount == QPalette::NColorGroups)
-        QApplicationPrivate::setSystemPalette(pal);
+    // ### Fix properly for 4.6
+    if (!(QApplicationPrivate::app_style && QApplicationPrivate::app_style->inherits("QGtkStyle"))) {
+        if (groupCount == QPalette::NColorGroups)
+            QApplicationPrivate::setSystemPalette(pal);
+    }
 
     int kdeSessionVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
  
@@ -887,11 +890,15 @@ bool QApplicationPrivate::x11_apply_settings()
         }
     }
 
+    static QString currentStyleName = stylename;
     if (QCoreApplication::startingUp()) {
         if (!stylename.isEmpty() && !QApplicationPrivate::styleOverride)
             QApplicationPrivate::styleOverride = new QString(stylename);
     } else {
-        QApplication::setStyle(stylename);
+        if (currentStyleName != stylename) {
+            currentStyleName = stylename;
+            QApplication::setStyle(stylename);
+        }
     }
 
     int num =

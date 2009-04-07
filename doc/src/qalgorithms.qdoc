@@ -490,7 +490,10 @@ of \a value in the variable passed as a reference in argument \a n.
 
     \overload
 
-    This is the same as qLowerBound(\a{container}.begin(), \a{container}.end(), value);
+    For read-only iteration over containers, this function is broadly equivalent to
+    qLowerBound(\a{container}.begin(), \a{container}.end(), value). However, since it
+    returns a const iterator, you cannot use it to modify the container; for example,
+    to insert items.
 */
 
 /*! \fn RandomAccessIterator qUpperBound(RandomAccessIterator begin, RandomAccessIterator end, const T &value)

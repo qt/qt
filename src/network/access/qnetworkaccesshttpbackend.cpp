@@ -527,8 +527,10 @@ void QNetworkAccessHttpBackend::postRequest()
     foreach (const QByteArray &header, headers)
         httpRequest.setHeaderField(header, request().rawHeader(header));
 
-    if (loadedFromCache)
+    if (loadedFromCache) {
+        QNetworkAccessBackend::finished();
         return;    // no need to send the request! :)
+    }
 
     httpReply = http->sendRequest(httpRequest);
     httpReply->setParent(this);
@@ -767,8 +769,12 @@ void QNetworkAccessHttpBackend::replyHeaderChanged()
 
     for (; it != end; ++it) {
         QByteArray value = rawHeader(it->first);
-        if (!value.isEmpty())
-            value += ", ";
+        if (!value.isEmpty()) {
+            if (it->first.toLower() == "set-cookie")
+                value += "\n";
+            else
+                value += ", ";
+        }
         value += it->second;
         setRawHeader(it->first, value);
     }
@@ -886,8 +892,6 @@ bool QNetworkAccessHttpBackend::sendCacheContents(const QNetworkCacheMetaData &m
     if (status < 100)
         status = 200;           // fake it
 
-    checkForRedirect(status);
-
     setAttribute(QNetworkRequest::HttpStatusCodeAttribute, status);
     setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, attributes.value(QNetworkRequest::HttpReasonPhraseAttribute));
     setAttribute(QNetworkRequest::SourceIsFromCacheAttribute, true);
@@ -897,6 +901,8 @@ bool QNetworkAccessHttpBackend::sendCacheContents(const QNetworkCacheMetaData &m
                                                        end = rawHeaders.constEnd();
     for ( ; it != end; ++it)
         setRawHeader(it->first, it->second);
+
+    checkForRedirect(status);
 
     writeDownstreamData(contents);
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
@@ -951,6 +957,7 @@ QNetworkCacheMetaData QNetworkAccessHttpBackend::fetchCacheMetaData(const QNetwo
 
     QList<QByteArray> newHeaders = rawHeaderList();
     foreach (QByteArray header, newHeaders) {
+        QByteArray originalHeader = header;
         header = header.toLower();
         bool hop_by_hop =
             (header == "connection"
@@ -974,19 +981,32 @@ QNetworkCacheMetaData QNetworkAccessHttpBackend::fetchCacheMetaData(const QNetwo
                 continue;
         }
 
+        it = cacheHeaders.findRawHeader(header);
+        if (it != cacheHeaders.rawHeaders.constEnd()) {
+            // Match the behavior of Firefox and assume Cache-Control: "no-transform"
+            if (header == "content-encoding"
+                || header == "content-range"
+                || header == "content-type")
+                continue;
+
+            // For MS servers that send "Content-Length: 0" on 304 responses
+            // ignore this too
+            if (header == "content-length")
+                continue;
+        }
+
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
         QByteArray n = rawHeader(header);
         QByteArray o;
-        it = cacheHeaders.findRawHeader(header);
         if (it != cacheHeaders.rawHeaders.constEnd())
             o = (*it).second;
-        if (n != o && header != "Date") {
+        if (n != o && header != "date") {
             qDebug() << "replacing" << header;
             qDebug() << "new" << n;
             qDebug() << "old" << o;
         }
 #endif
-        cacheHeaders.setRawHeader(header, rawHeader(header));
+        cacheHeaders.setRawHeader(originalHeader, rawHeader(header));
     }
     metaData.setRawHeaders(cacheHeaders.rawHeaders);
 

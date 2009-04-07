@@ -849,7 +849,7 @@ void QPrinter::setPrinterName(const QString &name)
   Returns true if the printer currently selected is a valid printer
   in the system, or a pure PDF/PostScript printer; otherwise returns false.
 
-  To detect other failures check the output of QPainter::begin() or QPainter::nextPage().
+  To detect other failures check the output of QPainter::begin() or QPrinter::newPage().
 
   \snippet doc/src/snippets/printing-qprinter/errors.cpp 0
 

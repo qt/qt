@@ -4937,10 +4937,12 @@ int QImage::dotsPerMeterY() const
     meter, to \a x.
 
     Together with dotsPerMeterY(), this number defines the intended
-    scale and aspect ratio of the image.
+    scale and aspect ratio of the image, and determines the scale
+    at which QPainter will draw graphics on the image. It does not
+    change the scale or aspect ratio of the image when it is rendered
+    on other paint devices.
 
-    \sa dotsPerMeterX(), {QImage#Image Information}{Image
-    Information}
+    \sa dotsPerMeterX(), {QImage#Image Information}{Image Information}
 */
 void QImage::setDotsPerMeterX(int x)
 {
@@ -4957,10 +4959,12 @@ void QImage::setDotsPerMeterX(int x)
     to \a y.
 
     Together with dotsPerMeterX(), this number defines the intended
-    scale and aspect ratio of the image.
+    scale and aspect ratio of the image, and determines the scale
+    at which QPainter will draw graphics on the image. It does not
+    change the scale or aspect ratio of the image when it is rendered
+    on other paint devices.
 
-    \sa dotsPerMeterY(), {QImage#Image Information}{Image
-    Information}
+    \sa dotsPerMeterY(), {QImage#Image Information}{Image Information}
 */
 void QImage::setDotsPerMeterY(int y)
 {

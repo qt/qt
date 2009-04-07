@@ -56,7 +56,7 @@ class QDirectFBPaintDevice : public QCustomRasterPaintDevice
 public:
     ~QDirectFBPaintDevice();
 
-    IDirectFBSurface *directFbSurface() const;
+    IDirectFBSurface *directFBSurface() const;
 
     void lockDirectFB();
     void unlockDirectFB();
@@ -77,6 +77,15 @@ protected:
           lockedImage(0),
           screen(scr),
           forceRaster(false) {}
+
+    inline int dotsPerMeterX() const
+    {
+        return (screen->deviceWidth() * 1000) / screen->physicalWidth();
+    }
+    inline int dotsPerMeterY() const
+    {
+        return (screen->deviceHeight() * 1000) / screen->physicalHeight();
+    }
 
     IDirectFBSurface *dfbSurface;
     QImage *lockedImage;

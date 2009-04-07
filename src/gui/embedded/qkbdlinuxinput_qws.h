@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,42 +39,41 @@
 **
 ****************************************************************************/
 
-#ifndef LINUXISKBDHANDLER_H
-#define LINUXISKBDHANDLER_H
+#ifndef QKBDLINUXINPUT_QWS_H
+#define QKBDLINUXINPUT_QWS_H
 
-#include <QObject>
-#include <QWSKeyboardHandler>
+#include <QtGui/qkbd_qws.h>
 
-class QSocketNotifier;
-class LinuxInputSubsystemKbdHandler : public QObject, public QWSKeyboardHandler {
-    Q_OBJECT
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
+
+#ifndef QT_NO_QWS_KEYBOARD
+
+#ifndef QT_NO_QWS_KBD_LINUXINPUT
+
+class QWSLinuxInputKbPrivate;
+
+class QWSLinuxInputKeyboardHandler : public QWSKeyboardHandler
+{
 public:
-    LinuxInputSubsystemKbdHandler(const QString &device = QString("/dev/input/event0"));
-    ~LinuxInputSubsystemKbdHandler();
+    QWSLinuxInputKeyboardHandler(const QString&);
+    virtual ~QWSLinuxInputKeyboardHandler();
 
-    struct keytable_s {
-	int code;
-	int unicode;
-	int keycode;
-    };
-
-    struct keymap_s {
-	int unicode;
-	int keycode;
-    };
+    virtual bool filterInputEvent(quint16 &input_code, qint32 &input_value);
 
 private:
-    void initmap();
-
-    QSocketNotifier *m_notify;
-    int  kbdFD;
-    bool shift;
-
-    static struct keytable_s keytable[];
-    static struct keymap_s keymap[];
-
-private Q_SLOTS:
-    void readKbdData();
+    QWSLinuxInputKbPrivate *d;
 };
 
-#endif // LINUXISKBDHANDLER_H
+#endif // QT_NO_QWS_KBD_LINUXINPUT
+
+#endif // QT_NO_QWS_KEYBOARD
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QKBDLINUXINPUT_QWS_H

@@ -43,7 +43,6 @@
 #include "qtransportauth_qws.h"
 #include "qtransportauth_qws_p.h"
 
-#include <sys/uio.h>
 #include <unistd.h>
 
 // #define QWSCOMMAND_DEBUG 1 // Uncomment to debug client/server communication

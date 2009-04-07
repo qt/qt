@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,49 +39,10 @@
 **
 ****************************************************************************/
 
-#include "linuxiskbddriverplugin.h"
-#include "linuxiskbdhandler.h"
+#include <QtGui/qgraphicswidget.h>
 
-#include <qdebug.h>
-#if 1
-#define qLog(x) qDebug()
-#else
-#define qLog(x) while (0) qDebug()
-#endif
-
-LinuxInputSubsystemKbdDriverPlugin::LinuxInputSubsystemKbdDriverPlugin( QObject *parent )
-    : QKbdDriverPlugin( parent )
-{
-}
-
-LinuxInputSubsystemKbdDriverPlugin::~LinuxInputSubsystemKbdDriverPlugin()
-{
-}
-
-QWSKeyboardHandler* LinuxInputSubsystemKbdDriverPlugin::create(const QString &driver, const QString &device)
-{
-    if (device.isEmpty()) {
-	return create( driver );
-    }
-    if( driver.toLower() == "linuxis" || driver.toLower() == "linuxiskbdhandler" ) {
-        qLog(Input) << "Before call LinuxInputSubsystemKbdHandler(" << device << ")";
-        return new LinuxInputSubsystemKbdHandler(device);
-    }
-    return 0;
-}
-
-QWSKeyboardHandler* LinuxInputSubsystemKbdDriverPlugin::create( const QString &driver)
-{
-    if( driver.toLower() == "linuxis" || driver.toLower() == "linuxiskbdhandler" ) {
-        qLog(Input) << "Before call LinuxInputSubsystemKbdHandler()";
-        return new LinuxInputSubsystemKbdHandler();
-    }
-    return 0;
-}
-
-QStringList LinuxInputSubsystemKbdDriverPlugin::keys() const
-{
-    return QStringList() << "linuxis" << "linuxiskbdhandler";
-}
-
-Q_EXPORT_PLUGIN2(qwslinuxiskbdhandler, LinuxInputSubsystemKbdDriverPlugin)
+class Window : public QGraphicsWidget {
+    Q_OBJECT
+public:
+    Window();
+};

@@ -60,6 +60,8 @@
 #include <QTextCodec>
 #include <QProcess>
 
+#include "../network-settings.h"
+
 static const char *TestFileName = "testfile";
 
 Q_DECLARE_METATYPE(qlonglong)
@@ -1229,7 +1231,7 @@ void tst_QTextStream::stillOpenWhenAtEnd()
     QSKIP("Qt/CE: Cannot test network on emulator", SkipAll);
 #endif
     QTcpSocket socket;
-    socket.connectToHost("imap.troll.no", 143);
+    socket.connectToHost(QtNetworkSettings::serverName(), 143);
     QVERIFY(socket.waitForReadyRead(5000));
 
     QTextStream stream2(&socket);

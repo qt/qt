@@ -235,28 +235,6 @@ QWindowSurface *QWidgetPrivate::createDefaultWindowSurface()
 
 /*!
     \internal
-    This is an internal function, you should never call this.
-
-    This function is called to focus associated input context. The
-    code intends to eliminate duplicate focus for the context even if
-    the context is shared between widgets
-
-    \sa QInputContext::setFocus()
- */
-void QWidgetPrivate::focusInputContext()
-{
-#ifndef QT_NO_IM
-    Q_Q(QWidget);
-    QInputContext *qic = q->inputContext();
-    if (qic) {
-        if(qic->focusWidget() != q)
-            qic->setFocusWidget(q);
-    }
-#endif // QT_NO_IM
-}
-
-/*!
-    \internal
 */
 void QWidgetPrivate::scrollChildren(int dx, int dy)
 {
@@ -330,20 +308,24 @@ void QWidget::setInputContext(QInputContext *context)
 
 
 /*!
+    \obsolete
+
     This function can be called on the widget that currently has focus
     to reset the input method operating on it.
 
-    \sa QInputContext, QInputContext::reset()
+    This function is providing for convenience, instead you should use
+    \l{QInputContext::}{reset()} on the input context that was
+    returned by inputContext().
+
+    \sa QInputContext, inputContext(), QInputContext::reset()
 */
 void QWidget::resetInputContext()
 {
     if (!hasFocus())
         return;
 #ifndef QT_NO_IM
-    if (!d_func()->ic)
-        return;
     QInputContext *qic = this->inputContext();
-    if( qic )
+    if(qic)
         qic->reset();
 #endif // QT_NO_IM
 }
@@ -2967,10 +2949,15 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 #if defined(Q_WS_MAC)
     setEnabled_helper_sys(enable);
 #endif
-#if defined (Q_WS_WIN)
-    if (q->hasFocus())
-        QInputContextPrivate::updateImeStatus(q, true);
-#endif
+    if (q->testAttribute(Qt::WA_InputMethodEnabled) && q->hasFocus()) {
+        QInputContext *qic = inputContext();
+        if (enable) {
+            qic->setFocusWidget(q);
+        } else {
+            qic->reset();
+            qic->setFocusWidget(0);
+        }
+    }
     QEvent e(QEvent::EnabledChange);
     QApplication::sendEvent(q, &e);
 #ifdef QT3_SUPPORT
@@ -7644,16 +7631,10 @@ bool QWidget::event(QEvent *event)
         }
         break;
     case QEvent::FocusIn:
-#if defined(Q_WS_WIN)
-        QInputContextPrivate::updateImeStatus(this, true);
-#endif
         focusInEvent((QFocusEvent*)event);
         break;
 
     case QEvent::FocusOut:
-#if defined(Q_WS_WIN)
-        QInputContextPrivate::updateImeStatus(this, false);
-#endif
         focusOutEvent((QFocusEvent*)event);
         break;
 
@@ -9818,7 +9799,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             parentWidget()->d_func()->enforceNativeChildren();
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
-        if (ic)
+        if (ic && isEnabled())
             ic->setFocusWidget(this);
         break;
     }
@@ -9849,10 +9830,6 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 #endif
         break;
     case Qt::WA_InputMethodEnabled: {
-#if defined(Q_WS_WIN) || (defined(Q_WS_QWS) && !defined(QT_NO_QWS_INPUTMETHODS))
-        if (hasFocus())
-            QInputContextPrivate::updateImeStatus(this, true);
-#endif
         QInputContext *ic = d->ic;
         if (!ic) {
             // implicitly create input context only if we have a focus
@@ -9860,7 +9837,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
                 ic = d->inputContext();
         }
         if (ic) {
-            if (on && hasFocus() && ic->focusWidget() != this) {
+            if (on && hasFocus() && ic->focusWidget() != this && isEnabled()) {
                 ic->setFocusWidget(this);
             } else if (!on && ic->focusWidget() == this) {
                 ic->reset();

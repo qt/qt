@@ -89,6 +89,8 @@ embedded {
 	HEADERS += embedded/qscreendriverplugin_qws.h \
 		    embedded/qscreendriverfactory_qws.h \
 		    embedded/qkbd_qws.h \
+		    embedded/qkbd_qws_p.h \
+		    embedded/qkbd_defaultmap_qws_p.h \
 		    embedded/qkbddriverplugin_qws.h \
 		    embedded/qkbddriverfactory_qws.h \
 		    embedded/qmouse_qws.h \
@@ -152,27 +154,16 @@ embedded {
 	contains( kbd-drivers, tty ) {
 		HEADERS +=embedded/qkbdtty_qws.h
 		SOURCES +=embedded/qkbdtty_qws.cpp
-		!contains( kbd-drivers, pc101 ) {
-		    kbd-drivers += pc101
-		}
 	}
 
-	contains( kbd-drivers, usb ) {
-		HEADERS +=embedded/qkbdusb_qws.h
-		SOURCES +=embedded/qkbdusb_qws.cpp
-		!contains( kbd-drivers, pc101 ) {
-		    kbd-drivers += pc101
-		}
+	contains( kbd-drivers, linuxinput ) {
+		HEADERS +=embedded/qkbdlinuxinput_qws.h
+		SOURCES +=embedded/qkbdlinuxinput_qws.cpp
 	}
 
 	contains( kbd-drivers, um ) {
 		HEADERS +=embedded/qkbdum_qws.h
 		SOURCES +=embedded/qkbdum_qws.cpp
-	}
-
-	contains( kbd-drivers, pc101 ) {
-		HEADERS +=embedded/qkbdpc101_qws.h
-		SOURCES +=embedded/qkbdpc101_qws.cpp
 	}
 
 	contains( kbd-drivers, yopy ) {

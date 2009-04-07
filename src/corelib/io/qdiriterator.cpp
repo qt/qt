@@ -116,7 +116,9 @@ public:
     QAbstractFileEngine *engine;
     QStack<QAbstractFileEngineIterator *> fileEngineIterators;
     QString path;
-    QFileInfo fileInfo;
+    QFileInfo nextFileInfo;
+    //This fileinfo is the current that we will return from the public API
+    QFileInfo currentFileInfo;
     QString currentFilePath;
     QDirIterator::IteratorFlags iteratorFlags;
     QDir::Filters filters;
@@ -140,8 +142,8 @@ QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList 
     this->filters = filters;
     this->nameFilters = nameFilters;
 
-    fileInfo.setFile(path);
-    pushSubDirectory(fileInfo.isSymLink() ? fileInfo.canonicalFilePath() : path,
+    nextFileInfo.setFile(path);
+    pushSubDirectory(nextFileInfo.isSymLink() ? nextFileInfo.canonicalFilePath() : path,
                      nameFilters, filters);
 }
 
@@ -160,12 +162,12 @@ void QDirIteratorPrivate::pushSubDirectory(const QString &path, const QStringLis
                                            QDir::Filters filters)
 {
     if (iteratorFlags & QDirIterator::FollowSymlinks) {
-        if (fileInfo.filePath() != path)
-            fileInfo.setFile(path);
-        if (fileInfo.isSymLink()) {
-            visitedLinks << fileInfo.canonicalFilePath();
+        if (nextFileInfo.filePath() != path)
+            nextFileInfo.setFile(path);
+        if (nextFileInfo.isSymLink()) {
+            visitedLinks << nextFileInfo.canonicalFilePath();
         } else {
-            visitedLinks << fileInfo.absoluteFilePath();
+            visitedLinks << nextFileInfo.absoluteFilePath();
         }
     }
     
@@ -199,8 +201,8 @@ void QDirIteratorPrivate::advance()
 
         QString subDir = it->currentFilePath();
 #ifdef Q_OS_WIN
-        if (fileInfo.isSymLink())
-            subDir = fileInfo.canonicalFilePath();
+        if (currentFileInfo.isSymLink())
+            subDir = currentFileInfo.canonicalFilePath();
 #endif
         pushSubDirectory(subDir, it->nameFilters(), it->filters());
     }
@@ -213,15 +215,16 @@ void QDirIteratorPrivate::advance()
         while (it->hasNext()) {
             it->next();
             if (matchesFilters(it)) {
-                fileInfo = it->currentFileInfo();
+                currentFileInfo = nextFileInfo;
+                nextFileInfo = it->currentFileInfo();
                 // Signal that we want to follow this entry.
-                followNextDir = shouldFollowDirectory(fileInfo);
-                
+                followNextDir = shouldFollowDirectory(nextFileInfo);
                 //We found a matching entry.
                 return;
 
             } else if (iteratorFlags & QDirIterator::Subdirectories) {
                 QFileInfo fileInfo = it->currentFileInfo();
+
                 if (!shouldFollowDirectory(fileInfo))
                     continue;
                 QString subDir = it->currentFilePath();
@@ -238,6 +241,7 @@ void QDirIteratorPrivate::advance()
         if (!foundDirectory)
             delete fileEngineIterators.pop();
     }
+    currentFileInfo = nextFileInfo;
     done = true;
 }
 
@@ -518,9 +522,7 @@ bool QDirIterator::hasNext() const
 */
 QString QDirIterator::fileName() const
 {
-    if (d->fileInfo.path() != d->currentFilePath)
-        d->fileInfo.setFile(d->currentFilePath);
-    return d->fileInfo.fileName();
+    return d->currentFileInfo.fileName();
 }
 
 /*!
@@ -543,9 +545,7 @@ QString QDirIterator::filePath() const
 */
 QFileInfo QDirIterator::fileInfo() const
 {
-    if (d->fileInfo.filePath() != d->currentFilePath)
-        d->fileInfo.setFile(d->currentFilePath);
-    return d->fileInfo;
+    return d->currentFileInfo;
 }
 
 /*!

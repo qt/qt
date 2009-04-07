@@ -91,7 +91,7 @@
     The disadvantage with the shared library approach is that you
     will get more files to deploy. For more information, see
     \l{sharedlibrary.html}{Creating Shared Libraries}.
-    
+
     \section1 Deploying Qt's Libraries
 
     \table
@@ -111,13 +111,14 @@
         \o \l {QtNetwork}
         \o \l {QtOpenGL}
         \o \l {QtScript}
-        \o \l {QtSql}
+        \o \l {QtScriptTools}
     \row
+        \o \l {QtSql}
         \o \l {QtSvg}
         \o \l {QtWebKit}
         \o \l {QtXml}
-        \o \l {QtXmlPatterns}
     \row
+        \o \l {QtXmlPatterns}
         \o \l {Phonon Module}{Phonon}
         \o \l {Qt3Support}
     \endtable
@@ -178,11 +179,13 @@
     Please see \l{QtWebKit Module#License Information}{the QtWebKit module
     documentation} for more information.
 
-    \row    \o Phonon     \o Phonon
+    \row    \o \l{Phonon Module}{Phonon}     \o Phonon
     \o Phonon relies on the native multimedia engines on different platforms.
     Phonon itself is licensed under the GNU LGPL version 2. Please see
     \l{Phonon Module#License Information}{the Phonon module documentation}
-    for more information.
+    for more information on licensing and the
+    \l{Phonon Overview#Backends}{Phonon Overview} for details of the backends
+    in use on different platforms.
     \endtable
 
     \section1 Platform-Specific Notes

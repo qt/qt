@@ -1535,7 +1535,7 @@ void MainWindow::selectedMessageChanged(const QModelIndex &sortedIndex, const QM
             } else {
                 m_sourceAndFormView->setCurrentWidget(m_sourceCodeView);
                 QDir dir = QFileInfo(m_dataModel->srcFileName(model)).dir();
-                QString fileName = dir.absoluteFilePath(m->fileName());
+                QString fileName = QDir::cleanPath(dir.absoluteFilePath(m->fileName()));
                 m_sourceCodeView->setSourceContext(fileName, m->lineNumber());
             }
             m_errorsView->setEnabled(true);

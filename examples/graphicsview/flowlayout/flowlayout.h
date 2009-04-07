@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,39 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef QKBDUSB_QWS_H
-#define QKBDUSB_QWS_H
+#include <QtGui/qgraphicslayout.h>
 
-#include <QtGui/qkbdpc101_qws.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
-
-#ifndef QT_NO_QWS_KEYBOARD
-
-#ifndef QT_NO_QWS_KBD_USB
-
-class QWSUsbKbPrivate;
-
-class QWSUsbKeyboardHandler : public QWSPC101KeyboardHandler
+class FlowLayout : public QGraphicsLayout
 {
 public:
-    QWSUsbKeyboardHandler(const QString&);
-    virtual ~QWSUsbKeyboardHandler();
+    FlowLayout();
+    inline void addItem(QGraphicsLayoutItem *item);
+    void insertItem(int index, QGraphicsLayoutItem *item);
+    void setSpacing(Qt::Orientations o, qreal spacing);
+    qreal spacing(Qt::Orientation o) const;
+
+    // inherited functions
+    void setGeometry(const QRectF &geom);
+
+    int count() const;
+    QGraphicsLayoutItem *itemAt(int index) const;
+    void removeAt(int index);
+
+protected:
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const;
 
 private:
-    QWSUsbKbPrivate *d;
+    qreal doLayout(const QRectF &geom, bool applyNewGeometry) const;
+    QSizeF minSize(const QSizeF &constraint) const;
+    QSizeF prefSize() const;
+    QSizeF maxSize() const;
+
+    QList<QGraphicsLayoutItem*> m_items;
+    qreal m_spacing[2];
 };
 
-#endif // QT_NO_QWS_KBD_USB
 
-#endif // QT_NO_QWS_KEYBOARD
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QKBDUSB_QWS_H
+inline void FlowLayout::addItem(QGraphicsLayoutItem *item)
+{
+    insertItem(-1, item);
+}

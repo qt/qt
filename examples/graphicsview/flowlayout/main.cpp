@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,20 +39,17 @@
 **
 ****************************************************************************/
 
-#ifndef LINUXISKBDDRIVERPLUGIN_H
-#define LINUXISKBDDRIVERPLUGIN_H
+#include <QtGui>
+#include "window.h"
 
-#include <QtGui/QWSKeyboardHandlerFactoryInterface>
+int main(int argc, char **argv)
+{
+    QApplication app(argc, argv);
 
-class LinuxInputSubsystemKbdDriverPlugin : public QKbdDriverPlugin {
-    Q_OBJECT
-public:
-    LinuxInputSubsystemKbdDriverPlugin( QObject *parent  = 0 );
-    ~LinuxInputSubsystemKbdDriverPlugin();
-
-    QWSKeyboardHandler* create(const QString& driver, const QString& device);
-    QWSKeyboardHandler* create(const QString& driver);
-    QStringList keys()const;
-};
-
-#endif // LINUXISKBDDRIVERPLUGIN_H
+    QGraphicsScene scene;
+    QGraphicsView *view = new QGraphicsView(&scene);
+    Window *w = new Window;
+    scene.addItem(w);
+    view->show();
+    return app.exec();
+}

@@ -935,6 +935,8 @@ bool QFSFileEngine::setSize(qint64 size)
     Q_D(QFSFileEngine);
     if (d->fd != -1)
         return !QT_FTRUNCATE(d->fd, size);
+    if (d->fh)
+        return !QT_FTRUNCATE(QT_FILENO(d->fh), size);
     return !QT_TRUNCATE(d->nativeFilePath.constData(), size);
 }
 

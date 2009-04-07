@@ -108,7 +108,7 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
         return;
     }
 
-    IDirectFBSurface *src = static_cast<const QDirectFBPixmapData*>(data)->directFbSurface();
+    IDirectFBSurface *src = static_cast<const QDirectFBPixmapData*>(data)->directFBSurface();
     const QImage::Format format = (data->hasAlphaChannel()
                                    ? QDirectFBScreen::instance()->alphaPixmapFormat()
                                    : QDirectFBScreen::instance()->pixelFormat());

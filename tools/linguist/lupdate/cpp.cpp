@@ -1800,7 +1800,9 @@ void loadCPP(Translator &translator, const QStringList &filenames, ConversionDat
         if (ts.codec()->name() == "UTF-16")
             translator.setCodecName("System");
         parser.setInput(ts, filename);
-        parser.setTranslator(new Translator);
+        Translator *tor = new Translator;
+        tor->setCodecName(translator.codecName());
+        parser.setTranslator(tor);
         QSet<QString> inclusions;
         parser.parse(cd.m_defaultContext, cd, inclusions);
         CppFiles::setResults(filename, parser.getResults());

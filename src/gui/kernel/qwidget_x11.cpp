@@ -898,7 +898,7 @@ void QWidgetPrivate::x11UpdateIsOpaque()
         bool visible = q->isVisible();
         if (visible)
             q->hide();
-        q->setParent(q->parentWidget(), q->windowFlags() & ~Qt::WindowType_Mask);
+        q->setParent(q->parentWidget(), q->windowFlags());
         q->move(pos);
         if (visible)
             q->show();
@@ -1516,7 +1516,6 @@ void QWidget::activateWindow()
             X11->userTime = X11->time;
         qt_net_update_user_time(tlw, X11->userTime);
         XSetInputFocus(X11->display, tlw->internalWinId(), XRevertToParent, X11->time);
-        d->focusInputContext();
     }
 }
 

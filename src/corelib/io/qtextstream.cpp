@@ -409,6 +409,7 @@ public:
     QString writeBuffer;
     QString readBuffer;
     int readBufferOffset;
+    int readConverterSavedStateOffset; //the offset between readBufferStartDevicePos and that start of the buffer
     qint64 readBufferStartDevicePos;
 
     // streaming parameters
@@ -435,6 +436,7 @@ QTextStreamPrivate::QTextStreamPrivate(QTextStream *q_ptr)
 #ifndef QT_NO_TEXTCODEC
     readConverterSavedState(0),
 #endif
+    readConverterSavedStateOffset(0),
     locale(QLocale::C)
 {
     this->q_ptr = q_ptr;
@@ -833,6 +835,10 @@ inline void QTextStreamPrivate::consume(int size)
             readBufferOffset = 0;
             readBuffer.clear();
             saveConverterState(device->pos());
+        } else if (readBufferOffset > QTEXTSTREAM_BUFFERSIZE) {
+            readBuffer = readBuffer.remove(0,readBufferOffset);
+            readConverterSavedStateOffset += readBufferOffset;
+            readBufferOffset = 0;
         }
     }
 }
@@ -854,6 +860,7 @@ inline void QTextStreamPrivate::saveConverterState(qint64 newPos)
 #endif
 
     readBufferStartDevicePos = newPos;
+    readConverterSavedStateOffset = 0;
 }
 
 /*! \internal
@@ -1218,7 +1225,7 @@ qint64 QTextStream::pos() const
 
         // Rewind the device to get to the current position Ensure that
         // readBufferOffset is unaffected by fillReadBuffer()
-        int oldReadBufferOffset = d->readBufferOffset;
+        int oldReadBufferOffset = d->readBufferOffset + d->readConverterSavedStateOffset;
         while (d->readBuffer.size() < oldReadBufferOffset) {
             if (!thatd->fillReadBuffer(1))
                 return qint64(-1);
@@ -1370,7 +1377,7 @@ QTextStream::FieldAlignment QTextStream::fieldAlignment() const
 
     \snippet doc/src/snippets/code/src_corelib_io_qtextstream.cpp 5
 
-    The string \a s contains:
+    The string \c s contains:
 
     \snippet doc/src/snippets/code/src_corelib_io_qtextstream.cpp 6
 
