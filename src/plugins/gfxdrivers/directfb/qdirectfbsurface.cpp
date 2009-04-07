@@ -111,6 +111,7 @@ void QDirectFBSurface::createWindow()
         dfbSurface->Release(dfbSurface);
 
     dfbWindow->GetSurface(dfbWindow, &dfbSurface);
+    forceRaster = (dfbSurface && QDirectFBScreen::getImageFormat(dfbSurface) == QImage::Format_RGB32);
 }
 #endif // QT_NO_DIRECTFB_WM
 
@@ -143,6 +144,7 @@ void QDirectFBSurface::setGeometry(const QRect &rect, const QRegion &mask)
             IDirectFBSurface *primarySurface = screen->dfbSurface();
             Q_ASSERT(primarySurface);
             result = primarySurface->GetSubSurface(primarySurface, &r, &dfbSurface);
+            forceRaster = (dfbSurface && QDirectFBScreen::getImageFormat(dfbSurface) == QImage::Format_RGB32);
         } else {
 #ifdef QT_NO_DIRECTFB_WM
             if (isResize) {
@@ -164,6 +166,7 @@ void QDirectFBSurface::setGeometry(const QRect &rect, const QRegion &mask)
                 QDirectFBScreen::initSurfaceDescriptionPixelFormat(&description,
                                                                    QDirectFBScreen::instance()->pixelFormat());
                 dfbSurface = QDirectFBScreen::instance()->createDFBSurface(&description, false);
+                forceRaster = (dfbSurface && QDirectFBScreen::getImageFormat(dfbSurface) == QImage::Format_RGB32);
             } else {
                 Q_ASSERT(dfbSurface);
             }
