@@ -2396,6 +2396,9 @@ void QWindowsVistaStyle::polish(QWidget *widget)
     else if (QTreeView *tree = qobject_cast<QTreeView *> (widget)) {
         tree->viewport()->setAttribute(Qt::WA_Hover);
     }
+    else if (QListView *list = qobject_cast<QListView *> (widget)) {
+        list->viewport()->setAttribute(Qt::WA_Hover);
+    }
 }
 
 /*!
