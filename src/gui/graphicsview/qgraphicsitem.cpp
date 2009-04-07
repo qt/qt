@@ -3998,14 +3998,14 @@ void QGraphicsItem::update(const QRectF &rect)
         return;
 
     if (CacheMode(d_ptr->cacheMode) != NoCache) {
-        QGraphicsItemCache *cache = d_ptr->maybeExtraItemCache();
-        if (!cache || cache->allExposed)
-            return;
-        if (rect.isNull()) {
-            cache->allExposed = true;
-            cache->exposed.clear();
-        } else {
-            cache->exposed.append(rect);
+        QGraphicsItemCache *cache = d_ptr->extraItemCache();
+        if (!cache->allExposed) {
+            if (rect.isNull()) {
+                cache->allExposed = true;
+                cache->exposed.clear();
+            } else {
+                cache->exposed.append(rect);
+            }
         }
     }
 
