@@ -280,9 +280,7 @@ public:
         WindowStaysOnTopHint = 0x00040000,
         // reserved for Qt3Support:
         // WMouseNoMask = 0x00080000,
-        WindowOkButtonHint = 0x00080000,
         // WDestructiveClose = 0x00100000,
-        WindowCancelButtonHint = 0x00100000,
         // WStaticContents = 0x00200000,
         // WGroupLeader = 0x00400000,
         // WShowModal = 0x00800000,
@@ -291,7 +289,9 @@ public:
         WindowStaysOnBottomHint = 0x04000000,
         WindowCloseButtonHint = 0x08000000,
         MacWindowToolBarButtonHint = 0x10000000,
-        BypassGraphicsProxyWidget = 0x20000000
+        BypassGraphicsProxyWidget = 0x20000000,
+        WindowOkButtonHint = 0x00080000,
+        WindowCancelButtonHint = 0x00100000
 
 #ifdef QT3_SUPPORT
         ,
