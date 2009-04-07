@@ -161,6 +161,7 @@ QT_END_NAMESPACE
             if (accel_ev.isAccepted()) {
                 *target = nil;
                 *action = nil;
+                [qt_mac_nativeview_for(widget) keyDown:event];
                 return YES;
             }
         }
