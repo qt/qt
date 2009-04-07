@@ -111,8 +111,15 @@ bool CustomProxy::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
 
 QVariant CustomProxy::itemChange(GraphicsItemChange change, const QVariant &value)
 {
-    if (change == ItemChildRemovedChange)
-        removeSceneEventFilter(this);
+    if (change == ItemChildAddedChange || change == ItemChildRemovedChange) {
+        QGraphicsItem *item = qVariantValue<QGraphicsItem *>(value);
+        if (change == ItemChildAddedChange) {
+            item->setCacheMode(ItemCoordinateCache);
+            item->installSceneEventFilter(this);
+        } else {
+            item->removeSceneEventFilter(this);
+        }
+    }
     return QGraphicsProxyWidget::itemChange(change, value);
 }
 
