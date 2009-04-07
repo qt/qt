@@ -92,7 +92,6 @@ public:
     void setRect(const QRectF &rect);
 
     void insertItem(QGraphicsItem *item);
-    void insertItems(const QList<QGraphicsItem *> &items);
     void removeItem(QGraphicsItem *item);
     void removeItems(const QList<QGraphicsItem *> &items);
 

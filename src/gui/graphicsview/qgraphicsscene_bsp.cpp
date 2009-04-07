@@ -133,13 +133,6 @@ void QGraphicsSceneBspTree::insertItem(QGraphicsItem *item)
     climbTree(insertVisitor, item->sceneBoundingRect());
 }
 
-void QGraphicsSceneBspTree::insertItems(const QList<QGraphicsItem *> &items)
-{
-     foreach(QGraphicsItem *item, items) {
-         insertItem(item);
-     }
-}
-
 void QGraphicsSceneBspTree::removeItem(QGraphicsItem *item)
 {
     removeVisitor->item = item;

@@ -60,6 +60,19 @@ QGraphicsScene* QGraphicsSceneIndex::scene()
      return mscene;
 }
 
+void QGraphicsSceneIndex::insertItems(const QList<QGraphicsItem *> &items)
+{
+    foreach (QGraphicsItem *item, items)
+        insertItem(item);
+}
+
+void QGraphicsSceneIndex::removeItems(const QList<QGraphicsItem *> &items)
+{
+    foreach (QGraphicsItem *item, items)
+        removeItem(item);
+}
+
+
 QT_END_NAMESPACE
 
 //#include "moc_qgraphicssceneindex.cpp"
