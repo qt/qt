@@ -132,6 +132,7 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
     const DFBRectangle blitRect = { rect.x(), rect.y(),
                                     rect.width(), rect.height() };
     DFBResult result = dfbSurface->Blit(dfbSurface, src, &blitRect, 0, 0);
+    dfbSurface->ReleaseSource(dfbSurface);
     if (result != DFB_OK) {
         DirectFBError("QDirectFBPixmapData::copy()", result);
         setSerialNumber(0);
@@ -236,6 +237,7 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
 
     const DFBRectangle destRect = { 0, 0, size.width(), size.height() };
     data->dfbSurface->StretchBlit(data->dfbSurface, dfbSurface, 0, &destRect);
+    data->dfbSurface->ReleaseSource(data->dfbSurface);
 
     return QPixmap(data);
 }

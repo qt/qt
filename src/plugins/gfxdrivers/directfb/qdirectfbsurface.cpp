@@ -262,7 +262,7 @@ bool QDirectFBSurface::scroll(const QRegion &region, int dx, int dy)
     dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
     dfbSurface->BatchBlit(dfbSurface, dfbSurface,
                           dfbRects.data(), dfbPoints.data(), n);
-
+    dfbSurface->ReleaseSource(dfbSurface);
     return true;
 }
 

@@ -195,7 +195,7 @@ IDirectFBSurface *QDirectFBScreen::copyDFBSurface(IDirectFBSurface *src,
 
     surface->SetBlittingFlags(surface, flags);
     surface->Blit(surface, src, 0, 0, 0);
-    surface->ReleaseSource(surface); // ??? Is this always right?
+    surface->ReleaseSource(surface);
     return surface;
 }
 
@@ -1093,6 +1093,7 @@ void QDirectFBScreen::compose(const QRegion &region)
             blit(surface->image(), offset, r);
         }
     }
+    d_ptr->dfbSurface->ReleaseSource(d_ptr->dfbSurface);
 }
 
 // Normally, when using DirectFB to compose the windows (I.e. when
