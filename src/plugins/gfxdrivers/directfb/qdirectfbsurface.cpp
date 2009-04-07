@@ -105,9 +105,9 @@ void QDirectFBSurface::createWindow()
                                                   |DWDESC_PIXELFORMAT);
 
     description.surface_caps = DSCAPS_NONE;
-    if (QDirectFBScreen::instance()->preferVideoOnly())
+    if (screen->preferVideoOnly())
         description.surface_caps = DFBSurfaceCapabilities(description.surface_caps|DSCAPS_VIDEOONLY);
-    const QImage::Format format = QDirectFBScreen::instance()->pixelFormat();
+    const QImage::Format format = screen->pixelFormat();
     description.pixelformat = QDirectFBScreen::getSurfacePixelFormat(format);
     if (QDirectFBScreen::isPremultiplied(format))
         description.surface_caps = DFBSurfaceCapabilities(DSCAPS_PREMULTIPLIED|description.caps);
@@ -173,8 +173,8 @@ void QDirectFBSurface::setGeometry(const QRect &rect, const QRegion &mask)
                 description.width = rect.width();
                 description.height = rect.height();
                 QDirectFBScreen::initSurfaceDescriptionPixelFormat(&description,
-                                                                   QDirectFBScreen::instance()->pixelFormat());
-                dfbSurface = QDirectFBScreen::instance()->createDFBSurface(&description, false);
+                                                                   screen->pixelFormat());
+                dfbSurface = screen->createDFBSurface(&description, false);
                 forceRaster = (dfbSurface && QDirectFBScreen::getImageFormat(dfbSurface) == QImage::Format_RGB32);
             } else {
                 Q_ASSERT(dfbSurface);

@@ -71,9 +71,9 @@ void QDirectFBPixmapData::resize(int width, int height)
         return;
     }
 
-    dfbSurface = QDirectFBScreen::instance()->createDFBSurface(QSize(width, height),
-                                                               screen->pixelFormat(),
-                                                               QDirectFBScreen::TrackSurface);
+    dfbSurface = screen->createDFBSurface(QSize(width, height),
+                                          screen->pixelFormat(),
+                                          QDirectFBScreen::TrackSurface);
     forceRaster = (screen->pixelFormat() == QImage::Format_RGB32);
     if (!dfbSurface) {
         setSerialNumber(0);
@@ -111,8 +111,8 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
     IDirectFBSurface *src = static_cast<const QDirectFBPixmapData*>(data)->directFBSurface();
     const bool hasAlpha = data->hasAlphaChannel();
     const QImage::Format format = (hasAlpha
-                                   ? QDirectFBScreen::instance()->alphaPixmapFormat()
-                                   : QDirectFBScreen::instance()->pixelFormat());
+                                   ? screen->alphaPixmapFormat()
+                                   : screen->pixelFormat());
 
     dfbSurface = screen->createDFBSurface(rect.size(), format,
                                           QDirectFBScreen::TrackSurface);
