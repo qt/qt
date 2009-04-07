@@ -4040,6 +4040,20 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         break;
 #endif
 
+    case QEvent::RequestSoftwareInputPanel:
+    case QEvent::CloseSoftwareInputPanel:
+#ifndef QT_NO_IM
+        if (receiver->isWidgetType()) {
+            QWidget *w = static_cast<QWidget *>(receiver);
+            QInputContext *ic = w->inputContext();
+            if (ic && ic->filterEvent(e)) {
+                break;
+            }
+        }
+#endif
+        res = d->notify_helper(receiver, e);
+        break;
+
     default:
         res = d->notify_helper(receiver, e);
         break;

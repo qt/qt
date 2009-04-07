@@ -209,7 +209,19 @@ void QInputContext::setFocusWidget(QWidget *widget)
     way. Although the input events have accept() and ignore()
     methods, leave it untouched.
 
-    \a event is currently restricted to QKeyEvent and QMouseEvent.
+    \a event is currently restricted to events of these types:
+
+    \list
+        \i CloseSoftwareInputPanel
+        \i KeyPress
+        \i KeyRelease
+        \i MouseButtonDblClick
+        \i MouseButtonPress
+        \i MouseButtonRelease
+        \i MouseMove
+        \i RequestSoftwareInputPanel
+    \endlist
+
     But some input method related events such as QWheelEvent or
     QTabletEvent may be added in future.
 
