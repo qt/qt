@@ -33,8 +33,24 @@ Third party components
 *                          Library                                         *
 ****************************************************************************
 
+- QAbstractSocket
+   * [192037] Emit disconnected only if we were connected before
+
+- QAuthenticator
+   * [237979] fix implemenation of md5-sess
+
+- QFileInfo
+   * [205244] return valid file info also for relative UNC paths
+
+- QHttp
+   * [208445] cancel request upon receiving unknown authentication method
+
 - QSharedPointer
    * [246843] Fixed a crash caused by using QSharedPointer in global statics
+
+- QSSlSocket
+   * [245668] set also protocol, verifyMode and verifyDepth in
+     setSslConfiguration()
 
 ****************************************************************************
 *                          Database Drivers                                *
