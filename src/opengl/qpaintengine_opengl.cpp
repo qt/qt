@@ -1983,7 +1983,7 @@ public:
 void QOpenGLTrapezoidToArrayTessellator::addTrap(const Trapezoid &trap)
 {
     // On OpenGL ES we convert the trap to 2 triangles
-#ifndef QT_OPENGL_ES_1
+#ifndef QT_OPENGL_ES
     if (size > allocated - 8) {
 #else
     if (size > allocated - 12) {
@@ -1994,31 +1994,31 @@ void QOpenGLTrapezoidToArrayTessellator::addTrap(const Trapezoid &trap)
 
     QGLTrapezoid t = toGLTrapezoid(trap);
 
-#ifndef QT_OPENGL_ES_1
-    vertices[size++] = t.topLeftX;
-    vertices[size++] = t.top;
-    vertices[size++] = t.topRightX;
-    vertices[size++] = t.top;
-    vertices[size++] = t.bottomRightX;
-    vertices[size++] = t.bottom;
-    vertices[size++] = t.bottomLeftX;
-    vertices[size++] = t.bottom;
+#ifndef QT_OPENGL_ES
+    vertices[size++] = f2vt(t.topLeftX);
+    vertices[size++] = f2vt(t.top);
+    vertices[size++] = f2vt(t.topRightX);
+    vertices[size++] = f2vt(t.top);
+    vertices[size++] = f2vt(t.bottomRightX);
+    vertices[size++] = f2vt(t.bottom);
+    vertices[size++] = f2vt(t.bottomLeftX);
+    vertices[size++] = f2vt(t.bottom);
 #else
     // First triangle
-    vertices[size++] = t.topLeftX;
-    vertices[size++] = t.top;
-    vertices[size++] = t.topRightX;
-    vertices[size++] = t.top;
-    vertices[size++] = t.bottomRightX;
-    vertices[size++] = t.bottom;
+    vertices[size++] = f2vt(t.topLeftX);
+    vertices[size++] = f2vt(t.top);
+    vertices[size++] = f2vt(t.topRightX);
+    vertices[size++] = f2vt(t.top);
+    vertices[size++] = f2vt(t.bottomRightX);
+    vertices[size++] = f2vt(t.bottom);
 
     // Second triangle
-    vertices[size++] = t.bottomLeftX;
-    vertices[size++] = t.bottom;
-    vertices[size++] = t.topLeftX;
-    vertices[size++] = t.top;
-    vertices[size++] = t.bottomRightX;
-    vertices[size++] = t.bottom;
+    vertices[size++] = f2vt(t.bottomLeftX);
+    vertices[size++] = f2vt(t.bottom);
+    vertices[size++] = f2vt(t.topLeftX);
+    vertices[size++] = f2vt(t.top);
+    vertices[size++] = f2vt(t.bottomRightX);
+    vertices[size++] = f2vt(t.bottom);
 #endif
 }
 
