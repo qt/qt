@@ -1768,6 +1768,13 @@ void QLineEdit::mouseReleaseEvent(QMouseEvent* e)
         }
     }
 #endif
+
+    if (e->button() == Qt::LeftButton && (!d->clickCausedFocus
+            || QApplication::autoSipOnMouseFocus())) {
+        QEvent event(QEvent::RequestSoftwareInputPanel);
+        QApplication::sendEvent(this, &event);
+    }
+    d->clickCausedFocus = 0;
 }
 
 /*! \reimp
@@ -2350,6 +2357,8 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
             d->moveCursor(d->nextMaskBlank(0));
         else if (!d->hasSelectedText())
             selectAll();
+    } else if (e->reason() == Qt::MouseFocusReason) {
+        d->clickCausedFocus = 1;
     }
 #ifdef QT_KEYPAD_NAVIGATION
     if (!QApplication::keypadNavigationEnabled() || (hasEditFocus() && e->reason() == Qt::PopupFocusReason))
