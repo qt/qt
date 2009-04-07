@@ -300,11 +300,13 @@ extern "C" {
     NSPoint windowPoint = [sender draggingLocation];
     NSPoint globalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
+    NSDragOperation nsActions = [sender draggingSourceOperationMask];
     QPoint posDrag(localPoint.x, localPoint.y);
-    if (qt_mac_mouse_inside_answer_rect(posDrag))
+    if (qt_mac_mouse_inside_answer_rect(posDrag)
+        && QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) == nsActions)
         return QT_PREPEND_NAMESPACE(qt_mac_mapDropActions)(QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastAction));
     // send drag move event to the widget    
-    NSDragOperation nsActions = [sender draggingSourceOperationMask]; 
+    QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) = nsActions;
     Qt::DropActions qtAllowed = QT_PREPEND_NAMESPACE(qt_mac_mapNSDragOperations)(nsActions);
     QMimeData *mimeData = dropData;
     if (QDragManager::self()->source())
