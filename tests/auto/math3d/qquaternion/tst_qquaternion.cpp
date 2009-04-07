@@ -768,24 +768,6 @@ void tst_QQuaternion::interpolate()
     QVERIFY(fuzzyCompare(result.scalar(), q3.scalar()));
 }
 
-// Force the fixed-point version of the test case to put a
-// different test name on the front of failure reports.
-class tst_QQuaternionFixed : public tst_QQuaternion
-{
-    Q_OBJECT
-public:
-    tst_QQuaternionFixed() {}
-    ~tst_QQuaternionFixed() {}
-};
-
-#ifdef QT_GL_FIXED_PREFERRED
-
-QTEST_APPLESS_MAIN(tst_QQuaternionFixed)
-
-#else
-
 QTEST_APPLESS_MAIN(tst_QQuaternion)
-
-#endif
 
 #include "tst_qquaternion.moc"

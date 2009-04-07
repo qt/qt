@@ -42,8 +42,8 @@
 #include "qvector3d.h"
 #include "qvector2d.h"
 #include "qvector4d.h"
-#include "qmath3dutil_p.h"
 #include <QtCore/qmath.h>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -287,7 +287,7 @@ void QVector3D::normalize()
 */
 qreal QVector3D::dotProduct(const QVector3D& v1, const QVector3D& v2)
 {
-    return qvtdot64(qvtmul64(v1.xp, v2.xp) + qvtmul64(v1.yp, v2.yp) + qvtmul64(v1.zp, v2.zp));
+    return v1.xp * v2.xp + v1.yp * v2.yp + v1.zp * v2.zp;
 }
 
 /*!
@@ -535,7 +535,7 @@ QVector4D QVector3D::toVector4D() const
 */
 qreal QVector3D::length() const
 {
-    return qvtsqrt64(qvtmul64(xp, xp) + qvtmul64(yp, yp) + qvtmul64(zp, zp));
+    return qSqrt(xp * xp + yp * yp + zp * zp);
 }
 
 /*!
@@ -546,7 +546,7 @@ qreal QVector3D::length() const
 */
 qreal QVector3D::lengthSquared() const
 {
-    return qvtdot64(qvtmul64(xp, xp) + qvtmul64(yp, yp) + qvtmul64(zp, zp));
+    return xp * xp + yp * yp + zp * zp;
 }
 
 #ifndef QT_NO_DEBUG_STREAM

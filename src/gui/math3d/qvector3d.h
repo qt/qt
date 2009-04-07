@@ -42,7 +42,6 @@
 #ifndef QVECTOR3D_H
 #define QVECTOR3D_H
 
-#include <QtGui/qmath3dglobal.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qmetatype.h>
 
@@ -130,16 +129,14 @@ public:
     QPointF toPointF() const;
 
 private:
-    qrealinner xp, yp, zp;
+    float xp, yp, zp;
 
-    QVector3D(qrealinner xpos, qrealinner ypos, qrealinner zpos, int dummy);
+    QVector3D(float xpos, float ypos, float zpos, int dummy);
 
     friend class QVector2D;
     friend class QVector4D;
     friend class QQuaternion;
     friend class QMatrix4x4;
-    friend class QVertexArray;
-    friend class QGLPainter;
 #ifndef QT_NO_MATRIX4X4
     friend QVector3D operator*(const QVector3D& vector, const QMatrix4x4& matrix);
     friend QVector3D operator*(const QMatrix4x4& matrix, const QVector3D& vector);
@@ -150,7 +147,7 @@ inline QVector3D::QVector3D() : xp(0.0f), yp(0.0f), zp(0.0f) {}
 
 inline QVector3D::QVector3D(qreal xpos, qreal ypos, qreal zpos) : xp(xpos), yp(ypos), zp(zpos) {}
 
-inline QVector3D::QVector3D(qrealinner xpos, qrealinner ypos, qrealinner zpos, int) : xp(xpos), yp(ypos), zp(zpos) {}
+inline QVector3D::QVector3D(float xpos, float ypos, float zpos, int) : xp(xpos), yp(ypos), zp(zpos) {}
 
 inline QVector3D::QVector3D(int xpos, int ypos, int zpos) : xp(xpos), yp(ypos), zp(zpos) {}
 
@@ -163,9 +160,9 @@ inline bool QVector3D::isNull() const
     return qIsNull(xp) && qIsNull(yp) && qIsNull(zp);
 }
 
-inline qreal QVector3D::x() const { return qt_math3d_convert<qreal, qrealinner>(xp); }
-inline qreal QVector3D::y() const { return qt_math3d_convert<qreal, qrealinner>(yp); }
-inline qreal QVector3D::z() const { return qt_math3d_convert<qreal, qrealinner>(zp); }
+inline qreal QVector3D::x() const { return qreal(xp); }
+inline qreal QVector3D::y() const { return qreal(yp); }
+inline qreal QVector3D::z() const { return qreal(zp); }
 
 inline void QVector3D::setX(qreal x) { xp = x; }
 inline void QVector3D::setY(qreal y) { yp = y; }
@@ -189,10 +186,9 @@ inline QVector3D &QVector3D::operator-=(const QVector3D &vector)
 
 inline QVector3D &QVector3D::operator*=(qreal factor)
 {
-    qrealinner f(factor);
-    xp *= f;
-    yp *= f;
-    zp *= f;
+    xp *= factor;
+    yp *= factor;
+    zp *= factor;
     return *this;
 }
 
@@ -206,10 +202,9 @@ inline QVector3D &QVector3D::operator*=(const QVector3D& vector)
 
 inline QVector3D &QVector3D::operator/=(qreal divisor)
 {
-    qrealinner d(divisor);
-    xp /= d;
-    yp /= d;
-    zp /= d;
+    xp /= divisor;
+    yp /= divisor;
+    zp /= divisor;
     return *this;
 }
 
@@ -235,14 +230,12 @@ inline const QVector3D operator-(const QVector3D &v1, const QVector3D &v2)
 
 inline const QVector3D operator*(qreal factor, const QVector3D &vector)
 {
-    qrealinner f(factor);
-    return QVector3D(vector.xp * f, vector.yp * f, vector.zp * f, 1);
+    return QVector3D(vector.xp * factor, vector.yp * factor, vector.zp * factor, 1);
 }
 
 inline const QVector3D operator*(const QVector3D &vector, qreal factor)
 {
-    qrealinner f(factor);
-    return QVector3D(vector.xp * f, vector.yp * f, vector.zp * f, 1);
+    return QVector3D(vector.xp * factor, vector.yp * factor, vector.zp * factor, 1);
 }
 
 inline const QVector3D operator*(const QVector3D &v1, const QVector3D& v2)
@@ -257,8 +250,7 @@ inline const QVector3D operator-(const QVector3D &vector)
 
 inline const QVector3D operator/(const QVector3D &vector, qreal divisor)
 {
-    qrealinner d(divisor);
-    return QVector3D(vector.xp / d, vector.yp / d, vector.zp / d, 1);
+    return QVector3D(vector.xp / divisor, vector.yp / divisor, vector.zp / divisor, 1);
 }
 
 inline bool qFuzzyCompare(const QVector3D& v1, const QVector3D& v2)
@@ -275,8 +267,7 @@ inline QPoint QVector3D::toPoint() const
 
 inline QPointF QVector3D::toPointF() const
 {
-    return QPointF(qt_math3d_convert<qreal, qrealinner>(xp),
-                   qt_math3d_convert<qreal, qrealinner>(yp));
+    return QPointF(qreal(xp), qreal(yp));
 }
 
 #ifndef QT_NO_DEBUG_STREAM
