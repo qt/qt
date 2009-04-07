@@ -88,9 +88,9 @@ public:
     qint64 contentLength() const;
     void setContentLength(qint64 length);
 
-    inline QByteArray headerField(const QByteArray &name, const QByteArray &defaultValue = QByteArray()) const;
-    inline QList<QByteArray> headerFieldValues(const QByteArray &name) const;
-    inline void setHeaderField(const QByteArray &name, const QByteArray &data);
+    QByteArray headerField(const QByteArray &name, const QByteArray &defaultValue = QByteArray()) const;
+    QList<QByteArray> headerFieldValues(const QByteArray &name) const;
+    void setHeaderField(const QByteArray &name, const QByteArray &data);
     bool operator==(const QHttpNetworkHeaderPrivate &other) const;
 
 };
