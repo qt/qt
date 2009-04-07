@@ -76,6 +76,7 @@ public:
     virtual void removeItems(const QList<QGraphicsItem *> &items);
     virtual void updateItems(const QList<QGraphicsItem *> &items);
 
+    virtual QList<QGraphicsItem *> items(const QPointF &point) = 0;
     virtual QList<QGraphicsItem *> items(const QRectF &rect) = 0;
 
     QGraphicsScene* scene();

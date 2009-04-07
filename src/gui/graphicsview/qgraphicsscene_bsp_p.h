@@ -95,13 +95,12 @@ public:
     void removeItem(QGraphicsItem *item);
     void removeItems(const QList<QGraphicsItem *> &items);
 
+    QList<QGraphicsItem *> items(const QPointF &point);
     QList<QGraphicsItem *> items(const QRectF &rect);
 
     int leafCount() const;
 
 private:
-
-    QList<QGraphicsItem *> items(const QPointF &pos);
 
     inline int firstChildIndex(int index) const
     { return index * 2 + 1; }

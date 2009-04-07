@@ -94,6 +94,14 @@ public:
         m_items.removeAll(item);
     }
 
+    virtual QList<QGraphicsItem *> items(const QPointF &point) {
+        QList<QGraphicsItem*> result;
+        foreach (QGraphicsItem *item, m_items)
+            if (item->sceneBoundingRect().contains(point))
+                result << item;
+        return result;
+    }
+
     virtual QList<QGraphicsItem *> items(const QRectF &rect) {
         QList<QGraphicsItem*> result;
         foreach (QGraphicsItem *item, m_items)
