@@ -182,7 +182,9 @@ extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.
 
 - (BOOL)makeFirstResponder:(NSResponder *)responder
 {
-    if (responder == nil)
+    // For some reason Cocoa wants to flip the first responder
+    // when Qt doesn't want to, sorry, but "No" :-)
+    if (responder == nil && qApp->focusWidget())
         return NO;
     return [super makeFirstResponder:responder];
 }
