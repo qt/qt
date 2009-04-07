@@ -558,43 +558,25 @@ void QDirectFBPaintEnginePrivate::fillRegion(const QRegion &region) const
 {
     const QVector<QRect> rects = region.rects();
     const int n = rects.size();
-    QVarLengthArray<DFBRectangle> dfbRects(n);
-
-    for (int i = 0; i < n; ++i) {
-        const QRect r = rects.at(i);
-        dfbRects[i].x = r.x();
-        dfbRects[i].y = r.y();
-        dfbRects[i].w = r.width();
-        dfbRects[i].h = r.height();
-
-    }
-    surface->FillRectangles(surface, dfbRects.data(), n);
+    fillRects(rects.constData(), n);
 }
 
 void QDirectFBPaintEnginePrivate::fillRects(const QRect *rects, int n) const
 {
-    QVarLengthArray<DFBRectangle> dfbRects(n);
     for (int i = 0; i < n; ++i) {
         const QRect r = transform.mapRect(rects[i]);
-        dfbRects[i].x = r.x();
-        dfbRects[i].y = r.y();
-        dfbRects[i].w = r.width();
-        dfbRects[i].h = r.height();
+        surface->FillRectangle(surface, r.x(), r.y(),
+                               r.width(), r.height());
     }
-    surface->FillRectangles(surface, dfbRects.data(), n);
 }
 
 void QDirectFBPaintEnginePrivate::fillRects(const QRectF *rects, int n) const
 {
-    QVarLengthArray<DFBRectangle> dfbRects(n);
     for (int i = 0; i < n; ++i) {
         const QRect r = transform.mapRect(rects[i]).toRect();
-        dfbRects[i].x = r.x();
-        dfbRects[i].y = r.y();
-        dfbRects[i].w = r.width();
-        dfbRects[i].h = r.height();
+        surface->FillRectangle(surface, r.x(), r.y(),
+                               r.width(), r.height());
     }
-    surface->FillRectangles(surface, dfbRects.data(), n);
 }
 
 void QDirectFBPaintEnginePrivate::drawRects(const QRect *rects, int n) const
