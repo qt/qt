@@ -185,7 +185,15 @@ IDirectFBSurface *QDirectFBScreen::copyDFBSurface(IDirectFBSurface *src,
     QSize size;
     src->GetSize(src, &size.rwidth(), &size.rheight());
     IDirectFBSurface *surface = createDFBSurface(size, format, options);
-    surface->SetBlittingFlags(surface, DSBLIT_NOFX);
+    DFBSurfacePixelFormat dspf;
+    src->GetPixelFormat(src, &dspf);
+    DFBSurfaceBlittingFlags flags = QDirectFBScreen::hasAlpha(dspf)
+                                    ? DSBLIT_BLEND_ALPHACHANNEL
+                                    : DSBLIT_NOFX;
+    if (flags & DSBLIT_BLEND_ALPHACHANNEL)
+        surface->Clear(surface, 0, 0, 0, 0);
+
+    surface->SetBlittingFlags(surface, flags);
     surface->Blit(surface, src, 0, 0, 0);
     surface->ReleaseSource(surface); // ??? Is this always right?
     return surface;
@@ -281,10 +289,16 @@ IDirectFBSurface *QDirectFBScreen::copyToDFBSurface(const QImage &img,
         QDirectFBScreen::releaseDFBSurface(dfbSurface);
         return 0;
     }
+
     Q_ASSERT(imgSurface);
-    DFBResult result;
-    dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
-    result = dfbSurface->Blit(dfbSurface, imgSurface, 0, 0, 0);
+    DFBSurfaceBlittingFlags flags = img.hasAlphaChannel()
+                                    ? DSBLIT_BLEND_ALPHACHANNEL
+                                    : DSBLIT_NOFX;
+    if (flags & DSBLIT_BLEND_ALPHACHANNEL)
+        dfbSurface->Clear(dfbSurface, 0, 0, 0, 0);
+
+    dfbSurface->SetBlittingFlags(dfbSurface, flags);
+    DFBResult result = dfbSurface->Blit(dfbSurface, imgSurface, 0, 0, 0);
     if (result != DFB_OK)
         DirectFBError("QDirectFBPixmapData::fromImage()", result);
     dfbSurface->ReleaseSource(dfbSurface);
@@ -370,7 +384,7 @@ DFBSurfacePixelFormat QDirectFBScreen::getSurfacePixelFormat(QImage::Format form
     };
 }
 
-static inline  bool isPremultiplied(IDirectFBSurface *surface)
+static inline bool isPremultiplied(IDirectFBSurface *surface)
 {
     Q_ASSERT(surface);
     DFBSurfaceCapabilities caps;

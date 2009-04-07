@@ -187,30 +187,13 @@ bool QDirectFBPixmapData::hasAlphaChannel() const
 {
     if (!serialNumber())
         return false;
+    DFBSurfacePixelFormat format;
+    dfbSurface->GetPixelFormat(dfbSurface, &format);
+    return QDirectFBScreen::hasAlpha(format);
 
     // We don't need to ask DFB for this really. Can just keep track
     // of what image format this has. It should always have either
     // QDirectFBScreen::alphaPixmapFormat() or QScreen::pixelFormat()
-
-    DFBSurfacePixelFormat format;
-    dfbSurface->GetPixelFormat(dfbSurface, &format);
-    switch (format) {
-    case DSPF_ARGB1555:
-    case DSPF_ARGB:
-    case DSPF_LUT8:
-    case DSPF_AiRGB:
-    case DSPF_A1:
-    case DSPF_ARGB2554:
-    case DSPF_ARGB4444:
-    case DSPF_AYUV:
-    case DSPF_A4:
-    case DSPF_ARGB1666:
-    case DSPF_ARGB6666:
-    case DSPF_LUT2:
-        return true;
-    default:
-        return false;
-    }
 }
 
 QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
