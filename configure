@@ -830,14 +830,15 @@ while [ "$#" -gt 0 ]; do
         ;;
     #Qt style options that pass an argument
     -qconfig)
-        if [ "$PLATFORM_QWS" = "yes" ]; then
-            CFG_QCONFIG="$VAL"
-            VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
-            shift
-            VAL=$1
-        else
-            UNKNOWN_ARG=yes
+        if [ "$PLATFORM_QWS" != "yes" ]; then
+            echo
+            echo "WARNING: -qconfig is only tested and supported on Qt for Embedded Linux."
+            echo
         fi
+        CFG_QCONFIG="$VAL"
+        VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
+        shift
+        VAL=$1
         ;;
     -prefix|-docdir|-headerdir|-plugindir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-demosdir|-depths|-make|-nomake|-platform|-xplatform|-buildkey|-sdk|-arch|-host-arch|-mysql_config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
