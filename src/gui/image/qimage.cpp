@@ -114,7 +114,7 @@ Q_GUI_EXPORT _qt_image_cleanup_hook qt_image_cleanup_hook = 0;
 typedef void (*_qt_image_cleanup_hook_64)(qint64);
 Q_GUI_EXPORT _qt_image_cleanup_hook_64 qt_image_cleanup_hook_64 = 0;
 
-static QImage rotated90(const QImage &src);=
+static QImage rotated90(const QImage &src);
 static QImage rotated180(const QImage &src);
 static QImage rotated270(const QImage &src);
 
