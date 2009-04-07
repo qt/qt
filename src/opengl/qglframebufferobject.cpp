@@ -48,6 +48,10 @@
 #include <qlibrary.h>
 #include <qimage.h>
 
+#ifdef QT_OPENGL_ES_1_CL
+#include "qgl_cl_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);

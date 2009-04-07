@@ -367,7 +367,9 @@ void QDirectFBPaintEnginePrivate::setPen(const QPen &p)
 {
     pen = p;
     simplePen = (pen.style() == Qt::NoPen) ||
-                (pen.style() == Qt::SolidLine && !antialiased
+                (pen.style() == Qt::SolidLine
+                 && !antialiased
+                 && (pen.brush().style() == Qt::SolidPattern)
                  && (pen.widthF() <= 1 && !matrixScale));
 }
 
@@ -907,8 +909,7 @@ void QDirectFBPaintEngine::setState(QPainterState *s)
 {
     Q_D(QDirectFBPaintEngine);
     QRasterPaintEngine::setState(s);
-    if (d->surface)
-        d->updateClip();
+    d->setClipDirty();
     d->setPen(state()->pen);
     d->setBrush(state()->brush);
     d->setOpacity(state()->opacity);
