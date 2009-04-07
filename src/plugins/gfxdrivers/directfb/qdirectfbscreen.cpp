@@ -1182,28 +1182,35 @@ void QDirectFBScreen::solidFill(const QColor &color, const QRegion &region)
     if (region.isEmpty())
         return;
 
-    const QVector<QRect> rects = region.rects();
-    QVarLengthArray<DFBRectangle> dfbRects(rects.size());
-    for (int i = 0; i < rects.size(); ++i) {
-        const QRect r = rects.at(i);
-        dfbRects[i].x = r.x();
-        dfbRects[i].y = r.y();
-        dfbRects[i].w = r.width();
-        dfbRects[i].h = r.height();
+    if (QDirectFBScreen::getImageFormat(d_ptr->dfbSurface) == QImage::Format_RGB32) {
+        uchar *mem;
+        int bpl;
+        d_ptr->dfbSurface->Lock(d_ptr->dfbSurface, DSLF_WRITE, (void**)&mem, &bpl);
+        QImage img(mem, w, h, bpl, QImage::Format_RGB32);
+        QPainter p(&img);
+        p.setBrush(color);
+        p.setPen(Qt::NoPen);
+        const QVector<QRect> rects = region.rects();
+        p.drawRects(rects.constData(), rects.size());
+        p.end();
+        d_ptr->dfbSurface->Unlock(d_ptr->dfbSurface);
+    } else {
+        d_ptr->dfbSurface->SetColor(d_ptr->dfbSurface,
+                                    color.red(), color.green(), color.blue(),
+                                    color.alpha());
+        const QVector<QRect> rects = region.rects();
+        for (int i=0; i<rects.size(); ++i) {
+            const QRect &r = rects.at(i);
+            d_ptr->dfbSurface->FillRectangle(d_ptr->dfbSurface,
+                                             r.x(), r.y(), r.width(), r.height());
+        }
     }
-
-    d_ptr->dfbSurface->SetColor(d_ptr->dfbSurface,
-                                color.red(), color.green(), color.blue(),
-                                color.alpha());
-    d_ptr->dfbSurface->FillRectangles(d_ptr->dfbSurface, dfbRects.data(),
-                                      dfbRects.size());
 }
 
 QImage::Format QDirectFBScreen::alphaPixmapFormat() const
 {
     return d_ptr->alphaPixmapFormat;
 }
-
 
 bool QDirectFBScreen::initSurfaceDescriptionPixelFormat(DFBSurfaceDescription *description,
                                                         QImage::Format format)
