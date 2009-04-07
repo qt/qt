@@ -4091,7 +4091,7 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
         return;
     if (d->cacheMode != NoCache) {
         QGraphicsItemCache *c;
-        bool scrollCache = qFuzzyCompare(dx - int(dx), qreal(0.0)) && qFuzzyCompare(dy - int(dy), qreal(0.0))
+        bool scrollCache = qIsFuzzyNull(dx - int(dx)) && qIsFuzzyNull(dy - int(dy))
                            && (c = (QGraphicsItemCache *)qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraCacheData)))
                            && (d->cacheMode == ItemCoordinateCache && !c->fixedSize.isValid());
         if (scrollCache) {
