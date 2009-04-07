@@ -909,8 +909,7 @@ void QDirectFBPaintEngine::setState(QPainterState *s)
 {
     Q_D(QDirectFBPaintEngine);
     QRasterPaintEngine::setState(s);
-    if (d->surface)
-        d->updateClip();
+    d->setClipDirty();
     d->setPen(state()->pen);
     d->setBrush(state()->brush);
     d->setOpacity(state()->opacity);
