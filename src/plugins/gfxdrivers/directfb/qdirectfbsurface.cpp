@@ -334,6 +334,12 @@ inline bool isWidgetOpaque(const QWidget *w)
 void QDirectFBSurface::flush(QWidget *widget, const QRegion &region,
                              const QPoint &offset)
 {
+    Q_UNUSED(widget);
+#ifdef QT_NO_DIRECTFB_WM
+    Q_UNUSED(region);
+    Q_UNUSED(offset);
+#endif
+
     QWidget *win = window();
 
     // hw: make sure opacity information is updated before compositing
