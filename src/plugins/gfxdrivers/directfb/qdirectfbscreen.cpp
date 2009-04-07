@@ -171,7 +171,7 @@ IDirectFBSurface* QDirectFBScreen::createDFBSurface(const QImage &img, SurfaceCr
     }
 #endif
 #ifndef QT_NO_DIRECTFB_PALETTE
-    if (img.numColors() != 0)
+    if (img.numColors() != 0 && surface)
         QDirectFBScreen::setSurfaceColorTable(surface, img);
 #endif
     return surface;
@@ -261,19 +261,21 @@ IDirectFBSurface *QDirectFBScreen::copyToDFBSurface(const QImage &img,
 #ifdef QT_NO_DIRECTFB_PREALLOCATED
         || image.format() != pixmapFormat
 #endif
+#ifdef QT_NO_DIRECTFB_PALETTE
+        || image.numColors() != 0
+#endif
         ) {
         image = image.convertToFormat(pixmapFormat);
     }
 
-
-    IDirectFBSurface *dfbSurface = createDFBSurface(img.size(), pixmapFormat, options);
+    IDirectFBSurface *dfbSurface = createDFBSurface(image.size(), pixmapFormat, options);
     if (!dfbSurface) {
         qWarning("QDirectFBPixmapData::fromImage() Couldn't create surface");
         return 0;
     }
 
 #ifndef QT_NO_DIRECTFB_PREALLOCATED
-    IDirectFBSurface *imgSurface = createDFBSurface(img, DontTrackSurface);
+    IDirectFBSurface *imgSurface = createDFBSurface(image, DontTrackSurface);
     if (!imgSurface) {
         qWarning("QDirectFBPixmapData::fromImage()");
         QDirectFBScreen::releaseDFBSurface(dfbSurface);
