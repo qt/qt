@@ -491,7 +491,7 @@ void QGraphicsScenePrivate::removeFromIndex(QGraphicsItem *item)
 void QGraphicsScenePrivate::resetIndex()
 {
     purgeRemovedItems();
-    if (indexMethod == QGraphicsScene::BspTreeIndex) {
+    if (indexMethod != QGraphicsScene::NoIndex) {
         for (int i = 0; i < indexedItems.size(); ++i) {
             if (QGraphicsItem *item = indexedItems.at(i)) {
                 item->d_ptr->index = -1;
@@ -2393,12 +2393,13 @@ void QGraphicsScene::setSceneIndex(QGraphicsSceneIndex *index)
     } else {
         d->indexMethod = CustomIndex;
         d->customIndex = index;
+        index->mscene = this;
     }
 }
 
-QGraphicsSceneIndex* QGraphicsScene::sceneIndex()
+QGraphicsSceneIndex* QGraphicsScene::sceneIndex() const
 {
-    Q_D(QGraphicsScene);
+    Q_D(const QGraphicsScene);
     return d->customIndex;
 }
 

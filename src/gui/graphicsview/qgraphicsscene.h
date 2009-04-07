@@ -145,7 +145,7 @@ public:
     ItemIndexMethod itemIndexMethod() const;
     void setItemIndexMethod(ItemIndexMethod method);
     void setSceneIndex(QGraphicsSceneIndex *index);
-    QGraphicsSceneIndex* sceneIndex();
+    QGraphicsSceneIndex* sceneIndex() const;
 
     bool isSortCacheEnabled() const;
     void setSortCacheEnabled(bool enabled);

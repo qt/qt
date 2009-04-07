@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qgraphicssceneindex.h"
+#include "qgraphicsscene.h"
 
 #ifndef QT_NO_GRAPHICSVIEW
 
@@ -52,6 +53,11 @@ QGraphicsSceneIndex::QGraphicsSceneIndex()
 QGraphicsSceneIndex::~QGraphicsSceneIndex()
 {
 
+}
+
+QGraphicsScene* QGraphicsSceneIndex::scene()
+{
+     return mscene;
 }
 
 QT_END_NAMESPACE

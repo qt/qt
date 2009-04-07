@@ -53,10 +53,10 @@ QT_MODULE(Gui)
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
 class QGraphicsItem;
+class QGraphicsScene;
 class QRectF;
 class QPointF;
 template<typename T> class QList;
-template<typename T> class QSet;
 
 class Q_GUI_EXPORT QGraphicsSceneIndex
 {
@@ -64,13 +64,20 @@ public:
     QGraphicsSceneIndex();
     virtual ~QGraphicsSceneIndex();
 
-    virtual void initialize(const QRectF &rect) = 0;
+    virtual void setRect(const QRectF &rect) = 0;
+    virtual QRectF rect() const = 0;
     virtual void clear() = 0;
 
     virtual void insertItem(QGraphicsItem *item, const QRectF &rect) = 0;
+    virtual void insertItems(QList<QGraphicsItem *> items, const QRectF &rect) = 0;
     virtual void removeItem(QGraphicsItem *item, const QRectF &rect) = 0;
+    virtual void removeItems(QList<QGraphicsItem *> items, const QRectF &rect) = 0;
 
     virtual QList<QGraphicsItem *> items(const QRectF &rect) = 0;
+
+    QGraphicsScene* scene();
+
+    QGraphicsScene* mscene;
 };
 
 #endif // QT_NO_GRAPHICSVIEW
