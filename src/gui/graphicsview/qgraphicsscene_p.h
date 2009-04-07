@@ -132,7 +132,7 @@ public:
 
     bool purgePending;
     void _q_removeItemLater(QGraphicsItem *item);
-    QSet<QGraphicsItem *> removedItems;
+    QList<QGraphicsItem *> removedItems;
     void purgeRemovedItems();
 
     QBrush backgroundBrush;

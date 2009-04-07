@@ -60,6 +60,7 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qset.h>
 #include <QtCore/qvector.h>
+#include <QtGui/qgraphicssceneindex.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,7 +70,7 @@ class QGraphicsSceneInsertItemBspTreeVisitor;
 class QGraphicsSceneRemoveItemBspTreeVisitor;
 class QGraphicsSceneFindItemBspTreeVisitor;
 
-class QGraphicsSceneBspTree
+class QGraphicsSceneBspTree : public QGraphicsSceneIndex
 {
 public:
     struct Node
@@ -87,10 +88,13 @@ public:
 
     void initialize(const QRectF &rect, int depth);
     void clear();
+    QRectF rect() const;
+    void setRect(const QRectF &rect);
 
-    void insertItem(QGraphicsItem *item, const QRectF &rect);
-    void removeItem(QGraphicsItem *item, const QRectF &rect);
-    void removeItems(const QSet<QGraphicsItem *> &items);
+    void insertItem(QGraphicsItem *item);
+    void insertItems(const QList<QGraphicsItem *> &items);
+    void removeItem(QGraphicsItem *item);
+    void removeItems(const QList<QGraphicsItem *> &items);
 
     QList<QGraphicsItem *> items(const QRectF &rect);
     QList<QGraphicsItem *> items(const QPointF &pos);
@@ -116,7 +120,7 @@ private:
     QVector<Node> nodes;
     QVector<QList<QGraphicsItem *> > leaves;
     int leafCnt;
-    QRectF rect;
+    QRectF sceneRect;
 
     QGraphicsSceneInsertItemBspTreeVisitor *insertVisitor;
     QGraphicsSceneRemoveItemBspTreeVisitor *removeVisitor;
@@ -129,6 +133,8 @@ public:
     virtual ~QGraphicsSceneBspTreeVisitor() { }
     virtual void visit(QList<QGraphicsItem *> *items) = 0;
 };
+
+Q_DECLARE_TYPEINFO(QGraphicsSceneBspTree::Node, Q_PRIMITIVE_TYPE);
 
 QT_END_NAMESPACE
 

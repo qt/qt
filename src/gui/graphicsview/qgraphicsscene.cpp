@@ -443,7 +443,7 @@ void QGraphicsScenePrivate::addToIndex(QGraphicsItem *item)
 {
     if (indexMethod == QGraphicsScene::BspTreeIndex) {
         if (item->d_func()->index != -1) {
-            bspTree.insertItem(item, item->sceneBoundingRect());
+            bspTree.insertItem(item);
             foreach (QGraphicsItem *child, item->children())
                 child->addToIndex();
         } else {
@@ -472,7 +472,7 @@ void QGraphicsScenePrivate::removeFromIndex(QGraphicsItem *item)
             if (indexMethod == QGraphicsScene::CustomIndex)
                 customIndex->removeItem(item);
             else
-                bspTree.removeItem(item, item->sceneBoundingRect());
+                bspTree.removeItem(item);
             freeItemIndexes << index;
             indexedItems[index] = 0;
             item->d_func()->index = -1;
@@ -579,7 +579,7 @@ void QGraphicsScenePrivate::_q_updateIndex()
             if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
                 continue;
             if (indexMethod == QGraphicsScene::BspTreeIndex)
-                bspTree.insertItem(item, rect);
+                bspTree.insertItem(item);
             if (indexMethod == QGraphicsScene::CustomIndex)
                 customIndex->insertItem(item);
 
