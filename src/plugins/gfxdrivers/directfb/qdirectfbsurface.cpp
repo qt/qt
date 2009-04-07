@@ -94,6 +94,9 @@ bool QDirectFBSurface::isValid() const
 #ifndef QT_NO_DIRECTFB_WM
 void QDirectFBSurface::createWindow()
 {
+#ifdef QT_NO_DIRECTFB_LAYER
+#warning QT_NO_DIRECTFB_LAYER requires QT_NO_DIRECTFB_WM
+#else
     IDirectFBDisplayLayer *layer = screen->dfbDisplayLayer();
     if (!layer)
         qFatal("QDirectFBWindowSurface: Unable to get primary display layer!");
@@ -121,6 +124,7 @@ void QDirectFBSurface::createWindow()
 
     dfbWindow->GetSurface(dfbWindow, &dfbSurface);
     forceRaster = (format == QImage::Format_RGB32);
+#endif
 }
 #endif // QT_NO_DIRECTFB_WM
 
