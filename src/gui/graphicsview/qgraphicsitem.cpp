@@ -3713,7 +3713,7 @@ void QGraphicsItemPrivate::fullUpdateHelper(bool childrenOnly, bool maybeDirtyCl
     dirtyChildren = 1;
 }
 
-static inline bool allChildrenCombineOpacity(QGraphicsItem *parent)
+static inline bool allChildrenCombineOpacityHelper(QGraphicsItem *parent)
 {
     Q_ASSERT(parent);
     if (parent->flags() & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)
@@ -3732,11 +3732,11 @@ void QGraphicsItemPrivate::updateEffectiveOpacity()
     Q_Q(QGraphicsItem);
     if (parent) {
         resolveEffectiveOpacity(parent->effectiveOpacity());
-        parent->d_ptr->allChildrenCombineOpacity = ::allChildrenCombineOpacity(parent);
+        parent->d_ptr->allChildrenCombineOpacity = allChildrenCombineOpacityHelper(parent);
     } else {
         resolveEffectiveOpacity(1.0);
     }
-    allChildrenCombineOpacity = ::allChildrenCombineOpacity(q);
+    allChildrenCombineOpacity = allChildrenCombineOpacityHelper(q);
 }
 
 /*!
