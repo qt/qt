@@ -83,8 +83,8 @@ public:
     }
 };
 
-QGraphicsSceneBspTree::QGraphicsSceneBspTree(QObject *parent)
-    : QGraphicsSceneIndex(parent), depth(0), leafCnt(0)
+QGraphicsSceneBspTree::QGraphicsSceneBspTree()
+    : leafCnt(0)
 {
     insertVisitor = new QGraphicsSceneInsertItemBspTreeVisitor;
     removeVisitor = new QGraphicsSceneRemoveItemBspTreeVisitor;
@@ -100,7 +100,7 @@ QGraphicsSceneBspTree::~QGraphicsSceneBspTree()
 
 void QGraphicsSceneBspTree::initialize(const QRectF &rect, int depth)
 {
-    sceneRect = rect;
+    this->rect = rect;
     leafCnt = 0;
     nodes.resize((1 << (depth + 1)) - 1);
     nodes.fill(Node());
@@ -117,29 +117,19 @@ void QGraphicsSceneBspTree::clear()
     leaves.clear();
 }
 
-QRectF QGraphicsSceneBspTree::rect() const
-{
-     return sceneRect;
-}
-
-void QGraphicsSceneBspTree::setRect(const QRectF &rect)
-{
-     sceneRect = rect;
-}
-
-void QGraphicsSceneBspTree::insertItem(QGraphicsItem *item)
+void QGraphicsSceneBspTree::insertItem(QGraphicsItem *item, const QRectF &rect)
 {
     insertVisitor->item = item;
-    climbTree(insertVisitor, item->sceneBoundingRect());
+    climbTree(insertVisitor, rect);
 }
 
-void QGraphicsSceneBspTree::removeItem(QGraphicsItem *item)
+void QGraphicsSceneBspTree::removeItem(QGraphicsItem *item, const QRectF &rect)
 {
     removeVisitor->item = item;
-    climbTree(removeVisitor, item->sceneBoundingRect());
+    climbTree(removeVisitor, rect);
 }
 
-void QGraphicsSceneBspTree::removeItems(const QList<QGraphicsItem *> &items)
+void QGraphicsSceneBspTree::removeItems(const QSet<QGraphicsItem *> &items)
 {
     for (int i = 0; i < leaves.size(); ++i) {
         QList<QGraphicsItem *> newItemList;
@@ -247,10 +237,8 @@ void QGraphicsSceneBspTree::initialize(const QRectF &rect, int depth, int index)
 
 void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QPointF &pos, int index)
 {
-    if (nodes.isEmpty()) {
-        // should never happen for bsp tree internal to QGraphicsScene
-        initialize(sceneRect, 0);
-    }
+    if (nodes.isEmpty())
+        return;
 
     const Node &node = nodes.at(index);
     int childIndex = firstChildIndex(index);
@@ -279,10 +267,8 @@ void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, con
 
 void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QRectF &rect, int index)
 {
-    if (nodes.isEmpty()) {
-        // should never happen for bsp tree internal to QGraphicsScene
-        initialize(sceneRect, 0);
-    }
+    if (nodes.isEmpty())
+        return;
 
     const Node &node = nodes.at(index);
     int childIndex = firstChildIndex(index);
@@ -316,7 +302,7 @@ void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, con
 QRectF QGraphicsSceneBspTree::rectForIndex(int index) const
 {
     if (index <= 0)
-        return sceneRect;
+        return rect;
 
     int parentIdx = parentIndex(index);
     QRectF rect = rectForIndex(parentIdx);

@@ -57,8 +57,8 @@
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
-#include "qgraphicsscene_bsp_p.h"
-#include "qgraphicsscene_linear_p.h"
+#include "qgraphicsscenebsptreeindex_p.h"
+#include "qgraphicsscenelinearindex_p.h"
 #include "qgraphicssceneindex.h"
 #include "qgraphicsitem_p.h"
 
@@ -89,15 +89,10 @@ public:
     int bspTreeDepth;
 
     QList<QGraphicsItem *> estimateItemsInRect(const QRectF &rect) const;
-    void addToIndex(QGraphicsItem *item);
-    void removeFromIndex(QGraphicsItem *item);
-    void resetIndex();
 
-    void _q_updateIndex();
     int lastItemCount;
 
     QGraphicsSceneIndex *index;
-    QGraphicsSceneLinearIndex *linearIndex;
 
     QRectF sceneRect;
     bool hasSceneRect;
@@ -112,7 +107,6 @@ public:
     QPainterPath selectionArea;
     int selectionChanging;
     QSet<QGraphicsItem *> selectedItems;
-    QList<QGraphicsItem *> indexedItems;
     QList<QGraphicsItem *> dirtyItems;
     QList<QGraphicsItem *> pendingUpdateItems;
     QList<QGraphicsItem *> unpolishedItems;
@@ -127,20 +121,10 @@ public:
     void resetDirtyItemsLater();
     bool dirtyItemResetPending;
 
-    QList<int> freeItemIndexes;
-    bool regenerateIndex;
-
-    bool purgePending;
     void _q_removeItemLater(QGraphicsItem *item);
-    QList<QGraphicsItem *> removedItems;
-    void purgeRemovedItems();
 
     QBrush backgroundBrush;
     QBrush foregroundBrush;
-
-    int indexTimerId;
-    bool restartIndexTimer;
-    void startIndexTimer();
 
     bool stickyFocus;
     bool hasFocus;

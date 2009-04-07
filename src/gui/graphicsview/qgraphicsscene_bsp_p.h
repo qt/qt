@@ -60,7 +60,6 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qset.h>
 #include <QtCore/qvector.h>
-#include <QtGui/qgraphicssceneindex.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -70,10 +69,8 @@ class QGraphicsSceneInsertItemBspTreeVisitor;
 class QGraphicsSceneRemoveItemBspTreeVisitor;
 class QGraphicsSceneFindItemBspTreeVisitor;
 
-class Q_AUTOTEST_EXPORT QGraphicsSceneBspTree : public QGraphicsSceneIndex
+class QGraphicsSceneBspTree
 {
-    Q_OBJECT
-
 public:
     struct Node
     {
@@ -85,26 +82,19 @@ public:
         Type type;
     };
 
-    QGraphicsSceneBspTree(QObject *parent = 0);
+    QGraphicsSceneBspTree();
     ~QGraphicsSceneBspTree();
 
     void initialize(const QRectF &rect, int depth);
     void clear();
-    QRectF rect() const;
-    void setRect(const QRectF &rect);
 
-    void insertItem(QGraphicsItem *item);
-    void removeItem(QGraphicsItem *item);
-    void removeItems(const QList<QGraphicsItem *> &items);
+    void insertItem(QGraphicsItem *item, const QRectF &rect);
+    void removeItem(QGraphicsItem *item, const QRectF &rect);
+    void removeItems(const QSet<QGraphicsItem *> &items);
 
-    QList<QGraphicsItem *> items(const QPointF &point);
     QList<QGraphicsItem *> items(const QRectF &rect);
-
+    QList<QGraphicsItem *> items(const QPointF &pos);
     int leafCount() const;
-
-    int depth;
-
-private:
 
     inline int firstChildIndex(int index) const
     { return index * 2 + 1; }
@@ -114,6 +104,7 @@ private:
 
     QString debug(int index) const;
 
+private:
     void initialize(const QRectF &rect, int depth, int index);
     void climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QPointF &pos, int index = 0);
     void climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QRectF &rect, int index = 0);
@@ -125,7 +116,7 @@ private:
     QVector<Node> nodes;
     QVector<QList<QGraphicsItem *> > leaves;
     int leafCnt;
-    QRectF sceneRect;
+    QRectF rect;
 
     QGraphicsSceneInsertItemBspTreeVisitor *insertVisitor;
     QGraphicsSceneRemoveItemBspTreeVisitor *removeVisitor;
@@ -138,8 +129,6 @@ public:
     virtual ~QGraphicsSceneBspTreeVisitor() { }
     virtual void visit(QList<QGraphicsItem *> *items) = 0;
 };
-
-Q_DECLARE_TYPEINFO(QGraphicsSceneBspTree::Node, Q_PRIMITIVE_TYPE);
 
 QT_END_NAMESPACE
 

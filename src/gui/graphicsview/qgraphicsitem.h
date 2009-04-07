@@ -398,6 +398,7 @@ private:
     friend class QGraphicsWidget;
     friend class QGraphicsWidgetPrivate;
     friend class QGraphicsProxyWidgetPrivate;
+    friend class QGraphicsSceneBspTreeIndex;
     friend class ::tst_QGraphicsItem;
     friend bool qt_closestLeaf(const QGraphicsItem *, const QGraphicsItem *);
     friend bool qt_closestItemFirst(const QGraphicsItem *, const QGraphicsItem *);

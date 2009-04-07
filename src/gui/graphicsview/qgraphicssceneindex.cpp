@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 /*!
     Constructs an abstract scene index.
 */
-QGraphicsSceneIndex::QGraphicsSceneIndex(QObject *parent): QObject(parent)
+QGraphicsSceneIndex::QGraphicsSceneIndex(QGraphicsScene *scene): QObject(scene), m_scene(scene)
 {
 }
 
@@ -108,7 +108,7 @@ QGraphicsSceneIndex::~QGraphicsSceneIndex()
 */
 QGraphicsScene* QGraphicsSceneIndex::scene()
 {
-     return mscene;
+     return m_scene;
 }
 
 /*!
@@ -121,7 +121,7 @@ QGraphicsScene* QGraphicsSceneIndex::scene()
 */
 void QGraphicsSceneIndex::updateItem(QGraphicsItem *item)
 {
-    removeItem(item);
+    removeItem(item,false);
     insertItem(item);
 }
 
@@ -145,10 +145,10 @@ void QGraphicsSceneIndex::insertItems(const QList<QGraphicsItem *> &items)
 
     \sa removeItem(), removeItems(), updateItems()
 */
-void QGraphicsSceneIndex::removeItems(const QList<QGraphicsItem *> &items)
+void QGraphicsSceneIndex::removeItems(const QList<QGraphicsItem *> &items, bool itemsAreAboutToDie)
 {
     foreach (QGraphicsItem *item, items)
-        removeItem(item);
+        removeItem(item,itemsAreAboutToDie);
 }
 
 /*!
@@ -162,6 +162,10 @@ void QGraphicsSceneIndex::updateItems(const QList<QGraphicsItem *> &items)
 {
     foreach (QGraphicsItem *item, items)
         updateItem(item);
+}
+
+void QGraphicsSceneIndex::updateIndex()
+{
 }
 
 QT_END_NAMESPACE

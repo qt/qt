@@ -43,8 +43,8 @@
 #include <QtTest/QtTest>
 #include <QtGui/qgraphicsscene.h>
 #include <QtGui/qgraphicssceneindex.h>
-#include <private/qgraphicsscene_bsp_p.h>
-#include <private/qgraphicsscene_linear_p.h>
+#include <private/qgraphicsscenebsptreeindex_p.h>
+#include <private/qgraphicsscenelinearindex_p.h>
 
 
 //TESTED_CLASS=
@@ -88,12 +88,12 @@ void tst_QGraphicsSceneIndex::common_data()
 QGraphicsSceneIndex *tst_QGraphicsSceneIndex::createIndex(const QString &indexMethod)
 {
     QGraphicsSceneIndex *index = 0;
-
+    QGraphicsScene *scene = new QGraphicsScene();
     if (indexMethod == "bsp")
-        index = new QGraphicsSceneBspTree;
+        index = new QGraphicsSceneBspTreeIndex(scene);
 
     if (indexMethod == "linear")
-        index = new QGraphicsSceneLinearIndex;
+        index = new QGraphicsSceneLinearIndex(scene);
 
     return index;
 }
@@ -104,8 +104,9 @@ void tst_QGraphicsSceneIndex::sceneRect_data()
 }
 
 void tst_QGraphicsSceneIndex::sceneRect()
-{
-    QGraphicsSceneIndex *index = new QGraphicsSceneBspTree;
+{ 
+    QGraphicsScene *scene = new QGraphicsScene();
+    QGraphicsSceneIndex *index = new QGraphicsSceneBspTreeIndex(scene);
     index->setRect(QRectF(0, 0, 2000, 2000));
     QCOMPARE(index->rect(), QRectF(0, 0, 2000, 2000));
 }

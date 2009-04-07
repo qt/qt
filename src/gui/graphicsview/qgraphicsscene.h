@@ -279,7 +279,6 @@ private:
 
     Q_DECLARE_PRIVATE(QGraphicsScene)
     Q_DISABLE_COPY(QGraphicsScene)
-    Q_PRIVATE_SLOT(d_func(), void _q_updateIndex())
     Q_PRIVATE_SLOT(d_func(), void _q_emitUpdated())
     Q_PRIVATE_SLOT(d_func(), void _q_removeItemLater(QGraphicsItem *item))
     Q_PRIVATE_SLOT(d_func(), void _q_updateLater())
@@ -292,6 +291,7 @@ private:
     friend class QGraphicsViewPrivate;
     friend class QGraphicsWidget;
     friend class QGraphicsWidgetPrivate;
+    friend class QGraphicsSceneBspTreeIndex;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsScene::SceneLayers)

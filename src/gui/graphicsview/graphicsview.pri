@@ -6,8 +6,9 @@ HEADERS += \
         graphicsview/qgraphicsitemanimation.h \
         graphicsview/qgraphicsscene.h \
         graphicsview/qgraphicsscene_p.h \
+        graphicsview/qgraphicsscenebsptreeindex_p.h \
         graphicsview/qgraphicsscene_bsp_p.h \
-        graphicsview/qgraphicsscene_linear_p.h \
+        graphicsview/qgraphicsscenelinearindex_p.h \
         graphicsview/qgraphicssceneindex.h \
         graphicsview/qgraphicssceneevent.h \
         graphicsview/qgraphicsview_p.h \
@@ -18,6 +19,7 @@ SOURCES += \
         graphicsview/qgraphicsitemanimation.cpp \
         graphicsview/qgraphicsscene.cpp \
         graphicsview/qgraphicsscene_bsp.cpp \
+        graphicsview/qgraphicsscenebsptreeindex_p.cpp \
         graphicsview/qgraphicssceneindex.cpp \
         graphicsview/qgraphicssceneevent.cpp \
         graphicsview/qgraphicsview.cpp

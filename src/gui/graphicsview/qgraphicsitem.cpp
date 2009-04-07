@@ -5789,7 +5789,7 @@ void QGraphicsItem::addToIndex()
         return;
     }
     if (d_ptr->scene)
-        d_ptr->scene->d_func()->addToIndex(this);
+        d_ptr->scene->d_func()->index->insertItem(this);
     d_ptr->updateHelper();
 }
 
@@ -5802,13 +5802,9 @@ void QGraphicsItem::addToIndex()
 */
 void QGraphicsItem::removeFromIndex()
 {
-    if (d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
-        // ### remove from child index only if applicable
-        return;
-    }
     d_ptr->updateHelper();
     if (d_ptr->scene)
-        d_ptr->scene->d_func()->removeFromIndex(this);
+        d_ptr->scene->d_func()->index->removeItem(this,false);
 }
 
 /*!
@@ -5831,7 +5827,7 @@ void QGraphicsItem::prepareGeometryChange()
 
     d_ptr->updateHelper(QRectF(), false, /*maybeDirtyClipPath=*/!d_ptr->inSetPosHelper);
     QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
-    scenePrivate->removeFromIndex(this);
+    scenePrivate->index->updateItem(this);
 
     if (d_ptr->inSetPosHelper)
         return;

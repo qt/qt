@@ -39,63 +39,80 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSCENEINDEX_H
-#define QGRAPHICSSCENEINDEX_H
+#include <QtCore/qglobal.h>
 
-#include <QtCore/qnamespace.h>
-#include <QtCore/qobject.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
+#ifndef QGRAPHICSBSPTREEINDEX_H
+#define QGRAPHICSBSPTREEINDEX_H
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
-class QGraphicsItem;
-class QGraphicsScene;
-class QRectF;
-class QPointF;
-template<typename T> class QList;
+QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QGraphicsSceneIndex: public QObject
+#include <QtCore/qrect.h>
+#include <QtCore/qlist.h>
+#include <QtGui/qgraphicsitem.h>
+#include <QtGui/qgraphicsscene.h>
+#include <QtGui/qgraphicssceneindex.h>
+
+#include "qgraphicsscene_bsp_p.h"
+
+class Q_AUTOTEST_EXPORT QGraphicsSceneBspTreeIndex : public QGraphicsSceneIndex
 {
     Q_OBJECT
-
 public:
-    QGraphicsSceneIndex(QGraphicsScene *scene = 0);
-    virtual ~QGraphicsSceneIndex();
+    QGraphicsSceneBspTreeIndex(QGraphicsScene *scene = 0);
 
-    QGraphicsScene* scene();
+    void setRect(const QRectF &rect);
+    virtual QRectF rect() const;
 
-    virtual void setRect(const QRectF &rect) = 0;
-    virtual QRectF rect() const = 0;
-    virtual void clear() = 0;
+    void clear();
 
-    virtual void insertItem(QGraphicsItem *item) = 0;
-    virtual void removeItem(QGraphicsItem *items, bool itemIsAboutToDie) = 0;
-    virtual void updateItem(QGraphicsItem *item);
+    void insertItem(QGraphicsItem *item);
+    void removeItem(QGraphicsItem *item, bool itemIsAboutToDie);
+    void updateItem(QGraphicsItem *item);
 
-    virtual void insertItems(const QList<QGraphicsItem *> &items);
-    virtual void removeItems(const QList<QGraphicsItem *> &items, bool itemsAreAboutToDie);
-    virtual void updateItems(const QList<QGraphicsItem *> &items);
+    QList<QGraphicsItem *> items(const QPointF &point);
+    QList<QGraphicsItem *> items(const QRectF &rect);
 
-    virtual QList<QGraphicsItem *> items(const QPointF &point) = 0;
-    virtual QList<QGraphicsItem *> items(const QRectF &rect) = 0;
+    QList<QGraphicsItem *> indexedItems();
 
-    virtual QList<QGraphicsItem *> indexedItems()  = 0;
+    void updateIndex();
 
-    virtual void updateIndex();
+    int bspDepth();
+    void setBspDepth(int depth);
 
-private:
-    QGraphicsScene *m_scene;
+protected:
+    bool event(QEvent *event);
+
+public slots :
+    void _q_updateIndex();
+
+private :
+    QGraphicsSceneBspTree bsp;
+    QRectF m_sceneRect;
+    int bspTreeDepth;
+    int indexTimerId;
+    bool restartIndexTimer;
+    bool regenerateIndex;
+    int lastItemCount;
+
+    QList<QGraphicsItem *> m_indexedItems;
+    QList<QGraphicsItem *> unindexedItems;
+    QList<int> freeItemIndexes;
+
+    bool purgePending;
+    QList<QGraphicsItem *> removedItems;
+    void purgeRemovedItems();
+
+    void startIndexTimer();
+    void resetIndex();
+
+    void addToIndex(QGraphicsItem *item);
+    void removeFromIndex(QGraphicsItem *item);
 };
-
-#endif // QT_NO_GRAPHICSVIEW
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
+#endif // QT_NO_GRAPHICSVIEW
 
-#endif // QGRAPHICSSCENEINDEX_H
+#endif // QGRAPHICSBSPTREEINDEX_H

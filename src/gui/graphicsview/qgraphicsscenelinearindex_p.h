@@ -73,7 +73,8 @@ private:
     QList<QGraphicsItem*> m_items;
 
 public:
-    QGraphicsSceneLinearIndex(QObject *parent = 0): QGraphicsSceneIndex(parent) {
+    QGraphicsSceneLinearIndex(QGraphicsScene *scene = 0): QGraphicsSceneIndex(scene)
+    {
     }
 
     virtual void setRect(const QRectF &rect) {
@@ -92,7 +93,8 @@ public:
         m_items << item;
     }
 
-    virtual void removeItem(QGraphicsItem *item) {
+    virtual void removeItem(QGraphicsItem *item, bool itemIsAboutToDie) {
+        Q_UNUSED(itemIsAboutToDie);
         m_items.removeAll(item);
     }
 
