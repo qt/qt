@@ -250,7 +250,12 @@ QImage QDirectFBPixmapData::toImage() const
 #ifndef QT_NO_DIRECTFB_PREALLOCATED
     QImage ret(size(), QDirectFBScreen::getImageFormat(dfbSurface));
     if (IDirectFBSurface *imgSurface = screen->createDFBSurface(ret, QDirectFBScreen::DontTrackSurface)) {
-        imgSurface->SetBlittingFlags(imgSurface, hasAlphaChannel() ? DSBLIT_BLEND_ALPHACHANNEL : DSBLIT_NOFX);
+        if (hasAlphaChannel()) {
+            imgSurface->SetBlittingFlags(imgSurface, DSBLIT_BLEND_ALPHACHANNEL);
+            imgSurface->Clear(imgSurface, 0, 0, 0, 0);
+        } else {
+            imgSurface->SetBlittingFlags(imgSurface, DSBLIT_NOFX);
+        }
         imgSurface->Blit(imgSurface, dfbSurface, 0, 0, 0);
         imgSurface->ReleaseSource(imgSurface);
         imgSurface->Release(imgSurface);
