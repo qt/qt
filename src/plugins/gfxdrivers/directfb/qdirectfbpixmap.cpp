@@ -231,13 +231,22 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
         return QPixmap();
 
     QDirectFBPixmapData *data = new QDirectFBPixmapData(QPixmapData::PixmapType);
-    data->resize(size.width(), size.height());
-
-    IDirectFBSurface *dest = data->dfbSurface;
-    dest->SetBlittingFlags(dest, DSBLIT_NOFX);
+    QImage::Format format = screen->pixelFormat();
+    DFBSurfaceBlittingFlags flags = DSBLIT_NOFX;
+    if (hasAlphaChannel()) {
+        flags = DSBLIT_BLEND_ALPHACHANNEL;
+        format = screen->alphaPixmapFormat();
+    }
+    data->dfbSurface = screen->createDFBSurface(size,
+                                                format,
+                                                QDirectFBScreen::TrackSurface);
+    if (flags & DSBLIT_BLEND_ALPHACHANNEL) {
+        data->dfbSurface->Clear(data->dfbSurface, 0, 0, 0, 0);
+    }
+    data->dfbSurface->SetBlittingFlags(data->dfbSurface, flags);
 
     const DFBRectangle destRect = { 0, 0, size.width(), size.height() };
-    dest->StretchBlit(dest, dfbSurface, 0, &destRect);
+    data->dfbSurface->StretchBlit(data->dfbSurface, dfbSurface, 0, &destRect);
 
     return QPixmap(data);
 }
