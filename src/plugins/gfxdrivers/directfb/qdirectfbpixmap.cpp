@@ -144,15 +144,11 @@ void QDirectFBPixmapData::fill(const QColor &color)
     Q_ASSERT(dfbSurface);
 
     if (color.alpha() < 255 && !hasAlphaChannel()) {
-        DFBSurfaceDescription description;
-        description.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH |
-                                                       DSDESC_HEIGHT |
-                                                       DSDESC_PIXELFORMAT);
-        dfbSurface->GetSize(dfbSurface, &description.width, &description.height);
-        QDirectFBScreen::initSurfaceDescriptionPixelFormat(&description, screen->alphaPixmapFormat());
-        screen->releaseDFBSurface(dfbSurface); // release old surface
 
-        dfbSurface = screen->createDFBSurface(&description, QDirectFBScreen::TrackSurface);
+        QSize size;
+        dfbSurface->GetSize(dfbSurface, &size.rwidth(), &size.rheight());
+        screen->releaseDFBSurface(dfbSurface);
+        dfbSurface = screen->createDFBSurface(size, screen->alphaPixmapFormat(), QDirectFBScreen::TrackSurface);
         forceRaster = false;
         setSerialNumber(++global_ser_no);
         if (!dfbSurface) {
