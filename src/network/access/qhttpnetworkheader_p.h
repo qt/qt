@@ -54,10 +54,10 @@
 //
 #ifndef QT_NO_HTTP
 
-QT_BEGIN_NAMESPACE
-
 #include <qshareddata.h>
 #include <qurl.h>
+
+QT_BEGIN_NAMESPACE
 
 class Q_AUTOTEST_EXPORT QHttpNetworkHeader
 {

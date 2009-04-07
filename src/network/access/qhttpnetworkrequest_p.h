@@ -54,9 +54,9 @@
 //
 #ifndef QT_NO_HTTP
 
-QT_BEGIN_NAMESPACE
-
 #include <private/qhttpnetworkheader_p.h>
+
+QT_BEGIN_NAMESPACE
 
 class QHttpNetworkRequestPrivate;
 class Q_AUTOTEST_EXPORT QHttpNetworkRequest: public QHttpNetworkHeader

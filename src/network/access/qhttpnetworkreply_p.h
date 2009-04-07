@@ -54,8 +54,6 @@
 //
 #ifndef QT_NO_HTTP
 
-QT_BEGIN_NAMESPACE
-
 #ifndef QT_NO_COMPRESS
 #    include <zlib.h>
 static const unsigned char gz_magic[2] = {0x1f, 0x8b}; // gzip magic header
@@ -83,6 +81,8 @@ static const unsigned char gz_magic[2] = {0x1f, 0x8b}; // gzip magic header
 #include <private/qhttpnetworkheader_p.h>
 #include <private/qhttpnetworkrequest_p.h>
 #include <private/qauthenticator_p.h>
+
+QT_BEGIN_NAMESPACE
 
 class QHttpNetworkConnection;
 class QHttpNetworkRequest;
