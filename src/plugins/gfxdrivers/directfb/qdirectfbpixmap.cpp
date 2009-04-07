@@ -109,7 +109,8 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
     }
 
     IDirectFBSurface *src = static_cast<const QDirectFBPixmapData*>(data)->directFBSurface();
-    const QImage::Format format = (data->hasAlphaChannel()
+    const bool hasAlpha = data->hasAlphaChannel();
+    const QImage::Format format = (hasAlpha
                                    ? QDirectFBScreen::instance()->alphaPixmapFormat()
                                    : QDirectFBScreen::instance()->pixelFormat());
 
@@ -122,7 +123,12 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
     }
     forceRaster = (format == QImage::Format_RGB32);
 
-    dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
+    if (hasAlpha) {
+        dfbSurface->Clear(dfbSurface, 0, 0, 0, 0);
+        dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_BLEND_ALPHACHANNEL);
+    } else {
+        dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
+    }
     const DFBRectangle blitRect = { rect.x(), rect.y(),
                                     rect.width(), rect.height() };
     DFBResult result = dfbSurface->Blit(dfbSurface, src, &blitRect, 0, 0);
