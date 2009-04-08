@@ -2507,6 +2507,10 @@ void QGtkStyle::drawControl(ControlElement element,
 
             if (selected) {
                 QRect rect = option->rect.adjusted(0, 0, -1, -1);
+#ifndef QT_NO_COMBOBOX
+                if (qobject_cast<const QComboBox*>(widget))
+                    rect = option->rect;
+#endif
                 gtkPainter.paintBox( gtkMenuItem, "menuitem", rect, GTK_STATE_PRELIGHT, GTK_SHADOW_OUT, style);
             }
 
