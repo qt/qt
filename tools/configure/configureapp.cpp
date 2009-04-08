@@ -474,6 +474,9 @@ void Configure::parseCmdLine()
         else if( configCmdLine.at(i) == "-developer-build" )
             dictionary[ "BUILDDEV" ] = "yes";
         else if( configCmdLine.at(i) == "-nokia-developer" ) {
+            cout << "Detected -nokia-developer option" << endl;
+            cout << "Nokia employees and agents are allowed to use this software under" << endl;
+            cout << "the authority of Nokia Corporation and/or its subsidiary(-ies)" << endl;
             dictionary[ "BUILDNOKIA" ] = "yes";
             dictionary[ "BUILDDEV" ] = "yes";
             dictionary["LICENSE_CONFIRMED"] = "yes";
@@ -3511,9 +3514,8 @@ void Configure::readLicense()
     }
 #else
     } else {
-        if (dictionary[ "BUILDNOKIA" ] != "yes")
-            Tools::checkLicense(dictionary, licenseInfo, firstLicensePath());
-        if (dictionary["DONE"] != "error") {
+        Tools::checkLicense(dictionary, licenseInfo, firstLicensePath());
+        if (dictionary["DONE"] != "error" && dictionary["BUILDNOKIA"] != "yes") {
             // give the user some feedback, and prompt for license acceptance
             cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " " << dictionary["EDITION"] << " Edition."<< endl << endl;
             if (!showLicense(dictionary["LICENSE FILE"])) {
