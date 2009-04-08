@@ -1058,7 +1058,7 @@ QVariant QDB2Result::data(int field)
                 case QSql::HighPrecision:
                 default:
                     // length + 1 for the comma
-                    v = new QVariant(qGetStringData(d->hStmt, field, info.length() + 1, isNull));
+                    v = new QVariant(value);
                     ok = true;
                     break;
             }
