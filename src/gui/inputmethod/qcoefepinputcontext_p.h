@@ -102,7 +102,6 @@ private:
     bool m_inDestruction;
     int m_cursorVisibility;
     int m_inlinePosition;
-    QPoint m_mousePressPos;
     MFepInlineTextFormatRetriever *m_formatRetriever;
     MFepPointerEventHandlerDuringInlineEdit *m_pointerHandler;
 };

@@ -208,39 +208,26 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         return false;
     }
 
-    if (event->type() == QEvent::MouseButtonPress) {
-        const QMouseEvent *mEvent = static_cast<const QMouseEvent *>(event);
-        m_mousePressPos = mEvent->globalPos();
-    } else if (event->type() == QEvent::MouseButtonRelease) {
+    if (event->type() == QEvent::RequestSoftwareInputPanel) {
         // Notify S60 that we want the virtual keyboard to show up.
-        const QMouseEvent *mEvent = static_cast<const QMouseEvent *>(event);
+        QSymbianControl *sControl;
+        Q_ASSERT(focusWidget());
+        sControl = focusWidget()->effectiveWinId()->MopGetObject(sControl);
+        Q_ASSERT(sControl);
 
-        if (mEvent->modifiers() == Qt::NoModifier
-                && mEvent->button() == Qt::LeftButton
-                && focusWidget() // Not set if prior MouseButtonPress was not on this widget
-                && focusWidget()->rect().contains(focusWidget()->mapFromGlobal(mEvent->globalPos()))
-                && (m_mousePressPos - mEvent->globalPos()).manhattanLength() < QApplication::startDragDistance()) {
-
-            QSymbianControl *sControl;
-            sControl = focusWidget()->effectiveWinId()->MopGetObject(sControl);
-            // The FEP UI temporarily steals focus when it shows up the first time, causing
-            // all sorts of weird effects on the focused widgets. Since it will immediately give
-            // back focus to us, we temporarily disable focus handling until the job's done.
-            if (sControl) {
-                sControl->setIgnoreFocusChanged(true);
-            }
-
-            m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::QT_EAknActivatePenInputRequest);
-
-            if (sControl) {
-                sControl->setIgnoreFocusChanged(false);
-            }
-
-            // Although it is tempting to let the click through by returning false, we have to return
-            // true because the event might have caused focus switches, which may in turn delete
-            // widgets.
-            return true;
+        // The FEP UI temporarily steals focus when it shows up the first time, causing
+        // all sorts of weird effects on the focused widgets. Since it will immediately give
+        // back focus to us, we temporarily disable focus handling until the job's done.
+        if (sControl) {
+            sControl->setIgnoreFocusChanged(true);
         }
+
+        m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::QT_EAknActivatePenInputRequest);
+
+        if (sControl) {
+            sControl->setIgnoreFocusChanged(false);
+        }
+        return true;
     }
 
     return false;
