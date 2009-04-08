@@ -129,11 +129,11 @@ public:
         (const QQuaternion& q1, const QQuaternion& q2, qreal t);
 
 private:
-    qrealinner wp, xp, yp, zp;
+    float wp, xp, yp, zp;
 
     friend class QMatrix4x4;
 
-    QQuaternion(qrealinner scalar, qrealinner xpos, qrealinner ypos, qrealinner zpos, int dummy);
+    QQuaternion(float scalar, float xpos, float ypos, float zpos, int dummy);
 };
 
 inline QQuaternion::QQuaternion() : wp(1.0f), xp(0.0f), yp(0.0f), zp(0.0f) {}
@@ -141,7 +141,7 @@ inline QQuaternion::QQuaternion() : wp(1.0f), xp(0.0f), yp(0.0f), zp(0.0f) {}
 inline QQuaternion::QQuaternion(qreal scalar, qreal xpos, qreal ypos, qreal zpos) : wp(scalar), xp(xpos), yp(ypos), zp(zpos) {}
 
 
-inline QQuaternion::QQuaternion(qrealinner scalar, qrealinner xpos, qrealinner ypos, qrealinner zpos, int) : wp(scalar), xp(xpos), yp(ypos), zp(zpos) {}
+inline QQuaternion::QQuaternion(float scalar, float xpos, float ypos, float zpos, int) : wp(scalar), xp(xpos), yp(ypos), zp(zpos) {}
 
 inline QQuaternion::QQuaternion(int scalar, int xpos, int ypos, int zpos) : wp(scalar), xp(xpos), yp(ypos), zp(zpos) {}
 
@@ -155,10 +155,10 @@ inline bool QQuaternion::isIdentity() const
     return qIsNull(xp) && qIsNull(yp) && qIsNull(zp) && wp == 1.0f;
 }
 
-inline qreal QQuaternion::x() const { return qt_math3d_convert<qreal, qrealinner>(xp); }
-inline qreal QQuaternion::y() const { return qt_math3d_convert<qreal, qrealinner>(yp); }
-inline qreal QQuaternion::z() const { return qt_math3d_convert<qreal, qrealinner>(zp); }
-inline qreal QQuaternion::scalar() const { return qt_math3d_convert<qreal, qrealinner>(wp); }
+inline qreal QQuaternion::x() const { return qreal(xp); }
+inline qreal QQuaternion::y() const { return qreal(yp); }
+inline qreal QQuaternion::z() const { return qreal(zp); }
+inline qreal QQuaternion::scalar() const { return qreal(wp); }
 
 inline void QQuaternion::setX(qreal x) { xp = x; }
 inline void QQuaternion::setY(qreal y) { yp = y; }
@@ -190,11 +190,10 @@ inline QQuaternion &QQuaternion::operator-=(const QQuaternion &quaternion)
 
 inline QQuaternion &QQuaternion::operator*=(qreal factor)
 {
-    qrealinner f(factor);
-    xp *= f;
-    yp *= f;
-    zp *= f;
-    wp *= f;
+    xp *= factor;
+    yp *= factor;
+    zp *= factor;
+    wp *= factor;
     return *this;
 }
 
@@ -202,19 +201,19 @@ inline const QQuaternion operator*(const QQuaternion &q1, const QQuaternion& q2)
 {
     // Algorithm from:
     // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q53
-    qrealinner x = q1.wp * q2.xp +
+    float x = q1.wp * q2.xp +
                     q1.xp * q2.wp +
                     q1.yp * q2.zp -
                     q1.zp * q2.yp;
-    qrealinner y = q1.wp * q2.yp +
+    float y = q1.wp * q2.yp +
                     q1.yp * q2.wp +
                     q1.zp * q2.xp -
                     q1.xp * q2.zp;
-    qrealinner z = q1.wp * q2.zp +
+    float z = q1.wp * q2.zp +
                     q1.zp * q2.wp +
                     q1.xp * q2.yp -
                     q1.yp * q2.xp;
-    qrealinner w = q1.wp * q2.wp -
+    float w = q1.wp * q2.wp -
                     q1.xp * q2.xp -
                     q1.yp * q2.yp -
                     q1.zp * q2.zp;
@@ -229,11 +228,10 @@ inline QQuaternion &QQuaternion::operator*=(const QQuaternion &quaternion)
 
 inline QQuaternion &QQuaternion::operator/=(qreal divisor)
 {
-    qrealinner d(divisor);
-    xp /= d;
-    yp /= d;
-    zp /= d;
-    wp /= d;
+    xp /= divisor;
+    yp /= divisor;
+    zp /= divisor;
+    wp /= divisor;
     return *this;
 }
 
@@ -259,14 +257,12 @@ inline const QQuaternion operator-(const QQuaternion &q1, const QQuaternion &q2)
 
 inline const QQuaternion operator*(qreal factor, const QQuaternion &quaternion)
 {
-    qrealinner f(factor);
-    return QQuaternion(quaternion.wp * f, quaternion.xp * f, quaternion.yp * f, quaternion.zp * f, 1);
+    return QQuaternion(quaternion.wp * factor, quaternion.xp * factor, quaternion.yp * factor, quaternion.zp * factor, 1);
 }
 
 inline const QQuaternion operator*(const QQuaternion &quaternion, qreal factor)
 {
-    qrealinner f(factor);
-    return QQuaternion(quaternion.wp * f, quaternion.xp * f, quaternion.yp * f, quaternion.zp * f, 1);
+    return QQuaternion(quaternion.wp * factor, quaternion.xp * factor, quaternion.yp * factor, quaternion.zp * factor, 1);
 }
 
 inline const QQuaternion operator-(const QQuaternion &quaternion)
@@ -276,8 +272,7 @@ inline const QQuaternion operator-(const QQuaternion &quaternion)
 
 inline const QQuaternion operator/(const QQuaternion &quaternion, qreal divisor)
 {
-    qrealinner d(divisor);
-    return QQuaternion(quaternion.wp / d, quaternion.xp / d, quaternion.yp / d, quaternion.zp / d, 1);
+    return QQuaternion(quaternion.wp / divisor, quaternion.xp / divisor, quaternion.yp / divisor, quaternion.zp / divisor, 1);
 }
 
 inline bool qFuzzyCompare(const QQuaternion& q1, const QQuaternion& q2)

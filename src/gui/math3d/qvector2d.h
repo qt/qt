@@ -42,7 +42,6 @@
 #ifndef QVECTOR2D_H
 #define QVECTOR2D_H
 
-#include <QtGui/qmath3dglobal.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qmetatype.h>
 
@@ -117,18 +116,17 @@ public:
     QPointF toPointF() const;
 
 private:
-    qrealinner xp, yp;
+    float xp, yp;
 
-    QVector2D(qrealinner xpos, qrealinner ypos, int dummy);
+    QVector2D(float xpos, float ypos, int dummy);
 
     friend class QVector3D;
     friend class QVector4D;
-    friend class QVertexArray;
 };
 
 inline QVector2D::QVector2D() : xp(0.0f), yp(0.0f) {}
 
-inline QVector2D::QVector2D(qrealinner xpos, qrealinner ypos, int) : xp(xpos), yp(ypos) {}
+inline QVector2D::QVector2D(float xpos, float ypos, int) : xp(xpos), yp(ypos) {}
 
 inline QVector2D::QVector2D(qreal xpos, qreal ypos) : xp(xpos), yp(ypos) {}
 
@@ -143,8 +141,8 @@ inline bool QVector2D::isNull() const
     return qIsNull(xp) && qIsNull(yp);
 }
 
-inline qreal QVector2D::x() const { return qt_math3d_convert<qreal, qrealinner>(xp); }
-inline qreal QVector2D::y() const { return qt_math3d_convert<qreal, qrealinner>(yp); }
+inline qreal QVector2D::x() const { return qreal(xp); }
+inline qreal QVector2D::y() const { return qreal(yp); }
 
 inline void QVector2D::setX(qreal x) { xp = x; }
 inline void QVector2D::setY(qreal y) { yp = y; }
@@ -165,9 +163,8 @@ inline QVector2D &QVector2D::operator-=(const QVector2D &vector)
 
 inline QVector2D &QVector2D::operator*=(qreal factor)
 {
-    qrealinner f(factor);
-    xp *= f;
-    yp *= f;
+    xp *= factor;
+    yp *= factor;
     return *this;
 }
 
@@ -180,9 +177,8 @@ inline QVector2D &QVector2D::operator*=(const QVector2D &vector)
 
 inline QVector2D &QVector2D::operator/=(qreal divisor)
 {
-    qrealinner d(divisor);
-    xp /= d;
-    yp /= d;
+    xp /= divisor;
+    yp /= divisor;
     return *this;
 }
 
@@ -208,14 +204,12 @@ inline const QVector2D operator-(const QVector2D &v1, const QVector2D &v2)
 
 inline const QVector2D operator*(qreal factor, const QVector2D &vector)
 {
-    qrealinner f(factor);
-    return QVector2D(vector.xp * f, vector.yp * f, 1);
+    return QVector2D(vector.xp * factor, vector.yp * factor, 1);
 }
 
 inline const QVector2D operator*(const QVector2D &vector, qreal factor)
 {
-    qrealinner f(factor);
-    return QVector2D(vector.xp * f, vector.yp * f, 1);
+    return QVector2D(vector.xp * factor, vector.yp * factor, 1);
 }
 
 inline const QVector2D operator*(const QVector2D &v1, const QVector2D &v2)
@@ -230,8 +224,7 @@ inline const QVector2D operator-(const QVector2D &vector)
 
 inline const QVector2D operator/(const QVector2D &vector, qreal divisor)
 {
-    qrealinner d(divisor);
-    return QVector2D(vector.xp / d, vector.yp / d, 1);
+    return QVector2D(vector.xp / divisor, vector.yp / divisor, 1);
 }
 
 inline bool qFuzzyCompare(const QVector2D& v1, const QVector2D& v2)
@@ -246,8 +239,7 @@ inline QPoint QVector2D::toPoint() const
 
 inline QPointF QVector2D::toPointF() const
 {
-    return QPointF(qt_math3d_convert<qreal, qrealinner>(xp),
-                   qt_math3d_convert<qreal, qrealinner>(yp));
+    return QPointF(qreal(xp), qreal(yp));
 }
 
 #ifndef QT_NO_DEBUG_STREAM
