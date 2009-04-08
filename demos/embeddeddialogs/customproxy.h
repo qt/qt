@@ -70,6 +70,7 @@ private slots:
 private:
     QTimeLine *timeLine;
     bool popupShown;
+    QGraphicsItem *currentPopup;
 };
 
 #endif
