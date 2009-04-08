@@ -694,16 +694,10 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest,
 }
 
 void QDirectFBPaintEnginePrivate::drawImage(const QRectF &dest,
-                                            const QImage &srcImage,
+                                            const QImage &image,
                                             const QRectF &src)
 {
-    QImage image = srcImage;
-    if (QDirectFBScreen::getSurfacePixelFormat(image.format()) == DSPF_UNKNOWN) {
-        image = image.convertToFormat(image.hasAlphaChannel()
-                                      ? QDirectFBScreen::instance()->alphaPixmapFormat()
-                                      : QDirectFBScreen::instance()->pixelFormat());
-    }
-
+    Q_ASSERT(QDirectFBScreen::getSurfacePixelFormat(image.format()) != DSPF_UNKNOWN);
     CachedImage *img = imageCache[image.cacheKey()];
     IDirectFBSurface *imgSurface = 0;
     bool doRelease = false;
@@ -1017,7 +1011,8 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
 
 #ifndef QT_NO_DIRECTFB_PREALLOCATED
     d->updateClip();
-    if (!d->dfbCanHandleClip(r) || d->matrixRotShear)
+    if (!d->dfbCanHandleClip(r) || d->matrixRotShear
+        || QDirectFBScreen::getSurfacePixelFormat(image.format()) == DSPF_UNKNOWN)
 #endif
     {
         d->lock();
