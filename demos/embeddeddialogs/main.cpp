@@ -68,7 +68,6 @@ int main(int argc, char *argv[])
             proxy->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
 
             scene.addItem(proxy);
-            proxy->installSceneEventFilter(proxy);
         }
     }
     scene.setSceneRect(scene.itemsBoundingRect());
