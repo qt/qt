@@ -1429,7 +1429,7 @@ void tst_QMenuBar::check_menuPosition()
 #ifdef Q_WS_MAC
     QSKIP("Qt/Mac does not use the native popups/menubar", SkipAll);
 #endif
-#ifdef Q_OS_WINCE
+#ifdef Q_OS_WINCE_WM
     QSKIP("Qt/CE uses native menubar", SkipAll);
 #endif
     QMenu menu;
