@@ -49,6 +49,7 @@
 #include <qstringlist.h>
 #include <qvarlengtharray.h>
 #include <qvector.h>
+#include <QDebug>
 
 #ifndef UNICODE
 #define UNICODE
@@ -578,7 +579,8 @@ bool QDB2Result::reset (const QString& query)
     } else {
         setSelect(false);
     }
-    d->valueCache.resize(count, NULL);
+    d->valueCache.resize(count);
+    d->valueCache.fill(NULL);
     setActive(true);
     return true;
 }
@@ -821,7 +823,8 @@ bool QDB2Result::exec()
         setSelect(false);
     }
     setActive(true);
-    d->valueCache.resize(count, NULL);
+    d->valueCache.resize(count);
+    d->valueCache.fill(NULL);
 
     //get out parameters
     if (!hasOutValues())
@@ -1130,7 +1133,8 @@ bool QDB2Result::nextResult()
     for (int i = 0; i < fieldCount; ++i)
         d->recInf.append(qMakeFieldInfo(d, i));
 
-    d->valueCache.resize(fieldCount, NULL);
+    d->valueCache.resize(fieldCount);
+    d->valueCache.fill(NULL);
     setActive(true);
 
     return true;
