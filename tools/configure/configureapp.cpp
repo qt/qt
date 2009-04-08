@@ -3499,7 +3499,8 @@ void Configure::readLicense()
     }
 #else
     } else {
-        Tools::checkLicense(dictionary, licenseInfo, firstLicensePath());
+        if (dictionary[ "BUILDNOKIA" ] != "yes")
+            Tools::checkLicense(dictionary, licenseInfo, firstLicensePath());
         if (dictionary["DONE"] != "error") {
             // give the user some feedback, and prompt for license acceptance
             cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " " << dictionary["EDITION"] << " Edition."<< endl << endl;
