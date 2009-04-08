@@ -159,10 +159,11 @@ QT_END_NAMESPACE
             accel_ev.ignore();
             qt_sendSpontaneousEvent(widget, &accel_ev);
             if (accel_ev.isAccepted()) {
-                *target = nil;
-                *action = nil;
-                [qt_mac_nativeview_for(widget) keyDown:event];
-                return YES;
+                if (qt_dispatchKeyEvent(event, widget)) {
+                    *target = nil;
+                    *action = nil;
+                    return YES;
+                }
             }
         }
     }
