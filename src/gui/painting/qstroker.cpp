@@ -763,7 +763,7 @@ template <class Iterator> bool qt_stroke_side(Iterator *it,
 
 qreal qt_t_for_arc_angle(qreal angle)
 {
-    if (qIsFuzzyNull(angle))
+    if (qFuzzyIsNull(angle))
         return 0;
 
     if (qFuzzyCompare(angle, qreal(90)))
@@ -904,13 +904,13 @@ QPointF qt_curves_for_arc(const QRectF &rect, qreal startAngle, qreal sweepLengt
     }
 
     // avoid empty start segment
-    if (qIsFuzzyNull(startT - qreal(1))) {
+    if (qFuzzyIsNull(startT - qreal(1))) {
         startT = 0;
         startSegment += delta;
     }
 
     // avoid empty end segment
-    if (qIsFuzzyNull(endT)) {
+    if (qFuzzyIsNull(endT)) {
         endT = 1;
         endSegment -= delta;
     }
@@ -918,8 +918,8 @@ QPointF qt_curves_for_arc(const QRectF &rect, qreal startAngle, qreal sweepLengt
     startT = qt_t_for_arc_angle(startT * 90);
     endT = qt_t_for_arc_angle(endT * 90);
 
-    const bool splitAtStart = !qIsFuzzyNull(startT);
-    const bool splitAtEnd = !qIsFuzzyNull(endT - qreal(1));
+    const bool splitAtStart = !qFuzzyIsNull(startT);
+    const bool splitAtEnd = !qFuzzyIsNull(endT - qreal(1));
 
     const int end = endSegment + delta;
 
@@ -1018,7 +1018,7 @@ void QDashStroker::processCurrentSubpath()
         sumLength += dashes[i];
     }
 
-    if (qIsFuzzyNull(sumLength))
+    if (qFuzzyIsNull(sumLength))
         return;
 
     Q_ASSERT(dashCount > 0);

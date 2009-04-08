@@ -618,22 +618,22 @@ void QRasterPaintEngine::updateMatrix(const QTransform &matrix)
     d->isPlain45DegreeRotation = false;
     if (txop >= QTransform::TxRotate) {
         d->isPlain45DegreeRotation =
-            (qIsFuzzyNull(matrix.m11())
-             && qIsFuzzyNull(matrix.m12() - qreal(1))
-             && qIsFuzzyNull(matrix.m21() + qreal(1))
-             && qIsFuzzyNull(matrix.m22())
+            (qFuzzyIsNull(matrix.m11())
+             && qFuzzyIsNull(matrix.m12() - qreal(1))
+             && qFuzzyIsNull(matrix.m21() + qreal(1))
+             && qFuzzyIsNull(matrix.m22())
                 )
             ||
-            (qIsFuzzyNull(matrix.m11() + qreal(1))
-             && qIsFuzzyNull(matrix.m12())
-             && qIsFuzzyNull(matrix.m21())
-             && qIsFuzzyNull(matrix.m22() + qreal(1))
+            (qFuzzyIsNull(matrix.m11() + qreal(1))
+             && qFuzzyIsNull(matrix.m12())
+             && qFuzzyIsNull(matrix.m21())
+             && qFuzzyIsNull(matrix.m22() + qreal(1))
                 )
             ||
-            (qIsFuzzyNull(matrix.m11())
-             && qIsFuzzyNull(matrix.m12() + qreal(1))
-             && qIsFuzzyNull(matrix.m21() - qreal(1))
-             && qIsFuzzyNull(matrix.m22())
+            (qFuzzyIsNull(matrix.m11())
+             && qFuzzyIsNull(matrix.m12() + qreal(1))
+             && qFuzzyIsNull(matrix.m21() - qreal(1))
+             && qFuzzyIsNull(matrix.m22())
                 )
             ;
     }

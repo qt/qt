@@ -4780,7 +4780,7 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     }
 
     const qreal opacity = painter->opacity();
-    if (qIsFuzzyNull(opacity))
+    if (qFuzzyIsNull(opacity))
         return; // Fully transparent.
 
     Q_D(QWidget);

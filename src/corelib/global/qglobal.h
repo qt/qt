@@ -1709,7 +1709,7 @@ static inline bool qFuzzyCompare(float p1, float p2)
 /*!
   \internal
 */
-static inline bool qIsFuzzyNull(double d)
+static inline bool qFuzzyIsNull(double d)
 {
     return qAbs(d) <= 0.000000000001;
 }
@@ -1717,7 +1717,7 @@ static inline bool qIsFuzzyNull(double d)
 /*!
   \internal
 */
-static inline bool qIsFuzzyNull(float f)
+static inline bool qFuzzyIsNull(float f)
 {
     return qAbs(f) <= 0.00001f;
 }

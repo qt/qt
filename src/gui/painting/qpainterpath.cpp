@@ -1299,10 +1299,10 @@ static QRectF qt_painterpath_bezier_extrema(const QBezier &b)
         qreal bx = QT_BEZIER_B(b, x);
         qreal cx = QT_BEZIER_C(b, x);
         // specialcase quadratic curves to avoid div by zero
-        if (qIsFuzzyNull(ax)) {
+        if (qFuzzyIsNull(ax)) {
 
             // linear curves are covered by initialization.
-            if (!qIsFuzzyNull(bx)) {
+            if (!qFuzzyIsNull(bx)) {
                 qreal t = -cx / bx;
                 QT_BEZIER_CHECK_T(b, t);
             }
@@ -1329,10 +1329,10 @@ static QRectF qt_painterpath_bezier_extrema(const QBezier &b)
         qreal cy = QT_BEZIER_C(b, y);
 
         // specialcase quadratic curves to avoid div by zero
-        if (qIsFuzzyNull(ay)) {
+        if (qFuzzyIsNull(ay)) {
 
             // linear curves are covered by initialization.
-            if (!qIsFuzzyNull(by)) {
+            if (!qFuzzyIsNull(by)) {
                 qreal t = -cy / by;
                 QT_BEZIER_CHECK_T(b, t);
             }

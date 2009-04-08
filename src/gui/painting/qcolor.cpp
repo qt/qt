@@ -1387,7 +1387,7 @@ QColor QColor::toHsv() const
     const qreal min = Q_MIN_3(r, g, b);
     const qreal delta = max - min;
     color.ct.ahsv.value = qRound(max * USHRT_MAX);
-    if (qIsFuzzyNull(delta)) {
+    if (qFuzzyIsNull(delta)) {
         // achromatic case, hue is undefined
         color.ct.ahsv.hue = USHRT_MAX;
         color.ct.ahsv.saturation = 0;
@@ -1441,7 +1441,7 @@ QColor QColor::toCmyk() const
     // cmy -> cmyk
     const qreal k = qMin(c, qMin(m, y));
 
-    if (!qIsFuzzyNull(k - 1)) {
+    if (!qFuzzyIsNull(k - 1)) {
         c = (c - k) / (1.0 - k);
         m = (m - k) / (1.0 - k);
         y = (y - k) / (1.0 - k);

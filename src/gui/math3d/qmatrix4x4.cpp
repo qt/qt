@@ -1514,7 +1514,7 @@ void QMatrix4x4::extractAxisRotation(qreal &angle, QVector3D &axis) const
     angle = acos(cosa) * 180.0f / M_PI;
 
     // Any axis will work if r is zero (means no rotation)
-    if (qIsFuzzyNull(angle)) {
+    if (qFuzzyIsNull(angle)) {
         axis.setX(1.0f);
         axis.setY(0.0f);
         axis.setZ(0.0f);

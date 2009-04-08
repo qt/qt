@@ -204,7 +204,7 @@ inline bool QTransform::isIdentity() const
 
 inline bool QTransform::isInvertible() const
 {
-    return !qIsFuzzyNull(determinant());
+    return !qFuzzyIsNull(determinant());
 }
 
 inline bool QTransform::isScaling() const
