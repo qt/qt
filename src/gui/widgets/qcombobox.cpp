@@ -2572,21 +2572,19 @@ void QComboBox::changeEvent(QEvent *e)
             hidePopup();
         break;
     case QEvent::PaletteChange: {
-        if (d->container) {
-            QStyleOptionComboBox opt;
-            initStyleOption(&opt);
+        QStyleOptionComboBox opt;
+        initStyleOption(&opt);
 #ifndef QT_NO_MENU
-            if (style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, this)) {
-                QMenu menu;
-                menu.ensurePolished();
-                d->viewContainer()->setPalette(menu.palette());
-                d->viewContainer()->setWindowOpacity(menu.windowOpacity());
-            } else
+        if (style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, this)) {
+            QMenu menu;
+            menu.ensurePolished();
+            d->viewContainer()->setPalette(menu.palette());
+            d->viewContainer()->setWindowOpacity(menu.windowOpacity());
+        } else
 #endif
-            {
-                d->viewContainer()->setPalette(palette());
-                d->viewContainer()->setWindowOpacity(1.0);
-            }
+        {
+            d->viewContainer()->setPalette(palette());
+            d->viewContainer()->setWindowOpacity(1.0);
         }
         break;
     }
