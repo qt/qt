@@ -75,7 +75,10 @@ public:
     int metric(QPaintDevice::PaintDeviceMetric m) const {return QDirectFBPaintDevice::metric(m);}
 
 private:
+    void invalidate();
     QDirectFBPaintEngine *engine;
+    QImage::Format format;
+    bool alpha;
 };
 
 QT_END_HEADER
