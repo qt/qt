@@ -52,6 +52,10 @@ Third party components
    * [245668] set also protocol, verifyMode and verifyDepth in
      setSslConfiguration()
 
+- QStyleSheetStyle
+   * Improved support for setting background and foreground roles in styles
+    such as the text color in a combo box popup on Mac and Cleanlooks.
+
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
@@ -64,6 +68,27 @@ Third party components
 Qt for Linux/X11
 ----------------
 
+- Phonon/GStreamer
+   * [244259] Fixed a problem where the backend would fail to indicate an
+    error when streaming fails.
+   * [233188] Fixed a problem where the seek slider would reset to 0 while
+    being dragged.
+   * [246189] Fixed a problem where the backend would fail to correctly
+    escape certain file names so that playback would not start
+   * [246097] Added support for the MediaController interface to allow audio
+    CD playback.
+
+- QGtkStyle
+   * The system palette is no longer strictly forced. Also behavior related 
+    to system theme changes have been improved.
+   * [249363] QFrame is now styled as a GtkScrolledWindow.
+   * [247653] Fixed a compilation issue on solaris.
+   * Fixed palette and styling issues with the background color of 
+    combo box popups.
+   * [239829] Disabled alt-key navigation for QGtkStyle to follow 
+    GTK+ behavior.
+   * [238196] Allow middle click to set scrollbar position to follow
+    GTK+ behavior.
 
 Qt for Windows
 --------------
@@ -72,6 +97,9 @@ Qt for Windows
    * [247401] Fixed a bug that would cause a restarted timer to fire
      too early, causing Javascript in QtWebKit to consume 100% CPU on
      Windows.
+- QWindowsXPStyle
+    * [248036] Fixed an issue where tool buttons would incorrectly
+      hover when disabled.
 
 Qt for Mac OS X
 ---------------
@@ -121,7 +149,6 @@ Qt for Windows CE
 
 
 - moc
-
 
 - uic
     * [244998] Fixed include file generation for phonon widgets.
