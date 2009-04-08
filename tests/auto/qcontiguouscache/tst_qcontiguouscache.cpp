@@ -49,30 +49,6 @@
 #include <QDebug>
 #include <stdio.h>
 
-
-#if defined(FORCE_UREF)
-template <class aT>
-inline QDebug &operator<<(QDebug debug, const QContiguousCache<aT> &contiguousCache)
-#else
-template <class aT>
-inline QDebug operator<<(QDebug debug, const QContiguousCache<aT> &contiguousCache)
-#endif
-{
-    debug.nospace() << "QContiguousCache(";
-    for (int i = contiguousCache.firstIndex(); i <= contiguousCache.lastIndex(); ++i) {
-        debug << contiguousCache[i];
-        if (i != contiguousCache.lastIndex())
-            debug << ", ";
-    }
-    debug << ")";
-    return debug.space();
-}
-
-#if defined(NO_BENCHMARK) and defined(QBENCHMARK)
-#undef QBENCHMARK
-#define QBENCHMARK
-#endif
-
 class tst_QContiguousCache : public QObject
 {
     Q_OBJECT

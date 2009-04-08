@@ -51,6 +51,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qset.h>
+#include <QtCore/qcontiguouscache.h>
 
 QT_BEGIN_HEADER
 
@@ -230,6 +231,24 @@ inline QDebug operator<<(QDebug debug, const QSet<T> &set)
 {
     debug.nospace() << "QSet";
     return operator<<(debug, set.toList());
+}
+
+#if defined(FORCE_UREF)
+template <class T>
+inline QDebug &operator<<(QDebug debug, const QContiguousCache<T> &contiguousCache)
+#else
+template <class T>
+inline QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)
+#endif
+{
+    debug.nospace() << "QContiguousCache(";
+    for (int i = cache.firstIndex(); i <= cache.lastIndex(); ++i) {
+        debug << cache[i];
+        if (i != cache.lastIndex())
+            debug << ", ";
+    }
+    debug << ")";
+    return debug.space();
 }
 
 #if !defined(QT_NO_DEBUG_STREAM)
