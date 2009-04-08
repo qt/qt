@@ -45,6 +45,13 @@ Third party components
 - QHttp
    * [208445] cancel request upon receiving unknown authentication method
 
+- QMacStyle
+    * [248769] Fix regression where QMacStyle would only draw tabs when passed a QStyleOptionTabV3.
+    * Adjust the opacity value for popups.
+
+- QMainWindow
+    * [248048] Fix a regression that would cause tooltips to disappear when using the unified toolbar.
+
 - QSharedPointer
    * [246843] Fixed a crash caused by using QSharedPointer in global statics
 
@@ -104,6 +111,35 @@ Qt for Windows
 Qt for Mac OS X
 ---------------
 
+- Cocoa port
+    * Fixed a bug where actions in the native menubar weren't properly disabled.
+    * Make shortcuts work properly when using the Dvorak-QWERTY+CMD keyboard layout.
+    * Fixed a bug where dialogs would be positioned in the wrong place on the screen.
+    * [244369] Window flags on Cocoa windows should match have a similar look as the Carbon ones.
+    * The build-key for Cocoa was changed in the unlikely case that a plugin may make
+      assumptions on how Qt was built. All Cocoa plugins built against 4.5.0 WILL NOT WORK
+      with 4.5.1, we don't foresee changing this again.
+    * Fixed a bug where some windows would not get activation when they normally should.
+    * Key events sent to popups do not get propagated onwards.
+    * [249296] Fix a bug where lineedits on a second page of a stack widget wourd not get key events
+    * QFileOpenEvents are no longer sent for items passed on the command line.
+    * Various fixes for determining metrics of text and the ability to disable kerning.
+    * [248918] Fixed color matching for themed text items.
+    * Modify the colliding mice example to work better with coalesced updates.
+
+- Fix a crash when showing a widget that is window modal but has no parent.
+- [248803] Showing two dialogs at the same time don't get shared activation.
+- Added QSysInfo::MV_10_6 as an enum to test against. 
+- Various compile fixes for Snow Leopard (preliminary support). 
+
+
+- The uninstall-qt.py script included in the binary package no longer complains about removing itself multiple times.
+
+- Document a bit clearer how qt_mac_set_dock_menu() works.
+
+- QTestLib
+    * Activate the test application when launched from the command line.
+
 
 Qt for Embedded Linux
 ---------------------
@@ -161,6 +197,7 @@ Qt for Windows CE
 
 
 - qmake
+    * [248806] Ensure that the Xcode generator includes the right path to frameworks.
 
 
 - configure
