@@ -139,28 +139,32 @@ void QDirectFBSurface::setGeometry(const QRect &rect, const QRegion &mask)
             dfbWindow = 0;
         }
 #endif
-        if (dfbSurface) {
+        if (dfbSurface && dfbSurface != screen->dfbSurface()) {
             dfbSurface->Release(dfbSurface);
             dfbSurface = 0;
         }
     } else if (rect != geometry()) {
-        const bool isResize = rect.size() != geometry().size();
         DFBResult result = DFB_OK;
 
         // If we're in a resize, the surface shouldn't be locked
-        Q_ASSERT( (lockedImage == 0) || (isResize == false));
+        Q_ASSERT((lockedImage == 0) || (rect.size() == geometry().size()));
 
         if (onscreen) {
-            if (dfbSurface)
-                dfbSurface->Release(dfbSurface);
-
-            DFBRectangle r = { rect.x(), rect.y(),
-                               rect.width(), rect.height() };
             IDirectFBSurface *primarySurface = screen->dfbSurface();
             Q_ASSERT(primarySurface);
-            result = primarySurface->GetSubSurface(primarySurface, &r, &dfbSurface);
+            if (dfbSurface && dfbSurface != primarySurface)
+                dfbSurface->Release(dfbSurface);
+
+            if (rect == screen->region().boundingRect()) {
+                dfbSurface = primarySurface;
+            } else {
+                const DFBRectangle r = { rect.x(), rect.y(),
+                                         rect.width(), rect.height() };
+                result = primarySurface->GetSubSurface(primarySurface, &r, &dfbSurface);
+            }
             forceRaster = (dfbSurface && QDirectFBScreen::getImageFormat(dfbSurface) == QImage::Format_RGB32);
         } else {
+            const bool isResize = rect.size() != geometry().size();
 #ifdef QT_NO_DIRECTFB_WM
             if (isResize) {
                 if (dfbSurface)
@@ -362,10 +366,8 @@ void QDirectFBSurface::flush(QWidget *widget, const QRegion &region,
         if (winOpacity != opacity)
             dfbWindow->SetOpacity(dfbWindow, winOpacity);
     }
-#endif
-#ifndef QT_NO_DIRECTFB_WM
     if (!(flipFlags & DSFLIP_BLIT)) {
-        dfbSurface->Flip(dfbSurface, 0, DFBSurfaceFlipFlags(flipFlags));
+        dfbSurface->Flip(dfbSurface, 0, flipFlags);
     } else {
         if (region.numRects() > 1) {
             const QVector<QRect> rects = region.rects();
