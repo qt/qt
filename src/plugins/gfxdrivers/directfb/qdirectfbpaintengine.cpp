@@ -196,10 +196,10 @@ public:
     void setPen(const QPen &pen);
     void setBrush(const QBrush &brush);
     void setCompositionMode(QPainter::CompositionMode mode);
-    void setOpacity(const qreal value);
+    void setOpacity(quint8 value);
     void setRenderHints(QPainter::RenderHints hints);
 
-    inline void setDFBColor(const QColor &color) const;
+    inline void setDFBColor(const QColor &color);
 
     inline void lock();
     inline void unlock();
@@ -222,14 +222,14 @@ public:
     void drawTiledPixmap(const QRectF &dest, const QPixmap &pixmap);
     void drawImage(const QRectF &dest, const QImage &image, const QRectF &src);
 
-    void updateClip();
-    void updateFlags();
+    inline void updateClip();
     inline void setClipDirty();
     void systemStateChanged(); //Needed to be notified when system clip changes
 
     void begin(QPaintDevice *device);
     void end();
 
+    void prepareForBlit(bool alpha);
     SurfaceCache *surfaceCache;
     QTransform transform;
     int lastLockedHeight;
@@ -244,10 +244,9 @@ private:
 
     quint8 opacity;
 
-    quint32 drawFlags;
-    quint32 blitFlags;
-    quint32 duffFlags;
-    bool dirtyFlags;
+    quint32 drawFlagsFromCompositionMode, blitFlagsFromCompositionMode;
+    DFBSurfacePorterDuffRule porterDuffRule;
+
     bool dirtyClip;
     bool dfbHandledClip;
     QDirectFBPaintDevice *dfbDevice;
@@ -258,8 +257,9 @@ private:
 QDirectFBPaintEnginePrivate::QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p)
     : surface(0), antialiased(false), forceRasterPrimitives(false), simplePen(false),
       simpleBrush(false), matrixRotShear(false), matrixScale(false), lastLockedHeight(-1),
-      fbWidth(-1), fbHeight(-1), opacity(255), drawFlags(0), blitFlags(0), duffFlags(0),
-      dirtyFlags(false), dirtyClip(true), dfbHandledClip(false), dfbDevice(0), q(p)
+      fbWidth(-1), fbHeight(-1), opacity(255), drawFlagsFromCompositionMode(0),
+      blitFlagsFromCompositionMode(0), porterDuffRule(DSPD_SRC_OVER), dirtyClip(true),
+      dfbHandledClip(false), dfbDevice(0), q(p)
 {
     fb = QDirectFBScreen::instance()->dfb();
     surfaceCache = new SurfaceCache;
@@ -294,7 +294,6 @@ void QDirectFBPaintEnginePrivate::setClipDirty()
 {
     dirtyClip = true;
 }
-
 
 void QDirectFBPaintEnginePrivate::lock()
 {
@@ -345,11 +344,8 @@ void QDirectFBPaintEnginePrivate::begin(QPaintDevice *device)
 
     setTransform(QTransform());
     antialiased = false;
-    drawFlags = DSDRAW_BLEND;
-    blitFlags = DSBLIT_BLEND_ALPHACHANNEL;
-    duffFlags = DSPD_SRC_OVER;
     opacity = 255;
-    dirtyFlags = true;
+    setCompositionMode(q->state()->compositionMode());
     dirtyClip = true;
     setPen(q->state()->pen);
     setDFBColor(pen.color());
@@ -382,91 +378,72 @@ void QDirectFBPaintEnginePrivate::setBrush(const QBrush &b)
 
 void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode mode)
 {
-    drawFlags &= ~(DSDRAW_XOR);
-    blitFlags &= ~(DSBLIT_XOR);
+    blitFlagsFromCompositionMode = DSBLIT_NOFX;
+    drawFlagsFromCompositionMode = DSDRAW_NOFX;
 
-    // TODO: check these mappings!!!!
-    quint32 duff = DSPD_NONE;
-    quint32 blit = blitFlags;
-
+    bool blend = true;
     switch (mode) {
     case QPainter::CompositionMode_SourceOver:
-        duff = DSPD_SRC_OVER;
-        blit |= DSBLIT_BLEND_ALPHACHANNEL;
+        porterDuffRule = DSPD_SRC_OVER;
         break;
     case QPainter::CompositionMode_DestinationOver:
-        duff = DSPD_DST_OVER;
-        blit |= DSBLIT_BLEND_ALPHACHANNEL;
+        porterDuffRule = DSPD_DST_OVER;
         break;
     case QPainter::CompositionMode_Clear:
-        duff = DSPD_CLEAR;
-        blit &= ~DSBLIT_BLEND_ALPHACHANNEL;
+        porterDuffRule = DSPD_CLEAR;
+        blend = false;
         break;
     case QPainter::CompositionMode_Source:
-        duff = DSPD_SRC;
-        blit &= ~DSBLIT_BLEND_ALPHACHANNEL;
+        porterDuffRule = DSPD_SRC;
+        blend = false;
         break;
     case QPainter::CompositionMode_Destination:
-        blit &= ~DSBLIT_BLEND_ALPHACHANNEL;
+        porterDuffRule = DSPD_NONE; // ### need to double check this
+        blend = false;
         return;
     case QPainter::CompositionMode_SourceIn:
-        duff = DSPD_SRC_IN;
-        blit |= DSBLIT_BLEND_ALPHACHANNEL;
+        porterDuffRule = DSPD_SRC_IN;
         break;
     case QPainter::CompositionMode_DestinationIn:
-        duff = DSPD_DST_IN;
-        blit |= DSBLIT_BLEND_ALPHACHANNEL;
+        porterDuffRule = DSPD_DST_IN;
         break;
     case QPainter::CompositionMode_SourceOut:
-        duff = DSPD_SRC_OUT;
-        blit |= DSBLIT_BLEND_ALPHACHANNEL;
+        porterDuffRule = DSPD_SRC_OUT;
         break;
     case QPainter::CompositionMode_DestinationOut:
-        duff = DSPD_DST_OUT;
-        blit |= DSBLIT_BLEND_ALPHACHANNEL;
-        break;
-    case QPainter::CompositionMode_SourceAtop:
-        duff = DSPD_SRC_OVER;
-        blit |= DSBLIT_BLEND_ALPHACHANNEL;
-        break;
-    case QPainter::CompositionMode_DestinationAtop:
-        duff = DSPD_DST_OVER;
+        porterDuffRule = DSPD_DST_OUT;
         break;
     case QPainter::CompositionMode_Xor:
-        duff = DSPD_NONE;
-        blit |= DSBLIT_BLEND_ALPHACHANNEL;
-        drawFlags |= DSDRAW_XOR;
-        blit |= DSBLIT_XOR;
-        dirtyFlags = true;
+        porterDuffRule = DSPD_XOR;
+        blitFlagsFromCompositionMode |= DSBLIT_XOR;
+        drawFlagsFromCompositionMode |= DSDRAW_XOR;
         break;
+//     case QPainter::CompositionMode_Plus: // ???
+//         porterDuffRule = DSPD_ADD;
+//         break;
     default:
         qWarning("QDirectFBPaintEnginePrivate::setCompositionMode(): "
                  "mode %d not implemented", mode);
-        break;
+        return;
     }
-
-    if (duff != duffFlags || blit != blitFlags) {
-        duffFlags = duff;
-        blitFlags = blit;
-        dirtyFlags = true;
+    // intentially not comparing with current porterDuffRule. surface might have changed.
+    if (blend) {
+        blitFlagsFromCompositionMode |= DSBLIT_BLEND_ALPHACHANNEL;
+        drawFlagsFromCompositionMode |= DSDRAW_BLEND;
+    }
+    if (opacity != 255) {
+        setOpacity(opacity);
     }
 }
 
-void QDirectFBPaintEnginePrivate::setOpacity(const qreal value)
+void QDirectFBPaintEnginePrivate::setOpacity(quint8 opacity)
 {
-    const bool wasOpaque = (opacity == 255);
-    opacity = quint8(value * 255);
-    const bool opaque = (opacity == 255);
-
-    if (opaque == wasOpaque)
-        return;
-
-    if (opaque)
-        blitFlags &= ~(DSBLIT_BLEND_COLORALPHA | DSBLIT_SRC_PREMULTCOLOR);
-    else
-        blitFlags |= (DSBLIT_BLEND_COLORALPHA | DSBLIT_SRC_PREMULTCOLOR);
-
-    dirtyFlags = true;
+    if (opacity == 255) {
+        // ### need to check this stuff
+        blitFlagsFromCompositionMode &= ~(DSBLIT_BLEND_COLORALPHA | DSBLIT_SRC_PREMULTCOLOR);
+    } else {
+        blitFlagsFromCompositionMode |= (DSBLIT_BLEND_COLORALPHA | DSBLIT_SRC_PREMULTCOLOR);
+    }
 }
 
 void QDirectFBPaintEnginePrivate::setRenderHints(QPainter::RenderHints hints)
@@ -478,22 +455,33 @@ void QDirectFBPaintEnginePrivate::setRenderHints(QPainter::RenderHints hints)
     }
 }
 
-void QDirectFBPaintEnginePrivate::updateFlags()
+void QDirectFBPaintEnginePrivate::prepareForBlit(bool alpha)
 {
-    if (!dirtyFlags)
-        return;
-    surface->SetDrawingFlags(surface, DFBSurfaceDrawingFlags(drawFlags));
-    surface->SetBlittingFlags(surface, DFBSurfaceBlittingFlags(blitFlags));
-    surface->SetPorterDuff(surface, DFBSurfacePorterDuffRule(duffFlags));
-    dirtyFlags = false;
+    quint32 blittingFlags = blitFlagsFromCompositionMode;
+    if (!alpha) {
+        blittingFlags &= ~DSBLIT_BLEND_ALPHACHANNEL;
+        surface->SetPorterDuff(surface, DSPD_NONE);
+    } else {
+        surface->SetPorterDuff(surface, porterDuffRule);
+    }
+    surface->SetColor(surface, 0xff, 0xff, 0xff, opacity);
+    surface->SetBlittingFlags(surface, DFBSurfaceBlittingFlags(blittingFlags));
 }
 
-void QDirectFBPaintEnginePrivate::setDFBColor(const QColor &color) const
+void QDirectFBPaintEnginePrivate::setDFBColor(const QColor &color)
 {
+    Q_ASSERT(surface);
     const quint8 alpha = (opacity == 255 ?
                           color.alpha() : ALPHA_MUL(color.alpha(), opacity));
     surface->SetColor(surface,
                       color.red(), color.green(), color.blue(), alpha);
+    quint32 drawingFlags = drawFlagsFromCompositionMode;
+    if (alpha == 255) {
+        drawingFlags &= ~DSDRAW_BLEND;
+    }
+    surface->SetPorterDuff(surface, DSPD_NONE);
+    // PorterDuff messes up alpha values for primitives
+    surface->SetDrawingFlags(surface, DFBSurfaceDrawingFlags(drawingFlags));
 }
 
 void QDirectFBPaintEnginePrivate::drawLines(const QLine *lines, int n) const
@@ -601,15 +589,7 @@ void QDirectFBPaintEnginePrivate::drawPixmap(const QRectF &dest,
                                              const QPixmap &pixmap,
                                              const QRectF &src)
 {
-    surface->SetColor(surface, 0xff, 0xff, 0xff, opacity);
-
-    const bool changeFlags = !pixmap.hasAlphaChannel()
-                             && (blitFlags & DSBLIT_BLEND_ALPHACHANNEL);
-    if (changeFlags) {
-        quint32 flags = blitFlags & ~DSBLIT_BLEND_ALPHACHANNEL;
-        surface->SetBlittingFlags(surface, DFBSurfaceBlittingFlags(flags));
-    }
-
+    prepareForBlit(pixmap.hasAlphaChannel());
     QPixmapData *data = pixmap.pixmapData();
     Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
     QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
@@ -627,22 +607,12 @@ void QDirectFBPaintEnginePrivate::drawPixmap(const QRectF &dest,
     }
     if (result != DFB_OK)
         DirectFBError("QDirectFBPaintEngine::drawPixmap()", result);
-    if (changeFlags)
-        surface->SetBlittingFlags(surface, DFBSurfaceBlittingFlags(blitFlags));
 }
 
 void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest,
                                                   const QPixmap &pixmap)
 {
-    surface->SetColor(surface, 0xff, 0xff, 0xff, opacity);
-
-    const bool changeFlags = !pixmap.hasAlphaChannel()
-                             && (blitFlags & DSBLIT_BLEND_ALPHACHANNEL);
-    if (changeFlags) {
-        quint32 flags = blitFlags & ~DSBLIT_BLEND_ALPHACHANNEL;
-        surface->SetBlittingFlags(surface, DFBSurfaceBlittingFlags(flags));
-    }
-
+    prepareForBlit(pixmap.hasAlphaChannel());
     QPixmapData *data = pixmap.pixmapData();
     Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
     QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
@@ -688,9 +658,6 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest,
 
     if (result != DFB_OK)
         DirectFBError("QDirectFBPaintEngine::drawTiledPixmap()", result);
-
-    if (changeFlags)
-        surface->SetBlittingFlags(surface, DFBSurfaceBlittingFlags(blitFlags));
 }
 
 void QDirectFBPaintEnginePrivate::drawImage(const QRectF &dest,
@@ -739,14 +706,7 @@ void QDirectFBPaintEnginePrivate::drawImage(const QRectF &dest,
     const QRect dr = transform.mapRect(dest).toRect();
     const DFBRectangle sRect = { sr.x(), sr.y(), sr.width(), sr.height() };
 
-    surface->SetColor(surface, 0xff, 0xff, 0xff, opacity);
-
-    const bool changeFlags = !image.hasAlphaChannel()
-                             && (blitFlags & DSBLIT_BLEND_ALPHACHANNEL);
-    if (changeFlags) {
-        quint32 flags = blitFlags & ~DSBLIT_BLEND_ALPHACHANNEL;
-        surface->SetBlittingFlags(surface, DFBSurfaceBlittingFlags(flags));
-    }
+    prepareForBlit(image.hasAlphaChannel());
     if (dr.size() == sr.size()) {
         surface->Blit(surface, imgSurface, &sRect, dr.x(), dr.y());
     } else {
@@ -754,8 +714,6 @@ void QDirectFBPaintEnginePrivate::drawImage(const QRectF &dest,
                                      dr.width(), dr.height() };
         surface->StretchBlit(surface, imgSurface, &sRect, &dRect);
     }
-    if (changeFlags)
-        surface->SetBlittingFlags(surface, DFBSurfaceBlittingFlags(blitFlags));
     if (doRelease) {
         surface->ReleaseSource(surface);
         imgSurface->Release(imgSurface);
@@ -850,8 +808,7 @@ void QDirectFBPaintEngine::brushChanged()
 void QDirectFBPaintEngine::opacityChanged()
 {
     Q_D(QDirectFBPaintEngine);
-    d->setOpacity(state()->opacity);
-
+    d->setOpacity(quint8(state()->opacity * 255));
     QRasterPaintEngine::opacityChanged();
 }
 
@@ -859,7 +816,6 @@ void QDirectFBPaintEngine::compositionModeChanged()
 {
     Q_D(QDirectFBPaintEngine);
     d->setCompositionMode(state()->compositionMode());
-
     QRasterPaintEngine::compositionModeChanged();
 }
 
@@ -888,7 +844,7 @@ void QDirectFBPaintEngine::setState(QPainterState *s)
     d->setClipDirty();
     d->setPen(state()->pen);
     d->setBrush(state()->brush);
-    d->setOpacity(state()->opacity);
+    d->setOpacity(quint8(state()->opacity * 255));
     d->setCompositionMode(state()->compositionMode());
     d->setTransform(state()->transform());
 }
@@ -930,12 +886,10 @@ void QDirectFBPaintEngine::drawRects(const QRect *rects, int rectCount)
     d->unlock();
 
     if (d->brush != Qt::NoBrush) {
-        d->updateFlags();
         d->setDFBColor(d->brush.color());
         d->fillRects(rects, rectCount);
     }
     if (d->pen != Qt::NoPen) {
-        d->updateFlags();
         d->setDFBColor(d->pen.color());
         d->drawRects(rects, rectCount);
     }
@@ -955,12 +909,10 @@ void QDirectFBPaintEngine::drawRects(const QRectF *rects, int rectCount)
     d->unlock();
 
     if (d->brush != Qt::NoBrush) {
-        d->updateFlags();
         d->setDFBColor(d->brush.color());
         d->fillRects(rects, rectCount);
     }
     if (d->pen != Qt::NoPen) {
-        d->updateFlags();
         d->setDFBColor(d->pen.color());
         d->drawRects(rects, rectCount);
     }
@@ -978,7 +930,6 @@ void QDirectFBPaintEngine::drawLines(const QLine *lines, int lineCount)
 
     if (d->pen != Qt::NoPen) {
         d->unlock();
-        d->updateFlags();
         d->setDFBColor(d->pen.color());
         d->drawLines(lines, lineCount);
     }
@@ -996,7 +947,6 @@ void QDirectFBPaintEngine::drawLines(const QLineF *lines, int lineCount)
 
     if (d->pen != Qt::NoPen) {
         d->unlock();
-        d->updateFlags();
         d->setDFBColor(d->pen.color());
         d->drawLines(lines, lineCount);
     }
@@ -1022,7 +972,6 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
 
 #ifndef QT_NO_DIRECTFB_PREALLOCATED
     d->unlock();
-    d->updateFlags();
     d->drawImage(r, image, sr);
 #endif
 }
@@ -1041,15 +990,12 @@ void QDirectFBPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap,
     if (pixmap.pixmapData()->classId() != QPixmapData::DirectFBClass) {
         d->lock();
         QRasterPaintEngine::drawPixmap(r, pixmap, sr);
-    }
-    else if (!d->dfbCanHandleClip(r) || d->matrixRotShear) {
+    } else if (!d->dfbCanHandleClip(r) || d->matrixRotShear) {
         const QImage *img = static_cast<QDirectFBPixmapData*>(pixmap.pixmapData())->buffer();
         d->lock();
         QRasterPaintEngine::drawImage(r, *img, sr);
-    }
-    else {
+    } else {
         d->unlock();
-        d->updateFlags();
         d->drawPixmap(r, pixmap, sr);
     }
 }
@@ -1068,18 +1014,15 @@ void QDirectFBPaintEngine::drawTiledPixmap(const QRectF &r,
     if (pixmap.pixmapData()->classId() != QPixmapData::DirectFBClass) {
         d->lock();
         QRasterPaintEngine::drawTiledPixmap(r, pixmap, sp);
-    }
-    else if (!d->dfbCanHandleClip(r) || d->matrixRotShear || !sp.isNull()) {
+    } else if (!d->dfbCanHandleClip(r) || d->matrixRotShear || !sp.isNull()) {
         const QImage *img = static_cast<QDirectFBPixmapData*>(pixmap.pixmapData())->buffer();
         d->lock();
         QRasterPixmapData *data = new QRasterPixmapData(QPixmapData::PixmapType);
         data->fromImage(*img, Qt::AutoColor);
         const QPixmap pix(data);
         QRasterPaintEngine::drawTiledPixmap(r, pix, sp);
-    }
-    else {
+    } else {
         d->unlock();
-        d->updateFlags();
         d->drawTiledPixmap(r, pixmap);
     }
 }
@@ -1162,7 +1105,6 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
             if (d->forceRasterPrimitives)
                 break;
             d->unlock();
-            d->updateFlags();
             d->setDFBColor(brush.color());
             const QRect r = d->transform.mapRect(rect).toRect();
             d->surface->FillRectangle(d->surface, r.x(), r.y(),
@@ -1172,7 +1114,6 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
             if (state()->brushOrigin == QPointF() && brush.transform().isIdentity()) {
                 //could handle certain types of brush.transform() E.g. scale
                 d->unlock();
-                d->updateFlags();
                 d->drawTiledPixmap(rect, brush.texture());
                 return;
             }
@@ -1194,7 +1135,6 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QColor &color)
         QRasterPaintEngine::fillRect(rect, color);
     } else {
         d->unlock();
-        d->updateFlags();
         d->setDFBColor(color);
         const QRect r = d->transform.mapRect(rect).toRect();
         d->surface->FillRectangle(d->surface, r.x(), r.y(),
@@ -1224,6 +1164,7 @@ void QDirectFBPaintEngine::drawColorSpans(const QSpan *spans, int count,
             } else {
                 DFBSpan span = { spans[i].x, spans[i].len };
                 uint c = BYTE_MUL(color, spans[i].coverage);
+                // ### how does this play with setDFBColor
                 d->surface->SetColor(d->surface,
                                      qRed(c), qGreen(c), qBlue(c), qAlpha(c));
                 d->surface->FillSpans(d->surface, spans[i].y, &span, 1);
@@ -1244,6 +1185,7 @@ void QDirectFBPaintEngine::drawBufferSpan(const uint *buffer, int bufsize,
 {
     Q_D(QDirectFBPaintEngine);
     IDirectFBSurface *src = d->surfaceCache->getSurface(buffer, bufsize);
+    // ### how does this play with setDFBColor
     src->SetColor(src, 0, 0, 0, const_alpha);
     const DFBRectangle rect = { 0, 0, length, 1 };
     d->surface->Blit(d->surface, src, &rect, x, y);
