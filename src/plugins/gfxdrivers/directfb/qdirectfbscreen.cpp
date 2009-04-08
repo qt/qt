@@ -233,6 +233,16 @@ IDirectFBSurface* QDirectFBScreen::createDFBSurface(const DFBSurfaceDescription 
             voDesc.caps = DFBSurfaceCapabilities(voDesc.caps | DSCAPS_VIDEOONLY);
         }
         result = d_ptr->dfb->CreateSurface(d_ptr->dfb, &voDesc, &newSurface);
+#ifndef QT_NO_DEBUG
+        if (result != DFB_OK) {
+            qWarning("QDirectFBScreen::createDFBSurface() Failed to create surface in video memory!\n"
+                     "   Flags %0x Caps %0x width %d height %d pixelformat %0x %d preallocated %p %d\n%s",
+                     desc->flags, desc->caps, desc->width, desc->height,
+                     desc->pixelformat, DFB_PIXELFORMAT_INDEX(desc->pixelformat),
+                     desc->preallocated[0].data, desc->preallocated[0].pitch,
+                     DirectFBErrorString(result));
+        }
+#endif
     }
 
     if (!newSurface)
