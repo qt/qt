@@ -772,6 +772,18 @@ static void printDirectFBInfo(IDirectFB *fb)
            dev.blitting_flags, dev.drawing_flags, dev.video_memory);
 }
 
+static inline bool setIntOption(const QStringList &arguments, const QString &variable, int *value)
+{
+    Q_ASSERT(value);
+    QRegExp rx(QString("%1=?(\\d+)").arg(variable));
+    rx.setCaseSensitivity(Qt::CaseInsensitive);
+    if (arguments.indexOf(rx) != -1) {
+        *value = rx.cap(1).toInt();
+        return true;
+    }
+    return false;
+}
+
 bool QDirectFBScreen::connect(const QString &displaySpec)
 {
     DFBResult result = DFB_OK;
@@ -817,6 +829,10 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
 
     DFBSurfaceDescription description;
     description.flags = DFBSurfaceDescriptionFlags(DSDESC_CAPS);
+    if (::setIntOption(displayArgs, QLatin1String("width"), &description.width))
+        description.flags = DFBSurfaceDescriptionFlags(description.flags | DSDESC_WIDTH);
+    if (::setIntOption(displayArgs, QLatin1String("height"), &description.height))
+        description.flags = DFBSurfaceDescriptionFlags(description.flags | DSDESC_HEIGHT);
     description.caps = DFBSurfaceCapabilities(DSCAPS_PRIMARY
                                               | DSCAPS_DOUBLE
                                               | DSCAPS_STATIC_ALLOC);
@@ -882,18 +898,8 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     setPixelFormat(getImageFormat(d_ptr->dfbSurface));
 
     physWidth = physHeight = -1;
-    QRegExp mmWidthRx(QLatin1String("mmWidth=?(\\d+)"));
-    int dimIdxW = displayArgs.indexOf(mmWidthRx);
-    if (dimIdxW >= 0) {
-        mmWidthRx.exactMatch(displayArgs.at(dimIdxW));
-        physWidth = mmWidthRx.cap(1).toInt();
-    }
-    QRegExp mmHeightRx(QLatin1String("mmHeight=?(\\d+)"));
-    int dimIdxH = displayArgs.indexOf(mmHeightRx);
-    if (dimIdxH >= 0) {
-        mmHeightRx.exactMatch(displayArgs.at(dimIdxH));
-        physHeight = mmHeightRx.cap(1).toInt();
-    }
+    ::setIntOption(displayArgs, QLatin1String("mmWidth"), &physWidth);
+    ::setIntOption(displayArgs, QLatin1String("mmHeight"), &physHeight);
     const int dpi = 72;
     if (physWidth < 0)
         physWidth = qRound(dw * 25.4 / dpi);
