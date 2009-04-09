@@ -61,3 +61,10 @@ HEADERS += qml/qmlparser_p.h \
 # for qtscript debugger
 QT += scripttools
 include(script/script.pri)
+
+# new language front-end
+include(parser/parser.pri)
+
+HEADERS += qml/qmlscriptparser_p.h
+
+SOURCES += qml/qmlscriptparser.cpp

@@ -56,6 +56,7 @@
 #include <QtCore/qdebug.h>
 #include <QApplication>
 
+#include "qmlscriptparser_p.h"
 
 QT_BEGIN_NAMESPACE
 class QByteArray;

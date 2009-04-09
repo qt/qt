@@ -60,6 +60,8 @@
 #include <qmlmetatype.h>
 #include <QtCore/qdebug.h>
 
+#include "qmlscriptparser_p.h"
+
 QT_BEGIN_NAMESPACE
 /*
     New properties and signals can be added to any QObject type from QML.

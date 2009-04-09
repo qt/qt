@@ -47,6 +47,8 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstring.h>
 
+#include "qmlscriptparser_p.h"
+
 QT_BEGIN_NAMESPACE
 
 QmlDomDocumentPrivate::QmlDomDocumentPrivate()
@@ -150,7 +152,11 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
 {
     d->error = QString();
 
-    QmlXmlParser parser;
+#ifdef QML_WITH_XML_PARSER
+   QmlXmlParser parser;
+#else
+   QmlScriptParser parser;
+#endif
     if(!parser.parse(data)) {
         d->error = parser.errorDescription();
         return false;
