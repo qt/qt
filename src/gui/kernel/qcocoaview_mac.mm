@@ -195,6 +195,7 @@ extern "C" {
     if (self) {
         [self finishInitWithQWidget:widget widgetPrivate:widgetprivate];
     }
+    composingText = new QString();
     composing = false;
     sendKeyEvents = true;
     [self setHidden:YES];
@@ -364,6 +365,7 @@ extern "C" {
 
 - (void)dealloc
 {
+    delete composingText;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [super dealloc];
 }
@@ -917,7 +919,7 @@ extern "C" {
 
 - (void) insertText:(id)aString
 {
-    if (composing) {
+    if ([aString length]) {
         // Send the commit string to the widget.
         QString commitText;
         if ([aString isKindOfClass:[NSAttributedString class]]) {
@@ -931,6 +933,7 @@ extern "C" {
         e.setCommitString(commitText);
         qt_sendSpontaneousEvent(qwidget, &e);
     }
+    composingText->clear();
 }
 
 - (void) setMarkedText:(id)aString selectedRange:(NSRange)selRange
@@ -984,12 +987,21 @@ extern "C" {
         attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat,
                                             0, composingLength, format);
     }
+    *composingText = qtText;
     QInputMethodEvent e(qtText, attrs);
     qt_sendSpontaneousEvent(qwidget, &e);
+    if (!composingLength)
+        composing = false;
 }
 
 - (void) unmarkText
 {
+    if (composing) {
+        QInputMethodEvent e;
+        e.setCommitString(*composingText);
+        qt_sendSpontaneousEvent(qwidget, &e);
+    }
+    composingText->clear();
     composing = false;
 }
 

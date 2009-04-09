@@ -42,7 +42,8 @@
 #include "qvector4d.h"
 #include "qvector3d.h"
 #include "qvector2d.h"
-#include "qmath3dutil_p.h"
+#include <QtCore/qdebug.h>
+#include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -237,8 +238,7 @@ QVector4D::QVector4D(const QVector3D& vector, qreal wpos)
 */
 qreal QVector4D::length() const
 {
-    return qvtsqrt64(qvtmul64(xp, xp) + qvtmul64(yp, yp) +
-                     qvtmul64(zp, zp) + qvtmul64(wp, wp));
+    return qSqrt(xp * xp + yp * yp + zp * zp + wp * wp);
 }
 
 /*!
@@ -249,8 +249,7 @@ qreal QVector4D::length() const
 */
 qreal QVector4D::lengthSquared() const
 {
-    return qvtdot64(qvtmul64(xp, xp) + qvtmul64(yp, yp) +
-                    qvtmul64(zp, zp) + qvtmul64(wp, wp));
+    return xp * xp + yp * yp + zp * zp + wp * wp;
 }
 
 /*!
@@ -336,8 +335,7 @@ void QVector4D::normalize()
 */
 qreal QVector4D::dotProduct(const QVector4D& v1, const QVector4D& v2)
 {
-    return qvtdot64(qvtmul64(v1.xp, v2.xp) + qvtmul64(v1.yp, v2.yp) +
-                    qvtmul64(v1.zp, v2.zp) + qvtmul64(v1.wp, v2.wp));
+    return v1.xp * v2.xp + v1.yp * v2.yp + v1.zp * v2.zp + v1.wp * v2.wp;
 }
 
 /*!

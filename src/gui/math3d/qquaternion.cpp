@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include "qquaternion.h"
-#include "qmath3dutil_p.h"
 #include <QtCore/qmath.h>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -223,8 +223,7 @@ QT_BEGIN_NAMESPACE
 */
 qreal QQuaternion::length() const
 {
-    return qvtsqrt64(qvtmul64(xp, xp) + qvtmul64(yp, yp) +
-                     qvtmul64(zp, zp) + qvtmul64(wp, wp));
+    return qSqrt(xp * xp + yp * yp + zp * zp + wp * wp);
 }
 
 /*!
@@ -234,8 +233,7 @@ qreal QQuaternion::length() const
 */
 qreal QQuaternion::lengthSquared() const
 {
-    return qvtdot64(qvtmul64(xp, xp) + qvtmul64(yp, yp) +
-                    qvtmul64(zp, zp) + qvtmul64(wp, wp));
+    return xp * xp + yp * yp + zp * zp + wp * wp;
 }
 
 /*!
@@ -342,6 +340,10 @@ QVector3D QQuaternion::rotateVector(const QVector3D& vector) const
     \sa operator*=()
 */
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #ifndef QT_NO_VECTOR3D
 
 /*!
@@ -354,9 +356,10 @@ QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, qreal angle)
     // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q56
     // We normalize the result just in case the values are close
     // to zero, as suggested in the above FAQ.
-    qrealinner s, c;
+    qreal a = (angle / 2.0f) * M_PI / 180.0f;
+    qreal s = qSin(a);
+    qreal c = qCos(a);
     QVector3D ax = axis.normalized();
-    qt_math3d_sincos(angle / 2.0f, &s, &c);
     return QQuaternion(c, ax.xp * s, ax.yp * s, ax.zp * s, 1).normalized();
 }
 
@@ -369,17 +372,18 @@ QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, qreal angle)
 QQuaternion QQuaternion::fromAxisAndAngle
         (qreal x, qreal y, qreal z, qreal angle)
 {
-    qrealinner xp = x;
-    qrealinner yp = y;
-    qrealinner zp = z;
-    qrealinner s, c;
-    qreal length = qvtsqrt(xp * xp + yp * yp + zp * zp);
+    float xp = x;
+    float yp = y;
+    float zp = z;
+    qreal length = qSqrt(xp * xp + yp * yp + zp * zp);
     if (!qIsNull(length)) {
         xp /= length;
         yp /= length;
         zp /= length;
     }
-    qt_math3d_sincos(angle / 2.0f, &s, &c);
+    qreal a = (angle / 2.0f) * M_PI / 180.0f;
+    qreal s = qSin(a);
+    qreal c = qCos(a);
     return QQuaternion(c, xp * s, yp * s, zp * s, 1).normalized();
 }
 
@@ -500,8 +504,7 @@ QQuaternion QQuaternion::interpolate
     // Determine the angle between the two quaternions.
     QQuaternion q2b;
     qreal dot;
-    dot = qvtdot64(qvtmul64(q1.xp, q2.xp) + qvtmul64(q1.yp, q2.yp) +
-                   qvtmul64(q1.zp, q2.zp) + qvtmul64(q1.wp, q2.wp));
+    dot = q1.xp * q2.xp + q1.yp * q2.yp + q1.zp * q2.zp + q1.wp * q2.wp;
     if (dot >= 0.0f) {
         q2b = q2;
     } else {

@@ -1906,11 +1906,11 @@ void QGraphicsItem::setOpacity(qreal opacity)
     newOpacity = qBound<qreal>(0.0, newOpacity, 1.0);
 
     // No change? Done.
-    if (qIsFuzzyNull(newOpacity - this->opacity()))
+    if (qFuzzyIsNull(newOpacity - this->opacity()))
         return;
 
     // Assign local opacity.
-    if (qIsFuzzyNull(newOpacity - 1)) {
+    if (qFuzzyIsNull(newOpacity - 1)) {
         // Opaque, unset opacity.
         d_ptr->hasOpacity = 0;
         d_ptr->unsetExtra(QGraphicsItemPrivate::ExtraOpacity);
@@ -3771,7 +3771,7 @@ void QGraphicsItemPrivate::resolveEffectiveOpacity(qreal parentEffectiveOpacity)
     }
 
     // Set this item's resolved opacity.
-    if (qIsFuzzyNull(myEffectiveOpacity - 1)) {
+    if (qFuzzyIsNull(myEffectiveOpacity - 1)) {
         // Opaque, unset effective opacity.
         hasEffectiveOpacity = 0;
         unsetExtra(ExtraEffectiveOpacity);
@@ -4091,7 +4091,7 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
         return;
     if (d->cacheMode != NoCache) {
         QGraphicsItemCache *c;
-        bool scrollCache = qFuzzyCompare(dx - int(dx), qreal(0.0)) && qFuzzyCompare(dy - int(dy), qreal(0.0))
+        bool scrollCache = qFuzzyIsNull(dx - int(dx)) && qFuzzyIsNull(dy - int(dy))
                            && (c = (QGraphicsItemCache *)qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraCacheData)))
                            && (d->cacheMode == ItemCoordinateCache && !c->fixedSize.isValid());
         if (scrollCache) {
@@ -5854,7 +5854,7 @@ static void qt_graphicsItem_highlightSelected(
     QGraphicsItem *item, QPainter *painter, const QStyleOptionGraphicsItem *option)
 {
     const QRectF murect = painter->transform().mapRect(QRectF(0, 0, 1, 1));
-    if (qIsFuzzyNull(qMax(murect.width(), murect.height())))
+    if (qFuzzyIsNull(qMax(murect.width(), murect.height())))
         return;
 
     const QRectF mbrect = painter->transform().mapRect(item->boundingRect());

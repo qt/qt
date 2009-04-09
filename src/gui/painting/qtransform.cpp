@@ -353,8 +353,8 @@ QTransform QTransform::inverted(bool *invertible) const
         invert.affine._dy = -affine._dy;
         break;
     case TxScale:
-        inv = !qIsFuzzyNull(affine._m11);
-        inv &= !qIsFuzzyNull(affine._m22);
+        inv = !qFuzzyIsNull(affine._m11);
+        inv &= !qFuzzyIsNull(affine._m22);
         if (inv) {
             invert.affine._m11 = 1. / affine._m11;
             invert.affine._m22 = 1. / affine._m22;
@@ -369,7 +369,7 @@ QTransform QTransform::inverted(bool *invertible) const
     default:
         // general case
         qreal det = determinant();
-        inv = !qIsFuzzyNull(det);
+        inv = !qFuzzyIsNull(det);
         if (inv)
             invert = adjoint() / det;
         break;
@@ -1958,27 +1958,27 @@ QTransform::TransformationType QTransform::type() const
 
     switch (static_cast<TransformationType>(m_dirty)) {
     case TxProject:
-        if (!qIsFuzzyNull(m_13) || !qIsFuzzyNull(m_23) || !qIsFuzzyNull(m_33 - 1)) {
+        if (!qFuzzyIsNull(m_13) || !qFuzzyIsNull(m_23) || !qFuzzyIsNull(m_33 - 1)) {
              m_type = TxProject;
              break;
          }
     case TxShear:
     case TxRotate:
-        if (!qIsFuzzyNull(affine._m12) || !qIsFuzzyNull(affine._m21)) {
+        if (!qFuzzyIsNull(affine._m12) || !qFuzzyIsNull(affine._m21)) {
             const qreal dot = affine._m11 * affine._m12 + affine._m21 * affine._m22;
-            if (qIsFuzzyNull(dot))
+            if (qFuzzyIsNull(dot))
                 m_type = TxRotate;
             else
                 m_type = TxShear;
             break;
         }
     case TxScale:
-        if (!qIsFuzzyNull(affine._m11 - 1) || !qIsFuzzyNull(affine._m22 - 1)) {
+        if (!qFuzzyIsNull(affine._m11 - 1) || !qFuzzyIsNull(affine._m22 - 1)) {
             m_type = TxScale;
             break;
         }
     case TxTranslate:
-        if (!qIsFuzzyNull(affine._dx) || !qIsFuzzyNull(affine._dy)) {
+        if (!qFuzzyIsNull(affine._dx) || !qFuzzyIsNull(affine._dy)) {
             m_type = TxTranslate;
             break;
         }

@@ -42,7 +42,8 @@
 #include "qvector2d.h"
 #include "qvector3d.h"
 #include "qvector4d.h"
-#include "qmath3dutil_p.h"
+#include <QtCore/qdebug.h>
+#include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -169,7 +170,7 @@ QVector2D::QVector2D(const QVector4D& vector)
 */
 qreal QVector2D::length() const
 {
-    return qvtsqrt64(qvtmul64(xp, xp) + qvtmul64(yp, yp));
+    return qSqrt(xp * xp + yp * yp);
 }
 
 /*!
@@ -180,7 +181,7 @@ qreal QVector2D::length() const
 */
 qreal QVector2D::lengthSquared() const
 {
-    return qvtdot64(qvtmul64(xp, xp) + qvtmul64(yp, yp));
+    return xp * xp + yp * yp;
 }
 
 /*!
@@ -263,7 +264,7 @@ void QVector2D::normalize()
 */
 qreal QVector2D::dotProduct(const QVector2D& v1, const QVector2D& v2)
 {
-    return qvtdot64(qvtmul64(v1.xp, v2.xp) + qvtmul64(v1.yp, v2.yp));
+    return v1.xp * v2.xp + v1.yp * v2.yp;
 }
 
 /*!

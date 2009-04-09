@@ -6055,22 +6055,22 @@ void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
         const QTransform &m = d->state->matrix;
         if (d->state->matrix.type() < QTransform::TxShear) {
             bool isPlain90DegreeRotation =
-                (qFuzzyCompare(m.m11() + 1, qreal(1))
-                 && qFuzzyCompare(m.m12(), qreal(1))
-                 && qFuzzyCompare(m.m21(), qreal(-1))
-                 && qFuzzyCompare(m.m22() + 1, qreal(1))
+                (qFuzzyIsNull(m.m11())
+                 && qFuzzyIsNull(m.m12() - qreal(1))
+                 && qFuzzyIsNull(m.m21() + qreal(1))
+                 && qFuzzyIsNull(m.m22())
                     )
                 ||
-                (qFuzzyCompare(m.m11(), qreal(-1))
-                 && qFuzzyCompare(m.m12() + 1, qreal(1))
-                 && qFuzzyCompare(m.m21() + 1, qreal(1))
-                 && qFuzzyCompare(m.m22(), qreal(-1))
+                (qFuzzyIsNull(m.m11() + qreal(1))
+                 && qFuzzyIsNull(m.m12())
+                 && qFuzzyIsNull(m.m21())
+                 && qFuzzyIsNull(m.m22() + qreal(1))
                     )
                 ||
-                (qFuzzyCompare(m.m11() + 1, qreal(1))
-                 && qFuzzyCompare(m.m12(), qreal(-1))
-                 && qFuzzyCompare(m.m21(), qreal(1))
-                 && qFuzzyCompare(m.m22() + 1, qreal(1))
+                (qFuzzyIsNull(m.m11())
+                 && qFuzzyIsNull(m.m12() + qreal(1))
+                 && qFuzzyIsNull(m.m21() - qreal(1))
+                 && qFuzzyIsNull(m.m22())
                     )
                 ;
             aa = !isPlain90DegreeRotation;
