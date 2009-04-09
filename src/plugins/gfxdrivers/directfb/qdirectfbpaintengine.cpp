@@ -440,10 +440,9 @@ void QDirectFBPaintEnginePrivate::setOpacity(quint8 op)
 {
     opacity = op;
     if (opacity == 255) {
-        // ### need to check this stuff
-        blitFlagsFromCompositionMode &= ~(DSBLIT_BLEND_COLORALPHA | DSBLIT_SRC_PREMULTCOLOR);
+        blitFlagsFromCompositionMode &= ~DSBLIT_BLEND_COLORALPHA;
     } else {
-        blitFlagsFromCompositionMode |= (DSBLIT_BLEND_COLORALPHA | DSBLIT_SRC_PREMULTCOLOR);
+        blitFlagsFromCompositionMode |= DSBLIT_BLEND_COLORALPHA;
     }
 }
 
@@ -459,11 +458,14 @@ void QDirectFBPaintEnginePrivate::setRenderHints(QPainter::RenderHints hints)
 void QDirectFBPaintEnginePrivate::prepareForBlit(bool alpha)
 {
     quint32 blittingFlags = blitFlagsFromCompositionMode;
-    if (!alpha) {
+    if (alpha) {
+        surface->SetPorterDuff(surface,
+                               (blittingFlags & DSBLIT_BLEND_COLORALPHA)
+                               ? DSPD_NONE
+                               : porterDuffRule);
+    } else {
         blittingFlags &= ~DSBLIT_BLEND_ALPHACHANNEL;
         surface->SetPorterDuff(surface, DSPD_NONE);
-    } else {
-        surface->SetPorterDuff(surface, porterDuffRule);
     }
     surface->SetColor(surface, 0xff, 0xff, 0xff, opacity);
     surface->SetBlittingFlags(surface, DFBSurfaceBlittingFlags(blittingFlags));
