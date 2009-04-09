@@ -248,11 +248,11 @@ case 13: {
     sym(1).Node = node;
 }   break;
 
-case 14:
+case 14: {
     AST::UiQualifiedId *node = makeAstNode<AST::UiQualifiedId> (driver->nodePool(), sym(1).UiQualifiedId, sym(3).sval);
     node->identifierToken = loc(3);
     sym(1).Node = node;
-    break;
+}   break;
 
 case 15: {
   AST::ThisExpression *node = makeAstNode<AST::ThisExpression> (driver->nodePool());

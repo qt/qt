@@ -590,11 +590,11 @@ case $rule_number: {
 
 UiQualifiedId: UiQualifiedId T_DOT T_IDENTIFIER ;
 /.
-case $rule_number:
+case $rule_number: {
     AST::UiQualifiedId *node = makeAstNode<AST::UiQualifiedId> (driver->nodePool(), sym(1).UiQualifiedId, sym(3).sval);
     node->identifierToken = loc(3);
     sym(1).Node = node;
-    break;
+}   break;
 ./
 
 
