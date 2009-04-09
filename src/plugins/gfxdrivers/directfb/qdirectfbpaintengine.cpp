@@ -224,7 +224,7 @@ public:
 
     inline void updateClip();
     inline void setClipDirty();
-    void systemStateChanged(); //Needed to be notified when system clip changes
+    void systemStateChanged();
 
     void begin(QPaintDevice *device);
     void end();
@@ -234,9 +234,6 @@ public:
     QTransform transform;
     int lastLockedHeight;
 private:
-//    QRegion rectsToClippedRegion(const QRect *rects, int n) const;
-//    QRegion rectsToClippedRegion(const QRectF *rects, int n) const;
-
     IDirectFB *fb;
     DFBSurfaceDescription fbDescription;
     int fbWidth;
@@ -489,61 +486,19 @@ void QDirectFBPaintEnginePrivate::setDFBColor(const QColor &color)
 
 void QDirectFBPaintEnginePrivate::drawLines(const QLine *lines, int n) const
 {
-    QVarLengthArray<DFBRegion> regions(n);
-
     for (int i = 0; i < n; ++i) {
         const QLine l = transform.map(lines[i]);
-
-        regions[i].x1 = l.x1();
-        regions[i].y1 = l.y1();
-        regions[i].x2 = l.x2();
-        regions[i].y2 = l.y2();
+        surface->DrawLine(surface, l.x1(), l.y1(), l.x2(), l.y2());
     }
-    surface->DrawLines(surface, regions.data(), n);
 }
 
 void QDirectFBPaintEnginePrivate::drawLines(const QLineF *lines, int n) const
 {
-    QVarLengthArray<DFBRegion> regions(n);
-
     for (int i = 0; i < n; ++i) {
         const QLine l = transform.map(lines[i]).toLine();
-
-        regions[i].x1 = l.x1();
-        regions[i].y1 = l.y1();
-        regions[i].x2 = l.x2();
-        regions[i].y2 = l.y2();
+        surface->DrawLine(surface, l.x1(), l.y1(), l.x2(), l.y2());
     }
-    surface->DrawLines(surface, regions.data(), n);
 }
-
-/* ### Commented out until it can be implemented properly using raster's QClipData
-QRegion QDirectFBPaintEnginePrivate::rectsToClippedRegion(const QRect *rects,
-                                                          int n) const
-{
-    QRegion region;
-
-    for (int i = 0; i < n; ++i) {
-        const QRect r = transform.mapRect(rects[i]);
-        region += clip & r;
-    }
-
-    return region;
-}
-
-QRegion QDirectFBPaintEnginePrivate::rectsToClippedRegion(const QRectF *rects,
-                                                          int n) const
-{
-    QRegion region;
-
-    for (int i = 0; i < n; ++i) {
-        const QRect r = transform.mapRect(rects[i]).toRect();
-        region += clip & r;
-    }
-
-    return region;
-}
-*/
 
 void QDirectFBPaintEnginePrivate::fillRegion(const QRegion &region) const
 {
