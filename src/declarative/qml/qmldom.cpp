@@ -152,16 +152,6 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
 {
     d->error = QString();
 
-#ifdef QML_WITH_XML_PARSER
-   QmlXmlParser parser;
-#else
-   QmlScriptParser parser;
-#endif
-    if(!parser.parse(data)) {
-        d->error = parser.errorDescription();
-        return false;
-    }
-
     QmlCompiledComponent component;
     QmlCompiler compiler;
     // ###
@@ -172,9 +162,9 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
         return false;
     }
 
-    if(parser.tree()) {
-        component.dump(0, parser.tree());
-        d->root = parser.tree();
+    if(tree) {
+        component.dump(0, tree);
+        d->root = tree;
         d->root->addref();
     }
 
