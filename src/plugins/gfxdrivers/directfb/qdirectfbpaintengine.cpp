@@ -436,8 +436,9 @@ void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode m
     }
 }
 
-void QDirectFBPaintEnginePrivate::setOpacity(quint8 opacity)
+void QDirectFBPaintEnginePrivate::setOpacity(quint8 op)
 {
+    opacity = op;
     if (opacity == 255) {
         // ### need to check this stuff
         blitFlagsFromCompositionMode &= ~(DSBLIT_BLEND_COLORALPHA | DSBLIT_SRC_PREMULTCOLOR);
