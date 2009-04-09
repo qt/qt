@@ -826,13 +826,6 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
                                                   | DSCAPS_PREMULTIPLIED);
     }
 
-    if (!(d_ptr->flipFlags & DSFLIP_BLIT)) {
-        description.caps = DFBSurfaceCapabilities(description.caps
-                                                  | DSCAPS_DOUBLE
-                                                  | DSCAPS_TRIPLE);
-    }
-
-
     // We don't track the primary surface as it's released in disconnect
     d_ptr->dfbSurface = createDFBSurface(&description, DontTrackSurface);
     if (!d_ptr->dfbSurface) {
