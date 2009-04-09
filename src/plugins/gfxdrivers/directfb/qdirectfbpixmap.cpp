@@ -283,11 +283,6 @@ void QDirectFBPixmapData::fill(const QColor &color)
     }
 }
 
-bool QDirectFBPixmapData::hasAlphaChannel() const
-{
-    return alpha;
-}
-
 QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
                                          Qt::TransformationMode mode) const
 {
