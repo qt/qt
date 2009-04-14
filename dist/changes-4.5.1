@@ -33,6 +33,13 @@ Third party components
 *                          Library                                         *
 ****************************************************************************
 
+- QAbstractItemModel
+   * [243195] Clrarified some warning messages printed if the model is invalid.
+
+- QAbstractEventDispatcher
+   * [248805] Duplicates timerid could happen when timer are running while
+     the QObject is moved to another thread, and would stop timers from working.
+
 - QAbstractSocket
    * [192037] Emit disconnected only if we were connected before
 
@@ -41,6 +48,9 @@ Third party components
 
 - QColorDialog
    * [247349] Fixed bug causing the wrong alpha value to be returned.
+
+- QCombobox
+   * [248094] Fixed scrollbar appearing while not required.
 
 - QCompleter
    * [250064] Fixed focus policy propagation regression.
@@ -75,8 +85,16 @@ Third party components
    * [249175] Fix QPixmap::fromImage() of monochrome images to result in
      black/white pixels and not transparent/white pixels.
 
+- QScrollBar
+   * [247985] Stylesheet: added ability to style scrollbar menus.
+
 - QSharedPointer
    * [246843] Fixed a crash caused by using QSharedPointer in global statics
+
+- QSortFilterProxyModel
+   * [247867] Properly sort when calling appendRows()
+   * [248868] Resort when the model is reset if dynamicSort is enabled.
+   * [248868] Fixed QSortFilterProxyModel::sort while dynamicSort was disabled.
 
 - QSSlSocket
    * [245668] set also protocol, verifyMode and verifyDepth in
@@ -84,10 +102,25 @@ Third party components
 
 - QStyleSheetStyle
    * Improved support for setting background and foreground roles in styles
-    such as the text color in a combo box popup on Mac and Cleanlooks.
+    such as the text color in a combo box popup on Mac and Cleanlooks, or
+    the QScrollBar background.
+   * [188195] fix background of QAbstractScrollArea loosing its color if styled with pseudo-class.
+   * Fixed crash while styling the title bar of a QMdiArea.
+   * [246542] Fixed QToolButton::hover{ color:.... }
+
+- QTreeView
+   * Fixed crash that may occurs when event are processed just after QSortFilterProxyModel
+     has been invalidated
+   * [246025] Fixed auto-expand that occurs while quicly collapsing an item after clicking on a child
+   * [248805] Calling programatically  QTreeView::sortByColumn was not working if manual 
+     sorting is disabled
+   * [248163] Fixed possible crash in the paintEvent when spans are used.
 
 - QWizard
    * [248107] Fixed bug on Vista causing Back button to connect twice to the back() signal.
+
+- Q3ListView
+   * [248689] Q3ListView would not update under certain condition.
 
 
 ****************************************************************************
@@ -134,6 +167,11 @@ Qt for Linux/X11
      Freetype's native subpixel rendering for vertical subpixel layouts.
    * [248644] Fall back to Qt's subpixel rendering if Freetype's subpixel
      rendering is available at compile-time but not at run-time.
+
+- QEventDispatcherGlib
+   * Event posted to a thread before it is started are not processed until
+     others events are posted.
+
 
 Qt for Windows
 --------------
@@ -185,6 +223,7 @@ Qt for Mac OS X
 - QTestLib
     * Activate the test application when launched from the command line.
 
+- Fixed the focus frame transparency that would make widget difficult to use with widget stylesheet.
 
 Qt for Embedded Linux
 ---------------------
