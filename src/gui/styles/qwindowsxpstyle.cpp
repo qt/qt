@@ -607,7 +607,7 @@ void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
 
     QPainter *painter = themeData.painter;
     Q_ASSERT_X(painter != 0, "QWindowsXPStylePrivate::drawBackground()", "Trying to draw a theme part without a painter");
-    if (!painter)
+    if (!painter || !painter->isActive())
         return;
 
     painter->save();
@@ -2834,7 +2834,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                     bflags |= State_MouseOver;
                 }
             }
-            
+
             QStyleOption tool(0);
             tool.palette = toolbutton->palette;
             if (toolbutton->subControls & SC_ToolButton) {
