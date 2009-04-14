@@ -2694,14 +2694,17 @@ fi
 
 # check -arch arguments for validity.
 if [ "$PLATFORM_MAC" = "yes" ]; then
-    ALLOWED="x86 ppc x86_64 ppc64"
+    ALLOWED="x86 ppc x86_64 ppc64 i386"
     for i in $CFG_MAC_ARCHS 
     do 
         if echo "$ALLOWED" | grep -w -v "$i" > /dev/null 2>&1; then
-            echo "Unknown architecture: \"$i\". Supported architectures: x86 ppc x86_64 ppc64";
+            echo "Unknown architecture: \"$i\". Supported architectures: x86[i386] ppc x86_64 ppc64";
             exit 2;
         fi
     done
+
+#   replace "i386" with "x86" to support configuring with -arch i386 as an alias for x86.
+    CFG_MAC_ARCHS="${CFG_MAC_ARCHS/i386/x86}" 
 fi
 
 # find the default framework value
