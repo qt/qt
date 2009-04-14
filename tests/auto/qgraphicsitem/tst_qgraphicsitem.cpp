@@ -4037,6 +4037,25 @@ void tst_QGraphicsItem::sceneEventFilter()
     QCOMPARE(tester->filteredEventReceivers.at(6), static_cast<QGraphicsItem *>(text2));
 
     QVERIFY(text2->hasFocus());
+
+    //Let check if the items are correctly removed from the sceneEventFilters array
+    //to avoid stale pointers.
+    QGraphicsView gv;
+    QGraphicsScene *anotherScene = new QGraphicsScene;
+    QGraphicsTextItem *ti = anotherScene->addText("This is a test #1");
+    ti->moveBy(50, 50);
+    QGraphicsTextItem *ti2 = anotherScene->addText("This is a test #2");
+    QGraphicsTextItem *ti3 = anotherScene->addText("This is a test #3");
+    gv.setScene(anotherScene);
+    gv.show();
+    QTest::qWait(250);
+    ti->installSceneEventFilter(ti2);
+    ti3->installSceneEventFilter(ti);
+    delete ti2;
+    //we souldn't crash
+    QTest::mouseMove(gv.viewport(), gv.mapFromScene(ti->scenePos()));
+    QTest::qWait(250);
+    delete ti;
 }
 
 class GeometryChanger : public QGraphicsItem
