@@ -108,7 +108,7 @@ void tst_QColorDialog::native_activeModalWidget()
     // color dialog when it is executing, even when using a native
     // dialog:
     TestNativeDialog d;
-    QTimer::singleShot(100, &d, SLOT(hide()));
+    QTimer::singleShot(1000, &d, SLOT(hide()));
     d.exec();
     QVERIFY(&d == d.m_activeModalWidget);
 }
