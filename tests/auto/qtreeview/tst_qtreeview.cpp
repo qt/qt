@@ -209,6 +209,8 @@ private slots:
     void indexRowSizeHint();
     void addRowsWhileSectionsAreHidden();
 
+    void filterProxyModelCrash();
+
     // task-specific tests:
     void task174627_moveLeftToRoot();
     void task171902_expandWith1stColHidden();
@@ -2829,6 +2831,29 @@ void tst_QTreeView::indexRowSizeHint()
     QCOMPARE(view.indexRowSizeHint(index), w->sizeHint().height());
 }
 
+void tst_QTreeView::filterProxyModelCrash()
+{
+    QStandardItemModel model;
+    QList<QStandardItem *> items;
+    for (int i = 0; i < 100; i++)
+        items << new QStandardItem(QString::fromLatin1("item %1").arg(i));
+    model.appendColumn(items);
+
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+
+    QTreeView view;
+    view.setModel(&proxy);
+    view.show();
+    QTest::qWait(30);
+    proxy.invalidate();
+    view.verticalScrollBar()->setValue(15);
+    QTest::qWait(20);
+
+    proxy.invalidate();
+    view.repaint(); //used to crash
+}
+
 class task174627_TreeView : public QTreeView
 {
     Q_OBJECT
@@ -3253,7 +3278,6 @@ void tst_QTreeView::task246536_scrollbarsNotWorking()
     QTest::qWait(100);
     QVERIFY(o.count > 0);
 }
-
 
 QTEST_MAIN(tst_QTreeView)
 #include "tst_qtreeview.moc"
