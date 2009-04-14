@@ -59,6 +59,22 @@ Third party components
 - QMainWindow
     * [248048] Fix a regression that would cause tooltips to disappear when using the unified toolbar.
 
+- QPainter
+   * [247492] Fix rendering bug in raster paint engine causing one-pixel
+     offset when drawing premultiplied ARGB32 images on RGB16 images.
+   * [249490] Fix one-pixel offset between stroke and fills of ellipses in
+     X11 paint engine.
+   * [246573] Fix very slow stroking of paths in X11 paint engine.
+   * [247083] Fix scale applied to antialiased cosmetic pens in X11 paint
+     engine.
+   * [247505] Fix missing fills of rectangles with negative width/height in
+     raster paint engine.
+   * [249628] Fix crash in OpenGL paint engine when filling using Qt::NoBrush.
+
+- QPixmap
+   * [249175] Fix QPixmap::fromImage() of monochrome images to result in
+     black/white pixels and not transparent/white pixels.
+
 - QSharedPointer
    * [246843] Fixed a crash caused by using QSharedPointer in global statics
 
@@ -107,6 +123,17 @@ Qt for Linux/X11
     GTK+ behavior.
    * [238196] Allow middle click to set scrollbar position to follow
     GTK+ behavior.
+
+- Font rendering
+   * Improve performance of subpixel antialiased text rendering by using a mask
+     in the calls to XRender's text compositing function.
+   * [248387] Better respect the font config LCD filter settings for subpixel
+     antialiased text rendering when Freetype's native subpixel rendering is
+     disabled.
+   * [248498] Fix garbled rendering of subpixel antialiased text when using
+     Freetype's native subpixel rendering for vertical subpixel layouts.
+   * [248644] Fall back to Qt's subpixel rendering if Freetype's subpixel
+     rendering is available at compile-time but not at run-time.
 
 Qt for Windows
 --------------
