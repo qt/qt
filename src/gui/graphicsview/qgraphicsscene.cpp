@@ -740,6 +740,15 @@ void QGraphicsScenePrivate::_q_removeItemLater(QGraphicsItem *item)
     unpolishedItems.removeAll(item);
     dirtyItems.removeAll(item);
 
+    //We remove all references of item from the sceneEventFilter arrays
+    QMultiMap<QGraphicsItem*, QGraphicsItem*>::iterator iterator = sceneEventFilters.begin();
+    while (iterator != sceneEventFilters.end()) {
+        if (iterator.value() == item || iterator.key() == item)
+            iterator = sceneEventFilters.erase(iterator);
+        else
+            ++iterator;
+    }
+
     // Remove from scene transform cache
     int transformIndex = item->d_func()->sceneTransformIndex;
     if (transformIndex != -1) {
@@ -3153,6 +3162,16 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
     d->cachedItemsUnderMouse.removeAll(item);
     d->unpolishedItems.removeAll(item);
     d->dirtyItems.removeAll(item);
+
+    //We remove all references of item from the sceneEventFilter arrays
+    QMultiMap<QGraphicsItem*, QGraphicsItem*>::iterator iterator = d->sceneEventFilters.begin();
+    while (iterator != d->sceneEventFilters.end()) {
+        if (iterator.value() == item || iterator.key() == item)
+            iterator = d->sceneEventFilters.erase(iterator);
+        else
+            ++iterator;
+    }
+
 
     //Ensure dirty flag have the correct default value so the next time it will be added it will receive updates
     item->d_func()->dirty = 0;
