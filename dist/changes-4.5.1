@@ -56,8 +56,23 @@ Third party components
    * [250064] Fixed focus policy propagation regression.
    * [246056] Fixed assertion failure in setCompletionPrefix().
 
+- QDirIterator
+   * [247645] Fix a bug that may loose all cached data inside the QFileInfo
+
 - QFileInfo
    * [205244] return valid file info also for relative UNC paths
+
+- QFileDialog
+   * [250194] QFileDialog and QSortFilterProxyModel index mapping issue
+   * [248332] QFileDialog is slow after visiting a large directory
+   * [221323] QFileDialog programatical file selection bug
+
+- QGraphicsItem
+   * [247890] Cached QGraphicsItems are not updated if update() is called when they are hidden
+   * [250272] When an item is deleted it does not get removed from the sceneeventfilters meaning a crash can occur
+
+-QGraphicsView
+   * [245766] Rubber Band drag mode not updated correctly when scrolling
 
 - QHttp
    * [208445] cancel request upon receiving unknown authentication method
