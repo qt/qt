@@ -39,6 +39,13 @@ Third party components
 - QAuthenticator
    * [237979] fix implemenation of md5-sess
 
+- QColorDialog
+   * [247349] Fixed bug causing the wrong alpha value to be returned.
+
+- QCompleter
+   * [250064] Fixed focus policy propagation regression.
+   * [246056] Fixed assertion failure in setCompletionPrefix().
+
 - QFileInfo
    * [205244] return valid file info also for relative UNC paths
 
@@ -62,6 +69,10 @@ Third party components
 - QStyleSheetStyle
    * Improved support for setting background and foreground roles in styles
     such as the text color in a combo box popup on Mac and Cleanlooks.
+
+- QWizard
+   * [248107] Fixed bug on Vista causing Back button to connect twice to the back() signal.
+
 
 ****************************************************************************
 *                          Database Drivers                                *
