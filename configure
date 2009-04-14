@@ -2698,7 +2698,7 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
     for i in $CFG_MAC_ARCHS 
     do 
         if echo "$ALLOWED" | grep -w -v "$i" > /dev/null 2>&1; then
-            echo "Unknown architecture: \"$i\". Supported architechtures: x86 ppc x86_64 ppc64";
+            echo "Unknown architecture: \"$i\". Supported architectures: x86 ppc x86_64 ppc64";
             exit 2;
         fi
     done
