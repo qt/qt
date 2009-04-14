@@ -2172,7 +2172,10 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
     if ((popup || type == Qt::Tool || type == Qt::ToolTip) && !q->isModal()) {
         [windowRef setHidesOnDeactivate:YES];
         [windowRef setHasShadow:YES];
+    } else {
+        [windowRef setHidesOnDeactivate:NO];
     }
+
     Q_UNUSED(parentWidget);
     Q_UNUSED(dialog);
 
