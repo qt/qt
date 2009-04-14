@@ -308,10 +308,6 @@ GLuint QGLPixelBuffer::generateDynamicTexture() const
     GLuint texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
-    [static_cast<NSOpenGLContext *>(d->share_ctx)
-            setTextureImageToPixelBuffer:static_cast<NSOpenGLPixelBuffer *>(d->pbuf)
-            colorBuffer:GL_FRONT];
-    glBindTexture(GL_TEXTURE_2D, texture); // updates texture target
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
@@ -322,8 +318,6 @@ GLuint QGLPixelBuffer::generateDynamicTexture() const
     GLuint texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
-    aglTexImagePBuffer(d->share_ctx, d->pbuf, GL_FRONT);
-    glBindTexture(GL_TEXTURE_2D, texture); // updates texture target
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     return texture;
