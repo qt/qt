@@ -119,6 +119,11 @@ Qt for Windows
     * [248036] Fixed an issue where tool buttons would incorrectly
       hover when disabled.
 
+- [249576] Fixed a crash when using a combobox with Qt::NoFocus.
+- [244875] System menu will now be shown for a fullscreen  window.
+- [240891] Corrected the focus behavior of native file dialogs, when application has multiple toplevels.
+- [245330] Fixed a bug which causes mouse inputs to be ignored on modal dialogs, when shown from an ActieQt control.
+
 Qt for Mac OS X
 ---------------
 
@@ -132,11 +137,13 @@ Qt for Mac OS X
       with 4.5.1, we don't foresee changing this again.
     * Fixed a bug where some windows would not get activation when they normally should.
     * Key events sent to popups do not get propagated onwards.
-    * [249296] Fix a bug where lineedits on a second page of a stack widget wourd not get key events
+    * [249296] Fix a bug where lineedits on a second page of a stack widget would not get key events
     * QFileOpenEvents are no longer sent for items passed on the command line.
     * Various fixes for determining metrics of text and the ability to disable kerning.
     * [248918] Fixed color matching for themed text items.
     * Modify the colliding mice example to work better with coalesced updates.
+    * Fixed a bug where the drag cursor was not updated when modifier keys are used.
+    * [247947] Fixed a crash in drag and drop.
 
 - Fix a crash when showing a widget that is window modal but has no parent.
 - [248803] Showing two dialogs at the same time don't get shared activation.
