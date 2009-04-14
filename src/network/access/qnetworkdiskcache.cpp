@@ -253,7 +253,8 @@ void QNetworkDiskCachePrivate::storeItem(QCacheItem *cacheItem)
         // ### use atomic rename rather then remove & rename
         if (cacheItem->file->rename(fileName))
             currentCacheSize += cacheItem->file->size();
-        cacheItem->file->setAutoRemove(true);
+        else
+            cacheItem->file->setAutoRemove(true);
     }
     if (cacheItem->metaData.url() == lastItem.metaData.url())
         lastItem.reset();
