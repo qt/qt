@@ -195,6 +195,14 @@ Third party components
    * [250388] Fixed potential crash in QWidget::scroll() when using the raster
      graphics system.
 
+- QWidget
+   * [246852] Better handling WindowMaximizeButtonHint for widget with
+     layouts.
+
+-QLocale
+   * String-to-number conversion functions are now ignore trailing and
+     leading whitespaces in all locales as it is documented.
+
 - QWizard
    * [248107] Fixed bug on Vista causing Back button to connect twice to the back() signal.
 
@@ -221,6 +229,37 @@ Third party components
 
 Qt for Linux/X11
 ----------------
+
+   * Proper resetting input contexts when switching between multiple
+     input context plugins.
+
+   * [244337] Improved input method handling when the widgets native
+     window id is recreated.
+
+   * Input methods preedit strings are properly reset when user
+     switches focus without commiting a string.
+
+   * [244607] Current focus widget is properly set and input method is
+     properly initialized when showing a toplevel that accepts
+     keyboard input.
+
+   * Unicode conversion functions will handle Latin-1 character set
+     only if they are used before QCoreApplication/QApplication is
+     constructed.
+
+   * Improved handling of failed unicode conversion.
+
+   * [232632] Fixed reparenting widgets to a difference X11 screen.
+
+   * [241888] The background of the drag-n-drop cursor is respected
+     according to the stylesheet.
+
+   * Fixed clipboard handling when the user manually creates an
+     instance of the QDesktopWidget.
+
+   * [226048] Fixed emitting a QDesktopWidget::resized() signal when
+     new screen appears or screen geometry is changed without
+     affecting the whole desktop geometry.
 
 - Phonon/GStreamer
    * [244259] Fixed a problem where the backend would fail to indicate an
@@ -262,6 +301,9 @@ Qt for Linux/X11
 
 Qt for Windows
 --------------
+
+   * [243583] Improved drag-and-drop handling when switching mouse
+     buttons fast.
 
 - QCoreApplication
    * [247401] Fixed a bug that would cause a restarted timer to fire
