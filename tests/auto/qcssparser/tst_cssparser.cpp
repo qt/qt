@@ -272,7 +272,7 @@ void tst_CssParser::term_data()
     val.variant = QVariant(QColor("#ffbb00"));
     QTest::newRow("hexcolor2") << true << "#fb0" << val;
 
-    QTest::ignoreMessage(QtWarningMsg, "QColor::setNamedColor: Could not parse color '#cafebabe'");
+    QTest::ignoreMessage(QtWarningMsg, "QCssParser::parseHexColor: Unknown color name '#cafebabe'");
     QTest::newRow("hexcolor_failure") << false << "#cafebabe" << val;
 
     val.type = QCss::Value::Uri;
