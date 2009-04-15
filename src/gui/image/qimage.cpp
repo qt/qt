@@ -1691,8 +1691,12 @@ void QImage::setColorTable(const QVector<QRgb> colors)
 
     d->colortable = colors;
     d->has_alpha_clut = false;
-    for (int i = 0; i < d->colortable.size(); ++i)
-        d->has_alpha_clut |= (qAlpha(d->colortable.at(i)) != 255);
+    for (int i = 0; i < d->colortable.size(); ++i) {
+        if (qAlpha(d->colortable.at(i)) != 255) {
+            d->has_alpha_clut = true;
+            break;
+        }
+    }
 }
 
 /*!
