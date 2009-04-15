@@ -43,16 +43,15 @@ SOURCES	+= qgl.cpp \
 
 #contains(QT_CONFIG, opengles2) {
     SOURCES +=  gl2paintengineex/qglgradientcache.cpp \
-                gl2paintengineex/qglpexshadermanager.cpp \
-                gl2paintengineex/qglshader.cpp \
+                gl2paintengineex/qglengineshadermanager.cpp \
                 gl2paintengineex/qgl2pexvertexarray.cpp \
                 gl2paintengineex/qpaintengineex_opengl2.cpp
 
     HEADERS +=  gl2paintengineex/qglgradientcache_p.h \
-                gl2paintengineex/qglpexshadermanager_p.h \
-                gl2paintengineex/qglshader_p.h \
+                gl2paintengineex/qglengineshadermanager_p.h \
                 gl2paintengineex/qgl2pexvertexarray_p.h \
-                gl2paintengineex/qpaintengineex_opengl2_p.h
+                gl2paintengineex/qpaintengineex_opengl2_p.h \
+                gl2paintengineex/glgc_shader_source.h
 #}
 
 

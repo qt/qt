@@ -77,7 +77,7 @@
 #include <private/qtextureglyphcache_p.h>
 
 #include "qglgradientcache_p.h"
-#include "qglpexshadermanager_p.h"
+#include "qglengineshadermanager_p.h"
 #include "qgl2pexvertexarray_p.h"
 
 
@@ -170,7 +170,7 @@ public:
 
     GLfloat pmvMatrix[4][4];
 
-    QGLPEXShaderManager* shaderManager;
+    QGLEngineShaderManager* shaderManager;
 
     // Clipping & state stuff stolen from QOpenGLPaintEngine:
     void updateDepthClip();
