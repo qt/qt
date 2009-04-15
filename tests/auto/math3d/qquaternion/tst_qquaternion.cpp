@@ -88,8 +88,8 @@ private slots:
     void fromAxisAndAngle_data();
     void fromAxisAndAngle();
 
-    void interpolate_data();
-    void interpolate();
+    void slerp_data();
+    void slerp();
 };
 
 // qFuzzyCompare isn't quite "fuzzy" enough to handle conversion
@@ -693,7 +693,7 @@ void tst_QQuaternion::fromAxisAndAngle()
 }
 
 // Test spherical interpolation of quaternions.
-void tst_QQuaternion::interpolate_data()
+void tst_QQuaternion::slerp_data()
 {
     QTest::addColumn<qreal>("x1");
     QTest::addColumn<qreal>("y1");
@@ -740,7 +740,7 @@ void tst_QQuaternion::interpolate_data()
         << (qreal)0.5f
         << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)-45.0f;
 }
-void tst_QQuaternion::interpolate()
+void tst_QQuaternion::slerp()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -760,7 +760,7 @@ void tst_QQuaternion::interpolate()
     QQuaternion q2 = QQuaternion::fromAxisAndAngle(x2, y2, z2, angle2);
     QQuaternion q3 = QQuaternion::fromAxisAndAngle(x3, y3, z3, angle3);
 
-    QQuaternion result = QQuaternion::interpolate(q1, q2, t);
+    QQuaternion result = QQuaternion::slerp(q1, q2, t);
 
     QVERIFY(fuzzyCompare(result.x(), q3.x()));
     QVERIFY(fuzzyCompare(result.y(), q3.y()));

@@ -124,7 +124,7 @@ public:
     static QQuaternion fromAxisAndAngle
             (qreal x, qreal y, qreal z, qreal angle);
 
-    static QQuaternion interpolate
+    static QQuaternion slerp
         (const QQuaternion& q1, const QQuaternion& q2, qreal t);
 
 private:

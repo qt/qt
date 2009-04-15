@@ -485,7 +485,7 @@ QQuaternion QQuaternion::fromAxisAndAngle
     If \a t is less than or equal to 0, then \a q1 will be returned.
     If \a t is greater than or equal to 1, then \a q2 will be returned.
 */
-QQuaternion QQuaternion::interpolate
+QQuaternion QQuaternion::slerp
     (const QQuaternion& q1, const QQuaternion& q2, qreal t)
 {
     // Handle the easy cases first.
