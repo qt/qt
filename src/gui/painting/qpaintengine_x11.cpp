@@ -1760,7 +1760,10 @@ void QX11PaintEngine::drawPath(const QPainterPath &path)
         QRectF deviceRect(0, 0, d->pdev->width(), d->pdev->height());
         // necessary to get aliased alphablended primitives to be drawn correctly
         if (d->cpen.isCosmetic() || d->has_scaling_xform) {
-            stroker.setWidth(width == 0 ? 1 : width * d->xform_scale);
+            if (d->cpen.isCosmetic())
+                stroker.setWidth(width == 0 ? 1 : width);
+            else
+                stroker.setWidth(width * d->xform_scale);
             stroker.d_ptr->stroker.setClipRect(deviceRect);
             stroke = stroker.createStroke(path * d->matrix);
             if (stroke.isEmpty())

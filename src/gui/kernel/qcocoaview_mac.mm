@@ -181,6 +181,7 @@ QT_FORWARD_DECLARE_CLASS(QAbstractScrollAreaPrivate)
 QT_FORWARD_DECLARE_CLASS(QPaintEvent)
 QT_FORWARD_DECLARE_CLASS(QPainter)
 QT_FORWARD_DECLARE_CLASS(QHoverEvent)
+QT_FORWARD_DECLARE_CLASS(QCursor)
 QT_USE_NAMESPACE
 extern "C" {
     extern NSString *NSTextInputReplacementRangeAttributeName;
@@ -233,6 +234,34 @@ extern "C" {
         [self registerForDraggedTypes:supportedTypes];
     } else {
         [self unregisterDraggedTypes];
+    }
+}
+
+- (void)resetCursorRects
+{
+    QWidget *cursorWidget = qwidget;
+
+    if (cursorWidget->testAttribute(Qt::WA_TransparentForMouseEvents))
+        cursorWidget = QApplication::widgetAt(qwidget->mapToGlobal(qwidget->rect().center()));
+
+    if (cursorWidget == 0)
+        return;
+
+    if (!cursorWidget->testAttribute(Qt::WA_SetCursor)) {
+        [super resetCursorRects];
+        return;
+    }
+
+    QRegion mask = qt_widget_private(cursorWidget)->extra->mask;
+    NSCursor *nscursor = static_cast<NSCursor *>(nsCursorForQCursor(cursorWidget->cursor()));
+    if (mask.isEmpty()) {
+        [self addCursorRect:[qt_mac_nativeview_for(cursorWidget) visibleRect] cursor:nscursor];
+    } else {
+        const QVector<QRect> &rects = mask.rects();
+        for (int i = 0; i < rects.size(); ++i) {
+            const QRect &rect = rects.at(i);
+            [self addCursorRect:NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height()) cursor:nscursor];
+        }
     }
 }
 

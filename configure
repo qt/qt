@@ -119,7 +119,13 @@ elif [ -f "$relpath"/src/gui/kernel/qapplication_qws.cpp ]; then
     # ~ src/gui/base/qapplication_qws.cpp is present
     # ~ this is the free or commercial edition
     # ~ this is the internal edition and Qt Embedded is explicitly enabled
-    PLATFORM_QWS=maybe
+    if [ -f "$relpath"/src/gui/kernel/qapplication_mac.mm ]; then
+        # This is a depot build, or an all-platforms package
+        PLATFORM_QWS=maybe
+    else
+        # This must be the embedded package, since the Qt/Mac source files are not present
+	PLATFORM_QWS=yes
+    fi
 fi
 
 #-----------------------------------------------------------------------------
@@ -2694,14 +2700,17 @@ fi
 
 # check -arch arguments for validity.
 if [ "$PLATFORM_MAC" = "yes" ]; then
-    ALLOWED="x86 ppc x86_64 ppc64"
+    ALLOWED="x86 ppc x86_64 ppc64 i386"
     for i in $CFG_MAC_ARCHS 
     do 
         if echo "$ALLOWED" | grep -w -v "$i" > /dev/null 2>&1; then
-            echo "Unknown architecture: \"$i\". Supported architechtures: x86 ppc x86_64 ppc64";
+            echo "Unknown architecture: \"$i\". Supported architectures: x86[i386] ppc x86_64 ppc64";
             exit 2;
         fi
     done
+
+#   replace "i386" with "x86" to support configuring with -arch i386 as an alias for x86.
+    CFG_MAC_ARCHS="${CFG_MAC_ARCHS/i386/x86}" 
 fi
 
 # find the default framework value
