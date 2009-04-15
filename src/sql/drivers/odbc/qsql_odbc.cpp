@@ -55,6 +55,7 @@
 #include <qvarlengtharray.h>
 #include <qvector.h>
 #include <QDebug>
+#include <QSqlQuery>
 
 QT_BEGIN_NAMESPACE
 
@@ -1800,6 +1801,10 @@ bool QODBCDriver::open(const QString & db,
     d->checkHasMultiResults();
     setOpen(true);
     setOpenError(false);
+    if(d->isMSSqlServer) {
+        QSqlQuery i(createResult());
+        i.exec(QLatin1String("SET QUOTED_IDENTIFIER ON"));
+    }
     return true;
 }
 
