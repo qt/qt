@@ -53,9 +53,10 @@
 #include <QtGui/QWidget>
 
 QT_FORWARD_DECLARE_CLASS(QWidget);
-QT_USE_NAMESPACE
-
+QT_BEGIN_NAMESPACE
 extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.mm
+QT_END_NAMESPACE
+QT_USE_NAMESPACE
 
 @implementation NSWindow (QT_MANGLE_NAMESPACE(QWidgetIntegration))
 
@@ -130,7 +131,7 @@ extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.
     [self retain];
 
     QWidget *widget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];
-    QCocoaView *view = static_cast<QCocoaView *>(qt_mac_nativeview_for(widget));
+    QT_MANGLE_NAMESPACE(QCocoaView) *view = static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(qt_mac_nativeview_for(widget));
     Qt::MouseButton mouseButton = cocoaButton2QtButton([event buttonNumber]);
 
     // sometimes need to redirect mouse events to the popup.
