@@ -46,6 +46,11 @@ Third party components
 - QAbstractSocket
    * [192037] Emit disconnected only if we were connected before
 
+- QAccessible
+   * [241161] Fixed bug in browsing menus with the keyboard.
+   * [221731] Fixed bug where the accessibility plugin could crash if there
+     was an "&" at the end or spin forever if a label had a sequence of "&&".
+
 - QAuthenticator
    * [237979] fix implemenation of md5-sess
 
@@ -83,11 +88,19 @@ Third party components
    sceneeventfilters meaning a crash can occur
    * Fixed slowdown regression in QGraphicsItem::ItemCoordinateCache
 
+- QGraphicsGridLayout
+   * [242472] Fix a bug where the calculation of the maximum width of a column
+     was not calculated correctly.
+
 - QGraphicsScene
    * [243707] Fixed crash when adding child before parent to scene
 
 -QGraphicsView
    * [245766] Rubber Band drag mode not updated correctly when scrolling
+
+- QGraphicsWidget
+    * [246215] Fixed a regression where we could cache the wrong size hint
+      because we called the virtual sizeHint() from the constructor.
 
 - QHttp
    * [208445] cancel request upon receiving unknown authentication method
@@ -142,7 +155,7 @@ Third party components
    * Fixed crash that may occurs when event are processed just after QSortFilterProxyModel
      has been invalidated
    * [246025] Fixed auto-expand that occurs while quicly collapsing an item after clicking on a child
-   * [248805] Calling programatically  QTreeView::sortByColumn was not working if manual 
+   * [248805] Calling programatically  QTreeView::sortByColumn was not working if manual
      sorting is disabled
    * [248163] Fixed possible crash in the paintEvent when spans are used.
 
@@ -184,13 +197,13 @@ Qt for Linux/X11
     CD playback.
 
 - QGtkStyle
-   * The system palette is no longer strictly forced. Also behavior related 
+   * The system palette is no longer strictly forced. Also behavior related
     to system theme changes have been improved.
    * [249363] QFrame is now styled as a GtkScrolledWindow.
    * [247653] Fixed a compilation issue on solaris.
-   * Fixed palette and styling issues with the background color of 
+   * Fixed palette and styling issues with the background color of
     combo box popups.
-   * [239829] Disabled alt-key navigation for QGtkStyle to follow 
+   * [239829] Disabled alt-key navigation for QGtkStyle to follow
     GTK+ behavior.
    * [238196] Allow middle click to set scrollbar position to follow
     GTK+ behavior.
@@ -250,8 +263,8 @@ Qt for Mac OS X
 
 - Fix a crash when showing a widget that is window modal but has no parent.
 - [248803] Showing two dialogs at the same time don't get shared activation.
-- Added QSysInfo::MV_10_6 as an enum to test against. 
-- Various compile fixes for Snow Leopard (preliminary support). 
+- Added QSysInfo::MV_10_6 as an enum to test against.
+- Various compile fixes for Snow Leopard (preliminary support).
 
 
 - The uninstall-qt.py script included in the binary package no longer complains about removing itself multiple times.
