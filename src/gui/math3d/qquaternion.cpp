@@ -484,6 +484,8 @@ QQuaternion QQuaternion::fromAxisAndAngle
 
     If \a t is less than or equal to 0, then \a q1 will be returned.
     If \a t is greater than or equal to 1, then \a q2 will be returned.
+
+    \sa nlerp()
 */
 QQuaternion QQuaternion::slerp
     (const QQuaternion& q1, const QQuaternion& q2, qreal t)
@@ -520,6 +522,43 @@ QQuaternion QQuaternion::slerp
 
     // Construct the result quaternion.
     return q1 * factor1 + q2b * factor2;
+}
+
+/*!
+    Interpolates along the shortest linear path between the rotational
+    positions \a q1 and \a q2.  The value \a t should be between 0 and 1,
+    indicating the distance to travel between \a q1 and \a q2.
+    The result will be normalized().
+
+    If \a t is less than or equal to 0, then \a q1 will be returned.
+    If \a t is greater than or equal to 1, then \a q2 will be returned.
+
+    The nlerp() function is typically faster than slerp() and will
+    give approximate results to spherical interpolation that are
+    good enough for some applications.
+
+    \sa slerp()
+*/
+QQuaternion QQuaternion::nlerp
+    (const QQuaternion& q1, const QQuaternion& q2, qreal t)
+{
+    // Handle the easy cases first.
+    if (t <= 0.0f)
+        return q1;
+    else if (t >= 1.0f)
+        return q2;
+
+    // Determine the angle between the two quaternions.
+    QQuaternion q2b;
+    qreal dot;
+    dot = q1.xp * q2.xp + q1.yp * q2.yp + q1.zp * q2.zp + q1.wp * q2.wp;
+    if (dot >= 0.0f)
+        q2b = q2;
+    else
+        q2b = -q2;
+
+    // Perform the linear interpolation.
+    return (q1 * (1.0f - t) + q2b * t).normalized();
 }
 
 #ifndef QT_NO_DEBUG_STREAM

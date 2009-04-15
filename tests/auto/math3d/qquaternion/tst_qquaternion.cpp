@@ -90,6 +90,9 @@ private slots:
 
     void slerp_data();
     void slerp();
+
+    void nlerp_data();
+    void nlerp();
 };
 
 // qFuzzyCompare isn't quite "fuzzy" enough to handle conversion
@@ -761,6 +764,60 @@ void tst_QQuaternion::slerp()
     QQuaternion q3 = QQuaternion::fromAxisAndAngle(x3, y3, z3, angle3);
 
     QQuaternion result = QQuaternion::slerp(q1, q2, t);
+
+    QVERIFY(fuzzyCompare(result.x(), q3.x()));
+    QVERIFY(fuzzyCompare(result.y(), q3.y()));
+    QVERIFY(fuzzyCompare(result.z(), q3.z()));
+    QVERIFY(fuzzyCompare(result.scalar(), q3.scalar()));
+}
+
+// Test normalized linear interpolation of quaternions.
+void tst_QQuaternion::nlerp_data()
+{
+    slerp_data();
+}
+void tst_QQuaternion::nlerp()
+{
+    QFETCH(qreal, x1);
+    QFETCH(qreal, y1);
+    QFETCH(qreal, z1);
+    QFETCH(qreal, angle1);
+    QFETCH(qreal, x2);
+    QFETCH(qreal, y2);
+    QFETCH(qreal, z2);
+    QFETCH(qreal, angle2);
+    QFETCH(qreal, t);
+
+    QQuaternion q1 = QQuaternion::fromAxisAndAngle(x1, y1, z1, angle1);
+    QQuaternion q2 = QQuaternion::fromAxisAndAngle(x2, y2, z2, angle2);
+
+    QQuaternion result = QQuaternion::nlerp(q1, q2, t);
+
+    qreal resultx, resulty, resultz, resultscalar;
+    if (t <= 0.0f) {
+        resultx = q1.x();
+        resulty = q1.y();
+        resultz = q1.z();
+        resultscalar = q1.scalar();
+    } else if (t >= 1.0f) {
+        resultx = q2.x();
+        resulty = q2.y();
+        resultz = q2.z();
+        resultscalar = q2.scalar();
+    } else if (qAbs(angle1 - angle2) <= 180.f) {
+        resultx = q1.x() * (1 - t) + q2.x() * t;
+        resulty = q1.y() * (1 - t) + q2.y() * t;
+        resultz = q1.z() * (1 - t) + q2.z() * t;
+        resultscalar = q1.scalar() * (1 - t) + q2.scalar() * t;
+    } else {
+        // Angle greater than 180 degrees: negate q2.
+        resultx = q1.x() * (1 - t) - q2.x() * t;
+        resulty = q1.y() * (1 - t) - q2.y() * t;
+        resultz = q1.z() * (1 - t) - q2.z() * t;
+        resultscalar = q1.scalar() * (1 - t) - q2.scalar() * t;
+    }
+
+    QQuaternion q3 = QQuaternion(resultscalar, resultx, resulty, resultz).normalized();
 
     QVERIFY(fuzzyCompare(result.x(), q3.x()));
     QVERIFY(fuzzyCompare(result.y(), q3.y()));

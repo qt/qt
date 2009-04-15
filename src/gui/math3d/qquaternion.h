@@ -126,6 +126,8 @@ public:
 
     static QQuaternion slerp
         (const QQuaternion& q1, const QQuaternion& q2, qreal t);
+    static QQuaternion nlerp
+        (const QQuaternion& q1, const QQuaternion& q2, qreal t);
 
 private:
     float wp, xp, yp, zp;
