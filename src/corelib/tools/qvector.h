@@ -98,6 +98,8 @@ struct QVectorTypedData
     T array[1];
 };
 
+class QRegion;
+
 template <typename T>
 class QVector
 {
