@@ -723,26 +723,25 @@ QFile::rename(const QString &newName)
             return false;
         }
 
-        QFile in(fileName());
         QFile out(newName);
-        if (in.open(QIODevice::ReadOnly)) {
+        if (open(QIODevice::ReadOnly)) {
             if (out.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
                 bool error = false;
                 char block[4096];
-                qint64 read;
-                while ((read = in.read(block, sizeof(block))) > 0) {
-                    if (read != out.write(block, read)) {
+                qint64 bytes;
+                while ((bytes = read(block, sizeof(block))) > 0) {
+                    if (bytes != out.write(block, bytes)) {
                         d->setError(QFile::RenameError, out.errorString());
                         error = true;
                         break;
                     }
                 }
-                if (read == -1) {
-                    d->setError(QFile::RenameError, in.errorString());
+                if (bytes == -1) {
+                    d->setError(QFile::RenameError, errorString());
                     error = true;
                 }
                 if(!error) {
-                    if (!in.remove()) {
+                    if (!remove()) {
                         d->setError(QFile::RenameError, tr("Cannot remove source file"));
                         error = true;
                     }
@@ -751,10 +750,12 @@ QFile::rename(const QString &newName)
                     out.remove();
                 else
                     setFileName(newName);
+                close();
                 return !error;
             }
+            close();
         }
-        d->setError(QFile::RenameError, out.isOpen() ? in.errorString() : out.errorString());
+        d->setError(QFile::RenameError, out.isOpen() ? errorString() : out.errorString());
     }
     return false;
 }
