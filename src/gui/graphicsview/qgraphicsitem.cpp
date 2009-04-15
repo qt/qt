@@ -4285,7 +4285,9 @@ QPointF QGraphicsItem::mapToItem(const QGraphicsItem *item, const QPointF &point
 */
 QPointF QGraphicsItem::mapToParent(const QPointF &point) const
 {
-    return d_ptr->pos + (d_ptr->hasTransform ? transform().map(point) : point);
+    if (!d_ptr->hasTransform)
+        return point + d_ptr->pos;
+    return transform().map(point) + d_ptr->pos;
 }
 
 /*!
@@ -4350,9 +4352,9 @@ QPolygonF QGraphicsItem::mapToItem(const QGraphicsItem *item, const QRectF &rect
 */
 QPolygonF QGraphicsItem::mapToParent(const QRectF &rect) const
 {
-    QPolygonF p = !d_ptr->hasTransform ? rect : transform().map(rect);
-    p.translate(d_ptr->pos);
-    return p;
+    if (!d_ptr->hasTransform)
+        return rect.translated(d_ptr->pos);
+    return transform().map(rect).translated(d_ptr->pos);
 }
 
 /*!
@@ -4551,9 +4553,9 @@ QPolygonF QGraphicsItem::mapToItem(const QGraphicsItem *item, const QPolygonF &p
 */
 QPolygonF QGraphicsItem::mapToParent(const QPolygonF &polygon) const
 {
-    QPolygonF p = !d_ptr->hasTransform ? polygon : transform().map(polygon);
-    p.translate(d_ptr->pos);
-    return p;
+    if (!d_ptr->hasTransform)
+        return polygon.translated(d_ptr->pos);
+    return transform().map(polygon).translated(d_ptr->pos);
 }
 
 /*!
@@ -4595,9 +4597,9 @@ QPainterPath QGraphicsItem::mapToItem(const QGraphicsItem *item, const QPainterP
 */
 QPainterPath QGraphicsItem::mapToParent(const QPainterPath &path) const
 {
-    QPainterPath p(path);
-    p.translate(d_ptr->pos);
-    return d_ptr->hasTransform ? transform().map(p) : p;
+    if (!d_ptr->hasTransform)
+        return path.translated(d_ptr->pos);
+    return transform().map(path).translated(d_ptr->pos);
 }
 
 /*!
