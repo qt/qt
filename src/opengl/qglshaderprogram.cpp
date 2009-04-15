@@ -1836,6 +1836,30 @@ void QGLShaderProgram::setUniformValue(const char *name, GLint value)
 }
 
 /*!
+    Sets the uniform variable at \a location in the current context to \a value.
+
+    \sa setAttributeValue()
+*/
+void QGLShaderProgram::setUniformValue(int location, GLuint value)
+{
+    if (location != -1)
+        glUniform1i(location, value);
+}
+
+/*!
+    \overload
+
+    Sets the uniform variable called \a name in the current context
+    to \a value.
+
+    \sa setAttributeValue()
+*/
+void QGLShaderProgram::setUniformValue(const char *name, GLuint value)
+{
+    setUniformValue(uniformLocation(name), value);
+}
+
+/*!
     Sets the uniform variable at \a location in the current context to
     the 2D vector (\a x, \a y).
 
@@ -2017,6 +2041,114 @@ void QGLShaderProgram::setUniformValue(int location, const QColor& color)
 void QGLShaderProgram::setUniformValue(const char *name, const QColor& color)
 {
     setUniformValue(uniformLocation(name), color);
+}
+
+/*!
+    Sets the uniform variable at \a location in the current context to
+    the x() & y() coordinates of \a point.
+
+    \sa setAttributeValue()
+*/
+void QGLShaderProgram::setUniformValue(int location, const QPoint& point)
+{
+    if (location != -1) {
+        GLfloat values[4] = {point.x(), point.y()};
+        glUniform2fv(location, 1, values);
+    }
+}
+
+/*!
+    \overload
+
+    Sets the uniform variable at \a location in the current context to
+    the x() & y() coordinates of \a point.
+
+    \sa setAttributeValue()
+*/
+void QGLShaderProgram::setUniformValue(const char *name, const QPoint& point)
+{
+    setUniformValue(uniformLocation(name), point);
+}
+
+/*!
+    Sets the uniform variable at \a location in the current context to
+    the x() & y() coordinates of \a point.
+
+    \sa setAttributeValue()
+*/
+void QGLShaderProgram::setUniformValue(int location, const QPointF& point)
+{
+    if (location != -1) {
+        GLfloat values[4] = {point.x(), point.y()};
+        glUniform2fv(location, 1, values);
+    }
+}
+
+/*!
+    \overload
+
+    Sets the uniform variable at \a location in the current context to
+    the x() & y() coordinates of \a point.
+
+    \sa setAttributeValue()
+*/
+void QGLShaderProgram::setUniformValue(const char *name, const QPointF& point)
+{
+    setUniformValue(uniformLocation(name), point);
+}
+
+/*!
+    Sets the uniform variable at \a location in the current context to
+    the width() & height() of the given \a size.
+
+    \sa setAttributeValue()
+*/
+void QGLShaderProgram::setUniformValue(int location, const QSize& size)
+{
+    if (location != -1) {
+        GLfloat values[4] = {size.width(), size.width()};
+        glUniform2fv(location, 1, values);
+    }
+}
+
+/*!
+    \overload
+
+    Sets the uniform variable at \a location in the current context to
+    the width() & height() of the given \a size.
+
+    \sa setAttributeValue()
+*/
+void QGLShaderProgram::setUniformValue(const char *name, const QSize& size)
+{
+    setUniformValue(uniformLocation(name), size);
+}
+
+/*!
+    Sets the uniform variable at \a location in the current context to
+    the width() & height() of the given \a size.
+
+    \sa setAttributeValue()
+*/
+void QGLShaderProgram::setUniformValue(int location, const QSizeF& size)
+{
+    if (location != -1) {
+        GLfloat values[4] = {size.width(), size.height()};
+        glUniform2fv(location, 1, values);
+    }
+}
+
+/*!
+    \overload
+
+    Sets the uniform variable at \a location in the current context to
+    the width() & height() of the given \a size.
+
+    \sa setAttributeValue()
+*/
+void QGLShaderProgram::setUniformValue(const char *name, const QSizeF& size)
+{
+    setUniformValue(uniformLocation(name), size);
 }
 
 /*!
