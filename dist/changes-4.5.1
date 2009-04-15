@@ -51,6 +51,9 @@ Third party components
    * [221731] Fixed bug where the accessibility plugin could crash if there
      was an "&" at the end or spin forever if a label had a sequence of "&&".
 
+- QAtomicInt
+   * [216492] Fix compilation on 64-bit PowerPC machines with gcc 4.3.
+
 - QAuthenticator
    * [237979] fix implemenation of md5-sess
 
@@ -108,12 +111,27 @@ Third party components
 - QHttp
    * [208445] cancel request upon receiving unknown authentication method
 
+- QHostAddress
+   * [247330] Fix compilation on MinGW by adding a missing QPair include.
+
+- QLocalSocket
+   * Fix a bug that would cause QLocalSocket to disconnect 30 seconds
+     after a succesful delayed connection on UNIX.
+
 - QMacStyle
     * [248769] Fix regression where QMacStyle would only draw tabs when passed a QStyleOptionTabV3.
     * Adjust the opacity value for popups.
 
 - QMainWindow
     * [248048] Fix a regression that would cause tooltips to disappear when using the unified toolbar.
+
+- QMetaType
+   * [248890] Detailed description of QMetaType no longer contradicts
+     documentation of QMetaType::type()
+
+- QMutex
+   * Fix performance regression for contended mutexes as reported on
+     the qt4-preview-feedback list.
 
 - QPainter
    * [247492] Fix rendering bug in raster paint engine causing one-pixel
@@ -130,6 +148,10 @@ Third party components
 - QPixmap
    * [249175] Fix QPixmap::fromImage() of monochrome images to result in
      black/white pixels and not transparent/white pixels.
+
+- QProcess
+   * [247865] Fix a crash when calling QProcess::start() and
+     startDetached() with an empty program string.
 
 - QScrollBar
    * [247985] Stylesheet: added ability to style scrollbar menus.
@@ -153,6 +175,10 @@ Third party components
    * [188195] fix background of QAbstractScrollArea loosing its color if styled with pseudo-class.
    * Fixed crash while styling the title bar of a QMdiArea.
    * [246542] Fixed QToolButton::hover{ color:.... }
+
+- QThread
+   * [249997] Add documentation indicating that the priority set by
+     the programmer may be ignored, for example on Linux.
 
 - QTreeView
    * Fixed crash that may occurs when event are processed just after QSortFilterProxyModel
