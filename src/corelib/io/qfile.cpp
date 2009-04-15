@@ -718,6 +718,11 @@ QFile::rename(const QString &newName)
             return true;
         }
 
+        if (isSequential()) {
+            d->setError(QFile::RenameError, tr("Will not rename sequential file using block copy"));
+            return false;
+        }
+
         QFile in(fileName());
         QFile out(newName);
         if (in.open(QIODevice::ReadOnly)) {
