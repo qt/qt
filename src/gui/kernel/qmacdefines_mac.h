@@ -105,7 +105,7 @@ Yes, it is an informative comment ;-)
 #  undef qDebug
 #endif
 
-#if __LP64__
+#ifdef __LP64__
 typedef signed int OSStatus;
 #else
 typedef signed long OSStatus;

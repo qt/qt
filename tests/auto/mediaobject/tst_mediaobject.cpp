@@ -787,7 +787,7 @@ void tst_MediaObject::setMediaAndPlay()
     QSignalSpy totalTimeChangedSignalSpy(m_media, SIGNAL(totalTimeChanged(qint64)));
     QVERIFY(m_media->currentSource().type() != MediaSource::Invalid);
     Phonon::State state = m_media->state();
-    QVERIFY(state == Phonon::StoppedState || state == Phonon::PlayingState);
+    QVERIFY(state == Phonon::StoppedState || state == Phonon::PlayingState || Phonon::PausedState);
     m_media->setCurrentSource(m_url);
     // before calling play() we better make sure that if play() finishes very fast that we don't get
     // called again

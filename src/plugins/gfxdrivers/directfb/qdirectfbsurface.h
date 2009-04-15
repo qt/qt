@@ -61,8 +61,8 @@ QT_MODULE(Gui)
 class QDirectFBSurface: public QWSWindowSurface, public QDirectFBPaintDevice
 {
 public:
-    QDirectFBSurface(QDirectFBScreen* scr);
-    QDirectFBSurface(QDirectFBScreen* scr, QWidget *widget);
+    QDirectFBSurface(DFBSurfaceFlipFlags flipFlags, QDirectFBScreen* scr);
+    QDirectFBSurface(DFBSurfaceFlipFlags flipFlags, QDirectFBScreen* scr, QWidget *widget);
     ~QDirectFBSurface();
 
     bool isValid() const;
@@ -99,6 +99,7 @@ private:
     bool onscreen;
 
     QList<QImage*> bufferImages;
+    DFBSurfaceFlipFlags flipFlags;
 #ifdef QT_DIRECTFB_TIMING
     int frames;
     QTime timer;

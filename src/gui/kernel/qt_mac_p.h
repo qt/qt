@@ -250,11 +250,13 @@ struct QMacDndAnswerRecord {
     Qt::KeyboardModifiers modifiers;
     Qt::MouseButtons buttons;
     Qt::DropAction lastAction;
+    unsigned int lastOperation;
     void clear() {
         rect = QRect();
         modifiers = Qt::NoModifier;
         buttons = Qt::NoButton;
         lastAction = Qt::IgnoreAction;
+        lastOperation = 0;
     }
 };
 extern QMacDndAnswerRecord qt_mac_dnd_answer_rec;

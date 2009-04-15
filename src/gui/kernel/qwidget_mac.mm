@@ -2166,7 +2166,10 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
     if ((popup || type == Qt::Tool || type == Qt::ToolTip) && !q->isModal()) {
         [windowRef setHidesOnDeactivate:YES];
         [windowRef setHasShadow:YES];
+    } else {
+        [windowRef setHidesOnDeactivate:NO];
     }
+
     Q_UNUSED(parentWidget);
     Q_UNUSED(dialog);
 
@@ -2838,12 +2841,26 @@ void QWidgetPrivate::updateSystemBackground()
 
 void QWidgetPrivate::setCursor_sys(const QCursor &)
 {
+    Q_Q(QWidget);
+#ifndef QT_MAC_USE_COCOA
     qt_mac_update_cursor();
+#else
+    if (q->testAttribute(Qt::WA_WState_Created)) {
+        [qt_mac_window_for(q) invalidateCursorRectsForView:qt_mac_nativeview_for(q)];
+    }
+#endif
 }
 
 void QWidgetPrivate::unsetCursor_sys()
 {
+    Q_Q(QWidget);
+#ifndef QT_MAC_USE_COCOA
     qt_mac_update_cursor();
+#else
+    if (q->testAttribute(Qt::WA_WState_Created)) {
+        [qt_mac_window_for(q) invalidateCursorRectsForView:qt_mac_nativeview_for(q)];
+    }
+#endif
 }
 
 void QWidgetPrivate::setWindowTitle_sys(const QString &caption)

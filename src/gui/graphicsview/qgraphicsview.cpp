@@ -3647,30 +3647,30 @@ void QGraphicsView::scrollContentsBy(int dx, int dy)
     if (isRightToLeft())
         dx = -dx;
 
-    if (d->viewportUpdateMode != QGraphicsView::NoViewportUpdate
-        && d->viewportUpdateMode != QGraphicsView::FullViewportUpdate) {
-        for (int i = 0; i < d->dirtyRects.size(); ++i)
-            d->dirtyRects[i].translate(dx, dy);
-        for (int i = 0; i < d->dirtyRegions.size(); ++i)
-            d->dirtyRegions[i].translate(dx, dy);
-    }
-
+    if (d->viewportUpdateMode != QGraphicsView::NoViewportUpdate) {
+        if (d->viewportUpdateMode != QGraphicsView::FullViewportUpdate) {
+            for (int i = 0; i < d->dirtyRects.size(); ++i)
+                d->dirtyRects[i].translate(dx, dy);
+            for (int i = 0; i < d->dirtyRegions.size(); ++i)
+                d->dirtyRegions[i].translate(dx, dy);
+            if (d->accelerateScrolling) {
 #ifndef QT_NO_RUBBERBAND
-    // Update old rubberband
-    if (d->viewportUpdateMode != QGraphicsView::NoViewportUpdate && !d->rubberBandRect.isEmpty()) {
-        if (d->viewportUpdateMode != FullViewportUpdate)
-            viewport()->update(d->rubberBandRegion(viewport(), d->rubberBandRect));
-        else
-            viewport()->update();
-    }
+                // Update new and old rubberband regions
+                if (!d->rubberBandRect.isEmpty()) {
+                    QRegion rubberBandRegion(d->rubberBandRegion(viewport(), d->rubberBandRect));
+                    rubberBandRegion += rubberBandRegion.translated(-dx, -dy);
+                    viewport()->update(rubberBandRegion);
+                }
 #endif
-
-    if (d->viewportUpdateMode != QGraphicsView::NoViewportUpdate){
-        if (d->accelerateScrolling && d->viewportUpdateMode != FullViewportUpdate)
-            viewport()->scroll(dx, dy);
-        else
+                viewport()->scroll(dx, dy);
+            } else {
+                viewport()->update();
+            }
+        } else {
             viewport()->update();
+        }
     }
+
     d->updateLastCenterPoint();
 
     if ((d->cacheMode & CacheBackground)

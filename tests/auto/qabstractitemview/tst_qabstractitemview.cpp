@@ -53,6 +53,8 @@
 #include <qspinbox.h>
 #include <qitemdelegate.h>
 #include <qpushbutton.h>
+#include <qscrollbar.h>
+#include <qboxlayout.h>
 #include "../../shared/util.h"
 
 //TESTED_CLASS=
@@ -209,6 +211,7 @@ private slots:
     void setCurrentIndex();
     
     void task221955_selectedEditor();
+    void task250754_fontChange();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1179,8 +1182,46 @@ void tst_QAbstractItemView::task221955_selectedEditor()
     button->setFocus();    
     QTest::qWait(50);
     QVERIFY(tree.selectionModel()->selectedIndexes().isEmpty());
+}
+
+void tst_QAbstractItemView::task250754_fontChange()
+{
+    QString app_css = qApp->styleSheet();
+    qApp->setStyleSheet("/*  */");
+
+    QWidget w;
+    QTreeView tree(&w);
+    QVBoxLayout *vLayout = new QVBoxLayout(&w);
+    vLayout->addWidget(&tree);
+
+    QStandardItemModel *m = new QStandardItemModel(this);
+    for (int i=0; i<5; ++i) {
+        QStandardItem *item = new QStandardItem(QString("Item number %1").arg(i));
+        for (int j=0; j<5; ++j) {
+            QStandardItem *child = new QStandardItem(QString("Child Item number %1").arg(j));
+            item->setChild(j, 0, child);
+        }
+        m->setItem(i, 0, item);
+    }
+    tree.setModel(m);
+
+    w.show();
+    w.resize(150,150);
+    QTest::qWait(30);
+    QFont font = tree.font();
+    font.setPointSize(5);
+    tree.setFont(font);
+    QTest::qWait(30);
+
+    QVERIFY(!tree.verticalScrollBar()->isVisible());
+
+    font.setPointSize(45);
+    tree.setFont(font);
+    QTest::qWait(30);
+    //now with the huge items, the scrollbar must be visible
+    QVERIFY(tree.verticalScrollBar()->isVisible());
     
-    
+    qApp->setStyleSheet(app_css);
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

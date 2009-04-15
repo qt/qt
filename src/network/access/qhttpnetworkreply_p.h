@@ -66,12 +66,10 @@ static const unsigned char gz_magic[2] = {0x1f, 0x8b}; // gzip magic header
 #define CHUNK 16384
 #endif
 
-#ifndef QT_NO_OPENSSL
-#    include <QtNetwork/qsslsocket.h>
-#    include <QtNetwork/qsslerror.h>
-#else
-#   include <QtNetwork/qtcpsocket.h>
-#endif
+#include <QtNetwork/qtcpsocket.h>
+// it's safe to include these even if SSL support is not enabled
+#include <QtNetwork/qsslsocket.h>
+#include <QtNetwork/qsslerror.h>
 
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkreply.h>

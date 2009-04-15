@@ -3401,6 +3401,9 @@ int QWindowsMobileStyle::styleHint(StyleHint hint, const QStyleOption *opt, cons
     case SH_ScrollBar_ContextMenu:
         ret = false;
         break;
+    case SH_MenuBar_AltKeyNavigation:
+        ret = false;
+        break;
     default:
           ret = QWindowsStyle::styleHint(hint, opt, widget, returnData);
        break;
