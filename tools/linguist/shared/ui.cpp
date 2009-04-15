@@ -95,7 +95,7 @@ bool UiReader::startElement(const QString &namespaceURI,
     Q_UNUSED(namespaceURI);
     Q_UNUSED(localName);
 
-    if (qName == QLatin1String("item")) {
+    if (qName == QLatin1String("item")) { // UI3 menu entries
         flush();
         if (!atts.value(QLatin1String("text")).isEmpty())
             m_source = atts.value(QLatin1String("text"));
@@ -123,15 +123,15 @@ bool UiReader::endElement(const QString &namespaceURI,
 
     m_accum.replace(QLatin1String("\r\n"), QLatin1String("\n"));
 
-    if (qName == QLatin1String("class")) {
+    if (qName == QLatin1String("class")) { // UI "header"
         if (m_context.isEmpty())
             m_context = m_accum;
     } else if (qName == QLatin1String("string") && m_isTrString) {
         m_source = m_accum;
-    } else if (qName == QLatin1String("comment")) {
+    } else if (qName == QLatin1String("comment")) { // FIXME: what's that?
         m_comment = m_accum;
         flush();
-    } else if (qName == QLatin1String("function")) {
+    } else if (qName == QLatin1String("function")) { // UI3 embedded code
         fetchtrInlinedCpp(m_accum, m_translator, m_context);
     } else {
         flush();
