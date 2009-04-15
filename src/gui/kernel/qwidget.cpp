@@ -1991,6 +1991,9 @@ void QWidgetPrivate::setOpaque(bool opaque)
 #ifdef Q_WS_WIN
     winUpdateIsOpaque();
 #endif
+#ifdef Q_WS_S60
+    s60UpdateIsOpaque();
+#endif
 }
 
 void QWidgetPrivate::updateIsTranslucent()
@@ -2003,6 +2006,9 @@ void QWidgetPrivate::updateIsTranslucent()
 #endif
 #ifdef Q_WS_WIN
     winUpdateIsOpaque();
+#endif
+#ifdef Q_WS_S60
+    s60UpdateIsOpaque();
 #endif
 }
 

@@ -12,7 +12,7 @@
 #include <qglobal.h> // for Q_WS_WIN define (non-PCH)
 
 #include <QtGui/qpaintdevice.h>
-#include <QtGui/qwidget.h>
+#include <private/qwidget_p.h>
 #include "qwindowsurface_s60_p.h"
 #include "qt_s60_p.h"
 
@@ -143,6 +143,15 @@ void QS60WindowSurface::lockBitmapHeap()
 
         // Get some values for QImage creation
         TDisplayMode mode  = bitmap->DisplayMode();
+        QWidget *win = QS60WindowSurfacePrivate::lockedSurface->window();
+        RWindowBase *rwin = win->winId()->DrawableWindow();
+        TDisplayMode rwMode = rwin->DisplayMode();
+
+        mode = rwMode;
+
+        if (mode == EColor16MA
+            && qt_widget_private(QS60WindowSurfacePrivate::lockedSurface->window())->isOpaque)
+            mode = EColor16MU;
         QImage::Format format = qt_TDisplayMode2Format( mode );
         TSize bitmapSize = bitmap->SizeInPixels();
         int bytesPerLine = CFbsBitmap::ScanLineLength( bitmapSize.iWidth, mode);

@@ -202,7 +202,14 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
             topExtra->rwindow->PointerFilter(EPointerFilterEnterExit
                 | EPointerFilterMove | EPointerFilterDrag, 0);
             topExtra->rwindow->EnableVisibilityChangeEvents();
+
+            if (q->testAttribute(Qt::WA_TranslucentBackground)) {
+                RWindow *rwindow = static_cast<RWindow*>(topExtra->rwindow);
+                TDisplayMode gotDM = (TDisplayMode)rwindow->SetRequiredDisplayMode(EColor16MA);
+                int erro = rwindow->SetTransparencyAlphaChannel();
+            }
         }
+
 
         id = (WId)control;
 
@@ -429,6 +436,29 @@ void QWidgetPrivate::setConstraints_sys()
 
 }
 
+
+void QWidgetPrivate::s60UpdateIsOpaque()
+{
+    Q_Q(QWidget);
+
+    if (!q->testAttribute(Qt::WA_WState_Created) || !q->testAttribute(Qt::WA_TranslucentBackground))
+        return;
+
+    if ((data.window_flags & Qt::FramelessWindowHint) == 0)
+        return;
+
+    if (!isOpaque) {
+        QTLWExtra *topExtra = topData();
+        RWindow *rwindow = static_cast<RWindow*>(topExtra->rwindow);
+        TDisplayMode gotDM = (TDisplayMode)rwindow->SetRequiredDisplayMode(EColor16MA);
+        int erro = rwindow->SetTransparencyAlphaChannel();
+    } else {
+        QTLWExtra *topExtra = topData();
+        RWindow *rwindow = static_cast<RWindow*>(topExtra->rwindow);
+        rwindow->SetTransparentRegion(TRegionFix<1>());
+    }
+}
+
 CFbsBitmap* qt_pixmapToNativeBitmapL(QPixmap pixmap, bool invert)
 {
     CFbsBitmap* fbsBitmap = new(ELeave)CFbsBitmap;
@@ -576,7 +606,9 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
 */
 void QWidgetPrivate::setWindowOpacity_sys(qreal level)
 {
-
+    RWindow* rw = static_cast<RWindow*>(topData()->rwindow);
+    if (rw)
+        rw->SetTransparencyFactor(TRgb::Gray256(255.0 * level));
 }
 
 void QWidgetPrivate::updateFrameStrut()

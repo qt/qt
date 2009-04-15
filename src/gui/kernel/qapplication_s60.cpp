@@ -540,7 +540,9 @@ void QSymbianControl::Draw(const TRect& r) const
     if (engine->type() == QPaintEngine::Raster) {
         QS60WindowSurface *s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
         CFbsBitmap *bitmap = s60Surface->symbianBitmap();
-        SystemGc().BitBlt(r.iTl, bitmap, r);
+        CWindowGc &gc = SystemGc();
+        gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
+        gc.BitBlt(r.iTl, bitmap, r);
     } else {
         surface->flush(qwidget, QRegion(qt_TRect2QRect(r)), QPoint());
     }
