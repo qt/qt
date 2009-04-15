@@ -3235,6 +3235,10 @@ bool QGLWidget::event(QEvent *e)
             update();
         }
         return true;
+#  if defined(QT_MAC_USE_COCOA)
+    } else if (e->type() == QEvent::MacGLClearDrawable) {
+        d->glcx->d_ptr->clearDrawable();
+#  endif
     }
 #endif
 
