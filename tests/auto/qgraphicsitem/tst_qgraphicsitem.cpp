@@ -162,6 +162,8 @@ private slots:
     void mapFromToParent();
     void mapFromToScene();
     void mapFromToItem();
+    void mapRectFromToParent_data();
+    void mapRectFromToParent();
     void isAncestorOf();
     void commonAncestorItem();
     void data();
@@ -2513,6 +2515,87 @@ void tst_QGraphicsItem::mapFromToItem()
     delete item2;
     delete item3;
     delete item4;
+}
+
+void tst_QGraphicsItem::mapRectFromToParent_data()
+{
+    QTest::addColumn<bool>("parent");
+    QTest::addColumn<QPointF>("parentPos");
+    QTest::addColumn<QTransform>("parentTransform");
+    QTest::addColumn<QPointF>("pos");
+    QTest::addColumn<QTransform>("transform");
+    QTest::addColumn<QRectF>("inputRect");
+    QTest::addColumn<QRectF>("outputRect");
+
+    QTest::newRow("nil") << false << QPointF() << QTransform() << QPointF() << QTransform() << QRectF() << QRectF();
+    QTest::newRow("simple") << false << QPointF() << QTransform() << QPointF() << QTransform()
+                            << QRectF(0, 0, 10, 10) << QRectF(0, 0, 10, 10);
+    QTest::newRow("simple w/parent") << true
+                                     << QPointF() << QTransform()
+                                     << QPointF() << QTransform()
+                                     << QRectF(0, 0, 10, 10) << QRectF(0, 0, 10, 10);
+    QTest::newRow("simple w/parent parentPos") << true
+                                               << QPointF(50, 50) << QTransform()
+                                               << QPointF() << QTransform()
+                                               << QRectF(0, 0, 10, 10) << QRectF(0, 0, 10, 10);
+    QTest::newRow("simple w/parent parentPos parentRotation") << true
+                                                              << QPointF(50, 50) << QTransform().rotate(45)
+                                                              << QPointF() << QTransform()
+                                                              << QRectF(0, 0, 10, 10) << QRectF(0, 0, 10, 10);
+    QTest::newRow("pos w/parent") << true
+                                  << QPointF() << QTransform()
+                                  << QPointF(50, 50) << QTransform()
+                                  << QRectF(0, 0, 10, 10) << QRectF(50, 50, 10, 10);
+    QTest::newRow("rotation w/parent") << true
+                                       << QPointF() << QTransform()
+                                       << QPointF() << QTransform().rotate(90)
+                                       << QRectF(0, 0, 10, 10) << QRectF(-10, 0, 10, 10);
+    QTest::newRow("pos rotation w/parent") << true
+                                           << QPointF() << QTransform()
+                                           << QPointF(50, 50) << QTransform().rotate(90)
+                                           << QRectF(0, 0, 10, 10) << QRectF(40, 50, 10, 10);
+    QTest::newRow("pos rotation w/parent parentPos parentRotation") << true
+                                                                    << QPointF(-170, -190) << QTransform().rotate(90)
+                                                                    << QPointF(50, 50) << QTransform().rotate(90)
+                                                                    << QRectF(0, 0, 10, 10) << QRectF(40, 50, 10, 10);
+}
+
+void tst_QGraphicsItem::mapRectFromToParent()
+{
+    QFETCH(bool, parent);
+    QFETCH(QPointF, parentPos);
+    QFETCH(QTransform, parentTransform);
+    QFETCH(QPointF, pos);
+    QFETCH(QTransform, transform);
+    QFETCH(QRectF, inputRect);
+    QFETCH(QRectF, outputRect);
+
+    QGraphicsRectItem *rect = new QGraphicsRectItem;
+    rect->setPos(pos);
+    rect->setTransform(transform);
+
+    if (parent) {
+        QGraphicsRectItem *rectParent = new QGraphicsRectItem;
+        rect->setParentItem(rectParent);
+        rectParent->setPos(parentPos);
+        rectParent->setTransform(parentTransform);
+    }
+
+    // Make sure we use non-destructive transform operations (e.g., 90 degree
+    // rotations).
+    QCOMPARE(rect->mapRectToParent(inputRect), outputRect);
+    QCOMPARE(rect->mapRectFromParent(outputRect), inputRect);
+    QCOMPARE(rect->itemTransform(rect->parentItem()).mapRect(inputRect), outputRect);
+    QCOMPARE(rect->mapToParent(inputRect).boundingRect(), outputRect);
+    QCOMPARE(rect->mapToParent(QPolygonF(inputRect)).boundingRect(), outputRect);
+    QCOMPARE(rect->mapFromParent(outputRect).boundingRect(), inputRect);
+    QCOMPARE(rect->mapFromParent(QPolygonF(outputRect)).boundingRect(), inputRect);
+    QPainterPath inputPath;
+    inputPath.addRect(inputRect);
+    QPainterPath outputPath;
+    outputPath.addRect(outputRect);
+    QCOMPARE(rect->mapToParent(inputPath).boundingRect(), outputPath.boundingRect());
+    QCOMPARE(rect->mapFromParent(outputPath).boundingRect(), inputPath.boundingRect());
 }
 
 void tst_QGraphicsItem::isAncestorOf()
