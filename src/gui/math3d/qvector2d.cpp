@@ -179,32 +179,38 @@ qreal QVector2D::lengthSquared() const
 }
 
 /*!
-    Returns the normalized unit vector form of this vector.  If this vector
-    is not null, the returned vector is guaranteed to be 1.0 in length.
-    If this vector is null, then a null vector is returned.
+    Returns the normalized unit vector form of this vector.
+
+    If this vector is null, then a null vector is returned.  If the length
+    of the vector is very close to 1, then the vector will be returned as-is.
+    Otherwise the normalized form of the vector of length 1 will be returned.
 
     \sa length(), normalize()
 */
 QVector2D QVector2D::normalized() const
 {
-    qreal len = length();
-    if (!qIsNull(len))
-        return *this / len;
+    qreal len = lengthSquared();
+    if (qFuzzyIsNull(len - 1.0f))
+        return *this;
+    else if (!qFuzzyIsNull(len))
+        return *this / qSqrt(len);
     else
         return QVector2D();
 }
 
 /*!
     Normalizes the currect vector in place.  Nothing happens if this
-    vector is a null vector.
+    vector is a null vector or the length of the vector is very close to 1.
 
     \sa length(), normalized()
 */
 void QVector2D::normalize()
 {
-    qreal len = length();
-    if (qIsNull(len))
+    qreal len = lengthSquared();
+    if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
+
+    len = qSqrt(len);
 
     xp /= len;
     yp /= len;

@@ -230,39 +230,45 @@ qreal QQuaternion::lengthSquared() const
 }
 
 /*!
-    Returns the normalized unit form of this quaternion.  If this quaternion
-    is not null, the returned quaternion is guaranteed to be 1.0 in length.
+    Returns the normalized unit form of this quaternion.
+
     If this quaternion is null, then a null quaternion is returned.
+    If the length of the quaternion is very close to 1, then the quaternion
+    will be returned as-is.  Otherwise the normalized form of the
+    quaternion of length 1 will be returned.
 
     \sa length(), normalize()
 */
 QQuaternion QQuaternion::normalized() const
 {
-    qreal len = length();
-    if (!qIsNull(len))
-        return *this / len;
+    qreal len = lengthSquared();
+    if (qFuzzyIsNull(len - 1.0f))
+        return *this;
+    else if (!qFuzzyIsNull(len))
+        return *this / qSqrt(len);
     else
         return QQuaternion(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 /*!
     Normalizes the currect quaternion in place.  Nothing happens if this
-    is a null quaternion.
+    is a null quaternion or the length of the quaternion is very close to 1.
 
     \sa length(), normalized()
 */
 void QQuaternion::normalize()
 {
-    qreal len = length();
-    if (qIsNull(len))
+    qreal len = lengthSquared();
+    if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
+
+    len = qSqrt(len);
 
     xp /= len;
     yp /= len;
     zp /= len;
     wp /= len;
 }
-
 
 /*!
     \fn QQuaternion QQuaternion::conjugate() const

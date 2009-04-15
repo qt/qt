@@ -995,8 +995,9 @@ QMatrix4x4& QMatrix4x4::rotate(qreal angle, qreal x, qreal y, qreal z)
         quick = true;
     }
     if (!quick) {
-        qreal len = qSqrt(x * x + y * y + z * z);
-        if (len != 0) {
+        qreal len = x * x + y * y + z * z;
+        if (!qFuzzyIsNull(len - 1.0f) && !qFuzzyIsNull(len)) {
+            len = qSqrt(len);
             x /= len;
             y /= len;
             z /= len;
