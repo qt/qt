@@ -432,6 +432,10 @@ void tst_QString::replace_uint_uint_data()
     QTest::newRow( "rep09" ) << QString("ACABCAB") << 4 << 2 << QString("XX") << QString("ACABXXB");
     QTest::newRow( "rep10" ) << QString("ACABCAB") << 5 << 2 << QString("XX") << QString("ACABCXX");
     QTest::newRow( "rep10" ) << QString("ACABCAB") << 6 << 2 << QString("XX") << QString("ACABCAXX");
+    QTest::newRow( "rep12" ) << QString() << 0 << 10 << QString("X") << QString("X");
+    QTest::newRow( "rep13" ) << QString("short") << 0 << 10 << QString("X") << QString("X");
+    QTest::newRow( "rep14" ) << QString() << 0 << 10 << QString("XX") << QString("XX");
+    QTest::newRow( "rep15" ) << QString("short") << 0 << 10 << QString("XX") << QString("XX");
 }
 
 void tst_QString::replace_string_data()
