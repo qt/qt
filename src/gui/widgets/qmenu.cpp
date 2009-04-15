@@ -2889,8 +2889,8 @@ void QMenu::internalDelayedPopup()
     int subMenuOffset = style()->pixelMetric(QStyle::PM_SubMenuOverlap, 0, this);
     const QRect actionRect(d->actionRect(d->currentAction));
     const QSize menuSize(d->activeMenu->sizeHint());
-    const QPoint rightPos(mapToGlobal(QPoint(rect().right() + subMenuOffset + 1, actionRect.top())));
-    const QPoint leftPos(mapToGlobal(QPoint(rect().left() - subMenuOffset - menuSize.width(), actionRect.top())));
+    const QPoint rightPos(mapToGlobal(QPoint(actionRect.right() + subMenuOffset + 1, actionRect.top())));
+    const QPoint leftPos(mapToGlobal(QPoint(actionRect.left() - subMenuOffset - menuSize.width(), actionRect.top())));
 
     QPoint pos(rightPos);
     QMenu *caused = qobject_cast<QMenu*>(d->activeMenu->d_func()->causedPopup.widget);
