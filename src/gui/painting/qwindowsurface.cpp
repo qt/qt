@@ -310,9 +310,12 @@ void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset)
     int lineskip = img.bytesPerLine();
     int depth = img.depth() >> 3;
 
-
-    const QRect r = rect & QRect(0, 0, img.width(), img.height());
+    const QRect imageRect(0, 0, img.width(), img.height());
+    const QRect r = rect & imageRect & imageRect.translated(-offset);
     const QPoint p = rect.topLeft() + offset;
+
+    if (r.isEmpty())
+        return;
 
     const uchar *src;
     uchar *dest;
