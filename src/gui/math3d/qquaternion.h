@@ -60,7 +60,6 @@ class Q_GUI_EXPORT QQuaternion
 public:
     QQuaternion();
     QQuaternion(qreal scalar, qreal xpos, qreal ypos, qreal zpos);
-    QQuaternion(int scalar, int xpos, int ypos, int zpos);
 #ifndef QT_NO_VECTOR3D
     QQuaternion(qreal scalar, const QVector3D& vector);
 #endif
@@ -142,8 +141,6 @@ inline QQuaternion::QQuaternion(qreal scalar, qreal xpos, qreal ypos, qreal zpos
 
 
 inline QQuaternion::QQuaternion(float scalar, float xpos, float ypos, float zpos, int) : wp(scalar), xp(xpos), yp(ypos), zp(zpos) {}
-
-inline QQuaternion::QQuaternion(int scalar, int xpos, int ypos, int zpos) : wp(scalar), xp(xpos), yp(ypos), zp(zpos) {}
 
 inline bool QQuaternion::isNull() const
 {

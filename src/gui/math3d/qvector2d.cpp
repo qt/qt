@@ -75,12 +75,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QVector2D::QVector2D(int xpos, int ypos)
-
-    Constructs a vector with coordinates (\a xpos, \a ypos).
-*/
-
-/*!
     \fn QVector2D::QVector2D(const QPoint& point)
 
     Constructs a vector with x and y coordinates from a 2D \a point.

@@ -63,7 +63,6 @@ class Q_GUI_EXPORT QVector4D
 public:
     QVector4D();
     QVector4D(qreal xpos, qreal ypos, qreal zpos, qreal wpos);
-    QVector4D(int xpos, int ypos, int zpos, int wpos);
     explicit QVector4D(const QPoint& point);
     explicit QVector4D(const QPointF& point);
 #ifndef QT_NO_VECTOR2D
@@ -145,8 +144,6 @@ inline QVector4D::QVector4D() : xp(0.0f), yp(0.0f), zp(0.0f), wp(0.0f) {}
 inline QVector4D::QVector4D(qreal xpos, qreal ypos, qreal zpos, qreal wpos) : xp(xpos), yp(ypos), zp(zpos), wp(wpos) {}
 
 inline QVector4D::QVector4D(float xpos, float ypos, float zpos, float wpos, int) : xp(xpos), yp(ypos), zp(zpos), wp(wpos) {}
-
-inline QVector4D::QVector4D(int xpos, int ypos, int zpos, int wpos) : xp(xpos), yp(ypos), zp(zpos), wp(wpos) {}
 
 inline QVector4D::QVector4D(const QPoint& point) : xp(point.x()), yp(point.y()), zp(0.0f), wp(0.0f) {}
 

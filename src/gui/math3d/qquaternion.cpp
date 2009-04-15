@@ -74,13 +74,6 @@ QT_BEGIN_NAMESPACE
     and \a scalar.
 */
 
-/*!
-    \fn QQuaternion::QQuaternion(int scalar, int xpos, int ypos, int zpos)
-
-    Constructs a quaternion with the vector (\a xpos, \a ypos, \a zpos)
-    and \a scalar.
-*/
-
 #ifndef QT_NO_VECTOR3D
 
 /*!

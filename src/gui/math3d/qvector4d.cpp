@@ -77,12 +77,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QVector4D::QVector4D(int xpos, int ypos, int zpos, int wpos)
-
-    Constructs a vector with coordinates (\a xpos, \a ypos, \a zpos, \a wpos).
-*/
-
-/*!
     \fn QVector4D::QVector4D(const QPoint& point)
 
     Constructs a vector with x and y coordinates from a 2D \a point, and

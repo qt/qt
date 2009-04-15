@@ -63,7 +63,6 @@ class Q_GUI_EXPORT QVector3D
 public:
     QVector3D();
     QVector3D(qreal xpos, qreal ypos, qreal zpos);
-    QVector3D(int xpos, int ypos, int zpos);
     explicit QVector3D(const QPoint& point);
     explicit QVector3D(const QPointF& point);
 #ifndef QT_NO_VECTOR2D
@@ -148,8 +147,6 @@ inline QVector3D::QVector3D() : xp(0.0f), yp(0.0f), zp(0.0f) {}
 inline QVector3D::QVector3D(qreal xpos, qreal ypos, qreal zpos) : xp(xpos), yp(ypos), zp(zpos) {}
 
 inline QVector3D::QVector3D(float xpos, float ypos, float zpos, int) : xp(xpos), yp(ypos), zp(zpos) {}
-
-inline QVector3D::QVector3D(int xpos, int ypos, int zpos) : xp(xpos), yp(ypos), zp(zpos) {}
 
 inline QVector3D::QVector3D(const QPoint& point) : xp(point.x()), yp(point.y()), zp(0.0f) {}
 

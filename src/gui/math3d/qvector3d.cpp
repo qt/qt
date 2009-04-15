@@ -79,12 +79,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QVector3D::QVector3D(int xpos, int ypos, int zpos)
-
-    Constructs a vector with coordinates (\a xpos, \a ypos, \a zpos).
-*/
-
-/*!
     \fn QVector3D::QVector3D(const QPoint& point)
 
     Constructs a vector with x and y coordinates from a 2D \a point, and a
