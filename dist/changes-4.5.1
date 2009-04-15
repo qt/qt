@@ -49,6 +49,9 @@ Third party components
 - QAuthenticator
    * [237979] fix implemenation of md5-sess
 
+- QByteArray
+   * [246233] QByteArray::fromHex() fails with input of size 1
+
 - QColorDialog
    * [247349] Fixed bug causing the wrong alpha value to be returned.
 
@@ -61,6 +64,10 @@ Third party components
 
 - QDirIterator
    * [247645] Fix a bug that may loose all cached data inside the QFileInfo
+
+- QFile
+   * [244500] QFile::rename() doesn't always return false when the method fails
+   * [244485] Renaming a file does not change QFile::fileName()
 
 - QFileInfo
    * [205244] return valid file info also for relative UNC paths
@@ -301,6 +308,7 @@ Qt for Windows CE
 
 
 - moc
+    * [240368] moc parsing issue with "unsigned" subphrase
 
 - uic
     * [244998] Fixed include file generation for phonon widgets.
@@ -314,6 +322,8 @@ Qt for Windows CE
 
 - qmake
     * [248806] Ensure that the Xcode generator includes the right path to frameworks.
+    * [201495] Comment processing in qmake prevented file from being moc'ed
+    * On Mac OS, properly escape file names in QMAKE_BUNDLE_DATA
 
 
 - configure
