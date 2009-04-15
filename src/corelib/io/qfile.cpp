@@ -748,8 +748,11 @@ QFile::rename(const QString &newName)
                 }
                 if (error)
                     out.remove();
-                else
+                else {
+                    setPermissions(permissions());
+                    unsetError();
                     setFileName(newName);
+                }
                 close();
                 return !error;
             }
