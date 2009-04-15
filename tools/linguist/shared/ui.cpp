@@ -60,7 +60,7 @@ class UiReader : public QXmlDefaultHandler
 {
 public:
     UiReader(Translator &translator, ConversionData &cd)
-      : m_translator(translator), m_cd(cd), m_lineNumber(-1),
+      : m_translator(translator), m_cd(cd), m_lineNumber(-1), m_isTrString(false),
         m_needUtf8(translator.codecName() != "UTF-8")
     {}
 
@@ -81,6 +81,7 @@ private:
     QString m_context;
     QString m_source;
     QString m_comment;
+    QString m_extracomment;
     QXmlLocator *m_locator;
 
     QString m_accum;
@@ -97,20 +98,25 @@ bool UiReader::startElement(const QString &namespaceURI,
 
     if (qName == QLatin1String("item")) { // UI3 menu entries
         flush();
-        if (!atts.value(QLatin1String("text")).isEmpty())
+        if (!atts.value(QLatin1String("text")).isEmpty()) {
             m_source = atts.value(QLatin1String("text"));
+            m_isTrString = true;
+            if (!m_cd.m_noUiLines)
+                m_lineNumber = m_locator->lineNumber();
+        }
     } else if (qName == QLatin1String("string")) {
         flush();
         if (atts.value(QLatin1String("notr")).isEmpty() ||
             atts.value(QLatin1String("notr")) != QLatin1String("true")) {
             m_isTrString = true;
             m_comment = atts.value(QLatin1String("comment"));
+            m_extracomment = atts.value(QLatin1String("extracomment"));
+            if (!m_cd.m_noUiLines)
+                m_lineNumber = m_locator->lineNumber();
         } else {
             m_isTrString = false;
         }
     }
-    if (m_isTrString && !m_cd.m_noUiLines)
-        m_lineNumber = m_locator->lineNumber();
     m_accum.clear();
     return true;
 }
@@ -161,12 +167,14 @@ void UiReader::flush()
         TranslatorMessage msg(m_context, m_source,
            m_comment, QString(), m_cd.m_sourceFileName,
            m_lineNumber, QStringList());
+        msg.setExtraComment(m_extracomment);
         if (m_needUtf8 && msg.needs8Bit())
             msg.setUtf8(true);
         m_translator.extend(msg);
     }
     m_source.clear();
     m_comment.clear();
+    m_extracomment.clear();
 }
 
 bool loadUI(Translator &translator, QIODevice &dev, ConversionData &cd)
