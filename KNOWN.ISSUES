@@ -1,0 +1,15 @@
+This is a list of known issues for this release. If you
+hit any of these issues or discover a new one, please use the following form
+to report the problem:
+
+http://www.qtsoftware.com/developer/bugreport-form/
+
+Some of these issues happen infrequently. We therefore need your
+help in sending us information about how you reproduced the
+issue. If you come across a crash, please include a stack trace in
+your email.
+
+249881 - Mac OS X wrong architecture detection.
+
+On OSX when running configure with the -arch x86_64 flag, tests are built using the native compiler. This means that if the native compiler is 32 bits then the tests will be built on 32 bits. The problem comes when a library was compiled on 64 bits mode, configure will complain that the library was built for a different architecture.
+As a workaround, use -continue to make configure disregard the error.
