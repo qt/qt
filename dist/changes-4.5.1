@@ -25,6 +25,9 @@ General Improvements
 
 - Documentation and Examples
 
+- Embedded Dialogs demo
+   * [246517] Fixed warnings and bugs in hover handling on Mac OS X
+
 Third party components
 ----------------------
 
@@ -69,7 +72,12 @@ Third party components
 
 - QGraphicsItem
    * [247890] Cached QGraphicsItems are not updated if update() is called when they are hidden
-   * [250272] When an item is deleted it does not get removed from the sceneeventfilters meaning a crash can occur
+   * [250272] When an item is deleted it does not get removed from the
+   sceneeventfilters meaning a crash can occur
+   * Fixed slowdown regression in QGraphicsItem::ItemCoordinateCache
+
+- QGraphicsScene
+   * [243707] Fixed crash when adding child before parent to scene
 
 -QGraphicsView
    * [245766] Rubber Band drag mode not updated correctly when scrolling
