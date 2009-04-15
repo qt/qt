@@ -105,9 +105,7 @@
     \l{QXmlStreamReader::setDevice()}{setDevice()}. The actual process
     of reading only takes place if the file is a valid XBEL 1.0 file. 
     Note that the XML input needs to be well-formed to be accepted by 
-    QXmlStreamReader. 
-    
-    Otherwise, the \l{QXmlStreamReader::raiseError()}
+    QXmlStreamReader. Otherwise, the \l{QXmlStreamReader::raiseError()}
     {raiseError()} function is used to display an error message.
 
     \snippet examples/xml/streambookmarks/xbelreader.cpp 1
