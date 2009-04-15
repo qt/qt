@@ -8489,6 +8489,7 @@ void QGraphicsSimpleTextItem::setText(const QString &text)
         return;
     d->text = text;
     d->updateBoundingRect();
+    update();
 }
 
 /*!
