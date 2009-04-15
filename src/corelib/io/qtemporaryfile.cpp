@@ -409,17 +409,14 @@ protected:
 
     bool autoRemove;
     QString templateName;
-    mutable QTemporaryFileEngine *fileEngine;
 };
 
-QTemporaryFilePrivate::QTemporaryFilePrivate() : autoRemove(true), fileEngine(0)
+QTemporaryFilePrivate::QTemporaryFilePrivate() : autoRemove(true)
 {
 }
 
 QTemporaryFilePrivate::~QTemporaryFilePrivate()
 {
-    delete fileEngine;
-    fileEngine = 0;
 }
 
 //************* QTemporaryFile
