@@ -915,6 +915,27 @@ extern "C" {
     }
 }
 
+- (void)viewWillMoveToWindow:(NSWindow *)window
+{
+    if (qwidget->windowFlags() & Qt::MSWindowsOwnDC
+          && (window != [self window])) { // OpenGL Widget
+        // Create a stupid ClearDrawable Event
+        QEvent event(QEvent::MacGLClearDrawable);
+        qApp->sendEvent(qwidget, &event);
+    }
+}
+
+- (void)viewDidMoveToWindow
+{
+    if (qwidget->windowFlags() & Qt::MSWindowsOwnDC && [self window]) {
+        // call update paint event
+        qwidgetprivate->needWindowChange = true;
+        QEvent event(QEvent::MacGLWindowChange);
+        qApp->sendEvent(qwidget, &event);
+    }
+}
+
+
 // NSTextInput Protocol implementation
 
 - (void) insertText:(id)aString
