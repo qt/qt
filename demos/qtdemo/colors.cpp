@@ -72,10 +72,8 @@ int Colors::contentHeight = 510;
 
 // Properties:
 bool Colors::openGlRendering = false;
-bool Colors::direct3dRendering = false;
 bool Colors::softwareRendering = false;
 bool Colors::openGlAwailable = true;
-bool Colors::direct3dAwailable = true;
 bool Colors::xRenderPresent = true;
 
 bool Colors::noTicker = false;
@@ -206,8 +204,6 @@ void Colors::parseArgs(int argc, char *argv[])
         QString s(argv[i]);
         if (s == "-opengl")
             Colors::openGlRendering = true;
-        else if (s == "-direct3d")
-            Colors::direct3dRendering = true;
         else if (s == "-software")
             Colors::softwareRendering = true;
         else if (s == "-no-opengl") // support old style
@@ -270,7 +266,7 @@ void Colors::parseArgs(int argc, char *argv[])
             Colors::fps = int(parseFloat(s, "-fps"));
         else if (s.startsWith("-h") || s.startsWith("-help")){
             QMessageBox::warning(0, "Arguments",
-                                 QString("Usage: qtdemo [-verbose] [-no-adapt] [-opengl] [-direct3d] [-software] [-fullscreen] [-ticker[0|1]] ")
+                                 QString("Usage: qtdemo [-verbose] [-no-adapt] [-opengl] [-software] [-fullscreen] [-ticker[0|1]] ")
                                  + "[-animations[0|1]] [-no-blending] [-no-sync] [-use-timer-update[0|1]] [-pause[0|1]]  "
                                  + "[-use-window-mask] [-no-rescale] "
                                  + "[-use-pixmaps] [-show-fps] [-show-br] [-8bit[0|1]] [-menu<int>] [-use-loop] [-use-balls] "
@@ -330,10 +326,6 @@ void Colors::detectSystemResources()
             qDebug("- OpenGL not recommended on this system");
     }
 
-#if defined(Q_WS_WIN)
-    Colors::direct3dAwailable = false; // for now.
-#endif
-
 #if defined(Q_WS_X11)
     // check if X render is present:
     QPixmap tmp(1, 1);
@@ -369,20 +361,8 @@ void Colors::postConfigure()
         }
     }
 
-#if !defined(Q_WS_WIN)
-    if (Colors::direct3dRendering){
-        Colors::direct3dRendering = false;
-            qDebug() << "- WARNING: Direct3D specified, but not supported on this platform";
-    }
-#endif
-
-    if (!Colors::openGlRendering && !Colors::direct3dRendering && !Colors::softwareRendering){
+    if (!Colors::openGlRendering && !Colors::softwareRendering){
         // The user has not decided rendering system. So we do it instead:
-#if defined(Q_WS_WIN)
-        if (Colors::direct3dAwailable)
-            Colors::direct3dRendering = true;
-        else
-#endif
         if (Colors::openGlAwailable)
             Colors::openGlRendering = true;
         else
