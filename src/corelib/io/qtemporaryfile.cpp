@@ -364,9 +364,11 @@ bool QTemporaryFileEngine::remove()
     // Since the QTemporaryFileEngine::close() does not really close the file,
     // we must explicitly call QFSFileEngine::close() before we remove it.
     QFSFileEngine::close();
-    bool removed = QFSFileEngine::remove();
-    d->filePath.clear();
-    return removed;
+    if (QFSFileEngine::remove()) {
+        d->filePath.clear();
+        return true;
+    }
+    return false;
 }
 
 bool QTemporaryFileEngine::close()
