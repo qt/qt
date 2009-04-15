@@ -2760,10 +2760,13 @@ void QGtkStyle::drawControl(ControlElement element,
             if (tab->state & State_Selected)
                 state = GTK_STATE_NORMAL;
 
-            bool first = tab->position == QStyleOptionTab::Beginning || tab->position == QStyleOptionTab::OnlyOneTab;
-            bool last = tab->position == QStyleOptionTab::End || tab->position == QStyleOptionTab::OnlyOneTab;
             bool selected = (tab->state & State_Selected);
-            if (option->direction == Qt::RightToLeft) {
+            bool first = false, last = false;
+            if (widget) {
+                // This is most accurate and avoids resizing tabs while moving
+                first = tab->rect.left() == widget->rect().left();
+                last = tab->rect.right() == widget->rect().right();
+            } else if (option->direction == Qt::RightToLeft) {
                 bool tmp = first;
                 first = last;
                 last = tmp;
