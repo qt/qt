@@ -142,7 +142,7 @@
            QAction::iconVisibleInMenu property.
 
            Menus that are currently open or menus already created in the native
-           Mac OS X menubar MAY NOT pick up a change in this attribute. Changes
+           Mac OS X menubar \e{may not} pick up a change in this attribute. Changes
            in the QAction::iconVisibleInMenu property will always be picked up.
 
     \value AA_NativeWindows Ensures that widgets have native windows.
