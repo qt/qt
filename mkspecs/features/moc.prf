@@ -11,13 +11,14 @@ isEmpty(QMAKE_EXT_CPP_MOC):QMAKE_EXT_CPP_MOC = .moc
 # On Windows, put the includes into a .inc file which moc will read, if the project
 # has too many includes. We do this to overcome a command-line limit on Win < XP
 INCLUDETEMP=
+WIN_INCLUDETEMP=
 win32:count($$list($$INCPATH), 40, >) {
-    INCLUDETEMP = mocinclude.tmp
+    INCLUDETEMP = $$MOC_DIR/mocinclude.tmp
 
     # Remove any existing mocinclude.tmp when qmake runs
-    WIN_OUT_PWD=$$OUT_PWD
-    WIN_OUT_PWD~=s,/,\,g
-    system($$QMAKE_DEL_FILE $$WIN_OUT_PWD\\$$INCLUDETEMP > NUL 2>&1)
+    WIN_INCLUDETEMP=$$INCLUDETEMP
+    WIN_INCLUDETEMP~=s,/,\,g
+    system($$QMAKE_DEL_FILE $$WIN_INCLUDETEMP > NUL 2>&1)
 
     EOC = $$escape_expand(\n\t)
 
@@ -32,10 +33,10 @@ win32:count($$list($$INCPATH), 40, >) {
     RET =
     for(incfile, $$list($$INCPATH)) {
         INCFILELIST = -I$$incfile
-        isEmpty(RET): RET += @echo $$INCFILELIST> $$INCLUDETEMP $$EOC
-        else:         RET += @echo $$INCFILELIST>> $$INCLUDETEMP $$EOC
+        isEmpty(RET): RET += @echo $$INCFILELIST> $$WIN_INCLUDETEMP $$EOC
+        else:         RET += @echo $$INCFILELIST>> $$WIN_INCLUDETEMP $$EOC
     }
-    !isEmpty(INCFILELIST):RET += @echo $$INCFILELIST>> $$INCLUDETEMP $$EOC
+    !isEmpty(INCFILELIST):RET += @echo $$INCFILELIST>> $$WIN_INCLUDETEMP $$EOC
 
     build_pass|isEmpty(BUILDS) {
         mocinclude.target = $$INCLUDETEMP
@@ -45,8 +46,8 @@ win32:count($$list($$INCPATH), 40, >) {
 }
 
 defineReplace(mocCmd) {
-    !isEmpty(INCLUDETEMP) {
-        return($$QMAKE_MOC $(DEFINES) @$$INCLUDETEMP $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$1 -o $$2)
+    !isEmpty(WIN_INCLUDETEMP) {
+        return($$QMAKE_MOC $(DEFINES) @$$WIN_INCLUDETEMP $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$1 -o $$2)
     }
     return($$QMAKE_MOC $(DEFINES) $(INCPATH) $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$1 -o $$2)
 }
