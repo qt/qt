@@ -2279,7 +2279,7 @@ void QAbstractSocket::disconnectFromHostImplementation()
     emit delayedCloseFinished(); // compat signal
 #endif
     // only emit disconnected if we were connected before
-    if (previousState == ConnectedState || ClosingState)
+    if (previousState == ConnectedState || previousState == ClosingState)
         emit disconnected();
 
     d->localPort = 0;
