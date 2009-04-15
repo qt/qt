@@ -977,7 +977,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
 
             if (widget && widget->testAttribute(Qt::WA_SetPalette) &&
                 resolve_mask & (1 << QPalette::Base)) // Palette overridden by user
-                painter->fillRect(textRect, option->palette.base().color());
+                painter->fillRect(textRect, option->palette.base());
             else
                 gtkPainter.paintFlatBox( gtkEntry, "entry_bg", textRect,
                                          option->state & State_Enabled ? GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE, GTK_SHADOW_NONE, gtkEntry->style);
