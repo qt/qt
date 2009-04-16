@@ -1682,9 +1682,16 @@ void tst_QTreeView::moveCursor()
     view.setColumnHidden(0, true);
     QVERIFY(view.isColumnHidden(0));
     view.show();
+    qApp->setActiveWindow(&view);
 
-    QModelIndex actual = view.moveCursor(PublicView::MoveDown, Qt::NoModifier);
+    //here the first visible index should be selected
+    //because the view got the focus
     QModelIndex expected = model.index(1, 1, QModelIndex());
+    QCOMPARE(view.currentIndex(), expected);
+
+    //then pressing down should go to the next line
+    QModelIndex actual = view.moveCursor(PublicView::MoveDown, Qt::NoModifier);
+    expected = model.index(2, 1, QModelIndex());
     QCOMPARE(actual, expected);
 
     view.setRowHidden(0, QModelIndex(), false);
