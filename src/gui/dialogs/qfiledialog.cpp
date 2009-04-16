@@ -1593,7 +1593,12 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
     args.parent = parent;
     args.caption = caption;
     args.directory = QFileDialogPrivate::workingDirectory(dir);
-    args.selection = QFileDialogPrivate::initialSelection(dir);
+    //If workingDirectory returned a different path than the initial one,
+    //it means that the initial path was invalid. There is no point to try select a file
+    if (args.directory != QFileInfo(dir).path())
+        args.selection = QString();
+    else
+        args.selection = QFileDialogPrivate::initialSelection(dir);
     args.filter = filter;
     args.mode = ExistingFile;
     args.options = options;
@@ -1678,7 +1683,12 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
     args.parent = parent;
     args.caption = caption;
     args.directory = QFileDialogPrivate::workingDirectory(dir);
-    args.selection = QFileDialogPrivate::initialSelection(dir);
+    //If workingDirectory returned a different path than the initial one,
+    //it means that the initial path was invalid. There is no point to try select a file
+    if (args.directory != QFileInfo(dir).path())
+        args.selection = QString();
+    else
+        args.selection = QFileDialogPrivate::initialSelection(dir);
     args.filter = filter;
     args.mode = ExistingFiles;
     args.options = options;
@@ -1764,7 +1774,12 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
     args.parent = parent;
     args.caption = caption;
     args.directory = QFileDialogPrivate::workingDirectory(dir);
-    args.selection = QFileDialogPrivate::initialSelection(dir);
+    //If workingDirectory returned a different path than the initial one,
+    //it means that the initial path was invalid. There is no point to try select a file
+    if (args.directory != QFileInfo(dir).path())
+        args.selection = QString();
+    else
+        args.selection = QFileDialogPrivate::initialSelection(dir);
     args.filter = filter;
     args.mode = AnyFile;
     args.options = options;
