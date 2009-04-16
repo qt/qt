@@ -184,7 +184,6 @@ void MenuManager::itemSelected(int userCode, const QString &menuName)
             this->tickerInAnim->startDelay = 2000;
             this->ticker->useGuideQt();
             this->score->queueMovie("ticker", Score::NEW_ANIMATION_ONLY);
-            this->window->switchTimerOnOff(true);
         }
         break;
     case MENU1:
@@ -220,7 +219,6 @@ void MenuManager::itemSelected(int userCode, const QString &menuName)
         this->score->queueMovie(this->currentInfo + " -buttons", Score::NEW_ANIMATION_ONLY);
         if (!Colors::noTicker){
             this->score->queueMovie("ticker -out", Score::NEW_ANIMATION_ONLY);
-            this->window->switchTimerOnOff(false);
         }
         break;
     case UP:{
@@ -257,7 +255,6 @@ void MenuManager::itemSelected(int userCode, const QString &menuName)
                 this->ticker->doIntroTransitions = false;
                 this->tickerInAnim->startDelay = 500;
                 this->score->queueMovie("ticker", Score::NEW_ANIMATION_ONLY);
-                this->window->switchTimerOnOff(true);
             }
         } else if (this->currentMenuCode != ROOT)
             itemSelected(ROOT, Colors::rootMenuName);
