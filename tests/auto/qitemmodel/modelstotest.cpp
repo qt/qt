@@ -117,13 +117,8 @@ ModelsToTest::ModelsToTest()
     tests.append(test("QTableModel", ReadWrite, HasData));
     tests.append(test("QTableModelEmpty", ReadWrite, Empty));
 
-#if QT_VERSION >= 0x040200
-#define TABLEFEATURE  ReadWrite
-#else
-#define TABLEFEATURE  ReadOnly
-#endif
-    tests.append(test("QTreeModel", TABLEFEATURE, HasData));
-    tests.append(test("QTreeModelEmpty", TABLEFEATURE, Empty));
+    tests.append(test("QTreeModel", ReadWrite, HasData));
+    tests.append(test("QTreeModelEmpty", ReadWrite, Empty));
 
     tests.append(test("QSqlQueryModel", ReadOnly, HasData));
     tests.append(test("QSqlQueryModelEmpty", ReadOnly, Empty));

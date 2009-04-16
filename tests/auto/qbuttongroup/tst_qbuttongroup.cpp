@@ -95,10 +95,7 @@ private slots:
 
     void checkedButton();
 
-    // fixed for Qt 4.2.0
-#if QT_VERSION >= 0x040200
     void task106609();
-#endif
 
     void task209485_removeFromGroupInEventHandler_data();
     void task209485_removeFromGroupInEventHandler();
@@ -211,7 +208,6 @@ void tst_QButtonGroup::arrowKeyNavigation()
 
 void tst_QButtonGroup::exclusiveWithActions()
 {
-#if QT_VERSION > 0x040100
     QDialog dlg(0);
     QHBoxLayout layout(&dlg);
     QAction *action1 = new QAction("Action 1", &dlg);
@@ -235,7 +231,7 @@ void tst_QButtonGroup::exclusiveWithActions()
     buttonGroup->addButton(toolButton2, 2);
     buttonGroup->addButton(toolButton3, 3);
     dlg.show();
-    
+
     QTest::mouseClick(toolButton1, Qt::LeftButton);
     QVERIFY(toolButton1->isChecked());
     QVERIFY(action1->isChecked());
@@ -251,7 +247,7 @@ void tst_QButtonGroup::exclusiveWithActions()
     QVERIFY(!toolButton3->isChecked());
     QVERIFY(!action1->isChecked());
     QVERIFY(!action3->isChecked());
-    
+
     QTest::mouseClick(toolButton3, Qt::LeftButton);
     QVERIFY(toolButton3->isChecked());
     QVERIFY(action3->isChecked());
@@ -259,7 +255,7 @@ void tst_QButtonGroup::exclusiveWithActions()
     QVERIFY(!toolButton2->isChecked());
     QVERIFY(!action1->isChecked());
     QVERIFY(!action2->isChecked());
-    
+
     QTest::mouseClick(toolButton2, Qt::LeftButton);
     QVERIFY(toolButton2->isChecked());
     QVERIFY(action2->isChecked());
@@ -267,7 +263,6 @@ void tst_QButtonGroup::exclusiveWithActions()
     QVERIFY(!toolButton3->isChecked());
     QVERIFY(!action1->isChecked());
     QVERIFY(!action3->isChecked());
-#endif
 }
 
 void tst_QButtonGroup::exclusive()
@@ -289,7 +284,7 @@ void tst_QButtonGroup::exclusive()
     buttonGroup->addButton(pushButton2, 2);
     buttonGroup->addButton(pushButton3, 3);
     dlg.show();
-    
+
     QTest::mouseClick(pushButton1, Qt::LeftButton);
     QVERIFY(pushButton1->isChecked());
     QVERIFY(!pushButton2->isChecked());
@@ -299,12 +294,12 @@ void tst_QButtonGroup::exclusive()
     QVERIFY(pushButton2->isChecked());
     QVERIFY(!pushButton1->isChecked());
     QVERIFY(!pushButton3->isChecked());
-    
+
     QTest::mouseClick(pushButton3, Qt::LeftButton);
     QVERIFY(pushButton3->isChecked());
     QVERIFY(!pushButton1->isChecked());
     QVERIFY(!pushButton2->isChecked());
-    
+
     QTest::mouseClick(pushButton2, Qt::LeftButton);
     QVERIFY(pushButton2->isChecked());
     QVERIFY(!pushButton1->isChecked());
@@ -363,7 +358,6 @@ void tst_QButtonGroup::testSignals()
     QVERIFY(releasedIdSpy.takeFirst().at(0).toInt() == 23);
 }
 
-#if QT_VERSION >= 0x040200
 void tst_QButtonGroup::task106609()
 {
     // task is:
@@ -403,7 +397,6 @@ void tst_QButtonGroup::task106609()
     QCOMPARE(spy2.count(), 2);
     QCOMPARE(spy1.count(), 2);
 }
-#endif
 
 void tst_QButtonGroup::checkedButton()
 {

@@ -42,10 +42,6 @@
 
 #include <QtTest/QtTest>
 
-#if QT_VERSION < 0x040200
-QTEST_NOOP_MAIN
-#else
-
 #include <private/qtextcontrol_p.h>
 #include <private/qgraphicsitem_p.h>
 #include <QAbstractTextDocumentLayout>
@@ -6044,4 +6040,3 @@ void tst_QGraphicsItem::cacheMode()
 
 QTEST_MAIN(tst_QGraphicsItem)
 #include "tst_qgraphicsitem.moc"
-#endif

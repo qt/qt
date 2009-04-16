@@ -326,10 +326,6 @@ void tst_QThread::isRunning()
 
 void tst_QThread::setPriority()
 {
-#if QT_VERSION < 0x040100
-    QSKIP("QThread::setPriority() was introduced in 4.1.0, you are testing " QT_VERSION_STR,
-         SkipAll);
-#else
     Simple_Thread thread;
 
     // cannot change the priority, since the thread is not running
@@ -401,7 +397,6 @@ void tst_QThread::setPriority()
     QTest::ignoreMessage(QtWarningMsg, "QThread::setPriority: Cannot set priority, thread is not running");
     thread.setPriority(QThread::TimeCriticalPriority);
     QCOMPARE(thread.priority(), QThread::InheritPriority);
-#endif
 }
 
 void tst_QThread::priority()

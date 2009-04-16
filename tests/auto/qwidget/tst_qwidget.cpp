@@ -2564,9 +2564,6 @@ void tst_QWidget::setGeometry()
 
 void tst_QWidget::windowOpacity()
 {
-#if defined(Q_WS_X11) && QT_VERSION < 0x040200
-    QSKIP("QWidget::windowOpacity is broken in Qt < 4.2 on X11", SkipAll);
-#else
 #ifdef Q_OS_WINCE
     QSKIP( "Windows CE does not support windowOpacity", SkipAll);
 #endif
@@ -2576,43 +2573,27 @@ void tst_QWidget::windowOpacity()
     // Initial value should be 1.0
     QCOMPARE(widget.windowOpacity(), 1.0);
     // children should always return 1.0
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Prior to 4.2, all children widgets returned 0.0", Continue);
-#endif
     QCOMPARE(child.windowOpacity(), 1.0);
 
     widget.setWindowOpacity(0.0);
     QCOMPARE(widget.windowOpacity(), 0.0);
     child.setWindowOpacity(0.0);
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Prior to 4.2, all children widgets returned 0.0", Continue);
-#endif
     QCOMPARE(child.windowOpacity(), 1.0);
 
     widget.setWindowOpacity(1.0);
     QCOMPARE(widget.windowOpacity(), 1.0);
     child.setWindowOpacity(1.0);
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Prior to 4.2, all children widgets returned 0.0", Continue);
-#endif
     QCOMPARE(child.windowOpacity(), 1.0);
 
     widget.setWindowOpacity(2.0);
     QCOMPARE(widget.windowOpacity(), 1.0);
     child.setWindowOpacity(2.0);
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Prior to 4.2, all children widgets returned 0.0", Continue);
-#endif
     QCOMPARE(child.windowOpacity(), 1.0);
 
     widget.setWindowOpacity(-1.0);
     QCOMPARE(widget.windowOpacity(), 0.0);
     child.setWindowOpacity(-1.0);
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Prior to 4.2, all children widgets returned 0.0", Continue);
-#endif
     QCOMPARE(child.windowOpacity(), 1.0);
-#endif
 }
 
 class UpdateWidget : public QWidget
@@ -5321,7 +5302,7 @@ void tst_QWidget::subtractOpaqueSiblings()
 {
 #ifdef QT_MAC_USE_COCOA
     QSKIP("Cocoa only has rect granularity.", SkipAll);
-#elif defined(Q_WIDGET_USE_DIRTYLIST) || (QT_VERSION >= 0x040400)
+#else
     QWidget w;
     w.setGeometry(50, 50, 300, 300);
 

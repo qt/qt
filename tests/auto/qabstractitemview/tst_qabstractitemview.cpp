@@ -234,11 +234,8 @@ void tst_QAbstractItemView::getSetCheck()
     MyAbstractItemDelegate *var1 = new MyAbstractItemDelegate;
     obj1->setItemDelegate(var1);
     QCOMPARE((QAbstractItemDelegate*)var1, obj1->itemDelegate());
-#if QT_VERSION >= 0x040200
-    // Itemviews in Qt < 4.2 have asserts for this. Qt >= 4.2 should handle this gracefully
     obj1->setItemDelegate((QAbstractItemDelegate *)0);
     QCOMPARE((QAbstractItemDelegate *)0, obj1->itemDelegate());
-#endif
     delete var1;
 
     // EditTriggers QAbstractItemView::editTriggers()
@@ -279,26 +276,6 @@ void tst_QAbstractItemView::getSetCheck()
     obj1->setAlternatingRowColors(true);
     QCOMPARE(true, obj1->alternatingRowColors());
 
-#if QT_VERSION < 0x040200
-    // int QAbstractItemView::horizontalStepsPerItem()
-    // void QAbstractItemView::setHorizontalStepsPerItem(int)
-    obj1->tst_setHorizontalStepsPerItem(0);
-    QCOMPARE(0, obj1->tst_horizontalStepsPerItem());
-    obj1->tst_setHorizontalStepsPerItem(INT_MIN);
-    QCOMPARE(INT_MIN, obj1->tst_horizontalStepsPerItem());
-    obj1->tst_setHorizontalStepsPerItem(INT_MAX);
-    QCOMPARE(INT_MAX, obj1->tst_horizontalStepsPerItem());
-
-    // int QAbstractItemView::verticalStepsPerItem()
-    // void QAbstractItemView::setVerticalStepsPerItem(int)
-    obj1->tst_setVerticalStepsPerItem(0);
-    QCOMPARE(0, obj1->tst_verticalStepsPerItem());
-    obj1->tst_setVerticalStepsPerItem(INT_MIN);
-    QCOMPARE(INT_MIN, obj1->tst_verticalStepsPerItem());
-    obj1->tst_setVerticalStepsPerItem(INT_MAX);
-    QCOMPARE(INT_MAX, obj1->tst_verticalStepsPerItem());
-#endif
-
     // State QAbstractItemView::state()
     // void QAbstractItemView::setState(State)
     obj1->tst_setState(TestView::tst_State(TestView::NoState));
@@ -314,13 +291,11 @@ void tst_QAbstractItemView::getSetCheck()
     obj1->tst_setState(TestView::tst_State(TestView::CollapsingState));
     QCOMPARE(TestView::tst_State(TestView::CollapsingState), obj1->tst_state());
 
-#if QT_VERSION >= 0x040200
     // QWidget QAbstractScrollArea::viewport()
     // void setViewport(QWidget*)
     QWidget *vp = new QWidget;
     obj1->setViewport(vp);
     QCOMPARE(vp, obj1->viewport());
-#endif
 
     QCOMPARE(16, obj1->autoScrollMargin());
     obj1->setAutoScrollMargin(20);

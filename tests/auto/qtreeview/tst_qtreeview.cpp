@@ -474,11 +474,7 @@ void tst_QTreeView::construction()
     QCOMPARE(view.iconSize(), QSize());
     QCOMPARE(view.indexAt(QPoint()), QModelIndex());
     QVERIFY(!view.indexWidget(QModelIndex()));
-#if QT_VERSION >= 0x040400
     QVERIFY(qobject_cast<QStyledItemDelegate *>(view.itemDelegate()));
-#else
-    QVERIFY(qobject_cast<QItemDelegate *>(view.itemDelegate()));
-#endif
     QVERIFY(!view.itemDelegateForColumn(-1));
     QVERIFY(!view.itemDelegateForColumn(0));
     QVERIFY(!view.itemDelegateForColumn(1));
@@ -1003,11 +999,7 @@ void tst_QTreeView::itemDelegate()
 
     {
         QTreeView view;
-#if QT_VERSION >= 0x040400
         QVERIFY(qobject_cast<QStyledItemDelegate *>(view.itemDelegate()));
-#else
-        QVERIFY(qobject_cast<QItemDelegate *>(view.itemDelegate()));
-#endif
         QPointer<QAbstractItemDelegate> oldDelegate = view.itemDelegate();
 
         otherItemDelegate = new QItemDelegate;
@@ -1864,14 +1856,8 @@ void tst_QTreeView::indexBelow()
     i = view.indexBelow(i);
     QVERIFY(i.isValid());
     QCOMPARE(i.row(), 1);
-#if QT_VERSION >= 0x040100
     i = view.indexBelow(i);
     QVERIFY(!i.isValid());
-#else
-    // Qt 4.0.x returns the bottom index
-    i = view.indexBelow(i);
-    QVERIFY(i.isValid());
-#endif
 }
 
 void tst_QTreeView::clicked()

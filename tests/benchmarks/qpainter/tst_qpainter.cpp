@@ -700,11 +700,7 @@ void tst_QPainter::compositionModes_data()
     QTest::addColumn<QSize>("size");
     QTest::addColumn<QColor>("color");
 
-#if QT_VERSION >= 0x040500
     const int n = QPainter::RasterOp_SourceAndNotDestination;
-#else
-    const int n = QPainter::CompositionMode_Exclusion;
-#endif
     for (int i = 0; i <= n; ++i) {
         QString title("%1:%2");
         QTest::newRow(qPrintable(title.arg(i).arg("10x10:opaque")))
@@ -732,9 +728,7 @@ void tst_QPainter::compositionModes()
     src.fill(color);
 
     QPixmap dest(size);
-#if QT_VERSION >= 0x040500
     if (mode < QPainter::RasterOp_SourceOrDestination)
-#endif
         color.setAlpha(127); // porter-duff needs an alpha channel
     dest.fill(color);
 

@@ -194,9 +194,6 @@ void tst_QMutexLocker::unlockAndRelockTest()
 
 void tst_QMutexLocker::lockerStateTest()
 {
-#if QT_VERSION < 0x040200
-    QSKIP("QMutexLocker doesn't keep state in Qt < 4.2", SkipAll);
-#else
     class LockerStateThread : public tst_QMutexLockerThread
     {
     public:
@@ -233,7 +230,6 @@ void tst_QMutexLocker::lockerStateTest()
 
     delete thread;
     thread = 0;
-#endif
 }
 
 QTEST_MAIN(tst_QMutexLocker)

@@ -1508,9 +1508,6 @@ void tst_QSortFilterProxyModel::insertAfterSelect()
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, p);
     QVERIFY(view.selectionModel()->selectedIndexes().size() > 0);
     model.insertRows(5, 1, QModelIndex());
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Selections are not kept in versions < 4.2", Abort);
-#endif
     QVERIFY(view.selectionModel()->selectedIndexes().size() > 0); // Should still have a selection
 }
 
@@ -1532,9 +1529,6 @@ void tst_QSortFilterProxyModel::removeAfterSelect()
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, p);
     QVERIFY(view.selectionModel()->selectedIndexes().size() > 0);
     model.removeRows(5, 1, QModelIndex());
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Selections are not kept in versions < 4.2", Abort);
-#endif
     QVERIFY(view.selectionModel()->selectedIndexes().size() > 0); // Should still have a selection
 }
 
