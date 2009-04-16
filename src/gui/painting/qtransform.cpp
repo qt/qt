@@ -1715,13 +1715,12 @@ QRect QTransform::mapRect(const QRect &rect) const
         return QRect(x, y, w, h);
     } else if (t < TxProject) {
         // see mapToPolygon for explanations of the algorithm.
-        qreal x0 = 0, y0 = 0;
-        qreal x, y;
-        MAP(rect.left(), rect.top(), x0, y0);
-        qreal xmin = x0;
-        qreal ymin = y0;
-        qreal xmax = x0;
-        qreal ymax = y0;
+        qreal x = 0, y = 0;
+        MAP(rect.left(), rect.top(), x, y);
+        qreal xmin = x;
+        qreal ymin = y;
+        qreal xmax = x;
+        qreal ymax = y;
         MAP(rect.right() + 1, rect.top(), x, y);
         xmin = qMin(xmin, x);
         ymin = qMin(ymin, y);
@@ -1782,13 +1781,12 @@ QRectF QTransform::mapRect(const QRectF &rect) const
         }
         return QRectF(x, y, w, h);
     } else if (t < TxProject) {
-        qreal x0 = 0, y0 = 0;
-        qreal x, y;
-        MAP(rect.x(), rect.y(), x0, y0);
-        qreal xmin = x0;
-        qreal ymin = y0;
-        qreal xmax = x0;
-        qreal ymax = y0;
+        qreal x = 0, y = 0;
+        MAP(rect.x(), rect.y(), x, y);
+        qreal xmin = x;
+        qreal ymin = y;
+        qreal xmax = x;
+        qreal ymax = y;
         MAP(rect.x() + rect.width(), rect.y(), x, y);
         xmin = qMin(xmin, x);
         ymin = qMin(ymin, y);

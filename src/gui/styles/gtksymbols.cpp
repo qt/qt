@@ -549,6 +549,7 @@ void QGtkStyleUpdateScheduler::updateTheme()
         QPalette newPalette = qApp->style()->standardPalette();
         QApplicationPrivate::setSystemPalette(newPalette);
         QApplication::setPalette(newPalette);
+        QGtk::initGtkWidgets();
         QGtk::applyCustomPaletteHash();
         QList<QWidget*> widgets = QApplication::allWidgets();
         // Notify all widgets that size metrics might have changed

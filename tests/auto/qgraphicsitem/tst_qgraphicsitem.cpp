@@ -162,6 +162,8 @@ private slots:
     void mapFromToParent();
     void mapFromToScene();
     void mapFromToItem();
+    void mapRectFromToParent_data();
+    void mapRectFromToParent();
     void isAncestorOf();
     void commonAncestorItem();
     void data();
@@ -220,6 +222,7 @@ private slots:
     // task specific tests below me
     void task141694_textItemEnsureVisible();
     void task128696_textItemEnsureMovable();
+    void ensureUpdateOnTextItem();
     void task177918_lineItemUndetected();
     void task240400_clickOnTextItem_data();
     void task240400_clickOnTextItem();
@@ -2513,6 +2516,87 @@ void tst_QGraphicsItem::mapFromToItem()
     delete item2;
     delete item3;
     delete item4;
+}
+
+void tst_QGraphicsItem::mapRectFromToParent_data()
+{
+    QTest::addColumn<bool>("parent");
+    QTest::addColumn<QPointF>("parentPos");
+    QTest::addColumn<QTransform>("parentTransform");
+    QTest::addColumn<QPointF>("pos");
+    QTest::addColumn<QTransform>("transform");
+    QTest::addColumn<QRectF>("inputRect");
+    QTest::addColumn<QRectF>("outputRect");
+
+    QTest::newRow("nil") << false << QPointF() << QTransform() << QPointF() << QTransform() << QRectF() << QRectF();
+    QTest::newRow("simple") << false << QPointF() << QTransform() << QPointF() << QTransform()
+                            << QRectF(0, 0, 10, 10) << QRectF(0, 0, 10, 10);
+    QTest::newRow("simple w/parent") << true
+                                     << QPointF() << QTransform()
+                                     << QPointF() << QTransform()
+                                     << QRectF(0, 0, 10, 10) << QRectF(0, 0, 10, 10);
+    QTest::newRow("simple w/parent parentPos") << true
+                                               << QPointF(50, 50) << QTransform()
+                                               << QPointF() << QTransform()
+                                               << QRectF(0, 0, 10, 10) << QRectF(0, 0, 10, 10);
+    QTest::newRow("simple w/parent parentPos parentRotation") << true
+                                                              << QPointF(50, 50) << QTransform().rotate(45)
+                                                              << QPointF() << QTransform()
+                                                              << QRectF(0, 0, 10, 10) << QRectF(0, 0, 10, 10);
+    QTest::newRow("pos w/parent") << true
+                                  << QPointF() << QTransform()
+                                  << QPointF(50, 50) << QTransform()
+                                  << QRectF(0, 0, 10, 10) << QRectF(50, 50, 10, 10);
+    QTest::newRow("rotation w/parent") << true
+                                       << QPointF() << QTransform()
+                                       << QPointF() << QTransform().rotate(90)
+                                       << QRectF(0, 0, 10, 10) << QRectF(-10, 0, 10, 10);
+    QTest::newRow("pos rotation w/parent") << true
+                                           << QPointF() << QTransform()
+                                           << QPointF(50, 50) << QTransform().rotate(90)
+                                           << QRectF(0, 0, 10, 10) << QRectF(40, 50, 10, 10);
+    QTest::newRow("pos rotation w/parent parentPos parentRotation") << true
+                                                                    << QPointF(-170, -190) << QTransform().rotate(90)
+                                                                    << QPointF(50, 50) << QTransform().rotate(90)
+                                                                    << QRectF(0, 0, 10, 10) << QRectF(40, 50, 10, 10);
+}
+
+void tst_QGraphicsItem::mapRectFromToParent()
+{
+    QFETCH(bool, parent);
+    QFETCH(QPointF, parentPos);
+    QFETCH(QTransform, parentTransform);
+    QFETCH(QPointF, pos);
+    QFETCH(QTransform, transform);
+    QFETCH(QRectF, inputRect);
+    QFETCH(QRectF, outputRect);
+
+    QGraphicsRectItem *rect = new QGraphicsRectItem;
+    rect->setPos(pos);
+    rect->setTransform(transform);
+
+    if (parent) {
+        QGraphicsRectItem *rectParent = new QGraphicsRectItem;
+        rect->setParentItem(rectParent);
+        rectParent->setPos(parentPos);
+        rectParent->setTransform(parentTransform);
+    }
+
+    // Make sure we use non-destructive transform operations (e.g., 90 degree
+    // rotations).
+    QCOMPARE(rect->mapRectToParent(inputRect), outputRect);
+    QCOMPARE(rect->mapRectFromParent(outputRect), inputRect);
+    QCOMPARE(rect->itemTransform(rect->parentItem()).mapRect(inputRect), outputRect);
+    QCOMPARE(rect->mapToParent(inputRect).boundingRect(), outputRect);
+    QCOMPARE(rect->mapToParent(QPolygonF(inputRect)).boundingRect(), outputRect);
+    QCOMPARE(rect->mapFromParent(outputRect).boundingRect(), inputRect);
+    QCOMPARE(rect->mapFromParent(QPolygonF(outputRect)).boundingRect(), inputRect);
+    QPainterPath inputPath;
+    inputPath.addRect(inputRect);
+    QPainterPath outputPath;
+    outputPath.addRect(outputRect);
+    QCOMPARE(rect->mapToParent(inputPath).boundingRect(), outputPath.boundingRect());
+    QCOMPARE(rect->mapFromParent(outputPath).boundingRect(), inputPath.boundingRect());
 }
 
 void tst_QGraphicsItem::isAncestorOf()
@@ -5187,6 +5271,39 @@ void tst_QGraphicsItem::task240400_clickOnTextItem()
         QVERIFY(item->textCursor().columnNumber() > column);
     else
         QCOMPARE(item->textCursor().columnNumber(), 0);
+}
+
+class TextItem : public QGraphicsSimpleTextItem
+{
+public:
+    TextItem(const QString& text) : QGraphicsSimpleTextItem(text)
+    {
+        updates = 0;
+    }
+
+    void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
+    {
+        updates++;
+        QGraphicsSimpleTextItem::paint(painter, option, widget);
+    }
+
+    int updates;
+};
+
+void tst_QGraphicsItem::ensureUpdateOnTextItem()
+{
+    QGraphicsScene scene;
+    TextItem *text1 = new TextItem(QLatin1String("123"));
+    scene.addItem(text1);
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWait(250);
+    QCOMPARE(text1->updates,1);
+
+    //same bouding rect but we have to update
+    text1->setText(QLatin1String("321"));
+    QTest::qWait(250);
+    QCOMPARE(text1->updates,2);
 }
 
 void tst_QGraphicsItem::task243707_addChildBeforeParent()

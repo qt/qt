@@ -264,6 +264,7 @@ public:
         GrabKeyboard = 188,
         UngrabKeyboard = 189,
         CocoaRequestModal = 190,                // Internal for requesting an application modal Cocoa Window
+        MacGLClearDrawable = 191,               // Internal Cocoa, the window has changed, so we must clear
 
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event

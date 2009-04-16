@@ -275,6 +275,7 @@ private slots:
     void accessibleName();
     void treeWidgetTest();
     void labelTest();
+    void accelerators();
 
 private:
     QWidget *createGUI();
@@ -2592,8 +2593,8 @@ void tst_QAccessibility::menuTest()
 
     QTestAccessibility::clearEvents();
     mw.hide();
-    
-    
+
+
     // Do not crash if the menu don't have a parent
     QMenu *menu = new QMenu;
     menu->addAction(QLatin1String("one"));
@@ -2607,7 +2608,7 @@ void tst_QAccessibility::menuTest()
     delete iface2;
     delete iface;
     delete menu;
-    
+
     }
     QTestAccessibility::clearEvents();
 #else
@@ -3988,13 +3989,13 @@ void tst_QAccessibility::treeWidgetTest()
     QCOMPARE(entry, 0);
     QCOMPARE(accTreeItem2->text(QAccessible::Name, 0), QLatin1String("row: 1"));
 
-    
-    // test selected/focused state 
+
+    // test selected/focused state
     QItemSelectionModel *selModel = tree->selectionModel();
     QVERIFY(selModel);
     selModel->select(QItemSelection(tree->model()->index(0, 0), tree->model()->index(3, 0)), QItemSelectionModel::Select);
     selModel->setCurrentIndex(tree->model()->index(1, 0), QItemSelectionModel::Current);
-    
+
     for (int i = 1; i < 10 ; ++i) {
         QAccessible::State expected;
         if (i <= 5 && i >= 2)
@@ -4043,6 +4044,45 @@ void tst_QAccessibility::labelTest()
     QTestAccessibility::clearEvents();
 #else
     QSKIP("Test needs accessibility support.", SkipAll);
+#endif
+}
+
+void tst_QAccessibility::accelerators()
+{
+#ifdef QTEST_ACCESSIBILITY
+    QWidget *window = new QWidget;
+    QHBoxLayout *lay = new QHBoxLayout(window);
+    QLabel *label = new QLabel(tr("&Line edit"), window);
+    QLineEdit *le = new QLineEdit(window);
+    lay->addWidget(label);
+    lay->addWidget(le);
+    label->setBuddy(le);
+
+    window->show();
+
+    QAccessibleInterface *accLineEdit = QAccessible::queryAccessibleInterface(le);
+    QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QString(QKeySequence(Qt::ALT) + QLatin1String("L")));
+    label->setText(tr("Q &"));
+    QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QString());
+    label->setText(tr("Q &&"));
+    QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QString());
+    label->setText(tr("Q && A"));
+    QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QString());
+    label->setText(tr("Q &&&A"));
+    QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QString(QKeySequence(Qt::ALT) + QLatin1String("A")));
+    label->setText(tr("Q &&A"));
+    QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QString());
+    label->setText(tr("Q &A&B"));
+    QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QString(QKeySequence(Qt::ALT) + QLatin1String("A")));
+
+#if defined(Q_WS_X11)
+    qt_x11_wait_for_window_manager(window);
+#endif
+    QTest::qWait(100);
+    delete window;
+    QTestAccessibility::clearEvents();
+#else
+    QSKIP("Test needs Qt >= 0x040000 and accessibility support.", SkipAll);
 #endif
 }
 
