@@ -509,16 +509,20 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
 
     if (d->mono_surface)
         d->glyphCacheType = QFontEngineGlyphCache::Raster_Mono;
-#ifdef Q_WS_WIN
-    else if (qt_cleartype_enabled) {
+#if defined(Q_WS_WIN)
+    else if (qt_cleartype_enabled)
+#elif defined (Q_WS_MAC)
+    else if (true)
+#else
+    else if (false)
+#endif
+    {
         QImage::Format format = static_cast<QImage *>(d->device)->format();
         if (format == QImage::Format_ARGB32_Premultiplied || format == QImage::Format_RGB32)
             d->glyphCacheType = QFontEngineGlyphCache::Raster_RGBMask;
         else
             d->glyphCacheType = QFontEngineGlyphCache::Raster_A8;
-    }
-#endif
-    else
+    } else
         d->glyphCacheType = QFontEngineGlyphCache::Raster_A8;
 
     setActive(true);

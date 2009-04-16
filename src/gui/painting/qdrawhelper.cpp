@@ -6933,6 +6933,12 @@ static void qt_alphamapblit_quint16(QRasterBuffer *rasterBuffer,
 void qt_build_pow_tables() {
     qreal smoothing = 1.7;
 
+#ifdef Q_WS_MAC
+    // decided by testing a few things on an iMac, should probably get this from the
+    // system...
+    smoothing = 2.0;
+#endif
+
 #ifdef Q_WS_WIN
     int winSmooth;
     if (SystemParametersInfo(0x200C /* SPI_GETFONTSMOOTHINGCONTRAST */, 0, &winSmooth, 0))
