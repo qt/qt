@@ -457,12 +457,23 @@ Qt for Windows CE
     * [245503] Fixed redundant backslashes in string property in property browser.
 
 - Linguist
+
   - Linguist GUI
+
+    * [248076] Fixed crash upon opening files for which we have no plural rules
+    * [249519] Fixed crash upon dropping text into non-focused lineedit
+
+  - Entire Linguist toolchain
+
+    * [244035] Fixed endless loop in PO writer
+    * [247738] Improved handling of duplicated messages
+    * [248849] Fixed encoding in XLIFF writer
+    * [249022] Fixed TS' and QM's handling of messages which appear in multiple encodings
 
   - lupdate
 
-  - lrelease
-
+    * [248724] Fixed encoding of messages from .ui files if CODECFORTR is not utf8
+    * [249633] Fixed processing of C++ backslash line continuations
 
 - rcc
 
@@ -484,6 +495,7 @@ Qt for Windows CE
     * [248806] Ensure that the Xcode generator includes the right path to frameworks.
     * [201495] Comment processing in qmake prevented file from being moc'ed
     * On Mac OS, properly escape file names in QMAKE_BUNDLE_DATA
+    * Fixed moc and uic features to make shadow builds work even if a non-shadow build is present
 
 
 - configure
