@@ -24,6 +24,11 @@ General Improvements
 --------------------
 
 - Documentation and Examples
+   * Added printing feature for the Spreadsheet demo.
+   * [245675] Clarified the differences between QItemDelegate and
+     QStyledItemDelegate.
+   * [248752] Marked QPrintDialog::printer(), setPrinter() and addButton()
+     as Unix only functions, part of Qt3Support.
 
 - Embedded Dialogs demo
    * [246517] Fixed warnings and bugs in hover handling on Mac OS X
@@ -50,90 +55,96 @@ Third party components
 ****************************************************************************
 
 - QAbstractItemModel
-   * [243195] Clrarified some warning messages printed if the model is invalid.
+   * [243195] Clarified some warning messages printed if the model is invalid.
 
 - QAbstractEventDispatcher
-   * [248805] Duplicates timerid could happen when timer are running while
-     the QObject is moved to another thread, and would stop timers from working.
+   * [248805] Duplicate timerids could occur when a timer is running while
+     the QObject is moved to another thread, stopping timers from working.
 
 - QAbstractSocket
-   * [192037] Emit disconnected only if we were connected before
+   * [192037] Emit the disconnected signal only if we were connected before.
 
 - QAccessible
-   * [241161] Fixed bug in browsing menus with the keyboard.
-   * [221731] Fixed bug where the accessibility plugin could crash if there
-     was an "&" at the end or spin forever if a label had a sequence of "&&".
+   * [241161] Fixed a bug in browsing menus with the keyboard.
+   * [221731] Fixed a bug where the accessibility plugin could crash if
+     there was an "&" at the end or spin forever if a label had a sequence of
+     "&&".
 
 - QAtomicInt
-   * [216492] Fix compilation on 64-bit PowerPC machines with gcc 4.3.
+   * [216492] Fixed compilation on 64-bit PowerPC machines with gcc 4.3.
 
 - QAuthenticator
-   * [237979] fix implemenation of md5-sess
+   * [237979] Fixed implementation of md5-sess.
 
 - QByteArray
-   * [246233] QByteArray::fromHex() fails with input of size 1
+   * [246233] QByteArray::fromHex() fails with input of size 1.
 
 - QColorDialog
-   * [247349] Fixed bug causing the wrong alpha value to be returned.
+   * [247349] Fixed a bug causing the wrong alpha value to be returned.
 
 - QCombobox
-   * [248094] Fixed scrollbar appearing while not required.
+   * [248094] Fixed scrollbar from appearing when not required.
 
 - QCompleter
-   * [250064] Fixed focus policy propagation regression.
-   * [246056] Fixed assertion failure in setCompletionPrefix().
+   * [250064] Fixed a focus policy propagation regression.
+   * [246056] Fixed an assertion failure in setCompletionPrefix().
 
 - QtConcurrent
-   * [244718] Reduce the number of calls to QThread::idealThreadCount().
+   * [244718] Reduced the number of calls to QThread::idealThreadCount().
 
 - QDirIterator
-   * [247645] Fix a bug that may loose all cached data inside the QFileInfo
+   * [247645] Fixed a bug that may loose all cached data inside QFileInfo.
 
 - QFile
-   * [244500] QFile::rename() doesn't always return false when the method fails
-   * [244485] Renaming a file does not change QFile::fileName()
+   * [244500] QFile::rename() does not always return false when the method
+              fails
+   * [244485] Renaming a file does not change QFile::fileName().
 
 - QFileInfo
-   * [205244] return valid file info also for relative UNC paths
+   * [205244] Return valid file info also for relative UNC paths.
 
 - QFileDialog
-   * [250194] QFileDialog and QSortFilterProxyModel index mapping issue
-   * [248332] QFileDialog is slow after visiting a large directory
-   * [221323] QFileDialog programatical file selection bug
+   * [250194] Fixed an issue with QFileDialog and QSortFilterProxyModel
+              index mapping.
+   * [248332] QFileDialog is slow after visiting a large directory.
+   * [221323] QFileDialog programmatical file selection bug.
 
 - QGraphicsItem
-   * [247890] Cached QGraphicsItems are not updated if update() is called when they are hidden
+   * [247890] Cached QGraphicsItems are not updated if update() is called
+              when they are hidden.
    * [250272] When an item is deleted it does not get removed from the
-   sceneeventfilters meaning a crash can occur
-   * Fixed slowdown regression in QGraphicsItem::ItemCoordinateCache
+              sceneeventfilters, meaning a crash can occur.
+   * Fixed a slow down regression in QGraphicsItem::ItemCoordinateCache.
 
 - QGraphicsGridLayout
-   * [242472] Fix a bug where the calculation of the maximum width of a column
-     was not calculated correctly.
+   * [242472] Fixed a bug where the calculation of the maximum width of a
+              column was incorrect.
 
 - QGraphicsScene
-   * [243707] Fixed crash when adding child before parent to scene
+   * [243707] Fixed a crash when adding child before parent to scene.
 
--QGraphicsView
-   * [245766] Rubber Band drag mode not updated correctly when scrolling
+- QGraphicsView
+   * [245766] Rubber Band drag mode does not update correctly when
+              scrolling.
 
 - QGraphicsWidget
     * [246215] Fixed a regression where we could cache the wrong size hint
       because we called the virtual sizeHint() from the constructor.
 
 - QHttp
-   * [208445] cancel request upon receiving unknown authentication method
+   * [208445] Cancel request upon receiving unknown authentication method.
 
 - QHostAddress
-   * [247330] Fix compilation on MinGW by adding a missing QPair include.
+   * [247330] Fixed compilation on MinGW by adding a missing QPair include.
 
 - QLocalSocket
-   * Fix a bug that would cause QLocalSocket to disconnect 30 seconds
+   * Fixed a bug that would cause QLocalSocket to disconnect 30 seconds
      after a succesful delayed connection on UNIX.
 
 - QMacStyle
-    * [248769] Fix regression where QMacStyle would only draw tabs when passed a QStyleOptionTabV3.
-    * Adjust the opacity value for popups.
+   * [248769] Fixed a regression where QMacStyle would only draw tabs when
+              passed a QStyleOptionTabV3.
+   * Adjusted the opacity value for popups.
 
 - QMainWindow
     * [248048] Fix a regression that would cause tooltips to disappear when using the unified toolbar.
