@@ -1295,6 +1295,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     eglContext = 0;
 #endif
     pbo = 0;
+    fbo = 0;
     crWin = false;
     initDone = false;
     sharing = false;
@@ -1303,6 +1304,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     version_flags_cached = false;
     version_flags = QGLFormat::OpenGL_Version_None;
     current_fbo = 0;
+    active_engine = 0;
 }
 
 QGLContext* QGLContext::currentCtx = 0;
@@ -1313,12 +1315,8 @@ QGLContext* QGLContext::currentCtx = 0;
    QGLFramebufferObject::toImage()
 */
 
-QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
+static void convertFromGLImage(QImage &img, int w, int h, bool alpha_format, bool include_alpha)
 {
-    QImage img(size, alpha_format ? QImage::Format_ARGB32 : QImage::Format_RGB32);
-    int w = size.width();
-    int h = size.height();
-    glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
     if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
         // OpenGL gives RGBA; Qt wants ARGB
         uint *p = (uint*)img.bits();
@@ -1341,7 +1339,27 @@ QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include
         // OpenGL gives ABGR (i.e. RGBA backwards); Qt wants ARGB
         img = img.rgbSwapped();
     }
-    return img.mirrored();
+    img = img.mirrored();
+}
+
+QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
+{
+    QImage img(size, alpha_format ? QImage::Format_ARGB32 : QImage::Format_RGB32);
+    int w = size.width();
+    int h = size.height();
+    glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+    convertFromGLImage(img, w, h, alpha_format, include_alpha);
+    return img;
+}
+
+QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alpha)
+{
+    QImage img(size, alpha_format ? QImage::Format_ARGB32 : QImage::Format_RGB32);
+    int w = size.width();
+    int h = size.height();
+    glGetTexImage(qt_gl_preferredTextureTarget(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+    convertFromGLImage(img, w, h, alpha_format, include_alpha);
+    return img;
 }
 
 // returns the highest number closest to v, which is a power of 2
@@ -4235,6 +4253,15 @@ void QGLDrawable::setDevice(QPaintDevice *pdev)
 #ifdef Q_WS_QWS
     wsurf = 0;
 #endif
+
+    if (pdev->devType() == QInternal::Pixmap) {
+        QPixmapData *data = static_cast<QPixmap *>(pdev)->pixmapData();
+        Q_ASSERT(data->classId() == QPixmapData::OpenGLClass);
+        pixmapData = static_cast<QGLPixmapData *>(data);
+
+        fbo = pixmapData->fbo();
+    }
+
     if (pdev->devType() == QInternal::Widget)
         widget = static_cast<QGLWidget *>(pdev);
     else if (pdev->devType() == QInternal::Pbuffer)
@@ -4261,7 +4288,9 @@ void QGLDrawable::swapBuffers()
 
 void QGLDrawable::makeCurrent()
 {
-    if (widget)
+    if (pixmapData)
+        pixmapData->beginPaint();
+    else if (widget)
         widget->makeCurrent();
     else if (buffer)
         buffer->makeCurrent();
@@ -4274,9 +4303,18 @@ void QGLDrawable::makeCurrent()
     }
 }
 
+QGLPixmapData *QGLDrawable::copyOnBegin() const
+{
+    if (!pixmapData || pixmapData->isUninitialized())
+        return 0;
+    return pixmapData;
+}
+
 void QGLDrawable::doneCurrent()
 {
-    if (fbo && !wasBound)
+    if (pixmapData)
+        pixmapData->endPaint();
+    else if (fbo && !wasBound)
         fbo->release();
 }
 
@@ -4285,6 +4323,8 @@ QSize QGLDrawable::size() const
     if (widget) {
         return QSize(widget->d_func()->glcx->device()->width(),
                      widget->d_func()->glcx->device()->height());
+    } else if (pixmapData) {
+        return pixmapData->size();
     } else if (buffer) {
         return buffer->size();
     } else if (fbo) {

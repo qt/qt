@@ -100,8 +100,8 @@ QGLGraphicsSystem::QGLGraphicsSystem()
         int i = 0;
         int spec[16];
         spec[i++] = GLX_RGBA;
-#if 0
         spec[i++] = GLX_DOUBLEBUFFER;
+#if 0
         spec[i++] = GLX_DEPTH_SIZE;
         spec[i++] = 8;
         spec[i++] = GLX_STENCIL_SIZE;
@@ -433,19 +433,35 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         size = parent->size();
     }
 
-    ctx->makeCurrent();
-#ifdef Q_WS_MAC
-    ctx->updatePaintDevice();
-#endif
-    glDisable(GL_DEPTH_TEST);
     glDisable(GL_SCISSOR_TEST);
 
     if (d_ptr->fbo && QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit) {
-        QGLFramebufferObject::blitFramebuffer(0, rect, d_ptr->fbo, rect);
-        d_ptr->fbo->bind();
+        const int h = d_ptr->fbo->height();
+
+        const int x0 = rect.left();
+        const int x1 = rect.left() + rect.width();
+        const int y0 = h - (rect.top() + rect.height());
+        const int y1 = h - rect.top();
+
+        glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, 0);
+
+        glBlitFramebufferEXT(x0, y0, x1, y1,
+                x0, y0, x1, y1,
+                GL_COLOR_BUFFER_BIT,
+                GL_NEAREST);
+
+        glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, d_ptr->fbo->handle());
     } else {
-        if (d_ptr->fbo)
+        glDisable(GL_DEPTH_TEST);
+
+        if (d_ptr->fbo) {
             d_ptr->fbo->release();
+        } else {
+            ctx->makeCurrent();
+#ifdef Q_WS_MAC
+            ctx->updatePaintDevice();
+#endif
+        }
 
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();

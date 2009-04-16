@@ -60,6 +60,7 @@
 #include "QtCore/qthreadstorage.h"
 #include "QtCore/qhash.h"
 #include "private/qwidget_p.h"
+#include "private/qpixmapdata_gl_p.h"
 
 #ifndef QT_OPENGL_ES_1_CL
 #define q_vertexType float
@@ -238,6 +239,7 @@ public:
     QGLFormat glFormat;
     QGLFormat reqFormat;
     GLuint pbo;
+    GLuint fbo;
 
     uint valid : 1;
     uint sharing : 1;
@@ -255,6 +257,7 @@ public:
     GLint max_texture_size;
 
     GLuint current_fbo;
+    QPaintEngine *active_engine;
 
 #ifdef Q_WS_WIN
     static inline QGLExtensionFuncs& qt_get_extension_funcs(const QGLContext *ctx) { return ctx->d_ptr->extensionFuncs; }
@@ -289,7 +292,7 @@ class QGLWindowSurface;
 class QGLDrawable {
 public:
     QGLDrawable() : widget(0), buffer(0), fbo(0)
-                  , wsurf(0)
+                  , wsurf(0), pixmapData(0)
         {}
     void setDevice(QPaintDevice *pdev);
     void swapBuffers();
@@ -303,6 +306,8 @@ public:
     QGLContext *context() const;
     bool autoFillBackground() const;
 
+    QGLPixmapData *copyOnBegin() const;
+
 private:
     bool wasBound;
     QGLWidget *widget;
@@ -313,6 +318,7 @@ private:
 #else
     QGLWindowSurface *wsurf;
 #endif
+    QGLPixmapData *pixmapData;
 };
 
 // GL extension definitions

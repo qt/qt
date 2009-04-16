@@ -475,7 +475,7 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
         fbo_attachment = QGLFramebufferObject::NoAttachment;
     }
 
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
     if (!valid) {
         if (color_buffer)
             glDeleteRenderbuffersEXT(1, &color_buffer);
@@ -825,18 +825,17 @@ bool QGLFramebufferObject::release()
 	return false;
     Q_D(QGLFramebufferObject);
     QGL_FUNC_CONTEXT;
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-    d->valid = d->checkFramebufferStatus();
     d->bound = false;
+
     const QGLContext *context = QGLContext::currentContext();
-    if (d->valid && context) {
+    if (context) {
         // Restore the previous setting for stacked framebuffer objects.
         context->d_ptr->current_fbo = d->previous_fbo;
-        if (d->previous_fbo)
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, d->previous_fbo);
+        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, d->previous_fbo);
         d->previous_fbo = 0;
     }
-    return d->valid;
+
+    return true;
 }
 
 /*!
@@ -1148,8 +1147,7 @@ void QGLFramebufferObject::blitFramebuffer(QGLFramebufferObject *target, const Q
                          tx0, ty0, tx1, ty1,
                          buffers, filter);
 
-    glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, 0);
-    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, 0);
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
 }
 
 QT_END_NAMESPACE
