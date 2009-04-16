@@ -225,6 +225,7 @@ private slots:
     void task238873_avoidAutoReopening();
     void task244304_clickOnDecoration();
     void task246536_scrollbarsNotWorking();
+    void task250683_wrongSectionSize();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -3278,6 +3279,23 @@ void tst_QTreeView::task246536_scrollbarsNotWorking()
     QTest::qWait(100);
     QVERIFY(o.count > 0);
 }
+
+
+void tst_QTreeView::task250683_wrongSectionSize()
+{
+    QDirModel model;
+    QTreeView treeView;
+    treeView.header()->setResizeMode(QHeaderView::ResizeToContents);
+    treeView.setModel(&model);
+    treeView.setColumnHidden(2, true);
+    treeView.setColumnHidden(3, true);
+
+    treeView.show();
+    QTest::qWait(100);
+
+    QCOMPARE(treeView.header()->sectionSize(0) + treeView.header()->sectionSize(1), treeView.viewport()->width());
+}
+
 
 QTEST_MAIN(tst_QTreeView)
 #include "tst_qtreeview.moc"
