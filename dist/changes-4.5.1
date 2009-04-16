@@ -28,6 +28,19 @@ General Improvements
 - Embedded Dialogs demo
    * [246517] Fixed warnings and bugs in hover handling on Mac OS X
 
+
+Optimizations
+-------------
+
+- Graphics View has been optimized in several areas
+    * Improved the performance of QGraphicsItem::clipPath.
+    * Improved the performance of QGraphicsItem::setPos.
+    * Improved the performance of QGraphicsItem::effectiveOpacity.
+    * Improved the performance of QGrahicsScene::items(*).
+    * Improved update handling.
+    * Reduced the number of floating point operations.
+    * Reduced QVariant overhead.
+
 Third party components
 ----------------------
 
@@ -316,6 +329,10 @@ Qt for Linux/X11
    * Event posted to a thread before it is started are not processed until
      others events are posted.
 
+- QWidget
+    * [213512] Fixed a bug that would cause wrong clipping when using the
+      Qt::WA_PaintOutsidePaintEvent attribute.
+
 
 Qt for Windows
 --------------
@@ -330,6 +347,10 @@ Qt for Windows
 - QWindowsXPStyle
     * [248036] Fixed an issue where tool buttons would incorrectly
       hover when disabled.
+
+- QWidget
+    * [248391] Fixed a bug that made it impossible to dynamically switch
+      from QPainter based graphics to native graphics API and back.
 
 - [249576] Fixed a crash when using a combobox with Qt::NoFocus.
 - [244875] System menu will now be shown for a fullscreen  window.
@@ -357,6 +378,7 @@ Qt for Mac OS X
     * Fixed a bug where the drag cursor was not updated when modifier keys are used.
     * [247947] Fixed a crash in drag and drop.
     * The command + h shortcut is now enabled. (Hides the current window.)
+    * [239043] Fixed a bug that would cause QGraphicsProxyWidget to shrink when moving it.
 
 - QDesktopWidget
     * [244004] Support multiple screens that have different sizes properly.
