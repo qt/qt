@@ -51,7 +51,7 @@ SOURCES	+= qgl.cpp \
                 gl2paintengineex/qglengineshadermanager_p.h \
                 gl2paintengineex/qgl2pexvertexarray_p.h \
                 gl2paintengineex/qpaintengineex_opengl2_p.h \
-                gl2paintengineex/glgc_shader_source.h
+                gl2paintengineex/qglengineshadersource_p.h
 #}
 
 

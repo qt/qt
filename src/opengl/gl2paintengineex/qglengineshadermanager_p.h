@@ -375,8 +375,9 @@ private:
     QGLShader* compiledShaders[TotalShaderCount];
 
     void compileNamedShader(QGLEngineShaderManager::ShaderName name, QGLShader::ShaderType type);
-};
 
+    static const char* qglEngineShaderSourceCode[TotalShaderCount];
+};
 
 QT_END_NAMESPACE
 

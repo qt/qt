@@ -40,11 +40,19 @@
 ****************************************************************************/
 
 #include "qglengineshadermanager_p.h"
+#include "qglengineshadersource_p.h"
 
 #if defined(QT_DEBUG)
 #include <QMetaEnum>
 #endif
 
+
+const char* QGLEngineShaderManager::qglEngineShaderSourceCode[] = {
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0
+};
 
 QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
     : ctx(context),
@@ -58,6 +66,77 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
       currentShaderProg(0)
 {
     memset(compiledShaders, 0, sizeof(compiledShaders));
+
+/*
+    Rather than having the shader source array statically initialised, it is initialised
+    here instead. This is to allow new shader names to be inserted or existing names moved
+    around without having to change the order of the glsl strings. It is hoped this will
+    make future hard-to-find runtime bugs more obvious and generally give more solid code.
+*/
+    static bool qglEngineShaderSourceCodePopulated = false;
+    if (!qglEngineShaderSourceCodePopulated) {
+
+        const char** code = qglEngineShaderSourceCode; // shortcut
+
+        code[SimpleVertexShader] = qglslSimpleVertexShader;
+        code[MainVertexShader] = qglslMainVertexShader;
+        code[MainWithTexCoordsVertexShader] = qglslMainWithTexCoordsVertexShader;
+
+        code[PositionOnlyVertexShader] = qglslPositionOnlyVertexShader;
+        code[PositionWithPatternBrushVertexShader] = qglslPositionWithPatternBrushVertexShader;
+        code[PositionWithLinearGradientBrushVertexShader] = qglslPositionWithLinearGradientBrushVertexShader;
+        code[PositionWithConicalGradientBrushVertexShader] = qglslPositionWithConicalGradientBrushVertexShader;
+        code[PositionWithRadialGradientBrushVertexShader] = qglslPositionWithRadialGradientBrushVertexShader;
+        code[PositionWithTextureBrushVertexShader] = qglslPositionWithTextureBrushVertexShader;
+        code[AffinePositionWithPatternBrushVertexShader] = qglslAffinePositionWithPatternBrushVertexShader;
+        code[AffinePositionWithLinearGradientBrushVertexShader] = qglslAffinePositionWithLinearGradientBrushVertexShader;
+        code[AffinePositionWithConicalGradientBrushVertexShader] = qglslAffinePositionWithConicalGradientBrushVertexShader;
+        code[AffinePositionWithRadialGradientBrushVertexShader] = qglslAffinePositionWithRadialGradientBrushVertexShader;
+        code[AffinePositionWithTextureBrushVertexShader] = qglslAffinePositionWithTextureBrushVertexShader;
+
+        code[MainFragmentShader_CMO] = qglslMainFragmentShader_CMO;
+        code[MainFragmentShader_CM] = qglslMainFragmentShader_CM;
+        code[MainFragmentShader_MO] = qglslMainFragmentShader_MO;
+        code[MainFragmentShader_M] = qglslMainFragmentShader_M;
+        code[MainFragmentShader_CO] = qglslMainFragmentShader_CO;
+        code[MainFragmentShader_C] = qglslMainFragmentShader_C;
+        code[MainFragmentShader_O] = qglslMainFragmentShader_O;
+        code[MainFragmentShader] = qglslMainFragmentShader;
+
+        code[ImageSrcFragmentShader] = qglslImageSrcFragmentShader;
+        code[NonPremultipliedImageSrcFragmentShader] = qglslNonPremultipliedImageSrcFragmentShader;
+        code[SolidBrushSrcFragmentShader] = qglslSolidBrushSrcFragmentShader;
+        code[TextureBrushSrcFragmentShader] = qglslTextureBrushSrcFragmentShader;
+        code[PatternBrushSrcFragmentShader] = qglslPatternBrushSrcFragmentShader;
+        code[LinearGradientBrushSrcFragmentShader] = qglslLinearGradientBrushSrcFragmentShader;
+        code[RadialGradientBrushSrcFragmentShader] = qglslRadialGradientBrushSrcFragmentShader;
+        code[ConicalGradientBrushSrcFragmentShader] = qglslConicalGradientBrushSrcFragmentShader;
+
+        code[MaskFragmentShader] = qglslMaskFragmentShader;
+        code[RgbMaskFragmentShader] = ""; //###
+        code[RgbMaskWithGammaFragmentShader] = ""; //###
+
+        code[MultiplyCompositionModeFragmentShader] = ""; //###
+        code[ScreenCompositionModeFragmentShader] = ""; //###
+        code[OverlayCompositionModeFragmentShader] = ""; //###
+        code[DarkenCompositionModeFragmentShader] = ""; //###
+        code[LightenCompositionModeFragmentShader] = ""; //###
+        code[ColorDodgeCompositionModeFragmentShader] = ""; //###
+        code[ColorBurnCompositionModeFragmentShader] = ""; //###
+        code[HardLightCompositionModeFragmentShader] = ""; //###
+        code[SoftLightCompositionModeFragmentShader] = ""; //###
+        code[DifferenceCompositionModeFragmentShader] = ""; //###
+        code[ExclusionCompositionModeFragmentShader] = ""; //###
+
+#if defined(QT_DEBUG)
+        // Check that all the elements have been filled:
+        for (int i = 0; i < TotalShaderCount; ++i) {
+            if (qglEngineShaderSourceCode[i] == 0)
+                qCritical() << "qglEngineShaderSourceCode: Missing shader in element" << i;
+        }
+#endif
+        qglEngineShaderSourceCodePopulated = true;
+    }
 }
 
 QGLEngineShaderManager::~QGLEngineShaderManager()
@@ -303,15 +382,6 @@ void QGLEngineShaderManager::useCorrectShaderProg()
         }
     }
 
-/*
-    QGLShader*          mainVertexShader;
-    QGLShader*          positionVertexShader;
-    QGLShader*          mainFragShader;
-    QGLShader*          srcPixelFragShader;
-    QGLShader*          maskFragShader;        // Can be null for no mask
-    QGLShader*          compositionFragShader; // Can be null for GL-handled mode
-    QGLShaderProgram*   program;
-*/
     // Shader program not found in cache, create it now.
     requiredProgram.program = new QGLShaderProgram(ctx, this);
     requiredProgram.program->addShader(requiredProgram.mainVertexShader);
