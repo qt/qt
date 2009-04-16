@@ -804,6 +804,9 @@ void QGL2PaintEngineEx::fill(const QVectorPath &path, const QBrush &brush)
 {
     Q_D(QGL2PaintEngineEx);
 
+    if (brush.style() == Qt::NoBrush)
+        return;
+
     d->setBrush(&brush);
     d->fill(path);
     d->setBrush(&(state()->brush)); // reset back to the state's brush
