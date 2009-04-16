@@ -132,6 +132,7 @@ private slots:
     void task248868_staticSorting();
     void task248868_dynamicSorting();
     void task250023_fetchMore();
+    void task251296_hiddenChildren();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
@@ -2673,6 +2674,47 @@ void tst_QSortFilterProxyModel::task250023_fetchMore()
         proxy.fetchMore(idx);
     QCOMPARE(proxy.rowCount(idx), 10);
     QCOMPARE(proxy.columnCount(idx), 10);
+}
+
+void tst_QSortFilterProxyModel::task251296_hiddenChildren()
+{
+    QStandardItemModel model;
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+    proxy.setDynamicSortFilter(true);
+
+    QStandardItem *itemA = new QStandardItem("A VISIBLE");
+    model.appendRow(itemA);
+    QStandardItem *itemB = new QStandardItem("B VISIBLE");
+    itemA->appendRow(itemB);
+    QStandardItem *itemC = new QStandardItem("C");
+    itemA->appendRow(itemC);
+    proxy.setFilterRegExp("VISIBLE");
+
+    QCOMPARE(proxy.rowCount(QModelIndex()) , 1);
+    QPersistentModelIndex indexA = proxy.index(0,0);
+    QCOMPARE(proxy.data(indexA).toString(), QString::fromLatin1("A VISIBLE"));
+
+    QCOMPARE(proxy.rowCount(indexA) , 1);
+    QPersistentModelIndex indexB = proxy.index(0, 0, indexA);
+    QCOMPARE(proxy.data(indexB).toString(), QString::fromLatin1("B VISIBLE"));
+
+    itemA->setText("A");
+    QCOMPARE(proxy.rowCount(QModelIndex()), 0);
+    QVERIFY(!indexA.isValid());
+    QVERIFY(!indexB.isValid());
+
+    itemB->setText("B");
+    itemA->setText("A VISIBLE");
+    itemC->setText("C VISIBLE");
+
+    QCOMPARE(proxy.rowCount(QModelIndex()), 1);
+    indexA = proxy.index(0,0);
+    QCOMPARE(proxy.data(indexA).toString(), QString::fromLatin1("A VISIBLE"));
+
+    QCOMPARE(proxy.rowCount(indexA) , 1);
+    QModelIndex indexC = proxy.index(0, 0, indexA);
+    QCOMPARE(proxy.data(indexC).toString(), QString::fromLatin1("C VISIBLE"));
 }
 
 
