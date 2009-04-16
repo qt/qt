@@ -1132,14 +1132,14 @@ void QGLFramebufferObject::blitFramebuffer(QGLFramebufferObject *target, const Q
     const int th = target ? target->height() : height;
 
     const int sx0 = sourceRect.left();
-    const int sx1 = sourceRect.right();
-    const int sy0 = sh - sourceRect.bottom() - 1;
-    const int sy1 = sh - sourceRect.top() - 1;
+    const int sx1 = sourceRect.left() + sourceRect.width();
+    const int sy0 = sh - (sourceRect.top() + sourceRect.height());
+    const int sy1 = sh - sourceRect.top();
 
     const int tx0 = targetRect.left();
-    const int tx1 = targetRect.right();
-    const int ty0 = th - targetRect.bottom() - 1;
-    const int ty1 = th - targetRect.top() - 1;
+    const int tx1 = targetRect.left() + targetRect.width();
+    const int ty0 = th - (targetRect.top() + targetRect.height());
+    const int ty1 = th - targetRect.top();
 
     glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, source ? source->handle() : 0);
     glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, target ? target->handle() : 0);
