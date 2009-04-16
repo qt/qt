@@ -218,10 +218,28 @@ Third party components
    * Fixed path fill styles (Zack Rusin)
    * Fixed pre-edit text handling with input methods.
 
+- QSqlTableModel
+   * [189093] QSqlTableModel did not handle updates when one of the fields
+     had a NULL value.
+   * Made setTable() try and use the db's casing of the passed tablename.
+
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
 
+   * Fixed DB2 driver returning double field as empty
+   * Fixed memory leak in DB2 driver
+   * [249059] Fixed QPSQL datetime/time fields with negative timezone offsets
+     not being handled correctly.
+   * Fixed DB2 not enquoting table/field names properly.
+   * Fixed an issue with ODBC & FreeTDS not accepting quotes in statements.
+   * Fixed sqlite2 driver not returning false on failing to exec a statement.
+   * PrecisionPolicy now works in the oracle driver.
+   * Fixed ODBC driver returning a list of tables when requested.
+   * Fixed Interbase retrieving scale/precision information on numeric/decimal fields.
+   * Stopped drivers doing quoting again when escapeIdentifier called twice.
+   * Fixed sqlite2 driver not quoting fields correctly.
+   * [232769] Fixed memory overflow issue on bound out strings in ODBC Driver
 
 ****************************************************************************
 *                      Platform Specific Changes                           *
