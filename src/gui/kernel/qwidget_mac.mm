@@ -465,7 +465,18 @@ Q_GUI_EXPORT OSWindowRef qt_mac_window_for(const QWidget *w)
     if (hiview){
         OSWindowRef window = qt_mac_window_for(hiview);
         if (!window && qt_isGenuineQWidget(hiview)) {
-            w->window()->d_func()->createWindow_sys();
+            QWidget *myWindow = w->window();
+            // This is a workaround for NSToolbar. When a widget is hidden
+            // by clicking the toolbar button, Cocoa reparents the widgets
+            // to another window (but Qt doesn't know about it).
+            // When we start showing them, it reparents back,
+            // but at this point it's window is nil, but the window it's being brought
+            // into (the Qt one) is for sure created.
+            // This stops the hierarchy moving under our feet.
+            if (myWindow != w && qt_mac_window_for(qt_mac_nativeview_for(myWindow)))
+                return qt_mac_window_for(qt_mac_nativeview_for(myWindow));
+
+            myWindow->d_func()->createWindow_sys();
             // Reget the hiview since the "create window could potentially move the view (I guess).
             hiview = qt_mac_nativeview_for(w);
             window = qt_mac_window_for(hiview);
