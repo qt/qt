@@ -196,6 +196,7 @@ public:
 
     void setUniformValue(int location, GLfloat value);
     void setUniformValue(int location, GLint value);
+    void setUniformValue(int location, GLuint value);
     void setUniformValue(int location, GLfloat x, GLfloat y);
     void setUniformValue(int location, GLfloat x, GLfloat y, GLfloat z);
     void setUniformValue(int location, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
@@ -203,6 +204,10 @@ public:
     void setUniformValue(int location, const QVector3D& value);
     void setUniformValue(int location, const QVector4D& value);
     void setUniformValue(int location, const QColor& color);
+    void setUniformValue(int location, const QPoint& point);
+    void setUniformValue(int location, const QPointF& point);
+    void setUniformValue(int location, const QSize& size);
+    void setUniformValue(int location, const QSizeF& size);
     void setUniformValue(int location, const QMatrix2x2& value);
     void setUniformValue(int location, const QMatrix2x3& value);
     void setUniformValue(int location, const QMatrix2x4& value);
@@ -217,6 +222,7 @@ public:
 
     void setUniformValue(const char *name, GLfloat value);
     void setUniformValue(const char *name, GLint value);
+    void setUniformValue(const char *name, GLuint value);
     void setUniformValue(const char *name, GLfloat x, GLfloat y);
     void setUniformValue(const char *name, GLfloat x, GLfloat y, GLfloat z);
     void setUniformValue(const char *name, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
@@ -224,6 +230,10 @@ public:
     void setUniformValue(const char *name, const QVector3D& value);
     void setUniformValue(const char *name, const QVector4D& value);
     void setUniformValue(const char *name, const QColor& color);
+    void setUniformValue(const char *name, const QPoint& point);
+    void setUniformValue(const char *name, const QPointF& point);
+    void setUniformValue(const char *name, const QSize& size);
+    void setUniformValue(const char *name, const QSizeF& size);
     void setUniformValue(const char *name, const QMatrix2x2& value);
     void setUniformValue(const char *name, const QMatrix2x3& value);
     void setUniformValue(const char *name, const QMatrix2x4& value);
