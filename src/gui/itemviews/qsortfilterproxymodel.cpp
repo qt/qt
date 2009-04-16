@@ -1035,7 +1035,7 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
     if (!source_rows_remove.isEmpty()) {
         remove_source_items(m->proxy_rows, m->source_rows,
                             source_rows_remove, source_parent, Qt::Vertical);
-        QSet<int> source_rows_remove_set = source_rows_remove.toSet();
+        QSet<int> source_rows_remove_set = source_rows_remove.toList().toSet();
         QVector<QModelIndex>::iterator it = m->mapped_children.begin();
         while (it != m->mapped_children.end()) {
             const QModelIndex source_child_index = *it;
