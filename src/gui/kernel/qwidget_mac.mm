@@ -2847,10 +2847,10 @@ void QWidgetPrivate::updateSystemBackground()
 
 void QWidgetPrivate::setCursor_sys(const QCursor &)
 {
-    Q_Q(QWidget);
 #ifndef QT_MAC_USE_COCOA
     qt_mac_update_cursor();
 #else
+     Q_Q(QWidget);
     if (q->testAttribute(Qt::WA_WState_Created)) {
         [qt_mac_window_for(q) invalidateCursorRectsForView:qt_mac_nativeview_for(q)];
     }
@@ -2859,10 +2859,10 @@ void QWidgetPrivate::setCursor_sys(const QCursor &)
 
 void QWidgetPrivate::unsetCursor_sys()
 {
-    Q_Q(QWidget);
 #ifndef QT_MAC_USE_COCOA
     qt_mac_update_cursor();
 #else
+     Q_Q(QWidget);
     if (q->testAttribute(Qt::WA_WState_Created)) {
         [qt_mac_window_for(q) invalidateCursorRectsForView:qt_mac_nativeview_for(q)];
     }
