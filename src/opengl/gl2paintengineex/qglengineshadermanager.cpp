@@ -211,6 +211,7 @@ QGLShaderProgram* QGLEngineShaderManager::simpleProgram()
 void QGLEngineShaderManager::useCorrectShaderProg()
 {
     QGLEngineShaderProg requiredProgram;
+    requiredProgram.program = 0;
 
     // Choose vertex shader main function
     QGLEngineShaderManager::ShaderName mainVertexShaderName = InvalidShaderName;
@@ -375,7 +376,7 @@ void QGLEngineShaderManager::useCorrectShaderProg()
              && (prog.srcPixelFragShader == requiredProgram.srcPixelFragShader)
              && (prog.compositionFragShader == requiredProgram.compositionFragShader) )
         {
-            currentShaderProg = requiredProgram.program;
+            currentShaderProg = prog.program;
             currentShaderProg->enable();
             shaderProgNeedsChanging = false;
             return;
