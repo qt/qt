@@ -2596,7 +2596,11 @@ class QtTestModel: public QAbstractItemModel
         }
 
         void fetchMore(const QModelIndex &idx) {
+            if (fetched.contains(idx))
+                return;
+            beginInsertRows(idx, 0, rows-1);
             fetched.insert(idx);
+            endInsertRows();
         }
 
         bool hasChildren(const QModelIndex & = QModelIndex()) const {
@@ -2607,7 +2611,7 @@ class QtTestModel: public QAbstractItemModel
             return fetched.contains(parent) ? rows : 0;
         }
         int columnCount(const QModelIndex& parent = QModelIndex()) const {
-            return fetched.contains(parent) ? cols : 0;
+            return cols;
         }
 
         QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const
