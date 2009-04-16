@@ -133,6 +133,8 @@ Third party components
 
 - QHttp
    * [208445] Cancel request upon receiving unknown authentication method.
+   * Compile fixes for QT_BEGIN_NAMESPACE being in the wrong place in
+     some private headers.
 
 - QHostAddress
    * [247330] Fixed compilation on MinGW by adding a missing QPair include.
@@ -168,6 +170,8 @@ Third party components
    * [247505] Fix missing fills of rectangles with negative width/height in
      raster paint engine.
    * [249628] Fix crash in OpenGL paint engine when filling using Qt::NoBrush.
+   * Compile fixes for OpenGL paint engine on OpenGL/ES 1.1 CommonLite
+     and OpenGL/ES 1.0.
 
 - QPixmap
    * [249175] Fix QPixmap::fromImage() of monochrome images to result in
@@ -437,6 +441,8 @@ Qt for Embedded Linux
 ---------------------
 
 - Various improvements to the Qt DirectFB plugin.
+- Fix recreation of temporary EGL surfaces in PowerVR gfxdriver.
+- Document some necessary #define's for building the PowerVR gfxdriver.
 
 Qt for Windows CE
 -----------------
