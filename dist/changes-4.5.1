@@ -25,6 +25,9 @@ General Improvements
 
 - Documentation and Examples
 
+- Embedded Dialogs demo
+   * [246517] Fixed warnings and bugs in hover handling on Mac OS X
+
 Third party components
 ----------------------
 
@@ -33,8 +36,187 @@ Third party components
 *                          Library                                         *
 ****************************************************************************
 
+- QAbstractItemModel
+   * [243195] Clrarified some warning messages printed if the model is invalid.
+
+- QAbstractEventDispatcher
+   * [248805] Duplicates timerid could happen when timer are running while
+     the QObject is moved to another thread, and would stop timers from working.
+
+- QAbstractSocket
+   * [192037] Emit disconnected only if we were connected before
+
+- QAccessible
+   * [241161] Fixed bug in browsing menus with the keyboard.
+   * [221731] Fixed bug where the accessibility plugin could crash if there
+     was an "&" at the end or spin forever if a label had a sequence of "&&".
+
+- QAtomicInt
+   * [216492] Fix compilation on 64-bit PowerPC machines with gcc 4.3.
+
+- QAuthenticator
+   * [237979] fix implemenation of md5-sess
+
+- QByteArray
+   * [246233] QByteArray::fromHex() fails with input of size 1
+
+- QColorDialog
+   * [247349] Fixed bug causing the wrong alpha value to be returned.
+
+- QCombobox
+   * [248094] Fixed scrollbar appearing while not required.
+
+- QCompleter
+   * [250064] Fixed focus policy propagation regression.
+   * [246056] Fixed assertion failure in setCompletionPrefix().
+
+- QtConcurrent
+   * [244718] Reduce the number of calls to QThread::idealThreadCount().
+
+- QDirIterator
+   * [247645] Fix a bug that may loose all cached data inside the QFileInfo
+
+- QFile
+   * [244500] QFile::rename() doesn't always return false when the method fails
+   * [244485] Renaming a file does not change QFile::fileName()
+
+- QFileInfo
+   * [205244] return valid file info also for relative UNC paths
+
+- QFileDialog
+   * [250194] QFileDialog and QSortFilterProxyModel index mapping issue
+   * [248332] QFileDialog is slow after visiting a large directory
+   * [221323] QFileDialog programatical file selection bug
+
+- QGraphicsItem
+   * [247890] Cached QGraphicsItems are not updated if update() is called when they are hidden
+   * [250272] When an item is deleted it does not get removed from the
+   sceneeventfilters meaning a crash can occur
+   * Fixed slowdown regression in QGraphicsItem::ItemCoordinateCache
+
+- QGraphicsGridLayout
+   * [242472] Fix a bug where the calculation of the maximum width of a column
+     was not calculated correctly.
+
+- QGraphicsScene
+   * [243707] Fixed crash when adding child before parent to scene
+
+-QGraphicsView
+   * [245766] Rubber Band drag mode not updated correctly when scrolling
+
+- QGraphicsWidget
+    * [246215] Fixed a regression where we could cache the wrong size hint
+      because we called the virtual sizeHint() from the constructor.
+
+- QHttp
+   * [208445] cancel request upon receiving unknown authentication method
+
+- QHostAddress
+   * [247330] Fix compilation on MinGW by adding a missing QPair include.
+
+- QLocalSocket
+   * Fix a bug that would cause QLocalSocket to disconnect 30 seconds
+     after a succesful delayed connection on UNIX.
+
+- QMacStyle
+    * [248769] Fix regression where QMacStyle would only draw tabs when passed a QStyleOptionTabV3.
+    * Adjust the opacity value for popups.
+
+- QMainWindow
+    * [248048] Fix a regression that would cause tooltips to disappear when using the unified toolbar.
+
+- QMetaType
+   * [248890] Detailed description of QMetaType no longer contradicts
+     documentation of QMetaType::type()
+
+- QMutex
+   * Fix performance regression for contended mutexes as reported on
+     the qt4-preview-feedback list.
+
+- QPainter
+   * [247492] Fix rendering bug in raster paint engine causing one-pixel
+     offset when drawing premultiplied ARGB32 images on RGB16 images.
+   * [249490] Fix one-pixel offset between stroke and fills of ellipses in
+     X11 paint engine.
+   * [246573] Fix very slow stroking of paths in X11 paint engine.
+   * [247083] Fix scale applied to antialiased cosmetic pens in X11 paint
+     engine.
+   * [247505] Fix missing fills of rectangles with negative width/height in
+     raster paint engine.
+   * [249628] Fix crash in OpenGL paint engine when filling using Qt::NoBrush.
+
+- QPixmap
+   * [249175] Fix QPixmap::fromImage() of monochrome images to result in
+     black/white pixels and not transparent/white pixels.
+
+- QProcess
+   * [247865] Fix a crash when calling QProcess::start() and
+     startDetached() with an empty program string.
+
+- QScrollBar
+   * [247985] Stylesheet: added ability to style scrollbar menus.
+
 - QSharedPointer
    * [246843] Fixed a crash caused by using QSharedPointer in global statics
+
+- QSortFilterProxyModel
+   * [247867] Properly sort when calling appendRows()
+   * [248868] Resort when the model is reset if dynamicSort is enabled.
+   * [248868] Fixed QSortFilterProxyModel::sort while dynamicSort was disabled.
+
+- QSSlSocket
+   * [245668] set also protocol, verifyMode and verifyDepth in
+     setSslConfiguration()
+
+- QString
+   * [249517] Fixed regression in replace(int, int, QChar) when string is empty
+
+- QStyleSheetStyle
+   * Improved support for setting background and foreground roles in styles
+    such as the text color in a combo box popup on Mac and Cleanlooks, or
+    the QScrollBar background.
+   * [188195] fix background of QAbstractScrollArea loosing its color if styled with pseudo-class.
+   * Fixed crash while styling the title bar of a QMdiArea.
+   * [246542] Fixed QToolButton::hover{ color:.... }
+
+- QThread
+   * [249997] Add documentation indicating that the priority set by
+     the programmer may be ignored, for example on Linux.
+
+- QTreeView
+   * Fixed crash that may occurs when event are processed just after QSortFilterProxyModel
+     has been invalidated
+   * [246025] Fixed auto-expand that occurs while quicly collapsing an item after clicking on a child
+   * [248805] Calling programatically  QTreeView::sortByColumn was not working if manual
+     sorting is disabled
+   * [248163] Fixed possible crash in the paintEvent when spans are used.
+
+- QWidget
+   * [250388] Fixed potential crash in QWidget::scroll() when using the raster
+     graphics system.
+
+- QWidget
+   * [246852] Better handling WindowMaximizeButtonHint for widget with
+     layouts.
+
+-QLocale
+   * String-to-number conversion functions are now ignore trailing and
+     leading whitespaces in all locales as it is documented.
+
+- QWizard
+   * [248107] Fixed bug on Vista causing Back button to connect twice to the back() signal.
+
+- Q3ListView
+   * [248689] Q3ListView would not update under certain condition.
+
+- QtWebKit
+   * Fix bug in cookie handling (WebKit Bugzilla 24062, Benjamin Meyer).
+   * Fixed support for calling from JavaScript into NPAPI plugins on Windows.
+   * Fixed updating state of WebActions (Erik Bunce)
+   * Fixed bug in HTML 5 Canvas clearRect() (Dirk Schulze)
+   * Fixed text field theming with KDE 4 Oxygen style (Zack Rusin)
+   * Fixed path fill styles (Zack Rusin)
+   * Fixed pre-edit text handling with input methods.
 
 ****************************************************************************
 *                          Database Drivers                                *
@@ -48,18 +230,145 @@ Third party components
 Qt for Linux/X11
 ----------------
 
+   * Proper resetting input contexts when switching between multiple
+     input context plugins.
+
+   * [244337] Improved input method handling when the widgets native
+     window id is recreated.
+
+   * Input methods preedit strings are properly reset when user
+     switches focus without commiting a string.
+
+   * [244607] Current focus widget is properly set and input method is
+     properly initialized when showing a toplevel that accepts
+     keyboard input.
+
+   * Unicode conversion functions will handle Latin-1 character set
+     only if they are used before QCoreApplication/QApplication is
+     constructed.
+
+   * Improved handling of failed unicode conversion.
+
+   * [232632] Fixed reparenting widgets to a difference X11 screen.
+
+   * [241888] The background of the drag-n-drop cursor is respected
+     according to the stylesheet.
+
+   * Fixed clipboard handling when the user manually creates an
+     instance of the QDesktopWidget.
+
+   * [226048] Fixed emitting a QDesktopWidget::resized() signal when
+     new screen appears or screen geometry is changed without
+     affecting the whole desktop geometry.
+
+- Phonon/GStreamer
+   * [244259] Fixed a problem where the backend would fail to indicate an
+    error when streaming fails.
+   * [233188] Fixed a problem where the seek slider would reset to 0 while
+    being dragged.
+   * [246189] Fixed a problem where the backend would fail to correctly
+    escape certain file names so that playback would not start
+   * [246097] Added support for the MediaController interface to allow audio
+    CD playback.
+
+- QGtkStyle
+   * The system palette is no longer strictly forced. Also behavior related
+    to system theme changes have been improved.
+   * [249363] QFrame is now styled as a GtkScrolledWindow.
+   * [247653] Fixed a compilation issue on solaris.
+   * Fixed palette and styling issues with the background color of
+    combo box popups.
+   * [239829] Disabled alt-key navigation for QGtkStyle to follow
+    GTK+ behavior.
+   * [238196] Allow middle click to set scrollbar position to follow
+    GTK+ behavior.
+
+- Font rendering
+   * Improve performance of subpixel antialiased text rendering by using a mask
+     in the calls to XRender's text compositing function.
+   * [248387] Better respect the font config LCD filter settings for subpixel
+     antialiased text rendering when Freetype's native subpixel rendering is
+     disabled.
+   * [248498] Fix garbled rendering of subpixel antialiased text when using
+     Freetype's native subpixel rendering for vertical subpixel layouts.
+   * [248644] Fall back to Qt's subpixel rendering if Freetype's subpixel
+     rendering is available at compile-time but not at run-time.
+
+- QEventDispatcherGlib
+   * Event posted to a thread before it is started are not processed until
+     others events are posted.
+
 
 Qt for Windows
 --------------
 
+   * [243583] Improved drag-and-drop handling when switching mouse
+     buttons fast.
+
+- QCoreApplication
+   * [247401] Fixed a bug that would cause a restarted timer to fire
+     too early, causing Javascript in QtWebKit to consume 100% CPU on
+     Windows.
+- QWindowsXPStyle
+    * [248036] Fixed an issue where tool buttons would incorrectly
+      hover when disabled.
+
+- [249576] Fixed a crash when using a combobox with Qt::NoFocus.
+- [244875] System menu will now be shown for a fullscreen  window.
+- [240891] Corrected the focus behavior of native file dialogs, when application has multiple toplevels.
+- [245330] Fixed a bug which causes mouse inputs to be ignored on modal dialogs, when shown from an ActieQt control.
 
 Qt for Mac OS X
 ---------------
 
+- Cocoa port
+    * Fixed a bug where actions in the native menubar weren't properly disabled.
+    * Make shortcuts work properly when using the Dvorak-QWERTY+CMD keyboard layout.
+    * Fixed a bug where dialogs would be positioned in the wrong place on the screen.
+    * [244369] Window flags on Cocoa windows should match have a similar look as the Carbon ones.
+    * The build-key for Cocoa was changed in the unlikely case that a plugin may make
+      assumptions on how Qt was built. All Cocoa plugins built against 4.5.0 WILL NOT WORK
+      with 4.5.1, we don't foresee changing this again.
+    * Fixed a bug where some windows would not get activation when they normally should.
+    * Key events sent to popups do not get propagated onwards.
+    * [249296] Fix a bug where lineedits on a second page of a stack widget would not get key events
+    * QFileOpenEvents are no longer sent for items passed on the command line.
+    * Various fixes for determining metrics of text and the ability to disable kerning.
+    * [248918] Fixed color matching for themed text items.
+    * Modify the colliding mice example to work better with coalesced updates.
+    * Fixed a bug where the drag cursor was not updated when modifier keys are used.
+    * [247947] Fixed a crash in drag and drop.
+    * The command + h shortcut is now enabled. (Hides the current window.)
+
+- QDesktopWidget
+    * [244004] Support multiple screens that have different sizes properly.
+
+- macdeployqt 
+    * The binary packages now includes the macdeployqt tool.
+    * macdeployqt now runs 'strip' on the deployed binaries.
+    * Fixed issue preventing the QtSvg from being deployed.
+
+- configure script
+    * Now supports "-arch i386" as an alias for "-arch x86".
+    * Detects invalid arch arguemnts and exits.
+
+- Fix a crash when showing a widget that is window modal but has no parent.
+- [248803] Showing two dialogs at the same time don't get shared activation.
+- Added QSysInfo::MV_10_6 as an enum to test against.
+- Various compile fixes for Snow Leopard (preliminary support).
+- The uninstall-qt.py script included in the binary package no longer complains about removing itself multiple times.
+
+- Document a bit clearer how qt_mac_set_dock_menu() works.
+
+- QTestLib
+    * Activate the test application when launched from the command line.
+
+- Fixed the focus frame transparency that would make widget difficult to use with widget stylesheet.
 
 Qt for Embedded Linux
 ---------------------
 
+- Various improvements to the Qt DirectFB plugin.
 
 Qt for Windows CE
 -----------------
@@ -101,7 +410,7 @@ Qt for Windows CE
 
 
 - moc
-
+    * [240368] moc parsing issue with "unsigned" subphrase
 
 - uic
     * [244998] Fixed include file generation for phonon widgets.
@@ -114,6 +423,9 @@ Qt for Windows CE
 
 
 - qmake
+    * [248806] Ensure that the Xcode generator includes the right path to frameworks.
+    * [201495] Comment processing in qmake prevented file from being moc'ed
+    * On Mac OS, properly escape file names in QMAKE_BUNDLE_DATA
 
 
 - configure

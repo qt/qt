@@ -321,7 +321,7 @@ void tst_QMatrix::setMatrix(QMatrix4x3& m, const qreal *values)
 // to be in row-major order.  This sets the values using fixed-point.
 void tst_QMatrix::setMatrixFixed(QMatrix2x2& m, const qreal *values)
 {
-    qrealinner *data = m.data();
+    float *data = m.data();
     for (int row = 0; row < 2; ++row) {
         for (int col = 0; col < 2; ++col) {
             data[row + col * 2] = values[row * 2 + col];
@@ -330,7 +330,7 @@ void tst_QMatrix::setMatrixFixed(QMatrix2x2& m, const qreal *values)
 }
 void tst_QMatrix::setMatrixFixed(QMatrix3x3& m, const qreal *values)
 {
-    qrealinner *data = m.data();
+    float *data = m.data();
     for (int row = 0; row < 3; ++row) {
         for (int col = 0; col < 3; ++col) {
             data[row + col * 3] = values[row * 3 + col];
@@ -339,7 +339,7 @@ void tst_QMatrix::setMatrixFixed(QMatrix3x3& m, const qreal *values)
 }
 void tst_QMatrix::setMatrixFixed(QMatrix4x4& m, const qreal *values)
 {
-    qrealinner *data = m.data();
+    float *data = m.data();
     for (int row = 0; row < 4; ++row) {
         for (int col = 0; col < 4; ++col) {
             data[row + col * 4] = values[row * 4 + col];
@@ -348,7 +348,7 @@ void tst_QMatrix::setMatrixFixed(QMatrix4x4& m, const qreal *values)
 }
 void tst_QMatrix::setMatrixFixed(QMatrix4x3& m, const qreal *values)
 {
-    qrealinner *data = m.data();
+    float *data = m.data();
     for (int row = 0; row < 3; ++row) {
         for (int col = 0; col < 4; ++col) {
             data[row + col * 3] = values[row * 4 + col];
@@ -365,15 +365,6 @@ static bool fuzzyCompare(float x, float y, qreal epsilon = 0.001)
         diff = -diff;
     return (diff < epsilon);
 }
-#ifdef QT_GL_FIXED_PREFERRED
-static bool fuzzyCompareFixed(qrealinner x, int y)
-{
-    int diff = x.bits() - y;
-    if (diff < 0)
-        diff = -diff;
-    return (diff < 50);
-}
-#endif
 
 static bool fuzzyCompare(const QVector3D &v1, const QVector3D &v2, qreal epsilon = 0.001)
 {
@@ -402,7 +393,7 @@ static bool matrixFuzzyCompare(const QMatrix4x4 &m1, const QMatrix4x4 &m2)
 // The values are assumed to be specified in row-major order.
 bool tst_QMatrix::isSame(const QMatrix2x2& m, const qreal *values)
 {
-    const qrealinner *mv = m.constData();
+    const float *mv = m.constData();
     for (int row = 0; row < 2; ++row) {
         for (int col = 0; col < 2; ++col) {
             // Check the values using the operator() function.
@@ -413,24 +404,17 @@ bool tst_QMatrix::isSame(const QMatrix2x2& m, const qreal *values)
 
             // Check the values using direct access, which verifies that the values
             // are stored internally in column-major order.
-#ifdef QT_GL_FIXED_PREFERRED
-            if (!fuzzyCompareFixed(mv[col * 2 + row], (int)(values[row * 2 + col] * 65536.0))) {
-                qDebug() << "column fixed-point failure at" << row << col << "actual =" << mv[col * 2 + row] << "expected =" << (int)(values[row * 2 + col] * 65536.0);
-                return false;
-            }
-#else
             if (!fuzzyCompare((float)(mv[col * 2 + row]), (float)(values[row * 2 + col]))) {
                 qDebug() << "column floating-point failure at" << row << col << "actual =" << mv[col * 2 + row] << "expected =" << values[row * 2 + col];
                 return false;
             }
-#endif
         }
     }
     return true;
 }
 bool tst_QMatrix::isSame(const QMatrix3x3& m, const qreal *values)
 {
-    const qrealinner *mv = m.constData();
+    const float *mv = m.constData();
     for (int row = 0; row < 3; ++row) {
         for (int col = 0; col < 3; ++col) {
             // Check the values using the operator() access function.
@@ -441,24 +425,17 @@ bool tst_QMatrix::isSame(const QMatrix3x3& m, const qreal *values)
 
             // Check the values using direct access, which verifies that the values
             // are stored internally in column-major order.
-#ifdef QT_GL_FIXED_PREFERRED
-            if (!fuzzyCompareFixed(mv[col * 3 + row], (int)(values[row * 3 + col] * 65536.0))) {
-                qDebug() << "column fixed-point failure at" << row << col << "actual =" << mv[col * 3 + row] << "expected =" << (int)(values[row * 3 + col] * 65536.0);
-                return false;
-            }
-#else
             if (!fuzzyCompare((float)(mv[col * 3 + row]), (float)(values[row * 3 + col]))) {
                 qDebug() << "column floating-point failure at" << row << col << "actual =" << mv[col * 3 + row] << "expected =" << values[row * 3 + col];
                 return false;
             }
-#endif
         }
     }
     return true;
 }
 bool tst_QMatrix::isSame(const QMatrix4x4& m, const qreal *values)
 {
-    const qrealinner *mv = m.constData();
+    const float *mv = m.constData();
     for (int row = 0; row < 4; ++row) {
         for (int col = 0; col < 4; ++col) {
             // Check the values using the operator() access function.
@@ -469,24 +446,17 @@ bool tst_QMatrix::isSame(const QMatrix4x4& m, const qreal *values)
 
             // Check the values using direct access, which verifies that the values
             // are stored internally in column-major order.
-#ifdef QT_GL_FIXED_PREFERRED
-            if (!fuzzyCompareFixed(mv[col * 4 + row], (int)(values[row * 4 + col] * 65536.0))) {
-                qDebug() << "column fixed-point failure at" << row << col << "actual =" << mv[col * 4 + row] << "expected =" << (int)(values[row * 4 + col] * 65536.0);
-                return false;
-            }
-#else
             if (!fuzzyCompare((float)(mv[col * 4 + row]), (float)(values[row * 4 + col]))) {
                 qDebug() << "column floating-point failure at" << row << col << "actual =" << mv[col * 4 + row] << "expected =" << values[row * 4 + col];
                 return false;
             }
-#endif
         }
     }
     return true;
 }
 bool tst_QMatrix::isSame(const QMatrix4x3& m, const qreal *values)
 {
-    const qrealinner *mv = m.constData();
+    const float *mv = m.constData();
     for (int row = 0; row < 3; ++row) {
         for (int col = 0; col < 4; ++col) {
             // Check the values using the operator() access function.
@@ -497,17 +467,10 @@ bool tst_QMatrix::isSame(const QMatrix4x3& m, const qreal *values)
 
             // Check the values using direct access, which verifies that the values
             // are stored internally in column-major order.
-#ifdef QT_GL_FIXED_PREFERRED
-            if (!fuzzyCompareFixed(mv[col * 3 + row], (int)(values[row * 4 + col] * 65536.0))) {
-                qDebug() << "column fixed-point failure at" << row << col << "actual =" << mv[col * 3 + row] << "expected =" << (int)(values[row * 4 + col] * 65536.0);
-                return false;
-            }
-#else
             if (!fuzzyCompare((float)(mv[col * 3 + row]), (float)(values[row * 4 + col]))) {
                 qDebug() << "column floating-point failure at" << row << col << "actual =" << mv[col * 3 + row] << "expected =" << values[row * 4 + col];
                 return false;
             }
-#endif
         }
     }
     return true;
@@ -1333,7 +1296,7 @@ void tst_QMatrix::multiply4x3()
     QMatrix4x3 m1((const qreal *)m1Values);
     QMatrix3x4 m2((const qreal *)m2Values);
 
-    QGenericMatrix<3, 3, qreal, qrealinner> m4;
+    QGenericMatrix<3, 3, qreal, float> m4;
     m4 = m1 * m2;
     qreal values[9];
     m4.toValueArray(values);
@@ -2901,11 +2864,7 @@ void tst_QMatrix::extractAxisRotation()
 
     m.extractAxisRotation(extractedAngle, extractedAxis);
  
-#ifdef QT_GL_FIXED_PREFERRED
-    qreal epsilon = 0.003;
-#else
     qreal epsilon = 0.001;
-#endif
  
     if (angle > 180) {
         QVERIFY(fuzzyCompare(360.0f - angle, extractedAngle, epsilon));
@@ -2953,11 +2912,7 @@ void tst_QMatrix::extractTranslation()
 
     QVector3D vec = rotation.extractTranslation();
 
-#ifdef QT_GL_FIXED_PREFERRED
-    qreal epsilon = 0.01;
-#else
     qreal epsilon = 0.001;
-#endif
    
     QVERIFY(fuzzyCompare(vec.x(), x, epsilon));
     QVERIFY(fuzzyCompare(vec.y(), y, epsilon));
@@ -2992,7 +2947,7 @@ enum {
 // Structure that allows direct access to "flagBits" for testing.
 struct Matrix4x4
 {
-    qrealinner m[4][4];
+    float m[4][4];
     int flagBits;
 };
 
@@ -3225,24 +3180,6 @@ void tst_QMatrix::fill()
     QVERIFY(isSame(m2, fillValues4x3));
 }
 
-// Force the fixed-point version of the test case to put a
-// different test name on the front of failure reports.
-class tst_QMatrixFixed : public tst_QMatrix
-{
-    Q_OBJECT
-public:
-    tst_QMatrixFixed() {}
-    ~tst_QMatrixFixed() {}
-};
-
-#ifdef QT_GL_FIXED_PREFERRED
-
-QTEST_APPLESS_MAIN(tst_QMatrixFixed)
-
-#else
-
 QTEST_APPLESS_MAIN(tst_QMatrix)
-
-#endif
 
 #include "tst_qmatrixnxn.moc"

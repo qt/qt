@@ -957,25 +957,29 @@ void QFileDialog::setNameFilters(const QStringList &filters)
 {
     Q_D(QFileDialog);
     d->defaultFileTypes = (filters == QStringList(QFileDialog::tr("All Files (*)")));
-    d->nameFilters = filters;
+    QStringList cleanedFilters;
+    for (int i = 0; i < filters.count(); ++i) {
+        cleanedFilters << filters[i].simplified();
+    }
+    d->nameFilters = cleanedFilters;
 
     if (d->nativeDialogInUse){
-        d->setNameFilters_sys(filters);
+        d->setNameFilters_sys(cleanedFilters);
         return;
     }
 
     d->qFileDialogUi->fileTypeCombo->clear();
-    if (filters.isEmpty())
+    if (cleanedFilters.isEmpty())
         return;
 
     if (testOption(HideNameFilterDetails)) {
         QStringList strippedFilters;
-        for (int i = 0; i < filters.count(); ++i) {
-            strippedFilters.append(filters[i].mid(0, filters[i].indexOf(QLatin1String(" ("))));
+        for (int i = 0; i < cleanedFilters.count(); ++i) {
+            strippedFilters.append(cleanedFilters[i].mid(0, cleanedFilters[i].indexOf(QLatin1String(" ("))));
         }
         d->qFileDialogUi->fileTypeCombo->addItems(strippedFilters);
     } else {
-        d->qFileDialogUi->fileTypeCombo->addItems(filters);
+        d->qFileDialogUi->fileTypeCombo->addItems(cleanedFilters);
     }
     d->_q_useNameFilter(0);
 }

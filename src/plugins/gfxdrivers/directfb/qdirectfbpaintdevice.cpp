@@ -110,7 +110,6 @@ int QDirectFBPaintDevice::bytesPerLine() const
         QDirectFBPaintDevice* that = const_cast<QDirectFBPaintDevice*>(this);
         that->lockDirectFB();
         Q_ASSERT(bpl != -1);
-        that->unlockDirectFB();
     }
     return bpl;
 }

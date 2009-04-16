@@ -76,6 +76,7 @@
 #include <qscrollbar.h>
 #include <qprogressbar.h>
 #include <qdockwidget.h>
+#include <qlistview.h>
 #include <qtreeview.h>
 #include <qtextedit.h>
 #include <qmessagebox.h>

@@ -3629,7 +3629,7 @@ void tst_QPainter::drawImage_data()
                         QString("srcFormat %1, dstFormat %2, odd x: %3, odd width: %4")
                             .arg(srcFormat).arg(dstFormat).arg(odd_x).arg(odd_width);
 
-                    QTest::newRow(description) << (10 + odd_x) << 10 << (20 + odd_width) << 20
+                    QTest::newRow(qPrintable(description)) << (10 + odd_x) << 10 << (20 + odd_width) << 20
                         << QImage::Format(srcFormat)
                         << QImage::Format(dstFormat);
                 }

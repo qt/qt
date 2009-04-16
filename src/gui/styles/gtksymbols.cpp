@@ -504,13 +504,6 @@ static QPalette gtkWidgetPalette(const QString &gtkWidgetName)
     pal.setBrush(QPalette::Disabled, QPalette::WindowText, disabledTextColor);
     pal.setBrush(QPalette::All, QPalette::ButtonText, textColor);
     pal.setBrush(QPalette::Disabled, QPalette::ButtonText, disabledTextColor);
-    if (gtkWidgetName == QLS("GtkMenu")) {
-        // This really applies to the combo box rendering since
-        // QComboBox copies the palette from a QMenu
-        GdkColor gdkBg = gtkWidget->style->bg[GTK_STATE_NORMAL];
-        QColor bgColor(gdkBg.red>>8, gdkBg.green>>8, gdkBg.blue>>8);
-        pal.setBrush(QPalette::Base, bgColor);
-    }
     return pal;
 }
 
@@ -528,6 +521,7 @@ void QGtk::applyCustomPaletteHash()
     GdkColor gdkBg = QGtk::gtkWidget(QLS("GtkMenu"))->style->bg[GTK_STATE_NORMAL];
     QColor bgColor(gdkBg.red>>8, gdkBg.green>>8, gdkBg.blue>>8);
     menuPal.setBrush(QPalette::Base, bgColor);
+    menuPal.setBrush(QPalette::Window, bgColor);
     qApp->setPalette(menuPal, "QMenu");
 
     QPalette toolbarPal = gtkWidgetPalette(QLS("GtkToolbar"));
@@ -555,6 +549,7 @@ void QGtkStyleUpdateScheduler::updateTheme()
         QPalette newPalette = qApp->style()->standardPalette();
         QApplicationPrivate::setSystemPalette(newPalette);
         QApplication::setPalette(newPalette);
+        QGtk::initGtkWidgets();
         QGtk::applyCustomPaletteHash();
         QList<QWidget*> widgets = QApplication::allWidgets();
         // Notify all widgets that size metrics might have changed

@@ -1492,7 +1492,7 @@ MakefileGenerator::replaceExtraCompilerVariables(const QString &orig_var, const 
             val += project->values(varname);
         }
         if(val.isEmpty() && var.startsWith(QLatin1String("QMAKE_VAR_FIRST_"))) {
-            const QString varname = var.mid(12);
+            const QString varname = var.mid(16);
             val += project->first(varname);
         }
 

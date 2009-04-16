@@ -169,6 +169,9 @@ public:
     Qt::DropAction lastDropAction;
     QList<QGraphicsItem *> cachedItemsUnderMouse;
     QList<QGraphicsItem *> hoverItems;
+    bool allItemsIgnoreHoverEvents;
+    bool allItemsUseDefaultCursor;
+    void enableMouseTrackingOnViews();
     QMap<Qt::MouseButton, QPointF> mouseGrabberButtonDownPos;
     QMap<Qt::MouseButton, QPointF> mouseGrabberButtonDownScenePos;
     QMap<Qt::MouseButton, QPoint> mouseGrabberButtonDownScreenPos;
@@ -201,6 +204,7 @@ public:
     void mousePressEventHandler(QGraphicsSceneMouseEvent *mouseEvent);
     QGraphicsWidget *windowForItem(const QGraphicsItem *item) const;
 
+    QList<QGraphicsItem *> items_helper(const QPointF &pos) const;
     QList<QGraphicsItem *> items_helper(const QRectF &rect,
                                         Qt::ItemSelectionMode mode,
                                         Qt::SortOrder order) const;
@@ -210,6 +214,9 @@ public:
     QList<QGraphicsItem *> items_helper(const QPainterPath &rect,
                                         Qt::ItemSelectionMode mode,
                                         Qt::SortOrder order) const;
+    void childItems_helper(QList<QGraphicsItem *> *items,
+                           const QGraphicsItem *parent,
+                           const QPointF &pos) const;
     void childItems_helper(QList<QGraphicsItem *> *items,
                            const QGraphicsItem *parent,
                            const QRectF &rect,

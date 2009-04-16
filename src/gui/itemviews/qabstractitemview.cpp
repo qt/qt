@@ -1400,6 +1400,9 @@ bool QAbstractItemView::event(QEvent *event)
     case QEvent::FocusOut:
         d->checkPersistentEditorFocus();
         break;
+    case QEvent::FontChange:
+        d->doDelayedItemsLayout(); // the size of the items will change
+        break;
     default:
         break;
     }

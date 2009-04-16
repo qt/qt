@@ -181,6 +181,7 @@ QT_FORWARD_DECLARE_CLASS(QAbstractScrollAreaPrivate)
 QT_FORWARD_DECLARE_CLASS(QPaintEvent)
 QT_FORWARD_DECLARE_CLASS(QPainter)
 QT_FORWARD_DECLARE_CLASS(QHoverEvent)
+QT_FORWARD_DECLARE_CLASS(QCursor)
 QT_USE_NAMESPACE
 extern "C" {
     extern NSString *NSTextInputReplacementRangeAttributeName;
@@ -195,6 +196,7 @@ extern "C" {
     if (self) {
         [self finishInitWithQWidget:widget widgetPrivate:widgetprivate];
     }
+    composingText = new QString();
     composing = false;
     sendKeyEvents = true;
     [self setHidden:YES];
@@ -233,6 +235,34 @@ extern "C" {
         [self registerForDraggedTypes:supportedTypes];
     } else {
         [self unregisterDraggedTypes];
+    }
+}
+
+- (void)resetCursorRects
+{
+    QWidget *cursorWidget = qwidget;
+
+    if (cursorWidget->testAttribute(Qt::WA_TransparentForMouseEvents))
+        cursorWidget = QApplication::widgetAt(qwidget->mapToGlobal(qwidget->rect().center()));
+
+    if (cursorWidget == 0)
+        return;
+
+    if (!cursorWidget->testAttribute(Qt::WA_SetCursor)) {
+        [super resetCursorRects];
+        return;
+    }
+
+    QRegion mask = qt_widget_private(cursorWidget)->extra->mask;
+    NSCursor *nscursor = static_cast<NSCursor *>(nsCursorForQCursor(cursorWidget->cursor()));
+    if (mask.isEmpty()) {
+        [self addCursorRect:[qt_mac_nativeview_for(cursorWidget) visibleRect] cursor:nscursor];
+    } else {
+        const QVector<QRect> &rects = mask.rects();
+        for (int i = 0; i < rects.size(); ++i) {
+            const QRect &rect = rects.at(i);
+            [self addCursorRect:NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height()) cursor:nscursor];
+        }
     }
 }
 
@@ -300,11 +330,13 @@ extern "C" {
     NSPoint windowPoint = [sender draggingLocation];
     NSPoint globalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
+    NSDragOperation nsActions = [sender draggingSourceOperationMask];
     QPoint posDrag(localPoint.x, localPoint.y);
-    if (qt_mac_mouse_inside_answer_rect(posDrag))
+    if (qt_mac_mouse_inside_answer_rect(posDrag)
+        && QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) == nsActions)
         return QT_PREPEND_NAMESPACE(qt_mac_mapDropActions)(QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastAction));
     // send drag move event to the widget    
-    NSDragOperation nsActions = [sender draggingSourceOperationMask]; 
+    QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) = nsActions;
     Qt::DropActions qtAllowed = QT_PREPEND_NAMESPACE(qt_mac_mapNSDragOperations)(nsActions);
     QMimeData *mimeData = dropData;
     if (QDragManager::self()->source())
@@ -364,6 +396,7 @@ extern "C" {
 
 - (void)dealloc
 {
+    delete composingText;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [super dealloc];
 }
@@ -913,11 +946,32 @@ extern "C" {
     }
 }
 
+- (void)viewWillMoveToWindow:(NSWindow *)window
+{
+    if (qwidget->windowFlags() & Qt::MSWindowsOwnDC
+          && (window != [self window])) { // OpenGL Widget
+        // Create a stupid ClearDrawable Event
+        QEvent event(QEvent::MacGLClearDrawable);
+        qApp->sendEvent(qwidget, &event);
+    }
+}
+
+- (void)viewDidMoveToWindow
+{
+    if (qwidget->windowFlags() & Qt::MSWindowsOwnDC && [self window]) {
+        // call update paint event
+        qwidgetprivate->needWindowChange = true;
+        QEvent event(QEvent::MacGLWindowChange);
+        qApp->sendEvent(qwidget, &event);
+    }
+}
+
+
 // NSTextInput Protocol implementation
 
 - (void) insertText:(id)aString
 {
-    if (composing) {
+    if ([aString length]) {
         // Send the commit string to the widget.
         QString commitText;
         if ([aString isKindOfClass:[NSAttributedString class]]) {
@@ -931,6 +985,7 @@ extern "C" {
         e.setCommitString(commitText);
         qt_sendSpontaneousEvent(qwidget, &e);
     }
+    composingText->clear();
 }
 
 - (void) setMarkedText:(id)aString selectedRange:(NSRange)selRange
@@ -984,12 +1039,21 @@ extern "C" {
         attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat,
                                             0, composingLength, format);
     }
+    *composingText = qtText;
     QInputMethodEvent e(qtText, attrs);
     qt_sendSpontaneousEvent(qwidget, &e);
+    if (!composingLength)
+        composing = false;
 }
 
 - (void) unmarkText
 {
+    if (composing) {
+        QInputMethodEvent e;
+        e.setCommitString(*composingText);
+        qt_sendSpontaneousEvent(qwidget, &e);
+    }
+    composingText->clear();
     composing = false;
 }
 

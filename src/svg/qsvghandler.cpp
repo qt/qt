@@ -2587,10 +2587,12 @@ static void parseBaseGradient(QSvgNode *node,
         if (prop && prop->type() == QSvgStyleProperty::GRADIENT) {
             QSvgGradientStyle *inherited =
                 static_cast<QSvgGradientStyle*>(prop);
-            if (!inherited->stopLink().isEmpty())
+            if (!inherited->stopLink().isEmpty()) {
                 gradProp->setStopLink(inherited->stopLink(), handler->document());
-            else
+            } else {
                 grad->setStops(inherited->qgradient()->stops());
+                gradProp->setGradientStopsSet(inherited->gradientStopsSet());
+            }
 
             matrix = inherited->qmatrix();
         } else {

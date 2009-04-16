@@ -54,6 +54,8 @@
 # include "qresource.h"
 #endif
 
+#include "qvarlengtharray.h"
+
 #include "../kernel/qcoreglobaldata_p.h"
 #include <stdlib.h>
 
@@ -2065,11 +2067,13 @@ QString QDir::cleanPath(const QString &path)
     QString name = path;
     QChar dir_separator = separator();
     if(dir_separator != QLatin1Char('/'))
-	name.replace(dir_separator, QLatin1Char('/'));
+ 	name.replace(dir_separator, QLatin1Char('/'));
 
     int used = 0, levels = 0;
     const int len = name.length();
-    QVector<QChar> out(len);
+    QVarLengthArray<QChar> outVector(len);
+    QChar *out = outVector.data();
+
     const QChar *p = name.unicode();
     for(int i = 0, last = -1, iwrite = 0; i < len; i++) {
         if(p[i] == QLatin1Char('/')) {
@@ -2169,7 +2173,7 @@ QString QDir::cleanPath(const QString &path)
     if(used == len)
         ret = name;
     else
-	ret = QString(out.data(), used);
+	ret = QString(out, used);
 
     // Strip away last slash except for root directories
     if (ret.endsWith(QLatin1Char('/'))
@@ -2232,7 +2236,7 @@ QStringList QDir::nameFiltersFromString(const QString &nameFilter)
 
     \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 13
 
-    If the file name contains characters that cannot be part of a valid C++ function name 
+    If the file name contains characters that cannot be part of a valid C++ function name
     (such as '-'), they have to be replaced by the underscore character ('_').
 
     Note: This macro cannot be used in a namespace. It should be called from

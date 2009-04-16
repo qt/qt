@@ -70,7 +70,7 @@ public:
     void recreateTestTables();
     void repopulateTestTables();
 
-    void generic_data();
+    void generic_data(const QString &engine=QString());
     tst_Databases dbs;
 
 public slots:

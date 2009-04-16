@@ -1436,7 +1436,7 @@ void QTessellator::tessellateRect(const QPointF &a_, const QPointF &b_, qreal wi
         QPointF perp(pb.y() - pa.y(), pa.x() - pb.x());
         qreal length = qSqrt(perp.x() * perp.x() + perp.y() * perp.y());
 
-        if (qFuzzyCompare(length + 1, static_cast<qreal>(1)))
+        if (qFuzzyIsNull(length))
             return;
 
         // need the half of the width

@@ -234,6 +234,7 @@ public:
 #if defined(Q_WS_MAC)
     bool update;
     void *tryFormat(const QGLFormat &format);
+    void clearDrawable();
 #endif
     QGLFormat glFormat;
     QGLFormat reqFormat;

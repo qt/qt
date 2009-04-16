@@ -1475,7 +1475,7 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
     view.paintEventRegion = QRegion();
     view.npaints = 0;
     QTimer::singleShot(0, widget, SLOT(updateScroll()));
-    QTest::qWait(500); 
+    QTest::qWait(500);
     QCOMPARE(view.npaints, 2);
     // QRect(0, 0, 200, 12) is the first update, expanded (-2, -2, 2, 2)
     // QRect(0, 12, 102, 10) is the scroll update, expanded (-2, -2, 2, 2),
@@ -2582,7 +2582,7 @@ void tst_QGraphicsProxyWidget::childPos()
 {
 #ifdef Q_OS_IRIX
     QSKIP("This test is not reliable on IRIX.", SkipAll);
-#endif    
+#endif
     QFETCH(bool, moveCombo);
     QFETCH(QPoint, comboPos);
     QFETCH(QPointF, proxyPos);
@@ -2797,6 +2797,7 @@ void tst_QGraphicsProxyWidget::palettePropagation()
 void tst_QGraphicsProxyWidget::fontPropagation()
 {
     // Construct a font with an unlikely setup
+    QGraphicsScene scene;
     QFont lineEditFont = QApplication::font("QLineEdit");
     QFont font = lineEditFont;
     font.setPointSize(43);
@@ -2805,6 +2806,7 @@ void tst_QGraphicsProxyWidget::fontPropagation()
     QGraphicsProxyWidget proxy;
     proxy.setWidget(edit);
 
+    scene.addItem(&proxy);
     EventSpy editSpy(edit);
     EventSpy proxySpy(&proxy);
 
@@ -2825,6 +2827,7 @@ void tst_QGraphicsProxyWidget::fontPropagation()
 
     // Proxy to widget
     proxy.setFont(font);
+    QApplication::processEvents();  // wait for QEvent::Polish
     QVERIFY(proxy.testAttribute(Qt::WA_SetFont));
     QCOMPARE(editSpy.counts[QEvent::FontChange], 3);
     QCOMPARE(proxySpy.counts[QEvent::FontChange], 1);
@@ -2893,7 +2896,7 @@ void tst_QGraphicsProxyWidget::createProxyForChildWidget()
     edit2->setText("QLineEdit 2");
     QCheckBox *checkbox = new QCheckBox("QCheckBox");
     QVBoxLayout *vlayout = new QVBoxLayout;
-    
+
     vlayout->addWidget(edit1);
     vlayout->addWidget(edit2);
     vlayout->addWidget(checkbox);
@@ -2916,7 +2919,7 @@ void tst_QGraphicsProxyWidget::createProxyForChildWidget()
 
     QVERIFY(window.graphicsProxyWidget() == 0);
     QVERIFY(checkbox->graphicsProxyWidget() == 0);
-    
+
     QGraphicsProxyWidget *windowProxy = scene.addWidget(&window);
     QGraphicsView view(&scene);
     view.show();
@@ -2946,10 +2949,10 @@ void tst_QGraphicsProxyWidget::createProxyForChildWidget()
     QVERIFY(boxProxy->size() == box->size());
 
     QTest::qWait(10);
-    
+
 
     QSignalSpy spy(checkbox, SIGNAL(clicked()));
-    
+
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0,
                       view.mapFromScene(checkboxProxy->mapToScene(QPointF(8,8))));
     QTRY_COMPARE(spy.count(), 0);
@@ -2958,7 +2961,7 @@ void tst_QGraphicsProxyWidget::createProxyForChildWidget()
     QTRY_COMPARE(spy.count(), 1);
 
 
-    
+
     boxProxy->setWidget(0);
 
     QVERIFY(checkbox->graphicsProxyWidget() == 0);
@@ -3006,10 +3009,10 @@ void tst_QGraphicsProxyWidget::actionsContextMenu()
     widget->addAction(new QAction("item 2", widget));
     widget->addAction(new QAction("item 3", widget));
     widget->setContextMenuPolicy(Qt::ActionsContextMenu);
-    
+
     QGraphicsScene scene;
     scene.addWidget(widget);
-    
+
     QGraphicsView view(&scene);
     view.show();
 #ifdef Q_WS_X11

@@ -43,13 +43,10 @@
 #define MOUSE_H
 
 #include <QGraphicsItem>
-#include <QObject>
 
 //! [0]
-class Mouse : public QObject, public QGraphicsItem
+class Mouse : public QGraphicsItem
 {
-    Q_OBJECT
-
 public:
     Mouse();
 
@@ -59,7 +56,7 @@ public:
                QWidget *widget);
 
 protected:
-    void timerEvent(QTimerEvent *event);
+    void advance(int step);
 
 private:
     qreal angle;

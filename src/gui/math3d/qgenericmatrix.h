@@ -42,8 +42,8 @@
 #ifndef QGENERICMATRIX_H
 #define QGENERICMATRIX_H
 
-#include <QtGui/qmath3dglobal.h>
 #include <QtCore/qmetatype.h>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_HEADER
 
@@ -134,7 +134,7 @@ template <int N, int M, typename T, typename InnerT>
 Q_INLINE_TEMPLATE T QGenericMatrix<N, M, T, InnerT>::operator()(int row, int column) const
 {
     Q_ASSERT(row >= 0 && row < M && column >= 0 && column < N);
-    return qt_math3d_convert<T, InnerT>(m[column][row]);
+    return T(m[column][row]);
 }
 
 template <int N, int M, typename T, typename InnerT>
@@ -323,18 +323,18 @@ Q_OUTOFLINE_TEMPLATE void QGenericMatrix<N, M, T, InnerT>::toValueArray(T *value
 {
     for (int col = 0; col < N; ++col)
         for (int row = 0; row < M; ++row)
-            values[row * N + col] = qt_math3d_convert<T, InnerT>(m[col][row]);
+            values[row * N + col] = T(m[col][row]);
 }
 
 // Define aliases for the useful variants of QGenericMatrix.
-typedef QGenericMatrix<2, 2, qreal, qrealinner> QMatrix2x2;
-typedef QGenericMatrix<2, 3, qreal, qrealinner> QMatrix2x3;
-typedef QGenericMatrix<2, 4, qreal, qrealinner> QMatrix2x4;
-typedef QGenericMatrix<3, 2, qreal, qrealinner> QMatrix3x2;
-typedef QGenericMatrix<3, 3, qreal, qrealinner> QMatrix3x3;
-typedef QGenericMatrix<3, 4, qreal, qrealinner> QMatrix3x4;
-typedef QGenericMatrix<4, 2, qreal, qrealinner> QMatrix4x2;
-typedef QGenericMatrix<4, 3, qreal, qrealinner> QMatrix4x3;
+typedef QGenericMatrix<2, 2, qreal, float> QMatrix2x2;
+typedef QGenericMatrix<2, 3, qreal, float> QMatrix2x3;
+typedef QGenericMatrix<2, 4, qreal, float> QMatrix2x4;
+typedef QGenericMatrix<3, 2, qreal, float> QMatrix3x2;
+typedef QGenericMatrix<3, 3, qreal, float> QMatrix3x3;
+typedef QGenericMatrix<3, 4, qreal, float> QMatrix3x4;
+typedef QGenericMatrix<4, 2, qreal, float> QMatrix4x2;
+typedef QGenericMatrix<4, 3, qreal, float> QMatrix4x3;
 
 #ifndef QT_NO_DEBUG_STREAM
 

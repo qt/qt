@@ -42,8 +42,8 @@
 #include "qvector3d.h"
 #include "qvector2d.h"
 #include "qvector4d.h"
-#include "qmath3dutil_p.h"
 #include <QtCore/qmath.h>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -74,12 +74,6 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn QVector3D::QVector3D(qreal xpos, qreal ypos, qreal zpos)
-
-    Constructs a vector with coordinates (\a xpos, \a ypos, \a zpos).
-*/
-
-/*!
-    \fn QVector3D::QVector3D(int xpos, int ypos, int zpos)
 
     Constructs a vector with coordinates (\a xpos, \a ypos, \a zpos).
 */
@@ -201,32 +195,38 @@ QVector3D::QVector3D(const QVector4D& vector)
 */
 
 /*!
-    Returns the normalized unit vector form of this vector.  If this vector
-    is not null, the returned vector is guaranteed to be 1.0 in length.
-    If this vector is null, then a null vector is returned.
+    Returns the normalized unit vector form of this vector.
+
+    If this vector is null, then a null vector is returned.  If the length
+    of the vector is very close to 1, then the vector will be returned as-is.
+    Otherwise the normalized form of the vector of length 1 will be returned.
 
     \sa length(), normalize()
 */
 QVector3D QVector3D::normalized() const
 {
-    qreal len = length();
-    if (!qIsNull(len))
-        return *this / len;
+    qreal len = lengthSquared();
+    if (qFuzzyIsNull(len - 1.0f))
+        return *this;
+    else if (!qFuzzyIsNull(len))
+        return *this / qSqrt(len);
     else
         return QVector3D();
 }
 
 /*!
     Normalizes the currect vector in place.  Nothing happens if this
-    vector is a null vector.
+    vector is a null vector or the length of the vector is very close to 1.
 
     \sa length(), normalized()
 */
 void QVector3D::normalize()
 {
-    qreal len = length();
-    if (qIsNull(len))
+    qreal len = lengthSquared();
+    if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
+
+    len = qSqrt(len);
 
     xp /= len;
     yp /= len;
@@ -287,7 +287,7 @@ void QVector3D::normalize()
 */
 qreal QVector3D::dotProduct(const QVector3D& v1, const QVector3D& v2)
 {
-    return qvtdot64(qvtmul64(v1.xp, v2.xp) + qvtmul64(v1.yp, v2.yp) + qvtmul64(v1.zp, v2.zp));
+    return v1.xp * v2.xp + v1.yp * v2.yp + v1.zp * v2.zp;
 }
 
 /*!
@@ -535,7 +535,7 @@ QVector4D QVector3D::toVector4D() const
 */
 qreal QVector3D::length() const
 {
-    return qvtsqrt64(qvtmul64(xp, xp) + qvtmul64(yp, yp) + qvtmul64(zp, zp));
+    return qSqrt(xp * xp + yp * yp + zp * zp);
 }
 
 /*!
@@ -546,7 +546,7 @@ qreal QVector3D::length() const
 */
 qreal QVector3D::lengthSquared() const
 {
-    return qvtdot64(qvtmul64(xp, xp) + qvtmul64(yp, yp) + qvtmul64(zp, zp));
+    return xp * xp + yp * yp + zp * zp;
 }
 
 #ifndef QT_NO_DEBUG_STREAM

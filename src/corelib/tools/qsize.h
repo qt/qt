@@ -171,14 +171,14 @@ inline const QSize operator*(qreal c, const QSize &s)
 
 inline QSize &QSize::operator/=(qreal c)
 {
-    Q_ASSERT(!qFuzzyCompare(c + 1, 1));
+    Q_ASSERT(!qFuzzyIsNull(c));
     wd = qRound(wd/c); ht = qRound(ht/c);
     return *this;
 }
 
 inline const QSize operator/(const QSize &s, qreal c)
 {
-    Q_ASSERT(!qFuzzyCompare(c + 1, 1));
+    Q_ASSERT(!qFuzzyIsNull(c));
     return QSize(qRound(s.wd/c), qRound(s.ht/c));
 }
 
@@ -327,14 +327,14 @@ inline const QSizeF operator*(qreal c, const QSizeF &s)
 
 inline QSizeF &QSizeF::operator/=(qreal c)
 {
-    Q_ASSERT(!qFuzzyCompare(c + 1, 1));
+    Q_ASSERT(!qFuzzyIsNull(c));
     wd = wd/c; ht = ht/c;
     return *this;
 }
 
 inline const QSizeF operator/(const QSizeF &s, qreal c)
 {
-    Q_ASSERT(!qFuzzyCompare(c + 1, 1));
+    Q_ASSERT(!qFuzzyIsNull(c));
     return QSizeF(s.wd/c, s.ht/c);
 }
 

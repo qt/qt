@@ -1,3 +1,89 @@
+2009-02-03  Dirk Schulze  <krit@webkit.org>
+
+        Reviewed by Sam Weinig.
+
+        This is a follow up of r40546. Call toImage() once speeds up ImageBuffer::getImageData()
+
+        * platform/graphics/qt/ImageBufferQt.cpp:
+        (WebCore::ImageBuffer::getImageData):
+
+2009-02-03  Dirk Schulze  <krit@webkit.org>
+
+        Reviewed by Sam Weinig and Oliver Hunt.
+
+        Added getImageData() support for QtWebKit.
+
+        [QT] lacks getImageData / putImageData support in Canvas
+        https://bugs.webkit.org/show_bug.cgi?id=22186
+
+        * platform/graphics/qt/ImageBufferQt.cpp:
+        (WebCore::ImageBuffer::getImageData):
+
+2009-04-14  Benjamin C Meyer  <benjamin.meyer@torchmobile.com>
+
+        Reviewed by George Staikos.
+
+        https://bugs.webkit.org/show_bug.cgi?id=25099
+
+        When creating a QNetworkRequest make sure to populate the
+        CacheLoadControlAttribute with the value set by the ResourceRequest::cachePolicy() so that the cache will be used as WebKit expects.
+
+        * WebKit/qt/tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::requestCache):
+
+        * platform/network/qt/ResourceRequestQt.cpp:
+        (WebCore::ResourceRequest::toNetworkRequest):
+
+2009-04-07  Brady Eidson  <beidson@apple.com>
+
+        Reviewed by Darin Adler
+
+        While working on <rdar://problem/5968249>, noticed some glaring problems with LocalStorage.
+
+        * page/DOMWindow.cpp:
+        (WebCore::DOMWindow::localStorage): Return the cached m_localStorage object if it exists to 
+          avoid creating multiple representations for the same underlying StorageArea.
+        * page/DOMWindow.h:
+        (WebCore::DOMWindow::optionalLocalStorage): Return m_localStorage, not m_sessionStorage.
+
+2009-04-06  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Don't show and hide the platformPluginWidget, as it's our QWebView
+
+        * plugins/mac/PluginViewMac.cpp:
+        (WebCore::PluginView::show):
+        (WebCore::PluginView::hide):
+        (WebCore::PluginView::setParentVisible):
+
+2009-04-06  Mike Belshe <mike@belshe.com>
+
+        Reviewed by Eric Seidel.
+
+        HTMLCanvasElement crash when ImageBuffer creation fails.
+        https://bugs.webkit.org/show_bug.cgi?id=23212
+
+        Check for NULL before using the ImageBuffer as we might
+        be low on memory and creation may have failed.
+
+        Test case creation blocked by:
+        https://bugs.webkit.org/show_bug.cgi?id=25055
+
+        * html/HTMLCanvasElement.cpp:
+        (WebCore::HTMLCanvasElement::createImageBuffer):
+
+2009-04-05  Erik L. Bunce  <elbunce@xendom.com>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=25050
+
+        Fix an assert failure when dropping an 'empty' text/uri-list on a QWebView. 
+
+        * platform/qt/DragDataQt.cpp:
+        (WebCore::DragData::asURL):
+
 2009-03-27  Zack Rusin <zack@kde.org>
 
         Reviewed by Simon Hausmann.

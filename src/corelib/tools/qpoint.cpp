@@ -442,6 +442,19 @@ QDebug operator<<(QDebug d, const QPointF &p)
     otherwise returns false.
 */
 
+
+/*!
+    Returns the sum of the absolute values of x() and y(),
+    traditionally known as the "Manhattan length" of the vector from
+    the origin to the point.
+
+    \sa QPoint::manhattanLength()
+*/
+qreal QPointF::manhattanLength() const
+{
+    return qAbs(x())+qAbs(y());
+}
+
 /*!
     \fn qreal QPointF::x() const
 
