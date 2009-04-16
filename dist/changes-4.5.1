@@ -383,6 +383,21 @@ Qt for Mac OS X
 - QDesktopWidget
     * [244004] Support multiple screens that have different sizes properly.
 
+- QDialog
+    * [239155] QDialog(foo, Qt::Sheet) with QComboBox have none native behavior.
+    * [218980] Modeless dialogs should be stacked above normal windows.
+    * [195904] Parent dialog is displayed on top of its modal child.
+
+- QFileDialog
+    * [219844] QFileDialog::getOpenFileName() search buttons lead to crash (native version).
+    * [225705] QFileDialog::getSaveFileName()'s filter does not display correctly.
+
+- QMenu
+    * [228017] QMenu should close when expanding a system menu.
+
+- Event system
+    * [210912] ShowEvent not sendt when reshowing a window after it was minimized.
+
 - macdeployqt 
     * The binary packages now includes the macdeployqt tool.
     * macdeployqt now runs 'strip' on the deployed binaries.
@@ -397,6 +412,8 @@ Qt for Mac OS X
 - Added QSysInfo::MV_10_6 as an enum to test against.
 - Various compile fixes for Snow Leopard (preliminary support).
 - The uninstall-qt.py script included in the binary package no longer complains about removing itself multiple times.
+- [223525] Macmainwindow Demo Application (crashfix).
+
 
 - Document a bit clearer how qt_mac_set_dock_menu() works.
 
