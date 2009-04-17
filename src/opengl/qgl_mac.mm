@@ -629,7 +629,7 @@ void QGLContext::updatePaintDevice()
         // ideally we would use QWidget::isVisible(), but we get "invalid drawable" errors
         if (![(NSWindow *)qt_mac_window_for(w) isVisible])
             return;
-        if ([static_cast<NSOpenGLContext *>(d->cx) view] != view)
+        if ([static_cast<NSOpenGLContext *>(d->cx) view] != view && ![view isHidden])
             [static_cast<NSOpenGLContext *>(d->cx) setView:view];
     } else if (d->paintDevice->devType() == QInternal::Pixmap) {
         const QPixmap *pm = static_cast<const QPixmap *>(d->paintDevice);

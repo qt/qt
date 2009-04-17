@@ -222,6 +222,7 @@ private slots:
     // task specific tests below me
     void task141694_textItemEnsureVisible();
     void task128696_textItemEnsureMovable();
+    void ensureUpdateOnTextItem();
     void task177918_lineItemUndetected();
     void task240400_clickOnTextItem_data();
     void task240400_clickOnTextItem();
@@ -5270,6 +5271,39 @@ void tst_QGraphicsItem::task240400_clickOnTextItem()
         QVERIFY(item->textCursor().columnNumber() > column);
     else
         QCOMPARE(item->textCursor().columnNumber(), 0);
+}
+
+class TextItem : public QGraphicsSimpleTextItem
+{
+public:
+    TextItem(const QString& text) : QGraphicsSimpleTextItem(text)
+    {
+        updates = 0;
+    }
+
+    void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
+    {
+        updates++;
+        QGraphicsSimpleTextItem::paint(painter, option, widget);
+    }
+
+    int updates;
+};
+
+void tst_QGraphicsItem::ensureUpdateOnTextItem()
+{
+    QGraphicsScene scene;
+    TextItem *text1 = new TextItem(QLatin1String("123"));
+    scene.addItem(text1);
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWait(250);
+    QCOMPARE(text1->updates,1);
+
+    //same bouding rect but we have to update
+    text1->setText(QLatin1String("321"));
+    QTest::qWait(250);
+    QCOMPARE(text1->updates,2);
 }
 
 void tst_QGraphicsItem::task243707_addChildBeforeParent()

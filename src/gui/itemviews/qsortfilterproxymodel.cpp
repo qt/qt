@@ -1569,6 +1569,10 @@ bool QSortFilterProxyModel::hasChildren(const QModelIndex &parent) const
         return false;
     if (!d->model->hasChildren(source_parent))
         return false;
+
+    if (d->model->canFetchMore(source_parent))
+        return true; //we assume we might have children that can be fetched
+
     QSortFilterProxyModelPrivate::Mapping *m = d->create_mapping(source_parent).value();
     return m->source_rows.count() != 0 && m->source_columns.count() != 0;
 }

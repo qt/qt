@@ -481,7 +481,7 @@ QX11EmbedWidget::QX11EmbedWidget(QWidget *parent)
                     | ExposureMask | StructureNotifyMask
                     | SubstructureNotifyMask | PropertyChangeMask);
 
-    unsigned int data[] = {XEMBED_VERSION, XEMBED_MAPPED};
+    long data[] = {XEMBED_VERSION, XEMBED_MAPPED};
     XChangeProperty(x11Info().display(), internalWinId(), ATOM(_XEMBED_INFO),
                     ATOM(_XEMBED_INFO), 32, PropModeReplace,
                     (unsigned char*) data, 2);
@@ -1571,7 +1571,7 @@ void QX11EmbedContainer::showEvent(QShowEvent *)
 {
     Q_D(QX11EmbedContainer);
     if (d->client) {
-	unsigned int data[] = {XEMBED_VERSION, XEMBED_MAPPED};
+        long data[] = {XEMBED_VERSION, XEMBED_MAPPED};
 	XChangeProperty(x11Info().display(), d->client, ATOM(_XEMBED_INFO), ATOM(_XEMBED_INFO), 32,
 			PropModeReplace, (unsigned char *) data, 2);
     }
@@ -1587,8 +1587,7 @@ void QX11EmbedContainer::hideEvent(QHideEvent *)
 {
     Q_D(QX11EmbedContainer);
     if (d->client) {
-	unsigned int data[] = {XEMBED_VERSION, XEMBED_MAPPED};
-
+        long data[] = {XEMBED_VERSION, XEMBED_MAPPED};
 	XChangeProperty(x11Info().display(), d->client, ATOM(_XEMBED_INFO), ATOM(_XEMBED_INFO), 32,
 			PropModeReplace, (unsigned char *) data, 2);
     }
