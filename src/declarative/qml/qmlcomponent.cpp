@@ -61,6 +61,17 @@
 QT_BEGIN_NAMESPACE
 class QByteArray;
 
+bool QmlComponentPrivate::isXml(const QByteArray &ba)
+{
+    for (int i = 0; i < ba.size(); ++i) {
+        char c = ba.at(i);
+        if (c == ' ' || c == '\n' || c == '\r' || c == '\t')
+            continue;
+        return (c == '<');
+    }
+    return true;
+}
+
 /*!
     \class QmlComponent
     \brief The QmlComponent class encapsulates a QML component description.
@@ -334,6 +345,20 @@ void QmlComponent::loadUrl(const QUrl &url)
 
         d->fromTypeData(data);
 
+<<<<<<< HEAD:src/declarative/qml/qmlcomponent.cpp
+=======
+        // Compile data
+        QmlCompiler compiler;
+        if(!compiler.compile(d->engine, parser, d->cc)) {
+            qWarning().nospace()
+#ifdef QML_VERBOSEERRORS_ENABLED
+                    << "QmlComponent: "
+#endif
+                    << compiler.errorDescription().toLatin1().constData() << " @"
+                    << d->name.toLatin1().constData() << ":"
+                    << compiler.errorLine();
+        }
+>>>>>>> support both *.qml and *.whatever with autodetection. Some debug output, some fixes.:src/declarative/qml/qmlcomponent.cpp
     }
 
     emit statusChanged(status());

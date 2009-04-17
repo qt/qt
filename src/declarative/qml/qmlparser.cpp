@@ -57,6 +57,7 @@
 #include <private/qmlvmemetaobject_p.h>
 #include "private/qmlxmlparser_p.h"
 #include <private/qmlcompiler_p.h>
+#include <QtDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -151,6 +152,7 @@ Object *QmlParser::Property::getValue()
 
 void QmlParser::Property::addValue(Value *v)
 {
+    qDebug() << "Property" << name << "addValue" << v->primitive;
     values << v;
 }
 

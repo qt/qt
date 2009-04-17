@@ -221,12 +221,38 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
     QTextStream out(&primitive);
     PrettyPretty pp(out);
 
+    Property *prop = currentProperty();
+
     if (node->statement->kind == AST::Node::Kind_ExpressionStatement) {
         AST::ExpressionStatement *stmt = static_cast<AST::ExpressionStatement *>(node->statement);
 
-        if (stmt->expression && stmt->expression->kind == AST::Node::Kind_IdentifierExpression)
+        if(prop->name.length() >= 3 && prop->name.startsWith("on") &&
+           ('A' <= prop->name.at(2) && 'Z' >= prop->name.at(2))) {
+            pp(stmt->expression);
+
+            // here comes a cruel hack until we support functions properly with arguments for signal properties
+            if (primitive.startsWith(QLatin1String("function("))) {
+                int brace = 0;
+                for (;brace < primitive.size(); ++brace)
+                    if (primitive.at(brace) == QLatin1Char('{'))
+                        break;
+                primitive = primitive.mid(brace + 1, primitive.size() - brace - 2);
+            }
+            //end of hack
+
+        } else if (prop->name == "id" && stmt->expression && stmt->expression->kind == AST::Node::Kind_IdentifierExpression) {
             primitive = static_cast<AST::IdentifierExpression *>(stmt->expression)->name->asString();
-        else {
+        } else if (stmt->expression->kind == AST::Node::Kind_StringLiteral) {
+            // hack: emulate weird XML feature that string literals are not quoted.
+            //This needs to be fixed in the qmlcompiler once xml goes away.
+            primitive = static_cast<AST::StringLiteral *>(stmt->expression)->value->asString();
+        } else if (stmt->expression->kind == AST::Node::Kind_TrueLiteral
+                    || stmt->expression->kind == AST::Node::Kind_FalseLiteral
+                    || stmt->expression->kind == AST::Node::Kind_NumericLiteral
+                    ) {
+            pp(stmt->expression);
+        } else {
+            // create a binding
             out << "{";
             pp(stmt->expression);
             out << "}";
@@ -236,13 +262,10 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
     }
 
 
-
-
-    const State s = state();
     Value *v = new Value;
     v->primitive = primitive;
     v->line = line;
-    s.property->addValue(v);
+    prop->addValue(v);
 
     for(int ii = str.count() - 1; ii >= 0; --ii)
         _stateStack.pop();
