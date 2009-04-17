@@ -111,6 +111,7 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
         code[LinearGradientBrushSrcFragmentShader] = qglslLinearGradientBrushSrcFragmentShader;
         code[RadialGradientBrushSrcFragmentShader] = qglslRadialGradientBrushSrcFragmentShader;
         code[ConicalGradientBrushSrcFragmentShader] = qglslConicalGradientBrushSrcFragmentShader;
+        code[ShockingPinkSrcFragmentShader] = qglslShockingPinkSrcFragmentShader;
 
         code[MaskFragmentShader] = qglslMaskFragmentShader;
         code[RgbMaskFragmentShader] = ""; //###
@@ -131,11 +132,32 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
 #if defined(QT_DEBUG)
         // Check that all the elements have been filled:
         for (int i = 0; i < TotalShaderCount; ++i) {
-            if (qglEngineShaderSourceCode[i] == 0)
-                qCritical() << "qglEngineShaderSourceCode: Missing shader in element" << i;
+            if (qglEngineShaderSourceCode[i] == 0) {
+                int enumIndex = staticMetaObject.indexOfEnumerator("ShaderName");
+                QMetaEnum m = staticMetaObject.enumerator(enumIndex);
+
+                qCritical() << "qglEngineShaderSourceCode: Source for" << m.valueToKey(i)
+                            << "(shader" << i << ") missing!";
+            }
         }
 #endif
         qglEngineShaderSourceCodePopulated = true;
+    }
+
+    // Compile up the simple shader:
+    simpleShaderProg = new QGLShaderProgram(ctx, this);
+    compileNamedShader(MainVertexShader,              QGLShader::PartialVertexShader);
+    compileNamedShader(PositionOnlyVertexShader,      QGLShader::PartialVertexShader);
+    compileNamedShader(MainFragmentShader,            QGLShader::PartialFragmentShader);
+    compileNamedShader(ShockingPinkSrcFragmentShader, QGLShader::PartialFragmentShader);
+    simpleShaderProg->addShader(compiledShaders[MainVertexShader]);
+    simpleShaderProg->addShader(compiledShaders[PositionOnlyVertexShader]);
+    simpleShaderProg->addShader(compiledShaders[MainFragmentShader]);
+    simpleShaderProg->addShader(compiledShaders[ShockingPinkSrcFragmentShader]);
+    simpleShaderProg->link();
+    if (!simpleShaderProg->isValid()) {
+        qCritical() << "Errors linking simple shader:"
+                    << simpleShaderProg->errors();
     }
 }
 

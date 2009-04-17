@@ -317,6 +317,7 @@ public:
         LinearGradientBrushSrcFragmentShader,
         RadialGradientBrushSrcFragmentShader,
         ConicalGradientBrushSrcFragmentShader,
+        ShockingPinkSrcFragmentShader,
 
         MaskFragmentShader,
         RgbMaskFragmentShader,

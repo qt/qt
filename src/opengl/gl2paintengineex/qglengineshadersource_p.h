@@ -288,6 +288,11 @@ static const char* const qglslNonPremultipliedImageSrcFragmentShader = "\
         return sample; \
     }";
 
+static const char* const qglslShockingPinkSrcFragmentShader = "\
+    lowp vec4 srcPixel() { \
+        return lowp vec4(0.98, 0.06, 0.75, 1.0); \
+    }";
+
 
 static const char* const qglslMainFragmentShader_CMO = "\
     uniform lowp float globalOpacity; \
