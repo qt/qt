@@ -77,21 +77,21 @@
 
   The above state machine is perfectly fine, but it doesn't \e do anything; it
   merely transitions from one state to another. The
-  QState::setPropertyOnEntry() function can be used to have a state set a
+  QAbstractState::assignProperty() function can be used to have a state set a
   property of a QObject when the state is entered. In the following snippet,
   the value that should be assigned to a QLabel's text property is specified
   for each state:
 
   \code
-    s1->setPropertyOnEntry(label, "text", "In state s1");
-    s2->setPropertyOnEntry(label, "text", "In state s2");
-    s3->setPropertyOnEntry(label, "text", "In state s3");
+    s1->assignProperty(label, "text", "In state s1");
+    s2->assignProperty(label, "text", "In state s2");
+    s3->assignProperty(label, "text", "In state s3");
   \endcode
 
   When any of the states is entered, the label's text will be changed
   accordingly.
 
-  The QState::invokeMethodOnEntry() function can be used to have a state
+  The QActionState::invokeMethodOnEntry() function can be used to have a state
   invoke a method (a slot) of a QObject when the state is entered. In the
   following snippet, the button's showMaximized() slot will be called when
   state \c s3 is entered:
@@ -204,7 +204,7 @@
     QHistoryState *s1h = s1->addHistoryState();
 
     QState *s3 = new QState();
-    s3->setPropertyOnEntry(label, "text", "In s3");
+    s3->assignProperty(label, "text", "In s3");
     QMessageBox mbox;
     mbox.addButton(QMessageBox::Ok);
     mbox.setText("Interrupted!");

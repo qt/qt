@@ -100,7 +100,7 @@ QT_BEGIN_NAMESPACE
           set in the state and restore them later.
 
 
-   \sa setRestorePolicy(), restorePolicy()
+   \sa setRestorePolicy(), restorePolicy(), QAbstractState::assignProperty()
 */
 
 /*!

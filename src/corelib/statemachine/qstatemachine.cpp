@@ -124,7 +124,7 @@ QT_BEGIN_NAMESPACE
 
   QStateMachine machine;
   QState *s1 = new QState();
-  s1->setPropertyOnEntry(&button, "text", "Click me");
+  s1->assignProperty(&button, "text", "Click me");
 
   QFinalState *s2 = new QFinalState();
   s1->addTransition(&button, SIGNAL(clicked()), s2);
@@ -1921,6 +1921,8 @@ QSignalEventGenerator::QSignalEventGenerator(
 */
 
 /*!
+  \internal
+
   Constructs a new QSignalEvent object with the given \a sender, \a
   signalIndex and \a arguments.
 */
@@ -1984,6 +1986,8 @@ QSignalEvent::~QSignalEvent()
 */
 
 /*!
+  \internal
+
   Constructs a new QStateFinishedEvent object associated with the given \a state.
 */
 QStateFinishedEvent::QStateFinishedEvent(QState *state)
