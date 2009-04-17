@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# We need to do things differently on different platforms
+# <10.3.9 Can't install
+# =10.3.9 Can install, but must check license manually
+# >=10.4 Just jump out
+
+os_version=`sysctl kern.osrelease | awk '{ print $3 }'`
+os_major=`echo $os_version | cut -d . -f 1`
+os_minor=`echo $os_version | cut -d . -f 2`
+
+if [ $os_major -lt 7 -o $os_major -eq 7 -a $os_minor -lt 9 ]; then
+    exit $((96+19))
+fi
+exit 0

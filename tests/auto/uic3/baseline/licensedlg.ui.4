@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>LicenseDialog</class>
+  <widget class="QDialog" name="LicenseDialog">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>582</width>
+        <height>531</height>
+      </rect>
+    </property>
+    <property name="sizePolicy">
+      <sizepolicy>
+        <hsizetype>5</hsizetype>
+        <vsizetype>5</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+      </sizepolicy>
+    </property>
+    <property name="windowTitle">
+      <string>License Agreement</string>
+    </property>
+    <property name="sizeGripEnabled">
+      <bool>true</bool>
+    </property>
+    <layout class="QVBoxLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item>
+        <widget class="Q3TextView" name="licenseText">
+          <property name="text">
+            <string>License text goes here</string>
+          </property>
+        </widget>
+      </item>
+      <item>
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <spacer name="Horizontal Spacing2">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonReject">
+              <property name="text">
+                <string>Reject</string>
+              </property>
+              <property name="shortcut">
+                <number>0</number>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+              <property name="default">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonAccept">
+              <property name="text">
+                <string>Accept</string>
+              </property>
+              <property name="shortcut">
+                <number>0</number>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>buttonReject</sender>
+      <signal>pressed()</signal>
+      <receiver>LicenseDialog</receiver>
+      <slot>reject()</slot>
+    </connection>
+    <connection>
+      <sender>buttonAccept</sender>
+      <signal>clicked()</signal>
+      <receiver>LicenseDialog</receiver>
+      <slot>reject()</slot>
+    </connection>
+    <connection>
+      <sender>buttonAccept</sender>
+      <signal>pressed()</signal>
+      <receiver>LicenseDialog</receiver>
+      <slot>accept()</slot>
+    </connection>
+  </connections>
+</ui>

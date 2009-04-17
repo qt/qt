@@ -1,0 +1,2987 @@
+Class QUintForSize<4>
+   size=1 align=1
+   base size=0 base align=1
+QUintForSize<4> (0xb7866000) 0 empty
+
+Class QUintForSize<8>
+   size=1 align=1
+   base size=0 base align=1
+QUintForSize<8> (0xb7866040) 0 empty
+
+Class QUintForType<void*>
+   size=1 align=1
+   base size=1 base align=1
+QUintForType<void*> (0xb7866100) 0 empty
+  QUintForSize<4> (0xb7866140) 0 empty
+
+Class QIntForSize<4>
+   size=1 align=1
+   base size=0 base align=1
+QIntForSize<4> (0xb78661c0) 0 empty
+
+Class QIntForSize<8>
+   size=1 align=1
+   base size=0 base align=1
+QIntForSize<8> (0xb7866200) 0 empty
+
+Class QIntForType<void*>
+   size=1 align=1
+   base size=1 base align=1
+QIntForType<void*> (0xb78662c0) 0 empty
+  QIntForSize<4> (0xb7866300) 0 empty
+
+Class QSysInfo
+   size=1 align=1
+   base size=0 base align=1
+QSysInfo (0xb7866380) 0 empty
+
+Class QBool
+   size=1 align=1
+   base size=1 base align=1
+QBool (0xb7866440) 0
+
+Class qIsNull(double)::U
+   size=8 align=4
+   base size=8 base align=4
+qIsNull(double)::U (0xb7866540) 0
+
+Class qIsNull(float)::U
+   size=4 align=4
+   base size=4 base align=4
+qIsNull(float)::U (0xb7866580) 0
+
+Class QTypeInfo<bool>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<bool> (0xb7866640) 0 empty
+
+Class QTypeInfo<char>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<char> (0xb7866680) 0 empty
+
+Class QTypeInfo<signed char>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<signed char> (0xb78666c0) 0 empty
+
+Class QTypeInfo<unsigned char>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<unsigned char> (0xb7866700) 0 empty
+
+Class QTypeInfo<short int>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<short int> (0xb7866740) 0 empty
+
+Class QTypeInfo<short unsigned int>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<short unsigned int> (0xb7866780) 0 empty
+
+Class QTypeInfo<int>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<int> (0xb78667c0) 0 empty
+
+Class QTypeInfo<unsigned int>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<unsigned int> (0xb7866800) 0 empty
+
+Class QTypeInfo<long int>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<long int> (0xb7866840) 0 empty
+
+Class QTypeInfo<long unsigned int>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<long unsigned int> (0xb7866880) 0 empty
+
+Class QTypeInfo<long long int>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<long long int> (0xb78668c0) 0 empty
+
+Class QTypeInfo<long long unsigned int>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<long long unsigned int> (0xb7866900) 0 empty
+
+Class QTypeInfo<float>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<float> (0xb7866940) 0 empty
+
+Class QTypeInfo<double>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<double> (0xb7866980) 0 empty
+
+Class QTypeInfo<long double>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<long double> (0xb78669c0) 0 empty
+
+Class QFlag
+   size=4 align=4
+   base size=4 base align=4
+QFlag (0xb7866a00) 0
+
+Class QLatin1Char
+   size=1 align=1
+   base size=1 base align=1
+QLatin1Char (0xb7866b00) 0
+
+Class QChar
+   size=2 align=2
+   base size=2 base align=2
+QChar (0xb7866b40) 0
+
+Class QTypeInfo<QChar>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QChar> (0xb7866bc0) 0 empty
+
+Class QBasicAtomic
+   size=4 align=4
+   base size=4 base align=4
+QBasicAtomic (0xb7866c40) 0
+
+Class QAtomic
+   size=4 align=4
+   base size=4 base align=4
+QAtomic (0xb7866cc0) 0
+  QBasicAtomic (0xb7866d00) 0
+
+Class __locale_struct
+   size=116 align=4
+   base size=116 base align=4
+__locale_struct (0xb7866e00) 0
+
+Class QByteArray::Data
+   size=20 align=4
+   base size=20 base align=4
+QByteArray::Data (0xb7866e80) 0
+
+Class QByteArray
+   size=4 align=4
+   base size=4 base align=4
+QByteArray (0xb7866e40) 0
+
+Class QByteRef
+   size=8 align=4
+   base size=8 base align=4
+QByteRef (0xb7866ec0) 0
+
+Class QTypeInfo<QByteArray>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QByteArray> (0xb7866f00) 0 empty
+
+Class QFlags<Qt::MouseButton>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<Qt::MouseButton> (0xb7866f40) 0
+
+Class QFlags<Qt::Orientation>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<Qt::Orientation> (0xb7866f80) 0
+
+Class QFlags<Qt::KeyboardModifier>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<Qt::KeyboardModifier> (0xb7866fc0) 0
+
+Class QFlags<Qt::WindowType>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<Qt::WindowType> (0xb73fb000) 0
+
+Class QFlags<Qt::AlignmentFlag>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<Qt::AlignmentFlag> (0xb73fb040) 0
+
+Class QFlags<Qt::ImageConversionFlag>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<Qt::ImageConversionFlag> (0xb73fb080) 0
+
+Class QFlags<Qt::DockWidgetArea>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<Qt::DockWidgetArea> (0xb73fb0c0) 0
+
+Class QFlags<Qt::ToolBarArea>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<Qt::ToolBarArea> (0xb73fb100) 0
+
+Class QFlags<Qt::WindowState>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<Qt::WindowState> (0xb73fb140) 0
+
+Class QFlags<Qt::DropAction>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<Qt::DropAction> (0xb73fb180) 0
+
+Class QFlags<Qt::ItemFlag>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<Qt::ItemFlag> (0xb73fb1c0) 0
+
+Class QFlags<Qt::MatchFlag>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<Qt::MatchFlag> (0xb73fb200) 0
+
+Class QFlags<Qt::TextInteractionFlag>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<Qt::TextInteractionFlag> (0xb73fb240) 0
+
+Class QInternal
+   size=1 align=1
+   base size=0 base align=1
+QInternal (0xb73fb280) 0 empty
+
+Class QString::Null
+   size=1 align=1
+   base size=0 base align=1
+QString::Null (0xb73fb300) 0 empty
+
+Class QString::Data
+   size=20 align=4
+   base size=20 base align=4
+QString::Data (0xb73fb380) 0
+
+Class QString
+   size=4 align=4
+   base size=4 base align=4
+QString (0xb73fb2c0) 0
+
+Class QFlags<QString::SectionFlag>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<QString::SectionFlag> (0xb73fb440) 0
+
+Class QLatin1String
+   size=4 align=4
+   base size=4 base align=4
+QLatin1String (0xb73fb480) 0
+
+Class QCharRef
+   size=8 align=4
+   base size=8 base align=4
+QCharRef (0xb73fb4c0) 0
+
+Class QConstString
+   size=4 align=4
+   base size=4 base align=4
+QConstString (0xb73fb540) 0
+  QString (0xb73fb580) 0
+
+Class QTypeInfo<QString>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QString> (0xb73fb5c0) 0 empty
+
+Class QGenericArgument
+   size=8 align=4
+   base size=8 base align=4
+QGenericArgument (0xb73fb600) 0
+
+Class QGenericReturnArgument
+   size=8 align=4
+   base size=8 base align=4
+QGenericReturnArgument (0xb73fb640) 0
+  QGenericArgument (0xb73fb680) 0
+
+Class QMetaObject::<anonymous struct>
+   size=16 align=4
+   base size=16 base align=4
+QMetaObject::<anonymous struct> (0xb73fb840) 0
+
+Class QMetaObject
+   size=16 align=4
+   base size=16 base align=4
+QMetaObject (0xb73fb800) 0
+
+Vtable for std::exception
+std::exception::_ZTVSt9exception: 5u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTISt9exception)
+8     std::exception::~exception
+12    std::exception::~exception
+16    std::exception::what
+
+Class std::exception
+   size=4 align=4
+   base size=4 base align=4
+std::exception (0xb73fb940) 0 nearly-empty
+    vptr=((& std::exception::_ZTVSt9exception) + 8u)
+
+Vtable for std::bad_exception
+std::bad_exception::_ZTVSt13bad_exception: 5u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTISt13bad_exception)
+8     std::bad_exception::~bad_exception
+12    std::bad_exception::~bad_exception
+16    std::exception::what
+
+Class std::bad_exception
+   size=4 align=4
+   base size=4 base align=4
+std::bad_exception (0xb73fb9c0) 0 nearly-empty
+    vptr=((& std::bad_exception::_ZTVSt13bad_exception) + 8u)
+  std::exception (0xb73fba00) 0 nearly-empty
+      primary-for std::bad_exception (0xb73fb9c0)
+
+Vtable for std::bad_alloc
+std::bad_alloc::_ZTVSt9bad_alloc: 5u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTISt9bad_alloc)
+8     std::bad_alloc::~bad_alloc
+12    std::bad_alloc::~bad_alloc
+16    std::exception::what
+
+Class std::bad_alloc
+   size=4 align=4
+   base size=4 base align=4
+std::bad_alloc (0xb73fba80) 0 nearly-empty
+    vptr=((& std::bad_alloc::_ZTVSt9bad_alloc) + 8u)
+  std::exception (0xb73fbac0) 0 nearly-empty
+      primary-for std::bad_alloc (0xb73fba80)
+
+Class std::nothrow_t
+   size=1 align=1
+   base size=0 base align=1
+std::nothrow_t (0xb73fbb40) 0 empty
+
+Class QListData::Data
+   size=24 align=4
+   base size=24 base align=4
+QListData::Data (0xb73fbbc0) 0
+
+Class QListData
+   size=4 align=4
+   base size=4 base align=4
+QListData (0xb73fbb80) 0
+
+Class QList<QObject*>::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+QList<QObject*>::<anonymous union> (0xb73fbf00) 0
+
+Class QList<QObject*>
+   size=4 align=4
+   base size=4 base align=4
+QList<QObject*> (0xb73fbe80) 0
+
+Vtable for QObjectData
+QObjectData::_ZTV11QObjectData: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI11QObjectData)
+8     __cxa_pure_virtual
+12    __cxa_pure_virtual
+
+Class QObjectData
+   size=28 align=4
+   base size=28 base align=4
+QObjectData (0xb73fbe00) 0
+    vptr=((& QObjectData::_ZTV11QObjectData) + 8u)
+
+Vtable for QObject
+QObject::_ZTV7QObject: 14u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI7QObject)
+8     QObject::metaObject
+12    QObject::qt_metacast
+16    QObject::qt_metacall
+20    QObject::~QObject
+24    QObject::~QObject
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+
+Class QObject
+   size=8 align=4
+   base size=8 base align=4
+QObject (0xb73fbf80) 0
+    vptr=((& QObject::_ZTV7QObject) + 8u)
+
+Vtable for QObjectUserData
+QObjectUserData::_ZTV15QObjectUserData: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI15QObjectUserData)
+8     QObjectUserData::~QObjectUserData
+12    QObjectUserData::~QObjectUserData
+
+Class QObjectUserData
+   size=4 align=4
+   base size=4 base align=4
+QObjectUserData (0xb73fb3c0) 0 nearly-empty
+    vptr=((& QObjectUserData::_ZTV15QObjectUserData) + 8u)
+
+Vtable for QAbstractExtensionFactory
+QAbstractExtensionFactory::_ZTV25QAbstractExtensionFactory: 5u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI25QAbstractExtensionFactory)
+8     QAbstractExtensionFactory::~QAbstractExtensionFactory
+12    QAbstractExtensionFactory::~QAbstractExtensionFactory
+16    __cxa_pure_virtual
+
+Class QAbstractExtensionFactory
+   size=4 align=4
+   base size=4 base align=4
+QAbstractExtensionFactory (0xb73fba40) 0 nearly-empty
+    vptr=((& QAbstractExtensionFactory::_ZTV25QAbstractExtensionFactory) + 8u)
+
+Vtable for QAbstractExtensionManager
+QAbstractExtensionManager::_ZTV25QAbstractExtensionManager: 7u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI25QAbstractExtensionManager)
+8     QAbstractExtensionManager::~QAbstractExtensionManager
+12    QAbstractExtensionManager::~QAbstractExtensionManager
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+
+Class QAbstractExtensionManager
+   size=4 align=4
+   base size=4 base align=4
+QAbstractExtensionManager (0xb73fbb00) 0 nearly-empty
+    vptr=((& QAbstractExtensionManager::_ZTV25QAbstractExtensionManager) + 8u)
+
+Class QHashData::Node
+   size=8 align=4
+   base size=8 base align=4
+QHashData::Node (0xb73fbfc0) 0
+
+Class QHashData
+   size=32 align=4
+   base size=32 base align=4
+QHashData (0xb73fbf40) 0
+
+Class QHashDummyValue
+   size=1 align=1
+   base size=0 base align=1
+QHashDummyValue (0xb7119040) 0 empty
+
+Class QTypeInfo<QHashDummyValue>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QHashDummyValue> (0xb7119080) 0 empty
+
+Class QHash<QString, QList<QAbstractExtensionFactory*> >::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+QHash<QString, QList<QAbstractExtensionFactory*> >::<anonymous union> (0xb7119900) 0
+
+Class QHash<QString, QList<QAbstractExtensionFactory*> >
+   size=4 align=4
+   base size=4 base align=4
+QHash<QString, QList<QAbstractExtensionFactory*> > (0xb7119880) 0
+
+Class QList<QAbstractExtensionFactory*>::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+QList<QAbstractExtensionFactory*>::<anonymous union> (0xb7119a00) 0
+
+Class QList<QAbstractExtensionFactory*>
+   size=4 align=4
+   base size=4 base align=4
+QList<QAbstractExtensionFactory*> (0xb7119980) 0
+
+Vtable for QExtensionManager
+QExtensionManager::_ZTV17QExtensionManager: 24u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI17QExtensionManager)
+8     QExtensionManager::metaObject
+12    QExtensionManager::qt_metacast
+16    QExtensionManager::qt_metacall
+20    QExtensionManager::~QExtensionManager
+24    QExtensionManager::~QExtensionManager
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QExtensionManager::registerExtensions
+60    QExtensionManager::unregisterExtensions
+64    QExtensionManager::extension
+68    (int (*)(...))-0x00000000000000008
+72    (int (*)(...))(& _ZTI17QExtensionManager)
+76    QExtensionManager::_ZThn8_N17QExtensionManagerD1Ev
+80    QExtensionManager::_ZThn8_N17QExtensionManagerD0Ev
+84    QExtensionManager::_ZThn8_N17QExtensionManager18registerExtensionsEP25QAbstractExtensionFactoryRK7QString
+88    QExtensionManager::_ZThn8_N17QExtensionManager20unregisterExtensionsEP25QAbstractExtensionFactoryRK7QString
+92    QExtensionManager::_ZThn8_NK17QExtensionManager9extensionEP7QObjectRK7QString
+
+Class QExtensionManager
+   size=20 align=4
+   base size=20 base align=4
+QExtensionManager (0xb7119780) 0
+    vptr=((& QExtensionManager::_ZTV17QExtensionManager) + 8u)
+  QObject (0xb71197c0) 0
+      primary-for QExtensionManager (0xb7119780)
+  QAbstractExtensionManager (0xb7119800) 8 nearly-empty
+      vptr=((& QExtensionManager::_ZTV17QExtensionManager) + 76u)
+
+Class QSize
+   size=8 align=4
+   base size=8 base align=4
+QSize (0xb7119ac0) 0
+
+Class QTypeInfo<QSize>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QSize> (0xb7119cc0) 0 empty
+
+Class QSizeF
+   size=16 align=4
+   base size=16 base align=4
+QSizeF (0xb7119d40) 0
+
+Class QTypeInfo<QSizeF>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QSizeF> (0xb7119f40) 0 empty
+
+Class QPoint
+   size=8 align=4
+   base size=8 base align=4
+QPoint (0xb7119640) 0
+
+Class QTypeInfo<QPoint>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QPoint> (0xb7119840) 0 empty
+
+Class QPointF
+   size=16 align=4
+   base size=16 base align=4
+QPointF (0xb7119940) 0
+
+Class QTypeInfo<QPointF>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QPointF> (0xb7119a40) 0 empty
+
+Class QRect
+   size=16 align=4
+   base size=16 base align=4
+QRect (0xb7119a80) 0
+
+Class QTypeInfo<QRect>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QRect> (0xb7119bc0) 0 empty
+
+Class QRectF
+   size=32 align=4
+   base size=32 base align=4
+QRectF (0xb7119c00) 0
+
+Class QTypeInfo<QRectF>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QRectF> (0xb7119b00) 0 empty
+
+Vtable for QPaintDevice
+QPaintDevice::_ZTV12QPaintDevice: 7u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI12QPaintDevice)
+8     QPaintDevice::~QPaintDevice
+12    QPaintDevice::~QPaintDevice
+16    QPaintDevice::devType
+20    __cxa_pure_virtual
+24    QPaintDevice::metric
+
+Class QPaintDevice
+   size=8 align=4
+   base size=6 base align=4
+QPaintDevice (0xb7119b40) 0
+    vptr=((& QPaintDevice::_ZTV12QPaintDevice) + 8u)
+
+Vtable for QIODevice
+QIODevice::_ZTV9QIODevice: 30u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI9QIODevice)
+8     QIODevice::metaObject
+12    QIODevice::qt_metacast
+16    QIODevice::qt_metacall
+20    QIODevice::~QIODevice
+24    QIODevice::~QIODevice
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QIODevice::isSequential
+60    QIODevice::open
+64    QIODevice::close
+68    QIODevice::pos
+72    QIODevice::size
+76    QIODevice::seek
+80    QIODevice::atEnd
+84    QIODevice::reset
+88    QIODevice::bytesAvailable
+92    QIODevice::bytesToWrite
+96    QIODevice::canReadLine
+100   QIODevice::waitForReadyRead
+104   QIODevice::waitForBytesWritten
+108   __cxa_pure_virtual
+112   QIODevice::readLineData
+116   __cxa_pure_virtual
+
+Class QIODevice
+   size=8 align=4
+   base size=8 base align=4
+QIODevice (0xb7119c40) 0
+    vptr=((& QIODevice::_ZTV9QIODevice) + 8u)
+  QObject (0xb7119d80) 0
+      primary-for QIODevice (0xb7119c40)
+
+Class QFlags<QIODevice::OpenModeFlag>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<QIODevice::OpenModeFlag> (0xb7119e40) 0
+
+Vtable for QDataStream
+QDataStream::_ZTV11QDataStream: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI11QDataStream)
+8     QDataStream::~QDataStream
+12    QDataStream::~QDataStream
+
+Class QDataStream
+   size=28 align=4
+   base size=28 base align=4
+QDataStream (0xb7119e80) 0
+    vptr=((& QDataStream::_ZTV11QDataStream) + 8u)
+
+Class QRegExp
+   size=4 align=4
+   base size=4 base align=4
+QRegExp (0xb7119f00) 0
+
+Class QTypeInfo<QRegExp>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QRegExp> (0xb7119dc0) 0 empty
+
+Class QStringMatcher
+   size=1036 align=4
+   base size=1036 base align=4
+QStringMatcher (0xb7119ec0) 0
+
+Class QList<QString>::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+QList<QString>::<anonymous union> (0xb6da2080) 0
+
+Class QList<QString>
+   size=4 align=4
+   base size=4 base align=4
+QList<QString> (0xb6da2000) 0
+
+Class QStringList
+   size=4 align=4
+   base size=4 base align=4
+QStringList (0xb6da20c0) 0
+  QList<QString> (0xb6da2100) 0
+
+Class QList<QString>::iterator
+   size=4 align=4
+   base size=4 base align=4
+QList<QString>::iterator (0xb6da2180) 0
+
+Class QList<QString>::const_iterator
+   size=4 align=4
+   base size=4 base align=4
+QList<QString>::const_iterator (0xb6da21c0) 0
+
+Class QColor::<anonymous union>::<anonymous struct>
+   size=10 align=2
+   base size=10 base align=2
+QColor::<anonymous union>::<anonymous struct> (0xb6da2300) 0
+
+Class QColor::<anonymous union>::<anonymous struct>
+   size=10 align=2
+   base size=10 base align=2
+QColor::<anonymous union>::<anonymous struct> (0xb6da2340) 0
+
+Class QColor::<anonymous union>::<anonymous struct>
+   size=10 align=2
+   base size=10 base align=2
+QColor::<anonymous union>::<anonymous struct> (0xb6da2380) 0
+
+Class QColor::<anonymous union>
+   size=10 align=2
+   base size=10 base align=2
+QColor::<anonymous union> (0xb6da22c0) 0
+
+Class QColor
+   size=16 align=4
+   base size=14 base align=4
+QColor (0xb6da2280) 0
+
+Class wait::<anonymous struct>
+   size=4 align=4
+   base size=4 base align=4
+wait::<anonymous struct> (0xb6da24c0) 0
+
+Class wait::<anonymous struct>
+   size=4 align=4
+   base size=4 base align=4
+wait::<anonymous struct> (0xb6da2500) 0
+
+Class wait
+   size=4 align=4
+   base size=4 base align=4
+wait (0xb6da2480) 0
+
+Class <anonymous struct>
+   size=8 align=4
+   base size=8 base align=4
+<anonymous struct> (0xb6da2540) 0
+
+Class <anonymous struct>
+   size=8 align=4
+   base size=8 base align=4
+<anonymous struct> (0xb6da2580) 0
+
+Class <anonymous struct>
+   size=16 align=4
+   base size=16 base align=4
+<anonymous struct> (0xb6da25c0) 0
+
+Class <anonymous struct>
+   size=8 align=4
+   base size=8 base align=4
+<anonymous struct> (0xb6da2600) 0
+
+Class <anonymous struct>
+   size=128 align=4
+   base size=128 base align=4
+<anonymous struct> (0xb6da2640) 0
+
+Class timespec
+   size=8 align=4
+   base size=8 base align=4
+timespec (0xb6da2680) 0
+
+Class timeval
+   size=8 align=4
+   base size=8 base align=4
+timeval (0xb6da26c0) 0
+
+Class <anonymous struct>
+   size=128 align=4
+   base size=128 base align=4
+<anonymous struct> (0xb6da2700) 0
+
+Class <anonymous union>
+   size=36 align=4
+   base size=36 base align=4
+<anonymous union> (0xb6da2740) 0
+
+Class __pthread_internal_slist
+   size=4 align=4
+   base size=4 base align=4
+__pthread_internal_slist (0xb6da2780) 0
+
+Class <anonymous union>::__pthread_mutex_s::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+<anonymous union>::__pthread_mutex_s::<anonymous union> (0xb6da2840) 0
+
+Class <anonymous union>::__pthread_mutex_s
+   size=24 align=4
+   base size=24 base align=4
+<anonymous union>::__pthread_mutex_s (0xb6da2800) 0
+
+Class <anonymous union>
+   size=24 align=4
+   base size=24 base align=4
+<anonymous union> (0xb6da27c0) 0
+
+Class <anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+<anonymous union> (0xb6da2880) 0
+
+Class <anonymous union>::<anonymous struct>
+   size=44 align=4
+   base size=44 base align=4
+<anonymous union>::<anonymous struct> (0xb6da2900) 0
+
+Class <anonymous union>
+   size=48 align=4
+   base size=48 base align=4
+<anonymous union> (0xb6da28c0) 0
+
+Class <anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+<anonymous union> (0xb6da2940) 0
+
+Class <anonymous union>::<anonymous struct>
+   size=32 align=4
+   base size=32 base align=4
+<anonymous union>::<anonymous struct> (0xb6da29c0) 0
+
+Class <anonymous union>
+   size=32 align=4
+   base size=32 base align=4
+<anonymous union> (0xb6da2980) 0
+
+Class <anonymous union>
+   size=8 align=4
+   base size=8 base align=4
+<anonymous union> (0xb6da2a00) 0
+
+Class <anonymous union>
+   size=20 align=4
+   base size=20 base align=4
+<anonymous union> (0xb6da2a40) 0
+
+Class <anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+<anonymous union> (0xb6da2a80) 0
+
+Class random_data
+   size=28 align=4
+   base size=28 base align=4
+random_data (0xb6da2ac0) 0
+
+Class drand48_data
+   size=24 align=4
+   base size=24 base align=4
+drand48_data (0xb6da2b00) 0
+
+Class QVectorData
+   size=16 align=4
+   base size=16 base align=4
+QVectorData (0xb6da2b40) 0
+
+Class QVector<QPoint>::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+QVector<QPoint>::<anonymous union> (0xb6da2d80) 0
+
+Class QVector<QPoint>
+   size=4 align=4
+   base size=4 base align=4
+QVector<QPoint> (0xb6da2d00) 0
+
+Class QPolygon
+   size=4 align=4
+   base size=4 base align=4
+QPolygon (0xb6da2dc0) 0
+  QVector<QPoint> (0xb6da2e00) 0
+
+Class QVector<QPointF>::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+QVector<QPointF>::<anonymous union> (0xb6da2ec0) 0
+
+Class QVector<QPointF>
+   size=4 align=4
+   base size=4 base align=4
+QVector<QPointF> (0xb6da2e40) 0
+
+Class QPolygonF
+   size=4 align=4
+   base size=4 base align=4
+QPolygonF (0xb6da2f00) 0
+  QVector<QPointF> (0xb6da2f40) 0
+
+Class QRegion::QRegionData
+   size=16 align=4
+   base size=16 base align=4
+QRegion::QRegionData (0xb6da23c0) 0
+
+Class QRegion
+   size=4 align=4
+   base size=4 base align=4
+QRegion (0xb6da2f80) 0
+
+Class QLine
+   size=16 align=4
+   base size=16 base align=4
+QLine (0xb6da2400) 0
+
+Class QTypeInfo<QLine>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QLine> (0xb6da2fc0) 0 empty
+
+Class QLineF
+   size=32 align=4
+   base size=32 base align=4
+QLineF (0xb6d12000) 0
+
+Class QTypeInfo<QLineF>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QLineF> (0xb6d12040) 0 empty
+
+Class QMatrix
+   size=48 align=4
+   base size=48 base align=4
+QMatrix (0xb6d12080) 0
+
+Class QTypeInfo<QMatrix>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QMatrix> (0xb6d120c0) 0 empty
+
+Class QImageTextKeyLang
+   size=8 align=4
+   base size=8 base align=4
+QImageTextKeyLang (0xb6d12100) 0
+
+Vtable for QImage
+QImage::_ZTV6QImage: 7u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI6QImage)
+8     QImage::~QImage
+12    QImage::~QImage
+16    QImage::devType
+20    QImage::paintEngine
+24    QImage::metric
+
+Class QImage
+   size=12 align=4
+   base size=12 base align=4
+QImage (0xb6d12140) 0
+    vptr=((& QImage::_ZTV6QImage) + 8u)
+  QPaintDevice (0xb6d12180) 0
+      primary-for QImage (0xb6d12140)
+
+Class QTypeInfo<QImage>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QImage> (0xb6d122c0) 0 empty
+
+Vtable for QPixmap
+QPixmap::_ZTV7QPixmap: 7u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI7QPixmap)
+8     QPixmap::~QPixmap
+12    QPixmap::~QPixmap
+16    QPixmap::devType
+20    QPixmap::paintEngine
+24    QPixmap::metric
+
+Class QPixmap
+   size=12 align=4
+   base size=12 base align=4
+QPixmap (0xb6d12300) 0
+    vptr=((& QPixmap::_ZTV7QPixmap) + 8u)
+  QPaintDevice (0xb6d12340) 0
+      primary-for QPixmap (0xb6d12300)
+
+Class QBrush
+   size=4 align=4
+   base size=4 base align=4
+QBrush (0xb6d12480) 0
+
+Class QTypeInfo<QBrush>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QBrush> (0xb6d124c0) 0 empty
+
+Class QBrushData
+   size=72 align=4
+   base size=72 base align=4
+QBrushData (0xb6d12500) 0
+
+Class QVector<QPair<double, QColor> >::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+QVector<QPair<double, QColor> >::<anonymous union> (0xb6d12640) 0
+
+Class QVector<QPair<double, QColor> >
+   size=4 align=4
+   base size=4 base align=4
+QVector<QPair<double, QColor> > (0xb6d125c0) 0
+
+Class QGradient::<anonymous union>::<anonymous struct>
+   size=32 align=4
+   base size=32 base align=4
+QGradient::<anonymous union>::<anonymous struct> (0xb6d126c0) 0
+
+Class QGradient::<anonymous union>::<anonymous struct>
+   size=40 align=4
+   base size=40 base align=4
+QGradient::<anonymous union>::<anonymous struct> (0xb6d12700) 0
+
+Class QGradient::<anonymous union>::<anonymous struct>
+   size=24 align=4
+   base size=24 base align=4
+QGradient::<anonymous union>::<anonymous struct> (0xb6d12740) 0
+
+Class QGradient::<anonymous union>
+   size=40 align=4
+   base size=40 base align=4
+QGradient::<anonymous union> (0xb6d12680) 0
+
+Class QGradient
+   size=56 align=4
+   base size=56 base align=4
+QGradient (0xb6d12540) 0
+
+Class QLinearGradient
+   size=56 align=4
+   base size=56 base align=4
+QLinearGradient (0xb6d12780) 0
+  QGradient (0xb6d127c0) 0
+
+Class QRadialGradient
+   size=56 align=4
+   base size=56 base align=4
+QRadialGradient (0xb6d12800) 0
+  QGradient (0xb6d12840) 0
+
+Class QConicalGradient
+   size=56 align=4
+   base size=56 base align=4
+QConicalGradient (0xb6d12880) 0
+  QGradient (0xb6d128c0) 0
+
+Class QPalette
+   size=8 align=4
+   base size=8 base align=4
+QPalette (0xb6d12900) 0
+
+Class QColorGroup
+   size=8 align=4
+   base size=8 base align=4
+QColorGroup (0xb6d12980) 0
+  QPalette (0xb6d129c0) 0
+
+Class QFont
+   size=8 align=4
+   base size=8 base align=4
+QFont (0xb6d12a40) 0
+
+Class QFontMetrics
+   size=4 align=4
+   base size=4 base align=4
+QFontMetrics (0xb6d12b40) 0
+
+Class QFontMetricsF
+   size=4 align=4
+   base size=4 base align=4
+QFontMetricsF (0xb6d12b80) 0
+
+Class QFontInfo
+   size=4 align=4
+   base size=4 base align=4
+QFontInfo (0xb6d12bc0) 0
+
+Class QSizePolicy
+   size=4 align=4
+   base size=4 base align=4
+QSizePolicy (0xb6d12c00) 0
+
+Class QCursor
+   size=4 align=4
+   base size=4 base align=4
+QCursor (0xb6d12cc0) 0
+
+Class QKeySequence
+   size=4 align=4
+   base size=4 base align=4
+QKeySequence (0xb6d12d00) 0
+
+Class QTypeInfo<QKeySequence>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QKeySequence> (0xb6d12dc0) 0 empty
+
+Class QWidgetData
+   size=64 align=4
+   base size=64 base align=4
+QWidgetData (0xb6d12e00) 0
+
+Vtable for QWidget
+QWidget::_ZTV7QWidget: 63u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI7QWidget)
+8     QWidget::metaObject
+12    QWidget::qt_metacast
+16    QWidget::qt_metacall
+20    QWidget::~QWidget
+24    QWidget::~QWidget
+28    QWidget::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QWidget::devType
+60    QWidget::setVisible
+64    QWidget::sizeHint
+68    QWidget::minimumSizeHint
+72    QWidget::heightForWidth
+76    QWidget::paintEngine
+80    QWidget::mousePressEvent
+84    QWidget::mouseReleaseEvent
+88    QWidget::mouseDoubleClickEvent
+92    QWidget::mouseMoveEvent
+96    QWidget::wheelEvent
+100   QWidget::keyPressEvent
+104   QWidget::keyReleaseEvent
+108   QWidget::focusInEvent
+112   QWidget::focusOutEvent
+116   QWidget::enterEvent
+120   QWidget::leaveEvent
+124   QWidget::paintEvent
+128   QWidget::moveEvent
+132   QWidget::resizeEvent
+136   QWidget::closeEvent
+140   QWidget::contextMenuEvent
+144   QWidget::tabletEvent
+148   QWidget::actionEvent
+152   QWidget::dragEnterEvent
+156   QWidget::dragMoveEvent
+160   QWidget::dragLeaveEvent
+164   QWidget::dropEvent
+168   QWidget::showEvent
+172   QWidget::hideEvent
+176   QWidget::x11Event
+180   QWidget::changeEvent
+184   QWidget::metric
+188   QWidget::inputMethodEvent
+192   QWidget::inputMethodQuery
+196   QWidget::focusNextPrevChild
+200   QWidget::styleChange
+204   QWidget::enabledChange
+208   QWidget::paletteChange
+212   QWidget::fontChange
+216   QWidget::windowActivationChange
+220   QWidget::languageChange
+224   (int (*)(...))-0x00000000000000008
+228   (int (*)(...))(& _ZTI7QWidget)
+232   QWidget::_ZThn8_N7QWidgetD1Ev
+236   QWidget::_ZThn8_N7QWidgetD0Ev
+240   QWidget::_ZThn8_NK7QWidget7devTypeEv
+244   QWidget::_ZThn8_NK7QWidget11paintEngineEv
+248   QWidget::_ZThn8_NK7QWidget6metricEN12QPaintDevice17PaintDeviceMetricE
+
+Class QWidget
+   size=20 align=4
+   base size=20 base align=4
+QWidget (0xb6d12e40) 0
+    vptr=((& QWidget::_ZTV7QWidget) + 8u)
+  QObject (0xb6d12e80) 0
+      primary-for QWidget (0xb6d12e40)
+  QPaintDevice (0xb6d12ec0) 8
+      vptr=((& QWidget::_ZTV7QWidget) + 232u)
+
+Vtable for QDesignerActionEditorInterface
+QDesignerActionEditorInterface::_ZTV30QDesignerActionEditorInterface: 67u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI30QDesignerActionEditorInterface)
+8     QDesignerActionEditorInterface::metaObject
+12    QDesignerActionEditorInterface::qt_metacast
+16    QDesignerActionEditorInterface::qt_metacall
+20    QDesignerActionEditorInterface::~QDesignerActionEditorInterface
+24    QDesignerActionEditorInterface::~QDesignerActionEditorInterface
+28    QWidget::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QWidget::devType
+60    QWidget::setVisible
+64    QWidget::sizeHint
+68    QWidget::minimumSizeHint
+72    QWidget::heightForWidth
+76    QWidget::paintEngine
+80    QWidget::mousePressEvent
+84    QWidget::mouseReleaseEvent
+88    QWidget::mouseDoubleClickEvent
+92    QWidget::mouseMoveEvent
+96    QWidget::wheelEvent
+100   QWidget::keyPressEvent
+104   QWidget::keyReleaseEvent
+108   QWidget::focusInEvent
+112   QWidget::focusOutEvent
+116   QWidget::enterEvent
+120   QWidget::leaveEvent
+124   QWidget::paintEvent
+128   QWidget::moveEvent
+132   QWidget::resizeEvent
+136   QWidget::closeEvent
+140   QWidget::contextMenuEvent
+144   QWidget::tabletEvent
+148   QWidget::actionEvent
+152   QWidget::dragEnterEvent
+156   QWidget::dragMoveEvent
+160   QWidget::dragLeaveEvent
+164   QWidget::dropEvent
+168   QWidget::showEvent
+172   QWidget::hideEvent
+176   QWidget::x11Event
+180   QWidget::changeEvent
+184   QWidget::metric
+188   QWidget::inputMethodEvent
+192   QWidget::inputMethodQuery
+196   QWidget::focusNextPrevChild
+200   QWidget::styleChange
+204   QWidget::enabledChange
+208   QWidget::paletteChange
+212   QWidget::fontChange
+216   QWidget::windowActivationChange
+220   QWidget::languageChange
+224   QDesignerActionEditorInterface::core
+228   __cxa_pure_virtual
+232   __cxa_pure_virtual
+236   __cxa_pure_virtual
+240   (int (*)(...))-0x00000000000000008
+244   (int (*)(...))(& _ZTI30QDesignerActionEditorInterface)
+248   QDesignerActionEditorInterface::_ZThn8_N30QDesignerActionEditorInterfaceD1Ev
+252   QDesignerActionEditorInterface::_ZThn8_N30QDesignerActionEditorInterfaceD0Ev
+256   QWidget::_ZThn8_NK7QWidget7devTypeEv
+260   QWidget::_ZThn8_NK7QWidget11paintEngineEv
+264   QWidget::_ZThn8_NK7QWidget6metricEN12QPaintDevice17PaintDeviceMetricE
+
+Class QDesignerActionEditorInterface
+   size=20 align=4
+   base size=20 base align=4
+QDesignerActionEditorInterface (0xb6d12200) 0
+    vptr=((& QDesignerActionEditorInterface::_ZTV30QDesignerActionEditorInterface) + 8u)
+  QWidget (0xb6d12240) 0
+      primary-for QDesignerActionEditorInterface (0xb6d12200)
+    QObject (0xb6d121c0) 0
+        primary-for QWidget (0xb6d12240)
+    QPaintDevice (0xb6d12380) 8
+        vptr=((& QDesignerActionEditorInterface::_ZTV30QDesignerActionEditorInterface) + 248u)
+
+Class QMapData::Node
+   size=8 align=4
+   base size=8 base align=4
+QMapData::Node (0xb6d123c0) 0
+
+Class QMapData
+   size=72 align=4
+   base size=72 base align=4
+QMapData (0xb6d12400) 0
+
+Vtable for QDesignerBrushManagerInterface
+QDesignerBrushManagerInterface::_ZTV30QDesignerBrushManagerInterface: 21u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI30QDesignerBrushManagerInterface)
+8     QDesignerBrushManagerInterface::metaObject
+12    QDesignerBrushManagerInterface::qt_metacast
+16    QDesignerBrushManagerInterface::qt_metacall
+20    QDesignerBrushManagerInterface::~QDesignerBrushManagerInterface
+24    QDesignerBrushManagerInterface::~QDesignerBrushManagerInterface
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+64    __cxa_pure_virtual
+68    __cxa_pure_virtual
+72    __cxa_pure_virtual
+76    __cxa_pure_virtual
+80    __cxa_pure_virtual
+
+Class QDesignerBrushManagerInterface
+   size=8 align=4
+   base size=8 base align=4
+QDesignerBrushManagerInterface (0xb69f40c0) 0
+    vptr=((& QDesignerBrushManagerInterface::_ZTV30QDesignerBrushManagerInterface) + 8u)
+  QObject (0xb69f4100) 0
+      primary-for QDesignerBrushManagerInterface (0xb69f40c0)
+
+Vtable for QDesignerDnDItemInterface
+QDesignerDnDItemInterface::_ZTV25QDesignerDnDItemInterface: 10u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI25QDesignerDnDItemInterface)
+8     QDesignerDnDItemInterface::~QDesignerDnDItemInterface
+12    QDesignerDnDItemInterface::~QDesignerDnDItemInterface
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    __cxa_pure_virtual
+32    __cxa_pure_virtual
+36    __cxa_pure_virtual
+
+Class QDesignerDnDItemInterface
+   size=4 align=4
+   base size=4 base align=4
+QDesignerDnDItemInterface (0xb69f4180) 0 nearly-empty
+    vptr=((& QDesignerDnDItemInterface::_ZTV25QDesignerDnDItemInterface) + 8u)
+
+Class QPointer<QWidget>
+   size=4 align=4
+   base size=4 base align=4
+QPointer<QWidget> (0xb69f4300) 0
+
+Class QPointer<QDesignerWidgetBoxInterface>
+   size=4 align=4
+   base size=4 base align=4
+QPointer<QDesignerWidgetBoxInterface> (0xb69f4380) 0
+
+Class QPointer<QDesignerPropertyEditorInterface>
+   size=4 align=4
+   base size=4 base align=4
+QPointer<QDesignerPropertyEditorInterface> (0xb69f4400) 0
+
+Class QPointer<QDesignerFormWindowManagerInterface>
+   size=4 align=4
+   base size=4 base align=4
+QPointer<QDesignerFormWindowManagerInterface> (0xb69f4480) 0
+
+Class QPointer<QExtensionManager>
+   size=4 align=4
+   base size=4 base align=4
+QPointer<QExtensionManager> (0xb69f4500) 0
+
+Class QPointer<QDesignerMetaDataBaseInterface>
+   size=4 align=4
+   base size=4 base align=4
+QPointer<QDesignerMetaDataBaseInterface> (0xb69f4580) 0
+
+Class QPointer<QDesignerWidgetDataBaseInterface>
+   size=4 align=4
+   base size=4 base align=4
+QPointer<QDesignerWidgetDataBaseInterface> (0xb69f4600) 0
+
+Class QPointer<QDesignerWidgetFactoryInterface>
+   size=4 align=4
+   base size=4 base align=4
+QPointer<QDesignerWidgetFactoryInterface> (0xb69f4680) 0
+
+Class QPointer<QDesignerObjectInspectorInterface>
+   size=4 align=4
+   base size=4 base align=4
+QPointer<QDesignerObjectInspectorInterface> (0xb69f4700) 0
+
+Class QPointer<QDesignerBrushManagerInterface>
+   size=4 align=4
+   base size=4 base align=4
+QPointer<QDesignerBrushManagerInterface> (0xb69f4780) 0
+
+Class QPointer<QDesignerIconCacheInterface>
+   size=4 align=4
+   base size=4 base align=4
+QPointer<QDesignerIconCacheInterface> (0xb69f4800) 0
+
+Class QPointer<QDesignerActionEditorInterface>
+   size=4 align=4
+   base size=4 base align=4
+QPointer<QDesignerActionEditorInterface> (0xb69f4880) 0
+
+Vtable for QDesignerFormEditorInterface
+QDesignerFormEditorInterface::_ZTV28QDesignerFormEditorInterface: 14u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI28QDesignerFormEditorInterface)
+8     QDesignerFormEditorInterface::metaObject
+12    QDesignerFormEditorInterface::qt_metacast
+16    QDesignerFormEditorInterface::qt_metacall
+20    QDesignerFormEditorInterface::~QDesignerFormEditorInterface
+24    QDesignerFormEditorInterface::~QDesignerFormEditorInterface
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+
+Class QDesignerFormEditorInterface
+   size=60 align=4
+   base size=60 base align=4
+QDesignerFormEditorInterface (0xb69f4240) 0
+    vptr=((& QDesignerFormEditorInterface::_ZTV28QDesignerFormEditorInterface) + 8u)
+  QObject (0xb69f4280) 0
+      primary-for QDesignerFormEditorInterface (0xb69f4240)
+
+Vtable for QDesignerFormEditorPluginInterface
+QDesignerFormEditorPluginInterface::_ZTV34QDesignerFormEditorPluginInterface: 8u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI34QDesignerFormEditorPluginInterface)
+8     QDesignerFormEditorPluginInterface::~QDesignerFormEditorPluginInterface
+12    QDesignerFormEditorPluginInterface::~QDesignerFormEditorPluginInterface
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    __cxa_pure_virtual
+
+Class QDesignerFormEditorPluginInterface
+   size=4 align=4
+   base size=4 base align=4
+QDesignerFormEditorPluginInterface (0xb69f4900) 0 nearly-empty
+    vptr=((& QDesignerFormEditorPluginInterface::_ZTV34QDesignerFormEditorPluginInterface) + 8u)
+
+Vtable for QDesignerFormWindowInterface
+QDesignerFormWindowInterface::_ZTV28QDesignerFormWindowInterface: 114u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI28QDesignerFormWindowInterface)
+8     QDesignerFormWindowInterface::metaObject
+12    QDesignerFormWindowInterface::qt_metacast
+16    QDesignerFormWindowInterface::qt_metacall
+20    QDesignerFormWindowInterface::~QDesignerFormWindowInterface
+24    QDesignerFormWindowInterface::~QDesignerFormWindowInterface
+28    QWidget::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QWidget::devType
+60    QWidget::setVisible
+64    QWidget::sizeHint
+68    QWidget::minimumSizeHint
+72    QWidget::heightForWidth
+76    QWidget::paintEngine
+80    QWidget::mousePressEvent
+84    QWidget::mouseReleaseEvent
+88    QWidget::mouseDoubleClickEvent
+92    QWidget::mouseMoveEvent
+96    QWidget::wheelEvent
+100   QWidget::keyPressEvent
+104   QWidget::keyReleaseEvent
+108   QWidget::focusInEvent
+112   QWidget::focusOutEvent
+116   QWidget::enterEvent
+120   QWidget::leaveEvent
+124   QWidget::paintEvent
+128   QWidget::moveEvent
+132   QWidget::resizeEvent
+136   QWidget::closeEvent
+140   QWidget::contextMenuEvent
+144   QWidget::tabletEvent
+148   QWidget::actionEvent
+152   QWidget::dragEnterEvent
+156   QWidget::dragMoveEvent
+160   QWidget::dragLeaveEvent
+164   QWidget::dropEvent
+168   QWidget::showEvent
+172   QWidget::hideEvent
+176   QWidget::x11Event
+180   QWidget::changeEvent
+184   QWidget::metric
+188   QWidget::inputMethodEvent
+192   QWidget::inputMethodQuery
+196   QWidget::focusNextPrevChild
+200   QWidget::styleChange
+204   QWidget::enabledChange
+208   QWidget::paletteChange
+212   QWidget::fontChange
+216   QWidget::windowActivationChange
+220   QWidget::languageChange
+224   __cxa_pure_virtual
+228   __cxa_pure_virtual
+232   __cxa_pure_virtual
+236   __cxa_pure_virtual
+240   __cxa_pure_virtual
+244   __cxa_pure_virtual
+248   __cxa_pure_virtual
+252   __cxa_pure_virtual
+256   __cxa_pure_virtual
+260   __cxa_pure_virtual
+264   __cxa_pure_virtual
+268   __cxa_pure_virtual
+272   __cxa_pure_virtual
+276   __cxa_pure_virtual
+280   __cxa_pure_virtual
+284   __cxa_pure_virtual
+288   __cxa_pure_virtual
+292   __cxa_pure_virtual
+296   __cxa_pure_virtual
+300   __cxa_pure_virtual
+304   QDesignerFormWindowInterface::core
+308   __cxa_pure_virtual
+312   __cxa_pure_virtual
+316   __cxa_pure_virtual
+320   __cxa_pure_virtual
+324   __cxa_pure_virtual
+328   __cxa_pure_virtual
+332   __cxa_pure_virtual
+336   __cxa_pure_virtual
+340   __cxa_pure_virtual
+344   __cxa_pure_virtual
+348   __cxa_pure_virtual
+352   __cxa_pure_virtual
+356   __cxa_pure_virtual
+360   __cxa_pure_virtual
+364   __cxa_pure_virtual
+368   __cxa_pure_virtual
+372   __cxa_pure_virtual
+376   __cxa_pure_virtual
+380   __cxa_pure_virtual
+384   __cxa_pure_virtual
+388   __cxa_pure_virtual
+392   __cxa_pure_virtual
+396   __cxa_pure_virtual
+400   __cxa_pure_virtual
+404   __cxa_pure_virtual
+408   __cxa_pure_virtual
+412   __cxa_pure_virtual
+416   __cxa_pure_virtual
+420   __cxa_pure_virtual
+424   __cxa_pure_virtual
+428   (int (*)(...))-0x00000000000000008
+432   (int (*)(...))(& _ZTI28QDesignerFormWindowInterface)
+436   QDesignerFormWindowInterface::_ZThn8_N28QDesignerFormWindowInterfaceD1Ev
+440   QDesignerFormWindowInterface::_ZThn8_N28QDesignerFormWindowInterfaceD0Ev
+444   QWidget::_ZThn8_NK7QWidget7devTypeEv
+448   QWidget::_ZThn8_NK7QWidget11paintEngineEv
+452   QWidget::_ZThn8_NK7QWidget6metricEN12QPaintDevice17PaintDeviceMetricE
+
+Class QDesignerFormWindowInterface
+   size=20 align=4
+   base size=20 base align=4
+QDesignerFormWindowInterface (0xb69f4980) 0
+    vptr=((& QDesignerFormWindowInterface::_ZTV28QDesignerFormWindowInterface) + 8u)
+  QWidget (0xb69f49c0) 0
+      primary-for QDesignerFormWindowInterface (0xb69f4980)
+    QObject (0xb69f4a00) 0
+        primary-for QWidget (0xb69f49c0)
+    QPaintDevice (0xb69f4a40) 8
+        vptr=((& QDesignerFormWindowInterface::_ZTV28QDesignerFormWindowInterface) + 436u)
+
+Vtable for QDesignerFormWindowCursorInterface
+QDesignerFormWindowCursorInterface::_ZTV34QDesignerFormWindowCursorInterface: 17u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI34QDesignerFormWindowCursorInterface)
+8     QDesignerFormWindowCursorInterface::~QDesignerFormWindowCursorInterface
+12    QDesignerFormWindowCursorInterface::~QDesignerFormWindowCursorInterface
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    __cxa_pure_virtual
+32    __cxa_pure_virtual
+36    __cxa_pure_virtual
+40    __cxa_pure_virtual
+44    __cxa_pure_virtual
+48    __cxa_pure_virtual
+52    __cxa_pure_virtual
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+64    __cxa_pure_virtual
+
+Class QDesignerFormWindowCursorInterface
+   size=4 align=4
+   base size=4 base align=4
+QDesignerFormWindowCursorInterface (0xb69f4ac0) 0 nearly-empty
+    vptr=((& QDesignerFormWindowCursorInterface::_ZTV34QDesignerFormWindowCursorInterface) + 8u)
+
+Vtable for QDesignerFormWindowManagerInterface
+QDesignerFormWindowManagerInterface::_ZTV35QDesignerFormWindowManagerInterface: 39u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI35QDesignerFormWindowManagerInterface)
+8     QDesignerFormWindowManagerInterface::metaObject
+12    QDesignerFormWindowManagerInterface::qt_metacast
+16    QDesignerFormWindowManagerInterface::qt_metacall
+20    QDesignerFormWindowManagerInterface::~QDesignerFormWindowManagerInterface
+24    QDesignerFormWindowManagerInterface::~QDesignerFormWindowManagerInterface
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QDesignerFormWindowManagerInterface::actionCut
+60    QDesignerFormWindowManagerInterface::actionCopy
+64    QDesignerFormWindowManagerInterface::actionPaste
+68    QDesignerFormWindowManagerInterface::actionDelete
+72    QDesignerFormWindowManagerInterface::actionSelectAll
+76    QDesignerFormWindowManagerInterface::actionLower
+80    QDesignerFormWindowManagerInterface::actionRaise
+84    QDesignerFormWindowManagerInterface::actionUndo
+88    QDesignerFormWindowManagerInterface::actionRedo
+92    QDesignerFormWindowManagerInterface::actionHorizontalLayout
+96    QDesignerFormWindowManagerInterface::actionVerticalLayout
+100   QDesignerFormWindowManagerInterface::actionSplitHorizontal
+104   QDesignerFormWindowManagerInterface::actionSplitVertical
+108   QDesignerFormWindowManagerInterface::actionGridLayout
+112   QDesignerFormWindowManagerInterface::actionBreakLayout
+116   QDesignerFormWindowManagerInterface::actionAdjustSize
+120   QDesignerFormWindowManagerInterface::activeFormWindow
+124   QDesignerFormWindowManagerInterface::formWindowCount
+128   QDesignerFormWindowManagerInterface::formWindow
+132   QDesignerFormWindowManagerInterface::createFormWindow
+136   QDesignerFormWindowManagerInterface::core
+140   __cxa_pure_virtual
+144   QDesignerFormWindowManagerInterface::addFormWindow
+148   QDesignerFormWindowManagerInterface::removeFormWindow
+152   QDesignerFormWindowManagerInterface::setActiveFormWindow
+
+Class QDesignerFormWindowManagerInterface
+   size=8 align=4
+   base size=8 base align=4
+QDesignerFormWindowManagerInterface (0xb69f4b40) 0
+    vptr=((& QDesignerFormWindowManagerInterface::_ZTV35QDesignerFormWindowManagerInterface) + 8u)
+  QObject (0xb69f4b80) 0
+      primary-for QDesignerFormWindowManagerInterface (0xb69f4b40)
+
+Vtable for QDesignerFormWindowToolInterface
+QDesignerFormWindowToolInterface::_ZTV32QDesignerFormWindowToolInterface: 23u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI32QDesignerFormWindowToolInterface)
+8     QDesignerFormWindowToolInterface::metaObject
+12    QDesignerFormWindowToolInterface::qt_metacast
+16    QDesignerFormWindowToolInterface::qt_metacall
+20    QDesignerFormWindowToolInterface::~QDesignerFormWindowToolInterface
+24    QDesignerFormWindowToolInterface::~QDesignerFormWindowToolInterface
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+64    __cxa_pure_virtual
+68    __cxa_pure_virtual
+72    __cxa_pure_virtual
+76    __cxa_pure_virtual
+80    QDesignerFormWindowToolInterface::saveToDom
+84    QDesignerFormWindowToolInterface::loadFromDom
+88    __cxa_pure_virtual
+
+Class QDesignerFormWindowToolInterface
+   size=8 align=4
+   base size=8 base align=4
+QDesignerFormWindowToolInterface (0xb69f4c00) 0
+    vptr=((& QDesignerFormWindowToolInterface::_ZTV32QDesignerFormWindowToolInterface) + 8u)
+  QObject (0xb69f4c40) 0
+      primary-for QDesignerFormWindowToolInterface (0xb69f4c00)
+
+Vtable for QDesignerIconCacheInterface
+QDesignerIconCacheInterface::_ZTV27QDesignerIconCacheInterface: 23u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI27QDesignerIconCacheInterface)
+8     QDesignerIconCacheInterface::metaObject
+12    QDesignerIconCacheInterface::qt_metacast
+16    QDesignerIconCacheInterface::qt_metacall
+20    QDesignerIconCacheInterface::~QDesignerIconCacheInterface
+24    QDesignerIconCacheInterface::~QDesignerIconCacheInterface
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+64    __cxa_pure_virtual
+68    __cxa_pure_virtual
+72    __cxa_pure_virtual
+76    __cxa_pure_virtual
+80    __cxa_pure_virtual
+84    __cxa_pure_virtual
+88    __cxa_pure_virtual
+
+Class QDesignerIconCacheInterface
+   size=8 align=4
+   base size=8 base align=4
+QDesignerIconCacheInterface (0xb69f4cc0) 0
+    vptr=((& QDesignerIconCacheInterface::_ZTV27QDesignerIconCacheInterface) + 8u)
+  QObject (0xb69f4d00) 0
+      primary-for QDesignerIconCacheInterface (0xb69f4cc0)
+
+Vtable for QDesignerLanguageExtension
+QDesignerLanguageExtension::_ZTV26QDesignerLanguageExtension: 8u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI26QDesignerLanguageExtension)
+8     QDesignerLanguageExtension::~QDesignerLanguageExtension
+12    QDesignerLanguageExtension::~QDesignerLanguageExtension
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    __cxa_pure_virtual
+
+Class QDesignerLanguageExtension
+   size=4 align=4
+   base size=4 base align=4
+QDesignerLanguageExtension (0xb69f4d80) 0 nearly-empty
+    vptr=((& QDesignerLanguageExtension::_ZTV26QDesignerLanguageExtension) + 8u)
+
+Vtable for QDesignerMetaDataBaseItemInterface
+QDesignerMetaDataBaseItemInterface::_ZTV34QDesignerMetaDataBaseItemInterface: 10u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI34QDesignerMetaDataBaseItemInterface)
+8     QDesignerMetaDataBaseItemInterface::~QDesignerMetaDataBaseItemInterface
+12    QDesignerMetaDataBaseItemInterface::~QDesignerMetaDataBaseItemInterface
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    __cxa_pure_virtual
+32    __cxa_pure_virtual
+36    __cxa_pure_virtual
+
+Class QDesignerMetaDataBaseItemInterface
+   size=4 align=4
+   base size=4 base align=4
+QDesignerMetaDataBaseItemInterface (0xb69f4ec0) 0 nearly-empty
+    vptr=((& QDesignerMetaDataBaseItemInterface::_ZTV34QDesignerMetaDataBaseItemInterface) + 8u)
+
+Vtable for QDesignerMetaDataBaseInterface
+QDesignerMetaDataBaseInterface::_ZTV30QDesignerMetaDataBaseInterface: 19u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI30QDesignerMetaDataBaseInterface)
+8     QDesignerMetaDataBaseInterface::metaObject
+12    QDesignerMetaDataBaseInterface::qt_metacast
+16    QDesignerMetaDataBaseInterface::qt_metacall
+20    QDesignerMetaDataBaseInterface::~QDesignerMetaDataBaseInterface
+24    QDesignerMetaDataBaseInterface::~QDesignerMetaDataBaseInterface
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+64    __cxa_pure_virtual
+68    __cxa_pure_virtual
+72    __cxa_pure_virtual
+
+Class QDesignerMetaDataBaseInterface
+   size=8 align=4
+   base size=8 base align=4
+QDesignerMetaDataBaseInterface (0xb69f4f40) 0
+    vptr=((& QDesignerMetaDataBaseInterface::_ZTV30QDesignerMetaDataBaseInterface) + 8u)
+  QObject (0xb69f4f80) 0
+      primary-for QDesignerMetaDataBaseInterface (0xb69f4f40)
+
+Vtable for QDesignerObjectInspectorInterface
+QDesignerObjectInspectorInterface::_ZTV33QDesignerObjectInspectorInterface: 65u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI33QDesignerObjectInspectorInterface)
+8     QDesignerObjectInspectorInterface::metaObject
+12    QDesignerObjectInspectorInterface::qt_metacast
+16    QDesignerObjectInspectorInterface::qt_metacall
+20    QDesignerObjectInspectorInterface::~QDesignerObjectInspectorInterface
+24    QDesignerObjectInspectorInterface::~QDesignerObjectInspectorInterface
+28    QWidget::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QWidget::devType
+60    QWidget::setVisible
+64    QWidget::sizeHint
+68    QWidget::minimumSizeHint
+72    QWidget::heightForWidth
+76    QWidget::paintEngine
+80    QWidget::mousePressEvent
+84    QWidget::mouseReleaseEvent
+88    QWidget::mouseDoubleClickEvent
+92    QWidget::mouseMoveEvent
+96    QWidget::wheelEvent
+100   QWidget::keyPressEvent
+104   QWidget::keyReleaseEvent
+108   QWidget::focusInEvent
+112   QWidget::focusOutEvent
+116   QWidget::enterEvent
+120   QWidget::leaveEvent
+124   QWidget::paintEvent
+128   QWidget::moveEvent
+132   QWidget::resizeEvent
+136   QWidget::closeEvent
+140   QWidget::contextMenuEvent
+144   QWidget::tabletEvent
+148   QWidget::actionEvent
+152   QWidget::dragEnterEvent
+156   QWidget::dragMoveEvent
+160   QWidget::dragLeaveEvent
+164   QWidget::dropEvent
+168   QWidget::showEvent
+172   QWidget::hideEvent
+176   QWidget::x11Event
+180   QWidget::changeEvent
+184   QWidget::metric
+188   QWidget::inputMethodEvent
+192   QWidget::inputMethodQuery
+196   QWidget::focusNextPrevChild
+200   QWidget::styleChange
+204   QWidget::enabledChange
+208   QWidget::paletteChange
+212   QWidget::fontChange
+216   QWidget::windowActivationChange
+220   QWidget::languageChange
+224   QDesignerObjectInspectorInterface::core
+228   __cxa_pure_virtual
+232   (int (*)(...))-0x00000000000000008
+236   (int (*)(...))(& _ZTI33QDesignerObjectInspectorInterface)
+240   QDesignerObjectInspectorInterface::_ZThn8_N33QDesignerObjectInspectorInterfaceD1Ev
+244   QDesignerObjectInspectorInterface::_ZThn8_N33QDesignerObjectInspectorInterfaceD0Ev
+248   QWidget::_ZThn8_NK7QWidget7devTypeEv
+252   QWidget::_ZThn8_NK7QWidget11paintEngineEv
+256   QWidget::_ZThn8_NK7QWidget6metricEN12QPaintDevice17PaintDeviceMetricE
+
+Class QDesignerObjectInspectorInterface
+   size=20 align=4
+   base size=20 base align=4
+QDesignerObjectInspectorInterface (0xb69f4140) 0
+    vptr=((& QDesignerObjectInspectorInterface::_ZTV33QDesignerObjectInspectorInterface) + 8u)
+  QWidget (0xb69f41c0) 0
+      primary-for QDesignerObjectInspectorInterface (0xb69f4140)
+    QObject (0xb69f42c0) 0
+        primary-for QWidget (0xb69f41c0)
+    QPaintDevice (0xb69f4340) 8
+        vptr=((& QDesignerObjectInspectorInterface::_ZTV33QDesignerObjectInspectorInterface) + 240u)
+
+Vtable for QDesignerPropertyEditorInterface
+QDesignerPropertyEditorInterface::_ZTV32QDesignerPropertyEditorInterface: 70u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI32QDesignerPropertyEditorInterface)
+8     QDesignerPropertyEditorInterface::metaObject
+12    QDesignerPropertyEditorInterface::qt_metacast
+16    QDesignerPropertyEditorInterface::qt_metacall
+20    QDesignerPropertyEditorInterface::~QDesignerPropertyEditorInterface
+24    QDesignerPropertyEditorInterface::~QDesignerPropertyEditorInterface
+28    QWidget::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QWidget::devType
+60    QWidget::setVisible
+64    QWidget::sizeHint
+68    QWidget::minimumSizeHint
+72    QWidget::heightForWidth
+76    QWidget::paintEngine
+80    QWidget::mousePressEvent
+84    QWidget::mouseReleaseEvent
+88    QWidget::mouseDoubleClickEvent
+92    QWidget::mouseMoveEvent
+96    QWidget::wheelEvent
+100   QWidget::keyPressEvent
+104   QWidget::keyReleaseEvent
+108   QWidget::focusInEvent
+112   QWidget::focusOutEvent
+116   QWidget::enterEvent
+120   QWidget::leaveEvent
+124   QWidget::paintEvent
+128   QWidget::moveEvent
+132   QWidget::resizeEvent
+136   QWidget::closeEvent
+140   QWidget::contextMenuEvent
+144   QWidget::tabletEvent
+148   QWidget::actionEvent
+152   QWidget::dragEnterEvent
+156   QWidget::dragMoveEvent
+160   QWidget::dragLeaveEvent
+164   QWidget::dropEvent
+168   QWidget::showEvent
+172   QWidget::hideEvent
+176   QWidget::x11Event
+180   QWidget::changeEvent
+184   QWidget::metric
+188   QWidget::inputMethodEvent
+192   QWidget::inputMethodQuery
+196   QWidget::focusNextPrevChild
+200   QWidget::styleChange
+204   QWidget::enabledChange
+208   QWidget::paletteChange
+212   QWidget::fontChange
+216   QWidget::windowActivationChange
+220   QWidget::languageChange
+224   QDesignerPropertyEditorInterface::core
+228   __cxa_pure_virtual
+232   __cxa_pure_virtual
+236   __cxa_pure_virtual
+240   __cxa_pure_virtual
+244   __cxa_pure_virtual
+248   __cxa_pure_virtual
+252   (int (*)(...))-0x00000000000000008
+256   (int (*)(...))(& _ZTI32QDesignerPropertyEditorInterface)
+260   QDesignerPropertyEditorInterface::_ZThn8_N32QDesignerPropertyEditorInterfaceD1Ev
+264   QDesignerPropertyEditorInterface::_ZThn8_N32QDesignerPropertyEditorInterfaceD0Ev
+268   QWidget::_ZThn8_NK7QWidget7devTypeEv
+272   QWidget::_ZThn8_NK7QWidget11paintEngineEv
+276   QWidget::_ZThn8_NK7QWidget6metricEN12QPaintDevice17PaintDeviceMetricE
+
+Class QDesignerPropertyEditorInterface
+   size=20 align=4
+   base size=20 base align=4
+QDesignerPropertyEditorInterface (0xb69f43c0) 0
+    vptr=((& QDesignerPropertyEditorInterface::_ZTV32QDesignerPropertyEditorInterface) + 8u)
+  QWidget (0xb69f4440) 0
+      primary-for QDesignerPropertyEditorInterface (0xb69f43c0)
+    QObject (0xb69f44c0) 0
+        primary-for QWidget (0xb69f4440)
+    QPaintDevice (0xb69f4540) 8
+        vptr=((& QDesignerPropertyEditorInterface::_ZTV32QDesignerPropertyEditorInterface) + 260u)
+
+Class QMetaType
+   size=1 align=1
+   base size=0 base align=1
+QMetaType (0xb69f45c0) 0 empty
+
+Class QMetaTypeId2<QString>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QString> (0xb69f4740) 0 empty
+
+Class QMetaTypeId2<int>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<int> (0xb69f47c0) 0 empty
+
+Class QMetaTypeId2<unsigned int>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<unsigned int> (0xb69f4840) 0 empty
+
+Class QMetaTypeId2<bool>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<bool> (0xb69f48c0) 0 empty
+
+Class QMetaTypeId2<double>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<double> (0xb69f4940) 0 empty
+
+Class QMetaTypeId2<QByteArray>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QByteArray> (0xb69f4a80) 0 empty
+
+Class QMetaTypeId2<QChar>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QChar> (0xb69f4b00) 0 empty
+
+Class QMetaTypeId2<long int>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<long int> (0xb69f4bc0) 0 empty
+
+Class QMetaTypeId2<short int>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<short int> (0xb69f4c80) 0 empty
+
+Class QMetaTypeId2<char>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<char> (0xb69f4d40) 0 empty
+
+Class QMetaTypeId2<long unsigned int>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<long unsigned int> (0xb69f4dc0) 0 empty
+
+Class QMetaTypeId2<short unsigned int>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<short unsigned int> (0xb69f4f00) 0 empty
+
+Class QMetaTypeId2<unsigned char>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<unsigned char> (0xb69f4fc0) 0 empty
+
+Class QMetaTypeId2<float>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<float> (0xb68f8000) 0 empty
+
+Class QMetaTypeId2<QObject*>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QObject*> (0xb68f8040) 0 empty
+
+Class QMetaTypeId2<QWidget*>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QWidget*> (0xb68f8080) 0 empty
+
+Class QMetaTypeId2<void*>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<void*> (0xb68f80c0) 0 empty
+
+Class QMetaTypeId2<long long int>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<long long int> (0xb68f8100) 0 empty
+
+Class QMetaTypeId2<long long unsigned int>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<long long unsigned int> (0xb68f8140) 0 empty
+
+Class QMetaTypeId2<QStringList>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QStringList> (0xb68f8180) 0 empty
+
+Class QMetaTypeId2<QBitArray>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QBitArray> (0xb68f81c0) 0 empty
+
+Class QMetaTypeId2<QDate>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QDate> (0xb68f8200) 0 empty
+
+Class QMetaTypeId2<QTime>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QTime> (0xb68f8240) 0 empty
+
+Class QMetaTypeId2<QDateTime>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QDateTime> (0xb68f8280) 0 empty
+
+Class QMetaTypeId2<QUrl>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QUrl> (0xb68f82c0) 0 empty
+
+Class QMetaTypeId2<QLocale>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QLocale> (0xb68f8300) 0 empty
+
+Class QMetaTypeId2<QRect>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QRect> (0xb68f8340) 0 empty
+
+Class QMetaTypeId2<QRectF>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QRectF> (0xb68f8380) 0 empty
+
+Class QMetaTypeId2<QSize>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QSize> (0xb68f83c0) 0 empty
+
+Class QMetaTypeId2<QSizeF>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QSizeF> (0xb68f8400) 0 empty
+
+Class QMetaTypeId2<QLine>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QLine> (0xb68f8440) 0 empty
+
+Class QMetaTypeId2<QLineF>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QLineF> (0xb68f8480) 0 empty
+
+Class QMetaTypeId2<QPoint>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QPoint> (0xb68f84c0) 0 empty
+
+Class QMetaTypeId2<QPointF>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QPointF> (0xb68f8500) 0 empty
+
+Class QMetaTypeId2<QRegExp>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QRegExp> (0xb68f8540) 0 empty
+
+Class QMetaTypeId2<QColorGroup>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QColorGroup> (0xb68f8580) 0 empty
+
+Class QMetaTypeId2<QFont>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QFont> (0xb68f85c0) 0 empty
+
+Class QMetaTypeId2<QPixmap>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QPixmap> (0xb68f8600) 0 empty
+
+Class QMetaTypeId2<QBrush>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QBrush> (0xb68f8640) 0 empty
+
+Class QMetaTypeId2<QColor>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QColor> (0xb68f8680) 0 empty
+
+Class QMetaTypeId2<QPalette>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QPalette> (0xb68f86c0) 0 empty
+
+Class QMetaTypeId2<QIcon>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QIcon> (0xb68f8700) 0 empty
+
+Class QMetaTypeId2<QImage>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QImage> (0xb68f8740) 0 empty
+
+Class QMetaTypeId2<QPolygon>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QPolygon> (0xb68f8780) 0 empty
+
+Class QMetaTypeId2<QRegion>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QRegion> (0xb68f87c0) 0 empty
+
+Class QMetaTypeId2<QBitmap>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QBitmap> (0xb68f8800) 0 empty
+
+Class QMetaTypeId2<QCursor>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QCursor> (0xb68f8840) 0 empty
+
+Class QMetaTypeId2<QSizePolicy>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QSizePolicy> (0xb68f8880) 0 empty
+
+Class QMetaTypeId2<QKeySequence>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QKeySequence> (0xb68f88c0) 0 empty
+
+Class QMetaTypeId2<QPen>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QPen> (0xb68f8900) 0 empty
+
+Class QMetaTypeId2<QTextLength>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QTextLength> (0xb68f8940) 0 empty
+
+Class QMetaTypeId2<QTextFormat>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QTextFormat> (0xb68f8980) 0 empty
+
+Class QMetaTypeId2<QMatrix>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId2<QMatrix> (0xb68f89c0) 0 empty
+
+Class QIcon
+   size=4 align=4
+   base size=4 base align=4
+QIcon (0xb68f8a00) 0
+
+Class QTypeInfo<QIcon>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QIcon> (0xb68f8ac0) 0 empty
+
+Class QDesignerWidgetBoxInterface::Widget
+   size=16 align=4
+   base size=16 base align=4
+QDesignerWidgetBoxInterface::Widget (0xb68f8c00) 0
+
+Class QList<QDesignerWidgetBoxInterface::Widget>::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+QList<QDesignerWidgetBoxInterface::Widget>::<anonymous union> (0xb68f8d40) 0
+
+Class QList<QDesignerWidgetBoxInterface::Widget>
+   size=4 align=4
+   base size=4 base align=4
+QList<QDesignerWidgetBoxInterface::Widget> (0xb68f8cc0) 0
+
+Class QDesignerWidgetBoxInterface::Category
+   size=12 align=4
+   base size=12 base align=4
+QDesignerWidgetBoxInterface::Category (0xb68f8c40) 0
+
+Vtable for QDesignerWidgetBoxInterface
+QDesignerWidgetBoxInterface::_ZTV27QDesignerWidgetBoxInterface: 76u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI27QDesignerWidgetBoxInterface)
+8     QDesignerWidgetBoxInterface::metaObject
+12    QDesignerWidgetBoxInterface::qt_metacast
+16    QDesignerWidgetBoxInterface::qt_metacall
+20    QDesignerWidgetBoxInterface::~QDesignerWidgetBoxInterface
+24    QDesignerWidgetBoxInterface::~QDesignerWidgetBoxInterface
+28    QWidget::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QWidget::devType
+60    QWidget::setVisible
+64    QWidget::sizeHint
+68    QWidget::minimumSizeHint
+72    QWidget::heightForWidth
+76    QWidget::paintEngine
+80    QWidget::mousePressEvent
+84    QWidget::mouseReleaseEvent
+88    QWidget::mouseDoubleClickEvent
+92    QWidget::mouseMoveEvent
+96    QWidget::wheelEvent
+100   QWidget::keyPressEvent
+104   QWidget::keyReleaseEvent
+108   QWidget::focusInEvent
+112   QWidget::focusOutEvent
+116   QWidget::enterEvent
+120   QWidget::leaveEvent
+124   QWidget::paintEvent
+128   QWidget::moveEvent
+132   QWidget::resizeEvent
+136   QWidget::closeEvent
+140   QWidget::contextMenuEvent
+144   QWidget::tabletEvent
+148   QWidget::actionEvent
+152   QWidget::dragEnterEvent
+156   QWidget::dragMoveEvent
+160   QWidget::dragLeaveEvent
+164   QWidget::dropEvent
+168   QWidget::showEvent
+172   QWidget::hideEvent
+176   QWidget::x11Event
+180   QWidget::changeEvent
+184   QWidget::metric
+188   QWidget::inputMethodEvent
+192   QWidget::inputMethodQuery
+196   QWidget::focusNextPrevChild
+200   QWidget::styleChange
+204   QWidget::enabledChange
+208   QWidget::paletteChange
+212   QWidget::fontChange
+216   QWidget::windowActivationChange
+220   QWidget::languageChange
+224   __cxa_pure_virtual
+228   __cxa_pure_virtual
+232   __cxa_pure_virtual
+236   __cxa_pure_virtual
+240   __cxa_pure_virtual
+244   __cxa_pure_virtual
+248   __cxa_pure_virtual
+252   __cxa_pure_virtual
+256   __cxa_pure_virtual
+260   __cxa_pure_virtual
+264   __cxa_pure_virtual
+268   __cxa_pure_virtual
+272   __cxa_pure_virtual
+276   (int (*)(...))-0x00000000000000008
+280   (int (*)(...))(& _ZTI27QDesignerWidgetBoxInterface)
+284   QDesignerWidgetBoxInterface::_ZThn8_N27QDesignerWidgetBoxInterfaceD1Ev
+288   QDesignerWidgetBoxInterface::_ZThn8_N27QDesignerWidgetBoxInterfaceD0Ev
+292   QWidget::_ZThn8_NK7QWidget7devTypeEv
+296   QWidget::_ZThn8_NK7QWidget11paintEngineEv
+300   QWidget::_ZThn8_NK7QWidget6metricEN12QPaintDevice17PaintDeviceMetricE
+
+Class QDesignerWidgetBoxInterface
+   size=20 align=4
+   base size=20 base align=4
+QDesignerWidgetBoxInterface (0xb68f8b00) 0
+    vptr=((& QDesignerWidgetBoxInterface::_ZTV27QDesignerWidgetBoxInterface) + 8u)
+  QWidget (0xb68f8b40) 0
+      primary-for QDesignerWidgetBoxInterface (0xb68f8b00)
+    QObject (0xb68f8b80) 0
+        primary-for QWidget (0xb68f8b40)
+    QPaintDevice (0xb68f8bc0) 8
+        vptr=((& QDesignerWidgetBoxInterface::_ZTV27QDesignerWidgetBoxInterface) + 284u)
+
+Class QMetaTypeId<QDesignerWidgetBoxInterface::Widget>
+   size=1 align=1
+   base size=0 base align=1
+QMetaTypeId<QDesignerWidgetBoxInterface::Widget> (0xb68f8e40) 0 empty
+
+Vtable for QDesignerWidgetDataBaseItemInterface
+QDesignerWidgetDataBaseItemInterface::_ZTV36QDesignerWidgetDataBaseItemInterface: 30u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI36QDesignerWidgetDataBaseItemInterface)
+8     QDesignerWidgetDataBaseItemInterface::~QDesignerWidgetDataBaseItemInterface
+12    QDesignerWidgetDataBaseItemInterface::~QDesignerWidgetDataBaseItemInterface
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    __cxa_pure_virtual
+32    __cxa_pure_virtual
+36    __cxa_pure_virtual
+40    __cxa_pure_virtual
+44    __cxa_pure_virtual
+48    __cxa_pure_virtual
+52    __cxa_pure_virtual
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+64    __cxa_pure_virtual
+68    __cxa_pure_virtual
+72    __cxa_pure_virtual
+76    __cxa_pure_virtual
+80    __cxa_pure_virtual
+84    __cxa_pure_virtual
+88    __cxa_pure_virtual
+92    __cxa_pure_virtual
+96    __cxa_pure_virtual
+100   __cxa_pure_virtual
+104   __cxa_pure_virtual
+108   __cxa_pure_virtual
+112   __cxa_pure_virtual
+116   __cxa_pure_virtual
+
+Class QDesignerWidgetDataBaseItemInterface
+   size=4 align=4
+   base size=4 base align=4
+QDesignerWidgetDataBaseItemInterface (0xb68f8f40) 0 nearly-empty
+    vptr=((& QDesignerWidgetDataBaseItemInterface::_ZTV36QDesignerWidgetDataBaseItemInterface) + 8u)
+
+Class QList<QDesignerWidgetDataBaseItemInterface*>::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+QList<QDesignerWidgetDataBaseItemInterface*>::<anonymous union> (0xb68f8f80) 0
+
+Class QList<QDesignerWidgetDataBaseItemInterface*>
+   size=4 align=4
+   base size=4 base align=4
+QList<QDesignerWidgetDataBaseItemInterface*> (0xb68f8c80) 0
+
+Vtable for QDesignerWidgetDataBaseInterface
+QDesignerWidgetDataBaseInterface::_ZTV32QDesignerWidgetDataBaseInterface: 22u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI32QDesignerWidgetDataBaseInterface)
+8     QDesignerWidgetDataBaseInterface::metaObject
+12    QDesignerWidgetDataBaseInterface::qt_metacast
+16    QDesignerWidgetDataBaseInterface::qt_metacall
+20    QDesignerWidgetDataBaseInterface::~QDesignerWidgetDataBaseInterface
+24    QDesignerWidgetDataBaseInterface::~QDesignerWidgetDataBaseInterface
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QDesignerWidgetDataBaseInterface::count
+60    QDesignerWidgetDataBaseInterface::item
+64    QDesignerWidgetDataBaseInterface::indexOf
+68    QDesignerWidgetDataBaseInterface::insert
+72    QDesignerWidgetDataBaseInterface::append
+76    QDesignerWidgetDataBaseInterface::indexOfObject
+80    QDesignerWidgetDataBaseInterface::indexOfClassName
+84    QDesignerWidgetDataBaseInterface::core
+
+Class QDesignerWidgetDataBaseInterface
+   size=12 align=4
+   base size=12 base align=4
+QDesignerWidgetDataBaseInterface (0xb68f8fc0) 0
+    vptr=((& QDesignerWidgetDataBaseInterface::_ZTV32QDesignerWidgetDataBaseInterface) + 8u)
+  QObject (0xb68f8a40) 0
+      primary-for QDesignerWidgetDataBaseInterface (0xb68f8fc0)
+
+Vtable for QDesignerWidgetFactoryInterface
+QDesignerWidgetFactoryInterface::_ZTV31QDesignerWidgetFactoryInterface: 21u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI31QDesignerWidgetFactoryInterface)
+8     QDesignerWidgetFactoryInterface::metaObject
+12    QDesignerWidgetFactoryInterface::qt_metacast
+16    QDesignerWidgetFactoryInterface::qt_metacall
+20    QDesignerWidgetFactoryInterface::~QDesignerWidgetFactoryInterface
+24    QDesignerWidgetFactoryInterface::~QDesignerWidgetFactoryInterface
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+64    __cxa_pure_virtual
+68    __cxa_pure_virtual
+72    __cxa_pure_virtual
+76    __cxa_pure_virtual
+80    __cxa_pure_virtual
+
+Class QDesignerWidgetFactoryInterface
+   size=8 align=4
+   base size=8 base align=4
+QDesignerWidgetFactoryInterface (0xb6786040) 0
+    vptr=((& QDesignerWidgetFactoryInterface::_ZTV31QDesignerWidgetFactoryInterface) + 8u)
+  QObject (0xb6786080) 0
+      primary-for QDesignerWidgetFactoryInterface (0xb6786040)
+
+Vtable for QDesignerExtraInfoExtension
+QDesignerExtraInfoExtension::_ZTV27QDesignerExtraInfoExtension: 10u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI27QDesignerExtraInfoExtension)
+8     QDesignerExtraInfoExtension::~QDesignerExtraInfoExtension
+12    QDesignerExtraInfoExtension::~QDesignerExtraInfoExtension
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    __cxa_pure_virtual
+32    __cxa_pure_virtual
+36    __cxa_pure_virtual
+
+Class QDesignerExtraInfoExtension
+   size=8 align=4
+   base size=8 base align=4
+QDesignerExtraInfoExtension (0xb6786100) 0
+    vptr=((& QDesignerExtraInfoExtension::_ZTV27QDesignerExtraInfoExtension) + 8u)
+
+Vtable for QDesignerLayoutDecorationExtension
+QDesignerLayoutDecorationExtension::_ZTV34QDesignerLayoutDecorationExtension: 19u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI34QDesignerLayoutDecorationExtension)
+8     QDesignerLayoutDecorationExtension::~QDesignerLayoutDecorationExtension
+12    QDesignerLayoutDecorationExtension::~QDesignerLayoutDecorationExtension
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    __cxa_pure_virtual
+32    __cxa_pure_virtual
+36    __cxa_pure_virtual
+40    __cxa_pure_virtual
+44    __cxa_pure_virtual
+48    __cxa_pure_virtual
+52    __cxa_pure_virtual
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+64    __cxa_pure_virtual
+68    __cxa_pure_virtual
+72    __cxa_pure_virtual
+
+Class QDesignerLayoutDecorationExtension
+   size=4 align=4
+   base size=4 base align=4
+QDesignerLayoutDecorationExtension (0xb6786240) 0 nearly-empty
+    vptr=((& QDesignerLayoutDecorationExtension::_ZTV34QDesignerLayoutDecorationExtension) + 8u)
+
+Vtable for QDesignerMemberSheetExtension
+QDesignerMemberSheetExtension::_ZTV29QDesignerMemberSheetExtension: 18u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI29QDesignerMemberSheetExtension)
+8     QDesignerMemberSheetExtension::~QDesignerMemberSheetExtension
+12    QDesignerMemberSheetExtension::~QDesignerMemberSheetExtension
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    __cxa_pure_virtual
+32    __cxa_pure_virtual
+36    __cxa_pure_virtual
+40    __cxa_pure_virtual
+44    __cxa_pure_virtual
+48    __cxa_pure_virtual
+52    __cxa_pure_virtual
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+64    __cxa_pure_virtual
+68    __cxa_pure_virtual
+
+Class QDesignerMemberSheetExtension
+   size=4 align=4
+   base size=4 base align=4
+QDesignerMemberSheetExtension (0xb67862c0) 0 nearly-empty
+    vptr=((& QDesignerMemberSheetExtension::_ZTV29QDesignerMemberSheetExtension) + 8u)
+
+Vtable for QDesignerPropertySheetExtension
+QDesignerPropertySheetExtension::_ZTV31QDesignerPropertySheetExtension: 19u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI31QDesignerPropertySheetExtension)
+8     QDesignerPropertySheetExtension::~QDesignerPropertySheetExtension
+12    QDesignerPropertySheetExtension::~QDesignerPropertySheetExtension
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    __cxa_pure_virtual
+32    __cxa_pure_virtual
+36    __cxa_pure_virtual
+40    __cxa_pure_virtual
+44    __cxa_pure_virtual
+48    __cxa_pure_virtual
+52    __cxa_pure_virtual
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+64    __cxa_pure_virtual
+68    __cxa_pure_virtual
+72    __cxa_pure_virtual
+
+Class QDesignerPropertySheetExtension
+   size=4 align=4
+   base size=4 base align=4
+QDesignerPropertySheetExtension (0xb6786400) 0 nearly-empty
+    vptr=((& QDesignerPropertySheetExtension::_ZTV31QDesignerPropertySheetExtension) + 8u)
+
+Vtable for QDesignerTaskMenuExtension
+QDesignerTaskMenuExtension::_ZTV26QDesignerTaskMenuExtension: 6u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI26QDesignerTaskMenuExtension)
+8     QDesignerTaskMenuExtension::~QDesignerTaskMenuExtension
+12    QDesignerTaskMenuExtension::~QDesignerTaskMenuExtension
+16    QDesignerTaskMenuExtension::preferredEditAction
+20    __cxa_pure_virtual
+
+Class QDesignerTaskMenuExtension
+   size=4 align=4
+   base size=4 base align=4
+QDesignerTaskMenuExtension (0xb6786540) 0 nearly-empty
+    vptr=((& QDesignerTaskMenuExtension::_ZTV26QDesignerTaskMenuExtension) + 8u)
+
+Class <anonymous struct>::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+<anonymous struct>::<anonymous union> (0xb6786700) 0
+
+Class <anonymous struct>
+   size=8 align=4
+   base size=8 base align=4
+<anonymous struct> (0xb67866c0) 0
+
+Class <anonymous struct>
+   size=12 align=4
+   base size=12 base align=4
+<anonymous struct> (0xb6786740) 0
+
+Class <anonymous struct>
+   size=16 align=4
+   base size=16 base align=4
+<anonymous struct> (0xb6786780) 0
+
+Class __gconv_trans_data
+   size=20 align=4
+   base size=20 base align=4
+__gconv_trans_data (0xb67867c0) 0
+
+Class __gconv_step
+   size=60 align=4
+   base size=60 base align=4
+__gconv_step (0xb6786800) 0
+
+Class __gconv_step_data
+   size=36 align=4
+   base size=36 base align=4
+__gconv_step_data (0xb6786840) 0
+
+Class __gconv_info
+   size=8 align=4
+   base size=8 base align=4
+__gconv_info (0xb6786880) 0
+
+Class <anonymous union>::<anonymous struct>
+   size=44 align=4
+   base size=44 base align=4
+<anonymous union>::<anonymous struct> (0xb6786900) 0
+
+Class <anonymous union>
+   size=44 align=4
+   base size=44 base align=4
+<anonymous union> (0xb67868c0) 0
+
+Class _IO_marker
+   size=12 align=4
+   base size=12 base align=4
+_IO_marker (0xb6786940) 0
+
+Class _IO_FILE
+   size=148 align=4
+   base size=148 base align=4
+_IO_FILE (0xb6786980) 0
+
+Class <anonymous struct>
+   size=16 align=4
+   base size=16 base align=4
+<anonymous struct> (0xb67869c0) 0
+
+Vtable for QFile
+QFile::_ZTV5QFile: 31u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI5QFile)
+8     QFile::metaObject
+12    QFile::qt_metacast
+16    QFile::qt_metacall
+20    QFile::~QFile
+24    QFile::~QFile
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QFile::isSequential
+60    QFile::open
+64    QFile::close
+68    QFile::pos
+72    QFile::size
+76    QFile::seek
+80    QFile::atEnd
+84    QIODevice::reset
+88    QIODevice::bytesAvailable
+92    QIODevice::bytesToWrite
+96    QIODevice::canReadLine
+100   QIODevice::waitForReadyRead
+104   QIODevice::waitForBytesWritten
+108   QFile::readData
+112   QFile::readLineData
+116   QFile::writeData
+120   QFile::fileEngine
+
+Class QFile
+   size=8 align=4
+   base size=8 base align=4
+QFile (0xb6786a00) 0
+    vptr=((& QFile::_ZTV5QFile) + 8u)
+  QIODevice (0xb6786a40) 0
+      primary-for QFile (0xb6786a00)
+    QObject (0xb6786a80) 0
+        primary-for QIODevice (0xb6786a40)
+
+Class QFlags<QFile::Permission>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<QFile::Permission> (0xb6786b00) 0
+
+Class QFileInfo
+   size=4 align=4
+   base size=4 base align=4
+QFileInfo (0xb6786b40) 0
+
+Class QFlags<QFileInfo::Permission>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<QFileInfo::Permission> (0xb6786b80) 0
+
+Class QTypeInfo<QFileInfo>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QFileInfo> (0xb6786bc0) 0 empty
+
+Class QList<QFileInfo>::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+QList<QFileInfo>::<anonymous union> (0xb6786c80) 0
+
+Class QList<QFileInfo>
+   size=4 align=4
+   base size=4 base align=4
+QList<QFileInfo> (0xb6786c00) 0
+
+Class QDir
+   size=4 align=4
+   base size=4 base align=4
+QDir (0xb6786cc0) 0
+
+Class QFlags<QDir::SortFlag>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<QDir::SortFlag> (0xb6786d40) 0
+
+Class QFlags<QDir::Filter>
+   size=4 align=4
+   base size=4 base align=4
+QFlags<QDir::Filter> (0xb6786dc0) 0
+
+Class QHash<QObject*, bool>::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+QHash<QObject*, bool>::<anonymous union> (0xb6786f00) 0
+
+Class QHash<QObject*, bool>
+   size=4 align=4
+   base size=4 base align=4
+QHash<QObject*, bool> (0xb6786e80) 0
+
+Class QHash<QString, QAction*>::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+QHash<QString, QAction*>::<anonymous union> (0xb6786000) 0
+
+Class QHash<QString, QAction*>
+   size=4 align=4
+   base size=4 base align=4
+QHash<QString, QAction*> (0xb6786f80) 0
+
+Class QHash<QString, QActionGroup*>::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+QHash<QString, QActionGroup*>::<anonymous union> (0xb6786280) 0
+
+Class QHash<QString, QActionGroup*>
+   size=4 align=4
+   base size=4 base align=4
+QHash<QString, QActionGroup*> (0xb67860c0) 0
+
+Vtable for QAbstractFormBuilder
+QAbstractFormBuilder::_ZTV20QAbstractFormBuilder: 48u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI20QAbstractFormBuilder)
+8     QAbstractFormBuilder::~QAbstractFormBuilder
+12    QAbstractFormBuilder::~QAbstractFormBuilder
+16    QAbstractFormBuilder::load
+20    QAbstractFormBuilder::save
+24    QAbstractFormBuilder::loadExtraInfo
+28    QAbstractFormBuilder::create
+32    QAbstractFormBuilder::create
+36    QAbstractFormBuilder::create
+40    QAbstractFormBuilder::create
+44    QAbstractFormBuilder::create
+48    QAbstractFormBuilder::create
+52    QAbstractFormBuilder::addMenuAction
+56    QAbstractFormBuilder::applyProperties
+60    QAbstractFormBuilder::applyTabStops
+64    QAbstractFormBuilder::createWidget
+68    QAbstractFormBuilder::createLayout
+72    QAbstractFormBuilder::createAction
+76    QAbstractFormBuilder::createActionGroup
+80    QAbstractFormBuilder::createCustomWidgets
+84    QAbstractFormBuilder::createConnections
+88    QAbstractFormBuilder::createResources
+92    QAbstractFormBuilder::addItem
+96    QAbstractFormBuilder::addItem
+100   QAbstractFormBuilder::saveExtraInfo
+104   QAbstractFormBuilder::saveDom
+108   QAbstractFormBuilder::createActionRefDom
+112   QAbstractFormBuilder::createDom
+116   QAbstractFormBuilder::createDom
+120   QAbstractFormBuilder::createDom
+124   QAbstractFormBuilder::createDom
+128   QAbstractFormBuilder::createDom
+132   QAbstractFormBuilder::createDom
+136   QAbstractFormBuilder::saveConnections
+140   QAbstractFormBuilder::saveCustomWidgets
+144   QAbstractFormBuilder::saveTabStops
+148   QAbstractFormBuilder::saveResources
+152   QAbstractFormBuilder::computeProperties
+156   QAbstractFormBuilder::checkProperty
+160   QAbstractFormBuilder::createProperty
+164   QAbstractFormBuilder::layoutInfo
+168   QAbstractFormBuilder::nameToIcon
+172   QAbstractFormBuilder::iconToFilePath
+176   QAbstractFormBuilder::iconToQrcPath
+180   QAbstractFormBuilder::nameToPixmap
+184   QAbstractFormBuilder::pixmapToFilePath
+188   QAbstractFormBuilder::pixmapToQrcPath
+
+Class QAbstractFormBuilder
+   size=28 align=4
+   base size=28 base align=4
+QAbstractFormBuilder (0xb6786e00) 0
+    vptr=((& QAbstractFormBuilder::_ZTV20QAbstractFormBuilder) + 8u)
+
+Vtable for QDesignerContainerExtension
+QDesignerContainerExtension::_ZTV27QDesignerContainerExtension: 11u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI27QDesignerContainerExtension)
+8     QDesignerContainerExtension::~QDesignerContainerExtension
+12    QDesignerContainerExtension::~QDesignerContainerExtension
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    __cxa_pure_virtual
+32    __cxa_pure_virtual
+36    __cxa_pure_virtual
+40    __cxa_pure_virtual
+
+Class QDesignerContainerExtension
+   size=4 align=4
+   base size=4 base align=4
+QDesignerContainerExtension (0xb6786300) 0 nearly-empty
+    vptr=((& QDesignerContainerExtension::_ZTV27QDesignerContainerExtension) + 8u)
+
+Vtable for QDesignerCustomWidgetInterface
+QDesignerCustomWidgetInterface::_ZTV30QDesignerCustomWidgetInterface: 16u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI30QDesignerCustomWidgetInterface)
+8     QDesignerCustomWidgetInterface::~QDesignerCustomWidgetInterface
+12    QDesignerCustomWidgetInterface::~QDesignerCustomWidgetInterface
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    __cxa_pure_virtual
+32    __cxa_pure_virtual
+36    __cxa_pure_virtual
+40    __cxa_pure_virtual
+44    __cxa_pure_virtual
+48    QDesignerCustomWidgetInterface::isInitialized
+52    QDesignerCustomWidgetInterface::initialize
+56    QDesignerCustomWidgetInterface::domXml
+60    QDesignerCustomWidgetInterface::codeTemplate
+
+Class QDesignerCustomWidgetInterface
+   size=4 align=4
+   base size=4 base align=4
+QDesignerCustomWidgetInterface (0xb6786e40) 0 nearly-empty
+    vptr=((& QDesignerCustomWidgetInterface::_ZTV30QDesignerCustomWidgetInterface) + 8u)
+
+Vtable for QDesignerCustomWidgetCollectionInterface
+QDesignerCustomWidgetCollectionInterface::_ZTV40QDesignerCustomWidgetCollectionInterface: 5u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI40QDesignerCustomWidgetCollectionInterface)
+8     QDesignerCustomWidgetCollectionInterface::~QDesignerCustomWidgetCollectionInterface
+12    QDesignerCustomWidgetCollectionInterface::~QDesignerCustomWidgetCollectionInterface
+16    __cxa_pure_virtual
+
+Class QDesignerCustomWidgetCollectionInterface
+   size=4 align=4
+   base size=4 base align=4
+QDesignerCustomWidgetCollectionInterface (0xb66d9080) 0 nearly-empty
+    vptr=((& QDesignerCustomWidgetCollectionInterface::_ZTV40QDesignerCustomWidgetCollectionInterface) + 8u)
+
+Class QMap<QString, QDesignerCustomWidgetInterface*>::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+QMap<QString, QDesignerCustomWidgetInterface*>::<anonymous union> (0xb66d9240) 0
+
+Class QMap<QString, QDesignerCustomWidgetInterface*>
+   size=4 align=4
+   base size=4 base align=4
+QMap<QString, QDesignerCustomWidgetInterface*> (0xb66d91c0) 0
+
+Vtable for QFormBuilder
+QFormBuilder::_ZTV12QFormBuilder: 49u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI12QFormBuilder)
+8     QFormBuilder::~QFormBuilder
+12    QFormBuilder::~QFormBuilder
+16    QAbstractFormBuilder::load
+20    QAbstractFormBuilder::save
+24    QAbstractFormBuilder::loadExtraInfo
+28    QFormBuilder::create
+32    QFormBuilder::create
+36    QFormBuilder::create
+40    QFormBuilder::create
+44    QFormBuilder::create
+48    QFormBuilder::create
+52    QAbstractFormBuilder::addMenuAction
+56    QFormBuilder::applyProperties
+60    QAbstractFormBuilder::applyTabStops
+64    QFormBuilder::createWidget
+68    QFormBuilder::createLayout
+72    QAbstractFormBuilder::createAction
+76    QAbstractFormBuilder::createActionGroup
+80    QAbstractFormBuilder::createCustomWidgets
+84    QFormBuilder::createConnections
+88    QAbstractFormBuilder::createResources
+92    QFormBuilder::addItem
+96    QFormBuilder::addItem
+100   QAbstractFormBuilder::saveExtraInfo
+104   QAbstractFormBuilder::saveDom
+108   QAbstractFormBuilder::createActionRefDom
+112   QAbstractFormBuilder::createDom
+116   QAbstractFormBuilder::createDom
+120   QAbstractFormBuilder::createDom
+124   QAbstractFormBuilder::createDom
+128   QAbstractFormBuilder::createDom
+132   QAbstractFormBuilder::createDom
+136   QAbstractFormBuilder::saveConnections
+140   QAbstractFormBuilder::saveCustomWidgets
+144   QAbstractFormBuilder::saveTabStops
+148   QAbstractFormBuilder::saveResources
+152   QAbstractFormBuilder::computeProperties
+156   QAbstractFormBuilder::checkProperty
+160   QAbstractFormBuilder::createProperty
+164   QAbstractFormBuilder::layoutInfo
+168   QAbstractFormBuilder::nameToIcon
+172   QAbstractFormBuilder::iconToFilePath
+176   QAbstractFormBuilder::iconToQrcPath
+180   QAbstractFormBuilder::nameToPixmap
+184   QAbstractFormBuilder::pixmapToFilePath
+188   QAbstractFormBuilder::pixmapToQrcPath
+192   QFormBuilder::updateCustomWidgets
+
+Class QFormBuilder
+   size=36 align=4
+   base size=36 base align=4
+QFormBuilder (0xb66d9100) 0
+    vptr=((& QFormBuilder::_ZTV12QFormBuilder) + 8u)
+  QAbstractFormBuilder (0xb66d9140) 0
+      primary-for QFormBuilder (0xb66d9100)
+
+Class QList<QString>::Node
+   size=4 align=4
+   base size=4 base align=4
+QList<QString>::Node (0xb66d9380) 0
+
+Class QVectorTypedData<QPoint>
+   size=24 align=4
+   base size=24 base align=4
+QVectorTypedData<QPoint> (0xb66d9400) 0
+
+Class QVectorTypedData<QPointF>
+   size=32 align=4
+   base size=32 base align=4
+QVectorTypedData<QPointF> (0xb66d9480) 0
+
+Class QList<QDesignerWidgetBoxInterface::Widget>::Node
+   size=4 align=4
+   base size=4 base align=4
+QList<QDesignerWidgetBoxInterface::Widget>::Node (0xb66d9500) 0
+
+Class QTypeInfo<QDesignerWidgetBoxInterface::Widget>
+   size=1 align=1
+   base size=0 base align=1
+QTypeInfo<QDesignerWidgetBoxInterface::Widget> (0xb66d9580) 0 empty
+
+Class QVector<T>::realloc(int, int) [with T = QPoint]::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+QVector<T>::realloc(int, int) [with T = QPoint]::<anonymous union> (0xb66d9740) 0
+
+Class QVector<T>::realloc(int, int) [with T = QPointF]::<anonymous union>
+   size=4 align=4
+   base size=4 base align=4
+QVector<T>::realloc(int, int) [with T = QPointF]::<anonymous union> (0xb66d9800) 0
+
+Class QList<QFileInfo>::Node
+   size=4 align=4
+   base size=4 base align=4
+QList<QFileInfo>::Node (0xb66d98c0) 0
+

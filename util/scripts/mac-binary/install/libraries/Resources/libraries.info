@@ -1,0 +1,17 @@
+Title Qt Libraries
+Version $VERSION_MAJOR$.$VERSION_MINOR$
+Description Qt $VERSION_MAJOR$.$VERSION_MINOR$.$VERSION_PATCH$ Libraries
+DefaultLocation (null)
+DeleteWarning 
+
+### Package Flags
+
+NeedsAuthorization YES
+Required NO
+Relocatable YES
+RequiresReboot NO
+UseUserMask YES
+OverwritePermissions NO
+InstallFat NO
+RootVolumeOnly NO
+

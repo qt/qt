@@ -1,0 +1,111 @@
+<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
+<class>MasterChildWindowBase</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>MasterChildWindowBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>565</width>
+            <height>659</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Qt Master-Child Example</string>
+    </property>
+    <grid>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>11</number>
+        </property>
+        <property name="spacing">
+            <number>6</number>
+        </property>
+        <widget class="QLabel" row="0" column="0">
+            <property name="name">
+                <cstring>TextLabel1</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>1</hsizetype>
+                    <vsizetype>4</vsizetype>
+                </sizepolicy>
+            </property>
+            <property name="text">
+                <string>Master Table</string>
+            </property>
+        </widget>
+        <widget class="QLabel" row="2" column="0">
+            <property name="name">
+                <cstring>TextLabel2</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>1</hsizetype>
+                    <vsizetype>4</vsizetype>
+                </sizepolicy>
+            </property>
+            <property name="text">
+                <string>Child Table</string>
+            </property>
+        </widget>
+        <widget class="QSqlTable" row="1" column="0">
+            <column>
+                <property name="text">
+                    <string>name</string>
+                </property>
+                <property name="pixmap">
+                    <pixmap></pixmap>
+                </property>
+                <property name="field">
+                    <string>name</string>
+                </property>
+            </column>
+            <property name="name">
+                <cstring>masterTable</cstring>
+            </property>
+            <property name="sorting">
+                <bool>true</bool>
+            </property>
+            <property name="database" stdset="0">
+                <stringlist>
+                    <string>(default)</string>
+                    <string>qsql_master</string>
+                </stringlist>
+            </property>
+        </widget>
+        <widget class="QSqlTable" row="3" column="0">
+            <column>
+                <property name="text">
+                    <string>Name</string>
+                </property>
+                <property name="pixmap">
+                    <pixmap></pixmap>
+                </property>
+                <property name="field">
+                    <string>name</string>
+                </property>
+            </column>
+            <property name="name">
+                <cstring>childTable</cstring>
+            </property>
+            <property name="sorting">
+                <bool>true</bool>
+            </property>
+            <property name="database" stdset="0">
+                <stringlist>
+                    <string>(default)</string>
+                    <string>qsql_child</string>
+                </stringlist>
+            </property>
+        </widget>
+    </grid>
+</widget>
+<connections>
+    <slot access="protected" language="C++">newMasterSelection( const QSqlRecord* fields )</slot>
+</connections>
+</UI>

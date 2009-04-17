@@ -1,0 +1,377 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 39;
+	objects = {
+		0249A66BFF388E3F11CA2CEA = {
+			expectedFileType = archive.ar;
+			isa = PBXFileReference;
+			name = "libstdc++.a";
+			path = "/usr/lib/libstdc++.a";
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+//020
+//021
+//022
+//023
+//024
+//080
+//081
+//082
+//083
+//084
+		195DF8CFFE9D517E11CA2CBB = {
+			children = (
+				8D0C4E970486CD37000505A6,
+			);
+			isa = PBXGroup;
+			name = Products;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+//190
+//191
+//192
+//193
+//194
+//200
+//201
+//202
+//203
+//204
+		20286C28FDCF999611CA2CEA = {
+			buildStyles = (
+				4A9504C5FFE6A39111CA0CBA,
+				4A9504C6FFE6A39111CA0CBA,
+			);
+			hasScannedForEncodings = 1;
+			isa = PBXProject;
+			mainGroup = 20286C29FDCF999611CA2CEA;
+			projectDirPath = "";
+			targets = (
+				8D0C4E890486CD37000505A6,
+			);
+		};
+		20286C29FDCF999611CA2CEA = {
+			children = (
+				20286C2AFDCF999611CA2CEA,
+				20286C32FDCF999611CA2CEA,
+				195DF8CFFE9D517E11CA2CBB,
+			);
+			isa = PBXGroup;
+			name = "«PROJECTNAMEASXML»";
+			path = "";
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		20286C2AFDCF999611CA2CEA = {
+			children = (
+				32DBCF6D0370B57F00C91783,
+				20286C2BFDCF999611CA2CEA,
+			);
+			isa = PBXGroup;
+			name = Sources;
+			path = "";
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		20286C2BFDCF999611CA2CEA = {
+			expectedFileType = sourcecode.qt.cpp;
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = main.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		20286C32FDCF999611CA2CEA = {
+			children = (
+				20286C33FDCF999611CA2CEA,
+				20286CA3FDCF999611CA2CEA,
+				4A9504CAFFE6A41611CA0CBA,
+				4A9504C8FFE6A3BC11CA0CBA,
+				0249A66BFF388E3F11CA2CEA,
+			);
+			isa = PBXGroup;
+			name = "External Frameworks and Libraries";
+			path = "";
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		20286CA3FDCF999611CA2CEA = {
+			expectedFileType = wrapper.framework;
+			fallbackIsa = PBXFileReference;
+			isa = PBXFrameworkReference;
+			name = QtGui.framework;
+			path = /Library/Frameworks/QtGui.framework;
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+
+		20286C33FDCF999611CA2CEA = {
+			expectedFileType = wrapper.framework;
+			fallbackIsa = PBXFileReference;
+			isa = PBXFrameworkReference;
+			name = QtCore.framework;
+			path = /Library/Frameworks/QtCore.framework;
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+//200
+//201
+//202
+//203
+//204
+//320
+//321
+//322
+//323
+//324
+		32DBCF6D0370B57F00C91783 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			path = "«PROJECTNAME».mocs";
+			refType = 4;
+			sourceTree = "<group>";
+		};
+//320
+//321
+//322
+//323
+//324
+//4A0
+//4A1
+//4A2
+//4A3
+//4A4
+		4A9504C5FFE6A39111CA0CBA = {
+			buildRules = (
+			);
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				DEBUGGING_SYMBOLS = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				OPTIMIZATION_CFLAGS = "-O0";
+				ZERO_LINK = YES;
+			};
+			isa = PBXBuildStyle;
+			name = Development;
+		};
+		4A9504C6FFE6A39111CA0CBA = {
+			buildRules = (
+			);
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				ZERO_LINK = NO;
+			};
+			isa = PBXBuildStyle;
+			name = Deployment;
+		};
+		4A9504C8FFE6A3BC11CA0CBA = {
+			expectedFileType = wrapper.framework;
+			fallbackIsa = PBXFileReference;
+			isa = PBXFrameworkReference;
+			name = ApplicationServices.framework;
+			path = /System/Library/Frameworks/ApplicationServices.framework;
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+		4A9504CAFFE6A41611CA0CBA = {
+			expectedFileType = wrapper.framework;
+			fallbackIsa = PBXFileReference;
+			isa = PBXFrameworkReference;
+			name = CoreServices.framework;
+			path = /System/Library/Frameworks/CoreServices.framework;
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+//4A0
+//4A1
+//4A2
+//4A3
+//4A4
+//8D0
+//8D1
+//8D2
+//8D3
+//8D4
+		8D0C4E890486CD37000505A6 = {
+			buildPhases = (
+				22D275D307D515930050A600, //get_mocs phase
+				8D0C4E8F0486CD37000505A6,
+				8D0C4E910486CD37000505A6,
+				8D0C4E940486CD37000505A6,
+			);
+			buildRules = (
+			        //22E554940732E0C3002CE4A0, //get_mocs rule
+				2241F8060731C52400C1F590, //make_moc rule
+				2241F8060731C52430C1F590, //make_uic rule
+				2241F8060731C59400C1F590, //make_rcc rule
+			);
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_ENABLE_TRIGRAPHS = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = NO;
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_STYLE = Static;
+				OTHER_CPLUSPLUSFLAGS = "-I/Library/Frameworks/QtCore.framework/Headers -I/Library/Frameworks/QtGui.framework/Headers";
+				OTHER_CLAGS = "-I/Library/Frameworks/QtCore.framework/Headers -I/Library/Frameworks/QtGui.framework/Headers";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = "«PROJECTNAME»";
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas";
+				WRAPPER_EXTENSION = app;
+			};
+			dependencies = (
+			);
+			isa = PBXNativeTarget;
+			name = "«PROJECTNAME»";
+			productInstallPath = "$(HOME)/Applications";
+			productName = "«PROJECTNAME»";
+			productReference = 8D0C4E970486CD37000505A6;
+			productType = "com.apple.product-type.application";
+		};
+		8D0C4E8B0486CD37000505A6 = {
+			fileRef = 32DBCF6D0370B57F00C91783;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		22D275D307D515930050A600 = { //get_mocs phase
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			       //"*.h",
+			);
+			name = "Qt Auto-Retrieve Mocables";
+			isa = PBXShellScriptBuildPhase;
+			outputPaths = (
+				//"«PROJECTNAME».mocs",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/Library/Frameworks/QtCore.framework/Resources/xcode/get_mocs.sh -output \"«PROJECTNAME».mocs\"";
+		};
+		22E554940732E0C3002CE4A0 = { //get_mocs rule
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.h";
+			fileType = pattern.proxy;
+			isEditable = 1;
+			isa = PBXBuildRule;
+			outputFiles = (
+				"«PROJECTNAME».mocs",
+			);
+			script = "/Library/Frameworks/QtCore.framework/Resources/xcode/get_mocs.sh -input \"${INPUT_FILE_PATH}\" -output \"«PROJECTNAME».mocs\"";
+		};
+		2241F8060731C59400C1F590 = { //make_rcc rule
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.qrc";
+			fileType = pattern.proxy;
+			isEditable = 1;
+			isa = PBXBuildRule;
+			outputFiles = (
+				"${DERIVED_FILES_DIR}/qrc_${INPUT_FILE_BASE}.cpp",
+			);
+			script = "/Library/Frameworks/QtCore.framework/Resources/xcode/make_rcc.sh -input \"${INPUT_FILE_PATH}\" -output \"${DERIVED_FILES_DIR}/qrc_${INPUT_FILE_BASE}.cpp\"";
+		};
+		2241F8060731C52430C1F590 = { //make_uic rule
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.ui";
+			fileType = pattern.proxy;
+			isEditable = 1;
+			isa = PBXBuildRule;
+			outputFiles = (
+				"${DERIVED_FILES_DIR}/ui_${INPUT_FILE_BASE}.h",
+			);
+			script = "/Library/Frameworks/QtCore.framework/Resources/xcode/make_uic.sh -input \"${INPUT_FILE_PATH}\" -output \"${DERIVED_FILES_DIR}/ui_${INPUT_FILE_BASE}.h\"";
+		};
+		2241F8060731C52400C1F590 = { //make_moc rule
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.mocs";
+			fileType = pattern.proxy;
+			isEditable = 1;
+			isa = PBXBuildRule;
+			outputFiles = (
+				"${DERIVED_FILES_DIR}/${INPUT_FILE_BASE}_mocs.cpp",
+			);
+			script = "/Library/Frameworks/QtCore.framework/Resources/xcode/make_moc.sh -input \"${INPUT_FILE_PATH}\" -output \"${DERIVED_FILES_DIR}/${INPUT_FILE_BASE}_mocs.cpp\"";
+		};
+		8D0C4E8F0486CD37000505A6 = {
+			buildActionMask = 2147483647;
+			files = (
+			        8D0C4E8B0486CD37000505A6,
+				8D0C4E900486CD37000505A6,
+			);
+			isa = PBXSourcesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D0C4E900486CD37000505A6 = {
+			fileRef = 20286C2BFDCF999611CA2CEA;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+				);
+			};
+		};
+		8D0C4E910486CD37000505A6 = {
+			buildActionMask = 2147483647;
+			files = (
+				8D0C4E920486CD37000505A6,
+				8D0C4E92048CCD37000505A6,
+				8D0C4E930486CD37000505A6,
+			);
+			isa = PBXFrameworksBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D0C4E92048CCD37000505A6 = {
+			fileRef = 20286CA3FDCF999611CA2CEA;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		8D0C4E920486CD37000505A6 = {
+			fileRef = 20286C33FDCF999611CA2CEA;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		8D0C4E930486CD37000505A6 = {
+			fileRef = 0249A66BFF388E3F11CA2CEA;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		8D0C4E940486CD37000505A6 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXRezBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D0C4E970486CD37000505A6 = {
+			expectedFileType = wrapper.application;
+			includeInIndex = 0;
+			isa = PBXFileReference;
+			path = "«PROJECTNAME».app";
+			refType = 3;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+	};
+	rootObject = 20286C28FDCF999611CA2CEA;
+}

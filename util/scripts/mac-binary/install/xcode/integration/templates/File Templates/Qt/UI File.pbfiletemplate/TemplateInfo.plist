@@ -1,0 +1,4 @@
+{
+	MainTemplateFile = "class.ui";
+	Description = "A base UI file to edit with the designer";
+}

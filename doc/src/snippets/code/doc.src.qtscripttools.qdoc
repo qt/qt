@@ -1,0 +1,8 @@
+//! [0]
+      #include <QtScriptTools>
+//! [0]
+
+
+//! [1]
+      QT += scripttools
+//! [1]

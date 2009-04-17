@@ -1,0 +1,83 @@
+setPen NoPen
+
+setBrush black
+drawRect 10 10 1200 140
+
+setCompositionMode SourceOrDestination
+translate 20 20
+begin_block drawShape
+setBrush 0xffff0000
+drawEllipse 10 10 80 80
+setBrush 0xff00ff00
+drawRect 0 0 50 50
+setBrush 0xff0000ff
+drawRect 50 50 50 50
+end_block
+
+begin_block loop
+setCompositionMode SourceAndDestination
+translate 120 0
+repeat_block drawShape
+
+setCompositionMode SourceXorDestination
+translate 120 0
+repeat_block drawShape
+
+setCompositionMode NotSourceAndNotDestination
+translate 120 0
+repeat_block drawShape
+
+setCompositionMode NotSourceOrNotDestination
+translate 120 0
+repeat_block drawShape
+
+setCompositionMode NotSourceXorDestination
+translate 120 0
+repeat_block drawShape
+
+setCompositionMode NotSource
+translate 120 0
+repeat_block drawShape
+
+setCompositionMode NotSourceAndDestination
+translate 120 0
+repeat_block drawShape
+
+setCompositionMode SourceAndNotDestination
+translate 120 0
+repeat_block drawShape
+end_block
+
+resetMatrix
+setCompositionMode Source
+setBrush white
+drawRect 10 160 1200 140
+translate 20 170
+repeat_block loop
+
+resetMatrix
+setCompositionMode Source
+translate 20 320
+repeat_block loop
+
+resetMatrix
+setPen black
+setCompositionMode SourceOver
+translate 20 470
+drawText 20 0 "Or ROP"
+translate 120 0
+drawText 20 0 "And ROP"
+translate 120 0
+drawText 20 0 "Xor ROP"
+translate 120 0
+drawText 20 0 "Nor ROP"
+translate 120 0
+drawText 20 0 "Nand ROP"
+translate 120 0
+drawText 0 0 "NSrcXorDst ROP"
+translate 120 0
+drawText 20 0 "NSrc ROP"
+translate 120 0
+drawText 0 0 "NSrcAndDst ROP"
+translate 120 0
+drawText 0 0 "SrcAndNDst ROP"

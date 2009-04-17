@@ -1,0 +1,16 @@
+<UI version="4.0" stdsetdef="1" >
+ <class>«FILEBASENAME»</class>
+ <widget class="QDialog" name="«FILEBASENAME»" >
+  <property name="objectName" >
+   <string notr="true">«FILEBASENAME»</string>
+  </property>
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>391</width>
+    <height>223</height>
+   </rect>
+  </property>
+ </widget>
+</UI>

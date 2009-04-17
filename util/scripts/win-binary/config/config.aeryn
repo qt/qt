@@ -1,0 +1,2 @@
+env		perlPath	c:\bin\perl\bin
+env		NSISPath	"c:\program files (x86)\NSIS"

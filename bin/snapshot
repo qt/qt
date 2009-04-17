@@ -1,0 +1,333 @@
+#!/usr/bin/perl -w
+######################################################################
+#
+#
+######################################################################
+
+# use packages -------------------------------------------------------
+use File::Basename;
+use File::Path;
+use Cwd;
+use Config;
+use strict;
+
+my $targetPath = "";
+my $qtdir = $ENV{"QTDIR"};
+
+my @files = (
+            "3rdparty/easing/easing.cpp",
+            "corelib/tools/qeasingcurve.h",
+            "corelib/tools/qeasingcurve.cpp",
+            "corelib/animation/animation.pri",
+            "corelib/animation/qabstractanimation.cpp",
+            "corelib/animation/qabstractanimation.h",
+            "corelib/animation/qabstractanimation_p.h",
+            "corelib/animation/qvariantanimation.cpp",
+            "corelib/animation/qvariantanimation.h",
+            "corelib/animation/qanimationgroup.cpp",
+            "corelib/animation/qvariantanimation_p.h",
+            "corelib/animation/qanimationgroup.h",
+            "corelib/animation/qanimationgroup_p.h",
+            "corelib/animation/qparallelanimationgroup.cpp",
+            "corelib/animation/qparallelanimationgroup.h",
+            "corelib/animation/qparallelanimationgroup_p.h",
+            "corelib/animation/qpauseanimation.cpp",
+            "corelib/animation/qpauseanimation.h",
+            "corelib/animation/qpropertyanimation.cpp",
+            "corelib/animation/qpropertyanimation.h",
+            "corelib/animation/qpropertyanimation_p.h",
+            "corelib/animation/qsequentialanimationgroup.cpp",
+            "corelib/animation/qsequentialanimationgroup.h",
+            "corelib/animation/qsequentialanimationgroup_p.h",
+            "corelib/statemachine/statemachine.pri",
+            "corelib/statemachine/qabstractstate.cpp",
+            "corelib/statemachine/qabstractstate.h",
+            "corelib/statemachine/qabstractstate_p.h",
+            "corelib/statemachine/qabstracttransition.cpp",
+            "corelib/statemachine/qabstracttransition.h",
+            "corelib/statemachine/qabstracttransition_p.h",
+            "corelib/statemachine/qactionstate.h",
+            "corelib/statemachine/qactionstate_p.h",
+            "corelib/statemachine/qactionstate.cpp",
+            "corelib/statemachine/qanimationstate.cpp",
+            "corelib/statemachine/qanimationstate.h",
+            "corelib/statemachine/qboundevent_p.h",
+            "corelib/statemachine/qeventtransition.cpp",
+            "corelib/statemachine/qeventtransition.h",
+            "corelib/statemachine/qeventtransition_p.h",
+            "corelib/statemachine/qfinalstate.cpp",
+            "corelib/statemachine/qfinalstate.h",
+            "corelib/statemachine/qhistorystate.cpp",
+            "corelib/statemachine/qhistorystate.h",
+            "corelib/statemachine/qhistorystate_p.h",
+            "corelib/statemachine/qsignalevent.h",
+            "corelib/statemachine/qsignaleventgenerator_p.h",
+            "corelib/statemachine/qsignaltransition.cpp",
+            "corelib/statemachine/qsignaltransition.h",
+            "corelib/statemachine/qsignaltransition_p.h",
+            "corelib/statemachine/qstate.cpp",
+            "corelib/statemachine/qstate.h",
+            "corelib/statemachine/qstateaction.cpp",
+            "corelib/statemachine/qstateaction.h",
+            "corelib/statemachine/qstateaction_p.h",
+            "corelib/statemachine/qstatefinishedevent.h",
+            "corelib/statemachine/qstatefinishedtransition.cpp",
+            "corelib/statemachine/qstatefinishedtransition.h",
+            "corelib/statemachine/qstatemachine.cpp",
+            "corelib/statemachine/qstatemachine.h",
+            "corelib/statemachine/qstatemachine_p.h",
+            "corelib/statemachine/qstate_p.h",
+            "corelib/statemachine/qtransition.cpp",
+            "corelib/statemachine/qtransition.h",
+            "corelib/statemachine/qtransition_p.h",
+            "gui/statemachine/qkeyeventtransition.h",
+            "gui/statemachine/qkeyeventtransition.cpp",
+            "gui/statemachine/qbasickeyeventtransition.cpp",
+            "gui/statemachine/qbasickeyeventtransition_p.h",
+            "gui/statemachine/qbasicmouseeventtransition.cpp",
+            "gui/statemachine/qbasicmouseeventtransition_p.h",
+            "gui/statemachine/qguistatemachine.cpp",
+            "gui/statemachine/qkeyeventtransition.cpp",
+            "gui/statemachine/qkeyeventtransition.h",
+            "gui/statemachine/qmouseeventtransition.cpp",
+            "gui/statemachine/qmouseeventtransition.h",
+            "gui/statemachine/statemachine.pri",       # needs special handling
+            );
+
+
+while ( @ARGV ) {
+    my $arg = shift @ARGV;
+    if ("$arg" eq "-to") {
+        $targetPath = shift @ARGV;
+    }
+}
+
+if ($targetPath eq "") {
+    die("missing -to option");
+}
+
+my $projectXML = "$targetPath\\files.xml";
+open(OXML, "> " . $projectXML) || die "Could not open $projectXML for writing (no write permission?)";
+
+print "COPYING SOURCES...\n";
+foreach my $files(@files) {
+    copyFile("$qtdir/src/$files","$targetPath/src");
+}
+copyFile("$qtdir/doc/src/animation.qdoc","$targetPath/doc");
+copyFile("$qtdir/doc/src/statemachine.qdoc","$targetPath/doc");
+copyFile("$qtdir/src/3rdparty/easing/legal.qdoc","$targetPath/doc");
+
+copyFile("$qtdir/doc/src/snippets/code/src_corelib_tools_qeasingcurve.cpp","$targetPath/doc/src/snippets/code");
+
+
+my %animation_examples = (
+    easing => [ "easing.pro",
+                "main.cpp",
+                "window.cpp",
+                "window.h",
+                "animation.h",
+                "form.ui",
+                "images/qt-logo.png",
+                "resources.qrc"],
+    moveblocks => [ "moveblocks.pro",
+                    "main.cpp" ],
+    animatedtiles => [     "animatedtiles.pro",
+                    "animatedtiles.qrc",
+                    "main.cpp",
+                    "images/*"],
+    "sub-attaq" => ["sub-attaq.pro",
+                    "animationmanager.cpp",
+                    "animationmanager.h",
+                    "boat.cpp",
+                    "boat_p.h",
+                    "boat.h",
+                    "bomb.cpp",
+                    "bomb.h",
+                    "custompropertyanimation.h",
+                    "custompropertyanimation_p.h",
+                    "custompropertyanimation.cpp",
+                    "graphicsscene.cpp",
+                    "graphicsscene.h",
+                    "main.cpp",
+                    "mainwindow.cpp",
+                    "mainwindow.h",
+                    "pics/scalable/*",
+                    "pics/big/*",
+                    "pics/small/*",
+                    "pics/welcome/*",
+                    "pixmapitem.cpp",
+                    "pixmapitem.h",
+                    "subattaq.qrc",
+                    "submarine.cpp",
+                    "submarine.h",
+                    "submarine_p.h",
+                    "states.cpp",
+                    "states.h",
+                    "torpedo.cpp",
+                    "torpedo.h"],
+    "stickman" => ["stickman.pro",
+                    "main.cpp",
+                    "animation.cpp",
+                    "animation.h",
+                    "graphicsview.cpp",
+                    "graphicsview.h",
+                    "lifecycle.cpp",
+                    "lifecycle.h",
+                    "node.cpp",
+                    "node.h",
+                    "stickman.cpp",
+                    "stickman.h",
+                    "animations/chilling",
+                    "animations/dancing",
+                    "animations/dead",
+                    "animations/jumping"]
+    );
+
+my $exDir;
+print "COPYING EXAMPLES...\n";
+for $exDir ( keys %animation_examples ) {
+    print "  $exDir...\n";
+    my $i = 0;
+    for $i ( 0 .. $#{ $animation_examples{$exDir} } ) {
+        my $ex_file = $animation_examples{$exDir}[$i];
+
+        my $copyTargetPath;
+        my $glob = 0;
+        if (index($ex_file,"/") > 0) {
+            my($basefile, $fullPath) = fileparse("$targetPath/examples/$exDir/$ex_file");
+            if ($basefile eq "*") {
+                $glob = 1;
+            }
+            mkpath "$fullPath",  0777 unless(-e "$fullPath");
+            $copyTargetPath = "$fullPath";
+        } else {
+            $copyTargetPath = "$targetPath/examples/$exDir";
+        }
+        my $lastCh = substr($copyTargetPath, length($copyTargetPath) - 1, 1);
+        if ($lastCh eq "/" || $lastCh eq "\\") {
+            chop($copyTargetPath);
+        }
+
+        if ($glob eq 1) {
+            my @globFiles = < $qtdir/examples/animation/$exDir/$ex_file >;
+            foreach my $globFile(@globFiles) {
+                copyFile("$globFile", "$copyTargetPath");
+            }
+        } else {
+            copyFile("$qtdir/examples/animation/$exDir/$ex_file", "$copyTargetPath");
+        }
+    }
+}
+
+close OXML;
+print("Finished!");
+######################################################################
+# Syntax:  copyFile(gitfile, destinationPath)
+# Params:  gitfile, string, filename to create duplicate for
+#          destinationPath, string, destination name of duplicate
+#
+# Purpose: Copies to the solutions area.
+# Returns: --
+# Warning: Dies if script cannot get write access.
+######################################################################
+sub copyFile
+{
+    my ($gitfile, $destinationPath) = @_;
+    # Bi-directional synchronization
+    open( I, "< " . $gitfile ) || die "Could not open $gitfile for reading";
+    local $/;
+    binmode I;
+    my $filecontents = <I>;
+    my ($baseFileName, $path, $ext) = fileparse($gitfile, qr/\.[^.]*/);
+    if ($ext eq ".h"  or $ext eq ".cpp" or $ext eq ".qdoc") {
+        # both public and private classes
+        $filecontents =~s/QAbstractAnimation/QtAbstractAnimation/g;
+        $filecontents =~s/QAnimationGroup/QtAnimationGroup/g;
+        $filecontents =~s/QParallelAnimationGroup/QtParallelAnimationGroup/g;
+        $filecontents =~s/QSequentialAnimationGroup/QtSequentialAnimationGroup/g;
+        $filecontents =~s/QEasingCurve/QtEasingCurve/g;
+        $filecontents =~s/QVariantAnimation/QtVariantAnimation/g;
+        $filecontents =~s/QPropertyAnimation/QtPropertyAnimation/g;
+        $filecontents =~s/QItemAnimation/QtItemAnimation/g;
+        $filecontents =~s/QPauseAnimation/QtPauseAnimation/g;
+        $filecontents =~s/QAbstractState/QtAbstractState/g;
+        $filecontents =~s/QAbstractStateGroup/QtAbstractStateGroup/g;
+        $filecontents =~s/QAbstractTransition/QtAbstractTransition/g;
+        $filecontents =~s/QActionState/QtActionState/g;
+        $filecontents =~s/QAnimationState/QtAnimationState/g;
+        $filecontents =~s/QEventTransition/QtEventTransition/g;
+        $filecontents =~s/QFinalState/QtFinalState/g;
+        $filecontents =~s/QHistoryState/QtHistoryState/g;
+        $filecontents =~s/QParallelStateGroup/QtParallelStateGroup/g;
+        $filecontents =~s/QSignalEvent/QtSignalEvent/g;
+        $filecontents =~s/QSignalTransition/QtSignalTransition/g;
+        $filecontents =~s/QState/QtState/g;
+        $filecontents =~s/QStateAction/QtStateAction/g;
+        $filecontents =~s/QStateSetPropertyAction/QtStateSetPropertyAction/g;
+        $filecontents =~s/QStateInvokeMethodAction/QtStateInvokeMethodAction/g;
+        $filecontents =~s/QStateFinishedEvent/QtStateFinishedEvent/g;
+        $filecontents =~s/QStateFinishedTransition/QtStateFinishedTransition/g;
+        $filecontents =~s/QStateMachine/QtStateMachine/g;
+        $filecontents =~s/QTransition/QtTransition/g;
+        $filecontents =~s/QMouseEventTransition/QtMouseEventTransition/g;
+        $filecontents =~s/QKeyEventTransition/QtKeyEventTransition/g;
+        $filecontents =~s/QGraphicsWidget/QtGraphicsWidget/g;
+        $filecontents =~s/Q_CORE_EXPORT/Q_ANIMATION_EXPORT/g;
+        $filecontents =~s/Q_GUI_EXPORT/Q_ANIMATION_EXPORT/g;
+        $filecontents =~s/QBoundEvent/QtBoundEvent/g;
+
+        $filecontents =~s/class Q_GUI_EXPORT/class/g;
+        $filecontents =~s/class Q_AUTOTEST_EXPORT/class/g;
+
+        $filecontents =~s/(#\s*include\s+["])q/${1}qt/g;
+
+        # moc stuff
+        $filecontents =~s/(#\s*include\s+["])moc_q/${1}moc_qt/g;
+
+        $filecontents =~s/\\since 4\.[0-9]//g;
+        $filecontents =~s/\\ingroup [a-z]+//g;
+
+        if (substr($filecontents, 0, 10) eq "/*********") {
+            my $endOfComment = index($filecontents, "*/");
+            $filecontents = substr($filecontents, $endOfComment + 2);
+        }
+    }
+    if ($ext eq ".pri"  ) {
+        $filecontents =~s/\$\$PWD\/q/\$\$PWD\/qt/g;
+        $filecontents =~s/animation\/q/\$\$PWD\/qt/g;
+
+        # oooh such a hack this is
+        if ($baseFileName eq "statemachine") {
+            if (index($gitfile, "corelib/statemachine") >= 0) {
+                $baseFileName = "corelib_statemachine";
+            }
+            if (index($gitfile, "gui/statemachine") >= 0) {
+                $baseFileName = "gui_statemachine";
+            }
+
+        }
+
+    }
+
+    if ($ext eq ".pro") {
+        $filecontents = "$filecontents\ninclude(../../src/qtanimationframework.pri)\n";
+    }
+    close I;
+
+    mkpath $destinationPath, 0777 unless(-e "$destinationPath");
+
+    if ($ext eq ".h"  or $ext eq ".cpp" or $ext eq ".qdoc") {
+        $baseFileName =~s/^q/qt/g;
+    }
+    my $targetFile = "$destinationPath/$baseFileName$ext";
+    open(O, "> " . $targetFile) || die "Could not open $targetFile for writing (no write permission?)";
+    local $/;
+    binmode O;
+    print O $filecontents;
+    close O;
+
+    my $xmlEntry = substr($targetFile, length($targetPath) + 1);
+    print "$xmlEntry\n";
+    print OXML "<add>$xmlEntry</add>\n";
+}
+

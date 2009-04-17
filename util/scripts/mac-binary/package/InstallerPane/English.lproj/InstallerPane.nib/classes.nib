@@ -1,0 +1,43 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            CLASS = InstallerPane; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                contentView = NSView; 
+                firstKeyView = NSView; 
+                initialKeyView = NSView; 
+                lastKeyView = NSView; 
+                nextPane = InstallerPane; 
+                parentSection = id; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {
+            ACTIONS = {checkLicense = id; checkName = id; }; 
+            CLASS = InstallerPanePane; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                LicenseField1 = NSTextField; 
+                LicenseField2 = NSTextField; 
+                LicenseField3 = NSTextField; 
+                LicenseField4 = NSTextField; 
+                LicenseField5 = NSTextField; 
+                LicenseField6 = NSTextField; 
+                LicenseField7 = NSTextField; 
+                errorField = NSTextField; 
+                myOutlet = id; 
+                nameField = NSTextField; 
+            }; 
+            SUPERCLASS = InstallerPane; 
+        }, 
+        {
+            CLASS = InstallerSection; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {firstPane = InstallerPane; }; 
+            SUPERCLASS = NSObject; 
+        }
+    ); 
+    IBVersion = 1; 
+}

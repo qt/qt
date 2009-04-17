@@ -1,0 +1,4 @@
+{
+	MainTemplateFile = "header.h";
+	Description = "A header file which includes the <QtGui/QtGui> header.";
+}

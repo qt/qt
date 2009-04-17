@@ -1,0 +1,16 @@
+Title Qt
+Version Trolltech Qt $VERSION_MAJOR$.$VERSION_MINOR$
+Description Qt by Trolltech
+DefaultLocation (null)
+DeleteWarning 
+
+### Package Flags
+
+NeedsAuthorization NO
+Required NO
+Relocatable NO
+RequiresReboot NO
+UseUserMask YES
+OverwritePermissions NO
+InstallFat NO
+RootVolumeOnly NO

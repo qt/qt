@@ -1,0 +1,123 @@
+<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
+<class>FindForm</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>FindForm</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>353</width>
+            <height>124</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Color Tool -- Find</string>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>Layout2</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>TextLabel1</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Look for</string>
+                    </property>
+                    <property name="buddy" stdset="0">
+                        <cstring>findLineEdit</cstring>
+                    </property>
+                </widget>
+                <widget class="QLineEdit">
+                    <property name="name">
+                        <cstring>findLineEdit</cstring>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>Layout1</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <spacer>
+                    <property name="name">
+                        <cstring>Spacer1</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>0</width>
+                            <height>16</height>
+                        </size>
+                    </property>
+                </spacer>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>findPushButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Find</string>
+                    </property>
+                    <property name="default">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>closePushButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Close</string>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+    </vbox>
+</widget>
+<connections>
+    <connection>
+        <sender>closePushButton</sender>
+        <signal>clicked()</signal>
+        <receiver>FindForm</receiver>
+        <slot>accept()</slot>
+    </connection>
+    <connection>
+        <sender>findPushButton</sender>
+        <signal>clicked()</signal>
+        <receiver>FindForm</receiver>
+        <slot>find()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in implementation">findform.ui.h</include>
+</includes>
+<signals>
+    <signal>lookfor(const QString&amp;)</signal>
+</signals>
+<slots>
+    <slot>find()</slot>
+</slots>
+<functions>
+    <function>notfound()</function>
+</functions>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

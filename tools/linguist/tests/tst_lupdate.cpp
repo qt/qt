@@ -1,0 +1,165 @@
+
+/****************************************************************************
+ **
+ ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+ **
+ ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+ ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ **
+ ****************************************************************************/
+
+#include <QtTest/QtTest>
+#include <QtCore/QtCore>
+
+//TESTED_CLASS=
+//TESTED_FILES=
+
+#include "tst_linguist.h"
+
+void tst_linguist::fetchtr()
+{
+    // FIXME: This probably should use some yet-to-be-invented
+    // binary interface to 'lupdate' instead of playing around
+    // with the filesystem,
+
+    QRegExp reg("\\s*");
+    QString lupdate("lupdate");
+
+    QFETCH(QString, input);
+
+    QFETCH(QString, name);
+    QFETCH(QString, file);
+    QFETCH(QString, line);
+    QFETCH(QString, src);
+
+    QString result;
+
+    QTemporaryFile profile("tst_lu_XXXXXX.pro");
+    QTemporaryFile cppfile("tst_lu_XXXXXX.cpp");
+    QTemporaryFile tsfile("tst_lu_XXXXXX.ts");
+
+    profile.open();
+    cppfile.open();
+    tsfile.open();
+
+#if 0
+    profile.setAutoRemove(false);
+    cppfile.setAutoRemove(false);
+    tsfile.setAutoRemove(false);
+
+    qDebug() << ".pro: " << profile.fileName();
+    qDebug() << ".cpp: " << cppfile.fileName();
+    qDebug() << ".ts:  " << tsfile.fileName();
+#endif
+
+    QTextStream prots(&profile);
+    prots << "SOURCES += " << cppfile.fileName() << "\n";
+    prots << "TRANSLATIONS += " << tsfile.fileName() << "\n";
+    prots.flush();
+
+    QTextStream cppts(&cppfile);
+    cppts.setCodec("ISO 8859-1");
+    cppts << input << '\n';
+    cppts.flush();
+
+    QProcess proc;
+    proc.start(lupdate, QStringList() << profile.fileName());
+    proc.waitForFinished();
+
+    result = tsfile.readAll();
+
+    static QRegExp re(
+        "<name>(.+)</name>\\s*"
+        "<message.*>\\s*"    // there might be a numerus="yes" attribiute
+        "<location filename=\"(.+)\" line=\"(\\d+)\"/>\\s*"
+        "<source>(.+)</source>\\s*"
+        "<translation type=\"unfinished\">.*</translation>\\s*"
+    );
+
+    re.indexIn(result);
+    QString resname = re.cap(1);
+    //QString resfile = re.cap(2);
+    QString resline = re.cap(3);
+    QString ressrc  = re.cap(4);
+
+    //qDebug() << "pattern:" << re.pattern();
+    //qDebug() << "result:" << result;
+    //qDebug() << "resname:" << resname;
+    ////qDebug() << "resfile:" << resfile;
+    //qDebug() << "resline:" << resline;
+    //qDebug() << "ressource:" << ressrc;
+
+    QCOMPARE(src + ":    " + resname, src + ":    " + name);
+    QCOMPARE(src + ":    " + resline, src + ":    " + line);
+    QCOMPARE(src + ":    " + ressrc,  src + ":    " + src);
+}
+
+void tst_linguist::fetchtr_data()
+{
+    using namespace QTest;
+
+    addColumn<QString>("input");
+    addColumn<QString>("name");
+    addColumn<QString>("file");
+    addColumn<QString>("line");
+    addColumn<QString>("src");
+
+    // plain stuff
+    newRow("00") << "int main() { tr(\"foo\"); }"
+        << "@default" << "XXXXXX" << "1" << "foo";
+
+    // space at beginning of text
+    newRow("01") << "int main() { tr(\" foo\"); }"
+        << "@default" << "XXXXXX" << "1" << " foo";
+    // space at end of text
+    newRow("02") << "int main() { tr(\"foo \"); }"
+        << "@default" << "XXXXXX" << "1" << "foo ";
+    // space in the middle of the text
+    newRow("03") << "int main() { tr(\"foo bar\"); }"
+        << "@default" << "XXXXXX" << "1" << "foo bar";
+
+    // tab at beginning of text
+    newRow("04") << "int main() { tr(\"\tfoo\"); }"
+        << "@default" << "XXXXXX" << "1" << "<byte value=\"x9\"/>foo";
+    // tab at end of text
+    newRow("05") << "int main() { tr(\"foo\t\"); }"
+        << "@default" << "XXXXXX" << "1" << "foo<byte value=\"x9\"/>";
+    // tab in the middle of the text
+    newRow("06") << "int main() { tr(\"foo\tbar\"); }"
+        << "@default" << "XXXXXX" << "1" << "foo<byte value=\"x9\"/>bar";
+
+    // check for unicode
+    newRow("07") << "int main() { tr(\"\32\"); }" // 26 dec
+        << "@default" << "XXXXXX" << "1" << "<byte value=\"x1a\"/>";
+    // check for unicode
+    newRow("08") << "int main() { tr(\"\33\"); }" // 27 dec
+        << "@default" << "XXXXXX" << "1" << "<byte value=\"x1b\"/>";
+    // check for unicode
+    newRow("09") << "int main() { tr(\"\176\"); }" // 124 dec
+        << "@default" << "XXXXXX" << "1" << "~";
+    // check for unicode
+    newRow("10") << "int main() { tr(\"\301\"); }" // 193 dec
+        << "@default" << "XXXXXX" << "1" << "&#xc1;";
+
+    // Bug 162562: lupdate does not find QCoreApplication::translate() strings
+    newRow("11") << "int main() { QString s = QCoreApplication::translate"
+        "(\"mycontext\", \"msg\", \"\", QCoreApplication::CodecForTr, 2);"
+        << "mycontext" << "XXXXXX" << "1" << "msg";
+
+    // Bug 161504: lupdate produces wrong ts file with context "N::QObject"
+    newRow("12") << "namespace N { QString foo() "
+        "{ return QObject::tr(\"msg\"); }"
+        << "QObject" << "XXXXXX" << "1" << "msg";
+
+    // Correct example from 161504:
+    newRow("13") << "namespace N { QString foo(); }"
+        "QString N::anyfunc() { return QObject::tr(\"msg\"); }"
+        << "QObject" << "XXXXXX" << "1" << "msg";
+
+    // Bug 161106: When specifying ::QObject::tr() then lupdate will
+    // take the previous word as being the namespace
+    newRow("14") << " std::cout << ::QObject::tr(\"msg\");"
+        << "QObject" << "XXXXXX" << "1" << "msg";
+
+}

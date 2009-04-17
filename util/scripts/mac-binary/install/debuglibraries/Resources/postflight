@@ -1,0 +1,58 @@
+#!/bin/sh
+#fix the doc path
+#PACK_LOCATION="$1"
+#INST_LOCATION="$3"
+#"$PACK_LOCATION/Contents/Resources/qtconf.pl" -version $VERSION_MAJOR$.$VERSION_MINOR$ -value "$INST_LOCATION/System/Library" Libraries
+
+t()
+{
+    o="$1"
+    i="$INSTALLER_TEMP/`basename $o`_t"
+    rm -f "$i"
+    mv "$o" "$i"
+    perl -e "open(SIN, \"<\" . \"$i\");
+             open(SOUT, \">\" . \"$o\");
+             local $/;
+             binmode SIN;
+             binmode SOUT;
+             \$ulen = length(\"$2\")+1;
+             \$plen = length(\"$3\")+1;
+             \$klen = length(\"$4\")+1;
+             while(\$C = <SIN>) {
+                 \$C =~ s,(qt_lcnsuser=).{\$ulen},\\1$2\\0,;
+                 \$C =~ s,(qt_lcnsprod=).{\$plen},\1$3\0,;
+                 \$C =~ s,(qt_qevalkey=).{\$klen},\1$4\0,;
+                 print SOUT \$C;
+             }
+             close SIN;
+             close SOUT"
+}
+
+for lib in QtCore QtGui QtNetwork QtXml QtOpenGL QtSql Qt3Support QtSvg QtScript; do
+   [ -d "${3}/Library/Frameworks/${lib}.framework" ] || continue
+   cd "${3}/Library/Frameworks/${lib}.framework/Versions/$VERSION_MAJOR$.0" 
+   Products="bad product"
+   (Licensee="not-licensed"; LicenseKeyExt="bad-license"; . $HOME/.qt-license >/dev/null 2>&1
+   if [ "$LicenseKeyExt" != "bad-license" ]; then
+       productTest=`echo $LicenseKeyExt | cut -f 1 -d - | cut -b 1`
+       case $productTest in
+       F)
+       # Universal
+       Products="Universal"
+       ;;
+       B)
+       # Desktop
+       Products="Desktop"
+       ;;
+       L)
+       # Desktop Lite
+       Products="Desktop Light"
+       ;;
+       *)
+       Products="bad product"
+       esac
+   fi
+   t "${lib}_debug" "$Licensee" "$Products" "$LicenseKeyExt")
+done
+
+exit 0

@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>SubmitDialog</class>
+  <widget class="QDialog" name="SubmitDialog">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>881</width>
+        <height>348</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Submit file(s)</string>
+    </property>
+    <property name="sizeGripEnabled">
+      <bool>true</bool>
+    </property>
+    <property name="windowIcon">
+      <pixmap>image0</pixmap>
+    </property>
+    <layout class="QGridLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item row="0" column="0" rowspan="1" colspan="2">
+        <widget class="QLabel" name="TextLabel1">
+          <property name="text">
+            <string>&amp;Files:</string>
+          </property>
+          <property name="buddy">
+            <cstring>fileList</cstring>
+          </property>
+          <property name="wordWrap">
+            <bool>false</bool>
+          </property>
+        </widget>
+      </item>
+      <item row="6" column="0" rowspan="1" colspan="2">
+        <widget class="Q3MultiLineEdit" name="description">
+          <property name="sizePolicy">
+            <sizepolicy>
+              <hsizetype>7</hsizetype>
+              <vsizetype>7</vsizetype>
+            </sizepolicy>
+          </property>
+        </widget>
+      </item>
+      <item row="5" column="0" rowspan="1" colspan="2">
+        <widget class="QLabel" name="TextLabel2">
+          <property name="sizePolicy">
+            <sizepolicy>
+              <hsizetype>1</hsizetype>
+              <vsizetype>1</vsizetype>
+            </sizepolicy>
+          </property>
+          <property name="text">
+            <string>&amp;Description:</string>
+          </property>
+          <property name="buddy">
+            <cstring>description</cstring>
+          </property>
+          <property name="wordWrap">
+            <bool>false</bool>
+          </property>
+        </widget>
+      </item>
+      <item row="1" column="1">
+        <widget class="QPushButton" name="buttonOk">
+          <property name="text">
+            <string>&amp;OK</string>
+          </property>
+          <property name="windowTitle">
+            <string/>
+          </property>
+          <property name="autoDefault">
+            <bool>true</bool>
+          </property>
+          <property name="default">
+            <bool>true</bool>
+          </property>
+          <property name="enabled">
+            <bool>false</bool>
+          </property>
+        </widget>
+      </item>
+      <item row="1" column="0" rowspan="4" colspan="1">
+        <widget class="Q3ListView" name="fileList">
+          <property name="sizePolicy">
+            <sizepolicy>
+              <hsizetype>7</hsizetype>
+              <vsizetype>5</vsizetype>
+            </sizepolicy>
+          </property>
+          <column>
+            <property name="text">
+              <string>Local file</string>
+            </property>
+            <property name="clickable">
+              <bool>true</bool>
+            </property>
+            <property name="resizable">
+              <bool>true</bool>
+            </property>
+          </column>
+          <column>
+            <property name="text">
+              <string>Depot file</string>
+            </property>
+            <property name="clickable">
+              <bool>true</bool>
+            </property>
+            <property name="resizable">
+              <bool>true</bool>
+            </property>
+          </column>
+          <column>
+            <property name="text">
+              <string>Action</string>
+            </property>
+            <property name="clickable">
+              <bool>true</bool>
+            </property>
+            <property name="resizable">
+              <bool>true</bool>
+            </property>
+          </column>
+        </widget>
+      </item>
+      <item row="3" column="1">
+        <widget class="QPushButton" name="PushButton5">
+          <property name="text">
+            <string>Select &amp;All</string>
+          </property>
+          <property name="enabled">
+            <bool>false</bool>
+          </property>
+        </widget>
+      </item>
+      <item row="2" column="1">
+        <widget class="QPushButton" name="buttonCancel">
+          <property name="text">
+            <string>&amp;Cancel</string>
+          </property>
+          <property name="autoDefault">
+            <bool>true</bool>
+          </property>
+        </widget>
+      </item>
+      <item row="4" column="1">
+        <spacer name="Spacer1">
+          <property name="sizeHint">
+            <size>
+              <width>20</width>
+              <height>20</height>
+            </size>
+          </property>
+          <property name="sizeType">
+            <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="orientation">
+            <enum>Qt::Vertical</enum>
+          </property>
+        </spacer>
+      </item>
+    </layout>
+  </widget>
+  <images>
+    <image name="image0">
+      <data format="XPM.GZ" length="423">789c75cec10ac2300c06e07b9f22b4b7226e3b2803f111148f827848a2a28729e83c88f8ee26dd3aba8a2934fdbf75a18587ed6605be308f16db0b039ff10efef06c9ad76ebf7c1b5bcda09a836c7662ec1418d6b7eb51cf72175c59d6b2345217519646a7b11ebea2c653a830a72f27256d44888e7e09292792ca08993923113726118c3fca5948f664965af0e411ccbd248f881289d4ba3650083410855209fdcfad7e566cf6b3305f9b7f5e41</data>
+    </image>
+  </images>
+  <connections>
+    <connection>
+      <sender>buttonOk</sender>
+      <signal>clicked()</signal>
+      <receiver>SubmitDialog</receiver>
+      <slot>accept()</slot>
+    </connection>
+    <connection>
+      <sender>buttonCancel</sender>
+      <signal>clicked()</signal>
+      <receiver>SubmitDialog</receiver>
+      <slot>reject()</slot>
+    </connection>
+    <connection>
+      <sender>description</sender>
+      <signal>undoAvailable(bool)</signal>
+      <receiver>buttonOk</receiver>
+      <slot>setEnabled(bool)</slot>
+    </connection>
+  </connections>
+</ui>

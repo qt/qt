@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+
+import os, sys, grp
+
+startPath = os.path.join(sys.argv[2], "Developer/Examples/Qt")
+qmakeCache = open(os.path.join(startPath, ".qmake.cache"), "w")
+qmakeCache.write("#nothing anymore...")
+qmakeCache.close()
+adminGid = grp.getgrnam('admin')[2]
+
+# Generate Xcode projects for everything and make things
+# writeable to the admin users
+for root, dirs, files in os.walk(startPath, topdown = False):
+    for name in files:
+        fullName = os.path.join(root, name)
+        currUid = os.stat(fullName).st_uid
+        if name.endswith(".pro"):
+            os.chdir(os.path.dirname(fullName))
+            print "/usr/bin/qmake -spec macx-xcode %s [%s]" % (name, fullName)
+            sys.stdout.flush() # To make the logger update in a timely fashion
+            os.system('/usr/bin/qmake -spec macx-xcode "%s"' % (name))
+        os.chown(fullName, currUid, adminGid)
+        if os.access(fullName, os.X_OK):
+            os.chmod(fullName, 0775)
+        elif os.access(fullName, os.W_OK):
+            os.chmod(fullName, 0664)
+    for name in dirs:
+        fullName = os.path.join(root, name)
+        currUid = os.stat(fullName).st_uid
+        os.chown(fullName, currUid, adminGid)
+        os.chmod(fullName, 0775)

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>QRect</key>
+	<dict>
+		<key>SummaryString</key>
+		<string>{(char *)Qt_QRectSummary($VAR, $ID)}:s</string>
+	</dict>
+	<key>QPoint</key>
+	<dict>
+		<key>SummaryString</key>
+		<string>{(char *)Qt_QPointSummary($VAR, $ID)}:s</string>
+	</dict>
+	<key>QSize</key>
+	<dict>
+		<key>SummaryString</key>
+		<string>{(char *)Qt_QSizeSummary($VAR, $ID)}:s</string>
+	</dict>
+	<key>QString</key>
+	<dict>
+		<key>SummaryString</key>
+		<string>{(char *)Qt_QStringSummary($VAR, $ID)}:s</string>
+	</dict>
+	<key>QDate</key>
+	<dict>
+		<key>SummaryString</key>
+		<string>{(char *)Qt_QDateSummary($VAR, $ID)}:s</string>
+	</dict>
+	<key>QTime</key>
+	<dict>
+		<key>SummaryString</key>
+		<string>{(char *)Qt_QTimeSummary($VAR, $ID)}:s</string>
+	</dict>
+	<key>QDateTime</key>
+	<dict>
+		<key>SummaryString</key>
+		<string>{(char *)Qt_QDateTimeSummary($VAR, $ID)}:s</string>
+	</dict>
+	<key>QCoreVariant</key>
+	<dict>
+		<key>SummaryString</key>
+		<string>{(char *)Qt_QCoreVariantSummary($VAR, $ID)}:s</string>
+	</dict>
+	<key>File Version</key>
+	<string>1</string>
+</dict>
+</plist>

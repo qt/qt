@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>ControlInfo</class>
+  <widget class="QDialog" name="ControlInfo">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>600</width>
+        <height>480</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Control Details</string>
+    </property>
+    <layout class="QVBoxLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item>
+        <widget class="Q3ListView" name="listInfo">
+          <property name="dragAutoScroll">
+            <bool>false</bool>
+          </property>
+          <property name="selectionMode">
+            <enum>Q3ListView::NoSelection</enum>
+          </property>
+          <property name="allColumnsShowFocus">
+            <bool>true</bool>
+          </property>
+          <property name="rootIsDecorated">
+            <bool>true</bool>
+          </property>
+          <property name="resizeMode">
+            <enum>Q3ListView::AllColumns</enum>
+          </property>
+          <column>
+            <property name="text">
+              <string>Item</string>
+            </property>
+            <property name="clickable">
+              <bool>true</bool>
+            </property>
+            <property name="resizeable">
+              <bool>true</bool>
+            </property>
+          </column>
+          <column>
+            <property name="text">
+              <string>Value</string>
+            </property>
+            <property name="clickable">
+              <bool>true</bool>
+            </property>
+            <property name="resizeable">
+              <bool>true</bool>
+            </property>
+          </column>
+        </widget>
+      </item>
+      <item>
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <spacer name="Spacer1">
+              <property name="sizeHint">
+                <size>
+                  <width>0</width>
+                  <height>0</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="PushButton1">
+              <property name="text">
+                <string>C&amp;lose</string>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>PushButton1</sender>
+      <signal>clicked()</signal>
+      <receiver>ControlInfo</receiver>
+      <slot>close()</slot>
+    </connection>
+  </connections>
+</ui>

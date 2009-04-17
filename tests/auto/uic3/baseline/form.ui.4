@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>Form1</class>
+  <widget class="QDialog" name="Form1">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>281</width>
+        <height>455</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Form1</string>
+    </property>
+    <layout class="QVBoxLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item>
+        <widget class="QLineEdit" name="number"/>
+      </item>
+      <item>
+        <widget class="Q3ListView" name="listview">
+          <column>
+            <property name="text">
+              <string>Column 1</string>
+            </property>
+            <property name="clickable">
+              <bool>true</bool>
+            </property>
+            <property name="resizeable">
+              <bool>true</bool>
+            </property>
+          </column>
+        </widget>
+      </item>
+    </layout>
+  </widget>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>number</sender>
+      <signal>returnPressed()</signal>
+      <receiver>Form1</receiver>
+      <slot>doInsert()</slot>
+    </connection>
+  </connections>
+</ui>

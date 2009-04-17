@@ -1,0 +1,41 @@
+/**  Qt file formats
+*/
+(
+    {
+       Identifier = sourcecode.qt.h;
+       BasedOn = sourcecode.cpp.h;
+       Name = "Qt header file";
+       ComputerLanguage = qt.c.cpp;
+       AppliesToBuildRules = no;
+       Extensions = (h);
+       IncludeInIndex = NO;
+       CanSetIncludeInIndex = YES;
+    },
+    {
+       Identifier = sourcecode.qt.cpp;
+       BasedOn = sourcecode.cpp.cpp;
+       Name = "Qt source file";
+       ComputerLanguage = qt.c.cpp;
+       AppliesToBuildRules = yes;
+       Extensions = (cpp);
+       IncludeInIndex = YES;
+       CanSetIncludeInIndex = YES;
+    },
+    {
+       Identifier = sourcecode.qt.qrc;
+       Name = "Qt resource file";
+       ComputerLanguage = qt.qrc;
+       AppliesToBuildRules = yes;
+       Extensions = (qrc);
+       IncludeInIndex = NO;
+    },
+    {
+       Identifier = sourcecode.qt.ui;
+       Name = "Qt UI file";
+       ComputerLanguage = qt.ui;
+       AppliesToBuildRules = yes;
+       Extensions = (ui);
+       IncludeInIndex = NO;
+    }
+)
+

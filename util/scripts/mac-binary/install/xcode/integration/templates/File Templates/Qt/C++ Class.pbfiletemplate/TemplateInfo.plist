@@ -1,0 +1,5 @@
+{
+	MainTemplateFile = "class.cpp";
+	CounterpartTemplateFile = "class.h";
+	Description = "A C++ class, with an optional header file which includes the <QtGui/QtGui> header.";
+}

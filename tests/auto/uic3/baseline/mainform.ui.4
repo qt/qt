@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>MainForm</class>
+  <widget class="QDialog" name="MainForm">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>284</width>
+        <height>120</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Main Form</string>
+    </property>
+    <layout class="QVBoxLayout">
+      <item>
+        <widget class="QPushButton" name="optionsPushButton">
+          <property name="text">
+            <string>&amp;Options...</string>
+          </property>
+        </widget>
+      </item>
+      <item>
+        <widget class="QPushButton" name="quitPushButton">
+          <property name="text">
+            <string>&amp;Quit</string>
+          </property>
+        </widget>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>optionsPushButton</sender>
+      <signal>clicked()</signal>
+      <receiver>MainForm</receiver>
+      <slot>optionsDlg()</slot>
+    </connection>
+    <connection>
+      <sender>quitPushButton</sender>
+      <signal>clicked()</signal>
+      <receiver>MainForm</receiver>
+      <slot>quit()</slot>
+    </connection>
+  </connections>
+</ui>

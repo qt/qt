@@ -1,0 +1,8 @@
+********* Start testing of tst_Cmptest *********
+Config: Using QTest library 4.1.0, Qt 4.1.0
+PASS   : tst_Cmptest::initTestCase()
+PASS   : tst_Cmptest::compare_boolfuncs()
+PASS   : tst_Cmptest::compare_pointerfuncs()
+PASS   : tst_Cmptest::cleanupTestCase()
+Totals: 4 passed, 0 failed, 0 skipped
+********* Finished testing of tst_Cmptest *********

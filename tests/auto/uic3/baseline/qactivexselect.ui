@@ -1,0 +1,194 @@
+<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
+<class>QActiveXSelect</class>
+<comment>*********************************************************************
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).  All rights reserved.
+**
+** This file is part of the Active Qt integration.
+**
+** Licensees holding valid Qt Enterprise Edition
+** licenses for Windows may use this file in accordance with the Qt Commercial
+** License Agreement provided with the Software.
+**
+** See http://www.trolltech.com/pricing.html or email sales@trolltech.com for
+**   information about Qt Commercial License Agreements.
+**
+** Contact qt-info@nokia.com if any conditions of this licensing are
+** not clear to you.
+**
+*********************************************************************</comment>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>QActiveXSelect</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>439</width>
+            <height>326</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Select ActiveX Control</string>
+    </property>
+    <property name="sizeGripEnabled">
+        <bool>true</bool>
+    </property>
+    <grid>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>11</number>
+        </property>
+        <property name="spacing">
+            <number>6</number>
+        </property>
+        <widget class="QLayoutWidget" row="0" column="1" rowspan="2" colspan="1">
+            <property name="name">
+                <cstring>Layout2</cstring>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>0</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>buttonOk</cstring>
+                    </property>
+                    <property name="caption">
+                        <string></string>
+                    </property>
+                    <property name="text">
+                        <string>OK</string>
+                    </property>
+                    <property name="autoDefault">
+                        <bool>true</bool>
+                    </property>
+                    <property name="default">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>buttonCancel</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Cancel</string>
+                    </property>
+                    <property name="autoDefault">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <spacer>
+                    <property name="name">
+                        <cstring>Spacer2</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Vertical</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>20</width>
+                            <height>0</height>
+                        </size>
+                    </property>
+                </spacer>
+            </vbox>
+        </widget>
+        <widget class="QListBox" row="0" column="0">
+            <property name="name">
+                <cstring>ActiveXList</cstring>
+            </property>
+        </widget>
+        <widget class="QLayoutWidget" row="1" column="0">
+            <property name="name">
+                <cstring>Layout2</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>0</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>TextLabel1</cstring>
+                    </property>
+                    <property name="text">
+                        <string>COM &amp;Object:</string>
+                    </property>
+                    <property name="buddy" stdset="0">
+                        <cstring>ActiveX</cstring>
+                    </property>
+                </widget>
+                <widget class="QLineEdit">
+                    <property name="name">
+                        <cstring>ActiveX</cstring>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+    </grid>
+</widget>
+<connections>
+    <connection>
+        <sender>buttonOk</sender>
+        <signal>clicked()</signal>
+        <receiver>QActiveXSelect</receiver>
+        <slot>accept()</slot>
+    </connection>
+    <connection>
+        <sender>buttonCancel</sender>
+        <signal>clicked()</signal>
+        <receiver>QActiveXSelect</receiver>
+        <slot>reject()</slot>
+    </connection>
+    <connection>
+        <sender>ActiveXList</sender>
+        <signal>highlighted(QListBoxItem*)</signal>
+        <receiver>QActiveXSelect</receiver>
+        <slot>controlSelected(QListBoxItem*)</slot>
+    </connection>
+    <connection>
+        <sender>ActiveXList</sender>
+        <signal>selected(const QString&amp;)</signal>
+        <receiver>QActiveXSelect</receiver>
+        <slot>accept()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="global" impldecl="in implementation">designerinterface.h</include>
+    <include location="local" impldecl="in declaration">qaxwidget.h</include>
+    <include location="local" impldecl="in implementation">qactivexselect.ui.h</include>
+</includes>
+<forwards>
+    <forward>struct DesignerInterface</forward>
+</forwards>
+<variables>
+    <variable>DesignerInterface *designer;</variable>
+    <variable>QAxWidget *activex;</variable>
+</variables>
+<slots>
+    <slot>init()</slot>
+    <slot>controlSelected( QListBoxItem *ctrl )</slot>
+    <slot>openLater()</slot>
+    <slot>setActiveX( QAxWidget * ax )</slot>
+    <slot>setDesigner( DesignerInterface * des )</slot>
+    <slot returnType="QString">selectedControl()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

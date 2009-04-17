@@ -1,0 +1,9 @@
+uic3: slot `quit()' for widget `MainView' of type `QDialog' is not supported; connection may fail. Line: 801 Column: 31
+uic3: slot `start_listChildren()' for widget `MainView' of type `QDialog' is not supported; connection may fail. Line: 807 Column: 31
+uic3: slot `start_get()' for widget `MainView' of type `QDialog' is not supported; connection may fail. Line: 813 Column: 31
+uic3: slot `start_copy()' for widget `MainView' of type `QDialog' is not supported; connection may fail. Line: 819 Column: 31
+uic3: slot `start_mkdir()' for widget `MainView' of type `QDialog' is not supported; connection may fail. Line: 825 Column: 31
+uic3: slot `start_put()' for widget `MainView' of type `QDialog' is not supported; connection may fail. Line: 831 Column: 31
+uic3: slot `start_remove()' for widget `MainView' of type `QDialog' is not supported; connection may fail. Line: 837 Column: 31
+uic3: slot `start_rename()' for widget `MainView' of type `QDialog' is not supported; connection may fail. Line: 843 Column: 31
+uic3: slot `stop()' for widget `MainView' of type `QDialog' is not supported; connection may fail. Line: 849 Column: 31
