@@ -183,15 +183,17 @@ static const char* const qglslPositionWithConicalGradientBrushVertexShader = "\
 static const char* const qglslAffinePositionWithConicalGradientBrushVertexShader
                  = qglslPositionWithConicalGradientBrushVertexShader;
 
-static const char* const qglslConicalGradientBrushSrcFragmentShader = "\
+static const char* const qglslConicalGradientBrushSrcFragmentShader = "\n\
     #define INVERSE_2PI 0.1591549430918953358 \n\
-    uniform         sampler2D   brushTexture; \
+    uniform         sampler2D   brushTexture; \n\
     uniform mediump float       angle; \
     varying highp   vec2        A; \
     lowp vec4 srcPixel() { \
+        highp float t; \
         if (abs(A.y) == abs(A.x)) \
-            A.y += 0.002; \
-        highp float t = (atan2(-A.y, A.x) + angle) * INVERSE_2PI; \
+            t = (atan(-A.y + 0.002, A.x) + angle) * INVERSE_2PI; \
+        else \
+            t = (atan(-A.y, A.x) + angle) * INVERSE_2PI; \
         return texture2D(brushTexture, vec2(t - floor(t), 0.5)); \
     }";
 
