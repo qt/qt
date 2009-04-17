@@ -66,15 +66,16 @@ void QGraphicsWidgetPrivate::init(QGraphicsItem *parentItem, Qt::WindowFlags wFl
     isWidget = 1; // QGraphicsItem::isWidget() returns true.
     focusNext = focusPrev = q;
     focusPolicy = Qt::NoFocus;
+
+    if (!parentItem)
+        adjustWindowFlags(&wFlags);
+    windowFlags = wFlags;
+
     q->setParentItem(parentItem);
     q->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred, QSizePolicy::DefaultType));
     q->setGraphicsItem(q);
 
     resolveLayoutDirection();
-
-    if (!parentItem)
-        adjustWindowFlags(&wFlags);
-    windowFlags = wFlags;
     q->unsetWindowFrameMargins();
 }
 qreal QGraphicsWidgetPrivate::titleBarHeight(const QStyleOptionTitleBar &options) const
