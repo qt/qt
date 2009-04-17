@@ -123,7 +123,6 @@ private:
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
-    QApplication::setAttribute(Qt::AA_EnableGestures);
     app.addGestureRecognizer(new GestureRecognizerLinjaZax);
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 //! [0]

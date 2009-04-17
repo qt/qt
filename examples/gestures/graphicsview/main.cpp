@@ -142,7 +142,6 @@ private:
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    QApplication::setAttribute(Qt::AA_EnableGestures);
     MainWidget w;
     w.show();
     return app.exec();
