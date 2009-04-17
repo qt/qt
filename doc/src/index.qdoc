@@ -85,12 +85,6 @@
         \endif
     \endif
 
-    \if defined(opensourceedition)
-    \bold{Note:} This edition is for the development of \l{Qt
-    Open Source Edition}{Free and Open Source} software only; see
-    \l{Qt Commercial Editions}.
-    \endif
-
     \raw HTML
         <table cellpadding="2" cellspacing="1" border="0" width="100%" bgcolor="#e5e5e5">
         <tr>
