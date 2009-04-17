@@ -62,10 +62,13 @@ QT_BEGIN_NAMESPACE
 
 bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
 
-static const unsigned int maximumGestureRecognitionTimeout = 2000;
+static const unsigned int MaximumGestureRecognitionTimeout = 2000;
+static const unsigned int DelayedPressTimeout = 300;
 
 QGestureManager::QGestureManager(QObject *parent)
-    : QObject(parent), targetWidget(0), state(NotGesture)
+    : QObject(parent), targetWidget(0), delayedPressTimer(0),
+      lastMousePressEvent(QEvent::None, QPoint(), Qt::NoButton, 0, 0),
+      state(NotGesture)
 {
     qRegisterMetaType<Qt::DirectionType>();
     qRegisterMetaType<Qt::GestureState>();
@@ -147,7 +150,7 @@ bool QGestureManager::filterEvent(QEvent *event)
         }
         foreach(QGestureRecognizer *r, newMaybeGestures) {
             if (!maybeGestures.contains(r)) {
-                int timerId = startTimer(maximumGestureRecognitionTimeout);
+                int timerId = startTimer(MaximumGestureRecognitionTimeout);
                 if (!timerId)
                     qWarning("QGestureManager: couldn't start timer!");
                 maybeGestures.insert(r, timerId);
@@ -248,7 +251,7 @@ bool QGestureManager::filterEvent(QEvent *event)
         }
         foreach(QGestureRecognizer *r, newMaybeGestures) {
             if (!maybeGestures.contains(r)) {
-                int timerId = startTimer(maximumGestureRecognitionTimeout);
+                int timerId = startTimer(MaximumGestureRecognitionTimeout);
                 if (!timerId)
                     qWarning("QGestureManager: couldn't start timer!");
                 maybeGestures.insert(r, timerId);
@@ -296,31 +299,100 @@ bool QGestureManager::filterEvent(QEvent *event)
         }
     }
 
+    if (delayedPressTimer && state == Gesture) {
+        DEBUG() << "QGestureManager: gesture started. Forgetting about postponed mouse press event";
+        killTimer(delayedPressTimer);
+        delayedPressTimer = 0;
+    } else if (delayedPressTimer && (state == NotGesture ||
+                                     event->type() == QEvent::MouseButtonRelease)) {
+        // not a gesture or released button too fast, so replay press
+        // event back.
+        DEBUG() << "QGestureManager: replaying mouse press event";
+        QMap<QGestureRecognizer*, int>::const_iterator it = maybeGestures.begin(),
+                                                        e = maybeGestures.end();;
+        for (; it != e; ++it) {
+            it.key()->reset();
+            killTimer(it.value());
+        }
+        maybeGestures.clear();
+        state = NotGesture;
+
+        Q_ASSERT(targetWidget != 0);
+        QApplication::sendEvent(targetWidget, &lastMousePressEvent);
+        if (event->type() == QEvent::MouseButtonRelease) {
+            QMouseEvent *me = static_cast<QMouseEvent*>(event);
+            QMouseEvent move(QEvent::MouseMove, me->pos(), me->globalPos(), me->button(),
+                             me->buttons(), me->modifiers());
+            QApplication::sendEvent(targetWidget, &move);
+            ret = false;
+        }
+        killTimer(delayedPressTimer);
+        delayedPressTimer = 0;
+    } else if (state == MaybeGesture && event->type() == QEvent::MouseButtonPress) {
+        // postpone the press event delivery until we know for
+        // sure whether it is a gesture.
+        DEBUG() << "QGestureManager: postponing mouse press event";
+        QMouseEvent *me = static_cast<QMouseEvent*>(event);
+        lastMousePressEvent = QMouseEvent(QEvent::MouseButtonPress, me->pos(),
+                                          me->globalPos(), me->button(),
+                                          me->buttons(), me->modifiers());
+        Q_ASSERT(delayedPressTimer == 0);
+        delayedPressTimer = startTimer(DelayedPressTimeout);
+        if (!delayedPressTimer)
+            qWarning("QGestureManager: couldn't start delayed press timer!");
+    }
+    // if we have postponed a mouse press event, postpone all
+    // following event
+    if (delayedPressTimer)
+        ret = true;
+
     lastPos = currentPos;
     return ret;
 }
 
 void QGestureManager::timerEvent(QTimerEvent *event)
 {
-    // sanity checks, remove later
-    Q_ASSERT((state == Gesture && !activeGestures.isEmpty()) || (state != Gesture && activeGestures.isEmpty()));
+    if (event->timerId() == delayedPressTimer) {
+        DEBUG() << "QGestureManager: replaying mouse press event due to timeout";
+        // sanity checks
+        Q_ASSERT(state != Gesture);
 
-    typedef QMap<QGestureRecognizer*, int> MaybeGestureMap;
-    for (MaybeGestureMap::iterator it = maybeGestures.begin(), e = maybeGestures.end();
-         it != e; ++it) {
-        if (it.value() == event->timerId()) {
-            DEBUG() << "QGestureManager: gesture timeout.";
-            QGestureRecognizer *r = it.key();
-            r->reset();
-            maybeGestures.erase(it);
-            killTimer(event->timerId());
-            break;
+        QMap<QGestureRecognizer*, int>::const_iterator it = maybeGestures.begin(),
+                                                        e = maybeGestures.end();;
+        for (; it != e; ++it) {
+            it.key()->reset();
+            killTimer(it.value());
         }
-    }
-
-    if (state == MaybeGesture && maybeGestures.isEmpty()) {
-        DEBUG() << "QGestureManager: new state = NotGesture because of timeout";
+        maybeGestures.clear();
         state = NotGesture;
+
+        // we neither received a mouse release event nor gesture
+        // started, so we replay stored mouse press event.
+        QApplication::sendEvent(targetWidget, &lastMousePressEvent);
+
+        killTimer(delayedPressTimer);
+        delayedPressTimer = 0;
+    } else {
+        // sanity checks, remove later
+        Q_ASSERT((state == Gesture && !activeGestures.isEmpty()) || (state != Gesture && activeGestures.isEmpty()));
+
+        typedef QMap<QGestureRecognizer*, int> MaybeGestureMap;
+        for (MaybeGestureMap::iterator it = maybeGestures.begin(), e = maybeGestures.end();
+             it != e; ++it) {
+            if (it.value() == event->timerId()) {
+                DEBUG() << "QGestureManager: gesture timeout.";
+                QGestureRecognizer *r = it.key();
+                r->reset();
+                maybeGestures.erase(it);
+                killTimer(event->timerId());
+                break;
+            }
+        }
+
+        if (state == MaybeGesture && maybeGestures.isEmpty()) {
+            DEBUG() << "QGestureManager: new state = NotGesture because of timeout";
+            state = NotGesture;
+        }
     }
 }
 
@@ -378,7 +450,7 @@ void QGestureManager::recognizerStateChanged(QGestureRecognizer::Result result)
             sendGestureEvent(targetWidget, &event);
         }
         if (!maybeGestures.contains(recognizer)) {
-            int timerId = startTimer(maximumGestureRecognitionTimeout);
+            int timerId = startTimer(MaximumGestureRecognitionTimeout);
             if (!timerId)
                 qWarning("QGestureManager: couldn't start timer!");
             maybeGestures.insert(recognizer, timerId);
@@ -395,6 +467,11 @@ void QGestureManager::recognizerStateChanged(QGestureRecognizer::Result result)
         break;
     default:
         Q_ASSERT(false);
+    }
+
+    if (delayedPressTimer && state == Gesture) {
+        killTimer(delayedPressTimer);
+        delayedPressTimer = 0;
     }
 }
 

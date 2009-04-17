@@ -94,6 +94,9 @@ private:
     QWidget *targetWidget;
     QPoint lastPos;
 
+    int delayedPressTimer;
+    QMouseEvent lastMousePressEvent;
+
     enum State {
         Gesture,
         NotGesture,
