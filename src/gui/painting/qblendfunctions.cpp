@@ -44,19 +44,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
-// This ifdef is made with the best of intention. GCC fails to
-// optimzie the code properly so the bytemul approach is the fastest
-// it gets. Both on ARM and on MSVC the code is optimized to be better
-// than the bytemul approach...  On the other hand... This code is
-// almost never run on i386 so it may be downright silly to have this
-// piece of code here...
-#if defined (Q_CC_GNU) && (defined (QT_ARCH_I386) || defined (QT_ARCH_X86_64))
-#  define QT_BLEND_USE_BYTEMUL
-#endif
-
-// #define QT_DEBUG_DRAW
-
 static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
 
 struct SourceOnlyAlpha
@@ -286,7 +273,7 @@ static void qt_blend_rgb16_on_rgb16(uchar *dst, int dbpl,
                                     int const_alpha)
 {
 #ifdef QT_DEBUG_DRAW
-    printf("qt_blend_argb16_on_rgb16: dst=(%p, %d), src=(%p, %d), dim=(%d, %d) alpha=%d\n",
+    printf("qt_blend_rgb16_on_rgb16: dst=(%p, %d), src=(%p, %d), dim=(%d, %d) alpha=%d\n",
            dst, dbpl, src, sbpl, w, h, const_alpha);
 #endif
 
@@ -347,11 +334,6 @@ template <typename T> void qt_blend_argb24_on_rgb16(uchar *destPixels, int dbpl,
             if (alpha == 255) {
                 *dst = spix;
             } else if (alpha != 0) {
-#ifdef QT_BLEND_USE_BYTEMUL
-                // truncate green channel to avoid overflow
-                *dst = (alphaFunc.bytemul(spix) & 0xffdf)
-                       + (quint16) qrgb565(*dst).byte_mul(qrgb565::ialpha(alpha));
-#else
                 quint16 dpix = *dst;
                 quint32 sia = 255 - alpha;
 
@@ -368,7 +350,6 @@ template <typename T> void qt_blend_argb24_on_rgb16(uchar *destPixels, int dbpl,
                 quint32 rb = ((siab + (siab>>8) + (0x80 >>  3)) >> 8) & 0x001f;
 
                 *dst = alphaFunc.bytemul(spix) + rr + rg + rb;
-#endif
             }
 
             ++dst;
