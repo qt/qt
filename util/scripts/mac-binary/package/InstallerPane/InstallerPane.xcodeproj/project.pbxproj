@@ -1,0 +1,381 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		8D5B49B0048680CD000E48DA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
+		8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */; };
+		B40F7FFC06739E1B0053A16B /* InstallerPlugins.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B40F7FFB06739E1B0053A16B /* InstallerPlugins.framework */; };
+		B40F802906739F480053A16B /* InstallerPane.nib in Resources */ = {isa = PBXBuildFile; fileRef = B40F802706739F480053A16B /* InstallerPane.nib */; };
+		B47CF355067B4E030066DBF6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B47CF353067B4E030066DBF6 /* Localizable.strings */; };
+		CA21468F0897D41100C0167A /* InstallerSecionSection.mm in Sources */ = {isa = PBXBuildFile; fileRef = CA21468E0897D41100C0167A /* InstallerSecionSection.mm */; };
+		CA72AA6A089640B3001196EE /* InstallerPanePane.mm in Sources */ = {isa = PBXBuildFile; fileRef = CA72AA69089640B3001196EE /* InstallerPanePane.mm */; };
+		CADBCF9F08F55066009B9612 /* helpfulfunc.mm in Sources */ = {isa = PBXBuildFile; fileRef = CADBCF9E08F55066009B9612 /* helpfulfunc.mm */; };
+		CADBD0A108F58F9C009B9612 /* keydec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CADBD0A008F58F9B009B9612 /* keydec.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		089C1672FE841209C02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		089C167EFE841241C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		089C167FFE841241C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
+		1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		32DBCF630370AF2F00C91783 /* InstallerPane_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InstallerPane_Prefix.pch; sourceTree = "<group>"; };
+		8D5B49B6048680CD000E48DA /* InstallerPane.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InstallerPane.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B40F7FFB06739E1B0053A16B /* InstallerPlugins.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = InstallerPlugins.framework; path = /System/Library/Frameworks/InstallerPlugins.framework; sourceTree = "<absolute>"; };
+		B40F802806739F480053A16B /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/InstallerPane.nib; sourceTree = "<group>"; };
+		B44C200806739AE500D31AA1 /* InstallerPanePane.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = InstallerPanePane.h; sourceTree = "<group>"; };
+		B47CF354067B4E030066DBF6 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B4A6B2A60673D523003CD9B2 /* InstallerSections.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = InstallerSections.plist; sourceTree = "<group>"; };
+		CA21468D0897D41100C0167A /* InstallerSecionSection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InstallerSecionSection.h; sourceTree = "<group>"; };
+		CA21468E0897D41100C0167A /* InstallerSecionSection.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = InstallerSecionSection.mm; sourceTree = "<group>"; };
+		CA2146C00897D69E00C0167A /* helpfulfunc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = helpfulfunc.h; sourceTree = "<group>"; };
+		CA72A9A40896304E001196EE /* keydec.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = keydec.h; sourceTree = "<group>"; };
+		CA72AA69089640B3001196EE /* InstallerPanePane.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = InstallerPanePane.mm; sourceTree = "<group>"; };
+		CADBCF9E08F55066009B9612 /* helpfulfunc.mm */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.objcpp; path = helpfulfunc.mm; sourceTree = "<group>"; };
+		CADBD0A008F58F9B009B9612 /* keydec.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = keydec.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8D5B49B3048680CD000E48DA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */,
+				B40F7FFC06739E1B0053A16B /* InstallerPlugins.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		089C166AFE841209C02AAC07 /* InstallerPlugin */ = {
+			isa = PBXGroup;
+			children = (
+				08FB77AFFE84173DC02AAC07 /* Classes */,
+				32C88E010371C26100C91783 /* Other Sources */,
+				089C167CFE841241C02AAC07 /* Resources */,
+				089C1671FE841209C02AAC07 /* Frameworks and Libraries */,
+				19C28FB8FE9D52D311CA2CBB /* Products */,
+			);
+			name = InstallerPlugin;
+			sourceTree = "<group>";
+		};
+		089C1671FE841209C02AAC07 /* Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				1058C7ACFEA557BF11CA2CBB /* Linked Frameworks */,
+				1058C7AEFEA557BF11CA2CBB /* Other Frameworks */,
+			);
+			name = "Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		089C167CFE841241C02AAC07 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B47CF353067B4E030066DBF6 /* Localizable.strings */,
+				B4A6B2A60673D523003CD9B2 /* InstallerSections.plist */,
+				8D5B49B7048680CD000E48DA /* Info.plist */,
+				089C167DFE841241C02AAC07 /* InfoPlist.strings */,
+				B40F802706739F480053A16B /* InstallerPane.nib */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		08FB77AFFE84173DC02AAC07 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				CADBD0A008F58F9B009B9612 /* keydec.cpp */,
+				CADBCF9E08F55066009B9612 /* helpfulfunc.mm */,
+				CA72A9A40896304E001196EE /* keydec.h */,
+				B44C200806739AE500D31AA1 /* InstallerPanePane.h */,
+				CA72AA69089640B3001196EE /* InstallerPanePane.mm */,
+				CA21468D0897D41100C0167A /* InstallerSecionSection.h */,
+				CA21468E0897D41100C0167A /* InstallerSecionSection.mm */,
+				CA2146C00897D69E00C0167A /* helpfulfunc.h */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+		1058C7ACFEA557BF11CA2CBB /* Linked Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */,
+				B40F7FFB06739E1B0053A16B /* InstallerPlugins.framework */,
+			);
+			name = "Linked Frameworks";
+			sourceTree = "<group>";
+		};
+		1058C7AEFEA557BF11CA2CBB /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				089C1672FE841209C02AAC07 /* Foundation.framework */,
+				089C167FFE841241C02AAC07 /* AppKit.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		19C28FB8FE9D52D311CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D5B49B6048680CD000E48DA /* InstallerPane.bundle */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		32C88E010371C26100C91783 /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				32DBCF630370AF2F00C91783 /* InstallerPane_Prefix.pch */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8D5B49AC048680CD000E48DA /* InstallerPane */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CA72A7AF0894D77F001196EE /* Build configuration list for PBXNativeTarget "InstallerPane" */;
+			buildPhases = (
+				8D5B49AF048680CD000E48DA /* Resources */,
+				8D5B49B1048680CD000E48DA /* Sources */,
+				8D5B49B3048680CD000E48DA /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = InstallerPane;
+			productInstallPath = "$(HOME)/Library/Bundles";
+			productName = InstallerPlugin;
+			productReference = 8D5B49B6048680CD000E48DA /* InstallerPane.bundle */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		089C1669FE841209C02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = CA72A7B30894D77F001196EE /* Build configuration list for PBXProject "InstallerPane" */;
+			compatibilityVersion = "Xcode 2.4";
+			hasScannedForEncodings = 1;
+			mainGroup = 089C166AFE841209C02AAC07 /* InstallerPlugin */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8D5B49AC048680CD000E48DA /* InstallerPane */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8D5B49AF048680CD000E48DA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8D5B49B0048680CD000E48DA /* InfoPlist.strings in Resources */,
+				B40F802906739F480053A16B /* InstallerPane.nib in Resources */,
+				B47CF355067B4E030066DBF6 /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8D5B49B1048680CD000E48DA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CA72AA6A089640B3001196EE /* InstallerPanePane.mm in Sources */,
+				CA21468F0897D41100C0167A /* InstallerSecionSection.mm in Sources */,
+				CADBCF9F08F55066009B9612 /* helpfulfunc.mm in Sources */,
+				CADBD0A108F58F9C009B9612 /* keydec.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		089C167DFE841241C02AAC07 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				089C167EFE841241C02AAC07 /* English */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		B40F802706739F480053A16B /* InstallerPane.nib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B40F802806739F480053A16B /* English */,
+			);
+			name = InstallerPane.nib;
+			sourceTree = "<group>";
+		};
+		B47CF353067B4E030066DBF6 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B47CF354067B4E030066DBF6 /* English */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		CA1E6BC90897938F0079C491 /* Debug-eval */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = InstallerPane_Prefix.pch;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Library/Bundles";
+				PREBINDING = NO;
+				PRODUCT_NAME = InstallerPane;
+				WRAPPER_EXTENSION = bundle;
+				ZERO_LINK = YES;
+			};
+			name = "Debug-eval";
+		};
+		CA1E6BCA0897938F0079C491 /* Debug-eval */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				OTHER_CFLAGS = "-DQT_EVAL";
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				ZERO_LINK = YES;
+			};
+			name = "Debug-eval";
+		};
+		CA72A7B00894D77F001196EE /* Debug-commercial */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = InstallerPane_Prefix.pch;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Library/Bundles";
+				PREBINDING = NO;
+				PRODUCT_NAME = InstallerPane;
+				WRAPPER_EXTENSION = bundle;
+				ZERO_LINK = YES;
+			};
+			name = "Debug-commercial";
+		};
+		CA72A7B10894D77F001196EE /* Release-commercial */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = InstallerPane_Prefix.pch;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Library/Bundles";
+				PREBINDING = NO;
+				PRODUCT_NAME = InstallerPane;
+				WRAPPER_EXTENSION = bundle;
+				ZERO_LINK = NO;
+			};
+			name = "Release-commercial";
+		};
+		CA72A7B40894D77F001196EE /* Debug-commercial */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				ZERO_LINK = YES;
+			};
+			name = "Debug-commercial";
+		};
+		CA72A7B50894D77F001196EE /* Release-commercial */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+			};
+			name = "Release-commercial";
+		};
+		CAEBD75C0896974E0003461D /* Release-eval */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = InstallerPane_Prefix.pch;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Library/Bundles";
+				PREBINDING = NO;
+				PRODUCT_NAME = InstallerPane;
+				WRAPPER_EXTENSION = bundle;
+				ZERO_LINK = NO;
+			};
+			name = "Release-eval";
+		};
+		CAEBD75D0896974E0003461D /* Release-eval */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				OTHER_CFLAGS = "-DQT_EVAL";
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+			};
+			name = "Release-eval";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CA72A7AF0894D77F001196EE /* Build configuration list for PBXNativeTarget "InstallerPane" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CA72A7B00894D77F001196EE /* Debug-commercial */,
+				CA1E6BC90897938F0079C491 /* Debug-eval */,
+				CA72A7B10894D77F001196EE /* Release-commercial */,
+				CAEBD75C0896974E0003461D /* Release-eval */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug-commercial";
+		};
+		CA72A7B30894D77F001196EE /* Build configuration list for PBXProject "InstallerPane" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CA72A7B40894D77F001196EE /* Debug-commercial */,
+				CA1E6BCA0897938F0079C491 /* Debug-eval */,
+				CA72A7B50894D77F001196EE /* Release-commercial */,
+				CAEBD75D0896974E0003461D /* Release-eval */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug-commercial";
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 089C1669FE841209C02AAC07 /* Project object */;
+}

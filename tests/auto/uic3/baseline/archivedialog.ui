@@ -1,0 +1,137 @@
+<!DOCTYPE UI><UI version="3.1" stdsetdef="1">
+<class>ArchiveDialog</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>ArchiveDialog</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>673</width>
+            <height>561</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Qt-interest Archive Search Tool</string>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>layout1</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>myTextLabel</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Search phrase</string>
+                    </property>
+                </widget>
+                <widget class="QLineEdit">
+                    <property name="name">
+                        <cstring>myLineEdit</cstring>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+        <widget class="QSplitter">
+            <property name="name">
+                <cstring>splitter1</cstring>
+            </property>
+            <property name="orientation">
+                <enum>Horizontal</enum>
+            </property>
+            <widget class="QListView">
+                <column>
+                    <property name="text">
+                        <string>Matching documents</string>
+                    </property>
+                    <property name="clickable">
+                        <bool>true</bool>
+                    </property>
+                    <property name="resizable">
+                        <bool>true</bool>
+                    </property>
+                </column>
+                <property name="name">
+                    <cstring>myListView</cstring>
+                </property>
+            </widget>
+            <widget class="QTextBrowser">
+                <property name="name">
+                    <cstring>myTextBrowser</cstring>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>layout3</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <spacer>
+                    <property name="name">
+                        <cstring>mySpacer</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>281</width>
+                            <height>21</height>
+                        </size>
+                    </property>
+                </spacer>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>myPushButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Quit</string>
+                    </property>
+                    <property name="autoDefault">
+                        <bool>false</bool>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+    </vbox>
+</widget>
+<includes>
+    <include location="global" impldecl="in declaration">qhttp.h</include>
+    <include location="global" impldecl="in declaration">qurl.h</include>
+    <include location="global" impldecl="in declaration">qmessagebox.h</include>
+    <include location="global" impldecl="in declaration">qapplication.h</include>
+    <include location="global" impldecl="in declaration">qcursor.h</include>
+    <include location="global" impldecl="in declaration">qregexp.h</include>
+    <include location="local" impldecl="in implementation">archivedialog.ui.h</include>
+</includes>
+<variables>
+    <variable access="private">QHttp articleSearcher;</variable>
+    <variable access="private">QHttp articleFetcher;</variable>
+</variables>
+<slots>
+    <slot specifier="non virtual">fetch( QListViewItem * it )</slot>
+    <slot specifier="non virtual">fetchDone( bool error )</slot>
+    <slot specifier="non virtual">search()</slot>
+    <slot specifier="non virtual">searchDone( bool error )</slot>
+</slots>
+<functions>
+    <function access="private" specifier="non virtual">init()</function>
+</functions>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

@@ -1,0 +1,519 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>OptionsDialog</class>
+  <widget class="QDialog" name="OptionsDialog">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>371</width>
+        <height>482</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Select Options</string>
+    </property>
+    <layout class="QVBoxLayout">
+      <item>
+        <layout class="QHBoxLayout">
+          <item>
+            <layout class="QVBoxLayout">
+              <item>
+                <widget class="Q3ButtonGroup" name="bgBorder">
+                  <property name="title">
+                    <string>&amp;Border</string>
+                  </property>
+                  <property name="flat">
+                    <bool>true</bool>
+                  </property>
+                  <property name="checkable">
+                    <bool>true</bool>
+                  </property>
+                  <property name="whatsThis" stdset="0">
+                    <string>Select different types of borders, or turn the border off. Windows without a border are ignored by the window manager.</string>
+                  </property>
+                  <layout class="QVBoxLayout">
+                    <item>
+                      <widget class="QRadioButton" name="rbBorderNormal">
+                        <property name="text">
+                          <string>&amp;Normal</string>
+                        </property>
+                        <property name="shortcut">
+                          <string>Alt+N</string>
+                        </property>
+                        <property name="checked">
+                          <bool>true</bool>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                          <string>A normal border</string>
+                        </property>
+                        <property name="whatsThis" stdset="0">
+                          <string>Gives the window a normal, resizable border. The window should have a layout installed to handle the resizing gracefully.</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QRadioButton" name="rbBorderDialog">
+                        <property name="text">
+                          <string>&amp;Dialog</string>
+                        </property>
+                        <property name="shortcut">
+                          <string>Alt+D</string>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                          <string>A thin dialog border</string>
+                        </property>
+                        <property name="whatsThis" stdset="0">
+                          <string>Gives the window a thin dialog border. Depending on the window manager the window will not be resizable. Use QWidget::setFixedSize() in addition to enforce a static size on all systems.</string>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <widget class="Q3ButtonGroup" name="bgTitle">
+                  <property name="title">
+                    <string>&amp;Titlebar</string>
+                  </property>
+                  <property name="flat">
+                    <bool>true</bool>
+                  </property>
+                  <property name="checkable">
+                    <bool>true</bool>
+                  </property>
+                  <property name="whatsThis" stdset="0">
+                    <string>Select different controls you want to see in the titlebar, or turn the titlebar off. Popup windows should not have a titlebar.</string>
+                  </property>
+                  <layout class="QVBoxLayout">
+                    <item>
+                      <widget class="QCheckBox" name="cbTitleSystem">
+                        <property name="text">
+                          <string>S&amp;ystem Menu</string>
+                        </property>
+                        <property name="shortcut">
+                          <string>Alt+Y</string>
+                        </property>
+                        <property name="checked">
+                          <bool>true</bool>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                          <string>A window system menu.</string>
+                        </property>
+                        <property name="whatsThis" stdset="0">
+                          <string>Adds a window system menu. Many window managers require a system menu to be able to provide minimize or maximize controls. A system menu implies a close button.</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QCheckBox" name="cbTitleMinimize">
+                        <property name="text">
+                          <string>Minimi&amp;ze</string>
+                        </property>
+                        <property name="shortcut">
+                          <string>Alt+Z</string>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                          <string>A minimize button</string>
+                        </property>
+                        <property name="whatsThis" stdset="0">
+                          <string>Adds a minimze button. This option requires a system menu on many window managers.</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QCheckBox" name="cbTitleMaximize">
+                        <property name="text">
+                          <string>Ma&amp;ximize</string>
+                        </property>
+                        <property name="shortcut">
+                          <string>Alt+X</string>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                          <string>A maximize button</string>
+                        </property>
+                        <property name="whatsThis" stdset="0">
+                          <string>Adds a maximze button. This option requires a system menu on many window managers.</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QCheckBox" name="cbTitleContext">
+                        <property name="text">
+                          <string>&amp;What's This</string>
+                        </property>
+                        <property name="shortcut">
+                          <string>Alt+W</string>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                          <string>A context help button</string>
+                        </property>
+                        <property name="whatsThis" stdset="0">
+                          <string>Adds a context help button. This option requires a system menu on many window managers, and often doesn't work together with minimize and maximize buttons.</string>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+            </layout>
+          </item>
+          <item>
+            <layout class="QVBoxLayout">
+              <item>
+                <widget class="Q3ButtonGroup" name="bgBehavior">
+                  <property name="title">
+                    <string>Behavior</string>
+                  </property>
+                  <property name="flat">
+                    <bool>true</bool>
+                  </property>
+                  <property name="whatsThis" stdset="0">
+                    <string>Select different behaviors of the window in runtime.</string>
+                  </property>
+                  <layout class="QVBoxLayout">
+                    <item>
+                      <widget class="QCheckBox" name="cbBehaviorTaskbar">
+                        <property name="text">
+                          <string>Taskbar &amp;Entry</string>
+                        </property>
+                        <property name="shortcut">
+                          <string>Alt+E</string>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                          <string>Entry in the taskbar</string>
+                        </property>
+                        <property name="whatsThis" stdset="0">
+                          <string>Gives the window a separate task bar entry.</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QCheckBox" name="cbBehaviorStays">
+                        <property name="text">
+                          <string>Stays on T&amp;op</string>
+                        </property>
+                        <property name="shortcut">
+                          <string>Alt+O</string>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                          <string>Stay on top of the desktop</string>
+                        </property>
+                        <property name="whatsThis" stdset="0">
+                          <string>Informs the window system that the window should stay on top of all other windows, including windows from other applications. This is not supported on all X11 window managers.</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QCheckBox" name="cbBehaviorPopup">
+                        <property name="enabled">
+                          <bool>false</bool>
+                        </property>
+                        <property name="text">
+                          <string>&amp;Popup</string>
+                        </property>
+                        <property name="shortcut">
+                          <string>Alt+P</string>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                          <string>A popup window</string>
+                        </property>
+                        <property name="whatsThis" stdset="0">
+                          <string>Indicates that this widget is a popup window. Popup windows are modal, but close automatically when the mouse is clicked.</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QCheckBox" name="cbBehaviorTool">
+                        <property name="text">
+                          <string>Too&amp;l</string>
+                        </property>
+                        <property name="shortcut">
+                          <string>Alt+L</string>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                          <string>A tool window</string>
+                        </property>
+                        <property name="whatsThis" stdset="0">
+                          <string>Makes the window a tool window. Tool windows often have a smaller titlebar and decoration, and don't activate automtically when displayed. Tool windows often cannot have their own taskbar entry.</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QCheckBox" name="cbBehaviorModal">
+                        <property name="text">
+                          <string>&amp;Modal</string>
+                        </property>
+                        <property name="shortcut">
+                          <string>Alt+M</string>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                          <string>Show modal</string>
+                        </property>
+                        <property name="whatsThis" stdset="0">
+                          <string>The window is modal for the application, e.g. input for other windows are blocked by this window.</string>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <spacer name="spacer2">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>31</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                </spacer>
+              </item>
+            </layout>
+          </item>
+        </layout>
+      </item>
+      <item>
+        <widget class="Q3GroupBox" name="gbProperties">
+          <property name="title">
+            <string>Properties</string>
+          </property>
+          <property name="flat">
+            <bool>true</bool>
+          </property>
+          <property name="whatsThis" stdset="0">
+            <string>Set other properties of the window.</string>
+          </property>
+          <layout class="QGridLayout">
+            <item row="0" column="1">
+              <widget class="QLineEdit" name="leCaption">
+                <property name="text">
+                  <string>Caption</string>
+                </property>
+                <property name="toolTip" stdset="0">
+                  <string>Window caption</string>
+                </property>
+                <property name="whatsThis" stdset="0">
+                  <string>The caption of the window.</string>
+                </property>
+              </widget>
+            </item>
+            <item row="1" column="1">
+              <layout class="QHBoxLayout">
+                <item>
+                  <widget class="QLineEdit" name="leIcon">
+                    <property name="toolTip" stdset="0">
+                      <string>Icon file</string>
+                    </property>
+                    <property name="whatsThis" stdset="0">
+                      <string>Provide an image file.</string>
+                    </property>
+                  </widget>
+                </item>
+                <item>
+                  <widget class="QToolButton" name="tbPick">
+                    <property name="text">
+                      <string>...</string>
+                    </property>
+                    <property name="toolTip" stdset="0">
+                      <string>Pick an icon</string>
+                    </property>
+                    <property name="whatsThis" stdset="0">
+                      <string>Select an image file.</string>
+                    </property>
+                  </widget>
+                </item>
+              </layout>
+            </item>
+            <item row="2" column="1">
+              <widget class="QSlider" name="slTransparency">
+                <property name="maximum">
+                  <number>100</number>
+                </property>
+                <property name="pageStep">
+                  <number>10</number>
+                </property>
+                <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="tickPosition">
+                  <enum>QSlider::TicksBelow</enum>
+                </property>
+                <property name="tickInterval">
+                  <number>10</number>
+                </property>
+                <property name="toolTip" stdset="0">
+                  <string>Window transparency</string>
+                </property>
+                <property name="whatsThis" stdset="0">
+                  <string>Set the transparency of the window.
+A high value gives a high window transparency, e.g. it is less visible.
+
+Note that this attribute is not supported on many windowing systems and will have no effect.</string>
+                </property>
+              </widget>
+            </item>
+            <item row="2" column="0">
+              <widget class="QLabel" name="textLabel3">
+                <property name="text">
+                  <string>Transp&amp;arency:</string>
+                </property>
+                <property name="buddy" stdset="0">
+                  <cstring>slTransparency</cstring>
+                </property>
+                <property name="wordWrap">
+                  <bool>false</bool>
+                </property>
+              </widget>
+            </item>
+            <item row="1" column="0">
+              <widget class="QLabel" name="textLabel2">
+                <property name="text">
+                  <string>&amp;Icon:</string>
+                </property>
+                <property name="buddy" stdset="0">
+                  <cstring>leIcon</cstring>
+                </property>
+                <property name="wordWrap">
+                  <bool>false</bool>
+                </property>
+              </widget>
+            </item>
+            <item row="0" column="0">
+              <widget class="QLabel" name="textLabel1">
+                <property name="text">
+                  <string>&amp;Caption:</string>
+                </property>
+                <property name="buddy" stdset="0">
+                  <cstring>leCaption</cstring>
+                </property>
+                <property name="wordWrap">
+                  <bool>false</bool>
+                </property>
+              </widget>
+            </item>
+          </layout>
+        </widget>
+      </item>
+      <item>
+        <layout class="QHBoxLayout">
+          <item>
+            <spacer name="spacer1">
+              <property name="sizeHint">
+                <size>
+                  <width>70</width>
+                  <height>21</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="pbApply">
+              <property name="text">
+                <string>Apply</string>
+              </property>
+              <property name="shortcut">
+                <string/>
+              </property>
+              <property name="default">
+                <bool>true</bool>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>Creates a new window with the selected flags, or modifies the visible window.</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="pbClose">
+              <property name="text">
+                <string>Close</string>
+              </property>
+              <property name="shortcut">
+                <string/>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>Closes this dialog and exits the application.</string>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <includes>
+    <include location="global">qpointer.h</include>
+    <include location="global">q3vbox.h</include>
+  </includes>
+  <connections>
+    <connection>
+      <sender>pbClose</sender>
+      <signal>clicked()</signal>
+      <receiver>OptionsDialog</receiver>
+      <slot>close()</slot>
+    </connection>
+    <connection>
+      <sender>pbApply</sender>
+      <signal>clicked()</signal>
+      <receiver>OptionsDialog</receiver>
+      <slot>apply()</slot>
+    </connection>
+    <connection>
+      <sender>bgBorder</sender>
+      <signal>toggled(bool)</signal>
+      <receiver>bgTitle</receiver>
+      <slot>setEnabled(bool)</slot>
+    </connection>
+    <connection>
+      <sender>cbTitleSystem</sender>
+      <signal>toggled(bool)</signal>
+      <receiver>cbTitleMinimize</receiver>
+      <slot>setEnabled(bool)</slot>
+    </connection>
+    <connection>
+      <sender>cbTitleSystem</sender>
+      <signal>toggled(bool)</signal>
+      <receiver>cbTitleMaximize</receiver>
+      <slot>setEnabled(bool)</slot>
+    </connection>
+    <connection>
+      <sender>cbTitleSystem</sender>
+      <signal>toggled(bool)</signal>
+      <receiver>cbTitleContext</receiver>
+      <slot>setEnabled(bool)</slot>
+    </connection>
+    <connection>
+      <sender>bgTitle</sender>
+      <signal>toggled(bool)</signal>
+      <receiver>cbBehaviorPopup</receiver>
+      <slot>setDisabled(bool)</slot>
+    </connection>
+    <connection>
+      <sender>cbBehaviorPopup</sender>
+      <signal>toggled(bool)</signal>
+      <receiver>bgTitle</receiver>
+      <slot>setDisabled(bool)</slot>
+    </connection>
+    <connection>
+      <sender>tbPick</sender>
+      <signal>clicked()</signal>
+      <receiver>OptionsDialog</receiver>
+      <slot>pickIcon()</slot>
+    </connection>
+  </connections>
+</ui>

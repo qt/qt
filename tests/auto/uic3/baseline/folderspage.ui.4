@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>FoldersPage</class>
+  <widget class="QWidget" name="FoldersPage">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>443</width>
+        <height>284</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Form8</string>
+    </property>
+    <layout class="QHBoxLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item>
+        <layout class="QGridLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item row="0" column="0">
+            <widget class="Q3GroupBox" name="folderBox">
+              <property name="title">
+                <string>Folders and paths</string>
+              </property>
+              <layout class="QGridLayout">
+                <property name="margin">
+                  <number>11</number>
+                </property>
+                <property name="spacing">
+                  <number>6</number>
+                </property>
+                <item row="0" column="0">
+                  <widget class="QLabel" name="folderLabel">
+                    <property name="text">
+                      <string>Program &amp;folder</string>
+                    </property>
+                    <property name="buddy" stdset="0">
+                      <cstring>folderPath</cstring>
+                    </property>
+                    <property name="wordWrap">
+                      <bool>false</bool>
+                    </property>
+                  </widget>
+                </item>
+                <item row="0" column="1" rowspan="1" colspan="2">
+                  <layout class="QHBoxLayout">
+                    <property name="margin">
+                      <number>0</number>
+                    </property>
+                    <property name="spacing">
+                      <number>6</number>
+                    </property>
+                    <item>
+                      <widget class="QLineEdit" name="folderPath"/>
+                    </item>
+                    <item>
+                      <widget class="QPushButton" name="folderPathButton">
+                        <property name="text">
+                          <string/>
+                        </property>
+                        <property name="icon">
+                          <pixmap>image0</pixmap>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </item>
+                <item row="1" column="0">
+                  <widget class="QLabel" name="qtDirLabel">
+                    <property name="text">
+                      <string>Set &amp;QTDIR</string>
+                    </property>
+                    <property name="buddy" stdset="0">
+                      <cstring>qtDirCheck</cstring>
+                    </property>
+                    <property name="wordWrap">
+                      <bool>false</bool>
+                    </property>
+                  </widget>
+                </item>
+                <item row="2" column="0">
+                  <widget class="QLabel" name="devSysLabel">
+                    <property name="sizePolicy">
+                      <sizepolicy>
+                        <hsizetype>5</hsizetype>
+                        <vsizetype>1</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                      </sizepolicy>
+                    </property>
+                    <property name="text">
+                      <string>&amp;Path</string>
+                    </property>
+                    <property name="buddy" stdset="0">
+                      <cstring>devSysPath</cstring>
+                    </property>
+                    <property name="wordWrap">
+                      <bool>false</bool>
+                    </property>
+                  </widget>
+                </item>
+                <item row="2" column="1" rowspan="1" colspan="2">
+                  <layout class="QHBoxLayout">
+                    <property name="margin">
+                      <number>0</number>
+                    </property>
+                    <property name="spacing">
+                      <number>6</number>
+                    </property>
+                    <item>
+                      <widget class="QLineEdit" name="devSysPath"/>
+                    </item>
+                    <item>
+                      <widget class="QPushButton" name="devSysPathButton">
+                        <property name="text">
+                          <string/>
+                        </property>
+                        <property name="icon">
+                          <pixmap>image0</pixmap>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </item>
+                <item row="3" column="0">
+                  <widget class="QLabel" name="groupLabel">
+                    <property name="text">
+                      <string>Folder &amp;group</string>
+                    </property>
+                    <property name="buddy" stdset="0">
+                      <cstring>folderGroups</cstring>
+                    </property>
+                    <property name="wordWrap">
+                      <bool>false</bool>
+                    </property>
+                  </widget>
+                </item>
+                <item row="3" column="1" rowspan="1" colspan="2">
+                  <widget class="QComboBox" name="folderGroups">
+                    <property name="sizePolicy">
+                      <sizepolicy>
+                        <hsizetype>7</hsizetype>
+                        <vsizetype>0</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                      </sizepolicy>
+                    </property>
+                  </widget>
+                </item>
+                <item row="1" column="1">
+                  <widget class="QCheckBox" name="qtDirCheck">
+                    <property name="text">
+                      <string/>
+                    </property>
+                    <property name="checked">
+                      <bool>true</bool>
+                    </property>
+                  </widget>
+                </item>
+                <item row="1" column="2">
+                  <spacer name="Spacer8">
+                    <property name="sizeHint">
+                      <size>
+                        <width>20</width>
+                        <height>20</height>
+                      </size>
+                    </property>
+                    <property name="sizeType">
+                      <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                    </property>
+                  </spacer>
+                </item>
+              </layout>
+            </widget>
+          </item>
+          <item row="1" column="0">
+            <spacer name="Spacer2">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Vertical</enum>
+              </property>
+            </spacer>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <tabstops>
+    <tabstop>folderPath</tabstop>
+    <tabstop>folderPathButton</tabstop>
+    <tabstop>qtDirCheck</tabstop>
+    <tabstop>devSysPath</tabstop>
+    <tabstop>devSysPathButton</tabstop>
+    <tabstop>folderGroups</tabstop>
+  </tabstops>
+  <images>
+    <image name="image0">
+      <data format="XPM.GZ" length="379">789c5d8ecb0a02310c45f7fd8ad0ec069907f531207e82e252101769b5388b51d07121e2bf6b1f195b6f28cd3d24b7ad0ad86dd75054e23ed0d0193067ba41717cf4fd737f58bd846ce6d028984123274296606073bd9c5c8fdf1eeba92b678db36dddaa60c959abec2258cdd62a9fc3424477a50cfdc18cc5d9c0e20eaffbbf90260c2a390f35c54a1823fa9bc39fc63cc3429e4b51cccb5060398a6c5478f7bd141fb90a5251</data>
+    </image>
+  </images>
+</ui>

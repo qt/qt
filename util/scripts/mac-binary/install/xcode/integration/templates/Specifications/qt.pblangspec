@@ -1,0 +1,84 @@
+(
+  {
+    Identifier = qt.c.cpp;  
+    BasedOn = c.cpp;
+    Name = "Qt C++";
+    SourceScannerClassName = PBXCPPSourceScanner;
+    SupportsIndentation = YES;
+    Description = "Qt C++";
+    SyntaxColoring = {
+      CaseSensitive = YES;
+      Keywords = (
+        "slots",
+        "signals",
+        "Q_OBJECT",
+        "Q_PROPERTY",
+        "Q_CLASSINFO",
+        "Q_INTERFACES",
+        "Q_PROPERTY",
+        "Q_OVERRIDE",
+        "Q_ENUMS",
+        "Q_FLAGS",
+        "Q_GADGET",
+        "foreach"
+      );
+      AltKeywords = (
+        "SLOT",
+        "SIGNAL",
+        "Q_SCRIPTABLE",
+        "Q_INVOKABLE",
+        "emit"
+      );
+    };
+  },
+  {
+    Identifier = qt.xml;
+    Name = "Qt XML";
+    Description = "Qt XML";
+    BasedOn = "pbx_root_language";
+    SupportsIndentation = NO;
+    Indentation = {
+    };
+    SyntaxColoring = {
+      CaseSensitive = NO;
+      UnicodeSymbols = YES;
+      MultiLineComment = (
+        ( "<!--", "-->" )
+      );
+     /*KeywordDelimeters = (	// not supported yet
+        ( "<", ">" )
+      );*/
+      String = (
+        ( "<", ">" )
+      );
+      Character = (
+        ( "&", ";", "=" )
+      );
+    };
+  },
+  {
+    Identifier = qt.qrc;
+    Name = "Qt Resource";
+    Description = "Qt Resource";
+    BasedOn = "qt.xml";
+    SyntaxColoring = {
+      CaseSensitive = NO;
+      String = (
+        "RCC",
+        "qresource",
+        "file",
+      );
+      AltKeywords = (
+        "version",
+        "prefix",
+        "alias"
+      );
+    };
+  },
+  {
+    Identifier = qt.ui;
+    Name = "Qt UI";
+    Description = "Qt UI";
+    BasedOn = "qt.xml";
+  }      
+)

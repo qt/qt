@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleGetInfoString</key>
+	<string>Trolltech Qt $VERSION_MAJOR$.$VERSION_MINOR$.$VERSION_PATCH$ Translations</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.trolltech.qt$VERSION_MAJOR$.translations</string>
+	<key>CFBundleName</key>
+	<string>Qt $VERSION_MAJOR$.$VERSION_MINOR$.$VERSION_PATCH$ Translations</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$VERSION_MAJOR$.$VERSION_MINOR$</string>
+	<key>IFMajorVersion</key>
+	<integer>$VERSION_MAJOR$</integer>
+	<key>IFMinorVersion</key>
+	<integer>$VERSION_MINOR$</integer>
+	<key>IFPkgFlagAllowBackRev</key>
+	<false/>
+	<key>IFPkgFlagAuthorizationAction</key>
+	<string>AdminAuthorization</string>
+	<key>IFPkgFlagDefaultLocation</key>
+	<string>/</string>
+	<key>IFPkgFlagFollowLinks</key>
+	<true/>
+	<key>IFPkgFlagInstallFat</key>
+	<true/>
+	<key>IFPkgFlagIsRequired</key>
+	<true/>
+	<key>IFPkgFlagRelocatable</key>
+	<false/>
+	<key>IFPkgFlagRestartAction</key>
+	<string>NoRestart</string>
+	<key>IFPkgFlagRootVolumeOnly</key>
+	<true/>
+	<key>IFPkgFlagUpdateInstalledLanguages</key>
+	<false/>
+	<key>IFPkgFormatVersion</key>
+	<real>0.10000000149011612</real>
+</dict>
+</plist>

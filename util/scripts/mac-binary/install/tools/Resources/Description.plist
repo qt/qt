@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IFPkgDescriptionDeleteWarning</key>
+	<string></string>
+	<key>IFPkgDescriptionDescription</key>
+	<string>Qt $VERSION_MAJOR$.$VERSION_MINOR$.$VERSION_PATCH$ Tools</string>
+	<key>IFPkgDescriptionTitle</key>
+	<string>Qt Tools</string>
+	<key>IFPkgDescriptionVersion</key>
+	<string>$VERSION_MAJOR$.$VERSION_MINOR$</string>
+</dict>
+</plist>

@@ -1,0 +1,47 @@
+call :%1 %2
+goto END
+
+:dest
+  set IWMAKE_EXTRACTDEST=%IWMAKE_ROOT%\%~1
+goto :eof
+
+:src
+  set IWMAKE_EXTRACTSRC=%~1
+goto :eof
+
+:extUnpack
+  set IWMAKE_EXTRACTSRC=%~n1
+  pushd %IWMAKE_ROOT%
+  if exist "%IWMAKE_EXTRACTSRC%.zip" del /Q /F "%IWMAKE_EXTRACTSRC%.zip"
+  %IWMAKE_WGET%\wget %IWMAKE_WGETUSER% %IWMAKE_WGETPASS% %IWMAKE_RELEASELOCATION%/%IWMAKE_EXTRACTSRC%.zip >> %IWMAKE_LOGFILE% 2>&1
+  popd
+  call :unpack "%~1"
+goto :eof
+
+:unpack
+  set IWMAKE_EXTRACTSRC=%~n1
+  pushd %IWMAKE_ROOT%
+  if exist "%IWMAKE_EXTRACTDEST%" rd /S /Q %IWMAKE_EXTRACTDEST% >> %IWMAKE_LOGFILE% 2>&1
+  if exist "%IWMAKE_EXTRACTSRC%" rd /S /Q %IWMAKE_EXTRACTSRC% >> %IWMAKE_LOGFILE% 2>&1
+  %IWMAKE_UNZIPAPP% -q %IWMAKE_EXTRACTSRC%.zip >> %IWMAKE_LOGFILE%
+  popd
+  move %IWMAKE_ROOT%\%IWMAKE_EXTRACTSRC% %IWMAKE_EXTRACTDEST% >> %IWMAKE_LOGFILE%
+goto :eof
+
+:extPatch
+  pushd %IWMAKE_ROOT%
+  if exist "%~1" del /Q /F "%~1"
+  %IWMAKE_WGET%\wget %IWMAKE_WGETUSER% %IWMAKE_WGETPASS% %IWMAKE_RELEASELOCATION%/%~1 >> %IWMAKE_LOGFILE% 2>&1
+  popd
+  call :patch "%~1"
+goto :eof
+
+:patch
+  pushd %IWMAKE_ROOT%
+  %IWMAKE_UNZIPAPP% %~1 >> %IWMAKE_LOGFILE%
+  popd
+  xcopy /R /I /S /Q /Y %IWMAKE_ROOT%\%IWMAKE_EXTRACTSRC%\*.* %IWMAKE_EXTRACTDEST%\ >> %IWMAKE_LOGFILE%
+  rd /S /Q %IWMAKE_ROOT%\%IWMAKE_EXTRACTSRC% >> %IWMAKE_LOGFILE%
+goto :eof
+
+:END

@@ -1,0 +1,12 @@
+uic3: slot `currentToolbarChanged(QString)' for widget `MainWindowWizardBase' of type `Q3Wizard' is not supported; connection may fail. Line: 656 Column: 31
+uic3: slot `toolbarAddAction()' for widget `MainWindowWizardBase' of type `Q3Wizard' is not supported; connection may fail. Line: 662 Column: 31
+uic3: slot `toolbarRemoveAction()' for widget `MainWindowWizardBase' of type `Q3Wizard' is not supported; connection may fail. Line: 668 Column: 31
+uic3: slot `toolbarActionUp()' for widget `MainWindowWizardBase' of type `Q3Wizard' is not supported; connection may fail. Line: 674 Column: 31
+uic3: slot `toolbarActionDown()' for widget `MainWindowWizardBase' of type `Q3Wizard' is not supported; connection may fail. Line: 680 Column: 31
+uic3: slot `pageSelected(QString)' for widget `MainWindowWizardBase' of type `Q3Wizard' is not supported; connection may fail. Line: 686 Column: 31
+uic3: slot `currentSettingChanged()' for widget `MainWindowWizardBase' of type `Q3Wizard' is not supported; connection may fail. Line: 692 Column: 31
+uic3: slot `currentSettingChanged()' for widget `MainWindowWizardBase' of type `Q3Wizard' is not supported; connection may fail. Line: 698 Column: 31
+uic3: slot `currentSettingChanged()' for widget `MainWindowWizardBase' of type `Q3Wizard' is not supported; connection may fail. Line: 704 Column: 31
+uic3: slot `currentSettingChanged()' for widget `MainWindowWizardBase' of type `Q3Wizard' is not supported; connection may fail. Line: 710 Column: 31
+uic3: slot `currentSettingChanged()' for widget `MainWindowWizardBase' of type `Q3Wizard' is not supported; connection may fail. Line: 716 Column: 31
+uic3: slot `currentSettingChanged()' for widget `MainWindowWizardBase' of type `Q3Wizard' is not supported; connection may fail. Line: 722 Column: 31

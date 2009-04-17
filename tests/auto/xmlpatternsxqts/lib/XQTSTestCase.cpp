@@ -1,0 +1,327 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the test suite of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the Patternist project on Trolltech Labs.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+***************************************************************************
+*/
+
+#include <QColor>
+#include <QFile>
+#include <QFileInfo>
+#include <QVariant>
+#include <QtDebug>
+
+#include "XQTSTestCase.h"
+
+using namespace QPatternistSDK;
+using namespace QPatternist;
+
+XQTSTestCase::XQTSTestCase(const Scenario scen,
+                           TreeItem *p,
+                           const QXmlQuery::QueryLanguage lang) : m_isXPath(false)
+                                                                , m_scenario(scen)
+                                                                , m_parent(p)
+                                                                , m_lang(lang)
+{
+}
+
+XQTSTestCase::~XQTSTestCase()
+{
+    qDeleteAll(m_baseLines);
+}
+
+QVariant XQTSTestCase::data(const Qt::ItemDataRole role, int column) const
+{
+    if(role == Qt::DisplayRole)
+    {
+        if(column == 0)
+            return title();
+
+        const TestResult *const tr = testResult();
+        if(!tr)
+        {
+            if(column == 1)
+                return TestResult::displayName(TestResult::NotTested);
+            else
+                return QString();
+        }
+        const TestResult::Status status = tr->status();
+
+        switch(column)
+        {
+            case 1:
+                return status == TestResult::Pass ? QString(QChar::fromLatin1('1'))
+                                                  : QString(QChar::fromLatin1('0'));
+            case 2:
+                return status == TestResult::Fail ? QString(QChar::fromLatin1('1'))
+                                                  : QString(QChar::fromLatin1('0'));
+            default:
+                return QString();
+        }
+    }
+
+    if(role != Qt::BackgroundRole)
+        return QVariant();
+
+    const TestResult *const tr = testResult();
+
+    if(!tr)
+    {
+        if(column == 0)
+            return Qt::yellow;
+        else
+            return QVariant();
+    }
+
+    const TestResult::Status status = tr->status();
+
+    if(status == TestResult::NotTested || status == TestResult::Unknown)
+        return Qt::yellow;
+
+    switch(column)
+    {
+        case 1:
+            return status == TestResult::Pass ? Qt::green : QVariant();
+        case 2:
+            return status == TestResult::Fail ? Qt::red : QVariant();
+        default:
+            return QVariant();
+    }
+}
+
+QString XQTSTestCase::sourceCode(bool &ok) const
+{
+    QFile file(m_queryPath.toLocalFile());
+
+    QString err;
+
+    if(!file.exists())
+        err = QString::fromLatin1("Error: %1 does not exist.").arg(file.fileName());
+    else if(!QFileInfo(file.fileName()).isFile())
+        err = QString::fromLatin1("Error: %1 is not a file, cannot display it.").arg(file.fileName());
+    else if(!file.open(QIODevice::ReadOnly))
+        err = QString::fromLatin1("Error: Could not open %1. Likely a permission error.")
+                                  .arg(file.fileName());
+
+    if(err.isNull()) /* No errors. */
+    {
+        ok = true;
+        /* Scary, we assume the query is stored in UTF-8. */
+        return QString::fromUtf8(file.readAll());
+    }
+    else
+    {
+        ok = false;
+        return err;
+    }
+}
+
+int XQTSTestCase::columnCount() const
+{
+    return 2;
+}
+
+void XQTSTestCase::addBaseLine(TestBaseLine *line)
+{
+    m_baseLines.append(line);
+}
+
+QString XQTSTestCase::name() const
+{
+    return m_name;
+}
+
+QString XQTSTestCase::creator() const
+{
+    return m_creator;
+}
+
+QString XQTSTestCase::description() const
+{
+    return m_description;
+}
+
+QDate XQTSTestCase::lastModified() const
+{
+    return m_lastModified;
+}
+
+bool XQTSTestCase::isXPath() const
+{
+    return m_isXPath;
+}
+
+TestCase::Scenario XQTSTestCase::scenario() const
+{
+    return m_scenario;
+}
+
+void XQTSTestCase::setName(const QString &n)
+{
+    m_name = n;
+}
+
+void XQTSTestCase::setCreator(const QString &ctor)
+{
+    m_creator = ctor;
+}
+
+void XQTSTestCase::setDescription(const QString &descriptionP)
+{
+    m_description = descriptionP;
+}
+
+void XQTSTestCase::setLastModified(const QDate &date)
+{
+    m_lastModified = date;
+}
+
+void XQTSTestCase::setIsXPath(const bool isXPathP)
+{
+    m_isXPath = isXPathP;
+}
+
+void XQTSTestCase::setQueryPath(const QUrl &uri)
+{
+    m_queryPath = uri;
+}
+
+TreeItem *XQTSTestCase::parent() const
+{
+    return m_parent;
+}
+
+QString XQTSTestCase::title() const
+{
+    return m_name;
+}
+
+TestBaseLine::List XQTSTestCase::baseLines() const
+{
+    Q_ASSERT_X(!m_baseLines.isEmpty(), Q_FUNC_INFO,
+               qPrintable(QString::fromLatin1("The test %1 has no base lines, it should have at least one.").arg(name())));
+    return m_baseLines;
+}
+
+QUrl XQTSTestCase::testCasePath() const
+{
+    return m_queryPath;
+}
+
+void XQTSTestCase::setExternalVariableLoader(const QPatternist::ExternalVariableLoader::Ptr &loader)
+{
+    m_externalVariableLoader = loader;
+}
+
+QPatternist::ExternalVariableLoader::Ptr XQTSTestCase::externalVariableLoader() const
+{
+    return m_externalVariableLoader;
+}
+
+void XQTSTestCase::setContextItemSource(const QUrl &uri)
+{
+    m_contextItemSource = uri;
+}
+
+QUrl XQTSTestCase::contextItemSource() const
+{
+    return m_contextItemSource;
+}
+
+QXmlQuery::QueryLanguage XQTSTestCase::language() const
+{
+    return m_lang;
+}
+
+void XQTSTestCase::setParent(TreeItem *const p)
+{
+    m_parent = p;
+}
+
+void XQTSTestCase::setInitialTemplateName(const QXmlName &name)
+{
+    m_initialTemplateName = name;
+}
+
+QXmlName XQTSTestCase::initialTemplateName() const
+{
+    return m_initialTemplateName;
+}
+
+// vim: et:ts=4:sw=4:sts=4
+

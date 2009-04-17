@@ -1,0 +1,612 @@
+<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
+<class>EditorForm</class>
+<include location="global" impldecl="in implementation">qfile.h</include>
+<include location="global" impldecl="in implementation">qfontdatabase.h</include>
+<include location="global" impldecl="in implementation">qmessagebox.h</include>
+<include location="global" impldecl="in implementation">qapplication.h</include>
+<include location="global" impldecl="in implementation">qfiledialog.h</include>
+<include location="global" impldecl="in implementation">qtextstream.h</include>
+<include location="local" implDecl="in declaration">richedit.ui.h</include>
+<variable>QString fileName;</variable>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+<widget class="QMainWindow">
+    <property name="name">
+        <cstring>EditorForm</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>646</width>
+            <height>436</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Rich Edit</string>
+    </property>
+    <hbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>11</number>
+        </property>
+        <property name="spacing">
+            <number>6</number>
+        </property>
+        <widget class="QTextEdit">
+            <property name="name">
+                <cstring>textEdit</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>7</hsizetype>
+                    <vsizetype>7</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="textFormat">
+                <enum>RichText</enum>
+            </property>
+        </widget>
+    </hbox>
+</widget>
+<menubar>
+    <property name="name">
+        <cstring>menubar</cstring>
+    </property>
+    <item text="&amp;File" name="fileMenu">
+        <action name="fileNewAction"/>
+        <action name="fileOpenAction"/>
+        <action name="fileSaveAction"/>
+        <action name="fileSaveAsAction"/>
+        <separator/>
+        <action name="fileExitAction"/>
+    </item>
+    <item text="&amp;Edit" name="editMenu">
+        <action name="editUndoAction"/>
+        <action name="editRedoAction"/>
+        <separator/>
+        <action name="editCutAction"/>
+        <action name="editCopyAction"/>
+        <action name="editPasteAction"/>
+    </item>
+    <item text="F&amp;ormat" name="PopupMenu_2">
+        <action name="leftAlignAction"/>
+        <action name="rightAlignAction"/>
+        <action name="centerAlignAction"/>
+        <separator/>
+        <action name="boldAction"/>
+        <action name="italicAction"/>
+        <action name="underlineAction"/>
+    </item>
+    <item text="&amp;Help" name="helpMenu">
+        <action name="helpContentsAction"/>
+        <action name="helpIndexAction"/>
+        <separator/>
+        <action name="helpAboutAction"/>
+    </item>
+</menubar>
+<toolbars>
+    <toolbar dock="2">
+        <property name="name">
+            <cstring>toolBar</cstring>
+        </property>
+        <property name="label">
+            <string>Tools</string>
+        </property>
+        <action name="fileNewAction"/>
+        <action name="fileOpenAction"/>
+        <action name="fileSaveAction"/>
+        <separator/>
+        <action name="editUndoAction"/>
+        <action name="editRedoAction"/>
+        <action name="editCutAction"/>
+        <action name="editCopyAction"/>
+        <action name="editPasteAction"/>
+    </toolbar>
+    <toolbar dock="2">
+        <property name="name">
+            <cstring>Toolbar</cstring>
+        </property>
+        <property name="label">
+            <string>Toolbar</string>
+        </property>
+        <action name="leftAlignAction"/>
+        <action name="centerAlignAction"/>
+        <action name="rightAlignAction"/>
+        <separator/>
+        <action name="boldAction"/>
+        <action name="italicAction"/>
+        <action name="underlineAction"/>
+        <separator/>
+        <widget class="QComboBox">
+            <property name="name">
+                <cstring>fontComboBox</cstring>
+            </property>
+        </widget>
+        <widget class="QSpinBox">
+            <property name="name">
+                <cstring>SpinBox2</cstring>
+            </property>
+            <property name="minValue">
+                <number>6</number>
+            </property>
+            <property name="value">
+                <number>10</number>
+            </property>
+        </widget>
+    </toolbar>
+</toolbars>
+<actions>
+    <action>
+        <property name="name">
+            <cstring>fileNewAction</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>filenew.png</iconset>
+        </property>
+        <property name="text">
+            <string>New</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;New</string>
+        </property>
+        <property name="accel">
+            <number>4194382</number>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileOpenAction</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>fileopen.png</iconset>
+        </property>
+        <property name="text">
+            <string>Open</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Open...</string>
+        </property>
+        <property name="accel">
+            <number>4194383</number>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileSaveAction</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>filesave.png</iconset>
+        </property>
+        <property name="text">
+            <string>Save</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Save</string>
+        </property>
+        <property name="accel">
+            <number>4194387</number>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileSaveAsAction</cstring>
+        </property>
+        <property name="text">
+            <string>Save As</string>
+        </property>
+        <property name="menuText">
+            <string>Save &amp;As...</string>
+        </property>
+        <property name="accel">
+            <number>0</number>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileExitAction</cstring>
+        </property>
+        <property name="text">
+            <string>Exit</string>
+        </property>
+        <property name="menuText">
+            <string>E&amp;xit</string>
+        </property>
+        <property name="accel">
+            <number>0</number>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>editUndoAction</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>undo.png</iconset>
+        </property>
+        <property name="text">
+            <string>Undo</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Undo</string>
+        </property>
+        <property name="accel">
+            <number>4194394</number>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>editRedoAction</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>redo.png</iconset>
+        </property>
+        <property name="text">
+            <string>Redo</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Redo</string>
+        </property>
+        <property name="accel">
+            <number>4194393</number>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>editCutAction</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>editcut.png</iconset>
+        </property>
+        <property name="text">
+            <string>Cut</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Cut</string>
+        </property>
+        <property name="accel">
+            <number>4194392</number>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>editCopyAction</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>editcopy.png</iconset>
+        </property>
+        <property name="text">
+            <string>Copy</string>
+        </property>
+        <property name="menuText">
+            <string>C&amp;opy</string>
+        </property>
+        <property name="accel">
+            <number>4194371</number>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>editPasteAction</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>editpaste.png</iconset>
+        </property>
+        <property name="text">
+            <string>Paste</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Paste</string>
+        </property>
+        <property name="accel">
+            <number>4194390</number>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>helpContentsAction</cstring>
+        </property>
+        <property name="text">
+            <string>Contents</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Contents...</string>
+        </property>
+        <property name="accel">
+            <number>0</number>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>helpIndexAction</cstring>
+        </property>
+        <property name="text">
+            <string>Index</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Index...</string>
+        </property>
+        <property name="accel">
+            <number>0</number>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>helpAboutAction</cstring>
+        </property>
+        <property name="text">
+            <string>About</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;About</string>
+        </property>
+        <property name="accel">
+            <number>0</number>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>boldAction</cstring>
+        </property>
+        <property name="toggleAction">
+            <bool>true</bool>
+        </property>
+        <property name="iconSet">
+            <iconset>textbold.png</iconset>
+        </property>
+        <property name="text">
+            <string>bold</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Bold</string>
+        </property>
+        <property name="accel">
+            <number>272629826</number>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>italicAction</cstring>
+        </property>
+        <property name="toggleAction">
+            <bool>true</bool>
+        </property>
+        <property name="iconSet">
+            <iconset>textitalic.png</iconset>
+        </property>
+        <property name="text">
+            <string>italic</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Italic</string>
+        </property>
+        <property name="accel">
+            <number>272629833</number>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>underlineAction</cstring>
+        </property>
+        <property name="toggleAction">
+            <bool>true</bool>
+        </property>
+        <property name="iconSet">
+            <iconset>textunder.png</iconset>
+        </property>
+        <property name="text">
+            <string>underline</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Underline</string>
+        </property>
+        <property name="accel">
+            <number>272629845</number>
+        </property>
+    </action>
+    <actiongroup>
+        <property name="name">
+            <cstring>alignActionGroup</cstring>
+        </property>
+        <property name="text">
+            <string>align</string>
+        </property>
+        <property name="usesDropDown">
+            <bool>false</bool>
+        </property>
+        <action>
+            <property name="name">
+                <cstring>leftAlignAction</cstring>
+            </property>
+            <property name="toggleAction">
+                <bool>true</bool>
+            </property>
+            <property name="iconSet">
+                <iconset>textleft.png</iconset>
+            </property>
+            <property name="text">
+                <string>left</string>
+            </property>
+            <property name="menuText">
+                <string>&amp;Left</string>
+            </property>
+            <property name="accel">
+                <number>272629836</number>
+            </property>
+        </action>
+        <action>
+            <property name="name">
+                <cstring>rightAlignAction</cstring>
+            </property>
+            <property name="toggleAction">
+                <bool>true</bool>
+            </property>
+            <property name="iconSet">
+                <iconset>textright.png</iconset>
+            </property>
+            <property name="text">
+                <string>right</string>
+            </property>
+            <property name="menuText">
+                <string>&amp;Right</string>
+            </property>
+            <property name="accel">
+                <number>272629842</number>
+            </property>
+        </action>
+        <action>
+            <property name="name">
+                <cstring>centerAlignAction</cstring>
+            </property>
+            <property name="toggleAction">
+                <bool>true</bool>
+            </property>
+            <property name="iconSet">
+                <iconset>textcenter.png</iconset>
+            </property>
+            <property name="text">
+                <string>center</string>
+            </property>
+            <property name="menuText">
+                <string>&amp;Center</string>
+            </property>
+        </action>
+    </actiongroup>
+</actions>
+<connections>
+    <connection language="C++">
+        <sender>fileNewAction</sender>
+        <signal>activated()</signal>
+        <receiver>EditorForm</receiver>
+        <slot>fileNew()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>fileOpenAction</sender>
+        <signal>activated()</signal>
+        <receiver>EditorForm</receiver>
+        <slot>fileOpen()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>fileSaveAction</sender>
+        <signal>activated()</signal>
+        <receiver>EditorForm</receiver>
+        <slot>fileSave()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>fileSaveAsAction</sender>
+        <signal>activated()</signal>
+        <receiver>EditorForm</receiver>
+        <slot>fileSaveAs()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>fileExitAction</sender>
+        <signal>activated()</signal>
+        <receiver>EditorForm</receiver>
+        <slot>fileExit()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>helpIndexAction</sender>
+        <signal>activated()</signal>
+        <receiver>EditorForm</receiver>
+        <slot>helpIndex()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>helpContentsAction</sender>
+        <signal>activated()</signal>
+        <receiver>EditorForm</receiver>
+        <slot>helpContents()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>helpAboutAction</sender>
+        <signal>activated()</signal>
+        <receiver>EditorForm</receiver>
+        <slot>helpAbout()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>SpinBox2</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>textEdit</receiver>
+        <slot>setPointSize(int)</slot>
+    </connection>
+    <connection language="C++">
+        <sender>editCutAction</sender>
+        <signal>activated()</signal>
+        <receiver>textEdit</receiver>
+        <slot>cut()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>editPasteAction</sender>
+        <signal>activated()</signal>
+        <receiver>textEdit</receiver>
+        <slot>paste()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>editCopyAction</sender>
+        <signal>activated()</signal>
+        <receiver>textEdit</receiver>
+        <slot>copy()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>editRedoAction</sender>
+        <signal>activated()</signal>
+        <receiver>textEdit</receiver>
+        <slot>redo()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>editUndoAction</sender>
+        <signal>activated()</signal>
+        <receiver>textEdit</receiver>
+        <slot>undo()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>alignActionGroup</sender>
+        <signal>selected(QAction*)</signal>
+        <receiver>EditorForm</receiver>
+        <slot>changeAlignment(QAction*)</slot>
+    </connection>
+    <connection language="C++">
+        <sender>underlineAction</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>textEdit</receiver>
+        <slot>setUnderline(bool)</slot>
+    </connection>
+    <connection language="C++">
+        <sender>italicAction</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>textEdit</receiver>
+        <slot>setItalic(bool)</slot>
+    </connection>
+    <connection language="C++">
+        <sender>boldAction</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>textEdit</receiver>
+        <slot>setBold(bool)</slot>
+    </connection>
+    <connection language="C++">
+        <sender>fontComboBox</sender>
+        <signal>activated(const QString&amp;)</signal>
+        <receiver>textEdit</receiver>
+        <slot>setFamily(const QString&amp;)</slot>
+    </connection>
+    <connection language="C++">
+        <sender>fontComboBox</sender>
+        <signal>activated(const QString&amp;)</signal>
+        <receiver>textEdit</receiver>
+        <slot>setFocus()</slot>
+    </connection>
+    <slot access="protected" specifier="virtual" language="C++" returnType="void">init()</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">fileExit()</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">fileNew()</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">fileOpen()</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">fileSave()</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">fileSaveAs()</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">helpAbout()</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">helpContents()</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">helpIndex()</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">changeAlignment( QAction * align )</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="int">saveAndContinue( const QString &amp; action )</slot>
+</connections>
+</UI>

@@ -1,0 +1,3 @@
+stylesheets/copyWholeDocument.xsl -crlf
+stylesheets/onlyRootTemplate.xsl -crlf
+stylesheets/useParameters.xsl -crlf

@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>InvokeMethod</class>
+  <widget class="QDialog" name="InvokeMethod">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>503</width>
+        <height>416</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Invoke Methods</string>
+    </property>
+    <layout class="QGridLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item row="1" column="0" rowspan="1" colspan="2">
+        <widget class="Q3GroupBox" name="boxParameters">
+          <property name="title">
+            <string>Parameter &amp;List</string>
+          </property>
+          <layout class="QGridLayout">
+            <property name="margin">
+              <number>11</number>
+            </property>
+            <property name="spacing">
+              <number>6</number>
+            </property>
+            <item row="0" column="0" rowspan="1" colspan="3">
+              <widget class="Q3ListView" name="listParameters">
+                <property name="resizeMode">
+                  <enum>Q3ListView::AllColumns</enum>
+                </property>
+                <column>
+                  <property name="text">
+                    <string>Parameter</string>
+                  </property>
+                  <property name="clickable">
+                    <bool>false</bool>
+                  </property>
+                  <property name="resizeable">
+                    <bool>true</bool>
+                  </property>
+                </column>
+                <column>
+                  <property name="text">
+                    <string>Type</string>
+                  </property>
+                  <property name="clickable">
+                    <bool>false</bool>
+                  </property>
+                  <property name="resizeable">
+                    <bool>true</bool>
+                  </property>
+                </column>
+                <column>
+                  <property name="text">
+                    <string>Value</string>
+                  </property>
+                  <property name="clickable">
+                    <bool>false</bool>
+                  </property>
+                  <property name="resizeable">
+                    <bool>true</bool>
+                  </property>
+                </column>
+              </widget>
+            </item>
+            <item row="1" column="2">
+              <widget class="QToolButton" name="buttonSet">
+                <property name="text">
+                  <string>&amp;Set</string>
+                </property>
+              </widget>
+            </item>
+            <item row="1" column="1">
+              <widget class="QLineEdit" name="editValue"/>
+            </item>
+            <item row="1" column="0">
+              <widget class="QLabel" name="TextLabel3">
+                <property name="text">
+                  <string>Parameter &amp;Value:</string>
+                </property>
+                <property name="buddy" stdset="0">
+                  <cstring>editValue</cstring>
+                </property>
+                <property name="wordWrap">
+                  <bool>false</bool>
+                </property>
+              </widget>
+            </item>
+          </layout>
+        </widget>
+      </item>
+      <item row="0" column="0" rowspan="1" colspan="2">
+        <layout class="QGridLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item row="1" column="1">
+            <widget class="QLineEdit" name="editReturn">
+              <property name="readOnly">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item row="0" column="1">
+            <widget class="QComboBox" name="comboMethods">
+              <property name="editable">
+                <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+                <sizepolicy>
+                  <hsizetype>7</hsizetype>
+                  <vsizetype>0</vsizetype>
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                </sizepolicy>
+              </property>
+              <property name="autoCompletion">
+                <bool>true</bool>
+              </property>
+              <property name="duplicatesEnabled">
+                <bool>false</bool>
+              </property>
+            </widget>
+          </item>
+          <item row="0" column="0">
+            <widget class="QLabel" name="labelMethods">
+              <property name="text">
+                <string>&amp;Method Name:</string>
+              </property>
+              <property name="buddy" stdset="0">
+                <cstring>comboMethods</cstring>
+              </property>
+              <property name="wordWrap">
+                <bool>false</bool>
+              </property>
+            </widget>
+          </item>
+          <item row="0" column="2">
+            <spacer name="Spacer1">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Preferred</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item row="1" column="0">
+            <widget class="QLabel" name="TextLabel1">
+              <property name="text">
+                <string>Returned Value:</string>
+              </property>
+              <property name="wordWrap">
+                <bool>false</bool>
+              </property>
+            </widget>
+          </item>
+          <item row="0" column="3">
+            <widget class="QPushButton" name="buttonInvoke">
+              <property name="text">
+                <string>In&amp;voke</string>
+              </property>
+              <property name="default">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item row="1" column="2" rowspan="1" colspan="2">
+            <spacer name="Spacer5">
+              <property name="sizeHint">
+                <size>
+                  <width>111</width>
+                  <height>21</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+        </layout>
+      </item>
+      <item row="2" column="0">
+        <spacer name="Spacer4">
+          <property name="sizeHint">
+            <size>
+              <width>361</width>
+              <height>21</height>
+            </size>
+          </property>
+          <property name="sizeType">
+            <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+          </property>
+        </spacer>
+      </item>
+      <item row="2" column="1">
+        <widget class="QPushButton" name="PushButton2">
+          <property name="text">
+            <string>Close</string>
+          </property>
+          <property name="autoDefault">
+            <bool>false</bool>
+          </property>
+        </widget>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>PushButton2</sender>
+      <signal>clicked()</signal>
+      <receiver>InvokeMethod</receiver>
+      <slot>close()</slot>
+    </connection>
+    <connection>
+      <sender>buttonSet</sender>
+      <signal>clicked()</signal>
+      <receiver>InvokeMethod</receiver>
+      <slot>setValue()</slot>
+    </connection>
+    <connection>
+      <sender>buttonInvoke</sender>
+      <signal>clicked()</signal>
+      <receiver>InvokeMethod</receiver>
+      <slot>invoke()</slot>
+    </connection>
+    <connection>
+      <sender>comboMethods</sender>
+      <signal>activated(QString)</signal>
+      <receiver>InvokeMethod</receiver>
+      <slot>methodSelected(QString)</slot>
+    </connection>
+    <connection>
+      <sender>listParameters</sender>
+      <signal>currentChanged(Q3ListViewItem*)</signal>
+      <receiver>InvokeMethod</receiver>
+      <slot>parameterSelected(Q3ListViewItem*)</slot>
+    </connection>
+    <connection>
+      <sender>editValue</sender>
+      <signal>returnPressed()</signal>
+      <receiver>buttonSet</receiver>
+      <slot>animateClick()</slot>
+    </connection>
+  </connections>
+</ui>

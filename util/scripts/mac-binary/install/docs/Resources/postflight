@@ -1,0 +1,16 @@
+#!/bin/sh
+#fix the doc path
+#PACK_LOCATION="$1"
+#INST_LOCATION="$3"
+#"$PACK_LOCATION/Contents/Resources/qtconf.pl" -version $VERSION_MAJOR$.$VERSION_MINOR$ -value "$INST_LOCATION/Developer/Documentation/Qt" Documentation 
+
+#get the documentation into the index
+DOC_INDEX="/Developer/Documentation/Help/Developer Help Viewer/MacOSXDeveloper.pbHelpIndexerList"
+if [ -e "$DOC_INDEX" ]; then
+    if grep "$3/Developer/Documentation/Qt" "$DOC_INDEX" >/dev/null 2>&1; then
+	true
+    else
+	echo "$3/Developer/Documentation/Qt" >>"$$DOC_INDEX"
+	/Developer/Tools/pbhelpindexer &
+    fi
+fi

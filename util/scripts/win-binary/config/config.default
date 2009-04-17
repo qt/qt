@@ -1,0 +1,17 @@
+#root directory
+env		root			"c:\iwmake"
+
+#where to find all external files
+env		extroot			"\\tirion\binaries"
+
+#where to find mingw
+env		mingwPath		"c:\mingw"
+
+#where to find nsis
+env		NSISPath		"%ProgramFiles%\NSIS"
+
+#where to find perl
+env		perlPath		"c:\Perl\bin"
+
+#where to find packages
+env		releaseLocation		"http://tirion.troll.no/~qt/packages/%QT_VERSION%"

@@ -1,0 +1,4 @@
+{
+	MainTemplateFile = "resource.qrc";
+	Description = "A base Qt resource file";
+}

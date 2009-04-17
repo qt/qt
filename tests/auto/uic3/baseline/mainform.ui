@@ -1,0 +1,74 @@
+<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
+<class>MainForm</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>MainForm</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>284</width>
+            <height>120</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Main Form</string>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QPushButton">
+            <property name="name">
+                <cstring>optionsPushButton</cstring>
+            </property>
+            <property name="text">
+                <string>&amp;Options...</string>
+            </property>
+        </widget>
+        <widget class="QPushButton">
+            <property name="name">
+                <cstring>quitPushButton</cstring>
+            </property>
+            <property name="text">
+                <string>&amp;Quit</string>
+            </property>
+        </widget>
+    </vbox>
+</widget>
+<connections>
+    <connection>
+        <sender>optionsPushButton</sender>
+        <signal>clicked()</signal>
+        <receiver>MainForm</receiver>
+        <slot>optionsDlg()</slot>
+    </connection>
+    <connection>
+        <sender>quitPushButton</sender>
+        <signal>clicked()</signal>
+        <receiver>MainForm</receiver>
+        <slot>quit()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in implementation">mainform.ui.h</include>
+</includes>
+<variables>
+    <variable>bool log_errors;</variable>
+    <variable>bool log_warnings;</variable>
+    <variable>bool log_actions;</variable>
+    <variable>bool logging;</variable>
+    <variable>bool sessions;</variable>
+    <variable>QString log_filename;</variable>
+</variables>
+<slots>    
+    <slot>optionsDlg()</slot>
+    <slot>quit()</slot>
+</slots>
+<functions>
+    <function access="private">init()</function>
+</functions>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

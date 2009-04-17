@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>AddressBook</class>
+  <widget class="Q3MainWindow" name="AddressBook">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>600</width>
+        <height>480</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Address Book</string>
+    </property>
+    <widget class="QWidget">
+      <layout class="QHBoxLayout">
+        <property name="margin">
+          <number>11</number>
+        </property>
+        <property name="spacing">
+          <number>6</number>
+        </property>
+        <item>
+          <widget class="Q3ListView" name="addressView">
+            <property name="selectionMode">
+              <enum>Q3ListView::Extended</enum>
+            </property>
+            <property name="allColumnsShowFocus">
+              <bool>true</bool>
+            </property>
+            <column>
+              <property name="text">
+                <string>Last Name</string>
+              </property>
+              <property name="clickable">
+                <bool>true</bool>
+              </property>
+              <property name="resizeable">
+                <bool>true</bool>
+              </property>
+            </column>
+            <column>
+              <property name="text">
+                <string>First Name</string>
+              </property>
+              <property name="clickable">
+                <bool>true</bool>
+              </property>
+              <property name="resizeable">
+                <bool>true</bool>
+              </property>
+            </column>
+            <column>
+              <property name="text">
+                <string>Phone Number</string>
+              </property>
+              <property name="clickable">
+                <bool>true</bool>
+              </property>
+              <property name="resizeable">
+                <bool>true</bool>
+              </property>
+            </column>
+            <column>
+              <property name="text">
+                <string>Street </string>
+              </property>
+              <property name="clickable">
+                <bool>true</bool>
+              </property>
+              <property name="resizeable">
+                <bool>true</bool>
+              </property>
+            </column>
+            <column>
+              <property name="text">
+                <string>City</string>
+              </property>
+              <property name="clickable">
+                <bool>true</bool>
+              </property>
+              <property name="resizeable">
+                <bool>true</bool>
+              </property>
+            </column>
+            <column>
+              <property name="text">
+                <string>Country</string>
+              </property>
+              <property name="clickable">
+                <bool>true</bool>
+              </property>
+              <property name="resizeable">
+                <bool>true</bool>
+              </property>
+            </column>
+            <column>
+              <property name="text">
+                <string>Zip Code</string>
+              </property>
+              <property name="clickable">
+                <bool>true</bool>
+              </property>
+              <property name="resizeable">
+                <bool>true</bool>
+              </property>
+            </column>
+          </widget>
+        </item>
+      </layout>
+    </widget>
+    <widget class="Q3ToolBar" name="toolBar">
+      <property name="label">
+        <string>Tools</string>
+      </property>
+      <addaction name="fileNewAction"/>
+      <addaction name="fileOpenAction"/>
+      <addaction name="fileSaveAction"/>
+      <addaction name="separator"/>
+      <addaction name="actionDeleteAddress"/>
+      <addaction name="editFindAction"/>
+    </widget>
+    <widget class="QMenuBar" name="menubar">
+      <widget class="QMenu" name="fileMenu">
+        <property name="title">
+          <string>&amp;File</string>
+        </property>
+        <addaction name="fileNewAction"/>
+        <addaction name="fileOpenAction"/>
+        <addaction name="fileSaveAction"/>
+        <addaction name="fileSaveAsAction"/>
+        <addaction name="separator"/>
+        <addaction name="fileExitAction"/>
+      </widget>
+      <widget class="QMenu" name="editMenu">
+        <property name="title">
+          <string>&amp;Edit</string>
+        </property>
+        <addaction name="actionDeleteAddress"/>
+        <addaction name="separator"/>
+        <addaction name="editFindAction"/>
+      </widget>
+      <addaction name="fileMenu"/>
+      <addaction name="editMenu"/>
+    </widget>
+    <action name="fileNewAction">
+      <property name="name">
+        <cstring>fileNewAction</cstring>
+      </property>
+      <property name="icon">
+        <iconset>filenew.png</iconset>
+      </property>
+      <property name="iconText">
+        <string>New</string>
+      </property>
+      <property name="text">
+        <string>&amp;New</string>
+      </property>
+      <property name="shortcut">
+        <number>4194382</number>
+      </property>
+    </action>
+    <action name="fileOpenAction">
+      <property name="name">
+        <cstring>fileOpenAction</cstring>
+      </property>
+      <property name="icon">
+        <iconset>fileopen.png</iconset>
+      </property>
+      <property name="iconText">
+        <string>Open</string>
+      </property>
+      <property name="text">
+        <string>&amp;Open...</string>
+      </property>
+      <property name="shortcut">
+        <number>4194383</number>
+      </property>
+    </action>
+    <action name="fileSaveAction">
+      <property name="name">
+        <cstring>fileSaveAction</cstring>
+      </property>
+      <property name="icon">
+        <iconset>filesave.png</iconset>
+      </property>
+      <property name="iconText">
+        <string>Save</string>
+      </property>
+      <property name="text">
+        <string>&amp;Save</string>
+      </property>
+      <property name="shortcut">
+        <number>4194387</number>
+      </property>
+    </action>
+    <action name="fileSaveAsAction">
+      <property name="name">
+        <cstring>fileSaveAsAction</cstring>
+      </property>
+      <property name="iconText">
+        <string>Save As</string>
+      </property>
+      <property name="text">
+        <string>Save &amp;As...</string>
+      </property>
+      <property name="shortcut">
+        <number>0</number>
+      </property>
+    </action>
+    <action name="fileExitAction">
+      <property name="name">
+        <cstring>fileExitAction</cstring>
+      </property>
+      <property name="iconText">
+        <string>Exit</string>
+      </property>
+      <property name="text">
+        <string>E&amp;xit</string>
+      </property>
+      <property name="shortcut">
+        <number>0</number>
+      </property>
+    </action>
+    <action name="editFindAction">
+      <property name="name">
+        <cstring>editFindAction</cstring>
+      </property>
+      <property name="icon">
+        <iconset>searchfind.png</iconset>
+      </property>
+      <property name="iconText">
+        <string>Find</string>
+      </property>
+      <property name="text">
+        <string>&amp;Find...</string>
+      </property>
+      <property name="shortcut">
+        <number>4194374</number>
+      </property>
+    </action>
+    <action name="actionDeleteAddress">
+      <property name="name">
+        <cstring>actionDeleteAddress</cstring>
+      </property>
+      <property name="icon">
+        <iconset>editcut.png</iconset>
+      </property>
+      <property name="iconText">
+        <string>Delete</string>
+      </property>
+    </action>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>fileNewAction</sender>
+      <signal>activated()</signal>
+      <receiver>AddressBook</receiver>
+      <slot>fileNew()</slot>
+    </connection>
+    <connection>
+      <sender>fileOpenAction</sender>
+      <signal>activated()</signal>
+      <receiver>AddressBook</receiver>
+      <slot>fileOpen()</slot>
+    </connection>
+    <connection>
+      <sender>fileSaveAction</sender>
+      <signal>activated()</signal>
+      <receiver>AddressBook</receiver>
+      <slot>fileSave()</slot>
+    </connection>
+    <connection>
+      <sender>fileSaveAsAction</sender>
+      <signal>activated()</signal>
+      <receiver>AddressBook</receiver>
+      <slot>fileSaveAs()</slot>
+    </connection>
+    <connection>
+      <sender>fileExitAction</sender>
+      <signal>activated()</signal>
+      <receiver>AddressBook</receiver>
+      <slot>fileExit()</slot>
+    </connection>
+    <connection>
+      <sender>editFindAction</sender>
+      <signal>activated()</signal>
+      <receiver>AddressBook</receiver>
+      <slot>editFind()</slot>
+    </connection>
+    <connection>
+      <sender>actionDeleteAddress</sender>
+      <signal>activated()</signal>
+      <receiver>AddressBook</receiver>
+      <slot>deleteAddress()</slot>
+    </connection>
+  </connections>
+</ui>

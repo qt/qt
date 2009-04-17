@@ -1,0 +1,434 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the test suite of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+
+#include <QtTest/QtTest>
+#include <QtCore/QUrl>
+#include <QtNetwork/QNetworkCookie>
+
+
+class tst_QNetworkCookie: public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void getterSetter();
+
+    void parseSingleCookie_data();
+    void parseSingleCookie();
+
+    void parseMultipleCookies_data();
+    void parseMultipleCookies();
+};
+
+QT_BEGIN_NAMESPACE
+
+namespace QTest {
+    template<>
+    char *toString(const QNetworkCookie &cookie)
+    {
+        return qstrdup(cookie.toRawForm());
+    }
+
+    template<>
+    char *toString(const QList<QNetworkCookie> &list)
+    {
+        QString result = "QList(";
+        bool first = true;
+        foreach (QNetworkCookie cookie, list) {
+            if (!first)
+                result += ", ";
+            first = false;
+            result += QString::fromLatin1("QNetworkCookie(%1)").arg(QLatin1String(cookie.toRawForm()));
+        }
+
+        return qstrdup(result.append(')').toLocal8Bit());
+    }
+}
+
+QT_END_NAMESPACE
+
+void tst_QNetworkCookie::getterSetter()
+{
+    QNetworkCookie cookie;
+    QNetworkCookie otherCookie;
+
+    QVERIFY(cookie == otherCookie);
+    QCOMPARE(cookie, otherCookie);
+    QVERIFY(!(cookie != otherCookie));
+
+    QVERIFY(!cookie.isSecure());
+    QVERIFY(cookie.isSessionCookie());
+    QVERIFY(!cookie.expirationDate().isValid());
+    QVERIFY(cookie.domain().isEmpty());
+    QVERIFY(cookie.path().isEmpty());
+    QVERIFY(cookie.name().isEmpty());
+    QVERIFY(cookie.value().isEmpty());
+
+    // change something
+    cookie.setName("foo");
+    QVERIFY(!(cookie == otherCookie));
+    QVERIFY(cookie != otherCookie);
+
+    // test getters and setters:
+    QCOMPARE(cookie.name(), QByteArray("foo"));
+    cookie.setName(0);
+    QVERIFY(cookie.name().isEmpty());
+
+    cookie.setValue("bar");
+    QCOMPARE(cookie.value(), QByteArray("bar"));
+    cookie.setValue(0);
+    QVERIFY(cookie.value().isEmpty());
+
+    cookie.setPath("/");
+    QCOMPARE(cookie.path(), QString("/"));
+    cookie.setPath(QString());
+    QVERIFY(cookie.path().isEmpty());
+
+    cookie.setDomain(".tld");
+    QCOMPARE(cookie.domain(), QString(".tld"));
+    cookie.setDomain(QString());
+    QVERIFY(cookie.domain().isEmpty());
+
+    QDateTime now = QDateTime::currentDateTime();
+    cookie.setExpirationDate(now);
+    QCOMPARE(cookie.expirationDate(), now);
+    QVERIFY(!cookie.isSessionCookie());
+    cookie.setExpirationDate(QDateTime());
+    QVERIFY(!cookie.expirationDate().isValid());
+    QVERIFY(cookie.isSessionCookie());
+
+    cookie.setSecure(true);
+    QVERIFY(cookie.isSecure());
+    cookie.setSecure(false);
+    QVERIFY(!cookie.isSecure());
+
+    QVERIFY(cookie == otherCookie);
+}
+
+void tst_QNetworkCookie::parseSingleCookie_data()
+{
+    QTest::addColumn<QString>("cookieString");
+    QTest::addColumn<QNetworkCookie>("expectedCookie");
+
+    QNetworkCookie cookie;
+    cookie.setName("a");
+    QTest::newRow("basic") << "a=" << cookie;
+    QTest::newRow("basic2") << " a=" << cookie;
+    QTest::newRow("basic3") << "a= " << cookie;
+    QTest::newRow("basic4") << " a= " << cookie;
+    QTest::newRow("basic5") << " a= ;" << cookie;
+    QTest::newRow("basic6") << " a=; " << cookie;
+    QTest::newRow("basic7") << " a =" << cookie;
+    QTest::newRow("basic8") << " a = " << cookie;
+
+    cookie.setValue("b");
+    QTest::newRow("with-value") << "a=b" << cookie;
+    QTest::newRow("with-value2") << " a=b" << cookie;
+    QTest::newRow("with-value3") << "a=b " << cookie;
+    QTest::newRow("with-value4") << " a=b " << cookie;
+    QTest::newRow("with-value4") << " a=b ;" << cookie;
+    QTest::newRow("with-value5") << "a =b" << cookie;
+    QTest::newRow("with-value6") << "a= b" << cookie;
+    QTest::newRow("with-value7") << "a = b" << cookie;
+    QTest::newRow("with-value8") << "a = b " << cookie;
+
+    cookie.setValue(",");
+    QTest::newRow("with-value-with-special1") << "a = \",\" " << cookie;
+    cookie.setValue(";");
+    QTest::newRow("with-value-with-special2") << "a = \";\" " << cookie;
+    cookie.setValue(" ");
+    QTest::newRow("with-value-with-special3") << "a = \" \" " << cookie;
+    cookie.setValue("\"");
+    QTest::newRow("with-value-with-special3") << "a = \"\\\"\" " << cookie;
+    cookie.setValue("\"a, b; c\"");
+    QTest::newRow("with-value-with-special4") << "a = \"\\\"a, b; c\\\"\"" << cookie;
+
+    cookie.setValue("b");
+    cookie.setSecure(true);
+    QTest::newRow("secure") << "a=b;secure" << cookie;
+    QTest::newRow("secure2") << "a=b;secure " << cookie;
+    QTest::newRow("secure3") << "a=b; secure" << cookie;
+    QTest::newRow("secure4") << "a=b; secure " << cookie;
+    QTest::newRow("secure5") << "a=b ;secure" << cookie;
+    QTest::newRow("secure6") << "a=b ;secure " << cookie;
+    QTest::newRow("secure7") << "a=b ; secure " << cookie;
+    QTest::newRow("secure8") << "a=b; Secure" << cookie;
+
+    cookie.setSecure(false);
+    cookie.setHttpOnly(true);
+    QTest::newRow("httponly") << "a=b;httponly" << cookie;
+    QTest::newRow("httponly2") << "a=b;HttpOnly " << cookie;
+    QTest::newRow("httponly3") << "a=b; httpOnly" << cookie;
+    QTest::newRow("httponly4") << "a=b; HttpOnly " << cookie;
+    QTest::newRow("httponly5") << "a=b ;HttpOnly" << cookie;
+    QTest::newRow("httponly6") << "a=b ;httponly " << cookie;
+    QTest::newRow("httponly7") << "a=b ; HttpOnly " << cookie;
+    QTest::newRow("httponly8") << "a=b; Httponly" << cookie;
+
+    cookie.setHttpOnly(false);
+    cookie.setPath("/");
+    QTest::newRow("path1") << "a=b;path=/" << cookie;
+    QTest::newRow("path2") << "a=b; path=/" << cookie;
+    QTest::newRow("path3") << "a=b;path=/ " << cookie;
+    QTest::newRow("path4") << "a=b;path =/ " << cookie;
+    QTest::newRow("path5") << "a=b;path= / " << cookie;
+    QTest::newRow("path6") << "a=b;path = / " << cookie;
+    QTest::newRow("path7") << "a=b;Path = / " << cookie;
+    QTest::newRow("path8") << "a=b; PATH = / " << cookie;
+
+    cookie.setPath("/foo");
+    QTest::newRow("path9") << "a=b;path=/foo" << cookie;
+
+    // some weird paths:
+    cookie.setPath("/with spaces");
+    QTest::newRow("path-with-spaces") << "a=b;path=/with%20spaces" << cookie;
+    QTest::newRow("path-with-spaces2") << "a=b; path=/with%20spaces " << cookie;
+    QTest::newRow("path-with-spaces3") << "a=b; path=\"/with spaces\"" << cookie;
+    QTest::newRow("path-with-spaces4") << "a=b; path = \"/with spaces\" " << cookie;
+
+    cookie.setPath("/with\"Quotes");
+    QTest::newRow("path-with-quotes") << "a=b; path = /with%22Quotes" << cookie;
+    QTest::newRow("path-with-quotes2") << "a=b; path = \"/with\\\"Quotes\"" << cookie;
+
+    cookie.setPath(QString::fromUtf8("/R\303\251sum\303\251"));
+    QTest::newRow("path-with-utf8") << "a=b;path=/R\303\251sum\303\251" << cookie;
+    QTest::newRow("path-with-utf8-2") << "a=b;path=/R%C3%A9sum%C3%A9" << cookie;
+
+    cookie.setPath(QString());
+    cookie.setDomain("trolltech.com");
+    QTest::newRow("plain-domain1") << "a=b;domain=trolltech.com" << cookie;
+    QTest::newRow("plain-domain2") << "a=b; domain=trolltech.com " << cookie;
+    QTest::newRow("plain-domain3") << "a=b;domain=TROLLTECH.COM" << cookie;
+    QTest::newRow("plain-domain4") << "a=b;DOMAIN = TROLLTECH.COM" << cookie;
+
+    cookie.setDomain(".trolltech.com");
+    QTest::newRow("dot-domain1") << "a=b;domain=.trolltech.com" << cookie;
+    QTest::newRow("dot-domain2") << "a=b; domain=.trolltech.com" << cookie;
+    QTest::newRow("dot-domain3") << "a=b; domain=.TROLLTECH.COM" << cookie;
+    QTest::newRow("dot-domain4") << "a=b; Domain = .TROLLTECH.COM" << cookie;
+
+    cookie.setDomain(QString::fromUtf8("d\303\270gn\303\245pent.troll.no"));
+    QTest::newRow("idn-domain1") << "a=b;domain=xn--dgnpent-gxa2o.troll.no" << cookie;
+    QTest::newRow("idn-domain2") << "a=b;domain=d\303\270gn\303\245pent.troll.no" << cookie;
+    QTest::newRow("idn-domain3") << "a=b;domain=XN--DGNPENT-GXA2O.TROLL.NO" << cookie;
+    QTest::newRow("idn-domain4") << "a=b;domain=D\303\230GN\303\205PENT.troll.NO" << cookie;
+    QTest::newRow("idn-domain5") << "a=b;domain = D\303\230GN\303\205PENT.troll.NO" << cookie;
+
+    cookie.setDomain(QString::fromUtf8(".d\303\270gn\303\245pent.troll.no"));
+    QTest::newRow("dot-idn-domain1") << "a=b;domain=.xn--dgnpent-gxa2o.troll.no" << cookie;
+    QTest::newRow("dot-idn-domain2") << "a=b;domain=.d\303\270gn\303\245pent.troll.no" << cookie;
+    QTest::newRow("dot-idn-domain3") << "a=b;domain=.XN--DGNPENT-GXA2O.TROLL.NO" << cookie;
+    QTest::newRow("dot-idn-domain4") << "a=b;domain=.D\303\230GN\303\205PENT.troll.NO" << cookie;
+
+    cookie.setDomain("trolltech.com");
+    cookie.setPath("/");
+    QTest::newRow("two-fields") << "a=b;domain=trolltech.com;path=/" << cookie;
+    QTest::newRow("two-fields2") << "a=b; domain=trolltech.com; path=/" << cookie;
+    QTest::newRow("two-fields3") << "a=b;   domain=trolltech.com ; path=/ " << cookie;
+    QTest::newRow("two-fields4") << "a=b;path=/; domain=trolltech.com" << cookie;
+    QTest::newRow("two-fields5") << "a=b; path=/  ;   domain=trolltech.com" << cookie;
+    QTest::newRow("two-fields6") << "a=b; path= /  ;   domain =trolltech.com" << cookie;
+
+    cookie.setSecure(true);
+    QTest::newRow("three-fields") << "a=b;domain=trolltech.com;path=/;secure" << cookie;
+    QTest::newRow("three-fields2") << "a=b;secure;path=/;domain=trolltech.com" << cookie;
+    QTest::newRow("three-fields3") << "a=b;secure;domain=trolltech.com; path=/" << cookie;
+    QTest::newRow("three-fields4") << "a = b;secure;domain=trolltech.com; path=/" << cookie;
+
+    cookie = QNetworkCookie();
+    cookie.setName("a");
+    cookie.setValue("b");
+    cookie.setExpirationDate(QDateTime(QDate(2012, 1, 29), QTime(23, 59, 59), Qt::UTC));
+    QTest::newRow("broken-expiration1") << "a=b; expires=Sun, 29-Jan-2012 23:59:59;" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(1999, 11, 9), QTime(23, 12, 40), Qt::UTC));
+    QTest::newRow("expiration1") << "a=b;expires=Wednesday, 09-Nov-1999 23:12:40 GMT" << cookie;
+    QTest::newRow("expiration2") << "a=b;expires=Wed, 09-Nov-1999 23:12:40 GMT" << cookie;
+    QTest::newRow("expiration3") << "a=b; expires=Wednesday, 09-Nov-1999 23:12:40 GMT " << cookie;
+    QTest::newRow("expiration-utc") << "a=b;expires=Wednesday, 09-Nov-1999 23:12:40 UTC" << cookie;
+
+    // two-digit years:
+    // from 70 until 99, we assume 20th century
+    QTest::newRow("expiration-2digit1") << "a=b; expires=Wednesday, 09-Nov-99 23:12:40 GMT " << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1970, 1, 1), QTime(23, 12, 40), Qt::UTC));
+    QTest::newRow("expiration-2digit2") << "a=b; expires=Thursday, 01-Jan-70 23:12:40 GMT " << cookie;
+    // from 00 until 69, we assume 21st century
+    cookie.setExpirationDate(QDateTime(QDate(2000, 1, 1), QTime(23, 12, 40), Qt::UTC));
+    QTest::newRow("expiration-2digit3") << "a=b; expires=Saturday, 01-Jan-00 23:12:40 GMT " << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(2020, 1, 1), QTime(23, 12, 40), Qt::UTC));
+    QTest::newRow("expiration-2digit4") << "a=b; expires=Wednesday, 01-Jan-20 23:12:40 GMT " << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(2069, 1, 1), QTime(23, 12, 40), Qt::UTC));
+    QTest::newRow("expiration-2digit5") << "a=b; expires=Wednesday, 01-Jan-69 23:12:40 GMT " << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(1999, 11, 9), QTime(23, 12, 40), Qt::UTC));
+
+    cookie.setPath("/");
+    QTest::newRow("expires+path") << "a=b; expires=Wed, 09-Nov-1999 23:12:40 GMT; path=/" << cookie;
+    QTest::newRow("path+expires") << "a=b; path=/;expires=Wed, 09-Nov-1999 23:12:40 GMT " << cookie;
+
+    cookie.setDomain(".trolltech.com");
+    QTest::newRow("full") << "a=b; domain=.trolltech.com;expires=Wed, 09-Nov-1999 23:12:40 GMT;path=/" << cookie;
+    QTest::newRow("full2") << "a=b;path=/; expires=Wed, 09-Nov-1999 23:12:40 GMT ;domain=.trolltech.com" << cookie;
+
+    // cookies obtained from the network:
+    cookie = QNetworkCookie("__siteid", "1");
+    cookie.setPath("/");
+    cookie.setExpirationDate(QDateTime(QDate(9999, 12, 31), QTime(23, 59, 59), Qt::UTC));
+    QTest::newRow("network2") << "__siteid=1; expires=Fri, 31-Dec-9999 23:59:59 GMT; path=/" << cookie;
+
+    QTest::newRow("network3") << "YM.LC=v=2&m=9993_262838_159_1558_1063_0_5649_4012_3776161073,9426_260205_549_1295_1336_0_5141_4738_3922731647,6733_258196_952_1364_643_0_3560_-1_0,3677_237633_1294_1294_19267_0_3244_29483_4102206176,1315_235149_1693_1541_941_0_3224_1691_1861378060,1858_214311_2100_1298_19538_0_2873_30900_716411652,6258_212007_2506_1285_1017_0_2868_3606_4288540264,3743_207884_2895_1362_2759_0_2545_7114_3388520216,2654_205253_3257_1297_1332_0_2504_4682_3048534803,1891_184881_3660_1291_19079_0_978_29178_2592538685&f=1&n=20&s=date&o=down&e=1196548712&b=Inbox&u=removed; path=/; domain=mail.yahoo.com" << cookie;
+
+    cookie = QNetworkCookie("__ac", "c2hhdXNtYW46U2FTYW80Wm8%3D");
+    cookie.setPath("/");
+    cookie.setExpirationDate(QDateTime(QDate(2008, 8, 30), QTime(20, 21, 49), Qt::UTC));
+    QTest::newRow("network4") << "__ac=\"c2hhdXNtYW46U2FTYW80Wm8%3D\"; Path=/; Expires=Sat, 30 Aug 2008 20:21:49 +0000" << cookie;
+}
+
+void tst_QNetworkCookie::parseSingleCookie()
+{
+    QFETCH(QString, cookieString);
+    QFETCH(QNetworkCookie, expectedCookie);
+
+    QList<QNetworkCookie> result = QNetworkCookie::parseCookies(cookieString.toLatin1());
+
+    QEXPECT_FAIL("network2", "QDateTime parsing problem: the date is beyond year 8000", Abort);
+    QEXPECT_FAIL("network3", "Cookie value contains commas, violating the HTTP spec", Abort);
+    QCOMPARE(result.count(), 1);
+    QCOMPARE(result.at(0), expectedCookie);
+
+    result = QNetworkCookie::parseCookies(result.at(0).toRawForm());
+    QCOMPARE(result.count(), 1);
+    QCOMPARE(result.at(0), expectedCookie);
+}
+
+void tst_QNetworkCookie::parseMultipleCookies_data()
+{
+    QTest::addColumn<QString>("cookieString");
+    QTest::addColumn<QList<QNetworkCookie> >("expectedCookies");
+
+    QList<QNetworkCookie> list;
+    QTest::newRow("empty") << "" << list;
+
+    // these are technically empty cookies:
+    QTest::newRow("invalid-01") << ";" << list;
+    QTest::newRow("invalid-02") << " " << list;
+    QTest::newRow("invalid-03") << " ," << list;
+    QTest::newRow("invalid-04") << ";;,, ; ; , , ; , ;" << list;
+
+    // these are really invalid:
+    // reason: malformed NAME=VALUE pair
+    QTest::newRow("invalid-05") << "foo" << list;
+    QTest::newRow("invalid-06") << "=b" << list;
+    QTest::newRow("invalid-08") << "a=b,foo" << list;
+    QTest::newRow("invalid-09") << "foo,a=b" << list;
+    QTest::newRow("invalid-10") << "a=b,=b" << list;
+    QTest::newRow("invalid-11") << ";path=/" << list;
+
+    // reason: malformed expiration date string
+    QTest::newRow("invalid-12") << "a=b;expires=" << list;
+    QTest::newRow("invalid-13") << "a=b;expires=foobar" << list;
+    QTest::newRow("invalid-14") << "a=b;expires=foobar, abc" << list;
+    QTest::newRow("invalid-15") << "a=b;expires=foobar, dd-mmm-yyyy hh:mm:ss GMT; path=/" << list;
+    QTest::newRow("invalid-16") << "a=b;expires=foobar, 32-Caz-1999 24:01:60 GMT; path=/" << list;
+    QTest::newRow("invalid-17") << "a=b,c=d;expires=" << list;
+    QTest::newRow("invalid-18") << "a=b, c=d; expires=foobar, 32-Caz-1999 24:01:60 GMT; path=/" << list;
+
+    QNetworkCookie cookie;
+    cookie.setName("a");
+    list += cookie;
+    cookie.setName("c");
+    cookie.setValue("d");
+    list += cookie;
+    QTest::newRow("two-1") << "a=,c=d" << list;
+    QTest::newRow("two-2") << "a=, c=d" << list;
+    QTest::newRow("two-3") << "a= ,c=d" << list;
+    QTest::newRow("two-4") << "a= , c=d" << list;
+
+    list.clear();
+    list += cookie;
+    cookie.setName("a");
+    cookie.setValue(QByteArray());
+    list += cookie;
+    QTest::newRow("two-5") << "c=d,a=" << list;
+    QTest::newRow("two-6") << "c=d, a=" << list;
+    QTest::newRow("two-7") << "c=d , a=" << list;
+
+    cookie.setName("foo");
+    cookie.setValue("bar");
+    cookie.setPath("/");
+    list += cookie;
+    QTest::newRow("complex-1") << "c=d, a=, foo=bar; path=/" << list;
+
+    cookie.setName("baz");
+    cookie.setDomain("trolltech.com");
+    list.prepend(cookie);
+    QTest::newRow("complex-2") << "baz=bar; path=/; domain=trolltech.com, c=d,a=,foo=bar; path=/" << list;
+
+    // cookies obtained from the network:
+    cookie = QNetworkCookie("id", "51706646077999719");
+    cookie.setDomain(".bluestreak.com");
+    cookie.setPath("/");
+    cookie.setExpirationDate(QDateTime(QDate(2017, 12, 05), QTime(9, 11, 7), Qt::UTC));
+    list << cookie;
+    cookie.setName("bb");
+    cookie.setValue("\\\"K14144t\\\"_AAQ\\\"ototrK_A_ttot44AQ4KwoRQtoto|");
+    list << cookie;
+    cookie.setName("adv");
+    cookie.setValue(QByteArray());
+    list << cookie;
+    QTest::newRow("network1") << "id=51706646077999719 bb=\"K14144t\"_AAQ\"ototrK_A_ttot44AQ4KwoRQtoto| adv=; Domain=.bluestreak.com; expires=Tuesday 05-Dec-2017 09:11:07 GMT; path=/;" << list;
+
+}
+
+void tst_QNetworkCookie::parseMultipleCookies()
+{
+    QFETCH(QString, cookieString);
+    QFETCH(QList<QNetworkCookie>, expectedCookies);
+
+    QList<QNetworkCookie> result = QNetworkCookie::parseCookies(cookieString.toLatin1());
+
+    QEXPECT_FAIL("network1", "Apparently multiple cookies set in one request (and an invalid date)", Abort);
+    QCOMPARE(result, expectedCookies);
+}
+
+QTEST_MAIN(tst_QNetworkCookie)
+#include "tst_qnetworkcookie.moc"

@@ -1,0 +1,8 @@
+uic3: slot `clear()' for widget `FormBase' of type `QWidget' is not supported; connection may fail. Line: 740 Column: 16
+uic3: slot `first()' for widget `FormBase' of type `QWidget' is not supported; connection may fail. Line: 746 Column: 16
+uic3: slot `prev()' for widget `FormBase' of type `QWidget' is not supported; connection may fail. Line: 752 Column: 16
+uic3: slot `next()' for widget `FormBase' of type `QWidget' is not supported; connection may fail. Line: 758 Column: 16
+uic3: slot `insert()' for widget `FormBase' of type `QWidget' is not supported; connection may fail. Line: 770 Column: 16
+uic3: slot `del()' for widget `FormBase' of type `QWidget' is not supported; connection may fail. Line: 776 Column: 16
+uic3: slot `last()' for widget `FormBase' of type `QWidget' is not supported; connection may fail. Line: 782 Column: 16
+uic3: flag 'AlignAuto' for widget 'QLineEdit' is not supported

@@ -1,0 +1,24 @@
+#!/bin/sh 
+# This is a simple press-one-button-to-build-a-binary-package script.
+# You specify your version number, and it will download the source package
+# from the web and build a binary from it.
+#
+# Usage: mkcommersialpackage [version] 
+# Where version is for example 4.1.0
+#
+
+BASE_URL=http://releases.dev.troll.no/~espenr/packages/
+PACKAGE_NAME=qt-mac-commercial-src-
+SUFFIX=.tar.gz
+
+PACKAGE_FILE_NAME=${PACKAGE_NAME}${1}${SUFFIX}
+COMPLETE_URL=${BASE_URL}${PACKAGE_FILE_NAME}
+
+DOWNLOAD_COMMAND="curl -O "${COMPLETE_URL}
+echo Running ${DOWNLOAD_COMMAND}
+$DOWNLOAD_COMMAND
+
+MKPACKAGE_LOCATION=${PWD}/`dirname $0`/mkpackage
+MKPACKAGE_COMMAND=${MKPACKAGE_LOCATION}" -qtpackage "${PWD}/${PACKAGE_FILE_NAME}
+echo Running $MKPACKAGE_COMMAND
+$MKPACKAGE_COMMAND

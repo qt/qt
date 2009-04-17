@@ -1,0 +1,5 @@
+uic3: slot `editClicked()' for widget `BookForm' of type `QDialog' is not supported; connection may fail. Line: 167 Column: 31
+uic3: slot `primeInsertAuthor(QSqlRecord*)' for widget `BookForm' of type `QDialog' is not supported; connection may fail. Line: 173 Column: 31
+uic3: slot `newCurrentAuthor(QSqlRecord*)' for widget `BookForm' of type `QDialog' is not supported; connection may fail. Line: 179 Column: 31
+uic3: enumerator 'MShape' for widget 'QSplitter' is not supported
+uic3: enumerator 'MShadow' for widget 'QSplitter' is not supported

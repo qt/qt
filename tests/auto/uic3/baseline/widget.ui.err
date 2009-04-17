@@ -1,0 +1,14 @@
+uic3: slot `blueToZero()' for widget `Widget' of type `QWidget' is not supported; connection may fail. Line: 1315 Column: 31
+uic3: slot `blueToThis()' for widget `Widget' of type `QWidget' is not supported; connection may fail. Line: 1321 Column: 31
+uic3: slot `blueToGreen()' for widget `Widget' of type `QWidget' is not supported; connection may fail. Line: 1327 Column: 31
+uic3: slot `blueToRed()' for widget `Widget' of type `QWidget' is not supported; connection may fail. Line: 1333 Column: 31
+uic3: slot `greenToZero()' for widget `Widget' of type `QWidget' is not supported; connection may fail. Line: 1339 Column: 31
+uic3: slot `greenToThis()' for widget `Widget' of type `QWidget' is not supported; connection may fail. Line: 1345 Column: 31
+uic3: slot `greenToBlue()' for widget `Widget' of type `QWidget' is not supported; connection may fail. Line: 1351 Column: 31
+uic3: slot `greenToRed()' for widget `Widget' of type `QWidget' is not supported; connection may fail. Line: 1357 Column: 31
+uic3: slot `redToZero()' for widget `Widget' of type `QWidget' is not supported; connection may fail. Line: 1363 Column: 31
+uic3: slot `redToThis()' for widget `Widget' of type `QWidget' is not supported; connection may fail. Line: 1369 Column: 31
+uic3: slot `redToGreen()' for widget `Widget' of type `QWidget' is not supported; connection may fail. Line: 1375 Column: 31
+uic3: slot `redToBlue()' for widget `Widget' of type `QWidget' is not supported; connection may fail. Line: 1381 Column: 31
+uic3: slot `toggleGreyDND()' for widget `Widget' of type `QWidget' is not supported; connection may fail. Line: 1387 Column: 31
+uic3: slot `reparentBelow()' for widget `Widget' of type `QWidget' is not supported; connection may fail. Line: 1393 Column: 31

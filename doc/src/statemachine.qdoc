@@ -1,0 +1,272 @@
+/****************************************************************************
+**
+** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the $MODULE$ of the Qt Toolkit.
+**
+** $TROLLTECH_DUAL_LICENSE$
+**
+****************************************************************************/
+
+/*!
+  \page statemachine-api.html
+  \title The State Machine Framework
+  \brief An overview of the State Machine framework for constructing and executing state graphs.
+
+  \tableofcontents
+
+  The State Machine framework provides classes for creating and executing
+  state graphs. The concepts and notation are based on those from Harel's
+  \l{Statecharts: A visual formalism for complex systems}{Statecharts}, which
+  is also the basis of UML state diagrams. The semantics of state machine
+  execution are based on \l{State Chart XML: State Machine Notation for
+  Control Abstraction}{State Chart XML (SCXML)}.
+
+  Statecharts provide a graphical way of modeling how a system reacts to
+  stimuli. This is done by defining the possible \e states that the system can
+  be in, and how the system can move from one state to another (\e transitions
+  between states). A key characteristic of event-driven systems (such as Qt
+  applications) is that behavior often depends not only on the last or current
+  event, but also the events that preceded it. With statecharts, this
+  information is easy to express.
+
+  The State Machine framework provides an API and execution model that can be
+  used to effectively embed the elements and semantics of statecharts in Qt
+  applications. The framework integrates tightly with Qt's existing event
+  system and meta-object system; for example, transitions between states can
+  be triggered by signals, and states can be configured to set properties and
+  invoke methods on QObjects.
+
+  \section1 A Simple State Machine
+
+  To demonstrate the core functionality of the State Machine API, let's look
+  at a small example: A state machine with three states, \c s1, \c s2 and \c
+  s3. The state machine is controlled by a single QPushButton; when the button
+  is clicked, the machine transitions to another state. Initially, the state
+  machine is in state \c s1. The statechart for this machine is as follows:
+
+    \img statemachine-button.png
+    \omit
+    \caption This is a caption
+    \endomit
+
+  The following snippet shows the code needed to create such a state machine.
+
+  \code
+    QStateMachine machine;
+    QState *s1 = new QState();
+    QState *s2 = new QState();
+    QState *s3 = new QState();
+
+    s1->addTransition(button, SIGNAL(clicked()), s2);
+    s2->addTransition(button, SIGNAL(clicked()), s3);
+    s3->addTransition(button, SIGNAL(clicked()), s1);
+
+    machine.addState(s1);
+    machine.addState(s2);
+    machine.addState(s3);
+    machine.setInitialState(s1);
+
+    machine.start();
+  \endcode
+
+  Once the state machine has been set up, you need to start it by calling
+  QStateMachine::start(). The state machine executes asynchronously, i.e. it
+  becomes part of your application's event loop.
+
+  The above state machine is perfectly fine, but it doesn't \e do anything; it
+  merely transitions from one state to another. The
+  QState::setPropertyOnEntry() function can be used to have a state set a
+  property of a QObject when the state is entered. In the following snippet,
+  the value that should be assigned to a QLabel's text property is specified
+  for each state:
+
+  \code
+    s1->setPropertyOnEntry(label, "text", "In state s1");
+    s2->setPropertyOnEntry(label, "text", "In state s2");
+    s3->setPropertyOnEntry(label, "text", "In state s3");
+  \endcode
+
+  When any of the states is entered, the label's text will be changed
+  accordingly.
+
+  The QState::invokeMethodOnEntry() function can be used to have a state
+  invoke a method (a slot) of a QObject when the state is entered. In the
+  following snippet, the button's showMaximized() slot will be called when
+  state \c s3 is entered:
+
+  \code
+    s2->invokeMethodOnEntry(button, "showMaximized");
+  \endcode
+
+  \section1 Sharing Transitions By Grouping States
+
+  The state machine defined in the previous section never finishes. In order
+  for a state machine to be able to finish, it needs to have a top-level \e
+  final state. When the state machine enters a top-level final state, the
+  machine will emit the finished() signal and halt.
+
+  Assume we wanted the user to be able to quit the application at any time by
+  clicking a Quit button. In order to achieve this, we need to create a final
+  state and make it the target of a transition associated with the Quit
+  button's clicked() signal. We could add a transition from each of \c s1, \c
+  s2 and \c s3; however, this seems redundant, and one would also have to
+  remember to add such a transition from every new state that is added in the
+  future.
+
+  We can achieve the same behavior (namely that clicking the Quit button quits
+  the state machine, regardless of which state the state machine is in) by
+  grouping states \c s1, \c s2 and \c s3. This is done by creating a new
+  top-level state and making the three original states children of the new
+  state. The following diagram shows the new state machine.
+
+    \img statemachine-button-nested.png
+    \omit
+    \caption This is a caption
+    \endomit
+
+  The three original states have been renamed \c s11, \c s12 and \c s13 to
+  reflect that they are now children of the new top-level state, \c s1.  Child
+  states implicitly inherit the transitions of their parent state. This means
+  it is now sufficient to add a single transition from \c s1 to the final
+  state \c s2. New states added to \c s1 will also automatically inherit this
+  transition.
+
+  All that's needed to group states is to specify the proper parent when the
+  state is created. You also need to specify which of the child states is the
+  initial one (i.e. which child state the state machine should enter when the
+  parent state is the target of a transition).
+
+  \code
+    QState *s1 = new QState();
+    QState *s11 = new QState(s1);
+    QState *s12 = new QState(s1);
+    QState *s13 = new QState(s1);
+    s1->setInitialState(s11);
+    machine.addState(s1);
+  \endcode
+
+  \code
+    QFinalState *s2 = new QFinalState();
+    s1->addTransition(quitButton, SIGNAL(clicked()), s2);
+    machine.addState(s2);
+
+    QObject::connect(&machine, SIGNAL(finished()), QApplication::instance(), SLOT(quit()));
+  \endcode
+
+  In this case we want the application to quit when the state machine is
+  finished, so the machine's finished() signal is connected to the
+  application's quit() slot.
+
+  A child state can override an inherited transition. For example, the
+  following code adds a transition that effectively causes the Quit button to
+  be ignored when the state machine is in state \c s12.
+
+  \code
+    s12>addTransition(quitButton, SIGNAL(clicked()), s12);
+  \endcode
+
+  \section1 Using History States to Save and Restore the Current State
+
+  Imagine that we wanted to add an "interrupt" mechanism to the example
+  discussed in the previous section; the user should be able to click a button
+  to have the state machine perform some non-related task, after which the
+  state machine should resume whatever it was doing before (i.e. return to the
+  old state, which is one of \c s11, \c s12 and \c s13 in this case).
+
+  Such behavior can easily be modeled using \e{history states}. A history
+  state (QHistoryState object) is a pseudo-state that represents the child
+  state that the parent state was in the last time the parent state was
+  exited.
+
+  A history state is created as a child of the state for which we wish to
+  record the current child state; when the state machine detects the presence
+  of such a state at runtime, it automatically records the current (real)
+  child state when the parent state is exited. A transition to the history
+  state is in fact a transition to the child state that the state machine had
+  previously saved; the state machine automatically "forwards" the transition
+  to the real child state.
+
+  The following diagram shows the state machine after the interrupt mechanism
+  has been added.
+
+    \img statemachine-button-history.png
+    \omit
+    \caption This is a caption
+    \endomit
+
+  The following code shows how it can be implemented; in this example we
+  simply display a message box when \c s3 is entered, then immediately return
+  to the previous child state of \c s1 via the history state.
+
+  \code
+    QHistoryState *s1h = s1->addHistoryState();
+
+    QState *s3 = new QState();
+    s3->setPropertyOnEntry(label, "text", "In s3");
+    QMessageBox mbox;
+    mbox.addButton(QMessageBox::Ok);
+    mbox.setText("Interrupted!");
+    mbox.setIcon(QMessageBox::Information);
+    s3->invokeMethodOnEntry(&mbox, "exec");
+    s3->addTransition(s1h);
+    machine.addState(s3);
+
+    s1->addTransition(interruptButton, SIGNAL(clicked()), s3);
+  \endcode
+
+  \section1 Using Parallel States to Avoid a Combinatorial Explosion of States
+
+  Assume that you wanted to model a set of mutually exclusive properties of a
+  car in a single state machine. Let's say the properties we are interested in
+  are Clean vs Dirty, and Moving vs Not moving. It would take four mutually
+  exclusive states and eight transitions to be able to represent and freely
+  move between all possible combinations.
+
+    \img statemachine-nonparallel.png
+    \omit
+    \caption This is a caption
+    \endomit
+
+  If we added a third property (say, Red vs Blue), the total number of states
+  would double, to eight; and if we added a fourth property (say, Enclosed vs
+  Convertible), the total number of states would double again, to 16.
+
+  Using parallel states, the total number of states and transitions grows
+  linearly as we add more properties, instead of exponentially. Furthermore,
+  states can be added to or removed from the parallel state without affecting
+  any of their sibling states.
+
+    \img statemachine-parallel.png
+    \omit
+    \caption This is a caption
+    \endomit
+
+  To create a parallel state group, pass QState::ParallelStateGroup to the
+  QState constructor.
+
+  \code
+    QState *s1 = new QState(QState::ParallelStateGroup);
+    // s11 and s12 will be entered in parallel
+    QState *s11 = new QState(s1);
+    QState *s12 = new QState(s1);
+  \endcode
+
+  \section1 Detecting that a Composite State has Finished
+
+  A child state can be final; when a final child state is entered, a
+  QStateFinishedEvent is generated for the parent state. You can use the
+  QStateFinishedTransition class to trigger a transition based on this event.
+
+    \img statemachine-finished.png
+    \omit
+    \caption This is a caption
+    \endomit
+
+  This is useful when you want to hide the internal details of a state;
+  i.e. the only thing the outside world should be able to do is enter the
+  state, and get a notification when the state has finished (i.e. when a final
+  child state has been entered).
+
+  */

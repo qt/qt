@@ -1,0 +1,3 @@
+IDI_ICON1               ICON    DISCARDABLE     "install.ico"
+LICENSE			RCDATA	"../../../dist/edu/LICENSE"
+QT_ARQ			RCDATA	"qt.arq"

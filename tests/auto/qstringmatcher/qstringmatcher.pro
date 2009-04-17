@@ -1,0 +1,5 @@
+load(qttest_p4)
+SOURCES  += tst_qstringmatcher.cpp
+
+DEFINES += QT_NO_CAST_TO_ASCII
+

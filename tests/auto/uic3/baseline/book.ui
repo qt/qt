@@ -1,0 +1,189 @@
+<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
+<class>BookForm</class>
+<include location="global" impldecl="in declaration">qsqlrecord.h</include>
+<include location="local" impldecl="in declaration">editbook.h</include>
+<include location="global" impldecl="in declaration">qdatabrowser.h</include>
+<include location="local" implDecl="in declaration">book.ui.h</include>
+<layoutdefaults spacing="6" margin="11"/>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>BookForm</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>490</width>
+            <height>504</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Book</string>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>11</number>
+        </property>
+        <property name="spacing">
+            <number>6</number>
+        </property>
+        <widget class="QSplitter">
+            <property name="name">
+                <cstring>Splitter1</cstring>
+            </property>
+            <property name="frameShape">
+                <enum>MShape</enum>
+            </property>
+            <property name="frameShadow">
+                <enum>MShadow</enum>
+            </property>
+            <property name="orientation">
+                <enum>Vertical</enum>
+            </property>
+            <widget class="QDataTable">
+                <column>
+                    <property name="text">
+                        <string>Surname</string>
+                    </property>
+                    <property name="field">
+                        <string>surname</string>
+                    </property>
+                </column>
+                <column>
+                    <property name="text">
+                        <string>Forename</string>
+                    </property>
+                    <property name="field">
+                        <string>forename</string>
+                    </property>
+                </column>
+                <property name="name">
+                    <cstring>AuthorDataTable</cstring>
+                </property>
+                <property name="confirmDelete">
+                    <bool>true</bool>
+                </property>
+                <property name="sort">
+                    <stringlist>
+                        <string>surname ASC</string>
+                        <string>forename ASC</string>
+                    </stringlist>
+                </property>
+                <property name="database" stdset="0">
+                    <stringlist>
+                        <string>(default)</string>
+                        <string>author</string>
+                    </stringlist>
+                </property>
+            </widget>
+            <widget class="QDataTable">
+                <column>
+                    <property name="text">
+                        <string>Title</string>
+                    </property>
+                    <property name="field">
+                        <string>title</string>
+                    </property>
+                </column>
+                <column>
+                    <property name="text">
+                        <string>Price</string>
+                    </property>
+                    <property name="field">
+                        <string>price</string>
+                    </property>
+                </column>
+                <column>
+                    <property name="text">
+                        <string>Notes</string>
+                    </property>
+                    <property name="field">
+                        <string>notes</string>
+                    </property>
+                </column>
+                <property name="name">
+                    <cstring>BookDataTable</cstring>
+                </property>
+                <property name="readOnly">
+                    <bool>true</bool>
+                </property>
+                <property name="sort">
+                    <stringlist>
+                        <string>title ASC</string>
+                    </stringlist>
+                </property>
+                <property name="database" stdset="0">
+                    <stringlist>
+                        <string>(default)</string>
+                        <string>book</string>
+                    </stringlist>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>Layout5</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>0</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>EditPushButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Edit Books</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>QuitPushButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Quit</string>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+    </vbox>
+</widget>
+<connections>
+    <connection language="C++">
+        <sender>QuitPushButton</sender>
+        <signal>clicked()</signal>
+        <receiver>BookForm</receiver>
+        <slot>accept()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>EditPushButton</sender>
+        <signal>clicked()</signal>
+        <receiver>BookForm</receiver>
+        <slot>editClicked()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>AuthorDataTable</sender>
+        <signal>primeInsert(QSqlRecord*)</signal>
+        <receiver>BookForm</receiver>
+        <slot>primeInsertAuthor(QSqlRecord*)</slot>
+    </connection>
+    <connection language="C++">
+        <sender>AuthorDataTable</sender>
+        <signal>currentChanged(QSqlRecord*)</signal>
+        <receiver>BookForm</receiver>
+        <slot>newCurrentAuthor(QSqlRecord*)</slot>
+    </connection>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">editClicked()</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">newCurrentAuthor( QSqlRecord * author )</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">primeInsertAuthor( QSqlRecord * buffer )</slot>
+</connections>
+</UI>

@@ -1,0 +1,14 @@
+#root directory
+env		root			"f:\iwmake"
+
+#where to find mingw
+env		mingwPath		"f:\mingw"
+
+#where to find nsis
+env		NSISPath		"%ProgramFiles%\NSIS"
+
+#where to find perl
+env		perlPath		"f:\Perl\bin"
+
+#where to find packages
+env         releaseLocation   "http://ares.troll.no/~harald/packages"

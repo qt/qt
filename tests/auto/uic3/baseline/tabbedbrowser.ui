@@ -1,0 +1,141 @@
+<!DOCTYPE UI><UI version="3.2" stdsetdef="1">
+<class>TabbedBrowser</class>
+<comment>*********************************************************************
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).  All rights reserved.
+**
+** This file is part of Qt Assistant.
+**
+** This file may be used under the terms of the GNU General
+** Public License versions 2.0 or 3.0 as published by the Free
+** Software Foundation and appearing in the files LICENSE.GPL2
+** and LICENSE.GPL3 included in the packaging of this file.
+** Alternatively you may (at your option) use any later version
+** of the GNU General Public License if such license has been
+** publicly approved by Nokia Corporation and/or its subsidiary(-ies) (or its successors, if any)
+** and the KDE Free Qt Foundation.
+**
+** Please review the following information to ensure GNU General
+** Public Licensing requirements will be met:
+** http://trolltech.com/products/qt/licenses/licensing/opensource/.
+** If you are unsure which license is appropriate for your use, please
+** review the following information:
+** http://trolltech.com/products/qt/licenses/licensing/licensingoverview
+** or contact the sales department at sales@trolltech.com.
+**
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with
+** the Software.
+**
+** This file is provided "AS IS" with NO WARRANTY OF ANY KIND,
+** INCLUDING THE WARRANTIES OF DESIGN, MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE. Trolltech reserves all rights not granted
+** herein.
+**
+*********************************************************************</comment>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>TabbedBrowser</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>710</width>
+            <height>681</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>TabbedBrowser</string>
+    </property>
+    <grid>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>0</number>
+        </property>
+        <property name="spacing">
+            <number>0</number>
+        </property>
+        <widget class="QTabWidget" row="0" column="0">
+            <property name="name">
+                <cstring>tab</cstring>
+            </property>
+            <widget class="QWidget">
+                <property name="name">
+                    <cstring>frontpage</cstring>
+                </property>
+                <attribute name="title">
+                    <string>Untitled</string>
+                </attribute>
+                <grid>
+                    <property name="name">
+                        <cstring>unnamed</cstring>
+                    </property>
+                </grid>
+            </widget>
+        </widget>
+    </grid>
+</widget>
+<includes>
+    <include location="global" impldecl="in declaration">qsettings.h</include>
+    <include location="local" impldecl="in implementation">helpwindow.h</include>
+    <include location="local" impldecl="in implementation">mainwindow.h</include>
+    <include location="global" impldecl="in implementation">qstylesheet.h</include>
+    <include location="global" impldecl="in implementation">qmime.h</include>
+    <include location="local" impldecl="in implementation">tabbedbrowser.ui.h</include>
+</includes>
+<forwards>
+    <forward>class HelpWindow;</forward>
+    <forward>class MainWindow;</forward>
+    <forward>class QStyleSheet;</forward>
+    <forward>class QMimeSourceFactory;</forward>
+</forwards>
+<variables>
+    <variable access="private">QStyleSheet *tabStyleSheet;</variable>
+    <variable access="private">bool tabLinkUnderline;</variable>
+    <variable access="private">QMimeSourceFactory *mimeSourceFactory;</variable>
+    <variable access="private">QWidget *lastCurrentTab;</variable>
+    <variable access="private">QFont tabFont;</variable>
+</variables>
+<slots>
+    <slot>forward()</slot>
+    <slot>backward()</slot>
+    <slot>setSource( const QString &amp; ref )</slot>
+    <slot>reload()</slot>
+    <slot>home()</slot>
+    <slot>nextTab()</slot>
+    <slot>previousTab()</slot>
+    <slot>newTab( const QString &amp; lnk )</slot>
+    <slot>zoomIn()</slot>
+    <slot>zoomOut()</slot>
+    <slot>updateTitle( const QString &amp; title )</slot>
+    <slot>newTab()</slot>
+    <slot>transferFocus()</slot>
+    <slot>initHelpWindow( HelpWindow * win )</slot>
+    <slot>setup()</slot>
+    <slot>setLinkUnderline( bool uline )</slot>
+    <slot>setPalette( const QPalette &amp; pal )</slot>
+    <slot>copy()</slot>
+    <slot>closeTab()</slot>
+    <slot>sourceChanged()</slot>
+</slots>
+<functions>
+    <function returnType="HelpWindow *">currentBrowser()</function>
+    <function access="private">init()</function>
+    <function returnType="MainWindow *">mainWindow()</function>
+    <function specifier="non virtual" returnType="QStyleSheet *">styleSheet()</function>
+    <function specifier="non virtual" returnType="bool">linkUnderline()</function>
+    <function specifier="non virtual" returnType="QStringList">sources()</function>
+    <function specifier="non virtual">setMimePath( QStringList lst )</function>
+    <function specifier="non virtual">setMimeExtension( const QString &amp; ext )</function>
+    <function specifier="non virtual">setBrowserFont( const QFont &amp; fnt )</function>
+    <function specifier="non virtual" returnType="QFont">browserFont()</function>
+    <function specifier="non virtual" returnType="QPtrList&lt;HelpWindow&gt;">browsers() const</function>
+    <function returnType="HelpWindow*">newBackgroundTab( const QString &amp; url )</function>
+    <function returnType="HelpWindow*" access="private">createHelpWindow(const QString &amp;)</function>	
+    <function>setTitle(HelpWindow*, const QString &amp;)</function>
+</functions>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

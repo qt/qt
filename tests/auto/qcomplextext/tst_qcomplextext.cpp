@@ -1,0 +1,167 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the test suite of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+
+// Horrible hack, but this get this out of the way for now
+// Carlos Duclos, 2007-12-11
+#if !defined(Q_WS_MAC)
+
+#include <QtTest/QtTest>
+#include <private/qtextengine_p.h>
+
+#include "bidireorderstring.h"
+
+
+//TESTED_CLASS=
+//TESTED_FILES=gui/widgets/qcombobox.h gui/widgets/qcombobox.cpp
+
+class tst_QComplexText : public QObject
+{
+Q_OBJECT
+
+public:
+    tst_QComplexText();
+    virtual ~tst_QComplexText();
+
+
+public slots:
+    void init();
+    void cleanup();
+private slots:
+    void bidiReorderString_data();
+    void bidiReorderString();
+};
+
+tst_QComplexText::tst_QComplexText()
+{
+}
+
+tst_QComplexText::~tst_QComplexText()
+{
+
+}
+
+void tst_QComplexText::init()
+{
+// This will be executed immediately before each test is run.
+// TODO: Add initialization code here.
+}
+
+void tst_QComplexText::cleanup()
+{
+// This will be executed immediately after each test is run.
+// TODO: Add cleanup code here.
+}
+
+void tst_QComplexText::bidiReorderString_data()
+{
+    QTest::addColumn<QString>("logical");
+    QTest::addColumn<QString>("VISUAL");
+    QTest::addColumn<int>("basicDir");
+
+    const LV *data = logical_visual;
+    while ( data->name ) {
+	//next we fill it with data
+	QTest::newRow( data->name )
+	    << QString::fromUtf8( data->logical )
+	    << QString::fromUtf8( data->visual )
+	    << (int) data->basicDir;
+	data++;
+    }
+}
+
+void tst_QComplexText::bidiReorderString()
+{
+    QFETCH( QString, logical );
+    QFETCH( int,  basicDir );
+
+    // replace \n with Unicode newline. The new algorithm ignores \n
+    logical.replace(QChar('\n'), QChar(0x2028));
+
+    QTextEngine e(logical, QFont());
+    e.option.setTextDirection((QChar::Direction)basicDir == QChar::DirL ? Qt::LeftToRight : Qt::RightToLeft);
+    e.itemize();
+    quint8 levels[256];
+    int visualOrder[256];
+    int nitems = e.layoutData->items.size();
+    int i;
+    for (i = 0; i < nitems; ++i) {
+	//qDebug("item %d bidiLevel=%d", i,  e.items[i].analysis.bidiLevel);
+	levels[i] = e.layoutData->items[i].analysis.bidiLevel;
+    }
+    e.bidiReorder(nitems, levels, visualOrder);
+
+    QString visual;
+    for (i = 0; i < nitems; ++i) {
+	QScriptItem &si = e.layoutData->items[visualOrder[i]];
+	QString sub = logical.mid(si.position, e.length(visualOrder[i]));
+	if (si.analysis.bidiLevel % 2) {
+	    // reverse sub
+	    QChar *a = (QChar *)sub.unicode();
+	    QChar *b = a + sub.length() - 1;
+	    while (a < b) {
+		QChar tmp = *a;
+		*a = *b;
+		*b = tmp;
+		++a;
+		--b;
+	    }
+	    a = (QChar *)sub.unicode();
+	    b = a + sub.length();
+	    while (a<b) {
+		*a = a->mirroredChar();
+		++a;
+	    }
+	}
+	visual += sub;
+    }
+    // replace Unicode newline back with  \n to compare.
+    visual.replace(QChar(0x2028), QChar('\n'));
+
+    QTEST(visual, "VISUAL");
+}
+
+
+QTEST_MAIN(tst_QComplexText)
+#include "tst_qcomplextext.moc"
+
+#endif // Q_WS_MAC
+

@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment>*********************************************************************
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).  All rights reserved.
+**
+** This file is part of Qt Designer.
+**
+** This file may be used under the terms of the GNU General
+** Public License versions 2.0 or 3.0 as published by the Free
+** Software Foundation and appearing in the files LICENSE.GPL2
+** and LICENSE.GPL3 included in the packaging of this file.
+** Alternatively you may (at your option) use any later version
+** of the GNU General Public License if such license has been
+** publicly approved by Nokia Corporation and/or its subsidiary(-ies) (or its successors, if any)
+** and the KDE Free Qt Foundation.
+**
+** Please review the following information to ensure GNU General
+** Public Licensing requirements will be met:
+** http://trolltech.com/products/qt/licenses/licensing/opensource/.
+** If you are unsure which license is appropriate for your use, please
+** review the following information:
+** http://trolltech.com/products/qt/licenses/licensing/licensingoverview
+** or contact the sales department at sales@trolltech.com.
+**
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with
+** the Software.
+**
+** This file is provided &quot;AS IS&quot; with NO WARRANTY OF ANY KIND,
+** INCLUDING THE WARRANTIES OF DESIGN, MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE. Trolltech reserves all rights not granted
+** herein.
+**
+*********************************************************************</comment>
+  <exportmacro></exportmacro>
+  <class>ConfigToolboxDialog</class>
+  <widget class="QDialog" name="ConfigToolboxDialog">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>403</width>
+        <height>467</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Configure Toolbox</string>
+    </property>
+    <layout class="QGridLayout">
+      <item row="1" column="0" rowspan="1" colspan="2">
+        <layout class="QHBoxLayout">
+          <item>
+            <spacer name="Spacer2">
+              <property name="sizeHint">
+                <size>
+                  <width>342</width>
+                  <height>0</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="PushButton3">
+              <property name="text">
+                <string>OK</string>
+              </property>
+              <property name="default">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="PushButton4">
+              <property name="text">
+                <string>Cancel</string>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+      <item row="0" column="0">
+        <layout class="QGridLayout">
+          <item row="1" column="1">
+            <widget class="QPushButton" name="buttonAdd">
+              <property name="enabled">
+                <bool>false</bool>
+              </property>
+              <property name="text">
+                <string>&amp;Add</string>
+              </property>
+            </widget>
+          </item>
+          <item row="1" column="0">
+            <spacer name="Spacer3">
+              <property name="sizeHint">
+                <size>
+                  <width>111</width>
+                  <height>0</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item row="0" column="0" rowspan="1" colspan="2">
+            <widget class="Q3ListView" name="listViewTools">
+              <property name="selectionMode">
+                <enum>Q3ListView::Extended</enum>
+              </property>
+              <property name="resizeMode">
+                <enum>Q3ListView::LastColumn</enum>
+              </property>
+              <column>
+                <property name="text">
+                  <string>Available Tools</string>
+                </property>
+                <property name="clickable">
+                  <bool>true</bool>
+                </property>
+                <property name="resizable">
+                  <bool>true</bool>
+                </property>
+              </column>
+            </widget>
+          </item>
+        </layout>
+      </item>
+      <item row="0" column="1">
+        <layout class="QGridLayout">
+          <item row="1" column="0">
+            <widget class="QPushButton" name="buttonRemove">
+              <property name="enabled">
+                <bool>false</bool>
+              </property>
+              <property name="text">
+                <string>&amp;Remove</string>
+              </property>
+            </widget>
+          </item>
+          <item row="0" column="0" rowspan="1" colspan="4">
+            <widget class="Q3ListView" name="listViewCommon">
+              <property name="selectionMode">
+                <enum>Q3ListView::Extended</enum>
+              </property>
+              <property name="resizeMode">
+                <enum>Q3ListView::LastColumn</enum>
+              </property>
+              <column>
+                <property name="text">
+                  <string>Common Widgets Page</string>
+                </property>
+                <property name="clickable">
+                  <bool>true</bool>
+                </property>
+                <property name="resizable">
+                  <bool>true</bool>
+                </property>
+              </column>
+            </widget>
+          </item>
+          <item row="1" column="3">
+            <widget class="QToolButton" name="buttonDown">
+              <property name="enabled">
+                <bool>false</bool>
+              </property>
+              <property name="text">
+                <string/>
+              </property>
+              <property name="icon">
+                <pixmap>designer_s_down.png</pixmap>
+              </property>
+            </widget>
+          </item>
+          <item row="1" column="1">
+            <spacer name="Spacer4">
+              <property name="sizeHint">
+                <size>
+                  <width>41</width>
+                  <height>0</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item row="1" column="2">
+            <widget class="QToolButton" name="buttonUp">
+              <property name="enabled">
+                <bool>false</bool>
+              </property>
+              <property name="text">
+                <string/>
+              </property>
+              <property name="icon">
+                <pixmap>designer_s_up.png</pixmap>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>buttonAdd</sender>
+      <signal>clicked()</signal>
+      <receiver>ConfigToolboxDialog</receiver>
+      <slot>addTool()</slot>
+    </connection>
+    <connection>
+      <sender>buttonRemove</sender>
+      <signal>clicked()</signal>
+      <receiver>ConfigToolboxDialog</receiver>
+      <slot>removeTool()</slot>
+    </connection>
+    <connection>
+      <sender>buttonUp</sender>
+      <signal>clicked()</signal>
+      <receiver>ConfigToolboxDialog</receiver>
+      <slot>moveToolUp()</slot>
+    </connection>
+    <connection>
+      <sender>buttonDown</sender>
+      <signal>clicked()</signal>
+      <receiver>ConfigToolboxDialog</receiver>
+      <slot>moveToolDown()</slot>
+    </connection>
+    <connection>
+      <sender>listViewTools</sender>
+      <signal>clicked(Q3ListViewItem*)</signal>
+      <receiver>ConfigToolboxDialog</receiver>
+      <slot>currentToolChanged(Q3ListViewItem*)</slot>
+    </connection>
+    <connection>
+      <sender>listViewCommon</sender>
+      <signal>clicked(Q3ListViewItem*)</signal>
+      <receiver>ConfigToolboxDialog</receiver>
+      <slot>currentCommonToolChanged(Q3ListViewItem*)</slot>
+    </connection>
+    <connection>
+      <sender>PushButton3</sender>
+      <signal>clicked()</signal>
+      <receiver>ConfigToolboxDialog</receiver>
+      <slot>accept()</slot>
+    </connection>
+    <connection>
+      <sender>PushButton4</sender>
+      <signal>clicked()</signal>
+      <receiver>ConfigToolboxDialog</receiver>
+      <slot>reject()</slot>
+    </connection>
+    <connection>
+      <sender>PushButton3</sender>
+      <signal>clicked()</signal>
+      <receiver>ConfigToolboxDialog</receiver>
+      <slot>ok()</slot>
+    </connection>
+    <connection>
+      <sender>listViewTools</sender>
+      <signal>doubleClicked(Q3ListViewItem*)</signal>
+      <receiver>ConfigToolboxDialog</receiver>
+      <slot>addTool()</slot>
+    </connection>
+  </connections>
+</ui>

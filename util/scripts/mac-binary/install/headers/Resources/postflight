@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+
+import os, re
+
+def getEditionDefine(licenseKey):
+    ProductMap = { 'F': 'QT_EDITION_UNIVERSAL', 'B': 'QT_EDITION_DESKTOP',
+                   'L': 'QT_EDITION_DESKTOPLIGHT', 'R': 'QT_EDITION_CONSOLE',
+                   'OPEN': 'QT_EDITION_OPENSOURCE' }
+
+    LicenseTypeMap = { 'Z4M': "QT_EDITION_EVALUATION", 'R4M': "QT_EDITION_EVALUATION",
+                       'Q4M': "QT_EDITION_EVALUATION", '34M': "QT_EDITION_ACADEMIC",
+                       'TBM': "QT_EDITION_EDUCATIONAL" }
+
+    if len(licenseKey) == 0:
+        return 'QT_EDITION_UNKNOWN'
+    licenseParts = licenseKey.split('-') 
+    productDefine = LicenseTypeMap.get(licenseParts[2], "")
+    if len(productDefine) == 0:
+        productDefine = ProductMap.get(licenseParts[0][0], 'QT_EDITION_UNKNOWN')
+    
+    return productDefine
+
+def alterQConfig(qconfigPath, licenseKey):
+    qconfigFile = open(qconfigPath, 'r')
+    qconfigLines = qconfigFile.readlines()
+    qconfigFile.close()
+    finalContents = []
+    editionRE = re.compile(r"(^#\s*define QT_EDITION) (.*)$")
+    licenseKeyRE = re.compile(r'(^#define QT_PRODUCT_LICENSEKEY).*$')
+
+    for line in qconfigLines:
+        tmpStr = line
+        matchObj = editionRE.search(line)
+        if matchObj:
+            tmpStr = matchObj.group(1) + " " + getEditionDefine(licenseKey) + "\n"
+        else:
+            matchObj = licenseKeyRE.search(line)
+            if matchObj:
+                tmpStr = matchObj.group(1) + ' "' + licenseKey + '"\n'
+        finalContents.append(tmpStr)
+    qconfigFile = open(qconfigPath, 'w')
+    qconfigFile.writelines(finalContents)
+    qconfigFile.close()
+
+def getLicenseKey():
+    licensePath = os.path.join(os.environ["HOME"], ".qt-license")
+    if not os.path.exists(licensePath):
+        return ""
+
+    licenseKeyRE = re.compile(r"^LicenseKeyExt=(.+)$")
+    file = open(licensePath, 'r')
+    for line in file:
+        matchObj = licenseKeyRE.search(line)
+        if matchObj:
+            return matchObj.group(1)
+
+if __name__ == "__main__":
+    import sys
+    qconfigPath = os.path.join(sys.argv[3],
+                    "Library/Frameworks/QtCore.framework/Versions/4.0/Headers/qconfig.h")
+    alterQConfig(qconfigPath, getLicenseKey())

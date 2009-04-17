@@ -1,0 +1,13 @@
+//! [0]
+QT += phonon
+//! [0]
+
+
+//! [1]
+QT += phonon
+//! [1]
+
+
+//! [2]
+#include <Phonon/MediaObject>
+//! [2]

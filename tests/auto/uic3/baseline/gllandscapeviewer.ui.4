@@ -1,0 +1,537 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>GLLandscapeViewer</class>
+  <widget class="QWidget" name="GLLandscapeViewer">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>731</width>
+        <height>519</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Qt/OpenGL example</string>
+    </property>
+    <layout class="QGridLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item row="1" column="0">
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>18</number>
+          </property>
+          <item>
+            <layout class="QVBoxLayout">
+              <property name="margin">
+                <number>0</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item>
+                <widget class="QLabel" name="TextLabel1">
+                  <property name="sizePolicy">
+                    <sizepolicy>
+                      <hsizetype>1</hsizetype>
+                      <vsizetype>0</vsizetype>
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                    </sizepolicy>
+                  </property>
+                  <property name="text">
+                    <string>X-rotation</string>
+                  </property>
+                  <property name="wordWrap">
+                    <bool>false</bool>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="QThumbWheel" name="wheelX">
+                  <property name="sizePolicy">
+                    <sizepolicy>
+                      <hsizetype>5</hsizetype>
+                      <vsizetype>0</vsizetype>
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                    </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                    <size>
+                      <width>100</width>
+                      <height>30</height>
+                    </size>
+                  </property>
+                </widget>
+              </item>
+            </layout>
+          </item>
+          <item>
+            <layout class="QVBoxLayout">
+              <property name="margin">
+                <number>0</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item>
+                <widget class="QLabel" name="TextLabel1_2">
+                  <property name="sizePolicy">
+                    <sizepolicy>
+                      <hsizetype>1</hsizetype>
+                      <vsizetype>0</vsizetype>
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                    </sizepolicy>
+                  </property>
+                  <property name="text">
+                    <string>Y-rotation</string>
+                  </property>
+                  <property name="wordWrap">
+                    <bool>false</bool>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="QThumbWheel" name="wheelY">
+                  <property name="minimumSize">
+                    <size>
+                      <width>100</width>
+                      <height>30</height>
+                    </size>
+                  </property>
+                </widget>
+              </item>
+            </layout>
+          </item>
+          <item>
+            <layout class="QVBoxLayout">
+              <property name="margin">
+                <number>0</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item>
+                <widget class="QLabel" name="TextLabel1_3">
+                  <property name="sizePolicy">
+                    <sizepolicy>
+                      <hsizetype>1</hsizetype>
+                      <vsizetype>0</vsizetype>
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                    </sizepolicy>
+                  </property>
+                  <property name="text">
+                    <string>Z-rotation</string>
+                  </property>
+                  <property name="wordWrap">
+                    <bool>false</bool>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="QThumbWheel" name="wheelZ">
+                  <property name="minimumSize">
+                    <size>
+                      <width>100</width>
+                      <height>30</height>
+                    </size>
+                  </property>
+                </widget>
+              </item>
+            </layout>
+          </item>
+        </layout>
+      </item>
+      <item row="2" column="0">
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <widget class="Q3ButtonGroup" name="ButtonGroup2">
+              <property name="enabled">
+                <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+                <sizepolicy>
+                  <hsizetype>1</hsizetype>
+                  <vsizetype>1</vsizetype>
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                </sizepolicy>
+              </property>
+              <property name="title">
+                <string>Rendering mode</string>
+              </property>
+              <layout class="QGridLayout">
+                <property name="margin">
+                  <number>11</number>
+                </property>
+                <property name="spacing">
+                  <number>6</number>
+                </property>
+                <item row="0" column="0">
+                  <widget class="QRadioButton" name="RadioButton1">
+                    <property name="text">
+                      <string>&amp;Wireframe</string>
+                    </property>
+                    <property name="checked">
+                      <bool>true</bool>
+                    </property>
+                  </widget>
+                </item>
+                <item row="0" column="1">
+                  <widget class="QRadioButton" name="RadioButton1_2">
+                    <property name="text">
+                      <string>Fl&amp;at shaded</string>
+                    </property>
+                  </widget>
+                </item>
+                <item row="0" column="2">
+                  <widget class="QRadioButton" name="RadioButton1_3">
+                    <property name="text">
+                      <string>&amp;Smooth shaded</string>
+                    </property>
+                  </widget>
+                </item>
+                <item row="0" column="3">
+                  <widget class="QRadioButton" name="RadioButton1_3_2">
+                    <property name="text">
+                      <string>&amp;Landscape</string>
+                    </property>
+                  </widget>
+                </item>
+              </layout>
+            </widget>
+          </item>
+          <item>
+            <layout class="QGridLayout">
+              <property name="margin">
+                <number>0</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item row="0" column="1">
+                <widget class="QPushButton" name="fractalize_btn_2">
+                  <property name="sizePolicy">
+                    <sizepolicy>
+                      <hsizetype>0</hsizetype>
+                      <vsizetype>0</vsizetype>
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                    </sizepolicy>
+                  </property>
+                  <property name="text">
+                    <string>&amp;Fractalize</string>
+                  </property>
+                  <property name="autoRepeat">
+                    <bool>true</bool>
+                  </property>
+                </widget>
+              </item>
+              <item row="0" column="2">
+                <widget class="QPushButton" name="reset_btn">
+                  <property name="sizePolicy">
+                    <sizepolicy>
+                      <hsizetype>0</hsizetype>
+                      <vsizetype>0</vsizetype>
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                    </sizepolicy>
+                  </property>
+                  <property name="text">
+                    <string>&amp;Reset grid</string>
+                  </property>
+                  <property name="autoRepeat">
+                    <bool>true</bool>
+                  </property>
+                </widget>
+              </item>
+              <item row="0" column="0">
+                <widget class="QPushButton" name="animate_btn">
+                  <property name="sizePolicy">
+                    <sizepolicy>
+                      <hsizetype>0</hsizetype>
+                      <vsizetype>0</vsizetype>
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                    </sizepolicy>
+                  </property>
+                  <property name="text">
+                    <string>&amp;Animate</string>
+                  </property>
+                  <property name="checkable">
+                    <bool>true</bool>
+                  </property>
+                  <property name="autoRepeat">
+                    <bool>true</bool>
+                  </property>
+                </widget>
+              </item>
+            </layout>
+          </item>
+        </layout>
+      </item>
+      <item row="0" column="0">
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <layout class="QVBoxLayout">
+              <property name="margin">
+                <number>0</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item>
+                <widget class="QLabel" name="TextLabel2">
+                  <property name="sizePolicy">
+                    <sizepolicy>
+                      <hsizetype>1</hsizetype>
+                      <vsizetype>0</vsizetype>
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                    </sizepolicy>
+                  </property>
+                  <property name="text">
+                    <string>Zoom</string>
+                  </property>
+                  <property name="wordWrap">
+                    <bool>false</bool>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="QThumbWheel" name="wheelZoom">
+                  <property name="sizePolicy">
+                    <sizepolicy>
+                      <hsizetype>0</hsizetype>
+                      <vsizetype>7</vsizetype>
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                    </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                    <size>
+                      <width>30</width>
+                      <height>0</height>
+                    </size>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="QLabel" name="TextLabel2_2">
+                  <property name="sizePolicy">
+                    <sizepolicy>
+                      <hsizetype>1</hsizetype>
+                      <vsizetype>0</vsizetype>
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                    </sizepolicy>
+                  </property>
+                  <property name="text">
+                    <string>Size</string>
+                  </property>
+                  <property name="wordWrap">
+                    <bool>false</bool>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="QThumbWheel" name="wheelSize">
+                  <property name="sizePolicy">
+                    <sizepolicy>
+                      <hsizetype>0</hsizetype>
+                      <vsizetype>7</vsizetype>
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                    </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                    <size>
+                      <width>30</width>
+                      <height>0</height>
+                    </size>
+                  </property>
+                </widget>
+              </item>
+            </layout>
+          </item>
+          <item>
+            <widget class="Q3Frame" name="Frame5">
+              <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+              </property>
+              <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+              </property>
+              <layout class="QHBoxLayout">
+                <property name="margin">
+                  <number>1</number>
+                </property>
+                <property name="spacing">
+                  <number>0</number>
+                </property>
+                <item>
+                  <widget class="GLLandscape" name="landscape">
+                    <property name="sizePolicy">
+                      <sizepolicy>
+                        <hsizetype>7</hsizetype>
+                        <vsizetype>7</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                      </sizepolicy>
+                    </property>
+                  </widget>
+                </item>
+              </layout>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <customwidgets>
+    <customwidget>
+      <class>GLLandscape</class>
+      <extends>QWidget</extends>
+      <header location="local">gllandscape.h</header>
+      <sizehint>
+        <width>100</width>
+        <height>100</height>
+      </sizehint>
+      <container>0</container>
+      <sizepolicy>
+        <hordata>3</hordata>
+        <verdata>3</verdata>
+      </sizepolicy>
+      <pixmap>image0</pixmap>
+    </customwidget>
+    <customwidget>
+      <class>QThumbWheel</class>
+      <extends>QWidget</extends>
+      <header location="local">qthumbwheel.h</header>
+      <sizehint>
+        <width>100</width>
+        <height>16</height>
+      </sizehint>
+      <container>0</container>
+      <sizepolicy>
+        <hordata>7</hordata>
+        <verdata>0</verdata>
+      </sizepolicy>
+      <pixmap>image0</pixmap>
+    </customwidget>
+  </customwidgets>
+  <tabstops>
+    <tabstop>RadioButton1</tabstop>
+    <tabstop>RadioButton1_2</tabstop>
+    <tabstop>RadioButton1_3</tabstop>
+    <tabstop>RadioButton1_3_2</tabstop>
+    <tabstop>fractalize_btn_2</tabstop>
+    <tabstop>reset_btn</tabstop>
+    <tabstop>animate_btn</tabstop>
+  </tabstops>
+  <images>
+    <image name="image0">
+      <data format="XPM.GZ" length="646">789c6dd2c10ac2300c00d07bbf2234b722ddac1741fc04c5a3201e6615f43085390f22febbb65dd6666dd821dda36996b552b0df6d4055e2d937fdcd82bd361da8f3ab6ddf87e3fa23a431e01e98cb99901a2c6c1ff78bcbf19fe372713275ed6908f441ab51300617649108624641d22a9427c21a192405241a256e08e4850311172a3b95d87159742e98ef09bda403e03271f6a5bc663e9d8214279afd05eaa048f11e242f753c27bb21ee9cef4afc00c1c26728</data>
+    </image>
+  </images>
+  <connections>
+    <connection>
+      <sender>RadioButton1</sender>
+      <signal>stateChanged(int)</signal>
+      <receiver>landscape</receiver>
+      <slot>setWireframe(int)</slot>
+    </connection>
+    <connection>
+      <sender>RadioButton1_2</sender>
+      <signal>stateChanged(int)</signal>
+      <receiver>landscape</receiver>
+      <slot>setFilled(int)</slot>
+    </connection>
+    <connection>
+      <sender>animate_btn</sender>
+      <signal>toggled(bool)</signal>
+      <receiver>landscape</receiver>
+      <slot>toggleWaveAnimation(bool)</slot>
+    </connection>
+    <connection>
+      <sender>RadioButton1_3</sender>
+      <signal>stateChanged(int)</signal>
+      <receiver>landscape</receiver>
+      <slot>setSmoothShaded(int)</slot>
+    </connection>
+    <connection>
+      <sender>wheelY</sender>
+      <signal>valueChanged(int)</signal>
+      <receiver>landscape</receiver>
+      <slot>rotateY(int)</slot>
+    </connection>
+    <connection>
+      <sender>wheelZ</sender>
+      <signal>valueChanged(int)</signal>
+      <receiver>landscape</receiver>
+      <slot>rotateZ(int)</slot>
+    </connection>
+    <connection>
+      <sender>wheelSize</sender>
+      <signal>valueChanged(int)</signal>
+      <receiver>landscape</receiver>
+      <slot>setGridSize(int)</slot>
+    </connection>
+    <connection>
+      <sender>wheelZoom</sender>
+      <signal>valueChanged(int)</signal>
+      <receiver>landscape</receiver>
+      <slot>zoom(int)</slot>
+    </connection>
+    <connection>
+      <sender>wheelX</sender>
+      <signal>valueChanged(int)</signal>
+      <receiver>landscape</receiver>
+      <slot>rotateX(int)</slot>
+    </connection>
+    <connection>
+      <sender>RadioButton1_3_2</sender>
+      <signal>stateChanged(int)</signal>
+      <receiver>landscape</receiver>
+      <slot>setLandscape(int)</slot>
+    </connection>
+    <connection>
+      <sender>reset_btn</sender>
+      <signal>clicked()</signal>
+      <receiver>landscape</receiver>
+      <slot>resetGrid()</slot>
+    </connection>
+    <connection>
+      <sender>fractalize_btn_2</sender>
+      <signal>clicked()</signal>
+      <receiver>landscape</receiver>
+      <slot>fractalize()</slot>
+    </connection>
+  </connections>
+</ui>
