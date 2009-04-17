@@ -474,6 +474,9 @@ void Configure::parseCmdLine()
         else if( configCmdLine.at(i) == "-developer-build" )
             dictionary[ "BUILDDEV" ] = "yes";
         else if( configCmdLine.at(i) == "-nokia-developer" ) {
+            cout << "Detected -nokia-developer option" << endl;
+            cout << "Nokia employees and agents are allowed to use this software under" << endl;
+            cout << "the authority of Nokia Corporation and/or its subsidiary(-ies)" << endl;
             dictionary[ "BUILDNOKIA" ] = "yes";
             dictionary[ "BUILDDEV" ] = "yes";
             dictionary["LICENSE_CONFIRMED"] = "yes";
@@ -675,6 +678,9 @@ void Configure::parseCmdLine()
         } else if ( configCmdLine.at(i) == "-opengl-es-cl" ) {
             dictionary[ "OPENGL" ]          = "yes";
             dictionary[ "OPENGL_ES_CL" ]    = "yes";
+        } else if ( configCmdLine.at(i) == "-opengl-es-2" ) {
+            dictionary[ "OPENGL" ]          = "yes";
+            dictionary[ "OPENGL_ES_2" ]     = "yes";
         }
         // Databases ------------------------------------------------
         else if( configCmdLine.at(i) == "-qt-sql-mysql" )
@@ -1632,6 +1638,7 @@ bool Configure::displayHelp()
         desc(                      "-signature <file>",    "Use file for signing the target project");
         desc("OPENGL_ES_CM", "no", "-opengl-es-cm",        "Enable support for OpenGL ES Common");
         desc("OPENGL_ES_CL", "no", "-opengl-es-cl",        "Enable support for OpenGL ES Common Lite");
+        desc("OPENGL_ES_2",  "no", "-opengl-es-2",         "Enable support for OpenGL ES 2.0");
         desc("DIRECTSHOW", "no",   "-phonon-wince-ds9",    "Enable Phonon Direct Show 9 backend for Windows CE");
 
         return true;
@@ -1784,6 +1791,8 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "OPENGL_ES_CM")
         available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
     else if (part == "OPENGL_ES_CL")
+        available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
+    else if (part == "OPENGL_ES_2")
         available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
     else if (part == "DIRECTSHOW")
         available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
@@ -2264,6 +2273,10 @@ void Configure::generateOutputVars()
         qtConfig += "opengles1";
     }
 
+    if ( dictionary["OPENGL_ES_2"] == "yes" ) {
+        qtConfig += "opengles2";
+    }
+
     if ( dictionary["OPENGL_ES_CL"] == "yes" ) {
         qtConfig += "opengles1cl";
     }
@@ -2664,9 +2677,11 @@ void Configure::generateConfigfiles()
         if(dictionary["SCRIPTTOOLS"] == "no")       qconfigList += "QT_NO_SCRIPTTOOLS";
 
         if(dictionary["OPENGL_ES_CM"] == "yes" ||
-           dictionary["OPENGL_ES_CL"] == "yes")     qconfigList += "QT_OPENGL_ES";
+           dictionary["OPENGL_ES_CL"] == "yes" ||
+           dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES";
 
         if(dictionary["OPENGL_ES_CM"] == "yes")     qconfigList += "QT_OPENGL_ES_1";
+        if(dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES_2";
         if(dictionary["OPENGL_ES_CL"] == "yes")     qconfigList += "QT_OPENGL_ES_1_CL";
 
         if(dictionary["SQL_MYSQL"] == "yes")        qconfigList += "QT_SQL_MYSQL";
@@ -3500,7 +3515,7 @@ void Configure::readLicense()
 #else
     } else {
         Tools::checkLicense(dictionary, licenseInfo, firstLicensePath());
-        if (dictionary["DONE"] != "error") {
+        if (dictionary["DONE"] != "error" && dictionary["BUILDNOKIA"] != "yes") {
             // give the user some feedback, and prompt for license acceptance
             cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " " << dictionary["EDITION"] << " Edition."<< endl << endl;
             if (!showLicense(dictionary["LICENSE FILE"])) {

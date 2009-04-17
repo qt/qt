@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include "qquaternion.h"
-#include "qmath3dutil_p.h"
 #include <QtCore/qmath.h>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,13 +69,6 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn QQuaternion::QQuaternion(qreal scalar, qreal xpos, qreal ypos, qreal zpos)
-
-    Constructs a quaternion with the vector (\a xpos, \a ypos, \a zpos)
-    and \a scalar.
-*/
-
-/*!
-    \fn QQuaternion::QQuaternion(int scalar, int xpos, int ypos, int zpos)
 
     Constructs a quaternion with the vector (\a xpos, \a ypos, \a zpos)
     and \a scalar.
@@ -223,8 +216,7 @@ QT_BEGIN_NAMESPACE
 */
 qreal QQuaternion::length() const
 {
-    return qvtsqrt64(qvtmul64(xp, xp) + qvtmul64(yp, yp) +
-                     qvtmul64(zp, zp) + qvtmul64(wp, wp));
+    return qSqrt(xp * xp + yp * yp + zp * zp + wp * wp);
 }
 
 /*!
@@ -234,44 +226,49 @@ qreal QQuaternion::length() const
 */
 qreal QQuaternion::lengthSquared() const
 {
-    return qvtdot64(qvtmul64(xp, xp) + qvtmul64(yp, yp) +
-                    qvtmul64(zp, zp) + qvtmul64(wp, wp));
+    return xp * xp + yp * yp + zp * zp + wp * wp;
 }
 
 /*!
-    Returns the normalized unit form of this quaternion.  If this quaternion
-    is not null, the returned quaternion is guaranteed to be 1.0 in length.
+    Returns the normalized unit form of this quaternion.
+
     If this quaternion is null, then a null quaternion is returned.
+    If the length of the quaternion is very close to 1, then the quaternion
+    will be returned as-is.  Otherwise the normalized form of the
+    quaternion of length 1 will be returned.
 
     \sa length(), normalize()
 */
 QQuaternion QQuaternion::normalized() const
 {
-    qreal len = length();
-    if (!qIsNull(len))
-        return *this / len;
+    qreal len = lengthSquared();
+    if (qFuzzyIsNull(len - 1.0f))
+        return *this;
+    else if (!qFuzzyIsNull(len))
+        return *this / qSqrt(len);
     else
         return QQuaternion(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 /*!
     Normalizes the currect quaternion in place.  Nothing happens if this
-    is a null quaternion.
+    is a null quaternion or the length of the quaternion is very close to 1.
 
     \sa length(), normalized()
 */
 void QQuaternion::normalize()
 {
-    qreal len = length();
-    if (qIsNull(len))
+    qreal len = lengthSquared();
+    if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
+
+    len = qSqrt(len);
 
     xp /= len;
     yp /= len;
     zp /= len;
     wp /= len;
 }
-
 
 /*!
     \fn QQuaternion QQuaternion::conjugate() const
@@ -342,6 +339,10 @@ QVector3D QQuaternion::rotateVector(const QVector3D& vector) const
     \sa operator*=()
 */
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #ifndef QT_NO_VECTOR3D
 
 /*!
@@ -354,9 +355,10 @@ QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, qreal angle)
     // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q56
     // We normalize the result just in case the values are close
     // to zero, as suggested in the above FAQ.
-    qrealinner s, c;
+    qreal a = (angle / 2.0f) * M_PI / 180.0f;
+    qreal s = qSin(a);
+    qreal c = qCos(a);
     QVector3D ax = axis.normalized();
-    qt_math3d_sincos(angle / 2.0f, &s, &c);
     return QQuaternion(c, ax.xp * s, ax.yp * s, ax.zp * s, 1).normalized();
 }
 
@@ -369,17 +371,18 @@ QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, qreal angle)
 QQuaternion QQuaternion::fromAxisAndAngle
         (qreal x, qreal y, qreal z, qreal angle)
 {
-    qrealinner xp = x;
-    qrealinner yp = y;
-    qrealinner zp = z;
-    qrealinner s, c;
-    qreal length = qvtsqrt(xp * xp + yp * yp + zp * zp);
+    float xp = x;
+    float yp = y;
+    float zp = z;
+    qreal length = qSqrt(xp * xp + yp * yp + zp * zp);
     if (!qIsNull(length)) {
         xp /= length;
         yp /= length;
         zp /= length;
     }
-    qt_math3d_sincos(angle / 2.0f, &s, &c);
+    qreal a = (angle / 2.0f) * M_PI / 180.0f;
+    qreal s = qSin(a);
+    qreal c = qCos(a);
     return QQuaternion(c, xp * s, yp * s, zp * s, 1).normalized();
 }
 
@@ -487,8 +490,10 @@ QQuaternion QQuaternion::fromAxisAndAngle
 
     If \a t is less than or equal to 0, then \a q1 will be returned.
     If \a t is greater than or equal to 1, then \a q2 will be returned.
+
+    \sa nlerp()
 */
-QQuaternion QQuaternion::interpolate
+QQuaternion QQuaternion::slerp
     (const QQuaternion& q1, const QQuaternion& q2, qreal t)
 {
     // Handle the easy cases first.
@@ -500,8 +505,7 @@ QQuaternion QQuaternion::interpolate
     // Determine the angle between the two quaternions.
     QQuaternion q2b;
     qreal dot;
-    dot = qvtdot64(qvtmul64(q1.xp, q2.xp) + qvtmul64(q1.yp, q2.yp) +
-                   qvtmul64(q1.zp, q2.zp) + qvtmul64(q1.wp, q2.wp));
+    dot = q1.xp * q2.xp + q1.yp * q2.yp + q1.zp * q2.zp + q1.wp * q2.wp;
     if (dot >= 0.0f) {
         q2b = q2;
     } else {
@@ -524,6 +528,43 @@ QQuaternion QQuaternion::interpolate
 
     // Construct the result quaternion.
     return q1 * factor1 + q2b * factor2;
+}
+
+/*!
+    Interpolates along the shortest linear path between the rotational
+    positions \a q1 and \a q2.  The value \a t should be between 0 and 1,
+    indicating the distance to travel between \a q1 and \a q2.
+    The result will be normalized().
+
+    If \a t is less than or equal to 0, then \a q1 will be returned.
+    If \a t is greater than or equal to 1, then \a q2 will be returned.
+
+    The nlerp() function is typically faster than slerp() and will
+    give approximate results to spherical interpolation that are
+    good enough for some applications.
+
+    \sa slerp()
+*/
+QQuaternion QQuaternion::nlerp
+    (const QQuaternion& q1, const QQuaternion& q2, qreal t)
+{
+    // Handle the easy cases first.
+    if (t <= 0.0f)
+        return q1;
+    else if (t >= 1.0f)
+        return q2;
+
+    // Determine the angle between the two quaternions.
+    QQuaternion q2b;
+    qreal dot;
+    dot = q1.xp * q2.xp + q1.yp * q2.yp + q1.zp * q2.zp + q1.wp * q2.wp;
+    if (dot >= 0.0f)
+        q2b = q2;
+    else
+        q2b = -q2;
+
+    // Perform the linear interpolation.
+    return (q1 * (1.0f - t) + q2b * t).normalized();
 }
 
 #ifndef QT_NO_DEBUG_STREAM

@@ -191,6 +191,10 @@ private slots:
     void sqlite_bindAndFetchUInt_data() { generic_data("QSQLITE3"); }
     void sqlite_bindAndFetchUInt();
 
+    void sqlStatementUseIsNull_189093_data() { generic_data(); }
+    void sqlStatementUseIsNull_189093();
+
+
 private:
     void createTestTables(QSqlDatabase db);
     void dropTestTables(QSqlDatabase db);
@@ -363,6 +367,7 @@ void tst_QSqlDatabase::populateTestTables(QSqlDatabase db)
     QVERIFY_SQL(q, exec("insert into " + qTableName("qtest") + " (id, t_varchar, t_char, t_numeric) values (1, 'VarChar1', 'Char1', 2.2)"));
     QVERIFY_SQL(q, exec("insert into " + qTableName("qtest") + " (id, t_varchar, t_char, t_numeric) values (2, 'VarChar2', 'Char2', 3.3)"));
     QVERIFY_SQL(q, exec("insert into " + qTableName("qtest") + " (id, t_varchar, t_char, t_numeric) values (3, 'VarChar3', 'Char3', 4.4)"));
+    QVERIFY_SQL(q, exec("insert into " + qTableName("qtest") + " (id, t_varchar, t_char, t_numeric) values (4, 'VarChar4', NULL, NULL)"));
 }
 
 void tst_QSqlDatabase::initTestCase()
@@ -1045,6 +1050,7 @@ void tst_QSqlDatabase::recordMySQL()
     int minor = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 1, 1 ).toInt();
     int revision = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 2, 2 ).toInt();
 
+#ifdef QT3_SUPPORT
     /* The below is broken in mysql below 5.0.15
         see http://dev.mysql.com/doc/refman/5.0/en/binary-varbinary.html
         specifically: Before MySQL 5.0.15, the pad value is space. Values are right-padded
@@ -1054,6 +1060,7 @@ void tst_QSqlDatabase::recordMySQL()
         bin10 = FieldDef("binary(10)", QVariant::ByteArray, QByteArray(Q3CString("123abc    ")));
         varbin10 = FieldDef("varbinary(10)", QVariant::ByteArray, QByteArray(Q3CString("123abcv   ")));
     }
+#endif
 
     static QDateTime dt(QDate::currentDate(), QTime(1, 2, 3, 0));
     static const FieldDef fieldDefs[] = {
@@ -2266,6 +2273,29 @@ void tst_QSqlDatabase::db2_valueCacheUpdate()
     QCOMPARE(c2.toString(), q.value(1).toString());
     QCOMPARE(c1.toString(), q.value(0).toString());
 }
+
+void tst_QSqlDatabase::sqlStatementUseIsNull_189093()
+{
+    // NULL = NULL is unknow, the sqlStatment must use IS NULL
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    // select a record with NULL value
+    QSqlQuery q(QString::null, db);
+    QVERIFY_SQL(q, exec("select * from " + qTableName("qtest") + " where id = 4"));
+    QVERIFY_SQL(q, next());
+
+    QSqlDriver *driver = db.driver();
+    QVERIFY(driver);
+
+    QString preparedStatment = driver->sqlStatement(QSqlDriver::WhereStatement, QString("qtest"), q.record(), true);
+    QCOMPARE(preparedStatment.count("IS NULL", Qt::CaseInsensitive), 2);
+
+    QString statment = driver->sqlStatement(QSqlDriver::WhereStatement, QString("qtest"), q.record(), false);
+    QCOMPARE(statment.count("IS NULL", Qt::CaseInsensitive), 2);
+}
+
 
 QTEST_MAIN(tst_QSqlDatabase)
 #include "tst_qsqldatabase.moc"

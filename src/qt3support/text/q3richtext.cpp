@@ -4895,7 +4895,8 @@ void Q3TextParagraph::drawString(QPainter &painter, const QString &str, int star
             bool extendRight = false;
             bool extendLeft = false;
             bool selWrap = (real_selEnd == length()-1 && n && n->hasSelection(it.key()));
-            if (selWrap || this->str->at(real_selEnd).lineStart) {
+            if (selWrap
+                || ((real_selEnd < this->str->length()) && this->str->at(real_selEnd).lineStart)) {
                 extendRight = (fullSelectionWidth != 0);
                 if (!extendRight && !rightToLeft)
                     tmpw += painter.fontMetrics().width(QLatin1Char(' '));

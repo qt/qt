@@ -119,6 +119,7 @@ public:
     static QImage::Format getImageFormat(IDirectFBSurface *surface);
     static bool initSurfaceDescriptionPixelFormat(DFBSurfaceDescription *description, QImage::Format format);
     static inline bool isPremultiplied(QImage::Format format);
+    static inline bool hasAlpha(DFBSurfacePixelFormat format);
     QImage::Format alphaPixmapFormat() const;
 
 #ifndef QT_NO_DIRECTFB_PALETTE
@@ -151,6 +152,26 @@ inline bool QDirectFBScreen::isPremultiplied(QImage::Format format)
     return false;
 }
 
+inline bool QDirectFBScreen::hasAlpha(DFBSurfacePixelFormat format)
+{
+    switch (format) {
+    case DSPF_ARGB1555:
+    case DSPF_ARGB:
+    case DSPF_LUT8:
+    case DSPF_AiRGB:
+    case DSPF_A1:
+    case DSPF_ARGB2554:
+    case DSPF_ARGB4444:
+    case DSPF_AYUV:
+    case DSPF_A4:
+    case DSPF_ARGB1666:
+    case DSPF_ARGB6666:
+    case DSPF_LUT2:
+        return true;
+    default:
+        return false;
+    }
+}
 
 QT_END_HEADER
 

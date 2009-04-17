@@ -376,6 +376,16 @@ public:
     }
 
     void addResolve(qreal offset);
+
+    bool gradientStopsSet() const
+    {
+        return m_gradientStopsSet;
+    }
+
+    void setGradientStopsSet(bool set)
+    {
+        m_gradientStopsSet = set;
+    }
 private:
     QGradient      *m_gradient;
     QList<qreal>  m_resolvePoints;
@@ -386,6 +396,7 @@ private:
 
     QSvgTinyDocument *m_doc;
     QString           m_link;
+    bool m_gradientStopsSet;
 };
 
 class QSvgTransformStyle : public QSvgStyleProperty

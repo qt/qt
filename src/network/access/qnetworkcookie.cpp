@@ -569,7 +569,7 @@ static bool checkStaticArray(int &val, const QByteArray &dateString, int at, con
         int j = 0;
         int i = 0;
         while (i <= size) {
-            const char *str(array + i);
+            const char *str = array + i;
             if (str[0] == dateString[at]
                 && str[1] == dateString[at + 1]
                 && str[2] == dateString[at + 2]) {

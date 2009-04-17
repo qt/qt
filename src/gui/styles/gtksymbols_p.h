@@ -204,7 +204,7 @@ public:
     static void cleanup_gtk_widgets();
     static void initGtkWidgets();
     static bool isKDE4Session();
-    static void applyGtkSystemPalette(QWidget* widget);
+    static void applyCustomPaletteHash();
     static QFont getThemeFont();
     static bool isThemeAvailable() { return gtkStyle() != 0; }
 
@@ -327,6 +327,15 @@ public:
 
     static Ptr_gconf_client_get_default gconf_client_get_default;
     static Ptr_gconf_client_get_string gconf_client_get_string;
+};
+
+// Helper to ensure that we have polished all our gtk widgets
+// before updating our own palettes
+class QGtkStyleUpdateScheduler : public QObject
+{
+    Q_OBJECT
+public slots:
+    void updateTheme();
 };
 
 QT_END_NAMESPACE

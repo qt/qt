@@ -5,6 +5,7 @@ wince*: {
    addFiles.sources = ../*.txt
    addFiles.path = .
    DEPLOYMENT += addFiles
+   DEPLOYMENT_PLUGIN += qcncodecs qjpcodecs qkrcodecs qtwcodecs
 }
 
 

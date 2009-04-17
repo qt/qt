@@ -295,9 +295,7 @@ bool qt_mac_is_macsheet(const QWidget *w)
     Qt::WindowModality modality = w->windowModality();
     if (modality == Qt::ApplicationModal)
         return false;
-    if (modality == Qt::WindowModal || w->windowType() == Qt::Sheet)
-        return true;
-    return false;
+    return w->parentWidget() && (modality == Qt::WindowModal || w->windowType() == Qt::Sheet);
 }
 
 bool qt_mac_is_macdrawer(const QWidget *w)
@@ -2168,7 +2166,10 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
     if ((popup || type == Qt::Tool || type == Qt::ToolTip) && !q->isModal()) {
         [windowRef setHidesOnDeactivate:YES];
         [windowRef setHasShadow:YES];
+    } else {
+        [windowRef setHidesOnDeactivate:NO];
     }
+
     Q_UNUSED(parentWidget);
     Q_UNUSED(dialog);
 
@@ -2840,12 +2841,26 @@ void QWidgetPrivate::updateSystemBackground()
 
 void QWidgetPrivate::setCursor_sys(const QCursor &)
 {
+    Q_Q(QWidget);
+#ifndef QT_MAC_USE_COCOA
     qt_mac_update_cursor();
+#else
+    if (q->testAttribute(Qt::WA_WState_Created)) {
+        [qt_mac_window_for(q) invalidateCursorRectsForView:qt_mac_nativeview_for(q)];
+    }
+#endif
 }
 
 void QWidgetPrivate::unsetCursor_sys()
 {
+    Q_Q(QWidget);
+#ifndef QT_MAC_USE_COCOA
     qt_mac_update_cursor();
+#else
+    if (q->testAttribute(Qt::WA_WState_Created)) {
+        [qt_mac_window_for(q) invalidateCursorRectsForView:qt_mac_nativeview_for(q)];
+    }
+#endif
 }
 
 void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
@@ -3269,6 +3284,20 @@ void QWidgetPrivate::show_sys()
 
     qt_event_request_window_change(q);
 }
+
+
+QPoint qt_mac_nativeMapFromParent(const QWidget *child, const QPoint &pt)
+{
+#ifndef QT_MAC_USE_COCOA
+    CGPoint nativePoint = CGPointMake(pt.x(), pt.y());
+    HIViewConvertPoint(&nativePoint, qt_mac_nativeview_for(child->parentWidget()),
+                       qt_mac_nativeview_for(child));
+#else
+    NSPoint nativePoint = [qt_mac_nativeview_for(child) convertPoint:NSMakePoint(pt.x(), pt.y()) fromView:qt_mac_nativeview_for(child->parentWidget())];
+#endif
+    return QPoint(nativePoint.x, nativePoint.y);
+}
+
 
 void QWidgetPrivate::hide_sys()
 {
@@ -4568,11 +4597,11 @@ void QWidgetPrivate::setModal_sys()
     OSWindowRef windowRef = qt_mac_window_for(q);
 
 #ifdef QT_MAC_USE_COCOA
-    bool windowIsSheet = [windowRef styleMask] & NSDocModalWindowMask;
+    bool alreadySheet = [windowRef styleMask] & NSDocModalWindowMask;
 
-    if (q->windowModality() == Qt::WindowModal){
+    if (windowParent && q->windowModality() == Qt::WindowModal){
         // Window should be window-modal, which implies a sheet.
-        if (!windowIsSheet)
+        if (!alreadySheet)
             recreateMacWindow();
         if ([windowRef isKindOfClass:[NSPanel class]]){
             // If the primary window of the sheet parent is a child of a modal dialog,
@@ -4586,7 +4615,7 @@ void QWidgetPrivate::setModal_sys()
         }
     } else {
         // Window shold not be window-modal, and as such, not a sheet.
-        if (windowIsSheet){
+        if (alreadySheet){
             // NB: the following call will call setModal_sys recursivly:
             recreateMacWindow();
             windowRef = qt_mac_window_for(q);

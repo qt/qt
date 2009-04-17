@@ -80,6 +80,10 @@
 #define GLX_SAMPLES_ARB         100001
 #endif
 
+#ifdef QT_OPENGL_ES_1_CL
+#include "qgl_cl_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 //

@@ -57,14 +57,16 @@
 
 #ifdef Q_IME_DEBUG
 #include "qdebug.h"
-#endif 
+#endif
+
+#if defined(Q_OS_WINCE)
+extern void qt_wince_show_SIP(bool show);   // defined in qguifunctions_wince.cpp
+#endif
 
 QT_BEGIN_NAMESPACE
 
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*);
-#if defined(Q_OS_WINCE)
-extern void qt_wince_show_SIP(bool show);   // defined in qguifunctions_wince.cpp
-#endif
+
 
 DEFINE_GUID(IID_IActiveIMMApp,
 0x08c0e040, 0x62d1, 0x11d1, 0x93, 0x26, 0x0, 0x60, 0xb0, 0x67, 0xb8, 0x6e);
