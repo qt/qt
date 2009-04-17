@@ -363,9 +363,9 @@ template <typename T> void qt_blend_argb24_on_rgb16(uchar *destPixels, int dbpl,
                 quint32 siag = dg * sia;
                 quint32 siab = db * sia;
 
-                quint32 rr = ((siar + (siar>>8) + (0x80 << 11)) >> 8) & 0xf800;
-                quint32 rg = ((siag + (siag>>8) + (0x80 <<  5)) >> 8) & 0x07e0;
-                quint32 rb = ((siab + (siab>>8) + (0x80 >>  3)) >> 8);
+                quint32 rr = ((siar + (siar>>8) + (0x80 <<  8)) >> 8) & 0xf800;
+                quint32 rg = ((siag + (siag>>8) + (0x80 <<  3)) >> 8) & 0x07e0;
+                quint32 rb = ((siab + (siab>>8) + (0x80 >>  3)) >> 8) & 0x001f;
 
                 *dst = alphaFunc.bytemul(spix) + rr + rg + rb;
 #endif
