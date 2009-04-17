@@ -1648,21 +1648,21 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
         const QString pixmap = QLatin1String("QPixmap");
         m_output << m_indent << "QIcon " << iconName << ";\n";
         if (i->hasElementNormalOff())
-            m_output << m_indent << iconName << ".addPixmap(" << pixCall(pixmap, i->elementNormalOff()->text()) << ", QIcon::Normal, QIcon::Off);\n";
+            m_output << m_indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementNormalOff()->text(), m_dindent) << "), QSize(), QIcon::Normal, QIcon::Off);\n";
         if (i->hasElementNormalOn())
-            m_output << m_indent << iconName << ".addPixmap(" << pixCall(pixmap, i->elementNormalOn()->text()) << ", QIcon::Normal, QIcon::On);\n";
+            m_output << m_indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementNormalOff()->text(), m_dindent) << "), QSize(), QIcon::Normal, QIcon::On);\n";
         if (i->hasElementDisabledOff())
-            m_output << m_indent << iconName << ".addPixmap(" << pixCall(pixmap, i->elementDisabledOff()->text()) << ", QIcon::Disabled, QIcon::Off);\n";
+            m_output << m_indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementNormalOff()->text(), m_dindent) << "), QSize(), QIcon::Disabled, QIcon::Off);\n";
         if (i->hasElementDisabledOn())
-            m_output << m_indent << iconName << ".addPixmap(" << pixCall(pixmap, i->elementDisabledOn()->text()) << ", QIcon::Disabled, QIcon::On);\n";
+            m_output << m_indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementNormalOff()->text(), m_dindent) << "), QSize(), QIcon::Disabled, QIcon::On);\n";
         if (i->hasElementActiveOff())
-            m_output << m_indent << iconName << ".addPixmap(" << pixCall(pixmap, i->elementActiveOff()->text()) << ", QIcon::Active, QIcon::Off);\n";
+            m_output << m_indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementNormalOff()->text(), m_dindent) << "), QSize(), QIcon::Active, QIcon::Off);\n";
         if (i->hasElementActiveOn())
-            m_output << m_indent << iconName << ".addPixmap(" << pixCall(pixmap, i->elementActiveOn()->text()) << ", QIcon::Active, QIcon::On);\n";
+            m_output << m_indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementNormalOff()->text(), m_dindent) << "), QSize(), QIcon::Active, QIcon::On);\n";
         if (i->hasElementSelectedOff())
-            m_output << m_indent << iconName << ".addPixmap(" << pixCall(pixmap, i->elementSelectedOff()->text()) << ", QIcon::Selected, QIcon::Off);\n";
+            m_output << m_indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementNormalOff()->text(), m_dindent) << "), QSize(), QIcon::Selected, QIcon::Off);\n";
         if (i->hasElementSelectedOn())
-            m_output << m_indent << iconName << ".addPixmap(" << pixCall(pixmap, i->elementSelectedOn()->text()) << ", QIcon::Selected, QIcon::On);\n";
+            m_output << m_indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementNormalOff()->text(), m_dindent) << "), QSize(), QIcon::Selected, QIcon::On);\n";
     } else { // pre-4.4 legacy
         m_output <<  m_indent << "const QIcon " << iconName << " = " << pixCall(QLatin1String("QIcon"), i->text())<< ";\n";
     }

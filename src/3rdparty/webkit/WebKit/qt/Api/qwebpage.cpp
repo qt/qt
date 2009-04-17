@@ -2517,7 +2517,7 @@ void QWebPagePrivate::_q_onLoadProgressChanged(int) {
     \sa bytesReceived()
 */
 quint64 QWebPage::totalBytes() const {
-    return d->m_bytesReceived;
+    return d->m_totalBytes;
 }
 
 
@@ -2527,7 +2527,7 @@ quint64 QWebPage::totalBytes() const {
     \sa totalBytes()
 */
 quint64 QWebPage::bytesReceived() const {
-    return d->m_totalBytes;
+    return d->m_bytesReceived;
 }
 
 /*!
