@@ -443,7 +443,7 @@
     release, separated by category.
 
     A comprehensive list of changes between Qt 4.4 and Qt 4.5 is included
-    in the \c changes-4.5.0 file
+    in the \c changes-4.5.1 file
     \l{http://www.qtsoftware.com/developer/changes/changes-4.5.0}{available online}.
     A \l{Known Issues in %VERSION%}{list of known issues} for this release is also
     available.
