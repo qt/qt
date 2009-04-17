@@ -246,13 +246,13 @@ QImage QGLPixmapData::toImage() const
         return QImage();
 
     if (m_renderFbo)
-        return m_renderFbo->toImage().copy(0, m_renderFbo->height() - m_height, m_width, m_height);
+        copyBackFromRenderFbo(true);
     else if (!m_source.isNull())
         return m_source;
     else if (m_dirty)
         return QImage(m_width, m_height, QImage::Format_ARGB32_Premultiplied);
-
-    ensureCreated();
+    else
+        ensureCreated();
 
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
     extern QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alpha);
@@ -269,15 +269,7 @@ struct TextureBuffer
 static QVector<TextureBuffer> textureBufferStack;
 static int currentTextureBuffer = 0;
 
-void QGLPixmapData::beginPaint()
-{
-    if (!isValid())
-        return;
-
-    m_renderFbo->bind();
-}
-
-void QGLPixmapData::endPaint()
+void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
 {
     if (!isValid())
         return;
@@ -308,12 +300,34 @@ void QGLPixmapData::endPaint()
             GL_COLOR_BUFFER_BIT,
             GL_NEAREST);
 
+    if (keepCurrentFboBound)
+        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_ctx->d_ptr->current_fbo);
+}
+
+void QGLPixmapData::swapBuffers()
+{
+    if (!isValid())
+        return;
+
+    copyBackFromRenderFbo(false);
     m_renderFbo->release();
 
     --currentTextureBuffer;
 
     m_renderFbo = 0;
     m_engine = 0;
+}
+
+void QGLPixmapData::makeCurrent()
+{
+    if (isValid() && m_renderFbo)
+        m_renderFbo->bind();
+}
+
+void QGLPixmapData::doneCurrent()
+{
+    if (isValid() && m_renderFbo)
+        m_renderFbo->release();
 }
 
 static TextureBuffer createTextureBuffer(const QSize &size, QGL2PaintEngineEx *engine = 0)
@@ -382,7 +396,10 @@ QPaintEngine* QGLPixmapData::paintEngine() const
 
 GLuint QGLPixmapData::bind() const
 {
-    ensureCreated();
+    if (m_renderFbo)
+        copyBackFromRenderFbo(true);
+    else
+        ensureCreated();
 
     GLuint id = m_textureId;
     glBindTexture(qt_gl_preferredTextureTarget(), id);

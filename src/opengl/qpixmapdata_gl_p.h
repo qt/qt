@@ -97,8 +97,9 @@ public:
 
     QGLFramebufferObject *fbo() const;
 
-    void beginPaint();
-    void endPaint();
+    void makeCurrent();
+    void doneCurrent();
+    void swapBuffers();
 
 protected:
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
@@ -106,6 +107,8 @@ protected:
 private:
     QGLPixmapData(const QGLPixmapData &other);
     QGLPixmapData &operator=(const QGLPixmapData &other);
+
+    void copyBackFromRenderFbo(bool keepCurrentFboBound) const;
 
     static bool useFramebufferObjects();
 

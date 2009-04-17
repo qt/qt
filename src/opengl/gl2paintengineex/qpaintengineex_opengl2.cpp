@@ -805,6 +805,7 @@ void QGL2PaintEngineEx::fill(const QVectorPath &path, const QBrush &brush)
 {
     Q_D(QGL2PaintEngineEx);
 
+    ensureActive();
     d->setBrush(&brush);
     d->fill(path);
     d->setBrush(&(state()->brush)); // reset back to the state's brush
@@ -814,6 +815,7 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 {
     Q_D(QGL2PaintEngineEx);
 
+    ensureActive();
     if (pen.style() == Qt::NoPen)
         return;
 
@@ -832,7 +834,6 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         d->setBrush(&(state()->brush));
     } else
         return QPaintEngineEx::stroke(path, pen);
-
 }
 
 void QGL2PaintEngineEx::penChanged()
@@ -887,6 +888,7 @@ void QGL2PaintEngineEx::transformChanged()
 void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, const QRectF & src)
 {
     Q_D(QGL2PaintEngineEx);
+    ensureActive();
     d->transferMode(ImageDrawingMode);
 
     QGLContext *ctx = d->ctx;
@@ -905,6 +907,7 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
                         Qt::ImageConversionFlags)
 {
     Q_D(QGL2PaintEngineEx);
+    ensureActive();
     d->transferMode(ImageDrawingMode);
 
     QGLContext *ctx = d->ctx;
@@ -921,6 +924,7 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
 void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem)
 {
     Q_D(QGL2PaintEngineEx);
+    ensureActive();
     QOpenGLPaintEngineState *s = state();
 
     const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
@@ -973,6 +977,9 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
 
     const QImage &image = cache->image();
     int margin = cache->glyphMargin();
+
+    if (image.isNull())
+        return;
 
     ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
 
@@ -1085,6 +1092,16 @@ bool QGL2PaintEngineEx::end()
 {
     Q_D(QGL2PaintEngineEx);
     QGLContext *ctx = d->ctx;
+    if (ctx->d_ptr->active_engine != this) {
+        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(d->last_engine);
+        if (engine) {
+            QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
+            p->transferMode(DefaultMode);
+            p->drawable.doneCurrent();
+        }
+        d->drawable.makeCurrent();
+    }
+
     glUseProgram(0);
     d->transferMode(DefaultMode);
     d->drawable.swapBuffers();
@@ -1104,6 +1121,31 @@ bool QGL2PaintEngineEx::end()
     }
 
     return false;
+}
+
+void QGL2PaintEngineEx::ensureActive()
+{
+    Q_D(QGL2PaintEngineEx);
+    QGLContext *ctx = d->ctx;
+
+    if (isActive() && ctx->d_ptr->active_engine != this) {
+        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(ctx->d_ptr->active_engine);
+        if (engine) {
+            QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
+            p->transferMode(DefaultMode);
+            p->drawable.doneCurrent();
+        }
+        d->drawable.makeCurrent();
+
+        ctx->d_ptr->active_engine = this;
+
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_SCISSOR_TEST);
+
+        glViewport(0, 0, d->width, d->height);
+        setState(state());
+        d->updateDepthClip();
+    }
 }
 
 
@@ -1246,6 +1288,7 @@ void QGL2PaintEngineExPrivate::updateDepthClip()
 
     Q_Q(QGL2PaintEngineEx);
 
+    q->ensureActive();
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_SCISSOR_TEST);
 
@@ -1305,7 +1348,7 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
     QOpenGLPaintEngineState *old_state = state();
     const bool needsDepthClipUpdate = !old_state
             || s->clipEnabled != old_state->clipEnabled
-            || s->clipEnabled && s->clipRegion != old_state->clipRegion;
+            || (s->clipEnabled && s->clipRegion != old_state->clipRegion);
 
     QPaintEngineEx::setState(s);
 

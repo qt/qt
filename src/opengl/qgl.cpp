@@ -4289,6 +4289,8 @@ void QGLDrawable::swapBuffers()
     if (widget) {
         if (widget->autoBufferSwap())
             widget->swapBuffers();
+    } else if (pixmapData) {
+        pixmapData->swapBuffers();
     } else {
         glFlush();
     }
@@ -4297,7 +4299,7 @@ void QGLDrawable::swapBuffers()
 void QGLDrawable::makeCurrent()
 {
     if (pixmapData)
-        pixmapData->beginPaint();
+        pixmapData->makeCurrent();
     else if (widget)
         widget->makeCurrent();
     else if (buffer)
@@ -4321,7 +4323,7 @@ QGLPixmapData *QGLDrawable::copyOnBegin() const
 void QGLDrawable::doneCurrent()
 {
     if (pixmapData)
-        pixmapData->endPaint();
+        pixmapData->doneCurrent();
     else if (fbo && !wasBound)
         fbo->release();
 }
