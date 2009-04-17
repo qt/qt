@@ -3164,10 +3164,7 @@ bool QETWidget::translateMouseEvent(const MSG &msg)
             if (popupButtonFocus) {
                 target = popupButtonFocus;
             } else if (popupChild) {
-                // forward mouse events to the popup child. mouse move events
-                // are only forwarded to popup children that enable mouse tracking.
-                if (type != QEvent::MouseMove || popupChild->hasMouseTracking())
-                    target = popupChild;
+                target = popupChild;
             }
 
             pos = target->mapFromGlobal(globalPos);
