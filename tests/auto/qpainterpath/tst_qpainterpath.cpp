@@ -84,11 +84,9 @@ private slots:
     void testOperatorEquals_fuzzy();
     void testOperatorDatastream();
 
-#if QT_VERSION >= 0x040200
     void testArcMoveTo_data();
     void testArcMoveTo();
     void setElementPositionAt();
-#endif
 
     void testOnPath_data();
     void testOnPath();

@@ -2236,9 +2236,6 @@ void tst_QNetworkReply::ioPutToFileFromLocalSocket_data()
 
 void tst_QNetworkReply::ioPutToFileFromLocalSocket()
 {
-#if defined(Q_OS_WINCE) && QT_VERSION < 0x040500
-    QSKIP("No local sockets on Windows CE for Qt 4.4", SkipAll);
-#else
     QString socketname = "networkreplytest";
     QLocalServer server;
     if (!server.listen(socketname)) {
@@ -2276,7 +2273,6 @@ void tst_QNetworkReply::ioPutToFileFromLocalSocket()
     QCOMPARE(file.size(), qint64(data.size()));
     QByteArray contents = file.readAll();
     QCOMPARE(contents, data);
-#endif
 }
 
 void tst_QNetworkReply::ioPutToFileFromProcess_data()

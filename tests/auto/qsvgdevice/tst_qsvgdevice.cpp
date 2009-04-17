@@ -332,11 +332,7 @@ void tst_QSvgDevice::playPaint( QPainter *p, const QString &type )
 	    qDrawShadePanel(p,4000,5000,4000,2000,palette.active(),false,200,&br);
 	    qDrawShadeRect(p,2000,2000,4000,2000,palette.active(),true,100,0,&br);
 	}
-    }
-#if !defined (Q_WS_WIN) && (QT_VERSION < 0x030200)
-    // This will fail on X11 with 3.1, fixed in 3.2
-#else
-    else if (type=="clipRect") {
+    } else if (type=="clipRect") {
 	p->setClipRect(15,25,10,10);
 	p->drawEllipse(10,20,50,70);
     } else if (type=="multipleClipRects") {
@@ -344,9 +340,7 @@ void tst_QSvgDevice::playPaint( QPainter *p, const QString &type )
 	p->drawEllipse(10,20,50,70);
 	p->setClipRect(100,200,20,20);
 	p->drawEllipse(110,220,50,70);
-    }
-#endif
-    else if (type == "qsimplerichtext") {
+    } else if (type == "qsimplerichtext") {
 	p->setPen(QColor(0,0,0));
         p->setBrush(Qt::NoBrush);
         QRect rect1(10, 10, 100, 50);

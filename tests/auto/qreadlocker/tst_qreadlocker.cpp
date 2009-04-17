@@ -189,9 +189,6 @@ void tst_QReadLocker::unlockAndRelockTest()
 
 void tst_QReadLocker::lockerStateTest()
 {
-#if QT_VERSION < 0x040200
-    QSKIP("QReadLocker doesn't keep state in Qt < 4.2", SkipAll);
-#else
     class LockerStateThread : public tst_QReadLockerThread
     {
     public:
@@ -228,7 +225,6 @@ void tst_QReadLocker::lockerStateTest()
 
     delete thread;
     thread = 0;
-#endif
 }
 
 QTEST_MAIN(tst_QReadLocker)

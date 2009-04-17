@@ -193,14 +193,9 @@ void tst_QTextDocument::getSetCheck()
     QPointer<MyAbstractTextDocumentLayout> var1 = new MyAbstractTextDocumentLayout(0);
     obj1.setDocumentLayout(var1);
     QCOMPARE(static_cast<QAbstractTextDocumentLayout *>(var1), obj1.documentLayout());
-#if QT_VERSION >= 0x040200
-    // QTextDocument in Qt < 4.2 crashes on this. Qt >= 4.2 should handle this gracefully
     obj1.setDocumentLayout((QAbstractTextDocumentLayout *)0);
     QVERIFY(var1.isNull());
     QVERIFY(obj1.documentLayout());
-#else
-    delete var1;
-#endif
 
     // bool QTextDocument::useDesignMetrics()
     // void QTextDocument::setUseDesignMetrics(bool)
@@ -672,18 +667,6 @@ void tst_QTextDocument::toHtml_data()
                                 << QString("<p DEFAULTBLOCKSTYLE><span style=\" font-size:40pt;\">Blah</span></p>");
     }
 
-#if QT_VERSION < 0x040200
-    {
-        CREATE_DOC_AND_CURSOR();
-
-        QTextCharFormat fmt;
-        fmt.setProperty(QTextFormat::FontSizeIncrement, 2);
-        cursor.insertText("Blah", fmt);
-
-        QTest::newRow("logical-font-size") << QTextDocumentFragment(&doc)
-                                        << QString("<p DEFAULTBLOCKSTYLE><font size=\"5\">Blah</font></p>");
-    }
-#else
     {
         CREATE_DOC_AND_CURSOR();
 
@@ -694,7 +677,6 @@ void tst_QTextDocument::toHtml_data()
         QTest::newRow("logical-font-size") << QTextDocumentFragment(&doc)
                                         << QString("<p DEFAULTBLOCKSTYLE><span style=\" font-size:x-large;\">Blah</span></p>");
     }
-#endif
 
     {
         CREATE_DOC_AND_CURSOR();
@@ -892,13 +874,8 @@ void tst_QTextDocument::toHtml_data()
 
         QTest::newRow("simpletable") << QTextDocumentFragment(&doc)
                                   << QString("<table border=\"1\" cellspacing=\"2\">"
-#if QT_VERSION >= 0x040200
                                              "\n<tr>\n<td></td>\n<td></td></tr>"
                                              "\n<tr>\n<td></td>\n<td></td></tr>"
-#else
-                                             "<tr><td></td><td></td></tr>"
-                                             "<tr><td></td><td></td></tr>"
-#endif
                                              "</table>");
     }
 
@@ -911,11 +888,7 @@ void tst_QTextDocument::toHtml_data()
 
         QTest::newRow("tablespans") << QTextDocumentFragment(&doc)
                                  << QString("<table border=\"1\" cellspacing=\"2\">"
-#if QT_VERSION >= 0x040200
                                              "\n<tr>\n<td colspan=\"2\"></td>\n<td colspan=\"2\"></td></tr>"
-#else
-                                             "<tr><td colspan=\"2\"></td><td colspan=\"2\"></td></tr>"
-#endif
                                              "</table>");
     }
 
@@ -961,7 +934,6 @@ void tst_QTextDocument::toHtml_data()
                                              "</table>");
     }
 
-#if QT_VERSION >= 0x040200
     {
         CREATE_DOC_AND_CURSOR();
 
@@ -977,7 +949,6 @@ void tst_QTextDocument::toHtml_data()
                                              "\n<tr>\n<td></td>\n<td></td></tr>"
                                              "</table>");
     }
-#endif
 
     {
         CREATE_DOC_AND_CURSOR();
@@ -988,13 +959,8 @@ void tst_QTextDocument::toHtml_data()
 
         QTest::newRow("nestedtable") << QTextDocumentFragment(&doc)
                                   << QString("<table border=\"1\" cellspacing=\"2\">"
-#if QT_VERSION >= 0x040200
                                              "\n<tr>\n<td></td>\n<td>\n<table border=\"1\" cellspacing=\"2\">\n<tr>\n<td>\n<p DEFAULTBLOCKSTYLE>Hey</p></td></tr></table></td></tr>"
                                              "\n<tr>\n<td></td>\n<td></td></tr>"
-#else
-                                             "<tr><td></td><td><table border=\"1\" cellspacing=\"2\"><tr><td><p DEFAULTBLOCKSTYLE>Hey</p></td></tr></table></td></tr>"
-                                             "<tr><td></td><td></td></tr>"
-#endif
                                              "</table>");
     }
 
@@ -1011,11 +977,7 @@ void tst_QTextDocument::toHtml_data()
 
         QTest::newRow("colwidths") << QTextDocumentFragment(&doc)
                                   << QString("<table border=\"1\" cellspacing=\"2\">"
-#if QT_VERSION >= 0x040200
                                              "\n<tr>\n<td></td>\n<td width=\"30%\"></td>\n<td width=\"40\"></td></tr>"
-#else
-                                             "<tr><td></td><td width=\"30%\"></td><td width=\"40\"></td></tr>"
-#endif
                                              "</table>");
     }
 
@@ -1032,11 +994,7 @@ void tst_QTextDocument::toHtml_data()
 
         QTest::newRow("cellproperties") << QTextDocumentFragment(&doc)
                                      << QString("<table border=\"1\" cellspacing=\"2\">"
-#if QT_VERSION >= 0x040200
                                                 "\n<tr>\n<td bgcolor=\"#ffffff\"></td></tr>"
-#else
-                                                "<tr><td bgcolor=\"#ffffff\"></td></tr>"
-#endif
                                                 "</table>");
     }
 
@@ -1111,9 +1069,7 @@ void tst_QTextDocument::toHtml_data()
 
         QTest::newRow("blockmargins") << QTextDocumentFragment(&doc)
                           <<
-#if QT_VERSION >= 0x040100
                              QString("EMPTYBLOCK") +
-#endif
                              QString("<p style=\" margin-top:10px; margin-bottom:20px; margin-left:30px; margin-right:40px; -qt-block-indent:0; text-indent:0px;\">Blah</p>");
     }
 
@@ -1129,11 +1085,7 @@ void tst_QTextDocument::toHtml_data()
         QTest::newRow("lists") << QTextDocumentFragment(&doc)
                           <<
                              QString("EMPTYBLOCK") +
-#if QT_VERSION >= 0x040200
                              QString("<ul style=\"-qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blubb</li>\n<li DEFAULTBLOCKSTYLE>Blah</li></ul>");
-#else
-                             QString("<ul style=\"-qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blubb<li DEFAULTBLOCKSTYLE>Blah</ul>");
-#endif
     }
 
     {
@@ -1156,11 +1108,7 @@ void tst_QTextDocument::toHtml_data()
         QTest::newRow("charfmt-for-list-item") << QTextDocumentFragment(&doc)
                           <<
                              QString("EMPTYBLOCK") +
-#if QT_VERSION >= 0x040200
                              QString("<ul style=\"-qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blubb</li>\n<li style=\" color:#0000ff;\" DEFAULTBLOCKSTYLE><span style=\" color:#ff0000;\">Blah</span></li></ul>");
-#else
-                             QString("<ul style=\"-qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blubb<li style=\" color:#0000ff;\" DEFAULTBLOCKSTYLE><span style=\" color:#ff0000;\">Blah</span></ul>");
-#endif
     }
 
     {
@@ -1174,9 +1122,7 @@ void tst_QTextDocument::toHtml_data()
 
         QTest::newRow("block-indent") << QTextDocumentFragment(&doc)
                                    <<
-#if QT_VERSION >= 0x040100
                                     QString("EMPTYBLOCK") +
-#endif
                                     QString("<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:3; text-indent:30px;\">Test</p>");
     }
 
@@ -1192,11 +1138,7 @@ void tst_QTextDocument::toHtml_data()
         QTest::newRow("list-indent") << QTextDocumentFragment(&doc)
                                   <<
                                     QString("EMPTYBLOCK") +
-#if QT_VERSION >= 0x040200
                                     QString("<ul style=\"-qt-list-indent: 4;\"><li DEFAULTBLOCKSTYLE>Blah</li></ul>");
-#else
-                                    QString("<ul style=\"-qt-list-indent: 4;\"><li DEFAULTBLOCKSTYLE>Blah</ul>");
-#endif
     }
 
     {
@@ -1217,11 +1159,7 @@ void tst_QTextDocument::toHtml_data()
         // if you press enter twice in an empty textedit and then insert 'Test'
         // you actually get three visible paragraphs, two empty leading ones and
         // a third with the actual text. the corresponding html representation
-        // therefore should also contain three paragraphs. that only works in >= 4.1,
-        // 4.0.x needs this additional block.
-#if QT_VERSION < 0x040100
-        cursor.insertBlock();
-#endif
+        // therefore should also contain three paragraphs.
 
         cursor.insertBlock();
         QTextCharFormat fmt;
@@ -1232,16 +1170,10 @@ void tst_QTextDocument::toHtml_data()
         fmt.setProperty(QTextFormat::FontSizeIncrement, 2);
         cursor.insertText("Test", fmt);
 
-#if QT_VERSION < 0x040200
-        QTest::newRow("blockcharfmt") << QTextDocumentFragment(&doc)
-                                   << QString("EMPTYBLOCK<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; color:#00ff00;\"><font size=\"4\"><font size=\"5\">Test</font></font></p>");
-#else
         QTest::newRow("blockcharfmt") << QTextDocumentFragment(&doc)
                                    << QString("EMPTYBLOCK<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:x-large; color:#00ff00;\">Test</span></p>");
-#endif
     }
 
-#if QT_VERSION >= 0x040100
     {
         CREATE_DOC_AND_CURSOR();
 
@@ -1254,7 +1186,6 @@ void tst_QTextDocument::toHtml_data()
         QTest::newRow("blockcharfmt2") << QTextDocumentFragment(&doc)
                                    << QString("<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#0000ff;\">Test</span></p>");
     }
-#endif
 
     {
         QTest::newRow("horizontal-ruler") << QTextDocumentFragment::fromHtml("<hr />")
@@ -1285,11 +1216,7 @@ void tst_QTextDocument::toHtml_data()
         cursor = mainFrame->lastCursorPosition();
 
         QTest::newRow("frame") << QTextDocumentFragment(&doc)
-#if QT_VERSION >= 0x040200
                             << QString("<table border=\"1\" style=\"-qt-table-type: frame; float: right; margin-top:2px; margin-bottom:2px; margin-left:2px; margin-right:2px;\" width=\"100\" height=\"50\" bgcolor=\"#00ff00\">\n<tr>\n<td style=\"border: none;\">\n<p DEFAULTBLOCKSTYLE>Hello World</p></td></tr></table>");
-#else
-                            << QString("<table border=\"1\" style=\"-qt-table-type: frame; float: right; margin-top:2px; margin-bottom:2px; margin-left:2px; margin-right:2px;\" width=\"100\" height=\"50\" bgcolor=\"#00ff00\"><tr><td style=\"border: none;\"><p DEFAULTBLOCKSTYLE>Hello World</p></td></tr></table>");
-#endif
     }
 
     {
@@ -1993,11 +1920,7 @@ void tst_QTextDocument::resolvedFontInEmptyFormat()
 
 void tst_QTextDocument::defaultRootFrameMargin()
 {
-#if QT_VERSION >= 0x040200 && QT_VERSION <= 0x040400
-    QCOMPARE(doc->rootFrame()->frameFormat().margin(), 2.0);
-#else
     QCOMPARE(doc->rootFrame()->frameFormat().margin(), 4.0);
-#endif
 }
 
 class TestDocument : public QTextDocument
@@ -2415,7 +2338,6 @@ void tst_QTextDocument::documentCleanup()
 
 void tst_QTextDocument::characterAt()
 {
-#if QT_VERSION >= 0x040500
     QTextDocument doc;
     QTextCursor cursor(&doc);
     QString text("12345\n67890");
@@ -2432,7 +2354,6 @@ void tst_QTextDocument::characterAt()
             c = QChar(QChar::ParagraphSeparator);
         QCOMPARE(doc.characterAt(i), c);
     }
-#endif
 }
 
 void tst_QTextDocument::revisions()

@@ -159,12 +159,10 @@ void tst_Q3TextEdit::getSetCheck()
     Q3TextDocument *var2 = new Q3TextDocument(0);
     obj1.setDocument(var2);
     QCOMPARE(obj1.document(), var2);
-#if QT_VERSION >= 0x040200
     // Should've done as QTextEdit, and created a new document, if you setDocument(0).
     // Unfortunately it doesn't, and we cannot change it.
     obj1.setDocument((Q3TextDocument *)0);
     QCOMPARE(obj1.document(), var2);
-#endif
     // delete var2; // No delete, since Q3TextEdit takes ownership
 }
 

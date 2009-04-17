@@ -42,10 +42,6 @@
 
 #include <QCoreApplication>
 
-#if QT_VERSION < 0x040200
-QTEST_NOOP_MAIN
-#else
-
 #include <QFileSystemWatcher>
 
 #ifdef Q_OS_LINUX
@@ -403,5 +399,3 @@ void tst_QFileSystemWatcher::removePaths()
 
 QTEST_MAIN(tst_QFileSystemWatcher)
 #include "tst_qfilesystemwatcher.moc"
-
-#endif

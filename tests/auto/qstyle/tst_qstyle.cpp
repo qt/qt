@@ -70,10 +70,7 @@
 #include <qlineedit.h>
 #include <qmdiarea.h>
 
-
-#if QT_VERSION >= 0x040200
 #include <QCleanlooksStyle>
-#endif
 
 #ifdef Q_WS_MAC
 #include <QMacStyle>
@@ -343,7 +340,7 @@ void tst_QStyle::testPlastiqueStyle()
 
 void tst_QStyle::testCleanlooksStyle()
 {
-#if QT_VERSION >= 0x040200 && !defined(QT_NO_STYLE_CLEANLOOKS)
+#if !defined(QT_NO_STYLE_CLEANLOOKS)
     QCleanlooksStyle cstyle;
     testAllFunctions(&cstyle);
     lineUpLayoutTest(&cstyle);
@@ -365,7 +362,7 @@ void tst_QStyle::testWindowsXPStyle()
     QWindowsXPStyle xpstyle;
     testAllFunctions(&xpstyle);
     lineUpLayoutTest(&xpstyle);
-#else 
+#else
     QSKIP("No WindowsXP style", SkipAll);
 #endif
 }

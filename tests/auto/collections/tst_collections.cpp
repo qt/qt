@@ -161,9 +161,7 @@ private slots:
     void q_init();
     void pointersize();
     void containerInstantiation();
-#if QT_VERSION >= 0x040101
     void qtimerList();
-#endif
     void containerTypedefs();
     void forwardDeclared();
 };
@@ -1907,11 +1905,9 @@ void tst_Collections::map()
 	    i.toFront();
 	    while(i.hasNext()) {
 		sum += i.next().value();
-#if QT_VERSION >= 0x040100
                 i.setValue(10);
                 i.value() += 22;
                 QVERIFY(i.value() == 32);
-#endif
             }
 	    QVERIFY(sum == 11);
 	}
@@ -2870,10 +2866,8 @@ void tst_Collections::javaStyleIterators()
     while (i.hasPrevious()) {
         i.previous();
         QVERIFY(i.value().isEmpty());
-#if QT_VERSION >= 0x040100
         i.value() = "x";
         QCOMPARE(i.value(), QString("x"));
-#endif
     }
 }
 
@@ -3355,7 +3349,6 @@ void tst_Collections::containerInstantiation()
     instantiateRandomAccess<Stack, EqualsComparable>();
 }
 
-#if QT_VERSION >= 0x040101
 void tst_Collections::qtimerList()
 {
     QList<double> foo;
@@ -3378,7 +3371,6 @@ void tst_Collections::qtimerList()
     }
     QFAIL("QList preallocates too much memory");
 }
-#endif
 
 template <typename Container>
 void testContainerTypedefs(Container container)
@@ -3387,11 +3379,11 @@ void testContainerTypedefs(Container container)
     { typedef typename Container::value_type Foo; }
     { typedef typename Container::iterator Foo; }
     { typedef typename Container::const_iterator Foo; }
-  	{ typedef typename Container::reference Foo; }
-	{ typedef typename Container::const_reference Foo; }
-	{ typedef typename Container::pointer Foo; }
-	{ typedef typename Container::difference_type Foo; }
-	{ typedef typename Container::size_type Foo; }
+    { typedef typename Container::reference Foo; }
+    { typedef typename Container::const_reference Foo; }
+    { typedef typename Container::pointer Foo; }
+    { typedef typename Container::difference_type Foo; }
+    { typedef typename Container::size_type Foo; }
 }
 
 template <typename Container>
@@ -3403,11 +3395,11 @@ void testPairAssociativeContainerTypedefs(Container container)
 //    { typedef typename Container::value_type Foo; }
 //    { typedef typename Container::const_iterator Foo; }
 //    { typedef typename Container::reference Foo; }
-//	  { typedef typename Container::const_reference Foo; }
-//	  { typedef typename Container::pointer Foo; }
+//    { typedef typename Container::const_reference Foo; }
+//    { typedef typename Container::pointer Foo; }
 
-	{ typedef typename Container::difference_type Foo; }
-	{ typedef typename Container::size_type Foo; }
+    { typedef typename Container::difference_type Foo; }
+    { typedef typename Container::size_type Foo; }
     { typedef typename Container::iterator Foo; }
     { typedef typename Container::key_type Foo; }
     { typedef typename Container::mapped_type Foo; }
@@ -3422,11 +3414,11 @@ void testSetContainerTypedefs(Container container)
     Q_UNUSED(container)
     { typedef typename Container::iterator Foo; }
     { typedef typename Container::const_iterator Foo; }
-  	{ typedef typename Container::reference Foo; }
-	{ typedef typename Container::const_reference Foo; }
-	{ typedef typename Container::pointer Foo; }
-	{ typedef typename Container::difference_type Foo; }
-	{ typedef typename Container::size_type Foo; }
+    { typedef typename Container::reference Foo; }
+    { typedef typename Container::const_reference Foo; }
+    { typedef typename Container::pointer Foo; }
+    { typedef typename Container::difference_type Foo; }
+    { typedef typename Container::size_type Foo; }
     { typedef typename Container::key_type Foo; }
 }
 
@@ -3450,7 +3442,7 @@ void tst_Collections::containerTypedefs()
 }
 
 #if defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
-class Key1 
+class Key1
 {};
 class T1
 {};

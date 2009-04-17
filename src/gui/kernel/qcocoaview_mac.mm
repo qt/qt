@@ -632,7 +632,7 @@ extern "C" {
     for (NSView *lookView in viewsToLookAt) {
         NSPoint tmpPoint = [lookView convertPoint:windowPoint fromView:nil];
         for (NSView *view in [lookView subviews]) {
-            if (view == mouseView)
+            if (view == mouseView || [view isHidden])
                 continue;
             NSRect frameRect = [view frame];
             if (NSMouseInRect(tmpPoint, [view frame], [view isFlipped]))
@@ -651,7 +651,7 @@ extern "C" {
             NSPoint tmpPoint = [viewForDescent convertPoint:windowPoint fromView:nil];                
             // Apply same rule as above wrt z-order.
             for (NSView *view in [viewForDescent subviews]) {
-                if (NSMouseInRect(tmpPoint, [view frame], [view isFlipped]))
+                if (![view isHidden] && NSMouseInRect(tmpPoint, [view frame], [view isFlipped]))
                     lowerView = view;
             }
             if (!lowerView) // Low as we can be at this point.

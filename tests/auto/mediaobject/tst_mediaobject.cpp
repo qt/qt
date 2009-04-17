@@ -349,6 +349,18 @@ void tst_MediaObject::_pausePlayback()
 void tst_MediaObject::initTestCase()
 {
     QCoreApplication::setApplicationName("tst_MediaObject");
+    m_stateChangedSignalSpy = 0;
+    m_media = 0;
+
+#ifdef Q_OS_WINCE
+    QString pluginsPath = QLibraryInfo::location(QLibraryInfo::PluginsPath);
+#ifdef DEBUG
+    QVERIFY(QFile::exists(pluginsPath + "/phonon_backend/phonon_waveoutd4.dll") || QFile::exists(pluginsPath + "/phonon_backend/phonon_phonon_ds9d4.dll"));
+#else
+    QVERIFY(QFile::exists(pluginsPath + "/phonon_backend/phonon_waveout4.dll") || QFile::exists(pluginsPath + "/phonon_backend/phonon_phonon_ds94.dll"));
+#endif
+#endif
+
 
     m_url = qgetenv("PHONON_TESTURL");
     m_media = new MediaObject(this);
@@ -856,8 +868,10 @@ void tst_MediaObject::testPlayBeforeFinish()
 
 void tst_MediaObject::cleanupTestCase()
 {
-    delete m_stateChangedSignalSpy;
-    delete m_media;
+    if (m_stateChangedSignalSpy)
+      delete m_stateChangedSignalSpy;
+    if (m_media)
+      delete m_media;
 #ifdef Q_OS_WINCE
     QTest::qWait(200);
 #endif

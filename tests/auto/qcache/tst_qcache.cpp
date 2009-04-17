@@ -39,9 +39,7 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
-
 
 #include <qcache.h>
 
@@ -55,7 +53,6 @@ class tst_QCache : public QObject
 public:
     tst_QCache();
     virtual ~tst_QCache();
-
 
 public slots:
     void initTestCase();
@@ -344,7 +341,7 @@ void tst_QCache::remove()
         QCOMPARE(cache.totalCost(), 20);
     }
 
-    cache.setMaxCost(1);    
+    cache.setMaxCost(1);
     QCOMPARE(cache.size(), 0);
     cache.remove("beta");
     QCOMPARE(cache.size(), 0);
@@ -377,7 +374,7 @@ void tst_QCache::take()
     QCOMPARE(cache.size(), 1);
     QCOMPARE(cache.totalCost(), 20);
 
-    cache.setMaxCost(1);    
+    cache.setMaxCost(1);
     QCOMPARE(cache.size(), 0);
     QCOMPARE(cache.take("beta"), (Foo*)0);
     QCOMPARE(cache.size(), 0);
@@ -389,15 +386,8 @@ struct KeyType
 
     KeyType(int x) : foo(x) {}
 
-    /*
-        Qt 4.0 and 4.1 require a default ctor and an operator=().
-    */
-#if QT_VERSION < 0x040200
-    KeyType() : foo(0) {}
-#else
 private:
     KeyType &operator=(const KeyType &);
-#endif
 };
 
 struct ValueType

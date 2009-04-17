@@ -144,7 +144,6 @@ void tst_QTemporaryFile::fileTemplate_data()
 
 void tst_QTemporaryFile::fileTemplate()
 {
-#if QT_VERSION >= 0x040200
     QFETCH(QString, constructorTemplate);
     QFETCH(QString, suffix);
     QFETCH(QString, fileTemplate);
@@ -157,7 +156,6 @@ void tst_QTemporaryFile::fileTemplate()
 
     QCOMPARE(file.fileName().right(suffix.length()), suffix);
     file.close();
-#endif
 }
 
 
@@ -234,9 +232,6 @@ void tst_QTemporaryFile::write()
 
 void tst_QTemporaryFile::openCloseOpenClose()
 {
-#if QT_VERSION < 0x040101
-    QSKIP("Until Qt 4.1.1, QTemporaryFile would create a new name every time open() was called.", SkipSingle);
-#endif
     QString fileName;
     {
         // Create a temp file
@@ -248,7 +243,7 @@ void tst_QTemporaryFile::openCloseOpenClose()
         QVERIFY(QFile::exists(fileName));
         file.close();
 
-        // Check that it still exists after being closed        
+        // Check that it still exists after being closed
         QVERIFY(QFile::exists(fileName));
         QVERIFY(!file.isOpen());
         QVERIFY(file.open());
