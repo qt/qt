@@ -103,7 +103,7 @@ Qt::MouseButton QMouseEventTransition::button() const
 }
 
 /*!
-  Sets the button that this mouse event transition will check for.
+  Sets the \a button that this mouse event transition will check for.
 */
 void QMouseEventTransition::setButton(Qt::MouseButton button)
 {

@@ -151,7 +151,7 @@ QActionState::~QActionState()
   create a QStateInvokeMethodAction object and add it to the entry actions of
   the state.
 
-  \sa invokeMethodOnExit(), setPropertyOnEntry(), addEntryAction()
+  \sa invokeMethodOnExit(), addEntryAction()
 */
 void QActionState::invokeMethodOnEntry(QObject *object, const char *method,
                                        const QList<QVariant> &arguments)

@@ -157,8 +157,6 @@ QTransition::~QTransition()
   object with the given \a arguments when the transition is taken. This
   function will create a QStateInvokeMethodAction object and add it to the
   actions of the transition.
-
-  \sa setPropertyOnTransition()
 */
 void QTransition::invokeMethodOnTransition(QObject *object, const char *method,
                                            const QList<QVariant> &arguments)
