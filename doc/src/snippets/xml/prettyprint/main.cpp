@@ -48,7 +48,7 @@
 #include <QXmlStreamReader>
 
 /*
-    This class exists for the solve purpose of creating a translation context.
+    This class exists for the sole purpose of creating a translation context.
  */
 class PrettyPrint
 {

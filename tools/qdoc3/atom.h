@@ -71,6 +71,9 @@ class Atom
         CodeOld, 
         CodeQuoteArgument,
         CodeQuoteCommand,
+#ifdef QDOC_QML
+        EndQmlText,
+#endif
         FootnoteLeft,
         FootnoteRight,
         FormatElse, 
@@ -99,6 +102,7 @@ class Atom
         ParaRight, 
 #ifdef QDOC_QML
         Qml,
+        QmlText,
 #endif
         QuotationLeft, 
         QuotationRight,

@@ -1059,11 +1059,20 @@ bool QEventDispatcherWin32::event(QEvent *e)
         QZeroTimerEvent *zte = static_cast<QZeroTimerEvent*>(e);
         WinTimerInfo *t = d->timerDict.value(zte->timerId());
         if (t) {
+            t->inTimerEvent = true;
+
             QTimerEvent te(zte->timerId());
             QCoreApplication::sendEvent(t->obj, &te);
-            WinTimerInfo *tn = d->timerDict.value(zte->timerId());
-            if (tn && t == tn)
-                QCoreApplication::postEvent(this, new QZeroTimerEvent(zte->timerId()));
+
+            t = d->timerDict.value(zte->timerId());
+            if (t) {
+                if (t->interval == 0 && t->inTimerEvent) {
+                    // post the next zero timer event as long as the timer was not restarted
+                    QCoreApplication::postEvent(this, new QZeroTimerEvent(zte->timerId()));
+                }
+
+                t->inTimerEvent = false;
+            }
         }
         return true;
     } else if (e->type() == QEvent::Timer) {

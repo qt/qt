@@ -542,7 +542,7 @@ void QFontEngine::addBitmapFontToPath(qreal x, qreal y, const QGlyphLayout &glyp
             advanceY += glyphs.advances_y[i];
             continue;
         }
-        QImage alphaMask = alphaMapForGlyph(glyphs.glyphs[i]);
+        const QImage alphaMask = alphaMapForGlyph(glyphs.glyphs[i]);
 
         const int w = alphaMask.width();
         const int h = alphaMask.height();

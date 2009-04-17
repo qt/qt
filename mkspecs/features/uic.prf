@@ -34,7 +34,17 @@ isEmpty(QMAKE_MOD_UIC):QMAKE_MOD_UIC = ui_
     INCREDIBUILD_XGE += uic
 }
 
-INCLUDEPATH += $$UI_HEADERS_DIR
+ui_dir_short = $$UI_HEADERS_DIR
+win32:ui_dir_short ~= s,^.:,/,
+contains(ui_dir_short, ^[/\\\\].*):INCLUDEPATH += $$UI_HEADERS_DIR
+else:INCLUDEPATH += $$OUT_PWD/$$UI_HEADERS_DIR
+
+# Backwards compatibility: Make shadow builds with default UI_DIR work
+# if the user did not add the source dir explicitly.
+equals(UI_DIR, .) {
+    CONFIG -= include_source_dir
+    CONFIG = include_source_dir $$CONFIG
+}
 
 uic3 {
     isEmpty(FORMS3) {

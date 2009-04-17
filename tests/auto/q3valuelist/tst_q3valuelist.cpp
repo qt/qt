@@ -296,7 +296,6 @@ void tst_Q3ValueList::beginEnd()
     QCOMPARE( *(cit1), 2 );
     QCOMPARE( *(cit2), 200 );
 
-#if (QT_VERSION >= 0x030200)
     Q3ValueList<int> b;
     b.append( 1 );
     Q3ValueList<int> b2 = b;
@@ -305,7 +304,6 @@ void tst_Q3ValueList::beginEnd()
     b2.append( 2 );
     QVERIFY( b.constBegin() != b2.constBegin() );
     QVERIFY( b2.constBegin() == b2.constBegin() );
-#endif
 }
 
 void tst_Q3ValueList::pushing()
@@ -593,11 +591,7 @@ void tst_Q3ValueList::opStreamOut()
 class ListVerifier : public Q3ValueList<int>
 {
 public:
-#if QT_VERSION < 0x040000
-    void* pointer() { return sh; }
-#else
     const int* pointer() const { return &*begin(); }
-#endif
 };
 void tst_Q3ValueList::shared()
 {

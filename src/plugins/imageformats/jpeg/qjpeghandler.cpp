@@ -809,7 +809,7 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
 
         if (params.contains(QLatin1String("GetHeaderInformation"))) {
             if (!ensureValidImage(outImage, &cinfo, true))
-                return false;
+                longjmp(jerr.setjmp_buffer, 1);
         } else if (params.contains(QLatin1String("Scale"))) {
 #if defined(_MSC_VER) && _MSC_VER >= 1400 && !defined(Q_OS_WINCE)
             sscanf_s(params.toLatin1().data(), "Scale(%i, %i, %1023s)",
@@ -848,7 +848,7 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
                 // Unsupported format
             }
             if (outImage->isNull())
-                return false;
+                longjmp(jerr.setjmp_buffer, 1);
 
             if (!outImage->isNull()) {
                 QImage tmpImage(cinfo.output_width, 1, QImage::Format_RGB32);
@@ -894,7 +894,7 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
 #endif
         } else {
             if (!ensureValidImage(outImage, &cinfo))
-                return false;
+                longjmp(jerr.setjmp_buffer, 1);
 
             uchar* data = outImage->bits();
             int bpl = outImage->bytesPerLine();

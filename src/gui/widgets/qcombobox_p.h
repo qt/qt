@@ -265,7 +265,7 @@ protected:
                const QStyleOptionViewItem &option,
                const QModelIndex &index) const {
         QStyleOptionMenuItem opt = getStyleOption(option, index);
-        painter->eraseRect(option.rect);
+        painter->fillRect(option.rect, opt.palette.background());
         mCombo->style()->drawControl(QStyle::CE_MenuItem, &opt, painter, mCombo);
     }
     QSize sizeHint(const QStyleOptionViewItem &option,

@@ -1370,7 +1370,7 @@ QTextStream::FieldAlignment QTextStream::fieldAlignment() const
 
     \snippet doc/src/snippets/code/src_corelib_io_qtextstream.cpp 5
 
-    Output:
+    The string \c s contains:
 
     \snippet doc/src/snippets/code/src_corelib_io_qtextstream.cpp 6
 

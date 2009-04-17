@@ -119,7 +119,13 @@ elif [ -f "$relpath"/src/gui/kernel/qapplication_qws.cpp ]; then
     # ~ src/gui/base/qapplication_qws.cpp is present
     # ~ this is the free or commercial edition
     # ~ this is the internal edition and Qt Embedded is explicitly enabled
-    PLATFORM_QWS=maybe
+    if [ -f "$relpath"/src/gui/kernel/qapplication_mac.mm ]; then
+        # This is a depot build, or an all-platforms package
+        PLATFORM_QWS=maybe
+    else
+        # This must be the embedded package, since the Qt/Mac source files are not present
+	PLATFORM_QWS=yes
+    fi
 fi
 
 #-----------------------------------------------------------------------------
@@ -199,10 +205,10 @@ earlyArgParse()
         h|help|--help|-help)
             if [ "$VAL" = "yes" ]; then
                 OPT_HELP="$VAL"
-                COMMERCIAL_USER="yes" #doesn't matter we will display the help
+                COMMERCIAL_USER="no" #doesn't matter we will display the help
             else
                 UNKNOWN_OPT=yes
-                COMMERCIAL_USER="yes" #doesn't matter we will display the help
+                COMMERCIAL_USER="no" #doesn't matter we will display the help
             fi
             ;;
         --*)
@@ -518,9 +524,14 @@ fi
 
 SYSTEM_VARIABLES="CC CXX CFLAGS CXXFLAGS LDFLAGS"
 for varname in $SYSTEM_VARIABLES; do
+    qmakevarname="${varname}"
+    # use LDFLAGS for autoconf compat, but qmake uses QMAKE_LFLAGS
+    if [ "${varname}" = "LDFLAGS" ]; then
+        qmakevarname="LFLAGS"
+    fi
     cmd=`echo \
 'if [ -n "\$'${varname}'" ]; then
-    QMakeVar set QMAKE_'${varname}' "\$'${varname}'"
+    QMakeVar set QMAKE_'${qmakevarname}' "\$'${varname}'"
 fi'`
     eval "$cmd"
 done
@@ -2090,7 +2101,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
 fi
 
 # symlink files from src/gui/embedded neccessary to build qvfb
-if [ "$CFG_DEV" = "yes" -o "$Edition" = "Qtopia" ]; then
+if [ "$CFG_DEV" = "yes" ]; then
     for f in qvfbhdr.h qlock_p.h qlock.cpp qwssignalhandler_p.h qwssignalhandler.cpp; do
 	dest="${relpath}/tools/qvfb/${f}"
 	rm -f "$dest"
@@ -2685,6 +2696,21 @@ if [ "$QT_CROSS_COMPILE" = "yes" ]; then
     else
         PKG_CONFIG=""
     fi
+fi
+
+# check -arch arguments for validity.
+if [ "$PLATFORM_MAC" = "yes" ]; then
+    ALLOWED="x86 ppc x86_64 ppc64 i386"
+    for i in $CFG_MAC_ARCHS 
+    do 
+        if echo "$ALLOWED" | grep -w -v "$i" > /dev/null 2>&1; then
+            echo "Unknown architecture: \"$i\". Supported architectures: x86[i386] ppc x86_64 ppc64";
+            exit 2;
+        fi
+    done
+
+#   replace "i386" with "x86" to support configuring with -arch i386 as an alias for x86.
+    CFG_MAC_ARCHS="${CFG_MAC_ARCHS/i386/x86}" 
 fi
 
 # find the default framework value
@@ -3654,39 +3680,7 @@ echo
 echo "This is the $Platform ${EditionString} Edition."
 echo
 
-if [ "$Edition" = "Qtopia" ]; then
-    TheLicense=`head -n 1 "$relpath/LICENSE.Qtopia"`
-    while true; do
-        if [ "$OPT_CONFIRM_LICENSE" = "yes" -o "$CFG_NOKIA" = "yes" ]; then
-            echo "You have already accepted the terms of the $TheLicense license."
-            acceptance=yes
-        else
-            echo "You are licensed to use this software under the terms of"
-            echo "the $TheLicense"
-            echo
-            echo "Type '?' to read the $TheLicense"
-            echo "Type 'yes' to accept this license offer."
-            echo "Type 'no' to decline this license offer."
-            echo
-            if echo '\c' | grep '\c' >/dev/null; then
-                echo -n "Do you accept the terms of the license? "
-            else
-                echo "Do you accept the terms of the license? \c"
-            fi
-            read acceptance
-        fi
-        echo
-        if [ "$acceptance" = "yes" ]; then
-            break
-        elif [ "$acceptance" = "no" ] ;then
-            echo "You are not licensed to use this software."
-            echo
-            exit 0
-        elif [ "$acceptance" = "?" ]; then
-            more "$relpath/LICENSE.Qtopia"
-        fi
-    done
-elif [ "$Edition" = "NokiaInternalBuild" ]; then
+if [ "$Edition" = "NokiaInternalBuild" ]; then
     echo "Detected -nokia-developer option"
     echo "Nokia employees and agents are allowed to use this software under"
     echo "the authority of Nokia Corporation and/or its subsidiary(-ies)"
@@ -4742,6 +4736,14 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         X11TESTS_FLAGS="$X11TESTS_FLAGS -fpermissive"
     fi
 
+    # Check we actually have X11 :-)
+    if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xlib "XLib" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+        echo "Basic XLib functionality test failed!"
+        echo " You might need to modify the include and library search paths by editing"
+        echo " QMAKE_INCDIR_X11 and QMAKE_LIBDIR_X11 in ${XQMAKESPEC}."
+        exit 1
+    fi
+
     # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es1cl = ES 1.x common lite, es2 = OpenGL ES 2.x)
     if [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/opengl "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
@@ -5503,6 +5505,22 @@ if [ "$CFG_MAC_DWARF2" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG dwarf2"
 fi
 
+# Set the default arch. Select 32-bit/carbon if nothing else has 
+# been specified on the configure line.
+if [ "$PLATFORM_MAC" = "yes" ]  && [ "$CFG_MAC_ARCHS" == "" ]; then
+    source "$mactests/defaultarch.test" "$TEST_COMPILER" "$OPT_VERBOSE" "$mactests"
+
+    if [ "$QT_MAC_DEFUALT_ARCH" == "x86_64" ]; then
+        CFG_MAC_ARCHS=" x86"
+    elif [ "$QT_MAC_DEFUALT_ARCH" == "ppc64" ]; then
+        CFG_MAC_ARCHS=" ppc"
+    else
+        CFG_MAC_ARCHS=" $QT_MAC_DEFUALT_ARCH"
+    fi
+
+    [ "$OPT_VERBOSE" == "yes" ] && echo "Setting Mac architechture to$CFG_MAC_ARCHS."
+fi
+
 # enable cocoa and/or carbon on Mac
 if [ "$CFG_MAC_COCOA" = "yes" ]; then
 #   -cocoa on the command line disables carbon completely (i.e. use cocoa for 32-bit as well)
@@ -6173,13 +6191,31 @@ rm -f .options
 BUILD_OPTIONS="$BUILD_CONFIG $BUILD_OPTIONS"
 # extract the operating system from the XPLATFORM
 TARGET_OPERATING_SYSTEM=`echo $XPLATFORM | cut -f 2- -d/ | cut -f -1 -d-`
+
 # when cross-compiling, don't include build-host information (build key is target specific)
 QT_BUILD_KEY="$CFG_USER_BUILD_KEY $CFG_ARCH $TARGET_OPERATING_SYSTEM $COMPILER $BUILD_OPTIONS"
+if [ -n "$QT_NAMESPACE" ]; then
+    QT_BUILD_KEY="$QT_BUILD_KEY $QT_NAMESPACE"
+fi
+MAC_NEED_TWO_BUILD_KEYS="no"
+if [ "$PLATFORM_MAC" = "yes" -a "$CFG_MAC_COCOA" = "yes" ]; then
+    QT_BUILD_KEY_CARBON=$QT_BUILD_KEY
+    TARGET_OPERATING_SYSTEM="$TARGET_OPERATING_SYSTEM-cocoa"
+    QT_BUILD_KEY_COCOA="$CFG_USER_BUILD_KEY $CFG_ARCH $TARGET_OPERATING_SYSTEM $COMPILER $BUILD_OPTIONS"
+    if [ "$CFG_MAC_CARBON" = "no" ]; then
+        QT_BUILD_KEY=$QT_BUILD_KEY_COCOA
+    else
+        MAC_NEED_TWO_BUILD_KEYS="yes"
+    fi
+fi
 # don't break loading plugins build with an older version of Qt
 QT_BUILD_KEY_COMPAT=
 if [ "$QT_CROSS_COMPILE" = "no" ]; then
     # previous versions of Qt used a build key built from the uname
     QT_BUILD_KEY_COMPAT="$CFG_USER_BUILD_KEY $UNAME_MACHINE $UNAME_SYSTEM $COMPILER $BUILD_OPTIONS"
+    if [ -n "$QT_NAMESPACE" ]; then
+        QT_BUILD_KEY_COMPAT="$QT_BUILD_KEY_COMPAT $QT_NAMESPACE"
+    fi
 fi
 # strip out leading/trailing/extra whitespace
 QT_BUILD_KEY=`echo $QT_BUILD_KEY | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
@@ -6200,6 +6236,7 @@ full)
     echo "#endif" >>"$tmpconfig"
     ;;
 esac
+
 cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
 
 /* Qt Edition */
@@ -6210,9 +6247,19 @@ cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
 /* Machine byte-order */
 #define Q_BIG_ENDIAN 4321
 #define Q_LITTLE_ENDIAN 1234
-
-#define QT_BUILD_KEY "$QT_BUILD_KEY"
 EOF
+
+if [ "$MAC_NEED_TWO_BUILD_KEYS" = "no" ]; then
+    echo "#define QT_BUILD_KEY \"$QT_BUILD_KEY\"" \
+        >> "$outpath/src/corelib/global/qconfig.h.new"
+else
+    cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
+
+#define QT_BUILD_KEY_CARBON "$QT_BUILD_KEY_CARBON"
+#define QT_BUILD_KEY_COCOA "$QT_BUILD_KEY_COCOA"
+EOF
+fi
+
 if [ -n "$QT_BUILD_KEY_COMPAT" ]; then
     echo "#define QT_BUILD_KEY_COMPAT \"$QT_BUILD_KEY_COMPAT\"" \
         >> "$outpath/src/corelib/global/qconfig.h.new"

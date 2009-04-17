@@ -200,7 +200,10 @@
     between each item. Here is an example for a class that represents
     a 2D coordinate.
 
-    \snippet doc/src/snippets/qdebugsnippet.cpp 0
+    \snippet doc/src/snippets/qdebug/qdebugsnippet.cpp 0
+
+    Integration of custom types with Qt's meta-object system is covered
+    in more depth in the \l{Creating Custom Qt Types} document.
 
     \section1 Debugging Macros
 

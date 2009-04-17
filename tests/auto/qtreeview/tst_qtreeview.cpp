@@ -200,6 +200,7 @@ private slots:
     void selectAll();
 
     void disabledButCheckable();
+    void sortByColumn_data();
     void sortByColumn();
 
     void evilModel_data();
@@ -207,6 +208,8 @@ private slots:
 
     void indexRowSizeHint();
     void addRowsWhileSectionsAreHidden();
+
+    void filterProxyModelCrash();
 
     // task-specific tests:
     void task174627_moveLeftToRoot();
@@ -221,6 +224,7 @@ private slots:
     void task202039_closePersistentEditor();
     void task238873_avoidAutoReopening();
     void task244304_clickOnDecoration();
+    void task246536_scrollbarsNotWorking();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -470,11 +474,7 @@ void tst_QTreeView::construction()
     QCOMPARE(view.iconSize(), QSize());
     QCOMPARE(view.indexAt(QPoint()), QModelIndex());
     QVERIFY(!view.indexWidget(QModelIndex()));
-#if QT_VERSION >= 0x040400
     QVERIFY(qobject_cast<QStyledItemDelegate *>(view.itemDelegate()));
-#else
-    QVERIFY(qobject_cast<QItemDelegate *>(view.itemDelegate()));
-#endif
     QVERIFY(!view.itemDelegateForColumn(-1));
     QVERIFY(!view.itemDelegateForColumn(0));
     QVERIFY(!view.itemDelegateForColumn(1));
@@ -999,11 +999,7 @@ void tst_QTreeView::itemDelegate()
 
     {
         QTreeView view;
-#if QT_VERSION >= 0x040400
         QVERIFY(qobject_cast<QStyledItemDelegate *>(view.itemDelegate()));
-#else
-        QVERIFY(qobject_cast<QItemDelegate *>(view.itemDelegate()));
-#endif
         QPointer<QAbstractItemDelegate> oldDelegate = view.itemDelegate();
 
         otherItemDelegate = new QItemDelegate;
@@ -1678,9 +1674,16 @@ void tst_QTreeView::moveCursor()
     view.setColumnHidden(0, true);
     QVERIFY(view.isColumnHidden(0));
     view.show();
+    qApp->setActiveWindow(&view);
 
-    QModelIndex actual = view.moveCursor(PublicView::MoveDown, Qt::NoModifier);
+    //here the first visible index should be selected
+    //because the view got the focus
     QModelIndex expected = model.index(1, 1, QModelIndex());
+    QCOMPARE(view.currentIndex(), expected);
+
+    //then pressing down should go to the next line
+    QModelIndex actual = view.moveCursor(PublicView::MoveDown, Qt::NoModifier);
+    expected = model.index(2, 1, QModelIndex());
     QCOMPARE(actual, expected);
 
     view.setRowHidden(0, QModelIndex(), false);
@@ -1860,14 +1863,8 @@ void tst_QTreeView::indexBelow()
     i = view.indexBelow(i);
     QVERIFY(i.isValid());
     QCOMPARE(i.row(), 1);
-#if QT_VERSION >= 0x040100
     i = view.indexBelow(i);
     QVERIFY(!i.isValid());
-#else
-    // Qt 4.0.x returns the bottom index
-    i = view.indexBelow(i);
-    QVERIFY(i.isValid());
-#endif
 }
 
 void tst_QTreeView::clicked()
@@ -2464,16 +2461,39 @@ void tst_QTreeView::disabledButCheckable()
     QCOMPARE(item->checkState(), Qt::Unchecked);
 }
 
-// Checks that sortByColumn also sets the sortIndicator
+void tst_QTreeView::sortByColumn_data()
+{
+    QTest::addColumn<bool>("sortingEnabled");
+    QTest::newRow("sorting enabled") << true;
+    QTest::newRow("sorting disabled") << false;
+}
+
+// Checks sorting and that sortByColumn also sets the sortIndicator
 void tst_QTreeView::sortByColumn()
 {
+    QFETCH(bool, sortingEnabled);
     QTreeView view;
-    QStandardItemModel model(2,2);
+    QStandardItemModel model(4,2);
+    model.setItem(0,0,new QStandardItem("b"));
+    model.setItem(1,0,new QStandardItem("d"));
+    model.setItem(2,0,new QStandardItem("c"));
+    model.setItem(3,0,new QStandardItem("a"));
+    model.setItem(0,1,new QStandardItem("e"));
+    model.setItem(1,1,new QStandardItem("g"));
+    model.setItem(2,1,new QStandardItem("h"));
+    model.setItem(3,1,new QStandardItem("f"));
+
+    view.setSortingEnabled(sortingEnabled);
     view.setModel(&model);
     view.sortByColumn(1);
     QCOMPARE(view.header()->sortIndicatorSection(), 1);
+    QCOMPARE(view.model()->data(view.model()->index(0,1)).toString(), QString::fromLatin1("h"));
+    QCOMPARE(view.model()->data(view.model()->index(1,1)).toString(), QString::fromLatin1("g"));
     view.sortByColumn(0, Qt::AscendingOrder);
     QCOMPARE(view.header()->sortIndicatorSection(), 0);
+    QCOMPARE(view.model()->data(view.model()->index(0,0)).toString(), QString::fromLatin1("a"));
+    QCOMPARE(view.model()->data(view.model()->index(1,0)).toString(), QString::fromLatin1("b"));
+    
 }
 
 /*
@@ -2802,6 +2822,29 @@ void tst_QTreeView::indexRowSizeHint()
     view.show();
 
     QCOMPARE(view.indexRowSizeHint(index), w->sizeHint().height());
+}
+
+void tst_QTreeView::filterProxyModelCrash()
+{
+    QStandardItemModel model;
+    QList<QStandardItem *> items;
+    for (int i = 0; i < 100; i++)
+        items << new QStandardItem(QString::fromLatin1("item %1").arg(i));
+    model.appendColumn(items);
+
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+
+    QTreeView view;
+    view.setModel(&proxy);
+    view.show();
+    QTest::qWait(30);
+    proxy.invalidate();
+    view.verticalScrollBar()->setValue(15);
+    QTest::qWait(20);
+
+    proxy.invalidate();
+    view.repaint(); //used to crash
 }
 
 class task174627_TreeView : public QTreeView
@@ -3192,6 +3235,42 @@ void tst_QTreeView::task244304_clickOnDecoration()
     QCOMPARE(view.currentIndex(), item1.index());
 }
 
+void tst_QTreeView::task246536_scrollbarsNotWorking()
+{
+    struct MyObject : public QObject
+    {
+        MyObject() : count(0)
+        {
+        }
+
+        bool eventFilter(QObject*, QEvent *e)
+        {
+            if (e->type() == QEvent::Paint)
+                count++;
+
+            return false;
+        }
+
+        int count;
+    };
+    QTreeView tree;
+    MyObject o;
+    tree.viewport()->installEventFilter(&o);
+    QStandardItemModel model;
+    tree.setModel(&model);
+    tree.show();
+    QTest::qWait(100);
+    QList<QStandardItem *> items;
+    for(int i=0; i<100; ++i){
+        items << new QStandardItem(QString::fromLatin1("item %1").arg(i));
+    }
+    model.invisibleRootItem()->appendColumn(items);
+    QTest::qWait(100);
+    o.count = 0;
+    tree.verticalScrollBar()->setValue(50);
+    QTest::qWait(100);
+    QVERIFY(o.count > 0);
+}
 
 QTEST_MAIN(tst_QTreeView)
 #include "tst_qtreeview.moc"

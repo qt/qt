@@ -740,7 +740,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     QString src = fileFixify(files[file], FileFixifyAbsolute);
                     if (!QFile::exists(src))
                         src = files[file];
-                    const QString dst = path + Option::dir_sep + fileInfo(files[file]).fileName();
+                    src = escapeFilePath(src);
+                    const QString dst = escapeFilePath(path + Option::dir_sep + fileInfo(files[file]).fileName());
                     t << dst << ": " << src << "\n\t"
                       << mkdir_p_asstring(path) << "\n\t";
                     QFileInfo fi(fileInfo(files[file]));

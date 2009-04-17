@@ -113,6 +113,7 @@ public:
     bool m_advancedPen;
     bool m_advancedBrush;
     bool m_complexTransform;
+    bool m_emulateProjectiveTransforms;
     bool m_continueCall;
 
     QTransform m_transform;

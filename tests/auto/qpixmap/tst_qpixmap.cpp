@@ -103,6 +103,7 @@ private slots:
     void grabWidget();
     void grabWindow();
     void isNull();
+    void task_246446();
 
 #ifdef Q_WS_QWS
     void convertFromImageNoDetach();
@@ -1014,6 +1015,21 @@ void tst_QPixmap::fromData()
     QCOMPARE(img.pixel(0, 0), QRgb(0xffffffff));
     QCOMPARE(img.pixel(0, 1), QRgb(0xff000000));
 }
+
+void tst_QPixmap::task_246446()
+{
+    // This crashed without the bugfix in 246446
+    QPixmap pm(10, 10);
+    pm.fill(Qt::transparent); // force 32-bit depth
+    QBitmap bm;
+    pm.setMask(bm);
+    {
+        QPixmap pm2(pm);
+    }
+    QVERIFY(pm.width() == 10);
+    QVERIFY(pm.mask().isNull());
+}
+
 
 QTEST_MAIN(tst_QPixmap)
 #include "tst_qpixmap.moc"

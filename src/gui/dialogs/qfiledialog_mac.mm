@@ -278,7 +278,7 @@ QT_USE_NAMESPACE
 {
     Q_UNUSED(sender);
     QString qtFileName = QT_PREPEND_NAMESPACE(qt_mac_NSStringToQString)(filename);
-    QFileInfo info(qtFileName);
+    QFileInfo info(qtFileName.normalized(QT_PREPEND_NAMESPACE(QString::NormalizationForm_C)));
     QString path = info.absolutePath();
     if (path != *mLastFilterCheckPath){
         *mLastFilterCheckPath = path;

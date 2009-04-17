@@ -100,6 +100,8 @@ public:
 
     void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
     void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s);
+    void drawImage(const QRectF &r, const QImage &image, const QRectF &sr,
+                   Qt::ImageConversionFlags flags = Qt::AutoColor);
     void drawTextItem(const QPointF &p, const QTextItem &ti);
 
     Type type() const { return Picture; }

@@ -52,9 +52,7 @@
 #include <QtGui/QStyle>
 #include <QtGui/QPalette>
 
-#if QT_VERSION >= 0x040400
 QT_BEGIN_NAMESPACE
-#endif
 
 class QtPropertyEditorView;
 
@@ -436,9 +434,7 @@ void QtTreePropertyBrowserPrivate::init(QWidget *parent)
     layout->setMargin(0);
     m_treeWidget = new QtPropertyEditorView(parent);
     m_treeWidget->setEditorPrivate(this);
-    const int indicatorWidth = m_treeWidget->style()->pixelMetric(QStyle::PM_IndicatorWidth, 0, m_treeWidget);
-    QSize iconSize(indicatorWidth, indicatorWidth);
-    m_treeWidget->setIconSize(QSize(indicatorWidth, indicatorWidth));
+    m_treeWidget->setIconSize(QSize(18, 18));
     layout->addWidget(m_treeWidget);
 
     m_treeWidget->setColumnCount(2);
@@ -1042,9 +1038,7 @@ void QtTreePropertyBrowser::editItem(QtBrowserItem *item)
     d_ptr->editItem(item);
 }
 
-#if QT_VERSION >= 0x040400
 QT_END_NAMESPACE
-#endif
 
 #include "moc_qttreepropertybrowser.cpp"
 #include "qttreepropertybrowser.moc"

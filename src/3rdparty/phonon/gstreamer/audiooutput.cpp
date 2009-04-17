@@ -42,6 +42,7 @@ AudioOutput::AudioOutput(Backend *backend, QObject *parent)
     static int count = 0;
     m_name = "AudioOutput" + QString::number(count++);
     if (m_backend->isValid()) {
+        g_set_application_name(qApp->applicationName().toUtf8());
         m_audioBin = gst_bin_new (NULL);
         gst_object_ref (GST_OBJECT (m_audioBin));
         gst_object_sink (GST_OBJECT (m_audioBin));     

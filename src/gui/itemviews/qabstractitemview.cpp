@@ -1374,6 +1374,11 @@ bool QAbstractItemView::event(QEvent *event)
 {
     Q_D(QAbstractItemView);
     switch (event->type()) {
+    case QEvent::Paint:
+        //we call this here because the scrollbars' visibility might be altered
+        //so this can't be done in the paintEvent method
+        d->executePostedLayout(); //make sure we set the layout properly
+        break;
     case QEvent::Show:
         {
             d->executePostedLayout(); //make sure we set the layout properly
@@ -1394,6 +1399,9 @@ bool QAbstractItemView::event(QEvent *event)
         break;
     case QEvent::FocusOut:
         d->checkPersistentEditorFocus();
+        break;
+    case QEvent::FontChange:
+        d->doDelayedItemsLayout(); // the size of the items will change
         break;
     default:
         break;
@@ -1501,12 +1509,7 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
         // when the user is interacting with it (ie. clicking on it)
         bool autoScroll = d->autoScroll;
         d->autoScroll = false;
-        // setSelection will update the current item too
-        // and it seems that the two updates are not merged
-        bool updates = d->viewport->updatesEnabled();
-        d->viewport->setUpdatesEnabled(command == QItemSelectionModel::NoUpdate);
         d->selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
-        d->viewport->setUpdatesEnabled(updates);
         d->autoScroll = autoScroll;
         QRect rect(d->pressedPosition - offset, pos);
         setSelection(rect, command);

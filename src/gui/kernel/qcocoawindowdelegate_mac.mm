@@ -1,11 +1,11 @@
 /****************************************************************************
- **
- ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
- **
- ** This file is part of the QtGui module of the Qt Toolkit.
- **
- ** $QT_BEGIN_LICENSE:LGPL$
+**
+** This file is part of the QtGui module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
@@ -36,11 +36,11 @@
 ** If you are unsure which license is appropriate for your use, please
 ** contact the sales department at qt-sales@nokia.com.
 ** $QT_END_LICENSE$
- **
- ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
- ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- **
- ****************************************************************************/
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************/
 
 #import "private/qcocoawindowdelegate_mac_p.h"
 #ifdef QT_MAC_USE_COCOA
@@ -266,18 +266,18 @@ static void cleanupCocoaWindowDelegate()
 
 -(void)windowDidBecomeMain:(NSNotification*)notification
 {
-    NSWindow *window = [notification object];
-    if ([window isKeyWindow])
-        return;  // Should have already got an activate notification from "become key."
-
     QWidget *qwidget = m_windowHash->value([notification object]);
+    Q_ASSERT(qwidget);
+    if (qwidget->isActiveWindow())
+        return;  // Widget is already active, no need to go through re-activation.
+
     onApplicationWindowChangedActivation(qwidget, true);
 }
 
 -(void)windowDidResignMain:(NSNotification*)notification
 {
     QWidget *qwidget = m_windowHash->value([notification object]);
-
+    Q_ASSERT(qwidget);
     onApplicationWindowChangedActivation(qwidget, false);
 }
 
@@ -285,11 +285,11 @@ static void cleanupCocoaWindowDelegate()
 // tiny difference between main and key windows.
 -(void)windowDidBecomeKey:(NSNotification*)notification
 {
-    NSWindow *window = [notification object];
-    if ([window isMainWindow])
-        return;  // Should have already got an activate notification from "become main."
+    QWidget *qwidget = m_windowHash->value([notification object]);
+    Q_ASSERT(qwidget);
+    if (qwidget->isActiveWindow())
+        return;  // Widget is already active, no need to go through re-activation
 
-    QWidget *qwidget = m_windowHash->value(window);
 
     onApplicationWindowChangedActivation(qwidget, true);
 }
@@ -297,6 +297,7 @@ static void cleanupCocoaWindowDelegate()
 -(void)windowDidResignKey:(NSNotification*)notification
 {
     QWidget *qwidget = m_windowHash->value([notification object]);
+    Q_ASSERT(qwidget);
     onApplicationWindowChangedActivation(qwidget, false);
 }
 

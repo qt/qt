@@ -110,6 +110,8 @@ public:
                const QString& host,
                int port,
                const QString& connOpts);
+    QString escapeIdentifier(const QString &identifier, IdentifierType type) const;
+
 private:
     bool setAutoCommit(bool autoCommit);
     QDB2DriverPrivate* d;

@@ -61,6 +61,7 @@
 #endif
 #include <private/qcombobox_p.h>
 #include <private/qabstractitemmodel_p.h>
+#include <private/qabstractscrollarea_p.h>
 #include <qdebug.h>
 
 #ifdef Q_WS_X11
@@ -108,7 +109,7 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
                                                         const QModelIndex &index) const
 {
     QStyleOptionMenuItem menuOption;
-    menuOption.palette = QComboBoxPrivate::viewContainerPalette(mCombo).resolve(QApplication::palette("QMenu"));
+    menuOption.palette = option.palette.resolve(QApplication::palette("QMenu"));
     menuOption.state = QStyle::State_None;
     if (mCombo->window()->isActiveWindow())
         menuOption.state = QStyle::State_Active;
@@ -619,7 +620,6 @@ void QComboBoxPrivateContainer::changeEvent(QEvent *e)
 bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
 {
     switch (e->type()) {
-    case QEvent::KeyPress:
     case QEvent::ShortcutOverride:
         switch (static_cast<QKeyEvent*>(e)->key()) {
         case Qt::Key_Enter:
@@ -2274,7 +2274,6 @@ void QComboBox::showPopup()
     bool boundToScreen = !window()->testAttribute(Qt::WA_DontShowOnScreen);
 
     const bool usePopup = style->styleHint(QStyle::SH_ComboBox_Popup, &opt, this);
-
     {
         int listHeight = 0;
         int count = 0;
@@ -2306,10 +2305,23 @@ void QComboBox::showPopup()
         listRect.setHeight(listHeight);
     }
 
-    // ### Adjusting by PM_DefaultFrameWidth is not enough. Since QFrame supports
-    // SE_FrameContents, QFrame needs API to return the frameWidths
-    listRect.setHeight(listRect.height() + 2*container->spacing()
-                       + style->pixelMetric(QStyle::PM_DefaultFrameWidth, &opt, this) * 2);
+    {
+        // add the spacing for the grid on the top and the bottom;
+        int heightMargin = 2*container->spacing();
+
+        // add the frame of the container
+        int marginTop, marginBottom;
+        container->getContentsMargins(0, &marginTop, 0, &marginBottom);
+        heightMargin += marginTop + marginBottom;
+
+        //add the frame of the view
+        view()->getContentsMargins(0, &marginTop, 0, &marginBottom);
+        marginTop += static_cast<QAbstractScrollAreaPrivate *>(QObjectPrivate::get(view()))->top;
+        marginBottom += static_cast<QAbstractScrollAreaPrivate *>(QObjectPrivate::get(view()))->bottom;
+        heightMargin += marginTop + marginBottom;
+
+        listRect.setHeight(listRect.height() + heightMargin);
+    }
 
     // Add space for margin at top and bottom if the style wants it.
     if (usePopup)
@@ -2322,6 +2334,8 @@ void QComboBox::showPopup()
             listRect.setWidth(listRect.width() + diff);
     }
 
+    //we need to activate the layout to make sure the min/maximum size are set when the widget was not yet show
+    container->layout()->activate();
     //takes account of the minimum/maximum size of the container
     listRect.setSize( listRect.size().expandedTo(container->minimumSize())
                       .boundedTo(container->maximumSize()));

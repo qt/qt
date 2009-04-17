@@ -181,6 +181,7 @@ QT_FORWARD_DECLARE_CLASS(QAbstractScrollAreaPrivate)
 QT_FORWARD_DECLARE_CLASS(QPaintEvent)
 QT_FORWARD_DECLARE_CLASS(QPainter)
 QT_FORWARD_DECLARE_CLASS(QHoverEvent)
+QT_FORWARD_DECLARE_CLASS(QCursor)
 QT_USE_NAMESPACE
 extern "C" {
     extern NSString *NSTextInputReplacementRangeAttributeName;
@@ -233,6 +234,34 @@ extern "C" {
         [self registerForDraggedTypes:supportedTypes];
     } else {
         [self unregisterDraggedTypes];
+    }
+}
+
+- (void)resetCursorRects
+{
+    QWidget *cursorWidget = qwidget;
+
+    if (cursorWidget->testAttribute(Qt::WA_TransparentForMouseEvents))
+        cursorWidget = QApplication::widgetAt(qwidget->mapToGlobal(qwidget->rect().center()));
+
+    if (cursorWidget == 0)
+        return;
+
+    if (!cursorWidget->testAttribute(Qt::WA_SetCursor)) {
+        [super resetCursorRects];
+        return;
+    }
+
+    QRegion mask = qt_widget_private(cursorWidget)->extra->mask;
+    NSCursor *nscursor = static_cast<NSCursor *>(nsCursorForQCursor(cursorWidget->cursor()));
+    if (mask.isEmpty()) {
+        [self addCursorRect:[qt_mac_nativeview_for(cursorWidget) visibleRect] cursor:nscursor];
+    } else {
+        const QVector<QRect> &rects = mask.rects();
+        for (int i = 0; i < rects.size(); ++i) {
+            const QRect &rect = rects.at(i);
+            [self addCursorRect:NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height()) cursor:nscursor];
+        }
     }
 }
 
@@ -300,11 +329,13 @@ extern "C" {
     NSPoint windowPoint = [sender draggingLocation];
     NSPoint globalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
+    NSDragOperation nsActions = [sender draggingSourceOperationMask];
     QPoint posDrag(localPoint.x, localPoint.y);
-    if (qt_mac_mouse_inside_answer_rect(posDrag))
+    if (qt_mac_mouse_inside_answer_rect(posDrag)
+        && QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) == nsActions)
         return QT_PREPEND_NAMESPACE(qt_mac_mapDropActions)(QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastAction));
     // send drag move event to the widget    
-    NSDragOperation nsActions = [sender draggingSourceOperationMask]; 
+    QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) = nsActions;
     Qt::DropActions qtAllowed = QT_PREPEND_NAMESPACE(qt_mac_mapNSDragOperations)(nsActions);
     QMimeData *mimeData = dropData;
     if (QDragManager::self()->source())
@@ -599,7 +630,7 @@ extern "C" {
     for (NSView *lookView in viewsToLookAt) {
         NSPoint tmpPoint = [lookView convertPoint:windowPoint fromView:nil];
         for (NSView *view in [lookView subviews]) {
-            if (view == mouseView)
+            if (view == mouseView || [view isHidden])
                 continue;
             NSRect frameRect = [view frame];
             if (NSMouseInRect(tmpPoint, [view frame], [view isFlipped]))
@@ -618,7 +649,7 @@ extern "C" {
             NSPoint tmpPoint = [viewForDescent convertPoint:windowPoint fromView:nil];                
             // Apply same rule as above wrt z-order.
             for (NSView *view in [viewForDescent subviews]) {
-                if (NSMouseInRect(tmpPoint, [view frame], [view isFlipped]))
+                if (![view isHidden] && NSMouseInRect(tmpPoint, [view frame], [view isFlipped]))
                     lowerView = view;
             }
             if (!lowerView) // Low as we can be at this point.
@@ -887,15 +918,18 @@ extern "C" {
     QWidget *widgetToGetKey = qwidget;
 
     QWidget *popup = qAppInstance()->activePopupWidget();
-    if (popup && popup != qwidget->window())
+    bool sendToPopup = false;
+    if (popup && popup != qwidget->window()) {
         widgetToGetKey = popup->focusWidget() ? popup->focusWidget() : popup;
+        sendToPopup = true;
+    }
 
     if (widgetToGetKey->testAttribute(Qt::WA_InputMethodEnabled)) {
         [qt_mac_nativeview_for(widgetToGetKey) interpretKeyEvents:[NSArray arrayWithObject: theEvent]];
     }
     if (sendKeyEvents && !composing) {
         bool keyOK = qt_dispatchKeyEvent(theEvent, widgetToGetKey);
-        if (!keyOK)
+        if (!keyOK && !sendToPopup)
             [super keyDown:theEvent];
     }
 }
@@ -909,6 +943,27 @@ extern "C" {
             [super keyUp:theEvent];
     }
 }
+
+- (void)viewWillMoveToWindow:(NSWindow *)window
+{
+    if (qwidget->windowFlags() & Qt::MSWindowsOwnDC
+          && (window != [self window])) { // OpenGL Widget
+        // Create a stupid ClearDrawable Event
+        QEvent event(QEvent::MacGLClearDrawable);
+        qApp->sendEvent(qwidget, &event);
+    }
+}
+
+- (void)viewDidMoveToWindow
+{
+    if (qwidget->windowFlags() & Qt::MSWindowsOwnDC && [self window]) {
+        // call update paint event
+        qwidgetprivate->needWindowChange = true;
+        QEvent event(QEvent::MacGLWindowChange);
+        qApp->sendEvent(qwidget, &event);
+    }
+}
+
 
 // NSTextInput Protocol implementation
 

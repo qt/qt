@@ -522,9 +522,6 @@ void tst_QUdpSocket::bindMode()
 #endif
     }
 
-#if QT_VERSION < 0x040100
-    QSKIP("QUdpSocket::BindMode was added in Qt 4.1.", SkipAll);
-#else
     QUdpSocket socket;
     QVERIFY2(socket.bind(), socket.errorString().toLatin1().constData());
     QUdpSocket socket2;
@@ -549,7 +546,6 @@ void tst_QUdpSocket::bindMode()
     QVERIFY2(socket.bind(0, QUdpSocket::DontShareAddress), socket.errorString().toLatin1().constData());
     QVERIFY(!socket2.bind(socket.localPort()));
     QVERIFY(!socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint));
-#endif
 #endif
 }
 

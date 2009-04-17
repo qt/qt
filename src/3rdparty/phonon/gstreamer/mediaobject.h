@@ -21,7 +21,6 @@
 #include "backend.h"
 #include "common.h"
 #include "medianode.h"
-
 #include <phonon/mediaobjectinterface.h>
 #include <phonon/addoninterface.h>
 
@@ -32,7 +31,6 @@
 #include <QtCore/QDate>
 #include <QtCore/QEvent>
 #include <QtCore/QUrl>
-
 #include <gst/gst.h>
 
 QT_BEGIN_NAMESPACE
@@ -50,11 +48,20 @@ class AudioPath;
 class VideoPath;
 class AudioOutput;
 
-class MediaObject : public QObject, public MediaObjectInterface, public AddonInterface, public MediaNode
+class MediaObject : public QObject, public MediaObjectInterface
+#ifndef QT_NO_PHONON_MEDIACONTROLLER
+        , public AddonInterface
+#endif
+        , public MediaNode
 {
     friend class Stream;
     Q_OBJECT
-    Q_INTERFACES(Phonon::MediaObjectInterface Phonon::AddonInterface Phonon::Gstreamer::MediaNode)
+    Q_INTERFACES(Phonon::MediaObjectInterface
+#ifndef QT_NO_PHONON_MEDIACONTROLLER
+                 Phonon::AddonInterface
+#endif
+                 Phonon::Gstreamer::MediaNode
+    )
 
 public:
 
@@ -93,16 +100,10 @@ public:
     MediaSource source() const;
 
     // No additional interfaces currently supported
-    bool hasInterface(Interface) const
-    {
-        return false;
-    }
-
-    QVariant interfaceCall(Interface, int, const QList<QVariant> &)
-    {
-        return QVariant();
-    }
-
+#ifndef QT_NO_PHONON_MEDIACONTROLLER
+    bool hasInterface(Interface) const;
+    QVariant interfaceCall(Interface, int, const QList<QVariant> &);
+#endif
     bool isLoading()
     {
         return m_loading;
@@ -176,6 +177,19 @@ Q_SIGNALS:
     QMultiMap<QString, QString> metaData();
     void setMetaData(QMultiMap<QString, QString> newData);
 
+    // AddonInterface:
+    void titleChanged(int);
+    void availableTitlesChanged(int);
+
+    // Not implemented
+    void chapterChanged(int);
+    void availableChaptersChanged(int);
+    void angleChanged(int);
+    void availableAnglesChanged(int);
+
+    void availableSubtitlesChanged();
+    void availableAudioChannelsChanged();
+
 protected:
     void beginLoad();
     void loadingComplete();
@@ -218,6 +232,10 @@ private:
     bool updateTotalTime();
     void updateSeekable();
     qint64 getPipelinePos() const;
+
+    int _iface_availableTitles() const;
+    int _iface_currentTitle() const;
+    void _iface_setCurrentTitle(int title);
 
     bool m_resumeState;
     State m_oldState;
@@ -264,6 +282,9 @@ private:
     bool m_resetNeeded;
     QStringList m_missingCodecs;
     QMultiMap<QString, QString> m_metaData;
+    bool m_autoplayTitles;
+    int m_availableTitles;
+    int m_currentTitle;
 };
 }
 } //namespace Phonon::Gstreamer

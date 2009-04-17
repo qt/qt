@@ -92,7 +92,11 @@ excludedirs             = $QT_SOURCE_TREE/src/3rdparty/clucene \
                           $QT_SOURCE_TREE/src/3rdparty/webkit/WebCore \
                           $QT_SOURCE_TREE/src/3rdparty/wintab \
                           $QT_SOURCE_TREE/src/3rdparty/zlib \
-                          $QT_SOURCE_TREE/doc/src/snippets
+                          $QT_SOURCE_TREE/doc/src/snippets \
+                          $QT_SOURCE_TREE/src/3rdparty/phonon/gstreamer \
+                          $QT_SOURCE_TREE/src/3rdparty/phonon/ds9 \
+                          $QT_SOURCE_TREE/src/3rdparty/phonon/qt7 \
+                          $QT_SOURCE_TREE/src/3rdparty/phonon/waveout
 
 sources.fileextensions  = "*.cpp *.qdoc *.mm"
 examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp"

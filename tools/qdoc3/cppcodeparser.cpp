@@ -672,11 +672,13 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
     else if (command == COMMAND_QMLCLASS) {
         const ClassNode* classNode = 0;
         QStringList names = arg.split(" "); 
-        qDebug() << "QMLCLASS" << names;
-        Node* n = tre->findNode(names[1].split("::"),Node::Class);
-        if (n) {
-            classNode = static_cast<const ClassNode*>(n);
-            qDebug() << "FOUND IT!" << classNode->name();
+        //qDebug() << "QMLCLASS" << names;
+        if (names.size() > 1) {
+            Node* n = tre->findNode(names[1].split("::"),Node::Class);
+            if (n) {
+                classNode = static_cast<const ClassNode*>(n);
+                //qDebug() << "FOUND IT!" << classNode->name();
+            }
         }
         return new QmlNode(tre->root(), names[0], classNode);
     }

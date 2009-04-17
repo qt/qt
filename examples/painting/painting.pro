@@ -7,7 +7,7 @@ SUBDIRS       = basicdrawing \
 
 !wince*: SUBDIRS += fontsampler
 
-contains(QT_CONFIG, svg): SUBDIRS += svgviewer
+contains(QT_CONFIG, svg): SUBDIRS += svggenerator svgviewer
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/painting

@@ -44,9 +44,7 @@
 
 #include "qtpropertymanager.h"
 
-#if QT_VERSION >= 0x040400
 QT_BEGIN_NAMESPACE
-#endif
 
 class QtSpinBoxFactoryPrivate;
 
@@ -394,8 +392,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void slotSetValue(const QFont &))
 };
 
-#if QT_VERSION >= 0x040400
 QT_END_NAMESPACE
-#endif
 
 #endif

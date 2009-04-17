@@ -346,9 +346,6 @@ void tst_Q3TextStream::operator_shiftleft()
     QFETCH( QString, device );
     QFETCH( QString, encoding );
     QFETCH( QByteArray, encoded );
-#if QT_VERSION < 0x040000
-    encoded.resize( encoded.size() - 1 );
-#endif
 
     if ( device == "file" ) {
 	QFile outFile( "qtextstream.out" );
@@ -400,9 +397,6 @@ void tst_Q3TextStream::operator_shiftright()
     QFETCH( int, intVal );
     QFETCH( QString,  stringVal );
     QFETCH( QByteArray, encoded );
-#if QT_VERSION < 0x040000
-    encoded.resize( encoded.size() - 1 );
-#endif
 
     if ( device == "file" ) {
 	QFile outFile( "qtextstream.out" );
@@ -1295,7 +1289,6 @@ void tst_Q3TextStream::write_Q3CString( Q3TextStream *s )
 void tst_Q3TextStream::task28319()
 {
     /*
-#if QT_VERSION >= 0x040000
     // Specific test for task 28319
     QFile f("28319.txt");
     if (f.open(IO_WriteOnly)) {
@@ -1324,9 +1317,6 @@ void tst_Q3TextStream::task28319()
     } else {
 	QVERIFY(FALSE);
     }
-#else
-    QSKIP( "A minor bug we don't want to fix in 3.2.", SkipAll);
-#endif
     */
 }
 

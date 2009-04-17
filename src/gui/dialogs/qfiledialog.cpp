@@ -780,6 +780,13 @@ void QFileDialog::selectFile(const QString &filename)
         if (QFileInfo(filename).isAbsolute()) {
             QString current = d->rootPath();
             text.remove(current);
+            if (text.at(0) == QDir::separator()
+#ifdef Q_OS_WIN
+                //On Windows both cases can happen
+                || text.at(0) == QLatin1Char('/')
+#endif
+                )
+                text = text.remove(0,1);
         }
         if (!isVisible() || !d->lineEdit()->hasFocus())
             d->lineEdit()->setText(text);
@@ -950,25 +957,29 @@ void QFileDialog::setNameFilters(const QStringList &filters)
 {
     Q_D(QFileDialog);
     d->defaultFileTypes = (filters == QStringList(QFileDialog::tr("All Files (*)")));
-    d->nameFilters = filters;
+    QStringList cleanedFilters;
+    for (int i = 0; i < filters.count(); ++i) {
+        cleanedFilters << filters[i].simplified();
+    }
+    d->nameFilters = cleanedFilters;
 
     if (d->nativeDialogInUse){
-        d->setNameFilters_sys(filters);
+        d->setNameFilters_sys(cleanedFilters);
         return;
     }
 
     d->qFileDialogUi->fileTypeCombo->clear();
-    if (filters.isEmpty())
+    if (cleanedFilters.isEmpty())
         return;
 
     if (testOption(HideNameFilterDetails)) {
         QStringList strippedFilters;
-        for (int i = 0; i < filters.count(); ++i) {
-            strippedFilters.append(filters[i].mid(0, filters[i].indexOf(QLatin1String(" ("))));
+        for (int i = 0; i < cleanedFilters.count(); ++i) {
+            strippedFilters.append(cleanedFilters[i].mid(0, cleanedFilters[i].indexOf(QLatin1String(" ("))));
         }
         d->qFileDialogUi->fileTypeCombo->addItems(strippedFilters);
     } else {
-        d->qFileDialogUi->fileTypeCombo->addItems(filters);
+        d->qFileDialogUi->fileTypeCombo->addItems(cleanedFilters);
     }
     d->_q_useNameFilter(0);
 }
@@ -1582,7 +1593,12 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
     args.parent = parent;
     args.caption = caption;
     args.directory = QFileDialogPrivate::workingDirectory(dir);
-    args.selection = QFileDialogPrivate::initialSelection(dir);
+    //If workingDirectory returned a different path than the initial one,
+    //it means that the initial path was invalid. There is no point to try select a file
+    if (args.directory != QFileInfo(dir).path())
+        args.selection = QString();
+    else
+        args.selection = QFileDialogPrivate::initialSelection(dir);
     args.filter = filter;
     args.mode = ExistingFile;
     args.options = options;
@@ -1667,7 +1683,12 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
     args.parent = parent;
     args.caption = caption;
     args.directory = QFileDialogPrivate::workingDirectory(dir);
-    args.selection = QFileDialogPrivate::initialSelection(dir);
+    //If workingDirectory returned a different path than the initial one,
+    //it means that the initial path was invalid. There is no point to try select a file
+    if (args.directory != QFileInfo(dir).path())
+        args.selection = QString();
+    else
+        args.selection = QFileDialogPrivate::initialSelection(dir);
     args.filter = filter;
     args.mode = ExistingFiles;
     args.options = options;
@@ -1753,7 +1774,12 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
     args.parent = parent;
     args.caption = caption;
     args.directory = QFileDialogPrivate::workingDirectory(dir);
-    args.selection = QFileDialogPrivate::initialSelection(dir);
+    //If workingDirectory returned a different path than the initial one,
+    //it means that the initial path was invalid. There is no point to try select a file
+    if (args.directory != QFileInfo(dir).path())
+        args.selection = QString();
+    else
+        args.selection = QFileDialogPrivate::initialSelection(dir);
     args.filter = filter;
     args.mode = AnyFile;
     args.options = options;
@@ -2117,6 +2143,7 @@ void QFileDialogPrivate::createWidgets()
 #ifndef QT_NO_COMPLETER
     completer = new QFSCompletor(model, q);
     qFileDialogUi->fileNameEdit->setCompleter(completer);
+    completer->sourceModel = model;
     QObject::connect(qFileDialogUi->fileNameEdit, SIGNAL(textChanged(QString)),
             q, SLOT(_q_autoCompleteFileName(QString)));
 #endif // QT_NO_COMPLETER
@@ -2239,12 +2266,21 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
         proxyModel->setSourceModel(d->model);
         d->qFileDialogUi->listView->setModel(d->proxyModel);
         d->qFileDialogUi->treeView->setModel(d->proxyModel);
+#ifndef QT_NO_COMPLETER
+        d->completer->setModel(d->proxyModel);
+        d->completer->proxyModel = d->proxyModel;
+#endif
         connect(d->proxyModel, SIGNAL(rowsInserted(const QModelIndex &, int, int)),
             this, SLOT(_q_rowsInserted(const QModelIndex &)));
     } else {
         d->proxyModel = 0;
         d->qFileDialogUi->listView->setModel(d->model);
         d->qFileDialogUi->treeView->setModel(d->model);
+#ifndef QT_NO_COMPLETER
+        d->completer->setModel(d->model);
+        d->completer->sourceModel = d->model;
+        d->completer->proxyModel = 0;
+#endif
         connect(d->model, SIGNAL(rowsInserted(const QModelIndex &, int, int)),
             this, SLOT(_q_rowsInserted(const QModelIndex &)));
     }
@@ -2757,8 +2793,9 @@ void QFileDialogPrivate::_q_enterDirectory(const QModelIndex &index)
 {
     Q_Q(QFileDialog);
     // My Computer or a directory
-    QString path = index.data(QFileSystemModel::FilePathRole).toString();
-    if (path.isEmpty() || model->isDir(index)) {
+    QModelIndex sourceIndex = mapToSource(index);
+    QString path = sourceIndex.data(QFileSystemModel::FilePathRole).toString();
+    if (path.isEmpty() || model->isDir(sourceIndex)) {
         q->setDirectory(path);
         emit q->directoryEntered(path);
         if (fileMode == QFileDialog::Directory
@@ -3132,7 +3169,11 @@ void QFileDialogLineEdit::keyPressEvent(QKeyEvent *e)
 
 QString QFSCompletor::pathFromIndex(const QModelIndex &index) const
 {
-    const QFileSystemModel *dirModel = static_cast<const QFileSystemModel *>(model());
+    const QFileSystemModel *dirModel;
+    if (proxyModel)
+        dirModel = qobject_cast<const QFileSystemModel *>(proxyModel->sourceModel());
+    else
+        dirModel = sourceModel;
     QString currentLocation = dirModel->rootPath();
     QString path = index.data(QFileSystemModel::FilePathRole).toString();
     if (!currentLocation.isEmpty() && path.startsWith(currentLocation)) {
@@ -3178,7 +3219,11 @@ QStringList QFSCompletor::splitPath(const QString &path) const
     bool startsFromRoot = path[0] == sep[0];
 #endif
     if (parts.count() == 1 || (parts.count() > 1 && !startsFromRoot)) {
-        const QFileSystemModel *dirModel = static_cast<const QFileSystemModel *>(model());
+        const QFileSystemModel *dirModel;
+        if (proxyModel)
+            dirModel = qobject_cast<const QFileSystemModel *>(proxyModel->sourceModel());
+        else
+            dirModel = sourceModel;
         QString currentLocation = QDir::toNativeSeparators(dirModel->rootPath());
         if (currentLocation.contains(sep) && path != currentLocation) {
             QStringList currentLocationList = splitPath(currentLocation);

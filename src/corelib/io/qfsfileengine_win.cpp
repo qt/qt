@@ -485,7 +485,7 @@ QString QFSFileEnginePrivate::longFileName(const QString &path)
     QString absPath = nativeAbsoluteFilePath(path);
 #if !defined(Q_OS_WINCE)
     QString prefix = QLatin1String("\\\\?\\");
-    if (isUncPath(path)) {
+    if (isUncPath(absPath)) {
         prefix = QLatin1String("\\\\?\\UNC\\");
         absPath.remove(0, 2);
     }

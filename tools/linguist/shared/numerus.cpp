@@ -104,7 +104,7 @@ static const uchar arabicRules[] =
       Q_MOD_100 | Q_BETWEEN, 3, 10, Q_NEWRULE,
       Q_MOD_100 | Q_NEQ, 0 };
 
-static const char * const japaneseStyleForms[] = { "Unique Form", 0 };
+static const char * const japaneseStyleForms[] = { "Universal Form", 0 };
 static const char * const englishStyleForms[] = { "Singular", "Plural", 0 };
 static const char * const frenchStyleForms[] = { "Singular", "Plural", 0 };
 static const char * const latvianForms[] = { "Singular", "Plural", "Nullar", 0 };

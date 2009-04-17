@@ -51,6 +51,7 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qthread.h>
+#include <QtCore/qthreadpool.h>
 #include <QtCore/qvector.h>
 
 QT_BEGIN_HEADER
@@ -107,7 +108,7 @@ class ReduceKernel
     const ReduceOptions reduceOptions;
 
     QMutex mutex;
-    int progress, resultsMapSize;
+    int progress, resultsMapSize, threadCount;
     ResultsMap resultsMap;
 
     bool canReduce(int begin) const
@@ -140,7 +141,8 @@ class ReduceKernel
 
 public:
     ReduceKernel(ReduceOptions _reduceOptions)
-        : reduceOptions(_reduceOptions), progress(0), resultsMapSize(0)
+        : reduceOptions(_reduceOptions), progress(0), resultsMapSize(0), 
+          threadCount(QThreadPool::globalInstance()->maxThreadCount())
     { }
 
     void runReduce(ReduceFunctor &reduce,
@@ -210,12 +212,12 @@ public:
 
     inline bool shouldThrottle()
     {
-        return (resultsMapSize > (ReduceQueueThrottleLimit * QThread::idealThreadCount()));
+        return (resultsMapSize > (ReduceQueueThrottleLimit * threadCount));
     }
 
     inline bool shouldStartThread()
     {
-        return (resultsMapSize <= (ReduceQueueStartLimit * QThread::idealThreadCount()));
+        return (resultsMapSize <= (ReduceQueueStartLimit * threadCount));
     }
 };
 

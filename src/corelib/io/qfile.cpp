@@ -712,6 +712,9 @@ QFile::rename(const QString &newName)
     if(error() == QFile::NoError) {
         if (fileEngine()->rename(newName)) {
             unsetError();
+            // engine was able to handle the new name so we just reset it
+            fileEngine()->setFileName(newName);
+            d->fileName = newName;
             return true;
         }
 
@@ -731,10 +734,18 @@ QFile::rename(const QString &newName)
                 }
                 if (read == -1) {
                     d->setError(QFile::RenameError, in.errorString());
-                    return true;
+                    error = true;
                 }
-                if(!error)
-                    in.remove();
+                if(!error) {
+                    if (!in.remove()) {
+                        d->setError(QFile::RenameError, tr("Cannot remove source file"));
+                        error = true;
+                    }
+                }
+                if (error)
+                    out.remove();
+                else
+                    setFileName(newName);
                 return !error;
             }
         }
@@ -889,7 +900,10 @@ QFile::copy(const QString &newName)
                         error = true;
                         d->setError(QFile::CopyError, tr("Cannot create %1 for output").arg(newName));
                     }
-#ifndef QT_NO_TEMPORARYFILE
+#ifdef QT_NO_TEMPORARYFILE
+                    if (error)
+                        out.remove();
+#else
                     if (!error)
                         out.setAutoRemove(false);
 #endif

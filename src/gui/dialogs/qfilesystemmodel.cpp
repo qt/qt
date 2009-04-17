@@ -166,6 +166,8 @@ bool QFileSystemModel::remove(const QModelIndex &aindex) const
 {
     //### TODO optim
     QString path = filePath(aindex);
+    QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());
+    d->fileInfoGatherer.removePath(path);
     QDirIterator it(path,
             QDir::AllDirs | QDir:: Files | QDir::NoDotAndDotDot,
             QDirIterator::Subdirectories);
@@ -375,7 +377,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
             if (!info.exists())
                 return rootNode;
             QFileSystemModelPrivate *p = const_cast<QFileSystemModelPrivate*>(this);
-            p->addNode(rootNode, host);
+            p->addNode(rootNode, host,info);
             p->addVisibleFiles(rootNode, QStringList(host));
         }
         r = rootNode->visibleLocation(host);
@@ -395,6 +397,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
 #endif
 
     QFileSystemModelPrivate::QFileSystemNode *parent = node(index);
+
     for (int i = 0; i < pathElements.count(); ++i) {
         QString element = pathElements.at(i);
 #ifdef Q_OS_WIN
@@ -423,7 +426,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
             if (!info.exists())
                 return const_cast<QFileSystemModelPrivate::QFileSystemNode*>(&root);
             QFileSystemModelPrivate *p = const_cast<QFileSystemModelPrivate*>(this);
-            node = p->addNode(parent, element);
+            node = p->addNode(parent, element,info);
 #ifndef QT_NO_FILESYSTEMWATCHER
             node->populate(fileInfoGatherer.getInfo(info));
 #endif
@@ -843,7 +846,7 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
         QFileSystemModelPrivate::QFileSystemNode *parentNode = indexNode->parent;
         int visibleLocation = parentNode->visibleLocation(parentNode->children.value(indexNode->fileName)->fileName);
 
-        d->addNode(parentNode, newName);
+        d->addNode(parentNode, newName,indexNode->info->fileInfo());
         parentNode->visibleChildren.removeAt(visibleLocation);
         QFileSystemModelPrivate::QFileSystemNode * oldValue = parentNode->children.value(oldName);
         parentNode->children[newName] = oldValue;
@@ -1076,11 +1079,10 @@ private:
 /*
     \internal
 
-    Sort all of the children of parent (including their children)
+    Sort all of the children of parent
 */
-void QFileSystemModelPrivate::sortChildren(int column, Qt::SortOrder order, const QModelIndex &parent)
+void QFileSystemModelPrivate::sortChildren(int column, const QModelIndex &parent)
 {
-    Q_Q(QFileSystemModel);
     QFileSystemModelPrivate::QFileSystemNode *indexNode = node(parent);
     if (indexNode->children.count() == 0)
         return;
@@ -1104,9 +1106,6 @@ void QFileSystemModelPrivate::sortChildren(int column, Qt::SortOrder order, cons
         indexNode->visibleChildren.append(values.at(i).first->fileName);
         values.at(i).first->isVisible = true;
     }
-
-    for (int i = 0; i < q->rowCount(parent); ++i)
-        sortChildren(column, order, q->index(i, 0, parent));
 }
 
 /*!
@@ -1128,7 +1127,7 @@ void QFileSystemModel::sort(int column, Qt::SortOrder order)
 
     if (!(d->sortColumn == column && d->sortOrder != order && !d->forceSort)) {
         //we sort only from where we are, don't need to sort all the model
-        d->sortChildren(column, order, index(rootPath()));
+        d->sortChildren(column, index(rootPath()));
         d->sortColumn = column;
         d->forceSort = false;
     }
@@ -1286,7 +1285,7 @@ QModelIndex QFileSystemModel::mkdir(const QModelIndex &parent, const QString &na
     if (!dir.mkdir(name))
         return QModelIndex();
     QFileSystemModelPrivate::QFileSystemNode *parentNode = d->node(parent);
-    d->addNode(parentNode, name);
+    d->addNode(parentNode, name, QFileInfo());
     Q_ASSERT(parentNode->children.contains(name));
     QFileSystemModelPrivate::QFileSystemNode *node = parentNode->children[name];
     node->populate(d->fileInfoGatherer.getInfo(QFileInfo(dir.absolutePath() + QDir::separator() + name)));
@@ -1431,7 +1430,10 @@ void QFileSystemModel::setFilter(QDir::Filters filters)
 }
 
 /*!
-    Returns the filter specification for the directory model.
+    Returns the filter specified for the directory model.
+
+    If a filter has not been set, the default filter is QDir::AllEntries |
+    QDir::NoDotAndDotDot | QDir::AllDirs.
 
     \sa QDir::Filters
 */
@@ -1605,10 +1607,13 @@ void QFileSystemModelPrivate::_q_directoryChanged(const QString &directory, cons
 
     *WARNING* this will change the count of children
 */
-QFileSystemModelPrivate::QFileSystemNode* QFileSystemModelPrivate::addNode(QFileSystemNode *parentNode, const QString &fileName)
+QFileSystemModelPrivate::QFileSystemNode* QFileSystemModelPrivate::addNode(QFileSystemNode *parentNode, const QString &fileName, const QFileInfo& info)
 {
     // In the common case, itemLocation == count() so check there first
     QFileSystemModelPrivate::QFileSystemNode *node = new QFileSystemModelPrivate::QFileSystemNode(fileName, parentNode);
+#ifndef QT_NO_FILESYSTEMWATCHER
+    node->populate(info);
+#endif
     parentNode->children.insert(fileName, node);
     return node;
 }
@@ -1726,7 +1731,7 @@ void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path, const QL
         QExtendedInformation info = fileInfoGatherer.getInfo(updates.at(i).second);
         bool previouslyHere = parentNode->children.contains(fileName);
         if (!previouslyHere) {
-            addNode(parentNode, fileName);
+            addNode(parentNode, fileName, info.fileInfo());
         }
         QFileSystemModelPrivate::QFileSystemNode * node = parentNode->children.value(fileName);
         bool isCaseSensitive = parentNode->caseSensitive();

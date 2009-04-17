@@ -44,7 +44,7 @@
 #include <QtGui>
 
 CustomProxy::CustomProxy(QGraphicsItem *parent, Qt::WindowFlags wFlags)
-    : QGraphicsProxyWidget(parent, wFlags), popupShown(false)
+    : QGraphicsProxyWidget(parent, wFlags), popupShown(false), currentPopup(0)
 {
     timeLine = new QTimeLine(250, this);
     connect(timeLine, SIGNAL(valueChanged(qreal)),
@@ -112,13 +112,17 @@ bool CustomProxy::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
 QVariant CustomProxy::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     if (change == ItemChildAddedChange || change == ItemChildRemovedChange) {
-        QGraphicsItem *item = qVariantValue<QGraphicsItem *>(value);
         if (change == ItemChildAddedChange) {
-            item->setCacheMode(ItemCoordinateCache);
-            item->installSceneEventFilter(this);
-        } else {
-            item->removeSceneEventFilter(this);
+            currentPopup = qVariantValue<QGraphicsItem *>(value);
+            currentPopup->setCacheMode(ItemCoordinateCache);
+            if (scene())
+                currentPopup->installSceneEventFilter(this);
+        } else if (scene()) {
+            currentPopup->removeSceneEventFilter(this);
+            currentPopup = 0;
         }
+    } else if (currentPopup && change == ItemSceneHasChanged) {
+        currentPopup->installSceneEventFilter(this);
     }
     return QGraphicsProxyWidget::itemChange(change, value);
 }

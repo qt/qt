@@ -231,7 +231,7 @@ void QSvgSolidColorStyle::revert(QPainter *p, QSvgExtraStates &)
 }
 
 QSvgGradientStyle::QSvgGradientStyle(QGradient *grad)
-    : m_gradient(grad)
+    : m_gradient(grad), m_gradientStopsSet(false)
 {
 }
 
@@ -256,14 +256,13 @@ void QSvgGradientStyle::apply(QPainter *p, const QRectF &/*rect*/, QSvgNode *, Q
     }
 
     // If the gradient is marked as empty, insert transparent black
-    QGradientStops stops = m_gradient->stops();
-    if (stops.size() == 1 && qIsNaN(stops.at(0).first))
+    if (!m_gradientStopsSet) {
         m_gradient->setStops(QGradientStops() << QGradientStop(0.0, QColor(0, 0, 0, 0)));
-
-    QGradient gradient = *m_gradient;
+        m_gradientStopsSet = true;
+    }
 
     QBrush brush;
-    brush = QBrush(gradient);
+    brush = QBrush(*m_gradient);
 
     if (!m_matrix.isIdentity())
         brush.setMatrix(m_matrix);

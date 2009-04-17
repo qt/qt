@@ -268,11 +268,13 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
         /*NOTREACHED*/
 }
 
+#ifndef Q_WS_WIN
 static int qt_mkstemps(char *path, int slen)
 {
         int fd = 0;
         return (_gettemp(path, &fd, 0, slen) ? fd : -1);
 }
+#endif
 
 //************* QTemporaryFileEngine
 class QTemporaryFileEngine : public QFSFileEngine

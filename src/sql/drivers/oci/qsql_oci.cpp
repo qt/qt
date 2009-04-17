@@ -489,7 +489,7 @@ QSqlError qMakeError(const QString& errString, QSqlError::ErrorType type, OCIErr
     return QSqlError(errString, oraErrorString, type, errorCode);
 }
 
-static QVariant::Type qDecodeOCIType(const QString& ocitype, int ocilen, int ociprec, int ociscale)
+QVariant::Type qDecodeOCIType(const QString& ocitype, QSql::NumericalPrecisionPolicy precisionPolicy)
 {
     QVariant::Type type = QVariant::Invalid;
     if (ocitype == QLatin1String("VARCHAR2") || ocitype == QLatin1String("VARCHAR")
@@ -497,10 +497,26 @@ static QVariant::Type qDecodeOCIType(const QString& ocitype, int ocilen, int oci
          || ocitype == QLatin1String("CHAR") || ocitype == QLatin1String("NVARCHAR2")
          || ocitype == QLatin1String("NCHAR"))
         type = QVariant::String;
-    else if (ocitype == QLatin1String("NUMBER"))
-        type = QVariant::Int;
-    else if (ocitype == QLatin1String("FLOAT"))
-        type = QVariant::Double;
+    else if (ocitype == QLatin1String("NUMBER")
+             || ocitype == QLatin1String("FLOAT")
+             || ocitype == QLatin1String("BINARY_FLOAT")
+             || ocitype == QLatin1String("BINARY_DOUBLE")) {
+        switch(precisionPolicy) {
+            case QSql::LowPrecisionInt32:
+                type = QVariant::Int;
+                break;
+            case QSql::LowPrecisionInt64:
+                type = QVariant::LongLong;
+                break;
+            case QSql::LowPrecisionDouble:
+                type = QVariant::Double;
+                break;
+            case QSql::HighPrecision:
+            default:
+                type = QVariant::String;
+                break;
+        }
+    }
     else if (ocitype == QLatin1String("LONG") || ocitype == QLatin1String("NCLOB")
              || ocitype == QLatin1String("CLOB"))
         type = QVariant::ByteArray;
@@ -512,18 +528,12 @@ static QVariant::Type qDecodeOCIType(const QString& ocitype, int ocilen, int oci
         type = QVariant::DateTime;
     else if (ocitype == QLatin1String("UNDEFINED"))
         type = QVariant::Invalid;
-    if (type == QVariant::Int) {
-        if (ocilen == 22 && ociprec == 0 && ociscale == 0)
-            type = QVariant::Double;
-        if (ociscale > 0)
-            type = QVariant::Double;
-    }
     if (type == QVariant::Invalid)
         qWarning("qDecodeOCIType: unknown type: %s", ocitype.toLocal8Bit().constData());
     return type;
 }
 
-static QVariant::Type qDecodeOCIType(int ocitype)
+QVariant::Type qDecodeOCIType(int ocitype, QSql::NumericalPrecisionPolicy precisionPolicy)
 {
     QVariant::Type type = QVariant::Invalid;
     switch (ocitype) {
@@ -550,7 +560,21 @@ static QVariant::Type qDecodeOCIType(int ocitype)
     case SQLT_NUM:
     case SQLT_VNU:
     case SQLT_UIN:
-        type = QVariant::String;
+        switch(precisionPolicy) {
+            case QSql::LowPrecisionInt32:
+                type = QVariant::Int;
+                break;
+            case QSql::LowPrecisionInt64:
+                type = QVariant::LongLong;
+                break;
+            case QSql::LowPrecisionDouble:
+                type = QVariant::Double;
+                break;
+            case QSql::HighPrecision:
+            default:
+                type = QVariant::String;
+                break;
+        }
         break;
     case SQLT_VBI:
     case SQLT_BIN:
@@ -686,7 +710,7 @@ static OraFieldInfo qMakeOraField(const QOCIResultPrivate* p, OCIParam* param)
     if (r != 0)
         qOraWarning("qMakeOraField:", p->err);
 
-    type = qDecodeOCIType(colType);
+    type = qDecodeOCIType(colType, p->precisionPolicy);
 
     if (type == QVariant::Int) {
         if (colLength == 22 && colPrecision == 0 && colScale == 0)
@@ -2074,7 +2098,7 @@ bool QOCIDriver::open(const QString & db,
 
     setOpen(true);
     setOpenError(false);
-    d->user = user.toUpper();
+    d->user = user;
 
     return true;
 }
@@ -2176,8 +2200,15 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
                 "and owner != 'WKSYS'"
                 "and owner != 'CTXSYS'"
                 "and owner != 'WMSYS'"));
+
+        QString user = d->user;
+        if ( isIdentifierEscaped(user, QSqlDriver::TableName))
+            user = stripDelimiters(user, QSqlDriver::TableName);
+        else
+            user = user.toUpper();
+
         while (t.next()) {
-            if (t.value(0).toString() != d->user)
+            if (t.value(0).toString() != user)
                 tl.append(t.value(0).toString() + QLatin1String(".") + t.value(1).toString());
             else
                 tl.append(t.value(1).toString());
@@ -2213,10 +2244,10 @@ void qSplitTableAndOwner(const QString & tname, QString * tbl,
 {
     int i = tname.indexOf(QLatin1Char('.')); // prefixed with owner?
     if (i != -1) {
-        *tbl = tname.right(tname.length() - i - 1).toUpper();
-        *owner = tname.left(i).toUpper();
+        *tbl = tname.right(tname.length() - i - 1);
+        *owner = tname.left(i);
     } else {
-        *tbl = tname.toUpper();
+        *tbl = tname;
     }
 }
 
@@ -2232,7 +2263,7 @@ QSqlRecord QOCIDriver::record(const QString& tablename) const
     QString stmt(QLatin1String("select column_name, data_type, data_length, "
                   "data_precision, data_scale, nullable, data_default%1"
                   "from all_tab_columns "
-                  "where upper(table_name)=%2"));
+                  "where table_name=%2"));
     if (d->serverVersion >= 9)
         stmt = stmt.arg(QLatin1String(", char_length "));
     else
@@ -2240,11 +2271,23 @@ QSqlRecord QOCIDriver::record(const QString& tablename) const
     bool buildRecordInfo = false;
     QString table, owner, tmpStmt;
     qSplitTableAndOwner(tablename, &table, &owner);
+
+    if (isIdentifierEscaped(table, QSqlDriver::TableName))
+        table = stripDelimiters(table, QSqlDriver::TableName);
+    else
+        table = table.toUpper();
+
     tmpStmt = stmt.arg(QLatin1Char('\'') + table + QLatin1Char('\''));
     if (owner.isEmpty()) {
         owner = d->user;
     }
-    tmpStmt += QLatin1String(" and upper(owner)='") + owner + QLatin1String("'");
+
+    if (isIdentifierEscaped(owner, QSqlDriver::TableName))
+        owner = stripDelimiters(owner, QSqlDriver::TableName);
+    else
+        owner = owner.toUpper();
+
+    tmpStmt += QLatin1String(" and owner='") + owner + QLatin1String("'");
     t.setForwardOnly(true);
     t.exec(tmpStmt);
     if (!t.next()) { // try and see if the tablename is a synonym
@@ -2257,14 +2300,15 @@ QSqlRecord QOCIDriver::record(const QString& tablename) const
     } else {
         buildRecordInfo = true;
     }
+    QStringList keywords = QStringList() << QLatin1String("NUMBER") << QLatin1String("FLOAT") << QLatin1String("BINARY_FLOAT")
+              << QLatin1String("BINARY_DOUBLE");
     if (buildRecordInfo) {
         do {
-            QVariant::Type ty = qDecodeOCIType(t.value(1).toString(), t.value(2).toInt(),
-                            t.value(3).toInt(), t.value(4).toInt());
+            QVariant::Type ty = qDecodeOCIType(t.value(1).toString(),t.numericalPrecisionPolicy());
             QSqlField f(t.value(0).toString(), ty);
             f.setRequired(t.value(5).toString() == QLatin1String("N"));
             f.setPrecision(t.value(4).toInt());
-            if (d->serverVersion >= 9 && (ty == QVariant::String) && !t.isNull(3)) {
+            if (d->serverVersion >= 9 && (ty == QVariant::String) && !t.isNull(3) && !keywords.contains(t.value(1).toString())) {
                 // Oracle9: data_length == size in bytes, char_length == amount of characters
                 f.setLength(t.value(7).toInt());
             } else {
@@ -2292,11 +2336,23 @@ QSqlIndex QOCIDriver::primaryIndex(const QString& tablename) const
     bool buildIndex = false;
     QString table, owner, tmpStmt;
     qSplitTableAndOwner(tablename, &table, &owner);
-    tmpStmt = stmt + QLatin1String(" and upper(a.table_name)='") + table + QLatin1String("'");
+
+    if (isIdentifierEscaped(table, QSqlDriver::TableName))
+        table = stripDelimiters(table, QSqlDriver::TableName);
+    else
+        table = table.toUpper();
+
+    tmpStmt = stmt + QLatin1String(" and a.table_name='") + table + QLatin1String("'");
     if (owner.isEmpty()) {
         owner = d->user;
     }
-    tmpStmt += QLatin1String(" and upper(a.owner)='") + owner + QLatin1String("'");
+
+    if (isIdentifierEscaped(owner, QSqlDriver::TableName))
+        owner = stripDelimiters(owner, QSqlDriver::TableName);
+    else
+        owner = owner.toUpper();
+
+    tmpStmt += QLatin1String(" and a.owner='") + owner + QLatin1String("'");
     t.setForwardOnly(true);
     t.exec(tmpStmt);
 
@@ -2324,7 +2380,7 @@ QSqlIndex QOCIDriver::primaryIndex(const QString& tablename) const
             if (!tt.next()) {
                 return QSqlIndex();
             }
-            QSqlField f(t.value(0).toString(), qDecodeOCIType(tt.value(0).toString(), 0, 0, 0));
+            QSqlField f(t.value(0).toString(), qDecodeOCIType(tt.value(0).toString(), t.numericalPrecisionPolicy()));
             idx.append(f);
         } while (t.next());
         return idx;
@@ -2390,13 +2446,14 @@ QVariant QOCIDriver::handle() const
     return qVariantFromValue(d->env);
 }
 
-QString QOCIDriver::escapeIdentifier(const QString &identifier, IdentifierType /* type */) const
+QString QOCIDriver::escapeIdentifier(const QString &identifier, IdentifierType type) const
 {
     QString res = identifier;
-    res.replace(QLatin1Char('"'), QLatin1String("\"\""));
-    if (identifier.indexOf(QLatin1Char(' ')) != -1)
+    if(!identifier.isEmpty() && !isIdentifierEscaped(identifier, type)) {
+        res.replace(QLatin1Char('"'), QLatin1String("\"\""));
         res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
-//     res.replace(QLatin1Char('.'), QLatin1String("\".\""));
+        res.replace(QLatin1Char('.'), QLatin1String("\".\""));
+    }
     return res;
 }
 

@@ -253,11 +253,9 @@ void tst_QHttp::constructing()
 
     }
 
-#if QT_VERSION >= 0x040102
     {
         QHttpResponseHeader header(200);
     }
-#endif
 }
 
 void tst_QHttp::invalidRequests()

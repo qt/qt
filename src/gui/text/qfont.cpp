@@ -249,9 +249,10 @@ QFontPrivate::~QFontPrivate()
 }
 
 #if !defined(Q_WS_MAC)
+extern QMutex *qt_fontdatabase_mutex();
+
 QFontEngine *QFontPrivate::engineForScript(int script) const
 {
-    extern QMutex *qt_fontdatabase_mutex();
     QMutexLocker locker(qt_fontdatabase_mutex());
     if (script >= QUnicodeTables::Inherited)
         script = QUnicodeTables::Common;

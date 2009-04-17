@@ -744,7 +744,7 @@ bool saveXLIFF(const Translator &translator, QIODevice &dev, ConversionData &cd)
     int indent = 0;
 
     QTextStream ts(&dev);
-    //ts.setCodec( QTextCodec::codecForName("ISO-8859-1") );  // FIXME: Huh?
+    ts.setCodec(QTextCodec::codecForName("UTF-8"));
 
     QStringList dtgs = cd.dropTags();
     dtgs << QLatin1String("po-(old_)?msgid_plural");

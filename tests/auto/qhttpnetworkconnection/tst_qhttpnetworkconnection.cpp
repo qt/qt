@@ -495,6 +495,8 @@ void tst_QHttpNetworkConnection::get401_data()
     QTest::newRow("no-credentials") << "http://" << QtNetworkSettings::serverName() << "/qtest/rfcs-auth/index.html" << ushort(80) << false << false << "" << ""<<401;
     QTest::newRow("invalid-credentials") << "http://" << QtNetworkSettings::serverName() << "/qtest/rfcs-auth/index.html" << ushort(80) << false << true << "test" << "test"<<401;
     QTest::newRow("valid-credentials") << "http://" << QtNetworkSettings::serverName() << "/qtest/rfcs-auth/index.html" << ushort(80) << false << true << "httptest" << "httptest"<<200;
+    QTest::newRow("digest-authentication-invalid") << "http://" << QtNetworkSettings::serverName() << "/qtest/auth-digest/index.html" << ushort(80) << false << true << "wrong" << "wrong"<<401;
+    QTest::newRow("digest-authentication-valid") << "http://" << QtNetworkSettings::serverName() << "/qtest/auth-digest/index.html" << ushort(80) << false << true << "httptest" << "httptest"<<200;
 }
 
 void tst_QHttpNetworkConnection::get401()

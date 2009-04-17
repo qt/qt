@@ -63,9 +63,6 @@
     Some \l{Qt Examples#ActiveQt}{example implementations} of ActiveX
     controls and COM objects are provided.
 
-    The QAxServer module is part of the \l{Qt Full Framework Edition} for
-    Windows. It is \e not part of the \l{Open Source Versions of Qt}.
-
     \sa {ActiveQt Framework}
 
     Topics:

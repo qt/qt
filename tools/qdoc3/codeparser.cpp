@@ -177,6 +177,11 @@ QSet<QString> CodeParser::commonMetaCommands()
                            << COMMAND_TITLE;
 }
 
+/*!
+  The topic command has been processed. Now process the other
+  metacommands that were found. These are not the text markup
+  commands. 
+ */
 void CodeParser::processCommonMetaCommand(const Location &location,
                                           const QString &command,
 					  const QString &arg,
@@ -185,31 +190,43 @@ void CodeParser::processCommonMetaCommand(const Location &location,
 {
     if (command == COMMAND_COMPAT) {
         node->setStatus(Node::Compat);
-    } else if (command == COMMAND_DEPRECATED) {
+    }
+    else if (command == COMMAND_DEPRECATED) {
 	node->setStatus(Node::Deprecated);
-    } else if (command == COMMAND_INGROUP) {
+    }
+    else if (command == COMMAND_INGROUP) {
 	tree->addToGroup(node, arg);
-    } else if (command == COMMAND_INPUBLICGROUP) {
+    }
+    else if (command == COMMAND_INPUBLICGROUP) {
         tree->addToPublicGroup(node, arg);
-    } else if (command == COMMAND_INMODULE) {
+    }
+    else if (command == COMMAND_INMODULE) {
 	node->setModuleName(arg);
-    } else if (command == COMMAND_MAINCLASS) {
+    }
+    else if (command == COMMAND_MAINCLASS) {
 	node->setStatus(Node::Main);
-    } else if (command == COMMAND_OBSOLETE) {
+    }
+    else if (command == COMMAND_OBSOLETE) {
         if (node->status() != Node::Compat)
             node->setStatus(Node::Obsolete);
-    } else if (command == COMMAND_NONREENTRANT) {
+    }
+    else if (command == COMMAND_NONREENTRANT) {
 	node->setThreadSafeness(Node::NonReentrant);
-    } else if (command == COMMAND_PRELIMINARY) {
+    }
+    else if (command == COMMAND_PRELIMINARY) {
 	node->setStatus(Node::Preliminary);
-    } else if (command == COMMAND_INTERNAL) {
+    }
+    else if (command == COMMAND_INTERNAL) {
 	node->setAccess(Node::Private);
         node->setStatus(Node::Internal);
-    } else if (command == COMMAND_REENTRANT) {
+    }
+    else if (command == COMMAND_REENTRANT) {
 	node->setThreadSafeness(Node::Reentrant);
-    } else if (command == COMMAND_SINCE) {
+    }
+    else if (command == COMMAND_SINCE) {
         node->setSince(arg);
-    } else if (command == COMMAND_SUBTITLE) {
+    }
+    else if (command == COMMAND_SUBTITLE) {
 	if (node->type() == Node::Fake) {
 	    FakeNode *fake = static_cast<FakeNode *>(node);
             fake->setSubTitle(arg);

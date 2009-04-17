@@ -202,12 +202,15 @@ namespace qdesigner_internal {
             isContainer = widgetItem->isContainer();
         }
 
+        // We might encounter temporary states with no layouts when re-layouting.
+        // Just default to Widget handling for the moment.
         if (isQLayoutWidget(w)) {
-            m_type = LayoutWidget;
-            const QLayout *layout = w->layout();
-            m_managedLayoutType = LayoutInfo::layoutType(ctx.core, layout);
-            m_className = QLatin1String(layout->metaObject()->className());
-            m_objectName = layout->objectName();
+            if (const QLayout *layout = w->layout()) {
+                m_type = LayoutWidget;
+                m_managedLayoutType = LayoutInfo::layoutType(ctx.core, layout);
+                m_className = QLatin1String(layout->metaObject()->className());
+                m_objectName = layout->objectName();
+            }
             return;
         }
 

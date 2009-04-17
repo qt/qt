@@ -274,6 +274,8 @@ void QGraphicsWidgetPrivate::updateFont(const QFont &font)
         }
     }
 
+    if (!polished)
+        return;
     // Notify change.
     QEvent event(QEvent::FontChange);
     QApplication::sendEvent(q, &event);

@@ -210,7 +210,7 @@ public:
     static QString prettifyPlainFileName(const QString &fn);
     static QString prettifyFileName(const QString &fn);
 
-    void setLanguageAndCountry(QLocale::Language lang, QLocale::Country country);
+    bool setLanguageAndCountry(QLocale::Language lang, QLocale::Country country);
     QLocale::Language language() const { return m_language; }
     QLocale::Country country() const { return m_country; }
     void setSourceLanguageAndCountry(QLocale::Language lang, QLocale::Country country);

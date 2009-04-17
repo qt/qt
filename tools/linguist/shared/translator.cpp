@@ -105,13 +105,18 @@ void Translator::extend(const TranslatorMessage &msg)
     if (index == -1) {
         m_messages.append(msg);
     } else {
-        m_messages[index].addReferenceUniq(msg.fileName(), msg.lineNumber());
+        TranslatorMessage &emsg = m_messages[index];
+        emsg.addReferenceUniq(msg.fileName(), msg.lineNumber());
         if (!msg.extraComment().isEmpty()) {
-            QString cmt = m_messages[index].extraComment();
+            QString cmt = emsg.extraComment();
             if (!cmt.isEmpty())
                 cmt.append(QLatin1String("\n----------\n"));
             cmt.append(msg.extraComment());
-            m_messages[index].setExtraComment(cmt);
+            emsg.setExtraComment(cmt);
+        }
+        if (msg.isUtf8() != emsg.isUtf8()) {
+            emsg.setUtf8(true);
+            emsg.setNonUtf8(true);
         }
     }
 }
@@ -259,7 +264,7 @@ bool Translator::save(const QString &filename, ConversionData &cd, const QString
         if (fmt == format.extension) {
             if (format.saver)
                 return (*format.saver)(*this, file, cd);
-            cd.appendError(QString(QLatin1String("Cannit save %1 files")).arg(fmt));
+            cd.appendError(QString(QLatin1String("Cannot save %1 files")).arg(fmt));
             return false;
         }
     }
@@ -411,17 +416,53 @@ void Translator::dropTranslations()
     }
 }
 
-QList<TranslatorMessage> Translator::findDuplicates() const
+QSet<TranslatorMessagePtr> Translator::resolveDuplicates()
 {
-    QHash<TranslatorMessage, int> dups;
-    foreach (const TranslatorMessage &msg, m_messages)
-        dups[msg]++;
-    QList<TranslatorMessage> ret;
-    QHash<TranslatorMessage, int>::ConstIterator it = dups.constBegin(), end = dups.constEnd();
-    for (; it != end; ++it)
-        if (it.value() > 1)
-            ret.append(it.key());
-    return ret;
+    QSet<TranslatorMessagePtr> dups;
+    QHash<TranslatorMessagePtr, int> refs;
+    for (int i = 0; i < m_messages.count();) {
+        const TranslatorMessage &msg = m_messages.at(i);
+        QHash<TranslatorMessagePtr, int>::ConstIterator it = refs.constFind(msg);
+        if (it != refs.constEnd()) {
+            TranslatorMessage &omsg = m_messages[*it];
+            if (omsg.isUtf8() != msg.isUtf8() && !omsg.isNonUtf8()) {
+                // Dual-encoded message
+                omsg.setUtf8(true);
+                omsg.setNonUtf8(true);
+            } else {
+                // Duplicate
+                dups.insert(omsg);
+            }
+            if (!omsg.isTranslated() && msg.isTranslated())
+                omsg.setTranslations(msg.translations());
+            m_messages.removeAt(i);
+        } else {
+            refs[msg] = i;
+            ++i;
+        }
+    }
+    return dups;
+}
+
+void Translator::reportDuplicates(const QSet<TranslatorMessagePtr> &dupes,
+                                  const QString &fileName, bool verbose)
+{
+    if (!dupes.isEmpty()) {
+        if (!verbose) {
+            qWarning("Warning: dropping duplicate messages in '%s'\n(try -verbose for more info).",
+                     qPrintable(fileName));
+        } else {
+            qWarning("Warning: dropping duplicate messages in '%s':", qPrintable(fileName));
+            foreach (const TranslatorMessagePtr &msg, dupes) {
+                qWarning("\n* Context: %s\n* Source: %s",
+                        qPrintable(msg->context()),
+                        qPrintable(msg->sourceText()));
+                if (!msg->comment().isEmpty())
+                    qWarning("* Comment: %s", qPrintable(msg->comment()));
+            }
+            qWarning();
+        }
+    }
 }
 
 // Used by lupdate to be able to search using absolute paths during merging
@@ -464,8 +505,8 @@ QStringList Translator::normalizedTranslations(const TranslatorMessage &msg,
     int numTranslations = 1;
     if (msg.isPlural() && language != QLocale::C) {
         QStringList forms;
-        getNumerusInfo(language, country, 0, &forms);
-        numTranslations = forms.count(); // includes singular
+        if (getNumerusInfo(language, country, 0, &forms))
+            numTranslations = forms.count(); // includes singular
     }
 
     // make sure that the stringlist always have the size of the
@@ -544,7 +585,7 @@ void Translator::setCodecName(const QByteArray &name)
     if (!codec) {
         if (!name.isEmpty())
             qWarning("No QTextCodec for %s available. Using Latin1\n", name.constData());
-        m_codecName.clear();
+        m_codecName = "ISO-8859-1";
     } else {
         m_codecName = codec->name();
     }

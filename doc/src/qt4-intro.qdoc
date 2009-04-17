@@ -161,9 +161,9 @@
     \o Support for OLE verbs and MIME data handling in \l{ActiveQt}.
     \endlist
 
-    For more information about improvements in the current release, see
-    the \l{http://www.qtsoftware.com/developer/changes/changes-4.1.4/}
-    {detailed list of changes}.
+    For more information about improvements in each Qt release, see
+    the \l{http://www.qtsoftware.com/developer/changes/}
+    {detailed lists of changes}.
 
     \section1 Significant Improvements
 
@@ -447,11 +447,10 @@
     \l{http://www.qtsoftware.com/developer/changes/changes-4.5.0}{available online}.
     A \l{Known Issues in %VERSION%}{list of known issues} for this release is also
     available.
-    \omit
+
     Changes between this release and the previous release are provided
     in the \c{changes-%VERSION%} file (also
     \l{http://www.qtsoftware.com/developer/changes/changes-%VERSION%}{available online}).
-    \endomit
 
     A list of other Qt 4 features can be found on the
     \bold{\l{What's New in Qt 4}} page.

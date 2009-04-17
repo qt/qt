@@ -127,6 +127,9 @@ public:
     bool unsubscribeFromNotification(const QString &name);  // ### Qt 5: make virtual
     QStringList subscribedToNotifications() const;          // ### Qt 5: make virtual
 
+    bool isIdentifierEscaped(const QString &identifier, IdentifierType type) const; // ### Qt 5: make virtual
+    QString stripDelimiters(const QString &identifier, IdentifierType type) const;  // ### Qt 5: make virtual
+
 Q_SIGNALS:
     void notification(const QString &name);
 
@@ -139,6 +142,9 @@ protected Q_SLOTS:
     bool subscribeToNotificationImplementation(const QString &name);        // ### Qt 5: eliminate, see subscribeToNotification()
     bool unsubscribeFromNotificationImplementation(const QString &name);    // ### Qt 5: eliminate, see unsubscribeFromNotification()
     QStringList subscribedToNotificationsImplementation() const;            // ### Qt 5: eliminate, see subscribedNotifications()
+
+    bool isIdentifierEscapedImplementation(const QString &identifier, IdentifierType type) const;   // ### Qt 5: eliminate, see isIdentifierEscaped()
+    QString stripDelimitersImplementation(const QString &identifier, IdentifierType type) const;    // ### Qt 5: eliminate, see stripDelimiters()
 
 private:
     Q_DISABLE_COPY(QSqlDriver)

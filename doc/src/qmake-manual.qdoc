@@ -367,15 +367,20 @@
     \row    \o debug    \o The project is to be built in debug mode.
     \row    \o debug_and_release \o The project is built in \e both debug and
             release modes.
+    \row    \o debug_and_release_target \o The project is built in \e both debug 
+    and release modes. TARGET is built into \e both the debug and release directories.
     \row    \o build_all \o If \c debug_and_release is specified, the project is
             built in both debug and release modes by default.
+    \row    \o autogen_precompile_source \o Automatically generates a \c .cpp file that includes 
+    the precompiled header file specified in the .pro file.
     \row    \o ordered  \o When using the \c subdirs template, this option
             specifies that the directories listed should be processed in the
             order in which they are given.
     \row    \o warn_on  \o The compiler should output as many warnings as possible.
             This is ignored if \c warn_off is specified.
     \row    \o warn_off \o The compiler should output as few warnings as possible.
-    \endtable
+    \row    \o copy_dir_files \o Enables the install rule to also copy directories, not just files.  
+   \endtable
 
     The \c debug_and_release option is special in that it enables \e both debug and
     release versions of a project to be built. In such a case, the Makefile that
@@ -3074,6 +3079,9 @@
     \c -nocache is not specified when \c qmake is run, it will try to find a file
     called \c{.qmake.cache} in parent directories of the current directory. If
     it fails to find this file, it will silently ignore this step of processing.
+
+    If it finds a \c{.qmake.cache} file then it will process this file first before
+    it processes the project file.
 
     \target LibDepend
     \section1 Library Dependencies

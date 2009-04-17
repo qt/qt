@@ -2568,7 +2568,7 @@
     details.
 
     Phonon also provides EffectWidget, which lets the user modify the
-    parameters of an effect an the fly, e.g., with comboboxes.
+    parameters of an effect an the fly; e.g., with combo boxes.
 
     \sa {Phonon Module}, EffectWidget
 */
@@ -2656,7 +2656,7 @@
 
     To find out what \l{Phonon::}{AudioOutputDevice}s are available
     for AudioOutput, you can call
-    BackendCapabilities::availableAudioDevices(). A default device is
+    BackendCapabilities::availableAudioOutputDevices(). A default device is
     selected by the backend, but it is possible to set the device to
     be used with setOutputDevice(). The outputDeviceChanged() signal
     will be emitted if the device changes.

@@ -42,10 +42,6 @@
 
 #include <QtTest/QtTest>
 
-#if QT_VERSION < 0x040200
-QTEST_NOOP_MAIN
-#else
-
 #include <qgraphicsitem.h>
 #include <qgraphicsscene.h>
 #include <qgraphicssceneevent.h>
@@ -155,6 +151,8 @@ private slots:
     void fitInView();
     void itemsAtPoint();
     void itemsInRect();
+    void itemsInRect_cosmeticAdjust_data();
+    void itemsInRect_cosmeticAdjust();
     void itemsInPoly();
     void itemsInPath();
     void itemAt();
@@ -1308,6 +1306,65 @@ void tst_QGraphicsView::itemsInRect()
     QCOMPARE(items.takeFirst()->zValue(), qreal(5));
     QCOMPARE(items.takeFirst()->zValue(), qreal(4));
     QCOMPARE(items.takeFirst()->zValue(), qreal(3));
+}
+
+class CountPaintItem : public QGraphicsRectItem
+{
+public:
+    int numPaints;
+
+    CountPaintItem(const QRectF &rect)
+        : QGraphicsRectItem(rect), numPaints(0)
+    { }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0)
+    {
+        ++numPaints;
+        QGraphicsRectItem::paint(painter, option, widget);
+    }
+};
+
+void tst_QGraphicsView::itemsInRect_cosmeticAdjust_data()
+{
+    QTest::addColumn<QRect>("updateRect");
+    QTest::addColumn<int>("numPaints");
+
+    QTest::newRow("nil") << QRect() << 1;
+    QTest::newRow("0, 0, 300, 100") << QRect(0, 0, 300, 100) << 1;
+    QTest::newRow("0, 0, 100, 300") << QRect(0, 0, 100, 300) << 1;
+    QTest::newRow("200, 0, 100, 300") << QRect(200, 0, 100, 300) << 1;
+    QTest::newRow("0, 200, 300, 100") << QRect(0, 200, 300, 100) << 1;
+    QTest::newRow("0, 0, 300, 99") << QRect(0, 0, 300, 99) << 0;
+    QTest::newRow("0, 0, 99, 300") << QRect(0, 0, 99, 300) << 0;
+    QTest::newRow("201, 0, 99, 300") << QRect(201, 0, 99, 300) << 0;
+    QTest::newRow("0, 201, 300, 99") << QRect(0, 201, 300, 99) << 0;
+}
+
+void tst_QGraphicsView::itemsInRect_cosmeticAdjust()
+{
+    QFETCH(QRect, updateRect);
+    QFETCH(int, numPaints);
+    
+    QGraphicsScene scene(-100, -100, 200, 200);
+    CountPaintItem *rect = new CountPaintItem(QRectF(-50, -50, 100, 100));
+    scene.addItem(rect);
+
+    QGraphicsView view(&scene);
+    view.setFrameStyle(0);
+    view.resize(300, 300);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(125);
+
+    rect->numPaints = 0;
+    if (updateRect.isNull())
+        view.viewport()->update();
+    else
+        view.viewport()->update(updateRect);
+    qApp->processEvents();
+    QCOMPARE(rect->numPaints, numPaints);
 }
 
 void tst_QGraphicsView::itemsInPoly()
@@ -2989,4 +3046,3 @@ void tst_QGraphicsView::centerOnDirtyItem()
 
 QTEST_MAIN(tst_QGraphicsView)
 #include "tst_qgraphicsview.moc"
-#endif

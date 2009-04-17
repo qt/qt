@@ -407,3 +407,8 @@ Versions/A/QuartzCore libphonon_qt7.dylib
 QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.4u.sdk
 CONFIG+=x86 ppc
 //! [53]
+
+
+//! [54]
+qApp->addLibraryPath("C:/customPath/plugins");
+//! [54]

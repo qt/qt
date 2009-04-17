@@ -56,6 +56,16 @@
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qabstractsocket.h>
 
+#include <private/qobject_p.h>
+#include <qauthenticator.h>
+#include <qnetworkproxy.h>
+#include <qbuffer.h>
+
+#include <private/qhttpnetworkheader_p.h>
+#include <private/qhttpnetworkrequest_p.h>
+#include <private/qhttpnetworkreply_p.h>
+
+
 #ifndef QT_NO_HTTP
 
 #ifndef QT_NO_OPENSSL
@@ -145,144 +155,137 @@ private:
 #endif
 };
 
-class Q_AUTOTEST_EXPORT QHttpNetworkHeader
+
+
+
+// private classes
+typedef QPair<QHttpNetworkRequest, QHttpNetworkReply*> HttpMessagePair;
+
+
+class QHttpNetworkConnectionPrivate : public QObjectPrivate
 {
+    Q_DECLARE_PUBLIC(QHttpNetworkConnection)
 public:
-    virtual ~QHttpNetworkHeader() {};
-    virtual QUrl url() const = 0;
-    virtual void setUrl(const QUrl &url) = 0;
+    QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt);
+    ~QHttpNetworkConnectionPrivate();
+    void init();
+    void connectSignals(QAbstractSocket *socket);
 
-    virtual int majorVersion() const = 0;
-    virtual int minorVersion() const = 0;
-
-    virtual qint64 contentLength() const = 0;
-    virtual void setContentLength(qint64 length) = 0;
-
-    virtual QList<QPair<QByteArray, QByteArray> > header() const = 0;
-    virtual QByteArray headerField(const QByteArray &name, const QByteArray &defaultValue = QByteArray()) const = 0;
-    virtual void setHeaderField(const QByteArray &name, const QByteArray &data) = 0;
-};
-
-class QHttpNetworkRequestPrivate;
-class Q_AUTOTEST_EXPORT QHttpNetworkRequest: public QHttpNetworkHeader
-{
-public:
-    enum Operation {
-        Options,
-        Get,
-        Head,
-        Post,
-        Put,
-        Delete,
-        Trace,
-        Connect
+    enum SocketState {
+        IdleState = 0,          // ready to send request
+        ConnectingState = 1,    // connecting to host
+        WritingState = 2,       // writing the data
+        WaitingState = 4,       // waiting for reply
+        ReadingState = 8,       // reading the reply
+        Wait4AuthState = 0x10,  // blocked for send till the current authentication slot is done
+        BusyState = (ConnectingState|WritingState|WaitingState|ReadingState|Wait4AuthState)
     };
 
-    enum Priority {
-        HighPriority,
-        NormalPriority,
-        LowPriority
+    enum { ChunkSize = 4096 };
+
+    int indexOf(QAbstractSocket *socket) const;
+    bool isSocketBusy(QAbstractSocket *socket) const;
+    bool isSocketWriting(QAbstractSocket *socket) const;
+    bool isSocketWaiting(QAbstractSocket *socket) const;
+    bool isSocketReading(QAbstractSocket *socket) const;
+
+    QHttpNetworkReply *queueRequest(const QHttpNetworkRequest &request);
+    void unqueueRequest(QAbstractSocket *socket);
+    void prepareRequest(HttpMessagePair &request);
+    bool sendRequest(QAbstractSocket *socket);
+    void receiveReply(QAbstractSocket *socket, QHttpNetworkReply *reply);
+    void resendCurrentRequest(QAbstractSocket *socket);
+    void closeChannel(int channel);
+    void copyCredentials(int fromChannel, QAuthenticator *auth, bool isProxy);
+
+    // private slots
+    void _q_bytesWritten(qint64 bytes); // proceed sending
+    void _q_readyRead(); // pending data to read
+    void _q_disconnected(); // disconnected from host
+    void _q_startNextRequest(); // send the next request from the queue
+    void _q_restartPendingRequest(); // send the currently blocked request
+    void _q_connected(); // start sending request
+    void _q_error(QAbstractSocket::SocketError); // error from socket
+#ifndef QT_NO_NETWORKPROXY
+    void _q_proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth); // from transparent proxy
+#endif
+    void _q_dataReadyReadNoBuffer();
+    void _q_dataReadyReadBuffer();
+
+    void createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request);
+    bool ensureConnection(QAbstractSocket *socket);
+    QString errorDetail(QNetworkReply::NetworkError errorCode, QAbstractSocket *socket);
+    void eraseData(QHttpNetworkReply *reply);
+#ifndef QT_NO_COMPRESS
+    bool expand(QAbstractSocket *socket, QHttpNetworkReply *reply, bool dataComplete);
+#endif
+    void bufferData(HttpMessagePair &request);
+    void removeReply(QHttpNetworkReply *reply);
+
+    QString hostName;
+    quint16 port;
+    bool encrypt;
+
+    struct Channel {
+        QAbstractSocket *socket;
+        SocketState state;
+        QHttpNetworkRequest request; // current request
+        QHttpNetworkReply *reply; // current reply for this request
+        qint64 written;
+        qint64 bytesTotal;
+        bool resendCurrent;
+        int lastStatus; // last status received on this channel
+        bool pendingEncrypt; // for https (send after encrypted)
+        int reconnectAttempts; // maximum 2 reconnection attempts
+        QAuthenticatorPrivate::Method authMehtod;
+        QAuthenticatorPrivate::Method proxyAuthMehtod;
+        QAuthenticator authenticator;
+        QAuthenticator proxyAuthenticator;
+#ifndef QT_NO_OPENSSL
+        bool ignoreSSLErrors;
+#endif
+        Channel() :state(IdleState), reply(0), written(0), bytesTotal(0), resendCurrent(false), reconnectAttempts(2),
+            authMehtod(QAuthenticatorPrivate::None), proxyAuthMehtod(QAuthenticatorPrivate::None)
+#ifndef QT_NO_OPENSSL
+            , ignoreSSLErrors(false)
+#endif
+        {}
     };
+    static const int channelCount;
+    Channel channels[2]; // maximum of 2 socket connections to the server
+    bool pendingAuthSignal; // there is an incomplete authentication signal
+    bool pendingProxyAuthSignal; // there is an incomplete proxy authentication signal
 
-    QHttpNetworkRequest(const QUrl &url = QUrl(), Operation operation = Get, Priority priority = NormalPriority);
-    QHttpNetworkRequest(const QHttpNetworkRequest &other);
-    virtual ~QHttpNetworkRequest();
-    QHttpNetworkRequest &operator=(const QHttpNetworkRequest &other);
-    bool operator==(const QHttpNetworkRequest &other) const;
-
-    QUrl url() const;
-    void setUrl(const QUrl &url);
-
-    int majorVersion() const;
-    int minorVersion() const;
-
-    qint64 contentLength() const;
-    void setContentLength(qint64 length);
-
-    QList<QPair<QByteArray, QByteArray> > header() const;
-    QByteArray headerField(const QByteArray &name, const QByteArray &defaultValue = QByteArray()) const;
-    void setHeaderField(const QByteArray &name, const QByteArray &data);
-
-    Operation operation() const;
-    void setOperation(Operation operation);
-
-    Priority priority() const;
-    void setPriority(Priority priority);
-
-    QIODevice *data() const;
-    void setData(QIODevice *data);
-
-private:
-    QSharedDataPointer<QHttpNetworkRequestPrivate> d;
-    friend class QHttpNetworkRequestPrivate;
-    friend class QHttpNetworkConnectionPrivate;
-};
-
-class QHttpNetworkReplyPrivate;
-class Q_AUTOTEST_EXPORT QHttpNetworkReply : public QObject, public QHttpNetworkHeader
-{
-    Q_OBJECT
-public:
-
-    explicit QHttpNetworkReply(const QUrl &url = QUrl(), QObject *parent = 0);
-    virtual ~QHttpNetworkReply();
-
-    QUrl url() const;
-    void setUrl(const QUrl &url);
-
-    int majorVersion() const;
-    int minorVersion() const;
-
-    qint64 contentLength() const;
-    void setContentLength(qint64 length);
-
-    QList<QPair<QByteArray, QByteArray> > header() const;
-    QByteArray headerField(const QByteArray &name, const QByteArray &defaultValue = QByteArray()) const;
-    void setHeaderField(const QByteArray &name, const QByteArray &data);
-    void parseHeader(const QByteArray &header); // mainly for testing
-
-    QHttpNetworkRequest request() const;
-    void setRequest(const QHttpNetworkRequest &request);
-
-    int statusCode() const;
-    void setStatusCode(int code);
-
-    QString errorString() const;
-    void setErrorString(const QString &error);
-
-    QString reasonPhrase() const;
-
-    qint64 bytesAvailable() const;
-    QByteArray read(qint64 maxSize = -1);
-
-    bool isFinished() const;
+    void appendData(QHttpNetworkReply &reply, const QByteArray &fragment, bool compressed);
+    qint64 bytesAvailable(const QHttpNetworkReply &reply, bool compressed = false) const;
+    qint64 read(QHttpNetworkReply &reply, QByteArray &data, qint64 maxSize, bool compressed);
+    void emitReplyError(QAbstractSocket *socket, QHttpNetworkReply *reply, QNetworkReply::NetworkError errorCode);
+    bool handleAuthenticateChallenge(QAbstractSocket *socket, QHttpNetworkReply *reply, bool isProxy, bool &resend);
+    void allDone(QAbstractSocket *socket, QHttpNetworkReply *reply);
+    void handleStatus(QAbstractSocket *socket, QHttpNetworkReply *reply);
+    inline bool emitSignals(QHttpNetworkReply *reply);
+    inline bool expectContent(QHttpNetworkReply *reply);
 
 #ifndef QT_NO_OPENSSL
-    QSslConfiguration sslConfiguration() const;
-    void setSslConfiguration(const QSslConfiguration &config);
-    void ignoreSslErrors();
-
-Q_SIGNALS:
-    void sslErrors(const QList<QSslError> &errors);
+    void _q_encrypted(); // start sending request (https)
+    void _q_sslErrors(const QList<QSslError> &errors); // ssl errors from the socket
+    QSslConfiguration sslConfiguration(const QHttpNetworkReply &reply) const;
 #endif
 
-Q_SIGNALS:
-    void readyRead();
-    void finished();
-    void finishedWithError(QNetworkReply::NetworkError errorCode, const QString &detail = QString());
-    void headerChanged();
-    void dataReadProgress(int done, int total);
-    void dataSendProgress(int done, int total);
+#ifndef QT_NO_NETWORKPROXY
+    QNetworkProxy networkProxy;
+#endif
 
-private:
-    Q_DECLARE_PRIVATE(QHttpNetworkReply)
-    friend class QHttpNetworkConnection;
-    friend class QHttpNetworkConnectionPrivate;
+    //The request queues
+    QList<HttpMessagePair> highPriorityQueue;
+    QList<HttpMessagePair> lowPriorityQueue;
 };
+
+
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QHttpNetworkRequest)
+//Q_DECLARE_METATYPE(QHttpNetworkRequest)
 //Q_DECLARE_METATYPE(QHttpNetworkReply)
 
 #endif // QT_NO_HTTP

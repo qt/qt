@@ -136,6 +136,8 @@ public:
     void setType(Type t) { m_type = t; }
     bool isUtf8() const { return m_utf8; } // codecForTr override
     void setUtf8(bool on) { m_utf8 = on; }
+    bool isNonUtf8() const { return m_nonUtf8; } // codecForTr override
+    void setNonUtf8(bool on) { m_nonUtf8 = on; }
     bool isPlural() const { return m_plural; }
     void setPlural(bool isplural) { m_plural = isplural; }
 
@@ -169,10 +171,39 @@ private:
 
     Type m_type;
     bool m_utf8;
+    bool m_nonUtf8;
     bool m_plural;
 };
 
+Q_DECLARE_TYPEINFO(TranslatorMessage, Q_MOVABLE_TYPE);
+
 int qHash(const TranslatorMessage &msg);
+
+struct TranslatorMessagePtr {
+    TranslatorMessagePtr(const TranslatorMessage &tm)
+    {
+        ptr = &tm;
+    }
+
+    inline const TranslatorMessage *operator->() const
+    {
+        return ptr;
+    }
+
+    const TranslatorMessage *ptr;
+};
+
+Q_DECLARE_TYPEINFO(TranslatorMessagePtr, Q_MOVABLE_TYPE);
+
+inline int qHash(TranslatorMessagePtr tmp)
+{
+    return qHash(*tmp.ptr);
+}
+
+inline bool operator==(TranslatorMessagePtr tmp1, TranslatorMessagePtr tmp2)
+{
+    return *tmp1.ptr == *tmp2.ptr;
+}
 
 QT_END_NAMESPACE
 

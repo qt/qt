@@ -45,11 +45,7 @@
 #include <QtGui/QWidget>
 #include <QtCore/QSet>
 
-#if QT_VERSION >= 0x040400
 QT_BEGIN_NAMESPACE
-#endif
-
-
 
 class QtAbstractPropertyManager;
 class QtPropertyPrivate;
@@ -308,8 +304,6 @@ private:
 
 };
 
-#if QT_VERSION >= 0x040400
 QT_END_NAMESPACE
-#endif
 
 #endif // QTPROPERTYBROWSER_H

@@ -286,8 +286,263 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     QTest::newRow("expiration3") << "a=b; expires=Wednesday, 09-Nov-1999 23:12:40 GMT " << cookie;
     QTest::newRow("expiration-utc") << "a=b;expires=Wednesday, 09-Nov-1999 23:12:40 UTC" << cookie;
 
+    cookie.setExpirationDate(QDateTime(QDate(1989, 4, 14), QTime(3, 20, 0, 0), Qt::UTC));
+    QTest::newRow("time-0") << "a=b;expires=14 Apr 89 03:20" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 4, 14), QTime(3, 20, 12, 0), Qt::UTC));
+    QTest::newRow("time-1") << "a=b;expires=14 Apr 89 03:20:12" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 4, 14), QTime(3, 20, 12, 88), Qt::UTC));
+    QTest::newRow("time-2") << "a=b;expires=14 Apr 89 03:20:12.88" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 4, 14), QTime(3, 20, 12, 88), Qt::UTC));
+    QTest::newRow("time-3") << "a=b;expires=14 Apr 89 03:20:12.88am" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 4, 14), QTime(15, 20, 12, 88), Qt::UTC));
+    QTest::newRow("time-4") << "a=b;expires=14 Apr 89 03:20:12.88pm" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 4, 14), QTime(3, 20, 12, 88), Qt::UTC));
+    QTest::newRow("time-5") << "a=b;expires=14 Apr 89 03:20:12.88 Am" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 4, 14), QTime(15, 20, 12, 88), Qt::UTC));
+    QTest::newRow("time-6") << "a=b;expires=14 Apr 89 03:20:12.88 PM" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 4, 14), QTime(15, 20, 12, 88), Qt::UTC));
+    QTest::newRow("time-7") << "a=b;expires=14 Apr 89 3:20:12.88 PM" << cookie;
+
+    // normal months
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(1, 1), Qt::UTC));
+    QTest::newRow("months-1") << "a=b;expires=Jan 1 89 1:1" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 2, 1), QTime(1, 1), Qt::UTC));
+    QTest::newRow("months-2") << "a=b;expires=Feb 1 89 1:1" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 3, 1), QTime(1, 1), Qt::UTC));
+    QTest::newRow("months-3") << "a=b;expires=mar 1 89 1:1" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 4, 1), QTime(1, 1), Qt::UTC));
+    QTest::newRow("months-4") << "a=b;expires=Apr 1 89 1:1" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 5, 1), QTime(1, 1), Qt::UTC));
+    QTest::newRow("months-5") << "a=b;expires=May 1 89 1:1" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 6, 1), QTime(1, 1), Qt::UTC));
+    QTest::newRow("months-6") << "a=b;expires=Jun 1 89 1:1" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 7, 1), QTime(1, 1), Qt::UTC));
+    QTest::newRow("months-7") << "a=b;expires=Jul 1 89 1:1" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 8, 1), QTime(1, 1), Qt::UTC));
+    QTest::newRow("months-8") << "a=b;expires=Aug 1 89 1:1" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 9, 1), QTime(1, 1), Qt::UTC));
+    QTest::newRow("months-9") << "a=b;expires=Sep 1 89 1:1" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 10, 1), QTime(1, 1), Qt::UTC));
+    QTest::newRow("months-10") << "a=b;expires=Oct 1 89 1:1" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 11, 1), QTime(1, 1), Qt::UTC));
+    QTest::newRow("months-11") << "a=b;expires=Nov 1 89 1:1" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 12, 1), QTime(1, 1), Qt::UTC));
+    QTest::newRow("months-12") << "a=b;expires=Dec 1 89 1:1" << cookie;
+
+    // extra months
+    cookie.setExpirationDate(QDateTime(QDate(1989, 12, 1), QTime(1, 1), Qt::UTC));
+    QTest::newRow("months-13") << "a=b;expires=December 1 89 1:1" << cookie;
+    QTest::newRow("months-14") << "a=b;expires=1 89 1:1 Dec" << cookie;
+    //cookie.setExpirationDate(QDateTime());
+    //QTest::newRow("months-15") << "a=b;expires=1 89 1:1 De" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(2024, 2, 29), QTime(1, 1), Qt::UTC));
+    QTest::newRow("months-16") << "a=b;expires=2024 29 Feb 1:1" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(2024, 2, 29), QTime(1, 1), Qt::UTC));
+    QTest::newRow("months-17") << "a=b;expires=Fri, 29-Feb-2024 01:01:00 GMT" << cookie;
+    QTest::newRow("months-18") << "a=b;expires=2024 29 Feb 1:1 GMT" << cookie;
+
+    // normal offsets
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-0") << "a=b;expires=Jan 1 89 8:0 PST" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-1") << "a=b;expires=Jan 1 89 8:0 PDT" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-2") << "a=b;expires=Jan 1 89 7:0 MST" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-3") << "a=b;expires=Jan 1 89 7:0 MDT" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-4") << "a=b;expires=Jan 1 89 6:0 CST" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-5") << "a=b;expires=Jan 1 89 6:0 CDT" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-6") << "a=b;expires=Jan 1 89 5:0 EST" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-7") << "a=b;expires=Jan 1 89 5:0 EDT" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-8") << "a=b;expires=Jan 1 89 4:0 AST" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-9") << "a=b;expires=Jan 1 89 3:0 NST" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-10") << "a=b;expires=Jan 1 89 0:0 GMT" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-11") << "a=b;expires=Jan 1 89 0:0 BST" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 2), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-12") << "a=b;expires=Jan 1 89 23:0 MET" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 2), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-13") << "a=b;expires=Jan 1 89 22:0 EET" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 2), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-14") << "a=b;expires=Jan 1 89 15:0 JST" << cookie;
+
+    // extra offsets
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 2), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-14") << "a=b;expires=Jan 1 89 15:0 JST+1" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(1, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-15") << "a=b;expires=Jan 1 89 0:0 GMT+1" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-15b") << "a=b;expires=Jan 1 89 1:0 GMT-1" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(1, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-16") << "a=b;expires=Jan 1 89 0:0 GMT+01" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(1, 5), Qt::UTC));
+    QTest::newRow("zoneoffset-17") << "a=b;expires=Jan 1 89 0:0 GMT+0105" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-18") << "a=b;expires=Jan 1 89 0:0 GMT+015" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-19") << "a=b;expires=Jan 1 89 0:0 GM" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-19b") << "a=b;expires=Jan 1 89 0:0 GMT" << cookie;
+
+    // offsets from gmt
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(1, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-20") << "a=b;expires=Jan 1 89 0:0 +1" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(1, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-21") << "a=b;expires=Jan 1 89 0:0 +01" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(1, 1), Qt::UTC));
+    QTest::newRow("zoneoffset-22") << "a=b;expires=Jan 1 89 0:0 +0101" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("zoneoffset-23") << "a=b;expires=Jan 1 89 1:0 -1" << cookie;
+
+    // Y2k
+    cookie.setExpirationDate(QDateTime(QDate(2000, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("year-0") << "a=b;expires=Jan 1 00 0:0" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1970, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("year-1") << "a=b;expires=Jan 1 70 0:0" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1971, 1, 1), QTime(0, 0), Qt::UTC));
+    QTest::newRow("year-2") << "a=b;expires=Jan 1 71 0:0" << cookie;
+
+    // Day, month, year
+    cookie.setExpirationDate(QDateTime(QDate(2013, 1, 2), QTime(0, 0), Qt::UTC));
+    QTest::newRow("date-0") << "a=b;expires=Jan 2 13 0:0" << cookie;
+    QTest::newRow("date-1") << "a=b;expires=1-2-13 0:0" << cookie;
+    QTest::newRow("date-2") << "a=b;expires=1/2/13 0:0" << cookie;
+    QTest::newRow("date-3") << "a=b;expires=Jan 2 13 0:0" << cookie;
+    QTest::newRow("date-4") << "a=b;expires=Jan 2, 13 0:0" << cookie;
+    QTest::newRow("date-5") << "a=b;expires=1-2-13 0:0" << cookie;
+    QTest::newRow("date-6") << "a=b;expires=1/2/13 0:0" << cookie;
+
+    // Known Year, determine month and day
+    cookie.setExpirationDate(QDateTime(QDate(1995, 1, 13), QTime(0, 0), Qt::UTC));
+    QTest::newRow("knownyear-0") << "a=b;expires=13/1/95 0:0" << cookie;
+    QTest::newRow("knownyear-1") << "a=b;expires=95/13/1 0:0" << cookie;
+    QTest::newRow("knownyear-2") << "a=b;expires=1995/1/13 0:0" << cookie;
+    QTest::newRow("knownyear-3") << "a=b;expires=1995/13/1 0:0" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(1995, 1, 2), QTime(0, 0), Qt::UTC));
+    QTest::newRow("knownyear-4") << "a=b;expires=1/2/95 0:0" << cookie;
+    QTest::newRow("knownyear-5") << "a=b;expires=95/1/2 0:0" << cookie;
+
+    // Known Year, Known day, determining month
+    cookie.setExpirationDate(QDateTime(QDate(1995, 1, 13), QTime(0, 0), Qt::UTC));
+    QTest::newRow("knownYD-0") << "a=b;expires=13/1/95 0:0" << cookie;
+    QTest::newRow("knownYD-1") << "a=b;expires=1/13/95 0:0" << cookie;
+    QTest::newRow("knownYD-2") << "a=b;expires=95/13/1 0:0" << cookie;
+    QTest::newRow("knownYD-3") << "a=b;expires=95/1/13 0:0" << cookie;
+
+    // Month comes before Year
+    cookie.setExpirationDate(QDateTime(QDate(2021, 03, 26), QTime(0, 0), Qt::UTC));
+    QTest::newRow("month-0") << "a=b;expires=26/03/21 0:0" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(2015, 12, 30), QTime(16, 25, 0, 0), Qt::UTC));
+    QTest::newRow("month-1") << "a=b;expires=wed 16:25pm December 2015 30" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(2031, 11, 11), QTime(16, 25, 0, 0), Qt::UTC));
+    QTest::newRow("month-2") << "a=b;expires=16:25 11 31 11" << cookie;
+
+    // The very ambiguous cases
+    // Matching Firefox's behavior of guessing month, day, year in those cases
+    cookie.setExpirationDate(QDateTime(QDate(2013, 10, 2), QTime(0, 0), Qt::UTC));
+    QTest::newRow("ambiguousd-0") << "a=b;expires=10/2/13 0:0" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(2013, 2, 10), QTime(0, 0), Qt::UTC));
+    QTest::newRow("ambiguousd-1") << "a=b;expires=2/10/13 0:0" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(2010, 2, 3), QTime(0, 0), Qt::UTC));
+    QTest::newRow("ambiguousd-2") << "a=b;expires=2/3/10 0:0" << cookie;
+
+    // FYI If you try these in Firefox it wont set a cookie for the following two string
+    // because 03 is turned into the year at which point it is expired
+    cookie.setExpirationDate(QDateTime(QDate(2003, 2, 10), QTime(0, 0), Qt::UTC));
+    QTest::newRow("ambiguousd-3") << "a=b;expires=2/10/3 0:0" << cookie;
+    cookie.setExpirationDate(QDateTime(QDate(2003, 10, 2), QTime(0, 0), Qt::UTC));
+    QTest::newRow("ambiguousd-4") << "a=b;expires=10/2/3 0:0" << cookie;
+
+    // These are the cookies that firefox's source says it can parse
+    cookie.setExpirationDate(QDateTime(QDate(1989, 4, 14), QTime(3, 20, 0, 0), Qt::UTC));
+    QTest::newRow("firefox-0") << "a=b;expires=14 Apr 89 03:20" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(1989, 4, 14), QTime(3, 20, 0, 0), Qt::UTC));
+    QTest::newRow("firefox-1") << "a=b;expires=14 Apr 89 03:20 GMT" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(1989, 3, 17), QTime(4, 1, 33, 0), Qt::UTC));
+    QTest::newRow("firefox-2") << "a=b;expires=Fri, 17 Mar 89 4:01:33" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(1989, 3, 17), QTime(4, 1, 0, 0), Qt::UTC));
+    QTest::newRow("firefox-3") << "a=b;expires=Fri, 17 Mar 89 4:01 GMT" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 16), QTime(16-8, 12, 0, 0), Qt::UTC));
+    QTest::newRow("firefox-4") << "a=b;expires=Mon Jan 16 16:12 PDT 1989" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(1989, 1, 16), QTime(17, 42, 0, 0), Qt::UTC));
+    QTest::newRow("firefox-5") << "a=b;expires=Mon Jan 16 16:12 +0130 1989" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(1992, 5, 6), QTime(16-9, 41, 0, 0), Qt::UTC));
+    QTest::newRow("firefox-6") << "a=b;expires=6 May 1992 16:41-JST (Wednesday)" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(1993, 8, 22), QTime(10, 59, 12, 82), Qt::UTC));
+    QTest::newRow("firefox-7") << "a=b;expires=22-AUG-1993 10:59:12.82" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(1993, 8, 22), QTime(22, 59, 0, 0), Qt::UTC));
+    QTest::newRow("firefox-8") << "a=b;expires=22-AUG-1993 10:59pm" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(1993, 8, 22), QTime(12, 59, 0, 0), Qt::UTC));
+    QTest::newRow("firefox-9") << "a=b;expires=22-AUG-1993 12:59am" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(1993, 8, 22), QTime(12, 59, 0, 0), Qt::UTC));
+    QTest::newRow("firefox-10") << "a=b;expires=22-AUG-1993 12:59 PM" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(1995, 8, 4), QTime(15, 54, 0, 0), Qt::UTC));
+    QTest::newRow("firefox-11") << "a=b;expires=Friday, August 04, 1995 3:54 PM" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(1995, 6, 21), QTime(16, 24, 34, 0), Qt::UTC));
+    QTest::newRow("firefox-12") << "a=b;expires=06/21/95 04:24:34 PM" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(1995, 6, 20), QTime(21, 7, 0, 0), Qt::UTC));
+    QTest::newRow("firefox-13") << "a=b;expires=20/06/95 21:07" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(1995, 6, 8), QTime(19-5, 32, 48, 0), Qt::UTC));
+    QTest::newRow("firefox-14") << "a=b;expires=95-06-08 19:32:48 EDT" << cookie;
+
+    // Edge cases caught by fuzzing
+    // These are about the default cause creates dates that don't exits
+    cookie.setExpirationDate(QDateTime(QDate(2030, 2, 25), QTime(1, 1, 0, 0), Qt::UTC));
+    QTest::newRow("fuzz-0") << "a=b; expires=30 -000002  1:1 25;" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(2031, 11, 20), QTime(1, 1, 0, 0), Qt::UTC));
+    QTest::newRow("fuzz-1") << "a=b; expires=31 11 20 1:1;" << cookie;
+
+    // April only has 30 days
+    cookie.setExpirationDate(QDateTime(QDate(2031, 4, 30), QTime(1, 1, 0, 0), Qt::UTC));
+    QTest::newRow("fuzz-2") << "a=b; expires=31 30 4 1:1" << cookie;
+
+    // 9 must be the month so 31 can't be the day
+    cookie.setExpirationDate(QDateTime(QDate(2031, 9, 21), QTime(1, 1, 0, 0), Qt::UTC));
+    QTest::newRow("fuzz-3") << "a=b; expires=31 21 9 1:1" << cookie;
+
+    // Year is known, then fallback to defaults of filling in month and day
+    cookie.setExpirationDate(QDateTime(QDate(2031, 11, 1), QTime(1, 1, 0, 0), Qt::UTC));
+    QTest::newRow("fuzz-4") << "a=b; expires=31 11 01 1:1" << cookie;
+
+    // 2 must be the month so 30 can't be the day
+    cookie.setExpirationDate(QDateTime(QDate(2030, 2, 20), QTime(1, 1, 0, 0), Qt::UTC));
+    QTest::newRow("fuzz-5") << "a=b; expires=30 02 20 1:1" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(2021, 12, 22), QTime(1, 1, 0, 0), Qt::UTC));
+    QTest::newRow("fuzz-6") << "a=b; expires=2021 12 22 1:1" << cookie;
+
+    cookie.setExpirationDate(QDateTime(QDate(2029, 2, 23), QTime(1, 1, 0, 0), Qt::UTC));
+    QTest::newRow("fuzz-7") << "a=b; expires=29 23 Feb 1:1" << cookie;
+
+    // 11 and 6 don't have 31 days
+    cookie.setExpirationDate(QDateTime(QDate(2031, 11, 06), QTime(1, 1, 0, 0), Qt::UTC));
+    QTest::newRow("fuzz-8") << "a=b; expires=31 11 06 1:1" << cookie;
+
     // two-digit years:
     // from 70 until 99, we assume 20th century
+    cookie.setExpirationDate(QDateTime(QDate(1999, 11, 9), QTime(23, 12, 40), Qt::UTC));
     QTest::newRow("expiration-2digit1") << "a=b; expires=Wednesday, 09-Nov-99 23:12:40 GMT " << cookie;
     cookie.setExpirationDate(QDateTime(QDate(1970, 1, 1), QTime(23, 12, 40), Qt::UTC));
     QTest::newRow("expiration-2digit2") << "a=b; expires=Thursday, 01-Jan-70 23:12:40 GMT " << cookie;
@@ -315,6 +570,9 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     cookie.setExpirationDate(QDateTime(QDate(9999, 12, 31), QTime(23, 59, 59), Qt::UTC));
     QTest::newRow("network2") << "__siteid=1; expires=Fri, 31-Dec-9999 23:59:59 GMT; path=/" << cookie;
 
+    cookie = QNetworkCookie("YM.LC", "v=2&m=9993_262838_159_1558_1063_0_5649_4012_3776161073,9426_260205_549_1295_1336_0_5141_4738_3922731647,6733_258196_952_1364_643_0_3560_-1_0,3677_237633_1294_1294_19267_0_3244_29483_4102206176,1315_235149_1693_1541_941_0_3224_1691_1861378060,1858_214311_2100_1298_19538_0_2873_30900_716411652,6258_212007_2506_1285_1017_0_2868_3606_4288540264,3743_207884_2895_1362_2759_0_2545_7114_3388520216,2654_205253_3257_1297_1332_0_2504_4682_3048534803,1891_184881_3660_1291_19079_0_978_29178_2592538685&f=1&n=20&s=date&o=down&e=1196548712&b=Inbox&u=removed");
+    cookie.setPath("/");
+    cookie.setDomain("mail.yahoo.com");
     QTest::newRow("network3") << "YM.LC=v=2&m=9993_262838_159_1558_1063_0_5649_4012_3776161073,9426_260205_549_1295_1336_0_5141_4738_3922731647,6733_258196_952_1364_643_0_3560_-1_0,3677_237633_1294_1294_19267_0_3244_29483_4102206176,1315_235149_1693_1541_941_0_3224_1691_1861378060,1858_214311_2100_1298_19538_0_2873_30900_716411652,6258_212007_2506_1285_1017_0_2868_3606_4288540264,3743_207884_2895_1362_2759_0_2545_7114_3388520216,2654_205253_3257_1297_1332_0_2504_4682_3048534803,1891_184881_3660_1291_19079_0_978_29178_2592538685&f=1&n=20&s=date&o=down&e=1196548712&b=Inbox&u=removed; path=/; domain=mail.yahoo.com" << cookie;
 
     cookie = QNetworkCookie("__ac", "c2hhdXNtYW46U2FTYW80Wm8%3D");
@@ -330,13 +588,22 @@ void tst_QNetworkCookie::parseSingleCookie()
 
     QList<QNetworkCookie> result = QNetworkCookie::parseCookies(cookieString.toLatin1());
 
-    QEXPECT_FAIL("network2", "QDateTime parsing problem: the date is beyond year 8000", Abort);
-    QEXPECT_FAIL("network3", "Cookie value contains commas, violating the HTTP spec", Abort);
+    //QEXPECT_FAIL("network2", "QDateTime parsing problem: the date is beyond year 8000", Abort);
     QCOMPARE(result.count(), 1);
+    QEXPECT_FAIL("network3", "Cookie value contains commas, violating the HTTP spec", Abort);
     QCOMPARE(result.at(0), expectedCookie);
 
     result = QNetworkCookie::parseCookies(result.at(0).toRawForm());
     QCOMPARE(result.count(), 1);
+
+    // Drop any millisecond information, if there's any
+    QDateTime dt = expectedCookie.expirationDate();
+    if (dt.isValid()) {
+        QTime t = dt.time();
+        dt.setTime(t.addMSecs(-t.msec()));
+        expectedCookie.setExpirationDate(dt);
+    }
+
     QCOMPARE(result.at(0), expectedCookie);
 }
 
@@ -358,9 +625,7 @@ void tst_QNetworkCookie::parseMultipleCookies_data()
     // reason: malformed NAME=VALUE pair
     QTest::newRow("invalid-05") << "foo" << list;
     QTest::newRow("invalid-06") << "=b" << list;
-    QTest::newRow("invalid-08") << "a=b,foo" << list;
     QTest::newRow("invalid-09") << "foo,a=b" << list;
-    QTest::newRow("invalid-10") << "a=b,=b" << list;
     QTest::newRow("invalid-11") << ";path=/" << list;
 
     // reason: malformed expiration date string
@@ -369,8 +634,6 @@ void tst_QNetworkCookie::parseMultipleCookies_data()
     QTest::newRow("invalid-14") << "a=b;expires=foobar, abc" << list;
     QTest::newRow("invalid-15") << "a=b;expires=foobar, dd-mmm-yyyy hh:mm:ss GMT; path=/" << list;
     QTest::newRow("invalid-16") << "a=b;expires=foobar, 32-Caz-1999 24:01:60 GMT; path=/" << list;
-    QTest::newRow("invalid-17") << "a=b,c=d;expires=" << list;
-    QTest::newRow("invalid-18") << "a=b, c=d; expires=foobar, 32-Caz-1999 24:01:60 GMT; path=/" << list;
 
     QNetworkCookie cookie;
     cookie.setName("a");
@@ -417,6 +680,26 @@ void tst_QNetworkCookie::parseMultipleCookies_data()
     list << cookie;
     QTest::newRow("network1") << "id=51706646077999719 bb=\"K14144t\"_AAQ\"ototrK_A_ttot44AQ4KwoRQtoto| adv=; Domain=.bluestreak.com; expires=Tuesday 05-Dec-2017 09:11:07 GMT; path=/;" << list;
 
+    QNetworkCookie cookieA;
+    cookieA.setName("a");
+    cookieA.setValue("b");
+
+    QNetworkCookie cookieB;
+    cookieB.setName("c");
+    cookieB.setValue("d");
+
+    // NewLine
+    cookieA.setExpirationDate(QDateTime(QDate(2009, 3, 10), QTime(7, 0, 0, 0), Qt::UTC));
+    cookieB.setExpirationDate(QDateTime(QDate(2009, 3, 20), QTime(7, 0, 0, 0), Qt::UTC));
+    list = QList<QNetworkCookie>() << cookieA << cookieB;
+    QTest::newRow("real-0") << "a=b; expires=Tue Mar 10 07:00:00 2009 GMT\nc=d; expires=Fri Mar 20 07:00:00 2009 GMT" << list;
+    QTest::newRow("real-1") << "a=b; expires=Tue Mar 10 07:00:00 2009 GMT\n\nc=d; expires=Fri Mar 20 07:00:00 2009 GMT" << list;
+    QTest::newRow("real-2") << "a=b; expires=Mar 10 07:00:00 2009 GMT, Tue\nc=d; expires=Fri Mar 20 07:00:00 2009 GMT" << list;
+
+    // Match firefox's behavior
+    cookieA.setPath("/foo");
+    list = QList<QNetworkCookie>() << cookieA << cookieB;
+    QTest::newRow("real-3") << "a=b; expires=Mar 10 07:00:00 2009 GMT, Tue; path=/foo\nc=d; expires=Fri Mar 20 07:00:00 2009 GMT" << list;
 }
 
 void tst_QNetworkCookie::parseMultipleCookies()

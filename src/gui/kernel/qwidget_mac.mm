@@ -295,9 +295,7 @@ bool qt_mac_is_macsheet(const QWidget *w)
     Qt::WindowModality modality = w->windowModality();
     if (modality == Qt::ApplicationModal)
         return false;
-    if (modality == Qt::WindowModal || w->windowType() == Qt::Sheet)
-        return true;
-    return false;
+    return w->parentWidget() && (modality == Qt::WindowModal || w->windowType() == Qt::Sheet);
 }
 
 bool qt_mac_is_macdrawer(const QWidget *w)
@@ -467,7 +465,18 @@ Q_GUI_EXPORT OSWindowRef qt_mac_window_for(const QWidget *w)
     if (hiview){
         OSWindowRef window = qt_mac_window_for(hiview);
         if (!window && qt_isGenuineQWidget(hiview)) {
-            w->window()->d_func()->createWindow_sys();
+            QWidget *myWindow = w->window();
+            // This is a workaround for NSToolbar. When a widget is hidden
+            // by clicking the toolbar button, Cocoa reparents the widgets
+            // to another window (but Qt doesn't know about it).
+            // When we start showing them, it reparents back,
+            // but at this point it's window is nil, but the window it's being brought
+            // into (the Qt one) is for sure created.
+            // This stops the hierarchy moving under our feet.
+            if (myWindow != w && qt_mac_window_for(qt_mac_nativeview_for(myWindow)))
+                return qt_mac_window_for(qt_mac_nativeview_for(myWindow));
+
+            myWindow->d_func()->createWindow_sys();
             // Reget the hiview since the "create window could potentially move the view (I guess).
             hiview = qt_mac_nativeview_for(w);
             window = qt_mac_window_for(hiview);
@@ -2174,11 +2183,13 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
     if ((popup || type == Qt::Tool || type == Qt::ToolTip) && !q->isModal()) {
         [windowRef setHidesOnDeactivate:YES];
         [windowRef setHasShadow:YES];
+    } else {
+        [windowRef setHidesOnDeactivate:NO];
     }
+
     Q_UNUSED(parentWidget);
     Q_UNUSED(dialog);
 
-    // May need to do something the equivalent to ReshapeCustomWindow from Carbon here stuff, currently seems OK.
     data.fstrut_dirty = true; // when we create a toplevel widget, the frame strut should be dirty
     OSViewRef nsview = (OSViewRef)data.winid;
     OSViewRef window_contentview = qt_mac_get_contentview_for(windowRef);
@@ -2515,6 +2526,8 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     }
 
     updateIsOpaque();
+    if (q->hasFocus())
+        setFocus_sys();
     if (!topLevel && initializeWindow)
         setWSGeometry();
 
@@ -2845,12 +2858,26 @@ void QWidgetPrivate::updateSystemBackground()
 
 void QWidgetPrivate::setCursor_sys(const QCursor &)
 {
+#ifndef QT_MAC_USE_COCOA
     qt_mac_update_cursor();
+#else
+     Q_Q(QWidget);
+    if (q->testAttribute(Qt::WA_WState_Created)) {
+        [qt_mac_window_for(q) invalidateCursorRectsForView:qt_mac_nativeview_for(q)];
+    }
+#endif
 }
 
 void QWidgetPrivate::unsetCursor_sys()
 {
+#ifndef QT_MAC_USE_COCOA
     qt_mac_update_cursor();
+#else
+     Q_Q(QWidget);
+    if (q->testAttribute(Qt::WA_WState_Created)) {
+        [qt_mac_window_for(q) invalidateCursorRectsForView:qt_mac_nativeview_for(q)];
+    }
+#endif
 }
 
 void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
@@ -3275,6 +3302,20 @@ void QWidgetPrivate::show_sys()
     qt_event_request_window_change(q);
 }
 
+
+QPoint qt_mac_nativeMapFromParent(const QWidget *child, const QPoint &pt)
+{
+#ifndef QT_MAC_USE_COCOA
+    CGPoint nativePoint = CGPointMake(pt.x(), pt.y());
+    HIViewConvertPoint(&nativePoint, qt_mac_nativeview_for(child->parentWidget()),
+                       qt_mac_nativeview_for(child));
+#else
+    NSPoint nativePoint = [qt_mac_nativeview_for(child) convertPoint:NSMakePoint(pt.x(), pt.y()) fromView:qt_mac_nativeview_for(child->parentWidget())];
+#endif
+    return QPoint(nativePoint.x, nativePoint.y);
+}
+
+
 void QWidgetPrivate::hide_sys()
 {
     Q_Q(QWidget);
@@ -3556,7 +3597,10 @@ void QWidgetPrivate::raise_sys()
 #if QT_MAC_USE_COCOA
     QMacCocoaAutoReleasePool pool;
     if (isRealWindow()) {
-        [qt_mac_window_for(q) orderFront:qt_mac_window_for(q)];
+        // Calling orderFront shows the window on Cocoa too.
+        if (!q->testAttribute(Qt::WA_DontShowOnScreen)) {
+            [qt_mac_window_for(q) orderFront:qt_mac_window_for(q)];
+        }
         if (qt_mac_raise_process) { //we get to be the active process now
             ProcessSerialNumber psn;
             GetCurrentProcess(&psn);
@@ -4579,11 +4623,11 @@ void QWidgetPrivate::setModal_sys()
     OSWindowRef windowRef = qt_mac_window_for(q);
 
 #ifdef QT_MAC_USE_COCOA
-    bool windowIsSheet = [windowRef styleMask] & NSDocModalWindowMask;
+    bool alreadySheet = [windowRef styleMask] & NSDocModalWindowMask;
 
-    if (q->windowModality() == Qt::WindowModal){
+    if (windowParent && q->windowModality() == Qt::WindowModal){
         // Window should be window-modal, which implies a sheet.
-        if (!windowIsSheet)
+        if (!alreadySheet)
             recreateMacWindow();
         if ([windowRef isKindOfClass:[NSPanel class]]){
             // If the primary window of the sheet parent is a child of a modal dialog,
@@ -4597,7 +4641,7 @@ void QWidgetPrivate::setModal_sys()
         }
     } else {
         // Window shold not be window-modal, and as such, not a sheet.
-        if (windowIsSheet){
+        if (alreadySheet){
             // NB: the following call will call setModal_sys recursivly:
             recreateMacWindow();
             windowRef = qt_mac_window_for(q);
@@ -4612,6 +4656,7 @@ void QWidgetPrivate::setModal_sys()
             if ([windowRef isKindOfClass:[NSPanel class]])
                 [static_cast<NSPanel *>(windowRef) setWorksWhenModal:YES];
         } else {
+            // INVARIANT: q should not be modal.
             NSInteger winLevel = -1;
             if (q->windowType() == Qt::Popup) {
                 winLevel = NSPopUpMenuWindowLevel;
@@ -4622,8 +4667,9 @@ void QWidgetPrivate::setModal_sys()
                 }
             } else if (q->windowType() == Qt::Tool) {
                 winLevel = NSFloatingWindowLevel;
+            } else if (q->windowType() == Qt::Dialog) {
+                winLevel = NSModalPanelWindowLevel;
             }
-
 
             // StayOnTop window should appear above Tool windows.
             if (data.window_flags & Qt::WindowStaysOnTopHint)
