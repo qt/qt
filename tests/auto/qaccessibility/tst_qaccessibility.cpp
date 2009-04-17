@@ -4046,7 +4046,7 @@ void tst_QAccessibility::accelerators()
     window->show();
 
     QAccessibleInterface *accLineEdit = QAccessible::queryAccessibleInterface(le);
-    QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QString(QKeySequence(Qt::ALT) + QLatin1String("L")));
+    QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QKeySequence(Qt::ALT).toString() + QLatin1String("L"));
     label->setText(tr("Q &"));
     QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QString());
     label->setText(tr("Q &&"));
@@ -4054,11 +4054,11 @@ void tst_QAccessibility::accelerators()
     label->setText(tr("Q && A"));
     QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QString());
     label->setText(tr("Q &&&A"));
-    QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QString(QKeySequence(Qt::ALT) + QLatin1String("A")));
+    QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QKeySequence(Qt::ALT).toString() + QLatin1String("A"));
     label->setText(tr("Q &&A"));
     QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QString());
     label->setText(tr("Q &A&B"));
-    QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QString(QKeySequence(Qt::ALT) + QLatin1String("A")));
+    QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QKeySequence(Qt::ALT).toString() + QLatin1String("A"));
 
 #if defined(Q_WS_X11)
     qt_x11_wait_for_window_manager(window);
