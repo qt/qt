@@ -412,32 +412,45 @@ void QGL2PaintEngineExPrivate::updateMatrix()
         {0.0,        0.0,        0.0,  1.0}
     };
 
-    // Use the (3x3) transform for the Model~View matrix:
     const QTransform& transform = q->state()->matrix;
-    GLfloat MV[4][4] = {
-        {transform.m11(), transform.m21(), 0.0, transform.dx()},
-        {transform.m12(), transform.m22(), 0.0, transform.dy()},
-        {0.0,             0.0,             1.0, 0.0},
-        {transform.m13(), transform.m23(), 0.0, transform.m33()}
-    };
 
-    // NOTE: OpenGL ES works with column-major matrices, so when we multiply the matrices,
-    //       we also transpose them ready for GL.
-    for (int row = 0; row < 4; ++row) {
-        for (int col = 0; col < 4; ++col) {
-            pmvMatrix[col][row] = 0.0;
+    if (mode == TextDrawingMode) {
+        // Text drawing mode is only used for non-scaling transforms
+        for (int row = 0; row < 4; ++row)
+            for (int col = 0; col < 4; ++col)
+                pmvMatrix[col][row] = P[row][col];
 
-            // P[row][n] is 0.0 for n < row
-            for (int n = row; n < 4; ++n)
-                pmvMatrix[col][row] += P[row][n] * MV[n][col];
+        pmvMatrix[3][0] += P[0][0] * qRound(transform.dx());
+        pmvMatrix[3][1] += P[1][1] * qRound(transform.dy());
+
+        inverseScale = 1;
+    } else {
+        // Use the (3x3) transform for the Model~View matrix:
+        GLfloat MV[4][4] = {
+            {transform.m11(), transform.m21(), 0.0, transform.dx()},
+            {transform.m12(), transform.m22(), 0.0, transform.dy()},
+            {0.0,             0.0,             1.0, 0.0},
+            {transform.m13(), transform.m23(), 0.0, transform.m33()}
+        };
+
+        // NOTE: OpenGL ES works with column-major matrices, so when we multiply the matrices,
+        //       we also transpose them ready for GL.
+        for (int row = 0; row < 4; ++row) {
+            for (int col = 0; col < 4; ++col) {
+                pmvMatrix[col][row] = 0.0;
+
+                // P[row][n] is 0.0 for n < row
+                for (int n = row; n < 4; ++n)
+                    pmvMatrix[col][row] += P[row][n] * MV[n][col];
+            }
         }
-    }
 
-    // 1/10000 == 0.0001, so we have good enough res to cover curves
-    // that span the entire widget...
-    inverseScale = qMax(1 / qMax( qMax(qAbs(transform.m11()), qAbs(transform.m22())),
-                                  qMax(qAbs(transform.m12()), qAbs(transform.m21())) ),
-                        qreal(0.0001));
+        // 1/10000 == 0.0001, so we have good enough res to cover curves
+        // that span the entire widget...
+        inverseScale = qMax(1 / qMax( qMax(qAbs(transform.m11()), qAbs(transform.m22())),
+                    qMax(qAbs(transform.m12()), qAbs(transform.m21())) ),
+                qreal(0.0001));
+    }
 
     matrixDirty = false;
 
@@ -554,6 +567,9 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
         glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
     }
 
+    if (mode == TextDrawingMode)
+        matrixDirty = true;
+
     if (newMode == TextDrawingMode) {
         glEnable(GL_BLEND);
         glActiveTexture(QT_BRUSH_TEXTURE_UNIT);
@@ -566,6 +582,8 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
 
         shaderManager->textShader()->use();
         shaderManager->textShader()->uniforms()[QLatin1String("textureSampler")] = QT_BRUSH_TEXTURE_UNIT;
+
+        matrixDirty = true;
     }
 
     if (newMode == ImageDrawingMode) {
