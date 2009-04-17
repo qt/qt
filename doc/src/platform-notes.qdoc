@@ -232,9 +232,7 @@
 
     \section1 Windows Vista
 
-    Known issues for Qt on Vista will be listed here.
-
-    As of Qt 4.2.0 no Vista-specific issues are known.
+    At the time Qt %VERSION% was released, there were no known Vista-specific issues.
 
     \target Windows NT
     \section1 Windows XP, Windows 2000 and Windows NT
