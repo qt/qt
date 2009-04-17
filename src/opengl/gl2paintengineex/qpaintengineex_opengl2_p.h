@@ -67,7 +67,6 @@ public:
 
     QRegion clipRegion;
     bool hasClipping;
-    QRect fastClip;
 };
 
 
