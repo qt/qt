@@ -215,7 +215,7 @@ static const char* const qglslPositionWithRadialGradientBrushVertexShader = "\
         gl_Position.xy = gl_Position.xy * invertedHTexCoordsZ; \
         gl_Position.w = invertedHTexCoordsZ; \
         A = hTexCoords.xy * invertedHTexCoordsZ; \
-        b = 2.0 * fmp * (A.x + A.y); \
+        b = 2.0 * dot(A, fmp); \
     }";
 
 static const char* const qglslAffinePositionWithRadialGradientBrushVertexShader
