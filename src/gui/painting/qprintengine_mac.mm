@@ -62,6 +62,10 @@ bool QMacPrintEngine::begin(QPaintDevice *dev)
 {
     Q_D(QMacPrintEngine);
 
+    Q_ASSERT(dev && dev->devType() == QInternal::Printer);
+    if (!static_cast<QPrinter *>(dev)->isValid())
+	return false;
+
     if (d->state == QPrinter::Idle && !d->isPrintSessionInitialized()) // Need to reinitialize
         d->initialize();
 
@@ -121,24 +125,8 @@ bool QMacPrintEngine::end()
     if(d->paintEngine->type() == QPaintEngine::CoreGraphics)
         static_cast<QCoreGraphicsPaintEngine*>(d->paintEngine)->d_func()->hd = 0;
     d->paintEngine->end();
-    if (d->state != QPrinter::Idle) {
-#ifndef QT_MAC_USE_COCOA
-        if (d->shouldSuppressStatus()) {
-            PMSessionEndPageNoDialog(d->session);
-            PMSessionEndDocumentNoDialog(d->session);
-        } else {
-            PMSessionEndPage(d->session);
-            PMSessionEndDocument(d->session);
-        }
-        PMRelease(d->session);
-#else
-        PMSessionEndPageNoDialog(d->session);
-        PMSessionEndDocumentNoDialog(d->session);
-        [d->printInfo release];
-#endif
-        d->printInfo = 0;
-        d->session = 0;
-    }
+    if (d->state != QPrinter::Idle)
+	d->releaseSession();
     d->state  = QPrinter::Idle;
     return true;
 }
@@ -509,6 +497,26 @@ void QMacPrintEnginePrivate::initialize()
     }
 }
 
+void QMacPrintEnginePrivate::releaseSession()
+{
+#ifndef QT_MAC_USE_COCOA
+    if (shouldSuppressStatus()) {
+	PMSessionEndPageNoDialog(session);
+	PMSessionEndDocumentNoDialog(session);
+    } else {
+	PMSessionEndPage(session);
+	PMSessionEndDocument(session);
+    }
+    PMRelease(session);
+#else
+    PMSessionEndPageNoDialog(session);
+    PMSessionEndDocumentNoDialog(session);
+    [printInfo release];
+#endif
+    printInfo = 0;
+    session = 0;
+}
+
 bool QMacPrintEnginePrivate::newPage_helper()
 {
     Q_Q(QMacPrintEngine);
@@ -737,6 +745,7 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         d->setPaperSize(QPrinter::PaperSize(value.toInt()));
         break;
     case PPK_PrinterName: {
+        bool printerNameSet = false;
         OSStatus status = noErr;
         QCFType<CFArrayRef> printerList;
         status = PMServerCreatePrinterList(kPMServerLocal, &printerList);
@@ -747,12 +756,18 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
                 QString name = QCFString::toQString(PMPrinterGetName(printer));
                 if (name == value.toString()) {
                     status = PMSessionSetCurrentPMPrinter(d->session, printer);
+                    printerNameSet = true;
                     break;
                 }
             }
         }
         if (status != noErr)
             qWarning("QMacPrintEngine::setPrinterName: Error setting printer: %ld", long(status));
+	if (!printerNameSet) {
+            qWarning("QMacPrintEngine::setPrinterName: Failed to set printer named '%s'.", qPrintable(value.toString()));
+            d->releaseSession();
+            d->state = QPrinter::Idle;
+        }
         break; }
     case PPK_SuppressSystemPrintStatus:
         d->suppressStatus = value.toBool();
@@ -876,17 +891,12 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         ret = r;
         break; }
     case PPK_PrinterName: {
-        CFIndex currIndex;
-        PMPrinter unused;
-        QCFType<CFArrayRef> printerList;
-        OSStatus status = PMSessionCreatePrinterList(d->session, &printerList, &currIndex, &unused);
+        PMPrinter printer;
+        OSStatus status = PMSessionGetCurrentPrinter(d->session, &printer);
         if (status != noErr)
-            qWarning("QMacPrintEngine::printerName: Problem getting list of printers: %ld", long(status));
-        if (currIndex != -1 && printerList && currIndex < CFArrayGetCount(printerList)) {
-            const CFStringRef name = static_cast<CFStringRef>(CFArrayGetValueAtIndex(printerList, currIndex));
-            if (name)
-                ret = QCFString::toQString(name);
-        }
+            qWarning("QMacPrintEngine::printerName: Failed getting current PMPrinter: %ld", long(status));
+        if (printer)
+            ret = QCFString::toQString(PMPrinterGetName(printer));
         break; }
     case PPK_Resolution: {
         ret = d->resolution.hRes;

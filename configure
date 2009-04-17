@@ -205,10 +205,10 @@ earlyArgParse()
         h|help|--help|-help)
             if [ "$VAL" = "yes" ]; then
                 OPT_HELP="$VAL"
-                COMMERCIAL_USER="yes" #doesn't matter we will display the help
+                COMMERCIAL_USER="no" #doesn't matter we will display the help
             else
                 UNKNOWN_OPT=yes
-                COMMERCIAL_USER="yes" #doesn't matter we will display the help
+                COMMERCIAL_USER="no" #doesn't matter we will display the help
             fi
             ;;
         --*)
@@ -6213,6 +6213,9 @@ QT_BUILD_KEY_COMPAT=
 if [ "$QT_CROSS_COMPILE" = "no" ]; then
     # previous versions of Qt used a build key built from the uname
     QT_BUILD_KEY_COMPAT="$CFG_USER_BUILD_KEY $UNAME_MACHINE $UNAME_SYSTEM $COMPILER $BUILD_OPTIONS"
+    if [ -n "$QT_NAMESPACE" ]; then
+        QT_BUILD_KEY_COMPAT="$QT_BUILD_KEY_COMPAT $QT_NAMESPACE"
+    fi
 fi
 # strip out leading/trailing/extra whitespace
 QT_BUILD_KEY=`echo $QT_BUILD_KEY | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`

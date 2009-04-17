@@ -230,19 +230,15 @@ void tst_QItemView::setupWithNoTestData()
     ViewsToTest testViews;
     QTest::addColumn<QString>("viewType");
     QTest::addColumn<bool>("displays");
-#if QT_VERSION >= 0x040200
     QTest::addColumn<int>("vscroll");
     QTest::addColumn<int>("hscroll");
-#endif
     for (int i = 0; i < testViews.tests.size(); ++i) {
         QString view = testViews.tests.at(i).viewType;
         QString test = view + " ScrollPerPixel";
         bool displayIndexes = (testViews.tests.at(i).display == ViewsToTest::DisplayRoot);
         QTest::newRow(test.toLatin1().data()) << view << displayIndexes
-#if QT_VERSION >= 0x040200
                                               << (int)QAbstractItemView::ScrollPerPixel
                                               << (int)QAbstractItemView::ScrollPerPixel
-#endif
                                               ;
     }
     for (int i = 0; i < testViews.tests.size(); ++i) {
@@ -250,10 +246,8 @@ void tst_QItemView::setupWithNoTestData()
         QString test = view + " ScrollPerItem";
         bool displayIndexes = (testViews.tests.at(i).display == ViewsToTest::DisplayRoot);
         QTest::newRow(test.toLatin1().data()) << view << displayIndexes
-#if QT_VERSION >= 0x040200
                                               << (int)QAbstractItemView::ScrollPerItem
                                               << (int)QAbstractItemView::ScrollPerItem
-#endif
                                               ;
     }
 }
@@ -296,19 +290,17 @@ void tst_QItemView::nonDestructiveBasicTest()
 #ifdef Q_OS_IRIX
     QSKIP("This test takes too long to execute on IRIX", SkipAll);
 #endif
-    
+
 #ifdef Q_OS_WINCE
      QTest::qWait(400);
 #endif
 
     QFETCH(QString, viewType);
     view = testViews->createView(viewType);
-#if QT_VERSION >= 0x040200
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
-#endif
 
     // setSelectionModel() will assert
     //view->setSelectionModel(0);
@@ -461,12 +453,10 @@ void tst_QItemView::spider()
 #endif
     QFETCH(QString, viewType);
     view = testViews->createView(viewType);
-#if QT_VERSION >= 0x040200
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
-#endif
     view->setModel(treeModel);
     view->show();
 #if defined(Q_OS_WINCE)
@@ -498,12 +488,10 @@ void tst_QItemView::resize()
     // doesn't really catch theproblem.
     QFETCH(QString, viewType);
     view = testViews->createView(viewType);
-#if QT_VERSION >= 0x040200
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
-#endif
     view->setModel(treeModel);
     view->show();
 
@@ -528,12 +516,10 @@ void tst_QItemView::visualRect()
 #endif
     QFETCH(QString, viewType);
     view = testViews->createView(viewType);
-#if QT_VERSION >= 0x040200
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
-#endif
     QCOMPARE(view->visualRect(QModelIndex()), QRect());
 
     // Add model
@@ -664,12 +650,10 @@ void tst_QItemView::indexAt()
 #endif
     QFETCH(QString, viewType);
     view = testViews->createView(viewType);
-#if QT_VERSION >= 0x040200
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
-#endif
     view->show();
     view->setModel(treeModel);
 #if 0
@@ -700,12 +684,10 @@ void tst_QItemView::scrollTo()
 #endif
     QFETCH(QString, viewType);
     view = testViews->createView(viewType);
-#if QT_VERSION >= 0x040200
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
-#endif
     view->setModel(treeModel);
     view->show();
 

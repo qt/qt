@@ -41,9 +41,6 @@
 
 
 #include <QtTest/QtTest>
-#if QT_VERSION < 0x040200
-QTEST_NOOP_MAIN
-#else
 #include <QStandardItemModel>
 #include <qdebug.h>
 #include <qdesktopservices.h>
@@ -172,5 +169,3 @@ void tst_qdesktopservices::storageLocationDoesNotEndWithSlash()
 
 QTEST_MAIN(tst_qdesktopservices)
 #include "tst_qdesktopservices.moc"
-#endif
-

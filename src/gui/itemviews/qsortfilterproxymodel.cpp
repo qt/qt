@@ -1032,9 +1032,21 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
         }
     }
 
-    if (!source_rows_remove.isEmpty())
+    if (!source_rows_remove.isEmpty()) {
         remove_source_items(m->proxy_rows, m->source_rows,
                             source_rows_remove, source_parent, Qt::Vertical);
+        QSet<int> source_rows_remove_set = source_rows_remove.toList().toSet();
+        QVector<QModelIndex>::iterator it = m->mapped_children.begin();
+        while (it != m->mapped_children.end()) {
+            const QModelIndex source_child_index = *it;
+            if (source_rows_remove_set.contains(source_child_index.row())) {
+                it = m->mapped_children.erase(it);
+                remove_from_mapping(source_child_index);
+            } else {
+                ++it;
+            }
+        }
+    }
 
     if (!source_rows_resort.isEmpty()) {
         // Re-sort the rows
@@ -1569,6 +1581,10 @@ bool QSortFilterProxyModel::hasChildren(const QModelIndex &parent) const
         return false;
     if (!d->model->hasChildren(source_parent))
         return false;
+
+    if (d->model->canFetchMore(source_parent))
+        return true; //we assume we might have children that can be fetched
+
     QSortFilterProxyModelPrivate::Mapping *m = d->create_mapping(source_parent).value();
     return m->source_rows.count() != 0 && m->source_columns.count() != 0;
 }

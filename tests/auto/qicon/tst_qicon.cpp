@@ -186,10 +186,8 @@ void tst_QIcon::actualSize2()
     QFETCH(QSize, argument);
     QFETCH(QSize, result);
 
-#if QT_VERSION >= 0x040200
     QCOMPARE(icon.actualSize(argument), result);
     QCOMPARE(icon.pixmap(argument).size(), result);
-#endif
 }
 
 void tst_QIcon::svgActualSize()

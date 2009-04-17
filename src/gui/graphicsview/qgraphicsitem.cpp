@@ -4223,9 +4223,9 @@ QPolygonF QGraphicsItem::mapToItem(const QGraphicsItem *item, const QRectF &rect
 */
 QPolygonF QGraphicsItem::mapToParent(const QRectF &rect) const
 {
-    if (!d_ptr->hasTransform)
-        return QPolygonF(rect.translated(d_ptr->pos));
-    return transform().map(rect.translated(d_ptr->pos));
+    QPolygonF p = !d_ptr->hasTransform ? rect : transform().map(rect);
+    p.translate(d_ptr->pos);
+    return p;
 }
 
 /*!
@@ -4292,8 +4292,8 @@ QRectF QGraphicsItem::mapRectToItem(const QGraphicsItem *item, const QRectF &rec
 */
 QRectF QGraphicsItem::mapRectToParent(const QRectF &rect) const
 {
-    QRectF r = rect.translated(d_ptr->pos.x(), d_ptr->pos.y());
-    return !d_ptr->hasTransform ? r : transform().mapRect(r);
+    QRectF r = !d_ptr->hasTransform ? rect : transform().mapRect(rect);
+    return r.translated(d_ptr->pos);
 }
 
 /*!
@@ -4424,9 +4424,9 @@ QPolygonF QGraphicsItem::mapToItem(const QGraphicsItem *item, const QPolygonF &p
 */
 QPolygonF QGraphicsItem::mapToParent(const QPolygonF &polygon) const
 {
-    QPolygonF p = polygon;
+    QPolygonF p = !d_ptr->hasTransform ? polygon : transform().map(polygon);
     p.translate(d_ptr->pos);
-    return d_ptr->hasTransform ? transform().map(p) : p;
+    return p;
 }
 
 /*!
@@ -4468,7 +4468,10 @@ QPainterPath QGraphicsItem::mapToItem(const QGraphicsItem *item, const QPainterP
 */
 QPainterPath QGraphicsItem::mapToParent(const QPainterPath &path) const
 {
-    return d_ptr->parent ? itemTransform(d_ptr->parent).map(path) : mapToScene(path);
+    QTransform x = QTransform::fromTranslate(d_ptr->pos.x(), d_ptr->pos.y());
+    if (d_ptr->hasTransform)
+        x = transform() * x;
+    return x.map(path);
 }
 
 /*!
@@ -5697,12 +5700,11 @@ void QGraphicsItem::removeFromIndex()
 */
 void QGraphicsItem::prepareGeometryChange()
 {
-    if (!d_ptr->scene)
-        return;
-
-    d_ptr->updateHelper(QRectF(), false, /*maybeDirtyClipPath=*/!d_ptr->inSetPosHelper);
-    QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
-    scenePrivate->removeFromIndex(this);
+    if (d_ptr->scene) {
+        d_ptr->updateHelper(QRectF(), false, /*maybeDirtyClipPath=*/!d_ptr->inSetPosHelper);
+        QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
+        scenePrivate->removeFromIndex(this);
+    }
 
     if (d_ptr->inSetPosHelper)
         return;
@@ -8487,6 +8489,7 @@ void QGraphicsSimpleTextItem::setText(const QString &text)
         return;
     d->text = text;
     d->updateBoundingRect();
+    update();
 }
 
 /*!

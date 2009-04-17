@@ -1263,7 +1263,7 @@ void QAbstractSocket::connectToHostImplementation(const QString &hostName, quint
            (int) openMode);
 #endif
 
-    if (d->state == ConnectedState || d->state == ConnectingState) {
+    if (d->state == ConnectedState || d->state == ConnectingState || d->state == ClosingState) {
         qWarning("QAbstractSocket::connectToHost() called when already connecting/connected to \"%s\"", qPrintable(hostName));
         return;
     }
@@ -2279,7 +2279,7 @@ void QAbstractSocket::disconnectFromHostImplementation()
     emit delayedCloseFinished(); // compat signal
 #endif
     // only emit disconnected if we were connected before
-    if (previousState == ConnectedState || ClosingState)
+    if (previousState == ConnectedState || previousState == ClosingState)
         emit disconnected();
 
     d->localPort = 0;

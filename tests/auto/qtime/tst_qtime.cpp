@@ -254,11 +254,7 @@ void tst_QTime::isNull()
     QTime t1;
     QVERIFY( t1.isNull() );
     QTime t2(0,0,0);
-#if QT_VERSION >= 0x040100
     QVERIFY( !t2.isNull() );
-#else
-    QVERIFY( t2.isNull() );
-#endif
     QTime t3(0,0,1);
     QVERIFY( !t3.isNull() );
     QTime t4(0,0,0,1);
@@ -270,11 +266,7 @@ void tst_QTime::isNull()
 void tst_QTime::isValid()
 {
     QTime t1;
-#if QT_VERSION >= 0x040100
     QVERIFY( !t1.isValid() );
-#else
-    QVERIFY( t1.isValid() );
-#endif
     QTime t2(24,0,0,0);
     QVERIFY( !t2.isValid() );
     QTime t3(23,60,0,0);
@@ -599,11 +591,7 @@ void tst_QTime::fromString_data()
     QTest::newRow( "data0" ) << QString("00:00:00") << QTime(0,0,0,0) << QTime(0,0,0,0);
     QTest::newRow( "data1" ) << QString("10:12:34") << QTime(10,12,34,0) << QTime(10,12,34,0);
     QTest::newRow( "data2" ) << QString("19:03:54.998601") << QTime(19, 3, 54, 999) << QTime(19, 3, 54, 999);
-#if QT_VERSION >= 0x040200
     QTest::newRow( "data3" ) << QString("19:03:54.999601") << QTime(19, 3, 54, 999) << QTime(19, 3, 54, 999);
-#else
-    QTest::newRow( "data3" ) << QString("19:03:54.999601") << QTime() << QTime();
-#endif
 }
 
 void tst_QTime::fromString()
@@ -671,9 +659,7 @@ void tst_QTime::toString_format_data()
     QTest::newRow( "data2" ) << QTime(10,12,34,45) << QString("hh:m:ss:z") << QString("10:12:34:45");
     QTest::newRow( "data3" ) << QTime(10,12,34,45) << QString("hh:ss ap") << QString("10:34 am");
     QTest::newRow( "data4" ) << QTime(22,12,34,45) << QString("hh:zzz AP") << QString("10:045 PM");
-#if (QT_VERSION-0 >= 0x030200)
     QTest::newRow( "data5" ) << QTime(230,230,230,230) << QString("hh:mm:ss") << QString();
-#endif
 }
 
 void tst_QTime::toString_format()

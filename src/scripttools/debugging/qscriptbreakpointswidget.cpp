@@ -225,7 +225,6 @@ public:
 
     bool eventFilter(QObject *editor, QEvent *event)
     {
-#if QT_VERSION >= 0x040500
         if (QLineEdit *le = qobject_cast<QLineEdit*>(editor)) {
             if (event->type() == QEvent::KeyPress) {
                 int key = static_cast<QKeyEvent*>(event)->key();
@@ -237,21 +236,18 @@ public:
                 }
             }
         }
-#endif
         return QStyledItemDelegate::eventFilter(editor, event);
     }
 
     void setModelData(QWidget *editor, QAbstractItemModel *model,
                       const QModelIndex &index) const
     {
-#if QT_VERSION >= 0x040500
         if (index.column() == 2) {
             // check that the syntax is OK
             QString condition = qobject_cast<QLineEdit*>(editor)->text();
             if (QScriptEngine::checkSyntax(condition).state() != QScriptSyntaxCheckResult::Valid)
                 return;
         }
-#endif
         QStyledItemDelegate::setModelData(editor, model, index);
     }
 
@@ -261,11 +257,7 @@ private Q_SLOTS:
         QWidget *editor = qobject_cast<QWidget*>(sender());
         QPalette pal = editor->palette();
         QColor col;
-#if QT_VERSION >= 0x040500
         bool ok = (QScriptEngine::checkSyntax(text).state() == QScriptSyntaxCheckResult::Valid);
-#else
-        bool ok = true;
-#endif
         if (ok) {
             col = Qt::white;
         } else {

@@ -275,6 +275,9 @@ void ProFileEvaluator::Private::insertVariable(const QString &line, int *i)
 {
     ProVariable::VariableOperator opkind;
 
+    if (m_proitem.isEmpty()) // Line starting with '=', like a conflict marker
+        return;
+
     switch (m_proitem.at(m_proitem.length() - 1).unicode()) {
         case '+':
             m_proitem.chop(1);
@@ -1473,7 +1476,13 @@ ProFile *ProFileEvaluator::parsedProFile(const QString &fileName)
 {
     QFileInfo fi(fileName);
     if (fi.exists()) {
-        ProFile *pro = new ProFile(fi.absoluteFilePath());
+        QString fn = QDir::cleanPath(fi.absoluteFilePath());
+        foreach (const ProFile *pf, d->m_profileStack)
+            if (pf->fileName() == fn) {
+                errorMessage(d->format("circular inclusion of %1").arg(fn));
+                return 0;
+            }
+        ProFile *pro = new ProFile(fn);
         if (d->read(pro))
             return pro;
         delete pro;

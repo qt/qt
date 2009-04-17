@@ -48,11 +48,7 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-#if QT_VERSION >= 0x040500
 QT_MODULE(ScriptTools)
-#else
-#  define Q_SCRIPTTOOLS_EXPORT
-#endif
 
 class QAction;
 class QScriptEngine;

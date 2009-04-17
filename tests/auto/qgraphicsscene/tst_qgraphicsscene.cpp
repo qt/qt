@@ -45,10 +45,6 @@
 #include <ceconfig.h>
 #endif
 
-#if QT_VERSION < 0x040200
-QTEST_NOOP_MAIN
-#else
-
 #include <QtGui>
 #include <math.h>
 
@@ -245,6 +241,7 @@ private slots:
     void task139782_containsItemBoundingRect();
     void task176178_itemIndexMethodBreaksSceneRect();
     void task160653_selectionChanged();
+    void task250680_childClip();
 };
 
 void tst_QGraphicsScene::initTestCase()
@@ -3384,6 +3381,31 @@ void tst_QGraphicsScene::task160653_selectionChanged()
     QCOMPARE(spy.count(), 1);
 }
 
+void tst_QGraphicsScene::task250680_childClip()
+{
+    QGraphicsRectItem *clipper = new QGraphicsRectItem;
+    clipper->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+    clipper->setPen(QPen(Qt::green));
+    clipper->setRect(200, 200, 640, 480);
+
+    QGraphicsRectItem *rect = new QGraphicsRectItem(clipper);
+    rect->setPen(QPen(Qt::red));
+    rect->setBrush(QBrush(QColor(255, 0, 0, 75)));
+    rect->setPos(320, 240);
+    rect->setRect(-25, -25, 50, 50);
+
+    QGraphicsScene scene;
+    scene.addItem(clipper);
+
+    QPainterPath path;
+    path.addRect(-25, -25, 50, 50);
+    QCOMPARE(rect->clipPath(), path);
+
+    QCOMPARE(scene.items(QRectF(320, 240, 5, 5)).size(), 2);
+    rect->rotate(45);
+    QCOMPARE(scene.items(QRectF(320, 240, 5, 5)).size(), 2);
+}
+
 void tst_QGraphicsScene::sorting_data()
 {
     QTest::addColumn<bool>("cache");
@@ -3563,4 +3585,3 @@ void tst_QGraphicsScene::stickyFocus()
 
 QTEST_MAIN(tst_QGraphicsScene)
 #include "tst_qgraphicsscene.moc"
-#endif

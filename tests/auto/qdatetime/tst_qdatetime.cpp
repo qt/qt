@@ -220,18 +220,10 @@ void tst_QDateTime::isNull()
 
     dt1.setDate(QDate(2004, 1, 2));
     QVERIFY(!dt1.isNull());
-#if QT_VERSION < 0x040100
-    dt1.setDate(QDate());
-    QVERIFY(dt1.isNull());
-#endif
     dt1.setTime(QTime(12, 34, 56));
     QVERIFY(!dt1.isNull());
     dt1.setTime(QTime());
-#if QT_VERSION >= 0x040100
     QVERIFY(!dt1.isNull());
-#else
-    QVERIFY(dt1.isNull());
-#endif
 }
 
 void tst_QDateTime::isValid()
@@ -1010,15 +1002,10 @@ void tst_QDateTime::toString_strformat_data()
 
 void tst_QDateTime::toString_strformat()
 {
-#if (QT_VERSION-0 >= 0x030200)
     QFETCH( QDateTime, dt );
     QFETCH( QString, format );
     QFETCH( QString, str );
     QCOMPARE( dt.toString( format ), str );
-#else
-    QSKIP( "No test implemented for < 3.2 yet", SkipAll);
-#endif
-
 }
 
 void tst_QDateTime::fromStringTextDate_data()
@@ -1068,7 +1055,6 @@ void tst_QDateTime::fromStringTextDate_data()
                               << 28 << 6 << 2005 << 7 << 57 << 30 << 110
                               << int(Qt::LocalTime);
 
-#if QT_VERSION >= 0x040200
     QTest::newRow("Year 0999") << QString("Tue Jun 17 08:00:10 0999")
                             << int(Qt::TextDate)
                             << 17 << 6 << 999 << 8 << 0 << 10 << 0
@@ -1088,7 +1074,6 @@ void tst_QDateTime::fromStringTextDate_data()
                             << int(Qt::TextDate)
                             << 1 << 1 << -4712 << 0 << 01 << 02 << 0
                             << int(Qt::LocalTime);
-#endif
 }
 
 void tst_QDateTime::fromStringTextDate()

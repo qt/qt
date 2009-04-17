@@ -1465,14 +1465,10 @@ void tst_QLineEdit::textMask_data()
 
 void tst_QLineEdit::textMask()
 {
-#if (QT_VERSION-0 >= 0x030303)
     QFETCH( QString, insertString );
     testWidget->setInputMask( "#" );
     testWidget->setText( insertString );
     QCOMPARE( testWidget->text(), insertString );
-#else
-    QSKIP( "This test function tests a problem with masks that was fixed in 3.3", SkipAll);
-#endif
 }
 
 void tst_QLineEdit::setText()

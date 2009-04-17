@@ -681,6 +681,22 @@ void tst_QFiledialog::filters()
     for (int i = views.at(0)->currentIndex(); i < views.at(0)->count(); ++i)
         views.at(0)->setCurrentIndex(i);
     QCOMPARE(spyFilterSelected.count(), 0);
+
+    //Let check if filters with whitespaces
+    QNonNativeFileDialog fd2;
+    QStringList expected;
+    expected << "C++ Source Files(*.cpp)";
+    expected << "Any(*.*)";
+    fd2.setFilter("C++ Source Files(*.cpp);;Any(*.*)");
+    QCOMPARE(expected, fd2.filters());
+    fd2.setFilter("C++ Source Files(*.cpp) ;;Any(*.*)");
+    QCOMPARE(expected, fd2.filters());
+    fd2.setFilter("C++ Source Files(*.cpp);; Any(*.*)");
+    QCOMPARE(expected, fd2.filters());
+    fd2.setFilter(" C++ Source Files(*.cpp);; Any(*.*)");
+    QCOMPARE(expected, fd2.filters());
+    fd2.setFilter("C++ Source Files(*.cpp) ;; Any(*.*)");
+    QCOMPARE(expected, fd2.filters());
 }
 
 void tst_QFiledialog::selectFilter()

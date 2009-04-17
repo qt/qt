@@ -211,11 +211,7 @@ void tst_QCommandLinkButton::setAutoRepeat()
     QVERIFY( !testWidget->isCheckable() );
 
     // verify autorepeat is off by default.
-#if QT_VERSION < 0x040000
-    QButton tmp( 0 );
-#else
     QCommandLinkButton tmp( 0 );
-#endif
     tmp.setObjectName("tmp");
     QVERIFY( !tmp.autoRepeat() );
 

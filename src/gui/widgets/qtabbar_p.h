@@ -70,7 +70,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 class QTabBarPrivate  : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QTabBar)
@@ -78,7 +77,7 @@ public:
     QTabBarPrivate()
         :currentIndex(-1), pressedIndex(-1),
          shape(QTabBar::RoundedNorth),
-         layoutDirty(false), drawBase(true), scrollOffset(0), expanding(true), closeButtonOnTabs(false), selectionBehaviorOnRemove(QTabBar::SelectRightTab), paintWithOffsets(true), movable(false), dragInProgress(false), documentMode(false) {}
+         layoutDirty(false), drawBase(true), scrollOffset(0), expanding(true), closeButtonOnTabs(false), selectionBehaviorOnRemove(QTabBar::SelectRightTab), paintWithOffsets(true), movable(false), dragInProgress(false), documentMode(false), movingTab(0) {}
 
     int currentIndex;
     int pressedIndex;
@@ -98,8 +97,6 @@ public:
             , lastTab(-1)
             , timeLine(0)
             , dragOffset(0)
-            , hidLeft(false)
-            , hidRight(false)
         {}
         bool enabled;
         int shortcutId;
@@ -123,9 +120,6 @@ public:
 
         QTimeLine *timeLine;
         int dragOffset;
-        QPixmap animatingCache;
-        bool hidLeft;
-        bool hidRight;
 
         void makeTimeLine(QWidget *q) {
             if (timeLine)
@@ -133,27 +127,6 @@ public:
             timeLine = new QTimeLine(ANIMATION_DURATION, q);
             q->connect(timeLine, SIGNAL(frameChanged(int)), q, SLOT(_q_moveTab(int)));
             q->connect(timeLine, SIGNAL(finished()), q, SLOT(_q_moveTabFinished()));
-        }
-
-        void hideWidgets() {
-            if (!hidRight && rightWidget) {
-                hidRight = rightWidget->isVisible();
-                rightWidget->hide();
-            }
-
-            if (!hidLeft && leftWidget) {
-                hidLeft = leftWidget->isVisible();
-                leftWidget->hide();
-            }
-        }
-
-        void unHideWidgets() {
-            if (leftWidget && hidLeft)
-                leftWidget->show();
-            hidLeft = false;
-            if (rightWidget && hidRight)
-                rightWidget->show();
-            hidRight = false;
         }
 
     };
@@ -184,12 +157,12 @@ public:
     void _q_moveTabFinished(int offset);
     QRect hoverRect;
 
-    void grabCache(int start, int end, bool unhide);
     void refresh();
     void layoutTabs();
     void layoutWidgets(int index = -1);
     void layoutTab(int index);
     void updateMacBorderMetrics();
+    void setupMovableTab();
 
     void makeVisible(int index);
     QSize iconSize;
@@ -205,6 +178,8 @@ public:
     bool movable;
     bool dragInProgress;
     bool documentMode;
+
+    QWidget *movingTab;
 
     // shared by tabwidget and qtabbar
     static void initStyleBaseOption(QStyleOptionTabBarBaseV2 *optTabBase, QTabBar *tabbar, QSize size)

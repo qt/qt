@@ -977,7 +977,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
 
             if (widget && widget->testAttribute(Qt::WA_SetPalette) &&
                 resolve_mask & (1 << QPalette::Base)) // Palette overridden by user
-                painter->fillRect(textRect, option->palette.base().color());
+                painter->fillRect(textRect, option->palette.base());
             else
                 gtkPainter.paintFlatBox( gtkEntry, "entry_bg", textRect,
                                          option->state & State_Enabled ? GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE, GTK_SHADOW_NONE, gtkEntry->style);
@@ -2760,10 +2760,13 @@ void QGtkStyle::drawControl(ControlElement element,
             if (tab->state & State_Selected)
                 state = GTK_STATE_NORMAL;
 
-            bool first = tab->position == QStyleOptionTab::Beginning || tab->position == QStyleOptionTab::OnlyOneTab;
-            bool last = tab->position == QStyleOptionTab::End || tab->position == QStyleOptionTab::OnlyOneTab;
             bool selected = (tab->state & State_Selected);
-            if (option->direction == Qt::RightToLeft) {
+            bool first = false, last = false;
+            if (widget) {
+                // This is most accurate and avoids resizing tabs while moving
+                first = tab->rect.left() == widget->rect().left();
+                last = tab->rect.right() == widget->rect().right();
+            } else if (option->direction == Qt::RightToLeft) {
                 bool tmp = first;
                 first = last;
                 last = tmp;
