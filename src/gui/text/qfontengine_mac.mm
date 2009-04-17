@@ -120,7 +120,7 @@ OSStatus QMacFontPath::closePath(void *data)
 
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
-QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, const ATSFontRef &atsFontRef, const QFontDef &fontDef, bool)
+QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, const ATSFontRef &atsFontRef, const QFontDef &fontDef, bool kerning)
     : QFontEngineMulti(0)
 {
     this->fontDef = fontDef;
@@ -149,11 +149,15 @@ QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, con
         CFRetain(ctfont);
     }
 
-    const void *keys[] = { NSFontAttributeName };
-    const void *values[] = { ctfont };
-    attributeDict = CFDictionaryCreate(0, keys, values, 1,
+    attributeDict = CFDictionaryCreateMutable(0, 2,
                                        &kCFTypeDictionaryKeyCallBacks,
                                        &kCFTypeDictionaryValueCallBacks);
+    CFDictionaryAddValue(attributeDict, NSFontAttributeName, ctfont);
+    if (!kerning) {
+        float zero = 0.0;
+        QCFType<CFNumberRef> noKern = CFNumberCreate(kCFAllocatorDefault, kCFNumberFloatType, &zero);
+        CFDictionaryAddValue(attributeDict, kCTKernAttributeName, &noKern);
+    }
 
     QCoreTextFontEngine *fe = new QCoreTextFontEngine(ctfont, fontDef, this);
     fe->ref.ref();
@@ -277,10 +281,11 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
                 outAdvances_x[idx] = QFixed::fromReal(tmpPoints[i + 1].x - tmpPoints[i].x);
                 outAdvances_y[idx] = QFixed::fromReal(tmpPoints[i + 1].y - tmpPoints[i].y);
             }
-            double runWidth = ceil(CTRunGetTypographicBounds(run, range, 0, 0, 0));
-            runWidth += tmpPoints[0].x;
+            CGSize lastGlyphAdvance;
+            CTFontGetAdvancesForGlyphs(runFont, kCTFontHorizontalOrientation, tmpGlyphs + glyphCount - 1, &lastGlyphAdvance, 1);
+
             outGlyphs[rtl ? 0 : (glyphCount - 1)] = tmpGlyphs[glyphCount - 1] | fontIndex;
-            outAdvances_x[rtl ? 0 : (glyphCount - 1)] = QFixed::fromReal(runWidth - tmpPoints[glyphCount - 1].x);
+            outAdvances_x[rtl ? 0 : (glyphCount - 1)] = QFixed::fromReal(lastGlyphAdvance.width).ceil();
         }
         outGlyphs += glyphCount;
         outAttributes += glyphCount;
@@ -365,26 +370,26 @@ glyph_metrics_t QCoreTextFontEngine::boundingBox(glyph_t glyph)
     ret.y = -QFixed::fromReal(rect.origin.y) - ret.height;
     CGSize advances[1];
     CTFontGetAdvancesForGlyphs(ctfont, kCTFontHorizontalOrientation, &g, advances, 1);
-    ret.xoff = QFixed::fromReal(advances[0].width);
-    ret.yoff = QFixed::fromReal(advances[0].height);
+    ret.xoff = QFixed::fromReal(advances[0].width).ceil();
+    ret.yoff = QFixed::fromReal(advances[0].height).ceil();
     return ret;
 }
 
 QFixed QCoreTextFontEngine::ascent() const
 {
-    return QFixed::fromReal(CTFontGetAscent(ctfont));
+    return QFixed::fromReal(CTFontGetAscent(ctfont)).ceil();
 }
 QFixed QCoreTextFontEngine::descent() const
 {
-    return QFixed::fromReal(CTFontGetDescent(ctfont));
+    return QFixed::fromReal(CTFontGetDescent(ctfont)).ceil();
 }
 QFixed QCoreTextFontEngine::leading() const
 {
-    return QFixed::fromReal(CTFontGetLeading(ctfont));
+    return QFixed::fromReal(CTFontGetLeading(ctfont)).ceil();
 }
 QFixed QCoreTextFontEngine::xHeight() const
 {
-    return QFixed::fromReal(CTFontGetXHeight(ctfont));
+    return QFixed::fromReal(CTFontGetXHeight(ctfont)).ceil();
 }
 QFixed QCoreTextFontEngine::averageCharWidth() const
 {

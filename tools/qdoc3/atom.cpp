@@ -106,6 +106,7 @@ QString Atom::UPPERROMAN_    ("upperroman");
   \value CodeOld
   \value CodeQuoteArgument
   \value CodeQuoteCommand
+  \value EndQmlText
   \value FormatElse
   \value FormatEndif
   \value FormatIf
@@ -131,6 +132,7 @@ QString Atom::UPPERROMAN_    ("upperroman");
   \value ParaLeft
   \value ParaRight
   \value Qml
+  \value QmlText
   \value QuotationLeft
   \value QuotationRight
   \value RawString
@@ -174,6 +176,9 @@ static const struct {
     { "CodeOld", Atom::CodeOld },
     { "CodeQuoteArgument", Atom::CodeQuoteArgument },
     { "CodeQuoteCommand", Atom::CodeQuoteCommand },
+#ifdef QDOC_QML
+    { "EndQmlText", Atom::EndQmlText },
+#endif
     { "FootnoteLeft", Atom::FootnoteLeft },
     { "FootnoteRight", Atom::FootnoteRight },
     { "FormatElse", Atom::FormatElse },
@@ -202,6 +207,7 @@ static const struct {
     { "ParaRight", Atom::ParaRight },
 #ifdef QDOC_QML
     { "Qml", Atom::Qml},
+    { "QmlText", Atom::QmlText },
 #endif
     { "QuotationLeft", Atom::QuotationLeft },
     { "QuotationRight", Atom::QuotationRight },

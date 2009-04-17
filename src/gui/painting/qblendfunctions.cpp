@@ -153,12 +153,13 @@ struct Blend_ARGB32_on_RGB16_SourceAndConstAlpha {
 template <typename SRC, typename T>
 void qt_scale_image_16bit(uchar *destPixels, int dbpl,
                           const uchar *srcPixels, int sbpl,
-                          const QRectF &targetRect,
+                          const QRectF &target,
                           const QRectF &srcRect,
                           const QRect &clip,
                           T blender)
 {
-
+    const QRectF targetRect = target.translated(aliasedCoordinateDelta,
+                                                aliasedCoordinateDelta);
 
     qreal sx = targetRect.width() / (qreal) srcRect.width();
     qreal sy = targetRect.height() / (qreal) srcRect.height();
@@ -177,10 +178,10 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
     int cy1 = clip.top();
     int cy2 = clip.y() + clip.height();
 
-    int tx1 = qFloor(targetRect.left() + aliasedCoordinateDelta);
-    int tx2 = qFloor(targetRect.right() + aliasedCoordinateDelta);
-    int ty1 = qFloor(targetRect.top() + aliasedCoordinateDelta);
-    int ty2 = qFloor(targetRect.bottom() + aliasedCoordinateDelta);
+    int tx1 = qRound(targetRect.left());
+    int tx2 = qRound(targetRect.right());
+    int ty1 = qRound(targetRect.top());
+    int ty2 = qRound(targetRect.bottom());
 
     if (tx2 < tx1)
         qSwap(tx2, tx1);
@@ -534,6 +535,8 @@ static void qt_blend_argb32_on_rgb16(uchar *destPixels, int dbpl,
                     s += BYTE_MUL_RGB16(*dst, 255 - alpha);
                 *dst = s;
             }
+            ++dst;
+            ++src;
         }
         dst += dstExtraStride;
         src += srcExtraStride;
@@ -702,11 +705,14 @@ struct Blend_ARGB32_on_ARGB32_SourceAndConstAlpha {
 
 template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
                                                 const uchar *srcPixels, int sbpl,
-                                                const QRectF &targetRect,
+                                                const QRectF &target,
                                                 const QRectF &srcRect,
                                                 const QRect &clip,
                                                 T blender)
 {
+    const QRectF targetRect = target.translated(aliasedCoordinateDelta,
+                                                aliasedCoordinateDelta);
+
     qreal sx = targetRect.width() / (qreal) srcRect.width();
     qreal sy = targetRect.height() / (qreal) srcRect.height();
 
@@ -724,10 +730,10 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
     int cy1 = clip.top();
     int cy2 = clip.y() + clip.height();
 
-    int tx1 = qFloor(targetRect.left() + aliasedCoordinateDelta);
-    int tx2 = qFloor(targetRect.right() + aliasedCoordinateDelta);
-    int ty1 = qFloor(targetRect.top() + aliasedCoordinateDelta);
-    int ty2 = qFloor(targetRect.bottom() + aliasedCoordinateDelta);
+    int tx1 = qRound(targetRect.left());
+    int tx2 = qRound(targetRect.right());
+    int ty1 = qRound(targetRect.top());
+    int ty2 = qRound(targetRect.bottom());
 
     if (tx2 < tx1)
         qSwap(tx2, tx1);

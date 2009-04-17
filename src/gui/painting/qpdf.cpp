@@ -1106,6 +1106,11 @@ void QPdfBaseEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     if (!d->hasPen || (d->clipEnabled && d->allClipped))
         return;
 
+    if (d->stroker.matrix.type() >= QTransform::TxProject) {
+        QPaintEngine::drawTextItem(p, textItem);
+        return;
+    }
+
     *d->currentPage << "q\n";
     if(!d->simplePen)
         *d->currentPage << QPdf::generateMatrix(d->stroker.matrix);
@@ -1226,6 +1231,8 @@ void QPdfBaseEngine::setupGraphicsState(QPaintEngine::DirtyFlags flags)
         setPen();
 }
 
+extern QPainterPath qt_regionToPath(const QRegion &region);
+
 void QPdfBaseEngine::updateClipPath(const QPainterPath &p, Qt::ClipOperation op)
 {
     Q_D(QPdfBaseEngine);
@@ -1252,7 +1259,6 @@ void QPdfBaseEngine::updateClipPath(const QPainterPath &p, Qt::ClipOperation op)
         // if we have an alpha region, we have to subtract that from the
         // any existing clip region since that region will be filled in
         // later with images
-        extern QPainterPath qt_regionToPath(const QRegion &region);
         QPainterPath alphaClip = qt_regionToPath(alphaClipping());
         if (!alphaClip.isEmpty()) {
             if (!d->clipEnabled) {

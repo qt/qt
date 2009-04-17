@@ -73,7 +73,7 @@ static void recursiveFileInfoList(const QDir &dir,
         if (fname != QLatin1String(".") && fname != QLatin1String("..")) {
             if (it->isDir())
                 recursiveFileInfoList(QDir(it->absoluteFilePath()), nameFilters, filter, recursive, fileinfolist);
-            else 
+            else
                 fileinfolist->append(*it);
         }
     }
@@ -146,6 +146,7 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
                 *fail = true;
                 continue;
             }
+            tor.resolveDuplicates();
             cd.clearErrors();
             if (!codecForTr.isEmpty() && codecForTr != tor.codecName())
                 qWarning("lupdate warning: Codec for tr() '%s' disagrees with "

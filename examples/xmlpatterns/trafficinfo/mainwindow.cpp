@@ -71,7 +71,7 @@ MainWindow::MainWindow()
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateTimeInformation()));
-    timer->start(1000*60);
+    timer->start(1000*60*5);
 
     const QSettings settings("Qt Software", "trafficinfo");
     m_station = StationInformation(settings.value("stationId", "03012130").toString(),

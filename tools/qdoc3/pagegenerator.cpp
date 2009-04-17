@@ -198,9 +198,11 @@ void PageGenerator::generateInnerNode(const InnerNode *node,
 	}
         else if (node->type() == Node::Fake) {
             const FakeNode* fakeNode = static_cast<const FakeNode *>(node);
+#ifdef QDOC_QML            
             if (fakeNode->subType() == FakeNode::QmlClass) {
-                qDebug() << "FILENAME:" << fileName(node);
+                //qDebug() << "FILENAME:" << fileName(node);
             }
+#endif            
 	    generateFakeNode(static_cast<const FakeNode *>(node), marker);
 	}
 	endSubPage();

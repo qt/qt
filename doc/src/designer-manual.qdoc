@@ -128,6 +128,7 @@
         \header
             \i  Widget Filter Box
             \i  Widget Morphing
+            \i  Disambiguation Field
         \row
             \i  \inlineimage designer-widget-filter.png
             \i  \inlineimage designer-widget-morph.png
@@ -1855,7 +1856,7 @@ pixmap property in the property editor.
 
     \section2 The Direct Approach
 
-    To demonstrate thow to use user interface (\c{.ui}) files straight from
+    To demonstrate how to use user interface (\c{.ui}) files straight from
     \QD, we create a simple Calculator Form application. This is based on the
     original \l{Calculator Form Example}{Calculator Form} example.
 
@@ -2294,7 +2295,7 @@ pixmap property in the property editor.
 
     \image worldtimeclockplugin-example.png
 
-    The \l QtDesigner module provides you with the ability to create cusom
+    The \l QtDesigner module provides you with the ability to create custom
     widgets in \QD.
 
 
@@ -2442,6 +2443,10 @@ pixmap property in the property editor.
     \target BuildingandInstallingthePlugin
     \section1 Building and Installing the Plugin
 
+    \section2 A Simple Plugin
+
+    The \l{Custom Widget Plugin Example} demonstrates a simple \QD plugin.
+
     The \c{.pro} file for a plugin must specify the headers and sources for
     both the custom widget and the plugin interface. Typically, this file only
     has to specify that the plugin's project is to be built as a library, but
@@ -2476,65 +2481,42 @@ pixmap property in the property editor.
     See QCoreApplication::libraryPaths() for more information about customizing
     paths for libraries and plugins with Qt applications.
 
-\omit
-    \section1 Using Qt Script to Aid in Building Forms
+    \section2 Splitting up the Plugin
 
-    Starting with Qt 4.3, \c .ui files may contain
-    \l{QtScript}{Qt Script} snippets that are executed by \l uic or QUiLoader
-    when building forms.
+    In a real world scenario, you do not want to have dependencies of the
+    application making use of the custom widgets to the \QD headers and
+    libraries as introduced by the simple approach explained above.
 
-    The snippets are executed per widget. The snippet may modify properties
-    or invoke slots on the widget.
+    There are two ways to resolve this:
 
-    Special variables are used to access the widget:
+    \list
+        \i Create a \c{.pri} file that contains the headers sources and sources
+           of the custom widget:
 
-    \table
-    \header
-    \o Name
-    \o Value
-    \row \o \c  widget
-         \o The widget being built.
-    \row \o \c  childWidgets
-         \o An array containing the child widgets. This is useful
-         for QDesignerContainerExtension subclasses.
-    \endtable
+           \code
+           INCLUDEPATH += $$PWD
+           HEADERS += $$PWD/analogclock.h
+           SOURCES += $$PWD/analogclock.cpp
+           \endcode
 
-    If scripts are present in an \c {uic}-generated form, the application
-    must be configured with Qt Script support.
+           This file would then be included by the \c{.pro} file of the plugin and
+           the application:
 
-    \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 5
+           \code
+           include(customwidget.pri)
+           \endcode
 
-    For security reasons, the execution of scripts is disabled
-    by default in QUiLoader. You can enable it by
-    calling the QUiLoader::setScriptingEnabled() method.
+           Running \c{qmake -Wall} on the \c{.pro} files causes a warning to be
+           printed if an included \c{.pri} file cannot be found.
 
-    The resulting script snippet is concatenated from snippets occurring in
-    several places:
+        \i Create a standalone shared library containing the custom widgets only
+           as described in
+           \l{sharedlibrary.html}{Creating Shared Libraries}.
 
-    \table
-    \header
-    \o Source
-    \o Usage
-    \row \o The \c codeTemplate() function of QDesignerCustomWidgetInterface
-         \o Allows snippets to be run on a per-class basis; for example, to set up a
-            container using the QDesignerContainerExtension.
-    \row \o The \c script() method of QDesignerScriptExtension
-         \o Allows snippets to be run on a per-widget basis; for example,
-            to set up the internal state of a custom widget.
-
-            Such an internal state might be, for example, the contents of
-            a custom item view container widget, for which an editor
-            is provided by an QDesignerTaskMenuExtension object.
-
-    \row \o Snippets entered at run-time using the \gui{Change script...}
-            option of the form's context menu
-         \o Fast prototyping. To get an idea,
-            drag a QLineEdit onto the form, enter the script
-            \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 6
-            and preview the form.
-    \endtable
-\endomit
-
+           This library would then be used by the application as well as by the
+           \QD plugin. Care must be taken to ensure that the plugin can locate
+          the library at run-time.
+    \endlist
 
     \section1 Related Examples
 

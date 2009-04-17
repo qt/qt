@@ -377,6 +377,14 @@ QString qAppName()
     QLibrary) can be retrieved with libraryPaths() and manipulated by
     setLibraryPaths(), addLibraryPath(), and removeLibraryPath().
 
+	On Unix/Linux Qt is configured to use the system local settings by 
+	default. This can cause a conflict when using POSIX functions, for 
+	instance, when converting between data types such as floats and 
+	strings, since the notation may differ between locales. To get 
+	around this problem call the POSIX function setlocale(LC_NUMERIC,"C") 
+	right after initializing QApplication or QCoreApplication to reset 
+	the locale that is used for number formatting to "C"-locale.
+
     \sa QApplication, QAbstractEventDispatcher, QEventLoop,
     {Semaphores Example}, {Wait Conditions Example}
 */

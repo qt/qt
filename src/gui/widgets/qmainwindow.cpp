@@ -481,7 +481,7 @@ void QMainWindow::setMenuBar(QMenuBar *menuBar)
         oldMenuBar->deleteLater();
     }
 #ifdef Q_OS_WINCE
-    if (menuBar->size().height() > 0)
+    if (menuBar && menuBar->size().height() > 0)
 #endif
     d->layout->setMenuBar(menuBar);
 }

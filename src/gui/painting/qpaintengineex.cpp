@@ -258,6 +258,8 @@ QPainterState *QPaintEngineEx::createState(QPainterState *orig) const
     return new QPainterState(orig);
 }
 
+extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
+
 void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 {
 #ifdef QT_DEBUG_DRAW
@@ -326,7 +328,6 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         flags |= QVectorPath::CurvedShapeHint;
 
     // ### Perspective Xforms are currently not supported...
-    extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
     qreal txscale = 1;
     if (!(pen.isCosmetic() || (qt_scaleForTransform(state()->matrix, &txscale) && txscale != 1))) {
         // We include cosmetic pens in this case to avoid having to

@@ -95,8 +95,7 @@ static bool match(const uchar* found, const char* target, uint len)
     // (normalize it to be without the zero-terminating symbol)
     if (len > 0 && found[len-1] == '\0')
         --len;
-    // 0 means anything, "" means empty
-    return !found || (qstrncmp((const char *)found, target, len) == 0 && target[len] == '\0');
+    return (memcmp(found, target, len) == 0 && target[len] == '\0');
 }
 
 static uint elfHash(const char *name)
@@ -765,8 +764,6 @@ void QTranslatorPrivate::clear()
 }
 
 /*!
-    \since 4.5
-
     Returns the translation for the key (\a context, \a sourceText,
     \a disambiguation). If none is found, also tries (\a context, \a
     sourceText, ""). If that still fails, returns an empty string.

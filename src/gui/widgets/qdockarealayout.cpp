@@ -579,7 +579,7 @@ void QDockAreaLayoutInfo::fitItems()
         QLayoutStruct &ls = layout_struct_list[j++];
         ls.init();
         ls.empty = false;
-        if (gap || (item.flags & QDockAreaLayoutItem::KeepSize)) {
+        if (item.flags & QDockAreaLayoutItem::KeepSize) {
             ls.minimumSize = ls.maximumSize = ls.sizeHint = item.size;
             ls.expansive = false;
             ls.stretch = 0;

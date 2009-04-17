@@ -448,12 +448,7 @@ QStringList QScriptDebuggerConsoleGlobalObject::getCommandCompletions(const QStr
 
 bool QScriptDebuggerConsoleGlobalObject::checkSyntax(const QString &program)
 {
-#if QT_VERSION >= 0x040500
     return (QScriptEngine::checkSyntax(program).state() == QScriptSyntaxCheckResult::Valid);
-#else
-    Q_UNUSED(program);
-    return true;
-#endif
 }
 
 void QScriptDebuggerConsoleGlobalObject::setEvaluateAction(int action)

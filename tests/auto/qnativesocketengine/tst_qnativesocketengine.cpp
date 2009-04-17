@@ -42,8 +42,6 @@
 
 #include <QtTest/QtTest>
 
-#if QT_VERSION >= 0x040100
-
 #ifdef Q_OS_WIN
 #include <winsock2.h>
 #endif
@@ -694,7 +692,3 @@ void tst_QNativeSocketEngine::receiveUrgentData()
 
 QTEST_MAIN(tst_QNativeSocketEngine)
 #include "tst_qnativesocketengine.moc"
-
-#else // QT_VERSION
-QTEST_NOOP_MAIN
-#endif

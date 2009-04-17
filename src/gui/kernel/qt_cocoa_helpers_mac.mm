@@ -555,12 +555,15 @@ bool qt_dispatchKeyEventWithCocoa(void * /*NSEvent * */ keyEvent, QWidget *widge
     int keyLength = [keyChars length];
     if (keyLength == 0)
         return false; // Dead Key, nothing to do!
+    bool ignoreText = false;
     Qt::Key qtKey = Qt::Key_unknown;
     if (keyLength == 1) {
         QChar ch([keyChars characterAtIndex:0]);
         if (ch.isLower())
             ch = ch.toUpper();
         qtKey = cocoaKey2QtKey(ch);
+        // Do not set the text for Function-Key Unicodes characters (0xF700–0xF8FF).
+        ignoreText = (ch.unicode() >= 0xF700 && ch.unicode() <= 0xF8FF);
     }
     Qt::KeyboardModifiers keyMods = qt_cocoaModifiers2QtModifiers([event modifierFlags]);
     QString text;
@@ -568,7 +571,7 @@ bool qt_dispatchKeyEventWithCocoa(void * /*NSEvent * */ keyEvent, QWidget *widge
     // To quote from the Carbon port: This is actually wrong--but it is the best that
     // can be done for now because of the Control/Meta mapping issues
     // (we always get text on the Mac)
-    if (!(keyMods & (Qt::ControlModifier | Qt::MetaModifier)))
+    if (!ignoreText && !(keyMods & (Qt::ControlModifier | Qt::MetaModifier)))
         text = QCFString::toQString(reinterpret_cast<CFStringRef>(keyChars));
 
     UInt32 macScanCode = 1;

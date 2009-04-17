@@ -53,7 +53,9 @@
 // We mean it.
 //
 
+#include "QtCore/qatomic.h"
 #include "QtCore/qmutex.h"
+#include "QtCore/qvarlengtharray.h"
 
 #ifndef QT_NO_THREAD
 
@@ -70,8 +72,7 @@ public:
     static QMutex *globalInstanceGet(const void *address);
 
 private:
-    QMutex mutex;
-    QMutex **mutexes;
+    QVarLengthArray<QAtomicPointer<QMutex>, 128> mutexes;
     int count;
     bool recurs;
 };

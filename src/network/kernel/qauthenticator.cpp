@@ -52,7 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#include <../3rdparty/des/des.cpp>
+#include "../../3rdparty/des/des.cpp"
 
 static QByteArray qNtlmPhase1();
 static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phase2data);

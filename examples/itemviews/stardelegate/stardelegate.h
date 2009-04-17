@@ -42,15 +42,15 @@
 #ifndef STARDELEGATE_H
 #define STARDELEGATE_H
 
-#include <QItemDelegate>
+#include <QStyledItemDelegate>
 
 //! [0]
-class StarDelegate : public QItemDelegate
+class StarDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 
 public:
-    StarDelegate(QWidget *parent = 0) : QItemDelegate(parent) {}
+    StarDelegate(QWidget *parent = 0) : QStyledItemDelegate(parent) {}
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const;

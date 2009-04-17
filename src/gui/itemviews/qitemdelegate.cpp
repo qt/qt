@@ -291,6 +291,18 @@ QSizeF QItemDelegatePrivate::doTextLayout(int lineWidth) const
     setModelData(), and updateEditorGeometry(). This process is
     described in the \l{Spin Box Delegate Example}.
 
+    \section1 QStyledItemDelegate vs. QItemDelegate
+
+    Since Qt 4.4, there are two delegate classes: QItemDelegate and
+    QStyledItemDelegate. However, the default delegate is QStyledItemDelegate.
+    These two classes are independent alternatives to painting and providing
+    editors for items in views. The difference between them is that
+    QStyledItemDelegate uses the current style to paint its items. We therefore
+    recommend using QStyledItemDelegate as the base class when implementing
+    custom delegates or when working with Qt style sheets. The code required
+    for either class should be equal unless the custom delegate needs to use
+    the style for drawing.
+
     \sa {Delegate Classes}, QStyledItemDelegate, QAbstractItemDelegate,
         {Spin Box Delegate Example}, {Settings Editor Example},
         {Icons Example}

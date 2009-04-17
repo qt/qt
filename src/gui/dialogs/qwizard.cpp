@@ -516,6 +516,7 @@ public:
         , vistaInitPending(false)
         , vistaState(QVistaHelper::Dirty)
         , vistaStateChanged(false)
+        , inHandleAeroStyleChange(false)
 #endif
         , minimumWidth(0)
         , minimumHeight(0)
@@ -617,6 +618,7 @@ public:
     bool vistaInitPending;
     QVistaHelper::VistaState vistaState;
     bool vistaStateChanged;
+    bool inHandleAeroStyleChange;
 #endif
     int minimumWidth;
     int minimumHeight;
@@ -1459,6 +1461,10 @@ void QWizardPrivate::handleAeroStyleChange()
 {
     Q_Q(QWizard);
 
+    if (inHandleAeroStyleChange)
+        return; // prevent recursion
+    inHandleAeroStyleChange = true;
+
     vistaHelper->backButton()->disconnect();
     q->removeEventFilter(vistaHelper);
 
@@ -1493,6 +1499,8 @@ void QWizardPrivate::handleAeroStyleChange()
 
     if (q->isVisible())
         vistaHelper->setWindowPosHack();
+
+    inHandleAeroStyleChange = false;
 }
 #endif
 

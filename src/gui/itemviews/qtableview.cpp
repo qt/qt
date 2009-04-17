@@ -320,25 +320,11 @@ QRect QTableViewPrivate::visualSpanRect(const Span &span) const
   \a drawn is a QBitArray of visualRowCountxvisualCoulumnCount which say if particular cell has been drawn
 */
 void QTableViewPrivate::drawAndClipSpans(const QRect &area, QPainter *painter,
-                                              const QStyleOptionViewItemV4 &option,
-                                              QBitArray *drawn)
+                                         const QStyleOptionViewItemV4 &option, QBitArray *drawn,
+                                         int firstVisualRow, int lastVisualRow, int firstVisualColumn, int lastVisualColumn)
 {
     bool alternateBase = false;
     QRegion region = viewport->rect();
-
-    int firstVisualRow = qMax(verticalHeader->visualIndexAt(0),0);
-    int lastVisualRow = verticalHeader->visualIndexAt(viewport->height());
-    if (lastVisualRow == -1)
-        lastVisualRow = model->rowCount(root) - 1;
-
-    int firstVisualColumn = horizontalHeader->visualIndexAt(0);
-    int lastVisualColumn = horizontalHeader->visualIndexAt(viewport->width());
-    if (q_func()->isRightToLeft())
-        qSwap(firstVisualColumn, lastVisualColumn);
-    if (firstVisualColumn == -1)
-        firstVisualColumn = 0;
-    if (lastVisualColumn == -1)
-        lastVisualColumn = model->columnCount(root) - 1;
 
     QList<Span>::const_iterator it;
     for (it = spans.constBegin(); it != spans.constEnd(); ++it) {
@@ -768,10 +754,13 @@ void QTableView::paintEvent(QPaintEvent *event)
     uint y = verticalHeader->length() - verticalHeader->offset() - 1;
 
     QVector<QRect> rects = event->region().rects();
+
+    //firstVisualRow is the visual index of the first visible row.  lastVisualRow is the visual index of the last visible Row.
+    //same goes for ...VisualColumn
     int firstVisualRow = qMax(verticalHeader->visualIndexAt(0),0);
     int lastVisualRow = verticalHeader->visualIndexAt(verticalHeader->viewport()->height());
     if (lastVisualRow == -1)
-        lastVisualRow = d->model->rowCount(d->root);
+        lastVisualRow = d->model->rowCount(d->root) - 1;
 
     int firstVisualColumn = horizontalHeader->visualIndexAt(0);
     int lastVisualColumn = horizontalHeader->visualIndexAt(horizontalHeader->viewport()->width());
@@ -795,7 +784,8 @@ void QTableView::paintEvent(QPaintEvent *event)
         }
 
         if (d->hasSpans())
-            d->drawAndClipSpans(dirtyArea, &painter, option, &drawn);
+            d->drawAndClipSpans(dirtyArea, &painter, option, &drawn,
+                                firstVisualRow, lastVisualRow, firstVisualColumn, lastVisualColumn);
 
         // get the horizontal start and end visual sections
         int left = horizontalHeader->visualIndexAt(dirtyArea.left());

@@ -90,6 +90,7 @@ private slots:
     void task165177_deleteFocusWidget();
     void task169808_setFloating();
     void task237438_setFloatingCrash();
+    void task248604_infiniteResize();
 };
 
 // Testing get/set functions
@@ -782,6 +783,20 @@ void tst_QDockWidget::task237438_setFloatingCrash()
     pqdwDock.setFloating(false);
     pqdwDock.show();
 }
+
+void tst_QDockWidget::task248604_infiniteResize()
+{
+    QDockWidget d;
+    QTabWidget *t = new QTabWidget;
+    t->addTab(new QWidget, "Foo");
+    d.setWidget(t);
+    d.setContentsMargins(2, 2, 2, 2);
+    d.setMinimumSize(320, 240);
+    d.show();
+    QTest::qWait(400);
+    QCOMPARE(d.size(), QSize(320, 240));
+}
+
 
 QTEST_MAIN(tst_QDockWidget)
 #include "tst_qdockwidget.moc"

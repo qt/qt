@@ -56,7 +56,8 @@
     \section1 Non-atomic convenience operators
 
     For convenience, QAtomicInt provides integer comparison, cast, and
-    assignment operators. Note that these operators are \e not atomic.
+    assignment operators. Note that a combination of these operators
+    is \e not an atomic operation.
 
     \section1 The Atomic API
 

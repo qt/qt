@@ -49,6 +49,7 @@
 #include "QtCore/qlist.h"
 #include "QtCore/qlocale.h"
 #include "QtCore/qstring.h"
+#include "QtCore/qstringlist.h"
 #include "QtCore/qurl.h"
 #include "private/qobject_p.h"
 
@@ -163,7 +164,7 @@ bool QNetworkCookie::operator==(const QNetworkCookie &other) const
         return true;
     return d->name == other.d->name &&
         d->value == other.d->value &&
-        d->expirationDate == other.d->expirationDate &&
+        d->expirationDate.toUTC() == other.d->expirationDate.toUTC() &&
         d->domain == other.d->domain &&
         d->path == other.d->path &&
         d->secure == other.d->secure &&
@@ -513,6 +514,392 @@ QByteArray QNetworkCookie::toRawForm(RawForm form) const
     return result;
 }
 
+static const char zones[] =
+    "pst\0" // -8
+    "pdt\0"
+    "mst\0" // -7
+    "mdt\0"
+    "cst\0" // -6
+    "cdt\0"
+    "est\0" // -5
+    "edt\0"
+    "ast\0" // -4
+    "nst\0" // -3
+    "gmt\0" // 0
+    "utc\0"
+    "bst\0"
+    "met\0" // 1
+    "eet\0" // 2
+    "jst\0" // 9
+    "\0";
+static int zoneOffsets[] = {-8, -8, -7, -7, -6, -6, -5, -5, -4, -3, 0, 0, 0, 1, 2, 9 };
+
+static const char months[] =
+    "jan\0"
+    "feb\0"
+    "mar\0"
+    "apr\0"
+    "may\0"
+    "jun\0"
+    "jul\0"
+    "aug\0"
+    "sep\0"
+    "oct\0"
+    "nov\0"
+    "dec\0"
+    "\0";
+
+static inline bool isNumber(char s)
+{ return s >= '0' && s <= '9'; }
+
+static inline bool isTerminator(char c)
+{ return c == '\n' || c == '\r'; }
+
+static inline bool isValueSeparator(char c)
+{ return isTerminator(c) || c == ';'; }
+
+static inline bool isWhitespace(char c)
+{ return c == ' '  || c == '\t'; }
+
+static bool checkStaticArray(int &val, const QByteArray &dateString, int at, const char *array, int size)
+{
+    if (dateString[at] < 'a' || dateString[at] > 'z')
+        return false;
+    if (val == -1 && dateString.length() >= at + 3) {
+        int j = 0;
+        int i = 0;
+        while (i <= size) {
+            const char *str = array + i;
+            if (str[0] == dateString[at]
+                && str[1] == dateString[at + 1]
+                && str[2] == dateString[at + 2]) {
+                val = j;
+                return true;
+            }
+            i += strlen(str) + 1;
+            ++j;
+        }
+    }
+    return false;
+}
+
+//#define PARSEDATESTRINGDEBUG
+
+#define ADAY   1
+#define AMONTH 2
+#define AYEAR  4
+
+/*
+    Parse all the date formats that Firefox can.
+
+    The official format is:
+    expires=ddd(d)?, dd-MMM-yyyy hh:mm:ss GMT
+
+    But browsers have been supporting a very wide range of date
+    strings. To work on many sites we need to support more then
+    just the official date format.
+
+    For reference see Firefox's PR_ParseTimeStringToExplodedTime in
+    prtime.c. The Firefox date parser is coded in a very complex way
+    and is slightly over ~700 lines long.  While this implementation
+    will be slightly slower for the non standard dates it is smaller,
+    more readable, and maintainable.
+
+    Or in their own words:
+        "} // else what the hell is this."
+*/
+static QDateTime parseDateString(const QByteArray &dateString)
+{
+    QTime time;
+    // placeholders for values when we are not sure it is a year, month or day
+    int unknown[3] = {-1, -1, -1};
+    int month = -1;
+    int day = -1;
+    int year = -1;
+    int zoneOffset = -1;
+
+    // hour:minute:second.ms pm
+    QRegExp timeRx(QLatin1String("(\\d{1,2}):(\\d{1,2})(:(\\d{1,2})|)(\\.(\\d{1,3})|)((\\s{0,}(am|pm))|)"));
+
+    int at = 0;
+    while (at < dateString.length()) {
+#ifdef PARSEDATESTRINGDEBUG
+        qDebug() << dateString.mid(at);
+#endif
+        bool isNum = isNumber(dateString[at]);
+
+        // Month
+        if (!isNum
+            && checkStaticArray(month, dateString, at, months, sizeof(months)- 1)) {
+            ++month;
+#ifdef PARSEDATESTRINGDEBUG
+            qDebug() << "Month:" << month;
+#endif
+            at += 3;
+            continue;
+        }
+        // Zone
+        if (!isNum
+            && zoneOffset == -1
+            && checkStaticArray(zoneOffset, dateString, at, zones, sizeof(zones)- 1)) {
+            int sign = (at >= 0 && dateString[at - 1] == '-') ? -1 : 1;
+            zoneOffset = sign * zoneOffsets[zoneOffset] * 60 * 60;
+#ifdef PARSEDATESTRINGDEBUG
+            qDebug() << "Zone:" << month;
+#endif
+            at += 3;
+            continue;
+        }
+        // Zone offset
+        if (!isNum
+            && (zoneOffset == -1 || zoneOffset == 0) // Can only go after gmt
+            && (dateString[at] == '+' || dateString[at] == '-')
+            && (at == 0
+                || isWhitespace(dateString[at - 1])
+                || dateString[at - 1] == ','
+                || (at >= 3
+                    && (dateString[at - 3] == 'g')
+                    && (dateString[at - 2] == 'm')
+                    && (dateString[at - 1] == 't')))) {
+
+            int end = 1;
+            while (end < 5 && dateString.length() > at+end
+                   && dateString[at + end] >= '0' && dateString[at + end] <= '9')
+                ++end;
+            int minutes = 0;
+            int hours = 0;
+            switch (end - 1) {
+            case 4:
+                minutes = atoi(dateString.mid(at + 3, 2).constData());
+                // fall through
+            case 2:
+                hours = atoi(dateString.mid(at + 1, 2).constData());
+                break;
+            case 1:
+                hours = atoi(dateString.mid(at + 1, 1).constData());
+                break;
+            default:
+                at += end;
+                continue;
+            }
+            if (end != 1) {
+                int sign = dateString[at] == '-' ? -1 : 1;
+                zoneOffset = sign * ((minutes * 60) + (hours * 60 * 60));
+#ifdef PARSEDATESTRINGDEBUG
+                qDebug() << "Zone offset:" << zoneOffset << hours << minutes;
+#endif
+                at += end;
+                continue;
+            }
+        }
+
+        // Time
+        if (isNum && time.isNull()
+            && dateString.length() >= at + 3
+            && (dateString[at + 2] == ':' || dateString[at + 1] == ':')) {
+            // While the date can be found all over the string the format
+            // for the time is set and a nice regexp can be used.
+            int pos = timeRx.indexIn(QLatin1String(dateString), at);
+            if (pos != -1) {
+                QStringList list = timeRx.capturedTexts();
+                int h = atoi(list.at(1).toLatin1().constData());
+                int m = atoi(list.at(2).toLatin1().constData());
+                int s = atoi(list.at(4).toLatin1().constData());
+                int ms = atoi(list.at(6).toLatin1().constData());
+                if (h < 12 && !list.at(9).isEmpty())
+                    if (list.at(9) == QLatin1String("pm"))
+                        h += 12;
+                time = QTime(h, m, s, ms);
+#ifdef PARSEDATESTRINGDEBUG
+                qDebug() << "Time:" << list << timeRx.matchedLength();
+#endif
+                at += timeRx.matchedLength();
+                continue;
+            }
+        }
+
+        // 4 digit Year
+        if (isNum
+            && year == -1
+            && dateString.length() >= at + 3) {
+            if (isNumber(dateString[at + 1])
+                && isNumber(dateString[at + 2])
+                && isNumber(dateString[at + 3])) {
+                year = atoi(dateString.mid(at, 4).constData());
+                at += 4;
+#ifdef PARSEDATESTRINGDEBUG
+                qDebug() << "Year:" << year;
+#endif
+                continue;
+            }
+        }
+
+        // a one or two digit number
+        // Could be month, day or year
+        if (isNum) {
+            int length = 1;
+            if (dateString.length() > at + 1
+                && isNumber(dateString[at + 1]))
+                ++length;
+            int x = atoi(dateString.mid(at, length).constData());
+            if (year == -1 && (x > 31 || x == 0)) {
+                year = x;
+            } else {
+                if (unknown[0] == -1) unknown[0] = x;
+                else if (unknown[1] == -1) unknown[1] = x;
+                else if (unknown[2] == -1) unknown[2] = x;
+            }
+            at += length;
+#ifdef PARSEDATESTRINGDEBUG
+            qDebug() << "Saving" << x;
+#endif
+            continue;
+        }
+
+        // Unknown character, typically a weekday such as 'Mon'
+        ++at;
+    }
+
+    // Once we are done parsing the string take the digits in unknown
+    // and determine which is the unknown year/month/day
+
+    int couldBe[3] = { 0, 0, 0 };
+    int unknownCount = 3;
+    for (int i = 0; i < unknownCount; ++i) {
+        if (unknown[i] == -1) {
+            couldBe[i] = ADAY | AYEAR | AMONTH;
+            unknownCount = i;
+            continue;
+        }
+
+        if (unknown[i] >= 1)
+            couldBe[i] = ADAY;
+
+        if (month == -1 && unknown[i] >= 1 && unknown[i] <= 12)
+            couldBe[i] |= AMONTH;
+
+        if (year == -1)
+            couldBe[i] |= AYEAR;
+    }
+
+    // For any possible day make sure one of the values that could be a month
+    // can contain that day.
+    // For any possible month make sure one of the values that can be a
+    // day that month can have.
+    // Example: 31 11 06
+    // 31 can't be a day because 11 and 6 don't have 31 days
+    for (int i = 0; i < unknownCount; ++i) {
+        int currentValue = unknown[i];
+        bool findMatchingMonth = couldBe[i] & ADAY && currentValue >= 29;
+        bool findMatchingDay = couldBe[i] & AMONTH;
+        if (!findMatchingMonth || !findMatchingDay)
+            continue;
+        for (int j = 0; j < 3; ++j) {
+            if (j == i)
+                continue;
+            for (int k = 0; k < 2; ++k) {
+                if (k == 0 && !(findMatchingMonth && (couldBe[j] & AMONTH)))
+                    continue;
+                else if (k == 1 && !(findMatchingDay && (couldBe[j] & ADAY)))
+                    continue;
+                int m = currentValue;
+                int d = unknown[j];
+                if (k == 0)
+                    qSwap(m, d);
+                if (m == -1) m = month;
+                bool found = true;
+                switch(m) {
+                    case 2:
+                        // When we get 29 and the year ends up having only 28
+                        // See date.isValid below
+                        // Example: 29 23 Feb
+                        if (d <= 29)
+                            found = false;
+                        break;
+                    case 4: case 6: case 9: case 11:
+                        if (d <= 30)
+                            found = false;
+                        break;
+                    default:
+                        if (d > 0 && d <= 31)
+                            found = false;
+                }
+                if (k == 0) findMatchingMonth = found;
+                else if (k == 1) findMatchingDay = found;
+            }
+        }
+        if (findMatchingMonth)
+            couldBe[i] &= ~ADAY;
+        if (findMatchingDay)
+            couldBe[i] &= ~AMONTH;
+    }
+
+    // First set the year/month/day that have been deduced
+    // and reduce the set as we go along to deduce more
+    for (int i = 0; i < unknownCount; ++i) {
+        int unset = 0;
+        for (int j = 0; j < 3; ++j) {
+            if (couldBe[j] == ADAY && day == -1) {
+                day = unknown[j];
+                unset |= ADAY;
+            } else if (couldBe[j] == AMONTH && month == -1) {
+                month = unknown[j];
+                unset |= AMONTH;
+            } else if (couldBe[j] == AYEAR && year == -1) {
+                year = unknown[j];
+                unset |= AYEAR;
+            } else {
+                // common case
+                break;
+            }
+            couldBe[j] &= ~unset;
+        }
+    }
+
+    // Now fallback to a standardized order to fill in the rest with
+    for (int i = 0; i < unknownCount; ++i) {
+        if (couldBe[i] & AMONTH && month == -1) month = unknown[i];
+        else if (couldBe[i] & ADAY && day == -1) day = unknown[i];
+        else if (couldBe[i] & AYEAR && year == -1) year = unknown[i];
+    }
+#ifdef PARSEDATESTRINGDEBUG
+        qDebug() << "Final set" << year << month << day;
+#endif
+
+    if (year == -1 || month == -1 || day == -1) {
+#ifdef PARSEDATESTRINGDEBUG
+        qDebug() << "Parser failure" << year << month << day;
+#endif
+        return QDateTime();
+    }
+
+    // Y2k behavior
+    int y2k = 0;
+    if (year < 70)
+        y2k = 2000;
+    else if (year < 100)
+        y2k = 1900;
+
+    QDate date(year + y2k, month, day);
+
+    // When we were given a bad cookie that when parsed
+    // set the day to 29 and the year to one that doesn't
+    // have the 29th of Feb rather then adding the extra
+    // complicated checking earlier just swap here.
+    // Example: 29 23 Feb
+    if (!date.isValid())
+        date = QDate(day + y2k, month, year);
+
+    QDateTime dateTime(date, time, Qt::UTC);
+
+    if (zoneOffset != -1) {
+        dateTime = dateTime.addSecs(zoneOffset);
+    }
+    if (!dateTime.isValid())
+        return QDateTime();
+    return dateTime;
+}
+
 /*!
     Parses the cookie string \a cookieString as received from a server
     response in the "Set-Cookie:" header. If there's a parsing error,
@@ -543,17 +930,23 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
     while (position < length) {
         QNetworkCookie cookie;
 
+        // When there are multiple SetCookie headers they are join with a new line
+        // \n will always be the start of a new cookie
+        int endOfSetCookie = cookieString.indexOf('\n', position);
+        if (endOfSetCookie == -1)
+            endOfSetCookie = length;
+
         // The first part is always the "NAME=VALUE" part
         QPair<QByteArray,QByteArray> field = nextField(cookieString, position);
         if (field.first.isEmpty() || field.second.isNull())
             // parsing error
-            return QList<QNetworkCookie>();
+            break;
         cookie.setName(field.first);
         cookie.setValue(field.second);
 
         position = nextNonWhitespace(cookieString, position);
         bool endOfCookie = false;
-        while (!endOfCookie && position < length)
+        while (!endOfCookie && position < endOfSetCookie)
             switch (cookieString.at(position++)) {
             case ',':
                 // end of the cookie
@@ -566,64 +959,20 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
                 field.first = field.first.toLower(); // everything but the NAME=VALUE is case-insensitive
 
                 if (field.first == "expires") {
-                    static const char dateFormats[] =
-                        "d-MMM-yyyy hh:mm:ss\0"
-                        "d MMM yyyy hh:mm:ss\0"
-                        "d-MMM-yy hh:mm:ss\0"
-                        "\0";
-
-                    // expires is a special case because it contains a naked comma
-                    // and naked spaces. The format is:
-                    //   expires=ddd(d)?, dd-MMM-yyyy hh:mm:ss GMT
-                    // but we also accept standard HTTP dates
-
-                    // make sure we're at the comma
-                    if (position >= length || cookieString.at(position) != ',')
-                        // invalid cookie string
-                        return QList<QNetworkCookie>();
-
-                    ++position;
+                    position -= field.second.length();
                     int end;
                     for (end = position; end < length; ++end)
-                        if (cookieString.at(end) == ',' || cookieString.at(end) == ';')
+                        if (isValueSeparator(cookieString.at(end)))
                             break;
 
-                    QByteArray datestring = cookieString.mid(position, end - position).trimmed();
+                    QByteArray dateString = cookieString.mid(position, end - position).trimmed();
                     position = end;
-                    if (datestring.endsWith(" GMT") || datestring.endsWith(" UTC"))
-                        datestring.chop(4);
-                    else if (datestring.endsWith(" +0000"))
-                        datestring.chop(6);
-
-                    size_t i = 0;
-                    int j = 0;
-                    QLocale cLocale = QLocale::c();
-                    QDateTime dt;
-                    do {
-                        QLatin1String df(dateFormats + i);
-                        i += strlen(dateFormats + i) + 1;
-
-#ifndef QT_NO_DATESTRING
-                        dt = cLocale.toDateTime(QString::fromLatin1(datestring), df);
-
-                        // some cookies are set with a two-digit year
-                        // (although this is not allowed); this is interpreted as a year
-                        // in the 20th century by QDateTime.
-                        // Work around this case here (assuming 00-69 is 21st century,
-                        //                                      70-99 is 20th century)
-                        QDate date = dt.date();
-                        if (j == 2 && date.year() >= 1900 && date.year() < 1970)
-                            dt = dt.addYears(100);
-                        if (date.year() >= 0 && date.year() < 100)
-                            dt = dt.addYears(1900);
-#endif
-                        j++;
-                    } while (!dt.isValid() && i <= sizeof dateFormats - 1);
-                    if (!dt.isValid())
-                        // invalid cookie string
-                        return QList<QNetworkCookie>();
-
-                    dt.setTimeSpec(Qt::UTC);
+                    QDateTime dt = parseDateString(dateString.toLower());
+                    if (!dt.isValid()) {
+                        cookie = QNetworkCookie();
+                        endOfCookie = true;
+                        continue;
+                    }
                     cookie.setExpirationDate(dt);
                 } else if (field.first == "domain") {
                     QByteArray rawDomain = field.second;
@@ -664,9 +1013,12 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
                 }
 
                 position = nextNonWhitespace(cookieString, position);
+                if (position > endOfSetCookie)
+                    endOfCookie = true;
             }
 
-        result += cookie;
+        if (!cookie.name().isEmpty())
+            result += cookie;
     }
 
     return result;

@@ -2038,7 +2038,8 @@ QScreen::~QScreen()
 void QScreen::shutdownDevice()
 {
 #ifndef QT_NO_QWS_CURSOR
-    qt_screencursor->hide();
+    if (qt_screencursor)
+        qt_screencursor->hide();
 #endif
 }
 

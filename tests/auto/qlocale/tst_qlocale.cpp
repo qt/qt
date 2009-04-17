@@ -591,6 +591,17 @@ void tst_QLocale::long_long_conversion_data()
     QTest::newRow("de_DE 12345.67")    << QString("de_DE") << "12345.67"<< false  << (qlonglong) 0;
     QTest::newRow("de_DE 123456.7")    << QString("de_DE") << "123456.7"<< false  << (qlonglong) 0;
     QTest::newRow("de_DE 1.234.567")   << QString("de_DE")<< "1.234.567"<< true  << (qlonglong) 1234567;
+    QTest::newRow("de_DE 1.234.567 ldspcs")   << QString("de_DE")<< "  1.234.567" << true  << (qlonglong) 1234567;
+    QTest::newRow("de_DE 1.234.567 trspcs")   << QString("de_DE")<< "1.234.567  "<< true  << (qlonglong) 1234567;
+    QTest::newRow("de_DE 1.234.567 ldtrspcs")   << QString("de_DE")<< "  1.234.567  "<< true  << (qlonglong) 1234567;
+
+    // test that space is also accepted whenever QLocale::groupSeparator() == 0xa0 (which looks like space).
+    QTest::newRow("nb_NO 123 groupsep")   << QString("nb_NO")<< QString("1")+QChar(0xa0)+QString("234") << true  << (qlonglong) 1234;
+    QTest::newRow("nb_NO 123 groupsep_space")   << QString("nb_NO")<< QString("1")+QChar(0x20)+QString("234") << true  << (qlonglong) 1234;
+
+    QTest::newRow("nb_NO 123 ldspcs")   << QString("nb_NO")<< "  123" << true  << (qlonglong) 123;
+    QTest::newRow("nb_NO 123 trspcs")   << QString("nb_NO")<< "123  "<< true  << (qlonglong) 123;
+    QTest::newRow("nb_NO 123 ldtrspcs")   << QString("nb_NO")<< "  123  "<< true  << (qlonglong) 123;
 
     QTest::newRow("C   1234")       << QString("C") << "  1234"   << true  << (qlonglong) 1234;
     QTest::newRow("C 1234  ")       << QString("C") << "1234  "   << true  << (qlonglong) 1234;

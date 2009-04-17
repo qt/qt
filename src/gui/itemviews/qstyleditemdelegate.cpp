@@ -218,16 +218,17 @@ public:
     The \l{Star Delegate Example}{Star Delegate} example creates
     editors by reimplementing these methods.
 
-    \section1 QStyledItemDelegate and QItemDelegate
+    \section1 QStyledItemDelegate vs. QItemDelegate
 
-    QStyledItemDelegate has taken over the job as default delegate -
-    leaving QItemDelegate behind. They will now co-exist peacefully as
-    independent alternatives to painting and providing editors for
-    items in views. The difference between them is that the new
-    delegate uses the current style to paint its items. We therefore
-    recommend using QStyledItemDelegate as base when implementing
-    custom delegates. The code required should be equal unless the
-    custom delegate also wishes to use the style for drawing.
+    Since Qt 4.4, there are two delegate classes: QItemDelegate and
+    QStyledItemDelegate. However, the default delegate is QStyledItemDelegate.
+    These two classes are independent alternatives to painting and providing
+    editors for items in views. The difference between them is that
+    QStyledItemDelegate uses the current style to paint its items. We therefore
+    recommend using QStyledItemDelegate as the base class when implementing
+    custom delegates or when working with Qt style sheets. The code required
+    for either class should be equal unless the custom delegate needs to use
+    the style for drawing.
 
     If you wish to customize the painting of item views, you should
     implement a custom style. Please see the QStyle class

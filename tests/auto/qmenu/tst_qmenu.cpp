@@ -92,6 +92,7 @@ private slots:
     void activeSubMenuPosition();
     void task242454_sizeHint();
     void task176201_clear();
+    void task250673_activeMutliColumnSubMenuPosition();
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -678,6 +679,39 @@ void tst_QMenu::task176201_clear()
     QTest::mouseClick(&menu, Qt::LeftButton, 0, menu.rect().center());
 }
 
+void tst_QMenu::task250673_activeMutliColumnSubMenuPosition()
+{
+    class MyMenu : public QMenu
+    {
+    public:
+        friend class tst_QMenu;
+    };
 
+    QMenu sub;
+    sub.addAction("Sub-Item1");
+    QAction *subAction = sub.addAction("Sub-Item2");
+
+    MyMenu main;
+    main.addAction("Item 1");
+    QAction *menuAction = main.addMenu(&sub);
+    main.popup(QPoint(200,200));
+
+    uint i = 2;
+    while (main.columnCount() < 2) {
+        main.addAction(QString("Item %1").arg(i));
+        ++i;
+        Q_ASSERT(i<1000);
+    }
+    main.setActiveAction(menuAction);
+    sub.setActiveAction(subAction);
+
+    QVERIFY(main.isVisible());
+    QCOMPARE(main.activeAction(), menuAction);
+    QVERIFY(sub.isVisible());
+    QVERIFY(sub.pos().x() > main.pos().x());
+
+    const int subMenuOffset = main.style()->pixelMetric(QStyle::PM_SubMenuOverlap, 0, &main);
+    QVERIFY((sub.geometry().left() - subMenuOffset + 5) < main.geometry().right());
+}
 QTEST_MAIN(tst_QMenu)
 #include "tst_qmenu.moc"

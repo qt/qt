@@ -70,7 +70,7 @@ public:
     void recreateTestTables();
     void repopulateTestTables();
 
-    void generic_data();
+    void generic_data(const QString &engine=QString());
     tst_Databases dbs;
 
 public slots:
@@ -286,10 +286,14 @@ tst_QSqlThread::~tst_QSqlThread()
 {
 }
 
-void tst_QSqlThread::generic_data()
+void tst_QSqlThread::generic_data(const QString& engine)
 {
-    if (dbs.fillTestTable() == 0)
-        QSKIP("No database drivers are available in this Qt configuration", SkipAll);
+    if ( dbs.fillTestTable(engine) == 0 ) {
+        if(engine.isEmpty())
+           QSKIP( "No database drivers are available in this Qt configuration", SkipAll );
+        else
+           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit(), SkipAll );
+    }
 }
 
 void tst_QSqlThread::dropTestTables()

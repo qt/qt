@@ -532,11 +532,11 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
 
     \section2 Severity Levels and the Icon and Pixmap Properties
 
-    QMessageBox supports four predefined message severity levels, or
-    message types, which really only differ in the predefined icon
-    they each show. Specify one of the four predefined message types
-    by setting the \l{QMessageBox::icon} {icon} property to one of the
-    \l{QMessageBox::Icon} {predefined Icons}. The following rules are
+    QMessageBox supports four predefined message severity levels, or message
+    types, which really only differ in the predefined icon they each show.
+    Specify one of the four predefined message types by setting the
+    \l{QMessageBox::icon}{icon} property to one of the
+    \l{QMessageBox::Icon}{predefined icons}. The following rules are
     guidelines:
 
     \table
@@ -558,17 +558,17 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     \o For reporting critical errors.
     \endtable
 
-    The default value is \l{QMessageBox::NoIcon} {No Icon}. The
-    message boxes are otherwise the same for all cases. When using a
-    standard icon, use the one recommended in the table, or use the
-    one recommended by the style guidelines for your platform. If none
-    of the standard icons is right for your message box, you can use a
-    custom icon by setting the \l{QMessageBox::iconPixmap} {icon
-    pixmap} property instead of setting the \l{QMessageBox::icon}
-    {icon} property.
+    \l{QMessageBox::Icon}{Predefined icons} are not defined by QMessageBox, but
+    provided by the style. The default value is \l{QMessageBox::NoIcon}
+    {No Icon}. The message boxes are otherwise the same for all cases. When
+    using a standard icon, use the one recommended in the table, or use the
+    one recommended by the style guidelines for your platform. If none of the
+    standard icons is right for your message box, you can use a custom icon by
+    setting the \l{QMessageBox::iconPixmap}{icon pixmap} property instead of
+    setting the \l{QMessageBox::icon}{icon} property.
 
-    In summary, to set an icon, use \e{either} setIcon() for one of
-    the standard icons, \e{or} setIconPixmap() for a custom icon.
+    In summary, to set an icon, use \e{either} setIcon() for one of the
+    standard icons, \e{or} setIconPixmap() for a custom icon.
 
     \section1 The Static Functions API
 

@@ -728,37 +728,27 @@ void tst_QMap::iterators()
 void tst_QMap::keys_values_uniqueKeys()
 {
     QMap<QString, int> map;
-#if QT_VERSION >= 0x040200
     QVERIFY(map.uniqueKeys().isEmpty());
-#endif
     QVERIFY(map.keys().isEmpty());
     QVERIFY(map.values().isEmpty());
 
     map.insertMulti("alpha", 1);
     QVERIFY(map.keys() == (QList<QString>() << "alpha"));
-#if QT_VERSION >= 0x040200
     QVERIFY(map.uniqueKeys() == map.keys());
-#endif
     QVERIFY(map.values() == (QList<int>() << 1));
 
     map.insertMulti("beta", -2);
     QVERIFY(map.keys() == (QList<QString>() << "alpha" << "beta"));
-#if QT_VERSION >= 0x040200
     QVERIFY(map.keys() == map.uniqueKeys());
-#endif
     QVERIFY(map.values() == (QList<int>() << 1 << -2));
 
     map.insertMulti("alpha", 2);
-#if QT_VERSION >= 0x040200
     QVERIFY(map.uniqueKeys() == (QList<QString>() << "alpha" << "beta"));
-#endif
     QVERIFY(map.keys() == (QList<QString>() << "alpha" << "alpha" << "beta"));
     QVERIFY(map.values() == (QList<int>() << 2 << 1 << -2));
 
     map.insertMulti("beta", 4);
-#if QT_VERSION >= 0x040200
     QVERIFY(map.uniqueKeys() == (QList<QString>() << "alpha" << "beta"));
-#endif
     QVERIFY(map.keys() == (QList<QString>() << "alpha" << "alpha" << "beta" << "beta"));
     QVERIFY(map.values() == (QList<int>() << 2 << 1 << 4 << -2));
 }

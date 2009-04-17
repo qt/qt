@@ -49,80 +49,58 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QTextStream>
 
+#include <stdio.h>
+
 QT_BEGIN_NAMESPACE
 
-namespace {
-    enum { debugWriteIncludes = 0 };
-    enum { warnHeaderGeneration = 0 };
+enum { debugWriteIncludes = 0 };
+enum { warnHeaderGeneration = 0 };
 
-struct StringPair
+struct ClassInfoEntry
 {
-    const char *key;
-    const char *value;
-
-    inline bool operator<(const StringPair &b) const { return qstrcmp(key, b.key) < 0; }
+    const char *klass;
+    const char *module;
+    const char *header;
 };
 
-
-class StringPairs
-{
-public:
-    StringPairs(StringPair *begin, int n)
-      : m_begin(begin), m_n(n)
-    {
-        qSort(m_begin, m_begin + n);
-    }
-
-    const char *searchEntry(const QString &str) const
-    {
-        QByteArray ba = str.toLatin1();
-        const StringPair *begin = m_begin;
-        const StringPair *end = m_begin + m_n;
-        while (true) {
-            int d = (end - begin) / 2;
-            if (d == 0)
-                return 0;
-            const StringPair *mid = begin + d;
-            int i = qstrcmp(mid->key, ba.constData());
-            if (i == 0)
-                return mid->value;
-            if (i < 0)
-                begin = mid;
-            else
-                end = mid;
-        }
-    }
-
-private:
-    StringPair *m_begin;
-    int m_n;
-};
-
-
-static StringPair cth[] = {
-#define QT_CLASS_LIB(klass, module, header) { #klass, #module "/" #klass },
+static const ClassInfoEntry qclass_lib_map[] = {
+#define QT_CLASS_LIB(klass, module, header) { #klass, #module, #header },
 #include "qclass_lib_map.h"
+
 #undef QT_CLASS_LIB
 };
 
-
-static StringPair hth[] = {
-#define QT_CLASS_LIB(klass, module, header) { #header, #module "/" #klass },
-#include "qclass_lib_map.h"
-#undef QT_CLASS_LIB
-};
-
-static StringPairs classToHeader(cth, sizeof(cth) / sizeof(cth[0]));
-static StringPairs oldHeaderToHeader(hth, sizeof(hth) / sizeof(hth[0]));
-
-} // namespace anon
-
+// Format a module header as 'QtCore/QObject'
+static inline QString moduleHeader(const QString &module, const QString &header)
+{
+    QString rc = module;
+    rc += QLatin1Char('/');
+    rc += header;
+    return rc;
+}
 
 namespace CPP {
 
 WriteIncludes::WriteIncludes(Uic *uic)
   : m_uic(uic), m_output(uic->output()), m_scriptsActivated(false)
 {
+    // When possible (no namespace) use the "QtModule/QClass" convention
+    // and create a re-mapping of the old header "qclass.h" to it. Do not do this
+    // for the "Phonon::Someclass" classes, however.
+    const QString namespaceDelimiter = QLatin1String("::");
+    const ClassInfoEntry *classLibEnd = qclass_lib_map + sizeof(qclass_lib_map)/sizeof(ClassInfoEntry);    
+    for(const ClassInfoEntry *it = qclass_lib_map; it < classLibEnd;  ++it) {        
+        const QString klass = QLatin1String(it->klass);
+        const QString module = QLatin1String(it->module);
+        QLatin1String header = QLatin1String(it->header);
+        if (klass.contains(namespaceDelimiter)) {
+            m_classToHeader.insert(klass, moduleHeader(module, header));
+        } else {
+            const QString newHeader = moduleHeader(module, klass);
+            m_classToHeader.insert(klass, newHeader);
+            m_oldHeaderToNewHeader.insert(header, newHeader);
+        }
+    }
 }
 
 void WriteIncludes::acceptUI(DomUI *node)
@@ -171,6 +149,9 @@ void WriteIncludes::acceptUI(DomUI *node)
 
 void WriteIncludes::acceptWidget(DomWidget *node)
 {
+    if (debugWriteIncludes)
+        fprintf(stderr, "%s '%s'\n", Q_FUNC_INFO, qPrintable(node->attributeClass()));
+
     add(node->attributeClass());
     TreeWalker::acceptWidget(node);
 }
@@ -198,17 +179,17 @@ void WriteIncludes::acceptProperty(DomProperty *node)
 
 void WriteIncludes::insertIncludeForClass(const QString &className, QString header, bool global)
 {
-    if (debugWriteIncludes) {
-        qDebug() << "WriteIncludes::insertIncludeForClass" << className << header  << global;
-    }
+    if (debugWriteIncludes)
+        fprintf(stderr, "%s %s '%s' %d\n", Q_FUNC_INFO, qPrintable(className), qPrintable(header), global);
 
     do {
         if (!header.isEmpty())
             break;
 
-        // Known class
-        if (const char *p = classToHeader.searchEntry(className)) {
-            header = QLatin1String(p);
+        // Known class        
+        const StringMap::const_iterator it = m_classToHeader.constFind(className);
+        if (it != m_classToHeader.constEnd()) {
+            header = it.value();
             global =  true;
             break;
         }
@@ -245,9 +226,8 @@ void WriteIncludes::insertIncludeForClass(const QString &className, QString head
 
 void WriteIncludes::add(const QString &className, bool determineHeader, const QString &header, bool global)
 {
-    if (debugWriteIncludes) {
-        qDebug() << "WriteIncludes::add" << className << header  << global;
-    }
+    if (debugWriteIncludes)
+            fprintf(stderr, "%s %s '%s' %d\n", Q_FUNC_INFO, qPrintable(className), qPrintable(header), global);
 
     if (className.isEmpty() || m_knownClasses.contains(className))
         return;
@@ -283,7 +263,7 @@ void WriteIncludes::acceptCustomWidget(DomCustomWidget *node)
         // custom header unless it is a built-in qt class
         QString header;
         bool global = false;
-        if (!classToHeader.searchEntry(className)) {
+        if (!m_classToHeader.contains(className)) {
             global = node->elementHeader()->attributeLocation().toLower() == QLatin1String("global");
             header = node->elementHeader()->text();
         }
@@ -311,9 +291,8 @@ void WriteIncludes::acceptInclude(DomInclude *node)
 
 void WriteIncludes::insertInclude(const QString &header, bool global)
 {
-    if (debugWriteIncludes) {
-        qDebug() << "WriteIncludes::insertInclude" <<  header  << global;
-    }
+    if (debugWriteIncludes)
+        fprintf(stderr, "%s %s %d\n", Q_FUNC_INFO, qPrintable(header), global);
 
     OrderedSet &includes = global ?  m_globalIncludes : m_localIncludes;
     if (includes.contains(header))
@@ -328,17 +307,13 @@ void WriteIncludes::writeHeaders(const OrderedSet &headers, bool global)
 {
     const QChar openingQuote = global ? QLatin1Char('<') : QLatin1Char('"');
     const QChar closingQuote = global ? QLatin1Char('>') : QLatin1Char('"');
-    const QChar qHeaderStart = QLatin1Char('q');
 
+    // Check for the old headers 'qslider.h' and replace by 'QtGui/QSlider'
     const OrderedSet::const_iterator cend = headers.constEnd();
     for (OrderedSet::const_iterator sit = headers.constBegin(); sit != cend; ++sit) {
-        QString header = sit.key();
-        // Check for the old qslider.h and replace by QtGui/QSlider,
-        // but don't do that for phonon headers (volumeslider.h)
-        if (header.startsWith(qHeaderStart)) {
-            if (const char *p = oldHeaderToHeader.searchEntry(header))
-                header = QLatin1String(p);
-        }
+        const StringMap::const_iterator hit = m_oldHeaderToNewHeader.constFind(sit.key());
+        const bool mapped =  hit != m_oldHeaderToNewHeader.constEnd();
+        const  QString header =  mapped ? hit.value() : sit.key();
         if (!header.trimmed().isEmpty()) {
             m_output << "#include " << openingQuote << header << closingQuote << QLatin1Char('\n');
         }

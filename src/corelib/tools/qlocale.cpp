@@ -4399,7 +4399,8 @@ double QLocalePrivate::stringToDouble(const QString &number, bool *ok,
                                         GroupSeparatorMode group_sep_mode) const
 {
     CharBuff buff;
-    if (!numberToCLocale(number, group_sep_mode, &buff)) {
+    if (!numberToCLocale(group().unicode() == 0xa0 ? number.trimmed() : number,
+                         group_sep_mode, &buff)) {
         if (ok != 0)
             *ok = false;
         return 0.0;
@@ -4411,7 +4412,8 @@ qlonglong QLocalePrivate::stringToLongLong(const QString &number, int base,
                                            bool *ok, GroupSeparatorMode group_sep_mode) const
 {
     CharBuff buff;
-    if (!numberToCLocale(number, group_sep_mode, &buff)) {
+    if (!numberToCLocale(group().unicode() == 0xa0 ? number.trimmed() : number,
+                         group_sep_mode, &buff)) {
         if (ok != 0)
             *ok = false;
         return 0;
@@ -4424,7 +4426,8 @@ qulonglong QLocalePrivate::stringToUnsLongLong(const QString &number, int base,
                                                bool *ok, GroupSeparatorMode group_sep_mode) const
 {
     CharBuff buff;
-    if (!numberToCLocale(number, group_sep_mode, &buff)) {
+    if (!numberToCLocale(group().unicode() == 0xa0 ? number.trimmed() : number,
+                         group_sep_mode, &buff)) {
         if (ok != 0)
             *ok = false;
         return 0;

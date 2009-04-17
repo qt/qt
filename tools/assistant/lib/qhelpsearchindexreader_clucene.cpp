@@ -83,9 +83,8 @@ void QHelpSearchIndexReader::cancelSearching()
     mutex.unlock();
 }
 
-void QHelpSearchIndexReader::search(const QString &collectionFile, 
-                                    const QString &indexFilesFolder,
-                                    const QList<QHelpSearchQuery> &queryList)
+void QHelpSearchIndexReader::search(const QString &collectionFile, const QString &indexFilesFolder,
+    const QList<QHelpSearchQuery> &queryList)
 {
     QMutexLocker lock(&mutex);
 
@@ -147,17 +146,16 @@ void QHelpSearchIndexReader::run()
         try {
 #endif
             QCLuceneBooleanQuery booleanQuery;
-            if (!buildQuery(booleanQuery, queryList)) {
+            QCLuceneStandardAnalyzer analyzer;
+            if (!buildQuery(booleanQuery, queryList, analyzer)) {
                 emit searchingFinished(0);
                 return;
             }
 
             const QStringList attribList = engine.filterAttributes(engine.currentFilter());
             if (!attribList.isEmpty()) {
-                QCLuceneStandardAnalyzer analyzer;
                 QCLuceneQuery* query = QCLuceneQueryParser::parse(QLatin1String("+")
-                    + attribList.join(QLatin1String(" +")), QLatin1String("attribute"),
-                    analyzer);
+                    + attribList.join(QLatin1String(" +")), QLatin1String("attribute"), analyzer);
 
                 if (!query) {
                     emit searchingFinished(0);
@@ -168,10 +166,26 @@ void QHelpSearchIndexReader::run()
 
             QCLuceneIndexSearcher indexSearcher(indexPath);
             QCLuceneHits hits = indexSearcher.search(booleanQuery);
-            const QStringList namespaceList = engine.registeredDocumentations();
+
+            bool boost = true;
+            QCLuceneBooleanQuery tryHarderQuery;
+            if (hits.length() == 0) {
+                if (buildTryHarderQuery(tryHarderQuery, queryList, analyzer)) {
+                    if (!attribList.isEmpty()) {
+                        QCLuceneQuery* query = QCLuceneQueryParser::parse(QLatin1String("+")
+                            + attribList.join(QLatin1String(" +")), QLatin1String("attribute"),
+                            analyzer);
+                        tryHarderQuery.add(query, true, true, false);
+                    }
+                    hits = indexSearcher.search(tryHarderQuery);
+                    boost = (hits.length() == 0);
+                }
+            }
 
             QSet<QString> pathSet;
             QCLuceneDocument document;
+            const QStringList namespaceList = engine.registeredDocumentations();
+
             for (qint32 i = 0; i < hits.length(); i++) {
                 document = hits.document(i);
                 const QString path = document.get(QLatin1String("path"));
@@ -192,8 +206,8 @@ void QHelpSearchIndexReader::run()
             }
 
             indexSearcher.close();
-            int count = hitList.count();
-            if (count > 0)
+            const int count = hitList.count();
+            if ((count > 0) && boost)
                 boostSearchHits(engine, hitList, queryList);
             emit searchingFinished(hitList.count());
 
@@ -206,11 +220,9 @@ void QHelpSearchIndexReader::run()
     }
 }
 
-bool QHelpSearchIndexReader::defaultQuery(const QString &term,
-                                          QCLuceneBooleanQuery &booleanQuery)
+bool QHelpSearchIndexReader::defaultQuery(const QString &term, QCLuceneBooleanQuery &booleanQuery,
+    QCLuceneStandardAnalyzer &analyzer)
 {
-    QCLuceneStandardAnalyzer analyzer;
-
     const QLatin1String c("content");
     const QLatin1String t("titleTokenized");
 
@@ -226,21 +238,23 @@ bool QHelpSearchIndexReader::defaultQuery(const QString &term,
 }
 
 bool QHelpSearchIndexReader::buildQuery(QCLuceneBooleanQuery &booleanQuery,
-                                        const QList<QHelpSearchQuery> &queryList)
+    const QList<QHelpSearchQuery> &queryList, QCLuceneStandardAnalyzer &analyzer)
 {
     foreach (const QHelpSearchQuery query, queryList) {
         switch (query.fieldName) {
             case QHelpSearchQuery::FUZZY: {
                 const QLatin1String fuzzy("~");
-                foreach (const QString term, query.wordList) {
-                    if (term.isEmpty() || !defaultQuery(term.toLower() + fuzzy, booleanQuery))
+                foreach (const QString &term, query.wordList) {
+                    if (term.isEmpty()
+                        || !defaultQuery(term.toLower() + fuzzy, booleanQuery, analyzer)) {
                         return false;
+                    }
                 }
             }   break;
 
             case QHelpSearchQuery::WITHOUT: {
                 QStringList stopWords = QCLuceneStopAnalyzer().englishStopWords();
-                foreach (const QString term, query.wordList) {
+                foreach (const QString &term, query.wordList) {
                     if (stopWords.contains(term, Qt::CaseInsensitive))
                         continue;
 
@@ -259,14 +273,14 @@ bool QHelpSearchIndexReader::buildQuery(QCLuceneBooleanQuery &booleanQuery,
             }   break;
 
             case QHelpSearchQuery::PHRASE: {
-                const QString term = query.wordList.at(0).toLower();
+                const QString &term = query.wordList.at(0).toLower();
                 if (term.contains(QLatin1Char(' '))) {
                     QStringList termList = term.split(QLatin1String(" "));
                     QCLucenePhraseQuery *q = new QCLucenePhraseQuery();
                     QStringList stopWords = QCLuceneStopAnalyzer().englishStopWords();
-                    foreach (const QString t, termList) {
-                        if (!stopWords.contains(t, Qt::CaseInsensitive))
-                            q->addTerm(QCLuceneTerm(QLatin1String("content"), t.toLower()));
+                    foreach (const QString &term, termList) {
+                        if (!stopWords.contains(term, Qt::CaseInsensitive))
+                            q->addTerm(QCLuceneTerm(QLatin1String("content"), term.toLower()));
                     }
                     booleanQuery.add(q, true, true, false);
                 } else {
@@ -286,7 +300,7 @@ bool QHelpSearchIndexReader::buildQuery(QCLuceneBooleanQuery &booleanQuery,
 
             case QHelpSearchQuery::ALL: {
                 QStringList stopWords = QCLuceneStopAnalyzer().englishStopWords();
-                foreach (const QString term, query.wordList) {
+                foreach (const QString &term, query.wordList) {
                     if (stopWords.contains(term, Qt::CaseInsensitive))
                         continue;
 
@@ -302,9 +316,8 @@ bool QHelpSearchIndexReader::buildQuery(QCLuceneBooleanQuery &booleanQuery,
             }   break;
 
             case QHelpSearchQuery::DEFAULT: {
-                QCLuceneStandardAnalyzer analyzer;
-                foreach (const QString t, query.wordList) {
-                    QCLuceneQuery *query = QCLuceneQueryParser::parse(t.toLower(),
+                foreach (const QString &term, query.wordList) {
+                    QCLuceneQuery *query = QCLuceneQueryParser::parse(term.toLower(),
                         QLatin1String("content"), analyzer);
 
                     if (query)
@@ -313,8 +326,8 @@ bool QHelpSearchIndexReader::buildQuery(QCLuceneBooleanQuery &booleanQuery,
             }   break;
 
             case QHelpSearchQuery::ATLEAST: {
-                foreach (const QString term, query.wordList) {
-                    if (term.isEmpty() || !defaultQuery(term.toLower(), booleanQuery))
+                foreach (const QString &term, query.wordList) {
+                    if (term.isEmpty() || !defaultQuery(term.toLower(), booleanQuery, analyzer))
                         return false;
                 }
             }
@@ -324,16 +337,38 @@ bool QHelpSearchIndexReader::buildQuery(QCLuceneBooleanQuery &booleanQuery,
     return true;
 }
 
+bool QHelpSearchIndexReader::buildTryHarderQuery(QCLuceneBooleanQuery &booleanQuery,
+    const QList<QHelpSearchQuery> &queryList, QCLuceneStandardAnalyzer &analyzer)
+{
+    bool retVal = false;
+    foreach (const QHelpSearchQuery query, queryList) {
+        switch (query.fieldName) {
+            default:    break;
+            case QHelpSearchQuery::DEFAULT: {
+                foreach (const QString &term, query.wordList) {
+                    QCLuceneQuery *query = QCLuceneQueryParser::parse(term.toLower(),
+                        QLatin1String("content"), analyzer);
+
+                    if (query) {
+                        retVal = true;
+                        booleanQuery.add(query, true, false, false);
+                    }
+                }
+            }   break;
+        }
+    }
+    return retVal;
+}
+
 void QHelpSearchIndexReader::boostSearchHits(const QHelpEngineCore &engine,
-    QList<QHelpSearchEngine::SearchHit> &hitList,
-    const QList<QHelpSearchQuery> &queryList)
+    QList<QHelpSearchEngine::SearchHit> &hitList, const QList<QHelpSearchQuery> &queryList)
 {
     foreach (const QHelpSearchQuery query, queryList) {
         if (query.fieldName != QHelpSearchQuery::DEFAULT)
             continue;
 
         QString joinedQuery = query.wordList.join(QLatin1String(" "));
-        
+
         QCLuceneStandardAnalyzer analyzer;
         QCLuceneQuery *parsedQuery = QCLuceneQueryParser::parse(
             joinedQuery, QLatin1String("content"), analyzer);
@@ -351,8 +386,7 @@ void QHelpSearchIndexReader::boostSearchHits(const QHelpEngineCore &engine,
         QStringList searchTerms;
         while (index != -1) {
             nextIndex = joinedQuery.indexOf(QLatin1String("content:"), index + 1);
-            term = joinedQuery.mid(index + length, nextIndex - (length + index))
-                .simplified();
+            term = joinedQuery.mid(index + length, nextIndex - (length + index)).simplified();
             if (term.startsWith(QLatin1String("\""))
                 && term.endsWith(QLatin1String("\""))) {
                 searchTerms.append(term.remove(QLatin1String("\"")));
@@ -370,17 +404,19 @@ void QHelpSearchIndexReader::boostSearchHits(const QHelpEngineCore &engine,
             QString data = QString::fromUtf8(engine.fileData(hit.first));
 
             int counter = 0;
-            foreach (const QString& term, searchTerms)
+            foreach (const QString &term, searchTerms)
                 counter += data.count(term, Qt::CaseInsensitive);
             hitMap.insertMulti(counter, hit);
         }
 
         QList<QHelpSearchEngine::SearchHit> boostedList;
-        QMap<int, QHelpSearchEngine::SearchHit>::const_iterator i;
-        for (i = hitMap.constEnd(), --i; i != hitMap.constBegin(); --i)
-            boostedList.append(i.value());
-        boostedList += hitList.mid(count - 1, hitList.count());
-        
+        QMap<int, QHelpSearchEngine::SearchHit>::const_iterator it = hitMap.constEnd();
+        do {
+            --it;
+            boostedList.append(it.value());
+        } while (it != hitMap.constBegin());
+        boostedList += hitList.mid(count, hitList.count());
+
         hitList = boostedList;
     }
 }

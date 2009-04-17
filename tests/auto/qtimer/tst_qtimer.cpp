@@ -44,6 +44,7 @@
 
 
 #include <qtimer.h>
+#include <qthread.h>
 
 
 
@@ -81,6 +82,8 @@ private slots:
     void recurringTimer_data();
     void recurringTimer();
     void deleteLaterOnQTimer(); // long name, don't want to shadow QObject::deleteLater()
+    void moveToThread();
+    void restartedTimerFiresTooSoon();
 };
 
 class TimerHelper : public QObject
@@ -386,5 +389,97 @@ void tst_QTimer::deleteLaterOnQTimer()
     QVERIFY(pointer.isNull());
 }
 
+void tst_QTimer::moveToThread()
+{
+    QTimer ti1;
+    QTimer ti2;
+    ti1.start(200);
+    ti2.start(200);
+    QVERIFY((ti1.timerId() & 0xffffff) != (ti2.timerId() & 0xffffff));
+    QThread tr;
+    ti1.moveToThread(&tr);
+    connect(&ti1,SIGNAL(timeout()), &tr, SLOT(quit()));
+    tr.start();
+    QTimer ti3;
+    ti3.start(200);
+    QVERIFY((ti3.timerId() & 0xffffff) != (ti2.timerId() & 0xffffff));
+    QVERIFY((ti3.timerId() & 0xffffff) != (ti1.timerId() & 0xffffff));
+    QTest::qWait(300);
+    QVERIFY(tr.wait());
+    ti2.stop();
+    QTimer ti4;
+    ti4.start(200);
+    ti3.stop();
+    ti2.start(200);
+    ti3.start(200);
+    QVERIFY((ti4.timerId() & 0xffffff) != (ti2.timerId() & 0xffffff));
+    QVERIFY((ti3.timerId() & 0xffffff) != (ti2.timerId() & 0xffffff));
+    QVERIFY((ti3.timerId() & 0xffffff) != (ti1.timerId() & 0xffffff));
+}
+
+class RestartedTimerFiresTooSoonObject : public QObject
+{
+    Q_OBJECT
+
+public:
+    QBasicTimer m_timer;
+
+    int m_interval;
+    QTime m_startedTime;
+    QEventLoop eventLoop;
+
+    inline RestartedTimerFiresTooSoonObject()
+        : QObject(), m_interval(0)
+    { }
+
+    void timerFired()
+    {
+        static int interval = 1000;
+
+        m_interval = interval;
+        m_startedTime.start();
+        m_timer.start(interval, this);
+
+        // alternate between single-shot and 1 sec
+        interval = interval ? 0 : 1000;
+    }
+
+    void timerEvent(QTimerEvent* ev)
+    {
+        if (ev->timerId() != m_timer.timerId())
+            return;
+
+        m_timer.stop();
+
+        QTime now = QTime::currentTime();
+        int elapsed = m_startedTime.elapsed();
+
+        if (elapsed < m_interval / 2) {
+            // severely too early!
+            m_timer.stop();
+            eventLoop.exit(-1);
+            return;
+        }
+
+        timerFired();
+
+        // don't do this forever
+        static int count = 0;
+        if (count++ > 20) {
+            m_timer.stop();
+            eventLoop.quit();
+            return;
+        }
+    }
+};
+
+void tst_QTimer::restartedTimerFiresTooSoon()
+{
+    RestartedTimerFiresTooSoonObject object;
+    object.timerFired();
+    QVERIFY(object.eventLoop.exec() == 0);
+}
+
 QTEST_MAIN(tst_QTimer)
 #include "tst_qtimer.moc"
+\

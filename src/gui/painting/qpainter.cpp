@@ -1293,7 +1293,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     destination.
 
     Note that composition transformation operates pixelwise. For that
-    reason, there is a difference between using the grahic primitive
+    reason, there is a difference between using the graphic primitive
     itself and its bounding rectangle: The bounding rect contains
     pixels with alpha == 0 (i.e the pixels surrounding the
     primitive). These pixels will overwrite the other image's pixels,
@@ -1465,8 +1465,8 @@ bool QPainter::isActive() const
 
 /*!
     Initializes the painters pen, background and font to the same as
-    the given \a widget. Call this function after begin() while the
-    painter is active.
+    the given \a widget. This function is called automatically when the
+    painter is opened on a QWidget.
 
     \sa begin(), {QPainter#Settings}{Settings}
 */
@@ -2371,6 +2371,11 @@ void QPainter::setClipping(bool enable)
     Returns the currently set clip region. Note that the clip region
     is given in logical coordinates.
 
+    \warning QPainter does not store the combined clip explicitly as
+    this is handled by the underlying QPaintEngine, so the path is
+    recreated on demand and transformed to the current logical
+    coordinate system. This is potentially an expensive operation.
+
     \sa setClipRegion(), clipPath(), setClipping()
 */
 
@@ -2480,9 +2485,16 @@ QRegion QPainter::clipRegion() const
     return region;
 }
 
+extern QPainterPath qt_regionToPath(const QRegion &region);
+
 /*!
     Returns the currently clip as a path. Note that the clip path is
     given in logical coordinates.
+
+    \warning QPainter does not store the combined clip explicitly as
+    this is handled by the underlying QPaintEngine, so the path is
+    recreated on demand and transformed to the current logical
+    coordinate system. This is potentially an expensive operation.
 
     \sa setClipPath(), clipRegion(), setClipping()
 */
@@ -2520,7 +2532,6 @@ QPainterPath QPainter::clipPath() const
             return path * matrix;
         } else {
             // Fallback to clipRegion() for now, since we don't have isect/unite for paths
-            extern QPainterPath qt_regionToPath(const QRegion &region);
             return qt_regionToPath(clipRegion());
         }
     }
@@ -3084,6 +3095,9 @@ void QPainter::strokePath(const QPainterPath &path, const QPen &pen)
         return;
     }
 
+    if (path.isEmpty())
+        return;
+
     if (d->extended) {
         const QGradient *g = qpen_brush(pen).gradient();
         if (!g || g->coordinateMode() == QGradient::LogicalMode) {
@@ -3123,6 +3137,9 @@ void QPainter::fillPath(const QPainterPath &path, const QBrush &brush)
         qWarning("QPainter::fillPath: Painter not active");
         return;
     }
+
+    if (path.isEmpty())
+        return;
 
     if (d->extended) {
         const QGradient *g = brush.gradient();
@@ -5148,9 +5165,6 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
 
     Q_D(QPainter);
 
-    if (!d->engine || pm.isNull())
-        return;
-
 #ifndef QT_NO_DEBUG
     qt_painter_thread_test(d->device->devType(), "drawPixmap()");
 #endif
@@ -5160,11 +5174,17 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
         return;
     }
 
+    if (!d->engine)
+        return;
+
     qreal x = p.x();
     qreal y = p.y();
 
     int w = pm.width();
     int h = pm.height();
+
+    if (w <= 0)
+        return;
 
     // Emulate opaque background for bitmaps
     if (d->state->bgMode == Qt::OpaqueMode && pm.isQBitmap()) {

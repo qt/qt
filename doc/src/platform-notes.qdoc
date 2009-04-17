@@ -232,9 +232,7 @@
 
     \section1 Windows Vista
 
-    Known issues for Qt on Vista will be listed here.
-
-    As of Qt 4.2.0 no Vista-specific issues are known.
+    At the time Qt %VERSION% was released, there were no known Vista-specific issues.
 
     \target Windows NT
     \section1 Windows XP, Windows 2000 and Windows NT
@@ -404,7 +402,7 @@
 
     Any platform-compiler combinations not listed here should be considered unsupported.
 
-    \section2 Actively Supported Platforms
+    \section1 Actively Supported Platforms
 
     \table
     \header \o OS                \o Architecture        \o Makespec        \o Compiler version(s)
@@ -435,7 +433,7 @@
                                                         \o wince*-msvc2008 \o Visual Studio 2008
     \endtable
 
-    \section2 Community Supported Platforms
+    \section1 Community Supported Platforms
 
     \table
     \header \o OS                \o Architecture    \o Makespec            \o Compiler version(s)
@@ -460,7 +458,7 @@
     \row    \o Embedded Linux    \o MIPS, PowerPC   \o qws/linux-g++       \o GCC 3.4, 4.1, 4.2, 4.3
     \endtable
 
-    \section2 Unsupported Platforms
+    \section1 Unsupported Platforms
 
     The following platforms were supported in previous releases, either as actively supported
     or community supported platforms, but are now unsupported.
@@ -493,7 +491,6 @@
     \row
     \row    \o aCC series 3     \o            \o             \o          \o \bold{X} \o \bold{X}
     \row    \o aCC series 6     \o \bold{X}   \o \bold{X}    \o \bold{X} \o \bold{X} \o \bold{X}
-    \row    \o MIPSpro 7.4.2m   \o{5,1} \e{Unsupported - see the Unsupported Platforms table}
     \row    \o xlC 6            \o            \o             \o          \o \bold{X} \o \bold{X}
     \row    \o \l{Known Issues in %VERSION%}{Intel CC 10 (see note)}
                                 \o \bold{X}   \o \bold{X}    \o \bold{X} \o \bold{X} \o \bold{X}
@@ -666,9 +663,9 @@
 
     \section2 Sun Studio
 
-    Qt is tested using Sun Studio 10 (Sun CC 5.5). Go to
-    \l{http://developers.sun.com/prodtech/cc/downloads/patches/index.html}{Sun's website}
-    to download the latest patches for your Sun compiler.
+    Qt is tested using Sun Studio 8 (Sun CC 5.5). Go to
+    \l{Sun Studio Patches} page on Sun's Web site to download
+    the latest patches for your Sun compiler.
 
     \section2 Sun WorkShop 5.0
 

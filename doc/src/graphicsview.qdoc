@@ -77,8 +77,8 @@
     \section1 The Graphics View Architecture
 
       Graphics View provides an item-based approach to model-view programming,
-      much like InterView's convenience classes QTableWidget, QTreeWidget and
-      QListWidget. Several views can observe a single scene, and the scene
+      much like InterView's convenience classes QTableView, QTreeView and
+      QListView. Several views can observe a single scene, and the scene
       contains items of varying geometric shapes.
 
       \section2 The Scene

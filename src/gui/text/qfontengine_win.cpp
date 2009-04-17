@@ -1438,6 +1438,7 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
 
 
 extern bool qt_cleartype_enabled;
+extern uint qt_pow_gamma[256];
 
 QImage QFontEngineWin::alphaMapForGlyph(glyph_t glyph, const QTransform &xform)
 {
@@ -1460,8 +1461,6 @@ QImage QFontEngineWin::alphaMapForGlyph(glyph_t glyph, const QTransform &xform)
     for (int i=0; i<256; ++i)
         colors[i] = qRgba(0, 0, 0, i);
     indexed.setColorTable(colors);
-
-    extern uint qt_pow_gamma[256];
 
     // Copy data... Cannot use QPainter here as GDI has messed up the
     // Alpha channel of the ni.image pixels...

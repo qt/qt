@@ -104,6 +104,7 @@ private slots:
     void emptyItemSize();
     void task203585_selectAll();
     void task228566_infiniteRelayout();
+    void task248430_crashWith0SizedItem();
 };
 
 // Testing get/set functions
@@ -1517,6 +1518,15 @@ void tst_QListView::task228566_infiniteRelayout()
     QCOMPARE(spy.count(), 0);
 }
 
+void tst_QListView::task248430_crashWith0SizedItem()
+{
+    QListView view;
+    view.setViewMode(QListView::IconMode);
+    QStringListModel model(QStringList() << QLatin1String("item1") << QString());
+    view.setModel(&model);
+    view.show();
+    QTest::qWait(100);
+}
 
 QTEST_MAIN(tst_QListView)
 #include "tst_qlistview.moc"

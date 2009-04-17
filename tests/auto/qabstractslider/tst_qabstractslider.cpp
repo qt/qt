@@ -864,11 +864,7 @@ void tst_QAbstractSlider::wheelEvent()
     QVERIFY(applicationInstance->sendEvent(slider,&event));
     QCOMPARE(slider->sliderPosition(),expectedSliderPosition);
     int expectedSignalCount = (initialSliderPosition == expectedSliderPosition) ? 0 : 1;
-#if QT_VERSION >= 0x040200
     QCOMPARE(spy1.count(), expectedSignalCount);
-#else
-    QCOMPARE(spy1.count(), 0);
-#endif
     QCOMPARE(spy2.count(), expectedSignalCount);
     if (expectedSignalCount)
         QVERIFY(actionTriggeredTimeStamp < valueChangedTimeStamp);

@@ -101,7 +101,7 @@ bool QPHReader::read(Translator &translator)
                 m_currentField = TargetField;
             else if (name() == QLatin1String("definition"))
                 m_currentField = DefinitionField;
-            else 
+            else
                 m_currentField = NoField;
         } else if (isWhiteSpace()) {
             // ignore these
@@ -133,14 +133,47 @@ static bool loadQPH(Translator &translator, QIODevice &dev, ConversionData &cd)
     return reader.read(translator);
 }
 
-static bool saveQPH(const Translator &translator, QIODevice &dev, ConversionData &cd)
+static QString protect(const QString &str)
+{
+    QString result;
+    result.reserve(str.length() * 12 / 10);
+    for (int i = 0; i != str.size(); ++i) {
+        uint c = str.at(i).unicode();
+        switch (c) {
+        case '\"':
+            result += QLatin1String("&quot;");
+            break;
+        case '&':
+            result += QLatin1String("&amp;");
+            break;
+        case '>':
+            result += QLatin1String("&gt;");
+            break;
+        case '<':
+            result += QLatin1String("&lt;");
+            break;
+        case '\'':
+            result += QLatin1String("&apos;");
+            break;
+        default:
+            if (c < 0x20 && c != '\r' && c != '\n' && c != '\t')
+                result += QString(QLatin1String("&#%1;")).arg(c);
+            else // this also covers surrogates
+                result += QChar(c);
+        }
+    }
+    return result;
+}
+
+static bool saveQPH(const Translator &translator, QIODevice &dev, ConversionData &)
 {
     QTextStream t(&dev);
-    t << "<!DOCTYPE QPH><QPH>\n";
+    t.setCodec(QTextCodec::codecForName("UTF-8"));
+    t << "<!DOCTYPE QPH>\n<QPH>\n";
     foreach (const TranslatorMessage &msg, translator.messages()) {
         t << "<phrase>\n";
-        t << "    <source>" << msg.sourceText() << "</source>\n";
-        t << "    <target>" << msg.translations().join(QLatin1String("@"))
+        t << "    <source>" << protect(msg.sourceText()) << "</source>\n";
+        t << "    <target>" << protect(msg.translations().join(QLatin1String("@")))
             << "</target>\n";
         if (!msg.context().isEmpty() || !msg.comment().isEmpty())
             t << "    <definition>" << msg.context() << msg.comment()

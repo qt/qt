@@ -143,9 +143,6 @@ protected:
     void focusOutEvent(QFocusEvent *e);
     void changeEvent(QEvent *e);
     void timerEvent(QTimerEvent *e);
-#ifdef Q_OS_WINCE
-    void contextMenuEvent(QContextMenuEvent *e);
-#endif
 
 #ifdef QT3_SUPPORT
 public:

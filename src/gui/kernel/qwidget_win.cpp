@@ -1037,6 +1037,8 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
 #else
                 UINT style = WS_POPUP;
 #endif
+		if (d->topData()->savedFlags & WS_SYSMENU)
+		    style |= WS_SYSMENU;
                 if (isVisible())
                     style |= WS_VISIBLE;
                 SetWindowLongA(internalWinId(), GWL_STYLE, style);

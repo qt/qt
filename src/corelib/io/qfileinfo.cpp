@@ -145,7 +145,7 @@ void QFileInfoPrivate::initFileEngine(const QString &file)
 
 bool QFileInfoPrivate::hasAccess(Access access) const
 {
-    if (!(data->fileEngine->fileFlags() & QAbstractFileEngine::LocalDiskFlag)) {
+    if (!(getFileFlags(QAbstractFileEngine::FileInfoAll) & QAbstractFileEngine::LocalDiskFlag)) {
         switch (access) {
         case ReadAccess:
             return getFileFlags(QAbstractFileEngine::ReadUserPerm);

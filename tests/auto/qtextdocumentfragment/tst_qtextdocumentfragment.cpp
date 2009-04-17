@@ -2217,9 +2217,6 @@ void tst_QTextDocumentFragment::defaultFont()
 void tst_QTextDocumentFragment::html_spanBackgroundColor()
 {
     setHtml("<span style=\"background-color: blue\">Foo</span>");
-#if QT_VERSION <= 0x040100
-    QEXPECT_FAIL("", "Fixed in >= 4.1.1", Continue);
-#endif
     QVERIFY(doc->begin().begin().fragment().charFormat().background().color() == QColor(Qt::blue));
 }
 
@@ -2251,9 +2248,6 @@ void tst_QTextDocumentFragment::html_brokenTitle()
 
 void tst_QTextDocumentFragment::html_blockVsInline()
 {
-#if QT_VERSION <= 0x040100
-    QEXPECT_FAIL("", "Fixed in >= 4.1.1", Abort);
-#endif
     {
         setHtml("<html><body><div><b>Foo<div>Bar");
         QVERIFY(cursor.charFormat().fontWeight() == QFont::Bold);
@@ -2314,15 +2308,8 @@ void tst_QTextDocumentFragment::html_tbody()
     QTextTable *table = cursor.currentTable();
     QVERIFY(table);
     QCOMPARE(table->columns(), 1);
-#if QT_VERSION <= 0x040100
-    QEXPECT_FAIL("", "Fixed in >= 4.1.1", Abort);
-#endif
     QCOMPARE(table->rows(), 2);
-
-#if QT_VERISON >= 0x040200
     QVERIFY(table->format().headerRowCount(), 1);
-#endif
-
     QCOMPARE(table->cellAt(0, 0).firstCursorPosition().block().text(), QString("First Cell"));
     QCOMPARE(table->cellAt(1, 0).firstCursorPosition().block().text(), QString("Second Cell"));
 }
@@ -2380,7 +2367,6 @@ void tst_QTextDocumentFragment::html_nestedTables()
 
 void tst_QTextDocumentFragment::html_rowSpans()
 {
-#if QT_VERSION > 0x040100
     setHtml(""
             "<table border=\"1\" width=\"100%\">"
             "  <tr>"
@@ -2413,7 +2399,6 @@ void tst_QTextDocumentFragment::html_rowSpans()
 
     QCOMPARE(table->cellAt(3, 0).firstCursorPosition().block().text(), QString("blubb"));
     QCOMPARE(table->cellAt(3, 1).firstCursorPosition().block().text(), QString("baz"));
-#endif
 }
 
 void tst_QTextDocumentFragment::html_rowSpans2()

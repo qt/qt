@@ -98,7 +98,10 @@ bool QSqlTableModelPrivate::setRecord(int row, const QSqlRecord &record)
 
 int QSqlTableModelPrivate::nameToIndex(const QString &name) const
 {
-    return rec.indexOf(name);
+    QString fieldname = name;
+    if (db.driver()->isIdentifierEscaped(fieldname, QSqlDriver::FieldName))
+        fieldname = db.driver()->stripDelimiters(fieldname, QSqlDriver::FieldName);
+    return rec.indexOf(fieldname);
 }
 
 void QSqlTableModelPrivate::initRecordAndPrimaryIndex()
@@ -367,10 +370,7 @@ void QSqlTableModel::setTable(const QString &tableName)
 {
     Q_D(QSqlTableModel);
     clear();
-    if(d->db.tables().contains(tableName.toUpper()))
-        d->tableName = tableName.toUpper();
-    else
-        d->tableName = tableName;
+    d->tableName = tableName;
     d->initRecordAndPrimaryIndex();
     d->initColOffsets(d->rec.count());
 
@@ -976,7 +976,9 @@ QString QSqlTableModel::orderByClause() const
     if (!f.isValid())
         return s;
         
-    QString table = d->db.driver()->escapeIdentifier(d->tableName, QSqlDriver::TableName);
+    QString table = d->tableName;
+    //we can safely escape the field because it would have been obtained from the database
+    //and have the correct case
     QString field = d->db.driver()->escapeIdentifier(f.name(), QSqlDriver::FieldName);
     s.append(QLatin1String("ORDER BY ")).append(table).append(QLatin1Char('.')).append(field);
     s += d->sortOrder == Qt::AscendingOrder ? QLatin1String(" ASC") : QLatin1String(" DESC");
@@ -1317,8 +1319,12 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
             mrow.rec = d->rec;
             mrow.primaryValues = d->primaryValues(indexInQuery(createIndex(row, 0)).row());
         }
+        QString fieldName;
         for (int i = 0; i < record.count(); ++i) {
-            int idx = mrow.rec.indexOf(record.fieldName(i));
+            fieldName = record.fieldName(i);
+            if (d->db.driver()->isIdentifierEscaped(fieldName, QSqlDriver::FieldName))
+                fieldName = d->db.driver()->stripDelimiters(fieldName, QSqlDriver::FieldName);
+            int idx = mrow.rec.indexOf(fieldName);
             if (idx == -1)
                 isOk = false;
             else

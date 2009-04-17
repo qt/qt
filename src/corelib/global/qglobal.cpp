@@ -1054,6 +1054,7 @@ bool qSharedBuild()
     \value WV_XP    Windows XP (operating system version 5.1)
     \value WV_2003  Windows Server 2003, Windows Server 2003 R2, Windows Home Server, Windows XP Professional x64 Edition (operating system version 5.2)
     \value WV_VISTA Windows Vista, Windows Server 2008 (operating system version 6.0)
+    \value WV_WINDOWS7 Windows 7 (operating system version 6.1)
 
     Alternatively, you may use the following macros which correspond directly to the Windows operating system version number:
 
@@ -1062,6 +1063,7 @@ bool qSharedBuild()
     \value WV_5_1   Operating system version 5.1, corresponds to Windows XP
     \value WV_5_2   Operating system version 5.2, corresponds to Windows Server 2003, Windows Server 2003 R2, Windows Home Server, and Windows XP Professional x64 Edition
     \value WV_6_0   Operating system version 6.0, corresponds to Windows Vista and Windows Server 2008
+    \value WV_6_1   Operating system version 6.1, corresponds to Windows 7
 
     CE-based versions:
 
@@ -1095,6 +1097,7 @@ bool qSharedBuild()
     \value MV_10_3     Mac OS X 10.3
     \value MV_10_4     Mac OS X 10.4
     \value MV_10_5     Mac OS X 10.5
+    \value MV_10_6     Mac OS X 10.6
     \value MV_Unknown  An unknown and currently unsupported platform
 
     \value MV_CHEETAH  Apple codename for MV_10_0
@@ -1103,6 +1106,7 @@ bool qSharedBuild()
     \value MV_PANTHER  Apple codename for MV_10_3
     \value MV_TIGER    Apple codename for MV_10_4
     \value MV_LEOPARD  Apple codename for MV_10_5
+    \value MV_SNOWLEOPARD  Apple codename for MV_10_6
 
     \sa WinVersion
 */
@@ -1631,16 +1635,19 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
     default: // VER_PLATFORM_WIN32_NT
         if (osver.dwMajorVersion < 5) {
             winver = QSysInfo::WV_NT;
-        } else if (osver.dwMajorVersion == 6) {
-            winver = QSysInfo::WV_VISTA;
-        } else if (osver.dwMinorVersion == 0) {
+        } else if (osver.dwMajorVersion == 5 && osver.dwMinorVersion == 0) {
             winver = QSysInfo::WV_2000;
-        } else if (osver.dwMinorVersion == 1) {
+        } else if (osver.dwMajorVersion == 5 && osver.dwMinorVersion == 1) {
             winver = QSysInfo::WV_XP;
-        } else if (osver.dwMinorVersion == 2) {
+        } else if (osver.dwMajorVersion == 5 && osver.dwMinorVersion == 2) {
             winver = QSysInfo::WV_2003;
+        } else if (osver.dwMajorVersion == 6 && osver.dwMinorVersion == 0) {
+            winver = QSysInfo::WV_VISTA;
+        } else if (osver.dwMajorVersion == 6 && osver.dwMinorVersion == 1) {
+            winver = QSysInfo::WV_WINDOWS7;
         } else {
-            qWarning("Qt: Untested Windows version detected!");
+            qWarning("Qt: Untested Windows version %d.%d detected!",
+                     osver.dwMajorVersion, osver.dwMinorVersion);
             winver = QSysInfo::WV_NT_based;
         }
     }
@@ -1667,6 +1674,8 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
             winver = QSysInfo::WV_XP;
         else if (override == "VISTA")
             winver = QSysInfo::WV_VISTA;
+        else if (override == "WINDOWS7")
+            winver = QSysInfo::WV_WINDOWS7;
     }
 #endif
 
@@ -1925,9 +1934,11 @@ QString qt_error_string(int errorCode)
 
     The message handler is a function that prints out debug messages,
     warnings, critical and fatal error messages. The Qt library (debug
-    version) contains hundreds of warning messages that are printed
+    mode) contains hundreds of warning messages that are printed
     when internal errors (usually invalid function arguments)
-    occur. If you implement your own message handler, you get total
+    occur. Qt built in release mode also contains such warnings unless 
+    QT_NO_WARNING_OUTPUT and/or QT_NO_DEBUG_OUTPUT have been set during 
+    compilation. If you implement your own message handler, you get total
     control of these messages.
 
     The default message handler prints the message to the standard
@@ -2022,7 +2033,8 @@ void qt_message_output(QtMsgType msgType, const char *buf)
     during compilation.
 
     If you pass the function a format string and a list of arguments,
-    it works in similar way to the C printf() function.
+    it works in similar way to the C printf() function. The format
+    should be a Latin-1 string.
 
     Example:
 
@@ -2033,11 +2045,12 @@ void qt_message_output(QtMsgType msgType, const char *buf)
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 25
 
-    This syntax automatically puts a single space between each item,
-    and outputs a newline at the end. It supports many C++ and Qt
-    types.
+    With this syntax, the function returns a QDebug object that is
+    configured to use the QtDebugMsg message type. It automatically
+    puts a single space between each item, and outputs a newline at
+    the end. It supports many C++ and Qt types.
 
-    To supress the output at runtime, install your own message handler
+    To suppress the output at run-time, install your own message handler
     with qInstallMsgHandler().
 
     \sa qWarning(), qCritical(), qFatal(), qInstallMsgHandler(),
@@ -2067,7 +2080,8 @@ void qDebug(const char *msg, ...)
     QT_FATAL_WARNINGS is defined.
 
     This function takes a format string and a list of arguments,
-    similar to the C printf() function.
+    similar to the C printf() function. The format should be a Latin-1
+    string.
 
     Example:
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 26
@@ -2105,8 +2119,9 @@ void qWarning(const char *msg, ...)
     message handler has been installed, the message is printed to
     stderr. Under Windows, the message is sent to the debugger.
 
-    This function takes a format string and a list of arguments, similar
-    to the C printf() function.
+    This function takes a format string and a list of arguments,
+    similar to the C printf() function. The format should be a Latin-1
+    string.
 
     Example:
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 28
@@ -2930,6 +2945,11 @@ bool QInternal::callFunction(InternalFunction func, void **args)
  Compares the floating point value \a p1 and \a p2 and
  returns \c true if they are considered equal, otherwise \c false.
 
+ Note that comparing values where either \a p1 or \a p2 is 0.0 will not work. 
+ The solution to this is to compare against values greater than or equal to 1.0.
+
+ \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 46
+
  The two numbers are compared in a relative way, where the
  exactness is stronger the smaller the numbers are.
  */
@@ -2959,6 +2979,26 @@ bool QInternal::callFunction(InternalFunction func, void **args)
     Example:
 
     \snippet doc/src/snippets/code/src_gui_dialogs_qmessagebox.cpp 4
+*/
+
+/*!
+    \macro Q_DECL_EXPORT
+    \relates <QtGlobal>
+
+    This macro marks a symbol for shared library export (see
+     \l{sharedlibrary.html}{Creating Shared Libraries}).
+
+    \sa Q_DECL_IMPORT
+*/
+
+/*!
+    \macro Q_DECL_IMPORT
+    \relates <QtGlobal>
+
+    This macro declares a symbol to be an import from a shared library (see
+    \l{sharedlibrary.html}{Creating Shared Libraries}).
+
+    \sa Q_DECL_EXPORT
 */
 
 QT_END_NAMESPACE

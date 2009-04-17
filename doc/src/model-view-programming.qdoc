@@ -227,9 +227,14 @@
     \section2 Delegates
 
     QAbstractItemDelegate is the abstract base class for delegates in the
-    model/view framework. A default delegate implementation is provided by
-    the QItemDelegate class, and this is used as the default delegate by
-    Qt's standard views.
+    model/view framework. Since Qt 4.4, the default delegate implementation is
+    provided by QStyledItemDelegate, and this is used as the default delegate
+    by Qt's standard views. However, QStyledItemDelegate and QItemDelegate are
+    independent alternatives to painting and providing editors for items in
+    views. The difference between them is that QStyledItemDelegate uses the
+    current style to paint its items. We therefore recommend using
+    QStyledItemDelegate as the base class when implementing custom delegates or
+    when working with Qt style sheets.
 
     Delegates are described in the section on \l{Delegate Classes}.
 

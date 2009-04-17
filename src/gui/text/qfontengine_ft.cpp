@@ -521,15 +521,28 @@ QFontEngineFT::Glyph::~Glyph()
     delete [] data;
 }
 
-#if !defined(QT_USE_FREETYPE_LCDFILTER)
 static const uint subpixel_filter[3][3] = {
     { 180, 60, 16 },
     { 38, 180, 38 },
     { 16, 60, 180 }
 };
-#endif
 
-static void convertRGBToARGB(const uchar *src, uint *dst, int width, int height, int src_pitch, bool bgr)
+static inline uint filterPixel(uint red, uint green, uint blue, bool legacyFilter)
+{
+    uint res;
+    if (legacyFilter) {
+        uint high = (red*subpixel_filter[0][0] + green*subpixel_filter[0][1] + blue*subpixel_filter[0][2]) >> 8;
+        uint mid = (red*subpixel_filter[1][0] + green*subpixel_filter[1][1] + blue*subpixel_filter[1][2]) >> 8;
+        uint low = (red*subpixel_filter[2][0] + green*subpixel_filter[2][1] + blue*subpixel_filter[2][2]) >> 8;
+        res = (mid << 24) + (high << 16) + (mid << 8) + low;
+    } else {
+        uint alpha = green;
+        res = (alpha << 24) + (red << 16) + (green << 8) + blue;
+    }
+    return res;
+}
+
+static void convertRGBToARGB(const uchar *src, uint *dst, int width, int height, int src_pitch, bool bgr, bool legacyFilter)
 {
     int h = height;
     const int offs = bgr ? -1 : 1;
@@ -540,9 +553,7 @@ static void convertRGBToARGB(const uchar *src, uint *dst, int width, int height,
             uint red = src[x+1-offs];
             uint green = src[x+1];
             uint blue = src[x+1+offs];
-            uint alpha = green;
-            uint res = (alpha << 24) + (red << 16) + (green << 8) + blue;
-            *dd = res;
+            *dd = filterPixel(red, green, blue, legacyFilter);
             ++dd;
         }
         dst += width;
@@ -550,7 +561,7 @@ static void convertRGBToARGB(const uchar *src, uint *dst, int width, int height,
     }
 }
 
-static void convertRGBToARGB_V(const uchar *src, uint *dst, int width, int height, int src_pitch, bool bgr)
+static void convertRGBToARGB_V(const uchar *src, uint *dst, int width, int height, int src_pitch, bool bgr, bool legacyFilter)
 {
     int h = height;
     const int offs = bgr ? -src_pitch : src_pitch;
@@ -559,16 +570,7 @@ static void convertRGBToARGB_V(const uchar *src, uint *dst, int width, int heigh
             uint red = src[x+src_pitch-offs];
             uint green = src[x+src_pitch];
             uint blue = src[x+src_pitch+offs];
-#if defined(QT_USE_FREETYPE_LCDFILTER)
-            uint alpha = green;
-            uint res = (alpha << 24) + (red << 16) + (green << 8) + blue;
-#else
-            uint high = (red*subpixel_filter[0][0] + green*subpixel_filter[0][1] + blue*subpixel_filter[0][2]) >> 8;
-            uint mid = (red*subpixel_filter[1][0] + green*subpixel_filter[1][1] + blue*subpixel_filter[1][2]) >> 8;
-            uint low = (red*subpixel_filter[2][0] + green*subpixel_filter[2][1] + blue*subpixel_filter[2][2]) >> 8;
-            uint res = (mid << 24) + (high << 16) + (mid << 8) + low;
-#endif
-            dst[x] = res;
+            dst[x] = filterPixel(red, green, blue, legacyFilter);
         }
         dst += width;
         src += 3*src_pitch;
@@ -923,8 +925,14 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph, Glyph
     uchar *glyph_buffer = 0;
     int glyph_buffer_size = 0;
 #if defined(QT_USE_FREETYPE_LCDFILTER)
+    bool useFreetypeRenderGlyph = false;
     if (slot->format == FT_GLYPH_FORMAT_OUTLINE && (hsubpixel || vfactor != 1)) {
-        FT_Library_SetLcdFilter(library, (FT_LcdFilter)lcdFilterType);
+        err = FT_Library_SetLcdFilter(library, (FT_LcdFilter)lcdFilterType);
+        if (err == FT_Err_Ok)
+            useFreetypeRenderGlyph = true;
+    }
+
+    if (useFreetypeRenderGlyph) {
         err = FT_Render_Glyph(slot, hsubpixel ? FT_RENDER_MODE_LCD : FT_RENDER_MODE_LCD_V);
 
         if (err != FT_Err_Ok)
@@ -932,8 +940,8 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph, Glyph
 
         FT_Library_SetLcdFilter(library, FT_LCD_FILTER_NONE);
 
-        info.height = slot->bitmap.rows;
-        info.width = slot->bitmap.width / 3;
+        info.height = slot->bitmap.rows / vfactor;
+        info.width = hsubpixel ? slot->bitmap.width / 3 : slot->bitmap.width;
         info.x = -slot->bitmap_left;
         info.y = slot->bitmap_top;
 
@@ -941,9 +949,9 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph, Glyph
         glyph_buffer = new uchar[glyph_buffer_size];
 
         if (hsubpixel)
-            convertRGBToARGB(slot->bitmap.buffer, (uint *)glyph_buffer, info.width, info.height, slot->bitmap.pitch, subpixelType != QFontEngineFT::Subpixel_RGB);
+            convertRGBToARGB(slot->bitmap.buffer, (uint *)glyph_buffer, info.width, info.height, slot->bitmap.pitch, subpixelType != QFontEngineFT::Subpixel_RGB, false);
         else if (vfactor != 1)
-            convertRGBToARGB_V(slot->bitmap.buffer, (uint *)glyph_buffer, info.width, info.height, slot->bitmap.pitch, subpixelType != QFontEngineFT::Subpixel_VRGB);
+            convertRGBToARGB_V(slot->bitmap.buffer, (uint *)glyph_buffer, info.width, info.height, slot->bitmap.pitch, subpixelType != QFontEngineFT::Subpixel_VRGB, false);
     } else
 #endif
     {
@@ -1042,11 +1050,19 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph, Glyph
             Q_ASSERT (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY);
             Q_ASSERT(antialias);
             uchar *convoluted = new uchar[bitmap.rows*bitmap.pitch];
-            convoluteBitmap(bitmap.buffer, convoluted, bitmap.width, info.height, bitmap.pitch);
-            convertRGBToARGB(convoluted + 1, (uint *)glyph_buffer, info.width, info.height, bitmap.pitch, subpixelType != QFontEngineFT::Subpixel_RGB);
+            bool useLegacyLcdFilter = false;
+#if defined(FC_LCD_FILTER) && defined(FT_LCD_FILTER_H)
+            useLegacyLcdFilter = (lcdFilterType == FT_LCD_FILTER_LEGACY);
+#endif
+            uchar *buffer = bitmap.buffer;
+            if (!useLegacyLcdFilter) {
+                convoluteBitmap(bitmap.buffer, convoluted, bitmap.width, info.height, bitmap.pitch);
+                buffer = convoluted;
+            }
+            convertRGBToARGB(buffer + 1, (uint *)glyph_buffer, info.width, info.height, bitmap.pitch, subpixelType != QFontEngineFT::Subpixel_RGB, useLegacyLcdFilter);
             delete [] convoluted;
         } else if (vfactor != 1) {
-            convertRGBToARGB_V(bitmap.buffer, (uint *)glyph_buffer, info.width, info.height, bitmap.pitch, subpixelType != QFontEngineFT::Subpixel_VRGB);
+            convertRGBToARGB_V(bitmap.buffer, (uint *)glyph_buffer, info.width, info.height, bitmap.pitch, subpixelType != QFontEngineFT::Subpixel_VRGB, true);
         }
 
         if (bitmap.buffer != glyph_buffer)

@@ -58,11 +58,12 @@
 
 QT_BEGIN_NAMESPACE
 
+extern QPainterPath qt_regionToPath(const QRegion &region);
+
 // #define QT_DEBUG_DRAW
 
 static void draw_text_item_win(const QPointF &_pos, const QTextItemInt &ti, HDC hdc,
                                bool convertToText, const QTransform &xform, const QPointF &topLeft);
-
 
 static const struct {
     int winSizeName;
@@ -368,7 +369,7 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
     QRgb brushColor = state->pen().brush().color().rgb();
     bool fallBack = state->pen().brush().style() != Qt::SolidPattern
                     || qAlpha(brushColor) != 0xff
-                    || QT_WA_INLINE(false, d->txop >= QTransform::TxScale)
+                    || QT_WA_INLINE(d->txop >= QTransform::TxProject, d->txop >= QTransform::TxScale)
                     || ti.fontEngine->type() != QFontEngine::Win;
 
 
@@ -586,7 +587,6 @@ void QWin32PrintEngine::updateState(const QPaintEngineState &state)
 
     if (state.state() & DirtyClipRegion) {
         QRegion clipRegion = state.clipRegion();
-        extern QPainterPath qt_regionToPath(const QRegion &region);
         QPainterPath clipPath = qt_regionToPath(clipRegion);
         updateClipPath(clipPath, state.clipOperation());
     }
@@ -621,7 +621,6 @@ void QWin32PrintEngine::updateClipPath(const QPainterPath &clipPath, Qt::ClipOpe
         }
     }
 
-    extern QPainterPath qt_regionToPath(const QRegion &region);
     QPainterPath aclip = qt_regionToPath(alphaClipping());
     if (!aclip.isEmpty()) {
         QTransform tx(d->stretch_x, 0, 0, d->stretch_y, d->origin_x, d->origin_y);

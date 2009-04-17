@@ -1159,13 +1159,13 @@ void tst_QTcpSocket::readLine()
         QVERIFY(socket->waitForReadyRead(10000));
 
     char buffer[1024];
-    QCOMPARE(socket->readLine(buffer, sizeof(buffer)), qint64(145));
+    QCOMPARE(socket->readLine(buffer, sizeof(buffer)), qint64(161));
 
     // * OK fluke Cyrus IMAP4 v2.2.12 server ready__
 //    // 01234567890123456789012345678901234567890123456789
-    QCOMPARE((int) buffer[143], (int) '\r');
-    QCOMPARE((int) buffer[144], (int) '\n');
-    QCOMPARE((int) buffer[145], (int) '\0');
+    QCOMPARE((int) buffer[159], (int) '\r');
+    QCOMPARE((int) buffer[160], (int) '\n');
+    QCOMPARE((int) buffer[161], (int) '\0');
 
     QCOMPARE(socket->write("1 NOOP\r\n"), qint64(8));
 
@@ -1198,7 +1198,7 @@ void tst_QTcpSocket::readLineString()
 {
     QTcpSocket *socket = newSocket();
 //    QByteArray expected("* OK fluke Cyrus IMAP4 v2.2.12 server ready\r\n");
-    QByteArray expected("* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] aspiriniks Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+    QByteArray expected("* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
     socket->connectToHost(QtNetworkSettings::serverName(), 143);
     QVERIFY(socket->waitForReadyRead(10000));
 
@@ -1749,7 +1749,7 @@ void tst_QTcpSocket::readyReadSignalsAfterWaitForReadyRead()
     QCOMPARE(readyReadSpy.count(), 1);
 
     QString s = socket->readLine();
-    QCOMPARE(s.toLatin1().constData(), "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] aspiriniks Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+    QCOMPARE(s.toLatin1().constData(), "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
     QCOMPARE(socket->bytesAvailable(), qint64(0));
 
     QCoreApplication::instance()->processEvents();

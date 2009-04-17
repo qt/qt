@@ -614,7 +614,7 @@ in the \l{Qt for Windows CE Requirements} document.
     <td><tt>-xinerama</tt> or auto-detected</td><td>1.1.0</td>
     </tr><tr id="DefaultColor">
     <td> Xi </td><td> libXi </td><td> X11 Input Extensions</td>
-    <td>auto-detected</td><td>1.3.0</td>
+    <td><tt>-xinput</tt> or auto-detected</td><td>1.3.0</td>
     </tr><tr id="DefaultColor">
     <td> Xt </td><td> libXt </td><td> Xt Intrinsics</td><td></td><td>0.99</td>
     </tr><tr id="DefaultColor">

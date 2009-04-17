@@ -2682,7 +2682,10 @@ bool Parser::parseFunction(QString *name, QString *args)
 bool Parser::parseHexColor(QColor *col)
 {
     col->setNamedColor(lexem());
-    if (!col->isValid()) return false;
+    if (!col->isValid()) {
+        qWarning("QCssParser::parseHexColor: Unknown color name '%s'",lexem().toLatin1().constData());
+        return false;
+    }
     skipSpace();
     return true;
 }

@@ -49,6 +49,17 @@
 
 QT_BEGIN_NAMESPACE
 
+static QString prepareIdentifier(const QString &identifier,
+        QSqlDriver::IdentifierType type, const QSqlDriver *driver)
+{
+    Q_ASSERT( driver != NULL );
+    QString ret = identifier;
+    if (!driver->isIdentifierEscaped(identifier, type)) {
+        ret = driver->escapeIdentifier(identifier, type);
+    }
+    return ret;
+}
+
 class QSqlDriverPrivate : public QObjectPrivate
 {
 public:
@@ -372,10 +383,60 @@ QSqlRecord QSqlDriver::record(const QString & /* tableName */) const
     on \a type.
 
     The default implementation does nothing.
+    \sa isIdentifierEscaped()
  */
 QString QSqlDriver::escapeIdentifier(const QString &identifier, IdentifierType) const
 {
     return identifier;
+}
+
+/*!
+    Returns whether \a identifier is escaped according to the database rules.
+    \a identifier can either be a table name or field name, dependent
+    on \a type.
+
+    \warning Because of binary compatability constraints, this function is not virtual.
+    If you want to provide your own implementation in your QSqlDriver subclass,
+    reimplement the isIdentifierEscapedImplementation() slot in your subclass instead.
+    The isIdentifierEscapedFunction() will dynamically detect the slot and call it.
+
+    \sa stripDelimiters(), escapeIdentifier()
+ */
+bool QSqlDriver::isIdentifierEscaped(const QString &identifier, IdentifierType type) const
+{
+    bool result;
+    QMetaObject::invokeMethod(const_cast<QSqlDriver*>(this),
+                            "isIdentifierEscapedImplementation", Qt::DirectConnection,
+                            Q_RETURN_ARG(bool, result),
+                            Q_ARG(QString, identifier),
+                            Q_ARG(IdentifierType, type));
+    return result;
+}
+
+/*!
+    Returns the \a identifier with the leading and trailing delimiters removed,
+    \a identifier can either be a table name or field name,
+    dependent on \a type.  If \a identifier does not have leading
+    and trailing delimiter characters, \a identifier is returned without
+    modification.
+
+    \warning Because of binary compatability constraints, this function is not virtual,
+    If you want to provide your own implementation in your QSqlDriver subclass,
+    reimplement the stripDelimitersImplementation() slot in your subclass instead.
+    The stripDelimiters() function will dynamically detect the slot and call it.
+
+    \since 4.5
+    \sa isIdentifierEscaped()
+ */
+QString QSqlDriver::stripDelimiters(const QString &identifier, IdentifierType type) const
+{
+    QString result;
+    QMetaObject::invokeMethod(const_cast<QSqlDriver*>(this),
+                            "stripDelimitersImplementation", Qt::DirectConnection,
+                            Q_RETURN_ARG(QString, result),
+                            Q_ARG(QString, identifier),
+                            Q_ARG(IdentifierType, type));
+    return result;
 }
 
 /*!
@@ -397,21 +458,26 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
     case SelectStatement:
         for (i = 0; i < rec.count(); ++i) {
             if (rec.isGenerated(i))
-                s.append(escapeIdentifier(rec.fieldName(i), FieldName)).append(QLatin1String(", "));
+                s.append(prepareIdentifier(rec.fieldName(i), QSqlDriver::FieldName, this)).append(QLatin1String(", "));
         }
         if (s.isEmpty())
             return s;
         s.chop(2);
-        s.prepend(QLatin1String("SELECT ")).append(QLatin1String(" FROM ")).append(escapeIdentifier(tableName, TableName));
+        s.prepend(QLatin1String("SELECT ")).append(QLatin1String(" FROM ")).append(tableName);
         break;
     case WhereStatement:
         if (preparedStatement) {
-            for (int i = 0; i < rec.count(); ++i)
-                s.append(escapeIdentifier(rec.fieldName(i), FieldName)).append(
-                         QLatin1String(" = ? AND "));
+            for (int i = 0; i < rec.count(); ++i) {
+                s.append(prepareIdentifier(rec.fieldName(i), FieldName,this));
+                if (rec.isNull(i))
+                    s.append(QLatin1String(" IS NULL"));
+                else
+                    s.append(QLatin1String(" = ?"));
+                s.append(QLatin1String(" AND "));
+            }
         } else {
             for (i = 0; i < rec.count(); ++i) {
-                s.append(escapeIdentifier(rec.fieldName(i), FieldName));
+                s.append(prepareIdentifier(rec.fieldName(i), QSqlDriver::FieldName, this));
                 QString val = formatValue(rec.field(i));
                 if (val == QLatin1String("NULL"))
                     s.append(QLatin1String(" IS NULL"));
@@ -426,12 +492,12 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
         }
         break;
     case UpdateStatement:
-        s.append(QLatin1String("UPDATE ")).append(escapeIdentifier(tableName, TableName)).append(
+        s.append(QLatin1String("UPDATE ")).append(tableName).append(
                  QLatin1String(" SET "));
         for (i = 0; i < rec.count(); ++i) {
             if (!rec.isGenerated(i) || !rec.value(i).isValid())
                 continue;
-            s.append(escapeIdentifier(rec.fieldName(i), FieldName)).append(QLatin1Char('='));
+            s.append(prepareIdentifier(rec.fieldName(i), QSqlDriver::FieldName, this)).append(QLatin1Char('='));
             if (preparedStatement)
                 s.append(QLatin1Char('?'));
             else
@@ -444,15 +510,15 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
             s.clear();
         break;
     case DeleteStatement:
-        s.append(QLatin1String("DELETE FROM ")).append(escapeIdentifier(tableName, TableName));
+        s.append(QLatin1String("DELETE FROM ")).append(tableName);
         break;
     case InsertStatement: {
-        s.append(QLatin1String("INSERT INTO ")).append(escapeIdentifier(tableName, TableName)).append(QLatin1String(" ("));
+        s.append(QLatin1String("INSERT INTO ")).append(tableName).append(QLatin1String(" ("));
         QString vals;
         for (i = 0; i < rec.count(); ++i) {
             if (!rec.isGenerated(i) || !rec.value(i).isValid())
                 continue;
-            s.append(escapeIdentifier(rec.fieldName(i), FieldName)).append(QLatin1String(", "));
+            s.append(prepareIdentifier(rec.fieldName(i), QSqlDriver::FieldName, this)).append(QLatin1String(", "));
             if (preparedStatement)
                 vals.append(QLatin1String("?"));
             else
@@ -798,6 +864,58 @@ bool QSqlDriver::unsubscribeFromNotificationImplementation(const QString &name)
 QStringList QSqlDriver::subscribedToNotificationsImplementation() const
 {
     return QStringList();
+}
+
+/*!
+    This slot returns whether \a identifier is escaped according to the database rules.
+    \a identifier can either be a table name or field name, dependent
+    on \a type.
+
+    Because of binary compatability constraints, isIdentifierEscaped() function
+    (introduced in Qt 4.5) is not virtual.  Instead, isIdentifierEscaped() will
+    dynamically detect and call \e this slot.  The default implementation
+    assumes the escape/delimiter character is a double quote.  Reimplement this
+    slot in your own QSqlDriver if your database engine uses a different
+    delimiter character.
+
+    \since 4.5
+    \sa isIdentifierEscaped()
+ */
+bool QSqlDriver::isIdentifierEscapedImplementation(const QString &identifier, IdentifierType type) const
+{
+    Q_UNUSED(type);
+    bool isLeftDelimited = identifier.left(1) == QString(QLatin1Char('"'));
+    bool isRightDelimited = identifier.right(1) == QString(QLatin1Char('"'));
+    if( identifier.size() > 2 && isLeftDelimited && isRightDelimited )
+        return true;
+    else
+        return false;
+}
+
+/*!
+    This slot returns \a identifier with the leading and trailing delimiters removed,
+    \a identifier can either be a tablename or field name, dependent on \a type.
+    If \a identifier does not have leading and trailing delimiter characters, \a
+    identifier is returned without modification.
+
+    Because of binary compatability constraints, the stripDelimiters() function
+    (introduced in Qt 4.5) is not virtual.  Instead, stripDelimiters() will
+    dynamically detect and call \e this slot.  It generally unnecessary
+    to reimplement this slot.
+
+    \since 4.5
+    \sa stripDelimiters()
+ */
+QString QSqlDriver::stripDelimitersImplementation(const QString &identifier, IdentifierType type) const
+{
+    QString ret;
+    if (this->isIdentifierEscaped(identifier, type)) {
+        ret = identifier.mid(1);
+        ret.chop(1);
+    } else {
+        ret = identifier;
+    }
+    return ret;
 }
 
 QT_END_NAMESPACE

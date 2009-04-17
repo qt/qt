@@ -84,7 +84,7 @@ struct ActionData {
     QString toolTip;
     PropertySheetIconValue icon;
     bool checkable;
-    QKeySequence keysequence;
+    PropertySheetKeySequenceValue keysequence;
 };
 
 inline bool operator==(const ActionData &a1, const ActionData &a2) {  return a1.compare(a2) == 0u; }

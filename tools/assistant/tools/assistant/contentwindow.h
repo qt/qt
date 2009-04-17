@@ -49,6 +49,7 @@
 QT_BEGIN_NAMESPACE
 
 class QHelpEngine;
+class QHelpContentItem;
 class QHelpContentWidget;
 
 class ContentWindow : public QWidget
@@ -75,6 +76,7 @@ private:
     void focusInEvent(QFocusEvent *e);
     void keyPressEvent(QKeyEvent *e);
     bool eventFilter(QObject *o, QEvent *e);
+    bool isPdfFile(QHelpContentItem *item) const;
 
     QHelpEngine *m_helpEngine;
     QHelpContentWidget *m_contentWidget;

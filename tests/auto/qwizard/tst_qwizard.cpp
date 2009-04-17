@@ -111,6 +111,7 @@ private slots:
     void task183550_stretchFactor();
     void task161658_alignments();
     void task177022_setFixedSize();
+    void task248107_backButton();
 
     /*
         Things that could be added:
@@ -2479,6 +2480,41 @@ void tst_QWizard::task177022_setFixedSize()
     QCOMPARE(wiz.maximumWidth(), width);
     QCOMPARE(wiz.maximumHeight(), height);
 
+}
+
+void tst_QWizard::task248107_backButton()
+{
+    QWizard wizard;
+    QWizardPage page1;
+    QWizardPage page2;
+    QWizardPage page3;
+    QWizardPage page4;
+    wizard.addPage(&page1);
+    wizard.addPage(&page2);
+    wizard.addPage(&page3);
+    wizard.addPage(&page4);
+
+    wizard.show();
+    QTest::qWait(100);
+    QCOMPARE(wizard.currentPage(), &page1);
+
+    QTest::mouseClick(wizard.button(QWizard::NextButton), Qt::LeftButton);
+    QCOMPARE(wizard.currentPage(), &page2);
+
+    QTest::mouseClick(wizard.button(QWizard::NextButton), Qt::LeftButton);
+    QCOMPARE(wizard.currentPage(), &page3);
+
+    QTest::mouseClick(wizard.button(QWizard::NextButton), Qt::LeftButton);
+    QCOMPARE(wizard.currentPage(), &page4);
+
+    QTest::mouseClick(wizard.button(QWizard::BackButton), Qt::LeftButton);
+    QCOMPARE(wizard.currentPage(), &page3);
+
+    QTest::mouseClick(wizard.button(QWizard::BackButton), Qt::LeftButton);
+    QCOMPARE(wizard.currentPage(), &page2);
+
+    QTest::mouseClick(wizard.button(QWizard::BackButton), Qt::LeftButton);
+    QCOMPARE(wizard.currentPage(), &page1);
 }
 
 QTEST_MAIN(tst_QWizard)

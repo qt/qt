@@ -106,6 +106,8 @@ private slots:
     void textSelection();
     void textEditing();
 
+    void requestCache();
+
 private:
 
 
@@ -879,6 +881,7 @@ void tst_QWebPage::textSelection()
     QCOMPARE(page->selectedText().trimmed(), QString::fromLatin1("The quick brown fox"));
 
     // these actions must exist
+    QVERIFY(page->action(QWebPage::SelectAll) != 0);
     QVERIFY(page->action(QWebPage::SelectNextChar) != 0);
     QVERIFY(page->action(QWebPage::SelectPreviousChar) != 0);
     QVERIFY(page->action(QWebPage::SelectNextWord) != 0);
@@ -906,10 +909,14 @@ void tst_QWebPage::textSelection()
     QCOMPARE(page->action(QWebPage::SelectStartOfDocument)->isEnabled(), false);
     QCOMPARE(page->action(QWebPage::SelectEndOfDocument)->isEnabled(), false);
 
+    // ..but SelectAll is awalys enabled
+    QCOMPARE(page->action(QWebPage::SelectAll)->isEnabled(), true);
+
     // make it editable before navigating the cursor
     page->setContentEditable(true);
 
     // here the actions are enabled after contentEditable is true
+    QCOMPARE(page->action(QWebPage::SelectAll)->isEnabled(), true);
     QCOMPARE(page->action(QWebPage::SelectNextChar)->isEnabled(), true);
     QCOMPARE(page->action(QWebPage::SelectPreviousChar)->isEnabled(), true);
     QCOMPARE(page->action(QWebPage::SelectNextWord)->isEnabled(), true);
@@ -951,6 +958,8 @@ void tst_QWebPage::textEditing()
     QVERIFY(page->action(QWebPage::ToggleBold) != 0);
     QVERIFY(page->action(QWebPage::ToggleItalic) != 0);
     QVERIFY(page->action(QWebPage::ToggleUnderline) != 0);
+    QVERIFY(page->action(QWebPage::InsertParagraphSeparator) != 0);
+    QVERIFY(page->action(QWebPage::InsertLineSeparator) != 0);
 
     // right now they are disabled because contentEditable is false
     QCOMPARE(page->action(QWebPage::DeleteStartOfWord)->isEnabled(), false);
@@ -961,6 +970,8 @@ void tst_QWebPage::textEditing()
     QCOMPARE(page->action(QWebPage::ToggleBold)->isEnabled(), false);
     QCOMPARE(page->action(QWebPage::ToggleItalic)->isEnabled(), false);
     QCOMPARE(page->action(QWebPage::ToggleUnderline)->isEnabled(), false);
+    QCOMPARE(page->action(QWebPage::InsertParagraphSeparator)->isEnabled(), false);
+    QCOMPARE(page->action(QWebPage::InsertLineSeparator)->isEnabled(), false);
 
     // make it editable before navigating the cursor
     page->setContentEditable(true);
@@ -974,10 +985,38 @@ void tst_QWebPage::textEditing()
     QCOMPARE(page->action(QWebPage::ToggleBold)->isEnabled(), true);
     QCOMPARE(page->action(QWebPage::ToggleItalic)->isEnabled(), true);
     QCOMPARE(page->action(QWebPage::ToggleUnderline)->isEnabled(), true);
+    QCOMPARE(page->action(QWebPage::InsertParagraphSeparator)->isEnabled(), true);
+    QCOMPARE(page->action(QWebPage::InsertLineSeparator)->isEnabled(), true);
 
     delete page;
 }
 
+void tst_QWebPage::requestCache()
+{
+    TestPage page;
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+
+    page.mainFrame()->setUrl(QString("data:text/html,<a href=\"data:text/html,Reached\" target=\"_blank\">Click me</a>"));
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(page.navigations.count(), 1);
+
+    page.mainFrame()->setUrl(QString("data:text/html,<a href=\"data:text/html,Reached\" target=\"_blank\">Click me2</a>"));
+    QTRY_COMPARE(loadSpy.count(), 2);
+    QTRY_COMPARE(page.navigations.count(), 2);
+
+    page.triggerAction(QWebPage::Stop);
+    QVERIFY(page.history()->canGoBack());
+    page.triggerAction(QWebPage::Back);
+
+    QTRY_COMPARE(loadSpy.count(), 3);
+    QTRY_COMPARE(page.navigations.count(), 3);
+    QCOMPARE(page.navigations.at(0).request.attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt(),
+             (int)QNetworkRequest::PreferNetwork);
+    QCOMPARE(page.navigations.at(1).request.attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt(),
+             (int)QNetworkRequest::PreferNetwork);
+    QCOMPARE(page.navigations.at(2).request.attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt(),
+             (int)QNetworkRequest::PreferCache);
+}
 
 QTEST_MAIN(tst_QWebPage)
 #include "tst_qwebpage.moc"

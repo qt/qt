@@ -526,7 +526,6 @@ void QColor::setNamedColor(const QString &name)
         if (qt_get_hex_rgb(name.constData(), name.length(), &rgb)) {
             setRgb(rgb);
         } else {
-            qWarning("QColor::setNamedColor: Could not parse color '%s'", name.toLatin1().constData());
             invalidate();
         }
         return;

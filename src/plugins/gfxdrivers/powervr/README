@@ -8,6 +8,9 @@ is built as two libraries: The actual QScreen plugin used by Qt (in the
 pvreglscreen directory) and a WSEGL plugin for the PowerVR drivers (in the
 QWSWSEGL directory).
 
+Qt/Embedded needs to be configured with the QT_QWS_CLIENTBLIT and
+QT_NO_QWS_CURSOR defines.
+
 The PowerVR drivers provide the WSEGL plugin API to allow window systems such as
 QWS to integrate correctly. In order to use the integration, the WSEGL plugin
 (libpvrQWSWSEGL.so, usually installed into the Qt library directory) must be in

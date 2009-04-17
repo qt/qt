@@ -73,9 +73,6 @@
     standard ActiveX controls to provide high-level user interface
     functionality are provided.
 
-    The QAxContainer module is part of the \l{Qt Full Framework Edition} for
-    Windows. It is \e not part of the \l{Open Source Versions of Qt}.
-
     \sa {ActiveQt Framework}
 
     Topics:
