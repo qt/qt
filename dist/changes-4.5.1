@@ -37,14 +37,14 @@ General Improvements
 Optimizations
 -------------
 
-- Graphics View has been optimized in several areas
-    * Improved the performance of QGraphicsItem::clipPath.
-    * Improved the performance of QGraphicsItem::setPos.
-    * Improved the performance of QGraphicsItem::effectiveOpacity.
-    * Improved the performance of QGrahicsScene::items(*).
-    * Improved update handling.
-    * Reduced the number of floating point operations.
-    * Reduced QVariant overhead.
+- Graphics View Framework has been optimized in several areas
+   * Improved the performance of QGraphicsItem::clipPath().
+   * Improved the performance of QGraphicsItem::setPos().
+   * Improved the performance of QGraphicsItem::effectiveOpacity().
+   * Improved the performance of QGrahicsScene::items(*).
+   * Improved handling of updates.
+   * Reduced the number of floating point operations.
+   * Reduced QVariant overhead.
 
 Third party components
 ----------------------
@@ -55,11 +55,11 @@ Third party components
 ****************************************************************************
 
 - QAbstractItemModel
-   * [243195] Clarified some warning messages printed if the model is invalid.
+   * Clarified some warning messages printed if the model is invalid.
 
 - QAbstractEventDispatcher
-   * [248805] Duplicate timerids could occur when a timer is running while
-     the QObject is moved to another thread, stopping timers from working.
+   * [248805] Duplicate timerids could occur if a timer is running while the
+     QObject is moved to another thread, stopping timers from working.
 
 - QAbstractSocket
    * [192037] Emit the disconnected signal only if we were connected before.
@@ -86,7 +86,7 @@ Third party components
    * [248094] Fixed scrollbar from appearing when not required.
 
 - QCompleter
-   * [250064] Fixed a focus policy propagation regression.
+   * [250064] Fixed a regression in focus policy propagation.
    * [246056] Fixed an assertion failure in setCompletionPrefix().
 
 - QtConcurrent
@@ -97,7 +97,7 @@ Third party components
 
 - QFile
    * [244500] QFile::rename() does not always return false when the method
-              fails
+     fails
    * [244485] Renaming a file does not change QFile::fileName().
 
 - QFileInfo
@@ -105,39 +105,40 @@ Third party components
 
 - QFileDialog
    * [250194] Fixed an issue with QFileDialog and QSortFilterProxyModel
-              index mapping.
+     index mapping.
    * [248332] QFileDialog is slow after visiting a large directory.
-   * [221323] QFileDialog programmatical file selection bug.
+   * [221323] Fixed a bug in QFileDialog's programmatical file selection.
 
 - QGLFramebufferObject
    * Framebuffer object extension resolution now works with OpenGL/ES 2.0.
 
 - QGraphicsItem
    * [247890] Cached QGraphicsItems are not updated if update() is called
-              when they are hidden.
-   * [250272] When an item is deleted it does not get removed from the
-              sceneeventfilters, meaning a crash can occur.
+     when they are hidden.
+   * [250272] Fixed a crash that could occur when an item is deleted but
+     it does not get removed from the sceneeventfilters.
    * Fixed a slow down regression in QGraphicsItem::ItemCoordinateCache.
 
 - QGraphicsGridLayout
    * [242472] Fixed a bug where the calculation of the maximum width of a
-              column was incorrect.
+     column was incorrect.
 
 - QGraphicsScene
-   * [243707] Fixed a crash when adding child before parent to scene.
+   * [243707] Fixed a crash when adding a child before a parent to the
+     scene.
 
 - QGraphicsView
    * [245766] Rubber Band drag mode does not update correctly when
-              scrolling.
+     scrolling.
 
 - QGraphicsWidget
-    * [246215] Fixed a regression where we could cache the wrong size hint
+   * [246215] Fixed a regression where we could cache the wrong size hint
       because we called the virtual sizeHint() from the constructor.
 
 - QHttp
    * [208445] Cancel request upon receiving unknown authentication method.
-   * Compile fixes for QT_BEGIN_NAMESPACE being in the wrong place in
-     some private headers.
+   * Compile fixes for QT_BEGIN_NAMESPACE being in the wrong place in some
+     private headers.
 
 - QHostAddress
    * [247330] Fixed compilation on MinGW by adding a missing QPair include.
@@ -148,130 +149,144 @@ Third party components
 
 - QMacStyle
    * [248769] Fixed a regression where QMacStyle would only draw tabs when
-              passed a QStyleOptionTabV3.
+     passed a QStyleOptionTabV3.
    * Adjusted the opacity value for popups.
 
 - QMainWindow
-    * [248048] Fix a regression that would cause tooltips to disappear when using the unified toolbar.
+   * [248048] Fixed a regression that would cause tooltips to disappear when
+     using the unified toolbar.
 
 - QMetaType
-   * [248890] Detailed description of QMetaType no longer contradicts
-     documentation of QMetaType::type()
+   * [248890] The detailed description of QMetaType no longer contradicts
+     the documentation of QMetaType::type()
 
 - QMutex
-   * Fix performance regression for contended mutexes as reported on
-     the qt4-preview-feedback list.
+   * Fixed a performance regression for contended mutexes as reported on the
+     qt4-preview-feedback list.
 
 - QPainter
-   * [247492] Fix rendering bug in raster paint engine causing one-pixel
-     offset when drawing premultiplied ARGB32 images on RGB16 images.
-   * [249490] Fix one-pixel offset between stroke and fills of ellipses in
-     X11 paint engine.
-   * [246573] Fix very slow stroking of paths in X11 paint engine.
-   * [247083] Fix scale applied to antialiased cosmetic pens in X11 paint
-     engine.
-   * [247505] Fix missing fills of rectangles with negative width/height in
-     raster paint engine.
-   * [249628] Fix crash in OpenGL paint engine when filling using Qt::NoBrush.
-   * Compile fixes for OpenGL paint engine on OpenGL/ES 1.1 CommonLite
-     and OpenGL/ES 1.0.
+   * [247492] Fixed a rendering bug in the raster paint engine causing
+     one-pixel offset when drawing premultiplied ARGB32 images on RGB16
+     images.
+   * [249490] Fixed one-pixel offset between stroke and fills of ellipses in
+     the X11 paint engine.
+   * [246573] Fixed a very slow stroking of paths in the X11 paint engine.
+   * [247083] Fixed the scale applied to antialiased cosmetic pens in X11
+     paint engine.
+   * [247505] Fixed missing fills of rectangles with negative width/height
+     in raster paint engine.
+   * [249628] Fixed a crash in OpenGL paint engine when filling using
+     Qt::NoBrush.
+   * Compile fixes for OpenGL paint engine on OpenGL/ES 1.1 CommonLite and
+     OpenGL/ES 1.0.
 
 - QPixmap
-   * [249175] Fix QPixmap::fromImage() of monochrome images to result in
+   * [249175] Fixed QPixmap::fromImage() of monochrome images to result in
      black/white pixels and not transparent/white pixels.
 
 - QProcess
-   * [247865] Fix a crash when calling QProcess::start() and
+   * [247865] Fixed a crash when calling QProcess::start() and
      startDetached() with an empty program string.
 
 - QScrollBar
-   * [247985] Stylesheet: added ability to style scrollbar menus.
+   * [247985] Stylesheet: added the feature to style scrollbar menus.
 
 - QSharedPointer
-   * [246843] Fixed a crash caused by using QSharedPointer in global statics
+   * [246843] Fixed a crash caused by using QSharedPointer in global statics.
 
 - QSortFilterProxyModel
-   * [247867] Properly sort when calling appendRows()
-   * [248868] Resort when the model is reset if dynamicSort is enabled.
-   * [248868] Fixed QSortFilterProxyModel::sort while dynamicSort was disabled.
+   * [247867] Properly sort when calling appendRows().
+   * [248868] Re-sort when the model is reset if dynamicSort is enabled.
+   * [248868] Fixed QSortFilterProxyModel::sort() if dynamicSort was disabled.
 
 - QSSlSocket
-   * [245668] set also protocol, verifyMode and verifyDepth in
-     setSslConfiguration()
+   * [245668] Set also protocol, verifyMode and verifyDepth in
+     setSslConfiguration().
 
 - QString
-   * [249517] Fixed regression in replace(int, int, QChar) when string is empty
+   * [249517] Fixed a regression in replace(int, int, QChar) when the string
+     is empty.
 
 - QStyleSheetStyle
    * Improved support for setting background and foreground roles in styles
-    such as the text color in a combo box popup on Mac and Cleanlooks, or
-    the QScrollBar background.
-   * [188195] fix background of QAbstractScrollArea loosing its color if styled with pseudo-class.
-   * Fixed crash while styling the title bar of a QMdiArea.
-   * [246542] Fixed QToolButton::hover{ color:.... }
+     such as the text color in a combo box popup on Mac and Cleanlooks, or
+     the background of QScrollBar.
+   * [188195] Fixed the background of QAbstractScrollArea losing its color
+     if styled with pseudo-class.
+   * Fixed a crash that occured while styling the title bar of a QMdiArea.
+   * [246542] Fixed a bug in QToolButton::hover{ color:.... }.
 
 - QThread
-   * [249997] Add documentation indicating that the priority set by
-     the programmer may be ignored, for example on Linux.
+   * [249997] Added documentation indicating that the priority set by the
+     programmer may be ignored, for example on Linux.
 
 - QTreeView
-   * Fixed crash that may occurs when event are processed just after QSortFilterProxyModel
-     has been invalidated
-   * [246025] Fixed auto-expand that occurs while quicly collapsing an item after clicking on a child
-   * [248805] Calling programatically  QTreeView::sortByColumn was not working if manual
-     sorting is disabled
-   * [248163] Fixed possible crash in the paintEvent when spans are used.
+   * Fixed a crash that may occur when events are processed immediately
+     after a QSortFilterProxyModel is invalidated.
+   * [246025] Fixed auto-expand that occured when quickly collapsing an item
+     after clicking on a child.
+   * [248805] Calling QTreeView::sortByColumn() programmatically was not
+     working if manual sorting was disabled.
+   * [248163] Fixed a possible crash in the paintEvent() when spans are used.
 
 - QWidget
-   * [250388] Fixed potential crash in QWidget::scroll() when using the raster
-     graphics system.
+   * [250388] Fixed a potential crash in QWidget::scroll() when using the
+     raster graphics system.
 
 - QWidget
-   * [246852] Better handling WindowMaximizeButtonHint for widget with
+   * [246852] Improved handling of WindowMaximizeButtonHint for widgets with
      layouts.
 
 -QLocale
-   * String-to-number conversion functions are now ignore trailing and
-     leading whitespaces in all locales as it is documented.
+   * String-to-number conversion functions will now ignore trailing and
+     leading whitespaces in all locales as documented.
 
 - QWizard
-   * [248107] Fixed bug on Vista causing Back button to connect twice to the back() signal.
+   * [248107] Fixed a bug on Windows Vista causing the Back button to
+     connect to the back() signal twice.
 
 - Q3ListView
-   * [248689] Q3ListView would not update under certain condition.
+   * [248689] Fixed a bug in Q3ListView that would not update under certain
+     conditions.
 
 - QtWebKit
-   * [248643] Fixed compiling with -pedantic.
-   * Fix bug in cookie handling (WebKit Bugzilla 24062, Benjamin Meyer).
-   * Fixed support for calling from JavaScript into NPAPI plugins on Windows.
-   * Fixed updating state of WebActions (Erik Bunce)
-   * Fixed bug in HTML 5 Canvas clearRect() (Dirk Schulze)
-   * Fixed text field theming with KDE 4 Oxygen style (Zack Rusin)
+   * [248643] Fixed compiling with the "-pedantic" compile option.
+   * Fixed a bug in cookie handling (WebKit Bugzilla 24062, Benjamin Meyer).
+   * Fixed a bug in calling from JavaScript into NPAPI plugins on Windows.
+   * Fixed the updating state of WebActions (Erik Bunce)
+   * Fixed a bug in HTML 5 Canvas clearRect() (Dirk Schulze)
+   * Fixed the theming of text fields with KDE 4 Oxygen style (Zack Rusin)
    * Fixed path fill styles (Zack Rusin)
    * Fixed pre-edit text handling with input methods.
 
 - QSqlTableModel
    * [189093] QSqlTableModel did not handle updates when one of the fields
      had a NULL value.
-   * Made setTable() try and use the db's casing of the passed tablename.
+   * Made setTable() try and use the database's letter case (uppercase/
+     lowercase)  of the given tablename.
 
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
 
-   * Fixed DB2 driver returning double field as empty
-   * Fixed memory leak in DB2 driver
-   * [249059] Fixed QPSQL datetime/time fields with negative timezone offsets
-     not being handled correctly.
-   * Fixed DB2 not enquoting table/field names properly.
+   * Fixed the DB2 driver returning a double field as empty.
+   * Fixed a memory leak in the DB2 driver.
+   * [249059] Fixed a bug that handled QPSQL datetime/time fields with
+     negative timezone offsets incorrectly.
+   * Fixed the DB2 driver not quoting table/field names properly.
    * Fixed an issue with ODBC & FreeTDS not accepting quotes in statements.
-   * Fixed sqlite2 driver not returning false on failing to exec a statement.
+   * Fixed a bug in the sqlite2 driver not returning false on failing to
+     execute a statement.
    * PrecisionPolicy now works in the oracle driver.
-   * Fixed ODBC driver returning a list of tables when requested.
-   * Fixed Interbase retrieving scale/precision information on numeric/decimal fields.
-   * Stopped drivers doing quoting again when escapeIdentifier called twice.
-   * Fixed sqlite2 driver not quoting fields correctly.
-   * [232769] Fixed memory overflow issue on bound out strings in ODBC Driver
+   * Fixed a bug in the ODBC driver returning a list of tables when
+     requested.
+   * Fixed Interbase retrieving scale/precision information on numeric/
+     decimal fields.
+   * Stopped drivers from quoting again when escapeIdentifier is called
+     twice.
+   * Fixed a bug in the sqlite2 driver not quoting fields correctly.
+   * [232769] Fixed a memory overflow issue on bound out strings in ODBC
+     Driver
 
 ****************************************************************************
 *                      Platform Specific Changes                           *
