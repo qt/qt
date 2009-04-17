@@ -1,4 +1,4 @@
-This is a list of Frequently Asked Questions regarding Qt Release 4.5.1.
+This is a list of Frequently Asked Questions regarding this Qt release.
 
 Q: I'm using a Unix system and I downloaded the Zip package. However, when I try
 to run the configure script, I get the following error message:
