@@ -1075,7 +1075,7 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
 
     // Step 1) If all items are contained within the expose region, then
     // return a list of all visible items.
-    const QRectF exposedRegionSceneBounds = q->mapToScene(exposedRegion.boundingRect().adjusted(-1, -1, 2, 2))
+    const QRectF exposedRegionSceneBounds = q->mapToScene(exposedRegion.boundingRect().adjusted(-1, -1, 1, 1))
                                             .boundingRect();
     if (exposedRegionSceneBounds.contains(scene->d_func()->growingItemsBoundingRect)) {
         Q_ASSERT(allItems);
@@ -2313,7 +2313,7 @@ QList<QGraphicsItem *> QGraphicsView::items(const QPoint &pos) const
             QTransform xinv = viewportTransform().inverted();
             return d->scene->items(xinv.mapRect(QRectF(pos.x(), pos.y(), 1, 1)));
         }
-        return d->scene->items(mapToScene(pos.x(), pos.y(), 2, 2));
+        return d->scene->items(mapToScene(pos.x(), pos.y(), 1, 1));
     }
 
     QPainterPath path;
@@ -2475,10 +2475,11 @@ QPolygonF QGraphicsView::mapToScene(const QRect &rect) const
         return QPolygonF();
 
     QPointF scrollOffset(d->horizontalScroll(), d->verticalScroll());
-    QPointF tl = scrollOffset + rect.topLeft();
-    QPointF tr = scrollOffset + rect.topRight();
-    QPointF br = scrollOffset + rect.bottomRight();
-    QPointF bl = scrollOffset + rect.bottomLeft();
+    QRect r = rect.adjusted(0, 0, 1, 1);
+    QPointF tl = scrollOffset + r.topLeft();
+    QPointF tr = scrollOffset + r.topRight();
+    QPointF br = scrollOffset + r.bottomRight();
+    QPointF bl = scrollOffset + r.bottomLeft();
 
     QPolygonF poly;
     poly.resize(4);
@@ -3471,7 +3472,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
         exposedRegion = viewport()->rect();
     else if (d->viewportUpdateMode == BoundingRectViewportUpdate)
         exposedRegion = event->rect();
-    QRectF exposedSceneRect = mapToScene(exposedRegion.boundingRect().adjusted(0, 0, 1, 1)).boundingRect();
+    QRectF exposedSceneRect = mapToScene(exposedRegion.boundingRect()).boundingRect();
 
     // Set up the painter
     QPainter painter(viewport());

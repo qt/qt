@@ -72,6 +72,7 @@ Q_DECLARE_METATYPE(QList<QRectF>)
 Q_DECLARE_METATYPE(QMatrix)
 Q_DECLARE_METATYPE(QPainterPath)
 Q_DECLARE_METATYPE(QPointF)
+Q_DECLARE_METATYPE(QPolygonF)
 Q_DECLARE_METATYPE(QRectF)
 Q_DECLARE_METATYPE(Qt::ScrollBarPolicy)
 
@@ -159,6 +160,7 @@ private slots:
     void itemAt2();
     void mapToScene();
     void mapToScenePoint();
+    void mapToSceneRect_data();
     void mapToSceneRect();
     void mapToScenePoly();
     void mapToScenePath();
@@ -1612,23 +1614,51 @@ void tst_QGraphicsView::mapToScenePoint()
              view.mapToScene(center) + QPointF(0, -10));
 }
 
+void tst_QGraphicsView::mapToSceneRect_data()
+{
+    QTest::addColumn<QRect>("viewRect");
+    QTest::addColumn<QPolygonF>("scenePoly");
+    QTest::addColumn<qreal>("rotation");
+
+    QTest::newRow("nil") << QRect() << QPolygonF() << qreal(0);
+    QTest::newRow("0, 0, 1, 1") << QRect(0, 0, 1, 1) << QPolygonF(QRectF(0, 0, 1, 1)) << qreal(0);
+    QTest::newRow("0, 0, 10, 10") << QRect(0, 0, 10, 10) << QPolygonF(QRectF(0, 0, 10, 10)) << qreal(0);
+    QTest::newRow("nil") << QRect() << QPolygonF() << qreal(90);
+    QPolygonF p;
+    p << QPointF(0, 0) << QPointF(0, -1) << QPointF(1, -1) << QPointF(1, 0) << QPointF(0, 0);
+    QTest::newRow("0, 0, 1, 1") << QRect(0, 0, 1, 1)
+                                << p
+                                << qreal(90);
+    p.clear();
+    p << QPointF(0, 0) << QPointF(0, -10) << QPointF(10, -10) << QPointF(10, 0) << QPointF(0, 0);
+    QTest::newRow("0, 0, 10, 10") << QRect(0, 0, 10, 10)
+                                  << p
+                                  << qreal(90);
+}
+
 void tst_QGraphicsView::mapToSceneRect()
 {
-    QGraphicsScene scene;
+    QFETCH(QRect, viewRect);
+    QFETCH(QPolygonF, scenePoly);
+    QFETCH(qreal, rotation);
+
+    QGraphicsScene scene(-1000, -1000, 2000, 2000);
+    scene.addRect(25, -25, 50, 50);
     QGraphicsView view(&scene);
-    view.rotate(90);
-    view.setFixedSize(117, 117);
+    view.setFrameStyle(0);
+    view.setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    view.setFixedSize(200, 200);
+    view.setTransformationAnchor(QGraphicsView::NoAnchor);
+    view.setResizeAnchor(QGraphicsView::NoAnchor);
     view.show();
-    QPoint center = view.viewport()->rect().center();
-    QRect rect(center + QPoint(10, 0), QSize(10, 10));
 
-    QPolygonF poly;
-    poly << view.mapToScene(rect.topLeft());
-    poly << view.mapToScene(rect.topRight());
-    poly << view.mapToScene(rect.bottomRight());
-    poly << view.mapToScene(rect.bottomLeft());
+    view.rotate(rotation);
 
-    QCOMPARE(view.mapToScene(rect), poly);
+    QPolygonF poly = view.mapToScene(viewRect);
+    if (!poly.isEmpty())
+        poly << poly[0];
+
+    QCOMPARE(poly, scenePoly);
 }
 
 void tst_QGraphicsView::mapToScenePoly()
