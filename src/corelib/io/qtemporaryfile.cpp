@@ -219,9 +219,20 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
 #  elif defined(Q_OS_WIN)
                            |O_BINARY
 #  endif
+#  ifdef O_CLOEXEC
+                           // supported on Linux >= 2.6.23; avoids one extra system call
+                           // and avoids a race condition: if another thread forks, we could
+                           // end up leaking a file descriptor...
+                           |O_CLOEXEC
+#  endif
                      , 0600)) >= 0)
 #endif // WIN && !CE
+            {
+#if defined(Q_OS_UNIX) && !defined(O_CLOEXEC)
+                fcntl(*doopen, F_SETFD, FD_CLOEXEC);
+#endif
                 return 1;
+            }
             if (errno != EEXIST)
                 return 0;
         } else if (domkdir) {
