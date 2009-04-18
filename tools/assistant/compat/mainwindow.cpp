@@ -311,29 +311,11 @@ void MainWindow::closeEvent(QCloseEvent *e)
 void MainWindow::about()
 {
     QMessageBox box(this);
-#if QT_EDITION == QT_EDITION_OPENSOURCE
-    QString edition = tr("Open Source Edition");
-    QString info = tr("This version of Qt Assistant is part of the Qt Open Source Edition, for use "
-                      "in the development of Open Source applications. "
-                      "Qt is a comprehensive C++ framework for cross-platform application "
-                      "development.");
-    QString moreInfo = tr("You need a commercial Qt license for development of proprietary (closed "
-                   "source) applications. Please see <a href=\"http://qtsoftware.com/company/model"
-                   "\">qtsoftware.com/company/model</a> for an overview of Qt licensing.");
-#elif defined(QT_PRODUCT_LICENSE)
-    QString edition;
-    QString info;
-    QString moreInfo(tr("This program is licensed to you under the terms of the "
-                   "Qt %1 License Agreement. For details, see the license file "
-                   "that came with this software distribution.").arg(QLatin1String(QT_PRODUCT_LICENSE)));
-#else 
-    QString edition;
-    QString info;
-    QString moreInfo(tr("This program is licensed to you under the terms of the "
-                   "Qt Commercial License Agreement. For details, see the file LICENSE "
-                   "that came with this software distribution."));
 
-#endif
+    // TODO: Remove these variables for 4.6.0.  Must keep this way for 4.5.x due to string freeze.
+    QString edition;
+    QString info;
+    QString moreInfo;
 
     box.setText(QString::fromLatin1("<center><img src=\":/trolltech/assistant/images/assistant-128.png\">"
                                     "<h3>%1</h3>"

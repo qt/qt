@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0">
+<!DOCTYPE TS>
+<TS version="2.0">
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/aboutdialog.cpp" line="+80"/>
+        <location filename="../tools/assistant/tools/assistant/aboutdialog.cpp" line="+110"/>
         <source>&amp;Close</source>
         <translation type="unfinished"></translation>
     </message>
@@ -30,7 +31,7 @@
 <context>
     <name>BookmarkDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="+155"/>
+        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="+185"/>
         <location line="+18"/>
         <location line="+36"/>
         <location line="+24"/>
@@ -149,7 +150,7 @@
 <context>
     <name>CentralWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+163"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+195"/>
         <source>Add new page</source>
         <translation type="unfinished"></translation>
     </message>
@@ -159,12 +160,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+266"/>
+        <location line="+265"/>
         <source>Print Document</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+124"/>
+        <location line="+147"/>
         <location line="+2"/>
         <source>unknown</source>
         <translation type="unfinished"></translation>
@@ -190,7 +191,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+227"/>
+        <location line="+257"/>
         <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
@@ -198,7 +199,7 @@
 <context>
     <name>ContentWindow</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/contentwindow.cpp" line="+115"/>
+        <location filename="../tools/assistant/tools/assistant/contentwindow.cpp" line="+155"/>
         <source>Open Link</source>
         <translation type="unfinished"></translation>
     </message>
@@ -224,7 +225,7 @@
 <context>
     <name>FindWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-809"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-863"/>
         <source>Previous</source>
         <translation type="unfinished"></translation>
     </message>
@@ -252,7 +253,7 @@
 <context>
     <name>FontPanel</name>
     <message>
-        <location filename="../tools/shared/fontpanel/fontpanel.cpp" line="+33"/>
+        <location filename="../tools/shared/fontpanel/fontpanel.cpp" line="+63"/>
         <source>Font</source>
         <translation type="unfinished"></translation>
     </message>
@@ -280,7 +281,7 @@
 <context>
     <name>HelpViewer</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+310"/>
+        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+481"/>
         <source>Help</source>
         <translation type="unfinished"></translation>
     </message>
@@ -290,12 +291,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="-62"/>
         <source>&lt;title&gt;Error 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;The page could not be found&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+90"/>
+        <location line="+125"/>
         <source>Copy &amp;Link Location</source>
         <translation type="unfinished"></translation>
     </message>
@@ -305,12 +306,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-238"/>
+        <location line="-267"/>
         <source>Open Link in New Tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+128"/>
+        <location line="+201"/>
         <source>Unable to launch external application.
 </source>
         <translation type="unfinished"></translation>
@@ -319,12 +320,12 @@
 <context>
     <name>IndexWindow</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/indexwindow.cpp" line="+36"/>
+        <location filename="../tools/assistant/tools/assistant/indexwindow.cpp" line="+66"/>
         <source>&amp;Look for:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+68"/>
         <source>Open Link</source>
         <translation type="unfinished"></translation>
     </message>
@@ -337,7 +338,7 @@
 <context>
     <name>InstallDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+45"/>
+        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+75"/>
         <location filename="../tools/assistant/tools/assistant/installdialog.ui"/>
         <source>Install Documentation</source>
         <translation type="unfinished"></translation>
@@ -436,84 +437,69 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+78"/>
-        <location line="+345"/>
+        <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+108"/>
+        <location line="+350"/>
         <source>Index</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-339"/>
-        <location line="+337"/>
+        <location line="-344"/>
+        <location line="+342"/>
         <source>Contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-332"/>
-        <location line="+336"/>
+        <location line="-337"/>
+        <location line="+341"/>
         <source>Bookmarks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-324"/>
-        <location line="+326"/>
+        <location line="-329"/>
+        <location line="+331"/>
         <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-314"/>
-        <location line="+185"/>
-        <location line="+488"/>
+        <location line="-319"/>
+        <location line="+192"/>
+        <location line="+470"/>
         <source>Qt Assistant</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-519"/>
+        <location line="-501"/>
         <location line="+4"/>
         <source>Unfiltered</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+82"/>
+        <location line="+84"/>
         <source>Page Set&amp;up...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Print Preview...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>&amp;Print...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>CTRL+P</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
+        <location line="+6"/>
         <source>New &amp;Tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>CTRL+T</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>&amp;Close Tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>CTRL+W</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>&amp;Quit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -528,42 +514,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Ctrl+C</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="+6"/>
         <source>&amp;Find in Text...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Ctrl+F</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="+5"/>
         <source>Find &amp;Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>F3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Find &amp;Previous</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Shift+F3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Preferences...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -573,27 +539,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Ctrl++</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+5"/>
         <source>Zoom &amp;out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Ctrl+-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+5"/>
         <source>Normal &amp;Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
         <source>Ctrl+0</source>
         <translation type="unfinished"></translation>
     </message>
@@ -618,27 +574,27 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Ctrl+Home</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
         <source>&amp;Back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+5"/>
         <source>&amp;Forward</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+5"/>
         <source>Sync with Table of Contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Next Page</source>
         <translation type="unfinished"></translation>
     </message>
@@ -653,7 +609,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Ctrl+Alt+Left</source>
         <translation type="unfinished"></translation>
     </message>
@@ -673,7 +629,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+75"/>
+        <location line="+74"/>
         <source>Toolbars</source>
         <translation type="unfinished"></translation>
     </message>
@@ -688,7 +644,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+23"/>
         <source>Address Toolbar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -698,27 +654,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+108"/>
+        <location line="+110"/>
         <source>Could not find the associated content item.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+60"/>
-        <source>Open Source Edition</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>This version of Qt Assistant is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>This program is licensed to you under the terms of the Qt Commercial License Agreement. For details, see the file LICENSE that came with this software distribution.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+20"/>
+        <location line="+81"/>
         <source>About %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -728,17 +669,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-614"/>
+        <location line="-597"/>
         <source>Looking for Qt Documentation...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+205"/>
+        <location line="+195"/>
         <source>&amp;Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Minimize</source>
         <translation type="unfinished"></translation>
     </message>
@@ -748,32 +689,32 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-2"/>
         <source>Zoom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-150"/>
+        <location line="-136"/>
         <source>&amp;File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+24"/>
         <source>&amp;Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+24"/>
         <source>&amp;View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+27"/>
         <source>&amp;Go</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+29"/>
         <source>&amp;Bookmarks</source>
         <translation type="unfinished"></translation>
     </message>
@@ -783,17 +724,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+294"/>
-        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qtsoftware.com/company/about/businessmodel&quot;&gt;http://qtsoftware.com/company/about/businessmodel&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-339"/>
+        <location line="-37"/>
         <source>ALT+O</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+35"/>
         <source>CTRL+D</source>
         <translation type="unfinished"></translation>
     </message>
@@ -801,7 +737,7 @@
 <context>
     <name>PreferencesDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/preferencesdialog.cpp" line="+238"/>
+        <location filename="../tools/assistant/tools/assistant/preferencesdialog.cpp" line="+237"/>
         <location line="+7"/>
         <location line="+6"/>
         <source>Add Documentation</source>
@@ -823,7 +759,27 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+122"/>
+        <location line="+23"/>
+        <source>Remove Documentation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Some documents currently opened in Assistant reference the documentation you are attempting to remove. Removing the documentation will close those documents.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+86"/>
         <source>Use custom settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -902,26 +858,6 @@
     </message>
     <message>
         <location/>
-        <source>Network</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Use Http Proxy</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Http Proxy:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Port:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
         <source>Options</source>
         <translation type="unfinished"></translation>
     </message>
@@ -944,7 +880,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/cmdlineparser.cpp" line="+79"/>
+        <location filename="../tools/assistant/tools/assistant/cmdlineparser.cpp" line="+110"/>
         <source>The specified collection file does not exist!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -990,6 +926,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+7"/>
+        <source>Missing filter argument!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+10"/>
         <source>Unknown option: %1</source>
         <translation type="unfinished"></translation>
@@ -1001,7 +942,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+58"/>
+        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+190"/>
         <source>Could not register documentation file
 %1
 
@@ -1015,7 +956,7 @@ Reason:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+11"/>
         <source>Could not unregister documentation file
 %1
 
@@ -1024,12 +965,12 @@ Reason:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="-3"/>
         <source>Documentation successfully unregistered.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+18"/>
         <source>Cannot load sqlite database driver!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1048,7 +989,7 @@ Reason:
 <context>
     <name>RemoteControl</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/remotecontrol.cpp" line="+128"/>
+        <location filename="../tools/assistant/tools/assistant/remotecontrol.cpp" line="+157"/>
         <source>Debugging Remote Control</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1061,7 +1002,7 @@ Reason:
 <context>
     <name>SearchWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+163"/>
+        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+193"/>
         <source>&amp;Copy</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1090,7 +1031,7 @@ Reason:
 <context>
     <name>TopicChooser</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/topicchooser.cpp" line="+24"/>
+        <location filename="../tools/assistant/tools/assistant/topicchooser.cpp" line="+54"/>
         <source>Choose a topic for &lt;b&gt;%1&lt;/b&gt;:</source>
         <translation type="unfinished"></translation>
     </message>

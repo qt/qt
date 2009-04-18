@@ -999,20 +999,6 @@ void MainWindow::helpAbout()
     QMessageBox box(this);
     box.setText(tr("<h3>%1</h3>"
                    "<br/>Version %2"
-#if QT_EDITION == QT_EDITION_OPENSOURCE
-                   " Open Source Edition</center><p>"
-                   "This version of Qt Configuration is part of the Qt Open Source Edition, for use "
-                   "in the development of Open Source applications. "
-                   "Qt is a comprehensive C++ framework for cross-platform application "
-                   "development.<br/><br/>"
-                   "You need a commercial Qt license for development of proprietary (closed "
-                   "source) applications. Please see <tt>http://qtsoftware.com/company/model"
-                   ".html</tt> for an overview of Qt licensing."
-#else
-                   "</center><p>This program is licensed to you under the terms of the "
-                   "Qt Commercial License Agreement. For details, see the file LICENSE "
-                   "that came with this software distribution."
-#endif
                    "<br/><br/>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)."
                    "<br/><br/>The program is provided AS IS with NO WARRANTY OF ANY KIND,"
                    " INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A"
