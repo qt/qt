@@ -20,33 +20,6 @@
 <context>
     <name>BatchTranslationDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/batchtranslationdialog.cpp" line="+79"/>
-        <source>Batch Translation of &apos;%1&apos; - Qt Linguist</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+37"/>
-        <source>Searching, please wait...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>&amp;Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+42"/>
-        <source>Linguist batch translator</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message numerus="yes">
-        <location line="+1"/>
-        <source>Batch translated %n entries</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-        </translation>
-    </message>
-    <message>
         <location filename="../tools/linguist/linguist/batchtranslation.ui"/>
         <source>Qt Linguist - Batch Translation</source>
         <translation type="unfinished"></translation>
@@ -105,6 +78,33 @@
         <location/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/linguist/linguist/batchtranslationdialog.cpp" line="+79"/>
+        <source>Batch Translation of &apos;%1&apos; - Qt Linguist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+37"/>
+        <source>Searching, please wait...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>&amp;Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+42"/>
+        <source>Linguist batch translator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <location line="+1"/>
+        <source>Batch translated %n entries</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -187,8 +187,24 @@ Will assume a single universal form.</source>
 <context>
     <name>FindDialog</name>
     <message>
+        <location filename="../tools/linguist/linguist/finddialog.cpp" line="+42"/>
+        <source></source>
+        <comment>Choose Edit|Find from the menu bar or press Ctrl+F to pop up the Find dialog</comment>
+        <translation></translation>
+    </message>
+    <message>
         <location filename="../tools/linguist/linguist/finddialog.ui"/>
+        <source>Find</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>This window allows you to search for some text in the translation source file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Find what:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -208,32 +224,12 @@ Will assume a single universal form.</source>
     </message>
     <message>
         <location/>
-        <source>Translations are searched when checked.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Texts such as &apos;TeX&apos; and &apos;tex&apos; are considered as different when checked.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Comments and contexts are searched when checked.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Find</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Find what:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
         <source>&amp;Source texts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Translations are searched when checked.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -243,7 +239,17 @@ Will assume a single universal form.</source>
     </message>
     <message>
         <location/>
+        <source>Texts such as &apos;TeX&apos; and &apos;tex&apos; are considered as different when checked.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>&amp;Match case</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Comments and contexts are searched when checked.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -276,12 +282,6 @@ Will assume a single universal form.</source>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location filename="../tools/linguist/linguist/finddialog.cpp" line="+14"/>
-        <source></source>
-        <comment>Choose Edit|Find from the menu bar or press Ctrl+F to pop up the Find dialog</comment>
-        <translation></translation>
-    </message>
 </context>
 <context>
     <name>LRelease</name>
@@ -305,453 +305,13 @@ Will assume a single universal form.</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
-        <source>MainWindow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Phrases</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Close Phrase Book</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Edit Phrase Book</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Print Phrase Book</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>V&amp;alidation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;View</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Vie&amp;ws</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Toolbars</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Help</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Translation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;File</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Recently Opened &amp;Files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Edit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Open a Qt translation source file (TS file) for editing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+O</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>E&amp;xit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Close this window and exit.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+Q</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+646"/>
-        <location line="+15"/>
-        <source>&amp;Save</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
-        <source>Save changes made to this Qt translation source file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Open Read-O&amp;nly...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Save All</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+S</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-14"/>
-        <location line="+11"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
-        <source>Save &amp;As...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
-        <source>Save As...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Save changes made to this Qt translation source file into a new file.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+4"/>
-        <source>&amp;Release</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
-        <source>Create a Qt message file suitable for released applications from the current message file.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+P</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Undo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+Z</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Redo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Redo an undone editing operation performed on the translation.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+Y</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Cu&amp;t</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Copy the selected translation text to the clipboard and deletes it.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+X</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Copy</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Copy the selected translation text to the clipboard.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+C</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Paste</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Paste the clipboard text into the translation.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+V</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Select &amp;All</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Select the whole translation text.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+A</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Search for some text in the translation source file.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+F</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Find &amp;Next</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Continue the search where it was left.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>F3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Prev Unfinished</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+K</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Next Unfinished</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>P&amp;rev</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+Shift+K</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ne&amp;xt</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Done and Next</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Copies the source text into the translation field.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+B</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Accelerators</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Ending Punctuation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Phrase matches</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Toggle checking that phrase suggestions are used.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Place &amp;Marker Matches</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Create a new phrase book.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+N</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Open a phrase book to assist translation.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+H</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Sort the items back in the same order as in the message file.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Display guesses</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Set whether or not to display translation guesses.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Statistics</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Manual</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>F1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>About Qt Linguist</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>About Qt</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Display information about the Qt toolkit by Trolltech.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;What&apos;s This?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>What&apos;s This?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Enter What&apos;s This? mode.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Shift+F1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Replace the translation on all entries that matches the search source text.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Batch translate all entries using the information in the phrase books.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-13"/>
-        <location line="+10"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
-        <source>Release As...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
-        <source>Create a Qt message file suitable for released applications from the current message file. The filename will automatically be determined from the name of the .ts file.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2004"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1315"/>
         <source></source>
         <comment>This is the application&apos;s main window.</comment>
         <translation></translation>
     </message>
     <message>
-        <location line="+195"/>
+        <location line="+165"/>
         <source>Source text</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1110,7 +670,27 @@ All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+2"/>
+        <location line="+15"/>
+        <source>&amp;Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-14"/>
+        <location line="+11"/>
+        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <source>Save &amp;As...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-9"/>
+        <location line="+10"/>
+        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <source>Release As...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-9"/>
         <location line="+13"/>
         <source>&amp;Close</source>
         <translation type="unfinished"></translation>
@@ -1132,7 +712,12 @@ All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+7"/>
+        <source>&amp;Release</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
         <source>Translation File &amp;Settings for &apos;%1&apos;...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1147,7 +732,19 @@ All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+2"/>
+        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <source>Translation File &amp;Settings...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <source>&amp;Batch Translation...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Search And &amp;Translate...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1218,17 +815,72 @@ All files (*)</source>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
-        <source>Open/Refresh Form &amp;Preview</source>
+        <source>MainWindow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location/>
-        <source>Form Preview Tool</source>
+        <source>&amp;Phrases</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location/>
-        <source>F5</source>
+        <source>&amp;Close Phrase Book</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Edit Phrase Book</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Print Phrase Book</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>V&amp;alidation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Vie&amp;ws</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Toolbars</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Help</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Translation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Recently Opened &amp;Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1238,7 +890,52 @@ All files (*)</source>
     </message>
     <message>
         <location/>
+        <source>Open a Qt translation source file (TS file) for editing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ctrl+O</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>E&amp;xit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Close this window and exit.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ctrl+Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Save changes made to this Qt translation source file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Save As...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Save changes made to this Qt translation source file into a new file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Create a Qt message file suitable for released applications from the current message file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1253,12 +950,132 @@ All files (*)</source>
     </message>
     <message>
         <location/>
+        <source>Ctrl+P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Undo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>Undo the last editing operation performed on the current translation.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location/>
+        <source>Ctrl+Z</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Redo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Redo an undone editing operation performed on the translation.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ctrl+Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Cu&amp;t</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Copy the selected translation text to the clipboard and deletes it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ctrl+X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Copy the selected translation text to the clipboard.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ctrl+C</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Paste</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Paste the clipboard text into the translation.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ctrl+V</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Select &amp;All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Select the whole translation text.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ctrl+A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>&amp;Find...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Search for some text in the translation source file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ctrl+F</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Find &amp;Next</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Continue the search where it was left.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>F3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Prev Unfinished</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1273,12 +1090,32 @@ All files (*)</source>
     </message>
     <message>
         <location/>
+        <source>Ctrl+K</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Next Unfinished</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>Next unfinished item.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location/>
         <source>Move to the next unfinished item.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ctrl+J</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>P&amp;rev</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1293,12 +1130,32 @@ All files (*)</source>
     </message>
     <message>
         <location/>
+        <source>Ctrl+Shift+K</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ne&amp;xt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>Next item.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location/>
         <source>Move to the next item.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ctrl+Shift+J</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Done and Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1318,12 +1175,32 @@ All files (*)</source>
     </message>
     <message>
         <location/>
+        <source>Copies the source text into the translation field.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ctrl+B</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Accelerators</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>Toggle the validity check of accelerators.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location/>
         <source>Toggle the validity check of accelerators, i.e. whether the number of ampersands in the source and translation text is the same. If the check fails, a message is shown in the warnings window.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Ending Punctuation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1338,7 +1215,22 @@ All files (*)</source>
     </message>
     <message>
         <location/>
+        <source>&amp;Phrase matches</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Toggle checking that phrase suggestions are used.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>Toggle checking that phrase suggestions are used. If the check fails, a message is shown in the warnings window.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Place &amp;Marker Matches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1358,7 +1250,27 @@ All files (*)</source>
     </message>
     <message>
         <location/>
+        <source>Create a new phrase book.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ctrl+N</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>&amp;Open Phrase Book...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Open a phrase book to assist translation.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ctrl+H</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1368,12 +1280,132 @@ All files (*)</source>
     </message>
     <message>
         <location/>
+        <source>Sort the items back in the same order as in the message file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Display guesses</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Set whether or not to display translation guesses.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Statistics</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>Display translation statistics.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location/>
+        <source>&amp;Manual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>F1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>About Qt Linguist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>About Qt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Display information about the Qt toolkit by Trolltech.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;What&apos;s This?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>What&apos;s This?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Enter What&apos;s This? mode.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Shift+F1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>&amp;Search And Translate...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Replace the translation on all entries that matches the search source text.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Batch translate all entries using the information in the phrase books.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Create a Qt message file suitable for released applications from the current message file. The filename will automatically be determined from the name of the .ts file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Open/Refresh Form &amp;Preview</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Form Preview Tool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>F5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Add to Phrase Book</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ctrl+T</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Open Read-O&amp;nly...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Save All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ctrl+S</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1389,38 +1421,6 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+W</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-526"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
-        <source>&amp;Batch Translation...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-1"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
-        <source>Translation File &amp;Settings...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
-        <source>&amp;Add to Phrase Book</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+T</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+J</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+Shift+J</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1544,7 +1544,7 @@ Line: %2</source>
 <context>
     <name>MsgEdit</name>
     <message>
-        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-577"/>
+        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-549"/>
         <source></source>
         <comment>This is the right panel of the main window.</comment>
         <translation></translation>
@@ -1553,7 +1553,13 @@ Line: %2</source>
 <context>
     <name>PhraseBookBox</name>
     <message>
-        <location filename="../tools/linguist/linguist/phrasebookbox.cpp" line="+8"/>
+        <location filename="../tools/linguist/linguist/phrasebookbox.cpp" line="-17"/>
+        <source></source>
+        <comment>Go to Phrase &gt; Edit Phrase Book... The dialog that pops up is a PhraseBookBox.</comment>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+25"/>
         <source>%1[*] - Qt Linguist</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1570,6 +1576,11 @@ Line: %2</source>
     <message>
         <location filename="../tools/linguist/linguist/phrasebookbox.ui"/>
         <source>Edit Phrase Book</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>This window allows you to add, modify, or delete entries in a phrase book.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1609,21 +1620,6 @@ Line: %2</source>
     </message>
     <message>
         <location/>
-        <source>&amp;Save</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Click here to save the changes made.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>This window allows you to add, modify, or delete entries in a phrase book.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
         <source>&amp;New Entry</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1644,7 +1640,12 @@ Line: %2</source>
     </message>
     <message>
         <location/>
-        <source>Close</source>
+        <source>Click here to save the changes made.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1653,10 +1654,9 @@ Line: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/phrasebookbox.cpp" line="-144"/>
-        <source></source>
-        <comment>Go to Phrase &gt; Edit Phrase Book... The dialog that pops up is a PhraseBookBox.</comment>
-        <translation></translation>
+        <location/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1703,12 +1703,7 @@ Line: %2</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../tools/linguist/shared/qm.cpp" line="+12"/>
-        <source>Compiled Qt translations</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1279"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1806"/>
         <source>Translation files (%1);;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1741,6 +1736,16 @@ Line: %2</source>
     <message>
         <location filename="../tools/linguist/shared/po.cpp" line="+651"/>
         <source>GNU Gettext localization files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/linguist/shared/qm.cpp" line="+12"/>
+        <source>Compiled Qt translations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/linguist/shared/qph.cpp" line="+192"/>
+        <source>Qt Linguist &apos;Phrase Book&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1778,11 +1783,6 @@ Line: %2</source>
         <source>XLIFF localization files</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location filename="../tools/linguist/shared/qph.cpp" line="+192"/>
-        <source>Qt Linguist &apos;Phrase Book&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>SourceCodeView</name>
@@ -1807,6 +1807,11 @@ Line: %2</source>
     <message>
         <location filename="../tools/linguist/linguist/statistics.ui"/>
         <source>Statistics</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1838,20 +1843,6 @@ Line: %2</source>
         <location/>
         <source>Characters (with spaces):</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Close</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>TrWindow</name>
-    <message>
-        <location filename="../tools/linguist/linguist/trwindow.cpp" line="+14"/>
-        <source></source>
-        <comment>This is the application&apos;s main window.</comment>
-        <translation></translation>
     </message>
 </context>
 <context>
@@ -1930,17 +1921,6 @@ Line: %2</source>
 <context>
     <name>TranslationSettingsDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/translationsettingsdialog.cpp" line="+68"/>
-        <source>Any Country</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <location line="+8"/>
-        <source>Settings for &apos;%1&apos; - Qt Linguist</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../tools/linguist/linguist/translationsettings.ui"/>
         <source>Source language</source>
         <translation type="unfinished"></translation>
@@ -1958,6 +1938,17 @@ Line: %2</source>
     <message>
         <location/>
         <source>Target language</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/linguist/linguist/translationsettingsdialog.cpp" line="+68"/>
+        <source>Any Country</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <location line="+8"/>
+        <source>Settings for &apos;%1&apos; - Qt Linguist</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
