@@ -104,7 +104,10 @@ public:
     QString &operator=(QChar c);
     QString &operator=(const QString &);
     inline QString &operator=(const QLatin1String &);
-
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QString &operator=(QString &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
     inline int size() const { return d->size; }
     inline int count() const { return d->size; }
     inline int length() const;

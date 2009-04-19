@@ -118,6 +118,11 @@ public:
     inline QVector(const QVector<T> &v) : d(v.d) { d->ref.ref(); if (!d->sharable) detach_helper(); }
     inline ~QVector() { if (!d) return; if (!d->ref.deref()) free(p); }
     QVector<T> &operator=(const QVector<T> &v);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QVector<T> operator=(QVector<T> &&other)
+    { qSwap(p, other.p); return *this; }
+#endif
+    
     bool operator==(const QVector<T> &v) const;
     inline bool operator!=(const QVector<T> &v) const { return !(*this == v); }
 
@@ -297,7 +302,6 @@ public:
     inline std::vector<T> toStdVector() const
     { std::vector<T> tmp; qCopy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
 #endif
-
 private:
     friend class QRegion; // Optimization for QRegion::rects()
 

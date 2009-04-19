@@ -118,6 +118,10 @@ public:
     inline QList(const QList<T> &l) : d(l.d) { d->ref.ref(); if (!d->sharable) detach_helper(); }
     ~QList();
     QList<T> &operator=(const QList<T> &l);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QList &operator=(QList &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
     bool operator==(const QList<T> &l) const;
     inline bool operator!=(const QList<T> &l) const { return !(*this == l); }
 
