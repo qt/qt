@@ -50,6 +50,10 @@
 #include <iterator>
 #include <list>
 #endif
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+#include <iterator>
+#include <initializer_list>
+#endif
 
 #include <new>
 #include <limits.h>
@@ -121,6 +125,10 @@ public:
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QList &operator=(QList &&other)
     { qSwap(d, other.d); return *this; }
+#endif
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    inline QList(std::initializer_list<T> args) : d(&QListData::shared_null)
+    { d->ref.ref(); qCopy(args.begin(), args.end(), std::back_inserter(*this)); }
 #endif
     bool operator==(const QList<T> &l) const;
     inline bool operator!=(const QList<T> &l) const { return !(*this == l); }
