@@ -68,7 +68,10 @@ protected:
     virtual void endVisit(AST::UiObjectDefinition *node);
 
     virtual bool visit(AST::UiPublicMember *node);
+
     virtual bool visit(AST::UiObjectBinding *node);
+    virtual void endVisit(AST::UiObjectBinding *node);
+
     virtual bool visit(AST::UiScriptBinding *node);
     virtual bool visit(AST::UiArrayBinding *node);
 
@@ -201,8 +204,67 @@ void ProcessAST::endVisit(AST::UiObjectDefinition *)
 // UiObjectMember: UiQualifiedId T_COLON T_IDENTIFIER UiObjectInitializer ;
 bool ProcessAST::visit(AST::UiObjectBinding *node)
 {
-    qWarning() << Q_FUNC_INFO << "not implemented";
-    return false;
+//    qWarning() << Q_FUNC_INFO << "not implemented";
+    const QString qualifiedId = asString(node->qualifiedId);
+    const QStringList str = qualifiedId.split(QLatin1Char('.'));
+    int line = node->colonToken.startLine;
+
+    for(int ii = 0; ii < str.count(); ++ii) {
+        const QString s = str.at(ii);
+        _stateStack.pushProperty(s, line);
+    }
+
+    const QString name = node->name->asString();
+    bool isType = name.at(0).isUpper() && !name.contains(QLatin1Char('.'));
+
+    _scope.append(name);
+
+    if (! isType) {
+        qWarning() << "bad name for a class"; // ### FIXME
+        return false;
+    }
+
+    // Class
+    const int typeId = _parser->findOrCreateTypeId(name);
+    line = node->identifierToken.startLine;
+
+    Object *obj = new Object;
+    obj->type = typeId;
+    obj->typeName = qualifiedNameId().toLatin1();
+    obj->line = line;
+
+    Property *prop = currentProperty();
+    Value *v = new Value;
+    v->object = obj;
+    v->line = line;
+    prop->addValue(v);
+
+    for(int ii = str.count() - 1; ii >= 0; --ii)
+        _stateStack.pop();
+
+    if (! _parser->tree()) {
+        _parser->setTree(obj);
+        _stateStack.pushObject(obj);
+    } else {
+        const State state = _stateStack.top();
+        Value *v = new Value;
+        v->object = obj;
+        v->line = line;
+        if(state.property)
+            state.property->addValue(v);
+        else
+            state.object->getDefaultProperty()->addValue(v);
+        _stateStack.pushObject(obj);
+    }
+
+    return true;
+}
+
+// UiObjectMember: UiQualifiedId T_COLON T_IDENTIFIER UiObjectInitializer ;
+void ProcessAST::endVisit(AST::UiObjectBinding *node)
+{
+    _stateStack.pop();
+    _scope.removeLast();
 }
 
 // UiObjectMember: UiQualifiedId T_COLON Statement ;
@@ -270,7 +332,7 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
     for(int ii = str.count() - 1; ii >= 0; --ii)
         _stateStack.pop();
 
-    return false;
+    return true;
 }
 
 // UiObjectMember: UiQualifiedId T_COLON T_LBRACKET UiObjectMemberList T_RBRACKET ;
