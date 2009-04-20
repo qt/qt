@@ -49,7 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1_CL) && !defined(QT_OPENGL_ES_1)
 
 /*!
     \class QGLShaderProgram
