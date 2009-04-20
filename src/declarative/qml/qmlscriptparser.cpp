@@ -218,8 +218,6 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
     const QString type = node->type->asString();
     const QString name = node->name->asString();
 
-    qDebug() << Q_FUNC_INFO << name;
-
     if (type == QLatin1String("property")) {
         _stateStack.pushProperty(QLatin1String("properties"), node->publicToken.startLine);
 
@@ -227,7 +225,6 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
                                           QString(),
                                           QLatin1String("Property"));
 
-        qDebug() << "MIDDLE";
         _stateStack.pushObject(obj);
 
         _stateStack.pushProperty(QLatin1String("name"), node->identifierToken.startLine);
@@ -256,8 +253,6 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
     } else {
         qWarning() << "bad public identifier" << type; // ### FIXME
     }
-
-    qDebug() << Q_FUNC_INFO << name << "DONE!!!";
 
     return false;
 }
