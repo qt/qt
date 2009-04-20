@@ -1211,8 +1211,11 @@ bool QGLShaderProgram::enable()
     return true;
 }
 
+#undef ctx
+#define ctx QGLContext::currentContext()
+
 /*!
-    Disables this shader program in the currently active QGLContext.
+    Disables the active shader program in the current QGLContext.
     This is equivalent to calling \c{glUseProgram(0)}.
 
     \sa enable()
@@ -1226,6 +1229,9 @@ void QGLShaderProgram::disable()
         glUseProgram(0);
 #endif
 }
+
+#undef ctx
+#define ctx d->context
 
 /*!
     Returns the OpenGL identifier associated with this shader program.

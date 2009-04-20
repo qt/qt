@@ -139,7 +139,7 @@ public:
     QString log() const;
 
     bool enable();
-    void disable();
+    static void disable();
 
     GLuint programId() const;
 
