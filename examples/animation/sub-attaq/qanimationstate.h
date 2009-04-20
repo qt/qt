@@ -60,7 +60,7 @@ QT_MODULE(Gui)
 
 class QAnimationStatePrivate;
 
-class Q_GUI_EXPORT QAnimationState : public QState
+class QAnimationState : public QState
 {
     Q_OBJECT
 public:
