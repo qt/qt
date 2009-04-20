@@ -142,7 +142,6 @@ my %animation_examples = (
                     "bomb.cpp",
                     "bomb.h",
                     "custompropertyanimation.h",
-                    "custompropertyanimation_p.h",
                     "custompropertyanimation.cpp",
                     "graphicsscene.cpp",
                     "graphicsscene.h",
