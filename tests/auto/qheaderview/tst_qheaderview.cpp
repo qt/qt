@@ -187,6 +187,7 @@ private slots:
     void emptySectionSpan();
     void task236450_hidden_data();
     void task236450_hidden();
+    void task248050_hideRow();
 
 protected:
     QHeaderView *view;
@@ -1918,6 +1919,29 @@ void tst_QHeaderView::task236450_hidden()
     }
 
 }
+
+void tst_QHeaderView::task248050_hideRow()
+{
+    //this is the sequence of events that make the task fail
+    protected_QHeaderView header(Qt::Vertical);
+    QStandardItemModel model(0, 1);
+    header.setStretchLastSection(false);
+    header.setDefaultSectionSize(17);
+    header.setModel(&model);
+    header.doItemsLayout();
+
+    model.setRowCount(3);
+
+    QCOMPARE(header.sectionPosition(2), 17*2);
+
+    header.hideSection(1);
+    QCOMPARE(header.sectionPosition(2), 17);
+
+    QTest::qWait(100);
+    //the size of the section shouldn't have changed
+    QCOMPARE(header.sectionPosition(2), 17);
+}
+
 
 QTEST_MAIN(tst_QHeaderView)
 #include "tst_qheaderview.moc"

@@ -4,6 +4,12 @@
 <context>
     <name></name>
     <message>
+        <location filename="../tools/designer/src/components/propertyeditor/previewframe.cpp" line="+73"/>
+        <source>The moose in the noose
+ate the goose who was loose.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditorwindow.cpp" line="+647"/>
         <source>&lt;object&gt;</source>
         <translation type="unfinished"></translation>
@@ -16,12 +22,6 @@
     <message>
         <location line="+0"/>
         <source>&lt;slot&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/designer/src/components/propertyeditor/previewframe.cpp" line="+73"/>
-        <source>The moose in the noose
-ate the goose who was loose.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -352,6 +352,44 @@ ate the goose who was loose.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../tools/designer/src/components/taskmenu/button_taskmenu.cpp" line="+225"/>
+        <source>Create button group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Break button group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Break button group &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Add buttons to group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <location filename="../tools/designer/src/lib/shared/formlayoutmenu.cpp" line="+458"/>
+        <source>Add &apos;%1&apos; to &apos;%2&apos;</source>
+        <extracomment>Command description for adding buttons to a QButtonGroup</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Remove buttons from group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Remove &apos;%1&apos; from &apos;%2&apos;</source>
+        <extracomment>Command description for removing buttons from a QButtonGroup</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../tools/designer/src/lib/shared/connectionedit.cpp" line="+143"/>
         <source>Add connection</source>
         <translation type="unfinished"></translation>
@@ -377,12 +415,23 @@ ate the goose who was loose.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../tools/designer/src/lib/shared/morphmenu.cpp" line="+349"/>
+        <source>Morph %1/&apos;%2&apos; into %3</source>
+        <extracomment>MorphWidgetCommand description</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../tools/designer/src/lib/shared/qdesigner_command.cpp" line="+149"/>
         <source>Insert &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+167"/>
+        <location line="+133"/>
+        <source>Change Z-order of &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+34"/>
         <source>Raise &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -432,7 +481,12 @@ ate the goose who was loose.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+240"/>
+        <location line="+105"/>
+        <source>Simplify Grid Layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+135"/>
         <location line="+235"/>
         <location line="+78"/>
         <source>Move Page</source>
@@ -523,7 +577,27 @@ ate the goose who was loose.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+576"/>
+        <location line="+138"/>
+        <source>Delete Subwindow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+44"/>
+        <source>Insert Subwindow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>subwindow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Subwindow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+391"/>
         <source>Change Table Contents</source>
         <translation type="unfinished"></translation>
     </message>
@@ -565,6 +639,11 @@ ate the goose who was loose.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_command2.cpp" line="+154"/>
+        <source>Change layout of &apos;%1&apos; from %2 to %3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="+1161"/>
         <source>Set action text</source>
         <translation type="unfinished"></translation>
@@ -588,95 +667,6 @@ ate the goose who was loose.</source>
     <message>
         <location line="+2"/>
         <source>Insert Menu</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/designer/src/lib/shared/signalslotdialog.cpp" line="+202"/>
-        <source>Change signals/slots</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_command.cpp" line="-867"/>
-        <source>Delete Subwindow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+44"/>
-        <source>Insert Subwindow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>subwindow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Subwindow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-1821"/>
-        <source>Change Z-order of &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+625"/>
-        <source>Simplify Grid Layout</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/designer/src/components/taskmenu/button_taskmenu.cpp" line="+225"/>
-        <source>Create button group</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+27"/>
-        <source>Break button group</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Break button group &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Add buttons to group</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <location filename="../tools/designer/src/lib/shared/formlayoutmenu.cpp" line="+458"/>
-        <source>Add &apos;%1&apos; to &apos;%2&apos;</source>
-        <extracomment>Command description for adding buttons to a QButtonGroup</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Remove buttons from group</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Remove &apos;%1&apos; from &apos;%2&apos;</source>
-        <extracomment>Command description for removing buttons from a QButtonGroup</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/designer/src/lib/shared/morphmenu.cpp" line="+349"/>
-        <source>Morph %1/&apos;%2&apos; into %3</source>
-        <extracomment>MorphWidgetCommand description</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_command2.cpp" line="+154"/>
-        <source>Change layout of &apos;%1&apos; from %2 to %3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/designer/src/lib/shared/scriptcommand.cpp" line="+55"/>
-        <source>Change script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -726,6 +716,16 @@ ate the goose who was loose.</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
+    </message>
+    <message>
+        <location filename="../tools/designer/src/lib/shared/scriptcommand.cpp" line="+55"/>
+        <source>Change script</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/designer/src/lib/shared/signalslotdialog.cpp" line="+202"/>
+        <source>Change signals/slots</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -790,27 +790,7 @@ ate the goose who was loose.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+205"/>
-        <source>This file cannot be read because it was created using %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>This file was created using Designer from Qt-%1 and cannot be read.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+102"/>
-        <source>This file cannot be read because the extra info extension failed to load.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-72"/>
-        <source>The converted file could not be read.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-76"/>
+        <location line="+173"/>
         <source>Invalid ui file: The root element &lt;ui&gt; is missing.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -820,7 +800,22 @@ ate the goose who was loose.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+74"/>
+        <location line="+26"/>
+        <source>This file cannot be read because it was created using %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>This file was created using Designer from Qt-%1 and cannot be read.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>The converted file could not be read.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>This file was created using Designer from Qt-%1 and will be converted to a new form by Qt Designer.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -841,7 +836,12 @@ ate the goose who was loose.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+746"/>
+        <location line="+51"/>
+        <source>This file cannot be read because the extra info extension failed to load.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+695"/>
         <source>Custom Widgets</source>
         <translation type="unfinished"></translation>
     </message>
@@ -942,32 +942,17 @@ ate the goose who was loose.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+76"/>
-        <source>Syntax error: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+54"/>
-        <source>The skin cursor image file &apos;%1&apos; does not exist.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>Syntax error in area definition: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+38"/>
-        <source>Mismatch in number of areas, expected %1, got %2.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-187"/>
+        <location line="+6"/>
         <source>The skin configuration file &apos;%1&apos; could not be read: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+91"/>
+        <location line="+70"/>
+        <source>Syntax error: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
         <source>The skin &quot;up&quot; image file &apos;%1&apos; does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -979,6 +964,21 @@ ate the goose who was loose.</source>
     <message>
         <location line="+11"/>
         <source>The skin &quot;closed&quot; image file &apos;%1&apos; does not exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>The skin cursor image file &apos;%1&apos; does not exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Syntax error in area definition: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+38"/>
+        <source>Mismatch in number of areas, expected %1, got %2.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1191,12 +1191,7 @@ ate the goose who was loose.</source>
     </message>
     <message>
         <location/>
-        <source>Embedded Design</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Author</source>
+        <source>&amp;Pixmap Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1206,12 +1201,17 @@ ate the goose who was loose.</source>
     </message>
     <message>
         <location/>
-        <source>&amp;Pixmap Function</source>
+        <source>Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location/>
-        <source>Grid</source>
+        <source>Embedded Design</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Author</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1277,7 +1277,12 @@ ate the goose who was loose.</source>
 <context>
     <name>NewForm</name>
     <message>
-        <location filename="../tools/designer/src/designer/newform.cpp" line="+79"/>
+        <location filename="../tools/designer/src/designer/newform.cpp" line="+78"/>
+        <source>Show this Dialog on Startup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>C&amp;reate</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1287,7 +1292,12 @@ ate the goose who was loose.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+3"/>
+        <source>New Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+29"/>
         <source>&amp;Close</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1307,17 +1317,7 @@ ate the goose who was loose.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-100"/>
-        <source>New Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-5"/>
-        <source>Show this Dialog on Startup</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+128"/>
+        <location line="+23"/>
         <source>A temporary form file could not be created in %1.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1643,17 +1643,79 @@ Script: %3</source>
 <context>
     <name>QDesignerActions</name>
     <message>
-        <location filename="../tools/designer/src/designer/qdesigner_actions.cpp" line="+178"/>
+        <location filename="../tools/designer/src/designer/qdesigner_actions.cpp" line="+128"/>
+        <source>Saved %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>%1 already exists.
+Do you want to replace it?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
         <source>Edit Widgets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+1"/>
+        <source>&amp;New...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Open...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Save &amp;As...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Save A&amp;ll</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Save As &amp;Template...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+896"/>
+        <source>&amp;Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-895"/>
+        <source>Save &amp;Image...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Print...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>&amp;Quit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+2"/>
+        <source>View &amp;Code...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>&amp;Minimize</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1668,12 +1730,17 @@ Script: %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+293"/>
-        <source>Clear &amp;Menu</source>
+        <location line="+1"/>
+        <source>Additional Fonts...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-232"/>
+        <location line="+58"/>
+        <source>ALT+CTRL+S</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>CTRL+SHIFT+S</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1724,7 +1791,17 @@ Script: %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+121"/>
+        <location line="+38"/>
+        <source>Clear &amp;Menu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>&amp;Recent Forms</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+77"/>
         <location line="+197"/>
         <source>Open Form</source>
         <translation type="unfinished"></translation>
@@ -1737,28 +1814,13 @@ Script: %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-615"/>
-        <source>%1 already exists.
-Do you want to replace it?</source>
+        <location line="-160"/>
+        <location line="+248"/>
+        <source>Save Form As</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-26"/>
-        <source>Saved %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+68"/>
-        <source>Additional Fonts...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+298"/>
-        <source>&amp;Recent Forms</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+202"/>
+        <location line="-161"/>
         <source>Designer</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1768,7 +1830,12 @@ Do you want to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+59"/>
+        <location line="+15"/>
+        <source>Code generation failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+44"/>
         <source>Read error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1800,7 +1867,14 @@ Do you want to update the file location or generate a new form?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+4"/>
+        <source>The file %1 could not be opened.
+Reason: %2
+Would you like to retry or select a different file?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <source>Select New File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1810,36 +1884,25 @@ Do you want to update the file location or generate a new form?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+201"/>
-        <source>&amp;Close Preview</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-893"/>
-        <source>Save &amp;Image...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>&amp;Print...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+655"/>
-        <source>The file %1 could not be opened.
-Reason: %2
-Would you like to retry or select a different file?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+39"/>
+        <location line="+3"/>
         <source>It was not possible to write the entire file %1 to disk.
 Reason:%2
 Would you like to retry?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+239"/>
+        <location line="+158"/>
+        <location line="+34"/>
+        <source>Assistant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>&amp;Close Preview</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+41"/>
         <location line="+23"/>
         <source>The backup file %1 could not be written.</source>
         <translation type="unfinished"></translation>
@@ -1855,7 +1918,12 @@ Would you like to retry?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+54"/>
+        <location line="+30"/>
+        <source>Preview failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
         <source>Image files (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1866,91 +1934,23 @@ Would you like to retry?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>The file %1 could not be written.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-1158"/>
-        <source>&amp;New...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>&amp;Open...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>&amp;Save</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Save &amp;As...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Save A&amp;ll</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Save As &amp;Template...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location line="+896"/>
-        <source>&amp;Close</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-891"/>
-        <source>View &amp;Code...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+419"/>
-        <location line="+248"/>
-        <source>Save Form As</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+429"/>
-        <source>Preview failed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-575"/>
-        <source>Code generation failed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+328"/>
-        <location line="+34"/>
-        <source>Assistant</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+259"/>
+        <location line="-4"/>
         <source>Saved image %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+5"/>
+        <source>The file %1 could not be written.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
         <source>Please close all forms to enable the loading of additional fonts.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+52"/>
         <source>Printed %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-1148"/>
-        <source>ALT+CTRL+S</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2247,7 +2247,12 @@ Container pages should only be added by specifying them in XML returned by the d
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+2"/>
+        <source>Edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>F&amp;orm</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2257,32 +2262,7 @@ Container pages should only be added by specifying them in XML returned by the d
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>&amp;Window</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>&amp;Help</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-15"/>
-        <source>Edit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+38"/>
-        <source>Toolbars</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+464"/>
-        <source>Save Forms?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-493"/>
+        <location line="+4"/>
         <source>&amp;View</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2292,7 +2272,34 @@ Container pages should only be added by specifying them in XML returned by the d
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+495"/>
+        <location line="+2"/>
+        <source>&amp;Window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>&amp;Help</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Toolbars</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+464"/>
+        <source>Save Forms?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <location line="+1"/>
+        <source>There are %n forms with unsaved changes. Do you want to review these changes before quitting?</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>If you do not review your documents, all your changes will be lost.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2325,13 +2332,6 @@ Container pages should only be added by specifying them in XML returned by the d
         <location line="+46"/>
         <source>The file &lt;b&gt;%1&lt;/b&gt; is not a valid Designer ui file.</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message numerus="yes">
-        <location line="-259"/>
-        <source>There are %n forms with unsaved changes. Do you want to review these changes before quitting?</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-        </translation>
     </message>
 </context>
 <context>
@@ -2806,6 +2806,11 @@ Container pages should only be added by specifying them in XML returned by the d
     </message>
     <message>
         <location/>
+        <source>This area shows a preview of the gradient being edited. It also allows you to edit parameters specific to the gradient&apos;s type such as start and final point, radius, etc. by drag &amp; drop.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2842,6 +2847,11 @@ Container pages should only be added by specifying them in XML returned by the d
     <message>
         <location/>
         <source>Zoom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Reset Zoom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2921,7 +2931,17 @@ Container pages should only be added by specifying them in XML returned by the d
     </message>
     <message>
         <location/>
+        <source>Show HSV specification</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>HSV</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Show RGB specification</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2992,26 +3012,6 @@ Container pages should only be added by specifying them in XML returned by the d
     <message>
         <location/>
         <source>Reflect Spread</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>This area shows a preview of the gradient being edited. It also allows you to edit parameters specific to the gradient&apos;s type such as start and final point, radius, etc. by drag &amp; drop.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Show HSV specification</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Show RGB specification</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Reset Zoom</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3292,7 +3292,17 @@ Do you want to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+49"/>
+        <location line="+16"/>
+        <source>&lt;p&gt;&lt;b&gt;Warning:&lt;/b&gt; The file&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;is outside of the current resource file&apos;s parent directory.&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>&lt;p&gt;To resolve the issue, press:&lt;/p&gt;&lt;table&gt;&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Copy&lt;/th&gt;&lt;td&gt;to copy the file to the resource file&apos;s parent directory.&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Copy As...&lt;/th&gt;&lt;td&gt;to copy the file into a subdirectory of the resource file&apos;s parent directory.&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Keep&lt;/th&gt;&lt;td&gt;to use its current location.&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
         <source>Add Files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3352,17 +3362,7 @@ This could for example be a language extension like &quot;_de&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-289"/>
-        <source>&lt;p&gt;&lt;b&gt;Warning:&lt;/b&gt; The file&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;is outside of the current resource file&apos;s parent directory.&lt;/p&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>&lt;p&gt;To resolve the issue, press:&lt;/p&gt;&lt;table&gt;&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Copy&lt;/th&gt;&lt;td&gt;to copy the file to the resource file&apos;s parent directory.&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Copy As...&lt;/th&gt;&lt;td&gt;to copy the file into a subdirectory of the resource file&apos;s parent directory.&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Keep&lt;/th&gt;&lt;td&gt;to use its current location.&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+288"/>
+        <location line="+7"/>
         <source>Could not copy
 %1
 to
@@ -3381,7 +3381,12 @@ to
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+1"/>
+        <source>Could not write %1: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+34"/>
         <source>Edit Resources</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3396,7 +3401,12 @@ to
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
+        <source>Open Resource File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <location line="+11"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
@@ -3509,16 +3519,6 @@ to
         <source>Remove Resource or File</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location filename="../tools/designer/src/lib/shared/qtresourceeditordialog.cpp" line="-242"/>
-        <source>Could not write %1: %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+72"/>
-        <source>Open Resource File</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>QtResourceView</name>
@@ -3625,7 +3625,12 @@ to
 <context>
     <name>QtToolBarDialog</name>
     <message>
-        <location filename="../tools/shared/qttoolbardialog/qttoolbardialog.cpp" line="+1789"/>
+        <location filename="../tools/shared/qttoolbardialog/qttoolbardialog.cpp" line="+1244"/>
+        <source>Custom Toolbar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+545"/>
         <source>&lt; S E P A R A T O R &gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3651,7 +3656,17 @@ to
     </message>
     <message>
         <location/>
+        <source>Add new toolbar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>New</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Remove selected toolbar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3661,7 +3676,17 @@ to
     </message>
     <message>
         <location/>
+        <source>Rename toolbar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>Rename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Move action up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3671,12 +3696,27 @@ to
     </message>
     <message>
         <location/>
+        <source>Remove action from toolbar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>&lt;-</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location/>
+        <source>Add action to toolbar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>-&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Move action down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3687,46 +3727,6 @@ to
     <message>
         <location/>
         <source>Current Toolbar Actions</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/shared/qttoolbardialog/qttoolbardialog.cpp" line="-545"/>
-        <source>Custom Toolbar</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/shared/qttoolbardialog/qttoolbardialog.ui"/>
-        <source>Add new toolbar</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Remove selected toolbar</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Rename toolbar</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Move action up</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Remove action from toolbar</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Add action to toolbar</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Move action down</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3798,12 +3798,12 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <location/>
-        <source>&amp;Category:</source>
+        <source>&amp;Name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location/>
-        <source>&amp;Name:</source>
+        <source>&amp;Category:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3861,22 +3861,22 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <location/>
-        <source>...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Signals</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location/>
+        <source>...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Signals</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3969,32 +3969,12 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::ActionEditor</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/actioneditor.cpp" line="+143"/>
-        <source>Actions</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-16"/>
+        <location filename="../tools/designer/src/lib/shared/actioneditor.cpp" line="+127"/>
         <source>New...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
-        <source>Delete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+307"/>
-        <source>New action</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+98"/>
-        <source>Edit action</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-411"/>
+        <location line="+1"/>
         <source>Edit...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4024,7 +4004,22 @@ Do you want overwrite the template?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+57"/>
+        <location line="+1"/>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Actions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+44"/>
+        <source>Configure Action Editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Icon View</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4034,23 +4029,28 @@ Do you want overwrite the template?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+412"/>
-        <source>Remove actions</source>
+        <location line="+245"/>
+        <source>New action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+98"/>
+        <source>Edit action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+69"/>
+        <source>Remove action &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+0"/>
-        <source>Remove action &apos;%1&apos;</source>
+        <source>Remove actions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+186"/>
         <source>Used In</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-607"/>
-        <source>Configure Action Editor</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4329,20 +4329,30 @@ Do you want overwrite the template?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+110"/>
-        <source>Signal and Slot Editor</source>
+        <location line="+108"/>
+        <source>The connection already exists!&lt;br&gt;%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-2"/>
-        <source>The connection already exists!&lt;br&gt;%1</source>
+        <location line="+2"/>
+        <source>Signal and Slot Editor</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>qdesigner_internal::ContainerWidgetTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/containerwidget_taskmenu.cpp" line="+112"/>
+        <location filename="../tools/designer/src/components/taskmenu/containerwidget_taskmenu.cpp" line="+84"/>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Insert</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Insert Page Before Current Page</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4357,17 +4367,7 @@ Do you want overwrite the template?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-40"/>
-        <source>Delete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>Insert</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+53"/>
+        <location line="+38"/>
         <source>Subwindow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4729,7 +4729,12 @@ Do you want overwrite the template?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+841"/>
+        <location line="+774"/>
+        <source>Insert widget &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+67"/>
         <source>Resize</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4739,8 +4744,27 @@ Do you want overwrite the template?</source>
         <source>Key Move</source>
         <translation type="unfinished"></translation>
     </message>
+    <message numerus="yes">
+        <location line="+211"/>
+        <source>Paste %n action(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location line="+2"/>
+        <source>Paste %n widget(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
     <message>
-        <location line="+270"/>
+        <location line="+1"/>
+        <source>Paste (%1 widgets, %2 actions)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+56"/>
         <source>Cannot paste widgets. Designer could not find a container without a layout to paste into.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4755,7 +4779,22 @@ Do you want overwrite the template?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+442"/>
+        <location line="+183"/>
+        <source>Raise widgets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Lower widgets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+201"/>
+        <source>Select Ancestor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+41"/>
         <source>Lay out</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4765,48 +4804,9 @@ Do you want overwrite the template?</source>
         <source>Drop widget</source>
         <translation type="unfinished"></translation>
     </message>
-    <message numerus="yes">
-        <location line="-1055"/>
-        <source>Paste %n action(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-        </translation>
-    </message>
     <message>
-        <location line="-511"/>
-        <source>Insert widget &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message numerus="yes">
-        <location line="+513"/>
-        <source>Paste %n widget(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-        </translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Paste (%1 widgets, %2 actions)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+463"/>
-        <source>Select Ancestor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+576"/>
+        <location line="-13"/>
         <source>A QMainWindow-based form does not contain a central widget.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-794"/>
-        <source>Raise widgets</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Lower widgets</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4814,12 +4814,12 @@ Do you want overwrite the template?</source>
     <name>qdesigner_internal::FormWindowBase</name>
     <message>
         <location filename="../tools/designer/src/lib/shared/formwindowbase.cpp" line="+397"/>
-        <source>Delete</source>
+        <source>Delete &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+0"/>
-        <source>Delete &apos;%1&apos;</source>
+        <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4928,7 +4928,17 @@ Do you want overwrite the template?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+6"/>
+        <source>Lay Out in a &amp;Form Layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Lays out the selected widgets in a form layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Lay Out in a &amp;Grid</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4968,7 +4978,17 @@ Do you want overwrite the template?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+5"/>
+        <source>Si&amp;mplify Grid Layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Removes empty columns and rows</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <source>&amp;Preview...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5001,26 +5021,6 @@ Do you want overwrite the template?</source>
     <message>
         <location line="+341"/>
         <source>Form Settings - %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-510"/>
-        <source>Removes empty columns and rows</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-50"/>
-        <source>Lay Out in a &amp;Form Layout</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Lays out the selected widgets in a form layout</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+45"/>
-        <source>Si&amp;mplify Grid Layout</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5109,7 +5109,12 @@ Do you want overwrite the template?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+33"/>
+        <source>Choose a Pixmap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Pixmap Read Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5176,11 +5181,6 @@ Do you want overwrite the template?</source>
     <message>
         <location line="+1"/>
         <source>Reset All</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-86"/>
-        <source>Choose a Pixmap</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5267,18 +5267,18 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::ListWidgetEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/listwidgeteditor.cpp" line="+105"/>
+        <location filename="../tools/designer/src/components/taskmenu/listwidgeteditor.cpp" line="+73"/>
+        <source>New Item</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>Edit List Widget</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Edit Combobox</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-51"/>
-        <source>New Item</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5348,6 +5348,11 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <location/>
+        <source>Object &amp;name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>&amp;Icon:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5371,11 +5376,6 @@ Do you want overwrite the template?</source>
         <source>...</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location/>
-        <source>Object &amp;name:</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>qdesigner_internal::NewDynamicPropertyDialog</name>
@@ -5391,6 +5391,12 @@ Please select another, unique one.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+4"/>
+        <source>The &apos;_q_&apos; prefix is reserved for the Qt library.
+Please select another name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../tools/designer/src/components/propertyeditor/newdynamicpropertydialog.ui"/>
         <source>Create Dynamic Property</source>
         <translation type="unfinished"></translation>
@@ -5402,18 +5408,12 @@ Please select another, unique one.</source>
     </message>
     <message>
         <location/>
-        <source>Property Type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/designer/src/components/propertyeditor/newdynamicpropertydialog.cpp" line="+4"/>
-        <source>The &apos;_q_&apos; prefix is reserved for the Qt library.
-Please select another name.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/designer/src/components/propertyeditor/newdynamicpropertydialog.ui"/>
         <source>horizontalSpacer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Property Type</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5558,6 +5558,11 @@ Please select another name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+3"/>
+        <source>%1 %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../tools/designer/src/lib/shared/orderdialog.ui"/>
         <source>Change Page Order</source>
         <translation type="unfinished"></translation>
@@ -5575,11 +5580,6 @@ Please select another name.</source>
     <message>
         <location/>
         <source>Move page down</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/designer/src/lib/shared/orderdialog.cpp" line="+3"/>
-        <source>%1 %2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5665,17 +5665,7 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::PixmapEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/designerpropertymanager.cpp" line="-1539"/>
-        <source>Copy Path</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Paste Path</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-3"/>
+        <location filename="../tools/designer/src/components/propertyeditor/designerpropertymanager.cpp" line="-1541"/>
         <source>Choose Resource...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5685,7 +5675,17 @@ Please select another name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+1"/>
+        <source>Copy Path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Paste Path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <location line="+16"/>
         <source>...</source>
         <translation type="unfinished"></translation>
@@ -5889,18 +5889,18 @@ Please select another name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
+        <source>Change signals/slots...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Promote to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Demote to %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-2"/>
-        <source>Change signals/slots...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5917,23 +5917,7 @@ Please select another name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Tree View</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location line="+1"/>
-        <source>Drop Down Button View</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+596"/>
-        <source>Object: %1
-Class: %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-599"/>
         <source>Sorting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5943,12 +5927,17 @@ Class: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+65"/>
-        <source>Configure Property Editor</source>
+        <location line="+1"/>
+        <source>Tree View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-14"/>
+        <location line="+1"/>
+        <source>Drop Down Button View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+49"/>
         <source>String...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5960,6 +5949,17 @@ Class: %2</source>
     <message>
         <location line="+4"/>
         <source>Other...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Configure Property Editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+533"/>
+        <source>Object: %1
+Class: %2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5989,13 +5989,13 @@ Class: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+169"/>
-        <source>%1 - Error</source>
+        <location line="+152"/>
+        <source>Change signals/slots...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-17"/>
-        <source>Change signals/slots...</source>
+        <location line="+17"/>
+        <source>%1 - Error</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6024,15 +6024,8 @@ Class: %2</source>
 </context>
 <context>
     <name>qdesigner_internal::QDesignerTaskMenu</name>
-    <message numerus="yes">
-        <location filename="../tools/designer/src/lib/shared/qdesigner_taskmenu.cpp" line="+560"/>
-        <source>Set size constraint on %n widget(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-        </translation>
-    </message>
     <message>
-        <location line="-492"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_taskmenu.cpp" line="+68"/>
         <source>Change objectName...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6135,6 +6128,13 @@ Class: %2</source>
         <location line="+144"/>
         <source>no signals available</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <location line="+67"/>
+        <source>Set size constraint on %n widget(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -6273,17 +6273,7 @@ Class: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+30"/>
-        <source>&amp;OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>&amp;Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-9"/>
+        <location line="+23"/>
         <source>Rich Text</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6292,11 +6282,21 @@ Class: %2</source>
         <source>Source</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location line="+6"/>
+        <source>&amp;OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>&amp;Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>qdesigner_internal::RichTextEditorToolBar</name>
     <message>
-        <location line="-294"/>
+        <location line="-302"/>
         <source>Bold</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6456,12 +6456,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::StyleSheetEditorDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/stylesheeteditor.cpp" line="+101"/>
-        <source>Edit Style Sheet</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-7"/>
+        <location filename="../tools/designer/src/lib/shared/stylesheeteditor.cpp" line="+94"/>
         <location line="+283"/>
         <source>Valid Style Sheet</source>
         <translation type="unfinished"></translation>
@@ -6487,7 +6482,12 @@ Class: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+281"/>
+        <location line="+2"/>
+        <source>Edit Style Sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+279"/>
         <source>Invalid Style Sheet</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6619,17 +6619,17 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::TextEditTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/textedit_taskmenu.cpp" line="+63"/>
-        <source>Change HTML...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-1"/>
+        <location filename="../tools/designer/src/components/taskmenu/textedit_taskmenu.cpp" line="+62"/>
         <source>Edit HTML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+1"/>
+        <source>Change HTML...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Edit Text</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6652,25 +6652,30 @@ Class: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+120"/>
-        <source>Choose a File</source>
+        <location line="+5"/>
+        <source>...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-115"/>
-        <source>...</source>
+        <location line="+115"/>
+        <source>Choose a File</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>qdesigner_internal::ToolBarEventFilter</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_toolbar.cpp" line="+239"/>
-        <source>Insert Separator</source>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_toolbar.cpp" line="+153"/>
+        <source>Insert Separator before &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-65"/>
+        <location line="+9"/>
+        <source>Append Separator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
         <source>Remove action &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6680,20 +6685,20 @@ Class: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-28"/>
-        <source>Insert Separator before &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Append Separator</source>
+        <location line="+58"/>
+        <source>Insert Separator</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>qdesigner_internal::TreeWidgetEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.cpp" line="+80"/>
+        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.cpp" line="+72"/>
+        <source>New Column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
         <source>&amp;Columns</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6714,7 +6719,13 @@ Class: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+194"/>
+        <location line="+19"/>
+        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.ui"/>
+        <source>New Subitem</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+175"/>
         <source>Properties &amp;&lt;&lt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6722,11 +6733,6 @@ Class: %2</source>
         <location line="+2"/>
         <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.ui"/>
         <source>Properties &amp;&gt;&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-327"/>
-        <source>New Column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6745,19 +6751,28 @@ Class: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.cpp" line="+150"/>
-        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.ui"/>
-        <source>New Subitem</source>
+        <location/>
+        <source>1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.ui"/>
+        <location/>
+        <source>&amp;New</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
         <source>New &amp;Subitem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location/>
         <source>Delete Item</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6798,21 +6813,6 @@ Class: %2</source>
     <message>
         <location/>
         <source>D</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;New</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Delete</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
