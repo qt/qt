@@ -301,7 +301,7 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
             GL_NEAREST);
 
     if (keepCurrentFboBound)
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_ctx->d_ptr->current_fbo);
+        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
 }
 
 void QGLPixmapData::swapBuffers()
@@ -394,9 +394,9 @@ QPaintEngine* QGLPixmapData::paintEngine() const
     return m_engine;
 }
 
-GLuint QGLPixmapData::bind() const
+GLuint QGLPixmapData::bind(bool copyBack) const
 {
-    if (m_renderFbo)
+    if (m_renderFbo && copyBack)
         copyBackFromRenderFbo(true);
     else
         ensureCreated();

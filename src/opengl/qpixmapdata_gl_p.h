@@ -82,7 +82,7 @@ public:
     QImage toImage() const;
     QPaintEngine* paintEngine() const;
 
-    GLuint bind() const;
+    GLuint bind(bool copyBack = true) const;
     GLuint textureId() const;
 
     bool isValidContext(const QGLContext *ctx) const;

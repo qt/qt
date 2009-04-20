@@ -1094,7 +1094,7 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     if (source) {
         d->transferMode(ImageDrawingMode);
 
-        source->bind();
+        source->bind(false);
 
         glDisable(GL_BLEND);
 
