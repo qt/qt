@@ -604,6 +604,8 @@ public:
     uint isGLWidget : 1;
 #endif
 
+    Qt::InputMethodHints imHints;
+
 #if defined(Q_WS_X11) || defined (Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_WS_S60)
 #ifdef Q_WS_MAC
     void setWSGeometry(bool dontShow=false, const QRect &oldRect = QRect());

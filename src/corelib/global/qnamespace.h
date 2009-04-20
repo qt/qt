@@ -1398,6 +1398,21 @@ public:
         ImMaximumTextLength
     };
 
+    enum InputMethodHint {
+        ImhNone = 0x0,
+        ImhHiddenText = 0x1,
+        ImhNumbersOnly = 0x2,
+        ImhUppercaseOnly = 0x4,
+        ImhLowercaseOnly = 0x8,
+        ImhNoAutoUppercase = 0x10,
+        ImhPreferNumbers = 0x20,
+        ImhPreferUppercase = 0x40,
+        ImhPreferLowercase = 0x80,
+        ImhNoPredictiveText = 0x100,
+        ImhDialableCharactersOnly = 0x200
+    };
+    Q_DECLARE_FLAGS(InputMethodHints, InputMethodHint)
+
     enum ToolButtonStyle {
         ToolButtonIconOnly,
         ToolButtonTextOnly,
@@ -1559,6 +1574,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::DropActions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ItemFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MatchFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TextInteractionFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::InputMethodHints)
 
 typedef bool (*qInternalCallback)(void **);
 
