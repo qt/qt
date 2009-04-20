@@ -248,6 +248,7 @@ public:
 
     void setUniformValueArray(int location, const GLfloat *values, int count, int size);
     void setUniformValueArray(int location, const GLint *values, int count);
+    void setUniformValueArray(int location, const GLuint *values, int count);
     void setUniformValueArray(int location, const QVector2D *values, int count);
     void setUniformValueArray(int location, const QVector3D *values, int count);
     void setUniformValueArray(int location, const QVector4D *values, int count);
@@ -263,6 +264,7 @@ public:
 
     void setUniformValueArray(const char *name, const GLfloat *values, int count, int size);
     void setUniformValueArray(const char *name, const GLint *values, int count);
+    void setUniformValueArray(const char *name, const GLuint *values, int count);
     void setUniformValueArray(const char *name, const QVector2D *values, int count);
     void setUniformValueArray(const char *name, const QVector3D *values, int count);
     void setUniformValueArray(const char *name, const QVector4D *values, int count);

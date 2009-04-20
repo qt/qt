@@ -1818,7 +1818,6 @@ void QGLShaderProgram::setUniformValue(const char *name, GLfloat value)
 
 /*!
     Sets the uniform variable at \a location in the current context to \a value.
-    This function must be used when setting sampler values.
 
     \sa setAttributeValue()
 */
@@ -1832,7 +1831,7 @@ void QGLShaderProgram::setUniformValue(int location, GLint value)
     \overload
 
     Sets the uniform variable called \a name in the current context
-    to \a value.  This function must be used when setting sampler values.
+    to \a value.
 
     \sa setAttributeValue()
 */
@@ -1843,6 +1842,7 @@ void QGLShaderProgram::setUniformValue(const char *name, GLint value)
 
 /*!
     Sets the uniform variable at \a location in the current context to \a value.
+    This function should be used when setting sampler values.
 
     \sa setAttributeValue()
 */
@@ -1856,7 +1856,7 @@ void QGLShaderProgram::setUniformValue(int location, GLuint value)
     \overload
 
     Sets the uniform variable called \a name in the current context
-    to \a value.
+    to \a value.  This function should be used when setting sampler values.
 
     \sa setAttributeValue()
 */
@@ -2519,8 +2519,7 @@ void QGLShaderProgram::setUniformValue
 
 /*!
     Sets the uniform variable array at \a location in the current
-    context to the \a count elements of \a values.  This overload
-    must be used when setting an array of sampler values.
+    context to the \a count elements of \a values.
 
     \sa setAttributeValue()
 */
@@ -2534,13 +2533,40 @@ void QGLShaderProgram::setUniformValueArray(int location, const GLint *values, i
     \overload
 
     Sets the uniform variable array called \a name in the current
-    context to the \a count elements of \a values.  This overload
-    must be used when setting an array of sampler values.
+    context to the \a count elements of \a values.
 
     \sa setAttributeValue()
 */
 void QGLShaderProgram::setUniformValueArray
         (const char *name, const GLint *values, int count)
+{
+    setUniformValueArray(uniformLocation(name), values, count);
+}
+
+/*!
+    Sets the uniform variable array at \a location in the current
+    context to the \a count elements of \a values.  This overload
+    should be used when setting an array of sampler values.
+
+    \sa setAttributeValue()
+*/
+void QGLShaderProgram::setUniformValueArray(int location, const GLuint *values, int count)
+{
+    if (location != -1)
+        glUniform1iv(location, count, reinterpret_cast<const GLint *>(values));
+}
+
+/*!
+    \overload
+
+    Sets the uniform variable array called \a name in the current
+    context to the \a count elements of \a values.  This overload
+    should be used when setting an array of sampler values.
+
+    \sa setAttributeValue()
+*/
+void QGLShaderProgram::setUniformValueArray
+        (const char *name, const GLuint *values, int count)
 {
     setUniformValueArray(uniformLocation(name), values, count);
 }
