@@ -2791,9 +2791,10 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
         return;
 
     // Notify the item that the transformation matrix is changing.
-    QVariant variant;
-    qVariantSetValue<QMatrix>(variant, newTransform.toAffine());
-    newTransform = QTransform(qVariantValue<QMatrix>(itemChange(ItemMatrixChange, variant)));
+    // Notify the item that the matrix is changing.
+    QVariant newTransformVariant(itemChange(ItemMatrixChange,
+                                            qVariantFromValue<QMatrix>(newTransform.toAffine())));
+    newTransform = QTransform(qVariantValue<QMatrix>(newTransformVariant));
     if (oldTransform == newTransform)
         return;
 
