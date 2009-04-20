@@ -253,6 +253,9 @@ struct QGLEngineCachedShaderProg
 }
 */
 
+static const GLuint QT_VERTEX_COORDS_ATTR  = 0;
+static const GLuint QT_TEXTURE_COORDS_ATTR = 1;
+
 class QGLEngineShaderManager : public QObject
 {
     Q_OBJECT;
@@ -266,9 +269,9 @@ public:
         NonPremultipliedImageSrc = Qt::TexturePattern+2
     };
 
-    // There are optimisations we can do, depending on the transform:
+    // There are optimisations we can do, depending on the brush transform:
     //    1) May not have to apply perspective-correction
-    //    2) Can use lower precision for vertecies
+    //    2) Can use lower precision for matrix
     void optimiseForBrushTransform(const QTransform transform);
     void setSrcPixelType(Qt::BrushStyle);
     void setSrcPixelType(PixelSrcType); // For non-brush sources, like pixmaps & images
@@ -360,7 +363,7 @@ private:
     bool            shaderProgNeedsChanging;
 
     // Current state variables which influence the choice of shader:
-    QTransform                  transform;
+    QTransform                  brushTransform;
     int                         srcPixelType;
     bool                        useGlobalOpacity;
     MaskType                    maskType;

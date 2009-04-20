@@ -248,7 +248,7 @@ void QGLEngineShaderManager::useCorrectShaderProg()
     // varyings) and the source pixel (srcPixel) fragment shader function:
     QGLEngineShaderManager::ShaderName positionVertexShaderName = InvalidShaderName;
     QGLEngineShaderManager::ShaderName srcPixelFragShaderName = InvalidShaderName;
-    bool isAffine = transform.isAffine();
+    bool isAffine = brushTransform.isAffine();
     if ( (srcPixelType >= Qt::Dense1Pattern) && (srcPixelType <= Qt::DiagCrossPattern) ) {
         if (isAffine)
             positionVertexShaderName = AffinePositionWithPatternBrushVertexShader;
@@ -413,6 +413,12 @@ void QGLEngineShaderManager::useCorrectShaderProg()
     requiredProgram.program->addShader(requiredProgram.srcPixelFragShader);
     requiredProgram.program->addShader(requiredProgram.maskFragShader);
     requiredProgram.program->addShader(requiredProgram.compositionFragShader);
+
+    // We have to bind the vertex attribute names before the program is linked:
+    requiredProgram.program->bindAttributeLocation("inputVertex", QT_VERTEX_COORDS_ATTR);
+    if (useTextureCoords)
+        requiredProgram.program->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
+
     requiredProgram.program->link();
     if (!requiredProgram.program->isValid()) {
         QString error;

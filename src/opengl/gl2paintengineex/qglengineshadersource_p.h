@@ -79,13 +79,13 @@ static const char* const qglslMainVertexShader = "\
     }";
 
 static const char* const qglslMainWithTexCoordsVertexShader = "\
-    attribute lowp  vec2    textureCoord; \
-    varying   lowp  vec2    fragTextureCoord; \
+    attribute lowp  vec2    textureCoordArray; \
+    varying   lowp  vec2    textureCoords; \
     void setPosition();\
     void main(void) \
     {\
             setPosition();\
-            fragTextureCoord = textureCoord; \
+            textureCoords = textureCoordArray; \
     }";
 
 
@@ -243,7 +243,7 @@ static const char* const qglslPositionWithTextureBrushVertexShader = "\
     uniform   mediump vec2  halfViewportSize; \
     uniform   mediump vec2  invertedTextureSize; \
     uniform   mediump mat3  brushTransform; \
-    varying   mediump vec2  textureTexCoords; \
+    varying   mediump vec2  brushTextureCoords; \
     void setPosition(void) { \
             gl_Position = pmvMatrix * inputVertex;\
             gl_Position.xy = gl_Position.xy / gl_Position.w; \
@@ -252,18 +252,18 @@ static const char* const qglslPositionWithTextureBrushVertexShader = "\
             mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \
             gl_Position.xy = gl_Position.xy * invertedHTexCoordsZ; \
             gl_Position.w = invertedHTexCoordsZ; \
-            textureTexCoords.xy = (hTexCoords.xy * invertedTextureSize) * gl_Position.w; \
-            textureTexCoords.y = -textureTexCoords.y; \
+            brushTextureCoords.xy = (hTexCoords.xy * invertedTextureSize) * gl_Position.w; \
+            brushTextureCoords.y = -brushTextureCoords.y; \
     }";
 
 static const char* const qglslAffinePositionWithTextureBrushVertexShader
                  = qglslPositionWithTextureBrushVertexShader;
 
 static const char* const qglslTextureBrushSrcFragmentShader = "\
-    varying mediump vec2      textureTexCoords; \
+    varying mediump vec2      brushTextureCoords; \
     uniform         sampler2D brushTexture; \
     lowp vec4 srcPixel() { \
-        return texture2D(brushTexture, textureTexCoords); \
+        return texture2D(brushTexture, brushTextureCoords); \
     }";
 
 
@@ -275,17 +275,17 @@ static const char* const qglslSolidBrushSrcFragmentShader = "\
     }";
 
 static const char* const qglslImageSrcFragmentShader = "\
-    varying highp vec2      texCoord; \
-    uniform       sampler2D textureSampler; \
+    varying highp vec2      textureCoords; \
+    uniform       sampler2D imageTexture; \
     lowp vec4 srcPixel() { \
-        return texture2D(textureSampler, texCoord); \
+        return texture2D(imageTexture, textureCoords); \
     }";
 
 static const char* const qglslNonPremultipliedImageSrcFragmentShader = "\
-    varying highp vec2      texCoord; \
-    uniform       sampler2D textureSampler; \
+    varying highp vec2      textureCoords; \
+    uniform       sampler2D imageTexture; \
     lowp vec4 srcPixel() { \
-        lowp vec4 sample = texture2D(textureSampler, texCoord); \
+        lowp vec4 sample = texture2D(imageTexture, textureCoords); \
         sample.rgb = sample.rgb * sample.a; \
         return sample; \
     }";
