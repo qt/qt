@@ -528,12 +528,14 @@ int QFontMetrics::rightBearing(QChar ch) const
 */
 int QFontMetrics::width(const QString &text, int len) const
 {
+    int pos = text.indexOf(QLatin1Char('\x9c'));
+    QString txt = (pos == -1) ? text : text.left(pos);
     if (len < 0)
-        len = text.length();
+        len = txt.length();
     if (len == 0)
         return 0;
 
-    QTextEngine layout(text, d);
+    QTextEngine layout(txt, d);
     layout.ignoreBidi = true;
     return qRound(layout.width(0, len));
 }
