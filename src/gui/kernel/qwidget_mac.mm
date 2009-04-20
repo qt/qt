@@ -4627,8 +4627,11 @@ void QWidgetPrivate::setModal_sys()
 
     if (windowParent && q->windowModality() == Qt::WindowModal){
         // Window should be window-modal, which implies a sheet.
-        if (!alreadySheet)
+        if (!alreadySheet) {
+            // NB: the following call will call setModal_sys recursivly:
             recreateMacWindow();
+            windowRef = qt_mac_window_for(q);
+        }
         if ([windowRef isKindOfClass:[NSPanel class]]){
             // If the primary window of the sheet parent is a child of a modal dialog,
             // the sheet parent should not be modally shaddowed.
