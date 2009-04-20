@@ -63,14 +63,6 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(OpenGL)
 
 
-static const char* const qglslSimpleVertexShader = "\
-    attribute highp vec4    inputVertex;\
-    uniform   highp mat4    pmvMatrix;\
-    void main(void)\
-    {\
-            gl_Position = pmvMatrix * inputVertex;\
-    }";
-
 static const char* const qglslMainVertexShader = "\
     void setPosition();\
     void main(void)\
@@ -90,24 +82,24 @@ static const char* const qglslMainWithTexCoordsVertexShader = "\
 
 
 static const char* const qglslPositionOnlyVertexShader = "\
-    attribute highp vec4    inputVertex;\
+    attribute highp vec4    vertexCoordsArray;\
     uniform   highp mat4    pmvMatrix;\
     void setPosition(void)\
     {\
-            gl_Position = pmvMatrix * inputVertex;\
+            gl_Position = pmvMatrix * vertexCoordsArray;\
     }";
 
 
 // Pattern Brush - This assumes the texture size is 8x8 and thus, the inverted size is 0.125
 static const char* const qglslPositionWithPatternBrushVertexShader = "\
-    attribute highp   vec4  inputVertex; \
+    attribute highp   vec4  vertexCoordsArray; \
     uniform   highp   mat4  pmvMatrix; \
     uniform   mediump vec2  halfViewportSize; \
     uniform   mediump vec2  invertedTextureSize; \
     uniform   mediump mat3  brushTransform; \
     varying   mediump vec2  patternTexCoords; \
     void setPosition(void) { \
-            gl_Position = pmvMatrix * inputVertex;\
+            gl_Position = pmvMatrix * vertexCoordsArray;\
             gl_Position.xy = gl_Position.xy / gl_Position.w; \
             mediump vec2 viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \
             mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \
@@ -132,14 +124,14 @@ static const char* const qglslPatternBrushSrcFragmentShader = "\
 
 // Linear Gradient Brush
 static const char* const qglslPositionWithLinearGradientBrushVertexShader = "\
-    attribute highp   vec4  inputVertex; \
+    attribute highp   vec4  vertexCoordsArray; \
     uniform   highp   mat4  pmvMatrix; \
     uniform   mediump vec2  halfViewportSize; \
     uniform   highp   vec3  linearData; \
     uniform   highp   mat3  brushTransform; \
     varying   mediump float index ; \
     void setPosition() { \
-        gl_Position = pmvMatrix * inputVertex;\
+        gl_Position = pmvMatrix * vertexCoordsArray;\
         gl_Position.xy = gl_Position.xy / gl_Position.w; \
         mediump vec2 viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \
         mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \
@@ -163,14 +155,14 @@ static const char* const qglslLinearGradientBrushSrcFragmentShader = "\
 
 // Conical Gradient Brush
 static const char* const qglslPositionWithConicalGradientBrushVertexShader = "\
-    attribute highp   vec4  inputVertex;\
+    attribute highp   vec4  vertexCoordsArray;\
     uniform   highp   mat4  pmvMatrix;\
     uniform   mediump vec2  halfViewportSize; \
     uniform   highp   mat3  brushTransform; \
     varying   highp   vec2  A; \
     void setPosition(void)\
     {\
-        gl_Position = pmvMatrix * inputVertex;\
+        gl_Position = pmvMatrix * vertexCoordsArray;\
         gl_Position.xy = gl_Position.xy / gl_Position.w; \
         mediump vec2  viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \
         mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \
@@ -200,7 +192,7 @@ static const char* const qglslConicalGradientBrushSrcFragmentShader = "\n\
 
 // Radial Gradient Brush
 static const char* const qglslPositionWithRadialGradientBrushVertexShader = "\
-    attribute highp   vec4 inputVertex;\
+    attribute highp   vec4 vertexCoordsArray;\
     uniform   highp   mat4 pmvMatrix;\
     uniform   mediump vec2 halfViewportSize; \
     uniform   highp   mat3 brushTransform; \
@@ -209,7 +201,7 @@ static const char* const qglslPositionWithRadialGradientBrushVertexShader = "\
     varying   highp   vec2  A; \
     void setPosition(void) \
     {\
-        gl_Position = pmvMatrix * inputVertex;\
+        gl_Position = pmvMatrix * vertexCoordsArray;\
         gl_Position.xy = gl_Position.xy / gl_Position.w; \
         mediump vec2 viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \
         mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \
@@ -238,14 +230,14 @@ static const char* const qglslRadialGradientBrushSrcFragmentShader = "\
 
 // Texture Brush
 static const char* const qglslPositionWithTextureBrushVertexShader = "\
-    attribute highp   vec4  inputVertex; \
+    attribute highp   vec4  vertexCoordsArray; \
     uniform   highp   mat4  pmvMatrix; \
     uniform   mediump vec2  halfViewportSize; \
     uniform   mediump vec2  invertedTextureSize; \
     uniform   mediump mat3  brushTransform; \
     varying   mediump vec2  brushTextureCoords; \
     void setPosition(void) { \
-            gl_Position = pmvMatrix * inputVertex;\
+            gl_Position = pmvMatrix * vertexCoordsArray;\
             gl_Position.xy = gl_Position.xy / gl_Position.w; \
             mediump vec2 viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \
             mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \

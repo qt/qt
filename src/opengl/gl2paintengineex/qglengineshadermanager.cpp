@@ -78,7 +78,6 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
 
         const char** code = qglEngineShaderSourceCode; // shortcut
 
-        code[SimpleVertexShader] = qglslSimpleVertexShader;
         code[MainVertexShader] = qglslMainVertexShader;
         code[MainWithTexCoordsVertexShader] = qglslMainWithTexCoordsVertexShader;
 

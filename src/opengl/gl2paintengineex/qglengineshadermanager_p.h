@@ -87,7 +87,6 @@
     correction is needed and a simpler vertex shader can be used instead.
 
     So there are the following "main" vertex shaders:
-        qglslSimpleVertexShader
         qglslMainVertexShader
         qglslMainWithTexCoordsVertexShader
 
@@ -287,7 +286,6 @@ public:
     QGLShaderProgram* simpleProgram(); // Used to draw into e.g. stencil buffers
 
     enum ShaderName {
-        SimpleVertexShader,
         MainVertexShader,
         MainWithTexCoordsVertexShader,
 
