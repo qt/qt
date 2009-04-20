@@ -2265,9 +2265,9 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
                                  | QT_MODULE_GRAPHICSVIEW \
                                  | QT_MODULE_HELP \
                                  | QT_MODULE_TEST \
-                                 | QT_MODULE_DBUS)
-#define QT_EDITION_DESKTOP      (QT_EDITION_OPENSOURCE \
+                                 | QT_MODULE_DBUS \
                                  | QT_MODULE_ACTIVEQT)
+#define QT_EDITION_DESKTOP      (QT_EDITION_OPENSOURCE)
 #define QT_EDITION_UNIVERSAL    QT_EDITION_DESKTOP
 #define QT_EDITION_ACADEMIC     QT_EDITION_DESKTOP
 #define QT_EDITION_EDUCATIONAL  QT_EDITION_DESKTOP
