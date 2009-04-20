@@ -152,10 +152,12 @@ Object *QmlParser::Property::getValue()
 
 void QmlParser::Property::addValue(Value *v)
 {
-    if (v->object)
-        qDebug() << "Property" << name << "addValue  Object(" << v->object->typeName << ")";
-    else
-        qDebug() << "Property" << name << "addValue" << v->primitive;
+    if (::getenv("DUI_DEBUG")) {
+        if (v->object)
+            qDebug() << "Property" << name << "addValue  Object(" << v->object->typeName << ")";
+        else
+            qDebug() << "Property" << name << "addValue" << v->primitive;
+    }
     values << v;
 }
 
