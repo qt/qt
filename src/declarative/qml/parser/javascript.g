@@ -530,6 +530,22 @@ case $rule_number: {
 } break;
 ./
 
+UiArrayMemberList: UiObjectMember ;
+/.
+case $rule_number: {
+    sym(1).Node = makeAstNode<AST::UiObjectMemberList> (driver->nodePool(), sym(1).UiObjectMember);
+} break;
+./
+
+UiArrayMemberList: UiArrayMemberList T_COMMA UiObjectMember ;
+/.
+case $rule_number: {
+    AST::UiObjectMemberList *node = makeAstNode<AST:: UiObjectMemberList> (driver->nodePool(),
+        sym(1).UiObjectMemberList, sym(3).UiObjectMember);
+    sym(1).Node = node;
+} break;
+./
+
 UiObjectInitializer: T_LBRACE T_RBRACE ;
 /.
 case $rule_number: {
@@ -571,7 +587,7 @@ case $rule_number: {
 }   break;
 ./
 
-UiObjectMember: UiQualifiedId T_COLON T_LBRACKET UiObjectMemberList T_RBRACKET ;
+UiObjectMember: UiQualifiedId T_COLON T_LBRACKET UiArrayMemberList T_RBRACKET ;
 /.
 case $rule_number: {
     AST::UiArrayBinding *node = makeAstNode<AST::UiArrayBinding> (driver->nodePool(), sym(1).UiQualifiedId->finish(),

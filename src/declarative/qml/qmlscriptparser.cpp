@@ -389,7 +389,9 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
         primitive = getPrimitive(prop->name, stmt->expression);
 
     } else {
+        out << '{';
         pp(node->statement);
+        out << '}';
     }
 
     Value *v = new Value;
@@ -425,7 +427,7 @@ bool ProcessAST::visit(AST::UiArrayBinding *node)
 
 
 QmlScriptParser::QmlScriptParser()
-    : root(0)
+    : root(0), _errorLine(-1)
 {
 }
 
@@ -450,6 +452,7 @@ bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
 
     if (! parser.parse(&driver)) {
         _error = parser.errorMessage();
+        _errorLine = parser.errorLineNumber();
         return false;
     }
 
@@ -462,6 +465,11 @@ bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
 QString QmlScriptParser::errorDescription() const
 {
     return _error;
+}
+
+int QmlScriptParser::errorLine() const
+{
+    return _errorLine;
 }
 
 QMap<QString,QString> QmlScriptParser::nameSpacePaths() const

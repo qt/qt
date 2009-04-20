@@ -20,6 +20,7 @@ public:
 
     bool parse(const QByteArray &data, const QUrl &url = QUrl());
     QString errorDescription() const;
+    int errorLine() const;
 
     QMap<QString,QString> nameSpacePaths() const;
     QStringList types() const;
@@ -35,6 +36,7 @@ private:
     QmlParser::Object *root;
     QStringList _typeNames;
     QString _error;
+    int _errorLine;
 };
 
 QT_END_NAMESPACE
