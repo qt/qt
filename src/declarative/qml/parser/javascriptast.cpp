@@ -888,6 +888,15 @@ void UiImportList::accept0(Visitor *visitor)
     visitor->endVisit(this);
 }
 
+void UiSourceElement::accept0(Visitor *visitor)
+{
+    if (visitor->visit(this)) {
+        acceptChild(sourceElement, visitor);
+    }
+
+    visitor->endVisit(this);
+}
+
 } } // namespace JavaScript::AST
 
 QT_END_NAMESPACE

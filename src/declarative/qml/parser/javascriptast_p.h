@@ -215,7 +215,8 @@ public:
         Kind_UiScriptBinding,
         Kind_UiArrayBinding,
         Kind_UiObjectMemberList,
-        Kind_UiQualifiedId
+        Kind_UiQualifiedId,
+        Kind_UiSourceElement
     };
 
     inline Node()
@@ -1672,6 +1673,19 @@ public:
     SourceLocation lbraceToken;
     UiObjectMemberList *members;
     SourceLocation rbraceToken;
+};
+
+class UiSourceElement: public UiObjectMember
+{
+public:
+    UiSourceElement(Statement *sourceElement)
+        : sourceElement(sourceElement)
+    { kind = Kind_UiSourceElement; }
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    Statement *sourceElement;
 };
 
 class UiObjectBinding: public UiObjectMember

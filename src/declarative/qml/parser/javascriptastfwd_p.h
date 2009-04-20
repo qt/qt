@@ -150,6 +150,7 @@ class UiObjectDefinition;
 class UiObjectInitializer;
 class UiObjectBinding;
 class UiScriptBinding;
+class UiSourceElement;
 class UiArrayBinding;
 class UiObjectMember;
 class UiObjectMemberList;

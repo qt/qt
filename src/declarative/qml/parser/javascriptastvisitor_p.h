@@ -73,6 +73,7 @@ public:
     virtual bool visit(UiImportList *) { return true; }
     virtual bool visit(UiImport *) { return true; }
     virtual bool visit(UiPublicMember *) { return true; }
+    virtual bool visit(UiSourceElement *) { return true; }
     virtual bool visit(UiObjectDefinition *) { return true; }
     virtual bool visit(UiObjectInitializer *) { return true; }
     virtual bool visit(UiObjectBinding *) { return true; }
@@ -85,6 +86,7 @@ public:
     virtual void endVisit(UiImportList *) {}
     virtual void endVisit(UiImport *) {}
     virtual void endVisit(UiPublicMember *) {}
+    virtual void endVisit(UiSourceElement *) {}
     virtual void endVisit(UiObjectDefinition *) {}
     virtual void endVisit(UiObjectInitializer *) {}
     virtual void endVisit(UiObjectBinding *) {}
