@@ -136,25 +136,27 @@ void QActionPrivate::redoGrab(QShortcutMap &map)
 void QActionPrivate::redoGrabAlternate(QShortcutMap &map)
 {
     Q_Q(QAction);
-    foreach (int id, alternateShortcutIds)
-        if (id)
+    for (int i = 0; i < alternateShortcutIds.size(); ++i)
+        if (int id = alternateShortcutIds.at(i))
             map.removeShortcut(id, q);
     alternateShortcutIds.clear();
     if (alternateShortcuts.isEmpty())
         return;
-    foreach (const QKeySequence& alternate, alternateShortcuts) {
+    for (int i = 0; i < alternateShortcuts.size(); ++i) {
+        const QKeySequence &alternate = alternateShortcuts.at(i);
         if (!alternate.isEmpty())
             alternateShortcutIds.append(map.addShortcut(q, alternate, shortcutContext));
         else
             alternateShortcutIds.append(0);
     }
+
     if (!enabled) {
-        foreach (int id, alternateShortcutIds)
-            map.setShortcutEnabled(false, id, q);
+        for (int i = 0; i < alternateShortcutIds.size(); ++i)
+            map.setShortcutEnabled(false, alternateShortcutIds.at(i), q);
     }
     if (!autorepeat) {
-        foreach (int id, alternateShortcutIds)
-            map.setShortcutAutoRepeat(false, id, q);
+        for (int i = 0; i < alternateShortcutIds.size(); ++i)
+            map.setShortcutAutoRepeat(false, alternateShortcutIds.at(i), q);
     }
 }
 
@@ -163,10 +165,26 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     Q_Q(QAction);
     if (shortcutId)
         map.setShortcutEnabled(enable, shortcutId, q);
-    foreach (int id, alternateShortcutIds)
-        if (id)
+    for (int i = 0; i < alternateShortcutIds.size(); ++i)
+        if (int id = alternateShortcutIds.at(i))
             map.setShortcutEnabled(enable, id, q);
 }
+
+void QActionPrivate::removeAll(QShortcutMap &map)
+{
+    Q_Q(QAction);
+    if (shortcutId) {
+        map.removeShortcut(shortcutId, q);
+        shortcutId = 0;
+    }
+
+    for (int i = 0; i < alternateShortcutIds.size(); ++i)
+        if (int id = alternateShortcutIds.at(i))
+            map.removeShortcut(id, q);
+
+    alternateShortcutIds.clear();
+}
+
 #endif // QT_NO_SHORTCUT
 
 
@@ -615,8 +633,8 @@ QAction::~QAction()
 #ifndef QT_NO_SHORTCUT
     if (d->shortcutId && qApp) {
         qApp->d_func()->shortcutMap.removeShortcut(d->shortcutId, this);
-        foreach (int id, d->alternateShortcutIds)
-            qApp->d_func()->shortcutMap.removeShortcut(id, this);
+        for (int i = 0; i < d->alternateShortcutIds.size(); ++i)
+            qApp->d_func()->shortcutMap.removeShortcut(d->alternateShortcutIds.at(i), this);
     }
 #endif
 }
@@ -1049,7 +1067,12 @@ void QAction::setVisible(bool b)
     d->visible = b;
     d->enabled = b && !d->forceDisabled && (!d->group || d->group->isEnabled()) ;
 #ifndef QT_NO_SHORTCUT
-    d->setShortcutEnabled(d->enabled, qApp->d_func()->shortcutMap);
+    if (b) {
+        d->redoGrab(qApp->d_func()->shortcutMap);
+        d->redoGrabAlternate(qApp->d_func()->shortcutMap);
+    } else {
+        d->removeAll(qApp->d_func()->shortcutMap);
+    }
 #endif
     d->sendDataChanged();
 }
