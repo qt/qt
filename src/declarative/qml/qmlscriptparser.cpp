@@ -77,6 +77,7 @@ protected:
 
     virtual bool visit(AST::UiScriptBinding *node);
     virtual bool visit(AST::UiArrayBinding *node);
+    virtual bool visit(AST::UiSourceElement *node);
 
     void accept(AST::Node *node);
 
@@ -419,6 +420,26 @@ bool ProcessAST::visit(AST::UiArrayBinding *node)
 
     while (propertyCount--)
         _stateStack.pop();
+
+    return false;
+}
+
+bool ProcessAST::visit(AST::UiSourceElement *node)
+{
+    QString source;
+    QTextStream out(&source);
+    PrettyPretty pp(out);
+
+    pp(node->sourceElement);
+
+    Object *obj = defineObjectBinding(-1, // ### line
+                                      0,
+                                      QLatin1String("Script"));
+
+    Value *value = new Value;
+    value->primitive = source;
+    value->line = -1; // ### fix me
+    obj->getDefaultProperty()->addValue(value);
 
     return false;
 }

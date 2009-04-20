@@ -747,8 +747,6 @@ bool QmlCompiler::compileSignal(Property *prop, Object *obj)
         if(isBinding(script))
             COMPILE_EXCEPTION("Cannot assign binding to signal property");
 
-        qDebug() << "and here we go...";
-
         int idx = output->indexForString(script); 
         int pr = output->indexForByteArray(prop->name);
 
