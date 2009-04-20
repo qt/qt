@@ -2000,7 +2000,7 @@ QStateFinishedEvent::QStateFinishedEvent(QState *state)
 #else
     QEvent(QEvent::Type(QEvent::User-2))
 #endif
-    , m_state(state)
+    , m_state(state), d(0)
 {
 }
 
