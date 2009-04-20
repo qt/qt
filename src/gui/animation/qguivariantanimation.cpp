@@ -39,45 +39,41 @@
 **
 ****************************************************************************/
 
-#ifndef QITEMANIMATION_P_H
-#define QITEMANIMATION_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of QIODevice. This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qitemanimation.h"
-
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-#include "qvariantanimation_p.h"
-#else
-#include "private/qvariantanimation_p.h"
-#endif
+#ifndef QT_NO_ANIMATION
 
 QT_BEGIN_NAMESPACE
 
-class QItemAnimationPrivate : public QVariantAnimationPrivate
+#ifdef QT_EXPERIMENTAL_SOLUTION
+# include "qvariantanimation.h"
+# include "qvariantanimation_p.h"
+#else
+#include <QtCore/qvariantanimation.h>
+#include <private/qvariantanimation_p.h>
+#endif
+
+
+template<> Q_INLINE_TEMPLATE QColor _q_interpolate(const QColor &f,const QColor &t, qreal progress)
 {
-   Q_DECLARE_PUBLIC(QItemAnimation)
-public:
-    QItemAnimationPrivate() : propertyName(QItemAnimation::None),
-        target(0)
-    {
-    }
+    return QColor(_q_interpolate(f.red(), t.red(), progress),
+                  _q_interpolate(f.green(), t.green(), progress),
+                  _q_interpolate(f.blue(), t.blue(), progress),
+                  _q_interpolate(f.alpha(), t.alpha(), progress));
+}
 
-    void initDefaultStartValue();
+static int qRegisterGuiGetInterpolator()
+{
+    qRegisterAnimationInterpolator<QColor>(_q_interpolateVariant<QColor>);
+    return 1;
+}
+Q_CONSTRUCTOR_FUNCTION(qRegisterGuiGetInterpolator)
 
-    QItemAnimation::PropertyName propertyName;
-    QGraphicsItem *target;
-};
+static int qUnregisterGuiGetInterpolator()
+{
+    qRegisterAnimationInterpolator<QColor>(0);
+    return 1;
+}
+Q_DESTRUCTOR_FUNCTION(qUnregisterGuiGetInterpolator)
 
 QT_END_NAMESPACE
 
-#endif //QITEMANIMATION_P_H
+#endif //QT_NO_ANIMATION

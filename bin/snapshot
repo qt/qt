@@ -39,6 +39,7 @@ my @files = (
             "corelib/animation/qsequentialanimationgroup.cpp",
             "corelib/animation/qsequentialanimationgroup.h",
             "corelib/animation/qsequentialanimationgroup_p.h",
+            "gui/animation/qguivariantanimation.cpp",
             "corelib/statemachine/statemachine.pri",
             "corelib/statemachine/qabstractstate.cpp",
             "corelib/statemachine/qabstractstate.h",

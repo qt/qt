@@ -49,8 +49,7 @@
 # include <QtCore/qeasingcurve.h>
 # include <QtCore/qabstractanimation.h>
 #endif
-#include <QtCore/qlist.h>
-#include <QtCore/qpoint.h>
+#include <QtCore/qvector.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qpair.h>
 
