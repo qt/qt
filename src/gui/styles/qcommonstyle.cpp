@@ -1779,7 +1779,46 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
     case CE_TabBarTab:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
             drawControl(CE_TabBarTabShape, tab, p, widget);
-            drawControl(CE_TabBarTabLabel, tab, p, widget);
+
+            QStyleOptionTabV3 tabV3(*tab);
+            QRect labelRect = tabV3.rect;
+            QSize &left= tabV3.leftButtonSize;
+            QSize &right = tabV3.rightButtonSize;
+            const int spacing = 6 + 2;
+
+            // left widget
+            if (!left.isEmpty()) {
+                if (tabV3.shape == QTabBar::RoundedEast || tabV3.shape == QTabBar::TriangularEast )
+                    labelRect.setTop(labelRect.top() + spacing + left.height());
+                else if (tabV3.shape == QTabBar::RoundedWest|| tabV3.shape == QTabBar::TriangularWest)
+                    labelRect.setBottom(labelRect.bottom() - spacing - left.height());
+                else
+                    labelRect.setLeft(labelRect.left() + spacing + left.width());
+            }
+
+            // right widget
+            if (!right.isEmpty()) {
+                if (tabV3.shape == QTabBar::RoundedEast || tabV3.shape == QTabBar::TriangularEast )
+                    labelRect.setBottom(labelRect.bottom() - spacing - right.height());
+                else if (tabV3.shape == QTabBar::RoundedWest|| tabV3.shape == QTabBar::TriangularWest)
+                    labelRect.setTop(labelRect.top() + spacing + right.height());
+                else
+                    labelRect.setRight(labelRect.right() - spacing - right.width());
+            }
+
+            tabV3.rect = visualRect(opt->direction, opt->rect, labelRect);
+            drawControl(CE_TabBarTabLabel, &tabV3, p, widget);
+            if (tabV3.state & State_HasFocus) {
+                const int OFFSET = 1 + pixelMetric(PM_DefaultFrameWidth);
+                int x1, x2;
+                x1 = tab->rect.left();
+                x2 = tab->rect.right() - 1;
+                QStyleOptionFocusRect fropt;
+                fropt.QStyleOption::operator=(*tab);
+                fropt.rect.setRect(x1 + 1 + OFFSET, tab->rect.y() + OFFSET,
+                                   x2 - x1 - 2*OFFSET, tab->rect.height() - 2*OFFSET);
+                drawPrimitive(PE_FrameFocusRect, &fropt, p, widget);
+            }
         }
         break;
     case CE_TabBarTabShape:
@@ -1981,12 +2020,8 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                                                     (tabV2.state & State_Enabled) ? QIcon::Normal
                                                                                   : QIcon::Disabled);
 
-                int offset = 4;
+                int offset = 6;
                 int left = opt->rect.left();
-                if (tabV2.leftButtonSize.isEmpty())
-                    offset += 2;
-                else
-                    left += tabV2.leftButtonSize.width() + (6 + 2) + 2;
                 QRect iconRect = QRect(left + offset, tr.center().y() - tabIcon.height() / 2,
                             tabIconSize.width(), tabIconSize.height());
                 if (!verticalTabs)
@@ -1997,20 +2032,6 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             drawItemText(p, tr, alignment, tab->palette, tab->state & State_Enabled, tab->text, QPalette::WindowText);
             if (verticalTabs)
                 p->restore();
-
-            if (tabV2.state & State_HasFocus) {
-                const int OFFSET = 1 + pixelMetric(PM_DefaultFrameWidth);
-
-                int x1, x2;
-                x1 = tabV2.rect.left();
-                x2 = tabV2.rect.right() - 1;
-
-                QStyleOptionFocusRect fropt;
-                fropt.QStyleOption::operator=(*tab);
-                fropt.rect.setRect(x1 + 1 + OFFSET, tabV2.rect.y() + OFFSET,
-                                   x2 - x1 - 2*OFFSET, tabV2.rect.height() - 2*OFFSET);
-                drawPrimitive(PE_FrameFocusRect, &fropt, p, widget);
-            }
         }
         break;
 #endif // QT_NO_TABBAR
@@ -2858,12 +2879,6 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 tr.setRight(tr.right() - horizontalShift);
             }
 
-            // left widget
-            if (!tabV2.leftButtonSize.isEmpty()) {
-                tr.setLeft(tr.left() + 6 + 2 +
-                    (verticalTabs ? tabV2.leftButtonSize.height() : tabV2.leftButtonSize.width()));
-            }
-
             // icon
             if (!tabV2.icon.isNull()) {
                 QSize iconSize = tabV2.iconSize;
@@ -2883,12 +2898,6 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 if (!verticalTabs)
                     iconRect = visualRect(opt->direction, opt->rect, iconRect);
                 tr.setLeft(tr.left() + tabIconSize.width() + offset + 2);
-            }
-
-            // right widget
-            if (!tabV2.rightButtonSize.isEmpty()) {
-                tr.setRight(tr.right() - 6 - 2 -
-                    (verticalTabs ? tabV2.rightButtonSize.height() : tabV2.rightButtonSize.width()));
             }
 
             if (!verticalTabs)
