@@ -1039,10 +1039,6 @@ QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &
         break;
     }
     case ItemParentHasChanged: {
-        // reset window type on parent change in order to automagically remove decorations etc.
-        Qt::WindowFlags wflags = d->windowFlags & ~Qt::WindowType_Mask;
-        d->adjustWindowFlags(&wflags);
-        setWindowFlags(wflags);
         // Deliver ParentChange.
         QEvent event(QEvent::ParentChange);
         QApplication::sendEvent(this, &event);
@@ -1623,6 +1619,7 @@ void QGraphicsWidget::setWindowFlags(Qt::WindowFlags wFlags)
         return;
     bool wasPopup = (d->windowFlags & Qt::WindowType_Mask) == Qt::Popup;
 
+    d->adjustWindowFlags(&wFlags);
     d->windowFlags = wFlags;
     if (!d->setWindowFrameMargins)
         unsetWindowFrameMargins();

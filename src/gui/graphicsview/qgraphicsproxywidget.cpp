@@ -460,7 +460,7 @@ void QGraphicsProxyWidgetPrivate::embedSubWindow(QWidget *subWin)
 {
     QWExtra *extra;
     if (!((extra = subWin->d_func()->extra) && extra->proxyWidget)) {
-        QGraphicsProxyWidget *subProxy = new QGraphicsProxyWidget(q_func());
+        QGraphicsProxyWidget *subProxy = new QGraphicsProxyWidget(q_func(), subWin->windowFlags());
         subProxy->d_func()->setWidget_helper(subWin, false);
     }
 }
@@ -661,10 +661,6 @@ void QGraphicsProxyWidgetPrivate::setWidget_helper(QWidget *newWidget, bool auto
     if (newWidget->testAttribute(Qt::WA_SetCursor))
         q->setCursor(widget->cursor());
 #endif
-    Qt::WFlags flags = newWidget->windowFlags();
-    if (newWidget->windowType() == Qt::Window)
-        flags &= ~Qt::Window;
-    q->setWindowFlags(flags);
     q->setEnabled(newWidget->isEnabled());
     q->setVisible(newWidget->isVisible());
     q->setLayoutDirection(newWidget->layoutDirection());
