@@ -261,7 +261,7 @@ public:
     bool compiled;
     bool isPartial;
     bool hasPartialSource;
-    QString errors;
+    QString log;
     QByteArray partialSource;
 
     bool create();
@@ -309,12 +309,12 @@ bool QGLShaderPrivate::compile()
     value = 0;
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &value);
     if (!compiled && value > 1) {
-        char *log = new char [value];
+        char *logbuf = new char [value];
         GLint len;
-        glGetShaderInfoLog(shader, value, &len, log);
-        errors = QString::fromLatin1(log);
-        qWarning() << "QGLShader::compile:" << errors;
-        delete [] log;
+        glGetShaderInfoLog(shader, value, &len, logbuf);
+        log = QString::fromLatin1(logbuf);
+        qWarning() << "QGLShader::compile:" << log;
+        delete [] logbuf;
     }
     return compiled;
 }
@@ -696,13 +696,13 @@ bool QGLShader::isCompiled() const
 }
 
 /*!
-    Returns the errors that occurred during the last compile.
+    Returns the errors and warnings that occurred during the last compile.
 
     \sa setSourceCode()
 */
-QString QGLShader::errors() const
+QString QGLShader::log() const
 {
-    return d->errors;
+    return d->log;
 }
 
 /*!
@@ -746,7 +746,7 @@ public:
     bool linked;
     bool inited;
     bool hasPartialShaders;
-    QString errors;
+    QString log;
     QList<QGLShader *> shaders;
     QList<QGLShader *> anonShaders;
     QGLShader *vertexShader;
@@ -868,13 +868,13 @@ bool QGLShaderProgram::addShader(QGLShader *shader)
     Compiles \a source as a shader of the specified \a type and
     adds it to this shader program.  Returns true if compilation
     was successful, false otherwise.  The compilation errors
-    will be made available via errors().
+    and warnings will be made available via log().
 
     This function is intended to be a short-cut for quickly
     adding vertex and fragment shaders to a shader program without
     creating an instance of QGLShader first.
 
-    \sa removeShader(), link(), errors(), removeAllShaders()
+    \sa removeShader(), link(), log(), removeAllShaders()
 */
 bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const char *source)
 {
@@ -882,7 +882,7 @@ bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const char *source)
         return false;
     QGLShader *shader = new QGLShader(type, this);
     if (!shader->setSourceCode(source)) {
-        d->errors = shader->errors();
+        d->log = shader->log();
         delete shader;
         return false;
     }
@@ -896,13 +896,13 @@ bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const char *source)
     Compiles \a source as a shader of the specified \a type and
     adds it to this shader program.  Returns true if compilation
     was successful, false otherwise.  The compilation errors
-    will be made available via errors().
+    and warnings will be made available via log().
 
     This function is intended to be a short-cut for quickly
     adding vertex and fragment shaders to a shader program without
     creating an instance of QGLShader first.
 
-    \sa removeShader(), link(), errors(), removeAllShaders()
+    \sa removeShader(), link(), log(), removeAllShaders()
 */
 bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const QByteArray& source)
 {
@@ -915,13 +915,13 @@ bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const QByteArray& s
     Compiles \a source as a shader of the specified \a type and
     adds it to this shader program.  Returns true if compilation
     was successful, false otherwise.  The compilation errors
-    will be made available via errors().
+    and warnings will be made available via log().
 
     This function is intended to be a short-cut for quickly
     adding vertex and fragment shaders to a shader program without
     creating an instance of QGLShader first.
 
-    \sa removeShader(), link(), errors(), removeAllShaders()
+    \sa removeShader(), link(), log(), removeAllShaders()
 */
 bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const QString& source)
 {
@@ -1052,14 +1052,14 @@ bool QGLShaderProgram::setProgramBinary(int format, const QByteArray& binary)
     d->linked = (value != 0);
     value = 0;
     glGetProgramiv(d->program, GL_INFO_LOG_LENGTH, &value);
-    d->errors = QString();
+    d->log = QString();
     if (value > 1) {
-        char *log = new char [value];
+        char *logbuf = new char [value];
         GLint len;
-        glGetProgramInfoLog(d->program, value, &len, log);
-        d->errors = QString::fromLatin1(log);
-        qWarning() << "QGLShaderProgram::setProgramBinary:" << d->errors;
-        delete [] log;
+        glGetProgramInfoLog(d->program, value, &len, logbuf);
+        d->log = QString::fromLatin1(logbuf);
+        qWarning() << "QGLShaderProgram::setProgramBinary:" << d->log;
+        delete [] logbuf;
     }
     return d->linked;
 #else
@@ -1073,7 +1073,7 @@ bool QGLShaderProgram::setProgramBinary(int format, const QByteArray& binary)
     Returns the list of program binary formats that are accepted by
     this system for use with setProgramBinary().
 
-    \sa programBinary, setProgramBinary()
+    \sa programBinary(), setProgramBinary()
 */
 QList<int> QGLShaderProgram::programBinaryFormats()
 {
@@ -1095,7 +1095,7 @@ QList<int> QGLShaderProgram::programBinaryFormats()
     Links together the shaders that were added to this program with
     addShader().  Returns true if the link was successful or
     false otherwise.  If the link failed, the error messages can
-    be retrieved with errors().
+    be retrieved with log().
 
     Subclasses can override this function to initialize attributes
     and uniform variables for use in specific shader programs.
@@ -1103,7 +1103,7 @@ QList<int> QGLShaderProgram::programBinaryFormats()
     If the shader program was already linked, calling this
     function again will force it to be re-linked.
 
-    \sa addShader(), errors()
+    \sa addShader(), log()
 */
 bool QGLShaderProgram::link()
 {
@@ -1131,7 +1131,7 @@ bool QGLShaderProgram::link()
                     new QGLShader(QGLShader::VertexShader, this);
             }
             if (!d->vertexShader->setSourceCode(vertexSource)) {
-                d->errors = d->vertexShader->errors();
+                d->log = d->vertexShader->log();
                 return false;
             }
             glAttachShader(d->program, d->vertexShader->d->shader);
@@ -1148,7 +1148,7 @@ bool QGLShaderProgram::link()
                     new QGLShader(QGLShader::FragmentShader, this);
             }
             if (!d->fragmentShader->setSourceCode(fragmentSource)) {
-                d->errors = d->fragmentShader->errors();
+                d->log = d->fragmentShader->log();
                 return false;
             }
             glAttachShader(d->program, d->fragmentShader->d->shader);
@@ -1160,14 +1160,14 @@ bool QGLShaderProgram::link()
     d->linked = (value != 0);
     value = 0;
     glGetProgramiv(d->program, GL_INFO_LOG_LENGTH, &value);
-    d->errors = QString();
+    d->log = QString();
     if (value > 1) {
-        char *log = new char [value];
+        char *logbuf = new char [value];
         GLint len;
-        glGetProgramInfoLog(d->program, value, &len, log);
-        d->errors = QString::fromLatin1(log);
-        qWarning() << "QGLShaderProgram::link:" << d->errors;
-        delete [] log;
+        glGetProgramInfoLog(d->program, value, &len, logbuf);
+        d->log = QString::fromLatin1(logbuf);
+        qWarning() << "QGLShaderProgram::link:" << d->log;
+        delete [] logbuf;
     }
     return d->linked;
 }
@@ -1183,14 +1183,14 @@ bool QGLShaderProgram::isLinked() const
 }
 
 /*!
-    Returns the errors that occurred during the last link()
+    Returns the errors and warnings that occurred during the last link()
     or addShader() with explicitly specified source code.
 
     \sa link()
 */
-QString QGLShaderProgram::errors() const
+QString QGLShaderProgram::log() const
 {
-    return d->errors;
+    return d->log;
 }
 
 /*!

@@ -96,7 +96,7 @@ public:
     QByteArray sourceCode() const;
 
     bool isCompiled() const;
-    QString errors() const;
+    QString log() const;
 
     GLuint shaderId() const;
 
@@ -136,7 +136,7 @@ public:
 
     virtual bool link();
     bool isLinked() const;
-    QString errors() const;
+    QString log() const;
 
     bool enable();
     void disable();

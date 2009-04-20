@@ -620,11 +620,11 @@ void Scene::initGL()
         if (!program->link()) {
             qWarning("Failed to compile and link shader program");
             qWarning("Vertex shader log:");
-            qWarning() << m_vertexShader->errors();
+            qWarning() << m_vertexShader->log();
             qWarning() << "Fragment shader log ( file =" << file.absoluteFilePath() << "):";
-            qWarning() << shader->errors();
+            qWarning() << shader->log();
             qWarning("Shader program log:");
-            qWarning() << program->errors();
+            qWarning() << program->log();
 
             delete shader;
             delete program;
