@@ -370,7 +370,7 @@ Q_STATIC_TEMPLATE_FUNCTION void QT_FASTCALL destStore(QRasterBuffer *rasterBuffe
                                   Q_TEMPLATE_FIX(DST))
 {
     DST *dest = reinterpret_cast<DST*>(rasterBuffer->scanLine(y)) + x;
-    const quint32 *src = reinterpret_cast<const quint32*>(buffer);
+    const quint32p *src = reinterpret_cast<const quint32p*>(buffer);
     while (length--)
         *dest++ = DST(*src++);
 }
