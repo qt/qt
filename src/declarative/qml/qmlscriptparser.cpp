@@ -254,6 +254,9 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         qWarning() << "bad public identifier" << type; // ### FIXME
     }
 
+
+    // ### TODO drop initializer (unless some example needs differnet properties than name and type and value.
+
     return false;
 }
 
@@ -361,7 +364,18 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
 // UiObjectMember: UiQualifiedId T_COLON T_LBRACKET UiObjectMemberList T_RBRACKET ;
 bool ProcessAST::visit(AST::UiArrayBinding *node)
 {
-    qWarning() << Q_FUNC_INFO << "not implemented";
+    QString propertyName = asString(node->qualifiedId);
+    const QStringList str = propertyName.split(QLatin1Char('.'), QString::SkipEmptyParts);
+    for(int ii = 0; ii < str.count(); ++ii) {
+        const QString s = str.at(ii);
+        _stateStack.pushProperty(s, node->colonToken.startLine);
+    }
+
+    accept(node->members);
+
+    for(int ii = str.count() - 1; ii >= 0; --ii)
+        _stateStack.pop();
+
     return false;
 }
 
