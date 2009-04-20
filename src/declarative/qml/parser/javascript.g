@@ -530,6 +530,16 @@ case $rule_number: {
 } break;
 ./
 
+UiObjectInitializer: T_LBRACE T_RBRACE ;
+/.
+case $rule_number: {
+    AST::UiObjectInitializer *node = makeAstNode<AST::UiObjectInitializer> (driver->nodePool(), (AST::UiObjectMemberList*)0);
+    node->lbraceToken = loc(1);
+    node->rbraceToken = loc(2);
+    sym(1).Node = node;
+}   break;
+./
+
 UiObjectInitializer: T_LBRACE UiObjectMemberList T_RBRACE ;
 /.
 case $rule_number: {
@@ -2223,7 +2233,7 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
         token_buffer[1].loc   = yylloc  = location(lexer);
 
         if (t_action(errorState, yytoken)) {
-            const QString msg = QString::fromUtf8("Removed token: `%1'").arg(spell[token_buffer[0].token]);
+            const QString msg = QString::fromUtf8("Removed token: `%1'").arg(QLatin1String(spell[token_buffer[0].token]));
 
             diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error,
                 token_buffer[0].loc.startLine, token_buffer[0].loc.startColumn, msg));
@@ -2253,7 +2263,7 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
         for (int *tk = tokens; *tk != EOF_SYMBOL; ++tk) {
             int a = t_action(errorState, *tk);
             if (a > 0 && t_action(a, yytoken)) {
-                const QString msg = QString::fromUtf8("Inserted token: `%1'").arg(spell[*tk]);
+                const QString msg = QString::fromUtf8("Inserted token: `%1'").arg(QLatin1String(spell[*tk]));
 
                 diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error,
                     token_buffer[0].loc.startLine, token_buffer[0].loc.startColumn, msg));
@@ -2273,7 +2283,7 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
         for (int tk = 1; tk < TERMINAL_COUNT; ++tk) {
             int a = t_action(errorState, tk);
             if (a > 0 && t_action(a, yytoken)) {
-                const QString msg = QString::fromUtf8("Inserted token: `%1'").arg(spell[tk]);
+                const QString msg = QString::fromUtf8("Inserted token: `%1'").arg(QLatin1String(spell[tk]));
                 diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error,
                     token_buffer[0].loc.startLine, token_buffer[0].loc.startColumn, msg));
 

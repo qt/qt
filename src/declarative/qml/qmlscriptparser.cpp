@@ -65,6 +65,7 @@ protected:
                              const QString &propertyName,
                              const QString &objectType,
                              AST::UiObjectInitializer *initializer = 0);
+    QString getPrimitive(const QByteArray &propertyName, AST::ExpressionNode *expr);
 
     using AST::Visitor::visit;
     using AST::Visitor::endVisit;
@@ -177,7 +178,8 @@ Object *ProcessAST::defineObjectBinding(int line,
     _scope.removeLast();
     obj->line = line;
 
-    if (Property *prop = currentProperty()) {
+    if (!str.isEmpty())  {
+        Property *prop = currentProperty();
         Value *v = new Value;
         v->object = obj;
         v->line = line;
@@ -213,34 +215,50 @@ Object *ProcessAST::defineObjectBinding(int line,
 // UiObjectMember: T_PUBLIC T_IDENTIFIER T_IDENTIFIER T_COLON Expression UiObjectInitializer ;
 bool ProcessAST::visit(AST::UiPublicMember *node)
 {
-#if 0
     const QString type = node->type->asString();
     const QString name = node->name->asString();
 
+    qDebug() << Q_FUNC_INFO << name;
+
     if (type == QLatin1String("property")) {
-        Object *properties = defineObjectBinding(node->publicToken.startLine, 
-                                                 QLatin1String("properties"),
-                                                 Q
-        property = QLatin1("properties");
         _stateStack.pushProperty(QLatin1String("properties"), node->publicToken.startLine);
 
-        const int typeId = _parser->findOrCreateTypeId(QLatin1String("Property"));
-        int line = node->identifierToken.startLine;
+        Object *obj = defineObjectBinding(node->identifierToken.startLine,
+                                          QString(),
+                                          QLatin1String("Property"));
 
-        Object *obj = new Object;
-        obj->type = typeId;
-        obj->typeName = qualifiedNameId().toLatin1();
-        obj->line = line;
+        qDebug() << "MIDDLE";
+        _stateStack.pushObject(obj);
+
+        _stateStack.pushProperty(QLatin1String("name"), node->identifierToken.startLine);
+        Value *value = new Value;
+        value->primitive = name;
+        value->line = node->identifierToken.startLine;
+        currentProperty()->addValue(value);
+        _stateStack.pop(); // name property
+
+        if (node->expression) { // default value
+            _stateStack.pushProperty(QLatin1String("value"), node->identifierToken.startLine);
+            Value *value = new Value;
+            value->primitive = getPrimitive("value", node->expression);
+            value->line = node->identifierToken.startLine;
+            currentProperty()->addValue(value);
+            _stateStack.pop(); // value property
+        }
 
 
-        accept(node->initializer);
 
-        _stateStack.pop();
+
+        _stateStack.pop(); // object
+
+        _stateStack.pop(); // properties
 
     } else {
-        qWarning << "bad public identifier" << type; // ### FIXME
+        qWarning() << "bad public identifier" << type; // ### FIXME
     }
-#endif
+
+    qDebug() << Q_FUNC_INFO << name << "DONE!!!";
+
     return false;
 }
 
@@ -266,6 +284,47 @@ bool ProcessAST::visit(AST::UiObjectBinding *node)
     return false;
 }
 
+QString ProcessAST::getPrimitive(const QByteArray &propertyName, AST::ExpressionNode *expr)
+{
+    QString primitive;
+    QTextStream out(&primitive);
+    PrettyPretty pp(out);
+
+    if(propertyName.length() >= 3 && propertyName.startsWith("on") &&
+       ('A' <= propertyName.at(2) && 'Z' >= propertyName.at(2))) {
+        pp(expr);
+
+        // here comes a cruel hack until we support functions properly with arguments for signal properties
+        if (primitive.startsWith(QLatin1String("function("))) {
+            int brace = 0;
+            for (;brace < primitive.size(); ++brace)
+                if (primitive.at(brace) == QLatin1Char('{'))
+                    break;
+            primitive = primitive.mid(brace + 1, primitive.size() - brace - 2);
+        }
+        //end of hack
+
+    } else if (propertyName == "id" && expr && expr->kind == AST::Node::Kind_IdentifierExpression) {
+        primitive = static_cast<AST::IdentifierExpression *>(expr)->name->asString();
+    } else if (expr->kind == AST::Node::Kind_StringLiteral) {
+        // hack: emulate weird XML feature that string literals are not quoted.
+        //This needs to be fixed in the qmlcompiler once xml goes away.
+        primitive = static_cast<AST::StringLiteral *>(expr)->value->asString();
+    } else if (expr->kind == AST::Node::Kind_TrueLiteral
+               || expr->kind == AST::Node::Kind_FalseLiteral
+               || expr->kind == AST::Node::Kind_NumericLiteral
+               ) {
+        pp(expr);
+    } else {
+        // create a binding
+        out << "{";
+        pp(expr);
+        out << "}";
+    }
+    return primitive;
+}
+
+
 // UiObjectMember: UiQualifiedId T_COLON Statement ;
 bool ProcessAST::visit(AST::UiScriptBinding *node)
 {
@@ -286,38 +345,8 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
 
     if (node->statement->kind == AST::Node::Kind_ExpressionStatement) {
         AST::ExpressionStatement *stmt = static_cast<AST::ExpressionStatement *>(node->statement);
+        primitive = getPrimitive(prop->name, stmt->expression);
 
-        if(prop->name.length() >= 3 && prop->name.startsWith("on") &&
-           ('A' <= prop->name.at(2) && 'Z' >= prop->name.at(2))) {
-            pp(stmt->expression);
-
-            // here comes a cruel hack until we support functions properly with arguments for signal properties
-            if (primitive.startsWith(QLatin1String("function("))) {
-                int brace = 0;
-                for (;brace < primitive.size(); ++brace)
-                    if (primitive.at(brace) == QLatin1Char('{'))
-                        break;
-                primitive = primitive.mid(brace + 1, primitive.size() - brace - 2);
-            }
-            //end of hack
-
-        } else if (prop->name == "id" && stmt->expression && stmt->expression->kind == AST::Node::Kind_IdentifierExpression) {
-            primitive = static_cast<AST::IdentifierExpression *>(stmt->expression)->name->asString();
-        } else if (stmt->expression->kind == AST::Node::Kind_StringLiteral) {
-            // hack: emulate weird XML feature that string literals are not quoted.
-            //This needs to be fixed in the qmlcompiler once xml goes away.
-            primitive = static_cast<AST::StringLiteral *>(stmt->expression)->value->asString();
-        } else if (stmt->expression->kind == AST::Node::Kind_TrueLiteral
-                    || stmt->expression->kind == AST::Node::Kind_FalseLiteral
-                    || stmt->expression->kind == AST::Node::Kind_NumericLiteral
-                    ) {
-            pp(stmt->expression);
-        } else {
-            // create a binding
-            out << "{";
-            pp(stmt->expression);
-            out << "}";
-        }
     } else {
         pp(node->statement);
     }
