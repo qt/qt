@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ja">
+<!DOCTYPE TS>
+<TS version="2.0" language="ja">
 <context>
     <name></name>
     <message>
-        <location filename="../tools/linguist/linguist/phrasebookbox.cpp" line="+29"/>
+        <location filename="../tools/linguist/linguist/phrasebookbox.cpp" line="+59"/>
         <source>(New Entry)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18,7 +19,7 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1318"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1357"/>
         <source>Qt Linguist</source>
         <translation>Qt Linguist</translation>
     </message>
@@ -30,7 +31,7 @@
         <translation type="obsolete">%1 項目が一括翻訳されました</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/batchtranslationdialog.cpp" line="+86"/>
+        <location filename="../tools/linguist/linguist/batchtranslationdialog.cpp" line="+116"/>
         <source>&amp;Cancel</source>
         <translation>キャンセル(&amp;C)</translation>
     </message>
@@ -135,7 +136,7 @@
 <context>
     <name>DataModel</name>
     <message>
-        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+184"/>
+        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+214"/>
         <source>&lt;qt&gt;Duplicate messages found in &apos;%1&apos;:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -155,8 +156,19 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+121"/>
+        <location line="+70"/>
+        <source>Linguist does not know the plural rules for &apos;%1&apos;.
+Will assume a single universal form.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+56"/>
         <source>Cannot create &apos;%2&apos;: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+56"/>
+        <source>Universal Form</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -186,7 +198,7 @@
 <context>
     <name>ErrorsView</name>
     <message>
-        <location filename="../tools/linguist/linguist/errorsview.cpp" line="+46"/>
+        <location filename="../tools/linguist/linguist/errorsview.cpp" line="+76"/>
         <source>Accelerator possibly superfluous in translation.</source>
         <translation type="unfinished">訳に余分なアクセラレータがついています。</translation>
     </message>
@@ -373,7 +385,7 @@
 <context>
     <name>LRelease</name>
     <message numerus="yes">
-        <location filename="../tools/linguist/shared/qm.cpp" line="+653"/>
+        <location filename="../tools/linguist/shared/qm.cpp" line="+715"/>
         <source>    Generated %n translation(s) (%1 finished and %2 unfinished)
 </source>
         <translation type="unfinished">
@@ -507,9 +519,8 @@
         <translation>Ctrl+K</translation>
     </message>
     <message>
-        <location/>
         <source>Ctrl+L</source>
-        <translation>Ctrl+L</translation>
+        <translation type="obsolete">Ctrl+L</translation>
     </message>
     <message>
         <location/>
@@ -552,9 +563,8 @@
         <translation>Ctrl+Shift+K</translation>
     </message>
     <message>
-        <location/>
         <source>Ctrl+Shift+L</source>
-        <translation>Ctrl+Shift+L</translation>
+        <translation type="obsolete">Ctrl+Shift+L</translation>
     </message>
     <message>
         <location/>
@@ -838,13 +848,13 @@
         <translation type="obsolete">ソート順序を初期状態に(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1965"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2004"/>
         <source></source>
         <comment>This is the application&apos;s main window.</comment>
         <translation></translation>
     </message>
     <message>
-        <location line="+165"/>
+        <location line="+195"/>
         <source>Source text</source>
         <translation type="unfinished">ソーステキスト</translation>
     </message>
@@ -897,39 +907,39 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+124"/>
+        <location line="+125"/>
         <source>Loading...</source>
         <translation type="unfinished">ロードしています...</translation>
     </message>
     <message>
+        <location line="+32"/>
         <location line="+22"/>
-        <location line="+20"/>
         <source>Loading File - Qt Linguist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-19"/>
+        <location line="-21"/>
         <source>The file &apos;%1&apos; does not seem to be related to the currently open file(s) &apos;%2&apos;.
 
 Close the open file(s) first?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+22"/>
         <source>The file &apos;%1&apos; does not seem to be related to the file &apos;%2&apos; which is being loaded as well.
 
 Skip loading the first named file?</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location line="+49"/>
+        <location line="+61"/>
         <source>%n translation unit(s) loaded.</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
     </message>
     <message>
-        <location line="+92"/>
+        <location line="+93"/>
         <source>Related files (%1);;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -939,20 +949,20 @@ Skip loading the first named file?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
-        <location line="+30"/>
+        <location line="+10"/>
+        <location line="+31"/>
         <source>File saved.</source>
         <translation type="unfinished">ファイルが保存されました。</translation>
     </message>
     <message>
-        <location line="+14"/>
-        <location line="+1184"/>
+        <location line="+15"/>
+        <location line="+1164"/>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Release</source>
         <translation type="unfinished">リリース</translation>
     </message>
     <message>
-        <location line="-1183"/>
+        <location line="-1163"/>
         <source>Qt message files for released applications (*.qm)
 All files (*)</source>
         <translation type="unfinished">リリースされたアプリケーション用の Qt メッセージファイル (*.qm)
@@ -1016,7 +1026,7 @@ All files (*)</source>
     <message>
         <location line="+17"/>
         <location line="+278"/>
-        <location line="+60"/>
+        <location line="+40"/>
         <location line="+24"/>
         <location line="+22"/>
         <location line="+516"/>
@@ -1028,7 +1038,7 @@ All files (*)</source>
         <translation type="unfinished">Qt Linguist</translation>
     </message>
     <message>
-        <location line="-1224"/>
+        <location line="-1204"/>
         <location line="+102"/>
         <source>Cannot find the string &apos;%1&apos;.</source>
         <translation type="unfinished">文字列 &apos;%1&apos; が見つかりません。</translation>
@@ -1134,27 +1144,19 @@ All files (*)</source>
         <translation type="unfinished">バージョン %1</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source> Open Source Edition</source>
-        <translation type="unfinished"> オープンソース版</translation>
+        <translation type="obsolete"> オープンソース版</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>This version of Qt Linguist is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.&lt;br/&gt;&lt;br/&gt;You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;tt&gt;http://qtsoftware.com/company/model.html&lt;/tt&gt; for an overview of Qt licensing.</source>
-        <translation type="unfinished">このバージョンの Qt Linguist は、 オープンソースアプリケーションを開発するための Qt オープンソース版の一部です。Qt は、クロスプラットフォームなアプリケーションを開発するための包括的な C++ のフレームワークです。&lt;br/&gt;&lt;br/&gt;独占的な（ソースが隠された）アプリケーションを開発するには、Qt の商用ライセンスが必要です。Qt のライセンスの概要については &lt;tt&gt;http://qtsoftware.com/company/model.html&lt;/tt&gt; をご覧ください。</translation>
+        <translation type="obsolete">このバージョンの Qt Linguist は、 オープンソースアプリケーションを開発するための Qt オープンソース版の一部です。Qt は、クロスプラットフォームなアプリケーションを開発するための包括的な C++ のフレームワークです。&lt;br/&gt;&lt;br/&gt;独占的な（ソースが隠された）アプリケーションを開発するには、Qt の商用ライセンスが必要です。Qt のライセンスの概要については &lt;tt&gt;http://qtsoftware.com/company/model.html&lt;/tt&gt; をご覧ください。</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>This program is licensed to you under the terms of the Qt %1 License Agreement. For details, see the license file that came with this software distribution.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
         <source>This program is licensed to you under the terms of the Qt Commercial License Agreement. For details, see the file LICENSE that came with this software distribution.</source>
-        <translation type="unfinished">このプログラムは、Qt 商用ライセンス契約書の定める条件の下であなたの利用が認められています。詳細は、ソフトウェアと一緒に配布される LICENSE ファイルを参照してください。</translation>
+        <translation type="obsolete">このプログラムは、Qt 商用ライセンス契約書の定める条件の下であなたの利用が認められています。詳細は、ソフトウェアと一緒に配布される LICENSE ファイルを参照してください。</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</source>
         <translation type="unfinished">&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist は、Qt アプリケーションの翻訳を行うツールです。&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies). 全ての権利は保護されています。&lt;/p&gt;&lt;p&gt;このプログラムは、「設計」、「市場性」および「特定の目的への適合性」も含む、あらゆる種類の「保証がなく」、「そのままで」提供されます。&lt;/p&gt;</translation>
     </message>
@@ -1320,7 +1322,7 @@ All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+312"/>
+        <location line="+314"/>
         <source>All</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1409,7 +1411,7 @@ All files (*)</source>
         <translation type="obsolete">ツール(&amp;L)</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-459"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-461"/>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Translation</source>
         <translation>翻訳</translation>
@@ -1645,6 +1647,16 @@ All files (*)</source>
         <source>Ctrl+T</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location/>
+        <source>Ctrl+J</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ctrl+Shift+J</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MessageEditor</name>
@@ -1693,7 +1705,7 @@ All files (*)</source>
         <translation type="obsolete">タブ</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="+42"/>
+        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="+72"/>
         <source>German</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1807,7 +1819,7 @@ Line: %2</source>
         <translation type="obsolete">項目数</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+861"/>
+        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+832"/>
         <source>Completion status for %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1837,7 +1849,7 @@ Line: %2</source>
 <context>
     <name>MsgEdit</name>
     <message>
-        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-547"/>
+        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-577"/>
         <source></source>
         <comment>This is the right panel of the main window.</comment>
         <translation></translation>
@@ -1973,7 +1985,7 @@ Line: %2</source>
         <translation>訳(&amp;T):</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/phrasebookbox.cpp" line="-113"/>
+        <location filename="../tools/linguist/linguist/phrasebookbox.cpp" line="-143"/>
         <source></source>
         <comment>Go to Phrase &gt; Edit Phrase Book... The dialog that pops up is a PhraseBookBox.</comment>
         <translation></translation>
@@ -1982,7 +1994,7 @@ Line: %2</source>
 <context>
     <name>PhraseModel</name>
     <message>
-        <location filename="../tools/linguist/linguist/phrasemodel.cpp" line="+91"/>
+        <location filename="../tools/linguist/linguist/phrasemodel.cpp" line="+121"/>
         <source>Definition</source>
         <translation>定義</translation>
     </message>
@@ -2000,7 +2012,7 @@ Line: %2</source>
 <context>
     <name>PhraseView</name>
     <message>
-        <location filename="../tools/linguist/linguist/phraseview.cpp" line="+91"/>
+        <location filename="../tools/linguist/linguist/phraseview.cpp" line="+121"/>
         <source>Insert</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2028,7 +2040,7 @@ Line: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1296"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1279"/>
         <source>Translation files (%1);;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2038,37 +2050,38 @@ Line: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="-1086"/>
+        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="-1118"/>
         <location line="+18"/>
-        <location line="+101"/>
+        <location line="+67"/>
+        <location line="+39"/>
         <location line="+17"/>
         <location line="+15"/>
-        <location filename="../tools/linguist/linguist/phrase.cpp" line="+166"/>
+        <location filename="../tools/linguist/linguist/phrase.cpp" line="+196"/>
         <source>Qt Linguist</source>
         <translation>Qt Linguist</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/cpp.cpp" line="+1039"/>
+        <location filename="../tools/linguist/shared/cpp.cpp" line="+1072"/>
         <source>C++ source files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/java.cpp" line="+624"/>
+        <location filename="../tools/linguist/shared/java.cpp" line="+646"/>
         <source>Java source files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/po.cpp" line="+584"/>
+        <location filename="../tools/linguist/shared/po.cpp" line="+651"/>
         <source>GNU Gettext localization files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/qscript.cpp" line="+2369"/>
+        <location filename="../tools/linguist/shared/qscript.cpp" line="+2399"/>
         <source>Qt Script source files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/ts.cpp" line="+617"/>
+        <location filename="../tools/linguist/shared/ts.cpp" line="+752"/>
         <source>Qt translation sources (format 1.1)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2079,11 +2092,11 @@ Line: %2</source>
     </message>
     <message>
         <location line="+9"/>
-        <source>Qt translation sources</source>
+        <source>Qt translation sources (latest format)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/ui.cpp" line="+171"/>
+        <location filename="../tools/linguist/shared/ui.cpp" line="+213"/>
         <source>Qt Designer form files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2093,8 +2106,13 @@ Line: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/xliff.cpp" line="+778"/>
+        <location filename="../tools/linguist/shared/xliff.cpp" line="+817"/>
         <source>XLIFF localization files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/linguist/shared/qph.cpp" line="+192"/>
+        <source>Qt Linguist &apos;Phrase Book&apos;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2127,7 +2145,7 @@ Line: %2</source>
 <context>
     <name>SourceCodeView</name>
     <message>
-        <location filename="../tools/linguist/linguist/sourcecodeview.cpp" line="+40"/>
+        <location filename="../tools/linguist/linguist/sourcecodeview.cpp" line="+70"/>
         <source>&lt;i&gt;Source code not available&lt;/i&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2688,7 +2706,7 @@ All files (*)</source>
 <context>
     <name>TranslationSettingsDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/translationsettingsdialog.cpp" line="+38"/>
+        <location filename="../tools/linguist/linguist/translationsettingsdialog.cpp" line="+68"/>
         <source>Any Country</source>
         <translation>指定しない</translation>
     </message>

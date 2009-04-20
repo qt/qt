@@ -142,10 +142,8 @@ void tst_Q3Accel::initTestCase()
     edit->setObjectName("test_edit");
     connect( accel1, SIGNAL(activated(int)), this, SLOT(accelTrig1()) );
     connect( accel2, SIGNAL(activated(int)), this, SLOT(accelTrig2()) );
-#if QT_VERSION >= 0x30100
     connect( accel1, SIGNAL(activatedAmbiguously(int)), this, SLOT(ambig1()) );
     connect( accel2, SIGNAL(activatedAmbiguously(int)), this, SLOT(ambig2()) );
-#endif
     mainW->setCentralWidget( edit );
     connect( mainW->statusBar(), SIGNAL(messageChanged(const QString&)),
              this, SLOT(statusMessage(const QString&)) );
@@ -160,11 +158,9 @@ int tst_Q3Accel::toButtons( int key )
         result |= Qt::ShiftModifier;
     if ( key & Qt::CTRL )
         result |= Qt::ControlModifier;
-#if QT_VERSION >= 0x30100
-   if ( key & Qt::META )
+    if ( key & Qt::META )
         result |= Qt::MetaModifier;
-#endif
-   if ( key & Qt::ALT )
+    if ( key & Qt::ALT )
         result |= Qt::AltModifier;
     return result;
 }
@@ -185,7 +181,6 @@ void tst_Q3Accel::defElements()
     QTest::addColumn<int>("theResult");
 }
 
-#if QT_VERSION >= 0x30100
 void tst_Q3Accel::number()
 {
     testElement();
@@ -369,34 +364,17 @@ void tst_Q3Accel::number_data()
        int(Qt::Key_Aring)
        UNICODE_ACCEL + int(Qt::Key_K)
     */
-    /* The #ifdefs for Qt4 are there, because accelerators are always case insensitive in Qt4.
-       It was not wise to differentiate between ASCII (where accelerators where case insensitive) and all other
-       unicode chars in 3.x.
-    */
     QTest::newRow( "N06 - sA1" ) << int(SetupAccel) << int(Accel1) << QString("")
         << int(Qt::Key_aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << int(NoResult);
-#if QT_VERSION < 0x040000
-    QTest::newRow( "N07 - sA2" ) << int(SetupAccel) << int(Accel2) << QString("")
-        << int(Qt::Key_Aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << int(NoResult);
-#endif
     QTest::newRow( "N08 - sA2" ) << int(SetupAccel) << int(Accel1) << QString("")
         << int(Qt::UNICODE_ACCEL) + int(Qt::Key_K) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << int(NoResult);
 
     QTest::newRow( "N:int(Qt::Key_aring)" ) << int(TestAccel) << int(NoWidget) << QString("")
         << int(Qt::Key_aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << int(Accel1Triggered);
-#if QT_VERSION < 0x040000
-    QTest::newRow( "N:int(Qt::Key_Aring)" ) << int(TestAccel) << int(NoWidget) << QString("")
-        << int(Qt::Key_Aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << int(Accel2Triggered);
-#endif
     QTest::newRow( "N:int(Qt::Key_aring) - Text Form" ) << int(TestAccel) << int(NoWidget) << QString("")
         << int(Qt::Key_unknown) << 0xE5 << 0 << 0 << 0 << 0 << 0 << 0 << int(Accel1Triggered);
-#if QT_VERSION < 0x040000
-    QTest::newRow( "N:int(Qt::Key_Aring) - Text Form" ) << int(TestAccel) << int(NoWidget) << QString("")
-        << int(Qt::Key_unknown) << 0xC5 << 0 << 0 << 0 << 0 << 0 << 0 << int(Accel2Triggered);
-#else
     QTest::newRow( "N:int(Qt::Key_Aring) - Text Form" ) << int(TestAccel) << int(NoWidget) << QString("")
         << int(Qt::Key_unknown) << 0xC5 << 0 << 0 << 0 << 0 << 0 << 0 << int(Accel1Triggered);
-#endif
     QTest::newRow( "N:UNICODE_ACCEL + int(Qt::Key_K)" ) << int(TestAccel) << int(NoWidget) << QString("")
         << int(Qt::UNICODE_ACCEL) + int(Qt::Key_K) << int('k') << 0 << 0 << 0 << 0 << 0 << 0 << int(Accel1Triggered);
 
@@ -615,28 +593,15 @@ void tst_Q3Accel::text_data()
     /* see comments above on the #ifdef'ery */
     QTest::newRow( "T06 - sA1" ) << int(SetupAccel) << int(Accel1) << QString("\x0E5")
         << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << int(NoResult);
-#if QT_VERSION < 0x040000
-    QTest::newRow( "T07 - sA2" ) << int(SetupAccel) << int(Accel2) << QString("\x0C5")
-        << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << int(NoResult);
-#endif
     QTest::newRow( "T08 - sA2" ) << int(SetupAccel) << int(Accel1) << QString("K")
         << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << int(NoResult);
 
     QTest::newRow( "T:int(Qt::Key_aring)" ) << int(TestAccel) << int(NoWidget) << QString("")
         << int(Qt::Key_aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << int(Accel1Triggered);
-#if QT_VERSION < 0x040000
-    QTest::newRow( "T:int(Qt::Key_Aring)" ) << int(TestAccel) << int(NoWidget) << QString("")
-        << int(Qt::Key_Aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << int(Accel2Triggered);
-#endif
     QTest::newRow( "T:int(Qt::Key_aring) - Text Form" ) << int(TestAccel) << int(NoWidget) << QString("")
         << int(Qt::Key_unknown) << 0xE5 << 0 << 0 << 0 << 0 << 0 << 0 << int(Accel1Triggered);
-#if QT_VERSION < 0x040000
-    QTest::newRow( "T:int(Qt::Key_Aring) - Text Form" ) << int(TestAccel) << int(NoWidget) << QString("")
-        << int(Qt::Key_unknown) << 0xC5 << 0 << 0 << 0 << 0 << 0 << 0 << int(Accel2Triggered);
-#else
     QTest::newRow( "T:int(Qt::Key_Aring) - Text Form" ) << int(TestAccel) << int(NoWidget) << QString("")
         << int(Qt::Key_unknown) << 0xC5 << 0 << 0 << 0 << 0 << 0 << 0 << int(Accel1Triggered);
-#endif
     QTest::newRow( "T:UNICODE_ACCEL + int(Qt::Key_K)" ) << int(TestAccel) << int(NoWidget) << QString("")
         << int(Qt::UNICODE_ACCEL) + int(Qt::Key_K) << int('k') << 0 << 0 << 0 << 0 << 0 << 0 << int(Accel1Triggered);
 
@@ -986,11 +951,7 @@ void tst_Q3Accel::sendKeyEvents( int k1, QChar c1, int k2, QChar c2, int k3, QCh
     k2 &= ~Qt::MODIFIER_MASK;
     k3 &= ~Qt::MODIFIER_MASK;
     k4 &= ~Qt::MODIFIER_MASK;
-#if QT_VERSION < 0x040000
-    QKeyEvent ke( QEvent::Accel, k1, k1, b1, QString(c1) );
-#else
     QKeyEvent ke( QEvent::Accel, k1, (Qt::KeyboardModifiers)b1, QString(c1) );
-#endif
     QApplication::sendEvent( mainW, &ke );
     if ( k2 ) {
         QKeyEvent ke( QEvent::Accel, k2, k2, b2, QString(c2) );
@@ -1005,49 +966,6 @@ void tst_Q3Accel::sendKeyEvents( int k1, QChar c1, int k2, QChar c2, int k3, QCh
         QApplication::sendEvent( mainW, &ke );
     }
 }
-
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-
-#else // For Qt < 3.1
-void tst_Q3Accel::number_data()
-{
-    QTest::addColumn<int>("bogus");
-    QTest::newRow( "b01" ) << 0;
-}
-
-void tst_Q3Accel::number()
-{
-    QSKIP( "Accel test for Qt < 3.1 not implemented", SkipAll);
-}
-
-void tst_Q3Accel::text_data()
-{
-    QTest::addColumn<int>("bogus");
-    QTest::newRow( "b02" ) << 0;
-}
-
-void tst_Q3Accel::text()
-{
-    QSKIP( "Accel test for Qt < 3.1 not implemented", SkipAll);
-}
-void tst_Q3Accel::disabledItems()
-{
-    QSKIP( "Accel test for Qt < 3.1 not implemented", SkipAll);
-}
-void tst_Q3Accel::ambiguousItems()
-{
-    QSKIP( "Amibguous signals non-existant in Qt < 3.1", SkipAll);
-}
-void tst_Q3Accel::unicodeCompare()
-{
-    QSKIP( "Accel test for Qt < 3.1 not implemented", SkipAll);
-}
-void tst_Q3Accel::unicodeCompose()
-{
-    QSKIP( "Unicode composing non-existant in Qt < 3.1", SkipAll);
-}
-#endif // QT_VERSION >= 0x30100
 
 QTEST_MAIN(tst_Q3Accel)
 #include "tst_q3accel.moc"

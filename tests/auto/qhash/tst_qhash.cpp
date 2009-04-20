@@ -39,16 +39,10 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
-
-#if QT_VERSION >= 0x040000
 #include <qhash.h>
 #include <qmap.h>
-#endif
-
-
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -65,7 +59,7 @@ private slots:
     void insert1();
     void erase();
     void key();
-    
+
     void count(); // copied from tst_QMap
     void clear(); // copied from tst_QMap
     void empty(); // copied from tst_QMap
@@ -80,9 +74,7 @@ private slots:
     void qmultihash_specific();
 
     void compare();
-#if QT_VERSION > 0x040100
     void compare2();
-#endif // QT_VERSION
     void iterators(); // sligthly modified from tst_QMap
     void keys_values_uniqueKeys(); // slightly modified from tst_QMap
     void noNeedlessRehashes();
@@ -799,7 +791,6 @@ void tst_QHash::compare()
     QVERIFY(hash1 != hash2);
 }
 
-#if QT_VERSION > 0x040100
 void tst_QHash::compare2()
 {
     QHash<int, int> a;
@@ -838,7 +829,6 @@ void tst_QHash::compare2()
     QVERIFY(!(a == b));
     QVERIFY(!(b == a));
 }
-#endif // QT_VERSION
 
 //sligthly modified from tst_QMap
 void tst_QHash::iterators()
@@ -996,9 +986,6 @@ void tst_QHash::rehash_isnt_quadratic()
 class Bar
 {
 public:
-#if QT_VERSION < 0x040100
-    Bar() : j(0) {}
-#endif
     Bar(int i) : j(i) {}
 
     int j;
@@ -1180,37 +1167,27 @@ QList<T> sorted(const QList<T> &list)
 void tst_QHash::keys_values_uniqueKeys()
 {
     QHash<QString, int> hash;
-#if QT_VERSION >= 0x040200
     QVERIFY(hash.uniqueKeys().isEmpty());
-#endif
     QVERIFY(hash.keys().isEmpty());
     QVERIFY(hash.values().isEmpty());
 
     hash.insertMulti("alpha", 1);
     QVERIFY(sorted(hash.keys()) == (QList<QString>() << "alpha"));
-#if QT_VERSION >= 0x040200
     QVERIFY(hash.keys() == hash.uniqueKeys());
-#endif
     QVERIFY(hash.values() == (QList<int>() << 1));
 
     hash.insertMulti("beta", -2);
     QVERIFY(sorted(hash.keys()) == (QList<QString>() << "alpha" << "beta"));
-#if QT_VERSION >= 0x040200
     QVERIFY(hash.keys() == hash.uniqueKeys());
-#endif
     QVERIFY(sorted(hash.values()) == sorted(QList<int>() << 1 << -2));
 
     hash.insertMulti("alpha", 2);
-#if QT_VERSION >= 0x040200
     QVERIFY(sorted(hash.uniqueKeys()) == (QList<QString>() << "alpha" << "beta"));
-#endif
     QVERIFY(sorted(hash.keys()) == (QList<QString>() << "alpha" << "alpha" << "beta"));
     QVERIFY(sorted(hash.values()) == sorted(QList<int>() << 2 << 1 << -2));
 
     hash.insertMulti("beta", 4);
-#if QT_VERSION >= 0x040200
     QVERIFY(sorted(hash.uniqueKeys()) == (QList<QString>() << "alpha" << "beta"));
-#endif
     QVERIFY(sorted(hash.keys()) == (QList<QString>() << "alpha" << "alpha" << "beta" << "beta"));
     QVERIFY(sorted(hash.values()) == sorted(QList<int>() << 2 << 1 << 4 << -2));
 }

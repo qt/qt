@@ -88,16 +88,9 @@ QScriptDebuggerAgentPrivate *QScriptDebuggerAgentPrivate::get(
 */
 QScriptDebuggerAgent::QScriptDebuggerAgent(
     QScriptDebuggerBackendPrivate *backend, QScriptEngine *engine)
-#if QT_VERSION >= 0x040500
     : QScriptEngineAgent(*new QScriptDebuggerAgentPrivate, engine)
-#else
-    : QScriptEngineAgent(engine), d_ptr(new QScriptDebuggerAgentPrivate)
-#endif
 {
     Q_D(QScriptDebuggerAgent);
-#if QT_VERSION < 0x040500
-    d_ptr->q_ptr = this;
-#endif
     d->backend = backend;
 
     QScriptContext *ctx = engine->currentContext();
@@ -117,9 +110,6 @@ QScriptDebuggerAgent::~QScriptDebuggerAgent()
     Q_D(QScriptDebuggerAgent);
     if (d->backend)
         d->backend->agentDestroyed(this);
-#if QT_VERSION < 0x040500
-    delete d_ptr;
-#endif
 }
 
 /*!
@@ -712,12 +702,7 @@ void QScriptDebuggerAgent::exceptionCatch(qint64 scriptId,
 */
 bool QScriptDebuggerAgent::supportsExtension(Extension extension) const
 {
-#if QT_VERSION >= 0x040500
     return (extension == DebuggerInvocationRequest);
-#else
-    Q_UNUSED(extension);
-    return false;
-#endif
 }
 
 /*!
@@ -727,7 +712,6 @@ QVariant QScriptDebuggerAgent::extension(Extension extension,
                                          const QVariant &argument)
 {
     Q_UNUSED(extension);
-#if QT_VERSION >= 0x040500
     Q_D(QScriptDebuggerAgent);
     Q_ASSERT(extension == DebuggerInvocationRequest);
     QVariantList lst = argument.toList();
@@ -739,9 +723,6 @@ QVariant QScriptDebuggerAgent::extension(Extension extension,
         d->backend->debuggerInvocationRequest(
             scriptId, lineNumber, columnNumber);
     }
-#else
-    Q_UNUSED(argument);
-#endif
     return QVariant();
 }
 

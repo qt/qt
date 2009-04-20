@@ -1263,7 +1263,7 @@ void QAbstractSocket::connectToHostImplementation(const QString &hostName, quint
            (int) openMode);
 #endif
 
-    if (d->state == ConnectedState || d->state == ConnectingState) {
+    if (d->state == ConnectedState || d->state == ConnectingState || d->state == ClosingState) {
         qWarning("QAbstractSocket::connectToHost() called when already connecting/connected to \"%s\"", qPrintable(hostName));
         return;
     }

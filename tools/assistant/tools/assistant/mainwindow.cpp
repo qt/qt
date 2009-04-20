@@ -787,26 +787,11 @@ void MainWindow::showAboutDialog()
             aboutDia.setPixmap(pix);
         aboutDia.setWindowTitle(aboutDia.documentTitle());
     } else {
-#if QT_EDITION == QT_EDITION_OPENSOURCE
-        QString edition = tr("Open Source Edition");
-        QString info = tr("This version of Qt Assistant is part of the Qt Open "
-            "Source Edition, for use "
-            "in the development of Open Source applications. "
-            "Qt is a comprehensive C++ framework for cross-platform application "
-            "development.");
-        QString moreInfo = tr("You need a commercial Qt license for development "
-            "of proprietary (closed source) applications. Please see "
-            "<a href=\"http://qtsoftware.com/company/about/businessmodel"
-            "\">http://qtsoftware.com/company/about/businessmodel</a> for an "
-            "overview of Qt licensing.");
-#else
+        // TODO: Remove these variables for 4.6.0.  Must keep this way for 4.5.x due to string freeze.
         QString edition;
         QString info;
-        QString moreInfo(tr("This program is licensed to you under the terms of the "
-            "Qt Commercial License Agreement. For details, see the file LICENSE "
-            "that came with this software distribution."));
+        QString moreInfo;
 
-#endif
         QByteArray resources;
         aboutDia.setText(QString::fromLatin1("<center>"
             "<h3>%1</h3>"

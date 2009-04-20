@@ -821,17 +821,12 @@ typedef quint64 qulonglong;
       sizeof(void *) == sizeof(quintptr)
       && sizeof(void *) == sizeof(qptrdiff)
 */
-template <int> class QUintForSize    { private: typedef void    Type; };
-template <>    class QUintForSize<4> { public:  typedef quint32 Type; };
-template <>    class QUintForSize<8> { public:  typedef quint64 Type; };
-template <typename T> class QUintForType : public QUintForSize<sizeof(T)> { };
-typedef QUintForType<void *>::Type quintptr;
-
-template <int> class QIntForSize    { private: typedef void   Type; };
-template <>    class QIntForSize<4> { public:  typedef qint32 Type; };
-template <>    class QIntForSize<8> { public:  typedef qint64 Type; };
-template <typename T> class QIntForType : public QIntForSize<sizeof(T)> { };
-typedef QIntForType<void *>::Type qptrdiff;
+template <int> struct QIntegerForSize;
+template <>    struct QIntegerForSize<4> { typedef quint32 Unsigned; typedef qint32 Signed; };
+template <>    struct QIntegerForSize<8> { typedef quint64 Unsigned; typedef qint64 Signed; };
+template <class T> struct QIntegerForSizeof: QIntegerForSize<sizeof(T)> { };
+typedef QIntegerForSizeof<void*>::Unsigned quintptr;
+typedef QIntegerForSizeof<void*>::Signed qptrdiff;
 
 /*
    Useful type definitions for Qt

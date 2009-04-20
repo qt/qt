@@ -4,7 +4,7 @@
 <context>
     <name>AssistantServer</name>
     <message>
-        <location filename="../tools/assistant/compat/main.cpp" line="+195"/>
+        <location filename="../tools/assistant/compat/main.cpp" line="+225"/>
         <source>Qt Assistant</source>
         <translation>Qt 助手</translation>
     </message>
@@ -17,7 +17,7 @@
 <context>
     <name>FontPanel</name>
     <message>
-        <location filename="../tools/shared/fontpanel/fontpanel.cpp" line="+33"/>
+        <location filename="../tools/shared/fontpanel/fontpanel.cpp" line="+63"/>
         <source>Font</source>
         <translation>字体</translation>
     </message>
@@ -45,7 +45,7 @@
 <context>
     <name>FontSettingsDialog</name>
     <message>
-        <location filename="../tools/assistant/compat/fontsettingsdialog.cpp" line="+33"/>
+        <location filename="../tools/assistant/compat/fontsettingsdialog.cpp" line="+63"/>
         <source>Font Settings</source>
         <translation>字体设置</translation>
     </message>
@@ -73,7 +73,7 @@
 <context>
     <name>HelpDialog</name>
     <message>
-        <location filename="../tools/assistant/compat/helpdialog.cpp" line="+248"/>
+        <location filename="../tools/assistant/compat/helpdialog.cpp" line="+279"/>
         <source>Open Link in Current Tab</source>
         <translation>在当前标签页打开链接</translation>
     </message>
@@ -96,12 +96,12 @@
     <message>
         <location line="-64"/>
         <location line="+16"/>
-        <location line="+659"/>
+        <location line="+661"/>
         <source>Qt Assistant</source>
         <translation>Qt 助手</translation>
     </message>
     <message>
-        <location line="-675"/>
+        <location line="-677"/>
         <source>Failed to load keyword index file
 Assistant will not work!</source>
         <translation>加载关键词索引文件失败
@@ -142,7 +142,7 @@ Skipping file.</source>
     </message>
     <message>
         <location line="+48"/>
-        <location line="+467"/>
+        <location line="+469"/>
         <source>Done</source>
         <translation>完成</translation>
     </message>
@@ -344,7 +344,7 @@ Assistant will not work!</source>
 <context>
     <name>HelpWindow</name>
     <message>
-        <location filename="../tools/assistant/compat/helpwindow.cpp" line="+67"/>
+        <location filename="../tools/assistant/compat/helpwindow.cpp" line="+97"/>
         <source>Help</source>
         <translation>帮助</translation>
     </message>
@@ -394,7 +394,7 @@ Assistant will not work!</source>
 <context>
     <name>Index</name>
     <message>
-        <location filename="../tools/assistant/compat/index.cpp" line="+355"/>
+        <location filename="../tools/assistant/compat/index.cpp" line="+385"/>
         <source>Untitled</source>
         <translation>未命名的</translation>
     </message>
@@ -402,7 +402,7 @@ Assistant will not work!</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+73"/>
+        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+103"/>
         <source>Sidebar</source>
         <translation>侧栏</translation>
     </message>
@@ -477,22 +477,19 @@ Assistant will not work!</source>
         <translation>显示一个指定文档集的主页面。</translation>
     </message>
     <message>
-        <location line="+35"/>
         <source>Open Source Edition</source>
-        <translation>开源版本</translation>
+        <translation type="obsolete">开源版本</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>This version of Qt Assistant is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.</source>
-        <translation>这个版本的 Qt 助手是 Qt 开源版本的一部分，用于开发开源应用程序。Qt 是一个用于跨平台应用程序开发的综合 C++ 框架。</translation>
+        <translation type="obsolete">这个版本的 Qt 助手是 Qt 开源版本的一部分，用于开发开源应用程序。Qt 是一个用于跨平台应用程序开发的综合 C++ 框架。</translation>
     </message>
     <message>
-        <location line="+16"/>
         <source>This program is licensed to you under the terms of the Qt Commercial License Agreement. For details, see the file LICENSE that came with this software distribution.</source>
-        <translation>我们已经允许您在 Qt 商业许可协议下使用本程序。有关细节，请阅读本软件发行中所带的 LICENSE 文件。</translation>
+        <translation type="obsolete">我们已经允许您在 Qt 商业许可协议下使用本程序。有关细节，请阅读本软件发行中所带的 LICENSE 文件。</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+49"/>
         <location line="+1"/>
         <source>Qt Assistant</source>
         <translation>Qt 助手</translation>
@@ -863,14 +860,12 @@ Assistant will not work!</source>
         <translation>字体设置...</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="-492"/>
         <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qtsoftware.com/company/model&quot;&gt;qtsoftware.com/company/model&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation>开发商业（闭源）应用程序，你需要商业 Qt 许可。对于 Qt 许可的概览，请参考&lt;a href=&quot;http://qtsoftware.com/company/model&quot;&gt;qtsoftware.com/company/model&lt;/a&gt;。</translation>
+        <translation type="obsolete">开发商业（闭源）应用程序，你需要商业 Qt 许可。对于 Qt 许可的概览，请参考&lt;a href=&quot;http://qtsoftware.com/company/model&quot;&gt;qtsoftware.com/company/model&lt;/a&gt;。</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>This program is licensed to you under the terms of the Qt %1 License Agreement. For details, see the license file that came with this software distribution.</source>
-        <translation>我们已经允许您在 Qt %1 许可协议下使用本程序。有关细节，请阅读本软件发行中所带的许可协议文件。</translation>
+        <translation type="obsolete">我们已经允许您在 Qt %1 许可协议下使用本程序。有关细节，请阅读本软件发行中所带的许可协议文件。</translation>
     </message>
 </context>
 <context>
@@ -880,7 +875,7 @@ Assistant will not work!</source>
         <translation type="obsolete">Trolltech 的 Qt 助手</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/config.cpp" line="+320"/>
+        <location filename="../tools/assistant/compat/config.cpp" line="+350"/>
         <source>Qt Assistant by Nokia</source>
         <translation>Qt助手 - Nokia</translation>
     </message>
@@ -888,7 +883,7 @@ Assistant will not work!</source>
 <context>
     <name>TabbedBrowser</name>
     <message>
-        <location filename="../tools/assistant/compat/tabbedbrowser.cpp" line="+119"/>
+        <location filename="../tools/assistant/compat/tabbedbrowser.cpp" line="+149"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -956,7 +951,7 @@ Assistant will not work!</source>
 <context>
     <name>TopicChooser</name>
     <message>
-        <location filename="../tools/assistant/compat/topicchooser.cpp" line="+26"/>
+        <location filename="../tools/assistant/compat/topicchooser.cpp" line="+56"/>
         <source>Choose a topic for &lt;b&gt;%1&lt;/b&gt;</source>
         <translation>为&lt;b&gt;%1&lt;/b&gt;选择一个主题</translation>
     </message>

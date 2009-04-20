@@ -212,10 +212,8 @@ void tst_QBitArray::countBits()
     }
 
     QCOMPARE(bits.count(), numBits);
-#if QT_VERSION >= 0x040100
     QCOMPARE(bits.count(true), onBits);
     QCOMPARE(bits.count(false), numBits - onBits);
-#endif
 }
 
 void tst_QBitArray::countBits2()
@@ -314,7 +312,7 @@ void tst_QBitArray::toggleBit_data()
 }
 
 void tst_QBitArray::toggleBit()
-{    
+{
     QFETCH(int,index);
     QFETCH(QBitArray, input);
     QFETCH(QBitArray, res);
@@ -322,7 +320,6 @@ void tst_QBitArray::toggleBit()
     input.toggleBit(index);
 
     QCOMPARE(input, res);
-
 }
 
 void tst_QBitArray::operator_andeq_data()
@@ -331,33 +328,33 @@ void tst_QBitArray::operator_andeq_data()
     QTest::addColumn<QBitArray>("input2");
     QTest::addColumn<QBitArray>("res");
 
-    QTest::newRow( "data0" )   << QStringToQBitArray(QString("11111111")) 
-                            << QStringToQBitArray(QString("00101100")) 
+    QTest::newRow( "data0" )   << QStringToQBitArray(QString("11111111"))
+                            << QStringToQBitArray(QString("00101100"))
                             << QStringToQBitArray(QString("00101100"));
 
 
-    QTest::newRow( "data1" )   << QStringToQBitArray(QString("11011011")) 
-                            << QStringToQBitArray(QString("00101100")) 
+    QTest::newRow( "data1" )   << QStringToQBitArray(QString("11011011"))
+                            << QStringToQBitArray(QString("00101100"))
                             << QStringToQBitArray(QString("00001000"));
 
-    QTest::newRow( "data2" )   << QStringToQBitArray(QString("11011011111")) 
-                            << QStringToQBitArray(QString("00101100")) 
+    QTest::newRow( "data2" )   << QStringToQBitArray(QString("11011011111"))
+                            << QStringToQBitArray(QString("00101100"))
                             << QStringToQBitArray(QString("00001000000"));
 
-    QTest::newRow( "data3" )   << QStringToQBitArray(QString("11011011")) 
-                            << QStringToQBitArray(QString("00101100111")) 
+    QTest::newRow( "data3" )   << QStringToQBitArray(QString("11011011"))
+                            << QStringToQBitArray(QString("00101100111"))
                             << QStringToQBitArray(QString("00001000000"));
 
-    QTest::newRow( "data4" )   << QStringToQBitArray(QString()) 
-                            << QStringToQBitArray(QString("00101100111")) 
+    QTest::newRow( "data4" )   << QStringToQBitArray(QString())
+                            << QStringToQBitArray(QString("00101100111"))
                             << QStringToQBitArray(QString("00000000000"));
 
-    QTest::newRow( "data5" ) << QStringToQBitArray(QString("00101100111")) 
-                             << QStringToQBitArray(QString()) 
+    QTest::newRow( "data5" ) << QStringToQBitArray(QString("00101100111"))
+                             << QStringToQBitArray(QString())
                              << QStringToQBitArray(QString("00000000000"));
 
-    QTest::newRow( "data6" ) << QStringToQBitArray(QString()) 
-                             << QStringToQBitArray(QString()) 
+    QTest::newRow( "data6" ) << QStringToQBitArray(QString())
+                             << QStringToQBitArray(QString())
                              << QStringToQBitArray(QString());
 }
 
@@ -370,7 +367,6 @@ void tst_QBitArray::operator_andeq()
     input1&=input2;
 
     QCOMPARE(input1, res);
-
 }
 
 void tst_QBitArray::operator_oreq_data()
@@ -379,37 +375,37 @@ void tst_QBitArray::operator_oreq_data()
     QTest::addColumn<QBitArray>("input2");
     QTest::addColumn<QBitArray>("res");
 
-    QTest::newRow( "data0" )   << QStringToQBitArray(QString("11111111")) 
-                            << QStringToQBitArray(QString("00101100")) 
+    QTest::newRow( "data0" )   << QStringToQBitArray(QString("11111111"))
+                            << QStringToQBitArray(QString("00101100"))
                             << QStringToQBitArray(QString("11111111"));
 
 
-    QTest::newRow( "data1" )   << QStringToQBitArray(QString("11011011")) 
-                            << QStringToQBitArray(QString("00101100")) 
+    QTest::newRow( "data1" )   << QStringToQBitArray(QString("11011011"))
+                            << QStringToQBitArray(QString("00101100"))
                             << QStringToQBitArray(QString("11111111"));
 
-    QTest::newRow( "data2" )   << QStringToQBitArray(QString("01000010")) 
-                            << QStringToQBitArray(QString("10100001")) 
+    QTest::newRow( "data2" )   << QStringToQBitArray(QString("01000010"))
+                            << QStringToQBitArray(QString("10100001"))
                             << QStringToQBitArray(QString("11100011"));
 
-    QTest::newRow( "data3" )   << QStringToQBitArray(QString("11011011")) 
-                            << QStringToQBitArray(QString("00101100000")) 
+    QTest::newRow( "data3" )   << QStringToQBitArray(QString("11011011"))
+                            << QStringToQBitArray(QString("00101100000"))
                             << QStringToQBitArray(QString("11111111000"));
 
-    QTest::newRow( "data4" )   << QStringToQBitArray(QString("11011011111")) 
-                            << QStringToQBitArray(QString("00101100")) 
+    QTest::newRow( "data4" )   << QStringToQBitArray(QString("11011011111"))
+                            << QStringToQBitArray(QString("00101100"))
                             << QStringToQBitArray(QString("11111111111"));
 
-    QTest::newRow( "data5" )   << QStringToQBitArray(QString()) 
-                            << QStringToQBitArray(QString("00101100111")) 
+    QTest::newRow( "data5" )   << QStringToQBitArray(QString())
+                            << QStringToQBitArray(QString("00101100111"))
                             << QStringToQBitArray(QString("00101100111"));
 
-    QTest::newRow( "data6" ) << QStringToQBitArray(QString("00101100111")) 
-                             << QStringToQBitArray(QString()) 
+    QTest::newRow( "data6" ) << QStringToQBitArray(QString("00101100111"))
+                             << QStringToQBitArray(QString())
                              << QStringToQBitArray(QString("00101100111"));
-    
-    QTest::newRow( "data7" ) << QStringToQBitArray(QString()) 
-                             << QStringToQBitArray(QString()) 
+
+    QTest::newRow( "data7" ) << QStringToQBitArray(QString())
+                             << QStringToQBitArray(QString())
                              << QStringToQBitArray(QString());
 }
 
@@ -422,7 +418,6 @@ void tst_QBitArray::operator_oreq()
     input1|=input2;
 
     QCOMPARE(input1, res);
-
 }
 
 void tst_QBitArray::operator_xoreq_data()
@@ -430,36 +425,36 @@ void tst_QBitArray::operator_xoreq_data()
     QTest::addColumn<QBitArray>("input1");
     QTest::addColumn<QBitArray>("input2");
     QTest::addColumn<QBitArray>("res");
-    QTest::newRow( "data0" )   << QStringToQBitArray(QString("11111111")) 
-                            << QStringToQBitArray(QString("00101100")) 
+    QTest::newRow( "data0" )   << QStringToQBitArray(QString("11111111"))
+                            << QStringToQBitArray(QString("00101100"))
                             << QStringToQBitArray(QString("11010011"));
 
-    QTest::newRow( "data1" )   << QStringToQBitArray(QString("11011011")) 
-                            << QStringToQBitArray(QString("00101100")) 
+    QTest::newRow( "data1" )   << QStringToQBitArray(QString("11011011"))
+                            << QStringToQBitArray(QString("00101100"))
                             << QStringToQBitArray(QString("11110111"));
 
-    QTest::newRow( "data2" )   << QStringToQBitArray(QString("01000010")) 
-                            << QStringToQBitArray(QString("10100001")) 
+    QTest::newRow( "data2" )   << QStringToQBitArray(QString("01000010"))
+                            << QStringToQBitArray(QString("10100001"))
                             << QStringToQBitArray(QString("11100011"));
 
-    QTest::newRow( "data3" )   << QStringToQBitArray(QString("01000010")) 
-                            << QStringToQBitArray(QString("10100001101")) 
+    QTest::newRow( "data3" )   << QStringToQBitArray(QString("01000010"))
+                            << QStringToQBitArray(QString("10100001101"))
                             << QStringToQBitArray(QString("11100011101"));
 
-    QTest::newRow( "data4" )   << QStringToQBitArray(QString("01000010111")) 
-                            << QStringToQBitArray(QString("101000011")) 
+    QTest::newRow( "data4" )   << QStringToQBitArray(QString("01000010111"))
+                            << QStringToQBitArray(QString("101000011"))
                             << QStringToQBitArray(QString("11100011011"));
 
-    QTest::newRow( "data5" )   << QStringToQBitArray(QString()) 
-                            << QStringToQBitArray(QString("00101100111")) 
+    QTest::newRow( "data5" )   << QStringToQBitArray(QString())
+                            << QStringToQBitArray(QString("00101100111"))
                             << QStringToQBitArray(QString("00101100111"));
 
-    QTest::newRow( "data6" ) << QStringToQBitArray(QString("00101100111")) 
-                             << QStringToQBitArray(QString()) 
+    QTest::newRow( "data6" ) << QStringToQBitArray(QString("00101100111"))
+                             << QStringToQBitArray(QString())
                              << QStringToQBitArray(QString("00101100111"));
-    
-    QTest::newRow( "data7" ) << QStringToQBitArray(QString()) 
-                             << QStringToQBitArray(QString()) 
+
+    QTest::newRow( "data7" ) << QStringToQBitArray(QString())
+                             << QStringToQBitArray(QString())
                              << QStringToQBitArray(QString());
 }
 
@@ -472,7 +467,6 @@ void tst_QBitArray::operator_xoreq()
     input1^=input2;
 
     QCOMPARE(input1, res);
-
 }
 
 
@@ -481,37 +475,37 @@ void tst_QBitArray::operator_neg_data()
     QTest::addColumn<QBitArray>("input");
     QTest::addColumn<QBitArray>("res");
 
-    QTest::newRow( "data0" )   << QStringToQBitArray(QString("11111111")) 
+    QTest::newRow( "data0" )   << QStringToQBitArray(QString("11111111"))
                                << QStringToQBitArray(QString("00000000"));
 
-    QTest::newRow( "data1" )   << QStringToQBitArray(QString("11011011")) 
+    QTest::newRow( "data1" )   << QStringToQBitArray(QString("11011011"))
                                << QStringToQBitArray(QString("00100100"));
 
-    QTest::newRow( "data2" )   << QStringToQBitArray(QString("00000000")) 
+    QTest::newRow( "data2" )   << QStringToQBitArray(QString("00000000"))
                                << QStringToQBitArray(QString("11111111"));
 
-    QTest::newRow( "data3" )   << QStringToQBitArray(QString()) 
+    QTest::newRow( "data3" )   << QStringToQBitArray(QString())
                                << QStringToQBitArray(QString());
 
-    QTest::newRow( "data4" )   << QStringToQBitArray("1") 
+    QTest::newRow( "data4" )   << QStringToQBitArray("1")
                                << QStringToQBitArray("0");
 
-    QTest::newRow( "data5" )   << QStringToQBitArray("0") 
+    QTest::newRow( "data5" )   << QStringToQBitArray("0")
                                << QStringToQBitArray("1");
 
-    QTest::newRow( "data6" )   << QStringToQBitArray("01") 
+    QTest::newRow( "data6" )   << QStringToQBitArray("01")
                                << QStringToQBitArray("10");
 
-    QTest::newRow( "data7" )   << QStringToQBitArray("1110101") 
+    QTest::newRow( "data7" )   << QStringToQBitArray("1110101")
                                << QStringToQBitArray("0001010");
 
-    QTest::newRow( "data8" )   << QStringToQBitArray("01110101") 
+    QTest::newRow( "data8" )   << QStringToQBitArray("01110101")
                                << QStringToQBitArray("10001010");
 
-    QTest::newRow( "data9" )   << QStringToQBitArray("011101010") 
+    QTest::newRow( "data9" )   << QStringToQBitArray("011101010")
                                << QStringToQBitArray("100010101");
 
-    QTest::newRow( "data10" )   << QStringToQBitArray("0111010101111010") 
+    QTest::newRow( "data10" )   << QStringToQBitArray("0111010101111010")
                                 << QStringToQBitArray("1000101010000101");
 }
 
@@ -521,9 +515,8 @@ void tst_QBitArray::operator_neg()
     QFETCH(QBitArray, res);
 
     input = ~input;
-    
-    QCOMPARE(input, res);
 
+    QCOMPARE(input, res);
 }
 
 void tst_QBitArray::datastream_data()
@@ -554,7 +547,7 @@ void tst_QBitArray::datastream()
     QFETCH(QString, bitField);
     QFETCH(int, numBits);
     QFETCH(int, onBits);
-    
+
     QBuffer buffer;
     QVERIFY(buffer.open(QBuffer::ReadWrite));
     QDataStream stream(&buffer);
@@ -566,11 +559,9 @@ void tst_QBitArray::datastream()
     }
 
     QCOMPARE(bits.count(), numBits);
-#if QT_VERSION >= 0x040100
     QCOMPARE(bits.count(true), onBits);
     QCOMPARE(bits.count(false), numBits - onBits);
-#endif
-    
+
     stream << bits << bits << bits;
     buffer.close();
 
@@ -583,10 +574,8 @@ void tst_QBitArray::datastream()
     stream2 >> array1 >> array2 >> array3;
 
     QCOMPARE(array1.count(), numBits);
-#if QT_VERSION >= 0x040100
     QCOMPARE(array1.count(true), onBits);
     QCOMPARE(array1.count(false), numBits - onBits);
-#endif
 
     QCOMPARE(array1, bits);
     QCOMPARE(array2, bits);
@@ -595,7 +584,7 @@ void tst_QBitArray::datastream()
 
 void tst_QBitArray::invertOnNull() const
 {
-    QBitArray a; 
+    QBitArray a;
     QCOMPARE(a = ~a, QBitArray());
 }
 
@@ -605,28 +594,28 @@ void tst_QBitArray::operator_noteq_data()
     QTest::addColumn<QBitArray>("input2");
     QTest::addColumn<bool>("res");
 
-    QTest::newRow("data0") << QStringToQBitArray(QString("11111111")) 
-                           << QStringToQBitArray(QString("00101100")) 
+    QTest::newRow("data0") << QStringToQBitArray(QString("11111111"))
+                           << QStringToQBitArray(QString("00101100"))
                            << true;
 
-    QTest::newRow("data1") << QStringToQBitArray(QString("11011011")) 
-                           << QStringToQBitArray(QString("11011011")) 
+    QTest::newRow("data1") << QStringToQBitArray(QString("11011011"))
+                           << QStringToQBitArray(QString("11011011"))
                            << false;
 
-    QTest::newRow("data2") << QStringToQBitArray(QString()) 
-                           << QStringToQBitArray(QString("00101100111")) 
+    QTest::newRow("data2") << QStringToQBitArray(QString())
+                           << QStringToQBitArray(QString("00101100111"))
                            << true;
 
-    QTest::newRow("data3") << QStringToQBitArray(QString()) 
-                           << QStringToQBitArray(QString()) 
+    QTest::newRow("data3") << QStringToQBitArray(QString())
+                           << QStringToQBitArray(QString())
                            << false;
 
-    QTest::newRow("data4") << QStringToQBitArray(QString("00101100")) 
-                           << QStringToQBitArray(QString("11111111")) 
+    QTest::newRow("data4") << QStringToQBitArray(QString("00101100"))
+                           << QStringToQBitArray(QString("11111111"))
                            << true;
 
-    QTest::newRow("data5") << QStringToQBitArray(QString("00101100111")) 
-                           << QStringToQBitArray(QString()) 
+    QTest::newRow("data5") << QStringToQBitArray(QString("00101100111"))
+                           << QStringToQBitArray(QString())
                            << true;
 }
 

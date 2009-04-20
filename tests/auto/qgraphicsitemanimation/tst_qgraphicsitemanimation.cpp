@@ -42,12 +42,7 @@
 
 #include <QtTest/QtTest>
 
-#if QT_VERSION < 0x040200
-QTEST_NOOP_MAIN
-#else
-
 #include <qgraphicsitemanimation.h>
-
 #include <QtCore/qtimeline.h>
 #include <QtGui/qmatrix.h>
 
@@ -195,4 +190,3 @@ void tst_QGraphicsItemAnimation::setTimeLine()
 
 QTEST_MAIN(tst_QGraphicsItemAnimation)
 #include "tst_qgraphicsitemanimation.moc"
-#endif

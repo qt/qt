@@ -614,7 +614,6 @@ void tst_QDirModel::task196768_sorting()
     QCOMPARE(index.data(), index2.data());
 }
 
-#if QT_VERSION >= 0x040102
 void tst_QDirModel::filter()
 {
     QDirModel model;
@@ -625,7 +624,6 @@ void tst_QDirModel::filter()
     Q_ASSERT(!index2.isValid());
     Q_ASSERT(model.rowCount(index) == 0);
 }
-#endif
 
 void tst_QDirModel::task244669_remove()
 {

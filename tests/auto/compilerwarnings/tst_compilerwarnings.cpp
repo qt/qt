@@ -173,9 +173,7 @@ void tst_CompilerWarnings::warnings()
          << "-Wno-long-long" << "-Wshadow" << "-Wpacked" << "-Wunreachable-code"
          << "-Wundef" << "-Wchar-subscripts" << "-Wformat-nonliteral" << "-Wformat-security"
          << "-Wcast-align"
-#if QT_VERSION >= 0x040100
          << "-Wfloat-equal"
-#endif
          << "-o" << tmpFile
          << tmpSourceFile;
 #elif defined(Q_CC_XLC)

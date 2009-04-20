@@ -397,7 +397,7 @@ namespace qdesigner_internal
         QMapIterator<QPair<QIcon::Mode, QIcon::State>, PropertySheetPixmapValue> itPath(paths);
         while (itPath.hasNext()) {
             QPair<QIcon::Mode, QIcon::State> pair = itPath.next().key();
-            icon.addPixmap(m_pixmapCache->pixmap(itPath.value()), pair.first, pair.second);
+            icon.addFile(itPath.value().path(), QSize(), pair.first, pair.second);
         }
         m_cache.insert(value, icon);
         return icon;

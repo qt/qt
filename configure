@@ -205,10 +205,10 @@ earlyArgParse()
         h|help|--help|-help)
             if [ "$VAL" = "yes" ]; then
                 OPT_HELP="$VAL"
-                COMMERCIAL_USER="yes" #doesn't matter we will display the help
+                COMMERCIAL_USER="no" #doesn't matter we will display the help
             else
                 UNKNOWN_OPT=yes
-                COMMERCIAL_USER="yes" #doesn't matter we will display the help
+                COMMERCIAL_USER="no" #doesn't matter we will display the help
             fi
             ;;
         --*)
@@ -3974,7 +3974,7 @@ if [ -n "$PERL" ] && [ -x "$relpath/bin/syncqt" ]; then
     [ "$CFG_DEV" = "yes" ] && SYNCQT_OPTS="$SYNCQT_OPTS -check-includes"
     if [ "$OPT_SHADOW" = "yes" ]; then
         "$outpath/bin/syncqt" $SYNCQT_OPTS
-    elif [ "$CFG_DEV" = "yes" ]; then
+    elif [ "$CFG_DEV" = "yes" ] || [ ! -d $relpath/include ]; then
         QTDIR="$relpath" perl "$outpath/bin/syncqt" $SYNCQT_OPTS
     fi
 fi

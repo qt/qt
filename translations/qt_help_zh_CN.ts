@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
 <TS version="2.0" language="zh">
-<defaultcodec></defaultcodec>
 <context>
     <name>QCLuceneResultWidget</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpsearchresultwidget.cpp" line="+80"/>
+        <location filename="../tools/assistant/lib/qhelpsearchresultwidget.cpp" line="+110"/>
         <source>Search Results</source>
         <translation>搜索结果</translation>
     </message>
@@ -33,7 +32,7 @@
 <context>
     <name>QHelpCollectionHandler</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpcollectionhandler.cpp" line="+49"/>
+        <location filename="../tools/assistant/lib/qhelpcollectionhandler.cpp" line="+79"/>
         <source>The collection file is not set up yet!</source>
         <translation>还没有设置收藏文件呢！</translation>
     </message>
@@ -116,7 +115,7 @@
         <translation type="obsolete">不能打开数据库！</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/lib/qhelpdbreader.cpp" line="+65"/>
+        <location filename="../tools/assistant/lib/qhelpdbreader.cpp" line="+95"/>
         <source>Cannot open database &apos;%1&apos; &apos;%2&apos;: %3</source>
         <translation>不能打开数据库“%1” “%2”：%3</translation>
     </message>
@@ -124,7 +123,7 @@
 <context>
     <name>QHelpEngineCore</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+482"/>
+        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+516"/>
         <source>The specified namespace does not exist!</source>
         <translation>指定的命名空间不存在！</translation>
     </message>
@@ -132,7 +131,7 @@
 <context>
     <name>QHelpEngineCorePrivate</name>
     <message>
-        <location line="-390"/>
+        <location line="-394"/>
         <source>Cannot open documentation file %1: %2!</source>
         <translation>不能打开文档文件%1：%2！</translation>
     </message>
@@ -144,7 +143,7 @@
 <context>
     <name>QHelpGenerator</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpgenerator.cpp" line="+127"/>
+        <location filename="../tools/assistant/lib/qhelpgenerator.cpp" line="+157"/>
         <source>Invalid help data!</source>
         <translation>无效的帮助数据！</translation>
     </message>
@@ -179,7 +178,7 @@
         <translation>文档已经被成功生成。</translation>
     </message>
     <message>
-        <location line="+72"/>
+        <location line="+76"/>
         <source>Some tables already exist!</source>
         <translation>一些表格已经存在！</translation>
     </message>
@@ -209,7 +208,7 @@
         <translation>不能打开文件 %1！正在忽略它。</translation>
     </message>
     <message>
-        <location line="+132"/>
+        <location line="+134"/>
         <source>The filter %1 is already registered!</source>
         <translation>过滤器 %1 已经被注册！</translation>
     </message>
@@ -239,7 +238,7 @@
         <translation>不能注册内容！</translation>
     </message>
     <message>
-        <location line="-603"/>
+        <location line="-609"/>
         <source>The file %1 cannot be overwritten!</source>
         <translation>文件 %1 不能被覆盖！</translation>
     </message>
@@ -252,7 +251,7 @@
 <context>
     <name>QHelpSearchQueryWidget</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpsearchquerywidget.cpp" line="+170"/>
+        <location filename="../tools/assistant/lib/qhelpsearchquerywidget.cpp" line="+200"/>
         <source>Search for:</source>
         <translation>搜索：</translation>
     </message>
@@ -295,7 +294,7 @@
 <context>
     <name>QHelpSearchResultWidget</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpsearchresultwidget.cpp" line="+232"/>
+        <location filename="../tools/assistant/lib/qhelpsearchresultwidget.cpp" line="+235"/>
         <source>0 - 0 of 0 Hits</source>
         <translation>0 次点击中的 0 - 0</translation>
     </message>
@@ -311,7 +310,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelp_global.h" line="+53"/>
+        <location filename="../tools/assistant/lib/qhelp_global.h" line="+83"/>
         <source>Untitled</source>
         <translation>未命名的</translation>
     </message>
@@ -324,7 +323,7 @@
         <translation type="obsolete">在行 %1 的未知标记。需要“QtHelpProject”！</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+81"/>
+        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+111"/>
         <source>A virtual folder must not contain a &apos;/&apos; character!</source>
         <translation>虚拟文件夹必须不包含“/“字符！</translation>
     </message>

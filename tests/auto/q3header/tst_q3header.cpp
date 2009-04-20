@@ -59,9 +59,7 @@ public slots:
     void cleanupTestCase();
 private slots:
     void bug_setOffset();
-#if QT_VERSION >= 0x040101
     void nullStringLabel();
-#endif
 
 private:
     Q3Header *testW;
@@ -108,7 +106,6 @@ void tst_Q3Header::bug_setOffset()
     QCOMPARE( testW->offset(), offs );
 }
 
-#if QT_VERSION >= 0x040101
 // Task 95640
 void tst_Q3Header::nullStringLabel()
 {
@@ -123,7 +120,6 @@ void tst_Q3Header::nullStringLabel()
     QCOMPARE(testW->label(testW->addLabel(QString())), QString());
     QCOMPARE(testW->label(testW->addLabel(QString(""))), QString(""));
 }
-#endif
 
 QTEST_MAIN(tst_Q3Header)
 #include "tst_q3header.moc"

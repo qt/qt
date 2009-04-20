@@ -42,12 +42,7 @@
 #include <QtGui>
 #include <qtest.h>
 #include "object.h"
-
-#if QT_VERSION >= 0x040000
-#  include <qcoreapplication.h>
-#else
-#  include <qapplication.h>
-#endif
+#include <qcoreapplication.h>
 #include <qdatetime.h>
 
 enum {
@@ -58,7 +53,7 @@ enum {
 class QObjectBenchmark : public QObject
 {
 Q_OBJECT
-private slots:		
+private slots:
     void signal_slot_benchmark();
     void signal_slot_benchmark_data();
     void qproperty_benchmark_data();
@@ -82,13 +77,8 @@ void QObjectBenchmark::signal_slot_benchmark()
 
     Object singleObject;
     Object multiObject;
-#if QT_VERSION >= 0x040000
     singleObject.setObjectName("single");
     multiObject.setObjectName("multi");
-#else
-    singleObject.setName("single");
-    multiObject.setName("double");
-#endif
 
     singleObject.connect(&singleObject, SIGNAL(signal0()), SLOT(slot0()));
 

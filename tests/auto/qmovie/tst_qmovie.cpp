@@ -71,9 +71,7 @@ private slots:
     void playMovie();
     void jumpToFrame_data();
     void jumpToFrame();
-#if QT_VERSION >= 0x040101
     void changeMovieFile();
-#endif // QT_VERSION
 };
 
 // Testing get/set functions
@@ -201,7 +199,6 @@ void tst_QMovie::jumpToFrame()
     QVERIFY(movie.currentFrameNumber() == 0);
 }
 
-#if QT_VERSION >= 0x040101
 void tst_QMovie::changeMovieFile()
 {
     QMovie movie("animations/comicsecard.gif");
@@ -210,8 +207,6 @@ void tst_QMovie::changeMovieFile()
     movie.setFileName("animations/trolltech.gif");
     QVERIFY(movie.currentFrameNumber() == -1);
 }
-
-#endif // QT_VERSION
 
 QTEST_MAIN(tst_QMovie)
 #include "tst_qmovie.moc"

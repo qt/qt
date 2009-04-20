@@ -283,13 +283,9 @@ void tst_QComboBox::getSetCheck()
     QLineEdit *var8 = new QLineEdit(0);
     obj1.setLineEdit(var8);
     QCOMPARE(var8, obj1.lineEdit());
-#if QT_VERSION >= 0x040200
-    // QComboBox in Qt < 4.2 have asserts for this, but handles the situation by ignoring it.
-    // Qt >= 4.2 should handle this gracefully (no asserts, but define behavior as keeping current)
     QTest::ignoreMessage(QtWarningMsg, "QComboBox::setLineEdit: cannot set a 0 line edit");
     obj1.setLineEdit((QLineEdit *)0);
     QCOMPARE(var8, obj1.lineEdit());
-#endif
     // delete var8; // No delete, since QComboBox takes ownership
 
     // const QValidator * QComboBox::validator()
@@ -306,13 +302,9 @@ void tst_QComboBox::getSetCheck()
     MyAbstractItemDelegate *var10 = new MyAbstractItemDelegate;
     obj1.setItemDelegate(var10);
     QCOMPARE(obj1.itemDelegate(), (QAbstractItemDelegate *)var10);
-#if QT_VERSION >= 0x040200
-    // QComboBox in Qt < 4.2 have asserts for this, but handles the situation by ignoring it.
-    // Qt >= 4.2 should handle this gracefully (no asserts, but define behavior as keeping current)
     QTest::ignoreMessage(QtWarningMsg, "QComboBox::setItemDelegate: cannot set a 0 delegate");
     obj1.setItemDelegate((QAbstractItemDelegate *)0);
     QCOMPARE(obj1.itemDelegate(), (QAbstractItemDelegate *)var10);
-#endif
     // delete var10; // No delete, since QComboBox takes ownership
 
     // QAbstractItemModel * QComboBox::model()
@@ -320,13 +312,9 @@ void tst_QComboBox::getSetCheck()
     MyAbstractItemModel *var11 = new MyAbstractItemModel;
     obj1.setModel(var11);
     QCOMPARE(obj1.model(), (QAbstractItemModel *)var11);
-#if QT_VERSION >= 0x040200
-    // QComboBox in Qt < 4.2 have asserts for this, but handles the situation by ignoring it.
-    // Qt >= 4.2 should handle this gracefully (no asserts, but define behavior as keeping current)
     QTest::ignoreMessage(QtWarningMsg, "QComboBox::setModel: cannot set a 0 model");
     obj1.setModel((QAbstractItemModel *)0);
     QCOMPARE(obj1.model(), (QAbstractItemModel *)var11);
-#endif
     delete var11;
     obj1.model();
 
@@ -345,13 +333,9 @@ void tst_QComboBox::getSetCheck()
     MyAbstractItemView *var13 = new MyAbstractItemView;
     obj1.setView(var13);
     QCOMPARE(obj1.view(), (QAbstractItemView *)var13);
-#if QT_VERSION >= 0x040200
-    // QComboBox in Qt < 4.2 have asserts for this
-    // Qt >= 4.2 should handle this gracefully (no asserts, but define behavior as keeping current view)
     QTest::ignoreMessage(QtWarningMsg, "QComboBox::setView: cannot set a 0 view");
     obj1.setView((QAbstractItemView *)0);
     QCOMPARE(obj1.view(), (QAbstractItemView *)var13);
-#endif
     delete var13;
 
     // int QComboBox::currentIndex()
@@ -512,13 +496,9 @@ void tst_QComboBox::sizeAdjustPolicy()
     testWidget->addItem("small");
     QCOMPARE(testWidget->sizeHint(), content);
     testWidget->addItem("looooooooooooooooooooooong item");
-#if QT_VERSION >= 0x040200
     // minimumContentsLength() > sizeof("looooooooooooooooooooooong item"), so the sizeHint()
     // stays the same
     QCOMPARE(testWidget->sizeHint(), content);
-#else
-    QVERIFY(testWidget->sizeHint().width() > content.width());
-#endif
     // over 60 characters (cf. setMinimumContentsLength() call above)
     testWidget->addItem("loooooooooooooooooooooooooooooooooooooooooooooo"
                         "ooooooooooooooooooooooooooooooooooooooooooooooo"
@@ -535,10 +515,8 @@ void tst_QComboBox::sizeAdjustPolicy()
     content = testWidget->sizeHint();
     while (testWidget->count())
         testWidget->removeItem(0);
-#if QT_VERSION >= 0x040200
     QCOMPARE(testWidget->sizeHint(), content);
     testWidget->setMinimumContentsLength(0);
-#endif
     QVERIFY(testWidget->sizeHint().width() < content.width());
 }
 
@@ -831,13 +809,9 @@ void tst_QComboBox::autoCompletionCaseSensitivity()
 
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_B);
     qApp->processEvents();
-#if QT_VERSION < 0x040200
-    // autocompletions are case-preserving in < 4.2
-    QCOMPARE(testWidget->currentText(), QString("aBCDEF"));
-#else
     // autocompletions preserve userkey-case from 4.2
     QCOMPARE(testWidget->currentText(), QString("abCDEF"));
-#endif
+
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_Enter);
     qApp->processEvents();
     QCOMPARE(testWidget->currentText(), QString("aBCDEF")); // case restored to item's case

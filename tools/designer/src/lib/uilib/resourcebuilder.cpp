@@ -98,21 +98,21 @@ QVariant QResourceBuilder::loadResource(const QDir &workingDirectory, const DomP
             if (const int flags = iconStateFlags(dpi)) { // new, post 4.4 format
                 QIcon icon;
                 if (flags & NormalOff)
-                    icon.addPixmap(QFileInfo(workingDirectory, dpi->elementNormalOff()->text()).absoluteFilePath(), QIcon::Normal, QIcon::Off);
+                    icon.addFile(QFileInfo(workingDirectory, dpi->elementNormalOff()->text()).absoluteFilePath(), QSize(), QIcon::Normal, QIcon::Off);
                 if (flags & NormalOn)
-                    icon.addPixmap(QFileInfo(workingDirectory, dpi->elementNormalOn()->text()).absoluteFilePath(), QIcon::Normal, QIcon::On);
+                    icon.addFile(QFileInfo(workingDirectory, dpi->elementNormalOn()->text()).absoluteFilePath(), QSize(), QIcon::Normal, QIcon::On);
                 if (flags & DisabledOff)
-                    icon.addPixmap(QFileInfo(workingDirectory, dpi->elementDisabledOff()->text()).absoluteFilePath(), QIcon::Disabled, QIcon::Off);
+                    icon.addFile(QFileInfo(workingDirectory, dpi->elementDisabledOff()->text()).absoluteFilePath(), QSize(), QIcon::Disabled, QIcon::Off);
                 if (flags & DisabledOn)
-                    icon.addPixmap(QFileInfo(workingDirectory, dpi->elementDisabledOn()->text()).absoluteFilePath(), QIcon::Disabled, QIcon::On);
+                    icon.addFile(QFileInfo(workingDirectory, dpi->elementDisabledOn()->text()).absoluteFilePath(), QSize(), QIcon::Disabled, QIcon::On);
                 if (flags & ActiveOff)
-                    icon.addPixmap(QFileInfo(workingDirectory, dpi->elementActiveOff()->text()).absoluteFilePath(), QIcon::Active, QIcon::Off);
+                    icon.addFile(QFileInfo(workingDirectory, dpi->elementActiveOff()->text()).absoluteFilePath(), QSize(), QIcon::Active, QIcon::Off);
                 if (flags & ActiveOn)
-                    icon.addPixmap(QFileInfo(workingDirectory, dpi->elementActiveOn()->text()).absoluteFilePath(), QIcon::Active, QIcon::On);
+                    icon.addFile(QFileInfo(workingDirectory, dpi->elementActiveOn()->text()).absoluteFilePath(), QSize(), QIcon::Active, QIcon::On);
                 if (flags & SelectedOff)
-                    icon.addPixmap(QFileInfo(workingDirectory, dpi->elementSelectedOff()->text()).absoluteFilePath(), QIcon::Selected, QIcon::Off);
+                    icon.addFile(QFileInfo(workingDirectory, dpi->elementSelectedOff()->text()).absoluteFilePath(), QSize(), QIcon::Selected, QIcon::Off);
                 if (flags & SelectedOn)
-                    icon.addPixmap(QFileInfo(workingDirectory, dpi->elementSelectedOn()->text()).absoluteFilePath(), QIcon::Selected, QIcon::On);
+                    icon.addFile(QFileInfo(workingDirectory, dpi->elementSelectedOn()->text()).absoluteFilePath(), QSize(), QIcon::Selected, QIcon::On);
                 return qVariantFromValue(icon);
             } else { // 4.3 legacy
                 const QIcon icon(QFileInfo(workingDirectory, dpi->text()).absoluteFilePath());

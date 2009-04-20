@@ -355,7 +355,7 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
             } else {
                 fieldVal += QString::fromAscii(buf, rSize);
             }
-            if (fieldVal.size() + lengthIndicator >= colSize) {
+            if (lengthIndicator - fieldVal.size() <= 0) {
                 // workaround for Drivermanagers that don't return SQL_NO_DATA
                 break;
             }

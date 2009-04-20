@@ -2576,9 +2576,6 @@ void tst_QWidget::setGeometry()
 
 void tst_QWidget::windowOpacity()
 {
-#if defined(Q_WS_X11) && QT_VERSION < 0x040200
-    QSKIP("QWidget::windowOpacity is broken in Qt < 4.2 on X11", SkipAll);
-#else
 #ifdef Q_OS_WINCE
     QSKIP( "Windows CE does not support windowOpacity", SkipAll);
 #endif
@@ -2588,43 +2585,27 @@ void tst_QWidget::windowOpacity()
     // Initial value should be 1.0
     QCOMPARE(widget.windowOpacity(), 1.0);
     // children should always return 1.0
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Prior to 4.2, all children widgets returned 0.0", Continue);
-#endif
     QCOMPARE(child.windowOpacity(), 1.0);
 
     widget.setWindowOpacity(0.0);
     QCOMPARE(widget.windowOpacity(), 0.0);
     child.setWindowOpacity(0.0);
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Prior to 4.2, all children widgets returned 0.0", Continue);
-#endif
     QCOMPARE(child.windowOpacity(), 1.0);
 
     widget.setWindowOpacity(1.0);
     QCOMPARE(widget.windowOpacity(), 1.0);
     child.setWindowOpacity(1.0);
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Prior to 4.2, all children widgets returned 0.0", Continue);
-#endif
     QCOMPARE(child.windowOpacity(), 1.0);
 
     widget.setWindowOpacity(2.0);
     QCOMPARE(widget.windowOpacity(), 1.0);
     child.setWindowOpacity(2.0);
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Prior to 4.2, all children widgets returned 0.0", Continue);
-#endif
     QCOMPARE(child.windowOpacity(), 1.0);
 
     widget.setWindowOpacity(-1.0);
     QCOMPARE(widget.windowOpacity(), 0.0);
     child.setWindowOpacity(-1.0);
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Prior to 4.2, all children widgets returned 0.0", Continue);
-#endif
     QCOMPARE(child.windowOpacity(), 1.0);
-#endif
 }
 
 class UpdateWidget : public QWidget
@@ -5333,7 +5314,7 @@ void tst_QWidget::subtractOpaqueSiblings()
 {
 #ifdef QT_MAC_USE_COCOA
     QSKIP("Cocoa only has rect granularity.", SkipAll);
-#elif defined(Q_WIDGET_USE_DIRTYLIST) || (QT_VERSION >= 0x040400)
+#else
     QWidget w;
     w.setGeometry(50, 50, 300, 300);
 
@@ -5806,6 +5787,35 @@ void tst_QWidget::setToolTip()
     widget.setToolTip(QString());
     QCOMPARE(widget.toolTip(), QString());
     QCOMPARE(spy.count(), 2);
+
+
+
+    for (int pass = 0; pass < 2; ++pass) {
+        QWidget *popup = new QWidget(0, Qt::Popup);
+        popup->resize(150, 50);
+        QFrame *frame = new QFrame(popup);
+        frame->setGeometry(0, 0, 50, 50);
+        frame->setFrameStyle(QFrame::Box | QFrame::Plain);
+        EventSpy spy1(frame, QEvent::ToolTip);
+        EventSpy spy2(popup, QEvent::ToolTip);
+        frame->setMouseTracking(pass == 0 ? false : true);
+        frame->setToolTip(QLatin1String("TOOLTIP FRAME"));
+        popup->setToolTip(QLatin1String("TOOLTIP POPUP"));
+        popup->show();
+#ifdef Q_WS_X11
+        qt_x11_wait_for_window_manager(popup);
+#endif
+        QTest::qWait(100);
+        QTest::mouseMove(frame);
+        QTest::qWait(900);          // delay is 700
+
+        QCOMPARE(spy1.count(), 1);
+        QCOMPARE(spy2.count(), 0);
+        if (pass == 0)
+            QTest::qWait(2200);     // delay is 2000
+        QTest::mouseMove(popup);
+        delete popup;
+    }
 }
 
 void tst_QWidget::testWindowIconChangeEventPropagation()
