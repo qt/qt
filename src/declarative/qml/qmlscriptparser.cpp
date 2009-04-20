@@ -62,10 +62,11 @@ public:
 
 protected:
     Object *defineObjectBinding(int line,
-                             const QString &propertyName,
+                             AST::UiQualifiedId *propertyName,
                              const QString &objectType,
                              AST::UiObjectInitializer *initializer = 0);
-    QString getPrimitive(const QByteArray &propertyName, AST::ExpressionNode *expr);
+        QString getPrimitive(const QByteArray &propertyName, AST::ExpressionNode *expr);
+        void defineProperty(const QString &propertyName, int line, const QString &primitive);
 
     using AST::Visitor::visit;
     using AST::Visitor::endVisit;
@@ -150,7 +151,7 @@ QString ProcessAST::asString(AST::UiQualifiedId *node) const
 }
 
 Object *ProcessAST::defineObjectBinding(int line,
-                                     const QString &propertyName,
+                                     AST::UiQualifiedId *propertyName,
                                      const QString &objectType,
                                      AST::UiObjectInitializer *initializer)
 {
@@ -160,13 +161,11 @@ Object *ProcessAST::defineObjectBinding(int line,
         return false;
     }
 
-    const QStringList str = propertyName.split(QLatin1Char('.'), QString::SkipEmptyParts);
-
-    for(int ii = 0; ii < str.count(); ++ii) {
-        const QString s = str.at(ii);
-        _stateStack.pushProperty(s, line);
+    int propertyCount = 0;
+    for (; propertyName; propertyName = propertyName->next){
+        ++propertyCount;
+        _stateStack.pushProperty(propertyName->name->asString(), propertyName->identifierToken.startLine);
     }
-
 
     // Class
     const int typeId = _parser->findOrCreateTypeId(objectType);
@@ -178,7 +177,7 @@ Object *ProcessAST::defineObjectBinding(int line,
     _scope.removeLast();
     obj->line = line;
 
-    if (!str.isEmpty())  {
+    if (propertyCount) {
         Property *prop = currentProperty();
         Value *v = new Value;
         v->object = obj;
@@ -186,7 +185,7 @@ Object *ProcessAST::defineObjectBinding(int line,
         prop->addValue(v);
     }
 
-    for(int ii = str.count() - 1; ii >= 0; --ii)
+    while (propertyCount--)
         _stateStack.pop();
 
 
@@ -212,6 +211,16 @@ Object *ProcessAST::defineObjectBinding(int line,
     return obj;
 }
 
+void ProcessAST::defineProperty(const QString &propertyName, int line, const QString &primitive)
+{
+    _stateStack.pushProperty(propertyName, line);
+    Value *value = new Value;
+    value->primitive = primitive;
+    value->line = line;
+    currentProperty()->addValue(value);
+    _stateStack.pop();
+}
+
 // UiObjectMember: T_PUBLIC T_IDENTIFIER T_IDENTIFIER T_COLON Expression UiObjectInitializer ;
 bool ProcessAST::visit(AST::UiPublicMember *node)
 {
@@ -222,32 +231,16 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         _stateStack.pushProperty(QLatin1String("properties"), node->publicToken.startLine);
 
         Object *obj = defineObjectBinding(node->identifierToken.startLine,
-                                          QString(),
+                                          0,
                                           QLatin1String("Property"));
 
         _stateStack.pushObject(obj);
 
-        _stateStack.pushProperty(QLatin1String("name"), node->identifierToken.startLine);
-        Value *value = new Value;
-        value->primitive = name;
-        value->line = node->identifierToken.startLine;
-        currentProperty()->addValue(value);
-        _stateStack.pop(); // name property
-
-        if (node->expression) { // default value
-            _stateStack.pushProperty(QLatin1String("value"), node->identifierToken.startLine);
-            Value *value = new Value;
-            value->primitive = getPrimitive("value", node->expression);
-            value->line = node->identifierToken.startLine;
-            currentProperty()->addValue(value);
-            _stateStack.pop(); // value property
-        }
-
-
-
+        defineProperty(QLatin1String("name"), node->identifierToken.startLine, name);
+        if (node->expression) // default value
+            defineProperty(QLatin1String("value"), node->identifierToken.startLine, getPrimitive("value", node->expression));
 
         _stateStack.pop(); // object
-
         _stateStack.pop(); // properties
 
     } else {
@@ -265,7 +258,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
 bool ProcessAST::visit(AST::UiObjectDefinition *node)
 {
     defineObjectBinding(node->identifierToken.startLine,
-                        QString(),
+                        0,
                         node->name->asString(),
                         node->initializer);
     return false;
@@ -275,10 +268,62 @@ bool ProcessAST::visit(AST::UiObjectDefinition *node)
 // UiObjectMember: UiQualifiedId T_COLON T_IDENTIFIER UiObjectInitializer ;
 bool ProcessAST::visit(AST::UiObjectBinding *node)
 {
-    defineObjectBinding(node->identifierToken.startLine,
-                        asString(node->qualifiedId),
-                        node->name->asString(),
-                        node->initializer);
+    if (asString(node->qualifiedId) == QLatin1String("propertyChangeSet")
+        && node->name->asString() == QLatin1String("PropertyChangeSet")) {
+
+        AST::UiObjectMemberList *it = node->initializer->members;
+        for (; it; it = it->next) {
+            if (it->member->kind != AST::Node::Kind_UiScriptBinding)
+                continue; // ### TODO generate error
+            AST::UiScriptBinding *scriptBinding = static_cast<AST::UiScriptBinding *>(it->member);
+
+
+            QString target;
+            QString property;
+            QString value;
+
+            int propertyCount = 0;
+            AST::UiQualifiedId *propertyName = scriptBinding->qualifiedId;
+            for (; propertyName; propertyName = propertyName->next){
+                if (propertyName->next) {
+                    if (!target.isEmpty())
+                        target += QLatin1Char('.');
+                    target += propertyName->name->asString();
+                } else {
+                    property = propertyName->name->asString();
+                }
+                ++propertyCount;
+            }
+
+            if (scriptBinding->statement->kind == AST::Node::Kind_ExpressionStatement) {
+                AST::ExpressionStatement *stmt = static_cast<AST::ExpressionStatement *>(scriptBinding->statement);
+                value = getPrimitive(property.toLatin1(), stmt->expression);
+            } else {
+                // #### TODO generate error
+            }
+
+            qDebug() << "SetProperty" << target << property << value;
+
+            Object *obj = defineObjectBinding(node->identifierToken.startLine,
+                                              0,
+                                              QLatin1String("SetProperty"));
+
+            _stateStack.pushObject(obj);
+            if (!target.isEmpty())
+                defineProperty(QLatin1String("target"), scriptBinding->colonToken.startLine, QLatin1Char('{') + target + QLatin1Char('}'));
+            if (!property.isEmpty())
+                defineProperty(QLatin1String("property"), scriptBinding->colonToken.startLine, property);
+            if (!value.isEmpty())
+                defineProperty(QLatin1String("value"), scriptBinding->colonToken.startLine, value);
+            _stateStack.pop(); // object
+        }
+    } else {
+
+        defineObjectBinding(node->identifierToken.startLine,
+                            node->qualifiedId,
+                            node->name->asString(),
+                            node->initializer);
+    }
     return false;
 }
 
@@ -326,20 +371,18 @@ QString ProcessAST::getPrimitive(const QByteArray &propertyName, AST::Expression
 // UiObjectMember: UiQualifiedId T_COLON Statement ;
 bool ProcessAST::visit(AST::UiScriptBinding *node)
 {
-    const QString qualifiedId = asString(node->qualifiedId);
-    const QStringList str = qualifiedId.split(QLatin1Char('.'));
-    int line = node->colonToken.startLine;
 
-    for(int ii = 0; ii < str.count(); ++ii) {
-        const QString s = str.at(ii);
-        _stateStack.pushProperty(s, line);
+    int propertyCount = 0;
+    AST::UiQualifiedId *propertyName = node->qualifiedId;
+    for (; propertyName; propertyName = propertyName->next){
+        ++propertyCount;
+        _stateStack.pushProperty(propertyName->name->asString(), propertyName->identifierToken.startLine);
     }
 
+    Property *prop = currentProperty();
     QString primitive;
     QTextStream out(&primitive);
     PrettyPretty pp(out);
-
-    Property *prop = currentProperty();
 
     if (node->statement->kind == AST::Node::Kind_ExpressionStatement) {
         AST::ExpressionStatement *stmt = static_cast<AST::ExpressionStatement *>(node->statement);
@@ -349,13 +392,12 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
         pp(node->statement);
     }
 
-
     Value *v = new Value;
     v->primitive = primitive;
-    v->line = line;
+    v->line = node->colonToken.startLine;
     prop->addValue(v);
 
-    for(int ii = str.count() - 1; ii >= 0; --ii)
+    while (propertyCount--)
         _stateStack.pop();
 
     return true;
@@ -364,16 +406,16 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
 // UiObjectMember: UiQualifiedId T_COLON T_LBRACKET UiObjectMemberList T_RBRACKET ;
 bool ProcessAST::visit(AST::UiArrayBinding *node)
 {
-    QString propertyName = asString(node->qualifiedId);
-    const QStringList str = propertyName.split(QLatin1Char('.'), QString::SkipEmptyParts);
-    for(int ii = 0; ii < str.count(); ++ii) {
-        const QString s = str.at(ii);
-        _stateStack.pushProperty(s, node->colonToken.startLine);
+    int propertyCount = 0;
+    AST::UiQualifiedId *propertyName = node->qualifiedId;
+    for (; propertyName; propertyName = propertyName->next){
+        ++propertyCount;
+        _stateStack.pushProperty(propertyName->name->asString(), propertyName->identifierToken.startLine);
     }
 
     accept(node->members);
 
-    for(int ii = str.count() - 1; ii >= 0; --ii)
+    while (propertyCount--)
         _stateStack.pop();
 
     return false;
