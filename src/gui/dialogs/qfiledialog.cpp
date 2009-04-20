@@ -1437,6 +1437,8 @@ void QFileDialog::setIconProvider(QFileIconProvider *provider)
 {
     Q_D(QFileDialog);
     d->model->setIconProvider(provider);
+    //It forces the refresh of all entries in the side bar, then we can get new icons
+    d->qFileDialogUi->sidebar->setUrls(d->qFileDialogUi->sidebar->urls());
 }
 
 /*!
