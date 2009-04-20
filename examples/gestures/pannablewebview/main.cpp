@@ -7,6 +7,11 @@ public:
     PannableWebView(QWidget *parent = 0)
         : QWebView(parent)
     {
+#if 0
+        QPushButton *btn = new QPushButton("Some test button", this);
+        btn->resize(300, 200);
+        btn->move(40, 300);
+#endif
         grabGesture(Qt::PanGesture);
     }
 protected:
