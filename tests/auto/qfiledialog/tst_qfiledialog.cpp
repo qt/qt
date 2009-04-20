@@ -157,6 +157,7 @@ private slots:
     void task228844_ensurePreviousSorting();
     void task239706_editableFilterCombo();
     void task218353_relativePaths();
+    void task251321_sideBarHiddenEntries();
 
 private:
     QByteArray userSettings;
@@ -1850,6 +1851,39 @@ void tst_QFiledialog::task218353_relativePaths()
     d.setDirectory(appDir.absolutePath() + QLatin1String("/test/../test/../"));
     QCOMPARE(d.directory().absolutePath(), appDir.absolutePath());
     appDir.rmdir("test");
+}
+
+void tst_QFiledialog::task251321_sideBarHiddenEntries()
+{
+    QNonNativeFileDialog fd;
+
+    QDir current = QDir::currentPath();
+    current.mkdir(".hidden");
+    QDir hiddenDir = QDir(".hidden");
+    hiddenDir.mkdir("subdir");
+    QDir hiddenSubDir = QDir(".hidden/subdir");
+    hiddenSubDir.mkdir("happy");
+    hiddenSubDir.mkdir("happy2");
+
+    QList<QUrl> urls;
+    urls << QUrl::fromLocalFile(hiddenSubDir.absolutePath());
+    fd.setSidebarUrls(urls);
+    fd.show();
+    QTest::qWait(250);
+
+    QSidebar *sidebar = qFindChild<QSidebar*>(&fd, "sidebar");
+    sidebar->setFocus();
+    sidebar->selectUrl(QUrl::fromLocalFile(hiddenSubDir.absolutePath()));
+    QTest::mouseClick(sidebar->viewport(), Qt::LeftButton, 0, sidebar->visualRect(sidebar->model()->index(0, 0)).center());
+    QTest::qWait(250);
+
+    QFileSystemModel *model = qFindChild<QFileSystemModel*>(&fd, "qt_filesystem_model");
+    QCOMPARE(model->rowCount(model->index(hiddenSubDir.absolutePath())), 2);
+
+    hiddenSubDir.rmdir("happy2");
+    hiddenSubDir.rmdir("happy");
+    hiddenDir.rmdir("subdir");
+    current.rmdir(".hidden");
 }
 
 QTEST_MAIN(tst_QFiledialog)
