@@ -544,9 +544,8 @@ QGraphicsProxyWidget::~QGraphicsProxyWidget()
     hidden or disabled after embedding is complete. The class documentation
     has a full overview over the shared state.
 
-    The embedded widget's window flags are ignored. QGraphicsProxyWidget's
-    window flags decide whether the widget, after embedding, should be given
-    window decorations or not.
+    QGraphicsProxyWidget's window flags determine whether the widget, after
+    embedding, will be given window decorations or not.
 
     After this function returns, QGraphicsProxyWidget will keep its state
     synchronized with that of \a widget whenever possible.
