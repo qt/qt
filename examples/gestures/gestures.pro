@@ -3,7 +3,8 @@ TEMPLATE      = \
 SUBDIRS       = \
               imageviewer \
               graphicsview \
-              collidingmice
+              collidingmice \
+              pannablewebview
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/gestures
