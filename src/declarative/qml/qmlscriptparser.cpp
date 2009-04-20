@@ -61,16 +61,17 @@ public:
     void operator()(AST::Node *node);
 
 protected:
+    Object *defineObjectBinding(int line,
+                             const QString &propertyName,
+                             const QString &objectType,
+                             AST::UiObjectInitializer *initializer = 0);
+
     using AST::Visitor::visit;
     using AST::Visitor::endVisit;
 
     virtual bool visit(AST::UiObjectDefinition *node);
-    virtual void endVisit(AST::UiObjectDefinition *node);
-
     virtual bool visit(AST::UiPublicMember *node);
-
     virtual bool visit(AST::UiObjectBinding *node);
-    virtual void endVisit(AST::UiObjectBinding *node);
 
     virtual bool visit(AST::UiScriptBinding *node);
     virtual bool visit(AST::UiArrayBinding *node);
@@ -147,100 +148,45 @@ QString ProcessAST::asString(AST::UiQualifiedId *node) const
     return s;
 }
 
-// UiObjectMember: T_PUBLIC T_IDENTIFIER T_IDENTIFIER T_COLON Expression UiObjectInitializer ;
-bool ProcessAST::visit(AST::UiPublicMember *node)
+Object *ProcessAST::defineObjectBinding(int line,
+                                     const QString &propertyName,
+                                     const QString &objectType,
+                                     AST::UiObjectInitializer *initializer)
 {
-    qWarning() << Q_FUNC_INFO << "not implemented";
-    return false;
-}
-
-// UiObjectMember: T_IDENTIFIER UiObjectInitializer ;
-bool ProcessAST::visit(AST::UiObjectDefinition *node)
-{
-    const QString name = node->name->asString();
-    bool isType = name.at(0).isUpper() && !name.contains(QLatin1Char('.'));
-
-    _scope.append(name);
-
-    if (! isType) {
+    bool isType = !objectType.isEmpty() && objectType.at(0).isUpper() && !objectType.contains(QLatin1Char('.'));
+    if (!isType) {
         qWarning() << "bad name for a class"; // ### FIXME
         return false;
     }
 
-    // Class
-    const int typeId = _parser->findOrCreateTypeId(name);
-    int line = node->identifierToken.startLine;
-
-    Object *obj = new Object;
-    obj->type = typeId;
-    obj->typeName = qualifiedNameId().toLatin1();
-    obj->line = line;
-
-    if (! _parser->tree()) {
-        _parser->setTree(obj);
-        _stateStack.pushObject(obj);
-    } else {
-        const State state = _stateStack.top();
-        Value *v = new Value;
-        v->object = obj;
-        v->line = line;
-        if(state.property)
-            state.property->addValue(v);
-        else
-            state.object->getDefaultProperty()->addValue(v);
-        _stateStack.pushObject(obj);
-    }
-
-    return true;
-}
-
-// UiObjectMember: T_IDENTIFIER UiObjectInitializer ;
-void ProcessAST::endVisit(AST::UiObjectDefinition *)
-{
-    _stateStack.pop();
-    _scope.removeLast();
-}
-
-// UiObjectMember: UiQualifiedId T_COLON T_IDENTIFIER UiObjectInitializer ;
-bool ProcessAST::visit(AST::UiObjectBinding *node)
-{
-//    qWarning() << Q_FUNC_INFO << "not implemented";
-    const QString qualifiedId = asString(node->qualifiedId);
-    const QStringList str = qualifiedId.split(QLatin1Char('.'));
-    int line = node->colonToken.startLine;
+    const QStringList str = propertyName.split(QLatin1Char('.'), QString::SkipEmptyParts);
 
     for(int ii = 0; ii < str.count(); ++ii) {
         const QString s = str.at(ii);
         _stateStack.pushProperty(s, line);
     }
 
-    const QString name = node->name->asString();
-    bool isType = name.at(0).isUpper() && !name.contains(QLatin1Char('.'));
-
-    _scope.append(name);
-
-    if (! isType) {
-        qWarning() << "bad name for a class"; // ### FIXME
-        return false;
-    }
 
     // Class
-    const int typeId = _parser->findOrCreateTypeId(name);
-    line = node->identifierToken.startLine;
+    const int typeId = _parser->findOrCreateTypeId(objectType);
 
     Object *obj = new Object;
     obj->type = typeId;
+    _scope.append(objectType);
     obj->typeName = qualifiedNameId().toLatin1();
+    _scope.removeLast();
     obj->line = line;
 
-    Property *prop = currentProperty();
-    Value *v = new Value;
-    v->object = obj;
-    v->line = line;
-    prop->addValue(v);
+    if (Property *prop = currentProperty()) {
+        Value *v = new Value;
+        v->object = obj;
+        v->line = line;
+        prop->addValue(v);
+    }
 
     for(int ii = str.count() - 1; ii >= 0; --ii)
         _stateStack.pop();
+
 
     if (! _parser->tree()) {
         _parser->setTree(obj);
@@ -257,14 +203,67 @@ bool ProcessAST::visit(AST::UiObjectBinding *node)
         _stateStack.pushObject(obj);
     }
 
-    return true;
+    accept(initializer);
+
+    _stateStack.pop();
+
+    return obj;
 }
 
-// UiObjectMember: UiQualifiedId T_COLON T_IDENTIFIER UiObjectInitializer ;
-void ProcessAST::endVisit(AST::UiObjectBinding *node)
+// UiObjectMember: T_PUBLIC T_IDENTIFIER T_IDENTIFIER T_COLON Expression UiObjectInitializer ;
+bool ProcessAST::visit(AST::UiPublicMember *node)
 {
-    _stateStack.pop();
-    _scope.removeLast();
+#if 0
+    const QString type = node->type->asString();
+    const QString name = node->name->asString();
+
+    if (type == QLatin1String("property")) {
+        Object *properties = defineObjectBinding(node->publicToken.startLine, 
+                                                 QLatin1String("properties"),
+                                                 Q
+        property = QLatin1("properties");
+        _stateStack.pushProperty(QLatin1String("properties"), node->publicToken.startLine);
+
+        const int typeId = _parser->findOrCreateTypeId(QLatin1String("Property"));
+        int line = node->identifierToken.startLine;
+
+        Object *obj = new Object;
+        obj->type = typeId;
+        obj->typeName = qualifiedNameId().toLatin1();
+        obj->line = line;
+
+
+        accept(node->initializer);
+
+        _stateStack.pop();
+
+    } else {
+        qWarning << "bad public identifier" << type; // ### FIXME
+    }
+#endif
+    return false;
+}
+
+
+// UiObjectMember: T_IDENTIFIER UiObjectInitializer ;
+bool ProcessAST::visit(AST::UiObjectDefinition *node)
+{
+    defineObjectBinding(node->identifierToken.startLine,
+                        QString(),
+                        node->name->asString(),
+                        node->initializer);
+    return false;
+}
+
+
+// UiObjectMember: UiQualifiedId T_COLON T_IDENTIFIER UiObjectInitializer ;
+bool ProcessAST::visit(AST::UiObjectBinding *node)
+{
+    defineObjectBinding(node->identifierToken.startLine,
+                        asString(node->qualifiedId),
+                        node->name->asString(),
+                        node->initializer);
+    return false;
 }
 
 // UiObjectMember: UiQualifiedId T_COLON Statement ;
