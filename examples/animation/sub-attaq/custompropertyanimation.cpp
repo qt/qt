@@ -55,9 +55,8 @@ void CustomPropertyAnimationPrivate::initDefaultStartValue()
     QVariant def = animProp->read();
     if (def.isValid())
         convertValues(def.userType());
-    if (animProp && !defaultStartValue.isValid()
-        && ((currentTime == 0 && (currentIteration || currentIteration == 0))
-        || (currentTime == duration && currentIteration == (iterationCount - 1)))) {
+    if (animProp && !defaultStartValue.isValid() && currentTime == 0
+        || (currentTime == duration && currentLoop == (loopCount - 1))) {
             setDefaultStartValue(def);
     }
 }

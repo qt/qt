@@ -64,12 +64,12 @@ class QParallelAnimationGroupPrivate : public QAnimationGroupPrivate
     Q_DECLARE_PUBLIC(QParallelAnimationGroup)
 public:
     QParallelAnimationGroupPrivate()
-        : lastIteration(0), lastCurrentTime(0)
+        : lastLoop(0), lastCurrentTime(0)
     {
     }
 
     QHash<QAbstractAnimation*, int> uncontrolledFinishTime;
-    int lastIteration;
+    int lastLoop;
     int lastCurrentTime;
 
     bool isUncontrolledAnimationFinished(QAbstractAnimation *anim) const;

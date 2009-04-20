@@ -144,7 +144,7 @@ void tst_QPropertyAnimation::construction()
 void tst_QPropertyAnimation::setCurrentTime_data()
 {
     QTest::addColumn<int>("duration");
-    QTest::addColumn<int>("iterationCount");
+    QTest::addColumn<int>("loopCount");
     QTest::addColumn<int>("currentTime");
     QTest::addColumn<int>("testCurrentTime");
     QTest::addColumn<int>("testCurrentLoop");
@@ -177,7 +177,7 @@ void tst_QPropertyAnimation::setCurrentTime_data()
 void tst_QPropertyAnimation::setCurrentTime()
 {
     QFETCH(int, duration);
-    QFETCH(int, iterationCount);
+    QFETCH(int, loopCount);
     QFETCH(int, currentTime);
     QFETCH(int, testCurrentTime);
     QFETCH(int, testCurrentLoop);
@@ -186,11 +186,11 @@ void tst_QPropertyAnimation::setCurrentTime()
     if (duration < 0)
         QTest::ignoreMessage(QtWarningMsg, "QVariantAnimation::setDuration: cannot set a negative duration");
     animation.setDuration(duration);
-    animation.setIterationCount(iterationCount);
+    animation.setLoopCount(loopCount);
     animation.setCurrentTime(currentTime);
 
     QCOMPARE(animation.currentTime(), testCurrentTime);
-    QCOMPARE(animation.currentIteration(), testCurrentLoop);
+    QCOMPARE(animation.currentLoop(), testCurrentLoop);
 }
 
 void tst_QPropertyAnimation::statesAndSignals_data()
@@ -208,7 +208,7 @@ void tst_QPropertyAnimation::statesAndSignals()
 
     QSignalSpy finishedSpy(anim, SIGNAL(finished()));
     QSignalSpy runningSpy(anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
-    QSignalSpy currentLoopSpy(anim, SIGNAL(currentIterationChanged(int)));
+    QSignalSpy currentLoopSpy(anim, SIGNAL(currentLoopChanged(int)));
 
     anim->setCurrentTime(1);
     anim->setCurrentTime(100);
@@ -217,23 +217,23 @@ void tst_QPropertyAnimation::statesAndSignals()
     QCOMPARE(currentLoopSpy.count(), 0);
     QCOMPARE(anim->state(), QAnimationGroup::Stopped);
 
-    anim->setIterationCount(3);
+    anim->setLoopCount(3);
     anim->setCurrentTime(101);
 
     if (uncontrolled)
         QSKIP("Uncontrolled animations don't handle looping", SkipSingle);
 
     QCOMPARE(currentLoopSpy.count(), 1);
-    QCOMPARE(anim->currentIteration(), 1);
+    QCOMPARE(anim->currentLoop(), 1);
 
     anim->setCurrentTime(0);
     QCOMPARE(currentLoopSpy.count(), 2);
-    QCOMPARE(anim->currentIteration(), 0);
+    QCOMPARE(anim->currentLoop(), 0);
 
     anim->start();
     QCOMPARE(anim->state(), QAnimationGroup::Running);
     QCOMPARE(runningSpy.count(), 1); //anim must have started
-    QCOMPARE(anim->currentIteration(), 0);
+    QCOMPARE(anim->currentLoop(), 0);
     runningSpy.clear();
 
     anim->stop();
@@ -241,7 +241,7 @@ void tst_QPropertyAnimation::statesAndSignals()
     QCOMPARE(runningSpy.count(), 1); //anim must have stopped
     QCOMPARE(finishedSpy.count(), 0);
     QCOMPARE(anim->currentTime(), 0);
-    QCOMPARE(anim->currentIteration(), 0);
+    QCOMPARE(anim->currentLoop(), 0);
     QCOMPARE(currentLoopSpy.count(), 2);
     runningSpy.clear();
 
@@ -252,24 +252,24 @@ void tst_QPropertyAnimation::statesAndSignals()
     runningSpy.clear();
     QCOMPARE(finishedSpy.count(), 1);
     QCOMPARE(anim->currentTime(), 100);
-    QCOMPARE(anim->currentIteration(), 2);
+    QCOMPARE(anim->currentLoop(), 2);
     QCOMPARE(currentLoopSpy.count(), 4);
 
     anim->start(); // auto-rewinds
     QCOMPARE(anim->state(), QAnimationGroup::Running);
     QCOMPARE(anim->currentTime(), 0);
-    QCOMPARE(anim->currentIteration(), 0);
+    QCOMPARE(anim->currentLoop(), 0);
     QCOMPARE(currentLoopSpy.count(), 5);
     QCOMPARE(runningSpy.count(), 1); // anim has started
     QCOMPARE(finishedSpy.count(), 1);
-    QCOMPARE(anim->currentIteration(), 0);
+    QCOMPARE(anim->currentLoop(), 0);
     runningSpy.clear();
 
     QTest::qWait(1000);
 
     QCOMPARE(currentLoopSpy.count(), 7);
     QCOMPARE(anim->state(), QAnimationGroup::Stopped);
-    QCOMPARE(anim->currentIteration(), 2);
+    QCOMPARE(anim->currentLoop(), 2);
     QCOMPARE(runningSpy.count(), 1); // anim has stopped
     QCOMPARE(finishedSpy.count(), 2);
     QCOMPARE(anim->currentTime(), 100);
@@ -340,7 +340,7 @@ void tst_QPropertyAnimation::deletion2()
     QCOMPARE(runningSpy.count(), 1);
     QCOMPARE(finishedSpy.count(), 0);
 
-    //we can't call deletaLater directly because the delete would only happen in the next iteration of _this_ event loop
+    //we can't call deletaLater directly because the delete would only happen in the next loop of _this_ event loop
     QTimer::singleShot(0, object, SLOT(deleteLater()));
     QTest::qWait(50);
 

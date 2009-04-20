@@ -21,8 +21,8 @@ void QValueAnimationPrivate::initDefaultStartValue()
 {
     Q_Q(QValueAnimation);
     if (animProp && !q->startValue().isValid()
-        && ((currentTime == 0 && (currentIteration || currentIteration == 0))
-        || (currentTime == duration && currentIteration == (iterationCount - 1)))) {
+        && (currentTime == 0
+        || (currentTime == duration && currentLoop == (loopCount - 1)))) {
             setDefaultStartValue(animProp->read());
     }
 }

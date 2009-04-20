@@ -279,7 +279,7 @@ QVariantAnimation::~QVariantAnimation()
     of the interpolated property.
 
     The easing curve is used with the interpolator, the interpolated() virtual
-    function, the animation's duration, and iterationCount, to control how the
+    function, the animation's duration, and loopCount, to control how the
     current value changes as the animation progresses.
 */
 QEasingCurve QVariantAnimation::easingCurve() const

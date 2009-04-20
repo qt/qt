@@ -111,7 +111,7 @@ void QParallelAnimationGroup::updateCurrentTime(int)
     if (d->animations.isEmpty())
         return;
 
-    if (d->currentIteration > d->lastIteration) {
+    if (d->currentLoop > d->lastLoop) {
         // simulate completion of the loop
         int dura = duration();
         if (dura > 0) {
@@ -119,7 +119,7 @@ void QParallelAnimationGroup::updateCurrentTime(int)
                 animation->setCurrentTime(dura);   // will stop
             }
         }
-    } else if (d->currentIteration < d->lastIteration) {
+    } else if (d->currentLoop < d->lastLoop) {
         // simulate completion of the loop seeking backwards
         foreach (QAbstractAnimation *animation, d->animations) {
             animation->setCurrentTime(0);
@@ -127,11 +127,11 @@ void QParallelAnimationGroup::updateCurrentTime(int)
         }
     }
 
-    bool timeFwd = ((d->currentIteration == d->lastIteration && d->currentTime >= d->lastCurrentTime)
-                   || d->currentIteration > d->lastIteration);
+    bool timeFwd = ((d->currentLoop == d->lastLoop && d->currentTime >= d->lastCurrentTime)
+                   || d->currentLoop > d->lastLoop);
 #ifdef QANIMATION_DEBUG
     qDebug("QParallellAnimationGroup %5d: setCurrentTime(%d), loop:%d, last:%d, timeFwd:%d, lastcurrent:%d, %d",
-        __LINE__, d->currentTime, d->currentIteration, d->lastIteration, timeFwd, d->lastCurrentTime, state());
+        __LINE__, d->currentTime, d->currentLoop, d->lastLoop, timeFwd, d->lastCurrentTime, state());
 #endif
     // finally move into the actual time of the current loop
     foreach (QAbstractAnimation *animation, d->animations) {
@@ -139,7 +139,7 @@ void QParallelAnimationGroup::updateCurrentTime(int)
         if (dura == -1 && d->isUncontrolledAnimationFinished(animation))
             continue;
         if (dura == -1 || (d->currentTime <= dura && dura != 0)
-            || (dura == 0 && d->currentIteration != d->lastIteration)) {
+            || (dura == 0 && d->currentLoop != d->lastLoop)) {
             switch (state()) {
             case Running:
                 animation->start();
@@ -165,7 +165,7 @@ void QParallelAnimationGroup::updateCurrentTime(int)
         if (d->currentTime > dura)
             animation->stop();
     }
-    d->lastIteration = d->currentIteration;
+    d->lastLoop = d->currentLoop;
     d->lastCurrentTime = d->currentTime;
 }
 
@@ -207,7 +207,7 @@ void QParallelAnimationGroupPrivate::_q_uncontrolledAnimationFinished()
     Q_ASSERT(animation);
 
     int uncontrolledRunningCount = 0;
-    if (animation->duration() == -1 || animation->iterationCount() < 0) {
+    if (animation->duration() == -1 || animation->loopCount() < 0) {
         QHash<QAbstractAnimation *, int>::iterator it = uncontrolledFinishTime.begin();
         while (it != uncontrolledFinishTime.end()) {
             if (it.key() == animation) {
@@ -248,7 +248,7 @@ void QParallelAnimationGroupPrivate::connectUncontrolledAnimations()
     Q_Q(QParallelAnimationGroup);
 
     foreach (QAbstractAnimation *animation, animations) {
-        if (animation->duration() == -1 || animation->iterationCount() < 0) {
+        if (animation->duration() == -1 || animation->loopCount() < 0) {
             uncontrolledFinishTime[animation] = -1;
             QObject::connect(animation, SIGNAL(finished()), q, SLOT(_q_uncontrolledAnimationFinished()));
         }
@@ -273,11 +273,11 @@ void QParallelAnimationGroup::updateDirection(QAbstractAnimation::Direction dire
         }
     } else {
         if (direction == Forward) {
-            d->lastIteration = 0;
+            d->lastLoop = 0;
             d->lastCurrentTime = 0;
         } else {
-            // Looping backwards with iterationCount == -1 does not really work well...
-            d->lastIteration = (d->iterationCount == -1 ? 0 : d->iterationCount - 1);
+            // Looping backwards with loopCount == -1 does not really work well...
+            d->lastLoop = (d->loopCount == -1 ? 0 : d->loopCount - 1);
             d->lastCurrentTime = duration();
         }
     }
