@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QState class provides a general-purpose state for QStateMachine.
 
+  \since 4.6
   \ingroup statemachine
 
   QState objects can have child states, and can have transitions to other
@@ -73,6 +74,9 @@ QT_BEGIN_NAMESPACE
   parent state is the target of a transition.
 
   The addHistoryState() function adds a history state.
+
+  The addFinishedTransition() function creates and adds a transition that's
+  triggered when a final child state is entered.
 
   The setErrorState() sets the state's error state. The error state is the
   state that the state machine will transition to if an error is detected when

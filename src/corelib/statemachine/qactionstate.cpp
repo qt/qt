@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QActionState class provides an action-based state.
 
+  \since 4.6
   \ingroup statemachine
 
   QActionState executes \l{QStateAction}{state actions} when the state is

@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QFinalState class provides a final state.
 
+  \since 4.6
   \ingroup statemachine
 
   A final state is used to communicate that (part of) a QStateMachine has

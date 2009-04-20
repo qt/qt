@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QAbstractState class is the base class of states of a QStateMachine.
 
+  \since 4.6
   \ingroup statemachine
 
   The QAbstractState class is the abstract base class of states that are part

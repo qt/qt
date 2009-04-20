@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QAbstractTransition class is the base class of transitions between QAbstractState objects.
 
+  \since 4.6
   \ingroup statemachine
 
   The QAbstractTransition class is the abstract base class of transitions

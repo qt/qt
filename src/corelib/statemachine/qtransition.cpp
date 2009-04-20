@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QTransition class provides an action-based transition.
 
+  \since 4.6
   \ingroup statemachine
 
   QTransition provides an action-based transition; you add actions with the

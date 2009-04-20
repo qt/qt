@@ -26,6 +26,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QMouseEventTransition class provides a transition for mouse events.
 
+  \since 4.6
   \ingroup statemachine
 
   QMouseEventTransition is part of \l{The State Machine Framework}.

@@ -25,6 +25,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QKeyEventTransition class provides a transition for key events.
 
+  \since 4.6
   \ingroup statemachine
 
   QKeyEventTransition is part of \l{The State Machine Framework}.

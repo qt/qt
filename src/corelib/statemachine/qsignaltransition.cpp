@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QSignalTransition class provides a transition based on a Qt signal.
 
+  \since 4.6
   \ingroup statemachine
 
   Typically you would use the overload of QState::addTransition() that takes a

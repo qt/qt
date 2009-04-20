@@ -71,11 +71,12 @@ void QStateActionPrivate::callExecute()
 
   \brief The QStateAction class is the base class of QState actions.
 
+  \since 4.6
   \ingroup statemachine
 
-  A state action is added to a state by calling QState::addEntryAction() or
-  QState::addExitAction(). QStateAction is part of \l{The State Machine
-  Framework}.
+  A state action is added to a state by calling QActionState::addEntryAction()
+  or QActionState::addExitAction(). QStateAction is part of \l{The State
+  Machine Framework}.
 
   \section1 Subclassing
 
@@ -152,6 +153,7 @@ QStateInvokeMethodActionPrivate *QStateInvokeMethodActionPrivate::get(QStateInvo
 
   \brief The QStateInvokeMethodAction class provides an invoke method action for QObjects.
 
+  \since 4.6
   \ingroup statemachine
 
   The QStateInvokeMethodAction class provides an action that calls a method of

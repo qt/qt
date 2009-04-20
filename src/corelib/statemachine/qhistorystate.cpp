@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QHistoryState class provides a means of returning to a previously active substate.
 
+  \since 4.6
   \ingroup statemachine
 
   A history state is a pseudo-state that represents the child state that the

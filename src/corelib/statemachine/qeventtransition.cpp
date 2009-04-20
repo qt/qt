@@ -55,10 +55,11 @@ QT_BEGIN_NAMESPACE
 
   \brief The QEventTransition class provides a QObject-specific transition for Qt events.
 
+  \since 4.6
   \ingroup statemachine
 
-  A QEventTransition object binds an event or transition to a particular
-  QObject.  QEventTransition is part of \l{The State Machine Framework}.
+  A QEventTransition object binds an event to a particular QObject.
+  QEventTransition is part of \l{The State Machine Framework}.
 
   Example:
 
