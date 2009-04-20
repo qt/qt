@@ -530,14 +530,14 @@ case $rule_number: {
 } break;
 ./
 
-UiArrayMemberList: UiObjectMember ;
+UiArrayMemberList: UiArrayObjectMember ;
 /.
 case $rule_number: {
     sym(1).Node = makeAstNode<AST::UiObjectMemberList> (driver->nodePool(), sym(1).UiObjectMember);
 } break;
 ./
 
-UiArrayMemberList: UiArrayMemberList T_COMMA UiObjectMember ;
+UiArrayMemberList: UiArrayMemberList T_COMMA UiArrayObjectMember ;
 /.
 case $rule_number: {
     AST::UiObjectMemberList *node = makeAstNode<AST:: UiObjectMemberList> (driver->nodePool(),
@@ -566,6 +566,8 @@ case $rule_number: {
 }   break;
 ./
 
+UiArrayObjectMember: UiQualifiedId T_COLON T_IDENTIFIER UiObjectInitializer ;
+/. case $rule_number: ./
 UiObjectMember: UiQualifiedId T_COLON T_IDENTIFIER UiObjectInitializer ;
 /.
 case $rule_number: {
@@ -577,6 +579,8 @@ case $rule_number: {
 }   break;
 ./
 
+UiArrayObjectMember: T_IDENTIFIER UiObjectInitializer ;
+/. case $rule_number: ./
 UiObjectMember: T_IDENTIFIER UiObjectInitializer ;
 /.
 case $rule_number: {
@@ -587,6 +591,8 @@ case $rule_number: {
 }   break;
 ./
 
+UiArrayObjectMember: UiQualifiedId T_COLON T_LBRACKET UiArrayMemberList T_RBRACKET ;
+/. case $rule_number: ./
 UiObjectMember: UiQualifiedId T_COLON T_LBRACKET UiArrayMemberList T_RBRACKET ;
 /.
 case $rule_number: {
@@ -599,6 +605,8 @@ case $rule_number: {
 }   break;
 ./
 
+UiArrayObjectMember: UiQualifiedId T_COLON Statement ;
+/. case $rule_number: ./
 UiObjectMember: UiQualifiedId T_COLON Statement ;
 /.
 case $rule_number: {
@@ -646,6 +654,9 @@ case $rule_number: {
 }   break;
 ./
 
+UiObjectMember: FunctionDeclaration ;
+/.
+./
 
 UiQualifiedId: T_IDENTIFIER ;
 /.
