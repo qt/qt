@@ -69,8 +69,10 @@ class Q_GUI_EXPORT QGestureManager : public QObject
 public:
     QGestureManager(QObject *parent);
 
-    // should be internal
     void setGestureTargetWidget(QWidget *widget);
+
+    int eventDeliveryDelay() const;
+    void setEventDeliveryDelay(int ms);
 
     void addRecognizer(QGestureRecognizer *recognizer);
     void removeRecognizer(QGestureRecognizer *recognizer);
@@ -94,6 +96,7 @@ private:
     QWidget *targetWidget;
     QPoint lastPos;
 
+    int eventDeliveryDelayTimeout;
     int delayedPressTimer;
     QMouseEvent lastMousePressEvent;
 

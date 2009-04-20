@@ -63,11 +63,10 @@ QT_BEGIN_NAMESPACE
 bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
 
 static const unsigned int MaximumGestureRecognitionTimeout = 2000;
-static const unsigned int DelayedPressTimeout = 300;
 
 QGestureManager::QGestureManager(QObject *parent)
-    : QObject(parent), targetWidget(0), delayedPressTimer(0),
-      lastMousePressEvent(QEvent::None, QPoint(), Qt::NoButton, 0, 0),
+    : QObject(parent), targetWidget(0), eventDeliveryDelayTimeout(300),
+      delayedPressTimer(0), lastMousePressEvent(QEvent::None, QPoint(), Qt::NoButton, 0, 0),
       state(NotGesture)
 {
     qRegisterMetaType<Qt::DirectionType>();
@@ -328,7 +327,8 @@ bool QGestureManager::filterEvent(QEvent *event)
         }
         killTimer(delayedPressTimer);
         delayedPressTimer = 0;
-    } else if (state == MaybeGesture && event->type() == QEvent::MouseButtonPress) {
+    } else if (state == MaybeGesture && event->type() == QEvent::MouseButtonPress
+               && eventDeliveryDelayTimeout) {
         // postpone the press event delivery until we know for
         // sure whether it is a gesture.
         DEBUG() << "QGestureManager: postponing mouse press event";
@@ -337,7 +337,7 @@ bool QGestureManager::filterEvent(QEvent *event)
                                           me->globalPos(), me->button(),
                                           me->buttons(), me->modifiers());
         Q_ASSERT(delayedPressTimer == 0);
-        delayedPressTimer = startTimer(DelayedPressTimeout);
+        delayedPressTimer = startTimer(eventDeliveryDelayTimeout);
         if (!delayedPressTimer)
             qWarning("QGestureManager: couldn't start delayed press timer!");
     }
@@ -489,6 +489,16 @@ bool QGestureManager::sendGestureEvent(QWidget *receiver, QGestureEvent *event)
     foreach(QGesture *gesture, event->gestures())
         gesture->translate(offset);
     return receiver ? qt_sendSpontaneousEvent(receiver, event) : false;
+}
+
+int QGestureManager::eventDeliveryDelay() const
+{
+    return eventDeliveryDelayTimeout;
+}
+
+void QGestureManager::setEventDeliveryDelay(int ms)
+{
+    eventDeliveryDelayTimeout = ms;
 }
 
 QT_END_NAMESPACE

@@ -5116,6 +5116,33 @@ void QApplication::removeGestureRecognizer(QGestureRecognizer *recognizer)
     d->gestureManager->removeRecognizer(recognizer);
 }
 
+/*!
+    \property QApplication::eventDeliveryDelayForGestures
+
+    Specifies the \a delay before input events are delivered to the
+    gesture enabled widgets.
+
+    The delay allows to postpone widget's input event handling until
+    gestures framework can successfully recognize a gesture.
+
+    \sa QWidget::grabGesture
+*/
+void QApplication::setEventDeliveryDelayForGestures(int delay)
+{
+    Q_D(QApplication);
+    if (!d->gestureManager)
+        d->gestureManager = new QGestureManager(this);
+    d->gestureManager->setEventDeliveryDelay(delay);
+}
+
+int QApplication::eventDeliveryDelayForGestures()
+{
+    Q_D(QApplication);
+    if (!d->gestureManager)
+        d->gestureManager = new QGestureManager(this);
+    return d->gestureManager->eventDeliveryDelay();
+}
+
 /*! \fn QDecoration &QApplication::qwsDecoration()
     Return the QWSDecoration used for decorating windows.
 

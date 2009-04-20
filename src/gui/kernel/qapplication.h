@@ -107,6 +107,7 @@ class Q_GUI_EXPORT QApplication : public QCoreApplication
     Q_PROPERTY(int autoMaximizeThreshold READ autoMaximizeThreshold WRITE setAutoMaximizeThreshold)
     Q_PROPERTY(bool autoSipEnabled READ autoSipEnabled WRITE setAutoSipEnabled)
 #endif
+    Q_PROPERTY(int eventDeliveryDelayForGestures READ eventDeliveryDelayForGestures WRITE setEventDeliveryDelayForGestures)
 
 public:
     enum Type { Tty, GuiClient, GuiServer };
@@ -269,6 +270,9 @@ public:
 
     void addGestureRecognizer(QGestureRecognizer *recognizer);
     void removeGestureRecognizer(QGestureRecognizer *recognizer);
+
+    void setEventDeliveryDelayForGestures(int delay);
+    int eventDeliveryDelayForGestures();
 
 Q_SIGNALS:
     void lastWindowClosed();
