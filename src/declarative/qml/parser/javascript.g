@@ -45,7 +45,7 @@
 %parser         JavaScriptGrammar
 %decl           javascriptparser_p.h
 %impl           javascriptparser.cpp
-%expect         3
+%expect         2
 %expect-rr      1
 
 %token T_AND "&"                T_AND_AND "&&"              T_AND_EQ "&="
@@ -81,6 +81,7 @@
 
 --- context keywords.
 %token T_PUBLIC "public"
+%token T_IMPORT "import"
 
 %nonassoc SHIFT_THERE
 %nonassoc T_IDENTIFIER T_COLON
@@ -243,6 +244,8 @@ public:
       JavaScript::AST::VariableDeclarationList *VariableDeclarationList;
 
       JavaScript::AST::UiProgram *UiProgram;
+      JavaScript::AST::UiImportList *UiImportList;
+      JavaScript::AST::UiImport *UiImport;
       JavaScript::AST::UiPublicMember *UiPublicMember;
       JavaScript::AST::UiObjectDefinition *UiObjectDefinition;
       JavaScript::AST::UiObjectInitializer *UiObjectInitializer;
@@ -461,14 +464,55 @@ bool JavaScriptParser::parse(JavaScriptEnginePrivate *driver)
 --------------------------------------------------------------------------------------------------------
 -- Declarative UI
 --------------------------------------------------------------------------------------------------------
-Program: UiObjectMemberList ;
+
+Program: UiImportListOpt UiObjectMemberList ;
 /.
 case $rule_number: {
-    sym(1).Node = makeAstNode<AST::UiProgram> (driver->nodePool(), sym(1).UiObjectMemberList->finish());
+    sym(1).Node = makeAstNode<AST::UiProgram> (driver->nodePool(), sym(2).UiObjectMemberList->finish());
+} break;
+./
+
+UiImportListOpt: Empty ;
+UiImportListOpt: UiImportList ;
+/.
+case $rule_number: {
+    sym(1).Node = sym(1).UiImportList->finish();
+} break;
+./
+
+UiImportList: UiImport ;
+/.
+case $rule_number: {
+    sym(1).Node = makeAstNode<AST::UiImportList> (driver->nodePool(), sym(1).UiImport);
+} break;
+./
+
+UiImportList: UiImportList UiImport ;
+/.
+case $rule_number: {
+    sym(1).Node = makeAstNode<AST::UiImportList> (driver->nodePool(),
+        sym(1).UiImportList, sym(2).UiImport);
+} break;
+./
+
+UiImport: T_IMPORT T_STRING_LITERAL T_AUTOMATIC_SEMICOLON;
+UiImport: T_IMPORT T_STRING_LITERAL T_SEMICOLON;
+/.
+case $rule_number: {
+    AST::UiImport *node = makeAstNode<AST::UiImport>(driver->nodePool(), sym(2).sval);
+    node->importToken = loc(1);
+    node->fileNameToken = loc(2);
+    node->semicolonToken = loc(3);
+    sym(1).Node = node;
 } break;
 ./
 
 Empty: ;
+/.
+case $rule_number: {
+    sym(1).Node = 0;
+} break;
+./
 
 UiObjectMemberList: UiObjectMember ;
 /.
@@ -477,13 +521,11 @@ case $rule_number: {
 } break;
 ./
 
-UiObjectMemberList: UiObjectMemberList Empty UiObjectMember ;
-/.case $rule_number:./
-UiObjectMemberList: UiObjectMemberList T_COMMA UiObjectMember ;
+UiObjectMemberList: UiObjectMemberList UiObjectMember ;
 /.
 case $rule_number: {
     AST::UiObjectMemberList *node = makeAstNode<AST:: UiObjectMemberList> (driver->nodePool(),
-        sym(1).UiObjectMemberList, sym(3).UiObjectMember);
+        sym(1).UiObjectMemberList, sym(2).UiObjectMember);
     sym(1).Node = node;
 } break;
 ./

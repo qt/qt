@@ -101,6 +101,8 @@ public:
       JavaScript::AST::VariableDeclarationList *VariableDeclarationList;
 
       JavaScript::AST::UiProgram *UiProgram;
+      JavaScript::AST::UiImportList *UiImportList;
+      JavaScript::AST::UiImport *UiImport;
       JavaScript::AST::UiPublicMember *UiPublicMember;
       JavaScript::AST::UiObjectDefinition *UiObjectDefinition;
       JavaScript::AST::UiObjectInitializer *UiObjectInitializer;
@@ -201,9 +203,9 @@ protected:
 };
 
 
-#define J_SCRIPT_REGEXPLITERAL_RULE1 22
+#define J_SCRIPT_REGEXPLITERAL_RULE1 27
 
-#define J_SCRIPT_REGEXPLITERAL_RULE2 23
+#define J_SCRIPT_REGEXPLITERAL_RULE2 28
 
 QT_END_NAMESPACE
 

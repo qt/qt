@@ -143,6 +143,8 @@ class DebuggerStatement;
 
 // ui elements
 class UiProgram;
+class UiImportList;
+class UiImport;
 class UiPublicMember;
 class UiObjectDefinition;
 class UiObjectInitializer;

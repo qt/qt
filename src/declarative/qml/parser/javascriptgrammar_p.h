@@ -7,8 +7,8 @@ class JavaScriptGrammar
 public:
   enum {
     EOF_SYMBOL = 0,
-    REDUCE_HERE = 86,
-    SHIFT_THERE = 85,
+    REDUCE_HERE = 87,
+    SHIFT_THERE = 86,
     T_AND = 1,
     T_AND_AND = 2,
     T_AND_EQ = 3,
@@ -43,6 +43,7 @@ public:
     T_GT_GT_GT_EQ = 28,
     T_IDENTIFIER = 29,
     T_IF = 30,
+    T_IMPORT = 85,
     T_IN = 31,
     T_INSTANCEOF = 32,
     T_LBRACE = 33,
@@ -95,14 +96,14 @@ public:
     T_XOR_EQ = 77,
 
     ACCEPT_STATE = 7,
-    RULE_COUNT = 283,
-    STATE_COUNT = 497,
-    TERMINAL_COUNT = 87,
-    NON_TERMINAL_COUNT = 93,
+    RULE_COUNT = 288,
+    STATE_COUNT = 503,
+    TERMINAL_COUNT = 88,
+    NON_TERMINAL_COUNT = 96,
 
-    GOTO_INDEX_OFFSET = 497,
-    GOTO_INFO_OFFSET = 1543,
-    GOTO_CHECK_OFFSET = 1543
+    GOTO_INDEX_OFFSET = 503,
+    GOTO_INFO_OFFSET = 1522,
+    GOTO_CHECK_OFFSET = 1522
   };
 
   static const char  *const spell [];

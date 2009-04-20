@@ -871,6 +871,23 @@ void UiQualifiedId::accept0(Visitor *visitor)
     visitor->endVisit(this);
 }
 
+void UiImport::accept0(Visitor *visitor)
+{
+    if (visitor->visit(this)) {
+    }
+
+    visitor->endVisit(this);
+}
+
+void UiImportList::accept0(Visitor *visitor)
+{
+    if (visitor->visit(this)) {
+        acceptChild(next, visitor);
+    }
+
+    visitor->endVisit(this);
+}
+
 } } // namespace JavaScript::AST
 
 QT_END_NAMESPACE

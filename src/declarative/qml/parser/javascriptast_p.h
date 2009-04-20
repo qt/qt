@@ -1564,6 +1564,52 @@ public:
     UiObjectMemberList *members;
 };
 
+class UiImport: public Node
+{
+public:
+    UiImport(JavaScriptNameIdImpl *fileName)
+        : fileName(fileName)
+    {
+    }
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    JavaScriptNameIdImpl *fileName;
+    SourceLocation importToken;
+    SourceLocation fileNameToken;
+    SourceLocation semicolonToken;
+};
+
+class UiImportList: public Node
+{
+public:
+    UiImportList(UiImport *import)
+        : import(import),
+          next(0)
+    { }
+
+    UiImportList(UiImportList *previous, UiImport *import)
+        : import(import)
+    {
+        next = previous->next;
+        previous->next = this;
+    }
+
+    UiImportList *finish()
+    {
+        UiImportList *head = next;
+        next = 0;
+        return head;
+    }
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    UiImport *import;
+    UiImportList *next;
+};
+
 class UiObjectMember: public Node
 {
 };

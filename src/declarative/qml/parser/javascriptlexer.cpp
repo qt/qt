@@ -287,6 +287,10 @@ int JavaScript::Lexer::findReservedWord(const QChar *c, int size) const
                 && c[2] == QLatin1Char('p') && c[3] == QLatin1Char('e')
                 && c[4] == QLatin1Char('o') && c[5] == QLatin1Char('f'))
             return JavaScriptGrammar::T_TYPEOF;
+        else if (c[0] == QLatin1Char('i') && c[1] == QLatin1Char('m')
+            && c[2] == QLatin1Char('p') && c[3] == QLatin1Char('o')
+            && c[4] == QLatin1Char('r') && c[5] == QLatin1Char('t'))
+            return JavaScriptGrammar::T_IMPORT;
         else if (check_reserved) {
             if (c[0] == QLatin1Char('e') && c[1] == QLatin1Char('x')
                     && c[2] == QLatin1Char('p') && c[3] == QLatin1Char('o')

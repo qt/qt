@@ -70,6 +70,8 @@ public:
 
     // Ui
     virtual bool visit(UiProgram *) { return true; }
+    virtual bool visit(UiImportList *) { return true; }
+    virtual bool visit(UiImport *) { return true; }
     virtual bool visit(UiPublicMember *) { return true; }
     virtual bool visit(UiObjectDefinition *) { return true; }
     virtual bool visit(UiObjectInitializer *) { return true; }
@@ -80,6 +82,8 @@ public:
     virtual bool visit(UiQualifiedId *) { return true; }
 
     virtual void endVisit(UiProgram *) {}
+    virtual void endVisit(UiImportList *) {}
+    virtual void endVisit(UiImport *) {}
     virtual void endVisit(UiPublicMember *) {}
     virtual void endVisit(UiObjectDefinition *) {}
     virtual void endVisit(UiObjectInitializer *) {}
