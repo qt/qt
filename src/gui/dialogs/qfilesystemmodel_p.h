@@ -163,7 +163,11 @@ public:
                 info->icon = iconProvider->icon(QFileInfo(path));
             QHash<QString, QFileSystemNode *>::const_iterator iterator;
             for(iterator = children.constBegin() ; iterator != children.constEnd() ; ++iterator) {
-                iterator.value()->updateIcon(iconProvider, path + QLatin1Char('/') + iterator.value()->fileName);
+                //On windows the root (My computer) has no path so we don't want to add a / for nothing (e.g. /C:/)
+                if (!path.isEmpty())
+                    iterator.value()->updateIcon(iconProvider, path + QLatin1Char('/') + iterator.value()->fileName);
+                else
+                    iterator.value()->updateIcon(iconProvider, iterator.value()->fileName);
             }
         }
 
@@ -172,7 +176,11 @@ public:
                 info->displayType = iconProvider->type(QFileInfo(path));
             QHash<QString, QFileSystemNode *>::const_iterator iterator;
             for(iterator = children.constBegin() ; iterator != children.constEnd() ; ++iterator) {
-                 iterator.value()->retranslateStrings(iconProvider, path + QLatin1Char('/') + iterator.value()->fileName);
+                //On windows the root (My computer) has no path so we don't want to add a / for nothing (e.g. /C:/)
+                if (!path.isEmpty())
+                    iterator.value()->retranslateStrings(iconProvider, path + QLatin1Char('/') + iterator.value()->fileName);
+                else
+                    iterator.value()->retranslateStrings(iconProvider, iterator.value()->fileName);
             }
         }
 

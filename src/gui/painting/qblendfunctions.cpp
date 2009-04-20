@@ -44,19 +44,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
-// This ifdef is made with the best of intention. GCC fails to
-// optimzie the code properly so the bytemul approach is the fastest
-// it gets. Both on ARM and on MSVC the code is optimized to be better
-// than the bytemul approach...  On the other hand... This code is
-// almost never run on i386 so it may be downright silly to have this
-// piece of code here...
-#if defined (Q_CC_GNU) && (defined (QT_ARCH_I386) || defined (QT_ARCH_X86_64))
-#  define QT_BLEND_USE_BYTEMUL
-#endif
-
-// #define QT_DEBUG_DRAW
-
 static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
 
 struct SourceOnlyAlpha
@@ -286,7 +273,7 @@ static void qt_blend_rgb16_on_rgb16(uchar *dst, int dbpl,
                                     int const_alpha)
 {
 #ifdef QT_DEBUG_DRAW
-    printf("qt_blend_argb16_on_rgb16: dst=(%p, %d), src=(%p, %d), dim=(%d, %d) alpha=%d\n",
+    printf("qt_blend_rgb16_on_rgb16: dst=(%p, %d), src=(%p, %d), dim=(%d, %d) alpha=%d\n",
            dst, dbpl, src, sbpl, w, h, const_alpha);
 #endif
 
@@ -347,11 +334,6 @@ template <typename T> void qt_blend_argb24_on_rgb16(uchar *destPixels, int dbpl,
             if (alpha == 255) {
                 *dst = spix;
             } else if (alpha != 0) {
-#ifdef QT_BLEND_USE_BYTEMUL
-                // truncate green channel to avoid overflow
-                *dst = (alphaFunc.bytemul(spix) & 0xffdf)
-                       + (quint16) qrgb565(*dst).byte_mul(qrgb565::ialpha(alpha));
-#else
                 quint16 dpix = *dst;
                 quint32 sia = 255 - alpha;
 
@@ -363,12 +345,11 @@ template <typename T> void qt_blend_argb24_on_rgb16(uchar *destPixels, int dbpl,
                 quint32 siag = dg * sia;
                 quint32 siab = db * sia;
 
-                quint32 rr = ((siar + (siar>>8) + (0x80 << 11)) >> 8) & 0xf800;
-                quint32 rg = ((siag + (siag>>8) + (0x80 <<  5)) >> 8) & 0x07e0;
-                quint32 rb = ((siab + (siab>>8) + (0x80 >>  3)) >> 8);
+                quint32 rr = ((siar + (siar>>8) + (0x80 <<  8)) >> 8) & 0xf800;
+                quint32 rg = ((siag + (siag>>8) + (0x80 <<  3)) >> 8) & 0x07e0;
+                quint32 rb = ((siab + (siab>>8) + (0x80 >>  3)) >> 8) & 0x001f;
 
                 *dst = alphaFunc.bytemul(spix) + rr + rg + rb;
-#endif
             }
 
             ++dst;
@@ -435,113 +416,45 @@ static void qt_blend_argb32_on_rgb16(uchar *destPixels, int dbpl,
     }
 
     quint16 *dst = (quint16 *) destPixels;
-    int dstExtraStride = dbpl / 2 - w;
-
-    const quint32 *src = (const quint32 *) srcPixels;
-    int srcExtraStride = sbpl / 4 - w;
+    quint32 *src = (quint32 *) srcPixels;
 
     for (int y=0; y<h; ++y) {
-        int length = w;
-        const int dstAlign = ((quintptr)dst) & 0x3;
-        if (dstAlign) {
-            const quint8 alpha = qAlpha(*src);
-            if (alpha) {
-                quint16 s = convert_argb32_to_rgb16(*src);
-                if (alpha < 255)
-                    s += BYTE_MUL_RGB16(*dst, 255 - alpha);
-                *dst = s;
-            }
-            ++dst;
-            ++src;
-            --length;
-        }
+        for (int x=0; x<w; ++x) {
 
-        const int length32 = length >> 1;
-        const int srcAlign = ((quintptr)src) & 0x3;
-        if (length32) {
-            if (srcAlign) {
-                for (int i = 0; i < length32; ++i) {
-                    quint32 *dest32 = reinterpret_cast<quint32*>(dst);
-                    const quint8 a1 = qAlpha(src[0]);
-                    const quint8 a2 = qAlpha(src[1]);
-                    quint32 s;
+            quint32 spix = src[x];
+            quint32 alpha = spix >> 24;
 
-                    if (!a1 && !a2) {
-                        src += 2;
-                        dst +=2;
-                        continue;
-                    }
+            if (alpha == 255) {
+                dst[x] = convert_argb32_to_rgb16(spix);
+            } else if (alpha != 0) {
+                quint32 dpix = dst[x];
 
-                    s = convert_argb32_to_rgb16(src[0])
-                        | (convert_argb32_to_rgb16(src[1]) << 16);
+                quint32 sia = 255 - alpha;
 
-                    if (a1 == a2) {
-                        if (a1 < 255) {
-                            const quint8 sa = ((255 - a1)+1) >> 3;
-                            s += BYTE_MUL_RGB16_32(*dest32, sa);
-                        }
-                    } else {
-                        if (a1 < 255)
-                            s += BYTE_MUL_RGB16(dst[0], 255 - a1);
-                        if (a2 < 255)
-                            s += BYTE_MUL_RGB16(dst[1], 255 - a2) << 16;
-                    }
+                quint32 sr = (spix >> 8) & 0xf800;
+                quint32 sg = (spix >> 5) & 0x07e0;
+                quint32 sb = (spix >> 3) & 0x001f;
 
-                    *dest32 = s;
-                    src += 2;
-                    dst += 2;
-                }
-            } else {
-                for (int i = 0; i < length32; ++i) {
-                    quint32 *dest32 = reinterpret_cast<quint32*>(dst);
-                    const quint8 a1 = qAlpha(src[0]);
-                    const quint8 a2 = qAlpha(src[1]);
-                    quint32 s;
+                quint32 dr = (dpix & 0x0000f800);
+                quint32 dg = (dpix & 0x000007e0);
+                quint32 db = (dpix & 0x0000001f);
 
-                    if (!a1 && !a2) {
-                        src += 2;
-                        dst +=2;
-                        continue;
-                    }
+                quint32 siar = dr * sia;
+                quint32 siag = dg * sia;
+                quint32 siab = db * sia;
 
-                    const quint64 *src64 =
-                        reinterpret_cast<const quint64*>(src);
-                    s = qConvertRgb32To16x2(*src64);
+                quint32 rr = sr + ((siar + (siar>>8) + (0x80 << 8)) >> 8);
+                quint32 rg = sg + ((siag + (siag>>8) + (0x80 << 3)) >> 8);
+                quint32 rb = sb + ((siab + (siab>>8) + (0x80 >> 3)) >> 8);
 
-                    if (a1 == a2) {
-                        if (a1 < 255) {
-                            const quint8 sa = ((255 - a1)+1) >> 3;
-                            s += BYTE_MUL_RGB16_32(*dest32, sa);
-                        }
-                    } else {
-                        if (a1 < 255)
-                            s += BYTE_MUL_RGB16(dst[0], 255 - a1);
-                        if (a2 < 255)
-                            s += BYTE_MUL_RGB16(dst[1], 255 - a2) << 16;
-                    }
-
-                    *dest32 = s;
-                    src += 2;
-                    dst += 2;
-                }
+                dst[x] = (rr & 0xf800)
+                         | (rg & 0x07e0)
+                         | (rb);
             }
         }
-        const int tail = length & 0x1;
-        if (tail) {
-            const quint8 alpha = qAlpha(*src);
-            if (alpha) {
-                quint16 s = convert_argb32_to_rgb16(*src);
-                if (alpha < 255)
-                    s += BYTE_MUL_RGB16(*dst, 255 - alpha);
-                *dst = s;
-            }
-            ++dst;
-            ++src;
-        }
-        dst += dstExtraStride;
-        src += srcExtraStride;
+        dst = (quint16 *) (((uchar *) dst) + dbpl);
+        src = (quint32 *) (((uchar *) src) + sbpl);
     }
-
 }
 
 

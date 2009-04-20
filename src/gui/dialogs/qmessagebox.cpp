@@ -1717,6 +1717,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "to comply with the terms of the GNU GPL version 3.0.</p>"
         "<p>Please see <a href=\"http://www.qtsoftware.com/products/licensing\">www.qtsoftware.com/products/licensing</a> "
         "for an overview of Qt licensing.</p>"
+        "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>"
         "<p>Qt is a Nokia product. See <a href=\"http://www.qtsoftware.com/qt/\">www.qtsoftware.com/qt</a> "
         "for more information.</p>"
        ).arg(QLatin1String(QT_VERSION_STR));

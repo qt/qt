@@ -91,7 +91,7 @@ static uint hash(const QChar *p, int n)
 
 uint qHash(const QByteArray &key)
 {
-    return hash(reinterpret_cast<const uchar *>(key.data()), key.size());
+    return hash(reinterpret_cast<const uchar *>(key.constData()), key.size());
 }
 
 uint qHash(const QString &key)
@@ -107,7 +107,7 @@ uint qHash(const QStringRef &key)
 uint qHash(const QBitArray &bitArray)
 {
     int m = bitArray.d.size() - 1;
-    uint result = hash(reinterpret_cast<const uchar *>(bitArray.d.data()), qMax(0, m));
+    uint result = hash(reinterpret_cast<const uchar *>(bitArray.d.constData()), qMax(0, m));
 
     // deal with the last 0 to 7 bits manually, because we can't trust that
     // the padding is initialized to 0 in bitArray.d

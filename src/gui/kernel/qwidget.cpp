@@ -2234,9 +2234,10 @@ WId QWidget::effectiveWinId() const
     The style sheet contains a textual description of customizations to the
     widget's style, as described in the \l{Qt Style Sheets} document.
 
-    \note Qt style sheets are currently not supported for QMacStyle
-    (the default style on Mac OS X). We plan to address this in some future
-    release.
+    Since Qt 4.5, Qt style sheets fully supports Mac OS X.
+
+    \warning Qt style sheets are currently not supported for custom QStyle
+    subclasses. We plan to address this in some future release.
 
     \sa setStyle(), QApplication::styleSheet, {Qt Style Sheets}
 */
