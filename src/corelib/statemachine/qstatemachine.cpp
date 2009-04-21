@@ -612,8 +612,17 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
 
     // Find the animations to use for the state change.
     QList<QAbstractAnimation*> selectedAnimations;
-    for (int i = 0; i < transitionList.size(); ++i)
-        selectedAnimations << transitionList.at(i)->animations();
+    for (int i = 0; i < transitionList.size(); ++i) {
+        QAbstractTransition *transition = transitionList.at(i);
+
+        selectedAnimations << transition->animations();
+        selectedAnimations << defaultAnimationsForSource.values(transition->sourceState());
+
+        QList<QAbstractState *> targetStates = transition->targetStates();
+        for (int j=0; j<targetStates.size(); ++j) 
+            selectedAnimations << defaultAnimationsForTarget.values(targetStates.at(j));
+    }
+    selectedAnimations << defaultAnimations;     
 #else
     Q_UNUSED(transitionList);
 #endif
@@ -1827,6 +1836,104 @@ void QStateMachine::endMicrostep(QEvent *event)
 {
     Q_UNUSED(event);
 }
+
+#ifndef QT_NO_ANIMATION
+
+/*!
+    Adds a default \a animation to be considered for any transition.
+*/    
+void QStateMachine::addDefaultAnimation(QAbstractAnimation *animation)
+{
+    Q_D(QStateMachine);
+    d->defaultAnimations.append(animation);
+}
+
+/*!
+    Returns the list of default animations that will be considered for any transition.
+*/
+QList<QAbstractAnimation*> QStateMachine::defaultAnimations() const
+{    
+    Q_D(const QStateMachine);
+    return d->defaultAnimations;
+}
+
+/*!
+    Removes \a animation from the list of default animations. 
+*/
+void QStateMachine::removeDefaultAnimation(QAbstractAnimation *animation)
+{
+    Q_D(QStateMachine);
+    d->defaultAnimations.removeAll(animation);
+}
+
+
+/*!
+    Adds a default \a animation to be considered for any transition with the source state 
+    \a sourceState.
+*/
+void QStateMachine::addDefaultAnimationForSourceState(QAbstractState *sourceState, 
+                                                      QAbstractAnimation *animation)
+{
+    Q_D(QStateMachine);
+    d->defaultAnimationsForSource.insert(sourceState, animation);
+}
+
+
+/*!
+    Returns the list of default animations that will be considered for any transition with 
+    the source state \a sourceState.
+*/
+QList<QAbstractAnimation*> QStateMachine::defaultAnimationsForSourceState(QAbstractState *sourceState) const
+{
+    Q_D(const QStateMachine);
+    return d->defaultAnimationsForSource.values(sourceState);
+}
+
+/*!
+    Removes \a animation from the list of default animations for the source state 
+    \a sourceState.
+*/
+void QStateMachine::removeDefaultAnimationForSourceState(QAbstractState *sourceState, 
+                                                         QAbstractAnimation *animation)
+{
+    Q_D(QStateMachine);
+    d->defaultAnimationsForSource.remove(sourceState, animation);
+}
+
+/*!
+    Adds a default \a animation to be considered for any transition with the target state 
+    \a targetState.
+*/
+void QStateMachine::addDefaultAnimationForTargetState(QAbstractState *targetState, 
+                                                      QAbstractAnimation *animation)
+{
+    Q_D(QStateMachine);
+    d->defaultAnimationsForTarget.insert(targetState, animation);
+}
+
+/*!
+    Returns the list of default animations that will be considered for any transition with 
+    the target state \a targetState.
+*/
+QList<QAbstractAnimation *> QStateMachine::defaultAnimationsForTargetState(QAbstractState *targetState) const
+{
+    Q_D(const QStateMachine);
+    return d->defaultAnimationsForTarget.values(targetState);
+}
+
+/*!
+    Removes \a animation from the list of default animations for the target state 
+    \a targetState.
+*/
+void QStateMachine::removeDefaultAnimationForTargetState(QAbstractState *targetState, 
+                                                         QAbstractAnimation *animation)
+{
+    Q_D(QStateMachine);
+    d->defaultAnimationsForTarget.remove(targetState, animation);
+}
+
+#endif // QT_NO_ANIMATION
+
 
 static const uint qt_meta_data_QSignalEventGenerator[] = {
 

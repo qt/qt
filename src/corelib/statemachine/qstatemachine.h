@@ -63,6 +63,8 @@ class QAbstractState;
 class QState;
 
 class QStateMachinePrivate;
+class QAbstractAnimation;
+class QAbstractState;
 class Q_CORE_EXPORT QStateMachine : public QObject
 {
     Q_OBJECT
@@ -95,6 +97,20 @@ public:
     Error error() const;
     QString errorString() const;
     void clearError();
+
+#ifndef QT_NO_ANIMATION
+    void addDefaultAnimation(QAbstractAnimation *animation);
+    QList<QAbstractAnimation *> defaultAnimations() const;
+    void removeDefaultAnimation(QAbstractAnimation *animation);
+
+    void addDefaultAnimationForSourceState(QAbstractState *sourceState, QAbstractAnimation *animation);
+    QList<QAbstractAnimation *> defaultAnimationsForSourceState(QAbstractState *sourceState) const;
+    void removeDefaultAnimationForSourceState(QAbstractState *sourceState, QAbstractAnimation *animation);
+
+    void addDefaultAnimationForTargetState(QAbstractState *targetState, QAbstractAnimation *animation);
+    QList<QAbstractAnimation *> defaultAnimationsForTargetState(QAbstractState *targetState) const;
+    void removeDefaultAnimationForTargetState(QAbstractState *targetState, QAbstractAnimation *animation);
+#endif // QT_NO_ANIMATION
 
     QAbstractState::RestorePolicy globalRestorePolicy() const;
     void setGlobalRestorePolicy(QAbstractState::RestorePolicy restorePolicy);
