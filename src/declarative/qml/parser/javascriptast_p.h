@@ -1758,7 +1758,7 @@ public:
 
     UiImportList(UiImport *import)
         : import(import),
-          next(0)
+          next(this)
     { kind = K; }
 
     UiImportList(UiImportList *previous, UiImport *import)

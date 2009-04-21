@@ -64,6 +64,14 @@ public:
                 return;
             else if (xml.tokenType() == QXmlStreamReader::StartElement)
                 startElement();
+            else if (xml.tokenType() == QXmlStreamReader::ProcessingInstruction) {
+                if (xml.processingInstructionTarget() == QLatin1String("qtfx")) {
+                    QString data = xml.processingInstructionData().toString().trimmed();
+                    if (data.startsWith(QLatin1String("namespacepath:="))) {
+                        outString.prepend( QLatin1String("import \"") + data.mid(data.indexOf(QLatin1Char('='))+1) + QLatin1String("\"\n"));
+                    }
+                }
+            }
             comment();
         }
     }
@@ -144,7 +152,7 @@ public:
         } else if (isSignalHandler(property)) {
             // if not a function name, create an anonymous function
             if (!isIdentifier(v)) {
-                v.prepend("function(){ ");
+                v.prepend("{ ");
                 v.append(" }");
             }
         } else
@@ -304,7 +312,7 @@ public:
     void startParentChange() {
         QString target = xml.attributes().value("target").toString();
         possiblyRemoveBraces(&target);
-        propertyChangeSet += StringPair(target + ".parent", xml.attributes().value("parent").toString());
+        propertyChangeSet += StringPair(target + ".moveToParent", xml.attributes().value("parent").toString());
         emptyLoop();
     }
 

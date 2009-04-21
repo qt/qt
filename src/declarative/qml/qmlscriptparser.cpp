@@ -95,6 +95,12 @@ private:
     QmlScriptParser *_parser;
     StateStack _stateStack;
     QStringList _scope;
+
+    inline bool isSignalProperty(const QByteArray &propertyName) const {
+        return (propertyName.length() >= 3 && propertyName.startsWith("on") &&
+                ('A' <= propertyName.at(2) && 'Z' >= propertyName.at(2)));
+    }
+
 };
 
 ProcessAST::ProcessAST(QmlScriptParser *parser)
@@ -431,8 +437,7 @@ QString ProcessAST::getPrimitive(const QByteArray &propertyName, AST::Expression
     QTextStream out(&primitive);
     PrettyPretty pp(out);
 
-    if(propertyName.length() >= 3 && propertyName.startsWith("on") &&
-       ('A' <= propertyName.at(2) && 'Z' >= propertyName.at(2))) {
+    if(isSignalProperty(propertyName)) {
         pp(expr);
 
         // here comes a cruel hack until we support functions properly with arguments for signal properties
@@ -484,8 +489,9 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
 
     if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(node->statement)) {
         primitive = getPrimitive(prop->name, stmt->expression);
-
-    } else {
+    } else if (isSignalProperty(prop->name)) {
+        pp(node->statement);
+    } else { // do binding
         out << '{';
         pp(node->statement);
         out << '}';
@@ -592,7 +598,6 @@ int QmlScriptParser::errorLine() const
 
 QMap<QString,QString> QmlScriptParser::nameSpacePaths() const
 {
-    qWarning() << Q_FUNC_INFO << "not implemented";
     return _nameSpacePaths;
 }
 
