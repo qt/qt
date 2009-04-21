@@ -9,7 +9,7 @@
 
 #include "qstate.h"
 #include "qstatemachine.h"
-#include "qtransition.h"
+#include "qactiontransition.h"
 #include "qsignaltransition.h"
 #include "qstateaction.h"
 
@@ -265,11 +265,11 @@ void tst_QState::assignPropertyTwice()
     QCOMPARE(object->property("fooBar").toInt(), 30);
 }
 
-class EventTestTransition: public QTransition
+class EventTestTransition: public QActionTransition
 {
 public:
     EventTestTransition(QEvent::Type type, QState *targetState) 
-        : QTransition(QList<QAbstractState*>() << targetState), m_type(type)
+        : QActionTransition(QList<QAbstractState*>() << targetState), m_type(type)
     {        
     }
 
