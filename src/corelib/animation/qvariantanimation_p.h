@@ -88,18 +88,6 @@ public:
         return q->d_func();
     }
 
-    
-    //some helper functions
-    bool atBeginning() const
-    {
-        return currentTime == 0;
-    }
-
-    bool atEnd() const
-    {
-        return currentTime == duration && currentLoop == (loopCount - 1);
-    }
-
     void setDefaultStartValue(const QVariant &value);
 
     int duration;
@@ -109,7 +97,7 @@ public:
     QVariant currentValue;
     QVariant defaultStartValue;
     bool hasStartValue;
-   
+
     //this is used to keep track of the KeyValue interval in which we currently are
     struct
     {
