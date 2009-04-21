@@ -455,7 +455,7 @@ public:
 
     ElementList(Elision *e, ExpressionNode *expr):
         elision (e), expression (expr), next (this)
-        { kind = K; }
+    { kind = K; }
 
     ElementList(ElementList *previous, Elision *e, ExpressionNode *expr):
         elision (e), expression (expr)
@@ -1739,8 +1739,7 @@ public:
 
     UiImport(JavaScriptNameIdImpl *fileName)
         : fileName(fileName)
-    {
-    }
+    { kind = K; }
 
     virtual void accept0(Visitor *visitor);
 
@@ -1764,6 +1763,7 @@ public:
     UiImportList(UiImportList *previous, UiImport *import)
         : import(import)
     {
+        kind = K;
         next = previous->next;
         previous->next = this;
     }
