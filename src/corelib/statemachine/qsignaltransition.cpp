@@ -233,8 +233,9 @@ bool QSignalTransition::eventTest(QEvent *event) const
 #else
     if (event->type() == QEvent::Type(QEvent::User-1)) {
 #endif
+        if (d->signalIndex == -1)
+            return false;
         QSignalEvent *se = static_cast<QSignalEvent*>(event);
-        Q_ASSERT(d->signalIndex != -1);
         return (se->sender() == d->sender)
             && (se->signalIndex() == d->signalIndex);
     }
