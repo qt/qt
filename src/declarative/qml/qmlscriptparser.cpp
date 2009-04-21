@@ -71,6 +71,7 @@ protected:
     using AST::Visitor::visit;
     using AST::Visitor::endVisit;
 
+    virtual bool visit(AST::UiProgram *node);
     virtual bool visit(AST::UiObjectDefinition *node);
     virtual bool visit(AST::UiPublicMember *node);
     virtual bool visit(AST::UiObjectBinding *node);
@@ -219,6 +220,14 @@ void ProcessAST::defineProperty(const QString &propertyName, int line, const QSt
     value->line = line;
     currentProperty()->addValue(value);
     _stateStack.pop();
+}
+
+// UiProgram: UiImportListOpt UiObjectMemberList ;
+bool ProcessAST::visit(AST::UiProgram *node)
+{
+    accept(node->imports);
+    accept(node->members->member);
+    return false;
 }
 
 // UiObjectMember: T_PUBLIC T_IDENTIFIER T_IDENTIFIER T_COLON Expression UiObjectInitializer ;

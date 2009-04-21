@@ -468,7 +468,8 @@ bool JavaScriptParser::parse(JavaScriptEnginePrivate *driver)
 Program: UiImportListOpt UiObjectMemberList ;
 /.
 case $rule_number: {
-    sym(1).Node = makeAstNode<AST::UiProgram> (driver->nodePool(), sym(2).UiObjectMemberList->finish());
+    sym(1).Node = makeAstNode<AST::UiProgram> (driver->nodePool(), sym(1).UiImportList,
+        sym(2).UiObjectMemberList->finish());
 } break;
 ./
 

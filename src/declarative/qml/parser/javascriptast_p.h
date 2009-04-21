@@ -1555,13 +1555,14 @@ public:
 class UiProgram: public Node
 {
 public:
-    UiProgram(UiObjectMemberList *members)
-        : members(members)
+    UiProgram(UiImportList *imports, UiObjectMemberList *members)
+        : imports(imports), members(members)
     { kind = Kind_UiProgram; }
 
     virtual void accept0(Visitor *visitor);
 
 // attributes
+    UiImportList *imports;
     UiObjectMemberList *members;
 };
 
