@@ -88,10 +88,10 @@ public:
             startDeclareProperties();
         else if (xml.name() == "signals")
             startDeclareSignals();
-//        else if (xml.name() == "states")
-//            loop(); // ignore
-//        else if (xml.name() == "transitions")
-//            loop(); // ignore
+        else if (xml.name() == "states")
+            loop(); // ignore
+        else if (xml.name() == "transitions")
+            loop(); // ignore
         else if (knownListProperties.contains(xml.name().toString()))
             startList();
         else if (xml.name() == "SetProperties")

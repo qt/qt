@@ -397,6 +397,16 @@ Object *ProcessAST::defineObjectBinding(int line,
         }
 
         return 0;
+    } else if(!currentProperty() && objectType == QLatin1String("State")) {
+        _stateStack.pushProperty(QLatin1String("states"), line);
+        Object *obj = defineObjectBinding_helper(line, 0, objectType, initializer);
+        _stateStack.pop();
+        return obj;
+    } else if (!currentProperty() && objectType == QLatin1String("Transition")) {
+        _stateStack.pushProperty(QLatin1String("transitions"), line);
+        Object *obj = defineObjectBinding_helper(line, 0, objectType, initializer);
+        _stateStack.pop();
+        return obj;
     }
 
     return defineObjectBinding_helper(line, qualifiedId, objectType, initializer);
