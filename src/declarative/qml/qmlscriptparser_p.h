@@ -31,12 +31,16 @@ public:
     int findOrCreateTypeId(const QString &name);
     void setTree(QmlParser::Object *tree);
 
+    void setScriptFile(const QString &filename) {_scriptFile = filename; }
+    QString scriptFile() const { return _scriptFile; }
+
 private:
     QMap<QString,QString> _nameSpacePaths;
     QmlParser::Object *root;
     QStringList _typeNames;
     QString _error;
     int _errorLine;
+    QString _scriptFile;
 };
 
 QT_END_NAMESPACE

@@ -314,7 +314,7 @@ public:
         out << depthString() << "Connection {" << endl;
         ++depth;
         out << depthString() << "signal: " << sender + "." + xml.attributes().value("signal").toString() << endl;
-        out << depthString() << "onSignal: function(){ " << xml.attributes().value("script").toString() << " }" << endl;
+        out << depthString() << "onSignal: { " << xml.attributes().value("script").toString() << " }" << endl;
         --depth;
         out << depthString() << "}" << endl;
         emptyLoop();
@@ -322,6 +322,7 @@ public:
 
     void startScript() {
         if (xml.attributes().hasAttribute(QLatin1String("src"))) {
+            /*
             QString import;
             QTextStream ts(&import);
             ts << "import \"";
@@ -329,6 +330,7 @@ public:
             ts << "\"" << endl;
             ts.flush();
             outString.prepend(import);
+            */
         }
         QString text = xml.readElementText();
         if (!text.trimmed().isEmpty()) {

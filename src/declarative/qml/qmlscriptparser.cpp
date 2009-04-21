@@ -193,6 +193,16 @@ Object *ProcessAST::defineObjectBinding(int line,
 
         if (! _parser->tree()) {
             _parser->setTree(obj);
+
+            if (!_parser->scriptFile().isEmpty()) {
+                _stateStack.pushObject(obj);
+                Object *scriptObject= defineObjectBinding(line, 0, QLatin1String("Script"));
+                _stateStack.pushObject(scriptObject);
+                defineProperty(QLatin1String("src"), line, _parser->scriptFile());
+                _stateStack.pop(); // scriptObject
+                _stateStack.pop(); // object
+            }
+
         } else {
             const State state = _stateStack.top();
             Value *v = new Value;
