@@ -72,6 +72,7 @@ protected:
     using AST::Visitor::endVisit;
 
     virtual bool visit(AST::UiProgram *node);
+    virtual bool visit(AST::UiImport *node);
     virtual bool visit(AST::UiObjectDefinition *node);
     virtual bool visit(AST::UiPublicMember *node);
     virtual bool visit(AST::UiObjectBinding *node);
@@ -237,6 +238,14 @@ bool ProcessAST::visit(AST::UiProgram *node)
 {
     accept(node->imports);
     accept(node->members->member);
+    return false;
+}
+
+// UiImport: T_IMPORT T_STRING_LITERAL ;
+bool ProcessAST::visit(AST::UiImport *node)
+{
+    QString fileName = node->fileName->asString();
+    _parser->addNamespacePath(fileName);
     return false;
 }
 
@@ -614,6 +623,11 @@ void QmlScriptParser::setTree(Object *tree)
     Q_ASSERT(! root);
 
     root = tree;
+}
+
+void QmlScriptParser::addNamespacePath(const QString &path)
+{
+    _nameSpacePaths.insertMulti(QString(), path);
 }
 
 

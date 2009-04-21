@@ -34,6 +34,8 @@ public:
     void setScriptFile(const QString &filename) {_scriptFile = filename; }
     QString scriptFile() const { return _scriptFile; }
 
+    void addNamespacePath(const QString &path);
+
 private:
     QMap<QString,QString> _nameSpacePaths;
     QmlParser::Object *root;
