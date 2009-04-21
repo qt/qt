@@ -4,7 +4,7 @@ struct MyStructure
     int count;
     QString name;
 };
-QT_DECLARE_METATYPE(MyStructure)
+Q_DECLARE_METATYPE(MyStructure)
 
 // Marshall the MyStructure data into a D-Bus argument
 QDBusArgument &operator<<(QDBusArgument &argument, const MyStructure &mystruct)

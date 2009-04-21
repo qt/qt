@@ -214,6 +214,7 @@ private slots:
     void tabChangesFocus();
     void tabChangesFocus_data();
     void cacheMode();
+    void updateCachedItemAfterMove();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -3654,6 +3655,8 @@ void tst_QGraphicsItem::defaultItemTest_QGraphicsEllipseItem()
 class ItemChangeTester : public QGraphicsRectItem
 {
 public:
+    ItemChangeTester(){}
+    ItemChangeTester(QGraphicsItem *parent) : QGraphicsRectItem(parent) {}
     QVariant itemChangeReturnValue;
     QGraphicsScene *itemSceneChangeTargetScene;
 
@@ -3928,6 +3931,39 @@ void tst_QGraphicsItem::itemChange()
         QCOMPARE(tester.changes.size(), ++changeCount);
         QCOMPARE(tester.changes.last(), QGraphicsItem::ItemChildRemovedChange);
         QCOMPARE(qVariantValue<QGraphicsItem *>(tester.values.last()), (QGraphicsItem *)&testerHelper);
+
+        // ItemChildRemovedChange 1
+        ItemChangeTester *test = new ItemChangeTester;
+        test->itemSceneChangeTargetScene = 0;
+        int count = 0;
+        QGraphicsScene *scene = new QGraphicsScene;
+        scene->addItem(test);
+        count = test->changes.size();
+        //We test here the fact that when a child is deleted the parent receive only one ItemChildRemovedChange
+        QGraphicsRectItem *child = new QGraphicsRectItem(test);
+        //We received ItemChildAddedChange
+        QCOMPARE(test->changes.size(), ++count);
+        QCOMPARE(test->changes.last(), QGraphicsItem::ItemChildAddedChange);
+        delete child;
+        child = 0;
+        QCOMPARE(test->changes.size(), ++count);
+        QCOMPARE(test->changes.last(), QGraphicsItem::ItemChildRemovedChange);
+
+        ItemChangeTester *childTester = new ItemChangeTester(test);
+        //Changes contains all sceneHasChanged and so on, we don't want to test that
+        int childCount = childTester->changes.size();
+        //We received ItemChildAddedChange
+        QCOMPARE(test->changes.size(), ++count);
+        child = new QGraphicsRectItem(childTester);
+        //We received ItemChildAddedChange
+        QCOMPARE(childTester->changes.size(), ++childCount);
+        QCOMPARE(childTester->changes.last(), QGraphicsItem::ItemChildAddedChange);
+        //Delete the child of the top level with all its children
+        delete childTester;
+        //Only one removal
+        QCOMPARE(test->changes.size(), ++count);
+        QCOMPARE(test->changes.last(), QGraphicsItem::ItemChildRemovedChange);
+        delete scene;
     }
     {
         // ItemChildRemovedChange 2
@@ -6036,6 +6072,47 @@ void tst_QGraphicsItem::cacheMode()
     QCOMPARE(tester->repaints, 13);
     QCOMPARE(testerChild->repaints, 11);
     QCOMPARE(testerChild2->repaints, 6);
+}
+
+void tst_QGraphicsItem::updateCachedItemAfterMove()
+{
+    // A simple item that uses ItemCoordinateCache
+    EventTester *tester = new EventTester;
+    tester->setCacheMode(QGraphicsItem::ItemCoordinateCache);
+
+    // Add to a scene, show in a view, ensure it's painted and reset its
+    // repaint counter.
+    QGraphicsScene scene;
+    scene.addItem(tester);
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(125);
+    tester->repaints = 0;
+
+    // Move the item, should not cause repaints
+    tester->setPos(10, 0);
+    QTest::qWait(125);
+    QCOMPARE(tester->repaints, 0);
+
+    // Move then update, should cause one repaint
+    tester->setPos(20, 0);
+    tester->update();
+    QTest::qWait(125);
+    QCOMPARE(tester->repaints, 1);
+
+    // Hiding the item doesn't cause a repaint
+    tester->hide();
+    QTest::qWait(125);
+    QCOMPARE(tester->repaints, 1);
+
+    // Moving a hidden item doesn't cause a repaint
+    tester->setPos(30, 0);
+    tester->update();
+    QTest::qWait(125);
+    QCOMPARE(tester->repaints, 1);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

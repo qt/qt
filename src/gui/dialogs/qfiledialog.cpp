@@ -693,7 +693,10 @@ void QFileDialog::setVisible(bool visible)
 */
 void QFileDialogPrivate::_q_goToUrl(const QUrl &url)
 {
-    QModelIndex idx = model->index(url.toLocalFile());
+    //The shortcut in the side bar may have a parent that is not fetched yet (e.g. an hidden file)
+    //so we force the fetching
+    QFileSystemModelPrivate::QFileSystemNode *node = model->d_func()->node(url.toLocalFile(), true);
+    QModelIndex idx =  model->d_func()->index(node);
     _q_enterDirectory(idx);
 }
 
