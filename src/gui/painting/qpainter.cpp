@@ -1484,7 +1484,9 @@ void QPainter::initFrom(const QWidget *widget)
     d->state->bgBrush = pal.brush(widget->backgroundRole());
     d->state->deviceFont = QFont(widget->font(), const_cast<QWidget*> (widget));
     d->state->font = d->state->deviceFont;
-    if (d->engine) {
+    if (d->extended) {
+        d->extended->penChanged();
+    } else if (d->engine) {
         d->engine->setDirty(QPaintEngine::DirtyPen);
         d->engine->setDirty(QPaintEngine::DirtyBrush);
         d->engine->setDirty(QPaintEngine::DirtyFont);
