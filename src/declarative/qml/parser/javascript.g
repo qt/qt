@@ -1906,7 +1906,10 @@ Statement: DebuggerStatement ;
 Block: T_LBRACE StatementListOpt T_RBRACE ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::Block> (driver->nodePool(), sym(2).StatementList);
+  AST::Block *node = makeAstNode<AST::Block> (driver->nodePool(), sym(2).StatementList);
+  node->lbraceToken = loc(1);
+  node->rbraceToken = loc(3);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1942,7 +1945,8 @@ VariableStatement: VariableDeclarationKind VariableDeclarationList T_AUTOMATIC_S
 VariableStatement: VariableDeclarationKind VariableDeclarationList T_SEMICOLON ;
 /.
 case $rule_number: {
-  AST::VariableStatement *node = makeAstNode<AST::VariableStatement> (driver->nodePool(), sym(2).VariableDeclarationList->finish (/*readOnly=*/sym(1).ival == T_CONST));
+  AST::VariableStatement *node = makeAstNode<AST::VariableStatement> (driver->nodePool(),
+     sym(2).VariableDeclarationList->finish (/*readOnly=*/sym(1).ival == T_CONST));
   node->declarationKindToken = loc(1);
   node->semicolonToken = loc(3);
   sym(1).Node = node;
@@ -1973,7 +1977,10 @@ case $rule_number: {
 VariableDeclarationList: VariableDeclarationList T_COMMA VariableDeclaration ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::VariableDeclarationList> (driver->nodePool(), sym(1).VariableDeclarationList, sym(3).VariableDeclaration);
+  AST::VariableDeclarationList *node = makeAstNode<AST::VariableDeclarationList> (driver->nodePool(),
+    sym(1).VariableDeclarationList, sym(3).VariableDeclaration);
+  node->commaToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -2012,6 +2019,7 @@ case $rule_number: {
 Initialiser: T_EQ AssignmentExpression ;
 /.
 case $rule_number: {
+  // ### TODO: AST for initializer
   sym(1) = sym(2);
 } break;
 ./
@@ -2028,6 +2036,7 @@ InitialiserOpt: Initialiser ;
 InitialiserNotIn: T_EQ AssignmentExpressionNotIn ;
 /.
 case $rule_number: {
+  // ### TODO: AST for initializer
   sym(1) = sym(2);
 } break;
 ./
@@ -2044,7 +2053,9 @@ InitialiserNotInOpt: InitialiserNotIn ;
 EmptyStatement: T_SEMICOLON ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::EmptyStatement> (driver->nodePool());
+  AST::EmptyStatement *node = makeAstNode<AST::EmptyStatement> (driver->nodePool());
+  node->semicolonToken = loc(1);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -2061,14 +2072,23 @@ case $rule_number: {
 IfStatement: T_IF T_LPAREN Expression T_RPAREN Statement T_ELSE Statement ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::IfStatement> (driver->nodePool(), sym(3).Expression, sym(5).Statement, sym(7).Statement);
+  AST::IfStatement *node = makeAstNode<AST::IfStatement> (driver->nodePool(), sym(3).Expression, sym(5).Statement, sym(7).Statement);
+  node->ifToken = loc(1);
+  node->lparenToken = loc(2);
+  node->rparenToken = loc(4);
+  node->elseToken = loc(5);
+  sym(1).Node = node;
 } break;
 ./
 
 IfStatement: T_IF T_LPAREN Expression T_RPAREN Statement ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::IfStatement> (driver->nodePool(), sym(3).Expression, sym(5).Statement);
+  AST::IfStatement *node = makeAstNode<AST::IfStatement> (driver->nodePool(), sym(3).Expression, sym(5).Statement);
+  node->ifToken = loc(1);
+  node->lparenToken = loc(2);
+  node->rparenToken = loc(4);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -2077,42 +2097,81 @@ IterationStatement: T_DO Statement T_WHILE T_LPAREN Expression T_RPAREN T_AUTOMA
 IterationStatement: T_DO Statement T_WHILE T_LPAREN Expression T_RPAREN T_SEMICOLON ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::DoWhileStatement> (driver->nodePool(), sym(2).Statement, sym(5).Expression);
+  AST::DoWhileStatement *node = makeAstNode<AST::DoWhileStatement> (driver->nodePool(), sym(2).Statement, sym(5).Expression);
+  node->doToken = loc(1);
+  node->whileToken = loc(3);
+  node->lparenToken = loc(4);
+  node->rparenToken = loc(6);
+  node->semicolonToken = loc(7);
+  sym(1).Node = node;
 } break;
 ./
 
 IterationStatement: T_WHILE T_LPAREN Expression T_RPAREN Statement ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::WhileStatement> (driver->nodePool(), sym(3).Expression, sym(5).Statement);
+  AST::WhileStatement *node = makeAstNode<AST::WhileStatement> (driver->nodePool(), sym(3).Expression, sym(5).Statement);
+  node->whileToken = loc(1);
+  node->lparenToken = loc(2);
+  node->rparenToken = loc(4);
+  sym(1).Node = node;
 } break;
 ./
 
 IterationStatement: T_FOR T_LPAREN ExpressionNotInOpt T_SEMICOLON ExpressionOpt T_SEMICOLON ExpressionOpt T_RPAREN Statement ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::ForStatement> (driver->nodePool(), sym(3).Expression, sym(5).Expression, sym(7).Expression, sym(9).Statement);
+  AST::ForStatement *node = makeAstNode<AST::ForStatement> (driver->nodePool(), sym(3).Expression,
+    sym(5).Expression, sym(7).Expression, sym(9).Statement);
+  node->forToken = loc(1);
+  node->lparenToken = loc(2);
+  node->firstSemicolonToken = loc(4);
+  node->secondSemicolonToken = loc(6);
+  node->rparenToken = loc(8);
+  sym(1).Node = node;
 } break;
 ./
 
 IterationStatement: T_FOR T_LPAREN T_VAR VariableDeclarationListNotIn T_SEMICOLON ExpressionOpt T_SEMICOLON ExpressionOpt T_RPAREN Statement ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::LocalForStatement> (driver->nodePool(), sym(4).VariableDeclarationList->finish (/*readOnly=*/false), sym(6).Expression, sym(8).Expression, sym(10).Statement);
+  AST::LocalForStatement *node = makeAstNode<AST::LocalForStatement> (driver->nodePool(),
+     sym(4).VariableDeclarationList->finish (/*readOnly=*/false), sym(6).Expression,
+     sym(8).Expression, sym(10).Statement);
+  node->forToken = loc(1);
+  node->lparenToken = loc(2);
+  node->varToken = loc(3);
+  node->firstSemicolonToken = loc(5);
+  node->secondSemicolonToken = loc(7);
+  node->rparenToken = loc(9);
+  sym(1).Node = node;
 } break;
 ./
 
 IterationStatement: T_FOR T_LPAREN LeftHandSideExpression T_IN Expression T_RPAREN Statement ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::ForEachStatement> (driver->nodePool(), sym(3).Expression, sym(5).Expression, sym(7).Statement);
+  AST:: ForEachStatement *node = makeAstNode<AST::ForEachStatement> (driver->nodePool(), sym(3).Expression,
+    sym(5).Expression, sym(7).Statement);
+  node->forToken = loc(1);
+  node->lparenToken = loc(2);
+  node->inToken = loc(4);
+  node->rparenToken = loc(6);
+  sym(1).Node = node;
 } break;
 ./
 
 IterationStatement: T_FOR T_LPAREN T_VAR VariableDeclarationNotIn T_IN Expression T_RPAREN Statement ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::LocalForEachStatement> (driver->nodePool(), sym(4).VariableDeclaration, sym(6).Expression, sym(8).Statement);
+  AST::LocalForEachStatement *node = makeAstNode<AST::LocalForEachStatement> (driver->nodePool(),
+    sym(4).VariableDeclaration, sym(6).Expression, sym(8).Statement);
+  node->forToken = loc(1);
+  node->lparenToken = loc(2);
+  node->varToken = loc(3);
+  node->inToken = loc(5);
+  node->rparenToken = loc(7);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -2120,7 +2179,10 @@ ContinueStatement: T_CONTINUE T_AUTOMATIC_SEMICOLON ;  -- automatic semicolon
 ContinueStatement: T_CONTINUE T_SEMICOLON ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::ContinueStatement> (driver->nodePool());
+  AST::ContinueStatement *node = makeAstNode<AST::ContinueStatement> (driver->nodePool());
+  node->continueToken = loc(1);
+  node->semicolonToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -2128,7 +2190,11 @@ ContinueStatement: T_CONTINUE T_IDENTIFIER T_AUTOMATIC_SEMICOLON ;  -- automatic
 ContinueStatement: T_CONTINUE T_IDENTIFIER T_SEMICOLON ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::ContinueStatement> (driver->nodePool(), sym(2).sval);
+  AST::ContinueStatement *node = makeAstNode<AST::ContinueStatement> (driver->nodePool(), sym(2).sval);
+  node->continueToken = loc(1);
+  node->identifierToken = loc(2);
+  node->semicolonToken = loc(3);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -2136,7 +2202,10 @@ BreakStatement: T_BREAK T_AUTOMATIC_SEMICOLON ;  -- automatic semicolon
 BreakStatement: T_BREAK T_SEMICOLON ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BreakStatement> (driver->nodePool());
+  AST::BreakStatement *node = makeAstNode<AST::BreakStatement> (driver->nodePool());
+  node->breakToken = loc(1);
+  node->semicolonToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -2144,7 +2213,11 @@ BreakStatement: T_BREAK T_IDENTIFIER T_AUTOMATIC_SEMICOLON ;  -- automatic semic
 BreakStatement: T_BREAK T_IDENTIFIER T_SEMICOLON ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BreakStatement> (driver->nodePool(), sym(2).sval);
+  AST::BreakStatement *node = makeAstNode<AST::BreakStatement> (driver->nodePool(), sym(2).sval);
+  node->breakToken = loc(1);
+  node->identifierToken = loc(2);
+  node->semicolonToken = loc(3);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -2152,35 +2225,52 @@ ReturnStatement: T_RETURN ExpressionOpt T_AUTOMATIC_SEMICOLON ;  -- automatic se
 ReturnStatement: T_RETURN ExpressionOpt T_SEMICOLON ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::ReturnStatement> (driver->nodePool(), sym(2).Expression);
+  AST::ReturnStatement *node = makeAstNode<AST::ReturnStatement> (driver->nodePool(), sym(2).Expression);
+  node->returnToken = loc(1);
+  node->semicolonToken = loc(3);
+  sym(1).Node = node;
 } break;
 ./
 
 WithStatement: T_WITH T_LPAREN Expression T_RPAREN Statement ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::WithStatement> (driver->nodePool(), sym(3).Expression, sym(5).Statement);
+  AST::WithStatement *node = makeAstNode<AST::WithStatement> (driver->nodePool(), sym(3).Expression, sym(5).Statement);
+  node->withToken = loc(1);
+  node->lparenToken = loc(2);
+  node->rparenToken = loc(4);
+  sym(1).Node = node;
 } break;
 ./
 
 SwitchStatement: T_SWITCH T_LPAREN Expression T_RPAREN CaseBlock ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::SwitchStatement> (driver->nodePool(), sym(3).Expression, sym(5).CaseBlock);
+  AST::SwitchStatement *node = makeAstNode<AST::SwitchStatement> (driver->nodePool(), sym(3).Expression, sym(5).CaseBlock);
+  node->switchToken = loc(1);
+  node->lparenToken = loc(2);
+  node->rparenToken = loc(4);
+  sym(1).Node = node;
 } break;
 ./
 
 CaseBlock: T_LBRACE CaseClausesOpt T_RBRACE ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::CaseBlock> (driver->nodePool(), sym(2).CaseClauses);
+  AST::CaseBlock *node = makeAstNode<AST::CaseBlock> (driver->nodePool(), sym(2).CaseClauses);
+  node->lbraceToken = loc(1);
+  node->rbraceToken = loc(3);
+  sym(1).Node = node;
 } break;
 ./
 
 CaseBlock: T_LBRACE CaseClausesOpt DefaultClause CaseClausesOpt T_RBRACE ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::CaseBlock> (driver->nodePool(), sym(2).CaseClauses, sym(3).DefaultClause, sym(4).CaseClauses);
+  AST::CaseBlock *node = makeAstNode<AST::CaseBlock> (driver->nodePool(), sym(2).CaseClauses, sym(3).DefaultClause, sym(4).CaseClauses);
+  node->lbraceToken = loc(1);
+  node->rbraceToken = loc(5);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -2215,21 +2305,30 @@ case $rule_number: {
 CaseClause: T_CASE Expression T_COLON StatementListOpt ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::CaseClause> (driver->nodePool(), sym(2).Expression, sym(4).StatementList);
+  AST::CaseClause *node = makeAstNode<AST::CaseClause> (driver->nodePool(), sym(2).Expression, sym(4).StatementList);
+  node->caseToken = loc(1);
+  node->colonToken = loc(3);
+  sym(1).Node = node;
 } break;
 ./
 
 DefaultClause: T_DEFAULT T_COLON StatementListOpt ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::DefaultClause> (driver->nodePool(), sym(3).StatementList);
+  AST::DefaultClause *node = makeAstNode<AST::DefaultClause> (driver->nodePool(), sym(3).StatementList);
+  node->defaultToken = loc(1);
+  node->colonToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 LabelledStatement: T_IDENTIFIER T_COLON Statement ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::LabelledStatement> (driver->nodePool(), sym(1).sval, sym(3).Statement);
+  AST::LabelledStatement *node = makeAstNode<AST::LabelledStatement> (driver->nodePool(), sym(1).sval, sym(3).Statement);
+  node->identifierToken = loc(1);
+  node->colonToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -2237,42 +2336,58 @@ ThrowStatement: T_THROW Expression T_AUTOMATIC_SEMICOLON ;  -- automatic semicol
 ThrowStatement: T_THROW Expression T_SEMICOLON ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::ThrowStatement> (driver->nodePool(), sym(2).Expression);
+  AST::ThrowStatement *node = makeAstNode<AST::ThrowStatement> (driver->nodePool(), sym(2).Expression);
+  node->throwToken = loc(1);
+  node->semicolonToken = loc(3);
+  sym(1).Node = node;
 } break;
 ./
 
 TryStatement: T_TRY Block Catch ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::TryStatement> (driver->nodePool(), sym(2).Statement, sym(3).Catch);
+  AST::TryStatement *node = makeAstNode<AST::TryStatement> (driver->nodePool(), sym(2).Statement, sym(3).Catch);
+  node->tryToken = loc(1);
+  sym(1).Node = node;
 } break;
 ./
 
 TryStatement: T_TRY Block Finally ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::TryStatement> (driver->nodePool(), sym(2).Statement, sym(3).Finally);
+  AST::TryStatement *node = makeAstNode<AST::TryStatement> (driver->nodePool(), sym(2).Statement, sym(3).Finally);
+  node->tryToken = loc(1);
+  sym(1).Node = node;
 } break;
 ./
 
 TryStatement: T_TRY Block Catch Finally ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::TryStatement> (driver->nodePool(), sym(2).Statement, sym(3).Catch, sym(4).Finally);
+  AST::TryStatement *node = makeAstNode<AST::TryStatement> (driver->nodePool(), sym(2).Statement, sym(3).Catch, sym(4).Finally);
+  node->tryToken = loc(1);
+  sym(1).Node = node;
 } break;
 ./
 
 Catch: T_CATCH T_LPAREN T_IDENTIFIER T_RPAREN Block ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::Catch> (driver->nodePool(), sym(3).sval, sym(5).Statement);
+  AST::Catch *node = makeAstNode<AST::Catch> (driver->nodePool(), sym(3).sval, sym(5).Statement);
+  node->catchToken = loc(1);
+  node->lparenToken = loc(2);
+  node->identifierToken = loc(3);
+  node->rparenToken = loc(4);
+  sym(1).Node = node;
 } break;
 ./
 
 Finally: T_FINALLY Block ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::Finally> (driver->nodePool(), sym(2).Statement);
+  AST::Finally *node = makeAstNode<AST::Finally> (driver->nodePool(), sym(2).Statement);
+  node->finallyToken = loc(1);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -2280,7 +2395,10 @@ DebuggerStatement: T_DEBUGGER T_AUTOMATIC_SEMICOLON ; -- automatic semicolon
 DebuggerStatement: T_DEBUGGER T_SEMICOLON ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::DebuggerStatement> (driver->nodePool());
+  AST::DebuggerStatement *node = makeAstNode<AST::DebuggerStatement> (driver->nodePool());
+  node->debuggerToken = loc(1);
+  node->semicolonToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 

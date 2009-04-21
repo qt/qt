@@ -1004,6 +1004,8 @@ public:
 
 // attributes
     StatementList *statements;
+    SourceLocation lbraceToken;
+    SourceLocation rbraceToken;
 };
 
 class StatementList: public Node
@@ -1114,6 +1116,7 @@ public:
 // attributes
     VariableDeclaration *declaration;
     VariableDeclarationList *next;
+    SourceLocation commaToken;
 };
 
 class EmptyStatement: public Statement
@@ -1125,6 +1128,9 @@ public:
     virtual ~EmptyStatement() {}
 
     virtual void accept0(Visitor *visitor);
+
+// attributes
+    SourceLocation semicolonToken;
 };
 
 class ExpressionStatement: public Statement
@@ -1161,6 +1167,10 @@ public:
     ExpressionNode *expression;
     Statement *ok;
     Statement *ko;
+    SourceLocation ifToken;
+    SourceLocation lparenToken;
+    SourceLocation rparenToken;
+    SourceLocation elseToken;
 };
 
 class DoWhileStatement: public Statement
@@ -1179,6 +1189,11 @@ public:
 // attributes
     Statement *statement;
     ExpressionNode *expression;
+    SourceLocation doToken;
+    SourceLocation whileToken;
+    SourceLocation lparenToken;
+    SourceLocation rparenToken;
+    SourceLocation semicolonToken;
 };
 
 class WhileStatement: public Statement
@@ -1197,6 +1212,9 @@ public:
 // attributes
     ExpressionNode *expression;
     Statement *statement;
+    SourceLocation whileToken;
+    SourceLocation lparenToken;
+    SourceLocation rparenToken;
 };
 
 class ForStatement: public Statement
@@ -1217,6 +1235,11 @@ public:
     ExpressionNode *condition;
     ExpressionNode *expression;
     Statement *statement;
+    SourceLocation forToken;
+    SourceLocation lparenToken;
+    SourceLocation firstSemicolonToken;
+    SourceLocation secondSemicolonToken;
+    SourceLocation rparenToken;
 };
 
 class LocalForStatement: public Statement
@@ -1237,6 +1260,12 @@ public:
     ExpressionNode *condition;
     ExpressionNode *expression;
     Statement *statement;
+    SourceLocation forToken;
+    SourceLocation lparenToken;
+    SourceLocation varToken;
+    SourceLocation firstSemicolonToken;
+    SourceLocation secondSemicolonToken;
+    SourceLocation rparenToken;
 };
 
 class ForEachStatement: public Statement
@@ -1256,6 +1285,10 @@ public:
     ExpressionNode *initialiser;
     ExpressionNode *expression;
     Statement *statement;
+    SourceLocation forToken;
+    SourceLocation lparenToken;
+    SourceLocation inToken;
+    SourceLocation rparenToken;
 };
 
 class LocalForEachStatement: public Statement
@@ -1275,6 +1308,11 @@ public:
     VariableDeclaration *declaration;
     ExpressionNode *expression;
     Statement *statement;
+    SourceLocation forToken;
+    SourceLocation lparenToken;
+    SourceLocation varToken;
+    SourceLocation inToken;
+    SourceLocation rparenToken;
 };
 
 class ContinueStatement: public Statement
@@ -1291,6 +1329,9 @@ public:
 
 // attributes
     JavaScriptNameIdImpl *label;
+    SourceLocation continueToken;
+    SourceLocation identifierToken;
+    SourceLocation semicolonToken;
 };
 
 class BreakStatement: public Statement
@@ -1307,6 +1348,9 @@ public:
 
 // attributes
     JavaScriptNameIdImpl *label;
+    SourceLocation breakToken;
+    SourceLocation identifierToken;
+    SourceLocation semicolonToken;
 };
 
 class ReturnStatement: public Statement
@@ -1323,6 +1367,8 @@ public:
 
 // attributes
     ExpressionNode *expression;
+    SourceLocation returnToken;
+    SourceLocation semicolonToken;
 };
 
 class WithStatement: public Statement
@@ -1341,6 +1387,9 @@ public:
 // attributes
     ExpressionNode *expression;
     Statement *statement;
+    SourceLocation withToken;
+    SourceLocation lparenToken;
+    SourceLocation rparenToken;
 };
 
 class SwitchStatement: public Statement
@@ -1359,6 +1408,9 @@ public:
 // attributes
     ExpressionNode *expression;
     CaseBlock *block;
+    SourceLocation switchToken;
+    SourceLocation lparenToken;
+    SourceLocation rparenToken;
 };
 
 class CaseBlock: public Node
@@ -1378,6 +1430,8 @@ public:
     CaseClauses *clauses;
     DefaultClause *defaultClause;
     CaseClauses *moreClauses;
+    SourceLocation lbraceToken;
+    SourceLocation rbraceToken;
 };
 
 class CaseClauses: public Node
@@ -1429,6 +1483,8 @@ public:
 // attributes
     ExpressionNode *expression;
     StatementList *statements;
+    SourceLocation caseToken;
+    SourceLocation colonToken;
 };
 
 class DefaultClause: public Node
@@ -1446,6 +1502,8 @@ public:
 
 // attributes
     StatementList *statements;
+    SourceLocation defaultToken;
+    SourceLocation colonToken;
 };
 
 class LabelledStatement: public Statement
@@ -1464,6 +1522,9 @@ public:
 // attributes
     JavaScriptNameIdImpl *label;
     Statement *statement;
+    SourceLocation identifierToken;
+    SourceLocation colonToken;
+    SourceLocation semicolonToken;
 };
 
 class ThrowStatement: public Statement
@@ -1480,6 +1541,8 @@ public:
 
 // attributes
     ExpressionNode *expression;
+    SourceLocation throwToken;
+    SourceLocation semicolonToken;
 };
 
 class TryStatement: public Statement
@@ -1507,6 +1570,7 @@ public:
     Statement *statement;
     Catch *catchExpression;
     Finally *finallyExpression;
+    SourceLocation tryToken;
 };
 
 class Catch: public Node
@@ -1525,6 +1589,10 @@ public:
 // attributes
     JavaScriptNameIdImpl *name;
     Statement *statement;
+    SourceLocation catchToken;
+    SourceLocation lparenToken;
+    SourceLocation identifierToken;
+    SourceLocation rparenToken;
 };
 
 class Finally: public Node
@@ -1542,6 +1610,7 @@ public:
 
 // attributes
     Statement *statement;
+    SourceLocation finallyToken;
 };
 
 class FunctionExpression: public ExpressionNode
@@ -1741,6 +1810,10 @@ public:
     virtual ~DebuggerStatement() {}
 
     virtual void accept0(Visitor *visitor);
+
+// attributes
+    SourceLocation debuggerToken;
+    SourceLocation semicolonToken;
 };
 
 class UiProgram: public Node
