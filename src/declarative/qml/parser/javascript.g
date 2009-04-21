@@ -793,21 +793,31 @@ case $rule_number: {
 PrimaryExpression: T_LBRACKET ElisionOpt T_RBRACKET ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), sym(2).Elision);
+  AST::ArrayLiteral *node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), sym(2).Elision);
+  node->lbracketToken = loc(1);
+  node->rbracketToken = loc(3);
+  sym(1).Node = node;
 } break;
 ./
 
 PrimaryExpression: T_LBRACKET ElementList T_RBRACKET ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), sym(2).ElementList->finish ());
+  AST::ArrayLiteral *node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), sym(2).ElementList->finish ());
+  node->lbracketToken = loc(1);
+  node->rbracketToken = loc(3);
+  sym(1).Node = node;
 } break;
 ./
 
 PrimaryExpression: T_LBRACKET ElementList T_COMMA ElisionOpt T_RBRACKET ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), sym(2).ElementList->finish (), sym(4).Elision);
+  AST::ArrayLiteral *node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), sym(2).ElementList->finish (), sym(4).Elision);
+  node->lbracketToken = loc(1);
+  node->commaToken = loc(3);
+  node->rbracketToken = loc(5);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -852,21 +862,27 @@ case $rule_number: {
 ElementList: ElementList T_COMMA ElisionOpt AssignmentExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::ElementList> (driver->nodePool(), sym(1).ElementList, sym(3).Elision, sym(4).Expression);
+  AST::ElementList *node = makeAstNode<AST::ElementList> (driver->nodePool(), sym(1).ElementList, sym(3).Elision, sym(4).Expression);
+  node->commaToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 Elision: T_COMMA ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::Elision> (driver->nodePool());
+  AST::Elision *node = makeAstNode<AST::Elision> (driver->nodePool());
+  node->commaToken = loc(1);
+  sym(1).Node = node;
 } break;
 ./
 
 Elision: Elision T_COMMA ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::Elision> (driver->nodePool(), sym(1).Elision);
+  AST::Elision *node = makeAstNode<AST::Elision> (driver->nodePool(), sym(1).Elision);
+  node->commaToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -887,42 +903,57 @@ case $rule_number: {
 PropertyNameAndValueList: PropertyName T_COLON AssignmentExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::PropertyNameAndValueList> (driver->nodePool(), sym(1).PropertyName, sym(3).Expression);
+  AST::PropertyNameAndValueList *node = makeAstNode<AST::PropertyNameAndValueList> (driver->nodePool(),
+      sym(1).PropertyName, sym(3).Expression);
+  node->colonToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 PropertyNameAndValueList: PropertyNameAndValueList T_COMMA PropertyName T_COLON AssignmentExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::PropertyNameAndValueList> (driver->nodePool(), sym(1).PropertyNameAndValueList, sym(3).PropertyName, sym(5).Expression);
+  AST::PropertyNameAndValueList *node = makeAstNode<AST::PropertyNameAndValueList> (driver->nodePool(),
+      sym(1).PropertyNameAndValueList, sym(3).PropertyName, sym(5).Expression);
+  node->commaToken = loc(2);
+  node->colonToken = loc(4);
+  sym(1).Node = node;  
 } break;
 ./
 
 PropertyName: T_IDENTIFIER %prec REDUCE_HERE ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::IdentifierPropertyName> (driver->nodePool(), sym(1).sval);
+  AST::IdentifierPropertyName *node = makeAstNode<AST::IdentifierPropertyName> (driver->nodePool(), sym(1).sval);
+  node->propertyNameToken = loc(1);
+  sym(1).Node = node;  
 } break;
 ./
 
 PropertyName: T_STRING_LITERAL ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::StringLiteralPropertyName> (driver->nodePool(), sym(1).sval);
+  AST::StringLiteralPropertyName *node = makeAstNode<AST::StringLiteralPropertyName> (driver->nodePool(), sym(1).sval);
+  node->propertyNameToken = loc(1);
+  sym(1).Node = node;  
 } break;
 ./
 
 PropertyName: T_NUMERIC_LITERAL ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::NumericLiteralPropertyName> (driver->nodePool(), sym(1).dval);
+  AST::NumericLiteralPropertyName *node = makeAstNode<AST::NumericLiteralPropertyName> (driver->nodePool(), sym(1).dval);
+  node->propertyNameToken = loc(1);
+  sym(1).Node = node;  
 } break;
 ./
 
 PropertyName: ReservedIdentifier ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::IdentifierPropertyName> (driver->nodePool(), sym(1).sval);
+  AST::IdentifierPropertyName *node = makeAstNode<AST::IdentifierPropertyName> (driver->nodePool(), sym(1).sval);
+  node->propertyNameToken = loc(1);
+  sym(1).Node = node;  
 } break;
 ./
 
@@ -1063,7 +1094,10 @@ MemberExpression: FunctionExpression ;
 MemberExpression: MemberExpression T_LBRACKET Expression T_RBRACKET ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::ArrayMemberExpression> (driver->nodePool(), sym(1).Expression, sym(3).Expression);
+  AST::ArrayMemberExpression *node = makeAstNode<AST::ArrayMemberExpression> (driver->nodePool(), sym(1).Expression, sym(3).Expression);
+  node->lbracketToken = loc(2);
+  node->rbracketToken = loc(4);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1122,7 +1156,10 @@ case $rule_number: {
 CallExpression: CallExpression T_LBRACKET Expression T_RBRACKET ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::ArrayMemberExpression> (driver->nodePool(), sym(1).Expression, sym(3).Expression);
+  AST::ArrayMemberExpression *node = makeAstNode<AST::ArrayMemberExpression> (driver->nodePool(), sym(1).Expression, sym(3).Expression);
+  node->lbracketToken = loc(2);
+  node->rbracketToken = loc(4);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1173,14 +1210,18 @@ PostfixExpression: LeftHandSideExpression ;
 PostfixExpression: LeftHandSideExpression T_PLUS_PLUS ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::PostIncrementExpression> (driver->nodePool(), sym(1).Expression);
+  AST::PostIncrementExpression *node = makeAstNode<AST::PostIncrementExpression> (driver->nodePool(), sym(1).Expression);
+  node->incrementToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 PostfixExpression: LeftHandSideExpression T_MINUS_MINUS ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::PostDecrementExpression> (driver->nodePool(), sym(1).Expression);
+  AST::PostDecrementExpression *node = makeAstNode<AST::PostDecrementExpression> (driver->nodePool(), sym(1).Expression);
+  node->decrementToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1189,63 +1230,81 @@ UnaryExpression: PostfixExpression ;
 UnaryExpression: T_DELETE UnaryExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::DeleteExpression> (driver->nodePool(), sym(2).Expression);
+  AST::DeleteExpression *node = makeAstNode<AST::DeleteExpression> (driver->nodePool(), sym(2).Expression);
+  node->deleteToken = loc(1);
+  sym(1).Node = node;
 } break;
 ./
 
 UnaryExpression: T_VOID UnaryExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::VoidExpression> (driver->nodePool(), sym(2).Expression);
+  AST::VoidExpression *node = makeAstNode<AST::VoidExpression> (driver->nodePool(), sym(2).Expression);
+  node->voidToken = loc(1);
+  sym(1).Node = node;
 } break;
 ./
 
 UnaryExpression: T_TYPEOF UnaryExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::TypeOfExpression> (driver->nodePool(), sym(2).Expression);
+  AST::TypeOfExpression *node = makeAstNode<AST::TypeOfExpression> (driver->nodePool(), sym(2).Expression);
+  node->typeofToken = loc(1);
+  sym(1).Node = node;
 } break;
 ./
 
 UnaryExpression: T_PLUS_PLUS UnaryExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::PreIncrementExpression> (driver->nodePool(), sym(2).Expression);
+  AST::PreIncrementExpression *node = makeAstNode<AST::PreIncrementExpression> (driver->nodePool(), sym(2).Expression);
+  node->incrementToken = loc(1);
+  sym(1).Node = node;
 } break;
 ./
 
 UnaryExpression: T_MINUS_MINUS UnaryExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::PreDecrementExpression> (driver->nodePool(), sym(2).Expression);
+  AST::PreDecrementExpression *node = makeAstNode<AST::PreDecrementExpression> (driver->nodePool(), sym(2).Expression);
+  node->decrementToken = loc(1);
+  sym(1).Node = node;
 } break;
 ./
 
 UnaryExpression: T_PLUS UnaryExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::UnaryPlusExpression> (driver->nodePool(), sym(2).Expression);
+  AST::UnaryPlusExpression *node = makeAstNode<AST::UnaryPlusExpression> (driver->nodePool(), sym(2).Expression);
+  node->plusToken = loc(1);
+  sym(1).Node = node;
 } break;
 ./
 
 UnaryExpression: T_MINUS UnaryExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::UnaryMinusExpression> (driver->nodePool(), sym(2).Expression);
+  AST::UnaryMinusExpression *node = makeAstNode<AST::UnaryMinusExpression> (driver->nodePool(), sym(2).Expression);
+  node->minusToken = loc(1);
+  sym(1).Node = node;
 } break;
 ./
 
 UnaryExpression: T_TILDE UnaryExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::TildeExpression> (driver->nodePool(), sym(2).Expression);
+  AST::TildeExpression *node = makeAstNode<AST::TildeExpression> (driver->nodePool(), sym(2).Expression);
+  node->tildeToken = loc(1);
+  sym(1).Node = node;
 } break;
 ./
 
 UnaryExpression: T_NOT UnaryExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::NotExpression> (driver->nodePool(), sym(2).Expression);
+  AST::NotExpression *node = makeAstNode<AST::NotExpression> (driver->nodePool(), sym(2).Expression);
+  node->notToken = loc(1);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1254,21 +1313,30 @@ MultiplicativeExpression: UnaryExpression ;
 MultiplicativeExpression: MultiplicativeExpression T_STAR UnaryExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::Mul, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::Mul, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 MultiplicativeExpression: MultiplicativeExpression T_DIVIDE_ UnaryExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::Div, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::Div, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 MultiplicativeExpression: MultiplicativeExpression T_REMAINDER UnaryExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::Mod, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::Mod, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1277,14 +1345,20 @@ AdditiveExpression: MultiplicativeExpression ;
 AdditiveExpression: AdditiveExpression T_PLUS MultiplicativeExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::Add, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::Add, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 AdditiveExpression: AdditiveExpression T_MINUS MultiplicativeExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::Sub, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::Sub, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1293,21 +1367,30 @@ ShiftExpression: AdditiveExpression ;
 ShiftExpression: ShiftExpression T_LT_LT AdditiveExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::LShift, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::LShift, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 ShiftExpression: ShiftExpression T_GT_GT AdditiveExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::RShift, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::RShift, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 ShiftExpression: ShiftExpression T_GT_GT_GT AdditiveExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::URShift, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::URShift, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1316,42 +1399,60 @@ RelationalExpression: ShiftExpression ;
 RelationalExpression: RelationalExpression T_LT ShiftExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::Lt, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::Lt, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 RelationalExpression: RelationalExpression T_GT ShiftExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::Gt, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::Gt, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 RelationalExpression: RelationalExpression T_LE ShiftExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::Le, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::Le, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 RelationalExpression: RelationalExpression T_GE ShiftExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::Ge, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::Ge, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 RelationalExpression: RelationalExpression T_INSTANCEOF ShiftExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::InstanceOf, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::InstanceOf, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 RelationalExpression: RelationalExpression T_IN ShiftExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::In, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::In, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1360,35 +1461,50 @@ RelationalExpressionNotIn: ShiftExpression ;
 RelationalExpressionNotIn: RelationalExpressionNotIn T_LT ShiftExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::Lt, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::Lt, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 RelationalExpressionNotIn: RelationalExpressionNotIn T_GT ShiftExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::Gt, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::Gt, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 RelationalExpressionNotIn: RelationalExpressionNotIn T_LE ShiftExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::Le, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::Le, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 RelationalExpressionNotIn: RelationalExpressionNotIn T_GE ShiftExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::Ge, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+   QSOperator::Ge, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 RelationalExpressionNotIn: RelationalExpressionNotIn T_INSTANCEOF ShiftExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::InstanceOf, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::InstanceOf, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1397,28 +1513,40 @@ EqualityExpression: RelationalExpression ;
 EqualityExpression: EqualityExpression T_EQ_EQ RelationalExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::Equal, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::Equal, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 EqualityExpression: EqualityExpression T_NOT_EQ RelationalExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::NotEqual, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::NotEqual, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 EqualityExpression: EqualityExpression T_EQ_EQ_EQ RelationalExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::StrictEqual, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::StrictEqual, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 EqualityExpression: EqualityExpression T_NOT_EQ_EQ RelationalExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::StrictNotEqual, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::StrictNotEqual, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1427,28 +1555,40 @@ EqualityExpressionNotIn: RelationalExpressionNotIn ;
 EqualityExpressionNotIn: EqualityExpressionNotIn T_EQ_EQ RelationalExpressionNotIn ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::Equal, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::Equal, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 EqualityExpressionNotIn: EqualityExpressionNotIn T_NOT_EQ RelationalExpressionNotIn;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::NotEqual, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::NotEqual, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 EqualityExpressionNotIn: EqualityExpressionNotIn T_EQ_EQ_EQ RelationalExpressionNotIn ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::StrictEqual, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::StrictEqual, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
 EqualityExpressionNotIn: EqualityExpressionNotIn T_NOT_EQ_EQ RelationalExpressionNotIn ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::StrictNotEqual, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::StrictNotEqual, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1457,7 +1597,10 @@ BitwiseANDExpression: EqualityExpression ;
 BitwiseANDExpression: BitwiseANDExpression T_AND EqualityExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::BitAnd, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::BitAnd, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1466,7 +1609,10 @@ BitwiseANDExpressionNotIn: EqualityExpressionNotIn ;
 BitwiseANDExpressionNotIn: BitwiseANDExpressionNotIn T_AND EqualityExpressionNotIn ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::BitAnd, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::BitAnd, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1475,7 +1621,10 @@ BitwiseXORExpression: BitwiseANDExpression ;
 BitwiseXORExpression: BitwiseXORExpression T_XOR BitwiseANDExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::BitXor, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::BitXor, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1484,7 +1633,10 @@ BitwiseXORExpressionNotIn: BitwiseANDExpressionNotIn ;
 BitwiseXORExpressionNotIn: BitwiseXORExpressionNotIn T_XOR BitwiseANDExpressionNotIn ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::BitXor, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::BitXor, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1493,7 +1645,10 @@ BitwiseORExpression: BitwiseXORExpression ;
 BitwiseORExpression: BitwiseORExpression T_OR BitwiseXORExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::BitOr, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::BitOr, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1502,7 +1657,10 @@ BitwiseORExpressionNotIn: BitwiseXORExpressionNotIn ;
 BitwiseORExpressionNotIn: BitwiseORExpressionNotIn T_OR BitwiseXORExpressionNotIn ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::BitOr, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::BitOr, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1511,7 +1669,10 @@ LogicalANDExpression: BitwiseORExpression ;
 LogicalANDExpression: LogicalANDExpression T_AND_AND BitwiseORExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::And, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::And, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1520,7 +1681,10 @@ LogicalANDExpressionNotIn: BitwiseORExpressionNotIn ;
 LogicalANDExpressionNotIn: LogicalANDExpressionNotIn T_AND_AND BitwiseORExpressionNotIn ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::And, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::And, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1529,7 +1693,10 @@ LogicalORExpression: LogicalANDExpression ;
 LogicalORExpression: LogicalORExpression T_OR_OR LogicalANDExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::Or, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::Or, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1538,7 +1705,10 @@ LogicalORExpressionNotIn: LogicalANDExpressionNotIn ;
 LogicalORExpressionNotIn: LogicalORExpressionNotIn T_OR_OR LogicalANDExpressionNotIn ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, QSOperator::Or, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    QSOperator::Or, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1547,7 +1717,11 @@ ConditionalExpression: LogicalORExpression ;
 ConditionalExpression: LogicalORExpression T_QUESTION AssignmentExpression T_COLON AssignmentExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::ConditionalExpression> (driver->nodePool(), sym(1).Expression, sym(3).Expression, sym(5).Expression);
+  AST::ConditionalExpression *node = makeAstNode<AST::ConditionalExpression> (driver->nodePool(), sym(1).Expression,
+    sym(3).Expression, sym(5).Expression);
+  node->questionToken = loc(2);
+  node->colonToken = loc(4);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1556,7 +1730,11 @@ ConditionalExpressionNotIn: LogicalORExpressionNotIn ;
 ConditionalExpressionNotIn: LogicalORExpressionNotIn T_QUESTION AssignmentExpressionNotIn T_COLON AssignmentExpressionNotIn ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::ConditionalExpression> (driver->nodePool(), sym(1).Expression, sym(3).Expression, sym(5).Expression);
+  AST::ConditionalExpression *node = makeAstNode<AST::ConditionalExpression> (driver->nodePool(), sym(1).Expression,
+    sym(3).Expression, sym(5).Expression);
+  node->questionToken = loc(2);
+  node->colonToken = loc(4);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1565,7 +1743,10 @@ AssignmentExpression: ConditionalExpression ;
 AssignmentExpression: LeftHandSideExpression AssignmentOperator AssignmentExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, sym(2).ival, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    sym(2).ival, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1574,7 +1755,10 @@ AssignmentExpressionNotIn: ConditionalExpressionNotIn ;
 AssignmentExpressionNotIn: LeftHandSideExpression AssignmentOperator AssignmentExpressionNotIn ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression, sym(2).ival, sym(3).Expression);
+  AST::BinaryExpression *node = makeAstNode<AST::BinaryExpression> (driver->nodePool(), sym(1).Expression,
+    sym(2).ival, sym(3).Expression);
+  node->operatorToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1667,7 +1851,9 @@ Expression: AssignmentExpression ;
 Expression: Expression T_COMMA AssignmentExpression ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::Expression> (driver->nodePool(), sym(1).Expression, sym(3).Expression);
+  AST::Expression *node = makeAstNode<AST::Expression> (driver->nodePool(), sym(1).Expression, sym(3).Expression);
+  node->commaToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1685,7 +1871,9 @@ ExpressionNotIn: AssignmentExpressionNotIn ;
 ExpressionNotIn: ExpressionNotIn T_COMMA AssignmentExpressionNotIn ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::Expression> (driver->nodePool(), sym(1).Expression, sym(3).Expression);
+  AST::Expression *node = makeAstNode<AST::Expression> (driver->nodePool(), sym(1).Expression, sym(3).Expression);
+  node->commaToken = loc(2);
+  sym(1).Node = node;
 } break;
 ./
 

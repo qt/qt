@@ -427,6 +427,9 @@ public:
 // attributes
     ElementList *elements;
     Elision *elision;
+    SourceLocation lbracketToken;
+    SourceLocation commaToken;
+    SourceLocation rbracketToken;
 };
 
 class ObjectLiteral: public ExpressionNode
@@ -480,6 +483,7 @@ public:
     Elision *elision;
     ExpressionNode *expression;
     ElementList *next;
+    SourceLocation commaToken;
 };
 
 class Elision: public Node
@@ -510,6 +514,7 @@ public:
 
 // attributes
     Elision *next;
+    SourceLocation commaToken;
 };
 
 class PropertyNameAndValueList: public Node
@@ -544,6 +549,8 @@ public:
     PropertyName *name;
     ExpressionNode *value;
     PropertyNameAndValueList *next;
+    SourceLocation colonToken;
+    SourceLocation commaToken;
 };
 
 class PropertyName: public Node
@@ -553,6 +560,9 @@ public:
 
     PropertyName() { kind = K; }
     virtual ~PropertyName() {}
+
+// attributes
+    SourceLocation propertyNameToken;
 };
 
 class IdentifierPropertyName: public PropertyName
@@ -617,6 +627,8 @@ public:
 // attributes
     ExpressionNode *base;
     ExpressionNode *expression;
+    SourceLocation lbracketToken;
+    SourceLocation rbracketToken;
 };
 
 class FieldMemberExpression: public ExpressionNode
@@ -745,6 +757,7 @@ public:
 
 // attributes
     ExpressionNode *base;
+    SourceLocation incrementToken;
 };
 
 class PostDecrementExpression: public ExpressionNode
@@ -761,6 +774,7 @@ public:
 
 // attributes
     ExpressionNode *base;
+    SourceLocation decrementToken;
 };
 
 class DeleteExpression: public ExpressionNode
@@ -776,6 +790,7 @@ public:
 
 // attributes
     ExpressionNode *expression;
+    SourceLocation deleteToken;
 };
 
 class VoidExpression: public ExpressionNode
@@ -792,6 +807,7 @@ public:
 
 // attributes
     ExpressionNode *expression;
+    SourceLocation voidToken;
 };
 
 class TypeOfExpression: public ExpressionNode
@@ -808,6 +824,7 @@ public:
 
 // attributes
     ExpressionNode *expression;
+    SourceLocation typeofToken;
 };
 
 class PreIncrementExpression: public ExpressionNode
@@ -824,6 +841,7 @@ public:
 
 // attributes
     ExpressionNode *expression;
+    SourceLocation incrementToken;
 };
 
 class PreDecrementExpression: public ExpressionNode
@@ -840,6 +858,7 @@ public:
 
 // attributes
     ExpressionNode *expression;
+    SourceLocation decrementToken;
 };
 
 class UnaryPlusExpression: public ExpressionNode
@@ -856,6 +875,7 @@ public:
 
 // attributes
     ExpressionNode *expression;
+    SourceLocation plusToken;
 };
 
 class UnaryMinusExpression: public ExpressionNode
@@ -872,6 +892,7 @@ public:
 
 // attributes
     ExpressionNode *expression;
+    SourceLocation minusToken;
 };
 
 class TildeExpression: public ExpressionNode
@@ -888,6 +909,7 @@ public:
 
 // attributes
     ExpressionNode *expression;
+    SourceLocation tildeToken;
 };
 
 class NotExpression: public ExpressionNode
@@ -904,6 +926,7 @@ public:
 
 // attributes
     ExpressionNode *expression;
+    SourceLocation notToken;
 };
 
 class BinaryExpression: public ExpressionNode
@@ -925,6 +948,7 @@ public:
     ExpressionNode *left;
     int op;
     ExpressionNode *right;
+    SourceLocation operatorToken;
 };
 
 class ConditionalExpression: public ExpressionNode
@@ -944,6 +968,8 @@ public:
     ExpressionNode *expression;
     ExpressionNode *ok;
     ExpressionNode *ko;
+    SourceLocation questionToken;
+    SourceLocation colonToken;
 };
 
 class Expression: public ExpressionNode // ### rename
@@ -961,6 +987,7 @@ public:
 // attributes
     ExpressionNode *left;
     ExpressionNode *right;
+    SourceLocation commaToken;
 };
 
 class Block: public Statement
