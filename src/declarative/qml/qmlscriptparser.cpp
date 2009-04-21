@@ -506,17 +506,6 @@ QString ProcessAST::getPrimitive(const QByteArray &propertyName, AST::Expression
 
     if(isSignalProperty(propertyName)) {
         pp(expr);
-
-        // here comes a cruel hack until we support functions properly with arguments for signal properties
-        if (primitive.startsWith(QLatin1String("function("))) {
-            int brace = 0;
-            for (;brace < primitive.size(); ++brace)
-                if (primitive.at(brace) == QLatin1Char('{'))
-                    break;
-            primitive = primitive.mid(brace + 1, primitive.size() - brace - 2);
-        }
-        //end of hack
-
     } else if (propertyName == "id" && expr && expr->kind == AST::Node::Kind_IdentifierExpression) {
         primitive = AST::cast<AST::IdentifierExpression *>(expr)->name->asString();
     } else if (expr->kind == AST::Node::Kind_StringLiteral) {

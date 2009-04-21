@@ -88,6 +88,10 @@ public:
             startDeclareProperties();
         else if (xml.name() == "signals")
             startDeclareSignals();
+//        else if (xml.name() == "states")
+//            loop(); // ignore
+//        else if (xml.name() == "transitions")
+//            loop(); // ignore
         else if (knownListProperties.contains(xml.name().toString()))
             startList();
         else if (xml.name() == "SetProperties")
@@ -174,10 +178,15 @@ public:
             v.prepend('\"');
             v.append('\"');
         }
+
+//        QByteArray semiColon = ";";
+//        if (v.endsWith(QLatin1Char('}')) || v.endsWith(QLatin1Char(';')))
+//            semiColon.clear();
+
         if (!newline)
-            out << property << ": " << v;
+            out << property << ": " << v /* << semiColon.constData() */;
         else
-            out << depthString() << property << ": " << v << endl;
+            out << depthString() << property << ": " << v /* << semiColon.constData() */  << endl;
     }
 
 
