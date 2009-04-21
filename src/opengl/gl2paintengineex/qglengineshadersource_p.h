@@ -348,14 +348,13 @@ static const char* const qglslMainFragmentShader = "\
         gl_FragColor = srcPixel(); \
     }";
 
-
 static const char* const qglslMaskFragmentShader = "\
-    varying highp   vec2      texCoord;\
-    uniform         sampler2D maskTextureSampler;\
+    varying highp   vec2      textureCoords;\
+    uniform         sampler2D maskTexture;\
     lowp vec4 applyMask(lowp vec4 src) \
     {\
-        lowp vec4 mask = texture2D(maskTextureSampler, texCoord); \
-        return src * mask.a; \
+        lowp vec4 mask = texture2D(maskTexture, textureCoords); \
+        return src * mask.r; \
     }";
 
 /*

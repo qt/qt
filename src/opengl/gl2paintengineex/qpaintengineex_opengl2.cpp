@@ -122,11 +122,11 @@ public:
 
     void transferMode(EngineMode newMode);
 
-    void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize);
-    void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
-
+    // fill, drawOutline, drawTexture & drawCachedGlyphs are the rendering entry points:
     void fill(const QVectorPath &path);
     void drawOutline(const QVectorPath& path);
+    void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize);
+    void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
 
     void drawVertexArrays(QGL2PEXVertexArray& vertexArray, GLenum primitive);
         // ^ draws whatever is in the vertex array
@@ -189,7 +189,7 @@ QGL2PaintEngineExPrivate::~QGL2PaintEngineExPrivate()
 
 void QGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform)
 {
-    glActiveTexture(QT_BRUSH_TEXTURE_UNIT); //### Is it always this texture unit?
+//    glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT); //### Is it always this texture unit?
 
     if (smoothPixmapTransform) {
         glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -249,7 +249,7 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         // Get the image data for the pattern
         QImage texImage = qt_imageForBrush(style, true);
 
-        glActiveTexture(QT_BRUSH_TEXTURE_UNIT);
+        glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         ctx->d_func()->bindTexture(texImage, GL_TEXTURE_2D, GL_RGBA, true);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, true);
     }
@@ -269,13 +269,13 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         else
             updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, true);
 
-        glActiveTexture(QT_BRUSH_TEXTURE_UNIT);
+        glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         glBindTexture(GL_TEXTURE_2D, texId);
     }
     else if (style == Qt::TexturePattern) {
         const QPixmap& texPixmap = currentBrush->texture();
 
-        glActiveTexture(QT_BRUSH_TEXTURE_UNIT);
+        glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         ctx->d_func()->bindTexture(texPixmap, GL_TEXTURE_2D, GL_RGBA, true);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, true);
     }
@@ -500,14 +500,14 @@ static inline void setCoords(GLfloat *coords, const QGLRect &rect)
 
 void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize)
 {
-//     qDebug("QGL2PaintEngineExPrivate::drawImage()");
+    transferMode(ImageDrawingMode);
+
     updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
 
     // Setup for texture drawing
     shaderManager->setSrcPixelType(QGLEngineShaderManager::ImageSrc);
     shaderManager->setTextureCoordsEnabled(true);
     prepareForDraw(false); // ###
-    transferMode(ImageDrawingMode);
 
     shaderManager->currentProgram()->setUniformValue("imageTexture", QT_IMAGE_TEXTURE_UNIT);
 
@@ -533,17 +533,11 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
     }
 
     if (newMode == TextDrawingMode) {
-        glEnable(GL_BLEND);
-//        glActiveTexture(QT_BRUSH_TEXTURE_UNIT);
-
         glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
         glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
 
         glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
         glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
-
-//        shaderManager->textShader()->use();
-//        shaderManager->textShader()->uniforms()[QLatin1String("textureSampler")] = QT_BRUSH_TEXTURE_UNIT;
     }
 
     if (newMode == ImageDrawingMode) {
@@ -552,13 +546,15 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
 
         glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, staticVertexCoordinateArray);
         glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, staticTextureCoordinateArray);
-
-//        glActiveTexture(QT_BRUSH_TEXTURE_UNIT);
     }
 
     // If we're switching to BrushDrawingMode, set the source pixel type to match the brush style:
-    if (newMode == BrushDrawingMode)
+    if (newMode == BrushDrawingMode || newMode == TextDrawingMode)
         shaderManager->setSrcPixelType(currentBrush->style());
+
+    // This needs to change when we implement high-quality anti-aliasing...
+    if (newMode != TextDrawingMode)
+        shaderManager->setMaskType(QGLEngineShaderManager::NoMask);
 
     mode = newMode;
 }
@@ -893,6 +889,7 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
     d->transferMode(ImageDrawingMode);
 
     QGLContext *ctx = d->ctx;
+    glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, true);
 
     //FIXME: we should use hasAlpha() instead, but that's SLOW at the moment
@@ -911,6 +908,7 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
     d->transferMode(ImageDrawingMode);
 
     QGLContext *ctx = d->ctx;
+    glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
 
     if ((state()->opacity < 0.99f) || image.hasAlphaChannel())
@@ -930,9 +928,6 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
 
     bool drawCached = true;
 
-    if (state()->pen.brush().style() != Qt::SolidPattern)
-        drawCached = false;
-
     if (s->matrix.type() > QTransform::TxTranslate)
         drawCached = false;
 
@@ -950,10 +945,10 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
 
 void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti)
 {
+    transferMode(TextDrawingMode);
+
     Q_Q(QGL2PaintEngineEx);
     QOpenGLPaintEngineState *s = q->state();
-
-    transferMode(TextDrawingMode);
 
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
@@ -961,9 +956,21 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
     matrix.translate(p.x(), p.y());
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
+
     QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0
         ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat)
         : QFontEngineGlyphCache::Raster_A8;
+
+    GLenum maskFormat = GL_RGBA;
+    if (glyphType == QFontEngineGlyphCache::Raster_A8) {
+        shaderManager->setMaskType(QGLEngineShaderManager::PixelMask);
+//        maskFormat = GL_ALPHA;
+    }
+    else if (glyphType == QFontEngineGlyphCache::Raster_RGBMask)
+        shaderManager->setMaskType(QGLEngineShaderManager::SubPixelMask);
+    //### TODO: Gamma correction
+    shaderManager->setTextureCoordsEnabled(true);
+
 
     QImageTextureGlyphCache *cache =
         (QImageTextureGlyphCache *) ti.fontEngine->glyphCache(glyphType, s->matrix);
@@ -977,23 +984,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
     const QImage &image = cache->image();
     int margin = cache->glyphMargin();
 
-    ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
-
-    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
-
-    if (compositionModeDirty)
-        updateCompositionMode();
-
-    if (matrixDirty)
-        updateMatrix();
-
-//    if (textShaderMatrixUniformDirty) {
-//        shaderManager->textShader()->uniforms()[QLatin1String("pmvMatrix")] = pmvMatrix;
-//        textShaderMatrixUniformDirty = false;
-//    }
-
-    QColor col = premultiplyColor(s->pen.color(), (GLfloat)s->opacity);
-//    shaderManager->textShader()->uniforms()[QLatin1String("fragmentColor")] = col;
 
     GLfloat dx = 1.0 / image.width();
     GLfloat dy = 1.0 / image.height();
@@ -1013,12 +1003,26 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
         textureCoordinateArray.addRect(QRectF(c.x*dx, 1 - c.y*dy, c.w * dx, -c.h * dy));
     }
 
+
+    glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
+    ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
+    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
+
+    QBrush pensBrush = q->state()->pen.brush();
+    setBrush(&pensBrush);
+
+    prepareForDraw(false); // Text always causes src pixels to be transparent
+
+    shaderManager->currentProgram()->setUniformValue("maskTexture", QT_MASK_TEXTURE_UNIT);
+
     if (vertexCoordinateArray.data() != oldVertexCoordinateDataPtr)
         glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
     if (textureCoordinateArray.data() != oldTextureCoordinateDataPtr)
         glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
 
     glDrawArrays(GL_TRIANGLES, 0, 6 * glyphs.size());
+
+    setBrush(&(q->state()->brush)); //###
 }
 
 bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
@@ -1068,7 +1072,6 @@ bool QGL2PaintEngineEx::end()
     Q_D(QGL2PaintEngineEx);
     QGLContext *ctx = d->ctx;
     glUseProgram(0);
-    d->transferMode(BrushDrawingMode);
     d->drawable.swapBuffers();
     d->drawable.doneCurrent();
     return false;
