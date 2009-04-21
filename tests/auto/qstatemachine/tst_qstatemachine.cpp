@@ -70,6 +70,17 @@
 
 static int globalTick;
 
+// Run exec for a maximum of TIMEOUT msecs
+#define QCOREAPPLICATION_EXEC(TIMEOUT) \
+{ \
+    QTimer timer; \
+    timer.setSingleShot(true); \
+    timer.setInterval(TIMEOUT); \
+    timer.start(); \
+    connect(&timer, SIGNAL(timeout()), QCoreApplication::instance(), SLOT(quit())); \
+    QCoreApplication::exec(); \
+}
+
 class tst_QStateMachine : public QObject
 {
     Q_OBJECT
@@ -122,6 +133,14 @@ private slots:
     void setGlobalRestorePolicyToGlobalRestore();
     void restorePolicyOnChildState();
     void transitionWithParent();
+
+    void simpleAnimation();
+    void twoAnimations();
+    void twoAnimatedTransitions();
+    void playAnimationTwice();
+    void nestedTargetStateForAnimation();
+    void animatedGlobalRestoreProperty();
+    void specificTargetValueOfAnimation();
 };
 
 tst_QStateMachine::tst_QStateMachine()
@@ -2110,6 +2129,314 @@ void tst_QStateMachine::transitionWithParent()
     QCOMPARE(trans->targetStates().size(), 1);
     QCOMPARE(trans->targetStates().at(0), (QAbstractState*)s2);
 }
+
+void tst_QStateMachine::simpleAnimation()
+{
+    QStateMachine machine;
+
+    QObject *object = new QObject();
+    object->setProperty("fooBar", 1.0);
+
+    QState *s1 = new QState(machine.rootState());
+    QState *s2 = new QState(machine.rootState());
+    s2->assignProperty(object, "fooBar", 2.0);
+
+    EventTransition *et = new EventTransition(QEvent::User, s2);
+    QPropertyAnimation *animation = new QPropertyAnimation(object, "fooBar", s2);
+    et->addAnimation(animation);
+    s1->addTransition(et);
+
+    QState *s3 = new QState(machine.rootState());
+    s2->addTransition(animation, SIGNAL(finished()), s3);
+    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+
+    machine.setInitialState(s1);
+    machine.start();
+    QCoreApplication::processEvents();
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QCOREAPPLICATION_EXEC(5000);
+
+    QVERIFY(machine.configuration().contains(s3));
+    QCOMPARE(object->property("fooBar").toDouble(), 2.0);    
+}
+
+class SlotCalledCounter: public QObject
+{
+    Q_OBJECT
+public:
+    SlotCalledCounter() : counter(0) {}
+
+    int counter;
+
+public slots:
+    void slot() { counter++; }
+};
+
+void tst_QStateMachine::twoAnimations()
+{
+    QStateMachine machine;
+
+    QObject *object = new QObject();
+    object->setProperty("foo", 1.0);
+    object->setProperty("bar", 3.0);
+
+    QState *s1 = new QState(machine.rootState());
+    QState *s2 = new QState(machine.rootState());
+    s2->assignProperty(object, "foo", 2.0);
+    s2->assignProperty(object, "bar", 10.0);
+
+    QPropertyAnimation *animationFoo = new QPropertyAnimation(object, "foo", s2);
+    QPropertyAnimation *animationBar = new QPropertyAnimation(object, "bar", s2);
+    animationBar->setDuration(900);
+
+    SlotCalledCounter counter;
+    connect(animationFoo, SIGNAL(finished()), &counter, SLOT(slot())); 
+    connect(animationBar, SIGNAL(finished()), &counter, SLOT(slot()));
+
+    EventTransition *et = new EventTransition(QEvent::User, s2);
+    et->addAnimation(animationFoo);
+    et->addAnimation(animationBar);
+    s1->addTransition(et);
+
+    QState *s3 = new QState(machine.rootState());
+    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    s2->addTransition(&machine, SIGNAL(animationsFinished()), s3);
+
+    machine.setInitialState(s1);
+    machine.start();
+    QCoreApplication::processEvents();
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QCOREAPPLICATION_EXEC(5000);
+
+    QVERIFY(machine.configuration().contains(s3));
+    QCOMPARE(object->property("foo").toDouble(), 2.0);
+    QCOMPARE(object->property("bar").toDouble(), 10.0);
+    
+    QCOMPARE(counter.counter, 2);
+}
+
+void tst_QStateMachine::twoAnimatedTransitions()
+{
+    QStateMachine machine;
+
+    QObject *object = new QObject();
+    object->setProperty("foo", 1.0);
+
+    QState *s1 = new QState(machine.rootState());
+
+    QState *s2 = new QState(machine.rootState());
+    s2->assignProperty(object, "foo", 5.0);
+    QPropertyAnimation *fooAnimation = new QPropertyAnimation(object, "foo", s2);
+    s1->addTransition(new EventTransition(QEvent::User, s2))->addAnimation(fooAnimation);
+
+    QState *s3 = new QState(machine.rootState());
+    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    s2->addTransition(fooAnimation, SIGNAL(finished()), s3);
+
+    QState *s4 = new QState(machine.rootState());
+    s4->assignProperty(object, "foo", 2.0);
+    QPropertyAnimation *fooAnimation2 = new QPropertyAnimation(object, "foo", s4);
+    s3->addTransition(new EventTransition(QEvent::User, s4))->addAnimation(fooAnimation2);
+
+    QState *s5 = new QState(machine.rootState());
+    s5->invokeMethodOnEntry(QApplication::instance(), "quit");
+    s4->addTransition(fooAnimation2, SIGNAL(finished()), s5);
+
+    machine.setInitialState(s1);
+    machine.start();
+    QCoreApplication::processEvents();
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QCOREAPPLICATION_EXEC(5000);
+
+    QVERIFY(machine.configuration().contains(s3));
+    QCOMPARE(object->property("foo").toDouble(), 5.0);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QCOREAPPLICATION_EXEC(5000);
+
+    QVERIFY(machine.configuration().contains(s5));
+    QCOMPARE(object->property("foo").toDouble(), 2.0);
+}
+
+void tst_QStateMachine::playAnimationTwice()
+{
+    QStateMachine machine;
+
+    QObject *object = new QObject();
+    object->setProperty("foo", 1.0);
+
+    QState *s1 = new QState(machine.rootState());
+
+    QState *s2 = new QState(machine.rootState());
+    s2->assignProperty(object, "foo", 5.0);
+    QPropertyAnimation *fooAnimation = new QPropertyAnimation(object, "foo", s2);
+    s1->addTransition(new EventTransition(QEvent::User, s2))->addAnimation(fooAnimation);
+
+    QState *s3 = new QState(machine.rootState());
+    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    s2->addTransition(fooAnimation, SIGNAL(finished()), s3);
+
+    QState *s4 = new QState(machine.rootState());
+    s4->assignProperty(object, "foo", 2.0);
+    s3->addTransition(new EventTransition(QEvent::User, s4))->addAnimation(fooAnimation);
+
+    QState *s5 = new QState(machine.rootState());
+    s5->invokeMethodOnEntry(QApplication::instance(), "quit");
+    s4->addTransition(fooAnimation, SIGNAL(finished()), s5);
+
+    machine.setInitialState(s1);
+    machine.start();
+    QCoreApplication::processEvents();
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QCOREAPPLICATION_EXEC(5000);
+
+    QVERIFY(machine.configuration().contains(s3));
+    QCOMPARE(object->property("foo").toDouble(), 5.0);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QCOREAPPLICATION_EXEC(5000);
+
+    QVERIFY(machine.configuration().contains(s5));
+    QCOMPARE(object->property("foo").toDouble(), 2.0);
+}
+
+void tst_QStateMachine::nestedTargetStateForAnimation()
+{
+    QStateMachine machine;
+
+    QObject *object = new QObject();
+    object->setProperty("foo", 1.0);
+    object->setProperty("bar", 3.0);
+
+    SlotCalledCounter counter;
+
+    QState *s1 = new QState(machine.rootState());
+    QState *s2 = new QState(machine.rootState());
+
+    s2->assignProperty(object, "foo", 2.0);
+
+    QState *s2Child = new QState(s2);
+    s2Child->assignProperty(object, "bar", 10.0);
+    s2->setInitialState(s2Child);
+
+    QState *s2Child2 = new QState(s2);
+    s2Child2->assignProperty(object, "bar", 11.0);
+    QAbstractTransition *at = s2Child->addTransition(new EventTransition(QEvent::User, s2Child2));
+    
+    QPropertyAnimation *animation = new QPropertyAnimation(object, "bar", s2);
+    connect(animation, SIGNAL(finished()), &counter, SLOT(slot()));
+    at->addAnimation(animation);
+    
+    at = s1->addTransition(new EventTransition(QEvent::User, s2));
+
+    animation = new QPropertyAnimation(object, "foo", s2);
+    connect(animation, SIGNAL(finished()), &counter, SLOT(slot()));
+    at->addAnimation(animation);
+
+    animation = new QPropertyAnimation(object, "bar", s2);
+    connect(animation, SIGNAL(finished()), &counter, SLOT(slot()));
+    at->addAnimation(animation);
+
+    QState *s3 = new QState(machine.rootState());
+    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    s2->addTransition(&machine, SIGNAL(animationsFinished()), s3);
+
+    machine.setInitialState(s1);
+    machine.start();
+    QCoreApplication::processEvents();
+    machine.postEvent(new QEvent(QEvent::User));
+
+    QCOREAPPLICATION_EXEC(5000);
+
+    QVERIFY(machine.configuration().contains(s3));
+    QCOMPARE(object->property("foo").toDouble(), 2.0);
+    QCOMPARE(object->property("bar").toDouble(), 10.0);
+    QCOMPARE(counter.counter, 2);
+}
+
+void tst_QStateMachine::animatedGlobalRestoreProperty()
+{
+    QStateMachine machine;
+    machine.setGlobalRestorePolicy(QState::RestoreProperties);
+
+    QObject *object = new QObject();
+    object->setProperty("foo", 1.0);
+
+    SlotCalledCounter counter;
+
+    QState *s1 = new QState(machine.rootState());
+    QState *s2 = new QState(machine.rootState());
+    s2->assignProperty(object, "foo", 2.0);
+
+    QState *s3 = new QState(machine.rootState());
+
+    QState *s4 = new QState(machine.rootState());
+    s4->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+
+    QAbstractTransition *at = s1->addTransition(new EventTransition(QEvent::User, s2));
+    QPropertyAnimation *pa = new QPropertyAnimation(object, "foo", s2);
+    connect(pa, SIGNAL(finished()), &counter, SLOT(slot()));
+    at->addAnimation(pa);
+   
+    at = s2->addTransition(pa, SIGNAL(finished()), s3);
+    pa = new QPropertyAnimation(object, "foo", s3);
+    connect(pa, SIGNAL(finished()), &counter, SLOT(slot()));
+    at->addAnimation(pa);
+
+    at = s3->addTransition(pa, SIGNAL(finished()), s4);
+    pa = new QPropertyAnimation(object, "foo", s4);
+    connect(pa, SIGNAL(finished()), &counter, SLOT(slot()));
+    at->addAnimation(pa);
+
+    machine.setInitialState(s1);
+    machine.start();
+    QCoreApplication::processEvents();
+
+    machine.postEvent(new QEvent(QEvent::User));
+
+    QCOREAPPLICATION_EXEC(5000);
+
+    QVERIFY(machine.configuration().contains(s4));
+    QCOMPARE(object->property("foo").toDouble(), 1.0);
+    QCOMPARE(counter.counter, 2);
+}
+
+void tst_QStateMachine::specificTargetValueOfAnimation()
+{
+    QStateMachine machine;
+
+    QObject *object = new QObject();
+    object->setProperty("foo", 1.0);
+
+    QState *s1 = new QState(machine.rootState());
+
+    QState *s2 = new QState(machine.rootState());
+    s2->assignProperty(object, "foo", 2.0);
+
+    QPropertyAnimation *anim = new QPropertyAnimation(object, "foo");
+    anim->setEndValue(10.0);
+    s1->addTransition(new EventTransition(QEvent::User, s2))->addAnimation(anim);
+
+    QState *s3 = new QState(machine.rootState());
+    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    s2->addTransition(anim, SIGNAL(finished()), s3);    
+
+    machine.setInitialState(s1);
+    machine.start();
+    QCoreApplication::processEvents();
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QCOREAPPLICATION_EXEC(5000);
+
+    QVERIFY(machine.configuration().contains(s3));
+    QCOMPARE(object->property("foo").toDouble(), 2.0);
+    QCOMPARE(anim->endValue().toDouble(), 10.0);
+}
+
 
 QTEST_MAIN(tst_QStateMachine)
 #include "tst_qstatemachine.moc"
