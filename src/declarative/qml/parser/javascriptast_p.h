@@ -61,6 +61,9 @@
 
 QT_BEGIN_NAMESPACE
 
+#define JAVASCRIPT_DECLARE_AST_NODE(name) \
+  enum { K = Kind_##name };
+
 class JavaScriptNameIdImpl;
 
 namespace QSOperator // ### rename
@@ -108,6 +111,15 @@ enum Op {
 
 namespace JavaScript { namespace AST {
 
+template <typename _T1, typename _T2>
+_T1 cast(_T2 *ast)
+{
+    if (ast && ast->kind == static_cast<_T1>(0)->K)
+        return static_cast<_T1>(ast);
+
+    return 0;
+}
+
 class SourceLocation
 {
 public:
@@ -128,99 +140,100 @@ class Node
 {
 public:
     enum Kind {
-        Kind_Node,
-        Kind_ExpressionNode,
-        Kind_Statement,
-        Kind_ThisExpression,
-        Kind_IdentifierExpression,
-        Kind_NullExpression,
-        Kind_TrueLiteral,
-        Kind_FalseLiteral,
-        Kind_NumericLiteral,
-        Kind_StringLiteral,
-        Kind_RegExpLiteral,
+        Kind_Undefined,
+
+        Kind_ArgumentList,
         Kind_ArrayLiteral,
-        Kind_ObjectLiteral,
+        Kind_ArrayMemberExpression,
+        Kind_BinaryExpression,
+        Kind_Block,
+        Kind_BreakStatement,
+        Kind_CallExpression,
+        Kind_CaseBlock,
+        Kind_CaseClause,
+        Kind_CaseClauses,
+        Kind_Catch,
+        Kind_ConditionalExpression,
+        Kind_ContinueStatement,
+        Kind_DebuggerStatement,
+        Kind_DefaultClause,
+        Kind_DeleteExpression,
+        Kind_DoWhileStatement,
         Kind_ElementList,
         Kind_Elision,
-        Kind_PropertyNameAndValueList,
-        Kind_PropertyName,
-        Kind_IdentifierPropertyName,
-        Kind_StringLiteralPropertyName,
-        Kind_NumericLiteralPropertyName,
-        Kind_ArrayMemberExpression,
-        Kind_FieldMemberExpression,
-        Kind_NewMemberExpression,
-        Kind_NewExpression,
-        Kind_CallExpression,
-        Kind_ArgumentList,
-        Kind_PostIncrementExpression,
-        Kind_PostDecrementExpression,
-        Kind_DeleteExpression,
-        Kind_VoidExpression,
-        Kind_TypeOfExpression,
-        Kind_PreIncrementExpression,
-        Kind_PreDecrementExpression,
-        Kind_UnaryPlusExpression,
-        Kind_UnaryMinusExpression,
-        Kind_TildeExpression,
-        Kind_NotExpression,
-        Kind_BinaryExpression,
-        Kind_ConditionalExpression,
-        Kind_Expression,
-        Kind_Block,
-        Kind_StatementList,
-        Kind_VariableStatement,
-        Kind_VariableDeclarationList,
-        Kind_VariableDeclaration,
         Kind_EmptyStatement,
+        Kind_Expression,
         Kind_ExpressionStatement,
-        Kind_IfStatement,
-        Kind_DoWhileStatement,
-        Kind_WhileStatement,
-        Kind_ForStatement,
-        Kind_LocalForStatement,
-        Kind_ForEachStatement,
-        Kind_LocalForEachStatement,
-        Kind_ContinueStatement,
-        Kind_BreakStatement,
-        Kind_ReturnStatement,
-        Kind_WithStatement,
-        Kind_SwitchStatement,
-        Kind_CaseBlock,
-        Kind_CaseClauses,
-        Kind_CaseClause,
-        Kind_DefaultClause,
-        Kind_LabelledStatement,
-        Kind_ThrowStatement,
-        Kind_TryStatement,
-        Kind_Catch,
+        Kind_FalseLiteral,
+        Kind_FieldMemberExpression,
         Kind_Finally,
-        Kind_FunctionDeclaration,
-        Kind_FunctionExpression,
+        Kind_ForEachStatement,
+        Kind_ForStatement,
         Kind_FormalParameterList,
         Kind_FunctionBody,
-        Kind_Program,
-        Kind_SourceElements,
-        Kind_SourceElement,
+        Kind_FunctionDeclaration,
+        Kind_FunctionExpression,
         Kind_FunctionSourceElement,
+        Kind_IdentifierExpression,
+        Kind_IdentifierPropertyName,
+        Kind_IfStatement,
+        Kind_LabelledStatement,
+        Kind_LocalForEachStatement,
+        Kind_LocalForStatement,
+        Kind_NewExpression,
+        Kind_NewMemberExpression,
+        Kind_NotExpression,
+        Kind_NullExpression,
+        Kind_NumericLiteral,
+        Kind_NumericLiteralPropertyName,
+        Kind_ObjectLiteral,
+        Kind_PostDecrementExpression,
+        Kind_PostIncrementExpression,
+        Kind_PreDecrementExpression,
+        Kind_PreIncrementExpression,
+        Kind_Program,
+        Kind_PropertyName,
+        Kind_PropertyNameAndValueList,
+        Kind_RegExpLiteral,
+        Kind_ReturnStatement,
+        Kind_SourceElement,
+        Kind_SourceElements,
+        Kind_StatementList,
         Kind_StatementSourceElement,
-        Kind_DebuggerStatement,
+        Kind_StringLiteral,
+        Kind_StringLiteralPropertyName,
+        Kind_SwitchStatement,
+        Kind_ThisExpression,
+        Kind_ThrowStatement,
+        Kind_TildeExpression,
+        Kind_TrueLiteral,
+        Kind_TryStatement,
+        Kind_TypeOfExpression,
+        Kind_UnaryMinusExpression,
+        Kind_UnaryPlusExpression,
+        Kind_VariableDeclaration,
+        Kind_VariableDeclarationList,
+        Kind_VariableStatement,
+        Kind_VoidExpression,
+        Kind_WhileStatement,
+        Kind_WithStatement,
 
-        Kind_UiProgram,
-        Kind_UiPublicMember,
+        Kind_UiArrayBinding,
+        Kind_UiImport,
+        Kind_UiImportList,
+        Kind_UiObjectBinding,
         Kind_UiObjectDefinition,
         Kind_UiObjectInitializer,
-        Kind_UiObjectBinding,
-        Kind_UiScriptBinding,
-        Kind_UiArrayBinding,
         Kind_UiObjectMemberList,
+        Kind_UiProgram,
+        Kind_UiPublicMember,
         Kind_UiQualifiedId,
+        Kind_UiScriptBinding,
         Kind_UiSourceElement
     };
 
     inline Node()
-        : kind(Kind_Node) {}
+        : kind(Kind_Undefined) {}
 
     virtual ~Node() {}
 
@@ -244,13 +257,14 @@ public:
 
     virtual void accept0(Visitor *visitor) = 0;
 
-    Kind kind;
+// attributes
+    int kind;
 };
 
 class ExpressionNode: public Node
 {
 public:
-    ExpressionNode() { kind = Kind_ExpressionNode; }
+    ExpressionNode() {}
     virtual ~ExpressionNode() {}
 
     virtual ExpressionNode *expressionCast();
@@ -259,7 +273,7 @@ public:
 class Statement: public Node
 {
 public:
-    Statement() { kind = Kind_Statement; }
+    Statement() {}
     virtual ~Statement() {}
 
     virtual Statement *statementCast();
@@ -268,7 +282,9 @@ public:
 class ThisExpression: public ExpressionNode
 {
 public:
-    ThisExpression() { kind = Kind_ThisExpression; }
+    JAVASCRIPT_DECLARE_AST_NODE(ThisExpression)
+
+    ThisExpression() { kind = K; }
     virtual ~ThisExpression() {}
 
     virtual void accept0(Visitor *visitor);
@@ -280,8 +296,10 @@ public:
 class IdentifierExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(IdentifierExpression)
+
     IdentifierExpression(JavaScriptNameIdImpl *n):
-        name (n) { kind = Kind_IdentifierExpression; }
+        name (n) { kind = K; }
 
     virtual ~IdentifierExpression() {}
 
@@ -295,7 +313,9 @@ public:
 class NullExpression: public ExpressionNode
 {
 public:
-    NullExpression() { kind = Kind_NullExpression; }
+    JAVASCRIPT_DECLARE_AST_NODE(NullExpression)
+
+    NullExpression() { kind = K; }
     virtual ~NullExpression() {}
 
     virtual void accept0(Visitor *visitor);
@@ -307,7 +327,9 @@ public:
 class TrueLiteral: public ExpressionNode
 {
 public:
-    TrueLiteral() { kind = Kind_TrueLiteral; }
+    JAVASCRIPT_DECLARE_AST_NODE(TrueLiteral)
+
+    TrueLiteral() { kind = K; }
     virtual ~TrueLiteral() {}
 
     virtual void accept0(Visitor *visitor);
@@ -319,7 +341,9 @@ public:
 class FalseLiteral: public ExpressionNode
 {
 public:
-    FalseLiteral() { kind = Kind_FalseLiteral; }
+    JAVASCRIPT_DECLARE_AST_NODE(FalseLiteral)
+
+    FalseLiteral() { kind = K; }
     virtual ~FalseLiteral() {}
 
     virtual void accept0(Visitor *visitor);
@@ -331,8 +355,10 @@ public:
 class NumericLiteral: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(NumericLiteral)
+
     NumericLiteral(double v):
-        value (v) { kind = Kind_NumericLiteral; }
+        value (v) { kind = K; }
     virtual ~NumericLiteral() {}
 
     virtual void accept0(Visitor *visitor);
@@ -345,8 +371,10 @@ public:
 class StringLiteral: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(StringLiteral)
+
     StringLiteral(JavaScriptNameIdImpl *v):
-        value (v) { kind = Kind_StringLiteral; }
+        value (v) { kind = K; }
 
     virtual ~StringLiteral() {}
 
@@ -360,8 +388,10 @@ public:
 class RegExpLiteral: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(RegExpLiteral)
+
     RegExpLiteral(JavaScriptNameIdImpl *p, int f):
-        pattern (p), flags (f) { kind = Kind_RegExpLiteral; }
+        pattern (p), flags (f) { kind = K; }
 
     virtual ~RegExpLiteral() {}
 
@@ -376,17 +406,19 @@ public:
 class ArrayLiteral: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(ArrayLiteral)
+
     ArrayLiteral(Elision *e):
         elements (0), elision (e)
-        { kind = Kind_ArrayLiteral; }
+        { kind = K; }
 
     ArrayLiteral(ElementList *elts):
         elements (elts), elision (0)
-        { kind = Kind_ArrayLiteral; }
+        { kind = K; }
 
     ArrayLiteral(ElementList *elts, Elision *e):
         elements (elts), elision (e)
-        { kind = Kind_ArrayLiteral; }
+        { kind = K; }
 
     virtual ~ArrayLiteral() {}
 
@@ -400,11 +432,13 @@ public:
 class ObjectLiteral: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(ObjectLiteral)
+
     ObjectLiteral():
-        properties (0) { kind = Kind_ObjectLiteral; }
+        properties (0) { kind = K; }
 
     ObjectLiteral(PropertyNameAndValueList *plist):
-        properties (plist) { kind = Kind_ObjectLiteral; }
+        properties (plist) { kind = K; }
 
     virtual ~ObjectLiteral() {}
 
@@ -417,14 +451,16 @@ public:
 class ElementList: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(ElementList)
+
     ElementList(Elision *e, ExpressionNode *expr):
         elision (e), expression (expr), next (this)
-        { kind = Kind_ElementList; }
+        { kind = K; }
 
     ElementList(ElementList *previous, Elision *e, ExpressionNode *expr):
         elision (e), expression (expr)
     {
-        kind = Kind_ElementList;
+        kind = K;
         next = previous->next;
         previous->next = this;
     }
@@ -449,12 +485,14 @@ public:
 class Elision: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(Elision)
+
     Elision():
-        next (this) { kind = Kind_Elision; }
+        next (this) { kind = K; }
 
     Elision(Elision *previous)
     {
-        kind = Kind_Elision;
+        kind = K;
         next = previous->next;
         previous->next = this;
     }
@@ -477,14 +515,16 @@ public:
 class PropertyNameAndValueList: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(PropertyNameAndValueList)
+
     PropertyNameAndValueList(PropertyName *n, ExpressionNode *v):
         name (n), value (v), next (this)
-        { kind = Kind_PropertyNameAndValueList; }
+        { kind = K; }
 
     PropertyNameAndValueList(PropertyNameAndValueList *previous, PropertyName *n, ExpressionNode *v):
         name (n), value (v)
     {
-        kind = Kind_PropertyNameAndValueList;
+        kind = K;
         next = previous->next;
         previous->next = this;
     }
@@ -509,15 +549,19 @@ public:
 class PropertyName: public Node
 {
 public:
-    PropertyName() { kind = Kind_PropertyName; }
+    JAVASCRIPT_DECLARE_AST_NODE(PropertyName)
+
+    PropertyName() { kind = K; }
     virtual ~PropertyName() {}
 };
 
 class IdentifierPropertyName: public PropertyName
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(IdentifierPropertyName)
+
     IdentifierPropertyName(JavaScriptNameIdImpl *n):
-        id (n) { kind = Kind_IdentifierPropertyName; }
+        id (n) { kind = K; }
 
     virtual ~IdentifierPropertyName() {}
 
@@ -530,8 +574,10 @@ public:
 class StringLiteralPropertyName: public PropertyName
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(StringLiteralPropertyName)
+
     StringLiteralPropertyName(JavaScriptNameIdImpl *n):
-        id (n) { kind = Kind_StringLiteralPropertyName; }
+        id (n) { kind = K; }
     virtual ~StringLiteralPropertyName() {}
 
     virtual void accept0(Visitor *visitor);
@@ -543,8 +589,10 @@ public:
 class NumericLiteralPropertyName: public PropertyName
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(NumericLiteralPropertyName)
+
     NumericLiteralPropertyName(double n):
-        id (n) { kind = Kind_NumericLiteralPropertyName; }
+        id (n) { kind = K; }
     virtual ~NumericLiteralPropertyName() {}
 
     virtual void accept0(Visitor *visitor);
@@ -556,9 +604,11 @@ public:
 class ArrayMemberExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(ArrayMemberExpression)
+
     ArrayMemberExpression(ExpressionNode *b, ExpressionNode *e):
         base (b), expression (e)
-        { kind = Kind_ArrayMemberExpression; }
+        { kind = K; }
 
     virtual ~ArrayMemberExpression() {}
 
@@ -572,9 +622,11 @@ public:
 class FieldMemberExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(FieldMemberExpression)
+
     FieldMemberExpression(ExpressionNode *b, JavaScriptNameIdImpl *n):
         base (b), name (n)
-        { kind = Kind_FieldMemberExpression; }
+        { kind = K; }
 
     virtual ~FieldMemberExpression() {}
 
@@ -590,9 +642,11 @@ public:
 class NewMemberExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(NewMemberExpression)
+
     NewMemberExpression(ExpressionNode *b, ArgumentList *a):
         base (b), arguments (a)
-        { kind = Kind_NewMemberExpression; }
+        { kind = K; }
 
     virtual ~NewMemberExpression() {}
 
@@ -609,8 +663,10 @@ public:
 class NewExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(NewExpression)
+
     NewExpression(ExpressionNode *e):
-        expression (e) { kind = Kind_NewExpression; }
+        expression (e) { kind = K; }
 
     virtual ~NewExpression() {}
 
@@ -624,9 +680,11 @@ public:
 class CallExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(CallExpression)
+
     CallExpression(ExpressionNode *b, ArgumentList *a):
         base (b), arguments (a)
-        { kind = Kind_CallExpression; }
+        { kind = K; }
 
     virtual ~CallExpression() {}
 
@@ -642,14 +700,16 @@ public:
 class ArgumentList: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(ArgumentList)
+
     ArgumentList(ExpressionNode *e):
         expression (e), next (this)
-        { kind = Kind_ArgumentList; }
+        { kind = K; }
 
     ArgumentList(ArgumentList *previous, ExpressionNode *e):
         expression (e)
     {
-        kind = Kind_ArgumentList;
+        kind = K;
         next = previous->next;
         previous->next = this;
     }
@@ -674,8 +734,10 @@ public:
 class PostIncrementExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(PostIncrementExpression)
+
     PostIncrementExpression(ExpressionNode *b):
-        base (b) { kind = Kind_PostIncrementExpression; }
+        base (b) { kind = K; }
 
     virtual ~PostIncrementExpression() {}
 
@@ -688,8 +750,10 @@ public:
 class PostDecrementExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(PostDecrementExpression)
+
     PostDecrementExpression(ExpressionNode *b):
-        base (b) { kind = Kind_PostDecrementExpression; }
+        base (b) { kind = K; }
 
     virtual ~PostDecrementExpression() {}
 
@@ -702,8 +766,10 @@ public:
 class DeleteExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(DeleteExpression)
+
     DeleteExpression(ExpressionNode *e):
-        expression (e) { kind = Kind_DeleteExpression; }
+        expression (e) { kind = K; }
     virtual ~DeleteExpression() {}
 
     virtual void accept0(Visitor *visitor);
@@ -715,8 +781,10 @@ public:
 class VoidExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(VoidExpression)
+
     VoidExpression(ExpressionNode *e):
-        expression (e) { kind = Kind_VoidExpression; }
+        expression (e) { kind = K; }
 
     virtual ~VoidExpression() {}
 
@@ -729,8 +797,10 @@ public:
 class TypeOfExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(TypeOfExpression)
+
     TypeOfExpression(ExpressionNode *e):
-        expression (e) { kind = Kind_TypeOfExpression; }
+        expression (e) { kind = K; }
 
     virtual ~TypeOfExpression() {}
 
@@ -743,8 +813,10 @@ public:
 class PreIncrementExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(PreIncrementExpression)
+
     PreIncrementExpression(ExpressionNode *e):
-        expression (e) { kind = Kind_PreIncrementExpression; }
+        expression (e) { kind = K; }
 
     virtual ~PreIncrementExpression() {}
 
@@ -757,8 +829,10 @@ public:
 class PreDecrementExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(PreDecrementExpression)
+
     PreDecrementExpression(ExpressionNode *e):
-        expression (e) { kind = Kind_PreDecrementExpression; }
+        expression (e) { kind = K; }
 
     virtual ~PreDecrementExpression() {}
 
@@ -771,8 +845,10 @@ public:
 class UnaryPlusExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(UnaryPlusExpression)
+
     UnaryPlusExpression(ExpressionNode *e):
-        expression (e) { kind = Kind_UnaryPlusExpression; }
+        expression (e) { kind = K; }
 
     virtual ~UnaryPlusExpression() {}
 
@@ -785,8 +861,10 @@ public:
 class UnaryMinusExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(UnaryMinusExpression)
+
     UnaryMinusExpression(ExpressionNode *e):
-        expression (e) { kind = Kind_UnaryMinusExpression; }
+        expression (e) { kind = K; }
 
     virtual ~UnaryMinusExpression() {}
 
@@ -799,8 +877,10 @@ public:
 class TildeExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(TildeExpression)
+
     TildeExpression(ExpressionNode *e):
-        expression (e) { kind = Kind_TildeExpression; }
+        expression (e) { kind = K; }
 
     virtual ~TildeExpression() {}
 
@@ -813,8 +893,10 @@ public:
 class NotExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(NotExpression)
+
     NotExpression(ExpressionNode *e):
-        expression (e) { kind = Kind_NotExpression; }
+        expression (e) { kind = K; }
 
     virtual ~NotExpression() {}
 
@@ -827,9 +909,11 @@ public:
 class BinaryExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(BinaryExpression)
+
     BinaryExpression(ExpressionNode *l, int o, ExpressionNode *r):
         left (l), op (o), right (r)
-        { kind = Kind_BinaryExpression; }
+        { kind = K; }
 
     virtual ~BinaryExpression() {}
 
@@ -846,9 +930,11 @@ public:
 class ConditionalExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(ConditionalExpression)
+
     ConditionalExpression(ExpressionNode *e, ExpressionNode *t, ExpressionNode *f):
         expression (e), ok (t), ko (f)
-        { kind = Kind_ConditionalExpression; }
+        { kind = K; }
 
     virtual ~ConditionalExpression() {}
 
@@ -863,8 +949,10 @@ public:
 class Expression: public ExpressionNode // ### rename
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(Expression)
+
     Expression(ExpressionNode *l, ExpressionNode *r):
-        left (l), right (r) { kind = Kind_Expression; }
+        left (l), right (r) { kind = K; }
 
     virtual ~Expression() {}
 
@@ -878,8 +966,10 @@ public:
 class Block: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(Block)
+
     Block(StatementList *slist):
-        statements (slist) { kind = Kind_Block; }
+        statements (slist) { kind = K; }
 
     virtual ~Block() {}
 
@@ -892,14 +982,16 @@ public:
 class StatementList: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(StatementList)
+
     StatementList(Statement *stmt):
         statement (stmt), next (this)
-        { kind = Kind_StatementList; }
+        { kind = K; }
 
     StatementList(StatementList *previous, Statement *stmt):
         statement (stmt)
     {
-        kind = Kind_StatementList;
+        kind = K;
         next = previous->next;
         previous->next = this;
     }
@@ -923,9 +1015,11 @@ public:
 class VariableStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(VariableStatement)
+
     VariableStatement(VariableDeclarationList *vlist):
         declarations (vlist)
-        { kind = Kind_VariableStatement; }
+        { kind = K; }
 
     virtual ~VariableStatement() {}
 
@@ -940,9 +1034,11 @@ public:
 class VariableDeclaration: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(VariableDeclaration)
+
     VariableDeclaration(JavaScriptNameIdImpl *n, ExpressionNode *e):
         name (n), expression (e), readOnly(false)
-        { kind = Kind_VariableDeclaration; }
+        { kind = K; }
 
     virtual ~VariableDeclaration() {}
 
@@ -958,14 +1054,16 @@ public:
 class VariableDeclarationList: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(VariableDeclarationList)
+
     VariableDeclarationList(VariableDeclaration *decl):
         declaration (decl), next (this)
-        { kind = Kind_VariableDeclarationList; }
+        { kind = K; }
 
     VariableDeclarationList(VariableDeclarationList *previous, VariableDeclaration *decl):
         declaration (decl)
     {
-        kind = Kind_VariableDeclarationList;
+        kind = K;
         next = previous->next;
         previous->next = this;
     }
@@ -994,7 +1092,9 @@ public:
 class EmptyStatement: public Statement
 {
 public:
-    EmptyStatement() { kind = Kind_EmptyStatement; }
+    JAVASCRIPT_DECLARE_AST_NODE(EmptyStatement)
+
+    EmptyStatement() { kind = K; }
     virtual ~EmptyStatement() {}
 
     virtual void accept0(Visitor *visitor);
@@ -1003,8 +1103,10 @@ public:
 class ExpressionStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(ExpressionStatement)
+
     ExpressionStatement(ExpressionNode *e):
-        expression (e) { kind = Kind_ExpressionStatement; }
+        expression (e) { kind = K; }
 
     virtual ~ExpressionStatement() {}
 
@@ -1018,9 +1120,11 @@ public:
 class IfStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(IfStatement)
+
     IfStatement(ExpressionNode *e, Statement *t, Statement *f = 0):
         expression (e), ok (t), ko (f)
-        { kind = Kind_IfStatement; }
+        { kind = K; }
 
     virtual ~IfStatement() {}
 
@@ -1035,9 +1139,11 @@ public:
 class DoWhileStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(DoWhileStatement)
+
     DoWhileStatement(Statement *stmt, ExpressionNode *e):
         statement (stmt), expression (e)
-        { kind = Kind_DoWhileStatement; }
+        { kind = K; }
 
     virtual ~DoWhileStatement() {}
 
@@ -1051,9 +1157,11 @@ public:
 class WhileStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(WhileStatement)
+
     WhileStatement(ExpressionNode *e, Statement *stmt):
         expression (e), statement (stmt)
-        { kind = Kind_WhileStatement; }
+        { kind = K; }
 
     virtual ~WhileStatement() {}
 
@@ -1067,9 +1175,11 @@ public:
 class ForStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(ForStatement)
+
     ForStatement(ExpressionNode *i, ExpressionNode *c, ExpressionNode *e, Statement *stmt):
         initialiser (i), condition (c), expression (e), statement (stmt)
-        { kind = Kind_ForStatement; }
+        { kind = K; }
 
     virtual ~ForStatement() {}
 
@@ -1085,9 +1195,11 @@ public:
 class LocalForStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(LocalForStatement)
+
     LocalForStatement(VariableDeclarationList *vlist, ExpressionNode *c, ExpressionNode *e, Statement *stmt):
         declarations (vlist), condition (c), expression (e), statement (stmt)
-        { kind = Kind_LocalForStatement; }
+        { kind = K; }
 
     virtual ~LocalForStatement() {}
 
@@ -1103,9 +1215,11 @@ public:
 class ForEachStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(ForEachStatement)
+
     ForEachStatement(ExpressionNode *i, ExpressionNode *e, Statement *stmt):
         initialiser (i), expression (e), statement (stmt)
-        { kind = Kind_ForEachStatement; }
+        { kind = K; }
 
     virtual ~ForEachStatement() {}
 
@@ -1120,9 +1234,11 @@ public:
 class LocalForEachStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(LocalForEachStatement)
+
     LocalForEachStatement(VariableDeclaration *v, ExpressionNode *e, Statement *stmt):
         declaration (v), expression (e), statement (stmt)
-        { kind = Kind_LocalForEachStatement; }
+        { kind = K; }
 
     virtual ~LocalForEachStatement() {}
 
@@ -1137,8 +1253,10 @@ public:
 class ContinueStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(ContinueStatement)
+
     ContinueStatement(JavaScriptNameIdImpl *l = 0):
-        label (l) { kind = Kind_ContinueStatement; }
+        label (l) { kind = K; }
 
     virtual ~ContinueStatement() {}
 
@@ -1151,8 +1269,10 @@ public:
 class BreakStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(BreakStatement)
+
     BreakStatement(JavaScriptNameIdImpl *l = 0):
-        label (l) { kind = Kind_BreakStatement; }
+        label (l) { kind = K; }
 
     virtual ~BreakStatement() {}
 
@@ -1165,8 +1285,10 @@ public:
 class ReturnStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(ReturnStatement)
+
     ReturnStatement(ExpressionNode *e):
-        expression (e) { kind = Kind_ReturnStatement; }
+        expression (e) { kind = K; }
 
     virtual ~ReturnStatement() {}
 
@@ -1179,9 +1301,11 @@ public:
 class WithStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(WithStatement)
+
     WithStatement(ExpressionNode *e, Statement *stmt):
         expression (e), statement (stmt)
-        { kind = Kind_WithStatement; }
+        { kind = K; }
 
     virtual ~WithStatement() {}
 
@@ -1195,9 +1319,11 @@ public:
 class SwitchStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(SwitchStatement)
+
     SwitchStatement(ExpressionNode *e, CaseBlock *b):
         expression (e), block (b)
-        { kind = Kind_SwitchStatement; }
+        { kind = K; }
 
     virtual ~SwitchStatement() {}
 
@@ -1211,9 +1337,11 @@ public:
 class CaseBlock: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(CaseBlock)
+
     CaseBlock(CaseClauses *c, DefaultClause *d = 0, CaseClauses *r = 0):
         clauses (c), defaultClause (d), moreClauses (r)
-        { kind = Kind_CaseBlock; }
+        { kind = K; }
 
     virtual ~CaseBlock() {}
 
@@ -1228,14 +1356,16 @@ public:
 class CaseClauses: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(CaseClauses)
+
     CaseClauses(CaseClause *c):
         clause (c), next (this)
-        { kind = Kind_CaseClauses; }
+        { kind = K; }
 
     CaseClauses(CaseClauses *previous, CaseClause *c):
         clause (c)
     {
-        kind = Kind_CaseClauses;
+        kind = K;
         next = previous->next;
         previous->next = this;
     }
@@ -1259,9 +1389,11 @@ public:
 class CaseClause: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(CaseClause)
+
     CaseClause(ExpressionNode *e, StatementList *slist):
         expression (e), statements (slist)
-        { kind = Kind_CaseClause; }
+        { kind = K; }
 
     virtual ~CaseClause() {}
 
@@ -1275,9 +1407,11 @@ public:
 class DefaultClause: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(DefaultClause)
+
     DefaultClause(StatementList *slist):
         statements (slist)
-        { kind = Kind_DefaultClause; }
+        { kind = K; }
 
     virtual ~DefaultClause() {}
 
@@ -1290,9 +1424,11 @@ public:
 class LabelledStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(LabelledStatement)
+
     LabelledStatement(JavaScriptNameIdImpl *l, Statement *stmt):
         label (l), statement (stmt)
-        { kind = Kind_LabelledStatement; }
+        { kind = K; }
 
     virtual ~LabelledStatement() {}
 
@@ -1306,8 +1442,10 @@ public:
 class ThrowStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(ThrowStatement)
+
     ThrowStatement(ExpressionNode *e):
-        expression (e) { kind = Kind_ThrowStatement; }
+        expression (e) { kind = K; }
 
     virtual ~ThrowStatement() {}
 
@@ -1320,17 +1458,19 @@ public:
 class TryStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(TryStatement)
+
     TryStatement(Statement *stmt, Catch *c, Finally *f):
         statement (stmt), catchExpression (c), finallyExpression (f)
-        { kind = Kind_TryStatement; }
+        { kind = K; }
 
     TryStatement(Statement *stmt, Finally *f):
         statement (stmt), catchExpression (0), finallyExpression (f)
-        { kind = Kind_TryStatement; }
+        { kind = K; }
 
     TryStatement(Statement *stmt, Catch *c):
         statement (stmt), catchExpression (c), finallyExpression (0)
-        { kind = Kind_TryStatement; }
+        { kind = K; }
 
     virtual ~TryStatement() {}
 
@@ -1345,9 +1485,11 @@ public:
 class Catch: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(Catch)
+
     Catch(JavaScriptNameIdImpl *n, Statement *stmt):
         name (n), statement (stmt)
-        { kind = Kind_Catch; }
+        { kind = K; }
 
     virtual ~Catch() {}
 
@@ -1361,9 +1503,11 @@ public:
 class Finally: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(Finally)
+
     Finally(Statement *stmt):
         statement (stmt)
-        { kind = Kind_Finally; }
+        { kind = K; }
 
     virtual ~Finally() {}
 
@@ -1376,9 +1520,11 @@ public:
 class FunctionExpression: public ExpressionNode
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(FunctionExpression)
+
     FunctionExpression(JavaScriptNameIdImpl *n, FormalParameterList *f, FunctionBody *b):
         name (n), formals (f), body (b)
-        { kind = Kind_FunctionExpression; }
+        { kind = K; }
 
     virtual ~FunctionExpression() {}
 
@@ -1399,9 +1545,11 @@ public:
 class FunctionDeclaration: public FunctionExpression
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(FunctionDeclaration)
+
     FunctionDeclaration(JavaScriptNameIdImpl *n, FormalParameterList *f, FunctionBody *b):
         FunctionExpression(n, f, b)
-        { kind = Kind_FunctionDeclaration; }
+        { kind = K; }
 
     virtual ~FunctionDeclaration() {}
 
@@ -1411,14 +1559,16 @@ public:
 class FormalParameterList: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(FormalParameterList)
+
     FormalParameterList(JavaScriptNameIdImpl *n):
         name (n), next (this)
-        { kind = Kind_FormalParameterList; }
+        { kind = K; }
 
     FormalParameterList(FormalParameterList *previous, JavaScriptNameIdImpl *n):
         name (n)
     {
-        kind = Kind_FormalParameterList;
+        kind = K;
         next = previous->next;
         previous->next = this;
     }
@@ -1444,9 +1594,11 @@ public:
 class FunctionBody: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(FunctionBody)
+
     FunctionBody(SourceElements *elts):
         elements (elts)
-        { kind = Kind_FunctionBody; }
+        { kind = K; }
 
     virtual ~FunctionBody() {}
 
@@ -1459,9 +1611,11 @@ public:
 class Program: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(Program)
+
     Program(SourceElements *elts):
         elements (elts)
-        { kind = Kind_Program; }
+        { kind = K; }
 
     virtual ~Program() {}
 
@@ -1474,14 +1628,16 @@ public:
 class SourceElements: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(SourceElements)
+
     SourceElements(SourceElement *elt):
         element (elt), next (this)
-        { kind = Kind_SourceElements; }
+        { kind = K; }
 
     SourceElements(SourceElements *previous, SourceElement *elt):
         element (elt)
     {
-        kind = Kind_SourceElements;
+        kind = K;
         next = previous->next;
         previous->next = this;
     }
@@ -1505,8 +1661,10 @@ public:
 class SourceElement: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(SourceElement)
+
     inline SourceElement()
-        { kind = Kind_SourceElement; }
+        { kind = K; }
 
     virtual ~SourceElement() {}
 };
@@ -1514,9 +1672,11 @@ public:
 class FunctionSourceElement: public SourceElement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(FunctionSourceElement)
+
     FunctionSourceElement(FunctionDeclaration *f):
         declaration (f)
-        { kind = Kind_FunctionSourceElement; }
+        { kind = K; }
 
     virtual ~FunctionSourceElement() {}
 
@@ -1529,9 +1689,11 @@ public:
 class StatementSourceElement: public SourceElement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(StatementSourceElement)
+
     StatementSourceElement(Statement *stmt):
         statement (stmt)
-        { kind = Kind_StatementSourceElement; }
+        { kind = K; }
 
     virtual ~StatementSourceElement() {}
 
@@ -1544,8 +1706,10 @@ public:
 class DebuggerStatement: public Statement
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(DebuggerStatement)
+
     DebuggerStatement()
-        { kind = Kind_DebuggerStatement; }
+        { kind = K; }
 
     virtual ~DebuggerStatement() {}
 
@@ -1555,9 +1719,11 @@ public:
 class UiProgram: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiProgram)
+
     UiProgram(UiImportList *imports, UiObjectMemberList *members)
         : imports(imports), members(members)
-    { kind = Kind_UiProgram; }
+    { kind = K; }
 
     virtual void accept0(Visitor *visitor);
 
@@ -1569,6 +1735,8 @@ public:
 class UiImport: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiImport)
+
     UiImport(JavaScriptNameIdImpl *fileName)
         : fileName(fileName)
     {
@@ -1586,10 +1754,12 @@ public:
 class UiImportList: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiImportList)
+
     UiImportList(UiImport *import)
         : import(import),
           next(0)
-    { }
+    { kind = K; }
 
     UiImportList(UiImportList *previous, UiImport *import)
         : import(import)
@@ -1619,10 +1789,12 @@ class UiObjectMember: public Node
 class UiPublicMember: public UiObjectMember
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiPublicMember)
+
     UiPublicMember(JavaScriptNameIdImpl *type,
                    JavaScriptNameIdImpl *name)
         : type(type), name(name), expression(0), initializer(0)
-    { kind = Kind_UiPublicMember; }
+    { kind = K; }
 
     UiPublicMember(JavaScriptNameIdImpl *type,
                    JavaScriptNameIdImpl *name,
@@ -1630,7 +1802,7 @@ public:
                    UiObjectInitializer *initializer)
         : type(type), name(name),
           expression(expression), initializer(initializer)
-    { kind = Kind_UiPublicMember; }
+    { kind = K; }
 
     virtual void accept0(Visitor *visitor);
 
@@ -1648,10 +1820,12 @@ public:
 class UiObjectDefinition: public UiObjectMember
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiObjectDefinition)
+
     UiObjectDefinition(JavaScriptNameIdImpl *name,
                        UiObjectInitializer *initializer)
         : name(name), initializer(initializer)
-    { kind = Kind_UiObjectDefinition; }
+    { kind = K; }
 
     virtual void accept0(Visitor *visitor);
 
@@ -1664,9 +1838,11 @@ public:
 class UiObjectInitializer: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiObjectInitializer)
+
     UiObjectInitializer(UiObjectMemberList *members)
         : members(members)
-    { kind = Kind_UiObjectInitializer; }
+    { kind = K; }
 
     virtual void accept0(Visitor *visitor);
 
@@ -1679,9 +1855,11 @@ public:
 class UiSourceElement: public UiObjectMember
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiSourceElement)
+
     UiSourceElement(Statement *sourceElement)
         : sourceElement(sourceElement)
-    { kind = Kind_UiSourceElement; }
+    { kind = K; }
 
     virtual void accept0(Visitor *visitor);
 
@@ -1692,13 +1870,15 @@ public:
 class UiObjectBinding: public UiObjectMember
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiObjectBinding)
+
     UiObjectBinding(UiQualifiedId *qualifiedId,
                     JavaScriptNameIdImpl *name,
                     UiObjectInitializer *initializer)
         : qualifiedId(qualifiedId),
           name(name),
           initializer(initializer)
-    { kind = Kind_UiObjectBinding; }
+    { kind = K; }
 
     virtual void accept0(Visitor *visitor);
 
@@ -1713,11 +1893,13 @@ public:
 class UiScriptBinding: public UiObjectMember
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiScriptBinding)
+
     UiScriptBinding(UiQualifiedId *qualifiedId,
                     Statement *statement)
         : qualifiedId(qualifiedId),
           statement(statement)
-    { kind = Kind_UiScriptBinding; }
+    { kind = K; }
 
     virtual void accept0(Visitor *visitor);
 
@@ -1730,11 +1912,13 @@ public:
 class UiArrayBinding: public UiObjectMember
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiArrayBinding)
+
     UiArrayBinding(UiQualifiedId *qualifiedId,
                    UiObjectMemberList *members)
         : qualifiedId(qualifiedId),
           members(members)
-    { kind = Kind_UiArrayBinding; }
+    { kind = K; }
 
     virtual void accept0(Visitor *visitor);
 
@@ -1749,14 +1933,16 @@ public:
 class UiObjectMemberList: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiObjectMemberList)
+
     UiObjectMemberList(UiObjectMember *member)
         : next(this), member(member)
-    { kind = Kind_UiObjectMemberList; }
+    { kind = K; }
 
     UiObjectMemberList(UiObjectMemberList *previous, UiObjectMember *member)
         : member(member)
     {
-        kind = Kind_UiObjectMemberList;
+        kind = K;
         next = previous->next;
         previous->next = this;
     }
@@ -1778,14 +1964,16 @@ public:
 class UiQualifiedId: public Node
 {
 public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiQualifiedId)
+
     UiQualifiedId(JavaScriptNameIdImpl *name)
         : next(this), name(name)
-    { kind = Kind_UiQualifiedId; }
+    { kind = K; }
 
     UiQualifiedId(UiQualifiedId *previous, JavaScriptNameIdImpl *name)
         : name(name)
     {
-        kind = Kind_UiQualifiedId;
+        kind = K;
         next = previous->next;
         previous->next = this;
     }

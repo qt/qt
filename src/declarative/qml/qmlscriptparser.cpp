@@ -289,9 +289,9 @@ bool ProcessAST::visit(AST::UiObjectDefinition *node)
         QString script;
 
         for (; it; it = it->next) {
-            if (it->member->kind != AST::Node::Kind_UiScriptBinding)
-                continue; // ### TODO generate error
-            AST::UiScriptBinding *scriptBinding = static_cast<AST::UiScriptBinding *>(it->member);
+            AST::UiScriptBinding *scriptBinding = AST::cast<AST::UiScriptBinding *>(it->member);
+            if (! scriptBinding)
+                continue;
 
             QString s;
             QTextStream out(&s);
@@ -300,8 +300,7 @@ bool ProcessAST::visit(AST::UiObjectDefinition *node)
             QString propertyName = asString(scriptBinding->qualifiedId);
             if (propertyName == QLatin1String("signal")) {
                 // ## TODO verify that this is a function call statement and nothing else.
-                if (scriptBinding->statement->kind == AST::Node::Kind_ExpressionStatement) {
-                    AST::ExpressionStatement *stmt = static_cast<AST::ExpressionStatement *>(scriptBinding->statement);
+                if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(scriptBinding->statement)) {
                     pp(stmt->expression);
                     int dot = s.lastIndexOf(QLatin1Char('.'));
                     if (dot >= 0) {
@@ -315,8 +314,7 @@ bool ProcessAST::visit(AST::UiObjectDefinition *node)
                 }
 
             } else if (propertyName == QLatin1String("onSignal")) {
-                if (scriptBinding->statement->kind == AST::Node::Kind_ExpressionStatement) {
-                    AST::ExpressionStatement *stmt = static_cast<AST::ExpressionStatement *>(scriptBinding->statement);
+                if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(scriptBinding->statement)) {
                     script = getPrimitive("onSignal", stmt->expression);
                 } else {
                     pp(scriptBinding->statement);
@@ -357,9 +355,9 @@ bool ProcessAST::visit(AST::UiObjectBinding *node)
 
         AST::UiObjectMemberList *it = node->initializer->members;
         for (; it; it = it->next) {
-            if (it->member->kind != AST::Node::Kind_UiScriptBinding)
+            AST::UiScriptBinding *scriptBinding = AST::cast<AST::UiScriptBinding *>(it->member);
+            if (!scriptBinding)
                 continue; // ### TODO generate error
-            AST::UiScriptBinding *scriptBinding = static_cast<AST::UiScriptBinding *>(it->member);
 
 
             QString target;
@@ -379,8 +377,7 @@ bool ProcessAST::visit(AST::UiObjectBinding *node)
                 ++propertyCount;
             }
 
-            if (scriptBinding->statement->kind == AST::Node::Kind_ExpressionStatement) {
-                AST::ExpressionStatement *stmt = static_cast<AST::ExpressionStatement *>(scriptBinding->statement);
+            if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(scriptBinding->statement)) {
                 value = getPrimitive(property.toLatin1(), stmt->expression);
             } else {
                 // #### TODO generate error
@@ -430,11 +427,11 @@ QString ProcessAST::getPrimitive(const QByteArray &propertyName, AST::Expression
         //end of hack
 
     } else if (propertyName == "id" && expr && expr->kind == AST::Node::Kind_IdentifierExpression) {
-        primitive = static_cast<AST::IdentifierExpression *>(expr)->name->asString();
+        primitive = AST::cast<AST::IdentifierExpression *>(expr)->name->asString();
     } else if (expr->kind == AST::Node::Kind_StringLiteral) {
         // hack: emulate weird XML feature that string literals are not quoted.
         //This needs to be fixed in the qmlcompiler once xml goes away.
-        primitive = static_cast<AST::StringLiteral *>(expr)->value->asString();
+        primitive = AST::cast<AST::StringLiteral *>(expr)->value->asString();
     } else if (expr->kind == AST::Node::Kind_TrueLiteral
                || expr->kind == AST::Node::Kind_FalseLiteral
                || expr->kind == AST::Node::Kind_NumericLiteral
@@ -466,8 +463,7 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
     QTextStream out(&primitive);
     PrettyPretty pp(out);
 
-    if (node->statement->kind == AST::Node::Kind_ExpressionStatement) {
-        AST::ExpressionStatement *stmt = static_cast<AST::ExpressionStatement *>(node->statement);
+    if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(node->statement)) {
         primitive = getPrimitive(prop->name, stmt->expression);
 
     } else {
