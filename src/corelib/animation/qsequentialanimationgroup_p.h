@@ -64,7 +64,7 @@ class QSequentialAnimationGroupPrivate : public QAnimationGroupPrivate
     Q_DECLARE_PUBLIC(QSequentialAnimationGroup)
 public:
     QSequentialAnimationGroupPrivate()
-        : currentAnimation(0), currentAnimationIndex(-1), lastIteration(0)
+        : currentAnimation(0), currentAnimationIndex(-1), lastLoop(0)
     { }
 
 
@@ -96,7 +96,7 @@ public:
     QList<int> actualDuration;
 
     void restart();
-    int lastIteration;
+    int lastLoop;
 
     // handle time changes
     void rewindForwards(const AnimationIndex &newAnimationIndex);

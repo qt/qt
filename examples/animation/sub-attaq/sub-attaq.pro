@@ -20,10 +20,8 @@ HEADERS += boat.h \
     states.h \
     boat_p.h \
     submarine_p.h \
-    custompropertyanimation_p.h \
     custompropertyanimation.h \
     qanimationstate.h
-
 SOURCES += boat.cpp \
     bomb.cpp \
     main.cpp \

@@ -97,7 +97,7 @@ public:
 
     bool atEnd() const
     {
-        return currentTime == duration && currentIteration == (iterationCount - 1);
+        return currentTime == duration && currentLoop == (loopCount - 1);
     }
 
     void setDefaultStartValue(const QVariant &value);

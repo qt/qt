@@ -88,7 +88,7 @@ void Window::startAnimation()
     m_anim->setStartValue(QPointF(0, 0));
     m_anim->setEndValue(QPointF(100, 100));
     m_anim->setDuration(2000);
-    m_anim->setIterationCount(-1); // forever
+    m_anim->setLoopCount(-1); // forever
     m_anim->start();
 }
 

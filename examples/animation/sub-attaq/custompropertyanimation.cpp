@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "custompropertyanimation.h"
-#include "custompropertyanimation_p.h"
 
 // Qt
 #include <QtCore/qdebug.h>
@@ -48,23 +47,8 @@
 QT_BEGIN_NAMESPACE
 
 
-void CustomPropertyAnimationPrivate::initDefaultStartValue()
-{
-    if (!animProp)
-        return;
-    QVariant def = animProp->read();
-    if (def.isValid())
-        convertValues(def.userType());
-    if (animProp && !defaultStartValue.isValid()
-        && ((currentTime == 0 && (currentIteration || currentIteration == 0))
-        || (currentTime == duration && currentIteration == (iterationCount - 1)))) {
-            setDefaultStartValue(def);
-    }
-}
-
-
 CustomPropertyAnimation::CustomPropertyAnimation(QObject *parent) :
-    QVariantAnimation(*new CustomPropertyAnimationPrivate, parent)
+    QVariantAnimation(parent), animProp(0)
 {
 }
 
@@ -72,13 +56,12 @@ CustomPropertyAnimation::~CustomPropertyAnimation()
 {
 }
 
-void CustomPropertyAnimation::setProperty(AbstractProperty *animProp)
+void CustomPropertyAnimation::setProperty(AbstractProperty *_animProp)
 {
-    Q_D(CustomPropertyAnimation);
-    if (d->animProp == animProp)
+    if (animProp == _animProp)
         return;
-    delete d->animProp;
-    d->animProp = animProp;
+    delete animProp;
+    animProp = _animProp;
 }
 
 /*!
@@ -86,11 +69,10 @@ void CustomPropertyAnimation::setProperty(AbstractProperty *animProp)
  */
 void CustomPropertyAnimation::updateCurrentValue(const QVariant &value)
 {
-    Q_D(CustomPropertyAnimation);
-    if (!d->animProp || state() == QAbstractAnimation::Stopped)
+    if (!animProp || state() == QAbstractAnimation::Stopped)
         return;
 
-    d->animProp->write(value);
+    animProp->write(value);
 }
 
 
@@ -99,10 +81,29 @@ void CustomPropertyAnimation::updateCurrentValue(const QVariant &value)
 */
 void CustomPropertyAnimation::updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState)
 {
-    Q_D(CustomPropertyAnimation);
     // Initialize start value
-    if (oldState == QAbstractAnimation::Stopped)
-        d->initDefaultStartValue();
+    if (oldState == QAbstractAnimation::Stopped) {
+        if (!animProp)
+            return;
+        QVariant def = animProp->read();
+        if (def.isValid()) {
+            const int t = def.userType();
+            KeyValues values = keyValues();
+            //this ensures that all the keyValues are of type t
+            for (int i = 0; i < values.count(); ++i) {
+                QVariantAnimation::KeyValue &pair = values[i];
+                if (pair.second.userType() != t)
+                    pair.second.convert(static_cast<QVariant::Type>(t));
+            }
+            //let's now update the key values
+            setKeyValues(values);
+        }
+
+        if (animProp && !startValue().isValid() && currentTime() == 0
+            || (currentTime() == duration() && currentLoop() == (loopCount() - 1))) {
+                setStartValue(def);
+        }
+    }
 
     QVariantAnimation::updateState(oldState, newState);
 }
