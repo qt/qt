@@ -93,11 +93,16 @@ void Edge::adjust()
 
     QLineF line(mapFromItem(source, 0, 0), mapFromItem(dest, 0, 0));
     qreal length = line.length();
-    QPointF edgeOffset((line.dx() * 10) / length, (line.dy() * 10) / length);
 
     prepareGeometryChange();
-    sourcePoint = line.p1() + edgeOffset;
-    destPoint = line.p2() - edgeOffset;
+
+    if (!qFuzzyCompare(length, qreal(0.0))) {
+        QPointF edgeOffset((line.dx() * 10) / length, (line.dy() * 10) / length);
+        sourcePoint = line.p1() + edgeOffset;
+        destPoint = line.p2() - edgeOffset;
+    } else {
+        sourcePoint = destPoint = line.p1();
+    }
 }
 
 QRectF Edge::boundingRect() const
