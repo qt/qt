@@ -164,9 +164,10 @@ void QAnimationGroup::insertAnimationAt(int index, QAbstractAnimation *animation
         return;
     }
 
-    d->animations.insert(index, animation);
     if (QAnimationGroup *oldGroup = animation->group())
         oldGroup->removeAnimation(animation);
+
+    d->animations.insert(index, animation);
     QAbstractAnimationPrivate::get(animation)->group = this;
     // this will make sure that ChildAdded event is sent to 'this'
     animation->setParent(this);
