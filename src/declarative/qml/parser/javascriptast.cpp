@@ -882,6 +882,7 @@ void UiImport::accept0(Visitor *visitor)
 void UiImportList::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
+        acceptChild(import, visitor);
         acceptChild(next, visitor);
     }
 
