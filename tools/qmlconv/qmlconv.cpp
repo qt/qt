@@ -77,6 +77,13 @@ public:
     }
 
     void startElement() {
+
+        if (!propertyChangeSet.isEmpty()
+            && xml.name() != "SetProperties"
+            && xml.name() != "SetProperty") {
+            clearPropertyChangeSet();
+        }
+
         if (xml.name() == "properties")
             startDeclareProperties();
         else if (xml.name() == "signals")
@@ -183,29 +190,32 @@ public:
         out << depthString() << name << " {" << endl;
         ++depth;
 
-        if (name == "State")
-            propertyChangeSet.clear();
-
         foreach (QXmlStreamAttribute attribute, xml.attributes()) {
             setProperty(attribute.name().toString(), attribute.value().toString());
         }
 
         loop();
 
-        if (name == "State" && !propertyChangeSet.isEmpty()) {
-            out << depthString() << "propertyChangeSet: PropertyChangeSet" << " {" << endl;
-            ++depth;
-            foreach(StringPair pair, propertyChangeSet)
-                setProperty(pair.first, pair.second);
-            --depth;
-            out << depthString() << "}" << endl;
-            propertyChangeSet.clear();
-        }
+        if (name == "State")
+            clearPropertyChangeSet();
 
         --depth;
         out << depthString() << "}";
         if (!inList)
             out << endl;
+    }
+
+    void clearPropertyChangeSet() {
+        if (propertyChangeSet.isEmpty())
+            return;
+
+        out << depthString() << "PropertyChangeSet" << " {" << endl;
+        ++depth;
+        foreach(StringPair pair, propertyChangeSet)
+            setProperty(pair.first, pair.second);
+        --depth;
+        out << depthString() << "}" << endl;
+        propertyChangeSet.clear();
     }
 
     void startObjectProperty() {
@@ -312,7 +322,15 @@ public:
     void startParentChange() {
         QString target = xml.attributes().value("target").toString();
         possiblyRemoveBraces(&target);
-        propertyChangeSet += StringPair(target + ".moveToParent", xml.attributes().value("parent").toString());
+
+        out << depthString() << "ParentChangeSet" << " {" << endl;
+        ++depth;
+        setProperty(target + ".parent", xml.attributes().value("parent").toString());
+        --depth;
+        out << depthString() << "}" << endl;
+
+//        propertyChangeSet += StringPair(target + ".moveToParent", xml.attributes().value("parent").toString());
+
         emptyLoop();
     }
 
