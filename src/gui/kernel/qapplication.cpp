@@ -3723,7 +3723,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                             while (target && target->d_func()->gestures.isEmpty())
                                 target = target->parentWidget();
                             if (target) {
-                                d->gestureManager->setGestureTargetWidget(target);
+                                d->gestureManager->setGestureTargetWidget(w);
                                 if (d->gestureManager->filterEvent(e))
                                     return true;
                             }
