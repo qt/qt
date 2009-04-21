@@ -245,7 +245,8 @@ void QState::setErrorState(QAbstractState *state)
 
 /*!
   Adds the given \a transition. The transition has this state as the source.
-  This state takes ownership of the transition.
+  This state takes ownership of the transition. If the transition is successfully
+  added, the function will return the \a transition pointer. Otherwise it will return null.
 */
 QAbstractTransition *QState::addTransition(QAbstractTransition *transition)
 {
