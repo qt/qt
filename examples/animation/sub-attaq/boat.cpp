@@ -56,6 +56,7 @@
 # include "qhistorystate.h"
 # include "qfinalstate.h"
 # include "qstate.h"
+# include "qpauseanimation.h"
 #include "qsequentialanimationgroup.h"
 #else
 #include <QPropertyAnimation>

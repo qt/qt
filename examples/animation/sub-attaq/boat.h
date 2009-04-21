@@ -49,7 +49,7 @@
 #include <QDebug>
 
 #if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qgraphicswidget.h"
+# include "qtgraphicswidget.h"
 #else
 # include <QtGui/QGraphicsWidget>
 #endif
