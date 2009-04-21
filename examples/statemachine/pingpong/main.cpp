@@ -44,7 +44,7 @@
 #ifdef QT_STATEMACHINE_SOLUTION
 #include <qstate.h>
 #include <qstatemachine.h>
-#include <qtransition.h>
+#include <qabstracttransition.h>
 #endif
 
 class PingEvent : public QEvent

@@ -44,7 +44,7 @@
 #ifdef QT_STATEMACHINE_SOLUTION
 #include <qstatemachine.h>
 #include <qstate.h>
-#include <qtransition.h>
+#include <qabstracttransition.h>
 #endif
 
 class ClockEvent : public QEvent
