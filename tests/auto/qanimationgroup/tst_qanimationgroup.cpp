@@ -68,6 +68,7 @@ private slots:
     void statesAndSignals();
     void setParentAutoAdd();
     void beginNestedGroup();
+    void addChildTwice();
 };
 
 tst_QAnimationGroup::tst_QAnimationGroup()
@@ -341,6 +342,39 @@ void tst_QAnimationGroup::beginNestedGroup()
 
         parent = child;
     }
+}
+
+void tst_QAnimationGroup::addChildTwice()
+{
+    QPropertyAnimation *subGroup;
+    QPropertyAnimation *subGroup2;
+    QAnimationGroup *parent = new QSequentialAnimationGroup();
+
+    subGroup = new QPropertyAnimation();
+    subGroup->setParent(parent);
+    parent->addAnimation(subGroup);
+    QCOMPARE(parent->animationCount(), 1);
+
+    parent->clearAnimations();
+
+    QCOMPARE(parent->animationCount(), 0);
+
+    // adding the same item twice to a group will remove the item from its current position
+    // and append it to the end
+    subGroup = new QPropertyAnimation(parent);
+    subGroup2 = new QPropertyAnimation(parent);
+
+    QCOMPARE(parent->animationCount(), 2);
+    QCOMPARE(parent->animationAt(0), subGroup);
+    QCOMPARE(parent->animationAt(1), subGroup2);
+
+    parent->addAnimation(subGroup);
+
+    QCOMPARE(parent->animationCount(), 2);
+    QCOMPARE(parent->animationAt(0), subGroup2);
+    QCOMPARE(parent->animationAt(1), subGroup);
+
+    delete parent;
 }
 
 QTEST_MAIN(tst_QAnimationGroup)
