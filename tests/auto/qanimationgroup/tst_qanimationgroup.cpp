@@ -69,6 +69,7 @@ private slots:
     void setParentAutoAdd();
     void beginNestedGroup();
     void addChildTwice();
+    void loopWithoutStartValue();
 };
 
 tst_QAnimationGroup::tst_QAnimationGroup()
@@ -375,6 +376,37 @@ void tst_QAnimationGroup::addChildTwice()
     QCOMPARE(parent->animationAt(1), subGroup);
 
     delete parent;
+}
+
+void tst_QAnimationGroup::loopWithoutStartValue()
+{
+    QAnimationGroup *parent = new QSequentialAnimationGroup();
+    QObject o;
+    o.setProperty("ole", 0);
+    QCOMPARE(o.property("ole").toInt(), 0);
+
+    QPropertyAnimation anim1(&o, "ole");
+    anim1.setEndValue(-50);
+    anim1.setDuration(100);
+
+    QPropertyAnimation anim2(&o, "ole");
+    anim2.setEndValue(50);
+    anim2.setDuration(100);
+
+    parent->addAnimation(&anim1);
+    parent->addAnimation(&anim2);
+
+    parent->setLoopCount(-1);
+    parent->start();
+
+    QVERIFY(anim1.startValue().isNull());
+    QCOMPARE(anim1.currentValue().toInt(), 0);
+    QCOMPARE(parent->currentLoop(), 0);
+
+    parent->setCurrentTime(200);
+    QCOMPARE(parent->currentLoop(), 1);
+    QCOMPARE(anim1.currentValue().toInt(), 50);
+    parent->stop();
 }
 
 QTEST_MAIN(tst_QAnimationGroup)

@@ -42,7 +42,6 @@
 #include <QtTest/QtTest>
 
 #include <QtCore/qpropertyanimation.h>
-#include <QtGui/qitemanimation.h>
 #include <QtGui/qwidget.h>
 
 //TESTED_CLASS=QPropertyAnimation
@@ -526,13 +525,14 @@ void tst_QPropertyAnimation::startWithoutStartValue()
     anim.setEndValue(110);
     anim.start();
     current = anim.currentValue().toInt();
-    QCOMPARE(current, 42); // the initial default start value
-
+    // the default start value will reevaluate the current property
+    // and set it to the end value of the last iteration
+    QCOMPARE(current, 100);
     QTest::qWait(100);
     current = anim.currentValue().toInt();
     //it is somewhere in the animation
-    QVERIFY(current > 42);
-    QVERIFY(current < 110);
+    QVERIFY(current >= 100);
+    QVERIFY(current <= 110);
 }
 
 void tst_QPropertyAnimation::playForwardBackward()
