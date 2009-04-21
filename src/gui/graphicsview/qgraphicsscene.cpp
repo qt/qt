@@ -697,12 +697,6 @@ void QGraphicsScenePrivate::_q_removeItemLater(QGraphicsItem *item)
 {
     Q_Q(QGraphicsScene);
 
-    if (QGraphicsItem *parent = item->d_func()->parent) {
-        parent->itemChange(QGraphicsItem::ItemChildRemovedChange,
-                           qVariantFromValue<QGraphicsItem *>(item));
-        parent->d_func()->children.removeAll(item);
-    }
-
     // Clear focus on the item to remove any reference in the focusWidget
     // chain.
     item->clearFocus();

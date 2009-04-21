@@ -3654,6 +3654,8 @@ void tst_QGraphicsItem::defaultItemTest_QGraphicsEllipseItem()
 class ItemChangeTester : public QGraphicsRectItem
 {
 public:
+    ItemChangeTester(){}
+    ItemChangeTester(QGraphicsItem *parent) : QGraphicsRectItem(parent) {}
     QVariant itemChangeReturnValue;
     QGraphicsScene *itemSceneChangeTargetScene;
 
@@ -3928,6 +3930,39 @@ void tst_QGraphicsItem::itemChange()
         QCOMPARE(tester.changes.size(), ++changeCount);
         QCOMPARE(tester.changes.last(), QGraphicsItem::ItemChildRemovedChange);
         QCOMPARE(qVariantValue<QGraphicsItem *>(tester.values.last()), (QGraphicsItem *)&testerHelper);
+
+        // ItemChildRemovedChange 1
+        ItemChangeTester *test = new ItemChangeTester;
+        test->itemSceneChangeTargetScene = 0;
+        int count = 0;
+        QGraphicsScene *scene = new QGraphicsScene;
+        scene->addItem(test);
+        count = test->changes.size();
+        //We test here the fact that when a child is deleted the parent receive only one ItemChildRemovedChange
+        QGraphicsRectItem *child = new QGraphicsRectItem(test);
+        //We received ItemChildAddedChange
+        QCOMPARE(test->changes.size(), ++count);
+        QCOMPARE(test->changes.last(), QGraphicsItem::ItemChildAddedChange);
+        delete child;
+        child = 0;
+        QCOMPARE(test->changes.size(), ++count);
+        QCOMPARE(test->changes.last(), QGraphicsItem::ItemChildRemovedChange);
+
+        ItemChangeTester *childTester = new ItemChangeTester(test);
+        //Changes contains all sceneHasChanged and so on, we don't want to test that
+        int childCount = childTester->changes.size();
+        //We received ItemChildAddedChange
+        QCOMPARE(test->changes.size(), ++count);
+        child = new QGraphicsRectItem(childTester);
+        //We received ItemChildAddedChange
+        QCOMPARE(childTester->changes.size(), ++childCount);
+        QCOMPARE(childTester->changes.last(), QGraphicsItem::ItemChildAddedChange);
+        //Delete the child of the top level with all its children
+        delete childTester;
+        //Only one removal
+        QCOMPARE(test->changes.size(), ++count);
+        QCOMPARE(test->changes.last(), QGraphicsItem::ItemChildRemovedChange);
+        delete scene;
     }
     {
         // ItemChildRemovedChange 2
