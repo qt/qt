@@ -2051,7 +2051,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QColor& color)
 
 /*!
     Sets the uniform variable at \a location in the current context to
-    the x() & y() coordinates of \a point.
+    the x and y coordinates of \a point.
 
     \sa setAttributeValue()
 */
@@ -2066,8 +2066,8 @@ void QGLShaderProgram::setUniformValue(int location, const QPoint& point)
 /*!
     \overload
 
-    Sets the uniform variable at \a location in the current context to
-    the x() & y() coordinates of \a point.
+    Sets the uniform variable associated with \a name in the current
+    context to the x and y coordinates of \a point.
 
     \sa setAttributeValue()
 */
@@ -2078,7 +2078,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QPoint& point)
 
 /*!
     Sets the uniform variable at \a location in the current context to
-    the x() & y() coordinates of \a point.
+    the x and y coordinates of \a point.
 
     \sa setAttributeValue()
 */
@@ -2093,8 +2093,8 @@ void QGLShaderProgram::setUniformValue(int location, const QPointF& point)
 /*!
     \overload
 
-    Sets the uniform variable at \a location in the current context to
-    the x() & y() coordinates of \a point.
+    Sets the uniform variable associated with \a name in the current
+    context to the x and y coordinates of \a point.
 
     \sa setAttributeValue()
 */
@@ -2105,7 +2105,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QPointF& point)
 
 /*!
     Sets the uniform variable at \a location in the current context to
-    the width() & height() of the given \a size.
+    the width and height of the given \a size.
 
     \sa setAttributeValue()
 */
@@ -2120,8 +2120,8 @@ void QGLShaderProgram::setUniformValue(int location, const QSize& size)
 /*!
     \overload
 
-    Sets the uniform variable at \a location in the current context to
-    the width() & height() of the given \a size.
+    Sets the uniform variable associated with \a name in the current
+    context to the width and height of the given \a size.
 
     \sa setAttributeValue()
 */
@@ -2132,7 +2132,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QSize& size)
 
 /*!
     Sets the uniform variable at \a location in the current context to
-    the width() & height() of the given \a size.
+    the width and height of the given \a size.
 
     \sa setAttributeValue()
 */
@@ -2147,8 +2147,8 @@ void QGLShaderProgram::setUniformValue(int location, const QSizeF& size)
 /*!
     \overload
 
-    Sets the uniform variable at \a location in the current context to
-    the width() & height() of the given \a size.
+    Sets the uniform variable associated with \a name in the current
+    context to the width and height of the given \a size.
 
     \sa setAttributeValue()
 */
