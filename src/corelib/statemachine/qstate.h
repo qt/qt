@@ -81,7 +81,7 @@ public:
     QAbstractState *errorState() const;
     void setErrorState(QAbstractState *state);
 
-    void addTransition(QAbstractTransition *transition);
+    QAbstractTransition *addTransition(QAbstractTransition *transition);
     QSignalTransition *addTransition(QObject *sender, const char *signal, QAbstractState *target);
     QAbstractTransition *addTransition(QAbstractState *target);
     QStateFinishedTransition *addFinishedTransition(QAbstractState *target);
