@@ -3950,17 +3950,29 @@ bool QGraphicsItemPrivate::isProxyWidget() const
 */
 void QGraphicsItem::update(const QRectF &rect)
 {
-    if ((rect.isEmpty() && !rect.isNull()) || d_ptr->discardUpdateRequest())
+    if (rect.isEmpty() && !rect.isNull())
         return;
 
     if (CacheMode(d_ptr->cacheMode) != NoCache) {
         QGraphicsItemCache *cache = d_ptr->extraItemCache();
+        if (d_ptr->discardUpdateRequest(/* ignoreVisibleBit = */ false,
+                                        /* ignoreClipping = */ false,
+                                        /* ignoreDirtyBit = */ true)) {
+            return;
+        }
+
+        // Invalidate cache.
         if (rect.isNull()) {
             cache->allExposed = true;
             cache->exposed.clear();
         } else {
             cache->exposed.append(rect);
         }
+        // Only invalidate cache; item is already dirty.
+        if (d_ptr->dirty)
+            return;
+    } else if (d_ptr->discardUpdateRequest()) {
+        return;
     }
 
     // Effectively the same as updateHelper(rect);

@@ -218,6 +218,7 @@ private slots:
     void tabChangesFocus();
     void tabChangesFocus_data();
     void cacheMode();
+    void updateCachedItemAfterMove();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -6075,6 +6076,47 @@ void tst_QGraphicsItem::cacheMode()
     QCOMPARE(tester->repaints, 13);
     QCOMPARE(testerChild->repaints, 11);
     QCOMPARE(testerChild2->repaints, 6);
+}
+
+void tst_QGraphicsItem::updateCachedItemAfterMove()
+{
+    // A simple item that uses ItemCoordinateCache
+    EventTester *tester = new EventTester;
+    tester->setCacheMode(QGraphicsItem::ItemCoordinateCache);
+
+    // Add to a scene, show in a view, ensure it's painted and reset its
+    // repaint counter.
+    QGraphicsScene scene;
+    scene.addItem(tester);
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(125);
+    tester->repaints = 0;
+
+    // Move the item, should not cause repaints
+    tester->setPos(10, 0);
+    QTest::qWait(125);
+    QCOMPARE(tester->repaints, 0);
+
+    // Move then update, should cause one repaint
+    tester->setPos(20, 0);
+    tester->update();
+    QTest::qWait(125);
+    QCOMPARE(tester->repaints, 1);
+
+    // Hiding the item doesn't cause a repaint
+    tester->hide();
+    QTest::qWait(125);
+    QCOMPARE(tester->repaints, 1);
+
+    // Moving a hidden item doesn't cause a repaint
+    tester->setPos(30, 0);
+    tester->update();
+    QTest::qWait(125);
+    QCOMPARE(tester->repaints, 1);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)
