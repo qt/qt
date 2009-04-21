@@ -43,9 +43,9 @@
 #define QSTATEFINISHEDTRANSITION_H
 
 #ifndef QT_STATEMACHINE_SOLUTION
-#include <QtCore/qtransition.h>
+#include <QtCore/qactiontransition.h>
 #else
-#include "qtransition.h"
+#include "qactiontransition.h"
 #endif
 
 QT_BEGIN_HEADER
@@ -57,7 +57,7 @@ QT_MODULE(Core)
 class QState;
 
 class QStateFinishedTransitionPrivate;
-class Q_CORE_EXPORT QStateFinishedTransition : public QTransition
+class Q_CORE_EXPORT QStateFinishedTransition : public QActionTransition
 {
     Q_OBJECT
     Q_PROPERTY(QState* state READ state WRITE setState)

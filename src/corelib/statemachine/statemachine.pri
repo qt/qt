@@ -14,8 +14,8 @@ HEADERS += $$PWD/qstatemachine.h \
 	   $$PWD/qhistorystate_p.h \
 	   $$PWD/qabstracttransition.h \
 	   $$PWD/qabstracttransition_p.h \
-	   $$PWD/qtransition.h \
-	   $$PWD/qtransition_p.h \
+	   $$PWD/qactiontransition.h \
+	   $$PWD/qactiontransition_p.h \
 	   $$PWD/qstatefinishedevent.h \
 	   $$PWD/qstatefinishedtransition.h \
 	   $$PWD/qsignalevent.h \
@@ -30,7 +30,7 @@ SOURCES += $$PWD/qstatemachine.cpp \
 	   $$PWD/qfinalstate.cpp \
 	   $$PWD/qhistorystate.cpp \
 	   $$PWD/qabstracttransition.cpp \
-	   $$PWD/qtransition.cpp \
+	   $$PWD/qactiontransition.cpp \
 	   $$PWD/qstatefinishedtransition.cpp \
 	   $$PWD/qsignaltransition.cpp
 

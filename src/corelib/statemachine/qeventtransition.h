@@ -42,7 +42,11 @@
 #ifndef QEVENTTRANSITION_H
 #define QEVENTTRANSITION_H
 
-#include "qtransition.h"
+#ifndef QT_STATEMACHINE_SOLUTION
+#include <QtCore/qactiontransition.h>
+#else
+#include "qactiontransition.h"
+#endif
 #include <QtCore/qcoreevent.h>
 
 QT_BEGIN_HEADER
@@ -52,7 +56,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Core)
 
 class QEventTransitionPrivate;
-class Q_CORE_EXPORT QEventTransition : public QTransition
+class Q_CORE_EXPORT QEventTransition : public QActionTransition
 {
     Q_OBJECT
     Q_PROPERTY(QObject* object READ eventSource WRITE setEventSource)

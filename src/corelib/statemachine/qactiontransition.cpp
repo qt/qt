@@ -39,24 +39,24 @@
 **
 ****************************************************************************/
 
-#include "qtransition.h"
-#include "qtransition_p.h"
+#include "qactiontransition.h"
+#include "qactiontransition_p.h"
 #include "qstateaction.h"
 #include "qstateaction_p.h"
 
 QT_BEGIN_NAMESPACE
 
 /*!
-  \class QTransition
+  \class QActionTransition
 
-  \brief The QTransition class provides an action-based transition.
+  \brief The QActionTransition class provides an action-based transition.
 
   \since 4.6
   \ingroup statemachine
 
-  QTransition provides an action-based transition; you add actions with the
-  addAction() function. The transition executes the actions when the
-  transition is triggered. QTransition is part of \l{The State Machine
+  QActionTransition provides an action-based transition; you add actions with
+  the addAction() function. The transition executes the actions when the
+  transition is triggered. QActionTransition is part of \l{The State Machine
   Framework}.
 
   The invokeMethodOnTransition() function is used for defining method
@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
   QStateMachine machine;
   QState *s1 = new QState();
   machine.addState(s1);
-  QTransition *t1 = new QTransition();
+  QActionTransition *t1 = new QActionTransition();
   QLabel label;
   t1->invokeMethodOnTransition(&label, "clear");
   QState *s2 = new QState();
@@ -80,25 +80,25 @@ QT_BEGIN_NAMESPACE
   \sa QState::addTransition(), QStateAction
 */
 
-QTransitionPrivate::QTransitionPrivate()
+QActionTransitionPrivate::QActionTransitionPrivate()
 {
 }
 
-QTransitionPrivate::~QTransitionPrivate()
+QActionTransitionPrivate::~QActionTransitionPrivate()
 {
 }
 
-QTransitionPrivate *QTransitionPrivate::get(QTransition *q)
-{
-    return q->d_func();
-}
-
-const QTransitionPrivate *QTransitionPrivate::get(const QTransition *q)
+QActionTransitionPrivate *QActionTransitionPrivate::get(QActionTransition *q)
 {
     return q->d_func();
 }
 
-QList<QStateAction*> QTransitionPrivate::actions() const
+const QActionTransitionPrivate *QActionTransitionPrivate::get(const QActionTransition *q)
+{
+    return q->d_func();
+}
+
+QList<QStateAction*> QActionTransitionPrivate::actions() const
 {
     QList<QStateAction*> result;
     QList<QObject*>::const_iterator it;
@@ -114,26 +114,26 @@ QList<QStateAction*> QTransitionPrivate::actions() const
 }
 
 /*!
-  Constructs a new QTransition object with the given \a sourceState.
+  Constructs a new QActionTransition object with the given \a sourceState.
 */
-QTransition::QTransition(QState *sourceState)
-    : QAbstractTransition(*new QTransitionPrivate, sourceState)
+QActionTransition::QActionTransition(QState *sourceState)
+    : QAbstractTransition(*new QActionTransitionPrivate, sourceState)
 {
 }
 
 /*!
-  Constructs a new QTransition object with the given \a targets and \a
+  Constructs a new QActionTransition object with the given \a targets and \a
   sourceState.
 */
-QTransition::QTransition(const QList<QAbstractState*> &targets, QState *sourceState)
-    : QAbstractTransition(*new QTransitionPrivate, targets, sourceState)
+QActionTransition::QActionTransition(const QList<QAbstractState*> &targets, QState *sourceState)
+    : QAbstractTransition(*new QActionTransitionPrivate, targets, sourceState)
 {
 }
 
 /*!
   \internal
 */
-QTransition::QTransition(QTransitionPrivate &dd, QState *parent)
+QActionTransition::QActionTransition(QActionTransitionPrivate &dd, QState *parent)
     : QAbstractTransition(dd, parent)
 {
 }
@@ -141,7 +141,7 @@ QTransition::QTransition(QTransitionPrivate &dd, QState *parent)
 /*!
   \internal
 */
-QTransition::QTransition(QTransitionPrivate &dd, const QList<QAbstractState*> &targets, QState *parent)
+QActionTransition::QActionTransition(QActionTransitionPrivate &dd, const QList<QAbstractState*> &targets, QState *parent)
     : QAbstractTransition(dd, targets, parent)
 {
 }
@@ -149,17 +149,17 @@ QTransition::QTransition(QTransitionPrivate &dd, const QList<QAbstractState*> &t
 /*!
   Destroys this transition.
 */
-QTransition::~QTransition()
+QActionTransition::~QActionTransition()
 {
 }
 
 /*!
-  Instructs this QTransition to invoke the given \a method of the given \a
+  Instructs this QActionTransition to invoke the given \a method of the given \a
   object with the given \a arguments when the transition is taken. This
   function will create a QStateInvokeMethodAction object and add it to the
   actions of the transition.
 */
-void QTransition::invokeMethodOnTransition(QObject *object, const char *method,
+void QActionTransition::invokeMethodOnTransition(QObject *object, const char *method,
                                            const QList<QVariant> &arguments)
 {
     addAction(new QStateInvokeMethodAction(object, method, arguments));
@@ -172,10 +172,10 @@ void QTransition::invokeMethodOnTransition(QObject *object, const char *method,
 
   \sa removeAction()
 */
-void QTransition::addAction(QStateAction *action)
+void QActionTransition::addAction(QStateAction *action)
 {
     if (!action) {
-        qWarning("QTransition::addAction: cannot add null action");
+        qWarning("QActionTransition::addAction: cannot add null action");
         return;
     }
     action->setParent(this);
@@ -187,10 +187,10 @@ void QTransition::addAction(QStateAction *action)
 
   \sa addAction()
 */
-void QTransition::removeAction(QStateAction *action)
+void QActionTransition::removeAction(QStateAction *action)
 {
     if (!action) {
-        qWarning("QTransition::removeAction: cannot remove null action");
+        qWarning("QActionTransition::removeAction: cannot remove null action");
         return;
     }
     action->setParent(0);
@@ -202,18 +202,18 @@ void QTransition::removeAction(QStateAction *action)
 
   \sa addAction()
 */
-QList<QStateAction*> QTransition::actions() const
+QList<QStateAction*> QActionTransition::actions() const
 {
-    Q_D(const QTransition);
+    Q_D(const QActionTransition);
     return d->actions();
 }
 
 /*!
   \reimp
 */
-void QTransition::onTransition()
+void QActionTransition::onTransition()
 {
-    Q_D(QTransition);
+    Q_D(QActionTransition);
     QList<QStateAction*> actions = d->actions();
     for (int i = 0; i < actions.size(); ++i)
         QStateActionPrivate::get(actions.at(i))->callExecute();
@@ -222,7 +222,7 @@ void QTransition::onTransition()
 /*!
   \reimp
 */
-bool QTransition::event(QEvent *e)
+bool QActionTransition::event(QEvent *e)
 {
     return QAbstractTransition::event(e);
 }

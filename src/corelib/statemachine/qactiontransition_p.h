@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QTRANSITION_P_H
-#define QTRANSITION_P_H
+#ifndef QACTIONTRANSITION_P_H
+#define QACTIONTRANSITION_P_H
 
 //
 //  W A R N I N G
@@ -61,16 +61,16 @@ QT_BEGIN_NAMESPACE
 
 class QStateAction;
 
-class QTransition;
-class Q_CORE_EXPORT QTransitionPrivate : public QAbstractTransitionPrivate
+class QActionTransition;
+class Q_CORE_EXPORT QActionTransitionPrivate : public QAbstractTransitionPrivate
 {
-    Q_DECLARE_PUBLIC(QTransition)
+    Q_DECLARE_PUBLIC(QActionTransition)
 public:
-    QTransitionPrivate();
-    ~QTransitionPrivate();
+    QActionTransitionPrivate();
+    ~QActionTransitionPrivate();
 
-    static QTransitionPrivate *get(QTransition *q);
-    static const QTransitionPrivate *get(const QTransition *q);
+    static QActionTransitionPrivate *get(QActionTransition *q);
+    static const QActionTransitionPrivate *get(const QActionTransition *q);
 
     QList<QStateAction*> actions() const;
 };

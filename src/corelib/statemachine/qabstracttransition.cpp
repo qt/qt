@@ -60,9 +60,6 @@ QT_BEGIN_NAMESPACE
   QStateMachine. QAbstractTransition is part of \l{The State Machine
   Framework}.
 
-  The QTransition class provides a default (action-based) implementation of
-  the QAbstractTransition interface.
-
   The sourceState() function returns the source of the transition. The
   targetStates() function returns the targets of the transition.
 

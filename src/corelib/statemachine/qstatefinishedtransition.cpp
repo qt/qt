@@ -41,7 +41,7 @@
 
 #include "qstatefinishedtransition.h"
 #include "qstatefinishedevent.h"
-#include "qtransition_p.h"
+#include "qactiontransition_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
     \brief the state whose QStateFinishedEvent this transition is associated with
 */
 
-class QStateFinishedTransitionPrivate : public QTransitionPrivate
+class QStateFinishedTransitionPrivate : public QActionTransitionPrivate
 {
     Q_DECLARE_PUBLIC(QStateFinishedTransition)
 public:
@@ -106,7 +106,7 @@ QStateFinishedTransitionPrivate *QStateFinishedTransitionPrivate::get(QStateFini
   sourceState.
 */
 QStateFinishedTransition::QStateFinishedTransition(QState *sourceState)
-    : QTransition(*new QStateFinishedTransitionPrivate, sourceState)
+    : QActionTransition(*new QStateFinishedTransitionPrivate, sourceState)
 {
 }
 
@@ -116,7 +116,7 @@ QStateFinishedTransition::QStateFinishedTransition(QState *sourceState)
 */
 QStateFinishedTransition::QStateFinishedTransition(
     QState *state, const QList<QAbstractState*> &targets, QState *sourceState)
-    : QTransition(*new QStateFinishedTransitionPrivate, targets, sourceState)
+    : QActionTransition(*new QStateFinishedTransitionPrivate, targets, sourceState)
 {
     Q_D(QStateFinishedTransition);
     d->state = state;
@@ -169,7 +169,7 @@ bool QStateFinishedTransition::eventTest(QEvent *event) const
 */
 bool QStateFinishedTransition::event(QEvent *e)
 {
-    return QTransition::event(e);
+    return QActionTransition::event(e);
 }
 
 QT_END_NAMESPACE

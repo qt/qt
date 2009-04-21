@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QTRANSITION_H
-#define QTRANSITION_H
+#ifndef QACTIONTRANSITION_H
+#define QACTIONTRANSITION_H
 
 #ifndef QT_STATEMACHINE_SOLUTION
 #include <QtCore/qabstracttransition.h>
@@ -59,14 +59,14 @@ QT_MODULE(Core)
 
 class QStateAction;
 
-class QTransitionPrivate;
-class Q_CORE_EXPORT QTransition : public QAbstractTransition
+class QActionTransitionPrivate;
+class Q_CORE_EXPORT QActionTransition : public QAbstractTransition
 {
     Q_OBJECT
 public:
-    QTransition(QState *sourceState = 0);
-    QTransition(const QList<QAbstractState*> &targets, QState *sourceState = 0);
-    ~QTransition();
+    QActionTransition(QState *sourceState = 0);
+    QActionTransition(const QList<QAbstractState*> &targets, QState *sourceState = 0);
+    ~QActionTransition();
 
     void invokeMethodOnTransition(QObject *object, const char *method,
                                   const QList<QVariant> &args = QList<QVariant>());
@@ -81,12 +81,12 @@ protected:
     bool event(QEvent *e);
 
 protected:
-    QTransition(QTransitionPrivate &dd, QState *parent);
-    QTransition(QTransitionPrivate &dd, const QList<QAbstractState*> &targets, QState *parent);
+    QActionTransition(QActionTransitionPrivate &dd, QState *parent);
+    QActionTransition(QActionTransitionPrivate &dd, const QList<QAbstractState*> &targets, QState *parent);
 
 private:
-    Q_DISABLE_COPY(QTransition)
-    Q_DECLARE_PRIVATE(QTransition)
+    Q_DISABLE_COPY(QActionTransition)
+    Q_DECLARE_PRIVATE(QActionTransition)
 };
 
 QT_END_NAMESPACE
