@@ -96,15 +96,19 @@ QGestureRecognizer::Result QGestureRecognizerPan::filterEvent(const QEvent *even
             reset();
             return QGestureRecognizer::NotGesture;
         }
+        if (ev->button() != Qt::LeftButton) {
+            return QGestureRecognizer::NotGesture;
+        }
         DEBUG() << "Pan: MouseButtonPress: maybe gesture started";
         mousePressed = true;
         pressedPos = lastPos = currentPos = ev->pos();
         return QGestureRecognizer::MaybeGesture;
     } else if (event->type() == QEvent::MouseButtonRelease) {
-        if (mousePressed && currentDirection != Qt::NoDirection) {
+        const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
+        if (mousePressed && currentDirection != Qt::NoDirection
+            && ev->button() == Qt::LeftButton) {
             DEBUG() << "Pan: MouseButtonRelease: pan detected";
             gestureState = Qt::GestureFinished;
-            const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
             currentPos = ev->pos();
             internalReset();
             return QGestureRecognizer::GestureFinished;
