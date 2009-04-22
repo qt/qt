@@ -41,8 +41,6 @@
 
 #ifndef QT_NO_ANIMATION
 
-/*QT_BEGIN_NAMESPACE
-
 #ifdef QT_EXPERIMENTAL_SOLUTION
 # include "qvariantanimation.h"
 # include "qvariantanimation_p.h"
@@ -51,6 +49,9 @@
 #include <private/qvariantanimation_p.h>
 #endif
 
+#include <QtGui/qcolor.h>
+
+QT_BEGIN_NAMESPACE
 
 template<> Q_INLINE_TEMPLATE QColor _q_interpolate(const QColor &f,const QColor &t, qreal progress)
 {
@@ -74,6 +75,6 @@ static int qUnregisterGuiGetInterpolator()
 }
 Q_DESTRUCTOR_FUNCTION(qUnregisterGuiGetInterpolator)
 
-QT_END_NAMESPACE*/
+QT_END_NAMESPACE
 
 #endif //QT_NO_ANIMATION

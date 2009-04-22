@@ -84,6 +84,7 @@ private slots:
     void deletion3();
     void duration0();
     void noStartValue();
+    void noStartValueWithLoop();
     void startWhenAnotherIsRunning();
     void easingcurve_data();
     void easingcurve();
@@ -414,6 +415,27 @@ void tst_QPropertyAnimation::noStartValue()
 
     QCOMPARE(o.values.first(), 42);
     QCOMPARE(o.values.last(), 420);
+}
+
+void tst_QPropertyAnimation::noStartValueWithLoop()
+{
+    StartValueTester o;
+    o.setProperty("ole", 42);
+    o.values.clear();
+
+    QPropertyAnimation a(&o, "ole");
+    a.setEndValue(420);
+    a.setDuration(250);
+    a.setLoopCount(2);
+    a.start();
+
+    a.setCurrentTime(250);
+    QCOMPARE(o.values.first(), 42);
+    QCOMPARE(a.currentValue().toInt(), 42);
+    QCOMPARE(o.values.last(), 42);
+
+    a.setCurrentTime(500);
+    QCOMPARE(a.currentValue().toInt(), 420);
 }
 
 void tst_QPropertyAnimation::startWhenAnotherIsRunning()

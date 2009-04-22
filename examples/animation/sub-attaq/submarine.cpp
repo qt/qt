@@ -50,10 +50,11 @@
 #include "qanimationstate.h"
 
 #if defined(QT_EXPERIMENTAL_SOLUTION)
-#include "qpropertyanimation.h"
-#include "qstatemachine.h"
-#include "qfinalstate.h"
-#include "qsequentialanimationgroup.h"
+# include "qpropertyanimation.h"
+# include "qstatemachine.h"
+# include "qfinalstate.h"
+# include "qsequentialanimationgroup.h"
+# include "qpauseanimation.h"
 #else
 #include <QPropertyAnimation>
 #include <QStateMachine>

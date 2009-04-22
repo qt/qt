@@ -7,6 +7,7 @@
 # include "qgraphicswidget.h"
 # include "qparallelanimationgroup.h"
 # include "qpropertyanimation.h"
+# include "qsignaltransition.h"
 #else
 #include <QtCore/qstate.h>
 #endif
