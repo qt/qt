@@ -2100,8 +2100,8 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                 if (that)
                     QApplication::sendEvent(that->style(), &in);
             }
+            emit qApp->focusChanged(prev, focus_widget);
         }
-        emit qApp->focusChanged(prev, focus_widget);
     }
 }
 
