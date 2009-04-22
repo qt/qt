@@ -61,7 +61,7 @@ void TestQString::toUpper()
 
 
 //! [9]
-/myTestDirectory$ qmake -project "CONFIG += testlib"
+/myTestDirectory$ qmake -project "CONFIG += qtestlib"
 /myTestDirectory$ qmake
 /myTestDirectory$ make
 //! [9]
