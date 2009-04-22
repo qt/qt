@@ -274,6 +274,9 @@ IndexMap::const_iterator QSortFilterProxyModelPrivate::create_mapping(
 
     Mapping *m = new Mapping;
 
+    if (model->canFetchMore(source_parent))
+        model->fetchMore(source_parent);
+
     int source_rows = model->rowCount(source_parent);
     for (int i = 0; i < source_rows; ++i) {
         if (q->filterAcceptsRow(i, source_parent))

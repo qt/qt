@@ -48,6 +48,7 @@
 #include <qinputcontext.h>
 #include <private/qkeymapper_p.h>
 #include <private/qapplication_p.h>
+#include <private/qmacinputcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -480,7 +481,8 @@ static bool translateKeyEventInternal(EventHandlerCallRef er, EventRef keyEvent,
 #ifdef QT_MAC_USE_COCOA
             if (outHandled) {
                 qt_mac_eat_unicode_key = false;
-                CallNextEventHandler(er, keyEvent);
+                if (er)
+                    CallNextEventHandler(er, keyEvent);
                 *outHandled = qt_mac_eat_unicode_key;
             }
 #endif
@@ -692,8 +694,14 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, EventHandlerCallRef e
         return true;
     }
 
-    if (qApp->inputContext() && qApp->inputContext()->isComposing())
+    if (qApp->inputContext() && qApp->inputContext()->isComposing()) {
+        if (ekind == kEventRawKeyDown) {
+            QMacInputContext *context = qobject_cast<QMacInputContext*>(qApp->inputContext());
+            if (context)
+                context->setLastKeydownEvent(event);
+        }
         return false;
+    }
     //get modifiers
     Qt::KeyboardModifiers modifiers;
     int qtKey;
@@ -721,7 +729,8 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, EventHandlerCallRef e
             //is it of use to text services? If so we won't bother
             //with a QKeyEvent.
             qt_mac_eat_unicode_key = false;
-            CallNextEventHandler(er, event);	
+            if (er)
+                CallNextEventHandler(er, event);
             extern bool qt_mac_menubar_is_open();   
             if (qt_mac_eat_unicode_key || qt_mac_menubar_is_open()) {
                 return true;

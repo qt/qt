@@ -75,6 +75,7 @@
 QT_BEGIN_NAMESPACE
 
 static bool displayDepth  =  -1;
+Q_GLOBAL_STATIC(QGtkStyleUpdateScheduler, styleScheduler)
 
 typedef QHash<QString, GtkWidget*> WidgetMap;
 Q_GLOBAL_STATIC(WidgetMap, gtkWidgetMap)
@@ -486,11 +487,11 @@ static void init_gtk_menu()
 }
 
 // Updates window/windowtext palette based on the indicated gtk widget
-static void ensureWidgetPalette(QWidget* widget, const QString &gtkWidgetName)
+static QPalette gtkWidgetPalette(const QString &gtkWidgetName)
 {
     GtkWidget *gtkWidget = QGtk::gtkWidget(gtkWidgetName);
     Q_ASSERT(gtkWidget);
-    QPalette pal = widget->palette();
+    QPalette pal = QApplication::palette();
     GdkColor gdkBg = gtkWidget->style->bg[GTK_STATE_NORMAL];
     GdkColor gdkText = gtkWidget->style->fg[GTK_STATE_NORMAL];
     GdkColor gdkDisabledText = gtkWidget->style->fg[GTK_STATE_INSENSITIVE];
@@ -503,8 +504,7 @@ static void ensureWidgetPalette(QWidget* widget, const QString &gtkWidgetName)
     pal.setBrush(QPalette::Disabled, QPalette::WindowText, disabledTextColor);
     pal.setBrush(QPalette::All, QPalette::ButtonText, textColor);
     pal.setBrush(QPalette::Disabled, QPalette::ButtonText, disabledTextColor);
-    widget->setPalette(pal);
-    widget->setAttribute(Qt::WA_SetPalette, false);
+    return pal;
 }
 
 bool QGtk::isKDE4Session()
@@ -515,44 +515,47 @@ bool QGtk::isKDE4Session()
     return (version == 4);
 }
 
-// Maps a Gtk widget palettes to a Qt widget
-void QGtk::applyGtkSystemPalette(QWidget *widget)
+void QGtk::applyCustomPaletteHash()
 {
-    // Do not apply if the widget has a custom palette;
-    if (widget->testAttribute(Qt::WA_SetPalette))
-        return;
+    QPalette menuPal = gtkWidgetPalette(QLS("GtkMenu"));
+    GdkColor gdkBg = QGtk::gtkWidget(QLS("GtkMenu"))->style->bg[GTK_STATE_NORMAL];
+    QColor bgColor(gdkBg.red>>8, gdkBg.green>>8, gdkBg.blue>>8);
+    menuPal.setBrush(QPalette::Base, bgColor);
+    menuPal.setBrush(QPalette::Window, bgColor);
+    qApp->setPalette(menuPal, "QMenu");
 
-    QPalette pal;
-    if (QStatusBar *statusbar = qobject_cast<QStatusBar*> (widget))
-        ensureWidgetPalette(statusbar, QLS("GtkStatusbar"));
-    else if (QMenuBar *menubar = qobject_cast<QMenuBar*> (widget))
-        ensureWidgetPalette(menubar, QLS("GtkMenuBar"));
-    else if (QToolBar *toolbar = qobject_cast<QToolBar*> (widget))
-        ensureWidgetPalette(toolbar, QLS("GtkToolbar"));
-    else if (QMenu *menu = qobject_cast<QMenu*> (widget)) {
-        // This really applies to the combo box rendering since
-        // QComboBox copies the palette from a QMenu
-        QPalette pal = widget->palette();
-        GdkColor gdkBg = QGtk::gtkWidget(QLS("GtkMenu"))->style->bg[GTK_STATE_NORMAL];
-        QColor bgColor(gdkBg.red>>8, gdkBg.green>>8, gdkBg.blue>>8);
-        pal.setBrush(QPalette::Base, bgColor);
-        menu->setPalette(pal);
-    }
-    widget->setAttribute(Qt::WA_SetPalette, false);
+    QPalette toolbarPal = gtkWidgetPalette(QLS("GtkToolbar"));
+    qApp->setPalette(toolbarPal, "QToolBar");
+
+    QPalette menuBarPal = gtkWidgetPalette(QLS("GtkMenuBar"));
+    qApp->setPalette(menuBarPal, "QMenuBar");
 }
 
 static void gtkStyleSetCallback(GtkWidget*, GtkStyle*, void*)
 {
+    // We have to let this function return and complete the event
+    // loop to ensure that all gtk widgets have been styled before
+    // updating
+    QMetaObject::invokeMethod(styleScheduler(), "updateTheme", Qt::QueuedConnection);
+}
+
+void QGtkStyleUpdateScheduler::updateTheme()
+{
     static QString oldTheme(QLS("qt_not_set"));
     QPixmapCache::clear();
-    qApp->setFont(QGtk::getThemeFont());
-    QGtk::initGtkWidgets();
     if (oldTheme != getThemeName()) {
         oldTheme = getThemeName();
-        QApplicationPrivate::setSystemPalette(qApp->style()->standardPalette());
+        qApp->setFont(QGtk::getThemeFont());
+        QPalette newPalette = qApp->style()->standardPalette();
+        QApplicationPrivate::setSystemPalette(newPalette);
+        QApplication::setPalette(newPalette);
+        QGtk::initGtkWidgets();
+        QGtk::applyCustomPaletteHash();
         QList<QWidget*> widgets = QApplication::allWidgets();
+        // Notify all widgets that size metrics might have changed
         foreach (QWidget *widget, widgets) {
-            QGtk::applyGtkSystemPalette(widget);
+            QEvent e(QEvent::StyleChange);
+            QApplication::sendEvent(widget, &e);
         }
     }
 }

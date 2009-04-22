@@ -110,7 +110,6 @@ int QDirectFBPaintDevice::bytesPerLine() const
         QDirectFBPaintDevice* that = const_cast<QDirectFBPaintDevice*>(this);
         that->lockDirectFB();
         Q_ASSERT(bpl != -1);
-        that->unlockDirectFB();
     }
     return bpl;
 }
@@ -123,7 +122,6 @@ QSize QDirectFBPaintDevice::size() const
     return QSize(w, h);
 }
 
-
 int QDirectFBPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
     if (!dfbSurface)
@@ -132,40 +130,21 @@ int QDirectFBPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
     int w, h;
     dfbSurface->GetSize(dfbSurface, &w, &h);
 
-    int dpmX, dpmY; // Dots-per-meter ;-)
-
-    // Do some common calculations:
-    switch (metric) {
-    case QPaintDevice::PdmWidthMM:
-    case QPaintDevice::PdmPhysicalDpiX:
-    case QPaintDevice::PdmDpiX:
-        dpmX = (screen->deviceWidth() * 1000) / screen->physicalWidth();
-        break;
-    case QPaintDevice::PdmHeightMM:
-    case QPaintDevice::PdmPhysicalDpiY:
-    case QPaintDevice::PdmDpiY:
-        dpmY = (screen->deviceHeight() * 1000) / screen->physicalHeight();
-        break;
-    default:
-        break;
-    }
-
-    // Now use those calculations
     switch (metric) {
     case QPaintDevice::PdmWidth:
         return w;
     case QPaintDevice::PdmHeight:
         return h;
     case QPaintDevice::PdmWidthMM:
-        return (w * 1000) / dpmX;
+        return (w * 1000) / dotsPerMeterX();
     case QPaintDevice::PdmHeightMM:
-        return (h * 1000) / dpmY;
+        return (h * 1000) / dotsPerMeterY();
     case QPaintDevice::PdmPhysicalDpiX:
     case QPaintDevice::PdmDpiX:
-        return (dpmX * 254) / 10000; // 0.0254 meters-per-inch
+        return (dotsPerMeterX() * 254) / 10000; // 0.0254 meters-per-inch
     case QPaintDevice::PdmPhysicalDpiY:
     case QPaintDevice::PdmDpiY:
-        return (dpmY * 254) / 10000; // 0.0254 meters-per-inch
+        return (dotsPerMeterY() * 254) / 10000; // 0.0254 meters-per-inch
     case QPaintDevice::PdmDepth:
         DFBSurfacePixelFormat format;
         dfbSurface->GetPixelFormat(dfbSurface, &format);

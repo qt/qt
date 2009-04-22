@@ -681,6 +681,22 @@ void tst_QFiledialog::filters()
     for (int i = views.at(0)->currentIndex(); i < views.at(0)->count(); ++i)
         views.at(0)->setCurrentIndex(i);
     QCOMPARE(spyFilterSelected.count(), 0);
+
+    //Let check if filters with whitespaces
+    QNonNativeFileDialog fd2;
+    QStringList expected;
+    expected << "C++ Source Files(*.cpp)";
+    expected << "Any(*.*)";
+    fd2.setFilter("C++ Source Files(*.cpp);;Any(*.*)");
+    QCOMPARE(expected, fd2.filters());
+    fd2.setFilter("C++ Source Files(*.cpp) ;;Any(*.*)");
+    QCOMPARE(expected, fd2.filters());
+    fd2.setFilter("C++ Source Files(*.cpp);; Any(*.*)");
+    QCOMPARE(expected, fd2.filters());
+    fd2.setFilter(" C++ Source Files(*.cpp);; Any(*.*)");
+    QCOMPARE(expected, fd2.filters());
+    fd2.setFilter("C++ Source Files(*.cpp) ;; Any(*.*)");
+    QCOMPARE(expected, fd2.filters());
 }
 
 void tst_QFiledialog::selectFilter()
@@ -1526,6 +1542,42 @@ private:
 
 };
 
+class sortProxy : public QSortFilterProxyModel
+{
+public:
+        sortProxy(QObject *parent) : QSortFilterProxyModel(parent)
+        {
+        }
+protected:
+        virtual bool lessThan(const QModelIndex &left, const QModelIndex &right) const
+        {
+            QFileSystemModel * const model = qobject_cast<QFileSystemModel *>(sourceModel());
+            const QFileInfo leftInfo(model->fileInfo(left));
+            const QFileInfo rightInfo(model->fileInfo(right));
+
+            if (leftInfo.isDir() == rightInfo.isDir())
+                return(leftInfo.filePath().compare(rightInfo.filePath(),Qt::CaseInsensitive) < 0);
+            else if (leftInfo.isDir())
+                return(false);
+            else
+                return(true);
+        }
+};
+
+class CrashDialog : public QNonNativeFileDialog
+{
+        Q_OBJECT
+
+public:
+        CrashDialog(QWidget *parent, const QString &caption, const
+QString &dir, const QString &filter)
+                   : QNonNativeFileDialog(parent, caption, dir, filter)
+        {
+                sortProxy *proxyModel = new sortProxy(this);
+                setProxyModel(proxyModel);
+        }
+};
+
 void tst_QFiledialog::task227304_proxyOnFileDialog()
 {
     QNonNativeFileDialog fd(0, "", QDir::currentPath(), 0);
@@ -1537,6 +1589,17 @@ void tst_QFiledialog::task227304_proxyOnFileDialog()
     QTest::keyClick(edit, Qt::Key_S);
     QTest::qWait(200);
     QTest::keyClick(edit->completer()->popup(), Qt::Key_Down);
+
+    CrashDialog *dialog = new CrashDialog(0, QString("crash dialog test"), QDir::homePath(), QString("*") );
+    dialog->setFileMode(QFileDialog::ExistingFile);
+    dialog->show();
+
+    QListView *list = qFindChild<QListView*>(dialog, "listView");
+    QTest::qWait(200);
+    QTest::keyClick(list, Qt::Key_Down);
+    QTest::keyClick(list, Qt::Key_Return);
+    QTest::qWait(200);
+
 }
 
 void tst_QFiledialog::task227930_correctNavigationKeyboardBehavior()

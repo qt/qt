@@ -155,6 +155,8 @@ private slots:
     void fitInView();
     void itemsAtPoint();
     void itemsInRect();
+    void itemsInRect_cosmeticAdjust_data();
+    void itemsInRect_cosmeticAdjust();
     void itemsInPoly();
     void itemsInPath();
     void itemAt();
@@ -189,6 +191,7 @@ private slots:
     void scrollAfterResize_data();
     void scrollAfterResize();
     void centerOnDirtyItem();
+    void mouseTracking();
 
     // task specific tests below me
     void task172231_untransformableItems();
@@ -1308,6 +1311,65 @@ void tst_QGraphicsView::itemsInRect()
     QCOMPARE(items.takeFirst()->zValue(), qreal(5));
     QCOMPARE(items.takeFirst()->zValue(), qreal(4));
     QCOMPARE(items.takeFirst()->zValue(), qreal(3));
+}
+
+class CountPaintItem : public QGraphicsRectItem
+{
+public:
+    int numPaints;
+
+    CountPaintItem(const QRectF &rect)
+        : QGraphicsRectItem(rect), numPaints(0)
+    { }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0)
+    {
+        ++numPaints;
+        QGraphicsRectItem::paint(painter, option, widget);
+    }
+};
+
+void tst_QGraphicsView::itemsInRect_cosmeticAdjust_data()
+{
+    QTest::addColumn<QRect>("updateRect");
+    QTest::addColumn<int>("numPaints");
+
+    QTest::newRow("nil") << QRect() << 1;
+    QTest::newRow("0, 0, 300, 100") << QRect(0, 0, 300, 100) << 1;
+    QTest::newRow("0, 0, 100, 300") << QRect(0, 0, 100, 300) << 1;
+    QTest::newRow("200, 0, 100, 300") << QRect(200, 0, 100, 300) << 1;
+    QTest::newRow("0, 200, 300, 100") << QRect(0, 200, 300, 100) << 1;
+    QTest::newRow("0, 0, 300, 99") << QRect(0, 0, 300, 99) << 0;
+    QTest::newRow("0, 0, 99, 300") << QRect(0, 0, 99, 300) << 0;
+    QTest::newRow("201, 0, 99, 300") << QRect(201, 0, 99, 300) << 0;
+    QTest::newRow("0, 201, 300, 99") << QRect(0, 201, 300, 99) << 0;
+}
+
+void tst_QGraphicsView::itemsInRect_cosmeticAdjust()
+{
+    QFETCH(QRect, updateRect);
+    QFETCH(int, numPaints);
+    
+    QGraphicsScene scene(-100, -100, 200, 200);
+    CountPaintItem *rect = new CountPaintItem(QRectF(-50, -50, 100, 100));
+    scene.addItem(rect);
+
+    QGraphicsView view(&scene);
+    view.setFrameStyle(0);
+    view.resize(300, 300);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(125);
+
+    rect->numPaints = 0;
+    if (updateRect.isNull())
+        view.viewport()->update();
+    else
+        view.viewport()->update(updateRect);
+    qApp->processEvents();
+    QCOMPARE(rect->numPaints, numPaints);
 }
 
 void tst_QGraphicsView::itemsInPoly()
@@ -2454,7 +2516,8 @@ void tst_QGraphicsView::replayMouseMove()
 
     // One mouse event should be translated into one scene event.
     for (int i = 0; i < 3; ++i) {
-        sendMouseMove(view.viewport(), view.viewport()->rect().center());
+        sendMouseMove(view.viewport(), view.viewport()->rect().center(),
+                      Qt::LeftButton, Qt::MouseButtons(Qt::LeftButton));
         QCOMPARE(viewSpy.count(), i + 1);
         QCOMPARE(sceneSpy.count(), i + 1);
     }
@@ -2644,6 +2707,7 @@ void tst_QGraphicsView::task186827_deleteReplayedItem()
     MouseMoveCounter view;
     view.setScene(&scene);
     view.show();
+    view.viewport()->setMouseTracking(true);
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
@@ -2985,6 +3049,102 @@ void tst_QGraphicsView::centerOnDirtyItem()
     QPixmap after = QPixmap::grabWindow(view.viewport()->winId());
 
     QCOMPARE(before, after);
+}
+
+void tst_QGraphicsView::mouseTracking()
+{
+    // Mouse tracking should only be automatically enabled if items either accept hover events
+    // or have a cursor set. We never disable mouse tracking if it is already enabled.
+
+    { // Make sure mouse tracking is disabled by default.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view(&scene);
+        QVERIFY(!view.viewport()->hasMouseTracking());
+    }
+
+    { // Make sure we don't disable mouse tracking in setupViewport/setScene.
+        QGraphicsView view;
+        QWidget *viewport = new QWidget;
+        viewport->setMouseTracking(true);
+        view.setViewport(viewport);
+        QVERIFY(viewport->hasMouseTracking());
+
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        view.setScene(&scene);
+        QVERIFY(viewport->hasMouseTracking());
+    }
+
+    // Make sure we enable mouse tracking when having items that accept hover events.
+    {
+        // Adding an item to the scene after the scene is set on the view.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view(&scene);
+
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        item->setAcceptHoverEvents(true);
+        scene.addItem(item);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+    {
+        // Adding an item to the scene before the scene is set on the view.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        item->setAcceptHoverEvents(true);
+        scene.addItem(item);
+
+        QGraphicsView view(&scene);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+    {
+        // QGraphicsWidget implicitly accepts hover if it has window decoration.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view(&scene);
+
+        QGraphicsWidget *widget = new QGraphicsWidget;
+        scene.addItem(widget);
+        QVERIFY(!view.viewport()->hasMouseTracking());
+        // Enable window decoraton.
+        widget->setWindowFlags(Qt::Window | Qt::WindowTitleHint);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+
+    // Make sure we enable mouse tracking when having items with a cursor set.
+    {
+        // Adding an item to the scene after the scene is set on the view.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view(&scene);
+
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        item->setCursor(Qt::CrossCursor);
+        scene.addItem(item);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+    {
+        // Adding an item to the scene before the scene is set on the view.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        item->setCursor(Qt::CrossCursor);
+        scene.addItem(item);
+
+        QGraphicsView view(&scene);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+
+    // Make sure we propagate mouse tracking to all views.
+    {
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view1(&scene);
+        QGraphicsView view2(&scene);
+        QGraphicsView view3(&scene);
+
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        item->setCursor(Qt::CrossCursor);
+        scene.addItem(item);
+
+        QVERIFY(view1.viewport()->hasMouseTracking());
+        QVERIFY(view2.viewport()->hasMouseTracking());
+        QVERIFY(view3.viewport()->hasMouseTracking());
+    }
 }
 
 QTEST_MAIN(tst_QGraphicsView)

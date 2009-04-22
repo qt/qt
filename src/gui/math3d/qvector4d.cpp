@@ -42,7 +42,8 @@
 #include "qvector4d.h"
 #include "qvector3d.h"
 #include "qvector2d.h"
-#include "qmath3dutil_p.h"
+#include <QtCore/qdebug.h>
+#include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -71,12 +72,6 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn QVector4D::QVector4D(qreal xpos, qreal ypos, qreal zpos, qreal wpos)
-
-    Constructs a vector with coordinates (\a xpos, \a ypos, \a zpos, \a wpos).
-*/
-
-/*!
-    \fn QVector4D::QVector4D(int xpos, int ypos, int zpos, int wpos)
 
     Constructs a vector with coordinates (\a xpos, \a ypos, \a zpos, \a wpos).
 */
@@ -237,8 +232,7 @@ QVector4D::QVector4D(const QVector3D& vector, qreal wpos)
 */
 qreal QVector4D::length() const
 {
-    return qvtsqrt64(qvtmul64(xp, xp) + qvtmul64(yp, yp) +
-                     qvtmul64(zp, zp) + qvtmul64(wp, wp));
+    return qSqrt(xp * xp + yp * yp + zp * zp + wp * wp);
 }
 
 /*!
@@ -249,44 +243,48 @@ qreal QVector4D::length() const
 */
 qreal QVector4D::lengthSquared() const
 {
-    return qvtdot64(qvtmul64(xp, xp) + qvtmul64(yp, yp) +
-                    qvtmul64(zp, zp) + qvtmul64(wp, wp));
+    return xp * xp + yp * yp + zp * zp + wp * wp;
 }
 
 /*!
-    Returns the normalized unit vector form of this vector.  If this vector
-    is not null, the returned vector is guaranteed to be 1.0 in length.
-    If this vector is null, then a null vector is returned.
+    Returns the normalized unit vector form of this vector.
+
+    If this vector is null, then a null vector is returned.  If the length
+    of the vector is very close to 1, then the vector will be returned as-is.
+    Otherwise the normalized form of the vector of length 1 will be returned.
 
     \sa length(), normalize()
 */
 QVector4D QVector4D::normalized() const
 {
-    qreal len = length();
-    if (!qIsNull(len))
-        return *this / len;
+    qreal len = lengthSquared();
+    if (qFuzzyIsNull(len - 1.0f))
+        return *this;
+    else if (!qFuzzyIsNull(len))
+        return *this / qSqrt(len);
     else
         return QVector4D();
 }
 
 /*!
     Normalizes the currect vector in place.  Nothing happens if this
-    vector is a null vector.
+    vector is a null vector or the length of the vector is very close to 1.
 
     \sa length(), normalized()
 */
 void QVector4D::normalize()
 {
-    qreal len = length();
-    if (qIsNull(len))
+    qreal len = lengthSquared();
+    if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
+
+    len = qSqrt(len);
 
     xp /= len;
     yp /= len;
     zp /= len;
     wp /= len;
 }
-
 
 /*!
     \fn QVector4D &QVector4D::operator+=(const QVector4D &vector)
@@ -336,8 +334,7 @@ void QVector4D::normalize()
 */
 qreal QVector4D::dotProduct(const QVector4D& v1, const QVector4D& v2)
 {
-    return qvtdot64(qvtmul64(v1.xp, v2.xp) + qvtmul64(v1.yp, v2.yp) +
-                    qvtmul64(v1.zp, v2.zp) + qvtmul64(v1.wp, v2.wp));
+    return v1.xp * v2.xp + v1.yp * v2.yp + v1.zp * v2.zp + v1.wp * v2.wp;
 }
 
 /*!

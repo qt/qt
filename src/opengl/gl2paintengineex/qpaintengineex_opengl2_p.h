@@ -67,7 +67,6 @@ public:
 
     QRegion clipRegion;
     bool hasClipping;
-    QRect fastClip;
 };
 
 
@@ -80,6 +79,8 @@ public:
 
     bool begin(QPaintDevice *device);
     bool end();
+
+    void ensureActive();
 
     virtual void fill(const QVectorPath &path, const QBrush &brush);
     virtual void stroke(const QVectorPath &path, const QPen &pen);
@@ -102,7 +103,6 @@ public:
     virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
 
     Type type() const { return OpenGL; }
-
 
     // State stuff is just for clipping and ripped off from QGLPaintEngine
     void setState(QPainterState *s);

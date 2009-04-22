@@ -60,6 +60,7 @@
 QT_BEGIN_NAMESPACE
 
 class QPaintEngine;
+class QGLFramebufferObject;
 
 class QGLPixmapData : public QPixmapData
 {
@@ -72,6 +73,7 @@ public:
     void resize(int width, int height);
     void fromImage(const QImage &image,
                    Qt::ImageConversionFlags flags);
+    void copy(const QPixmapData *data, const QRect &rect);
 
     bool scroll(int dx, int dy, const QRect &rect);
 
@@ -80,12 +82,24 @@ public:
     QImage toImage() const;
     QPaintEngine* paintEngine() const;
 
-    GLuint bind() const;
+    GLuint bind(bool copyBack = true) const;
     GLuint textureId() const;
 
     bool isValidContext(const QGLContext *ctx) const;
 
     void ensureCreated() const;
+
+    bool isUninitialized() const { return m_dirty && m_source.isNull(); }
+
+    QSize size() const { return QSize(m_width, m_height); }
+    int width() const { return m_width; }
+    int height() const { return m_height; }
+
+    QGLFramebufferObject *fbo() const;
+
+    void makeCurrent();
+    void doneCurrent();
+    void swapBuffers();
 
 protected:
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
@@ -94,11 +108,17 @@ private:
     QGLPixmapData(const QGLPixmapData &other);
     QGLPixmapData &operator=(const QGLPixmapData &other);
 
+    void copyBackFromRenderFbo(bool keepCurrentFboBound) const;
+
+    static bool useFramebufferObjects();
+
     int m_width;
     int m_height;
 
+    mutable QGLFramebufferObject *m_renderFbo;
+    mutable uint m_textureId;
+    mutable QPaintEngine *m_engine;
     mutable QGLContext *m_ctx;
-    mutable GLuint m_texture;
     mutable bool m_dirty;
     mutable QImage m_source;
 };

@@ -49,6 +49,7 @@
 #include <qstringlist.h>
 #include <qvarlengtharray.h>
 #include <qvector.h>
+#include <QDebug>
 
 #ifndef UNICODE
 #define UNICODE
@@ -87,8 +88,19 @@ public:
     {}
     ~QDB2ResultPrivate()
     {
-        for (int i = 0; i < valueCache.count(); ++i)
+        emptyValueCache();
+    }
+    void clearValueCache()
+    {
+        for (int i = 0; i < valueCache.count(); ++i) {
             delete valueCache[i];
+            valueCache[i] = NULL;
+        }
+    }
+    void emptyValueCache()
+    {
+        clearValueCache();
+        valueCache.clear();
     }
 
     const QDB2DriverPrivate* dp;
@@ -544,7 +556,7 @@ bool QDB2Result::reset (const QString& query)
     SQLRETURN r;
 
     d->recInf.clear();
-    d->valueCache.clear();
+    d->emptyValueCache();
 
     if (!qMakeStatement(d, isForwardOnly()))
         return false;
@@ -568,6 +580,7 @@ bool QDB2Result::reset (const QString& query)
         setSelect(false);
     }
     d->valueCache.resize(count);
+    d->valueCache.fill(NULL);
     setActive(true);
     return true;
 }
@@ -579,7 +592,7 @@ bool QDB2Result::prepare(const QString& query)
     SQLRETURN r;
 
     d->recInf.clear();
-    d->valueCache.clear();
+    d->emptyValueCache();
 
     if (!qMakeStatement(d, isForwardOnly()))
         return false;
@@ -607,7 +620,7 @@ bool QDB2Result::exec()
     SQLRETURN r;
 
     d->recInf.clear();
-    d->valueCache.clear();
+    d->emptyValueCache();
 
     if (!qMakeStatement(d, isForwardOnly(), false))
         return false;
@@ -811,6 +824,7 @@ bool QDB2Result::exec()
     }
     setActive(true);
     d->valueCache.resize(count);
+    d->valueCache.fill(NULL);
 
     //get out parameters
     if (!hasOutValues())
@@ -858,7 +872,7 @@ bool QDB2Result::fetch(int i)
         return false;
     if (i == at())
         return true;
-    d->valueCache.fill(0);
+    d->clearValueCache();
     int actualIdx = i + 1;
     if (actualIdx <= 0) {
         setAt(QSql::BeforeFirstRow);
@@ -887,7 +901,7 @@ bool QDB2Result::fetch(int i)
 bool QDB2Result::fetchNext()
 {
     SQLRETURN r;
-    d->valueCache.fill(0);
+    d->clearValueCache();
     r = SQLFetchScroll(d->hStmt,
                        SQL_FETCH_NEXT,
                        0);
@@ -907,7 +921,7 @@ bool QDB2Result::fetchFirst()
         return false;
     if (isForwardOnly())
         return fetchNext();
-    d->valueCache.fill(0);
+    d->clearValueCache();
     SQLRETURN r;
     r = SQLFetchScroll(d->hStmt,
                        SQL_FETCH_FIRST,
@@ -923,7 +937,7 @@ bool QDB2Result::fetchFirst()
 
 bool QDB2Result::fetchLast()
 {
-    d->valueCache.fill(0);
+    d->clearValueCache();
 
     int i = at();
     if (i == QSql::AfterLastRow) {
@@ -1044,7 +1058,7 @@ QVariant QDB2Result::data(int field)
                 case QSql::HighPrecision:
                 default:
                     // length + 1 for the comma
-                    v = new QVariant(qGetStringData(d->hStmt, field, info.length() + 1, isNull));
+                    v = new QVariant(value);
                     ok = true;
                     break;
             }
@@ -1101,7 +1115,7 @@ bool QDB2Result::nextResult()
     setActive(false);
     setAt(QSql::BeforeFirstRow);
     d->recInf.clear();
-    d->valueCache.clear();
+    d->emptyValueCache();
     setSelect(false);
 
     SQLRETURN r = SQLMoreResults(d->hStmt);
@@ -1120,6 +1134,7 @@ bool QDB2Result::nextResult()
         d->recInf.append(qMakeFieldInfo(d, i));
 
     d->valueCache.resize(fieldCount);
+    d->valueCache.fill(NULL);
     setActive(true);
 
     return true;
@@ -1167,7 +1182,7 @@ QDB2Driver::~QDB2Driver()
     delete d;
 }
 
-bool QDB2Driver::open(const QString& db, const QString& user, const QString& password, const QString&, int,
+bool QDB2Driver::open(const QString& db, const QString& user, const QString& password, const QString& host, int port,
                        const QString& connOpts)
 {
     if (isOpen())
@@ -1190,6 +1205,8 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
         setOpenError(true);
         return false;
     }
+
+    QString protocol;
     // Set connection attributes
     const QStringList opts(connOpts.split(QLatin1Char(';'), QString::SkipEmptyParts));
     for (int i = 0; i < opts.count(); ++i) {
@@ -1220,7 +1237,10 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
         } else if (opt == QLatin1String("SQL_ATTR_LOGIN_TIMEOUT")) {
             v = val.toUInt();
             r = SQLSetConnectAttr(d->hDbc, SQL_ATTR_LOGIN_TIMEOUT, (SQLPOINTER) v, 0);
-        } else {
+        } else if (opt.compare(QLatin1String("PROTOCOL"), Qt::CaseInsensitive) == 0) {
+                        protocol = tmp;
+        }
+        else {
             qWarning("QDB2Driver::open: Unknown connection attribute '%s'",
                       tmp.toLocal8Bit().constData());
         }
@@ -1229,9 +1249,18 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
                            "Unable to set connection attribute '%1'").arg(opt), d);
     }
 
+    if (protocol.isEmpty())
+        protocol = QLatin1String("PROTOCOL=TCPIP");
+
+    if (port < 0 )
+        port = 50000;
+
     QString connQStr;
-    connQStr = QLatin1String("DSN=") + db + QLatin1String(";UID=") + user + QLatin1String(";PWD=")
-               + password;
+    connQStr =  protocol + QLatin1String(";DATABASE=") + db + QLatin1String(";HOSTNAME=") + host
+        + QLatin1String(";PORT=") + QString::number(port) + QLatin1String(";UID=") + user
+        + QLatin1String(";PWD=") + password;
+
+
     SQLTCHAR connOut[SQL_MAX_OPTION_STRING_LENGTH];
     SQLSMALLINT cb;
 
@@ -1250,7 +1279,7 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
         return false;
     }
 
-    d->user = user.toUpper();
+    d->user = user;
     setOpen(true);
     setOpenError(false);
     return true;
@@ -1295,9 +1324,24 @@ QSqlRecord QDB2Driver::record(const QString& tableName) const
 
     SQLHANDLE hStmt;
     QString catalog, schema, table;
-    qSplitTableQualifier(tableName.toUpper(), &catalog, &schema, &table);
+    qSplitTableQualifier(tableName, &catalog, &schema, &table);
     if (schema.isEmpty())
         schema = d->user;
+
+    if (isIdentifierEscaped(catalog, QSqlDriver::TableName))
+        catalog = stripDelimiters(catalog, QSqlDriver::TableName);
+    else
+        catalog = catalog.toUpper();
+
+    if (isIdentifierEscaped(schema, QSqlDriver::TableName))
+        schema = stripDelimiters(schema, QSqlDriver::TableName);
+    else
+        schema = schema.toUpper();
+
+    if (isIdentifierEscaped(table, QSqlDriver::TableName))
+        table = stripDelimiters(table, QSqlDriver::TableName);
+    else
+        table = table.toUpper();
 
     SQLRETURN r = SQLAllocHandle(SQL_HANDLE_STMT,
                                   d->hDbc,
@@ -1312,6 +1356,9 @@ QSqlRecord QDB2Driver::record(const QString& tableName) const
                         (SQLPOINTER) SQL_CURSOR_FORWARD_ONLY,
                         SQL_IS_UINTEGER);
 
+
+    //Aside: szSchemaName and szTableName parameters of SQLColumns
+    //are case sensitive search patterns, so no escaping is used.
     r =  SQLColumns(hStmt,
                      NULL,
                      0,
@@ -1392,7 +1439,13 @@ QStringList QDB2Driver::tables(QSql::TableType type) const
         bool isNull;
         QString fieldVal = qGetStringData(hStmt, 2, -1, isNull);
         QString userVal = qGetStringData(hStmt, 1, -1, isNull);
-        if (userVal != d->user)
+        QString user = d->user;
+        if ( isIdentifierEscaped(user, QSqlDriver::TableName))
+            user = stripDelimiters(user, QSqlDriver::TableName);
+        else
+            user = user.toUpper();
+
+        if (userVal != user)
             fieldVal = userVal + QLatin1Char('.') + fieldVal;
         tl.append(fieldVal);
         r = SQLFetchScroll(hStmt,
@@ -1423,7 +1476,23 @@ QSqlIndex QDB2Driver::primaryIndex(const QString& tablename) const
         return index;
     }
     QString catalog, schema, table;
-    qSplitTableQualifier(tablename.toUpper(), &catalog, &schema, &table);
+    qSplitTableQualifier(tablename, &catalog, &schema, &table);
+
+    if (isIdentifierEscaped(catalog, QSqlDriver::TableName))
+        catalog = stripDelimiters(catalog, QSqlDriver::TableName);
+    else
+        catalog = catalog.toUpper();
+
+    if (isIdentifierEscaped(schema, QSqlDriver::TableName))
+        schema = stripDelimiters(schema, QSqlDriver::TableName);
+    else
+        schema = schema.toUpper();
+
+    if (isIdentifierEscaped(table, QSqlDriver::TableName))
+        table = stripDelimiters(table, QSqlDriver::TableName);
+    else
+        table = table.toUpper();
+
     r = SQLSetStmtAttr(hStmt,
                         SQL_ATTR_CURSOR_TYPE,
                         (SQLPOINTER)SQL_CURSOR_FORWARD_ONLY,

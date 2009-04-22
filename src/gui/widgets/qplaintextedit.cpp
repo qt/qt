@@ -370,11 +370,16 @@ void QPlainTextDocumentLayout::layoutBlock(const QTextBlock &block)
         extraMargin += fm.width(QChar(0x21B5));
     }
     tl->beginLayout();
+    qreal availableWidth = d->width;
+    if (availableWidth <= 0) {
+        availableWidth = INT_MAX; // similar to text edit with pageSize.width == 0
+    }
+    availableWidth -= 2*margin + extraMargin;
     while (1) {
         QTextLine line = tl->createLine();
         if (!line.isValid())
             break;
-        line.setLineWidth(d->width - 2*margin - extraMargin);
+        line.setLineWidth(availableWidth);
 
         height += leading;
         line.setPosition(QPointF(margin, height));

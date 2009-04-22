@@ -2506,8 +2506,8 @@ void QD3DDrawHelper::addTrap(const Trapezoid &trap)
     qreal _rightA = (qreal)_w/_h;
     qreal _rightB = topRightX - _rightA * topRightY;
 
-    qreal invLeftA = qFuzzyCompare(_leftA + 1, 1) ? 0.0 : 1.0 / _leftA;
-    qreal invRightA = qFuzzyCompare(_rightA + 1, 1) ? 0.0 : 1.0 / _rightA;
+    qreal invLeftA = qFuzzyIsNull(_leftA) ? 0.0 : 1.0 / _leftA;
+    qreal invRightA = qFuzzyIsNull(_rightA) ? 0.0 : 1.0 / _rightA;
 
     vertex v1 = { {1.f, top - 1.f, 0.5f}, 0.f,
         top, bottom, invLeftA, -invRightA,
@@ -2970,7 +2970,7 @@ qreal calculateAngle(qreal dx, qreal dy)
 {
     qreal angle;
 
-    if (qFuzzyCompare(dx + 1, 1)) {
+    if (qFuzzyIsNull(dx)) {
         angle = (dy < 0) ? -M_PI/2 : M_PI/2;
     } else {
         angle = atanf(dy/dx);

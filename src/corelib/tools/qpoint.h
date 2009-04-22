@@ -192,6 +192,8 @@ public:
     QPointF(const QPoint &p);
     QPointF(qreal xpos, qreal ypos);
 
+    qreal manhattanLength() const;
+
     bool isNull() const;
 
     qreal x() const;

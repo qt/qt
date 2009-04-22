@@ -80,6 +80,10 @@
 #define GLX_SAMPLES_ARB         100001
 #endif
 
+#ifdef QT_OPENGL_ES_1_CL
+#include "qgl_cl_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 //
@@ -100,8 +104,8 @@ QGLGraphicsSystem::QGLGraphicsSystem()
         int i = 0;
         int spec[16];
         spec[i++] = GLX_RGBA;
-#if 0
         spec[i++] = GLX_DOUBLEBUFFER;
+#if 0
         spec[i++] = GLX_DEPTH_SIZE;
         spec[i++] = 8;
         spec[i++] = GLX_STENCIL_SIZE;
@@ -187,9 +191,10 @@ public:
     }
 
     void cleanup() {
-        delete widget;
-        widget = 0;
+        QGLWidget *w = widget;
         cleanedUp = true;
+        widget = 0;
+        delete w;
     }
 
     static bool cleanedUp;
@@ -432,19 +437,35 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         size = parent->size();
     }
 
-    ctx->makeCurrent();
-#ifdef Q_WS_MAC
-    ctx->updatePaintDevice();
-#endif
-    glDisable(GL_DEPTH_TEST);
     glDisable(GL_SCISSOR_TEST);
 
     if (d_ptr->fbo && QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit) {
-        QGLFramebufferObject::blitFramebuffer(0, rect, d_ptr->fbo, rect);
-        d_ptr->fbo->bind();
+        const int h = d_ptr->fbo->height();
+
+        const int x0 = rect.left();
+        const int x1 = rect.left() + rect.width();
+        const int y0 = h - (rect.top() + rect.height());
+        const int y1 = h - rect.top();
+
+        glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, 0);
+
+        glBlitFramebufferEXT(x0, y0, x1, y1,
+                x0, y0, x1, y1,
+                GL_COLOR_BUFFER_BIT,
+                GL_NEAREST);
+
+        glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, d_ptr->fbo->handle());
     } else {
-        if (d_ptr->fbo)
+        glDisable(GL_DEPTH_TEST);
+
+        if (d_ptr->fbo) {
             d_ptr->fbo->release();
+        } else {
+            ctx->makeCurrent();
+#ifdef Q_WS_MAC
+            ctx->updatePaintDevice();
+#endif
+        }
 
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
@@ -492,6 +513,35 @@ void QGLWindowSurface::updateGeometry()
         return;
     }
 
+    if ((QGLExtensions::glExtensions & QGLExtensions::FramebufferObject) && (d_ptr->fbo || !d_ptr->tried_fbo)) {
+        d_ptr->tried_fbo = true;
+        hijackWindow(window());
+        QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
+        ctx->d_ptr->internal_context = true;
+        ctx->makeCurrent();
+        delete d_ptr->fbo;
+
+        QGLFramebufferObjectFormat format;
+        format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+        format.setInternalFormat(GL_RGBA);
+        format.setTextureTarget(target);
+
+        if (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)
+            format.setSamples(8);
+
+        d_ptr->fbo = new QGLFramebufferObject(rect.size(), format);
+        d_ptr->fbo->bind();
+        if (d_ptr->fbo->isValid()) {
+            qDebug() << "Created Window Surface FBO" << rect.size()
+                     << "with samples" << d_ptr->fbo->format().samples();
+            return;
+        } else {
+            qDebug() << "QGLWindowSurface: Failed to create valid FBO, falling back";
+            delete d_ptr->fbo;
+            d_ptr->fbo = 0;
+        }
+    }
+
     if (d_ptr->pb || !d_ptr->tried_pb) {
         d_ptr->tried_pb = true;
 
@@ -535,34 +585,6 @@ void QGLWindowSurface::updateGeometry()
         }
     }
 
-    if ((QGLExtensions::glExtensions & QGLExtensions::FramebufferObject) && (d_ptr->fbo || !d_ptr->tried_fbo)) {
-        d_ptr->tried_fbo = true;
-        hijackWindow(window());
-        QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
-        ctx->d_ptr->internal_context = true;
-        ctx->makeCurrent();
-        delete d_ptr->fbo;
-
-        QGLFramebufferObjectFormat format;
-        format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
-        format.setInternalFormat(GL_RGBA);
-        format.setTextureTarget(target);
-
-        if (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)
-            format.setSamples(8);
-
-        d_ptr->fbo = new QGLFramebufferObject(rect.size(), format);
-        d_ptr->fbo->bind();
-        if (d_ptr->fbo->isValid()) {
-            qDebug() << "Created Window Surface FBO" << rect.size()
-                     << "with samples" << d_ptr->fbo->format().samples();
-            return;
-        } else {
-            qDebug() << "QGLWindowSurface: Failed to create valid FBO, falling back";
-            delete d_ptr->fbo;
-            d_ptr->fbo = 0;
-        }
-    }
 
     hijackWindow(window());
     QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);

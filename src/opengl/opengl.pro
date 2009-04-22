@@ -131,6 +131,10 @@ wince*: {
     contains(QT_CONFIG,opengles1cl) {
         QMAKE_LIBS += "libGLES_CL.lib"
     }
+    contains(QT_CONFIG,opengles2) {
+        QMAKE_LIBS += "libGLESv2.lib"
+    }
+
 } else {
     QMAKE_LIBS += $$QMAKE_LIBS_OPENGL
 }

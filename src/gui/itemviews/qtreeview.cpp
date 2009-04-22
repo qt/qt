@@ -2019,6 +2019,7 @@ int QTreeView::verticalOffset() const
         // If we are scrolling per item and have non-uniform row heights,
         // finding the vertical offset in pixels is going to be relatively slow.
         // ### find a faster way to do this
+        d->executePostedLayout();
         int offset = 0;
         for (int i = 0; i < d->viewItems.count(); ++i) {
             if (i == verticalScrollBar()->value())
@@ -3507,6 +3508,7 @@ void QTreeViewPrivate::updateScrollBars()
 
 int QTreeViewPrivate::itemDecorationAt(const QPoint &pos) const
 {
+    const_cast<QTreeView *>(q_func())->executeDelayedItemsLayout();
     int x = pos.x();
     int column = header->logicalIndexAt(x);
     if (column != 0)

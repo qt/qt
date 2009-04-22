@@ -122,9 +122,9 @@ QWSTtyKbPrivate::QWSTtyKbPrivate(QWSTtyKeyboardHandler *h, const QString &device
 
     QStringList args = device.split(QLatin1Char(':'));
     foreach (const QString &arg, args) {
-        if (arg.startsWith(QLatin1String("repeat_delay=")))
+        if (arg.startsWith(QLatin1String("repeat-delay=")))
             repeat_delay = arg.mid(13).toInt();
-        else if (arg.startsWith(QLatin1String("repeat_rate=")))
+        else if (arg.startsWith(QLatin1String("repeat-rate=")))
             repeat_rate = arg.mid(12).toInt();
         else if (arg.startsWith(QLatin1String("/dev/")))
             dev = arg;
@@ -255,7 +255,6 @@ void QWSTtyKbPrivate::readKeycode()
         ka = m_handler->processKeycode(buffer[i] & 0x7f, (buffer[i] & 0x80) == 0x00, buffer[i] == m_last_keycode);
         m_last_keycode = buffer[i];
 
-qWarning("Special: %08x", ka);
         switch (ka) {
         case QWSKeyboardHandler::CapsLockOn:
         case QWSKeyboardHandler::CapsLockOff:

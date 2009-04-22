@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,16 +39,73 @@
 **
 ****************************************************************************/
 
-#include "math3dincludes.h"
+#ifndef QHTTPNETWORKHEADER_H
+#define QHTTPNETWORKHEADER_H
 
-#if defined(FIXED_POINT_TESTS)
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of the Network Access API.  This header file may change from
+// version to version without notice, or even be removed.
+//
+// We mean it.
+//
+#ifndef QT_NO_HTTP
 
-#include "qmatrix4x4.cpp"
-#include "qgenericmatrix.cpp"
-#include "qvector2d.cpp"
-#include "qvector3d.cpp"
-#include "qvector4d.cpp"
-#include "qquaternion.cpp"
-#include "qmath3dutil.cpp"
+#include <qshareddata.h>
+#include <qurl.h>
 
-#endif
+QT_BEGIN_NAMESPACE
+
+class Q_AUTOTEST_EXPORT QHttpNetworkHeader
+{
+public:
+    virtual ~QHttpNetworkHeader() {};
+    virtual QUrl url() const = 0;
+    virtual void setUrl(const QUrl &url) = 0;
+
+    virtual int majorVersion() const = 0;
+    virtual int minorVersion() const = 0;
+
+    virtual qint64 contentLength() const = 0;
+    virtual void setContentLength(qint64 length) = 0;
+
+    virtual QList<QPair<QByteArray, QByteArray> > header() const = 0;
+    virtual QByteArray headerField(const QByteArray &name, const QByteArray &defaultValue = QByteArray()) const = 0;
+    virtual void setHeaderField(const QByteArray &name, const QByteArray &data) = 0;
+};
+
+class QHttpNetworkHeaderPrivate : public QSharedData
+{
+public:
+    QUrl url;
+    QList<QPair<QByteArray, QByteArray> > fields;
+
+    QHttpNetworkHeaderPrivate(const QUrl &newUrl = QUrl());
+    QHttpNetworkHeaderPrivate(const QHttpNetworkHeaderPrivate &other);
+    qint64 contentLength() const;
+    void setContentLength(qint64 length);
+
+    QByteArray headerField(const QByteArray &name, const QByteArray &defaultValue = QByteArray()) const;
+    QList<QByteArray> headerFieldValues(const QByteArray &name) const;
+    void setHeaderField(const QByteArray &name, const QByteArray &data);
+    bool operator==(const QHttpNetworkHeaderPrivate &other) const;
+
+};
+
+
+QT_END_NAMESPACE
+
+
+#endif // QT_NO_HTTP
+
+
+#endif // QHTTPNETWORKHEADER_H
+
+
+
+
+
+

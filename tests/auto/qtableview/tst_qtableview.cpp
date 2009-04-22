@@ -2540,6 +2540,7 @@ void tst_QTableView::span_data()
       << 2 << 1
       << false;
 
+  /* This makes no sens. 
     QTest::newRow("top left 2x0")
       << 10 << 10
       << -1 << -1
@@ -2554,7 +2555,7 @@ void tst_QTableView::span_data()
       << 0 << 0
       << 0 << 2
       << 0 << 2
-      << false;
+      << false;*/
 
     QTest::newRow("invalid 2x2")
       << 10 << 10
@@ -2628,7 +2629,7 @@ void tst_QTableView::span()
     view.hideRow(hiddenRow);
     view.hideColumn(hiddenColumn);
     view.show();
-
+    
     QCOMPARE(view.rowSpan(row, column), expectedRowSpan);
     QCOMPARE(view.columnSpan(row, column), expectedColumnSpan);
 

@@ -174,6 +174,8 @@ public:
     // Clipping & state stuff stolen from QOpenGLPaintEngine:
     void updateDepthClip();
     uint use_system_clip : 1;
+
+    QPaintEngine *last_engine;
 };
 
 
@@ -398,32 +400,45 @@ void QGL2PaintEngineExPrivate::updateMatrix()
         {0.0,        0.0,        0.0,  1.0}
     };
 
-    // Use the (3x3) transform for the Model~View matrix:
     const QTransform& transform = q->state()->matrix;
-    GLfloat MV[4][4] = {
-        {transform.m11(), transform.m21(), 0.0, transform.dx()},
-        {transform.m12(), transform.m22(), 0.0, transform.dy()},
-        {0.0,             0.0,             1.0, 0.0},
-        {transform.m13(), transform.m23(), 0.0, transform.m33()}
-    };
 
-    // NOTE: OpenGL ES works with column-major matrices, so when we multiply the matrices,
-    //       we also transpose them ready for GL.
-    for (int row = 0; row < 4; ++row) {
-        for (int col = 0; col < 4; ++col) {
-            pmvMatrix[col][row] = 0.0;
+    if (mode == TextDrawingMode) {
+        // Text drawing mode is only used for non-scaling transforms
+        for (int row = 0; row < 4; ++row)
+            for (int col = 0; col < 4; ++col)
+                pmvMatrix[col][row] = P[row][col];
 
-            // P[row][n] is 0.0 for n < row
-            for (int n = row; n < 4; ++n)
-                pmvMatrix[col][row] += P[row][n] * MV[n][col];
+        pmvMatrix[3][0] += P[0][0] * qRound(transform.dx());
+        pmvMatrix[3][1] += P[1][1] * qRound(transform.dy());
+
+        inverseScale = 1;
+    } else {
+        // Use the (3x3) transform for the Model~View matrix:
+        GLfloat MV[4][4] = {
+            {transform.m11(), transform.m21(), 0.0, transform.dx()},
+            {transform.m12(), transform.m22(), 0.0, transform.dy()},
+            {0.0,             0.0,             1.0, 0.0},
+            {transform.m13(), transform.m23(), 0.0, transform.m33()}
+        };
+
+        // NOTE: OpenGL ES works with column-major matrices, so when we multiply the matrices,
+        //       we also transpose them ready for GL.
+        for (int row = 0; row < 4; ++row) {
+            for (int col = 0; col < 4; ++col) {
+                pmvMatrix[col][row] = 0.0;
+
+                // P[row][n] is 0.0 for n < row
+                for (int n = row; n < 4; ++n)
+                    pmvMatrix[col][row] += P[row][n] * MV[n][col];
+            }
         }
-    }
 
-    // 1/10000 == 0.0001, so we have good enough res to cover curves
-    // that span the entire widget...
-    inverseScale = qMax(1 / qMax( qMax(qAbs(transform.m11()), qAbs(transform.m22())),
-                                  qMax(qAbs(transform.m12()), qAbs(transform.m21())) ),
-                        qreal(0.0001));
+        // 1/10000 == 0.0001, so we have good enough res to cover curves
+        // that span the entire widget...
+        inverseScale = qMax(1 / qMax( qMax(qAbs(transform.m11()), qAbs(transform.m22())),
+                    qMax(qAbs(transform.m12()), qAbs(transform.m21())) ),
+                qreal(0.0001));
+    }
 
     matrixDirty = false;
 
@@ -532,12 +547,17 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
         glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
     }
 
+    if (mode == TextDrawingMode)
+        matrixDirty = true;
+
     if (newMode == TextDrawingMode) {
         glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
         glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
 
         glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
         glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
+
+        matrixDirty = true;
     }
 
     if (newMode == ImageDrawingMode) {
@@ -547,10 +567,6 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
         glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, staticVertexCoordinateArray);
         glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, staticTextureCoordinateArray);
     }
-
-    // If we're switching to BrushDrawingMode, set the source pixel type to match the brush style:
-    if (newMode == BrushDrawingMode || newMode == TextDrawingMode)
-        shaderManager->setSrcPixelType(currentBrush->style());
 
     // This needs to change when we implement high-quality anti-aliasing...
     if (newMode != TextDrawingMode)
@@ -805,6 +821,7 @@ void QGL2PaintEngineEx::fill(const QVectorPath &path, const QBrush &brush)
     if (brush.style() == Qt::NoBrush)
         return;
 
+    ensureActive();
     d->setBrush(&brush);
     d->fill(path);
     d->setBrush(&(state()->brush)); // reset back to the state's brush
@@ -814,6 +831,7 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 {
     Q_D(QGL2PaintEngineEx);
 
+    ensureActive();
     if (pen.style() == Qt::NoPen)
         return;
 
@@ -832,7 +850,6 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         d->setBrush(&(state()->brush));
     } else
         return QPaintEngineEx::stroke(path, pen);
-
 }
 
 void QGL2PaintEngineEx::penChanged()
@@ -886,6 +903,7 @@ void QGL2PaintEngineEx::transformChanged()
 void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, const QRectF & src)
 {
     Q_D(QGL2PaintEngineEx);
+    ensureActive();
     d->transferMode(ImageDrawingMode);
 
     QGLContext *ctx = d->ctx;
@@ -905,6 +923,7 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
                         Qt::ImageConversionFlags)
 {
     Q_D(QGL2PaintEngineEx);
+    ensureActive();
     d->transferMode(ImageDrawingMode);
 
     QGLContext *ctx = d->ctx;
@@ -922,6 +941,8 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
 void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem)
 {
     Q_D(QGL2PaintEngineEx);
+
+    ensureActive();
     QOpenGLPaintEngineState *s = state();
 
     const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
@@ -984,6 +1005,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
     const QImage &image = cache->image();
     int margin = cache->glyphMargin();
 
+    if (image.isNull())
+        return;
 
     GLfloat dx = 1.0 / image.width();
     GLfloat dy = 1.0 / image.height();
@@ -1002,7 +1025,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
         vertexCoordinateArray.addRect(QRectF(x, y, c.w, c.h));
         textureCoordinateArray.addRect(QRectF(c.x*dx, 1 - c.y*dy, c.w * dx, -c.h * dy));
     }
-
 
     glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
     ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
@@ -1042,6 +1064,14 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     qt_resolve_version_1_3_functions(d->ctx);
     qt_resolve_glsl_extensions(d->ctx);
 
+    d->last_engine = d->ctx->d_ptr->active_engine;
+    d->ctx->d_ptr->active_engine = this;
+
+    if (d->last_engine) {
+        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(d->last_engine);
+        static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr)->transferMode(BrushDrawingMode);
+    }
+
     if (!d->shaderManager)
         d->shaderManager = new QGLEngineShaderManager(d->ctx);
 
@@ -1062,6 +1092,19 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->use_system_clip = !systemClip().isEmpty();
 
     glDisable(GL_DEPTH_TEST);
+    glDisable(GL_SCISSOR_TEST);
+
+    QGLPixmapData *source = d->drawable.copyOnBegin();
+    if (source) {
+        d->transferMode(ImageDrawingMode);
+
+        source->bind(false);
+
+        glDisable(GL_BLEND);
+
+        QRect rect(0, 0, source->width(), source->height());
+        d->drawTexture(QRectF(rect), QRectF(rect), rect.size());
+    }
 
     updateClipRegion(QRegion(), Qt::NoClip);
     return true;
@@ -1071,10 +1114,60 @@ bool QGL2PaintEngineEx::end()
 {
     Q_D(QGL2PaintEngineEx);
     QGLContext *ctx = d->ctx;
+    if (ctx->d_ptr->active_engine != this) {
+        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(d->last_engine);
+        if (engine) {
+            QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
+            p->transferMode(BrushDrawingMode);
+            p->drawable.doneCurrent();
+        }
+        d->drawable.makeCurrent();
+    }
+
     glUseProgram(0);
+    d->transferMode(BrushDrawingMode);
     d->drawable.swapBuffers();
     d->drawable.doneCurrent();
+    d->ctx->d_ptr->active_engine = d->last_engine;
+
+    if (d->last_engine) {
+        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(d->last_engine);
+        QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
+
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_SCISSOR_TEST);
+
+        glViewport(0, 0, p->width, p->height);
+        engine->setState(engine->state());
+        p->updateDepthClip();
+    }
+
     return false;
+}
+
+void QGL2PaintEngineEx::ensureActive()
+{
+    Q_D(QGL2PaintEngineEx);
+    QGLContext *ctx = d->ctx;
+
+    if (isActive() && ctx->d_ptr->active_engine != this) {
+        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(ctx->d_ptr->active_engine);
+        if (engine) {
+            QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
+            p->transferMode(BrushDrawingMode);
+            p->drawable.doneCurrent();
+        }
+        d->drawable.makeCurrent();
+
+        ctx->d_ptr->active_engine = this;
+
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_SCISSOR_TEST);
+
+        glViewport(0, 0, d->width, d->height);
+        setState(state());
+        d->updateDepthClip();
+    }
 }
 
 
@@ -1207,11 +1300,6 @@ void QGL2PaintEngineEx::updateClipRegion(const QRegion &clipRegion, Qt::ClipOper
         state()->hasClipping = op != Qt::NoClip || d->use_system_clip;
     }
 
-    if (state()->hasClipping && state()->clipRegion.rects().size() == 1)
-        state()->fastClip = state()->clipRegion.rects().at(0);
-    else
-        state()->fastClip = QRect();
-
     d->updateDepthClip();
 }
 
@@ -1222,20 +1310,17 @@ void QGL2PaintEngineExPrivate::updateDepthClip()
 
     Q_Q(QGL2PaintEngineEx);
 
+    q->ensureActive();
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_SCISSOR_TEST);
 
     if (!q->state()->hasClipping)
         return;
 
-    QRect fastClip;
-    if (q->state()->clipEnabled) {
-        fastClip = q->state()->fastClip;
-    } else if (use_system_clip && q->systemClip().rects().count() == 1) {
-        fastClip = q->systemClip().rects().at(0);
-    }
+    const QVector<QRect> rects = q->state()->clipEnabled ? q->state()->clipRegion.rects() : q->systemClip().rects();
+    if (rects.size() == 1) {
+        QRect fastClip = rects.at(0);
 
-    if (!fastClip.isEmpty()) {
         glEnable(GL_SCISSOR_TEST);
 
         const int left = fastClip.left();
@@ -1252,7 +1337,6 @@ void QGL2PaintEngineExPrivate::updateDepthClip()
     glClear(GL_DEPTH_BUFFER_BIT);
     glClearDepthf(0x1);
 
-    const QVector<QRect> rects = q->state()->clipEnabled ? q->state()->clipRegion.rects() : q->systemClip().rects();
     glEnable(GL_SCISSOR_TEST);
     for (int i = 0; i < rects.size(); ++i) {
         QRect rect = rects.at(i);
@@ -1275,14 +1359,23 @@ void QGL2PaintEngineExPrivate::updateDepthClip()
 
 
 
-void QGL2PaintEngineEx::setState(QPainterState *s)
+void QGL2PaintEngineEx::setState(QPainterState *new_state)
 {
 //     qDebug("QGL2PaintEngineEx::setState()");
 
     Q_D(QGL2PaintEngineEx);
+
+    QOpenGLPaintEngineState *s = static_cast<QOpenGLPaintEngineState *>(new_state);
+
+    QOpenGLPaintEngineState *old_state = state();
+    const bool needsDepthClipUpdate = !old_state
+            || s->clipEnabled != old_state->clipEnabled
+            || (s->clipEnabled && s->clipRegion != old_state->clipRegion);
+
     QPaintEngineEx::setState(s);
 
-    d->updateDepthClip();
+    if (needsDepthClipUpdate)
+        d->updateDepthClip();
 
     d->matrixDirty = true;
     d->compositionModeDirty = true;
@@ -1308,7 +1401,6 @@ QOpenGLPaintEngineState::QOpenGLPaintEngineState(QOpenGLPaintEngineState &other)
 {
     clipRegion = other.clipRegion;
     hasClipping = other.hasClipping;
-    fastClip = other.fastClip;
 }
 
 QOpenGLPaintEngineState::QOpenGLPaintEngineState()

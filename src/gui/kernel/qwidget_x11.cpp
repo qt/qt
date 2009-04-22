@@ -898,7 +898,7 @@ void QWidgetPrivate::x11UpdateIsOpaque()
         bool visible = q->isVisible();
         if (visible)
             q->hide();
-        q->setParent(q->parentWidget(), q->windowFlags() & ~Qt::WindowType_Mask);
+        q->setParent(q->parentWidget(), q->windowFlags());
         q->move(pos);
         if (visible)
             q->show();
