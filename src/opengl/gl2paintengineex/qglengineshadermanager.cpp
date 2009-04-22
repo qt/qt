@@ -169,7 +169,7 @@ QGLEngineShaderManager::~QGLEngineShaderManager()
 
 
 
-void QGLEngineShaderManager::optimiseForBrushTransform(const QTransform transform)
+void QGLEngineShaderManager::optimiseForBrushTransform(const QTransform &transform)
 {
     Q_UNUSED(transform); // Currently ignored
 }

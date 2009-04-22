@@ -271,7 +271,7 @@ public:
     // There are optimisations we can do, depending on the brush transform:
     //    1) May not have to apply perspective-correction
     //    2) Can use lower precision for matrix
-    void optimiseForBrushTransform(const QTransform transform);
+    void optimiseForBrushTransform(const QTransform &transform);
     void setSrcPixelType(Qt::BrushStyle);
     void setSrcPixelType(PixelSrcType); // For non-brush sources, like pixmaps & images
     void setTextureCoordsEnabled(bool); // For images & text glyphs
