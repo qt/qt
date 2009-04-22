@@ -294,7 +294,7 @@ static const char* const qglslMainFragmentShader_CMO = "\
     lowp vec4 applyMask(lowp vec4); \
     lowp vec4 compose(lowp vec4); \
     void main() { \
-        gl_FragColor = compose(applyMask(srcPixel()*globalOpacity)); \
+        gl_FragColor = applyMask(compose(srcPixel()*globalOpacity))); \
     }";
 
 static const char* const qglslMainFragmentShader_CM = "\
@@ -302,7 +302,7 @@ static const char* const qglslMainFragmentShader_CM = "\
     lowp vec4 applyMask(lowp vec4); \
     lowp vec4 compose(lowp vec4); \
     void main() { \
-        gl_FragColor = compose(applyMask(srcPixel())); \
+        gl_FragColor = applyMask(compose(srcPixel())); \
     }";
 
 static const char* const qglslMainFragmentShader_MO = "\
