@@ -350,8 +350,6 @@ public:
 
 #if defined (QT_DEBUG)
     Q_ENUMS(ShaderName);
-#else
-#error Release build not supported yet
 #endif
 
 
