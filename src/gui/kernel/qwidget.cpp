@@ -109,6 +109,7 @@
 #include "private/qabstractscrollarea_p.h"
 
 #include "private/qgraphicssystem_p.h"
+#include "private/qgesturemanager_p.h"
 
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
@@ -11032,17 +11033,27 @@ QWindowSurface *QWidget::windowSurface() const
 int QWidget::grabGesture(const QString &gesture)
 {
     Q_D(QWidget);
-    return d->grabGesture(qHash(gesture));
+    return d->grabGesture(QGestureManager::instance()->makeGestureId(gesture));
 }
 
-int QWidgetPrivate::grabGesture(int id)
+int QWidgetPrivate::grabGesture(int gestureId)
 {
-    QSet<int>::iterator it = gestures.find(id);
-    if (it != gestures.end())
-        return *it;
-    gestures << id;
-    ++qApp->d_func()->grabbedGestures[id];
-    return id;
+    gestures << gestureId;
+    ++qApp->d_func()->grabbedGestures[QGestureManager::instance()->gestureNameFromId(gestureId)];
+    return gestureId;
+}
+
+bool QWidgetPrivate::releaseGesture(int gestureId)
+{
+    QApplicationPrivate *qAppPriv = qApp->d_func();
+    if (gestures.contains(gestureId)) {
+        QString name = QGestureManager::instance()->gestureNameFromId(gestureId);
+        Q_ASSERT(qAppPriv->grabbedGestures[name] > 0);
+        --qAppPriv->grabbedGestures[name];
+        gestures.remove(gestureId);
+        return true;
+    }
+    return false;
 }
 
 /*!
@@ -11066,12 +11077,8 @@ int QWidget::grabGesture(Qt::GestureType gesture)
 void QWidget::releaseGesture(int gestureId)
 {
     Q_D(QWidget);
-    QSet<int>::iterator it = d->gestures.find(gestureId);
-    if (it != d->gestures.end()) {
-        Q_ASSERT(qApp->d_func()->grabbedGestures[gestureId] > 0);
-        --qApp->d_func()->grabbedGestures[gestureId];
-        d->gestures.erase(it);
-    }
+    if (d->releaseGesture(gestureId))
+        QGestureManager::instance()->releaseGestureId(gestureId);
 }
 
 /*!

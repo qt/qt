@@ -53,7 +53,6 @@
 // We mean it.
 //
 
-#include "qwidget.h"
 #include "qlist.h"
 #include "qset.h"
 #include "qevent.h"
@@ -63,6 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QWidget;
 class Q_GUI_EXPORT QGestureManager : public QObject
 {
     Q_OBJECT
@@ -79,6 +79,13 @@ public:
 
     bool filterEvent(QEvent *event);
     bool inGestureMode();
+
+    int makeGestureId(const QString &name);
+    void releaseGestureId(int gestureId);
+    QString gestureNameFromId(int gestureId) const;
+
+    // declared in qapplication.cpp
+    static QGestureManager* instance();
 
 protected:
     void timerEvent(QTimerEvent *event);
@@ -99,6 +106,9 @@ private:
     int eventDeliveryDelayTimeout;
     int delayedPressTimer;
     QMouseEvent lastMousePressEvent;
+
+    QMap<int, QString> gestureIdMap;
+    int lastGestureId;
 
     enum State {
         Gesture,

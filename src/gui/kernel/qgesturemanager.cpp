@@ -45,6 +45,7 @@
 
 #include "qapplication.h"
 #include "qapplication_p.h"
+#include "qwidget.h"
 #include "qwidget_p.h"
 
 #include "qgesturestandardrecognizers_p.h"
@@ -104,7 +105,7 @@ bool QGestureManager::filterEvent(QEvent *event)
     default: break;
     }
 
-    const QMap<int, int> &grabbedGestures = qApp->d_func()->grabbedGestures;
+    const QMap<QString, int> &grabbedGestures = qApp->d_func()->grabbedGestures;
 
     bool ret = false;
     QSet<QGestureRecognizer*> startedGestures;
@@ -120,7 +121,7 @@ bool QGestureManager::filterEvent(QEvent *event)
         QSet<QGestureRecognizer*> stillMaybeGestures;
         // try other recognizers.
         foreach(QGestureRecognizer *r, recognizers) {
-            if (grabbedGestures.value(qHash(r->gestureType()), 0) <= 0)
+            if (grabbedGestures.value(r->gestureType(), 0) <= 0)
                 continue;
             QGestureRecognizer::Result result = r->filterEvent(event);
             if (result == QGestureRecognizer::GestureStarted) {
@@ -213,7 +214,7 @@ bool QGestureManager::filterEvent(QEvent *event)
         Q_ASSERT(!activeGestures.isEmpty());
 
         foreach(QGestureRecognizer *r, recognizers) {
-            if (grabbedGestures.value(qHash(r->gestureType()), 0) <= 0)
+            if (grabbedGestures.value(r->gestureType(), 0) <= 0)
                 continue;
             QGestureRecognizer::Result result = r->filterEvent(event);
             if (result == QGestureRecognizer::GestureStarted) {
@@ -411,7 +412,7 @@ void QGestureManager::recognizerStateChanged(QGestureRecognizer::Result result)
     QGestureRecognizer *recognizer = qobject_cast<QGestureRecognizer*>(sender());
     if (!recognizer)
         return;
-    if (qApp->d_func()->grabbedGestures.value(qHash(recognizer->gestureType()), 0) <= 0) {
+    if (qApp->d_func()->grabbedGestures.value(recognizer->gestureType(), 0) <= 0) {
         recognizer->reset();
         return;
     }
@@ -477,12 +478,22 @@ void QGestureManager::recognizerStateChanged(QGestureRecognizer::Result result)
 
 bool QGestureManager::sendGestureEvent(QWidget *receiver, QGestureEvent *event)
 {
-    QSet<int> eventGestures;
+    QSet<QString> eventGestures;
     foreach(const QString &gesture, event->gestureTypes())
-        eventGestures << qHash(gesture);
+        eventGestures << gesture;
 
     QPoint offset;
-    while (receiver && (receiver->d_func()->gestures & eventGestures).isEmpty()) {
+    bool found = false;
+    while (receiver) {
+        QSet<int> widgetGestures = receiver->d_func()->gestures;
+        foreach(int gestureId, widgetGestures) {
+            if (eventGestures.contains(gestureNameFromId(gestureId))) {
+                found = true;
+                break;
+            }
+        }
+        if (found)
+            break;
         offset += receiver->pos();
         receiver = receiver->parentWidget();
     }
@@ -499,6 +510,22 @@ int QGestureManager::eventDeliveryDelay() const
 void QGestureManager::setEventDeliveryDelay(int ms)
 {
     eventDeliveryDelayTimeout = ms;
+}
+
+int QGestureManager::makeGestureId(const QString &name)
+{
+    gestureIdMap[++lastGestureId] = name;
+    return lastGestureId;
+}
+
+void QGestureManager::releaseGestureId(int gestureId)
+{
+    gestureIdMap.remove(gestureId);
+}
+
+QString QGestureManager::gestureNameFromId(int gestureId) const
+{
+    return gestureIdMap.value(gestureId);
 }
 
 QT_END_NAMESPACE

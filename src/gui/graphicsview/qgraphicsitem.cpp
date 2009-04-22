@@ -521,6 +521,7 @@
 #include <private/qtextcontrol_p.h>
 #include <private/qtextdocumentlayout_p.h>
 #include <private/qtextengine_p.h>
+#include <private/qgesturemanager_p.h>
 
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
@@ -5811,10 +5812,7 @@ int QGraphicsItem::grabGesture(Qt::GestureType gesture)
 */
 int QGraphicsItem::grabGesture(const QString &gesture)
 {
-    int id = qHash(gesture);
-    QSet<int>::iterator it = d_ptr->gestures.find(id);
-    if (it != d_ptr->gestures.end())
-        return *it;
+    int id = QGestureManager::instance()->makeGestureId(gesture);
     d_ptr->gestures << id;
     if (d_ptr->scene)
         d_ptr->scene->d_func()->grabGesture(this, id);
@@ -5829,9 +5827,10 @@ int QGraphicsItem::grabGesture(const QString &gesture)
 */
 void QGraphicsItem::releaseGesture(int gestureId)
 {
-    d_ptr->gestures.remove(gestureId);
     if (d_ptr->scene)
         d_ptr->scene->d_func()->releaseGesture(this, gestureId);
+    QGestureManager::instance()->releaseGestureId(gestureId);
+    d_ptr->gestures.remove(gestureId);
 }
 
 /*!

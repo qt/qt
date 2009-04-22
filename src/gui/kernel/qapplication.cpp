@@ -137,6 +137,14 @@ int QApplicationPrivate::autoMaximizeThreshold = -1;
 bool QApplicationPrivate::autoSipEnabled = false;
 #endif
 
+QGestureManager* QGestureManager::instance()
+{
+    QApplicationPrivate *d = qApp->d_func();
+    if (!d->gestureManager)
+        d->gestureManager = new QGestureManager(qApp);
+    return d->gestureManager;
+}
+
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::Type type)
     : QCoreApplicationPrivate(argc, argv)
 {
@@ -3711,8 +3719,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     QWidget *w = static_cast<QWidget*>(receiver);
                     // if we are in gesture mode, we send all mouse events
                     // directly to gesture recognizer.
-                    if (!d->gestureManager)
-                        d->gestureManager = new QGestureManager(this);
+                    (void)QGestureManager::instance();
                     if (d->gestureManager->inGestureMode()) {
                         if (d->gestureManager->filterEvent(e))
                             return true;
@@ -5098,9 +5105,7 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
 void QApplication::addGestureRecognizer(QGestureRecognizer *recognizer)
 {
     Q_D(QApplication);
-    if (!d->gestureManager)
-        d->gestureManager = new QGestureManager(this);
-    d->gestureManager->addRecognizer(recognizer);
+    QGestureManager::instance()->addRecognizer(recognizer);
 }
 
 /*!
@@ -5129,18 +5134,12 @@ void QApplication::removeGestureRecognizer(QGestureRecognizer *recognizer)
 */
 void QApplication::setEventDeliveryDelayForGestures(int delay)
 {
-    Q_D(QApplication);
-    if (!d->gestureManager)
-        d->gestureManager = new QGestureManager(this);
-    d->gestureManager->setEventDeliveryDelay(delay);
+    QGestureManager::instance()->setEventDeliveryDelay(delay);
 }
 
 int QApplication::eventDeliveryDelayForGestures()
 {
-    Q_D(QApplication);
-    if (!d->gestureManager)
-        d->gestureManager = new QGestureManager(this);
-    return d->gestureManager->eventDeliveryDelay();
+    return QGestureManager::instance()->eventDeliveryDelay();
 }
 
 /*! \fn QDecoration &QApplication::qwsDecoration()
