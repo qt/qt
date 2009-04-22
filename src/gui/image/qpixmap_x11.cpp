@@ -1437,7 +1437,7 @@ QImage QX11PixmapData::toImage() const
 
         // we may have to swap the byte order
         if ((QSysInfo::ByteOrder == QSysInfo::LittleEndian && xi->byte_order == MSBFirst)
-            || (QSysInfo::ByteOrder == QSysInfo::BigEndian))
+            || (QSysInfo::ByteOrder == QSysInfo::BigEndian && xi->byte_order == LSBFirst))
         {
             for (int i=0; i < image.height(); i++) {
                 uint *p = (uint*)image.scanLine(i);

@@ -1680,7 +1680,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
 {
 #ifdef Q_WS_MAC
     static QPointer<QMessageBox> oldMsgBox;
-  
+
     if (oldMsgBox) {
         oldMsgBox->show();
         oldMsgBox->raise();
@@ -1692,29 +1692,35 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
     QString translatedTextAboutQt;
     translatedTextAboutQt = QMessageBox::tr(
         "<h3>About Qt</h3>"
-        "%1<p>Qt is a C++ toolkit for cross-platform "
-        "application development.</p>"
-        "<p>Qt provides single-source "
-        "portability across MS&nbsp;Windows, Mac&nbsp;OS&nbsp;X, "
-        "Linux, and all major commercial Unix variants. Qt is also"
-        " available for embedded devices as Qt for Embedded Linux"
-        " and Qt for Windows CE.</p>"
-        "<p>Qt is a Nokia product. See "
-        "<a href=\"http://qtsoftware.com/qt/\">qtsoftware.com/qt/</a> for more information.</p>"
-       )
-#if QT_EDITION != QT_EDITION_OPENSOURCE
-       .arg(QMessageBox::tr("<p>This program uses Qt version %1.</p>"))
-#else
-       .arg(QMessageBox::tr("<p>This program uses Qt Open Source Edition version %1.</p>"
-               "<p>Qt Open Source Edition is intended for the development "
-               "of Open Source applications. You need a commercial Qt "
-               "license for development of proprietary (closed source) "
-               "applications.</p>"
-               "<p>Please see <a href=\"http://qtsoftware.com/company/model/\">qtsoftware.com/company/model/</a> "
-               "for an overview of Qt licensing.</p>"))
-#endif
-
-    .arg(QLatin1String(QT_VERSION_STR));
+        "<p>This program uses Qt version %1.</p>"
+        "<p>Qt is a C++ toolkit for cross-platform application "
+        "development.</p>"
+        "<p>Qt provides single-source portability across MS&nbsp;Windows, "
+        "Mac&nbsp;OS&nbsp;X, Linux, and all major commercial Unix variants. "
+        "Qt is also available for embedded devices as Qt for Embedded Linux "
+        "and Qt for Windows CE.</p>"
+        "<p>Qt is available under three different licensing options designed "
+        "to accommodate the needs of our various users.</p>"
+        "Qt licensed under our commercial license agreement is appropriate "
+        "for development of proprietary/commercial software where you do not "
+        "want to share any source code with third parties or otherwise cannot "
+        "comply with the terms of the GNU LGPL version 2.1 or GNU GPL version "
+        "3.0.</p>"
+        "<p>Qt licensed under the GNU LGPL version 2.1 is appropriate for the "
+        "development of Qt applications (proprietary or open source) provided "
+        "you can comply with the terms and conditions of the GNU LGPL version "
+        "2.1.</p>"
+        "<p>Qt licensed under the GNU General Public License version 3.0 is "
+        "appropriate for the development of Qt applications where you wish to "
+        "use such applications in combination with software subject to the "
+        "terms of the GNU GPL version 3.0 or where you are otherwise willing "
+        "to comply with the terms of the GNU GPL version 3.0.</p>"
+        "<p>Please see <a href=\"http://www.qtsoftware.com/products/licensing\">www.qtsoftware.com/products/licensing</a> "
+        "for an overview of Qt licensing.</p>"
+        "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>"
+        "<p>Qt is a Nokia product. See <a href=\"http://www.qtsoftware.com/qt/\">www.qtsoftware.com/qt</a> "
+        "for more information.</p>"
+       ).arg(QLatin1String(QT_VERSION_STR));
 
     QMessageBox *msgBox = new QMessageBox(parent);
     msgBox->setAttribute(Qt::WA_DeleteOnClose);

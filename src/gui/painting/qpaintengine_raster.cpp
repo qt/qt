@@ -1144,6 +1144,33 @@ void QRasterPaintEnginePrivate::updateMatrixData(QSpanData *spanData, const QBru
     }
 }
 
+// #define QT_CLIPPING_RATIOS
+
+#ifdef QT_CLIPPING_RATIOS
+int rectClips;
+int regionClips;
+int totalClips;
+
+static void checkClipRatios(QRasterPaintEnginePrivate *d)
+{
+    if (d->clip()->hasRectClip)
+        rectClips++;
+    if (d->clip()->hasRegionClip)
+        regionClips++;
+    totalClips++;
+
+    if ((totalClips % 5000) == 0) {
+        printf("Clipping ratio: rectangular=%f%%, region=%f%%, complex=%f%%\n",
+               rectClips * 100.0 / (qreal) totalClips,
+               regionClips * 100.0 / (qreal) totalClips,
+               (totalClips - rectClips - regionClips) * 100.0 / (qreal) totalClips);
+        totalClips = 0;
+        rectClips = 0;
+        regionClips = 0;
+    }
+
+}
+#endif
 
 /*!
     \internal
@@ -1245,6 +1272,10 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 
     d->solid_color_filler.clip = d->clip();
     d->solid_color_filler.adjustSpanMethods();
+
+#ifdef QT_CLIPPING_RATIOS
+    checkClipRatios(d);
+#endif
 }
 
 
@@ -1319,6 +1350,11 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
 
     d->solid_color_filler.clip = d->clip();
     d->solid_color_filler.adjustSpanMethods();
+
+
+#ifdef QT_CLIPPING_RATIOS
+    checkClipRatios(d);
+#endif
 }
 
 /*!

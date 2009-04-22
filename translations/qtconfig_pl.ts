@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="pl_PL">
-<defaultcodec></defaultcodec>
+<!DOCTYPE TS>
+<TS version="2.0" language="pl_PL">
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/qtconfig/mainwindow.cpp" line="+344"/>
+        <location filename="../tools/qtconfig/mainwindow.cpp" line="+351"/>
         <source>On The Spot</source>
         <translation>W oknie dokumentu (On-The-Spot)</translation>
     </message>
@@ -76,7 +76,7 @@
         <translation>Użyj prostego oprogramowania renderującego</translation>
     </message>
     <message>
-        <location line="+74"/>
+        <location line="+79"/>
         <source>Over The Spot</source>
         <translation>Nad oknem dokumentu (Over-The-Spot)</translation>
     </message>
@@ -91,17 +91,21 @@
         <translation>W dodatkowym oknie (Root)</translation>
     </message>
     <message>
-        <location line="+455"/>
+        <location line="+466"/>
         <source>Select a Directory</source>
         <translation>Wybierz katalog</translation>
     </message>
     <message>
         <location line="+17"/>
-        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2</source>
-        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Wersja %2</translation>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+20"/>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2</source>
+        <translation type="obsolete">&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Wersja %2</translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <location line="+1"/>
         <location line="+8"/>
         <source>Qt Configuration</source>
@@ -133,12 +137,22 @@
         <translation>&amp;Anuluj</translation>
     </message>
     <message>
-        <location line="-577"/>
+        <location line="-578"/>
         <source>No changes to be saved.</source>
         <translation>Brak zmian do zapisania.</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="-259"/>
+        <source>Desktop Settings (Default)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Choose style and palette based on your desktop settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+258"/>
         <source>Saving changes...</source>
         <translation>Zapisywanie zmian...</translation>
     </message>
@@ -806,6 +820,14 @@ p, li { white-space: pre-wrap; }
         <location/>
         <source>Close dialog and discard all changes.</source>
         <translation>Zamknij okno i anuluj wszystkie zmiany.</translation>
+    </message>
+</context>
+<context>
+    <name>PreviewFrame</name>
+    <message>
+        <location filename="../tools/qtconfig/previewframe.cpp" line="+81"/>
+        <source>Desktop settings will only take effect after an application restart.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

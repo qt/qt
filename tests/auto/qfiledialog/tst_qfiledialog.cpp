@@ -157,6 +157,8 @@ private slots:
     void task228844_ensurePreviousSorting();
     void task239706_editableFilterCombo();
     void task218353_relativePaths();
+    void task251321_sideBarHiddenEntries();
+    void task251341_sideBarRemoveEntries();
 
 private:
     QByteArray userSettings;
@@ -1850,6 +1852,120 @@ void tst_QFiledialog::task218353_relativePaths()
     d.setDirectory(appDir.absolutePath() + QLatin1String("/test/../test/../"));
     QCOMPARE(d.directory().absolutePath(), appDir.absolutePath());
     appDir.rmdir("test");
+}
+
+void tst_QFiledialog::task251321_sideBarHiddenEntries()
+{
+    QNonNativeFileDialog fd;
+
+    QDir current = QDir::currentPath();
+    current.mkdir(".hidden");
+    QDir hiddenDir = QDir(".hidden");
+    hiddenDir.mkdir("subdir");
+    QDir hiddenSubDir = QDir(".hidden/subdir");
+    hiddenSubDir.mkdir("happy");
+    hiddenSubDir.mkdir("happy2");
+
+    QList<QUrl> urls;
+    urls << QUrl::fromLocalFile(hiddenSubDir.absolutePath());
+    fd.setSidebarUrls(urls);
+    fd.show();
+    QTest::qWait(250);
+
+    QSidebar *sidebar = qFindChild<QSidebar*>(&fd, "sidebar");
+    sidebar->setFocus();
+    sidebar->selectUrl(QUrl::fromLocalFile(hiddenSubDir.absolutePath()));
+    QTest::mouseClick(sidebar->viewport(), Qt::LeftButton, 0, sidebar->visualRect(sidebar->model()->index(0, 0)).center());
+    QTest::qWait(250);
+
+    QFileSystemModel *model = qFindChild<QFileSystemModel*>(&fd, "qt_filesystem_model");
+    QCOMPARE(model->rowCount(model->index(hiddenSubDir.absolutePath())), 2);
+
+    hiddenSubDir.rmdir("happy2");
+    hiddenSubDir.rmdir("happy");
+    hiddenDir.rmdir("subdir");
+    current.rmdir(".hidden");
+}
+
+class MyQSideBar : public QSidebar
+{
+public :
+    MyQSideBar(QWidget *parent = 0) : QSidebar(parent)
+    {}
+
+    void removeSelection() {
+        QList<QModelIndex> idxs = selectionModel()->selectedIndexes();
+        QList<QPersistentModelIndex> indexes;
+        for (int i = 0; i < idxs.count(); i++)
+            indexes.append(idxs.at(i));
+
+        for (int i = 0; i < indexes.count(); ++i)
+            if (!indexes.at(i).data(Qt::UserRole + 1).toUrl().path().isEmpty())
+                model()->removeRow(indexes.at(i).row());
+    }
+};
+
+void tst_QFiledialog::task251341_sideBarRemoveEntries()
+{
+    QNonNativeFileDialog fd;
+
+    QDir current = QDir::currentPath();
+    current.mkdir("testDir");
+    QDir testSubDir = QDir("testDir");
+
+    QList<QUrl> urls;
+    urls << QUrl::fromLocalFile(testSubDir.absolutePath());
+    urls << QUrl::fromLocalFile("NotFound");
+    fd.setSidebarUrls(urls);
+    fd.show();
+    QTest::qWait(250);
+
+    QSidebar *sidebar = qFindChild<QSidebar*>(&fd, "sidebar");
+    sidebar->setFocus();
+    //We enter in the first bookmark
+    sidebar->selectUrl(QUrl::fromLocalFile(testSubDir.absolutePath()));
+    QTest::mouseClick(sidebar->viewport(), Qt::LeftButton, 0, sidebar->visualRect(sidebar->model()->index(0, 0)).center());
+    QTest::qWait(250);
+
+    QFileSystemModel *model = qFindChild<QFileSystemModel*>(&fd, "qt_filesystem_model");
+    //There is no file
+    QCOMPARE(model->rowCount(model->index(testSubDir.absolutePath())), 0);
+    //Icon is not enabled QUrlModel::EnabledRole
+    QVariant value = sidebar->model()->index(0, 0).data(Qt::UserRole + 2);
+    QCOMPARE(qvariant_cast<bool>(value), true);
+
+    sidebar->setFocus();
+    //We enter in the second bookmark which is invalid
+    sidebar->selectUrl(QUrl::fromLocalFile("NotFound"));
+    QTest::mouseClick(sidebar->viewport(), Qt::LeftButton, 0, sidebar->visualRect(sidebar->model()->index(1, 0)).center());
+    QTest::qWait(250);
+
+    //We fallback to root because the entry in the bookmark is invalid
+    QCOMPARE(model->rowCount(model->index("NotFound")), model->rowCount(model->index(model->rootPath())));
+    //Icon is not enabled QUrlModel::EnabledRole
+    value = sidebar->model()->index(1, 0).data(Qt::UserRole + 2);
+    QCOMPARE(qvariant_cast<bool>(value), false);
+
+    MyQSideBar mySideBar;
+    mySideBar.init(model, urls);
+    mySideBar.show();
+    mySideBar.selectUrl(QUrl::fromLocalFile(testSubDir.absolutePath()));
+    QTest::qWait(1000);
+    mySideBar.removeSelection();
+
+    //We remove the first entry
+    QList<QUrl> expected;
+    expected << QUrl::fromLocalFile("NotFound");
+    QCOMPARE(mySideBar.urls(), expected);
+
+    mySideBar.selectUrl(QUrl::fromLocalFile("NotFound"));
+    mySideBar.removeSelection();
+
+    //We remove the second entry
+    expected.clear();
+    QCOMPARE(mySideBar.urls(), expected);
+
+    current.rmdir("testDir");
 }
 
 QTEST_MAIN(tst_QFiledialog)

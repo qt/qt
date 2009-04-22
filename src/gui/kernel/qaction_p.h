@@ -111,6 +111,7 @@ public:
     void redoGrab(QShortcutMap &map);
     void redoGrabAlternate(QShortcutMap &map);
     void setShortcutEnabled(bool enable, QShortcutMap &map);
+    void removeAll(QShortcutMap &map);
 
     static QShortcutMap *globalMap;
 #endif // QT_NO_SHORTCUT

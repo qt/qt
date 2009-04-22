@@ -55,6 +55,18 @@
 
 QT_BEGIN_NAMESPACE
 
+void QSideBarDelegate::initStyleOption(QStyleOptionViewItem *option,
+                                         const QModelIndex &index) const
+{
+    QStyledItemDelegate::initStyleOption(option,index);
+    QVariant value = index.data(QUrlModel::EnabledRole);
+    if (value.isValid()) {
+        //If the bookmark/entry is not enabled then we paint it in gray
+        if (!qvariant_cast<bool>(value))
+            option->state &= ~QStyle::State_Enabled;
+    }
+}
+
 /*!
     QUrlModel lets you have indexes from a QFileSystemModel to a list.  When QFileSystemModel
     changes them QUrlModel will automatically update.
@@ -86,9 +98,6 @@ Qt::ItemFlags QUrlModel::flags(const QModelIndex &index) const
     }
 
     if (index.data(Qt::DecorationRole).isNull())
-        flags &= ~Qt::ItemIsEnabled;
-
-    if (invalidUrls.contains(index.data(UrlRole).toUrl()))
         flags &= ~Qt::ItemIsEnabled;
 
     return flags;
@@ -193,6 +202,11 @@ void QUrlModel::setUrl(const QModelIndex &index, const QUrl &url, const QModelIn
             newName = QFileInfo(url.toLocalFile()).fileName();
             if (!invalidUrls.contains(url))
                 invalidUrls.append(url);
+            //The bookmark is invalid then we set to false the EnabledRole
+            setData(index, false, EnabledRole);
+        } else {
+            //The bookmark is valid then we set to true the EnabledRole
+            setData(index, true, EnabledRole);
         }
 
         // Make sure that we have at least 32x32 images
@@ -356,6 +370,7 @@ void QSidebar::init(QFileSystemModel *model, const QList<QUrl> &newUrls)
     urlModel = new QUrlModel(this);
     urlModel->setFileSystemModel(model);
     setModel(urlModel);
+    setItemDelegate(new QSideBarDelegate(this));
 
     connect(selectionModel(), SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
             this, SLOT(clicked(const QModelIndex &)));

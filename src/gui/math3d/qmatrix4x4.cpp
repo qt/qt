@@ -1435,7 +1435,7 @@ QTransform QMatrix4x4::toTransform() const
 /*!
     \fn float *QMatrix4x4::data()
 
-    Returns a pointer to the raw data of this matrix.  This is indended
+    Returns a pointer to the raw data of this matrix.  This is intended
     for use with raw GL functions.
 
     \sa constData(), inferSpecialType()
@@ -1445,7 +1445,7 @@ QTransform QMatrix4x4::toTransform() const
     \fn const float *QMatrix4x4::data() const
 
     Returns a constant pointer to the raw data of this matrix.
-    This is indended for use with raw GL functions.
+    This is intended for use with raw GL functions.
 
     \sa constData()
 */
@@ -1454,7 +1454,7 @@ QTransform QMatrix4x4::toTransform() const
     \fn const float *QMatrix4x4::constData() const
 
     Returns a constant pointer to the raw data of this matrix.
-    This is indended for use with raw GL functions.
+    This is intended for use with raw GL functions.
 
     \sa data()
 */

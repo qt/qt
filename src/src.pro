@@ -13,7 +13,7 @@ wince*:{
         contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_tools_uic3
     }
 }
-win32:!contains(QT_EDITION, OpenSource|Console): {
+win32:{
     SRC_SUBDIRS += src_activeqt
     !wince*: SRC_SUBDIRS += src_tools_idc
 }

@@ -15,7 +15,7 @@ no-png {
      SUBDIRS     += linguist
      wince*: SUBDIRS = qtestlib designer
      unix:!mac:!embedded:contains(QT_CONFIG, qt3support):SUBDIRS += qtconfig
-     win32:!wince*:!contains(QT_EDITION, OpenSource|Console):SUBDIRS += activeqt
+     win32:!wince*:SUBDIRS += activeqt
 }
 
 mac {
