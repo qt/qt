@@ -5167,6 +5167,9 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
 
     Q_D(QPainter);
 
+    if (!d->engine)
+        return;
+
 #ifndef QT_NO_DEBUG
     qt_painter_thread_test(d->device->devType(), "drawPixmap()");
 #endif
@@ -5175,9 +5178,6 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
         d->extended->drawPixmap(p, pm);
         return;
     }
-
-    if (!d->engine)
-        return;
 
     qreal x = p.x();
     qreal y = p.y();
