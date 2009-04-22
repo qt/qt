@@ -18,7 +18,6 @@ qhp.Linguist.virtualFolder       = qdoc
 qhp.Linguist.indexTitle          = Qt Linguist Manual
 qhp.Linguist.extraFiles          = classic.css images/qt-logo.png images/trolltech-logo.png
 qhp.Linguist.filterAttributes    = qt 4.6.0 tools linguist
->>>>>>> 4.5:tools/qdoc3/test/linguist.qdocconf
 qhp.Linguist.customFilters.Linguist.name = Qt Linguist Manual
 qhp.Linguist.customFilters.Linguist.filterAttributes = qt tools linguist
 qhp.Linguist.subprojects         = manual examples
