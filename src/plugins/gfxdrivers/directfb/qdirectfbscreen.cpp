@@ -956,16 +956,15 @@ void QDirectFBScreen::disconnect()
 
 bool QDirectFBScreen::initDevice()
 {
-    QWSServer *server = QWSServer::instance();
 #ifndef QT_NO_DIRECTFB_MOUSE
     if (qgetenv("QWS_MOUSE_PROTO").isEmpty()) {
-        server->setDefaultMouse("None");
+        QWSServer::instance()->->setDefaultMouse("None");
         d_ptr->mouse = new QDirectFBMouseHandler;
     }
 #endif
 #ifndef QT_NO_DIRECTFB_KEYBOARD
     if (qgetenv("QWS_KEYBOARD").isEmpty()) {
-        server->setDefaultKeyboard("None");
+        QWSServer::instance()->->setDefaultKeyboard("None");
         d_ptr->keyboard = new QDirectFBKeyboardHandler(QString());
     }
 #endif

@@ -160,6 +160,9 @@ static bool checkForAlphaPixels(const QImage &img)
 void QDirectFBPixmapData::fromImage(const QImage &img,
                                     Qt::ImageConversionFlags flags)
 {
+#ifdef QT_NO_DIRECTFB_OPAQUE_DETECTION
+    Q_UNUSED(flags);
+#endif
     Q_ASSERT(img.depth() != 1); // these should be handled by QRasterPixmapData
     if (img.hasAlphaChannel()
 #ifndef QT_NO_DIRECTFB_OPAQUE_DETECTION
