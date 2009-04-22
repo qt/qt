@@ -75,6 +75,10 @@ public:
     void setRestorePolicy(RestorePolicy restorePolicy);
     RestorePolicy restorePolicy() const;
 
+Q_SIGNALS:
+    void entered();
+    void exited();
+
 protected:
     QAbstractState(QState *parent = 0);
 

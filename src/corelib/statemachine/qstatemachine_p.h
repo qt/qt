@@ -171,7 +171,7 @@ public:
     QList<QEvent*> externalEventQueue;
 
     QStateMachine::Error error;
-    QActionState::RestorePolicy globalRestorePolicy;
+    QAbstractState::RestorePolicy globalRestorePolicy;
 
     QString errorString;
     QSet<QAbstractState *> pendingErrorStates;

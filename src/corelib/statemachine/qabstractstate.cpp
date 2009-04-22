@@ -62,6 +62,9 @@ QT_BEGIN_NAMESPACE
   The assignProperty() function is used for defining property assignments that
   should be performed when a state is entered.
 
+  The entered() signal is emitted when the state has been entered. The
+  exited() signal is emitted when the state has been exited.
+
   The parentState() function returns the state's parent state.
 
   \section1 Subclassing
@@ -147,6 +150,18 @@ void QAbstractStatePrivate::callOnExit()
 {
     Q_Q(QAbstractState);
     q->onExit();
+}
+
+void QAbstractStatePrivate::emitEntered()
+{
+    Q_Q(QAbstractState);
+    emit q->entered();
+}
+
+void QAbstractStatePrivate::emitExited()
+{
+    Q_Q(QAbstractState);
+    emit q->exited();
 }
 
 /*!
@@ -253,6 +268,20 @@ QAbstractState::RestorePolicy QAbstractState::restorePolicy() const
 
   This function is called when the state is entered. Reimplement this function
   to perform custom processing when the state is entered.
+*/
+
+/*!
+  \fn QAbstractState::entered()
+
+  This signal is emitted when the state has been entered (after onEntry() has
+  been called).
+*/
+
+/*!
+  \fn QAbstractState::exited()
+
+  This signal is emitted when the state has been exited (after onExit() has
+  been called).
 */
 
 /*!

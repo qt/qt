@@ -172,7 +172,7 @@ int main(int argc, char **argv)
     QTimer timer;
     timer.setInterval(1250);
     timer.setSingleShot(true);
-    group->invokeMethodOnEntry(&timer, "start");
+    QObject::connect(group, SIGNAL(entered()), &timer, SLOT(start()));
 
     QState *state1;
     QState *state2;

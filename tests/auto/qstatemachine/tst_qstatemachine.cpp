@@ -45,7 +45,6 @@
 
 #include "qstatemachine.h"
 #include "qstate.h"
-#include "qactiontransition.h"
 #include "qhistorystate.h"
 #include "qkeyeventtransition.h"
 #include "qmouseeventtransition.h"
@@ -102,8 +101,6 @@ private slots:
     void signalTransitions();
     void eventTransitions();
     void historyStates();
-    void stateActions();
-    void transitionActions();
     void transitionToRootState();
     void transitionEntersParent();
     
@@ -226,15 +223,16 @@ void tst_QStateMachine::cleanup()
     qInstallMsgHandler(s_oldHandler);
 }
 
-class EventTransition : public QActionTransition
+class EventTransition : public QAbstractTransition
 {
 public:
     EventTransition(QEvent::Type type, QAbstractState *target, QState *parent = 0)
-        : QActionTransition(QList<QAbstractState*>() << target, parent), m_type(type) {}
+        : QAbstractTransition(QList<QAbstractState*>() << target, parent), m_type(type) {}
 protected:
     virtual bool eventTest(QEvent *e) const {
         return (e->type() == m_type);
     }
+    virtual void onTransition() {}
 private:
     QEvent::Type m_type;
 };
@@ -1631,154 +1629,6 @@ void tst_QStateMachine::historyStates()
     QTRY_COMPARE(finishedSpy.count(), 1);
 }
 
-class TestStateAction : public QStateAction
-{
-public:
-    TestStateAction() : m_didExecute(false)
-        {}
-    bool didExecute() const {
-        return m_didExecute;
-    }
-protected:
-    void execute() {
-        m_didExecute = true;
-    }
-private:
-    bool m_didExecute;
-};
-
-void tst_QStateMachine::stateActions()
-{
-    QStateMachine machine;
-    QState *s1 = new QState(machine.rootState());
-
-    QVERIFY(s1->entryActions().isEmpty());
-    QVERIFY(s1->exitActions().isEmpty());
-
-    QTest::ignoreMessage(QtWarningMsg, "QActionState::addEntryAction: cannot add null action");
-    s1->addEntryAction(0);
-    QTest::ignoreMessage(QtWarningMsg, "QActionState::addExitAction: cannot add null action");
-    s1->addExitAction(0);
-    QTest::ignoreMessage(QtWarningMsg, "QActionState::removeEntryAction: cannot remove null action");
-    s1->removeEntryAction(0);
-    QTest::ignoreMessage(QtWarningMsg, "QActionState::removeExitAction: cannot remove null action");
-    s1->removeExitAction(0);
-
-    QFinalState *s2 = new QFinalState(machine.rootState());
-    s1->addTransition(s2);
-
-    machine.setInitialState(s1);
-    QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
-
-    QObject *obj = new QObject();
-    QStateInvokeMethodAction *ima = new QStateInvokeMethodAction(obj, "deleteLater");
-    QPointer<QObject> ptr(obj);
-    QVERIFY(ptr != 0);
-    s1->addEntryAction(ima);
-    finishedSpy.clear();
-    machine.start();
-    QTRY_COMPARE(finishedSpy.count(), 1);
-    QCoreApplication::processEvents();
-    QVERIFY(ptr == 0);
-
-    s1->removeEntryAction(ima);
-
-    s1->invokeMethodOnEntry(ima, "deleteLater");
-    QCOMPARE(s1->entryActions().size(), 1);
-
-    ptr = ima;
-    QVERIFY(ptr != 0);
-    finishedSpy.clear();
-    machine.start();
-    QTRY_COMPARE(finishedSpy.count(), 1);
-    QCoreApplication::processEvents();
-    QVERIFY(ptr == 0);
-
-    while (!s1->entryActions().isEmpty()) {
-        QStateAction *act = s1->entryActions().first();
-        s1->removeEntryAction(act);
-        delete act;
-    }
-
-    TestStateAction *act1 = new TestStateAction();
-    s1->addEntryAction(act1);
-    TestStateAction *act2 = new TestStateAction();
-    s1->addExitAction(act2);
-    QVERIFY(!act1->didExecute());
-    QVERIFY(!act2->didExecute());
-
-    finishedSpy.clear();
-    machine.start();
-    QTRY_COMPARE(finishedSpy.count(), 1);
-
-    QVERIFY(act1->didExecute());
-    QVERIFY(act2->didExecute());
-
-    QCOMPARE(s1->entryActions().size(), 1);
-    QCOMPARE(s2->entryActions().size(), 0);
-    s2->addEntryAction(act1); // should remove it from s1
-    QCOMPARE(s1->entryActions().size(), 0);
-    QCOMPARE(s2->entryActions().size(), 1);
-    QCOMPARE(act1->parent(), (QObject*)s2);
-
-    QCOMPARE(s2->exitActions().size(), 0);
-    s2->addExitAction(act1); // should remove entry action
-    QCOMPARE(s2->exitActions().size(), 1);
-    QCOMPARE(s2->entryActions().size(), 0);
-    QCOMPARE(act1->parent(), (QObject*)s2);
-}
-
-void tst_QStateMachine::transitionActions()
-{
-    QStateMachine machine;
-    QState *s1 = new QState(machine.rootState());
-
-    QFinalState *s2 = new QFinalState(machine.rootState());
-    EventTransition *trans = new EventTransition(QEvent::User, s2);
-    s1->addTransition(trans);
-    QVERIFY(trans->actions().isEmpty());
-    QTest::ignoreMessage(QtWarningMsg, "QActionTransition::addAction: cannot add null action");
-    trans->addAction(0);
-    QVERIFY(trans->actions().isEmpty());
-
-    TestStateAction *act = new TestStateAction();
-    trans->addAction(act);
-    QCOMPARE(trans->actions().size(), 1);
-    QCOMPARE(trans->actions().at(0), (QStateAction*)act);
-    QCOMPARE(act->parent(), (QObject*)trans);
-    QVERIFY(!act->didExecute());
-
-    trans->removeAction(act);
-    QVERIFY(trans->actions().isEmpty());
-    QCOMPARE(act->parent(), (QObject*)0);
-
-    trans->addAction(act);
-
-    QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
-    machine.setInitialState(s1);
-    machine.start();
-    QCoreApplication::processEvents();
-
-    machine.postEvent(new QEvent(QEvent::User));
-    QCoreApplication::processEvents();
-    QTRY_COMPARE(finishedSpy.count(), 1);
-    QVERIFY(act->didExecute());
-
-    trans->invokeMethodOnTransition(act, "deleteLater");
-
-    QPointer<QStateAction> ptr(act);
-    QVERIFY(ptr != 0);
-    finishedSpy.clear();
-    machine.start();
-    QCoreApplication::processEvents();
-
-    machine.postEvent(new QEvent(QEvent::User));
-    QCoreApplication::processEvents();
-    QTRY_COMPARE(finishedSpy.count(), 1);
-    QCoreApplication::processEvents();
-    QVERIFY(ptr == 0);
-}
-
 void tst_QStateMachine::defaultGlobalRestorePolicy()
 {
     QStateMachine machine;    
@@ -2161,7 +2011,7 @@ void tst_QStateMachine::simpleAnimation()
 
     QState *s3 = new QState(machine.rootState());
     s2->addTransition(animation, SIGNAL(finished()), s3);
-    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
     machine.setInitialState(s1);
     machine.start();
@@ -2213,7 +2063,7 @@ void tst_QStateMachine::twoAnimations()
     s1->addTransition(et);
 
     QState *s3 = new QState(machine.rootState());
-    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
     s2->addTransition(&machine, SIGNAL(animationsFinished()), s3);
 
     machine.setInitialState(s1);
@@ -2245,7 +2095,7 @@ void tst_QStateMachine::twoAnimatedTransitions()
     s1->addTransition(new EventTransition(QEvent::User, s2))->addAnimation(fooAnimation);
 
     QState *s3 = new QState(machine.rootState());
-    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
     s2->addTransition(fooAnimation, SIGNAL(finished()), s3);
 
     QState *s4 = new QState(machine.rootState());
@@ -2254,7 +2104,7 @@ void tst_QStateMachine::twoAnimatedTransitions()
     s3->addTransition(new EventTransition(QEvent::User, s4))->addAnimation(fooAnimation2);
 
     QState *s5 = new QState(machine.rootState());
-    s5->invokeMethodOnEntry(QApplication::instance(), "quit");
+    QObject::connect(s5, SIGNAL(entered()), QApplication::instance(), SLOT(quit()));
     s4->addTransition(fooAnimation2, SIGNAL(finished()), s5);
 
     machine.setInitialState(s1);
@@ -2289,7 +2139,7 @@ void tst_QStateMachine::playAnimationTwice()
     s1->addTransition(new EventTransition(QEvent::User, s2))->addAnimation(fooAnimation);
 
     QState *s3 = new QState(machine.rootState());
-    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
     s2->addTransition(fooAnimation, SIGNAL(finished()), s3);
 
     QState *s4 = new QState(machine.rootState());
@@ -2297,7 +2147,7 @@ void tst_QStateMachine::playAnimationTwice()
     s3->addTransition(new EventTransition(QEvent::User, s4))->addAnimation(fooAnimation);
 
     QState *s5 = new QState(machine.rootState());
-    s5->invokeMethodOnEntry(QApplication::instance(), "quit");
+    QObject::connect(s5, SIGNAL(entered()), QApplication::instance(), SLOT(quit()));
     s4->addTransition(fooAnimation, SIGNAL(finished()), s5);
 
     machine.setInitialState(s1);
@@ -2355,7 +2205,7 @@ void tst_QStateMachine::nestedTargetStateForAnimation()
     at->addAnimation(animation);
 
     QState *s3 = new QState(machine.rootState());
-    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
     s2->addTransition(&machine, SIGNAL(animationsFinished()), s3);
 
     machine.setInitialState(s1);
@@ -2388,7 +2238,7 @@ void tst_QStateMachine::animatedGlobalRestoreProperty()
     QState *s3 = new QState(machine.rootState());
 
     QState *s4 = new QState(machine.rootState());
-    s4->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    QObject::connect(s4, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
     QAbstractTransition *at = s1->addTransition(new EventTransition(QEvent::User, s2));
     QPropertyAnimation *pa = new QPropertyAnimation(object, "foo", s2);
@@ -2435,7 +2285,7 @@ void tst_QStateMachine::specificTargetValueOfAnimation()
     s1->addTransition(new EventTransition(QEvent::User, s2))->addAnimation(anim);
 
     QState *s3 = new QState(machine.rootState());
-    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
     s2->addTransition(anim, SIGNAL(finished()), s3);    
 
     machine.setInitialState(s1);
@@ -2463,7 +2313,7 @@ void tst_QStateMachine::addDefaultAnimation()
     s2->assignProperty(object, "foo", 2.0);
 
     QState *s3 = new QState(machine.rootState());
-    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
     
     s1->addTransition(new EventTransition(QEvent::User, s2));
 
@@ -2498,7 +2348,7 @@ void tst_QStateMachine::addDefaultAnimationWithUnusedAnimation()
     s2->assignProperty(object, "foo", 2.0);
 
     QState *s3 = new QState(machine.rootState());
-    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
     
     s1->addTransition(new EventTransition(QEvent::User, s2));
 
@@ -2536,7 +2386,7 @@ void tst_QStateMachine::addDefaultAnimationForSource()
     s2->assignProperty(object, "foo", 2.0);
 
     QState *s3 = new QState(machine.rootState());
-    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
     
     s1->addTransition(new EventTransition(QEvent::User, s2));
 
@@ -2568,7 +2418,7 @@ void tst_QStateMachine::addDefaultAnimationForTarget()
     s2->assignProperty(object, "foo", 2.0);
 
     QState *s3 = new QState(machine.rootState());
-    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
     
     s1->addTransition(new EventTransition(QEvent::User, s2));
 
@@ -2726,7 +2576,7 @@ void tst_QStateMachine::overrideDefaultAnimationWithSource()
     s2->assignProperty(object, "foo", 2.0);
 
     QState *s3 = new QState(machine.rootState());
-    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
     s1->addTransition(new EventTransition(QEvent::User, s2));    
     
@@ -2766,7 +2616,7 @@ void tst_QStateMachine::overrideDefaultAnimationWithTarget()
     s2->assignProperty(object, "foo", 2.0);
 
     QState *s3 = new QState(machine.rootState());
-    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
     s1->addTransition(new EventTransition(QEvent::User, s2));    
     
@@ -2807,7 +2657,7 @@ void tst_QStateMachine::overrideDefaultAnimationWithSpecific()
     s2->assignProperty(object, "foo", 2.0);
 
     QState *s3 = new QState(machine.rootState());
-    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
     QAbstractTransition *at = s1->addTransition(new EventTransition(QEvent::User, s2));
     
@@ -2847,7 +2697,7 @@ void tst_QStateMachine::overrideDefaultSourceAnimationWithSpecific()
     s2->assignProperty(object, "foo", 2.0);
 
     QState *s3 = new QState(machine.rootState());
-    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
     QAbstractTransition *at = s1->addTransition(new EventTransition(QEvent::User, s2));
     
@@ -2887,7 +2737,7 @@ void tst_QStateMachine::overrideDefaultTargetAnimationWithSpecific()
     s2->assignProperty(object, "foo", 2.0);
 
     QState *s3 = new QState(machine.rootState());
-    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
     QAbstractTransition *at = s1->addTransition(new EventTransition(QEvent::User, s2));
     
@@ -2927,7 +2777,7 @@ void tst_QStateMachine::overrideDefaultTargetAnimationWithSource()
     s2->assignProperty(object, "foo", 2.0);
 
     QState *s3 = new QState(machine.rootState());
-    s3->invokeMethodOnEntry(QCoreApplication::instance(), "quit");
+    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
     QAbstractTransition *at = s1->addTransition(new EventTransition(QEvent::User, s2));
     

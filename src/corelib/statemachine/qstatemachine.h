@@ -43,9 +43,9 @@
 #define QSTATEMACHINE_H
 
 #ifndef QT_STATEMACHINE_SOLUTION
-#  include <QtCore/qactionstate.h>
+#  include <QtCore/qabstractstate.h>
 #else
-#  include "qactionstate.h"
+#  include "qabstractstate.h"
 #endif
 
 #include <QtCore/qlist.h>

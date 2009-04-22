@@ -86,8 +86,8 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
     QTimer *timer = new QTimer(lightningBlink);
     timer->setSingleShot(true);
     timer->setInterval(100);
-    lightningBlink->invokeMethodOnEntry(timer, "start");
-    lightningBlink->invokeMethodOnExit(timer, "stop");
+    QObject::connect(lightningBlink, SIGNAL(entered()), timer, SLOT(start()));
+    QObject::connect(lightningBlink, SIGNAL(exited()), timer, SLOT(stop()));
   
     m_dead = new QState(m_machine->rootState());
     m_dead->setRestorePolicy(QState::DoNotRestoreProperties);

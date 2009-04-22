@@ -138,7 +138,7 @@ const QStatePrivate *QStatePrivate::get(const QState *q)
   Constructs a new state with the given \a parent state.
 */
 QState::QState(QState *parent)
-    : QActionState(*new QStatePrivate, parent)
+    : QAbstractState(*new QStatePrivate, parent)
 {
 }
 
@@ -146,7 +146,7 @@ QState::QState(QState *parent)
   Constructs a new state of the given \a type with the given \a parent state.
 */
 QState::QState(Type type, QState *parent)
-    : QActionState(*new QStatePrivate, parent)
+    : QAbstractState(*new QStatePrivate, parent)
 {
     Q_D(QState);
     d->isParallelGroup = (type == ParallelGroup);
@@ -156,7 +156,7 @@ QState::QState(Type type, QState *parent)
   \internal
 */
 QState::QState(QStatePrivate &dd, QState *parent)
-    : QActionState(dd, parent)
+    : QAbstractState(dd, parent)
 {
 }
 
@@ -385,7 +385,6 @@ QHistoryState *QState::addHistoryState(HistoryType type)
 */
 void QState::onEntry()
 {
-    QActionState::onEntry();
 }
 
 /*!
@@ -393,7 +392,6 @@ void QState::onEntry()
 */
 void QState::onExit()
 {
-    QActionState::onExit();
 }
 
 /*!
@@ -430,7 +428,7 @@ void QState::setInitialState(QAbstractState *state)
 */
 bool QState::event(QEvent *e)
 {
-    return QActionState::event(e);
+    return QAbstractState::event(e);
 }
 
 QT_END_NAMESPACE

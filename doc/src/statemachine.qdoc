@@ -91,13 +91,12 @@
   When any of the states is entered, the label's text will be changed
   accordingly.
 
-  The QActionState::invokeMethodOnEntry() function can be used to have a state
-  invoke a method (a slot) of a QObject when the state is entered. In the
+  The QActionState::entered() signal is emitted when the state is entered. In the
   following snippet, the button's showMaximized() slot will be called when
   state \c s3 is entered:
 
   \code
-    s2->invokeMethodOnEntry(button, "showMaximized");
+    QObject::connect(s3, SIGNAL(entered()), button, SLOT(showMaximized()));
   \endcode
 
   \section1 Sharing Transitions By Grouping States
@@ -209,7 +208,7 @@
     mbox.addButton(QMessageBox::Ok);
     mbox.setText("Interrupted!");
     mbox.setIcon(QMessageBox::Information);
-    s3->invokeMethodOnEntry(&mbox, "exec");
+    QObject::connect(s3, SIGNAL(entered()), &mbox, SLOT(exec()));
     s3->addTransition(s1h);
     machine.addState(s3);
 

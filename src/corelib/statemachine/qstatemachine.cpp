@@ -49,8 +49,6 @@
 #include "qsignaleventgenerator_p.h"
 #include "qabstractstate.h"
 #include "qabstractstate_p.h"
-#include "qactionstate.h"
-#include "qactionstate_p.h"
 #include "qfinalstate.h"
 #include "qhistorystate.h"
 #include "qhistorystate_p.h"
@@ -58,8 +56,6 @@
 #include "qstatefinishedtransition.h"
 #include "qstate.h"
 #include "qstate_p.h"
-#include "qstateaction.h"
-#include "qstateaction_p.h"
 #ifndef QT_STATEMACHINE_SOLUTION
 #include "private/qobject_p.h"
 #include "private/qthread_p.h"
@@ -417,6 +413,7 @@ QList<QAbstractState*> QStateMachinePrivate::exitStates(const QList<QAbstractTra
 #endif
         QAbstractStatePrivate::get(s)->callOnExit();
         configuration.remove(s);
+        QAbstractStatePrivate::get(s)->emitExited();
     }
     return statesToExit_sorted;
 }
@@ -504,6 +501,7 @@ QList<QAbstractState*> QStateMachinePrivate::enterStates(const QList<QAbstractTr
         configuration.insert(s);
         registerTransitions(s);
         QAbstractStatePrivate::get(s)->callOnEntry();
+        QAbstractStatePrivate::get(s)->emitEntered();
         if (statesForDefaultEntry.contains(s)) {
             // ### executeContent(s.initial.transition.children())
         }
@@ -1490,9 +1488,9 @@ void QStateMachine::clearError()
 /*!
    Returns the global restore policy of the state machine.
 
-   \sa QActionState::restorePolicy()
+   \sa QAbstractState::restorePolicy()
 */
-QActionState::RestorePolicy QStateMachine::globalRestorePolicy() const
+QAbstractState::RestorePolicy QStateMachine::globalRestorePolicy() const
 {
     Q_D(const QStateMachine);
     return d->globalRestorePolicy;

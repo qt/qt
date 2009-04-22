@@ -53,14 +53,14 @@
 // We mean it.
 //
 
-#include "qactionstate_p.h"
+#include "qabstractstate_p.h"
 
 #include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 
 class QState;
-class Q_CORE_EXPORT QStatePrivate : public QActionStatePrivate
+class Q_CORE_EXPORT QStatePrivate : public QAbstractStatePrivate
 {
     Q_DECLARE_PUBLIC(QState)
 public:

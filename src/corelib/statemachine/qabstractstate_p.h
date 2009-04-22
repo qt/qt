@@ -98,6 +98,9 @@ public:
     void callOnEntry();
     void callOnExit();
 
+    void emitEntered();
+    void emitExited();
+
     QAbstractState::RestorePolicy restorePolicy;
     QList<QPropertyAssignment> propertyAssignments;
 

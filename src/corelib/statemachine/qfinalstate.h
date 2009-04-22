@@ -43,9 +43,9 @@
 #define QFINALSTATE_H
 
 #ifndef QT_STATEMACHINE_SOLUTION
-#include <QtCore/qactionstate.h>
+#include <QtCore/qabstractstate.h>
 #else
-#include "qactionstate.h"
+#include "qabstractstate.h"
 #endif
 
 QT_BEGIN_HEADER
@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Core)
 
 class QFinalStatePrivate;
-class Q_CORE_EXPORT QFinalState : public QActionState
+class Q_CORE_EXPORT QFinalState : public QAbstractState
 {
     Q_OBJECT
 public:

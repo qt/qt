@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qfinalstate.h"
-#include "qactionstate_p.h"
+#include "qabstractstate_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
   \sa QStateFinishedTransition
 */
 
-class QFinalStatePrivate : public QActionStatePrivate
+class QFinalStatePrivate : public QAbstractStatePrivate
 {
     Q_DECLARE_PUBLIC(QFinalState)
 
@@ -96,7 +96,7 @@ QFinalStatePrivate::QFinalStatePrivate()
   Constructs a new QFinalState object with the given \a parent state.
 */
 QFinalState::QFinalState(QState *parent)
-    : QActionState(*new QFinalStatePrivate, parent)
+    : QAbstractState(*new QFinalStatePrivate, parent)
 {
 }
 
@@ -112,7 +112,6 @@ QFinalState::~QFinalState()
 */
 void QFinalState::onEntry()
 {
-    QActionState::onEntry();
 }
 
 /*!
@@ -120,7 +119,6 @@ void QFinalState::onEntry()
 */
 void QFinalState::onExit()
 {
-    QActionState::onExit();
 }
 
 /*!
@@ -128,7 +126,7 @@ void QFinalState::onExit()
 */
 bool QFinalState::event(QEvent *e)
 {
-    return QActionState::event(e);
+    return QAbstractState::event(e);
 }
 
 QT_END_NAMESPACE
