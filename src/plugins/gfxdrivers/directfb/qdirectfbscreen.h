@@ -127,6 +127,8 @@ public:
                                      const QImage &image);
 #endif
 
+    static uchar *lockSurface(IDirectFBSurface *surface, DFBSurfaceLockFlags flags, int *bpl = 0);
+
 private:
     void compose(const QRegion &r);
     void blit(IDirectFBSurface *src, const QPoint &topLeft,

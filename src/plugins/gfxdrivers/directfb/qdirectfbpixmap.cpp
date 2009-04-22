@@ -267,16 +267,17 @@ void QDirectFBPixmapData::fill(const QColor &color)
     if (forceRaster) {
         // in DSPF_RGB32 all dfb drawing causes the Alpha byte to be
         // set to 0. This causes issues for the raster engine.
-        char *mem;
-        int bpl;
-        const int h = QPixmapData::height();
-        dfbSurface->Lock(dfbSurface, DSLF_WRITE, (void**)&mem, &bpl);
-        const int c = color.rgba();
-        for (int i = 0; i < h; ++i) {
-            memset(mem, c, bpl);
-            mem += bpl;
+        uchar *mem = QDirectFBScreen::lockSurface(dfbSurface, DSLF_WRITE, &bpl);
+        if (mem) {
+            const int h = QPixmapData::height();
+            const int w = QPixmapData::width() * 4; // 4 bytes per 32 bit pixel
+            const int c = color.rgba();
+            for (int i = 0; i < h; ++i) {
+                memset(mem, c, w);
+                mem += bpl;
+            }
+            dfbSurface->Unlock(dfbSurface);
         }
-        dfbSurface->Unlock(dfbSurface);
     } else {
         dfbSurface->Clear(dfbSurface, color.red(), color.green(), color.blue(),
                           color.alpha());
