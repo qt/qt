@@ -1,0 +1,22 @@
+<Rect id="page" width="240" height="180" color='black'>
+    <RemoveButton1
+        y="5"
+        anchors.right="{page.right}"
+        anchors.rightMargin="5"/>
+    <RemoveButton2
+        y="40"
+        anchors.right="{page.right}"
+        anchors.rightMargin="5"/>
+    <RemoveButton3
+        y="75"
+        anchors.right="{page.right}"
+        anchors.rightMargin="5"/>
+    <RemoveButton4
+        y="110"
+        anchors.right="{page.right}"
+        anchors.rightMargin="5"/>
+    <RemoveButton5
+        y="145"
+        anchors.right="{page.right}"
+        anchors.rightMargin="5"/>
+</Rect>

@@ -147,19 +147,40 @@ class HtmlGenerator : public PageGenerator
                              const Node *relative,
 			     CodeMarker *marker, 
                              CodeMarker::SynopsisStyle style);
-    void generateSectionInheritedList(const Section& section, 
+#ifdef QDOC_QML
+    void generateQmlSummary(const Section& section,
+                            const Node *relative,
+                            CodeMarker *marker);
+    void generateQmlItem(const Node *node,
+                         const Node *relative,
+                         CodeMarker *marker,
+                         bool summary);
+    void generateDetailedQmlMember(const Node *node,
+                                   const InnerNode *relative,
+                                   CodeMarker *marker);
+    void generateQmlInherits(const QmlClassNode* cn, CodeMarker* marker);
+    void generateQmlInstantiates(const QmlClassNode* qcn, CodeMarker* marker);
+    void generateInstantiatedBy(const ClassNode* cn, CodeMarker* marker);
+#endif
+   void generateSectionInheritedList(const Section& section, 
                                       const Node *relative,
                                       CodeMarker *marker);
     void generateFullName(const Node *apparentNode, 
                           const Node *relative, 
                           CodeMarker *marker,
 			  const Node *actualNode = 0);
-    void generateDetailedMember(const Node *node, const InnerNode *relative, CodeMarker *marker);
-    void generateLink(const Atom *atom, const Node *relative, CodeMarker *marker);
+    void generateDetailedMember(const Node *node, 
+                                const InnerNode *relative, 
+                                CodeMarker *marker);
+    void generateLink(const Atom *atom, 
+                      const Node *relative, 
+                      CodeMarker *marker);
     void generateStatus(const Node *node, CodeMarker *marker);
     
     QString registerRef(const QString& ref);
-    QString highlightedCode(const QString& markedCode, CodeMarker *marker, const Node *relative);
+    QString highlightedCode(const QString& markedCode, 
+                            CodeMarker *marker, 
+                            const Node *relative);
     QString fileBase(const Node *node);
 #if 0
     QString fileBase(const Node *node, const SectionIterator& section);

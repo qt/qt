@@ -77,6 +77,7 @@ class QString;
 #endif
 #define Q_CLASSINFO(name, value)
 #define Q_INTERFACES(x)
+#define Q_CAST_INTERFACES(x)
 #define Q_PROPERTY(text)
 #define Q_OVERRIDE(text)
 #define Q_ENUMS(x)
@@ -169,6 +170,7 @@ private:
 #define Q_SIGNALS Q_SIGNALS
 #define Q_CLASSINFO(name, value) Q_CLASSINFO(name, value)
 #define Q_INTERFACES(x) Q_INTERFACES(x)
+#define Q_CAST_INTERFACES(x) Q_CAST_INTERFACES(x)
 #define Q_PROPERTY(text) Q_PROPERTY(text)
 #define Q_OVERRIDE(text) Q_OVERRIDE(text)
 #define Q_ENUMS(x) Q_ENUMS(x)
@@ -428,6 +430,7 @@ struct Q_CORE_EXPORT QMetaObject
     };
 
     int static_metacall(Call, int, void **) const;
+    static int metacall(QObject *, Call, int, void **);
 
 #ifdef QT3_SUPPORT
     QT3_SUPPORT const char *superClassName() const;
@@ -439,6 +442,7 @@ struct Q_CORE_EXPORT QMetaObject
         const uint *data;
         const void *extradata;
     } d;
+
 };
 
 struct QMetaObjectExtraData

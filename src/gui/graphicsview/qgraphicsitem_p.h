@@ -91,6 +91,15 @@ class Q_AUTOTEST_EXPORT QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsItem)
 public:
+    struct TransformData
+    {
+        TransformData() : rotationX(0),rotationY(0),rotationZ(0),scaleX(1),scaleY(1), dirty(true)  {}
+        QTransform baseTransform;
+        QTransform transform;
+        QPointF transformCenter;
+        qreal rotationX,rotationY,rotationZ,scaleX,scaleY;
+        bool dirty;
+    };
     enum Extra {
         ExtraTransform,
         ExtraToolTip,
@@ -229,7 +238,7 @@ public:
             }
         }
     }
-
+    
     struct ExtraStruct {
         ExtraStruct(Extra type, QVariant value)
             : type(type), value(value)
@@ -241,6 +250,7 @@ public:
         bool operator<(Extra extra) const
         { return type < extra; }
     };
+    
     QList<ExtraStruct> extras;
 
     QGraphicsItemCache *maybeExtraItemCache() const;

@@ -128,6 +128,22 @@ namespace QT_NAMESPACE {}
 
 #endif /* __cplusplus */
 
+/**
+ * For animation framework to work seamlessly as a solution
+ */
+#if 0
+# define QT_EXPERIMENTAL_BEGIN_NAMESPACE namespace QtExperimental {
+# define QT_EXPERIMENTAL_END_NAMESPACE }
+# define QT_EXPERIMENTAL_USE_NAMESPACE using namespace QtExperimental;
+# define QT_EXPERIMENTAL_PREPEND_NAMESPACE(name) QtExperimental::name
+namespace QtExperimental {}
+#else
+# define QT_EXPERIMENTAL_BEGIN_NAMESPACE
+# define QT_EXPERIMENTAL_END_NAMESPACE
+# define QT_EXPERIMENTAL_USE_NAMESPACE
+# define QT_EXPERIMENTAL_PREPEND_NAMESPACE(name) name
+#endif
+
 #if defined(Q_OS_MAC) && !defined(Q_CC_INTEL)
 #define QT_BEGIN_HEADER extern "C++" {
 #define QT_END_HEADER }
@@ -1132,6 +1148,11 @@ class QDataStream;
 #    else
 #      define Q_SVG_EXPORT Q_DECL_IMPORT
 #    endif
+#    if defined(QT_BUILD_DECLARATIVE_LIB)
+#      define Q_DECLARATIVE_EXPORT Q_DECL_EXPORT
+#    else
+#      define Q_DECLARATIVE_EXPORT Q_DECL_IMPORT
+#    endif
 #    if defined(QT_BUILD_OPENGL_LIB)
 #      define Q_OPENGL_EXPORT Q_DECL_EXPORT
 #    else
@@ -1174,6 +1195,7 @@ class QDataStream;
 #    define Q_SQL_EXPORT Q_DECL_IMPORT
 #    define Q_NETWORK_EXPORT Q_DECL_IMPORT
 #    define Q_SVG_EXPORT Q_DECL_IMPORT
+#    define Q_DECLARATIVE_EXPORT Q_DECL_IMPORT
 #    define Q_CANVAS_EXPORT Q_DECL_IMPORT
 #    define Q_OPENGL_EXPORT Q_DECL_IMPORT
 #    define Q_XML_EXPORT Q_DECL_IMPORT
@@ -1200,6 +1222,7 @@ class QDataStream;
 #    define Q_SQL_EXPORT Q_DECL_EXPORT
 #    define Q_NETWORK_EXPORT Q_DECL_EXPORT
 #    define Q_SVG_EXPORT Q_DECL_EXPORT
+#    define Q_DECLARATIVE_EXPORT Q_DECL_EXPORT
 #    define Q_OPENGL_EXPORT Q_DECL_EXPORT
 #    define Q_XML_EXPORT Q_DECL_EXPORT
 #    define Q_XMLPATTERNS_EXPORT Q_DECL_EXPORT
@@ -1212,6 +1235,7 @@ class QDataStream;
 #    define Q_SQL_EXPORT
 #    define Q_NETWORK_EXPORT
 #    define Q_SVG_EXPORT
+#    define Q_DECLARATIVE_EXPORT
 #    define Q_OPENGL_EXPORT
 #    define Q_XML_EXPORT
 #    define Q_XMLPATTERNS_EXPORT
@@ -2246,6 +2270,7 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #define QT_MODULE_TEST                 0x04000
 #define QT_MODULE_DBUS                 0x08000
 #define QT_MODULE_SCRIPTTOOLS          0x10000
+#define QT_MODULE_DECLARATIVE          0x20000
 
 /* Qt editions */
 #define QT_EDITION_CONSOLE      (QT_MODULE_CORE \
@@ -2273,6 +2298,7 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
                                  | QT_MODULE_QT3SUPPORTLIGHT \
                                  | QT_MODULE_QT3SUPPORT \
                                  | QT_MODULE_SVG \
+                                 | QT_MODULE_DECLARATIVE \
                                  | QT_MODULE_GRAPHICSVIEW \
                                  | QT_MODULE_HELP \
                                  | QT_MODULE_TEST \
@@ -2334,6 +2360,9 @@ QT_LICENSED_MODULE(Qt3Support)
 #endif
 #if (QT_EDITION & QT_MODULE_SVG)
 QT_LICENSED_MODULE(Svg)
+#endif
+#if (QT_EDITION & QT_MODULE_DECLARATIVE)
+QT_LICENSED_MODULE(Declarative)
 #endif
 #if (QT_EDITION & QT_MODULE_ACTIVEQT)
 QT_LICENSED_MODULE(ActiveQt)

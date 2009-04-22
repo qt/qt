@@ -1,0 +1,68 @@
+<Item id="Page" width="800" height="600">
+    <resources>
+        <Component id="AppDelegate">
+            <Item id="Wrapper" x="0" width="204" height="204" scale="{PathView.scale}" z="{PathView.z}">
+                <Item width="{AppIcon.width}" height="{AppIcon.height}" anchors.horizontalCenter="{parent.horizontalCenter}" >
+                    <BlendedImage id="AppIcon" width="240" height="240" primaryFile="{icon + '.png'}" secondaryFile="{icon + '-blur.png'}" anchors.horizontalCenter="{parent.horizontalCenter}" blend="{1 - Wrapper.PathView.opacity}" />
+                </Item>
+                <Text id="AppName" anchors.top="{Wrapper.bottom}" anchors.topMargin="25"
+                      anchors.horizontalCenter="{parent.horizontalCenter}" text="{name}" font.bold="true" font.size="26" color="white"/>
+                <states>
+                    <State name="HideName" when="{index != pathView.currentIndex}">
+                        <SetProperty target="{AppName}" property="opacity" value="0"/>
+                    </State>
+                </states>
+                <transitions>
+                    <Transition>
+                        <NumericAnimation properties="opacity" duration="500"/>
+                    </Transition>
+                </transitions>
+            </Item>
+        </Component>
+    </resources>
+
+    <Image id="Background" opaque="true" file="pics/background.png" anchors.fill="{parent}"/>
+
+    <Item y="0" id="Wheel">
+        <Script>
+        <![CDATA[
+            function prevItem() {
+                if (Applications.currentIndex > 0)
+                    Applications.currentIndex--;
+                else
+                    Applications.currentIndex = Applications.count - 1;
+            }
+            function nextItem() {
+                if (Applications.currentIndex < Applications.count - 1)
+                    Applications.currentIndex++;
+                else
+                    Applications.currentIndex = 0;
+            }
+        ]]>
+        </Script>
+        <PathView id="Applications" model="{appModel}" width="800" height="600" delegate="{AppDelegate}" focusable="true">
+            <path>
+                <Path startX="320" startY="350">
+                    <PathAttribute name="scale" value="1.0"/>
+                    <PathAttribute name="z" value="50"/>
+                    <PathAttribute name="opacity" value="1"/>
+                    <PathQuad x="320" y="150" controlX="740" controlY="250" />
+                    <PathAttribute name="scale" value="0.1"/>
+                    <PathAttribute name="z" value="0"/>
+                    <PathAttribute name="opacity" value="-0.5"/>
+                    <PathQuad x="320" y="350" controlX="-100" controlY="250"/>
+                </Path>
+            </path>
+            <currentIndex>
+                <SerialAnimation running="true" repeat="true">
+                    <NumericAnimation target="{Applications}" from="0" to="{Applications.count}" duration="1000" />
+                </SerialAnimation>
+            </currentIndex>
+        </PathView>
+        <transitions>
+            <Transition>
+                <NumericAnimation properties="x,y,scale,opacity" duration="250"/>
+            </Transition>
+        </transitions>
+    </Item>
+</Item>

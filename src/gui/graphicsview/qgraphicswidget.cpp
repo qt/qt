@@ -291,7 +291,7 @@ QGraphicsWidget::~QGraphicsWidget()
 
     //we check if we have a layout previously
     if (d->layout) {
-        delete d->layout;
+        QGraphicsLayout *temp = d->layout;
         foreach (QGraphicsItem * item, childItems()) {
             // In case of a custom layout which doesn't remove and delete items, we ensure that
             // the parent layout item does not point to the deleted layout. This code is here to
@@ -302,6 +302,8 @@ QGraphicsWidget::~QGraphicsWidget()
                     widget->setParentLayoutItem(0);
             }
         }
+        d->layout = 0;
+        delete temp;
     }
 
     // Remove this graphics widget from widgetStyles

@@ -334,6 +334,16 @@
 */
 
 /*!
+    \externalpage http://www.w3.org/TR/scxml/
+    \title State Chart XML: State Machine Notation for Control Abstraction
+*/
+
+/*!
+    \externalpage http://www.wisdom.weizmann.ac.il/~dharel/SCANNED.PAPERS/Statecharts.pdf
+    \title Statecharts: A visual formalism for complex systems
+*/
+
+/*!
     \externalpage http://www.gnu.org/licenses/gpl.html
     \title GNU General Public License
 */

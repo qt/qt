@@ -1,0 +1,128 @@
+/*! 
+\page elements.html
+\target elements
+\title Qml Elements
+
+The following table lists the Qml elements provided by the Qt Declarative module.
+
+\bold {Standard Qt Declarative Elements}
+
+\table
+\header
+\o \bold {States}
+\o \bold {Animation and Transitions}
+\o \bold {Utility}
+\row
+
+\o
+\list
+\o \l StateGroup
+\o \l SetProperty
+\o \l SetProperties
+\o \l ParentChange
+\o \l RunScript
+\endlist
+
+\o
+\list
+\o \l NumericAnimation
+\o \l ColorAnimation
+\o \l VariantAnimation
+\o \l PauseAnimation
+\o \l SequentialAnimation
+\o \l ParallelAnimation
+\o \l SetPropertyAction
+\o \l Transition
+\o \l Behaviour
+\o \l Follow
+\endlist
+
+\o
+\list
+\o \l Script
+\o \l Bind
+\o \l Connection
+\o \l ListModel
+\o \l DateTimeFormatter
+\endlist
+\endtable
+
+\bold {Fluid UI Primitives}
+
+\table
+\header
+\o \bold {Basic Items}
+\o \bold {Utility}
+\o \bold {Widgets}
+
+\row
+\o
+\list
+\o \l Item
+\o \l Image
+\o \l Text
+\o \l TextEdit
+\o \l Rect
+\o \l MouseRegion
+\o \l KeyActions
+\o \l AnimatedImage
+\endlist
+
+\o
+\list
+\o \l Repeater
+\o \l Content
+\o \l FocusPanel
+\o \l FocusRealm
+\o \l KeyProxy
+\o \l ComponentInstance
+\endlist
+
+\o
+\list
+\o \l Flickable
+\o \l Flipable
+\o \l WebView
+\endlist
+
+\header
+\o \bold {Views}
+\o \bold {Layouts}
+\o \bold {Effects}
+
+\row
+\o
+
+\target xmlViews
+\list
+\o \l ListView
+\o \l GridView
+\o \l PathView
+    \list
+    \o \l Path
+    \endlist
+\endlist
+
+\o
+\list
+\o \l VerticalLayout
+\o \l HorizontalLayout
+\o \l GridLayout
+\endlist
+
+\o
+\list
+\o \l Shadow
+\o \l Reflection
+\o \l Blur
+\o \l Highlight
+\o \l Particles
+    \list
+    \o \l ParticleMotionLinear
+    \o \l ParticleMotionGravity
+    \o \l ParticleMotionWander
+    \endlist
+\endlist
+\endtable
+
+*/

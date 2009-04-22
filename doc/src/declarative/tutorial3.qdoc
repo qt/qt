@@ -1,0 +1,83 @@
+/*! 
+\page tutorial3.html
+\title Tutorial 3 - States
+\target tutorial3
+
+In this chapter, we make this example a little bit more dynamic by introducing states.
+
+We want our text to jump at the bottom of the screen and become red when clicked.
+
+\image declarative-tutorial3_animation.gif
+
+Here is the QML code:
+
+\code
+<Rect id="Page" width="480" height="200" color="white">
+    <Text id="HelloText" text="Hello world!" font.size="24" font.bold="true" y="30" anchors.horizontalCenter="{Page.horizontalCenter}">
+        <states>
+            <State name="down" when="{MouseRegion.pressed == true}">
+                <SetProperty target="{HelloText}" property="y" value="160"/>
+                <SetProperty target="{HelloText}" property="color" value="red"/>
+            </State>
+        </states>
+        <transitions>
+            <Transition fromState="*" toState="down" reversible="true">
+                <ParallelAnimation>
+                    <NumericAnimation properties="y" duration="500" easing="easeOutBounce"/>
+                    <ColorAnimation duration="500"/>
+                </ParallelAnimation>
+            </Transition>
+        </transitions>
+    </Text>
+    <MouseRegion id="MouseRegion" anchors.fill="{HelloText}"/>
+    <GridLayout id="ColorPicker" x="0" anchors.bottom="{Page.bottom}" width="120" height="50" columns="3" rows="2">
+        <Cell color="#ff0000"/>
+        <Cell color="#00ff00"/>
+        <Cell color="#0000ff"/>
+        <Cell color="#ffff00"/>
+        <Cell color="#00ffff"/>
+        <Cell color="#ff00ff"/>
+    </GridLayout>
+</Rect>
+\endcode
+
+\section1 Walkthrough
+
+\code
+<states>
+    <State name="down" when="{MouseRegion.pressed == true}">
+        <SetProperty target="{HelloText}" property="y" value="160"/>
+        <SetProperty target="{HelloText}" property="color" value="red"/>
+    </State>
+</states>
+\endcode
+
+First, we create a new state \e down for our text element. This state will be activated when \l {xmlMouseRegion}{MouseRegion} is pressed, and deactivated when it is released.
+
+The \e down state includes a set of property changes from our implicit \e {default state} (the items as they were initially defined in the QML). Specifically, we set the \c y property of the text to 160 and the \c color to red.
+
+\code
+<Transition fromState="*" toState="down" reversible="true">
+\endcode
+
+Because we don't want the text to appear at the bottom instantly but rather move smoothly, we add a transition between our two states.
+
+\c fromState and \c toState define the states between which the transition will run. In this case, we want a transition from any state to our \e down state.
+
+Because we want the same transition to be run in reverse when changing back from the \e down state to the default state, we set \c reversible to \c true. This is equivalent to writing the two transitions separately.
+
+\code
+<ParallelAnimation>
+    <NumericAnimation properties="y" duration="500" easing="easeOutBounce"/>
+    <ColorAnimation duration="500"/>
+</ParallelAnimation>
+\endcode
+
+The \c ParallelAnimation element makes sure that the two animations (color and position) will start at the same time. We could also run them one after the other by using \c SequentialAnimation instead.
+
+For more details on states and transitions, see \l {states-transitions}{States and Transitions}.
+
+[Previous: \l tutorial2] [\l tutorial]
+
+*/
+

@@ -307,6 +307,12 @@
     \o \l{sql/sqlwidgetmapper}{SQL Widget Mapper}\raisedaster
     \endlist
 
+    \section1 State Machine
+
+    \list
+    \o \l{statemachine/trafficlight}{Traffic Light}\raisedaster
+    \endlist
+
     \section1 Threads
 
     \list

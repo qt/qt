@@ -1,0 +1,999 @@
+/*!
+    \page qmlforcpp.html
+    \target qmlforcpp
+    \title Qt Declarative Markup Language For C++ Programmers
+
+    This page describes the QML format and how to use and extend it from C++.
+
+    The QML syntax declaratively describes in XML how to construct an in memory
+    object tree.  QML is usually used to describe a visual scene graph - using
+    \l {graphicsview}{GraphicsView} or the \l {fxprimitives}{Fx Primitives} - but it is not conceptually 
+    limited to this: the QML format is an abstract XML description of \b any 
+    object tree.  
+
+    QML also includes property bindings.  Bindings are ECMAScript expressions 
+    of a properties value.  Whenever the value of the expression changes - 
+    either for the first time at startup or subsequently thereafter - the 
+    property is automatically updated with the new value.
+
+    \section1 Loading and using QML Files
+
+    QmlComponent is used to load a QML file and to create object instances.
+
+    In QML a component is the unit of instantiation, and the most basic unit 
+    of scope.  A component is like a template for how to construct an object 
+    tree.  One component can create multiple instances of this tree, but the 
+    template remains constant.  
+
+    The following code uses the C++ interface to create 100 red rectangles
+    based on a simple declarative component description.
+    \raw html
+    <table border="0">
+    <tr>
+    <td>
+    \endraw
+    \code
+    QmlComponent redRectangle("<Rect color=\"red\" width=\"100\" height=\"100\" />");
+    for (int ii = 0; ii < 100; ++ii) {
+        QObject *rectangle = redRectangle.create();
+        // ... do something with the rectangle ...
+    }
+    \endcode
+    \raw html
+    </td>
+    </tr>
+    </table>
+    \endraw
+    
+    Each independent XML file describes a QML component, but it is
+    also possible to create sub-components within a QML file as will be
+    shown later.
+    
+    \section1 QML Format 101
+
+    This is some sample QML code.
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    <Image id="myRect" x="10" y="10" width="100" height="100" src="background.png">
+        <Text width="100">
+            <height>50</height>
+            <color>white</color>
+            <font.fontSize>16</font.fontSize>
+            Hello world!
+        </Text>
+    </Image>
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    In QML, XML tags and attributes correspond to Qt objects and properties. 
+    The general rule of thumb is any tag or attribute name that starts with a 
+    capital letter refers to a class, and names that start with a lower case 
+    letter to properties.  It is not possible to access a property that starts 
+    with a capital letter from QML.
+
+    The QML snippet shown above instantiates one \c Image instance and one 
+    \c Text instance and sets properties on both.  \b Everything in QML 
+    ultimately comes down to either instantiating an object instance, or
+    assigning a property a value.  QML relies heavily on Qt's meta object system
+    and can only instantiate classes that derive from QObject.
+
+    Setting properties can be done in two ways: as an XML attribute directly on
+    the class tag that created the the object, or as sub-tags.
+    Although syntactically different, their behaviour is identical.  The two QML
+    snippets below behave exactly the same.
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code 
+    <Rect x="10" y="10" />
+    \endcode
+\raw HTML
+    </td>
+    <td>
+\endraw
+    \code
+    <Rect>
+        <x>10</x>
+        <y>10</y>
+    </Rect>
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+    Arbitrary mixing and matching between the two is allowed.
+
+    QML can set properties that are more complex than just simple types like 
+    integers and strings.  Properties can be object pointers or Qt interface pointers
+    or even lists of object or Qt interface pointers!  QML is typesafe, and will 
+    ensure that only the valid types are assigned to properties.
+
+    Assigning an object to a property is as simple as assigning a basic
+    integer.  Attempting to assign an object to a property when type coercian 
+    fails will produce an error.  The following shows an example of valid and of
+    invalid QML and the corresponding C++ classes.
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code 
+    class Image : public QObject
+    {
+        ... 
+        Q_PROPERTY(ImageFilter *filter READ filter WRITE setFilter)
+    }; 
+
+    class ImageFilter : public QObject 
+    {
+        ...
+    };
+    \endcode
+\raw HTML
+    </td>
+    <td>
+\endraw
+    \code
+    <!-- OK -->
+    <Image>
+        <filter>
+            <ImageFilter />
+        </filter>
+    </Image>
+    
+    <!-- NOT OK: Image cannot be cast into ImageFilter -->
+    <Image>
+        <filter>
+            <Image />
+        </filter>
+    </Image>
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    Classes can also define an optional default property.  The default property
+    is used for assignment if no explicit property has been specified.  
+    In the example below, the string "Hello World!" will be assigned to
+    the \c Text element's default property - which happens to be the \c text 
+    property.  Both lines do the same thing, one explicitly and one implicitly. 
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    <Text text="Hello World!" />
+    <Text>Hello World!</Text>
+    \endcode
+\raw HTML
+    </td>
+    <td>
+\endraw
+    \code
+    class Text : public QObject
+    {
+        ...
+        Q_PROPERTY(QString text READ text WRITE setText)
+        Q_CLASSINFO("DefaultProperty", "text")
+    };
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    Any object property can be the default, even complex properties like lists
+    of objects.  The default property of the \c Rect class is the \c children 
+    property, a list of \c Item's.  In the following example, as both \c Image 
+    and \c Text inherit from \c Item the \c Image and \c Text instances are 
+    added to the parent's \c children property.
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    <Rect>
+        <Image />
+        <Text />
+    </Rect>
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    Properties that return read-only object pointers can be used recursively.  
+    This can be used, for example, to group properties together.  The 
+    \c Text element has a \c font property that returns an object with a number
+    of sub-properties such as \c family, \c bold, \c italic and \c size.  
+    QML makes it easy to interact with these grouped properties, as the
+    following shows - everything you would expect to work, just does.
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    class Text : public ...
+    {
+        ...
+        Q_PROPERTY(Font *font READ font);
+    };
+    class Font : public QObject 
+    {
+        ...
+        Q_PROPERTY(QString family READ family WRITE setFamily);
+        Q_PROPERTY(bool bold READ bold WRITE setBold);
+        Q_PROPERTY(bool italic READ italic WRITE setItalic);
+        Q_PROPERTY(int size READ size WRITE setSize);
+    };
+    \endcode
+\raw HTML
+    </td>
+    <td>
+\endraw
+    \code
+        <Text font.family="helvetica">
+            <font>
+                <bold>true</bold>
+                <italic>true</italic>
+            </font>
+            <font.size>12</font.size>
+        </Text>
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    \section1 Defining QML Types
+
+    The QML engine has no intrinsic knowledge of any class types.  Instead
+    the programmer must define the C++ types, and their corresponding QML
+    name.  There are three ways of adding known types to the QML engine:
+    \list
+    \o 
+    \code
+    #define QML_DECLARE_TYPE(T)
+    #define QML_DEFINE_TYPE(T,QmlName)
+    \endcode
+    Adding these macros to your library or executable automatically makes the 
+    C++ type \a T available from the declarative markup language under the
+    name \a QmlName.  Of course there's nothing stopping you using the same
+    name for both the C++ and the QML name!<br>
+    Most types are added to the QML engine using these macros.  The only 
+    requirement is that \a T inherits QObject and has a default constructor.
+    \o 
+    \code 
+    #define QML_DEFINE_CUSTOM_PARSER(QmlName, CustomParserClass)
+    \endcode
+    Custom parsers define a way to translate between declarative XML and an 
+    object instance in the case the default object model lets you down.  Free 
+    form lists (\c {<ListModel>} are an example of a custom parser.  
+    Custom parsers implement the \l QmlCustomParser interface.
+
+    Custom parsers give a developer very fine grain control over how a type is 
+    instantiated from the XML that describes it.  During the 
+    compilation phase, the custom parser is presented with the XML via a
+    QXmlStreamReader and must 
+    compile this down into an opaque blob that is returned to the compiler.  
+    When, at runtime, the type is instantiated, the opaque blob is passed into 
+    the custom parser, which must return a QObject derived type.
+
+    \o QML::ClassFactory
+
+    The QML engine calls the class factory as a last resort when trying to 
+    create a type.  The class factory returns a \l QmlComponent instance for
+    the type if it can create it.  This allows "on the fly" types to be created.
+    For example, a class factory is used to support automatic instantiation of
+    .qml template files.
+    \endlist
+
+    \section1 Property Binding 
+
+    Assigning constant values and trees to properties will only get you so
+    far.  Property binding allows a property's value to be dependant on the 
+    value of other properties and data.  Whenever these dependencies change,
+    the property's value is automatically updated.  
+
+    Property bindings are ECMAScript expressions and can be applied to any 
+    object property.  C++ classes don't have to do anything special to get 
+    binding support other than define appropriate properties.  Property binding 
+    expressions are differentiated from regular constant literals by surrounding
+    them in braces.
+
+    Here's a simple example that stacks a red, blue and green rectangle.  
+    Bindings are used to ensure that the height of each is kept equal to it's
+    parent's.  Were the root rectangle's height property to change, the child 
+    rectangles height would be updated automatically.
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    <Rect color="red" width="100">
+        <Rect color="blue" width="50" height="{parent.height}">
+            <Rect color="green" width="25" height="{parent.height}">
+        </Rect>
+    </Rect>
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+    Binding expressions execute in a context.  A context behaves as a scope and
+    defines how the expression resolves property and variable names.   Although
+    the two expressions in the last example are the same, the value of \c parent
+    resolves differently because each executes in a different context.  Although
+    QML generally takes care of everything for the programmer, a thorough 
+    understanding of bind contexts is important in some of the more complex QML
+    structures.
+
+    Every expression is executed in a bind context, encapsulated by the 
+    QmlBindContext C++ class.  As covered in the class documentation, a 
+    bind context contains a map of names to values, and a list of default 
+    objects.  When resolving a name, the name to value map is searched first.
+    If the name cannot be found, the default object's are iterated in turn and 
+    the context attempts to resolve the name as a property of one of the default
+    objects.
+
+    There are generally two contexts involved in the execution of a binding.
+    The first is the "object context" - a bind context associated with the 
+    closest instantiated object and containing just one default object, and 
+    that's instantiated object itself.  The effect of the object
+    context is pretty simple - names in the binding expression resolve to 
+    properties on the object first.  It is important to note - particularly in 
+    the case of grouped properties - the object context is that of the 
+    instantiated object,  the consequences of which are shown below.
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    <!-- OK -->                             <!-- NOT OK: Text has no italic property -->
+    <Text>                                  <Text>
+        <font>                                  <font>
+            <bold>{font.italic}</bold>              <bold>{italic}</bold>
+        </font>                                 </font>
+    </Text>                                 </Text>
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    The second context is the "component context".  Each QML component (and 
+    consequently each QML file) is created in its own unique binding context.
+    Like the object context, the component context contains just one default
+    object - but in this case it is the component's root object.  An example
+    will illustrate best - the resultant text will read "background.png".
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    <Image src="background.png">
+        <Text text="{src}" />
+    </Image>
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    If the name is not found in either of these contexts, the context heirarchy
+    is searched parent-by-parent until the name is either found, or the
+    heirarchy is exhausted.
+
+    The first property binding example shown involved fixing the height of three
+    rectangles.  It did this by fixing the height of each rectangle to its
+    parent, rather than fixing them all to a single common point.  Here's the
+    example rewritten to do just that.
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    <Rect color="red" width="100">
+        <Rect color="blue" width="50" height="{parent.height}">
+            <Rect color="green" width="25" height="{parent.parent.height}">
+        </Rect>
+    </Rect>
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    Clearly this sort of fragile relationship is undesirable and unmanageable - 
+    moving the green rectangle to be a sibling of the blue or introducing a 
+    further rectangle between the two would break the example.
+
+    To address this problem, QML includes a way to directly reference any object
+    within a component (or parent component for that matter), called "ids".  
+    Developers assign an object an id, and can then reference it directly by 
+    name.  Developers assign an object an id by setting the special \c id
+    property.  Every object automatically has this magical property (if the
+    object also has an actual property called \c id, that gets set too).  As
+    an id allows an object to be referenced directly, it must be unique within
+    a component.  Any number of id's can exist, but they must all begin with
+    a capital letter.  An id of "Root" is valid, while an id of "root" is not.
+    \note This is not technically true - lowercase id names do work, but are 
+    slower.  Support will probably be removed for them eventually.
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    <Rect id="Root" color="red" width="{GreenRect.width + 75}">
+        <Rect color="blue" width="{GreenRect.width + 25}" height="{Root.height}">
+            <Rect id="GreenRect" color="green" width="25" height="{Root.height}">
+        </Rect>
+    </Rect>
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    To relate id's back to QmlBindContext, id's exist as properties on the
+    component context.
+
+    Bind expressions can reference any object property.  The QML bind engine 
+    relies on the presence of the NOTIFY signal in the Q_PROPERTY declaration 
+    on a class to alert it that a property's value has changed.  If this is 
+    omitted, the bind expression can still access the property's value, but
+    the expression will not be updated if the value changes.  The following is 
+    an example of a QML friendly property declaration.
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    class Example : public QObject
+    {
+    Q_OBJECT
+    Q_PROPERTY(int sample READ sample WRITE setSample NOTIFY sampleChanged)
+    public:
+        int sample() const;
+        void setSample(int);
+    signals:
+        void sampleChanged(int);
+    };
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    While generally no changes are needed to a C++ class to use property 
+    binding, sometimes more advanced interaction between the binding engine and
+    an object is desirable.  To facilitate this, there is a special exception
+    in the bind engine for allowing an object to access the binding directly.
+
+    If a binding is assigned to a property with a type of QmlBindableValue 
+    pointer (ie. QmlBindableValue *), each time the binding value changes,
+    a QmlBindableValue instance is assigned to that property.  The 
+    QmlBindableValue instance allows the object to read the binding and to
+    evaluate the binding's current value.
+
+    \section1 Signal Properties
+
+    In addition to reading and writing regular properties, QML allows you to 
+    easily associate ECMAScript with signals.  Consider the following example,
+    in which Button is a made-up type with a clicked() signal.
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    <Button text="Hello world!" onClicked="print(text)" />
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    Clicking on the button causes "Hello world!" to be printed to the console
+    (or lost forever if you're running Windows).
+
+    Like properties, signals automatically become available in QML without
+    any additional work.  As illustrated signals are mapped into QML as special
+    "signal properties", using the name "on<Signal Name>" where the first 
+    character of the signal's name is uppercased.  If more than one signal of
+    the same name is exist on a class, only the first is available (see the
+    \l {xmlConnection}{<Connection>} element for more general signal connections).
+
+    An important observation to make here is the lack of braces.  While both
+    property bindings and signal properties involve executing ECMAScript code,
+    property bindings dynamically update the property value (hence the braces),
+    whereas with signal properties the constant script "value" is actually 
+    assigned to the signal property.  Trying to bind a value to a signal 
+    property will not work!
+
+    Signal parameters are also available to the executing script, as shown 
+    below, as long as you remember to name the parameters of your signal
+    in C++ (see QMetaMethod::parameterNames()).
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    <Example>
+        <onDoSomething>
+            for(var ii = 0; ii &lt; count; ++ii) 
+                print(message)
+        </onDoSomething>
+    </Example>
+    \endcode
+\raw HTML
+    </td>
+    <td>
+\endraw
+    \code
+    class Example : public QObject
+    {
+    Q_OBJECT
+    signals:
+        void doSomething(int count, const QString &message);
+    };
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+    
+    Just like property bindings, signal scripts are executed in a context.  The
+    signal script context is identical in scope to the "object context" under
+    property binding, with the exception that it has the signal parameters 
+    bound in.
+
+    In addition to scripts, it is possible to assign objects to signal properties.
+    This automatically connects the signal to the object's default method.  A
+    default method is defined just like a default property, though the special
+    "DefaultMethod" class info.
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    Q_CLASSINFO("DefaultMethod", "myMethod(int)");
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    This is useful in achieving several use cases, like that below which moves
+    the button when it is clicked.
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    <Button id="MyButton">
+        <onClicked>
+            <NumericAnimation target="{MyButton}" property="x" to="100" />
+        </onClicked>
+    </Button>
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+
+    If the class itself actually defines a property called "on<Name>", this will
+    be assigned the string value and the signal handling behaviour will be 
+    disabled.
+
+    \section1 Attached Properties
+
+    Attached properties allow unrelated types to annotate another type with some
+    additional properties.  Some APIs or operations are inherintly imperative,
+    and attached properties help out when translating these APIs into the 
+    declarative QML language.
+
+    Qt's QGridLayout is one such example.
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    <QGridLayout>
+        <QLabel QGridLayout.row="0" QGridLayout.column="0" text="Name:"/>
+        <QLineEdit QGridLayout.row="0" QGridLayout.column="1" />
+
+        <QLabel QGridLayout.row="1" QGridLayout.column="0" text="Occupation:"/>
+        <QLineEdit QGridLayout.row="1" QGridLayout.column="1" />
+    </QGridLayout>
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+    
+    Attached properties are identified by the use of a class name, in the
+    case shown \c QGridLayout, as a grouped property specifier.  To prevent
+    ambiguity with actual class instantiations, attached properties must
+    always be specified to include a period but can otherwise be used just like
+    regular properties.
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    <!-- OK -->                                     <!-- NOT OK: Creates a QGridLayout, rather than assigning attached property -->
+    <QLabel>                                        <QLabel>
+        <QGridLayout.row>0</QGridLayout.row>            <QGridLayout>
+    </QLabel>                                               <row>0</row>
+                                                        </QGridLayout>
+                                                    </QLabel>
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    C++ types provide attached properties by declaring the public function \c qmlAttachedProperties like this example.
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+        static QObject *Type::qmlAttachedProperties(QObject *);
+    \endcode
+\raw HTML
+    </td>
+    <td>
+\endraw
+    \code
+    class Example : public QObject
+    {
+        Q_OBJECT
+    public:
+        static QObject *qmlAttachedProperties(QObject *);
+    };
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+    
+    When an attached property is accessed, the QML engine will call this method
+    to create an attachment object, passing in the object instance that the
+    attached property applies to.  The attachment object should define all
+    the attached properties, and is generally parented to the provided object
+    instance to avoid memory leaks.  The QML engine does not save this object,
+    so it is necessary for the attached property function to ensure that 
+    multiple calls for the same instance object return the same attached object.
+
+    While conceptually simple, implementing an attachment object is not quite
+    so easy.  The \c qmlAttachedProperties function is static - attachment 
+    objects are not associated with any particular instance.  How the values
+    of the attached properties apply to the behaviour they are controlling is
+    entirely implementation dependent.  An additional consequence of this is
+    that \b any object can attach \b any attached property.  The following is
+    perfectly valid, although the attached property has no actual effect:
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    <FancyGridLayout>
+        <Item>
+            <Button QGridLayout.row="1" />
+        </Item>
+    </FancyGridLayout>
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    The property has no effect because the (made-up) FancyGridLayout type defines the meaning
+    of the \c row attached property only to apply to its direct children.  It
+    is possible that other types may have attached properties that affect 
+    objects that aren't their direct children.
+
+    Attached properties are an advanced feature that should be used with 
+    caution.
+
+    \note We may implement a convenience wrapper that makes using attached 
+    properties easier for the common "attach to children" case.
+
+    \section1 Property Value Sources
+
+    Intrinsically, the QML engine can assign a property either a static value,
+    such as a number of object tree, or a property binding.  It is possible for
+    advanced users to extend the engine to assign other "types" of values to
+    properties.  These "types" are known as property value sources.
+
+    Consider the following \l {fxprimitives}{Fx Primitives} example.
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    <Rect width="100" height="100" color="red">
+        <x>
+            <NumericAnimation running="true" repeat="true" from="0" to="100" />
+        </x>
+    </Rect>
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    Here the \c x property of the rectangle will be animated from 0 to 100.
+    To support this, the NumericAnimation class inherits the 
+    QmlPropertyValueSource class.  If a type inherits this class and is assigned
+    to a property for which type assignment would otherwise fail (ie. the
+    property itself doesn't have a type of QmlPropertyValueSource *), the QML
+    engine will automatically set the property as the target of the value 
+    source.
+
+    \section1 Extending types in QML
+
+    QML is designed to allow you to build fully working types without writing
+    a line of C++ code.  This is, for example, used extensively when designing
+    applications using the \l {fxprimitives}{Fx Primitives}.  To create new types, it is 
+    necessary to be able to define new signals, slots and properties in QML.
+
+    \note slots are not yet supported
+
+    Any object is extensible in this way under QML, using the special 
+    \c properties and \c signals properties.  Like \c id, these two properties
+    are automatically available on all types under QML and accessible from
+    other QML files or directly from C++.
+
+    In this example, a Button  is extended to have an additional
+    "text2" property (which always returns "Hello world!") and an additional
+    signal "clicked2" that is also emitted when the button is clicked.  Not
+    a very useful extension, but an extension nonetheless.
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    QmlComponent component(xmlData);
+    QObject *object = component.create();
+    // Will print "Hello world!"
+    qDebug() << object->property("text2");
+    // Will be emitted whenever the button is clicked
+    QObject::connect(object, SIGNAL(clicked2()), this, SLOT(...));
+    \endcode
+\raw HTML
+    </td>
+    <td>
+\endraw
+    \code
+    <Button text="Hello!">
+        <properties>
+            <Property name="text2" type="string" />
+        </properties>
+        <signals>
+            <Signal name="clicked2" />
+        </signals>
+        <text2>Hello world!</text2>
+        <onClicked>clicked2.emit()</onClicked>
+    </Button>
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    Any number of properties and signals can be added to an existing type.  The
+    \c Property and \c Signal elements have the following properties that can 
+    be set:
+    \table
+    \header \o Tag \o Property \o Description
+    \row \o Property \o name \o The name of the property
+    \row \o Property \o type \o The type of the property.  The available types are: \list \o int \o bool \o double \o real \o string \o color \o date \o variant \endlist  The default is variant.
+    \row \o Property \o value \o The initial value of the property.  Setting this is just a shortcut for setting the property normally, as shown in the example above.
+    \row \o Property \o onValueChanged \o A special signal property that is emitted each time the property value changes.
+    \row \o Property \o default \o Set this as the object's default property
+    \row \o Signal \o name \o The name of the signal.
+    \endtable
+
+    If the type itself actually defines a property called \c properties or
+    \c signals, the respective extension will be disabled for that type and
+    the types own properties will be set.
+
+    \section1 Parser Status
+
+    Generally using QML is a breeze - you implement your classes in C++, add
+    the appropriate properties, signals and slots and off you go.  The QML
+    engine takes care of instantiating your classes and setting the properties
+    and everything works fine.
+    
+    However, sometimes it is helpful to know a little more about the status of
+    the QML parser.  For example, it might be beneficial from a performance 
+    standpoint to delay initializing some data structures until all the 
+    properties have been set.
+
+    To assist with this, the QML engine defines an interface class called 
+    QmlParserStatus.  The interface defines a number of virtual methods that are
+    invoked at various stages of the component instantiation.  To receive
+    these notifications, all a class has to do is to inherit the interface, and
+    notify the Qt meta system using the Q_INTERFACES() macro.  For example,
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    class Example : public QObject, public QmlParserStatus
+    {
+        Q_OBJECT
+        Q_INTERFACES(QmlParserStatus)
+    public:
+        virtual void componentComplete()
+        {
+            qDebug() << "Woohoo!  Now to do my costly initialization";
+        }
+    };
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    \section1 Extended Type Definitions
+
+    QML requires that types have the appropriate properties and signals to 
+    work well within the declarative environment.  In the case of existing
+    types, it is sometimes necessary to add signals, properties or slots to a 
+    target class to make it more QML friendly but the original type cannot be 
+    modified.  For these cases, the QML engine supports extended type 
+    definitions.
+
+    An extended type definition allows the programmer to supply an additional
+    type - known as the extension type - when registering the target class
+    whose properties, signals and slots are transparently merged with the 
+    original target class when used from within QML.
+
+    An extension class is a regular QObject, with a constructor that takes a
+    QObject pointer.  When needed (extension classes are delay created 
+    until the first extension attribute is accessed) the extension
+    class is created and the target object is passed in as the parent.  When
+    an extension attribute on the original is accessed, the appropriate signal,
+    property or slots on the extension object is used instead.
+
+    When an extended type is installed, the 
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+        #define QML_DEFINE_EXTENDED_TYPE(T,QmlName,ExtendedTypeName)
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+    macro should be used instead of the regular \c QML_DEFINE_TYPE.
+
+    This example shows the addition of a read-only \c textLength property to 
+    QLabel being implemented as an extension.
+
+\raw HTML
+    <table border="0">
+    <tr>
+    <td>
+\endraw
+    \code
+    class QLabelExtension : public QObject
+    {
+        Q_OBJECT
+        Q_PROPERTY(int textLength READ textLength)
+    public:
+        QWidgetExtension(QObject *parent) : QObject(parent) {}
+        int textLength() const { 
+            return static_cast<QLabel *>(parent())->text().count(); 
+        }
+    };
+    QML_DEFINE_EXTENDED_TYPE(QLabel,QLabel,QLabelExtension);
+    \endcode
+\raw HTML
+    </td>
+    <td>
+\endraw
+    \code
+    <QLabel id="Label1" text="Hello World!" />
+    <QLabel text="{'Label1 text length:' + Label1.textLength}" />
+    \endcode
+\raw HTML
+    </td>
+    </tr>
+    </table>
+\endraw
+
+    Attributes defined through extensions are inherited, just like attributes
+    defined on a normal class.  Any types that inherit from \c QLabel, will
+    also have the \c textLength property.  Derived types can include additional
+    extensions which are merged together, but only a single extension can be
+    specified for each single C++ class.
+
+    Extended type definitions can even be used to add an attached properties
+    function to a type - just declare the \c qmlAttachedProperties function on
+    the extension object.
+
+*/
+

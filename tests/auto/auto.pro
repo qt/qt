@@ -5,9 +5,11 @@ TEMPLATE = subdirs
            headers
 
 SUBDIRS += bic \
+           dynamicobject \
            collections \
            compile \
            compilerwarnings \
+           dynamicobject \
            exceptionsafety \
            macgui \
            macplist \
@@ -75,6 +77,7 @@ SUBDIRS += bic \
            qaction \
            qactiongroup \
            qalgorithms \
+           qanimationgroup \
            qapplication \
            qatomicint \
            qatomicpointer \
@@ -213,6 +216,7 @@ SUBDIRS += bic \
            qpainter \
            qpainterpath \
            qpalette \
+           qparallelanimationgroup \
            qpathclipper \
            qpen \
            qpicture \
@@ -228,6 +232,7 @@ SUBDIRS += bic \
            qprocess \
            qprogressbar \
            qprogressdialog \
+           qpropertyanimation \
            qpushbutton \
            qqueue \
            qradiobutton \
@@ -254,6 +259,7 @@ SUBDIRS += bic \
            qscrollarea \
            qsemaphore \
 	   qsharedpointer \
+           qsequentialanimationgroup \
            qset \
            qsettings \
            qshortcut \
@@ -287,6 +293,7 @@ SUBDIRS += bic \
            qstackedwidget \
            qstandarditem \
            qstandarditemmodel \
+           qstate \
            qstatusbar \
            qstl \
            qstring \
@@ -340,6 +347,7 @@ SUBDIRS += bic \
            qtranslator \
            qtransform \
            qtransformedscreen \
+           qtransition \
            qtreeview \
            qtreewidget \
            qtreewidgetitemiterator \
@@ -432,3 +440,5 @@ contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebpage
 
 SUBDIRS += math3d
+
+contains(QT_CONFIG, declarative): SUBDIRS += declarative

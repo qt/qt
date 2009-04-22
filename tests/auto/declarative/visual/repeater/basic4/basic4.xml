@@ -1,0 +1,18 @@
+<Rect color="blue" width="800" height="600" id="Page">
+    <ListModel id="DataSource">
+        <Month>
+            <name>January</name>
+        </Month>
+        <Month>
+            <name>February</name>
+        </Month>
+    </ListModel>
+    <Component id="Delegate">
+        <Rect color="red" width="100" height="100">
+            <Text text="{name}" />
+        </Rect>
+    </Component>
+    <HorizontalLayout>
+        <Repeater dataSource="{DataSource}" component="{Delegate}" />
+    </HorizontalLayout>
+</Rect>

@@ -12,7 +12,7 @@ HEADERS += \
 	kernel/qcoreevent.h \
 	kernel/qmetaobject.h \
 	kernel/qmetatype.h \
-        kernel/qmimedata.h \
+	kernel/qmimedata.h \
 	kernel/qobject.h \
 	kernel/qobjectdefs.h \
 	kernel/qsignalmapper.h \
@@ -27,12 +27,13 @@ HEADERS += \
         kernel/qvariant_p.h \
         kernel/qmetaobject_p.h \
         kernel/qobject_p.h \
-        kernel/qcoreglobaldata_p.h \
-        kernel/qsharedmemory.h \
+	kernel/qcoreglobaldata_p.h \
+	kernel/qsharedmemory.h \
         kernel/qsharedmemory_p.h \
         kernel/qsystemsemaphore.h \
         kernel/qsystemsemaphore_p.h \
-        kernel/qfunctions_p.h
+        kernel/qfunctions_p.h \
+        kernel/qmetaobjectbuilder_p.h
 
 SOURCES += \
 	kernel/qabstracteventdispatcher.cpp \
@@ -43,7 +44,7 @@ SOURCES += \
 	kernel/qcoreevent.cpp \
 	kernel/qmetaobject.cpp \
 	kernel/qmetatype.cpp \
-        kernel/qmimedata.cpp \
+	kernel/qmimedata.cpp \
 	kernel/qobject.cpp \
 	kernel/qobjectcleanuphandler.cpp \
 	kernel/qsignalmapper.cpp \
@@ -51,9 +52,10 @@ SOURCES += \
 	kernel/qtimer.cpp \
 	kernel/qtranslator.cpp \
 	kernel/qvariant.cpp \
-        kernel/qcoreglobaldata.cpp \
-        kernel/qsharedmemory.cpp \
-        kernel/qsystemsemaphore.cpp
+	kernel/qcoreglobaldata.cpp \
+	kernel/qsharedmemory.cpp \
+	kernel/qsystemsemaphore.cpp \
+	kernel/qmetaobjectbuilder.cpp
 
 win32 {
 	SOURCES += \

@@ -1,0 +1,347 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the test suite of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include <QtTest/QtTest>
+
+#include <QtCore/qanimationgroup.h>
+#include <QtCore/qsequentialanimationgroup.h>
+#include <QtCore/qparallelanimationgroup.h>
+
+//TESTED_CLASS=QAnimationGroup
+//TESTED_FILES=
+
+Q_DECLARE_METATYPE(QAbstractAnimation::State)
+
+class tst_QAnimationGroup : public QObject
+{
+  Q_OBJECT
+public:
+    tst_QAnimationGroup();
+    virtual ~tst_QAnimationGroup();
+
+public Q_SLOTS:
+    void init();
+    void cleanup();
+
+private slots:
+    void construction();
+    void emptyGroup();
+    void setCurrentTime();
+    void statesAndSignals();
+    void setParentAutoAdd();
+    void beginNestedGroup();
+};
+
+tst_QAnimationGroup::tst_QAnimationGroup()
+{
+}
+
+tst_QAnimationGroup::~tst_QAnimationGroup()
+{
+}
+
+void tst_QAnimationGroup::init()
+{
+    qRegisterMetaType<QAbstractAnimation::State>("QAbstractAnimation::State");
+}
+
+void tst_QAnimationGroup::cleanup()
+{
+}
+
+void tst_QAnimationGroup::construction()
+{
+    QSequentialAnimationGroup animationgroup;
+}
+
+class AnimationObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int value READ value WRITE setValue)
+public:
+    AnimationObject(int startValue = 0)
+        : v(startValue)
+    { }
+
+    int value() const { return v; }
+    void setValue(int value) { v = value; }
+
+    int v;
+};
+
+class TestAnimation : public QVariantAnimation
+{
+    Q_OBJECT
+public:
+    virtual void updateCurrentValue(const QVariant &value) { Q_UNUSED(value)};
+    virtual void updateState(QAbstractAnimation::State oldState,
+                             QAbstractAnimation::State newState)
+    {
+        Q_UNUSED(oldState)
+        Q_UNUSED(newState)
+    };
+};
+
+class UncontrolledAnimation : public QPropertyAnimation
+{
+    Q_OBJECT
+public:
+    UncontrolledAnimation(QObject *target, const QByteArray &propertyName, QObject *parent = 0)
+        : QPropertyAnimation(target, propertyName, parent), id(0)
+    {
+        setDuration(250);
+    }
+
+    int duration() const { return -1; /* not time driven */ }
+
+protected:
+    void timerEvent(QTimerEvent *event)
+    {
+        if (event->timerId() == id)
+            stop();
+    }
+
+    void updateRunning(bool running)
+    {
+        if (running) {
+            id = startTimer(500);
+        } else {
+            killTimer(id);
+            id = 0;
+        }
+    }
+
+private:
+    int id;
+};
+
+void tst_QAnimationGroup::emptyGroup()
+{
+    QSequentialAnimationGroup group;
+    QSignalSpy groupStateChangedSpy(&group, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+
+    QCOMPARE(group.state(), QAnimationGroup::Stopped);
+    group.start();
+
+    QCOMPARE(groupStateChangedSpy.count(), 2);
+
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(groupStateChangedSpy.at(0).at(1)),
+             QAnimationGroup::Running);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(groupStateChangedSpy.at(1).at(1)),
+             QAnimationGroup::Stopped);
+
+    QCOMPARE(group.state(), QAnimationGroup::Stopped);
+
+    QTest::ignoreMessage(QtWarningMsg, "QAbstractAnimation::pause: Cannot pause a stopped animation");
+    group.pause();
+
+    QCOMPARE(groupStateChangedSpy.count(), 2);
+    QCOMPARE(group.state(), QAnimationGroup::Stopped);
+
+    group.start();
+
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(groupStateChangedSpy.at(2).at(1)),
+             QAnimationGroup::Running);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(groupStateChangedSpy.at(3).at(1)),
+             QAnimationGroup::Stopped);
+
+    QCOMPARE(group.state(), QAnimationGroup::Stopped);
+
+    group.stop();
+
+    QCOMPARE(groupStateChangedSpy.count(), 4);
+    QCOMPARE(group.state(), QAnimationGroup::Stopped);
+}
+
+void tst_QAnimationGroup::setCurrentTime()
+{
+    AnimationObject s_o1;
+    AnimationObject s_o2;
+    AnimationObject s_o3;
+    AnimationObject p_o1;
+    AnimationObject p_o2;
+    AnimationObject p_o3;
+    AnimationObject t_o1;
+    AnimationObject t_o2;
+
+    // sequence operating on same object/property
+    QSequentialAnimationGroup *sequence = new QSequentialAnimationGroup();
+    QVariantAnimation *a1_s_o1 = new QPropertyAnimation(&s_o1, "value");
+    QVariantAnimation *a2_s_o1 = new QPropertyAnimation(&s_o1, "value");
+    QVariantAnimation *a3_s_o1 = new QPropertyAnimation(&s_o1, "value");
+    a2_s_o1->setIterationCount(3);
+    sequence->addAnimation(a1_s_o1);
+    sequence->addAnimation(a2_s_o1);
+    sequence->addAnimation(a3_s_o1);
+
+    // sequence operating on different object/properties
+    QAnimationGroup *sequence2 = new QSequentialAnimationGroup();
+    QVariantAnimation *a1_s_o2 = new QPropertyAnimation(&s_o2, "value");
+    QVariantAnimation *a1_s_o3 = new QPropertyAnimation(&s_o3, "value");
+    sequence2->addAnimation(a1_s_o2);
+    sequence2->addAnimation(a1_s_o3);
+
+    // parallel operating on different object/properties
+    QAnimationGroup *parallel = new QParallelAnimationGroup();
+    QVariantAnimation *a1_p_o1 = new QPropertyAnimation(&p_o1, "value");
+    QVariantAnimation *a1_p_o2 = new QPropertyAnimation(&p_o2, "value");
+    QVariantAnimation *a1_p_o3 = new QPropertyAnimation(&p_o3, "value");
+    a1_p_o2->setIterationCount(3);
+    parallel->addAnimation(a1_p_o1);
+    parallel->addAnimation(a1_p_o2);
+    parallel->addAnimation(a1_p_o3);
+
+    UncontrolledAnimation *notTimeDriven = new UncontrolledAnimation(&t_o1, "value");
+    QCOMPARE(notTimeDriven->totalDuration(), -1);
+
+    QVariantAnimation *loopsForever = new QPropertyAnimation(&t_o2, "value");
+    loopsForever->setIterationCount(-1);
+    QCOMPARE(loopsForever->totalDuration(), -1);
+
+    QParallelAnimationGroup group;
+    group.addAnimation(sequence);
+    group.addAnimation(sequence2);
+    group.addAnimation(parallel);
+    group.addAnimation(notTimeDriven);
+    group.addAnimation(loopsForever);
+
+    // Current time = 1
+    group.setCurrentTime(1);
+    QCOMPARE(group.state(), QAnimationGroup::Stopped);
+    QCOMPARE(sequence->state(), QAnimationGroup::Stopped);
+    QCOMPARE(a1_s_o1->state(), QAnimationGroup::Stopped);
+    QCOMPARE(sequence2->state(), QAnimationGroup::Stopped);
+    QCOMPARE(a1_s_o2->state(), QAnimationGroup::Stopped);
+    QCOMPARE(parallel->state(), QAnimationGroup::Stopped);
+    QCOMPARE(a1_p_o1->state(), QAnimationGroup::Stopped);
+    QCOMPARE(a1_p_o2->state(), QAnimationGroup::Stopped);
+    QCOMPARE(a1_p_o3->state(), QAnimationGroup::Stopped);
+    QCOMPARE(notTimeDriven->state(), QAnimationGroup::Stopped);
+    QCOMPARE(loopsForever->state(), QAnimationGroup::Stopped);
+
+    QCOMPARE(group.currentTime(), 1);
+    QCOMPARE(sequence->currentTime(), 1);
+    QCOMPARE(a1_s_o1->currentTime(), 1);
+    QCOMPARE(a2_s_o1->currentTime(), 0);
+    QCOMPARE(a3_s_o1->currentTime(), 0);
+    QCOMPARE(a1_s_o2->currentTime(), 1);
+    QCOMPARE(a1_s_o3->currentTime(), 0);
+    QCOMPARE(a1_p_o1->currentTime(), 1);
+    QCOMPARE(a1_p_o2->currentTime(), 1);
+    QCOMPARE(a1_p_o3->currentTime(), 1);
+    QCOMPARE(notTimeDriven->currentTime(), 1);
+    QCOMPARE(loopsForever->currentTime(), 1);
+
+    // Current time = 250
+    group.setCurrentTime(250);
+    QCOMPARE(group.currentTime(), 250);
+    QCOMPARE(sequence->currentTime(), 250);
+    QCOMPARE(a1_s_o1->currentTime(), 250);
+    QCOMPARE(a2_s_o1->currentTime(), 0);
+    QCOMPARE(a3_s_o1->currentTime(), 0);
+    QCOMPARE(a1_s_o2->currentTime(), 250);
+    QCOMPARE(a1_s_o3->currentTime(), 0);
+    QCOMPARE(a1_p_o1->currentTime(), 250);
+    QCOMPARE(a1_p_o2->currentTime(), 0);
+    QCOMPARE(a1_p_o2->currentIteration(), 1);
+    QCOMPARE(a1_p_o3->currentTime(), 250);
+    QCOMPARE(notTimeDriven->currentTime(), 250);
+    QCOMPARE(loopsForever->currentTime(), 0);
+    QCOMPARE(loopsForever->currentIteration(), 1);
+    QCOMPARE(sequence->currentAnimation(), a2_s_o1);
+
+    // Current time = 251
+    group.setCurrentTime(251);
+    QCOMPARE(group.currentTime(), 251);
+    QCOMPARE(sequence->currentTime(), 251);
+    QCOMPARE(a1_s_o1->currentTime(), 250);
+    QCOMPARE(a2_s_o1->currentTime(), 1);
+    QCOMPARE(a2_s_o1->currentIteration(), 0);
+    QCOMPARE(a3_s_o1->currentTime(), 0);
+    QCOMPARE(sequence2->currentTime(), 251);
+    QCOMPARE(a1_s_o2->currentTime(), 250);
+    QCOMPARE(a1_s_o3->currentTime(), 1);
+    QCOMPARE(a1_p_o1->currentTime(), 250);
+    QCOMPARE(a1_p_o2->currentTime(), 1);
+    QCOMPARE(a1_p_o2->currentIteration(), 1);
+    QCOMPARE(a1_p_o3->currentTime(), 250);
+    QCOMPARE(notTimeDriven->currentTime(), 251);
+    QCOMPARE(loopsForever->currentTime(), 1);
+    QCOMPARE(sequence->currentAnimation(), a2_s_o1);
+}
+
+void tst_QAnimationGroup::statesAndSignals()
+{
+}
+
+void tst_QAnimationGroup::setParentAutoAdd()
+{
+    QParallelAnimationGroup group;
+    QVariantAnimation *animation = new QPropertyAnimation(&group);
+    QCOMPARE(animation->group(), &group);
+}
+
+void tst_QAnimationGroup::beginNestedGroup()
+{
+    QAnimationGroup *subGroup;
+    QAnimationGroup *parent = new QParallelAnimationGroup();
+
+    for (int i = 0; i < 10; ++i) {
+        if (i & 1)
+            subGroup = new QParallelAnimationGroup(parent);
+        else
+            subGroup = new QSequentialAnimationGroup(parent);
+
+        QCOMPARE(parent->animationCount(), 1);
+        QAnimationGroup *child = static_cast<QAnimationGroup *>(parent->animationAt(0));
+
+        QCOMPARE(child->parent(), static_cast<QObject *>(parent));
+        if (i & 1)
+            QVERIFY(qobject_cast<QParallelAnimationGroup *> (child));
+        else
+            QVERIFY(qobject_cast<QSequentialAnimationGroup *> (child));
+
+        parent = child;
+    }
+}
+
+QTEST_MAIN(tst_QAnimationGroup)
+#include "tst_qanimationgroup.moc"

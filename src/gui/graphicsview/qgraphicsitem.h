@@ -239,11 +239,27 @@ public:
     QTransform itemTransform(const QGraphicsItem *other, bool *ok = 0) const;
     void setTransform(const QTransform &matrix, bool combine = false);
     void resetTransform();
-    
+
+    // ### obsolete?
     void rotate(qreal angle);
     void scale(qreal sx, qreal sy);
     void shear(qreal sh, qreal sv);
     void translate(qreal dx, qreal dy);
+
+    // ### experimental
+    QPointF transformOrigin() const;
+    void setTransformOrigin(const QPointF &center);
+    qreal xScale() const;
+    void setXScale(qreal factor);
+    qreal yScale() const;
+    void setYScale(qreal factor);
+    qreal xRotation() const;
+    void setXRotation(qreal angle);
+    qreal yRotation() const;
+    void setYRotation(qreal angle);
+    qreal zRotation() const;
+    void setZRotation(qreal angle);
+
     virtual void advance(int phase);
 
     // Stacking order
@@ -404,6 +420,7 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsItem::GraphicsItemFlags)
+Q_DECLARE_INTERFACE(QGraphicsItem, "com.trolltech.Qt.QGraphicsItem")
 
 inline void QGraphicsItem::setPos(qreal ax, qreal ay)
 { setPos(QPointF(ax, ay)); }

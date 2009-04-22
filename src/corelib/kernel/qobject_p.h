@@ -220,6 +220,14 @@ private:
 
 void Q_CORE_EXPORT qDeleteInEventHandler(QObject *o);
 
+
+struct Q_CORE_EXPORT QAbstractDynamicMetaObject : public QMetaObject
+{
+    virtual ~QAbstractDynamicMetaObject() {}
+    virtual int metaCall(QMetaObject::Call, int _id, void **) { return _id; }
+    virtual int createProperty(const char *, const char *) { return -1; }
+};
+
 QT_END_NAMESPACE
 
 #endif // QOBJECT_P_H

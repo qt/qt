@@ -1,0 +1,140 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the QtDeclarative module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include "qmlvmemetaobject_p.h"
+#include <qml.h>
+#include <private/qmlrefcount_p.h>
+#include <QColor>
+#include <QDate>
+
+
+QT_BEGIN_NAMESPACE
+QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
+                                       const QMetaObject *other, 
+                                       QmlRefCount *rc)
+: object(obj), ref(rc)
+{
+    if(ref)
+        ref->addref();
+
+    *static_cast<QMetaObject *>(this) = *other;
+    this->d.superdata = obj->metaObject();
+    QObjectPrivate::get(obj)->metaObject = this;
+
+    baseProp = propertyOffset();
+    baseSig = methodOffset();
+    data = new QVariant[propertyCount() - baseProp];
+    vTypes.resize(propertyCount() - baseProp);
+
+    for(int ii = baseProp; ii < propertyCount(); ++ii) {
+        QMetaProperty prop = property(ii);
+        if((int)prop.type() != -1) {
+            data[ii - baseProp] = QVariant((QVariant::Type)prop.userType());
+        } else {
+            vTypes.setBit(ii - baseProp, true);
+        }
+    }
+}
+
+QmlVMEMetaObject::~QmlVMEMetaObject()
+{
+    if(ref)
+        ref->release();
+    delete [] data;
+}
+
+int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
+{
+    if(id >= baseProp) {
+        int propId = id - baseProp;
+        bool needActivate = false;
+
+        if(vTypes.testBit(propId)) {
+            if(c == QMetaObject::ReadProperty) {
+                *reinterpret_cast<QVariant *>(a[0]) = data[propId];
+            } else if(c == QMetaObject::WriteProperty) {
+                needActivate = 
+                    (data[propId] != *reinterpret_cast<QVariant *>(a[0]));
+                data[propId] = *reinterpret_cast<QVariant *>(a[0]);
+            }
+        } else {
+            if(c == QMetaObject::ReadProperty) {
+                switch(data[propId].type()) {
+                case QVariant::Int:
+                    *reinterpret_cast<int *>(a[0]) = data[propId].toInt();
+                    break;
+                case QVariant::Bool:
+                    *reinterpret_cast<bool *>(a[0]) = data[propId].toBool();
+                    break;
+                case QVariant::Double:
+                    *reinterpret_cast<double *>(a[0]) = data[propId].toDouble();
+                    break;
+                case QVariant::String:
+                    *reinterpret_cast<QString *>(a[0]) = data[propId].toString();
+                    break;
+                case QVariant::Color:
+                    *reinterpret_cast<QColor *>(a[0]) = data[propId].value<QColor>();
+                    break;
+                case QVariant::Date:
+                    *reinterpret_cast<QDate *>(a[0]) = data[propId].toDate();
+                    break;
+                default:
+                    qFatal("Unknown type");
+                    break;
+                }
+            } else if(c == QMetaObject::WriteProperty) {
+
+                QVariant value = QVariant((QVariant::Type)data[propId].type(), a[0]); 
+                needActivate = (data[propId] != value);
+                data[propId] = value;
+            }
+        }
+
+        if(c == QMetaObject::WriteProperty && needActivate) {
+            activate(object, baseSig + propId, 0);
+        }
+
+        return id;
+    } else {
+        return object->qt_metacall(c, id, a);
+    }
+}
+QT_END_NAMESPACE

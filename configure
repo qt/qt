@@ -600,6 +600,7 @@ CFG_RELEASE_QMAKE=no
 CFG_PHONON=auto
 CFG_PHONON_BACKEND=yes
 CFG_SVG=yes
+CFG_DECLARATIVE=yes
 CFG_WEBKIT=auto # (yes|no|auto)
 
 CFG_GFX_AVAILABLE="linuxfb transformed qvfb vnc multiscreen"
@@ -830,7 +831,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-svg|-webkit|-scripttools|-rpath|-force-pkg-config)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-svg|-declarative|-webkit|-scripttools|-rpath|-force-pkg-config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1720,6 +1721,17 @@ while [ "$#" -gt 0 ]; do
         else
             if [ "$VAL" = "no" ]; then
                 CFG_SVG="no"
+            else
+                UNKNOWN_OPT=yes
+            fi
+        fi
+        ;;
+    declarative)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ]; then
+            CFG_DECLARATIVE="yes"
+        else
+            if [ "$VAL" = "no" ]; then
+                CFG_DECLARATIVE="no"
             else
                 UNKNOWN_OPT=yes
             fi
@@ -3066,7 +3078,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
         [-no-openssl] [-openssl] [-openssl-linked]
         [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit]
-        [-no-scripttools] [-scripttools]
+        [-no-scripttools] [-scripttools] [-no-declarative] [-declarative]
 
         [additional platform specific options (see below)]
 
@@ -3214,6 +3226,9 @@ fi
 
     -no-scripttools .... Do not build the QtScriptTools module.
  +  -scripttools ....... Build the QtScriptTools module.
+
+    -no-declarative .....Do not build the declarative module.
+ +  -declarative ....... Build the declarative module.
 
     -platform target ... The operating system and compiler you are building
                          on ($PLATFORM).
@@ -5961,6 +5976,12 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SVG"
 fi
 
+if [ "$CFG_DECLARATIVE" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG declarative"
+else
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DECLARATIVE"
+fi
+
 if [ "$CFG_WEBKIT" = "auto" ]; then
     CFG_WEBKIT="$canBuildWebKit"
 fi
@@ -6846,6 +6867,7 @@ echo "QtXmlPatterns module  $CFG_XMLPATTERNS"
 echo "Phonon module ....... $CFG_PHONON"
 echo "SVG module .......... $CFG_SVG"
 echo "WebKit module ....... $CFG_WEBKIT"
+echo "Declarative module .. $CFG_DECLARATIVE"
 echo "STL support ......... $CFG_STL"
 echo "PCH support ......... $CFG_PRECOMPILE"
 echo "MMX/3DNOW/SSE/SSE2..  ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}"

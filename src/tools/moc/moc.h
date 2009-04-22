@@ -144,10 +144,11 @@ struct ClassDef {
 
     struct Interface
     {
-        inline explicit Interface(const QByteArray &_className)
-            : className(_className) {}
+        inline explicit Interface(const QByteArray &_className, bool _isCast)
+            : className(_className), isCast(_isCast) {}
         QByteArray className;
         QByteArray interfaceId;
+        bool isCast;
     };
     QList<QList<Interface> >interfaceList;
 
@@ -217,7 +218,7 @@ public:
     void parseEnumOrFlag(ClassDef *def, bool isFlag);
     void parseFlag(ClassDef *def);
     void parseClassInfo(ClassDef *def);
-    void parseInterfaces(ClassDef *def);
+    void parseInterfaces(ClassDef *def, bool isCast);
     void parseDeclareInterface();
     void parseDeclareMetatype();
     void parseSlotInPrivate(ClassDef *def, FunctionDef::Access access);

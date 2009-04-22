@@ -90,6 +90,18 @@ class CppCodeParser : public CodeParser
     virtual Node *processTopicCommand(const Doc& doc, 
                                       const QString& command,
                                       const QString& arg);
+#ifdef QDOC_QML    
+    // might need to implement this in QsCodeParser as well.
+    virtual Node *processTopicCommandGroup(const QString& command,
+                                           const QStringList& args);
+    bool splitQmlPropertyArg(const QString& arg,
+                             QString& type,
+                             QString& element,
+                             QString& property);
+    bool splitQmlArg(const QString& arg,
+                     QString& element,
+                     QString& name);
+#endif
     virtual QSet<QString> otherMetaCommands();
     virtual void processOtherMetaCommand(const Doc& doc,
                                          const QString& command,

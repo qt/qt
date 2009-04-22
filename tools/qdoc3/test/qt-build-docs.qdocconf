@@ -107,7 +107,8 @@ exampledirs             = $QT_SOURCE_TREE/doc/src \
                           $QT_SOURCE_TREE \
                           $QT_SOURCE_TREE/qmake/examples
 imagedirs               = $QT_SOURCE_TREE/doc/src/images \
-                          $QT_SOURCE_TREE/examples
+                          $QT_SOURCE_TREE/examples \
+                          $QT_SOURCE_TREE/doc/src/declarative/pics
 outputdir               = $QT_BUILD_TREE/doc/html
 tagfile                 = $QT_BUILD_TREE/doc/html/qt.tags
 base                    = file:$QT_BUILD_TREE/doc/html

@@ -1,0 +1,31 @@
+/*! 
+\page effects.html
+\target effects
+\title Visual Effects
+
+
+\section1 Basic Effects
+
+These effects are currently supported by all canvas backends.
+
+\list
+\o Scaling (\l Item \bold scale property)
+\o Opacity (\l Item \bold opacity property)
+\o Z-Axis Rotation (\l Item \bold rotation property)
+\endlist
+
+\section1 Advanced Effects
+
+These effects are currently only supported by the OpenGL canvas backend. Support for other
+backends may be added if the performance can be made acceptable.
+
+\list
+\o X/Y-Axis Rotation (see \l Transform)
+\o \l Shadow
+\o \l Blur
+\o \l Reflection
+\o \l Highlights
+\o \l Particles
+\endlist
+
+*/

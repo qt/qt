@@ -1,0 +1,387 @@
+/*!
+    \page basicxmltypes.html
+    \title Common QML Types
+
+    QML uses a range of property types, which you will see
+    referenced throughout the element documentation. Almost all of them are
+    exactly what you would expect.
+
+    \target basicxmlint
+    \raw HTML
+    <div class="memitem">
+    <div class="memproto">
+    <table class="memname">
+    <tr><td>int</td></tr>
+    </table>
+    </div>
+    <div class="memdoc">
+    \endraw
+
+    ints are whole numbers - things like 0, 10 and -20.  The possible int 
+    values range from around -2000000000 to around 2000000000, although most
+    elements will only accept a reduced range (which they mention in their
+    documentation).
+
+    int's must be specified using the plain old syntax you learned at school -
+    none of that scientific notation nonsense is supported.
+
+    Setting ints looks like this:
+    \code
+    <Item width="100" height="200" />
+    \endcode
+
+    \raw HTML
+    </div>
+    </div>
+    \endraw
+
+    \target basicxmlbool
+    \raw HTML
+    <br>
+    <div class="memitem">
+    <div class="memproto">
+    <table class="memname">
+    <tr><td>bool</td></tr>
+    </table>
+    </div>
+    <div class="memdoc">
+    \endraw
+
+    bools are a binary true/false value, represented by the strings
+    "true" and "false" in XML.
+
+    Setting bools looks like this:
+    \code
+    <Item focusable="true" clip="false" />
+    \endcode
+
+    \note Technically bool treats an empty string, "false" and "0" as false and
+    everything else as true.  Seriously, though, use "true" and "false".
+
+    \raw HTML
+    </div>
+    </div>
+    \endraw
+
+    \target basicxmlreal
+    \raw HTML
+    <br>
+    <div class="memitem">
+    <div class="memproto">
+    <table class="memname">
+    <tr><td>real</td></tr>
+    </table>
+    </div>
+    <div class="memdoc">
+    \endraw
+
+    reals are numbers - either whole numbers like ints, or fractional numbers
+    like 1.2 and -29.8.  
+
+    Setting reals looks like this:
+    \code
+    <Item x="-10" y="100.8" />
+    \endcode
+
+    \note In QML all reals are stored in single precision, \l {http://en.wikipedia.org/wiki/IEEE_754}{IEEE floating point} format.
+
+    \raw HTML
+    </div>
+    </div>
+    \endraw
+
+    \target basicxmlstring
+    \raw HTML
+    <br>
+    <div class="memitem">
+    <div class="memproto">
+    <table class="memname">
+    <tr><td>string</td></tr>
+    </table>
+    </div>
+    <div class="memdoc">
+    \endraw
+
+    strings are free form text, like "hello world", "QML is cool" and
+    anything else you can think of.
+
+    Setting a string looks like this:
+    \code
+    <Text text="Hello world!" />
+    \endcode
+
+    \raw HTML
+    </div>
+    </div>
+    \endraw
+
+    \target basicxmlcolor
+    \raw HTML
+    <br>
+    <div class="memitem">
+    <div class="memproto">
+    <table class="memname">
+    <tr><td>color</td></tr>
+    </table>
+    </div>
+    <div class="memdoc">
+    \endraw
+
+    Colors are most commonly specified as an \l {http://www.w3.org/TR/SVG/types.html#ColorKeywords}{SVG color name}.  These names include colors like
+    "red", "green" and "lightsteelblue".
+
+    If the color you want isn't part of this list, colors can also be specified
+    in hexidecimal triplets or quads that take the form \c "#RRGGBB" and 
+    \c "#AARRGGBB" respectively.  For example, the color red corresponds to a
+    triplet of \c "#FF0000" and a slightly transparent blue to a quad of 
+    \c "#800000FF".
+
+    Setting a color looks like this:
+    \code
+    <Rect color="steelblue" />
+    <Rect color="#FF0000" />
+    <Rect color="#800000FF" />
+    \endcode
+
+    \raw HTML
+    </div>
+    </div>
+    \endraw
+
+    \target basicxmlpoint
+    \raw HTML
+    <br>
+    <div class="memitem">
+    <div class="memproto">
+    <table class="memname">
+    <tr><td>point</td></tr>
+    </table>
+    </div>
+    <div class="memdoc">
+    \endraw
+
+    Points are specified in \c "x,y" format.
+
+    Setting a point looks like this:
+    \code
+    <Widget pos="50,50"/>
+    \endcode
+
+    \raw HTML
+    </div>
+    </div>
+    \endraw
+
+    \target basicxmlsize
+    \raw HTML
+    <br>
+    <div class="memitem">
+    <div class="memproto">
+    <table class="memname">
+    <tr><td>size</td></tr>
+    </table>
+    </div>
+    <div class="memdoc">
+    \endraw
+
+    Sizes are specified in \c "widthxheight" format.
+
+    Setting a size looks like this:
+    \code
+    <Widget size="50x50"/>
+    \endcode
+
+    \raw HTML
+    </div>
+    </div>
+    \endraw
+
+    \target basicxmlrectangle
+    \raw HTML
+    <br>
+    <div class="memitem">
+    <div class="memproto">
+    <table class="memname">
+    <tr><td>rectangle</td></tr>
+    </table>
+    </div>
+    <div class="memdoc">
+    \endraw
+
+    Rectangles are specified in \c "x,y,widthxheight" format.
+
+    Setting a rectangle looks like this:
+    \code
+    <Widget geometry="50,50,100x100"/>
+    \endcode
+
+    \raw HTML
+    </div>
+    </div>
+    \endraw
+
+    \target basicxmldate
+    \raw HTML
+    <br>
+    <div class="memitem">
+    <div class="memproto">
+    <table class="memname">
+    <tr><td>date</td></tr>
+    </table>
+    </div>
+    <div class="memdoc">
+    \endraw
+
+    Dates are specified in \c "YYYY-MM-DD" format.
+
+    Setting a date looks like this:
+    \code
+    <DatePicker minDate="2000-01-01" maxDate="2020-12-31"/>
+    \endcode
+
+    \raw HTML
+    </div>
+    </div>
+    \endraw
+
+    \target basicxmltime
+    \raw HTML
+    <br>
+    <div class="memitem">
+    <div class="memproto">
+    <table class="memname">
+    <tr><td>time</td></tr>
+    </table>
+    </div>
+    <div class="memdoc">
+    \endraw
+
+    Times are specified in \c "hh:mm:ss" format.
+
+    Setting a time looks like this:
+    \code
+    <TimePicker time="14:22:15"/>
+    \endcode
+
+    \raw HTML
+    </div>
+    </div>
+    \endraw
+
+    \target basicxmlfont
+    \raw HTML
+    <br>
+    <div class="memitem">
+    <div class="memproto">
+    <table class="memname">
+    <tr><td>font</td></tr>
+    </table>
+    </div>
+    <div class="memdoc">
+    \endraw
+    
+    The font type has components:
+    \list
+    \o string font.family
+    \o bool font.bold
+    \o bool font.italic
+    \o real font.size
+    \endlist
+
+    Setting a font looks like this:
+    \code
+    <Text font.family="Helvetica" font.size="13" font.bold="true">
+    \endcode
+
+    \raw HTML
+    </div>
+    </div>
+    \endraw
+
+    \target basicxmlaction
+    \raw HTML
+    <br>
+    <div class="memitem">
+    <div class="memproto">
+    <table class="memname">
+    <tr><td>action</td></tr>
+    </table>
+    </div>
+    <div class="memdoc">
+    \endraw
+    
+    The action type has all the properties of QAction, in particular:
+    \list
+    \o slot action.trigger - invoke the action
+    \o bool action.enabled - true if the action is enabled
+    \o string action.text - the text associated with the action
+    \endlist
+
+    Actions are used like this:
+
+    \code
+    <MouseRegion onClick="{someitem.someaction.trigger()}">
+    <State name="enabled" when="{someitem.someaction.enabled=='true'}">
+    <Text text="{someitem.someaction.text}">
+    \endcode
+
+    \raw HTML
+    </div>
+    </div>
+    \endraw
+
+    \target basicxmlany
+    \raw HTML
+    <br>
+    <div class="memitem">
+    <div class="memproto">
+    <table class="memname">
+    <tr><td>any</td></tr>
+    </table>
+    </div>
+    <div class="memdoc">
+    \endraw
+    
+    The any type can accept any basic type, object or list.  Generally this
+    is only used in very special cases.  The documentation for elements that
+    use the any type will explain the constraints in that particular case.
+
+    \raw HTML
+    </div>
+    </div>
+    \endraw
+
+    \target basicxmllist
+    \raw HTML
+    <br>
+    <div class="memitem">
+    <div class="memproto">
+    <table class="memname">
+    <tr><td>Lists</td></tr>
+    </table>
+    </div>
+    <div class="memdoc">
+    \endraw
+    
+    While not technically a basic type, QML also supports lists of object
+    types.  When used from QML, the engine  automatically appends each value to the
+    list.  
+    
+    For example, the \l {xmlItem}{Item} class has a children list property
+    that can be used like this:
+    \code
+    <Item>
+        <children>
+            <Item id="child1" />
+            <Rect id="child2" />
+            <Text id="child3" />
+        </children>
+    </Item>
+    \endcode
+    \c child1, \c child2 and \c child3 will all be added to the children list
+    in the order in which they appear.
+    \raw HTML
+    </div>
+    </div>
+    \endraw
+*/

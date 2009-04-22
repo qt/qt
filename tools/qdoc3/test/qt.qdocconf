@@ -109,7 +109,8 @@ exampledirs             = $QTDIR/doc/src \
                           $QTDIR \
                           $QTDIR/qmake/examples
 imagedirs               = $QTDIR/doc/src/images \
-                          $QTDIR/examples
+                          $QTDIR/examples \
+			  $QTDIR/doc/src/declarative/pics
 outputdir               = $QTDIR/doc/html
 tagfile                 = $QTDIR/doc/html/qt.tags
 base                    = file:$QTDIR/doc/html

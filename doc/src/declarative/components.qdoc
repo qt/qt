@@ -1,0 +1,74 @@
+/*! 
+\page components.html
+\target components
+\title Components
+
+A \b component is a reusable, encapsulated Qml element with a well-defined interface.
+
+Writing and using components allows you to:
+\list
+\o Reuse sections of Qml without copy-and-paste.
+\o Have consistent Look and Feel between different parts of your UI.
+\o Create new Qml elements without writing a new C++ class. (See \l {cppitem}{Creating Qml elements in C++})
+\endlist
+
+Components are placed in \e <Name>.qml files, allowing \e <Name> to then be used as a tag elsewhere. For example, if you have a Slider.qml file, you can then use \c <Slider> to place a slider.
+
+Components may be collected into \l {qmlmodules}{modules}.
+
+\section1 Example: Creating a MyButton Component
+
+This example describes how to create a component from an existing snippet of Qml.
+
+Assume you have an existing UI with a single 'Save' button, defined as follows:
+
+\code
+<Image file="pics/button-background.png">
+    <Text text="Save" anchors.horizontalCenter="{parent.horizontalCenter}" anchors.verticalCenter="{parent.verticalCenter}"/>
+    <MouseRegion anchors.fill="{parent}" onClick="saveData()"/>
+</Image>
+\endcode
+
+For the next release, you plan to add 'Cancel' and 'Reset' buttons. Rather than copying and pasting the above markup, you can create a component:
+
+\list 1
+\o Create a file called MyButton.qml, and copy the relevant Qml snippet into that file.
+\o Make some minor changes to define the component's interface:
+
+\code
+<Image file="pics/button-background.png">
+    <properties><Property name="label"/></properties>
+    <signals><Signal name="click"/></signals>
+    <Text text="{parent.label}" anchors.horizontalCenter="{parent.horizontalCenter}" anchors.verticalCenter="{parent.verticalCenter}"/>
+    <MouseRegion anchors.fill="{parent}" onClick="parent.click.emit()"/>
+</Image>
+\endcode
+
+The \a label property and \a click signal that were added effectively become part of the 'public API' of the MyButton component. In a similar manner, the Text and MouseRegion elements become invisible to anyone using the component. Note that the Text element now binds in its data from \a label, and the MouseRegion emits a generic signal.
+
+\o The component can now be used elsewhere as MyButton:
+
+\code
+<MyButton label="Save" onClick="saveData()"/>
+...
+<MyButton label="Cancel" onClick="cancelData()"/>
+...
+<MyButton label="Reset" onClick="resetData()"/>
+\endcode
+
+\endlist
+
+\section1 Placing .qml Files
+
+Component files should be placed in specific locations in order to be found by the Qml engine:
+
+\list
+\o the run directory
+\o the run directory + "/qml"
+\o the directory of the Qml you are running
+\o the directory of the Qml you are running + "/qml"
+\endlist
+
+In the future library-like directories will be defined (in the meantime the first two options above effectively serve this purpose).
+
+*/

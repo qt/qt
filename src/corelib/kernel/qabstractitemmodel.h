@@ -220,6 +220,9 @@ public:
                                   Qt::MatchFlags(Qt::MatchStartsWith|Qt::MatchWrap)) const;
     virtual QSize span(const QModelIndex &index) const;
 
+    void setRoleNames(const QHash<int,QByteArray> &roleNames);
+    const QHash<int,QByteArray> &roleNames() const;
+
 #ifdef Q_NO_USING_KEYWORD
     inline QObject *parent() const { return QObject::parent(); }
 #else

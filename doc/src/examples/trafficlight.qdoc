@@ -1,0 +1,58 @@
+/****************************************************************************
+**
+** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the $MODULE$ of the Qt Toolkit.
+**
+** $TROLLTECH_DUAL_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example statemachine/trafficlight
+    \title Traffic Light Example
+
+    The Traffic Light example shows how to use \l{The State Machine Framework}
+    to implement the control flow of a traffic light.
+
+    \image trafficlight-example.png
+
+    In this example we write a TrafficLightWidget class. The traffic light has
+    three lights: Red, yellow and green. The traffic light transitions from
+    one light to another (red to yellow to green to yellow to red again) at
+    certain intervals.
+
+    \snippet examples/statemachine/trafficlight/main.cpp 0
+
+    The LightWidget class represents a single light of the traffic light. It
+    provides a setOn() function to turn the light on or off. It paints itself
+    in the color that's passed to the constructor.
+
+    \snippet examples/statemachine/trafficlight/main.cpp 2
+
+    The TrafficLightWidget class represents the visual part of the traffic
+    light; it's a widget that contains three lights, and provides accessor
+    functions for these.
+
+    \snippet examples/statemachine/trafficlight/main.cpp 1
+
+    The LightState class represents a state that turns a light on when the
+    state is entered, and off when the state is exited. The class is a timer,
+    and as we shall see the timeout is used to transition from one LightState
+    to another.
+
+    \snippet examples/statemachine/trafficlight/main.cpp 3
+
+    The TrafficLight class combines the TrafficLightWidget with control flow
+    based on the LightState class. The state graph has four states:
+    red-to-yellow, yellow-to-green, green-to-yellow and yellow-to-red. The
+    initial state is red-to-yellow; when the state's timer times out, the
+    state machine transitions to yellow-to-green. The same process repeats
+    through the other states.
+
+    \snippet examples/statemachine/trafficlight/main.cpp 4
+
+    The main() function constructs a TrafficLight and shows it.
+
+*/

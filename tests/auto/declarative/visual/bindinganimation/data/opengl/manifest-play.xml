@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestLog>
+    <TestFullFrame time="30" frameId="0"/>
+    <TestMouse time="1770" type="2" button="1" buttons="1" globalPos="614,528" pos="175,131"/>
+    <TestMouse time="1860" type="3" button="1" buttons="0" globalPos="614,528" pos="175,131"/>
+    <TestFrame time="1860" hash="7CB5FC371040E587DE9F06CE14A4B29A"/>
+    <TestFrame time="1920" hash="8F88EE8780C32F038C9ACDC7172DE04E"/>
+    <TestFrame time="1950" hash="BE859D598C5DB953A8FC506DED4940EB"/>
+    <TestFrame time="1980" hash="16FE17B15900FF0464AB20EA921E5B1F"/>
+    <TestFrame time="2010" hash="FCB17070EF24575C61046928A8BBE440"/>
+    <TestFrame time="2040" hash="4F58226BDBDA7339D972ECA065F75766"/>
+    <TestFrame time="2070" hash="D9AF30557F99B086BB1A185A946B580D"/>
+    <TestFrame time="2100" hash="082E0E7650D187A54EF0948CCCA98E5A"/>
+    <TestFrame time="2130" hash="4F41101378A104E72228EEB4BA395CA8"/>
+    <TestFrame time="2160" hash="3223ED179C828FADB3ECA9C6373176C1"/>
+    <TestFrame time="2190" hash="DAFCCE427161A70C3513841AC22AEA00"/>
+    <TestFrame time="2220" hash="7F465A99FCA50503736E470A0B4E1C7A"/>
+    <TestFrame time="2250" hash="97542160B249135B1F3957DBBB329C2E"/>
+    <TestFrame time="2280" hash="F9F74A2E38B52C9266F33E428B6ACD9D"/>
+    <TestFrame time="2310" hash="65AD7E0189C096792331BD1BB0DAF0DB"/>
+    <TestFrame time="2340" hash="BA403842BA3128B1CDF6A9CB28C90751"/>
+    <TestFrame time="2370" hash="1BCDCD0E8166D69F4349E05D5E92FD9D"/>
+    <TestFrame time="2400" hash="383BA6B9EFCC58FCA512982A207631F6"/>
+    <TestMouse time="2820" type="2" button="1" buttons="1" globalPos="614,528" pos="175,131"/>
+    <TestMouse time="2910" type="3" button="1" buttons="0" globalPos="614,528" pos="175,131"/>
+    <TestFrame time="2910" hash="383BA6B9EFCC58FCA512982A207631F6"/>
+    <TestFrame time="2970" hash="ADC501A3A2B8AAF72F58BA985B57424E"/>
+    <TestFrame time="3000" hash="BFA51B7C19753EF7B16D78AFFFC7B9DD"/>
+    <TestFrame time="3030" hash="A93F930EC8528F954CD4A770C9A8171B"/>
+    <TestFrame time="3060" hash="0B0C6419E1E5B016D9C22BD98FD452B1"/>
+    <TestFrame time="3090" hash="1D5CD86AB732DA3705A7BB1DEAB77923"/>
+    <TestFrame time="3120" hash="69058485CED6BC992A1A7C5EE34ADD4C"/>
+    <TestFrame time="3150" hash="72731478D80F024076EA639B55152360"/>
+    <TestFrame time="3180" hash="37739777A5979F3EBF85E47E63341660"/>
+    <TestFrame time="3210" hash="FCAE0317F81A3DDD713F4DB1349A9DA0"/>
+    <TestFrame time="3240" hash="82363265ED2B611A54F8D48B2AF22F11"/>
+    <TestFrame time="3270" hash="5FAE0BDC65C609CB766CE585B8C649DB"/>
+    <TestFrame time="3300" hash="2D21B4AF3780EF2BBCCFCEC957CE49C8"/>
+    <TestFrame time="3330" hash="4AB21E266919FB8D340F87091D8E1F62"/>
+    <TestFrame time="3360" hash="5F5DA43901938FA244F536336FFD2DFC"/>
+    <TestFrame time="3390" hash="9B7685F5933C5E06883EE4D1BB2BD2C6"/>
+    <TestFrame time="3420" hash="96C077E3A572EDFF04FA9B2F7020FFD0"/>
+    <TestFrame time="3450" hash="7CB5FC371040E587DE9F06CE14A4B29A"/>
+    <TestMouse time="3840" type="2" button="1" buttons="1" globalPos="614,528" pos="175,131"/>
+    <TestMouse time="3930" type="3" button="1" buttons="0" globalPos="614,528" pos="175,131"/>
+    <TestFrame time="3930" hash="7CB5FC371040E587DE9F06CE14A4B29A"/>
+    <TestFrame time="3990" hash="8F88EE8780C32F038C9ACDC7172DE04E"/>
+    <TestFrame time="4020" hash="BE859D598C5DB953A8FC506DED4940EB"/>
+    <TestFrame time="4050" hash="16FE17B15900FF0464AB20EA921E5B1F"/>
+    <TestFrame time="4080" hash="FCB17070EF24575C61046928A8BBE440"/>
+    <TestFrame time="4110" hash="4F58226BDBDA7339D972ECA065F75766"/>
+    <TestFrame time="4140" hash="D9AF30557F99B086BB1A185A946B580D"/>
+    <TestFrame time="4170" hash="082E0E7650D187A54EF0948CCCA98E5A"/>
+    <TestFrame time="4200" hash="4F41101378A104E72228EEB4BA395CA8"/>
+    <TestFrame time="4230" hash="3223ED179C828FADB3ECA9C6373176C1"/>
+    <TestFrame time="4260" hash="DAFCCE427161A70C3513841AC22AEA00"/>
+    <TestFrame time="4290" hash="7F465A99FCA50503736E470A0B4E1C7A"/>
+    <TestFrame time="4320" hash="97542160B249135B1F3957DBBB329C2E"/>
+    <TestFrame time="4350" hash="F9F74A2E38B52C9266F33E428B6ACD9D"/>
+    <TestFrame time="4380" hash="65AD7E0189C096792331BD1BB0DAF0DB"/>
+    <TestFrame time="4410" hash="BA403842BA3128B1CDF6A9CB28C90751"/>
+    <TestFrame time="4440" hash="1BCDCD0E8166D69F4349E05D5E92FD9D"/>
+    <TestFrame time="4470" hash="383BA6B9EFCC58FCA512982A207631F6"/>
+    <TestMouse time="4920" type="2" button="1" buttons="1" globalPos="614,528" pos="175,131"/>
+    <TestMouse time="5010" type="3" button="1" buttons="0" globalPos="614,528" pos="175,131"/>
+    <TestFrame time="5010" hash="383BA6B9EFCC58FCA512982A207631F6"/>
+    <TestFrame time="5070" hash="ADC501A3A2B8AAF72F58BA985B57424E"/>
+    <TestFrame time="5100" hash="BFA51B7C19753EF7B16D78AFFFC7B9DD"/>
+    <TestFrame time="5130" hash="A93F930EC8528F954CD4A770C9A8171B"/>
+    <TestFrame time="5160" hash="0B0C6419E1E5B016D9C22BD98FD452B1"/>
+    <TestFrame time="5190" hash="1D5CD86AB732DA3705A7BB1DEAB77923"/>
+    <TestFrame time="5220" hash="69058485CED6BC992A1A7C5EE34ADD4C"/>
+    <TestFrame time="5250" hash="72731478D80F024076EA639B55152360"/>
+    <TestFrame time="5280" hash="37739777A5979F3EBF85E47E63341660"/>
+    <TestFrame time="5310" hash="FCAE0317F81A3DDD713F4DB1349A9DA0"/>
+    <TestFrame time="5340" hash="82363265ED2B611A54F8D48B2AF22F11"/>
+    <TestFrame time="5370" hash="5FAE0BDC65C609CB766CE585B8C649DB"/>
+    <TestFrame time="5400" hash="2D21B4AF3780EF2BBCCFCEC957CE49C8"/>
+    <TestFrame time="5430" hash="4AB21E266919FB8D340F87091D8E1F62"/>
+    <TestFrame time="5460" hash="5F5DA43901938FA244F536336FFD2DFC"/>
+    <TestFrame time="5490" hash="9B7685F5933C5E06883EE4D1BB2BD2C6"/>
+    <TestFrame time="5520" hash="96C077E3A572EDFF04FA9B2F7020FFD0"/>
+    <TestFrame time="5550" hash="7CB5FC371040E587DE9F06CE14A4B29A"/>
+    <TestMouse time="5910" type="2" button="1" buttons="1" globalPos="614,528" pos="175,131"/>
+    <TestMouse time="6030" type="3" button="1" buttons="0" globalPos="614,528" pos="175,131"/>
+    <TestFrame time="6030" hash="7CB5FC371040E587DE9F06CE14A4B29A"/>
+    <TestFrame time="6090" hash="8F88EE8780C32F038C9ACDC7172DE04E"/>
+    <TestFrame time="6120" hash="BE859D598C5DB953A8FC506DED4940EB"/>
+    <TestFrame time="6150" hash="16FE17B15900FF0464AB20EA921E5B1F"/>
+    <TestFrame time="6180" hash="FCB17070EF24575C61046928A8BBE440"/>
+    <TestFrame time="6210" hash="4F58226BDBDA7339D972ECA065F75766"/>
+    <TestFrame time="6240" hash="D9AF30557F99B086BB1A185A946B580D"/>
+    <TestFrame time="6270" hash="082E0E7650D187A54EF0948CCCA98E5A"/>
+    <TestFrame time="6300" hash="4F41101378A104E72228EEB4BA395CA8"/>
+    <TestFrame time="6330" hash="3223ED179C828FADB3ECA9C6373176C1"/>
+    <TestFrame time="6360" hash="DAFCCE427161A70C3513841AC22AEA00"/>
+    <TestFrame time="6390" hash="7F465A99FCA50503736E470A0B4E1C7A"/>
+    <TestFrame time="6420" hash="97542160B249135B1F3957DBBB329C2E"/>
+    <TestFrame time="6450" hash="F9F74A2E38B52C9266F33E428B6ACD9D"/>
+    <TestFrame time="6480" hash="65AD7E0189C096792331BD1BB0DAF0DB"/>
+    <TestFrame time="6510" hash="BA403842BA3128B1CDF6A9CB28C90751"/>
+    <TestFrame time="6540" hash="1BCDCD0E8166D69F4349E05D5E92FD9D"/>
+    <TestFrame time="6570" hash="383BA6B9EFCC58FCA512982A207631F6"/>
+</TestLog>

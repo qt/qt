@@ -4662,7 +4662,7 @@ void DoxWriter::readAnchors()
 void DoxWriter::insertTitle(FakeNode* node, const QString& title)
 {
     switch (node->subType()) {
-    case FakeNode::Example:
+    case Node::Example:
         if (exampleTitles.contains(title)) {
             qWarning() << "DoxWriter::insertTitle():"
                        << "Duplicate example title:"
@@ -4673,7 +4673,7 @@ void DoxWriter::insertTitle(FakeNode* node, const QString& title)
             exampleTitlesInverse[node->name()] = title;
         }
         break;
-    case FakeNode::HeaderFile: 
+    case Node::HeaderFile: 
         if (headerFileTitles.contains(title)) {
             qWarning() << "DoxWriter::insertTitle():"
                        << "Duplicate header file title:"
@@ -4684,7 +4684,7 @@ void DoxWriter::insertTitle(FakeNode* node, const QString& title)
             headerFileTitlesInverse[node->name()] = title;
         }
         break;
-    case FakeNode::File:
+    case Node::File:
         if (fileTitles.contains(title)) {
             qWarning() << "DoxWriter::insertTitle():"
                        << "Duplicate file title:"
@@ -4695,7 +4695,7 @@ void DoxWriter::insertTitle(FakeNode* node, const QString& title)
             fileTitlesInverse[node->name()] = title;
         }
         break;
-    case FakeNode::Group:
+    case Node::Group:
         if (groupTitles.contains(title)) {
             qWarning() << "DoxWriter::insertTitle():"
                        << "Duplicate group title:"
@@ -4706,7 +4706,7 @@ void DoxWriter::insertTitle(FakeNode* node, const QString& title)
             groupTitlesInverse[node->name()] = title;
         }
         break;
-    case FakeNode::Module:
+    case Node::Module:
         if (moduleTitles.contains(title)) {
             qWarning() << "DoxWriter::insertTitle():"
                        << "Duplicate module title:"
@@ -4717,7 +4717,7 @@ void DoxWriter::insertTitle(FakeNode* node, const QString& title)
             moduleTitlesInverse[node->name()] = title;
         }
         break;
-    case FakeNode::Page:
+    case Node::Page:
         if (pageTitles.contains(title)) {
             qWarning() << "DoxWriter::insertTitle():"
                        << "Duplicate page title:"
@@ -4728,7 +4728,7 @@ void DoxWriter::insertTitle(FakeNode* node, const QString& title)
             pageTitlesInverse[node->name()] = title;
         }
         break;
-    case FakeNode::ExternalPage:
+    case Node::ExternalPage:
         if (externalPageTitles.contains(title)) {
             qWarning() << "DoxWriter::insertTitle():"
                        << "Duplicate external page title:"

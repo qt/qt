@@ -1,0 +1,81 @@
+/*! 
+\page optimizing-performance.html
+\target optimizing-performance
+\title Optimizing Performance
+
+The Qt Declarative module includes several tools to help measure performance.
+
+\section1 Performance Logging
+
+The declarative module uses the functionality provided by QPerformanceLog to log performance information. To see this information you can add the following to src.pro:
+
+\code
+DEFINES += Q_ENABLE_PERFORMANCE_LOG
+\endcode
+
+The performance information will be printed to screen on a QML application startup, or when running the viewer can be forced at anytime by pressing 'F3' on the keyboard.
+
+Additional logging can be enabled by adding the relevant categories to qfxperf.h and qfxperf.cpp.
+
+For example, to measure the cost of calculating the size of a text item, you would first define a TextSize category by adding the following:
+
+\code
+//in qfxperf.h
+Q_DECLARE_PERFORMANCE_METRIC(TextSize);
+
+//in qfxperf.cpp
+Q_DEFINE_PERFORMANCE_METRIC(TextSize, "Text Size Calculation");
+\endcode
+
+You could then use this category in the code:
+
+\code
+void QFxText::updateSize()
+{
+    QFxPerfTimer<QFxPerf::TextSize> perf;
+    ...
+}
+\endcode
+
+Because there is no cost for a QFxPerfTimer when Q_ENABLE_PERFORMANCE_LOG is not defined, this line can persist in the code and be used to help detect performance bottlenecks and regressions. See the QPerformanceLog documentation for more information on this performance framework.
+
+\section1 FPS Measurements
+
+When running the viewer, pressing 'F2' on the keyboard while a QML program is running will cause information on cost-per-frame and frames-per-second (FPS) to be printed to the console.
+
+The information printed includes:
+\list
+\o \e repaint(): the total time spent painting.
+\o \e paint(): the time spent by Qt painting.
+\o \e timeBetweenFrames: the total time spent per frame. This number minus repaint() gives a good idea of how much time is spent on things besides painting. A high number here with a low number for repaint() indicates expensive calculations happening each frame.
+\endlist
+
+\section1 Improving Performance
+
+The following tips can help decrease startup time for QML-based appications.
+
+\section2 Images
+
+\list
+\o Use jpg instead of png for photo-like images. On the N810, this can save 150ms for a large (320x480) image.
+
+\o If you are configuring Qt, configure out any image plugins you don't plan to support (mng and svg are the most expensive). On the N810, this can save 75-100ms startup time. For example:
+
+\code
+configure -no-libmng -no-svg -no-libtiff
+\endcode
+
+\o In some cases running pngcrush, optipng, gifsicle or other similar tools can give some improvement.
+
+We are also investigating support for the loading of uncompressed images. This will provide opportunites to decrease startup time at the cost of increased storage space.
+\endlist
+
+\section2 Fonts
+
+\list
+\o Use qpf instead of ttf. When using multiple font sizes and weights on the N810, this can save 125ms startup time compared to a ttf 'clean' run, and 40-50ms on subsequent runs (ttfs are shared by open applications).
+\endlist
+
+*/
+
+*/

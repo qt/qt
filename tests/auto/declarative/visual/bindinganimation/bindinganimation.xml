@@ -1,0 +1,19 @@
+<Rect color="blue" width="320" height="240" id="Page">
+    <Rect id="MyRect" width="100" height="100" color="red" x="{10}" />
+
+    <states>
+        <State name="hello">
+            <SetProperty target="{MyRect}" property="x" binding="100" />
+            <SetProperty target="{MyMouseRegion}" property="onClick" value="Page.currentState = ''" />
+        </State>
+    </states>
+
+    <transitions>
+        <Transition>
+            <NumericAnimation properties="x" />
+        </Transition>
+    </transitions>
+
+    <MouseRegion id="MyMouseRegion" anchors.fill="{parent}" onClick="Page.currentState= 'hello'" />
+
+</Rect>

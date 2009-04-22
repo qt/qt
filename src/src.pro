@@ -27,6 +27,7 @@ contains(QT_CONFIG, webkit)  {
     SRC_SUBDIRS += src_webkit
 }
 contains(QT_CONFIG, scripttools): SRC_SUBDIRS += src_scripttools
+contains(QT_CONFIG, declarative): SRC_SUBDIRS += src_declarative
 SRC_SUBDIRS += src_plugins
 
 src_winmain.subdir = $$QT_SOURCE_TREE/src/winmain
@@ -79,6 +80,8 @@ src_javascriptcore.subdir = $$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore
 src_javascriptcore.target = sub-javascriptcore
 src_webkit.subdir = $$QT_SOURCE_TREE/src/3rdparty/webkit/WebCore
 src_webkit.target = sub-webkit
+src_declarative.subdir = $$QT_SOURCE_TREE/src/declarative
+src_declarative.target = sub-declarative
 
 #CONFIG += ordered
 !wince*:!ordered {
@@ -103,6 +106,7 @@ src_webkit.target = sub-webkit
    src_tools_uic3.depends = src_qt3support src_xml
    src_tools_idc.depends = src_corelib
    src_tools_activeqt.depends = src_tools_idc src_gui
+   src_declarative.depends = src_xml src_gui src_script src_network src_svg
    src_plugins.depends = src_gui src_sql src_svg
    contains(QT_CONFIG, webkit)  {
       src_webkit.depends = src_gui src_sql src_network src_xml

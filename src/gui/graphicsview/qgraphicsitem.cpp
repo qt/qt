@@ -970,7 +970,12 @@ QGraphicsItem::~QGraphicsItem()
     d_ptr->setParentItemHelper(0, /* deleting = */ true);
     if (d_ptr->scene)
         d_ptr->scene->d_func()->_q_removeItemLater(this);
-
+    
+    if (d_ptr->hasTransform) {
+        delete static_cast<QGraphicsItemPrivate::TransformData *>(
+                            qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform)));
+    }
+        
     delete d_ptr;
 
     qt_dataStore()->data.remove(this);
@@ -2485,7 +2490,24 @@ QTransform QGraphicsItem::transform() const
 {
     if (!d_ptr->hasTransform)
         return QTransform();
-    return qVariantValue<QTransform>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform));
+    QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
+                            qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform)));
+    Q_ASSERT(transformData);
+    if (transformData->dirty) {
+        QGraphicsItem *that = const_cast<QGraphicsItem *>(this);
+        QTransform newTransform;
+        QPointF center = transformData->transformCenter;
+        newTransform.translate(center.x(), center.y());
+        newTransform.rotate(transformData->rotationZ, Qt::ZAxis);
+        newTransform.rotate(transformData->rotationY, Qt::YAxis);
+        newTransform.rotate(transformData->rotationX, Qt::XAxis);
+        newTransform.scale(transformData->scaleX, transformData->scaleY);
+        newTransform *= transformData->baseTransform;
+        newTransform.translate(-center.x(), -center.y());
+        transformData->transform = newTransform;
+        transformData->dirty = false;
+    }
+    return transformData->transform;
 }
 
 /*!
@@ -2763,7 +2785,17 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
 */
 void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
 {
-    QTransform oldTransform = this->transform();
+    QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
+                            qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform)));
+    if (!transformData) {
+        if (matrix.isIdentity())
+            return;
+        transformData = new QGraphicsItemPrivate::TransformData;
+        d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, qVariantFromValue<void *>(transformData));
+    }
+    
+    QTransform oldTransform = transformData->baseTransform;
+
     QTransform newTransform;
     if (!combine)
         newTransform = QTransform(matrix);
@@ -2782,8 +2814,9 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
     // Update and set the new transformation.
     d_ptr->fullUpdateHelper(true, true);
     prepareGeometryChange();
-    d_ptr->hasTransform = !newTransform.isIdentity();
-    d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, newTransform);
+    transformData->baseTransform = newTransform;
+    transformData->dirty = true;
+    d_ptr->hasTransform = true;
     d_ptr->invalidateSceneTransformCache();
 
     // Send post-notification.
@@ -2811,7 +2844,17 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
 */
 void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
 {
-    QTransform oldTransform = this->transform();
+    QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
+                            qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform)));
+    if (!transformData) {
+        if (matrix.isIdentity())
+            return;
+        transformData = new QGraphicsItemPrivate::TransformData;
+        d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, qVariantFromValue<void *>(transformData));
+    }
+    
+    QTransform oldTransform = transformData->baseTransform;
+
     QTransform newTransform;
     if (!combine)
         newTransform = matrix;
@@ -2830,8 +2873,10 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
     // Update and set the new transformation.
     d_ptr->fullUpdateHelper(true, true);
     prepareGeometryChange();
-    d_ptr->hasTransform = !newTransform.isIdentity();
-    d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, newTransform);
+    transformData->baseTransform = newTransform;
+    transformData->dirty = true;
+    d_ptr->hasTransform = true;
+    transform(); // ### update transform, bad!
     d_ptr->invalidateSceneTransformCache();
 
     // Send post-notification.
@@ -2915,6 +2960,197 @@ void QGraphicsItem::shear(qreal sh, qreal sv)
 void QGraphicsItem::translate(qreal dx, qreal dy)
 {
     setTransform(QTransform::fromTranslate(dx, dy), true);
+}
+
+QPointF QGraphicsItem::transformOrigin() const
+{
+    QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
+                            qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform)));
+    if (!transformData)
+        return QPointF();
+ 
+    return transformData->transformCenter;
+}
+
+/*!
+    Set a center for all transformation
+*/
+void QGraphicsItem::setTransformOrigin(const QPointF &center)
+{
+    QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
+                            qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform)));
+    if (!transformData) {
+        if (center.isNull())
+            return;
+        transformData = new QGraphicsItemPrivate::TransformData;
+        d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, qVariantFromValue<void *>(transformData));
+    }
+    if (transformData->transformCenter == center)
+        return;
+   
+    d_ptr->fullUpdateHelper(true);
+    prepareGeometryChange();
+    
+    transformData->transformCenter = center;
+
+    transformData->dirty = true;
+    d_ptr->hasTransform = true;
+    d_ptr->fullUpdateHelper();
+
+}
+
+qreal QGraphicsItem::xScale() const
+{
+    QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
+                            qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform)));
+    if (!transformData)
+        return 1;
+    
+    return transformData->scaleX; 
+}
+
+void QGraphicsItem::setXScale(qreal factor)
+{
+    QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
+                            qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform)));
+    if (!transformData) {
+        if (factor == 1)
+            return;
+        transformData = new QGraphicsItemPrivate::TransformData;
+        d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, qVariantFromValue<void *>(transformData));
+    }
+    if (transformData->scaleX == factor)
+        return;  
+    
+    d_ptr->fullUpdateHelper(true);
+    prepareGeometryChange();
+    
+    transformData->scaleX = factor;
+    transformData->dirty = true;
+    d_ptr->hasTransform = true;
+    d_ptr->invalidateSceneTransformCache();
+}
+
+qreal QGraphicsItem::yScale() const
+{
+    QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
+                            qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform)));
+    if (!transformData)
+        return 1;
+    
+    return transformData->scaleY; 
+}
+
+void QGraphicsItem::setYScale(qreal factor)
+{
+    QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
+                            qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform)));
+    if (!transformData) {
+        if (factor == 1)
+            return;
+        transformData = new QGraphicsItemPrivate::TransformData;
+        d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, qVariantFromValue<void *>(transformData));
+    }
+    if (transformData->scaleY == factor)
+        return;  
+    
+    d_ptr->fullUpdateHelper(true);
+    prepareGeometryChange();
+    
+    transformData->scaleY = factor;
+    transformData->dirty = true;
+    d_ptr->hasTransform = true;
+    d_ptr->invalidateSceneTransformCache();
+}
+
+qreal QGraphicsItem::xRotation() const
+{
+    QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
+                            qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform)));
+    if (!transformData)
+        return 0;
+    return transformData->rotationX;
+}
+
+void QGraphicsItem::setXRotation(qreal angle)
+{
+    QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
+                            qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform)));
+    if (!transformData) {
+        if (qFuzzyCompare(angle + 1, 1))
+            return;
+        transformData = new QGraphicsItemPrivate::TransformData;
+        d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, qVariantFromValue<void *>(transformData));
+    }
+    
+    d_ptr->fullUpdateHelper(true);
+    prepareGeometryChange();
+
+    transformData->rotationX = angle;
+    
+    transformData->dirty = true;
+    d_ptr->hasTransform = true;
+    d_ptr->invalidateSceneTransformCache();
+}
+
+qreal QGraphicsItem::yRotation() const
+{
+    QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
+                            qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform)));
+    if (!transformData)
+        return 0;
+    return transformData->rotationY;
+}
+
+void QGraphicsItem::setYRotation(qreal angle)
+{
+    QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
+                            qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform)));
+    if (!transformData) {
+        if (qFuzzyCompare(angle + 1, 1))
+            return;
+        transformData = new QGraphicsItemPrivate::TransformData;
+        d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, qVariantFromValue<void *>(transformData));
+    }
+    
+    d_ptr->fullUpdateHelper(true);
+    prepareGeometryChange();
+
+    transformData->rotationY = angle;
+    
+    transformData->dirty = true;
+    d_ptr->hasTransform = true;
+    d_ptr->invalidateSceneTransformCache();
+}
+
+qreal QGraphicsItem::zRotation() const
+{
+    QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
+                            qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform)));
+    if (!transformData)
+        return 0;
+    return transformData->rotationZ;
+}
+
+void QGraphicsItem::setZRotation(qreal angle)
+{
+    QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
+                            qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform)));
+    if (!transformData) {
+        if (qFuzzyCompare(angle + 1, 1))
+            return;
+        transformData = new QGraphicsItemPrivate::TransformData;
+        d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, qVariantFromValue<void *>(transformData));
+    }
+    
+    d_ptr->fullUpdateHelper(true);
+    prepareGeometryChange();
+
+    transformData->rotationZ = angle;
+    
+    transformData->dirty = true;
+    d_ptr->hasTransform = true;
+    d_ptr->invalidateSceneTransformCache();
 }
 
 /*!

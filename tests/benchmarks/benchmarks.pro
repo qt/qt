@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 SUBDIRS = containers-associative \
 	containers-sequential \
+        qanimation \
 	qbytearray \
 	qpainter \
 	qtestlib-simple	events \
@@ -14,6 +15,14 @@ SUBDIRS = containers-associative \
         qregion \
         qvariant \
 	qwidget	\
-	qtwidgets
+	qtwidgets \
+        qmlxmlparser \
+        qfxview \
 
 contains(QT_CONFIG, opengl): SUBDIRS += opengl
+
+# Tests which should run in Pulse
+PULSE_TESTS = \
+    qfxview \
+    qmlxmlparser \
+

@@ -467,6 +467,21 @@ QAbstractItemModel *QAbstractItemModelPrivate::staticEmptyModel()
     return qEmptyModel();
 }
 
+const QHash<int,QByteArray> &QAbstractItemModelPrivate::defaultRoleNames()
+{
+    static QHash<int,QByteArray> roleNames;
+    if (roleNames.isEmpty()) {
+        roleNames[Qt::DisplayRole] = "Display";
+        roleNames[Qt::DecorationRole] = "Decoration";
+        roleNames[Qt::EditRole] = "Edit";
+        roleNames[Qt::ToolTipRole] = "ToolTip";
+        roleNames[Qt::StatusTipRole] = "StatusTip";
+        roleNames[Qt::WhatsThisRole] = "WhatsThis";
+    }
+
+    return roleNames;
+}
+
 void QAbstractItemModelPrivate::removePersistentIndexData(QPersistentModelIndexData *data)
 {
     if (data->index.isValid()) {
@@ -1829,6 +1844,22 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
 QSize QAbstractItemModel::span(const QModelIndex &) const
 {
     return QSize(1, 1);
+}
+
+/*!
+*/
+void QAbstractItemModel::setRoleNames(const QHash<int,QByteArray> &roleNames)
+{
+    Q_D(QAbstractItemModel);
+    d->roleNames = roleNames;
+}
+
+/*!
+*/
+const QHash<int,QByteArray> &QAbstractItemModel::roleNames() const
+{
+    Q_D(const QAbstractItemModel);
+    return d->roleNames;
 }
 
 /*!

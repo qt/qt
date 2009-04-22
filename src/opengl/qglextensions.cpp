@@ -150,36 +150,158 @@ bool qt_resolve_buffer_extensions(QGLContext *ctx)
 
 bool qt_resolve_glsl_extensions(QGLContext *ctx)
 {
+#if defined(QT_OPENGL_ES_2)
+    // The GLSL shader functions are always present in OpenGL/ES 2.0.
+    // The only exceptions are glGetProgramBinaryOES and glProgramBinaryOES.
+    if (!QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glslResolved) {
+        glGetProgramBinaryOES = (_glGetProgramBinaryOES) ctx->getProcAddress(QLatin1String("glGetProgramBinaryOES"));
+        glProgramBinaryOES = (_glProgramBinaryOES) ctx->getProcAddress(QLatin1String("glProgramBinaryOES"));
+        QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glslResolved = true;
+    }
+    return true;
+#else
     if (glCreateShader)
         return true;
 
     glCreateShader = (_glCreateShader) ctx->getProcAddress(QLatin1String("glCreateShader"));
-    glShaderSource = (_glShaderSource) ctx->getProcAddress(QLatin1String("glShaderSource"));
-    glCompileShader = (_glCompileShader) ctx->getProcAddress(QLatin1String("glCompileShader"));
-    glDeleteShader = (_glDeleteShader) ctx->getProcAddress(QLatin1String("glDeleteShader"));
+    if (glCreateShader) {
+        glShaderSource = (_glShaderSource) ctx->getProcAddress(QLatin1String("glShaderSource"));
+        glShaderBinary = (_glShaderBinary) ctx->getProcAddress(QLatin1String("glShaderBinary"));
+        glCompileShader = (_glCompileShader) ctx->getProcAddress(QLatin1String("glCompileShader"));
+        glDeleteShader = (_glDeleteShader) ctx->getProcAddress(QLatin1String("glDeleteShader"));
+        glIsShader = (_glIsShader) ctx->getProcAddress(QLatin1String("glIsShader"));
 
-    glCreateProgram = (_glCreateProgram) ctx->getProcAddress(QLatin1String("glCreateProgram"));
-    glAttachShader = (_glAttachShader) ctx->getProcAddress(QLatin1String("glAttachShader"));
-    glDetachShader = (_glDetachShader) ctx->getProcAddress(QLatin1String("glDetachShader"));
-    glLinkProgram = (_glLinkProgram) ctx->getProcAddress(QLatin1String("glLinkProgram"));
-    glUseProgram = (_glUseProgram) ctx->getProcAddress(QLatin1String("glUseProgram"));
-    glDeleteProgram = (_glDeleteProgram) ctx->getProcAddress(QLatin1String("glDeleteProgram"));
+        glCreateProgram = (_glCreateProgram) ctx->getProcAddress(QLatin1String("glCreateProgram"));
+        glAttachShader = (_glAttachShader) ctx->getProcAddress(QLatin1String("glAttachShader"));
+        glDetachShader = (_glDetachShader) ctx->getProcAddress(QLatin1String("glDetachShader"));
+        glLinkProgram = (_glLinkProgram) ctx->getProcAddress(QLatin1String("glLinkProgram"));
+        glUseProgram = (_glUseProgram) ctx->getProcAddress(QLatin1String("glUseProgram"));
+        glDeleteProgram = (_glDeleteProgram) ctx->getProcAddress(QLatin1String("glDeleteProgram"));
+        glIsProgram = (_glIsProgram) ctx->getProcAddress(QLatin1String("glIsProgram"));
 
-    glGetShaderInfoLog = (_glGetShaderInfoLog) ctx->getProcAddress(QLatin1String("glGetShaderInfoLog"));
-    glGetShaderiv = (_glGetShaderiv) ctx->getProcAddress(QLatin1String("glGetShaderiv"));
-    glGetProgramiv = (_glGetProgramiv) ctx->getProcAddress(QLatin1String("glGetProgramiv"));
+        glGetShaderInfoLog = (_glGetShaderInfoLog) ctx->getProcAddress(QLatin1String("glGetShaderInfoLog"));
+        glGetShaderiv = (_glGetShaderiv) ctx->getProcAddress(QLatin1String("glGetShaderiv"));
+        glGetShaderSource = (_glGetShaderSource) ctx->getProcAddress(QLatin1String("glGetShaderSource"));
+        glGetProgramiv = (_glGetProgramiv) ctx->getProcAddress(QLatin1String("glGetProgramiv"));
+        glGetProgramInfoLog = (_glGetProgramInfoLog) ctx->getProcAddress(QLatin1String("glGetProgramInfoLog"));
 
-    glGetUniformLocation = (_glGetUniformLocation) ctx->getProcAddress(QLatin1String("glGetUniformLocation"));
-    glUniform4fv = (_glUniform4fv) ctx->getProcAddress(QLatin1String("glUniform4fv"));
-    glUniform3fv = (_glUniform3fv) ctx->getProcAddress(QLatin1String("glUniform3fv"));
-    glUniform2fv = (_glUniform2fv) ctx->getProcAddress(QLatin1String("glUniform2fv"));
-    glUniform1fv = (_glUniform1fv) ctx->getProcAddress(QLatin1String("glUniform1fv"));
-    glUniform1i = (_glUniform1i) ctx->getProcAddress(QLatin1String("glUniform1i"));
+        glGetUniformLocation = (_glGetUniformLocation) ctx->getProcAddress(QLatin1String("glGetUniformLocation"));
+        glUniform4fv = (_glUniform4fv) ctx->getProcAddress(QLatin1String("glUniform4fv"));
+        glUniform3fv = (_glUniform3fv) ctx->getProcAddress(QLatin1String("glUniform3fv"));
+        glUniform2fv = (_glUniform2fv) ctx->getProcAddress(QLatin1String("glUniform2fv"));
+        glUniform1fv = (_glUniform1fv) ctx->getProcAddress(QLatin1String("glUniform1fv"));
+        glUniform1i = (_glUniform1i) ctx->getProcAddress(QLatin1String("glUniform1i"));
+        glUniform1iv = (_glUniform1iv) ctx->getProcAddress(QLatin1String("glUniform1iv"));
+        glUniformMatrix2fv = (_glUniformMatrix2fv) ctx->getProcAddress(QLatin1String("glUniformMatrix2fv"));
+        glUniformMatrix3fv = (_glUniformMatrix3fv) ctx->getProcAddress(QLatin1String("glUniformMatrix3fv"));
+        glUniformMatrix4fv = (_glUniformMatrix4fv) ctx->getProcAddress(QLatin1String("glUniformMatrix4fv"));
+        glUniformMatrix2x3fv = (_glUniformMatrix2x3fv) ctx->getProcAddress(QLatin1String("glUniformMatrix2x3fv"));
+        glUniformMatrix2x4fv = (_glUniformMatrix2x4fv) ctx->getProcAddress(QLatin1String("glUniformMatrix2x4fv"));
+        glUniformMatrix3x2fv = (_glUniformMatrix3x2fv) ctx->getProcAddress(QLatin1String("glUniformMatrix3x2fv"));
+        glUniformMatrix3x4fv = (_glUniformMatrix3x4fv) ctx->getProcAddress(QLatin1String("glUniformMatrix3x4fv"));
+        glUniformMatrix4x2fv = (_glUniformMatrix4x2fv) ctx->getProcAddress(QLatin1String("glUniformMatrix4x2fv"));
+        glUniformMatrix4x3fv = (_glUniformMatrix4x3fv) ctx->getProcAddress(QLatin1String("glUniformMatrix4x3fv"));
 
-    return glCreateShader && glShaderSource && glCompileShader && glDeleteProgram &&
-        glCreateProgram && glAttachShader && glDetachShader && glLinkProgram && glUseProgram &&
-        glDeleteProgram && glGetShaderInfoLog && glGetShaderiv && glGetProgramiv && glGetUniformLocation &&
-        glUniform1i && glUniform1fv && glUniform2fv && glUniform3fv && glUniform4fv;
+        glBindAttribLocation = (_glBindAttribLocation) ctx->getProcAddress(QLatin1String("glBindAttribLocation"));
+        glGetAttribLocation = (_glGetAttribLocation) ctx->getProcAddress(QLatin1String("glGetAttribLocation"));
+        glVertexAttrib1fv = (_glVertexAttrib1fv) ctx->getProcAddress(QLatin1String("glVertexAttrib1fv"));
+        glVertexAttrib2fv = (_glVertexAttrib2fv) ctx->getProcAddress(QLatin1String("glVertexAttrib2fv"));
+        glVertexAttrib3fv = (_glVertexAttrib3fv) ctx->getProcAddress(QLatin1String("glVertexAttrib3fv"));
+        glVertexAttrib4fv = (_glVertexAttrib4fv) ctx->getProcAddress(QLatin1String("glVertexAttrib4fv"));
+        glVertexAttribPointer = (_glVertexAttribPointer) ctx->getProcAddress(QLatin1String("glVertexAttribPointer"));
+        glDisableVertexAttribArray = (_glDisableVertexAttribArray) ctx->getProcAddress(QLatin1String("glDisableVertexAttribArray"));
+        glEnableVertexAttribArray = (_glEnableVertexAttribArray) ctx->getProcAddress(QLatin1String("glEnableVertexAttribArray"));
+    } else {
+        // We may not have the standard shader functions, but we might
+        // have the older ARB functions instead.
+        glCreateShader = (_glCreateShader) ctx->getProcAddress(QLatin1String("glCreateShaderObjectARB"));
+        glShaderSource = (_glShaderSource) ctx->getProcAddress(QLatin1String("glShaderSourceARB"));
+        glShaderBinary = (_glShaderBinary) ctx->getProcAddress(QLatin1String("glShaderBinaryARB"));
+        glCompileShader = (_glCompileShader) ctx->getProcAddress(QLatin1String("glCompileShaderARB"));
+        glDeleteShader = (_glDeleteShader) ctx->getProcAddress(QLatin1String("glDeleteObjectARB"));
+        glIsShader = 0;
+
+        glCreateProgram = (_glCreateProgram) ctx->getProcAddress(QLatin1String("glCreateProgramObjectARB"));
+        glAttachShader = (_glAttachShader) ctx->getProcAddress(QLatin1String("glAttachObjectARB"));
+        glDetachShader = (_glDetachShader) ctx->getProcAddress(QLatin1String("glDetachObjectARB"));
+        glLinkProgram = (_glLinkProgram) ctx->getProcAddress(QLatin1String("glLinkProgramARB"));
+        glUseProgram = (_glUseProgram) ctx->getProcAddress(QLatin1String("glUseProgramObjectARB"));
+        glDeleteProgram = (_glDeleteProgram) ctx->getProcAddress(QLatin1String("glDeleteObjectARB"));
+        glIsProgram = 0;
+
+        glGetShaderInfoLog = (_glGetShaderInfoLog) ctx->getProcAddress(QLatin1String("glGetInfoLogARB"));
+        glGetShaderiv = (_glGetShaderiv) ctx->getProcAddress(QLatin1String("glGetObjectParameterivARB"));
+        glGetShaderSource = (_glGetShaderSource) ctx->getProcAddress(QLatin1String("glGetShaderSourceARB"));
+        glGetProgramiv = (_glGetProgramiv) ctx->getProcAddress(QLatin1String("glGetObjectParameterivARB"));
+        glGetProgramInfoLog = (_glGetProgramInfoLog) ctx->getProcAddress(QLatin1String("glGetInfoLogARB"));
+
+        glGetUniformLocation = (_glGetUniformLocation) ctx->getProcAddress(QLatin1String("glGetUniformLocationARB"));
+        glUniform4fv = (_glUniform4fv) ctx->getProcAddress(QLatin1String("glUniform4fvARB"));
+        glUniform3fv = (_glUniform3fv) ctx->getProcAddress(QLatin1String("glUniform3fvARB"));
+        glUniform2fv = (_glUniform2fv) ctx->getProcAddress(QLatin1String("glUniform2fvARB"));
+        glUniform1fv = (_glUniform1fv) ctx->getProcAddress(QLatin1String("glUniform1fvARB"));
+        glUniform1i = (_glUniform1i) ctx->getProcAddress(QLatin1String("glUniform1iARB"));
+        glUniform1iv = (_glUniform1iv) ctx->getProcAddress(QLatin1String("glUniform1ivARB"));
+        glUniformMatrix2fv = (_glUniformMatrix2fv) ctx->getProcAddress(QLatin1String("glUniformMatrix2fvARB"));
+        glUniformMatrix3fv = (_glUniformMatrix3fv) ctx->getProcAddress(QLatin1String("glUniformMatrix3fvARB"));
+        glUniformMatrix4fv = (_glUniformMatrix4fv) ctx->getProcAddress(QLatin1String("glUniformMatrix4fvARB"));
+        glUniformMatrix2x3fv = (_glUniformMatrix2x3fv) ctx->getProcAddress(QLatin1String("glUniformMatrix2x3fvARB"));
+        glUniformMatrix2x4fv = (_glUniformMatrix2x4fv) ctx->getProcAddress(QLatin1String("glUniformMatrix2x4fvARB"));
+        glUniformMatrix3x2fv = (_glUniformMatrix3x2fv) ctx->getProcAddress(QLatin1String("glUniformMatrix3x2fvARB"));
+        glUniformMatrix3x4fv = (_glUniformMatrix3x4fv) ctx->getProcAddress(QLatin1String("glUniformMatrix3x4fvARB"));
+        glUniformMatrix4x2fv = (_glUniformMatrix4x2fv) ctx->getProcAddress(QLatin1String("glUniformMatrix4x2fvARB"));
+        glUniformMatrix4x3fv = (_glUniformMatrix4x3fv) ctx->getProcAddress(QLatin1String("glUniformMatrix4x3fvARB"));
+
+        glBindAttribLocation = (_glBindAttribLocation) ctx->getProcAddress(QLatin1String("glBindAttribLocationARB"));
+        glGetAttribLocation = (_glGetAttribLocation) ctx->getProcAddress(QLatin1String("glGetAttribLocationARB"));
+        glVertexAttrib1fv = (_glVertexAttrib1fv) ctx->getProcAddress(QLatin1String("glVertexAttrib1fvARB"));
+        glVertexAttrib2fv = (_glVertexAttrib2fv) ctx->getProcAddress(QLatin1String("glVertexAttrib2fvARB"));
+        glVertexAttrib3fv = (_glVertexAttrib3fv) ctx->getProcAddress(QLatin1String("glVertexAttrib3fvARB"));
+        glVertexAttrib4fv = (_glVertexAttrib4fv) ctx->getProcAddress(QLatin1String("glVertexAttrib4fvARB"));
+        glVertexAttribPointer = (_glVertexAttribPointer) ctx->getProcAddress(QLatin1String("glVertexAttribPointerARB"));
+        glDisableVertexAttribArray = (_glDisableVertexAttribArray) ctx->getProcAddress(QLatin1String("glDisableVertexAttribArrayARB"));
+        glEnableVertexAttribArray = (_glEnableVertexAttribArray) ctx->getProcAddress(QLatin1String("glEnableVertexAttribArrayARB"));
+    }
+
+    // Note: glShaderBinary(), glIsShader(), glIsProgram(), and
+    // glUniformMatrixNxMfv() are optional, but all other functions
+    // are required.
+
+    return glCreateShader &&
+        glShaderSource &&
+        glCompileShader &&
+        glDeleteProgram &&
+        glCreateProgram &&
+        glAttachShader &&
+        glDetachShader &&
+        glLinkProgram &&
+        glUseProgram &&
+        glDeleteProgram &&
+        glGetShaderInfoLog &&
+        glGetShaderiv &&
+        glGetShaderSource &&
+        glGetProgramiv &&
+        glGetProgramInfoLog &&
+        glGetUniformLocation &&
+        glUniform1fv &&
+        glUniform2fv &&
+        glUniform3fv &&
+        glUniform4fv &&
+        glUniform1i &&
+        glUniform1iv &&
+        glUniformMatrix2fv &&
+        glUniformMatrix3fv &&
+        glUniformMatrix4fv &&
+        glBindAttribLocation &&
+        glGetAttribLocation &&
+        glVertexAttrib1fv &&
+        glVertexAttrib2fv &&
+        glVertexAttrib3fv &&
+        glVertexAttrib4fv &&
+        glVertexAttribPointer &&
+        glDisableVertexAttribArray &&
+        glEnableVertexAttribArray;
+#endif
 }
 
 QT_END_NAMESPACE
