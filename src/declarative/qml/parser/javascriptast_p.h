@@ -1891,26 +1891,23 @@ class UiPublicMember: public UiObjectMember
 public:
     JAVASCRIPT_DECLARE_AST_NODE(UiPublicMember)
 
-    UiPublicMember(JavaScriptNameIdImpl *type,
+    UiPublicMember(JavaScriptNameIdImpl *memberType,
                    JavaScriptNameIdImpl *name)
-        : type(type), name(name), expression(0), initializer(0)
+        : memberType(memberType), name(name), expression(0)
     { kind = K; }
 
-    UiPublicMember(JavaScriptNameIdImpl *type,
+    UiPublicMember(JavaScriptNameIdImpl *memberType,
                    JavaScriptNameIdImpl *name,
-                   ExpressionNode *expression,
-                   UiObjectInitializer *initializer)
-        : type(type), name(name),
-          expression(expression), initializer(initializer)
+                   ExpressionNode *expression)
+        : memberType(memberType), name(name), expression(expression)
     { kind = K; }
 
     virtual void accept0(Visitor *visitor);
 
 // attributes
-    JavaScriptNameIdImpl *type;
+    JavaScriptNameIdImpl *memberType;
     JavaScriptNameIdImpl *name;
     ExpressionNode *expression;
-    UiObjectInitializer *initializer;
     SourceLocation publicToken;
     SourceLocation attributeTypeToken;
     SourceLocation identifierToken;

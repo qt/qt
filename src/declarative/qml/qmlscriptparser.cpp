@@ -438,13 +438,16 @@ bool ProcessAST::visit(AST::UiImport *node)
     return false;
 }
 
-// UiObjectMember: T_PUBLIC T_IDENTIFIER T_IDENTIFIER T_COLON Expression UiObjectInitializer ;
+// UiObjectMember: T_PUBLIC UiMemberType T_IDENTIFIER T_COLON Expression
+// UiObjectMember: T_PUBLIC UiMemberType T_IDENTIFIER
+//
+// UiMemberType: "property" | "signal"
 bool ProcessAST::visit(AST::UiPublicMember *node)
 {
-    const QString type = node->type->asString();
+    const QString memberType = node->memberType->asString();
     const QString name = node->name->asString();
 
-    if (type == QLatin1String("property")) {
+    if (memberType == QLatin1String("property")) {
         _stateStack.pushProperty(QLatin1String("properties"), node->publicToken.startLine);
 
         Object *obj = defineObjectBinding(node->identifierToken.startLine,
@@ -460,7 +463,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         _stateStack.pop(); // object
         _stateStack.pop(); // properties
 
-    } else if (type == QLatin1String("signal")) {
+    } else if (memberType == QLatin1String("signal")) {
         _stateStack.pushProperty(QLatin1String("signals"), node->publicToken.startLine);
 
         Object *obj = defineObjectBinding(node->identifierToken.startLine,
@@ -474,7 +477,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         _stateStack.pop(); // object
         _stateStack.pop(); // signals
     } else {
-        qWarning() << "bad public identifier" << type; // ### FIXME
+        qWarning() << "bad public identifier" << memberType; // ### FIXME
     }
 
 
