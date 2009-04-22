@@ -833,15 +833,15 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
         description.flags = DFBSurfaceDescriptionFlags(description.flags | DSDESC_WIDTH);
     if (::setIntOption(displayArgs, QLatin1String("height"), &description.height))
         description.flags = DFBSurfaceDescriptionFlags(description.flags | DSDESC_HEIGHT);
-    description.caps = DFBSurfaceCapabilities(DSCAPS_PRIMARY
-                                              | DSCAPS_DOUBLE
-                                              | DSCAPS_STATIC_ALLOC);
-    if (displayArgs.contains(QLatin1String("forcepremultiplied"),
-                             Qt::CaseInsensitive)) {
-        description.caps = DFBSurfaceCapabilities(description.caps
-                                                  | DSCAPS_PREMULTIPLIED);
+    uint caps = DSCAPS_PRIMARY|DSCAPS_DOUBLE;
+    if (displayArgs.contains(QLatin1String("static_alloc")))
+        caps |= DSCAPS_STATIC_ALLOC;
+
+    if (displayArgs.contains(QLatin1String("forcepremultiplied"), Qt::CaseInsensitive)) {
+        caps |= DSCAPS_PREMULTIPLIED;
     }
 
+    description.caps = DFBSurfaceCapabilities(caps);
     // We don't track the primary surface as it's released in disconnect
     d_ptr->dfbSurface = createDFBSurface(&description, DontTrackSurface);
     if (!d_ptr->dfbSurface) {
