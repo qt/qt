@@ -157,13 +157,13 @@ static bool checkForAlphaPixels(const QImage &img)
     return false;
 }
 
-void QDirectFBPixmapData::fromImage(const QImage &img,
+void QDirectFBPixmapData::fromImage(const QImage &i,
                                     Qt::ImageConversionFlags flags)
 {
 #ifdef QT_NO_DIRECTFB_OPAQUE_DETECTION
     Q_UNUSED(flags);
 #endif
-    Q_ASSERT(img.depth() != 1); // these should be handled by QRasterPixmapData
+    const QImage img = (i.depth() == 1 ? i.convertToFormat(screen->alphaPixmapFormat()) : i);
     if (img.hasAlphaChannel()
 #ifndef QT_NO_DIRECTFB_OPAQUE_DETECTION
         && (flags & Qt::NoOpaqueDetection || ::checkForAlphaPixels(img))
