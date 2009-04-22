@@ -1583,6 +1583,7 @@ static PtrWacomConfigOpenDevice ptrWacomConfigOpenDevice = 0;
 static PtrWacomConfigGetRawParam ptrWacomConfigGetRawParam = 0;
 static PtrWacomConfigCloseDevice ptrWacomConfigCloseDevice = 0;
 static PtrWacomConfigTerm ptrWacomConfigTerm = 0;
+Q_GLOBAL_STATIC(QByteArray, wacomDeviceName)
 #endif
 
 #endif
@@ -2377,6 +2378,8 @@ void qt_init(QApplicationPrivate *priv, int,
 #else
                 if (devs->type == ATOM(XWacomStylus)) {
                     deviceType = QTabletEvent::Stylus;
+                    if (wacomDeviceName()->isEmpty())
+                        wacomDeviceName()->append(devs->name);
                     gotStylus = true;
                 } else if (devs->type == ATOM(XWacomEraser)) {
                     deviceType = QTabletEvent::XFreeEraser;
@@ -4511,8 +4514,7 @@ void fetchWacomToolId(int &deviceType, qint64 &serialId)
     WACOMCONFIG *config = ptrWacomConfigInit(X11->display, 0);
     if (config == 0)
         return;
-    const char *name = "stylus"; // TODO get this from the X config instead (users may have called it differently)
-    WACOMDEVICE *device = ptrWacomConfigOpenDevice (config, name);
+    WACOMDEVICE *device = ptrWacomConfigOpenDevice (config, wacomDeviceName()->constData());
     if (device == 0)
         return;
     unsigned keys[1];
