@@ -43,6 +43,7 @@
 
 #include "qfilesystemwatcher.h"
 #include "qfilesystemwatcher_kqueue_p.h"
+#include "qcore_unix_p.h"
 
 #include <qdebug.h>
 #include <qfile.h>
@@ -124,9 +125,9 @@ QStringList QKqueueFileSystemWatcherEngine::addPaths(const QStringList &paths,
         QString path = it.next();
         int fd;
 #if defined(O_EVTONLY)
-        fd = ::open(QFile::encodeName(path), O_EVTONLY);
+        fd = qt_safe_open(QFile::encodeName(path), O_EVTONLY);
 #else
-        fd = ::open(QFile::encodeName(path), O_RDONLY);
+        fd = qt_safe_open(QFile::encodeName(path), O_RDONLY);
 #endif
         if (fd == -1) {
             perror("QKqueueFileSystemWatcherEngine::addPaths: open");

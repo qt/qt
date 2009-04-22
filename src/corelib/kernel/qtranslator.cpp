@@ -58,6 +58,7 @@
 
 #if defined(Q_OS_UNIX)
 #define QT_USE_MMAP
+#include "private/qcore_unix_p.h"
 #endif
 
 // most of the headers below are already included in qplatformdefs.h
