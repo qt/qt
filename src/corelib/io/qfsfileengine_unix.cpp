@@ -458,7 +458,7 @@ bool QFSFileEngine::caseSensitive() const
 bool QFSFileEngine::setCurrentPath(const QString &path)
 {
     int r;
-    r = ::chdir(QFile::encodeName(path));
+    r = QT_CHDIR(QFile::encodeName(path));
     return r >= 0;
 }
 
