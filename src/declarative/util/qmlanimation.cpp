@@ -323,8 +323,8 @@ void QmlAbstractAnimation::setRepeat(bool r)
         return;
 
     d->repeat = r;
-    int ic = r ? -1 : 1;
-    qtAnimation()->setIterationCount(ic);
+    int lc = r ? -1 : 1;
+    qtAnimation()->setLoopCount(lc);
     emit repeatChanged(r);
 }
 

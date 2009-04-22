@@ -41,7 +41,7 @@
 
 #ifndef QT_NO_ANIMATION
 
-QT_BEGIN_NAMESPACE
+/*QT_BEGIN_NAMESPACE
 
 #ifdef QT_EXPERIMENTAL_SOLUTION
 # include "qvariantanimation.h"
@@ -74,6 +74,6 @@ static int qUnregisterGuiGetInterpolator()
 }
 Q_DESTRUCTOR_FUNCTION(qUnregisterGuiGetInterpolator)
 
-QT_END_NAMESPACE
+QT_END_NAMESPACE*/
 
 #endif //QT_NO_ANIMATION
