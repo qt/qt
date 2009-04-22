@@ -145,6 +145,9 @@ private slots:
     void addDefaultAnimationWithUnusedAnimation();
     void addDefaultAnimationForSource();
     void addDefaultAnimationForTarget();
+    void removeDefaultAnimation();
+    void removeDefaultAnimationForSource();
+    void removeDefaultAnimationForTarget();
 };
 
 tst_QStateMachine::tst_QStateMachine()
@@ -2577,6 +2580,130 @@ void tst_QStateMachine::addDefaultAnimationForTarget()
     QVERIFY(machine.configuration().contains(s3));
     QCOMPARE(object->property("foo").toDouble(), 2.0);
 }
+
+void tst_QStateMachine::removeDefaultAnimation()
+{
+    QStateMachine machine;
+
+    QCOMPARE(machine.defaultAnimations().size(), 0);
+
+    QPropertyAnimation *anim = new QPropertyAnimation(this, "foo");
+
+    machine.addDefaultAnimation(anim);
+
+    QCOMPARE(machine.defaultAnimations().size(), 1);
+    QVERIFY(machine.defaultAnimations().contains(anim));
+
+    machine.removeDefaultAnimation(anim);
+
+    QCOMPARE(machine.defaultAnimations().size(), 0);
+
+    machine.addDefaultAnimation(anim);
+    
+    QPropertyAnimation *anim2 = new QPropertyAnimation(this, "foo");
+    machine.addDefaultAnimation(anim2);
+
+    QCOMPARE(machine.defaultAnimations().size(), 2);
+    QVERIFY(machine.defaultAnimations().contains(anim));
+    QVERIFY(machine.defaultAnimations().contains(anim2));
+
+    machine.removeDefaultAnimation(anim);
+
+    QCOMPARE(machine.defaultAnimations().size(), 1);
+    QVERIFY(machine.defaultAnimations().contains(anim2));
+
+    machine.removeDefaultAnimation(anim2);
+    QCOMPARE(machine.defaultAnimations().size(), 0);
+}
+
+void tst_QStateMachine::removeDefaultAnimationForSource()
+{
+    QStateMachine machine;
+
+    QCOMPARE(machine.defaultAnimationsForSourceState(machine.rootState()).size(), 0);
+
+    QPropertyAnimation *anim = new QPropertyAnimation(this, "foo");
+
+    machine.addDefaultAnimationForSourceState(machine.rootState(), anim);
+
+    QCOMPARE(machine.defaultAnimations().size(), 0);
+    QCOMPARE(machine.defaultAnimationsForTargetState(machine.rootState()).size(), 0);
+    QCOMPARE(machine.defaultAnimationsForSourceState(machine.rootState()).size(), 1);
+    QVERIFY(machine.defaultAnimationsForSourceState(machine.rootState()).contains(anim));
+
+    machine.removeDefaultAnimationForTargetState(machine.rootState(), anim);
+
+    QCOMPARE(machine.defaultAnimations().size(), 0);
+    QCOMPARE(machine.defaultAnimationsForTargetState(machine.rootState()).size(), 0);
+    QCOMPARE(machine.defaultAnimationsForSourceState(machine.rootState()).size(), 1);
+    QVERIFY(machine.defaultAnimationsForSourceState(machine.rootState()).contains(anim));
+
+    machine.removeDefaultAnimationForSourceState(machine.rootState(), anim);
+
+    QCOMPARE(machine.defaultAnimationsForSourceState(machine.rootState()).size(), 0);
+
+    machine.addDefaultAnimationForSourceState(machine.rootState(), anim);
+    
+    QPropertyAnimation *anim2 = new QPropertyAnimation(this, "foo");
+    machine.addDefaultAnimationForSourceState(machine.rootState(), anim2);
+
+    QCOMPARE(machine.defaultAnimationsForSourceState(machine.rootState()).size(), 2);
+    QVERIFY(machine.defaultAnimationsForSourceState(machine.rootState()).contains(anim));
+    QVERIFY(machine.defaultAnimationsForSourceState(machine.rootState()).contains(anim2));
+
+    machine.removeDefaultAnimationForSourceState(machine.rootState(), anim);
+
+    QCOMPARE(machine.defaultAnimationsForSourceState(machine.rootState()).size(), 1);
+    QVERIFY(machine.defaultAnimationsForSourceState(machine.rootState()).contains(anim2));
+
+    machine.removeDefaultAnimationForSourceState(machine.rootState(), anim2);
+    QCOMPARE(machine.defaultAnimationsForSourceState(machine.rootState()).size(), 0);
+}
+
+void tst_QStateMachine::removeDefaultAnimationForTarget()
+{
+    QStateMachine machine;
+
+    QCOMPARE(machine.defaultAnimationsForTargetState(machine.rootState()).size(), 0);
+
+    QPropertyAnimation *anim = new QPropertyAnimation(this, "foo");
+
+    machine.addDefaultAnimationForTargetState(machine.rootState(), anim);
+
+    QCOMPARE(machine.defaultAnimations().size(), 0);
+    QCOMPARE(machine.defaultAnimationsForSourceState(machine.rootState()).size(), 0);
+    QCOMPARE(machine.defaultAnimationsForTargetState(machine.rootState()).size(), 1);
+    QVERIFY(machine.defaultAnimationsForTargetState(machine.rootState()).contains(anim));
+
+    machine.removeDefaultAnimationForSourceState(machine.rootState(), anim);
+
+    QCOMPARE(machine.defaultAnimations().size(), 0);
+    QCOMPARE(machine.defaultAnimationsForSourceState(machine.rootState()).size(), 0);
+    QCOMPARE(machine.defaultAnimationsForTargetState(machine.rootState()).size(), 1);
+    QVERIFY(machine.defaultAnimationsForTargetState(machine.rootState()).contains(anim));
+
+    machine.removeDefaultAnimationForTargetState(machine.rootState(), anim);
+
+    QCOMPARE(machine.defaultAnimationsForTargetState(machine.rootState()).size(), 0);
+
+    machine.addDefaultAnimationForTargetState(machine.rootState(), anim);
+    
+    QPropertyAnimation *anim2 = new QPropertyAnimation(this, "foo");
+    machine.addDefaultAnimationForTargetState(machine.rootState(), anim2);
+
+    QCOMPARE(machine.defaultAnimationsForTargetState(machine.rootState()).size(), 2);
+    QVERIFY(machine.defaultAnimationsForTargetState(machine.rootState()).contains(anim));
+    QVERIFY(machine.defaultAnimationsForTargetState(machine.rootState()).contains(anim2));
+
+    machine.removeDefaultAnimationForTargetState(machine.rootState(), anim);
+
+    QCOMPARE(machine.defaultAnimationsForTargetState(machine.rootState()).size(), 1);
+    QVERIFY(machine.defaultAnimationsForTargetState(machine.rootState()).contains(anim2));
+
+    machine.removeDefaultAnimationForTargetState(machine.rootState(), anim2);
+    QCOMPARE(machine.defaultAnimationsForTargetState(machine.rootState()).size(), 0);
+}
+
 
 QTEST_MAIN(tst_QStateMachine)
 #include "tst_qstatemachine.moc"
