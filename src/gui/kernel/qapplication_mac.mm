@@ -1196,10 +1196,6 @@ void qt_init(QApplicationPrivate *priv, int)
         [qtMenuLoader release];
     }
 #endif
-    if (QApplication::testAttribute(Qt::AA_MacPluginApplication)) {
-        extern void qt_mac_set_native_menubar(bool);
-        qt_mac_set_native_menubar(false);
-    }
     // Register for Carbon tablet proximity events on the event monitor target.
     // This means that we should receive proximity events even when we aren't the active application.
     if (!tablet_proximity_handler) {

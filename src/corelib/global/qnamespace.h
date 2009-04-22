@@ -503,6 +503,7 @@ public:
         AA_NativeWindows = 3,
         AA_DontCreateNativeWidgetSiblings = 4,
         AA_MacPluginApplication = 5,
+        AA_DontUseNativeMenuBar = 6,
 
         // Add new attributes before this line
         AA_AttributeCount
