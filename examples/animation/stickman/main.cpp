@@ -26,7 +26,7 @@ int main(int argc, char **argv)
         "<li>Press <font color=\"purple\">Return</font> to make him return to his original position.</li>"
         "<li>When you are done, press <font color=\"purple\">Escape</font>.</li>"
         "</i></p>"
-        "<p>If you are unlucky, the stickman will get struck by lightning, and never jump, dance or chill out again."
+        "<p>If he is unlucky, the stickman will get struck by lightning, and never jump, dance or chill out again."
         "</p></font>");
     qreal w = textItem->boundingRect().width();
     QRectF stickManBoundingRect = stickMan->mapToScene(stickMan->boundingRect()).boundingRect();

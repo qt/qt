@@ -24,6 +24,7 @@ Clock::Clock(QGraphicsItem *parent)
       m_timeState(0),
       m_updateState(0),
       m_regularState(0),
+      m_displaysHistoryState(0),
       m_alarmSound(new QSound(":/sound/alarm.wav", this))
 {
 }
@@ -84,9 +85,19 @@ void Clock::initializeStateMachine()
     displays->setObjectName("displays");
     initializeDisplaysState(displays);
 
-    /*QState *alarmsBeep = new QState(m_stateMachine->rootState());
-    alarmsBeep->setObjectName("alarmsBeep");
-    initializeAlarmsBeepState(alarmsBeep);*/
+    QState *alarmsBeepState = new QState(m_stateMachine->rootState());
+    alarmsBeepState->setObjectName("alarmsBeep");
+    alarmsBeepState->invokeMethodOnEntry(this, "playSound");
+    alarmsBeepState->invokeMethodOnExit(this, "stopSound");
+
+    QTimer *alarmTimeOut = new QTimer(alarmsBeepState);
+    alarmTimeOut->setInterval(30000);    
+    alarmsBeepState->invokeMethodOnEntry(alarmTimeOut, "start");
+    alarmsBeepState->invokeMethodOnExit(alarmTimeOut, "stop");
+
+    displays->addTransition(m_clockDisplay, SIGNAL(alarmTriggered()), alarmsBeepState);
+    alarmsBeepState->addTransition(this, SIGNAL(anyButtonPressed()), m_displaysHistoryState); 
+    alarmsBeepState->addTransition(alarmTimeOut, SIGNAL(timeout()), m_displaysHistoryState);
 
     m_stateMachine->setInitialState(displays);
     m_stateMachine->start();
@@ -101,8 +112,7 @@ void Clock::initializeUpdateState(QState *updateState)
     
     PropertyAddState *secIncrease = new PropertyAddState(updateState);
     secIncrease->setObjectName("sec ++");
-    secIncrease->addToProperty(m_clockDisplay, "currentTime", 
-                               TimePeriod().setSeconds(1));
+    secIncrease->addToProperty(m_clockDisplay, "currentTime", TimePeriod().setSeconds(1));
     sec->addTransition(m_buttonD, SIGNAL(pressed()), secIncrease);
     secIncrease->addTransition(sec);
 
@@ -113,8 +123,7 @@ void Clock::initializeUpdateState(QState *updateState)
 
     PropertyAddState *oneMinIncrease = new PropertyAddState(updateState);
     oneMinIncrease->setObjectName("1 min ++");
-    oneMinIncrease->addToProperty(m_clockDisplay, "currentTime", 
-                                  TimePeriod().setMinutes(1));
+    oneMinIncrease->addToProperty(m_clockDisplay, "currentTime", TimePeriod().setMinutes(1));
     oneMin->addTransition(m_buttonD, SIGNAL(pressed()), oneMinIncrease);
     oneMinIncrease->addTransition(oneMin);
 
@@ -125,8 +134,7 @@ void Clock::initializeUpdateState(QState *updateState)
 
     PropertyAddState *tenMinIncrease = new PropertyAddState(updateState);
     tenMinIncrease->setObjectName("10 min ++");
-    tenMinIncrease->addToProperty(m_clockDisplay, "currentTime", 
-                                  TimePeriod().setMinutes(10));
+    tenMinIncrease->addToProperty(m_clockDisplay, "currentTime", TimePeriod().setMinutes(10));
     tenMin->addTransition(m_buttonD, SIGNAL(pressed()), tenMinIncrease);
     tenMinIncrease->addTransition(tenMin);
 
@@ -137,8 +145,7 @@ void Clock::initializeUpdateState(QState *updateState)
 
     PropertyAddState *hrIncrease = new PropertyAddState(updateState);
     hrIncrease->setObjectName("hr ++");
-    hrIncrease->addToProperty(m_clockDisplay, "currentTime", 
-                              TimePeriod().setHours(1));
+    hrIncrease->addToProperty(m_clockDisplay, "currentTime", TimePeriod().setHours(1));
     hr->addTransition(m_buttonD, SIGNAL(pressed()), hrIncrease);
     hrIncrease->addTransition(hr);
 
@@ -149,8 +156,7 @@ void Clock::initializeUpdateState(QState *updateState)
 
     PropertyAddState *monIncrease = new PropertyAddState(updateState);
     monIncrease->setObjectName("mon ++");
-    monIncrease->addToProperty(m_clockDisplay, "currentTime", 
-                               TimePeriod().setMonths(1));
+    monIncrease->addToProperty(m_clockDisplay, "currentTime", TimePeriod().setMonths(1));
     mon->addTransition(m_buttonD, SIGNAL(pressed()), monIncrease);
     monIncrease->addTransition(mon);
 
@@ -161,8 +167,7 @@ void Clock::initializeUpdateState(QState *updateState)
 
     PropertyAddState *dayIncrease = new PropertyAddState(updateState);
     dayIncrease->setObjectName("day ++");
-    dayIncrease->addToProperty(m_clockDisplay, "currentTime",
-                               TimePeriod().setDays(1));
+    dayIncrease->addToProperty(m_clockDisplay, "currentTime", TimePeriod().setDays(1));
     day->addTransition(m_buttonD, SIGNAL(pressed()), dayIncrease);
     dayIncrease->addTransition(day);
 
@@ -173,8 +178,7 @@ void Clock::initializeUpdateState(QState *updateState)
 
     PropertyAddState *yearIncrease = new PropertyAddState(updateState);
     yearIncrease->setObjectName("year ++");
-    yearIncrease->addToProperty(m_clockDisplay, "currentTime",
-                                TimePeriod().setYears(1));
+    yearIncrease->addToProperty(m_clockDisplay, "currentTime", TimePeriod().setYears(1));
     year->addTransition(m_buttonD, SIGNAL(pressed()), yearIncrease);
     yearIncrease->addTransition(year);
     year->addTransition(m_buttonC, SIGNAL(pressed()), m_timeState);
@@ -305,6 +309,8 @@ void Clock::initializeDisplaysState(QState *displays)
     wait->invokeMethodOnEntry(waitTimer, "start");
     wait->invokeMethodOnExit(waitTimer, "stop");
 
+    m_displaysHistoryState = displays->addHistoryState(QState::DeepHistory);
+
     m_timeState->addTransition(m_buttonC, SIGNAL(pressed()), wait);
     wait->addTransition(waitTimer, SIGNAL(timeout()), m_updateState);
     wait->addTransition(m_buttonC, SIGNAL(released()), m_timeState);
@@ -324,7 +330,7 @@ void Clock::initializeAlarmState(QState *alarmState)
 
     QHistoryState *history = alarmState->addHistoryState();    
     history->setObjectName("alarmHistory");
-    history->setDefaultState(onState);
+    history->setDefaultState(offState);
 
     offState->addTransition(m_buttonD, SIGNAL(pressed()), onState);
     onState->addTransition(m_buttonD, SIGNAL(pressed()), offState);
@@ -371,12 +377,14 @@ void Clock::updateTime()
 
 void Clock::playSound()
 {
+    qDebug("playing sound");
     m_alarmSound->stop();
     m_alarmSound->play();
 }
 
 void Clock::stopSound()
 {
+    qDebug("stopping sound");
     m_alarmSound->stop();
 }
 

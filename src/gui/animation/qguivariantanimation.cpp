@@ -39,73 +39,41 @@
 **
 ****************************************************************************/
 
-#ifndef QITEMANIMATION_H
-#define QITEMANIMATION_H
-
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qvariantanimation.h"
-#else
-# include <QtCore/qvariantanimation.h>
-#endif
-
-QT_BEGIN_HEADER
+#ifndef QT_NO_ANIMATION
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
+#ifdef QT_EXPERIMENTAL_SOLUTION
+# include "qvariantanimation.h"
+# include "qvariantanimation_p.h"
+#else
+#include <QtCore/qvariantanimation.h>
+#include <private/qvariantanimation_p.h>
+#endif
 
-#ifndef QT_NO_ANIMATION
 
-class QGraphicsItem;
-
-class QItemAnimationPrivate;
-class Q_GUI_EXPORT QItemAnimation : public QVariantAnimation
+template<> Q_INLINE_TEMPLATE QColor _q_interpolate(const QColor &f,const QColor &t, qreal progress)
 {
-public:
-    enum PropertyName
-    {
-        None, //default
-        Position,
-        Opacity,
-        RotationX,
-        RotationY,
-        RotationZ,
-        ScaleFactorX,
-        ScaleFactorY
-    };
+    return QColor(_q_interpolate(f.red(), t.red(), progress),
+                  _q_interpolate(f.green(), t.green(), progress),
+                  _q_interpolate(f.blue(), t.blue(), progress),
+                  _q_interpolate(f.alpha(), t.alpha(), progress));
+}
 
-    Q_OBJECT
-    Q_PROPERTY(PropertyName propertyName READ propertyName WRITE setPropertyName)
-    Q_PROPERTY(QGraphicsItem* targetItem READ targetItem WRITE setTargetItem)  /*NOTIFY targetItemChanged*/
+static int qRegisterGuiGetInterpolator()
+{
+    qRegisterAnimationInterpolator<QColor>(_q_interpolateVariant<QColor>);
+    return 1;
+}
+Q_CONSTRUCTOR_FUNCTION(qRegisterGuiGetInterpolator)
 
-public:
-    QItemAnimation(QObject *parent = 0);
-    QItemAnimation(QGraphicsItem *target, PropertyName p = None, QObject *parent = 0);
-    ~QItemAnimation();
-
-    QGraphicsItem *targetItem() const;
-    void setTargetItem(QGraphicsItem *item);
-
-    PropertyName propertyName() const;
-    void setPropertyName(PropertyName);
-
-    static QList<QItemAnimation*> runningAnimations(QGraphicsItem *item = 0);
-    static QItemAnimation* runningAnimation(QGraphicsItem *item, PropertyName prop);
-
-protected:
-    bool event(QEvent *event);
-    void updateCurrentValue(const QVariant &value);
-    void updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState);
-
-private:
-    Q_DISABLE_COPY(QItemAnimation)
-    Q_DECLARE_PRIVATE(QItemAnimation)
-};
-
-#endif //QT_NO_ANIMATION
+static int qUnregisterGuiGetInterpolator()
+{
+    qRegisterAnimationInterpolator<QColor>(0);
+    return 1;
+}
+Q_DESTRUCTOR_FUNCTION(qUnregisterGuiGetInterpolator)
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif //QITEMANIMATION_H
+#endif //QT_NO_ANIMATION

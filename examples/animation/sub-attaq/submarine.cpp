@@ -47,18 +47,17 @@
 #include "graphicsscene.h"
 #include "animationmanager.h"
 #include "custompropertyanimation.h"
+#include "qanimationstate.h"
 
 #if defined(QT_EXPERIMENTAL_SOLUTION)
 #include "qpropertyanimation.h"
 #include "qstatemachine.h"
 #include "qfinalstate.h"
-#include "qanimationstate.h"
 #include "qsequentialanimationgroup.h"
 #else
 #include <QPropertyAnimation>
 #include <QStateMachine>
 #include <QFinalState>
-#include <QAnimationState>
 #include <QSequentialAnimationGroup>
 #endif
 
@@ -143,20 +142,20 @@ SubMarine::SubMarine(int type, const QString &name, int points, QGraphicsItem * 
     QFinalState *final = new QFinalState(machine->rootState());
 
     //If the moving animation is finished we move to the return state
-    movement->addFinishedTransition(rotation);
+    movement->addTransition(movement, SIGNAL(animationFinished()), rotation);
 
     //If the return animation is finished we move to the moving state
-    rotation->addFinishedTransition(movement);
+    rotation->addTransition(rotation, SIGNAL(animationFinished()), movement);
 
     //This state play the destroyed animation
     QAnimationState *destroyedState = new QAnimationState(machine->rootState());
-    destroyedState->addAnimation(setupDestroyAnimation(this));
+    destroyedState->setAnimation(setupDestroyAnimation(this));
 
     //Play a nice animation when the submarine is destroyed
     moving->addTransition(this, SIGNAL(subMarineDestroyed()),destroyedState);
 
     //Transition to final state when the destroyed animation is finished
-    destroyedState->addFinishedTransition(final);
+    destroyedState->addTransition(destroyedState, SIGNAL(animationFinished()), final);
 
     //The machine has finished to be executed, then the submarine is dead
     connect(machine,SIGNAL(finished()),this, SIGNAL(subMarineExecutionFinished()));

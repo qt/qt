@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,45 +39,58 @@
 **
 ****************************************************************************/
 
-#ifndef QITEMANIMATION_P_H
-#define QITEMANIMATION_P_H
+#ifndef QACTIONTRANSITION_H
+#define QACTIONTRANSITION_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of QIODevice. This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qitemanimation.h"
-
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-#include "qvariantanimation_p.h"
+#ifndef QT_STATEMACHINE_SOLUTION
+#include <QtCore/qabstracttransition.h>
 #else
-#include "private/qvariantanimation_p.h"
+#include "qabstracttransition.h"
 #endif
+
+#include <QtCore/qvariant.h>
+#include <QtCore/qlist.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QItemAnimationPrivate : public QVariantAnimationPrivate
+QT_MODULE(Core)
+
+class QStateAction;
+
+class QActionTransitionPrivate;
+class Q_CORE_EXPORT QActionTransition : public QAbstractTransition
 {
-   Q_DECLARE_PUBLIC(QItemAnimation)
+    Q_OBJECT
 public:
-    QItemAnimationPrivate() : propertyName(QItemAnimation::None),
-        target(0)
-    {
-    }
+    QActionTransition(QState *sourceState = 0);
+    QActionTransition(const QList<QAbstractState*> &targets, QState *sourceState = 0);
+    ~QActionTransition();
 
-    void initDefaultStartValue();
+    void invokeMethodOnTransition(QObject *object, const char *method,
+                                  const QList<QVariant> &args = QList<QVariant>());
 
-    QItemAnimation::PropertyName propertyName;
-    QGraphicsItem *target;
+    void addAction(QStateAction *action);
+    void removeAction(QStateAction *action);
+    QList<QStateAction*> actions() const;
+
+protected:
+    virtual void onTransition();
+
+    bool event(QEvent *e);
+
+protected:
+    QActionTransition(QActionTransitionPrivate &dd, QState *parent);
+    QActionTransition(QActionTransitionPrivate &dd, const QList<QAbstractState*> &targets, QState *parent);
+
+private:
+    Q_DISABLE_COPY(QActionTransition)
+    Q_DECLARE_PRIVATE(QActionTransition)
 };
 
 QT_END_NAMESPACE
 
-#endif //QITEMANIMATION_P_H
+QT_END_HEADER
+
+#endif

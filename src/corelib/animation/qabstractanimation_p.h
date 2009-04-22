@@ -78,8 +78,8 @@ public:
           deleteWhenStopped(false),
           totalCurrentTime(0),
           currentTime(0),
-          iterationCount(1),
-          currentIteration(0),
+          loopCount(1),
+          currentLoop(0),
           group(0)
     {
     }
@@ -98,8 +98,8 @@ public:
 
     int totalCurrentTime;
     int currentTime;
-    int iterationCount;
-    int currentIteration;
+    int loopCount;
+    int currentLoop;
 
     QAnimationGroup *group;
 #ifdef QT_EXPERIMENTAL_SOLUTION

@@ -3,9 +3,39 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -19,9 +49,6 @@
 #include "qstatefinishedtransition.h"
 #include "qstatemachine.h"
 #include "qstatemachine_p.h"
-#ifndef QT_NO_ANIMATION
-#include "qanimationstate.h"
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -30,6 +57,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QState class provides a general-purpose state for QStateMachine.
 
+  \since 4.6
   \ingroup statemachine
 
   QState objects can have child states, and can have transitions to other
@@ -46,6 +74,9 @@ QT_BEGIN_NAMESPACE
   parent state is the target of a transition.
 
   The addHistoryState() function adds a history state.
+
+  The addFinishedTransition() function creates and adds a transition that's
+  triggered when a final child state is entered.
 
   The setErrorState() sets the state's error state. The error state is the
   state that the state machine will transition to if an error is detected when
@@ -242,36 +273,42 @@ void QState::addTransition(QAbstractTransition *transition)
 
 /*!
   Adds a transition associated with the given \a signal of the given \a sender
-  object. The transition has this state as the source, and the given \a target
-  as the target state.
+  object, and returns the new QSignalTransition object. The transition has
+  this state as the source, and the given \a target as the target state.
 */
-void QState::addTransition(QObject *sender, const char *signal,
-                           QAbstractState *target)
+QSignalTransition *QState::addTransition(QObject *sender, const char *signal,
+                                         QAbstractState *target)
 {
     if (!sender) {
         qWarning("QState::addTransition: sender cannot be null");
-        return;
+        return 0;
     }
     if (!signal) {
         qWarning("QState::addTransition: signal cannot be null");
-        return;
+        return 0;
     }
-    addTransition(new QSignalTransition(sender, signal, QList<QAbstractState*>() << target));
+    QSignalTransition *trans = new QSignalTransition(sender, signal, QList<QAbstractState*>() << target);
+    addTransition(trans);
+    return trans;
 }
 
 /*!
   Adds a transition that's triggered by the finished event of this state, and
-  that has the given \a target state.
+  returns the new QStateFinishedTransition object. The transition has the
+  given \a target state.
 
   \sa QStateFinishedEvent
 */
-void QState::addFinishedTransition(QAbstractState *target)
+QStateFinishedTransition *QState::addFinishedTransition(QAbstractState *target)
 {
-    addTransition(new QStateFinishedTransition(this, QList<QAbstractState*>() << target));
+    QStateFinishedTransition *trans = new QStateFinishedTransition(this, QList<QAbstractState*>() << target);
+    addTransition(trans);
+    return trans;
 }
 
 namespace {
 
+// ### Make public?
 class UnconditionalTransition : public QAbstractTransition
 {
 public:
@@ -286,11 +323,13 @@ protected:
 
 /*!
   Adds an unconditional transition from this state to the given \a target
-  state.
+  state, and returns then new transition object.
 */
-void QState::addTransition(QAbstractState *target)
+QAbstractTransition *QState::addTransition(QAbstractState *target)
 {
-    addTransition(new UnconditionalTransition(target));
+    UnconditionalTransition *trans = new UnconditionalTransition(target);
+    addTransition(trans);
+    return trans;
 }
 
 /*!
@@ -354,80 +393,6 @@ void QState::onExit()
 {
     QActionState::onExit();
 }
-
-#ifndef QT_NO_ANIMATION
-
-/*!
-  \overload addAnimatedTransition()
-
-  Adds an animated transition from the current state to \a targetState for \a animation. 
-
-  This function creates a QSignalTransition for the \a sender and \a signal, and calls 
-  addAnimatedTransition() with this transition object.
-*/
-QAnimationState *QState::addAnimatedTransition(QObject *sender, const char *signal,
-                                               QAbstractState *targetState,
-                                               QAbstractAnimation *animation)
-{
-    if (!targetState) {
-        qWarning("QState::addAnimatedTransition: cannot add transition to null state");
-        return 0;
-    }
-    return addAnimatedTransition(
-        new QSignalTransition(sender, signal,
-                              QList<QAbstractState*>() << targetState), animation);
-}
-
-/*!
-  Adds an animated transition from the current state.
-  
-  The animated transition has an intermediate QAnimationState which plays \a
-  animation before entering the target state(s). This QAnimationState will be
-  entered when \a transition is taken by the state machine. When the animation
-  has finished playing, the transition's target state(s) will be entered.
-
-  The new QAnimationState object will become a child of this state's parent state.
-
-  \code
-    QPushButton button;
-    QPropertyAnimation animation(&button, "geometry");
-    animation.setEndValue(QRect(100, 100, 400, 400));
-
-    QStateMachine machine;
-
-    QState *s1 = new QState();
-    QState *s2 = new QState();
-
-    QTransition *transition = new QTransition(MyEventType);
-    s1->addAnimatedTransition(transition, s2, &animation);
-  \endcode
-
-  The function returns the new QAnimationState. This state can be used if you want to add additional 
-  transitions into or out from the animation state, and if you want to add additional animations.
-
-  \sa QAnimationState
-*/
-QAnimationState *QState::addAnimatedTransition(QAbstractTransition *transition,
-                                               QAbstractAnimation *animation)
-{
-    if (!transition) {
-        qWarning("QState::addAnimatedTransition: cannot add null transition");
-        return 0;
-    }
-    QList<QAbstractState*> targets = transition->targetStates();
-    Q_ASSERT(!targets.isEmpty());
-    if (!targets.at(0)->parentState()) {
-        qWarning("QState::addAnimatedTransition: cannot add transition to target that doesn't have a parent state");
-        return 0;
-    }
-    QAnimationState *animState = new QAnimationState(animation, targets.at(0)->parentState());
-    animState->addTransition(new QStateFinishedTransition(animState, targets));
-    transition->setTargetStates(QList<QAbstractState*>() << animState);
-    addTransition(transition);
-    return animState;
-}
-
-#endif
 
 /*!
   Returns this state's initial state, or 0 if the state has no initial state.

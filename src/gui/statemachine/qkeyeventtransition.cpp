@@ -25,6 +25,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QKeyEventTransition class provides a transition for key events.
 
+  \since 4.6
   \ingroup statemachine
 
   QKeyEventTransition is part of \l{The State Machine Framework}.
@@ -119,7 +120,8 @@ Qt::KeyboardModifiers QKeyEventTransition::modifiers() const
 }
 
 /*!
-  Sets the keyboard modifiers that this key event transition will check for.
+  Sets the keyboard \a modifiers that this key event transition will check
+  for.
 */
 void QKeyEventTransition::setModifiers(Qt::KeyboardModifiers modifiers)
 {

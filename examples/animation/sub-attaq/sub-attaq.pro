@@ -20,8 +20,8 @@ HEADERS += boat.h \
     states.h \
     boat_p.h \
     submarine_p.h \
-    custompropertyanimation_p.h \
-    custompropertyanimation.h
+    custompropertyanimation.h \
+    qanimationstate.h
 SOURCES += boat.cpp \
     bomb.cpp \
     main.cpp \
@@ -32,5 +32,7 @@ SOURCES += boat.cpp \
     graphicsscene.cpp \
     animationmanager.cpp \
     states.cpp \
-    custompropertyanimation.cpp
+    custompropertyanimation.cpp \
+    qanimationstate.cpp
+
 RESOURCES += subattaq.qrc

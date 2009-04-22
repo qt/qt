@@ -39,6 +39,7 @@ my @files = (
             "corelib/animation/qsequentialanimationgroup.cpp",
             "corelib/animation/qsequentialanimationgroup.h",
             "corelib/animation/qsequentialanimationgroup_p.h",
+            "gui/animation/qguivariantanimation.cpp",
             "corelib/statemachine/statemachine.pri",
             "corelib/statemachine/qabstractstate.cpp",
             "corelib/statemachine/qabstractstate.h",
@@ -49,8 +50,6 @@ my @files = (
             "corelib/statemachine/qactionstate.h",
             "corelib/statemachine/qactionstate_p.h",
             "corelib/statemachine/qactionstate.cpp",
-            "corelib/statemachine/qanimationstate.cpp",
-            "corelib/statemachine/qanimationstate.h",
             "corelib/statemachine/qboundevent_p.h",
             "corelib/statemachine/qeventtransition.cpp",
             "corelib/statemachine/qeventtransition.h",
@@ -77,9 +76,9 @@ my @files = (
             "corelib/statemachine/qstatemachine.h",
             "corelib/statemachine/qstatemachine_p.h",
             "corelib/statemachine/qstate_p.h",
-            "corelib/statemachine/qtransition.cpp",
-            "corelib/statemachine/qtransition.h",
-            "corelib/statemachine/qtransition_p.h",
+            "corelib/statemachine/qactiontransition.cpp",
+            "corelib/statemachine/qactiontransition.h",
+            "corelib/statemachine/qactiontransition_p.h",
             "gui/statemachine/qkeyeventtransition.h",
             "gui/statemachine/qkeyeventtransition.cpp",
             "gui/statemachine/qbasickeyeventtransition.cpp",
@@ -144,7 +143,6 @@ my %animation_examples = (
                     "bomb.cpp",
                     "bomb.h",
                     "custompropertyanimation.h",
-                    "custompropertyanimation_p.h",
                     "custompropertyanimation.cpp",
                     "graphicsscene.cpp",
                     "graphicsscene.h",
@@ -254,7 +252,6 @@ sub copyFile
         $filecontents =~s/QAbstractStateGroup/QtAbstractStateGroup/g;
         $filecontents =~s/QAbstractTransition/QtAbstractTransition/g;
         $filecontents =~s/QActionState/QtActionState/g;
-        $filecontents =~s/QAnimationState/QtAnimationState/g;
         $filecontents =~s/QEventTransition/QtEventTransition/g;
         $filecontents =~s/QFinalState/QtFinalState/g;
         $filecontents =~s/QHistoryState/QtHistoryState/g;
@@ -263,12 +260,11 @@ sub copyFile
         $filecontents =~s/QSignalTransition/QtSignalTransition/g;
         $filecontents =~s/QState/QtState/g;
         $filecontents =~s/QStateAction/QtStateAction/g;
-        $filecontents =~s/QStateSetPropertyAction/QtStateSetPropertyAction/g;
         $filecontents =~s/QStateInvokeMethodAction/QtStateInvokeMethodAction/g;
         $filecontents =~s/QStateFinishedEvent/QtStateFinishedEvent/g;
         $filecontents =~s/QStateFinishedTransition/QtStateFinishedTransition/g;
         $filecontents =~s/QStateMachine/QtStateMachine/g;
-        $filecontents =~s/QTransition/QtTransition/g;
+        $filecontents =~s/QActionTransition/QtActionTransition/g;
         $filecontents =~s/QMouseEventTransition/QtMouseEventTransition/g;
         $filecontents =~s/QKeyEventTransition/QtKeyEventTransition/g;
         $filecontents =~s/QGraphicsWidget/QtGraphicsWidget/g;

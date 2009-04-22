@@ -45,15 +45,14 @@
 #include "boat.h"
 #include "graphicsscene.h"
 #include "animationmanager.h"
+#include "qanimationstate.h"
 
 #if defined(QT_EXPERIMENTAL_SOLUTION)
 #include "qpropertyanimation.h"
 #include "qstatemachine.h"
 #include "qfinalstate.h"
-#include "qanimationstate.h"
 #else
 #include <QPropertyAnimation>
-#include <QAnimationState>
 #include <QStateMachine>
 #include <QFinalState>
 #endif
@@ -81,18 +80,19 @@ void Torpedo::launch()
     QStateMachine *machine = new QStateMachine(this);
 
     //This state is when the launch animation is playing
-    QAnimationState *launched = new QAnimationState(launchAnimation,machine->rootState());
-
-    machine->setInitialState(launched);
+    QAnimationState *launched = new QAnimationState(machine->rootState());
+    launched->setAnimation(launchAnimation);
 
     //End
     QFinalState *final = new QFinalState(machine->rootState());
+
+    machine->setInitialState(launched);
 
     //### Add a nice animation when the torpedo is destroyed
     launched->addTransition(this, SIGNAL(torpedoExplosed()),final);
 
     //If the animation is finished, then we move to the final state
-    launched->addFinishedTransition(final);
+    launched->addTransition(launched, SIGNAL(animationFinished()), final);
 
     //The machine has finished to be executed, then the boat is dead
     connect(machine,SIGNAL(finished()),this, SIGNAL(torpedoExecutionFinished()));

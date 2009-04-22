@@ -24,7 +24,7 @@ private:
         }
 
         QObject *object;
-        const char *propertyName;
+        QByteArray propertyName;
         QVariant valueToAdd;
     };
     QList<PropertyAdder> m_propertyAdditions;

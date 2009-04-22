@@ -54,13 +54,19 @@ private:
     QPixmap p;
 };
 
-void createStateAndTransition(QObject *o1, const QRect &selectedRect, QState *parent)
+void createStates(const QObjectList &objects,
+                  const QRect &selectedRect, QState *parent)
 {
-    QState *state = new QState(parent);
-    state->setPropertyOnEntry(o1, "geometry", selectedRect);
-
-    QPropertyAnimation *animation = new QPropertyAnimation(o1, "geometry");
-    parent->addAnimatedTransition(o1, SIGNAL(clicked()), state, animation);
+    for (int i = 0; i < objects.size(); ++i) {
+        QState *state = new QState(parent);
+        state->assignProperty(objects.at(i), "geometry", selectedRect);
+        QAbstractTransition *trans = parent->addTransition(objects.at(i), SIGNAL(clicked()), state);
+        for (int j = 0; j < objects.size(); ++j) {
+            QPropertyAnimation *animation = new QPropertyAnimation(objects.at(j), "geometry");
+            animation->setDuration(2000);
+            trans->addAnimation(animation);
+        }
+    }
 }
 
 int main(int argc, char **argv)
@@ -107,10 +113,7 @@ int main(int argc, char **argv)
     QState *idleState = new QState(group);
     group->setInitialState(idleState);
 
-    createStateAndTransition(p1, selectedRect, group);
-    createStateAndTransition(p2, selectedRect, group);
-    createStateAndTransition(p3, selectedRect, group);
-    createStateAndTransition(p4, selectedRect, group);
+    createStates(QObjectList() << p1 << p2 << p3 << p4, selectedRect, group);
 
     machine.setInitialState(group);
     machine.start();

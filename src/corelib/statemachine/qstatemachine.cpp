@@ -3,9 +3,39 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -26,7 +56,6 @@
 #include "qhistorystate_p.h"
 #include "qstatefinishedevent.h"
 #include "qstatefinishedtransition.h"
-#include "qmetaobject.h"
 #include "qstate.h"
 #include "qstate_p.h"
 #include "qstateaction.h"
@@ -44,9 +73,15 @@
 
 #ifndef QT_NO_ANIMATION
 #include "qpropertyanimation.h"
-#include "qanimationstate.h"
+#include "qanimationgroup.h"
+# ifndef QT_STATEMACHINE_SOLUTION
+# include <private/qvariantanimation_p.h>
+# else
+# include "qvariantanimation_p.h"
+# endif
 #endif
 
+#include <QtCore/qmetaobject.h>
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -57,6 +92,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QStateMachine class provides a hierarchical finite state machine.
 
+  \since 4.6
   \ingroup statemachine
 
   The QStateMachine class provides a hierarchical finite state machine based
@@ -75,7 +111,7 @@ QT_BEGIN_NAMESPACE
   invoke methods on QObjects when the state is entered or exited. This is
   typically used in conjunction with \l{Signals and Slots}{signals}; the
   signals determine the flow of the state graph, whereas the states' property
-  assigments and method invocations are the actions.
+  assignments and method invocations are the actions.
 
   Use the addState() function to add a state to the state machine;
   alternatively, pass the machine's rootState() to the state constructor.  Use
@@ -89,7 +125,7 @@ QT_BEGIN_NAMESPACE
 
   QStateMachine machine;
   QState *s1 = new QState();
-  s1->setPropertyOnEntry(&button, "text", "Click me");
+  s1->assignProperty(&button, "text", "Click me");
 
   QFinalState *s2 = new QFinalState();
   s1->addTransition(&button, SIGNAL(clicked()), s2);
@@ -148,7 +184,6 @@ QT_BEGIN_NAMESPACE
 */
 
 // #define QSTATEMACHINE_DEBUG
-// #define QT_NO_STATEMACHINE_RESTOREPROPERTIES
 
 QStateMachinePrivate::QStateMachinePrivate()
 {
@@ -157,7 +192,7 @@ QStateMachinePrivate::QStateMachinePrivate()
     processingScheduled = false;
     stop = false;
     error = QStateMachine::NoError;
-    globalRestorePolicy = QState::DoNotRestoreProperties;
+    globalRestorePolicy = QAbstractState::DoNotRestoreProperties;
     rootState = 0;
     initialErrorStateForRoot = 0;
 #ifndef QT_STATEMACHINE_SOLUTION
@@ -320,14 +355,15 @@ void QStateMachinePrivate::microstep(const QList<QAbstractTransition*> &enabledT
     qDebug() << q_func() << ": configuration after exiting states:" << configuration;
 #endif
     executeTransitionContent(enabledTransitions);
-    enterStates(enabledTransitions);
+    QList<QAbstractState*> enteredStates = enterStates(enabledTransitions);
+    applyProperties(enabledTransitions, enteredStates);
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q_func() << ": configuration after entering states:" << configuration;
     qDebug() << q_func() << ": end microstep";
 #endif
 }
 
-void QStateMachinePrivate::exitStates(const QList<QAbstractTransition*> &enabledTransitions)
+QList<QAbstractState*> QStateMachinePrivate::exitStates(const QList<QAbstractTransition*> &enabledTransitions)
 {
 //    qDebug() << "exitStates(" << enabledTransitions << ")";
     QSet<QAbstractState*> statesToExit;
@@ -382,6 +418,7 @@ void QStateMachinePrivate::exitStates(const QList<QAbstractTransition*> &enabled
         QAbstractStatePrivate::get(s)->callOnExit();
         configuration.remove(s);
     }
+    return statesToExit_sorted;
 }
 
 void QStateMachinePrivate::executeTransitionContent(const QList<QAbstractTransition*> &enabledTransitions)
@@ -395,7 +432,7 @@ void QStateMachinePrivate::executeTransitionContent(const QList<QAbstractTransit
     }
 }
 
-void QStateMachinePrivate::enterStates(const QList<QAbstractTransition*> &enabledTransitions)
+QList<QAbstractState*> QStateMachinePrivate::enterStates(const QList<QAbstractTransition*> &enabledTransitions)
 {
 #ifdef QSTATEMACHINE_DEBUG
     Q_Q(QStateMachine);
@@ -458,65 +495,6 @@ void QStateMachinePrivate::enterStates(const QList<QAbstractTransition*> &enable
 
     QList<QAbstractState*> statesToEnter_sorted = statesToEnter.toList();
     qSort(statesToEnter_sorted.begin(), statesToEnter_sorted.end(), stateEntryLessThan);
-    
-#ifndef QT_NO_STATEMACHINE_RESTOREPROPERTIES
-    bool hasAnimationState = false;
-
-    QHash<RestorableId, QVariant> pendingRestorables = registeredRestorables;
-    for (int i = 0; i < statesToEnter_sorted.size(); ++i) {
-        QAbstractState *as = statesToEnter_sorted.at(i);
-        
-#ifndef QT_NO_ANIMATION
-        // If we are going to an animation state, it will restore properties for us
-        hasAnimationState = hasAnimationState
-                         || qobject_cast<QAnimationState*>(as) != 0;
-#endif
-
-        QActionState *s = qobject_cast<QActionState*>(as);
-        if (s == 0)
-            continue;
-
-        QActionState::RestorePolicy restorePolicy = s->restorePolicy();
-        if (restorePolicy == QActionState::GlobalRestorePolicy)
-            restorePolicy = globalRestorePolicy;
-
-        if (restorePolicy == QActionState::DoNotRestoreProperties)
-            continue;
-
-        QActionStatePrivate *s_d = QActionStatePrivate::get(s);
-        QList<QStateAction*> actions = s_d->entryActions();
-
-        for (int j = 0; j < actions.size(); ++j) {
-            QStateSetPropertyAction *spa = qobject_cast<QStateSetPropertyAction*>(actions.at(j));
-            if (spa == 0 || spa->targetObject() == 0)
-                continue;
-
-            registerRestorable(spa->targetObject(), spa->propertyName());
-            pendingRestorables.remove(RestorableId(spa->targetObject(), spa->propertyName()));
-        }
-    }
-   
-#ifndef QT_NO_ANIMATION
-    // If the configuration has an animation state, we do not want to restore here, as we 
-    // might be transitioning inside the animation state (into the final state for instance.)
-    // We let the animation state handle the restoration.
-    QSet<QAbstractState*>::const_iterator it;
-    for (it=configuration.constBegin(); !hasAnimationState && it!=configuration.constEnd(); ++it)
-        hasAnimationState = qobject_cast<QAnimationState*>(*it) != 0;
-#endif
-
-    if (!hasAnimationState) {
-        QHash<RestorableId, QVariant>::const_iterator it;
-        for (it = pendingRestorables.constBegin(); it != pendingRestorables.constEnd(); ++it) {
-            QObject *object = it.key().first;
-            QByteArray propertyName = it.key().second;
-
-            object->setProperty(propertyName, it.value());
-            unregisterRestorable(object, propertyName);
-        }        
-    }
-
-#endif // QT_NO_STATEMACHINE_RESTOREPROPERTIES
 
     for (int i = 0; i < statesToEnter_sorted.size(); ++i) {
         QAbstractState *s = statesToEnter_sorted.at(i);
@@ -568,6 +546,7 @@ void QStateMachinePrivate::enterStates(const QList<QAbstractTransition*> &enable
         }
     }
 //    qDebug() << "configuration:" << configuration.toList();
+    return statesToEnter_sorted;
 }
 
 void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
@@ -615,6 +594,115 @@ void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
                     addStatesToEnter(child, anc, statesToEnter, statesForDefaultEntry);
             }
         }
+    }
+}
+
+void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &transitionList,
+                                           const QList<QAbstractState*> &enteredStates)
+{
+#ifndef QT_NO_ANIMATION
+    Q_Q(QStateMachine);
+    // Gracefully terminate playing animations.
+    for (int i = 0; i < playingAnimations.size(); ++i)
+        playingAnimations.at(i)->stop();
+    playingAnimations.clear();
+    for (int i = 0; i < resetEndValues.size(); ++i)
+        qobject_cast<QVariantAnimation*>(resetEndValues.at(i))->setEndValue(QVariant()); // ### generalize
+    resetEndValues.clear();
+
+    // Find the animations to use for the state change.
+    QList<QAbstractAnimation*> selectedAnimations;
+    for (int i = 0; i < transitionList.size(); ++i)
+        selectedAnimations << transitionList.at(i)->animations();
+#else
+    Q_UNUSED(transitionList);
+#endif
+
+    // Process the SetProperty definitions of the entered states.
+    QList<QPropertyAssignment> propertyAssignments;
+    QHash<RestorableId, QVariant> pendingRestorables = registeredRestorables;
+    for (int i = 0; i < enteredStates.size(); ++i) {
+        QAbstractState *s = enteredStates.at(i);
+
+        QAbstractState::RestorePolicy restorePolicy = s->restorePolicy();
+        if (restorePolicy == QAbstractState::GlobalRestorePolicy)
+            restorePolicy = globalRestorePolicy;
+
+        QList<QPropertyAssignment> assignments = QAbstractStatePrivate::get(s)->propertyAssignments;
+        for (int j = 0; j < assignments.size(); ++j) {
+            const QPropertyAssignment &assn = assignments.at(j);
+            if (restorePolicy == QAbstractState::RestoreProperties) {
+                registerRestorable(assn.object, assn.propertyName);
+            }
+            pendingRestorables.remove(RestorableId(assn.object, assn.propertyName));
+            propertyAssignments.append(assn);
+        }
+    }
+    propertyAssignments << restorablesToPropertyList(pendingRestorables);
+
+#ifndef QT_NO_ANIMATION
+    // Set the animated properties that did not finish animating and that are not
+    // set in the new state.
+    for (int i = 0; i < propertiesForAnimations.size(); ++i) {
+        QPropertyAssignment assn = propertiesForAnimations.at(i).second;
+        bool found = false;
+        for (int j = 0; j < propertyAssignments.size(); ++j) {
+            if ((propertyAssignments.at(j).object == assn.object)
+                && (propertyAssignments.at(j).propertyName == assn.propertyName)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            assn.object->setProperty(assn.propertyName, assn.value);
+        }
+    }
+
+    // Initialize animations from SetProperty definitions.
+    propertiesForAnimations.clear();
+    for (int i = 0; i < selectedAnimations.size(); ++i) {
+        QAbstractAnimation *anim = selectedAnimations.at(i);
+        QList<QPropertyAssignment>::iterator it;
+        for (it = propertyAssignments.begin(); it != propertyAssignments.end(); ) {
+            QPair<QList<QAbstractAnimation*>, QList<QAbstractAnimation*> > ret;
+            ret = initializeAnimation(anim, *it);
+            QList<QAbstractAnimation*> handlers = ret.first;
+            if (!handlers.isEmpty()) {
+                for (int j = 0; j < handlers.size(); ++j)
+                    propertiesForAnimations.append(qMakePair(handlers.at(j), *it));
+                it = propertyAssignments.erase(it);
+            } else {
+                ++it;
+            }
+            resetEndValues << ret.second;
+        }
+
+        // We require that at least one animation is valid.
+        // ### generalize
+        QList<QVariantAnimation*> variantAnims = qFindChildren<QVariantAnimation*>(anim);
+        if (QVariantAnimation *va = qobject_cast<QVariantAnimation*>(anim))
+            variantAnims.append(va);
+        bool hasValidEndValue = false;
+        for (int j = 0; j < variantAnims.size(); ++j) {
+            if (variantAnims.at(j)->endValue().isValid()) {
+                hasValidEndValue = true;
+                break;
+            }
+        }
+
+        if (hasValidEndValue) {
+            QObject::disconnect(anim, SIGNAL(finished()), q, SLOT(_q_animationFinished()));
+            QObject::connect(anim, SIGNAL(finished()), q, SLOT(_q_animationFinished()));
+            anim->start();
+            playingAnimations.append(anim);
+        }
+    }
+#endif // !QT_NO_ANIMATION
+
+    // Immediately set the properties that are not animated.
+    for (int i = 0; i < propertyAssignments.size(); ++i) {
+        const QPropertyAssignment &assn = propertyAssignments.at(i);
+        assn.object->setProperty(assn.propertyName, assn.value);
     }
 }
 
@@ -696,7 +784,18 @@ void QStateMachinePrivate::registerRestorable(QObject *object, const QByteArray 
 {
     RestorableId id(object, propertyName);
     if (!registeredRestorables.contains(id))
-        registeredRestorables.insert(id, object->property(propertyName));   
+        registeredRestorables.insert(id, object->property(propertyName));
+}
+
+QList<QPropertyAssignment> QStateMachinePrivate::restorablesToPropertyList(const QHash<RestorableId, QVariant> &restorables) const
+{
+    QList<QPropertyAssignment> result;
+    QHash<RestorableId, QVariant>::const_iterator it;
+    for (it = restorables.constBegin(); it != restorables.constEnd(); ++it) {
+//        qDebug() << "restorable:" << it.key().first << it.key().second << it.value();
+        result.append(QPropertyAssignment(it.key().first, it.key().second, it.value(), /*explicitlySet=*/false));
+    }
+    return result;
 }
 
 /*! 
@@ -720,47 +819,10 @@ QVariant QStateMachinePrivate::restorableValue(QObject *object, const QByteArray
 */
 void QStateMachinePrivate::unregisterRestorable(QObject *object, const QByteArray &propertyName)
 {
+//    qDebug() << "unregisterRestorable(" << object << propertyName << ")";
     RestorableId id(object, propertyName);
     registeredRestorables.remove(id);
-
-#ifndef QT_NO_ANIMATION
-    registeredRestorableAnimations.remove(id);
-#endif
-
 }
-
-#ifndef QT_NO_ANIMATION
-void QStateMachinePrivate::registerRestorable(QPropertyAnimation *animation)
-{
-    // We always want to restore to the first registered value, so if one is already present, we
-    // leave it be.
-    RestorableId id(animation->targetObject(), animation->propertyName());
-    if (!registeredRestorableAnimations.contains(id))
-        registeredRestorableAnimations.insert(id, animation);    
-    registerRestorable(animation->targetObject(), animation->propertyName());
-}
-
-
-/*!
-   \internal
-   Returns all variables currently registered. The list returned is in no particular order.
-*/
-QList<QPropertyAnimation*> QStateMachinePrivate::restorableAnimations() const
-{
-    return registeredRestorableAnimations.values();
-}
-
-/*!
-   \internal
-   Returns a reference to the restorable identified by \a id.
-*/
-QPropertyAnimation *QStateMachinePrivate::restorableAnimation(QObject *object, 
-                                                              const QByteArray &propertyName)
-{
-    return registeredRestorableAnimations.value(RestorableId(object, propertyName), 0);
-}
-
-#endif // QT_NO_ANIMATION
 
 QAbstractState *QStateMachinePrivate::findErrorState(QAbstractState *context)
 {
@@ -820,6 +882,82 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
     }
 }
 
+#ifndef QT_NO_ANIMATION
+
+QPair<QList<QAbstractAnimation*>, QList<QAbstractAnimation*> >
+QStateMachinePrivate::initializeAnimation(QAbstractAnimation *abstractAnimation, 
+                                          const QPropertyAssignment &prop)
+{
+    QList<QAbstractAnimation*> handledAnimations;
+    QList<QAbstractAnimation*> localResetEndValues;
+    QAnimationGroup *group = qobject_cast<QAnimationGroup*>(abstractAnimation);
+    if (group) {
+        for (int i = 0; i < group->animationCount(); ++i) {
+            QAbstractAnimation *animationChild = group->animationAt(i);
+            QPair<QList<QAbstractAnimation*>, QList<QAbstractAnimation*> > ret;
+            ret = initializeAnimation(animationChild, prop);
+            handledAnimations << ret.first;
+            localResetEndValues << ret.second;
+        }
+    } else { 
+        QPropertyAnimation *animation = qobject_cast<QPropertyAnimation *>(abstractAnimation);
+        if (animation != 0 
+            && prop.object == animation->targetObject()
+            && prop.propertyName == animation->propertyName()) {
+
+            if (!animation->startValue().isValid()) {
+                QByteArray propertyName = animation->propertyName();
+                QVariant currentValue = animation->targetObject()->property(propertyName);
+
+                QVariantAnimationPrivate::get(animation)->setDefaultStartValue(currentValue);
+            }
+
+            // Only change end value if it is undefined
+            if (!animation->endValue().isValid()) {
+                animation->setEndValue(prop.value);
+                localResetEndValues.append(animation);
+            }
+            handledAnimations.append(animation);
+        }
+    }
+    return qMakePair(handledAnimations, localResetEndValues);
+}
+
+static bool isAncestorOf(QObject *anc, QObject *o)
+{
+    for (o = o->parent() ; o != 0; o = o->parent()) {
+        if (o == anc)
+            return true;
+    }
+    return false;
+}
+
+void QStateMachinePrivate::_q_animationFinished()
+{
+    Q_Q(QStateMachine);
+    QAbstractAnimation *animation = qobject_cast<QAbstractAnimation*>(q->sender());
+    Q_ASSERT(animation != 0);
+    QList<QPair<QAbstractAnimation*, QPropertyAssignment> >::iterator it;
+    for (it = propertiesForAnimations.begin(); it != propertiesForAnimations.end(); ) {
+        QAbstractAnimation *a = (*it).first;
+        if (a == animation || isAncestorOf(animation, a)) {
+            QPropertyAssignment assn = (*it).second;
+            assn.object->setProperty(assn.propertyName, assn.value);
+            if (!assn.explicitlySet)
+                unregisterRestorable(assn.object, assn.propertyName);
+            it = propertiesForAnimations.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    playingAnimations.removeOne(animation);
+    if (playingAnimations.isEmpty())
+        emit q->animationsFinished();
+}
+
+#endif // !QT_NO_ANIMATION
+
 namespace {
 
 class StartState : public QState
@@ -876,6 +1014,7 @@ void QStateMachinePrivate::_q_start()
     transitions.append(initialTransition);
     executeTransitionContent(transitions);
     enterStates(transitions);
+    applyProperties(transitions, QList<QAbstractState*>() << initial);
     delete start;
 
 #ifdef QSTATEMACHINE_DEBUG
@@ -911,7 +1050,7 @@ void QStateMachinePrivate::_q_process()
         if (enabledTransitions.isEmpty() && !internalEventQueue.isEmpty()) {
             e = internalEventQueue.takeFirst();
 #ifdef QSTATEMACHINE_DEBUG
-            qDebug() << q << ": dequeued internal event" << e;
+            qDebug() << q << ": dequeued internal event" << e << "of type" << e->type();
 #endif
             enabledTransitions = selectTransitions(e);
             if (enabledTransitions.isEmpty()) {
@@ -928,7 +1067,7 @@ void QStateMachinePrivate::_q_process()
             } else {
                 e = externalEventQueue.takeFirst();
 #ifdef QSTATEMACHINE_DEBUG
-                qDebug() << q << ": dequeued external event" << e;
+                qDebug() << q << ": dequeued external event" << e << "of type" << e->type();
 #endif
                 enabledTransitions = selectTransitions(e);
                 if (enabledTransitions.isEmpty()) {
@@ -1075,6 +1214,7 @@ void QStateMachinePrivate::unregisterSignalTransition(QSignalTransition *transit
     int signalIndex = QSignalTransitionPrivate::get(transition)->signalIndex;
     if (signalIndex == -1)
         return; // not registered
+#ifndef QT_STATEMACHINE_SOLUTION
     const QObject *sender = QSignalTransitionPrivate::get(transition)->sender;
     QList<int> &connectedSignalIndexes = connections[sender];
     Q_ASSERT(connectedSignalIndexes.contains(signalIndex));
@@ -1087,6 +1227,7 @@ void QStateMachinePrivate::unregisterSignalTransition(QSignalTransition *transit
             connections.remove(sender);
         QSignalTransitionPrivate::get(transition)->signalIndex = -1;
     }
+#endif
 }
 
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
@@ -1166,6 +1307,24 @@ QStateMachine::QStateMachine(QObject *parent)
         parent)
 #ifdef QT_STATEMACHINE_SOLUTION
     , d_ptr(new QStateMachinePrivate)
+#endif
+{
+#ifdef QT_STATEMACHINE_SOLUTION
+    d_ptr->q_ptr = this;
+#endif
+}
+
+/*!
+  \internal
+*/
+QStateMachine::QStateMachine(QStateMachinePrivate &dd, QObject *parent)
+    : QObject(
+#ifndef QT_STATEMACHINE_SOLUTION
+        dd,
+#endif
+        parent)
+#ifdef QT_STATEMACHINE_SOLUTION
+    , d_ptr(&dd)
 #endif
 {
 #ifdef QT_STATEMACHINE_SOLUTION
@@ -1332,13 +1491,13 @@ QActionState::RestorePolicy QStateMachine::globalRestorePolicy() const
 
 /*!
    Sets the global restore policy of the state machine to \a restorePolicy. The default global 
-   restore policy is QActionState::DoNotRestoreProperties.
+   restore policy is QAbstractState::DoNotRestoreProperties.
    
-   The global restore policy cannot be set to QActionState::GlobalRestorePolicy.
+   The global restore policy cannot be set to QAbstractState::GlobalRestorePolicy.
 
-   \sa QActionState::setRestorePolicy()
+   \sa QAbstractState::setRestorePolicy()
 */
-void QStateMachine::setGlobalRestorePolicy(QActionState::RestorePolicy restorePolicy) 
+void QStateMachine::setGlobalRestorePolicy(QAbstractState::RestorePolicy restorePolicy) 
 {
     Q_D(QStateMachine);
     if (restorePolicy == QState::GlobalRestorePolicy) {
@@ -1564,6 +1723,18 @@ QSet<QAbstractState*> QStateMachine::configuration() const
   \sa QStateMachine::stop()
 */
 
+#ifndef QT_NO_ANIMATION
+
+/*!
+  \fn QStateMachine::animationsFinished()
+
+  This signal is emitted when the state machine has finished playing all
+  animations associated with the latest transition (i.e., all properties have
+  reached their target values).
+*/
+
+#endif
+
 /*!
   \reimp
 */
@@ -1737,6 +1908,7 @@ QSignalEventGenerator::QSignalEventGenerator(
 
   \brief The QSignalEvent class represents a Qt signal event.
 
+  \since 4.6
   \ingroup statemachine
 
   A signal event is generated by a QStateMachine in response to a Qt
@@ -1751,6 +1923,8 @@ QSignalEventGenerator::QSignalEventGenerator(
 */
 
 /*!
+  \internal
+
   Constructs a new QSignalEvent object with the given \a sender, \a
   signalIndex and \a arguments.
 */
@@ -1800,6 +1974,7 @@ QSignalEvent::~QSignalEvent()
 
   \brief The QStateFinishedEvent class contains parameters that describe a state that has finished.
 
+  \since 4.6
   \ingroup statemachine
 
   A state is finished when one of its final child states (a QFinalState) is
@@ -1814,6 +1989,8 @@ QSignalEvent::~QSignalEvent()
 */
 
 /*!
+  \internal
+
   Constructs a new QStateFinishedEvent object associated with the given \a state.
 */
 QStateFinishedEvent::QStateFinishedEvent(QState *state)
@@ -1823,7 +2000,7 @@ QStateFinishedEvent::QStateFinishedEvent(QState *state)
 #else
     QEvent(QEvent::Type(QEvent::User-2))
 #endif
-    , m_state(state)
+    , m_state(state), d(0)
 {
 }
 

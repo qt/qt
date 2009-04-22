@@ -17,6 +17,7 @@
 #include <private/qstatemachine_p.h>
 #endif
 #include <QtGui/qevent.h>
+#include <QtGui/qgraphicssceneevent.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -72,12 +73,11 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::ThreadChange:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
+
     case QEvent::WindowActivate:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
     case QEvent::WindowDeactivate:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
+
     case QEvent::ShowToParent:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
@@ -360,20 +360,41 @@ static QEvent *cloneEvent(QEvent *e)
         break;
 
     case QEvent::GraphicsSceneMouseMove:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
     case QEvent::GraphicsSceneMousePress:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
     case QEvent::GraphicsSceneMouseRelease:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
-    case QEvent::GraphicsSceneMouseDoubleClick:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
-    case QEvent::GraphicsSceneContextMenu:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+    case QEvent::GraphicsSceneMouseDoubleClick: {
+        QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent*>(e);
+        QGraphicsSceneMouseEvent *me2 = new QGraphicsSceneMouseEvent(me->type());
+        me2->setWidget(me->widget());
+        me2->setPos(me->pos());
+        me2->setScenePos(me->scenePos());
+        me2->setScreenPos(me->screenPos());
+// ### for all buttons
+        me2->setButtonDownPos(Qt::LeftButton, me->buttonDownPos(Qt::LeftButton));
+        me2->setButtonDownPos(Qt::RightButton, me->buttonDownPos(Qt::RightButton));
+        me2->setButtonDownScreenPos(Qt::LeftButton, me->buttonDownScreenPos(Qt::LeftButton));
+        me2->setButtonDownScreenPos(Qt::RightButton, me->buttonDownScreenPos(Qt::RightButton));
+        me2->setLastPos(me->lastPos());
+        me2->setLastScenePos(me->lastScenePos());
+        me2->setLastScreenPos(me->lastScreenPos());
+        me2->setButtons(me->buttons());
+        me2->setButton(me->button());
+        me2->setModifiers(me->modifiers());
+        return me2;
+    }
+
+    case QEvent::GraphicsSceneContextMenu: {
+        QGraphicsSceneContextMenuEvent *me = static_cast<QGraphicsSceneContextMenuEvent*>(e);
+        QGraphicsSceneContextMenuEvent *me2 = new QGraphicsSceneContextMenuEvent(me->type());
+        me2->setWidget(me->widget());
+        me2->setPos(me->pos());
+        me2->setScenePos(me->scenePos());
+        me2->setScreenPos(me->screenPos());
+        me2->setModifiers(me->modifiers());
+        me2->setReason(me->reason());
+        return me2;
+    }
+
     case QEvent::GraphicsSceneHoverEnter:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
@@ -449,9 +470,14 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::GraphicsSceneResize:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
-    case QEvent::GraphicsSceneMove:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+    case QEvent::GraphicsSceneMove: {
+        QGraphicsSceneMoveEvent *me = static_cast<QGraphicsSceneMoveEvent*>(e);
+        QGraphicsSceneMoveEvent *me2 = new QGraphicsSceneMoveEvent();
+        me2->setWidget(me->widget());
+        me2->setNewPos(me->newPos());
+        me2->setOldPos(me->oldPos());
+        return me2;
+    }
 
     case QEvent::CursorChange:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
@@ -465,17 +491,11 @@ static QEvent *cloneEvent(QEvent *e)
         break;
 
     case QEvent::GrabMouse:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
     case QEvent::UngrabMouse:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
     case QEvent::GrabKeyboard:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
     case QEvent::UngrabKeyboard:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
+
 #ifdef QT_MAC_USE_COCOA
     case QEvent::CocoaRequestModal:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");

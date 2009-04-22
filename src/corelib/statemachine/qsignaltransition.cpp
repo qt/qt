@@ -3,9 +3,39 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -25,6 +55,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QSignalTransition class provides a transition based on a Qt signal.
 
+  \since 4.6
   \ingroup statemachine
 
   Typically you would use the overload of QState::addTransition() that takes a
@@ -106,7 +137,7 @@ void QSignalTransitionPrivate::invalidate()
   Constructs a new signal transition with the given \a sourceState.
 */
 QSignalTransition::QSignalTransition(QState *sourceState)
-    : QTransition(*new QSignalTransitionPrivate, sourceState)
+    : QActionTransition(*new QSignalTransitionPrivate, sourceState)
 {
 }
 
@@ -116,7 +147,7 @@ QSignalTransition::QSignalTransition(QState *sourceState)
 */
 QSignalTransition::QSignalTransition(QObject *sender, const char *signal,
                                      QState *sourceState)
-    : QTransition(*new QSignalTransitionPrivate, sourceState)
+    : QActionTransition(*new QSignalTransitionPrivate, sourceState)
 {
     Q_D(QSignalTransition);
     d->sender = sender;
@@ -131,7 +162,7 @@ QSignalTransition::QSignalTransition(QObject *sender, const char *signal,
 QSignalTransition::QSignalTransition(QObject *sender, const char *signal,
                                      const QList<QAbstractState*> &targets,
                                      QState *sourceState)
-    : QTransition(*new QSignalTransitionPrivate, targets, sourceState)
+    : QActionTransition(*new QSignalTransitionPrivate, targets, sourceState)
 {
     Q_D(QSignalTransition);
     d->sender = sender;
@@ -202,8 +233,9 @@ bool QSignalTransition::eventTest(QEvent *event) const
 #else
     if (event->type() == QEvent::Type(QEvent::User-1)) {
 #endif
+        if (d->signalIndex == -1)
+            return false;
         QSignalEvent *se = static_cast<QSignalEvent*>(event);
-        Q_ASSERT(d->signalIndex != -1);
         return (se->sender() == d->sender)
             && (se->signalIndex() == d->signalIndex);
     }
@@ -213,16 +245,9 @@ bool QSignalTransition::eventTest(QEvent *event) const
 /*!
   \reimp
 */
-void QSignalTransition::onTransition()
-{
-}
-
-/*!
-  \reimp
-*/
 bool QSignalTransition::event(QEvent *e)
 {
-    return QTransition::event(e);
+    return QActionTransition::event(e);
 }
 
 QT_END_NAMESPACE

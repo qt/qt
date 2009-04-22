@@ -3,9 +3,39 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -13,6 +43,8 @@
 #define QABSTRACTTRANSITION_H
 
 #include <QtCore/qobject.h>
+
+#include <QtCore/qlist.h>
 
 QT_BEGIN_HEADER
 
@@ -23,6 +55,10 @@ QT_MODULE(Core)
 class QEvent;
 class QAbstractState;
 class QState;
+
+#ifndef QT_NO_ANIMATION
+class QAbstractAnimation;
+#endif
 
 class QAbstractTransitionPrivate;
 class Q_CORE_EXPORT QAbstractTransition : public QObject
@@ -41,6 +77,12 @@ public:
     void setTargetState(QAbstractState* target);
     QList<QAbstractState*> targetStates() const;
     void setTargetStates(const QList<QAbstractState*> &targets);
+
+#ifndef QT_NO_ANIMATION
+    void addAnimation(QAbstractAnimation *animation);
+    void removeAnimation(QAbstractAnimation *animation);
+    QList<QAbstractAnimation*> animations() const;
+#endif
 
 protected:
     virtual bool eventTest(QEvent *event) const = 0;

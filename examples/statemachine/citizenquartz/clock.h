@@ -10,6 +10,7 @@ class QStateMachine ;
 class QState ;
 class QTimerState ;
 class QSound ;
+class QHistoryState ;
 
 class Clock: public QObject, public QGraphicsItem
 {
@@ -25,7 +26,6 @@ public:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 
 signals: 
-    void alarm();
     void anyButtonPressed();
 
 public slots:
@@ -52,6 +52,8 @@ private:
     QState *m_timeState;
     QState *m_updateState;
     QState *m_regularState;
+
+    QHistoryState *m_displaysHistoryState;
 
     QSound *m_alarmSound;
     QTime m_time;

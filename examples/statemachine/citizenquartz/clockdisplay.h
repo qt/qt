@@ -42,7 +42,13 @@ public:
     DisplayMode displayMode() const { return m_displayMode; }
 
     QDateTime currentTime() const { return m_currentTime; }
-    void setCurrentTime(const QDateTime &time) { m_currentTime = time; update(); }
+    void setCurrentTime(const QDateTime &time) 
+    { 
+        if (m_alarmEnabled && !alarmMatches(m_currentTime) && alarmMatches(time)) 
+            emit alarmTriggered();
+        m_currentTime = time; 
+        update(); 
+    }
 
     QTime alarm() const { return m_alarm; }
     void setAlarm(const QTime &time) { m_alarm = time; update(); }
@@ -53,11 +59,19 @@ public:
     virtual QRectF boundingRect() const;
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);
 
+signals:
+    void alarmTriggered();
+
 private slots:
     void toggleBlinkFlag();
 
 private:
     void updateText();
+
+    bool alarmMatches(const QDateTime &dt)
+    {
+        return (dt.time().hour() == m_alarm.hour() && dt.time().minute() == m_alarm.minute());
+    }
 
     DisplayMode m_displayMode;
 

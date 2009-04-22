@@ -13,8 +13,8 @@
 #include <QtGui>
 #if defined(QT_EXPERIMENTAL_SOLUTION)
 #include "qstatemachine.h"
+#include "qstate.h"
 #include "qabstracttransition.h"
-#include "qanimationstate.h"
 #include "qpropertyanimation.h"
 #include "qsequentialanimationgroup.h"
 #include "qparallelanimationgroup.h"
@@ -99,7 +99,8 @@ public:
     void addState(QState *state, QAbstractAnimation *animation) {
         StateSwitchTransition *trans = new StateSwitchTransition(++m_stateCount);
         trans->setTargetState(state);
-        addAnimatedTransition(trans, animation);
+        addTransition(trans);
+        trans->addAnimation(animation);
     }
 
 
@@ -116,11 +117,11 @@ QState *createGeometryState(QObject *w1, const QRect &rect1,
                             QState *parent)
 {
     QState *result = new QState(parent);
-    result->setPropertyOnEntry(w1, "geometry", rect1);
-    result->setPropertyOnEntry(w1, "geometry", rect1);
-    result->setPropertyOnEntry(w2, "geometry", rect2);
-    result->setPropertyOnEntry(w3, "geometry", rect3);
-    result->setPropertyOnEntry(w4, "geometry", rect4);
+    result->assignProperty(w1, "geometry", rect1);
+    result->assignProperty(w1, "geometry", rect1);
+    result->assignProperty(w2, "geometry", rect2);
+    result->assignProperty(w3, "geometry", rect3);
+    result->assignProperty(w4, "geometry", rect4);
 
     return result;
 }

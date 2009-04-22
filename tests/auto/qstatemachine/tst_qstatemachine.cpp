@@ -3,6 +3,40 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
+** This file is part of the test suite of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
 ****************************************************************************/
 
 #include <QtTest/QtTest>
@@ -11,7 +45,7 @@
 
 #include "qstatemachine.h"
 #include "qstate.h"
-#include "qtransition.h"
+#include "qactiontransition.h"
 #include "qhistorystate.h"
 #include "qkeyeventtransition.h"
 #include "qmouseeventtransition.h"
@@ -87,7 +121,6 @@ private slots:
     void setRestorePolicyToDoNotRestore();
     void setGlobalRestorePolicyToGlobalRestore();
     void restorePolicyOnChildState();
-    void addAnimatedTransition();
     void transitionWithParent();
 };
 
@@ -161,11 +194,11 @@ void tst_QStateMachine::cleanup()
     qInstallMsgHandler(s_oldHandler);
 }
 
-class EventTransition : public QTransition
+class EventTransition : public QActionTransition
 {
 public:
     EventTransition(QEvent::Type type, QAbstractState *target, QState *parent = 0)
-        : QTransition(QList<QAbstractState*>() << target, parent), m_type(type) {}
+        : QActionTransition(QList<QAbstractState*>() << target, parent), m_type(type) {}
 protected:
     virtual bool eventTest(QEvent *e) const {
         return (e->type() == m_type);
@@ -212,21 +245,21 @@ void tst_QStateMachine::transitionEntersParent()
 
     QState *greatGrandParent = new QState();
     greatGrandParent->setObjectName("grandParent");
-    greatGrandParent->setPropertyOnEntry(entryController, "greatGrandParentEntered", true);
+    greatGrandParent->assignProperty(entryController, "greatGrandParentEntered", true);
     machine.addState(greatGrandParent);
     machine.setInitialState(greatGrandParent);
 
     QState *grandParent = new QState(greatGrandParent);
     grandParent->setObjectName("grandParent");
-    grandParent->setPropertyOnEntry(entryController, "grandParentEntered", true);
+    grandParent->assignProperty(entryController, "grandParentEntered", true);
 
     QState *parent = new QState(grandParent);
     parent->setObjectName("parent");
-    parent->setPropertyOnEntry(entryController, "parentEntered", true);
+    parent->assignProperty(entryController, "parentEntered", true);
 
     QState *state = new QState(parent);
     state->setObjectName("state");
-    state->setPropertyOnEntry(entryController, "stateEntered", true);
+    state->assignProperty(entryController, "stateEntered", true);
 
     QState *initialStateOfGreatGrandParent = new QState(greatGrandParent);
     initialStateOfGreatGrandParent->setObjectName("initialStateOfGreatGrandParent");
@@ -633,21 +666,21 @@ void tst_QStateMachine::errorStateEntersParentFirst()
 
     QState *greatGrandParent = new QState();
     greatGrandParent->setObjectName("greatGrandParent");
-    greatGrandParent->setPropertyOnEntry(entryController, "greatGrandParentEntered", true);
+    greatGrandParent->assignProperty(entryController, "greatGrandParentEntered", true);
     machine.addState(greatGrandParent);
     machine.setInitialState(greatGrandParent);
 
     QState *grandParent = new QState(greatGrandParent);
     grandParent->setObjectName("grandParent");
-    grandParent->setPropertyOnEntry(entryController, "grandParentEntered", true);    
+    grandParent->assignProperty(entryController, "grandParentEntered", true);    
 
     QState *parent = new QState(grandParent);
     parent->setObjectName("parent");
-    parent->setPropertyOnEntry(entryController, "parentEntered", true);
+    parent->assignProperty(entryController, "parentEntered", true);
 
     QState *errorState = new QState(parent);
     errorState->setObjectName("errorState");
-    errorState->setPropertyOnEntry(entryController, "errorStateEntered", true);
+    errorState->assignProperty(entryController, "errorStateEntered", true);
     machine.setErrorState(errorState);
 
     QState *initialStateOfGreatGrandParent = new QState(greatGrandParent);
@@ -785,15 +818,15 @@ void tst_QStateMachine::brokenStateIsNeverEntered()
     machine.setInitialState(initialState);
 
     QState *errorState = new QState(machine.rootState());
-    errorState->setPropertyOnEntry(entryController, "errorStateEntered", true);
+    errorState->assignProperty(entryController, "errorStateEntered", true);
     machine.setErrorState(errorState); 
 
     QState *brokenState = new QState(machine.rootState());
-    brokenState->setPropertyOnEntry(entryController, "brokenStateEntered", true);
+    brokenState->assignProperty(entryController, "brokenStateEntered", true);
     brokenState->setObjectName("brokenState");
     
     QState *childState = new QState(brokenState);
-    childState->setPropertyOnEntry(entryController, "childStateEntered", true);
+    childState->assignProperty(entryController, "childStateEntered", true);
 
     initialState->addTransition(new EventTransition(QEvent::User, brokenState));
 
@@ -863,13 +896,13 @@ void tst_QStateMachine::restoreProperties()
 
     QState *S1 = new QState();
     S1->setObjectName("S1");
-    S1->setPropertyOnEntry(object, "a", 3);
+    S1->assignProperty(object, "a", 3);
     S1->setRestorePolicy(QState::RestoreProperties);
     machine.addState(S1);
 
     QState *S2 = new QState();
     S2->setObjectName("S2");
-    S2->setPropertyOnEntry(object, "b", 5);
+    S2->assignProperty(object, "b", 5);
     S2->setRestorePolicy(QState::RestoreProperties);
     machine.addState(S2);
 
@@ -1584,30 +1617,6 @@ private:
 
 void tst_QStateMachine::stateActions()
 {
-    {
-        QStateSetPropertyAction act;
-        QCOMPARE(act.targetObject(), (QObject*)0);
-        QCOMPARE(act.propertyName().length(), 0);
-        QCOMPARE(act.value(), QVariant());
-
-        act.setTargetObject(this);
-        QCOMPARE(act.targetObject(), (QObject*)this);
-        QByteArray name("foo");
-        act.setPropertyName(name);
-        QCOMPARE(act.propertyName(), name);
-        QVariant value(123);
-        act.setValue(value);
-        QCOMPARE(act.value(), value);
-    }
-    {
-        QByteArray name("foo");
-        QVariant value(123);
-        QStateSetPropertyAction act(this, name, value);
-        QCOMPARE(act.targetObject(), (QObject*)this);
-        QCOMPARE(act.propertyName(), name);
-        QCOMPARE(act.value(), value);
-    }
-
     QStateMachine machine;
     QState *s1 = new QState(machine.rootState());
 
@@ -1623,47 +1632,15 @@ void tst_QStateMachine::stateActions()
     QTest::ignoreMessage(QtWarningMsg, "QActionState::removeExitAction: cannot remove null action");
     s1->removeExitAction(0);
 
-    QStateSetPropertyAction *spa = new QStateSetPropertyAction(s1, "objectName", "foo");
-    s1->addEntryAction(spa);
-    QCOMPARE(s1->entryActions().size(), 1);
-    QCOMPARE(s1->entryActions().at(0), (QStateAction*)spa);
-    QCOMPARE(spa->parent(), (QObject*)s1);
-    QVERIFY(s1->exitActions().isEmpty());
-
-    s1->addEntryAction(spa); // add again
-    QCOMPARE(s1->entryActions().size(), 1);
-
     QFinalState *s2 = new QFinalState(machine.rootState());
     s1->addTransition(s2);
 
     machine.setInitialState(s1);
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
-    machine.start();
-    QTRY_COMPARE(finishedSpy.count(), 1);
-    QCOMPARE(s1->objectName(), QString::fromLatin1("foo"));
 
-    s1->removeEntryAction(spa);
-    QCOMPARE(spa->parent(), (QObject*)0);
-    QVERIFY(s1->entryActions().isEmpty());
-
-    s1->removeEntryAction(spa); // remove again
-
-    s1->setObjectName(QString::fromLatin1("bar"));
-    finishedSpy.clear();
-    machine.start();
-    QTRY_COMPARE(finishedSpy.count(), 1);
-    QCOMPARE(s1->objectName(), QString::fromLatin1("bar"));
-
-    s1->addEntryAction(spa);
-    finishedSpy.clear();
-    machine.start();
-    QTRY_COMPARE(finishedSpy.count(), 1);
-    QCOMPARE(s1->objectName(), QString::fromLatin1("foo"));
-
-    s1->removeEntryAction(spa);
-    QVERIFY(s1->entryActions().isEmpty());
-    QStateInvokeMethodAction *ima = new QStateInvokeMethodAction(spa, "deleteLater");
-    QPointer<QStateAction> ptr(spa);
+    QObject *obj = new QObject();
+    QStateInvokeMethodAction *ima = new QStateInvokeMethodAction(obj, "deleteLater");
+    QPointer<QObject> ptr(obj);
     QVERIFY(ptr != 0);
     s1->addEntryAction(ima);
     finishedSpy.clear();
@@ -1674,13 +1651,8 @@ void tst_QStateMachine::stateActions()
 
     s1->removeEntryAction(ima);
 
-    s1->setPropertyOnEntry(s1, "objectName", "bar");
-    QCOMPARE(s1->entryActions().size(), 1);
-    s1->setPropertyOnEntry(s1, "objectName", "bar");
-    QCOMPARE(s1->entryActions().size(), 1);
-
     s1->invokeMethodOnEntry(ima, "deleteLater");
-    QCOMPARE(s1->entryActions().size(), 2);
+    QCOMPARE(s1->entryActions().size(), 1);
 
     ptr = ima;
     QVERIFY(ptr != 0);
@@ -1730,10 +1702,10 @@ void tst_QStateMachine::transitionActions()
     QState *s1 = new QState(machine.rootState());
 
     QFinalState *s2 = new QFinalState(machine.rootState());
-    QTransition *trans = new EventTransition(QEvent::User, s2);
+    EventTransition *trans = new EventTransition(QEvent::User, s2);
     s1->addTransition(trans);
     QVERIFY(trans->actions().isEmpty());
-    QTest::ignoreMessage(QtWarningMsg, "QTransition::addAction: cannot add null action");
+    QTest::ignoreMessage(QtWarningMsg, "QActionTransition::addAction: cannot add null action");
     trans->addAction(0);
     QVERIFY(trans->actions().isEmpty());
 
@@ -1760,7 +1732,6 @@ void tst_QStateMachine::transitionActions()
     QTRY_COMPARE(finishedSpy.count(), 1);
     QVERIFY(act->didExecute());
 
-    trans->setPropertyOnTransition(s1, "objectName", "foo");
     trans->invokeMethodOnTransition(act, "deleteLater");
 
     QPointer<QStateAction> ptr(act);
@@ -1774,7 +1745,6 @@ void tst_QStateMachine::transitionActions()
     QTRY_COMPARE(finishedSpy.count(), 1);
     QCoreApplication::processEvents();
     QVERIFY(ptr == 0);
-    QCOMPARE(s1->objectName(), QString::fromLatin1("foo"));
 }
 
 void tst_QStateMachine::defaultGlobalRestorePolicy()
@@ -1786,10 +1756,10 @@ void tst_QStateMachine::defaultGlobalRestorePolicy()
     propertyHolder->setProperty("b", 2);
 
     QState *s1 = new QState(machine.rootState());
-    s1->setPropertyOnEntry(propertyHolder, "a", 3);
+    s1->assignProperty(propertyHolder, "a", 3);
 
     QState *s2 = new QState(machine.rootState());
-    s2->setPropertyOnEntry(propertyHolder, "b", 4);
+    s2->assignProperty(propertyHolder, "b", 4);
 
     QState *s3 = new QState(machine.rootState());
 
@@ -1830,12 +1800,12 @@ void tst_QStateMachine::restorePolicyNotInherited()
 
     QState *s1 = new QState(parentState);
     s1->setObjectName("s1");
-    s1->setPropertyOnEntry(propertyHolder, "a", 3);
+    s1->assignProperty(propertyHolder, "a", 3);
     parentState->setInitialState(s1);
 
     QState *s2 = new QState(parentState);
     s2->setObjectName("s2");
-    s2->setPropertyOnEntry(propertyHolder, "b", 4);
+    s2->assignProperty(propertyHolder, "b", 4);
 
     QState *s3 = new QState(parentState);
     s3->setObjectName("s3");
@@ -1874,10 +1844,10 @@ void tst_QStateMachine::globalRestorePolicySetToDoNotRestore()
     propertyHolder->setProperty("b", 2);
 
     QState *s1 = new QState(machine.rootState());
-    s1->setPropertyOnEntry(propertyHolder, "a", 3);
+    s1->assignProperty(propertyHolder, "a", 3);
 
     QState *s2 = new QState(machine.rootState());
-    s2->setPropertyOnEntry(propertyHolder, "b", 4);
+    s2->assignProperty(propertyHolder, "b", 4);
 
     QState *s3 = new QState(machine.rootState());
 
@@ -1914,13 +1884,13 @@ void tst_QStateMachine::setRestorePolicyToDoNotRestore()
 
     QState *S1 = new QState();
     S1->setObjectName("S1");
-    S1->setPropertyOnEntry(object, "a", 3);
+    S1->assignProperty(object, "a", 3);
     S1->setRestorePolicy(QState::DoNotRestoreProperties);
     machine.addState(S1);
 
     QState *S2 = new QState();
     S2->setObjectName("S2");
-    S2->setPropertyOnEntry(object, "b", 5);
+    S2->assignProperty(object, "b", 5);
     S2->setRestorePolicy(QState::DoNotRestoreProperties);
     machine.addState(S2);
 
@@ -1987,13 +1957,13 @@ void tst_QStateMachine::restorePolicyOnChildState()
     QState *s1 = new QState(parentState);
     s1->setRestorePolicy(QState::RestoreProperties);
     s1->setObjectName("s1");
-    s1->setPropertyOnEntry(propertyHolder, "a", 3);
+    s1->assignProperty(propertyHolder, "a", 3);
     parentState->setInitialState(s1);
 
     QState *s2 = new QState(parentState);
     s2->setRestorePolicy(QState::RestoreProperties);
     s2->setObjectName("s2");
-    s2->setPropertyOnEntry(propertyHolder, "b", 4);
+    s2->assignProperty(propertyHolder, "b", 4);
 
     QState *s3 = new QState(parentState);
     s3->setRestorePolicy(QState::RestoreProperties);
@@ -2032,10 +2002,10 @@ void tst_QStateMachine::globalRestorePolicySetToRestore()
     propertyHolder->setProperty("b", 2);
 
     QState *s1 = new QState(machine.rootState());
-    s1->setPropertyOnEntry(propertyHolder, "a", 3);
+    s1->assignProperty(propertyHolder, "a", 3);
 
     QState *s2 = new QState(machine.rootState());
-    s2->setPropertyOnEntry(propertyHolder, "b", 4);
+    s2->assignProperty(propertyHolder, "b", 4);
 
     QState *s3 = new QState(machine.rootState());
 
@@ -2071,19 +2041,19 @@ void tst_QStateMachine::mixedRestoreProperties()
 
     QState *s1 = new QState(machine.rootState());
     s1->setRestorePolicy(QState::RestoreProperties);
-    s1->setPropertyOnEntry(propertyHolder, "a", 3);
+    s1->assignProperty(propertyHolder, "a", 3);
 
     QState *s2 = new QState(machine.rootState());
-    s2->setPropertyOnEntry(propertyHolder, "a", 4);
+    s2->assignProperty(propertyHolder, "a", 4);
 
     QState *s3 = new QState(machine.rootState());
 
     QState *s4 = new QState(machine.rootState());
-    s4->setPropertyOnEntry(propertyHolder, "a", 5);
+    s4->assignProperty(propertyHolder, "a", 5);
 
     QState *s5 = new QState(machine.rootState());
     s5->setRestorePolicy(QState::RestoreProperties);
-    s5->setPropertyOnEntry(propertyHolder, "a", 6);
+    s5->assignProperty(propertyHolder, "a", 6);
 
     s1->addTransition(new EventTransition(QEvent::User, s2));
     s2->addTransition(new EventTransition(QEvent::User, s3));
@@ -2127,38 +2097,6 @@ void tst_QStateMachine::mixedRestoreProperties()
 
     // Enter s3, restore
     QCOMPARE(propertyHolder->property("a").toInt(), 5);
-}
-
-void tst_QStateMachine::addAnimatedTransition()
-{
-    {
-        QStateMachine machine;
-        QState *s1 = new QState(machine.rootState());
-        QState *s2 = new QState(machine.rootState());
-        SignalEmitter emitter;
-        QState *as = s1->addAnimatedTransition(&emitter, SIGNAL(signalWithNoArg()), s2);
-        QVERIFY(as != 0);
-        QCOMPARE(as->parentState(), s2->parentState());
-    }
-    {
-        QStateMachine machine;
-        QState *s1 = new QState(machine.rootState());
-        QState *s2 = new QState(machine.rootState());
-        QState *s21 = new QState(s2);
-        SignalEmitter emitter;
-        QState *as = s1->addAnimatedTransition(&emitter, SIGNAL(signalWithNoArg()), s21);
-        QVERIFY(as != 0);
-        QCOMPARE(as->parentState(), s2);
-    }
-    {
-        QStateMachine machine;
-        QState *s1 = new QState();
-        QState *s2 = new QState();
-        SignalEmitter emitter;
-        QTest::ignoreMessage(QtWarningMsg, "QState::addAnimatedTransition: cannot add transition to target that doesn't have a parent state");
-        QState *as = s1->addAnimatedTransition(&emitter, SIGNAL(signalWithNoArg()), s2);
-        QCOMPARE(as, (QState*)0);
-    }
 }
 
 void tst_QStateMachine::transitionWithParent()

@@ -47,6 +47,7 @@
 #include "graphicsscene.h"
 #include "animationmanager.h"
 #include "custompropertyanimation.h"
+#include "qanimationstate.h"
 
 //Qt
 #if defined(QT_EXPERIMENTAL_SOLUTION)
@@ -56,7 +57,6 @@
 # include "qfinalstate.h"
 # include "qstate.h"
 #include "qsequentialanimationgroup.h"
-#include "qanimationstate.h"
 #else
 #include <QPropertyAnimation>
 #include <QStateMachine>
@@ -64,7 +64,6 @@
 #include <QFinalState>
 #include <QState>
 #include <QSequentialAnimationGroup>
-#include <QAnimationState>
 #endif
 
 static QAbstractAnimation *setupDestroyAnimation(Boat *boat)
@@ -208,13 +207,13 @@ Boat::Boat(QGraphicsItem * parent, Qt::WindowFlags wFlags)
 
     //This state play the destroyed animation
     QAnimationState *destroyedState = new QAnimationState(machine->rootState());
-    destroyedState->addAnimation(setupDestroyAnimation(this));
+    destroyedState->setAnimation(setupDestroyAnimation(this));
 
     //Play a nice animation when the boat is destroyed
     moving->addTransition(this, SIGNAL(boatDestroyed()),destroyedState);
 
     //Transition to final state when the destroyed animation is finished
-    destroyedState->addFinishedTransition(final);
+    destroyedState->addTransition(destroyedState, SIGNAL(animationFinished()), final);
 
     //The machine has finished to be executed, then the boat is dead
     connect(machine,SIGNAL(finished()),this, SIGNAL(boatExecutionFinished()));

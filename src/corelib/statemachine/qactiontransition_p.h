@@ -39,26 +39,42 @@
 **
 ****************************************************************************/
 
-#ifndef CUSTOMPROPERTYANIMATION_P_H
-#define CUSTOMPROPERTYANIMATION_P_H
+#ifndef QACTIONTRANSITION_P_H
+#define QACTIONTRANSITION_P_H
 
-#ifdef QT_EXPERIMENTAL_SOLUTION
-# include "qvariantanimation_p.h"
-#else
-# include <private/qvariantanimation_p.h>
-#endif
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-class CustomPropertyAnimationPrivate : public QVariantAnimationPrivate
+#include "qabstracttransition_p.h"
+
+#include <QtCore/qlist.h>
+
+QT_BEGIN_NAMESPACE
+
+class QStateAction;
+
+class QActionTransition;
+class Q_CORE_EXPORT QActionTransitionPrivate : public QAbstractTransitionPrivate
 {
-   Q_DECLARE_PUBLIC(CustomPropertyAnimation)
+    Q_DECLARE_PUBLIC(QActionTransition)
 public:
-    CustomPropertyAnimationPrivate() : QVariantAnimationPrivate(), animProp(0)
-    {
-    }
+    QActionTransitionPrivate();
+    ~QActionTransitionPrivate();
 
-    void initDefaultStartValue();
+    static QActionTransitionPrivate *get(QActionTransition *q);
+    static const QActionTransitionPrivate *get(const QActionTransition *q);
 
-    AbstractProperty *animProp;
+    QList<QStateAction*> actions() const;
 };
 
-#endif //QTCUSTOMPROPERTYANIMATION_P_H
+QT_END_NAMESPACE
+
+#endif

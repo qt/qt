@@ -45,17 +45,15 @@
 //Own
 #include "animationmanager.h"
 #include "submarine.h"
+#include "qanimationstate.h"
 
 //Qt
 #if defined(QT_EXPERIMENTAL_SOLUTION)
-#include "qanimationstate.h"
 #include "qpropertyanimation.h"
 #else
-#include <QAnimationState>
 #include <QPropertyAnimation>
 #endif
 #include <QGraphicsScene>
-
 
 //This state is describing when the boat is moving right
 class MovementState : public QAnimationState
@@ -66,16 +64,18 @@ public:
     {
         movementAnimation = new QPropertyAnimation(submarine, "pos");
         connect(movementAnimation,SIGNAL(valueChanged(const QVariant &)),this,SLOT(onAnimationMovementValueChanged(const QVariant &)));
-        addAnimation(movementAnimation);
+        setAnimation(movementAnimation);
         AnimationManager::self()->registerAnimation(movementAnimation);
         this->submarine = submarine;
     }
+
 protected slots:
     void onAnimationMovementValueChanged(const QVariant &)
     {
         if (qrand() % 200 + 1 == 3)
             submarine->launchTorpedo(qrand() % 3 + 1);
     }
+
 protected:
     void onEntry()
     {
@@ -91,11 +91,6 @@ protected:
         QAnimationState::onEntry();
     }
 
-    void onExit()
-    {
-        movementAnimation->stop();
-        QAnimationState::onExit();
-    }
 private:
     SubMarine *submarine;
     QPropertyAnimation *movementAnimation;
@@ -109,9 +104,10 @@ public:
     {
         returnAnimation = new QPropertyAnimation(submarine, "yRotation");
         AnimationManager::self()->registerAnimation(returnAnimation);
-        addAnimation(returnAnimation);
+        setAnimation(returnAnimation);
         this->submarine = submarine;
     }
+
 protected:
     void onEntry()
     {
@@ -124,10 +120,10 @@ protected:
 
     void onExit()
     {
-        returnAnimation->stop();
         submarine->currentDirection() == SubMarine::Right ? submarine->setCurrentDirection(SubMarine::Left) : submarine->setCurrentDirection(SubMarine::Right);
         QAnimationState::onExit();
     }
+
 private:
     SubMarine *submarine;
     QPropertyAnimation *returnAnimation;

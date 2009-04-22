@@ -3,6 +3,7 @@
 # include "qgraphicswidget.h"
 # include "qstate.h"
 # include "qstatemachine.h"
+# include "qabstracttransition.h"
 # include "qgraphicswidget.h"
 # include "qparallelanimationgroup.h"
 # include "qpropertyanimation.h"
@@ -147,27 +148,27 @@ int main(int argc, char **argv)
     for (int i = 0; i < 64; ++i) {
         Pixmap *item = items.at(i);
         // Ellipse
-        ellipseState->setPropertyOnEntry(item, "pos",
+        ellipseState->assignProperty(item, "pos",
                                          QPointF(cos((i / 63.0) * 6.28) * 250,
                                                  sin((i / 63.0) * 6.28) * 250));
 
         // Figure 8
-        figure8State->setPropertyOnEntry(item, "pos",
+        figure8State->assignProperty(item, "pos",
                                          QPointF(sin((i / 63.0) * 6.28) * 250,
                                                  sin(((i * 2)/63.0) * 6.28) * 250));
 
         // Random
-        randomState->setPropertyOnEntry(item, "pos",
+        randomState->assignProperty(item, "pos",
                                         QPointF(-250 + qrand() % 500,
                                                 -250 + qrand() % 500));
 
         // Tiled
-        tiledState->setPropertyOnEntry(item, "pos",
+        tiledState->assignProperty(item, "pos",
                                        QPointF(((i % 8) - 4) * kineticPix.width() + kineticPix.width() / 2,
                                                ((i / 8) - 4) * kineticPix.height() + kineticPix.height() / 2));
 
         // Centered
-        centeredState->setPropertyOnEntry(item, "pos", QPointF());
+        centeredState->assignProperty(item, "pos", QPointF());
     }
 
     // Ui
@@ -184,7 +185,6 @@ int main(int argc, char **argv)
     states.setInitialState(rootState);
     rootState->setInitialState(centeredState);
 
-    // rootState->addTransition(ellipseButton, SIGNAL(pressed()), ellipseState);
     QParallelAnimationGroup *group = new QParallelAnimationGroup;
     for (int i = 0; i < 64; ++i) {
         QPropertyAnimation *anim = new QPropertyAnimation(items[i], "pos");
@@ -192,7 +192,8 @@ int main(int argc, char **argv)
         anim->setEasingCurve(QEasingCurve::InOutBack);
         group->addAnimation(anim);
     }
-    rootState->addAnimatedTransition(ellipseButton, SIGNAL(pressed()), ellipseState, group);
+    QAbstractTransition *trans = rootState->addTransition(ellipseButton, SIGNAL(pressed()), ellipseState);
+    trans->addAnimation(group);
 
     group = new QParallelAnimationGroup;
     for (int i = 0; i < 64; ++i) {
@@ -201,7 +202,8 @@ int main(int argc, char **argv)
         anim->setEasingCurve(QEasingCurve::InOutBack);
         group->addAnimation(anim);
     }
-    rootState->addAnimatedTransition(figure8Button, SIGNAL(pressed()), figure8State, group);
+    trans = rootState->addTransition(figure8Button, SIGNAL(pressed()), figure8State);
+    trans->addAnimation(group);
 
     group = new QParallelAnimationGroup;
     for (int i = 0; i < 64; ++i) {
@@ -210,7 +212,8 @@ int main(int argc, char **argv)
         anim->setEasingCurve(QEasingCurve::InOutBack);
         group->addAnimation(anim);
     }
-    rootState->addAnimatedTransition(randomButton, SIGNAL(pressed()), randomState, group);
+    trans = rootState->addTransition(randomButton, SIGNAL(pressed()), randomState);
+    trans->addAnimation(group);
 
     group = new QParallelAnimationGroup;
     for (int i = 0; i < 64; ++i) {
@@ -219,7 +222,8 @@ int main(int argc, char **argv)
         anim->setEasingCurve(QEasingCurve::InOutBack);
         group->addAnimation(anim);
     }
-    rootState->addAnimatedTransition(tiledButton, SIGNAL(pressed()), tiledState, group);
+    trans = rootState->addTransition(tiledButton, SIGNAL(pressed()), tiledState);
+    trans->addAnimation(group);
 
     group = new QParallelAnimationGroup;
     for (int i = 0; i < 64; ++i) {
@@ -228,13 +232,14 @@ int main(int argc, char **argv)
         anim->setEasingCurve(QEasingCurve::InOutBack);
         group->addAnimation(anim);
     }
-    rootState->addAnimatedTransition(centeredButton, SIGNAL(pressed()), centeredState, group);
+    trans = rootState->addTransition(centeredButton, SIGNAL(pressed()), centeredState);
+    trans->addAnimation(group);
 
     states.start();
     QTimer timer;
     timer.start(125);
     timer.setSingleShot(true);
-    rootState->addAnimatedTransition(&timer, SIGNAL(timeout()), ellipseState, group);
+    rootState->addTransition(&timer, SIGNAL(timeout()), ellipseState);
 
     return app.exec();
 }

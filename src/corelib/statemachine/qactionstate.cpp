@@ -3,9 +3,39 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -21,6 +51,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QActionState class provides an action-based state.
 
+  \since 4.6
   \ingroup statemachine
 
   QActionState executes \l{QStateAction}{state actions} when the state is
@@ -29,19 +60,6 @@ QT_BEGIN_NAMESPACE
   You can add actions to a state with the addEntryAction() and addExitAction()
   functions. The state executes the actions when the state is entered and
   exited, respectively.
-
-  Built-in actions are provided for setting properties and invoking methods of
-  QObjects. The setPropertyOnEntry() and setPropertyOnExit() functions are
-  used for defining property assignments that should be performed when a state
-  is entered and exited, respectively.
-
-  \code
-  QLabel label;
-  QStateMachine machine;
-  QState *s1 = new QState();
-  s1->setPropertyOnEntry(&label, "text", "Entered state s1");
-  machine.addState(s1);
-  \endcode
 
   The invokeMethodOnEntry() and invokeMethodOnExit() functions are used for
   defining method invocations that should be performed when a state is entered
@@ -56,43 +74,7 @@ QT_BEGIN_NAMESPACE
   \sa QStateAction
 */
 
-/*!
-   \enum QActionState::RestorePolicy
-
-   This enum specifies the restore policy type for a state. The restore policy takes effect when
-   the machine enters a state which has entry actions of the type QStateSetPropertyAction. If the 
-   restore policy of the state is set to RestoreProperties, the state machine will save the 
-   value of the property before the QStateSetPropertyAction is executed. 
-
-   Later, when the machine either enters a state which has its restore policy set to 
-   DoNotRestoreProperties or when it enters a state which does not set a value for the given 
-   property, the property will automatically be restored to its initial value. The state machine
-   will only detect which properties are being set if they are being set using a
-   QStateSetPropertyAction object set as entry action on a state.
-
-   Special rules apply when using QAnimationState. If a QAnimationState registers that a property
-   should be restored before entering the target state of its QStateFinishedTransition, it will
-   restore this property using a QPropertyAnimation. 
-   
-   Only one initial value will be saved for any given property. If a value for a property has 
-   already been saved by the state machine, it will not be overwritten until the property has been
-   successfully restored. Once the property has been restored, the state machine will clear the 
-   initial value until it enters a new state which sets the property and which has RestoreProperties
-   as its restore policy.
-
-   \value GlobalRestorePolicy The restore policy for the state should be retrieved using 
-          QStateMachine::globalRestorePolicy()
-   \value DoNotRestoreProperties The state machine should not save the initial values of properties 
-          set in the state and restore them later.
-   \value RestoreProperties The state machine should save the initial values of properties 
-          set in the state and restore them later.
-
-
-   \sa setRestorePolicy(), restorePolicy(), addEntryAction(), setPropertyOnEntry()
-*/
-
 QActionStatePrivate::QActionStatePrivate()
-    : restorePolicy(QActionState::GlobalRestorePolicy)
 {
 }
 
@@ -165,66 +147,12 @@ QActionState::~QActionState()
 }
 
 /*!
-  Instructs this state to set the property with the given \a name of the given
-  \a object to the given \a value when the state is entered. This function
-  will create a QStateSetPropertyAction object and add it to the entry actions
-  of the state. If there is already an existing action associated with the
-  property, the value of that action is updated.
-
-  \sa setPropertyOnExit(), invokeMethodOnEntry(), addEntryAction()
-*/
-void QActionState::setPropertyOnEntry(QObject *object, const char *name,
-                                      const QVariant &value)
-{
-    Q_D(QActionState);
-    QList<QStateAction*> actions = d->entryActions();
-    for (int i=0; i<actions.size(); ++i) {
-        QStateAction *action = actions.at(i);           
-        if (QStateSetPropertyAction *spa = qobject_cast<QStateSetPropertyAction*>(action)) {
-            if (spa->targetObject() == object && spa->propertyName() == name) {
-                QStateSetPropertyActionPrivate::get(spa)->value = value;
-                return;
-            }
-        }
-    }
-
-    addEntryAction(new QStateSetPropertyAction(object, name, value));
-}
-
-/*!
-  Instructs this state to set the property with the given \a name of the given
-  \a object to the given \a value when the state is exited. This function will
-  create a QStateSetPropertyAction object and add it to the exit actions of
-  the state. If there is already an existing action associated with the
-  property, the value of that action is updated.
-
-  \sa setPropertyOnEntry(), invokeMethodOnExit(), addExitAction()
-*/
-void QActionState::setPropertyOnExit(QObject *object, const char *name,
-                                     const QVariant &value)
-{
-    Q_D(QActionState);
-    QList<QStateAction*> actions = d->exitActions();
-    for (int i=0; i<actions.size(); ++i) {
-        QStateAction *action = actions.at(i);
-        if (QStateSetPropertyAction *spa = qobject_cast<QStateSetPropertyAction*>(action)) {
-            if (spa->targetObject() == object && spa->propertyName() == name) {
-                QStateSetPropertyActionPrivate::get(spa)->value = value;
-                return;
-            }
-        }
-    }
-
-    addExitAction(new QStateSetPropertyAction(object, name, value));
-}
-
-/*!
   Instructs this state to invoke the given \a method of the given \a object
   with the given \a arguments when the state is entered. This function will
   create a QStateInvokeMethodAction object and add it to the entry actions of
   the state.
 
-  \sa invokeMethodOnExit(), setPropertyOnEntry(), addEntryAction()
+  \sa invokeMethodOnExit(), addEntryAction()
 */
 void QActionState::invokeMethodOnEntry(QObject *object, const char *method,
                                        const QList<QVariant> &arguments)
@@ -238,7 +166,7 @@ void QActionState::invokeMethodOnEntry(QObject *object, const char *method,
   create a QStateInvokeMethodAction object and add it to the exit actions of
   the state.
 
-  \sa invokeMethodOnEntry(), setPropertyOnExit(), addExitAction()
+  \sa invokeMethodOnEntry(), addExitAction()
 */
 void QActionState::invokeMethodOnExit(QObject *object, const char *method,
                                       const QList<QVariant> &arguments)
@@ -330,26 +258,6 @@ QList<QStateAction*> QActionState::exitActions() const
 {
     Q_D(const QActionState);
     return d->exitActions();
-}
-
-/*!
-  Sets the restore policy of this state to \a restorePolicy. 
-  
-  The default restore policy is QActionState::GlobalRestorePolicy.
-*/
-void QActionState::setRestorePolicy(RestorePolicy restorePolicy)
-{
-    Q_D(QActionState);
-    d->restorePolicy = restorePolicy;
-}
-
-/*!
-  Returns the restore policy for this state.
-*/
-QActionState::RestorePolicy QActionState::restorePolicy() const
-{
-    Q_D(const QActionState);
-    return d->restorePolicy;
 }
 
 /*!

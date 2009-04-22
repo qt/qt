@@ -46,12 +46,10 @@
 #if defined(QT_EXPERIMENTAL_SOLUTION)
 #include "qstate.h"
 #include "qsignaltransition.h"
-#include "qanimationstate.h"
 #include "qpropertyanimation.h"
 #else
 #include <QState>
 #include <QSignalTransition>
-#include <QAnimationState>
 #include <QPropertyAnimation>
 #endif
 #include <QSet>
@@ -122,7 +120,7 @@ private :
     PlayState *game;
 };
 
-class UpdateScoreState : public QAnimationState
+class UpdateScoreState : public QState
 {
 public:
     UpdateScoreState(PlayState *game, QState *parent);

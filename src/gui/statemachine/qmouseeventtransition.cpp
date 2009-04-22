@@ -26,6 +26,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QMouseEventTransition class provides a transition for mouse events.
 
+  \since 4.6
   \ingroup statemachine
 
   QMouseEventTransition is part of \l{The State Machine Framework}.
@@ -103,7 +104,7 @@ Qt::MouseButton QMouseEventTransition::button() const
 }
 
 /*!
-  Sets the button that this mouse event transition will check for.
+  Sets the \a button that this mouse event transition will check for.
 */
 void QMouseEventTransition::setButton(Qt::MouseButton button)
 {

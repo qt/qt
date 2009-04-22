@@ -49,6 +49,7 @@
 #include "pixmapitem.h"
 #include "custompropertyanimation.h"
 #include "animationmanager.h"
+#include "qanimationstate.h"
 
 //Qt
 #if defined(QT_EXPERIMENTAL_SOLUTION)
@@ -56,7 +57,6 @@
 #include "qsequentialanimationgroup.h"
 #include "qparallelanimationgroup.h"
 #include "qstatemachine.h"
-#include "qanimationstate.h"
 #include "qfinalstate.h"
 #include "qpauseanimation.h"
 #else
@@ -64,7 +64,6 @@
 #include <QSequentialAnimationGroup>
 #include <QParallelAnimationGroup>
 #include <QStateMachine>
-#include <QAnimationState>
 #include <QFinalState>
 #include <QPauseAnimation>
 #endif
@@ -236,18 +235,26 @@ void GraphicsScene::setupScene(const QList<QAction *> &actions)
     QFinalState *final = new QFinalState(machine->rootState());
 
     //Animation when the player enter in the game
-    QAnimationState *animationState = new QAnimationState(lettersGroupMoving, machine->rootState());
-    animationState->addAnimatedTransition(newAction, SIGNAL(triggered()),gameState,lettersGroupFading);
+    QAnimationState *lettersMovingState = new QAnimationState(machine->rootState());
+    lettersMovingState->setAnimation(lettersGroupMoving);
+
+    //Animation when the welcome screen disappear
+    QAnimationState *lettersFadingState = new QAnimationState(machine->rootState());
+    lettersFadingState->setAnimation(lettersGroupFading);
+
+    //if new game then we fade out the welcome screen and start playing
+    lettersMovingState->addTransition(newAction, SIGNAL(triggered()),lettersFadingState);
+    lettersFadingState->addTransition(lettersFadingState, SIGNAL(animationFinished()),gameState);
 
     //New Game is triggered then player start playing
     gameState->addTransition(newAction, SIGNAL(triggered()),gameState);
 
     //Wanna quit, then connect to CTRL+Q
     gameState->addTransition(quitAction, SIGNAL(triggered()),final);
-    animationState->addTransition(quitAction, SIGNAL(triggered()),final);
+    lettersMovingState->addTransition(quitAction, SIGNAL(triggered()),final);
 
     //Welcome screen is the initial state
-    machine->setInitialState(animationState);
+    machine->setInitialState(lettersMovingState);
 
     machine->start();
 

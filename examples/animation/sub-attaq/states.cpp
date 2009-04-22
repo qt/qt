@@ -131,7 +131,7 @@ void PlayState::onEntry()
     playState->addTransition(scoreTransition);
 
     //We go back to play state
-    scoreState->addFinishedTransition(playState);
+    scoreState->addTransition(playState);
 
     //We start playing!!!
     machine->setInitialState(playState);
@@ -242,14 +242,14 @@ void WinState::onEntry()
 }
 
 /** UpdateScore State */
-UpdateScoreState::UpdateScoreState(PlayState *game, QState *parent) : QAnimationState(parent)
+UpdateScoreState::UpdateScoreState(PlayState *game, QState *parent) : QState(parent)
 {
     this->game = game;
 }
 void UpdateScoreState::onEntry()
 {
     //### Make a nice anim to update the score in the scene
-    QAnimationState::onEntry();
+    QState::onEntry();
 }
 
 /** Win transition */

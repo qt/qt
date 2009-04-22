@@ -124,8 +124,7 @@ QRectF ClockDisplay::boundingRect() const
 
 void ClockDisplay::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    if (m_alarmEnabled)
-        m_alarmSymbol->setVisible(true);
+    m_alarmSymbol->setVisible(m_alarmEnabled);
 
     updateText(); 
 

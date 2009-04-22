@@ -1,4 +1,5 @@
 #include "node.h"
+#include "stickman.h"
 
 #include <QRectF>
 #include <QPainter>
@@ -23,6 +24,14 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {    
     painter->setPen(Qt::white);
     painter->drawEllipse(QPointF(0.0, 0.0), 5.0, 5.0);
+}
+
+QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+    if (change == QGraphicsItem::ItemPositionChange)
+        emit positionChanged();
+
+    return QGraphicsItem::itemChange(change, value);
 }
 
 void Node::mousePressEvent(QGraphicsSceneMouseEvent *event)

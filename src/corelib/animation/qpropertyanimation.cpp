@@ -233,14 +233,16 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State oldState,
         d->updateMetaProperty();
         QPropertyAnimation *oldAnim = hash->value(key, 0);
         if (oldAnim) {
-            //we try to stop the top level group
+            // try to stop the top level group
             QAbstractAnimation *current = oldAnim;
             while(current->group() && current->state() != Stopped) current = current->group();
             current->stop();
         }
         hash->insert(key, this);
         // Initialize start value
-        if (d->target && !d->defaultStartValue.isValid() && (d->atBeginning() || d->atEnd())) {
+        // ### review this line below, d->atEnd() ?
+        // ### avoid entering a state where start value is not set
+        if (d->target && (d->atBeginning() || d->atEnd())) {
             d->setDefaultStartValue(d->target->property(d->propertyName.constData()));
         }
     } else if (hash->value(key) == this) {

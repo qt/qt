@@ -3,9 +3,39 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -41,11 +71,12 @@ void QStateActionPrivate::callExecute()
 
   \brief The QStateAction class is the base class of QState actions.
 
+  \since 4.6
   \ingroup statemachine
 
-  A state action is added to a state by calling QState::addEntryAction() or
-  QState::addExitAction(). QStateAction is part of \l{The State Machine
-  Framework}.
+  A state action is added to a state by calling QActionState::addEntryAction()
+  or QActionState::addExitAction(). QStateAction is part of \l{The State
+  Machine Framework}.
 
   \section1 Subclassing
 
@@ -112,151 +143,6 @@ bool QStateAction::event(QEvent *e)
     return QObject::event(e);
 }
 
-QStateSetPropertyActionPrivate *QStateSetPropertyActionPrivate::get(QStateSetPropertyAction *q)
-{
-    return q->d_func();
-}
-
-/*!
-  \class QStateSetPropertyAction
-
-  \brief The QStateSetPropertyAction class provides a set property action for QObjects.
-
-  \ingroup statemachine
-
-  The QStateSetPropertyAction class provides an action that sets a property of
-  a QObject to a pre-defined value when a QState is entered or exited.
-  QStateSetPropertyAction is part of \l{The State Machine Framework}.
-
-  Typically you don't construct QStateSetPropertyAction objects directly, but
-  rather call the QState::setPropertyOnEntry() function or the
-  QState::setPropertyOnExit() function.
-*/
-
-/*!
-    \property QStateSetPropertyAction::target
-
-    \brief the object for which this action sets a property
-*/
-
-/*!
-    \property QStateSetPropertyAction::propertyName
-
-    \brief the name of the property set by this action
-*/
-
-/*!
-    \property QStateSetPropertyAction::value
-
-    \brief the value set by this action
-*/
-
-/*!
-  Constructs a new QStateSetPropertyAction object for the property named \a
-  propertyName of the given \a target object, with the given \a value, and
-  with the given \a parent.
-*/
-QStateSetPropertyAction::QStateSetPropertyAction(
-    QObject *target, const QByteArray &propertyName,
-    const QVariant &value, QObject *parent)
-    : QStateAction(*new QStateSetPropertyActionPrivate, parent)
-{
-    Q_D(QStateSetPropertyAction);
-    d->target = target;
-    d->propertyName = propertyName;
-    d->value = value;
-}
-
-/*!
-  Constructs a new QStateSetPropertyAction object with the given \a parent.
-*/
-QStateSetPropertyAction::QStateSetPropertyAction(QObject *parent)
-    : QStateAction(*new QStateSetPropertyActionPrivate, parent)
-{
-    Q_D(QStateSetPropertyAction);
-    d->target = 0;
-}
-
-/*!
-  Destroys this QStateAbstractSetPropertyAction object.
-*/
-QStateSetPropertyAction::~QStateSetPropertyAction()
-{
-}
-
-/*!
-  Returns the object for which this action sets a property.
-*/
-QObject *QStateSetPropertyAction::targetObject() const
-{
-    Q_D(const QStateSetPropertyAction);
-    return d->target;
-}
-
-/*!
-  Sets the object for which this action sets a property.
-*/
-void QStateSetPropertyAction::setTargetObject(QObject *target)
-{
-    Q_D(QStateSetPropertyAction);
-    d->target = target;
-}
-
-/*!
-  Returns the name of the property set by this action.
-*/
-QByteArray QStateSetPropertyAction::propertyName() const
-{
-    Q_D(const QStateSetPropertyAction);
-    return d->propertyName;
-}
-
-/*!
-  Sets the name of the property set by this action.
-*/
-void QStateSetPropertyAction::setPropertyName(const QByteArray &propertyName)
-{
-    Q_D(QStateSetPropertyAction);
-    d->propertyName = propertyName;
-}
-
-/*!
-  Returns the value set by this action.
-*/
-QVariant QStateSetPropertyAction::value() const
-{
-    Q_D(const QStateSetPropertyAction);
-    return d->value;
-}
-
-/*!
-  Sets the value set by this action.
-*/
-void QStateSetPropertyAction::setValue(const QVariant &value)
-{
-    Q_D(QStateSetPropertyAction);
-    d->value = value;
-}
-
-/*!
-  \reimp
-*/
-void QStateSetPropertyAction::execute()
-{
-    Q_D(QStateSetPropertyAction);
-    if (!d->target)
-        return;
-    d->target->setProperty(d->propertyName, d->value);
-}
-
-/*!
-  \reimp
-*/
-bool QStateSetPropertyAction::event(QEvent *e)
-{
-    return QStateAction::event(e);
-}
-
 QStateInvokeMethodActionPrivate *QStateInvokeMethodActionPrivate::get(QStateInvokeMethodAction *q)
 {
     return q->d_func();
@@ -267,6 +153,7 @@ QStateInvokeMethodActionPrivate *QStateInvokeMethodActionPrivate::get(QStateInvo
 
   \brief The QStateInvokeMethodAction class provides an invoke method action for QObjects.
 
+  \since 4.6
   \ingroup statemachine
 
   The QStateInvokeMethodAction class provides an action that calls a method of

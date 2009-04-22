@@ -44,19 +44,18 @@
 #include "submarine.h"
 #include "pixmapitem.h"
 #include "animationmanager.h"
+#include "qanimationstate.h"
 
 //Qt
 
 #if defined(QT_EXPERIMENTAL_SOLUTION)
 #include "qpropertyanimation.h"
 #include "qsequentialanimationgroup.h"
-#include "qanimationstate.h"
 #include "qstatemachine.h"
 #include "qfinalstate.h"
 #else
 #include <QtCore/QSequentialAnimationGroup>
 #include <QtCore/QPropertyAnimation>
-#include <QtCore/QAnimationState>
 #include <QtCore/QStateMachine>
 #include <QtCore/QFinalState>
 #endif
@@ -94,18 +93,19 @@ void Bomb::launch(Bomb::Direction direction)
     QStateMachine *machine = new QStateMachine(this);
 
     //This state is when the launch animation is playing
-    QAnimationState *launched = new QAnimationState(launchAnimation,machine->rootState());
-
-    machine->setInitialState(launched);
+    QAnimationState *launched = new QAnimationState(machine->rootState());
+    launched->setAnimation(launchAnimation);
 
     //End
     QFinalState *final = new QFinalState(machine->rootState());
+
+    machine->setInitialState(launched);
 
     //### Add a nice animation when the bomb is destroyed
     launched->addTransition(this, SIGNAL(bombExplosed()),final);
 
     //If the animation is finished, then we move to the final state
-    launched->addFinishedTransition(final);
+    launched->addTransition(launched, SIGNAL(animationFinished()), final);
 
     //The machine has finished to be executed, then the boat is dead
     connect(machine,SIGNAL(finished()),this, SIGNAL(bombExecutionFinished()));

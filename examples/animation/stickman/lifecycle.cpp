@@ -6,6 +6,15 @@
 
 #include <QtCore>
 #include <QtGui>
+#if defined(QT_EXPERIMENTAL_SOLUTION)
+#include "qstatemachine.h"
+#include "qstate.h"
+#include "qeventtransition.h"
+#include "qsignaltransition.h"
+#include "qsignalevent.h"
+#include "qpropertyanimation.h"
+#include "qparallelanimationgroup.h"
+#endif
 
 class KeyPressTransition: public QSignalTransition
 {
@@ -69,27 +78,34 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
     // Make it blink when lightning strikes before entering dead animation
     QState *lightningBlink = new QState(m_machine->rootState());    
     lightningBlink->setRestorePolicy(QState::DoNotRestoreProperties);
-    lightningBlink->setPropertyOnEntry(m_stickMan->scene(), "backgroundBrush", Qt::white);
-    lightningBlink->setPropertyOnEntry(m_stickMan, "penColor", Qt::black);
-    lightningBlink->setPropertyOnEntry(m_stickMan, "fillColor", Qt::white);
-    lightningBlink->setPropertyOnEntry(m_stickMan, "isDead", true);
+    lightningBlink->assignProperty(m_stickMan->scene(), "backgroundBrush", Qt::white);
+    lightningBlink->assignProperty(m_stickMan, "penColor", Qt::black);
+    lightningBlink->assignProperty(m_stickMan, "fillColor", Qt::white);
+    lightningBlink->assignProperty(m_stickMan, "isDead", true);
+    
+    QTimer *timer = new QTimer(lightningBlink);
+    timer->setSingleShot(true);
+    timer->setInterval(100);
+    lightningBlink->invokeMethodOnEntry(timer, "start");
+    lightningBlink->invokeMethodOnExit(timer, "stop");
   
     m_dead = new QState(m_machine->rootState());
     m_dead->setRestorePolicy(QState::DoNotRestoreProperties);
-    m_dead->setPropertyOnEntry(m_stickMan->scene(), "backgroundBrush", Qt::black);
-    m_dead->setPropertyOnEntry(m_stickMan, "penColor", Qt::white);
-    m_dead->setPropertyOnEntry(m_stickMan, "fillColor", Qt::black);
+    m_dead->assignProperty(m_stickMan->scene(), "backgroundBrush", Qt::black);
+    m_dead->assignProperty(m_stickMan, "penColor", Qt::white);
+    m_dead->assignProperty(m_stickMan, "fillColor", Qt::black);
     m_dead->setObjectName("dead");
            
     // Idle state (sets no properties)
     m_idle = new QState(m_alive);
     m_idle->setObjectName("idle");
+
     m_alive->setInitialState(m_idle);
 
     // Lightning strikes at random
     m_alive->addTransition(new LightningStrikesTransition(lightningBlink));
-    m_alive->addTransition(new KeyPressTransition(m_keyReceiver, Qt::Key_L, lightningBlink));
-    connectByAnimation(m_machine->rootState(), lightningBlink, m_dead);
+    //m_alive->addTransition(new KeyPressTransition(m_keyReceiver, Qt::Key_L, lightningBlink));
+    connectByAnimation(lightningBlink, m_dead, new QSignalTransition(timer, SIGNAL(timeout())));
 
     m_machine->setInitialState(m_alive);
 }
@@ -98,7 +114,9 @@ void LifeCycle::setResetKey(Qt::Key resetKey)
 {
     // When resetKey is pressed, enter the idle state and do a restoration animation
     // (requires no animation pointer, since no property is being set in the idle state)
-    m_alive->addAnimatedTransition(new KeyPressTransition(m_keyReceiver, resetKey, m_idle));
+    KeyPressTransition *trans = new KeyPressTransition(m_keyReceiver, resetKey, m_idle);
+    trans->addAnimation(m_animationGroup);
+    m_alive->addTransition(trans);
 }
 
 void LifeCycle::setDeathAnimation(const QString &fileName)
@@ -112,26 +130,22 @@ void LifeCycle::start()
     m_machine->start();
 }
 
-void LifeCycle::connectByAnimation(QState *parentState, 
-                                   QState *s1, QAbstractState *s2, 
+void LifeCycle::connectByAnimation(QState *s1, QAbstractState *s2, 
                                    QAbstractTransition *transition)
 {
-    QAnimationState *animationState = new QAnimationState(m_animationGroup, parentState);
-    
-    if (transition == 0)
-        s1->addTransition(animationState);
-    else {
-        transition->setTargetStates(QList<QAbstractState*>() << animationState);
+    if (transition == 0) {
+        transition = s1->addTransition(s2);
+    } else {
+        transition->setTargetState(s2);
         s1->addTransition(transition);
     }
-
-    animationState->addFinishedTransition(s2);
+    transition->addAnimation(m_animationGroup);
 }
 
 void LifeCycle::addActivity(const QString &fileName, Qt::Key key)
 {
     QState *state = makeState(m_alive, fileName);
-    connectByAnimation(m_alive, m_alive, state, new KeyPressTransition(m_keyReceiver, key));
+    connectByAnimation(m_alive, state, new KeyPressTransition(m_keyReceiver, key));
 }
 
 QState *LifeCycle::makeState(QState *parentState, const QString &animationFileName)
@@ -149,21 +163,25 @@ QState *LifeCycle::makeState(QState *parentState, const QString &animationFileNa
     QState *previousState = 0;
     for (int i=0; i<frameCount; ++i) {
         QState *frameState = new QState(topLevel);
-        
+        frameState->setObjectName(QString::fromLatin1("frame %0").arg(i));
+
         animation.setCurrentFrame(i);
         const int nodeCount = animation.nodeCount();
         for (int j=0; j<nodeCount; ++j)
-            frameState->setPropertyOnEntry(m_stickMan->node(j), "position", animation.nodePos(j));
+            frameState->assignProperty(m_stickMan->node(j), "position", animation.nodePos(j));
 
-        if (previousState == 0)
+        if (previousState == 0) {
             topLevel->setInitialState(frameState);
-        else
-            connectByAnimation(topLevel, previousState, frameState);
+        } else {
+            connectByAnimation(previousState, frameState, 
+                new QSignalTransition(m_machine, SIGNAL(animationsFinished())));
+        }
         previousState = frameState;
     }
 
     // Loop
-    connectByAnimation(topLevel, previousState, topLevel->initialState());
+    connectByAnimation(previousState, topLevel->initialState(), 
+        new QSignalTransition(m_machine, SIGNAL(animationsFinished())));
 
     return topLevel;
 

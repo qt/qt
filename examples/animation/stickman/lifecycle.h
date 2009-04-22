@@ -23,7 +23,7 @@ public:
     void start();
 
 private:
-    void connectByAnimation(QState *parentState, QState *s1, QAbstractState *s2, 
+    void connectByAnimation(QState *s1, QAbstractState *s2, 
                             QAbstractTransition *transition = 0);
     QState *makeState(QState *parentState, const QString &animationFileName);
 

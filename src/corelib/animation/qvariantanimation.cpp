@@ -279,7 +279,7 @@ QVariantAnimation::~QVariantAnimation()
     of the interpolated property.
 
     The easing curve is used with the interpolator, the interpolated() virtual
-    function, the animation's duration, and iterationCount, to control how the
+    function, the animation's duration, and loopCount, to control how the
     current value changes as the animation progresses.
 */
 QEasingCurve QVariantAnimation::easingCurve() const
@@ -340,7 +340,7 @@ template<typename T> static inline QVariantAnimation::Interpolator castToInterpo
      return reinterpret_cast<QVariantAnimation::Interpolator>(func);
 }
 
-static QVariantAnimation::Interpolator getInterpolator(int interpolationType)
+QVariantAnimation::Interpolator QVariantAnimationPrivate::getInterpolator(int interpolationType)
 {
     QReadLocker locker(registeredInterpolatorsLock());
     QVariantAnimation::Interpolator ret = 0;
@@ -574,7 +574,7 @@ QVariant QVariantAnimation::interpolated(const QVariant &from, const QVariant &t
     Q_D(const QVariantAnimation);
     if (d->interpolator == 0) {
         if (from.userType() == to.userType())
-            d->interpolator = getInterpolator(from.userType());
+            d->interpolator = QVariantAnimationPrivate::getInterpolator(from.userType());
         if (d->interpolator == 0) //no interpolator found
             return QVariant();
     }

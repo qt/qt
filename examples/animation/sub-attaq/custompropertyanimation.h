@@ -49,7 +49,6 @@
 #endif
 
 class QGraphicsItem;
-class CustomPropertyAnimationPrivate;
 
 struct AbstractProperty
 {
@@ -111,7 +110,7 @@ public:
 
 private:
     Q_DISABLE_COPY(CustomPropertyAnimation);
-    Q_DECLARE_PRIVATE(CustomPropertyAnimation);
+    AbstractProperty *animProp;
 };
 
 #endif // CUSTOMPROPERTYANIMATION_H

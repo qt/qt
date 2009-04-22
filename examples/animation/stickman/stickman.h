@@ -37,6 +37,7 @@ public:
    
 public slots:
     void stabilize();
+    void childPositionChanged();
 
 protected:
     void timerEvent(QTimerEvent *e);

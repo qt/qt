@@ -81,6 +81,7 @@ StickMan::StickMan()
     // Set up start position of limbs
     for (int i=0; i<NodeCount; ++i) {
         m_nodes[i] = new Node(QPointF(Coords[i * 2], Coords[i * 2 + 1]), this);
+        connect(m_nodes[i], SIGNAL(positionChanged()), this, SLOT(childPositionChanged()));
     }
 
     m_perfectBoneLengths = new qreal[BoneCount];
@@ -103,6 +104,11 @@ StickMan::~StickMan()
     delete m_nodes;
 }
 
+void StickMan::childPositionChanged()
+{
+    prepareGeometryChange();
+}
+
 void StickMan::setDrawSticks(bool on)
 {
     m_sticks = on;
@@ -114,8 +120,8 @@ void StickMan::setDrawSticks(bool on)
 
 QRectF StickMan::boundingRect() const
 {
-    // account for head radius=50.0 plus pen which is 5.0, plus jump height :-)
-    return QRectF(-125, -200, 250, 450 + 50).adjusted(-55.0, -55.0, 55.0, 55.0);
+    // account for head radius=50.0 plus pen which is 5.0
+    return childrenBoundingRect().adjusted(-55.0, -55.0, 55.0, 55.0);
 }
 
 int StickMan::nodeCount() const
@@ -125,7 +131,6 @@ int StickMan::nodeCount() const
 
 Node *StickMan::node(int idx) const
 {
-    const_cast<StickMan *>(this)->prepareGeometryChange();
     if (idx >= 0 && idx < NodeCount)
         return m_nodes[idx];
     else
@@ -134,11 +139,13 @@ Node *StickMan::node(int idx) const
 
 void StickMan::timerEvent(QTimerEvent *e)
 {
-    prepareGeometryChange();
+    update();
 }
 
 void StickMan::stabilize()
 {
+    static const qreal threshold = 0.001;
+
     for (int i=0; i<BoneCount; ++i) {
         int n1 = Bones[i * 2];
         int n2 = Bones[i * 2 + 1];
@@ -153,12 +160,14 @@ void StickMan::stabilize()
         qreal length = sqrt(pow(dist.x(),2) + pow(dist.y(),2));
         qreal diff = (length - m_perfectBoneLengths[i]) / length;
 
-        pos1 -= dist * (0.5 * diff);
-        pos2 += dist * (0.5 * diff);
+        QPointF p = dist * (0.5 * diff);
+        if (p.x() > threshold && p.y() > threshold) {
+            pos1 -= p;
+            pos2 += p;
 
-        node1->setPos(pos1);
-        node2->setPos(pos2);
-
+            node1->setPos(pos1);
+            node2->setPos(pos2);
+        }
     }
 }
 
@@ -245,18 +254,11 @@ void StickMan::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
             qreal angle = asin(sinAngle) * 180.0 / M_PI;
 
             QPointF headPos = node1->pos();
-            painter->save();
             painter->translate(headPos);
             painter->rotate(-angle);
 
             painter->setBrush(m_fillColor);
             painter->drawEllipse(QPointF(0,0), 50.0, 50.0);
-
-            /*painter->drawArc(QRectF(-20.0, 0.0, 40.0, 20.0), 30.0 * 16, 120.0 * 16);
-
-            painter->setBrush(m_penColor);
-            painter->drawEllipse(QPointF(-30.0, -30.0), 2.5, 2.5);
-            painter->drawEllipse(QPointF(30.0, -30.0), 2.5, 2.5);*/
 
             painter->setBrush(m_penColor);
             painter->setPen(QPen(m_penColor, 2.5, Qt::SolidLine, Qt::RoundCap));
@@ -288,9 +290,6 @@ void StickMan::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
                 painter->drawEllipse(QPointF(-12.0, -25.0), 5.0, 5.0);
                 painter->drawEllipse(QPointF(22.0, -25.0), 5.0, 5.0);
             }
-
-
-            painter->restore();
         }
     }
 }

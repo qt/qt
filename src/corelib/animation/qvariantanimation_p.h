@@ -97,7 +97,7 @@ public:
 
     bool atEnd() const
     {
-        return currentTime == duration && currentIteration == (iterationCount - 1);
+        return currentTime == duration && currentLoop == (loopCount - 1);
     }
 
     void setDefaultStartValue(const QVariant &value);
@@ -124,6 +124,8 @@ public:
     void setValueAt(qreal, const QVariant &);
     QVariant valueAt(qreal step) const;
     void convertValues(int t);
+
+    static QVariantAnimation::Interpolator getInterpolator(int interpolationType);
 };
 
 //this should make the interpolation faster

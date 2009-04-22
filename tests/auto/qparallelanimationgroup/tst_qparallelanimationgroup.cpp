@@ -71,8 +71,8 @@ private slots:
     void startGroupWithRunningChild();
     void zeroDurationAnimation();
     void stopUncontrolledAnimations();
-    void iterationCount_data();
-    void iterationCount();
+    void loopCount_data();
+    void loopCount();
     void autoAdd();
 };
 
@@ -194,7 +194,7 @@ void tst_QParallelAnimationGroup::setCurrentTime()
     QVariantAnimation *a1_p_o1 = new QPropertyAnimation(&p_o1, "value");
     QVariantAnimation *a1_p_o2 = new QPropertyAnimation(&p_o2, "value");
     QVariantAnimation *a1_p_o3 = new QPropertyAnimation(&p_o3, "value");
-    a1_p_o2->setIterationCount(3);
+    a1_p_o2->setLoopCount(3);
     parallel->addAnimation(a1_p_o1);
     parallel->addAnimation(a1_p_o2);
     parallel->addAnimation(a1_p_o3);
@@ -203,7 +203,7 @@ void tst_QParallelAnimationGroup::setCurrentTime()
     QCOMPARE(notTimeDriven->totalDuration(), -1);
 
     QVariantAnimation *loopsForever = new QPropertyAnimation(&t_o2, "value");
-    loopsForever->setIterationCount(-1);
+    loopsForever->setLoopCount(-1);
     QCOMPARE(loopsForever->totalDuration(), -1);
 
     QParallelAnimationGroup group;
@@ -233,18 +233,18 @@ void tst_QParallelAnimationGroup::setCurrentTime()
     QCOMPARE(group.currentTime(), 250);
     QCOMPARE(a1_p_o1->currentTime(), 250);
     QCOMPARE(a1_p_o2->currentTime(), 0);
-    QCOMPARE(a1_p_o2->currentIteration(), 1);
+    QCOMPARE(a1_p_o2->currentLoop(), 1);
     QCOMPARE(a1_p_o3->currentTime(), 250);
     QCOMPARE(notTimeDriven->currentTime(), 250);
     QCOMPARE(loopsForever->currentTime(), 0);
-    QCOMPARE(loopsForever->currentIteration(), 1);
+    QCOMPARE(loopsForever->currentLoop(), 1);
 
     // Current time = 251
     group.setCurrentTime(251);
     QCOMPARE(group.currentTime(), 251);
     QCOMPARE(a1_p_o1->currentTime(), 250);
     QCOMPARE(a1_p_o2->currentTime(), 1);
-    QCOMPARE(a1_p_o2->currentIteration(), 1);
+    QCOMPARE(a1_p_o2->currentLoop(), 1);
     QCOMPARE(a1_p_o3->currentTime(), 250);
     QCOMPARE(notTimeDriven->currentTime(), 251);
     QCOMPARE(loopsForever->currentTime(), 1);
@@ -589,7 +589,7 @@ void tst_QParallelAnimationGroup::zeroDurationAnimation()
 
 
     group.stop();
-    group.setIterationCount(4);
+    group.setLoopCount(4);
     stateChangedSpy1.clear();
     stateChangedSpy2.clear();
 
@@ -625,7 +625,7 @@ void tst_QParallelAnimationGroup::stopUncontrolledAnimations()
     loopsForever.setStartValue(0);
     loopsForever.setEndValue(100);
     loopsForever.setDuration(100);
-    loopsForever.setIterationCount(-1);
+    loopsForever.setLoopCount(-1);
 
     QSignalSpy stateChangedSpy(&anim1, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
 
@@ -670,10 +670,10 @@ struct AnimState {
 #define Stopped QAbstractAnimation::Stopped
 
 Q_DECLARE_METATYPE(AnimState)
-void tst_QParallelAnimationGroup::iterationCount_data()
+void tst_QParallelAnimationGroup::loopCount_data()
 {
     QTest::addColumn<bool>("directionBackward");
-    QTest::addColumn<int>("setIterationCount");
+    QTest::addColumn<int>("setLoopCount");
     QTest::addColumn<int>("initialGroupTime");
     QTest::addColumn<int>("currentGroupTime");
     QTest::addColumn<AnimState>("expected1");
@@ -742,10 +742,10 @@ void tst_QParallelAnimationGroup::iterationCount_data()
 
 }
 
-void tst_QParallelAnimationGroup::iterationCount()
+void tst_QParallelAnimationGroup::loopCount()
 {
     QFETCH(bool, directionBackward);
-    QFETCH(int, setIterationCount);
+    QFETCH(int, setLoopCount);
     QFETCH(int, initialGroupTime);
     QFETCH(int, currentGroupTime);
     QFETCH(AnimState, expected1);
@@ -763,7 +763,7 @@ void tst_QParallelAnimationGroup::iterationCount()
     anim2.setStartValue(0);
     anim2.setEndValue(100);
     anim2.setDuration(60);  //total 120
-    anim2.setIterationCount(2);
+    anim2.setLoopCount(2);
 
     TestAnimation anim3;
     anim3.setStartValue(0);
@@ -774,7 +774,7 @@ void tst_QParallelAnimationGroup::iterationCount()
     group.addAnimation(&anim2);
     group.addAnimation(&anim3);
 
-    group.setIterationCount(setIterationCount);
+    group.setLoopCount(setLoopCount);
     if (initialGroupTime >= 0)
         group.setCurrentTime(initialGroupTime);
     if (directionBackward)

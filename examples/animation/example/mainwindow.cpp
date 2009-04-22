@@ -94,50 +94,50 @@ MainWindow::MainWindow() : QMainWindow(0)
     machine->setInitialState(group);
 
     // State 1
-    state1->setPropertyOnEntry(button, "text", "Edit");
-    state1->setPropertyOnEntry(button2, "text", "Add");
-    state1->setPropertyOnEntry(button3, "text", "Remove");
-    state1->setPropertyOnEntry(button4, "text", "Accept");
+    state1->assignProperty(button, "text", "Edit");
+    state1->assignProperty(button2, "text", "Add");
+    state1->assignProperty(button3, "text", "Remove");
+    state1->assignProperty(button4, "text", "Accept");
     state1->addTransition(button2, SIGNAL(clicked()), state3);
-    state1->setPropertyOnEntry(listProxy, "geometry", QRectF(0, 0, 700, 560));
-    state1->setPropertyOnEntry(widget, "geometry", QRectF(0, 0, 700, 600));
-    state1->setPropertyOnEntry(editProxy, "opacity", double(0));
-    state1->setPropertyOnEntry(labelProxy, "opacity", double(0));
-    state1->setPropertyOnEntry(label2Proxy, "opacity", double(0));
-    state1->setPropertyOnEntry(buttonProxy4, "opacity", double(0));
-    state1->setPropertyOnEntry(labelWidget, "text", "Name : ");
-    state1->setPropertyOnEntry(label2Widget, "text", "Edit a contact");
-    state1->setPropertyOnEntry(label2Proxy, "geometry", QRectF(375, -50, 300, 30));
-    state1->setPropertyOnEntry(labelProxy, "geometry", QRectF(350, 300, 100, 30));
-    state1->setPropertyOnEntry(editProxy, "geometry", QRectF(750, 300, 250, 30));
-    state1->setPropertyOnEntry(buttonProxy4, "geometry", QRectF(500, 350, 80, 25));
+    state1->assignProperty(listProxy, "geometry", QRectF(0, 0, 700, 560));
+    state1->assignProperty(widget, "geometry", QRectF(0, 0, 700, 600));
+    state1->assignProperty(editProxy, "opacity", double(0));
+    state1->assignProperty(labelProxy, "opacity", double(0));
+    state1->assignProperty(label2Proxy, "opacity", double(0));
+    state1->assignProperty(buttonProxy4, "opacity", double(0));
+    state1->assignProperty(labelWidget, "text", "Name : ");
+    state1->assignProperty(label2Widget, "text", "Edit a contact");
+    state1->assignProperty(label2Proxy, "geometry", QRectF(375, -50, 300, 30));
+    state1->assignProperty(labelProxy, "geometry", QRectF(350, 300, 100, 30));
+    state1->assignProperty(editProxy, "geometry", QRectF(750, 300, 250, 30));
+    state1->assignProperty(buttonProxy4, "geometry", QRectF(500, 350, 80, 25));
 
     // State 2
-    state2->setPropertyOnEntry(button, "text", "Close Editing");
-    state2->setPropertyOnEntry(listProxy, "geometry", QRectF(0, 0, 350, 560));
+    state2->assignProperty(button, "text", "Close Editing");
+    state2->assignProperty(listProxy, "geometry", QRectF(0, 0, 350, 560));
     state2->addTransition(button2, SIGNAL(clicked()), state3);
     state2->addTransition(button4, SIGNAL(clicked()), state1);
 
-    state2->setPropertyOnEntry(editProxy, "opacity", double(1));
-    state2->setPropertyOnEntry(labelProxy, "opacity", double(1));
-    state2->setPropertyOnEntry(label2Proxy, "opacity", double(1));
-    state2->setPropertyOnEntry(buttonProxy4, "opacity", double(1));
+    state2->assignProperty(editProxy, "opacity", double(1));
+    state2->assignProperty(labelProxy, "opacity", double(1));
+    state2->assignProperty(label2Proxy, "opacity", double(1));
+    state2->assignProperty(buttonProxy4, "opacity", double(1));
 
-    state2->setPropertyOnEntry(label2Proxy, "geometry", QRectF(375, 250, 300, 30));
-    state2->setPropertyOnEntry(editProxy, "geometry", QRectF(440, 300, 260, 30));
+    state2->assignProperty(label2Proxy, "geometry", QRectF(375, 250, 300, 30));
+    state2->assignProperty(editProxy, "geometry", QRectF(440, 300, 260, 30));
 
      // State 3
-    state3->setPropertyOnEntry(button4, "text", "Create New");
-    state3->setPropertyOnEntry(listProxy, "geometry", QRectF(0, 0, 350, 560));
+    state3->assignProperty(button4, "text", "Create New");
+    state3->assignProperty(listProxy, "geometry", QRectF(0, 0, 350, 560));
     state3->addTransition(button4, SIGNAL(clicked()), state1);
     state3->addTransition(button, SIGNAL(clicked()), state1);
-    state3->setPropertyOnEntry(editProxy, "opacity", double(1));
-    state3->setPropertyOnEntry(labelProxy, "opacity", double(1));
-    state3->setPropertyOnEntry(label2Proxy, "opacity", double(1));
-    state3->setPropertyOnEntry(buttonProxy4, "opacity", double(1));
+    state3->assignProperty(editProxy, "opacity", double(1));
+    state3->assignProperty(labelProxy, "opacity", double(1));
+    state3->assignProperty(label2Proxy, "opacity", double(1));
+    state3->assignProperty(buttonProxy4, "opacity", double(1));
 
-    state3->setPropertyOnEntry(label2Proxy, "geometry", QRectF(375, 250, 300, 30));
-    state3->setPropertyOnEntry(editProxy, "geometry", QRectF(440, 300, 260, 30));
+    state3->assignProperty(label2Proxy, "geometry", QRectF(375, 250, 300, 30));
+    state3->assignProperty(editProxy, "geometry", QRectF(440, 300, 260, 30));
 
     {
       QAnimationGroup *animationGroup = new QParallelAnimationGroup;
@@ -150,7 +150,8 @@ MainWindow::MainWindow() : QMainWindow(0)
       anim = new QPropertyAnimation(listProxy, "geometry");
       animationGroup->addAnimation(anim);
       
-      state1->addAnimatedTransition(button, SIGNAL(clicked()), state2, animationGroup);
+      QAbstractTransition *trans = state1->addTransition(button, SIGNAL(clicked()), state2);
+      trans->addAnimation(animationGroup);
     }
 
     {
@@ -162,7 +163,8 @@ MainWindow::MainWindow() : QMainWindow(0)
         animationGroup->addAnimation(anim);
         anim = new QPropertyAnimation(listProxy, "geometry");
         animationGroup->addAnimation(anim);
-        state2->addAnimatedTransition(button, SIGNAL(clicked()), state1, animationGroup);
+        QAbstractTransition *trans = state2->addTransition(button, SIGNAL(clicked()), state1);
+        trans->addAnimation(animationGroup);
     }
 
     currentState = state1;

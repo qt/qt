@@ -3,6 +3,7 @@
 
 #include <QtGui/QGraphicsView>
 
+class MainWindow;
 class GraphicsView: public QGraphicsView
 {
     Q_OBJECT
@@ -14,6 +15,9 @@ protected:
 
 signals:
     void keyPressed(int key);
+
+private:
+    MainWindow *m_editor;
 };
 
 #endif

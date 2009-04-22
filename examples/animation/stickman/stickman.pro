@@ -7,6 +7,8 @@ TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
 
+include(editor/editor.pri)
+
 # Input
 HEADERS += stickman.h animation.h node.h lifecycle.h graphicsview.h
 SOURCES += main.cpp stickman.cpp animation.cpp node.cpp lifecycle.cpp graphicsview.cpp

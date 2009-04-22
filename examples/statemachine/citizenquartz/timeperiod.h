@@ -76,7 +76,7 @@ inline QTime operator+(const QTime &time, const TimePeriod &timePeriod)
     QTime result(time);
     result += timePeriod;
 
-    return time;
+    return result;
 }
 
 Q_DECLARE_METATYPE(TimePeriod)

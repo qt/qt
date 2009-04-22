@@ -37,7 +37,7 @@ void PropertyAddState::onEntry()
 {
     foreach (PropertyAdder propertyAdder, m_propertyAdditions) {
         QObject *object = propertyAdder.object;
-        const char *propertyName = propertyAdder.propertyName;
+        QByteArray propertyName = propertyAdder.propertyName;
         QVariant toAdd = propertyAdder.valueToAdd;
         QVariant current = object->property(propertyName);
 
