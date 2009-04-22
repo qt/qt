@@ -19,6 +19,7 @@
 QT_BEGIN_NAMESPACE
 
 class QPainter;
+class QPixmap;
 class QStyleOptionSlider;
 class QStyleOption;
 
