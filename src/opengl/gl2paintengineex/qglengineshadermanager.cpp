@@ -210,11 +210,6 @@ void QGLEngineShaderManager::setCompositionMode(QPainter::CompositionMode mode)
     shaderProgNeedsChanging = true; //###
 }
 
-bool QGLEngineShaderManager::shaderProgramDirty()
-{
-    return shaderProgNeedsChanging;
-}
-
 QGLShaderProgram* QGLEngineShaderManager::currentProgram()
 {
     return currentShaderProg;
@@ -228,9 +223,13 @@ QGLShaderProgram* QGLEngineShaderManager::simpleProgram()
 
 
 
-// Select & use the correct shader program using the current state
-void QGLEngineShaderManager::useCorrectShaderProg()
+// Select & use the correct shader program using the current state.
+// Returns true if program needed changing.
+bool QGLEngineShaderManager::useCorrectShaderProg()
 {
+    if (!shaderProgNeedsChanging)
+        return false;
+
     QGLEngineShaderProg requiredProgram;
     requiredProgram.program = 0;
 
@@ -400,7 +399,7 @@ void QGLEngineShaderManager::useCorrectShaderProg()
             currentShaderProg = prog.program;
             currentShaderProg->enable();
             shaderProgNeedsChanging = false;
-            return;
+            return true;
         }
     }
 
@@ -442,6 +441,7 @@ void QGLEngineShaderManager::useCorrectShaderProg()
         currentShaderProg->enable();
     }
     shaderProgNeedsChanging = false;
+    return true;
 }
 
 void QGLEngineShaderManager::compileNamedShader(QGLEngineShaderManager::ShaderName name, QGLShader::ShaderType type)

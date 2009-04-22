@@ -741,9 +741,7 @@ void QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
 
 
     // If the shader program needs changing, we change it and mark all uniforms as dirty
-    if (shaderManager->shaderProgramDirty()) {
-        shaderManager->useCorrectShaderProg();
-
+    if (shaderManager->useCorrectShaderProg()) {
         // The shader program has changed so mark all uniforms as dirty:
         brushUniformsDirty = true;
         shaderMatrixUniformDirty = true;

@@ -279,8 +279,7 @@ public:
     void setMaskType(MaskType);
     void setCompositionMode(QPainter::CompositionMode);
 
-    bool shaderProgramDirty(); // returns true if the shader program needs to be changed
-    void useCorrectShaderProg();
+    bool useCorrectShaderProg(); // returns true if the shader program needed to be changed
 
     QGLShaderProgram* currentProgram(); // Returns pointer to the shader the manager has chosen
     QGLShaderProgram* simpleProgram(); // Used to draw into e.g. stencil buffers
