@@ -128,6 +128,13 @@ static void qt_sa_sigchld_handler(int signum)
         qt_sa_old_sigchld_handler(signum);
 }
 
+static inline void add_fd(int &nfds, int fd, fd_set *fdset)
+{
+    FD_SET(fd, fdset);
+    if ((fd) > nfds)
+        nfds = fd;
+}
+
 struct QProcessInfo {
     QProcess *process;
     int deathPipe;
@@ -845,17 +852,15 @@ void QProcessPrivate::killProcess()
         ::kill(pid_t(pid), SIGKILL);
 }
 
-static int qt_safe_select(fd_set *fdread, fd_set *fdwrite, int timeout)
+static int select_msecs(int nfds, fd_set *fdread, fd_set *fdwrite, int timeout)
 {
+    if (timeout < 0)
+        return qt_safe_select(nfds, fdread, fdwrite, 0, 0);
+
     struct timeval tv;
     tv.tv_sec = timeout / 1000;
     tv.tv_usec = (timeout % 1000) * 1000;
-
-    int ret;
-    do {
-        ret = select(FD_SETSIZE, fdread, fdwrite, 0, timeout < 0 ? 0 : &tv);
-    } while (ret < 0 && (errno == EINTR));
-    return ret;
+    return qt_safe_select(nfds, fdread, fdwrite, 0, &tv);
 }
 
 /*
@@ -883,11 +888,7 @@ bool QProcessPrivate::waitForStarted(int msecs)
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(childStartedPipe[0], &fds);
-    int ret;
-    do {
-        ret = qt_safe_select(&fds, 0, msecs);
-    } while (ret < 0 && errno == EINTR);
-    if (ret == 0) {
+    if (select_msecs(childStartedPipe[0] + 1, &fds, 0, msecs) == 0) {
         processError = QProcess::Timedout;
         q->setErrorString(QProcess::tr("Process operation timed out"));
 #if defined (QPROCESS_DEBUG)
@@ -920,24 +921,23 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
         FD_ZERO(&fdread);
         FD_ZERO(&fdwrite);
 
-        if (processState == QProcess::Starting)
-            FD_SET(childStartedPipe[0], &fdread);
-
-        if (stdoutChannel.pipe[0] != -1)
-            FD_SET(stdoutChannel.pipe[0], &fdread);
-        if (stderrChannel.pipe[0] != -1)
-            FD_SET(stderrChannel.pipe[0], &fdread);
-
+        int nfds = deathPipe[0];
         FD_SET(deathPipe[0], &fdread);
 
+        if (processState == QProcess::Starting)
+            add_fd(nfds, childStartedPipe[0], &fdread);
+
+        if (stdoutChannel.pipe[0] != -1)
+            add_fd(nfds, stdoutChannel.pipe[0], &fdread);
+        if (stderrChannel.pipe[0] != -1)
+            add_fd(nfds, stderrChannel.pipe[0], &fdread);
+
         if (!writeBuffer.isEmpty() && stdinChannel.pipe[1] != -1)
-            FD_SET(stdinChannel.pipe[1], &fdwrite);
+            add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
 
         int timeout = qt_timeout_value(msecs, stopWatch.elapsed());
-        int ret = qt_safe_select(&fdread, &fdwrite, timeout);
+        int ret = select_msecs(nfds + 1, &fdread, &fdwrite, timeout);
         if (ret < 0) {
-            if (errno == EINTR)
-                continue;
             break;
         }
         if (ret == 0) {
@@ -993,24 +993,24 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
         FD_ZERO(&fdread);
         FD_ZERO(&fdwrite);
 
-        if (processState == QProcess::Starting)
-            FD_SET(childStartedPipe[0], &fdread);
-
-        if (stdoutChannel.pipe[0] != -1)
-            FD_SET(stdoutChannel.pipe[0], &fdread);
-        if (stderrChannel.pipe[0] != -1)
-            FD_SET(stderrChannel.pipe[0], &fdread);
-
+        int nfds = deathPipe[0];
         FD_SET(deathPipe[0], &fdread);
 
+        if (processState == QProcess::Starting)
+            add_fd(nfds, childStartedPipe[0], &fdread);
+
+        if (stdoutChannel.pipe[0] != -1)
+            add_fd(nfds, stdoutChannel.pipe[0], &fdread);
+        if (stderrChannel.pipe[0] != -1)
+            add_fd(nfds, stderrChannel.pipe[0], &fdread);
+
+
         if (!writeBuffer.isEmpty() && stdinChannel.pipe[1] != -1)
-            FD_SET(stdinChannel.pipe[1], &fdwrite);
+            add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
 
 	int timeout = qt_timeout_value(msecs, stopWatch.elapsed());
-	int ret = qt_safe_select(&fdread, &fdwrite, timeout);
+	int ret = select_msecs(nfds + 1, &fdread, &fdwrite, timeout);
         if (ret < 0) {
-            if (errno == EINTR)
-                continue;
             break;
         }
 
@@ -1056,29 +1056,28 @@ bool QProcessPrivate::waitForFinished(int msecs)
     forever {
         fd_set fdread;
         fd_set fdwrite;
+        int nfds = -1;
 
         FD_ZERO(&fdread);
         FD_ZERO(&fdwrite);
 
         if (processState == QProcess::Starting)
-            FD_SET(childStartedPipe[0], &fdread);
+            add_fd(nfds, childStartedPipe[0], &fdread);
 
         if (stdoutChannel.pipe[0] != -1)
-            FD_SET(stdoutChannel.pipe[0], &fdread);
+            add_fd(nfds, stdoutChannel.pipe[0], &fdread);
         if (stderrChannel.pipe[0] != -1)
-            FD_SET(stderrChannel.pipe[0], &fdread);
+            add_fd(nfds, stderrChannel.pipe[0], &fdread);
 
         if (processState == QProcess::Running)
-            FD_SET(deathPipe[0], &fdread);
+            add_fd(nfds, deathPipe[0], &fdread);
 
         if (!writeBuffer.isEmpty() && stdinChannel.pipe[1] != -1)
-            FD_SET(stdinChannel.pipe[1], &fdwrite);
+            add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
 
 	int timeout = qt_timeout_value(msecs, stopWatch.elapsed());
-	int ret = qt_safe_select(&fdread, &fdwrite, timeout);
+	int ret = select_msecs(nfds + 1, &fdread, &fdwrite, timeout);
         if (ret < 0) {
-            if (errno == EINTR)
-                continue;
             break;
         }
 	if (ret == 0) {
@@ -1113,12 +1112,7 @@ bool QProcessPrivate::waitForWrite(int msecs)
     fd_set fdwrite;
     FD_ZERO(&fdwrite);
     FD_SET(stdinChannel.pipe[1], &fdwrite);
-
-    int ret;
-    do {
-        ret = qt_safe_select(0, &fdwrite, msecs < 0 ? 0 : msecs) == 1;
-    } while (ret < 0 && errno == EINTR);
-    return ret == 1;
+    return select_msecs(stdinChannel.pipe[1] + 1, 0, &fdwrite, msecs < 0 ? 0 : msecs) == 1;
 }
 
 void QProcessPrivate::findExitCode()

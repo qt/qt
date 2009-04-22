@@ -88,6 +88,7 @@ mac {
 
 unix {
 	SOURCES += \
+                kernel/qcore_unix.cpp \
                 kernel/qcrashhandler.cpp \
                 kernel/qsharedmemory_unix.cpp \
                 kernel/qsystemsemaphore_unix.cpp
