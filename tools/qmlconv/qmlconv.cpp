@@ -251,6 +251,10 @@ public:
 
     void startDeclareProperty() {
         out << depthString() << "public property ";
+
+        if (xml.attributes().hasAttribute("type"))
+            out << "/* " << xml.attributes().value("type").toString() << " */ ";
+
         QString name = xml.attributes().value("name").toString();
 
         if (xml.attributes().hasAttribute("value"))
@@ -263,16 +267,7 @@ public:
                 continue;
             attributes.insert(attribute.name().toString(), attribute.value().toString());
         }
-        if (attributes.isEmpty()) {
-            out << endl;
-        } else {
-            out << " {" << endl;
-            ++depth;
-            foreach (QString key, attributes.keys())
-                setProperty(key, attributes.value(key));
-            --depth;
-            out << depthString() << "}" << endl;
-        }
+        out << endl;
         emptyLoop();
     }
 
