@@ -112,6 +112,8 @@ tst_QLocalSocket::tst_QLocalSocket()
 #endif
                 ))
         qWarning() << "lackey executable doesn't exists!";
+
+    QLocalServer::removeServer("tst_localsocket");
 }
 
 tst_QLocalSocket::~tst_QLocalSocket()
