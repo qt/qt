@@ -1,14 +1,9 @@
-<Rect id="page" width="240" height="{layout.height}" color='white'>
-    <VerticalLayout id="layout" margin="5" spacing="5">
-        <Text x="5" width="230">Rectangle Component</Text>
-        <RemoveButton1 anchors.right="{parent.right}"/>
-        <Text x="5" width="230">Closed Remove Item Button</Text>
-        <RemoveButton2 anchors.right="{parent.right}"/>
-        <Text x="5" width="230">Open Remove Item Button</Text>
-        <RemoveButton3 anchors.right="{parent.right}"/>
-        <Text x="5" width="230">State Based Button</Text>
-        <RemoveButton4 anchors.right="{parent.right}"/>
-        <Text x="5" width="230">Animated Button</Text>
-        <RemoveButton5 anchors.right="{parent.right}"/>
+<Rect id="page" width="{layout.width}" height="{layout.height}" color='white'>
+    <VerticalLayout id="layout" width="{contents.width}" margin="5" spacing="5">
+        <GroupBox contents="RemoveButton1.qml" label="Rectangle Component"/>
+        <GroupBox contents="RemoveButton2.qml" label="Closed Remove Item Button"/>
+        <GroupBox contents="RemoveButton3.qml" label="Open Remove Item Button"/>
+        <GroupBox contents="RemoveButton4.qml" label="State Based Button"/>
+        <GroupBox contents="RemoveButton5.qml" label="Animated Button"/>
     </VerticalLayout>
 </Rect>

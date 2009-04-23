@@ -1,34 +1,12 @@
-<Rect id="page" width="480" height="360" color='black'>
+<Rect id="page" width="{layout.width}" height="{layout.height}" color='white'>
     <properties>
         <Property name="mouseGrabbed" value="false"/>
     </properties>
-    <Item x="0" y="0" width="240" height="180">
-        <ContactField1
-            y="5"
-            anchors.left="{parent.left}" anchors.leftMargin="5"
-            anchors.right="{parent.right}" anchors.rightMargin="5"/>
-        <ContactField2
-            y="40"
-            anchors.left="{parent.left}" anchors.leftMargin="5"
-            anchors.right="{parent.right}" anchors.rightMargin="5"/>
-        <ContactField3
-            y="75"
-            anchors.left="{parent.left}" anchors.leftMargin="5"
-            anchors.right="{parent.right}" anchors.rightMargin="5"
-            label="Phone Number"
-            icon="../shared/pics/phone.png"
-            value="123123"/>
-    </Item>
-    <Rect pen.color="gray" x="5" y="115" width="230" height="180" radius="5">
-        <Contact3 anchors.fill="{parent}"
-                label="Brian"
-                phone="123123"
-                email="brian@bigisp.com" />
-    </Rect>
-    <Rect pen.color="gray" x="245" y="115" width="230" height="180" radius="5">
-        <Contact4 anchors.fill="{parent}"
-                label="Brian"
-                phone="123123"
-                email="brian@bigisp.com" />
-    </Rect>
+    <VerticalLayout id="layout" width="{contents.width}" margin="5" spacing="5">
+        <GroupBox contents="ContactField1.qml" label="Loading Component"/>
+        <GroupBox contents="ContactField2.qml" label="Using properties"/>
+        <GroupBox contents="ContactField3.qml" label="Defining signals"/>
+        <GroupBox contents="Contact3.qml" label="Multiple Items"/>
+        <GroupBox contents="Contact4.qml" label="Mouse Grabbing"/>
+    </VerticalLayout>
 </Rect>

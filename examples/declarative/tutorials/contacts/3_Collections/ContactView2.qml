@@ -1,4 +1,9 @@
-<Item id="contacts">
+<Item id="contacts"
+    width="240"
+    height="230">
+    <properties>
+        <Property name="mouseGrabbed" value="false"/>
+    </properties>
     <resources>
         <SqlConnection id="contactDatabase" name="qmlConnection" driver="QSQLITE" databaseName="../shared/contacts.sqlite"/>
         <SqlQuery id="contactList" connection="{contactDatabase}">
@@ -9,10 +14,10 @@
                 x="0"
                 width="{ListView.view.width}" height="34">
                 <Text id="label"
-                    x="40" y="12"
-                    width="{parent.width-30}" 
+                    x="45" y="12"
+                    width="{parent.width-45}" 
                     text="{model.label}"
-                    color="white"
+                    color="black"
                     font.bold="true">
                 </Text>
                 <MouseRegion
@@ -58,5 +63,6 @@
         anchors.bottom="{parent.bottom}"
         clip="true"
         model="{contactList}"
-        delegate="{contactDelegate}"/>
+        delegate="{contactDelegate}"
+        focus="true"/>
 </Item>

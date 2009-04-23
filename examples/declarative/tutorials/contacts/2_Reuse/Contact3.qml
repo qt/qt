@@ -1,4 +1,6 @@
-<Item id="contactDetails">
+<Item id="contactDetails"
+    width="230"
+    height="{layout.height}">
     <properties>
         <Property name="contactid" value=""/>
         <Property name="label" onValueChanged="labelField.value = label"/>
