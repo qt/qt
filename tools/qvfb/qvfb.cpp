@@ -635,6 +635,7 @@ void QVFb::configure()
     config->touchScreen->setChecked(view->touchScreenEmulation());
     config->lcdScreen->setChecked(view->lcdScreenEmulation());
     chooseDepth(view->displayDepth(), view->displayFormat());
+    config->rgbSwapped->setChecked(view->rgbSwapped());
     connect(config->skin, SIGNAL(activated(int)), this, SLOT(skinConfigChosen(int)));
     if ( view->gammaRed() == view->gammaGreen() && view->gammaGreen() == view->gammaBlue() ) {
 	config->gammaslider->setValue(int(view->gammaRed()*400));
@@ -710,6 +711,7 @@ void QVFb::configure()
 	}
 	view->setViewFormat(displayFormat);
 	view->setTouchscreenEmulation( config->touchScreen->isChecked() );
+	view->setRgbSwapped(config->rgbSwapped->isChecked());
 	bool lcdEmulation = config->lcdScreen->isChecked();
 	view->setLcdScreenEmulation( lcdEmulation );
 	if ( lcdEmulation )
