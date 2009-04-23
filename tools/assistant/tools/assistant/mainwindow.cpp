@@ -228,6 +228,9 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         else if (m_cmdLine->bookmarks() == CmdLineParser::Activate)
             showBookmarks();
 
+        if (!m_cmdLine->currentFilter().isEmpty())
+            m_helpEngine->setCurrentFilter(m_cmdLine->currentFilter());
+
         if (usesDefaultCollection())
             QTimer::singleShot(0, this, SLOT(lookForNewQtDocumentation()));
         else
