@@ -272,6 +272,16 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="rgbSwapped">
+          <property name="toolTip">
+           <string>Swap red and blue channels</string>
+          </property>
+          <property name="text">
+           <string>BGR format</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>

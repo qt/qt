@@ -89,7 +89,7 @@ QVFbAbstractView::~QVFbAbstractView()
 
 QVFbView::QVFbView(int id, int w, int h, int d, Rotation r, QWidget *parent)
         : QVFbAbstractView(parent),
-          viewdepth(d), viewFormat(DefaultFormat), rsh(0), gsh(0), bsh(0), rmax(15), gmax(15), bmax(15),
+          viewdepth(d), viewFormat(DefaultFormat), rgb_swapped(0), rsh(0), gsh(0), bsh(0), rmax(15), gmax(15), bmax(15),
         contentsWidth(w), contentsHeight(h), gred(1.0), ggreen(1.0), gblue(1.0),
         gammatable(0), refreshRate(30), animation(0),
         hzm(0.0), vzm(0.0), mView(0),
@@ -600,6 +600,9 @@ QImage QVFbView::getBuffer(const QRect &r, int &leading) const
             img = QImage();
         break;
     }
+
+    if (rgb_swapped)
+        img = img.rgbSwapped();
 
     if ( brightness != 255 ) {
         if (img.format() == QImage::Format_Indexed8) {
