@@ -62,36 +62,43 @@ class Q_DECLARATIVE_EXPORT QmlComponent : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlComponent);
 
-    Q_PROPERTY(QString name READ name WRITE setName);
-
 public:
-    QmlComponent(QObject *parent=0);
+    QmlComponent(QObject *parent = 0);
     QmlComponent(QmlEngine *, QObject *parent=0);
     QmlComponent(QmlEngine *, const QUrl &url, QObject *parent = 0);
-    QmlComponent(QmlEngine *, const QByteArray &, const QUrl &url=QUrl(), QObject *parent=0);
-    ~QmlComponent();
+    QmlComponent(QmlEngine *, const QByteArray &data, 
+                 const QUrl &baseUrl=QUrl(), QObject *parent=0);
+    virtual ~QmlComponent();
+
+    enum Status { Null, Ready, Loading, Error };
+    Status status() const;
+
+    bool isNull() const;
+    bool isReady() const;
+    bool isError() const;
+    bool isLoading() const;
+    QString errorDescription() const;
+
+    QUrl url() const;
 
     virtual QObject *create(QmlContext *context = 0);
     virtual QObject *beginCreate(QmlContext *);
     virtual void completeCreate();
 
-    QString name() const;
-    void setName(const QString &name);
-
-    void setData(const QByteArray &, const QUrl &url);
-
-    bool isReady() const;
-
-    QmlComponent(QmlEngine *, QmlCompiledComponent *, int, int, QObject *parent);
+    void loadUrl(const QUrl &url);
+    void setData(const QByteArray &, const QUrl &baseUrl = QUrl());
 
 Q_SIGNALS:
-    void readyChanged();
+    void statusChanged(Status);
 
 protected:
     QmlComponent(QmlComponentPrivate &dd, QObject* parent);
 
 private:
+    QmlComponent(QmlEngine *, QmlCompiledComponent *, int, int, QObject *parent);
+
     friend class QmlVME;
+    friend class QmlCompositeTypeData;
 };
 QML_DECLARE_TYPE(QmlComponent);
 

@@ -177,7 +177,7 @@ void tst_QFxListView::items()
     model.addItem("Bob", "54321");
 
     QmlContext *ctxt = canvas->rootContext();
-    ctxt->setProperty("testModel", &model);
+    ctxt->setContextProperty("testModel", &model);
 
     canvas->execute();
     qApp->processEvents();
@@ -213,7 +213,7 @@ void tst_QFxListView::changed()
     model.addItem("Bob", "54321");
 
     QmlContext *ctxt = canvas->rootContext();
-    ctxt->setProperty("testModel", &model);
+    ctxt->setContextProperty("testModel", &model);
 
     canvas->execute();
     qApp->processEvents();
@@ -246,7 +246,7 @@ void tst_QFxListView::inserted()
     model.addItem("Bob", "54321");
 
     QmlContext *ctxt = canvas->rootContext();
-    ctxt->setProperty("testModel", &model);
+    ctxt->setContextProperty("testModel", &model);
 
     canvas->execute();
     qApp->processEvents();
@@ -312,7 +312,7 @@ void tst_QFxListView::removed()
         model.addItem("Item" + QString::number(i), "");
 
     QmlContext *ctxt = canvas->rootContext();
-    ctxt->setProperty("testModel", &model);
+    ctxt->setContextProperty("testModel", &model);
 
     canvas->execute();
     qApp->processEvents();

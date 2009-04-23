@@ -261,7 +261,7 @@ qreal QmlTimeLinePrivate::value(const Op &op, int time, qreal base, bool *change
 
 /*!
     \class QmlTimeLine
-    \ingroup animation
+    \ingroup group_animation
     \brief The QmlTimeLine class provides a timeline for controlling animations.
 
     QmlTimeLine is similar to QTimeLine except:
@@ -872,7 +872,7 @@ void QmlTimeLine::remove(QmlTimeLineObject *v)
 
 /*!
     \class GfxValue
-    \ingroup animation
+    \ingroup group_animation
     \brief The GfxValue class is modified by QmlTimeLine.
 */
 

@@ -538,14 +538,15 @@ void QmlAbstractAnimation::timelineComplete()
 /*!
     \internal
     \class QmlPauseAnimation
-    \ingroup animation states
+    \ingroup group_animation
+    \ingroup group_states
     \brief The QmlPauseAnimation class provides a pause for an animation.
 
     When used in a QmlSequentialAnimation, QmlPauseAnimation is a step when
     nothing happens, for a specified duration.
 
     A QmlPauseAnimation object can be instantiated in Qml using the tag
-    \ref xmlPauseAnimation "&lt;PauseAnimation&gt;".
+    \l{xmlPauseAnimation} {&lt;PauseAnimation&gt;}.
 */
 
 QML_DEFINE_TYPE(QmlPauseAnimation,PauseAnimation);
@@ -629,11 +630,12 @@ QAbstractAnimation *QmlPauseAnimation::qtAnimation()
 /*!
     \internal
     \class QmlColorAnimation
-    \ingroup animation states
+    \ingroup group_animation
+    \ingroup group_states
     \brief The QmlColorAnimation class allows you to animate color changes.
 
     A QmlColorAnimation object can be instantiated in Qml using the tag
-    \ref xmlColorAnimation "&lt;ColorAnimation&gt;".
+    \l{xmlColorAnimation} {&lt;ColorAnimation&gt;}.
 */
 
 QmlColorAnimation::QmlColorAnimation(QObject *parent)
@@ -930,9 +932,9 @@ QML_DEFINE_TYPE(QmlColorAnimation,ColorAnimation);
 /*!
     \internal
     \class QmlRunScriptAction
-    \brief The QmlRunScriptAction class allows scropts to be run during transitions
+    \brief The QmlRunScriptAction class allows scripts to be run during transitions
 
-    \ref xmlRunScriptAction
+    \sa xmlRunScriptAction
 */
 QmlRunScriptAction::QmlRunScriptAction(QObject *parent)
     :QmlAbstractAnimation(*(new QmlRunScriptActionPrivate), parent)
@@ -1039,7 +1041,7 @@ QML_DEFINE_TYPE(QmlRunScriptAction, RunScriptAction);
     \brief The QmlSetPropertyAction class allows property changes during transitions.
 
     A QmlSetPropertyAction object can be instantiated in Qml using the tag
-    \ref xmlSetPropertyAction "&lt;SetPropertyAction&gt;".
+    \l{xmlSetPropertyAction} {&lt;SetPropertyAction&gt;}.
 */
 QmlSetPropertyAction::QmlSetPropertyAction(QObject *parent)
 : QmlAbstractAnimation(*(new QmlSetPropertyActionPrivate), parent)
@@ -1337,11 +1339,12 @@ QML_DEFINE_TYPE(QmlParentChangeAction,ParentChangeAction);
 /*!
     \internal
     \class QmlNumericAnimation
-    \ingroup animation states
+    \ingroup group_animation
+    \ingroup group_states
     \brief The QmlNumericAnimation class allows you to animate changes in properties of type qreal.
 
     A QmlNumericAnimation object can be instantiated in Qml using the tag
-    \ref xmlNumericAnimation "&lt;NumericAnimation&gt;".
+    \l{xmlNumericAnimation} {&lt;NumericAnimation&gt;}.
 */
 
 QmlNumericAnimation::QmlNumericAnimation(QObject *parent)
@@ -1766,7 +1769,8 @@ QML_DEFINE_TYPE(QmlSequentialAnimation,SequentialAnimation);
 /*!
     \internal
     \class QmlParallelAnimation
-    \ingroup animation states
+    \ingroup group_animation
+    \ingroup group_states
     \brief The QmlParallelAnimation class allows you to run animations in parallel.
 
     Animations controlled by QmlParallelAnimation will be run at the same time.
@@ -1774,7 +1778,7 @@ QML_DEFINE_TYPE(QmlSequentialAnimation,SequentialAnimation);
     \sa QmlSequentialAnimation
 
     A QmlParallelAnimation object can be instantiated in Qml using the tag
-    \ref xmlParallelAnimation "&lt;ParallelAnimation&gt;".
+    \l{xmlParallelAnimation} {&lt;ParallelAnimation&gt;}.
 */
 
 QmlParallelAnimation::QmlParallelAnimation(QObject *parent) :

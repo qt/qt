@@ -85,7 +85,7 @@ public:
 /*!
     \internal
     \class QFxPixmap
-    \ingroup utility
+    \ingroup group_utility
     \brief Enacapsultes a pixmap for QFx items.
 
     This class is NOT reentrant.

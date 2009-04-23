@@ -667,11 +667,6 @@ QmlMetaType::attachedPropertiesFunc(const QByteArray &name)
 QMetaProperty QmlMetaType::defaultProperty(const QMetaObject *metaObject)
 {
     int idx = metaObject->indexOfClassInfo("DefaultProperty");
-    while(idx == -1 && metaObject) {
-        metaObject = metaObject->superClass();
-        if(metaObject)
-            idx = metaObject->indexOfClassInfo("DefaultProperty");
-    }
     if(-1 == idx)
         return QMetaProperty();
 
@@ -698,11 +693,6 @@ QMetaProperty QmlMetaType::defaultProperty(QObject *obj)
 QMetaMethod QmlMetaType::defaultMethod(const QMetaObject *metaObject)
 {
     int idx = metaObject->indexOfClassInfo("DefaultMethod");
-    while(idx == -1 && metaObject) {
-        metaObject = metaObject->superClass();
-        if(metaObject)
-            idx = metaObject->indexOfClassInfo("DefaultMethod");
-    }
     if(-1 == idx)
         return QMetaMethod();
 

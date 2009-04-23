@@ -1029,7 +1029,7 @@ public:
         QmlEngine *engine = webview->itemContext()->engine();
         component = new QmlComponent(engine, url, this);
         item = 0;
-        connect(engine, SIGNAL(readyChanged()), this, SLOT(qmlLoaded()));
+        connect(engine, SIGNAL(statusChanged(Status)), this, SLOT(qmlLoaded()));
     }
 
 public Q_SLOTS:

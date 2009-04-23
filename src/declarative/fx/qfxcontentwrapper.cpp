@@ -95,7 +95,7 @@ QML_DEFINE_TYPE(QFxContent,Content);
 
 /*!
     \qmlclass Content QFxContent
-    \ingroup utility
+    \ingroup group_utility
     \brief Content is used as a placeholder for the content of a component.
     \inherits Item
 

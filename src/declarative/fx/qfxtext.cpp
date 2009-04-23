@@ -93,7 +93,7 @@ QML_DEFINE_TYPE(QFxText,Text);
     \internal
     \class QFxText
     \qmlclass Text
-    \ingroup coreitems
+    \ingroup group_coreitems
 
     \brief The QFxText class provides a formatted text item that you can add to a QFxView.
 

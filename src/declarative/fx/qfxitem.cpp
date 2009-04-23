@@ -74,20 +74,49 @@ QML_DEFINE_TYPE(QFxItem,Item);
 QML_DEFINE_NOCREATE_TYPE(QSimpleCanvasFilter);
 
 /*!
-    \defgroup animation Animation
-    \defgroup coreitems Basic Items
-    \defgroup effects Effects
-    \defgroup layouts Layouts
-    \defgroup states States and Transitions
-    \defgroup utility Utility
-    \defgroup views Views
-    \defgroup widgets Widgets
+    \group group_animation
+    \title Animation
+*/
+
+/*!
+    \group group_coreitems
+    \title Basic Items
+*/
+
+/*!
+    \group group_effects
+    \title Effects
+*/
+
+/*!
+    \group group_layouts
+    \title Layouts
+*/
+
+/*!
+    \group group_states
+    \title States and Transitions
+*/
+
+/*!
+    \group group_utility
+    \title Utility
+*/
+
+/*!
+    \group group_views
+    \title Views
+*/
+
+/*!
+    \group group_widgets
+    \title Widgets
 */
 
 /*!
     \internal
     \class QFxContents
-    \ingroup utility
+    \ingroup group_utility
     \brief The QFxContents class gives access to the height and width of an item's contents.
 
 */
@@ -194,7 +223,7 @@ void QFxContents::setItem(QFxItem *item)
     \endqml
     \endqmltext
     
-    \ingroup coreitems
+    \ingroup group_coreitems
 */
 
 /*!
@@ -751,10 +780,10 @@ void QFxItem::setQml(const QString &qml)
     } else {
         d->_qmlcomp = 
             new QmlComponent(itemContext()->engine(), d->_qmlurl, this);
-        if(d->_qmlcomp->isReady())
+        if(!d->_qmlcomp->isLoading())
             qmlLoaded();
         else
-            QObject::connect(d->_qmlcomp, SIGNAL(readyChanged()),
+            QObject::connect(d->_qmlcomp, SIGNAL(statusChanged(Status)),
                              this, SLOT(qmlLoaded()));
     }
 }
@@ -768,7 +797,7 @@ void QFxItem::qmlLoaded()
         // ###
         for (int i=0; i<d->_qmlnewloading.length(); ++i) {
             QmlComponent *c = d->_qmlnewcomp.at(i);
-            if(!c->isReady())
+            if(c->isLoading())
                 continue;
 
             QmlContext *ctxt = new QmlContext(itemContext());
@@ -1618,10 +1647,10 @@ void QFxItem::newChild(const QString &type)
     d->_qmlnewloading.append(url);
     d->_qmlnewcomp.append(new QmlComponent(itemContext()->engine(), url, this));
 
-    if(d->_qmlnewcomp.last()->isReady())
+    if(!d->_qmlnewcomp.last()->isLoading())
         qmlLoaded();
     else
-        connect(d->_qmlnewcomp.last(), SIGNAL(readyChanged()), 
+        connect(d->_qmlnewcomp.last(), SIGNAL(statusChanged(Status)), 
                 this, SLOT(qmlLoaded()));
 }
 

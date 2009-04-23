@@ -122,7 +122,7 @@ void QmlSetPropertiesMetaObject::propertyWrite(int id)
     \class QmlSetProperties
     \brief The QmlSetProperties class describes new property values for a state.
 
-    \ingroup states
+    \ingroup group_states
 
     QmlSetProperties is a convenience class for changing many properties on a single
     object. It allows you to specify the property names and values similar to how

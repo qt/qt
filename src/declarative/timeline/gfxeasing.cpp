@@ -357,7 +357,7 @@ Q_GLOBAL_STATIC(ConfigFunctionMap, configFunctionMap);
 
 /*!
     \class GfxEasing
-    \ingroup animation
+    \ingroup group_animation
     \brief The GfxEasing class provides easing curves for controlling animation.
 
     Easing curves describe a function that controls how a value changes over
