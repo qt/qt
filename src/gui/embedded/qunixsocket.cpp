@@ -46,6 +46,7 @@
 #include <QtCore/qsocketnotifier.h>
 #include <QtCore/qqueue.h>
 #include <QtCore/qdatetime.h>
+#include "private/qcore_unix_p.h" // overrides QT_OPEN
 
 #ifdef QUNIXSOCKET_DEBUG
 #include <QtCore/qdebug.h>
@@ -131,7 +132,7 @@ struct QUnixSocketRightsPrivate : public QSharedData
 #ifdef QUNIXSOCKET_DEBUG
         int closerv =
 #endif
-            ::close(fd);
+            QT_CLOSE(fd);
 #ifdef QUNIXSOCKET_DEBUG
         if(0 != closerv) {
             qDebug() << "QUnixSocketRightsPrivate: Unable to close managed"
@@ -162,7 +163,7 @@ QUnixSocketRights::QUnixSocketRights(int fd)
     if(-1 == fd) {
         d->fd = -1;
     } else {
-        d->fd = ::dup(fd);
+        d->fd = qt_safe_dup(fd);
 #ifdef QUNIXSOCKET_DEBUG
         if(-1 == d->fd) {
             qDebug() << "QUnixSocketRights: Unable to duplicate fd "
@@ -232,7 +233,7 @@ int QUnixSocketRights::dupFd() const
 {
     if(-1 == d->fd) return -1;
 
-    int rv = ::dup(d->fd);
+    int rv = qt_safe_dup(d->fd);
 
 #ifdef QUNIXSOCKET_DEBUG
     if(-1 == rv)
@@ -825,7 +826,7 @@ public:
                 int numFds = (h->cmsg_len - CMSG_LEN(0)) / sizeof(int);
 
                 for(int ii = 0; ii < numFds; ++ii)
-                    ::close(fds[ii]);
+                    QT_CLOSE(fds[ii]);
             }
 
             h = (::cmsghdr *)CMSG_NXTHDR(&(message), h);
@@ -1017,7 +1018,7 @@ connect_error: // Cleanup failed connection
 #ifdef QUNIXSOCKET_DEBUG
         int closerv =
 #endif
-            ::close(d->fd);
+            QT_CLOSE(d->fd);
 #ifdef QUNIXSOCKET_DEBUG
         if(0 != closerv) {
             qDebug() << "QUnixSocket: Unable to close file descriptor after "
@@ -1762,7 +1763,12 @@ void QUnixSocketPrivate::readActivated()
     message.msg_controllen = ancillaryBufferCapacity();
     message.msg_control = ancillaryBuffer;
 
-    int recvrv = ::recvmsg(fd, &message, 0);
+    int flags = 0;
+#ifdef MSG_CMSG_CLOEXEC
+    flags = MSG_CMSG_CLOEXEC;
+#endif
+
+    int recvrv = ::recvmsg(fd, &message, flags);
 #ifdef QUNIXSOCKET_DEBUG
     qDebug() << "QUnixSocket: Received message (" << recvrv << ')';
 #endif
