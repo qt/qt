@@ -652,6 +652,10 @@ struct QX11Data
         _XEMBED,
         _XEMBED_INFO,
 
+        XWacomStylus,
+        XWacomCursor,
+        XWacomEraser,
+
         NPredefinedAtoms,
 
         _QT_SETTINGS_TIMESTAMP = NPredefinedAtoms,

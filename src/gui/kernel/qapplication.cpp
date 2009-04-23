@@ -833,12 +833,13 @@ QApplication::QApplication(Display *dpy, int &argc, char **argv,
 
 #endif // Q_WS_X11
 
-
-/*!
-  Initializes the QApplication object, called from the constructors.
-*/
 extern void qInitDrawhelperAsm();
 
+/*!
+  \fn void QApplicationPrivate::initialize()
+
+  Initializes the QApplication object, called from the constructors.
+*/
 void QApplicationPrivate::initialize()
 {
     QWidgetPrivate::mapper = new QWidgetMapper;
@@ -2101,8 +2102,8 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                 if (that)
                     QApplication::sendEvent(that->style(), &in);
             }
+            emit qApp->focusChanged(prev, focus_widget);
         }
-        emit qApp->focusChanged(prev, focus_widget);
     }
 }
 

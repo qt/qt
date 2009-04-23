@@ -67,8 +67,7 @@ void QGraphicsWidgetPrivate::init(QGraphicsItem *parentItem, Qt::WindowFlags wFl
     focusNext = focusPrev = q;
     focusPolicy = Qt::NoFocus;
 
-    if (!parentItem)
-        adjustWindowFlags(&wFlags);
+    adjustWindowFlags(&wFlags);
     windowFlags = wFlags;
 
     q->setParentItem(parentItem);

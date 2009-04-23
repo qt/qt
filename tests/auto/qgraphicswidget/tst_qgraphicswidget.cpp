@@ -149,6 +149,8 @@ private slots:
     void explicitMouseGrabber();
     void implicitMouseGrabber();
     void popupMouseGrabber();
+    void windowFlags_data();
+    void windowFlags();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -2084,6 +2086,83 @@ void tst_QGraphicsWidget::popupMouseGrabber()
     QCOMPARE(widget3GrabEventSpy.count(), 4);
     QCOMPARE(widget2UngrabEventSpy.count(), 4);
     QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget3);
+}
+
+void tst_QGraphicsWidget::windowFlags_data()
+{
+    QTest::addColumn<int>("inputFlags");
+    QTest::addColumn<int>("outputFlags");
+
+    QTest::newRow("nil") << 0 << 0;
+
+    // Window types
+    QTest::newRow("Qt::Window") << int(Qt::Window)
+                                << int(Qt::Window | Qt::WindowTitleHint | Qt::WindowSystemMenuHint
+                                       | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint);
+    QTest::newRow("Qt::SubWindow") << int(Qt::SubWindow)
+                                   << int(Qt::SubWindow | Qt::WindowTitleHint | Qt::WindowSystemMenuHint
+                                          | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint);
+    QTest::newRow("Qt::Dialog") << int(Qt::Dialog)
+                                << int(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowSystemMenuHint
+                                       | Qt::WindowContextHelpButtonHint);
+    QTest::newRow("Qt::Sheet") << int(Qt::Sheet)
+                               << int(Qt::Sheet | Qt::WindowTitleHint | Qt::WindowSystemMenuHint
+                                      | Qt::WindowContextHelpButtonHint);
+    QTest::newRow("Qt::Tool") << int(Qt::Tool)
+                              << int(Qt::Tool | Qt::WindowTitleHint | Qt::WindowSystemMenuHint);
+
+    // Custom window flags
+    QTest::newRow("Qt::FramelessWindowHint") << int(Qt::FramelessWindowHint)
+                                             << int(Qt::FramelessWindowHint);
+    QTest::newRow("Qt::CustomizeWindowHint") << int(Qt::CustomizeWindowHint)
+                                             << int(Qt::CustomizeWindowHint);
+}
+
+void tst_QGraphicsWidget::windowFlags()
+{
+    QFETCH(int, inputFlags);
+    QFETCH(int, outputFlags);
+
+    // Construct with flags set already
+    QGraphicsWidget widget(0, Qt::WindowFlags(inputFlags));
+    QCOMPARE(widget.windowFlags(), Qt::WindowFlags(outputFlags));
+
+    // Set flags after construction
+    QGraphicsWidget widget2;
+    widget2.setWindowFlags(Qt::WindowFlags(inputFlags));
+    QCOMPARE(widget2.windowFlags(), Qt::WindowFlags(outputFlags));
+
+    // Reset flags
+    widget2.setWindowFlags(0);
+    QVERIFY(!widget2.windowFlags());
+
+    // Set flags back again
+    widget2.setWindowFlags(Qt::WindowFlags(inputFlags));
+    QCOMPARE(widget2.windowFlags(), Qt::WindowFlags(outputFlags));
+
+    // Construct with custom flags set already
+    QGraphicsWidget widget3(0, Qt::WindowFlags(inputFlags | Qt::FramelessWindowHint));
+    QCOMPARE(widget3.windowFlags(), Qt::WindowFlags(inputFlags | Qt::FramelessWindowHint));
+
+    // Set custom flags after construction
+    QGraphicsWidget widget4;
+    widget4.setWindowFlags(Qt::WindowFlags(inputFlags | Qt::FramelessWindowHint));
+    QCOMPARE(widget4.windowFlags(), Qt::WindowFlags(inputFlags | Qt::FramelessWindowHint));
+
+    // Reset flags
+    widget4.setWindowFlags(0);
+    QVERIFY(!widget4.windowFlags());
+
+    // Set custom flags back again
+    widget4.setWindowFlags(Qt::WindowFlags(inputFlags | Qt::FramelessWindowHint));
+    QCOMPARE(widget4.windowFlags(), Qt::WindowFlags(inputFlags | Qt::FramelessWindowHint));
+
+    QGraphicsWidget *widget5 = new QGraphicsWidget;
+    widget5->setWindowFlags(Qt::WindowFlags(inputFlags));
+    QCOMPARE(widget5->windowFlags(), Qt::WindowFlags(outputFlags));
+    QGraphicsWidget window(0, Qt::Window);
+    widget5->setParentItem(&window);
+    QCOMPARE(widget5->windowFlags(), Qt::WindowFlags(outputFlags));
 }
 
 class ProxyStyle : public QCommonStyle

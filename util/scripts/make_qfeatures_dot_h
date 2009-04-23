@@ -2,9 +2,9 @@
 #
 # Usage:  make_qfeatures_dot_h
 #
-# Generates core/base/qfeatures.h from core/base/qfeatures.txt.
+# Generates src/corelib/global/qfeatures.h from src/corelib/global/qfeatures.txt.
 #
-# The tools/qfeatures.txt file can contain redundancies, and this program
+# The qfeatures.txt file can contain redundancies, and this program
 # will show them.
 #
 
@@ -86,11 +86,11 @@ print OUT
 '/****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Qt Software Information (qt-info\@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** \$QT_BEGIN_LICENSE:LGPL\$
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
@@ -119,8 +119,8 @@ print OUT
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
-** $QT_END_LICENSE$
+** contact the sales department at qt-sales\@nokia.com.
+** \$QT_END_LICENSE\$
 **
 ****************************************************************************/
 

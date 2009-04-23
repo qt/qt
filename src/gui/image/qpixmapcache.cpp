@@ -275,7 +275,8 @@ bool QPixmapCache::insert(const QString &key, const QPixmap &pm)
 /*!
     Returns the cache limit (in kilobytes).
 
-    The default cache limit is 2048 KB for Embedded, 10240 KB for Desktops.
+    The default cache limit is 2048 KB for Embedded, 10240 KB for
+    Desktops.
 
     \sa setCacheLimit()
 */
@@ -288,7 +289,8 @@ int QPixmapCache::cacheLimit()
 /*!
     Sets the cache limit to \a n kilobytes.
 
-    The default setting is 1024 kilobytes.
+    The default setting is 2048 KB for Embedded, 10240 KB for
+    Desktops.
 
     \sa cacheLimit()
 */

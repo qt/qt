@@ -386,11 +386,6 @@
 #define QT_NO_PHONON_VOLUMESLIDER
 #endif
 
-// QPrinter
-#if !defined(QT_NO_PRINTER) && (defined(QT_NO_TEXTSTREAM))
-#define QT_NO_PRINTER
-#endif
-
 // QProcess
 #if !defined(QT_NO_PROCESS) && (defined(QT_NO_THREAD))
 #define QT_NO_PROCESS
@@ -514,6 +509,11 @@
 // QLibrary
 #if !defined(QT_NO_LIBRARY) && (defined(QT_NO_SETTINGS))
 #define QT_NO_LIBRARY
+#endif
+
+// QPrinter
+#if !defined(QT_NO_PRINTER) && (defined(QT_NO_TEXTSTREAM) || defined(QT_NO_PICTURE))
+#define QT_NO_PRINTER
 #endif
 
 // QScrollArea
@@ -646,11 +646,6 @@
 #define QT_NO_WHATSTHIS
 #endif
 
-// Common UNIX Printing System
-#if !defined(QT_NO_CUPS) && (defined(QT_NO_PRINTER) || defined(QT_NO_LIBRARY))
-#define QT_NO_CUPS
-#endif
-
 // QDirModel
 #if !defined(QT_NO_DIRMODEL) && (defined(QT_NO_ITEMVIEWS))
 #define QT_NO_DIRMODEL
@@ -731,6 +726,11 @@
 #define QT_NO_COMPLETER
 #endif
 
+// Common UNIX Printing System
+#if !defined(QT_NO_CUPS) && (defined(QT_NO_PRINTER) || defined(QT_NO_LIBRARY))
+#define QT_NO_CUPS
+#endif
+
 // QDataWidgetMapper
 #if !defined(QT_NO_DATAWIDGETMAPPER) && (defined(QT_NO_ITEMVIEWS) || defined(QT_NO_PROPERTIES))
 #define QT_NO_DATAWIDGETMAPPER
@@ -762,7 +762,7 @@
 #endif
 
 // QPrintPreviewWidget
-#if !defined(QT_NO_PRINTPREVIEWWIDGET) && (defined(QT_NO_GRAPHICSVIEW) || defined(QT_NO_PRINTER) || defined(QT_NO_PICTURE))
+#if !defined(QT_NO_PRINTPREVIEWWIDGET) && (defined(QT_NO_GRAPHICSVIEW) || defined(QT_NO_PRINTER))
 #define QT_NO_PRINTPREVIEWWIDGET
 #endif
 

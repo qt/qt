@@ -1484,7 +1484,9 @@ void QPainter::initFrom(const QWidget *widget)
     d->state->bgBrush = pal.brush(widget->backgroundRole());
     d->state->deviceFont = QFont(widget->font(), const_cast<QWidget*> (widget));
     d->state->font = d->state->deviceFont;
-    if (d->engine) {
+    if (d->extended) {
+        d->extended->penChanged();
+    } else if (d->engine) {
         d->engine->setDirty(QPaintEngine::DirtyPen);
         d->engine->setDirty(QPaintEngine::DirtyBrush);
         d->engine->setDirty(QPaintEngine::DirtyFont);
@@ -5165,6 +5167,9 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
 
     Q_D(QPainter);
 
+    if (!d->engine)
+        return;
+
 #ifndef QT_NO_DEBUG
     qt_painter_thread_test(d->device->devType(), "drawPixmap()");
 #endif
@@ -5173,9 +5178,6 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
         d->extended->drawPixmap(p, pm);
         return;
     }
-
-    if (!d->engine)
-        return;
 
     qreal x = p.x();
     qreal y = p.y();
