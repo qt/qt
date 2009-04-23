@@ -17,7 +17,6 @@
 
 #include <QtGui/qicon.h>
 #include <QtCore/qstate.h>
-#include <QtCore/qtransition.h>
 #include <QtCore/qstatemachine.h>
 
 class QAction;
@@ -34,7 +33,6 @@ public:
     QString title;
     QStateMachine *machine;
     QState *popupState;
-    //QTransition *transition;
     QList<QGraphicsPieMenuSection *> sections;
 
     QEventLoop *eventLoop;
