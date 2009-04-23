@@ -40,48 +40,48 @@
 ****************************************************************************/
 
 /*!
-        \page tutorials-kinetic-contacts.html
-        \startpage {index.html}{Qt Reference Documentation}
-        \nextpage {tutorials/kinetic-contacts/part1}{Chapter 1}
+    \page tutorials-declarative-contacts.html
+    \startpage {index.html}{Qt Reference Documentation}
+    \nextpage {tutorials/declarative/contacts/part1}{Chapter 1}
 
-        \title Kinetic Contacts application tutorial.
-        \ingroup howto
-        \ingroup tutorials
-        \brief An introduction to using Qt Declarative UI to put together a
-        simple animated application.
+    \title Declarative UI Tutorial
+    \ingroup howto
+    \ingroup tutorials
+    \brief An introduction to using Qt Declarative UI to put together a
+    simple animated application.
 
-        \omit 
-        At the time of writing the tutorial Declarative UI was still under
-        development.  It is extremely likely that an update will be required
-        prior to 4.6 release.
-        \endomit
+    \omit 
+    At the time of writing the tutorial Declarative UI was still under
+    development.  It is extremely likely that an update will be required
+    prior to 4.6 release.
+    \endomit
 
-        This tutorial gives an introduction to using the Qt Declarative UI
-        animation framework.
+    This tutorial gives an introduction to using the Qt Declarative UI
+    animation framework.
 
-        In this process we will learn about some of the basics of using
-        Declarative UI, such as
+    In this process we will learn about some of the basics of using
+    Declarative UI, such as
 
-        \list
-        \o Basic drawing
-        \o States and Transitions
-        \o Reuse of components
-        \o Models and Views
-        \endlist
+    \list
+    \o Basic drawing
+    \o States and Transitions
+    \o Reuse of components
+    \o Models and Views
+    \endlist
 
-        An existing knowledge of Qt is not required.
+    An existing knowledge of Qt is not required.
 
-        The tutorial's source code is located in Qt's
-        \c examples/declarative/tutorials/contacts directory.
-        It is split up into a number of sub directories, and within each
-        sub directory the files are numbered in an order of increasing features.
+    The tutorial's source code is located in Qt's
+    \c examples/declarative/tutorials/contacts directory.
+    It is split up into a number of sub directories, and within each
+    sub directory the files are numbered in an order of increasing features.
 
-        The code in this example is not compiled, but interpreted at run time.
-        This means you should use the duiviewer application provided with
-        Qt to run the examples.
+    The code in this example is not compiled, but interpreted at run time.
+    This means you should use the duiviewer application provided with
+    Qt to run the examples.
 
     \list 1
-    \o \l{tutorials/declarative/contacts/part1}{Drawing and animation}
+    \o \l{tutorials/declarative/contacts/part1}{Drawing and Animation}
     \o \l{tutorials/declarative/contacts/part2}{Reuse of QML components}
     \o \l{tutorials/declarative/contacts/part3}{Models, Views and Delegates}
     \o \l{tutorials/declarative/contacts/part4}{Other Tricks}
@@ -92,8 +92,9 @@
     \page tutorials-declarative-contacts-part1.html
     \contentspage {Declarative UI Tutorial}{Contents}
     \nextpage {tutorials/declarative/contacts/part2}{Chapter 2}
-    \example tutorials/declarative/contacts/1_Drawing_and_Animation
-    \title Declarative UI 1 - Drawing and Animation
+    \example tutorials/declarative/contacts/part1
+    \title Drawing and Animation
+    \tableofcontents
 
     The first part of this tutorial covers basic drawing of elements on the
     screen and causing them to animate.  The file 1_Drawing_and_Animation.qml
@@ -109,12 +110,17 @@
     confirm icon on the left, the text "Remove" in the middle, and a
     cancel icon on the right.
 
+    \image declarative-removebutton.png
+
     Because Declarative UI is declarative, you don't pass instructions on
     what to paint in a sequential manner as you may be used to.  Instead
     elements and how they appear on the screen are declared in much the
     same was as elements on a web page are declared.
 
-    \i RemoveButton1.qml
+    We will start by drawing a simple red rectangle with rounded corners.
+
+    \image declarative-roundrect.png
+
     \code
     <Rect id="removeButton"
         width="30" height="30"
@@ -171,7 +177,11 @@
     have a list of children.  When drawing, first any components earlier
     siblings are drawn, then the component, then any of the components children.
 
+    \section1 Layout
+
     The next step of the tutorial adds an image over the rectangle.
+
+    \image declarative-removebutton-close.png
 
     \code
     <Rect id="removeButton"
@@ -234,8 +244,13 @@
     \endomit
 
     At this point the initial state of the RemoveButton is complete.  A small
-    rounded rectangle with a trash icon.  The description of the alternate
-    state of the button can be written as:
+    rounded rectangle with a trash icon.  The component also needs a
+    description of its open state:
+
+    \image declarative-removebutton-open.png
+
+    This is a wider rectangle with two images and some text.  The code to
+    draw this state of the button could be written as follows:
 
     \code
     <Rect id="removeButton"
@@ -263,7 +278,7 @@
     </Rect>
     \endcode
 
-    The rectangle with is now wider, by 200 pixels.  Also the trashIcon has
+    The rectangle with is now wider by 200 pixels.  Also the trashIcon has
     been replaced with the confirm state children.  Normally we wouldn't
     remove the trashIcon when developing an alternate state of the RemoveButton,
     however since this is a tutorial its been done so that its easier to
@@ -279,11 +294,15 @@
     any bindings, that is the values specified by a braced expression such as
     "{parent.left}" will be evaluated and animated as well.
 
+    \section1 Defining States
+
     When designing a component with multiple states, it should be developed
     with the initial state and the changes that would be made specified
-    as a state changed.  Because we cannot add children to an element from
-    a state change we instead start with the children that should be present
-    and then set their opacity or position such that they won't appear.  Thus
+    as an additional state.  Its not possible to add new children to an
+    element when changing state, only changing the properties of existing
+    children.  This means that all possible child components should be included
+    in the initial state, and those that should not be visible in the initial
+    state should have their opacity set to zero.  Thus
     for the RemoveButton we specify the starting size of the removeButton
     and hide any items that should not initially be visible.
 
@@ -308,8 +327,9 @@
             opacity="0"/>
     \endcode
 
-    Which includes both components, but by setting opacity="0" means the
-    second components won't be drawn unless their is a state change.
+    The code above includes components from both states of the RemoveButton,
+    but by setting opacity="0" for the cancelIcon it means that the
+    components of the second state won't be drawn yet.
     The base state of a component always has an empty name, however new
     states can be added that describe how a component and its children
     should be changed.  For the RemoveButton there is only one non-base state
@@ -329,8 +349,10 @@
 
     In the opened state the width of the button itself changes from the base
     width of 30 to the new width of 230.  Also the opacity of the children
-    are changed so that the trash icon is hidden and the other elements
-    appear.
+    are changed so that the trash icon is now hidden and the other elements
+    are now visible.
+
+    \section1 Changing States
 
     To trigger the change we will react to the 'clicked' signal of a
     MouseRegion component.
@@ -346,7 +368,7 @@
             anchors.fill="{parent}"
             onClicked="toggle()"/>
     </Image>
-                                                                                    \endcode
+    \endcode
 
     MouseRegion components handle mouse actions within their geometry.  This
     geometry behaves the same way as painted components, such that children
@@ -419,7 +441,7 @@
 
     See the file RemoveButton4.qml for the full multi-state specification.
 
-    \section Animation
+    \section1 Animation
 
     Currently the RemoveButton is function, but snaps between our two states.
     Fortunately making the transition between states smooth is very simple.
@@ -439,7 +461,9 @@
     children change due to a change in state, that they should take 200ms
     to complete their transition.
 
-    \omit TODO More on types of animation
+    \omit
+        TODO More on types of animation
+    \endomit
 
     In the next chapter we will show how we can use the remove button in
     other QML components.
