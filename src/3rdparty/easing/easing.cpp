@@ -547,20 +547,20 @@ static qreal easeOutInBack(qreal t, qreal s)
     return easeInBack(2*t - 1, s)/2 + 0.5;
 }
 
-static qreal easeOutBounce_helper(qreal t, qreal b, qreal c, qreal a)
+static qreal easeOutBounce_helper(qreal t, qreal c, qreal a)
 {
-    if (t == 1.0) return 1.0;
-    if (t < (1/2.75)) {
-        return c*(7.5625*t*t) + b;
-    } else if (t < (2/2.75)) {
-        t -= (1.5f/2.75f);
-        return -a * (1. - (7.5625*t*t + .75)) + (b + c);
-    } else if (t < (2.5/2.75)) {
-        t -= (2.25f/2.75f);
-        return -a * (1. - (7.5625*t*t + .9375)) + (b + c);
+    if (t == 1.0) return c;
+    if (t < (4/11.0)) {
+        return c*(7.5625*t*t);
+    } else if (t < (8/11.0)) {
+        t -= (6/11.0);
+        return -a * (1. - (7.5625*t*t + .75)) + c;
+    } else if (t < (10/11.0)) {
+        t -= (9/11.0);
+        return -a * (1. - (7.5625*t*t + .9375)) + c;
     } else {
-        t -= (2.65f/2.75f);
-        return -a * (1. - (7.5625*t*t + .984375)) + (b + c);
+        t -= (21/22.0);
+        return -a * (1. - (7.5625*t*t + .984375)) + c;
     }
 }
 
@@ -573,7 +573,7 @@ static qreal easeOutBounce_helper(qreal t, qreal b, qreal c, qreal a)
  */
 static qreal easeOutBounce(qreal t, qreal a)
 {
-    return easeOutBounce_helper(t, 0, 1, a);
+    return easeOutBounce_helper(t, 1, a);
 }
 
 /**
@@ -585,7 +585,7 @@ static qreal easeOutBounce(qreal t, qreal a)
  */
 static qreal easeInBounce(qreal t, qreal a)
 {
-    return 1.0 - easeOutBounce_helper(1.0-t, 0, 1.0, a);
+    return 1.0 - easeOutBounce_helper(1.0-t, 1.0, a);
 }
 
 
@@ -611,8 +611,8 @@ static qreal easeInOutBounce(qreal t, qreal a)
  */
 static qreal easeOutInBounce(qreal t, qreal a)
 {
-    if (t < 0.5) return easeOutBounce_helper(t*2, 0, 0.5, a);
-    return 1.0 - easeOutBounce_helper (2.0-2*t, 0.0, 0.5, a);
+    if (t < 0.5) return easeOutBounce_helper(t*2, 0.5, a);
+    return 1.0 - easeOutBounce_helper (2.0-2*t, 0.5, a);
 }
 
 static inline qreal qt_sinProgress(qreal value)
