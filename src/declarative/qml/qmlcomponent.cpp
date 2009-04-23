@@ -96,10 +96,10 @@ QML_DEFINE_TYPE(QmlComponent,Component);
     
     Specifies the loading status of the QmlComponent.
 
-    \o Null This QmlComponent has no data.  Call loadUrl() or setData() to add QML content.
-    \o Ready This QmlComponent is ready and create() may be called.
-    \o Loading This QmlComponent is loading network data.
-    \o Error An error has occured.  Calling errorDescription() to retrieve a description.
+    \value Null This QmlComponent has no data.  Call loadUrl() or setData() to add QML content.
+    \value Ready This QmlComponent is ready and create() may be called.
+    \value Loading This QmlComponent is loading network data.
+    \value Error An error has occured.  Calling errorDescription() to retrieve a description.
 */
 
 void QmlComponentPrivate::typeDataReady()

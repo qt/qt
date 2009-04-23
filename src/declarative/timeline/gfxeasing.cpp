@@ -612,7 +612,7 @@ GfxEasing::GfxEasing(Curve curve)
 
     Curve names have the form
     \c {ease<CurveName>[(<arg>: <arg value>[, <arg2>: <arg value>])]}.  The
-    \i CurveName is equivalent to the GfxEasing::Curve enum name.  Some more
+    \e CurveName is equivalent to the GfxEasing::Curve enum name.  Some more
     advanced curves can take arguments to further refine their behaviour.  Where
     applicable, these parameters are described in the corresponding
     GfxEasing::Curve value documentation.
