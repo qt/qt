@@ -1,7 +1,8 @@
 TEMPLATE =  subdirs
 SUBDIRS +=  formextractor \
             previewer \
-            fancybrowser
+            fancybrowser \
+            googlechat
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/webkit

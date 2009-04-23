@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,60 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef QBYTEARRAYMATCHER_H
-#define QBYTEARRAYMATCHER_H
+#include <QWidget>
 
-#include <QtCore/qbytearray.h>
+#include "ui_form.h"
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Core)
-
-class QByteArrayMatcherPrivate;
-
-class Q_CORE_EXPORT QByteArrayMatcher
+class GoogleChat: public QWidget
 {
+    Q_OBJECT
+
 public:
-    QByteArrayMatcher();
-    explicit QByteArrayMatcher(const QByteArray &pattern);
-    explicit QByteArrayMatcher(const char *pattern, int length);
-    QByteArrayMatcher(const QByteArrayMatcher &other);
-    ~QByteArrayMatcher();
+    GoogleChat();
 
-    QByteArrayMatcher &operator=(const QByteArrayMatcher &other);
+protected:
+    void showStatus(const QString &msg);
+    void showError(const QString &msg);
+    QString evalJS(const QString &js);
 
-    void setPattern(const QByteArray &pattern);
+private slots:
 
-    int indexIn(const QByteArray &ba, int from = 0) const;
-    int indexIn(const char *str, int len, int from = 0) const;
-    inline QByteArray pattern() const
-    {
-        if (q_pattern.isNull())
-            return QByteArray((const char*)p.p, p.l);
-        return q_pattern;
-    }
+    void adjustLoginButton();
+    void inputPassword();
+    void doLogin();
+    void initialPage(bool ok);
+    void loginPage(bool ok);
+    void hideElements();
 
 private:
-    QByteArrayMatcherPrivate *d;
-    QByteArray q_pattern;
-#ifdef Q_CC_RVCT
-// explicitely allow anonymous unions for RVCT to prevent compiler warnings
-#pragma anon_unions
-#endif
-    union {
-        uint dummy[256];
-        struct {
-            uchar q_skiptable[256];
-            const uchar *p;
-            int l;
-        } p;
-    };
+    Ui::Form form;
+    QString userName;
+    QString password;
 };
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QBYTEARRAYMATCHER_H

@@ -359,6 +359,8 @@ bool QShortcutMap::tryShortcutEvent(QObject *o, QKeyEvent *e)
     else
         e->ignore();
 
+    int identicalMatches = d->identicals.count();
+
     switch(result) {
     case QKeySequence::NoMatch:
         return stateWasAccepted;
@@ -368,8 +370,9 @@ bool QShortcutMap::tryShortcutEvent(QObject *o, QKeyEvent *e)
     default:
 	break;
     }
-
-    return true;
+    // If nextState is QKeySequence::ExactMatch && identicals.count == 0
+    // we've only found disabled shortcuts
+    return identicalMatches > 0 || result == QKeySequence::PartialMatch;
 }
 
 /*! \internal
@@ -491,7 +494,9 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e)
                     // We don't need partials, if we have identicals
                     if (d->identicals.size())
                         break;
-                    partialFound = true;
+                    // We only care about enabled partials, so we don't consume
+                    // key events when all partials are disabled!
+                    partialFound |= (*it).enabled;
                 }
             }
             ++it;

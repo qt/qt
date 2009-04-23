@@ -4,7 +4,7 @@
 
 win32 {
     QT_WINCONFIG = release/
-    CONFIG(debug, debug|release) {
+    !CONFIG(release, debug|release) {
         QT_WINCONFIG = debug/
     }
 }
