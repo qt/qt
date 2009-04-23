@@ -348,6 +348,7 @@
     \list
     \o \l{webkit/previewer}{Previewer}\raisedaster
     \o \l{webkit/formextractor}{Form Extractor}
+    \o \l{webkit/fancybrowser}{Fancy Browser}
     \endlist
 
     \section1 Widgets
