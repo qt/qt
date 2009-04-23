@@ -139,7 +139,6 @@ extern bool qt_cleartype_enabled;
  * Span functions
  */
 static void qt_span_fill_clipRect(int count, const QSpan *spans, void *userData);
-static void qt_span_fill_clipRegion(int count, const QSpan *spans, void *userData);
 static void qt_span_fill_clipped(int count, const QSpan *spans, void *userData);
 static void qt_span_clip(int count, const QSpan *spans, void *userData);
 static void qt_merge_clip(const QClipData *c1, const QClipData *c2, QClipData *result);
@@ -1149,6 +1148,25 @@ void QRasterPaintEnginePrivate::updateMatrixData(QSpanData *spanData, const QBru
 }
 
 
+static void qrasterpaintengine_state_setNoClip(QRasterPaintEngineState *s)
+{
+    if (s->flags.has_clip_ownership)
+        delete s->clip;
+    s->clip = 0;
+    s->flags.has_clip_ownership = false;
+}
+
+static void qrasterpaintengine_dirty_clip(QRasterPaintEnginePrivate *d, QRasterPaintEngineState *s)
+{
+    s->fillFlags |= QPaintEngine::DirtyClipPath;
+    s->strokeFlags |= QPaintEngine::DirtyClipPath;
+    s->pixmapFlags |= QPaintEngine::DirtyClipPath;
+
+    d->solid_color_filler.clip = d->clip();
+    d->solid_color_filler.adjustSpanMethods();
+}
+
+
 /*!
     \internal
 */
@@ -1197,10 +1215,7 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
     }
 
     if (op == Qt::NoClip) {
-        if (s->flags.has_clip_ownership)
-            delete s->clip;
-        s->clip = 0;
-        s->flags.has_clip_ownership = false;
+        qrasterpaintengine_state_setNoClip(s);
 
     } else {
         QClipData *base = d->baseClip;
@@ -1242,13 +1257,7 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
         s->clip = newClip;
         s->flags.has_clip_ownership = true;
     }
-
-    s->fillFlags |= DirtyClipPath;
-    s->strokeFlags |= DirtyClipPath;
-    s->pixmapFlags |= DirtyClipPath;
-
-    d->solid_color_filler.clip = d->clip();
-    d->solid_color_filler.adjustSpanMethods();
+    qrasterpaintengine_dirty_clip(d, s);
 }
 
 
@@ -1266,10 +1275,7 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
     QRasterPaintEngineState *s = state();
 
     if (op == Qt::NoClip) {
-        if (s->flags.has_clip_ownership)
-            delete s->clip;
-        s->clip = d->baseClip;
-        s->flags.has_clip_ownership = false;
+        qrasterpaintengine_state_setNoClip(s);
 
     } else if (op == Qt::UniteClip || s->matrix.type() > QTransform::TxScale) {
         QPaintEngineEx::clip(rect, op);
@@ -1313,32 +1319,63 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
             return;
         }
     }
-
-    s->brushData.clip = d->clip();
-    s->penData.clip = d->clip();
-
-    s->fillFlags |= DirtyClipPath;
-    s->strokeFlags |= DirtyClipPath;
-    s->pixmapFlags |= DirtyClipPath;
-
-    d->solid_color_filler.clip = d->clip();
-    d->solid_color_filler.adjustSpanMethods();
+    qrasterpaintengine_dirty_clip(d, s);
 }
+
 
 /*!
     \internal
 */
 void QRasterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
 {
-    QPaintEngineEx::clip(region, op);
-}
+#ifdef QT_DEBUG_DRAW
+    qDebug() << "QRasterPaintEngine::clip(): " << region << op;
+#endif
 
-/*!
-    \internal
-*/
-void QRasterPaintEngine::clip(const QPainterPath &path, Qt::ClipOperation op)
-{
-    QPaintEngineEx::clip(path, op);
+    Q_D(QRasterPaintEngine);
+
+    if (region.numRects() == 1) {
+        clip(region.boundingRect(), op);
+        return;
+    }
+
+    QRasterPaintEngineState *s = state();
+    const QClipData *clip = d->clip();
+    const QClipData *baseClip = d->baseClip;
+
+    if (op == Qt::NoClip) {
+        qrasterpaintengine_state_setNoClip(s);
+    } else if (s->matrix.type() > QTransform::TxScale
+               || op == Qt::UniteClip
+               || (op == Qt::IntersectClip && !clip->hasRectClip && !clip->hasRegionClip)
+               || (op == Qt::ReplaceClip && !baseClip->hasRectClip && !baseClip->hasRegionClip)) {
+        QPaintEngineEx::clip(region, op);
+    } else {
+        const QClipData *curClip;
+        QClipData *newClip;
+
+        if (op == Qt::IntersectClip)
+            curClip = clip;
+        else
+            curClip = baseClip;
+
+        if (s->flags.has_clip_ownership) {
+            newClip = s->clip;
+            Q_ASSERT(newClip);
+        } else {
+            newClip = new QClipData(d->rasterBuffer->height());
+            s->clip = newClip;
+            s->flags.has_clip_ownership = true;
+        }
+
+        QRegion r = s->matrix.map(region);
+        if (curClip->hasRectClip)
+            newClip->setClipRegion(r & curClip->clipRect);
+        else if (curClip->hasRegionClip)
+            newClip->setClipRegion(r & clip->clipRegion);
+
+        qrasterpaintengine_dirty_clip(d, s);
+    }
 }
 
 /*!
@@ -4387,12 +4424,19 @@ void QClipData::setClipRect(const QRect &rect)
 {
 //    qDebug() << "setClipRect" << clipSpanHeight << count << allocated << rect;
     hasRectClip = true;
+    hasRegionClip = false;
     clipRect = rect;
 
     xmin = rect.x();
     xmax = rect.x() + rect.width();
     ymin = qMin(rect.y(), clipSpanHeight);
     ymax = qMin(rect.y() + rect.height(), clipSpanHeight);
+
+    if (m_spans) {
+        delete m_spans;
+        m_spans = 0;
+    }
+
 
 //    qDebug() << xmin << xmax << ymin << ymax;
 }
@@ -4408,6 +4452,7 @@ void QClipData::setClipRegion(const QRegion &region)
     }
 
     hasRegionClip = true;
+    hasRectClip = false;
     clipRegion = region;
 
     { // set bounding rect
@@ -4417,6 +4462,12 @@ void QClipData::setClipRegion(const QRegion &region)
         ymin = rect.y();
         ymax = rect.y() + rect.height();
     }
+
+    if (m_spans) {
+        delete m_spans;
+        m_spans = 0;
+    }
+
 }
 
 /*!
@@ -4659,29 +4710,6 @@ static void qt_span_fill_clipRect(int count, const QSpan *spans,
                                fillData->clip->clipRect);
     if (count > 0)
         fillData->unclipped_blend(count, spans, fillData);
-}
-
-static void qt_span_fill_clipRegion(int count, const QSpan *spans,
-                                    void *userData)
-{
-    QSpanData *fillData = reinterpret_cast<QSpanData *>(userData);
-    Q_ASSERT(fillData->blend && fillData->unclipped_blend);
-
-    Q_ASSERT(fillData->clip);
-    Q_ASSERT(!fillData->clip->clipRegion.isEmpty());
-
-    const int NSPANS = 256;
-    QSpan cspans[NSPANS];
-    int currentClip = 0;
-    while (currentClip < count) {
-        const int unclipped = qt_intersect_spans(const_cast<QSpan*>(spans),
-                                                 count, &currentClip,
-                                                 &cspans[0], NSPANS,
-                                                 fillData->clip->clipRegion);
-        if (unclipped > 0)
-            fillData->unclipped_blend(unclipped, cspans, fillData);
-    }
-
 }
 
 static void qt_span_clip(int count, const QSpan *spans, void *userData)
@@ -5108,8 +5136,6 @@ void QSpanData::adjustSpanMethods()
         blend = unclipped_blend;
     } else if (clip->hasRectClip) {
         blend = clip->clipRect.isEmpty() ? 0 : qt_span_fill_clipRect;
-    } else if (clip->hasRegionClip) {
-        blend = clip->clipRegion.isEmpty() ? 0 : qt_span_fill_clipRegion;
     } else {
         blend = qt_span_fill_clipped;
     }
@@ -6086,7 +6112,7 @@ void dumpClip(int width, int height, QClipData *clip)
     int y1 = 0;
 
     for (int i = 0; i < clip->count; ++i) {
-        QSpan *span = clip->spans + i;
+        QSpan *span = clip->spans() + i;
         for (int j = 0; j < span->len; ++j)
             clipImg.setPixel(span->x + j, span->y, 0xffffff00);
         x0 = qMin(x0, int(span->x));
