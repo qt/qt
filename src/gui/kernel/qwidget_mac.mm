@@ -4001,6 +4001,33 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
     }
 }
 
+void QWidgetPrivate::applyMaxAndMinSizeConstraints(int &w, int &h)
+{
+    if (QWExtra *extra = extraData()) {
+        w = qMin(w, extra->maxw);
+        h = qMin(h, extra->maxh);
+        w = qMax(w, extra->minw);
+        h = qMax(h, extra->minh);
+
+        // Deal with size increment
+        if (QTLWExtra *top = topData()) {
+            if(top->incw) {
+                w = w/top->incw;
+                w *= top->incw;
+            }
+            if(top->inch) {
+                h = h/top->inch;
+                h *= top->inch;
+            }
+        }
+    }
+
+    if (isRealWindow()) {
+        w = qMax(0, w);
+        h = qMax(0, h);
+    }
+}
+
 void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 {
     Q_Q(QWidget);
@@ -4011,7 +4038,9 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 
     QMacCocoaAutoReleasePool pool;
     bool realWindow = isRealWindow();
+
     if (realWindow && !(w == 0 && h == 0) && !q->testAttribute(Qt::WA_DontShowOnScreen)) {
+        applyMaxAndMinSizeConstraints(w, h);
         topData()->isSetGeometry = 1;
         topData()->isMove = isMove;
 #ifndef QT_MAC_USE_COCOA
@@ -4037,10 +4066,26 @@ void QWidgetPrivate::setGeometry_sys_helper(int x, int y, int w, int h, bool isM
 {
     Q_Q(QWidget);
     bool realWindow = isRealWindow();
-    if(QWExtra *extra = extraData()) {        // any size restrictions?
-        if(realWindow) {
+
+    QPoint oldp = q->pos();
+    QSize  olds = q->size();
+    const bool isResize = (olds != QSize(w, h));
+
+    if (!realWindow && !isResize && QPoint(x, y) == oldp)
+        return;
+
+    if (isResize)
+        data.window_state = data.window_state & ~Qt::WindowMaximized;
+
+    const bool visible = q->isVisible();
+    data.crect = QRect(x, y, w, h);
+
+    if (realWindow) {
+        if (QWExtra *extra = extraData()) {
+            applyMaxAndMinSizeConstraints(w, h);
             qt_mac_update_sizer(q);
-            if(q->windowFlags() & Qt::WindowMaximizeButtonHint) {
+
+            if (q->windowFlags() & Qt::WindowMaximizeButtonHint) {
 #ifndef QT_MAC_USE_COCOA
                 OSWindowRef window = qt_mac_window_for(q);
                 if(extra->maxw && extra->maxh && extra->maxw == extra->minw
@@ -4051,43 +4096,8 @@ void QWidgetPrivate::setGeometry_sys_helper(int x, int y, int w, int h, bool isM
                 }
 #endif
             }
-        }
 
-        w = qMin(w,extra->maxw);
-        h = qMin(h,extra->maxh);
-        w = qMax(w,extra->minw);
-        h = qMax(h,extra->minh);
-
-        // Deal with size increment
-        if(QTLWExtra *top = topData()) {
-            if(top->incw) {
-                w = w/top->incw;
-                w *= top->incw;
-            }
-            if(top->inch) {
-                h = h/top->inch;
-                h *= top->inch;
-            }
-        }
-    }
-
-    if (realWindow) {
-        w = qMax(0, w);
-        h = qMax(0, h);
-    }
-
-    QPoint oldp = q->pos();
-    QSize  olds = q->size();
-    const bool isResize = (olds != QSize(w, h));
-    if(!realWindow && !isResize && QPoint(x, y) == oldp)
-        return;
-    if(isResize && q->isMaximized())
-        data.window_state = data.window_state & ~Qt::WindowMaximized;
-    const bool visible = q->isVisible();
-    data.crect = QRect(x, y, w, h);
-
-    if(realWindow) {
-        if(QWExtra *extra = extraData()) { //set constraints
+            // Update max and min constraints:
             const float max_f(20000);
 #ifndef QT_MAC_USE_COCOA
 #define SF(x) ((x > max_f) ? max_f : x)
