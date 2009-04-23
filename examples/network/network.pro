@@ -11,6 +11,7 @@ SUBDIRS       = blockingfortuneclient \
                 http \
                 loopback \
                 threadedfortuneserver \
+                googlesuggest \
  		torrent
 
 contains(QT_CONFIG, openssl):SUBDIRS += securesocketclient

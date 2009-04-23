@@ -118,6 +118,7 @@
     <example filename="threadedfortuneserver" name="Threaded Fort. Server" />
     <example filename="torrent" name="Torrent Client" />
     <example filename="securesocketclient" name="Secure Socket Client" />
+    <example filename="googlesuggest" name="Google Suggest" />
   </category>
   <category dirname="opengl" name="OpenGL">
     <example filename="2dpainting" name="2D Painting" />
