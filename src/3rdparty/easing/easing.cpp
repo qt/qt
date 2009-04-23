@@ -37,36 +37,36 @@ static qreal easeNone(qreal progress)
 {
     return progress;
 }
-	
+
 /**
  * Easing equation function for a quadratic (t^2) easing in: accelerating from zero velocity.
  *
  * @param t		Current time (in frames or seconds).
  * @return		The correct value.
  */
-static qreal easeInQuad(qreal t) 
+static qreal easeInQuad(qreal t)
 {
     return t*t;
 }
-	
+
 /**
 * Easing equation function for a quadratic (t^2) easing out: decelerating to zero velocity.
 *
 * @param t		Current time (in frames or seconds).
 * @return		The correct value.
 */
-static qreal easeOutQuad(qreal t) 
+static qreal easeOutQuad(qreal t)
 {
     return -t*(t-2);
 }
-	
+
 /**
  * Easing equation function for a quadratic (t^2) easing in/out: acceleration until halfway, then deceleration.
  *
  * @param t		Current time (in frames or seconds).
  * @return		The correct value.
  */
-static qreal easeInOutQuad(qreal t) 
+static qreal easeInOutQuad(qreal t)
 {
     t*=2.0;
     if (t < 1) {
@@ -76,7 +76,7 @@ static qreal easeInOutQuad(qreal t)
         return -0.5 * (t*(t-2) - 1);
     }
 }
-	
+
 /**
  * Easing equation function for a quadratic (t^2) easing out/in: deceleration until halfway, then acceleration.
  *
@@ -88,7 +88,7 @@ static qreal easeOutInQuad(qreal t)
     if (t < 0.5) return easeOutQuad (t*2)/2;
     return easeInQuad((2*t)-1)/2 + 0.5;
 }
-	
+
 /**
  * Easing equation function for a cubic (t^3) easing in: accelerating from zero velocity.
  *
@@ -99,7 +99,7 @@ static qreal easeInCubic(qreal t)
 {
     return t*t*t;
 }
-	
+
 /**
  * Easing equation function for a cubic (t^3) easing out: decelerating from zero velocity.
  *
@@ -111,7 +111,7 @@ static qreal easeOutCubic(qreal t)
     t-=1.0;
     return t*t*t + 1;
 }
-	
+
 /**
  * Easing equation function for a cubic (t^3) easing in/out: acceleration until halfway, then deceleration.
  *
@@ -151,7 +151,7 @@ static qreal easeInQuart(qreal t)
 {
     return t*t*t*t;
 }
-	
+
 /**
  * Easing equation function for a quartic (t^4) easing out: decelerating from zero velocity.
  *
@@ -163,7 +163,7 @@ static qreal easeOutQuart(qreal t)
     t-= qreal(1.0);
     return - (t*t*t*t- 1);
 }
-	
+
 /**
  * Easing equation function for a quartic (t^4) easing in/out: acceleration until halfway, then deceleration.
  *
@@ -178,7 +178,7 @@ static qreal easeInOutQuart(qreal t)
         t -= 2.0f;
         return -0.5 * (t*t*t*t- 2);
     }
-} 
+}
 
 /**
  * Easing equation function for a quartic (t^4) easing out/in: deceleration until halfway, then acceleration.
@@ -186,12 +186,12 @@ static qreal easeInOutQuart(qreal t)
  * @param t		Current time (in frames or seconds).
  * @return		The correct value.
  */
-static qreal easeOutInQuart(qreal t) 
+static qreal easeOutInQuart(qreal t)
 {
     if (t < 0.5) return easeOutQuart (2*t)/2;
     return easeInQuart(2*t-1)/2 + 0.5;
 }
-	
+
 /**
  * Easing equation function for a quintic (t^5) easing in: accelerating from zero velocity.
  *
@@ -202,7 +202,7 @@ static qreal easeInQuint(qreal t)
 {
     return t*t*t*t*t;
 }
-	
+
 /**
  * Easing equation function for a quintic (t^5) easing out: decelerating from zero velocity.
  *
@@ -214,7 +214,7 @@ static qreal easeOutQuint(qreal t)
     t-=1.0;
     return t*t*t*t*t + 1;
 }
-	
+
 /**
  * Easing equation function for a quintic (t^5) easing in/out: acceleration until halfway, then deceleration.
  *
@@ -230,7 +230,7 @@ static qreal easeInOutQuint(qreal t)
         return 0.5*(t*t*t*t*t + 2);
     }
 }
-	
+
 /**
  * Easing equation function for a quintic (t^5) easing out/in: deceleration until halfway, then acceleration.
  *
@@ -242,7 +242,7 @@ static qreal easeOutInQuint(qreal t)
     if (t < 0.5) return easeOutQuint (2*t)/2;
     return easeInQuint(2*t - 1)/2 + 0.5;
 }
-	
+
 /**
  * Easing equation function for a sinusoidal (sin(t)) easing in: accelerating from zero velocity.
  *
@@ -253,7 +253,7 @@ static qreal easeInSine(qreal t)
 {
     return (t == 1.0) ? 1.0 : -::cos(t * M_PI_2) + 1.0;
 }
-	
+
 /**
  * Easing equation function for a sinusoidal (sin(t)) easing out: decelerating from zero velocity.
  *
@@ -264,7 +264,7 @@ static qreal easeOutSine(qreal t)
 {
     return ::sin(t* M_PI_2);
 }
-	
+
 /**
  * Easing equation function for a sinusoidal (sin(t)) easing in/out: acceleration until halfway, then deceleration.
  *
@@ -275,7 +275,7 @@ static qreal easeInOutSine(qreal t)
 {
     return -0.5 * (::cos(M_PI*t) - 1);
 }
-	
+
 /**
  * Easing equation function for a sinusoidal (sin(t)) easing out/in: deceleration until halfway, then acceleration.
  *
@@ -287,7 +287,7 @@ static qreal easeOutInSine(qreal t)
     if (t < 0.5) return easeOutSine (2*t)/2;
     return easeInSine(2*t - 1)/2 + 0.5;
 }
-	
+
 /**
  * Easing equation function for an exponential (2^t) easing in: accelerating from zero velocity.
  *
@@ -336,7 +336,7 @@ static qreal easeOutInExpo(qreal t)
     if (t < 0.5) return easeOutExpo (2*t)/2;
     return easeInExpo(2*t - 1)/2 + 0.5;
 }
-	
+
 /**
  * Easing equation function for a circular (sqrt(1-t^2)) easing in: accelerating from zero velocity.
  *
@@ -563,7 +563,7 @@ static qreal easeOutBounce_helper(qreal t, qreal b, qreal c, qreal a)
         return -a * (1. - (7.5625*t*t + .984375)) + (b + c);
     }
 }
-	
+
 /**
  * Easing equation function for a bounce (exponentially decaying parabolic bounce) easing out: decelerating from zero velocity.
  *
@@ -587,8 +587,8 @@ static qreal easeInBounce(qreal t, qreal a)
 {
     return 1.0 - easeOutBounce_helper(1.0-t, 0, 1.0, a);
 }
-	
-	
+
+
 /**
  * Easing equation function for a bounce (exponentially decaying parabolic bounce) easing in/out: acceleration until halfway, then deceleration.
  *
@@ -601,7 +601,7 @@ static qreal easeInOutBounce(qreal t, qreal a)
     if (t < 0.5) return easeInBounce (2*t, a)/2;
     else return (t == 1.0) ? 1.0 : easeOutBounce (2*t - 1, a)/2 + 0.5;
 }
-	
+
 /**
  * Easing equation function for a bounce (exponentially decaying parabolic bounce) easing out/in: deceleration until halfway, then acceleration.
  *
@@ -633,7 +633,7 @@ static inline qreal qt_smoothBeginEndMixFactor(qreal value)
 /**
  * Easing function that starts growing slowly, then increases in speed. At the end of the curve the speed will be constant.
  */
-static qreal easeInCurve(qreal t) 
+static qreal easeInCurve(qreal t)
 {
     const qreal sinProgress = qt_sinProgress(t);
     const qreal mix = qt_smoothBeginEndMixFactor(t);
@@ -643,7 +643,7 @@ static qreal easeInCurve(qreal t)
 /**
  * Easing function that starts growing steadily, then ends slowly. The speed will be constant at the beginning of the curve.
  */
-static qreal easeOutCurve(qreal t) 
+static qreal easeOutCurve(qreal t)
 {
     const qreal sinProgress = qt_sinProgress(t);
     const qreal mix = qt_smoothBeginEndMixFactor(1 - t);
@@ -653,7 +653,7 @@ static qreal easeOutCurve(qreal t)
 /**
  * Easing function where the value grows sinusoidally. Note that the calculated  end value will be 0 rather than 1.
  */
-static qreal easeSineCurve(qreal t) 
+static qreal easeSineCurve(qreal t)
 {
     return (qSin(((t * M_PI * 2)) - M_PI_2) + 1) / 2;
 }
@@ -662,7 +662,7 @@ static qreal easeSineCurve(qreal t)
  * Easing function where the value grows cosinusoidally. Note that the calculated start value will be 0.5 and the end value will be 0.5
  * contrary to the usual 0 to 1 easing curve.
  */
-static qreal easeCosineCurve(qreal t) 
+static qreal easeCosineCurve(qreal t)
 {
     return (qCos(((t * M_PI * 2)) - M_PI_2) + 1) / 2;
 }
