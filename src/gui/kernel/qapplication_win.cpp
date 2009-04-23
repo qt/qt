@@ -4003,6 +4003,7 @@ void QApplicationPrivate::initializeMultitouch()
     CloseTouchInputHandle = static_cast<qt_CloseTouchInputHandlePtr>(library.resolve("CloseTouchInputHandle"));
 
     currentMultitouchWidget = 0;
+    currentMultitouchWidgetAcceptedTouchBegin = false;
     touchInputIDToTouchPointID.clear();
     allTouchPoints.clear();
     currentTouchPoints.clear();
@@ -4106,6 +4107,9 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
             if (!child)
                 child = window;
             currentMultitouchWidget = child;
+            // if the TouchBegin handler recurses, we assume that means the event
+            // has been implicitly accepted and continue to send touch events
+            currentMultitouchWidgetAcceptedTouchBegin = true;
         }
     }
 
@@ -4131,8 +4135,19 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
                                q->keyboardModifiers(), activeTouchPoints);
         updateTouchPointsForWidget(widget, &touchEvent);
 
-        bool res = QApplication::sendSpontaneousEvent(widget, &touchEvent);
-        return (qt_tabletChokeMouse = res && touchEvent.isAccepted());
+        if (sendTouchBegin) {
+            bool res = QApplication::sendSpontaneousEvent(widget, &touchEvent);
+            qt_tabletChokeMouse
+                = currentMultitouchWidgetAcceptedTouchBegin
+                = (res && touchEvent.isAccepted());
+        } else if (currentMultitouchWidgetAcceptedTouchBegin) {
+            (void) QApplication::sendSpontaneousEvent(widget, &touchEvent);
+            qt_tabletChokeMouse = true;
+        } else {
+            qt_tabletChokeMouse = false;
+        }
+
+        return qt_tabletChokeMouse;
     }
 
     return false;

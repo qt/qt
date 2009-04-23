@@ -429,6 +429,7 @@ public:
 #endif
 
     QPointer<QWidget> currentMultitouchWidget;
+    bool currentMultitouchWidgetAcceptedTouchBegin;
     static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
 
 #if defined(Q_WS_WIN)
