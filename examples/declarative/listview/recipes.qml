@@ -1,6 +1,6 @@
 <!-- This example illustrates expanding a list item to show a more detailed view -->
 <?qtfx namespacepath:=content ?>
-<Rect id="page" width="400" height="280" color="black">
+<Rect id="page" width="400" height="240" color="black">
     <resources>
         <!--
         Delegate for the recipes.  This delegate has two modes:
@@ -8,7 +8,7 @@
         2. the details mode, which also shows the ingredients and method.
         -->
         <Component id="recipeDelegate">
-            <Item id="wrapper" x="10" width="{List.width-20}">
+            <Item id="wrapper" width="{List.width}">
                 <!--
                 Create a property to contain the visibility of the details.
                 We can bind multiple element's opacity to this one property,
@@ -29,20 +29,23 @@
                 bottom.  Note that elements that should not be visible in the list
                 mode have their opacity set to wrapper.detailsOpacity.
                 -->
-                <VerticalLayout id="topLayout" width="{parent.width-20}" margin="10" spacing="10">
-                    <HorizontalLayout spacing="10" height="{recipePic.height}">
-                        <Image id="recipePic" src="{picture}" width="48" height="48"/>
-                        <VerticalLayout height="{recipePic.height}" spacing="5" width="{background.width-recipePic.width-20}">
-                            <Text id="name" text="{title}" font.bold="true" font.size="16"/>
-                            <Text opacity="{wrapper.detailsOpacity}" text="Ingredients" font.size="12" font.bold="true"/>
-                            <Text opacity="{wrapper.detailsOpacity}" text="{ingredients}" wrap="true" width="{parent.width}"/>
-                        </VerticalLayout>
-                    </HorizontalLayout>
-                    <VerticalLayout id="details" opacity="{wrapper.detailsOpacity}">
-                        <Text text="Method" font.size="12" font.bold="true"/>
-                        <Text text="{method}" wrap="true" width="{topLayout.width}"/>
+                <HorizontalLayout id="topLayout" x="10" y="10" spacing="10" height="{recipePic.height}" width="{parent.width}">
+                    <Image id="recipePic" src="{picture}" width="48" height="48"/>
+                    <VerticalLayout height="{recipePic.height}" spacing="5" width="{background.width-recipePic.width-20}">
+                        <Text id="name" text="{title}" font.bold="true" font.size="16"/>
+                        <Text opacity="{wrapper.detailsOpacity}" text="Ingredients" font.size="12" font.bold="true"/>
+                        <Text opacity="{wrapper.detailsOpacity}" text="{ingredients}" wrap="true" width="{parent.width}"/>
                     </VerticalLayout>
-                </VerticalLayout>
+                </HorizontalLayout>
+                <Item id="details" x="10" width="{parent.width-20}" anchors.top="{topLayout.bottom}" anchors.topMargin="10"
+                            anchors.bottom="{parent.bottom}" anchors.bottomMargin="10" opacity="{wrapper.detailsOpacity}">
+                    <Text id="methodTitle" text="Method" font.size="12" font.bold="true" anchors.top="{parent.top}"/>
+                    <Flickable id="flick" anchors.top="{methodTitle.bottom}" anchors.bottom="{parent.bottom}" width="{parent.width}" viewportHeight="{methodText.height}" clip="true">
+                        <Text id="methodText" text="{method}" wrap="true" width="{details.width}"/>
+                    </Flickable>
+                    <Image anchors.right="{flick.right}" anchors.top="{flick.top}" src="content/pics/moreUp.png" opacity="{flick.atYBeginning ? 0 : 1}"/>
+                    <Image anchors.right="{flick.right}" anchors.bottom="{flick.bottom}" src="content/pics/moreDown.png" opacity="{flick.atYEnd ? 0 : 1}"/>
+                </Item>
                 <!-- A button to close the detailed view, i.e. set the state back to default (''). -->
                 <MediaButton anchors.right="{background.right}" anchors.rightMargin="5" y="10" opacity="{wrapper.detailsOpacity}" text="Close" onClicked="wrapper.state = ''"/>
                 <!-- Make the default height equal the hight of the picture, plus margin. -->
@@ -57,7 +60,6 @@
                         <SetProperties target="{wrapper}" detailsOpacity="1" x="0"/>
                         <!-- Make the detailed view fill the entire list area -->
                         <SetProperty target="{wrapper}" property="height" value="{List.height}"/>
-                        <SetProperty target="{wrapper}" property="width" value="{List.width}"/>
                         <!-- Move the list so that this item is at the top. -->
                         <SetProperty target="{wrapper.ListView.view}" property="yPosition" value="{wrapper.y}"/>
                         <!-- Disallow flicking while we're in detailed view -->
