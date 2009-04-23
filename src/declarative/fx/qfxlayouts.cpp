@@ -612,7 +612,6 @@ void QFxVerticalLayout::doLayout()
             setMovingItem(child);
             child->setY(voffset);
             setMovingItem(0);
-            child->setX(0);
         }
         voffset += child->height();
         voffset += spacing();
@@ -766,7 +765,6 @@ void QFxHorizontalLayout::doLayout()
             setMovingItem(child);
             child->setX(hoffset);
             setMovingItem(0);
-            child->setY(0);
         }
         hoffset += child->width();
         hoffset += spacing();
