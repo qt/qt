@@ -203,13 +203,13 @@ void QFxView::execute()
     if(!d->component->isLoading()) {
         continueExecute();
     } else {
-        connect(d->component, SIGNAL(statusChanged(Status)), this, SLOT(continueExecute()));
+        connect(d->component, SIGNAL(statusChanged(QmlComponent::Status)), this, SLOT(continueExecute()));
     }
 }
 
 void QFxView::continueExecute()
 {
-    disconnect(d->component, SIGNAL(statusChanged(Status)), this, SLOT(continueExecute()));
+    disconnect(d->component, SIGNAL(statusChanged(QmlComponent::Status)), this, SLOT(continueExecute()));
 
     if(!d->component){
         qWarning() << "Error in loading" << d->source;
