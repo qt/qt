@@ -1,6 +1,7 @@
 TEMPLATE =  subdirs
 SUBDIRS +=  formextractor \
-            previewer
+            previewer \
+            fancybrowser
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/webkit
