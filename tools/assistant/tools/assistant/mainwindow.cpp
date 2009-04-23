@@ -228,8 +228,17 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         else if (m_cmdLine->bookmarks() == CmdLineParser::Activate)
             showBookmarks();
 
-        if (!m_cmdLine->currentFilter().isEmpty())
-            m_helpEngine->setCurrentFilter(m_cmdLine->currentFilter());
+        if (!m_cmdLine->currentFilter().isEmpty()) {
+            const QString &curFilter = m_cmdLine->currentFilter();
+            m_helpEngine->setCurrentFilter(curFilter);
+            int idx = m_filterCombo->findText(curFilter);
+            if (idx >= 0) {
+                bool blocked = m_filterCombo->signalsBlocked();
+                m_filterCombo->blockSignals(true);
+                m_filterCombo->setCurrentIndex(idx);
+                m_filterCombo->blockSignals(blocked);
+            }
+        }
 
         if (usesDefaultCollection())
             QTimer::singleShot(0, this, SLOT(lookForNewQtDocumentation()));
