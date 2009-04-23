@@ -181,20 +181,17 @@ public:
     IDirectFBSurface *surface;
 
     QPen pen;
-    QBrush brush;
 
     bool antialiased;
     bool forceRasterPrimitives;
 
     bool simplePen;
-    bool simpleBrush;
 
     bool matrixRotShear;
     bool matrixScale;
 
     void setTransform(const QTransform &m);
     void setPen(const QPen &pen);
-    void setBrush(const QBrush &brush);
     void setCompositionMode(QPainter::CompositionMode mode);
     void setOpacity(quint8 value);
     void setRenderHints(QPainter::RenderHints hints);
@@ -207,6 +204,7 @@ public:
     inline bool dfbCanHandleClip(const QRect &rect) const;
     inline bool dfbCanHandleClip(const QRectF &rect) const;
     inline bool dfbCanHandleClip() const;
+    inline bool isSimpleBrush(const QBrush &brush) const;
 
     void drawLines(const QLine *lines, int count) const;
     void drawLines(const QLineF *lines, int count) const;
@@ -216,6 +214,7 @@ public:
     void drawRects(const QRect *rects, int count) const;
     void fillRects(const QRectF *rects, int count) const;
     void drawRects(const QRectF *rects, int count) const;
+
 
     void drawPixmap(const QRectF &dest,
                     const QPixmap &pixmap, const QRectF &src);
@@ -253,7 +252,7 @@ private:
 
 QDirectFBPaintEnginePrivate::QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p)
     : surface(0), antialiased(false), forceRasterPrimitives(false), simplePen(false),
-      simpleBrush(false), matrixRotShear(false), matrixScale(false), lastLockedHeight(-1),
+      matrixRotShear(false), matrixScale(false), lastLockedHeight(-1),
       fbWidth(-1), fbHeight(-1), opacity(255), drawFlagsFromCompositionMode(0),
       blitFlagsFromCompositionMode(0), porterDuffRule(DSPD_SRC_OVER), dirtyClip(true),
       dfbHandledClip(false), dfbDevice(0), q(p)
@@ -285,6 +284,11 @@ bool QDirectFBPaintEnginePrivate::dfbCanHandleClip(const QRectF &rect) const
 bool QDirectFBPaintEnginePrivate::dfbCanHandleClip() const
 {
     return dfbHandledClip;
+}
+
+bool QDirectFBPaintEnginePrivate::isSimpleBrush(const QBrush &brush) const
+{
+    return (brush.style() == Qt::NoBrush) || (brush.style() == Qt::SolidPattern && !antialiased);
 }
 
 void QDirectFBPaintEnginePrivate::setClipDirty()
@@ -364,13 +368,6 @@ void QDirectFBPaintEnginePrivate::setPen(const QPen &p)
                  && !antialiased
                  && (pen.brush().style() == Qt::SolidPattern)
                  && (pen.widthF() <= 1 && !matrixScale));
-}
-
-void QDirectFBPaintEnginePrivate::setBrush(const QBrush &b)
-{
-    brush = b;
-    simpleBrush = (brush.style() == Qt::NoBrush) ||
-                  (brush.style() == Qt::SolidPattern && !antialiased);
 }
 
 void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode mode)
@@ -755,14 +752,6 @@ void QDirectFBPaintEngine::penChanged()
     QRasterPaintEngine::penChanged();
 }
 
-void QDirectFBPaintEngine::brushChanged()
-{
-    Q_D(QDirectFBPaintEngine);
-    d->setBrush(state()->brush);
-
-    QRasterPaintEngine::brushChanged();
-}
-
 void QDirectFBPaintEngine::opacityChanged()
 {
     Q_D(QDirectFBPaintEngine);
@@ -801,7 +790,6 @@ void QDirectFBPaintEngine::setState(QPainterState *s)
     QRasterPaintEngine::setState(s);
     d->setClipDirty();
     d->setPen(state()->pen);
-    d->setBrush(state()->brush);
     d->setOpacity(quint8(state()->opacity * 255));
     d->setCompositionMode(state()->compositionMode());
     d->setTransform(state()->transform());
@@ -834,8 +822,10 @@ void QDirectFBPaintEngine::drawRects(const QRect *rects, int rectCount)
 {
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
-    if (!d->dfbCanHandleClip() || d->matrixRotShear || !d->simpleBrush
-        || !d->simplePen || d->forceRasterPrimitives) {
+    const QBrush &brush = state()->brush;
+    if (!d->dfbCanHandleClip() || d->matrixRotShear
+        || !d->simplePen || d->forceRasterPrimitives
+        || !d->isSimpleBrush(brush)) {
         d->lock();
         QRasterPaintEngine::drawRects(rects, rectCount);
         return;
@@ -843,8 +833,8 @@ void QDirectFBPaintEngine::drawRects(const QRect *rects, int rectCount)
 
     d->unlock();
 
-    if (d->brush != Qt::NoBrush) {
-        d->setDFBColor(d->brush.color());
+    if (brush != Qt::NoBrush) {
+        d->setDFBColor(brush.color());
         d->fillRects(rects, rectCount);
     }
     if (d->pen != Qt::NoPen) {
@@ -857,8 +847,10 @@ void QDirectFBPaintEngine::drawRects(const QRectF *rects, int rectCount)
 {
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
-    if (!d->dfbCanHandleClip() || d->matrixRotShear || !d->simpleBrush
-        || !d->simplePen || d->forceRasterPrimitives) {
+    const QBrush &brush = state()->brush;
+    if (!d->dfbCanHandleClip() || d->matrixRotShear
+        || !d->simplePen || d->forceRasterPrimitives
+        || !d->isSimpleBrush(brush)) {
         d->lock();
         QRasterPaintEngine::drawRects(rects, rectCount);
         return;
@@ -866,8 +858,8 @@ void QDirectFBPaintEngine::drawRects(const QRectF *rects, int rectCount)
 
     d->unlock();
 
-    if (d->brush != Qt::NoBrush) {
-        d->setDFBColor(d->brush.color());
+    if (brush != Qt::NoBrush) {
+        d->setDFBColor(brush.color());
         d->fillRects(rects, rectCount);
     }
     if (d->pen != Qt::NoPen) {
