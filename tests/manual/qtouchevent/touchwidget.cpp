@@ -3,6 +3,28 @@
 #include <QMouseEvent>
 #include <QTouchEvent>
 
+
+void TouchWidget::reset()
+{
+    acceptTouchBegin
+        = acceptTouchUpdate
+        = acceptTouchEnd
+        = seenTouchBegin
+        = seenTouchUpdate
+        = seenTouchEnd
+        = closeWindowOnTouchEnd
+
+        = acceptMousePress
+        = acceptMouseMove
+        = acceptMouseRelease
+        = seenMousePress
+        = seenMouseMove
+        = seenMouseRelease
+        = closeWindowOnMouseRelease
+
+        = false;
+}
+
 bool TouchWidget::event(QEvent *event)
 {
     switch (event->type()) {
@@ -22,6 +44,8 @@ bool TouchWidget::event(QEvent *event)
         break;
     case QEvent::TouchEnd:
         seenTouchEnd = true;
+        if (closeWindowOnTouchEnd)
+            window()->close();
         if (acceptTouchEnd) {
             event->accept();
             return true;
@@ -44,6 +68,8 @@ bool TouchWidget::event(QEvent *event)
         break;
     case QEvent::MouseButtonRelease:
         seenMouseRelease = true;
+        if (closeWindowOnMouseRelease)
+            window()->close();
         if (acceptMouseRelease) {
             event->accept();
             return true;

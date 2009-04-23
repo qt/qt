@@ -10,8 +10,11 @@ class TouchWidget : public QWidget
 public:
     bool acceptTouchBegin, acceptTouchUpdate, acceptTouchEnd;
     bool seenTouchBegin, seenTouchUpdate, seenTouchEnd;
+    bool closeWindowOnTouchEnd;
+
     bool acceptMousePress, acceptMouseMove, acceptMouseRelease;
     bool seenMousePress, seenMouseMove, seenMouseRelease;
+    bool closeWindowOnMouseRelease;
 
     inline TouchWidget(QWidget *parent = 0)
         : QWidget(parent)
@@ -19,22 +22,7 @@ public:
         reset();
     }
 
-    void reset()
-    {
-        acceptTouchBegin
-            = acceptTouchUpdate
-            = acceptTouchEnd
-            = seenTouchBegin
-            = seenTouchUpdate
-            = seenTouchEnd
-            = acceptMousePress
-            = acceptMouseMove
-            = acceptMouseRelease
-            = seenMousePress
-            = seenMouseMove
-            = seenMouseRelease
-            = false;
-    }
+    void reset();
 
     bool event(QEvent *event);
 };
