@@ -18,7 +18,6 @@ qhp.qmake.virtualFolder       = qdoc
 qhp.qmake.indexTitle          = QMake Manual
 qhp.qmake.extraFiles          = classic.css images/qt-logo.png images/trolltech-logo.png
 qhp.qmake.filterAttributes    = qt 4.6.0 tools qmake
->>>>>>> 4.5:tools/qdoc3/test/qmake.qdocconf
 qhp.qmake.customFilters.qmake.name = qmake Manual
 qhp.qmake.customFilters.qmake.filterAttributes = qt tools qmake
 qhp.qmake.subprojects         = manual
