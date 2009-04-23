@@ -134,10 +134,10 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     dock->setWidget(m_searchWidget);
     addDockWidget(Qt::LeftDockWidgetArea, dock);
 
-    connect(m_searchWidget, SIGNAL(requestShowLink(const QUrl&)),
-        m_centralWidget, SLOT(setSource(const QUrl&)));
-    connect(m_searchWidget, SIGNAL(requestShowLinkInNewTab(const QUrl&)),
-        m_centralWidget, SLOT(setSourceInNewTab(const QUrl&)));
+    connect(m_searchWidget, SIGNAL(requestShowLink(QUrl)), m_centralWidget,
+        SLOT(setSource(QUrl)));
+    connect(m_searchWidget, SIGNAL(requestShowLinkInNewTab(QUrl)),
+        m_centralWidget, SLOT(setSourceInNewTab(QUrl)));
 #endif
 
     QString defWindowTitle = tr("Qt Assistant");
@@ -304,6 +304,7 @@ bool MainWindow::initHelpDB()
             hc.addCustomFilter(tr("Unfiltered"), QStringList());
             hc.setCustomValue(unfiltered, 1);
         }
+
         m_helpEngine->blockSignals(true);
         m_helpEngine->setCurrentFilter(tr("Unfiltered"));
         m_helpEngine->blockSignals(false);
@@ -318,10 +319,10 @@ bool MainWindow::initHelpDB()
 void MainWindow::lookForNewQtDocumentation()
 {
     m_qtDocInstaller = new QtDocInstaller(m_helpEngine->collectionFile());
-    connect(m_qtDocInstaller, SIGNAL(errorMessage(const QString&)),
-        this, SLOT(displayInstallationError(const QString&)));
-    connect(m_qtDocInstaller, SIGNAL(docsInstalled(bool)),
-        this, SLOT(qtDocumentationInstalled(bool)));
+    connect(m_qtDocInstaller, SIGNAL(errorMessage(QString)), this,
+        SLOT(displayInstallationError(QString)));
+    connect(m_qtDocInstaller, SIGNAL(docsInstalled(bool)), this,
+        SLOT(qtDocumentationInstalled(bool)));
 
     QString versionKey = QString(QLatin1String("qtVersion%1$$$qt")).
         arg(QLatin1String(QT_VERSION_STR));
@@ -353,8 +354,8 @@ void MainWindow::checkInitState()
         if (!m_connectedInitSignals) {
             connect(m_helpEngine->contentModel(), SIGNAL(contentsCreated()),
                 this, SLOT(checkInitState()));
-            connect(m_helpEngine->indexModel(), SIGNAL(indexCreated()),
-                this, SLOT(checkInitState()));
+            connect(m_helpEngine->indexModel(), SIGNAL(indexCreated()), this,
+                SLOT(checkInitState()));
             m_connectedInitSignals = true;
         }
     } else {
@@ -601,8 +602,8 @@ void MainWindow::setupFilterToolbar()
 
     connect(m_helpEngine, SIGNAL(setupFinished()), this,
         SLOT(setupFilterCombo()));
-    connect(m_filterCombo, SIGNAL(activated(const QString&)), this,
-        SLOT(filterDocumentation(const QString&)));
+    connect(m_filterCombo, SIGNAL(activated(QString)), this,
+        SLOT(filterDocumentation(QString)));
 
     setupFilterCombo();
 }
@@ -626,12 +627,12 @@ void MainWindow::setupAddressToolbar()
     toolBarMenu()->addAction(addressToolBar->toggleViewAction());
 
     // address lineedit
-    connect(m_addressLineEdit, SIGNAL(returnPressed()),
-        this, SLOT(gotoAddress()));
-    connect(m_centralWidget, SIGNAL(currentViewerChanged()),
-        this, SLOT(showNewAddress()));
-    connect(m_centralWidget, SIGNAL(sourceChanged(const QUrl&)),
-        this, SLOT(showNewAddress(const QUrl&)));
+    connect(m_addressLineEdit, SIGNAL(returnPressed()), this,
+        SLOT(gotoAddress()));
+    connect(m_centralWidget, SIGNAL(currentViewerChanged()), this,
+        SLOT(showNewAddress()));
+    connect(m_centralWidget, SIGNAL(sourceChanged(QUrl)), this,
+        SLOT(showNewAddress(QUrl)));
 }
 
 void MainWindow::updateAboutMenuText()
@@ -712,10 +713,10 @@ void MainWindow::showPreferences()
 {
     PreferencesDialog dia(m_helpEngine, this);
 
-    connect(&dia, SIGNAL(updateApplicationFont()),
-        this, SLOT(updateApplicationFont()));
-    connect(&dia, SIGNAL(updateBrowserFont()),
-        m_centralWidget, SLOT(updateBrowserFont()));
+    connect(&dia, SIGNAL(updateApplicationFont()), this,
+        SLOT(updateApplicationFont()));
+    connect(&dia, SIGNAL(updateBrowserFont()), m_centralWidget,
+        SLOT(updateBrowserFont()));
 
     dia.showDialog();
 }
@@ -950,8 +951,7 @@ QWidget* MainWindow::setupBookmarkWidget()
 {
     m_bookmarkManager = new BookmarkManager(m_helpEngine);
     m_bookmarkWidget = new BookmarkWidget(m_bookmarkManager, this);
-    connect(m_bookmarkWidget, SIGNAL(addBookmark()),
-        this, SLOT(addBookmark()));
+    connect(m_bookmarkWidget, SIGNAL(addBookmark()), this, SLOT(addBookmark()));
     return m_bookmarkWidget;
 }
 
