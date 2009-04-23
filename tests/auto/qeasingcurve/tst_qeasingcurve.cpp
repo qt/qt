@@ -96,17 +96,17 @@ void tst_QEasingCurve::type()
     QEasingCurve curve(QEasingCurve::Linear);
     QCOMPARE(curve.period(), 0.3);
     QCOMPARE(curve.amplitude(), 1.0);
-    
+
     curve.setPeriod(5);
     curve.setAmplitude(3);
     QCOMPARE(curve.period(), 5.0);
     QCOMPARE(curve.amplitude(), 3.0);
-    
+
     curve.setType(QEasingCurve::InElastic);
     QCOMPARE(curve.period(), 5.0);
     QCOMPARE(curve.amplitude(), 3.0);
     }
-    
+
     {
     QEasingCurve curve(QEasingCurve::InElastic);
     QCOMPARE(curve.period(), 0.3);
@@ -132,7 +132,7 @@ void tst_QEasingCurve::type()
     QTest::ignoreMessage(QtWarningMsg, QString::fromAscii("QEasingCurve: Invalid curve type %1")
                         .arg(QEasingCurve::Custom).toLatin1().constData());
     curve.setType(QEasingCurve::Custom);
-    QCOMPARE(curve.type(), QEasingCurve::InCubic);    
+    QCOMPARE(curve.type(), QEasingCurve::InCubic);
     QTest::ignoreMessage(QtWarningMsg, QString::fromAscii("QEasingCurve: Invalid curve type %1")
                         .arg(-1).toLatin1().constData());
     curve.setType((QEasingCurve::Type)-1);
@@ -386,12 +386,12 @@ void tst_QEasingCurve::valueForProgress()
         QString strCurve = QLatin1String(mo.enumerator(mo.indexOfEnumerator("Type")).key(c));
         QString strInputs;
         QString strOutputs;
-        
+
         for (int t = 0; t <= 100; t+= 20) {
             qreal ease = curve.valueForProgress(t/qreal(100));
             strInputs += QString::fromAscii(" << %1").arg(t);
             strOutputs += QString::fromAscii(" << %1").arg(int(100*ease));
-            
+
         }
         QString str = QString::fromAscii("    QTest::newRow(\"%1\") << int(QEasingCurve::%2)\n"
                                                 "\t\t << (IntList() %3)\n"
@@ -460,14 +460,14 @@ void tst_QEasingCurve::operators()
     QCOMPARE(curve2.valueForProgress(0.25), 0.2);
     QCOMPARE(curve2.valueForProgress(0.35), 0.3);
     QCOMPARE(curve2.valueForProgress(0.999999), 0.9);
-    
+
     // operator==
     curve.setType(QEasingCurve::InBack);
     curve2 = curve;
     curve2.setOvershoot(qreal(1.70158f));
     QCOMPARE(curve.overshoot(), curve2.overshoot());
     QVERIFY(curve2 == curve);
-    
+
     curve.setOvershoot(3.0);
     QVERIFY(curve2 != curve);
     curve2.setOvershoot(3.0);
