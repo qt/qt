@@ -67,10 +67,21 @@
 #include <errno.h>
 #include <fcntl.h>
 
+struct sockaddr;
+
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_LINUX) && defined(__GLIBC__) && (__GLIBC__ * 0x100 + __GLIBC_MINOR__) >= 0x0209
+#if defined(Q_OS_LINUX) && defined(__GLIBC__) && (__GLIBC__ * 0x100 + __GLIBC_MINOR__) >= 0x0204
+// Linux supports thread-safe FD_CLOEXEC
 # define QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC 1
+
+namespace QtLibcSupplement {
+    Q_CORE_EXPORT int accept4(int, sockaddr *, QT_SOCKLEN_T *, int flags);
+    Q_CORE_EXPORT int dup3(int oldfd, int newfd, int flags);
+    Q_CORE_EXPORT int pipe2(int pipes[], int flags);
+}
+
+using namespace QtLibcSupplement;
 #else
 # define QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC 0
 #endif

@@ -100,7 +100,7 @@ static inline int qt_safe_accept(int s, struct sockaddr *addr, QT_SOCKLEN_T *add
     Q_ASSERT((flags & ~O_NONBLOCK) == 0);
 
     register int fd;
-#if 0    // no released version of glibc contains accept4 yet
+#if QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC
     // use accept4
     int sockflags = SOCK_CLOEXEC;
     if (flags & O_NONBLOCK)

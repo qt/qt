@@ -42,7 +42,7 @@
 //#define QNATIVESOCKETENGINE_DEBUG
 
 #include "qnativesocketengine_p.h"
-#include "private/qcore_unix_p.h"
+#include "private/qnet_unix_p.h"
 #include "qiodevice.h"
 #include "qhostaddress.h"
 #include "qvarlengtharray.h"
@@ -162,7 +162,7 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
     int protocol = AF_INET;
 #endif
     int type = (socketType == QAbstractSocket::UdpSocket) ? SOCK_DGRAM : SOCK_STREAM;
-    int socket = qt_socket_socket(protocol, type, 0);
+    int socket = qt_safe_socket(protocol, type, 0);
 
     if (socket <= 0) {
         switch (errno) {
@@ -467,7 +467,7 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &address, quint16
 
 bool QNativeSocketEnginePrivate::nativeListen(int backlog)
 {
-    if (qt_socket_listen(socketDescriptor, backlog) < 0) {
+    if (qt_safe_listen(socketDescriptor, backlog) < 0) {
         switch (errno) {
         case EADDRINUSE:
             setError(QAbstractSocket::AddressInUseError,
@@ -494,7 +494,7 @@ bool QNativeSocketEnginePrivate::nativeListen(int backlog)
 
 int QNativeSocketEnginePrivate::nativeAccept()
 {
-    int acceptedDescriptor = qt_socket_accept(socketDescriptor, 0, 0);
+    int acceptedDescriptor = qt_safe_accept(socketDescriptor, 0, 0);
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativeAccept() == %i", acceptedDescriptor);
 #endif

@@ -119,3 +119,66 @@ int qt_safe_select(int nfds, fd_set *fdread, fd_set *fdwrite, fd_set *fdexcept,
 }
 
 QT_END_NAMESPACE
+
+#ifdef Q_OS_LINUX
+// Don't wait for libc to supply the calls we need
+// Make syscalls directly
+
+# if defined(__GLIBC__) && (__GLIBC__ * 0x100 + __GLIBC_MINOR__) >= 0x0204
+// glibc 2.4 has syscall(...)
+#  include <sys/syscall.h>
+#  include <asm/unistd.h>
+# else
+// no syscall(...)
+static inline int syscall(...) { errno = ENOSYS; return -1;}
+# endif
+
+# ifndef __NR_dup3
+#  if defined(__i386__)
+#   define __NR_dup3        330
+#   define __NR_pipe2       331
+#  elif defined(__x86_64__)
+#   define __NR_accept4     288
+#   define __NR_dup3        292
+#   define __NR_pipe2       293
+#  elif defined(__ia64__)
+#   define __NR_accept4     -1
+#   define __NR_dup3        1316
+#   define __NR_pipe2       1317
+#  else
+//  set the syscalls to absurd numbers so that they'll cause ENOSYS errors
+#   warning "Please port the pipe2/dup3/accept4 code to this platform"
+#   define __NR_accept4     -1
+#   define __NR_dup3        -1
+#   define __NR_pipe2       -1
+#  endif
+# endif
+
+QT_BEGIN_NAMESPACE
+namespace QtLibcSupplement {
+    int pipe2(int pipes[], int flags)
+    {
+        return syscall(__NR_pipe2, pipes, flags);
+    }
+
+    int dup3(int oldfd, int newfd, int flags)
+    {
+        return syscall(__NR_dup3, oldfd, newfd, flags);
+    }
+
+    int accept4(int s, sockaddr *addr, QT_SOCKLEN_T *addrlen, int flags)
+    {
+# if defined(__NR_socketcall)
+        // This platform uses socketcall() instead of raw syscalls
+        // the SYS_ACCEPT4 number is cross-platform: 18
+        return syscall(__NR_socketcall, 18, &s);
+# else
+        return syscall(__NR_accept4, s, addr, addrlen, flags);
+# endif
+
+        Q_UNUSED(addr); Q_UNUSED(addrlen); Q_UNUSED(flags); // they're actually used
+    }
+}
+QT_END_NAMESPACE
+#endif  // Q_OS_LINUX
+
