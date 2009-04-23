@@ -56,24 +56,13 @@ class QAbstractStatePrivate;
 class Q_CORE_EXPORT QAbstractState : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(RestorePolicy)
-    Q_PROPERTY(RestorePolicy restorePolicy READ restorePolicy WRITE setRestorePolicy)
 public:
-    enum RestorePolicy {
-        GlobalRestorePolicy,
-        DoNotRestoreProperties,
-        RestoreProperties
-    };
-
     ~QAbstractState();
 
     QState *parentState() const;
 
     void assignProperty(QObject *object, const char *name,
                         const QVariant &value);
-
-    void setRestorePolicy(RestorePolicy restorePolicy);
-    RestorePolicy restorePolicy() const;
 
 Q_SIGNALS:
     void entered();

@@ -72,7 +72,13 @@ class Q_CORE_EXPORT QStateMachine : public QObject
     Q_PROPERTY(QAbstractState* initialState READ initialState WRITE setInitialState)
     Q_PROPERTY(QAbstractState* errorState READ errorState WRITE setErrorState)
     Q_PROPERTY(QString errorString READ errorString)
+    Q_PROPERTY(RestorePolicy globalRestorePolicy READ globalRestorePolicy WRITE setGlobalRestorePolicy)
+    Q_ENUMS(RestorePolicy)
 public:
+    enum RestorePolicy {
+        DoNotRestoreProperties,
+        RestoreProperties
+    };
 
     enum Error {
         NoError, 
@@ -112,8 +118,8 @@ public:
     void removeDefaultAnimationForTargetState(QAbstractState *targetState, QAbstractAnimation *animation);
 #endif // QT_NO_ANIMATION
 
-    QAbstractState::RestorePolicy globalRestorePolicy() const;
-    void setGlobalRestorePolicy(QAbstractState::RestorePolicy restorePolicy);
+    QStateMachine::RestorePolicy globalRestorePolicy() const;
+    void setGlobalRestorePolicy(QStateMachine::RestorePolicy restorePolicy);
 
     void postEvent(QEvent *event, int delay = 0);
 

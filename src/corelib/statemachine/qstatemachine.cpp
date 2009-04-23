@@ -188,7 +188,7 @@ QStateMachinePrivate::QStateMachinePrivate()
     processingScheduled = false;
     stop = false;
     error = QStateMachine::NoError;
-    globalRestorePolicy = QAbstractState::DoNotRestoreProperties;
+    globalRestorePolicy = QStateMachine::DoNotRestoreProperties;
     rootState = 0;
     initialErrorStateForRoot = 0;
 #ifndef QT_STATEMACHINE_SOLUTION
@@ -631,14 +631,10 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
     for (int i = 0; i < enteredStates.size(); ++i) {
         QAbstractState *s = enteredStates.at(i);
 
-        QAbstractState::RestorePolicy restorePolicy = s->restorePolicy();
-        if (restorePolicy == QAbstractState::GlobalRestorePolicy)
-            restorePolicy = globalRestorePolicy;
-
         QList<QPropertyAssignment> assignments = QAbstractStatePrivate::get(s)->propertyAssignments;
         for (int j = 0; j < assignments.size(); ++j) {
             const QPropertyAssignment &assn = assignments.at(j);
-            if (restorePolicy == QAbstractState::RestoreProperties) {
+            if (globalRestorePolicy == QStateMachine::RestoreProperties) {
                 registerRestorable(assn.object, assn.propertyName);
             }
             pendingRestorables.remove(RestorableId(assn.object, assn.propertyName));
@@ -1458,6 +1454,32 @@ void QStateMachine::setErrorState(QAbstractState *state)
 */
 
 /*!
+   \enum QStateMachine::RestorePolicy
+
+   This enum specifies the restore policy type. The restore policy
+   takes effect when the machine enters a state which sets one or more
+   properties. If the restore policy is set to RestoreProperties,
+   the state machine will save the original value of the property before the
+   new value is set.
+
+   Later, when the machine either enters a state which does not set
+   a value for the given property, the property will automatically be restored
+   to its initial value.
+
+   Only one initial value will be saved for any given property. If a value for a property has 
+   already been saved by the state machine, it will not be overwritten until the property has been
+   successfully restored. 
+
+   \value DoNotRestoreProperties The state machine should not save the initial values of properties 
+          and restore them later.
+   \value RestoreProperties The state machine should save the initial values of properties 
+          and restore them later.
+
+   \sa setRestorePolicy(), restorePolicy(), QAbstractState::assignProperty()
+*/
+
+
+/*!
   Returns the error code of the last error that occurred in the state machine.
 */
 QStateMachine::Error QStateMachine::error() const
@@ -1486,33 +1508,25 @@ void QStateMachine::clearError()
 }
 
 /*!
-   Returns the global restore policy of the state machine.
+   Returns the restore policy of the state machine.
 
-   \sa QAbstractState::restorePolicy()
+   \sa setGlobalRestorePolicy()
 */
-QAbstractState::RestorePolicy QStateMachine::globalRestorePolicy() const
+QStateMachine::RestorePolicy QStateMachine::globalRestorePolicy() const
 {
     Q_D(const QStateMachine);
     return d->globalRestorePolicy;
 }
 
 /*!
-   Sets the global restore policy of the state machine to \a restorePolicy. The default global 
+   Sets the restore policy of the state machine to \a restorePolicy. The default 
    restore policy is QAbstractState::DoNotRestoreProperties.
    
-   The global restore policy cannot be set to QAbstractState::GlobalRestorePolicy.
-
-   \sa QAbstractState::setRestorePolicy()
+   \sa globalRestorePolicy()
 */
-void QStateMachine::setGlobalRestorePolicy(QAbstractState::RestorePolicy restorePolicy) 
+void QStateMachine::setGlobalRestorePolicy(QStateMachine::RestorePolicy restorePolicy) 
 {
     Q_D(QStateMachine);
-    if (restorePolicy == QState::GlobalRestorePolicy) {
-        qWarning("QStateMachine::setGlobalRestorePolicy: Cannot set global restore policy to "
-                 "GlobalRestorePolicy");
-        return;
-    }
-
     d->globalRestorePolicy = restorePolicy;
 }
 

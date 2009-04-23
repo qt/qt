@@ -9,9 +9,7 @@
 
 #include "qstate.h"
 #include "qstatemachine.h"
-#include "qactiontransition.h"
 #include "qsignaltransition.h"
-#include "qstateaction.h"
 
 // Will try to wait for the condition while allowing event processing
 #define QTRY_COMPARE(__expr, __expected) \
@@ -45,7 +43,6 @@ private slots:
     void assignProperty();
     void assignPropertyTwice();
     void historyInitialState();
-    void addEntryAction();
 
 private:
     bool functionCalled;
@@ -214,22 +211,6 @@ public slots:
     
 };
 
-void tst_QState::addEntryAction()
-{
-    QStateMachine sm;
-
-    TestClass testObject;
-
-    QState *s0 = new QState(sm.rootState());
-    s0->addEntryAction(new QStateInvokeMethodAction(&testObject, "slot"));
-    sm.setInitialState(s0);
-
-    sm.start();
-    QCoreApplication::processEvents();
-    
-    QCOMPARE(testObject.called, true);
-}
-
 void tst_QState::assignProperty()
 {
     QStateMachine machine;
@@ -265,11 +246,11 @@ void tst_QState::assignPropertyTwice()
     QCOMPARE(object->property("fooBar").toInt(), 30);
 }
 
-class EventTestTransition: public QActionTransition
+class EventTestTransition: public QAbstractTransition
 {
 public:
     EventTestTransition(QEvent::Type type, QState *targetState) 
-        : QActionTransition(QList<QAbstractState*>() << targetState), m_type(type)
+        : QAbstractTransition(QList<QAbstractState*>() << targetState), m_type(type)
     {        
     }
 
@@ -278,6 +259,8 @@ protected:
     {
         return e->type() == m_type;
     }
+
+    void onTransition() {}
 
 private:
     QEvent::Type m_type;

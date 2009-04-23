@@ -121,14 +121,17 @@ private slots:
     void customErrorStateNotInGraph();
     void transitionToStateNotInGraph();
     void restoreProperties();
+    
     void defaultGlobalRestorePolicy();
     void globalRestorePolicySetToRestore();
     void globalRestorePolicySetToDoNotRestore();
-    void restorePolicyNotInherited();
-    void mixedRestoreProperties();
-    void setRestorePolicyToDoNotRestore();
-    void setGlobalRestorePolicyToGlobalRestore();
-    void restorePolicyOnChildState();
+    
+    //void restorePolicyNotInherited();
+    //void mixedRestoreProperties();
+    //void setRestorePolicyToDoNotRestore();    
+    //void setGlobalRestorePolicyToGlobalRestore();
+    //void restorePolicyOnChildState();
+
     void transitionWithParent();
 
     void simpleAnimation();
@@ -923,22 +926,20 @@ void tst_QStateMachine::restoreProperties()
     object->setProperty("b", 2);
 
     QStateMachine machine;
+    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
 
     QState *S1 = new QState();
     S1->setObjectName("S1");
     S1->assignProperty(object, "a", 3);
-    S1->setRestorePolicy(QState::RestoreProperties);
     machine.addState(S1);
 
     QState *S2 = new QState();
     S2->setObjectName("S2");
     S2->assignProperty(object, "b", 5);
-    S2->setRestorePolicy(QState::RestoreProperties);
     machine.addState(S2);
 
     QState *S3 = new QState();
     S3->setObjectName("S3");
-    S3->setRestorePolicy(QState::RestoreProperties);
     machine.addState(S3);
 
     QFinalState *S4 = new QFinalState();
@@ -1668,6 +1669,7 @@ void tst_QStateMachine::defaultGlobalRestorePolicy()
     QCOMPARE(propertyHolder->property("b").toInt(), 4);    
 }
 
+/*
 void tst_QStateMachine::restorePolicyNotInherited()
 {
     QStateMachine machine;    
@@ -1714,12 +1716,12 @@ void tst_QStateMachine::restorePolicyNotInherited()
     QCOMPARE(propertyHolder->property("a").toInt(), 3);
     QCOMPARE(propertyHolder->property("b").toInt(), 4);    
 
-}
+}*/
 
 void tst_QStateMachine::globalRestorePolicySetToDoNotRestore()
 {
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QState::DoNotRestoreProperties);
+    machine.setGlobalRestorePolicy(QStateMachine::DoNotRestoreProperties);
 
     QObject *propertyHolder = new QObject();
     propertyHolder->setProperty("a", 1);
@@ -1756,6 +1758,7 @@ void tst_QStateMachine::globalRestorePolicySetToDoNotRestore()
     QCOMPARE(propertyHolder->property("b").toInt(), 4);       
 }
 
+/*
 void tst_QStateMachine::setRestorePolicyToDoNotRestore()
 {
     QObject *object = new QObject();
@@ -1812,18 +1815,19 @@ void tst_QStateMachine::setGlobalRestorePolicyToGlobalRestore()
 {
     s_countWarnings = false;
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QState::GlobalRestorePolicy);
+    machine.setGlobalRestorePolicy(QStateMachine::GlobalRestorePolicy);
 
-    QCOMPARE(machine.globalRestorePolicy(), QState::DoNotRestoreProperties);
+    QCOMPARE(machine.globalRestorePolicy(), QStateMachine::DoNotRestoreProperties);
     QCOMPARE(s_msgType, QtWarningMsg);
 
     s_msgType = QtDebugMsg;
-    machine.setGlobalRestorePolicy(QState::RestoreProperties);
-    machine.setGlobalRestorePolicy(QState::GlobalRestorePolicy);
+    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+    machine.setGlobalRestorePolicy(QStateMachine::GlobalRestorePolicy);
 
-    QCOMPARE(machine.globalRestorePolicy(), QState::RestoreProperties);
+    QCOMPARE(machine.globalRestorePolicy(), QStateMachine::RestoreProperties);
     QCOMPARE(s_msgType, QtWarningMsg);
 }
+
 
 void tst_QStateMachine::restorePolicyOnChildState()
 {
@@ -1873,11 +1877,12 @@ void tst_QStateMachine::restorePolicyOnChildState()
     QCOMPARE(propertyHolder->property("a").toInt(), 1);
     QCOMPARE(propertyHolder->property("b").toInt(), 2);    
 }
+*/
 
 void tst_QStateMachine::globalRestorePolicySetToRestore()
 {
     QStateMachine machine;    
-    machine.setGlobalRestorePolicy(QState::RestoreProperties);
+    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
 
     QObject *propertyHolder = new QObject();
     propertyHolder->setProperty("a", 1);
@@ -1914,6 +1919,7 @@ void tst_QStateMachine::globalRestorePolicySetToRestore()
     QCOMPARE(propertyHolder->property("b").toInt(), 2);    
 }
 
+/*
 void tst_QStateMachine::mixedRestoreProperties()
 {
     QStateMachine machine;    
@@ -1980,6 +1986,7 @@ void tst_QStateMachine::mixedRestoreProperties()
     // Enter s3, restore
     QCOMPARE(propertyHolder->property("a").toInt(), 5);
 }
+*/
 
 void tst_QStateMachine::transitionWithParent()
 {
@@ -2224,7 +2231,7 @@ void tst_QStateMachine::nestedTargetStateForAnimation()
 void tst_QStateMachine::animatedGlobalRestoreProperty()
 {
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QState::RestoreProperties);
+    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
 
     QObject *object = new QObject();
     object->setProperty("foo", 1.0);

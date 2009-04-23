@@ -101,7 +101,6 @@ public:
     void emitEntered();
     void emitExited();
 
-    QAbstractState::RestorePolicy restorePolicy;
     QList<QPropertyAssignment> propertyAssignments;
 
 #ifdef QT_STATEMACHINE_SOLUTION

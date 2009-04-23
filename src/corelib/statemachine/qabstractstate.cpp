@@ -76,45 +76,7 @@ QT_BEGIN_NAMESPACE
   function to perform custom processing when the state is exited.
 */
 
-/*!
-   \enum QAbstractState::RestorePolicy
-
-   This enum specifies the restore policy type for a state. The restore policy
-   takes effect when the machine enters a state which sets one or more
-   properties. If the restore policy of the state is set to RestoreProperties,
-   the state machine will save the original value of the property before the
-   new value is set.
-
-   Later, when the machine either enters a state which has its restore policy
-   set to DoNotRestoreProperties or when it enters a state which does not set
-   a value for the given property, the property will automatically be restored
-   to its initial value.
-
-   Only one initial value will be saved for any given property. If a value for a property has 
-   already been saved by the state machine, it will not be overwritten until the property has been
-   successfully restored. Once the property has been restored, the state machine will clear the 
-   initial value until it enters a new state which sets the property and which has RestoreProperties
-   as its restore policy.
-
-   \value GlobalRestorePolicy The restore policy for the state should be retrieved using 
-          QStateMachine::globalRestorePolicy()
-   \value DoNotRestoreProperties The state machine should not save the initial values of properties 
-          set in the state and restore them later.
-   \value RestoreProperties The state machine should save the initial values of properties 
-          set in the state and restore them later.
-
-
-   \sa setRestorePolicy(), restorePolicy(), QAbstractState::assignProperty()
-*/
-
-/*!
-   \property QAbstractState::restorePolicy
-
-    \brief the restore policy of this state
-*/
-
-QAbstractStatePrivate::QAbstractStatePrivate()
-    : restorePolicy(QAbstractState::GlobalRestorePolicy)
+QAbstractStatePrivate::QAbstractStatePrivate()    
 {
 }
 
@@ -234,26 +196,6 @@ void QAbstractState::assignProperty(QObject *object, const char *name,
         }
     }
     d->propertyAssignments.append(QPropertyAssignment(object, name, value));
-}
-
-/*!
-  Sets the restore policy of this state to \a restorePolicy. 
-  
-  The default restore policy is QAbstractState::GlobalRestorePolicy.
-*/
-void QAbstractState::setRestorePolicy(RestorePolicy restorePolicy)
-{
-    Q_D(QAbstractState);
-    d->restorePolicy = restorePolicy;
-}
-
-/*!
-  Returns the restore policy for this state.
-*/
-QAbstractState::RestorePolicy QAbstractState::restorePolicy() const
-{
-    Q_D(const QAbstractState);
-    return d->restorePolicy;
 }
 
 /*!
