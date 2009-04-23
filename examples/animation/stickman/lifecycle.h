@@ -17,7 +17,6 @@ public:
     ~LifeCycle();
 
     void setDeathAnimation(const QString &fileName);
-    void setResetKey(Qt::Key key);
     void addActivity(const QString &fileName, Qt::Key key);    
 
     void start();

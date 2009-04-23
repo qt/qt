@@ -23,7 +23,6 @@ int main(int argc, char **argv)
         "<li>Press <font color=\"purple\">J</font> to make the stickman jump.</li>"
         "<li>Press <font color=\"purple\">D</font> to make the stickman dance.</li>"
         "<li>Press <font color=\"purple\">C</font> to make him chill out.</li>"
-        "<li>Press <font color=\"purple\">Return</font> to make him return to his original position.</li>"
         "<li>When you are done, press <font color=\"purple\">Escape</font>.</li>"
         "</i></p>"
         "<p>If he is unlucky, the stickman will get struck by lightning, and never jump, dance or chill out again."
@@ -46,7 +45,6 @@ int main(int argc, char **argv)
     view->setSceneRect(scene->sceneRect());
     
     LifeCycle *cycle = new LifeCycle(stickMan, view);
-    cycle->setResetKey(Qt::Key_Return);
     cycle->setDeathAnimation("animations/dead");
     
     cycle->addActivity("animations/jumping", Qt::Key_J);
