@@ -62,8 +62,6 @@ class BookmarkWidget;
 class CmdLineParser;
 class QtDocInstaller;
 
-class SearchWidget;
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -159,7 +157,6 @@ private:
     QMenu *m_toolBarMenu;
 
     CmdLineParser *m_cmdLine;
-    SearchWidget *m_searchWidget;
 
     QWidget *m_progressWidget;
     QtDocInstaller *m_qtDocInstaller;

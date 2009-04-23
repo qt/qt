@@ -88,7 +88,6 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     : QMainWindow(parent)
     , m_toolBarMenu(0)
     , m_cmdLine(cmdLine)
-    , m_searchWidget(0)
     , m_progressWidget(0)
     , m_qtDocInstaller(0)
     , m_connectedInitSignals(false)
@@ -125,20 +124,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     connect(searchEngine, SIGNAL(indexingStarted()), this, SLOT(indexingStarted()));
     connect(searchEngine, SIGNAL(indexingFinished()), this, SLOT(indexingFinished()));
 
-#ifdef QT_CLUCENE_SUPPORT
     m_centralWidget->createSearchWidget(searchEngine);
-#else
-    QDockWidget *dock = new QDockWidget(tr("Search"), this);
-    dock->setObjectName(QLatin1String("SearchWindow"));
-    m_searchWidget = new SearchWidget(searchEngine, this);
-    dock->setWidget(m_searchWidget);
-    addDockWidget(Qt::LeftDockWidgetArea, dock);
-
-    connect(m_searchWidget, SIGNAL(requestShowLink(QUrl)), m_centralWidget,
-        SLOT(setSource(QUrl)));
-    connect(m_searchWidget, SIGNAL(requestShowLinkInNewTab(QUrl)),
-        m_centralWidget, SLOT(setSourceInNewTab(QUrl)));
-#endif
 
     QString defWindowTitle = tr("Qt Assistant");
     setWindowTitle(defWindowTitle);
@@ -882,19 +868,12 @@ void MainWindow::activateCurrentCentralWidgetTab()
 
 void MainWindow::showSearch()
 {
-    if (m_searchWidget)
-        activateDockWidget(m_searchWidget);
-    else
-        m_centralWidget->activateSearch();
+    m_centralWidget->activateSearch();
 }
 
 void MainWindow::hideSearch()
 {
-    if (m_searchWidget) {
-        m_searchWidget->parentWidget()->parentWidget()->hide();
-    } else {
-        m_centralWidget->removeSearchWidget();
-    }
+    m_centralWidget->removeSearchWidget();
 }
 
 void MainWindow::updateApplicationFont()

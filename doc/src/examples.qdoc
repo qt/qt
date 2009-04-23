@@ -209,6 +209,7 @@
     \o  \l{network/loopback}{Loopback}
     \o  \l{network/threadedfortuneserver}{Threaded Fortune Server}\raisedaster
     \o  \l{network/torrent}{Torrent}
+    \o  \l{network/googlesuggest}{Google Suggest}
     \endlist
 
     \section1 OpenGL
