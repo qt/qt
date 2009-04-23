@@ -104,7 +104,7 @@
             </Rect>
         </Flickable>
         <Image id="footer" width="{parent.width}" anchors.bottom="{parent.bottom}"
-                height="43" src="content/pics/footer.sci">
+                height="43" src="content/pics/footer.png">
             <Rect y="-1" width="{parent.width}" height="1" color="#555555"/>
             <Item id="backbutton" anchors.right="{reload.left}" anchors.rightMargin="10" anchors.verticalCenter="{parent.verticalCenter}" width="{back_e.width}" height="{back_e.height}">
                 <Image anchors.fill="{parent}" id="back_e" src="content/pics/back.png" />
