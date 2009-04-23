@@ -320,7 +320,7 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
-    \fn void QFxItem::keyPress()
+    \fn void QFxItem::keyPress(QObject *event)
 
     This signal is emitted when a key is pressed.
 
@@ -335,7 +335,7 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
-    \fn void QFxItem::keyRelease()
+    \fn void QFxItem::keyRelease(QObject *event)
 
     This signal is emitted when a key is released.
 

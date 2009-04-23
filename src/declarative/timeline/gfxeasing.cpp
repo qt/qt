@@ -454,169 +454,134 @@ Q_GLOBAL_STATIC(ConfigFunctionMap, configFunctionMap);
     \enum GfxEasing::Curve
 
     The type of easing curve.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::None 
+
+    \value None 
     Easing equation function for a simple linear tweening, with no easing.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InQuad 
+
+    \value InQuad 
     Easing equation function for a quadratic (t^2) easing in: accelerating from zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutQuad 
+
+    \value OutQuad 
     Easing equation function for a quadratic (t^2) easing out: decelerating to zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InOutQuad 
+
+    \value InOutQuad 
     Easing equation function for a quadratic (t^2) easing in/out: acceleration until halfway, then deceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutInQuad 
+
+    \value OutInQuad 
     Easing equation function for a quadratic (t^2) easing out/in: deceleration until halfway, then acceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InCubic 
+
+    \value InCubic 
     Easing equation function for a cubic (t^3) easing in: accelerating from zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutCubic 
+
+    \value OutCubic 
     Easing equation function for a cubic (t^3) easing out: decelerating from zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InOutCubic 
+
+    \value InOutCubic 
     Easing equation function for a cubic (t^3) easing in/out: acceleration until halfway, then deceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutInCubic 
+
+    \value OutInCubic 
     Easing equation function for a cubic (t^3) easing out/in: deceleration until halfway, then acceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InQuart 
+
+    \value InQuart 
     Easing equation function for a quartic (t^4) easing in: accelerating from zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutQuart 
+
+    \value OutQuart 
     Easing equation function for a quartic (t^4) easing out: decelerating from zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InOutQuart 
+
+    \value InOutQuart 
     Easing equation function for a quartic (t^4) easing in/out: acceleration until halfway, then deceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutInQuart 
+
+    \value OutInQuart 
     Easing equation function for a quartic (t^4) easing out/in: deceleration until halfway, then acceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InQuint 
+
+    \value InQuint 
     Easing equation function for a quintic (t^5) easing in: accelerating from zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutQuint 
+
+    \value OutQuint 
     Easing equation function for a quintic (t^5) easing out: decelerating from zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InOutQuint 
+
+    \value InOutQuint 
     Easing equation function for a quintic (t^5) easing in/out: acceleration until halfway, then deceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutInQuint 
+
+    \value OutInQuint 
     Easing equation function for a quintic (t^5) easing out/in: deceleration until halfway, then acceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InSine 
+
+    \value InSine 
     Easing equation function for a sinusoidal (sin(t)) easing in: accelerating from zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutSine 
+
+    \value OutSine 
     Easing equation function for a sinusoidal (sin(t)) easing out: decelerating from zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InOutSine 
+
+    \value InOutSine 
     Easing equation function for a sinusoidal (sin(t)) easing in/out: acceleration until halfway, then deceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutInSine 
+
+    \value OutInSine 
     Easing equation function for a sinusoidal (sin(t)) easing out/in: deceleration until halfway, then acceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InExpo 
+
+    \value InExpo 
     Easing equation function for an exponential (2^t) easing in: accelerating from zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutExpo 
+
+    \value OutExpo 
     Easing equation function for an exponential (2^t) easing out: decelerating from zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InOutExpo 
+
+    \value InOutExpo 
     Easing equation function for an exponential (2^t) easing in/out: acceleration until halfway, then deceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutInExpo 
+
+    \value OutInExpo 
     Easing equation function for an exponential (2^t) easing out/in: deceleration until halfway, then acceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InCirc 
+
+    \value InCirc 
     Easing equation function for a circular (sqrt(1-t^2)) easing in: accelerating from zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutCirc 
+
+    \value OutCirc 
     Easing equation function for a circular (sqrt(1-t^2)) easing out: decelerating from zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InOutCirc 
+
+    \value InOutCirc 
     Easing equation function for a circular (sqrt(1-t^2)) easing in/out: acceleration until halfway, then deceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutInCirc 
+
+    \value OutInCirc 
     Easing equation function for a circular (sqrt(1-t^2)) easing out/in: deceleration until halfway, then acceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InElastic 
-    Easing equation function for an elastic (exponentially decaying sine wave) easing in: accelerating from zero velocity.  The peak amplitude can be set with the \i amplitude parameter, and the period of decay by the \i period parameter.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutElastic 
-    Easing equation function for an elastic (exponentially decaying sine wave) easing out: decelerating from zero velocity.  The peak amplitude can be set with the \i amplitude parameter, and the period of decay by the \i period parameter.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InOutElastic 
+
+    \value InElastic
+    Easing equation function for an elastic (exponentially decaying
+    sine wave) easing in: accelerating from zero velocity.  The peak
+    amplitude can be set with the \e amplitude parameter, and the
+    period of decay by the \e period parameter.
+
+    \value OutElastic
+    Easing equation function for an elastic (exponentially decaying
+    sine wave) easing out: decelerating from zero velocity.  The peak
+    amplitude can be set with the \e amplitude parameter, and the
+    period of decay by the \e period parameter.
+
+    \value InOutElastic 
     Easing equation function for an elastic (exponentially decaying sine wave) easing in/out: acceleration until halfway, then deceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutInElastic 
+
+    \value OutInElastic 
     Easing equation function for an elastic (exponentially decaying sine wave) easing out/in: deceleration until halfway, then acceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InBack 
+
+    \value InBack 
     Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing in: accelerating from zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutBack 
+
+    \value OutBack 
     Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing out: decelerating from zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InOutBack 
+
+    \value InOutBack 
     Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing in/out: acceleration until halfway, then deceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutInBack 
+
+    \value OutInBack 
     Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing out/in: deceleration until halfway, then acceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutBounce 
+
+    \value OutBounce 
     Easing equation function for a bounce (exponentially decaying parabolic bounce) easing out: decelerating from zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InBounce 
+
+    \value InBounce 
     Easing equation function for a bounce (exponentially decaying parabolic bounce) easing in: accelerating from zero velocity.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::InOutBounce 
+
+    \value InOutBounce 
     Easing equation function for a bounce (exponentially decaying parabolic bounce) easing in/out: acceleration until halfway, then deceleration.
-*/
-/*!
-    \var GfxEasing::Curve GfxEasing::OutInBounce 
+
+    \value OutInBounce 
     Easing equation function for a bounce (exponentially decaying parabolic bounce) easing out/in: deceleration until halfway, then acceleration.
 */
 
