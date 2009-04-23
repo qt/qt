@@ -593,6 +593,16 @@ void tst_QTransform::types()
     m3.translate(5.0f, 5.0f);
     QCOMPARE(m3.type(), QTransform::TxScale);
     QCOMPARE(m3.inverted().type(), QTransform::TxScale);
+
+    m3.setMatrix(1.0f, 0.0f, 0.0f,
+                 0.0f, 1.0f, 0.0f,
+                 0.0f, 0.0f, 2.0f);
+    QCOMPARE(m3.type(), QTransform::TxProject);
+
+    m3.setMatrix(0.0f, 2.0f, 0.0f,
+                 1.0f, 0.0f, 0.0f,
+                 0.0f, 0.0f, 2.0f);
+    QCOMPARE(m3.type(), QTransform::TxProject);
 }
 
 

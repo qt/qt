@@ -1532,7 +1532,7 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
             value = rect;
         } else {
             value = QTransform(1/d->stretch_x, 0, 0, 1/d->stretch_y, 0, 0)
-                    .mapRect(d->fullPage ? d->devPaperRect : d->devPageRect);
+                    .mapRect(d->fullPage ? d->devPhysicalPageRect : d->devPageRect);
         }
         break;
 
