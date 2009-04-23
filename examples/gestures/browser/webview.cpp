@@ -316,10 +316,34 @@ bool WebView::event(QEvent *event)
 void WebView::gestureEvent(QGestureEvent *event)
 {
     if (const QGesture *g = event->gesture(Qt::PanGesture)) {
-        if (QWebFrame *frame = page()->mainFrame()) {
-            QPoint offset = g->pos() - g->lastPos();
-            frame->setScrollPosition(frame->scrollPosition() - offset);
+        if (g->state() == Qt::GestureUpdated) {
+            if (QWebFrame *frame = page()->mainFrame()) {
+                QPoint offset = g->pos() - g->lastPos();
+                frame->setScrollPosition(frame->scrollPosition() - offset);
+            }
+            speed = g->pos() - g->lastPos();
+        } else if (g->state() == Qt::GestureStarted) {
+            startTimer(20);
+        } else {
         }
         event->accept();
     }
+}
+
+static QPoint deaccelerate(const QPoint &speed, int a = 1, int max = 64)
+{
+    int x = qBound(-max, speed.x(), max);
+    int y = qBound(-max, speed.y(), max);
+    x = (x == 0) ? x : (x > 0) ? qMax(0, x - a) : qMin(0, x + a);
+    y = (y == 0) ? y : (y > 0) ? qMax(0, y - a) : qMin(0, y + a);
+    return QPoint(x, y);
+}
+
+void WebView::timerEvent(QTimerEvent *event)
+{
+    speed = deaccelerate(speed);
+    if (speed.isNull())
+        killTimer(event->timerId());
+    if (QWebFrame *frame = page()->mainFrame())
+        frame->setScrollPosition(frame->scrollPosition() - speed);
 }

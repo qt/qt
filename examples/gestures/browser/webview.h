@@ -99,6 +99,7 @@ public:
 protected:
     bool event(QEvent *event);
     void gestureEvent(QGestureEvent *event);
+    void timerEvent(QTimerEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void contextMenuEvent(QContextMenuEvent *event);
@@ -116,6 +117,7 @@ private:
     QUrl m_initialUrl;
     int m_progress;
     WebPage *m_page;
+    QPoint speed;
 };
 
 #endif
