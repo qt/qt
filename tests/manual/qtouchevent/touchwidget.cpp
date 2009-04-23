@@ -1,8 +1,9 @@
 #include "touchwidget.h"
 
-#include <QMouseEvent>
+#include <QApplication>
+#include <QtEvents>
+#include <QTimer>
 #include <QTouchEvent>
-
 
 void TouchWidget::reset()
 {
@@ -69,7 +70,7 @@ bool TouchWidget::event(QEvent *event)
     case QEvent::MouseButtonRelease:
         seenMouseRelease = true;
         if (closeWindowOnMouseRelease)
-            window()->close();
+            window()->close();        
         if (acceptMouseRelease) {
             event->accept();
             return true;
