@@ -109,7 +109,7 @@ void tst_QFxPathView::items()
     model.addItem("Bob", "54321");
 
     QmlContext *ctxt = canvas->rootContext();
-    ctxt->setProperty("testModel", &model);
+    ctxt->setContextProperty("testModel", &model);
 
     canvas->execute();
     qApp->processEvents();
@@ -142,7 +142,7 @@ void tst_QFxPathView::pathMoved()
     model.addItem("Bill", "4321");
 
     QmlContext *ctxt = canvas->rootContext();
-    ctxt->setProperty("testModel", &model);
+    ctxt->setContextProperty("testModel", &model);
 
     canvas->execute();
     qApp->processEvents();
@@ -183,7 +183,7 @@ void tst_QFxPathView::limitedItems()
         model.addItem("Bob", QString::number(i));
 
     QmlContext *ctxt = canvas->rootContext();
-    ctxt->setProperty("testModel", &model);
+    ctxt->setContextProperty("testModel", &model);
 
     canvas->execute();
     qApp->processEvents();

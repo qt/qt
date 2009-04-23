@@ -134,7 +134,7 @@ void tst_qfxtext::width()
         QmlComponent textComponent(&engine, "<Text text=\"\"/>");
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
-        QCOMPARE(textObject->width(), 0);
+        QCOMPARE(textObject->width(), 0.);
     }
 
     for (int i = 0; i < standard.size(); i++)
@@ -147,7 +147,7 @@ void tst_qfxtext::width()
         QmlComponent textComponent(&engine, componentStr.toLatin1());
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
-        QCOMPARE(textObject->width(), metricWidth);
+        QCOMPARE(textObject->width(), qreal(metricWidth));
     }
 
     for (int i = 0; i < richText.size(); i++)
@@ -162,7 +162,7 @@ void tst_qfxtext::width()
         QmlComponent textComponent(&engine, componentStr.toLatin1());
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
-        QCOMPARE(textObject->width(), documentWidth);
+        QCOMPARE(textObject->width(), qreal(documentWidth));
     }
 }
 
@@ -175,7 +175,7 @@ void tst_qfxtext::wrap()
         QmlComponent textComponent(&engine, "<Text text=\"\" wrap=\"true\" width=\"300\"/>");
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
-        QCOMPARE(textObject->width(), 300);
+        QCOMPARE(textObject->width(), 300.);
     }
 
     for (int i = 0; i < standard.size(); i++)
@@ -184,7 +184,7 @@ void tst_qfxtext::wrap()
         QmlComponent textComponent(&engine, componentStr.toLatin1());
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
-        QCOMPARE(textObject->width(), 300);
+        QCOMPARE(textObject->width(), 300.);
     }
 
     for (int i = 0; i < richText.size(); i++)
@@ -193,7 +193,7 @@ void tst_qfxtext::wrap()
         QmlComponent textComponent(&engine, componentStr.toLatin1());
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
-        QCOMPARE(textObject->width(), 300);
+        QCOMPARE(textObject->width(), 300.);
     }
 
 }
@@ -210,7 +210,7 @@ void tst_qfxtext::elide()
             QmlComponent textComponent(&engine, ("<Text text=\"\" "+elide+" width=\"300\"/>").toLatin1());
             QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
-            QCOMPARE(textObject->width(), 300);
+            QCOMPARE(textObject->width(), 300.);
         }
 
         for (int i = 0; i < standard.size(); i++)
@@ -219,7 +219,7 @@ void tst_qfxtext::elide()
             QmlComponent textComponent(&engine, componentStr.toLatin1());
             QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
-            QCOMPARE(textObject->width(), 300);
+            QCOMPARE(textObject->width(), 300.);
         }
 
         // richtext - does nothing
@@ -229,7 +229,7 @@ void tst_qfxtext::elide()
             QmlComponent textComponent(&engine, componentStr.toLatin1());
             QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
-            QCOMPARE(textObject->width(), 300);
+            QCOMPARE(textObject->width(), 300.);
         }
     }
 }

@@ -56,7 +56,9 @@ class QmlList : private QmlPrivate::ListInterface
 public:
     virtual void append(T) = 0;
     virtual void insert(int, T) = 0;
+    virtual void removeAt(int) = 0;
     virtual T at(int) const = 0;
+    virtual int count() const = 0;
     virtual void clear() = 0;
     QmlList<T> &operator<<(T t) { append(t); return *this; }
 
