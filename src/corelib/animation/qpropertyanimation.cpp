@@ -49,7 +49,7 @@
     by itself as a simple animation class, or as part of more complex
     animations through QAnimationGroup.
 
-    The most common way to use QPropertyAnimation is to construct an instance 
+    The most common way to use QPropertyAnimation is to construct an instance
     of it by passing a pointer to a QObject or a QWidget, and the name of the
     property you would like to animate to QPropertyAnimation's constructor.
 
@@ -220,11 +220,20 @@ void QPropertyAnimation::updateCurrentValue(const QVariant &value)
 
 /*!
     \reimp
+
+    If the startValue is not defined when the state of the animation changes from Stopped to Running,
+    the current property value is used as the initial value for the animation.
 */
 void QPropertyAnimation::updateState(QAbstractAnimation::State oldState,
                                      QAbstractAnimation::State newState)
 {
     Q_D(QPropertyAnimation);
+
+    if (!d->target) {
+        qWarning("QPropertyAnimation::updateState: Changing state of an animation without target");
+        return;
+    }
+
     QVariantAnimation::updateState(oldState, newState);
     QMutexLocker locker(guardHashLock());
     QPropertyAnimationHash * hash = _q_runningAnimations();
@@ -235,20 +244,19 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State oldState,
         if (oldAnim) {
             // try to stop the top level group
             QAbstractAnimation *current = oldAnim;
-            while(current->group() && current->state() != Stopped) current = current->group();
+            while (current->group() && current->state() != Stopped)
+                current = current->group();
             current->stop();
         }
         hash->insert(key, this);
-        // Initialize start value
-        // ### review this line below, d->atEnd() ?
-        // ### avoid entering a state where start value is not set
-        if (d->target && (d->atBeginning() || d->atEnd())) {
+
+        // update the default start value
+        if (oldState == Stopped) {
             d->setDefaultStartValue(d->target->property(d->propertyName.constData()));
         }
     } else if (hash->value(key) == this) {
         hash->remove(key);
     }
-
 }
 
 #include "moc_qpropertyanimation.cpp"

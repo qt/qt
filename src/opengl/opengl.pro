@@ -25,7 +25,6 @@ HEADERS += qgl.h \
 	   qglcolormap.h \
 	   qglpixelbuffer.h \
 	   qglframebufferobject.h  \
-	   qglpixmapfilter_p.h  \
            qglshaderprogram.h
 
 SOURCES	+= qgl.cpp \
@@ -33,11 +32,10 @@ SOURCES	+= qgl.cpp \
 	   qglpixelbuffer.cpp \
 	   qglframebufferobject.cpp \
            qglextensions.cpp \
-           qglpixmapfilter.cpp \
            qglshaderprogram.cpp
 
 !contains(QT_CONFIG, opengles2) {
-    HEADERS += qpaintengine_opengl_p.h qglpixmapfilter_p.h 
+    HEADERS += qpaintengine_opengl_p.h qglpixmapfilter_p.h
     SOURCES += qpaintengine_opengl.cpp qglpixmapfilter.cpp
 }
 

@@ -128,7 +128,7 @@ class Q_CORE_EXPORT QVariant
         LineF = 24,
         Point = 25,
         PointF = 26,
-	RegExp = 27,
+        RegExp = 27,
         Hash = 28,
         LastCoreType = Hash,
 
@@ -181,7 +181,6 @@ class Q_CORE_EXPORT QVariant
     QVariant(qulonglong ull);
     QVariant(bool b);
     QVariant(double d);
-    QVariant(float f) { d.is_null = false; d.type = QMetaType::Float; d.data.f = f; }
 #ifndef QT_NO_CAST_FROM_ASCII
     QT_ASCII_CAST_WARN_CONSTRUCTOR QVariant(const char *str);
 #endif
@@ -350,7 +349,6 @@ class Q_CORE_EXPORT QVariant
             uint u;
             bool b;
             double d;
-            float f;
             qlonglong ll;
             qulonglong ull;
             void *ptr;
@@ -445,18 +443,7 @@ inline QVariant qVariantFromValue(const QVariant &t) { return t; }
 template <typename T>
 inline void qVariantSetValue(QVariant &v, const T &t)
 {
-    //if possible we reuse the current QVariant private
-    const int type = qMetaTypeId<T>(reinterpret_cast<T *>(0));
-    QVariant::Private &d = v.data_ptr();
-    if (type <= int(QVariant::Char) || (type == d.type && v.isDetached())) {
-        d.type = type;
-        T *old = reinterpret_cast<T*>(d.is_shared ? d.data.shared->ptr : &d.data.ptr);
-        if (QTypeInfo<T>::isComplex)
-            old->~T();
-        new (old) T(t); //call the copy constructor
-    } else {
-        v = QVariant(type, &t);
-    }
+    v = QVariant(qMetaTypeId<T>(reinterpret_cast<T *>(0)), &t);
 }
 
 inline QVariant::QVariant() {}
