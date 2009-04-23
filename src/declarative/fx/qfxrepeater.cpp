@@ -122,7 +122,7 @@ QML_DEFINE_TYPE(QFxRepeater,Repeater);
 /*!
     \internal
     \class QFxRepeater
-    \ingroup utility
+    \ingroup group_utility
     \qmlclass Repeater
 
     \brief The QFxRepeater class allows you to repeat a component based on a 

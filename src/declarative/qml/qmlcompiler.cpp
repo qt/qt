@@ -448,7 +448,7 @@ void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
     }
 
 bool QmlCompiler::compile(QmlEngine *engine, 
-                          QmlCompositeTypeManager::TypeData *unit,
+                          QmlCompositeTypeData *unit,
                           QmlCompiledComponent *out)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
@@ -463,7 +463,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
 
     // Compile types
     for(int ii = 0; ii < unit->types.count(); ++ii) {
-        QmlCompositeTypeManager::TypeData::TypeReference &tref = unit->types[ii];
+        QmlCompositeTypeData::TypeReference &tref = unit->types[ii];
         QmlCompiledComponent::TypeReference ref;
         if(tref.type)
             ref.type = tref.type;

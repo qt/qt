@@ -112,7 +112,7 @@ class Q_DECLARATIVE_EXPORT QmlCompiler
 public:
     QmlCompiler();
 
-    bool compile(QmlEngine *, QmlCompositeTypeManager::TypeData *, QmlCompiledComponent *);
+    bool compile(QmlEngine *, QmlCompositeTypeData *, QmlCompiledComponent *);
 
     bool isError() const;
     qint64 errorLine() const;

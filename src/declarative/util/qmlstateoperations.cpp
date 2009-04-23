@@ -236,7 +236,7 @@ QmlRunScript::ActionList QmlRunScript::actions()
     \class QmlSetProperty
     \brief The QmlSetProperty class describes a new property value or binding for a state.
 
-    \ingroup states
+    \ingroup group_states
 
     \sa QmlSetProperties
 */

@@ -242,7 +242,7 @@ QML_DEFINE_TYPE(QFxMouseRegion,MouseRegion);
     \class QFxMouseRegion
     \brief The QFxMouseRegion class provides a simple mouse handling abstraction for use within Qml.
 
-    \ingroup coreitems
+    \ingroup group_coreitems
 
     All QFxItem derived classes can do mouse handling but the QFxMouseRegion class exposes mouse
     handling data as properties and tracks flicking and dragging of the mouse.

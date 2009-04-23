@@ -111,7 +111,7 @@ public:
 /*!
     \internal
     \class QFxReflectionFilter
-    \ingroup effects
+    \ingroup group_effects
     \brief The QFxReflectionFilter class allows you to add a reflection to an item.
 */
 QFxReflectionFilter::QFxReflectionFilter(QObject *parent)

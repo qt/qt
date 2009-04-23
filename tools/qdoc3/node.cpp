@@ -1060,7 +1060,7 @@ QString QmlClassNode::fileBase() const
   always a QmlClassNode. 
  */
 QmlPropGroupNode::QmlPropGroupNode(QmlClassNode* parent, const QString& name)
-    : FakeNode(parent, name, QmlPropertyGroup)
+    : FakeNode(parent, name, QmlPropertyGroup), isdefault(false)
 {
     // nothing.
 }

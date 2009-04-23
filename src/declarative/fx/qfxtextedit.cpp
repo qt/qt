@@ -83,7 +83,7 @@ QML_DEFINE_TYPE(QFxTextEdit, TextEdit);
     \internal
     \class QFxTextEdit
     \qmlclass TextEdit
-    \ingroup coreitems
+    \ingroup group_coreitems
 
     \brief The QFxTextEdit class provides an editable formatted text item that you can add to a QFxView.
 

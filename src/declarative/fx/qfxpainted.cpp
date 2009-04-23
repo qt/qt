@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
     \class QFxPainted
     \brief QFxPainted is an abstract base class for QFxView items that paint using QPainter.
 
-    \ingroup coreitems
+    \ingroup group_coreitems
 
     This is a convenience class allowing easy use of QPainter within a custom item.
     The contents of the item are cached behind the scenes. Any time you change the contents

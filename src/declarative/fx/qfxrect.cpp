@@ -49,7 +49,7 @@ QML_DEFINE_TYPE(QFxPen,Pen);
 /*!
     \internal
     \class QFxPen
-    \ingroup utility
+    \ingroup group_utility
     \brief The QFxPen class provides a pen used for drawing rect borders on a QFxView.
 
     Example:
@@ -126,7 +126,7 @@ QML_DEFINE_TYPE(QFxRect,Rect);
 
     A QFxRect object can be instantiated in Qml using the tag \l Rect.
 
-    \ingroup coreitems
+    \ingroup group_coreitems
 */
 QFxRect::QFxRect(QFxItem *parent)
   : QFxItem(*(new QFxRectPrivate), parent)
