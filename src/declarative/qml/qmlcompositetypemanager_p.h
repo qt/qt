@@ -53,70 +53,71 @@ class QmlEngine;
 class QmlCompiledComponent;
 class QmlComponentPrivate;
 class QmlComponent;
+struct QmlCompositeTypeData : public QmlRefCount
+{
+    QmlCompositeTypeData();
+    virtual ~QmlCompositeTypeData();
+
+    enum Status { 
+        Invalid,
+        Complete,
+        Error,
+        Waiting
+    };
+    Status status;
+    QString errorDescription;
+
+    QString url;
+    QList<QmlCompositeTypeData *> dependants;
+
+    // Return a QmlComponent if the QmlCompositeTypeData is not in the Waiting 
+    // state.  The QmlComponent is owned by the QmlCompositeTypeData, so a 
+    // reference should be kept to keep the QmlComponent alive.
+    QmlComponent *toComponent(QmlEngine *);
+    // Return a QmlCompiledComponent if possible, or 0 if an error
+    // occurs
+    QmlCompiledComponent *toCompiledComponent(QmlEngine *);
+
+    struct TypeReference 
+    {
+        TypeReference();
+
+        QmlType *type;
+        QmlCompositeTypeData *unit;
+        QmlCustomParser *parser;
+    };
+
+    QList<TypeReference> types;
+
+    // Add or remove p as a waiter.  When the QmlCompositeTypeData becomes 
+    // ready, the QmlComponentPrivate::typeDataReady() method will be invoked on
+    // p.  The waiter is automatically removed when the typeDataReady() method
+    // is invoked, so there is no need to call remWaiter() in this case.
+    void addWaiter(QmlComponentPrivate *p);
+    void remWaiter(QmlComponentPrivate *p);
+
+private:
+    friend class QmlCompositeTypeManager;
+    friend class QmlCompiler;
+
+    QmlXmlParser data;
+    QList<QmlComponentPrivate *> waiters;
+    QmlComponent *component;
+    QmlCompiledComponent *compiledComponent;
+};
+
 class QmlCompositeTypeManager : public QObject
 {
     Q_OBJECT
 public:
     QmlCompositeTypeManager(QmlEngine *);
 
-    struct TypeData : public QmlRefCount
-    {
-        TypeData();
-        virtual ~TypeData();
-
-        enum Status { 
-            Invalid,
-            Complete,
-            Error,
-            Waiting
-        };
-        Status status;
-        QString errorDescription;
-
-        QString url;
-        QList<TypeData *> dependants;
-
-        // Return a QmlComponent if the TypeData is not in the Waiting state.
-        // The QmlComponent is owned by the TypeData, so a reference should be
-        // kept to keep the QmlComponent alive.
-        QmlComponent *toComponent(QmlEngine *);
-        // Return a QmlCompiledComponent if possible, or 0 if an error
-        // occurs
-        QmlCompiledComponent *toCompiledComponent(QmlEngine *);
-
-        struct TypeReference 
-        {
-            TypeReference();
-
-            QmlType *type;
-            TypeData *unit;
-            QmlCustomParser *parser;
-        };
-
-        QList<TypeReference> types;
-
-        // Add or remove p as a waiter.  When the TypeData becomes ready, the
-        // QmlComponentPrivate::typeDataReady() method will be invoked on p.
-        // The waiter is automatically removed when the typeDataReady() method
-        // is invoked, so there is no need to call remWaiter() in this case.
-        void addWaiter(QmlComponentPrivate *p);
-        void remWaiter(QmlComponentPrivate *p);
-
-    private:
-        friend class QmlCompositeTypeManager;
-        friend class QmlCompiler;
-
-        QmlXmlParser data;
-        QList<QmlComponentPrivate *> waiters;
-        QmlComponent *component;
-        QmlCompiledComponent *compiledComponent;
-    };
-
-    // Return a TypeData for url.  The TypeData may be cached.
-    TypeData *get(const QUrl &url);
-    // Return a TypeData for data, with the provided base url.  The TypeData 
-    // will not be cached.
-    TypeData *getImmediate(const QByteArray &data, const QUrl &url);
+    // Return a QmlCompositeTypeData for url.  The QmlCompositeTypeData may be 
+    // cached.
+    QmlCompositeTypeData *get(const QUrl &url);
+    // Return a QmlCompositeTypeData for data, with the provided base url.  The
+   //  QmlCompositeTypeData will not be cached.
+    QmlCompositeTypeData *getImmediate(const QByteArray &data, const QUrl &url);
 
     // Clear cached types.  Only types that aren't in the Waiting state will
     // be cleared.
@@ -126,15 +127,15 @@ private Q_SLOTS:
     void replyFinished();
 
 private:
-    void loadSource(TypeData *);
-    void compile(TypeData *);
-    void setData(TypeData *, const QByteArray &, const QUrl &);
+    void loadSource(QmlCompositeTypeData *);
+    void compile(QmlCompositeTypeData *);
+    void setData(QmlCompositeTypeData *, const QByteArray &, const QUrl &);
 
-    void doComplete(TypeData *);
-    void checkComplete(TypeData *);
+    void doComplete(QmlCompositeTypeData *);
+    void checkComplete(QmlCompositeTypeData *);
 
     QmlEngine *engine;
-    typedef QHash<QString, TypeData *> Components;
+    typedef QHash<QString, QmlCompositeTypeData *> Components;
     Components components;
 };
 

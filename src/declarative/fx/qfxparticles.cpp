@@ -110,7 +110,7 @@ QML_DEFINE_TYPE(QFxParticleMotion,ParticleMotion);
 
 /*!
     \class QFxParticleMotion
-    \ingroup effects
+    \ingroup group_effects
     \brief The QFxParticleMotion class is the base class for particle motion.
 
     This class causes the particles to remain static.
@@ -160,7 +160,7 @@ void QFxParticleMotion::destroy(QFxParticle &particle)
 /*!
     \internal
     \class QFxParticleMotionLinear
-    \ingroup effects
+    \ingroup group_effects
     \brief The QFxParticleMotionLinear class moves the particles linearly.
 
     \sa QFxParticles
@@ -184,7 +184,7 @@ void QFxParticleMotionLinear::advance(QFxParticle &p, int interval)
 /*!
     \internal
     \class QFxParticleMotionGravity
-    \ingroup effects
+    \ingroup group_effects
     \brief The QFxParticleMotionGravity class moves the particles towards a point.
 
     \sa QFxParticles
@@ -259,7 +259,7 @@ void QFxParticleMotionGravity::advance(QFxParticle &p, int interval)
 /*!
     \internal
     \class QFxParticleMotionWander
-    \ingroup effects
+    \ingroup group_effects
     \brief The QFxParticleMotionWander class moves particles in a somewhat random fashion.
 
     The particles will continue roughly in the original direction, however will randomly
@@ -544,7 +544,7 @@ QML_DEFINE_TYPE(QFxParticles,Particles);
 /*!
     \internal
     \class QFxParticles
-    \ingroup effects
+    \ingroup group_effects
     \brief The QFxParticles class generates and moves particles.
 */
 

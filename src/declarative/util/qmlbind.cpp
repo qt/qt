@@ -91,7 +91,7 @@ QML_DEFINE_TYPE(QmlBind,Bind);
 /*!
     \internal
     \class QmlBind
-    \ingroup utility
+    \ingroup group_utility
     \brief The QmlBind class allows arbitrary property bindings to be created.
 
     Simple bindings are usually earier to do in-place rather than creating a

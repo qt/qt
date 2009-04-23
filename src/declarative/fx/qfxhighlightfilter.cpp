@@ -96,7 +96,7 @@ public:
 /*!
     \internal
     \class QFxHighlightFilter
-    \ingroup effects
+    \ingroup group_effects
     \brief The QFxHightlightFilter class allows you to add a highlight to an item.
 */
 

@@ -344,7 +344,7 @@ public:
     \class QFxFlipable
     \brief The QFxFlipable class provides a flipable surface.
 
-    \ingroup widgets
+    \ingroup group_widgets
 
     QFxFlipable allows you to specify a front and a back, as well as an
     axis for the flip.

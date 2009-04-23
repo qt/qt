@@ -99,7 +99,7 @@ QML_DEFINE_TYPE(QFxImage,Image);
     \class QFxImage Image
     \brief The QFxImage class provides an image item that you can add to a QFxView.
 
-    \ingroup coreitems
+    \ingroup group_coreitems
 
     Example:
     \code

@@ -56,7 +56,7 @@ QML_DEFINE_TYPE(QFxKeyProxy,KeyProxy);
     \internal
     \class QFxKeyProxy
     \brief The QFxKeyProxy class proxies key presses to a number of other elements.
-    \ingroup utility
+    \ingroup group_utility
 */
 
 class QFxKeyProxyPrivate

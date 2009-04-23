@@ -93,7 +93,7 @@ public:
 /*!
     \internal
     \class QFxBlurFilter
-    \ingroup effects
+    \ingroup group_effects
     \brief The QFxBlurFilter class allows you to blur an item.
 */
 

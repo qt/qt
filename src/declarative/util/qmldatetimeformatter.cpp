@@ -85,7 +85,7 @@ public:
 /*!
     \internal
     \class QmlDateTimeFormatter
-    \ingroup utility
+    \ingroup group_utility
     \brief The QmlDateTimeFormatter class allows you to format a date string.
 */
 

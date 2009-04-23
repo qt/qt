@@ -12,7 +12,6 @@
 
 
 /*!
-  \relates <tokens.h>
   Returns a string representation of token \a tok.
 */
 const char *tokenToString(Token tok)

@@ -67,6 +67,17 @@ class QByteArray;
 */
 QML_DEFINE_TYPE(QmlComponent,Component);
 
+/*!
+    \enum QmlComponent::Status
+    
+    Specifies the loading status of the QmlComponent.
+
+    \o Null This QmlComponent has no data.  Call loadUrl() or setData() to add QML content.
+    \o Ready This QmlComponent is ready and create() may be called.
+    \o Loading This QmlComponent is loading network data.
+    \o Error An error has occured.  Calling errorDescription() to retrieve a description.
+*/
+
 void QmlComponentPrivate::typeDataReady()
 {
     Q_Q(QmlComponent);
@@ -76,19 +87,21 @@ void QmlComponentPrivate::typeDataReady()
     fromTypeData(typeData);
     typeData = 0;
 
-    emit q->readyChanged();
+    emit q->statusChanged(q->status());
 }
 
-void QmlComponentPrivate::fromTypeData(QmlCompositeTypeManager::TypeData *data)
+void QmlComponentPrivate::fromTypeData(QmlCompositeTypeData *data)
 {
-    name = data->url;
+    url = QUrl(data->url);
     QmlCompiledComponent *c = data->toCompiledComponent(engine);
 
     if(!c) {
-        Q_ASSERT(data->status == QmlCompositeTypeManager::TypeData::Error);
+        Q_ASSERT(data->status == QmlCompositeTypeData::Error);
 
+        errorDescription = data->errorDescription;
         qWarning().nospace() << "QmlComponent: "
                              << data->errorDescription.toLatin1().constData();
+
     } else {
 
         cc = c;
@@ -98,14 +111,26 @@ void QmlComponentPrivate::fromTypeData(QmlCompositeTypeManager::TypeData *data)
     data->release();
 }
 
+void QmlComponentPrivate::clear()
+{
+    if(typeData) {
+        typeData->remWaiter(this);
+        typeData->release();
+        typeData = 0;
+    }
+        
+    if(cc) { 
+        cc->release();
+        cc = 0;
+    }
+}
+
 /*!
-    Construct a null QmlComponent.
+    \internal
 */
 QmlComponent::QmlComponent(QObject *parent)
     : QObject(*(new QmlComponentPrivate), parent)
 {
-    Q_D(QmlComponent);
-    d->name = QLatin1String("<unspecified file>");
 }
 
 /*!
@@ -122,62 +147,66 @@ QmlComponent::~QmlComponent()
         d->cc->release();
 }
 
-/*!
-    \property QmlComponent::name
-    \brief the component's name.
-
-    The component's name is used in error and warning messages.  If available,
-    the XML source file name is used as the component's name, otherwise it is
-    set to "<unspecified file>".
-*/
-QString QmlComponent::name() const
+QmlComponent::Status QmlComponent::status() const
 {
     Q_D(const QmlComponent);
-    return d->name;
-}
 
-void QmlComponent::setName(const QString &name)
-{
-    Q_D(QmlComponent);
-    d->name = name;
+    if(d->typeData)
+        return Loading;
+    else if(d->engine && d->cc)
+        return Ready;
+    else if(!d->errorDescription.isEmpty())
+        return Error;
+    else
+        return Null;
 }
 
 /*!
-    \internal
+    Returns true if the component is in the Null state, false otherwise.
+
+    Equivalent to status() == QmlComponent::Null.
 */
-QmlComponent::QmlComponent(QmlEngine *engine, QmlCompiledComponent *cc, int start, int count, QObject *parent)
-    : QObject(*(new QmlComponentPrivate), parent)
+bool QmlComponent::isNull() const
 {
-    Q_D(QmlComponent);
-    d->engine = engine;
-    d->name = QLatin1String("<unspecified file>");
-    d->cc = cc;
-    cc->addref();
-    d->start = start;
-    d->count = count;
+    return status() == Null;
 }
 
-QmlComponent::QmlComponent(QmlEngine *engine, const QUrl &url, QObject *parent)
-: QObject(*(new QmlComponentPrivate), parent)
+/*!
+    Returns true if the component is in the Ready state, false otherwise.
+
+    Equivalent to status() == QmlComponent::Ready.
+*/
+bool QmlComponent::isReady() const
 {
-    Q_D(QmlComponent);
-    d->engine = engine;
-    d->name = url.toString();
-
-    QmlCompositeTypeManager::TypeData *data = 
-        engine->d_func()->typeManager.get(url);
-
-    if(data->status == QmlCompositeTypeManager::TypeData::Waiting) {
-
-        d->typeData = data;
-        d->typeData->addWaiter(d);
-
-    } else {
-
-        d->fromTypeData(data);
-
-    }
+    return status() == Ready;
 }
+
+/*!
+    Returns true if the component is in the Error state, false otherwise.
+
+    Equivalent to status() == QmlComponent::Error.
+*/
+bool QmlComponent::isError() const
+{
+    return status() == Error;
+}
+
+/*!
+    Returns true if the component is in the Loading state, false otherwise.
+
+    Equivalent to status() == QmlComponent::Loading.
+*/
+bool QmlComponent::isLoading() const
+{
+    return status() == Loading;
+}
+
+/*!
+    \fn void QmlComponent::statusChanged(QmlComponent::Status status)
+
+    Emitted whenever the component's status changes.  \a status will be the
+    new status.
+*/
 
 /*!
     Create a QmlComponent with no data. Set setData().
@@ -187,6 +216,17 @@ QmlComponent::QmlComponent(QmlEngine *engine, QObject *parent)
 {
     Q_D(QmlComponent);
     d->engine = engine;
+}
+
+/*!
+    Create a QmlComponent from the given \a url.
+*/
+QmlComponent::QmlComponent(QmlEngine *engine, const QUrl &url, QObject *parent)
+: QObject(*(new QmlComponentPrivate), parent)
+{
+    Q_D(QmlComponent);
+    d->engine = engine;
+    loadUrl(url);
 }
 
 /*!
@@ -203,27 +243,36 @@ QmlComponent::QmlComponent(QmlEngine *engine, const QByteArray &data, const QUrl
 }
 
 /*!
-    Sets the QmlComponent to use the given XML \a data.  If provided, \a filename
-    is used to set the component name, and to provide a base path for items
-    resolved by this component.
+    \internal
+*/
+QmlComponent::QmlComponent(QmlEngine *engine, QmlCompiledComponent *cc, int start, int count, QObject *parent)
+    : QObject(*(new QmlComponentPrivate), parent)
+{
+    Q_D(QmlComponent);
+    d->engine = engine;
+    d->cc = cc;
+    cc->addref();
+    d->start = start;
+    d->count = count;
+}
 
-    Currently only supported to call once per component.
+/*!
+    Sets the QmlComponent to use the given XML \a data.  If provided, 
+    \a filename is used to set the component name, and to provide a base path 
+    for items resolved by this component.
 */
 void QmlComponent::setData(const QByteArray &data, const QUrl &url)
 {
     Q_D(QmlComponent);
 
-    if(d->cc) d->cc->release();
-    if(d->typeData) d->typeData->release();
-    d->cc = 0;
-    d->typeData = 0;
+    d->clear();
 
-    d->name = url.toString();
+    d->url = url;
 
-    QmlCompositeTypeManager::TypeData *typeData = 
+    QmlCompositeTypeData *typeData = 
         d->engine->d_func()->typeManager.getImmediate(data, url);
     
-    if(typeData->status == QmlCompositeTypeManager::TypeData::Waiting) {
+    if(typeData->status == QmlCompositeTypeData::Waiting) {
 
         d->typeData = typeData;
         d->typeData->addWaiter(d);
@@ -234,13 +283,54 @@ void QmlComponent::setData(const QByteArray &data, const QUrl &url)
 
     }
 
+    emit statusChanged(status());
 }
 
-bool QmlComponent::isReady() const
+/*!
+    Load the QmlComponent from the provided \a url.
+*/
+void QmlComponent::loadUrl(const QUrl &url)
+{
+    Q_D(QmlComponent);
+
+    d->clear();
+
+    d->url = url;
+
+    QmlCompositeTypeData *data = 
+        d->engine->d_func()->typeManager.get(url);
+
+    if(data->status == QmlCompositeTypeData::Waiting) {
+
+        d->typeData = data;
+        d->typeData->addWaiter(d);
+
+    } else {
+
+        d->fromTypeData(data);
+
+    }
+
+    emit statusChanged(status());
+}
+
+QString QmlComponent::errorDescription() const
 {
     Q_D(const QmlComponent);
+    if(isError())
+        return d->errorDescription;
+    else
+        return QString();
+}
 
-    return d->engine && !d->typeData;
+/*!
+    Return the component URL.  This is the URL passed to either the constructor,
+    or the loadUrl() or setData() methods.
+*/
+QUrl QmlComponent::url() const
+{
+    Q_D(const QmlComponent);
+    return d->url;
 }
 
 /*!
@@ -249,9 +339,6 @@ bool QmlComponent::isReady() const
 QmlComponent::QmlComponent(QmlComponentPrivate &dd, QObject *parent)
     : QObject(dd, parent)
 {
-    Q_D(QmlComponent);
-    d->name = QLatin1String("<unspecified file>");
-    d->cc = new QmlCompiledComponent;
 }
 
 /*!
@@ -320,8 +407,9 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
         qWarning("QmlComponent: Cannot create new component instance before completing the previous");
         return 0;
     }
-    if (!d->cc) {
-        qWarning("QmlComponent: Cannot load component data");
+
+    if(!isReady()) {
+        qWarning("QmlComponent: Cannot create un-ready component");
         return 0;
     }
 
@@ -345,7 +433,7 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
                              << "QmlComponent: "
 #endif
                              << vme.errorDescription().toLatin1().constData() << " @"
-                             << d->name.toLatin1().constData() << ":" << vme.errorLine();
+                             << d->url.toString().toLatin1().constData() << ":" << vme.errorLine();
     }
 
 

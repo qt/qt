@@ -56,7 +56,7 @@ QML_DEFINE_TYPE(QmlFont,Font);
 /*!
     \internal
     \class QmlFont
-    \ingroup utility
+    \ingroup group_utility
     \brief The QmlFont class provides a font used for drawing text on a QFxView.
 */
 QmlFont::QmlFont(QObject *parent)

@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
     that you use the move, remove and add transitions when those conditions
     arise.
 
-    \ingroup layouts
+    \ingroup group_layouts
 */
 QFxBaseLayout::QFxBaseLayout(AutoUpdateType at, QFxItem *parent)
     : QFxItem(*(new QFxBaseLayoutPrivate), parent)
@@ -577,7 +577,7 @@ QML_DEFINE_TYPE(QFxVerticalLayout, VerticalLayout);
     \internal
     \class QFxVerticalLayout
     \brief The QFxVerticalLayout class lines up items vertically.
-    \ingroup layouts
+    \ingroup group_layouts
 */
 QFxVerticalLayout::QFxVerticalLayout(QFxItem *parent)
 : QFxBaseLayout(Vertical, parent)
@@ -731,7 +731,7 @@ QML_DEFINE_TYPE(QFxHorizontalLayout,HorizontalLayout);
     \internal
     \class QFxHorizontalLayout
     \brief The QFxHorizontalLayout class lines up items horizontally.
-    \ingroup layouts
+    \ingroup group_layouts
 */
 QFxHorizontalLayout::QFxHorizontalLayout(QFxItem *parent)
 : QFxBaseLayout(Horizontal, parent)
@@ -910,7 +910,7 @@ QML_DEFINE_TYPE(QFxGridLayout,GridLayout);
     \internal
     \class QFxGridLayout
     \brief The QFxGridLayout class lays out items in a grid.
-    \ingroup layouts
+    \ingroup group_layouts
 
 */
 QFxGridLayout::QFxGridLayout(QFxItem *parent) :
