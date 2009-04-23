@@ -65,6 +65,30 @@ class QByteArray;
     \brief The QmlComponent class encapsulates a QML component description.
     \mainclass
 */
+
+/*!
+    \qmlclass Component QmlComponent
+    \brief The Component element encapsulates a QML component description.
+
+    Components are reusable, encapsulated Qml element with a well-defined interface.
+    They are often defined in \l {components}{Component Files}.
+
+    The \e Component element allows defining components within a QML file.
+    This can be useful for reusing a small component within a single QML
+    file, or for defining a component that logically belongs with the
+    file containing it.
+
+    \code
+    <Item>
+        <Component id="RedSquare">
+            <Rect color="red" width="10" height="10"/>
+        </Component>
+
+        <ComponentInstance component="{RedSquare}"/>
+        <ComponentInstance component="{RedSquare}" x="20"/>
+    </Item>
+    \endcode
+*/
 QML_DEFINE_TYPE(QmlComponent,Component);
 
 /*!

@@ -1040,7 +1040,7 @@ QmlClassNode::QmlClassNode(InnerNode *parent,
 }
 
 /*!
-  The base file name for this kind of node has "qml"
+  The base file name for this kind of node has "qml_"
   prepended to it.
 
   But not yet. Still testing.
@@ -1050,7 +1050,7 @@ QString QmlClassNode::fileBase() const
 #if 0    
     if (Node::fileBase() == "item")
         qDebug() << "FILEBASE: qmlitem" << name();
-    return "qml" + Node::fileBase();
+    return "qml_" + Node::fileBase();
 #endif
     return Node::fileBase();
 }

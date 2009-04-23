@@ -60,6 +60,16 @@ QML_DEFINE_TYPE(QFxComponentInstance,ComponentInstance);
 /*!
     \qmlclass ComponentInstance QFxComponentInstance
     \brief The ComponentInstance element allows you to instantiate an arbitrary component.
+
+    \code
+    <Item>
+        <Component id="RedSquare">
+            <Rect color="red" width="10" height="10"/>
+        </Component>
+
+        <ComponentInstance component="{RedSquare}"/>
+    </Item>
+    \endcode
 */
 QFxComponentInstance::QFxComponentInstance(QFxItem *parent)
   : QFxItem(*(new QFxComponentInstancePrivate), parent)
@@ -73,6 +83,11 @@ QFxComponentInstance::QFxComponentInstance(QFxComponentInstancePrivate &dd, QFxI
     setOptions(IsFocusRealm);
 }
 
+/*!
+    \qmlproperty Component QFxComponentInstance::component
+
+    This property holds the component to instantiate.
+*/
 QmlComponent *QFxComponentInstance::component() const
 {
     Q_D(const QFxComponentInstance);
@@ -123,6 +138,11 @@ void QFxComponentInstance::updateSize()
     }
 }
 
+/*!
+    \qmlproperty Item QFxComponentInstance::instance
+
+    This property holds the instantiated component.
+*/
 QFxItem *QFxComponentInstance::instance() const
 {
     Q_D(const QFxComponentInstance);

@@ -1,17 +1,18 @@
 <Item id="contactField"
     clip="true"
+    width="230"
     height="30">
     <RemoveButton1 id="removeButton"
         anchors.right="{parent.right}"
         anchors.top="{parent.top}" anchors.bottom="{parent.bottom}"/>
     <Text id="fieldText"
-        width="{contactField.width-70}"
-        anchors.right="{removeButton.left}" anchors.rightMargin="5"
+        width="{contactField.width-80}"
+        anchors.right="{removeButton.left}" anchors.rightMargin="10"
         anchors.verticalCenter="{parent.verticalCenter}"
         font.bold="true"
-        color="white"
-        text="Phone Number"/>
+        color="black"
+        text="123123"/>
     <Image src="../shared/pics/phone.png"
-        anchors.right="{fieldText.left}" anchors.rightMargin="5"
+        anchors.right="{fieldText.left}" anchors.rightMargin="10"
         anchors.verticalCenter="{parent.verticalCenter}"/>
 </Item>

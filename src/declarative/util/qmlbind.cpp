@@ -77,10 +77,10 @@ QML_DEFINE_TYPE(QmlBind,Bind);
     property into QML.  You could use Bind to update the enteredText property 
     like this.
     \code
-    <LineEdit id="myTextField" text="Please type here..." />
+    <TextEdit id="myTextField" text="Please type here..." />
     <Bind target="{app}" property="enteredText" value="{myTextField.text}" />
     \endcode
-    Whenever the text in the LineEdit is updated, the C++ property will be
+    Whenever the text in the TextEdit is updated, the C++ property will be
     updated also.
 
     If the bind target or bind property is changed, the bound value is 

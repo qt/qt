@@ -1,7 +1,7 @@
 <Rect id="fieldText"
     height="30"
     radius="5"
-    color="black">
+    color="white">
     <properties>
         <Property
             name="text"
@@ -43,10 +43,10 @@
         src="../shared/pics/ok.png"
         opacity="0"/>
     <TextEdit id="textEdit"
-        anchors.left="{parent.left}" anchors.leftMargin="0"
-        anchors.right="{parent.right}" anchors.rightMargin="0"
+        anchors.left="{parent.left}" anchors.leftMargin="5"
+        anchors.right="{parent.right}" anchors.rightMargin="5"
         anchors.verticalCenter="{parent.verticalCenter}"
-        color="white"
+        color="black"
         font.bold="true"
         readOnly="true"
         wrap="false"
@@ -75,13 +75,11 @@
         <State name="editing">
             <SetProperty target="{confirmIcon}" property="opacity" value="1"/>
             <SetProperty target="{cancelIcon}" property="opacity" value="1"/>
-            <SetProperty target="{fieldText}" property="color" value="white"/>
-            <SetProperty target="{textEdit}" property="color" value="black"/>
             <SetProperty target="{textEdit}" property="readOnly" value="false"/>
             <SetProperty target="{textEdit}" property="focus" value="true"/>
             <SetProperty target="{editRegion}" property="opacity" value="0"/>
-            <SetProperty target="{textEdit.anchors}" property="leftMargin" value="34"/>
-            <SetProperty target="{textEdit.anchors}" property="rightMargin" value="34"/>
+            <SetProperty target="{textEdit.anchors}" property="leftMargin" value="39"/>
+            <SetProperty target="{textEdit.anchors}" property="rightMargin" value="39"/>
         </State>
     </states>
     <transitions>

@@ -1,23 +1,23 @@
 <Item id="contactField"
     clip="true"
-    width="230"
     height="30">
     <properties>
-        <Property name="label" value="Name"/>
-        <Property name="icon" value="../shared/pics/phone.png"/>
-        <Property name="value"/>
+        <Property name="label"/>
+        <Property name="icon"/>
+        <Property name="value" onValueChanged="fieldText.text=field.value"/>
     </properties>
-    <RemoveButton3 id="removeButton"
+    <RemoveButton id="removeButton"
         anchors.right="{parent.right}"
         anchors.top="{parent.top}" anchors.bottom="{parent.bottom}"
         expandedWidth="{contactField.width}"
         onConfirmed="print('Clear field text'); fieldText.text=''"/>
-    <FieldText3 id="fieldText"
+    <FieldText id="fieldText"
         width="{contactField.width-70}"
         anchors.right="{removeButton.left}" anchors.rightMargin="5"
         anchors.verticalCenter="{parent.verticalCenter}"
         label="{contactField.label}"
-        text="{contactField.value}"/>
+        text="{contactField.value}"
+        onConfirmed="contactField.value=fieldText.text"/>
     <Image
         anchors.right="{fieldText.left}" anchors.rightMargin="5"
         anchors.verticalCenter="{parent.verticalCenter}"
