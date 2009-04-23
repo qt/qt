@@ -124,7 +124,7 @@ void tst_qfxtextedit::width()
         QmlComponent texteditComponent(&engine, "<TextEdit text=\"\"/>");
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
-        QCOMPARE(textEditObject->width(), 0);
+        QCOMPARE(textEditObject->width(), 0.);
     }
 
     for (int i = 0; i < standard.size(); i++)
@@ -137,7 +137,7 @@ void tst_qfxtextedit::width()
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
-        QCOMPARE(textEditObject->width(), metricWidth);
+        QCOMPARE(textEditObject->width(), qreal(metricWidth));
     }
 
     for (int i = 0; i < richText.size(); i++)
@@ -152,7 +152,7 @@ void tst_qfxtextedit::width()
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
-        QCOMPARE(textEditObject->width(), documentWidth);
+        QCOMPARE(textEditObject->width(), qreal(documentWidth));
     }
 }
 
@@ -163,7 +163,7 @@ void tst_qfxtextedit::wrap()
         QmlComponent texteditComponent(&engine, "<TextEdit text=\"\" wrap=\"true\" width=\"300\"/>");
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
-        QCOMPARE(textEditObject->width(), 300);
+        QCOMPARE(textEditObject->width(), 300.);
     }
 
     for (int i = 0; i < standard.size(); i++)
@@ -172,7 +172,7 @@ void tst_qfxtextedit::wrap()
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
-        QCOMPARE(textEditObject->width(), 300);
+        QCOMPARE(textEditObject->width(), 300.);
     }
 
     for (int i = 0; i < richText.size(); i++)
@@ -181,7 +181,7 @@ void tst_qfxtextedit::wrap()
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
-        QCOMPARE(textEditObject->width(), 300);
+        QCOMPARE(textEditObject->width(), 300.);
     }
 
 }
