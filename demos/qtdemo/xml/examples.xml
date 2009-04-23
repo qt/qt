@@ -217,6 +217,7 @@
     <example filename="formextractor" name="Form Extractor" />
     <example filename="previewer" name="HTML Previewer" />
     <example filename="fancybrowser" name="Fancy Browser" />
+    <example filename="googlechat" name="Google Chat" />
   </category>
   <category dirname="xml" name="XML">
     <example filename="saxbookmarks" name="SAX Bookmarks" />
