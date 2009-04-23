@@ -359,8 +359,6 @@ bool QShortcutMap::tryShortcutEvent(QObject *o, QKeyEvent *e)
     else
         e->ignore();
 
-    int identicalMatches = d->identicals.count();
-
     switch(result) {
     case QKeySequence::NoMatch:
         return stateWasAccepted;
