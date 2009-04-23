@@ -1,16 +1,21 @@
-<Item width="30" height="30" id="button">
+<Item id="button" width="30" height="30">
     <properties>
         <Property name="icon"/>
     </properties>
     <signals>
         <Signal name="clicked"/>
     </signals>
-    <Rect id="buttonRect" color="lightgreen" anchors.fill="{parent}" radius="5">
+    <Rect id="buttonRect"
+        anchors.fill="{parent}"
+        color="lightgreen"
+        radius="5">
         <Image id="iconImage"
             src="{button.icon}"
             anchors.horizontalCenter="{buttonRect.horizontalCenter}"
             anchors.verticalCenter="{buttonRect.verticalCenter}"/>
-        <MouseRegion id="buttonMouseRegion" anchors.fill="{buttonRect}" onClicked="button.clicked.emit()"/>
+        <MouseRegion id="buttonMouseRegion"
+            anchors.fill="{buttonRect}"
+            onClicked="button.clicked.emit()"/>
         <states>
             <State name="pressed" when="{buttonMouseRegion.pressed == true}">
                 <SetProperty target="{buttonRect}" property="color" value="green"/>

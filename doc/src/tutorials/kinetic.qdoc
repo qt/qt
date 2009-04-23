@@ -1,0 +1,446 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+        \page tutorials-kinetic-contacts.html
+        \startpage {index.html}{Qt Reference Documentation}
+        \nextpage {tutorials/kinetic-contacts/part1}{Chapter 1}
+
+        \title Kinetic Contacts application tutorial.
+        \ingroup howto
+        \ingroup tutorials
+        \brief An introduction to using Qt Declarative UI to put together a
+        simple animated application.
+
+        \omit 
+        At the time of writing the tutorial Declarative UI was still under
+        development.  It is extremely likely that an update will be required
+        prior to 4.6 release.
+        \endomit
+
+        This tutorial gives an introduction to using the Qt Declarative UI
+        animation framework.
+
+        In this process we will learn about some of the basics of using
+        Declarative UI, such as
+
+        \list
+        \o Basic drawing
+        \o States and Transitions
+        \o Reuse of components
+        \o Models and Views
+        \endlist
+
+        An existing knowledge of Qt is not required.
+
+        The tutorial's source code is located in Qt's
+        \c examples/declarative/tutorials/contacts directory.
+        It is split up into a number of sub directories, and within each
+        sub directory the files are numbered in an order of increasing features.
+
+        The code in this example is not compiled, but interpreted at run time.
+        This means you should use the duiviewer application provided with
+        Qt to run the examples.
+
+    \list 1
+    \o \l{tutorials/declarative/contacts/part1}{Drawing and animation}
+    \o \l{tutorials/declarative/contacts/part2}{Reuse of QML components}
+    \o \l{tutorials/declarative/contacts/part3}{Models, Views and Delegates}
+    \o \l{tutorials/declarative/contacts/part4}{Other Tricks}
+    \endlist
+*/
+
+/*!
+    \page tutorials-declarative-contacts-part1.html
+    \contentspage {Declarative UI Tutorial}{Contents}
+    \nextpage {tutorials/declarative/contacts/part2}{Chapter 2}
+    \example tutorials/declarative/contacts/1_Drawing_and_Animation
+    \title Declarative UI 1 - Drawing and Animation
+
+    The first part of this tutorial covers basic drawing of elements on the
+    screen and causing them to animate.  The file 1_Drawing_and_Animation.qml
+    loads and displays each of the five stages of this tutorial in a single
+    window.  For now you don't need to worry about the contents of
+    1_Drawing_and_Animation.qml.
+
+    \section1 Drawing
+
+    In this first chapter we will build a button that indicates something
+    can be removed and asks for confirmation.  When clicked it will expand
+    from a small button with a trash can icon, to a wide button with a
+    confirm icon on the left, the text "Remove" in the middle, and a
+    cancel icon on the right.
+
+    Because Declarative UI is declarative, you don't pass instructions on
+    what to paint in a sequential manner as you may be used to.  Instead
+    elements and how they appear on the screen are declared in much the
+    same was as elements on a web page are declared.
+
+    \i RemoveButton1.qml
+    \code
+    <Rect id="removeButton"
+        width="30" height="30"
+        color="red"
+        radius="5"/>
+    \endcode
+
+    This is the simplest of QML components.  It describes a rectangle with
+    some simple properties.  In QML all components start with a capital
+    letter, and their properties with lower case letters.  Properties
+    can either be declared as XML attributes or as children of the 
+    component element.  The above rectangle could equally be written
+    
+    \code
+    <Rect id="removeButton" color="red">
+        <width>30</width>
+        <height>30</height>
+        <radius>5</radius>
+    </Rect>
+    \endcode
+
+    The rectangle component is one of the more simple QML components.  Apart
+    from the properties all QML components share, it has the properties
+
+    \list
+    \o color - The background color of the rectangle
+    \o tintColor - The overlay color of the rectangle
+    \o gradientColor - The color at the base of the rectangle to blend upwards
+    \o pen - The description of how to draw the border of the rectangle
+    \o radius - The corner radius used to draw rounded rectangles.
+    \endlist
+
+    \omit
+    For more information on the Rect element, see: TODO
+    \endomit
+
+    There are also a number of properties all QML components share.  To see
+    a full description of the base QML item, see {QFxItem}.  The rectangle
+    drawn in the above code uses the properties;
+
+    \list
+    \o id - An identifier of the component
+    \o width - the width of the component when drawn
+    \o height - the height of the component when drawn
+    \endlist
+
+    All items have properties to handle their position on the screen, size,
+    clipping, rotation, scale and layout in regards to other elements.  In
+    the current example width and height refer to how large to draw the
+    rectangle.  The identifier allows other components to refer to the
+    identified component.
+
+    Another important property of a component is its children.  All components
+    have a list of children.  When drawing, first any components earlier
+    siblings are drawn, then the component, then any of the components children.
+
+    The next step of the tutorial adds an image over the rectangle.
+
+    \code
+    <Rect id="removeButton"
+        width="30" height="30"
+            color="red"
+        radius="5">
+        <Image id="trashIcon"
+            width="22" height="22"
+            anchors.right="{parent.right}" anchors.rightMargin="4"
+            anchors.verticalCenter="{parent.verticalCenter}"
+            src="../shared/pics/trash.png"/>
+    </Rect>
+    \endcode
+
+    The trashIcon image is added as a child of the Rectangle.  In this case
+    the <children> tag isn't used because the default property of the
+    Rect component is its children.  Some elements don't often have children
+    and use some other default component, when this is the case its possible
+    to explicitly list the sub component as a child as follows:
+
+    \code
+    <Rect id="removeButton"
+        width="30" height="30"
+            color="red"
+        radius="5">
+        <children>
+            <Image id="trashIcon"
+                width="22" height="22"
+                anchors.right="{parent.right}" anchors.rightMargin="4"
+                anchors.verticalCenter="{parent.verticalCenter}"
+                src="../shared/pics/trash.png"/>
+        </children>
+    </Rect>
+    \endcode
+
+    The Image element allows loading an image file for display.  The source
+    specified is a URL, and in this case refers to a portable network graphics
+    file in a relative directory to where the QML file was loaded from.
+
+    Also new in this code is the use of anchors.  In QML components can either
+    have their position and size specified explicitly using x, y, width
+    and height, or they can instead specify the size and position in relation
+    to elements either parent or sibling elements.  The Image component uses
+    a combination of both styles.  It has a fixed size, but specifies its
+    position to align to the right of its parent and for its vertical center
+    to align with the vertical center of its parent.  The braces "{}" are
+    used to indicate that the value is not a static value, but instead a
+    binding to an expression.  In this case it binds to the parent
+    element, which is a special identifier that always refers to the
+    parent component of a component.  The removeButton identifier can
+    be used interchangeably with parent in this case, however it must
+    always be a parent or sibling.  Because of this its most common to
+    use the parent identifier as it makes later refactoring of code easier.
+
+    Anchors are most useful when the size of items might change based on
+    the component state or contents.
+
+    \omit
+    See TODO for full list of anchor properties.
+    \endomit
+
+    At this point the initial state of the RemoveButton is complete.  A small
+    rounded rectangle with a trash icon.  The description of the alternate
+    state of the button can be written as:
+
+    \code
+    <Rect id="removeButton"
+        width="230" height="30"
+        color="red"
+        radius="5">
+        <Image id="cancelIcon"
+            width="22" height="22"
+            anchors.right="{parent.right}" anchors.rightMargin="4"
+            anchors.verticalCenter="{parent.verticalCenter}"
+            src="../shared/pics/cancel.png"/>
+        <Image id="confirmIcon"
+            width="22" height="22"
+            anchors.left="{parent.left}" anchors.leftMargin="4"
+            anchors.verticalCenter="{parent.verticalCenter}"
+            src="../shared/pics/ok.png"/>
+        <Text id="text"
+            anchors.verticalCenter="{parent.verticalCenter}"
+            anchors.left="{confirmIcon.right}" anchors.leftMargin="4"
+            anchors.right="{cancelIcon.left}" anchors.rightMargin="4"
+            font.bold="true"
+            color="white"
+            hAlign="AlignHCenter"
+            text="Remove"/>
+    </Rect>
+    \endcode
+
+    The rectangle with is now wider, by 200 pixels.  Also the trashIcon has
+    been replaced with the confirm state children.  Normally we wouldn't
+    remove the trashIcon when developing an alternate state of the RemoveButton,
+    however since this is a tutorial its been done so that its easier to
+    understand the alternate state we are aiming for and how it relates to
+    transitioning between states.
+
+    We also introduce the Text element, which is used to display read only
+    text.  \omit see {Text} for more information on the text element \endomit
+    Because we want text to fill the space between the icons, rather than
+    a fixed with the left and right anchors are specified instead.  This
+    means as the parent removeButton gets wider, so will the text component.
+    It also means that if we animate a width change on the removeButton,
+    any bindings, that is the values specified by a braced expression such as
+    "{parent.left}" will be evaluated and animated as well.
+
+    When designing a component with multiple states, it should be developed
+    with the initial state and the changes that would be made specified
+    as a state changed.  Because we cannot add children to an element from
+    a state change we instead start with the children that should be present
+    and then set their opacity or position such that they won't appear.  Thus
+    for the RemoveButton we specify the starting size of the removeButton
+    and hide any items that should not initially be visible.
+
+    The code snippet below shows what the start of the duel state specification
+    might look like.
+
+    \code
+    <Rect id="removeButton"
+        width="30" height="30"
+            color="red"
+        radius="5">
+        <Image id="trashIcon"
+            width="22" height="22"
+            anchors.right="{parent.right}" anchors.rightMargin="4"
+            anchors.verticalCenter="{parent.verticalCenter}"
+            src="../shared/pics/trash.png"/>
+        <Image id="cancelIcon"
+            width="22" height="22"
+            anchors.right="{parent.right}" anchors.rightMargin="4"
+            anchors.verticalCenter="{parent.verticalCenter}"
+            src="../shared/pics/cancel.png"
+            opacity="0"/>
+    \endcode
+
+    Which includes both components, but by setting opacity="0" means the
+    second components won't be drawn unless their is a state change.
+    The base state of a component always has an empty name, however new
+    states can be added that describe how a component and its children
+    should be changed.  For the RemoveButton there is only one non-base state
+    required.  In this tutorial we will name it the 'opened' state.
+
+    \code
+    <states>
+        <State name="opened">
+            <SetProperty target="{removeButton}" property="width" value="230"/>
+            <SetProperty target="{text}" property="opacity" value="1"/>
+            <SetProperty target="{confirmIcon}" property="opacity" value="1"/>
+            <SetProperty target="{cancelIcon}" property="opacity" value="1"/>
+            <SetProperty target="{trashIcon}" property="opacity" value="0"/>
+        </State>
+    </states>
+    \endcode
+
+    In the opened state the width of the button itself changes from the base
+    width of 30 to the new width of 230.  Also the opacity of the children
+    are changed so that the trash icon is hidden and the other elements
+    appear.
+
+    To trigger the change we will react to the 'clicked' signal of a
+    MouseRegion component.
+
+    \code
+    <Image id="trashIcon"
+        width="22" height="22"
+        anchors.right="{parent.right}" anchors.rightMargin="4"
+        anchors.verticalCenter="{parent.verticalCenter}"
+        src="../shared/pics/trash.png"
+        opacity="1">
+        <MouseRegion
+            anchors.fill="{parent}"
+            onClicked="toggle()"/>
+    </Image>
+                                                                                    \endcode
+
+    MouseRegion components handle mouse actions within their geometry.  This
+    geometry behaves the same way as painted components, such that children
+    cover their parents and later siblings will cover earlier siblings and
+    all the children of the earlier sibling, should they overlap.
+
+    When a component has a signal, such as clicked, the action for the signal
+    can be specified using on<SignalName>, as is done above.  In this
+    case when the clicked signal is emitted by the MouseRegion component,
+    a function called toggle() is called.  It might also have been written
+
+    \code
+    onClicked="removeButton.state='opened'"
+    \endcode
+
+    However in this case we are using a function because it allows multiple
+    mouse regions to use the same functionality, and also makes it
+    easier to specify complex behavior in response to a signal.
+
+    The toggle() function is a new function specified as part of the remove
+    button element.
+
+    \code
+    <resources>
+        <Script>
+            function toggle() {
+                print('removeButton.toggle()');
+                if (removeButton.state == 'opened') {
+                    removeButton.state = '';
+                } else {
+                    removeButton.state = 'opened';
+                }
+            }
+        </Script>
+    </resources>
+    \endcode
+
+    Any QML component can have a set of resources specified.  One of those
+    resources is any Script that might be needed.   See the
+    {QtScript Module}{QtScript Module} for more information on how to write
+    script code in Qt.  There are only a couple of additional items to
+    note when using Script with QML components.  The first is that it
+    is an xml file, that means either CDATA or other forms of escaping
+    should be used if special characters are needed.  For example, 
+    the expression;
+
+    \code
+    if (a && b) {}
+    \endcode
+
+    Should either be escaped as:
+
+    \code
+    if (a &amp;&amp; b) {}
+    \endcode
+
+    or enclosed in a CDATA section as
+
+    \code
+    <![CDATA[if (a && b) {}]]>
+    \endcode
+
+    The other item to note is that you can refer to identified QML components
+    within the script.  Hence the function for our RemoveButton will check
+    if the state is already open to determine what the new state should be.
+
+    We also have added a print function.  This isn't required for the button
+    to function, but is useful for tracking down possible bugs when
+    working with QML.
+
+    See the file RemoveButton4.qml for the full multi-state specification.
+
+    \section Animation
+
+    Currently the RemoveButton is function, but snaps between our two states.
+    Fortunately making the transition between states smooth is very simple.
+    We only need one more bit of code at the end of our removeButton component.
+
+    \code
+    <transitions>
+        <Transition fromState="*" toState="opened" reversible="true">
+            <NumericAnimation properties="opacity,x,width" duration="200"/>
+        </Transition>
+    </transitions>
+    \endcode
+
+    All QML components have a transitions property.  This describes how
+    properties of items within the component should change.  In this case
+    we specify that if the x, width or opacity of the removeButton or its
+    children change due to a change in state, that they should take 200ms
+    to complete their transition.
+
+    \omit TODO More on types of animation
+
+    In the next chapter we will show how we can use the remove button in
+    other QML components.
+*/
