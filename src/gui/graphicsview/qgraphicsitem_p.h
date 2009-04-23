@@ -178,6 +178,7 @@ public:
     void addChild(QGraphicsItem *child);
     void removeChild(QGraphicsItem *child);
     void setParentItemHelper(QGraphicsItem *parent, bool deleting);
+    void childrenBoundingRectHelper(QTransform *x, QRectF *rect);
 
     virtual void resolveFont(uint inheritedMask)
     {
