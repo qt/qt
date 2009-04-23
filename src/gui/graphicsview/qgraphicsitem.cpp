@@ -885,6 +885,38 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool de
 /*!
     \internal
 
+    Returns the bounding rect of this item's children (excluding itself).
+*/
+void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rect)
+{
+    for (int i = 0; i < children.size(); ++i) {
+        QGraphicsItem *child = children.at(i);
+        QGraphicsItemPrivate *childd = child->d_ptr;
+        bool hasX = childd->hasTransform;
+        bool hasPos = !childd->pos.isNull();
+        if (hasPos || hasX) {
+            QTransform matrix;
+            if (hasX)
+                matrix = child->transform();
+            if (hasPos) {
+                const QPointF &p = childd->pos;
+                matrix *= QTransform::fromTranslate(p.x(), p.y());
+            }
+            matrix *= *x;
+            *rect |= matrix.mapRect(child->boundingRect());
+            if (!childd->children.isEmpty())
+                childd->childrenBoundingRectHelper(&matrix, rect);
+        } else {
+            *rect |= x->mapRect(child->boundingRect());
+            if (!childd->children.isEmpty())
+                childd->childrenBoundingRectHelper(x, rect);
+        }
+    }
+}
+
+/*!
+    \internal
+
     Empty all cached pixmaps from the pixmap cache.
 */
 void QGraphicsItemCache::purge()
@@ -3044,13 +3076,8 @@ void QGraphicsItem::setZValue(qreal z)
 QRectF QGraphicsItem::childrenBoundingRect() const
 {
     QRectF childRect;
-    foreach (QGraphicsItem *child, children()) {
-        QPointF childPos = child->pos();
-        QTransform matrix = child->transform();
-        if (!childPos.isNull())
-            matrix *= QTransform::fromTranslate(childPos.x(), childPos.y());
-        childRect |= matrix.mapRect(child->boundingRect() | child->childrenBoundingRect());
-    }
+    QTransform x;
+    d_ptr->childrenBoundingRectHelper(&x, &childRect);
     return childRect;
 }
 
