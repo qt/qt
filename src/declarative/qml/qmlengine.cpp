@@ -39,11 +39,7 @@
 **
 ****************************************************************************/
 
-// XXX ;)
-#define private public
 #include <QMetaProperty>
-#undef private
-
 #include <private/qmlengine_p.h>
 #include <private/qmlcontext_p.h>
 
@@ -308,7 +304,7 @@ bool QmlEnginePrivate::fetchCache(QmlBasicScriptNodeCache &cache, const QString 
 
         cache.object = obj;
         cache.type = QmlBasicScriptNodeCache::Core;
-        cache.core = prop.property().idx + prop.property().mobj->propertyOffset();
+        cache.core = prop.property().propertyIndex();
         cache.coreType = prop.propertyType();
         return true;
 
