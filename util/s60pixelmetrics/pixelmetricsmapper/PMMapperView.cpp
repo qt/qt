@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 // INCLUDE FILES
 
 #include <eiklabel.h>
@@ -47,10 +46,10 @@
 #include <aknviewappui.h>
 #include <aknconsts.h>
 
-#include "PMMapper.hrh"
-#include <PM_Mapper.rsg>
-#include "PMMapperView.h"
-#include "PMMapperApp.h"
+#include "pmmapper.hrh"
+#include <pm_mapper.rsg>
+#include "pmmapperView.h"
+#include "pmmapperApp.h"
 
 #include <aknlists.h>
 #include <avkon.hrh>

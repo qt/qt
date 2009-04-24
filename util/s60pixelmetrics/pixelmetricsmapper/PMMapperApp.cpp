@@ -39,15 +39,14 @@
 **
 ****************************************************************************/
 
-
 // INCLUDE FILES
 
 #include <avkon.rsg>
 #include <avkon.hrh>
-#include "PMMapper.hrh"
-#include "PMMapperApp.h"
-#include "PMMapperView.h"
-#include <PM_Mapper.rsg>
+#include "pmmapper.hrh"
+#include "pmmapperApp.h"
+#include "pmmapperView.h"
+#include <pm_mapper.rsg>
 
 #include <BldVariant.hrh>
 

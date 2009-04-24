@@ -50,7 +50,7 @@
 // so that we can keep dynamic and static values inline.
 // Please adjust version data if correcting dynamic PM calculations.
 const TInt KPMMajorVersion = 1;
-const TInt KPMMinorVersion = 12;
+const TInt KPMMinorVersion = 13;
 
 TPixelMetricsVersion PixelMetrics::Version()
     {
@@ -233,6 +233,7 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
         case QStyle::PM_SpinBoxFrameWidth:
             value = 0;
             break;
+        case QStyle::PM_ToolBarFrameWidth:
         case QStyle::PM_DefaultFrameWidth:
             {
             TAknLayoutRect highLightPaneRect;
@@ -656,16 +657,6 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
             value = cellToolBarRect1.Rect().iBr.iX - cellToolBarRect2.Rect().iTl.iX;
             }
             break;
-        case QStyle::PM_ToolBarFrameWidth:
-            {
-            variety = 4;
-            TAknLayoutRect popupToolBarWindow;
-            popupToolBarWindow.LayoutRect( mainPaneRect, AknLayoutScalable_Avkon::popup_toolbar_window(variety) );
-            TAknLayoutRect gridToolBarRect;
-            gridToolBarRect.LayoutRect( popupToolBarWindow.Rect(), AknLayoutScalable_Avkon::grid_toobar_pane() );
-            value = popupToolBarWindow.Rect().iBr.iX - gridToolBarRect.Rect().iBr.iX;
-            }
-            break;
         case QStyle::PM_ToolBarItemMargin:
             {
             variety = 4;
@@ -886,7 +877,7 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
             TAknLayoutRect cellToolBarRect1;
             TAknLayoutRect cellToolBarRect2;
             cellToolBarRect1.LayoutRect( gridToolBarRect.Rect(), AknLayoutScalable_Avkon::cell_toolbar_pane(0).LayoutLine() ); //first item
-            value = Max( cellToolBarRect1.Rect().Height(), cellToolBarRect1.Rect().Width() );
+            value = Min( cellToolBarRect1.Rect().Height(), cellToolBarRect1.Rect().Width() );
             }
             break;
 
@@ -1003,6 +994,10 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
         case QStyle::PM_ButtonShiftVertical:
             value = 0;
             break;
+        
+        case QStyle::PM_ToolBarExtensionExtent:
+            value = PixelMetricTabValue(QStyle::PM_TabBarScrollButtonWidth, appWindow.Rect(), landscape);
+            break;
 
 // todo: re-check if these really are not available in s60
         case QStyle::PM_MenuDesktopFrameWidth:    // not needed in S60 - dislocates Menu both horizontally and vertically
@@ -1016,7 +1011,6 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
         case QStyle::PM_MdiSubWindowMinimizedWidth: //no such thing in S60
         case QStyle::PM_HeaderGripMargin: // not in S60
         case QStyle::PM_SplitterWidth: // not in S60
-        case QStyle::PM_ToolBarExtensionExtent: // not in S60
         case QStyle::PM_ToolBarSeparatorExtent: // not in S60
         case QStyle::PM_ToolBarHandleExtent: // not in s60
         case QStyle::PM_MenuButtonIndicator: // none???
