@@ -73,7 +73,7 @@ QGraphicsWidget *QFxWidgetContainer::graphicsWidget() const
 }
 
 /*!
-    \property QGraphicsWidget QFxWidgetContainer::graphicsWidget
+    \qmlproperty QGraphicsWidget QFxWidgetContainer::graphicsWidget
     The QGraphicsWidget associated with this element.
 */
 void QFxWidgetContainer::setGraphicsWidget(QGraphicsWidget *widget)

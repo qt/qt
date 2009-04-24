@@ -113,7 +113,6 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QSimpleCanvasItem, public QmlParserS
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
     Q_PROPERTY(QString qml READ qml WRITE setQml NOTIFY qmlChanged)
     Q_PROPERTY(QFxItem *qmlItem READ qmlItem NOTIFY qmlChanged)
-    Q_PROPERTY(QFxItem *clipToItem READ clipToItem WRITE setClipToItem)
     Q_PROPERTY(qreal x READ x WRITE setX NOTIFY leftChanged)
     Q_PROPERTY(qreal y READ y WRITE setY NOTIFY topChanged)
     Q_PROPERTY(qreal z READ z WRITE setZ)
@@ -173,9 +172,6 @@ public:
     QFxItem *qmlItem() const;
     QString qml() const;
     void setQml(const QString &);
-
-    QFxItem *clipToItem() const;
-    void setClipToItem(QFxItem *i);
 
     bool flipVertically() const;
     void setFlipVertically(bool);

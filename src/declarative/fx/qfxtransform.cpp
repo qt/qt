@@ -56,8 +56,6 @@ QML_DEFINE_TYPE(QFxTransform,Transform);
 /*!
     \qmlclass Transform
     \brief A transformation.
-
-    \todo Document Transform.
 */
 QFxTransform::QFxTransform(QObject *parent) :
     QObject(parent)
@@ -334,9 +332,6 @@ public:
     \endcode
 
     \image flipable.gif
-
-    \todo A lot needs to be done to get a fully-functioning Flipable. Should we simplify?
-
 */
 
 /*!

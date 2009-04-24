@@ -110,13 +110,7 @@ QML_DEFINE_TYPE(QFxRepeater,Repeater);
 
     The repeater instance continues to own all items it instantiates, even
     if they are otherwise manipulated.  It is illegal to manually remove an item
-    created by the Repeater.  
-
-    \todo Repeater is very conservative in how it instatiates/deletes items.  
-    Also new model entries will not be created and old ones will not be removed.
-
-    \todo Need an example
-
+    created by the Repeater.
  */
 
 /*!
