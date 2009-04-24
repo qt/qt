@@ -545,7 +545,7 @@
     "signal properties", using the name "on<Signal Name>" where the first 
     character of the signal's name is uppercased.  If more than one signal of
     the same name is exist on a class, only the first is available (see the
-    \l {xmlConnection}{<Connection>} element for more general signal connections).
+    \l Connection element for more general signal connections).
 
     An important observation to make here is the lack of braces.  While both
     property bindings and signal properties involve executing ECMAScript code,

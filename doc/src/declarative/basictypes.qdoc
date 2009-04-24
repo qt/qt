@@ -367,7 +367,7 @@
     types.  When used from QML, the engine  automatically appends each value to the
     list.  
     
-    For example, the \l {xmlItem}{Item} class has a children list property
+    For example, the \l Item class has a children list property
     that can be used like this:
     \code
     <Item>

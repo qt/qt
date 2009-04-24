@@ -85,8 +85,6 @@ QML_DEFINE_TYPE(QFxText,Text);
     plain text to a set width.
 
     Text provides read-only text. For editable text, see \l TextEdit.
-
-    \todo explain details of auto-sizing
 */
 
 /*!

@@ -49,12 +49,24 @@
 QT_BEGIN_NAMESPACE
 
 /*!
+    \qmlclass BlendedImage
+    \brief The BlendedImage elements blends two different images depending on a blend ratio.
+
+    This element can be used to simulate blur on slow devices by setting secondaryUrl with
+    a pre-rendered blurred version of primaryUrl.
+
+    Note that this class will only work under OpenGL. On the software canvas it will display
+    only the primary image unless the blend is > 0.75, in which case it will display only the
+    secondary image.
+*/
+
+/*!
     \internal
     \class QFxBlendedImage
     \brief The QFxBlendedImage blends two different images depending on a blend ratio.
 
-    This class can be used to simulate blur on slow devices by setting secondaryFile with
-    a pre-rendered blurred version of primaryFile.
+    This class can be used to simulate blur on slow devices by setting secondaryUrl with
+    a pre-rendered blurred version of primaryUrl.
 
     Note that this class will only work under OpenGL. On the software canvas it will display
     only the primary image unless the blend is > 0.75, in which case it will display only the
@@ -69,8 +81,8 @@ QFxBlendedImage::QFxBlendedImage(QFxItem *parent)
 }
 
 /*!
-    \property QFxBlendedImage::primaryUrl
-    \brief the URL of the first image to be displayed in this item.
+    \qmlproperty string BlendedImage::primaryUrl
+    The URL of the first image to be displayed in this item.
 */
 QString QFxBlendedImage::primaryUrl() const
 {
@@ -97,8 +109,8 @@ void QFxBlendedImage::setPrimaryUrl(const QString &url)
 }
 
 /*!
-    \property QFxBlendedImage::secondaryUrl
-    \brief the URL of the second image to be displayed in this item.
+    \qmlproperty string BlendedImage::secondaryUrl
+    The URL of the second image to be displayed in this item.
 */
 QString QFxBlendedImage::secondaryUrl() const
 {
@@ -125,8 +137,8 @@ void QFxBlendedImage::setSecondaryUrl(const QString &url)
 }
 
 /*!
-    \property QFxBlendedImage::blend
-    \brief the ratio used to blend the two images.
+    \qmlproperty real BlendedImage::blend
+    The ratio used to blend the two images.
 
     If blend has a value of 0, only the first image will be displayed.
     If blend has a value of 1, only the second image will be displayed.
@@ -246,4 +258,5 @@ void QFxBlendedImage::paintGLContents(GLPainter &p)
 #endif
 
 QML_DEFINE_TYPE(QFxBlendedImage,BlendedImage);
+
 QT_END_NAMESPACE

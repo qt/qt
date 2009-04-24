@@ -39,23 +39,22 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qobject.h>
-#ifdef QT_EXPERIMENTAL_SOLUTION
-#include "qtgraphicswidget.h"
-#else
-#include <QtGui/qgraphicswidget.h>
-#endif
+#ifndef SCENE_H
+#define SCENE_H
 
-class SplashItem : public QGraphicsWidget
+#include <QtGui/qgraphicsscene.h>
+
+class Scene : public QGraphicsScene
 {
     Q_OBJECT
 public:
-    SplashItem(QGraphicsItem *parent = 0);
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    Scene(qreal x, qreal y, qreal width, qreal height, QObject *parent = 0);
+    Scene(const QRectF &sceneRect, QObject *parent = 0);
+    Scene(QObject *parent = 0);
+    ~Scene();
 
 protected:
-    void keyPressEvent(QKeyEvent *event);
-
-private:
-    QString text;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
 };
+
+#endif
