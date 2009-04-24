@@ -152,6 +152,12 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
 {
     d->error = QString();
 
+    QmlXmlParser parser;
+    if(!parser.parse(data)) {
+        d->error = parser.errorDescription();
+        return false;
+    }
+
     QmlCompiledComponent component;
     QmlCompiler compiler;
     // ###
@@ -162,14 +168,15 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
         return false;
     }
 
-    if(tree) {
-        component.dump(0, tree);
-        d->root = tree;
+    if(parser.tree()) {
+        component.dump(0, parser.tree());
+        d->root = parser.tree();
         d->root->addref();
     }
 
     return true;
 }
+
 
 /*!
     Returns the last load error.  The load error will be reset after a 
