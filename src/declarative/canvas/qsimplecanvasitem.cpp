@@ -443,7 +443,16 @@ void QSimpleCanvasItem::setZ(qreal z)
         return;
 
     if(d->graphicsItem) {
+
+        if(z < 0)
+            d->graphicsItem->setFlag(QGraphicsItem::ItemStacksBehindParent, 
+                                     true);
+        else
+            d->graphicsItem->setFlag(QGraphicsItem::ItemStacksBehindParent, 
+                                     false);
+
         d->graphicsItem->setZValue(z);
+
     } else {
         if(d->data()->z == z)
             return;
