@@ -2564,7 +2564,7 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
         token_buffer[1].loc   = yylloc  = location(lexer);
 
         if (t_action(errorState, yytoken)) {
-            const QString msg = QString::fromUtf8("Removed token: `%1'").arg(QLatin1String(spell[token_buffer[0].token]));
+            const QString msg = QString::fromUtf8("Unexpected token `%1'").arg(QLatin1String(spell[token_buffer[0].token]));
 
             diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error,
                 token_buffer[0].loc.startLine, token_buffer[0].loc.startColumn, msg));
@@ -2594,7 +2594,7 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
         for (int *tk = tokens; *tk != EOF_SYMBOL; ++tk) {
             int a = t_action(errorState, *tk);
             if (a > 0 && t_action(a, yytoken)) {
-                const QString msg = QString::fromUtf8("Inserted token: `%1'").arg(QLatin1String(spell[*tk]));
+                const QString msg = QString::fromUtf8("Expected token `%1'").arg(QLatin1String(spell[*tk]));
 
                 diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error,
                     token_buffer[0].loc.startLine, token_buffer[0].loc.startColumn, msg));
@@ -2612,9 +2612,12 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
         }
 
         for (int tk = 1; tk < TERMINAL_COUNT; ++tk) {
+            if (tk == T_AUTOMATIC_SEMICOLON)
+               continue;
+
             int a = t_action(errorState, tk);
             if (a > 0 && t_action(a, yytoken)) {
-                const QString msg = QString::fromUtf8("Inserted token: `%1'").arg(QLatin1String(spell[tk]));
+                const QString msg = QString::fromUtf8("Expected token `%1'").arg(QLatin1String(spell[tk]));
                 diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error,
                     token_buffer[0].loc.startLine, token_buffer[0].loc.startColumn, msg));
 
@@ -2627,7 +2630,7 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
             }
         }
 
-        const QString msg = QString::fromUtf8("Unexpected token");
+        const QString msg = QString::fromUtf8("Syntax error");
         diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error,
             token_buffer[0].loc.startLine, token_buffer[0].loc.startColumn, msg));
     }
