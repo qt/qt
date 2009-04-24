@@ -130,7 +130,7 @@ void tst_ManualMultitouch::basicEventHandling()
 void tst_ManualMultitouch::touchEventPropagation()
 {
     MultitouchTestWidget testWidget;
-    testWidget.testNameLabel->setText("QTouchEvent propagation test");
+    testWidget.testNameLabel->setText("QTouchEvent propagation test, Blue blocks Green");
     testWidget.testDescriptionLabel->setText("Touch, hold, and release your finger on the blue widget.");
     testWidget.redWidget->hide();
 
@@ -228,123 +228,127 @@ void tst_ManualMultitouch::touchEventPropagation()
     QVERIFY(!testWidget.greenWidget->seenMouseRelease);
 
     // repeat the test above, now ignoring touch events in the
-    // blueWidget, they should be propagated to the greenWidget
-    testWidget.blueWidget->setAttribute(Qt::WA_AcceptTouchEvents, false);
-    testWidget.greenWidget->setAttribute(Qt::WA_AcceptTouchEvents);
-    testWidget.blueWidget->reset();
-    testWidget.greenWidget->reset();
-    testWidget.greenWidget->acceptTouchBegin = true;
-    testWidget.greenWidget->acceptTouchUpdate = true;
-    testWidget.greenWidget->acceptTouchEnd = true;
-    testWidget.greenWidget->closeWindowOnTouchEnd = true;
+    // greyWidget, they should be propagated to the redWidget
+    testWidget.testNameLabel->setText("QTouchEvent propagation test, Red handles Grey's ignored events");
+    testWidget.testDescriptionLabel->setText("Touch, hold, and release your finger on the grey widget.");
+    testWidget.greenWidget->hide();
+    testWidget.redWidget->show();
+    testWidget.greyWidget->setAttribute(Qt::WA_AcceptTouchEvents, false);
+    testWidget.redWidget->setAttribute(Qt::WA_AcceptTouchEvents);
+    testWidget.greyWidget->reset();
+    testWidget.redWidget->reset();
+    testWidget.redWidget->acceptTouchBegin = true;
+    testWidget.redWidget->acceptTouchUpdate = true;
+    testWidget.redWidget->acceptTouchEnd = true;
+    testWidget.redWidget->closeWindowOnTouchEnd = true;
     testWidget.showMaximized();
 
     (void) qApp->exec();
-    QVERIFY(!testWidget.blueWidget->seenTouchBegin);
-    QVERIFY(!testWidget.blueWidget->seenTouchUpdate);
-    QVERIFY(!testWidget.blueWidget->seenTouchEnd);
-    QVERIFY(!testWidget.blueWidget->seenMousePress);
-    QVERIFY(!testWidget.blueWidget->seenMouseMove);
-    QVERIFY(!testWidget.blueWidget->seenMouseRelease);
-    QVERIFY(testWidget.greenWidget->seenTouchBegin);
-    QVERIFY(testWidget.greenWidget->seenTouchUpdate);
-    QVERIFY(testWidget.greenWidget->seenTouchEnd);
-    QVERIFY(!testWidget.greenWidget->seenMousePress);
-    QVERIFY(!testWidget.greenWidget->seenMouseMove);
-    QVERIFY(!testWidget.greenWidget->seenMouseRelease);
+    QVERIFY(!testWidget.greyWidget->seenTouchBegin);
+    QVERIFY(!testWidget.greyWidget->seenTouchUpdate);
+    QVERIFY(!testWidget.greyWidget->seenTouchEnd);
+    QVERIFY(!testWidget.greyWidget->seenMousePress);
+    QVERIFY(!testWidget.greyWidget->seenMouseMove);
+    QVERIFY(!testWidget.greyWidget->seenMouseRelease);
+    QVERIFY(testWidget.redWidget->seenTouchBegin);
+    QVERIFY(testWidget.redWidget->seenTouchUpdate);
+    QVERIFY(testWidget.redWidget->seenTouchEnd);
+    QVERIFY(!testWidget.redWidget->seenMousePress);
+    QVERIFY(!testWidget.redWidget->seenMouseMove);
+    QVERIFY(!testWidget.redWidget->seenMouseRelease);
 
-    // again, but this time blueWidget should see the TouchBegin
-    testWidget.blueWidget->reset();
-    testWidget.greenWidget->reset();
-    testWidget.blueWidget->setAttribute(Qt::WA_AcceptTouchEvents);
-    testWidget.greenWidget->acceptTouchBegin = true;
-    testWidget.greenWidget->acceptTouchUpdate = true;
-    testWidget.greenWidget->acceptTouchEnd = true;
-    testWidget.greenWidget->closeWindowOnTouchEnd = true;
+    // again, but this time greyWidget should see the TouchBegin
+    testWidget.greyWidget->reset();
+    testWidget.redWidget->reset();
+    testWidget.greyWidget->setAttribute(Qt::WA_AcceptTouchEvents);
+    testWidget.redWidget->acceptTouchBegin = true;
+    testWidget.redWidget->acceptTouchUpdate = true;
+    testWidget.redWidget->acceptTouchEnd = true;
+    testWidget.redWidget->closeWindowOnTouchEnd = true;
     testWidget.showMaximized();
 
     (void) qApp->exec();
-    QVERIFY(testWidget.blueWidget->seenTouchBegin);
-    QVERIFY(!testWidget.blueWidget->seenTouchUpdate);
-    QVERIFY(!testWidget.blueWidget->seenTouchEnd);
-    QVERIFY(!testWidget.blueWidget->seenMousePress);
-    QVERIFY(!testWidget.blueWidget->seenMouseMove);
-    QVERIFY(!testWidget.blueWidget->seenMouseRelease);
-    QVERIFY(testWidget.greenWidget->seenTouchBegin);
-    QVERIFY(testWidget.greenWidget->seenTouchUpdate);
-    QVERIFY(testWidget.greenWidget->seenTouchEnd);
-    QVERIFY(!testWidget.greenWidget->seenMousePress);
-    QVERIFY(!testWidget.greenWidget->seenMouseMove);
-    QVERIFY(!testWidget.greenWidget->seenMouseRelease);
+    QVERIFY(testWidget.greyWidget->seenTouchBegin);
+    QVERIFY(!testWidget.greyWidget->seenTouchUpdate);
+    QVERIFY(!testWidget.greyWidget->seenTouchEnd);
+    QVERIFY(!testWidget.greyWidget->seenMousePress);
+    QVERIFY(!testWidget.greyWidget->seenMouseMove);
+    QVERIFY(!testWidget.greyWidget->seenMouseRelease);
+    QVERIFY(testWidget.redWidget->seenTouchBegin);
+    QVERIFY(testWidget.redWidget->seenTouchUpdate);
+    QVERIFY(testWidget.redWidget->seenTouchEnd);
+    QVERIFY(!testWidget.redWidget->seenMousePress);
+    QVERIFY(!testWidget.redWidget->seenMouseMove);
+    QVERIFY(!testWidget.redWidget->seenMouseRelease);
 
     // again, ignoring the TouchEnd
-    testWidget.blueWidget->reset();
-    testWidget.greenWidget->reset();
-    testWidget.greenWidget->acceptTouchBegin = true;
-    testWidget.greenWidget->acceptTouchUpdate = true;
-    // testWidget.greenWidget->acceptTouchEnd = true;
-    testWidget.greenWidget->closeWindowOnTouchEnd = true;
+    testWidget.greyWidget->reset();
+    testWidget.redWidget->reset();
+    testWidget.redWidget->acceptTouchBegin = true;
+    testWidget.redWidget->acceptTouchUpdate = true;
+    // testWidget.redWidget->acceptTouchEnd = true;
+    testWidget.redWidget->closeWindowOnTouchEnd = true;
     testWidget.showMaximized();
 
     (void) qApp->exec();
-    QVERIFY(testWidget.blueWidget->seenTouchBegin);
-    QVERIFY(!testWidget.blueWidget->seenTouchUpdate);
-    QVERIFY(!testWidget.blueWidget->seenTouchEnd);
-    QVERIFY(!testWidget.blueWidget->seenMousePress);
-    QVERIFY(!testWidget.blueWidget->seenMouseMove);
-    QVERIFY(!testWidget.blueWidget->seenMouseRelease);
-    QVERIFY(testWidget.greenWidget->seenTouchBegin);
-    QVERIFY(testWidget.greenWidget->seenTouchUpdate);
-    QVERIFY(testWidget.greenWidget->seenTouchEnd);
-    QVERIFY(!testWidget.greenWidget->seenMousePress);
-    QVERIFY(!testWidget.greenWidget->seenMouseMove);
-    QVERIFY(!testWidget.greenWidget->seenMouseRelease);
+    QVERIFY(testWidget.greyWidget->seenTouchBegin);
+    QVERIFY(!testWidget.greyWidget->seenTouchUpdate);
+    QVERIFY(!testWidget.greyWidget->seenTouchEnd);
+    QVERIFY(!testWidget.greyWidget->seenMousePress);
+    QVERIFY(!testWidget.greyWidget->seenMouseMove);
+    QVERIFY(!testWidget.greyWidget->seenMouseRelease);
+    QVERIFY(testWidget.redWidget->seenTouchBegin);
+    QVERIFY(testWidget.redWidget->seenTouchUpdate);
+    QVERIFY(testWidget.redWidget->seenTouchEnd);
+    QVERIFY(!testWidget.redWidget->seenMousePress);
+    QVERIFY(!testWidget.redWidget->seenMouseMove);
+    QVERIFY(!testWidget.redWidget->seenMouseRelease);
 
     // again, ignoring TouchUpdates
-    testWidget.blueWidget->reset();
-    testWidget.greenWidget->reset();
-    testWidget.greenWidget->acceptTouchBegin = true;
-    // testWidget.greenWidget->acceptTouchUpdate = true;
-    testWidget.greenWidget->acceptTouchEnd = true;
-    testWidget.greenWidget->closeWindowOnTouchEnd = true;
+    testWidget.greyWidget->reset();
+    testWidget.redWidget->reset();
+    testWidget.redWidget->acceptTouchBegin = true;
+    // testWidget.redWidget->acceptTouchUpdate = true;
+    testWidget.redWidget->acceptTouchEnd = true;
+    testWidget.redWidget->closeWindowOnTouchEnd = true;
     testWidget.showMaximized();
 
     (void) qApp->exec();
-    QVERIFY(testWidget.blueWidget->seenTouchBegin);
-    QVERIFY(!testWidget.blueWidget->seenTouchUpdate);
-    QVERIFY(!testWidget.blueWidget->seenTouchEnd);
-    QVERIFY(!testWidget.blueWidget->seenMousePress);
-    QVERIFY(!testWidget.blueWidget->seenMouseMove);
-    QVERIFY(!testWidget.blueWidget->seenMouseRelease);
-    QVERIFY(testWidget.greenWidget->seenTouchBegin);
-    QVERIFY(testWidget.greenWidget->seenTouchUpdate);
-    QVERIFY(testWidget.greenWidget->seenTouchEnd);
-    QVERIFY(!testWidget.greenWidget->seenMousePress);
-    QVERIFY(!testWidget.greenWidget->seenMouseMove);
-    QVERIFY(!testWidget.greenWidget->seenMouseRelease);
+    QVERIFY(testWidget.greyWidget->seenTouchBegin);
+    QVERIFY(!testWidget.greyWidget->seenTouchUpdate);
+    QVERIFY(!testWidget.greyWidget->seenTouchEnd);
+    QVERIFY(!testWidget.greyWidget->seenMousePress);
+    QVERIFY(!testWidget.greyWidget->seenMouseMove);
+    QVERIFY(!testWidget.greyWidget->seenMouseRelease);
+    QVERIFY(testWidget.redWidget->seenTouchBegin);
+    QVERIFY(testWidget.redWidget->seenTouchUpdate);
+    QVERIFY(testWidget.redWidget->seenTouchEnd);
+    QVERIFY(!testWidget.redWidget->seenMousePress);
+    QVERIFY(!testWidget.redWidget->seenMouseMove);
+    QVERIFY(!testWidget.redWidget->seenMouseRelease);
 
     // last time, ignoring TouchUpdates and TouchEnd
-    testWidget.blueWidget->reset();
-    testWidget.greenWidget->reset();
-    testWidget.greenWidget->acceptTouchBegin = true;
-    // testWidget.greenWidget->acceptTouchUpdate = true;
-    // testWidget.greenWidget->acceptTouchEnd = true;
-    testWidget.greenWidget->closeWindowOnTouchEnd = true;
+    testWidget.greyWidget->reset();
+    testWidget.redWidget->reset();
+    testWidget.redWidget->acceptTouchBegin = true;
+    // testWidget.redWidget->acceptTouchUpdate = true;
+    // testWidget.redWidget->acceptTouchEnd = true;
+    testWidget.redWidget->closeWindowOnTouchEnd = true;
     testWidget.showMaximized();
 
     (void) qApp->exec();
-    QVERIFY(testWidget.blueWidget->seenTouchBegin);
-    QVERIFY(!testWidget.blueWidget->seenTouchUpdate);
-    QVERIFY(!testWidget.blueWidget->seenTouchEnd);
-    QVERIFY(!testWidget.blueWidget->seenMousePress);
-    QVERIFY(!testWidget.blueWidget->seenMouseMove);
+    QVERIFY(testWidget.greyWidget->seenTouchBegin);
+    QVERIFY(!testWidget.greyWidget->seenTouchUpdate);
+    QVERIFY(!testWidget.greyWidget->seenTouchEnd);
+    QVERIFY(!testWidget.greyWidget->seenMousePress);
+    QVERIFY(!testWidget.greyWidget->seenMouseMove);
     QVERIFY(!testWidget.blueWidget->seenMouseRelease);
-    QVERIFY(testWidget.greenWidget->seenTouchBegin);
-    QVERIFY(testWidget.greenWidget->seenTouchUpdate);
-    QVERIFY(testWidget.greenWidget->seenTouchEnd);
-    QVERIFY(!testWidget.greenWidget->seenMousePress);
-    QVERIFY(!testWidget.greenWidget->seenMouseMove);
-    QVERIFY(!testWidget.greenWidget->seenMouseRelease);
+    QVERIFY(testWidget.redWidget->seenTouchBegin);
+    QVERIFY(testWidget.redWidget->seenTouchUpdate);
+    QVERIFY(testWidget.redWidget->seenTouchEnd);
+    QVERIFY(!testWidget.redWidget->seenMousePress);
+    QVERIFY(!testWidget.redWidget->seenMouseMove);
+    QVERIFY(!testWidget.redWidget->seenMouseRelease);
 }
 
 QTEST_MAIN(tst_ManualMultitouch)
