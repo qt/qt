@@ -14,11 +14,11 @@
                 print('removeButton.toggle()');
                 if (removeButton.state == 'opened') {
                     removeButton.state = '';
-                    page.mouseGrabbed=false;
+                    contactDetails.mouseGrabbed=false;
                 } else {
-                    if (!page.mouseGrabbed) {
+                    if (!contactDetails.mouseGrabbed) {
                         removeButton.state = 'opened';
-                        page.mouseGrabbed=true;
+                        contactDetails.mouseGrabbed=true;
                     }
                 }
             }

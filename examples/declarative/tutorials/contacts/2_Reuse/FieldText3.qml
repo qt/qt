@@ -58,7 +58,7 @@
         color="#505050"
         font.italic="true"
         text="{fieldText.label}"
-        opacity="{textEdit.text != '' ? 0 : 1}">
+        opacity="{textEdit.text == '' ? 1 : 0}">
         <opacity>
             <Behaviour>
                 <NumericAnimation property="opacity" duration="250"/>

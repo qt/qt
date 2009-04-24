@@ -1,7 +1,4 @@
 <Rect id="page" width="{layout.width}" height="{layout.height}" color='white'>
-    <properties>
-        <Property name="mouseGrabbed" value="false"/>
-    </properties>
     <VerticalLayout id="layout" width="{contents.width}" margin="5" spacing="5">
         <GroupBox contents="ContactField1.qml" label="Loading Component"/>
         <GroupBox contents="ContactField2.qml" label="Using properties"/>

@@ -82,7 +82,7 @@
 
     \list 1
     \o \l{tutorials/declarative/contacts/part1}{Drawing and Animation}
-    \o \l{tutorials/declarative/contacts/part2}{Reuse of QML components}
+    \o \l{tutorials/declarative/contacts/part2}{Reusing QML Components}
     \o \l{tutorials/declarative/contacts/part3}{Models, Views and Delegates}
     \o \l{tutorials/declarative/contacts/part4}{Other Tricks}
     \endlist
@@ -462,9 +462,261 @@
     to complete their transition.
 
     \omit
-        TODO More on types of animation
+        TODO More on types of animation, e.g. ColorAnimation, Behaviors.
     \endomit
 
     In the next chapter we will show how we can use the remove button in
     other QML components.
 */
+
+/*!
+    \page tutorials-declarative-contacts-part2.html
+    \contentspage {Declarative UI Tutorial}{Contents}
+    \previouspage {tutorials/declarative/contacts/part1}{Chapter 1}
+    \nextpage {tutorials/declarative/contacts/part3}{Chapter 3}
+    \example tutorials/declarative/contacts/part2
+    \title Reusing QML Components
+    \tableofcontents
+
+    The second part of this tutorial covers how to reuse QML components and
+    have them interact with each other.  The RemoveButton developed in the 
+    previous chapter is intended to be part of a more complex control for
+    editing a field of our contact.  This ContactField in turn is intended
+    to be used in a contact editing control.
+
+    \section1 Loading QML Components
+
+    Reusing the RemoveButton itself is very simple.  When parsing a QML file
+    if a Component is refered to that isn't already in the system, Qt
+    will try to load it from a file of the same name with the ".qml" extension.
+
+    \code
+    <Item id="contactField"
+        clip="true"
+        width="230"
+        height="30">
+        <RemoveButton id="removeButton"
+            anchors.right="{parent.right}"
+            anchors.top="{parent.top}" anchors.bottom="{parent.bottom}"/>
+    \endcode
+
+    The above QML code will attempt to load the RemoveButton component from
+    a file called "RemoveButton.qml".  All the properties of the button are
+    accessible and can be overridden from defaults.  The loaded component
+    can also refer to elements further up in the tree, so that code within
+    RemoveButton.qml could refer to the contactField component.  However only
+    properties of the top level element in RemoveButton.qml are visible to
+    the contact field.  In order to allow contact field to modify how wide
+    the remove button will be when opened we need to add a property to the
+    remove button.
+
+    \section1 Properties and Signals
+
+    \code
+    <Rect id="removeButton"
+        width="30" height="30"
+        color="red"
+        radius="5">
+        <properties>
+            <Property name="expandedWidth" value="230"/>
+        </properties>
+        <signals>
+            <Signal name="confirmed"/>
+        </signals>
+    \endcode
+
+    \omit
+    Need reference for more information on declaring properties and signals.
+    \endomit
+
+    These properties and signals are accessed from the contact field the same
+    way standard system components are accessed.
+
+    \code
+    <Item id="contactField"
+        clip="true"
+        width="230"
+        height="30">
+        <RemoveButton id="removeButton"
+            anchors.right="{parent.right}"
+            anchors.top="{parent.top}" anchors.bottom="{parent.bottom}"
+            expandedWidth="{contactField.width}"
+            onConfirmed="print('Clear field text'); fieldText.text=''"/>
+    \endcode
+
+    Now when the remove button is expanded, it will expand to the width of the
+    contact field.  Also when the user confirms the remove action, the
+    text section of the contact field will be cleared.  When creating a
+    component that does have children out of its own
+    bounds its important to consider whether the item should be clipped,
+    which is done above with \c{clip="true"}.
+
+    \section1 States
+
+    Its also possible to access the state of included components.  The FieldText
+    component we will use in this tutorial is also been written specifically
+    for our contacts application, as was the RemoveButton component.  In
+    this case we want it to expand when editing.  One way to do this would
+    be to anchor the field text component to the center of its parent and
+    then let its own width change push the remove button away, however that
+    would make it difficult to have the remove button also push the field
+    text to the left when the remove button expands.
+
+    So instead we will anchor the right edge of the field text to 
+    the left edge of the remove button and use a state change in the
+    contact field itself to move the remove button and the field icon out of
+    view.
+
+    \code
+    <Item id="contactField"
+        clip="true"
+        width="230"
+        height="30">
+        <properties>
+            <Property name="label" value="Name"/>
+            <Property name="icon" value="../shared/pics/phone.png"/>
+            <Property name="value"/>
+        </properties>
+        <RemoveButton id="removeButton"
+            anchors.right="{parent.right}"
+            anchors.top="{parent.top}" anchors.bottom="{parent.bottom}"
+            expandedWidth="{contactField.width}"
+            onConfirmed="print('Clear field text'); fieldText.text=''"/>
+        <FieldText id="fieldText"
+            width="{contactField.width-70}"
+            anchors.right="{removeButton.left}" anchors.rightMargin="5"
+            anchors.verticalCenter="{parent.verticalCenter}"
+            label="{contactField.label}"
+            text="{contactField.value}"/>
+        <Image
+            anchors.right="{fieldText.left}" anchors.rightMargin="5"
+            anchors.verticalCenter="{parent.verticalCenter}"
+            src="{contactField.icon}"/>
+        <states>
+            <State name="editingText" when="{fieldText.state == 'editing'}">
+                <SetProperty target="{removeButton.anchors}" property="rightMargin" value="-35"/>
+                <SetProperty target="{fieldText}" property="width" value="{contactField.width}"/>
+            </State>
+        </states>
+        <transitions>
+            <Transition fromState='' toState="*" reversible="true">
+                <NumericAnimation properties="width,rightMargin" duration="200"/>
+            </Transition>
+        </transitions>
+    </Item> 
+    \endcode
+
+    Apart from accessing the fieldText.state, the above code also uses the when
+    attribute of its own editingText state.  This is an alternative to using
+    a signal to change state.  When the value of the expression for the 
+    when attribute changes, Qt will detect if the contactField needs to enter
+    that state.  In the FieldText element a similar approach is used to fade
+    out the label of the FieldText when the user enters some text of their own.
+
+    \code
+    <Text id="textLabel"
+        x="5" width="{parent.width-10}"
+        anchors.verticalCenter="{parent.verticalCenter}"
+        hAlign="AlignHCenter"
+        color="#505050"
+        font.italic="true"
+        text="{fieldText.label}"
+        opacity="{textEdit.text == '' ? 1 : 0}">
+        <opacity>
+            <Behaviour>
+                <NumericAnimation property="opacity" duration="250"/>
+            </Behaviour>
+        </opacity>
+    </Text>
+   \endcode
+
+    fieldText is the enclosing component and textEdit is a TextEdit element
+    provided by Qt.  In the QML code above, the opacity of the textLabel is
+    only 1 if there is text for the textEdit is empty.  This is a form of
+    short cut to using states for an element, useful if only one property
+    is changing as it is for the textLabel.  To animate a property change is
+    similar to animating a state change.  Using the Behavior element we can
+    specify how the property changes if it does change state, allowing for
+    a smooth transition.
+
+    The fieldText element also handles changes to the text using the
+    onValueChanged attribute when specifying properties.
+
+    \code
+    <Rect id="fieldText"
+        height="30"
+        radius="5"
+        color="white">
+        <properties>
+            <Property
+                name="text"
+                value=""
+                onValueChanged="reset()"/>
+    \endcode
+
+    Because the user needs to be able to edit text in the text edit, it
+    shouldn't be simply bound to the text property of the FieldText component.
+    However if a component using the FieldText component sets the text
+    property of the FieldText component it should in turn set the text
+    of the text edit.
+
+    \section1 Key and Mouse Focus
+
+    Unlike in Qt setting focus to true on a component does not always mean
+    that the component has focus.  This is due to the declarative nature
+    of QML, and can be affected by multiple components both indicating
+    focus to be true.  At the time of writing this tutorial both key and mouse
+    focus handling are still being improved.  Hence we will only lightly cover
+    the topic.
+
+    Normally in QML this is handled by FocusRealm components.  A focus realm
+    is a sort of cut off point for determining focus.  If a FocusRealm does
+    not have focus then any children of it won't be able to get focus even
+    if they do set focus to true.  If your component has multiple child
+    components that could gain focus ensure that they are guarded by FocusRealm
+    component, and add code to handle which focus realms have focus
+    at that level.  The alternative and approach done at this stage in
+    the tutorial is to only have one component set focus to true at a time.
+
+    Currently if multiple contact fields were put into our contact editor,
+    any of the FieldText components could be clicked and opened, and
+    any of the RemoveButton components could be clicked and opened, all
+    at the same time.  We would like this behavior to be some what modal
+    instead, encouraging the user to either accept or cancel the current
+    action before moving onto a new action.
+
+    In the tutorial we do this with a property of our top level component
+    to handle whether we are in this state or not.
+
+    \code
+    <Item id="contactDetails"
+        width="230"
+        height="{layout.height}">
+        <properties>
+            <Property name="mouseGrabbed" value="false"/>
+        </properties>
+    \endcode
+
+    And in the code where we want to check or avoid allowing mouse interaction.
+
+    \code
+    <Script>
+        function toggle() {
+            print('removeButton.toggle()');
+            if (removeButton.state == 'opened') {
+                removeButton.state = '';
+                contactDetails.mouseGrabbed=false;
+            } else {
+                if (!contactDetails.mouseGrabbed) {
+                    removeButton.state = 'opened';
+                    contactDetails.mouseGrabbed=true;
+                }
+            }
+        }
+    </Script>
+    \endcode
+
+    Handling Key and Mouse focus in QML is quite likely to change before
+    the Qt 4.6 release.
+*/
+

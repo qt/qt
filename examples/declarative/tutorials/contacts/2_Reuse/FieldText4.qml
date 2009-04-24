@@ -17,21 +17,21 @@
     <resources>
         <Script>
             function edit() {
-                if (!page.mouseGrabbed) {
+                if (!contactDetails.mouseGrabbed) {
                     fieldText.state='editing';
-                    page.mouseGrabbed=true;
+                    contactDetails.mouseGrabbed=true;
                 }
             }
             function confirm() {
                 fieldText.text = textEdit.text;
                 fieldText.state='';
-                page.mouseGrabbed=false;
+                contactDetails.mouseGrabbed=false;
                 fieldText.confirmed.emit();
             }
             function reset() {
                 textEdit.text = fieldText.text;
                 fieldText.state='';
-                page.mouseGrabbed=false;
+                contactDetails.mouseGrabbed=false;
             }
         </Script>
     </resources>
@@ -63,7 +63,7 @@
         color="#505050"
         font.italic="true"
         text="{fieldText.label}"
-        opacity="{textEdit.text != '' ? 0 : 1}">
+        opacity="{textEdit.text == '' ? 1 : 0}">
         <opacity>
             <Behaviour>
                 <NumericAnimation property="opacity" duration="250"/>

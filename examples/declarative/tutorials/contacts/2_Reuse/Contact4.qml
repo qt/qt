@@ -2,6 +2,9 @@
     width="230"
     height="{layout.height}">
     <properties>
+        <Property name="mouseGrabbed" value="false"/>
+    </properties>
+    <properties>
         <Property name="contactid" value=""/>
         <Property name="label" onValueChanged="labelField.value = label"/>
         <Property name="phone" onValueChanged="phoneField.value = phone"/>
