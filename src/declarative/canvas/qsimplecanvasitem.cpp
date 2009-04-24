@@ -443,7 +443,16 @@ void QSimpleCanvasItem::setZ(qreal z)
         return;
 
     if(d->graphicsItem) {
+
+        if(z < 0)
+            d->graphicsItem->setFlag(QGraphicsItem::ItemStacksBehindParent, 
+                                     true);
+        else
+            d->graphicsItem->setFlag(QGraphicsItem::ItemStacksBehindParent, 
+                                     false);
+
         d->graphicsItem->setZValue(z);
+
     } else {
         if(d->data()->z == z)
             return;
@@ -626,12 +635,8 @@ void QSimpleCanvasItem::addChild(QSimpleCanvasItem *c)
 {
     Q_D(QSimpleCanvasItem);
     d->children.append(c);
-    if(d->graphicsItem) {
-        // XXX - GraphicsView does not preserve the stacking order of items
-        c->setZ(d->children.count());
-    } else {
+    if(!d->graphicsItem) 
         d->needsZOrder = true;
-    }
     childrenChanged();
 }
 
