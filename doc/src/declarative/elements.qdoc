@@ -101,6 +101,13 @@ The following table lists the Qml elements provided by the Qt Declarative module
 \o \l PathView
     \list
     \o \l Path
+        \list
+        \o \l PathLine
+        \o \l PathQuad
+        \o \l PathCubic
+        \o \l PathAttribute
+        \o \l PathPercent
+        \endlist
     \endlist
 \endlist
 
