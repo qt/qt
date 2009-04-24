@@ -68,6 +68,7 @@ private slots:
     void flagEFBFBF() const;
     void decode0D() const;
     void codecForIndex() const;
+    void aliasForUTF16() const;
 
     void utf8Codec_data();
     void utf8Codec();
@@ -451,6 +452,11 @@ void tst_QTextCodec::decode0D() const
 
 void tst_QTextCodec::codecForIndex() const
 {
+}
+
+void tst_QTextCodec::aliasForUTF16() const
+{
+    QVERIFY(QTextCodec::codecForName("UTF-16")->aliases().isEmpty());
 }
 
 static QString fromInvalidUtf8Sequence(const QByteArray &ba)
