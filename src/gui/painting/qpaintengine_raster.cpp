@@ -362,7 +362,8 @@ void QRasterPaintEngine::init()
     d->basicStroker.setCubicToHook(qt_ft_outline_cubic_to);
     d->dashStroker = 0;
 
-    d->baseClip = 0;
+    d->baseClip = new QClipData(d->device->height());
+    d->baseClip->setClipRect(QRect(0, 0, d->device->width(), d->device->height()));
 
     d->image_filler.init(d->rasterBuffer, this);
     d->image_filler.type = QSpanData::Texture;
@@ -446,6 +447,8 @@ QRasterPaintEngine::~QRasterPaintEngine()
     delete d->outlineMapper;
     delete d->rasterizer;
     delete d->dashStroker;
+
+    delete d->baseClip;
 }
 
 /*!
@@ -540,11 +543,6 @@ bool QRasterPaintEngine::end()
         dumpClip(d->rasterBuffer->width(), d->rasterBuffer->height(), d->baseClip);
     }
 #endif
-
-    if (d->baseClip) {
-        delete d->baseClip;
-        d->baseClip = 0;
-    }
 
     return true;
 }
@@ -1099,11 +1097,10 @@ void QRasterPaintEnginePrivate::systemStateChanged()
     if (!systemClip.isEmpty()) {
         QRegion clippedDeviceRgn = systemClip & clipRect;
         deviceRect = clippedDeviceRgn.boundingRect();
-        delete baseClip;
-        baseClip = new QClipData(device->height());
         baseClip->setClipRegion(clippedDeviceRgn);
     } else {
         deviceRect = clipRect;
+        baseClip->setClipRect(deviceRect);
     }
 #ifdef QT_DEBUG_DRAW
     qDebug() << "systemStateChanged" << this << "deviceRect" << deviceRect << clipRect << systemClip;
