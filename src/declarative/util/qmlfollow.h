@@ -65,6 +65,7 @@ class Q_DECLARATIVE_EXPORT QmlFollow : public QmlPropertyValueSource,
     Q_PROPERTY(qreal damping READ damping WRITE setDamping);
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled);
 
+    Q_PROPERTY(qreal followValue READ value NOTIFY valueChanged); 
 public:
     QmlFollow(QObject *parent=0);
     ~QmlFollow();
@@ -81,6 +82,11 @@ public:
     void setDamping(qreal damping);
     bool enabled() const;
     void setEnabled(bool enabled);
+
+    qreal value() const;
+
+Q_SIGNALS:
+    void valueChanged(qreal);
 };
 
 QML_DECLARE_TYPE(QmlFollow);

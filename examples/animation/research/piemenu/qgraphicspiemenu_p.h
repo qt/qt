@@ -39,23 +39,40 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qobject.h>
-#ifdef QT_EXPERIMENTAL_SOLUTION
-#include "qtgraphicswidget.h"
-#else
-#include <QtGui/qgraphicswidget.h>
-#endif
+#ifndef QGRAPHICSPIEMENU_P_H
+#define QGRAPHICSPIEMENU_P_H
 
-class SplashItem : public QGraphicsWidget
+#include "qgraphicspiemenu.h"
+#include "qgraphicspiemenusection_p.h"
+
+#include <QtGui/qicon.h>
+#include <QtCore/qstate.h>
+#include <QtCore/qtransition.h>
+#include <QtCore/qstatemachine.h>
+
+class QAction;
+class QEventLoop;
+class QGraphicsPieMenuSection;
+
+class QGraphicsPieMenuPrivate
 {
-    Q_OBJECT
+    Q_DECLARE_PUBLIC(QGraphicsPieMenu);
 public:
-    SplashItem(QGraphicsItem *parent = 0);
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    void init(const QIcon &icon = QIcon(), const QString &title = QString());
 
-protected:
-    void keyPressEvent(QKeyEvent *event);
+    QIcon icon;
+    QString title;
+    QStateMachine *machine;
+    QState *popupState;
+    //QTransition *transition;
+    QList<QGraphicsPieMenuSection *> sections;
 
-private:
-    QString text;
+    QEventLoop *eventLoop;
+
+    QAction *menuAction;
+    QGraphicsPieMenu *q_ptr;
+
+    void updatePopupState();
 };
+
+#endif

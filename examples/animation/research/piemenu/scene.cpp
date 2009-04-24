@@ -39,23 +39,35 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qobject.h>
-#ifdef QT_EXPERIMENTAL_SOLUTION
-#include "qtgraphicswidget.h"
-#else
-#include <QtGui/qgraphicswidget.h>
-#endif
+#include "qgraphicspiemenu.h"
+#include "scene.h"
 
-class SplashItem : public QGraphicsWidget
+#include <QtGui/qaction.h>
+#include <QtGui/qgraphicssceneevent.h>
+
+Scene::Scene(qreal x, qreal y, qreal width, qreal height, QObject *parent)
+    : QGraphicsScene(x, y, width, height, parent)
 {
-    Q_OBJECT
-public:
-    SplashItem(QGraphicsItem *parent = 0);
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+}
 
-protected:
-    void keyPressEvent(QKeyEvent *event);
+Scene::Scene(const QRectF &sceneRect, QObject *parent)
+    : QGraphicsScene(sceneRect, parent)
+{
+}
 
-private:
-    QString text;
-};
+Scene::Scene(QObject *parent)
+    : QGraphicsScene(parent)
+{
+}
+
+Scene::~Scene()
+{
+}
+
+void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    QGraphicsPieMenu *menu = new QGraphicsPieMenu;
+    for (int i = 0; i < 5; ++i)
+        menu->addAction(new QAction(QString("Item %1").arg(i), menu));
+    menu->popup(event->scenePos());
+}

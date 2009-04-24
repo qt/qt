@@ -39,23 +39,18 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qobject.h>
-#ifdef QT_EXPERIMENTAL_SOLUTION
-#include "qtgraphicswidget.h"
-#else
-#include <QtGui/qgraphicswidget.h>
-#endif
+#include <QtGui>
+#include "scene.h"
+#include "qgraphicspiemenu.h"
 
-class SplashItem : public QGraphicsWidget
+int main(int argc, char *argv[])
 {
-    Q_OBJECT
-public:
-    SplashItem(QGraphicsItem *parent = 0);
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    QApplication app(argc, argv);
 
-protected:
-    void keyPressEvent(QKeyEvent *event);
+    Scene scene;
 
-private:
-    QString text;
-};
+    QGraphicsView view(&scene);
+    view.show();
+
+    return app.exec();
+}

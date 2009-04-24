@@ -126,5 +126,5 @@ Transitions can happen in parallel, in sequence, or in any combination of the tw
 
 \section1 Property Behaviors
 
-\todo Document.  Should we remove property behaviour altogether?
+\note Property behaviors are currently experimental.
 */

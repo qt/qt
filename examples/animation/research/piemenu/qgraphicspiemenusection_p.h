@@ -39,23 +39,50 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qobject.h>
-#ifdef QT_EXPERIMENTAL_SOLUTION
-#include "qtgraphicswidget.h"
-#else
-#include <QtGui/qgraphicswidget.h>
-#endif
+#ifndef QGRAPHICSPIEMENUSECTION_H
+#define QGRAPHICSPIEMENUSECTION_H
 
-class SplashItem : public QGraphicsWidget
+#include <QtGui/qgraphicswidget.h>
+#include <QtGui/qpainter.h>
+
+class QGraphicsPieMenuSection : public QGraphicsWidget
 {
     Q_OBJECT
+    Q_PROPERTY(qreal rotation READ rotation WRITE setRotation)
 public:
-    SplashItem(QGraphicsItem *parent = 0);
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    QGraphicsPieMenuSection(QGraphicsItem *parent = 0)
+        : QGraphicsWidget(parent), rot(0)
+    { }
+
+    qreal rotation() const
+    {
+        return rot;
+    }
+    void setRotation(qreal rotation)
+    {
+        rot = rotation;
+        setTransform(QTransform().rotate(rot));
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0)
+    {
+        Q_UNUSED(option);
+        Q_UNUSED(widget);
+        painter->setPen(QPen(Qt::black, 1));
+        painter->setBrush(QBrush(Qt::gray));
+        painter->drawPie(QRectF(-100, -100, 200, 200), 0, -30 * 16);
+    }
 
 protected:
-    void keyPressEvent(QKeyEvent *event);
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &size = QSizeF()) const
+    {
+        Q_UNUSED(which);
+        Q_UNUSED(size);
+        return QSizeF(100, 30);
+    }
 
 private:
-    QString text;
+    qreal rot;
 };
+
+#endif

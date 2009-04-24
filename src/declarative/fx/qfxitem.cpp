@@ -838,23 +838,6 @@ void QFxItem::qmlLoaded()
 }
 
 /*!
-  \qmlproperty Item Item::clipToItem
-
-  Experimental clip to item support.  Do not use.
-
-  \todo complete clip to item support.
- */
-QFxItem *QFxItem::clipToItem() const
-{
-    return 0;
-}
-
-void QFxItem::setClipToItem(QFxItem *)
-{
-    qWarning() << "QFxItem: clipToItem not implemented";
-}
-
-/*!
   \qmlproperty real Item::x
   \qmlproperty real Item::y
   \qmlproperty int Item::width
@@ -1361,7 +1344,7 @@ void QFxItem::setScale(qreal s)
   Opacity is an \e inherited attribute.  That is, the opacity is
   also applied individually to child items.  In almost all cases this
   is what you want.  If you can spot the issue in the following
-  example, you might need to use an opacity filter instead.
+  example, you might need to use an opacity filter (not yet available) instead.
 
   \table
   \row
@@ -1385,8 +1368,6 @@ void QFxItem::setScale(qreal s)
   </Item>
   \endqml
   \endtable
-
-  \todo There is no such thing as an opacity filter
 */
 
 qreal QFxItem::opacity() const
@@ -1488,8 +1469,8 @@ QmlList<QmlTransition *>* QFxItem::transitions()
   \qmlproperty list<Filter> Item::filter
   This property holds a list of graphical filters to be applied to the item.
 
-  \l {qmlfilter}{Filters} include things like \l {qmlblur}{blurring}
-  the item, or giving it a Reflection.  Some
+  \l {Filter}{Filters} include things like \l {Blur}{blurring}
+  the item, or giving it a \l Reflection.  Some
   filters may not be available on all canvases; if a filter is not
   available on a certain canvas, it will simply not be applied for
   that canvas (but the XML will still be considered valid).

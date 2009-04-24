@@ -917,7 +917,7 @@ void QFxParticles::setStreamIn(bool b)
   will be produced until it is set to true.
 */
 /*!
-  \property bool Particles::emitting
+  \property QFxParticles::emitting
   If emitting is set to false no new particles will be created. This means that
   when a particle reaches the end of its lifespan it is not replaced. This
   property can be used to turn particles on and off with a more natural look.

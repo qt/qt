@@ -39,23 +39,42 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qobject.h>
-#ifdef QT_EXPERIMENTAL_SOLUTION
-#include "qtgraphicswidget.h"
-#else
-#include <QtGui/qgraphicswidget.h>
-#endif
+#ifndef __MENU__H__
+#define __MENU__H__
 
-class SplashItem : public QGraphicsWidget
+#include <QtGui>
+
+class MenuAction;
+
+class Menu : public QGraphicsWidget
 {
     Q_OBJECT
 public:
-    SplashItem(QGraphicsItem *parent = 0);
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    Menu(QGraphicsItem *parent);
+    ~Menu();
+    
+    MenuAction *addAction(const QString&, QObject *receiver = 0, const char* slot = 0 );
 
-protected:
-    void keyPressEvent(QKeyEvent *event);
-
+    QRectF boundingRect() const;
+    void keyPressEvent ( QKeyEvent * event );
+public slots:
+    void show();
+    void hide();
 private:
-    QString text;
+    QList<MenuAction*> m_actions;
+    QGraphicsRectItem *m_selection;
+    int m_selected;
 };
+
+class MenuAction : public QGraphicsTextItem
+{
+    Q_OBJECT
+public:
+    MenuAction(const QString &text, Menu * parent);
+    void trigger();
+signals:
+    void triggered();
+};
+
+
+#endif //__RIVERITEM__H__
