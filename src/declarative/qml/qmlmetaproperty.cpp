@@ -92,6 +92,9 @@ QmlMetaProperty::QmlMetaProperty()
 {
 }
 
+/*!
+  The destructor deletes its heap data.
+ */
 QmlMetaProperty::~QmlMetaProperty()
 {
     delete d; d = 0;
@@ -923,7 +926,12 @@ bool QmlMetaProperty::hasChangedNotifier() const
 }
 
 /*!
-    Connect the property's change notifier signal to the \a dest \a method.
+    Connects the property's change notifier signal to the
+    specified \a method of the \a dest object and returns
+    true. Returns false if this metaproperty does not
+    represent a regular Qt property or if it has no
+    change notifier signal, or if the \a dest object does
+    not have the specified \a method.
 */
 bool QmlMetaProperty::connectNotifier(QObject *dest, int method) const
 {
@@ -938,7 +946,12 @@ bool QmlMetaProperty::connectNotifier(QObject *dest, int method) const
 }
 
 /*!
-    Connect the property's change notifier signal to the \a dest \a slot.
+    Connects the property's change notifier signal to the
+    specified \a slot of the \a dest object and returns
+    true. Returns false if this metaproperty does not
+    represent a regular Qt property or if it has no
+    change notifier signal, or if the \a dest object does
+    not have the specified \a slot.
 */
 bool QmlMetaProperty::connectNotifier(QObject *dest, const char *slot) const
 {
