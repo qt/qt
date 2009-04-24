@@ -238,15 +238,15 @@ QPointF QSimpleCanvasItem::scenePos() const
 
     Controls the point about which simple transforms like scale apply.
 
-    \o TopLeft The top-left corner of the item.
-    \o TopCenter The center point of the top of the item.
-    \o TopRight The top-right corner of the item.
-    \o MiddleLeft The left most point of the vertical middle.
-    \o Center The center of the item.
-    \o MiddleRight The right most point of the vertical middle.
-    \o BottomLeft The bottom-left corner of the item.
-    \o BottomCenter The center point of the bottom of the item. 
-    \o BottomRight The bottom-right corner of the item.
+    \value TopLeft The top-left corner of the item.
+    \value TopCenter The center point of the top of the item.
+    \value TopRight The top-right corner of the item.
+    \value MiddleLeft The left most point of the vertical middle.
+    \value Center The center of the item.
+    \value MiddleRight The right most point of the vertical middle.
+    \value BottomLeft The bottom-left corner of the item.
+    \value BottomCenter The center point of the bottom of the item. 
+    \value BottomRight The bottom-right corner of the item.
 */
 
 /*!

@@ -3,7 +3,7 @@
 \target components
 \title Components
 
-A \b component is a reusable, encapsulated Qml element with a well-defined interface.
+A \bold component is a reusable, encapsulated Qml element with a well-defined interface.
 
 Writing and using components allows you to:
 \list

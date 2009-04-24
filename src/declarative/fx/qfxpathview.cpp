@@ -88,7 +88,7 @@ private:
     \class QFxPathView
     \brief The QFxPathView class lays out items provided by a model on a path.
 
-    \ingroup views
+    \ingroup group_views
 
     The model must be a \l QListModelInterface subclass.
 

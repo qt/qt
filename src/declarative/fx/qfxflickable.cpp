@@ -253,7 +253,7 @@ QML_DEFINE_TYPE(QFxFlickable,Flickable);
     \class QFxFlickable
     \brief The QFxFlickable class provides a view that can be "flicked".
 
-    \ingroup widgets
+    \ingroup group_widgets
 
     QFxFlickable allows its children to be dragged and flicked.
     

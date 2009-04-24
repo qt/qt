@@ -97,7 +97,7 @@ QmlStateOperation::QmlStateOperation(QObjectPrivate &dd, QObject *parent)
     \class QmlState
     \brief The QmlState class allows you to define configurations of objects and properties.
 
-    \ingroup states
+    \ingroup group_states
 
     QmlState allows you to specify a state as a set of batched changes from the default
     configuration.

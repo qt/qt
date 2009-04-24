@@ -200,16 +200,16 @@ void QFxView::execute()
         d->component = new QmlComponent(&d->engine, d->xml.toUtf8(), d->source);
     }
 
-    if(d->component->isReady()) {
+    if(!d->component->isLoading()) {
         continueExecute();
     } else {
-        connect(d->component, SIGNAL(readyChanged()), this, SLOT(continueExecute()));
+        connect(d->component, SIGNAL(statusChanged(QmlComponent::Status)), this, SLOT(continueExecute()));
     }
 }
 
 void QFxView::continueExecute()
 {
-    disconnect(d->component, SIGNAL(readyChanged()), this, SLOT(continueExecute()));
+    disconnect(d->component, SIGNAL(statusChanged(QmlComponent::Status)), this, SLOT(continueExecute()));
 
     if(!d->component){
         qWarning() << "Error in loading" << d->source;

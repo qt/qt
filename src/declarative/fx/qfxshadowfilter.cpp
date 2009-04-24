@@ -90,7 +90,7 @@ public:
 /*!
     \internal
     \class QFxShadowFilter
-    \ingroup effects
+    \ingroup group_effects
     \brief The QFxShadowFilter class allows you to add a shadow to an item.
 */
 
@@ -128,7 +128,7 @@ void QFxShadowFilter::setXOffset(int offset)
 }
 
 /*!
-    \property QFxShadowFilter::xOffset
+    \property QFxShadowFilter::yOffset
     \brief the y offset of the shadow relative to the item.
 */
 int QFxShadowFilter::yOffset() const

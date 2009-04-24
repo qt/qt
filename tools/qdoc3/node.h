@@ -367,6 +367,11 @@ class QmlPropGroupNode : public FakeNode
     virtual ~QmlPropGroupNode() { }
 
     const QString& element() const { return name(); }
+    void setDefault() { isdefault = true; }
+    bool isDefault() const { return isdefault; }
+
+ private:
+    bool    isdefault;
 };
 
 class QmlPropertyNode : public LeafNode
@@ -395,8 +400,8 @@ class QmlPropertyNode : public LeafNode
     static bool fromTrool(Trool troolean, bool defaultValue);
 
     QString dt;
-    Trool sto;
-    Trool des;
+    Trool   sto;
+    Trool   des;
 };
 
 class QmlSignalNode : public LeafNode

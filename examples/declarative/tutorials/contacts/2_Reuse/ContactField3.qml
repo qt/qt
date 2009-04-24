@@ -1,9 +1,10 @@
 <Item id="contactField"
     clip="true"
+    width="230"
     height="30">
     <properties>
-        <Property name="label"/>
-        <Property name="icon"/>
+        <Property name="label" value="Name"/>
+        <Property name="icon" value="../shared/pics/phone.png"/>
         <Property name="value"/>
     </properties>
     <RemoveButton3 id="removeButton"

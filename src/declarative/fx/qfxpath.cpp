@@ -65,7 +65,7 @@ QML_DEFINE_TYPE(QFxPathCubic,PathCubic);
 /*!
     \internal
     \class QFxPath
-    \ingroup utility
+    \ingroup group_utility
     \brief The QFxPath class defines a path.
     \sa QFxPathView
 */
@@ -469,7 +469,7 @@ void QFxCurve::setY(int y)
 /*!
     \internal
     \class QFxPathAttribute
-    \ingroup utility
+    \ingroup group_utility
     \brief The QFxPathAttribute class allows to set the value of an attribute at a given position in the path.
 
     \sa QFxPath
@@ -527,7 +527,7 @@ void QFxPathAttribute::setValue(qreal value)
 /*!
     \internal
     \class QFxPathLine
-    \ingroup utility
+    \ingroup group_utility
     \brief The QFxPathLine class defines a straight line.
 
     \sa QFxPath
@@ -549,7 +549,7 @@ void QFxPathLine::addToPath(QPainterPath &path)
 /*!
     \internal
     \class QFxPathQuad
-    \ingroup utility
+    \ingroup group_utility
     \brief The QFxPathQuad class defines a quadratic Bezier curve with a control point.
 
     \sa QFxPath
@@ -613,7 +613,7 @@ void QFxPathQuad::addToPath(QPainterPath &path)
 /*!
     \internal
     \class QFxPathCubic
-    \ingroup utility
+    \ingroup group_utility
     \brief The QFxPathCubic class defines a cubic Bezier curve with two control points.
 
     \sa QFxPath
@@ -723,7 +723,7 @@ void QFxPathCubic::addToPath(QPainterPath &path)
 /*!
     \internal
     \class QFxPathPercent
-    \ingroup utility
+    \ingroup group_utility
     \brief The QFxPathPercent class manipulates the way a path is interpreted.
 
     QFxPathPercent allows you to bunch up items (or spread out items) along various

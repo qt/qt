@@ -101,16 +101,16 @@ QString PageGenerator::fileBase(const Node *node)
 #ifdef QDOC_QML
         /*
           To avoid file name conflicts in the html directory,
-          we prepend "qml" to the file name of QML element doc
+          we prepend "qml-" to the file name of QML element doc
           files.
          */
         if ((p->subType() == Node::QmlClass) ||
             (p->subType() == Node::QmlPropertyGroup))
-            base.prepend("qml");
+            base.prepend("qml-");
         else if ((p->type() == Node::QmlProperty) ||
                  (p->type() == Node::QmlSignal) ||
                  (p->type() == Node::QmlMethod))
-            base.prepend("qml");
+            base.prepend("qml-");
 #endif        
         const Node *pp = p->parent();
         if (!pp || pp->name().isEmpty() || pp->type() == Node::Fake)

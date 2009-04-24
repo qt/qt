@@ -79,7 +79,7 @@ public:
 /*!
     \qmlclass Script QmlScript
     \brief The Script element adds JavaScript snippets.
-    \ingroup utility
+    \ingroup group_utility
 
     QmlScript is used to add convenient JavaScript "glue" methods to
     your Qt Declarative application or component. While you can have any JavaScript code
@@ -139,7 +139,7 @@ void QmlScript::setScript(const QString &script)
     the file specified.
  */
 /*!
-    \property QmlScript::source
+    \property QmlScript::src
     \brief the path to a script file.
 */
 QString QmlScript::source() const

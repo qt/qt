@@ -55,6 +55,7 @@
 #include <QtCore/qset.h>
 #include <QtDeclarative/qmlexpression.h>
 #include <private/qmlstringconverters_p.h>
+#include <private/qvariantanimation_p.h>
 
 /* TODO:
     Check for any memory leaks
@@ -538,14 +539,15 @@ void QmlAbstractAnimation::timelineComplete()
 /*!
     \internal
     \class QmlPauseAnimation
-    \ingroup animation states
+    \ingroup group_animation
+    \ingroup group_states
     \brief The QmlPauseAnimation class provides a pause for an animation.
 
     When used in a QmlSequentialAnimation, QmlPauseAnimation is a step when
     nothing happens, for a specified duration.
 
     A QmlPauseAnimation object can be instantiated in Qml using the tag
-    \ref xmlPauseAnimation "&lt;PauseAnimation&gt;".
+    \l{xmlPauseAnimation} {&lt;PauseAnimation&gt;}.
 */
 
 QML_DEFINE_TYPE(QmlPauseAnimation,PauseAnimation);
@@ -629,11 +631,12 @@ QAbstractAnimation *QmlPauseAnimation::qtAnimation()
 /*!
     \internal
     \class QmlColorAnimation
-    \ingroup animation states
+    \ingroup group_animation
+    \ingroup group_states
     \brief The QmlColorAnimation class allows you to animate color changes.
 
     A QmlColorAnimation object can be instantiated in Qml using the tag
-    \ref xmlColorAnimation "&lt;ColorAnimation&gt;".
+    \l{xmlColorAnimation} {&lt;ColorAnimation&gt;}.
 */
 
 QmlColorAnimation::QmlColorAnimation(QObject *parent)
@@ -930,9 +933,9 @@ QML_DEFINE_TYPE(QmlColorAnimation,ColorAnimation);
 /*!
     \internal
     \class QmlRunScriptAction
-    \brief The QmlRunScriptAction class allows scropts to be run during transitions
+    \brief The QmlRunScriptAction class allows scripts to be run during transitions
 
-    \ref xmlRunScriptAction
+    \sa xmlRunScriptAction
 */
 QmlRunScriptAction::QmlRunScriptAction(QObject *parent)
     :QmlAbstractAnimation(*(new QmlRunScriptActionPrivate), parent)
@@ -1039,7 +1042,7 @@ QML_DEFINE_TYPE(QmlRunScriptAction, RunScriptAction);
     \brief The QmlSetPropertyAction class allows property changes during transitions.
 
     A QmlSetPropertyAction object can be instantiated in Qml using the tag
-    \ref xmlSetPropertyAction "&lt;SetPropertyAction&gt;".
+    \l{xmlSetPropertyAction} {&lt;SetPropertyAction&gt;}.
 */
 QmlSetPropertyAction::QmlSetPropertyAction(QObject *parent)
 : QmlAbstractAnimation(*(new QmlSetPropertyActionPrivate), parent)
@@ -1337,11 +1340,12 @@ QML_DEFINE_TYPE(QmlParentChangeAction,ParentChangeAction);
 /*!
     \internal
     \class QmlNumericAnimation
-    \ingroup animation states
+    \ingroup group_animation
+    \ingroup group_states
     \brief The QmlNumericAnimation class allows you to animate changes in properties of type qreal.
 
     A QmlNumericAnimation object can be instantiated in Qml using the tag
-    \ref xmlNumericAnimation "&lt;NumericAnimation&gt;".
+    \l{xmlNumericAnimation} {&lt;NumericAnimation&gt;}.
 */
 
 QmlNumericAnimation::QmlNumericAnimation(QObject *parent)
@@ -1766,7 +1770,8 @@ QML_DEFINE_TYPE(QmlSequentialAnimation,SequentialAnimation);
 /*!
     \internal
     \class QmlParallelAnimation
-    \ingroup animation states
+    \ingroup group_animation
+    \ingroup group_states
     \brief The QmlParallelAnimation class allows you to run animations in parallel.
 
     Animations controlled by QmlParallelAnimation will be run at the same time.
@@ -1774,7 +1779,7 @@ QML_DEFINE_TYPE(QmlSequentialAnimation,SequentialAnimation);
     \sa QmlSequentialAnimation
 
     A QmlParallelAnimation object can be instantiated in Qml using the tag
-    \ref xmlParallelAnimation "&lt;ParallelAnimation&gt;".
+    \l{xmlParallelAnimation} {&lt;ParallelAnimation&gt;}.
 */
 
 QmlParallelAnimation::QmlParallelAnimation(QObject *parent) :
@@ -1819,99 +1824,13 @@ void QmlParallelAnimation::transition(QmlStateActions &actions,
 
 QML_DEFINE_TYPE(QmlParallelAnimation,ParallelAnimation);
 
-//XXX it would be good to use QVariantAnimation's interpolators if possible
 QVariant QmlVariantAnimationPrivate::interpolateVariant(const QVariant &from, const QVariant &to, qreal progress)
 {
     if (from.userType() != to.userType())
         return QVariant();
 
-    QVariant res;
-    switch (from.userType()) {
-    case QVariant::Int: {
-        int f = from.toInt();
-        int t = to.toInt();
-        res = f + (t - f) * progress;
-        break;
-    }
-    case QVariant::Double: {
-        double f = from.toDouble();
-        double t = to.toDouble();
-        res = f + (t - f) * progress;
-        break;
-    }
-    case QMetaType::Float: {
-        float f = from.toDouble();
-        float t = to.toDouble();
-        res = f + (t - f) * progress;
-        break;
-    }
-    case QVariant::Color: {
-        QColor f = from.value<QColor>();
-        QColor t = to.value<QColor>();
-        uint red = uint(qreal(f.red()) + progress * (qreal(t.red()) - qreal(f.red())));
-        uint green = uint(qreal(f.green()) + progress * (qreal(t.green()) - qreal(f.green())));
-        uint blue = uint(qreal(f.blue()) + progress * (qreal(t.blue()) - qreal(f.blue())));
-        res = QColor(red,green,blue);
-        break;
-    }
-    case QVariant::Rect: {
-        QRect f = from.value<QRect>();
-        QRect t = to.value<QRect>();
-        int x = f.x() + (t.x() - f.x()) * progress;
-        int y = f.y() + (t.y() - f.y()) * progress;
-        int w = f.width() + (t.width() - f.width()) * progress;
-        int h = f.height() + (t.height() - f.height()) * progress;
-        res = QRect(x, y, w, h);
-        break;
-    }
-    case QVariant::RectF: {
-        QRectF f = from.value<QRectF>();
-        QRectF t = to.value<QRectF>();
-        qreal x = f.x() + (t.x() - f.x()) * progress;
-        qreal y = f.y() + (t.y() - f.y()) * progress;
-        qreal w = f.width() + (t.width() - f.width()) * progress;
-        qreal h = f.height() + (t.height() - f.height()) * progress;
-        res = QRectF(x, y, w, h);
-        break;
-    }
-    case QVariant::Point: {
-        QPoint f = from.value<QPoint>();
-        QPoint t = to.value<QPoint>();
-        int x = f.x() + (t.x() - f.x()) * progress;
-        int y = f.y() + (t.y() - f.y()) * progress;
-        res = QPointF(x, y);
-        break;
-    }
-    case QVariant::PointF: {
-        QPointF f = from.value<QPointF>();
-        QPointF t = to.value<QPointF>();
-        qreal x = f.x() + (t.x() - f.x()) * progress;
-        qreal y = f.y() + (t.y() - f.y()) * progress;
-        res = QPointF(x, y);
-        break;
-    }
-    case QVariant::Size: {
-        QSize f = from.value<QSize>();
-        QSize t = to.value<QSize>();
-        int w = f.width() + (t.width() - f.width()) * progress;
-        int h = f.height() + (t.height() - f.height()) * progress;
-        res = QSize(w, h);
-        break;
-    }
-    case QVariant::SizeF: {
-        QSizeF f = from.value<QSizeF>();
-        QSizeF t = to.value<QSizeF>();
-        qreal w = f.width() + (t.width() - f.width()) * progress;
-        qreal h = f.height() + (t.height() - f.height()) * progress;
-        res = QSizeF(w, h);
-        break;
-    }
-    default:
-        res = to;
-        break;
-    }
-
-    return res;
+    QVariantAnimation::Interpolator interpolator = QVariantAnimationPrivate::getInterpolator(from.userType());
+    return interpolator(from.constData(), to.constData(), progress);
 }
 
 //convert a variant from string type to another animatable type

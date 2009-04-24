@@ -90,6 +90,7 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_QMLINHERITS             Doc::alias("inherits")
 #define COMMAND_QMLSIGNAL               Doc::alias("qmlsignal")
 #define COMMAND_QMLMETHOD               Doc::alias("qmlmethod")
+#define COMMAND_QMLDEFAULT              Doc::alias("default")
 #endif
 
 QStringList CppCodeParser::exampleFiles;
@@ -820,7 +821,8 @@ QSet<QString> CppCodeParser::otherMetaCommands()
                                 << COMMAND_INDEXPAGE
 #ifdef QDOC_QML        
                                 << COMMAND_STARTPAGE
-                                << COMMAND_QMLINHERITS;
+                                << COMMAND_QMLINHERITS
+                                << COMMAND_QMLDEFAULT;
 #else    
                                 << COMMAND_STARTPAGE;
 #endif    
@@ -890,14 +892,19 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
     else if (command == COMMAND_RELATES) {
         InnerNode *pseudoParent;
         if (arg.startsWith("<") || arg.startsWith("\"")) {
-            pseudoParent = static_cast<InnerNode *>(tre->findNode(QStringList(arg), Node::Fake));
+            pseudoParent =
+                static_cast<InnerNode *>(tre->findNode(QStringList(arg),
+                                                       Node::Fake));
         }
         else {
             QStringList newPath = arg.split("::");
-            pseudoParent = static_cast<InnerNode *>(tre->findNode(QStringList(newPath), Node::Class));
+            pseudoParent =
+                static_cast<InnerNode*>(tre->findNode(QStringList(newPath),
+                                                      Node::Class));
             if (!pseudoParent)
-                pseudoParent = static_cast<InnerNode *>(tre->findNode(QStringList(newPath),
-                                                        Node::Namespace));
+                pseudoParent =
+                    static_cast<InnerNode*>(tre->findNode(QStringList(newPath),
+                                                          Node::Namespace));
         }
         if (!pseudoParent) {
             doc.location().warning(tr("Cannot find '%1' in '\\%2'")
@@ -925,6 +932,10 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
 #ifdef QDOC_QML
     else if (command == COMMAND_QMLINHERITS) {
         setLink(node, Node::InheritsLink, arg);
+    }
+    else if (command == COMMAND_QMLDEFAULT) {
+        QmlPropGroupNode* qpgn = static_cast<QmlPropGroupNode*>(node);
+        qpgn->setDefault();
     }
 #endif
     else {

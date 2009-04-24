@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
     \class QmlTransition
     \brief The QmlTransition class allows you to define animated transitions that occur on state changes.
 
-    \ingroup states
+    \ingroup group_states
 */
 
 //ParallelAnimationWrapperallows us to do a "callback" when the animation finishes, rather than connecting

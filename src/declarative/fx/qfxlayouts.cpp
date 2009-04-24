@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
     that you use the move, remove and add transitions when those conditions
     arise.
 
-    \ingroup layouts
+    \ingroup group_layouts
 */
 QFxBaseLayout::QFxBaseLayout(AutoUpdateType at, QFxItem *parent)
     : QFxItem(*(new QFxBaseLayoutPrivate), parent)
@@ -577,7 +577,7 @@ QML_DEFINE_TYPE(QFxVerticalLayout, VerticalLayout);
     \internal
     \class QFxVerticalLayout
     \brief The QFxVerticalLayout class lines up items vertically.
-    \ingroup layouts
+    \ingroup group_layouts
 */
 QFxVerticalLayout::QFxVerticalLayout(QFxItem *parent)
 : QFxBaseLayout(Vertical, parent)
@@ -612,7 +612,6 @@ void QFxVerticalLayout::doLayout()
             setMovingItem(child);
             child->setY(voffset);
             setMovingItem(0);
-            child->setX(0);
         }
         voffset += child->height();
         voffset += spacing();
@@ -731,7 +730,7 @@ QML_DEFINE_TYPE(QFxHorizontalLayout,HorizontalLayout);
     \internal
     \class QFxHorizontalLayout
     \brief The QFxHorizontalLayout class lines up items horizontally.
-    \ingroup layouts
+    \ingroup group_layouts
 */
 QFxHorizontalLayout::QFxHorizontalLayout(QFxItem *parent)
 : QFxBaseLayout(Horizontal, parent)
@@ -766,7 +765,6 @@ void QFxHorizontalLayout::doLayout()
             setMovingItem(child);
             child->setX(hoffset);
             setMovingItem(0);
-            child->setY(0);
         }
         hoffset += child->width();
         hoffset += spacing();
@@ -910,7 +908,7 @@ QML_DEFINE_TYPE(QFxGridLayout,GridLayout);
     \internal
     \class QFxGridLayout
     \brief The QFxGridLayout class lays out items in a grid.
-    \ingroup layouts
+    \ingroup group_layouts
 
 */
 QFxGridLayout::QFxGridLayout(QFxItem *parent) :

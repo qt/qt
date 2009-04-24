@@ -79,7 +79,7 @@ public:
     */
 /*!
     \class QmlNumberFormatter
-    \ingroup utility
+    \ingroup group_utility
     \brief The QmlNumberFormatter class allows you to format a number to a particular string format/locale specific number format.
 */
 

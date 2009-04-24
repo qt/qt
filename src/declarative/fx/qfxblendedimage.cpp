@@ -97,7 +97,7 @@ void QFxBlendedImage::setPrimaryUrl(const QString &url)
 }
 
 /*!
-    \property QFxBlendedImage::secondaryFile
+    \property QFxBlendedImage::secondaryUrl
     \brief the URL of the second image to be displayed in this item.
 */
 QString QFxBlendedImage::secondaryUrl() const

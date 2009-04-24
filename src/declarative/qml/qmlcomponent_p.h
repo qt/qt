@@ -63,12 +63,13 @@ class QmlComponentPrivate : public QObjectPrivate
 public:
     QmlComponentPrivate() : typeData(0), start(-1), count(-1), cc(0), completePending(false), engine(0) {}
 
-    QmlCompositeTypeManager::TypeData *typeData;
+    QmlCompositeTypeData *typeData;
     void typeDataReady();
     
-    void fromTypeData(QmlCompositeTypeManager::TypeData *data);
+    void fromTypeData(QmlCompositeTypeData *data);
 
-    QString name;
+    QString errorDescription;
+    QUrl url;
 
     int start;
     int count;
@@ -78,6 +79,8 @@ public:
     bool completePending;
 
     QmlEngine *engine;
+
+    void clear();
 };
 
 #endif // QMLCOMPONENT_P_H

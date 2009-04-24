@@ -122,7 +122,7 @@ static qreal adjustedPosition(QFxItem *item, QFxAnchorLine::AnchorLine anchorLin
 /*!
     \internal
     \class QFxAnchors
-    \ingroup layouts
+    \ingroup group_layouts
     \brief The QFxAnchors class provides a way to lay out items relative to other items.
 
     \warning Currently, only anchoring to siblings or parent is supported.

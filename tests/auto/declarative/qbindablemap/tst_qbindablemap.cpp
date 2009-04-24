@@ -58,7 +58,7 @@ void tst_QBindableMap::changed()
     //make changes in QML
     QmlEngine engine;
     QmlContext *ctxt = engine.rootContext();
-    ctxt->setProperty("data", &map);
+    ctxt->setContextProperty(QLatin1String("data"), &map);
     QmlComponent component(&engine, "<Script script=\"data.key1 = 'Hello World';\"/>");
     component.create();
     QCOMPARE(spy.count(), 1);
