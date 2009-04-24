@@ -59,7 +59,7 @@
     project file ensures that an application is compiled and linked
     appropriately:
 
-    \snippet doc/src/snippets/code/doc_src_qtwebkit.qdoc 0
+    \snippet webkitsnippets/qtwebkit_build_snippet.qdoc 0
 
     This line is necessary because only the QtCore and QtGui modules are used
     in the default build process.
@@ -67,7 +67,7 @@
     To include the definitions of the module's classes, use the following
     directive:
 
-    \snippet doc/src/snippets/code/doc_src_qtwebkit.qdoc 1
+    \snippet webkitsnippets/qtwebkit_build_snippet.qdoc 1
 
     \section1 Architecture
 
@@ -75,7 +75,7 @@
     widget it can be embedded into your forms or a graphics view, and it
     provides convenience functions for downloading and rendering web sites.
 
-    \snippet snippets/webkit/simple/main.cpp Using QWebView
+    \snippet webkitsnippets/simple/main.cpp Using QWebView
 
     QWebView acts as a view onto Web pages, each of which is represented by an
     instance of the QWebPage class. QWebPage provides access to the document

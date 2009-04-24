@@ -105,7 +105,8 @@ exampledirs             = $QT_SOURCE_TREE/doc/src \
                           $QT_SOURCE_TREE/examples \
                           $QT_SOURCE_TREE/examples/tutorials \
                           $QT_SOURCE_TREE \
-                          $QT_SOURCE_TREE/qmake/examples
+                          $QT_SOURCE_TREE/qmake/examples \
+                          $QT_SOURCE_TREE/src/3rdparty/webkit/WebKit/qt/docs
 imagedirs               = $QT_SOURCE_TREE/doc/src/images \
                           $QT_SOURCE_TREE/examples
 outputdir               = $QT_BUILD_TREE/doc/html
