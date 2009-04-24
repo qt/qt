@@ -779,9 +779,6 @@ void qt_init(QApplicationPrivate *priv, int)
             appNoGrab = !appNoGrab;
         else
 #endif // QT_DEBUG
-        if (qstrcmp(argv[i], "-direct3d") == 0)
-            QApplication::setAttribute(Qt::AA_MSWindowsUseDirect3DByDefault);
-        else
             argv[j++] = argv[i];
     }
     if(j < priv->argc) {

@@ -9792,27 +9792,6 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         QEvent e(QEvent::MouseTrackingChange);
         QApplication::sendEvent(this, &e);
         break; }
-#if !defined(QT_NO_DIRECT3D) && defined(Q_WS_WIN)
-    case Qt::WA_MSWindowsUseDirect3D:
-        if (!qApp->testAttribute(Qt::AA_MSWindowsUseDirect3DByDefault)) {
-            if (on) {
-                if (!d->extra)
-                    d->createExtra();
-                d->extra->had_auto_fill_bg = d->extra->autoFillBackground;
-                d->extra->had_no_system_bg = testAttribute(Qt::WA_NoSystemBackground);
-                d->extra->had_paint_on_screen = testAttribute(Qt::WA_PaintOnScreen);
-                // enforce the opaque widget state D3D needs
-                d->extra->autoFillBackground = true;
-                setAttribute(Qt::WA_PaintOnScreen);
-                setAttribute(Qt::WA_NoSystemBackground);
-            } else if (d->extra) {
-                d->extra->autoFillBackground = d->extra->had_auto_fill_bg;
-                setAttribute(Qt::WA_PaintOnScreen, d->extra->had_paint_on_screen);
-                setAttribute(Qt::WA_NoSystemBackground, d->extra->had_no_system_bg);
-            }
-        }
-        break;
-#endif
     case Qt::WA_NativeWindow: {
         QInputContext *ic = 0;
         if (on && !internalWinId() && testAttribute(Qt::WA_InputMethodEnabled) && hasFocus()) {
