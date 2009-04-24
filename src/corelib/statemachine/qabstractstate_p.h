@@ -98,7 +98,9 @@ public:
     void callOnEntry();
     void callOnExit();
 
-    QAbstractState::RestorePolicy restorePolicy;
+    void emitEntered();
+    void emitExited();
+
     QList<QPropertyAssignment> propertyAssignments;
 
 #ifdef QT_STATEMACHINE_SOLUTION

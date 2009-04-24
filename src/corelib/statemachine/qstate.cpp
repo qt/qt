@@ -138,7 +138,7 @@ const QStatePrivate *QStatePrivate::get(const QState *q)
   Constructs a new state with the given \a parent state.
 */
 QState::QState(QState *parent)
-    : QActionState(*new QStatePrivate, parent)
+    : QAbstractState(*new QStatePrivate, parent)
 {
 }
 
@@ -146,7 +146,7 @@ QState::QState(QState *parent)
   Constructs a new state of the given \a type with the given \a parent state.
 */
 QState::QState(Type type, QState *parent)
-    : QActionState(*new QStatePrivate, parent)
+    : QAbstractState(*new QStatePrivate, parent)
 {
     Q_D(QState);
     d->isParallelGroup = (type == ParallelGroup);
@@ -156,7 +156,7 @@ QState::QState(Type type, QState *parent)
   \internal
 */
 QState::QState(QStatePrivate &dd, QState *parent)
-    : QActionState(dd, parent)
+    : QAbstractState(dd, parent)
 {
 }
 
@@ -245,30 +245,32 @@ void QState::setErrorState(QAbstractState *state)
 
 /*!
   Adds the given \a transition. The transition has this state as the source.
-  This state takes ownership of the transition.
+  This state takes ownership of the transition. If the transition is successfully
+  added, the function will return the \a transition pointer. Otherwise it will return null.
 */
-void QState::addTransition(QAbstractTransition *transition)
+QAbstractTransition *QState::addTransition(QAbstractTransition *transition)
 {
     Q_D(QState);
     if (!transition) {
         qWarning("QState::addTransition: cannot add null transition");
-        return;
+        return 0;
     }
     const QList<QAbstractState*> &targets = QAbstractTransitionPrivate::get(transition)->targetStates;
     for (int i = 0; i < targets.size(); ++i) {
         QAbstractState *t = targets.at(i);
         if (!t) {
             qWarning("QState::addTransition: cannot add transition to null state");
-            return;
+            return 0;
         }
         if ((QAbstractStatePrivate::get(t)->machine() != d->machine())
             && QAbstractStatePrivate::get(t)->machine() && d->machine()) {
             qWarning("QState::addTransition: cannot add transition "
                      "to a state in a different state machine");
-            return;
+            return 0;
         }
     }
     transition->setParent(this);
+    return transition;
 }
 
 /*!
@@ -383,7 +385,6 @@ QHistoryState *QState::addHistoryState(HistoryType type)
 */
 void QState::onEntry()
 {
-    QActionState::onEntry();
 }
 
 /*!
@@ -391,7 +392,6 @@ void QState::onEntry()
 */
 void QState::onExit()
 {
-    QActionState::onExit();
 }
 
 /*!
@@ -428,7 +428,7 @@ void QState::setInitialState(QAbstractState *state)
 */
 bool QState::event(QEvent *e)
 {
-    return QActionState::event(e);
+    return QAbstractState::event(e);
 }
 
 QT_END_NAMESPACE

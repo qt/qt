@@ -169,9 +169,9 @@ public:
     QSet<QAbstractState*> configuration;
     QList<QEvent*> internalEventQueue;
     QList<QEvent*> externalEventQueue;
-    
+
     QStateMachine::Error error;
-    QActionState::RestorePolicy globalRestorePolicy;
+    QStateMachine::RestorePolicy globalRestorePolicy;
 
     QString errorString;
     QSet<QAbstractState *> pendingErrorStates;
@@ -186,7 +186,12 @@ public:
     QList<QPair<QAbstractAnimation*, QPropertyAssignment> > propertiesForAnimations;
     QList<QAbstractAnimation*> playingAnimations;
     QList<QAbstractAnimation*> resetEndValues;
-#endif
+
+    QList<QAbstractAnimation *> defaultAnimations;
+    QMultiHash<QAbstractState *, QAbstractAnimation *> defaultAnimationsForSource;
+    QMultiHash<QAbstractState *, QAbstractAnimation *> defaultAnimationsForTarget;
+
+#endif // QT_NO_ANIMATION
 
 #ifndef QT_STATEMACHINE_SOLUTION
     QSignalEventGenerator *signalEventGenerator;

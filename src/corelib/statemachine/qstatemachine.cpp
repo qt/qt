@@ -49,8 +49,6 @@
 #include "qsignaleventgenerator_p.h"
 #include "qabstractstate.h"
 #include "qabstractstate_p.h"
-#include "qactionstate.h"
-#include "qactionstate_p.h"
 #include "qfinalstate.h"
 #include "qhistorystate.h"
 #include "qhistorystate_p.h"
@@ -58,8 +56,6 @@
 #include "qstatefinishedtransition.h"
 #include "qstate.h"
 #include "qstate_p.h"
-#include "qstateaction.h"
-#include "qstateaction_p.h"
 #ifndef QT_STATEMACHINE_SOLUTION
 #include "private/qobject_p.h"
 #include "private/qthread_p.h"
@@ -192,7 +188,7 @@ QStateMachinePrivate::QStateMachinePrivate()
     processingScheduled = false;
     stop = false;
     error = QStateMachine::NoError;
-    globalRestorePolicy = QAbstractState::DoNotRestoreProperties;
+    globalRestorePolicy = QStateMachine::DoNotRestoreProperties;
     rootState = 0;
     initialErrorStateForRoot = 0;
 #ifndef QT_STATEMACHINE_SOLUTION
@@ -417,6 +413,7 @@ QList<QAbstractState*> QStateMachinePrivate::exitStates(const QList<QAbstractTra
 #endif
         QAbstractStatePrivate::get(s)->callOnExit();
         configuration.remove(s);
+        QAbstractStatePrivate::get(s)->emitExited();
     }
     return statesToExit_sorted;
 }
@@ -504,6 +501,7 @@ QList<QAbstractState*> QStateMachinePrivate::enterStates(const QList<QAbstractTr
         configuration.insert(s);
         registerTransitions(s);
         QAbstractStatePrivate::get(s)->callOnEntry();
+        QAbstractStatePrivate::get(s)->emitEntered();
         if (statesForDefaultEntry.contains(s)) {
             // ### executeContent(s.initial.transition.children())
         }
@@ -612,8 +610,17 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
 
     // Find the animations to use for the state change.
     QList<QAbstractAnimation*> selectedAnimations;
-    for (int i = 0; i < transitionList.size(); ++i)
-        selectedAnimations << transitionList.at(i)->animations();
+    for (int i = 0; i < transitionList.size(); ++i) {
+        QAbstractTransition *transition = transitionList.at(i);
+
+        selectedAnimations << transition->animations();
+        selectedAnimations << defaultAnimationsForSource.values(transition->sourceState());
+
+        QList<QAbstractState *> targetStates = transition->targetStates();
+        for (int j=0; j<targetStates.size(); ++j) 
+            selectedAnimations << defaultAnimationsForTarget.values(targetStates.at(j));
+    }
+    selectedAnimations << defaultAnimations;     
 #else
     Q_UNUSED(transitionList);
 #endif
@@ -624,14 +631,10 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
     for (int i = 0; i < enteredStates.size(); ++i) {
         QAbstractState *s = enteredStates.at(i);
 
-        QAbstractState::RestorePolicy restorePolicy = s->restorePolicy();
-        if (restorePolicy == QAbstractState::GlobalRestorePolicy)
-            restorePolicy = globalRestorePolicy;
-
         QList<QPropertyAssignment> assignments = QAbstractStatePrivate::get(s)->propertyAssignments;
         for (int j = 0; j < assignments.size(); ++j) {
             const QPropertyAssignment &assn = assignments.at(j);
-            if (restorePolicy == QAbstractState::RestoreProperties) {
+            if (globalRestorePolicy == QStateMachine::RestoreProperties) {
                 registerRestorable(assn.object, assn.propertyName);
             }
             pendingRestorables.remove(RestorableId(assn.object, assn.propertyName));
@@ -1451,6 +1454,32 @@ void QStateMachine::setErrorState(QAbstractState *state)
 */
 
 /*!
+   \enum QStateMachine::RestorePolicy
+
+   This enum specifies the restore policy type. The restore policy
+   takes effect when the machine enters a state which sets one or more
+   properties. If the restore policy is set to RestoreProperties,
+   the state machine will save the original value of the property before the
+   new value is set.
+
+   Later, when the machine either enters a state which does not set
+   a value for the given property, the property will automatically be restored
+   to its initial value.
+
+   Only one initial value will be saved for any given property. If a value for a property has 
+   already been saved by the state machine, it will not be overwritten until the property has been
+   successfully restored. 
+
+   \value DoNotRestoreProperties The state machine should not save the initial values of properties 
+          and restore them later.
+   \value RestoreProperties The state machine should save the initial values of properties 
+          and restore them later.
+
+   \sa setRestorePolicy(), restorePolicy(), QAbstractState::assignProperty()
+*/
+
+
+/*!
   Returns the error code of the last error that occurred in the state machine.
 */
 QStateMachine::Error QStateMachine::error() const
@@ -1479,33 +1508,25 @@ void QStateMachine::clearError()
 }
 
 /*!
-   Returns the global restore policy of the state machine.
+   Returns the restore policy of the state machine.
 
-   \sa QActionState::restorePolicy()
+   \sa setGlobalRestorePolicy()
 */
-QActionState::RestorePolicy QStateMachine::globalRestorePolicy() const
+QStateMachine::RestorePolicy QStateMachine::globalRestorePolicy() const
 {
     Q_D(const QStateMachine);
     return d->globalRestorePolicy;
 }
 
 /*!
-   Sets the global restore policy of the state machine to \a restorePolicy. The default global 
+   Sets the restore policy of the state machine to \a restorePolicy. The default 
    restore policy is QAbstractState::DoNotRestoreProperties.
    
-   The global restore policy cannot be set to QAbstractState::GlobalRestorePolicy.
-
-   \sa QAbstractState::setRestorePolicy()
+   \sa globalRestorePolicy()
 */
-void QStateMachine::setGlobalRestorePolicy(QAbstractState::RestorePolicy restorePolicy) 
+void QStateMachine::setGlobalRestorePolicy(QStateMachine::RestorePolicy restorePolicy) 
 {
     Q_D(QStateMachine);
-    if (restorePolicy == QState::GlobalRestorePolicy) {
-        qWarning("QStateMachine::setGlobalRestorePolicy: Cannot set global restore policy to "
-                 "GlobalRestorePolicy");
-        return;
-    }
-
     d->globalRestorePolicy = restorePolicy;
 }
 
@@ -1827,6 +1848,104 @@ void QStateMachine::endMicrostep(QEvent *event)
 {
     Q_UNUSED(event);
 }
+
+#ifndef QT_NO_ANIMATION
+
+/*!
+    Adds a default \a animation to be considered for any transition.
+*/    
+void QStateMachine::addDefaultAnimation(QAbstractAnimation *animation)
+{
+    Q_D(QStateMachine);
+    d->defaultAnimations.append(animation);
+}
+
+/*!
+    Returns the list of default animations that will be considered for any transition.
+*/
+QList<QAbstractAnimation*> QStateMachine::defaultAnimations() const
+{    
+    Q_D(const QStateMachine);
+    return d->defaultAnimations;
+}
+
+/*!
+    Removes \a animation from the list of default animations. 
+*/
+void QStateMachine::removeDefaultAnimation(QAbstractAnimation *animation)
+{
+    Q_D(QStateMachine);
+    d->defaultAnimations.removeAll(animation);
+}
+
+
+/*!
+    Adds a default \a animation to be considered for any transition with the source state 
+    \a sourceState.
+*/
+void QStateMachine::addDefaultAnimationForSourceState(QAbstractState *sourceState, 
+                                                      QAbstractAnimation *animation)
+{
+    Q_D(QStateMachine);
+    d->defaultAnimationsForSource.insert(sourceState, animation);
+}
+
+
+/*!
+    Returns the list of default animations that will be considered for any transition with 
+    the source state \a sourceState.
+*/
+QList<QAbstractAnimation*> QStateMachine::defaultAnimationsForSourceState(QAbstractState *sourceState) const
+{
+    Q_D(const QStateMachine);
+    return d->defaultAnimationsForSource.values(sourceState);
+}
+
+/*!
+    Removes \a animation from the list of default animations for the source state 
+    \a sourceState.
+*/
+void QStateMachine::removeDefaultAnimationForSourceState(QAbstractState *sourceState, 
+                                                         QAbstractAnimation *animation)
+{
+    Q_D(QStateMachine);
+    d->defaultAnimationsForSource.remove(sourceState, animation);
+}
+
+/*!
+    Adds a default \a animation to be considered for any transition with the target state 
+    \a targetState.
+*/
+void QStateMachine::addDefaultAnimationForTargetState(QAbstractState *targetState, 
+                                                      QAbstractAnimation *animation)
+{
+    Q_D(QStateMachine);
+    d->defaultAnimationsForTarget.insert(targetState, animation);
+}
+
+/*!
+    Returns the list of default animations that will be considered for any transition with 
+    the target state \a targetState.
+*/
+QList<QAbstractAnimation *> QStateMachine::defaultAnimationsForTargetState(QAbstractState *targetState) const
+{
+    Q_D(const QStateMachine);
+    return d->defaultAnimationsForTarget.values(targetState);
+}
+
+/*!
+    Removes \a animation from the list of default animations for the target state 
+    \a targetState.
+*/
+void QStateMachine::removeDefaultAnimationForTargetState(QAbstractState *targetState, 
+                                                         QAbstractAnimation *animation)
+{
+    Q_D(QStateMachine);
+    d->defaultAnimationsForTarget.remove(targetState, animation);
+}
+
+#endif // QT_NO_ANIMATION
+
 
 static const uint qt_meta_data_QSignalEventGenerator[] = {
 

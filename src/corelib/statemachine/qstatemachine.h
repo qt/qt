@@ -43,9 +43,9 @@
 #define QSTATEMACHINE_H
 
 #ifndef QT_STATEMACHINE_SOLUTION
-#  include <QtCore/qactionstate.h>
+#  include <QtCore/qabstractstate.h>
 #else
-#  include "qactionstate.h"
+#  include "qabstractstate.h"
 #endif
 
 #include <QtCore/qlist.h>
@@ -63,6 +63,8 @@ class QAbstractState;
 class QState;
 
 class QStateMachinePrivate;
+class QAbstractAnimation;
+class QAbstractState;
 class Q_CORE_EXPORT QStateMachine : public QObject
 {
     Q_OBJECT
@@ -70,7 +72,13 @@ class Q_CORE_EXPORT QStateMachine : public QObject
     Q_PROPERTY(QAbstractState* initialState READ initialState WRITE setInitialState)
     Q_PROPERTY(QAbstractState* errorState READ errorState WRITE setErrorState)
     Q_PROPERTY(QString errorString READ errorString)
+    Q_PROPERTY(RestorePolicy globalRestorePolicy READ globalRestorePolicy WRITE setGlobalRestorePolicy)
+    Q_ENUMS(RestorePolicy)
 public:
+    enum RestorePolicy {
+        DoNotRestoreProperties,
+        RestoreProperties
+    };
 
     enum Error {
         NoError, 
@@ -96,8 +104,22 @@ public:
     QString errorString() const;
     void clearError();
 
-    QAbstractState::RestorePolicy globalRestorePolicy() const;
-    void setGlobalRestorePolicy(QAbstractState::RestorePolicy restorePolicy);
+#ifndef QT_NO_ANIMATION
+    void addDefaultAnimation(QAbstractAnimation *animation);
+    QList<QAbstractAnimation *> defaultAnimations() const;
+    void removeDefaultAnimation(QAbstractAnimation *animation);
+
+    void addDefaultAnimationForSourceState(QAbstractState *sourceState, QAbstractAnimation *animation);
+    QList<QAbstractAnimation *> defaultAnimationsForSourceState(QAbstractState *sourceState) const;
+    void removeDefaultAnimationForSourceState(QAbstractState *sourceState, QAbstractAnimation *animation);
+
+    void addDefaultAnimationForTargetState(QAbstractState *targetState, QAbstractAnimation *animation);
+    QList<QAbstractAnimation *> defaultAnimationsForTargetState(QAbstractState *targetState) const;
+    void removeDefaultAnimationForTargetState(QAbstractState *targetState, QAbstractAnimation *animation);
+#endif // QT_NO_ANIMATION
+
+    QStateMachine::RestorePolicy globalRestorePolicy() const;
+    void setGlobalRestorePolicy(QStateMachine::RestorePolicy restorePolicy);
 
     void postEvent(QEvent *event, int delay = 0);
 

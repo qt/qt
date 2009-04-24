@@ -43,9 +43,9 @@
 #define QSTATE_H
 
 #ifndef QT_STATEMACHINE_SOLUTION
-#include <QtCore/qactionstate.h>
+#include <QtCore/qabstractstate.h>
 #else
-#include "qactionstate.h"
+#include "qabstractstate.h"
 #endif
 
 QT_BEGIN_HEADER
@@ -60,7 +60,7 @@ class QSignalTransition;
 class QStateFinishedTransition;
 
 class QStatePrivate;
-class Q_CORE_EXPORT QState : public QActionState
+class Q_CORE_EXPORT QState : public QAbstractState
 {
     Q_OBJECT
 public:
@@ -81,7 +81,7 @@ public:
     QAbstractState *errorState() const;
     void setErrorState(QAbstractState *state);
 
-    void addTransition(QAbstractTransition *transition);
+    QAbstractTransition *addTransition(QAbstractTransition *transition);
     QSignalTransition *addTransition(QObject *sender, const char *signal, QAbstractState *target);
     QAbstractTransition *addTransition(QAbstractState *target);
     QStateFinishedTransition *addFinishedTransition(QAbstractState *target);

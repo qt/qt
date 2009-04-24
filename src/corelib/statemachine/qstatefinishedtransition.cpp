@@ -41,7 +41,7 @@
 
 #include "qstatefinishedtransition.h"
 #include "qstatefinishedevent.h"
-#include "qactiontransition_p.h"
+#include "qabstracttransition_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
     \brief the state whose QStateFinishedEvent this transition is associated with
 */
 
-class QStateFinishedTransitionPrivate : public QActionTransitionPrivate
+class QStateFinishedTransitionPrivate : public QAbstractTransitionPrivate
 {
     Q_DECLARE_PUBLIC(QStateFinishedTransition)
 public:
@@ -106,7 +106,7 @@ QStateFinishedTransitionPrivate *QStateFinishedTransitionPrivate::get(QStateFini
   sourceState.
 */
 QStateFinishedTransition::QStateFinishedTransition(QState *sourceState)
-    : QActionTransition(*new QStateFinishedTransitionPrivate, sourceState)
+    : QAbstractTransition(*new QStateFinishedTransitionPrivate, sourceState)
 {
 }
 
@@ -116,7 +116,7 @@ QStateFinishedTransition::QStateFinishedTransition(QState *sourceState)
 */
 QStateFinishedTransition::QStateFinishedTransition(
     QState *state, const QList<QAbstractState*> &targets, QState *sourceState)
-    : QActionTransition(*new QStateFinishedTransitionPrivate, targets, sourceState)
+    : QAbstractTransition(*new QStateFinishedTransitionPrivate, targets, sourceState)
 {
     Q_D(QStateFinishedTransition);
     d->state = state;
@@ -167,9 +167,16 @@ bool QStateFinishedTransition::eventTest(QEvent *event) const
 /*!
   \reimp
 */
+void QStateFinishedTransition::onTransition()
+{
+}
+
+/*!
+  \reimp
+*/
 bool QStateFinishedTransition::event(QEvent *e)
 {
-    return QActionTransition::event(e);
+    return QAbstractTransition::event(e);
 }
 
 QT_END_NAMESPACE

@@ -129,7 +129,7 @@ void QEventTransitionPrivate::invalidate()
   Constructs a new QEventTransition object with the given \a sourceState.
 */
 QEventTransition::QEventTransition(QState *sourceState)
-    : QActionTransition(*new QEventTransitionPrivate, sourceState)
+    : QAbstractTransition(*new QEventTransitionPrivate, sourceState)
 {
 }
 
@@ -139,7 +139,7 @@ QEventTransition::QEventTransition(QState *sourceState)
 */
 QEventTransition::QEventTransition(QObject *object, QEvent::Type type,
                                    QState *sourceState)
-    : QActionTransition(*new QEventTransitionPrivate, sourceState)
+    : QAbstractTransition(*new QEventTransitionPrivate, sourceState)
 {
     Q_D(QEventTransition);
     d->registered = false;
@@ -155,7 +155,7 @@ QEventTransition::QEventTransition(QObject *object, QEvent::Type type,
 QEventTransition::QEventTransition(QObject *object, QEvent::Type type,
                                    const QList<QAbstractState*> &targets,
                                    QState *sourceState)
-    : QActionTransition(*new QEventTransitionPrivate, targets, sourceState)
+    : QAbstractTransition(*new QEventTransitionPrivate, targets, sourceState)
 {
     Q_D(QEventTransition);
     d->registered = false;
@@ -167,7 +167,7 @@ QEventTransition::QEventTransition(QObject *object, QEvent::Type type,
   \internal
 */
 QEventTransition::QEventTransition(QEventTransitionPrivate &dd, QState *parent)
-    : QActionTransition(dd, parent)
+    : QAbstractTransition(dd, parent)
 {
 }
 
@@ -176,7 +176,7 @@ QEventTransition::QEventTransition(QEventTransitionPrivate &dd, QState *parent)
 */
 QEventTransition::QEventTransition(QEventTransitionPrivate &dd, QObject *object,
                                    QEvent::Type type, QState *parent)
-    : QActionTransition(dd, parent)
+    : QAbstractTransition(dd, parent)
 {
     Q_D(QEventTransition);
     d->registered = false;
@@ -190,7 +190,7 @@ QEventTransition::QEventTransition(QEventTransitionPrivate &dd, QObject *object,
 QEventTransition::QEventTransition(QEventTransitionPrivate &dd, QObject *object,
                                    QEvent::Type type, const QList<QAbstractState*> &targets,
                                    QState *parent)
-    : QActionTransition(dd, targets, parent)
+    : QAbstractTransition(dd, targets, parent)
 {
     Q_D(QEventTransition);
     d->registered = false;
@@ -268,6 +268,13 @@ bool QEventTransition::eventTest(QEvent *event) const
 }
 
 /*!
+  \reimp
+*/
+void QEventTransition::onTransition()
+{
+}
+
+/*!
   Tests an instance of an event associated with this event transition and
   returns true if the transition should be taken, otherwise returns false.
   The type of the given \a event will be eventType().
@@ -286,7 +293,7 @@ bool QEventTransition::testEventCondition(QEvent *event) const
 */
 bool QEventTransition::event(QEvent *e)
 {
-    return QActionTransition::event(e);
+    return QAbstractTransition::event(e);
 }
 
 QT_END_NAMESPACE

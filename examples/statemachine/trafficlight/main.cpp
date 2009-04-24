@@ -97,9 +97,9 @@ public:
         timer->setInterval(duration);
         timer->setSingleShot(true);
         QState *timing = new QState(this);
-        timing->invokeMethodOnEntry(light, "turnOn");
-        timing->invokeMethodOnEntry(timer, "start");
-        timing->invokeMethodOnExit(light, "turnOff");
+        QObject::connect(timing, SIGNAL(entered()), light, SLOT(turnOn()));
+        QObject::connect(timing, SIGNAL(entered()), timer, SLOT(start()));
+        QObject::connect(timing, SIGNAL(exited()), light, SLOT(turnOff()));
         QFinalState *done = new QFinalState(this);
         timing->addTransition(timer, SIGNAL(timeout()), done);
         setInitialState(timing);
