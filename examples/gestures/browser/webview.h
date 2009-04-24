@@ -117,7 +117,8 @@ private:
     QUrl m_initialUrl;
     int m_progress;
     WebPage *m_page;
-    QPoint speed;
+    QPoint m_panSpeed;
+    QWebFrame *m_currentPanFrame;
 };
 
 #endif

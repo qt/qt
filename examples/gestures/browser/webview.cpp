@@ -186,6 +186,7 @@ WebView::WebView(QWidget* parent)
     : QWebView(parent)
     , m_progress(0)
     , m_page(new WebPage(this))
+    , m_currentPanFrame(0)
 {
     grabGesture(Qt::PanGesture);
     setPage(m_page);
@@ -317,13 +318,18 @@ void WebView::gestureEvent(QGestureEvent *event)
 {
     if (const QGesture *g = event->gesture(Qt::PanGesture)) {
         if (g->state() == Qt::GestureUpdated) {
-            if (QWebFrame *frame = page()->mainFrame()) {
-                QPoint offset = g->pos() - g->lastPos();
-                frame->setScrollPosition(frame->scrollPosition() - offset);
+            if (m_currentPanFrame) {
+                m_panSpeed = g->pos() - g->lastPos();
+                m_currentPanFrame->scroll(-m_panSpeed.x(), -m_panSpeed.y());
             }
-            speed = g->pos() - g->lastPos();
         } else if (g->state() == Qt::GestureStarted) {
             startTimer(20);
+            m_currentPanFrame = 0;
+            if (QWebFrame *frame = page()->mainFrame()) {
+                QWebHitTestResult result = frame->hitTestContent(g->startPos());
+                if (!result.isNull())
+                    m_currentPanFrame = result.frame();
+            }
         } else {
         }
         event->accept();
@@ -341,9 +347,9 @@ static QPoint deaccelerate(const QPoint &speed, int a = 1, int max = 64)
 
 void WebView::timerEvent(QTimerEvent *event)
 {
-    speed = deaccelerate(speed);
-    if (speed.isNull())
+    m_panSpeed = deaccelerate(m_panSpeed);
+    if (m_panSpeed.isNull())
         killTimer(event->timerId());
-    if (QWebFrame *frame = page()->mainFrame())
-        frame->setScrollPosition(frame->scrollPosition() - speed);
+    if (m_currentPanFrame)
+        m_currentPanFrame->scroll(-m_panSpeed.x(), -m_panSpeed.y());
 }
