@@ -39,68 +39,23 @@
 **
 ****************************************************************************/
 
-#ifndef __BOAT__H__
-#define __BOAT__H__
+#ifndef PROGRESSITEM_H
+#define PROGRESSITEM_H
 
 //Qt
-#include <QObject>
-#include <QKeyEvent>
+#include <QGraphicsTextItem>
 
-#include <QDebug>
-
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qtgraphicswidget.h"
-#else
-# include <QtGui/QGraphicsWidget>
-#endif
-
-class PixmapItem;
-class Bomb;
-class QVariantAnimation;
-class QAbstractAnimation;
-class QStateMachine;
-
-class Boat : public QGraphicsWidget
+class ProgressItem : public QGraphicsTextItem
 {
-Q_OBJECT
-Q_PROPERTY(QPointF pos READ pos WRITE setPos)
 public:
-    enum Movement {
-       None = 0,
-       Left,
-       Right
-    };
-    enum { Type = UserType + 2 };
-    Boat(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
-    void destroy();
-    void run();
-    void stop();
-
-    int bombsLaunched() const;
-    void setBombsLaunched(int number);
-
-    int currentSpeed() const;
-    void setCurrentSpeed(int speed);
-
-    enum Movement currentDirection() const;
-    void setCurrentDirection(Movement direction);
-
-    void updateBoatMovement();
-
-    virtual int type() const;
-
-Q_SIGNALS:
-    void boatDestroyed();
-    void boatExecutionFinished();
+    ProgressItem(QGraphicsItem * parent = 0);
+    void setLevel(int level);
+    void setScore(int score);
 
 private:
-    int speed;
-    int bombsAlreadyLaunched;
-    Movement direction;
-    QVariantAnimation *movementAnimation;
-    QAbstractAnimation *destroyAnimation;
-    QStateMachine *machine;
-    PixmapItem *pixmapItem;
+    void updateProgress();
+    int currentLevel;
+    int currentScore;
 };
 
-#endif //__BOAT__H__
+#endif // PROGRESSITEM_H

@@ -58,6 +58,7 @@ class SubMarine;
 class Torpedo;
 class Bomb;
 class PixmapItem;
+class ProgressItem;
 class QAction;
 
 class GraphicsScene : public QGraphicsScene
@@ -109,6 +110,7 @@ private slots:
 private:
     Mode mode;
     PixmapItem *backgroundItem;
+    ProgressItem *progressItem;
     QAction * newAction;
     QAction * quitAction;
     Boat *boat;
@@ -121,8 +123,11 @@ private:
 
     friend class PauseState;
     friend class PlayState;
+    friend class LevelState;
     friend class LostState;
     friend class WinState;
+    friend class WinTransition;
+    friend class UpdateScoreTransition;
 };
 
 #endif //__GRAPHICSSCENE__H__

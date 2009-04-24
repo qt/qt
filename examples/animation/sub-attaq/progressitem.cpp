@@ -39,68 +39,29 @@
 **
 ****************************************************************************/
 
-#ifndef __BOAT__H__
-#define __BOAT__H__
+#include "progressitem.h"
+#include "pixmapitem.h"
 
-//Qt
-#include <QObject>
-#include <QKeyEvent>
-
-#include <QDebug>
-
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qtgraphicswidget.h"
-#else
-# include <QtGui/QGraphicsWidget>
-#endif
-
-class PixmapItem;
-class Bomb;
-class QVariantAnimation;
-class QAbstractAnimation;
-class QStateMachine;
-
-class Boat : public QGraphicsWidget
+ProgressItem::ProgressItem (QGraphicsItem * parent)
+    : QGraphicsTextItem(parent), currentLevel(1), currentScore(0)
 {
-Q_OBJECT
-Q_PROPERTY(QPointF pos READ pos WRITE setPos)
-public:
-    enum Movement {
-       None = 0,
-       Left,
-       Right
-    };
-    enum { Type = UserType + 2 };
-    Boat(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
-    void destroy();
-    void run();
-    void stop();
+    setFont(QFont("Comic Sans MS"));
+    setPos(parentItem()->boundingRect().topRight() - QPointF(180, -5));
+}
 
-    int bombsLaunched() const;
-    void setBombsLaunched(int number);
+void ProgressItem::setLevel(int level)
+{
+    currentLevel = level;
+    updateProgress();
+}
 
-    int currentSpeed() const;
-    void setCurrentSpeed(int speed);
+void ProgressItem::setScore(int score)
+{
+    currentScore = score;
+    updateProgress();
+}
 
-    enum Movement currentDirection() const;
-    void setCurrentDirection(Movement direction);
-
-    void updateBoatMovement();
-
-    virtual int type() const;
-
-Q_SIGNALS:
-    void boatDestroyed();
-    void boatExecutionFinished();
-
-private:
-    int speed;
-    int bombsAlreadyLaunched;
-    Movement direction;
-    QVariantAnimation *movementAnimation;
-    QAbstractAnimation *destroyAnimation;
-    QStateMachine *machine;
-    PixmapItem *pixmapItem;
-};
-
-#endif //__BOAT__H__
+void ProgressItem::updateProgress()
+{
+    setHtml(QString("Level : %1 Score : %2").arg(currentLevel).arg(currentScore));
+}
