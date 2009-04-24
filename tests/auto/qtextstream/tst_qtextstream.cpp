@@ -60,6 +60,8 @@
 #include <QTextCodec>
 #include <QProcess>
 
+#include "../network-settings.h"
+
 static const char *TestFileName = "testfile";
 
 Q_DECLARE_METATYPE(qlonglong)
@@ -102,10 +104,8 @@ private slots:
     void readLineFromTextDevice_data();
     void readLineFromTextDevice();
     void readLineUntilNull();
-#if QT_VERSION >= 0x040103
     void readLineMaxlen_data();
     void readLineMaxlen();
-#endif
     void readLinesFromBufferCRCR();
 
     // all
@@ -222,13 +222,11 @@ private slots:
     void utf8IncompleteAtBufferBoundary_data();
     void utf8IncompleteAtBufferBoundary();
 
-#if QT_VERSION >= 0x040100
     // status
     void status_real_read_data();
     void status_real_read();
     void status_integer_read();
     void status_word_read();
-#endif
 
     // use case tests
     void useCase1();
@@ -1233,7 +1231,7 @@ void tst_QTextStream::stillOpenWhenAtEnd()
     QSKIP("Qt/CE: Cannot test network on emulator", SkipAll);
 #endif
     QTcpSocket socket;
-    socket.connectToHost(FTP_TEST_SERVER_NAME_1, 21);
+    socket.connectToHost(QtNetworkSettings::serverName(), 143);
 #if defined(Q_OS_SYMBIAN)    
     QVERIFY(socket.waitForReadyRead(30000));
 #else

@@ -300,6 +300,12 @@ QThreadPrivate::~QThreadPrivate()
     priority parameter. If the thread is already running, this
     function does nothing.
 
+    The effect of the \a priority parameter is dependent on the
+    operating system's scheduling policy. In particular, the \a priority
+    will be ignored on systems that do not support thread priorities
+    (such as on Linux, see http://linux.die.net/man/2/sched_setscheduler
+    for more details).
+
     \sa run(), terminate()
 */
 
@@ -592,6 +598,12 @@ void QThread::cleanup()
 
     The \a priority argument can be any value in the \c
     QThread::Priority enum except for \c InheritPriorty.
+
+    The effect of the \a priority parameter is dependent on the
+    operating system's scheduling policy. In particular, the \a priority
+    will be ignored on systems that do not support thread priorities
+    (such as on Linux, see http://linux.die.net/man/2/sched_setscheduler
+    for more details).
 
     \sa Priority priority() start()
 */

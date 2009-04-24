@@ -54,17 +54,14 @@ QT_MODULE(Gui)
 class QDirectFBPaintDevice : public QCustomRasterPaintDevice
 {
 public:
-    QDirectFBPaintDevice(QDirectFBScreen *scr = QDirectFBScreen::instance())
-        : QCustomRasterPaintDevice(0),
-          dfbSurface(0),
-          lockedImage(0),
-          screen(scr) {}
     ~QDirectFBPaintDevice();
 
-    IDirectFBSurface *directFbSurface() const;
+    IDirectFBSurface *directFBSurface() const;
 
     void lockDirectFB();
     void unlockDirectFB();
+
+    inline bool forceRasterPrimitives() const { return forceRaster; }
 
     // Reimplemented from QCustomRasterPaintDevice:
     void* memory() const;
@@ -72,11 +69,31 @@ public:
     int bytesPerLine() const;
     QSize size() const;
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
-
 protected:
+    // Shouldn't create QDirectFBPaintDevice by itself but only sub-class it:
+    QDirectFBPaintDevice(QDirectFBScreen *scr = QDirectFBScreen::instance())
+        : QCustomRasterPaintDevice(0),
+          dfbSurface(0),
+          lockedImage(0),
+          screen(scr),
+          forceRaster(false) {}
+
+    inline int dotsPerMeterX() const
+    {
+        return (screen->deviceWidth() * 1000) / screen->physicalWidth();
+    }
+    inline int dotsPerMeterY() const
+    {
+        return (screen->deviceHeight() * 1000) / screen->physicalHeight();
+    }
+
     IDirectFBSurface *dfbSurface;
     QImage *lockedImage;
     QDirectFBScreen *screen;
+    int bpl;
+    bool forceRaster;
+private:
+    Q_DISABLE_COPY(QDirectFBPaintDevice)
 };
 
 QT_END_HEADER

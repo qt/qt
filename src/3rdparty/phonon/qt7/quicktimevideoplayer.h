@@ -20,6 +20,7 @@
 
 #include "backendheader.h"
 
+#include <QtGui/qmacdefines_mac.h>
 #import <QTKit/QTDataReference.h>
 #import <QTKit/QTMovie.h>
 

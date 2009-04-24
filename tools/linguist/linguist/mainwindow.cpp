@@ -188,7 +188,7 @@ private:
 
 static const QVariant &pxObsolete()
 {
-    static const QVariant v = 
+    static const QVariant v =
         qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_obsolete.png")));
     return v;
 }
@@ -1340,30 +1340,10 @@ void MainWindow::about()
     QMessageBox box(this);
     box.setTextFormat(Qt::RichText);
     QString version = tr("Version %1");
-#if QT_EDITION == QT_EDITION_OPENSOURCE
-    QString open = tr(" Open Source Edition");
-    version.append(open);
-#endif
     version = version.arg(QLatin1String(QT_VERSION_STR));
 
-    QString edition =
-#if QT_EDITION == QT_EDITION_OPENSOURCE
-        tr("This version of Qt Linguist is part of the Qt Open Source Edition, for use "
-        "in the development of Open Source applications. "
-        "Qt is a comprehensive C++ framework for cross-platform application "
-        "development.<br/><br/>"
-        "You need a commercial Qt license for development of proprietary (closed "
-        "source) applications. Please see <tt>http://qtsoftware.com/company/model"
-        ".html</tt> for an overview of Qt licensing.");
-#elif defined(QT_PRODUCT_LICENSE)
-        tr("This program is licensed to you under the terms of the "
-        "Qt %1 License Agreement. For details, see the license file "
-        "that came with this software distribution.").arg(QLatin1String(QT_PRODUCT_LICENSE));
-#else
-        tr("This program is licensed to you under the terms of the "
-        "Qt Commercial License Agreement. For details, see the file LICENSE "
-        "that came with this software distribution.");
-#endif
+    // TODO: Remove this variable for 4.6.0.  Must keep this way for 4.5.x due to string freeze.
+    QString edition;
 
     box.setText(tr("<center><img src=\":/images/splash.png\"/></img><p>%1</p></center>"
                     "<p>Qt Linguist is a tool for adding translations to Qt "
@@ -1535,7 +1515,7 @@ void MainWindow::selectedMessageChanged(const QModelIndex &sortedIndex, const QM
             } else {
                 m_sourceAndFormView->setCurrentWidget(m_sourceCodeView);
                 QDir dir = QFileInfo(m_dataModel->srcFileName(model)).dir();
-                QString fileName = dir.absoluteFilePath(m->fileName());
+                QString fileName = QDir::cleanPath(dir.absoluteFilePath(m->fileName()));
                 m_sourceCodeView->setSourceContext(fileName, m->lineNumber());
             }
             m_errorsView->setEnabled(true);

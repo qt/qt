@@ -299,16 +299,12 @@ void tst_QWMatrix::mapping_data()
 
 void tst_QWMatrix::mapRect()
 {
-#if QT_VERSION >= 0x030100
     QFETCH( QMatrix, matrix );
     QFETCH( QRect, src );
 //     qDebug( "got src: %d/%d (%d/%d), matrix=[ %f %f %f %f %f %f ]",
-// 	    src.x(), src.y(), src.width(), src.height(),
-// 	    matrix.m11(), matrix.m12(), matrix.m21(), matrix.m22(), matrix.dx(), matrix.dy() );
+//         src.x(), src.y(), src.width(), src.height(),
+//         matrix.m11(), matrix.m12(), matrix.m21(), matrix.m22(), matrix.dx(), matrix.dy() );
     QTEST( QPolygon( matrix.mapRect(src) ), "res" );
-#else
-    QSKIP( "Not tested with Qt versions < 3.1", SkipAll);
-#endif
 }
 
 void tst_QWMatrix::operator_star_qrect()
@@ -349,7 +345,6 @@ void tst_QWMatrix::operator_star_qwmatrix()
 
 void tst_QWMatrix::assignments()
 {
-#if QT_VERSION >= 0x040000
     QMatrix m;
     m.scale(2, 3);
     m.rotate(45);
@@ -371,24 +366,16 @@ void tst_QWMatrix::assignments()
     QCOMPARE(m.m22(), c2.m22());
     QCOMPARE(m.dx(),  c2.dx());
     QCOMPARE(m.dy(),  c2.dy());
-#else
-    QSKIP( "Not tested with Qt versions < 4.0", SkipAll);
-#endif
 }
 
 
 void tst_QWMatrix::mapToPolygon()
 {
-#if QT_VERSION >= 0x030100
     QFETCH( QMatrix, matrix );
     QFETCH( QRect, src );
     QFETCH( QPolygon, res );
 
     QCOMPARE( matrix.mapToPolygon( src ), res );
-#else
-    QSKIP( "Not tested with Qt versions < 3.1", SkipAll);
-//    qDebug("passing test; transformations are broken in 3.0.x" );
-#endif
 }
 
 

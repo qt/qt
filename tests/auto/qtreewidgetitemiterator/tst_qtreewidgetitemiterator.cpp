@@ -42,8 +42,6 @@
 
 #include <QtTest/QtTest>
 
-#if QT_VERSION >= 0x040100
-
 #include <qtreewidget.h>
 #include <qtreewidgetitemiterator.h>
 #include <qapplication.h>
@@ -60,7 +58,6 @@ class tst_QTreeWidgetItemIterator : public QObject
 public:
     tst_QTreeWidgetItemIterator();
     ~tst_QTreeWidgetItemIterator();
-
 
 public slots:
     void initTestCase();
@@ -136,7 +133,7 @@ void tst_QTreeWidgetItemIterator::initTestCase()
             case 9:  top->setFlags(Qt::ItemIsEnabled);break;
 
             case 10:  top->setFlags(Qt::ItemIsEnabled);break;
-            case 11:  
+            case 11:
                 top->setFlags(0);
                 break;
 
@@ -982,7 +979,6 @@ void tst_QTreeWidgetItemIterator::postdecrement()
 
 }
 
-
 void tst_QTreeWidgetItemIterator::plus_eq_data()
 {
     QTest::addColumn<int>("start");
@@ -1146,9 +1142,9 @@ void tst_QTreeWidgetItemIterator::updateIteratorAfterDeletedItem_and_ContinueIte
     QTest::addColumn<int>("grandChildItems");       // Populate the tree data
     // we have one iterator pointing to an item in the tree.
     // This iterator will be updated if we delete the item it is pointing to.
-    // 
+    //
     QTest::addColumn<int>("removeindex");                   // The index of the node we want to remove
-    QTest::addColumn<int>("iterator_initial_index");        // The new expected index of 
+    QTest::addColumn<int>("iterator_initial_index");        // The new expected index of
     QTest::addColumn<int>("iterator_advance_after_removal");
     QTest::addColumn<QString>("iterator_new_value");        // The new current item value of the iterator
     QTest::newRow("Remove 13, it points to 25, it-=1. We should get top0,child2,grandchild2") << 3 << 3 << 3 << 13 << 25 << -1 << QString("top0,child2,grandchild2");
@@ -1245,7 +1241,3 @@ void tst_QTreeWidgetItemIterator::initializeIterator()
 
 QTEST_MAIN(tst_QTreeWidgetItemIterator)
 #include "tst_qtreewidgetitemiterator.moc"
-
-#else
-QTEST_NOOP_MAIN
-#endif

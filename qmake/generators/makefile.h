@@ -114,7 +114,7 @@ protected:
     struct SubTarget
     {
         QString name;
-	QString in_directory, out_directory;
+        QString in_directory, out_directory;
         QString profile, target, makefile;
         QStringList depends;
     };
@@ -188,8 +188,8 @@ protected:
 
     void filterIncludedFiles(const QString &);
     virtual void processSources() {
-	filterIncludedFiles("SOURCES");
-	filterIncludedFiles("GENERATED_SOURCES");
+        filterIncludedFiles("SOURCES");
+        filterIncludedFiles("GENERATED_SOURCES");
     }
 
     //for cross-platform dependent directories

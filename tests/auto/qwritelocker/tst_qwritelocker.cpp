@@ -189,9 +189,6 @@ void tst_QWriteLocker::unlockAndRelockTest()
 
 void tst_QWriteLocker::lockerStateTest()
 {
-#if QT_VERSION < 0x040200
-    QSKIP("QWriteLocker doesn't keep state in Qt < 4.2", SkipAll);
-#else
     class LockerStateThread : public tst_QWriteLockerThread
     {
     public:
@@ -228,7 +225,6 @@ void tst_QWriteLocker::lockerStateTest()
 
     delete thread;
     thread = 0;
-#endif
 }
 
 QTEST_MAIN(tst_QWriteLocker)

@@ -375,14 +375,11 @@ void tst_QDialog::showAsTool()
     testWidget->activateWindow();
     dialog.exec();
     QTest::qWait(100);
-	if (testWidget->style()->styleHint(QStyle::SH_Widget_ShareActivation, 0, testWidget)) {
-#if defined(Q_WS_QWS)  && QT_VERSION < 0x040400
-		QEXPECT_FAIL(0, "Qtopia Core has messed up WStyle_Tool  (task 126435)", Continue);
-#endif
-		QCOMPARE(dialog.wasActive(), true);
-	} else {
-		QCOMPARE(dialog.wasActive(), false);
-	}
+    if (testWidget->style()->styleHint(QStyle::SH_Widget_ShareActivation, 0, testWidget)) {
+        QCOMPARE(dialog.wasActive(), true);
+    } else {
+        QCOMPARE(dialog.wasActive(), false);
+    }
 }
 
 // Verify that pos() returns the same before and after show()
@@ -392,10 +389,10 @@ void tst_QDialog::toolDialogPosition()
 #if defined(Q_OS_WINCE)
     QSKIP("No real support for Qt::Tool on WinCE", SkipAll);
 #endif
-	QDialog dialog(0, Qt::Tool);
-	dialog.move(QPoint(100,100));
+    QDialog dialog(0, Qt::Tool);
+    dialog.move(QPoint(100,100));
     const QPoint beforeShowPosition = dialog.pos();
-	dialog.show();
+    dialog.show();
     const QPoint afterShowPosition = dialog.pos();
     QCOMPARE(afterShowPosition, beforeShowPosition);
 }
@@ -445,7 +442,7 @@ public slots:
 void tst_QDialog::throwInExec()
 {
 #ifdef Q_WS_MAC
-    QSKIP("Qt/Mac: Throwing exceptions in excec() is not supported.", SkipAll);
+    QSKIP("Qt/Mac: Throwing exceptions in exec() is not supported.", SkipAll);
 #endif
     int caughtExceptions = 0;
     try {

@@ -44,7 +44,7 @@ PATH               - to locate qmake, moc and other Qt tools
 
 //! [8]
 C:
-cd /D C:\Qt\4.4.0-rc1
+cd /D C:\Qt\%VERSION%
 configure
 //! [8]
 

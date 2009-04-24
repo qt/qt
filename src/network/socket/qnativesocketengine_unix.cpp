@@ -526,26 +526,11 @@ int QNativeSocketEnginePrivate::nativeAccept()
 
 qint64 QNativeSocketEnginePrivate::nativeBytesAvailable() const
 {
-    /*
-      Apparently, there is not consistency among different operating
-      systems on how to use FIONREAD.
-
-      FreeBSD, Linux and Solaris all expect the 3rd argument to
-      ioctl() to be an int, which is normally 32-bit even on 64-bit
-      machines.
-
-      IRIX, on the other hand, expects a size_t, which is 64-bit on
-      64-bit machines.
-
-      So, the solution is to use size_t initialized to zero to make
-      sure all bits are set to zero, preventing underflow with the
-      FreeBSD/Linux/Solaris ioctls.
-    */
-    size_t nbytes = 0;
+    int nbytes = 0;
     // gives shorter than true amounts on Unix domain sockets.
     qint64 available = 0;
     if (::ioctl(socketDescriptor, FIONREAD, (char *) &nbytes) >= 0)
-        available = (qint64) *((int *) &nbytes);
+        available = (qint64) nbytes;
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativeBytesAvailable() == %lli", available);
@@ -918,15 +903,15 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
 
         if (timeout > 0) {
             // recalculate the timeout
-            timeout -= timer.elapsed();
-            tv.tv_sec = timeout / 1000;
-            tv.tv_usec = (timeout % 1000) * 1000;
-
-            if (timeout < 0) {
+            int t = timeout - timer.elapsed();
+            if (t < 0) {
                 // oops, timeout turned negative?
                 retval = -1;
                 break;
             }
+
+            tv.tv_sec = t / 1000;
+            tv.tv_usec = (t % 1000) * 1000;
         }
     } while (true);
 
@@ -965,15 +950,15 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
 
         if (timeout > 0) {
             // recalculate the timeout
-            timeout -= timer.elapsed();
-            tv.tv_sec = timeout / 1000;
-            tv.tv_usec = (timeout % 1000) * 1000;
-
-            if (timeout < 0) {
+            int t = timeout - timer.elapsed();
+            if (t < 0) {
                 // oops, timeout turned negative?
                 ret = -1;
                 break;
             }
+
+            tv.tv_sec = t / 1000;
+            tv.tv_usec = (t % 1000) * 1000;
         }
     } while (true);
     if (ret <= 0)

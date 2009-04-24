@@ -46,9 +46,7 @@
 #include <QtCore/QVariant>
 #include <QtGui/QIcon>
 
-#if QT_VERSION >= 0x040400
 QT_BEGIN_NAMESPACE
-#endif
 
 typedef QMap<int, QIcon> QtIconMap;
 
@@ -172,9 +170,7 @@ private:
     Q_DISABLE_COPY(QtVariantEditorFactory)
 };
 
-#if QT_VERSION >= 0x040400
 QT_END_NAMESPACE
-#endif
 
 Q_DECLARE_METATYPE(QIcon)
 Q_DECLARE_METATYPE(QtIconMap)

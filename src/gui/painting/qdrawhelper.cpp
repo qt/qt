@@ -370,7 +370,7 @@ Q_STATIC_TEMPLATE_FUNCTION void QT_FASTCALL destStore(QRasterBuffer *rasterBuffe
                                   Q_TEMPLATE_FIX(DST))
 {
     DST *dest = reinterpret_cast<DST*>(rasterBuffer->scanLine(y)) + x;
-    const quint32 *src = reinterpret_cast<const quint32*>(buffer);
+    const quint32p *src = reinterpret_cast<const quint32p*>(buffer);
     while (length--)
         *dest++ = DST(*src++);
 }
@@ -4763,7 +4763,7 @@ void QT_FASTCALL blendUntransformed(int count, const QSpan *spans, void *userDat
 static void blend_untransformed_rgb888(int count, const QSpan *spans,
                                        void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_24)
+#if defined(QT_QWS_DEPTH_24)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_RGB888)
@@ -4777,7 +4777,7 @@ static void blend_untransformed_rgb888(int count, const QSpan *spans,
 static void blend_untransformed_argb6666(int count, const QSpan *spans,
                                          void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_18)
+#if defined(QT_QWS_DEPTH_18)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB6666_Premultiplied)
@@ -4793,7 +4793,7 @@ static void blend_untransformed_argb6666(int count, const QSpan *spans,
 static void blend_untransformed_rgb666(int count, const QSpan *spans,
                                        void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_18)
+#if defined(QT_QWS_DEPTH_18)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB6666_Premultiplied)
@@ -4809,7 +4809,7 @@ static void blend_untransformed_rgb666(int count, const QSpan *spans,
 static void blend_untransformed_argb8565(int count, const QSpan *spans,
                                          void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_16)
+#if defined(QT_QWS_DEPTH_16)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8565_Premultiplied)
@@ -4825,7 +4825,7 @@ static void blend_untransformed_argb8565(int count, const QSpan *spans,
 static void blend_untransformed_rgb565(int count, const QSpan *spans,
                                        void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_16)
+#if defined(QT_QWS_DEPTH_16)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8565_Premultiplied)
@@ -4841,7 +4841,7 @@ static void blend_untransformed_rgb565(int count, const QSpan *spans,
 static void blend_untransformed_argb8555(int count, const QSpan *spans,
                                          void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_15)
+#if defined(QT_QWS_DEPTH_15)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8555_Premultiplied)
@@ -4857,7 +4857,7 @@ static void blend_untransformed_argb8555(int count, const QSpan *spans,
 static void blend_untransformed_rgb555(int count, const QSpan *spans,
                                        void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_15)
+#if defined(QT_QWS_DEPTH_15)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8555_Premultiplied)
@@ -4873,7 +4873,7 @@ static void blend_untransformed_rgb555(int count, const QSpan *spans,
 static void blend_untransformed_argb4444(int count, const QSpan *spans,
                                          void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_12)
+#if defined(QT_QWS_DEPTH_12)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB4444_Premultiplied)
@@ -4889,7 +4889,7 @@ static void blend_untransformed_argb4444(int count, const QSpan *spans,
 static void blend_untransformed_rgb444(int count, const QSpan *spans,
                                        void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_12)
+#if defined(QT_QWS_DEPTH_12)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB4444_Premultiplied)
@@ -5084,7 +5084,7 @@ Q_STATIC_TEMPLATE_FUNCTION void blendTiled(int count, const QSpan *spans, void *
 
 static void blend_tiled_rgb888(int count, const QSpan *spans, void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_24)
+#if defined(QT_QWS_DEPTH_24)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_RGB888)
@@ -5097,7 +5097,7 @@ static void blend_tiled_rgb888(int count, const QSpan *spans, void *userData)
 
 static void blend_tiled_argb6666(int count, const QSpan *spans, void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_18)
+#if defined(QT_QWS_DEPTH_18)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB6666_Premultiplied)
@@ -5112,7 +5112,7 @@ static void blend_tiled_argb6666(int count, const QSpan *spans, void *userData)
 
 static void blend_tiled_rgb666(int count, const QSpan *spans, void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_18)
+#if defined(QT_QWS_DEPTH_18)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB6666_Premultiplied)
@@ -5127,7 +5127,7 @@ static void blend_tiled_rgb666(int count, const QSpan *spans, void *userData)
 
 static void blend_tiled_argb8565(int count, const QSpan *spans, void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_16)
+#if defined(QT_QWS_DEPTH_16)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8565_Premultiplied)
@@ -5142,7 +5142,7 @@ static void blend_tiled_argb8565(int count, const QSpan *spans, void *userData)
 
 static void blend_tiled_rgb565(int count, const QSpan *spans, void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_16)
+#if defined(QT_QWS_DEPTH_16)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8565_Premultiplied)
@@ -5157,7 +5157,7 @@ static void blend_tiled_rgb565(int count, const QSpan *spans, void *userData)
 
 static void blend_tiled_argb8555(int count, const QSpan *spans, void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_15)
+#if defined(QT_QWS_DEPTH_15)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8555_Premultiplied)
@@ -5172,7 +5172,7 @@ static void blend_tiled_argb8555(int count, const QSpan *spans, void *userData)
 
 static void blend_tiled_rgb555(int count, const QSpan *spans, void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_15)
+#if defined(QT_QWS_DEPTH_15)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8555_Premultiplied)
@@ -5187,7 +5187,7 @@ static void blend_tiled_rgb555(int count, const QSpan *spans, void *userData)
 
 static void blend_tiled_argb4444(int count, const QSpan *spans, void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_12)
+#if defined(QT_QWS_DEPTH_12)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB4444_Premultiplied)
@@ -5202,7 +5202,7 @@ static void blend_tiled_argb4444(int count, const QSpan *spans, void *userData)
 
 static void blend_tiled_rgb444(int count, const QSpan *spans, void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_12)
+#if defined(QT_QWS_DEPTH_12)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB4444_Premultiplied)
@@ -5599,7 +5599,7 @@ Q_STATIC_TEMPLATE_FUNCTION void blendTransformedBilinear(int count, const QSpan 
 
 static void blend_transformed_bilinear_rgb888(int count, const QSpan *spans, void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_24)
+#if defined(QT_QWS_DEPTH_24)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_RGB888)
@@ -5612,7 +5612,7 @@ static void blend_transformed_bilinear_rgb888(int count, const QSpan *spans, voi
 
 static void blend_transformed_bilinear_argb6666(int count, const QSpan *spans, void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_18)
+#if defined(QT_QWS_DEPTH_18)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB6666_Premultiplied)
@@ -5627,7 +5627,7 @@ static void blend_transformed_bilinear_argb6666(int count, const QSpan *spans, v
 
 static void blend_transformed_bilinear_rgb666(int count, const QSpan *spans, void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_18)
+#if defined(QT_QWS_DEPTH_18)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB6666_Premultiplied)
@@ -5642,7 +5642,7 @@ static void blend_transformed_bilinear_rgb666(int count, const QSpan *spans, voi
 
 static void blend_transformed_bilinear_argb8565(int count, const QSpan *spans, void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_16)
+#if defined(QT_QWS_DEPTH_16)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8565_Premultiplied)
@@ -5658,7 +5658,7 @@ static void blend_transformed_bilinear_argb8565(int count, const QSpan *spans, v
 static void blend_transformed_bilinear_rgb565(int count, const QSpan *spans,
                                               void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_16)
+#if defined(QT_QWS_DEPTH_16)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_RGB16)
@@ -5673,7 +5673,7 @@ static void blend_transformed_bilinear_rgb565(int count, const QSpan *spans,
 
 static void blend_transformed_bilinear_argb8555(int count, const QSpan *spans, void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_15)
+#if defined(QT_QWS_DEPTH_15)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8555_Premultiplied)
@@ -5688,7 +5688,7 @@ static void blend_transformed_bilinear_argb8555(int count, const QSpan *spans, v
 
 static void blend_transformed_bilinear_rgb555(int count, const QSpan *spans, void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_15)
+#if defined(QT_QWS_DEPTH_15)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8555_Premultiplied)
@@ -5703,7 +5703,7 @@ static void blend_transformed_bilinear_rgb555(int count, const QSpan *spans, voi
 
 static void blend_transformed_bilinear_argb4444(int count, const QSpan *spans, void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_12)
+#if defined(QT_QWS_DEPTH_12)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB4444_Premultiplied)
@@ -5718,7 +5718,7 @@ static void blend_transformed_bilinear_argb4444(int count, const QSpan *spans, v
 
 static void blend_transformed_bilinear_rgb444(int count, const QSpan *spans, void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_12)
+#if defined(QT_QWS_DEPTH_12)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB4444_Premultiplied)
@@ -6195,7 +6195,7 @@ Q_STATIC_TEMPLATE_FUNCTION void blendTransformed(int count, const QSpan *spans, 
 static void blend_transformed_rgb888(int count, const QSpan *spans,
                                      void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_24)
+#if defined(QT_QWS_DEPTH_24)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_RGB888)
@@ -6209,7 +6209,7 @@ static void blend_transformed_rgb888(int count, const QSpan *spans,
 static void blend_transformed_argb6666(int count, const QSpan *spans,
                                        void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_18)
+#if defined(QT_QWS_DEPTH_18)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB6666_Premultiplied)
@@ -6225,7 +6225,7 @@ static void blend_transformed_argb6666(int count, const QSpan *spans,
 static void blend_transformed_rgb666(int count, const QSpan *spans,
                                        void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_18)
+#if defined(QT_QWS_DEPTH_18)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB6666_Premultiplied)
@@ -6241,7 +6241,7 @@ static void blend_transformed_rgb666(int count, const QSpan *spans,
 static void blend_transformed_argb8565(int count, const QSpan *spans,
                                          void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_16)
+#if defined(QT_QWS_DEPTH_16)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8565_Premultiplied)
@@ -6257,7 +6257,7 @@ static void blend_transformed_argb8565(int count, const QSpan *spans,
 static void blend_transformed_rgb565(int count, const QSpan *spans,
                                        void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_16)
+#if defined(QT_QWS_DEPTH_16)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8565_Premultiplied)
@@ -6273,7 +6273,7 @@ static void blend_transformed_rgb565(int count, const QSpan *spans,
 static void blend_transformed_argb8555(int count, const QSpan *spans,
                                          void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_15)
+#if defined(QT_QWS_DEPTH_15)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8555_Premultiplied)
@@ -6289,7 +6289,7 @@ static void blend_transformed_argb8555(int count, const QSpan *spans,
 static void blend_transformed_rgb555(int count, const QSpan *spans,
                                        void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_15)
+#if defined(QT_QWS_DEPTH_15)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8555_Premultiplied)
@@ -6305,7 +6305,7 @@ static void blend_transformed_rgb555(int count, const QSpan *spans,
 static void blend_transformed_argb4444(int count, const QSpan *spans,
                                          void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_12)
+#if defined(QT_QWS_DEPTH_12)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB4444_Premultiplied)
@@ -6321,7 +6321,7 @@ static void blend_transformed_argb4444(int count, const QSpan *spans,
 static void blend_transformed_rgb444(int count, const QSpan *spans,
                                        void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_12)
+#if defined(QT_QWS_DEPTH_12)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB4444_Premultiplied)
@@ -6619,7 +6619,7 @@ Q_STATIC_TEMPLATE_FUNCTION void blendTransformedTiled(int count, const QSpan *sp
 static void blend_transformed_tiled_rgb888(int count, const QSpan *spans,
                                            void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_24)
+#if defined(QT_QWS_DEPTH_24)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_RGB888)
@@ -6633,7 +6633,7 @@ static void blend_transformed_tiled_rgb888(int count, const QSpan *spans,
 static void blend_transformed_tiled_argb6666(int count, const QSpan *spans,
                                              void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_18)
+#if defined(QT_QWS_DEPTH_18)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB6666_Premultiplied)
@@ -6649,7 +6649,7 @@ static void blend_transformed_tiled_argb6666(int count, const QSpan *spans,
 static void blend_transformed_tiled_rgb666(int count, const QSpan *spans,
                                            void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_18)
+#if defined(QT_QWS_DEPTH_18)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB6666_Premultiplied)
@@ -6665,7 +6665,7 @@ static void blend_transformed_tiled_rgb666(int count, const QSpan *spans,
 static void blend_transformed_tiled_argb8565(int count, const QSpan *spans,
                                              void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_16)
+#if defined(QT_QWS_DEPTH_16)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8565_Premultiplied)
@@ -6681,7 +6681,7 @@ static void blend_transformed_tiled_argb8565(int count, const QSpan *spans,
 static void blend_transformed_tiled_rgb565(int count, const QSpan *spans,
                                            void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_16)
+#if defined(QT_QWS_DEPTH_16)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8565_Premultiplied)
@@ -6697,7 +6697,7 @@ static void blend_transformed_tiled_rgb565(int count, const QSpan *spans,
 static void blend_transformed_tiled_argb8555(int count, const QSpan *spans,
                                              void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_15)
+#if defined(QT_QWS_DEPTH_15)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8555_Premultiplied)
@@ -6713,7 +6713,7 @@ static void blend_transformed_tiled_argb8555(int count, const QSpan *spans,
 static void blend_transformed_tiled_rgb555(int count, const QSpan *spans,
                                            void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_15)
+#if defined(QT_QWS_DEPTH_15)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8555_Premultiplied)
@@ -6729,7 +6729,7 @@ static void blend_transformed_tiled_rgb555(int count, const QSpan *spans,
 static void blend_transformed_tiled_argb4444(int count, const QSpan *spans,
                                              void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_12)
+#if defined(QT_QWS_DEPTH_12)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB4444_Premultiplied)
@@ -6745,7 +6745,7 @@ static void blend_transformed_tiled_argb4444(int count, const QSpan *spans,
 static void blend_transformed_tiled_rgb444(int count, const QSpan *spans,
                                            void *userData)
 {
-#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_12)
+#if defined(QT_QWS_DEPTH_12)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB4444_Premultiplied)

@@ -2120,6 +2120,10 @@ int QHttp::setUser(const QString &userName, const QString &password)
     Web proxy cache server (from \l http://www.squid.org/). For transparent
     proxying, such as SOCKS5, use QNetworkProxy instead.
 
+    \note setProxy() has to be called before setHost() for it to take effect.
+    If setProxy() is called after setHost(), then it will not apply until after 
+    setHost() is called again.
+
     \sa QFtp::setProxy()
 */
 int QHttp::setProxy(const QString &host, int port,
@@ -2139,7 +2143,7 @@ int QHttp::setProxy(const QString &host, int port,
     is QNetworkProxy::HttpCachingProxy, QHttp will behave like the
     previous function.
 
-    Note: for compatibility with Qt 4.3, if the proxy type is
+    \note for compatibility with Qt 4.3, if the proxy type is
     QNetworkProxy::HttpProxy and the request type is unencrypted (that
     is, ConnectionModeHttp), QHttp will treat the proxy as a caching
     proxy.

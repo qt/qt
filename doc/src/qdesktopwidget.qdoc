@@ -48,6 +48,9 @@
     \ingroup environment
     \mainclass
 
+    QApplication::desktop() function should be used to get an instance
+    of the QDesktopWidget.
+
     Systems with more than one graphics card and monitor can manage the
     physical screen space available either as multiple desktops, or as a
     large virtual desktop, which usually has the size of the bounding
@@ -86,11 +89,13 @@
     screens. The correct width and height values are obtained using
     availableGeometry() or screenGeometry() for a particular screen.
 
-    \sa QApplication, QX11Info::appRootWindow()
+    \sa QApplication, QApplication::desktop(), QX11Info::appRootWindow()
 */
 
 /*!
     \fn QDesktopWidget::QDesktopWidget()
+
+    \internal
 
     Creates the desktop widget.
 
@@ -103,6 +108,8 @@
 
 /*!
     \fn QDesktopWidget::~QDesktopWidget()
+
+    \internal
 
     Destroys the desktop widget and frees any allocated resources.
 */

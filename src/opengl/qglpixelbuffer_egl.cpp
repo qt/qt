@@ -47,6 +47,10 @@
 #include <qimage.h>
 #include <private/qgl_p.h>
 
+#ifdef QT_OPENGL_ES_1_CL
+#include "qgl_cl_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifdef EGL_BIND_TO_TEXTURE_RGBA
@@ -188,8 +192,8 @@ GLuint QGLPixelBuffer::generateDynamicTexture() const
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, d->req_size.width(), d->req_size.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
     else
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, d->req_size.width(), d->req_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     return texture;
 #else
     return 0;

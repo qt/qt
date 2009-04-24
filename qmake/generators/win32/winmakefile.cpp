@@ -432,9 +432,21 @@ void Win32MakefileGenerator::processRcFileVar()
             writeRcFile = rcFile.readAll() != rcString;
             rcFile.close();
         }
-        if (writeRcFile && rcFile.open(QFile::WriteOnly)) {
-            rcFile.write(rcString);
-            rcFile.close();
+        if (writeRcFile) {
+	    bool ok;
+	    ok = rcFile.open(QFile::WriteOnly);
+	    if (!ok) {
+		// The file can't be opened... try creating the containing
+		// directory first (needed for clean shadow builds)
+		QDir().mkpath(QFileInfo(rcFile).path());
+		ok = rcFile.open(QFile::WriteOnly);
+	    }
+	    if (!ok) {
+		::fprintf(stderr, "Cannot open for writing: %s", rcFile.fileName().toLatin1().constData());
+		::exit(1);
+	    }
+	    rcFile.write(rcString);
+	    rcFile.close();
         }
         if (project->values("QMAKE_WRITE_DEFAULT_RC").isEmpty())
             project->values("RC_FILE").insert(0, rcFile.fileName());

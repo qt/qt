@@ -162,11 +162,7 @@ void QScriptCompletionTaskPrivate::completeScriptExpression()
             obj = ctx->thisObject();
         } else {
             QScriptValueList scopeChain;
-#if QT_VERSION >= 0x040500
             scopeChain = ctx->scopeChain();
-#else
-            scopeChain.append(ctx->activationObject());
-#endif
             for (int i = 0; i < scopeChain.size(); ++i) {
                 QScriptValue oo = scopeChain.at(i).property(topLevelIdent);
                 if (oo.isObject()) {
@@ -180,11 +176,7 @@ void QScriptCompletionTaskPrivate::completeScriptExpression()
         if (obj.isValid())
             objects.append(obj);
     } else {
-#if QT_VERSION >= 0x040500
         objects << ctx->scopeChain();
-#else
-        objects.append(ctx->activationObject());
-#endif
         QStringList keywords;
         keywords.append(QString::fromLatin1("this"));
         keywords.append(QString::fromLatin1("true"));

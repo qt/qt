@@ -1555,9 +1555,6 @@ void tst_QTreeWidget::keyboardNavigation()
 
 void tst_QTreeWidget::scrollToItem()
 {
-#if QT_VERSION < 0x040100
-    QSKIP("This behaviour will be merged from main in 4.1.0.", SkipAll);
-#else
     // Check if all parent nodes of the item found are expanded.
     // Reported in task #78761
     QTreeWidgetItem *bar;
@@ -1586,7 +1583,6 @@ void tst_QTreeWidget::scrollToItem()
     QVERIFY(testWidget->isItemExpanded(bar));
     bar = bar->parent();
     QVERIFY(testWidget->isItemExpanded(bar));
-#endif
 }
 
 // From task #85413
@@ -2087,7 +2083,6 @@ void tst_QTreeWidget::itemWidget()
     }
 }
 
-#if QT_VERSION >= 0x040200
 void tst_QTreeWidget::insertItemsWithSorting_data()
 {
     QTest::addColumn<int>("sortOrder");
@@ -2259,8 +2254,6 @@ void tst_QTreeWidget::insertExpandedItemsWithSorting_data()
         << (QStringList() << "h" << "g" << "f" << "e");
 }
 
-
-
 // From Task 134978
 void tst_QTreeWidget::insertExpandedItemsWithSorting()
 {
@@ -2421,7 +2414,6 @@ void tst_QTreeWidget::changeDataWithSorting()
     QCOMPARE(dataChangedSpy.count(), 1);
     QCOMPARE(layoutChangedSpy.count(), reorderingExpected ? 1 : 0);
 }
-#endif // QT_VERSION
 
 void tst_QTreeWidget::itemOperatorLessThan()
 {
@@ -2599,7 +2591,6 @@ void tst_QTreeWidget::removeSelectedItem()
     QCOMPARE(selModel->isSelected(w->model()->index(0,0)), false);
 
     delete w;
-
 }
 
 class AnotherTreeWidget : public QTreeWidget

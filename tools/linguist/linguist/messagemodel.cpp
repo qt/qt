@@ -209,19 +209,19 @@ bool DataModel::load(const QString &fileName, bool *langGuessed, QWidget *parent
         return false;
     }
 
-    QList<TranslatorMessage> dupes = tor.findDuplicates();
+    QSet<TranslatorMessagePtr> dupes = tor.resolveDuplicates();
     if (!dupes.isEmpty()) {
         QString err = tr("<qt>Duplicate messages found in '%1':").arg(Qt::escape(fileName));
         int numdups = 0;
-        foreach (const TranslatorMessage &msg, dupes) {
+        foreach (const TranslatorMessagePtr &msg, dupes) {
             if (++numdups >= 5) {
                 err += tr("<p>[more duplicates omitted]");
                 break;
             }
             err += tr("<p>* Context: %1<br>* Source: %2")
-                    .arg(Qt::escape(msg.context()), Qt::escape(msg.sourceText()));
-            if (!msg.comment().isEmpty())
-                err += tr("<br>* Comment: %3").arg(Qt::escape(msg.comment()));
+                    .arg(Qt::escape(msg->context()), Qt::escape(msg->sourceText()));
+            if (!msg->comment().isEmpty())
+                err += tr("<br>* Comment: %3").arg(Qt::escape(msg->comment()));
         }
         QMessageBox::warning(parent, QObject::tr("Qt Linguist"), err);
     }
@@ -460,7 +460,7 @@ QString DataModel::prettifyFileName(const QString &fn)
 
 /******************************************************************************
  *
- * DataModelIterator 
+ * DataModelIterator
  *
  *****************************************************************************/
 
@@ -1109,7 +1109,7 @@ void MultiDataModel::updateCountsOnRemove(int model, bool writable)
 
 /******************************************************************************
  *
- * MultiDataModelIterator 
+ * MultiDataModelIterator
  *
  *****************************************************************************/
 
@@ -1214,17 +1214,17 @@ int MessageModel::columnCount(const QModelIndex &) const
 
 QVariant MessageModel::data(const QModelIndex &index, int role) const
 {
-    static QVariant pxOn  = 
+    static QVariant pxOn  =
         qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_on.png")));
-    static QVariant pxOff = 
+    static QVariant pxOff =
         qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_off.png")));
-    static QVariant pxObsolete =    
+    static QVariant pxObsolete =
         qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_obsolete.png")));
     static QVariant pxDanger =
         qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_danger.png")));
     static QVariant pxWarning =
         qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_warning.png")));
-    static QVariant pxEmpty = 
+    static QVariant pxEmpty =
         qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_empty.png")));
 
     int row = index.row();

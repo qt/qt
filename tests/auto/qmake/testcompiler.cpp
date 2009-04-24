@@ -39,49 +39,37 @@
 **
 ****************************************************************************/
 
-
 #include "testcompiler.h"
-#include <stdlib.h>
-#include <qapplication.h>
 
-#ifdef QT3_SUPPORT
+#include <QProcess>
+#include <QDir>
 
-#include <q3process.h>
-#include <qtimer.h>
-#ifdef Q_OS_WIN32
-#   include <windows.h>
-#endif
-
-#include <QtTest/QtTest>
-
-#undef SHOW_QDEBUG
-#undef SHOW_COMPLETENESS
-
-QString targetName( BuildType buildMode, const QString& target, const QString& version )
+static QString targetName( BuildType buildMode, const QString& target, const QString& version )
 {
+    Q_UNUSED(version);
     QString targetName = target;
 
 #if defined (Q_OS_WIN32)
     switch (buildMode)
     {
     case Exe: // app
-	targetName.append(".exe");
-	break;
+        targetName.append(".exe");
+        break;
     case Dll: // dll
-	if (version != "") {
-	    QStringList ver = QStringList::split(".", version);
-	    targetName.append(ver.first());
-	}
+        if (version != "") {
+            QStringList ver = QStringList::split(".", version);
+            targetName.append(ver.first());
+        }
         targetName.append(".dll");
-	break;
+        break;
     case Lib: // lib
 #ifdef Q_CC_GNU
         targetName.prepend("lib");
         targetName.append(".a");
 #else
-	targetName.append(".lib");
+        targetName.append(".lib");
 #endif
-	break;
+        break;
     case Plain:
         // no conversion
         break;
@@ -90,16 +78,16 @@ QString targetName( BuildType buildMode, const QString& target, const QString& v
     switch (buildMode)
     {
     case Exe: // app
-	targetName += ".app/Contents/MacOS/" + target.section('/', -1);
-	break;
+        targetName += ".app/Contents/MacOS/" + target.section('/', -1);
+        break;
     case Dll: // dll
-	targetName.prepend("lib");
+        targetName.prepend("lib");
         targetName.append("." + version + ".dylib");
-	break;
+        break;
     case Lib: // lib
-	targetName.prepend("lib");
-	targetName.append(".a");
-	break;
+        targetName.prepend("lib");
+        targetName.append(".a");
+        break;
     case Plain:
         // no conversion
         break;
@@ -108,9 +96,9 @@ QString targetName( BuildType buildMode, const QString& target, const QString& v
     switch (buildMode)
     {
     case Exe: // app
-	break;
+        break;
     case Dll: // dll
-	targetName.prepend("lib");
+        targetName.prepend("lib");
 #if defined (Q_OS_HPUX) && !defined (__ia64)
         targetName.append(".sl");
 #elif defined (Q_OS_AIX)
@@ -118,11 +106,11 @@ QString targetName( BuildType buildMode, const QString& target, const QString& v
 #else
         targetName.append(".so");
 #endif
-	break;
+        break;
     case Lib: // lib
-	targetName.prepend("lib");
-	targetName.append(".a");
-	break;
+        targetName.prepend("lib");
+        targetName.append(".a");
+        break;
     case Plain:
         // no conversion
         break;
@@ -131,223 +119,119 @@ QString targetName( BuildType buildMode, const QString& target, const QString& v
     return targetName;
 }
 
-
-
 TestCompiler::TestCompiler()
 {
-    exit_ok = FALSE;
-    childProc = 0;
-    setBaseCommands( "", "", FALSE );
+    setBaseCommands( "", "" );
 }
 
 TestCompiler::~TestCompiler()
 {
-    if (childProc)
-	delete childProc;
 }
 
-bool TestCompiler::runChild( bool showOutput, QStringList argList, QStringList *envList )
+bool TestCompiler::runCommand( QString cmdline )
 {
-    //qDebug() << "executing" << argList;
-    exit_ok = FALSE;
-    if (childProc)
-	delete childProc;
+    testOutput_.append("Running command: " + cmdline);
 
-    child_show = showOutput;
-    if ( showOutput ) {
+    QProcess child;
+    if (!environment_.empty())
+        child.setEnvironment(QProcess::systemEnvironment() + environment_);
 
-	QString S = argList.join(" ");
-	addMakeResult( S );
+    child.start(cmdline);
+    if (!child.waitForStarted(-1)) {
+        testOutput_.append( "Unable to start child process." );
+        return false;
     }
 
-    childProc = new Q3Process(argList, this, argList.join(" ").latin1());
-    Q_ASSERT(childProc);
+    bool failed = false;
+    child.setReadChannel(QProcess::StandardError);
+    while (QProcess::Running == child.state()) {
+        if (child.waitForReadyRead(1000)) {
+            QString output = child.readAllStandardError();
+            testOutput_.append(output);
 
-    connect(childProc,SIGNAL(readyReadStdout()),this,SLOT(childHasData()));
-    connect(childProc,SIGNAL(processExited()),this,SLOT(childReady()));
-
-    if (!childProc->start( envList )) {
-
-	addMakeResult( "Error executing '" + argList[0] + "'." );
-	childReady();
-	return FALSE;
+            output.prepend('\n');
+            if (output.contains("\nProject MESSAGE: FAILED"))
+                failed = true;
+        }
     }
 
-    while (childProc != 0 && childProc->isRunning()) {
-	qApp->processEvents();
-    }
+    child.waitForFinished(-1);
 
-    childReady();
-
-    return exit_ok;
+    return failed
+        ? false
+        : (child.exitStatus() == QProcess::NormalExit)
+            && (child.exitCode() == 0);
 }
 
-void TestCompiler::childReady()
+void TestCompiler::setBaseCommands( QString makeCmd, QString qmakeCmd )
 {
-    if (childProc != 0) {
-	childHasData();
-
-	QString S;
-	int pos;
-	while (childProc->canReadLineStderr()) {
-	    S = childProc->readLineStderr();
-	    do {
-		pos = S.find("\t");
-		if (pos >= 0) {
-		    S.remove(pos,1);
-		    S.insert(pos,"    ");
-		}
-	    } while (pos >= 0);
-
-	    if (child_show)
-		addMakeResult( S );
-	}
-
-	exit_ok = childProc->normalExit() && childProc->exitStatus() == 0;
-	delete childProc;
-    }
-    childProc = 0;
+    makeCmd_ = makeCmd;
+    qmakeCmd_ = qmakeCmd;
 }
 
-void TestCompiler::childHasData()
+void TestCompiler::resetEnvironment()
 {
-    QString S;
-    int pos;
-    while (childProc->canReadLineStderr()) {
-
-	S = childProc->readLineStderr();
-	do {
-	    pos = S.find("\t");
-	    if (pos >= 0) {
-		S.remove(pos,1);
-		S.insert(pos,"    ");
-	    }
-
-	} while (pos >= 0);
-
-        if ( S.startsWith("Project MESSAGE: FAILED") )
-	    QTest::qFail( S, __FILE__, __LINE__ );
-        else if ( S.startsWith("Project MESSAGE: SKIPPED") )
-            QTest::qSkip( S, QTest::SkipSingle, __FILE__, __LINE__ );
-	else if (child_show)
-	    addMakeResult( S );
-    }
+    environment_.clear();
 }
 
-void TestCompiler::setBaseCommands( QString makeCmd, QString qmakeCmd, bool qwsMode )
+void TestCompiler::addToEnvironment( QString varAssignment )
 {
-    qws_mode = qwsMode;
-    make_cmd = makeCmd;
-
-    // not sure if i need this, but it doesn't hurt
-    if (make_cmd.startsWith("\""))
-        make_cmd = make_cmd.remove(0,1);
-    if (make_cmd.endsWith("\""))
-        make_cmd = make_cmd.remove(make_cmd.length()-1,1);
-
-    qmake_cmd = qmakeCmd;
-    // also not sure if i need this, but it doesn't hurt...
-    if(qmake_cmd.length() >= 2 && (qmake_cmd.at(0) == '"' || qmake_cmd.at(0) == '\'') && qmake_cmd.at(qmake_cmd.length()-1) == qmake_cmd.at(0))
-        qmake_cmd = qmake_cmd.mid(1, qmake_cmd.length()-2);
-}
-
-bool TestCompiler::cleanAll( const QString &workPath, const QString &destPath, const QString &exeName, const QString &exeExt )
-{
-    QDir D(workPath);
-    if (!D.exists()) {
-
-        addMakeResult( "Directory '" + workPath + "' doesn't exist" );
-        return FALSE;
-    }
-
-    D.setCurrent(workPath);
-    // must delete at least the executable file to be able to easily and safely
-    // verify that the compilation was a success.
-    D.remove( destPath + "/" + exeName + exeExt );
-    D.remove( workPath + "/Makefile");
-    QFileInfo Fi( workPath + "/Makefile");
-    if (Fi.exists()) {
-
-	// Run make clean
-	QStringList args;
-        args = QStringList::split( " ", make_cmd );
-	args.append("clean");
-
-	return runChild( FALSE, args, 0 );
-    }
-
-    return TRUE;
+    environment_.push_back(varAssignment);
 }
 
 bool TestCompiler::makeClean( const QString &workPath )
 {
     QDir D;
     if (!D.exists(workPath)) {
-
-        addMakeResult( "Directory '" + workPath + "' doesn't exist" );
-        return FALSE;
+        testOutput_.append( "Directory '" + workPath + "' doesn't exist" );
+        return false;
     }
 
     D.setCurrent(workPath);
     QFileInfo Fi( workPath + "/Makefile");
-    if (Fi.exists()) {
+    if (Fi.exists())
+        // Run make clean
+        return runCommand( makeCmd_ + " clean" );
 
-	// Run make clean
-	QStringList args;
-        args = QStringList::split( " ", make_cmd );
-	args.append("clean");
-
-	return runChild( FALSE, args, 0 );
-    }
-
-    return TRUE;
+    return true;
 }
 
 bool TestCompiler::makeDistClean( const QString &workPath )
 {
     QDir D;
     if (!D.exists(workPath)) {
-        addMakeResult( "Directory '" + workPath + "' doesn't exist" );
-        return FALSE;
+        testOutput_.append( "Directory '" + workPath + "' doesn't exist" );
+        return false;
     }
 
     D.setCurrent(workPath);
     QFileInfo Fi( workPath + "/Makefile");
-    if (Fi.exists()) {
-	// Run make distclean
-	QStringList args;
-        args = QStringList::split( " ", make_cmd );
-	args.append("distclean");
+    if (Fi.exists())
+        // Run make distclean
+        return runCommand( makeCmd_ + " distclean" );
 
-	return runChild( FALSE, args, 0 );
-    }
-
-    return TRUE;
+    return true;
 
 }
 
 bool TestCompiler::qmake( const QString &workDir, const QString &proName, const QString &buildDir )
 {
-    // Now start qmake and generate the makefile
-
-    QDir D( workDir );
-    // Make sure we start in the right directory
+    QDir D;
     D.setCurrent( workDir );
 
     if (D.exists("Makefile"))
-	D.remove("Makefile");
+        D.remove("Makefile");
 
-    QStringList args;
-    args = QStringList::split( " ", qmake_cmd );
+    QString projectFile = proName;
+    QString makeFile = buildDir;
+    if (!projectFile.endsWith(".pro"))
+        projectFile += ".pro";
+    if (!makeFile.isEmpty() && !makeFile.endsWith('/'))
+        makeFile += '/';
+    makeFile += "Makefile";
 
-    QString project_fname = workDir + "/" + proName + ".pro";
-    QString makefile_fname = (buildDir.isNull()?QString():(buildDir + "/")) + "Makefile";
-
-    args.append( project_fname );
-    args.append( "-o" );
-    args.append( makefile_fname );
-
-    return runChild( TRUE, args, 0 );
+    // Now start qmake and generate the makefile
+    return runCommand( qmakeCmd_ + " " + projectFile + " -o " + makeFile );
 }
 
 bool TestCompiler::make( const QString &workPath, const QString &target )
@@ -355,14 +239,13 @@ bool TestCompiler::make( const QString &workPath, const QString &target )
     QDir D;
     D.setCurrent( workPath );
 
-    QStringList args;
-    args = QStringList::split( " ", make_cmd );
-    if ( make_cmd.lower().find("nmake") >= 0)
-	args.append("/NOLOGO");
-    if ( !target.isNull() )
-        args.append(target);
+    QString cmdline = makeCmd_;
+    if ( cmdline.contains("nmake", Qt::CaseInsensitive) )
+        cmdline.append(" /NOLOGO");
+    if ( !target.isEmpty() )
+        cmdline += " " + target;
 
-    return runChild( TRUE, args, 0 );
+    return runCommand( cmdline );
 }
 
 bool TestCompiler::exists( const QString &destDir, const QString &exeName, BuildType buildType, const QString &version )
@@ -371,20 +254,12 @@ bool TestCompiler::exists( const QString &destDir, const QString &exeName, Build
     return f.exists();
 }
 
-void TestCompiler::addMakeResult( const QString &result )
-{
-    make_result.append( result );
-}
-
 bool TestCompiler::removeMakefile( const QString &workPath )
 {
     QDir D;
     D.setCurrent( workPath );
     if ( D.exists( "Makefile" ) )
-	return D.remove( "Makefile" );
+        return D.remove( "Makefile" );
     else
-	return TRUE;
+        return true;
 }
-
-#endif //QT3_SUPPORT
-

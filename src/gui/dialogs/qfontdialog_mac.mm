@@ -190,7 +190,7 @@ const int StyleMask = NSTitledWindowMask | NSClosableWindowMask | NSResizableWin
         newFont.setStrikeOut(mQtFont->strikeOut());
     }
 
-	[self setQtFont:newFont];
+    [self setQtFont:newFont];
     if (mPriv)
         mPriv->updateSampleFont(*mQtFont);
 }
@@ -357,8 +357,8 @@ const int StyleMask = NSTitledWindowMask | NSClosableWindowMask | NSResizableWin
 
 - (void)setQtFont:(const QFont &)newFont
 {
-	delete mQtFont;
-	mQtFont = new QFont(newFont);
+    delete mQtFont;
+    mQtFont = new QFont(newFont);
 }
 
 - (QFont)qtFont
@@ -404,6 +404,7 @@ const int StyleMask = NSTitledWindowMask | NSClosableWindowMask | NSResizableWin
     }
     [mFontPanel setDelegate:nil];
     [[NSFontManager sharedFontManager] setDelegate:nil];
+    [[NSFontManager sharedFontManager] setTarget:nil];
 }
 @end
 
@@ -527,6 +528,7 @@ void *QFontDialogPrivate::openCocoaFontPanel(const QFont &initial,
                                                    extraHeight:dialogExtraHeight];
     [ourPanel setDelegate:delegate];
     [[NSFontManager sharedFontManager] setDelegate:delegate];
+    [[NSFontManager sharedFontManager] setTarget:delegate];
     setFont(delegate, initial);
 
     // hack to get correct initial layout

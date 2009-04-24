@@ -133,10 +133,15 @@ public:
         hasBoundingRegionGranularity(0),
         flags(0),
         hasOpacity(0),
+        hasEffectiveOpacity(0),
         isWidget(0),
         dirty(0),
         dirtyChildren(0),
         localCollisionHack(0),
+        dirtyClipPath(1),
+        emptyClipPath(0),
+        inSetPosHelper(0),
+        allChildrenCombineOpacity(1),
         globalStackingOrder(-1),
         sceneTransformIndex(-1),
         q_ptr(0)
@@ -157,11 +162,15 @@ public:
     virtual QVariant inputMethodQueryHelper(Qt::InputMethodQuery query) const;
     static bool movableAncestorIsSelected(const QGraphicsItem *item);
 
-    void setPosHelper(const QPointF &pos, bool update);
+    void setPosHelper(const QPointF &pos);
     void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
-    void updateHelper(const QRectF &rect = QRectF(), bool force = false);
-    void fullUpdateHelper(bool childrenOnly = false);
+    bool discardUpdateRequest(bool ignoreClipping = false,
+                              bool ignoreVisibleBit = false,
+                              bool ignoreDirtyBit = false) const;
+    void updateHelper(const QRectF &rect = QRectF(), bool force = false, bool maybeDirtyClipPath = false);
+    void fullUpdateHelper(bool childrenOnly = false, bool maybeDirtyClipPath = false);
+    void updateEffectiveOpacity();
     void resolveEffectiveOpacity(qreal effectiveParentOpacity);
     void resolveDepth(int parentDepth);
     void invalidateSceneTransformCache();
@@ -233,6 +242,47 @@ public:
     QGraphicsItemCache *extraItemCache() const;
     void removeExtraItemCache();
 
+    inline void setCachedClipPath(const QPainterPath &path)
+    {
+        cachedClipPath = path;
+        dirtyClipPath = 0;
+        emptyClipPath = 0;
+    }
+
+    inline void setEmptyCachedClipPath()
+    {
+        emptyClipPath = 1;
+        dirtyClipPath = 0;
+    }
+
+    void setEmptyCachedClipPathRecursively(const QRectF &emptyIfOutsideThisRect = QRectF());
+
+    inline void invalidateCachedClipPath()
+    { /*static int count = 0 ;qWarning("%i", ++count);*/ dirtyClipPath = 1; emptyClipPath = 0; }
+
+    void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
+    void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
+
+    inline bool isFullyTransparent() const
+    { return hasEffectiveOpacity && qFuzzyCompare(q_func()->effectiveOpacity() + 1, qreal(1.0)); }
+
+    inline bool childrenCombineOpacity() const
+    { return allChildrenCombineOpacity || children.isEmpty(); }
+
+    inline bool isClippedAway() const
+    { return !dirtyClipPath && q_func()->isClipped() && (emptyClipPath || cachedClipPath.isEmpty()); }
+
+    inline bool childrenClippedToShape() const
+    { return (flags & QGraphicsItem::ItemClipsChildrenToShape) || children.isEmpty(); }
+
+    inline bool isInvisible() const
+    {
+        return !visible
+               || (childrenClippedToShape() && isClippedAway())
+               || (childrenCombineOpacity() && isFullyTransparent());
+    }
+
+    QPainterPath cachedClipPath;
     QPointF pos;
     qreal z;
     QGraphicsScene *scene;
@@ -262,10 +312,15 @@ public:
 
     // New 32 bytes
     quint32 hasOpacity : 1;
+    quint32 hasEffectiveOpacity : 1;
     quint32 isWidget : 1;
     quint32 dirty : 1;    
     quint32 dirtyChildren : 1;    
     quint32 localCollisionHack : 1;
+    quint32 dirtyClipPath : 1;
+    quint32 emptyClipPath : 1;
+    quint32 inSetPosHelper : 1;
+    quint32 allChildrenCombineOpacity : 1;
 
     // Optional stacking order
     int globalStackingOrder;

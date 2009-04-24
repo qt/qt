@@ -92,9 +92,10 @@ enum ThreadAction {
     PendingCallBlockAction = 28,
 
     AddTimeoutAction = 50,
-    RemoveTimeoutAction = 51,
-    KillTimerAction = 52,
-    TimerEventAction = 53,
+    RealAddTimeoutAction = 51,
+    RemoveTimeoutAction = 52,
+    KillTimerAction = 58,
+    TimerEventAction = 59,
     AddWatchAction = 60,
     RemoveWatchAction = 61,
     ToggleWatchAction = 62,

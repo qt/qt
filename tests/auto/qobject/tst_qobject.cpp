@@ -264,13 +264,9 @@ void tst_QObject::disconnect()
     QCOMPARE( r1->called(1), FALSE );
     r1->reset();
 
-#if QT_VERSION >= 0x030100
     QCOMPARE( ret, TRUE );
-#endif
     ret = QObject::disconnect( s, SIGNAL( signal1() ), r1, SLOT( slot1() ) );
-#if QT_VERSION >= 0x030100
     QCOMPARE( ret, FALSE  );
-#endif
 
     // disconnect all signals from s from all slots from r1
     QObject::disconnect( s, 0, r1, 0 );
@@ -702,12 +698,10 @@ void tst_QObject::connectDisconnectNotify()
     QCOMPARE( s->org_signal, s->nw_signal );
     QCOMPARE( s->org_signal.toLatin1(), QMetaObject::normalizedSignature(a_signal.toLatin1().constData()) );
 
-#if QT_VERSION > 0x040101
     // Reconnect
     connect( (SenderObject*)s, a_signal.toLatin1(), (ReceiverObject*)r, a_slot.toLatin1() );
     // Test disconnectNotify for a complete disconnect
     ((SenderObject*)s)->disconnect((ReceiverObject*)r);
-#endif
 
     delete s;
     delete r;

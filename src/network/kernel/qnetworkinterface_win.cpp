@@ -173,14 +173,14 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWinXP()
         interfaces << iface;
 
         iface->index = 0;
-        if (ptr->Length >= offsetof(IP_ADAPTER_ADDRESSES, Ipv6IfIndex))
+        if (ptr->Length >= offsetof(IP_ADAPTER_ADDRESSES, Ipv6IfIndex) && ptr->Ipv6IfIndex != 0)
             iface->index = ptr->Ipv6IfIndex;
         else if (ptr->IfIndex != 0)
             iface->index = ptr->IfIndex;
 
         iface->flags = QNetworkInterface::CanBroadcast;
-		if (ptr->OperStatus == IfOperStatusUp)
-			iface->flags |= QNetworkInterface::IsUp | QNetworkInterface::IsRunning;
+        if (ptr->OperStatus == IfOperStatusUp)
+            iface->flags |= QNetworkInterface::IsUp | QNetworkInterface::IsRunning;
         if ((ptr->Flags & IP_ADAPTER_NO_MULTICAST) == 0)
             iface->flags |= QNetworkInterface::CanMulticast;
 

@@ -3,28 +3,28 @@
 Feature: PROPERTIES
 Description: Supports scripting Qt-based applications.
 Section: Kernel
-Requires: 
+Requires:
 Name: Properties
 SeeAlso: ???
 
 Feature: TEXTHTMLPARSER
 Description: Parser for HTML
 Section: Kernel
-Requires: 
+Requires:
 Name: HtmlParser
 SeeAlso: ???
 
 Feature: TEXTODFWRITER
 Description: Provides an ODF writer
 Section: Kernel
-Requires: XMLSTREAMWRITER 
+Requires: XMLSTREAMWRITER
 Name: OdfWriter
 SeeAlso: ???
 
 Feature: CSSPARSER
 Description: Parser for Style Sheets
 Section: Kernel
-Requires: 
+Requires:
 Name: CssParser
 SeeAlso: ???
 
@@ -52,21 +52,21 @@ SeeAlso: ???
 Feature: SESSIONMANAGER
 Description: Supports session management.
 Section: Kernel
-Requires: 
+Requires:
 Name: Session Manager
 SeeAlso: ???
 
 Feature: SHORTCUT
 Description: Supports keyboard accelerators and shortcuts.
 Section: Kernel
-Requires: 
+Requires:
 Name: QShortcut
 SeeAlso: ???
 
 Feature: ACTION
 Description: Supports widget actions.
 Section: Kernel
-Requires: 
+Requires:
 Name: QAction
 SeeAlso: ???
 
@@ -129,8 +129,8 @@ SeeAlso: ???
 Feature: XMLSTREAM
 Description: Provides a simple streaming API for XML.
 Section: Kernel
-Requires: 
-Name: 
+Requires:
+Name:
 SeeAlso: ???
 
 Feature: XMLSTREAMREADER
@@ -159,14 +159,14 @@ SeeAlso: ???
 Feature: QUUID_STRING
 Description: Supports convertion between UUID and strings.
 Section: Data structures
-Requires: 
+Requires:
 Name:  Universally Unique Identifier Convertion
 SeeAlso: ???
 
 Feature: TEXTDATE
 Description: Supports month and day names in dates.
 Section: Data structures
-Requires: 
+Requires:
 Name: Text Date
 SeeAlso: ???
 
@@ -210,7 +210,7 @@ SeeAlso: ???
 Feature: SETTINGS
 Description: Supports persistent application settings.
 Section: File I/O
-Requires: TEXTSTREAM 
+Requires: TEXTSTREAM
 Name: QSettings
 SeeAlso: ???
 
@@ -229,7 +229,7 @@ Name: QFileSystemModel
 SeeAlso: ???
 
 Feature: FILESYSTEMWATCHER
-Description: Provides an interface for monitoring files and directories 
+Description: Provides an interface for monitoring files and directories
 for modications.
 Section: File I/O
 Requires: THREAD
@@ -239,7 +239,7 @@ SeeAlso: ???
 # Widgets
 
 Feature: TREEWIDGET
-Description: Supports views using tree models. 
+Description: Supports views using tree models.
 Section: Widgets
 Requires: TREEVIEW
 Name: QTreeWidget
@@ -283,7 +283,7 @@ SeeAlso: ???
 Feature: SPLASHSCREEN
 Description: Supports splash screens that can be shown during application startup.
 Section: Widgets
-Requires: 
+Requires:
 Name: Splash screen widget
 SeeAlso: ???
 
@@ -295,7 +295,7 @@ Name: QSplitter
 SeeAlso: ???
 
 Feature: LCDNUMBER
-Description: Supports LCD-like digits. 
+Description: Supports LCD-like digits.
 Section: Widgets
 Requires:
 Name: QLCDNumber
@@ -381,7 +381,7 @@ SeeAlso: ???
 Feature: BUTTONGROUP
 Description: Supports organizing groups of button widgets.
 Section: Widgets
-Requires: GROUPBOX 
+Requires: GROUPBOX
 Name: QButtonGroup
 SeeAlso: ???
 
@@ -393,7 +393,7 @@ Name: QMainWindow
 SeeAlso: ???
 
 Feature: DOCKWIDGET
-Description: Supports docking widgets inside a QMainWindow or floated as 
+Description: Supports docking widgets inside a QMainWindow or floated as
 a top-level window on the desktop.
 Section: Widgets
 Requires: RUBBERBAND MAINWINDOW
@@ -401,7 +401,7 @@ Name: QDockwidget
 SeeAlso: ???
 
 Feature: WORKSPACE
-Description: Supports workspace windows, e.g. used in an MDI application. 
+Description: Supports workspace windows, e.g. used in an MDI application.
 Section: Widgets
 Requires: SCROLLBAR RESIZEHANDLER MENU TOOLBUTTON MAINWINDOW TOOLBAR MENUBAR
 Name: QWorkSpace
@@ -457,8 +457,8 @@ Name: QSlider
 SeeAlso: ???
 
 Feature: SCROLLBAR
-Description: Supports scrollbars allowing the user access parts of a 
-document that is larger than the widget used to display it. 
+Description: Supports scrollbars allowing the user access parts of a
+document that is larger than the widget used to display it.
 Section: Widgets
 Requires: SLIDER
 Name: QScrollBar
@@ -500,7 +500,7 @@ Name: QTextEdit
 SeeAlso: ???
 
 Feature: SYNTAXHIGHLIGHTER
-Description: Supports custom syntax highlighting. 
+Description: Supports custom syntax highlighting.
 Section: Widgets
 Requires: TEXTEDIT
 Name: QSyntaxHighlighter
@@ -556,7 +556,7 @@ Name: QSizeGrip
 SeeAlso: ???
 
 Feature: CALENDARWIDGET
-Description: Provides a monthly based calendar widget allowing the user to select 
+Description: Provides a monthly based calendar widget allowing the user to select
 a date.
 Section: Widgets
 Requires: TABLEVIEW MENU TEXTDATE SPINBOX TOOLBUTTON
@@ -567,14 +567,14 @@ Feature: PRINTPREVIEWWIDGET
 Description: Provides a widget for previewing page layouts for printer output.
 a date.
 Section: Widgets
-Requires: GRAPHICSVIEW PRINTER PICTURE
+Requires: GRAPHICSVIEW PRINTER
 Name: QPrintPreviewWidget
 SeeAlso: ???
 
 # Dialogs
 
 Feature: MESSAGEBOX
-Description: Supports message boxes displaying  
+Description: Supports message boxes displaying
 informative messages and simple questions.
 Section: Dialogs
 Requires:
@@ -589,7 +589,7 @@ Name: QColorDialog
 SeeAlso: ???
 
 Feature: FILEDIALOG
-Description: Supports a dialog widget for selecting files or directories. 
+Description: Supports a dialog widget for selecting files or directories.
 Section: Dialogs
 Requires: DIRMODEL TREEVIEW COMBOBOX TOOLBUTTON BUTTONGROUP TOOLTIP SPLITTER STACKEDWIDGET FILESYSTEMMODEL
 Name: QFileDialog
@@ -654,7 +654,7 @@ SeeAlso: ???
 # ItemViews
 
 Feature: ITEMVIEWS
-Description: Supports the model/view architecture managing the relationship 
+Description: Supports the model/view architecture managing the relationship
 between data and the way it is presented to the user.
 Section: ItemViews
 Requires: RUBBERBAND SCROLLAREA
@@ -683,8 +683,8 @@ Name: QAbstractProxyModel
 SeeAlso: ???
 
 Feature: SORTFILTERPROXYMODEL
-Description: Supports sorting and filtering of data passed between 
-another model and a view. 
+Description: Supports sorting and filtering of data passed between
+another model and a view.
 Section: ItemViews
 Requires: PROXYMODEL
 Name: QSortFilterProxyModel
@@ -705,9 +705,9 @@ Name: QListView
 SeeAlso: ???
 
 Feature: TABLEVIEW
-Description: Supports a default model/view implementation of a table view. 
+Description: Supports a default model/view implementation of a table view.
 Section: ItemViews
-Requires: ITEMVIEWS 
+Requires: ITEMVIEWS
 Name: QTableView
 SeeAlso: ???
 
@@ -735,21 +735,21 @@ SeeAlso: ???
 # Styles
 
 Feature: STYLE_WINDOWS
-Description: Supports a Microsoft Windows-like look and feel. 
+Description: Supports a Microsoft Windows-like look and feel.
 Section: Styles
 Requires:
 Name: QWindowsStyle
 SeeAlso: ???
 
 Feature: STYLE_MOTIF
-Description: Supports a Motif look and feel. 
+Description: Supports a Motif look and feel.
 Section: Styles
 Requires:
 Name: QMotifStyle
 SeeAlso: ???
 
 Feature: STYLE_CDE
-Description:  Supports a CDE look and feel. 
+Description:  Supports a CDE look and feel.
 Section: Styles
 Requires: STYLE_MOTIF
 Name: QCDEStyle
@@ -798,7 +798,7 @@ Name: QWindowsMobileStyle
 SeeAlso: ???
 
 Feature: STYLE_STYLESHEET
-Description: 
+Description:
 Section: Styles
 Requires: STYLE_WINDOWS PROPERTIES CSSPARSER
 Name: QStyleSheetStyle
@@ -809,14 +809,14 @@ SeeAlso: ???
 Feature: IMAGEFORMATPLUGIN
 Description: Supports writing an image format plugin.
 Section: Images
-Requires: 
+Requires:
 Name: QImageIOPlugin
 SeeAlso: ???
 
 Feature: ICON
 Description: Supports scalable icons in different modes and states.
 Section: Images
-Requires: 
+Requires:
 Name: QIcon
 SeeAlso: ???
 
@@ -837,14 +837,14 @@ SeeAlso: ???
 Feature: IMAGEFORMAT_PPM
 Description: Supports the Portable Pixmap image file format.
 Section: Images
-Requires: 
+Requires:
 Name: PPM Image Format
 SeeAlso: ???
 
 Feature: IMAGEFORMAT_XBM
 Description: Supports the X11 Bitmap image file format.
 Section: Images
-Requires: 
+Requires:
 Name: XBM Image Format
 SeeAlso: ???
 
@@ -858,14 +858,14 @@ SeeAlso: ???
 Feature: IMAGEFORMAT_PNG
 Description: Supports the Portable Network Graphics image file format.
 Section: Images
-Requires: 
+Requires:
 Name: PNG Image Format
 SeeAlso: ???
 
 Feature: IMAGEFORMAT_JPEG
 Description: Supports the Joint Photographic Experts Group image file format.
 Section: Images
-Requires: 
+Requires:
 Name: JPEG Image Format
 SeeAlso: ???
 
@@ -895,7 +895,7 @@ SeeAlso: ???
 Feature: PICTURE
 Description: Supports recording and replaying QPainter commands.
 Section: Painting
-Requires: 
+Requires:
 Name: QPicture
 SeeAlso: ???
 
@@ -908,9 +908,9 @@ Name: Color Names
 SeeAlso: ???
 
 Feature: PRINTER
-Description: Supports printing 
+Description: Supports printing
 Section: Painting
-Requires: TEXTSTREAM
+Requires: TEXTSTREAM PICTURE
 Name: QPrinter
 SeeAlso: ???
 
@@ -952,7 +952,7 @@ Name: Freetype Font Engine
 SeeAlso: ???
 
 Feature: QWS_QPF
-Description: Supports Qt's pre-rendered fonts, a light-weight non-scalable font format 
+Description: Supports Qt's pre-rendered fonts, a light-weight non-scalable font format
 specific to Qt for Embedded Linux.
 Section: Fonts
 Requires:
@@ -960,7 +960,7 @@ Name: Qt Prerendered Font Format
 SeeAlso: ???
 
 Feature: QWS_QPF2
-Description: Supports Qt's second generation of pre-rendered fonts, a light-weight 
+Description: Supports Qt's second generation of pre-rendered fonts, a light-weight
 non-scalable font format specific to Qt for Embedded Linux.
 Section: Fonts
 Requires:
@@ -987,7 +987,7 @@ Feature: TRANSLATION_UTF8
 Description: Supports translations using QObject::trUtf8().
 Section: Internationalization
 Requires: TRANSLATION TEXTCODEC
-Name: Translation (UTF-8 representation) 
+Name: Translation (UTF-8 representation)
 SeeAlso: ???
 
 Feature: TEXTCODEC
@@ -1007,14 +1007,14 @@ SeeAlso: ???
 Feature: BIG_CODECS
 Description: Supports big codecs, e.g. CJK.
 Section: Internationalization
-Requires: 
+Requires:
 Name: Big Codecs
 SeeAlso: ???
 
 Feature: QWS_INPUTMETHODS
 Description: Supports international input methods.
 Section: Internationalization
-Requires: 
+Requires:
 Name: QWSInputMethod
 SeeAlso: ???
 
@@ -1023,14 +1023,14 @@ SeeAlso: ???
 Feature: URLINFO
 Description: Supports storage of URL information.
 Section: Networking
-Requires: 
+Requires:
 Name: QUrlInfo
 SeeAlso: ???
 
 Feature: HOSTINFO
 Description: Supports host name lookups.
 Section: Networking
-Requires: TEXTSTREAM 
+Requires: TEXTSTREAM
 Name: QHostInfo
 SeeAlso: ???
 
@@ -1051,14 +1051,14 @@ SeeAlso: ???
 Feature: UDPSOCKET
 Description: Supports User Datagram Protocol sockets.
 Section: Networking
-Requires: 
+Requires:
 Name: QUdpSocket
 SeeAlso: ???
 
 Feature: NETWORKPROXY
 Description: Supports configuring network layer proxy support to the Qt network classes.
 Section: Networking
-Requires: 
+Requires:
 Name: QNetworkProxy
 SeeAlso: ???
 
@@ -1123,7 +1123,7 @@ Name: QUndoStack
 SeeAlso: ???
 
 Feature: UNDOGROUP
-Description: 
+Description:
 Section: Utilities
 Requires: UNDOCOMMAND UNDOSTACK
 Name: QUndoGroup
@@ -1181,7 +1181,7 @@ Name: QSvgRenderer
 SeeAlso: ???
 
 Feature: SVGWIDGET
-Description: Provides a widget that is used to display the contents of SVG files. 
+Description: Provides a widget that is used to display the contents of SVG files.
 Section: SVG
 Requires: SVGRENDERER
 Name: QSvgWidget
@@ -1233,21 +1233,21 @@ Name: Manager
 SeeAlso: ???
 
 Feature: QWS_DECORATION_DEFAULT
-Description: Supports default decoration of the top level windows. 
+Description: Supports default decoration of the top level windows.
 Section: Qt for Embedded Linux
-Requires: 
+Requires:
 Name: Decoration
 SeeAlso: ???
 
 Feature: QWS_DECORATION_WINDOWS
-Description: Supports a "Windows" style decoration of the top level windows. 
+Description: Supports a "Windows" style decoration of the top level windows.
 Section: Qt for Embedded Linux
 Requires: QWS_DECORATION_DEFAULT
 Name: Decoration (Windows Style)
 SeeAlso: ???
 
 Feature: QWS_DECORATION_STYLED
-Description: Supports styled decoration of the top level windows. 
+Description: Supports styled decoration of the top level windows.
 Section: Qt for Embedded Linux
 Requires: QWS_DECORATION_DEFAULT
 Name: Decoration (Styled)
@@ -1395,13 +1395,13 @@ SeeAlso: ???
 Feature: PHONON_MEDIACONTROLLER
 Description: Support for the MediaController class
 Section: Phonon
-Requires: 
+Requires:
 Name: Phonon::MediaController
 SeeAlso: ???
 
 Feature: PHONON_ABSTRACTMEDIASTREAM
 Description: Support for streaming of raw data (QIODevice...)
 Section: Phonon
-Requires: 
+Requires:
 Name: Phonon::AbstractMediaStream
 SeeAlso: ???

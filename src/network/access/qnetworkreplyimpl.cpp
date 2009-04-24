@@ -131,27 +131,37 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
     if (!copyDevice && !q->isOpen())
         return;
 
-    qint64 bytesToRead = nextDownstreamBlockSize();
-    if (bytesToRead == 0)
-        // we'll be called again, eventually
-        return;
+    forever {
+        qint64 bytesToRead = nextDownstreamBlockSize();
+        if (bytesToRead == 0)
+            // we'll be called again, eventually
+            break;
 
-    bytesToRead = qBound<qint64>(1, bytesToRead, copyDevice->bytesAvailable());
-    char *ptr = readBuffer.reserve(bytesToRead);
-    qint64 bytesActuallyRead = copyDevice->read(ptr, bytesToRead);
-    if (bytesActuallyRead == -1) {
-        readBuffer.chop(bytesToRead);
-        backendNotify(NotifyCopyFinished);
+        bytesToRead = qBound<qint64>(1, bytesToRead, copyDevice->bytesAvailable());
+        char *ptr = readBuffer.reserve(bytesToRead);
+        qint64 bytesActuallyRead = copyDevice->read(ptr, bytesToRead);
+        if (bytesActuallyRead == -1) {
+            readBuffer.chop(bytesToRead);
+            backendNotify(NotifyCopyFinished);
+            return;
+        }
+
+        if (bytesActuallyRead != bytesToRead)
+            readBuffer.chop(bytesToRead - bytesActuallyRead);
+
+        if (!copyDevice->isSequential() && copyDevice->atEnd()) {
+            backendNotify(NotifyCopyFinished);
+            break;
+        }
+
+        bytesDownloaded += bytesActuallyRead;
+    }
+
+    if (bytesDownloaded == lastBytesDownloaded) {
+        // we didn't read anything
         return;
     }
 
-    if (bytesActuallyRead != bytesToRead)
-        readBuffer.chop(bytesToRead - bytesActuallyRead);
-
-    if (!copyDevice->isSequential() && copyDevice->atEnd())
-        backendNotify(NotifyCopyFinished);
-
-    bytesDownloaded += bytesActuallyRead;
     lastBytesDownloaded = bytesDownloaded;
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
     emit q->downloadProgress(bytesDownloaded,

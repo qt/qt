@@ -207,8 +207,7 @@ void *QThreadPrivate::start(void *arg)
     data->quitNow = false;
 
     // ### TODO: allow the user to create a custom event dispatcher
-    if (QCoreApplication::instance())
-        createEventDispatcher(data);
+    createEventDispatcher(data);
 
     emit thr->started();
 #ifndef Q_OS_SYMBIAN

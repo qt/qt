@@ -167,9 +167,6 @@ public:
 
 void tst_QWaitCondition::wait_QMutex()
 {
-#if defined(Q_OS_WIN32) && QT_VERSION < 0x030200
-    QSKIP("Known race-conditions cause sporadic failures", SkipAll);
-#else
     int x;
     for (int i = 0; i < iterations; ++i) {
 	{
@@ -246,7 +243,6 @@ void tst_QWaitCondition::wait_QMutex()
 	    }
 	}
     }
-#endif
 }
 
 void tst_QWaitCondition::wait_QReadWriteLock()
@@ -457,9 +453,6 @@ int wake_Thread_2::count = 0;
 
 void tst_QWaitCondition::wakeOne()
 {
-#if defined(Q_OS_WIN32) && QT_VERSION < 0x030200
-    QSKIP("Known race-conditions cause sporadic failures", SkipAll);
-#else
     int x;
     // wake up threads, one at a time
     for (int i = 0; i < iterations; ++i) {
@@ -606,9 +599,9 @@ void tst_QWaitCondition::wakeOne()
 
 	QCOMPARE(wake_Thread::count, 0);
 
-    // QReadWriteLock
-    QReadWriteLock readWriteLock;
-	wake_Thread_2 rwthread[ThreadCount];
+        // QReadWriteLock
+        QReadWriteLock readWriteLock;
+        wake_Thread_2 rwthread[ThreadCount];
 
 	readWriteLock.lockForWrite();
 	for (x = 0; x < ThreadCount; ++x) {
@@ -652,14 +645,10 @@ void tst_QWaitCondition::wakeOne()
 
 	QCOMPARE(wake_Thread_2::count, 0);
 }
-#endif
 }
 
 void tst_QWaitCondition::wakeAll()
 {
-#if defined(Q_OS_WIN32) && QT_VERSION < 0x030200
-    QSKIP("Known race-conditions cause sporadic failures", SkipAll);
-#else
     int x;
     for (int i = 0; i < iterations; ++i) {
 	QMutex mutex;
@@ -726,7 +715,6 @@ void tst_QWaitCondition::wakeAll()
 	QCOMPARE(exited, ThreadCount);
 	QCOMPARE(wake_Thread_2::count, 0);
     }
-#endif
 }
 
 class wait_RaceConditionThread : public QThread
