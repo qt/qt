@@ -2038,18 +2038,16 @@ static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QPoin
         // Defined in qmacstyle_mac.cpp
         extern void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset, const QBrush &brush);
         qt_mac_fill_background(painter, rgn, offset, brush);
+#elif defined(Q_WS_S60)
+        // Defined in qs60style_symbian.cpp
+        extern void qt_s60_fill_background(QPainter *painter, const QRegion &rgn,
+                        const QPoint &offset, const QBrush &brush);
+        qt_s60_fill_background(painter, rgn, offset, brush);
 #else
         const QRegion translated = rgn.translated(offset);
         const QRect rect(translated.boundingRect());
         painter->setClipRegion(translated);
         painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
-#endif
-#if defined(Q_WS_S60) && !defined(QT_NO_STYLE_S60)
-    } if (!brush.isOpaque()) {
-        // QS60Style knows it's background and does not store its texture in a palette
-        // Defined in qs60style.cpp
-        extern void qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset);
-        qt_s60_fill_background(painter, rgn, offset);
 #endif
     } else {
         const QVector<QRect> &rects = rgn.rects();

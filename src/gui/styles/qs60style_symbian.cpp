@@ -372,21 +372,29 @@ bool QS60StylePrivate::isTouchSupported()
     return bool(AknLayoutUtils::PenEnabled());
 }
 
-void qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset)
+void qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset,
+            const QBrush &brush)
 {
     const QPixmap backgroundTexture(QS60StylePrivate::backgroundTexture());
-    const QPaintDevice *target = painter->device();
-    if (target->devType() == QInternal::Widget) {
-        const QWidget *widget = static_cast<const QWidget *>(target);
-        const CCoeControl *control = widget->effectiveWinId();
-        const TPoint globalPos = control ? control->PositionRelativeToScreen() : TPoint(0,0);
-        const QRegion translated = rgn.translated(offset);
-        const QVector<QRect> &rects = translated.rects();
-        for (int i = 0; i < rects.size(); ++i) {
-            const QRect rect(rects.at(i));
-            painter->drawPixmap(rect.topLeft(), backgroundTexture,
-                                rect.translated(globalPos.iX, globalPos.iY));
+    if (backgroundTexture.cacheKey() == brush.texture().cacheKey()) {
+        const QPaintDevice *target = painter->device();
+        if (target->devType() == QInternal::Widget) {
+            const QWidget *widget = static_cast<const QWidget *>(target);
+            CCoeControl *control = widget->effectiveWinId();
+            TPoint globalPos = control ? control->PositionRelativeToScreen() : TPoint(0,0);
+            const QRegion translated = rgn.translated(offset);
+            const QVector<QRect> &rects = translated.rects();
+            for (int i = 0; i < rects.size(); ++i) {
+                const QRect rect(rects.at(i));
+                painter->drawPixmap(rect.topLeft(), backgroundTexture,
+                                    rect.translated(globalPos.iX, globalPos.iY));
+            }
         }
+    } else {
+        const QRegion translated = rgn.translated(offset);
+        const QRect rect(translated.boundingRect());
+        painter->setClipRegion(translated);
+        painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
     }
 }
 

@@ -485,7 +485,7 @@ void QS60StylePrivate::setThemePalette(QWidget *widget) const
             QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnHighlightColors, 2, 0));
     // set these as transparent so that styled full screen theme background is visible
     widgetPalette.setColor(QPalette::AlternateBase, Qt::transparent);
-    widgetPalette.setColor(QPalette::Window, Qt::transparent);
+    widgetPalette.setColor(QPalette::Window, QS60StylePrivate::backgroundTexture());
     widgetPalette.setColor(QPalette::Base, Qt::transparent);
     // set button and tooltipbase based on pixel colors
     QColor buttonColor = colorFromFrameGraphics(QS60StylePrivate::SF_ButtonNormal);
@@ -530,17 +530,6 @@ void QS60Style::polish(QWidget *widget)
     Q_D(const QS60Style);
     QCommonStyle::polish(widget);
 
-    if (QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(widget)){
-        scrollArea->viewport()->setAutoFillBackground(false);
-    }
-
-    if (false
-#ifndef QT_NO_SCROLLBAR
-        || qobject_cast<QScrollBar *>(widget)
-#endif
-        ) {
-        widget->setAttribute(Qt::WA_OpaquePaintEvent, false);
-    }
     if (QS60StylePrivate::isSkinnableDialog(widget)) {
         widget->setAttribute(Qt::WA_StyledBackground);
     } else if (false
@@ -565,17 +554,6 @@ void QS60Style::polish(QWidget *widget)
 
 void QS60Style::unpolish(QWidget *widget)
 {
-    if (QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(widget)){
-        scrollArea->viewport()->setAutoFillBackground(true);
-    }
-
-    if (false
-#ifndef QT_NO_SCROLLBAR
-        || qobject_cast<QScrollBar *>(widget)
-#endif
-        ) {
-        widget->setAttribute(Qt::WA_OpaquePaintEvent);
-    }
     if (QS60StylePrivate::isSkinnableDialog(widget)) {
         widget->setAttribute(Qt::WA_StyledBackground, false);
     } else if (false
