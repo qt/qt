@@ -76,9 +76,9 @@ my @files = (
             "corelib/statemachine/qstatemachine.h",
             "corelib/statemachine/qstatemachine_p.h",
             "corelib/statemachine/qstate_p.h",
-            "corelib/statemachine/qtransition.cpp",
-            "corelib/statemachine/qtransition.h",
-            "corelib/statemachine/qtransition_p.h",
+            "corelib/statemachine/qactiontransition.cpp",
+            "corelib/statemachine/qactiontransition.h",
+            "corelib/statemachine/qactiontransition_p.h",
             "gui/statemachine/qkeyeventtransition.h",
             "gui/statemachine/qkeyeventtransition.cpp",
             "gui/statemachine/qbasickeyeventtransition.cpp",
@@ -264,7 +264,7 @@ sub copyFile
         $filecontents =~s/QStateFinishedEvent/QtStateFinishedEvent/g;
         $filecontents =~s/QStateFinishedTransition/QtStateFinishedTransition/g;
         $filecontents =~s/QStateMachine/QtStateMachine/g;
-        $filecontents =~s/QTransition/QtTransition/g;
+        $filecontents =~s/QActionTransition/QtActionTransition/g;
         $filecontents =~s/QMouseEventTransition/QtMouseEventTransition/g;
         $filecontents =~s/QKeyEventTransition/QtKeyEventTransition/g;
         $filecontents =~s/QGraphicsWidget/QtGraphicsWidget/g;
