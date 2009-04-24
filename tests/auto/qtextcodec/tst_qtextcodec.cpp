@@ -69,6 +69,7 @@ private slots:
     void decode0D() const;
     void codecForIndex() const;
     void aliasForUTF16() const;
+    void mibForTSCII() const;
 
     void utf8Codec_data();
     void utf8Codec();
@@ -457,6 +458,11 @@ void tst_QTextCodec::codecForIndex() const
 void tst_QTextCodec::aliasForUTF16() const
 {
     QVERIFY(QTextCodec::codecForName("UTF-16")->aliases().isEmpty());
+}
+
+void tst_QTextCodec::mibForTSCII() const
+{
+    QCOMPARE(QTextCodec::codecForName("TSCII")->mibEnum(), 2107);
 }
 
 static QString fromInvalidUtf8Sequence(const QByteArray &ba)
