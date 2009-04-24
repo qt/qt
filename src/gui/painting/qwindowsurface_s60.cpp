@@ -15,6 +15,7 @@
 #include <private/qwidget_p.h>
 #include "qwindowsurface_s60_p.h"
 #include "qt_s60_p.h"
+#include "private/qdrawhelper_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -61,7 +62,7 @@ QS60WindowSurface::~QS60WindowSurface()
     delete d_ptr;
 }
 
-void QS60WindowSurface::beginPaint(const QRegion &)
+void QS60WindowSurface::beginPaint(const QRegion &rgn)
 {
     if(!d_ptr->bitmap)
         return;
@@ -69,6 +70,26 @@ void QS60WindowSurface::beginPaint(const QRegion &)
     Q_ASSERT(!QS60WindowSurfacePrivate::lockedSurface);
     QS60WindowSurfacePrivate::lockedSurface = this;
     lockBitmapHeap();
+
+    if (!qt_widget_private(window())->isOpaque) {
+        QRgb *data = reinterpret_cast<QRgb *>(d_ptr->device.bits());
+        const int row_stride = d_ptr->device.bytesPerLine() / 4;
+
+        const QVector<QRect> rects = rgn.rects();
+        for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
+            const int x_start = it->x();
+            const int width = it->width();
+
+            const int y_start = it->y();
+            const int height = it->height();
+
+            QRgb *row = data + row_stride * y_start;
+            for (int y = 0; y < height; ++y) {
+                qt_memfill(row + x_start, 0U, width);
+                row += row_stride;
+            }
+        }
+    }
 }
 
 void QS60WindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &)
