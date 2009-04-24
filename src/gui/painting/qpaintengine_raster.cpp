@@ -1417,7 +1417,7 @@ static void fillRect_normalized(const QRect &r, QSpanData *data,
 {
     int x1, x2, y1, y2;
 
-    bool rectClipped = false;
+    bool rectClipped = true;
 
     if (data->clip) {
         x1 = qMax(r.x(), data->clip->xmin);
@@ -3066,7 +3066,7 @@ bool QRasterPaintEnginePrivate::isUnclipped_normalized(const QRect &r) const
     if (cl->clipRect == deviceRect)
         return true;
 
-    if (cl->hasRegionClip) {
+    if (cl->hasRectClip) {
         // inline contains() for performance (we know the rects are normalized)
         const QRect &r1 = cl->clipRect;
         return (r.left() >= r1.left() && r.right() <= r1.right()
