@@ -62,6 +62,7 @@ QSimpleCanvasItemData::~QSimpleCanvasItemData()
 }
 
 /*!
+  \internal
     \class QSimpleCanvasItem
     \brief The QSimpleCanvasItem class is the base class of canvas items.
  */
