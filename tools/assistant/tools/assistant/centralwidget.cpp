@@ -72,7 +72,8 @@
 QT_BEGIN_NAMESPACE
 
 namespace {
-    HelpViewer* helpViewerFromTabPosition(const QTabWidget *widget, const QPoint &point)
+    HelpViewer* helpViewerFromTabPosition(const QTabWidget *widget,
+        const QPoint &point)
     {
         QTabBar *tabBar = qFindChild<QTabBar*>(widget);
         for (int i = 0; i < tabBar->count(); ++i) {
@@ -87,38 +88,32 @@ namespace {
 FindWidget::FindWidget(QWidget *parent)
     : QWidget(parent)
 {
-    QString system = QLatin1String("win");
     QHBoxLayout *hboxLayout = new QHBoxLayout(this);
-#ifdef Q_OS_MAC
-    system = QLatin1String("mac");
-#else
-    hboxLayout->setSpacing(6);
+    QString resourcePath = QLatin1String(":/trolltech/assistant/images/");
+
+#ifndef Q_OS_MAC
     hboxLayout->setMargin(0);
+    hboxLayout->setSpacing(6);
+    resourcePath.append(QLatin1String("win"));
+#else
+    resourcePath.append(QLatin1String("mac"));
 #endif
 
-    toolClose = new QToolButton(this);
-    toolClose->setIcon(QIcon(QString::fromUtf8(":/trolltech/assistant/images/%1/closetab.png").arg(system)));
-    toolClose->setAutoRaise(true);
+    toolClose = setupToolButton(QLatin1String(""),
+        resourcePath + QLatin1String("/closetab.png"));
     hboxLayout->addWidget(toolClose);
 
     editFind = new QLineEdit(this);
-    editFind->setMinimumSize(QSize(150, 0));
-    connect(editFind, SIGNAL(textChanged(const QString&)),
-        this, SLOT(updateButtons()));
     hboxLayout->addWidget(editFind);
+    editFind->setMinimumSize(QSize(150, 0));
+    connect(editFind, SIGNAL(textChanged(QString)), this, SLOT(updateButtons()));
 
-    toolPrevious = new QToolButton(this);
-    toolPrevious->setAutoRaise(true);
-    toolPrevious->setText(tr("Previous"));
-    toolPrevious->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    toolPrevious->setIcon(QIcon(QString::fromUtf8(":/trolltech/assistant/images/%1/previous.png").arg(system)));
+    toolPrevious = setupToolButton(tr("Previous"),
+        resourcePath + QLatin1String("/previous.png"));
     hboxLayout->addWidget(toolPrevious);
 
-    toolNext = new QToolButton(this);
-    toolNext->setAutoRaise(true);
-    toolNext->setText(tr("Next"));
-    toolNext->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    toolNext->setIcon(QIcon(QString::fromUtf8(":/trolltech/assistant/images/%1/next.png").arg(system)));
+    toolNext = setupToolButton(tr("Next"),
+        resourcePath + QLatin1String("/next.png"));
     hboxLayout->addWidget(toolNext);
 
     checkCase = new QCheckBox(tr("Case Sensitive"), this);
@@ -131,15 +126,17 @@ FindWidget::FindWidget(QWidget *parent)
 #endif
 
     labelWrapped = new QLabel(this);
+    labelWrapped->setScaledContents(true);
+    labelWrapped->setTextFormat(Qt::RichText);
     labelWrapped->setMinimumSize(QSize(0, 20));
     labelWrapped->setMaximumSize(QSize(105, 20));
-    labelWrapped->setTextFormat(Qt::RichText);
-    labelWrapped->setScaledContents(true);
-    labelWrapped->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
-    labelWrapped->setText(tr("<img src=\":/trolltech/assistant/images/wrap.png\">&nbsp;Search wrapped"));
+    labelWrapped->setAlignment(Qt::AlignLeading | Qt::AlignLeft | Qt::AlignVCenter);
+    labelWrapped->setText(tr("<img src=\":/trolltech/assistant/images/wrap.png\""
+        ">&nbsp;Search wrapped"));
     hboxLayout->addWidget(labelWrapped);
 
-    QSpacerItem *spacerItem = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    QSpacerItem *spacerItem = new QSpacerItem(20, 20, QSizePolicy::Expanding,
+        QSizePolicy::Minimum);
     hboxLayout->addItem(spacerItem);
     setMinimumWidth(minimumSizeHint().width());
     labelWrapped->hide();
@@ -162,38 +159,54 @@ void FindWidget::updateButtons()
     }
 }
 
+QToolButton* FindWidget::setupToolButton(const QString &text, const QString &icon)
+{
+    QToolButton* toolButton = new QToolButton(this);
+
+    toolButton->setText(text);
+    toolButton->setAutoRaise(true);
+    toolButton->setIcon(QIcon(icon));
+    toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+
+    return toolButton;
+}
+
+
+// --
+
 
 CentralWidget::CentralWidget(QHelpEngine *engine, MainWindow *parent)
     : QWidget(parent)
+    , lastTabPage(0)
+    , collectionFile(engine->collectionFile())
     , findBar(0)
     , tabWidget(0)
+    , findWidget(0)
     , helpEngine(engine)
     , printer(0)
+    , usesDefaultCollection(parent->usesDefaultCollection())
     , m_searchWidget(0)
 {
-    staticCentralWidget = this;
-
-    lastTabPage = 0;
     globalActionList.clear();
-    collectionFile = helpEngine->collectionFile();
-    usesDefaultCollection = parent->usesDefaultCollection();
-
-    QString system = QLatin1String("win");
+    staticCentralWidget = this;
     QVBoxLayout *vboxLayout = new QVBoxLayout(this);
+    QString resourcePath = QLatin1String(":/trolltech/assistant/images/");
 
-#ifdef Q_OS_MAC
-    system = QLatin1String("mac");
-#else
+#ifndef Q_OS_MAC
     vboxLayout->setMargin(0);
+    resourcePath.append(QLatin1String("win"));
+#else
+    resourcePath.append(QLatin1String("mac"));
 #endif
 
     tabWidget = new QTabWidget(this);
-    connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentPageChanged(int)));
+    connect(tabWidget, SIGNAL(currentChanged(int)), this,
+        SLOT(currentPageChanged(int)));
 
     QToolButton *newTabButton = new QToolButton(this);
     newTabButton->setAutoRaise(true);
     newTabButton->setToolTip(tr("Add new page"));
-    newTabButton->setIcon(QIcon(QString::fromUtf8(":/trolltech/assistant/images/%1/addtab.png").arg(system)));
+    newTabButton->setIcon(QIcon(resourcePath + QLatin1String("/addtab.png")));
 
     tabWidget->setCornerWidget(newTabButton, Qt::TopLeftCorner);
     connect(newTabButton, SIGNAL(clicked()), this, SLOT(newTab()));
@@ -202,7 +215,7 @@ CentralWidget::CentralWidget(QHelpEngine *engine, MainWindow *parent)
     closeTabButton->setEnabled(false);
     closeTabButton->setAutoRaise(true);
     closeTabButton->setToolTip(tr("Close current page"));
-    closeTabButton->setIcon(QIcon(QString::fromUtf8(":/trolltech/assistant/images/%1/closetab.png").arg(system)));
+    closeTabButton->setIcon(QIcon(resourcePath + QLatin1String("/closetab.png")));
 
     tabWidget->setCornerWidget(closeTabButton, Qt::TopRightCorner);
     connect(closeTabButton, SIGNAL(clicked()), this, SLOT(closeTab()));
@@ -216,19 +229,20 @@ CentralWidget::CentralWidget(QHelpEngine *engine, MainWindow *parent)
     vboxLayout->addWidget(findBar);
     findBar->hide();
     findWidget->editFind->installEventFilter(this);
-    connect(findWidget->toolClose, SIGNAL(clicked()), findBar, SLOT(hide()));
 
+    connect(findWidget->toolClose, SIGNAL(clicked()), findBar, SLOT(hide()));
     connect(findWidget->toolNext, SIGNAL(clicked()), this, SLOT(findNext()));
     connect(findWidget->editFind, SIGNAL(returnPressed()), this, SLOT(findNext()));
-    connect(findWidget->editFind, SIGNAL(textChanged(const QString&)), this, SLOT(findCurrentText(const QString&)));
+    connect(findWidget->editFind, SIGNAL(textChanged(QString)), this,
+        SLOT(findCurrentText(QString)));
     connect(findWidget->toolPrevious, SIGNAL(clicked()), this, SLOT(findPrevious()));
 
     QTabBar *tabBar = qFindChild<QTabBar*>(tabWidget);
     if (tabBar) {
         tabBar->installEventFilter(this);
         tabBar->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(tabBar, SIGNAL(customContextMenuRequested(const QPoint&)),
-                this, SLOT(showTabBarContextMenu(const QPoint&)));
+        connect(tabBar, SIGNAL(customContextMenuRequested(QPoint)), this,
+            SLOT(showTabBarContextMenu(QPoint)));
     }
 
     QPalette p = qApp->palette();
@@ -247,17 +261,12 @@ CentralWidget::~CentralWidget()
 
     QString zoomCount;
     QString currentPages;
-    QLatin1Char sep('|');
+    QLatin1Char separator('|');
     for (int i = 1; i < tabWidget->count(); ++i) {
         HelpViewer *viewer = qobject_cast<HelpViewer*>(tabWidget->widget(i));
         if (viewer && viewer->source().isValid()) {
-            currentPages.append(viewer->source().toString()).append(sep);
-#if !defined(QT_NO_WEBKIT)
-            zoomCount.append(QString::number(viewer->textSizeMultiplier())).
-                append(sep);
-#else
-            zoomCount.append(QString::number(viewer->zoom())).append(sep);
-#endif
+            currentPages += viewer->source().toString() + separator;
+            zoomCount += QString::number(viewer->zoom()) + separator;
         }
     }
     engine.setCustomValue(QLatin1String("LastTabPage"), lastTabPage);
@@ -363,8 +372,9 @@ void CentralWidget::setSource(const QUrl &url)
         lastTabPage = tabWidget->addTab(viewer, QString());
         tabWidget->setCurrentIndex(lastTabPage);
         connectSignals();
-    } else
+    } else {
         viewer = lastViewer;
+    }
 
     viewer->setSource(url);
     currentPageChanged(lastTabPage);
@@ -375,37 +385,35 @@ void CentralWidget::setSource(const QUrl &url)
 
 void CentralWidget::setLastShownPages()
 {
+    const QLatin1String key("LastShownPages");
+    QString value = helpEngine->customValue(key, QString()).toString();
+    const QStringList lastShownPageList = value.split(QLatin1Char('|'),
+        QString::SkipEmptyParts);
+
+    const int pageCount = lastShownPageList.count();
+    if (pageCount == 0 && usesDefaultCollection)
+        return setSource(QUrl(QLatin1String("help")));
+
 #if !defined(QT_NO_WEBKIT)
-    QLatin1String zoom("LastPagesZoomWebView");
+    const QLatin1String zoom("LastPagesZoomWebView");
 #else
-    QLatin1String zoom("LastPagesZoomTextBrowser");
+    const QLatin1String zoom("LastPagesZoomTextBrowser");
 #endif
 
-    const QStringList lastShownPageList =
-        helpEngine->customValue(QLatin1String("LastShownPages")).toString().
-        split(QLatin1Char('|'), QString::SkipEmptyParts);
+    value = helpEngine->customValue(zoom, QString()).toString();
+    QVector<QString> zoomVector = value.split(QLatin1Char('|'),
+        QString::SkipEmptyParts).toVector();
 
-    if (!lastShownPageList.isEmpty()) {
-        QVector<QString>zoomList = helpEngine->customValue(zoom).toString().
-            split(QLatin1Char('|'), QString::SkipEmptyParts).toVector();
-        if (zoomList.isEmpty())
-            zoomList.fill(QLatin1String("0.0"), lastShownPageList.size());
-        else if(zoomList.count() < lastShownPageList.count()) {
-            zoomList.insert(zoomList.count(),
-                lastShownPageList.count() - zoomList.count(), QLatin1String("0.0"));
-        }
+    const int zoomCount = zoomVector.count();
+    zoomVector.insert(zoomCount, pageCount - zoomCount, QLatin1String("0.0"));
 
-        QVector<QString>::const_iterator zIt = zoomList.constBegin();
-        QStringList::const_iterator it = lastShownPageList.constBegin();
-        for (; it != lastShownPageList.constEnd(); ++it, ++zIt)
-            setSourceInNewTab((*it), (*zIt).toFloat());
+    QVector<QString>::const_iterator zIt = zoomVector.constBegin();
+    QStringList::const_iterator it = lastShownPageList.constBegin();
+    for (; it != lastShownPageList.constEnd(); ++it, ++zIt)
+        setSourceInNewTab((*it), (*zIt).toFloat());
 
-        tabWidget->setCurrentIndex(helpEngine->customValue(
-            QLatin1String("LastTabPage"), 1).toInt());
-    } else {
-        if (usesDefaultCollection)
-            setSource(QUrl(QLatin1String("help")));
-    }
+    const QLatin1String lastTab("LastTabPage");
+    tabWidget->setCurrentIndex(helpEngine->customValue(lastTab, 1).toInt());
 }
 
 bool CentralWidget::hasSelection() const
@@ -483,7 +491,8 @@ void CentralWidget::printPreview()
 #ifndef QT_NO_PRINTER
     initPrinter();
     QPrintPreviewDialog preview(printer, this);
-    connect(&preview, SIGNAL(paintRequested(QPrinter *)), SLOT(printPreview(QPrinter *)));
+    connect(&preview, SIGNAL(paintRequested(QPrinter*)),
+        SLOT(printPreview(QPrinter*)));
     preview.exec();
 #endif
 }
@@ -634,13 +643,18 @@ void CentralWidget::connectSignals()
 {
     const HelpViewer* viewer = currentHelpViewer();
     if (viewer) {
-        connect(viewer, SIGNAL(copyAvailable(bool)), this, SIGNAL(copyAvailable(bool)));
-        connect(viewer, SIGNAL(forwardAvailable(bool)), this, SIGNAL(forwardAvailable(bool)));
-        connect(viewer, SIGNAL(backwardAvailable(bool)), this, SIGNAL(backwardAvailable(bool)));
-        connect(viewer, SIGNAL(sourceChanged(const QUrl&)), this, SIGNAL(sourceChanged(const QUrl&)));
-        connect(viewer, SIGNAL(highlighted(const QString&)), this, SIGNAL(highlighted(const QString&)));
-
-        connect(viewer, SIGNAL(sourceChanged(const QUrl&)), this, SLOT(setTabTitle(const QUrl&)));
+        connect(viewer, SIGNAL(copyAvailable(bool)), this,
+            SIGNAL(copyAvailable(bool)));
+        connect(viewer, SIGNAL(forwardAvailable(bool)), this,
+            SIGNAL(forwardAvailable(bool)));
+        connect(viewer, SIGNAL(backwardAvailable(bool)), this,
+            SIGNAL(backwardAvailable(bool)));
+        connect(viewer, SIGNAL(sourceChanged(QUrl)), this,
+            SIGNAL(sourceChanged(QUrl)));
+        connect(viewer, SIGNAL(highlighted(QString)), this,
+            SIGNAL(highlighted(QString)));
+        connect(viewer, SIGNAL(sourceChanged(QUrl)), this,
+            SLOT(setTabTitle(QUrl)));
     }
 }
 
@@ -700,8 +714,11 @@ void CentralWidget::currentPageChanged(int index)
             enabled = tabWidget->count() > 1;
     }
 
-    tabWidget->cornerWidget(Qt::TopRightCorner)->setEnabled(enabled);
-    tabWidget->cornerWidget(Qt::TopLeftCorner)->setEnabled(m_searchWidget ? enabled : true);
+    QWidget *widget = tabWidget->cornerWidget(Qt::TopLeftCorner);
+    widget->setEnabled(m_searchWidget ? enabled : true);
+
+    widget = tabWidget->cornerWidget(Qt::TopRightCorner);
+    widget->setEnabled(enabled);
 
      emit currentViewerChanged();
 }
@@ -876,8 +893,10 @@ void CentralWidget::find(QString ttf, bool forward, bool backward)
 
     QTextDocument::FindFlags options;
 
-    if (cursor.hasSelection())
-        cursor.setPosition(forward ? cursor.position() : cursor.anchor(), QTextCursor::MoveAnchor);
+    if (cursor.hasSelection()) {
+        cursor.setPosition(forward ? cursor.position() : cursor.anchor(),
+            QTextCursor::MoveAnchor);
+    }
 
     QTextCursor newCursor = cursor;
 
@@ -971,10 +990,10 @@ void CentralWidget::createSearchWidget(QHelpSearchEngine *searchEngine)
 {
     if (!m_searchWidget) {
         m_searchWidget = new SearchWidget(searchEngine, this);
-        connect(m_searchWidget, SIGNAL(requestShowLink(const QUrl&)), this,
-            SLOT(setSourceFromSearch(const QUrl&)));
-        connect(m_searchWidget, SIGNAL(requestShowLinkInNewTab(const QUrl&)), this,
-            SLOT(setSourceFromSearchInNewTab(const QUrl&)));
+        connect(m_searchWidget, SIGNAL(requestShowLink(QUrl)), this,
+            SLOT(setSourceFromSearch(QUrl)));
+        connect(m_searchWidget, SIGNAL(requestShowLinkInNewTab(QUrl)), this,
+            SLOT(setSourceFromSearchInNewTab(QUrl)));
     }
     tabWidget->insertTab(0, m_searchWidget, tr("Search"));
 }
