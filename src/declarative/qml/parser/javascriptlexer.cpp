@@ -311,7 +311,7 @@ int JavaScript::Lexer::findReservedWord(const QChar *c, int size) const
             else if (c[0] == QLatin1Char('p') && c[1] == QLatin1Char('u')
                     && c[2] == QLatin1Char('b') && c[3] == QLatin1Char('l')
                     && c[4] == QLatin1Char('i') && c[5] == QLatin1Char('c'))
-                return JavaScriptGrammar::T_PUBLIC;
+                return JavaScriptGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('n') && c[1] == QLatin1Char('a')
                     && c[2] == QLatin1Char('t') && c[3] == QLatin1Char('i')
                     && c[4] == QLatin1Char('v') && c[5] == QLatin1Char('e'))
