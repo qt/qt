@@ -151,6 +151,10 @@ public:
     qreal pageYPosition;
     qreal pageHeight;
 
+    void handleMousePressEvent(QGraphicsSceneMouseEvent *);
+    void handleMouseMoveEvent(QGraphicsSceneMouseEvent *);
+    void handleMouseReleaseEvent(QGraphicsSceneMouseEvent *);
+
     // flickableData property
     void data_removeAt(int);
     int data_count() const;
