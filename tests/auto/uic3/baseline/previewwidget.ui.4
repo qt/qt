@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment>*********************************************************************
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).  All rights reserved.
+**
+** This file is part of Qt Designer.
+**
+** This file may be used under the terms of the GNU General
+** Public License versions 2.0 or 3.0 as published by the Free
+** Software Foundation and appearing in the files LICENSE.GPL2
+** and LICENSE.GPL3 included in the packaging of this file.
+** Alternatively you may (at your option) use any later version
+** of the GNU General Public License if such license has been
+** publicly approved by Nokia Corporation and/or its subsidiary(-ies) (or its successors, if any)
+** and the KDE Free Qt Foundation.
+**
+** Please review the following information to ensure GNU General
+** Public Licensing requirements will be met:
+** http://trolltech.com/products/qt/licenses/licensing/opensource/.
+** If you are unsure which license is appropriate for your use, please
+** review the following information:
+** http://trolltech.com/products/qt/licenses/licensing/licensingoverview
+** or contact the sales department at sales@trolltech.com.
+**
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with
+** the Software.
+**
+** This file is provided &quot;AS IS&quot; with NO WARRANTY OF ANY KIND,
+** INCLUDING THE WARRANTIES OF DESIGN, MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE. Trolltech reserves all rights not granted
+** herein.
+**
+*********************************************************************</comment>
+  <exportmacro></exportmacro>
+  <class>PreviewWidgetBase</class>
+  <widget class="QWidget" name="PreviewWidgetBase">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>378</width>
+        <height>236</height>
+      </rect>
+    </property>
+    <property name="sizePolicy">
+      <sizepolicy>
+        <hsizetype>1</hsizetype>
+        <vsizetype>1</vsizetype>
+      </sizepolicy>
+    </property>
+    <property name="windowTitle">
+      <string>Preview Window</string>
+    </property>
+    <layout class="QVBoxLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item>
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <layout class="QVBoxLayout">
+              <property name="margin">
+                <number>0</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item>
+                <widget class="Q3ButtonGroup" name="ButtonGroup1">
+                  <property name="title">
+                    <string>ButtonGroup</string>
+                  </property>
+                  <layout class="QVBoxLayout">
+                    <property name="margin">
+                      <number>11</number>
+                    </property>
+                    <property name="spacing">
+                      <number>6</number>
+                    </property>
+                    <item>
+                      <widget class="QRadioButton" name="RadioButton1">
+                        <property name="text">
+                          <string>RadioButton1</string>
+                        </property>
+                        <property name="checked">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QRadioButton" name="RadioButton2">
+                        <property name="text">
+                          <string>RadioButton2</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QRadioButton" name="RadioButton3">
+                        <property name="text">
+                          <string>RadioButton3</string>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <widget class="Q3ButtonGroup" name="ButtonGroup2">
+                  <property name="title">
+                    <string>ButtonGroup2</string>
+                  </property>
+                  <layout class="QVBoxLayout">
+                    <property name="margin">
+                      <number>11</number>
+                    </property>
+                    <property name="spacing">
+                      <number>6</number>
+                    </property>
+                    <item>
+                      <widget class="QCheckBox" name="CheckBox1">
+                        <property name="text">
+                          <string>CheckBox1</string>
+                        </property>
+                        <property name="checked">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QCheckBox" name="CheckBox2">
+                        <property name="text">
+                          <string>CheckBox2</string>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <widget class="Q3ProgressBar" name="ProgressBar1">
+                  <property name="progress">
+                    <number>50</number>
+                  </property>
+                </widget>
+              </item>
+            </layout>
+          </item>
+          <item>
+            <layout class="QVBoxLayout">
+              <property name="margin">
+                <number>0</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item>
+                <widget class="QLineEdit" name="LineEdit1">
+                  <property name="text">
+                    <string>LineEdit</string>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="QComboBox" name="ComboBox1">
+                  <item>
+                    <property name="text">
+                      <string>ComboBox</string>
+                    </property>
+                  </item>
+                </widget>
+              </item>
+              <item>
+                <layout class="QHBoxLayout">
+                  <property name="margin">
+                    <number>0</number>
+                  </property>
+                  <property name="spacing">
+                    <number>6</number>
+                  </property>
+                  <item>
+                    <widget class="QSpinBox" name="SpinBox1"/>
+                  </item>
+                  <item>
+                    <widget class="QPushButton" name="PushButton1">
+                      <property name="text">
+                        <string>PushButton</string>
+                      </property>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+              <item>
+                <widget class="QScrollBar" name="ScrollBar1">
+                  <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="QSlider" name="Slider1">
+                  <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="Q3TextView" name="textView">
+                  <property name="maximumSize">
+                    <size>
+                      <width>32767</width>
+                      <height>50</height>
+                    </size>
+                  </property>
+                  <property name="text">
+                    <string>&lt;p&gt;
+&lt;a href=&quot;http://www.trolltech.com/&quot;&gt;http://www.trolltech.com&lt;/a&gt;
+&lt;/p&gt;
+&lt;p&gt;
+&lt;a href=&quot;http://www.kde.org/&quot;&gt;http://www.kde.org&lt;/a&gt;
+&lt;/p&gt;</string>
+                  </property>
+                </widget>
+              </item>
+            </layout>
+          </item>
+        </layout>
+      </item>
+      <item>
+        <spacer name="Spacer2">
+          <property name="sizeHint">
+            <size>
+              <width>20</width>
+              <height>20</height>
+            </size>
+          </property>
+          <property name="sizeType">
+            <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="orientation">
+            <enum>Qt::Vertical</enum>
+          </property>
+        </spacer>
+      </item>
+    </layout>
+  </widget>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+</ui>

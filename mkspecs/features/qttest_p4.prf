@@ -1,0 +1,120 @@
+isEmpty(TEMPLATE):TEMPLATE=app
+CONFIG          += qt warn_on console depend_includepath
+
+wince*:{
+LIBS += corelibc.lib ole32.lib oleaut32.lib uuid.lib commctrl.lib coredll.lib winsock.lib
+CONFIG(debug, debug|release) {
+   LIBS += $$[QT_INSTALL_LIBS]/qtmaind.lib
+} else {
+   LIBS += $$[QT_INSTALL_LIBS]/qtmain.lib
+}
+}
+
+symbian:{
+# qt.prf sets TARGET.EPOCSTACKSIZE and TARGET.EPOCHEAPSIZE
+#    DEFINES += QTEST_NO_SPECIALIZATIONS
+    TARGET.UID3 = $$generate_test_uid($$TARGET)
+    TARGET.CAPABILITY="ALL -TCB"
+    RSS_RULES ="group_name=\"QtTests\";" 
+}
+
+# find testlib's prl file and extract the librarie's name
+QTEST_LIB =
+mac:exists($$[QT_INSTALL_LIBS]/QtTest.framework):QTEST_LIB = QtTest.framework
+CONFIG(debug, debug|release) {
+    isEmpty(QTEST_LIB) {
+       win32 {
+          QTEST_LIB = $$fromfile($$[QT_INSTALL_LIBS]/QtTest$${QT_LIBINFIX}d.prl, QMAKE_PRL_TARGET)4.dll
+       }
+       mac {
+          QTEST_LIB = $$fromfile($$[QT_INSTALL_LIBS]/libQtTest$${QT_LIBINFIX}_debug.prl, QMAKE_PRL_TARGET)
+       }
+       unix:!mac:!symbian {
+          QTEST_LIB = $$fromfile($$[QT_INSTALL_LIBS]/libQtTest$${QT_LIBINFIX}.prl, QMAKE_PRL_TARGET)
+       }
+       symbian {
+          QTEST_LIB = $$fromfile($$[QT_INSTALL_LIBS]/QtTest$${QT_LIBINFIX}.prl, QMAKE_PRL_TARGET).dll
+       }
+    }
+    OBJECTS_DIR     = tmp/debug
+    MOC_DIR         = tmp/debug
+} else {
+    isEmpty(QTEST_LIB) {
+       win32 {
+          QTEST_LIB = $$fromfile($$[QT_INSTALL_LIBS]/QtTest$${QT_LIBINFIX}.prl, QMAKE_PRL_TARGET)4.dll
+       } symbian {
+       	  QTEST_LIB = $$fromfile($$[QT_INSTALL_LIBS]/QtTest$${QT_LIBINFIX}.prl, QMAKE_PRL_TARGET).dll
+       } else {
+          QTEST_LIB = $$fromfile($$[QT_INSTALL_LIBS]/libQtTest$${QT_LIBINFIX}.prl, QMAKE_PRL_TARGET)
+       }
+    }
+    OBJECTS_DIR     = tmp/release
+    MOC_DIR         = tmp/release
+}
+
+isEmpty(QTEST_LIB) {
+    warning("Cannot find testlib's prl file, run qmake in $QTDIR/src/testlib")
+    CONFIG += embed_testlib
+} else {
+    # Never embed automatically in Symbian, as checking for existence is not reliable
+    # due to the fact that we support multiple platforms (WINSCW, ARMV5, GCCE, ...), which
+    # each build the lib to different location.
+    !symbian {
+        !exists($$[QT_INSTALL_LIBS]/$$QTEST_LIB):CONFIG += embed_testlib
+    }
+}
+
+# make sure the test is build according to your Qt configuration
+contains(QT_CONFIG, embedded):CONFIG += embedded
+
+embed_testlib {
+    QTESTDIR = $${QT_SOURCE_TREE}
+    isEmpty(QTESTDIR):QTESTDIR = $$(QTSRCDIR)
+    isEmpty(QTESTDIR):QTESTDIR = $$(QTDIR)
+    isEmpty(QTESTDIR):warning("Cannot find QTestLib sources, set QTDIR or QTSRCDIR")
+    QTESTDIR = $${QTESTDIR}/src/testlib
+    HEADERS += $${QTESTDIR}/qtesteventloop.h
+    SOURCES += $${QTESTDIR}/qasciikey.cpp \
+               $${QTESTDIR}/qabstracttestlogger.cpp \
+               $${QTESTDIR}/qsignaldumper.cpp \
+               $${QTESTDIR}/qtestdata.cpp \
+               $${QTESTDIR}/qtestresult.cpp \
+               $${QTESTDIR}/qxmltestlogger.cpp \
+               $${QTESTDIR}/qplaintestlogger.cpp \
+               $${QTESTDIR}/qtestcase.cpp \
+               $${QTESTDIR}/qbenchmark.cpp \
+               $${QTESTDIR}/qbenchmarkevent.cpp \
+               $${QTESTDIR}/qbenchmarkmeasurement.cpp \
+               $${QTESTDIR}/qbenchmarkvalgrind.cpp \
+               $${QTESTDIR}/qtestlog.cpp \
+               $${QTESTDIR}/qtesttable.cpp
+    DEFINES += QTEST_EMBED QTEST_LIGHT
+} else {
+    CONFIG += qtestlib
+}
+
+embedded:QMAKE_CXXFLAGS+=-fno-rtti
+
+# prefix test binary with tst_
+!contains(TARGET, ^tst_.*):TARGET = $$join(TARGET,,"tst_")
+
+########################################################################
+# Use install rule to run test application.
+# This lets you do 'make install' on a test to both build and run it,
+# and lets you easily build and run all tests from the parent directory.
+# ----------------------------------------------------------------------
+
+runme.files                =
+runme.path                 = .
+!isEmpty(DESTDIR): runme.commands = cd ./$(DESTDIR) &&
+macx:      runme.commands += ./$(QMAKE_TARGET).app/Contents/MacOS/$(QMAKE_TARGET)
+else:unix: runme.commands += ./$(QMAKE_TARGET)
+else:win32: {
+    CONFIG(debug, debug|release):runme.commands += debug\\$(QMAKE_TARGET)
+    else:runme.commands += release\\$(QMAKE_TARGET)
+}
+embedded:  runme.commands += -qws
+INSTALLS += runme
+
+
+########################################################################

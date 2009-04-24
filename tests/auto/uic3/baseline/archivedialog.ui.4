@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>ArchiveDialog</class>
+  <widget class="QDialog" name="ArchiveDialog">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>673</width>
+        <height>561</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Qt-interest Archive Search Tool</string>
+    </property>
+    <layout class="QVBoxLayout">
+      <item>
+        <layout class="QHBoxLayout">
+          <item>
+            <widget class="QLabel" name="myTextLabel">
+              <property name="text">
+                <string>Search phrase</string>
+              </property>
+              <property name="wordWrap">
+                <bool>false</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QLineEdit" name="myLineEdit"/>
+          </item>
+        </layout>
+      </item>
+      <item>
+        <widget class="QSplitter" name="splitter1">
+          <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+          </property>
+          <widget class="Q3ListView" name="myListView">
+            <column>
+              <property name="text">
+                <string>Matching documents</string>
+              </property>
+              <property name="clickable">
+                <bool>true</bool>
+              </property>
+              <property name="resizable">
+                <bool>true</bool>
+              </property>
+            </column>
+          </widget>
+          <widget class="Q3TextBrowser" name="myTextBrowser"/>
+        </widget>
+      </item>
+      <item>
+        <layout class="QHBoxLayout">
+          <item>
+            <spacer name="mySpacer">
+              <property name="sizeHint">
+                <size>
+                  <width>281</width>
+                  <height>21</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="myPushButton">
+              <property name="text">
+                <string>&amp;Quit</string>
+              </property>
+              <property name="autoDefault">
+                <bool>false</bool>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <includes>
+    <include location="global">q3http.h</include>
+    <include location="global">q3url.h</include>
+    <include location="global">qmessagebox.h</include>
+    <include location="global">qapplication.h</include>
+    <include location="global">qcursor.h</include>
+    <include location="global">qregexp.h</include>
+  </includes>
+</ui>

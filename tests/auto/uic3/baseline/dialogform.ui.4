@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>DialogForm</class>
+  <widget class="QDialog" name="DialogForm">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>288</width>
+        <height>145</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Dialog</string>
+    </property>
+    <layout class="QVBoxLayout">
+      <item>
+        <layout class="QHBoxLayout">
+          <item>
+            <layout class="QVBoxLayout">
+              <item>
+                <layout class="QVBoxLayout">
+                  <item>
+                    <widget class="QCheckBox" name="sessionsCheckBox">
+                      <property name="text">
+                        <string>Save/Restore &amp;Sessions</string>
+                      </property>
+                      <property name="checked">
+                        <bool>true</bool>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QCheckBox" name="loggingCheckBox">
+                      <property name="text">
+                        <string>&amp;Log Activities</string>
+                      </property>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+              <item>
+                <spacer name="Spacer2">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>0</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                </spacer>
+              </item>
+              <item>
+                <layout class="QHBoxLayout">
+                  <item>
+                    <widget class="QPushButton" name="detailsPushButton">
+                      <property name="text">
+                        <string>&amp;Details &gt;&gt;&gt;</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <spacer name="Spacer4">
+                      <property name="sizeHint">
+                        <size>
+                          <width>0</width>
+                          <height>20</height>
+                        </size>
+                      </property>
+                      <property name="sizeType">
+                        <enum>QSizePolicy::Expanding</enum>
+                      </property>
+                      <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                      </property>
+                    </spacer>
+                  </item>
+                </layout>
+              </item>
+            </layout>
+          </item>
+          <item>
+            <layout class="QVBoxLayout">
+              <item>
+                <widget class="QPushButton" name="okPushButton">
+                  <property name="text">
+                    <string>OK</string>
+                  </property>
+                  <property name="default">
+                    <bool>true</bool>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="QPushButton" name="cancelPushButton">
+                  <property name="text">
+                    <string>Cancel</string>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <spacer name="Spacer3">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>0</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                </spacer>
+              </item>
+            </layout>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>okPushButton</sender>
+      <signal>clicked()</signal>
+      <receiver>DialogForm</receiver>
+      <slot>accept()</slot>
+    </connection>
+    <connection>
+      <sender>cancelPushButton</sender>
+      <signal>clicked()</signal>
+      <receiver>DialogForm</receiver>
+      <slot>reject()</slot>
+    </connection>
+    <connection>
+      <sender>detailsPushButton</sender>
+      <signal>clicked()</signal>
+      <receiver>DialogForm</receiver>
+      <slot>toggleDetails()</slot>
+    </connection>
+  </connections>
+</ui>

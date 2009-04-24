@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment>*********************************************************************
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).  All rights reserved.
+**
+** This file is part of the Active Qt integration.
+**
+** Licensees holding valid Qt Enterprise Edition
+** licenses for Windows may use this file in accordance with the Qt Commercial
+** License Agreement provided with the Software.
+**
+** See http://www.trolltech.com/pricing.html or email sales@trolltech.com for
+**   information about Qt Commercial License Agreements.
+**
+** Contact qt-info@nokia.com if any conditions of this licensing are
+** not clear to you.
+**
+*********************************************************************</comment>
+  <exportmacro></exportmacro>
+  <class>QActiveXSelect</class>
+  <widget class="QDialog" name="QActiveXSelect">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>439</width>
+        <height>326</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Select ActiveX Control</string>
+    </property>
+    <property name="sizeGripEnabled">
+      <bool>true</bool>
+    </property>
+    <layout class="QGridLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item row="0" column="1" rowspan="2" colspan="1">
+        <layout class="QVBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <widget class="QPushButton" name="buttonOk">
+              <property name="windowTitle">
+                <string/>
+              </property>
+              <property name="text">
+                <string>OK</string>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+              <property name="default">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonCancel">
+              <property name="text">
+                <string>&amp;Cancel</string>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <spacer name="Spacer2">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>0</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Vertical</enum>
+              </property>
+            </spacer>
+          </item>
+        </layout>
+      </item>
+      <item row="0" column="0">
+        <widget class="Q3ListBox" name="ActiveXList"/>
+      </item>
+      <item row="1" column="0">
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <widget class="QLabel" name="TextLabel1">
+              <property name="text">
+                <string>COM &amp;Object:</string>
+              </property>
+              <property name="buddy" stdset="0">
+                <cstring>ActiveX</cstring>
+              </property>
+              <property name="wordWrap">
+                <bool>false</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QLineEdit" name="ActiveX"/>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <includes>
+    <include location="local">qaxwidget.h</include>
+  </includes>
+  <connections>
+    <connection>
+      <sender>buttonOk</sender>
+      <signal>clicked()</signal>
+      <receiver>QActiveXSelect</receiver>
+      <slot>accept()</slot>
+    </connection>
+    <connection>
+      <sender>buttonCancel</sender>
+      <signal>clicked()</signal>
+      <receiver>QActiveXSelect</receiver>
+      <slot>reject()</slot>
+    </connection>
+    <connection>
+      <sender>ActiveXList</sender>
+      <signal>highlighted(Q3ListBoxItem*)</signal>
+      <receiver>QActiveXSelect</receiver>
+      <slot>controlSelected(Q3ListBoxItem*)</slot>
+    </connection>
+    <connection>
+      <sender>ActiveXList</sender>
+      <signal>selected(QString)</signal>
+      <receiver>QActiveXSelect</receiver>
+      <slot>accept()</slot>
+    </connection>
+  </connections>
+</ui>

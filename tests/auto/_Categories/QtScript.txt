@@ -1,0 +1,13 @@
+qscriptable
+qscriptclass
+qscriptcontext
+qscriptcontextinfo
+qscriptengine
+qscriptengineagent
+#qscriptenginedebugger does not compile, requires QtScriptTools.lib
+qscriptjstestsuite
+qscriptqobject
+qscriptstring
+qscriptv8testsuite
+qscriptvalue
+qscriptvalueiterator

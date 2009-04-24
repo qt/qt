@@ -1,0 +1,15 @@
+HEADERS       = mandelbrotwidget.h \
+                renderthread.h
+SOURCES       = main.cpp \
+                mandelbrotwidget.cpp \
+                renderthread.cpp
+
+unix:!mac:!symbian:LIBS += -lm
+
+# install
+target.path = $$[QT_INSTALL_EXAMPLES]/threads/mandelbrot
+sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS mandelbrot.pro
+sources.path = $$[QT_INSTALL_EXAMPLES]/threads/mandelbrot
+INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

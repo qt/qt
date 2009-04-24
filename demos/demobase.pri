@@ -1,0 +1,1 @@
+symbian:RSS_RULES = "group_name=\"QtDemos\";" 

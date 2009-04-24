@@ -1,0 +1,56 @@
+/****************************************************************************
+**
+** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the $MODULE$ of the Qt Toolkit.
+**
+** $TROLLTECH_DUAL_EMBEDDED_LICENSE$
+**
+****************************************************************************/
+
+// Even S60 application have ENoAppResourceFile and ENonStandardResourceFile
+// flags set, the S60 3rd Edition FP1 emulator requires applications to have
+// very minimalistic application resource file, otherwise apps refures to start
+// This file serves the minimalistic resource file for S60 3.1 platforms.
+
+//  RESOURCE IDENTIFIER
+NAME QTMA    // 4 letter ID
+
+//  INCLUDES
+//#include <eikon.rh>
+#include <appinfo.rh>
+#include <eikon.rh>
+#include <avkon.rsg>
+#include <avkon.rh>
+#include <avkon.mbg>
+
+//  RESOURCE DEFINITIONS
+RESOURCE RSS_SIGNATURE
+    {
+    }
+
+RESOURCE TBUF r_default_document_name
+    {
+    buf="QTMA";
+    }
+
+RESOURCE EIK_APP_INFO
+    {
+    menubar = r_qt_wrapperapp_menubar;
+    cba = R_AVKON_SOFTKEYS_EXIT;
+    }
+
+RESOURCE MENU_BAR r_qt_wrapperapp_menubar
+    {
+    titles =
+        {
+        MENU_TITLE { menu_pane = r_qt_wrapperapp_menu; }
+        };
+    }
+
+RESOURCE MENU_PANE r_qt_wrapperapp_menu
+    {
+    }
+// End of File
+

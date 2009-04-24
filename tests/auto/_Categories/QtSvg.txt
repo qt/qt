@@ -1,0 +1,3 @@
+qsvgdevice
+qsvggenerator
+qsvgrenderer

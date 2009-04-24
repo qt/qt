@@ -1,0 +1,15 @@
+qdbusabstractadaptor
+qdbusconnection
+qdbuscontext
+qdbusinterface
+qdbuslocalcalls
+qdbusmarshall
+qdbusmetaobject
+qdbusmetatype
+qdbuspendingcall
+qdbuspendingreply
+qdbusperformance
+qdbusreply
+qdbusserver
+qdbusthreading
+qdbusxmlparser

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>Form1</class>
+  <widget class="QWidget" name="Form1">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>584</width>
+        <height>331</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Form1</string>
+    </property>
+    <layout class="QVBoxLayout">
+      <item>
+        <layout class="QGridLayout">
+          <item row="1" column="0">
+            <widget class="QLabel" name="textLabel3">
+              <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+                <enum>QFrame::Plain</enum>
+              </property>
+              <property name="text">
+                <string>Size</string>
+              </property>
+              <property name="wordWrap">
+                <bool>false</bool>
+              </property>
+            </widget>
+          </item>
+          <item row="1" column="2">
+            <widget class="QLabel" name="textLabel4">
+              <property name="text">
+                <string>Stretch</string>
+              </property>
+              <property name="wordWrap">
+                <bool>false</bool>
+              </property>
+            </widget>
+          </item>
+          <item row="0" column="0">
+            <widget class="QLabel" name="textLabel1">
+              <property name="text">
+                <string>Family</string>
+              </property>
+              <property name="wordWrap">
+                <bool>false</bool>
+              </property>
+            </widget>
+          </item>
+          <item row="0" column="3">
+            <widget class="QComboBox" name="styles"/>
+          </item>
+          <item row="0" column="1">
+            <widget class="QComboBox" name="families"/>
+          </item>
+          <item row="1" column="1">
+            <widget class="QSpinBox" name="sizebox">
+              <property name="suffix">
+                <string> pt</string>
+              </property>
+              <property name="specialValueText">
+                <string/>
+              </property>
+              <property name="maximum">
+                <number>1000</number>
+              </property>
+              <property name="minimum">
+                <number>10</number>
+              </property>
+              <property name="singleStep">
+                <number>10</number>
+              </property>
+            </widget>
+          </item>
+          <item row="0" column="2">
+            <widget class="QLabel" name="textLabel2">
+              <property name="text">
+                <string>Style</string>
+              </property>
+              <property name="wordWrap">
+                <bool>false</bool>
+              </property>
+            </widget>
+          </item>
+          <item row="1" column="3">
+            <widget class="QSpinBox" name="stretchbox">
+              <property name="suffix">
+                <string> %</string>
+              </property>
+              <property name="maximum">
+                <number>4000</number>
+              </property>
+              <property name="minimum">
+                <number>1</number>
+              </property>
+              <property name="value">
+                <number>100</number>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+      <item>
+        <widget class="Line" name="line1">
+          <property name="frameShape">
+            <enum>QFrame::HLine</enum>
+          </property>
+          <property name="frameShadow">
+            <enum>QFrame::Sunken</enum>
+          </property>
+        </widget>
+      </item>
+      <item>
+        <widget class="QLabel" name="viewer">
+          <property name="sizePolicy">
+            <sizepolicy>
+              <hsizetype>3</hsizetype>
+              <vsizetype>3</vsizetype>
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+            </sizepolicy>
+          </property>
+          <property name="maximumSize">
+            <size>
+              <width>500</width>
+              <height>32767</height>
+            </size>
+          </property>
+          <property name="text">
+            <string>Andy,
+
+I'm sorry but that does not quite help me.  I've already seen that the new functional equivalent is drawPrimitive witrh a PE_ArrowDown flag.  The problem is that I do not see how to translate the parameters used in the old function to the QRect parameter that is required in the new function.  Sinve there is no one-to-one correspondance in parameters I do not see how to move form the old function to the new.
+
+The purpose of this method is to pain t a combobox-like down arrow to the right of a QLineEdit widget that is contained in the class.  How do I convert the old code to the new?
+
+Thanks!
+
+...Jake</string>
+          </property>
+          <property name="alignment">
+            <set>Qt::AlignTop</set>
+          </property>
+          <property name="wordWrap">
+            <bool>true</bool>
+          </property>
+        </widget>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <tabstops>
+    <tabstop>families</tabstop>
+    <tabstop>styles</tabstop>
+    <tabstop>sizebox</tabstop>
+    <tabstop>stretchbox</tabstop>
+  </tabstops>
+  <connections>
+    <connection>
+      <sender>families</sender>
+      <signal>activated(QString)</signal>
+      <receiver>Form1</receiver>
+      <slot>changeFamily(QString)</slot>
+    </connection>
+    <connection>
+      <sender>sizebox</sender>
+      <signal>valueChanged(int)</signal>
+      <receiver>Form1</receiver>
+      <slot>changeSize(int)</slot>
+    </connection>
+    <connection>
+      <sender>stretchbox</sender>
+      <signal>valueChanged(int)</signal>
+      <receiver>Form1</receiver>
+      <slot>changeStretch(int)</slot>
+    </connection>
+  </connections>
+</ui>

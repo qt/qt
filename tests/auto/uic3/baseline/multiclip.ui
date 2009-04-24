@@ -1,0 +1,206 @@
+<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
+<class>MulticlipForm</class>
+<include location="global" impldecl="in declaration">qclipboard.h</include>
+<include location="global" impldecl="in implementation">qapplication.h</include>
+<include location="local" implDecl="in declaration">multiclip.ui.h</include>
+<variable>QClipboard *cb;</variable>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>MulticlipForm</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>585</width>
+            <height>472</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Multiclip</string>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>11</number>
+        </property>
+        <property name="spacing">
+            <number>6</number>
+        </property>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>Layout1</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>0</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>TextLabel1</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Current Clipping</string>
+                    </property>
+                </widget>
+                <widget class="QLineEdit">
+                    <property name="name">
+                        <cstring>currentLineEdit</cstring>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>Layout19</cstring>
+            </property>
+            <grid>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>0</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <widget class="QPushButton" row="4" column="1">
+                    <property name="name">
+                        <cstring>addPushButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Add Clipping</string>
+                    </property>
+                </widget>
+                <spacer row="2" column="1">
+                    <property name="name">
+                        <cstring>Spacer4</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Vertical</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>20</width>
+                            <height>20</height>
+                        </size>
+                    </property>
+                </spacer>
+                <widget class="QPushButton" row="7" column="1">
+                    <property name="name">
+                        <cstring>quitPushButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Quit</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="0" column="1">
+                    <property name="name">
+                        <cstring>TextLabel3</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Length</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="0" column="0">
+                    <property name="name">
+                        <cstring>TextLabel2</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Previous Clippings</string>
+                    </property>
+                </widget>
+                <widget class="QCheckBox" row="3" column="1">
+                    <property name="name">
+                        <cstring>autoCheckBox</cstring>
+                    </property>
+                    <property name="text">
+                        <string>A&amp;uto Add Clippings</string>
+                    </property>
+                </widget>
+                <widget class="QLCDNumber" row="1" column="1">
+                    <property name="name">
+                        <cstring>lengthLCDNumber</cstring>
+                    </property>
+                </widget>
+                <widget class="QPushButton" row="6" column="1">
+                    <property name="name">
+                        <cstring>deletePushButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Delete Clipping</string>
+                    </property>
+                </widget>
+                <widget class="QListBox" row="1" column="0" rowspan="7" colspan="1">
+                    <property name="name">
+                        <cstring>clippingsListBox</cstring>
+                    </property>
+                </widget>
+                <widget class="QPushButton" row="5" column="1">
+                    <property name="name">
+                        <cstring>copyPushButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Copy Previous</string>
+                    </property>
+                </widget>
+            </grid>
+        </widget>
+    </vbox>
+</widget>
+<connections>
+    <connection language="C++">
+        <sender>quitPushButton</sender>
+        <signal>clicked()</signal>
+        <receiver>MulticlipForm</receiver>
+        <slot>accept()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>addPushButton</sender>
+        <signal>clicked()</signal>
+        <receiver>MulticlipForm</receiver>
+        <slot>addClipping()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>copyPushButton</sender>
+        <signal>pressed()</signal>
+        <receiver>MulticlipForm</receiver>
+        <slot>copyPrevious()</slot>
+    </connection>
+    <connection language="C++">
+        <sender>deletePushButton</sender>
+        <signal>clicked()</signal>
+        <receiver>MulticlipForm</receiver>
+        <slot>deleteClipping()</slot>
+    </connection>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">addClipping()</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">dataChanged()</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">deleteClipping()</slot>
+    <slot access="protected" specifier="virtual" language="C++" returnType="void">init()</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">selectionChanged()</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">copyPrevious()</slot>
+    <slot access="public" specifier="virtual" language="C++" returnType="void">clippingChanged( const QString &amp; clipping )</slot>
+</connections>
+<tabstops>
+    <tabstop>currentLineEdit</tabstop>
+    <tabstop>clippingsListBox</tabstop>
+    <tabstop>autoCheckBox</tabstop>
+    <tabstop>addPushButton</tabstop>
+    <tabstop>copyPushButton</tabstop>
+    <tabstop>deletePushButton</tabstop>
+    <tabstop>quitPushButton</tabstop>
+</tabstops>
+</UI>

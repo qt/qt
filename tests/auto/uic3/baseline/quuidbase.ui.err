@@ -1,0 +1,8 @@
+uic3: slot `copyUuid()' for widget `QUuidBase' of type `QDialog' is not supported; connection may fail. Line: 264 Column: 31
+uic3: slot `formatChanged()' for widget `QUuidBase' of type `QDialog' is not supported; connection may fail. Line: 276 Column: 31
+uic3: slot `newUuid()' for widget `QUuidBase' of type `QDialog' is not supported; connection may fail. Line: 282 Column: 31
+uic3: slot `formatChanged()' for widget `QUuidBase' of type `QDialog' is not supported; connection may fail. Line: 288 Column: 31
+uic3: flag 'WordBreak' for widget 'QLabel' is not supported
+uic3: flag 'AlignAuto' for widget 'QLabel' is not supported
+uic3: flag 'WordBreak' for widget 'QLabel' is not supported
+uic3: flag 'AlignAuto' for widget 'QLabel' is not supported

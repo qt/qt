@@ -1,0 +1,15 @@
+contains(DEFINES, QT_MAKEDLL)|contains(DEFINES, QT_DLL) {
+    CONFIG *= epocallowdlldata
+}
+
+CONFIG += qtmain
+
+load(qt)
+
+contains(CONFIG, qt):!contains(TARGET.UID3, 0x2001E61C):!contains(TARGET.UID3, 0xE001E61C) {
+    default_deployment.depends += \
+        "(0x2001E61C), $${QT_MAJOR_VERSION}, $${QT_MINOR_VERSION}, $${QT_PATCH_VERSION},  {\"QtLibs pre-release\"}"
+}
+
+isEmpty(TARGET.EPOCSTACKSIZE):TARGET.EPOCSTACKSIZE = 0x14000
+isEmpty(TARGET.EPOCHEAPSIZE):TARGET.EPOCHEAPSIZE = 0x020000 0x800000

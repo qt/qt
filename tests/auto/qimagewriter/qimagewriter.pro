@@ -1,0 +1,21 @@
+load(qttest_p4)
+SOURCES += tst_qimagewriter.cpp
+MOC_DIR=tmp
+!contains(QT_CONFIG, no-tiff):DEFINES += QTEST_HAVE_TIFF
+win32-msvc:QMAKE_CXXFLAGS -= -Zm200
+win32-msvc:QMAKE_CXXFLAGS += -Zm800
+
+wince*: {
+   addFiles.sources = images\*.*
+   addFiles.path = images
+   DEPLOYMENT += addFiles
+   DEFINES += SRCDIR=\\\".\\\"
+} else:symbian* {
+   addFiles.sources = images\*.*
+   addFiles.path = images
+   imagePlugins.sources = qjpeg.dll qtiff.dll
+   imagePlugins.path = imageformats
+   DEPLOYMENT += addFiles imagePlugins
+} else {
+   DEFINES += SRCDIR=\\\"$$PWD\\\"
+}

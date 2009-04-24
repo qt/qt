@@ -1,0 +1,29 @@
+qabstractnetworkcache
+qabstractsocket
+qftp
+qhostaddress
+qhostinfo
+qhttp
+qhttpnetworkconnection
+qhttpnetworkreply
+qhttpsocketengine
+qlocalsocket cetest-subdir: test
+qnativesocketengine
+qnetworkaddressentry
+qnetworkcachemetadata
+qnetworkcookie
+qnetworkcookiejar
+qnetworkdiskcache
+qnetworkinterface
+qnetworkproxy
+qnetworkreply cetest-subdir: test
+qnetworkrequest
+qsocks5socketengine
+qsslcertificate
+qsslcipher
+qsslerror
+qsslkey
+qsslsocket
+qtcpserver cetest-subdir: test
+qtcpsocket cetest-subdir: test
+qudpsocket cetest-subdir: test

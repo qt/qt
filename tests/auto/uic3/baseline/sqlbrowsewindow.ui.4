@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>SqlBrowseWindowBase</class>
+  <widget class="QWidget" name="SqlBrowseWindowBase">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>630</width>
+        <height>516</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Qt SQL Browse</string>
+    </property>
+    <layout class="QGridLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item row="2" column="0">
+        <widget class="Q3MultiLineEdit" name="currentRecordEdit">
+          <property name="enabled">
+            <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+            <sizepolicy>
+              <hsizetype>7</hsizetype>
+              <vsizetype>5</vsizetype>
+            </sizepolicy>
+          </property>
+          <property name="font">
+            <font/>
+          </property>
+          <property name="text">
+            <string/>
+          </property>
+        </widget>
+      </item>
+      <item row="0" column="0">
+        <widget class="QTabWidget" name="tabs">
+          <property name="sizePolicy">
+            <sizepolicy>
+              <hsizetype>7</hsizetype>
+              <vsizetype>4</vsizetype>
+            </sizepolicy>
+          </property>
+          <widget class="QWidget" name="tab">
+            <attribute name="title">
+              <string>Tables</string>
+            </attribute>
+            <layout class="QGridLayout">
+              <property name="margin">
+                <number>11</number>
+              </property>
+              <property name="spacing">
+                <number>6</number>
+              </property>
+              <item row="0" column="0" rowspan="2" colspan="1">
+                <widget class="Q3ListBox" name="tableList">
+                  <property name="sizePolicy">
+                    <sizepolicy>
+                      <hsizetype>7</hsizetype>
+                      <vsizetype>4</vsizetype>
+                    </sizepolicy>
+                  </property>
+                  <property name="maximumSize">
+                    <size>
+                      <width>32767</width>
+                      <height>200</height>
+                    </size>
+                  </property>
+                </widget>
+              </item>
+              <item row="1" column="1">
+                <widget class="QPushButton" name="execButton">
+                  <property name="sizePolicy">
+                    <sizepolicy>
+                      <hsizetype>4</hsizetype>
+                      <vsizetype>0</vsizetype>
+                    </sizepolicy>
+                  </property>
+                  <property name="text">
+                    <string>&amp;Execute</string>
+                  </property>
+                  <property name="default">
+                    <bool>true</bool>
+                  </property>
+                </widget>
+              </item>
+              <item row="0" column="1">
+                <spacer name="Spacer1">
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                  <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                </spacer>
+              </item>
+            </layout>
+          </widget>
+        </widget>
+      </item>
+      <item row="1" column="0">
+        <widget class="Q3DataTable" name="dataGrid"/>
+      </item>
+    </layout>
+  </widget>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <tabstops>
+    <tabstop>execButton</tabstop>
+  </tabstops>
+</ui>

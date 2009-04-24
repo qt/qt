@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>SmallDialog</class>
+  <widget class="QDialog" name="SmallDialog">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>361</width>
+        <height>283</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Small Dialog</string>
+    </property>
+    <property name="sizeGripEnabled">
+      <bool>true</bool>
+    </property>
+    <layout class="QGridLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item row="2" column="0">
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <widget class="QPushButton" name="buttonHelp">
+              <property name="text">
+                <string>&amp;Help</string>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <spacer name="Horizontal Spacing2">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonOk">
+              <property name="text">
+                <string>OK</string>
+              </property>
+              <property name="shortcut">
+                <number>0</number>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+              <property name="default">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonCancel">
+              <property name="text">
+                <string>Cancel</string>
+              </property>
+              <property name="shortcut">
+                <number>0</number>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+      <item row="0" column="0">
+        <widget class="QLabel" name="TextLabel1">
+          <property name="sizePolicy">
+            <sizepolicy>
+              <hsizetype>1</hsizetype>
+              <vsizetype>0</vsizetype>
+            </sizepolicy>
+          </property>
+          <property name="text">
+            <string>This is just a useless dialog.</string>
+          </property>
+          <property name="wordWrap">
+            <bool>false</bool>
+          </property>
+        </widget>
+      </item>
+      <item row="1" column="0">
+        <widget class="Q3Frame" name="Frame4">
+          <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QGridLayout">
+            <property name="margin">
+              <number>11</number>
+            </property>
+            <property name="spacing">
+              <number>6</number>
+            </property>
+            <item row="0" column="1">
+              <widget class="QDial" name="Dial1"/>
+            </item>
+            <item row="1" column="1">
+              <widget class="QLCDNumber" name="LCDNumber1">
+                <property name="numDigits">
+                  <number>2</number>
+                </property>
+              </widget>
+            </item>
+            <item row="0" column="0" rowspan="2" colspan="1">
+              <widget class="QSlider" name="Slider1">
+                <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                </property>
+              </widget>
+            </item>
+          </layout>
+        </widget>
+      </item>
+    </layout>
+  </widget>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>buttonOk</sender>
+      <signal>clicked()</signal>
+      <receiver>SmallDialog</receiver>
+      <slot>accept()</slot>
+    </connection>
+    <connection>
+      <sender>buttonCancel</sender>
+      <signal>clicked()</signal>
+      <receiver>SmallDialog</receiver>
+      <slot>reject()</slot>
+    </connection>
+    <connection>
+      <sender>Slider1</sender>
+      <signal>valueChanged(int)</signal>
+      <receiver>LCDNumber1</receiver>
+      <slot>display(int)</slot>
+    </connection>
+    <connection>
+      <sender>Slider1</sender>
+      <signal>valueChanged(int)</signal>
+      <receiver>Dial1</receiver>
+      <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+      <sender>Dial1</sender>
+      <signal>valueChanged(int)</signal>
+      <receiver>Slider1</receiver>
+      <slot>setValue(int)</slot>
+    </connection>
+  </connections>
+</ui>

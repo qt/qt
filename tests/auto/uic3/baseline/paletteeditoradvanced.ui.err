@@ -1,0 +1,12 @@
+uic3: slot `paletteSelected(int)' for widget `PaletteEditorAdvancedBase' of type `QDialog' is not supported; connection may fail. Line: 656 Column: 16
+uic3: slot `onCentral(int)' for widget `PaletteEditorAdvancedBase' of type `QDialog' is not supported; connection may fail. Line: 662 Column: 16
+uic3: slot `onChoosePixmap()' for widget `PaletteEditorAdvancedBase' of type `QDialog' is not supported; connection may fail. Line: 668 Column: 16
+uic3: slot `onChooseCentralColor()' for widget `PaletteEditorAdvancedBase' of type `QDialog' is not supported; connection may fail. Line: 674 Column: 16
+uic3: slot `onChooseEffectColor()' for widget `PaletteEditorAdvancedBase' of type `QDialog' is not supported; connection may fail. Line: 680 Column: 16
+uic3: slot `onEffect(int)' for widget `PaletteEditorAdvancedBase' of type `QDialog' is not supported; connection may fail. Line: 686 Column: 16
+uic3: slot `onToggleBuildEffects(bool)' for widget `PaletteEditorAdvancedBase' of type `QDialog' is not supported; connection may fail. Line: 692 Column: 16
+uic3: slot `showHelp()' for widget `PaletteEditorAdvancedBase' of type `QDialog' is not supported; connection may fail. Line: 698 Column: 16
+uic3: slot `onToggleBuildInactive(bool)' for widget `PaletteEditorAdvancedBase' of type `QDialog' is not supported; connection may fail. Line: 716 Column: 16
+uic3: slot `onToggleBuildDisabled(bool)' for widget `PaletteEditorAdvancedBase' of type `QDialog' is not supported; connection may fail. Line: 722 Column: 16
+uic3: enumerator 'MShape' for widget 'QLabel' is not supported
+uic3: enumerator 'MShadow' for widget 'QLabel' is not supported

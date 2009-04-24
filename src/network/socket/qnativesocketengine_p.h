@@ -1,0 +1,393 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the QtNetwork module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#ifndef QNATIVESOCKETENGINE_P_H
+#define QNATIVESOCKETENGINE_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of the QLibrary class.  This header file may change from
+// version to version without notice, or even be removed.
+//
+// We mean it.
+//
+#include "QtNetwork/qhostaddress.h"
+#include "private/qabstractsocketengine_p.h"
+#ifndef Q_OS_WIN
+#include "qplatformdefs.h"
+#else
+#include <Winsock2.h> // sockaddr_storage, sockaddr_in
+#endif
+
+#ifdef Q_OS_SYMBIAN
+#include <private/qeventdispatcher_symbian_p.h>
+#include<unistd.h>
+#endif
+
+QT_BEGIN_NAMESPACE
+
+
+#ifndef Q_OS_WIN
+// Almost always the same. If not, specify in qplatformdefs.h.
+#if !defined(QT_SOCKOPTLEN_T)
+# define QT_SOCKOPTLEN_T QT_SOCKLEN_T
+#endif
+
+// Tru64 redefines accept -> _accept with _XOPEN_SOURCE_EXTENDED
+static inline int qt_socket_accept(int s, struct sockaddr *addr, QT_SOCKLEN_T *addrlen)
+{ return ::accept(s, addr, static_cast<QT_SOCKLEN_T *>(addrlen)); }
+#if defined(accept)
+# undef accept
+#endif
+
+// UnixWare 7 redefines listen -> _listen
+static inline int qt_socket_listen(int s, int backlog)
+{
+	return ::listen(s, backlog);
+}
+#if defined(listen)
+# undef listen
+#endif
+
+static inline int qt_socket_connect(int s, const struct sockaddr * addrptr, socklen_t namelen)
+{
+	return ::connect(s, addrptr, namelen);
+}
+#if defined(connect)
+# undef connect
+#endif
+
+static inline int qt_socket_bind(int s, const struct sockaddr * addrptr, socklen_t namelen)
+{
+	return ::bind(s, addrptr, namelen);
+}
+#if defined(bind)
+# undef bind
+#endif
+
+static inline int qt_socket_write(int socket, const char *data, qint64 len)
+{
+	return ::write(socket, data, len);
+}
+#if defined(write)
+# undef write
+#endif
+
+static inline int qt_socket_read(int socket, char *data, qint64 len)
+{
+	return ::read(socket, data, len);
+}
+#if defined(read)
+# undef read
+#endif
+
+static inline int qt_socket_recv(int socket, void *data, size_t length, int flags)
+{
+	return ::recv(socket, data, length, flags);
+}
+#if defined(recv)
+# undef recv
+#endif
+
+static inline int qt_socket_recvfrom(int socket, void *data, size_t length,
+	                                 int flags, struct sockaddr *address,
+	                                 socklen_t *address_length)
+{
+	return ::recvfrom(socket, data, length, flags, address, address_length);
+}
+#if defined(recvfrom)
+# undef recvfrom
+#endif
+
+static inline int qt_socket_sendto(int socket, const void *data, size_t length,
+	                               int flags, const struct sockaddr *dest_addr,
+	                               socklen_t dest_length)
+{
+	return ::sendto(socket, data, length, flags, dest_addr, dest_length);
+}
+#if defined(sendto)
+# undef sendto
+#endif
+static inline int qt_socket_close(int socket)
+{
+	return ::close(socket);
+}
+#if defined(close)
+# undef close
+#endif
+
+static inline int qt_socket_fcntl(int socket, int command, int option)
+{
+	return ::fcntl(socket, command, option);
+}
+#if defined(fcntl)
+# undef fcntl
+#endif
+
+static inline int qt_socket_ioctl(int socket, int command, char *option)
+{
+	return ::ioctl(socket, command, option);
+}
+#if defined(ioctl)
+# undef ioctl
+#endif
+
+static inline int qt_socket_getsockname(int socket, struct sockaddr *address, socklen_t *address_len)
+{
+	return ::getsockname(socket, address, address_len);
+}
+#if defined(getsockname)
+# undef getsockname
+#endif
+
+static inline int qt_socket_getpeername(int socket, struct sockaddr *address, socklen_t *address_len)
+{
+	return ::getpeername(socket, address, address_len);
+}
+#if defined(getpeername)
+# undef getpeername
+#endif
+
+static inline int qt_socket_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
+{
+	return ::select(nfds, readfds, writefds, exceptfds, timeout);
+}
+
+#if defined(select)
+# undef select
+#endif
+
+static inline int qt_socket_getsockopt(int socket, int level, int optname, void *optval, socklen_t *optlen)
+{
+	return ::getsockopt(socket, level, optname, optval, optlen);
+}
+
+#if defined(getsockopt)
+# undef getsockopt
+#endif
+
+static inline int qt_socket_setsockopt(int socket, int level, int optname, void *optval, socklen_t optlen)
+{
+	return ::setsockopt(socket, level, optname, optval, optlen);
+}
+
+#if defined(setsockopt)
+# undef setsockopt
+#endif
+
+// UnixWare 7 redefines socket -> _socket
+static inline int qt_socket_socket(int domain, int type, int protocol)
+{
+	return ::socket(domain, type, protocol);
+}
+#if defined(socket)
+# undef socket
+#endif
+
+#endif
+
+class QNativeSocketEnginePrivate;
+
+class Q_AUTOTEST_EXPORT QNativeSocketEngine : public QAbstractSocketEngine
+{
+    Q_OBJECT
+public:
+    QNativeSocketEngine(QObject *parent = 0);
+    ~QNativeSocketEngine();
+
+    bool initialize(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol protocol = QAbstractSocket::IPv4Protocol);
+    bool initialize(int socketDescriptor, QAbstractSocket::SocketState socketState = QAbstractSocket::ConnectedState);
+
+    int socketDescriptor() const;
+
+    bool isValid() const;
+
+    bool connectToHost(const QHostAddress &address, quint16 port);
+    bool connectToHostByName(const QString &name, quint16 port);
+    bool bind(const QHostAddress &address, quint16 port);
+    bool listen();
+    int accept();
+    void close();
+
+    qint64 bytesAvailable() const;
+
+    qint64 read(char *data, qint64 maxlen);
+    qint64 write(const char *data, qint64 len);
+
+    qint64 readDatagram(char *data, qint64 maxlen, QHostAddress *addr = 0,
+                            quint16 *port = 0);
+    qint64 writeDatagram(const char *data, qint64 len, const QHostAddress &addr,
+                             quint16 port);
+    bool hasPendingDatagrams() const;
+    qint64 pendingDatagramSize() const;
+
+    qint64 receiveBufferSize() const;
+    void setReceiveBufferSize(qint64 bufferSize);
+
+    qint64 sendBufferSize() const;
+    void setSendBufferSize(qint64 bufferSize);
+
+    int option(SocketOption option) const;
+    bool setOption(SocketOption option, int value);
+
+    bool waitForRead(int msecs = 30000, bool *timedOut = 0);
+    bool waitForWrite(int msecs = 30000, bool *timedOut = 0);
+    bool waitForReadOrWrite(bool *readyToRead, bool *readyToWrite,
+			    bool checkRead, bool checkWrite,
+			    int msecs = 30000, bool *timedOut = 0);
+
+    bool isReadNotificationEnabled() const;
+    void setReadNotificationEnabled(bool enable);
+    bool isWriteNotificationEnabled() const;
+    void setWriteNotificationEnabled(bool enable);
+    bool isExceptionNotificationEnabled() const;
+    void setExceptionNotificationEnabled(bool enable);
+
+public Q_SLOTS:
+    // non-virtual override;
+    void connectionNotification();
+
+private:
+    Q_DECLARE_PRIVATE(QNativeSocketEngine)
+    Q_DISABLE_COPY(QNativeSocketEngine)
+};
+
+#ifdef Q_OS_WIN
+class QWindowsSockInit
+{
+public:
+    QWindowsSockInit();
+    ~QWindowsSockInit();
+    int version;
+};
+#endif
+
+class QSocketNotifier;
+
+class QNativeSocketEnginePrivate : public QAbstractSocketEnginePrivate
+{
+    Q_DECLARE_PUBLIC(QNativeSocketEngine)
+public:
+    QNativeSocketEnginePrivate();
+    ~QNativeSocketEnginePrivate();
+
+    int socketDescriptor;
+
+#if !defined(QT_NO_IPV6)
+    struct sockaddr_storage aa;
+#else
+    struct sockaddr_in aa;
+#endif    
+    
+    QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
+
+#ifdef Q_OS_WIN
+    QWindowsSockInit winSock;
+#endif
+
+    enum ErrorString {
+        NonBlockingInitFailedErrorString,
+        BroadcastingInitFailedErrorString,
+        NoIpV6ErrorString,
+        RemoteHostClosedErrorString,
+        TimeOutErrorString,
+        ResourceErrorString,
+        OperationUnsupportedErrorString,
+        ProtocolUnsupportedErrorString,
+        InvalidSocketErrorString,
+        HostUnreachableErrorString,
+        NetworkUnreachableErrorString,
+        AccessErrorString,
+        ConnectionTimeOutErrorString,
+        ConnectionRefusedErrorString,
+        AddressInuseErrorString,
+        AddressNotAvailableErrorString,
+        AddressProtectedErrorString,
+        DatagramTooLargeErrorString,
+        SendDatagramErrorString,
+        ReceiveDatagramErrorString,
+        WriteErrorString,
+        ReadErrorString,
+        PortInuseErrorString,
+        NotSocketErrorString,
+        InvalidProxyTypeString,
+
+        UnknownSocketErrorString = -1
+    };
+
+    void setError(QAbstractSocket::SocketError error, ErrorString errorString) const;
+
+    // native functions
+    int option(QNativeSocketEngine::SocketOption option) const;
+    bool setOption(QNativeSocketEngine::SocketOption option, int value);
+
+    bool createNewSocket(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol protocol);
+
+    bool nativeConnect(const QHostAddress &address, quint16 port);
+    bool nativeBind(const QHostAddress &address, quint16 port);
+    bool nativeListen(int backlog);
+    int nativeAccept();
+    qint64 nativeBytesAvailable() const;
+
+    bool nativeHasPendingDatagrams() const;
+    qint64 nativePendingDatagramSize() const;
+    qint64 nativeReceiveDatagram(char *data, qint64 maxLength,
+                                     QHostAddress *address, quint16 *port);
+    qint64 nativeSendDatagram(const char *data, qint64 length,
+                                  const QHostAddress &host, quint16 port);
+    qint64 nativeRead(char *data, qint64 maxLength);
+    qint64 nativeWrite(const char *data, qint64 length);
+    int nativeSelect(int timeout, bool selectForRead) const;
+    int nativeSelect(int timeout, bool checkRead, bool checkWrite,
+		     bool *selectForRead, bool *selectForWrite) const;
+
+    void nativeClose();
+
+    bool checkProxy(const QHostAddress &address);
+    bool fetchConnectionParameters();
+};
+
+QT_END_NAMESPACE
+
+#endif // QNATIVESOCKETENGINE_P_H

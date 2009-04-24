@@ -1,0 +1,5 @@
+uic3: slot `newConnection()' for widget `DatabaseConnectionBase' of type `QDialog' is not supported; connection may fail. Line: 282 Column: 16
+uic3: slot `deleteConnection()' for widget `DatabaseConnectionBase' of type `QDialog' is not supported; connection may fail. Line: 288 Column: 16
+uic3: slot `doConnect()' for widget `DatabaseConnectionBase' of type `QDialog' is not supported; connection may fail. Line: 294 Column: 16
+uic3: slot `currentConnectionChanged(QString)' for widget `DatabaseConnectionBase' of type `QDialog' is not supported; connection may fail. Line: 300 Column: 16
+uic3: slot `currentConnectionChanged(QString)' for widget `DatabaseConnectionBase' of type `QDialog' is not supported; connection may fail. Line: 306 Column: 16

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>DiffDialog</class>
+  <widget class="QDialog" name="DiffDialog">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>621</width>
+        <height>468</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>diffdialog</string>
+    </property>
+    <property name="sizeGripEnabled">
+      <bool>true</bool>
+    </property>
+    <property name="windowIcon">
+      <pixmap>image0</pixmap>
+    </property>
+    <layout class="QVBoxLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item>
+        <widget class="Q3TextView" name="view"/>
+      </item>
+      <item>
+        <layout class="QHBoxLayout">
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="spacing">
+            <number>6</number>
+          </property>
+          <item>
+            <spacer name="Horizontal Spacing2">
+              <property name="sizeHint">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+              <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="buttonCancel">
+              <property name="text">
+                <string>&amp;Close</string>
+              </property>
+              <property name="autoDefault">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <images>
+    <image name="image0">
+      <data format="XPM.GZ" length="469">789c6dcfc10ac2300c06e0fb9ea22cb721dd76d181f8088a47413c24e98a1e54d07910f1dd4dd675ae62e821ffd7ac64656176dbb529caecde617762c347bc99c23dcee7e7feb07a65793d377216a6ce67596e0d9bcdf5d26a4fd243d597468eb1e9631ba3f71a5d88de87081a9baa198651a3f7f1d6f60552a19b1822d01f43b2cc3f06209418332a8d464428c2f03542878a48a329399da56800a4e4c22683c967423635794668fa1f62282f816ddbc474945dc0a9454c4c7130a2b8990dfbbd97d9071d546d91</data>
+    </image>
+  </images>
+  <connections>
+    <connection>
+      <sender>buttonCancel</sender>
+      <signal>clicked()</signal>
+      <receiver>DiffDialog</receiver>
+      <slot>accept()</slot>
+    </connection>
+  </connections>
+</ui>

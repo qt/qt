@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>MyDialog</class>
+  <widget class="QDialog" name="MyDialog">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>592</width>
+        <height>470</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>MyDialog</string>
+    </property>
+    <property name="sizeGripEnabled">
+      <bool>true</bool>
+    </property>
+    <widget class="QWidget" name="Layout5">
+      <property name="geometry">
+        <rect>
+          <x>500</x>
+          <y>30</y>
+          <width>82</width>
+          <height>410</height>
+        </rect>
+      </property>
+      <layout class="QVBoxLayout">
+        <property name="margin">
+          <number>0</number>
+        </property>
+        <property name="spacing">
+          <number>6</number>
+        </property>
+        <item>
+          <widget class="QPushButton" name="buttonOk">
+            <property name="text">
+              <string>&amp;OK</string>
+            </property>
+            <property name="shortcut">
+              <number>0</number>
+            </property>
+            <property name="autoDefault">
+              <bool>true</bool>
+            </property>
+            <property name="default">
+              <bool>true</bool>
+            </property>
+          </widget>
+        </item>
+        <item>
+          <widget class="QPushButton" name="buttonCancel">
+            <property name="text">
+              <string>&amp;Cancel</string>
+            </property>
+            <property name="shortcut">
+              <number>0</number>
+            </property>
+            <property name="autoDefault">
+              <bool>true</bool>
+            </property>
+          </widget>
+        </item>
+        <item>
+          <widget class="QPushButton" name="buttonHelp">
+            <property name="text">
+              <string>&amp;Help</string>
+            </property>
+            <property name="shortcut">
+              <number>4144</number>
+            </property>
+            <property name="autoDefault">
+              <bool>true</bool>
+            </property>
+          </widget>
+        </item>
+        <item>
+          <spacer name="Spacer1">
+            <property name="sizeHint">
+              <size>
+                <width>20</width>
+                <height>20</height>
+              </size>
+            </property>
+            <property name="sizeType">
+              <enum>QSizePolicy::Expanding</enum>
+            </property>
+            <property name="orientation">
+              <enum>Qt::Vertical</enum>
+            </property>
+          </spacer>
+        </item>
+      </layout>
+    </widget>
+  </widget>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <connections>
+    <connection>
+      <sender>buttonOk</sender>
+      <signal>clicked()</signal>
+      <receiver>MyDialog</receiver>
+      <slot>accept()</slot>
+    </connection>
+    <connection>
+      <sender>buttonCancel</sender>
+      <signal>clicked()</signal>
+      <receiver>MyDialog</receiver>
+      <slot>reject()</slot>
+    </connection>
+  </connections>
+</ui>

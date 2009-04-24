@@ -1,0 +1,57 @@
+TEMPLATE      = subdirs
+SUBDIRS       = \
+                desktop \
+                dialogs \
+                draganddrop \
+                graphicsview \
+                ipc \
+                itemviews \
+                layouts \
+                linguist \
+                mainwindows \
+                network \
+                painting \
+                qtconcurrent \
+                richtext \
+                sql \
+                threads \
+                tools \
+                tutorials \
+                widgets \
+                uitools \
+                xml \
+                script
+
+symbian: SUBDIRS = \
+                graphicsview \
+                itemviews \
+                network \
+                painting \
+                widgets \
+                draganddrop \
+                mainwindows \
+                script \
+                sql \
+                xml
+
+contains(QT_CONFIG, phonon):!static: SUBDIRS += phonon
+contains(QT_CONFIG, webkit): SUBDIRS += webkit
+embedded:SUBDIRS += qws
+!wince*:!symbian: {
+	!contains(QT_EDITION, Console):contains(QT_BUILD_PARTS, tools):SUBDIRS += designer
+	contains(QT_BUILD_PARTS, tools):SUBDIRS += assistant qtestlib help
+} else {
+	contains(QT_BUILD_PARTS, tools):SUBDIRS += qtestlib
+}
+contains(QT_CONFIG, opengl): SUBDIRS += opengl
+contains(QT_CONFIG, dbus): SUBDIRS += dbus
+win32:!contains(QT_EDITION, OpenSource|Console):SUBDIRS += activeqt
+contains(QT_CONFIG, xmlpatterns): SUBDIRS += xmlpatterns
+contains(DEFINES, QT_NO_CURSOR): SUBDIRS -= mainwindows
+
+# install
+sources.files = README *.pro
+sources.path = $$[QT_INSTALL_EXAMPLES]
+INSTALLS += sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

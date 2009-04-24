@@ -1,0 +1,34 @@
+# /****************************************************************************
+# **
+# ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+# ** Contact: Qt Software Information (qt-info@nokia.com)
+# **
+# ** This file is part of symbian-sbsv2 mkspec.
+# **
+# ****************************************************************************/
+
+include $(FLMHOME)/metaflm.mk
+
+SINGLETON:=$(call sanitise,TARGET_$(DEPLOY_TARGET))
+
+define qmake_emulator_deployment
+$(ALLTARGET):: $(DEPLOY_TARGET)
+FINAL:: $(DEPLOY_TARGET)
+
+# Prevent duplicate targets from being created
+$(SINGLETON):=1
+
+$(DEPLOY_TARGET): $(DEPLOY_SOURCE) 
+	$(call startrule,qmake_emulator_deployment) \
+	$(GNUCP) -u -T $(DEPLOY_SOURCE) $(DEPLOY_TARGET) \
+	$(call endrule,qmake_emulator_deployment)
+endef
+
+ifeq ($($(SINGLETON)),)
+$(eval $(qmake_emulator_deployment))
+endif	
+
+$(call makepathfor,$(DEPLOY_TARGET))
+
+$(eval $(call GenerateStandardCleanTarget,$(DEPLOY_TARGET),''))
+

@@ -1,0 +1,8 @@
+//! [0]
+CONFIG += qaxcontainer
+//! [0]
+
+
+//! [1]
+TYPELIBS = file.tlb
+//! [1]

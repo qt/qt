@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0" stdsetdef="1">
+  <author></author>
+  <comment></comment>
+  <exportmacro></exportmacro>
+  <class>EditBookForm</class>
+  <widget class="QDialog" name="EditBookForm">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>520</width>
+        <height>369</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Edit Books</string>
+    </property>
+    <layout class="QVBoxLayout">
+      <property name="margin">
+        <number>11</number>
+      </property>
+      <property name="spacing">
+        <number>6</number>
+      </property>
+      <item>
+        <widget class="Q3DataBrowser" name="BookDataBrowser">
+          <property name="sort">
+            <stringlist>
+              <string>title ASC</string>
+            </stringlist>
+          </property>
+          <property name="database" stdset="0">
+            <stringlist>
+              <string>(default)</string>
+              <string>book</string>
+            </stringlist>
+          </property>
+          <property name="frameworkCode" stdset="0">
+            <bool>true</bool>
+          </property>
+          <layout class="QGridLayout">
+            <property name="margin">
+              <number>11</number>
+            </property>
+            <property name="spacing">
+              <number>6</number>
+            </property>
+            <item row="0" column="0">
+              <layout class="QGridLayout">
+                <property name="margin">
+                  <number>0</number>
+                </property>
+                <property name="spacing">
+                  <number>6</number>
+                </property>
+                <item row="1" column="0">
+                  <widget class="QLabel" name="labelPrice">
+                    <property name="text">
+                      <string>Price</string>
+                    </property>
+                    <property name="wordWrap">
+                      <bool>false</bool>
+                    </property>
+                  </widget>
+                </item>
+                <item row="0" column="0">
+                  <widget class="QLabel" name="labelTitle">
+                    <property name="text">
+                      <string>Title</string>
+                    </property>
+                    <property name="wordWrap">
+                      <bool>false</bool>
+                    </property>
+                  </widget>
+                </item>
+                <item row="0" column="1">
+                  <widget class="QLineEdit" name="QLineEditTitle">
+                    <property name="database" stdset="0">
+                      <stringlist>
+                        <string>(default)</string>
+                        <string>book</string>
+                        <string>title</string>
+                      </stringlist>
+                    </property>
+                  </widget>
+                </item>
+                <item row="1" column="1">
+                  <widget class="QLineEdit" name="QLineEditPrice">
+                    <property name="database" stdset="0">
+                      <stringlist>
+                        <string>(default)</string>
+                        <string>book</string>
+                        <string>price</string>
+                      </stringlist>
+                    </property>
+                  </widget>
+                </item>
+              </layout>
+            </item>
+            <item row="3" column="0">
+              <layout class="QHBoxLayout">
+                <property name="margin">
+                  <number>0</number>
+                </property>
+                <property name="spacing">
+                  <number>6</number>
+                </property>
+                <item>
+                  <widget class="QPushButton" name="PushButtonInsert">
+                    <property name="text">
+                      <string>&amp;Insert</string>
+                    </property>
+                  </widget>
+                </item>
+                <item>
+                  <widget class="QPushButton" name="PushButtonUpdate">
+                    <property name="text">
+                      <string>&amp;Update</string>
+                    </property>
+                    <property name="default">
+                      <bool>true</bool>
+                    </property>
+                  </widget>
+                </item>
+                <item>
+                  <widget class="QPushButton" name="PushButtonDelete">
+                    <property name="text">
+                      <string>&amp;Delete</string>
+                    </property>
+                  </widget>
+                </item>
+                <item>
+                  <widget class="QPushButton" name="PushButtonClose">
+                    <property name="text">
+                      <string>&amp;Close</string>
+                    </property>
+                  </widget>
+                </item>
+              </layout>
+            </item>
+            <item row="2" column="0">
+              <layout class="QHBoxLayout">
+                <property name="margin">
+                  <number>0</number>
+                </property>
+                <property name="spacing">
+                  <number>6</number>
+                </property>
+                <item>
+                  <widget class="QPushButton" name="PushButtonFirst">
+                    <property name="text">
+                      <string>|&lt; &amp;First</string>
+                    </property>
+                  </widget>
+                </item>
+                <item>
+                  <widget class="QPushButton" name="PushButtonPrev">
+                    <property name="text">
+                      <string>&lt;&lt; &amp;Prev</string>
+                    </property>
+                  </widget>
+                </item>
+                <item>
+                  <widget class="QPushButton" name="PushButtonNext">
+                    <property name="text">
+                      <string>&amp;Next &gt;&gt;</string>
+                    </property>
+                  </widget>
+                </item>
+                <item>
+                  <widget class="QPushButton" name="PushButtonLast">
+                    <property name="text">
+                      <string>&amp;Last &gt;|</string>
+                    </property>
+                  </widget>
+                </item>
+              </layout>
+            </item>
+            <item row="1" column="0">
+              <layout class="QHBoxLayout">
+                <property name="margin">
+                  <number>0</number>
+                </property>
+                <property name="spacing">
+                  <number>6</number>
+                </property>
+                <item>
+                  <widget class="QLabel" name="TextLabel1">
+                    <property name="text">
+                      <string>Author</string>
+                    </property>
+                    <property name="wordWrap">
+                      <bool>false</bool>
+                    </property>
+                  </widget>
+                </item>
+                <item>
+                  <widget class="QComboBox" name="ComboBoxAuthor">
+                    <property name="sizePolicy">
+                      <sizepolicy>
+                        <hsizetype>7</hsizetype>
+                        <vsizetype>0</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                      </sizepolicy>
+                    </property>
+                    <property name="database" stdset="0">
+                      <stringlist>
+                        <string>(default)</string>
+                        <string>author_view</string>
+                        <string>name</string>
+                      </stringlist>
+                    </property>
+                  </widget>
+                </item>
+              </layout>
+            </item>
+          </layout>
+        </widget>
+      </item>
+    </layout>
+  </widget>
+  <layoutdefault spacing="6" margin="11"/>
+  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+  <tabstops>
+    <tabstop>QLineEditTitle</tabstop>
+    <tabstop>QLineEditPrice</tabstop>
+    <tabstop>ComboBoxAuthor</tabstop>
+    <tabstop>PushButtonFirst</tabstop>
+    <tabstop>PushButtonPrev</tabstop>
+    <tabstop>PushButtonNext</tabstop>
+    <tabstop>PushButtonLast</tabstop>
+    <tabstop>PushButtonInsert</tabstop>
+    <tabstop>PushButtonUpdate</tabstop>
+    <tabstop>PushButtonDelete</tabstop>
+    <tabstop>PushButtonClose</tabstop>
+  </tabstops>
+  <includes>
+    <include location="global">qsqlrecord.h</include>
+  </includes>
+  <connections>
+    <connection>
+      <sender>PushButtonFirst</sender>
+      <signal>clicked()</signal>
+      <receiver>BookDataBrowser</receiver>
+      <slot>first()</slot>
+    </connection>
+    <connection>
+      <sender>BookDataBrowser</sender>
+      <signal>firstRecordAvailable(bool)</signal>
+      <receiver>PushButtonFirst</receiver>
+      <slot>setEnabled(bool)</slot>
+    </connection>
+    <connection>
+      <sender>PushButtonPrev</sender>
+      <signal>clicked()</signal>
+      <receiver>BookDataBrowser</receiver>
+      <slot>prev()</slot>
+    </connection>
+    <connection>
+      <sender>BookDataBrowser</sender>
+      <signal>prevRecordAvailable(bool)</signal>
+      <receiver>PushButtonPrev</receiver>
+      <slot>setEnabled(bool)</slot>
+    </connection>
+    <connection>
+      <sender>PushButtonNext</sender>
+      <signal>clicked()</signal>
+      <receiver>BookDataBrowser</receiver>
+      <slot>next()</slot>
+    </connection>
+    <connection>
+      <sender>BookDataBrowser</sender>
+      <signal>nextRecordAvailable(bool)</signal>
+      <receiver>PushButtonNext</receiver>
+      <slot>setEnabled(bool)</slot>
+    </connection>
+    <connection>
+      <sender>PushButtonLast</sender>
+      <signal>clicked()</signal>
+      <receiver>BookDataBrowser</receiver>
+      <slot>last()</slot>
+    </connection>
+    <connection>
+      <sender>BookDataBrowser</sender>
+      <signal>lastRecordAvailable(bool)</signal>
+      <receiver>PushButtonLast</receiver>
+      <slot>setEnabled(bool)</slot>
+    </connection>
+    <connection>
+      <sender>PushButtonInsert</sender>
+      <signal>clicked()</signal>
+      <receiver>BookDataBrowser</receiver>
+      <slot>insert()</slot>
+    </connection>
+    <connection>
+      <sender>PushButtonUpdate</sender>
+      <signal>clicked()</signal>
+      <receiver>BookDataBrowser</receiver>
+      <slot>update()</slot>
+    </connection>
+    <connection>
+      <sender>PushButtonDelete</sender>
+      <signal>clicked()</signal>
+      <receiver>BookDataBrowser</receiver>
+      <slot>del()</slot>
+    </connection>
+    <connection>
+      <sender>PushButtonClose</sender>
+      <signal>clicked()</signal>
+      <receiver>EditBookForm</receiver>
+      <slot>accept()</slot>
+    </connection>
+    <connection>
+      <sender>BookDataBrowser</sender>
+      <signal>primeUpdate(QSqlRecord*)</signal>
+      <receiver>EditBookForm</receiver>
+      <slot>primeUpdateBook(QSqlRecord*)</slot>
+    </connection>
+    <connection>
+      <sender>BookDataBrowser</sender>
+      <signal>beforeUpdate(QSqlRecord*)</signal>
+      <receiver>EditBookForm</receiver>
+      <slot>beforeUpdateBook(QSqlRecord*)</slot>
+    </connection>
+    <connection>
+      <sender>BookDataBrowser</sender>
+      <signal>beforeInsert(QSqlRecord*)</signal>
+      <receiver>EditBookForm</receiver>
+      <slot>beforeUpdateBook(QSqlRecord*)</slot>
+    </connection>
+    <connection>
+      <sender>BookDataBrowser</sender>
+      <signal>primeInsert(QSqlRecord*)</signal>
+      <receiver>EditBookForm</receiver>
+      <slot>primeInsertBook(QSqlRecord*)</slot>
+    </connection>
+    <connection>
+      <sender>BookDataBrowser</sender>
+      <signal>primeInsert(QSqlRecord*)</signal>
+      <receiver>EditBookForm</receiver>
+      <slot>primeInsertBook(QSqlRecord*)</slot>
+    </connection>
+  </connections>
+</ui>
