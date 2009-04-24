@@ -47,8 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(QFxPath,Path);
-QML_DEFINE_TYPE(QFxPathElement,PathElement);
-QML_DEFINE_TYPE(QFxCurve,Curve);
+QML_DEFINE_NOCREATE_TYPE(QFxPathElement);
+QML_DEFINE_NOCREATE_TYPE(QFxCurve);
 QML_DEFINE_TYPE(QFxPathAttribute,PathAttribute);
 QML_DEFINE_TYPE(QFxPathPercent,PathPercent);
 QML_DEFINE_TYPE(QFxPathLine,PathLine);
@@ -56,10 +56,35 @@ QML_DEFINE_TYPE(QFxPathQuad,PathQuad);
 QML_DEFINE_TYPE(QFxPathCubic,PathCubic);
 
 /*!
-    \qmlclass Path
+    \qmlclass PathElement
+    \brief PathElement is the base path element.
+
+    This element is the base for all path elements.  It cannot
+    be instantiated.
+
+    \sa Path, PathAttribute, PathPercent, PathLine, PathQuad, PathCubic
+*/
+
+/*!
+    \internal
+    \class QFxPathElement
+    \ingroup group_utility
+*/
+
+/*!
+    \qmlclass Path QFxPath
     \brief The Path element defines a path for use by \l PathView.
 
-    \sa PathElement, PathAttribute, PathPercent, PathLine, PathQuad, PathCubic
+    A Path is composed of one or more path segments - PathLine, PathQuad,
+    PathCubic.
+
+    The spacing of the items along the Path can be adjusted via the
+    PathPercent element.
+
+    PathAttribute allows named attributes with values to be defined
+    along the path.
+
+    \sa PathView, PathAttribute, PathPercent, PathLine, PathQuad, PathCubic
 */
 
 /*!
@@ -84,8 +109,9 @@ QFxPath::~QFxPath()
 }
 
 /*!
-    \qmlproperty int Path::startX
-    This property holds the starting x position of the path.
+    \qmlproperty real Path::startX
+    \qmlproperty real Path::startY
+    This property holds the starting position of the path.
 */
 
 /*!
@@ -93,35 +119,31 @@ QFxPath::~QFxPath()
     \brief the starting x position of the path.
 */
 
-int QFxPath::startX() const
+qreal QFxPath::startX() const
 {
     Q_D(const QFxPath);
     return d->startX;
 }
 
-void QFxPath::setStartX(int x)
+void QFxPath::setStartX(qreal x)
 {
     Q_D(QFxPath);
     d->startX = x;
 }
 
-/*!
-    \qmlproperty int Path::startY
-    This property holds the starting y position of the path.
-*/
 
 /*!
     \property QFxPath::startY
     \brief the starting y position of the path.
 */
 
-int QFxPath::startY() const
+qreal QFxPath::startY() const
 {
     Q_D(const QFxPath);
     return d->startY;
 }
 
-void QFxPath::setStartY(int y)
+void QFxPath::setStartY(qreal y)
 {
     Q_D(QFxPath);
     d->startY = y;
@@ -433,12 +455,12 @@ qreal QFxPath::attributeAt(const QString &name, qreal percent) const
 
 /****************************************************************************/
 
-int QFxCurve::x() const
+qreal QFxCurve::x() const
 {
     return _x;
 }
 
-void QFxCurve::setX(int x)
+void QFxCurve::setX(qreal x)
 {
     if (_x != x) {
         _x = x;
@@ -446,12 +468,12 @@ void QFxCurve::setX(int x)
     }
 }
 
-int QFxCurve::y() const
+qreal QFxCurve::y() const
 {
     return _y;
 }
 
-void QFxCurve::setY(int y)
+void QFxCurve::setY(qreal y)
 {
     if (_y != y) {
         _y = y;
@@ -567,7 +589,6 @@ void QFxPathAttribute::setValue(qreal value)
     \endcode
 
     \sa Path, PathQuad, PathCubic
-
 */
 
 /*!
@@ -577,6 +598,13 @@ void QFxPathAttribute::setValue(qreal value)
     \brief The QFxPathLine class defines a straight line.
 
     \sa QFxPath
+*/
+
+/*!
+    \qmlproperty real PathLine::x
+    \qmlproperty real PathLine::y
+
+    Defines the end point of the line.
 */
 
 void QFxPathLine::addToPath(QPainterPath &path)
@@ -614,20 +642,30 @@ void QFxPathLine::addToPath(QPainterPath &path)
     \sa QFxPath
 */
 
+
 /*!
-   \qmlproperty string PathQuad::controlX
-   The x position of the control point.
+    \qmlproperty real PathQuad::x
+    \qmlproperty real PathQuad::y
+
+    Defines the end point of the curve.
+*/
+
+/*!
+   \qmlproperty real PathQuad::controlX
+   \qmlproperty real PathQuad::controlY
+
+   Defines the position of the control point.
 */
 
 /*!
     the x position of the control point.
 */
-int QFxPathQuad::controlX() const
+qreal QFxPathQuad::controlX() const
 {
     return _controlX;
 }
 
-void QFxPathQuad::setControlX(int x)
+void QFxPathQuad::setControlX(qreal x)
 {
     if (_controlX != x) {
         _controlX = x;
@@ -635,20 +673,16 @@ void QFxPathQuad::setControlX(int x)
     }
 }
 
-/*!
-   \qmlproperty string PathQuad::controlY
-   The y position of the control point.
-*/
 
 /*!
     the y position of the control point.
 */
-int QFxPathQuad::controlY() const
+qreal QFxPathQuad::controlY() const
 {
     return _controlY;
 }
 
-void QFxPathQuad::setControlY(int y)
+void QFxPathQuad::setControlY(qreal y)
 {
     if (_controlY != y) {
         _controlY = y;
@@ -693,20 +727,29 @@ void QFxPathQuad::addToPath(QPainterPath &path)
 */
 
 /*!
-   \qmlproperty string PathCubic::control1X
-   the x position of the first control point.
+    \qmlproperty real PathCubic::x
+    \qmlproperty real PathCubic::y
+
+    Defines the end point of the curve.
+*/
+
+/*!
+   \qmlproperty real PathCubic::control1X
+   \qmlproperty real PathCubic::control1Y
+
+    Defines the position of the first control point.
 */
 
 /*!
     \property QFxPathCubic::control1X
     \brief the x position of the first control point.
 */
-int QFxPathCubic::control1X() const
+qreal QFxPathCubic::control1X() const
 {
     return _control1X;
 }
 
-void QFxPathCubic::setControl1X(int x)
+void QFxPathCubic::setControl1X(qreal x)
 {
     if (_control1X != x) {
         _control1X = x;
@@ -715,20 +758,15 @@ void QFxPathCubic::setControl1X(int x)
 }
 
 /*!
-   \qmlproperty string PathCubic::control1Y
-   the y position of the first control point.
-*/
-
-/*!
     \property QFxPathCubic::control1Y
     \brief the y position of the first control point.
 */
-int QFxPathCubic::control1Y() const
+qreal QFxPathCubic::control1Y() const
 {
     return _control1Y;
 }
 
-void QFxPathCubic::setControl1Y(int y)
+void QFxPathCubic::setControl1Y(qreal y)
 {
     if (_control1Y != y) {
         _control1Y = y;
@@ -737,20 +775,22 @@ void QFxPathCubic::setControl1Y(int y)
 }
 
 /*!
-   \qmlproperty string PathCubic::control2X
-   the x position of the second control point.
+   \qmlproperty real PathCubic::control2X
+   \qmlproperty real PathCubic::control2Y
+
+    Defines the position of the second control point.
 */
 
 /*!
     \property QFxPathCubic::control2X
     \brief the x position of the second control point.
 */
-int QFxPathCubic::control2X() const
+qreal QFxPathCubic::control2X() const
 {
     return _control2X;
 }
 
-void QFxPathCubic::setControl2X(int x)
+void QFxPathCubic::setControl2X(qreal x)
 {
     if (_control2X != x) {
         _control2X = x;
@@ -759,20 +799,15 @@ void QFxPathCubic::setControl2X(int x)
 }
 
 /*!
-   \qmlproperty string PathCubic::control2Y
-   the y position of the second control point.
-*/
-
-/*!
     \property QFxPathCubic::control2Y
     \brief the y position of the second control point.
 */
-int QFxPathCubic::control2Y() const
+qreal QFxPathCubic::control2Y() const
 {
     return _control2Y;
 }
 
-void QFxPathCubic::setControl2Y(int y)
+void QFxPathCubic::setControl2Y(qreal y)
 {
     if (_control2Y != y) {
         _control2Y = y;
