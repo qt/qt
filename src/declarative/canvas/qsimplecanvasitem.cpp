@@ -626,12 +626,8 @@ void QSimpleCanvasItem::addChild(QSimpleCanvasItem *c)
 {
     Q_D(QSimpleCanvasItem);
     d->children.append(c);
-    if(d->graphicsItem) {
-        // XXX - GraphicsView does not preserve the stacking order of items
-        c->setZ(d->children.count());
-    } else {
+    if(!d->graphicsItem) 
         d->needsZOrder = true;
-    }
     childrenChanged();
 }
 
