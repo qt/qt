@@ -4709,10 +4709,13 @@ void QWidget::render(QPaintDevice *target, const QPoint &targetOffset,
     if (redirected) {
         target = redirected;
         offset -= redirectionOffset;
-        if (!inRenderWithPainter) { // Clip handled by shared painter (in qpainter.cpp).
-            const QRegion redirectedSystemClip = redirected->paintEngine()->systemClip();
-            if (!redirectedSystemClip.isEmpty())
-                paintRegion &= redirectedSystemClip.translated(-offset);
+    }
+
+    if (!inRenderWithPainter) { // Clip handled by shared painter (in qpainter.cpp).
+        if (QPaintEngine *targetEngine = target->paintEngine()) {
+            const QRegion targetSystemClip = targetEngine->systemClip();
+            if (!targetSystemClip.isEmpty())
+                paintRegion &= targetSystemClip.translated(-offset);
         }
     }
 
