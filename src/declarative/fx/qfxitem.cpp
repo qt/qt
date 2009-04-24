@@ -1658,7 +1658,7 @@ void QFxItem::classBegin()
 void QFxItem::classComplete()
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::ItemClassComplete> cc;
+    QFxPerfTimer<QFxPerf::ItemComponentComplete> cc;
 #endif
     Q_D(QFxItem);
     d->_classComplete = true;

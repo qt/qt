@@ -228,7 +228,9 @@ void QFxView::continueExecute()
             QPerformanceLog::displayData();
             QPerformanceLog::clear();
             d->root = item;
-            emit sceneResized(QSize(item->width(), item->height()));
+            connect(item, SIGNAL(widthChanged()), this, SLOT(sizeChanged()));
+            connect(item, SIGNAL(heightChanged()), this, SLOT(sizeChanged()));
+            sizeChanged();
         } else if(QWidget *wid = qobject_cast<QWidget *>(obj)) {
             window()->setAttribute(Qt::WA_OpaquePaintEvent, false);
             window()->setAttribute(Qt::WA_NoSystemBackground, false);
@@ -244,6 +246,12 @@ void QFxView::continueExecute()
             emit sceneResized(wid->size());
         }
     }
+}
+
+void QFxView::sizeChanged()
+{
+    if (d->root)
+        emit sceneResized(QSize(d->root->width(),d->root->height()));
 }
 
 QFxItem* QFxView::addItem(const QString &xml, QFxItem* parent)

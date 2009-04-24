@@ -1287,6 +1287,7 @@ void QSimpleCanvasItem::setOptions(Options options, bool set)
                 d->gvAddMouseFilter();
             else
                 d->gvRemoveMouseFilter();
+
         } else {
             QSimpleCanvas *c = canvas();
             if(c) {
