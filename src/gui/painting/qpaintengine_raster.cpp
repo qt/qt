@@ -4405,6 +4405,9 @@ void QClipData::fixup()
  */
 void QClipData::setClipRect(const QRect &rect)
 {
+    if (rect == clipRect)
+        return;
+
 //    qDebug() << "setClipRect" << clipSpanHeight << count << allocated << rect;
     hasRectClip = true;
     clipRect = rect;
@@ -4413,6 +4416,11 @@ void QClipData::setClipRect(const QRect &rect)
     xmax = rect.x() + rect.width();
     ymin = qMin(rect.y(), clipSpanHeight);
     ymax = qMin(rect.y() + rect.height(), clipSpanHeight);
+
+    if (m_spans) {
+        delete m_spans;
+        m_spans = 0;
+    }
 
 //    qDebug() << xmin << xmax << ymin << ymax;
 }
@@ -4437,6 +4445,12 @@ void QClipData::setClipRegion(const QRegion &region)
         ymin = rect.y();
         ymax = rect.y() + rect.height();
     }
+
+    if (m_spans) {
+        delete m_spans;
+        m_spans = 0;
+    }
+
 }
 
 /*!
