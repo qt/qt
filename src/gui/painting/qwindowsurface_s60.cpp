@@ -35,12 +35,17 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
     d_ptr->bytes = 0;
     d_ptr->bitmap = 0;
 
-    TSize size(0, 0);
     TDisplayMode mode = S60->screenDevice()->DisplayMode();
+    bool isOpaque = qt_widget_private(widget)->isOpaque;
+    if (mode == EColor16MA && isOpaque)
+        mode = EColor16MU; // Faster since 16MU -> 16MA is typically accelerated
+    else if (mode == EColor16MU && !isOpaque)
+        mode = EColor16MA; // Try for transparency anyway
 
-	// We create empty CFbsBitmap here -> it will be resized in setGeometry
+
+    // We create empty CFbsBitmap here -> it will be resized in setGeometry
     d_ptr->bitmap = new (ELeave) CFbsBitmap;
-    User::LeaveIfError( d_ptr->bitmap->Create( size, mode ) );
+    User::LeaveIfError( d_ptr->bitmap->Create(TSize(0, 0), mode ) );
 
     updatePaintDeviceOnBitmap();
 
@@ -143,12 +148,6 @@ void QS60WindowSurface::lockBitmapHeap()
 
         // Get some values for QImage creation
         TDisplayMode mode  = bitmap->DisplayMode();
-        QWidget *win = QS60WindowSurfacePrivate::lockedSurface->window();
-        RWindowBase *rwin = win->winId()->DrawableWindow();
-        TDisplayMode rwMode = rwin->DisplayMode();
-
-        mode = rwMode;
-
         if (mode == EColor16MA
             && qt_widget_private(QS60WindowSurfacePrivate::lockedSurface->window())->isOpaque)
             mode = EColor16MU;

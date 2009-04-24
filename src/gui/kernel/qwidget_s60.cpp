@@ -206,7 +206,8 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
             if (q->testAttribute(Qt::WA_TranslucentBackground)) {
                 RWindow *rwindow = static_cast<RWindow*>(topExtra->rwindow);
                 TDisplayMode gotDM = (TDisplayMode)rwindow->SetRequiredDisplayMode(EColor16MA);
-                int erro = rwindow->SetTransparencyAlphaChannel();
+                if (rwindow->SetTransparencyAlphaChannel() == KErrNone)
+                    rwindow->SetBackgroundColor(~0);
             }
         }
 
@@ -451,7 +452,8 @@ void QWidgetPrivate::s60UpdateIsOpaque()
         QTLWExtra *topExtra = topData();
         RWindow *rwindow = static_cast<RWindow*>(topExtra->rwindow);
         TDisplayMode gotDM = (TDisplayMode)rwindow->SetRequiredDisplayMode(EColor16MA);
-        int erro = rwindow->SetTransparencyAlphaChannel();
+        if (rwindow->SetTransparencyAlphaChannel() == KErrNone)
+            rwindow->SetBackgroundColor(~0);
     } else {
         QTLWExtra *topExtra = topData();
         RWindow *rwindow = static_cast<RWindow*>(topExtra->rwindow);
