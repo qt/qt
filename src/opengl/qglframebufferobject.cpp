@@ -160,8 +160,7 @@ QGLFramebufferObjectFormat::QGLFramebufferObjectFormat(const QGLFramebufferObjec
     Assigns \a other to this object.
 */
 
-QGLFramebufferObjectFormat::QGLFramebufferObjectFormat &
-QGLFramebufferObjectFormat::operator=(const QGLFramebufferObjectFormat &other)
+QGLFramebufferObjectFormat &QGLFramebufferObjectFormat::operator=(const QGLFramebufferObjectFormat &other)
 {
     *d = *other.d;
     return *this;
