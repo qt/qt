@@ -276,11 +276,11 @@ case 23: {
 }   break;
 
 case 24: {
-    sym(1).Node = makeAstNode<AST::UiSourceElement>(driver->nodePool(), sym(1).Statement);
+    sym(1).Node = makeAstNode<AST::UiSourceElement>(driver->nodePool(), sym(1).Node);
 }   break;
 
 case 25: {
-    sym(1).Node = makeAstNode<AST::UiSourceElement>(driver->nodePool(), sym(1).Statement);
+    sym(1).Node = makeAstNode<AST::UiSourceElement>(driver->nodePool(), sym(1).Node);
 }   break;
 
 case 26: {

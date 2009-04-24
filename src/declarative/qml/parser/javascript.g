@@ -645,14 +645,14 @@ case $rule_number: {
 UiObjectMember: FunctionDeclaration ;
 /.
 case $rule_number: {
-    sym(1).Node = makeAstNode<AST::UiSourceElement>(driver->nodePool(), sym(1).Statement);
+    sym(1).Node = makeAstNode<AST::UiSourceElement>(driver->nodePool(), sym(1).Node);
 }   break;
 ./
 
 UiObjectMember: VariableStatement ;
 /.
 case $rule_number: {
-    sym(1).Node = makeAstNode<AST::UiSourceElement>(driver->nodePool(), sym(1).Statement);
+    sym(1).Node = makeAstNode<AST::UiSourceElement>(driver->nodePool(), sym(1).Node);
 }   break;
 ./
 

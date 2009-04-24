@@ -1954,14 +1954,14 @@ class UiSourceElement: public UiObjectMember
 public:
     JAVASCRIPT_DECLARE_AST_NODE(UiSourceElement)
 
-    UiSourceElement(Statement *sourceElement)
+    UiSourceElement(Node *sourceElement)
         : sourceElement(sourceElement)
     { kind = K; }
 
     virtual void accept0(Visitor *visitor);
 
 // attributes
-    Statement *sourceElement;
+    Node *sourceElement;
 };
 
 class UiObjectBinding: public UiObjectMember

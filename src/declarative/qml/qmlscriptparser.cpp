@@ -240,7 +240,7 @@ Object *ProcessAST::defineObjectBinding(int line,
                                      const QString &objectType,
                                      AST::UiObjectInitializer *initializer)
 {
-
+#if 0
     if (objectType == QLatin1String("Connection")) {
 
         AST::UiObjectMemberList *it = initializer->members;
@@ -410,6 +410,7 @@ Object *ProcessAST::defineObjectBinding(int line,
         _stateStack.pop();
         return obj;
     }
+#endif
 
     return defineObjectBinding_helper(line, qualifiedId, objectType, initializer);
 }
@@ -599,19 +600,28 @@ bool ProcessAST::visit(AST::UiArrayBinding *node)
 
 bool ProcessAST::visit(AST::UiSourceElement *node)
 {
+    QmlParser::Object *obj = currentObject();
+    if (! (obj && obj->typeName == "Script")) {
+        // ### warning
+        return false;
+    }
+
     QString source;
     QTextStream out(&source);
     PrettyPretty pp(out);
 
     pp(node->sourceElement);
 
-    Object *obj = defineObjectBinding(-1, // ### line
-                                      0,
-                                      QLatin1String("Script"));
+    int line = 0;
+    if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement))
+        line = funDecl->functionToken.startLine;
+    else if (AST::VariableStatement *varStmt = AST::cast<AST::VariableStatement *>(node->sourceElement))
+        line = varStmt->declarationKindToken.startLine;
 
     Value *value = new Value;
     value->primitive = source;
-    value->line = -1; // ### fix me
+    value->line = line;
+
     obj->getDefaultProperty()->addValue(value);
 
     return false;
