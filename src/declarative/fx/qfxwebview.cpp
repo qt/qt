@@ -372,12 +372,16 @@ void QFxWebView::setIdealHeight(int ih)
 }
 
 /*!
-    \qmlproperty bool WebView::interactive
-    This property holds controls whether the item responds to mouse and key events.
+  \qmlproperty bool WebView::interactive
+
+  This property holds controls whether the item responds to mouse and
+  key events.
 */
+
 /*!
-    \property QFxWebView::interactive
-    \brief controls whether the item responds to mouse and key events.
+  \property QFxWebView::interactive
+
+  \brief controls whether the item responds to mouse and key events.
 */
 bool QFxWebView::interactive() const
 {
@@ -458,19 +462,19 @@ void QFxWebView::paintPage(const QRect& r)
 }
 
 /*!
-    \qmlproperty int WebView::cacheSize
-    This property holds the maximum number of pixels of image cache to allow
+  \qmlproperty int WebView::cacheSize
 
-    The default is 0.1 megapixels.
-
-    The cache will not be larger than the (unscaled) size of the WebView.
+  This property holds the maximum number of pixels of image cache to
+  allow. The default is 0.1 megapixels. The cache will not be larger
+  than the (unscaled) size of the WebView.
 */
-/*!
-    \property QFxWebView::cacheSize
-    \brief the maximum number of pixels of image cache to allow
-    The default is 0.1 megapixels.
 
-    The cache will not be larger than the (unscaled) size of the QFxWebView.
+/*!
+  \property QFxWebView::cacheSize
+
+  The maximum number of pixels of image cache to allow. The default
+  is 0.1 megapixels. The cache will not be larger than the (unscaled)
+  size of the QFxWebView.
 */
 int QFxWebView::cacheSize() const
 {
