@@ -1,5 +1,7 @@
 
 #include "qmlscriptparser_p.h"
+#include "qmlxmlparser_p.h"
+#include "qmlparser_p.h"
 
 #include "parser/javascriptengine_p.h"
 #include "parser/javascriptparser_p.h"
@@ -630,6 +632,21 @@ QmlScriptParser::~QmlScriptParser()
 
 bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
 {
+    if (QmlComponentPrivate::isXml(data)) {
+        // parse using the XML parser.
+        QmlXmlParser xmlParser;
+        if (xmlParser.parse(data, url)) {
+            _nameSpacePaths = xmlParser.nameSpacePaths();
+            root = xmlParser.takeTree();
+            _typeNames = xmlParser.types();
+            return true;
+        }
+
+        _error = xmlParser.errorDescription();
+        _errorLine = 0; // ### FIXME
+        return false;
+    }
+
     const QString fileName = url.toString();
     const QString code = QString::fromUtf8(data); // ### FIXME
 
@@ -678,6 +695,19 @@ QStringList QmlScriptParser::types() const
 Object *QmlScriptParser::tree() const
 {
     return root;
+}
+
+void QmlScriptParser::clear()
+{
+    if(root) {
+        root->release();
+        root = 0;
+    }
+    _nameSpacePaths.clear();
+    _typeNames.clear();
+    _error.clear();
+    _scriptFile.clear();
+    _errorLine = 0;
 }
 
 int QmlScriptParser::findOrCreateTypeId(const QString &name)

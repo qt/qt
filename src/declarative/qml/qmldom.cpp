@@ -41,7 +41,6 @@
 
 #include "qmldom.h"
 #include "qmldom_p.h"
-#include "private/qmlxmlparser_p.h"
 #include "private/qmlcompiler_p.h"
 #include "qmlcompiledcomponent_p.h"
 #include <QtCore/qbytearray.h>
@@ -152,7 +151,7 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
 {
     d->error = QString();
 
-    QmlXmlParser parser;
+    QmlScriptParser parser;
     if(!parser.parse(data)) {
         d->error = parser.errorDescription();
         return false;

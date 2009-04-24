@@ -51,7 +51,6 @@
 #include <qmlengine.h>
 #include <QFileInfo>
 #include <qmlbindablevalue.h>
-#include "private/qmlxmlparser_p.h"
 #include "qmlcompiledcomponent_p.h"
 #include <QtCore/qdebug.h>
 #include <QApplication>

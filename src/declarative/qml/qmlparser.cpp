@@ -55,7 +55,6 @@
 #include <qmlbasicscript.h>
 #include "private/qmetaobjectbuilder_p.h"
 #include <private/qmlvmemetaobject_p.h>
-#include "private/qmlxmlparser_p.h"
 #include <private/qmlcompiler_p.h>
 #include <QtDebug>
 

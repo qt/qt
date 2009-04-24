@@ -1,14 +1,18 @@
 #ifndef QMLSCRIPTPARSER_P_H
 #define QMLSCRIPTPARSER_P_H
 
+#include <QtCore/QList>
+#include <QtCore/QUrl>
 #include <qml.h>
-#include <private/qmlcomponent_p.h>
-#include <private/qmlparser_p.h>
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
+namespace QmlParser {
+    class Object;
+}
 
 class QByteArray;
 
@@ -26,6 +30,8 @@ public:
     QStringList types() const;
 
     QmlParser::Object *tree() const;
+
+    void clear();
 
 // ### private:
     int findOrCreateTypeId(const QString &name);
