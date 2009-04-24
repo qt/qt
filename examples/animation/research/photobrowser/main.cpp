@@ -39,23 +39,44 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qobject.h>
-#ifdef QT_EXPERIMENTAL_SOLUTION
-#include "qtgraphicswidget.h"
-#else
-#include <QtGui/qgraphicswidget.h>
-#endif
+#include <QtGui>
 
-class SplashItem : public QGraphicsWidget
+#include "river.h"
+#include "menu.h"
+
+int main(int argc, char **argv)
 {
-    Q_OBJECT
-public:
-    SplashItem(QGraphicsItem *parent = 0);
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    QApplication app(argc, argv);
+    if (app.arguments().size() == 1) {
+        qWarning("you have to specifiy a path to look for the photos");
+        return 0;
+    }
+    
+    
+    QGraphicsScene scene;
+    scene.setSceneRect(QRectF(QPointF(), River::fixedSize()));
 
-protected:
-    void keyPressEvent(QKeyEvent *event);
+    QGraphicsView view(&scene);
+    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-private:
-    QString text;
-};
+    const int fw = view.frameWidth() * 2;
+    view.setFixedSize(River::fixedSize() + QSize(fw,fw));
+
+    River river(app.arguments()[1]);
+    scene.addItem(&river);
+    
+    Menu menu(&river);
+    menu.addAction(QLatin1String("River Mode"), &river, SLOT(setRiverMode()));
+    menu.addAction(QLatin1String("Grid Mode"), &river, SLOT(setGridMode()));
+    menu.addAction(QLatin1String("Cover Flow"), &river, SLOT(setCoverMode()));
+    menu.addAction(QLatin1String("Hide Menu"), &menu, SLOT(hide()));
+    menu.addAction(QLatin1String("Exit"), &app, SLOT(quit()));
+    menu.setZValue(2);
+    menu.setFocus();
+
+    river.menu = &menu;
+    view.show();
+
+    return app.exec();
+}

@@ -77,13 +77,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    Constructs the painted item.
+    Constructs a painted item with parent object \a parent.
 */
-
-//### what options do we need to set?
 QFxPainted::QFxPainted(QFxItem *parent)
   : QFxItem(*(new QFxPaintedPrivate), parent)
 {
+    //### what options do we need to set?
     setOptions(HasContents, true);
 }
 
@@ -105,8 +104,9 @@ QFxPainted::QFxPainted(QFxPaintedPrivate &dd, QFxItem *parent)
 /*!
     \fn QFxPainted::paint(QPainter *painter)
 
-    Implement this method to paint the item.  The painting will be cached and
-    paint() will only be called again if \l markDirty() has been called.
+    Implement this method to paint the item using \a painter.
+    The painting will be cached and paint() will only be called again
+    if \l markDirty() has been called.
 
     \sa markDirty()
 */

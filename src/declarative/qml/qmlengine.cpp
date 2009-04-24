@@ -461,7 +461,7 @@ QmlContext *QmlEngine::activeContext()
 /*!
     Sets the mappings from namespace URIs to URL to \a map.
 
-    \sa nameSpacePaths
+    \sa nameSpacePaths()
 */
 void QmlEngine::setNameSpacePaths(const QMap<QString,QString>& map)
 {
@@ -472,7 +472,7 @@ void QmlEngine::setNameSpacePaths(const QMap<QString,QString>& map)
 /*!
     Adds mappings (given by \a map) from namespace URIs to URL.
 
-    \sa nameSpacePaths
+    \sa nameSpacePaths()
 */
 void QmlEngine::addNameSpacePaths(const QMap<QString,QString>& map)
 {
@@ -483,7 +483,7 @@ void QmlEngine::addNameSpacePaths(const QMap<QString,QString>& map)
 /*!
     Adds a mapping from namespace URI \a ns to URL \a path.
 
-    \sa nameSpacePaths
+    \sa nameSpacePaths()
 */
 void QmlEngine::addNameSpacePath(const QString& ns, const QString& path)
 {
@@ -521,7 +521,7 @@ void QmlEngine::addNameSpacePath(const QString& ns, const QString& path)
     In the above case, "xyz://abc/def/Bar.qml" would then map to
     "file:///opt/jkl/def/Bar.qml".
 
-    \sa componentUrl
+    \sa componentUrl()
 */
 QMap<QString,QString> QmlEngine::nameSpacePaths() const
 {
@@ -533,7 +533,7 @@ QMap<QString,QString> QmlEngine::nameSpacePaths() const
     Returns the URL for the component source \a src, as mapped
     by the nameSpacePaths(), resolved relative to \a baseUrl.
 
-    \sa nameSpacePaths
+    \sa nameSpacePaths()
 */
 QUrl QmlEngine::componentUrl(const QUrl& src, const QUrl& baseUrl) const
 {

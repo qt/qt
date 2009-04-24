@@ -39,23 +39,28 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qobject.h>
-#ifdef QT_EXPERIMENTAL_SOLUTION
-#include "qtgraphicswidget.h"
-#else
-#include <QtGui/qgraphicswidget.h>
-#endif
+#ifndef __RIVERITEM__H__
+#define __RIVERITEM__H__
 
-class SplashItem : public QGraphicsWidget
+#include <QtGui/QGraphicsPixmapItem>
+
+class RiverItemAnimator;
+
+class RiverItem : public QGraphicsPixmapItem
 {
-    Q_OBJECT
 public:
-    SplashItem(QGraphicsItem *parent = 0);
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    RiverItem(QGraphicsItem *parent);
+    ~RiverItem();
 
+    void setPixmap(const QPixmap &);
+    void setFullScreen(bool b, qreal originScaleFactor);
+    
 protected:
-    void keyPressEvent(QKeyEvent *event);
+    void mousePressEvent(QGraphicsSceneMouseEvent*);
 
 private:
-    QString text;
+    QPointF m_nonFSPos; //to save the position when not in fullscreen
+    bool m_fullscreen;
 };
+
+#endif //__RIVERITEM__H__

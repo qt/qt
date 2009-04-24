@@ -24,7 +24,7 @@ backends may be added if the performance can be made acceptable.
 \o \l Shadow
 \o \l Blur
 \o \l Reflection
-\o \l Highlights
+\o \l Highlight
 \o \l Particles
 \endlist
 

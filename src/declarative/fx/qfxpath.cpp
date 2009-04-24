@@ -462,8 +462,43 @@ void QFxCurve::setY(int y)
 /****************************************************************************/
 
 /*!
-   \qmlclass PathAttribute
-   \brief The PathAttribute allows to set an attribute at a given position in the path.
+    \qmlclass PathAttribute
+    \brief The PathAttribute allows setting an attribute at a given position in a Path.
+
+    The PathAttribute element allows attibutes consisting of a name and a
+    value to be specified for the endpoints of path segments.  The attributes
+    are exposed to the delegate as \l {Attached Properties}.  The value of
+    an attribute at any particular point is interpolated from the PathAttributes
+    bounding the point.
+
+    The example below shows a path with the items scaled to 10% at the ends of
+    the path and scaled 100% along the PathLine in the middle.  Note the use
+    of the PathView.scale attached property to set the scale of the delegate.
+    \table
+    \row
+    \o \image declarative-pathattribute.png
+    \o
+    \code
+    <Component id="Delegate">
+        <Rect id="Wrapper" width="20" height="20" scale="{PathView.scale}" color="steelblue"/>
+    </Component>
+    <PathView width="200" height="100" model="{Model}" delegate="{Delegate}">
+        <path>
+            <Path startX="20" startY="0">
+                <PathAttribute name="scale" value="0.1"/>
+                <PathQuad x="50" y="80" controlX="0" controlY="80"/>
+                <PathAttribute name="scale" value="1"/>
+                <PathLine x="150" y="80"/>
+                <PathAttribute name="scale" value="1"/>
+                <PathQuad x="180" y="0" controlX="200" controlY="80"/>
+                <PathAttribute name="scale" value="0.1"/>
+            </Path>
+        </path>
+    </PathView>
+    \endcode
+    \endtable
+
+   \sa Path
 */
 
 /*!
@@ -519,8 +554,19 @@ void QFxPathAttribute::setValue(qreal value)
 /****************************************************************************/
 
 /*!
-   \qmlclass PathLine
-   \brief The PathLine defines a straight line.
+    \qmlclass PathLine
+    \brief The PathLine defines a straight line.
+
+    The example below creates a path consisting of a straight line from
+    0,100 to 200,100:
+
+    \code
+    <Path startX="0" startY="100">
+        <PathLine x="200" y="100"/>
+    </Path>
+    \endcode
+
+    \sa Path, PathQuad, PathCubic
 
 */
 
@@ -541,9 +587,22 @@ void QFxPathLine::addToPath(QPainterPath &path)
 /****************************************************************************/
 
 /*!
-   \qmlclass PathQuad
-   \brief The PathQuad defines a quadratic Bezier curve with a control point.
+    \qmlclass PathQuad
+    \brief The PathQuad defines a quadratic Bezier curve with a control point.
 
+    The following QML produces the path shown below:
+    \table
+    \row
+    \o \image declarative-pathquad.png
+    \o
+    \code
+    <Path startX="0" startY="0">
+        <PathQuad x="200" y="0" controlX="100" controlY="150"/>
+    </Path>
+    \endcode
+    \endtable
+
+    \sa Path, PathCubic, PathLine
 */
 
 /*!
@@ -557,7 +616,7 @@ void QFxPathLine::addToPath(QPainterPath &path)
 
 /*!
    \qmlproperty string PathQuad::controlX
-   the x position of the control point.
+   The x position of the control point.
 */
 
 /*!
@@ -578,7 +637,7 @@ void QFxPathQuad::setControlX(int x)
 
 /*!
    \qmlproperty string PathQuad::controlY
-   the y position of the control point.
+   The y position of the control point.
 */
 
 /*!
@@ -608,6 +667,20 @@ void QFxPathQuad::addToPath(QPainterPath &path)
    \qmlclass PathCubic
    \brief The PathCubic defines a cubic Bezier curve with two control points.
 
+    The following QML produces the path shown below:
+    \table
+    \row
+    \o \image declarative-pathcubic.png
+    \o
+    \code
+    <Path startX="20" startY="0">
+         <PathCubic x="180" y="0" control1X="-10" control1Y="90"
+                    control2X="210" control2Y="90"/>
+    </Path>
+    \endcode
+    \endtable
+
+    \sa Path, PathQuad, PathLine
 */
 
 /*!
@@ -715,9 +788,39 @@ void QFxPathCubic::addToPath(QPainterPath &path)
 /****************************************************************************/
 
 /*!
-   \qmlclass PathPercent
-   \brief The PathPercent manipulates the way a path is interpreted.
+    \qmlclass PathPercent
+    \brief The PathPercent manipulates the way a path is interpreted.
 
+    The examples below show the normal distrubution of items along a path
+    compared to a distribution which places 50% of the items along the
+    PathLine section of the path.
+    \table
+    \row
+    \o \image declarative-nopercent.png
+    \o
+    \code
+    <Path startX="20" startY="0">
+        <PathQuad x="50" y="80" controlX="0" controlY="80"/>
+        <PathLine x="150" y="80"/>
+        <PathQuad x="180" y="0" controlX="200" controlY="80"/>
+    </Path>
+    \endcode
+    \row
+    \o \image declarative-percent.png
+    \o
+    \code
+    <Path startX="20" startY="0">
+        <PathQuad x="50" y="80" controlX="0" controlY="80"/>
+        <PathPercent value=".25"/>
+        <PathLine x="150" y="80"/>
+        <PathPercent value=".75"/>
+        <PathQuad x="180" y="0" controlX="200" controlY="80"/>
+        <PathPercent value="1"/>
+    </Path>
+    \endcode
+    \endtable
+
+    \sa Path
 */
 
 /*!
