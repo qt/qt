@@ -84,25 +84,25 @@ public:
             clearPropertyChangeSet();
         }
 
-        if (xml.name() == "properties")
+        if (false && xml.name() == "properties")
             startDeclareProperties();
-        else if (xml.name() == "signals")
+        else if (false && xml.name() == "signals")
             startDeclareSignals();
-        else if (xml.name() == "states")
+        else if (false && xml.name() == "states")
             loop(); // ignore
-        else if (xml.name() == "transitions")
+        else if (false && xml.name() == "transitions")
             loop(); // ignore
         else if (knownListProperties.contains(xml.name().toString()))
             startList();
-        else if (xml.name() == "SetProperties")
+        else if (false && xml.name() == "SetProperties")
             startSetProperties();
-        else if (xml.name() == "SetProperty")
+        else if (false && xml.name() == "SetProperty")
             startSetProperty();
-        else if (xml.name() == "ParentChange")
+        else if (false && xml.name() == "ParentChange")
             startParentChange();
-        else if (xml.name() == "Connection")
+        else if (false && xml.name() == "Connection")
             startConnection();
-        else if (xml.name() == "Script")
+        else if (false && xml.name() == "Script")
             startScript();
         else if (xml.name().at(0).isLower() && xml.attributes().isEmpty())
             startObjectProperty();
@@ -203,7 +203,14 @@ public:
             setProperty(attribute.name().toString(), attribute.value().toString());
         }
 
-        loop();
+        if (name == "Script") {
+            QString text = xml.readElementText();
+            if (!text.trimmed().isEmpty()) {
+                out << text << endl;
+            }
+        } else {
+            loop();
+        }
 
         if (name == "State")
             clearPropertyChangeSet();
