@@ -55,6 +55,7 @@
 #include <QtCore/qset.h>
 #include <QtDeclarative/qmlexpression.h>
 #include <private/qmlstringconverters_p.h>
+#include <private/qvariantanimation_p.h>
 
 /* TODO:
     Check for any memory leaks
@@ -1823,99 +1824,13 @@ void QmlParallelAnimation::transition(QmlStateActions &actions,
 
 QML_DEFINE_TYPE(QmlParallelAnimation,ParallelAnimation);
 
-//XXX it would be good to use QVariantAnimation's interpolators if possible
 QVariant QmlVariantAnimationPrivate::interpolateVariant(const QVariant &from, const QVariant &to, qreal progress)
 {
     if (from.userType() != to.userType())
         return QVariant();
 
-    QVariant res;
-    switch (from.userType()) {
-    case QVariant::Int: {
-        int f = from.toInt();
-        int t = to.toInt();
-        res = f + (t - f) * progress;
-        break;
-    }
-    case QVariant::Double: {
-        double f = from.toDouble();
-        double t = to.toDouble();
-        res = f + (t - f) * progress;
-        break;
-    }
-    case QMetaType::Float: {
-        float f = from.toDouble();
-        float t = to.toDouble();
-        res = f + (t - f) * progress;
-        break;
-    }
-    case QVariant::Color: {
-        QColor f = from.value<QColor>();
-        QColor t = to.value<QColor>();
-        uint red = uint(qreal(f.red()) + progress * (qreal(t.red()) - qreal(f.red())));
-        uint green = uint(qreal(f.green()) + progress * (qreal(t.green()) - qreal(f.green())));
-        uint blue = uint(qreal(f.blue()) + progress * (qreal(t.blue()) - qreal(f.blue())));
-        res = QColor(red,green,blue);
-        break;
-    }
-    case QVariant::Rect: {
-        QRect f = from.value<QRect>();
-        QRect t = to.value<QRect>();
-        int x = f.x() + (t.x() - f.x()) * progress;
-        int y = f.y() + (t.y() - f.y()) * progress;
-        int w = f.width() + (t.width() - f.width()) * progress;
-        int h = f.height() + (t.height() - f.height()) * progress;
-        res = QRect(x, y, w, h);
-        break;
-    }
-    case QVariant::RectF: {
-        QRectF f = from.value<QRectF>();
-        QRectF t = to.value<QRectF>();
-        qreal x = f.x() + (t.x() - f.x()) * progress;
-        qreal y = f.y() + (t.y() - f.y()) * progress;
-        qreal w = f.width() + (t.width() - f.width()) * progress;
-        qreal h = f.height() + (t.height() - f.height()) * progress;
-        res = QRectF(x, y, w, h);
-        break;
-    }
-    case QVariant::Point: {
-        QPoint f = from.value<QPoint>();
-        QPoint t = to.value<QPoint>();
-        int x = f.x() + (t.x() - f.x()) * progress;
-        int y = f.y() + (t.y() - f.y()) * progress;
-        res = QPointF(x, y);
-        break;
-    }
-    case QVariant::PointF: {
-        QPointF f = from.value<QPointF>();
-        QPointF t = to.value<QPointF>();
-        qreal x = f.x() + (t.x() - f.x()) * progress;
-        qreal y = f.y() + (t.y() - f.y()) * progress;
-        res = QPointF(x, y);
-        break;
-    }
-    case QVariant::Size: {
-        QSize f = from.value<QSize>();
-        QSize t = to.value<QSize>();
-        int w = f.width() + (t.width() - f.width()) * progress;
-        int h = f.height() + (t.height() - f.height()) * progress;
-        res = QSize(w, h);
-        break;
-    }
-    case QVariant::SizeF: {
-        QSizeF f = from.value<QSizeF>();
-        QSizeF t = to.value<QSizeF>();
-        qreal w = f.width() + (t.width() - f.width()) * progress;
-        qreal h = f.height() + (t.height() - f.height()) * progress;
-        res = QSizeF(w, h);
-        break;
-    }
-    default:
-        res = to;
-        break;
-    }
-
-    return res;
+    QVariantAnimation::Interpolator interpolator = QVariantAnimationPrivate::getInterpolator(from.userType());
+    return interpolator(from.constData(), to.constData(), progress);
 }
 
 //convert a variant from string type to another animatable type

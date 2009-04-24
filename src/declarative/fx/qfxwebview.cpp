@@ -243,7 +243,7 @@ void QFxWebView::componentComplete()
     This property holds the progress of loading the current URL, from 0 to 1.
 */
 /*!
-    \property qreal QFxWebView::progress
+    \property QFxWebView::progress
     \brief the progress of loading the current URL, from 0 to 1.
 */
 qreal QFxWebView::progress() const
@@ -284,7 +284,7 @@ void QFxWebView::doLoadFinished(bool ok)
     loading of the URL successfully starts.
 */
 /*!
-    \property QString QFxWebView::url
+    \property QFxWebView::url
     \brief the URL to the page displayed in this item.
 
     \sa urlChanged()
@@ -330,7 +330,7 @@ void QFxWebView::setUrl(const QString &n)
     This property holds the ideal width for displaying the current URL.
 */
 /*!
-    \property int QFxWebView::idealWidth
+    \property QFxWebView::idealWidth
     \brief the ideal width for displaying the current URL.
 */
 int QFxWebView::idealWidth() const
@@ -353,7 +353,7 @@ void QFxWebView::setIdealWidth(int iw)
     This property holds the ideal height for displaying the current URL.
 */
 /*!
-    \property int QFxWebView::idealHeight
+    \property QFxWebView::idealHeight
     \brief the ideal height for displaying the current URL.
 */
 int QFxWebView::idealHeight() const
@@ -376,7 +376,7 @@ void QFxWebView::setIdealHeight(int ih)
     This property holds controls whether the item responds to mouse and key events.
 */
 /*!
-    \property bool QFxWebView::interactive
+    \property QFxWebView::interactive
     \brief controls whether the item responds to mouse and key events.
 */
 bool QFxWebView::interactive() const
@@ -398,7 +398,7 @@ void QFxWebView::setInteractive(bool i)
     This property holds hints as to whether the item should be drawn anti-aliased.
 */
 /*!
-    \property bool QFxWebView::smooth
+    \property QFxWebView::smooth
     \brief hints as to whether the item should be drawn anti-aliased.
 */
 bool QFxWebView::smooth() const
@@ -466,7 +466,7 @@ void QFxWebView::paintPage(const QRect& r)
     The cache will not be larger than the (unscaled) size of the WebView.
 */
 /*!
-    \property int QFxWebView::cacheSize
+    \property QFxWebView::cacheSize
     \brief the maximum number of pixels of image cache to allow
     The default is 0.1 megapixels.
 

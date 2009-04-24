@@ -320,7 +320,7 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
-    \fn void QFxItem::keyPress()
+    \fn void QFxItem::keyPress(QObject *event)
 
     This signal is emitted when a key is pressed.
 
@@ -335,7 +335,7 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
-    \fn void QFxItem::keyRelease()
+    \fn void QFxItem::keyRelease(QObject *event)
 
     This signal is emitted when a key is released.
 
@@ -783,7 +783,7 @@ void QFxItem::setQml(const QString &qml)
         if(!d->_qmlcomp->isLoading())
             qmlLoaded();
         else
-            QObject::connect(d->_qmlcomp, SIGNAL(statusChanged(Status)),
+            QObject::connect(d->_qmlcomp, SIGNAL(statusChanged(QmlComponent::Status)),
                              this, SLOT(qmlLoaded()));
     }
 }
@@ -1650,7 +1650,7 @@ void QFxItem::newChild(const QString &type)
     if(!d->_qmlnewcomp.last()->isLoading())
         qmlLoaded();
     else
-        connect(d->_qmlnewcomp.last(), SIGNAL(statusChanged(Status)), 
+        connect(d->_qmlnewcomp.last(), SIGNAL(statusChanged(QmlComponent::Status)), 
                 this, SLOT(qmlLoaded()));
 }
 
