@@ -86,6 +86,7 @@ QT_BEGIN_NAMESPACE
 
 MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     : QMainWindow(parent)
+    , m_filterCombo(0)
     , m_toolBarMenu(0)
     , m_cmdLine(cmdLine)
     , m_progressWidget(0)
@@ -217,12 +218,14 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         if (!m_cmdLine->currentFilter().isEmpty()) {
             const QString &curFilter = m_cmdLine->currentFilter();
             m_helpEngine->setCurrentFilter(curFilter);
-            int idx = m_filterCombo->findText(curFilter);
-            if (idx >= 0) {
-                bool blocked = m_filterCombo->signalsBlocked();
-                m_filterCombo->blockSignals(true);
-                m_filterCombo->setCurrentIndex(idx);
-                m_filterCombo->blockSignals(blocked);
+            if (m_filterCombo) {
+                int idx = m_filterCombo->findText(curFilter);
+                if (idx >= 0) {
+                    bool blocked = m_filterCombo->signalsBlocked();
+                    m_filterCombo->blockSignals(true);
+                    m_filterCombo->setCurrentIndex(idx);
+                    m_filterCombo->blockSignals(blocked);
+                }
             }
         }
 

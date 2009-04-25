@@ -393,6 +393,7 @@ void HelpViewer::mousePressEvent(QMouseEvent *event)
 void HelpViewer::setLoadFinished(bool ok)
 {
     loadFinished = ok;
+    emit sourceChanged(url());
 }
 
 #else  // !defined(QT_NO_WEBKIT)
