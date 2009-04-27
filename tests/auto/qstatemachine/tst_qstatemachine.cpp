@@ -1231,7 +1231,7 @@ void tst_QStateMachine::stateFinished()
     s1_1->addTransition(s1_2);
     s1->setInitialState(s1_1);
     QFinalState *s2 = new QFinalState(machine.rootState());
-    s1->addTransition(new QStateFinishedTransition(s1, QList<QAbstractState*>() << s2));
+    s1->addTransition(s1, SIGNAL(finished()), s2);
     machine.setInitialState(s1);
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
     machine.start();
@@ -1260,7 +1260,7 @@ void tst_QStateMachine::parallelStates()
     QFinalState *s2 = new QFinalState();
     machine.addState(s2);
 
-    s1->addFinishedTransition(s2);
+    s1->addTransition(s1, SIGNAL(finished()), s2);
 
     machine.setInitialState(s1);
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));

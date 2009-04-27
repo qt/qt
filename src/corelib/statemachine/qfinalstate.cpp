@@ -76,8 +76,6 @@ QT_BEGIN_NAMESPACE
   machine.setInitialState(s1);
   machine.start();
   \endcode
-
-  \sa QStateFinishedTransition
 */
 
 class QFinalStatePrivate : public QAbstractStatePrivate

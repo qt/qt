@@ -57,7 +57,6 @@ QT_MODULE(Core)
 class QAbstractTransition;
 class QHistoryState;
 class QSignalTransition;
-class QStateFinishedTransition;
 
 class QStatePrivate;
 class Q_CORE_EXPORT QState : public QAbstractState
@@ -84,7 +83,6 @@ public:
     QAbstractTransition *addTransition(QAbstractTransition *transition);
     QSignalTransition *addTransition(QObject *sender, const char *signal, QAbstractState *target);
     QAbstractTransition *addTransition(QAbstractState *target);
-    QStateFinishedTransition *addFinishedTransition(QAbstractState *target);
     void removeTransition(QAbstractTransition *transition);
     QList<QAbstractTransition*> transitions() const;
 
@@ -92,6 +90,9 @@ public:
 
     QAbstractState *initialState() const;
     void setInitialState(QAbstractState *state);
+
+Q_SIGNALS:
+    void finished();
 
 protected:
     void onEntry();

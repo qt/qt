@@ -74,6 +74,8 @@ public:
     QList<QHistoryState*> historyStates() const;
     QList<QAbstractTransition*> transitions() const;
 
+    void emitFinished();
+
     QAbstractState *errorState;
     bool isParallelGroup;
     QAbstractState *initialState;

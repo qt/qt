@@ -46,7 +46,6 @@
 #include "qabstracttransition.h"
 #include "qabstracttransition_p.h"
 #include "qsignaltransition.h"
-#include "qstatefinishedtransition.h"
 #include "qstatemachine.h"
 #include "qstatemachine_p.h"
 
@@ -74,9 +73,6 @@ QT_BEGIN_NAMESPACE
   parent state is the target of a transition.
 
   The addHistoryState() function adds a history state.
-
-  The addFinishedTransition() function creates and adds a transition that's
-  triggered when a final child state is entered.
 
   The setErrorState() sets the state's error state. The error state is the
   state that the state machine will transition to if an error is detected when
@@ -132,6 +128,12 @@ const QStatePrivate *QStatePrivate::get(const QState *q)
     if (!q)
         return 0;
     return q->d_func();
+}
+
+void QStatePrivate::emitFinished()
+{
+    Q_Q(QState);
+    emit q->finished();
 }
 
 /*!
@@ -294,20 +296,6 @@ QSignalTransition *QState::addTransition(QObject *sender, const char *signal,
     return trans;
 }
 
-/*!
-  Adds a transition that's triggered by the finished event of this state, and
-  returns the new QStateFinishedTransition object. The transition has the
-  given \a target state.
-
-  \sa QStateFinishedEvent
-*/
-QStateFinishedTransition *QState::addFinishedTransition(QAbstractState *target)
-{
-    QStateFinishedTransition *trans = new QStateFinishedTransition(this, QList<QAbstractState*>() << target);
-    addTransition(trans);
-    return trans;
-}
-
 namespace {
 
 // ### Make public?
@@ -430,5 +418,11 @@ bool QState::event(QEvent *e)
 {
     return QAbstractState::event(e);
 }
+
+/*!
+  \fn QState::finished()
+
+  This signal is emitted when a final child state of this state is entered.
+*/
 
 QT_END_NAMESPACE
