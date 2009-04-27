@@ -181,13 +181,6 @@ public:
     int baselineOffset() const;
     void setBaselineOffset(int);
 
-    QFxAnchorLine left() const;
-    QFxAnchorLine right() const;
-    QFxAnchorLine horizontalCenter() const;
-    QFxAnchorLine top() const;
-    QFxAnchorLine bottom() const;
-    QFxAnchorLine verticalCenter() const;
-
     qreal rotation() const;
     void setRotation(qreal);
 
@@ -266,8 +259,16 @@ protected:
     QFxItem(QFxItemPrivate &dd, QFxItem *parent = 0);
 
 private:
+    QFxAnchorLine left() const;
+    QFxAnchorLine right() const;
+    QFxAnchorLine horizontalCenter() const;
+    QFxAnchorLine top() const;
+    QFxAnchorLine bottom() const;
+    QFxAnchorLine verticalCenter() const;
+
     void init(QFxItem *parent);
     friend class QmlStatePrivate;
+    friend class QFxAnchors;
     Q_DISABLE_COPY(QFxItem)
     Q_DECLARE_PRIVATE(QFxItem)
 };

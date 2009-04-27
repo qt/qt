@@ -237,24 +237,20 @@ void QFxContents::setItem(QFxItem *item)
 
     This signal is emitted when the baseline of the item changes. 
 
-    The baseline may change in response to a call to setBaselineOffset()
-    or due to the geometry of the item changing.
-
-    \sa baselineOffset(), setBaselineOffset()
+    The baseline may change in response to a change to the baselineOffset
+    property or due to the geometry of the item changing.
 */
 
 /*!
     \fn void QFxItem::baselineOffsetChanged()
 
     This signal is emitted when the baseline of the item is changed
-    via setBaselineOffset(). 
+    via the baselineOffset property.
 
     The baseline corresponds to the baseline of the text contained in
     the element.  It is useful for aligning the text in items placed
     beside each other.  The default baseline is positioned at
     2/3 of the height of the item.
-
-    \sa baselineOffset(), setBaselineOffset()
 */
 
 /*!
@@ -324,7 +320,7 @@ void QFxContents::setItem(QFxItem *item)
 
     This signal is emitted when a key is pressed.
 
-    The key event is available in QML via the QFxKeyEvent \c event
+    The key event is available in QML via the QFxKeyEvent \a event
     property.
 
     \qml
@@ -339,7 +335,7 @@ void QFxContents::setItem(QFxItem *item)
 
     This signal is emitted when a key is released.
 
-    The key event is available in QML via the QFxKeyEvent \c event
+    The key event is available in QML via the QFxKeyEvent \a event
     property.
 
     \qml
@@ -1111,36 +1107,54 @@ void QFxItem::setId(const QString &id)
     d->_id = id;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::left() const
 {
     Q_D(const QFxItem);
     return d->anchorLines()->left;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::right() const
 {
     Q_D(const QFxItem);
     return d->anchorLines()->right;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::horizontalCenter() const
 {
     Q_D(const QFxItem);
     return d->anchorLines()->hCenter;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::top() const
 {
     Q_D(const QFxItem);
     return d->anchorLines()->top;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::bottom() const
 {
     Q_D(const QFxItem);
     return d->anchorLines()->bottom;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::verticalCenter() const
 {
     Q_D(const QFxItem);
@@ -1216,18 +1230,9 @@ QFxAnchorLine QFxItem::verticalCenter() const
   For more information see \l {anchor-layout}{Anchor Layouts}.
 */
 
-/*
-  \property QFxItem::baseline
-  \brief The position of the item's baseline in global (scene) coordinates.
-
-  The baseline of a Text item is the imaginary line on which the text
-  sits. Controls containing text usually set their baseline to the
-  baseline of their text.
-
-  For non-text items, a default baseline offset of two-thirds of the
-  item's height is used to determine the baseline.
+/*!
+    \internal
 */
-
 int QFxItem::baselineOffset() const
 {
     Q_D(const QFxItem);
@@ -1237,6 +1242,9 @@ int QFxItem::baselineOffset() const
         return d->_baselineOffset;
 }
 
+/*!
+    \internal
+*/
 void QFxItem::setBaselineOffset(int offset)
 {
     Q_D(QFxItem);
@@ -1533,6 +1541,13 @@ QmlState *QFxItem::findState(const QString &name) const
 
   \sa {states-transitions}{States and Transitions}
 */
+
+/*!
+    \property QFxItem::state
+    \brief the current state of the item.
+
+    \sa {states-transitions}{States and Transitions}
+*/
 QString QFxItem::state() const
 {
     Q_D(const QFxItem);
@@ -1598,7 +1613,6 @@ void QFxItem::setVisible(bool visible)
 */
 void QFxItem::dump(int depth)
 {
-    Q_D(QFxItem);
     QByteArray ba(depth * 4, ' ');
     qWarning() << ba.constData() << metaObject()->className() << "(" << (void *)static_cast<QFxItem*>(this) << ", " << (void *)static_cast<QSimpleCanvasItem*>(this) << "):" << x() << y() << width() << height() << (void *) itemParent();
 }
@@ -1700,6 +1714,9 @@ void QFxItem::reparentItems()
     qFatal("EEK");
 }
 
+/*!
+    \internal
+*/
 void QFxItem::updateTransform()
 {
     Q_D(QFxItem);
@@ -1714,6 +1731,9 @@ void QFxItem::updateTransform()
     transformChanged(trans);
 }
 
+/*!
+    \internal
+*/
 void QFxItem::transformChanged(const QSimpleCanvas::Matrix &)
 {
 }
