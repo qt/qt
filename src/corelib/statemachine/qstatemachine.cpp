@@ -234,6 +234,18 @@ Q_CORE_EXPORT const QStateMachinePrivate::Handler *qcoreStateMachineHandler()
     return &qt_kernel_statemachine_handler;
 }
 
+static int indexOfDescendant(QState *s, QAbstractState *desc)
+{
+    QList<QAbstractState*> childStates = QStatePrivate::get(s)->childStates();
+    for (int i = 0; i < childStates.size(); ++i) {
+        QAbstractState *c = childStates.at(i);
+        if ((c == desc) || QStateMachinePrivate::isDescendantOf(desc, c)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 bool QStateMachinePrivate::stateEntryLessThan(QAbstractState *s1, QAbstractState *s2)
 {
     if (s1->parent() == s2->parent()) {
@@ -244,8 +256,9 @@ bool QStateMachinePrivate::stateEntryLessThan(QAbstractState *s1, QAbstractState
     } else if (isDescendantOf(s2, s1)) {
         return true;
     } else {
-        // ### fixme
-        return s1 < s2;
+        QState *lca = findLCA(QList<QAbstractState*>() << s1 << s2);
+        Q_ASSERT(lca != 0);
+        return (indexOfDescendant(lca, s1) < indexOfDescendant(lca, s2));
     }
 }
 
@@ -259,8 +272,9 @@ bool QStateMachinePrivate::stateExitLessThan(QAbstractState *s1, QAbstractState 
     } else if (isDescendantOf(s2, s1)) {
         return false;
     } else {
-        // ### fixme
-        return s2 < s1;
+        QState *lca = findLCA(QList<QAbstractState*>() << s1 << s2);
+        Q_ASSERT(lca != 0);
+        return (indexOfDescendant(lca, s1) < indexOfDescendant(lca, s2));
     }
 }
 
