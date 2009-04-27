@@ -325,6 +325,7 @@ static bool isNull(const QVariant::Private *d)
     case QVariant::ULongLong:
     case QVariant::Bool:
     case QVariant::Double:
+    case QMetaType::Float:
         break;
     }
     return d->is_null;
@@ -416,6 +417,8 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
         return a->data.b == b->data.b;
     case QVariant::Double:
         return a->data.d == b->data.d;
+    case QMetaType::Float:
+        return a->data.f == b->data.f;
     case QVariant::Date:
         return *v_cast<QDate>(a) == *v_cast<QDate>(b);
     case QVariant::Time:
@@ -2554,57 +2557,62 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
 */
 bool QVariant::canConvert(Type t) const
 {
-    if (d.type == uint(t))
+    //we can treat floats as double
+    //the reason for not doing it the "proper" way is that QMetaTye Float's value is 135,
+    //which can't be handled by qCanConvertMatrix
+    const uint currentType = ((d.type == QMetaType::Float) ? QVariant::Double : d.type);
+    if (t == QMetaType::Float) t = QVariant::Double;
+
+    if (currentType == uint(t))
         return true;
 
-    if (d.type > QVariant::LastCoreType || t > QVariant::LastCoreType) {
+    if (currentType > QVariant::LastCoreType || t > QVariant::LastCoreType) {
         switch (uint(t)) {
         case QVariant::Int:
-            return d.type == QVariant::KeySequence
-                   || d.type == QMetaType::ULong
-                   || d.type == QMetaType::Long
-                   || d.type == QMetaType::UShort
-                   || d.type == QMetaType::UChar
-                   || d.type == QMetaType::Char
-                   || d.type == QMetaType::Short;
+            return currentType == QVariant::KeySequence
+                   || currentType == QMetaType::ULong
+                   || currentType == QMetaType::Long
+                   || currentType == QMetaType::UShort
+                   || currentType == QMetaType::UChar
+                   || currentType == QMetaType::Char
+                   || currentType == QMetaType::Short;
         case QVariant::Image:
-            return d.type == QVariant::Pixmap || d.type == QVariant::Bitmap;
+            return currentType == QVariant::Pixmap || currentType == QVariant::Bitmap;
         case QVariant::Pixmap:
-            return d.type == QVariant::Image || d.type == QVariant::Bitmap
-                              || d.type == QVariant::Brush;
+            return currentType == QVariant::Image || currentType == QVariant::Bitmap
+                              || currentType == QVariant::Brush;
         case QVariant::Bitmap:
-            return d.type == QVariant::Pixmap || d.type == QVariant::Image;
+            return currentType == QVariant::Pixmap || currentType == QVariant::Image;
         case QVariant::ByteArray:
-            return d.type == QVariant::Color;
+            return currentType == QVariant::Color;
         case QVariant::String:
-            return d.type == QVariant::KeySequence || d.type == QVariant::Font
-                              || d.type == QVariant::Color;
+            return currentType == QVariant::KeySequence || currentType == QVariant::Font
+                              || currentType == QVariant::Color;
         case QVariant::KeySequence:
-            return d.type == QVariant::String || d.type == QVariant::Int;
+            return currentType == QVariant::String || currentType == QVariant::Int;
         case QVariant::Font:
-            return d.type == QVariant::String;
+            return currentType == QVariant::String;
         case QVariant::Color:
-            return d.type == QVariant::String || d.type == QVariant::ByteArray
-                              || d.type == QVariant::Brush;
+            return currentType == QVariant::String || currentType == QVariant::ByteArray
+                              || currentType == QVariant::Brush;
         case QVariant::Brush:
-            return d.type == QVariant::Color || d.type == QVariant::Pixmap;
+            return currentType == QVariant::Color || currentType == QVariant::Pixmap;
         case QMetaType::Long:
         case QMetaType::Char:
         case QMetaType::UChar:
         case QMetaType::ULong:
         case QMetaType::Short:
         case QMetaType::UShort:
-        case QMetaType::Float:
-            return qCanConvertMatrix[QVariant::Int] & (1 << d.type) || d.type == QVariant::Int;
+            return qCanConvertMatrix[QVariant::Int] & (1 << currentType) || currentType == QVariant::Int;
         default:
             return false;
         }
     }
 
-    if(t == String && d.type == StringList)
+    if(t == String && currentType == StringList)
         return v_cast<QStringList>(&d)->count() == 1;
     else
-        return qCanConvertMatrix[t] & (1 << d.type);
+        return qCanConvertMatrix[t] & (1 << currentType);
 }
 
 /*!
