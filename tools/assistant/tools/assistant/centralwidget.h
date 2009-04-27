@@ -83,6 +83,9 @@ private slots:
     void updateButtons();
 
 private:
+    QToolButton* setupToolButton(const QString &text, const QString &icon);
+
+private:
     QLineEdit *editFind;
     QCheckBox *checkCase;
     QLabel *labelWrapped;

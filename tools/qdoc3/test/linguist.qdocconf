@@ -13,7 +13,7 @@ indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 qhp.projects            = Linguist
 
 qhp.Linguist.file                = linguist.qhp
-qhp.Linguist.namespace           = com.trolltech.linguist.451
+qhp.Linguist.namespace           = com.trolltech.linguist.452
 qhp.Linguist.virtualFolder       = qdoc
 qhp.Linguist.indexTitle          = Qt Linguist Manual
 qhp.Linguist.extraFiles          = classic.css images/qt-logo.png images/trolltech-logo.png

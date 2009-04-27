@@ -20,7 +20,8 @@ headerdirs              = $QDOC_CURRENT_DIR
 exampledirs             = $QTDIR/doc/src \
                           $QTDIR/examples \
                           $QTDIR \
-                          $QTDIR/qmake/examples
+                          $QTDIR/qmake/examples \
+                          $QTDIR/src/3rdparty/webkit/WebKit/qt/docs
 imagedirs               = $QTDIR/doc/src/images \
                           $QTDIR/examples
 outputdir               = $QTDIR/doc/html

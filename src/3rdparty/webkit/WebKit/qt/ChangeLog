@@ -1,3 +1,42 @@
+2009-04-24  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Rubber-stamped by Ariya Hidayat.
+
+        Fix qdoc warning about link to QAction::isEnabled.
+
+        * Api/qwebpage.cpp:
+
+2009-04-24  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Ariya Hidayat.
+
+        Added support for generating API docs in the Qt build using "make docs"
+
+        Added code snippets and overview from the Qt sources references in the API docs.
+
+        * Api/qwebpage.cpp: Adjust paths to snippets.
+        * Api/qwebview.cpp: Ditto.
+        * docs/docs.pri: Added.
+        * docs/qtwebkit.qdoc: Added.
+        * docs/qtwebkit.qdocconf: Added.
+        * docs/webkitsnippets/qtwebkit_build_snippet.qdoc: Added.
+        * docs/webkitsnippets/qtwebkit_qwebview_snippet.cpp: Added.
+        * docs/webkitsnippets/simple/main.cpp: Added.
+        * docs/webkitsnippets/simple/simple.pro: Added.
+        * docs/webkitsnippets/webpage/main.cpp: Added.
+        * docs/webkitsnippets/webpage/webpage.pro: Added.
+
+2009-03-02  Benjamin C Meyer  <benjamin.meyer@torchmobile.com>
+
+        Reviewed by George Staikos.
+
+        https://bugs.webkit.org/show_bug.cgi?id=21230
+        On X11 match the behavior of Firefox and also copy the url to the
+        clipboard selection when the action Copy Link Location is executed.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::triggerAction):
+
 2009-03-07  Adam Treat  <adam.treat@torchmobile.com>
 
         Reviewed by Cameron Zwarich.

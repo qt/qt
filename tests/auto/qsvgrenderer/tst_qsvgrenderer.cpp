@@ -534,16 +534,42 @@ void tst_QSvgRenderer::gradientStops() const
         QCOMPARE(image, refImage);
     }
 
+    const char *svgs[] = {
+        "<svg>"
+            "<defs>"
+                "<linearGradient id=\"gradient\">"
+                    "<stop offset=\"0\" stop-color=\"red\" stop-opacity=\"0\"/>"
+                    "<stop offset=\"1\" stop-color=\"blue\"/>"
+                "</linearGradient>"
+            "</defs>"
+            "<rect fill=\"url(#gradient)\" height=\"8\" width=\"256\" x=\"0\" y=\"0\"/>"
+        "</svg>",
+        "<svg>"
+            "<defs>"
+                "<linearGradient id=\"gradient\" xlink:href=\"#gradient0\">"
+                "</linearGradient>"
+                "<linearGradient id=\"gradient0\">"
+                    "<stop offset=\"0\" stop-color=\"red\" stop-opacity=\"0\"/>"
+                    "<stop offset=\"1\" stop-color=\"blue\"/>"
+                "</linearGradient>"
+            "</defs>"
+            "<rect fill=\"url(#gradient)\" height=\"8\" width=\"256\" x=\"0\" y=\"0\"/>"
+        "</svg>",
+        "<svg>"
+            "<defs>"
+                "<linearGradient id=\"gradient0\">"
+                    "<stop offset=\"0\" stop-color=\"red\" stop-opacity=\"0\"/>"
+                    "<stop offset=\"1\" stop-color=\"blue\"/>"
+                "</linearGradient>"
+                "<linearGradient id=\"gradient\" xlink:href=\"#gradient0\">"
+                "</linearGradient>"
+            "</defs>"
+            "<rect fill=\"url(#gradient)\" height=\"8\" width=\"256\" x=\"0\" y=\"0\"/>"
+        "</svg>"
+    };
+    for (int i = 0 ; i < sizeof(svgs) / sizeof(svgs[0]) ; ++i)
     {
-        QByteArray data("<svg>"
-                          "<defs>"
-                            "<linearGradient id=\"gradient\">"
-                              "<stop offset=\"0\" stop-color=\"red\" stop-opacity=\"0\"/>"
-                              "<stop offset=\"1\" stop-color=\"blue\"/>"
-                            "</linearGradient>"
-                          "</defs>"
-                          "<rect fill=\"url(#gradient)\" height=\"8\" width=\"256\" x=\"0\" y=\"0\"/>"
-                        "</svg>");
+        QByteArray data = svgs[i];
         QSvgRenderer renderer(data);
 
         QImage image(256, 8, QImage::Format_ARGB32_Premultiplied);
