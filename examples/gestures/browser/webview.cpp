@@ -329,6 +329,13 @@ void WebView::gestureEvent(QGestureEvent *event)
                 QWebHitTestResult result = frame->hitTestContent(g->startPos());
                 if (!result.isNull())
                     m_currentPanFrame = result.frame();
+                while (m_currentPanFrame &&
+                       m_currentPanFrame->scrollBarMinimum(Qt::Vertical) == 0 &&
+                       m_currentPanFrame->scrollBarMaximum(Qt::Vertical) == 0 &&
+                       m_currentPanFrame->scrollBarMinimum(Qt::Horizontal) == 0 &&
+                       m_currentPanFrame->scrollBarMaximum(Qt::Horizontal) == 0) {
+                    m_currentPanFrame = m_currentPanFrame->parentFrame();
+                }
             }
         } else {
         }
