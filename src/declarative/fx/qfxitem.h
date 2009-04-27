@@ -94,6 +94,7 @@ class QmlContext;
 class QmlState;
 class QmlTransition;
 class QFxTransform;
+class QFxKeyEvent;
 class QFxItemPrivate;
 class Q_DECLARATIVE_EXPORT QFxItem : public QSimpleCanvasItem, public QmlParserStatus
 {
@@ -228,8 +229,8 @@ Q_SIGNALS:
     void focusChanged();
     void activeFocusChanged();
     void parentChanged();
-    void keyPress(QObject *event);
-    void keyRelease(QObject *event);
+    void keyPress(QFxKeyEvent *event);
+    void keyRelease(QFxKeyEvent *event);
     void rotationChanged();
     void scaleChanged();
     void opacityChanged();

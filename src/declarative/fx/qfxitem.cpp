@@ -60,6 +60,7 @@
 
 #include "qfxitem_p.h"
 #include "qfxitem.h"
+#include "qfxevents_p.h"
 #include <qsimplecanvasfilter.h>
 #include <qmlcomponent.h>
 
@@ -1024,34 +1025,13 @@ void QFxItem::setFlipHorizontally(bool v)
         setFlip((QSimpleCanvasItem::Flip)(flip() & ~HorizontalFlip));
 }
 
-class QFxKeyEvent : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(int key READ key);
-    Q_PROPERTY(QString text READ text);
-    Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted);
-public:
-    QFxKeyEvent(int key, const QString &text=QString()) : _accepted(false), _key(key), _text(text) {}
-
-    bool isAccepted() { return _accepted; }
-    void setAccepted(bool accepted) { _accepted = accepted; }
-
-    int key() const { return _key; }
-
-    QString text() const { return _text; }
-
-private:
-    bool _accepted;
-    int _key;
-    QString _text;
-};
 
 /*!
   \reimp
 */
 void QFxItem::keyPressEvent(QKeyEvent *event)
 {
-    QFxKeyEvent ke(event->key(), event->text());
+    QFxKeyEvent ke(*event);
     emit keyPress(&ke);
     event->setAccepted(ke.isAccepted());
     if (itemParent() && !ke.isAccepted())
@@ -1063,7 +1043,7 @@ void QFxItem::keyPressEvent(QKeyEvent *event)
 */
 void QFxItem::keyReleaseEvent(QKeyEvent *event)
 {
-    QFxKeyEvent ke(event->key(), event->text());
+    QFxKeyEvent ke(*event);
     emit keyRelease(&ke);
     event->setAccepted(ke.isAccepted());
     if (itemParent() && !ke.isAccepted())
@@ -1777,5 +1757,4 @@ QFxItemPrivate::AnchorLines::AnchorLines(QFxItem *q)
     vCenter.anchorLine = QFxAnchorLine::VCenter;
 }
 
-#include "qfxitem.moc"
 QT_END_NAMESPACE
