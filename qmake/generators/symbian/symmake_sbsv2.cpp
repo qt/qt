@@ -350,16 +350,18 @@ bool SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     DeploymentList depList;
     initProjectDeploySymbian( project, depList, remoteTestPath, false, QLatin1String("winscw"), QLatin1String("udeb"), generatedDirs, generatedFiles );
 
+    t << "#if defined(WINSCW)" << endl;
     for (int i=0; i<depList.size(); ++i) {
         t << "START EXTENSION qt/qmake_emulator_deployment" << endl;
         QString fromItem = depList.at(i).from;
         QString toItem = depList.at(i).to;
         fromItem.replace("\\", "/");
-        toItem.replace("\\", "/");
+        toItem.replace("\\", "/").prepend(QDir::current().absolutePath().left(2)); // add drive
         t << "OPTION DEPLOY_SOURCE " << fromItem << endl;
         t << "OPTION DEPLOY_TARGET " << toItem << endl;
         t << "END" << endl;
     }
+    t << "#endif" << endl;
 
     t << endl;
 #endif
