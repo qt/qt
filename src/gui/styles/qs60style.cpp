@@ -485,7 +485,7 @@ void QS60StylePrivate::setThemePalette(QWidget *widget) const
             QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnHighlightColors, 2, 0));
     // set these as transparent so that styled full screen theme background is visible
     widgetPalette.setColor(QPalette::AlternateBase, Qt::transparent);
-    widgetPalette.setColor(QPalette::Window, QS60StylePrivate::backgroundTexture());
+    widgetPalette.setBrush(QPalette::Window, QS60StylePrivate::backgroundTexture());
     widgetPalette.setColor(QPalette::Base, Qt::transparent);
     // set button and tooltipbase based on pixel colors
     QColor buttonColor = colorFromFrameGraphics(QS60StylePrivate::SF_ButtonNormal);
