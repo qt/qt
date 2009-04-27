@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,18 +39,42 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
-#include <QUrl>
-#include <QWebView>
+#ifndef GOOGLESUGGEST_H
+#define GOOGLESUGGEST_H
 
-int main(int argc, char *argv[])
+#include <QObject>
+#include <QNetworkAccessManager>
+
+QT_BEGIN_NAMESPACE
+class QLineEdit;
+class QNetworkReply;
+class QTimer;
+class QTreeWidget;
+QT_END_NAMESPACE
+
+class GSuggestCompletion : public QObject
 {
-    QApplication app(argc, argv);
-    QWidget *parent = 0;
-//! [Using QWebView]
-    QWebView *view = new QWebView(parent);
-    view->load(QUrl("http://qtsoftware.com/"));
-    view->show();
-//! [Using QWebView]
-    return app.exec();
-}
+    Q_OBJECT
+
+public:
+    GSuggestCompletion(QLineEdit *parent = 0);
+    ~GSuggestCompletion();
+    bool eventFilter(QObject *obj, QEvent *ev);
+    void showCompletion(const QStringList &choices, const QStringList &hits);
+
+public slots:
+
+    void doneCompletion();
+    void preventSuggest();
+    void autoSuggest();
+    void handleNetworkData(QNetworkReply *networkReply);
+
+private:
+    QLineEdit *editor;
+    QTreeWidget *popup;
+    QTimer *timer;
+    QNetworkAccessManager networkManager;
+};
+
+#endif // GOOGLESUGGEST_H
+

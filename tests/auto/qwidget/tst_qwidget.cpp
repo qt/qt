@@ -283,6 +283,8 @@ private slots:
     void render_task217815();
     void render_windowOpacity();
     void render_systemClip();
+    void render_systemClip2_data();
+    void render_systemClip2();
 
     void setContentsMargins();
 
@@ -6895,6 +6897,102 @@ void tst_QWidget::render_systemClip()
 
     QCOMPARE(image, expectedImage);
 #endif
+}
+
+void tst_QWidget::render_systemClip2_data()
+{
+    QTest::addColumn<bool>("autoFillBackground");
+    QTest::addColumn<bool>("usePaintEvent");
+    QTest::addColumn<QColor>("expectedColor");
+
+    QTest::newRow("Only auto-fill background") << true << false << QColor(Qt::blue);
+    QTest::newRow("Only draw in paintEvent") << false << true << QColor(Qt::green);
+    QTest::newRow("Auto-fill background and draw in paintEvent") << true << true << QColor(Qt::green);
+}
+
+void tst_QWidget::render_systemClip2()
+{
+    QFETCH(bool, autoFillBackground);
+    QFETCH(bool, usePaintEvent);
+    QFETCH(QColor, expectedColor);
+
+    Q_ASSERT_X(expectedColor != QColor(Qt::red), Q_FUNC_INFO,
+               "Qt::red is the reference color for the image, pick another color");
+
+    class MyWidget : public QWidget
+    {
+    public:
+        bool usePaintEvent;
+        void paintEvent(QPaintEvent *)
+        {
+            if (usePaintEvent)
+                QPainter(this).fillRect(rect(), Qt::green);
+        }
+    };
+
+    MyWidget widget;
+    widget.usePaintEvent = usePaintEvent;
+    widget.setPalette(Qt::blue);
+    // NB! widget.setAutoFillBackground(autoFillBackground) won't do the
+    // trick here since the widget is a top-level. The background is filled
+    // regardless, unless Qt::WA_OpaquePaintEvent or Qt::WA_NoSystemBackground
+    // is set. We therefore use the opaque attribute to turn off auto-fill.
+    if (!autoFillBackground)
+        widget.setAttribute(Qt::WA_OpaquePaintEvent);
+    widget.resize(100, 100);
+
+    QImage image(widget.size(), QImage::Format_RGB32);
+    image.fill(QColor(Qt::red).rgb());
+
+    QPaintEngine *paintEngine = image.paintEngine();
+    QVERIFY(paintEngine);
+
+    QRegion systemClip(QRegion(50, 0, 50, 10));
+    systemClip += QRegion(90, 10, 10, 40);
+    paintEngine->setSystemClip(systemClip);
+
+    // Render entire widget directly onto device.
+    widget.render(&image);
+
+#ifndef RENDER_DEBUG
+    image.save("systemclip_with_device.png");
+#endif
+    // All pixels within the system clip should now be
+    // the expectedColor, and the rest should be red.
+    for (int i = 0; i < image.height(); ++i) {
+        for (int j = 0; j < image.width(); ++j) {
+            if (systemClip.contains(QPoint(j, i)))
+                QCOMPARE(image.pixel(j, i), expectedColor.rgb());
+            else
+                QCOMPARE(image.pixel(j, i), QColor(Qt::red).rgb());
+        }
+    }
+
+    // Refill image with red.
+    image.fill(QColor(Qt::red).rgb());
+
+    // Do the same with an untransformed painter.
+    QPainter painter(&image);
+    //Make sure we're using the same paint engine and has the right clip set.
+    paintEngine->setSystemClip(systemClip);
+    QCOMPARE(painter.paintEngine(), paintEngine);
+    QCOMPARE(paintEngine->systemClip(), systemClip);
+
+    widget.render(&painter);
+
+#ifndef RENDER_DEBUG
+    image.save("systemclip_with_untransformed_painter.png");
+#endif
+    // All pixels within the system clip should now be
+    // the expectedColor, and the rest should be red.
+    for (int i = 0; i < image.height(); ++i) {
+        for (int j = 0; j < image.width(); ++j) {
+            if (systemClip.contains(QPoint(j, i)))
+                QCOMPARE(image.pixel(j, i), expectedColor.rgb());
+            else
+                QCOMPARE(image.pixel(j, i), QColor(Qt::red).rgb());
+        }
+    }
 }
 
 void tst_QWidget::setContentsMargins()

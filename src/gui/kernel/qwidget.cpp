@@ -2132,6 +2132,10 @@ QWidget *QWidget::find(WId id)
     If a widget is non-native (alien) and winId() is invoked on it, that widget
     will be provided a native handle.
 
+    On Mac OS X, the type returned depends on which framework Qt was linked
+    against. If Qt is using Carbon, the {WId} is actually an HIViewRef. If Qt
+    is using Cocoa, {WId} is a pointer to an NSView.
+
     \note We recommend that you do not store this value as it is likely to
     change at run-time.
 
@@ -2234,9 +2238,10 @@ WId QWidget::effectiveWinId() const
     The style sheet contains a textual description of customizations to the
     widget's style, as described in the \l{Qt Style Sheets} document.
 
-    \note Qt style sheets are currently not supported for QMacStyle
-    (the default style on Mac OS X). We plan to address this in some future
-    release.
+    Since Qt 4.5, Qt style sheets fully supports Mac OS X.
+
+    \warning Qt style sheets are currently not supported for custom QStyle
+    subclasses. We plan to address this in some future release.
 
     \sa setStyle(), QApplication::styleSheet, {Qt Style Sheets}
 */
@@ -4708,10 +4713,13 @@ void QWidget::render(QPaintDevice *target, const QPoint &targetOffset,
     if (redirected) {
         target = redirected;
         offset -= redirectionOffset;
-        if (!inRenderWithPainter) { // Clip handled by shared painter (in qpainter.cpp).
-            const QRegion redirectedSystemClip = redirected->paintEngine()->systemClip();
-            if (!redirectedSystemClip.isEmpty())
-                paintRegion &= redirectedSystemClip.translated(-offset);
+    }
+
+    if (!inRenderWithPainter) { // Clip handled by shared painter (in qpainter.cpp).
+        if (QPaintEngine *targetEngine = target->paintEngine()) {
+            const QRegion targetSystemClip = targetEngine->systemClip();
+            if (!targetSystemClip.isEmpty())
+                paintRegion &= targetSystemClip.translated(-offset);
         }
     }
 

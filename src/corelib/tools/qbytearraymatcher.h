@@ -67,7 +67,12 @@ public:
 
     int indexIn(const QByteArray &ba, int from = 0) const;
     int indexIn(const char *str, int len, int from = 0) const;
-    inline QByteArray pattern() const { return q_pattern; }
+    inline QByteArray pattern() const
+    {
+        if (q_pattern.isNull())
+            return QByteArray((const char*)p.p, p.l);
+        return q_pattern;
+    }
 
 private:
     QByteArrayMatcherPrivate *d;

@@ -99,10 +99,3 @@ SOURCES += apigenerator.cpp \
            webxmlgenerator.cpp \
 	   yyindent.cpp
 
-
-win32 {
-    QT_WINCONFIG = release
-    CONFIG(debug, debug|release) {
-        QT_WINCONFIG = debug
-    }    
-}

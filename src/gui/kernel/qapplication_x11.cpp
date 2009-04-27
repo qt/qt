@@ -398,7 +398,7 @@ extern bool qt_xdnd_dragging;
 // gui or non-gui from qapplication.cpp
 extern bool qt_is_gui_used;
 
-/*! 
+/*!
     \internal
     Try to resolve a \a symbol from \a library with the version specified
     by \a vernum.
@@ -836,7 +836,7 @@ bool QApplicationPrivate::x11_apply_settings()
     }
 
     int kdeSessionVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
- 
+
     if (!appFont) {
         QFont font(QApplication::font());
         QString fontDescription;
@@ -1948,11 +1948,17 @@ void qt_init(QApplicationPrivate *priv, int,
         {
             QString displayName = QLatin1String(XDisplayName(NULL));
 
-            // apparently MITSHM only works for local displays, so do a quick check here
-            // to determine whether the display is local or not (not 100 % accurate)
+            // MITSHM only works for local displays, so do a quick check here
+            // to determine whether the display is local or not (not 100 % accurate).
+            // BGR server layouts are not supported either, since it requires the raster
+            // engine to work on a QImage with BGR layout.
             bool local = displayName.isEmpty() || displayName.lastIndexOf(QLatin1Char(':')) == 0;
-            if (local && (qgetenv("QT_X11_NO_MITSHM").toInt() == 0))
-                X11->use_mitshm = mitshm_pixmaps;
+            if (local && (qgetenv("QT_X11_NO_MITSHM").toInt() == 0)) {
+                Visual *defaultVisual = DefaultVisual(X11->display, DefaultScreen(X11->display));
+                X11->use_mitshm = mitshm_pixmaps && (defaultVisual->red_mask == 0xff0000
+                                                     && defaultVisual->green_mask == 0xff00
+                                                     && defaultVisual->blue_mask == 0xff);
+            }
         }
 #endif // QT_NO_MITSHM
 
