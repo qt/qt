@@ -2452,6 +2452,10 @@ bool QGLContext::create(const QGLContext* shareContext)
         return false;
     reset();
     d->valid = chooseContext(shareContext);
+    if (d->valid && d->paintDevice->devType() == QInternal::Widget) {
+        QWidgetPrivate *wd = qt_widget_private(static_cast<QWidget *>(d->paintDevice));
+        wd->usesDoubleBufferedGLContext = d->glFormat.doubleBuffer();
+    }
     if (d->sharing)  // ok, we managed to share
         qgl_share_reg()->addShare(this, shareContext);
     return d->valid;
