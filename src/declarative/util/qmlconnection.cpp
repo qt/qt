@@ -51,9 +51,8 @@ QT_BEGIN_NAMESPACE
 class QmlConnectionPrivate : public QObjectPrivate
 {
 public:
-    QmlConnectionPrivate() : ctxt(0), boundsignal(0), signalSender(0), componentcomplete(false) {}
+    QmlConnectionPrivate() : boundsignal(0), signalSender(0), componentcomplete(false) {}
 
-    QmlContext *ctxt;
     QmlBoundSignal *boundsignal;
     QObject *signalSender;
     QString script;
@@ -112,8 +111,6 @@ public:
 QmlConnection::QmlConnection(QObject *parent) :
     QObject(*(new QmlConnectionPrivate), parent)
 {
-    Q_D(QmlConnection);
-    d->ctxt = QmlContext::activeContext();
 }
 
 QmlConnection::~QmlConnection()
@@ -192,9 +189,9 @@ void QmlConnection::connectIfValid()
         }
 
         if (sigparams.isEmpty())
-            d->boundsignal = new QmlBoundSignal(d->ctxt, d->script, sender, sigIdx, this);
+            d->boundsignal = new QmlBoundSignal(qmlContext(this), d->script, sender, sigIdx, this);
         else
-            d->boundsignal = new QmlBoundSignalProxy(new QmlContext(d->ctxt,this), d->script, sender, sigIdx, this);
+            d->boundsignal = new QmlBoundSignalProxy(new QmlContext(qmlContext(this),this), d->script, sender, sigIdx, this);
     }
 }
 

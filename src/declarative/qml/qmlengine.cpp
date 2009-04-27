@@ -42,6 +42,7 @@
 #include <QMetaProperty>
 #include <private/qmlengine_p.h>
 #include <private/qmlcontext_p.h>
+#include <private/qobject_p.h>
 
 #ifdef QT_SCRIPTTOOLS_LIB
 #include <QScriptEngineDebugger>
@@ -593,6 +594,38 @@ QNetworkAccessManager *QmlEngine::networkAccessManager() const
     if(!d->networkAccessManager) 
         d->networkAccessManager = new QNetworkAccessManager;
     return d->networkAccessManager;
+}
+
+QmlContext *QmlEngine::contextForObject(const QObject *object)
+{
+    QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
+    if(priv->declarativeData) {
+        return static_cast<QmlContextPrivate::ContextData *>(priv->declarativeData)->context;
+    } else {
+        return 0;
+    }
+}
+
+QmlContext *qmlContext(const QObject *obj)
+{
+    return QmlEngine::contextForObject(obj);
+}
+
+QmlEngine *qmlEngine(const QObject *obj)
+{
+    QmlContext *context = QmlEngine::contextForObject(obj);
+    return context?context->engine():0;
+}
+
+
+void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
+{
+    QObjectPrivate *priv = QObjectPrivate::get(object);
+    if(priv->declarativeData) {
+        qWarning("QmlEngine::setContextForObject(): Object already has a QmlContext");
+        return;
+    }
+    priv->declarativeData = &context->d_func()->contextData;
 }
 
 /*! \internal */

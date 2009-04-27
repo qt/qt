@@ -1987,8 +1987,7 @@ void QFxItem::transformChanged(const QSimpleCanvas::Matrix &)
 */
 QmlContext *QFxItem::itemContext() const
 {
-    Q_D(const QFxItem);
-    return d->_ctxt;
+    return QmlEngine::contextForObject(this);
 }
 
 QmlStateGroup *QFxItemPrivate::states()

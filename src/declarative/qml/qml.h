@@ -88,6 +88,11 @@ QT_MODULE(Declarative)
 #define QML_DEFINE_NOCREATE_TYPE(TYPE) \
     template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *>::instance(qmlRegisterType<TYPE>(#TYPE));
 
+class QmlContext;
+class QmlEngine;
+Q_DECLARATIVE_EXPORT QmlContext *qmlContext(const QObject *);
+Q_DECLARATIVE_EXPORT QmlEngine *qmlEngine(const QObject *);
+
 QML_DECLARE_TYPE(QObject);
 Q_DECLARE_METATYPE(QVariant);
 

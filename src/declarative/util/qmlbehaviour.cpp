@@ -76,14 +76,13 @@ class QmlBehaviourPrivate : public QObjectPrivate
 {
 public:
     QmlBehaviourPrivate()
-        : context(0), oldContext(0), valueData(0), operations(this) {}
+        : context(0), valueData(0), operations(this) {}
     QmlMetaProperty property;
     QVariant currentValue;
 
     QVariant fromValue;
     QVariant toValue;
     QmlContext *context;
-    QmlContext *oldContext;
     QmlBehaviourData *valueData;
     class AnimationList : public QmlConcreteList<QmlAbstractAnimation *>
     {
@@ -123,8 +122,6 @@ QmlBehaviour::QmlBehaviour(QObject *parent)
 {
     Q_D(QmlBehaviour);
     d->valueData = new QmlBehaviourData(this);
-    d->context = new QmlContext(QmlContext::activeContext(), this);
-    d->context->addDefaultObject(d->valueData);
     d->group = new QSequentialAnimationGroup(this);
 }
 
@@ -234,6 +231,10 @@ void QmlBehaviour::setTarget(const QmlMetaProperty &property)
 void QmlBehaviour::classBegin()
 {
     Q_D(QmlBehaviour);
+    if(!d->context) {
+        d->context = new QmlContext(qmlContext(this), this);
+        d->context->addDefaultObject(d->valueData);
+    }
     d->context->activate();
 }
 

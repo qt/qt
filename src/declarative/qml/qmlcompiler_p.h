@@ -54,6 +54,7 @@ class QmlXmlParser;
 class QmlEngine;
 class QmlComponent;
 class QmlCompiledComponent;
+class QmlContext;
 
 namespace QmlParser {
     class Object;
@@ -83,7 +84,7 @@ public:
         QmlCustomParser *parser;
 
         QmlRefCount *ref;
-        QObject *createInstance() const;
+        QObject *createInstance(QmlContext *) const;
     };
     QList<TypeReference> types;
     struct CustomTypeData
