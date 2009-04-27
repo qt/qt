@@ -47,7 +47,7 @@
     #include <QtOpenGL/QtOpenGL>
 #endif
 //Qt
-#include <QGraphicsView>
+#include <QtGui/QGraphicsView>
 
 MainWindow::MainWindow() : QMainWindow(0)
 {

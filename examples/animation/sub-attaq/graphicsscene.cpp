@@ -61,20 +61,20 @@
 #include "qfinalstate.h"
 #include "qpauseanimation.h"
 #else
-#include <QPropertyAnimation>
-#include <QSequentialAnimationGroup>
-#include <QParallelAnimationGroup>
-#include <QStateMachine>
-#include <QFinalState>
-#include <QPauseAnimation>
+#include <QtCore/QPropertyAnimation>
+#include <QtCore/QSequentialAnimationGroup>
+#include <QtCore/QParallelAnimationGroup>
+#include <QtCore/QStateMachine>
+#include <QtCore/QFinalState>
+#include <QtCore/QPauseAnimation>
 #endif
-#include <QAction>
-#include <QDir>
-#include <QApplication>
-#include <QMessageBox>
-#include <QGraphicsView>
-#include <QGraphicsSceneMouseEvent>
-#include <QXmlStreamReader>
+#include <QtGui/QAction>
+#include <QtCore/QDir>
+#include <QtGui/QApplication>
+#include <QtGui/QMessageBox>
+#include <QtGui/QGraphicsView>
+#include <QtGui/QGraphicsSceneMouseEvent>
+#include <QtCore/QXmlStreamReader>
 
 //helper function that creates an animation for position and inserts it into group
 static CustomPropertyAnimation *addGraphicsItemPosAnimation(QSequentialAnimationGroup *group,

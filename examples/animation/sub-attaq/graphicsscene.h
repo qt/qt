@@ -43,13 +43,13 @@
 #define __GRAPHICSSCENE__H__
 
 //Qt
-#include <QGraphicsScene>
-#include <QSet>
+#include <QtGui/QGraphicsScene>
+#include <QtCore/QSet>
 
 #if defined(QT_EXPERIMENTAL_SOLUTION)
 # include "qstate.h"
 #else
-# include <QState>
+# include <QtCore/QState>
 #endif
 
 

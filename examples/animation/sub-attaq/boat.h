@@ -43,10 +43,8 @@
 #define __BOAT__H__
 
 //Qt
-#include <QObject>
-#include <QKeyEvent>
-
-#include <QDebug>
+#include <QtCore/QObject>
+#include <QtGui/QKeyEvent>
 
 #if defined(QT_EXPERIMENTAL_SOLUTION)
 # include "qtgraphicswidget.h"

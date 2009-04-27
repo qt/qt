@@ -49,12 +49,12 @@
 #include "qpropertyanimation.h"
 #include "qkeyeventtransition.h"
 #else
-#include <QState>
-#include <QSignalTransition>
-#include <QPropertyAnimation>
-# include <QKeyEventTransition>
+#include <QtCore/QState>
+#include <QtCore/QSignalTransition>
+#include <QtCore/QPropertyAnimation>
+# include <QtGui/QKeyEventTransition>
 #endif
-#include <QSet>
+#include <QtCore/QSet>
 
 class GraphicsScene;
 class Boat;

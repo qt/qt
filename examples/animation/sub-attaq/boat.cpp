@@ -59,12 +59,12 @@
 # include "qpauseanimation.h"
 #include "qsequentialanimationgroup.h"
 #else
-#include <QPropertyAnimation>
-#include <QStateMachine>
-#include <QHistoryState>
-#include <QFinalState>
-#include <QState>
-#include <QSequentialAnimationGroup>
+#include <QtCore/QPropertyAnimation>
+#include <QtCore/QStateMachine>
+#include <QtCore/QHistoryState>
+#include <QtCore/QFinalState>
+#include <QtCore/QState>
+#include <QtCore/QSequentialAnimationGroup>
 #endif
 
 static QAbstractAnimation *setupDestroyAnimation(Boat *boat)
