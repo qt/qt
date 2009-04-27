@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "tankitem.h"
+#include "rocketitem.h"
 #include "plugin.h"
 
 #include <QStateMachine>
@@ -13,7 +14,7 @@
 #include <QPluginLoader>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+    : QMainWindow(parent), m_scene(0), m_machine(0), m_runningState(0), m_started(false)
 {
     init();
 }
@@ -37,6 +38,7 @@ void MainWindow::init()
     setWindowTitle("Pluggable Tank Game");
 
     QGraphicsView *view = new QGraphicsView(this);
+    view->setRenderHints(QPainter::Antialiasing);
     setCentralWidget(view);
 
     m_scene = new QGraphicsScene(this);
@@ -118,6 +120,7 @@ void MainWindow::init()
     
     stoppedState->assignProperty(runGameAction, "enabled", true);
     stoppedState->assignProperty(stopGameAction, "enabled", false);
+    stoppedState->assignProperty(this, "started", false);
     m_machine->setInitialState(stoppedState);
 
     QState *spawnsAvailable = new QState(stoppedState);
@@ -146,20 +149,42 @@ void MainWindow::init()
     timer->setInterval(100);
     connect(timer, SIGNAL(timeout()), this, SLOT(runStep()));
     connect(m_runningState, SIGNAL(entered()), timer, SLOT(start()));    
-    connect(m_runningState, SIGNAL(exited()), timer, SLOT(stop()));    
+    connect(m_runningState, SIGNAL(exited()), timer, SLOT(stop()));
 
     m_time.start();
 }   
 
 void MainWindow::runStep()
 {
-    int elapsed = m_time.elapsed();
-    if (elapsed > 0) {
+    if (!m_started) {
         m_time.restart();
-        qreal elapsedSecs = elapsed / 1000.0;
-        QList<TankItem *> tankItems = qFindChildren<TankItem *>(this);
-        foreach (TankItem *tankItem, tankItems) 
-            tankItem->idle(elapsedSecs);        
+        m_started = true;
+    } else {
+        int elapsed = m_time.elapsed();
+        if (elapsed > 0) {
+            m_time.restart();
+            qreal elapsedSecs = elapsed / 1000.0;
+            QList<QGraphicsItem *> items = m_scene->items();
+            foreach (QGraphicsItem *item, items) {
+                GameItem *gameItem = qgraphicsitem_cast<GameItem *>(item);
+                if (gameItem != 0)
+                    gameItem->idle(elapsedSecs);
+            }
+        }
+    }
+}
+
+void MainWindow::addRocket()
+{
+    TankItem *tankItem = qobject_cast<TankItem *>(sender());
+    if (tankItem != 0) {
+        RocketItem *rocketItem = new RocketItem;
+
+        QPointF s = tankItem->mapToScene(QPointF(tankItem->boundingRect().right() + 10.0, 
+                                                 tankItem->boundingRect().center().y()));
+        rocketItem->setPos(s);
+        rocketItem->setDirection(tankItem->direction());
+        m_scene->addItem(rocketItem);
     }
 }
 
@@ -175,6 +200,7 @@ void MainWindow::addTank()
     if (plugin != 0) {
         TankItem *tankItem = m_spawns.takeLast();
         m_scene->addItem(tankItem);
+        connect(tankItem, SIGNAL(fireCannon()), this, SLOT(addRocket()));
         if (m_spawns.isEmpty())
             emit mapFull();
 

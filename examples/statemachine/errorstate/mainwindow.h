@@ -11,12 +11,17 @@ class TankItem;
 class MainWindow: public QMainWindow
 {
     Q_OBJECT
+    Q_PROPERTY(bool started READ started WRITE setStarted)
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    void setStarted(bool b) { m_started = b; }
+    bool started() const { return m_started; }
+
 public slots:
     void addTank();
+    void addRocket();
     void runStep();
 
 signals:
@@ -34,7 +39,8 @@ private:
 
     QList<TankItem *> m_spawns;
     QTime m_time;
-
+    
+    bool m_started : 1;
 };
 
 #endif

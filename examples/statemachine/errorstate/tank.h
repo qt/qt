@@ -23,9 +23,9 @@ signals:
 public slots:
     virtual void moveForwards(qreal length) = 0;
     virtual void moveBackwards(qreal length) = 0;
-    virtual void turn(qreal newDirection) = 0;
+    virtual void turn(qreal degrees) = 0;
     virtual void stop() = 0;
-    virtual void fireCannon(qreal distance) = 0;
+    virtual void fireCannon() = 0;
 };
 
 #endif

@@ -8,6 +8,6 @@ DEPENDPATH += .
 INCLUDEPATH += C:/dev/kinetic/examples/statemachine/errorstate/. .
 
 # Input
-HEADERS += mainwindow.h plugin.h tank.h tankitem.h
-SOURCES += main.cpp mainwindow.cpp tankitem.cpp
+HEADERS += mainwindow.h plugin.h tank.h tankitem.h rocketitem.h gameitem.h
+SOURCES += main.cpp mainwindow.cpp tankitem.cpp rocketitem.cpp gameitem.cpp
 CONFIG += console

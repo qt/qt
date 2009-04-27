@@ -47,7 +47,7 @@ signals:
 protected:
     void onEntry() 
     {
-        emit distanceComputed(qreal(qrand() % 10));
+        emit distanceComputed(qreal(qrand() % 180));
     }
 };
 

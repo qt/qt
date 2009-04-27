@@ -2,12 +2,12 @@
 #define TANKITEM_H
 
 #include "tank.h"
+#include "gameitem.h"
 
-#include <QGraphicsItem>
 #include <QColor>
 
 class Action;
-class TankItem: public Tank, public QGraphicsItem
+class TankItem: public Tank, public GameItem
 {
     Q_OBJECT
 public:
@@ -17,7 +17,6 @@ public:
     virtual void moveBackwards(qreal length);
     virtual void turn(qreal newDirection);
     virtual void stop();
-    virtual void fireCannon(qreal distance);
     virtual qreal direction() const;
     virtual qreal distanceToObstacle() const;
 
@@ -27,22 +26,26 @@ public:
     void idle(qreal elapsed);
     void setDirection(qreal newDirection);
 
-    qreal speed() const { return 20.0; }
-    qreal angularSpeed() const { return 1.0; }
+    qreal speed() const { return 90.0; }
+    qreal angularSpeed() const { return 90.0; }
+
+    QRectF boundingRect() const;
+
+    void hitByRocket();
+
+signals:
+    virtual void fireCannon();
 
 protected:
-    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-    QRectF boundingRect() const;
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);    
     QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value);
 
 private:
-    QPointF tryMove(const QPointF &requestedPosition) const;
     void setAction(Action *newAction);
 
     Action *m_currentAction;
     qreal m_currentDirection;
     QColor m_color;
-    mutable QPolygonF m_brp;
 };
 
 #endif

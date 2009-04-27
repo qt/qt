@@ -17,7 +17,7 @@ QState *RandomAiPlugin::create(QState *parentState, Tank *tank)
     topLevel->setInitialState(selectNextActionState);
 
     QState *fireState = new RandomDistanceState(topLevel);
-    connect(fireState, SIGNAL(distanceComputed(qreal)), tank, SLOT(fireCannon(qreal)));
+    connect(fireState, SIGNAL(distanceComputed(qreal)), tank, SLOT(fireCannon()));
     selectNextActionState->addTransition(selectNextActionState, SIGNAL(fireSelected()), fireState);
 
     QState *moveForwardsState = new RandomDistanceState(topLevel);
