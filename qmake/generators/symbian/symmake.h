@@ -116,7 +116,7 @@ protected:
 public:
 
     SymbianMakefileGenerator();
-    inline ~SymbianMakefileGenerator();
+    ~SymbianMakefileGenerator();
 
 };
 
