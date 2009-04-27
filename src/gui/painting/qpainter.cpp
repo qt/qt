@@ -1293,7 +1293,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     destination.
 
     Note that composition transformation operates pixelwise. For that
-    reason, there is a difference between using the grahic primitive
+    reason, there is a difference between using the graphic primitive
     itself and its bounding rectangle: The bounding rect contains
     pixels with alpha == 0 (i.e the pixels surrounding the
     primitive). These pixels will overwrite the other image's pixels,
@@ -1465,8 +1465,8 @@ bool QPainter::isActive() const
 
 /*!
     Initializes the painters pen, background and font to the same as
-    the given \a widget. Call this function after begin() while the
-    painter is active.
+    the given \a widget. This function is called automatically when the
+    painter is opened on a QWidget.
 
     \sa begin(), {QPainter#Settings}{Settings}
 */
@@ -1484,7 +1484,9 @@ void QPainter::initFrom(const QWidget *widget)
     d->state->bgBrush = pal.brush(widget->backgroundRole());
     d->state->deviceFont = QFont(widget->font(), const_cast<QWidget*> (widget));
     d->state->font = d->state->deviceFont;
-    if (d->engine) {
+    if (d->extended) {
+        d->extended->penChanged();
+    } else if (d->engine) {
         d->engine->setDirty(QPaintEngine::DirtyPen);
         d->engine->setDirty(QPaintEngine::DirtyBrush);
         d->engine->setDirty(QPaintEngine::DirtyFont);
@@ -2371,6 +2373,11 @@ void QPainter::setClipping(bool enable)
     Returns the currently set clip region. Note that the clip region
     is given in logical coordinates.
 
+    \warning QPainter does not store the combined clip explicitly as
+    this is handled by the underlying QPaintEngine, so the path is
+    recreated on demand and transformed to the current logical
+    coordinate system. This is potentially an expensive operation.
+
     \sa setClipRegion(), clipPath(), setClipping()
 */
 
@@ -2485,6 +2492,11 @@ extern QPainterPath qt_regionToPath(const QRegion &region);
 /*!
     Returns the currently clip as a path. Note that the clip path is
     given in logical coordinates.
+
+    \warning QPainter does not store the combined clip explicitly as
+    this is handled by the underlying QPaintEngine, so the path is
+    recreated on demand and transformed to the current logical
+    coordinate system. This is potentially an expensive operation.
 
     \sa setClipPath(), clipRegion(), setClipping()
 */
@@ -5155,7 +5167,7 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
 
     Q_D(QPainter);
 
-    if (!d->engine || pm.isNull())
+    if (!d->engine)
         return;
 
 #ifndef QT_NO_DEBUG
@@ -5172,6 +5184,9 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
 
     int w = pm.width();
     int h = pm.height();
+
+    if (w <= 0)
+        return;
 
     // Emulate opaque background for bitmaps
     if (d->state->bgMode == Qt::OpaqueMode && pm.isQBitmap()) {

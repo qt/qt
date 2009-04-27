@@ -293,6 +293,7 @@ namespace qdesigner_internal {
         }
 
         setFocusProxy(m_lineEdit);
+        setText(m_cachedText);
         markIntermediateState();
     }
 

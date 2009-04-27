@@ -44,11 +44,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "4.5.1"
+#define QT_VERSION_STR   "4.5.2"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x040501
+#define QT_VERSION 0x040502
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -1346,6 +1346,7 @@ public:
         WV_XP       = 0x0030,
         WV_2003     = 0x0040,
         WV_VISTA    = 0x0080,
+        WV_WINDOWS7 = 0x0090,
         WV_NT_based = 0x00f0,
 
         /* version numbers */
@@ -1354,6 +1355,7 @@ public:
         WV_5_1      = WV_XP,
         WV_5_2      = WV_2003,
         WV_6_0      = WV_VISTA,
+        WV_6_1      = WV_WINDOWS7,
 
         WV_CE       = 0x0100,
         WV_CENET    = 0x0200,
@@ -1377,6 +1379,7 @@ public:
         MV_10_3 = 0x0005,
         MV_10_4 = 0x0006,
         MV_10_5 = 0x0007,
+        MV_10_6 = 0x0008,
 
         /* codenames */
         MV_CHEETAH = MV_10_0,
@@ -1384,7 +1387,8 @@ public:
         MV_JAGUAR = MV_10_2,
         MV_PANTHER = MV_10_3,
         MV_TIGER = MV_10_4,
-        MV_LEOPARD = MV_10_5
+        MV_LEOPARD = MV_10_5,
+        MV_SNOWLEOPARD = MV_10_6
     };
     static const MacVersion MacintoshVersion;
 #endif
@@ -2323,9 +2327,9 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
                                  | QT_MODULE_GRAPHICSVIEW \
                                  | QT_MODULE_HELP \
                                  | QT_MODULE_TEST \
-                                 | QT_MODULE_DBUS)
-#define QT_EDITION_DESKTOP      (QT_EDITION_OPENSOURCE \
+                                 | QT_MODULE_DBUS \
                                  | QT_MODULE_ACTIVEQT)
+#define QT_EDITION_DESKTOP      (QT_EDITION_OPENSOURCE)
 #define QT_EDITION_UNIVERSAL    QT_EDITION_DESKTOP
 #define QT_EDITION_ACADEMIC     QT_EDITION_DESKTOP
 #define QT_EDITION_EDUCATIONAL  QT_EDITION_DESKTOP

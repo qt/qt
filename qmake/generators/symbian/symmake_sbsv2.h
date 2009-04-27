@@ -29,7 +29,7 @@ protected:
 public:
 
     SymbianSbsv2MakefileGenerator();
-    inline ~SymbianSbsv2MakefileGenerator();
+    ~SymbianSbsv2MakefileGenerator();
 
 private:
     void exportFlm();

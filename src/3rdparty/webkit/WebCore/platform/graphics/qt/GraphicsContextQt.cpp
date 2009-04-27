@@ -168,6 +168,18 @@ static inline QGradient applySpreadMethod(QGradient gradient, GradientSpreadMeth
     return gradient;
 }
 
+static inline Qt::FillRule toQtFillRule(WindRule rule)
+{
+    switch(rule) {
+    case RULE_EVENODD:
+        return Qt::OddEvenFill;
+    case RULE_NONZERO:
+        return Qt::WindingFill;
+    }
+    qDebug("Qt: unrecognized wind rule!");
+    return Qt::OddEvenFill;
+}
+
 struct TransparencyLayer
 {
     TransparencyLayer(const QPainter* p, const QRect &rect)
@@ -458,13 +470,21 @@ void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2)
     if (paintingDisabled())
         return;
 
+    StrokeStyle style = strokeStyle();
+    Color color = strokeColor();
+    if (style == NoStroke || !color.alpha())
+        return;
+
+    float width = strokeThickness();
+
     FloatPoint p1 = point1;
     FloatPoint p2 = point2;
+    bool isVerticalLine = (p1.x() == p2.x());
 
     QPainter *p = m_data->p();
     const bool antiAlias = p->testRenderHint(QPainter::Antialiasing);
     p->setRenderHint(QPainter::Antialiasing, m_data->antiAliasingForRectsAndLines);
-    adjustLineToPixelBoundaries(p1, p2, strokeThickness(), strokeStyle());
+    adjustLineToPixelBoundaries(p1, p2, width, style);
 
     IntSize shadowSize;
     int shadowBlur;
@@ -477,7 +497,75 @@ void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2)
         p->restore();
     }
 
+    int patWidth = 0;
+    switch (style) {
+        case NoStroke:
+        case SolidStroke:
+            break;
+        case DottedStroke:
+            patWidth = (int)width;
+            break;
+        case DashedStroke:
+            patWidth = 3 * (int)width;
+            break;
+    }
+
+    if (patWidth) {
+        p->save();
+
+        // Do a rect fill of our endpoints.  This ensures we always have the
+        // appearance of being a border.  We then draw the actual dotted/dashed line.
+        if (isVerticalLine) {
+            p->fillRect(FloatRect(p1.x() - width / 2, p1.y() - width, width, width), color);
+            p->fillRect(FloatRect(p2.x() - width / 2, p2.y(), width, width), color);
+        } else {
+            p->fillRect(FloatRect(p1.x() - width, p1.y() - width / 2, width, width), color);
+            p->fillRect(FloatRect(p2.x(), p2.y() - width / 2, width, width), color);
+        }
+
+        // Example: 80 pixels with a width of 30 pixels.
+        // Remainder is 20.  The maximum pixels of line we could paint
+        // will be 50 pixels.
+        int distance = (isVerticalLine ? (point2.y() - point1.y()) : (point2.x() - point1.x())) - 2*(int)width;
+        int remainder = distance % patWidth;
+        int coverage = distance - remainder;
+        int numSegments = coverage / patWidth;
+
+        float patternOffset = 0.0f;
+        // Special case 1px dotted borders for speed.
+        if (patWidth == 1)
+            patternOffset = 1.0f;
+        else {
+            bool evenNumberOfSegments = numSegments % 2 == 0;
+            if (remainder)
+                evenNumberOfSegments = !evenNumberOfSegments;
+            if (evenNumberOfSegments) {
+                if (remainder) {
+                    patternOffset += patWidth - remainder;
+                    patternOffset += remainder / 2;
+                } else
+                    patternOffset = patWidth / 2;
+            } else {
+                if (remainder)
+                    patternOffset = (patWidth - remainder)/2;
+            }
+        }
+
+        QVector<qreal> dashes;
+        dashes << qreal(patWidth) / width << qreal(patWidth) / width;
+
+        QPen pen = p->pen();
+        pen.setWidthF(width);
+        pen.setCapStyle(Qt::FlatCap);
+        pen.setDashPattern(dashes);
+        pen.setDashOffset(patternOffset / width);
+        p->setPen(pen);
+    }
+
     p->drawLine(p1, p2);
+
+    if (patWidth)
+        p->restore();
 
     p->setRenderHint(QPainter::Antialiasing, antiAlias);
 }
@@ -541,6 +629,7 @@ void GraphicsContext::fillPath()
 
     QPainter *p = m_data->p();
     QPainterPath path = m_data->currentPath;
+    path.setFillRule(toQtFillRule(fillRule()));
 
     switch (m_common->state.fillColorSpace) {
     case SolidColorSpace:
@@ -569,6 +658,7 @@ void GraphicsContext::strokePath()
     QPainter *p = m_data->p();
     QPen pen = p->pen();
     QPainterPath path = m_data->currentPath;
+    path.setFillRule(toQtFillRule(fillRule()));
 
     switch (m_common->state.strokeColorSpace) {
     case SolidColorSpace:
@@ -815,7 +905,7 @@ void GraphicsContext::clearRect(const FloatRect& rect)
     QPainter::CompositionMode currentCompositionMode = p->compositionMode();
     if (p->paintEngine()->hasFeature(QPaintEngine::PorterDuff))
         p->setCompositionMode(QPainter::CompositionMode_Source);
-    p->eraseRect(rect);
+    p->fillRect(rect, Qt::transparent);
     if (p->paintEngine()->hasFeature(QPaintEngine::PorterDuff))
         p->setCompositionMode(currentCompositionMode);
 }

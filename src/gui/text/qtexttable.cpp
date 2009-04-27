@@ -553,7 +553,7 @@ void QTextTablePrivate::update() const
 /*! \internal
  */
 QTextTable::QTextTable(QTextDocument *doc)
-    : QTextFrame(*new QTextTablePrivate, doc)
+    : QTextFrame(*new QTextTablePrivate(doc), doc)
 {
 }
 

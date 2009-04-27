@@ -1106,6 +1106,11 @@ void QPdfBaseEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     if (!d->hasPen || (d->clipEnabled && d->allClipped))
         return;
 
+    if (d->stroker.matrix.type() >= QTransform::TxProject) {
+        QPaintEngine::drawTextItem(p, textItem);
+        return;
+    }
+
     *d->currentPage << "q\n";
     if(!d->simplePen)
         *d->currentPage << QPdf::generateMatrix(d->stroker.matrix);

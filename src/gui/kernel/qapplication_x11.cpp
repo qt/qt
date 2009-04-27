@@ -398,7 +398,7 @@ extern bool qt_xdnd_dragging;
 // gui or non-gui from qapplication.cpp
 extern bool qt_is_gui_used;
 
-/*! 
+/*!
     \internal
     Try to resolve a \a symbol from \a library with the version specified
     by \a vernum.
@@ -829,11 +829,14 @@ bool QApplicationPrivate::x11_apply_settings()
                          QColor(strlist[i]));
     }
 
-    if (groupCount == QPalette::NColorGroups)
-        QApplicationPrivate::setSystemPalette(pal);
+    // ### Fix properly for 4.6
+    if (!(QApplicationPrivate::app_style && QApplicationPrivate::app_style->inherits("QGtkStyle"))) {
+        if (groupCount == QPalette::NColorGroups)
+            QApplicationPrivate::setSystemPalette(pal);
+    }
 
     int kdeSessionVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
- 
+
     if (!appFont) {
         QFont font(QApplication::font());
         QString fontDescription;
@@ -887,11 +890,15 @@ bool QApplicationPrivate::x11_apply_settings()
         }
     }
 
+    static QString currentStyleName = stylename;
     if (QCoreApplication::startingUp()) {
         if (!stylename.isEmpty() && !QApplicationPrivate::styleOverride)
             QApplicationPrivate::styleOverride = new QString(stylename);
     } else {
-        QApplication::setStyle(stylename);
+        if (currentStyleName != stylename) {
+            currentStyleName = stylename;
+            QApplication::setStyle(stylename);
+        }
     }
 
     int num =
@@ -1355,8 +1362,10 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
             pal.setColor(QPalette::Disabled, QPalette::Highlight, Qt::darkBlue);
         }
 
-        QApplicationPrivate::setSystemPalette(pal);
-
+        // QGtkStyle sets it's own system palette
+        if (!(QApplicationPrivate::app_style && QApplicationPrivate::app_style->inherits("QGtkStyle"))) {
+            QApplicationPrivate::setSystemPalette(pal);
+        }
         QColor::setAllowX11ColorNames(allowX11ColorNames);
     }
 
@@ -1939,11 +1948,17 @@ void qt_init(QApplicationPrivate *priv, int,
         {
             QString displayName = QLatin1String(XDisplayName(NULL));
 
-            // apparently MITSHM only works for local displays, so do a quick check here
-            // to determine whether the display is local or not (not 100 % accurate)
+            // MITSHM only works for local displays, so do a quick check here
+            // to determine whether the display is local or not (not 100 % accurate).
+            // BGR server layouts are not supported either, since it requires the raster
+            // engine to work on a QImage with BGR layout.
             bool local = displayName.isEmpty() || displayName.lastIndexOf(QLatin1Char(':')) == 0;
-            if (local && (qgetenv("QT_X11_NO_MITSHM").toInt() == 0))
-                X11->use_mitshm = mitshm_pixmaps;
+            if (local && (qgetenv("QT_X11_NO_MITSHM").toInt() == 0)) {
+                Visual *defaultVisual = DefaultVisual(X11->display, DefaultScreen(X11->display));
+                X11->use_mitshm = mitshm_pixmaps && (defaultVisual->red_mask == 0xff0000
+                                                     && defaultVisual->green_mask == 0xff00
+                                                     && defaultVisual->blue_mask == 0xff);
+            }
         }
 #endif // QT_NO_MITSHM
 
@@ -3351,15 +3366,24 @@ int QApplication::x11ProcessEvent(XEvent* event)
 
         // update the size for desktop widget
         int scr = X11->ptrXRRRootToScreen(X11->display, event->xany.window);
-        QWidget *w = desktop()->screen(scr);
+        QDesktopWidget *desktop = QApplication::desktop();
+        QWidget *w = desktop->screen(scr);
         QSize oldSize(w->size());
         w->data->crect.setWidth(DisplayWidth(X11->display, scr));
         w->data->crect.setHeight(DisplayHeight(X11->display, scr));
-        if (w->size() != oldSize) {
-            QResizeEvent e(w->size(), oldSize);
-            QApplication::sendEvent(w, &e);
-            emit desktop()->resized(scr);
+        QVarLengthArray<QRect> oldSizes(desktop->numScreens());
+        for (int i = 0; i < desktop->numScreens(); ++i)
+            oldSizes[i] = desktop->screenGeometry(i);
+        QResizeEvent e(w->size(), oldSize);
+        QApplication::sendEvent(w, &e);
+        for (int i = 0; i < qMin(oldSizes.count(), desktop->numScreens()); ++i) {
+            if (oldSizes[i] != desktop->screenGeometry(i))
+                emit desktop->resized(i);
         }
+        for (int i = oldSizes.count(); i < desktop->numScreens(); ++i)
+            emit desktop->resized(i); // added
+        for (int i = desktop->numScreens(); i < oldSizes.count(); ++i)
+            emit desktop->resized(i); // removed
     }
 #endif // QT_NO_XRANDR
 

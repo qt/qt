@@ -176,6 +176,32 @@ void tst_QSidebar::addUrls()
     qsidebar.addUrls(urls, -1);
     qsidebar.addUrls(moreUrls, -1);
     QCOMPARE(qsidebar.urls()[0], urls[0]);
+
+    QList<QUrl> doubleUrls;
+    //tow exact same paths, we have only one entry
+    doubleUrls << QUrl::fromLocalFile(QDir::home().absolutePath());
+    doubleUrls << QUrl::fromLocalFile(QDir::home().absolutePath());
+    qsidebar.setUrls(emptyUrls);
+    qsidebar.addUrls(doubleUrls, 1);
+    QCOMPARE(qsidebar.urls().size(), 1);
+
+#if defined(Q_OS_WIN)
+    //Windows is case insensitive so no duplicate entries in that case
+    doubleUrls << QUrl::fromLocalFile(QDir::home().absolutePath());
+    doubleUrls << QUrl::fromLocalFile(QDir::home().absolutePath().toUpper());
+    qsidebar.setUrls(emptyUrls);
+    qsidebar.addUrls(doubleUrls, 1);
+    QCOMPARE(qsidebar.urls().size(), 1);
+#else
+    //Two different paths we should have two entries
+    doubleUrls << QUrl::fromLocalFile(QDir::home().absolutePath());
+    doubleUrls << QUrl::fromLocalFile(QDir::home().absolutePath().toUpper());
+    qsidebar.setUrls(emptyUrls);
+    qsidebar.addUrls(doubleUrls, 1);
+    QCOMPARE(qsidebar.urls().size(), 2);
+#endif
+
+
 }
 
 void tst_QSidebar::goToUrl()

@@ -56,6 +56,7 @@
 #include <qlistwidget.h>
 #include <qtreewidget.h>
 #include <qtablewidget.h>
+#include <qscrollbar.h>
 #ifdef Q_WS_MAC
 #include <qmacstyle_mac.h>
 #elif defined Q_WS_X11
@@ -138,6 +139,8 @@ private slots:
     void task248169_popupWithMinimalSize();
     void task247863_keyBoardSelection();
     void setModelColumn();
+    void noScrollbar_data();
+    void noScrollbar();
 
 protected slots:
     void onEditTextChanged( const QString &newString );
@@ -280,13 +283,9 @@ void tst_QComboBox::getSetCheck()
     QLineEdit *var8 = new QLineEdit(0);
     obj1.setLineEdit(var8);
     QCOMPARE(var8, obj1.lineEdit());
-#if QT_VERSION >= 0x040200
-    // QComboBox in Qt < 4.2 have asserts for this, but handles the situation by ignoring it.
-    // Qt >= 4.2 should handle this gracefully (no asserts, but define behavior as keeping current)
     QTest::ignoreMessage(QtWarningMsg, "QComboBox::setLineEdit: cannot set a 0 line edit");
     obj1.setLineEdit((QLineEdit *)0);
     QCOMPARE(var8, obj1.lineEdit());
-#endif
     // delete var8; // No delete, since QComboBox takes ownership
 
     // const QValidator * QComboBox::validator()
@@ -303,13 +302,9 @@ void tst_QComboBox::getSetCheck()
     MyAbstractItemDelegate *var10 = new MyAbstractItemDelegate;
     obj1.setItemDelegate(var10);
     QCOMPARE(obj1.itemDelegate(), (QAbstractItemDelegate *)var10);
-#if QT_VERSION >= 0x040200
-    // QComboBox in Qt < 4.2 have asserts for this, but handles the situation by ignoring it.
-    // Qt >= 4.2 should handle this gracefully (no asserts, but define behavior as keeping current)
     QTest::ignoreMessage(QtWarningMsg, "QComboBox::setItemDelegate: cannot set a 0 delegate");
     obj1.setItemDelegate((QAbstractItemDelegate *)0);
     QCOMPARE(obj1.itemDelegate(), (QAbstractItemDelegate *)var10);
-#endif
     // delete var10; // No delete, since QComboBox takes ownership
 
     // QAbstractItemModel * QComboBox::model()
@@ -317,13 +312,9 @@ void tst_QComboBox::getSetCheck()
     MyAbstractItemModel *var11 = new MyAbstractItemModel;
     obj1.setModel(var11);
     QCOMPARE(obj1.model(), (QAbstractItemModel *)var11);
-#if QT_VERSION >= 0x040200
-    // QComboBox in Qt < 4.2 have asserts for this, but handles the situation by ignoring it.
-    // Qt >= 4.2 should handle this gracefully (no asserts, but define behavior as keeping current)
     QTest::ignoreMessage(QtWarningMsg, "QComboBox::setModel: cannot set a 0 model");
     obj1.setModel((QAbstractItemModel *)0);
     QCOMPARE(obj1.model(), (QAbstractItemModel *)var11);
-#endif
     delete var11;
     obj1.model();
 
@@ -342,13 +333,9 @@ void tst_QComboBox::getSetCheck()
     MyAbstractItemView *var13 = new MyAbstractItemView;
     obj1.setView(var13);
     QCOMPARE(obj1.view(), (QAbstractItemView *)var13);
-#if QT_VERSION >= 0x040200
-    // QComboBox in Qt < 4.2 have asserts for this
-    // Qt >= 4.2 should handle this gracefully (no asserts, but define behavior as keeping current view)
     QTest::ignoreMessage(QtWarningMsg, "QComboBox::setView: cannot set a 0 view");
     obj1.setView((QAbstractItemView *)0);
     QCOMPARE(obj1.view(), (QAbstractItemView *)var13);
-#endif
     delete var13;
 
     // int QComboBox::currentIndex()
@@ -509,13 +496,9 @@ void tst_QComboBox::sizeAdjustPolicy()
     testWidget->addItem("small");
     QCOMPARE(testWidget->sizeHint(), content);
     testWidget->addItem("looooooooooooooooooooooong item");
-#if QT_VERSION >= 0x040200
     // minimumContentsLength() > sizeof("looooooooooooooooooooooong item"), so the sizeHint()
     // stays the same
     QCOMPARE(testWidget->sizeHint(), content);
-#else
-    QVERIFY(testWidget->sizeHint().width() > content.width());
-#endif
     // over 60 characters (cf. setMinimumContentsLength() call above)
     testWidget->addItem("loooooooooooooooooooooooooooooooooooooooooooooo"
                         "ooooooooooooooooooooooooooooooooooooooooooooooo"
@@ -532,10 +515,8 @@ void tst_QComboBox::sizeAdjustPolicy()
     content = testWidget->sizeHint();
     while (testWidget->count())
         testWidget->removeItem(0);
-#if QT_VERSION >= 0x040200
     QCOMPARE(testWidget->sizeHint(), content);
     testWidget->setMinimumContentsLength(0);
-#endif
     QVERIFY(testWidget->sizeHint().width() < content.width());
 }
 
@@ -828,13 +809,9 @@ void tst_QComboBox::autoCompletionCaseSensitivity()
 
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_B);
     qApp->processEvents();
-#if QT_VERSION < 0x040200
-    // autocompletions are case-preserving in < 4.2
-    QCOMPARE(testWidget->currentText(), QString("aBCDEF"));
-#else
     // autocompletions preserve userkey-case from 4.2
     QCOMPARE(testWidget->currentText(), QString("abCDEF"));
-#endif
+
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_Enter);
     qApp->processEvents();
     QCOMPARE(testWidget->currentText(), QString("aBCDEF")); // case restored to item's case
@@ -2132,7 +2109,7 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
 
     QFrame *container = qFindChild<QComboBoxPrivateContainer *>(&comboBox);
     QVERIFY(container);
-    QVERIFY(desktop.availableGeometry().contains(container->geometry()));
+    QVERIFY(desktop.screenGeometry(container).contains(container->geometry()));
 }
 
 void tst_QComboBox::task247863_keyBoardSelection()
@@ -2179,6 +2156,57 @@ void tst_QComboBox::setModelColumn()
     QCOMPARE(box.currentText(), QString("0"));
     box.setModelColumn(1);
     QCOMPARE(box.currentText(), QString("zero"));
+}
+
+void tst_QComboBox::noScrollbar_data()
+{
+    QTest::addColumn<QString>("stylesheet");
+
+    QTest::newRow("normal") << QString();
+    QTest::newRow("border") << QString::fromLatin1("QAbstractItemView { border: 12px solid blue;}");
+    QTest::newRow("margin") << QString::fromLatin1("QAbstractItemView { margin: 12px 15px 13px 10px; }");
+    QTest::newRow("padding") << QString::fromLatin1("QAbstractItemView { padding: 12px 15px 13px 10px;}");
+    QTest::newRow("everything") << QString::fromLatin1("QAbstractItemView {  border: 12px  solid blue; "
+                                                       " padding: 12px 15px 13px 10px; margin: 12px 15px 13px 10px;  }");
+    QTest::newRow("everything and more") << QString::fromLatin1("QAbstractItemView {  border: 1px 3px 5px 1px solid blue; "
+                                                       " padding: 2px 5px 3px 1px; margin: 2px 5px 3px 1px;  } "
+                                                       " QAbstractItemView::item {  border: 2px solid green; "
+                                                       "                      padding: 1px 1px 2px 2px margin: 1px; } " );
+}
+
+void tst_QComboBox::noScrollbar()
+{
+    QStringList initialContent;
+    initialContent << "foo" << "bar" << "foobar" << "moo";
+    QFETCH(QString, stylesheet);
+
+    {
+        QComboBox comboBox;
+        comboBox.setStyleSheet(stylesheet);
+        comboBox.addItems(initialContent);
+        comboBox.show();
+        comboBox.resize(200, comboBox.height());
+        QTest::qWait(100);
+        comboBox.showPopup();
+        QTest::qWait(100);
+        QVERIFY(!comboBox.view()->horizontalScrollBar()->isVisible());
+        QVERIFY(!comboBox.view()->verticalScrollBar()->isVisible());
+    }
+    
+    {
+        QTableWidget *table = new QTableWidget(2,2);
+        QComboBox comboBox;
+        comboBox.setStyleSheet(stylesheet);
+        comboBox.setView(table);
+        comboBox.setModel(table->model());
+        comboBox.show();
+        QTest::qWait(100);
+        comboBox.resize(200, comboBox.height());
+        comboBox.showPopup();
+        QTest::qWait(100);
+        QVERIFY(!comboBox.view()->horizontalScrollBar()->isVisible());
+        QVERIFY(!comboBox.view()->verticalScrollBar()->isVisible());
+    }
 }
 
 QTEST_MAIN(tst_QComboBox)

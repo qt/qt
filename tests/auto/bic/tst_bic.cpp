@@ -195,29 +195,10 @@ void tst_Bic::sizesAndVTables_data()
         && archFileName420.isEmpty())
         QSKIP("No reference files found for this platform", SkipAll);
 
-#if QT_VERSION >= 0x040100
     bool isPatchRelease400 = false;
-#else
-    bool isPatchRelease400 = true;
-#endif
-
-#if QT_VERSION >= 0x040200
     bool isPatchRelease410 = false;
-#else
-    bool isPatchRelease410 = true;
-#endif
-
-#if QT_VERSION >= 0x040300
     bool isPatchRelease420 = false;
-#else
-    bool isPatchRelease420 = true;
-#endif
-
-#if QT_VERSION >= 0x040400
     bool isPatchRelease430 = false;
-#else
-    bool isPatchRelease430 = true;
-#endif
 
     QTest::addColumn<QString>("oldLib");
     QTest::addColumn<bool>("isPatchRelease");

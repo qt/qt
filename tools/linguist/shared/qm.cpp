@@ -103,6 +103,43 @@ static uint elfHash(const QByteArray &ba)
     return h;
 }
 
+class ByteTranslatorMessage
+{
+public:
+    ByteTranslatorMessage(
+            const QByteArray &context,
+            const QByteArray &sourceText,
+            const QByteArray &comment,
+            const QStringList &translations) :
+        m_context(context),
+        m_sourcetext(sourceText),
+        m_comment(comment),
+        m_translations(translations)
+    {}
+    const QByteArray &context() const { return m_context; }
+    const QByteArray &sourceText() const { return m_sourcetext; }
+    const QByteArray &comment() const { return m_comment; }
+    const QStringList &translations() const { return m_translations; }
+    bool operator<(const ByteTranslatorMessage& m) const;
+
+private:
+    QByteArray m_context;
+    QByteArray m_sourcetext;
+    QByteArray m_comment;
+    QStringList m_translations;
+};
+
+Q_DECLARE_TYPEINFO(ByteTranslatorMessage, Q_MOVABLE_TYPE);
+
+bool ByteTranslatorMessage::operator<(const ByteTranslatorMessage& m) const
+{
+    if (m_context != m.m_context)
+        return m_context < m.m_context;
+    if (m_sourcetext != m.m_sourcetext)
+        return m_sourcetext < m.m_sourcetext;
+    return m_comment < m.m_comment;
+}
+
 class Releaser
 {
 public:
@@ -133,26 +170,11 @@ public:
         m_codec = QTextCodec::codecForName(codecName);
     }
 
-    TranslatorMessage findMessage(const QString &context,
-        const QString &sourceText, const QString &comment,
-        const QString &fileName = QString(), int lineNumber = -1) const;
-
     bool save(QIODevice *iod);
 
-    void insert(const TranslatorMessage &);
-    void remove(const TranslatorMessage &);
-
-    bool contains(const QString &context, const QString &sourceText,
-        const QString & comment) const;
-
-    bool contains(const QString &context, const QString &comment,
-        const QString &fileName, int lineNumber) const;
+    void insert(const TranslatorMessage &msg, bool forceComment);
 
     void squeeze(TranslatorSaveMode mode);
-
-    QList<TranslatorMessage> messages() const;
-
-    bool isEmpty() const;
 
     void setNumerusRules(const QByteArray &rules);
 
@@ -163,18 +185,20 @@ private:
     // on turn should be the same as passed to the actual tr(...) calls
     QByteArray originalBytes(const QString &str, bool isUtf8) const;
 
-    Prefix commonPrefix(const TranslatorMessage &m1, const TranslatorMessage &m2) const;
+    void insertInternal(const TranslatorMessage &message, bool forceComment, bool isUtf8);
 
-    uint msgHash(const TranslatorMessage &msg) const;
+    static Prefix commonPrefix(const ByteTranslatorMessage &m1, const ByteTranslatorMessage &m2);
 
-    void writeMessage(const TranslatorMessage & msg, QDataStream & stream,
+    static uint msgHash(const ByteTranslatorMessage &msg);
+
+    void writeMessage(const ByteTranslatorMessage & msg, QDataStream & stream,
         TranslatorSaveMode strip, Prefix prefix) const;
 
     // for squeezed but non-file data, this is what needs to be deleted
     QByteArray m_messageArray;
     QByteArray m_offsetArray;
     QByteArray m_contextArray;
-    QMap<TranslatorMessage, void *> m_messages;
+    QMap<ByteTranslatorMessage, void *> m_messages;
     QByteArray m_numerusRules;
 
     // Used to reproduce the original bytes
@@ -193,12 +217,12 @@ QByteArray Releaser::originalBytes(const QString &str, bool isUtf8) const
     return m_codec ? m_codec->fromUnicode(str) : str.toLatin1();
 }
 
-uint Releaser::msgHash(const TranslatorMessage &msg) const
+uint Releaser::msgHash(const ByteTranslatorMessage &msg)
 {
-    return elfHash(originalBytes(msg.sourceText() + msg.comment(), msg.isUtf8()));
+    return elfHash(msg.sourceText() + msg.comment());
 }
 
-Prefix Releaser::commonPrefix(const TranslatorMessage &m1, const TranslatorMessage &m2) const
+Prefix Releaser::commonPrefix(const ByteTranslatorMessage &m1, const ByteTranslatorMessage &m2)
 {
     if (msgHash(m1) != msgHash(m2))
         return NoPrefix;
@@ -211,7 +235,7 @@ Prefix Releaser::commonPrefix(const TranslatorMessage &m1, const TranslatorMessa
     return HashContextSourceTextComment;
 }
 
-void Releaser::writeMessage(const TranslatorMessage & msg, QDataStream & stream,
+void Releaser::writeMessage(const ByteTranslatorMessage &msg, QDataStream &stream,
     TranslatorSaveMode mode, Prefix prefix) const
 {
     for (int i = 0; i < msg.translations().count(); ++i) {
@@ -228,14 +252,14 @@ void Releaser::writeMessage(const TranslatorMessage & msg, QDataStream & stream,
     switch (prefix) {
     default:
     case HashContextSourceTextComment:
-        stream << quint8(Tag_Comment) << originalBytes(msg.comment(), msg.isUtf8());
+        stream << quint8(Tag_Comment) << msg.comment();
         // fall through
     case HashContextSourceText:
-        stream << quint8(Tag_SourceText) << originalBytes(msg.sourceText(), msg.isUtf8());
+        stream << quint8(Tag_SourceText) << msg.sourceText();
         // fall through
     case HashContext:
-        stream << quint8(Tag_Context) << originalBytes(msg.context(), msg.isUtf8());
-        ;
+        stream << quint8(Tag_Context) << msg.context();
+        break;
     }
 
     stream << quint8(Tag_End);
@@ -275,7 +299,7 @@ void Releaser::squeeze(TranslatorSaveMode mode)
     if (m_messages.isEmpty() && mode == SaveEverything)
         return;
 
-    QMap<TranslatorMessage, void *> messages = m_messages;
+    QMap<ByteTranslatorMessage, void *> messages = m_messages;
 
     // re-build contents
     m_messageArray.clear();
@@ -286,7 +310,7 @@ void Releaser::squeeze(TranslatorSaveMode mode)
     QMap<Offset, void *> offsets;
 
     QDataStream ms(&m_messageArray, QIODevice::WriteOnly);
-    QMap<TranslatorMessage, void *>::const_iterator it, next;
+    QMap<ByteTranslatorMessage, void *>::const_iterator it, next;
     int cpPrev = 0, cpNext = 0;
     for (it = messages.constBegin(); it != messages.constEnd(); ++it) {
         cpPrev = cpNext;
@@ -310,7 +334,7 @@ void Releaser::squeeze(TranslatorSaveMode mode)
     }
 
     if (mode == SaveStripped) {
-        QMap<QString, int> contextSet;
+        QMap<QByteArray, int> contextSet;
         for (it = messages.constBegin(); it != messages.constEnd(); ++it)
             ++contextSet[it.key().context()];
 
@@ -322,10 +346,10 @@ void Releaser::squeeze(TranslatorSaveMode mode)
         else
             hTableSize = (contextSet.size() < 10000) ? 15013 : 3 * contextSet.size() / 2;
 
-        QMultiMap<int, QString> hashMap;
-        QMap<QString, int>::const_iterator c;
+        QMultiMap<int, QByteArray> hashMap;
+        QMap<QByteArray, int>::const_iterator c;
         for (c = contextSet.constBegin(); c != contextSet.constEnd(); ++c)
-            hashMap.insert(elfHash(originalBytes(c.key(), false /*FIXME*/)) % hTableSize, c.key());
+            hashMap.insert(elfHash(c.key()) % hTableSize, c.key());
 
         /*
           The contexts found in this translator are stored in a hash
@@ -360,16 +384,14 @@ void Releaser::squeeze(TranslatorSaveMode mode)
         t << quint16(0); // the entry at offset 0 cannot be used
         uint upto = 2;
 
-        QMap<int, QString>::const_iterator entry = hashMap.constBegin();
+        QMap<int, QByteArray>::const_iterator entry = hashMap.constBegin();
         while (entry != hashMap.constEnd()) {
             int i = entry.key();
             hTable[i] = quint16(upto >> 1);
 
             do {
-                QString context = entry.value();
-                QByteArray ba = context.toUtf8();
-                const char *con = ba.data();
-                uint len = uint(qstrlen(con));
+                const char *con = entry.value().constData();
+                uint len = uint(entry.value().length());
                 len = qMin(len, 255u);
                 t << quint8(len);
                 t.writeRawData(con, len);
@@ -394,78 +416,33 @@ void Releaser::squeeze(TranslatorSaveMode mode)
     }
 }
 
-bool Releaser::contains(const QString &context, const QString &sourceText,
-    const QString &comment) const
+void Releaser::insertInternal(const TranslatorMessage &message, bool forceComment, bool isUtf8)
 {
-    return !findMessage(context, sourceText, comment).translation().isNull();
-}
-
-bool Releaser::contains(const QString &context, const QString &comment,
-    const QString &fileName, int lineNumber) const
-{
-    return !findMessage(context, QString(), comment, fileName, lineNumber).isNull();
-}
-
-void Releaser::insert(const TranslatorMessage &message)
-{
-    m_messages.insert(message, 0);
-}
-
-void Releaser::remove(const TranslatorMessage &message)
-{
-    m_messages.remove(message);
-}
-
-
-TranslatorMessage Releaser::findMessage(const QString &context,
-    const QString &sourceText, const QString &comment,
-    const QString &fileName, int lineNumber) const
-{
-    if (m_messages.isEmpty()) 
-        return TranslatorMessage();
-
-    QMap<TranslatorMessage, void *>::const_iterator it;
-
-    // Either we want to find an item that matches context, sourcetext
-    // (and optionally comment) Or we want to find an item that
-    // matches context, filename, linenumber (and optionally comment)
-    TranslatorMessage msg(context, sourceText, comment, QString(), fileName, lineNumber);
-    it = m_messages.constFind(msg);
-    if (it != m_messages.constEnd())
-        return it.key();
-
-    if (!comment.isEmpty()) {
-        it = m_messages.constFind(TranslatorMessage(context, sourceText, QString(), QString(), fileName, lineNumber));
-        if (it != m_messages.constEnd())
-            return it.key();
+    ByteTranslatorMessage bmsg(originalBytes(message.context(), isUtf8),
+                               originalBytes(message.sourceText(), isUtf8),
+                               originalBytes(message.comment(), isUtf8),
+                               message.translations());
+    if (!forceComment) {
+        ByteTranslatorMessage bmsg2(
+                bmsg.context(), bmsg.sourceText(), QByteArray(""), bmsg.translations());
+        if (!m_messages.contains(bmsg2)) {
+            m_messages.insert(bmsg2, 0);
+            return;
+        }
     }
-
-    it = m_messages.constFind(TranslatorMessage(context, QString(), comment, QString(), fileName, lineNumber));
-    if (it != m_messages.constEnd())
-        return it.key();
-    if (comment.isEmpty())
-        return TranslatorMessage();
-
-    it = m_messages.constFind(TranslatorMessage(context, QString(), QString(), QString(), fileName, lineNumber));
-    if (it != m_messages.constEnd())
-        return it.key();
-    return TranslatorMessage();
+    m_messages.insert(bmsg, 0);
 }
 
-bool Releaser::isEmpty() const
+void Releaser::insert(const TranslatorMessage &message, bool forceComment)
 {
-    return m_messageArray.isEmpty() && m_offsetArray.isEmpty()
-        && m_contextArray.isEmpty() && m_messages.isEmpty();
+    insertInternal(message, forceComment, message.isUtf8());
+    if (message.isUtf8() && message.isNonUtf8())
+        insertInternal(message, forceComment, false);
 }
 
 void Releaser::setNumerusRules(const QByteArray &rules)
 {
     m_numerusRules = rules;
-}
-
-QList<TranslatorMessage> Releaser::messages() const
-{
-    return m_messages.keys();
 }
 
 static quint8 read8(const uchar *data)
@@ -478,6 +455,31 @@ static quint32 read32(const uchar *data)
     return (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | (data[3]);
 }
 
+static void fromBytes(const char *str, int len, QTextCodec *codec, QTextCodec *utf8Codec,
+                      QString *out, QString *utf8Out,
+                      bool *isSystem, bool *isUtf8, bool *needs8Bit)
+{
+    for (int i = 0; i < len; ++i)
+        if (str[i] & 0x80) {
+            if (utf8Codec) {
+                QTextCodec::ConverterState cvtState;
+                *utf8Out = utf8Codec->toUnicode(str, len, &cvtState);
+                *isUtf8 = !cvtState.invalidChars;
+            }
+            QTextCodec::ConverterState cvtState;
+            *out = codec->toUnicode(str, len, &cvtState);
+            *isSystem = !cvtState.invalidChars;
+            *needs8Bit = true;
+            return;
+        }
+    *out = QString::fromLatin1(str, len);
+    *isSystem = true;
+    if (utf8Codec) {
+        *utf8Out = *out;
+        *isUtf8 = true;
+    }
+    *needs8Bit = false;
+}
 
 bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
 {
@@ -543,10 +545,19 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
     size_t numItems = offsetLength / (2 * sizeof(quint32));
     //qDebug() << "NUMITEMS: " << numItems;
 
-    TranslatorMessage msg;
-
     // FIXME: that's just a guess, the original locale data is lost...
     QTextCodec *codec = QTextCodec::codecForLocale();
+    QTextCodec *utf8Codec = 0;
+    if (codec->name() != "UTF-8")
+        utf8Codec = QTextCodec::codecForName("UTF-8");
+
+    QString context, contextUtf8;
+    bool contextIsSystem, contextIsUtf8, contextNeeds8Bit;
+    QString sourcetext, sourcetextUtf8;
+    bool sourcetextIsSystem, sourcetextIsUtf8, sourcetextNeeds8Bit;
+    QString comment, commentUtf8;
+    bool commentIsSystem, commentIsUtf8, commentNeeds8Bit;
+    QStringList translations;
 
     for (const uchar *start = offsetArray; start != offsetArray + (numItems << 3); start += 8) {
         //quint32 hash = read32(start);
@@ -575,7 +586,7 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
                 }
                 str.replace(QChar(Translator::InternalVariantSeparator),
                             QChar(Translator::DefaultVariantSeparator));
-                msg.appendTranslation(str);
+                translations << str;
                 m += len;
                 break;
             }
@@ -588,7 +599,9 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
                 m += 4;
                 //qDebug() << "SOURCE LEN: " << len;
                 //qDebug() << "SOURCE: " << QByteArray((const char*)m, len);
-                msg.setSourceText(codec->toUnicode(QByteArray((const char*)m, len)));
+                fromBytes((const char*)m, len, codec, utf8Codec,
+                          &sourcetext, &sourcetextUtf8,
+                          &sourcetextIsSystem, &sourcetextIsUtf8, &sourcetextNeeds8Bit);
                 m += len;
                 break;
             }
@@ -597,7 +610,9 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
                 m += 4;
                 //qDebug() << "CONTEXT LEN: " << len;
                 //qDebug() << "CONTEXT: " << QByteArray((const char*)m, len);
-                msg.setContext(codec->toUnicode(QByteArray((const char*)m, len)));
+                fromBytes((const char*)m, len, codec, utf8Codec,
+                          &context, &contextUtf8,
+                          &contextIsSystem, &contextIsUtf8, &contextNeeds8Bit);
                 m += len;
                 break;
             }
@@ -606,7 +621,9 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
                 m += 4;
                 //qDebug() << "COMMENT LEN: " << len;
                 //qDebug() << "COMMENT: " << QByteArray((const char*)m, len);
-                msg.setComment(codec->toUnicode(QByteArray((const char*)m, len)));
+                fromBytes((const char*)m, len, codec, utf8Codec,
+                          &comment, &commentUtf8,
+                          &commentIsSystem, &commentIsUtf8, &commentNeeds8Bit);
                 m += len;
                 break;
             }
@@ -616,10 +633,31 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
             }
         }
     end:;
+        TranslatorMessage msg;
         msg.setType(TranslatorMessage::Finished);
+        msg.setTranslations(translations);
+        translations.clear();
+        if (contextNeeds8Bit || sourcetextNeeds8Bit || commentNeeds8Bit) {
+            if (utf8Codec && contextIsUtf8 && sourcetextIsUtf8 && commentIsUtf8) {
+                // The message is utf-8, but file is not.
+                msg.setUtf8(true);
+                msg.setContext(contextUtf8);
+                msg.setSourceText(sourcetextUtf8);
+                msg.setComment(commentUtf8);
+                translator.append(msg);
+                continue;
+            }
+            if (!(contextIsSystem && sourcetextIsSystem && commentIsSystem)) {
+                cd.appendError(QLatin1String(
+                        "Cannot read file with current system character codec"));
+                return false;
+            }
+            // The message is 8-bit in the file's encoding (utf-8 or not).
+        }
+        msg.setContext(context);
+        msg.setSourceText(sourcetext);
+        msg.setComment(comment);
         translator.append(msg);
-        //qDebug() << "\nHASH:" << hash << msg.sourceText() << msg.context();
-        msg.setTranslations(QStringList());
     }
     return ok;
 }
@@ -646,39 +684,27 @@ static bool saveQM(const Translator &translator, QIODevice &dev, ConversionData 
         TranslatorMessage::Type typ = msg.type();
         if (typ != TranslatorMessage::Obsolete) {
             if (typ == TranslatorMessage::Unfinished) {
-                if (msg.translation().isEmpty())
+                if (msg.translation().isEmpty()) {
                     ++untranslated;
-                else
+                    continue;
+                } else {
+                    if (cd.ignoreUnfinished())
+                        continue;
                     ++unfinished;
+                }
             } else {
                 ++finished;
             }
-            QString context = msg.context();
-            QString sourceText = msg.sourceText();
-            QString comment = msg.comment();
-            QStringList translations = msg.translations();
-
-            if (!cd.ignoreUnfinished() || typ != TranslatorMessage::Unfinished) {
-                /*
-                Drop the comment in (context, sourceText, comment),
-                unless the context is empty,
-                unless (context, sourceText, "") already exists or
-                unless we already dropped the comment of (context,
-                sourceText, comment0).
-                */
-                if (comment.isEmpty()
-                    || context.isEmpty()
-                    || translator.contains(context, sourceText, QString())
-                    || !releaser.findMessage(context, sourceText, QString()).translation()
-                            .isNull() ) {
-                    releaser.insert(msg);
-                } else {
-                    TranslatorMessage tm(context, sourceText, QString(),
-                    QString(), QString(), -1, translations);
-                    //filename and lineNumbers will be ignored from now.
-                    releaser.insert(tm);
-                }
-            }
+            // Drop the comment in (context, sourceText, comment),
+            // unless the context is empty,
+            // unless (context, sourceText, "") already exists or
+            // unless we already dropped the comment of (context,
+            // sourceText, comment0).
+            bool forceComment =
+                    msg.comment().isEmpty()
+                    || msg.context().isEmpty()
+                    || translator.contains(msg.context(), msg.sourceText(), QString());
+            releaser.insert(msg, forceComment);
         }
     }
 

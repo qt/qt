@@ -287,6 +287,7 @@ public:
 private:
     Q_DISABLE_COPY(QTextDocument)
     Q_DECLARE_PRIVATE(QTextDocument)
+    friend class QTextObjectPrivate;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextDocument::FindFlags)

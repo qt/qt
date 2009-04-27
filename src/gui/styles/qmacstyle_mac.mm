@@ -2189,7 +2189,7 @@ void QMacStyle::polish(QWidget* w)
     }
 
     if (qobject_cast<QMenu*>(w) || qobject_cast<QComboBoxPrivateContainer *>(w)) {
-        w->setWindowOpacity(0.94);
+        w->setWindowOpacity(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5 ? 0.985 : 0.94);
         if (!w->testAttribute(Qt::WA_SetPalette)) {
             QPixmap px(64, 64);
             HIThemeMenuDrawInfo mtinfo;
@@ -3854,13 +3854,16 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         }
         break;
     case CE_TabBarTabShape:
-        if (const QStyleOptionTabV3 *tabOpt = qstyleoption_cast<const QStyleOptionTabV3 *>(opt)) {
-            if (tabOpt->documentMode) {
-                p->save();
-                QRect tabRect = tabOpt->rect;
-                drawTabShape(p, tabOpt);
-                p->restore();
-                return;
+        if (const QStyleOptionTab *tabOpt = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
+
+            if (const QStyleOptionTabV3 *tabOptV3 = qstyleoption_cast<const QStyleOptionTabV3 *>(opt)) {
+                if (tabOptV3->documentMode) {
+                    p->save();
+                    QRect tabRect = tabOptV3->rect;
+                    drawTabShape(p, tabOptV3);
+                    p->restore();
+                    return;
+                }
             }
 
 #if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)

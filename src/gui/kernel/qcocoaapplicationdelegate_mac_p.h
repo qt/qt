@@ -107,6 +107,7 @@ QT_FORWARD_DECLARE_CLASS(QApplicationPrivate);
     NSMenu *dockMenu;
     QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader;
     id <NSApplicationDelegate> reflectionDelegate;
+    bool inLaunch;
 }
 + (QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate)*)sharedDelegate;
 - (void)setDockMenu:(NSMenu *)newMenu;

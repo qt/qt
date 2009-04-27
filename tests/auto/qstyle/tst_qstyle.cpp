@@ -74,9 +74,7 @@
 #define SRCDIR "."
 #endif
 
-#if QT_VERSION >= 0x040200
 #include <QCleanlooksStyle>
-#endif
 
 #ifdef Q_WS_MAC
 #include <QMacStyle>
@@ -362,7 +360,7 @@ void tst_QStyle::testPlastiqueStyle()
 
 void tst_QStyle::testCleanlooksStyle()
 {
-#if QT_VERSION >= 0x040200 && !defined(QT_NO_STYLE_CLEANLOOKS)
+#if !defined(QT_NO_STYLE_CLEANLOOKS)
     QCleanlooksStyle cstyle;
     testAllFunctions(&cstyle);
     lineUpLayoutTest(&cstyle);

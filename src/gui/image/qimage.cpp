@@ -3607,6 +3607,9 @@ int QImage::pixelIndex(int x, int y) const
 
     If the \a position is not valid, the results are undefined.
 
+    \warning This function is expensive when used for massive pixel
+    manipulations.
+
     \sa setPixel(), valid(), {QImage#Pixel Manipulation}{Pixel
     Manipulation}
 */
@@ -4937,10 +4940,12 @@ int QImage::dotsPerMeterY() const
     meter, to \a x.
 
     Together with dotsPerMeterY(), this number defines the intended
-    scale and aspect ratio of the image.
+    scale and aspect ratio of the image, and determines the scale
+    at which QPainter will draw graphics on the image. It does not
+    change the scale or aspect ratio of the image when it is rendered
+    on other paint devices.
 
-    \sa dotsPerMeterX(), {QImage#Image Information}{Image
-    Information}
+    \sa dotsPerMeterX(), {QImage#Image Information}{Image Information}
 */
 void QImage::setDotsPerMeterX(int x)
 {
@@ -4957,10 +4962,12 @@ void QImage::setDotsPerMeterX(int x)
     to \a y.
 
     Together with dotsPerMeterX(), this number defines the intended
-    scale and aspect ratio of the image.
+    scale and aspect ratio of the image, and determines the scale
+    at which QPainter will draw graphics on the image. It does not
+    change the scale or aspect ratio of the image when it is rendered
+    on other paint devices.
 
-    \sa dotsPerMeterY(), {QImage#Image Information}{Image
-    Information}
+    \sa dotsPerMeterY(), {QImage#Image Information}{Image Information}
 */
 void QImage::setDotsPerMeterY(int y)
 {
@@ -5577,6 +5584,8 @@ bool QImage::isDetached() const
 
     Use one of the composition mods in QPainter::CompositionMode instead.
 
+    \warning This function is expensive.
+
     \sa alphaChannel(), {QImage#Image Transformations}{Image
     Transformations}, {QImage#Image Formats}{Image Formats}
 */
@@ -5658,6 +5667,11 @@ void QImage::setAlphaChannel(const QImage &alphaChannel)
     You can see an example of use of this function in QPixmap's
     \l{QPixmap::}{alphaChannel()}, which works in the same way as
     this function on QPixmaps.
+
+    Most usecases for this function can be replaced with QPainter and
+    using composition modes.
+
+    \warning This is an expensive function.
 
     \sa setAlphaChannel(), hasAlphaChannel(),
     {QPixmap#Pixmap Information}{Pixmap},

@@ -31,7 +31,7 @@ protected:
 public:
 
     SymbianAbldMakefileGenerator();
-    inline ~SymbianAbldMakefileGenerator();
+    ~SymbianAbldMakefileGenerator();
 
 };
 

@@ -66,6 +66,7 @@
 #ifdef Q_WS_MAC
 # include "qt_mac_p.h"
 # include "qt_cocoa_helpers_mac_p.h"
+# include "qmainwindow.h"
 #endif
 #if defined(Q_WS_QWS)
 # include "qwsdisplay_qws.h"
@@ -168,6 +169,7 @@ static inline bool bypassGraphicsProxyWidget(QWidget *p)
 #endif
 
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); // qapplication.cpp
+extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
 QWidgetPrivate::QWidgetPrivate(int version) :
         QObjectPrivate(version), extra(0), focus_child(0)
@@ -234,28 +236,6 @@ QWindowSurface *QWidgetPrivate::createDefaultWindowSurface()
     if (QApplicationPrivate::graphicsSystem())
         return QApplicationPrivate::graphicsSystem()->createWindowSurface(q);
     return createDefaultWindowSurface_sys();
-}
-
-/*!
-    \internal
-    This is an internal function, you should never call this.
-
-    This function is called to focus associated input context. The
-    code intends to eliminate duplicate focus for the context even if
-    the context is shared between widgets
-
-    \sa QInputContext::setFocus()
- */
-void QWidgetPrivate::focusInputContext()
-{
-#ifndef QT_NO_IM
-    Q_Q(QWidget);
-    QInputContext *qic = q->inputContext();
-    if (qic) {
-        if(qic->focusWidget() != q)
-            qic->setFocusWidget(q);
-    }
-#endif // QT_NO_IM
 }
 
 /*!
@@ -333,20 +313,24 @@ void QWidget::setInputContext(QInputContext *context)
 
 
 /*!
+    \obsolete
+
     This function can be called on the widget that currently has focus
     to reset the input method operating on it.
 
-    \sa QInputContext, QInputContext::reset()
+    This function is providing for convenience, instead you should use
+    \l{QInputContext::}{reset()} on the input context that was
+    returned by inputContext().
+
+    \sa QInputContext, inputContext(), QInputContext::reset()
 */
 void QWidget::resetInputContext()
 {
     if (!hasFocus())
         return;
 #ifndef QT_NO_IM
-    if (!d_func()->ic)
-        return;
     QInputContext *qic = this->inputContext();
-    if( qic )
+    if(qic)
         qic->reset();
 #endif // QT_NO_IM
 }
@@ -1405,7 +1389,13 @@ int QWidgetPrivate::maxInstances = 0;     // Maximum number of widget instances
 void QWidgetPrivate::setWinId(WId id)                // set widget identifier
 {
     Q_Q(QWidget);
-    if (mapper && data.winid) {
+    // the user might create a widget with Qt::Desktop window
+    // attribute (or create another QDesktopWidget instance), which
+    // will have the same windowid (the root window id) as the
+    // qt_desktopWidget. We should not add the second desktop widget
+    // to the mapper.
+    bool userDesktopWidget = qt_desktopWidget != 0 && qt_desktopWidget != q && q->windowType() == Qt::Desktop;
+    if (mapper && data.winid && !userDesktopWidget) {
         mapper->remove(data.winid);
         uncreatedWidgets->insert(q);
     }
@@ -1414,7 +1404,7 @@ void QWidgetPrivate::setWinId(WId id)                // set widget identifier
 #if defined(Q_WS_X11)
     hd = id; // X11: hd == ident
 #endif
-    if (mapper && id) {
+    if (mapper && id && !userDesktopWidget) {
         mapper->insert(data.winid, q);
         uncreatedWidgets->remove(q);
     }
@@ -2257,9 +2247,10 @@ WId QWidget::effectiveWinId() const
     The style sheet contains a textual description of customizations to the
     widget's style, as described in the \l{Qt Style Sheets} document.
 
-    \note Qt style sheets are currently not supported for QMacStyle
-    (the default style on Mac OS X). We plan to address this in some future
-    release.
+    Since Qt 4.5, Qt style sheets fully supports Mac OS X.
+
+    \warning Qt style sheets are currently not supported for custom QStyle
+    subclasses. We plan to address this in some future release.
 
     \sa setStyle(), QApplication::styleSheet, {Qt Style Sheets}
 */
@@ -8990,17 +8981,36 @@ QWidget *QWidget::childAt(const QPoint &p) const
 QWidget *QWidgetPrivate::childAt_helper(const QPoint &p, bool ignoreChildrenInDestructor) const
 {
     Q_Q(const QWidget);
-    if (!q->rect().contains(p))
+#ifdef Q_WS_MAC
+    bool includeFrame = q->isWindow() && qobject_cast<const QMainWindow *>(q)
+                        && static_cast<const QMainWindow *>(q)->unifiedTitleAndToolBarOnMac();
+#endif
+
+    if (
+#ifdef Q_WS_MAC
+            !includeFrame &&
+#endif
+            !q->rect().contains(p))
         return 0;
+
     for (int i = children.size(); i > 0 ;) {
         --i;
         QWidget *w = qobject_cast<QWidget *>(children.at(i));
-        if (w && !w->isWindow() && !w->isHidden() && w->geometry().contains(p)) {
+        if (w && !w->isWindow() && !w->isHidden()
+                && (w->geometry().contains(p)
+#ifdef Q_WS_MAC
+                    || (includeFrame && w->geometry().contains(qt_mac_nativeMapFromParent(w, p)))
+#endif
+               )) {
             if (ignoreChildrenInDestructor && w->data->in_destructor)
                 continue;
             if (w->testAttribute(Qt::WA_TransparentForMouseEvents))
                 continue;
             QPoint childPoint = w->mapFromParent(p);
+#ifdef Q_WS_MAC
+            if (includeFrame && !w->geometry().contains(p))
+                childPoint = qt_mac_nativeMapFromParent(w, p);
+#endif
             if (QWidget *t = w->d_func()->childAt_helper(childPoint, ignoreChildrenInDestructor))
                 return t;
             // if WMouseNoMask is set the widget mask is ignored, if
@@ -9441,11 +9451,13 @@ void QWidget::repaint(const QRect &rect)
     if (!isVisible() || !updatesEnabled() || rect.isEmpty())
         return;
 
-    QTLWExtra *tlwExtra = !d->paintOnScreen() ? window()->d_func()->maybeTopData() : 0;
-    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
-        tlwExtra->inRepaint = true;
-        tlwExtra->backingStore->markDirty(rect, this, true);
-        tlwExtra->inRepaint = false;
+    if (hasBackingStoreSupport()) {
+        QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
+        if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
+            tlwExtra->inRepaint = true;
+            tlwExtra->backingStore->markDirty(rect, this, true);
+            tlwExtra->inRepaint = false;
+        }
     } else {
         d->repaint_sys(rect);
     }
@@ -9468,11 +9480,13 @@ void QWidget::repaint(const QRegion &rgn)
     if (!isVisible() || !updatesEnabled() || rgn.isEmpty())
         return;
 
-    QTLWExtra *tlwExtra = !d->paintOnScreen() ? window()->d_func()->maybeTopData() : 0;
-    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
-        tlwExtra->inRepaint = true;
-        tlwExtra->backingStore->markDirty(rgn, this, true);
-        tlwExtra->inRepaint = false;
+    if (hasBackingStoreSupport()) {
+        QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
+        if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
+            tlwExtra->inRepaint = true;
+            tlwExtra->backingStore->markDirty(rgn, this, true);
+            tlwExtra->inRepaint = false;
+        }
     } else {
         d->repaint_sys(rgn);
     }
@@ -9799,12 +9813,21 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         }
         break;
 #endif
-    case Qt::WA_NativeWindow:
+    case Qt::WA_NativeWindow: {
+        QInputContext *ic = 0;
+        if (on && !internalWinId() && testAttribute(Qt::WA_InputMethodEnabled) && hasFocus()) {
+            ic = d->inputContext();
+            ic->reset();
+            ic->setFocusWidget(0);
+        }
         if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget())
             parentWidget()->d_func()->enforceNativeChildren();
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
+        if (ic)
+            ic->setFocusWidget(this);
         break;
+    }
     case Qt::WA_PaintOnScreen:
         d->updateIsOpaque();
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)

@@ -124,9 +124,7 @@ private slots:
     void selectWordWithSeparators_data();
     void selectWordWithSeparators();
     void startOfWord();
-#if QT_VERSION >= 0x040100
     void selectBlock();
-#endif
     void selectVisually();
 
     void insertText();
@@ -1228,13 +1226,9 @@ void tst_QTextCursor::selectWord()
 
     cursor.movePosition(QTextCursor::EndOfBlock);
     cursor.select(QTextCursor::WordUnderCursor);
-#if QT_VERSION < 0x040200
-    QVERIFY(!cursor.hasSelection());
-#else
     QVERIFY(cursor.hasSelection());
     QCOMPARE(cursor.selectionStart(), 17);
     QCOMPARE(cursor.selectionEnd(), 22);
-#endif
 }
 
 void tst_QTextCursor::selectWordWithSeparators_data()
@@ -1269,7 +1263,6 @@ void tst_QTextCursor::startOfWord()
     QCOMPARE(cursor.position(), 0);
 }
 
-#if QT_VERSION >= 0x040100
 void tst_QTextCursor::selectBlock()
 {
     cursor.insertText("foobar");
@@ -1295,7 +1288,6 @@ void tst_QTextCursor::selectBlock()
     QVERIFY(cursor.blockFormat().alignment() == Qt::AlignHCenter);
     QCOMPARE(cursor.block().text(), QString("blah"));
 }
-#endif
 
 void tst_QTextCursor::selectVisually()
 {
@@ -1551,7 +1543,6 @@ void tst_QTextCursor::update()
 
 void tst_QTextCursor::disallowSettingObjectIndicesOnCharFormats()
 {
-#if QT_VERSION >= 0x040200
     QTextCharFormat fmt;
     fmt.setObjectIndex(42);
     cursor.insertText("Hey", fmt);
@@ -1581,7 +1572,6 @@ void tst_QTextCursor::disallowSettingObjectIndicesOnCharFormats()
     cursor = table->cellAt(0, 0).firstCursorPosition();
     QVERIFY(!cursor.isNull());
     QCOMPARE(cursor.blockCharFormat().objectIndex(), table->objectIndex());
-#endif
 }
 
 void tst_QTextCursor::blockAndColumnNumber()

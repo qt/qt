@@ -170,10 +170,8 @@ private slots:
     void setVersion_data();
     void setVersion();
 
-#if QT_VERSION >= 0x040100
     void skipRawData_data();
     void skipRawData();
-#endif
 
     void status_qint8_data();
     void status_qint8();
@@ -2442,7 +2440,6 @@ private:
     int offset;
 };
 
-#if QT_VERSION >= 0x040100
 void tst_QDataStream::skipRawData_data()
 {
     QTest::addColumn<QString>("deviceType");
@@ -2493,7 +2490,6 @@ void tst_QDataStream::skipRawData()
 
     delete dev;
 }
-#endif
 
 #define TEST_qint(T, UT) \
     void tst_QDataStream::status_##T() \

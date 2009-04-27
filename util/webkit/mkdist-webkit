@@ -1,7 +1,24 @@
 #!/bin/bash
 
-repository="git://git.dev.troll.no/webkit-mirror"
-tag="qtwebkit-merged-into-qt-4-4"
+die() {
+    echo $*
+    exit 1
+}
+
+default_tag="origin/qtwebkit-4.5"
+
+if [ $# -eq 0 ]; then
+    tag="$default_tag"
+elif [ $# -eq 1 ]; then
+    tag=$1
+else
+    die "usage: $0 [commit (defaults to $default_tag)]"
+fi
+
+repository=`git config qtwebkit.url`
+if [ -z "$repository" ]; then
+    die "error: cannot locate webkit git repository. please run git config --global qtwebkit.url /path-or-url/to/webkit/repo"
+fi
 
 excluded_directories="LayoutTests JavaScriptGlue WebKitLibraries WebKitSite WebKitTools WebCore/platform/cf WebCore/platform/gtk WebCore/platform/chromium"
 excluded_directories="$excluded_directories PageLoadTests"
@@ -138,20 +155,6 @@ files_to_remove="$files_to_remove WebCore/WebCoreSources.bkl"
 files_to_remove="$files_to_remove WebCore/webcore-base.bkl"
 files_to_remove="$files_to_remove WebCore/webcore-wx.bkl"
 
-if [ $# -eq 1 ]; then
-    tag=$1
-fi
-
-if [ $# -eq 2 ]; then
-    repository=$1
-    tag=$2
-fi
-
-die() {
-    echo $*
-    exit 1
-}
-
 require_clean_work_tree() {
     # test if working tree is dirty
     git rev-parse --verify HEAD > /dev/null &&
@@ -251,7 +254,7 @@ echo "generating extra sources"
       mkdir tmp &&
       cd tmp &&
       mkdir -p ../generated &&
-      qmake -o Makefile QT_CONFIG+=phonon GENERATED_SOURCES_DIR=`pwd`/../generated  OUTPUT_DIR=`pwd` ../$proj.pro &&
+      qmake -o Makefile CONFIG-=QTDIR_build QT_CONFIG+=phonon GENERATED_SOURCES_DIR=`pwd`/../generated  OUTPUT_DIR=`pwd` ../$proj.pro &&
       make generated_files &&
       perl -pi -e "s,$absSrcDir/,,g" ../generated/*.cpp ../generated/*.h &&
       git add ../generated &&

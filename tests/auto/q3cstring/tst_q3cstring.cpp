@@ -69,8 +69,6 @@ private slots:
     void replace_uint_uint();
     void replace_string_data();
     void replace_string();
-    void replace_regexp_data();
-    void replace_regexp();
     void remove_uint_uint_data();
     void remove_uint_uint();
     void prepend();
@@ -130,11 +128,6 @@ void tst_Q3CString::remove_uint_uint_data()
 void tst_Q3CString::remove_string_data()
 {
     replace_string_data();
-}
-
-void tst_Q3CString::remove_regexp_data()
-{
-    replace_regexp_data();
 }
 
 void tst_Q3CString::length_data()
@@ -202,9 +195,6 @@ void tst_Q3CString::replace_string_data()
     QTest::newRow( "rem13" ) << Q3CString("") << Q3CString("A") << Q3CString(0) << Q3CString("");
     QTest::newRow( "rem14" ) << Q3CString(0) << Q3CString("A") << Q3CString("") << Q3CString(0);
     QTest::newRow( "rem15" ) << Q3CString(0) << Q3CString("A") << Q3CString(0) << Q3CString(0);
-#if QT_VERSION < 0x040000
-    QTest::newRow( "rem16" ) << Q3CString(0) << Q3CString("") << Q3CString("A") << Q3CString(0);
-#endif
     QTest::newRow( "rem17" ) << Q3CString(0) << Q3CString("") << Q3CString("") << Q3CString(0);
     // ### how should the one below behave in Q3CString????
 //    QTest::newRow( "rem18" ) << Q3CString("") << Q3CString(0) << Q3CString("A") << Q3CString("A");
@@ -216,7 +206,7 @@ void tst_Q3CString::replace_string_data()
     QTest::newRow( "rep03" ) << Q3CString("") << Q3CString("") << Q3CString("X") << Q3CString("X");
 }
 
-void tst_Q3CString::replace_regexp_data()
+void tst_Q3CString::remove_regexp_data()
 {
     QTest::addColumn<Q3CString>("string");
     QTest::addColumn<Q3CString>("regexp");
@@ -224,20 +214,16 @@ void tst_Q3CString::replace_regexp_data()
     QTest::addColumn<Q3CString>("result");
 
     QTest::newRow( "rem00" ) << Q3CString("alpha") << Q3CString("a+") << Q3CString("") << Q3CString("lph");
-#if QT_VERSION >= 0x030100
     QTest::newRow( "rem01" ) << Q3CString("banana") << Q3CString("^.a") << Q3CString("") << Q3CString("nana");
-#endif
     QTest::newRow( "rem02" ) << Q3CString("") << Q3CString("^.a") << Q3CString("") << Q3CString("");
     QTest::newRow( "rem03" ) << Q3CString("") << Q3CString("^.a") << Q3CString(0) << Q3CString("");
     QTest::newRow( "rem04" ) << Q3CString(0) << Q3CString("^.a") << Q3CString("") << Q3CString(0);
     QTest::newRow( "rem05" ) << Q3CString(0) << Q3CString("^.a") << Q3CString(0) << Q3CString(0);
 
-#if QT_VERSION >= 0x030100
     QTest::newRow( "rep00" ) << Q3CString("A <i>bon mot</i>.") << Q3CString("<i>([^<]*)</i>") << Q3CString("\\emph{\\1}") << Q3CString("A \\emph{bon mot}.");
     QTest::newRow( "rep01" ) << Q3CString("banana") << Q3CString("^.a()") << Q3CString("\\1") << Q3CString("nana");
     QTest::newRow( "rep02" ) << Q3CString("banana") << Q3CString("(ba)") << Q3CString("\\1X\\1") << Q3CString("baXbanana");
     QTest::newRow( "rep03" ) << Q3CString("banana") << Q3CString("(ba)(na)na") << Q3CString("\\2X\\1") << Q3CString("naXba");
-#endif
 }
 
 void tst_Q3CString::length()
@@ -364,11 +350,7 @@ void tst_Q3CString::acc_01()
     QCOMPARE('X'+a,(Q3CString)"XABC");
     a = (const char*)0;
     QVERIFY(a.isNull());
-#if QT_VERSION < 0x040000
-    QVERIFY((const char*)a==0);
-#else
     QVERIFY(*((const char *)a) == 0);
-#endif
 
     {
 	QFile f("COMPARE.txt");
@@ -420,11 +402,7 @@ void tst_Q3CString::constructor()
 
     QCOMPARE(a,ca);
     QVERIFY(a.isNull());
-#if QT_VERSION < 0x040000
-    QVERIFY(a != (Q3CString)"");
-#else
     QVERIFY(a == Q3CString(""));
-#endif
     QCOMPARE(b,cb);
     QCOMPARE(c,cc);
     QCOMPARE(d,(Q3CString)"String D");
@@ -509,18 +487,6 @@ void tst_Q3CString::find()
     //QCOMPARE(a.find('G',-1),14);    // -ve does what?  Parameter should be uint?
     //QCOMPARE(a.find('G',-2),11);    // -ve does what?  Parameter should be uint?
     QCOMPARE(a.find('f'),10);
-#if QT_VERSION < 0x040000
-    // case sensitive find has been removed in 4.0
-    QCOMPARE(a.find('f',0,FALSE),5);
-    QCOMPARE(a.find('g',0,TRUE),-1);
-    QCOMPARE(a.find("fgh",0,FALSE),5);
-    QCOMPARE(a.find("fgh",0,TRUE),-1);
-    QCOMPARE(a.find("EFG",5,TRUE),12);
-    QCOMPARE(a.find("EFG",5,FALSE),9);
-    QCOMPARE(a.find("EFG",4,TRUE),4);
-    QCOMPARE(a.find("EfG",4,FALSE),4);
-    QCOMPARE(a.find("EfG",4,TRUE),9);
-#endif
 //  QCOMPARE(a.find("efg",-1,FALSE),12);    // -ve does what?  Parameter should be uint?
 //  QCOMPARE(a.find("efg",-2,FALSE),12);    // -ve does what?  Parameter should be uint?
 //  QCOMPARE(a.find("efg",-3,FALSE),12);    // -ve does what?  Parameter should be uint?
@@ -544,14 +510,6 @@ void tst_Q3CString::findRev()
     QCOMPARE(a.findRev('B'),1);
     QCOMPARE(a.findRev('B',1),1);
     QCOMPARE(a.findRev('B',0),-1);
-#if QT_VERSION < 0x040000
-    QCOMPARE(a.findRev("efg",99,FALSE),-1);
-//    QCOMPARE(a.findRev("efg",15,FALSE),-1);
-    QCOMPARE(a.findRev("efg",16,FALSE),-1);
-    QCOMPARE(a.findRev("efg",14,FALSE),12);
-    QCOMPARE(a.findRev("efg",12,FALSE),12);
-    QCOMPARE(a.findRev("efg",11,FALSE),9);
-#endif
 //    QCOMPARE(a.findRev(QRegExp("[EFG][EFG]"),14),13);
 //    QCOMPARE(a.findRev(QRegExp("[EFG][EFG]"),11),11);
 }
@@ -560,15 +518,6 @@ void tst_Q3CString::contains()
 {
     Q3CString a;
     a="ABCDEFGHIEfGEFG"; // 15 chars
-#if QT_VERSION < 0x040000
-    QCOMPARE(a.contains('A'),1);
-    QCOMPARE(a.contains('Z'),0);
-    QCOMPARE(a.contains('E'),3);
-    QCOMPARE(a.contains('F'),2);
-    QCOMPARE(a.contains('F',FALSE),3);
-    QCOMPARE(a.contains("FG"),2);
-    QCOMPARE(a.contains("FG",FALSE),3);
-#else
     QVERIFY(a.contains('A'));
     QVERIFY(!a.contains('Z'));
     QVERIFY(a.contains('E'));
@@ -579,7 +528,6 @@ void tst_Q3CString::contains()
     QCOMPARE(a.count('E'),3);
     QCOMPARE(a.count('F'),2);
     QCOMPARE(a.count("FG"),2);
-#endif
 //    QCOMPARE(a.contains(QRegExp("[FG][HI]")),1);
 //    QCOMPARE(a.contains(QRegExp("[G][HE]")),2);
 }
@@ -771,7 +719,6 @@ void tst_Q3CString::replace_uint_uint()
 
 void tst_Q3CString::replace_string()
 {
-#if QT_VERSION >= 0x030100
     QFETCH( Q3CString, string );
     QFETCH( Q3CString, before );
     QFETCH( Q3CString, after );
@@ -788,37 +735,6 @@ void tst_Q3CString::replace_string()
     Q3CString s3 = string;
     s3.replace( before, after );
     QCOMPARE( s3, result );
-
-#if QT_VERSION < 0x040000
-    if ( !string.isNull() ) {
-	/*
-	  I've changed the isNull() behavior in QString::replace() in
-	  Qt 3.2, according to the philosophy that null and empty
-	  should behave mostly the same.
-	*/
-	Q3CString s4 = string;
-	s4.replace( QRegExp(QRegExp::escape(before)), after );
-	QVERIFY( s4 == result );
-    }
-#endif
-#else
-    QSKIP( "Not tested with Qt versions < 3.1", SkipAll);
-#endif
-}
-
-void tst_Q3CString::replace_regexp()
-{
-#if QT_VERSION >= 0x040000
-    QSKIP("This functionality has been removed in Qt 4.", SkipAll);
-#else
-    QFETCH( Q3CString, string );
-    QFETCH( Q3CString, regexp );
-    QFETCH( Q3CString, after );
-    QFETCH( Q3CString, result );
-
-    string.replace( QRegExp(regexp), after );
-    QVERIFY( string == result );
-#endif
 }
 
 void tst_Q3CString::remove_uint_uint()

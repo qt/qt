@@ -1,23 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
 <TS version="2.0" language="zh">
-<defaultcodec></defaultcodec>
 <context>
     <name></name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/previewframe.cpp" line="+43"/>
+        <location filename="../tools/designer/src/components/propertyeditor/previewframe.cpp" line="+73"/>
         <source>The moose in the noose
 ate the goose who was loose.</source>
         <translation>The moose in the noose
 ate the goose who was loose.</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditorwindow.cpp" line="+624"/>
+        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditorwindow.cpp" line="+647"/>
         <source>&lt;object&gt;</source>
         <translation>&lt;对象&gt;</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+18"/>
         <source>&lt;signal&gt;</source>
         <translation>&lt;信号&gt;</translation>
     </message>
@@ -45,7 +44,7 @@ ate the goose who was loose.</translation>
 <context>
     <name>AbstractFindWidget</name>
     <message>
-        <location filename="../tools/shared/findwidget/abstractfindwidget.cpp" line="+97"/>
+        <location filename="../tools/shared/findwidget/abstractfindwidget.cpp" line="+127"/>
         <source>&amp;Previous</source>
         <translation>&amp;上一个</translation>
     </message>
@@ -91,7 +90,7 @@ ate the goose who was loose.</translation>
 <context>
     <name>AppFontDialog</name>
     <message>
-        <location filename="../tools/designer/src/designer/appfontdialog.cpp" line="+388"/>
+        <location filename="../tools/designer/src/designer/appfontdialog.cpp" line="+418"/>
         <source>Additional Fonts</source>
         <translation>附加字体</translation>
     </message>
@@ -203,7 +202,7 @@ ate the goose who was loose.</translation>
 <context>
     <name>AssistantClient</name>
     <message>
-        <location filename="../tools/designer/src/designer/assistantclient.cpp" line="+70"/>
+        <location filename="../tools/designer/src/designer/assistantclient.cpp" line="+100"/>
         <source>Unable to send request: Assistant is not responding.</source>
         <translation>无法发送请求：助手无响应。</translation>
     </message>
@@ -221,7 +220,7 @@ ate the goose who was loose.</translation>
 <context>
     <name>BrushManagerProxy</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/brushmanagerproxy.cpp" line="+191"/>
+        <location filename="../tools/designer/src/components/formeditor/brushmanagerproxy.cpp" line="+221"/>
         <source>The element &apos;%1&apos; is missing the required attribute &apos;%2&apos;.</source>
         <translation>组件“%1”缺少必需的属性“%2”。</translation>
     </message>
@@ -249,7 +248,7 @@ ate the goose who was loose.</translation>
 <context>
     <name>BrushPropertyManager</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/brushpropertymanager.cpp" line="+22"/>
+        <location filename="../tools/designer/src/components/propertyeditor/brushpropertymanager.cpp" line="+52"/>
         <source>No brush</source>
         <translation>无画刷</translation>
     </message>
@@ -342,19 +341,24 @@ ate the goose who was loose.</translation>
 <context>
     <name>Command</name>
     <message>
-        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditor.cpp" line="+177"/>
-        <location line="+211"/>
+        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditor.cpp" line="+208"/>
+        <location line="+258"/>
         <source>Change signal</source>
         <translation>改变信号</translation>
     </message>
     <message>
-        <location line="-209"/>
-        <location line="+221"/>
+        <location line="-256"/>
+        <location line="+268"/>
         <source>Change slot</source>
         <translation>改变槽</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="-220"/>
+        <source>Change signal-slot connection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+234"/>
         <source>Change sender</source>
         <translation>改变发送者</translation>
     </message>
@@ -364,7 +368,7 @@ ate the goose who was loose.</translation>
         <translation>改变接收者</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/connectionedit.cpp" line="+113"/>
+        <location filename="../tools/designer/src/lib/shared/connectionedit.cpp" line="+143"/>
         <source>Add connection</source>
         <translation>添加连接</translation>
     </message>
@@ -397,7 +401,7 @@ ate the goose who was loose.</translation>
         <translation type="obsolete">重置“%2”的“%1”</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_command.cpp" line="+117"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_command.cpp" line="+149"/>
         <source>Insert &apos;%1&apos;</source>
         <translation>插入“%1”</translation>
     </message>
@@ -422,7 +426,7 @@ ate the goose who was loose.</translation>
         <translation>重定义“%1”的父对象</translation>
     </message>
     <message>
-        <location line="+51"/>
+        <location line="+53"/>
         <source>Promote to custom widget</source>
         <translation>提升至自定义窗口部件</translation>
     </message>
@@ -452,48 +456,48 @@ ate the goose who was loose.</translation>
         <translation>取消布局</translation>
     </message>
     <message>
-        <location line="+231"/>
-        <location line="+226"/>
-        <location line="+75"/>
+        <location line="+240"/>
+        <location line="+235"/>
+        <location line="+78"/>
         <source>Move Page</source>
         <translation>移动页</translation>
     </message>
     <message>
-        <location line="-267"/>
-        <location line="+116"/>
-        <location line="+183"/>
-        <location line="+664"/>
+        <location line="-279"/>
+        <location line="+123"/>
+        <location line="+188"/>
+        <location line="+666"/>
         <source>Delete Page</source>
         <translation>删除页</translation>
     </message>
     <message>
-        <location line="-925"/>
-        <location line="+116"/>
+        <location line="-939"/>
+        <location line="+123"/>
         <source>Page</source>
         <translation>页</translation>
     </message>
     <message>
-        <location line="-114"/>
-        <location line="+297"/>
-        <location line="+670"/>
+        <location line="-121"/>
+        <location line="+309"/>
+        <location line="+672"/>
         <source>page</source>
         <translation>页</translation>
     </message>
     <message>
-        <location line="-964"/>
-        <location line="+116"/>
-        <location line="+181"/>
-        <location line="+665"/>
+        <location line="-978"/>
+        <location line="+123"/>
+        <location line="+186"/>
+        <location line="+667"/>
         <source>Insert Page</source>
         <translation>插入页</translation>
     </message>
     <message>
-        <location line="-849"/>
+        <location line="-856"/>
         <source>tab</source>
         <translation>标签页</translation>
     </message>
     <message>
-        <location line="+204"/>
+        <location line="+209"/>
         <source>Change Tab order</source>
         <translation>改变制表符顺序</translation>
     </message>
@@ -542,12 +546,12 @@ ate the goose who was loose.</translation>
         <translation>改变表单布局项的几何位置</translation>
     </message>
     <message>
-        <location line="+94"/>
+        <location line="+95"/>
         <source>Change Layout Item Geometry</source>
         <translation>改变布局项的几何位置</translation>
     </message>
     <message>
-        <location line="+569"/>
+        <location line="+576"/>
         <source>Change Table Contents</source>
         <translation>改变表格内容</translation>
     </message>
@@ -631,7 +635,7 @@ ate the goose who was loose.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="+1125"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="+1161"/>
         <source>Set action text</source>
         <translation>设定动作文本</translation>
     </message>
@@ -642,7 +646,7 @@ ate the goose who was loose.</translation>
     </message>
     <message>
         <location line="+89"/>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="+861"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="+891"/>
         <source>Move action</source>
         <translation>移动动作</translation>
     </message>
@@ -657,17 +661,17 @@ ate the goose who was loose.</translation>
         <translation>插入菜单</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_command.cpp" line="-2610"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_command.cpp" line="-2641"/>
         <source>Change Z-order of &apos;%1&apos;</source>
         <translation>改变“%1”的 Z 顺序</translation>
     </message>
     <message>
-        <location line="+623"/>
+        <location line="+625"/>
         <source>Simplify Grid Layout</source>
         <translation>简易网格布局</translation>
     </message>
     <message>
-        <location line="+1126"/>
+        <location line="+1149"/>
         <source>Delete Subwindow</source>
         <translation>删除子窗口</translation>
     </message>
@@ -687,12 +691,12 @@ ate the goose who was loose.</translation>
         <translation>子窗口</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/signalslotdialog.cpp" line="+172"/>
+        <location filename="../tools/designer/src/lib/shared/signalslotdialog.cpp" line="+202"/>
         <source>Change signals/slots</source>
         <translation>改变信号/槽</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/button_taskmenu.cpp" line="+195"/>
+        <location filename="../tools/designer/src/components/taskmenu/button_taskmenu.cpp" line="+225"/>
         <source>Create button group</source>
         <translation>创建按钮组</translation>
     </message>
@@ -713,7 +717,7 @@ ate the goose who was loose.</translation>
     </message>
     <message>
         <location line="+8"/>
-        <location filename="../tools/designer/src/lib/shared/formlayoutmenu.cpp" line="+373"/>
+        <location filename="../tools/designer/src/lib/shared/formlayoutmenu.cpp" line="+458"/>
         <source>Add &apos;%1&apos; to &apos;%2&apos;</source>
         <extracomment>Command description for adding buttons to a QButtonGroup</extracomment>
         <translation>添加“%1”到“%2”</translation>
@@ -730,23 +734,23 @@ ate the goose who was loose.</translation>
         <translation>从“%2”中移除“%1”</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/morphmenu.cpp" line="+318"/>
+        <location filename="../tools/designer/src/lib/shared/morphmenu.cpp" line="+349"/>
         <source>Morph %1/&apos;%2&apos; into %3</source>
         <extracomment>MorphWidgetCommand description</extracomment>
         <translation>将%1/“%2”变形为%3</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_command2.cpp" line="+124"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_command2.cpp" line="+154"/>
         <source>Change layout of &apos;%1&apos; from %2 to %3</source>
         <translation>将“%1”的布局从%2变为%3</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/scriptcommand.cpp" line="+25"/>
+        <location filename="../tools/designer/src/lib/shared/scriptcommand.cpp" line="+55"/>
         <source>Change script</source>
         <translation>改变脚本</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_propertycommand.cpp" line="+1176"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_propertycommand.cpp" line="+1209"/>
         <source>Changed &apos;%1&apos; of &apos;%2&apos;</source>
         <translation>已改变“%2”个中的“%1”个</translation>
     </message>
@@ -820,7 +824,7 @@ ate the goose who was loose.</translation>
 <context>
     <name>DPI_Chooser</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/dpi_chooser.cpp" line="+39"/>
+        <location filename="../tools/designer/src/components/formeditor/dpi_chooser.cpp" line="+69"/>
         <source>Standard (96 x 96)</source>
         <extracomment>Embedded device standard screen resolution</extracomment>
         <translation>标准(96 x 96)</translation>
@@ -841,7 +845,7 @@ ate the goose who was loose.</translation>
 <context>
     <name>Designer</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/qdesigner_resource.cpp" line="+409"/>
+        <location filename="../tools/designer/src/components/formeditor/qdesigner_resource.cpp" line="+439"/>
         <source>Qt Designer</source>
         <translation>Qt 设计师</translation>
     </message>
@@ -856,7 +860,7 @@ The old form has been untouched, but you will have to save this form under a new
 旧的窗体没有改变，但是您将不得不使用新的名称保存这个表单。</translation>
     </message>
     <message>
-        <location line="+1017"/>
+        <location line="+1028"/>
         <source>Custom Widgets</source>
         <translation>自定义窗口部件</translation>
     </message>
@@ -866,7 +870,7 @@ The old form has been untouched, but you will have to save this form under a new
         <translation>提升窗口部件</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_utils.cpp" line="+602"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_utils.cpp" line="+682"/>
         <source>Unable to launch %1.</source>
         <translation>不能启动 %1。</translation>
     </message>
@@ -876,7 +880,7 @@ The old form has been untouched, but you will have to save this form under a new
         <translation>%1 超时。</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/qdesigner_resource.cpp" line="-812"/>
+        <location filename="../tools/designer/src/components/formeditor/qdesigner_resource.cpp" line="-823"/>
         <source>This file cannot be read because it was created using %1.</source>
         <translation>不能读取这个文件，因为它是被使用 %1 创建的。</translation>
     </message>
@@ -945,7 +949,7 @@ The old form has been untouched, but you will have to save this form under a new
 <context>
     <name>DesignerMetaEnum</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_utils.cpp" line="-463"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_utils.cpp" line="-513"/>
         <source>%1 is not a valid enumeration value of &apos;%2&apos;.</source>
         <translation>%1 不是“%2”中的一个有效的枚举值。</translation>
     </message>
@@ -966,7 +970,7 @@ The old form has been untouched, but you will have to save this form under a new
 <context>
     <name>DeviceProfile</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/deviceprofile.cpp" line="+367"/>
+        <location filename="../tools/designer/src/lib/shared/deviceprofile.cpp" line="+397"/>
         <source>&apos;%1&apos; is not a number.</source>
         <extracomment>Reading a number for an embedded device profile</extracomment>
         <translation>&apos;%1&apos;不是一个数字</translation>
@@ -1008,7 +1012,7 @@ The old form has been untouched, but you will have to save this form under a new
 <context>
     <name>DeviceSkin</name>
     <message>
-        <location filename="../tools/shared/deviceskin/deviceskin.cpp" line="+49"/>
+        <location filename="../tools/shared/deviceskin/deviceskin.cpp" line="+79"/>
         <source>The image file &apos;%1&apos; could not be loaded.</source>
         <translation>无法加载图像文件“%1”。</translation>
     </message>
@@ -1066,66 +1070,56 @@ The old form has been untouched, but you will have to save this form under a new
 <context>
     <name>EmbeddedOptionsControl</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/embeddedoptionspage.cpp" line="+130"/>
         <source>None</source>
-        <translation>无</translation>
+        <translation type="obsolete">无</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Add a profile</source>
-        <translation>添加描述文件</translation>
+        <translation type="obsolete">添加描述文件</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Edit the selected profile</source>
-        <translation>编辑选中的描述文件</translation>
+        <translation type="obsolete">编辑选中的描述文件</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Delete the selected profile</source>
-        <translation>删除选中的描述文件</translation>
+        <translation type="obsolete">删除选中的描述文件</translation>
     </message>
     <message>
-        <location line="+22"/>
         <source>Add Profile</source>
-        <translation>添加描述文件</translation>
+        <translation type="obsolete">添加描述文件</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>New profile</source>
-        <translation>新建描述文件</translation>
+        <translation type="obsolete">新建描述文件</translation>
     </message>
     <message>
-        <location line="+35"/>
         <source>Edit Profile</source>
-        <translation>编辑描述文件</translation>
+        <translation type="obsolete">编辑描述文件</translation>
     </message>
     <message>
-        <location line="+26"/>
         <source>Delete Profile</source>
-        <translation>删除描述文件</translation>
+        <translation type="obsolete">删除描述文件</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Would you like to delete the profile &apos;%1&apos;?</source>
-        <translation>你要删除描述文件“%1”吗？</translation>
+        <translation type="obsolete">你要删除描述文件“%1”吗？</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location filename="../tools/designer/src/components/formeditor/embeddedoptionspage.cpp" line="+311"/>
         <source>&lt;html&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Font&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%1, %2&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Style&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%3&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Resolution&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%4 x %5&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/html&gt;</source>
         <extracomment>Format embedded device profile description</extracomment>
         <translation>&lt;html&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;字体&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%1，%2&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;风格&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%3&lt;/td&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;解析度&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%4 x %5&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>Default</source>
-        <translation>默认</translation>
+        <translation type="obsolete">默认</translation>
     </message>
 </context>
 <context>
     <name>EmbeddedOptionsPage</name>
     <message>
-        <location line="+90"/>
+        <location line="+103"/>
         <source>Embedded Design</source>
         <extracomment>Tab in preferences dialog</extracomment>
         <translation>嵌入式设计</translation>
@@ -1163,7 +1157,7 @@ The old form has been untouched, but you will have to save this form under a new
 <context>
     <name>FontPanel</name>
     <message>
-        <location filename="../tools/shared/fontpanel/fontpanel.cpp" line="+33"/>
+        <location filename="../tools/shared/fontpanel/fontpanel.cpp" line="+63"/>
         <source>Font</source>
         <translation>字体</translation>
     </message>
@@ -1191,7 +1185,7 @@ The old form has been untouched, but you will have to save this form under a new
 <context>
     <name>FontPropertyManager</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/fontpropertymanager.cpp" line="+32"/>
+        <location filename="../tools/designer/src/components/propertyeditor/fontpropertymanager.cpp" line="+62"/>
         <source>PreferDefault</source>
         <translation>首选默认</translation>
     </message>
@@ -1214,7 +1208,7 @@ The old form has been untouched, but you will have to save this form under a new
 <context>
     <name>FormBuilder</name>
     <message>
-        <location filename="../tools/designer/src/lib/uilib/formbuilderextra.cpp" line="+321"/>
+        <location filename="../tools/designer/src/lib/uilib/formbuilderextra.cpp" line="+351"/>
         <source>Invalid stretch value for &apos;%1&apos;: &apos;%2&apos;</source>
         <extracomment>Parsing layout stretch values</extracomment>
         <translation>“%1”：“%2”无效的拉伸值</translation>
@@ -1229,7 +1223,7 @@ The old form has been untouched, but you will have to save this form under a new
 <context>
     <name>FormEditorOptionsPage</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/formeditor_optionspage.cpp" line="+61"/>
+        <location filename="../tools/designer/src/components/formeditor/formeditor_optionspage.cpp" line="+91"/>
         <source>%1 %</source>
         <translation>%1 %</translation>
     </message>
@@ -1296,7 +1290,7 @@ The old form has been untouched, but you will have to save this form under a new
 <context>
     <name>FormWindow</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/formwindow.cpp" line="+1669"/>
+        <location filename="../tools/designer/src/components/formeditor/formwindow.cpp" line="+1705"/>
         <source>Unexpected element &lt;%1&gt;</source>
         <translation>未预期的元素&lt;%1&gt;</translation>
     </message>
@@ -1372,7 +1366,7 @@ The old form has been untouched, but you will have to save this form under a new
 <context>
     <name>IconSelector</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/iconselector.cpp" line="+321"/>
+        <location filename="../tools/designer/src/lib/shared/iconselector.cpp" line="+353"/>
         <source>All Pixmaps (</source>
         <translation>所有像素映射 (</translation>
     </message>
@@ -1380,7 +1374,7 @@ The old form has been untouched, but you will have to save this form under a new
 <context>
     <name>ItemPropertyBrowser</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/itemlisteditor.cpp" line="+36"/>
+        <location filename="../tools/designer/src/components/taskmenu/itemlisteditor.cpp" line="+66"/>
         <source>XX Icon Selected off</source>
         <extracomment>Sample string to determinate the width for the first column of the list item property browser</extracomment>
         <translation>XX图标选择关闭</translation>
@@ -1389,7 +1383,7 @@ The old form has been untouched, but you will have to save this form under a new
 <context>
     <name>LanguageResourceDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/iconselector.cpp" line="-234"/>
+        <location filename="../tools/designer/src/lib/shared/iconselector.cpp" line="-235"/>
         <source>Choose Resource</source>
         <translation>选择资源</translation>
     </message>
@@ -1397,7 +1391,7 @@ The old form has been untouched, but you will have to save this form under a new
 <context>
     <name>MainWindowBase</name>
     <message>
-        <location filename="../tools/designer/src/designer/mainwindow.cpp" line="+89"/>
+        <location filename="../tools/designer/src/designer/mainwindow.cpp" line="+119"/>
         <source>Main</source>
         <extracomment>Not currently used (main tool bar)</extracomment>
         <translation>主要</translation>
@@ -1439,7 +1433,7 @@ The old form has been untouched, but you will have to save this form under a new
         <translation type="obsolete">选择一个用于预览的模板</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/designer/newform.cpp" line="+53"/>
+        <location filename="../tools/designer/src/designer/newform.cpp" line="+83"/>
         <source>New Form</source>
         <translation>新建窗体</translation>
     </message>
@@ -1504,7 +1498,7 @@ The old form has been untouched, but you will have to save this form under a new
 <context>
     <name>NewFormWidget</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/newformwidget.cpp" line="+465"/>
+        <location filename="../tools/designer/src/lib/shared/newformwidget.cpp" line="+495"/>
         <source>Unable to open the form template file &apos;%1&apos;: %2</source>
         <translation>无法打开窗体模版文件&apos;%1&apos;：%2</translation>
     </message>
@@ -1512,7 +1506,7 @@ The old form has been untouched, but you will have to save this form under a new
 <context>
     <name>ObjectInspectorModel</name>
     <message>
-        <location filename="../tools/designer/src/components/objectinspector/objectinspectormodel.cpp" line="+331"/>
+        <location filename="../tools/designer/src/components/objectinspector/objectinspectormodel.cpp" line="+364"/>
         <source>Object</source>
         <translation>对象</translation>
     </message>
@@ -1522,7 +1516,7 @@ The old form has been untouched, but you will have to save this form under a new
         <translation>类</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+35"/>
         <source>separator</source>
         <translation>分隔符</translation>
     </message>
@@ -1535,7 +1529,7 @@ The old form has been untouched, but you will have to save this form under a new
 <context>
     <name>ObjectNameDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_taskmenu.cpp" line="+132"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_taskmenu.cpp" line="+162"/>
         <source>Change Object Name</source>
         <translation>改变对象名称</translation>
     </message>
@@ -1597,52 +1591,16 @@ There&apos;s nothing more here. You should get back to work.</source>
     </message>
 </context>
 <context>
-    <name>qdesigner_internal::PluginDialog</name>
+    <name>PluginDialog</name>
     <message>
-        <location filename="../tools/designer/src/designer/plugindialog.cpp" line="+40"/>
-        <source>Components</source>
-        <translation>组件</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <location filename="../tools/designer/src/designer/plugindialog.ui"/>
+        <location filename="../tools/designer/src/lib/shared/plugindialog.ui"/>
         <source>Plugin Information</source>
-        <translation>插件信息</translation>
+        <translation type="unfinished">插件信息</translation>
     </message>
     <message>
-        <location line="+53"/>
-        <source>Qt Designer couldn&apos;t find any plugins</source>
-        <translation>Qt 设计师无法找到任何插件</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Qt Designer found the following plugins</source>
-        <translation>Qt 设计师已经找到如下插件</translation>
-    </message>
-    <message>
-        <location filename="../tools/designer/src/designer/plugindialog.ui"/>
-        <source>TextLabel</source>
-        <translation>文本标签</translation>
-    </message>
-    <message>
-        <location filename="../tools/designer/src/designer/plugindialog.cpp" line="-52"/>
-        <source>Refresh</source>
-        <translation>刷新</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Scan for newly installed custom widget plugins.</source>
-        <translation>扫描新安装的自定义窗口部件插件。</translation>
-    </message>
-    <message>
-        <location line="+106"/>
-        <source>New custom widget plugins have been found.</source>
-        <translation>新的自定义窗口部件插件已经被找到。</translation>
-    </message>
-    <message>
-        <location filename="../tools/designer/src/designer/plugindialog.ui"/>
+        <location/>
         <source>1</source>
-        <translation>1</translation>
+        <translation type="unfinished">1</translation>
     </message>
 </context>
 <context>
@@ -1688,7 +1646,7 @@ There&apos;s nothing more here. You should get back to work.</source>
 <context>
     <name>PreviewConfigurationWidget</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/previewconfigurationwidget.cpp" line="+125"/>
+        <location filename="../tools/designer/src/lib/shared/previewconfigurationwidget.cpp" line="+155"/>
         <source>Default</source>
         <translation>默认</translation>
     </message>
@@ -1736,7 +1694,7 @@ There&apos;s nothing more here. You should get back to work.</source>
 <context>
     <name>PromotionModel</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/promotionmodel.cpp" line="+86"/>
+        <location filename="../tools/designer/src/lib/shared/promotionmodel.cpp" line="+116"/>
         <source>Not used</source>
         <extracomment>Usage of promoted widgets</extracomment>
         <translation>没有被使用</translation>
@@ -1752,7 +1710,7 @@ There&apos;s nothing more here. You should get back to work.</source>
 <context>
     <name>Q3WizardContainer</name>
     <message>
-        <location filename="../tools/designer/src/plugins/widgets/q3wizard/q3wizard_container.cpp" line="+142"/>
+        <location filename="../tools/designer/src/plugins/widgets/q3wizard/q3wizard_container.cpp" line="+172"/>
         <location line="+5"/>
         <source>Page</source>
         <translation>页</translation>
@@ -1761,7 +1719,7 @@ There&apos;s nothing more here. You should get back to work.</source>
 <context>
     <name>QAbstractFormBuilder</name>
     <message>
-        <location filename="../tools/designer/src/lib/uilib/abstractformbuilder.cpp" line="+176"/>
+        <location filename="../tools/designer/src/lib/uilib/abstractformbuilder.cpp" line="+206"/>
         <source>Unexpected element &lt;%1&gt;</source>
         <translation>未预期的元素&lt;%1&gt;</translation>
     </message>
@@ -1808,7 +1766,7 @@ This indicates an inconsistency in the ui-file.</source>
         <translation>在应用制表符时中断：无法找到窗口部件“%1”。</translation>
     </message>
     <message>
-        <location line="+734"/>
+        <location line="+749"/>
         <source>Invalid QButtonGroup reference &apos;%1&apos; referenced by &apos;%2&apos;.</source>
         <translation>“%2”参考了无效的QButtonGroup参考“%1”。</translation>
     </message>
@@ -1854,7 +1812,7 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QAxWidgetPlugin</name>
     <message>
-        <location filename="../tools/designer/src/plugins/activeqt/qaxwidgetplugin.cpp" line="+45"/>
+        <location filename="../tools/designer/src/plugins/activeqt/qaxwidgetplugin.cpp" line="+75"/>
         <source>ActiveX control</source>
         <translation>ActiveX 控件</translation>
     </message>
@@ -1867,7 +1825,7 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QAxWidgetTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/plugins/activeqt/qaxwidgettaskmenu.cpp" line="+89"/>
+        <location filename="../tools/designer/src/plugins/activeqt/qaxwidgettaskmenu.cpp" line="+119"/>
         <source>Set Control</source>
         <translation>设置控件</translation>
     </message>
@@ -1890,7 +1848,7 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QCoreApplication</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_promotion.cpp" line="+53"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_promotion.cpp" line="+83"/>
         <source>%1 is not a promoted class.</source>
         <translation>%1 不是提升的类。</translation>
     </message>
@@ -1940,7 +1898,7 @@ This indicates an inconsistency in the ui-file.</source>
         <translation>无法设定一个空白包含文件。</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/uilib/formscriptrunner.cpp" line="+58"/>
+        <location filename="../tools/designer/src/lib/uilib/formscriptrunner.cpp" line="+88"/>
         <source>Exception at line %1: %2</source>
         <translation>%1 行发生意外：%2</translation>
     </message>
@@ -1960,7 +1918,7 @@ Script: %3</source>
 <context>
     <name>QDesigner</name>
     <message>
-        <location filename="../tools/designer/src/designer/qdesigner.cpp" line="+111"/>
+        <location filename="../tools/designer/src/designer/qdesigner.cpp" line="+141"/>
         <source>%1 - warning</source>
         <translation>%1 - 警告</translation>
     </message>
@@ -1993,7 +1951,7 @@ Script: %3</source>
         <translation type="obsolete">CTRL+O</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/designer/qdesigner_actions.cpp" line="+459"/>
+        <location filename="../tools/designer/src/designer/qdesigner_actions.cpp" line="+488"/>
         <source>Clear &amp;Menu</source>
         <translation>清空菜单(&amp;M)</translation>
     </message>
@@ -2006,7 +1964,7 @@ Script: %3</source>
         <translation type="obsolete">CTRL+W</translation>
     </message>
     <message>
-        <location line="-297"/>
+        <location line="-300"/>
         <source>&amp;Quit</source>
         <translation>退出(&amp;Q)</translation>
     </message>
@@ -2079,17 +2037,17 @@ Script: %3</source>
     </message>
     <message>
         <location line="+6"/>
-        <location line="+598"/>
+        <location line="+601"/>
         <source>About Qt Designer</source>
         <translation>关于 Qt 设计师</translation>
     </message>
     <message>
-        <location line="-592"/>
+        <location line="-595"/>
         <source>About Qt</source>
         <translation>关于 Qt</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+44"/>
         <source>&amp;Recent Forms</source>
         <translation>最近的窗体(&amp;R)</translation>
     </message>
@@ -2130,19 +2088,19 @@ Would you like to retry or select a different file?</source>
         <translation>选择新文件</translation>
     </message>
     <message>
-        <location line="-691"/>
+        <location line="-694"/>
         <source>%1 already exists.
 Do you want to replace it?</source>
         <translation>%1 已经存在。
 您想要替换它么？</translation>
     </message>
     <message>
-        <location line="+960"/>
+        <location line="+925"/>
         <source>&amp;Close Preview</source>
         <translation>关闭预览(&amp;C)</translation>
     </message>
     <message>
-        <location line="-919"/>
+        <location line="-884"/>
         <source>Preferences...</source>
         <translation>属性...</translation>
     </message>
@@ -2152,19 +2110,19 @@ Do you want to replace it?</source>
         <translation>CTRL+SHIFT+S</translation>
     </message>
     <message>
-        <location line="+313"/>
+        <location line="+316"/>
         <location line="+37"/>
         <location line="+160"/>
         <source>Designer UI files (*.%1);;All Files (*)</source>
         <translation>设计师 UI 文件 (*.%1);;全部文件 (*)</translation>
     </message>
     <message>
-        <location line="-638"/>
+        <location line="-641"/>
         <source>Saved %1.</source>
         <translation>%1 已被保存。</translation>
     </message>
     <message>
-        <location line="+624"/>
+        <location line="+627"/>
         <source>Read error</source>
         <translation>读取错误</translation>
     </message>
@@ -2216,7 +2174,7 @@ Would you like to retry?</source>
         <translation type="obsolete">窗体设定 - %1</translation>
     </message>
     <message>
-        <location line="-696"/>
+        <location line="-699"/>
         <source>&amp;New...</source>
         <translation>新建(&amp;N)...</translation>
     </message>
@@ -2247,12 +2205,12 @@ Would you like to retry?</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+931"/>
+        <location line="+896"/>
         <source>&amp;Close</source>
         <translation>关闭(&amp;C)</translation>
     </message>
     <message>
-        <location line="-930"/>
+        <location line="-895"/>
         <source>Save &amp;Image...</source>
         <translation>保存图像(&amp;I)...</translation>
     </message>
@@ -2276,18 +2234,18 @@ Would you like to retry?</source>
         <translation>ALT+CTRL+S</translation>
     </message>
     <message>
-        <location line="+352"/>
+        <location line="+355"/>
         <location line="+248"/>
         <source>Save Form As</source>
         <translation>窗体另存为</translation>
     </message>
     <message>
-        <location line="+467"/>
+        <location line="+429"/>
         <source>Preview failed</source>
         <translation>预览失败</translation>
     </message>
     <message>
-        <location line="-613"/>
+        <location line="-575"/>
         <source>Code generation failed</source>
         <translation>代码生成失败</translation>
     </message>
@@ -2302,12 +2260,12 @@ Would you like to retry?</source>
     </message>
     <message>
         <location line="+158"/>
-        <location line="+66"/>
+        <location line="+34"/>
         <source>Assistant</source>
         <translation>助手</translation>
     </message>
     <message>
-        <location line="+53"/>
+        <location line="+47"/>
         <location line="+23"/>
         <source>The backup file %1 could not be written.</source>
         <translation>备份文件%1无法被写入。</translation>
@@ -2349,7 +2307,7 @@ Would you like to retry?</source>
         <translation>请关闭所有窗体文件，以便加载附加字体</translation>
     </message>
     <message>
-        <location line="+49"/>
+        <location line="+52"/>
         <source>Printed %1.</source>
         <translation>%1 已被打印。</translation>
     </message>
@@ -2357,7 +2315,7 @@ Would you like to retry?</source>
 <context>
     <name>QDesignerAppearanceOptionsPage</name>
     <message>
-        <location filename="../tools/designer/src/designer/qdesigner_appearanceoptions.cpp" line="+93"/>
+        <location filename="../tools/designer/src/designer/qdesigner_appearanceoptions.cpp" line="+138"/>
         <source>Appearance</source>
         <extracomment>Tab in preferences dialog</extracomment>
         <translation>外观</translation>
@@ -2366,7 +2324,7 @@ Would you like to retry?</source>
 <context>
     <name>QDesignerAppearanceOptionsWidget</name>
     <message>
-        <location line="-39"/>
+        <location line="-53"/>
         <source>Docked Window</source>
         <translation>锚接的窗口</translation>
     </message>
@@ -2376,7 +2334,7 @@ Would you like to retry?</source>
         <translation>多个顶级窗口</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+5"/>
         <source>Toolwindow Font</source>
         <translation>工具窗口字体</translation>
     </message>
@@ -2394,7 +2352,7 @@ Would you like to retry?</source>
         <translation>设置控件</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/plugins/activeqt/qdesigneraxwidget.cpp" line="+149"/>
+        <location filename="../tools/designer/src/plugins/activeqt/qdesigneraxwidget.cpp" line="+179"/>
         <source>Control loaded</source>
         <translation>控件已经加载</translation>
     </message>
@@ -2407,7 +2365,7 @@ Would you like to retry?</source>
 <context>
     <name>QDesignerFormBuilder</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_formbuilder.cpp" line="+58"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_formbuilder.cpp" line="+88"/>
         <source>Script errors occurred:</source>
         <translation>发生脚本错误：</translation>
     </message>
@@ -2425,7 +2383,7 @@ Would you like to retry?</source>
 <context>
     <name>QDesignerFormWindow</name>
     <message>
-        <location filename="../tools/designer/src/designer/qdesigner_formwindow.cpp" line="+187"/>
+        <location filename="../tools/designer/src/designer/qdesigner_formwindow.cpp" line="+217"/>
         <source>%1 - %2[*]</source>
         <translation>%1 - %2[*]</translation>
     </message>
@@ -2448,7 +2406,7 @@ Would you like to retry?</source>
 <context>
     <name>QDesignerMenu</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="-1154"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="-1160"/>
         <source>Type Here</source>
         <translation>在这里输入</translation>
     </message>
@@ -2458,7 +2416,7 @@ Would you like to retry?</source>
         <translation>添加分隔符</translation>
     </message>
     <message>
-        <location line="+373"/>
+        <location line="+379"/>
         <source>Remove action &apos;%1&apos;</source>
         <translation>移除动作“%1”</translation>
     </message>
@@ -2517,7 +2475,7 @@ Would you like to retry?</source>
 <context>
     <name>QDesignerPluginManager</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/pluginmanager.cpp" line="+197"/>
+        <location filename="../tools/designer/src/lib/shared/pluginmanager.cpp" line="+249"/>
         <source>An XML error was encountered when parsing the XML of the custom widget %1: %2</source>
         <translation>在解析自定义窗口部件%1的XML时发生错误：%2</translation>
     </message>
@@ -2551,7 +2509,7 @@ Would you like to retry?</source>
 <context>
     <name>QDesignerPropertySheet</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_propertysheet.cpp" line="+717"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_propertysheet.cpp" line="+747"/>
         <source>Dynamic Properties</source>
         <translation>动态属性</translation>
     </message>
@@ -2564,14 +2522,14 @@ Would you like to retry?</source>
         <translation>不支持布局类型“%1”，默认为网格。</translation>
     </message>
     <message>
-        <location line="+331"/>
+        <location line="+342"/>
         <source>The container extension of the widget &apos;%1&apos; (%2) returned a widget not managed by Designer &apos;%3&apos; (%4) when queried for page #%5.
 Container pages should only be added by specifying them in XML returned by the domXml() method of the custom widget.</source>
         <translation>在查询页面#%5时，窗口部件“%1”(%2)的容器扩展返回了一个没有被设计师管理的窗口部件。
 容器页面应该只能由自定义窗口部件的domXml()方法传回的XML指定。</translation>
     </message>
     <message>
-        <location line="+598"/>
+        <location line="+599"/>
         <source>Unexpected element &lt;%1&gt;</source>
         <extracomment>Parsing clipboard contents</extracomment>
         <translation>未预期的元素&lt;%1&gt;</translation>
@@ -2599,7 +2557,7 @@ Container pages should only be added by specifying them in XML returned by the d
 <context>
     <name>QDesignerSharedSettings</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/shared_settings.cpp" line="+53"/>
+        <location filename="../tools/designer/src/lib/shared/shared_settings.cpp" line="+83"/>
         <source>The template path %1 could not be created.</source>
         <translation>无法创建临时路径 %1。</translation>
     </message>
@@ -2619,7 +2577,7 @@ Container pages should only be added by specifying them in XML returned by the d
 <context>
     <name>QDesignerToolWindow</name>
     <message>
-        <location filename="../tools/designer/src/designer/qdesigner_toolwindow.cpp" line="+160"/>
+        <location filename="../tools/designer/src/designer/qdesigner_toolwindow.cpp" line="+190"/>
         <source>Property Editor</source>
         <translation>属性编辑器</translation>
     </message>
@@ -2656,7 +2614,7 @@ Container pages should only be added by specifying them in XML returned by the d
         <translation type="obsolete">窗口部件盒</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/widgetbox/widgetboxtreewidget.cpp" line="+318"/>
+        <location filename="../tools/designer/src/components/widgetbox/widgetboxtreewidget.cpp" line="+349"/>
         <source>An error has been encountered at line %1 of %2: %3</source>
         <translation>在%2的第%1行发生错误：%3</translation>
     </message>
@@ -2679,7 +2637,7 @@ Container pages should only be added by specifying them in XML returned by the d
 <context>
     <name>QDesignerWorkbench</name>
     <message>
-        <location filename="../tools/designer/src/designer/qdesigner_workbench.cpp" line="+169"/>
+        <location filename="../tools/designer/src/designer/qdesigner_workbench.cpp" line="+199"/>
         <source>&amp;File</source>
         <translation>文件(&amp;F)</translation>
     </message>
@@ -2790,7 +2748,7 @@ Container pages should only be added by specifying them in XML returned by the d
         <translation type="obsolete">设计师在您上一次对话中没有正常终止。还有一些备份文件存在，您想要加载它们么？</translation>
     </message>
     <message>
-        <location line="+113"/>
+        <location line="+112"/>
         <source>The file &lt;b&gt;%1&lt;/b&gt; could not be opened.</source>
         <translation>无法打开文件 &lt;b&gt;%1&lt;/b&gt;。</translation>
     </message>
@@ -2804,7 +2762,7 @@ Container pages should only be added by specifying them in XML returned by the d
         <translation type="obsolete">文件</translation>
     </message>
     <message numerus="yes">
-        <location line="-260"/>
+        <location line="-259"/>
         <source>There are %n forms with unsaved changes. Do you want to review these changes before quitting?</source>
         <translation>
             <numerusform>还有 %n 个窗体没有保存变化。您想要在退出之前评审这些变化么？</numerusform>
@@ -2834,7 +2792,7 @@ Container pages should only be added by specifying them in XML returned by the d
 <context>
     <name>QFormBuilder</name>
     <message>
-        <location filename="../tools/designer/src/lib/uilib/formbuilder.cpp" line="+130"/>
+        <location filename="../tools/designer/src/lib/uilib/formbuilder.cpp" line="+160"/>
         <source>An empty class name was passed on to %1 (object name: &apos;%2&apos;).</source>
         <extracomment>Empty class name passed to widget factory method</extracomment>
         <translation>一个空白的类名称被传送到%1(对象名称：%2)。</translation>
@@ -2855,7 +2813,7 @@ Container pages should only be added by specifying them in XML returned by the d
         <translation>布局类型“%1”不被支持。</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/uilib/properties.cpp" line="+76"/>
+        <location filename="../tools/designer/src/lib/uilib/properties.cpp" line="+106"/>
         <source>The set-type property %1 could not be read.</source>
         <translation>无法读取集类型属性 %1。</translation>
     </message>
@@ -2875,7 +2833,7 @@ Container pages should only be added by specifying them in XML returned by the d
         <translation>属性 %1 无法被写入。还不支持类型 %2。</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/uilib/properties_p.h" line="+102"/>
+        <location filename="../tools/designer/src/lib/uilib/properties_p.h" line="+132"/>
         <source>The enumeration-value &apos;%1&apos; is invalid. The default value &apos;%2&apos; will be used instead.</source>
         <translation>枚举变量值“%1”是无效的。默认值“%2”将会被用来替代。</translation>
     </message>
@@ -3134,7 +3092,7 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QStackedWidgetEventFilter</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_stackedbox.cpp" line="+164"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_stackedbox.cpp" line="+194"/>
         <source>Previous Page</source>
         <translation>上一页</translation>
     </message>
@@ -3195,7 +3153,7 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QTabWidgetEventFilter</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_tabwidget.cpp" line="+59"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_tabwidget.cpp" line="+89"/>
         <source>Delete</source>
         <translation>删除</translation>
     </message>
@@ -3223,7 +3181,7 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QToolBoxHelper</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_toolbox.cpp" line="+34"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_toolbox.cpp" line="+64"/>
         <source>Delete Page</source>
         <translation>删除页</translation>
     </message>
@@ -3261,7 +3219,7 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QtBoolEdit</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="+198"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="+226"/>
         <location line="+10"/>
         <location line="+25"/>
         <source>True</source>
@@ -3277,7 +3235,7 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QtBoolPropertyManager</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+1469"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+1477"/>
         <source>True</source>
         <translation>真</translation>
     </message>
@@ -3290,7 +3248,7 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QtCharEdit</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qteditorfactory.cpp" line="+1573"/>
+        <location filename="../tools/shared/qtpropertybrowser/qteditorfactory.cpp" line="+1601"/>
         <source>Clear Char</source>
         <translation>清除字符</translation>
     </message>
@@ -3306,7 +3264,7 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QtColorPropertyManager</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+4769"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+4777"/>
         <source>Red</source>
         <translation>红色</translation>
     </message>
@@ -3494,7 +3452,7 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QtGradientEditor</name>
     <message>
-        <location filename="../tools/shared/qtgradienteditor/qtgradienteditor.cpp" line="+405"/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradienteditor.cpp" line="+435"/>
         <source>Start X</source>
         <translation>开始 X</translation>
     </message>
@@ -3769,7 +3727,7 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QtGradientStopsWidget</name>
     <message>
-        <location filename="../tools/shared/qtgradienteditor/qtgradientstopswidget.cpp" line="+919"/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradientstopswidget.cpp" line="+949"/>
         <source>New Stop</source>
         <translation>新建中止点</translation>
     </message>
@@ -3807,7 +3765,7 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QtGradientView</name>
     <message>
-        <location filename="../tools/shared/qtgradienteditor/qtgradientview.cpp" line="+77"/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradientview.cpp" line="+107"/>
         <source>Grad</source>
         <translation>渐变</translation>
     </message>
@@ -3854,7 +3812,7 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QtGradientViewDialog</name>
     <message>
-        <location filename="../tools/shared/qtgradienteditor/qtgradientviewdialog.h" line="+32"/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradientviewdialog.h" line="+62"/>
         <location filename="../tools/shared/qtgradienteditor/qtgradientviewdialog.ui"/>
         <source>Select Gradient</source>
         <translation>选择渐变</translation>
@@ -3871,7 +3829,7 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QtLocalePropertyManager</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="-3553"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="-3561"/>
         <source>%1, %2</source>
         <translation>%1, %2</translation>
     </message>
@@ -3938,22 +3896,22 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QtRectFPropertyManager</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+1705"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+1716"/>
         <source>[(%1, %2), %3 x %4]</source>
         <translation>[(%1, %2), %3 x %4]</translation>
     </message>
     <message>
-        <location line="+155"/>
+        <location line="+156"/>
         <source>X</source>
         <translation>X</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+8"/>
         <source>Y</source>
         <translation>Y</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+8"/>
         <source>Width</source>
         <translation>宽度</translation>
     </message>
@@ -3966,22 +3924,22 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QtRectPropertyManager</name>
     <message>
-        <location line="-610"/>
+        <location line="-614"/>
         <source>[(%1, %2), %3 x %4]</source>
         <translation>[(%1, %2), %3 x %4]</translation>
     </message>
     <message>
-        <location line="+119"/>
+        <location line="+120"/>
         <source>X</source>
         <translation>X</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+7"/>
         <source>Y</source>
         <translation>Y</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+7"/>
         <source>Width</source>
         <translation>宽度</translation>
     </message>
@@ -3994,7 +3952,7 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>QtResourceEditorDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qtresourceeditordialog.cpp" line="+46"/>
+        <location filename="../tools/designer/src/lib/shared/qtresourceeditordialog.cpp" line="+76"/>
         <source>%1 already exists.
 Do you want to replace it?</source>
         <translation>%1 已经存在。
@@ -4006,7 +3964,7 @@ Do you want to replace it?</source>
         <translation>这个文件好像不是一个资源文件；我们所期望的是“%2”，但是只找到了元素“%1”。</translation>
     </message>
     <message>
-        <location line="+900"/>
+        <location line="+902"/>
         <source>%1 [read-only]</source>
         <translation>%1 [只读]</translation>
     </message>
@@ -4298,7 +4256,7 @@ to
 <context>
     <name>QtResourceView</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qtresourceview.cpp" line="+404"/>
+        <location filename="../tools/designer/src/lib/shared/qtresourceview.cpp" line="+435"/>
         <source>Size: %1 x %2
 %3</source>
         <translation>大小：%1 x %2
@@ -4331,7 +4289,7 @@ to
 <context>
     <name>QtSizeFPropertyManager</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="-532"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="-537"/>
         <source>%1 x %2</source>
         <translation>%1 x %2</translation>
     </message>
@@ -4349,12 +4307,18 @@ to
 <context>
     <name>QtSizePolicyPropertyManager</name>
     <message>
-        <location line="+1707"/>
+        <location line="+1719"/>
+        <location line="+1"/>
+        <source>&lt;Invalid&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>[%1, %2, %3, %4]</source>
         <translation>[%1, %2, %3, %4]</translation>
     </message>
     <message>
-        <location line="+49"/>
+        <location line="+45"/>
         <source>Horizontal Policy</source>
         <translation>水平策略</translation>
     </message>
@@ -4377,7 +4341,7 @@ to
 <context>
     <name>QtSizePropertyManager</name>
     <message>
-        <location line="-2288"/>
+        <location line="-2298"/>
         <source>%1 x %2</source>
         <translation>%1 x %2</translation>
     </message>
@@ -4395,7 +4359,7 @@ to
 <context>
     <name>QtToolBarDialog</name>
     <message>
-        <location filename="../tools/shared/qttoolbardialog/qttoolbardialog.cpp" line="+1214"/>
+        <location filename="../tools/shared/qttoolbardialog/qttoolbardialog.cpp" line="+1244"/>
         <source>Custom Toolbar</source>
         <translation>自定义工具栏</translation>
     </message>
@@ -4503,7 +4467,7 @@ to
 <context>
     <name>QtTreePropertyBrowser</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qttreepropertybrowser.cpp" line="+407"/>
+        <location filename="../tools/shared/qtpropertybrowser/qttreepropertybrowser.cpp" line="+442"/>
         <source>Property</source>
         <translation>属性</translation>
     </message>
@@ -4516,7 +4480,7 @@ to
 <context>
     <name>SaveFormAsTemplate</name>
     <message>
-        <location filename="../tools/designer/src/designer/saveformastemplate.cpp" line="+42"/>
+        <location filename="../tools/designer/src/designer/saveformastemplate.cpp" line="+72"/>
         <source>Add path...</source>
         <translation>添加路径...</translation>
     </message>
@@ -4581,7 +4545,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>ScriptErrorDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/scripterrordialog.cpp" line="+33"/>
+        <location filename="../tools/designer/src/lib/shared/scripterrordialog.cpp" line="+63"/>
         <source>An error occurred while running the scripts for &quot;%1&quot;:
 </source>
         <translation>在运行“%1”的脚本过程中发生一个错误：
@@ -4600,11 +4564,21 @@ Do you want overwrite the template?</source>
         <source>Select signal</source>
         <translation>选择信号</translation>
     </message>
+    <message>
+        <location/>
+        <source>signal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>class</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SignalSlotConnection</name>
     <message>
-        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditor.cpp" line="-311"/>
+        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditor.cpp" line="-358"/>
         <source>SENDER(%1), SIGNAL(%2), RECEIVER(%3), SLOT(%4)</source>
         <translation>SENDER(%1), SIGNAL(%2), RECEIVER(%3), SLOT(%4)</translation>
     </message>
@@ -4645,7 +4619,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>Spacer</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/spacer_widget.cpp" line="+245"/>
+        <location filename="../tools/designer/src/lib/shared/spacer_widget.cpp" line="+275"/>
         <source>Horizontal Spacer &apos;%1&apos;, %2 x %3</source>
         <translation>水平间隔器“%1”，%2 x %3</translation>
     </message>
@@ -4658,7 +4632,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>TemplateOptionsPage</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/templateoptionspage.cpp" line="+126"/>
+        <location filename="../tools/designer/src/components/formeditor/templateoptionspage.cpp" line="+156"/>
         <source>Template Paths</source>
         <extracomment>Tab in preferences dialog</extracomment>
         <translation>模板路径</translation>
@@ -4700,29 +4674,27 @@ Do you want overwrite the template?</source>
 <context>
     <name>VersionDialog</name>
     <message>
-        <location filename="../tools/designer/src/designer/versiondialog.cpp" line="+146"/>
+        <location filename="../tools/designer/src/designer/versiondialog.cpp" line="+172"/>
         <source>Qt Designer</source>
         <translation>Qt 设计师</translation>
     </message>
     <message>
-        <location line="-5"/>
+        <location line="-1"/>
         <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;&lt;br/&gt;Version %2</source>
         <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;&lt;br/&gt;版本 %2</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source> Open Source Edition</source>
-        <translation> 开源版本</translation>
+        <translation type="obsolete"> 开源版本</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+2"/>
         <source>&lt;br/&gt;Qt Designer is a graphical user interface designer for Qt applications.&lt;br/&gt;</source>
         <translation>&lt;br/&gt;Qt 设计师是用于开发 Qt 应用程序的图形用户界面设计师。&lt;br/&gt;</translation>
     </message>
     <message>
-        <location line="+16"/>
         <source>This program is licensed to you under the terms of the Qt Commercial License Agreement. For details, see the file LICENSE that came with this software distribution.&lt;br/&gt;</source>
-        <translation>我们已经允许您在 Qt 商业许可协议下使用本程序。有关细节，请阅读本软件发行中所带的 LICENSE 文件。</translation>
+        <translation type="obsolete">我们已经允许您在 Qt 商业许可协议下使用本程序。有关细节，请阅读本软件发行中所带的 LICENSE 文件。</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -4730,20 +4702,18 @@ Do you want overwrite the template?</source>
         <translation>%1&lt;br/&gt;%2&lt;br/&gt;版权所有 2000-$THISYEAR$ Nokia Corporation and/or its subsidiary(-ies)。所有权利已被保留。&lt;br/&gt;&lt;br/&gt;本程序是在&lt;b&gt;没有任何担保（其中包括任何特定目的的设计、商业和适当性的担保）&lt;/b&gt;的条件下提供的。&lt;br/&gt; </translation>
     </message>
     <message>
-        <location line="-17"/>
         <source>This version of Qt Designer is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.&lt;br/&gt;&lt;br/&gt;You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qtsoftware.com/company/about/businessmodel&quot;&gt;http://qtsoftware.com/company/about/businessmodel.html&lt;/a&gt; for an overview of Qt licensing.&lt;br/&gt;</source>
-        <translation>这个版本的 Qt 设计师是 Qt 开源版本的一部分，用于开发开源应用程序。Qt 是一个用于跨平台应用程序开发的综合 C++ 框架。&lt;br/&gt;&lt;br/&gt;开发商业（闭源）应用程序，您需要商业 Qt 许可。对于 Qt 许可的概览，请参考&lt;tt&gt;http://qtsoftware.com/company/about/businessmodel&lt;/tt&gt;。</translation>
+        <translation type="obsolete">这个版本的 Qt 设计师是 Qt 开源版本的一部分，用于开发开源应用程序。Qt 是一个用于跨平台应用程序开发的综合 C++ 框架。&lt;br/&gt;&lt;br/&gt;开发商业（闭源）应用程序，您需要商业 Qt 许可。对于 Qt 许可的概览，请参考&lt;tt&gt;http://qtsoftware.com/company/about/businessmodel&lt;/tt&gt;。</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>This program is licensed to you under the terms of the Qt %1 License Agreement. For details, see the license file that came with this software distribution.&lt;br/&gt;</source>
-        <translation>我们已经允许您在 Qt %1 许可协议下使用本程序。有关细节，请阅读本软件发行中所带的许可协议文件。</translation>
+        <translation type="obsolete">我们已经允许您在 Qt %1 许可协议下使用本程序。有关细节，请阅读本软件发行中所带的许可协议文件。</translation>
     </message>
 </context>
 <context>
     <name>WidgetDataBase</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/widgetdatabase.cpp" line="+786"/>
+        <location filename="../tools/designer/src/lib/shared/widgetdatabase.cpp" line="+814"/>
         <source>The file contains a custom widget &apos;%1&apos; whose base class (%2) differs from the current entry in the widget database (%3). The widget database is left unchanged.</source>
         <translation>这个文件包含了一个自定义窗口部件“%1”，其基类(%2)和窗口部件数据库(%3)的当前条目不同。这个窗口部件数据库并未做任何改动。</translation>
     </message>
@@ -4751,22 +4721,22 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::ActionEditor</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/actioneditor.cpp" line="+111"/>
+        <location filename="../tools/designer/src/lib/shared/actioneditor.cpp" line="+143"/>
         <source>Actions</source>
         <translation>动作</translation>
     </message>
     <message>
-        <location line="-15"/>
+        <location line="-16"/>
         <source>New...</source>
         <translation>新建...</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location line="+305"/>
+        <location line="+307"/>
         <source>New action</source>
         <translation>新建动作</translation>
     </message>
@@ -4776,9 +4746,14 @@ Do you want overwrite the template?</source>
         <translation>编辑动作</translation>
     </message>
     <message>
-        <location line="-408"/>
+        <location line="-411"/>
         <source>Edit...</source>
         <translation>编辑...</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Go to slot...</source>
+        <translation type="unfinished">转到槽...</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -4801,7 +4776,7 @@ Do you want overwrite the template?</source>
         <translation>选择全部</translation>
     </message>
     <message>
-        <location line="+52"/>
+        <location line="+54"/>
         <source>Configure Action Editor</source>
         <translation>配置动作编辑器</translation>
     </message>
@@ -4816,7 +4791,7 @@ Do you want overwrite the template?</source>
         <translation>细节视图</translation>
     </message>
     <message>
-        <location line="+406"/>
+        <location line="+412"/>
         <source>Remove actions</source>
         <translation>移除动作</translation>
     </message>
@@ -4826,7 +4801,7 @@ Do you want overwrite the template?</source>
         <translation>移除动作“%1”</translation>
     </message>
     <message>
-        <location line="+183"/>
+        <location line="+186"/>
         <source>Used In</source>
         <translation>用于</translation>
     </message>
@@ -4841,7 +4816,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::ActionModel</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/actionrepository.cpp" line="+64"/>
+        <location filename="../tools/designer/src/lib/shared/actionrepository.cpp" line="+95"/>
         <source>Name</source>
         <translation>名称</translation>
     </message>
@@ -4874,7 +4849,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::BuddyEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/buddyeditor/buddyeditor.cpp" line="+235"/>
+        <location filename="../tools/designer/src/components/buddyeditor/buddyeditor.cpp" line="+265"/>
         <source>Add buddy</source>
         <translation>添加伙伴</translation>
     </message>
@@ -4906,7 +4881,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::BuddyEditorPlugin</name>
     <message>
-        <location filename="../tools/designer/src/components/buddyeditor/buddyeditor_plugin.cpp" line="+47"/>
+        <location filename="../tools/designer/src/components/buddyeditor/buddyeditor_plugin.cpp" line="+77"/>
         <source>Edit Buddies</source>
         <translation>编辑伙伴</translation>
     </message>
@@ -4914,7 +4889,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::BuddyEditorTool</name>
     <message>
-        <location filename="../tools/designer/src/components/buddyeditor/buddyeditor_tool.cpp" line="+30"/>
+        <location filename="../tools/designer/src/components/buddyeditor/buddyeditor_tool.cpp" line="+60"/>
         <source>Edit Buddies</source>
         <translation>编辑伙伴</translation>
     </message>
@@ -4968,7 +4943,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::CodeDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/codedialog.cpp" line="+69"/>
+        <location filename="../tools/designer/src/lib/shared/codedialog.cpp" line="+99"/>
         <source>Save...</source>
         <translation>保存...</translation>
     </message>
@@ -5026,7 +5001,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::ColorAction</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/richtexteditor.cpp" line="+220"/>
+        <location filename="../tools/designer/src/lib/shared/richtexteditor.cpp" line="+250"/>
         <source>Text Color</source>
         <translation>文本颜色</translation>
     </message>
@@ -5034,7 +5009,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::ComboBoxTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/combobox_taskmenu.cpp" line="+42"/>
+        <location filename="../tools/designer/src/components/taskmenu/combobox_taskmenu.cpp" line="+72"/>
         <source>Edit Items...</source>
         <translation>编辑项目...</translation>
     </message>
@@ -5073,7 +5048,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::ConnectionModel</name>
     <message>
-        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditorwindow.cpp" line="-470"/>
+        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditorwindow.cpp" line="-465"/>
         <source>Sender</source>
         <translation>发送者</translation>
     </message>
@@ -5093,7 +5068,7 @@ Do you want overwrite the template?</source>
         <translation>槽</translation>
     </message>
     <message>
-        <location line="+97"/>
+        <location line="+90"/>
         <source>&lt;sender&gt;</source>
         <translation>&lt;发送者&gt;</translation>
     </message>
@@ -5126,7 +5101,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::ContainerWidgetTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/containerwidget_taskmenu.cpp" line="+82"/>
+        <location filename="../tools/designer/src/components/taskmenu/containerwidget_taskmenu.cpp" line="+112"/>
         <source>Insert Page Before Current Page</source>
         <translation>在当前页之前插入页</translation>
     </message>
@@ -5189,7 +5164,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::DesignerPropertyManager</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/designerpropertymanager.cpp" line="+614"/>
+        <location filename="../tools/designer/src/components/propertyeditor/designerpropertymanager.cpp" line="+644"/>
         <location line="+6"/>
         <source>AlignLeft</source>
         <translation>AlignLeft</translation>
@@ -5330,7 +5305,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::DeviceProfileDialog</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/deviceprofiledialog.cpp" line="+33"/>
+        <location filename="../tools/designer/src/components/formeditor/deviceprofiledialog.cpp" line="+63"/>
         <source>Device Profiles (*.%1)</source>
         <translation>设备描述文件(*.%1)</translation>
     </message>
@@ -5437,14 +5412,60 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::EmbeddedOptionsControl</name>
     <message>
+        <location filename="../tools/designer/src/components/formeditor/embeddedoptionspage.cpp" line="-256"/>
+        <source>Add a profile</source>
+        <translation type="unfinished">添加描述文件</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Edit the selected profile</source>
+        <translation type="unfinished">编辑选中的描述文件</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Delete the selected profile</source>
+        <translation type="unfinished">删除选中的描述文件</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Add Profile</source>
+        <translation type="unfinished">添加描述文件</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>New profile</source>
+        <translation type="unfinished">新建描述文件</translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>Edit Profile</source>
+        <translation type="unfinished">编辑描述文件</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Delete Profile</source>
+        <translation type="unfinished">删除描述文件</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Would you like to delete the profile &apos;%1&apos;?</source>
+        <translation type="unfinished">你要删除描述文件“%1”吗？</translation>
+    </message>
+    <message>
+        <location line="+55"/>
+        <source>Default</source>
+        <translation type="unfinished">默认</translation>
+    </message>
+    <message>
+        <location line="-160"/>
         <source>None</source>
-        <translation type="obsolete">无</translation>
+        <translation type="unfinished">无</translation>
     </message>
 </context>
 <context>
     <name>qdesigner_internal::FilterWidget</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/filterwidget.cpp" line="+155"/>
+        <location filename="../tools/designer/src/lib/shared/filterwidget.cpp" line="+185"/>
         <source>&lt;Filter&gt;</source>
         <translation>&lt;过滤器&gt;</translation>
     </message>
@@ -5452,7 +5473,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::FormEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/formeditor.cpp" line="+160"/>
+        <location filename="../tools/designer/src/components/formeditor/formeditor.cpp" line="+190"/>
         <source>Resource File Changed</source>
         <translation>资源文件已改变</translation>
     </message>
@@ -5473,7 +5494,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::FormWindow</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/formwindow.cpp" line="-1262"/>
+        <location filename="../tools/designer/src/components/formeditor/formwindow.cpp" line="-1267"/>
         <source>Edit contents</source>
         <translation>编辑内容</translation>
     </message>
@@ -5487,7 +5508,7 @@ Do you want overwrite the template?</source>
         <translation type="obsolete">插入窗口部件%1</translation>
     </message>
     <message>
-        <location line="+836"/>
+        <location line="+841"/>
         <source>Resize</source>
         <translation>重定义大小</translation>
     </message>
@@ -5531,13 +5552,13 @@ and then paste again.</source>
         <translation>布局</translation>
     </message>
     <message>
-        <location line="+490"/>
+        <location line="+493"/>
         <location line="+55"/>
         <source>Drop widget</source>
         <translation>丢弃窗口部件</translation>
     </message>
     <message numerus="yes">
-        <location line="-1052"/>
+        <location line="-1055"/>
         <source>Paste %n action(s)</source>
         <translation>
             <numerusform>粘贴 %n 个动作</numerusform>
@@ -5576,7 +5597,7 @@ and then paste again.</source>
         <translation>选择祖先</translation>
     </message>
     <message>
-        <location line="+573"/>
+        <location line="+576"/>
         <source>A QMainWindow-based form does not contain a central widget.</source>
         <translation>一个基于 QMainWindow 的窗体没有包含中央窗口部件。</translation>
     </message>
@@ -5584,7 +5605,7 @@ and then paste again.</source>
 <context>
     <name>qdesigner_internal::FormWindowBase</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/formwindowbase.cpp" line="+363"/>
+        <location filename="../tools/designer/src/lib/shared/formwindowbase.cpp" line="+397"/>
         <source>Delete</source>
         <translation>删除</translation>
     </message>
@@ -5597,7 +5618,7 @@ and then paste again.</source>
 <context>
     <name>qdesigner_internal::FormWindowManager</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/formwindowmanager.cpp" line="+337"/>
+        <location filename="../tools/designer/src/components/formeditor/formwindowmanager.cpp" line="+368"/>
         <source>Cu&amp;t</source>
         <translation>剪切(&amp;T)</translation>
     </message>
@@ -5679,7 +5700,7 @@ and then paste again.</source>
         <translation>调整选中的窗口部件的大小</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Lay Out &amp;Horizontally</source>
         <translation>水平布局(&amp;H)</translation>
     </message>
@@ -5729,7 +5750,7 @@ and then paste again.</source>
         <translation>在一个分裂器中垂直布局选中的窗口部件</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>&amp;Break Layout</source>
         <translation>打破布局(&amp;B)</translation>
     </message>
@@ -5754,7 +5775,7 @@ and then paste again.</source>
         <translation>窗体设定(&amp;S)...</translation>
     </message>
     <message>
-        <location line="+75"/>
+        <location line="+78"/>
         <source>Break Layout</source>
         <translation>打破布局</translation>
     </message>
@@ -5770,12 +5791,12 @@ and then paste again.</source>
         <translation>无法创建窗体预览</translation>
     </message>
     <message>
-        <location line="+324"/>
+        <location line="+341"/>
         <source>Form Settings - %1</source>
         <translation>窗体设定 - %1</translation>
     </message>
     <message>
-        <location line="-539"/>
+        <location line="-560"/>
         <source>Lay Out in a &amp;Form Layout</source>
         <translation>在窗体布局中布局(&amp;F)</translation>
     </message>
@@ -5785,7 +5806,7 @@ and then paste again.</source>
         <translation>在一个窗体布局中布局选中的窗口部件</translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+45"/>
         <source>Si&amp;mplify Grid Layout</source>
         <translation>简易网格布局(&amp;M)</translation>
     </message>
@@ -5798,7 +5819,7 @@ and then paste again.</source>
 <context>
     <name>qdesigner_internal::FormWindowSettings</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/formwindowsettings.cpp" line="+162"/>
+        <location filename="../tools/designer/src/components/formeditor/formwindowsettings.cpp" line="+193"/>
         <source>None</source>
         <translation>无</translation>
     </message>
@@ -5849,7 +5870,7 @@ and then paste again.</source>
 <context>
     <name>qdesigner_internal::GroupBoxTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/groupbox_taskmenu.cpp" line="+56"/>
+        <location filename="../tools/designer/src/components/taskmenu/groupbox_taskmenu.cpp" line="+86"/>
         <source>Change title...</source>
         <translation>改变标题...</translation>
     </message>
@@ -5865,7 +5886,7 @@ and then paste again.</source>
 <context>
     <name>qdesigner_internal::IconSelector</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/iconselector.cpp" line="+210"/>
+        <location filename="../tools/designer/src/lib/shared/iconselector.cpp" line="+211"/>
         <source>The pixmap file &apos;%1&apos; cannot be read.</source>
         <translation>无法读取像素映射文件“%1”。</translation>
     </message>
@@ -5958,7 +5979,7 @@ and then paste again.</source>
 <context>
     <name>qdesigner_internal::ItemListEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/itemlisteditor.cpp" line="+349"/>
+        <location filename="../tools/designer/src/components/taskmenu/itemlisteditor.cpp" line="+358"/>
         <source>Properties &amp;&lt;&lt;</source>
         <translation>属性&amp;&lt;&lt;</translation>
     </message>
@@ -6017,7 +6038,7 @@ and then paste again.</source>
 <context>
     <name>qdesigner_internal::LabelTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/label_taskmenu.cpp" line="+59"/>
+        <location filename="../tools/designer/src/components/taskmenu/label_taskmenu.cpp" line="+89"/>
         <source>Change rich text...</source>
         <translation>改变多信息文本...</translation>
     </message>
@@ -6030,7 +6051,7 @@ and then paste again.</source>
 <context>
     <name>qdesigner_internal::LineEditTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/lineedit_taskmenu.cpp" line="+54"/>
+        <location filename="../tools/designer/src/components/taskmenu/lineedit_taskmenu.cpp" line="+84"/>
         <source>Change text...</source>
         <translation>改变文本...</translation>
     </message>
@@ -6062,7 +6083,7 @@ and then paste again.</source>
         <translation type="obsolete">U</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/listwidgeteditor.cpp" line="+43"/>
+        <location filename="../tools/designer/src/components/taskmenu/listwidgeteditor.cpp" line="+73"/>
         <source>New Item</source>
         <translation>新建项目</translation>
     </message>
@@ -6096,7 +6117,7 @@ and then paste again.</source>
 <context>
     <name>qdesigner_internal::ListWidgetTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/listwidget_taskmenu.cpp" line="+41"/>
+        <location filename="../tools/designer/src/components/taskmenu/listwidget_taskmenu.cpp" line="+71"/>
         <source>Edit Items...</source>
         <translation>编辑项目...</translation>
     </message>
@@ -6132,7 +6153,7 @@ and then paste again.</source>
 <context>
     <name>qdesigner_internal::MenuTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/menutaskmenu.cpp" line="+30"/>
+        <location filename="../tools/designer/src/components/taskmenu/menutaskmenu.cpp" line="+60"/>
         <source>Remove</source>
         <translation>移除</translation>
     </message>
@@ -6191,7 +6212,7 @@ and then paste again.</source>
 <context>
     <name>qdesigner_internal::NewDynamicPropertyDialog</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/newdynamicpropertydialog.cpp" line="+104"/>
+        <location filename="../tools/designer/src/components/propertyeditor/newdynamicpropertydialog.cpp" line="+134"/>
         <source>Set Property Name</source>
         <translation>设置属性名称</translation>
     </message>
@@ -6311,7 +6332,7 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::NewPromotedClassPanel</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_promotiondialog.cpp" line="+66"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_promotiondialog.cpp" line="+96"/>
         <source>Add</source>
         <translation>添加</translation>
     </message>
@@ -6349,7 +6370,7 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::ObjectInspector</name>
     <message>
-        <location filename="../tools/designer/src/components/objectinspector/objectinspector.cpp" line="+727"/>
+        <location filename="../tools/designer/src/components/objectinspector/objectinspector.cpp" line="+758"/>
         <source>&amp;Find in Text...</source>
         <translation>在文本中查找(&amp;F)...</translation>
     </message>
@@ -6365,7 +6386,7 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::OrderDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/orderdialog.cpp" line="+83"/>
+        <location filename="../tools/designer/src/lib/shared/orderdialog.cpp" line="+113"/>
         <source>Index %1 (%2)</source>
         <translation>索引 %1 (%2)</translation>
     </message>
@@ -6446,7 +6467,7 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::PaletteEditorButton</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/paletteeditorbutton.cpp" line="+31"/>
+        <location filename="../tools/designer/src/components/propertyeditor/paletteeditorbutton.cpp" line="+61"/>
         <source>Change Palette</source>
         <translation>改变调色板</translation>
     </message>
@@ -6454,7 +6475,7 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::PaletteModel</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/paletteeditor.cpp" line="+351"/>
+        <location filename="../tools/designer/src/components/propertyeditor/paletteeditor.cpp" line="+381"/>
         <source>Color Role</source>
         <translation>颜色角色</translation>
     </message>
@@ -6506,15 +6527,61 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::PlainTextEditorDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/plaintexteditor.cpp" line="+39"/>
+        <location filename="../tools/designer/src/lib/shared/plaintexteditor.cpp" line="+69"/>
         <source>Edit text</source>
         <translation>编辑文本</translation>
     </message>
 </context>
 <context>
+    <name>qdesigner_internal::PluginDialog</name>
+    <message>
+        <location filename="../tools/designer/src/lib/shared/plugindialog.cpp" line="+72"/>
+        <source>Components</source>
+        <translation>组件</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Plugin Information</source>
+        <translation>插件信息</translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>Qt Designer couldn&apos;t find any plugins</source>
+        <translation>Qt 设计师无法找到任何插件</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Qt Designer found the following plugins</source>
+        <translation>Qt 设计师已经找到如下插件</translation>
+    </message>
+    <message>
+        <source>TextLabel</source>
+        <translation type="obsolete">文本标签</translation>
+    </message>
+    <message>
+        <location line="-52"/>
+        <source>Refresh</source>
+        <translation>刷新</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Scan for newly installed custom widget plugins.</source>
+        <translation>扫描新安装的自定义窗口部件插件。</translation>
+    </message>
+    <message>
+        <location line="+106"/>
+        <source>New custom widget plugins have been found.</source>
+        <translation>新的自定义窗口部件插件已经被找到。</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation type="obsolete">1</translation>
+    </message>
+</context>
+<context>
     <name>qdesigner_internal::PreviewActionGroup</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/previewactiongroup.cpp" line="+65"/>
+        <location filename="../tools/designer/src/components/formeditor/previewactiongroup.cpp" line="+95"/>
         <source>%1 Style</source>
         <translation>%1 风格</translation>
     </message>
@@ -6557,7 +6624,7 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::PreviewDeviceSkin</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/previewmanager.cpp" line="+188"/>
+        <location filename="../tools/designer/src/lib/shared/previewmanager.cpp" line="+218"/>
         <source>&amp;Close</source>
         <translation>关闭(&amp;C)</translation>
     </message>
@@ -6658,7 +6725,7 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::PromotionTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/promotiontaskmenu.cpp" line="+55"/>
+        <location filename="../tools/designer/src/lib/shared/promotiontaskmenu.cpp" line="+85"/>
         <source>Promoted widgets...</source>
         <translation>提升的窗口部件...</translation>
     </message>
@@ -6686,7 +6753,7 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::PropertyEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/propertyeditor.cpp" line="+222"/>
+        <location filename="../tools/designer/src/components/propertyeditor/propertyeditor.cpp" line="+188"/>
         <source>Add Dynamic Property...</source>
         <translation>添加动态属性 ...</translation>
     </message>
@@ -6742,7 +6809,7 @@ Please select another name.</source>
 %2</translation>
     </message>
     <message>
-        <location line="+534"/>
+        <location line="+533"/>
         <source>Object: %1
 Class: %2</source>
         <translation>对象：%1
@@ -6752,7 +6819,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::PropertyLineEdit</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/propertylineedit.cpp" line="+58"/>
+        <location filename="../tools/designer/src/lib/shared/propertylineedit.cpp" line="+88"/>
         <source>Insert line break</source>
         <translation>插入换行符</translation>
     </message>
@@ -6901,7 +6968,7 @@ Class: %2</source>
         <translation>设置最大大小</translation>
     </message>
     <message>
-        <location line="+236"/>
+        <location line="+235"/>
         <source>Edit ToolTip</source>
         <translation>编辑工具提示</translation>
     </message>
@@ -6910,8 +6977,13 @@ Class: %2</source>
         <source>Edit WhatsThis</source>
         <translation>编辑这是什么</translation>
     </message>
+    <message>
+        <location line="+144"/>
+        <source>no signals available</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message numerus="yes">
-        <location line="+132"/>
+        <location line="+67"/>
         <source>Set size constraint on %n widget(s)</source>
         <translation>
             <numerusform>为 %n 个窗口部件设置大小限定</numerusform>
@@ -6921,7 +6993,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::QDesignerWidgetBox</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_widgetbox.cpp" line="+97"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_widgetbox.cpp" line="+127"/>
         <location line="+13"/>
         <source>Unexpected element &lt;%1&gt;</source>
         <translation>未预期的元素&lt;%1&gt;</translation>
@@ -6977,7 +7049,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::QtGradientStopsController</name>
     <message>
-        <location filename="../tools/shared/qtgradienteditor/qtgradientstopscontroller.cpp" line="+147"/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradientstopscontroller.cpp" line="+177"/>
         <source>H</source>
         <translation>H</translation>
     </message>
@@ -7152,7 +7224,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::ScriptDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/scriptdialog.cpp" line="+38"/>
+        <location filename="../tools/designer/src/lib/shared/scriptdialog.cpp" line="+68"/>
         <source>Edit script</source>
         <translation>编辑脚本</translation>
     </message>
@@ -7202,7 +7274,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::SignalSlotEditorPlugin</name>
     <message>
-        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditor_plugin.cpp" line="+46"/>
+        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditor_plugin.cpp" line="+76"/>
         <source>Edit Signals/Slots</source>
         <translation>编辑信号/槽</translation>
     </message>
@@ -7215,7 +7287,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::SignalSlotEditorTool</name>
     <message>
-        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditor_tool.cpp" line="+32"/>
+        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditor_tool.cpp" line="+62"/>
         <source>Edit Signals/Slots</source>
         <translation>编辑信号/槽</translation>
     </message>
@@ -7223,7 +7295,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::StatusBarTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/toolbar_taskmenu.cpp" line="+55"/>
+        <location filename="../tools/designer/src/components/taskmenu/toolbar_taskmenu.cpp" line="+85"/>
         <source>Remove</source>
         <translation>移除</translation>
     </message>
@@ -7231,7 +7303,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::StringListEditorButton</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/stringlisteditorbutton.cpp" line="+30"/>
+        <location filename="../tools/designer/src/components/propertyeditor/stringlisteditorbutton.cpp" line="+60"/>
         <source>Change String List</source>
         <translation>改变字符串列表</translation>
     </message>
@@ -7239,7 +7311,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::StyleSheetEditorDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/stylesheeteditor.cpp" line="+71"/>
+        <location filename="../tools/designer/src/lib/shared/stylesheeteditor.cpp" line="+101"/>
         <source>Edit Style Sheet</source>
         <translation>编辑样式表</translation>
     </message>
@@ -7278,7 +7350,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::TabOrderEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/tabordereditor/tabordereditor.cpp" line="+333"/>
+        <location filename="../tools/designer/src/components/tabordereditor/tabordereditor.cpp" line="+363"/>
         <source>Start from Here</source>
         <translation>从这里开始</translation>
     </message>
@@ -7306,7 +7378,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::TabOrderEditorPlugin</name>
     <message>
-        <location filename="../tools/designer/src/components/tabordereditor/tabordereditor_plugin.cpp" line="+47"/>
+        <location filename="../tools/designer/src/components/tabordereditor/tabordereditor_plugin.cpp" line="+77"/>
         <source>Edit Tab Order</source>
         <translation>编辑 Tab 顺序</translation>
     </message>
@@ -7314,7 +7386,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::TabOrderEditorTool</name>
     <message>
-        <location filename="../tools/designer/src/components/tabordereditor/tabordereditor_tool.cpp" line="+31"/>
+        <location filename="../tools/designer/src/components/tabordereditor/tabordereditor_tool.cpp" line="+61"/>
         <source>Edit Tab Order</source>
         <translation>编辑 Tab 顺序</translation>
     </message>
@@ -7356,7 +7428,7 @@ Class: %2</source>
         <translation type="obsolete">表格行</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/tablewidgeteditor.cpp" line="+44"/>
+        <location filename="../tools/designer/src/components/taskmenu/tablewidgeteditor.cpp" line="+74"/>
         <source>New Row</source>
         <translation>新建行</translation>
     </message>
@@ -7431,7 +7503,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::TableWidgetTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/tablewidget_taskmenu.cpp" line="+38"/>
+        <location filename="../tools/designer/src/components/taskmenu/tablewidget_taskmenu.cpp" line="+68"/>
         <source>Edit Items...</source>
         <translation>编辑项目...</translation>
     </message>
@@ -7462,7 +7534,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::TextEditTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/textedit_taskmenu.cpp" line="+33"/>
+        <location filename="../tools/designer/src/components/taskmenu/textedit_taskmenu.cpp" line="+63"/>
         <source>Change HTML...</source>
         <translation>改变HTML...</translation>
     </message>
@@ -7508,7 +7580,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::ToolBarEventFilter</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_toolbar.cpp" line="+209"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_toolbar.cpp" line="+239"/>
         <source>Insert Separator</source>
         <translation>插入分隔符</translation>
     </message>
@@ -7558,7 +7630,7 @@ Class: %2</source>
         <translation>树项目</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.cpp" line="+50"/>
+        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.cpp" line="+80"/>
         <source>&amp;Columns</source>
         <translation>列(&amp;C)</translation>
     </message>
@@ -7705,7 +7777,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::TreeWidgetTaskMenu</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/treewidget_taskmenu.cpp" line="+37"/>
+        <location filename="../tools/designer/src/components/taskmenu/treewidget_taskmenu.cpp" line="+67"/>
         <source>Edit Items...</source>
         <translation>编辑项目...</translation>
     </message>
@@ -7713,7 +7785,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::WidgetBox</name>
     <message>
-        <location filename="../tools/designer/src/components/widgetbox/widgetbox_dnditem.cpp" line="+83"/>
+        <location filename="../tools/designer/src/components/widgetbox/widgetbox_dnditem.cpp" line="+113"/>
         <source>Warning: Widget creation failed in the widget box. This could be caused by invalid custom widget XML.</source>
         <translation>警告：部件框中的部件创建失败。可能是由于无效的自定义部件XML引起的。</translation>
     </message>
@@ -7748,17 +7820,17 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::WidgetBoxTreeWidget</name>
     <message>
-        <location filename="../tools/designer/src/components/widgetbox/widgetboxtreewidget.cpp" line="-267"/>
+        <location filename="../tools/designer/src/components/widgetbox/widgetboxtreewidget.cpp" line="-268"/>
         <source>Scratchpad</source>
         <translation>便条</translation>
     </message>
     <message>
-        <location line="+360"/>
+        <location line="+370"/>
         <source>Custom Widgets</source>
         <translation>自定义窗口部件</translation>
     </message>
     <message>
-        <location line="+261"/>
+        <location line="+260"/>
         <source>Expand all</source>
         <translation>全部展开</translation>
     </message>
@@ -7799,7 +7871,7 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::WidgetEditorTool</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/tool_widgeteditor.cpp" line="+41"/>
+        <location filename="../tools/designer/src/components/formeditor/tool_widgeteditor.cpp" line="+71"/>
         <source>Edit Widgets</source>
         <translation>编辑窗口部件</translation>
     </message>
@@ -7807,12 +7879,12 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::WidgetFactory</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/widgetfactory.cpp" line="+237"/>
+        <location filename="../tools/designer/src/lib/shared/widgetfactory.cpp" line="+267"/>
         <source>The custom widget factory registered for widgets of class %1 returned 0.</source>
         <translation>为类 %1 的窗口部件注册的自定义窗口部件工厂返回 0。</translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+44"/>
         <source>A class name mismatch occurred when creating a widget using the custom widget factory registered for widgets of class %1. It returned a widget of class %2.</source>
         <translation>在使用为类 %1 的窗口部件注册的自定义窗口部件工厂创建一个窗口部件时，发生了类名称不匹配。它返回了一个类 %2 的窗口部件。</translation>
     </message>
@@ -7855,7 +7927,7 @@ This indicates an inconsistency in the ui-file.</source>
 <context>
     <name>qdesigner_internal::ZoomMenu</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/zoomwidget.cpp" line="+54"/>
+        <location filename="../tools/designer/src/lib/shared/zoomwidget.cpp" line="+84"/>
         <source>%1 %</source>
         <extracomment>Zoom factor</extracomment>
         <translation>%1 %</translation>

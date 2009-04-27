@@ -1,3 +1,44 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the tools applications of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
 #include "tools.h"
 
 #include <QDir>
@@ -17,6 +58,13 @@ using namespace std;
 void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString> &licenseInfo,
                          const QString &path)
 {
+    if (dictionary[ "BUILDNOKIA" ] == "yes") {
+        dictionary["EDITION"] = "NokiaInternalBuild";
+        dictionary["LICENSE_FILE"] = ""; // No License for nokia developers
+        dictionary["QT_EDITION"] = "QT_EDITION_OPENSOURCE";
+        return; // No license key checking in internal builds
+    }
+
     QString tpLicense = dictionary["QT_SOURCE_TREE"] + "/LICENSE.PREVIEW.OPENSOURCE";
     if (QFile::exists(tpLicense)) {
         dictionary["EDITION"] = "Preview";
@@ -101,25 +149,28 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
             dictionary["EDITION"] = "GUIFramework";
             dictionary["QT_EDITION"] = "QT_EDITION_DESKTOPLIGHT";
         }
+
+        if (platforms == 'X') {
+            dictionary["LICENSE_EXTENSION"] = "-ALLOS";
+        } else if (strchr("3679ACDEHJKMSUWX", platforms)) {
+            dictionary["LICENSE_EXTENSION"] = "-EMBEDDED";
+        } else if (strchr("4BFPQRTY", platforms)) {
+            dictionary["LICENSE_EXTENSION"] = "-DESKTOP";
+        }
     } else if (strcmp(licenseSchema,"Z4M") == 0 || strcmp(licenseSchema,"R4M") == 0 || strcmp(licenseSchema,"Q4M") == 0) {
         if (products == 'B') {
             dictionary["EDITION"] = "Evaluation";
             dictionary["QT_EDITION"] = "QT_EDITION_EVALUATION";
+            dictionary["LICENSE_EXTENSION"] = "-EVALUATION";
         }
     }
 
-    // Determine license extension -----------------------------------------------------------------
     if (QFile::exists(dictionary["QT_SOURCE_TREE"] + "/.LICENSE")) {
         // Generic, no-suffix license
         dictionary["LICENSE_EXTENSION"] = QString();
-    } else if (platforms == 'X') {
-        dictionary["LICENSE_EXTENSION"] = "-ALLOS";
-    } else if (/*Windows CE */platforms  == '6' || /*Embedded */ platforms == '8' || /*Embedded + Windows CE*/platforms  == 'K' || /*Windows + Windows CE*/ platforms  == 'H') {
-        dictionary["LICENSE_EXTENSION"] = "-EMBEDDED";
-    } else if (/*Windows*/ platforms == 'R' || /*Mac+X11+Windows*/ platforms  == 'F') {
-        dictionary["LICENSE_EXTENSION"] = "-DESKTOP";
-    } else if (dictionary["EDITION"] == "Evaluation") {
-        dictionary["LICENSE_EXTENSION"] = "-EVALUATION";
+    } else if (dictionary["LICENSE_EXTENSION"].isEmpty()) {
+        cout << "License file does not contain proper license key." << endl;
+        dictionary["DONE"] = "error";
     }
     if (licenseType.isEmpty()
         || dictionary["EDITION"].isEmpty()
@@ -129,19 +180,9 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
         return;
     }
 
-    // verify that we are licensed to use Qt for Windows
     if (dictionary["PLATFORM NAME"].contains("Windows CE")) {
-        // verify that we are licensed to use Qt for Windows AND Qt for Windows CE
-        if (platforms != 'H') {
-            cout << "You are not licensed for the " << dictionary["PLATFORM NAME"] << " platform." << endl << endl;
-            cout << "Please contact sales@trolltech.com to upgrade your license" << endl;
-            cout << "to include the " << dictionary["PLATFORM NAME"] << " platform, or install the" << endl;
-            cout << "Qt Open Source Edition if you intend to develop free software." << endl;
-            dictionary["DONE"] = "error";
-            return;
-        }
-    } else {
-        if (!( platforms == 'R' || ( platforms == '6' )|| platforms == '8' )) {
+        // verify that we are licensed to use Qt for Windows CE
+        if (dictionary["LICENSE_EXTENSION"] != "-EMBEDDED" && dictionary["LICENSE_EXTENSION"] != "-ALLOS") {
             cout << "You are not licensed for the " << dictionary["PLATFORM NAME"] << " platform." << endl << endl;
             cout << "Please contact sales@trolltech.com to upgrade your license" << endl;
             cout << "to include the " << dictionary["PLATFORM NAME"] << " platform, or install the" << endl;

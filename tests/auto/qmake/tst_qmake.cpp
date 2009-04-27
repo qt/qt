@@ -39,21 +39,13 @@
 **
 ****************************************************************************/
 
-
-#include <QtTest/QtTest>
-
-#if !defined(QMAKE_CROSS_COMPILED) && defined(QT3_SUPPORT)
-
-#include <qdir.h>
-#include <qprocess.h>
-
+#if !defined(QMAKE_CROSS_COMPILED)
 
 #include "testcompiler.h"
 
-#include <stdlib.h>
-
-//TESTED_CLASS=
-//TESTED_FILES=corelib/tools/qlocale.h corelib/tools/qlocale.cpp
+#include <QObject>
+#include <QDir>
+#include <QtTest/QtTest>
 
 class tst_qmake : public QObject
 {
@@ -63,12 +55,12 @@ public:
     tst_qmake();
     virtual ~tst_qmake();
 
-
 public slots:
     void initTestCase();
     void cleanupTestCase();
     void init();
     void cleanup();
+
 private slots:
     void simple_app();
     void simple_lib();
@@ -104,16 +96,16 @@ tst_qmake::tst_qmake()
 {
     QString cmd = QString("qmake \"QT_VERSION=%1\"").arg(QT_VERSION);
 #ifdef Q_CC_MSVC
-    test_compiler.setBaseCommands( "nmake", cmd, FALSE );
+    test_compiler.setBaseCommands( "nmake", cmd );
 #elif defined(Q_CC_MINGW)
-    test_compiler.setBaseCommands( "mingw32-make", cmd, FALSE );
+    test_compiler.setBaseCommands( "mingw32-make", cmd );
 #elif defined(Q_OS_WIN) && defined(Q_CC_GNU)
-    test_compiler.setBaseCommands( "mmmake", cmd, FALSE );
+    test_compiler.setBaseCommands( "mmmake", cmd );
 #else
-    test_compiler.setBaseCommands( "make", cmd, FALSE );
+    test_compiler.setBaseCommands( "make", cmd );
 #endif
     QDir dir;
-    base_path = dir.currentDirPath();
+    base_path = dir.currentPath();
 }
 
 tst_qmake::~tst_qmake()
@@ -255,10 +247,10 @@ void tst_qmake::duplicateLibraryEntries()
 void tst_qmake::export_across_file_boundaries()
 {
     // This relies on features so we need to set the QMAKEFEATURES environment variable
-	putenv("QMAKEFEATURES=.");
+    test_compiler.addToEnvironment("QMAKEFEATURES=.");
     QString workDir = base_path + "/testdata/export_across_file_boundaries";
     QVERIFY( test_compiler.qmake( workDir, "foo" ));
-	putenv("QMAKEFEATURES=");
+    test_compiler.resetEnvironment();
 }
 
 void tst_qmake::include_dir()
@@ -406,7 +398,7 @@ void tst_qmake::bundle_spaces()
     // make (-n).
 
     TestCompiler local_tc;
-    local_tc.setBaseCommands("make -n", "qmake -macx -spec macx-g++", FALSE);
+    local_tc.setBaseCommands("make -n", "qmake -macx -spec macx-g++");
 
     QVERIFY( local_tc.qmake(workDir, "bundle-spaces") );
 

@@ -20,10 +20,10 @@ edition.DesktopLight.groups       = -graphicsview-api
 qhp.projects            = Qt
 
 qhp.Qt.file                = qt.qhp
-qhp.Qt.namespace           = com.trolltech.qt.450
+qhp.Qt.namespace           = com.trolltech.qt.451
 qhp.Qt.virtualFolder       = qdoc
 qhp.Qt.indexTitle          = Qt Reference Documentation
-qhp.Qt.indexRoot           = 
+qhp.Qt.indexRoot           =
 
 # Files not referenced in any qdoc file (last four are needed by qtdemo)
 # See also extraimages.HTML
@@ -33,11 +33,11 @@ qhp.Qt.extraFiles          = classic.css \
                              images/taskmenuextension-example.png \
                              images/coloreditorfactoryimage.png \
                              images/dynamiclayouts-example.png \
-                             images/stylesheet-coffee-plastique.png                             
+                             images/stylesheet-coffee-plastique.png
 
-qhp.Qt.filterAttributes    = qt 4.5.0 qtrefdoc
-qhp.Qt.customFilters.Qt.name = Qt 4.5.0
-qhp.Qt.customFilters.Qt.filterAttributes = qt 4.5.0
+qhp.Qt.filterAttributes    = qt 4.5.2 qtrefdoc
+qhp.Qt.customFilters.Qt.name = Qt 4.5.2
+qhp.Qt.customFilters.Qt.filterAttributes = qt 4.5.2
 qhp.Qt.subprojects         = classes overviews examples
 qhp.Qt.subprojects.classes.title = Classes
 qhp.Qt.subprojects.classes.indexTitle = Qt's Classes
@@ -92,7 +92,11 @@ excludedirs             = $QT_SOURCE_TREE/src/3rdparty/clucene \
                           $QT_SOURCE_TREE/src/3rdparty/webkit/WebCore \
                           $QT_SOURCE_TREE/src/3rdparty/wintab \
                           $QT_SOURCE_TREE/src/3rdparty/zlib \
-                          $QT_SOURCE_TREE/doc/src/snippets
+                          $QT_SOURCE_TREE/doc/src/snippets \
+                          $QT_SOURCE_TREE/src/3rdparty/phonon/gstreamer \
+                          $QT_SOURCE_TREE/src/3rdparty/phonon/ds9 \
+                          $QT_SOURCE_TREE/src/3rdparty/phonon/qt7 \
+                          $QT_SOURCE_TREE/src/3rdparty/phonon/waveout
 
 sources.fileextensions  = "*.cpp *.qdoc *.mm"
 examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp"
@@ -101,7 +105,8 @@ exampledirs             = $QT_SOURCE_TREE/doc/src \
                           $QT_SOURCE_TREE/examples \
                           $QT_SOURCE_TREE/examples/tutorials \
                           $QT_SOURCE_TREE \
-                          $QT_SOURCE_TREE/qmake/examples
+                          $QT_SOURCE_TREE/qmake/examples \
+                          $QT_SOURCE_TREE/src/3rdparty/webkit/WebKit/qt/docs
 imagedirs               = $QT_SOURCE_TREE/doc/src/images \
                           $QT_SOURCE_TREE/examples
 outputdir               = $QT_BUILD_TREE/doc/html

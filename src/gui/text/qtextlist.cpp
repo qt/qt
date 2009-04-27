@@ -50,6 +50,11 @@ QT_BEGIN_NAMESPACE
 
 class QTextListPrivate : public QTextBlockGroupPrivate
 {
+public:
+    QTextListPrivate(QTextDocument *doc)
+        : QTextBlockGroupPrivate(doc)
+    {
+    }
 };
 
 /*!
@@ -111,7 +116,7 @@ class QTextListPrivate : public QTextBlockGroupPrivate
 /*! \internal
  */
 QTextList::QTextList(QTextDocument *doc)
-    : QTextBlockGroup(*new QTextListPrivate, doc)
+    : QTextBlockGroup(*new QTextListPrivate(doc), doc)
 {
 }
 

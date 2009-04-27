@@ -277,7 +277,11 @@ CentralWidget *CentralWidget::instance()
 void CentralWidget::newTab()
 {
     HelpViewer* viewer = currentHelpViewer();
+#if !defined(QT_NO_WEBKIT)
+    if (viewer && viewer->hasLoadFinished())
+#else
     if (viewer)
+#endif
         setSourceInNewTab(viewer->source());
 }
 

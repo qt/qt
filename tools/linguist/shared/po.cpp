@@ -389,7 +389,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
     for (; l != lines.size(); ++l) {
         QString line = lines.at(l);
         if (line.isEmpty())
-           continue; 
+           continue;
         if (isTranslationLine(line)) {
             bool isObsolete = line.startsWith(QLatin1String("#~ msgstr"));
             const QString prefix = QLatin1String(isObsolete ? "#~ " : "");
