@@ -594,6 +594,8 @@ void QFxPathViewPrivate::regenerate()
     int minI = -1;
     for(int i=0; i<numItems; i++){
         QFxItem *item = model->item(i);
+        if (!item)
+            return;
         items.append(item);
         item->setZ(i);
         item->setParent(q);
