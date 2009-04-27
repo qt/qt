@@ -3,5 +3,5 @@ SOURCES +=  \
 
 HEADERS += \ 
             timeline/qmltimeline.h \
-            timeline/gfxvalueproxy.h \
+            timeline/qmltimelinevalueproxy.h \
 

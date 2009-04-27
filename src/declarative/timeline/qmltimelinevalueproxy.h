@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef GFXVALUEPROXY_H
-#define GFXVALUEPROXY_H
+#ifndef QMLTIMELINEVALUEPROXY_H
+#define QMLTIMELINEVALUEPROXY_H
 
 #include "qmltimeline.h"
 
@@ -51,24 +51,24 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 template<class T>
-class GfxValueProxy : public GfxValue
+class QmlTimeLineValueProxy : public QmlTimeLineValue
 {
 public:
-    GfxValueProxy(T *cls, void (T::*func)(qreal), qreal v = 0.)
-    : GfxValue(v), _class(cls), _setFunctionReal(func), _setFunctionInt(0)
+    QmlTimeLineValueProxy(T *cls, void (T::*func)(qreal), qreal v = 0.)
+    : QmlTimeLineValue(v), _class(cls), _setFunctionReal(func), _setFunctionInt(0)
     {
         Q_ASSERT(_class);
     }
 
-    GfxValueProxy(T *cls, void (T::*func)(int), qreal v = 0.)
-    : GfxValue(v), _class(cls), _setFunctionReal(0), _setFunctionInt(func)
+    QmlTimeLineValueProxy(T *cls, void (T::*func)(int), qreal v = 0.)
+    : QmlTimeLineValue(v), _class(cls), _setFunctionReal(0), _setFunctionInt(func)
     {
         Q_ASSERT(_class);
     }
 
     virtual void setValue(qreal v)
     {
-        GfxValue::setValue(v);
+        QmlTimeLineValue::setValue(v);
         if(_setFunctionReal) (_class->*_setFunctionReal)(v);
         else if(_setFunctionInt) (_class->*_setFunctionInt)((int)v);
     }
@@ -83,4 +83,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif//GFXVALUEPROXY
+#endif//QMLTIMELINEVALUEPROXY_H

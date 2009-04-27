@@ -653,7 +653,7 @@ QmlColorAnimation::~QmlColorAnimation()
 void QmlColorAnimationPrivate::init()
 {
     Q_Q(QmlColorAnimation);
-    ca = new GfxValueAnimator(q);
+    ca = new QmlTimeLineValueAnimator(q);
     ca->setStartValue(QVariant(0.0f));
     ca->setEndValue(QVariant(1.0f));
 }
@@ -791,7 +791,7 @@ void QmlColorAnimation::prepare(QmlMetaProperty &p)
     else
         d->property = d->userProperty;
     d->fromSourced = false;
-    d->value.GfxValue::setValue(0.);
+    d->value.QmlTimeLineValue::setValue(0.);
     d->ca->setAnimValue(&d->value, QAbstractAnimation::KeepWhenStopped);
 }
 
@@ -808,7 +808,7 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
     Q_D(QmlColorAnimation);
     Q_UNUSED(direction);
 
-    struct NTransitionData : public GfxValue
+    struct NTransitionData : public QmlTimeLineValue
     {
         QmlStateActions actions;
         void write(QmlMetaProperty &property, const QColor &color)
@@ -820,7 +820,7 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
 
         void setValue(qreal v)
         {
-            GfxValue::setValue(v);
+            QmlTimeLineValue::setValue(v);
             for(int ii = 0; ii < actions.count(); ++ii) {
                 Action &action = actions[ii];
 
@@ -1362,7 +1362,7 @@ QmlNumericAnimation::~QmlNumericAnimation()
 void QmlNumericAnimationPrivate::init()
 {
     Q_Q(QmlNumericAnimation);
-    na = new GfxValueAnimator(q);
+    na = new QmlTimeLineValueAnimator(q);
     na->setStartValue(QVariant(0.0f));
     na->setEndValue(QVariant(1.0f));
 }
@@ -1600,7 +1600,7 @@ void QmlNumericAnimation::prepare(QmlMetaProperty &p)
     else
         d->property = d->userProperty;
     d->fromSourced = false;
-    d->value.GfxValue::setValue(0.);
+    d->value.QmlTimeLineValue::setValue(0.);
     d->na->setAnimValue(&d->value, QAbstractAnimation::KeepWhenStopped);
 }
 
@@ -1617,12 +1617,12 @@ void QmlNumericAnimation::transition(QmlStateActions &actions,
     Q_D(QmlNumericAnimation);
     Q_UNUSED(direction);
 
-    struct NTransitionData : public GfxValue
+    struct NTransitionData : public QmlTimeLineValue
     {
         QmlStateActions actions;
         void setValue(qreal v)
         {
-            GfxValue::setValue(v);
+            QmlTimeLineValue::setValue(v);
             for(int ii = 0; ii < actions.count(); ++ii) {
                 Action &action = actions[ii];
 
@@ -1951,7 +1951,7 @@ QmlVariantAnimation::~QmlVariantAnimation()
 void QmlVariantAnimationPrivate::init()
 {
     Q_Q(QmlVariantAnimation);
-    va = new GfxValueAnimator(q);
+    va = new QmlTimeLineValueAnimator(q);
     va->setStartValue(QVariant(0.0f));
     va->setEndValue(QVariant(1.0f));
 }
@@ -2157,7 +2157,7 @@ void QmlVariantAnimation::prepare(QmlMetaProperty &p)
         d->convertVariant(d->from.value, (QVariant::Type)d->property.propertyType());
 
     d->fromSourced = false;
-    d->value.GfxValue::setValue(0.);
+    d->value.QmlTimeLineValue::setValue(0.);
     d->va->setAnimValue(&d->value, QAbstractAnimation::KeepWhenStopped);
 }
 
@@ -2168,12 +2168,12 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
     Q_D(QmlVariantAnimation);
     Q_UNUSED(direction);
 
-    struct NTransitionData : public GfxValue
+    struct NTransitionData : public QmlTimeLineValue
     {
         QmlStateActions actions;
         void setValue(qreal v)
         {
-            GfxValue::setValue(v);
+            QmlTimeLineValue::setValue(v);
             for(int ii = 0; ii < actions.count(); ++ii) {
                 Action &action = actions[ii];
 

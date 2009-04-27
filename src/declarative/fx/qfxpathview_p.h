@@ -58,6 +58,7 @@
 #include "qfxitem_p.h"
 #include "qfxvisualitemmodel.h"
 #include "qml.h"
+#include "qmltimelinevalueproxy.h"
 #include "private/qmlanimation_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -115,7 +116,7 @@ public:
     qreal snapPos;
     qreal dragMargin;
     QmlTimeLine tl;
-    GfxValueProxy<QFxPathViewPrivate> moveOffset;
+    QmlTimeLineValueProxy<QFxPathViewPrivate> moveOffset;
     QmlTimeLineEvent fixupOffsetEvent;
     int firstIndex;
     int pathItems;

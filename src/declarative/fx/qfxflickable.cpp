@@ -48,7 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
-ElasticValue::ElasticValue(GfxValue &val)
+ElasticValue::ElasticValue(QmlTimeLineValue &val)
     : _value(val)
 {
     _to = _value.value();
