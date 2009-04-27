@@ -135,6 +135,9 @@ public:
     virtual bool visit(PropertyNameAndValueList *) { return true; }
     virtual void endVisit(PropertyNameAndValueList *) {}
 
+    virtual bool visit(NestedExpression *) { return true; }
+    virtual void endVisit(NestedExpression *) {}
+
     virtual bool visit(IdentifierPropertyName *) { return true; }
     virtual void endVisit(IdentifierPropertyName *) {}
 

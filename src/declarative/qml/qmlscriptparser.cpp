@@ -9,7 +9,6 @@
 #include "parser/javascriptnodepool_p.h"
 #include "parser/javascriptastvisitor_p.h"
 #include "parser/javascriptast_p.h"
-#include "parser/javascriptprettypretty_p.h"
 
 #include <QStack>
 #include <QtDebug>
@@ -60,7 +59,7 @@ public:
     ProcessAST(QmlScriptParser *parser);
     virtual ~ProcessAST();
 
-    void operator()(AST::Node *node);
+    void operator()(const QString &code, AST::Node *node);
 
 protected:
     Object *defineObjectBinding(int line,
@@ -97,10 +96,36 @@ protected:
 
     QString qualifiedNameId() const;
 
+    QString textAt(const AST::SourceLocation &loc) const
+    { return _contents.mid(loc.offset, loc.length); }
+
+    QString textAt(const AST::SourceLocation &first,
+                   const AST::SourceLocation &last) const
+    { return _contents.mid(first.offset, last.offset + last.length - first.offset); }
+
+    QString asString(AST::ExpressionNode *expr) const
+    {
+        if (! expr)
+            return QString();
+
+        return textAt(expr->firstSourceLocation(), expr->lastSourceLocation());
+    }
+
+    QString asString(AST::Statement *stmt) const
+    {
+        if (! stmt)
+            return QString();
+
+        QString s = textAt(stmt->firstSourceLocation(), stmt->lastSourceLocation());
+        s += QLatin1Char('\n');
+        return s;
+    }
+
 private:
     QmlScriptParser *_parser;
     StateStack _stateStack;
     QStringList _scope;
+    QString _contents;
 
     inline bool isSignalProperty(const QByteArray &propertyName) const {
         return (propertyName.length() >= 3 && propertyName.startsWith("on") &&
@@ -118,8 +143,9 @@ ProcessAST::~ProcessAST()
 {
 }
 
-void ProcessAST::operator()(AST::Node *node)
+void ProcessAST::operator()(const QString &code, AST::Node *node)
 {
+    _contents = code;
     accept(node);
 }
 
@@ -258,9 +284,7 @@ Object *ProcessAST::defineObjectBinding(int line,
                 if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(scriptBinding->statement)) {
                     script = getPrimitive("script", stmt->expression);
                 } else {
-                    QTextStream out(&script);
-                    PrettyPretty pp(out);
-                    pp(scriptBinding->statement);
+                    script = asString(scriptBinding->statement);
                 }
                 defineProperty(QLatin1String("script"), line, script);
             } else {
@@ -378,27 +402,25 @@ bool ProcessAST::visit(AST::UiObjectBinding *node)
 QString ProcessAST::getPrimitive(const QByteArray &propertyName, AST::ExpressionNode *expr)
 {
     QString primitive;
-    QTextStream out(&primitive);
-    PrettyPretty pp(out);
 
     if(isSignalProperty(propertyName)) {
-        pp(expr);
+        primitive = asString(expr);
     } else if (propertyName == "id" && expr && expr->kind == AST::Node::Kind_IdentifierExpression) {
-        primitive = AST::cast<AST::IdentifierExpression *>(expr)->name->asString();
-    } else if (expr->kind == AST::Node::Kind_StringLiteral) {
+        primitive = asString(expr);
+    } else if (AST::StringLiteral *lit = AST::cast<AST::StringLiteral *>(expr)) {
         // hack: emulate weird XML feature that string literals are not quoted.
         //This needs to be fixed in the qmlcompiler once xml goes away.
-        primitive = AST::cast<AST::StringLiteral *>(expr)->value->asString();
+        primitive = lit->value->asString();
     } else if (expr->kind == AST::Node::Kind_TrueLiteral
                || expr->kind == AST::Node::Kind_FalseLiteral
                || expr->kind == AST::Node::Kind_NumericLiteral
                ) {
-        pp(expr);
+        primitive = asString(expr);
     } else {
         // create a binding
-        out << "{";
-        pp(expr);
-        out << "}";
+        primitive += QLatin1Char('{');
+        primitive += asString(expr);
+        primitive += QLatin1Char('}');
     }
     return primitive;
 }
@@ -407,7 +429,6 @@ QString ProcessAST::getPrimitive(const QByteArray &propertyName, AST::Expression
 // UiObjectMember: UiQualifiedId T_COLON Statement ;
 bool ProcessAST::visit(AST::UiScriptBinding *node)
 {
-
     int propertyCount = 0;
     AST::UiQualifiedId *propertyName = node->qualifiedId;
     for (; propertyName; propertyName = propertyName->next){
@@ -417,17 +438,20 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
 
     Property *prop = currentProperty();
     QString primitive;
-    QTextStream out(&primitive);
-    PrettyPretty pp(out);
 
     if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(node->statement)) {
         primitive = getPrimitive(prop->name, stmt->expression);
     } else if (isSignalProperty(prop->name)) {
-        pp(node->statement);
+        if (AST::Block *block = AST::cast<AST::Block *>(node->statement)) {
+            const int start = block->lbraceToken.offset + block->rbraceToken.length;
+            primitive += _contents.mid(start, block->rbraceToken.offset - start);
+        } else {
+            primitive += asString(node->statement);
+        }
     } else { // do binding
-        out << '{';
-        pp(node->statement);
-        out << '}';
+        primitive += QLatin1Char('{');
+        primitive += asString(node->statement);
+        primitive += QLatin1Char('}');
     }
 
     Value *v = new Value;
@@ -468,16 +492,15 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
     }
 
     QString source;
-    QTextStream out(&source);
-    PrettyPretty pp(out);
-
-    pp(node->sourceElement);
 
     int line = 0;
-    if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement))
+    if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement)) {
         line = funDecl->functionToken.startLine;
-    else if (AST::VariableStatement *varStmt = AST::cast<AST::VariableStatement *>(node->sourceElement))
+        source = asString(funDecl);
+    } else if (AST::VariableStatement *varStmt = AST::cast<AST::VariableStatement *>(node->sourceElement)) {
+        // ignore variable declarations
         line = varStmt->declarationKindToken.startLine;
+    }
 
     Value *value = new Value;
     value->primitive = source;
@@ -538,7 +561,7 @@ bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
     }
 
     ProcessAST process(this);
-    process(parser.ast());
+    process(code, parser.ast());
 
     return true;
 }

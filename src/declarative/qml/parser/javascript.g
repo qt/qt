@@ -240,6 +240,7 @@ public:
       JavaScript::AST::SourceElements *SourceElements;
       JavaScript::AST::Statement *Statement;
       JavaScript::AST::StatementList *StatementList;
+      JavaScript::AST::Block *Block;
       JavaScript::AST::VariableDeclaration *VariableDeclaration;
       JavaScript::AST::VariableDeclarationList *VariableDeclarationList;
 
@@ -818,24 +819,36 @@ case $rule_number: {
 PrimaryExpression: T_LBRACE PropertyNameAndValueListOpt T_RBRACE ;
 /.
 case $rule_number: {
+  AST::ObjectLiteral *node = 0;
   if (sym(2).Node)
-    sym(1).Node = makeAstNode<AST::ObjectLiteral> (driver->nodePool(), sym(2).PropertyNameAndValueList->finish ());
+    node = makeAstNode<AST::ObjectLiteral> (driver->nodePool(),
+        sym(2).PropertyNameAndValueList->finish ());
   else
-    sym(1).Node = makeAstNode<AST::ObjectLiteral> (driver->nodePool());
+    node = makeAstNode<AST::ObjectLiteral> (driver->nodePool());
+  node->lbraceToken = loc(1);
+  node->lbraceToken = loc(3);
+  sym(1).Node = node;
 } break;
 ./
 
 PrimaryExpression: T_LBRACE PropertyNameAndValueList T_COMMA T_RBRACE ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::ObjectLiteral> (driver->nodePool(), sym(2).PropertyNameAndValueList->finish ());
+  AST::ObjectLiteral *node = makeAstNode<AST::ObjectLiteral> (driver->nodePool(),
+    sym(2).PropertyNameAndValueList->finish ());
+  node->lbraceToken = loc(1);
+  node->lbraceToken = loc(4);
+  sym(1).Node = node;
 } break;
 ./
 
 PrimaryExpression: T_LPAREN Expression T_RPAREN ;
 /.
 case $rule_number: {
-  sym(1) = sym(2);
+  AST::NestedExpression *node = makeAstNode<AST::NestedExpression>(driver->nodePool(), sym(2).Expression);
+  node->lparenToken = loc(1);
+  node->rparenToken = loc(3);
+  sym(1).Node = node;
 } break;
 ./
 
@@ -2360,7 +2373,7 @@ case $rule_number: {
 Catch: T_CATCH T_LPAREN T_IDENTIFIER T_RPAREN Block ;
 /.
 case $rule_number: {
-  AST::Catch *node = makeAstNode<AST::Catch> (driver->nodePool(), sym(3).sval, sym(5).Statement);
+  AST::Catch *node = makeAstNode<AST::Catch> (driver->nodePool(), sym(3).sval, sym(5).Block);
   node->catchToken = loc(1);
   node->lparenToken = loc(2);
   node->identifierToken = loc(3);
@@ -2372,7 +2385,7 @@ case $rule_number: {
 Finally: T_FINALLY Block ;
 /.
 case $rule_number: {
-  AST::Finally *node = makeAstNode<AST::Finally> (driver->nodePool(), sym(2).Statement);
+  AST::Finally *node = makeAstNode<AST::Finally> (driver->nodePool(), sym(2).Block);
   node->finallyToken = loc(1);
   sym(1).Node = node;
 } break;
@@ -2536,6 +2549,8 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
             tk.token = yytoken;
             tk.dval = yylval;
             tk.loc = yylloc;
+
+            yylloc.length = 0;
 
             const QString msg = QString::fromUtf8("Missing `;'");
 

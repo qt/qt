@@ -79,6 +79,14 @@ Statement *Statement::statementCast()
     return this;
 }
 
+void NestedExpression::accept0(Visitor *visitor)
+{
+    if (visitor->visit(this)) {
+        acceptChild(expression, visitor);
+    }
+    visitor->endVisit(this);
+}
+
 void ThisExpression::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {

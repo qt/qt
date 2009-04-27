@@ -217,6 +217,7 @@ public:
         Kind_VoidExpression,
         Kind_WhileStatement,
         Kind_WithStatement,
+        Kind_NestedExpression,
 
         Kind_UiArrayBinding,
         Kind_UiImport,
@@ -268,6 +269,9 @@ public:
     virtual ~ExpressionNode() {}
 
     virtual ExpressionNode *expressionCast();
+
+    virtual SourceLocation firstSourceLocation() const = 0;
+    virtual SourceLocation lastSourceLocation() const = 0;
 };
 
 class Statement: public Node
@@ -277,6 +281,32 @@ public:
     virtual ~Statement() {}
 
     virtual Statement *statementCast();
+
+    virtual SourceLocation firstSourceLocation() const = 0;
+    virtual SourceLocation lastSourceLocation() const = 0;
+};
+
+class NestedExpression: public ExpressionNode
+{
+public:
+    JAVASCRIPT_DECLARE_AST_NODE(NestedExpression)
+
+    NestedExpression(ExpressionNode *expression)
+        : expression(expression)
+    { kind = K; }
+
+    virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return lparenToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return rparenToken; }
+
+// attributes
+    ExpressionNode *expression;
+    SourceLocation lparenToken;
+    SourceLocation rparenToken;
 };
 
 class ThisExpression: public ExpressionNode
@@ -288,6 +318,12 @@ public:
     virtual ~ThisExpression() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return thisToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return thisToken; }
 
 // attributes
     SourceLocation thisToken;
@@ -305,6 +341,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return identifierToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return identifierToken; }
+
 // attributes
     JavaScriptNameIdImpl *name;
     SourceLocation identifierToken;
@@ -320,6 +362,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return nullToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return nullToken; }
+
 // attributes
     SourceLocation nullToken;
 };
@@ -333,6 +381,12 @@ public:
     virtual ~TrueLiteral() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return trueToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return trueToken; }
 
 // attributes
     SourceLocation trueToken;
@@ -348,6 +402,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return falseToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return falseToken; }
+
 // attributes
     SourceLocation falseToken;
 };
@@ -362,6 +422,12 @@ public:
     virtual ~NumericLiteral() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return literalToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return literalToken; }
 
 // attributes:
     double value;
@@ -380,6 +446,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return literalToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return literalToken; }
+
 // attributes:
     JavaScriptNameIdImpl *value;
     SourceLocation literalToken;
@@ -396,6 +468,12 @@ public:
     virtual ~RegExpLiteral() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return literalToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return literalToken; }
 
 // attributes:
     JavaScriptNameIdImpl *pattern;
@@ -424,6 +502,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return lbracketToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return rbracketToken; }
+
 // attributes
     ElementList *elements;
     Elision *elision;
@@ -447,8 +531,16 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return lbraceToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return rbraceToken; }
+
 // attributes
     PropertyNameAndValueList *properties;
+    SourceLocation lbraceToken;
+    SourceLocation rbraceToken;
 };
 
 class ElementList: public Node
@@ -624,6 +716,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return base->firstSourceLocation(); }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return rbracketToken; }
+
 // attributes
     ExpressionNode *base;
     ExpressionNode *expression;
@@ -644,7 +742,13 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
-// attributes
+    virtual SourceLocation firstSourceLocation() const
+    { return base->firstSourceLocation(); }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return identifierToken; }
+
+    // attributes
     ExpressionNode *base;
     JavaScriptNameIdImpl *name;
     SourceLocation dotToken;
@@ -664,7 +768,13 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
-// attributes
+    virtual SourceLocation firstSourceLocation() const
+    { return newToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return rparenToken; }
+
+    // attributes
     ExpressionNode *base;
     ArgumentList *arguments;
     SourceLocation newToken;
@@ -684,6 +794,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return newToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return expression->lastSourceLocation(); }
+
 // attributes
     ExpressionNode *expression;
     SourceLocation newToken;
@@ -701,6 +817,12 @@ public:
     virtual ~CallExpression() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return base->firstSourceLocation(); }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return rparenToken; }
 
 // attributes
     ExpressionNode *base;
@@ -755,6 +877,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return base->firstSourceLocation(); }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return incrementToken; }
+
 // attributes
     ExpressionNode *base;
     SourceLocation incrementToken;
@@ -772,6 +900,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return base->firstSourceLocation(); }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return decrementToken; }
+
 // attributes
     ExpressionNode *base;
     SourceLocation decrementToken;
@@ -787,6 +921,12 @@ public:
     virtual ~DeleteExpression() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return deleteToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return expression->lastSourceLocation(); }
 
 // attributes
     ExpressionNode *expression;
@@ -805,6 +945,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return voidToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return expression->lastSourceLocation(); }
+
 // attributes
     ExpressionNode *expression;
     SourceLocation voidToken;
@@ -821,6 +967,12 @@ public:
     virtual ~TypeOfExpression() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return typeofToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return expression->lastSourceLocation(); }
 
 // attributes
     ExpressionNode *expression;
@@ -839,6 +991,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return incrementToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return expression->lastSourceLocation(); }
+
 // attributes
     ExpressionNode *expression;
     SourceLocation incrementToken;
@@ -855,6 +1013,12 @@ public:
     virtual ~PreDecrementExpression() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return decrementToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return expression->lastSourceLocation(); }
 
 // attributes
     ExpressionNode *expression;
@@ -873,6 +1037,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return plusToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return expression->lastSourceLocation(); }
+
 // attributes
     ExpressionNode *expression;
     SourceLocation plusToken;
@@ -889,6 +1059,12 @@ public:
     virtual ~UnaryMinusExpression() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return minusToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return expression->lastSourceLocation(); }
 
 // attributes
     ExpressionNode *expression;
@@ -907,6 +1083,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return tildeToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return expression->lastSourceLocation(); }
+
 // attributes
     ExpressionNode *expression;
     SourceLocation tildeToken;
@@ -923,6 +1105,12 @@ public:
     virtual ~NotExpression() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return notToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return expression->lastSourceLocation(); }
 
 // attributes
     ExpressionNode *expression;
@@ -944,6 +1132,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return left->firstSourceLocation(); }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return right->lastSourceLocation(); }
+
 // attributes
     ExpressionNode *left;
     int op;
@@ -963,6 +1157,12 @@ public:
     virtual ~ConditionalExpression() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return expression->firstSourceLocation(); }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return ko->lastSourceLocation(); }
 
 // attributes
     ExpressionNode *expression;
@@ -984,6 +1184,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return left->firstSourceLocation(); }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return right->lastSourceLocation(); }
+
 // attributes
     ExpressionNode *left;
     ExpressionNode *right;
@@ -1002,7 +1208,13 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
-// attributes
+    virtual SourceLocation firstSourceLocation() const
+    { return lbraceToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return rbraceToken; }
+
+    // attributes
     StatementList *statements;
     SourceLocation lbraceToken;
     SourceLocation rbraceToken;
@@ -1053,6 +1265,12 @@ public:
     virtual ~VariableStatement() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return declarationKindToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return semicolonToken; }
 
 // attributes
     VariableDeclarationList *declarations;
@@ -1129,6 +1347,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return semicolonToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return semicolonToken; }
+
 // attributes
     SourceLocation semicolonToken;
 };
@@ -1144,6 +1368,12 @@ public:
     virtual ~ExpressionStatement() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return expression->firstSourceLocation(); }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return semicolonToken; }
 
 // attributes
     ExpressionNode *expression;
@@ -1162,6 +1392,17 @@ public:
     virtual ~IfStatement() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return ifToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    {
+        if (ko)
+            return ko->lastSourceLocation();
+
+        return ok->lastSourceLocation();
+    }
 
 // attributes
     ExpressionNode *expression;
@@ -1186,6 +1427,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return doToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return semicolonToken; }
+
 // attributes
     Statement *statement;
     ExpressionNode *expression;
@@ -1209,6 +1456,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return whileToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return statement->lastSourceLocation(); }
+
 // attributes
     ExpressionNode *expression;
     Statement *statement;
@@ -1229,6 +1482,12 @@ public:
     virtual ~ForStatement() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return forToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return statement->lastSourceLocation(); }
 
 // attributes
     ExpressionNode *initialiser;
@@ -1254,6 +1513,12 @@ public:
     virtual ~LocalForStatement() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return forToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return statement->lastSourceLocation(); }
 
 // attributes
     VariableDeclarationList *declarations;
@@ -1281,6 +1546,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return forToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return statement->lastSourceLocation(); }
+
 // attributes
     ExpressionNode *initialiser;
     ExpressionNode *expression;
@@ -1303,6 +1574,12 @@ public:
     virtual ~LocalForEachStatement() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return forToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return statement->lastSourceLocation(); }
 
 // attributes
     VariableDeclaration *declaration;
@@ -1327,6 +1604,12 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return continueToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return semicolonToken; }
+
 // attributes
     JavaScriptNameIdImpl *label;
     SourceLocation continueToken;
@@ -1346,7 +1629,13 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
-// attributes
+    virtual SourceLocation firstSourceLocation() const
+    { return breakToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return semicolonToken; }
+
+    // attributes
     JavaScriptNameIdImpl *label;
     SourceLocation breakToken;
     SourceLocation identifierToken;
@@ -1364,6 +1653,12 @@ public:
     virtual ~ReturnStatement() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return returnToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return semicolonToken; }
 
 // attributes
     ExpressionNode *expression;
@@ -1384,31 +1679,16 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return withToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return statement->lastSourceLocation(); }
+
 // attributes
     ExpressionNode *expression;
     Statement *statement;
     SourceLocation withToken;
-    SourceLocation lparenToken;
-    SourceLocation rparenToken;
-};
-
-class SwitchStatement: public Statement
-{
-public:
-    JAVASCRIPT_DECLARE_AST_NODE(SwitchStatement)
-
-    SwitchStatement(ExpressionNode *e, CaseBlock *b):
-        expression (e), block (b)
-        { kind = K; }
-
-    virtual ~SwitchStatement() {}
-
-    virtual void accept0(Visitor *visitor);
-
-// attributes
-    ExpressionNode *expression;
-    CaseBlock *block;
-    SourceLocation switchToken;
     SourceLocation lparenToken;
     SourceLocation rparenToken;
 };
@@ -1432,6 +1712,33 @@ public:
     CaseClauses *moreClauses;
     SourceLocation lbraceToken;
     SourceLocation rbraceToken;
+};
+
+class SwitchStatement: public Statement
+{
+public:
+    JAVASCRIPT_DECLARE_AST_NODE(SwitchStatement)
+
+    SwitchStatement(ExpressionNode *e, CaseBlock *b):
+        expression (e), block (b)
+        { kind = K; }
+
+    virtual ~SwitchStatement() {}
+
+    virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return switchToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return block->rbraceToken; }
+
+// attributes
+    ExpressionNode *expression;
+    CaseBlock *block;
+    SourceLocation switchToken;
+    SourceLocation lparenToken;
+    SourceLocation rparenToken;
 };
 
 class CaseClauses: public Node
@@ -1519,12 +1826,17 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return identifierToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return statement->lastSourceLocation(); }
+
 // attributes
     JavaScriptNameIdImpl *label;
     Statement *statement;
     SourceLocation identifierToken;
     SourceLocation colonToken;
-    SourceLocation semicolonToken;
 };
 
 class ThrowStatement: public Statement
@@ -1539,10 +1851,56 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
-// attributes
+    virtual SourceLocation firstSourceLocation() const
+    { return throwToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return semicolonToken; }
+
+    // attributes
     ExpressionNode *expression;
     SourceLocation throwToken;
     SourceLocation semicolonToken;
+};
+
+class Catch: public Node
+{
+public:
+    JAVASCRIPT_DECLARE_AST_NODE(Catch)
+
+    Catch(JavaScriptNameIdImpl *n, Block *stmt):
+        name (n), statement (stmt)
+        { kind = K; }
+
+    virtual ~Catch() {}
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    JavaScriptNameIdImpl *name;
+    Block *statement;
+    SourceLocation catchToken;
+    SourceLocation lparenToken;
+    SourceLocation identifierToken;
+    SourceLocation rparenToken;
+};
+
+class Finally: public Node
+{
+public:
+    JAVASCRIPT_DECLARE_AST_NODE(Finally)
+
+    Finally(Block *stmt):
+        statement (stmt)
+        { kind = K; }
+
+    virtual ~Finally() {}
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    Block *statement;
+    SourceLocation finallyToken;
 };
 
 class TryStatement: public Statement
@@ -1566,51 +1924,24 @@ public:
 
     virtual void accept0(Visitor *visitor);
 
+    virtual SourceLocation firstSourceLocation() const
+    { return tryToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    {
+        if (finallyExpression)
+            return finallyExpression->statement->rbraceToken;
+        else if (catchExpression)
+            return catchExpression->statement->rbraceToken;
+
+        return statement->lastSourceLocation();
+    }
+
 // attributes
     Statement *statement;
     Catch *catchExpression;
     Finally *finallyExpression;
     SourceLocation tryToken;
-};
-
-class Catch: public Node
-{
-public:
-    JAVASCRIPT_DECLARE_AST_NODE(Catch)
-
-    Catch(JavaScriptNameIdImpl *n, Statement *stmt):
-        name (n), statement (stmt)
-        { kind = K; }
-
-    virtual ~Catch() {}
-
-    virtual void accept0(Visitor *visitor);
-
-// attributes
-    JavaScriptNameIdImpl *name;
-    Statement *statement;
-    SourceLocation catchToken;
-    SourceLocation lparenToken;
-    SourceLocation identifierToken;
-    SourceLocation rparenToken;
-};
-
-class Finally: public Node
-{
-public:
-    JAVASCRIPT_DECLARE_AST_NODE(Finally)
-
-    Finally(Statement *stmt):
-        statement (stmt)
-        { kind = K; }
-
-    virtual ~Finally() {}
-
-    virtual void accept0(Visitor *visitor);
-
-// attributes
-    Statement *statement;
-    SourceLocation finallyToken;
 };
 
 class FunctionExpression: public ExpressionNode
@@ -1625,6 +1956,12 @@ public:
     virtual ~FunctionExpression() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return functionToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return rbraceToken; }
 
 // attributes
     JavaScriptNameIdImpl *name;
@@ -1810,6 +2147,12 @@ public:
     virtual ~DebuggerStatement() {}
 
     virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return debuggerToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return semicolonToken; }
 
 // attributes
     SourceLocation debuggerToken;

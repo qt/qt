@@ -97,6 +97,7 @@ public:
       JavaScript::AST::SourceElements *SourceElements;
       JavaScript::AST::Statement *Statement;
       JavaScript::AST::StatementList *StatementList;
+      JavaScript::AST::Block *Block;
       JavaScript::AST::VariableDeclaration *VariableDeclaration;
       JavaScript::AST::VariableDeclarationList *VariableDeclarationList;
 

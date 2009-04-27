@@ -384,18 +384,30 @@ case 39: {
 } break;
 
 case 40: {
+  AST::ObjectLiteral *node = 0;
   if (sym(2).Node)
-    sym(1).Node = makeAstNode<AST::ObjectLiteral> (driver->nodePool(), sym(2).PropertyNameAndValueList->finish ());
+    node = makeAstNode<AST::ObjectLiteral> (driver->nodePool(),
+        sym(2).PropertyNameAndValueList->finish ());
   else
-    sym(1).Node = makeAstNode<AST::ObjectLiteral> (driver->nodePool());
+    node = makeAstNode<AST::ObjectLiteral> (driver->nodePool());
+  node->lbraceToken = loc(1);
+  node->lbraceToken = loc(3);
+  sym(1).Node = node;
 } break;
 
 case 41: {
-  sym(1).Node = makeAstNode<AST::ObjectLiteral> (driver->nodePool(), sym(2).PropertyNameAndValueList->finish ());
+  AST::ObjectLiteral *node = makeAstNode<AST::ObjectLiteral> (driver->nodePool(),
+    sym(2).PropertyNameAndValueList->finish ());
+  node->lbraceToken = loc(1);
+  node->lbraceToken = loc(4);
+  sym(1).Node = node;
 } break;
 
 case 42: {
-  sym(1) = sym(2);
+  AST::NestedExpression *node = makeAstNode<AST::NestedExpression>(driver->nodePool(), sym(2).Expression);
+  node->lparenToken = loc(1);
+  node->rparenToken = loc(3);
+  sym(1).Node = node;
 } break;
 
 case 43: {
@@ -1339,7 +1351,7 @@ case 273: {
 } break;
 
 case 274: {
-  AST::Catch *node = makeAstNode<AST::Catch> (driver->nodePool(), sym(3).sval, sym(5).Statement);
+  AST::Catch *node = makeAstNode<AST::Catch> (driver->nodePool(), sym(3).sval, sym(5).Block);
   node->catchToken = loc(1);
   node->lparenToken = loc(2);
   node->identifierToken = loc(3);
@@ -1348,7 +1360,7 @@ case 274: {
 } break;
 
 case 275: {
-  AST::Finally *node = makeAstNode<AST::Finally> (driver->nodePool(), sym(2).Statement);
+  AST::Finally *node = makeAstNode<AST::Finally> (driver->nodePool(), sym(2).Block);
   node->finallyToken = loc(1);
   sym(1).Node = node;
 } break;
@@ -1450,6 +1462,8 @@ case 293: {
             tk.token = yytoken;
             tk.dval = yylval;
             tk.loc = yylloc;
+
+            yylloc.length = 0;
 
             const QString msg = QString::fromUtf8("Missing `;'");
 

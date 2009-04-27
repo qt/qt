@@ -140,6 +140,7 @@ class SourceElement;
 class FunctionSourceElement;
 class StatementSourceElement;
 class DebuggerStatement;
+class NestedExpression;
 
 // ui elements
 class UiProgram;
