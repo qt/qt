@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include "gfxtimeline.h"
 #include "qfxitem_p.h"
 #if defined(QFX_RENDER_OPENGL)
 #include "gltexture.h"

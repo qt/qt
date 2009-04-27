@@ -39,19 +39,17 @@
 **
 ****************************************************************************/
 
-#include "gfxtimeline.h"
+#include "qmltimeline.h"
 #include <QDebug>
 #include <QMutex>
 #include <QThread>
 #include <QWaitCondition>
 #include <QEvent>
 #include <QCoreApplication>
-#include "gfxeasing.h"
+#include <QEasingCurve>
 #include <QTime>
 
 QT_BEGIN_NAMESPACE
-
-#define TIMETICK 5
 
 //
 // Timeline stuff
@@ -84,7 +82,7 @@ struct QmlTimeLinePrivate
         };
         Op() {}
         Op(Type t, int l, qreal v, qreal v2, int o, 
-           const GfxEvent &ev = GfxEvent(), const GfxEasing &es = GfxEasing())
+           const GfxEvent &ev = GfxEvent(), const QEasingCurve &es = QEasingCurve())
             : type(t), length(l), value(v), value2(v2), order(o), event(ev),
               easing(es) {}
         Op(const Op &o)
@@ -104,7 +102,7 @@ struct QmlTimeLinePrivate
 
         int order;
         GfxEvent event;
-        GfxEasing easing;
+        QEasingCurve easing;
     };
     struct TimeLine
     {
@@ -208,13 +206,12 @@ qreal QmlTimeLinePrivate::value(const Op &op, int time, qreal base, bool *change
             } else if(time == (op.length)) {
                 return op.value;
             } else {
-                if(op.easing.isLinear()) {
-                    qreal delta = op.value - base;
-                    qreal pTime = (qreal)(time) / (qreal)op.length;
+                qreal delta = op.value - base;
+                qreal pTime = (qreal)(time) / (qreal)op.length;
+                if(op.easing.type() == QEasingCurve::Linear)
                     return base + delta * pTime;
-                } else {
-                    return op.easing.valueAt(time, base, op.value, op.length);
-                }
+                else
+                    return base + delta * op.easing.valueForProgress(pTime);
             }
         case Op::MoveBy:
             if(time == 0) {
@@ -222,13 +219,12 @@ qreal QmlTimeLinePrivate::value(const Op &op, int time, qreal base, bool *change
             } else if(time == (op.length)) {
                 return base + op.value;
             } else {
-                if(op.easing.isLinear()) {
-                    qreal delta = op.value;
-                    qreal pTime = (qreal)(time) / (qreal)op.length;
+                qreal delta = op.value;
+                qreal pTime = (qreal)(time) / (qreal)op.length;
+                if(op.easing.type() == QEasingCurve::Linear)
                     return base + delta * pTime;
-                } else {
-                    return op.easing.valueAt(time, base, base + op.value, op.length);
-                }
+                else
+                    return base + delta * op.easing.valueForProgress(pTime);
             }
         case Op::Accel:
             if(time == 0) {
@@ -260,6 +256,7 @@ qreal QmlTimeLinePrivate::value(const Op &op, int time, qreal base, bool *change
 }
 
 /*!
+    \internal
     \class QmlTimeLine
     \ingroup group_animation
     \brief The QmlTimeLine class provides a timeline for controlling animations.
@@ -469,7 +466,7 @@ void QmlTimeLine::move(GfxValue &gfxValue, qreal destination, int time)
     Change the \a gfxValue from its current value to the given \a destination
     value over \a time milliseconds using the \a easing curve.
  */
-void QmlTimeLine::move(GfxValue &gfxValue, qreal destination, const GfxEasing &easing, int time)
+void QmlTimeLine::move(GfxValue &gfxValue, qreal destination, const QEasingCurve &easing, int time)
 {
     if(time <= 0) return;
     QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Move, time, destination, 0.0f, d->order++, GfxEvent(), easing);
@@ -491,7 +488,7 @@ void QmlTimeLine::moveBy(GfxValue &gfxValue, qreal change, int time)
     Change the \a gfxValue from its current value by the \a change amount over
     \a time milliseconds using the \a easing curve.
  */
-void QmlTimeLine::moveBy(GfxValue &gfxValue, qreal change, const GfxEasing &easing, int time)
+void QmlTimeLine::moveBy(GfxValue &gfxValue, qreal change, const QEasingCurve &easing, int time)
 {
     if(time <= 0) return;
     QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::MoveBy, time, change, 0.0f, d->order++, GfxEvent(), easing);

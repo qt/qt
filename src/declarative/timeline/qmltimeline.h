@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef GFXTIMELINE_H
-#define GFXTIMELINE_H
+#ifndef QMLTIMELINE_H
+#define QMLTIMELINE_H
 
 #include <QObject>
 #include <qfxglobal.h>
@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class GfxEasing;
+class QEasingCurve;
 class GfxValue;
 class GfxEvent;
 struct QmlTimeLinePrivate;
@@ -77,9 +77,9 @@ public:
     int accelDistance(GfxValue &, qreal velocity, qreal distance);
 
     void move(GfxValue &, qreal destination, int time = 500);
-    void move(GfxValue &, qreal destination, const GfxEasing &, int time = 500);
+    void move(GfxValue &, qreal destination, const QEasingCurve &, int time = 500);
     void moveBy(GfxValue &, qreal change, int time = 500);
-    void moveBy(GfxValue &, qreal change, const GfxEasing &, int time = 500);
+    void moveBy(GfxValue &, qreal change, const QEasingCurve &, int time = 500);
 
     void sync();
     void setSyncPoint(int);

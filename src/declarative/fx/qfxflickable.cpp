@@ -43,7 +43,6 @@
 #include "qfxflickable_p.h"
 
 #include <QGraphicsSceneMouseEvent>
-#include <gfxeasing.h>
 #include <QPointer>
 #include <QTimer>
 
@@ -128,11 +127,11 @@ void QFxFlickablePrivate::fixupX()
     vTime = _tl.time();
 
     if(_moveX.value() > q->minXExtent() || q->maxXExtent() > 0) {
-        _tl.move(_moveX, q->minXExtent(), GfxEasing(GfxEasing::InOutQuad), 200);
+        _tl.move(_moveX, q->minXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         flicked = false;
         //emit flickingChanged();
     } else if(_moveX.value() < q->maxXExtent()) {
-        _tl.move(_moveX,  q->maxXExtent(), GfxEasing(GfxEasing::InOutQuad), 200);
+        _tl.move(_moveX,  q->maxXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         flicked = false;
         //emit flickingChanged();
     }
@@ -147,10 +146,10 @@ void QFxFlickablePrivate::fixupY()
     vTime = _tl.time();
 
     if(_moveY.value() > q->minYExtent() || (q->maxYExtent() > q->minYExtent())) {
-        _tl.move(_moveY, q->minYExtent(), GfxEasing(GfxEasing::InOutQuad), 200);
+        _tl.move(_moveY, q->minYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else if(_moveY.value() < q->maxYExtent()) {
-        _tl.move(_moveY,  q->maxYExtent(), GfxEasing(GfxEasing::InOutQuad), 200);
+        _tl.move(_moveY,  q->maxYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else {
         flicked = false;

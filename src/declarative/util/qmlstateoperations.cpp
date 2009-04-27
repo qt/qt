@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include <private/qobject_p.h>
-#include <gfxeasing.h>
 #include <qml.h>
 #include <QtDeclarative/qmlcontext.h>
 #include "qmlbindablevalue.h"

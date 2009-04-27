@@ -41,6 +41,9 @@
 
 #ifndef GFXVALUEPROXY_H
 #define GFXVALUEPROXY_H
+
+#include "qmltimeline.h"
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE

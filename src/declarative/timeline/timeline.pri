@@ -1,9 +1,7 @@
 SOURCES +=  \
-            timeline/gfxeasing.cpp \
-            timeline/gfxtimeline.cpp \
+            timeline/qmltimeline.cpp \
 
 HEADERS += \ 
-            timeline/gfxeasing.h \
-            timeline/gfxtimeline.h \
+            timeline/qmltimeline.h \
             timeline/gfxvalueproxy.h \
 
