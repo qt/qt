@@ -2070,7 +2070,7 @@ int QMetaProperty::propertyIndex() const
 {
     if (!mobj)
         return -1;
-    return ((handle - priv(mobj->d.data)->propertyData) / 3) + mobj->propertyOffset();
+    return idx + mobj->propertyOffset();
 }
 
 /*!
