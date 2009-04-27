@@ -4032,27 +4032,30 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
     case QEvent::Gesture: {
         QWidget *w = static_cast<QWidget*>(receiver);
-        QGestureEvent *g = static_cast<QGestureEvent*>(e);
-        bool eventAccepted = g->isAccepted();
-        // Q_ASSERT(g->gesture() != 0);
-        // const QGesture &gesture = *g->gesture();
-        QPoint relPos(0,0);
+        QGestureEvent *ge = static_cast<QGestureEvent*>(e);
+        QSet<QString> eventGestures;
+        foreach(const QString &gesture, ge->gestureTypes())
+            eventGestures << gesture;
+        bool eventAccepted = ge->isAccepted();
+
+        QPoint offset;
         while (w) {
-            // QGesture qge(gesture.gestureType(), gesture.startPos()+relPos, gesture.lastPos()+relPos,
-            //              gesture.currentPos()+relPos, gesture.direction(), gesture.rect().translated(relPos),
-            //              gesture.hotSpot()+relPos, gesture.state(), gesture.startTime());
-            // QGestureEvent ge(&qge, false);
-            // ### TODO: fix widget-relative positions in gesture event.
-            QGestureEvent ge = *g;
-            ge.spont = g->spontaneous();
-            res = d->notify_helper(w, w == receiver ? g : &ge);
-            g->spont = false;
-            eventAccepted = (w == receiver ? g : &ge)->isAccepted();
-            if (res && eventAccepted)
-                break;
+            QSet<int> widgetGestures = w->d_func()->gestures;
+            foreach(int gestureId, widgetGestures) {
+                if (eventGestures.contains(QGestureManager::instance()->gestureNameFromId(gestureId))) {
+                    foreach(QGesture *gesture, ge->gestures())
+                        gesture->translate(offset);
+                    offset = QPoint();
+                    res = d->notify_helper(w, ge);
+                    ge->spont = false;
+                    eventAccepted = ge->isAccepted();
+                    if (res && eventAccepted)
+                        break;
+                }
+            }
             if (w->isWindow())
                 break;
-            relPos += w->pos();
+            offset += w->pos();
             w = w->parentWidget();
         }
         break;

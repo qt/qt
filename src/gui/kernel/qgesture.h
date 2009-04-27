@@ -101,6 +101,7 @@ protected:
 
 private:
     friend class QGestureManager;
+    friend class QApplication;
     friend class QGestureRecognizerPan;
     friend class QDoubleTapGestureRecognizer;
     friend class QTapAndHoldGestureRecognizer;

@@ -482,28 +482,7 @@ void QGestureManager::recognizerStateChanged(QGestureRecognizer::Result result)
 
 bool QGestureManager::sendGestureEvent(QWidget *receiver, QGestureEvent *event)
 {
-    QSet<QString> eventGestures;
-    foreach(const QString &gesture, event->gestureTypes())
-        eventGestures << gesture;
-
-    QPoint offset;
-    bool found = false;
-    while (receiver) {
-        QSet<int> widgetGestures = receiver->d_func()->gestures;
-        foreach(int gestureId, widgetGestures) {
-            if (eventGestures.contains(gestureNameFromId(gestureId))) {
-                found = true;
-                break;
-            }
-        }
-        if (found)
-            break;
-        offset += receiver->pos();
-        receiver = receiver->parentWidget();
-    }
-    foreach(QGesture *gesture, event->gestures())
-        gesture->translate(offset);
-    return receiver ? qt_sendSpontaneousEvent(receiver, event) : false;
+    return qt_sendSpontaneousEvent(receiver, event);
 }
 
 int QGestureManager::eventDeliveryDelay() const
