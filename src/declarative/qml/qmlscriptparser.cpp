@@ -240,177 +240,38 @@ Object *ProcessAST::defineObjectBinding(int line,
                                      const QString &objectType,
                                      AST::UiObjectInitializer *initializer)
 {
-#if 0
     if (objectType == QLatin1String("Connection")) {
 
+        Object *obj = defineObjectBinding_helper(line, 0, QLatin1String("Connection"));
+
+        _stateStack.pushObject(obj);
+
         AST::UiObjectMemberList *it = initializer->members;
-
-        QString sender;
-        QString signal;
-        QString script;
-
         for (; it; it = it->next) {
             AST::UiScriptBinding *scriptBinding = AST::cast<AST::UiScriptBinding *>(it->member);
             if (! scriptBinding)
                 continue;
 
-            QString s;
-            QTextStream out(&s);
-            PrettyPretty pp(out);
-
             QString propertyName = asString(scriptBinding->qualifiedId);
-            if (propertyName == QLatin1String("signal")) {
-                // ## TODO verify that this is a function call statement and nothing else.
+            if (propertyName == QLatin1String("script")) {
+                QString script;
                 if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(scriptBinding->statement)) {
-                    pp(stmt->expression);
-                    int dot = s.lastIndexOf(QLatin1Char('.'));
-                    if (dot >= 0) {
-                        sender = s.left(dot);
-                        signal = s.mid(dot+1);
-                    } else {
-                        // ### TODO generate error
-                    }
+                    script = getPrimitive("script", stmt->expression);
                 } else {
-                    // ### TODO generate error
-                }
-
-            } else if (propertyName == QLatin1String("onSignal")) {
-                if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(scriptBinding->statement)) {
-                    script = getPrimitive("onSignal", stmt->expression);
-                } else {
+                    QTextStream out(&script);
+                    PrettyPretty pp(out);
                     pp(scriptBinding->statement);
-                    script = s;
                 }
+                defineProperty(QLatin1String("script"), line, script);
             } else {
-                //### TODO generate error
+                accept(it->member);
             }
         }
-        Object *obj = defineObjectBinding_helper(line,
-                                                 0,
-                                                 QLatin1String("Connection"));
 
-        _stateStack.pushObject(obj);
-        if (!sender.isEmpty())
-            defineProperty(QLatin1String("sender"), line, QLatin1Char('{') + sender + QLatin1Char('}'));
-        if (!script.isEmpty())
-            defineProperty(QLatin1String("script"), line, script);
-        if (!signal.isEmpty())
-            defineProperty(QLatin1String("signal"), line, signal);
         _stateStack.pop(); // object
 
         return obj;
-
-    } else if (objectType == QLatin1String("PropertyChangeSet")) {
-
-        AST::UiObjectMemberList *it = initializer->members;
-        for (; it; it = it->next) {
-            AST::UiScriptBinding *scriptBinding = AST::cast<AST::UiScriptBinding *>(it->member);
-            if (!scriptBinding)
-                continue; // ### TODO generate error
-
-
-            QString target;
-            QString property;
-            QString value;
-
-            int propertyCount = 0;
-            AST::UiQualifiedId *propertyName = scriptBinding->qualifiedId;
-            for (; propertyName; propertyName = propertyName->next){
-                if (propertyName->next) {
-                    if (!target.isEmpty())
-                        target += QLatin1Char('.');
-                    target += propertyName->name->asString();
-                } else {
-                    property = propertyName->name->asString();
-                }
-                ++propertyCount;
-            }
-
-            if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(scriptBinding->statement)) {
-                value = getPrimitive(property.toLatin1(), stmt->expression);
-            } else {
-                // #### TODO generate error
-            }
-
-            Object *obj = defineObjectBinding_helper(line,
-                                                     0,
-                                                     QLatin1String("SetProperty"));
-
-            _stateStack.pushObject(obj);
-            if (!target.isEmpty())
-                defineProperty(QLatin1String("target"), scriptBinding->colonToken.startLine, QLatin1Char('{') + target + QLatin1Char('}'));
-            if (!property.isEmpty())
-                defineProperty(QLatin1String("property"), scriptBinding->colonToken.startLine, property);
-            if (!value.isEmpty())
-                defineProperty(QLatin1String("value"), scriptBinding->colonToken.startLine, value);
-            _stateStack.pop(); // object
-
-        }
-
-        return 0;
-    } else if (objectType == QLatin1String("ParentChangeSet")) {
-
-        AST::UiObjectMemberList *it = initializer->members;
-        for (; it; it = it->next) {
-            AST::UiScriptBinding *scriptBinding = AST::cast<AST::UiScriptBinding *>(it->member);
-            if (!scriptBinding)
-                continue; // ### TODO generate error
-
-
-            QString target;
-            QString property;
-            QString parent;
-
-            int propertyCount = 0;
-            AST::UiQualifiedId *propertyName = scriptBinding->qualifiedId;
-            for (; propertyName; propertyName = propertyName->next){
-                if (propertyName->next) {
-                    if (!target.isEmpty())
-                        target += QLatin1Char('.');
-                    target += propertyName->name->asString();
-                } else {
-                    property = propertyName->name->asString();
-                }
-                ++propertyCount;
-            }
-
-            if (property != QLatin1String("parent")) {
-                // ### TODO generate error
-            } else {
-
-                if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(scriptBinding->statement)) {
-                    parent = getPrimitive(property.toLatin1(), stmt->expression);
-                } else {
-                    // #### TODO generate error
-                }
-
-                Object *obj = defineObjectBinding_helper(line,
-                                                         0,
-                                                         QLatin1String("ParentChange"));
-
-                _stateStack.pushObject(obj);
-                if (!target.isEmpty())
-                    defineProperty(QLatin1String("target"), scriptBinding->colonToken.startLine, QLatin1Char('{') + target + QLatin1Char('}'));
-                if (!parent.isEmpty())
-                    defineProperty(QLatin1String("parent"), scriptBinding->colonToken.startLine, parent);
-                _stateStack.pop(); // object
-            }
-
-        }
-
-        return 0;
-    } else if(!currentProperty() && objectType == QLatin1String("State")) {
-        _stateStack.pushProperty(QLatin1String("states"), line);
-        Object *obj = defineObjectBinding_helper(line, 0, objectType, initializer);
-        _stateStack.pop();
-        return obj;
-    } else if (!currentProperty() && objectType == QLatin1String("Transition")) {
-        _stateStack.pushProperty(QLatin1String("transitions"), line);
-        Object *obj = defineObjectBinding_helper(line, 0, objectType, initializer);
-        _stateStack.pop();
-        return obj;
     }
-#endif
 
     return defineObjectBinding_helper(line, qualifiedId, objectType, initializer);
 }

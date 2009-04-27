@@ -6,7 +6,7 @@
 #include <QtCore/QDebug>
 
 
-
+static bool optionInPlace = false;
 
 class Reader
 {
@@ -34,8 +34,16 @@ public:
         loop();
 
         out.flush();
-        QTextStream print(stdout);
-        print << outString;
+
+        if (! optionInPlace) {
+            QTextStream print(stdout);
+            print << outString;
+        }
+    }
+
+    QString output() const
+    {
+        return outString;
     }
 
     void comment()
@@ -100,7 +108,7 @@ public:
             startSetProperty();
         else if (false && xml.name() == "ParentChange")
             startParentChange();
-        else if (false && xml.name() == "Connection")
+        else if (true && xml.name() == "Connection")
             startConnection();
         else if (false && xml.name() == "Script")
             startScript();
@@ -350,10 +358,32 @@ public:
         possiblyRemoveBraces(&sender);
         out << depthString() << "Connection {" << endl;
         ++depth;
-        out << depthString() << "signal: " << sender + "." + xml.attributes().value("signal").toString() << endl;
-        out << depthString() << "onSignal: { " << xml.attributes().value("script").toString() << " }" << endl;
-        --depth;
-        out << depthString() << "}" << endl;
+        if (! sender.isEmpty())
+            out << depthString() << "sender: " << sender << endl;
+        if (xml.attributes().hasAttribute("signal"))
+            out << depthString() << "signal: \"" << xml.attributes().value("signal").toString() << '"' << endl;
+        if (xml.attributes().hasAttribute("script")) {
+            out << depthString() << "script: { " << xml.attributes().value("script").toString() << " }" << endl;
+            --depth;
+            out << depthString() << "}" << endl;
+        } else {
+            QString text;
+            while (!xml.atEnd()) {
+                xml.readNext();
+                if (xml.tokenType() == QXmlStreamReader::EndElement)
+                    break;
+                else if (xml.tokenType() == QXmlStreamReader::Characters)
+                    text.append(xml.text());
+            }
+
+            out << depthString() << "script: {" << endl;
+            foreach (QString line, text.split(QLatin1Char('\n'))) {
+                out << depthString() << line << endl;
+            }
+            out << depthString() << "}" << endl;
+            --depth;
+            out << depthString() << "}" << endl;
+        }
         emptyLoop();
     }
 
@@ -409,17 +439,42 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    if (argc != 2) {
-        qWarning() << "Usage: qmlconf filename";
+    QStringList args = a.arguments();
+    args.removeFirst();
+
+again:
+    if (args.isEmpty()) {
+        qWarning() << "Usage: qmlconf [-i] filename";
         exit(1);
     }
 
-    QFile file(argv[1]);
-    if (file.open(QIODevice::ReadOnly)) {
-        Reader r(&file);
+    if (args.first() == QLatin1String("-i")) {
+        optionInPlace = true;
+        args.removeFirst();
+        goto again;
     }
 
+    const QString fileName = args.first();
 
+    QFile file(fileName);
+    if (! file.open(QIODevice::ReadOnly)) {
+        qWarning() << "qmlconv: no input file";
+        exit(1);
+    }
+
+    Reader r(&file);
     file.close();
+
+    if (optionInPlace) {
+        if (! file.open(QFile::WriteOnly)) {
+            qWarning() << "qmlconv: cannot open file" << qPrintable(fileName);
+            exit(1);
+        }
+
+        QTextStream out(&file);
+        out << r.output();
+        file.close();
+    }
+
     return 0;
 }
