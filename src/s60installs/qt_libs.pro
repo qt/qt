@@ -42,11 +42,9 @@ symbian: {
     #ENDIF      
 
     qtlibraries.path = /sys/bin
-    qtlibraries.depends = "(0x20009a80), 1, 5, 0, {\"Symbian OS PIPS\"}"
+    qtlibraries.depends = "(0x20013851), 1, 5, 1, {\"PIPS Installer\"}"
     contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
-        qtlibraries.depends += "(0x200110CB), 1, 5, 0, {\"Open C LIBSSL Common\"}"
-        qtlibraries.depends += "(0x10281f34), 1, 5, 0, {\"Open C LIBSSL\"}"
-        qtlibraries.depends += "(0x2001B28B), 1, 5, 0, {\"OpenC LIBZ Support Files\"}"
+        qtlibraries.depends += "(0x200110CB), 1, 5, 1, {\"Open C LIBSSL Common\"}"
     }
     contains(QT_CONFIG, stl) {
         qtlibraries.depends += "(0x2000F866), 1, 0, 0, {\"Standard C++ Library Common\"}"
