@@ -56,10 +56,8 @@ class QFxHighlightFilterPrivate
 {
 public:
     QFxHighlightFilterPrivate()
-        : ctxt(QmlContext::activeContext()),
-          xOffset(0), yOffset(0), tiled(false) {}
+        : xOffset(0), yOffset(0), tiled(false) {}
 
-    QmlContext *ctxt;
     QString source;
     QUrl url;
     int xOffset;
@@ -147,12 +145,12 @@ void QFxHighlightFilter::setSource(const QString &f)
     if(!d->source.isEmpty())
         QFxPixmap::cancelGet(d->url, this, SLOT(imageLoaded()));
     d->source = f;
-    d->url = QmlContext::activeContext()->resolvedUrl(f);
+    d->url = qmlContext(this)->resolvedUrl(f);
 #if defined(QFX_RENDER_OPENGL2)
     d->tex.clear();
 #endif
     if(!f.isEmpty())
-        QFxPixmap::get(d->ctxt->engine(), d->url, this, SLOT(imageLoaded()));
+        QFxPixmap::get(qmlEngine(this), d->url, this, SLOT(imageLoaded()));
     else
         emit sourceChanged(d->source);
 }

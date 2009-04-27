@@ -58,6 +58,7 @@
 #include "qfxitem_p.h"
 #include "qfxvisualitemmodel.h"
 #include "qml.h"
+#include "qmltimelinevalueproxy.h"
 #include "private/qmlanimation_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -79,7 +80,7 @@ public:
         , firstIndex(0), pathItems(-1), pathOffset(0), model(0)
         , moveReason(Other)
     {
-        fixupOffsetEvent = GfxEvent::gfxEvent<QFxPathViewPrivate, &QFxPathViewPrivate::fixOffset>(&moveOffset, this);
+        fixupOffsetEvent = QmlTimeLineEvent::timeLineEvent<QFxPathViewPrivate, &QFxPathViewPrivate::fixOffset>(&moveOffset, this);
     }
 
     void init()
@@ -115,8 +116,8 @@ public:
     qreal snapPos;
     qreal dragMargin;
     QmlTimeLine tl;
-    GfxValueProxy<QFxPathViewPrivate> moveOffset;
-    GfxEvent fixupOffsetEvent;
+    QmlTimeLineValueProxy<QFxPathViewPrivate> moveOffset;
+    QmlTimeLineEvent fixupOffsetEvent;
     int firstIndex;
     int pathItems;
     int pathOffset;

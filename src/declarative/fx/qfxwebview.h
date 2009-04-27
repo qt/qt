@@ -92,8 +92,10 @@ class Q_DECLARATIVE_EXPORT QFxWebView : public QFxItem
     Q_PROPERTY(int idealHeight READ idealHeight WRITE setIdealHeight NOTIFY idealHeightChanged)
     Q_PROPERTY(QString url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(bool smooth READ smooth WRITE setSmooth)
-    Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged())
+    Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
+
     Q_PROPERTY(bool interactive READ interactive WRITE setInteractive NOTIFY interactiveChanged)
+
     Q_PROPERTY(int cacheSize READ cacheSize WRITE setCacheSize)
 
     Q_PROPERTY(QObject* reload READ reloadAction)

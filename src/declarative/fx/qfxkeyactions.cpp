@@ -908,8 +908,7 @@ void QFxKeyActions::keyPressEvent(QKeyEvent *event)
 {
     Qt::Key key = (Qt::Key)event->key();
     if(d->enabled && d->key(key)) {
-        QmlExpression b(itemContext(), d->action(key), 
-                                this, false);
+        QmlExpression b(qmlContext(this), d->action(key), this, false);
         b.value();
         event->accept();
     } else {

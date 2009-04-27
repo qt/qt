@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include <gfxeasing.h>
 #include "qmltransition.h"
 #include "qmlstategroup.h"
 #include "qmlstate_p.h"

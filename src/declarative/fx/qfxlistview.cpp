@@ -43,7 +43,6 @@
 #include "qmlfollow.h"
 #include "qlistmodelinterface.h"
 #include "qfxvisualitemmodel.h"
-#include "gfxeasing.h"
 #include "qfxlistview.h"
 #include <qmlexpression.h>
 
@@ -395,7 +394,7 @@ FxListItem *QFxListViewPrivate::createItem(int modelIndex)
         listItem->index = modelIndex;
         // initialise attached properties
         if (!sectionExpression.isEmpty()) {
-            QmlExpression e(listItem->item->itemContext(), sectionExpression, q);
+            QmlExpression e(qmlContext(listItem->item), sectionExpression, q);
             e.setTrackChange(false);
             listItem->attached->m_section = e.value().toString();
             if (modelIndex > 0) {
@@ -581,7 +580,7 @@ void QFxListViewPrivate::createHighlight()
     if (currentItem) {
         QFxItem *item = 0;
         if (highlightComponent) {
-            QmlContext *highlightContext = new QmlContext(q->itemContext());
+            QmlContext *highlightContext = new QmlContext(qmlContext(q));
             QObject *nobj = highlightComponent->create(highlightContext);
             if (nobj) {
                 highlightContext->setParent(nobj);
@@ -749,7 +748,7 @@ void QFxListViewPrivate::fixupY()
         if (currentItem) {
             moveReason = Mouse;
             _tl.clear();
-            _tl.move(_moveY, -(currentItem->position() - snapPos), GfxEasing(GfxEasing::InOutQuad), 200);
+            _tl.move(_moveY, -(currentItem->position() - snapPos), QEasingCurve(QEasingCurve::InOutQuad), 200);
         }
     } else if (currItemMode == QFxListView::Snap) {
         moveReason = Mouse;
@@ -761,7 +760,7 @@ void QFxListViewPrivate::fixupY()
             else if (pos < -q->minYExtent())
                 pos = -q->minYExtent();
             _tl.clear();
-            _tl.move(_moveY, -(pos), GfxEasing(GfxEasing::InOutQuad), 200);
+            _tl.move(_moveY, -(pos), QEasingCurve(QEasingCurve::InOutQuad), 200);
         }
     }
 }
@@ -775,7 +774,7 @@ void QFxListViewPrivate::fixupX()
     if (currItemMode == QFxListView::SnapAuto) {
         moveReason = Mouse;
         _tl.clear();
-        _tl.move(_moveX, -(currentItem->position() - snapPos), GfxEasing(GfxEasing::InOutQuad), 200);
+        _tl.move(_moveX, -(currentItem->position() - snapPos), QEasingCurve(QEasingCurve::InOutQuad), 200);
     } else if (currItemMode == QFxListView::Snap) {
         moveReason = Mouse;
         int idx = snapIndex();
@@ -786,7 +785,7 @@ void QFxListViewPrivate::fixupX()
             else if (pos < -q->minXExtent())
                 pos = -q->minXExtent();
             _tl.clear();
-            _tl.move(_moveX, -(pos), GfxEasing(GfxEasing::InOutQuad), 200);
+            _tl.move(_moveX, -(pos), QEasingCurve(QEasingCurve::InOutQuad), 200);
         }
     }
 }
@@ -900,7 +899,7 @@ void QFxListView::setModel(const QVariant &model)
         d->model = vim;
     } else {
         if (!d->ownModel) {
-            d->model = new QFxVisualItemModel(itemContext());
+            d->model = new QFxVisualItemModel(qmlContext(this));
             d->ownModel = true;
         }
         d->model->setModel(model);
@@ -945,7 +944,7 @@ void QFxListView::setDelegate(QmlComponent *delegate)
 {
     Q_D(QFxListView);
     if (!d->ownModel) {
-        d->model = new QFxVisualItemModel(itemContext());
+        d->model = new QFxVisualItemModel(qmlContext(this));
         d->ownModel = true;
     }
     d->model->setDelegate(delegate);

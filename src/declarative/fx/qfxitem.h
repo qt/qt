@@ -121,7 +121,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QSimpleCanvasItem, public QmlParserS
     Q_PROPERTY(bool flipVertically READ flipVertically WRITE setFlipVertically)
     Q_PROPERTY(bool flipHorizontally READ flipHorizontally WRITE setFlipHorizontally)
     Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
-    Q_PROPERTY(int baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged )
+    Q_PROPERTY(int baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged)
     Q_PROPERTY(QFxAnchorLine left READ left)
     Q_PROPERTY(QFxAnchorLine right READ right)
     Q_PROPERTY(QFxAnchorLine horizontalCenter READ horizontalCenter)
@@ -208,8 +208,6 @@ public:
 
     bool keepMouseGrab() const;
     void setKeepMouseGrab(bool);
-
-    QmlContext *itemContext() const;
 
 public Q_SLOTS:
     void newChild(const QString &url);

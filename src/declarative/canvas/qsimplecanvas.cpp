@@ -541,6 +541,7 @@ void QSimpleCanvasGraphicsView::focusInEvent(QFocusEvent *)
 }
 
 /*!
+  \internal
     \class QSimpleCanvas
     \brief The QSimpleCanvas class implements the canvas used by Qt Declarative
  */
