@@ -74,7 +74,7 @@
             Note that we specify the 'children' property.  This is because
             the default property of a ListView is 'delegate'.
             -->
-            <Rect y="{List3.yPosition+125}" width="200" height="50" color="#FFFF88" z="0"/>
+            <Rect y="125" width="200" height="50" color="#FFFF88" z="-1"/>
         </children>
     </ListView>
 
