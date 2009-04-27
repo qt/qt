@@ -232,6 +232,7 @@ clean::
 	-del symmake.obj
 	-del symmake_abld.obj
 	-del symmake_sbsv2.obj
+	-del initprojectdeploy_symbian.obj
 	-del pbuilder_pbx.obj
 	-del qnumeric.obj \
 	-del qscriptasm.obj \
@@ -462,7 +463,7 @@ symmake_abld.obj: $(SOURCE_PATH)/qmake/generators/symbian/symmake_abld.cpp
 symmake_sbsv2.obj: $(SOURCE_PATH)/qmake/generators/symbian/symmake_sbsv2.cpp
 	$(CXX) $(CXXFLAGS) generators/symbian/symmake_sbsv2.cpp
 
-initprojectdeploy_symbian.o: $(SOURCE_PATH)/qmake/generators/symbian/initprojectdeploy_symbian.cpp
+initprojectdeploy_symbian.obj: $(SOURCE_PATH)/qmake/generators/symbian/initprojectdeploy_symbian.cpp
         $(CXX) $(CXXFLAGS) generators/symbian/initprojectdeploy_symbian.cpp
 
 md5.obj: $(SOURCE_PATH)\src\3rdparty\md5\md5.cpp
