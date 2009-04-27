@@ -188,7 +188,7 @@ void QFxPathView::setModel(const QVariant &model)
         d->model = m;
     } else {
         if (!d->ownModel) {
-            d->model = new QFxVisualItemModel;
+            d->model = new QFxVisualItemModel(qmlContext(this));
             d->ownModel = true;
         }
         d->model->setModel(model);
@@ -368,7 +368,7 @@ void QFxPathView::setDelegate(QmlComponent *c)
 {
     Q_D(QFxPathView);
     if (!d->ownModel) {
-        d->model = new QFxVisualItemModel;
+        d->model = new QFxVisualItemModel(qmlContext(this));
         d->ownModel = true;
     }
     d->model->setDelegate(c);
