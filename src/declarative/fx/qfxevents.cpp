@@ -39,74 +39,34 @@
 **
 ****************************************************************************/
 
-#ifndef QFXMOUSEREGION_P_H
-#define QFXMOUSEREGION_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qdatetime.h"
-#include "qbasictimer.h"
-#include "qgraphicssceneevent.h"
-#include "qfxitem_p.h"
+#include "qfxevents_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QFxMouseRegionPrivate : public QFxItemPrivate
-{
-    Q_DECLARE_PUBLIC(QFxMouseRegion)
+/*!
+    \qmlclass MouseEvent QFxMouseEvent
+    \brief The MouseEvent element provides information about a mouse event.
+*/
 
-public:
-    QFxMouseRegionPrivate()
-      : absorb(true), hovered(false), inside(true), pressed(false), longPress(0), drag(0)
-    {
-    }
+/*!
+    \internal
+    \class QFxMouseEvent
+*/
 
-    void init()
-    {
-        Q_Q(QFxMouseRegion);
-        q->setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
-        q->setOptions(QSimpleCanvasItem::HoverEvents | QSimpleCanvasItem::MouseEvents);
-    }
+/*!
+    \qmlproperty int x
+    \qmlproperty int y
 
-    void bindButtonValue(Qt::MouseButton);
+    These properties hold the position of the mouse event.
+*/
 
-    void saveEvent(QGraphicsSceneMouseEvent *event) {
-        lastPos = event->pos();
-        lastButton = event->button();
-        lastButtons = event->buttons();
-        lastModifiers = event->modifiers();
-    }
+/*!
+    \qmlproperty enum button
 
-    bool absorb;
-    bool hovered;
-    bool inside;
-    bool pressed;
-    bool longPress;
-    QFxDrag drag;
-    bool moved;
-    bool dragX;
-    bool dragY;
-    bool dragged;
-    QPointF start;
-    QPointF startScene;
-    int startX;
-    int startY;
-    QPointF lastPos;
-    Qt::MouseButton lastButton;
-    Qt::MouseButtons lastButtons;
-    Qt::KeyboardModifiers lastModifiers;
-    QBasicTimer pressAndHoldTimer;
-};
+    This property holds the button that caused the event.
+*/
+
+QML_DEFINE_NOCREATE_TYPE(QFxKeyEvent);
+QML_DEFINE_NOCREATE_TYPE(QFxMouseEvent);
 
 QT_END_NAMESPACE
-
-#endif // QFXMOUSEREGION_P_H
