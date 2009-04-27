@@ -536,6 +536,7 @@ public:
     uint inDirtyList : 1;
     uint isScrolled : 1;
     uint isMoved : 1;
+    uint usesDoubleBufferedGLContext : 1;
 
 #ifdef Q_WS_WIN
     uint noPaintOnScreen : 1; // see qwidget_win.cpp ::paintEngine()

@@ -183,6 +183,7 @@ QWidgetPrivate::QWidgetPrivate(int version) :
         ,inDirtyList(0)
         ,isScrolled(0)
         ,isMoved(0)
+        ,usesDoubleBufferedGLContext(0)
 #ifdef Q_WS_WIN
         ,noPaintOnScreen(0)
 #endif
