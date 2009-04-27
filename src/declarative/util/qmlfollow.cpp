@@ -41,7 +41,6 @@
 
 #include <limits.h>
 #include <QtCore/qdebug.h>
-#include <gfxtimeline.h>
 #include "private/qobject_p.h"
 #include "qmlfollow.h"
 #include "private/qmlanimation_p.h"

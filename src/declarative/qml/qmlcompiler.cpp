@@ -1649,12 +1649,15 @@ QmlCompiledData &QmlCompiledData::operator=(const QmlCompiledData &other)
     return *this;
 }
 
-QObject *QmlCompiledData::TypeReference::createInstance() const
+QObject *QmlCompiledData::TypeReference::createInstance(QmlContext *ctxt) const
 {
     if(type) {
-        return type->create();
+        QObject *rv = type->create();
+        if(rv)
+            QmlEngine::setContextForObject(rv, ctxt);
+        return rv;
     } else if(component) {
-        return component->create(QmlContext::activeContext());
+        return component->create(ctxt);
     } else {
         return 0;
     }

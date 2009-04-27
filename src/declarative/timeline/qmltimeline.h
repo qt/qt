@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef GFXTIMELINE_H
-#define GFXTIMELINE_H
+#ifndef QMLTIMELINE_H
+#define QMLTIMELINE_H
 
 #include <QObject>
 #include <qfxglobal.h>
@@ -52,9 +52,9 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class GfxEasing;
-class GfxValue;
-class GfxEvent;
+class QEasingCurve;
+class QmlTimeLineValue;
+class QmlTimeLineEvent;
 struct QmlTimeLinePrivate;
 class QmlTimeLineObject;
 class Q_DECLARATIVE_EXPORT QmlTimeLine : public QAbstractAnimation
@@ -69,26 +69,26 @@ public:
     void setSyncMode(SyncMode);
 
     void pause(QmlTimeLineObject &, int);
-    void execute(const GfxEvent &);
-    void set(GfxValue &, qreal);
+    void execute(const QmlTimeLineEvent &);
+    void set(QmlTimeLineValue &, qreal);
 
-    int accel(GfxValue &, qreal velocity, qreal accel);
-    int accel(GfxValue &, qreal velocity, qreal accel, qreal maxDistance);
-    int accelDistance(GfxValue &, qreal velocity, qreal distance);
+    int accel(QmlTimeLineValue &, qreal velocity, qreal accel);
+    int accel(QmlTimeLineValue &, qreal velocity, qreal accel, qreal maxDistance);
+    int accelDistance(QmlTimeLineValue &, qreal velocity, qreal distance);
 
-    void move(GfxValue &, qreal destination, int time = 500);
-    void move(GfxValue &, qreal destination, const GfxEasing &, int time = 500);
-    void moveBy(GfxValue &, qreal change, int time = 500);
-    void moveBy(GfxValue &, qreal change, const GfxEasing &, int time = 500);
+    void move(QmlTimeLineValue &, qreal destination, int time = 500);
+    void move(QmlTimeLineValue &, qreal destination, const QEasingCurve &, int time = 500);
+    void moveBy(QmlTimeLineValue &, qreal change, int time = 500);
+    void moveBy(QmlTimeLineValue &, qreal change, const QEasingCurve &, int time = 500);
 
     void sync();
     void setSyncPoint(int);
     int syncPoint() const;
 
-    void sync(GfxValue &);
-    void sync(GfxValue &, GfxValue &);
+    void sync(QmlTimeLineValue &);
+    void sync(QmlTimeLineValue &, QmlTimeLineValue &);
 
-    void reset(GfxValue &);
+    void reset(QmlTimeLineValue &);
 
     void complete();
     void clear();
@@ -123,10 +123,10 @@ protected:
     QmlTimeLine *_t;
 };
 
-class Q_DECLARATIVE_EXPORT GfxValue : public QmlTimeLineObject
+class Q_DECLARATIVE_EXPORT QmlTimeLineValue : public QmlTimeLineObject
 {
 public:
-    GfxValue(qreal v = 0.) : _v(v) {}
+    QmlTimeLineValue(qreal v = 0.) : _v(v) {}
 
     qreal value() const { return _v; }
     virtual void setValue(qreal v) { _v = v; }
@@ -134,21 +134,21 @@ public:
     QmlTimeLine *timeLine() const { return _t; }
 
     operator qreal() const { return _v; }
-    GfxValue &operator=(qreal v) { setValue(v); return *this; }
+    QmlTimeLineValue &operator=(qreal v) { setValue(v); return *this; }
 private:
     friend class QmlTimeLine;
     friend struct QmlTimeLinePrivate;
     qreal _v;
 };
 
-class Q_DECLARATIVE_EXPORT GfxEvent
+class Q_DECLARATIVE_EXPORT QmlTimeLineEvent
 {
 public:
-    GfxEvent();
-    GfxEvent(const GfxEvent &o);
+    QmlTimeLineEvent();
+    QmlTimeLineEvent(const QmlTimeLineEvent &o);
 
     template<class T, void (T::*method)()>
-    GfxEvent(QmlTimeLineObject *b, T *c)
+    QmlTimeLineEvent(QmlTimeLineObject *b, T *c)
     {
 	d0 = &callFunc<T, method>;
 	d1 = (void *)c;
@@ -156,16 +156,16 @@ public:
     }
 
     template<class T, void (T::*method)()>
-    static GfxEvent gfxEvent(QmlTimeLineObject *b, T *c)
+    static QmlTimeLineEvent timeLineEvent(QmlTimeLineObject *b, T *c)
     {
-        GfxEvent rv;
+        QmlTimeLineEvent rv;
 	rv.d0 = &callFunc<T, method>;
 	rv.d1 = (void *)c;
 	rv.d2 = b;
 	return rv;
     }
 
-    GfxEvent &operator=(const GfxEvent &o);
+    QmlTimeLineEvent &operator=(const QmlTimeLineEvent &o);
     void execute() const;
     QmlTimeLineObject *eventObject() const;
 

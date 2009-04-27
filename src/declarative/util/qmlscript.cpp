@@ -65,7 +65,7 @@ class QmlScriptPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlScript);
 
 public:
-    QmlScriptPrivate() : reply(0), ctxt(0) {}
+    QmlScriptPrivate() : reply(0) {}
 
     void addScriptToEngine(const QString &, const QString &fileName=QString());
 
@@ -73,7 +73,6 @@ public:
     QString source;
     QNetworkReply *reply;
     QUrl url;
-    QmlContext *ctxt;
 };
 
 /*!
@@ -106,8 +105,6 @@ public:
 QML_DEFINE_TYPE(QmlScript,Script);
 QmlScript::QmlScript(QObject *parent) : QObject(*(new QmlScriptPrivate), parent)
 {
-    Q_D(QmlScript);
-    d->ctxt = QmlContext::activeContext();
 }
 
 /*!
@@ -154,10 +151,10 @@ void QmlScript::setSource(const QString &source)
     if (d->source == source)
         return;
     d->source = source;
-    d->url = d->ctxt->resolvedUrl(source);
+    d->url = qmlContext(this)->resolvedUrl(source);
     QNetworkRequest req(d->url);
     req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
-    d->reply = d->ctxt->engine()->networkAccessManager()->get(req);
+    d->reply = qmlEngine(this)->networkAccessManager()->get(req);
     QObject::connect(d->reply, SIGNAL(finished()),
                      this, SLOT(replyFinished()));
 }
@@ -176,7 +173,8 @@ void QmlScript::replyFinished()
 void QmlScriptPrivate::addScriptToEngine(const QString &script, const QString &fileName)
 {
     Q_Q(QmlScript);
-    QmlEngine *engine = ctxt->engine();
+    QmlEngine *engine = qmlEngine(q);
+    QmlContext *context = qmlContext(q);
     QScriptEngine *scriptEngine = engine->scriptEngine();
 
     QScriptContext *currentContext = engine->scriptEngine()->currentContext();
@@ -186,11 +184,11 @@ void QmlScriptPrivate::addScriptToEngine(const QString &script, const QString &f
     for (int i = 0; i < oldScopeChain.size(); ++i) {
         currentContext->popScope();
     }
-    for (int i = ctxt->d_func()->scopeChain.size() - 1; i > -1; --i) {
-        currentContext->pushScope(ctxt->d_func()->scopeChain.at(i));
+    for (int i = context->d_func()->scopeChain.size() - 1; i > -1; --i) {
+        currentContext->pushScope(context->d_func()->scopeChain.at(i));
     }
 
-    currentContext->setActivationObject(ctxt->d_func()->scopeChain.at(0));
+    currentContext->setActivationObject(context->d_func()->scopeChain.at(0));
 
     QScriptValue val = scriptEngine->evaluate(script, fileName);
     if (scriptEngine->hasUncaughtException()) {
@@ -209,7 +207,7 @@ void QmlScriptPrivate::addScriptToEngine(const QString &script, const QString &f
 
     currentContext->setActivationObject(oldact);
 
-    for (int i = 0; i < ctxt->d_func()->scopeChain.size(); ++i)
+    for (int i = 0; i < context->d_func()->scopeChain.size(); ++i)
         currentContext->popScope();
 
     for (int i = oldScopeChain.size() - 1; i > -1; --i)

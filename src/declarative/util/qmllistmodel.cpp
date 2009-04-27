@@ -537,7 +537,6 @@ ModelNode::~ModelNode()
 struct ListModelData
 {
     int dataOffset;
-    int id;
     int instrCount;
     ListInstruction *instructions() const { return (ListInstruction *)((char *)this + sizeof(ListModelData)); }
 };
@@ -546,7 +545,6 @@ QByteArray ListModelParser::compile(QXmlStreamReader& reader, bool *ok)
 {
     *ok = true;
 
-    QByteArray id;
     QByteArray data;
     QList<ListInstruction> instr;
     int depth=0;
@@ -649,10 +647,6 @@ QByteArray ListModelParser::compile(QXmlStreamReader& reader, bool *ok)
     rv.resize(size);
 
     ListModelData *lmd = (ListModelData *)rv.data();
-    if(id.count())
-        lmd->id = 0;
-    else
-        lmd->id = -1;
     lmd->dataOffset = sizeof(ListModelData) + 
                      instr.count() * sizeof(ListInstruction);
     lmd->instrCount = instr.count();
@@ -707,11 +701,6 @@ QVariant ListModelParser::create(const QByteArray &d)
             }
             break;
         }
-    }
-
-    if(lmd->id != -1) {
-        QmlContext *ctxt = QmlContext::activeContext();
-        ctxt->setContextProperty(QLatin1String(data + lmd->id), rv);
     }
 
     return QVariant::fromValue(rv);

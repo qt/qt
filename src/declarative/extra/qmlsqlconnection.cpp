@@ -62,7 +62,6 @@ public:
     int port;
     QString name, databaseName, connectionOptions;
     QString hostName, userName, password, driver;
-    QmlContext *context;
 };
 
 /*!
@@ -177,8 +176,6 @@ public:
 QmlSqlConnection::QmlSqlConnection(QObject *parent)
 : QObject(*(new QmlSqlConnectionPrivate), parent)
 {
-    Q_D(QmlSqlConnection);
-    d->context = QmlContext::activeContext();
 }
 
 /*!
@@ -416,10 +413,11 @@ QSqlDatabase QmlSqlConnection::database() const
     }
     if (db.isOpen())
         return db;
-    if ((d->driver.isEmpty() || d->driver == QLatin1String("QSQLITE")) && d->context) {
+    if ((d->driver.isEmpty() || d->driver == QLatin1String("QSQLITE")) && 
+            qmlContext(this)) {
         // SQLITE uses files for databases, hence use relative pathing
         // if possible.
-        QUrl url = d->context->resolvedUrl(d->databaseName);
+        QUrl url = qmlContext(this)->resolvedUrl(d->databaseName);
         if (url.isRelative() || url.scheme() == QLatin1String("file"))
             db.setDatabaseName(url.toLocalFile());
         else

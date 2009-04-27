@@ -44,7 +44,6 @@
 
 #include <qfxitem.h>
 #include <qfxpath.h>
-#include <gfxvalueproxy.h>
 
 QT_BEGIN_HEADER
 

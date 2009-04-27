@@ -39,33 +39,31 @@
 **
 ****************************************************************************/
 
-#include "gfxtimeline.h"
+#include "qmltimeline.h"
 #include <QDebug>
 #include <QMutex>
 #include <QThread>
 #include <QWaitCondition>
 #include <QEvent>
 #include <QCoreApplication>
-#include "gfxeasing.h"
+#include <QEasingCurve>
 #include <QTime>
 
 QT_BEGIN_NAMESPACE
-
-#define TIMETICK 5
 
 //
 // Timeline stuff
 //
 
 struct Update {
-    Update(GfxValue *_g, qreal _v)
+    Update(QmlTimeLineValue *_g, qreal _v)
         : g(_g), v(_v) {}
-    Update(const GfxEvent &_e)
+    Update(const QmlTimeLineEvent &_e)
         : g(0), v(0), e(_e) {}
 
-    GfxValue *g;
+    QmlTimeLineValue *g;
     qreal v;
-    GfxEvent e;
+    QmlTimeLineEvent e;
 };
 
 struct QmlTimeLinePrivate
@@ -84,7 +82,7 @@ struct QmlTimeLinePrivate
         };
         Op() {}
         Op(Type t, int l, qreal v, qreal v2, int o, 
-           const GfxEvent &ev = GfxEvent(), const GfxEasing &es = GfxEasing())
+           const QmlTimeLineEvent &ev = QmlTimeLineEvent(), const QEasingCurve &es = QEasingCurve())
             : type(t), length(l), value(v), value2(v2), order(o), event(ev),
               easing(es) {}
         Op(const Op &o)
@@ -103,8 +101,8 @@ struct QmlTimeLinePrivate
         qreal value2;
 
         int order;
-        GfxEvent event;
-        GfxEasing easing;
+        QmlTimeLineEvent event;
+        QEasingCurve easing;
     };
     struct TimeLine
     {
@@ -144,7 +142,7 @@ QmlTimeLinePrivate::QmlTimeLinePrivate(QmlTimeLine *parent)
 void QmlTimeLinePrivate::add(QmlTimeLineObject &g, const Op &o)
 {
     if(g._t && g._t != q) {
-        qWarning() << "QmlTimeLine: Cannot modify a GfxValue owned by"
+        qWarning() << "QmlTimeLine: Cannot modify a QmlTimeLineValue owned by"
                    << "another timeline.";
         return;
     }
@@ -208,13 +206,12 @@ qreal QmlTimeLinePrivate::value(const Op &op, int time, qreal base, bool *change
             } else if(time == (op.length)) {
                 return op.value;
             } else {
-                if(op.easing.isLinear()) {
-                    qreal delta = op.value - base;
-                    qreal pTime = (qreal)(time) / (qreal)op.length;
+                qreal delta = op.value - base;
+                qreal pTime = (qreal)(time) / (qreal)op.length;
+                if(op.easing.type() == QEasingCurve::Linear)
                     return base + delta * pTime;
-                } else {
-                    return op.easing.valueAt(time, base, op.value, op.length);
-                }
+                else
+                    return base + delta * op.easing.valueForProgress(pTime);
             }
         case Op::MoveBy:
             if(time == 0) {
@@ -222,13 +219,12 @@ qreal QmlTimeLinePrivate::value(const Op &op, int time, qreal base, bool *change
             } else if(time == (op.length)) {
                 return base + op.value;
             } else {
-                if(op.easing.isLinear()) {
-                    qreal delta = op.value;
-                    qreal pTime = (qreal)(time) / (qreal)op.length;
+                qreal delta = op.value;
+                qreal pTime = (qreal)(time) / (qreal)op.length;
+                if(op.easing.type() == QEasingCurve::Linear)
                     return base + delta * pTime;
-                } else {
-                    return op.easing.valueAt(time, base, base + op.value, op.length);
-                }
+                else
+                    return base + delta * op.easing.valueForProgress(pTime);
             }
         case Op::Accel:
             if(time == 0) {
@@ -260,28 +256,29 @@ qreal QmlTimeLinePrivate::value(const Op &op, int time, qreal base, bool *change
 }
 
 /*!
+    \internal
     \class QmlTimeLine
     \ingroup group_animation
     \brief The QmlTimeLine class provides a timeline for controlling animations.
 
     QmlTimeLine is similar to QTimeLine except:
     \list
-    \i It updates GfxValue instances directly, rather than maintaining a single
+    \i It updates QmlTimeLineValue instances directly, rather than maintaining a single
     current value.
 
     For example, the following animates a simple value over 200 milliseconds:
     \code
-    GfxValue v(<starting value>);
+    QmlTimeLineValue v(<starting value>);
     QmlTimeLine tl;
     tl.move(v, 100., 200);
     tl.start()
     \endcode
 
     If your program needs to know when values are changed, it can either
-    connect to the QmlTimeLine's updated() signal, or inherit from GfxValue
-    and reimplement the GfxValue::setValue() method.
+    connect to the QmlTimeLine's updated() signal, or inherit from QmlTimeLineValue
+    and reimplement the QmlTimeLineValue::setValue() method.
 
-    \i Supports multiple GfxValue, arbitrary start and end values and allows
+    \i Supports multiple QmlTimeLineValue, arbitrary start and end values and allows
     animations to be strung together for more complex effects.
 
     For example, the following animation moves the x and y coordinates of
@@ -290,8 +287,8 @@ qreal QmlTimeLinePrivate::value(const Op &op, int time, qreal base, bool *change
     milliseconds:
 
     \code
-    GfxValue x(<starting value>);
-    GfxValue y(<starting value>);
+    QmlTimeLineValue x(<starting value>);
+    QmlTimeLineValue y(<starting value>);
 
     QmlTimeLine tl;
     tl.start();
@@ -358,7 +355,7 @@ void QmlTimeLine::setSyncMode(SyncMode syncMode)
 }
 
 /*!
-    Pause \a gfxValue for \a time milliseconds.
+    Pause \a obj for \a time milliseconds.
 */
 void QmlTimeLine::pause(QmlTimeLineObject &obj, int time)
 {
@@ -370,28 +367,28 @@ void QmlTimeLine::pause(QmlTimeLineObject &obj, int time)
 /*!
     Execute the \a event.
  */
-void QmlTimeLine::execute(const GfxEvent &event)
+void QmlTimeLine::execute(const QmlTimeLineEvent &event)
 {
     QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Execute, 0, 0, 0., d->order++, event);
     d->add(*event.eventObject(), op);
 }
 
 /*!
-    Set the \a value of \a gfxValue.
+    Set the \a value of \a timeLineValue.
 */
-void QmlTimeLine::set(GfxValue &gfxValue, qreal value)
+void QmlTimeLine::set(QmlTimeLineValue &timeLineValue, qreal value)
 {
     QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Set, 0, value, 0., d->order++);
-    d->add(gfxValue, op);
+    d->add(timeLineValue, op);
 }
 
 /*!
-    Decelerate \a gfxValue from the starting \a velocity to zero at the
+    Decelerate \a timeLineValue from the starting \a velocity to zero at the
     given \a acceleration rate.  Although the \a acceleration is technically
     a deceleration, it should always be positive.  The QmlTimeLine will ensure
     that the deceleration is in the opposite direction to the initial velocity.
 */
-int QmlTimeLine::accel(GfxValue &gfxValue, qreal velocity, qreal acceleration)
+int QmlTimeLine::accel(QmlTimeLineValue &timeLineValue, qreal velocity, qreal acceleration)
 {
     if((velocity > 0.0f) ==  (acceleration > 0.0f))
         acceleration = acceleration * -1.0f;
@@ -399,7 +396,7 @@ int QmlTimeLine::accel(GfxValue &gfxValue, qreal velocity, qreal acceleration)
     int time = static_cast<int>(-1000 * velocity / acceleration);
 
     QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Accel, time, velocity, acceleration, d->order++);
-    d->add(gfxValue, op);
+    d->add(timeLineValue, op);
 
     return time;
 }
@@ -407,14 +404,14 @@ int QmlTimeLine::accel(GfxValue &gfxValue, qreal velocity, qreal acceleration)
 /*!
     \overload
 
-    Decelerate \a gfxValue from the starting \a velocity to zero at the
+    Decelerate \a timeLineValue from the starting \a velocity to zero at the
     given \a acceleration rate over a maximum distance of maxDistance.
 
     If necessary, QmlTimeLine will reduce the acceleration to ensure that the
     entire operation does not require a move of more than \a maxDistance.
     \a maxDistance should always be positive.
 */
-int QmlTimeLine::accel(GfxValue &gfxValue, qreal velocity, qreal acceleration, qreal maxDistance)
+int QmlTimeLine::accel(QmlTimeLineValue &timeLineValue, qreal velocity, qreal acceleration, qreal maxDistance)
 {
     Q_ASSERT(acceleration >= 0.0f && maxDistance >= 0.0f);
 
@@ -428,19 +425,19 @@ int QmlTimeLine::accel(GfxValue &gfxValue, qreal velocity, qreal acceleration, q
     int time = static_cast<int>(-1000 * velocity / acceleration);
 
     QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Accel, time, velocity, acceleration, d->order++);
-    d->add(gfxValue, op);
+    d->add(timeLineValue, op);
 
     return time;
 }
 
 /*!
-    Decelerate \a gfxValue from the starting \a velocity to zero over the given
+    Decelerate \a timeLineValue from the starting \a velocity to zero over the given
     \a distance.  This is like accel(), but the QmlTimeLine calculates the exact
     deceleration to use.
 
     \a distance should be positive.
 */
-int QmlTimeLine::accelDistance(GfxValue &gfxValue, qreal velocity, qreal distance)
+int QmlTimeLine::accelDistance(QmlTimeLineValue &timeLineValue, qreal velocity, qreal distance)
 {
     if (distance == 0.0f || velocity == 0.0f)
         return -1;
@@ -449,68 +446,68 @@ int QmlTimeLine::accelDistance(GfxValue &gfxValue, qreal velocity, qreal distanc
     int time = static_cast<int>(1000 * (2.0f * distance) / velocity);
 
     QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::AccelDistance, time, velocity, distance, d->order++);
-    d->add(gfxValue, op);
+    d->add(timeLineValue, op);
 
     return time;
 }
 
 /*!
-    Linearly change the \a gfxValue from its current value to the given
+    Linearly change the \a timeLineValue from its current value to the given
     \a destination value over \a time milliseconds.
 */
-void QmlTimeLine::move(GfxValue &gfxValue, qreal destination, int time)
+void QmlTimeLine::move(QmlTimeLineValue &timeLineValue, qreal destination, int time)
 {
     if(time <= 0) return;
     QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Move, time, destination, 0.0f, d->order++);
-    d->add(gfxValue, op);
+    d->add(timeLineValue, op);
 }
 
 /*!
-    Change the \a gfxValue from its current value to the given \a destination
+    Change the \a timeLineValue from its current value to the given \a destination
     value over \a time milliseconds using the \a easing curve.
  */
-void QmlTimeLine::move(GfxValue &gfxValue, qreal destination, const GfxEasing &easing, int time)
+void QmlTimeLine::move(QmlTimeLineValue &timeLineValue, qreal destination, const QEasingCurve &easing, int time)
 {
     if(time <= 0) return;
-    QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Move, time, destination, 0.0f, d->order++, GfxEvent(), easing);
-    d->add(gfxValue, op);
+    QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Move, time, destination, 0.0f, d->order++, QmlTimeLineEvent(), easing);
+    d->add(timeLineValue, op);
 }
 
 /*!
-    Linearly change the \a gfxValue from its current value by the \a change amount
+    Linearly change the \a timeLineValue from its current value by the \a change amount
     over \a time milliseconds.
 */
-void QmlTimeLine::moveBy(GfxValue &gfxValue, qreal change, int time)
+void QmlTimeLine::moveBy(QmlTimeLineValue &timeLineValue, qreal change, int time)
 {
     if(time <= 0) return;
     QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::MoveBy, time, change, 0.0f, d->order++);
-    d->add(gfxValue, op);
+    d->add(timeLineValue, op);
 }
 
 /*!
-    Change the \a gfxValue from its current value by the \a change amount over
+    Change the \a timeLineValue from its current value by the \a change amount over
     \a time milliseconds using the \a easing curve.
  */
-void QmlTimeLine::moveBy(GfxValue &gfxValue, qreal change, const GfxEasing &easing, int time)
+void QmlTimeLine::moveBy(QmlTimeLineValue &timeLineValue, qreal change, const QEasingCurve &easing, int time)
 {
     if(time <= 0) return;
-    QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::MoveBy, time, change, 0.0f, d->order++, GfxEvent(), easing);
-    d->add(gfxValue, op);
+    QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::MoveBy, time, change, 0.0f, d->order++, QmlTimeLineEvent(), easing);
+    d->add(timeLineValue, op);
 }
 
 /*!
-    Cancel (but don't complete) all scheduled actions for \a gfxValue.
+    Cancel (but don't complete) all scheduled actions for \a timeLineValue.
 */
-void QmlTimeLine::reset(GfxValue &gfxValue)
+void QmlTimeLine::reset(QmlTimeLineValue &timeLineValue)
 {
-    if(!gfxValue._t)
+    if(!timeLineValue._t)
         return;
-    if(gfxValue._t != this) {
-        qWarning() << "QmlTimeLine: Cannot reset a GfxValue owned by another timeline.";
+    if(timeLineValue._t != this) {
+        qWarning() << "QmlTimeLine: Cannot reset a QmlTimeLineValue owned by another timeline.";
         return;
     }
-    remove(&gfxValue);
-    gfxValue._t = 0;
+    remove(&timeLineValue);
+    timeLineValue._t = 0;
 }
 
 int QmlTimeLine::duration() const
@@ -519,48 +516,48 @@ int QmlTimeLine::duration() const
 }
 
 /*!
-    Synchronize the end point of \a gfxValue to the endpoint of \a syncTo
+    Synchronize the end point of \a timeLineValue to the endpoint of \a syncTo
     within this timeline.
 
-    Following operations on \a gfxValue in this timeline will be scheduled after
+    Following operations on \a timeLineValue in this timeline will be scheduled after
     all the currently scheduled actions on \a syncTo are complete.  In
     psuedo-code this is equivalent to:
     \code
-    QmlTimeLine::pause(gfxValue, min(0, length_of(syncTo) - length_of(gfxValue)))
+    QmlTimeLine::pause(timeLineValue, min(0, length_of(syncTo) - length_of(timeLineValue)))
     \endcode
 */
-void QmlTimeLine::sync(GfxValue &gfxValue, GfxValue &syncTo)
+void QmlTimeLine::sync(QmlTimeLineValue &timeLineValue, QmlTimeLineValue &syncTo)
 {
     QmlTimeLinePrivate::Ops::Iterator iter = d->ops.find(&syncTo);
     if(iter == d->ops.end())
         return;
     int length = iter->length;
 
-    iter = d->ops.find(&gfxValue);
+    iter = d->ops.find(&timeLineValue);
     if(iter == d->ops.end()) {
-        pause(gfxValue, length);
+        pause(timeLineValue, length);
     } else {
         int glength = iter->length;
-        pause(gfxValue, length - glength);
+        pause(timeLineValue, length - glength);
     }
 }
 
 /*!
-    Synchronize the end point of \a gfxValue to the endpoint of the longest
-    action currently scheduled in the timeline.
+    Synchronize the end point of \a timeLineValue to the endpoint of the longest
+    action cursrently scheduled in the timeline.
 
     In psuedo-code, this is equivalent to:
     \code
-    QmlTimeLine::pause(gfxValue, length_of(timeline) - length_of(gfxValue))
+    QmlTimeLine::pause(timeLineValue, length_of(timeline) - length_of(timeLineValue))
     \endcode
 */
-void QmlTimeLine::sync(GfxValue &gfxValue)
+void QmlTimeLine::sync(QmlTimeLineValue &timeLineValue)
 {
-    QmlTimeLinePrivate::Ops::Iterator iter = d->ops.find(&gfxValue);
+    QmlTimeLinePrivate::Ops::Iterator iter = d->ops.find(&timeLineValue);
     if(iter == d->ops.end()) {
-        pause(gfxValue, d->length);
+        pause(timeLineValue, d->length);
     } else {
-        pause(gfxValue, d->length - iter->length);
+        pause(timeLineValue, d->length - iter->length);
     }
 }
 
@@ -623,7 +620,7 @@ int QmlTimeLine::syncPoint() const
 
 /*!
     Returns true if the timeline is active.  An active timeline is one where
-    GfxValue actions are still pending.
+    QmlTimeLineValue actions are still pending.
 */
 bool QmlTimeLine::isActive() const
 {
@@ -633,7 +630,7 @@ bool QmlTimeLine::isActive() const
 /*!
     Completes the timeline.  All queued actions are played to completion, and then discarded.  For example,
     \code
-    GfxValue v(0.);
+    QmlTimeLineValue v(0.);
     QmlTimeLine tl;
     tl.move(v, 100., 1000.);
     // 500 ms passes
@@ -648,9 +645,9 @@ void QmlTimeLine::complete()
 }
 
 /*!
-    Resets the timeline.  All queued actions are discarded and GfxValue's retain their current value. For example,
+    Resets the timeline.  All queued actions are discarded and QmlTimeLineValue's retain their current value. For example,
     \code
-    GfxValue v(0.);
+    QmlTimeLineValue v(0.);
     QmlTimeLine tl;
     tl.move(v, 100., 1000.);
     // 500 ms passes
@@ -677,8 +674,8 @@ int QmlTimeLine::time() const
 /*!
     \fn void QmlTimeLine::updated()
 
-    Emitted each time the timeline modifies GfxValues.  Even if multiple
-    GfxValues are changed, this signal is only emitted once for each clock tick.
+    Emitted each time the timeline modifies QmlTimeLineValues.  Even if multiple
+    QmlTimeLineValues are changed, this signal is only emitted once for each clock tick.
 */
 
 void QmlTimeLine::updateCurrentTime(int v)
@@ -750,7 +747,7 @@ int QmlTimeLinePrivate::advance(int t)
         QList<QPair<int, Update> > updates;
 
         for(Ops::Iterator iter = ops.begin(); iter != ops.end(); ) {
-            GfxValue *v = static_cast<GfxValue *>(iter.key());
+            QmlTimeLineValue *v = static_cast<QmlTimeLineValue *>(iter.key());
             TimeLine &tl = *iter;
             Q_ASSERT(!tl.ops.isEmpty());
 
@@ -871,31 +868,31 @@ void QmlTimeLine::remove(QmlTimeLineObject *v)
 }
 
 /*!
-    \class GfxValue
+    \class QmlTimeLineValue
     \ingroup group_animation
-    \brief The GfxValue class is modified by QmlTimeLine.
+    \brief The QmlTimeLineValue class is modified by QmlTimeLine.
 */
 
 /*!
-    \fn GfxValue::GfxValue(qreal value = 0)
+    \fn QmlTimeLineValue::QmlTimeLineValue(qreal value = 0)
 
-    Construct a new GfxValue with an initial \a value.
+    Construct a new QmlTimeLineValue with an initial \a value.
 */
 
 /*!
-    \fn qreal GfxValue::value() const
+    \fn qreal QmlTimeLineValue::value() const
 
     Return the current value.
 */
 
 /*!
-    \fn void GfxValue::setValue(qreal value)
+    \fn void QmlTimeLineValue::setValue(qreal value)
 
     Set the current \a value.
 */
 
 /*!
-    \fn QmlTimeLine *GfxValue::timeLine() const
+    \fn QmlTimeLine *QmlTimeLineValue::timeLine() const
 
     If a QmlTimeLine is operating on this value, return a pointer to it,
     otherwise return null.
@@ -915,17 +912,17 @@ QmlTimeLineObject::~QmlTimeLineObject()
     }
 }
 
-GfxEvent::GfxEvent()
+QmlTimeLineEvent::QmlTimeLineEvent()
 : d0(0), d1(0), d2(0)
 {
 }
 
-GfxEvent::GfxEvent(const GfxEvent &o)
+QmlTimeLineEvent::QmlTimeLineEvent(const QmlTimeLineEvent &o)
 : d0(o.d0), d1(o.d1), d2(o.d2)
 {
 }
 
-GfxEvent &GfxEvent::operator=(const GfxEvent &o)
+QmlTimeLineEvent &QmlTimeLineEvent::operator=(const QmlTimeLineEvent &o)
 {
     d0 = o.d0;
     d1 = o.d1;
@@ -933,12 +930,12 @@ GfxEvent &GfxEvent::operator=(const GfxEvent &o)
     return *this;
 }
 
-void GfxEvent::execute() const
+void QmlTimeLineEvent::execute() const
 {
     d0(d1);
 }
 
-QmlTimeLineObject *GfxEvent::eventObject() const
+QmlTimeLineObject *QmlTimeLineEvent::eventObject() const
 {
     return d2;
 }

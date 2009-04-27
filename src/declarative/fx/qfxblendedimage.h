@@ -60,16 +60,21 @@ class QFxBlendedImage : public QFxItem
     Q_PROPERTY(QString primaryUrl READ primaryUrl WRITE setPrimaryUrl)
     Q_PROPERTY(QString secondaryUrl READ secondaryUrl WRITE setSecondaryUrl)
     Q_PROPERTY(qreal blend READ blend WRITE setBlend)
+    Q_PROPERTY(bool smooth READ smoothTransform WRITE setSmoothTransform)
 public:
     QFxBlendedImage(QFxItem *parent=0);
 
     QString primaryUrl() const;
     void setPrimaryUrl(const QString &);
+
     QString secondaryUrl() const;
     void setSecondaryUrl(const QString &);
 
     qreal blend() const;
     void setBlend(qreal);
+
+    bool smoothTransform() const;
+    void setSmoothTransform(bool);
 
 #if defined(QFX_RENDER_QPAINTER) 
     void paintContents(QPainter &painter);
@@ -88,6 +93,7 @@ private:
     QUrl secUrl;
 
     qreal _blend;
+    bool _smooth;
     bool dirty;
 #if defined(QFX_RENDER_OPENGL2)
     GLTexture prim;

@@ -81,6 +81,13 @@ public:
         NormalPriority
     };
     void addDefaultObject(QObject *, Priority);
+
+    class ContextData : public QDeclarativeData
+    {
+    public:
+        QmlContext *context;
+    };
+    ContextData contextData;
 };
 QT_END_NAMESPACE
 

@@ -81,6 +81,8 @@ public:
     void setNetworkAccessManager(QNetworkAccessManager *);
     QNetworkAccessManager *networkAccessManager() const;
 
+    static QmlContext *contextForObject(const QObject *);
+    static void setContextForObject(QObject *, QmlContext *);
 private:
     // LK: move to the private class
     QScriptEngine *scriptEngine();

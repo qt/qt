@@ -253,7 +253,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 #ifdef Q_ENABLE_PERFORMANCE_LOG
                 QFxCompilerTimer<QFxCompiler::InstrCreateObject> cc;
 #endif
-                QObject *o = types.at(instr.create.type).createInstance();
+                QObject *o = types.at(instr.create.type).createInstance(QmlContext::activeContext());
                 if(!o)
                     VME_EXCEPTION("Unable to create object of type" << types.at(instr.create.type).className);
 
@@ -276,6 +276,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QObject *o = QmlMetaType::toQObject(v);
                 if(!o)
                     VME_EXCEPTION("Unable to create" << types.at(instr.create.type).className);
+                QmlEngine::setContextForObject(o, QmlContext::activeContext());
 
                 if(!stack.isEmpty()) {
                     QObject *parent = stack.top();

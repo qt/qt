@@ -211,7 +211,8 @@ void QFxWebView::init()
     pal.setBrush(QPalette::Base, QColor::fromRgbF(0, 0, 0, 0));
     wp->setPalette(pal);
 
-    wp->setNetworkAccessManager(itemContext()->engine()->networkAccessManager());
+    // ### Need to delay this as qmlEngine() is not set yet
+    wp->setNetworkAccessManager(qmlEngine(this)->networkAccessManager());
     setPage(wp);
 
     // XXX settable from QML?
@@ -313,7 +314,7 @@ void QFxWebView::setUrl(const QString &n)
 
     QUrl url(n);
     if (url.isRelative())
-        url = itemContext()->resolvedUrl(n);
+        url = qmlContext(this)->resolvedUrl(n);
 
     if (isComponentComplete())
         d->page->mainFrame()->load(url);
@@ -372,12 +373,16 @@ void QFxWebView::setIdealHeight(int ih)
 }
 
 /*!
-    \qmlproperty bool WebView::interactive
-    This property holds controls whether the item responds to mouse and key events.
+  \qmlproperty bool WebView::interactive
+
+  This property holds controls whether the item responds to mouse and
+  key events.
 */
+
 /*!
-    \property QFxWebView::interactive
-    \brief controls whether the item responds to mouse and key events.
+  \property QFxWebView::interactive
+
+  \brief controls whether the item responds to mouse and key events.
 */
 bool QFxWebView::interactive() const
 {
@@ -458,19 +463,19 @@ void QFxWebView::paintPage(const QRect& r)
 }
 
 /*!
-    \qmlproperty int WebView::cacheSize
-    This property holds the maximum number of pixels of image cache to allow
+  \qmlproperty int WebView::cacheSize
 
-    The default is 0.1 megapixels.
-
-    The cache will not be larger than the (unscaled) size of the WebView.
+  This property holds the maximum number of pixels of image cache to
+  allow. The default is 0.1 megapixels. The cache will not be larger
+  than the (unscaled) size of the WebView.
 */
-/*!
-    \property QFxWebView::cacheSize
-    \brief the maximum number of pixels of image cache to allow
-    The default is 0.1 megapixels.
 
-    The cache will not be larger than the (unscaled) size of the QFxWebView.
+/*!
+  \property QFxWebView::cacheSize
+
+  The maximum number of pixels of image cache to allow. The default
+  is 0.1 megapixels. The cache will not be larger than the (unscaled)
+  size of the QFxWebView.
 */
 int QFxWebView::cacheSize() const
 {
@@ -1026,7 +1031,7 @@ public:
         propertyValues(paramValues),
         webview(view)
     {
-        QmlEngine *engine = webview->itemContext()->engine();
+        QmlEngine *engine = qmlEngine(webview);
         component = new QmlComponent(engine, url, this);
         item = 0;
         connect(engine, SIGNAL(statusChanged(Status)), this, SLOT(qmlLoaded()));
@@ -1035,7 +1040,7 @@ public:
 public Q_SLOTS:
     void qmlLoaded()
     {
-        item = qobject_cast<QFxItem*>(component->create(webview->itemContext()));
+        item = qobject_cast<QFxItem*>(component->create(qmlContext(webview)));
         item->setParent(webview);
         for (int i=0; i<propertyNames.count(); ++i) {
             if (propertyNames[i] != QLatin1String("type") && propertyNames[i] != QLatin1String("data")) {
@@ -1070,7 +1075,7 @@ QFxWebView *QFxWebPage::view()
 
 QObject *QFxWebPage::createPlugin(const QString &, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues)
 {
-    QUrl comp = view()->itemContext()->resolvedUri(url.toString());
+    QUrl comp = qmlContext(view())->resolvedUri(url.toString());
     return new QWidget_Dummy_Plugin(comp,view(),paramNames,paramValues);
 }
 

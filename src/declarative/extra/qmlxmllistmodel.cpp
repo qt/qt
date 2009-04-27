@@ -87,7 +87,7 @@ class QmlXmlListModelPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlXmlListModel)
 public:
-    QmlXmlListModelPrivate() : size(-1), highestRole(Qt::UserRole), reply(0), context(0), roleObjects(this) {}
+    QmlXmlListModelPrivate() : size(-1), highestRole(Qt::UserRole), reply(0), roleObjects(this) {}
 
     QString src;
     QString query;
@@ -100,7 +100,6 @@ public:
     QNetworkReply *reply;
     mutable QByteArray xml;
     QString prefix;
-    QmlContext *context;
 
     struct RoleList : public QmlConcreteList<XmlListModelRole *>
     {
@@ -144,7 +143,6 @@ QmlXmlListModel::QmlXmlListModel(QObject *parent)
     : QListModelInterface(*(new QmlXmlListModelPrivate), parent)
 {
     Q_D(QmlXmlListModel);
-    d->context = QmlContext::activeContext();
 }
 
 QmlXmlListModel::~QmlXmlListModel()
@@ -249,7 +247,7 @@ void QmlXmlListModel::fetch()
 
     QNetworkRequest req((QUrl(d->src)));
     req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
-    d->reply = d->context->engine()->networkAccessManager()->get(req);
+    d->reply = qmlContext(this)->engine()->networkAccessManager()->get(req);
     QObject::connect(d->reply, SIGNAL(finished()),
                     this, SLOT(requestFinished()));
 }
