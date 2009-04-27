@@ -100,7 +100,18 @@ QmlMetaProperty::~QmlMetaProperty()
 // ### not thread safe
 static QHash<const QMetaObject *, QMetaPropertyEx> qmlCacheDefProp;
 
+
 /*!
+    Creates a QmlMetaProperty for the default property of \a obj. If there is no
+    default property, an invalid QmlMetaProperty will be created.
+ */
+QmlMetaProperty::QmlMetaProperty(QObject *obj)
+{
+    initDefault(obj);
+}
+
+/*!
+    \internal
     Creates a QmlMetaProperty for the default property of \a obj. If there is no
     default property, an invalid QmlMetaProperty will be created.
  */
@@ -108,6 +119,11 @@ QmlMetaProperty::QmlMetaProperty(QObject *obj, QmlContext *ctxt)
 : d(new QmlMetaPropertyPrivate)
 {
     d->context = ctxt;
+    initDefault(obj);
+}
+
+void QmlMetaProperty::initDefault(QObject *obj)
+{
     if(!obj)
         return;
 
@@ -159,6 +175,16 @@ static QHash<const QMetaObject *, QHash<QString, QMetaPropertyEx> > qmlCacheProp
 /*!
     Creates a QmlMetaProperty for the property \a name of \a obj.
  */
+QmlMetaProperty::QmlMetaProperty(QObject *obj, const QString &name)
+: d(new QmlMetaPropertyPrivate)
+{
+    initProperty(obj, name);
+}
+
+/*!
+    \internal
+    Creates a QmlMetaProperty for the property \a name of \a obj.
+ */
 QmlMetaProperty::QmlMetaProperty(QObject *obj, const QString &name, QmlContext *ctxt)
 : d(new QmlMetaPropertyPrivate)
 {
@@ -167,6 +193,11 @@ QmlMetaProperty::QmlMetaProperty(QObject *obj, const QString &name, QmlContext *
 #endif
 
     d->context = ctxt;
+    initProperty(obj, name);
+}
+
+void QmlMetaProperty::initProperty(QObject *obj, const QString &name)
+{
     d->name = name;
     d->object = obj;
     if(name.isEmpty() || !obj)
