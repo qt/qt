@@ -458,6 +458,10 @@ void tst_QGL::partialGLWidgetUpdates()
 
     widget.paintEventRegion = QRegion();
     widget.repaint(50, 50, 50, 50);
+#ifdef Q_WS_MAC
+    // repaint() is not immediate on the Mac; it has to go through the event loop.
+    QTest::qWait(200);
+#endif
     if (supportsPartialUpdates)
         QCOMPARE(widget.paintEventRegion, QRegion(50, 50, 50, 50));
     else
