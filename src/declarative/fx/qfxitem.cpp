@@ -816,7 +816,7 @@ void QFxItem::setQml(const QString &qml)
     }
 
     d->_qml = qml;
-    d->_qmlurl = itemContext()->resolvedUri(qml);
+    d->_qmlurl = qmlContext(this)->resolvedUri(qml);
     d->qmlItem = 0;
 
     if(d->_qml.isEmpty()) {
@@ -831,7 +831,7 @@ void QFxItem::setQml(const QString &qml)
         emit qmlChanged();
     } else {
         d->_qmlcomp = 
-            new QmlComponent(itemContext()->engine(), d->_qmlurl, this);
+            new QmlComponent(qmlEngine(this), d->_qmlurl, this);
         if(!d->_qmlcomp->isLoading())
             qmlLoaded();
         else
@@ -852,12 +852,12 @@ void QFxItem::qmlLoaded()
             if(c->isLoading())
                 continue;
 
-            QmlContext *ctxt = new QmlContext(itemContext());
+            QmlContext *ctxt = new QmlContext(qmlContext(this));
             QObject* o = c ? c->create(ctxt):0;
             QFxItem* ret = qobject_cast<QFxItem*>(o);
             if (ret) {
                 ret->setItemParent(this);
-                QScriptValue v = itemContext()->engine()->scriptEngine()->newQObject(ret);
+                QScriptValue v = qmlEngine(this)->scriptEngine()->newQObject(ret);
                 emit newChildCreated(d->_qmlnewloading.at(i).toString(),v);
             }
 
@@ -870,7 +870,7 @@ void QFxItem::qmlLoaded()
 
     // setQml...
     if (d->_qmlcomp) {
-        QmlContext *ctxt = new QmlContext(itemContext());
+        QmlContext *ctxt = new QmlContext(qmlContext(this));
         ctxt->addDefaultObject(this);
 
         QObject *obj = d->_qmlcomp->create(ctxt);
@@ -1885,12 +1885,12 @@ void QFxItem::newChild(const QString &type)
 {
     Q_D(QFxItem);
 
-    QUrl url = itemContext()->resolvedUri(type);
+    QUrl url = qmlContext(this)->resolvedUri(type);
     if (url.isEmpty())
         return;
 
     d->_qmlnewloading.append(url);
-    d->_qmlnewcomp.append(new QmlComponent(itemContext()->engine(), url, this));
+    d->_qmlnewcomp.append(new QmlComponent(qmlEngine(this), url, this));
 
     if(!d->_qmlnewcomp.last()->isLoading())
         qmlLoaded();
@@ -1980,14 +1980,6 @@ void QFxItem::updateTransform()
 
 void QFxItem::transformChanged(const QSimpleCanvas::Matrix &)
 {
-}
-
-/*!
-  Returns the current QML context for this item.
-*/
-QmlContext *QFxItem::itemContext() const
-{
-    return QmlEngine::contextForObject(this);
 }
 
 QmlStateGroup *QFxItemPrivate::states()

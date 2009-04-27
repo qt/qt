@@ -558,7 +558,7 @@ void QFxGridViewPrivate::createHighlight()
         return;
 
     if (currentItem) {
-        QmlContext *highlightContext = new QmlContext(q->itemContext());
+        QmlContext *highlightContext = new QmlContext(qmlContext(q));
         QObject *nobj = highlightComponent->create(highlightContext);
         if (nobj) {
             highlightContext->setParent(nobj);
@@ -751,7 +751,7 @@ void QFxGridView::setModel(const QVariant &model)
         d->model = vim;
     } else {
         if (!d->ownModel) {
-            d->model = new QFxVisualItemModel(itemContext());
+            d->model = new QFxVisualItemModel(qmlContext(this));
             d->ownModel = true;
         }
         d->model->setModel(model);
@@ -796,7 +796,7 @@ void QFxGridView::setDelegate(QmlComponent *delegate)
 {
     Q_D(QFxGridView);
     if (!d->ownModel) {
-        d->model = new QFxVisualItemModel(itemContext());
+        d->model = new QFxVisualItemModel(qmlContext(this));
         d->ownModel = true;
     }
     d->model->setDelegate(delegate);

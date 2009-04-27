@@ -109,7 +109,7 @@ void QFxComponentInstance::create()
 {
     Q_D(QFxComponentInstance);
     if(d->component) {
-        QObject *obj= d->component->create(itemContext());
+        QObject *obj= d->component->create(qmlContext(this));
         if(obj) {
             QFxItem *objitem = qobject_cast<QFxItem *>(obj);
             if(objitem) {

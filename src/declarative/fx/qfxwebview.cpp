@@ -211,7 +211,8 @@ void QFxWebView::init()
     pal.setBrush(QPalette::Base, QColor::fromRgbF(0, 0, 0, 0));
     wp->setPalette(pal);
 
-    wp->setNetworkAccessManager(itemContext()->engine()->networkAccessManager());
+    // ### Need to delay this as qmlEngine() is not set yet
+    wp->setNetworkAccessManager(qmlEngine(this)->networkAccessManager());
     setPage(wp);
 
     // XXX settable from QML?
@@ -313,7 +314,7 @@ void QFxWebView::setUrl(const QString &n)
 
     QUrl url(n);
     if (url.isRelative())
-        url = itemContext()->resolvedUrl(n);
+        url = qmlContext(this)->resolvedUrl(n);
 
     if (isComponentComplete())
         d->page->mainFrame()->load(url);
@@ -1030,7 +1031,7 @@ public:
         propertyValues(paramValues),
         webview(view)
     {
-        QmlEngine *engine = webview->itemContext()->engine();
+        QmlEngine *engine = qmlEngine(webview);
         component = new QmlComponent(engine, url, this);
         item = 0;
         connect(engine, SIGNAL(statusChanged(Status)), this, SLOT(qmlLoaded()));
@@ -1039,7 +1040,7 @@ public:
 public Q_SLOTS:
     void qmlLoaded()
     {
-        item = qobject_cast<QFxItem*>(component->create(webview->itemContext()));
+        item = qobject_cast<QFxItem*>(component->create(qmlContext(webview)));
         item->setParent(webview);
         for (int i=0; i<propertyNames.count(); ++i) {
             if (propertyNames[i] != QLatin1String("type") && propertyNames[i] != QLatin1String("data")) {
@@ -1074,7 +1075,7 @@ QFxWebView *QFxWebPage::view()
 
 QObject *QFxWebPage::createPlugin(const QString &, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues)
 {
-    QUrl comp = view()->itemContext()->resolvedUri(url.toString());
+    QUrl comp = qmlContext(view())->resolvedUri(url.toString());
     return new QWidget_Dummy_Plugin(comp,view(),paramNames,paramValues);
 }
 

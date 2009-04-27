@@ -215,8 +215,6 @@ public:
     bool keepMouseGrab() const;
     void setKeepMouseGrab(bool);
 
-    QmlContext *itemContext() const;
-
 public Q_SLOTS:
     void newChild(const QString &url);
 

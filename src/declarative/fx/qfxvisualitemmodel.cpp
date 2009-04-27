@@ -542,7 +542,7 @@ QVariant QFxVisualItemModel::evaluate(int index, const QString &expression, QObj
         QObject *nobj = d->m_cache[index];
         QFxItem *item = qobject_cast<QFxItem *>(nobj);
         if (item) {
-            QmlExpression e(item->itemContext(), expression, objectContext);
+            QmlExpression e(qmlContext(item), expression, objectContext);
             e.setTrackChange(false);
             value = e.value();
         }

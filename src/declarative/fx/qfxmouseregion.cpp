@@ -315,7 +315,8 @@ void QFxMouseRegionPrivate::bindButtonValue(Qt::MouseButton b)
         default:
             bString = QLatin1String("None"); break;
     }
-    q->itemContext()->setContextProperty(QLatin1String("mouseButton"), bString);
+    // ### is this needed anymore?
+    qmlContext(q)->setContextProperty(QLatin1String("mouseButton"), bString);
 }
 
 void QFxMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
