@@ -627,7 +627,7 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
     lastPos = event->pos();
 }
 
-void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *)
 {
     Q_Q(QFxFlickable);
 
