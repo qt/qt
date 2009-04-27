@@ -68,7 +68,7 @@ static const unsigned int MaximumGestureRecognitionTimeout = 2000;
 QGestureManager::QGestureManager(QObject *parent)
     : QObject(parent), targetWidget(0), eventDeliveryDelayTimeout(300),
       delayedPressTimer(0), lastMousePressEvent(QEvent::None, QPoint(), Qt::NoButton, 0, 0),
-      state(NotGesture)
+      lastGestureId(0), state(NotGesture)
 {
     qRegisterMetaType<Qt::DirectionType>();
     qRegisterMetaType<Qt::GestureState>();
