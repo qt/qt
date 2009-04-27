@@ -2132,6 +2132,10 @@ QWidget *QWidget::find(WId id)
     If a widget is non-native (alien) and winId() is invoked on it, that widget
     will be provided a native handle.
 
+    On Mac OS X, the type returned depends on which framework Qt was linked
+    against. If Qt is using Carbon, the {WId} is actually an HIViewRef. If Qt
+    is using Cocoa, {WId} is a pointer to an NSView.
+
     \note We recommend that you do not store this value as it is likely to
     change at run-time.
 
