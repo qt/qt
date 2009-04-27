@@ -2876,12 +2876,6 @@ void QStyleSheetStyle::polish(QWidget *w)
     QRenderRule rule = renderRule(w, PseudoElement_None, PseudoClass_Any);
     if (rule.hasDrawable() || rule.hasBox()) {
         if (w->metaObject() == &QWidget::staticMetaObject
-#ifndef QT_NO_MENUBAR
-              || qobject_cast<QMenuBar *>(w)
-#endif
-#ifndef QT_NO_MENU
-              || qobject_cast<QMenu *>(w)
-#endif
 #ifndef QT_NO_ITEMVIEWS
               || qobject_cast<QHeaderView *>(w)
 #endif
@@ -4164,9 +4158,8 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 rule.configurePalette(&frmOpt.palette, QPalette::Text, QPalette::Base);
                 frmOpt.rect = rule.borderRect(frmOpt.rect);
                 baseStyle()->drawControl(ce, &frmOpt, p, w);
-            } else {
-                rule.drawBorder(p, rule.borderRect(opt->rect));
             }
+            // else, borders are already drawn in PE_Widget
         }
         return;
 
@@ -4220,12 +4213,6 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
     QRect rect = opt->rect;
 
     switch (pe) {
-    case PE_PanelStatusBar:
-        if (rule.hasDrawable()) {
-            rule.drawRule(p, opt->rect);
-            return;
-        }
-        break;
 
     case PE_FrameStatusBar: {
         QRenderRule subRule = renderRule(w->parentWidget(), opt, PseudoElement_Item);
@@ -4337,36 +4324,34 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         return;
 
     case PE_Widget:
-        if (!rule.hasBackground()) {
+        if (!rule.hasDrawable()) {
             QWidget *container = containerWidget(w);
             if (autoFillDisabledWidgets->contains(container)
-                && (container == w || !renderRule(container, opt).hasBackground())) {
+                && (container == w || !renderRule(container, opt).hasDrawable())) {
                 //we do not have a background, but we disabled the autofillbackground anyway. so fill the background now.
                 // (this may happen if we have rules like :focus)
                 p->fillRect(opt->rect, opt->palette.brush(w->backgroundRole()));
             }
             break;
         }
-
 #ifndef QT_NO_SCROLLAREA
         if (const QAbstractScrollArea *sa = qobject_cast<const QAbstractScrollArea *>(w)) {
             const QAbstractScrollAreaPrivate *sap = sa->d_func();
             rule.drawBackground(p, opt->rect, sap->contentsOffset());
-        } else
-#endif
-        {
-            rule.drawBackground(p, opt->rect);
+            if (rule.hasBorder())
+                rule.drawBorder(p, rule.borderRect(opt->rect));
+            break;
         }
-
-        return;
-
-    case PE_FrameMenu:
+#endif
+    //fall tghought
+    case PE_PanelMenu:
     case PE_PanelMenuBar:
-        if (!rule.hasNativeBorder()) {
-            rule.drawBorder(p, rule.borderRect(opt->rect));
+    case PE_PanelStatusBar:
+        if(rule.hasDrawable()) {
+            rule.drawRule(p, opt->rect);
             return;
         }
-        break;
+    break;
 
     case PE_IndicatorToolBarSeparator:
     case PE_IndicatorToolBarHandle: {
