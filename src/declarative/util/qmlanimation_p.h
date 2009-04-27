@@ -52,7 +52,7 @@
 #include <QVariantAnimation>
 #include <QAnimationGroup>
 #include <QColor>
-#include <gfxvalueproxy.h>
+#include <qmltimelinevalueproxy.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -112,13 +112,13 @@ private:
     DeletionPolicy policy;
 };
 
-//animates GfxValue (assumes start and end values will be reals or compatible)
-class GfxValueAnimator : public QVariantAnimation
+//animates QmlTimeLineValue (assumes start and end values will be reals or compatible)
+class QmlTimeLineValueAnimator : public QVariantAnimation
 {
 public:
-    GfxValueAnimator(QObject *parent = 0) : QVariantAnimation(parent), animValue(0), policy(KeepWhenStopped) {}
-    GfxValueAnimator(GfxValue *value, QObject *parent = 0) : QVariantAnimation(parent), animValue(value), policy(KeepWhenStopped) {}
-    void setAnimValue(GfxValue *value, DeletionPolicy p)
+    QmlTimeLineValueAnimator(QObject *parent = 0) : QVariantAnimation(parent), animValue(0), policy(KeepWhenStopped) {}
+    QmlTimeLineValueAnimator(QmlTimeLineValue *value, QObject *parent = 0) : QVariantAnimation(parent), animValue(value), policy(KeepWhenStopped) {}
+    void setAnimValue(QmlTimeLineValue *value, DeletionPolicy p)
     {
         if (state() == Running)
             stop();
@@ -141,7 +141,7 @@ protected:
     }
 
 private:
-    GfxValue *animValue;
+    QmlTimeLineValue *animValue;
     DeletionPolicy policy;
 };
 
@@ -214,10 +214,10 @@ public:
     bool fromSourced;
     QColor fromValue;
     QColor toValue;
-    GfxValueAnimator *ca;
+    QmlTimeLineValueAnimator *ca;
     virtual void valueChanged(qreal);
 
-    GfxValueProxy<QmlColorAnimationPrivate> value;
+    QmlTimeLineValueProxy<QmlColorAnimationPrivate> value;
 };
 
 class QmlRunScriptActionPrivate : public QmlAbstractAnimationPrivate
@@ -294,10 +294,10 @@ public:
 
     bool fromSourced;
     qreal fromValue;
-    GfxValueAnimator *na;
+    QmlTimeLineValueAnimator *na;
     virtual void valueChanged(qreal);
 
-    GfxValueProxy<QmlNumericAnimationPrivate> value;
+    QmlTimeLineValueProxy<QmlNumericAnimationPrivate> value;
 };
 
 class QmlAnimationGroupPrivate : public QmlAbstractAnimationPrivate
@@ -359,10 +359,10 @@ public:
 
     bool fromSourced;
     QVariant fromValue;
-    GfxValueAnimator *va;
+    QmlTimeLineValueAnimator *va;
     virtual void valueChanged(qreal);
 
-    GfxValueProxy<QmlVariantAnimationPrivate> value;
+    QmlTimeLineValueProxy<QmlVariantAnimationPrivate> value;
 
     static QVariant interpolateVariant(const QVariant &from, const QVariant &to, qreal progress);
     static void convertVariant(QVariant &variant, QVariant::Type type);

@@ -43,13 +43,12 @@
 #include "qfxflickable_p.h"
 
 #include <QGraphicsSceneMouseEvent>
-#include <gfxeasing.h>
 #include <QPointer>
 #include <QTimer>
 
 QT_BEGIN_NAMESPACE
 
-ElasticValue::ElasticValue(GfxValue &val)
+ElasticValue::ElasticValue(QmlTimeLineValue &val)
     : _value(val)
 {
     _to = _value.value();
@@ -101,8 +100,8 @@ QFxFlickablePrivate::QFxFlickablePrivate()
     , vTime(0), atXEnd(false), atXBeginning(true), pageXPosition(0.), pageWidth(0.)
     , atYEnd(false), atYBeginning(true), pageYPosition(0.), pageHeight(0.)
 {
-    fixupXEvent = GfxEvent::gfxEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupX>(&_moveX, this);
-    fixupYEvent = GfxEvent::gfxEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupY>(&_moveY, this);
+    fixupXEvent = QmlTimeLineEvent::timeLineEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupX>(&_moveX, this);
+    fixupYEvent = QmlTimeLineEvent::timeLineEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupY>(&_moveY, this);
 }
 
 void QFxFlickablePrivate::init()
@@ -128,11 +127,11 @@ void QFxFlickablePrivate::fixupX()
     vTime = _tl.time();
 
     if(_moveX.value() > q->minXExtent() || q->maxXExtent() > 0) {
-        _tl.move(_moveX, q->minXExtent(), GfxEasing(GfxEasing::InOutQuad), 200);
+        _tl.move(_moveX, q->minXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         flicked = false;
         //emit flickingChanged();
     } else if(_moveX.value() < q->maxXExtent()) {
-        _tl.move(_moveX,  q->maxXExtent(), GfxEasing(GfxEasing::InOutQuad), 200);
+        _tl.move(_moveX,  q->maxXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         flicked = false;
         //emit flickingChanged();
     }
@@ -147,10 +146,10 @@ void QFxFlickablePrivate::fixupY()
     vTime = _tl.time();
 
     if(_moveY.value() > q->minYExtent() || (q->maxYExtent() > q->minYExtent())) {
-        _tl.move(_moveY, q->minYExtent(), GfxEasing(GfxEasing::InOutQuad), 200);
+        _tl.move(_moveY, q->minYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else if(_moveY.value() < q->maxYExtent()) {
-        _tl.move(_moveY,  q->maxYExtent(), GfxEasing(GfxEasing::InOutQuad), 200);
+        _tl.move(_moveY,  q->maxYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else {
         flicked = false;

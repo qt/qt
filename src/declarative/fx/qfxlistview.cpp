@@ -43,7 +43,6 @@
 #include "qmlfollow.h"
 #include "qlistmodelinterface.h"
 #include "qfxvisualitemmodel.h"
-#include "gfxeasing.h"
 #include "qfxlistview.h"
 #include <qmlexpression.h>
 
@@ -749,7 +748,7 @@ void QFxListViewPrivate::fixupY()
         if (currentItem) {
             moveReason = Mouse;
             _tl.clear();
-            _tl.move(_moveY, -(currentItem->position() - snapPos), GfxEasing(GfxEasing::InOutQuad), 200);
+            _tl.move(_moveY, -(currentItem->position() - snapPos), QEasingCurve(QEasingCurve::InOutQuad), 200);
         }
     } else if (currItemMode == QFxListView::Snap) {
         moveReason = Mouse;
@@ -761,7 +760,7 @@ void QFxListViewPrivate::fixupY()
             else if (pos < -q->minYExtent())
                 pos = -q->minYExtent();
             _tl.clear();
-            _tl.move(_moveY, -(pos), GfxEasing(GfxEasing::InOutQuad), 200);
+            _tl.move(_moveY, -(pos), QEasingCurve(QEasingCurve::InOutQuad), 200);
         }
     }
 }
@@ -775,7 +774,7 @@ void QFxListViewPrivate::fixupX()
     if (currItemMode == QFxListView::SnapAuto) {
         moveReason = Mouse;
         _tl.clear();
-        _tl.move(_moveX, -(currentItem->position() - snapPos), GfxEasing(GfxEasing::InOutQuad), 200);
+        _tl.move(_moveX, -(currentItem->position() - snapPos), QEasingCurve(QEasingCurve::InOutQuad), 200);
     } else if (currItemMode == QFxListView::Snap) {
         moveReason = Mouse;
         int idx = snapIndex();
@@ -786,7 +785,7 @@ void QFxListViewPrivate::fixupX()
             else if (pos < -q->minXExtent())
                 pos = -q->minXExtent();
             _tl.clear();
-            _tl.move(_moveX, -(pos), GfxEasing(GfxEasing::InOutQuad), 200);
+            _tl.move(_moveX, -(pos), QEasingCurve(QEasingCurve::InOutQuad), 200);
         }
     }
 }

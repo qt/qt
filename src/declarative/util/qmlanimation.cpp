@@ -40,19 +40,19 @@
 ****************************************************************************/
 
 #include "qmlanimation.h"
-#include "gfxtimeline.h"
 #include "qvariant.h"
 #include "qcolor.h"
 #include "qfile.h"
-#include "gfxeasing.h"
 #include "qmlpropertyvaluesource.h"
 #include "qml.h"
 #include "qmlanimation_p.h"
-#include "gfxtimeline.h"
 #include "qmlbehaviour.h"
 #include <QParallelAnimationGroup>
 #include <QSequentialAnimationGroup>
 #include <QtCore/qset.h>
+#include <QtCore/qrect.h>
+#include <QtCore/qpoint.h>
+#include <QtCore/qsize.h>
 #include <QtDeclarative/qmlexpression.h>
 #include <private/qmlstringconverters_p.h>
 #include <private/qvariantanimation_p.h>
@@ -653,7 +653,7 @@ QmlColorAnimation::~QmlColorAnimation()
 void QmlColorAnimationPrivate::init()
 {
     Q_Q(QmlColorAnimation);
-    ca = new GfxValueAnimator(q);
+    ca = new QmlTimeLineValueAnimator(q);
     ca->setStartValue(QVariant(0.0f));
     ca->setEndValue(QVariant(1.0f));
 }
@@ -791,7 +791,7 @@ void QmlColorAnimation::prepare(QmlMetaProperty &p)
     else
         d->property = d->userProperty;
     d->fromSourced = false;
-    d->value.GfxValue::setValue(0.);
+    d->value.QmlTimeLineValue::setValue(0.);
     d->ca->setAnimValue(&d->value, QAbstractAnimation::KeepWhenStopped);
 }
 
@@ -808,7 +808,7 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
     Q_D(QmlColorAnimation);
     Q_UNUSED(direction);
 
-    struct NTransitionData : public GfxValue
+    struct NTransitionData : public QmlTimeLineValue
     {
         QmlStateActions actions;
         void write(QmlMetaProperty &property, const QColor &color)
@@ -820,7 +820,7 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
 
         void setValue(qreal v)
         {
-            GfxValue::setValue(v);
+            QmlTimeLineValue::setValue(v);
             for(int ii = 0; ii < actions.count(); ++ii) {
                 Action &action = actions[ii];
 
@@ -1362,7 +1362,7 @@ QmlNumericAnimation::~QmlNumericAnimation()
 void QmlNumericAnimationPrivate::init()
 {
     Q_Q(QmlNumericAnimation);
-    na = new GfxValueAnimator(q);
+    na = new QmlTimeLineValueAnimator(q);
     na->setStartValue(QVariant(0.0f));
     na->setEndValue(QVariant(1.0f));
 }
@@ -1447,7 +1447,57 @@ void QmlNumericAnimation::setTo(qreal t)
     emit toChanged(t);
 }
 
-/* XML docs in GfxEasing */
+/*!
+    \qmlproperty string NumericAnimation::easing
+    \brief the easing curve used for the transition.
+
+    Available values are:
+
+    \list
+    \i \e easeNone - Easing equation function for a simple linear tweening, with no easing.
+    \i \e easeInQuad - Easing equation function for a quadratic (t^2) easing in: accelerating from zero velocity.
+    \i \e easeOutQuad - Easing equation function for a quadratic (t^2) easing out: decelerating to zero velocity.
+    \i \e easeInOutQuad - Easing equation function for a quadratic (t^2) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInQuad - Easing equation function for a quadratic (t^2) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeInCubic - Easing equation function for a cubic (t^3) easing in: accelerating from zero velocity.
+    \i \e easeOutCubic - Easing equation function for a cubic (t^3) easing out: decelerating from zero velocity.
+    \i \e easeInOutCubic - Easing equation function for a cubic (t^3) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInCubic - Easing equation function for a cubic (t^3) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeInQuart - Easing equation function for a quartic (t^4) easing in: accelerating from zero velocity.
+    \i \e easeOutQuart - Easing equation function for a quartic (t^4) easing out: decelerating from zero velocity.
+    \i \e easeInOutQuart - Easing equation function for a quartic (t^4) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInQuart - Easing equation function for a quartic (t^4) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeInQuint - Easing equation function for a quintic (t^5) easing in: accelerating from zero velocity.
+    \i \e easeOutQuint - Easing equation function for a quintic (t^5) easing out: decelerating from zero velocity.
+    \i \e easeInOutQuint - Easing equation function for a quintic (t^5) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInQuint - Easing equation function for a quintic (t^5) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeInSine - Easing equation function for a sinusoidal (sin(t)) easing in: accelerating from zero velocity.
+    \i \e easeOutSine - Easing equation function for a sinusoidal (sin(t)) easing out: decelerating from zero velocity.
+    \i \e easeInOutSine - Easing equation function for a sinusoidal (sin(t)) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInSine - Easing equation function for a sinusoidal (sin(t)) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeInExpo - Easing equation function for an exponential (2^t) easing in: accelerating from zero velocity.
+    \i \e easeOutExpo - Easing equation function for an exponential (2^t) easing out: decelerating from zero velocity.
+    \i \e easeInOutExpo - Easing equation function for an exponential (2^t) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInExpo - Easing equation function for an exponential (2^t) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeInCirc - Easing equation function for a circular (sqrt(1-t^2)) easing in: accelerating from zero velocity.
+    \i \e easeOutCirc - Easing equation function for a circular (sqrt(1-t^2)) easing out: decelerating from zero velocity.
+    \i \e easeInOutCirc - Easing equation function for a circular (sqrt(1-t^2)) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInCirc - Easing equation function for a circular (sqrt(1-t^2)) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeInElastic - Easing equation function for an elastic (exponentially decaying sine wave) easing in: accelerating from zero velocity.  The peak amplitude can be set with the \e amplitude parameter, and the period of decay by the \e period parameter.
+    \i \e easeOutElastic - Easing equation function for an elastic (exponentially decaying sine wave) easing out: decelerating from zero velocity.  The peak amplitude can be set with the \e amplitude parameter, and the period of decay by the \e period parameter.
+    \i \e easeInOutElastic - Easing equation function for an elastic (exponentially decaying sine wave) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInElastic - Easing equation function for an elastic (exponentially decaying sine wave) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeInBack - Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing in: accelerating from zero velocity.
+    \i \e easeOutBack - Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing out: decelerating from zero velocity.
+    \i \e easeInOutBack - Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInBack - Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing out/in: deceleration until halfway, then acceleration.
+    \i \e easeOutBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing out: decelerating from zero velocity.
+    \i \e easeInBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing in: accelerating from zero velocity.
+    \i \e easeInOutBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing in/out: acceleration until halfway, then deceleration.
+    \i \e easeOutInBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing out/in: deceleration until halfway, then acceleration.
+    \endlist
+*/
+
 /*!
     \property QmlNumericAnimation::easing
     This property holds the easing curve to use.
@@ -1550,7 +1600,7 @@ void QmlNumericAnimation::prepare(QmlMetaProperty &p)
     else
         d->property = d->userProperty;
     d->fromSourced = false;
-    d->value.GfxValue::setValue(0.);
+    d->value.QmlTimeLineValue::setValue(0.);
     d->na->setAnimValue(&d->value, QAbstractAnimation::KeepWhenStopped);
 }
 
@@ -1567,12 +1617,12 @@ void QmlNumericAnimation::transition(QmlStateActions &actions,
     Q_D(QmlNumericAnimation);
     Q_UNUSED(direction);
 
-    struct NTransitionData : public GfxValue
+    struct NTransitionData : public QmlTimeLineValue
     {
         QmlStateActions actions;
         void setValue(qreal v)
         {
-            GfxValue::setValue(v);
+            QmlTimeLineValue::setValue(v);
             for(int ii = 0; ii < actions.count(); ++ii) {
                 Action &action = actions[ii];
 
@@ -1901,7 +1951,7 @@ QmlVariantAnimation::~QmlVariantAnimation()
 void QmlVariantAnimationPrivate::init()
 {
     Q_Q(QmlVariantAnimation);
-    va = new GfxValueAnimator(q);
+    va = new QmlTimeLineValueAnimator(q);
     va->setStartValue(QVariant(0.0f));
     va->setEndValue(QVariant(1.0f));
 }
@@ -2107,7 +2157,7 @@ void QmlVariantAnimation::prepare(QmlMetaProperty &p)
         d->convertVariant(d->from.value, (QVariant::Type)d->property.propertyType());
 
     d->fromSourced = false;
-    d->value.GfxValue::setValue(0.);
+    d->value.QmlTimeLineValue::setValue(0.);
     d->va->setAnimValue(&d->value, QAbstractAnimation::KeepWhenStopped);
 }
 
@@ -2118,12 +2168,12 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
     Q_D(QmlVariantAnimation);
     Q_UNUSED(direction);
 
-    struct NTransitionData : public GfxValue
+    struct NTransitionData : public QmlTimeLineValue
     {
         QmlStateActions actions;
         void setValue(qreal v)
         {
-            GfxValue::setValue(v);
+            QmlTimeLineValue::setValue(v);
             for(int ii = 0; ii < actions.count(); ++ii) {
                 Action &action = actions[ii];
 

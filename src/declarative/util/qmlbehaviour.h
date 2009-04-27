@@ -45,8 +45,6 @@
 #include <qmlpropertyvaluesource.h>
 #include <qml.h>
 #include <qmlstate.h>
-#include <gfxtimeline.h>
-
 
 QT_BEGIN_HEADER
 

@@ -42,7 +42,6 @@
 #ifndef QSIMPLECANVASITEM_H
 #define QSIMPLECANVASITEM_H
 
-#include <gfxtimeline.h>
 #include <qfxglobal.h>
 #include <qsimplecanvas.h>
 #include <QObject>

@@ -43,7 +43,6 @@
 #include <QDebug>
 #include <QPen>
 #include <QEvent>
-#include <gfxeasing.h>
 #include "qmlbindablevalue.h"
 #include "qmlstate.h"
 #include "qlistmodelinterface.h"
@@ -595,6 +594,8 @@ void QFxPathViewPrivate::regenerate()
     int minI = -1;
     for(int i=0; i<numItems; i++){
         QFxItem *item = model->item(i);
+        if (!item)
+            return;
         items.append(item);
         item->setZ(i);
         item->setParent(q);
@@ -805,7 +806,7 @@ void QFxPathViewPrivate::snapToCurrent()
             rounds--;
         if(distance > 50)
             rounds++;
-        tl.move(moveOffset, targetOffset + 100.0*(-rounds), GfxEasing(GfxEasing::InOutQuad),
+        tl.move(moveOffset, targetOffset + 100.0*(-rounds), QEasingCurve(QEasingCurve::InOutQuad),
                 int(100*items.count()*qMax((qreal)(2.0/items.count()),(qreal)qAbs(rounds))));
         tl.execute(fixupOffsetEvent);
         return;
@@ -813,16 +814,16 @@ void QFxPathViewPrivate::snapToCurrent()
 
     if (targetOffset - _offset > 50.0) {
         qreal distance = 100 - targetOffset + _offset;
-        tl.move(moveOffset, 0.0, GfxEasing(GfxEasing::OutQuad), int(200 * _offset / distance));
+        tl.move(moveOffset, 0.0, QEasingCurve(QEasingCurve::OutQuad), int(200 * _offset / distance));
         tl.set(moveOffset, 100.0);
-        tl.move(moveOffset, targetOffset, GfxEasing(GfxEasing::InQuad), int(200 * (100-targetOffset) / distance));
+        tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::InQuad), int(200 * (100-targetOffset) / distance));
     } else if (targetOffset - _offset <= -50.0) {
         qreal distance = 100 - _offset + targetOffset;
-        tl.move(moveOffset, 100.0, GfxEasing(GfxEasing::OutQuad), int(200 * (100-_offset) / distance));
+        tl.move(moveOffset, 100.0, QEasingCurve(QEasingCurve::OutQuad), int(200 * (100-_offset) / distance));
         tl.set(moveOffset, 0.0);
-        tl.move(moveOffset, targetOffset, GfxEasing(GfxEasing::InQuad), int(200 * targetOffset / distance));
+        tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::InQuad), int(200 * targetOffset / distance));
     } else {
-        tl.move(moveOffset, targetOffset, GfxEasing(GfxEasing::InOutQuad), 200);
+        tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::InOutQuad), 200);
     }
 }
 

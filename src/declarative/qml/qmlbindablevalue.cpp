@@ -41,9 +41,7 @@
 
 #include <qml.h>
 #include "qmlbindablevalue.h"
-#include <gfxeasing.h>
 #include <qmlcontext.h>
-#include <gfxtimeline.h>
 #include <QVariant>
 #include <qfxperf.h>
 #include <QtCore/qdebug.h>

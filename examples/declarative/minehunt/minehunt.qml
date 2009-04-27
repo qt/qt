@@ -10,7 +10,7 @@
                     <Axis id="axis" xStart="20" xEnd="20" yStart="20" yEnd="0" />
                 </transform>
                 <front>
-                    <Image src="pics/cachepix-boxless.sci" width="40" height="40">
+                    <Image src="pics/front.png" width="40" height="40">
                         <Image anchors.horizontalCenter="{parent.horizontalCenter}"
                                anchors.verticalCenter="{parent.verticalCenter}"
                                 src="pics/flag.png" opacity="{modelData.hasFlag}">
@@ -23,7 +23,7 @@
                     </Image>
                 </front>
                 <back>
-                    <Image src="pics/cachepix-black.sci" width="40" height="40">
+                    <Image src="pics/back.png" width="40" height="40">
                         <Text anchors.horizontalCenter="{parent.horizontalCenter}" anchors.verticalCenter="{parent.verticalCenter}" 
                               text="{modelData.hint}" color="white" font.bold="true" 
                               opacity="{modelData.hasMine == false &amp;&amp; modelData.hint > 0}"/>
