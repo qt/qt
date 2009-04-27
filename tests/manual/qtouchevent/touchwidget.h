@@ -11,6 +11,7 @@ public:
     bool acceptTouchBegin, acceptTouchUpdate, acceptTouchEnd;
     bool seenTouchBegin, seenTouchUpdate, seenTouchEnd;
     bool closeWindowOnTouchEnd;
+    int touchPointCount;
 
     bool acceptMousePress, acceptMouseMove, acceptMouseRelease;
     bool seenMousePress, seenMouseMove, seenMouseRelease;
