@@ -26,6 +26,9 @@
      <property name="text">
       <string>Test Name</string>
      </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
     </widget>
    </item>
    <item>
@@ -37,6 +40,9 @@
      </property>
      <property name="text">
       <string>Test description</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>
