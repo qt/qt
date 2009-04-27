@@ -88,6 +88,7 @@ private:
 };
 QML_DECLARE_TYPE(QFxDrag);
 
+class QFxMouseEvent;
 class QFxMouseRegionPrivate;
 class Q_DECLARATIVE_EXPORT QFxMouseRegion : public QFxItem
 {
@@ -122,11 +123,11 @@ Q_SIGNALS:
     void pressedChanged();
     void positionChanged();
 
-    void pressed(int x, int y);
-    void pressAndHold(int x, int y);
-    void released(int x, int y, bool isClick, bool followsPressAndHold);
-    void clicked(int x, int y, bool followsPressAndHold);
-    void doubleClicked(int x, int y);
+    void pressed(QFxMouseEvent *mouse);
+    void pressAndHold(QFxMouseEvent *mouse);
+    void released(QFxMouseEvent *mouse);
+    void clicked(QFxMouseEvent *mouse);
+    void doubleClicked(QFxMouseEvent *mouse);
     void entered();
     void exited();
     void exitedWhilePressed();

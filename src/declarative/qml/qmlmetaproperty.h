@@ -72,8 +72,10 @@ public:
         Normal
     };
     QmlMetaProperty();
-    QmlMetaProperty(QObject *, QmlContext * = 0);
-    QmlMetaProperty(QObject *, const QString &, QmlContext * = 0);
+    QmlMetaProperty(QObject *);
+    QmlMetaProperty(QObject *, const QString &);
+    QmlMetaProperty(QObject *, QmlContext *);
+    QmlMetaProperty(QObject *, const QString &, QmlContext *);
     QmlMetaProperty(const QmlMetaProperty &);
     QmlMetaProperty &operator=(const QmlMetaProperty &);
     QmlMetaProperty(QObject *, int, PropertyCategory = Unknown, QmlContext * = 0);
@@ -125,6 +127,8 @@ public:
 
     int coreIndex() const;
 private:
+    void initDefault(QObject *obj);
+    void initProperty(QObject *obj, const QString &name);
     friend class QmlEnginePrivate;
     QmlMetaPropertyPrivate *d;
 };

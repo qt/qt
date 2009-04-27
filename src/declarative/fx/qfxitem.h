@@ -94,6 +94,7 @@ class QmlContext;
 class QmlState;
 class QmlTransition;
 class QFxTransform;
+class QFxKeyEvent;
 class QFxItemPrivate;
 class Q_DECLARATIVE_EXPORT QFxItem : public QSimpleCanvasItem, public QmlParserStatus
 {
@@ -181,13 +182,6 @@ public:
     int baselineOffset() const;
     void setBaselineOffset(int);
 
-    QFxAnchorLine left() const;
-    QFxAnchorLine right() const;
-    QFxAnchorLine horizontalCenter() const;
-    QFxAnchorLine top() const;
-    QFxAnchorLine bottom() const;
-    QFxAnchorLine verticalCenter() const;
-
     qreal rotation() const;
     void setRotation(qreal);
 
@@ -233,8 +227,8 @@ Q_SIGNALS:
     void focusChanged();
     void activeFocusChanged();
     void parentChanged();
-    void keyPress(QObject *event);
-    void keyRelease(QObject *event);
+    void keyPress(QFxKeyEvent *event);
+    void keyRelease(QFxKeyEvent *event);
     void rotationChanged();
     void scaleChanged();
     void opacityChanged();
@@ -264,8 +258,16 @@ protected:
     QFxItem(QFxItemPrivate &dd, QFxItem *parent = 0);
 
 private:
+    QFxAnchorLine left() const;
+    QFxAnchorLine right() const;
+    QFxAnchorLine horizontalCenter() const;
+    QFxAnchorLine top() const;
+    QFxAnchorLine bottom() const;
+    QFxAnchorLine verticalCenter() const;
+
     void init(QFxItem *parent);
     friend class QmlStatePrivate;
+    friend class QFxAnchors;
     Q_DISABLE_COPY(QFxItem)
     Q_DECLARE_PRIVATE(QFxItem)
 };
