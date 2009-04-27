@@ -52,7 +52,6 @@
 #include <qdebug.h>
 #include <qurl.h>
 #include "qlabel_p.h"
-#include "private/qstylesheetstyle_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -971,6 +970,13 @@ void QLabel::paintEvent(QPaintEvent *)
 #endif
     if (d->isTextLabel) {
         QRectF lr = d->layoutRect();
+        QStyleOption opt;
+        opt.initFrom(this);
+#ifndef QT_NO_STYLE_STYLESHEET
+        if (QStyleSheetStyle* cssStyle = qobject_cast<QStyleSheetStyle*>(style())) {
+            cssStyle->styleSheetPalette(this, &opt, &opt.palette);
+        }
+#endif
         if (d->control) {
 #ifndef QT_NO_SHORTCUT
             const bool underline = (bool)style->styleHint(QStyle::SH_UnderlineShortcut, 0, this, 0);
@@ -984,11 +990,9 @@ void QLabel::paintEvent(QPaintEvent *)
             d->ensureTextLayouted();
 
             QAbstractTextDocumentLayout::PaintContext context;
-            QStyleOption opt(0);
-            opt.init(this);
 
             if (!isEnabled() && style->styleHint(QStyle::SH_EtchDisabledText, &opt, this)) {
-                context.palette = palette();
+                context.palette = opt.palette;
                 context.palette.setColor(QPalette::Text, context.palette.light().color());
                 painter.save();
                 painter.translate(lr.x() + 1, lr.y() + 1);
@@ -999,12 +1003,7 @@ void QLabel::paintEvent(QPaintEvent *)
             }
 
             // Adjust the palette
-            context.palette = palette();
-#ifndef QT_NO_STYLE_STYLESHEET
-            if (QStyleSheetStyle* cssStyle = qobject_cast<QStyleSheetStyle*>(style)) {
-                cssStyle->focusPalette(this, &opt, &context.palette);
-            }
-#endif
+            context.palette = opt.palette;
 
             if (foregroundRole() != QPalette::Text && isEnabled())
                 context.palette.setColor(QPalette::Text, context.palette.color(foregroundRole()));
@@ -1019,12 +1018,10 @@ void QLabel::paintEvent(QPaintEvent *)
             int flags = align;
             if (d->hasShortcut) {
                 flags |= Qt::TextShowMnemonic;
-                QStyleOption opt;
-                opt.initFrom(this);
                 if (!style->styleHint(QStyle::SH_UnderlineShortcut, &opt, this))
                     flags |= Qt::TextHideMnemonic;
             }
-            style->drawItemText(&painter, lr.toRect(), flags, palette(), isEnabled(), d->text, foregroundRole());
+            style->drawItemText(&painter, lr.toRect(), flags, opt.palette, isEnabled(), d->text, foregroundRole());
         }
     } else
 #ifndef QT_NO_PICTURE

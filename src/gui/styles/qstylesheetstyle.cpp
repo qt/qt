@@ -5872,13 +5872,11 @@ void QStyleSheetStyle::clearWidgetFont(QWidget* w) const
     w->setProperty("_q_styleSheetWidgetFont", QVariant(QVariant::Invalid));
 }
 
-// Returns the palette that should be used when the particular widget is focused.
-// This needs to be called by some widgets that do drawing themselves instead
-// of through the style.
-// ### This should be removed ideally by Qt 4.5, and at least by Qt 5, and fixed
-// for good by letting the style draw everything.
+// Polish palette that should be used for a particular widget, with particular states
+// (eg. :focus, :hover, ...)
+// this is called by widgets that paint themself in their paint event
 // Returns true if there is a new palette in pal.
-bool QStyleSheetStyle::focusPalette(const QWidget* w, const QStyleOption* opt, QPalette* pal)
+bool QStyleSheetStyle::styleSheetPalette(const QWidget* w, const QStyleOption* opt, QPalette* pal)
 {
     if (!w || !opt || !pal)
         return false;
