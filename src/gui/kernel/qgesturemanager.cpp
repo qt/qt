@@ -141,11 +141,15 @@ bool QGestureManager::filterEvent(QEvent *event)
         }
         activeGestures -= newMaybeGestures;
         activeGestures += startedGestures;
-        foreach(QGestureRecognizer *r, startedGestures+finishedGestures+notGestures) {
-            QMap<QGestureRecognizer*, int>::iterator it = maybeGestures.find(r);
-            if (it != maybeGestures.end()) {
+        for(QMap<QGestureRecognizer*, int>::iterator it = maybeGestures.begin();
+            it != maybeGestures.end();) {
+            QGestureRecognizer *r = it.key();
+            if (startedGestures.contains(r) || finishedGestures.contains(r) ||
+                notGestures.contains(r)) {
                 killTimer(it.value());
-                maybeGestures.erase(it);
+                it = maybeGestures.erase(it);
+            } else {
+                ++it;
             }
         }
         foreach(QGestureRecognizer *r, newMaybeGestures) {
