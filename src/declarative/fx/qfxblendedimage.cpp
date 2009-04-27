@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
     secondary image.
 */
 QFxBlendedImage::QFxBlendedImage(QFxItem *parent)
-: QFxItem(parent), _blend(0), dirty(false)
+: QFxItem(parent), _blend(0), _smooth(false), dirty(false)
 {
 #if defined(QFX_RENDER_OPENGL2)
     setOptions(HasContents);
@@ -154,16 +154,51 @@ void QFxBlendedImage::setBlend(qreal b)
     update();
 }
 
+/*!
+    \qmlproperty bool BlendedImage::smooth
+
+    Set this property if you want the image to be smoothly filtered when scaled or
+    transformed.  Smooth filtering gives better visual quality, but is slower.  If
+    the BlendedImage is displayed at its natural size, this property has no visual or
+    performance effect.
+
+    \note Generally scaling artifacts are only visible if the image is stationary on
+    the screen.  A common pattern when animating an image is to disable smooth
+    filtering at the beginning of the animation and reenable it at the conclusion.
+ */
+bool QFxBlendedImage::smoothTransform() const
+{
+    return _smooth;
+}
+
+void QFxBlendedImage::setSmoothTransform(bool s)
+{
+    if(_smooth == s)
+        return;
+    _smooth = s;
+    update();
+}
+
 #if defined(QFX_RENDER_QPAINTER) 
 
 void QFxBlendedImage::paintContents(QPainter &p)
 {
     if (primSrc.isNull() && secSrc.isNull())
         return;
+
+    if(_smooth) {
+        p.save();
+        p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, _smooth);
+    }
+
     if (_blend < 0.75)
         p.drawImage(0, 0, primPix);
     else
         p.drawImage(0, 0, secPix);
+
+    if(_smooth) {
+        p.restore();
+    }
 }
 
 #elif defined(QFX_RENDER_OPENGL2)
