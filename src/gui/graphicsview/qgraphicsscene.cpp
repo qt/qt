@@ -247,6 +247,7 @@ static const int QGRAPHICSSCENE_INDEXTIMER_TIMEOUT = 2000;
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #endif
+#include <private/qgesturemanager_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -3962,23 +3963,27 @@ bool QGraphicsScene::event(QEvent *event)
 
         // find graphics items that intersects with gestures hot spots.
         QPolygonF poly;
-        QMap<int, QPointF> sceneHotSpots;
+        QMap<QString, QPointF> sceneHotSpots;
         foreach(const QString &type, gestureTypes) {
             QPointF pt = ev->mapToScene(ev->gesture(type)->hotSpot());
-            sceneHotSpots.insert(qHash(type), pt);
+            sceneHotSpots.insert(type, pt);
             poly << pt;
         }
         QList<QGraphicsItem*> itemsInGestureArea = items(poly, Qt::IntersectsItemBoundingRect);
 
         foreach(QGraphicsItem *item, itemsInGestureArea) {
-            QMap<int, QPointF>::const_iterator it = sceneHotSpots.begin(),
-                                                e = sceneHotSpots.end();
+            QMap<QString, QPointF>::const_iterator it = sceneHotSpots.begin(),
+                                                    e = sceneHotSpots.end();
             for(; it != e; ++it) {
-                if (item->contains(item->mapFromScene(it.value())) &&
-                    item->d_ptr->gestures.contains(it.key())) {
-                    d->sendEvent(item, ev);
-                    if (ev->isAccepted())
-                        break;
+                if (item->contains(item->mapFromScene(it.value()))) {
+                    const QString gestureName = it.key();
+                    foreach(int gestureId, item->d_ptr->gestures) {
+                        if (QGestureManager::instance()->gestureNameFromId(gestureId) == gestureName) {
+                            d->sendEvent(item, ev);
+                            if (ev->isAccepted())
+                                break;
+                        }
+                    }
                 }
             }
         }
