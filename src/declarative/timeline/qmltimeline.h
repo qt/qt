@@ -54,7 +54,7 @@ QT_MODULE(Declarative)
 
 class QEasingCurve;
 class GfxValue;
-class GfxEvent;
+class QmlTimeLineEvent;
 struct QmlTimeLinePrivate;
 class QmlTimeLineObject;
 class Q_DECLARATIVE_EXPORT QmlTimeLine : public QAbstractAnimation
@@ -69,7 +69,7 @@ public:
     void setSyncMode(SyncMode);
 
     void pause(QmlTimeLineObject &, int);
-    void execute(const GfxEvent &);
+    void execute(const QmlTimeLineEvent &);
     void set(GfxValue &, qreal);
 
     int accel(GfxValue &, qreal velocity, qreal accel);
@@ -141,14 +141,14 @@ private:
     qreal _v;
 };
 
-class Q_DECLARATIVE_EXPORT GfxEvent
+class Q_DECLARATIVE_EXPORT QmlTimeLineEvent
 {
 public:
-    GfxEvent();
-    GfxEvent(const GfxEvent &o);
+    QmlTimeLineEvent();
+    QmlTimeLineEvent(const QmlTimeLineEvent &o);
 
     template<class T, void (T::*method)()>
-    GfxEvent(QmlTimeLineObject *b, T *c)
+    QmlTimeLineEvent(QmlTimeLineObject *b, T *c)
     {
 	d0 = &callFunc<T, method>;
 	d1 = (void *)c;
@@ -156,16 +156,16 @@ public:
     }
 
     template<class T, void (T::*method)()>
-    static GfxEvent gfxEvent(QmlTimeLineObject *b, T *c)
+    static QmlTimeLineEvent timeLineEvent(QmlTimeLineObject *b, T *c)
     {
-        GfxEvent rv;
+        QmlTimeLineEvent rv;
 	rv.d0 = &callFunc<T, method>;
 	rv.d1 = (void *)c;
 	rv.d2 = b;
 	return rv;
     }
 
-    GfxEvent &operator=(const GfxEvent &o);
+    QmlTimeLineEvent &operator=(const QmlTimeLineEvent &o);
     void execute() const;
     QmlTimeLineObject *eventObject() const;
 

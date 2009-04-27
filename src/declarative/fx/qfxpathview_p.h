@@ -79,7 +79,7 @@ public:
         , firstIndex(0), pathItems(-1), pathOffset(0), model(0)
         , moveReason(Other)
     {
-        fixupOffsetEvent = GfxEvent::gfxEvent<QFxPathViewPrivate, &QFxPathViewPrivate::fixOffset>(&moveOffset, this);
+        fixupOffsetEvent = QmlTimeLineEvent::timeLineEvent<QFxPathViewPrivate, &QFxPathViewPrivate::fixOffset>(&moveOffset, this);
     }
 
     void init()
@@ -116,7 +116,7 @@ public:
     qreal dragMargin;
     QmlTimeLine tl;
     GfxValueProxy<QFxPathViewPrivate> moveOffset;
-    GfxEvent fixupOffsetEvent;
+    QmlTimeLineEvent fixupOffsetEvent;
     int firstIndex;
     int pathItems;
     int pathOffset;

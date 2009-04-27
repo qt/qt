@@ -116,8 +116,8 @@ public:
     qreal velocityX;
     qreal velocityY;
     QTime pressTime;
-    GfxEvent fixupXEvent;
-    GfxEvent fixupYEvent;
+    QmlTimeLineEvent fixupXEvent;
+    QmlTimeLineEvent fixupYEvent;
     int maxVelocity;
     bool locked;
     QFxFlickable::DragMode dragMode;

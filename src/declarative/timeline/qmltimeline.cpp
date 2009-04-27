@@ -58,12 +58,12 @@ QT_BEGIN_NAMESPACE
 struct Update {
     Update(GfxValue *_g, qreal _v)
         : g(_g), v(_v) {}
-    Update(const GfxEvent &_e)
+    Update(const QmlTimeLineEvent &_e)
         : g(0), v(0), e(_e) {}
 
     GfxValue *g;
     qreal v;
-    GfxEvent e;
+    QmlTimeLineEvent e;
 };
 
 struct QmlTimeLinePrivate
@@ -82,7 +82,7 @@ struct QmlTimeLinePrivate
         };
         Op() {}
         Op(Type t, int l, qreal v, qreal v2, int o, 
-           const GfxEvent &ev = GfxEvent(), const QEasingCurve &es = QEasingCurve())
+           const QmlTimeLineEvent &ev = QmlTimeLineEvent(), const QEasingCurve &es = QEasingCurve())
             : type(t), length(l), value(v), value2(v2), order(o), event(ev),
               easing(es) {}
         Op(const Op &o)
@@ -101,7 +101,7 @@ struct QmlTimeLinePrivate
         qreal value2;
 
         int order;
-        GfxEvent event;
+        QmlTimeLineEvent event;
         QEasingCurve easing;
     };
     struct TimeLine
@@ -367,7 +367,7 @@ void QmlTimeLine::pause(QmlTimeLineObject &obj, int time)
 /*!
     Execute the \a event.
  */
-void QmlTimeLine::execute(const GfxEvent &event)
+void QmlTimeLine::execute(const QmlTimeLineEvent &event)
 {
     QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Execute, 0, 0, 0., d->order++, event);
     d->add(*event.eventObject(), op);
@@ -469,7 +469,7 @@ void QmlTimeLine::move(GfxValue &gfxValue, qreal destination, int time)
 void QmlTimeLine::move(GfxValue &gfxValue, qreal destination, const QEasingCurve &easing, int time)
 {
     if(time <= 0) return;
-    QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Move, time, destination, 0.0f, d->order++, GfxEvent(), easing);
+    QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Move, time, destination, 0.0f, d->order++, QmlTimeLineEvent(), easing);
     d->add(gfxValue, op);
 }
 
@@ -491,7 +491,7 @@ void QmlTimeLine::moveBy(GfxValue &gfxValue, qreal change, int time)
 void QmlTimeLine::moveBy(GfxValue &gfxValue, qreal change, const QEasingCurve &easing, int time)
 {
     if(time <= 0) return;
-    QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::MoveBy, time, change, 0.0f, d->order++, GfxEvent(), easing);
+    QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::MoveBy, time, change, 0.0f, d->order++, QmlTimeLineEvent(), easing);
     d->add(gfxValue, op);
 }
 
@@ -912,17 +912,17 @@ QmlTimeLineObject::~QmlTimeLineObject()
     }
 }
 
-GfxEvent::GfxEvent()
+QmlTimeLineEvent::QmlTimeLineEvent()
 : d0(0), d1(0), d2(0)
 {
 }
 
-GfxEvent::GfxEvent(const GfxEvent &o)
+QmlTimeLineEvent::QmlTimeLineEvent(const QmlTimeLineEvent &o)
 : d0(o.d0), d1(o.d1), d2(o.d2)
 {
 }
 
-GfxEvent &GfxEvent::operator=(const GfxEvent &o)
+QmlTimeLineEvent &QmlTimeLineEvent::operator=(const QmlTimeLineEvent &o)
 {
     d0 = o.d0;
     d1 = o.d1;
@@ -930,12 +930,12 @@ GfxEvent &GfxEvent::operator=(const GfxEvent &o)
     return *this;
 }
 
-void GfxEvent::execute() const
+void QmlTimeLineEvent::execute() const
 {
     d0(d1);
 }
 
-QmlTimeLineObject *GfxEvent::eventObject() const
+QmlTimeLineObject *QmlTimeLineEvent::eventObject() const
 {
     return d2;
 }

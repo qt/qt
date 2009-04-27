@@ -100,8 +100,8 @@ QFxFlickablePrivate::QFxFlickablePrivate()
     , vTime(0), atXEnd(false), atXBeginning(true), pageXPosition(0.), pageWidth(0.)
     , atYEnd(false), atYBeginning(true), pageYPosition(0.), pageHeight(0.)
 {
-    fixupXEvent = GfxEvent::gfxEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupX>(&_moveX, this);
-    fixupYEvent = GfxEvent::gfxEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupY>(&_moveY, this);
+    fixupXEvent = QmlTimeLineEvent::timeLineEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupX>(&_moveX, this);
+    fixupYEvent = QmlTimeLineEvent::timeLineEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupY>(&_moveY, this);
 }
 
 void QFxFlickablePrivate::init()
