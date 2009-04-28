@@ -133,6 +133,7 @@ private slots:
     //void restorePolicyOnChildState();
 
     void transitionWithParent();
+    void parallelStateTransition();
 
     void simpleAnimation();
     void twoAnimations();
@@ -2806,6 +2807,52 @@ void tst_QStateMachine::overrideDefaultTargetAnimationWithSource()
 
     QVERIFY(machine.configuration().contains(s3));
     QCOMPARE(counter.counter, 2); // specific animation started and stopped
+}
+
+void tst_QStateMachine::parallelStateTransition()
+{
+    QStateMachine machine;
+
+    QState *parallelState = new QState(QState::ParallelGroup, machine.rootState());
+    machine.setInitialState(parallelState);
+
+    QState *s1 = new QState(parallelState);
+    QState *s2 = new QState(parallelState);
+
+    QState *s1InitialChild = new QState(s1);
+    s1->setInitialState(s1InitialChild);
+
+    QState *s2InitialChild = new QState(s2);
+    s2->setInitialState(s2InitialChild);
+
+    QState *s1OtherChild = new QState(s1);
+    QState *s2OtherChild = new QState(s2);
+
+    s1->addTransition(new EventTransition(QEvent::User, s1OtherChild));
+
+    machine.start();
+    QCoreApplication::processEvents();
+
+    QVERIFY(machine.configuration().contains(parallelState));
+    QVERIFY(machine.configuration().contains(s1));
+    QVERIFY(machine.configuration().contains(s2));
+    QVERIFY(machine.configuration().contains(s1InitialChild));
+    QVERIFY(machine.configuration().contains(s2InitialChild));
+    QCOMPARE(machine.configuration().size(), 5);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QCoreApplication::processEvents();
+
+    QVERIFY(machine.configuration().contains(parallelState));
+
+    QVERIFY(machine.configuration().contains(s1));
+    
+    QEXPECT_FAIL("", "This failure is defined in the algorithm. We need to find out what behavior is correct.", Abort);
+    QVERIFY(machine.configuration().contains(s2));
+    QVERIFY(machine.configuration().contains(s1OtherChild));
+    QVERIFY(machine.configuration().contains(s2InitialChild));
+    QCOMPARE(machine.configuration().size(), 5);
+    
 }
 
 
