@@ -616,7 +616,7 @@ void QFxPathViewPrivate::regenerate()
 void QFxPathViewPrivate::updateItem(QFxItem *item, qreal percent)
 {
     if(QObject *obj = QFxPathView::attachedProperties.value(item)) {
-        foreach(QString attr, path->attributes())
+        foreach(const QString &attr, path->attributes())
             static_cast<QFxPathViewAttached *>(obj)->setValue(attr.toLatin1(), path->attributeAt(attr, percent));
     }
 

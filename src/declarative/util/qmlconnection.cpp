@@ -165,7 +165,7 @@ void QmlConnection::connectIfValid()
         QList<QByteArray> sigparams;
         if (lparen >= 0 && d->signal.length() > lparen+2) {
             QStringList l = d->signal.mid(lparen+1,d->signal.length()-lparen-2).split(QLatin1Char(','));
-            foreach (QString s, l) {
+            foreach (const QString &s, l) {
                 sigparams.append(s.toLatin1());
             }
         }

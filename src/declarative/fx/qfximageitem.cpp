@@ -119,8 +119,7 @@ void QFxImageItem::dirtyCache(const QRect& rect)
 void QFxImageItem::clearCache()
 {
     Q_D(QFxImageItem);
-    foreach (QFxImageItemPrivate::ImageCacheItem* i, d->imagecache)
-        delete i;
+    qDeleteAll(d->imagecache);
     d->imagecache.clear();
 }
 
@@ -232,8 +231,9 @@ void QFxImageItem::paintGLContents(GLPainter &p)
         return;
 
 #if defined(QFX_RENDER_QPAINTER)
+    bool oldAntiAliasing = p.testRenderHint(QPainter::Antialiasing);
+    bool oldSmoothPixmap = p.testRenderHint(QPainter::SmoothPixmapTransform);
     if(d->smooth) {
-        p.save();
         p.setRenderHints(QPainter::Antialiasing, true);
         p.setRenderHints(QPainter::SmoothPixmapTransform, true);
     }
@@ -303,7 +303,8 @@ void QFxImageItem::paintGLContents(GLPainter &p)
         }
         const QRegion bigger = QRegion(biggerrect) & uncached;
         const QVector<QRect> rects = bigger.rects();
-        foreach (QRect r, rects) {
+        for (int i = 0; i < rects.count(); ++i) {
+            const QRect &r = rects.at(i);
 #if defined(QFX_RENDER_QPAINTER)
             QImage img(r.size(),QImage::Format_ARGB32_Premultiplied);
 #else
@@ -335,8 +336,10 @@ void QFxImageItem::paintGLContents(GLPainter &p)
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 #endif
 #if defined(QFX_RENDER_QPAINTER)
-    if(d->smooth) 
-        p.restore();
+    if(d->smooth) {
+        p.setRenderHints(QPainter::Antialiasing, oldAntiAliasing);
+        p.setRenderHints(QPainter::SmoothPixmapTransform, oldSmoothPixmap);
+    }
 #endif
 }
 

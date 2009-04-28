@@ -388,7 +388,7 @@ void ListModel::checkRoles() const
     for(int ii = 0; ii < _root->values.count(); ++ii) {
         ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(ii));
         if(node) {
-            foreach(QString role, node->properties.keys())
+            foreach(const QString &role, node->properties.keys())
                 addRole(role);
         } 
     }

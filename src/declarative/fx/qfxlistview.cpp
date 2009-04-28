@@ -1546,9 +1546,8 @@ void QFxListView::itemsInserted(int modelIndex, int count)
         }
     }
     // everything is in order now - emit add() signal
-    foreach(FxListItem *item, added)
-        item->attached->emitAdd();
-
+    for (int j = 0; j < added.count(); ++j)
+        added.at(j)->attached->emitAdd();
     emit countChanged();
 }
 

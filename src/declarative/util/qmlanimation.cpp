@@ -104,7 +104,7 @@ QEasingCurve stringToCurve(const QString &curve)
     easingCurve.setType((QEasingCurve::Type)value);
 
     if (hasParams) {
-        foreach(QString str, props) {
+        foreach(const QString &str, props) {
             int sep = str.indexOf(QLatin1Char(':'));
 
             if(sep == -1) {
