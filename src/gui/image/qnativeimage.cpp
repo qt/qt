@@ -65,7 +65,7 @@ typedef struct {
 
 QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool isTextBuffer, QWidget *)
 {
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
     Q_UNUSED(isTextBuffer);
 #endif
     BITMAPINFO_MASK bmi;
@@ -78,7 +78,7 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool is
 
     if (format == QImage::Format_RGB16) {
         bmi.bmiHeader.biBitCount = 16;
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
         if (isTextBuffer) {
             bmi.bmiHeader.biCompression = BI_RGB;
             bmi.redMask = 0;
@@ -116,7 +116,7 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool is
     Q_ASSERT(image.paintEngine()->type() == QPaintEngine::Raster);
     static_cast<QRasterPaintEngine *>(image.paintEngine())->setDC(hdc);
 
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
     GdiFlush();
 #endif
 }

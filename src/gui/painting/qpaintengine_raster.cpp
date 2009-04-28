@@ -3182,7 +3182,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     // ### cases we should delegate painting to the font engine
     // ### directly...
 
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
     QFontEngine::Type fontEngineType = ti.fontEngine->type();
     // qDebug() << "type" << fontEngineType << s->matrix.type();
     if ((fontEngineType == QFontEngine::Win && !((QFontEngineWin *) ti.fontEngine)->ttf && s->matrix.type() > QTransform::TxTranslate)

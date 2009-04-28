@@ -45,7 +45,7 @@
 #include "qlibrary.h"
 #include <qvector.h>
 #include <limits.h>
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 #include <sipapi.h>
 #endif
 #include "qwidget_p.h"
@@ -92,7 +92,7 @@ QVector<QRect> *QDesktopWidgetPrivate::rects = 0;
 QVector<QRect> *QDesktopWidgetPrivate::workrects = 0;
 static int screen_number = 0;
 int QDesktopWidgetPrivate::refcount = 0;
-#ifdef Q_OS_WINCE_WM
+#ifdef Q_WS_WINCE_WM
 // Use SIP information, if available
 // SipGetInfo is not supported by SSDK (no definition!). 
 static inline void qt_get_sip_info(QRect &rect)
@@ -208,7 +208,7 @@ void QDesktopWidgetPrivate::init(QDesktopWidget *that)
         SystemParametersInfo(SPI_GETWORKAREA, 0, &r, 0);
         QRect qr = QRect(QPoint(r.left, r.top), QPoint(r.right - 1, r.bottom - 1));
 
-#if defined(Q_OS_WINCE_WM)
+#if defined(Q_WS_WINCE_WM)
         qt_get_sip_info(qr);
 #endif
 
@@ -222,7 +222,7 @@ void QDesktopWidgetPrivate::init(QDesktopWidget *that)
     enumDisplayMonitors(0, 0, enumCallback, 0);
     enumDisplayMonitors = 0;
     getMonitorInfo = 0;
-#endif // Q_OS_WINCE
+#endif // Q_WS_WINCE
 }
 
 QDesktopWidgetPrivate::~QDesktopWidgetPrivate()
@@ -303,7 +303,7 @@ QWidget *QDesktopWidget::screen(int /* screen */)
 const QRect QDesktopWidget::availableGeometry(int screen) const
 {
     Q_D(const QDesktopWidget);
-#ifdef Q_OS_WINCE_WM
+#ifdef Q_WS_WINCE_WM
     for(int i=0; i < d->workrects->size(); ++i)
         qt_get_sip_info((*d->workrects)[i]);
 #endif
@@ -385,7 +385,7 @@ void QDesktopWidget::resizeEvent(QResizeEvent *)
 
     QDesktopWidgetPrivate::cleanup();
     QDesktopWidgetPrivate::init(this);
-#ifdef Q_OS_WINCE_WM
+#ifdef Q_WS_WINCE_WM
     for(int i=0; i < d->workrects->size(); ++i)
         qt_get_sip_info((*d->workrects)[i]);
 #endif
