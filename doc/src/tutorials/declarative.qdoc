@@ -80,7 +80,7 @@
     This means you should use the duiviewer application provided with
     Qt to run the examples.
 
-    \list 1
+    \list
     \o \l{tutorials/declarative/contacts/part1}{Drawing and Animation}
     \o \l{tutorials/declarative/contacts/part2}{Reusing QML Components}
     \o \l{tutorials/declarative/contacts/part3}{Models, Views and Delegates}
@@ -720,3 +720,67 @@
     the Qt 4.6 release.
 */
 
+/*!
+    \page tutorials-declarative-contacts-part3.html
+    \contentspage {Declarative UI Tutorial}{Contents}
+    \previouspage {tutorials/declarative/contacts/part2}{Chapter 2}
+    \nextpage {tutorials/declarative/contacts/part4}{Chapter 4}
+    \example tutorials/declarative/contacts/part3
+    \title Models, Views and Delegates
+    \tableofcontents
+
+    In the previous chapters we designed a component to display and
+    edit a contact.  The next step is to display a list of those contacts
+    and allow the user to expand individual contacts for editing.
+
+    As the previous elements will not be changed in this section, they have
+    been moved to a lib directory for this tutorial and the relevant
+    name space path has been used.
+
+    \section1 Simple List View
+
+    Displaying lists requires three components.  A model that holds the
+    data displayed, a delegate to indicate how elements are drawn and
+    a view to arrange the elements.
+
+    For the purposes of this tutorial we will be using an SQL query as our
+    data model.  This can be declared in the resources section of
+    the parent item.
+
+    \code
+    <SqlConnection id="contactDatabase"
+        name="qmlConnection"
+        driver="QSQLITE" databaseName="../../shared/contacts.sqlite"/>
+    <SqlQuery id="contactList"
+        connection="{contactDatabase}">
+        <query>SELECT recid, label, email, phone FROM contacts ORDER BY label, recid</query>
+    </SqlQuery>
+    \endcode
+
+    The SqlConnection component describes how to connect to the database in
+    much the same ways as the QSqlDatabase::addDatabase() function is used.
+    In this case an SQLite database is used as it can be connected to as a
+    file, reducing complexity in setting up a database server or credentials.
+
+    The SqlQuery component allows various forms of queries to be described.
+    When the query is a select statement, the component also acts as a model
+    allowing it to provide data to a ListView component.  The query above
+    retrieves the fields recid, label, email and phone from a contacts table,
+    and orders the results by the label of the contact first, and then by 
+    the recid for any contacts with equivalent labels.
+
+    To display the data retrieved from the table, a delegate is needed.  This
+    is also declared in the resources section of the parent item.
+
+    \code
+    <Component id="contactDelegate">
+        <Text
+            x="45" y="12"
+            width="{contactListView.width-45}"
+            height="30"
+            color="black"
+            font.bold="true"
+            text="{model.label}"/>
+    </Component>
+    \endcode
+*/
