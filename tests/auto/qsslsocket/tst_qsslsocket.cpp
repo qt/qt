@@ -1283,7 +1283,11 @@ protected:
 
         // delayed acceptance:
         QTest::qSleep(100);
-        server.waitForNewConnection(2000);
+#ifndef Q_OS_SYMBIAN        
+        bool ret = server.waitForNewConnection(2000);
+#else
+        bool ret = server.waitForNewConnection(20000);        
+#endif        
 
         // delayed start of encryption
         QTest::qSleep(100);
@@ -1329,7 +1333,6 @@ protected:
 
 void tst_QSslSocket::waitForMinusOne()
 {
-QSKIP("App stucks here if synchornized socket operations in use", SkipAll);
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;

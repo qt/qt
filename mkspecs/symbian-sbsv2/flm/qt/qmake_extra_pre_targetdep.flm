@@ -28,8 +28,8 @@ endef
 
 ifeq ($($(SINGLETON)),)
 $(eval $(qmake_extra_pre_targetdep))
+$(eval $(call GenerateStandardCleanTarget,$(PREDEP_TARGET),''))
 endif	
 
 
-$(eval $(call GenerateStandardCleanTarget,$(PREDEP_TARGET),''))
 

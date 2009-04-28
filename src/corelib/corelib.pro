@@ -27,4 +27,10 @@ QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtCore.dynlist
 
 contains(DEFINES,QT_EVAL):include(eval.pri)
 
-symbian:TARGET.UID3=0x2001B2DC
+symbian: {
+    TARGET.UID3=0x2001B2DC
+
+    # Workaroud for problems with paging this dll
+    MMP_RULES -= PAGED
+    MMP_RULES *= UNPAGED
+}
