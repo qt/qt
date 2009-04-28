@@ -1,7 +1,7 @@
 <Rect color="white" width="200" height="200">
     <Rect width="50" height="50" color="red">
         <Text text="Click" anchors.centeredIn="{parent}"/>
-        <MouseRegion onPressed="print('press (x: ' + mouse.x + ' y: ' + mouse.y + ')')"
+        <MouseRegion onPressed="print('press (x: ' + mouse.x + ' y: ' + mouse.y + ' button: ' + (mouse.button == Qt.RightButton ? 'right' : 'left') + ' Shift: ' + (mouse.modifiers &amp; Qt.ShiftModifier ? 'true' : 'false') + ')')"
                      onReleased="print('release (x: ' + mouse.x + ' y: ' + mouse.y + ' isClick: ' + mouse.isClick + ' wasHeld: ' + mouse.wasHeld + ')')"
                      onClicked="print('click (x: ' + mouse.x + ' y: ' + mouse.y + ' wasHeld: ' + mouse.wasHeld + ')')"
                      onDoubleClicked="print('double click (x: ' + mouse.x + ' y: ' + mouse.y + ')')"

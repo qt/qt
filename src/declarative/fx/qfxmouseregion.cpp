@@ -155,7 +155,7 @@ void QFxDrag::setYmax(int m)
     </Rect>
     \endcode
 
-    Many MouseRegion signals pass a \l {qml-mouseevent}{mouse} parameter that contains
+    Many MouseRegion signals pass a \l {MouseEvent}{mouse} parameter that contains
     additional information about the mouse event, such as the position, button,
     and any key modifiers.
 
@@ -163,13 +163,15 @@ void QFxDrag::setYmax(int m)
     example extended so as to give a different color when you right click.
     \code
     <Rect width="100" height="100">
-        <MouseRegion anchors.fill="{parent}" onClick="if(mouse.button=='Right') { parent.color='blue';} else { parent.color = 'red';}"/>
+        <MouseRegion anchors.fill="{parent}" onClick="if(mouse.button==Qt.RightButton) { parent.color='blue';} else { parent.color = 'red';}"/>
     </Rect>
     \endcode
 
     For basic key handling, see \l KeyActions.
 
     MouseRegion is an invisible element: it is never painted.
+
+    \sa MouseEvent
 */
 
 /*!
@@ -201,6 +203,15 @@ void QFxDrag::setYmax(int m)
 */
 
 /*!
+    \qmlsignal MouseRegion::onPositionChanged(mouse)
+
+    This handler is called when the mouse position changes.
+
+    The \l {MouseEvent}{mouse} parameter provides information about the mouse, including the x and y
+    position, and any buttons currently pressed.
+*/
+
+/*!
     \qmlsignal MouseRegion::onClicked(mouse)
 
     This handler is called when there is a click. A click is defined as a press followed by a release,
@@ -215,8 +226,8 @@ void QFxDrag::setYmax(int m)
     \qmlsignal MouseRegion::onPressed(mouse)
 
     This handler is called when there is a press.
-    The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
-    position of the release of the click, and whether the click wasHeld.
+    The \l {MouseEvent}{mouse} parameter provides information about the press, including the x and y
+    position and which button was pressed.
 */
 
 /*!
@@ -231,8 +242,8 @@ void QFxDrag::setYmax(int m)
     \qmlsignal MouseRegion::onPressAndHold(mouse)
 
     This handler is called when there is a long press (currently 800ms).
-    The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
-    position of the release of the click, and whether the click wasHeld.
+    The \l {MouseEvent}{mouse} parameter provides information about the press, including the x and y
+    position of the press, and which button is pressed.
 */
 
 /*!
@@ -309,24 +320,6 @@ void QFxMouseRegion::setEnabled(bool a)
     d->absorb = a;
 }
 
-void QFxMouseRegionPrivate::bindButtonValue(Qt::MouseButton b)
-{
-    Q_Q(QFxMouseRegion);
-    QString bString;
-    switch(b){
-        case Qt::LeftButton:
-            bString = QLatin1String("Left"); break;
-        case Qt::RightButton:
-            bString = QLatin1String("Right"); break;
-        case Qt::MidButton:
-            bString = QLatin1String("Middle"); break;
-        default:
-            bString = QLatin1String("None"); break;
-    }
-    // ### is this needed anymore?
-    qmlContext(q)->setContextProperty(QLatin1String("mouseButton"), bString);
-}
-
 void QFxMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxMouseRegion);
@@ -348,9 +341,7 @@ void QFxMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
         // ### we should only start timer if pressAndHold is connected to (but connectNotify doesn't work)
         d->pressAndHoldTimer.start(PressAndHoldDelay, this);
         setKeepMouseGrab(false);
-        d->bindButtonValue(event->button());
         setPressed(true);
-        emit positionChanged();
         event->accept();
     }
 }
@@ -424,7 +415,8 @@ void QFxMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         }
     }
     d->moved = true;
-    emit positionChanged();
+    QFxMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, false, d->longPress);
+    emit positionChanged(&me);
     event->accept();
 }
 
@@ -547,9 +539,10 @@ void QFxMouseRegion::setPressed(bool p)
     if(d->pressed != p) {
         d->pressed = p;
         QFxMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, isclick, d->longPress);
-        if(d->pressed)
+        if(d->pressed) {
+            emit positionChanged(&me);
             emit pressed(&me);
-        else {
+        } else {
             emit released(&me);
             if (isclick)
                 emit clicked(&me);

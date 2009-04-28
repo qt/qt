@@ -322,33 +322,27 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
-    \fn void QFxItem::keyPress(QObject *event)
+    \qmlsignal Item::onKeyPress(event)
 
-    This signal is emitted when a key is pressed.
+    This handler is called when a key is pressed.
 
-    The key event is available in QML via the QFxKeyEvent \a event
-    property.
+    The key event is available via the KeyEvent \a event.
 
     \qml
     <Item onKeyPress="if (event.key == Qt.Key_Enter) state='Enter'"/>
     \endqml
-
-    \sa keyRelease()
 */
 
 /*!
-    \fn void QFxItem::keyRelease(QObject *event)
+    \qmlsignal Item::onKeyRelease(event)
 
-    This signal is emitted when a key is released.
+    This handler is called when a key is released.
 
-    The key event is available in QML via the QFxKeyEvent \a event
-    property.
+    The key event is available in via the KeyEvent \a event.
 
     \qml
     <Item onKeyRelease="if (event.key == Qt.Key_Enter) state='Enter'"/>
     \endqml
-
-    \sa keyPress()
 */
 
 /*!

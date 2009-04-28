@@ -411,6 +411,7 @@ QGraphicsSceneMouseEvent *QSimpleCanvasPrivate::mouseEventToSceneMouseEvent(QMou
     QGraphicsSceneMouseEvent *me = new QGraphicsSceneMouseEvent(t);
     me->setButton(e->button());
     me->setButtons(e->buttons());
+    me->setModifiers(e->modifiers());
     me->setPos(item);
     me->setScreenPos(e->pos());
     me->setScenePos(e->pos());
