@@ -69,8 +69,8 @@ public:
     virtual void setValue(qreal v)
     {
         QmlTimeLineValue::setValue(v);
-        if(_setFunctionReal) (_class->*_setFunctionReal)(v);
-        else if(_setFunctionInt) (_class->*_setFunctionInt)((int)v);
+        if (_setFunctionReal) (_class->*_setFunctionReal)(v);
+        else if (_setFunctionInt) (_class->*_setFunctionInt)((int)v);
     }
 
 private:

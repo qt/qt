@@ -84,13 +84,13 @@ private:
         virtual void clear()
         {
             for (int i = 0; i < count(); ++i)
-                if(QGraphicsWidget *w = qobject_cast<QGraphicsWidget *>(at(i)))
+                if (QGraphicsWidget *w = qobject_cast<QGraphicsWidget *>(at(i)))
                     static_cast<QGraphicsScene *>(q)->removeItem(w);
             QmlConcreteList<QObject *>::clear();
         }
         virtual void removeAt(int i)
         {
-            if(QGraphicsWidget *w = qobject_cast<QGraphicsWidget *>(at(i)))
+            if (QGraphicsWidget *w = qobject_cast<QGraphicsWidget *>(at(i)))
                 static_cast<QGraphicsScene *>(q)->removeItem(w);
             QmlConcreteList<QObject *>::removeAt(i);
         }
@@ -99,7 +99,7 @@ private:
             QmlConcreteList<QObject *>::insert(i, o);
 
             //XXX are there any cases when insertion should be different from appension?
-            if(QGraphicsWidget *w = qobject_cast<QGraphicsWidget *>(o))
+            if (QGraphicsWidget *w = qobject_cast<QGraphicsWidget *>(o))
                 static_cast<QGraphicsScene *>(q)->addItem(w);
             //else if (QWidget *w = qobject_cast<QWidget *>(o))
             //    static_cast<QGraphicsScene *>(q)->addWidget(w);

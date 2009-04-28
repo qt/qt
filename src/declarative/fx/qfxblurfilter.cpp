@@ -124,7 +124,7 @@ qreal QFxBlurFilter::radius() const
 
 void QFxBlurFilter::setRadius(qreal radius)
 {
-    if(d->radius == radius) return;
+    if (d->radius == radius) return;
     d->radius = radius;
     emit radiusChanged(radius);
     update();
@@ -133,7 +133,7 @@ void QFxBlurFilter::setRadius(qreal radius)
 QRectF QFxBlurFilter::itemBoundingRect(const QRectF &r) const
 {
     QRectF rv = r;
-    if(d->radius > 0)
+    if (d->radius > 0)
         rv.adjust(-d->radius, -d->radius, d->radius, d->radius);
     return rv;
 }
@@ -143,7 +143,7 @@ void QFxBlurFilter::filterGL(QSimpleCanvasItem::GLPainter &p)
 {
 #if defined(QFX_RENDER_OPENGL2)
 #if 1
-    if(d->radius <= 0) {
+    if (d->radius <= 0) {
         renderToScreen();
         return;
     }
@@ -156,7 +156,7 @@ void QFxBlurFilter::filterGL(QSimpleCanvasItem::GLPainter &p)
     radius *= blurScale;
 
     QGLFramebufferObject *fbo = renderToFBO(blurScale);
-    if(!fbo) 
+    if (!fbo) 
         return;
 
     float height = r.height();
@@ -201,7 +201,7 @@ void QFxBlurFilter::filterGL(QSimpleCanvasItem::GLPainter &p)
         BlurTextureShader *shader = item->basicShaders()->blurTexture();
         shader->enable();
         shader->setTransform(trans);
-        if(steps > 1) {
+        if (steps > 1) {
             shader->setStep(xstep * 2);
             shader->setSteps(steps / 2);
         } else {
@@ -252,7 +252,7 @@ void QFxBlurFilter::filterGL(QSimpleCanvasItem::GLPainter &p)
         BlurTextureShader *shader = item->basicShaders()->blurTexture();
         shader->enable();
         shader->setTransform(trans);
-        if(steps > 1) {
+        if (steps > 1) {
             shader->setStep(ystep * 2);
             shader->setSteps(steps / 2);
         } else {
@@ -303,7 +303,7 @@ void QFxBlurFilter::filterGL(QSimpleCanvasItem::GLPainter &p)
     releaseFBO(fbo);
 #else
 #if 0
-    if(d->radius <= 0) {
+    if (d->radius <= 0) {
         renderToScreen();
         return;
     }
@@ -314,7 +314,7 @@ void QFxBlurFilter::filterGL(QSimpleCanvasItem::GLPainter &p)
     float scale = 0.5;
     float scalePercent = scale / d->radius;
     QGLFramebufferObject *fbo = renderToFBO(scalePercent);
-    if(!fbo) 
+    if (!fbo) 
         return;
 
     QGLFramebufferObject *xfbo = acquireFBO(QSize(scale * r.width(), fbo->height()));

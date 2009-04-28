@@ -121,16 +121,16 @@ void QFxFlickablePrivate::init()
 void QFxFlickablePrivate::fixupX()
 {
     Q_Q(QFxFlickable);
-    if(!q->xflick() || _moveX.timeLine())
+    if (!q->xflick() || _moveX.timeLine())
         return;
 
     vTime = _tl.time();
 
-    if(_moveX.value() > q->minXExtent() || q->maxXExtent() > 0) {
+    if (_moveX.value() > q->minXExtent() || q->maxXExtent() > 0) {
         _tl.move(_moveX, q->minXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         flicked = false;
         //emit flickingChanged();
-    } else if(_moveX.value() < q->maxXExtent()) {
+    } else if (_moveX.value() < q->maxXExtent()) {
         _tl.move(_moveX,  q->maxXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         flicked = false;
         //emit flickingChanged();
@@ -140,15 +140,15 @@ void QFxFlickablePrivate::fixupX()
 void QFxFlickablePrivate::fixupY()
 {
     Q_Q(QFxFlickable);
-    if(!q->yflick() || _moveY.timeLine())
+    if (!q->yflick() || _moveY.timeLine())
         return;
 
     vTime = _tl.time();
 
-    if(_moveY.value() > q->minYExtent() || (q->maxYExtent() > q->minYExtent())) {
+    if (_moveY.value() > q->minYExtent() || (q->maxYExtent() > q->minYExtent())) {
         _tl.move(_moveY, q->minYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
-    } else if(_moveY.value() < q->maxYExtent()) {
+    } else if (_moveY.value() < q->maxYExtent()) {
         _tl.move(_moveY,  q->maxYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else {
@@ -560,17 +560,17 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
     bool rejectX = false;
     bool moved = false;
 
-    if(q->yflick()) {
+    if (q->yflick()) {
         int dy = int(event->pos().y() - pressPos.y());
         if (qAbs(dy) > FlickThreshold || pressTime.elapsed() > 200) {
             qreal newY = dy + pressY;
             const qreal minY = q->minYExtent();
             const qreal maxY = q->maxYExtent();
-            if(newY > minY)
+            if (newY > minY)
                 newY = minY + (newY - minY) / 2;
-            if(newY < maxY && maxY - minY < 0)
+            if (newY < maxY && maxY - minY < 0)
                 newY = maxY + (newY - maxY) / 2;
-            if(q->overShoot() || (newY <= minY && newY >= maxY)) {
+            if (q->overShoot() || (newY <= minY && newY >= maxY)) {
                 if (dragMode == QFxFlickable::Hard)
                     _moveY.setValue(newY);
                 else
@@ -583,11 +583,11 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
         }
     }
 
-    if(q->xflick()) {
+    if (q->xflick()) {
         int dx = int(event->pos().x() - pressPos.x());
         if (qAbs(dx) > FlickThreshold || pressTime.elapsed() > 200) {
             qreal newX = dx + pressX;
-            if(q->overShoot() || (newX <= q->minXExtent() && newX >= q->maxXExtent())) {
+            if (q->overShoot() || (newX <= q->minXExtent() && newX >= q->maxXExtent())) {
                 if (dragMode == QFxFlickable::Hard)
                     _moveX.setValue(newX);
                 else
@@ -600,23 +600,23 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
         }
     }
 
-    if(!lastPos.isNull()) {
+    if (!lastPos.isNull()) {
         qreal elapsed = qreal(lastPosTime.restart()) / 1000.;
-        if(elapsed <= 0)
+        if (elapsed <= 0)
             elapsed = 1;
-        if(q->yflick()) {
+        if (q->yflick()) {
             qreal diff = event->pos().y() - lastPos.y();
             velocityY = diff / elapsed;
         }
 
-        if(q->xflick()) {
+        if (q->xflick()) {
             qreal diff = event->pos().x() - lastPos.x();
             velocityX = diff / elapsed;
         }
     }
 
-    if(rejectY) velocityY = 0;
-    if(rejectX) velocityX = 0;
+    if (rejectY) velocityY = 0;
+    if (rejectX) velocityX = 0;
 
     if (moved) {
         q->viewportMoved();
@@ -640,20 +640,20 @@ void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *)
     }
 
     vTime = _tl.time();
-    if(qAbs(velocityY) > 10) {
+    if (qAbs(velocityY) > 10) {
         qreal maxDistance = -1;
         // -ve velocity means list is moving up
-        if(velocityY > 0) {
-            if(_moveY.value() < q->minYExtent())
+        if (velocityY > 0) {
+            if (_moveY.value() < q->minYExtent())
                 maxDistance = qAbs(q->minYExtent() -_moveY.value() + (overShoot?30:0));
         } else {
-            if(_moveY.value() > q->maxYExtent())
+            if (_moveY.value() > q->maxYExtent())
                 maxDistance = qAbs(q->maxYExtent() - _moveY.value()) + (overShoot?30:0);
         }
-        if(maxDistance > 0) {
+        if (maxDistance > 0) {
             qreal v = velocityY;
-            if(maxVelocity != -1 && maxVelocity < qAbs(v)) {
-                if(v < 0)
+            if (maxVelocity != -1 && maxVelocity < qAbs(v)) {
+                if (v < 0)
                     v = -maxVelocity;
                 else
                     v = maxVelocity;
@@ -669,20 +669,20 @@ void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *)
     } else {
         fixupY();
     }
-    if(qAbs(velocityX) > 10) {
+    if (qAbs(velocityX) > 10) {
         qreal maxDistance = -1;
         // -ve velocity means list is moving up
-        if(velocityX > 0) {
-            if(_moveX.value() < q->minXExtent())
+        if (velocityX > 0) {
+            if (_moveX.value() < q->minXExtent())
                 maxDistance = qAbs(q->minXExtent()) -_moveX.value() + (overShoot?30:0);
         } else {
-            if(_moveX.value() > q->maxXExtent())
+            if (_moveX.value() > q->maxXExtent())
                 maxDistance = qAbs(q->maxXExtent() - _moveX.value()) + (overShoot?30:0);
         }
-        if(maxDistance > 0) {
+        if (maxDistance > 0) {
             qreal v = velocityX;
-            if(maxVelocity != -1 && maxVelocity < qAbs(v)) {
-                if(v < 0)
+            if (maxVelocity != -1 && maxVelocity < qAbs(v)) {
+                if (v < 0)
                     v = -maxVelocity;
                 else
                     v = maxVelocity;
@@ -701,7 +701,7 @@ void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *)
     stealMouse = false;
     lastPosTime = QTime();
 
-    if(!_tl.isActive())
+    if (!_tl.isActive())
         q->movementEnding();
 }
 
@@ -766,7 +766,7 @@ void QFxFlickable::viewportMoved()
         qreal prevY = d->lastFlickablePosition.x();
         qreal prevX = d->lastFlickablePosition.y();
         d->velocityTimeline.clear();
-        if(d->pressed) {
+        if (d->pressed) {
             qreal xVelocity = (prevX - d->_moveX.value()) * 1000 / elapsed;
             qreal yVelocity = (prevY - d->_moveY.value()) * 1000 / elapsed;
             d->velocityTimeline.move(d->xVelocity, xVelocity, d->velocityDecay);
@@ -804,7 +804,7 @@ void QFxFlickablePrivate::data_append(QObject *o)
 {
     Q_Q(QFxFlickable);
     QFxItem *i = qobject_cast<QFxItem *>(o);
-    if(i)
+    if (i)
         _flick->children()->append(i);
     else
         o->setParent(q);
@@ -901,7 +901,7 @@ void QFxFlickable::setViewportWidth(int w)
     if (d->vWidth == w)
         return;
     d->vWidth = w;
-    if(w < 0)
+    if (w < 0)
         d->_flick->setWidth(width());
     else
         d->_flick->setWidth(w);
@@ -913,7 +913,7 @@ void QFxFlickable::setWidth(int w)
 {
     Q_D(QFxFlickable);
     QFxItem::setWidth(w);
-    if(d->vWidth < 0) {
+    if (d->vWidth < 0) {
         d->_flick->setWidth(w);
         emit viewportWidthChanged();
         d->updateBeginningEnd();
@@ -924,7 +924,7 @@ void QFxFlickable::setHeight(int h)
 {
     Q_D(QFxFlickable);
     QFxItem::setHeight(h);
-    if(d->vHeight < 0) {
+    if (d->vHeight < 0) {
         d->_flick->setHeight(h);
         emit viewportHeightChanged();
         d->updateBeginningEnd();
@@ -947,7 +947,7 @@ void QFxFlickable::setViewportHeight(int h)
     if (d->vHeight == h)
         return;
     d->vHeight = h;
-    if(h < 0)
+    if (h < 0)
         d->_flick->setHeight(height());
     else
         d->_flick->setHeight(h);
@@ -958,7 +958,7 @@ void QFxFlickable::setViewportHeight(int h)
 int QFxFlickable::vWidth() const
 {
     Q_D(const QFxFlickable);
-    if(d->vWidth < 0)
+    if (d->vWidth < 0)
         return width();
     else
         return d->vWidth;
@@ -967,7 +967,7 @@ int QFxFlickable::vWidth() const
 int QFxFlickable::vHeight() const
 {
     Q_D(const QFxFlickable);
-    if(d->vHeight < 0)
+    if (d->vHeight < 0)
         return height();
     else
         return d->vHeight;
@@ -1028,7 +1028,7 @@ bool QFxFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
 
 bool QFxFlickable::mouseFilter(QGraphicsSceneMouseEvent *e)
 {
-    if(!isVisible())
+    if (!isVisible())
         return false;
     switch (e->type()) {
     case QEvent::GraphicsSceneMousePress:
@@ -1060,7 +1060,7 @@ int QFxFlickable::maximumFlickVelocity() const
 void QFxFlickable::setMaximumFlickVelocity(int v)
 {
     Q_D(QFxFlickable);
-    if(v == d->maxVelocity)
+    if (v == d->maxVelocity)
         return;
     d->maxVelocity = v;
 }
@@ -1081,7 +1081,7 @@ void QFxFlickable::setVelocityDecay(int decay)
 {
     Q_D(QFxFlickable);
     Q_ASSERT(decay >= 0);
-    if(decay == d->velocityDecay)
+    if (decay == d->velocityDecay)
         return;
     d->velocityDecay = decay;
     emit velocityDecayChanged(decay);
@@ -1096,7 +1096,7 @@ bool QFxFlickable::isMoving() const
 void QFxFlickable::movementStarting()
 {
     Q_D(QFxFlickable);
-    if(!d->moving) {
+    if (!d->moving) {
         d->moving = true;
         emit movingChanged();
         emit movementStarted();
@@ -1106,7 +1106,7 @@ void QFxFlickable::movementStarting()
 void QFxFlickable::movementEnding()
 {
     Q_D(QFxFlickable);
-    if(d->moving) {
+    if (d->moving) {
         d->moving = false;
         emit movingChanged();
         emit movementEnded();

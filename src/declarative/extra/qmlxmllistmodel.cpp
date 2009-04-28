@@ -255,7 +255,7 @@ void QmlXmlListModel::fetch()
 void QmlXmlListModel::requestFinished()
 {
     Q_D(QmlXmlListModel);
-    if(d->reply->error() != QNetworkReply::NoError) {
+    if (d->reply->error() != QNetworkReply::NoError) {
         d->reply->deleteLater();
         d->reply = 0;
     } else {

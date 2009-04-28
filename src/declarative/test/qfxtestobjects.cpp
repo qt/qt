@@ -71,7 +71,7 @@ int TestObject::time() const
 
 void TestObject::setTime(int t)
 {
-    if(t == _time)
+    if (t == _time)
         return;
     _time = t;
     emit dataChanged();
@@ -97,7 +97,7 @@ QString TestFrame::hash() const
 
 void TestFrame::setHash(const QString &h)
 {
-    if(_hash == h)
+    if (_hash == h)
         return;
     _hash = h;
     emit frameChanged();
@@ -123,7 +123,7 @@ int TestFullFrame::frameId() const
 
 void TestFullFrame::setFrameId(int id)
 {
-    if(id == _frameId)
+    if (id == _frameId)
         return;
     _frameId = id;
     emit frameChanged();
@@ -149,7 +149,7 @@ int TestMouse::type() const
 
 void TestMouse::setType(int t)
 {
-    if(_type == t)
+    if (_type == t)
         return;
     _type = t;
     emit mouseChanged();
@@ -162,7 +162,7 @@ int TestMouse::button() const
 
 void TestMouse::setButton(int b)
 {
-    if(b == _button)
+    if (b == _button)
         return;
     _button = b;
     emit mouseChanged();
@@ -175,7 +175,7 @@ int TestMouse::buttons() const
 
 void TestMouse::setButtons(int buttons)
 {
-    if(_buttons == buttons)
+    if (_buttons == buttons)
         return;
     _buttons = buttons;
     emit mouseChanged();
@@ -188,7 +188,7 @@ QPoint TestMouse::globalPos() const
 
 void TestMouse::setGlobalPos(const QPoint &g)
 {
-    if(_globalPos == g)
+    if (_globalPos == g)
         return;
     _globalPos = g;
     emit mouseChanged();
@@ -201,7 +201,7 @@ QPoint TestMouse::pos() const
 
 void TestMouse::setPos(const QPoint &p)
 {
-    if(p == _pos)
+    if (p == _pos)
         return;
     _pos = p;
     emit mouseChanged();
@@ -231,7 +231,7 @@ int TestKey::type() const
 
 void TestKey::setType(int t)
 {
-    if(t == _type)
+    if (t == _type)
         return;
     _type = t;
     emit keyChanged();
@@ -244,7 +244,7 @@ int TestKey::modifiers() const
 
 void TestKey::setModifiers(int m)
 {
-    if(m == _modifiers)
+    if (m == _modifiers)
         return;
     _modifiers = m;
     emit keyChanged();
@@ -257,7 +257,7 @@ QString TestKey::text() const
 
 void TestKey::setText(const QString &t)
 {
-    if(_text == t)
+    if (_text == t)
         return;
     _text = t;
     emit keyChanged();
@@ -270,7 +270,7 @@ int TestKey::key() const
 
 void TestKey::setKey(int k)
 {
-    if(_key == k)
+    if (_key == k)
         return;
     _key = k;
     emit keyChanged();
@@ -283,7 +283,7 @@ void TestKey::save(QXmlStreamWriter *device)
     device->writeAttribute(QLatin1String("type"), QString::number(type()));
     device->writeAttribute(QLatin1String("modifiers"), QString::number(modifiers()));
     device->writeAttribute(QLatin1String("key"), QString::number(key()));
-    if(key() != Qt::Key_Escape)
+    if (key() != Qt::Key_Escape)
         device->writeAttribute(QLatin1String("text"), text());
     device->writeEndElement();
 }
@@ -317,7 +317,7 @@ void TestLog::save(QIODevice *device)
     writer.setAutoFormatting(true);
     writer.writeStartDocument(QLatin1String("1.0"));
     writer.writeStartElement(QLatin1String("TestLog"));
-    for(int ii = 0; ii < _actions.count(); ++ii)
+    for (int ii = 0; ii < _actions.count(); ++ii)
         _actions.at(ii)->save(&writer);
     writer.writeEndElement();
     writer.writeEndDocument();
@@ -325,7 +325,7 @@ void TestLog::save(QIODevice *device)
 
 TestObject *TestLog::next()
 {
-    if(atEnd())
+    if (atEnd())
         return 0;
     TestObject *rv = _actions.at(_current);
     _current++;
@@ -334,7 +334,7 @@ TestObject *TestLog::next()
 
 bool TestLog::atEnd() const
 {
-    if(_current >= _actions.count())
+    if (_current >= _actions.count())
         return true;
     else
         return false;

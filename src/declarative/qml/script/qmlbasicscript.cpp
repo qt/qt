@@ -48,7 +48,7 @@ public:
 
     static unsigned int alignRound(int s)
     {
-        if(s % 4) 
+        if (s % 4) 
             s += 4 - (s % 4);
         return s;
     }
@@ -171,7 +171,7 @@ static QVariant fetch_value(QObject *o, int idx, int type)
             break;
         default:  
             {
-                if(QmlMetaType::isObject(type)) {
+                if (QmlMetaType::isObject(type)) {
                     // NOTE: This assumes a cast to QObject does not alter the 
                     // object pointer
                     QObject *val = 0;
@@ -180,7 +180,7 @@ static QVariant fetch_value(QObject *o, int idx, int type)
                     return QVariant::fromValue(val);
                 } else {
                     QVariant var = o->metaObject()->property(idx).read(o);
-                    if(QmlMetaType::isObject(var.userType())) {
+                    if (QmlMetaType::isObject(var.userType())) {
                         QObject *obj = 0;
                         obj = *(QObject **)var.data();
                         var = QVariant::fromValue(obj);
@@ -299,7 +299,7 @@ QmlBasicScript::QmlBasicScript()
 QmlBasicScript::QmlBasicScript(const char *data, QmlRefCount *owner)
 : flags(0), d((QmlBasicScriptPrivate *)data), rc(owner)
 {
-    if(rc) rc->addref();
+    if (rc) rc->addref();
 }
 
 /*!
@@ -307,7 +307,7 @@ QmlBasicScript::QmlBasicScript(const char *data, QmlRefCount *owner)
  */
 QByteArray QmlBasicScript::expression() const
 {
-    if(!d)
+    if (!d)
         return QByteArray();
     else
         return QByteArray(d->expr());
@@ -318,9 +318,9 @@ QByteArray QmlBasicScript::expression() const
 */
 QmlBasicScript::~QmlBasicScript()
 {
-    if(flags & QmlBasicScriptPrivate::OwnData)
+    if (flags & QmlBasicScriptPrivate::OwnData)
         free(d);
-    if(rc) rc->release();
+    if (rc) rc->release();
     d = 0;
     rc = 0;
 }
@@ -331,9 +331,9 @@ QmlBasicScript::~QmlBasicScript()
 */
 void QmlBasicScript::clear()
 {
-    if(flags & QmlBasicScriptPrivate::OwnData)
+    if (flags & QmlBasicScriptPrivate::OwnData)
         free(d);
-    if(rc) rc->release();
+    if (rc) rc->release();
     d = 0;
     rc = 0;
     flags = 0;
@@ -345,7 +345,7 @@ void QmlBasicScript::clear()
  */
 void *QmlBasicScript::newScriptState()
 {
-    if(!d) {
+    if (!d) {
         return 0;
     } else  {
         void *rv = ::malloc(d->stateSize * sizeof(QmlBasicScriptNodeCache));
@@ -359,7 +359,7 @@ void *QmlBasicScript::newScriptState()
  */
 void QmlBasicScript::deleteScriptState(void *data)
 {
-    if(!data) return;
+    if (!data) return;
     Q_ASSERT(d);
     clearCache(data);
     free(data);
@@ -370,12 +370,12 @@ void QmlBasicScript::deleteScriptState(void *data)
  */
 void QmlBasicScript::dump()
 {
-    if(!d)
+    if (!d)
         return;
 
     qWarning() << d->instructionCount << "instructions:";
     const char *data = d->data();
-    for(int ii = 0; ii < d->instructionCount; ++ii) {
+    for (int ii = 0; ii < d->instructionCount; ++ii) {
         const ScriptInstruction &instr = d->instructions()[ii];
 
         switch(instr.type) {
@@ -438,7 +438,7 @@ bool QmlBasicScript::compile(const QByteArray &src)
  */
 bool QmlBasicScript::compile(const char *src)
 {
-    if(!src) return false;
+    if (!src) return false;
 
     QmlBasicScriptCompiler bsc;
     bsc.script = this;
@@ -446,14 +446,14 @@ bool QmlBasicScript::compile(const char *src)
     bsc.src = src;
     // dumpTokens(src, bsc.tokens);
 
-    if(d) {
-        if(flags & QmlBasicScriptPrivate::OwnData)
+    if (d) {
+        if (flags & QmlBasicScriptPrivate::OwnData)
             free(d);
         d = 0;
         flags = 0;
     }
 
-    if(bsc.compile()) {
+    if (bsc.compile()) {
         int len = ::strlen(src);
         flags = QmlBasicScriptPrivate::OwnData;
         int size = sizeof(QmlBasicScriptPrivate) + 
@@ -465,7 +465,7 @@ bool QmlBasicScript::compile(const char *src)
         d->instructionCount = bsc.bytecode.count();
         d->exprLen = len;
         ::memcpy((char *)d->expr(), src, len + 1);
-        for(int ii = 0; ii < d->instructionCount; ++ii) 
+        for (int ii = 0; ii < d->instructionCount; ++ii) 
             d->instructions()[ii] = bsc.bytecode.at(ii);
         ::memcpy((char *)d->data(), bsc.data.constData(), bsc.data.count());
     } 
@@ -481,21 +481,21 @@ void QmlBasicScriptCompiler::skipWhitespace()
 
 bool QmlBasicScriptCompiler::compile()
 {
-    if(!compileExpr())
+    if (!compileExpr())
         return false;
 
     skipWhitespace();
 
-    if(atEnd())
+    if (atEnd())
         return true;
 
     int t = token();
-    if(t != AND) 
+    if (t != AND) 
         return false;
 
     adv();
     skipWhitespace();
-    if(!compileExpr())
+    if (!compileExpr())
         return false;
 
     ScriptInstruction instr;
@@ -513,12 +513,12 @@ bool QmlBasicScriptCompiler::compileExpr()
         EXPRESSION := <NAME><OPERATOR>[<CONSTANT>|<NAME>]
      */
 
-    if(!parseName())
+    if (!parseName())
         return false;
 
     skipWhitespace();
 
-    if(atEnd())
+    if (atEnd())
         return true;
 
     int t = token();
@@ -539,7 +539,7 @@ bool QmlBasicScriptCompiler::compileExpr()
 
     skipWhitespace();
 
-    if(!parseConstant() &&
+    if (!parseConstant() &&
        !parseName())
         return false;
 
@@ -578,18 +578,18 @@ bool QmlBasicScriptCompiler::parseName()
     bool pushed = false;
     while(!atEnd()) {
         int t = token();
-        if(t == CHARACTER) {
+        if (t == CHARACTER) {
             named = true;
             seendot = false;
             seenchar = true;
             namestart = index();
             adv();
-        } else if(t == DIGIT) {
-            if(!seenchar) break;
+        } else if (t == DIGIT) {
+            if (!seenchar) break;
             adv();
-        } else if(t == DOT) {
+        } else if (t == DOT) {
             seendot = true;
-            if(namestart == -1)
+            if (namestart == -1)
                 break;
 
             seenchar = false;
@@ -598,7 +598,7 @@ bool QmlBasicScriptCompiler::parseName()
             data.append(name);
             data.append('\0');
             ScriptInstruction instr;
-            if(pushed)
+            if (pushed)
                 instr.type = ScriptInstruction::Fetch;
             else
                 instr.type = ScriptInstruction::Load;
@@ -613,13 +613,13 @@ bool QmlBasicScriptCompiler::parseName()
         }
     }
 
-    if(namestart != -1) {
+    if (namestart != -1) {
         QByteArray name = string(namestart, index() - 1);
         int nref = data.count();
         data.append(name);
         data.append('\0');
         ScriptInstruction instr;
-        if(pushed)
+        if (pushed)
             instr.type = ScriptInstruction::Fetch;
         else
             instr.type = ScriptInstruction::Load;
@@ -629,7 +629,7 @@ bool QmlBasicScriptCompiler::parseName()
         ++stateSize;
     }
 
-    if(seendot)
+    if (seendot)
         return false;
     else
         return named;
@@ -688,7 +688,7 @@ int QmlBasicScriptCompiler::index() const
 QByteArray QmlBasicScriptCompiler::string(int from, int to)
 {
     QByteArray rv;
-    for(int ii = from; ii <= to; ++ii) {
+    for (int ii = from; ii <= to; ++ii) {
         const LexerToken &token = tokens.at(ii);
         rv.append(QByteArray(src + token.start, token.end - token.start + 1));
     }
@@ -703,8 +703,8 @@ void QmlBasicScript::clearCache(void *voidCache)
     QmlBasicScriptNodeCache *dataCache =
         reinterpret_cast<QmlBasicScriptNodeCache *>(voidCache);
 
-    for(int ii = 0; ii < d->stateSize; ++ii) {
-        if(!dataCache[ii].isCore() && !dataCache[ii].isExplicit() && 
+    for (int ii = 0; ii < d->stateSize; ++ii) {
+        if (!dataCache[ii].isCore() && !dataCache[ii].isExplicit() && 
             dataCache[ii].object) {
             QMetaObject::removeGuard(&dataCache[ii].object);
             dataCache[ii].object = 0;
@@ -715,9 +715,9 @@ void QmlBasicScript::clearCache(void *voidCache)
 
 void QmlBasicScript::guard(QmlBasicScriptNodeCache &n)
 {
-    if(n.object) {
-        if(n.isExplicit()) {
-        } else if(n.isCore()) {
+    if (n.object) {
+        if (n.isExplicit()) {
+        } else if (n.isCore()) {
             n.metaObject = 
                 n.object->metaObject();
         } else {
@@ -750,7 +750,7 @@ bool QmlBasicScript::valid(QmlBasicScriptNodeCache &n, QObject *obj)
  */
 QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *cached)
 {
-    if(!isValid())
+    if (!isValid())
         return QVariant();
 
     QmlBasicScriptNodeCache *dataCache =
@@ -763,7 +763,7 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
 
     const char *data = d->data();
 
-    if(dataCache[0].type == QmlBasicScriptNodeCache::Invalid) {
+    if (dataCache[0].type == QmlBasicScriptNodeCache::Invalid) {
         resetting = true;
         hasReset = true;
     }
@@ -771,7 +771,7 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
     CacheState state = NoChange;
 
     dataCacheItem = 0;
-    for(int idx = 0; idx < d->instructionCount; ++idx) {
+    for (int idx = 0; idx < d->instructionCount; ++idx) {
         const ScriptInstruction &instr = d->instructions()[idx];
 
         switch(instr.type) {
@@ -781,9 +781,9 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
                 const char *id = data + instr.fetch.idx;
                 QmlBasicScriptNodeCache &n = dataCache[dataCacheItem];
 
-                if(instr.type == ScriptInstruction::Load) {
+                if (instr.type == ScriptInstruction::Load) {
 
-                    if(n.type == QmlBasicScriptNodeCache::Invalid) {
+                    if (n.type == QmlBasicScriptNodeCache::Invalid) {
                         context->engine()->d_func()->loadCache(n, QLatin1String(id), static_cast<QmlContextPrivate*>(context->d_ptr));
                         state = Incremental;
                     }
@@ -792,9 +792,9 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
 
                     QVariant o = stack.pop();
                     QObject *obj = qvariant_cast<QObject *>(o);
-                    if(!obj) {
-                        if(n.type == QmlBasicScriptNodeCache::Invalid) {
-                            if(scriptWarnings())
+                    if (!obj) {
+                        if (n.type == QmlBasicScriptNodeCache::Invalid) {
+                            if (scriptWarnings())
                                 qWarning() << "QmlBasicScript: Unable to convert" << o;
                             *cached = state;
                             return QVariant();
@@ -804,11 +804,11 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
                             CacheState dummy;
                             return run(context, voidCache, &dummy);
                         }
-                    } else if(n.type == QmlBasicScriptNodeCache::Invalid) {
+                    } else if (n.type == QmlBasicScriptNodeCache::Invalid) {
                         context->engine()->d_func()->fetchCache(n, QLatin1String(id), obj);
                         guard(n);
                         state = Incremental;
-                    } else if(!valid(n, obj)) {
+                    } else if (!valid(n, obj)) {
                         clearCache(dataCache);
                         *cached = Reset;
                         CacheState dummy;
@@ -875,7 +875,7 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
 
     *cached = state;
 
-    if(stack.isEmpty())
+    if (stack.isEmpty())
         return QVariant();
     else
         return stack.top();
@@ -895,7 +895,7 @@ const char *QmlBasicScript::compileData() const
  */
 unsigned int QmlBasicScript::compileDataSize() const
 {
-    if(d)
+    if (d)
         return d->size;
     else
         return 0;
@@ -903,7 +903,7 @@ unsigned int QmlBasicScript::compileDataSize() const
 
 bool QmlBasicScript::isSingleLoad() const
 {
-    if(!d)
+    if (!d)
         return false;
 
     return d->instructionCount == 1 &&
@@ -912,7 +912,7 @@ bool QmlBasicScript::isSingleLoad() const
 
 QByteArray QmlBasicScript::singleLoadTarget() const
 {
-    if(!isSingleLoad())
+    if (!isSingleLoad())
         return QByteArray();
 
     // We know there is one instruction and it is a load

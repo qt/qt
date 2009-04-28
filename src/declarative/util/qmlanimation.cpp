@@ -73,9 +73,9 @@ QEasingCurve stringToCurve(const QString &curve)
     bool hasParams = curve.contains(QLatin1Char('('));
     QStringList props;
 
-    if(hasParams) {
+    if (hasParams) {
         QString easeName = curve.trimmed();
-        if(!easeName.endsWith(QLatin1Char(')'))) {
+        if (!easeName.endsWith(QLatin1Char(')'))) {
             qWarning("QEasingCurve: Unmatched perenthesis in easing function '%s'",
                      curve.toLatin1().constData());
             return easingCurve;
@@ -107,7 +107,7 @@ QEasingCurve stringToCurve(const QString &curve)
         foreach(QString str, props) {
             int sep = str.indexOf(QLatin1Char(':'));
 
-            if(sep == -1) {
+            if (sep == -1) {
                 qWarning("QEasingCurve: Improperly specified property in easing function '%s'",
                         curve.toLatin1().constData());
                 return easingCurve;
@@ -117,7 +117,7 @@ QEasingCurve stringToCurve(const QString &curve)
             bool isOk;
             qreal propValue = str.mid(sep + 1).trimmed().toDouble(&isOk);
 
-            if(propName.isEmpty() || !isOk) {
+            if (propName.isEmpty() || !isOk) {
                 qWarning("QEasingCurve: Improperly specified property in easing function '%s'",
                         curve.toLatin1().constData());
                 return easingCurve;
@@ -211,7 +211,7 @@ void QmlAbstractAnimationPrivate::commence()
 
     q->prepare(userProperty.value);
     q->qtAnimation()->start();
-    if(!q->qtAnimation()->state() == QAbstractAnimation::Running) {
+    if (!q->qtAnimation()->state() == QAbstractAnimation::Running) {
         running = false;
         emit q->completed();
     }
@@ -220,17 +220,17 @@ void QmlAbstractAnimationPrivate::commence()
 void QmlAbstractAnimation::setRunning(bool r)
 {
     Q_D(QmlAbstractAnimation);
-    if(d->running == r)
+    if (d->running == r)
         return;
 
-    if(d->group) {
+    if (d->group) {
         qWarning("QmlAbstractAnimation: setRunning() cannot be used on non-root animation nodes");
         return;
     }
 
     d->running = r;
-    if(d->running) {
-        if(!d->connectedTimeLine) {
+    if (d->running) {
+        if (!d->connectedTimeLine) {
             QObject::connect(qtAnimation(), SIGNAL(finished()),
                              this, SLOT(timelineComplete()));
             d->connectedTimeLine = true;
@@ -241,7 +241,7 @@ void QmlAbstractAnimation::setRunning(bool r)
             d->startOnCompletion = true;
         emit started();
     } else {
-        if(!d->finishPlaying)
+        if (!d->finishPlaying)
             qtAnimation()->stop();
         emit completed();
     }
@@ -286,7 +286,7 @@ bool QmlAbstractAnimation::finishPlaying() const
 void QmlAbstractAnimation::setFinishPlaying(bool f)
 {
     Q_D(QmlAbstractAnimation);
-    if(d->finishPlaying == f)
+    if (d->finishPlaying == f)
         return;
 
     d->finishPlaying = f;
@@ -320,7 +320,7 @@ bool QmlAbstractAnimation::repeat() const
 void QmlAbstractAnimation::setRepeat(bool r)
 {
     Q_D(QmlAbstractAnimation);
-    if(r == d->repeat)
+    if (r == d->repeat)
         return;
 
     d->repeat = r;
@@ -338,20 +338,20 @@ QmlAnimationGroup *QmlAbstractAnimation::group() const
 void QmlAbstractAnimation::setGroup(QmlAnimationGroup *g)
 {
     Q_D(QmlAbstractAnimation);
-    if(d->group == g)
+    if (d->group == g)
         return;
-    if(d->group)
+    if (d->group)
         static_cast<QmlAnimationGroupPrivate *>(d->group->d_ptr)->animations.removeAll(this);
 
     d->group = g;
 
-    if(d->group && !static_cast<QmlAnimationGroupPrivate *>(d->group->d_ptr)->animations.contains(this))
+    if (d->group && !static_cast<QmlAnimationGroupPrivate *>(d->group->d_ptr)->animations.contains(this))
         static_cast<QmlAnimationGroupPrivate *>(d->group->d_ptr)->animations.append(this);
 
     if (d->group)
         ((QAnimationGroup*)d->group->qtAnimation())->addAnimation(qtAnimation());
 
-    //if(g) //if removed from a group, then the group should no longer be the parent
+    //if (g) //if removed from a group, then the group should no longer be the parent
         setParent(g);
 }
 
@@ -371,11 +371,11 @@ QObject *QmlAbstractAnimation::target() const
 void QmlAbstractAnimation::setTarget(QObject *o)
 {
     Q_D(QmlAbstractAnimation);
-    if(d->target == o)
+    if (d->target == o)
         return;
 
     d->target = o;
-    if(d->target && !d->propertyName.isEmpty()) {
+    if (d->target && !d->propertyName.isEmpty()) {
         d->userProperty = QmlMetaProperty(d->target, d->propertyName);
     } else {
         d->userProperty.invalidate();
@@ -400,11 +400,11 @@ QString QmlAbstractAnimation::property() const
 void QmlAbstractAnimation::setProperty(const QString &n)
 {
     Q_D(QmlAbstractAnimation);
-    if(d->propertyName == n)
+    if (d->propertyName == n)
         return;
 
     d->propertyName = n;
-    if(d->target && !d->propertyName.isEmpty()) {
+    if (d->target && !d->propertyName.isEmpty()) {
         d->userProperty = QmlMetaProperty(d->target, d->propertyName);
     } else {
         d->userProperty.invalidate();
@@ -487,7 +487,7 @@ void QmlAbstractAnimation::restart()
 */
 void QmlAbstractAnimation::complete()
 {
-    if(isRunning()) {
+    if (isRunning()) {
          qtAnimation()->setCurrentTime(qtAnimation()->duration());
     }
 }
@@ -495,7 +495,7 @@ void QmlAbstractAnimation::complete()
 void QmlAbstractAnimation::setTarget(const QmlMetaProperty &p)
 {
     Q_D(QmlAbstractAnimation);
-    if(d->userProperty.isNull)
+    if (d->userProperty.isNull)
         d->userProperty = p;
 }
 
@@ -588,13 +588,13 @@ int QmlPauseAnimation::duration() const
 
 void QmlPauseAnimation::setDuration(int duration)
 {
-    if(duration < 0) {
+    if (duration < 0) {
         qWarning("QmlPauseAnimation: Cannot set a duration of < 0");
         return;
     }
 
     Q_D(QmlPauseAnimation);
-    if(d->pa->duration() == duration)
+    if (d->pa->duration() == duration)
         return;
     d->pa->setDuration(duration);
     emit durationChanged(duration);
@@ -603,7 +603,7 @@ void QmlPauseAnimation::setDuration(int duration)
 void QmlPauseAnimation::prepare(QmlMetaProperty &p)
 {
     Q_D(QmlPauseAnimation);
-    if(d->userProperty.isNull)
+    if (d->userProperty.isNull)
         d->property = p;
     else
         d->property = d->userProperty;
@@ -678,13 +678,13 @@ int QmlColorAnimation::duration() const
 
 void QmlColorAnimation::setDuration(int duration)
 {
-    if(duration < 0) {
+    if (duration < 0) {
         qWarning("QmlColorAnimation: Cannot set a duration of < 0");
         return;
     }
 
     Q_D(QmlColorAnimation);
-    if(d->ca->duration() == duration)
+    if (d->ca->duration() == duration)
         return;
     d->ca->setDuration(duration);
     emit durationChanged(duration);
@@ -707,7 +707,7 @@ QColor QmlColorAnimation::from() const
 void QmlColorAnimation::setFrom(const QColor &f)
 {
     Q_D(QmlColorAnimation);
-    if(d->fromValue.isValid() && f == d->fromValue)
+    if (d->fromValue.isValid() && f == d->fromValue)
         return;
     d->fromValue = f;
     emit fromChanged(f);
@@ -730,7 +730,7 @@ QColor QmlColorAnimation::to() const
 void QmlColorAnimation::setTo(const QColor &t)
 {
     Q_D(QmlColorAnimation);
-    if(d->toValue.isValid() && t == d->toValue)
+    if (d->toValue.isValid() && t == d->toValue)
         return;
     d->toValue = t;
     emit toChanged(t);
@@ -753,7 +753,7 @@ QString QmlColorAnimation::easing() const
 void QmlColorAnimation::setEasing(const QString &e)
 {
     Q_D(QmlColorAnimation);
-    if(d->easing == e)
+    if (d->easing == e)
         return;
 
     d->easing = e;
@@ -786,7 +786,7 @@ QList<QObject *> *QmlColorAnimation::exclude()
 void QmlColorAnimation::prepare(QmlMetaProperty &p)
 {
     Q_D(QmlColorAnimation);
-    if(d->userProperty.isNull)
+    if (d->userProperty.isNull)
         d->property = p;
     else
         d->property = d->userProperty;
@@ -813,7 +813,7 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
         QmlStateActions actions;
         void write(QmlMetaProperty &property, const QColor &color)
         {
-            if(property.propertyType() == qMetaTypeId<QColor>()) {
+            if (property.propertyType() == qMetaTypeId<QColor>()) {
                 property.write(color);
             }
         }
@@ -821,17 +821,17 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
         void setValue(qreal v)
         {
             QmlTimeLineValue::setValue(v);
-            for(int ii = 0; ii < actions.count(); ++ii) {
+            for (int ii = 0; ii < actions.count(); ++ii) {
                 Action &action = actions[ii];
 
                 QColor to(action.toValue.value<QColor>());
 
-                if(v == 1.) {
+                if (v == 1.) {
                     write(action.property, to);
                 } else {
-                    if(action.fromValue.isNull()) {
+                    if (action.fromValue.isNull()) {
                         action.fromValue = action.property.read();
-                        if(action.fromValue.isNull())
+                        if (action.fromValue.isNull())
                             action.fromValue = QVariant(QColor());
                     }
 
@@ -852,26 +852,26 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
     //XXX should we get rid of this?
     QStringList props;
     props << QLatin1String("color");
-    if(!d->propertyName.isEmpty() && !props.contains(d->propertyName))
+    if (!d->propertyName.isEmpty() && !props.contains(d->propertyName))
         props.append(d->propertyName);
 
     NTransitionData *data = new NTransitionData;
 
     QSet<QObject *> objs;
-    for(int ii = 0; ii < actions.count(); ++ii) {
+    for (int ii = 0; ii < actions.count(); ++ii) {
         Action &action = actions[ii];
 
         QObject *obj = action.property.object();
         QString propertyName = action.property.name();
 
-        if((d->filter.isEmpty() || d->filter.contains(obj)) &&
+        if ((d->filter.isEmpty() || d->filter.contains(obj)) &&
            (!d->exclude.contains(obj)) && props.contains(propertyName) &&
            (!target() || target() == obj)) {
             objs.insert(obj);
             Action myAction = action;
-            if(d->fromValue.isValid())
+            if (d->fromValue.isValid())
                 myAction.fromValue = QVariant(d->fromValue);
-            if(d->toValue.isValid())
+            if (d->toValue.isValid())
                 myAction.toValue = QVariant(d->toValue);
 
             modified << action.property;
@@ -880,13 +880,13 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
         }
     }
 
-    if(d->toValue.isValid() && target() && !objs.contains(target())) {
+    if (d->toValue.isValid() && target() && !objs.contains(target())) {
         QObject *obj = target();
-        for(int jj = 0; jj < props.count(); ++jj) {
+        for (int jj = 0; jj < props.count(); ++jj) {
             Action myAction;
             myAction.property = QmlMetaProperty(obj, props.at(jj));
 
-            if(d->fromValue.isValid())
+            if (d->fromValue.isValid())
                 myAction.fromValue = QVariant(d->fromValue);
 
             myAction.toValue = QVariant(d->toValue);
@@ -896,7 +896,7 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
         }
     }
 
-    if(data->actions.count())
+    if (data->actions.count())
         d->ca->setAnimValue(data, QAbstractAnimation::DeleteWhenStopped);
     else
         delete data;
@@ -905,8 +905,8 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
 
 void QmlColorAnimationPrivate::valueChanged(qreal v)
 {
-    if(!fromSourced) {
-        if(!fromValue.isValid()) {
+    if (!fromSourced) {
+        if (!fromValue.isValid()) {
             fromValue = QColor(qvariant_cast<QColor>(property.read()));
         }
         fromSourced = true;
@@ -918,7 +918,7 @@ void QmlColorAnimationPrivate::valueChanged(qreal v)
     uint blue = uint(qreal(fromValue.blue()) + v * (qreal(toValue.blue()) - qreal(fromValue.blue())));
     uint alpha = uint(qreal(fromValue.alpha()) + v * (qreal(toValue.alpha()) - qreal(fromValue.alpha())));
 
-    if(property.propertyType() == qMetaTypeId<QColor>()) {
+    if (property.propertyType() == qMetaTypeId<QColor>()) {
         property.write(QColor(red, green, blue, alpha));
     }
 }
@@ -967,7 +967,7 @@ QString QmlRunScriptAction::script() const
 void QmlRunScriptAction::setScript(const QString &script)
 {
     Q_D(QmlRunScriptAction);
-    if(script == d->script)
+    if (script == d->script)
         return;
     d->script = script;
     emit scriptChanged(script);
@@ -986,7 +986,7 @@ QString QmlRunScriptAction::file() const
 void QmlRunScriptAction::setFile(const QString &file)
 {
     Q_D(QmlRunScriptAction);
-    if(file == d->file)
+    if (file == d->file)
         return;
     d->file = file;
     emit fileChanged(file);
@@ -996,14 +996,14 @@ void QmlRunScriptActionPrivate::execute()
 {
     Q_Q(QmlRunScriptAction);
     QString scriptStr = script;
-    if(!file.isEmpty()){
+    if (!file.isEmpty()){
         QFile scriptFile(file);
-        if(scriptFile.open(QIODevice::ReadOnly | QIODevice::Text)){
+        if (scriptFile.open(QIODevice::ReadOnly | QIODevice::Text)){
             scriptStr = QString::fromUtf8(scriptFile.readAll());
         }
     }
 
-    if(!scriptStr.isEmpty()) {
+    if (!scriptStr.isEmpty()) {
         QmlExpression expr(qmlContext(q), scriptStr, q);
         expr.setTrackChange(false);
         expr.value();
@@ -1074,7 +1074,7 @@ QString QmlSetPropertyAction::properties() const
 void QmlSetPropertyAction::setProperties(const QString &p)
 {
     Q_D(QmlSetPropertyAction);
-    if(d->properties == p)
+    if (d->properties == p)
         return;
     d->properties = p;
     emit propertiesChanged(p);
@@ -1116,7 +1116,7 @@ QVariant QmlSetPropertyAction::value() const
 void QmlSetPropertyAction::setValue(const QVariant &v)
 {
     Q_D(QmlSetPropertyAction);
-    if(d->value.isNull || d->value != v) {
+    if (d->value.isNull || d->value != v) {
         d->value = v;
         emit valueChanged(v);
     }
@@ -1137,7 +1137,7 @@ void QmlSetPropertyAction::prepare(QmlMetaProperty &p)
 {
     Q_D(QmlSetPropertyAction);
 
-    if(d->userProperty.isNull)
+    if (d->userProperty.isNull)
         d->property = p;
     else
         d->property = d->userProperty;
@@ -1157,7 +1157,7 @@ void QmlSetPropertyAction::transition(QmlStateActions &actions,
         QmlStateActions actions;
         virtual void doAction()
         {
-            for(int ii = 0; ii < actions.count(); ++ii) {
+            for (int ii = 0; ii < actions.count(); ++ii) {
                 const Action &action = actions.at(ii);
                 QmlBehaviour::_ignore = true;
                 action.property.write(action.toValue);
@@ -1167,27 +1167,27 @@ void QmlSetPropertyAction::transition(QmlStateActions &actions,
     };
 
     QStringList props = d->properties.split(QLatin1Char(','));
-    for(int ii = 0; ii < props.count(); ++ii)
+    for (int ii = 0; ii < props.count(); ++ii)
         props[ii] = props.at(ii).trimmed();
-    if(!d->propertyName.isEmpty() && !props.contains(d->propertyName))
+    if (!d->propertyName.isEmpty() && !props.contains(d->propertyName))
         props.append(d->propertyName);
 
     QmlSetPropertyAnimationAction *data = new QmlSetPropertyAnimationAction;
 
     QSet<QObject *> objs;
-    for(int ii = 0; ii < actions.count(); ++ii) {
+    for (int ii = 0; ii < actions.count(); ++ii) {
         Action &action = actions[ii];
 
         QObject *obj = action.property.object();
         QString propertyName = action.property.name();
 
-        if((d->filter.isEmpty() || d->filter.contains(obj)) &&
+        if ((d->filter.isEmpty() || d->filter.contains(obj)) &&
            (!d->exclude.contains(obj)) && props.contains(propertyName) &&
            (!target() || target() == obj)) {
             objs.insert(obj);
             Action myAction = action;
 
-            if(d->value.isValid()) 
+            if (d->value.isValid()) 
                 myAction.toValue = d->value;
 
             modified << action.property;
@@ -1196,9 +1196,9 @@ void QmlSetPropertyAction::transition(QmlStateActions &actions,
         }
     }
 
-    if(d->value.isValid() && target() && !objs.contains(target())) {
+    if (d->value.isValid() && target() && !objs.contains(target())) {
         QObject *obj = target();
-        for(int jj = 0; jj < props.count(); ++jj) {
+        for (int jj = 0; jj < props.count(); ++jj) {
             Action myAction;
             myAction.property = QmlMetaProperty(obj, props.at(jj));
             myAction.toValue = d->value;
@@ -1206,7 +1206,7 @@ void QmlSetPropertyAction::transition(QmlStateActions &actions,
         }
     }
 
-    if(data->actions.count()) {
+    if (data->actions.count()) {
         d->spa->setAnimAction(data, QAbstractAnimation::DeleteWhenStopped);
     } else {
         delete data;
@@ -1249,7 +1249,7 @@ void QmlParentChangeAction::prepare(QmlMetaProperty &p)
 {
     Q_D(QmlParentChangeAction);
 
-    if(d->userProperty.isNull)
+    if (d->userProperty.isNull)
         d->property = p;
     else 
         d->property = d->userProperty;
@@ -1275,7 +1275,7 @@ void QmlParentChangeAction::transition(QmlStateActions &actions,
         QmlStateActions actions;
         virtual void doAction()
         {
-            for(int ii = 0; ii < actions.count(); ++ii) {
+            for (int ii = 0; ii < actions.count(); ++ii) {
                 const Action &action = actions.at(ii);
                 QmlBehaviour::_ignore = true;
                 action.property.write(action.toValue);
@@ -1287,17 +1287,17 @@ void QmlParentChangeAction::transition(QmlStateActions &actions,
     QmlParentChangeActionData *data = new QmlParentChangeActionData;
 
     QSet<QObject *> objs;
-    for(int ii = 0; ii < actions.count(); ++ii) {
+    for (int ii = 0; ii < actions.count(); ++ii) {
         Action &action = actions[ii];
 
         QObject *obj = action.property.object();
         QString propertyName = action.property.name();
 
-        if((!target() || target() == obj) && propertyName == QString(QLatin1String("moveToParent"))) {
+        if ((!target() || target() == obj) && propertyName == QString(QLatin1String("moveToParent"))) {
             objs.insert(obj);
             Action myAction = action;
 
-            /*if(d->value.isValid())
+            /*if (d->value.isValid())
                 myAction.toValue = d->value;*/
 
             modified << action.property;
@@ -1306,9 +1306,9 @@ void QmlParentChangeAction::transition(QmlStateActions &actions,
         }
     }
 
-    /*if(d->value.isValid() && target() && !objs.contains(target())) {
+    /*if (d->value.isValid() && target() && !objs.contains(target())) {
         QObject *obj = target();
-        for(int jj = 0; jj < props.count(); ++jj) {
+        for (int jj = 0; jj < props.count(); ++jj) {
             Action myAction;
             myAction.property = QmlMetaProperty(obj, props.at(jj));
             myAction.toValue = d->value;
@@ -1316,7 +1316,7 @@ void QmlParentChangeAction::transition(QmlStateActions &actions,
         }
     }*/
 
-    if(data->actions.count()) {
+    if (data->actions.count()) {
         d->cpa->setAnimAction(data, QAbstractAnimation::DeleteWhenStopped);
     } else {
         delete data;
@@ -1387,13 +1387,13 @@ int QmlNumericAnimation::duration() const
 
 void QmlNumericAnimation::setDuration(int duration)
 {
-    if(duration < 0) {
+    if (duration < 0) {
         qWarning("QmlNumericAnimation: Cannot set a duration of < 0");
         return;
     }
 
     Q_D(QmlNumericAnimation);
-    if(d->na->duration() == duration)
+    if (d->na->duration() == duration)
         return;
     d->na->setDuration(duration);
     emit durationChanged(duration);
@@ -1417,7 +1417,7 @@ qreal QmlNumericAnimation::from() const
 void QmlNumericAnimation::setFrom(qreal f)
 {
     Q_D(QmlNumericAnimation);
-    if(!d->from.isNull && f == d->from)
+    if (!d->from.isNull && f == d->from)
         return;
     d->from = f;
     emit fromChanged(f);
@@ -1441,7 +1441,7 @@ qreal QmlNumericAnimation::to() const
 void QmlNumericAnimation::setTo(qreal t)
 {
     Q_D(QmlNumericAnimation);
-    if(!d->to.isNull && t == d->to)
+    if (!d->to.isNull && t == d->to)
         return;
     d->to = t;
     emit toChanged(t);
@@ -1513,7 +1513,7 @@ QString QmlNumericAnimation::easing() const
 void QmlNumericAnimation::setEasing(const QString &e)
 {
     Q_D(QmlNumericAnimation);
-    if(d->easing == e)
+    if (d->easing == e)
         return;
 
     d->easing = e;
@@ -1544,7 +1544,7 @@ QString QmlNumericAnimation::properties() const
 void QmlNumericAnimation::setProperties(const QString &prop)
 {
     Q_D(QmlNumericAnimation);
-    if(d->properties == prop)
+    if (d->properties == prop)
         return;
 
     d->properties = prop;
@@ -1575,8 +1575,8 @@ QList<QObject *> *QmlNumericAnimation::exclude()
 
 void QmlNumericAnimationPrivate::valueChanged(qreal r)
 {
-    if(!fromSourced) {
-        if(from.isNull) {
+    if (!fromSourced) {
+        if (from.isNull) {
             fromValue = qvariant_cast<qreal>(property.read());
         } else {
             fromValue = from;
@@ -1584,7 +1584,7 @@ void QmlNumericAnimationPrivate::valueChanged(qreal r)
         fromSourced = true;
     }
 
-    if(r == 1.) {
+    if (r == 1.) {
         property.write(to.value);
     } else {
         qreal val = fromValue + (to-fromValue) * r;
@@ -1595,7 +1595,7 @@ void QmlNumericAnimationPrivate::valueChanged(qreal r)
 void QmlNumericAnimation::prepare(QmlMetaProperty &p)
 {
     Q_D(QmlNumericAnimation);
-    if(d->userProperty.isNull)
+    if (d->userProperty.isNull)
         d->property = p;
     else
         d->property = d->userProperty;
@@ -1623,16 +1623,16 @@ void QmlNumericAnimation::transition(QmlStateActions &actions,
         void setValue(qreal v)
         {
             QmlTimeLineValue::setValue(v);
-            for(int ii = 0; ii < actions.count(); ++ii) {
+            for (int ii = 0; ii < actions.count(); ++ii) {
                 Action &action = actions[ii];
 
                 QmlBehaviour::_ignore = true;
-                if(v == 1.)
+                if (v == 1.)
                     action.property.write(action.toValue.toDouble());
                 else {
-                    if(action.fromValue.isNull()) {
+                    if (action.fromValue.isNull()) {
                         action.fromValue = action.property.read();
-                        if(action.fromValue.isNull()) {
+                        if (action.fromValue.isNull()) {
                             action.fromValue = QVariant(0.);
                         }
                     }
@@ -1647,31 +1647,31 @@ void QmlNumericAnimation::transition(QmlStateActions &actions,
     };
 
     QStringList props = d->properties.split(QLatin1Char(','));
-    for(int ii = 0; ii < props.count(); ++ii)
+    for (int ii = 0; ii < props.count(); ++ii)
         props[ii] = props.at(ii).trimmed();
-    if(!d->propertyName.isEmpty() && !props.contains(d->propertyName))
+    if (!d->propertyName.isEmpty() && !props.contains(d->propertyName))
         props.append(d->propertyName);
 
     NTransitionData *data = new NTransitionData;
 
     QSet<QObject *> objs;
-    for(int ii = 0; ii < actions.count(); ++ii) {
+    for (int ii = 0; ii < actions.count(); ++ii) {
         Action &action = actions[ii];
 
         QObject *obj = action.property.object();
         QString propertyName = action.property.name();
 
-        if((d->filter.isEmpty() || d->filter.contains(obj)) &&
+        if ((d->filter.isEmpty() || d->filter.contains(obj)) &&
            (!d->exclude.contains(obj)) && props.contains(propertyName) &&
            (!target() || target() == obj)) {
             objs.insert(obj);
             Action myAction = action;
-            if(d->from.isValid()) {
+            if (d->from.isValid()) {
                 myAction.fromValue = QVariant(d->from);
             } else {
                 myAction.fromValue = QVariant();
             }
-            if(d->to.isValid()) 
+            if (d->to.isValid()) 
                 myAction.toValue = QVariant(d->to);
 
             modified << action.property;
@@ -1681,13 +1681,13 @@ void QmlNumericAnimation::transition(QmlStateActions &actions,
         }
     }
 
-    if(d->to.isValid() && target() && !objs.contains(target())) {
+    if (d->to.isValid() && target() && !objs.contains(target())) {
         QObject *obj = target();
-        for(int jj = 0; jj < props.count(); ++jj) {
+        for (int jj = 0; jj < props.count(); ++jj) {
             Action myAction;
             myAction.property = QmlMetaProperty(obj, props.at(jj));
 
-            if(d->from.isValid()) 
+            if (d->from.isValid()) 
                 myAction.fromValue = QVariant(d->from);
 
             myAction.toValue = QVariant(d->to);
@@ -1697,7 +1697,7 @@ void QmlNumericAnimation::transition(QmlStateActions &actions,
         }
     }
 
-    if(data->actions.count()) {
+    if (data->actions.count()) {
         d->na->setAnimValue(data, QAbstractAnimation::DeleteWhenStopped);
     } else {
         delete data;
@@ -1755,7 +1755,7 @@ QmlSequentialAnimation::~QmlSequentialAnimation()
 void QmlSequentialAnimation::prepare(QmlMetaProperty &p)
 {
     Q_D(QmlAnimationGroup);
-    if(d->userProperty.isNull)
+    if (d->userProperty.isNull)
         d->property = p;
     else
         d->property = d->userProperty;
@@ -1778,7 +1778,7 @@ void QmlSequentialAnimation::transition(QmlStateActions &actions,
 
     int inc = 1;
     int from = 0;
-    if(direction == Backward) {
+    if (direction == Backward) {
         inc = -1;
         from = d->animations.count() - 1;
     }
@@ -1787,7 +1787,7 @@ void QmlSequentialAnimation::transition(QmlStateActions &actions,
     for (int i = d->ag->animationCount()-1; i >= 0; --i)
         d->ag->takeAnimationAt(i);
 
-    for(int ii = from; ii < d->animations.count() && ii >= 0; ii += inc) {
+    for (int ii = from; ii < d->animations.count() && ii >= 0; ii += inc) {
         d->animations.at(ii)->transition(actions, modified, direction);
         d->ag->addAnimation(d->animations.at(ii)->qtAnimation());
     }
@@ -1846,7 +1846,7 @@ QmlParallelAnimation::~QmlParallelAnimation()
 void QmlParallelAnimation::prepare(QmlMetaProperty &p)
 {
     Q_D(QmlAnimationGroup);
-    if(d->userProperty.isNull)
+    if (d->userProperty.isNull)
         d->property = p;
     else
         d->property = d->userProperty;
@@ -1867,7 +1867,7 @@ void QmlParallelAnimation::transition(QmlStateActions &actions,
 {
     Q_D(QmlAnimationGroup);
 
-    for(int ii = 0; ii < d->animations.count(); ++ii) {
+    for (int ii = 0; ii < d->animations.count(); ++ii) {
         d->animations.at(ii)->transition(actions, modified, direction);
     }
 }
@@ -1976,13 +1976,13 @@ int QmlVariantAnimation::duration() const
 
 void QmlVariantAnimation::setDuration(int duration)
 {
-    if(duration < 0) {
+    if (duration < 0) {
         qWarning("QmlVariantAnimation: Cannot set a duration of < 0");
         return;
     }
 
     Q_D(QmlVariantAnimation);
-    if(d->va->duration() == duration)
+    if (d->va->duration() == duration)
         return;
     d->va->setDuration(duration);
     emit durationChanged(duration);
@@ -2006,7 +2006,7 @@ QVariant QmlVariantAnimation::from() const
 void QmlVariantAnimation::setFrom(const QVariant &f)
 {
     Q_D(QmlVariantAnimation);
-    if(!d->from.isNull && f == d->from)
+    if (!d->from.isNull && f == d->from)
         return;
     d->from = f;
     emit fromChanged(f);
@@ -2030,7 +2030,7 @@ QVariant QmlVariantAnimation::to() const
 void QmlVariantAnimation::setTo(const QVariant &t)
 {
     Q_D(QmlVariantAnimation);
-    if(!d->to.isNull && t == d->to)
+    if (!d->to.isNull && t == d->to)
         return;
     d->to = t;
     emit toChanged(t);
@@ -2059,7 +2059,7 @@ QString QmlVariantAnimation::easing() const
 void QmlVariantAnimation::setEasing(const QString &e)
 {
     Q_D(QmlVariantAnimation);
-    if(d->easing == e)
+    if (d->easing == e)
         return;
 
     d->easing = e;
@@ -2090,7 +2090,7 @@ QString QmlVariantAnimation::properties() const
 void QmlVariantAnimation::setProperties(const QString &prop)
 {
     Q_D(QmlVariantAnimation);
-    if(d->properties == prop)
+    if (d->properties == prop)
         return;
 
     d->properties = prop;
@@ -2121,8 +2121,8 @@ QList<QObject *> *QmlVariantAnimation::exclude()
 
 void QmlVariantAnimationPrivate::valueChanged(qreal r)
 {
-    if(!fromSourced) {
-        if(from.isNull) {
+    if (!fromSourced) {
+        if (from.isNull) {
             fromValue = property.read();
         } else {
             fromValue = from;
@@ -2130,7 +2130,7 @@ void QmlVariantAnimationPrivate::valueChanged(qreal r)
         fromSourced = true;
     }
 
-    if(r == 1.) {
+    if (r == 1.) {
         property.write(to.value);
     } else {
         QVariant val = interpolateVariant(fromValue, to.value, r);
@@ -2147,7 +2147,7 @@ QAbstractAnimation *QmlVariantAnimation::qtAnimation()
 void QmlVariantAnimation::prepare(QmlMetaProperty &p)
 {
     Q_D(QmlVariantAnimation);
-    if(d->userProperty.isNull)
+    if (d->userProperty.isNull)
         d->property = p;
     else
         d->property = d->userProperty;
@@ -2174,15 +2174,15 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
         void setValue(qreal v)
         {
             QmlTimeLineValue::setValue(v);
-            for(int ii = 0; ii < actions.count(); ++ii) {
+            for (int ii = 0; ii < actions.count(); ++ii) {
                 Action &action = actions[ii];
 
-                if(v == 1.)
+                if (v == 1.)
                     action.property.write(action.toValue);
                 else {
-                    if(action.fromValue.isNull()) {
+                    if (action.fromValue.isNull()) {
                         action.fromValue = action.property.read();
-                        /*if(action.fromValue.isNull())
+                        /*if (action.fromValue.isNull())
                             action.fromValue = QVariant(0.);*/    //XXX can we give a default value for any type?
                     }
                     QVariant val = QmlVariantAnimationPrivate::interpolateVariant(action.fromValue, action.toValue, v);
@@ -2193,29 +2193,29 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
     };
 
     QStringList props = d->properties.split(QLatin1Char(','));
-    for(int ii = 0; ii < props.count(); ++ii)
+    for (int ii = 0; ii < props.count(); ++ii)
         props[ii] = props.at(ii).trimmed();
-    if(!d->propertyName.isEmpty() && !props.contains(d->propertyName))
+    if (!d->propertyName.isEmpty() && !props.contains(d->propertyName))
         props.append(d->propertyName);
 
     NTransitionData *data = new NTransitionData;
 
     QSet<QObject *> objs;
-    for(int ii = 0; ii < actions.count(); ++ii) {
+    for (int ii = 0; ii < actions.count(); ++ii) {
         Action &action = actions[ii];
 
         QObject *obj = action.property.object();
         QString propertyName = action.property.name();
 
-        if((d->filter.isEmpty() || d->filter.contains(obj)) &&
+        if ((d->filter.isEmpty() || d->filter.contains(obj)) &&
            (!d->exclude.contains(obj)) && props.contains(propertyName) &&
            (!target() || target() == obj)) {
             objs.insert(obj);
             Action myAction = action;
 
-            if(d->from.isValid())
+            if (d->from.isValid())
                 myAction.fromValue = QVariant(d->from);
-            if(d->to.isValid())
+            if (d->to.isValid())
                 myAction.toValue = QVariant(d->to);
 
             d->convertVariant(myAction.fromValue, (QVariant::Type)myAction.property.propertyType());
@@ -2228,13 +2228,13 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
         }
     }
 
-    if(d->to.isValid() && target() && !objs.contains(target())) {
+    if (d->to.isValid() && target() && !objs.contains(target())) {
         QObject *obj = target();
-        for(int jj = 0; jj < props.count(); ++jj) {
+        for (int jj = 0; jj < props.count(); ++jj) {
             Action myAction;
             myAction.property = QmlMetaProperty(obj, props.at(jj));
 
-            if(d->from.isValid()) {
+            if (d->from.isValid()) {
                 d->convertVariant(d->from.value, (QVariant::Type)myAction.property.propertyType());
                 myAction.fromValue = QVariant(d->from);
             }
@@ -2247,7 +2247,7 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
         }
     }
 
-    if(data->actions.count()) {
+    if (data->actions.count()) {
         d->va->setAnimValue(data, QAbstractAnimation::DeleteWhenStopped);
     } else {
         delete data;

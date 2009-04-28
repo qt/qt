@@ -98,7 +98,7 @@ public:
     QString text;
     QmlFont *font()
     {
-        if(!_font) {
+        if (!_font) {
             Q_Q(QFxText);
             _font = new QmlFont;
             QObject::connect(_font, SIGNAL(updated()), q, SLOT(fontChanged()));

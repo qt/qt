@@ -80,7 +80,7 @@ QmlSetPropertiesMetaObject::QmlSetPropertiesMetaObject(QObject *obj)
 
 void QmlSetPropertiesMetaObject::propertyRead(int id)
 {
-    if(!value(id).isValid())  
+    if (!value(id).isValid())  
         setValue(id, QVariant::fromValue((QObject *)new QmlSetPropertiesProxyObject(object())));
 
     QmlOpenMetaObject::propertyRead(id);
@@ -88,10 +88,10 @@ void QmlSetPropertiesMetaObject::propertyRead(int id)
 
 void QmlSetPropertiesMetaObject::propertyWrite(int id)
 {
-    if(value(id).userType() == qMetaTypeId<QObject *>()) {
+    if (value(id).userType() == qMetaTypeId<QObject *>()) {
         QObject *val = qvariant_cast<QObject *>(value(id));
         QmlSetPropertiesProxyObject *proxy = qobject_cast<QmlSetPropertiesProxyObject *>(val);
-        if(proxy) {
+        if (proxy) {
             setValue(id, QVariant());
             delete proxy;
         }
@@ -203,9 +203,9 @@ QmlSetProperties::doAction(QmlSetPropertiesMetaObject *metaObject,
 
         QmlMetaProperty prop(object, QLatin1String(name));
 
-        if(po) {
+        if (po) {
             QObject *objVal = QmlMetaType::toQObject(prop.read());
-            if(!objVal) {
+            if (!objVal) {
                 qmlInfo(this) << object->metaObject()->className()
                               << "has no object property named" << name;
                 continue;

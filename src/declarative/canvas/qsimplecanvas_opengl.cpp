@@ -66,7 +66,7 @@ void CanvasEGLWidget::updateGL()
 
 void CanvasEGLWidget::updateGL(const QRect &r)
 {
-    if(r.isEmpty())
+    if (r.isEmpty())
         return;
 
     _clip = r;
@@ -117,7 +117,7 @@ void QSimpleCanvasPrivate::paintGL()
     p.stencilValue = 0;
     p.opacity = 1;
     p.forceParamRefresh = false;
-    if(!isSetup)
+    if (!isSetup)
         root->d_func()->setupPainting(0, QRect());
     root->d_func()->paint(p);
 
@@ -126,12 +126,12 @@ void QSimpleCanvasPrivate::paintGL()
 
 QGLFramebufferObject *QSimpleCanvasPrivate::acquire(int w, int h)
 {
-    if(w <= 0 || h <= 0)
+    if (w <= 0 || h <= 0)
         return 0;
 
     int size = qMax(w, h);
-    for(int ii = 0; ii < frameBuffers.count(); ++ii) {
-        if(frameBuffers.at(ii)->width() >= size) {
+    for (int ii = 0; ii < frameBuffers.count(); ++ii) {
+        if (frameBuffers.at(ii)->width() >= size) {
             QGLFramebufferObject *rv = frameBuffers.at(ii);
             frameBuffers.removeAt(ii);
             return rv;
@@ -154,8 +154,8 @@ QGLFramebufferObject *QSimpleCanvasPrivate::acquire(int w, int h)
 void QSimpleCanvasPrivate::release(QGLFramebufferObject *buf)
 {
     int size = qMax(buf->width(), buf->height());
-    for(int ii = 0; ii < frameBuffers.count(); ++ii) {
-        if(frameBuffers.at(ii)->width() >= size) {
+    for (int ii = 0; ii < frameBuffers.count(); ++ii) {
+        if (frameBuffers.at(ii)->width() >= size) {
             frameBuffers.insert(ii, buf);
             return;
         }
@@ -178,7 +178,7 @@ QSimpleCanvas::Matrix QSimpleCanvasItemPrivate::localTransform() const
     trans.translate(to.x(), to.y());
     trans.scale(q->scale(), q->scale());
     trans.translate(-to.x(), -to.y());
-    if(data()->transformUser)
+    if (data()->transformUser)
         trans *= *data()->transformUser;
     return trans;
 }
@@ -188,13 +188,13 @@ void QSimpleCanvasItemPrivate::simplePaintChild(const GLPaintParameters &params,
     Q_Q(QSimpleCanvasItem);
 
     GLPaintParameters childParams = params;
-    if(clip)
+    if (clip)
         ++childParams.stencilValue;
 
-    if(child->d_func()->data()->activeOpacity != 0) {
+    if (child->d_func()->data()->activeOpacity != 0) {
         childParams.boundingRect = child->boundingRect();
 
-        if(child->filter() && child->filter()->enabled()) {
+        if (child->filter() && child->filter()->enabled()) {
             QSimpleCanvasItem::GLPainter painter(q);
             painter.activeTransform = child->d_func()->data()->transformActive;
             painter.activeOpacity = child->d_func()->data()->activeOpacity;
@@ -209,7 +209,7 @@ void QSimpleCanvasItemPrivate::simplePaintChild(const GLPaintParameters &params,
 void QSimpleCanvasItemPrivate::paintChild(const GLPaintParameters &params, 
                                        QSimpleCanvasItem *child)
 {
-    if(params.forceParamRefresh) {
+    if (params.forceParamRefresh) {
         QSimpleCanvas::Matrix t = child->d_func()->data()->transformActive;
         qreal o = child->d_func()->data()->activeOpacity;
         setupChildState(child);
@@ -226,10 +226,10 @@ void QSimpleCanvasItemPrivate::setupChildState(QSimpleCanvasItem *child)
 {
     qreal visible = child->visible();
     child->d_func()->data()->activeOpacity = data()->activeOpacity;
-    if(visible != 1)
+    if (visible != 1)
         child->d_func()->data()->activeOpacity *= visible;
 
-    if(child->d_func()->data()->activeOpacity != 0) {
+    if (child->d_func()->data()->activeOpacity != 0) {
         // Calculate child's transform
         qreal x = child->x();
         qreal y = child->y();
@@ -238,19 +238,19 @@ void QSimpleCanvasItemPrivate::setupChildState(QSimpleCanvasItem *child)
 
         QSimpleCanvas::Matrix &am = child->d_func()->data()->transformActive;
         am = data()->transformActive;
-        if(x != 0 || y != 0)
+        if (x != 0 || y != 0)
             am.translate(x, y);
-        if(scale != 1) {
+        if (scale != 1) {
             QPointF to = child->d_func()->transformOrigin();
-            if(to.x() != 0. || to.y() != 0.)
+            if (to.x() != 0. || to.y() != 0.)
                 am.translate(to.x(), to.y());
             am.scale(scale, scale);
-            if(to.x() != 0. || to.y() != 0.)
+            if (to.x() != 0. || to.y() != 0.)
                 am.translate(-to.x(), -to.y());
         }
-        if(child->d_func()->data()->transformUser)
+        if (child->d_func()->data()->transformUser)
             am *= *child->d_func()->data()->transformUser;
-        if(flip) {
+        if (flip) {
             QRectF br = child->boundingRect();
             am.translate(br.width() / 2., br.height() / 2);
             am.rotate(180, (flip & QSimpleCanvasItem::VerticalFlip)?1:0, (flip & QSimpleCanvasItem::HorizontalFlip)?1:0, 0);
@@ -265,15 +265,15 @@ QRectF QSimpleCanvasItemPrivate::setupPainting(int version, const QRect &boundin
     Q_Q(QSimpleCanvasItem);
 
     QRectF filteredBoundRect = q->boundingRect();
-    if(filter)
+    if (filter)
         filteredBoundRect = filter->itemBoundingRect(filteredBoundRect);
     QRectF rv = data()->transformActive.mapRect(filteredBoundRect);
 
-    for(int ii = 0; ii < children.count(); ++ii) {
+    for (int ii = 0; ii < children.count(); ++ii) {
         QSimpleCanvasItem *child = children.at(ii);
         setupChildState(child);
 
-        if(child->d_func()->data()->activeOpacity != 0) 
+        if (child->d_func()->data()->activeOpacity != 0) 
             rv |= child->d_func()->setupPainting(version, bounding);
     } 
 
@@ -283,7 +283,7 @@ QRectF QSimpleCanvasItemPrivate::setupPainting(int version, const QRect &boundin
 
 void QSimpleCanvasItemPrivate::paint(GLPaintParameters &oldParams, QSimpleCanvasFilter::Layer layer)
 {
-    if(!layer)
+    if (!layer)
         return;
 
     Q_Q(QSimpleCanvasItem);
@@ -299,8 +299,8 @@ void QSimpleCanvasItemPrivate::paint(GLPaintParameters &oldParams, QSimpleCanvas
                            width, 0 };
 
     // XXX Handle separate cliping modes
-    if(clip) {
-        if(params.stencilValue == 255) 
+    if (clip) {
+        if (params.stencilValue == 255) 
             qWarning() 
                 << "OpenGL: Clip recursion greater than 255 not permitted.";
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
@@ -341,17 +341,17 @@ void QSimpleCanvasItemPrivate::paint(GLPaintParameters &oldParams, QSimpleCanvas
     zOrderChildren();
 
     int upto = 0;
-    for(upto = 0; upto < children.count(); ++upto) {
+    for (upto = 0; upto < children.count(); ++upto) {
         QSimpleCanvasItem *c = children.at(upto);
-        if(c->z() < 0) {
-            if(layer & QSimpleCanvasFilter::ChildrenUnderItem) 
+        if (c->z() < 0) {
+            if (layer & QSimpleCanvasFilter::ChildrenUnderItem) 
                 paintChild(params, c);
         } else {
             break;
         }
     }
 
-    if(layer & QSimpleCanvasFilter::Item && 
+    if (layer & QSimpleCanvasFilter::Item && 
        q->options() & QSimpleCanvasItem::HasContents) {
         QSimpleCanvasItem::GLPainter painter(q);
         painter.activeTransform = data()->transformActive;
@@ -361,14 +361,14 @@ void QSimpleCanvasItemPrivate::paint(GLPaintParameters &oldParams, QSimpleCanvas
         q->paintGLContents(painter);
     }
 
-    if(layer & QSimpleCanvasFilter::ChildrenAboveItem) {
-        for(; upto < children.count(); ++upto) {
+    if (layer & QSimpleCanvasFilter::ChildrenAboveItem) {
+        for (; upto < children.count(); ++upto) {
             QSimpleCanvasItem *c = children.at(upto);
             paintChild(params, c);
         }
     }
 
-    if(clip) {
+    if (clip) {
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
         glStencilFunc(GL_EQUAL, params.stencilValue + 1, 0xFFFFFFFF);
         glStencilOp(GL_KEEP, GL_KEEP, GL_DECR);
@@ -389,7 +389,7 @@ void QSimpleCanvasItemPrivate::paint(GLPaintParameters &oldParams, QSimpleCanvas
 
 QGLShaderProgram *QSimpleCanvasItem::GLPainter::useTextureShader()
 {
-    if(activeOpacity == 1.) {
+    if (activeOpacity == 1.) {
         item->basicShaders()->singleTexture()->enable();
         item->basicShaders()->singleTexture()->setTransform(activeTransform);
         return item->basicShaders()->singleTexture();
@@ -406,7 +406,7 @@ QGLShaderProgram *QSimpleCanvasItem::GLPainter::useColorShader(const QColor &col
 {
 	QColor c = color;
     item->basicShaders()->constantColor()->enable();
-	if(activeOpacity != 1.) {
+	if (activeOpacity != 1.) {
         c.setAlpha(int(c.alpha() * activeOpacity));
     }
 

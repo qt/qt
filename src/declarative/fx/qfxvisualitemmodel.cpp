@@ -85,13 +85,13 @@ public:
     QmlListAccessor *m_modelList;
 
     int modelCount() const {
-        if(m_visualItemModel)
+        if (m_visualItemModel)
             return m_visualItemModel->count();
-        if(m_listModelInterface)
+        if (m_listModelInterface)
             return m_listModelInterface->count();
-        if(m_abstractItemModel)
+        if (m_abstractItemModel)
             return m_abstractItemModel->rowCount();
-        if(m_modelList)
+        if (m_modelList)
             return m_modelList->count();
         return 0;
     }
@@ -162,10 +162,10 @@ int QFxVisualItemModelDataMetaObject::createProperty(const char *name, const cha
             return QmlOpenMetaObject::createProperty(name, type);
     } else {
         const QLatin1String sname(name);
-        for(QHash<int, QString>::ConstIterator iter = data->m_model->m_roleNames.begin();
+        for (QHash<int, QString>::ConstIterator iter = data->m_model->m_roleNames.begin();
             iter != data->m_model->m_roleNames.end(); ++iter) {
 
-            if(*iter == sname) 
+            if (*iter == sname) 
                 return QmlOpenMetaObject::createProperty(name, type);
         }
     }
@@ -184,10 +184,10 @@ QFxVisualItemModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &pro
             && data->m_model->m_modelList) {
         return data->m_model->m_modelList->at(data->m_index);
     } else if (data->m_model->m_listModelInterface) {
-        for(QHash<int, QString>::ConstIterator iter = data->m_model->m_roleNames.begin();
+        for (QHash<int, QString>::ConstIterator iter = data->m_model->m_roleNames.begin();
             iter != data->m_model->m_roleNames.end(); ++iter) {
 
-            if(*iter == name) {
+            if (*iter == name) {
                 roles.append(iter.key());
                 QHash<int,QVariant> values = data->m_model->m_listModelInterface->data(data->m_index, QList<int>() << iter.key());
                 if (values.isEmpty())
@@ -197,10 +197,10 @@ QFxVisualItemModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &pro
             } 
         }
     } else if (data->m_model->m_abstractItemModel) {
-        for(QHash<int, QString>::ConstIterator iter = data->m_model->m_roleNames.begin();
+        for (QHash<int, QString>::ConstIterator iter = data->m_model->m_roleNames.begin();
             iter != data->m_model->m_roleNames.end(); ++iter) {
 
-            if(*iter == name) {
+            if (*iter == name) {
                 roles.append(iter.key());
                 QModelIndex index = data->m_model->m_abstractItemModel->index(data->m_index, 0);
                 return data->m_model->m_abstractItemModel->data(index, iter.key());
@@ -297,7 +297,7 @@ QFxVisualItemModel::QFxVisualItemModel(QmlContext *ctxt)
 QFxVisualItemModel::~QFxVisualItemModel()
 {
     Q_D(QFxVisualItemModel);
-    if(d->m_modelList)
+    if (d->m_modelList)
         delete d->m_modelList;
 }
 
@@ -311,7 +311,7 @@ void QFxVisualItemModel::setModel(const QVariant &model)
 {
     Q_D(QFxVisualItemModel);
     d->m_modelVariant = model;
-    if(d->m_listModelInterface) {
+    if (d->m_listModelInterface) {
         // Assume caller has released all items.
         QObject::disconnect(d->m_listModelInterface, SIGNAL(itemsChanged(int,int,QList<int>)),
                 this, SLOT(_q_itemsChanged(int,int,QList<int>)));
@@ -329,7 +329,7 @@ void QFxVisualItemModel::setModel(const QVariant &model)
                             this, SLOT(_q_rowsRemoved(const QModelIndex &,int,int)));
         QObject::disconnect(d->m_abstractItemModel, SIGNAL(dataChanged(const QModelIndex&,const QModelIndex&)),
                             this, SLOT(_q_dataChanged(const QModelIndex&,const QModelIndex&)));
-    } else if(d->m_visualItemModel) {
+    } else if (d->m_visualItemModel) {
         QObject::disconnect(d->m_visualItemModel, SIGNAL(itemsInserted(int,int)),
                          this, SIGNAL(itemsInserted(int,int)));
         QObject::disconnect(d->m_visualItemModel, SIGNAL(itemsRemoved(int,int)),
@@ -343,9 +343,9 @@ void QFxVisualItemModel::setModel(const QVariant &model)
     if (object && (d->m_listModelInterface = qobject_cast<QListModelInterface *>(object))) {
         d->m_roles.clear();
         d->m_roleNames.clear();
-        if(d->m_listModelInterface) {
+        if (d->m_listModelInterface) {
             d->m_roles = d->m_listModelInterface->roles();
-            for(int ii = 0; ii < d->m_roles.count(); ++ii) 
+            for (int ii = 0; ii < d->m_roles.count(); ++ii) 
                 d->m_roleNames.insert(d->m_roles.at(ii), 
                                       d->m_listModelInterface->toString(d->m_roles.at(ii)));
         }
@@ -359,7 +359,7 @@ void QFxVisualItemModel::setModel(const QVariant &model)
         QObject::connect(d->m_listModelInterface, SIGNAL(itemsMoved(int,int,int)),
                          this, SLOT(_q_itemsMoved(int,int,int)));
 
-        if(d->m_delegate && d->m_listModelInterface->count())
+        if (d->m_delegate && d->m_listModelInterface->count())
             emit itemsInserted(0, d->m_listModelInterface->count());
         return;
     } else if (object && (d->m_abstractItemModel = qobject_cast<QAbstractItemModel *>(object))) {
@@ -390,7 +390,7 @@ void QFxVisualItemModel::setModel(const QVariant &model)
     if (!d->m_modelList)
         d->m_modelList = new QmlListAccessor;
     d->m_modelList->setList(model);
-    if(d->m_delegate && d->modelCount())
+    if (d->m_delegate && d->modelCount())
         emit itemsInserted(0, d->modelCount());
 }
 
@@ -405,7 +405,7 @@ void QFxVisualItemModel::setDelegate(QmlComponent *delegate)
     Q_D(QFxVisualItemModel);
     d->m_delegate = delegate;
 
-    if(d->modelCount())
+    if (d->modelCount())
         emit itemsInserted(0, d->modelCount());
 }
 
@@ -430,7 +430,7 @@ int QFxVisualItemModel::count() const
 QFxItem *QFxVisualItemModel::item(int index, bool complete)
 {
     Q_D(QFxVisualItemModel);
-    if(d->m_visualItemModel)
+    if (d->m_visualItemModel)
         return d->m_visualItemModel->item(index, d->m_part.toLatin1(), complete);
     return item(index, QByteArray(), complete);
 }
@@ -471,7 +471,7 @@ void QFxVisualItemModel::release(QFxItem *item)
 QObject *QFxVisualItemModel::parts() 
 {
     Q_D(QFxVisualItemModel);
-    if(!d->m_parts) 
+    if (!d->m_parts) 
         d->m_parts = new QFxVisualItemModelParts(this);
     return d->m_parts;
 }
@@ -479,18 +479,18 @@ QObject *QFxVisualItemModel::parts()
 QFxItem *QFxVisualItemModel::item(int index, const QByteArray &viewId, bool complete)
 {
     Q_D(QFxVisualItemModel);
-    if(d->m_visualItemModel)
+    if (d->m_visualItemModel)
         return d->m_visualItemModel->item(index, viewId, complete);
 
-    if(d->modelCount() <= 0 || !d->m_delegate)
+    if (d->modelCount() <= 0 || !d->m_delegate)
         return 0;
 
     QObject *nobj = 0;
-    if(d->m_cache.contains(index)) {
+    if (d->m_cache.contains(index)) {
         nobj = d->m_cache[index];
     } else {
         QmlContext *ccontext = d->m_context;
-        if(!ccontext) ccontext = qmlContext(this);
+        if (!ccontext) ccontext = qmlContext(this);
         QmlContext *ctxt = new QmlContext(ccontext);
         QFxVisualItemModelData *data = new QFxVisualItemModelData(index, d);
         ctxt->setContextProperty(QLatin1String("model"), data);
@@ -507,7 +507,7 @@ QFxItem *QFxVisualItemModel::item(int index, const QByteArray &viewId, bool comp
     QFxItem *item = qobject_cast<QFxItem *>(nobj);
     if (!item) {
         QmlPackage *package = qobject_cast<QmlPackage *>(nobj);
-        if(package) {
+        if (package) {
             QObject *o = package->part(QLatin1String(viewId));
             item = qobject_cast<QFxItem *>(o);
             d->m_packaged[o] = package;
@@ -520,7 +520,7 @@ QFxItem *QFxVisualItemModel::item(int index, const QByteArray &viewId, bool comp
 void QFxVisualItemModel::completeItem()
 {
     Q_D(QFxVisualItemModel);
-    if(d->m_visualItemModel) {
+    if (d->m_visualItemModel) {
         d->m_visualItemModel->completeItem();
         return;
     }
@@ -534,11 +534,11 @@ QVariant QFxVisualItemModel::evaluate(int index, const QString &expression, QObj
     if (d->m_visualItemModel)
         return d->m_visualItemModel->evaluate(index, expression, objectContext);
 
-    if((!d->m_listModelInterface && !d->m_abstractItemModel) || !d->m_delegate)
+    if ((!d->m_listModelInterface && !d->m_abstractItemModel) || !d->m_delegate)
         return QVariant();
 
     QVariant value;
-    if(d->m_cache.contains(index)) {
+    if (d->m_cache.contains(index)) {
         QObject *nobj = d->m_cache[index];
         QFxItem *item = qobject_cast<QFxItem *>(nobj);
         if (item) {
@@ -548,7 +548,7 @@ QVariant QFxVisualItemModel::evaluate(int index, const QString &expression, QObj
         }
     } else {
         QmlContext *ccontext = d->m_context;
-        if(!ccontext) ccontext = qmlContext(this);
+        if (!ccontext) ccontext = qmlContext(this);
         QmlContext *ctxt = new QmlContext(ccontext);
         QFxVisualItemModelData *data = new QFxVisualItemModelData(index, d);
         ctxt->addDefaultObject(data);
@@ -567,17 +567,17 @@ void QFxVisualItemModel::_q_itemsChanged(int index, int count,
 {
     Q_D(QFxVisualItemModel);
     // XXX - highly inefficient
-    for(int ii = index; ii < index + count; ++ii) {
+    for (int ii = index; ii < index + count; ++ii) {
 
-        if(d->m_cache.contains(ii)) {
+        if (d->m_cache.contains(ii)) {
 
             QObject *item = d->m_cache[ii];
             QFxVisualItemModelData *data = d->data(item);
 
-            for(int prop = 0; prop < data->count(); ++prop) {
+            for (int prop = 0; prop < data->count(); ++prop) {
 
                 int role = data->role(prop);
-                if(roles.contains(role)) {
+                if (roles.contains(role)) {
                     if (d->m_listModelInterface) {
                         data->setValue(prop, *d->m_listModelInterface->data(ii, QList<int>() << role).begin());
                     } else if (d->m_abstractItemModel) {
@@ -596,10 +596,10 @@ void QFxVisualItemModel::_q_itemsInserted(int index, int count)
     Q_D(QFxVisualItemModel);
     // XXX - highly inefficient
     QHash<int, QObject *> items;
-    for(QHash<int, QObject *>::Iterator iter = d->m_cache.begin();
+    for (QHash<int, QObject *>::Iterator iter = d->m_cache.begin();
         iter != d->m_cache.end(); ) {
 
-        if(iter.key() >= index) {
+        if (iter.key() >= index) {
             QObject *item = *iter;
             int index = iter.key() + count;
             iter = d->m_cache.erase(iter);
@@ -622,15 +622,15 @@ void QFxVisualItemModel::_q_itemsRemoved(int index, int count)
     Q_D(QFxVisualItemModel);
     // XXX - highly inefficient
     QHash<int, QObject *> items;
-    for(QHash<int, QObject *>::Iterator iter = d->m_cache.begin();
+    for (QHash<int, QObject *>::Iterator iter = d->m_cache.begin();
         iter != d->m_cache.end(); ) {
-        if(iter.key() >= index && iter.key() < index + count) {
+        if (iter.key() >= index && iter.key() < index + count) {
             QObject *item = *iter;
             iter = d->m_cache.erase(iter);
             items.insertMulti(-1, item); //XXX perhaps better to maintain separately
             QFxVisualItemModelData *data = d->data(item);
             data->setIndex(-1);
-        } else if(iter.key() >= index + count) {
+        } else if (iter.key() >= index + count) {
             QObject *item = *iter;
             int index = iter.key() - count;
             iter = d->m_cache.erase(iter);
@@ -651,10 +651,10 @@ void QFxVisualItemModel::_q_itemsMoved(int from, int to, int count)
     Q_D(QFxVisualItemModel);
     // XXX - highly inefficient
     QHash<int, QObject *> items;
-    for(QHash<int, QObject *>::Iterator iter = d->m_cache.begin();
+    for (QHash<int, QObject *>::Iterator iter = d->m_cache.begin();
         iter != d->m_cache.end(); ) {
 
-        if(iter.key() >= from && iter.key() < from + count) {
+        if (iter.key() >= from && iter.key() < from + count) {
             QObject *item = *iter;
             int index = iter.key() - from + to;
             iter = d->m_cache.erase(iter);

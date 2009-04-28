@@ -163,7 +163,7 @@ void QFxDrag::setYmax(int m)
     example extended so as to give a different color when you right click.
     \code
     <Rect width="100" height="100">
-        <MouseRegion anchors.fill="{parent}" onClick="if(mouse.button==Qt.RightButton) { parent.color='blue';} else { parent.color = 'red';}"/>
+        <MouseRegion anchors.fill="{parent}" onClick="if (mouse.button==Qt.RightButton) { parent.color='blue';} else { parent.color = 'red';}"/>
     </Rect>
     \endcode
 
@@ -324,7 +324,7 @@ void QFxMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxMouseRegion);
     d->moved = false;
-    if(!d->absorb)
+    if (!d->absorb)
         QFxItem::mousePressEvent(event);
     else {
         if (!d->inside) {
@@ -349,7 +349,7 @@ void QFxMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void QFxMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxMouseRegion);
-    if(!d->absorb) {
+    if (!d->absorb) {
         QFxItem::mouseMoveEvent(event);
         return;
     }
@@ -369,10 +369,10 @@ void QFxMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         emit reenteredWhilePressed();
     }
 
-    if(drag()->target()) {
-        if(!d->moved) {
-            if(d->dragX) d->startX = int(drag()->target()->x());   //### change startX and startY to qreal?
-            if(d->dragY) d->startY = int(drag()->target()->y());
+    if (drag()->target()) {
+        if (!d->moved) {
+            if (d->dragX) d->startX = int(drag()->target()->x());   //### change startX and startY to qreal?
+            if (d->dragY) d->startY = int(drag()->target()->y());
         }
 
         QPointF startLocalPos;
@@ -397,7 +397,7 @@ void QFxMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             }
         }
 
-        if(d->dragX) {
+        if (d->dragX) {
             qreal x = (curLocalPos.x() - startLocalPos.x()) + d->startX;
             if (x < drag()->xmin())
                 x = drag()->xmin();
@@ -405,7 +405,7 @@ void QFxMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 x = drag()->xmax();
             drag()->target()->setX(x);
         }
-        if(d->dragY) {
+        if (d->dragY) {
             qreal y = (curLocalPos.y() - startLocalPos.y()) + d->startY;
             if (y < drag()->ymin())
                 y = drag()->ymin();
@@ -424,7 +424,7 @@ void QFxMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void QFxMouseRegion::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxMouseRegion);
-    if(!d->absorb)
+    if (!d->absorb)
         QFxItem::mouseReleaseEvent(event);
     else {
         d->saveEvent(event);
@@ -438,7 +438,7 @@ void QFxMouseRegion::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 void QFxMouseRegion::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxMouseRegion);
-    if(!d->absorb)
+    if (!d->absorb)
         QFxItem::mouseDoubleClickEvent(event);
     else {
         //d->inside = true;
@@ -454,7 +454,7 @@ void QFxMouseRegion::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 void QFxMouseRegion::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_D(QFxMouseRegion);
-    if(!d->absorb)
+    if (!d->absorb)
         QFxItem::hoverEnterEvent(event);
     else {
         setHovered(true);
@@ -465,7 +465,7 @@ void QFxMouseRegion::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 void QFxMouseRegion::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_D(QFxMouseRegion);
-    if(!d->absorb)
+    if (!d->absorb)
         QFxItem::hoverLeaveEvent(event);
     else {
         setHovered(false);
@@ -525,7 +525,7 @@ bool QFxMouseRegion::pressed()
 void QFxMouseRegion::setHovered(bool h)
 {
     Q_D(QFxMouseRegion);
-    if(d->hovered != h) {
+    if (d->hovered != h) {
         d->hovered = h;
         emit hoveredChanged();
     }
@@ -536,10 +536,10 @@ void QFxMouseRegion::setPressed(bool p)
     Q_D(QFxMouseRegion);
     bool isclick = d->pressed == true && p == false && d->dragged == false && d->inside == true;
 
-    if(d->pressed != p) {
+    if (d->pressed != p) {
         d->pressed = p;
         QFxMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, isclick, d->longPress);
-        if(d->pressed) {
+        if (d->pressed) {
             emit positionChanged(&me);
             emit pressed(&me);
         } else {

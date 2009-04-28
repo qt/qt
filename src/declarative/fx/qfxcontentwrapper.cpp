@@ -76,7 +76,7 @@ void QFxContentWrapper::componentComplete()
     target = target->itemParent();
 
     QList<QFxItem*> myContent(*content());
-    for(int ii = 0; ii < myContent.count();  ++ii) 
+    for (int ii = 0; ii < myContent.count();  ++ii) 
         myContent.at(ii)->setParent(target);
 }
 

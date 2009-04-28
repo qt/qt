@@ -93,22 +93,22 @@ QList<QFxItem *> *QFxKeyProxy::targets() const
 
 void QFxKeyProxy::keyPressEvent(QKeyEvent *e)
 {
-    for(int ii = 0; ii < d->targets.count(); ++ii) {
+    for (int ii = 0; ii < d->targets.count(); ++ii) {
         QSimpleCanvasItem *i = d->targets.at(ii);
-        if(i)
+        if (i)
             i->keyPressEvent(e);
-        if(e->isAccepted())
+        if (e->isAccepted())
             return;
     }
 }
 
 void QFxKeyProxy::keyReleaseEvent(QKeyEvent *e)
 {
-    for(int ii = 0; ii < d->targets.count(); ++ii) {
+    for (int ii = 0; ii < d->targets.count(); ++ii) {
         QSimpleCanvasItem *i = d->targets.at(ii);
-        if(i)
+        if (i)
             i->keyReleaseEvent(e);
-        if(e->isAccepted())
+        if (e->isAccepted())
             return;
     }
 }

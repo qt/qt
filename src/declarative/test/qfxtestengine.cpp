@@ -110,15 +110,15 @@ public:
 
 bool QFxTestEnginePrivate::compare(const QImage &img1, const QImage &img2)
 {
-    if(img1.size() != img2.size())
+    if (img1.size() != img2.size())
         return false;
 
     int errorCount = 0;
-    for(int yy = 0; yy < img1.height(); ++yy) {
-        for(int xx = 0; xx < img1.width(); ++xx) {
-            if(img1.pixel(xx, yy) != img2.pixel(xx, yy)) {
+    for (int yy = 0; yy < img1.height(); ++yy) {
+        for (int xx = 0; xx < img1.width(); ++xx) {
+            if (img1.pixel(xx, yy) != img2.pixel(xx, yy)) {
                 errorCount++;
-                if(errorCount > MAX_MISMATCHED_PIXELS)
+                if (errorCount > MAX_MISMATCHED_PIXELS)
                     return false;
             }
         }
@@ -138,13 +138,13 @@ QFxTestEngine::QFxTestEngine(TestMode mode, const QString &dir,
 
     d->testDirectory = dir;
     d->testMode = mode;
-    if(d->testMode == RecordTest) {
+    if (d->testMode == RecordTest) {
         qWarning("QFxTestEngine: Record ON");
-    } else if(d->testMode == PlaybackTest) {
+    } else if (d->testMode == PlaybackTest) {
 
         QString fileName(d->testDirectory + QLatin1String("/manifest.xml"));
         QFile f(fileName);
-        if(!f.open(QIODevice::ReadOnly)) {
+        if (!f.open(QIODevice::ReadOnly)) {
             qWarning() << "QFxTestEngine: Unable to open file" << fileName;
             return;
         }
@@ -153,7 +153,7 @@ QFxTestEngine::QFxTestEngine(TestMode mode, const QString &dir,
         QmlComponent c(&d->engine, data, QUrl(d->testDirectory + QLatin1String("/manifest.xml")));
         QObject *o = c.create();
         TestLog *log = qobject_cast<TestLog *>(o);
-        if(log) {
+        if (log) {
             log->setParent(this);
             d->playbackTestData.actions() = log->actions();
             qWarning("QFxTestEngine: Playback ON");
@@ -164,18 +164,18 @@ QFxTestEngine::QFxTestEngine(TestMode mode, const QString &dir,
         }
     }
 
-    if(d->testMode != NoTest) {
+    if (d->testMode != NoTest) {
 
         QUnifiedTimer::instance()->setConsistentTiming(true);
         QObject::connect(canvas, SIGNAL(framePainted()), 
                          this, SLOT(framePainted()));
 
         canvas->installEventFilter(this);
-        for(int ii = 0; ii < d->playbackTestData.actions().count(); ++ii) {
+        for (int ii = 0; ii < d->playbackTestData.actions().count(); ++ii) {
             TestObject *o = d->playbackTestData.actions().at(ii);
-            if(TestMouse *m = qobject_cast<TestMouse *>(o)) 
+            if (TestMouse *m = qobject_cast<TestMouse *>(o)) 
                 d->toPost << m;
-            else if(TestKey *k = qobject_cast<TestKey *>(o))
+            else if (TestKey *k = qobject_cast<TestKey *>(o))
                 d->toPost << k;
         }
     }
@@ -190,7 +190,7 @@ void QFxTestEngine::framePainted()
 {
     QImage img = d->canvas->asImage();
 
-    if(d->fullFrame) {
+    if (d->fullFrame) {
         d->fullFrame = false;
         d->recordFullFrameEvent(img);
     } else {
@@ -207,11 +207,11 @@ void QFxTestEnginePrivate::recordFullFrameEvent(const QImage &img)
     fullFrames << img;
     testData.actions() << ff;
 
-    if(testMode == QFxTestEngine::PlaybackTest) {
+    if (testMode == QFxTestEngine::PlaybackTest) {
         TestFullFrame *pf = qobject_cast<TestFullFrame *>(playbackTestData.next());
         QString filename = testDirectory + QLatin1String("/image") + QString::number(pf->frameId()) + QLatin1String(".png");
         QImage recImg(filename);
-        if(!pf || !compare(recImg, img) || pf->time() != QUnifiedTimer::instance()->elapsedTime()) {
+        if (!pf || !compare(recImg, img) || pf->time() != QUnifiedTimer::instance()->elapsedTime()) {
             message(Fail, "FFrame mismatch");
         } else {
             message(Success, "FFrame OK");
@@ -226,11 +226,11 @@ static QByteArray toHex(uchar c)
     QByteArray rv;
     uint h = c / 16;
     uint l = c % 16;
-    if(h >= 10)
+    if (h >= 10)
         rv.append(h - 10 + 'A');
     else
         rv.append(h + '0');
-    if(l >= 10)
+    if (l >= 10)
         rv.append(l - 10 + 'A');
     else
         rv.append(l + '0');
@@ -245,7 +245,7 @@ void QFxTestEnginePrivate::recordFrameEvent(const QImage &img)
 
     QByteArray result = hash.result();
     QByteArray hexResult;
-    for(int ii = 0; ii < result.count(); ++ii) 
+    for (int ii = 0; ii < result.count(); ++ii) 
         hexResult.append(toHex(result.at(ii)));
 
     TestFrame *f = new TestFrame(q);
@@ -253,13 +253,13 @@ void QFxTestEnginePrivate::recordFrameEvent(const QImage &img)
 
     f->setHash(QLatin1String(hexResult));
     testData.actions() << f;
-    if(testMode == QFxTestEngine::PlaybackTest) {
+    if (testMode == QFxTestEngine::PlaybackTest) {
         TestObject *o = playbackTestData.next();
         TestFrame *f = qobject_cast<TestFrame *>(o);
-        if(!f || f->time() != QUnifiedTimer::instance()->elapsedTime() ||
+        if (!f || f->time() != QUnifiedTimer::instance()->elapsedTime() ||
                 f->hash() != QLatin1String(hexResult)) {
             mismatchedFrames++;
-            if(mismatchedFrames > MAX_MISMATCHED_FRAMES ||
+            if (mismatchedFrames > MAX_MISMATCHED_FRAMES ||
                lastFrameMismatch)
                 message(Fail, "Frame mismatch");
             else
@@ -276,23 +276,23 @@ void QFxTestEnginePrivate::recordFrameEvent(const QImage &img)
 
 void QFxTestEnginePrivate::updateCurrentTime(int)
 {
-    if(status != Working)
+    if (status != Working)
         return;
 
     while(!toPost.isEmpty()) {
         int t = QUnifiedTimer::instance()->elapsedTime();
         TestObject *o = toPost.first();
-        if(testMode == QFxTestEngine::RecordTest)
+        if (testMode == QFxTestEngine::RecordTest)
             o->setTime(t);
-        else if(o->time() != t)
+        else if (o->time() != t)
             return;
         toPost.takeFirst();
 
-        if(TestMouse *m = qobject_cast<TestMouse *>(o)) {
+        if (TestMouse *m = qobject_cast<TestMouse *>(o)) {
             QMouseEvent e((QEvent::Type)m->type(), m->pos(), m->globalPos(), (Qt::MouseButton)m->button(), (Qt::MouseButtons)m->buttons(), (Qt::KeyboardModifiers)0);
             postedEvents.insert(&e);
             QApplication::sendEvent(canvas, &e);
-        } else if(TestKey *k = qobject_cast<TestKey *>(o)) {
+        } else if (TestKey *k = qobject_cast<TestKey *>(o)) {
             QKeyEvent e((QEvent::Type)k->type(), k->key(), (Qt::KeyboardModifiers)k->modifiers(), k->text());
             postedEvents.insert(&e);
             QApplication::sendEvent(canvas, &e);
@@ -302,25 +302,25 @@ void QFxTestEnginePrivate::updateCurrentTime(int)
 
 bool QFxTestEngine::eventFilter(QObject *, QEvent *event)
 {
-    if(d->status != QFxTestEnginePrivate::Working)
+    if (d->status != QFxTestEnginePrivate::Working)
         return false;
     
-    if(event->type() == QEvent::MouseButtonPress ||
+    if (event->type() == QEvent::MouseButtonPress ||
        event->type() == QEvent::MouseButtonDblClick ||
        event->type() == QEvent::MouseButtonRelease ||
        event->type() == QEvent::MouseMove) {
-        if(d->testMode == RecordTest && d->postedEvents.contains(event)) {
+        if (d->testMode == RecordTest && d->postedEvents.contains(event)) {
             d->postedEvents.remove(event);
         } else {
             d->recordMouseEvent(static_cast<QMouseEvent *>(event));
             return d->testMode == RecordTest;
         }
-    } else if(event->type() == QEvent::KeyPress ||
+    } else if (event->type() == QEvent::KeyPress ||
               event->type() == QEvent::KeyRelease) {
         QKeyEvent *key = static_cast<QKeyEvent *>(event);
-        if(key->key() < Qt::Key_F1 || key->key() > Qt::Key_F9)  {
+        if (key->key() < Qt::Key_F1 || key->key() > Qt::Key_F9)  {
 
-            if(d->testMode == RecordTest && d->postedEvents.contains(event)) {
+            if (d->testMode == RecordTest && d->postedEvents.contains(event)) {
                 d->postedEvents.remove(event);
             } else {
                 d->recordKeyEvent(key);
@@ -344,9 +344,9 @@ void QFxTestEnginePrivate::recordMouseEvent(QMouseEvent *e)
     m->setPos(e->pos());
     testData.actions() << m;
 
-    if(testMode == QFxTestEngine::PlaybackTest) {
+    if (testMode == QFxTestEngine::PlaybackTest) {
         TestMouse *m = qobject_cast<TestMouse *>(playbackTestData.next());
-        if(!m || m->time() != QUnifiedTimer::instance()->elapsedTime() ||
+        if (!m || m->time() != QUnifiedTimer::instance()->elapsedTime() ||
                 m->type() != e->type() ||
                 m->button() != e->button() ||
                 m->buttons() != e->buttons() ||
@@ -372,9 +372,9 @@ void QFxTestEnginePrivate::recordKeyEvent(QKeyEvent *e)
     k->setText(e->text());
     k->setKey(e->key());
     testData.actions() << k;
-    if(testMode == QFxTestEngine::PlaybackTest) {
+    if (testMode == QFxTestEngine::PlaybackTest) {
         TestKey *f = qobject_cast<TestKey *>(playbackTestData.next());
-        if(!f || f->time() != QUnifiedTimer::instance()->elapsedTime() ||
+        if (!f || f->time() != QUnifiedTimer::instance()->elapsedTime() ||
                 f->type() != e->type() ||
                 f->modifiers() != e->QInputEvent::modifiers() ||
                 f->text() != e->text() ||
@@ -396,10 +396,10 @@ void QFxTestEngine::captureFullFrame()
 
 void QFxTestEnginePrivate::message(MessageType t, const char *message)
 {
-    if(exitOnFail)
+    if (exitOnFail)
         qWarning("%s", message);
-    if(t == Fail) {
-        if(exitOnFail) {
+    if (t == Fail) {
+        if (exitOnFail) {
             save(QLatin1String("manifest-fail.xml"), false);
             qFatal("Failed");
         } else {
@@ -417,15 +417,15 @@ void QFxTestEnginePrivate::save(const QString &filename, bool images)
     testData.save(&manifest);
     manifest.close();
 
-    if(images) {
-        for(int ii = 0; ii < fullFrames.count(); ++ii) 
+    if (images) {
+        for (int ii = 0; ii < fullFrames.count(); ++ii) 
             fullFrames.at(ii).save(testDirectory + QLatin1String("/image") + QString::number(ii) + QLatin1String(".png"));
     }
 }
 
 void QFxTestEngine::save()
 {
-    if(d->testMode != RecordTest)
+    if (d->testMode != RecordTest)
         return;
 
     d->save(QLatin1String("manifest.xml"));
@@ -433,9 +433,9 @@ void QFxTestEngine::save()
 
 void QFxTestEnginePrivate::testPass()
 {
-    if(playbackTestData.atEnd()) {
+    if (playbackTestData.atEnd()) {
         qWarning("Test PASSED");
-        if(exitOnFail) {
+        if (exitOnFail) {
             save(QLatin1String("manifest-play.xml"));
             exit(0);
         } else {

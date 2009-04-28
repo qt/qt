@@ -246,7 +246,7 @@ void QFxPathView::setCurrentIndex(int idx)
         d->currentIndex = idx;
         d->snapToCurrent();
         int itemIndex = (idx - d->firstIndex + d->model->count()) % d->model->count();
-        if(itemIndex < d->items.count())
+        if (itemIndex < d->items.count())
             d->items.at(itemIndex)->setFocus(true);
         emit currentIndexChanged();
     }
@@ -392,7 +392,7 @@ int QFxPathView::pathItemCount() const
 void QFxPathView::setPathItemCount(int i)
 {
     Q_D(QFxPathView);
-    if(i == d->pathItems)
+    if (i == d->pathItems)
         return;
     d->pathItems = i;
     d->regenerate();
@@ -553,7 +553,7 @@ bool QFxPathView::sendMouseEvent(QGraphicsSceneMouseEvent *event)
 
 bool QFxPathView::mouseFilter(QGraphicsSceneMouseEvent *e)
 {
-    if(!isVisible())
+    if (!isVisible())
         return false;
 
     switch (e->type()) {
@@ -579,7 +579,7 @@ void QFxPathViewPrivate::regenerate()
     if (!model || model->count() <= 0 || !model->delegate() || !path)
         return;
 
-    for(int i=0; i<items.count(); i++){
+    for (int i=0; i<items.count(); i++){
         QFxItem *p = items[i];
         q->attachedProperties.remove(p);
         model->release(p);
@@ -592,7 +592,7 @@ void QFxPathViewPrivate::regenerate()
     int numItems = (pathItems>=0 ? pathItems : model->count());
     qreal minDiff = 1e9;
     int minI = -1;
-    for(int i=0; i<numItems; i++){
+    for (int i=0; i<numItems; i++){
         QFxItem *item = model->item(i);
         if (!item)
             return;
@@ -603,7 +603,7 @@ void QFxPathViewPrivate::regenerate()
         percent /= 100.0;
         updateItem(items.last(), percent);
         qreal diff = qAbs(percent - snapPos);
-        if(diff < minDiff){
+        if (diff < minDiff){
             minDiff = diff;
             minI = i;
         }
@@ -615,7 +615,7 @@ void QFxPathViewPrivate::regenerate()
 
 void QFxPathViewPrivate::updateItem(QFxItem *item, qreal percent)
 {
-    if(QObject *obj = QFxPathView::attachedProperties.value(item)) {
+    if (QObject *obj = QFxPathView::attachedProperties.value(item)) {
         foreach(QString attr, path->attributes())
             static_cast<QFxPathViewAttached *>(obj)->setValue(attr.toLatin1(), path->attributeAt(attr, percent));
     }
@@ -632,36 +632,36 @@ void QFxPathView::refill()
         return;
 
     QList<qreal> positions;
-    for(int i=0; i<d->items.count(); i++){
+    for (int i=0; i<d->items.count(); i++){
         qreal percent = i * (100. / d->items.count());
         percent = percent + d->_offset;
         percent = fmod(percent,100.);
         positions << qAbs(percent/100.0);
     }
 
-    if(d->pathItems==-1){
-        for(int i=0; i<positions.count(); i++){
+    if (d->pathItems==-1){
+        for (int i=0; i<positions.count(); i++){
             d->updateItem(d->items.at(i), positions[i]);
         }
         return;
     }
 
     QList<qreal> rotatedPositions;
-    for(int i=0; i<d->items.count(); i++)
+    for (int i=0; i<d->items.count(); i++)
         rotatedPositions << positions[(i + d->pathOffset + d->items.count()) % d->items.count()];
 
     int firstFind = -1;
     int i;
-    for(i=0; i<d->items.count()-1; i++)
+    for (i=0; i<d->items.count()-1; i++)
     {
-        if(rotatedPositions[i] > rotatedPositions[i+1]){
+        if (rotatedPositions[i] > rotatedPositions[i+1]){
             firstFind = i;
             break;
         }
     }
-    if(firstFind!=-1 ){
+    if (firstFind!=-1 ){
         //A wraparound has occured
-        if(firstFind<(d->items.count()/2)){
+        if (firstFind<(d->items.count()/2)){
             while(firstFind-- >= 0){
                 QFxItem* p = d->items.takeFirst();
                 attachedProperties.remove(p);
@@ -681,21 +681,21 @@ void QFxPathView::refill()
                 attachedProperties.remove(p);
                 d->model->release(p);
                 d->firstIndex--;
-                if(d->firstIndex<0)
+                if (d->firstIndex<0)
                     d->firstIndex = d->model->count() - 1;
                 d->items.prepend(d->model->item(d->firstIndex));
                 d->items.first()->setZ(d->firstIndex);
                 d->items.first()->setParent(this);
                 d->pathOffset--;
-                if(d->pathOffset<0)
+                if (d->pathOffset<0)
                     d->pathOffset = d->items.count() - 1;
             }
         }
-        for(int i=0; i<d->items.count(); i++)
+        for (int i=0; i<d->items.count(); i++)
             rotatedPositions[i] = positions[(i + d->pathOffset + d->items.count())
                 % d->items.count()];
     }
-    for(int i=0; i<d->items.count(); i++){
+    for (int i=0; i<d->items.count(); i++){
         d->updateItem(d->items.at(i), rotatedPositions[i]);
     }
 }
@@ -712,26 +712,26 @@ int QFxPathViewPrivate::calcCurrentIndex()
     int current = -1;
     if (model && items.count()) {
         _offset = fmod(_offset, 100.0);
-        if(_offset < 0)
+        if (_offset < 0)
             _offset += 100.0;
 
-        if(pathItems == -1){
+        if (pathItems == -1){
             qreal delta = fmod(_offset - snapPos, 100.0);
             if (delta < 0)
                 delta = 100.0 + delta;
             int ii = model->count() - qRound(delta * model->count() / 100);
-            if(ii < 0)
+            if (ii < 0)
                 ii = 0;
             current = ii;
         }else{
             qreal bestDiff=1e9;
             int bestI=-1;
-            for(int i=0; i<items.count(); i++){
+            for (int i=0; i<items.count(); i++){
                 qreal percent = i * (100. / items.count());
                 percent = percent + _offset;
                 percent = fmod(percent,100.);
                 qreal diff = qAbs(snapPos - (percent/100.0));
-                if(diff < bestDiff){
+                if (diff < bestDiff){
                     bestDiff = diff;
                     bestI = i;
                 }
@@ -755,7 +755,7 @@ void QFxPathViewPrivate::updateCurrent()
     if (model && idx != currentIndex) {
         currentIndex = idx;
         int itemIndex = (idx - firstIndex + model->count()) % model->count();
-        if(itemIndex < items.count())
+        if (itemIndex < items.count())
             items.at(itemIndex)->setFocus(true);
         emit q->currentIndexChanged();
     }
@@ -783,7 +783,7 @@ void QFxPathViewPrivate::snapToCurrent()
     //Rounds is the number of times round to make the current item visible
     int rounds = itemIndex / items.count();
     int otherWayRounds = (model->count() - (itemIndex))/items.count() + 1;
-    if(otherWayRounds < rounds)
+    if (otherWayRounds < rounds)
         rounds = -otherWayRounds;
 
     itemIndex += pathOffset;
@@ -799,12 +799,12 @@ void QFxPathViewPrivate::snapToCurrent()
     tl.clear();
     moveOffset.setValue(_offset);
 
-    if(rounds!=0){
+    if (rounds!=0){
         //Compensate if the targetOffset would bring the target it from off the screen
         qreal distance = targetOffset - _offset;
-        if(distance <= -50)
+        if (distance <= -50)
             rounds--;
-        if(distance > 50)
+        if (distance > 50)
             rounds++;
         tl.move(moveOffset, targetOffset + 100.0*(-rounds), QEasingCurve(QEasingCurve::InOutQuad),
                 int(100*items.count()*qMax((qreal)(2.0/items.count()),(qreal)qAbs(rounds))));

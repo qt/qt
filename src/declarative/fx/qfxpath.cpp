@@ -185,7 +185,7 @@ QList<QFxPathElement *>* QFxPath::pathElements()
 void QFxPath::interpolate(int idx, const QString &name, qreal value)
 {
     Q_D(QFxPath);
-    if(!idx)
+    if (!idx)
         return;
 
     qreal lastValue = 0;
@@ -193,7 +193,7 @@ void QFxPath::interpolate(int idx, const QString &name, qreal value)
     int search = idx - 1;
     while(search >= 0) {
         const AttributePoint &point = d->_attributePoints.at(search);
-        if(point.values.contains(name)) {
+        if (point.values.contains(name)) {
             lastValue = point.values.value(name);
             lastPercent = point.origpercent;
             break;
@@ -205,7 +205,7 @@ void QFxPath::interpolate(int idx, const QString &name, qreal value)
 
     const AttributePoint &curPoint = d->_attributePoints.at(idx);
 
-    for(int ii = search; ii < idx; ++ii) {
+    for (int ii = search; ii < idx; ++ii) {
         AttributePoint &point = d->_attributePoints[ii];
 
         qreal val = lastValue + (value - lastValue) * (point.origpercent - lastPercent) / (curPoint.origpercent - lastPercent);
@@ -218,10 +218,10 @@ void QFxPath::endpoint(const QString &name)
     Q_D(QFxPath);
     const AttributePoint &first = d->_attributePoints.first();
     qreal val = first.values.value(name);
-    for(int ii = d->_attributePoints.count() - 1; ii >= 0; ii--) {
+    for (int ii = d->_attributePoints.count() - 1; ii >= 0; ii--) {
         const AttributePoint &point = d->_attributePoints.at(ii);
-        if(point.values.contains(name)) {
-            for(int jj = ii + 1; jj < d->_attributePoints.count(); ++jj) {
+        if (point.values.contains(name)) {
+            for (int jj = ii + 1; jj < d->_attributePoints.count(); ++jj) {
                 AttributePoint &setPoint = d->_attributePoints[jj];
                 setPoint.values.insert(name, val);
             }
@@ -239,23 +239,23 @@ void QFxPath::processPath()
     d->_path = QPainterPath();
 
     AttributePoint first;
-    for(int ii = 0; ii < d->_attributes.count(); ++ii)
+    for (int ii = 0; ii < d->_attributes.count(); ++ii)
         first.values[d->_attributes.at(ii)] = 0;
     d->_attributePoints << first;
 
     d->_path.moveTo(d->startX, d->startY);
 
     foreach (QFxPathElement *pathElement, d->_pathElements) {
-        if(QFxCurve *curve = qobject_cast<QFxCurve *>(pathElement)) {
+        if (QFxCurve *curve = qobject_cast<QFxCurve *>(pathElement)) {
             curve->addToPath(d->_path);
             AttributePoint p;
             p.origpercent = d->_path.length();
             d->_attributePoints << p;
-        } else if(QFxPathAttribute *attribute = qobject_cast<QFxPathAttribute *>(pathElement)) {
+        } else if (QFxPathAttribute *attribute = qobject_cast<QFxPathAttribute *>(pathElement)) {
             AttributePoint &point = d->_attributePoints.last();
             point.values[attribute->name()] = attribute->value();
             interpolate(d->_attributePoints.count() - 1, attribute->name(), attribute->value());
-        } else if(QFxPathPercent *percent = qobject_cast<QFxPathPercent *>(pathElement)) {
+        } else if (QFxPathPercent *percent = qobject_cast<QFxPathPercent *>(pathElement)) {
             AttributePoint &point = d->_attributePoints.last();
             point.values[QLatin1String("_qfx_percent")] = percent->value();
             interpolate(d->_attributePoints.count() - 1, QLatin1String("_qfx_percent"), percent->value());
@@ -264,8 +264,8 @@ void QFxPath::processPath()
 
     // Fixup end points
     const AttributePoint &last = d->_attributePoints.last();
-    for(int ii = 0; ii < d->_attributes.count(); ++ii) {
-        if(!last.values.contains(d->_attributes.at(ii)))
+    for (int ii = 0; ii < d->_attributes.count(); ++ii) {
+        if (!last.values.contains(d->_attributes.at(ii)))
             endpoint(d->_attributes.at(ii));
     }
 
@@ -273,9 +273,9 @@ void QFxPath::processPath()
     qreal length = d->_path.length();
     qreal prevpercent = 0;
     qreal prevorigpercent = 0;
-    for(int ii = 0; ii < d->_attributePoints.count(); ++ii) {
+    for (int ii = 0; ii < d->_attributePoints.count(); ++ii) {
         const AttributePoint &point = d->_attributePoints.at(ii);
-        if(point.values.contains(QLatin1String("_qfx_percent"))) { //special string for QFxPathPercent
+        if (point.values.contains(QLatin1String("_qfx_percent"))) { //special string for QFxPathPercent
             if ( ii > 0) {
                 qreal scale = (d->_attributePoints[ii].origpercent/length - prevorigpercent) /
                             (point.values.value(QLatin1String("_qfx_percent"))-prevpercent);
@@ -300,7 +300,7 @@ void QFxPath::componentComplete()
     QSet<QString> attrs;
     // First gather up all the attributes
     foreach (QFxPathElement *pathElement, d->_pathElements) {
-        if(QFxPathAttribute *attribute = 
+        if (QFxPathAttribute *attribute = 
             qobject_cast<QFxPathAttribute *>(pathElement))
             attrs.insert(attribute->name());
     }
@@ -383,10 +383,10 @@ void QFxPath::createPointCache() const
         //find which set we are in
         qreal prevPercent = 0;
         qreal prevOrigPercent = 0;
-        for(int ii = 0; ii < d->_attributePoints.count(); ++ii) {
+        for (int ii = 0; ii < d->_attributePoints.count(); ++ii) {
             qreal percent = qreal(i)/points;
             const AttributePoint &point = d->_attributePoints.at(ii);
-            if(percent < point.percent || ii == d->_attributePoints.count() - 1) { //### || is special case for very last item
+            if (percent < point.percent || ii == d->_attributePoints.count() - 1) { //### || is special case for very last item
                 qreal elementPercent = (percent - prevPercent);
 
                 qreal spc = prevOrigPercent + elementPercent * point.scale;
@@ -430,15 +430,15 @@ QPointF QFxPath::pointAt(qreal p) const
 qreal QFxPath::attributeAt(const QString &name, qreal percent) const
 {
     Q_D(const QFxPath);
-    if(percent < 0 || percent > 1)
+    if (percent < 0 || percent > 1)
         return 0;
 
-    for(int ii = 0; ii < d->_attributePoints.count(); ++ii) {
+    for (int ii = 0; ii < d->_attributePoints.count(); ++ii) {
         const AttributePoint &point = d->_attributePoints.at(ii);
 
-        if(point.percent == percent) {
+        if (point.percent == percent) {
             return point.values.value(name);
-        } else if(point.percent > percent) {
+        } else if (point.percent > percent) {
             qreal lastValue = 
                 ii?(d->_attributePoints.at(ii - 1).values.value(name)):0;
             qreal lastPercent = 

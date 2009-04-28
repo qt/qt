@@ -413,17 +413,17 @@ void QFxParticlesPrivate::tick(int time)
     if (!addParticleTime)
         addParticleTime = time;
 
-    if(particles.count() < count && emitting) {
+    if (particles.count() < count && emitting) {
         qreal perc = (lifeSpanDev <= 0)?(1.):(qreal(time - addParticleTime) / qreal(lifeSpanDev));
         int percCount = addParticleCount + (int)perc * (count - addParticleCount);
         int streamWidth = -1;
-        if(stream){
-            if(streamDelay > time){
+        if (stream){
+            if (streamDelay > time){
                 streamWidth = 0;
             }else{
                 int missed = time - streamDelay;
                 qreal streamWidthReal = qreal(count)/qreal(lifeSpan);
-                if(streamWidthReal < 1){
+                if (streamWidthReal < 1){
                     streamDelay = time + (int)(1.0/streamWidthReal);
                     streamWidth = 1;
                     streamWidth += missed/streamDelay;

@@ -164,7 +164,7 @@ QmlType::QmlType(int type, int listType, int qmlListType,
     d->m_extFunc = extFunc;
     d->m_index = index;
 
-    if(extMetaObject)
+    if (extMetaObject)
         d->m_extMetaObject = extMetaObject;
 }
 
@@ -175,16 +175,16 @@ QmlType::~QmlType()
 
 void QmlTypePrivate::init() const
 {
-    if(m_isSetup) return;
+    if (m_isSetup) return;
 
     QWriteLocker lock(metaTypeDataLock());
-    if(m_isSetup)
+    if (m_isSetup)
         return;
 
     // Setup extended meta object
     // XXX - very inefficient
     const QMetaObject *mo = m_baseMetaObject;
-    if(m_extFunc) {
+    if (m_extFunc) {
         QMetaObject *mmo = new QMetaObject;
         *mmo = *m_extMetaObject;
         mmo->d.superdata = mo;
@@ -195,12 +195,12 @@ void QmlTypePrivate::init() const
     mo = mo->d.superdata;
     while(mo) {
         QmlType *t = metaTypeData()->metaObjectToType.value(mo);
-        if(t) {
-            if(t->d->m_extFunc) {
+        if (t) {
+            if (t->d->m_extFunc) {
                 QMetaObject *mmo = new QMetaObject;
                 *mmo = *t->d->m_extMetaObject;
                 mmo->d.superdata = m_baseMetaObject;
-                if(!m_metaObjects.isEmpty()) 
+                if (!m_metaObjects.isEmpty()) 
                     m_metaObjects.last().metaObject->d.superdata = mmo;
                 QmlProxyMetaObject::ProxyData data = { mmo, t->d->m_extFunc, 0 };
                 m_metaObjects << data;
@@ -209,7 +209,7 @@ void QmlTypePrivate::init() const
         mo = mo->d.superdata;
     }
 
-    for(int ii = 0; ii < m_metaObjects.count(); ++ii) 
+    for (int ii = 0; ii < m_metaObjects.count(); ++ii) 
         m_metaObjects[ii].propertyOffset = 
             m_metaObjects.at(ii).metaObject->propertyOffset();
 
@@ -218,7 +218,7 @@ void QmlTypePrivate::init() const
 
     const QMetaObject *myMetaObject = m_metaObjects.isEmpty()?m_baseMetaObject:m_metaObjects.first().metaObject;
 
-    for(int ii = 0; ii < myMetaObject->propertyCount(); ++ii) {
+    for (int ii = 0; ii < myMetaObject->propertyCount(); ++ii) {
         QMetaProperty prop = myMetaObject->property(ii);
         hashData.append(prop.type());
         hashData.append("|");
@@ -226,7 +226,7 @@ void QmlTypePrivate::init() const
         hashData.append("|");
     }
 
-    for(int ii = 0; ii < myMetaObject->methodCount(); ++ii) {
+    for (int ii = 0; ii < myMetaObject->methodCount(); ++ii) {
         QMetaMethod method = myMetaObject->method(ii);
         hashData.append(method.signature());
         hashData.append("|");
@@ -240,7 +240,7 @@ void QmlTypePrivate::init() const
 
 QByteArray QmlType::typeName() const
 {
-    if(d->m_baseMetaObject)
+    if (d->m_baseMetaObject)
         return d->m_baseMetaObject->className();
     else
         return QByteArray();
@@ -324,7 +324,7 @@ const QMetaObject *QmlType::metaObject() const
 {
     d->init();
 
-    if(d->m_metaObjects.isEmpty())
+    if (d->m_metaObjects.isEmpty())
         return d->m_baseMetaObject;
     else
         return d->m_metaObjects.first().metaObject;
@@ -383,11 +383,11 @@ int QmlMetaType::registerInterface(const QmlPrivate::MetaTypeIds &id,
     data->idToType.insert(type->qmlListTypeId(), type);
     data->nameToType.insert(type->qmlTypeName(), type);
 
-    if(data->interfaces.size() < id.typeId) 
+    if (data->interfaces.size() < id.typeId) 
         data->interfaces.resize(id.typeId + 16);
-    if(data->qmllists.size() < id.qmlListId) 
+    if (data->qmllists.size() < id.qmlListId) 
         data->qmllists.resize(id.qmlListId + 16);
-    if(data->lists.size() < id.listId) 
+    if (data->lists.size() < id.listId) 
         data->lists.resize(id.listId + 16);
     data->interfaces.setBit(id.typeId, true);
     data->qmllists.setBit(id.qmlListId, true);
@@ -403,8 +403,8 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
     QmlMetaTypeData *data = metaTypeData();
 
     QString name = QLatin1String(cname);
-    for(int ii = 0; ii < name.count(); ++ii) {
-        if(!name.at(ii).isLetterOrNumber()) {
+    for (int ii = 0; ii < name.count(); ++ii) {
+        if (!name.at(ii).isLetterOrNumber()) {
             qWarning("QmlMetaType: Invalid QML name %s", cname);
             return -1;
         }
@@ -421,16 +421,16 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
     data->idToType.insert(type->qListTypeId(), type);
     data->idToType.insert(type->qmlListTypeId(), type);
 
-    if(!type->qmlTypeName().isEmpty()) 
+    if (!type->qmlTypeName().isEmpty()) 
         data->nameToType.insert(type->qmlTypeName(), type);
 
     data->metaObjectToType.insert(type->baseMetaObject(), type);
    
-    if(data->objects.size() <= id.typeId) 
+    if (data->objects.size() <= id.typeId) 
         data->objects.resize(id.typeId + 16);
-    if(data->qmllists.size() <= id.qmlListId) 
+    if (data->qmllists.size() <= id.qmlListId) 
         data->qmllists.resize(id.qmlListId + 16);
-    if(data->lists.size() <= id.listId) 
+    if (data->lists.size() <= id.listId) 
         data->lists.resize(id.listId + 16);
     data->objects.setBit(id.typeId, true);
     data->qmllists.setBit(id.qmlListId, true);
@@ -446,7 +446,7 @@ void QmlMetaType::registerCustomParser(const char *qmlName,
     QmlMetaTypeData *data = metaTypeData();
 
     Q_ASSERT(parser);
-    if(data->customParsers.contains(qmlName)) {
+    if (data->customParsers.contains(qmlName)) {
         delete parser;
         return;
     }
@@ -468,7 +468,7 @@ int QmlMetaType::qmlParserStatusCast(int userType)
     QReadLocker lock(metaTypeDataLock());
     QmlMetaTypeData *data = metaTypeData();
     QmlType *type = data->idToType.value(userType);
-    if(type && type->typeId() == userType)
+    if (type && type->typeId() == userType)
         return type->parserStatusCast();
     else
         return -1;
@@ -476,7 +476,7 @@ int QmlMetaType::qmlParserStatusCast(int userType)
 
 QObject *QmlMetaType::toQObject(const QVariant &v)
 {
-    if(!isObject(v.userType()))
+    if (!isObject(v.userType()))
         return 0;
 
     // NOTE: This assumes a cast to QObject does not alter the 
@@ -493,7 +493,7 @@ int QmlMetaType::listType(int id)
     QReadLocker lock(metaTypeDataLock());
     QmlMetaTypeData *data = metaTypeData();
     QmlType *type = data->idToType.value(id);
-    if(type && type->qListTypeId() == id)
+    if (type && type->qListTypeId() == id)
         return type->typeId();
     else
         return 0;
@@ -507,7 +507,7 @@ int QmlMetaType::qmlListType(int id)
     QReadLocker lock(metaTypeDataLock());
     QmlMetaTypeData *data = metaTypeData();
     QmlType *type = data->idToType.value(id);
-    if(type && type->qmlListTypeId() == id)
+    if (type && type->qmlListTypeId() == id)
         return type->typeId();
     else
         return 0;
@@ -520,7 +520,7 @@ bool QmlMetaType::clear(const QVariant &list)
     QmlMetaTypeData *data = metaTypeData();
     QmlType *type = data->idToType.value(userType);
     lock.unlock();
-    if(type && type->qListTypeId() == userType) {
+    if (type && type->qListTypeId() == userType) {
         type->listClear(list);
         return true;
     } else {
@@ -535,7 +535,7 @@ bool QmlMetaType::append(const QVariant &list, const QVariant &item)
     QmlMetaTypeData *data = metaTypeData();
     QmlType *type = data->idToType.value(userType);
     lock.unlock();
-    if(type && type->qListTypeId() == userType && 
+    if (type && type->qListTypeId() == userType && 
        item.userType() == type->typeId()) {
         type->listAppend(list, item);
         return true;
@@ -551,7 +551,7 @@ QObject *QmlMetaType::create(const QByteArray &name)
     lock.unlock();
 
     QmlType *type = data->nameToType.value(name);
-    if(type)
+    if (type)
         return type->create();
     else
         return 0;
@@ -563,7 +563,7 @@ QVariant QmlMetaType::fromObject(QObject *obj, int typeId)
     QmlMetaTypeData *data = metaTypeData();
 
     QmlType *type = data->idToType.value(typeId);
-    if(type && type->typeId() == typeId)
+    if (type && type->typeId() == typeId)
         return type->fromObject(obj);
     else
         return QVariant();
@@ -575,7 +575,7 @@ const QMetaObject *QmlMetaType::rawMetaObjectForType(int id)
     QmlMetaTypeData *data = metaTypeData();
 
     QmlType *type = data->idToType.value(id);
-    if(type && type->typeId() == id)
+    if (type && type->typeId() == id)
         return type->baseMetaObject();
     else
         return 0;
@@ -587,7 +587,7 @@ const QMetaObject *QmlMetaType::rawMetaObjectForType(const QByteArray &name)
     QmlMetaTypeData *data = metaTypeData();
 
     QmlType *type = data->nameToType.value(name);
-    if(type)
+    if (type)
         return type->baseMetaObject();
     else
         return 0;
@@ -600,7 +600,7 @@ const QMetaObject *QmlMetaType::metaObjectForType(int id)
     QmlType *type = data->idToType.value(id);
     lock.unlock();
 
-    if(type && type->typeId() == id)
+    if (type && type->typeId() == id)
         return type->metaObject();
     else
         return 0;
@@ -613,7 +613,7 @@ const QMetaObject *QmlMetaType::metaObjectForType(const QByteArray &name)
     QmlType *type = data->nameToType.value(name);
     lock.unlock();
 
-    if(type)
+    if (type)
         return type->metaObject();
     else
         return 0;
@@ -625,7 +625,7 @@ int QmlMetaType::type(const QByteArray &name)
     QmlMetaTypeData *data = metaTypeData();
 
     QmlType *type = data->nameToType.value(name);
-    if(type)
+    if (type)
         return type->typeId();
     else
         return 0;
@@ -637,7 +637,7 @@ int QmlMetaType::attachedPropertiesFuncId(const QByteArray &name)
     QmlMetaTypeData *data = metaTypeData();
 
     QmlType *type = data->nameToType.value(name);
-    if(type && type->attachedPropertiesFunction())
+    if (type && type->attachedPropertiesFunction())
         return type->index();
     else
         return -1;
@@ -649,7 +649,7 @@ int QmlMetaType::attachedPropertiesFuncId(const QMetaObject *mo)
     QmlMetaTypeData *data = metaTypeData();
 
     QmlType *type = data->metaObjectToType.value(mo);
-    if(type && type->attachedPropertiesFunction())
+    if (type && type->attachedPropertiesFunction())
         return type->index();
     else
         return -1;
@@ -657,7 +657,7 @@ int QmlMetaType::attachedPropertiesFuncId(const QMetaObject *mo)
 
 QmlAttachedPropertiesFunc QmlMetaType::attachedPropertiesFuncById(int id)
 {
-    if(id < 0)
+    if (id < 0)
         return 0;
     QReadLocker lock(metaTypeDataLock());
     QmlMetaTypeData *data = metaTypeData();
@@ -670,7 +670,7 @@ QmlMetaType::attachedPropertiesFunc(const QByteArray &name)
     QReadLocker lock(metaTypeDataLock());
     QmlMetaTypeData *data = metaTypeData();
     QmlType *type = data->nameToType.value(name);
-    if(type)
+    if (type)
         return type->attachedPropertiesFunction();
     else
         return 0;
@@ -679,15 +679,15 @@ QmlMetaType::attachedPropertiesFunc(const QByteArray &name)
 QMetaProperty QmlMetaType::defaultProperty(const QMetaObject *metaObject)
 {
     int idx = metaObject->indexOfClassInfo("DefaultProperty");
-    if(-1 == idx)
+    if (-1 == idx)
         return QMetaProperty();
 
     QMetaClassInfo info = metaObject->classInfo(idx);
-    if(!info.value())
+    if (!info.value())
         return QMetaProperty();
 
     idx = metaObject->indexOfProperty(info.value());
-    if(-1 == idx)
+    if (-1 == idx)
         return QMetaProperty();
 
     return metaObject->property(idx);
@@ -695,7 +695,7 @@ QMetaProperty QmlMetaType::defaultProperty(const QMetaObject *metaObject)
 
 QMetaProperty QmlMetaType::defaultProperty(QObject *obj)
 {
-    if(!obj)
+    if (!obj)
         return QMetaProperty();
 
     const QMetaObject *metaObject = obj->metaObject();
@@ -705,15 +705,15 @@ QMetaProperty QmlMetaType::defaultProperty(QObject *obj)
 QMetaMethod QmlMetaType::defaultMethod(const QMetaObject *metaObject)
 {
     int idx = metaObject->indexOfClassInfo("DefaultMethod");
-    if(-1 == idx)
+    if (-1 == idx)
         return QMetaMethod();
 
     QMetaClassInfo info = metaObject->classInfo(idx);
-    if(!info.value())
+    if (!info.value())
         return QMetaMethod();
 
     idx = metaObject->indexOfMethod(info.value());
-    if(-1 == idx)
+    if (-1 == idx)
         return QMetaMethod();
 
     return metaObject->method(idx);
@@ -721,7 +721,7 @@ QMetaMethod QmlMetaType::defaultMethod(const QMetaObject *metaObject)
 
 QMetaMethod QmlMetaType::defaultMethod(QObject *obj)
 {
-    if(!obj)
+    if (!obj)
         return QMetaMethod();
 
     const QMetaObject *metaObject = obj->metaObject();
@@ -739,13 +739,13 @@ QMetaProperty QmlMetaType::property(QObject *obj, const QByteArray &bname)
  */
 QMetaProperty QmlMetaType::property(QObject *obj, const char *name)
 {
-    if(!obj)
+    if (!obj)
         return QMetaProperty();
 
     const QMetaObject *metaObject = obj->metaObject();
 
     int idx = metaObject->indexOfProperty(name);
-    if(-1 == idx)
+    if (-1 == idx)
         return QMetaProperty();
 
     return metaObject->property(idx);
@@ -771,7 +771,7 @@ const char *QmlMetaType::interfaceIId(int userType)
     QmlMetaTypeData *data = metaTypeData();
     QmlType *type = data->idToType.value(userType);
     lock.unlock();
-    if(type && type->isInterface() && type->typeId() == userType)
+    if (type && type->isInterface() && type->typeId() == userType)
         return type->interfaceIId();
     else
         return 0;
@@ -780,7 +780,7 @@ const char *QmlMetaType::interfaceIId(int userType)
 bool QmlMetaType::isObject(const QMetaObject *mo)
 {
     while(mo) {
-        if(mo == &QObject::staticMetaObject)
+        if (mo == &QObject::staticMetaObject)
             return true;
         mo = mo->superClass();
     }
@@ -815,7 +815,7 @@ int QmlMetaType::listCount(const QVariant &v)
     QmlType *type = data->idToType.value(userType);
     lock.unlock();
 
-    if(type && type->qListTypeId() == userType)
+    if (type && type->qListTypeId() == userType)
         return type->listCount(v);
     else
         return 0;
@@ -830,7 +830,7 @@ QVariant QmlMetaType::listAt(const QVariant &v, int idx)
     QmlType *type = data->idToType.value(userType);
     lock.unlock();
 
-    if(type && type->qListTypeId() == userType)
+    if (type && type->qListTypeId() == userType)
         return type->listAt(v, idx);
     else
         return 0;
@@ -856,7 +856,7 @@ void QmlMetaType::registerCustomStringConverter(int type, StringConverter conver
     QWriteLocker lock(metaTypeDataLock());
 
     QmlMetaTypeData *data = metaTypeData();
-    if(data->stringConverters.contains(type))
+    if (data->stringConverters.contains(type))
         return;
     data->stringConverters.insert(type, converter);
 }

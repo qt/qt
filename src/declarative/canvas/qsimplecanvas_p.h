@@ -176,7 +176,7 @@ public:
     GLBasicShaders *basicShaders() const
     {
 #if defined(QFX_RENDER_OPENGL2)
-        if(!basicShadersInstance)
+        if (!basicShadersInstance)
             basicShadersInstance = new GLBasicShaders;
         return basicShadersInstance;
 #else

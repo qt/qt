@@ -119,7 +119,7 @@ void QGraphicsLinearLayoutObject::insertLayoutItem(int index, QGraphicsLayoutIte
     insertItem(index, item);
 
     //connect attached properties
-    if(QObject *obj = attachedProperties.value(item)) {
+    if (QObject *obj = attachedProperties.value(item)) {
         setStretchFactor(item, static_cast<LinearLayoutAttached *>(obj)->stretchFactor());
         setAlignment(item, static_cast<LinearLayoutAttached *>(obj)->alignment());
         QObject::connect(obj, SIGNAL(stretchChanged(QGraphicsLayoutItem*,int)),
@@ -261,7 +261,7 @@ QGraphicsGridLayoutObject::~QGraphicsGridLayoutObject()
 void QGraphicsGridLayoutObject::addWidget(QGraphicsWidget *wid)
 {
     //use attached properties
-    if(QObject *obj = attachedProperties.value(qobject_cast<QGraphicsLayoutItem*>(wid))) {
+    if (QObject *obj = attachedProperties.value(qobject_cast<QGraphicsLayoutItem*>(wid))) {
         int row = static_cast<GridLayoutAttached *>(obj)->row();
         int column = static_cast<GridLayoutAttached *>(obj)->column();
         int rowSpan = static_cast<GridLayoutAttached *>(obj)->rowSpan();
@@ -277,7 +277,7 @@ void QGraphicsGridLayoutObject::addWidget(QGraphicsWidget *wid)
 void QGraphicsGridLayoutObject::addLayoutItem(QGraphicsLayoutItem *item)
 {
     //use attached properties
-    if(QObject *obj = attachedProperties.value(item)) {
+    if (QObject *obj = attachedProperties.value(item)) {
         int row = static_cast<GridLayoutAttached *>(obj)->row();
         int column = static_cast<GridLayoutAttached *>(obj)->column();
         int rowSpan = static_cast<GridLayoutAttached *>(obj)->rowSpan();
