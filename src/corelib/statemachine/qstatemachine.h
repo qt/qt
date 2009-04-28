@@ -74,6 +74,9 @@ class Q_CORE_EXPORT QStateMachine : public QObject
     Q_PROPERTY(QString errorString READ errorString)
     Q_PROPERTY(RestorePolicy globalRestorePolicy READ globalRestorePolicy WRITE setGlobalRestorePolicy)
     Q_ENUMS(RestorePolicy)
+#ifndef QT_NO_ANIMATION
+    Q_PROPERTY(bool animationsEnabled READ animationsEnabled WRITE setAnimationsEnabled)
+#endif
 public:
     enum RestorePolicy {
         DoNotRestoreProperties,
@@ -105,6 +108,9 @@ public:
     void clearError();
 
 #ifndef QT_NO_ANIMATION
+    bool animationsEnabled() const;
+    void setAnimationsEnabled(bool enabled);
+
     void addDefaultAnimation(QAbstractAnimation *animation);
     QList<QAbstractAnimation *> defaultAnimations() const;
     void removeDefaultAnimation(QAbstractAnimation *animation);

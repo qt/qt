@@ -179,6 +179,8 @@ public:
     QAbstractState *initialErrorStateForRoot;
 
 #ifndef QT_NO_ANIMATION
+    bool animationsEnabled;
+
     QPair<QList<QAbstractAnimation*>, QList<QAbstractAnimation*> >
         initializeAnimation(QAbstractAnimation *abstractAnimation, 
                             const QPropertyAssignment &prop);

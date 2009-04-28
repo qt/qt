@@ -177,6 +177,14 @@ QT_BEGIN_NAMESPACE
     \brief the error string of this state machine
 */
 
+#ifndef QT_NO_ANIMATION
+/*!
+    \property QStateMachine::animationsEnabled
+
+    \brief whether animations are enabled
+*/
+#endif
+
 // #define QSTATEMACHINE_DEBUG
 
 QStateMachinePrivate::QStateMachinePrivate()
@@ -191,6 +199,9 @@ QStateMachinePrivate::QStateMachinePrivate()
     initialErrorStateForRoot = 0;
 #ifndef QT_STATEMACHINE_SOLUTION
     signalEventGenerator = 0;
+#endif
+#ifndef QT_NO_ANIMATION
+    animationsEnabled = true;
 #endif
 }
 
@@ -622,17 +633,19 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
 
     // Find the animations to use for the state change.
     QList<QAbstractAnimation*> selectedAnimations;
-    for (int i = 0; i < transitionList.size(); ++i) {
-        QAbstractTransition *transition = transitionList.at(i);
+    if (animationsEnabled) {
+        for (int i = 0; i < transitionList.size(); ++i) {
+            QAbstractTransition *transition = transitionList.at(i);
 
-        selectedAnimations << transition->animations();
-        selectedAnimations << defaultAnimationsForSource.values(transition->sourceState());
+            selectedAnimations << transition->animations();
+            selectedAnimations << defaultAnimationsForSource.values(transition->sourceState());
 
-        QList<QAbstractState *> targetStates = transition->targetStates();
-        for (int j=0; j<targetStates.size(); ++j) 
-            selectedAnimations << defaultAnimationsForTarget.values(targetStates.at(j));
+            QList<QAbstractState *> targetStates = transition->targetStates();
+            for (int j=0; j<targetStates.size(); ++j) 
+                selectedAnimations << defaultAnimationsForTarget.values(targetStates.at(j));
+        }
+        selectedAnimations << defaultAnimations;
     }
-    selectedAnimations << defaultAnimations;     
 #else
     Q_UNUSED(transitionList);
 #endif
@@ -1864,6 +1877,24 @@ void QStateMachine::endMicrostep(QEvent *event)
 }
 
 #ifndef QT_NO_ANIMATION
+
+/*!
+  Returns whether animations are enabled for this state machine.
+*/
+bool QStateMachine::animationsEnabled() const
+{
+    Q_D(const QStateMachine);
+    return d->animationsEnabled;
+}
+
+/*!
+  Sets whether animations are \a enabled for this state machine.
+*/
+void QStateMachine::setAnimationsEnabled(bool enabled)
+{
+    Q_D(QStateMachine);
+    d->animationsEnabled = enabled;
+}
 
 /*!
     Adds a default \a animation to be considered for any transition.
