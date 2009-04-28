@@ -67,7 +67,9 @@ extern bool qt_wince_is_smartphone(); //is defined in qguifunctions_wce.cpp
 #elif defined(Q_WS_S60)
 #  include "qfiledialog.h"
 #endif
-
+#if defined(Q_OS_SYMBIAN)
+#include "qmenubar.h"
+#endif
 #ifndef SPI_GETSNAPTODEFBUTTON
 #  define SPI_GETSNAPTODEFBUTTON  95
 #endif
@@ -488,6 +490,14 @@ int QDialog::exec()
 #endif //QT_NO_MENUBAR
 #endif //Q_OS_WINCE_WM
 
+#ifdef Q_OS_SYMBIAN
+#ifndef QT_NO_MENUBAR
+    QMenuBar *menuBar = 0;
+    if (!findChild<QMenuBar *>())
+        menuBar = new QMenuBar(this);
+#endif
+#endif
+    
 #if !defined(Q_WS_S60)
     show();
 #else
@@ -520,6 +530,13 @@ int QDialog::exec()
         delete menuBar;
 #endif //QT_NO_MENUBAR
 #endif //Q_OS_WINCE_WM
+#ifdef Q_OS_SYMBIAN
+#ifndef QT_NO_MENUBAR
+    else if (menuBar)
+        delete menuBar;
+#endif //QT_NO_MENUBAR
+#endif //Q_OS_SYMBIAN
+
     return res;
 }
 
