@@ -1,3 +1,4 @@
+<?qtfx namespacepath:=../lib ?>
 <Item id="contacts"
     width="240"
     height="230">

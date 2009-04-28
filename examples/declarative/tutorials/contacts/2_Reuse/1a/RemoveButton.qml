@@ -2,24 +2,14 @@
     width="30" height="30"
     color="red"
     radius="5">
-    <properties>
-        <Property name="expandedWidth" value="230"/>
-    </properties>
-    <signals>
-        <Signal name="confirmed"/>
-    </signals>
     <resources>
         <Script>
             function toggle() {
                 print('removeButton.toggle()');
                 if (removeButton.state == 'opened') {
                     removeButton.state = '';
-                    contacts.mouseGrabbed=false;
                 } else {
-                    if (!contacts.mouseGrabbed) {
-                        removeButton.state = 'opened';
-                        contacts.mouseGrabbed=true;
-                    }
+                    removeButton.state = 'opened';
                 }
             }
         </Script>
@@ -52,7 +42,7 @@
         opacity="0">
         <MouseRegion
             anchors.fill="{parent}"
-            onClicked="toggle(); removeButton.confirmed.emit()"/>
+            onClicked="toggle()"/>
     </Image>
     <Text id="text"
         anchors.verticalCenter="{parent.verticalCenter}"
@@ -65,7 +55,7 @@
         opacity="0"/>
     <states>
         <State name="opened">
-            <SetProperty target="{removeButton}" property="width" value="{removeButton.expandedWidth}"/>
+            <SetProperty target="{removeButton}" property="width" value="230"/>
             <SetProperty target="{text}" property="opacity" value="1"/>
             <SetProperty target="{confirmIcon}" property="opacity" value="1"/>
             <SetProperty target="{cancelIcon}" property="opacity" value="1"/>
