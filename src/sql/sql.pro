@@ -17,5 +17,11 @@ include(kernel/kernel.pri)
 include(drivers/drivers.pri)
 include(models/models.pri)
 
-symbian:TARGET.UID3=0x2001E61D
+symbian: {
+    TARGET.UID3=0x2001E61D
+    
+    # Workaroud for problems with paging this dll
+    MMP_RULES -= PAGED
+    MMP_RULES *= UNPAGED
+}
 
