@@ -860,14 +860,10 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 #endif
                 QObject *target = stack.top();
 
-                QmlAttachedPropertiesFunc attachFunc = 
-                    QmlMetaType::attachedPropertiesFunc(datas.at(instr.fetchAttached.idx));
-                if(!attachFunc) 
-                    VME_EXCEPTION("No such attached object" << primitives.at(instr.fetchAttached.idx));
+                QObject *qmlObject = qmlAttachedPropertiesObjectById(instr.fetchAttached.id, target);
 
-                QObject *qmlObject = attachFunc(target);
                 if(!qmlObject)
-                    VME_EXCEPTION("Internal error - unable to create attached object" << primitives.at(instr.fetchAttached.idx));
+                    VME_EXCEPTION("Unable to create attached object");
 
                 stack.push(qmlObject);
             }

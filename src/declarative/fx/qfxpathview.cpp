@@ -188,7 +188,7 @@ void QFxPathView::setModel(const QVariant &model)
         d->model = m;
     } else {
         if (!d->ownModel) {
-            d->model = new QFxVisualItemModel;
+            d->model = new QFxVisualItemModel(qmlContext(this));
             d->ownModel = true;
         }
         d->model->setModel(model);
@@ -368,7 +368,7 @@ void QFxPathView::setDelegate(QmlComponent *c)
 {
     Q_D(QFxPathView);
     if (!d->ownModel) {
-        d->model = new QFxVisualItemModel;
+        d->model = new QFxVisualItemModel(qmlContext(this));
         d->ownModel = true;
     }
     d->model->setDelegate(c);
@@ -830,11 +830,9 @@ void QFxPathViewPrivate::snapToCurrent()
 QHash<QObject*, QObject*> QFxPathView::attachedProperties;
 QObject *QFxPathView::qmlAttachedProperties(QObject *obj)
 {
-    if(!attachedProperties.contains(obj)) {
-        QFxPathViewAttached *rv = new QFxPathViewAttached(obj);
-        attachedProperties.insert(obj, rv);
-    }
-    return attachedProperties.value(obj);
+    QFxPathViewAttached *rv = new QFxPathViewAttached(obj);
+    attachedProperties.insert(obj, rv);
+    return rv;
 }
 
 QT_END_NAMESPACE

@@ -150,18 +150,17 @@ void QGraphicsLinearLayoutObject::updateAlignment(QGraphicsLayoutItem *item, Qt:
 QHash<QGraphicsLayoutItem*, QObject*> QGraphicsLinearLayoutObject::attachedProperties;
 QObject *QGraphicsLinearLayoutObject::qmlAttachedProperties(QObject *obj)
 {
+    // ### This is not allowed - you must attach to any object
     if (!qobject_cast<QGraphicsLayoutItem*>(obj))
         return 0;
-    if(!attachedProperties.contains(qobject_cast<QGraphicsLayoutItem*>(obj))) {
-        LinearLayoutAttached *rv = new LinearLayoutAttached(obj);
-        /*if (QGraphicsLinearLayoutObject *lo = qobject_cast<QGraphicsLinearLayoutObject*>(obj->parent()))
-            QObject::connect(rv, SIGNAL(stretchChanged(QGraphicsLayoutItem*,int)),
-                             lo, SLOT(updateStretch(QGraphicsLayoutItem*,int)));
-            QObject::connect(rv, SIGNAL(alignmentChanged(QGraphicsLayoutItem*,Qt::Alignment)),
-                             lo, SLOT(updateAlignment(QGraphicsLayoutItem*,Qt::Alignment)));*/
-        attachedProperties.insert(qobject_cast<QGraphicsLayoutItem*>(obj), rv);
-    }
-    return attachedProperties.value(qobject_cast<QGraphicsLayoutItem*>(obj));
+    LinearLayoutAttached *rv = new LinearLayoutAttached(obj);
+    /*if (QGraphicsLinearLayoutObject *lo = qobject_cast<QGraphicsLinearLayoutObject*>(obj->parent()))
+        QObject::connect(rv, SIGNAL(stretchChanged(QGraphicsLayoutItem*,int)),
+                         lo, SLOT(updateStretch(QGraphicsLayoutItem*,int)));
+        QObject::connect(rv, SIGNAL(alignmentChanged(QGraphicsLayoutItem*,Qt::Alignment)),
+                         lo, SLOT(updateAlignment(QGraphicsLayoutItem*,Qt::Alignment)));*/
+    attachedProperties.insert(qobject_cast<QGraphicsLayoutItem*>(obj), rv);
+    return rv;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -311,13 +310,12 @@ qreal QGraphicsGridLayoutObject::spacing() const
 QHash<QGraphicsLayoutItem*, QObject*> QGraphicsGridLayoutObject::attachedProperties;
 QObject *QGraphicsGridLayoutObject::qmlAttachedProperties(QObject *obj)
 {
+    // ### This is not allowed - you must attach to any object
     if (!qobject_cast<QGraphicsLayoutItem*>(obj))
         return 0;
-    if(!attachedProperties.contains(qobject_cast<QGraphicsLayoutItem*>(obj))) {
-        GridLayoutAttached *rv = new GridLayoutAttached(obj);
-        attachedProperties.insert(qobject_cast<QGraphicsLayoutItem*>(obj), rv);
-    }
-    return attachedProperties.value(qobject_cast<QGraphicsLayoutItem*>(obj));
+    GridLayoutAttached *rv = new GridLayoutAttached(obj);
+    attachedProperties.insert(qobject_cast<QGraphicsLayoutItem*>(obj), rv);
+    return rv;
 }
 
 QT_END_NAMESPACE
