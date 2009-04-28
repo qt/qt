@@ -97,11 +97,7 @@ win32 {
 symbian {
     !static {
         DEFINES+=QT_MAKEDLL
-        contains(QT_EDITION, OpenSource) {
-            TARGET.CAPABILITY = LocalServices NetworkServices ReadUserData UserEnvironment WriteUserData
-        } else {
-            TARGET.CAPABILITY = All -Tcb        
-        }
+        TARGET.CAPABILITY = All -Tcb        
     }
 }
 win32-borland:INCLUDEPATH += kernel
