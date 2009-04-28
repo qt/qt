@@ -81,9 +81,9 @@ public:
     static int contentHeight;
 
     // properties:
+    static bool openGlAvailable;
     static bool openGlRendering;
     static bool softwareRendering;
-    static bool direct3dAwailable;
     static bool xRenderPresent;
     static bool noAdapt;
     static bool noTicker;
