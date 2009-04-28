@@ -537,6 +537,7 @@ QT_IMPL_MEMROTATE(quint32, quint24)
 QT_IMPL_MEMROTATE(quint32, quint18)
 QT_IMPL_MEMROTATE(quint32, quint8)
 QT_IMPL_MEMROTATE(quint16, quint8)
+QT_IMPL_MEMROTATE(qrgb444, quint8)
 QT_IMPL_MEMROTATE(quint8, quint8)
 #ifdef QT_QWS_DEPTH_GENERIC
 QT_IMPL_MEMROTATE(quint32, qrgb_generic16)

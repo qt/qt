@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,46 +39,42 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSURFACE_D3D_P_H
-#define QWINDOWSURFACE_D3D_P_H
+#ifndef GOOGLESUGGEST_H
+#define GOOGLESUGGEST_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the QLibrary class.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <qglobal.h>
-#include "private/qwindowsurface_p.h"
+#include <QObject>
+#include <QNetworkAccessManager>
 
 QT_BEGIN_NAMESPACE
-
-class QPaintDevice;
-class QPoint;
-class QRegion;
-class QWidget;
-struct QD3DWindowSurfacePrivate;
-
-class QD3DWindowSurface : public QWindowSurface
-{
-public:
-    QD3DWindowSurface(QWidget *widget);
-    ~QD3DWindowSurface();
-
-    QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    void setGeometry(const QRect &rect);
-    bool scroll(const QRegion &area, int dx, int dy);
-
-private:
-    QD3DWindowSurfacePrivate *d_ptr;
-};
-
+class QLineEdit;
+class QNetworkReply;
+class QTimer;
+class QTreeWidget;
 QT_END_NAMESPACE
 
-#endif // QWINDOWSURFACE_D3D_P_H
+class GSuggestCompletion : public QObject
+{
+    Q_OBJECT
+
+public:
+    GSuggestCompletion(QLineEdit *parent = 0);
+    ~GSuggestCompletion();
+    bool eventFilter(QObject *obj, QEvent *ev);
+    void showCompletion(const QStringList &choices, const QStringList &hits);
+
+public slots:
+
+    void doneCompletion();
+    void preventSuggest();
+    void autoSuggest();
+    void handleNetworkData(QNetworkReply *networkReply);
+
+private:
+    QLineEdit *editor;
+    QTreeWidget *popup;
+    QTimer *timer;
+    QNetworkAccessManager networkManager;
+};
+
+#endif // GOOGLESUGGEST_H
+

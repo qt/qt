@@ -107,9 +107,6 @@ static void initResources()
     Q_INIT_RESOURCE(qstyle);
 #endif
 
-#if !defined(QT_NO_DIRECT3D) && defined(Q_WS_WIN)
-    Q_INIT_RESOURCE(qpaintengine_d3d);
-#endif
     Q_INIT_RESOURCE(qmessagebox);
 #if !defined(QT_NO_PRINTDIALOG)
     Q_INIT_RESOURCE(qprintdialog);
@@ -620,13 +617,6 @@ void QApplicationPrivate::process_cmdline()
             and QPixmaps. Available options are \c{raster} and \c{opengl}.
     \endlist
 
-    The Windows version of Qt supports an additional command line  option, if
-    Direct3D support has been compiled into Qt:
-    \list
-        \o  -direct3d will make the Direct3D paint engine the default widget
-            paint engine in Qt. \bold {This functionality is experimental.}
-    \endlist
-
     The X11 version of Qt supports some traditional X11 command line options:
     \list
         \o  -display \e display, sets the X display (default is $DISPLAY).
@@ -832,12 +822,13 @@ QApplication::QApplication(Display *dpy, int &argc, char **argv,
 
 #endif // Q_WS_X11
 
-
-/*!
-  Initializes the QApplication object, called from the constructors.
-*/
 extern void qInitDrawhelperAsm();
 
+/*!
+  \fn void QApplicationPrivate::initialize()
+
+  Initializes the QApplication object, called from the constructors.
+*/
 void QApplicationPrivate::initialize()
 {
     QWidgetPrivate::mapper = new QWidgetMapper;
@@ -2106,8 +2097,8 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                 if (that)
                     QApplication::sendEvent(that->style(), &in);
             }
+            emit qApp->focusChanged(prev, focus_widget);
         }
-        emit qApp->focusChanged(prev, focus_widget);
     }
 }
 
@@ -3504,7 +3495,7 @@ void QApplication::changeOverrideCursor(const QCursor &cursor)
     It is necessary to call this function to start event handling. The main
     event loop receives events from the window system and dispatches these to
     the application widgets.
- 
+
     Generally, no user interaction can take place before calling exec(). As a
     special case, modal widgets like QMessageBox can be used before calling
     exec(), because modal widgets call exec() to start a local event loop.

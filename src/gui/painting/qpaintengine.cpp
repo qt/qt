@@ -949,8 +949,8 @@ void QPaintEngine::setSystemClip(const QRegion &region)
     Q_D(QPaintEngine);
     d->systemClip = region;
     // Be backward compatible and only call d->systemStateChanged()
-    // if we currently have a system transform set.
-    if (d->hasSystemTransform) {
+    // if we currently have a system transform/viewport set.
+    if (d->hasSystemTransform || d->hasSystemViewport) {
         d->transformSystemClip();
         d->systemStateChanged();
     }
