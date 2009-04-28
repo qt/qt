@@ -12,7 +12,7 @@
     </signals>
 
     <transform>
-        <Axis id="Axis" xStart="{Container.width / 2}" xEnd="{Container.width / 2}" yEnd="1" />
+        <AxisRotation id="Axis" axis.startX="{Container.width / 2}" axis.endX="{Container.width / 2}" axis.endY="1" />
     </transform>
 
     <front>
@@ -47,13 +47,13 @@
 
     <states>
         <State name="Back">
-            <SetProperty target="{Axis}" property="rotation" value="180"/>
+            <SetProperty target="{Axis}" property="angle" value="180"/>
         </State>
     </states>
 
     <transitions>
         <Transition>
-            <NumericAnimation easing="easeInOutQuad" properties="rotation" duration="500"/>
+            <NumericAnimation easing="easeInOutQuad" properties="angle" duration="500"/>
         </Transition>
     </transitions>
 

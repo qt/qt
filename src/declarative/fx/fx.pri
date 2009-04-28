@@ -10,6 +10,7 @@ HEADERS += \
            fx/qfxcontentwrapper_p.h \
            fx/qfxflickable.h \
            fx/qfxflickable_p.h \
+           fx/qfxflipable.h \
            fx/qfxfocuspanel.h \
            fx/qfxfocusrealm.h \
            fx/qfxgridview.h \
@@ -58,6 +59,7 @@ SOURCES += \
            fx/qfxcomponentinstance.cpp \
            fx/qfxcontentwrapper.cpp \
            fx/qfxflickable.cpp \
+           fx/qfxflipable.cpp \
            fx/qfxfocuspanel.cpp \
            fx/qfxfocusrealm.cpp \
            fx/qfxgridview.cpp \

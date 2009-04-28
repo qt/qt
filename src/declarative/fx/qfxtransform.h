@@ -49,17 +49,18 @@
 #endif
 #include <qfxitem.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class Q_DECLARATIVE_EXPORT QFxTransform : public QObject
 {
     Q_OBJECT
 public:
     QFxTransform(QObject *parent=0);
+    ~QFxTransform();
 
     void update();
 
@@ -68,37 +69,61 @@ public:
 };
 QML_DECLARE_TYPE(QFxTransform);
 
-class Q_DECLARATIVE_EXPORT QFxAxis : public QFxTransform
+class Q_DECLARATIVE_EXPORT QFxAxis : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(qreal xStart READ xStart WRITE setXStart)
-    Q_PROPERTY(qreal yStart READ yStart WRITE setYStart)
-    Q_PROPERTY(qreal xEnd READ xEnd WRITE setXEnd)
-    Q_PROPERTY(qreal yEnd READ yEnd WRITE setYEnd)
-    Q_PROPERTY(qreal zEnd READ zEnd WRITE setZEnd)
-    Q_PROPERTY(qreal rotation READ rotation WRITE setRotation)
-    Q_PROPERTY(qreal translation READ translation WRITE setTranslation)
-    Q_PROPERTY(qreal distanceToPlane READ distanceToPlane WRITE setDistanceToPlane)
+    Q_PROPERTY(qreal startX READ startX WRITE setStartX)
+    Q_PROPERTY(qreal startY READ startY WRITE setStartY)
+    Q_PROPERTY(qreal endX READ endX WRITE setEndX)
+    Q_PROPERTY(qreal endY READ endY WRITE setEndY)
+    Q_PROPERTY(qreal endZ READ endZ WRITE setEndZ)
 public:
     QFxAxis(QObject *parent=0);
+    ~QFxAxis();
 
-    qreal xStart() const;
-    void setXStart(qreal);
-    qreal yStart() const;
-    void setYStart(qreal);
+    qreal startX() const;
+    void setStartX(qreal);
 
-    qreal xEnd() const;
-    void setXEnd(qreal);
-    qreal yEnd() const;
-    void setYEnd(qreal);
-    qreal zEnd() const;
-    void setZEnd(qreal);
+    qreal startY() const;
+    void setStartY(qreal);
 
-    qreal rotation() const;
-    void setRotation(qreal);
-    qreal translation() const;
-    void setTranslation(qreal);
+    qreal endX() const;
+    void setEndX(qreal);
+
+    qreal endY() const;
+    void setEndY(qreal);
+
+    qreal endZ() const;
+    void setEndZ(qreal);
+
+Q_SIGNALS:
+    void updated();
+
+private:
+    qreal _startX;
+    qreal _startY;
+    qreal _endX;
+    qreal _endY;
+    qreal _endZ;
+};
+QML_DECLARE_TYPE(QFxAxis);
+
+class Q_DECLARATIVE_EXPORT QFxRotation : public QFxTransform
+{
+    Q_OBJECT
+
+    Q_PROPERTY(QFxAxis *axis READ axis)
+    Q_PROPERTY(qreal angle READ angle WRITE setAngle)
+    Q_PROPERTY(qreal distanceToPlane READ distanceToPlane WRITE setDistanceToPlane)
+public:
+    QFxRotation(QObject *parent=0);
+    ~QFxRotation();
+
+    QFxAxis *axis();
+
+    qreal angle() const;
+    void setAngle(qreal);
 
     qreal distanceToPlane() const;
     void setDistanceToPlane(qreal);
@@ -106,22 +131,46 @@ public:
     virtual bool isIdentity() const;
     virtual QSimpleCanvas::Matrix transform() const;
 
-private:
+private Q_SLOTS:
     void update();
-
-    qreal _xStart;
-    qreal _yStart;
-    qreal _xEnd;
-    qreal _yEnd;
-    qreal _zEnd;
-    qreal _rotation;
-    qreal _translation;
+private:
+    QFxAxis _axis;
+    qreal _angle;
     qreal _distanceToPlane;
 
     mutable bool _dirty;
     mutable QSimpleCanvas::Matrix _transform;
 };
-QML_DECLARE_TYPE(QFxAxis);
+QML_DECLARE_TYPE(QFxRotation);
+
+class Q_DECLARATIVE_EXPORT QFxTranslation : public QFxTransform
+{
+    Q_OBJECT
+
+    Q_PROPERTY(QFxAxis *axis READ axis)
+    Q_PROPERTY(qreal distance READ distance WRITE setDistance)
+public:
+    QFxTranslation(QObject *parent=0);
+    ~QFxTranslation();
+
+    QFxAxis *axis();
+
+    qreal distance() const;
+    void setDistance(qreal);
+
+    virtual bool isIdentity() const;
+    virtual QSimpleCanvas::Matrix transform() const;
+
+private Q_SLOTS:
+    void update();
+private:
+    QFxAxis _axis;
+    qreal _distance;
+
+    mutable bool _dirty;
+    mutable QSimpleCanvas::Matrix _transform;
+};
+QML_DECLARE_TYPE(QFxTranslation);
 
 class Q_DECLARATIVE_EXPORT QFxPerspective : public QFxTransform
 {
@@ -134,6 +183,7 @@ class Q_DECLARATIVE_EXPORT QFxPerspective : public QFxTransform
     Q_PROPERTY(qreal scale READ scale WRITE setScale)
 public:
     QFxPerspective(QObject *parent=0);
+    ~QFxPerspective();
 
     qreal angle() const { return _angle; }
     void setAngle(qreal v) { _angle = v; update(); }
@@ -171,16 +221,17 @@ class Q_DECLARATIVE_EXPORT QFxSquish : public QFxTransform
     Q_PROPERTY(qreal y READ y WRITE setY)
     Q_PROPERTY(qreal width READ width WRITE setWidth)
     Q_PROPERTY(qreal height READ height WRITE setHeight)
-    Q_PROPERTY(qreal topLeft_x READ topLeft_x WRITE settopLeft_x)
-    Q_PROPERTY(qreal topLeft_y READ topLeft_y WRITE settopLeft_y)
-    Q_PROPERTY(qreal topRight_x READ topRight_x WRITE settopRight_x)
-    Q_PROPERTY(qreal topRight_y READ topRight_y WRITE settopRight_y)
-    Q_PROPERTY(qreal bottomLeft_x READ bottomLeft_x WRITE setbottomLeft_x)
-    Q_PROPERTY(qreal bottomLeft_y READ bottomLeft_y WRITE setbottomLeft_y)
-    Q_PROPERTY(qreal bottomRight_y READ bottomRight_y WRITE setbottomRight_y)
-    Q_PROPERTY(qreal bottomRight_x READ bottomRight_x WRITE setbottomRight_x)
+    Q_PROPERTY(qreal topLeftX READ topLeft_x WRITE settopLeft_x)
+    Q_PROPERTY(qreal topLeftY READ topLeft_y WRITE settopLeft_y)
+    Q_PROPERTY(qreal topRightX READ topRight_x WRITE settopRight_x)
+    Q_PROPERTY(qreal topRightY READ topRight_y WRITE settopRight_y)
+    Q_PROPERTY(qreal bottomLeftX READ bottomLeft_x WRITE setbottomLeft_x)
+    Q_PROPERTY(qreal bottomLeftY READ bottomLeft_y WRITE setbottomLeft_y)
+    Q_PROPERTY(qreal bottomRightX READ bottomRight_x WRITE setbottomRight_x)
+    Q_PROPERTY(qreal bottomRightY READ bottomRight_y WRITE setbottomRight_y)
 public:
     QFxSquish(QObject *parent=0);
+    ~QFxSquish();
 
     qreal x() const;
     void setX(qreal);
@@ -230,45 +281,10 @@ private:
     QSizeF s;
     QPointF p1, p2, p3, p4;
 };
-
 QML_DECLARE_TYPE(QFxSquish);
-
-class QFxFlipablePrivate;
-class Q_DECLARATIVE_EXPORT QFxFlipable : public QFxItem
-{
-    Q_OBJECT
-
-    Q_ENUMS(Side);
-    Q_PROPERTY(QFxItem *front READ front WRITE setFront)
-    Q_PROPERTY(QFxItem *back READ back WRITE setBack)
-    Q_PROPERTY(Side side READ side NOTIFY sideChanged)
-public:
-    QFxFlipable(QFxItem *parent=0);
-    ~QFxFlipable();
-
-    QFxItem *front();
-    void setFront(QFxItem *);
-
-    QFxItem *back();
-    void setBack(QFxItem *);
-
-    enum Side { Front, Back };
-    Side side() const;
-
-protected:
-    virtual void transformChanged(const QSimpleCanvas::Matrix &);
-
-Q_SIGNALS:
-    void sideChanged();
-
-private:
-    Q_DISABLE_COPY(QFxFlipable)
-    Q_DECLARE_PRIVATE(QFxFlipable)
-};
-QML_DECLARE_TYPE(QFxFlipable);
-
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
-#endif // _TRANSFORM_H_
+
+#endif // QFXTRANSFORM_H
