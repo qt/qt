@@ -2558,10 +2558,11 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
 bool QVariant::canConvert(Type t) const
 {
     //we can treat floats as double
-    //the reason for not doing it the "proper" way is that QMetaTye Float's value is 135,
+    //the reason for not doing it the "proper" way is that QMetaType::Float's value is 135,
     //which can't be handled by qCanConvertMatrix
+    //In addition QVariant::Type doesn't have a Float value, so we're using QMetaType::Float
     const uint currentType = ((d.type == QMetaType::Float) ? QVariant::Double : d.type);
-    if (t == QMetaType::Float) t = QVariant::Double;
+    if (uint(t) == uint(QMetaType::Float)) t = QVariant::Double;
 
     if (currentType == uint(t))
         return true;
