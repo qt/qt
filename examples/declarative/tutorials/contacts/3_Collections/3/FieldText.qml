@@ -17,16 +17,21 @@
     <resources>
         <Script>
             function edit() {
-                fieldText.state='editing';
+                if (!contacts.mouseGrabbed) {
+                    fieldText.state='editing';
+                    contacts.mouseGrabbed=true;
+                }
             }
             function confirm() {
                 fieldText.text = textEdit.text;
                 fieldText.state='';
+                contacts.mouseGrabbed=false;
                 fieldText.confirmed.emit();
             }
             function reset() {
                 textEdit.text = fieldText.text;
                 fieldText.state='';
+                contacts.mouseGrabbed=false;
             }
         </Script>
     </resources>
@@ -34,13 +39,13 @@
         width="22" height="22"
         anchors.right="{parent.right}" anchors.rightMargin="4"
         anchors.verticalCenter="{parent.verticalCenter}"
-        src="../shared/pics/cancel.png"
+        src="../../shared/pics/cancel.png"
         opacity="0"/>
     <Image id="confirmIcon"
         width="22" height="22"
         anchors.left="{parent.left}" anchors.leftMargin="4"
         anchors.verticalCenter="{parent.verticalCenter}"
-        src="../shared/pics/ok.png"
+        src="../../shared/pics/ok.png"
         opacity="0"/>
     <TextEdit id="textEdit"
         anchors.left="{parent.left}" anchors.leftMargin="5"

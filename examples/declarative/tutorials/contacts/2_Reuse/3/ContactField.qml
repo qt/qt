@@ -1,17 +1,18 @@
 <Item id="contactField"
     clip="true"
+    width="230"
     height="30">
     <properties>
-        <Property name="label"/>
-        <Property name="icon"/>
+        <Property name="label" value="Name"/>
+        <Property name="icon" value="../../shared/pics/phone.png"/>
         <Property name="value"/>
     </properties>
-    <RemoveButton4 id="removeButton"
+    <RemoveButton id="removeButton"
         anchors.right="{parent.right}"
         anchors.top="{parent.top}" anchors.bottom="{parent.bottom}"
         expandedWidth="{contactField.width}"
         onConfirmed="print('Clear field text'); fieldText.text=''"/>
-    <FieldText4 id="fieldText"
+    <FieldText id="fieldText"
         width="{contactField.width-70}"
         anchors.right="{removeButton.left}" anchors.rightMargin="5"
         anchors.verticalCenter="{parent.verticalCenter}"

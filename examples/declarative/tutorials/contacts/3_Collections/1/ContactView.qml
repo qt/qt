@@ -5,7 +5,7 @@
         <Property name="mouseGrabbed" value="false"/>
     </properties>
     <resources>
-        <SqlConnection id="contactDatabase" name="qmlConnection" driver="QSQLITE" databaseName="../shared/contacts.sqlite"/>
+        <SqlConnection id="contactDatabase" name="qmlConnection" driver="QSQLITE" databaseName="../../shared/contacts.sqlite"/>
         <SqlQuery id="contactList" connection="{contactDatabase}">
             <query>SELECT recid, label, email, phone FROM contacts ORDER BY label, recid</query>
         </SqlQuery>

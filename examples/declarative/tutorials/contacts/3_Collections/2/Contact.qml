@@ -1,9 +1,5 @@
 <Item id="contactDetails"
-    width="230"
-    height="{layout.height}">
-    <properties>
-        <Property name="mouseGrabbed" value="false"/>
-    </properties>
+    anchors.fill="{parent}">
     <properties>
         <Property name="contactid" value=""/>
         <Property name="label" onValueChanged="labelField.value = label"/>
@@ -14,19 +10,19 @@
         anchors.fill="{parent}"
         spacing="5"
         margin="5">
-        <ContactField4 id="labelField"
+        <ContactField id="labelField"
             anchors.left="{layout.left}" anchors.leftMargin="5"
             anchors.right="{layout.right}" anchors.rightMargin="5"
             label="Name"/>
-        <ContactField4 id="phoneField"
+        <ContactField id="phoneField"
             anchors.left="{layout.left}" anchors.leftMargin="5"
             anchors.right="{layout.right}" anchors.rightMargin="5"
-            icon="../shared/pics/phone.png"
+            icon="../../shared/pics/phone.png"
             label="Phone"/>
-        <ContactField4 id="emailField"
+        <ContactField id="emailField"
             anchors.left="{layout.left}" anchors.leftMargin="5"
             anchors.right="{layout.right}" anchors.rightMargin="5"
-            icon="../shared/pics/email.png"
+            icon="../../shared/pics/email.png"
             label="Email"/>
     </VerticalLayout>
 </Item>

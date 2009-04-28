@@ -14,11 +14,11 @@
                 print('removeButton.toggle()');
                 if (removeButton.state == 'opened') {
                     removeButton.state = '';
-                    contactDetails.mouseGrabbed=false;
+                    contacts.mouseGrabbed=false;
                 } else {
-                    if (!contactDetails.mouseGrabbed) {
+                    if (!contacts.mouseGrabbed) {
                         removeButton.state = 'opened';
-                        contactDetails.mouseGrabbed=true;
+                        contacts.mouseGrabbed=true;
                     }
                 }
             }
@@ -28,7 +28,7 @@
         width="22" height="22"
         anchors.right="{parent.right}" anchors.rightMargin="4"
         anchors.verticalCenter="{parent.verticalCenter}"
-        src="../shared/pics/trash.png"
+        src="../../shared/pics/trash.png"
         opacity="1">
         <MouseRegion
             anchors.fill="{parent}"
@@ -38,7 +38,7 @@
         width="22" height="22"
         anchors.right="{parent.right}" anchors.rightMargin="4"
         anchors.verticalCenter="{parent.verticalCenter}"
-        src="../shared/pics/cancel.png"
+        src="../../shared/pics/cancel.png"
         opacity="0">
         <MouseRegion
             anchors.fill="{parent}"
@@ -48,7 +48,7 @@
         width="22" height="22"
         anchors.left="{parent.left}" anchors.leftMargin="4"
         anchors.verticalCenter="{parent.verticalCenter}"
-        src="../shared/pics/ok.png"
+        src="../../shared/pics/ok.png"
         opacity="0">
         <MouseRegion
             anchors.fill="{parent}"

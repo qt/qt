@@ -5,7 +5,7 @@
         <Property name="mouseGrabbed" value="false"/>
     </properties>
     <resources>
-        <SqlConnection id="contactDatabase" name="qmlConnection" driver="QSQLITE" databaseName="../shared/contacts.sqlite"/>
+        <SqlConnection id="contactDatabase" name="qmlConnection" driver="QSQLITE" databaseName="../../shared/contacts.sqlite"/>
         <SqlQuery id="contactList" connection="{contactDatabase}">
             <query>SELECT recid AS contactid, label, email, phone FROM contacts ORDER BY label, recid</query>
         </SqlQuery>
@@ -60,7 +60,8 @@
     <Button id="cancelEditButton"
         anchors.top="{parent.top}" anchors.topMargin="5"
         anchors.right="{parent.right}" anchors.rightMargin="5"
-        icon="../shared/pics/cancel.png"/>
+        icon="../../shared/pics/cancel.png"
+        opacity="{mouseGrabbed ? 0 : 1}"/>
     <ListView id="contactListView"
         anchors.left="{parent.left}"
         anchors.right="{parent.right}"

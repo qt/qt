@@ -17,12 +17,12 @@
         <ContactField id="phoneField"
             anchors.left="{layout.left}" anchors.leftMargin="5"
             anchors.right="{layout.right}" anchors.rightMargin="5"
-            icon="../shared/pics/phone.png"
+            icon="../../shared/pics/phone.png"
             label="Phone"/>
         <ContactField id="emailField"
             anchors.left="{layout.left}" anchors.leftMargin="5"
             anchors.right="{layout.right}" anchors.rightMargin="5"
-            icon="../shared/pics/email.png"
+            icon="../../shared/pics/email.png"
             label="Email"/>
     </VerticalLayout>
 </Item>
