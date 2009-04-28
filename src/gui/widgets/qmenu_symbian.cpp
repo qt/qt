@@ -252,7 +252,6 @@ void QMenuBarPrivate::symbianCreateMenuBar(QWidget *parent)
     Q_Q(QMenuBar);
     if (parent && parent->isWindow()){
         symbian_menubar = new QSymbianMenuBarPrivate(this);
-        symbian_menubar->parent = parent;
         nativeMenuBars.append(q);
     }
 }
