@@ -285,7 +285,7 @@ QFxVisualItemModelData *QFxVisualItemModelPrivate::data(QObject *item)
 }
 
 QFxVisualItemModel::QFxVisualItemModel()
-: QObject(*(new QFxVisualItemModelPrivate(QmlContext::activeContext())))
+: QObject(*(new QFxVisualItemModelPrivate(0)))
 {
 }
 
@@ -489,7 +489,9 @@ QFxItem *QFxVisualItemModel::item(int index, const QByteArray &viewId, bool comp
     if(d->m_cache.contains(index)) {
         nobj = d->m_cache[index];
     } else {
-        QmlContext *ctxt = new QmlContext(d->m_context);
+        QmlContext *ccontext = d->m_context;
+        if(!ccontext) ccontext = qmlContext(this);
+        QmlContext *ctxt = new QmlContext(ccontext);
         QFxVisualItemModelData *data = new QFxVisualItemModelData(index, d);
         ctxt->setContextProperty(QLatin1String("model"), data);
         ctxt->addDefaultObject(data);
@@ -540,12 +542,14 @@ QVariant QFxVisualItemModel::evaluate(int index, const QString &expression, QObj
         QObject *nobj = d->m_cache[index];
         QFxItem *item = qobject_cast<QFxItem *>(nobj);
         if (item) {
-            QmlExpression e(item->itemContext(), expression, objectContext);
+            QmlExpression e(qmlContext(item), expression, objectContext);
             e.setTrackChange(false);
             value = e.value();
         }
     } else {
-        QmlContext *ctxt = new QmlContext(d->m_context);
+        QmlContext *ccontext = d->m_context;
+        if(!ccontext) ccontext = qmlContext(this);
+        QmlContext *ctxt = new QmlContext(ccontext);
         QFxVisualItemModelData *data = new QFxVisualItemModelData(index, d);
         ctxt->addDefaultObject(data);
         QmlExpression e(ctxt, expression, objectContext);

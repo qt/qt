@@ -94,6 +94,7 @@ class QmlContext;
 class QmlState;
 class QmlTransition;
 class QFxTransform;
+class QFxKeyEvent;
 class QFxItemPrivate;
 class Q_DECLARATIVE_EXPORT QFxItem : public QSimpleCanvasItem, public QmlParserStatus
 {
@@ -113,7 +114,6 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QSimpleCanvasItem, public QmlParserS
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
     Q_PROPERTY(QString qml READ qml WRITE setQml NOTIFY qmlChanged)
     Q_PROPERTY(QFxItem *qmlItem READ qmlItem NOTIFY qmlChanged)
-    Q_PROPERTY(QFxItem *clipToItem READ clipToItem WRITE setClipToItem)
     Q_PROPERTY(qreal x READ x WRITE setX NOTIFY leftChanged)
     Q_PROPERTY(qreal y READ y WRITE setY NOTIFY topChanged)
     Q_PROPERTY(qreal z READ z WRITE setZ)
@@ -121,7 +121,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QSimpleCanvasItem, public QmlParserS
     Q_PROPERTY(bool flipVertically READ flipVertically WRITE setFlipVertically)
     Q_PROPERTY(bool flipHorizontally READ flipHorizontally WRITE setFlipHorizontally)
     Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
-    Q_PROPERTY(int baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged )
+    Q_PROPERTY(int baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged)
     Q_PROPERTY(QFxAnchorLine left READ left)
     Q_PROPERTY(QFxAnchorLine right READ right)
     Q_PROPERTY(QFxAnchorLine horizontalCenter READ horizontalCenter)
@@ -174,9 +174,6 @@ public:
     QString qml() const;
     void setQml(const QString &);
 
-    QFxItem *clipToItem() const;
-    void setClipToItem(QFxItem *i);
-
     bool flipVertically() const;
     void setFlipVertically(bool);
     bool flipHorizontally() const;
@@ -184,13 +181,6 @@ public:
 
     int baselineOffset() const;
     void setBaselineOffset(int);
-
-    QFxAnchorLine left() const;
-    QFxAnchorLine right() const;
-    QFxAnchorLine horizontalCenter() const;
-    QFxAnchorLine top() const;
-    QFxAnchorLine bottom() const;
-    QFxAnchorLine verticalCenter() const;
 
     qreal rotation() const;
     void setRotation(qreal);
@@ -219,8 +209,6 @@ public:
     bool keepMouseGrab() const;
     void setKeepMouseGrab(bool);
 
-    QmlContext *itemContext() const;
-
 public Q_SLOTS:
     void newChild(const QString &url);
 
@@ -239,8 +227,8 @@ Q_SIGNALS:
     void focusChanged();
     void activeFocusChanged();
     void parentChanged();
-    void keyPress(QObject *event);
-    void keyRelease(QObject *event);
+    void keyPress(QFxKeyEvent *event);
+    void keyRelease(QFxKeyEvent *event);
     void rotationChanged();
     void scaleChanged();
     void opacityChanged();
@@ -270,8 +258,16 @@ protected:
     QFxItem(QFxItemPrivate &dd, QFxItem *parent = 0);
 
 private:
+    QFxAnchorLine left() const;
+    QFxAnchorLine right() const;
+    QFxAnchorLine horizontalCenter() const;
+    QFxAnchorLine top() const;
+    QFxAnchorLine bottom() const;
+    QFxAnchorLine verticalCenter() const;
+
     void init(QFxItem *parent);
     friend class QmlStatePrivate;
+    friend class QFxAnchors;
     Q_DISABLE_COPY(QFxItem)
     Q_DECLARE_PRIVATE(QFxItem)
 };

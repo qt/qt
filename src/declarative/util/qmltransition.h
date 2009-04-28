@@ -44,7 +44,6 @@
 
 #include <QtCore/qobject.h>
 #include <qfxglobal.h>
-#include <gfxtimeline.h>
 #include <qmlstate.h>
 #include <qml.h>
 

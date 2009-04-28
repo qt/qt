@@ -43,13 +43,12 @@
 #include "qfxflickable_p.h"
 
 #include <QGraphicsSceneMouseEvent>
-#include <gfxeasing.h>
 #include <QPointer>
 #include <QTimer>
 
 QT_BEGIN_NAMESPACE
 
-ElasticValue::ElasticValue(GfxValue &val)
+ElasticValue::ElasticValue(QmlTimeLineValue &val)
     : _value(val)
 {
     _to = _value.value();
@@ -101,8 +100,8 @@ QFxFlickablePrivate::QFxFlickablePrivate()
     , vTime(0), atXEnd(false), atXBeginning(true), pageXPosition(0.), pageWidth(0.)
     , atYEnd(false), atYBeginning(true), pageYPosition(0.), pageHeight(0.)
 {
-    fixupXEvent = GfxEvent::gfxEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupX>(&_moveX, this);
-    fixupYEvent = GfxEvent::gfxEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupY>(&_moveY, this);
+    fixupXEvent = QmlTimeLineEvent::timeLineEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupX>(&_moveX, this);
+    fixupYEvent = QmlTimeLineEvent::timeLineEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupY>(&_moveY, this);
 }
 
 void QFxFlickablePrivate::init()
@@ -111,8 +110,8 @@ void QFxFlickablePrivate::init()
     _flick->setParent(q);
     QObject::connect(&_tl, SIGNAL(updated()), q, SLOT(ticked()));
     QObject::connect(&_tl, SIGNAL(completed()), q, SLOT(movementEnding()));
-    q->setAcceptedMouseButtons(Qt::NoButton);
-    q->setOptions(QSimpleCanvasItem::MouseFilter | QSimpleCanvasItem::MouseEvents);
+    q->setAcceptedMouseButtons(Qt::LeftButton);
+    q->setOptions(QSimpleCanvasItem::ChildMouseFilter | QSimpleCanvasItem::MouseEvents);
     QObject::connect(_flick, SIGNAL(leftChanged()), q, SIGNAL(positionChanged()));
     QObject::connect(_flick, SIGNAL(topChanged()), q, SIGNAL(positionChanged()));
     QObject::connect(&elasticX, SIGNAL(updated()), q, SLOT(ticked()));
@@ -128,11 +127,11 @@ void QFxFlickablePrivate::fixupX()
     vTime = _tl.time();
 
     if(_moveX.value() > q->minXExtent() || q->maxXExtent() > 0) {
-        _tl.move(_moveX, q->minXExtent(), GfxEasing(GfxEasing::InOutQuad), 200);
+        _tl.move(_moveX, q->minXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         flicked = false;
         //emit flickingChanged();
     } else if(_moveX.value() < q->maxXExtent()) {
-        _tl.move(_moveX,  q->maxXExtent(), GfxEasing(GfxEasing::InOutQuad), 200);
+        _tl.move(_moveX,  q->maxXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         flicked = false;
         //emit flickingChanged();
     }
@@ -147,10 +146,10 @@ void QFxFlickablePrivate::fixupY()
     vTime = _tl.time();
 
     if(_moveY.value() > q->minYExtent() || (q->maxYExtent() > q->minYExtent())) {
-        _tl.move(_moveY, q->minYExtent(), GfxEasing(GfxEasing::InOutQuad), 200);
+        _tl.move(_moveY, q->minYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else if(_moveY.value() < q->maxYExtent()) {
-        _tl.move(_moveY,  q->maxYExtent(), GfxEasing(GfxEasing::InOutQuad), 200);
+        _tl.move(_moveY,  q->maxYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else {
         flicked = false;
@@ -528,182 +527,203 @@ qreal QFxFlickable::visibleY() const
     return -d->_moveY.value();
 }
 
-void QFxFlickable::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void QFxFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxFlickable);
-    if (!d->locked && d->_tl.isActive() && (qAbs(d->velocityX) > 10 || qAbs(d->velocityY) > 10))
-        d->stealMouse = true; // If we've been flicked then steal the click.
+    if (!locked && _tl.isActive() && (qAbs(velocityX) > 10 || qAbs(velocityY) > 10))
+        stealMouse = true; // If we've been flicked then steal the click.
     else
-        d->stealMouse = false;
-    d->pressed = true;
-    d->_tl.clear();
-    d->velocityX = -1;
-    d->velocityY = -1;
-    d->lastPos = QPoint();
-    d->lastPosTime.start();
-    d->pressPos = event->pos();
-    d->pressX = d->_moveX.value();
-    d->pressY = d->_moveY.value();
-    d->flicked = false;
-    d->pressTime.start();
-    if (d->dragMode == Elastic) {
-        d->elasticX.clear();
-        d->elasticY.clear();
+        stealMouse = false;
+    pressed = true;
+    _tl.clear();
+    velocityX = -1;
+    velocityY = -1;
+    lastPos = QPoint();
+    lastPosTime.start();
+    pressPos = event->pos();
+    pressX = _moveX.value();
+    pressY = _moveY.value();
+    flicked = false;
+    pressTime.start();
+    if (dragMode == QFxFlickable::Elastic) {
+        elasticX.clear();
+        elasticY.clear();
     }
-    d->velocityTime.start();
+    velocityTime.start();
 }
 
-void QFxFlickable::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxFlickable);
-    if (d->locked || d->lastPosTime.isNull())
+    Q_Q(QFxFlickable);
+    if (locked || lastPosTime.isNull())
         return;
     bool rejectY = false;
     bool rejectX = false;
     bool moved = false;
 
-    if(yflick()) {
-        int dy = int(event->pos().y() - d->pressPos.y());
-        if (qAbs(dy) > FlickThreshold || d->pressTime.elapsed() > 200) {
-            qreal newY = dy + d->pressY;
-            const qreal minY = minYExtent();
-            const qreal maxY = maxYExtent();
+    if(q->yflick()) {
+        int dy = int(event->pos().y() - pressPos.y());
+        if (qAbs(dy) > FlickThreshold || pressTime.elapsed() > 200) {
+            qreal newY = dy + pressY;
+            const qreal minY = q->minYExtent();
+            const qreal maxY = q->maxYExtent();
             if(newY > minY)
                 newY = minY + (newY - minY) / 2;
             if(newY < maxY && maxY - minY < 0)
                 newY = maxY + (newY - maxY) / 2;
-            if(overShoot() || (newY <= minY && newY >= maxY)) {
-                if (d->dragMode == Hard)
-                    d->_moveY.setValue(newY);
+            if(q->overShoot() || (newY <= minY && newY >= maxY)) {
+                if (dragMode == QFxFlickable::Hard)
+                    _moveY.setValue(newY);
                 else
-                    d->elasticY.setValue(newY);
+                    elasticY.setValue(newY);
                 moved = true;
-            } else if (!overShoot())
+            } else if (!q->overShoot())
                 rejectY = true;
             if (qAbs(dy) > FlickThreshold)
-                d->stealMouse = true;
+                stealMouse = true;
         }
     }
 
-    if(xflick()) {
-        int dx = int(event->pos().x() - d->pressPos.x());
-        if (qAbs(dx) > FlickThreshold || d->pressTime.elapsed() > 200) {
-            qreal newX = dx + d->pressX;
-            if(overShoot() || (newX <= minXExtent() && newX >= maxXExtent())) {
-                if (d->dragMode == Hard)
-                    d->_moveX.setValue(newX);
+    if(q->xflick()) {
+        int dx = int(event->pos().x() - pressPos.x());
+        if (qAbs(dx) > FlickThreshold || pressTime.elapsed() > 200) {
+            qreal newX = dx + pressX;
+            if(q->overShoot() || (newX <= q->minXExtent() && newX >= q->maxXExtent())) {
+                if (dragMode == QFxFlickable::Hard)
+                    _moveX.setValue(newX);
                 else
-                    d->elasticX.setValue(newX);
+                    elasticX.setValue(newX);
                 moved = true;
-            } else if (!overShoot())
+            } else if (!q->overShoot())
                 rejectX = true;
             if (qAbs(dx) > FlickThreshold)
-                d->stealMouse = true;
+                stealMouse = true;
         }
     }
 
-    if(!d->lastPos.isNull()) {
-        qreal elapsed = qreal(d->lastPosTime.restart()) / 1000.;
+    if(!lastPos.isNull()) {
+        qreal elapsed = qreal(lastPosTime.restart()) / 1000.;
         if(elapsed <= 0)
             elapsed = 1;
-        if(yflick()) {
-            qreal diff = event->pos().y() - d->lastPos.y();
-            d->velocityY = diff / elapsed;
+        if(q->yflick()) {
+            qreal diff = event->pos().y() - lastPos.y();
+            velocityY = diff / elapsed;
         }
 
-        if(xflick()) {
-            qreal diff = event->pos().x() - d->lastPos.x();
-            d->velocityX = diff / elapsed;
+        if(q->xflick()) {
+            qreal diff = event->pos().x() - lastPos.x();
+            velocityX = diff / elapsed;
         }
     }
 
-    if(rejectY) d->velocityY = 0;
-    if(rejectX) d->velocityX = 0;
+    if(rejectY) velocityY = 0;
+    if(rejectX) velocityX = 0;
 
     if (moved) {
-        viewportMoved();
-        movementStarting();
+        q->viewportMoved();
+        q->movementStarting();
     }
 
-    d->lastPos = event->pos();
+    lastPos = event->pos();
 }
 
-void QFxFlickable::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *)
 {
-    Q_D(QFxFlickable);
-    d->pressed = false;
-    if (d->lastPosTime.isNull())
+    Q_Q(QFxFlickable);
+
+    pressed = false;
+    if (lastPosTime.isNull())
         return;
 
-    if (d->dragMode == Elastic) {
-        d->elasticY.clear();
-        d->elasticX.clear();
+    if (dragMode == QFxFlickable::Elastic) {
+        elasticY.clear();
+        elasticX.clear();
     }
 
-    d->vTime = d->_tl.time();
-    if(qAbs(d->velocityY) > 10) {
+    vTime = _tl.time();
+    if(qAbs(velocityY) > 10) {
         qreal maxDistance = -1;
         // -ve velocity means list is moving up
-        if(d->velocityY > 0) {
-            if(d->_moveY.value() < minYExtent())
-                maxDistance = qAbs(minYExtent() -d->_moveY.value() + (d->overShoot?30:0));
+        if(velocityY > 0) {
+            if(_moveY.value() < q->minYExtent())
+                maxDistance = qAbs(q->minYExtent() -_moveY.value() + (overShoot?30:0));
         } else {
-            if(d->_moveY.value() > maxYExtent())
-                maxDistance = qAbs(maxYExtent() - d->_moveY.value()) + (d->overShoot?30:0);
+            if(_moveY.value() > q->maxYExtent())
+                maxDistance = qAbs(q->maxYExtent() - _moveY.value()) + (overShoot?30:0);
         }
         if(maxDistance > 0) {
-            qreal v = d->velocityY;
-            if(d->maxVelocity != -1 && d->maxVelocity < qAbs(v)) {
+            qreal v = velocityY;
+            if(maxVelocity != -1 && maxVelocity < qAbs(v)) {
                 if(v < 0)
-                    v = -d->maxVelocity;
+                    v = -maxVelocity;
                 else
-                    v = d->maxVelocity;
+                    v = maxVelocity;
             }
-            d->_tl.accel(d->_moveY, v, 500, maxDistance);
-            d->_tl.execute(d->fixupYEvent);
-            d->flicked = true;
-            emit flickingChanged();
-            emit flickStarted();
+            _tl.accel(_moveY, v, 500, maxDistance);
+            _tl.execute(fixupYEvent);
+            flicked = true;
+            emit q->flickingChanged();
+            emit q->flickStarted();
         } else {
-            d->fixupY();
+            fixupY();
         }
     } else {
-        d->fixupY();
+        fixupY();
     }
-    if(qAbs(d->velocityX) > 10) {
+    if(qAbs(velocityX) > 10) {
         qreal maxDistance = -1;
         // -ve velocity means list is moving up
-        if(d->velocityX > 0) {
-            if(d->_moveX.value() < minXExtent())
-                maxDistance = qAbs(minXExtent()) -d->_moveX.value() + (d->overShoot?30:0);
+        if(velocityX > 0) {
+            if(_moveX.value() < q->minXExtent())
+                maxDistance = qAbs(q->minXExtent()) -_moveX.value() + (overShoot?30:0);
         } else {
-            if(d->_moveX.value() > maxXExtent())
-                maxDistance = qAbs(maxXExtent() - d->_moveX.value()) + (d->overShoot?30:0);
+            if(_moveX.value() > q->maxXExtent())
+                maxDistance = qAbs(q->maxXExtent() - _moveX.value()) + (overShoot?30:0);
         }
         if(maxDistance > 0) {
-            qreal v = d->velocityX;
-            if(d->maxVelocity != -1 && d->maxVelocity < qAbs(v)) {
+            qreal v = velocityX;
+            if(maxVelocity != -1 && maxVelocity < qAbs(v)) {
                 if(v < 0)
-                    v = -d->maxVelocity;
+                    v = -maxVelocity;
                 else
-                    v = d->maxVelocity;
+                    v = maxVelocity;
             }
-            d->_tl.accel(d->_moveX, v, 500, maxDistance);
-            d->_tl.execute(d->fixupXEvent);
-            d->flicked = true;
-            emit flickingChanged();
-            emit flickStarted();
+            _tl.accel(_moveX, v, 500, maxDistance);
+            _tl.execute(fixupXEvent);
+            flicked = true;
+            emit q->flickingChanged();
+            emit q->flickStarted();
         } else {
-            d->fixupX();
+            fixupX();
         }
     } else {
-        d->fixupX();
+        fixupX();
     }
-    d->stealMouse = false;
-    d->lastPosTime = QTime();
+    stealMouse = false;
+    lastPosTime = QTime();
 
-    if(!d->_tl.isActive())
-        movementEnding();
+    if(!_tl.isActive())
+        q->movementEnding();
+}
+
+void QFxFlickable::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    Q_D(QFxFlickable);
+    d->handleMousePressEvent(event);
+    event->accept();
+}
+
+void QFxFlickable::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    Q_D(QFxFlickable);
+    d->handleMouseMoveEvent(event);
+    event->accept();
+}
+
+void QFxFlickable::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    Q_D(QFxFlickable);
+    d->handleMouseReleaseEvent(event);
+    event->accept();
 }
 
 qreal QFxFlickable::minYExtent() const
@@ -984,20 +1004,20 @@ bool QFxFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
 
         switch(mouseEvent.type()) {
         case QEvent::GraphicsSceneMouseMove:
-            mouseMoveEvent(&mouseEvent);
+            d->handleMouseMoveEvent(&mouseEvent);
             break;
         case QEvent::GraphicsSceneMousePress:
-            mousePressEvent(&mouseEvent);
+            d->handleMousePressEvent(&mouseEvent);
             break;
         case QEvent::GraphicsSceneMouseRelease:
-            mouseReleaseEvent(&mouseEvent);
+            d->handleMouseReleaseEvent(&mouseEvent);
             break;
         default:
             break;
         }
         grabber = static_cast<QFxItem*>(mouseGrabberItem());
         if (grabber && d->stealMouse && !grabber->keepMouseGrab())
-            mouseGrabberItem()->ungrabMouse();
+            grabMouse();
 
         return d->stealMouse;
     } else if (!d->lastPosTime.isNull()) {
@@ -1014,12 +1034,7 @@ bool QFxFlickable::mouseFilter(QGraphicsSceneMouseEvent *e)
     case QEvent::GraphicsSceneMousePress:
     case QEvent::GraphicsSceneMouseMove:
     case QEvent::GraphicsSceneMouseRelease: 
-        {
-        bool ret = sendMouseEvent(e);
-        if (e->type() == QEvent::GraphicsSceneMouseRelease) 
-            return ret;
-        break; 
-        }
+        return sendMouseEvent(e);
     default:
         break;
     }

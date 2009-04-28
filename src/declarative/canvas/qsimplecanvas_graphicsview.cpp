@@ -88,21 +88,54 @@ QRectF QSimpleGraphicsItem::boundingRect() const
 
 void QSimpleGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
+    QSimpleCanvasItem *p = owner->parent();
+    while(p) {
+        if(p->options() & QSimpleCanvasItem::ChildMouseFilter) {
+            if(p->mouseFilter(event))
+                return;
+        }
+        p = p->parent();
+    }
     owner->mousePressEvent(event);
 }
 
 void QSimpleGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
+    QSimpleCanvasItem *p = owner->parent();
+    while(p) {
+        if(p->options() & QSimpleCanvasItem::ChildMouseFilter) {
+            if(p->mouseFilter(event))
+                return;
+        }
+        p = p->parent();
+    }
     owner->mouseReleaseEvent(event);
+    ungrabMouse();
 }
 
 void QSimpleGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
+    QSimpleCanvasItem *p = owner->parent();
+    while(p) {
+        if(p->options() & QSimpleCanvasItem::ChildMouseFilter) {
+            if(p->mouseFilter(event))
+                return;
+        }
+        p = p->parent();
+    }
     owner->mouseDoubleClickEvent(event);
 }
 
 void QSimpleGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
+    QSimpleCanvasItem *p = owner->parent();
+    while(p) {
+        if(p->options() & QSimpleCanvasItem::ChildMouseFilter) {
+            if(p->mouseFilter(event))
+                return;
+        }
+        p = p->parent();
+    }
     owner->mouseMoveEvent(event);
 }
 

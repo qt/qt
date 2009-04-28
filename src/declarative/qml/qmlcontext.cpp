@@ -96,6 +96,8 @@ void QmlContextPrivate::init()
     else
         scopeChain = parent->d_func()->scopeChain;
     scopeChain.prepend(scopeObj);
+
+    contextData.context = q;
 }
 
 void QmlContextPrivate::addDefaultObject(QObject *object, Priority priority)

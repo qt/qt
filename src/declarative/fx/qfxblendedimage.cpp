@@ -49,19 +49,31 @@
 QT_BEGIN_NAMESPACE
 
 /*!
+    \qmlclass BlendedImage
+    \brief The BlendedImage elements blends two different images depending on a blend ratio.
+
+    This element can be used to simulate blur on slow devices by setting secondaryUrl with
+    a pre-rendered blurred version of primaryUrl.
+
+    Note that this class will only work under OpenGL. On the software canvas it will display
+    only the primary image unless the blend is > 0.75, in which case it will display only the
+    secondary image.
+*/
+
+/*!
     \internal
     \class QFxBlendedImage
     \brief The QFxBlendedImage blends two different images depending on a blend ratio.
 
-    This class can be used to simulate blur on slow devices by setting secondaryFile with
-    a pre-rendered blurred version of primaryFile.
+    This class can be used to simulate blur on slow devices by setting secondaryUrl with
+    a pre-rendered blurred version of primaryUrl.
 
     Note that this class will only work under OpenGL. On the software canvas it will display
     only the primary image unless the blend is > 0.75, in which case it will display only the
     secondary image.
 */
 QFxBlendedImage::QFxBlendedImage(QFxItem *parent)
-: QFxItem(parent), _blend(0), dirty(false)
+: QFxItem(parent), _blend(0), _smooth(false), dirty(false)
 {
 #if defined(QFX_RENDER_OPENGL2)
     setOptions(HasContents);
@@ -69,8 +81,8 @@ QFxBlendedImage::QFxBlendedImage(QFxItem *parent)
 }
 
 /*!
-    \property QFxBlendedImage::primaryUrl
-    \brief the URL of the first image to be displayed in this item.
+    \qmlproperty string BlendedImage::primaryUrl
+    The URL of the first image to be displayed in this item.
 */
 QString QFxBlendedImage::primaryUrl() const
 {
@@ -91,14 +103,14 @@ void QFxBlendedImage::setPrimaryUrl(const QString &url)
     if (!primSrc.isEmpty())
         QFxPixmap::cancelGet(primUrl,this,SLOT(primaryLoaded()));
     primSrc = url;
-    primUrl = itemContext()->resolvedUrl(url);
+    primUrl = qmlContext(this)->resolvedUrl(url);
     if (!primSrc.isEmpty())
-        QFxPixmap::get(itemContext()->engine(), primUrl,this,SLOT(primaryLoaded()));
+        QFxPixmap::get(qmlEngine(this), primUrl,this,SLOT(primaryLoaded()));
 }
 
 /*!
-    \property QFxBlendedImage::secondaryFile
-    \brief the URL of the second image to be displayed in this item.
+    \qmlproperty string BlendedImage::secondaryUrl
+    The URL of the second image to be displayed in this item.
 */
 QString QFxBlendedImage::secondaryUrl() const
 {
@@ -119,14 +131,14 @@ void QFxBlendedImage::setSecondaryUrl(const QString &url)
     if (!secSrc.isEmpty())
         QFxPixmap::cancelGet(secUrl,this,SLOT(secondaryLoaded()));
     secSrc = url;
-    secUrl = itemContext()->resolvedUrl(url);
+    secUrl = qmlContext(this)->resolvedUrl(url);
     if (!secSrc.isEmpty())
-        QFxPixmap::get(itemContext()->engine(), secUrl,this,SLOT(secondaryLoaded()));
+        QFxPixmap::get(qmlEngine(this), secUrl,this,SLOT(secondaryLoaded()));
 }
 
 /*!
-    \property QFxBlendedImage::blend
-    \brief the ratio used to blend the two images.
+    \qmlproperty real BlendedImage::blend
+    The ratio used to blend the two images.
 
     If blend has a value of 0, only the first image will be displayed.
     If blend has a value of 1, only the second image will be displayed.
@@ -142,16 +154,51 @@ void QFxBlendedImage::setBlend(qreal b)
     update();
 }
 
+/*!
+    \qmlproperty bool BlendedImage::smooth
+
+    Set this property if you want the image to be smoothly filtered when scaled or
+    transformed.  Smooth filtering gives better visual quality, but is slower.  If
+    the BlendedImage is displayed at its natural size, this property has no visual or
+    performance effect.
+
+    \note Generally scaling artifacts are only visible if the image is stationary on
+    the screen.  A common pattern when animating an image is to disable smooth
+    filtering at the beginning of the animation and reenable it at the conclusion.
+ */
+bool QFxBlendedImage::smoothTransform() const
+{
+    return _smooth;
+}
+
+void QFxBlendedImage::setSmoothTransform(bool s)
+{
+    if(_smooth == s)
+        return;
+    _smooth = s;
+    update();
+}
+
 #if defined(QFX_RENDER_QPAINTER) 
 
 void QFxBlendedImage::paintContents(QPainter &p)
 {
     if (primSrc.isNull() && secSrc.isNull())
         return;
+
+    if(_smooth) {
+        p.save();
+        p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, _smooth);
+    }
+
     if (_blend < 0.75)
         p.drawImage(0, 0, primPix);
     else
         p.drawImage(0, 0, secPix);
+
+    if(_smooth) {
+        p.restore();
+    }
 }
 
 #elif defined(QFX_RENDER_OPENGL2)
@@ -246,4 +293,5 @@ void QFxBlendedImage::paintGLContents(GLPainter &p)
 #endif
 
 QML_DEFINE_TYPE(QFxBlendedImage,BlendedImage);
+
 QT_END_NAMESPACE

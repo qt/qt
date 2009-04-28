@@ -42,7 +42,6 @@
 #ifndef QSIMPLECANVASITEM_H
 #define QSIMPLECANVASITEM_H
 
-#include <gfxtimeline.h>
 #include <qfxglobal.h>
 #include <qsimplecanvas.h>
 #include <QObject>
@@ -82,13 +81,14 @@ public:
                     ClipToRect = 0x03 };
     enum Option { NoOption = 0x00000000,
                   MouseFilter = 0x00000001,
-                  HoverEvents = 0x00000002,
-                  MouseEvents = 0x00000004,
-                  HasContents = 0x00000008,
-                  SimpleItem = 0x00000010,
-                  IsFocusPanel = 0x00000020,
-                  IsFocusRealm = 0x00000040,
-                  AcceptsInputMethods = 0x00000080};
+                  ChildMouseFilter = 0x00000002,
+                  HoverEvents = 0x00000004,
+                  MouseEvents = 0x00000008,
+                  HasContents = 0x00000010,
+                  SimpleItem = 0x00000020,
+                  IsFocusPanel = 0x00000040,
+                  IsFocusRealm = 0x00000080,
+                  AcceptsInputMethods = 0x00000100};
     Q_DECLARE_FLAGS(Options, Option);
 
     QSimpleCanvasItem(QSimpleCanvasItem *parent=0);

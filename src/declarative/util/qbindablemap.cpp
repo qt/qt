@@ -117,6 +117,9 @@ QBindableMap::QBindableMap(QObject *parent)
     m_mo = new QBindableMapMetaObject(this);
 }
 
+/*!
+    Destroys the bindable map.
+*/
 QBindableMap::~QBindableMap()
 {
 }

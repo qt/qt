@@ -294,7 +294,7 @@ void QFxTextEdit::setColor(const QColor &color)
 */
 
 /*!
-    \property QFxText::hAlign
+    \property QFxTextEdit::hAlign
     \brief the horizontal alignment of the text.
 
     Valid values are \c AlignLeft, \c AlignRight, and \c AlignHCenter. The default value is \c AlignLeft.
@@ -316,7 +316,7 @@ void QFxTextEdit::setHAlign(QFxTextEdit::HAlignment alignment)
 }
 
 /*!
-    \property QFxText::vAlign
+    \property QFxTextEdit::vAlign
     \brief the vertical alignment of the text.
 
     Valid values are \c AlignTop, \c AlignBottom, and \c AlignVCenter. The default value is \c AlignTop.

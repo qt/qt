@@ -96,17 +96,17 @@ void tst_QEasingCurve::type()
     QEasingCurve curve(QEasingCurve::Linear);
     QCOMPARE(curve.period(), 0.3);
     QCOMPARE(curve.amplitude(), 1.0);
-    
+
     curve.setPeriod(5);
     curve.setAmplitude(3);
     QCOMPARE(curve.period(), 5.0);
     QCOMPARE(curve.amplitude(), 3.0);
-    
+
     curve.setType(QEasingCurve::InElastic);
     QCOMPARE(curve.period(), 5.0);
     QCOMPARE(curve.amplitude(), 3.0);
     }
-    
+
     {
     QEasingCurve curve(QEasingCurve::InElastic);
     QCOMPARE(curve.period(), 0.3);
@@ -132,7 +132,7 @@ void tst_QEasingCurve::type()
     QTest::ignoreMessage(QtWarningMsg, QString::fromAscii("QEasingCurve: Invalid curve type %1")
                         .arg(QEasingCurve::Custom).toLatin1().constData());
     curve.setType(QEasingCurve::Custom);
-    QCOMPARE(curve.type(), QEasingCurve::InCubic);    
+    QCOMPARE(curve.type(), QEasingCurve::InCubic);
     QTest::ignoreMessage(QtWarningMsg, QString::fromAscii("QEasingCurve: Invalid curve type %1")
                         .arg(-1).toLatin1().constData());
     curve.setType((QEasingCurve::Type)-1);
@@ -191,185 +191,184 @@ void tst_QEasingCurve::valueForProgress_data()
     // integer values and avoid fp inaccuracies
 
     QTest::newRow("Linear") << int(QEasingCurve::Linear)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100);
 
     QTest::newRow("InQuad") << int(QEasingCurve::InQuad)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 4 << 16 << 36 << 64 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 1 << 4 << 9 << 16 << 25 << 36 << 48 << 64 << 81 << 100);
 
     QTest::newRow("OutQuad") << int(QEasingCurve::OutQuad)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 36 << 64 << 84 << 96 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 19 << 36 << 51 << 64 << 75 << 84 << 90 << 96 << 99 << 100);
 
     QTest::newRow("InOutQuad") << int(QEasingCurve::InOutQuad)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 8 << 32 << 68 << 92 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 2 << 8 << 18 << 32 << 50 << 68 << 82 << 92 << 98 << 100);
 
     QTest::newRow("OutInQuad") << int(QEasingCurve::OutInQuad)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 32 << 48 << 52 << 68 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 18 << 32 << 42 << 48 << 50 << 52 << 57 << 68 << 82 << 100);
 
     QTest::newRow("InCubic") << int(QEasingCurve::InCubic)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 0 << 6 << 21 << 51 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 0 << 0 << 2 << 6 << 12 << 21 << 34 << 51 << 72 << 100);
 
     QTest::newRow("OutCubic") << int(QEasingCurve::OutCubic)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 48 << 78 << 93 << 99 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 27 << 48 << 65 << 78 << 87 << 93 << 97 << 99 << 99 << 100);
 
     QTest::newRow("InOutCubic") << int(QEasingCurve::InOutCubic)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 3 << 25 << 74 << 96 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 0 << 3 << 10 << 25 << 50 << 74 << 89 << 96 << 99 << 100);
 
     QTest::newRow("OutInCubic") << int(QEasingCurve::OutInCubic)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 39 << 49 << 50 << 60 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 24 << 39 << 46 << 49 << 50 << 50 << 53 << 60 << 75 << 100);
 
     QTest::newRow("InQuart") << int(QEasingCurve::InQuart)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 0 << 2 << 12 << 40 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 0 << 0 << 0 << 2 << 6 << 12 << 24 << 40 << 65 << 100);
 
     QTest::newRow("OutQuart") << int(QEasingCurve::OutQuart)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 59 << 87 << 97 << 99 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 34 << 59 << 75 << 87 << 93 << 97 << 99 << 99 << 99 << 100);
 
     QTest::newRow("InOutQuart") << int(QEasingCurve::InOutQuart)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 1 << 20 << 79 << 98 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 0 << 1 << 6 << 20 << 50 << 79 << 93 << 98 << 99 << 100);
 
     QTest::newRow("OutInQuart") << int(QEasingCurve::OutInQuart)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 43 << 49 << 50 << 56 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 29 << 43 << 48 << 49 << 50 << 50 << 51 << 56 << 70 << 100);
 
     QTest::newRow("InQuint") << int(QEasingCurve::InQuint)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 0 << 1 << 7 << 32 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 0 << 0 << 0 << 1 << 3 << 7 << 16 << 32 << 59 << 100);
 
     QTest::newRow("OutQuint") << int(QEasingCurve::OutQuint)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 67 << 92 << 98 << 99 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 40 << 67 << 83 << 92 << 96 << 98 << 99 << 99 << 99 << 100);
 
     QTest::newRow("InOutQuint") << int(QEasingCurve::InOutQuint)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 0 << 16 << 83 << 99 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 0 << 0 << 3 << 16 << 50 << 83 << 96 << 99 << 99 << 100);
 
     QTest::newRow("OutInQuint") << int(QEasingCurve::OutInQuint)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 46 << 49 << 50 << 53 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 33 << 46 << 49 << 49 << 50 << 50 << 50 << 53 << 66 << 100);
 
     QTest::newRow("InSine") << int(QEasingCurve::InSine)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 4 << 19 << 41 << 69 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 1 << 4 << 10 << 19 << 29 << 41 << 54 << 69 << 84 << 100);
 
     QTest::newRow("OutSine") << int(QEasingCurve::OutSine)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 30 << 58 << 80 << 95 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 15 << 30 << 45 << 58 << 70 << 80 << 89 << 95 << 98 << 100);
 
     QTest::newRow("InOutSine") << int(QEasingCurve::InOutSine)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 9 << 34 << 65 << 90 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 2 << 9 << 20 << 34 << 49 << 65 << 79 << 90 << 97 << 100);
 
     QTest::newRow("OutInSine") << int(QEasingCurve::OutInSine)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 29 << 47 << 52 << 70 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 15 << 29 << 40 << 47 << 50 << 52 << 59 << 70 << 84 << 100);
 
     QTest::newRow("InExpo") << int(QEasingCurve::InExpo)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 0 << 1 << 6 << 24 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 0 << 0 << 0 << 1 << 3 << 6 << 12 << 24 << 49 << 100);
 
     QTest::newRow("OutExpo") << int(QEasingCurve::OutExpo)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 75 << 93 << 98 << 99 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 50 << 75 << 87 << 93 << 96 << 98 << 99 << 99 << 99 << 100);
 
     QTest::newRow("InOutExpo") << int(QEasingCurve::InOutExpo)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 0 << 12 << 87 << 99 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 0 << 0 << 3 << 12 << 50 << 87 << 96 << 99 << 99 << 100);
 
     QTest::newRow("OutInExpo") << int(QEasingCurve::OutInExpo)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 46 << 49 << 50 << 53 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 37 << 46 << 49 << 49 << 50 << 50 << 50 << 53 << 62 << 100);
 
     QTest::newRow("InCirc") << int(QEasingCurve::InCirc)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 2 << 8 << 19 << 40 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 0 << 2 << 4 << 8 << 13 << 19 << 28 << 40 << 56 << 100);
 
     QTest::newRow("OutCirc") << int(QEasingCurve::OutCirc)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 59 << 80 << 91 << 97 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 43 << 59 << 71 << 80 << 86 << 91 << 95 << 97 << 99 << 100);
 
     QTest::newRow("InOutCirc") << int(QEasingCurve::InOutCirc)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 4 << 20 << 80 << 95 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 1 << 4 << 9 << 20 << 50 << 80 << 89 << 95 << 98 << 100);
 
     QTest::newRow("OutInCirc") << int(QEasingCurve::OutInCirc)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 40 << 48 << 51 << 60 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 29 << 40 << 45 << 48 << 50 << 51 << 54 << 60 << 70 << 100);
 
     QTest::newRow("InElastic") << int(QEasingCurve::InElastic)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 0 << 1 << -3 << -12 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 0 << 0 << 0 << 1 << -1 << -3 << 12 << -12 << -25 << 100);
 
     QTest::newRow("OutElastic") << int(QEasingCurve::OutElastic)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 112 << 103 << 98 << 100 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 125 << 112 << 87 << 103 << 101 << 98 << 100 << 100 << 99 << 100);
 
     QTest::newRow("InOutElastic") << int(QEasingCurve::InOutElastic)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 0 << -6 << 106 << 99 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 0 << 0 << -1 << -6 << 50 << 106 << 101 << 99 << 100 << 100);
 
     QTest::newRow("OutInElastic") << int(QEasingCurve::OutInElastic)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 56 << 49 << 49 << 53 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 37 << 56 << 49 << 49 << 50 << 49 << 50 << 53 << 24 << 100);
 
     QTest::newRow("InBack") << int(QEasingCurve::InBack)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << -4 << -9 << -2 << 29 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << -1 << -4 << -8 << -9 << -8 << -2 << 9 << 29 << 59 << 100);
 
     QTest::newRow("OutBack") << int(QEasingCurve::OutBack)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 70 << 102 << 109 << 104 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 40 << 70 << 90 << 102 << 108 << 109 << 108 << 104 << 101 << 100);
 
     QTest::newRow("InOutBack") << int(QEasingCurve::InOutBack)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << -9 << 8 << 91 << 109 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << -3 << -9 << -7 << 8 << 50 << 91 << 107 << 109 << 103 << 100);
 
     QTest::newRow("OutInBack") << int(QEasingCurve::OutInBack)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 51 << 52 << 47 << 48 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 35 << 51 << 54 << 52 << 50 << 47 << 45 << 48 << 64 << 100);
 
     QTest::newRow("InBounce") << int(QEasingCurve::InBounce)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 6 << 22 << 8 << 69 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 1 << 6 << 6 << 22 << 23 << 9 << 31 << 69 << 92 << 100);
 
     QTest::newRow("OutBounce") << int(QEasingCurve::OutBounce)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 30 << 91 << 77 << 93 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 7 << 30 << 68 << 90 << 76 << 77 << 93 << 94 << 98 << 100);
 
     QTest::newRow("InOutBounce") << int(QEasingCurve::InOutBounce)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 11 << 34 << 65 << 88 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 3 << 11 << 4 << 34 << 50 << 65 << 95 << 88 << 97 << 100);
 
     QTest::newRow("OutInBounce") << int(QEasingCurve::OutInBounce)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 41 << 43 << 56 << 58 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 15 << 40 << 27 << 43 << 50 << 56 << 72 << 58 << 84 << 100);
 
     QTest::newRow("InCurve") << int(QEasingCurve::InCurve)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 10 << 37 << 60 << 80 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 2 << 10 << 23 << 37 << 50 << 60 << 70 << 80 << 90 << 100);
 
     QTest::newRow("OutCurve") << int(QEasingCurve::OutCurve)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 20 << 39 << 62 << 89 << 100);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 10 << 20 << 30 << 39 << 50 << 62 << 76 << 89 << 97 << 100);
 
     QTest::newRow("SineCurve") << int(QEasingCurve::SineCurve)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 0 << 34 << 90 << 90 << 34 << 0);
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 0 << 9 << 34 << 65 << 90 << 100 << 90 << 65 << 34 << 9 << 0);
 
     QTest::newRow("CosineCurve") << int(QEasingCurve::CosineCurve)
-                 << (IntList()  << 0 << 20 << 40 << 60 << 80 << 100)
-                 << (IntList()  << 50 << 97 << 79 << 20 << 2 << 49);
-
+                 << (IntList()  << 0 << 10 << 20 << 30 << 40 << 50 << 60 << 70 << 80 << 90 << 100)
+                 << (IntList()  << 50 << 79 << 97 << 97 << 79 << 50 << 20 << 2 << 2 << 20 << 49);
 
 }
 
@@ -386,12 +385,12 @@ void tst_QEasingCurve::valueForProgress()
         QString strCurve = QLatin1String(mo.enumerator(mo.indexOfEnumerator("Type")).key(c));
         QString strInputs;
         QString strOutputs;
-        
-        for (int t = 0; t <= 100; t+= 20) {
+
+        for (int t = 0; t <= 100; t+= 10) {
             qreal ease = curve.valueForProgress(t/qreal(100));
             strInputs += QString::fromAscii(" << %1").arg(t);
             strOutputs += QString::fromAscii(" << %1").arg(int(100*ease));
-            
+
         }
         QString str = QString::fromAscii("    QTest::newRow(\"%1\") << int(QEasingCurve::%2)\n"
                                                 "\t\t << (IntList() %3)\n"
@@ -460,14 +459,14 @@ void tst_QEasingCurve::operators()
     QCOMPARE(curve2.valueForProgress(0.25), 0.2);
     QCOMPARE(curve2.valueForProgress(0.35), 0.3);
     QCOMPARE(curve2.valueForProgress(0.999999), 0.9);
-    
+
     // operator==
     curve.setType(QEasingCurve::InBack);
     curve2 = curve;
     curve2.setOvershoot(qreal(1.70158f));
     QCOMPARE(curve.overshoot(), curve2.overshoot());
     QVERIFY(curve2 == curve);
-    
+
     curve.setOvershoot(3.0);
     QVERIFY(curve2 != curve);
     curve2.setOvershoot(3.0);

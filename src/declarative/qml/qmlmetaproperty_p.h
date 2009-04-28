@@ -42,6 +42,8 @@
 #ifndef QMLMETAPROPERTY_P_H
 #define QMLMETAPROPERTY_P_H
 
+#include "qmlmetaproperty.h"
+
 class QmlContext;
 class QmlMetaPropertyPrivate
 {
@@ -69,6 +71,12 @@ public:
 
     QObject *attachedObject() const;
     void findSignalInt(QObject *, const QString &);
+
+    int propertyType() const;
+    QmlMetaProperty::PropertyCategory propertyCategory() const;
+
+    void writeSignalProperty(const QVariant &);
+    void writeValueProperty(const QVariant &);
 };
 
 #endif // QMLMETAPROPERTY_P_H

@@ -89,7 +89,7 @@ public:
     void setData(const QByteArray &, const QUrl &baseUrl = QUrl());
 
 Q_SIGNALS:
-    void statusChanged(Status);
+    void statusChanged(QmlComponent::Status);
 
 protected:
     QmlComponent(QmlComponentPrivate &dd, QObject* parent);

@@ -137,7 +137,7 @@ public:
 
     QSimpleCanvasItem::ClipType clip:3;
     QSimpleCanvasItem::TransformOrigin origin:4;
-    int options:8;
+    int options:9;
     bool focusable:1;
     bool wantsActiveFocusPanelPendingCanvas:1;
     bool hasBeenActiveFocusPanel:1;

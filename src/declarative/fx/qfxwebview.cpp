@@ -199,23 +199,13 @@ QFxWebView::~QFxWebView()
 
 void QFxWebView::init()
 {
+    Q_D(QFxWebView);
+
     setAcceptedMouseButtons(Qt::LeftButton);
     setOptions(HasContents | MouseEvents);
     setFocusable(true);
 
-    QWebPage *wp = new QFxWebPage(this);
-
-    // QML elements don't default to having a background,
-    // even though most we pages will set one anyway.
-    QPalette pal = QApplication::palette();
-    pal.setBrush(QPalette::Base, QColor::fromRgbF(0, 0, 0, 0));
-    wp->setPalette(pal);
-
-    wp->setNetworkAccessManager(itemContext()->engine()->networkAccessManager());
-    setPage(wp);
-
-    // XXX settable from QML?
-    settings()->setAttribute(QWebSettings::PluginsEnabled, true);
+    d->page = 0;
 }
 
 void QFxWebView::componentComplete()
@@ -243,7 +233,7 @@ void QFxWebView::componentComplete()
     This property holds the progress of loading the current URL, from 0 to 1.
 */
 /*!
-    \property qreal QFxWebView::progress
+    \property QFxWebView::progress
     \brief the progress of loading the current URL, from 0 to 1.
 */
 qreal QFxWebView::progress() const
@@ -284,7 +274,7 @@ void QFxWebView::doLoadFinished(bool ok)
     loading of the URL successfully starts.
 */
 /*!
-    \property QString QFxWebView::url
+    \property QFxWebView::url
     \brief the URL to the page displayed in this item.
 
     \sa urlChanged()
@@ -297,26 +287,25 @@ void QFxWebView::doLoadFinished(bool ok)
 */
 QString QFxWebView::url() const
 {
-    Q_D(const QFxWebView);
-    return d->page->mainFrame()->url().toString();
+    return page()->mainFrame()->url().toString();
 }
 
 void QFxWebView::setUrl(const QString &n)
 {
     Q_D(QFxWebView);
-    if(n == d->page->mainFrame()->url().toString())
+    if(n == page()->mainFrame()->url().toString())
         return;
 
-    d->page->setViewportSize(QSize(
+    page()->setViewportSize(QSize(
         d->idealwidth>0 ? d->idealwidth : width(),
         d->idealheight>0 ? d->idealheight : height()));
 
     QUrl url(n);
     if (url.isRelative())
-        url = itemContext()->resolvedUrl(n);
+        url = qmlContext(this)->resolvedUrl(n);
 
     if (isComponentComplete())
-        d->page->mainFrame()->load(url);
+        page()->mainFrame()->load(url);
     else {
         d->pending = d->PendingUrl;
         d->pending_url = url;
@@ -330,7 +319,7 @@ void QFxWebView::setUrl(const QString &n)
     This property holds the ideal width for displaying the current URL.
 */
 /*!
-    \property int QFxWebView::idealWidth
+    \property QFxWebView::idealWidth
     \brief the ideal width for displaying the current URL.
 */
 int QFxWebView::idealWidth() const
@@ -353,7 +342,7 @@ void QFxWebView::setIdealWidth(int iw)
     This property holds the ideal height for displaying the current URL.
 */
 /*!
-    \property int QFxWebView::idealHeight
+    \property QFxWebView::idealHeight
     \brief the ideal height for displaying the current URL.
 */
 int QFxWebView::idealHeight() const
@@ -372,12 +361,16 @@ void QFxWebView::setIdealHeight(int ih)
 }
 
 /*!
-    \qmlproperty bool WebView::interactive
-    This property holds controls whether the item responds to mouse and key events.
+  \qmlproperty bool WebView::interactive
+
+  This property holds controls whether the item responds to mouse and
+  key events.
 */
+
 /*!
-    \property bool QFxWebView::interactive
-    \brief controls whether the item responds to mouse and key events.
+  \property QFxWebView::interactive
+
+  \brief controls whether the item responds to mouse and key events.
 */
 bool QFxWebView::interactive() const
 {
@@ -398,7 +391,7 @@ void QFxWebView::setInteractive(bool i)
     This property holds hints as to whether the item should be drawn anti-aliased.
 */
 /*!
-    \property bool QFxWebView::smooth
+    \property QFxWebView::smooth
     \brief hints as to whether the item should be drawn anti-aliased.
 */
 bool QFxWebView::smooth() const
@@ -425,7 +418,7 @@ void QFxWebView::updateCacheForVisibility()
 void QFxWebView::expandToWebPage()
 {
     Q_D(QFxWebView);
-    QSize cs = d->page->mainFrame()->contentsSize();
+    QSize cs = page()->mainFrame()->contentsSize();
     if (cs.width() < d->idealwidth)
         cs.setWidth(d->idealwidth);
     if (cs.height() < d->idealheight)
@@ -434,8 +427,8 @@ void QFxWebView::expandToWebPage()
         cs.setWidth(width());
     if (heightValid() && cs.height() < height())
         cs.setHeight(height());
-    if (cs != d->page->viewportSize()) {
-        d->page->setViewportSize(cs);
+    if (cs != page()->viewportSize()) {
+        page()->setViewportSize(cs);
         d->clearCache();
         setImplicitWidth(cs.width());
         setImplicitHeight(cs.height());
@@ -458,19 +451,19 @@ void QFxWebView::paintPage(const QRect& r)
 }
 
 /*!
-    \qmlproperty int WebView::cacheSize
-    This property holds the maximum number of pixels of image cache to allow
+  \qmlproperty int WebView::cacheSize
 
-    The default is 0.1 megapixels.
-
-    The cache will not be larger than the (unscaled) size of the WebView.
+  This property holds the maximum number of pixels of image cache to
+  allow. The default is 0.1 megapixels. The cache will not be larger
+  than the (unscaled) size of the WebView.
 */
-/*!
-    \property int QFxWebView::cacheSize
-    \brief the maximum number of pixels of image cache to allow
-    The default is 0.1 megapixels.
 
-    The cache will not be larger than the (unscaled) size of the QFxWebView.
+/*!
+  \property QFxWebView::cacheSize
+
+  The maximum number of pixels of image cache to allow. The default
+  is 0.1 megapixels. The cache will not be larger than the (unscaled)
+  size of the QFxWebView.
 */
 int QFxWebView::cacheSize() const
 {
@@ -520,7 +513,7 @@ void QFxWebView::paintGLContents(GLPainter &p)
 #endif
 {
     Q_D(QFxWebView);
-    QWebFrame *frame = d->page->mainFrame();
+    QWebFrame *frame = page()->mainFrame();
     const QRect content(QPoint(0,0),frame->contentsSize());
 
     if (content.width() <= 0 || content.height() <= 0)
@@ -600,8 +593,7 @@ void QFxWebView::paintGLContents(GLPainter &p)
 
 QString QFxWebView::propertyInfo() const
 {
-    Q_D(const QFxWebView);
-    return d->page->mainFrame()->url().toString();
+    return page()->mainFrame()->url().toString();
 }
 
 static QMouseEvent *sceneMouseEventToMouseEvent(QGraphicsSceneMouseEvent *e)
@@ -634,12 +626,12 @@ void QFxWebView::timerEvent(QTimerEvent *event)
     if (event->timerId() ==d->dcTimer.timerId()) {
         d->dcTimer.stop();
         if (d->lastPress) {
-            d->page->event(d->lastPress);
+            page()->event(d->lastPress);
             delete d->lastPress;
             d->lastPress = 0;
         }
         if (d->lastRelease) {
-            d->page->event(d->lastRelease);
+            page()->event(d->lastRelease);
             delete d->lastRelease;
             d->lastRelease = 0;
         }
@@ -715,7 +707,7 @@ void QFxWebView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     Q_D(const QFxWebView);
     if (d->interactive && !d->dcTimer.isActive()) {
         QMouseEvent *me = sceneMouseEventToMouseEvent(event);
-        d->page->event(me);
+        page()->event(me);
         event->setAccepted(
 #if QT_VERSION <= 0x040500 // XXX see bug 230835
             true
@@ -735,7 +727,7 @@ void QFxWebView::keyPressEvent(QKeyEvent* event)
 {
     Q_D(const QFxWebView);
     if (d->interactive)
-        d->page->event(event);
+        page()->event(event);
     if (!event->isAccepted())
         QFxItem::keyPressEvent(event);
 }
@@ -744,7 +736,7 @@ void QFxWebView::keyReleaseEvent(QKeyEvent* event)
 {
     Q_D(const QFxWebView);
     if (d->interactive)
-        d->page->event(event);
+        page()->event(event);
     if (!event->isAccepted())
         QFxItem::keyReleaseEvent(event);
 }
@@ -755,8 +747,7 @@ void QFxWebView::keyReleaseEvent(QKeyEvent* event)
 */
 QAction *QFxWebView::backAction() const
 {
-    Q_D(const QFxWebView);
-    return d->page->action(QWebPage::Back);
+    return page()->action(QWebPage::Back);
 }
 
 /*!
@@ -765,8 +756,7 @@ QAction *QFxWebView::backAction() const
 */
 QAction *QFxWebView::forwardAction() const
 {
-    Q_D(const QFxWebView);
-    return d->page->action(QWebPage::Forward);
+    return page()->action(QWebPage::Forward);
 }
 
 /*!
@@ -775,8 +765,7 @@ QAction *QFxWebView::forwardAction() const
 */
 QAction *QFxWebView::reloadAction() const
 {
-    Q_D(const QFxWebView);
-    return d->page->action(QWebPage::Reload);
+    return page()->action(QWebPage::Reload);
 }
 
 /*!
@@ -785,8 +774,7 @@ QAction *QFxWebView::reloadAction() const
 */
 QAction *QFxWebView::stopAction() const
 {
-    Q_D(const QFxWebView);
-    return d->page->action(QWebPage::Stop);
+    return page()->action(QWebPage::Stop);
 }
 
 /*!
@@ -805,10 +793,7 @@ QAction *QFxWebView::stopAction() const
 */
 QString QFxWebView::title() const
 {
-    Q_D(const QFxWebView);
-    if (d->page)
-        return d->page->mainFrame()->title();
-    return QString();
+    return page()->mainFrame()->title();
 }
 
 
@@ -827,10 +812,7 @@ QString QFxWebView::title() const
 */
 QPixmap QFxWebView::icon() const
 {
-    Q_D(const QFxWebView);
-    if (d->page)
-        return d->page->mainFrame()->icon().pixmap(QSize(256,256));
-    return QPixmap();
+    return page()->mainFrame()->icon().pixmap(QSize(256,256));
 }
 
 
@@ -844,8 +826,7 @@ QPixmap QFxWebView::icon() const
 */
 void QFxWebView::setTextSizeMultiplier(qreal factor)
 {
-    Q_D(QFxWebView);
-    d->page->mainFrame()->setTextSizeMultiplier(factor);
+    page()->mainFrame()->setTextSizeMultiplier(factor);
 }
 
 /*!
@@ -853,8 +834,7 @@ void QFxWebView::setTextSizeMultiplier(qreal factor)
 */
 qreal QFxWebView::textSizeMultiplier() const
 {
-    Q_D(const QFxWebView);
-    return d->page->mainFrame()->textSizeMultiplier();
+    return page()->mainFrame()->textSizeMultiplier();
 }
 
 void QFxWebView::setStatusBarMessage(const QString& s)
@@ -873,8 +853,30 @@ QString QFxWebView::status() const
 QWebPage *QFxWebView::page() const
 {
     Q_D(const QFxWebView);
+
+    if (!d->page) {
+        QFxWebView *self = const_cast<QFxWebView*>(this);
+        QWebPage *wp = new QFxWebPage(self);
+
+        // QML elements don't default to having a background,
+        // even though most we pages will set one anyway.
+        QPalette pal = QApplication::palette();
+        pal.setBrush(QPalette::Base, QColor::fromRgbF(0, 0, 0, 0));
+        wp->setPalette(pal);
+
+        wp->setNetworkAccessManager(qmlEngine(this)->networkAccessManager());
+
+        // XXX settable from QML?
+        wp->settings()->setAttribute(QWebSettings::PluginsEnabled, true);
+
+        self->setPage(wp);
+
+        return wp;
+    }
+
     return d->page;
 }
+
 
 void QFxWebView::setPage(QWebPage *page)
 {
@@ -1026,7 +1028,7 @@ public:
         propertyValues(paramValues),
         webview(view)
     {
-        QmlEngine *engine = webview->itemContext()->engine();
+        QmlEngine *engine = qmlEngine(webview);
         component = new QmlComponent(engine, url, this);
         item = 0;
         connect(engine, SIGNAL(statusChanged(Status)), this, SLOT(qmlLoaded()));
@@ -1035,7 +1037,7 @@ public:
 public Q_SLOTS:
     void qmlLoaded()
     {
-        item = qobject_cast<QFxItem*>(component->create(webview->itemContext()));
+        item = qobject_cast<QFxItem*>(component->create(qmlContext(webview)));
         item->setParent(webview);
         for (int i=0; i<propertyNames.count(); ++i) {
             if (propertyNames[i] != QLatin1String("type") && propertyNames[i] != QLatin1String("data")) {
@@ -1070,7 +1072,7 @@ QFxWebView *QFxWebPage::view()
 
 QObject *QFxWebPage::createPlugin(const QString &, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues)
 {
-    QUrl comp = view()->itemContext()->resolvedUri(url.toString());
+    QUrl comp = qmlContext(view())->resolvedUri(url.toString());
     return new QWidget_Dummy_Plugin(comp,view(),paramNames,paramValues);
 }
 

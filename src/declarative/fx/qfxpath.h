@@ -89,22 +89,22 @@ class Q_DECLARATIVE_EXPORT QFxCurve : public QFxPathElement
 {
     Q_OBJECT
 
-    Q_PROPERTY(int x READ x WRITE setX NOTIFY changed)
-    Q_PROPERTY(int y READ y WRITE setY NOTIFY changed)
+    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY changed)
+    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY changed)
 public:
     QFxCurve(QObject *parent=0) : QFxPathElement(parent), _x(0), _y(0) {}
 
-    int x() const;
-    void setX(int x);
+    qreal x() const;
+    void setX(qreal x);
 
-    int y() const;
-    void setY(int y);
+    qreal y() const;
+    void setY(qreal y);
 
     virtual void addToPath(QPainterPath &) {}
 
 private:
-    int _x;
-    int _y;
+    qreal _x;
+    qreal _y;
 };
 QML_DECLARE_TYPE(QFxCurve);
 
@@ -122,22 +122,22 @@ class Q_DECLARATIVE_EXPORT QFxPathQuad : public QFxCurve
 {
     Q_OBJECT
 
-    Q_PROPERTY(int controlX READ controlX WRITE setControlX NOTIFY changed)
-    Q_PROPERTY(int controlY READ controlY WRITE setControlY NOTIFY changed)
+    Q_PROPERTY(qreal controlX READ controlX WRITE setControlX NOTIFY changed)
+    Q_PROPERTY(qreal controlY READ controlY WRITE setControlY NOTIFY changed)
 public:
     QFxPathQuad(QObject *parent=0) : QFxCurve(parent), _controlX(0), _controlY(0) {}
 
-    int controlX() const;
-    void setControlX(int x);
+    qreal controlX() const;
+    void setControlX(qreal x);
 
-    int controlY() const;
-    void setControlY(int y);
+    qreal controlY() const;
+    void setControlY(qreal y);
 
     void addToPath(QPainterPath &path);
 
 private:
-    int _controlX;
-    int _controlY;
+    qreal _controlX;
+    qreal _controlY;
 };
 QML_DECLARE_TYPE(QFxPathQuad);
 
@@ -145,24 +145,24 @@ class Q_DECLARATIVE_EXPORT QFxPathCubic : public QFxCurve
 {
     Q_OBJECT
 
-    Q_PROPERTY(int control1X READ control1X WRITE setControl1X NOTIFY changed)
-    Q_PROPERTY(int control1Y READ control1Y WRITE setControl1Y NOTIFY changed)
-    Q_PROPERTY(int control2X READ control2X WRITE setControl2X NOTIFY changed)
-    Q_PROPERTY(int control2Y READ control2Y WRITE setControl2Y NOTIFY changed)
+    Q_PROPERTY(qreal control1X READ control1X WRITE setControl1X NOTIFY changed)
+    Q_PROPERTY(qreal control1Y READ control1Y WRITE setControl1Y NOTIFY changed)
+    Q_PROPERTY(qreal control2X READ control2X WRITE setControl2X NOTIFY changed)
+    Q_PROPERTY(qreal control2Y READ control2Y WRITE setControl2Y NOTIFY changed)
 public:
     QFxPathCubic(QObject *parent=0) : QFxCurve(parent), _control1X(0), _control1Y(0), _control2X(0), _control2Y(0) {}
 
-    int control1X() const;
-    void setControl1X(int x);
+    qreal control1X() const;
+    void setControl1X(qreal x);
 
-    int control1Y() const;
-    void setControl1Y(int y);
+    qreal control1Y() const;
+    void setControl1Y(qreal y);
 
-    int control2X() const;
-    void setControl2X(int x);
+    qreal control2X() const;
+    void setControl2X(qreal x);
 
-    int control2Y() const;
-    void setControl2Y(int y);
+    qreal control2Y() const;
+    void setControl2Y(qreal y);
 
     void addToPath(QPainterPath &path);
 
@@ -196,8 +196,8 @@ class Q_DECLARATIVE_EXPORT QFxPath : public QObject, public QmlParserStatus
 
     Q_INTERFACES(QmlParserStatus);
     Q_PROPERTY(QList<QFxPathElement *>* pathElements READ pathElements)
-    Q_PROPERTY(int startX READ startX WRITE setStartX)
-    Q_PROPERTY(int startY READ startY WRITE setStartY)
+    Q_PROPERTY(qreal startX READ startX WRITE setStartX)
+    Q_PROPERTY(qreal startY READ startY WRITE setStartY)
     Q_CLASSINFO("DefaultProperty", "pathElements")
     Q_INTERFACES(QmlParserStatus)
 public:
@@ -206,11 +206,11 @@ public:
 
     QList<QFxPathElement *>* pathElements();
 
-    int startX() const;
-    void setStartX(int x);
+    qreal startX() const;
+    void setStartX(qreal x);
 
-    int startY() const;
-    void setStartY(int y);
+    qreal startY() const;
+    void setStartY(qreal y);
 
     QPainterPath path() const;
     QStringList attributes() const;

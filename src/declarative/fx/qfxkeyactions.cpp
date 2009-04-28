@@ -239,12 +239,7 @@ void QFxKeyActions::setEnabled(bool e)
 }
 
 /*!
-    \qmlproperty string KeyActions::keyA
-    \qmlproperty string KeyActions::keyB
-    \qmlproperty string KeyActions::keyC
-    \qmlproperty ... KeyActions::...
-    \qmlproperty string KeyActions::keyY
-    \qmlproperty string KeyActions::keyZ
+    \qmlproperty string KeyActions::keyA...keyZ
 
     The action to take for the given letter.
 
@@ -569,11 +564,7 @@ void QFxKeyActions::setKey_Down(const QString &s)
 }
 
 /*!
-    \qmlproperty string KeyActions::digit0
-    \qmlproperty string KeyActions::digit1
-    \qmlproperty string KeyActions::digit2
-    \qmlproperty ... KeyActions::...
-    \qmlproperty string KeyActions::digit9
+    \qmlproperty string KeyActions::digit0...digit9
 
     The action to take for the given number key.
 
@@ -908,8 +899,7 @@ void QFxKeyActions::keyPressEvent(QKeyEvent *event)
 {
     Qt::Key key = (Qt::Key)event->key();
     if(d->enabled && d->key(key)) {
-        QmlExpression b(itemContext(), d->action(key), 
-                                this, false);
+        QmlExpression b(qmlContext(this), d->action(key), this, false);
         b.value();
         event->accept();
     } else {

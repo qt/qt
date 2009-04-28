@@ -39,13 +39,10 @@
 **
 ****************************************************************************/
 
-// XXX ;)
-#define private public
 #include <QMetaProperty>
-#undef private
-
 #include <private/qmlengine_p.h>
 #include <private/qmlcontext_p.h>
+#include <private/qobject_p.h>
 
 #ifdef QT_SCRIPTTOOLS_LIB
 #include <QScriptEngineDebugger>
@@ -308,7 +305,7 @@ bool QmlEnginePrivate::fetchCache(QmlBasicScriptNodeCache &cache, const QString 
 
         cache.object = obj;
         cache.type = QmlBasicScriptNodeCache::Core;
-        cache.core = prop.property().idx + prop.property().mobj->propertyOffset();
+        cache.core = prop.property().propertyIndex();
         cache.coreType = prop.propertyType();
         return true;
 
@@ -465,7 +462,7 @@ QmlContext *QmlEngine::activeContext()
 /*!
     Sets the mappings from namespace URIs to URL to \a map.
 
-    \sa nameSpacePaths
+    \sa nameSpacePaths()
 */
 void QmlEngine::setNameSpacePaths(const QMap<QString,QString>& map)
 {
@@ -476,7 +473,7 @@ void QmlEngine::setNameSpacePaths(const QMap<QString,QString>& map)
 /*!
     Adds mappings (given by \a map) from namespace URIs to URL.
 
-    \sa nameSpacePaths
+    \sa nameSpacePaths()
 */
 void QmlEngine::addNameSpacePaths(const QMap<QString,QString>& map)
 {
@@ -487,7 +484,7 @@ void QmlEngine::addNameSpacePaths(const QMap<QString,QString>& map)
 /*!
     Adds a mapping from namespace URI \a ns to URL \a path.
 
-    \sa nameSpacePaths
+    \sa nameSpacePaths()
 */
 void QmlEngine::addNameSpacePath(const QString& ns, const QString& path)
 {
@@ -525,7 +522,7 @@ void QmlEngine::addNameSpacePath(const QString& ns, const QString& path)
     In the above case, "xyz://abc/def/Bar.qml" would then map to
     "file:///opt/jkl/def/Bar.qml".
 
-    \sa componentUrl
+    \sa componentUrl()
 */
 QMap<QString,QString> QmlEngine::nameSpacePaths() const
 {
@@ -537,7 +534,7 @@ QMap<QString,QString> QmlEngine::nameSpacePaths() const
     Returns the URL for the component source \a src, as mapped
     by the nameSpacePaths(), resolved relative to \a baseUrl.
 
-    \sa nameSpacePaths
+    \sa nameSpacePaths()
 */
 QUrl QmlEngine::componentUrl(const QUrl& src, const QUrl& baseUrl) const
 {
@@ -597,6 +594,90 @@ QNetworkAccessManager *QmlEngine::networkAccessManager() const
     if(!d->networkAccessManager) 
         d->networkAccessManager = new QNetworkAccessManager;
     return d->networkAccessManager;
+}
+
+QmlContext *QmlEngine::contextForObject(const QObject *object)
+{
+    QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
+
+    QmlSimpleDeclarativeData *data = 
+        static_cast<QmlSimpleDeclarativeData *>(priv->declarativeData);
+
+    return data?data->context:0;
+}
+
+void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
+{
+    QObjectPrivate *priv = QObjectPrivate::get(object);
+
+    QmlSimpleDeclarativeData *data = 
+        static_cast<QmlSimpleDeclarativeData *>(priv->declarativeData);
+
+    if(data && data->context) {
+        qWarning("QmlEngine::setContextForObject(): Object already has a QmlContext");
+        return;
+    }
+
+    if(!data) {
+        priv->declarativeData = &context->d_func()->contextData;
+    } else {
+        // ### - Don't have to use extended data here
+        QmlExtendedDeclarativeData *data = new QmlExtendedDeclarativeData;
+        data->context = context;
+        priv->declarativeData = data;
+    }
+}
+
+QmlContext *qmlContext(const QObject *obj)
+{
+    return QmlEngine::contextForObject(obj);
+}
+
+QmlEngine *qmlEngine(const QObject *obj)
+{
+    QmlContext *context = QmlEngine::contextForObject(obj);
+    return context?context->engine():0;
+}
+
+QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object)
+{
+    QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
+
+
+    QmlSimpleDeclarativeData *data = static_cast<QmlSimpleDeclarativeData *>(priv->declarativeData);
+
+    QmlExtendedDeclarativeData *edata = (data && data->flags & QmlSimpleDeclarativeData::Extended)?static_cast<QmlExtendedDeclarativeData *>(data):0;
+
+    if(edata) {
+        QObject *rv = edata->attachedProperties.value(id);
+        if(rv)
+            return rv;
+    }
+
+    QmlAttachedPropertiesFunc pf = QmlMetaType::attachedPropertiesFuncById(id);
+    if(!pf)
+        return 0;
+
+    QObject *rv = pf(const_cast<QObject *>(object));
+
+    if(rv) {
+        if(!edata) {
+
+            edata = new QmlExtendedDeclarativeData;
+            if(data) edata->context = data->context;
+            priv->declarativeData = edata;
+
+        }
+
+        edata->attachedProperties.insert(id, rv);
+    }
+
+    return rv;
+}
+
+void QmlExtendedDeclarativeData::destroyed(QObject *)
+{
+    delete this;
 }
 
 /*! \internal */

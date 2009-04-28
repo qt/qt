@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,45 +39,28 @@
 **
 ****************************************************************************/
 
-#ifndef GFXVALUEPROXY_H
-#define GFXVALUEPROXY_H
-QT_BEGIN_HEADER
+#ifndef __RIVERITEM__H__
+#define __RIVERITEM__H__
 
-QT_BEGIN_NAMESPACE
+#include <QtGui/QGraphicsPixmapItem>
 
-QT_MODULE(Declarative)
+class RiverItemAnimator;
 
-template<class T>
-class GfxValueProxy : public GfxValue
+class RiverItem : public QGraphicsPixmapItem
 {
 public:
-    GfxValueProxy(T *cls, void (T::*func)(qreal), qreal v = 0.)
-    : GfxValue(v), _class(cls), _setFunctionReal(func), _setFunctionInt(0)
-    {
-        Q_ASSERT(_class);
-    }
+    RiverItem(QGraphicsItem *parent);
+    ~RiverItem();
 
-    GfxValueProxy(T *cls, void (T::*func)(int), qreal v = 0.)
-    : GfxValue(v), _class(cls), _setFunctionReal(0), _setFunctionInt(func)
-    {
-        Q_ASSERT(_class);
-    }
-
-    virtual void setValue(qreal v)
-    {
-        GfxValue::setValue(v);
-        if(_setFunctionReal) (_class->*_setFunctionReal)(v);
-        else if(_setFunctionInt) (_class->*_setFunctionInt)((int)v);
-    }
+    void setPixmap(const QPixmap &);
+    void setFullScreen(bool b, qreal originScaleFactor);
+    
+protected:
+    void mousePressEvent(QGraphicsSceneMouseEvent*);
 
 private:
-    T *_class;
-    void (T::*_setFunctionReal)(qreal);
-    void (T::*_setFunctionInt)(int);
+    QPointF m_nonFSPos; //to save the position when not in fullscreen
+    bool m_fullscreen;
 };
 
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif//GFXVALUEPROXY
+#endif //__RIVERITEM__H__

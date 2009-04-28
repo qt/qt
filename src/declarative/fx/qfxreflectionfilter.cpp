@@ -103,9 +103,6 @@ public:
 
     Reflection is only supported when Qt Declarative is compiled for OpenGL ES 2.0.
     Otherwise the Reflection filter has no effect.
-    
-    \todo describe (and fix) reflection and bounding box interaction
-
 */
 
 /*!

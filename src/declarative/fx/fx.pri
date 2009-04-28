@@ -8,8 +8,10 @@ HEADERS += \
            fx/qfxcomponentinstance_p.h \
            fx/qfxcontentwrapper.h \
            fx/qfxcontentwrapper_p.h \
+           fx/qfxevents_p.h \
            fx/qfxflickable.h \
            fx/qfxflickable_p.h \
+           fx/qfxflipable.h \
            fx/qfxfocuspanel.h \
            fx/qfxfocusrealm.h \
            fx/qfxgridview.h \
@@ -57,7 +59,9 @@ SOURCES += \
            fx/qfxblurfilter.cpp \
            fx/qfxcomponentinstance.cpp \
            fx/qfxcontentwrapper.cpp \
+           fx/qfxevents.cpp \
            fx/qfxflickable.cpp \
+           fx/qfxflipable.cpp \
            fx/qfxfocuspanel.cpp \
            fx/qfxfocusrealm.cpp \
            fx/qfxgridview.cpp \

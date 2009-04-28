@@ -411,13 +411,14 @@ QGraphicsSceneMouseEvent *QSimpleCanvasPrivate::mouseEventToSceneMouseEvent(QMou
     QGraphicsSceneMouseEvent *me = new QGraphicsSceneMouseEvent(t);
     me->setButton(e->button());
     me->setButtons(e->buttons());
+    me->setModifiers(e->modifiers());
     me->setPos(item);
     me->setScreenPos(e->pos());
     me->setScenePos(e->pos());
     return me;
 }
 
-bool QSimpleCanvasPrivate::deliverMousePress(QSimpleCanvasItem *base, QMouseEvent *e)
+bool QSimpleCanvasPrivate::deliverMousePress(QSimpleCanvasItem *base, QMouseEvent *e, bool seenChildFilter)
 {
     if(base->clipType()) {
         QRectF br = base->boundingRect();
@@ -427,22 +428,25 @@ bool QSimpleCanvasPrivate::deliverMousePress(QSimpleCanvasItem *base, QMouseEven
     }
 
     const QList<QSimpleCanvasItem *> &children = base->d_func()->children;
+
+    if(base->options() & QSimpleCanvasItem::ChildMouseFilter) 
+        seenChildFilter = true;
+
     for(int ii = children.count() - 1; ii >= 0; --ii) {
         if(children.at(ii)->visible() != 0.)
-            if(deliverMousePress(children.at(ii), e))
+            if(deliverMousePress(children.at(ii), e, seenChildFilter))
                 return true;
     }
 
-    if(base->acceptedMouseButtons() & e->button()) {
+    if(base->acceptedMouseButtons() & e->button() || base->options() & QSimpleCanvasItem::ChildMouseFilter) {
+
         QRectF br = base->boundingRect();
         QPoint pos = base->mapFromScene(e->pos()).toPoint();
 
         if(br.contains(pos)) {
             QGraphicsSceneMouseEvent *me = mouseEventToSceneMouseEvent(e, pos);
-            if (me->type() == QEvent::GraphicsSceneMousePress)
-                base->mousePressEvent(me);
-            else
-                base->mouseDoubleClickEvent(me);
+
+            sendMouseEvent(base, me);
             bool isAccepted = me->isAccepted();
             delete me;
             if(isAccepted) {
@@ -453,6 +457,36 @@ bool QSimpleCanvasPrivate::deliverMousePress(QSimpleCanvasItem *base, QMouseEven
     }
     return false;
 }
+
+// Delivers e to item
+void QSimpleCanvasPrivate::sendMouseEvent(QSimpleCanvasItem *item, QGraphicsSceneMouseEvent *e)
+{
+    QSimpleCanvasItem *p = item->parent();
+    while(p) {
+        if(p->options() & QSimpleCanvasItem::ChildMouseFilter) {
+            if(p->mouseFilter(e))
+                return;
+        }
+        p = p->parent();
+    }
+    switch(e->type()) {
+    case QEvent::GraphicsSceneMousePress:
+        item->mousePressEvent(e);
+        break;
+    case QEvent::GraphicsSceneMouseRelease:
+        item->mouseReleaseEvent(e);
+        break;
+    case QEvent::GraphicsSceneMouseMove:
+        item->mouseMoveEvent(e);
+        break;
+    case QEvent::GraphicsSceneMouseDoubleClick:
+        item->mouseDoubleClickEvent(e);
+        break;
+    default:
+        break;
+    }
+}
+
 
 QSimpleCanvasRootLayer::QSimpleCanvasRootLayer(QSimpleCanvas *c)
 : _canvas(c)
@@ -508,6 +542,7 @@ void QSimpleCanvasGraphicsView::focusInEvent(QFocusEvent *)
 }
 
 /*!
+  \internal
     \class QSimpleCanvas
     \brief The QSimpleCanvas class implements the canvas used by Qt Declarative
  */
@@ -665,7 +700,7 @@ void QSimpleCanvas::mouseMoveEvent(QMouseEvent *e)
     } else if(d->isSimpleCanvas() && d->lastMouseItem) {
         QPoint p = d->lastMouseItem->mapFromScene(e->pos()).toPoint();
         QGraphicsSceneMouseEvent *me = d->mouseEventToSceneMouseEvent(e, p);
-        d->lastMouseItem->mouseMoveEvent(me);
+        d->sendMouseEvent(d->lastMouseItem, me);
         e->setAccepted(me->isAccepted());
         delete me;
     } else {
@@ -680,7 +715,7 @@ void QSimpleCanvas::mouseReleaseEvent(QMouseEvent *e)
     } else if(d->isSimpleCanvas() && d->lastMouseItem) {
         QPoint p = d->lastMouseItem->mapFromScene(e->pos()).toPoint();
         QGraphicsSceneMouseEvent *me = d->mouseEventToSceneMouseEvent(e, p);
-        d->lastMouseItem->mouseReleaseEvent(me);
+        d->sendMouseEvent(d->lastMouseItem, me);
         d->lastMouseItem->mouseUngrabEvent();
         e->setAccepted(me->isAccepted());
         delete me;

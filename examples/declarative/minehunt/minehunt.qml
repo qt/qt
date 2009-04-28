@@ -7,10 +7,10 @@
         <Component id="tile">
             <Flipable id="flipable" width="40" height="40">
                 <transform>
-                    <Axis id="axis" xStart="20" xEnd="20" yStart="20" yEnd="0" />
+                    <AxisRotation id="axis" axis.startX="20" axis.endX="20" axis.startY="20" axis.endY="0" />
                 </transform>
                 <front>
-                    <Image src="pics/cachepix-boxless.sci" width="40" height="40">
+                    <Image src="pics/front.png" width="40" height="40">
                         <Image anchors.horizontalCenter="{parent.horizontalCenter}"
                                anchors.verticalCenter="{parent.verticalCenter}"
                                 src="pics/flag.png" opacity="{modelData.hasFlag}">
@@ -23,7 +23,7 @@
                     </Image>
                 </front>
                 <back>
-                    <Image src="pics/cachepix-black.sci" width="40" height="40">
+                    <Image src="pics/back.png" width="40" height="40">
                         <Text anchors.horizontalCenter="{parent.horizontalCenter}" anchors.verticalCenter="{parent.verticalCenter}" 
                               text="{modelData.hint}" color="white" font.bold="true" 
                               opacity="{modelData.hasMine == false &amp;&amp; modelData.hint > 0}"/>
@@ -34,14 +34,14 @@
                 </back>
                 <states>
                     <State name="back" when="{modelData.flipped == true}">
-                        <SetProperty target="{axis}" property="rotation" value="180" />
+                        <SetProperty target="{axis}" property="angle" value="180" />
                     </State>
                 </states>
                 <transitions>
                     <Transition>
                         <SequentialAnimation>
                             <PauseAnimation duration="{var ret = Math.abs(flipable.parent.x-field.clickx) + Math.abs(flipable.parent.y-field.clicky); if (ret > 0) {if(modelData.hasMine==true &amp;&amp; modelData.flipped==true){ret*3;}else{ret;}} else {0}}"/>
-                            <NumericAnimation easing="easeInOutQuad" properties="rotation"/>
+                            <NumericAnimation easing="easeInOutQuad" properties="angle"/>
                         </SequentialAnimation>
                     </Transition>
                 </transitions>

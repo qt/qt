@@ -39,14 +39,15 @@
 **
 ****************************************************************************/
 
-#ifndef GFXEASING_H
-#define GFXEASING_H
+#ifndef QFXFLIPABLE_H
+#define QFXFLIPABLE_H
 
-#include <qfxglobal.h>
-#include <QList>
-#include <QPair>
-#include <QWidget>
-
+#include <QObject>
+#include <QTransform>
+#if defined(QFX_RENDER_OPENGL)
+#include <QtGui/qmatrix4x4.h>
+#endif
+#include <qfxitem.h>
 
 QT_BEGIN_HEADER
 
@@ -54,54 +55,42 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class GfxEasingFunction;
-class Q_DECLARATIVE_EXPORT GfxEasing
+class QFxFlipablePrivate;
+class Q_DECLARATIVE_EXPORT QFxFlipable : public QFxItem
 {
+    Q_OBJECT
+
+    Q_ENUMS(Side);
+    Q_PROPERTY(QFxItem *front READ front WRITE setFront)
+    Q_PROPERTY(QFxItem *back READ back WRITE setBack)
+    Q_PROPERTY(Side side READ side NOTIFY sideChanged)
 public:
-    enum Curve {
-                 None,
-                 InQuad, OutQuad, InOutQuad, OutInQuad,
-                 InCubic, OutCubic, InOutCubic, OutInCubic,
-                 InQuart, OutQuart, InOutQuart, OutInQuart,
-                 InQuint, OutQuint, InOutQuint, OutInQuint,
-                 InSine, OutSine, InOutSine, OutInSine,
-                 InExpo, OutExpo, InOutExpo, OutInExpo,
-                 InCirc, OutCirc, InOutCirc, OutInCirc,
-                 InElastic, OutElastic, InOutElastic, OutInElastic,
-                 InBack, OutBack, InOutBack, OutInBack,
-                 InBounce, OutBounce, InOutBounce, OutInBounce
-               };
+    QFxFlipable(QFxItem *parent=0);
+    ~QFxFlipable();
 
-    GfxEasing();
-    GfxEasing(Curve);
-    GfxEasing(const QString &);
-    GfxEasing(const GfxEasing &);
-    GfxEasing &operator=(const GfxEasing &);
+    QFxItem *front();
+    void setFront(QFxItem *);
 
-    bool isLinear() const;
+    QFxItem *back();
+    void setBack(QFxItem *);
 
-    qreal from() const;
-    void setFrom(qreal);
-    qreal to() const;
-    void setTo(qreal);
-    qreal length() const;
-    void setLength(qreal);
+    enum Side { Front, Back };
+    Side side() const;
 
-    qreal valueAt(qreal t) const;
-    qreal valueAt(qreal t, qreal from, qreal to, qreal length) const;
+protected:
+    virtual void transformChanged(const QSimpleCanvas::Matrix &);
 
-    static QStringList curves();
+Q_SIGNALS:
+    void sideChanged();
 
-    typedef float (*Function)(float t, float b, float c, float d);
 private:
-    GfxEasingFunction *_config;
-    Function _func;
-
-    qreal _b, _c, _d;
+    Q_DISABLE_COPY(QFxFlipable)
+    Q_DECLARE_PRIVATE(QFxFlipable)
 };
-
+QML_DECLARE_TYPE(QFxFlipable);
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
-#endif
+
+#endif // QFXFLIPABLE_H

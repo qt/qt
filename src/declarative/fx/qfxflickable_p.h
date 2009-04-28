@@ -57,7 +57,7 @@
 #include "qfxflickable.h"
 #include "qfxitem_p.h"
 #include "qml.h"
-#include "gfxvalueproxy.h"
+#include "qmltimelinevalueproxy.h"
 #include "private/qmlanimation_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
 class ElasticValue : public QAbstractAnimation {
     Q_OBJECT
 public:
-    ElasticValue(GfxValue &);
+    ElasticValue(QmlTimeLineValue &);
     void setValue(qreal to);
     void clear();
 
@@ -81,7 +81,7 @@ private:
     qreal _to;
     qreal _myValue;
     qreal _velocity;
-    GfxValue &_value;
+    QmlTimeLineValue &_value;
     QTime _startTime;
 };
 
@@ -98,8 +98,8 @@ public:
 
 public:
     QFxItem *_flick;
-    GfxValueProxy<QFxItem> _moveX;
-    GfxValueProxy<QFxItem> _moveY;
+    QmlTimeLineValueProxy<QFxItem> _moveX;
+    QmlTimeLineValueProxy<QFxItem> _moveY;
     QmlTimeLine _tl;
     int vWidth;
     int vHeight;
@@ -116,8 +116,8 @@ public:
     qreal velocityX;
     qreal velocityY;
     QTime pressTime;
-    GfxEvent fixupXEvent;
-    GfxEvent fixupYEvent;
+    QmlTimeLineEvent fixupXEvent;
+    QmlTimeLineEvent fixupYEvent;
     int maxVelocity;
     bool locked;
     QFxFlickable::DragMode dragMode;
@@ -128,12 +128,12 @@ public:
     int velocityDecay;
 
     void updateVelocity();
-    struct Velocity : public GfxValue
+    struct Velocity : public QmlTimeLineValue
     {
         Velocity(QFxFlickablePrivate *p)
             : parent(p) {}
         virtual void setValue(qreal v) {
-            GfxValue::setValue(v);
+            QmlTimeLineValue::setValue(v);
             parent->updateVelocity();
         }
         QFxFlickablePrivate *parent;
@@ -150,6 +150,10 @@ public:
     bool atYBeginning;
     qreal pageYPosition;
     qreal pageHeight;
+
+    void handleMousePressEvent(QGraphicsSceneMouseEvent *);
+    void handleMouseMoveEvent(QGraphicsSceneMouseEvent *);
+    void handleMouseReleaseEvent(QGraphicsSceneMouseEvent *);
 
     // flickableData property
     void data_removeAt(int);

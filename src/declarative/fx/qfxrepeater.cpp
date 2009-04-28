@@ -110,13 +110,7 @@ QML_DEFINE_TYPE(QFxRepeater,Repeater);
 
     The repeater instance continues to own all items it instantiates, even
     if they are otherwise manipulated.  It is illegal to manually remove an item
-    created by the Repeater.  
-
-    \todo Repeater is very conservative in how it instatiates/deletes items.  
-    Also new model entries will not be created and old ones will not be removed.
-
-    \todo Need an example
-
+    created by the Repeater.
  */
 
 /*!
@@ -241,6 +235,15 @@ void QFxRepeater::setComponent(QmlComponent *_c)
 /*!
     \internal
  */
+void QFxRepeater::componentComplete()
+{
+    QFxItem::componentComplete();
+    regenerate();
+}
+
+/*!
+    \internal
+ */
 void QFxRepeater::parentChanged(QSimpleCanvasItem *o, QSimpleCanvasItem *n)
 {
     QFxItem::parentChanged(o, n);
@@ -256,7 +259,7 @@ void QFxRepeater::regenerate()
     
     qDeleteAll(d->deletables); 
     d->deletables.clear();
-    if(!d->component || !itemParent())
+    if(!d->component || !itemParent() || !isComponentComplete())
         return;
 
     QFxItem *lastItem = this;
@@ -265,7 +268,7 @@ void QFxRepeater::regenerate()
         QStringList sl = qvariant_cast<QStringList>(d->dataSource);
 
         for(int ii = 0; ii < sl.size(); ++ii) {
-            QmlContext *ctxt = new QmlContext(itemContext(), this);
+            QmlContext *ctxt = new QmlContext(qmlContext(this), this);
             d->deletables << ctxt;
 
             ctxt->setContextProperty(QLatin1String("index"), ii);
@@ -283,7 +286,7 @@ void QFxRepeater::regenerate()
             QVariant v = QmlMetaType::listAt(d->dataSource, ii);
             QObject *o = QmlMetaType::toQObject(v);
 
-            QmlContext *ctxt = new QmlContext(itemContext(), this);
+            QmlContext *ctxt = new QmlContext(qmlContext(this), this);
             d->deletables << ctxt;
 
             ctxt->setContextProperty(QLatin1String("index"), ii);
@@ -298,7 +301,7 @@ void QFxRepeater::regenerate()
             return;
 
         for(int ii = 0; ii < cnt; ++ii) {
-            QmlContext *ctxt = new QmlContext(itemContext(), this);
+            QmlContext *ctxt = new QmlContext(qmlContext(this), this);
             d->deletables << ctxt;
 
             ctxt->setContextProperty(QLatin1String("index"), ii);
@@ -319,7 +322,7 @@ void QFxRepeater::regenerate()
     } else if (QObject *object = d->dataSource.value<QObject*>()) {
         // A single object (i.e. list of size 1).
         // Properties are the roles (excluding objectName).
-        QmlContext *ctxt = new QmlContext(itemContext(), this);
+        QmlContext *ctxt = new QmlContext(qmlContext(this), this);
         d->deletables << ctxt;
 
         ctxt->setContextProperty(QLatin1String("index"), QVariant(0));
@@ -341,7 +344,7 @@ void QFxRepeater::regenerate()
         int count = qvariant_cast<int>(d->dataSource);
 
         for(int ii = 0; ii < count; ++ii) {
-            QmlContext *ctxt = new QmlContext(itemContext(), this);
+            QmlContext *ctxt = new QmlContext(qmlContext(this), this);
             d->deletables << ctxt;
 
             ctxt->setContextProperty(QLatin1String("index"), ii);

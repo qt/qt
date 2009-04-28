@@ -60,6 +60,7 @@
 
 #include "qfxitem_p.h"
 #include "qfxitem.h"
+#include "qfxevents_p.h"
 #include <qsimplecanvasfilter.h>
 #include <qmlcomponent.h>
 
@@ -227,6 +228,11 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
+  \property QFxItem::activeFocus
+  This property indicates whether the item has the active focus.
+ */
+
+/*!
     \fn void QFxItem::activeFocusChanged()
 
     This signal is emitted when this item gains active focus.
@@ -237,24 +243,20 @@ void QFxContents::setItem(QFxItem *item)
 
     This signal is emitted when the baseline of the item changes. 
 
-    The baseline may change in response to a call to setBaselineOffset()
-    or due to the geometry of the item changing.
-
-    \sa baselineOffset(), setBaselineOffset()
+    The baseline may change in response to a change to the baselineOffset
+    property or due to the geometry of the item changing.
 */
 
 /*!
     \fn void QFxItem::baselineOffsetChanged()
 
     This signal is emitted when the baseline of the item is changed
-    via setBaselineOffset(). 
+    via the baselineOffset property.
 
     The baseline corresponds to the baseline of the text contained in
     the element.  It is useful for aligning the text in items placed
     beside each other.  The default baseline is positioned at
     2/3 of the height of the item.
-
-    \sa baselineOffset(), setBaselineOffset()
 */
 
 /*!
@@ -320,33 +322,27 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
-    \fn void QFxItem::keyPress()
+    \qmlsignal Item::onKeyPress(event)
 
-    This signal is emitted when a key is pressed.
+    This handler is called when a key is pressed.
 
-    The key event is available in QML via the QFxKeyEvent \c event
-    property.
+    The key event is available via the KeyEvent \a event.
 
     \qml
     <Item onKeyPress="if (event.key == Qt.Key_Enter) state='Enter'"/>
     \endqml
-
-    \sa keyRelease()
 */
 
 /*!
-    \fn void QFxItem::keyRelease()
+    \qmlsignal Item::onKeyRelease(event)
 
-    This signal is emitted when a key is released.
+    This handler is called when a key is released.
 
-    The key event is available in QML via the QFxKeyEvent \c event
-    property.
+    The key event is available in via the KeyEvent \a event.
 
     \qml
     <Item onKeyRelease="if (event.key == Qt.Key_Enter) state='Enter'"/>
     \endqml
-
-    \sa keyPress()
 */
 
 /*!
@@ -433,8 +429,14 @@ QFxItem::~QFxItem()
 
     The default transform origin is \c TopLeft.
 */
+
 /*!
     \qmlproperty Item Item::parent
+    This property holds the parent of the item.
+*/
+
+/*!
+    \property QFxItem::parent
     This property holds the parent of the item.
 */
 void QFxItem::setItemParent(QFxItem *parent)
@@ -443,7 +445,9 @@ void QFxItem::setItemParent(QFxItem *parent)
 }
 
 /*!
-    XXX Playing around with view2view transitions.
+  \internal
+  \property QFxItem::moveToParent
+  Playing around with view2view transitions.
  */
 void QFxItem::moveToParent(QFxItem *parent)
 {
@@ -532,6 +536,19 @@ QFxItem *QFxItem::itemParent() const
         </resources>
     </Item>
     \endqml
+*/
+
+/*!
+    \property QFxItem::children
+
+    This property contains the list of visual children of this item. 
+*/
+
+/*!
+    \property QFxItem::resources
+
+    This property contains non-visual resources that you want to 
+    reference by name.
 */
 
 /*!
@@ -707,6 +724,18 @@ void QFxItemPrivate::children_clear()
     data is a behind-the-scenes property: you should never need to explicitly 
     specify it.
  */
+
+/*!
+    \property QFxItem::data
+
+    The data property is allows you to freely mix the visual children
+    and the non-visual resources of an item.  If you assign a visual
+    item to the data list it becomes a child and if you assign any
+    other object type, it is added as a resource.
+
+    data is a behind-the-scenes property: you should never need to
+    explicitly specify it.
+ */
 QmlList<QObject *> *QFxItem::data()
 {
     Q_D(QFxItem);
@@ -731,6 +760,11 @@ QFxContents *QFxItem::contents()
     return d->_contents;
 }
 
+/*!
+  \internal
+  \property QFxItem::qmlItem
+*/
+
 QFxItem *QFxItem::qmlItem() const
 {
     Q_D(const QFxItem);
@@ -739,6 +773,15 @@ QFxItem *QFxItem::qmlItem() const
 
 /*!
     \qmlproperty string Item::qml
+    This property holds the dynamic QML for the item.
+
+    This property is used for dynamically loading QML into the
+    item. Querying for the QML only has meaning if the QML has been
+    dynamically set; otherwise an empty string is returned.
+*/
+
+/*!
+    \property QFxItem::qml
     This property holds the dynamic QML for the item.
 
     This property is used for dynamically loading QML into the
@@ -764,7 +807,7 @@ void QFxItem::setQml(const QString &qml)
     }
 
     d->_qml = qml;
-    d->_qmlurl = itemContext()->resolvedUri(qml);
+    d->_qmlurl = qmlContext(this)->resolvedUri(qml);
     d->qmlItem = 0;
 
     if(d->_qml.isEmpty()) {
@@ -779,11 +822,11 @@ void QFxItem::setQml(const QString &qml)
         emit qmlChanged();
     } else {
         d->_qmlcomp = 
-            new QmlComponent(itemContext()->engine(), d->_qmlurl, this);
+            new QmlComponent(qmlEngine(this), d->_qmlurl, this);
         if(!d->_qmlcomp->isLoading())
             qmlLoaded();
         else
-            QObject::connect(d->_qmlcomp, SIGNAL(statusChanged(Status)),
+            QObject::connect(d->_qmlcomp, SIGNAL(statusChanged(QmlComponent::Status)),
                              this, SLOT(qmlLoaded()));
     }
 }
@@ -800,12 +843,12 @@ void QFxItem::qmlLoaded()
             if(c->isLoading())
                 continue;
 
-            QmlContext *ctxt = new QmlContext(itemContext());
+            QmlContext *ctxt = new QmlContext(qmlContext(this));
             QObject* o = c ? c->create(ctxt):0;
             QFxItem* ret = qobject_cast<QFxItem*>(o);
             if (ret) {
                 ret->setItemParent(this);
-                QScriptValue v = itemContext()->engine()->scriptEngine()->newQObject(ret);
+                QScriptValue v = qmlEngine(this)->scriptEngine()->newQObject(ret);
                 emit newChildCreated(d->_qmlnewloading.at(i).toString(),v);
             }
 
@@ -818,7 +861,7 @@ void QFxItem::qmlLoaded()
 
     // setQml...
     if (d->_qmlcomp) {
-        QmlContext *ctxt = new QmlContext(itemContext());
+        QmlContext *ctxt = new QmlContext(qmlContext(this));
         ctxt->addDefaultObject(this);
 
         QObject *obj = d->_qmlcomp->create(ctxt);
@@ -838,23 +881,6 @@ void QFxItem::qmlLoaded()
 }
 
 /*!
-  \qmlproperty Item Item::clipToItem
-
-  Experimental clip to item support.  Do not use.
-
-  \todo complete clip to item support.
- */
-QFxItem *QFxItem::clipToItem() const
-{
-    return 0;
-}
-
-void QFxItem::setClipToItem(QFxItem *)
-{
-    qWarning() << "QFxItem: clipToItem not implemented";
-}
-
-/*!
   \qmlproperty real Item::x
   \qmlproperty real Item::y
   \qmlproperty int Item::width
@@ -866,6 +892,39 @@ void QFxItem::setClipToItem(QFxItem *)
   <Item x="100" y="100" width="100" height="100" />
   \endqml
  */
+
+/*!
+  \property QFxItem::width
+
+  Defines the item's width relative to its parent.
+ */
+
+/*!
+  \property QFxItem::height
+
+  Defines the item's height relative to its parent.
+ */
+
+/*!
+  \property QFxItem::x
+
+  The x coordinate of the item relative to its parent.
+*/
+
+/*!
+  \property QFxItem::y
+
+  The y coordinate of the item relative to its parent.
+*/
+
+/*!
+  \property QFxItem::z
+
+  The z coordinate of the item relative to its parent.
+
+  A negative z coordinate means the item will be painted below its parent.
+*/
+
 
 /*!
   \qmlproperty real Item::z
@@ -920,12 +979,6 @@ void QFxItem::setClipToItem(QFxItem *)
   \endqml
   \endtable
  */
-/*!
-  \property QFxItem::z
-  \brief The z coordinate of the item relative to its parent.
-
-  A negative z coordinate means the item will be painted below its parent.
-*/
 
 void QFxItem::geometryChanged(const QRectF &newGeometry, 
                               const QRectF &oldGeometry)
@@ -1019,6 +1072,13 @@ void QFxItemPrivate::handleHeightChange(int yoffset)
   When set, the item will be displayed flipped horizontally or vertically
   about its center.
  */
+
+/*!
+  \property QFxItem::flipVertically
+
+  When set, the item will be displayed flipped horizontally or vertically
+  about its center.
+ */
 bool QFxItem::flipVertically() const
 {
     return flip() & VerticalFlip;
@@ -1032,6 +1092,12 @@ void QFxItem::setFlipVertically(bool v)
         setFlip((QSimpleCanvasItem::Flip)(flip() & ~VerticalFlip));
 }
 
+/*!
+  \property QFxItem::flipHorizontally
+
+  When set, the item will be displayed flipped horizontally or vertically
+  about its center.
+ */
 bool QFxItem::flipHorizontally() const
 {
     return flip() & HorizontalFlip;
@@ -1045,34 +1111,13 @@ void QFxItem::setFlipHorizontally(bool v)
         setFlip((QSimpleCanvasItem::Flip)(flip() & ~HorizontalFlip));
 }
 
-class QFxKeyEvent : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(int key READ key);
-    Q_PROPERTY(QString text READ text);
-    Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted);
-public:
-    QFxKeyEvent(int key, const QString &text=QString()) : _accepted(false), _key(key), _text(text) {}
-
-    bool isAccepted() { return _accepted; }
-    void setAccepted(bool accepted) { _accepted = accepted; }
-
-    int key() const { return _key; }
-
-    QString text() const { return _text; }
-
-private:
-    bool _accepted;
-    int _key;
-    QString _text;
-};
 
 /*!
   \reimp
 */
 void QFxItem::keyPressEvent(QKeyEvent *event)
 {
-    QFxKeyEvent ke(event->key(), event->text());
+    QFxKeyEvent ke(*event);
     emit keyPress(&ke);
     event->setAccepted(ke.isAccepted());
     if (itemParent() && !ke.isAccepted())
@@ -1084,7 +1129,7 @@ void QFxItem::keyPressEvent(QKeyEvent *event)
 */
 void QFxItem::keyReleaseEvent(QKeyEvent *event)
 {
-    QFxKeyEvent ke(event->key(), event->text());
+    QFxKeyEvent ke(*event);
     emit keyRelease(&ke);
     event->setAccepted(ke.isAccepted());
     if (itemParent() && !ke.isAccepted())
@@ -1112,8 +1157,23 @@ QRectF QFxItem::sceneBoundingRect() const
   \endqml
 
   The identifier is available throughout to the \l {components}{component}
-  where it is declared.  Two items in the same component
-  with the same identifier is invalid.
+  where it is declared.  The identifier must be unique in thecomponent.
+*/
+
+/*!
+  \property QFxItem::id
+  This property holds the identifier for the item.
+  
+  The identifier can be used in bindings and other expressions to
+  refer to the item. For example:
+
+  \qml
+  <Text id="myText" .../>
+  <Text text="{myText.text}"/>
+  \endqml
+
+  The identifier is available throughout the \l {components}{component}
+  where it is declared.  The identifier must be unique in thecomponent.
 */
 QString QFxItem::id() const
 {
@@ -1128,41 +1188,107 @@ void QFxItem::setId(const QString &id)
     d->_id = id;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::left() const
 {
     Q_D(const QFxItem);
     return d->anchorLines()->left;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::right() const
 {
     Q_D(const QFxItem);
     return d->anchorLines()->right;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::horizontalCenter() const
 {
     Q_D(const QFxItem);
     return d->anchorLines()->hCenter;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::top() const
 {
     Q_D(const QFxItem);
     return d->anchorLines()->top;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::bottom() const
 {
     Q_D(const QFxItem);
     return d->anchorLines()->bottom;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::verticalCenter() const
 {
     Q_D(const QFxItem);
     return d->anchorLines()->vCenter;
 }
+
+/*!
+  \property QFxItem::top
+
+  One of the anchor lines of the item.
+
+  For more information see \l {anchor-layout}{Anchor Layouts}.
+*/
+
+/*!
+  \property QFxItem::bottom
+
+  One of the anchor lines of the item.
+
+  For more information see \l {anchor-layout}{Anchor Layouts}.
+*/
+
+/*!
+  \property QFxItem::left
+
+  One of the anchor lines of the item.
+
+  For more information see \l {anchor-layout}{Anchor Layouts}.
+*/
+
+/*!
+  \property QFxItem::right
+
+  One of the anchor lines of the item.
+
+  For more information see \l {anchor-layout}{Anchor Layouts}.
+*/
+
+/*!
+  \property QFxItem::horizontalCenter
+
+  One of the anchor lines of the item.
+
+  For more information see \l {anchor-layout}{Anchor Layouts}.
+*/
+
+/*!
+  \property QFxItem::verticalCenter
+
+  One of the anchor lines of the item.
+
+  For more information see \l {anchor-layout}{Anchor Layouts}.
+*/
 
 /*!
   \qmlproperty AnchorLine Item::top
@@ -1233,8 +1359,8 @@ QFxAnchorLine QFxItem::verticalCenter() const
   For more information see \l {anchor-layout}{Anchor Layouts}.
 */
 
-/*
-  \property QFxItem::baseline
+/*!
+  \property QFxItem::baselineOffset
   \brief The position of the item's baseline in global (scene) coordinates.
 
   The baseline of a Text item is the imaginary line on which the text
@@ -1244,7 +1370,6 @@ QFxAnchorLine QFxItem::verticalCenter() const
   For non-text items, a default baseline offset of two-thirds of the
   item's height is used to determine the baseline.
 */
-
 int QFxItem::baselineOffset() const
 {
     Q_D(const QFxItem);
@@ -1254,6 +1379,9 @@ int QFxItem::baselineOffset() const
         return d->_baselineOffset;
 }
 
+/*!
+    \internal
+*/
 void QFxItem::setBaselineOffset(int offset)
 {
     Q_D(QFxItem);
@@ -1283,6 +1411,14 @@ void QFxItem::setBaselineOffset(int offset)
   </Rect>
   \endqml
   \endtable
+*/
+
+/*!
+  \property QFxItem::rotation
+  This property holds the rotation of the item in degrees.
+
+  This specifies how many degrees to rotate the item around its origin (0,0).
+  The default rotation is 0 degrees (i.e. not rotated at all).
 */
 qreal QFxItem::rotation() const
 {
@@ -1339,6 +1475,21 @@ void QFxItem::setRotation(qreal rotation)
   \endqml
   \endtable
 */
+
+/*!
+  \property QFxItem::scale
+  This property holds the scale of the item.
+
+  A scale of less than 1 means the item will be displayed smaller than
+  normal, and a scale of greater than 1 means the item will be
+  displayed larger than normal.  A negative scale means the item will
+  be mirrored.
+
+  By default, items are displayed at a scale of 1 (i.e. at their
+  normal size).
+
+  Scaling is from the item's origin (0,0).
+*/
 qreal QFxItem::scale() const
 {
     return QSimpleCanvasItem::scale();
@@ -1361,7 +1512,7 @@ void QFxItem::setScale(qreal s)
   Opacity is an \e inherited attribute.  That is, the opacity is
   also applied individually to child items.  In almost all cases this
   is what you want.  If you can spot the issue in the following
-  example, you might need to use an opacity filter instead.
+  example, you might need to use an opacity filter (not yet available) instead.
 
   \table
   \row
@@ -1385,8 +1536,16 @@ void QFxItem::setScale(qreal s)
   </Item>
   \endqml
   \endtable
+*/
 
-  \todo There is no such thing as an opacity filter
+/*!
+  \property QFxItem::opacity
+
+  The opacity of the item.  Opacity is specified as a number between 0
+  (fully transparent) and 1 (fully opaque).  The default is 1.
+
+  Opacity is an \e inherited attribute.  That is, the opacity is
+  also applied individually to child items. 
 */
 
 qreal QFxItem::opacity() const
@@ -1456,6 +1615,13 @@ QmlList<QObject *> *QFxItem::resources()
 
   \sa {states-transitions}{States and Transitions}
 */
+
+/*!
+  \property QFxItem::states
+  This property holds a list of states defined by the item.
+
+  \sa {states-transitions}{States and Transitions}
+*/
 QmlList<QmlState *>* QFxItem::states()
 {
     Q_D(QFxItem);
@@ -1478,6 +1644,13 @@ QmlList<QmlState *>* QFxItem::states()
 
   \sa {states-transitions}{States and Transitions}
 */
+
+/*!
+  \property QFxItem::transitions
+  This property holds a list of transitions defined by the item.
+
+  \sa {states-transitions}{States and Transitions}
+*/
 QmlList<QmlTransition *>* QFxItem::transitions()
 {
     Q_D(QFxItem);
@@ -1485,11 +1658,16 @@ QmlList<QmlTransition *>* QFxItem::transitions()
 }
 
 /*!
+  \internal
+  \property QFxItem::filter
+*/
+
+/*!
   \qmlproperty list<Filter> Item::filter
   This property holds a list of graphical filters to be applied to the item.
 
-  \l {qmlfilter}{Filters} include things like \l {qmlblur}{blurring}
-  the item, or giving it a Reflection.  Some
+  \l {Filter}{Filters} include things like \l {Blur}{blurring}
+  the item, or giving it a \l Reflection.  Some
   filters may not be available on all canvases; if a filter is not
   available on a certain canvas, it will simply not be applied for
   that canvas (but the XML will still be considered valid).
@@ -1507,6 +1685,16 @@ QmlList<QmlTransition *>* QFxItem::transitions()
 
 /*!
   \qmlproperty bool Item::clip
+  This property holds whether clipping is enabled.
+
+  if clipping is enabled, an item will clip its own painting, as well
+  as the painting of its children, to its bounding rectangle.
+
+  Non-rectangular clipping regions are not supported for performance reasons.
+*/
+
+/*!
+  \property QFxItem::clip
   This property holds whether clipping is enabled.
 
   if clipping is enabled, an item will clip its own painting, as well
@@ -1552,6 +1740,32 @@ QmlState *QFxItem::findState(const QString &name) const
 
   \sa {states-transitions}{States and Transitions}
 */
+
+/*!
+  \property QFxItem::state
+
+  This property holds the name of the current state of the item.
+
+  This property is often used in scripts to change between states. For
+  example:
+
+  \qml
+    <Script>
+        function toggle() {
+            if (button.state == 'On')
+                button.state = 'Off';
+            else
+                button.state = 'On';
+        }
+    </Script>
+  \endqml
+
+  If the item is in its base state (i.e. no explicit state has been
+  set), \c state will be a blank string. Likewise, you can return an
+  item to its base state by setting its current state to \c ''.
+
+  \sa {states-transitions}{States and Transitions}
+*/
 QString QFxItem::state() const
 {
     Q_D(const QFxItem);
@@ -1573,11 +1787,28 @@ void QFxItem::setState(const QString &state)
 
   For more information see \l Transform.
 */
+
+/*!
+  \property QFxItem::transform
+  This property holds the list of transformations to apply.
+
+  For more information see \l Transform.
+*/
 QList<QFxTransform *> *QFxItem::transform()
 {
     Q_D(QFxItem);
     return &(d->_transform);
 }
+
+/*!
+  \property QFxItem::focus
+  This property holds the item's focus state.
+*/
+
+/*!
+  \property QFxItem::focusable
+  This property holds whether the item has focus state.
+*/
 
 /*!
   Returns true if the item is visible; otherwise returns false.
@@ -1590,11 +1821,15 @@ bool QFxItem::isVisible() const
     return d->visible;
 }
 
-/*!
-  Sets the visibility of the item to \a visible.
+/*! 
+  \property QFxItem::visible
+
+  This property specifies whether the item is visible or invisible.
 
   Setting visibility to false sets opacity to 0.  Setting the
   visibility to true restores the opacity to its previous value.
+
+  \sa isVisible()
 */
 void QFxItem::setVisible(bool visible)
 {
@@ -1617,7 +1852,6 @@ void QFxItem::setVisible(bool visible)
 */
 void QFxItem::dump(int depth)
 {
-    Q_D(QFxItem);
     QByteArray ba(depth * 4, ' ');
     qWarning() << ba.constData() << metaObject()->className() << "(" << (void *)static_cast<QFxItem*>(this) << ", " << (void *)static_cast<QSimpleCanvasItem*>(this) << "):" << x() << y() << width() << height() << (void *) itemParent();
 }
@@ -1640,17 +1874,17 @@ void QFxItem::newChild(const QString &type)
 {
     Q_D(QFxItem);
 
-    QUrl url = itemContext()->resolvedUri(type);
+    QUrl url = qmlContext(this)->resolvedUri(type);
     if (url.isEmpty())
         return;
 
     d->_qmlnewloading.append(url);
-    d->_qmlnewcomp.append(new QmlComponent(itemContext()->engine(), url, this));
+    d->_qmlnewcomp.append(new QmlComponent(qmlEngine(this), url, this));
 
     if(!d->_qmlnewcomp.last()->isLoading())
         qmlLoaded();
     else
-        connect(d->_qmlnewcomp.last(), SIGNAL(statusChanged(Status)), 
+        connect(d->_qmlnewcomp.last(), SIGNAL(statusChanged(QmlComponent::Status)), 
                 this, SLOT(qmlLoaded()));
 }
 
@@ -1677,7 +1911,7 @@ void QFxItem::classBegin()
 void QFxItem::classComplete()
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::ItemClassComplete> cc;
+    QFxPerfTimer<QFxPerf::ItemComponentComplete> cc;
 #endif
     Q_D(QFxItem);
     d->_classComplete = true;
@@ -1719,6 +1953,9 @@ void QFxItem::reparentItems()
     qFatal("EEK");
 }
 
+/*!
+    \internal
+*/
 void QFxItem::updateTransform()
 {
     Q_D(QFxItem);
@@ -1733,17 +1970,11 @@ void QFxItem::updateTransform()
     transformChanged(trans);
 }
 
+/*!
+    \internal
+*/
 void QFxItem::transformChanged(const QSimpleCanvas::Matrix &)
 {
-}
-
-/*!
-  Returns the current QML context for this item.
-*/
-QmlContext *QFxItem::itemContext() const
-{
-    Q_D(const QFxItem);
-    return d->_ctxt;
 }
 
 QmlStateGroup *QFxItemPrivate::states()
@@ -1776,5 +2007,4 @@ QFxItemPrivate::AnchorLines::AnchorLines(QFxItem *q)
     vCenter.anchorLine = QFxAnchorLine::VCenter;
 }
 
-#include "qfxitem.moc"
 QT_END_NAMESPACE

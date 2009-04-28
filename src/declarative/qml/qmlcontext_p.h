@@ -44,6 +44,7 @@
 
 #include <qmlcontext.h>
 #include <private/qobject_p.h>
+#include <private/qmldeclarativedata_p.h>
 #include <qhash.h>
 #include <qscriptvalue.h>
 
@@ -81,6 +82,8 @@ public:
         NormalPriority
     };
     void addDefaultObject(QObject *, Priority);
+
+    QmlSimpleDeclarativeData contextData;
 };
 QT_END_NAMESPACE
 

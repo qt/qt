@@ -70,10 +70,7 @@ QML_DEFINE_TYPE(QFxPen,Pen);
     \brief the color of the pen.
 
     color is most commonly specified in hexidecimal notation (#RRGGBB)
-    or as an
-    \htmlonly
-    <a href="http://www.w3.org/TR/SVG/types.html#ColorKeywords"> SVG color keyword name</a>
-    \endhtmlonly
+    or as an \l {http://www.w3.org/TR/SVG/types.html#ColorKeywords}{SVG color keyword name}
      (as defined by the World Wide Web Consortium). For example:
     \code
     <!-- rect with green border using hexidecimal notation -->

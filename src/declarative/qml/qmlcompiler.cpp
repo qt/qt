@@ -909,8 +909,10 @@ bool QmlCompiler::compileAttachedProperty(QmlParser::Property *prop,
     QmlInstruction fetch;
     fetch.type = QmlInstruction::FetchAttached;
     fetch.line = prop->line;
-    int ref = output->indexForByteArray(prop->name);
-    fetch.fetchAttached.idx = ref;
+    int id = QmlMetaType::attachedPropertiesFuncId(prop->name);
+    if(id == -1)
+        COMPILE_EXCEPTION("Non-existant attached property object" << prop->name);
+    fetch.fetchAttached.id = id;
     output->bytecode << fetch;
 
     COMPILE_CHECK(compileFetchedObject(prop->value, ctxt + 1));
@@ -1647,12 +1649,15 @@ QmlCompiledData &QmlCompiledData::operator=(const QmlCompiledData &other)
     return *this;
 }
 
-QObject *QmlCompiledData::TypeReference::createInstance() const
+QObject *QmlCompiledData::TypeReference::createInstance(QmlContext *ctxt) const
 {
     if(type) {
-        return type->create();
+        QObject *rv = type->create();
+        if(rv)
+            QmlEngine::setContextForObject(rv, ctxt);
+        return rv;
     } else if(component) {
-        return component->create(QmlContext::activeContext());
+        return component->create(ctxt);
     } else {
         return 0;
     }

@@ -107,8 +107,8 @@ class QSimpleCanvasPrivate
 public:
     QSimpleCanvasPrivate(QSimpleCanvas *canvas)
     : q(canvas), timer(0), root(0), lrpTime(0), canvasServer(0), focusItem(0), 
-      lastFocusItem(0), lastMouseItem(0), isSetup(false),
-      view(0)
+      lastFocusItem(0), lastMouseItem(0),
+      isSetup(false), view(0)
 #if defined(QFX_RENDER_OPENGL)
       ,egl(q, this), basicShadersInstance(0)
 #endif
@@ -160,9 +160,10 @@ public:
     void removeMouseFilter(QSimpleCanvasItem *);
     QList<QSimpleCanvasItem *> mouseFilters;
     bool filter(QMouseEvent *e);
-    bool deliverMousePress(QSimpleCanvasItem *, QMouseEvent *);
+    bool deliverMousePress(QSimpleCanvasItem *, QMouseEvent *, bool = false);
     QGraphicsSceneMouseEvent *mouseEventToSceneMouseEvent(QMouseEvent *, const QPoint &);
     QSimpleCanvasItem *lastMouseItem;
+    void sendMouseEvent(QSimpleCanvasItem *, QGraphicsSceneMouseEvent *);
 
     bool isSetup;
 

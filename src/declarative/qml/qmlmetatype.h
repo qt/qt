@@ -90,6 +90,7 @@ public:
     static const QMetaObject *metaObjectForType(const QByteArray &);
     static const QMetaObject *metaObjectForType(int);
     static int attachedPropertiesFuncId(const QByteArray &);
+    static int attachedPropertiesFuncId(const QMetaObject *);
     static QmlAttachedPropertiesFunc attachedPropertiesFuncById(int);
     static QmlAttachedPropertiesFunc attachedPropertiesFunc(const QByteArray &);
 

@@ -23,9 +23,9 @@ Here is the QML code for the application:
 <Rect id="Page" width="480" height="200" color="white">
 \endcode
 
-First, we declare a root element of type \l {xmlRect}{Rect}. It is one of the basic building blocks you can use to create an application in QML.
+First, we declare a root element of type \l Rect. It is one of the basic building blocks you can use to create an application in QML.
 We give it an id to be able to refer to it later. In this case, we call it \e Page. We also set the \c width, \c height and \c color properties. 
-The \l {xmlRect}{Rect} element contains many other properties (such as \c x and \c y), but these are left at their default values.
+The \l Rect element contains many other properties (such as \c x and \c y), but these are left at their default values.
 
 \section2 Text element
 

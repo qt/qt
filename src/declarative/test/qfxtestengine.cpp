@@ -41,7 +41,7 @@
 
 #include <QFile>
 #include <QmlComponent>
-#include <gfxtimeline.h>
+#include <qmltimeline.h>
 #include "qfxtestengine.h"
 #include "qfxtestobjects.h"
 #include <QCryptographicHash>

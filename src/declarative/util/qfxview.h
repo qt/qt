@@ -89,6 +89,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void continueExecute();
+    void sizeChanged();
 
 protected:
     virtual void resizeEvent(QResizeEvent *);

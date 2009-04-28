@@ -41,7 +41,6 @@
 
 #include <limits.h>
 #include <QtCore/qdebug.h>
-#include <gfxtimeline.h>
 #include "private/qobject_p.h"
 #include "qmlfollow.h"
 #include "private/qmlanimation_p.h"
@@ -52,6 +51,7 @@ QML_DEFINE_TYPE(QmlFollow,Follow);
 
 class QmlFollowPrivate : public QObjectPrivate
 {
+    Q_DECLARE_PUBLIC(QmlFollow)
 public:
     QmlFollowPrivate()
         : sourceValue(0), maxVelocity(0), lastTime(0)
@@ -86,6 +86,8 @@ public:
 
 void QmlFollowPrivate::tick(int time)
 {
+    Q_Q(QmlFollow);
+
     int elapsed = time - lastTime;
     if (!elapsed)
         return;
@@ -133,6 +135,7 @@ void QmlFollowPrivate::tick(int time)
         }
         lastTime = time;
     }
+    emit q->valueChanged(currentValue);
     property.write(currentValue);
 }
 
@@ -288,6 +291,11 @@ void QmlFollow::setDamping(qreal damping)
 }
 
 /*!
+    \qmlproperty qreal Follow::followValue
+    The current value.
+*/
+
+/*!
     \qmlproperty bool Follow::enabled
     This property holds whether the target will track the source.
 */
@@ -306,4 +314,11 @@ void QmlFollow::setEnabled(bool enabled)
     else
         d->stop();
 }
+
+qreal QmlFollow::value() const
+{
+    Q_D(const QmlFollow);
+    return d->currentValue;
+}
+
 QT_END_NAMESPACE
