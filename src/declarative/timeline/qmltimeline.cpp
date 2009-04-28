@@ -141,7 +141,7 @@ QmlTimeLinePrivate::QmlTimeLinePrivate(QmlTimeLine *parent)
 
 void QmlTimeLinePrivate::add(QmlTimeLineObject &g, const Op &o)
 {
-    if(g._t && g._t != q) {
+    if (g._t && g._t != q) {
         qWarning() << "QmlTimeLine: Cannot modify a QmlTimeLineValue owned by"
                    << "another timeline.";
         return;
@@ -149,12 +149,12 @@ void QmlTimeLinePrivate::add(QmlTimeLineObject &g, const Op &o)
     g._t = q;
 
     Ops::Iterator iter = ops.find(&g);
-    if(iter == ops.end()) {
+    if (iter == ops.end()) {
         iter = ops.insert(&g, TimeLine());
-        if(syncPoint > 0)
+        if (syncPoint > 0)
             q->pause(g, syncPoint);
     }
-    if(!iter->ops.isEmpty() &&
+    if (!iter->ops.isEmpty() &&
        o.type == Op::Pause &&
        iter->ops.last().type == Op::Pause) {
         iter->ops.last().length += o.length;
@@ -164,22 +164,22 @@ void QmlTimeLinePrivate::add(QmlTimeLineObject &g, const Op &o)
         iter->length += o.length;
     }
 
-    if(iter->length > length)
+    if (iter->length > length)
         length = iter->length;
 
-    if(!clockRunning) {
+    if (!clockRunning) {
         q->stop();
         prevTime = 0;
         clockRunning = true;
 
-        if(syncMode == QmlTimeLine::LocalSync)  {
+        if (syncMode == QmlTimeLine::LocalSync)  {
             syncAdj = -1;
         } else {
             syncAdj = 0;
         }
         q->start();
 /*        q->tick(0);
-        if(syncMode == QmlTimeLine::LocalSync)  {
+        if (syncMode == QmlTimeLine::LocalSync)  {
             syncAdj = -1;
         } else {
             syncAdj = 0;
@@ -201,33 +201,33 @@ qreal QmlTimeLinePrivate::value(const Op &op, int time, qreal base, bool *change
         case Op::Set:
             return op.value;
         case Op::Move:
-            if(time == 0) {
+            if (time == 0) {
                 return base;
-            } else if(time == (op.length)) {
+            } else if (time == (op.length)) {
                 return op.value;
             } else {
                 qreal delta = op.value - base;
                 qreal pTime = (qreal)(time) / (qreal)op.length;
-                if(op.easing.type() == QEasingCurve::Linear)
+                if (op.easing.type() == QEasingCurve::Linear)
                     return base + delta * pTime;
                 else
                     return base + delta * op.easing.valueForProgress(pTime);
             }
         case Op::MoveBy:
-            if(time == 0) {
+            if (time == 0) {
                 return base;
-            } else if(time == (op.length)) {
+            } else if (time == (op.length)) {
                 return base + op.value;
             } else {
                 qreal delta = op.value;
                 qreal pTime = (qreal)(time) / (qreal)op.length;
-                if(op.easing.type() == QEasingCurve::Linear)
+                if (op.easing.type() == QEasingCurve::Linear)
                     return base + delta * pTime;
                 else
                     return base + delta * op.easing.valueForProgress(pTime);
             }
         case Op::Accel:
-            if(time == 0) {
+            if (time == 0) {
                 return base;
             } else {
                 qreal t = (qreal)(time) / 1000.0f;
@@ -235,9 +235,9 @@ qreal QmlTimeLinePrivate::value(const Op &op, int time, qreal base, bool *change
                 return base + delta;
             }
         case Op::AccelDistance:
-            if(time == 0) {
+            if (time == 0) {
                 return base;
-            } else if(time == (op.length)) {
+            } else if (time == (op.length)) {
                 return base + op.value2;
             } else {
                 qreal t = (qreal)(time) / 1000.0f;
@@ -326,7 +326,7 @@ QmlTimeLine::QmlTimeLine(QObject *parent)
 */
 QmlTimeLine::~QmlTimeLine()
 {
-    for(QmlTimeLinePrivate::Ops::Iterator iter = d->ops.begin();
+    for (QmlTimeLinePrivate::Ops::Iterator iter = d->ops.begin();
             iter != d->ops.end();
             ++iter)
         iter.key()->_t = 0;
@@ -359,7 +359,7 @@ void QmlTimeLine::setSyncMode(SyncMode syncMode)
 */
 void QmlTimeLine::pause(QmlTimeLineObject &obj, int time)
 {
-    if(time <= 0) return;
+    if (time <= 0) return;
     QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Pause, time, 0., 0., d->order++);
     d->add(obj, op);
 }
@@ -390,7 +390,7 @@ void QmlTimeLine::set(QmlTimeLineValue &timeLineValue, qreal value)
 */
 int QmlTimeLine::accel(QmlTimeLineValue &timeLineValue, qreal velocity, qreal acceleration)
 {
-    if((velocity > 0.0f) ==  (acceleration > 0.0f))
+    if ((velocity > 0.0f) ==  (acceleration > 0.0f))
         acceleration = acceleration * -1.0f;
 
     int time = static_cast<int>(-1000 * velocity / acceleration);
@@ -416,10 +416,10 @@ int QmlTimeLine::accel(QmlTimeLineValue &timeLineValue, qreal velocity, qreal ac
     Q_ASSERT(acceleration >= 0.0f && maxDistance >= 0.0f);
 
     qreal maxAccel = (velocity * velocity) / (2.0f * maxDistance);
-    if(maxAccel > acceleration)
+    if (maxAccel > acceleration)
         acceleration = maxAccel;
 
-    if((velocity > 0.0f) ==  (acceleration > 0.0f))
+    if ((velocity > 0.0f) ==  (acceleration > 0.0f))
         acceleration = acceleration * -1.0f;
 
     int time = static_cast<int>(-1000 * velocity / acceleration);
@@ -457,7 +457,7 @@ int QmlTimeLine::accelDistance(QmlTimeLineValue &timeLineValue, qreal velocity, 
 */
 void QmlTimeLine::move(QmlTimeLineValue &timeLineValue, qreal destination, int time)
 {
-    if(time <= 0) return;
+    if (time <= 0) return;
     QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Move, time, destination, 0.0f, d->order++);
     d->add(timeLineValue, op);
 }
@@ -468,7 +468,7 @@ void QmlTimeLine::move(QmlTimeLineValue &timeLineValue, qreal destination, int t
  */
 void QmlTimeLine::move(QmlTimeLineValue &timeLineValue, qreal destination, const QEasingCurve &easing, int time)
 {
-    if(time <= 0) return;
+    if (time <= 0) return;
     QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Move, time, destination, 0.0f, d->order++, QmlTimeLineEvent(), easing);
     d->add(timeLineValue, op);
 }
@@ -479,7 +479,7 @@ void QmlTimeLine::move(QmlTimeLineValue &timeLineValue, qreal destination, const
 */
 void QmlTimeLine::moveBy(QmlTimeLineValue &timeLineValue, qreal change, int time)
 {
-    if(time <= 0) return;
+    if (time <= 0) return;
     QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::MoveBy, time, change, 0.0f, d->order++);
     d->add(timeLineValue, op);
 }
@@ -490,7 +490,7 @@ void QmlTimeLine::moveBy(QmlTimeLineValue &timeLineValue, qreal change, int time
  */
 void QmlTimeLine::moveBy(QmlTimeLineValue &timeLineValue, qreal change, const QEasingCurve &easing, int time)
 {
-    if(time <= 0) return;
+    if (time <= 0) return;
     QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::MoveBy, time, change, 0.0f, d->order++, QmlTimeLineEvent(), easing);
     d->add(timeLineValue, op);
 }
@@ -500,9 +500,9 @@ void QmlTimeLine::moveBy(QmlTimeLineValue &timeLineValue, qreal change, const QE
 */
 void QmlTimeLine::reset(QmlTimeLineValue &timeLineValue)
 {
-    if(!timeLineValue._t)
+    if (!timeLineValue._t)
         return;
-    if(timeLineValue._t != this) {
+    if (timeLineValue._t != this) {
         qWarning() << "QmlTimeLine: Cannot reset a QmlTimeLineValue owned by another timeline.";
         return;
     }
@@ -529,12 +529,12 @@ int QmlTimeLine::duration() const
 void QmlTimeLine::sync(QmlTimeLineValue &timeLineValue, QmlTimeLineValue &syncTo)
 {
     QmlTimeLinePrivate::Ops::Iterator iter = d->ops.find(&syncTo);
-    if(iter == d->ops.end())
+    if (iter == d->ops.end())
         return;
     int length = iter->length;
 
     iter = d->ops.find(&timeLineValue);
-    if(iter == d->ops.end()) {
+    if (iter == d->ops.end()) {
         pause(timeLineValue, length);
     } else {
         int glength = iter->length;
@@ -554,7 +554,7 @@ void QmlTimeLine::sync(QmlTimeLineValue &timeLineValue, QmlTimeLineValue &syncTo
 void QmlTimeLine::sync(QmlTimeLineValue &timeLineValue)
 {
     QmlTimeLinePrivate::Ops::Iterator iter = d->ops.find(&timeLineValue);
-    if(iter == d->ops.end()) {
+    if (iter == d->ops.end()) {
         pause(timeLineValue, d->length);
     } else {
         pause(timeLineValue, d->length - iter->length);
@@ -591,7 +591,7 @@ void QmlTimeLine::sync(QmlTimeLineValue &timeLineValue)
 
 /*void QmlTimeLine::sync()
 {
-    for(QmlTimeLinePrivate::Ops::Iterator iter = d->ops.begin();
+    for (QmlTimeLinePrivate::Ops::Iterator iter = d->ops.begin();
             iter != d->ops.end();
             ++iter)
         pause(*iter.key(), d->length - iter->length);
@@ -658,7 +658,7 @@ void QmlTimeLine::complete()
 */
 void QmlTimeLine::clear()
 {
-    for(QmlTimeLinePrivate::Ops::ConstIterator iter = d->ops.begin(); iter != d->ops.end(); ++iter)
+    for (QmlTimeLinePrivate::Ops::ConstIterator iter = d->ops.begin(); iter != d->ops.end(); ++iter)
         iter.key()->_t = 0;
     d->ops.clear();
     d->length = 0;
@@ -680,13 +680,13 @@ int QmlTimeLine::time() const
 
 void QmlTimeLine::updateCurrentTime(int v)
 {
-    if(d->syncAdj == -1)
+    if (d->syncAdj == -1)
         d->syncAdj = v;
     v -= d->syncAdj;
 
     int timeChanged = v - d->prevTime;
 #if 0
-    if(!timeChanged)
+    if (!timeChanged)
         return;
 #endif
     d->prevTime = v;
@@ -694,18 +694,18 @@ void QmlTimeLine::updateCurrentTime(int v)
     emit updated();
 
     // Do we need to stop the clock?
-    if(d->ops.isEmpty()) {
+    if (d->ops.isEmpty()) {
         stop();
         d->prevTime = 0;
         d->clockRunning = false;
         emit completed();
-    } /*else if(pauseTime > 0) {
+    } /*else if (pauseTime > 0) {
         GfxClock::cancelClock();
         d->prevTime = 0;
         GfxClock::pauseFor(pauseTime);
         d->syncAdj = 0;
         d->clockRunning = false;
-    }*/ else if(/*!GfxClock::isActive()*/ state() != Running) {
+    }*/ else if (/*!GfxClock::isActive()*/ state() != Running) {
         stop();
         d->prevTime = 0;
         d->clockRunning = true;
@@ -729,14 +729,14 @@ int QmlTimeLinePrivate::advance(int t)
         pauseTime = -1;
         // Minimal advance time
         int advanceTime = t;
-        for(Ops::Iterator iter = ops.begin(); iter != ops.end(); ++iter) {
+        for (Ops::Iterator iter = ops.begin(); iter != ops.end(); ++iter) {
             TimeLine &tl = *iter;
             Op &op = tl.ops.first();
             int length = op.length - tl.consumedOpLength;
                 
-            if(length < advanceTime) {
+            if (length < advanceTime) {
                 advanceTime = length;
-                if(advanceTime == 0)
+                if (advanceTime == 0)
                     break;
             }
         }
@@ -746,28 +746,28 @@ int QmlTimeLinePrivate::advance(int t)
         // sets.
         QList<QPair<int, Update> > updates;
 
-        for(Ops::Iterator iter = ops.begin(); iter != ops.end(); ) {
+        for (Ops::Iterator iter = ops.begin(); iter != ops.end(); ) {
             QmlTimeLineValue *v = static_cast<QmlTimeLineValue *>(iter.key());
             TimeLine &tl = *iter;
             Q_ASSERT(!tl.ops.isEmpty());
 
             do {
                 Op &op = tl.ops.first();
-                if(advanceTime == 0 && op.length != 0)
+                if (advanceTime == 0 && op.length != 0)
                     continue;
 
-                if(tl.consumedOpLength == 0 && 
+                if (tl.consumedOpLength == 0 && 
                    op.type != Op::Pause && 
                    op.type != Op::Execute)
                     tl.base = v->value();
 
-                if((tl.consumedOpLength + advanceTime) == op.length) {
-                    if(op.type == Op::Execute) {
+                if ((tl.consumedOpLength + advanceTime) == op.length) {
+                    if (op.type == Op::Execute) {
                         updates << qMakePair(op.order, Update(op.event));
                     } else {
                         bool changed = false;
                         qreal val = value(op, op.length, tl.base, &changed);
-                        if(changed)
+                        if (changed)
                             updates << qMakePair(op.order, Update(v, val));
                     }
                     tl.length -= qMin(advanceTime, tl.length);
@@ -777,7 +777,7 @@ int QmlTimeLinePrivate::advance(int t)
                     tl.consumedOpLength += advanceTime;
                     bool changed = false;
                     qreal val = value(op, tl.consumedOpLength, tl.base, &changed);
-                    if(changed)
+                    if (changed)
                         updates << qMakePair(op.order, Update(v, val));
                     tl.length -= qMin(advanceTime, tl.length);
                     break;
@@ -786,13 +786,13 @@ int QmlTimeLinePrivate::advance(int t)
             } while(!tl.ops.isEmpty() && advanceTime == 0 && tl.ops.first().length == 0);
 
 
-            if(tl.ops.isEmpty()) {
+            if (tl.ops.isEmpty()) {
                 iter = ops.erase(iter);
                 v->_t = 0;
             } else {
-                if(tl.ops.first().type == Op::Pause && pauseTime != 0) {
+                if (tl.ops.first().type == Op::Pause && pauseTime != 0) {
                     int opPauseTime = tl.ops.first().length - tl.consumedOpLength;
-                    if(pauseTime == -1 || opPauseTime < pauseTime)
+                    if (pauseTime == -1 || opPauseTime < pauseTime)
                         pauseTime = opPauseTime;
                 } else {
                     pauseTime = 0;
@@ -806,9 +806,9 @@ int QmlTimeLinePrivate::advance(int t)
 
         qSort(updates.begin(), updates.end());
         updateQueue = &updates;
-        for(int ii = 0; ii < updates.count(); ++ii) {
+        for (int ii = 0; ii < updates.count(); ++ii) {
             const Update &v = updates.at(ii).second;
-            if(v.g)
+            if (v.g)
                 v.g->setValue(v.v);
             else
                 v.e.execute();
@@ -826,27 +826,27 @@ void QmlTimeLine::remove(QmlTimeLineObject *v)
 
     int len = iter->length;
     d->ops.erase(iter);
-    if(len == d->length) {
+    if (len == d->length) {
         // We need to recalculate the length
         d->length = 0;
-        for(QmlTimeLinePrivate::Ops::Iterator iter = d->ops.begin();
+        for (QmlTimeLinePrivate::Ops::Iterator iter = d->ops.begin();
                 iter != d->ops.end();
                 ++iter) {
 
-            if(iter->length > d->length)
+            if (iter->length > d->length)
                 d->length = iter->length;
 
         }
     }
-    if(d->ops.isEmpty()) {
+    if (d->ops.isEmpty()) {
         stop();
         d->clockRunning = false;
-    } else if(/*!GfxClock::isActive()*/ state() != Running) {
+    } else if (/*!GfxClock::isActive()*/ state() != Running) {
         stop();
         d->prevTime = 0;
         d->clockRunning = true;
 
-        if(d->syncMode == QmlTimeLine::LocalSync) {
+        if (d->syncMode == QmlTimeLine::LocalSync) {
             d->syncAdj = -1;
         } else {
             d->syncAdj = 0;
@@ -854,9 +854,9 @@ void QmlTimeLine::remove(QmlTimeLineObject *v)
         start();
     }
 
-    if(d->updateQueue) {
-        for(int ii = 0; ii < d->updateQueue->count(); ++ii) {
-            if(d->updateQueue->at(ii).second.g == v ||
+    if (d->updateQueue) {
+        for (int ii = 0; ii < d->updateQueue->count(); ++ii) {
+            if (d->updateQueue->at(ii).second.g == v ||
                d->updateQueue->at(ii).second.e.eventObject() == v) {
                 d->updateQueue->removeAt(ii);
                 --ii;
@@ -906,7 +906,7 @@ QmlTimeLineObject::QmlTimeLineObject()
 
 QmlTimeLineObject::~QmlTimeLineObject()
 {
-    if(_t) {
+    if (_t) {
         _t->remove(this);
         _t = 0;
     }

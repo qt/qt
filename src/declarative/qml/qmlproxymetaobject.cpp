@@ -53,7 +53,7 @@ QmlProxyMetaObject::QmlProxyMetaObject(QObject *obj, QList<ProxyData> *mList)
     *static_cast<QMetaObject *>(this) = *metaObjects->last().metaObject;
 
     QObjectPrivate *op = QObjectPrivate::get(obj);
-    if(op->metaObject)
+    if (op->metaObject)
         parent = static_cast<QAbstractDynamicMetaObject*>(op->metaObject);
 
     op->metaObject = this;
@@ -69,31 +69,31 @@ QmlProxyMetaObject::QmlProxyMetaObject(QObject *obj, QList<ProxyData> *mList)
 
 QmlProxyMetaObject::~QmlProxyMetaObject()
 {
-    if(parent)
+    if (parent)
         delete parent;
     parent = 0;
 
-    if(proxies)
+    if (proxies)
         delete [] proxies;
     proxies = 0;
 }
 
 int QmlProxyMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
 {
-    if((c == QMetaObject::ReadProperty ||
+    if ((c == QMetaObject::ReadProperty ||
         c == QMetaObject::WriteProperty) &&
             id >= metaObjects->last().propertyOffset) {
 
-        for(int ii = 0; ii < metaObjects->count(); ++ii) {
+        for (int ii = 0; ii < metaObjects->count(); ++ii) {
             const ProxyData &data = metaObjects->at(ii);
-            if(id >= data.propertyOffset) {
-                if(!proxies) {
+            if (id >= data.propertyOffset) {
+                if (!proxies) {
                     proxies = new QObject*[metaObjects->count()];
                     ::memset(proxies, 0, 
                              sizeof(QObject *) * metaObjects->count());
                 }
 
-                if(!proxies[ii])
+                if (!proxies[ii])
                     proxies[ii] = data.createFunc(object);
 
                 int proxyOffset = proxies[ii]->metaObject()->propertyOffset();
@@ -104,7 +104,7 @@ int QmlProxyMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
         }
     }
 
-    if(parent)
+    if (parent)
         return parent->metaCall(c, id, a);
     else
         return object->qt_metacall(c, id, a);

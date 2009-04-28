@@ -59,12 +59,12 @@ QmlDomDocumentPrivate::QmlDomDocumentPrivate(const QmlDomDocumentPrivate &other)
 : QSharedData(other), root(0)
 {
     root = other.root;
-    if(root) root->addref();
+    if (root) root->addref();
 }
 
 QmlDomDocumentPrivate::~QmlDomDocumentPrivate()
 {
-    if(root) root->release();
+    if (root) root->release();
 }
 
 /*!
@@ -152,7 +152,7 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
     d->error = QString();
 
     QmlScriptParser parser;
-    if(!parser.parse(data)) {
+    if (!parser.parse(data)) {
         d->error = parser.errorDescription();
         return false;
     }
@@ -162,12 +162,12 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
     // ###
 //    compiler.compile(engine, parser, &component);
 
-    if(compiler.isError()) {
+    if (compiler.isError()) {
         d->error = compiler.errorDescription();
         return false;
     }
 
-    if(parser.tree()) {
+    if (parser.tree()) {
         component.dump(0, parser.tree());
         d->root = parser.tree();
         d->root->addref();
@@ -214,7 +214,7 @@ QmlDomObject QmlDomDocument::rootObject() const
 {
     QmlDomObject rv;
     rv.d->object = d->root;
-    if(rv.d->object) rv.d->object->addref();
+    if (rv.d->object) rv.d->object->addref();
     return rv;
 }
 
@@ -227,12 +227,12 @@ QmlDomPropertyPrivate::QmlDomPropertyPrivate(const QmlDomPropertyPrivate &other)
 : QSharedData(other), property(0)
 {
     property = other.property;
-    if(property) property->addref();
+    if (property) property->addref();
 }
 
 QmlDomPropertyPrivate::~QmlDomPropertyPrivate()
 {
-    if(property) property->release();
+    if (property) property->release();
 }
 
 /*!
@@ -313,7 +313,7 @@ QByteArray QmlDomProperty::propertyName() const
 */
 QList<QByteArray> QmlDomProperty::propertyNameParts() const
 {
-    if(d->propertyName.isEmpty()) return QList<QByteArray>();
+    if (d->propertyName.isEmpty()) return QList<QByteArray>();
     else return d->propertyName.split('.');
 }
 
@@ -344,7 +344,7 @@ bool QmlDomProperty::isDefaultProperty() const
 QmlDomValue QmlDomProperty::value() const
 {
     QmlDomValue rv;
-    if(d->property) {
+    if (d->property) {
         rv.d->property = d->property;
         rv.d->value = d->property->values.at(0);
         rv.d->property->addref();
@@ -371,13 +371,13 @@ QmlDomObjectPrivate::QmlDomObjectPrivate(const QmlDomObjectPrivate &other)
 : QSharedData(other), object(0), isVirtualComponent(false)
 {
     object = other.object;
-    if(object) object->addref();
+    if (object) object->addref();
     isVirtualComponent = other.isVirtualComponent;
 }
 
 QmlDomObjectPrivate::~QmlDomObjectPrivate()
 {
-    if(object) object->release();
+    if (object) object->release();
 }
 
 QmlDomObjectPrivate::Properties
@@ -385,7 +385,7 @@ QmlDomObjectPrivate::properties() const
 {
     Properties rv;
 
-    for(QHash<QByteArray, QmlParser::Property *>::ConstIterator iter = 
+    for (QHash<QByteArray, QmlParser::Property *>::ConstIterator iter = 
             object->properties.begin();
             iter != object->properties.end();
             ++iter) {
@@ -401,9 +401,9 @@ QmlDomObjectPrivate::properties(QmlParser::Property *property) const
 {
     Properties rv;
 
-    if(property->value) {
+    if (property->value) {
 
-        for(QHash<QByteArray, QmlParser::Property *>::ConstIterator iter = 
+        for (QHash<QByteArray, QmlParser::Property *>::ConstIterator iter = 
                 property->value->properties.begin();
                 iter != property->value->properties.end();
                 ++iter) {
@@ -413,13 +413,13 @@ QmlDomObjectPrivate::properties(QmlParser::Property *property) const
         }
 
         QByteArray name(property->name + ".");
-        for(Properties::Iterator iter = rv.begin(); iter != rv.end(); ++iter) 
+        for (Properties::Iterator iter = rv.begin(); iter != rv.end(); ++iter) 
             iter->second.prepend(name);
 
     } else {
 
         // We don't display "id" sets as a property in the dom
-        if(property->values.count() != 1 || 
+        if (property->values.count() != 1 || 
            property->values.at(0)->type != QmlParser::Value::Id)
             rv << qMakePair(property, property->name);
 
@@ -515,7 +515,7 @@ bool QmlDomObject::isValid() const
 */
 QByteArray QmlDomObject::objectType() const
 {
-    if(d->object) return d->object->typeName;
+    if (d->object) return d->object->typeName;
     else return QByteArray();
 }
 
@@ -530,7 +530,7 @@ QByteArray QmlDomObject::objectType() const
 */
 QByteArray QmlDomObject::objectId() const
 {
-    if(d->object) return d->object->id;
+    if (d->object) return d->object->id;
     else return QByteArray();
 }
 
@@ -557,11 +557,11 @@ QList<QmlDomProperty> QmlDomObject::properties() const
 {
     QList<QmlDomProperty> rv;
 
-    if(!d->object)
+    if (!d->object)
         return rv;
 
     QmlDomObjectPrivate::Properties properties = d->properties();
-    for(int ii = 0; ii < properties.count(); ++ii) {
+    for (int ii = 0; ii < properties.count(); ++ii) {
 
         QmlDomProperty domProperty;
         domProperty.d->property = properties.at(ii).first;
@@ -571,7 +571,7 @@ QList<QmlDomProperty> QmlDomObject::properties() const
 
     }
 
-    if(d->object->defaultProperty) {
+    if (d->object->defaultProperty) {
         QmlDomProperty domProperty;
         domProperty.d->property = d->object->defaultProperty;
         domProperty.d->property->addref();
@@ -596,8 +596,8 @@ QList<QmlDomProperty> QmlDomObject::properties() const
 QmlDomProperty QmlDomObject::property(const QByteArray &name) const
 {
     QList<QmlDomProperty> props = properties();
-    for(int ii = 0; ii < props.count(); ++ii)
-        if(props.at(ii).propertyName() == name)
+    for (int ii = 0; ii < props.count(); ++ii)
+        if (props.at(ii).propertyName() == name)
             return props.at(ii);
     return QmlDomProperty();
 }
@@ -684,7 +684,7 @@ bool QmlDomObject::isComponent() const
 QmlDomComponent QmlDomObject::toComponent() const
 {
     QmlDomComponent rv;
-    if(isComponent())
+    if (isComponent())
         rv.d = d;
     return rv;
 }
@@ -698,12 +698,12 @@ QmlDomBasicValuePrivate::QmlDomBasicValuePrivate(const QmlDomBasicValuePrivate &
 : QSharedData(other), value(0)
 {
     value = other.value;
-    if(value) value->addref();
+    if (value) value->addref();
 }
 
 QmlDomBasicValuePrivate::~QmlDomBasicValuePrivate()
 {
-    if(value) value->release();
+    if (value) value->release();
 }
 
 /*!
@@ -761,7 +761,7 @@ QmlDomValueLiteral &QmlDomValueLiteral::operator=(const QmlDomValueLiteral &othe
 */
 QString QmlDomValueLiteral::literal() const
 {
-    if(d->value) return d->value->primitive;
+    if (d->value) return d->value->primitive;
     else return QString();
 }
 
@@ -827,7 +827,7 @@ QmlDomValueBinding &QmlDomValueBinding::operator=(const QmlDomValueBinding &othe
 */
 QString QmlDomValueBinding::binding() const
 {
-    if(d->value) 
+    if (d->value) 
         return d->value->primitive.mid(1, d->value->primitive.length() - 2);
     else 
         return QString();
@@ -907,7 +907,7 @@ QmlDomValueValueSource &QmlDomValueValueSource::operator=(const QmlDomValueValue
 QmlDomObject QmlDomValueValueSource::object() const
 {
     QmlDomObject rv;
-    if(d->value) {
+    if (d->value) {
         rv.d->object = d->value->object;
         rv.d->object->addref();
     } 
@@ -933,14 +933,14 @@ QmlDomValuePrivate::QmlDomValuePrivate(const QmlDomValuePrivate &other)
 {
     property = other.property;
     value = other.value;
-    if(property) property->addref();
-    if(value) value->addref();
+    if (property) property->addref();
+    if (value) value->addref();
 }
 
 QmlDomValuePrivate::~QmlDomValuePrivate()
 {
-    if(property) property->release();
-    if(value) value->release();
+    if (property) property->release();
+    if (value) value->release();
 }
 
 /*!
@@ -969,13 +969,13 @@ QmlDomValuePrivate::~QmlDomValuePrivate()
     QmlDomObject root = document.rootObject();
 
     QmlDomProperty text = root.property("text");
-    if(text.value().isLiteral()) {
+    if (text.value().isLiteral()) {
         QmlDomValueLiteral literal = text.value().toLiteral();
         qDebug() << literal.literal();
     }
 
     QmlDomProperty y = root.property("y");
-    if(y.value().isBinding()) {
+    if (y.value().isBinding()) {
         QmlDomValueBinding binding = y.value().toBinding();
         qDebug() << binding.binding();
     }
@@ -1032,8 +1032,8 @@ QmlDomValue &QmlDomValue::operator=(const QmlDomValue &other)
 */
 QmlDomValue::Type QmlDomValue::type() const
 {
-    if(d->property)
-        if(QmlMetaType::isList(d->property->type) || 
+    if (d->property)
+        if (QmlMetaType::isList(d->property->type) || 
            QmlMetaType::isQmlList(d->property->type) ||
            (d->property && d->property->values.count() > 1))
             return List;
@@ -1121,7 +1121,7 @@ bool QmlDomValue::isList() const
 QmlDomValueLiteral QmlDomValue::toLiteral() const
 {
     QmlDomValueLiteral rv;
-    if(type() == Literal) {
+    if (type() == Literal) {
         rv.d->value = d->value;
         rv.d->value->addref();
     }
@@ -1137,7 +1137,7 @@ QmlDomValueLiteral QmlDomValue::toLiteral() const
 QmlDomValueBinding QmlDomValue::toBinding() const
 {
     QmlDomValueBinding rv;
-    if(type() == PropertyBinding) {
+    if (type() == PropertyBinding) {
         rv.d->value = d->value;
         rv.d->value->addref();
     }
@@ -1153,7 +1153,7 @@ QmlDomValueBinding QmlDomValue::toBinding() const
 QmlDomValueValueSource QmlDomValue::toValueSource() const
 {
     QmlDomValueValueSource rv;
-    if(type() == ValueSource) {
+    if (type() == ValueSource) {
         rv.d->value = d->value;
         rv.d->value->addref();
     }
@@ -1169,7 +1169,7 @@ QmlDomValueValueSource QmlDomValue::toValueSource() const
 QmlDomObject QmlDomValue::toObject() const
 {
     QmlDomObject rv;
-    if(type() == Object) {
+    if (type() == Object) {
         rv.d->object = d->value->object;
         rv.d->object->addref();
     }
@@ -1185,7 +1185,7 @@ QmlDomObject QmlDomValue::toObject() const
 QmlDomList QmlDomValue::toList() const
 {
     QmlDomList rv;
-    if(type() == List) {
+    if (type() == List) {
         rv.d = d;
     }
     return rv;
@@ -1254,10 +1254,10 @@ QmlDomList &QmlDomList::operator=(const QmlDomList &other)
 QList<QmlDomValue> QmlDomList::values() const
 {
     QList<QmlDomValue> rv;
-    if(!d->property)
+    if (!d->property)
         return rv;
 
-    for(int ii = 0; ii < d->property->values.count(); ++ii) {
+    for (int ii = 0; ii < d->property->values.count(); ++ii) {
         QmlDomValue v;
         v.d->value = d->property->values.at(ii);
         v.d->value->addref();
@@ -1342,17 +1342,17 @@ QmlDomComponent &QmlDomComponent::operator=(const QmlDomComponent &other)
 QmlDomObject QmlDomComponent::componentRoot() const
 {
     QmlDomObject rv;
-    if(d->isVirtualComponent) {
+    if (d->isVirtualComponent) {
         rv.d->object = d->object;
         rv.d->object->addref();
-    } else if(d->object) {
+    } else if (d->object) {
         QmlParser::Object *obj = 0;
-        if(d->object->defaultProperty && 
+        if (d->object->defaultProperty && 
            d->object->defaultProperty->values.count() == 1 &&
            d->object->defaultProperty->values.at(0)->object)
             obj = d->object->defaultProperty->values.at(0)->object;
 
-        if(obj) {
+        if (obj) {
             rv.d->object = obj;
             rv.d->object->addref();
         }

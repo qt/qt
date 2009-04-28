@@ -68,16 +68,16 @@ void QmlContextPrivate::dump(int depth)
     QByteArray ba(depth * 4, ' ');
     qWarning() << ba << properties.keys();
     qWarning() << ba << variantProperties.keys();
-    if(parent)
+    if (parent)
         parent->d_func()->dump(depth + 1);
 }
 
 void QmlContextPrivate::destroyed(QObject *obj)
 {
     defaultObjects.removeAll(obj);
-    for(QHash<QString, QObject *>::Iterator iter = properties.begin();
+    for (QHash<QString, QObject *>::Iterator iter = properties.begin();
             iter != properties.end(); ) {
-        if(*iter == obj)
+        if (*iter == obj)
             iter = properties.erase(iter);
         else
             ++iter;
@@ -102,13 +102,13 @@ void QmlContextPrivate::init()
 
 void QmlContextPrivate::addDefaultObject(QObject *object, Priority priority)
 {
-    if(defaultObjects.count() >= (MAXIMUM_DEFAULT_OBJECTS - 1)) {
+    if (defaultObjects.count() >= (MAXIMUM_DEFAULT_OBJECTS - 1)) {
         qWarning("QmlContext: Cannot have more than %d default objects on "
                  "one bind context.", MAXIMUM_DEFAULT_OBJECTS - 1);
         return;
     }
 
-    if(priority == HighPriority) {
+    if (priority == HighPriority) {
         defaultObjects.insert(highPriorityCount++, object);
     } else {
         defaultObjects.append(object);
@@ -233,7 +233,7 @@ QmlContext::QmlContext(QmlContext *parentContext, QObject *parent)
 QmlContext::~QmlContext()
 {
     Q_D(QmlContext);
-    if(d->component) d->component->release();
+    if (d->component) d->component->release();
 }
 
 
@@ -313,7 +313,7 @@ void QmlContext::deactivate()
     QmlEnginePrivate *ep = engine()->d_func();
     Q_ASSERT(ep->activeContexts.top() == this);
     ep->activeContexts.pop();
-    if(ep->activeContexts.isEmpty())
+    if (ep->activeContexts.isEmpty())
         ep->setCurrentBindContext(0);
     else
         ep->setCurrentBindContext(ep->activeContexts.top());
@@ -332,7 +332,7 @@ void QmlContext::deactivate()
 QmlContext *QmlContext::activeContext()
 {
     QmlEngine *engine = QmlEngine::activeEngine();
-    if(engine)
+    if (engine)
         return engine->activeContext();
     else
         return 0;
@@ -351,16 +351,16 @@ QmlContext *QmlContext::activeContext()
 QUrl QmlContext::resolvedUrl(const QUrl &src)
 {
     QmlContext *ctxt = this;
-    if(src.isRelative()) {
-        if(ctxt) {
+    if (src.isRelative()) {
+        if (ctxt) {
             while(ctxt) {
-                if(ctxt->d_func()->component)
+                if (ctxt->d_func()->component)
                     break;
                 else
                     ctxt = ctxt->parentContext();
             }
 
-            if(ctxt)
+            if (ctxt)
                 return ctxt->d_func()->component->url.resolved(src);
         }
         return QUrl();
@@ -380,16 +380,16 @@ QUrl QmlContext::resolvedUrl(const QUrl &src)
 QUrl QmlContext::resolvedUri(const QUrl &src)
 {
     QmlContext *ctxt = this;
-    if(src.isRelative()) {
-        if(ctxt) {
+    if (src.isRelative()) {
+        if (ctxt) {
             while(ctxt) {
-                if(ctxt->d_func()->component)
+                if (ctxt->d_func()->component)
                     break;
                 else
                     ctxt = ctxt->parentContext();
             }
 
-            if(ctxt)
+            if (ctxt)
                 return ctxt->d_func()->engine->componentUrl(src, ctxt->d_func()->component->url);
         }
         return QUrl();

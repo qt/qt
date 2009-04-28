@@ -72,7 +72,7 @@ void newState(QList<State> &states, const char *token, const char *lexem)
     while(*lexem) {
         int next = states[state].next[(int)*lexem];
 
-        if(!next) {
+        if (!next) {
             next = states.size();
             states += State(character?"CHARACTER":"INCOMPLETE");
             states[state].next[(int)*lexem] = next;
@@ -89,7 +89,7 @@ void newState(QList<State> &states, const char *token, const char *lexem)
 void newState(QList<State> &states, const char *token, char lexem)
 {
     int next = states[0].next[(int)lexem];
-    if(!next) {
+    if (!next) {
         next = states.size();
         states += State(token);
         states[0].next[(int)lexem] = next;
@@ -111,11 +111,11 @@ int main()
     newState(states, "CHARACTER", '_');
 
     // add digits
-    for(int cc = '0'; cc <= '9'; ++cc)
+    for (int cc = '0'; cc <= '9'; ++cc)
         newState(states, "DIGIT", cc);
 
     // keywords
-    for(int ii = 0; keywords[ii].lexem; ++ii)
+    for (int ii = 0; keywords[ii].lexem; ++ii)
         newState(states, keywords[ii].token, keywords[ii].lexem);
 
     ::printf("static const struct\n{\n"
@@ -123,9 +123,9 @@ int main()
              "    char next[128];\n"
              "} keywords[] = {\n");
 
-    for(int ii = 0; ii < states.size(); ++ii) {
+    for (int ii = 0; ii < states.size(); ++ii) {
         printf("%s    { %s, { ", ii?",\n":"", states[ii].token.data());
-        for(int jj = 0; jj < 128; jj++) 
+        for (int jj = 0; jj < 128; jj++) 
             printf("%s%d", jj?",":"", states[ii].next[jj]);
         printf(" } }");
     }

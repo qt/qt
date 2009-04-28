@@ -109,7 +109,7 @@ void QmlParentChange::setParent(QObject *parent)
 QmlStateOperation::ActionList QmlParentChange::actions()
 {
     Q_D(QmlParentChange);
-    if(!d->target || !d->parent)
+    if (!d->target || !d->parent)
         return ActionList();
 
     QString propName(QLatin1String("moveToParent"));
@@ -118,7 +118,7 @@ QmlStateOperation::ActionList QmlParentChange::actions()
         qmlInfo(this) << d->target->metaObject()->className()
                       << "has no property named" << propName;
         return ActionList();
-    }else if(!prop.isWritable()){
+    }else if (!prop.isWritable()){
         qmlInfo(this) << d->target->metaObject()->className() << propName
                       << "is not a writable property and cannot be set.";
         return ActionList();
@@ -187,7 +187,7 @@ void QmlRunScript::setName(const QString &n)
 void QmlRunScript::execute()
 {
     Q_D(QmlRunScript);
-    if(!d->script.isEmpty()) {
+    if (!d->script.isEmpty()) {
         QmlExpression expr(qmlContext(this), d->script, this);
         expr.setTrackChange(false);
         expr.value();
@@ -354,7 +354,7 @@ void QmlSetProperty::setBinding(const QString &binding)
 QmlSetProperty::ActionList QmlSetProperty::actions()
 {
     Q_D(QmlSetProperty);
-    if(!d->obj)
+    if (!d->obj)
         return ActionList();
 
     QObject *obj = d->obj;
@@ -362,10 +362,10 @@ QmlSetProperty::ActionList QmlSetProperty::actions()
 
     if (d->prop.contains(QLatin1Char('.'))) {  //handle dot properties
         QStringList str = d->prop.split(QLatin1Char('.'));
-        for(int ii = 0; ii < str.count()-1; ++ii) {
+        for (int ii = 0; ii < str.count()-1; ++ii) {
             const QString &s = str.at(ii);
             QmlMetaProperty prop(obj, s);
-            if(!prop.isValid()) {
+            if (!prop.isValid()) {
                 qmlInfo(this) << obj->metaObject()->className() 
                               << "has no property named" << s;
                 return ActionList();
@@ -386,7 +386,7 @@ QmlSetProperty::ActionList QmlSetProperty::actions()
         qmlInfo(this) << obj->metaObject()->className() 
                       << "has no property named" << propName;
         return ActionList();
-    }else if(!prop.isWritable()){
+    }else if (!prop.isWritable()){
         qmlInfo(this) << obj->metaObject()->className() << propName
                       << "is not a writable property and cannot be set.";
         return ActionList();
@@ -399,7 +399,7 @@ QmlSetProperty::ActionList QmlSetProperty::actions()
     a.toValue = d->value;
     if (!d->binding.isEmpty()) {
         QmlBindableValue *bv = prop.binding();
-        if(bv) {
+        if (bv) {
             a.fromBinding = bv->expression();
             a.bv = bv;
         }

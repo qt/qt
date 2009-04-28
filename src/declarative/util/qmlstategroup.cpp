@@ -68,7 +68,7 @@ public:
             :group(g) {}
         void append(QmlState *s) {
             QmlConcreteList<QmlState *>::append(s);
-            if(s) s->setStateGroup(group);
+            if (s) s->setStateGroup(group);
         }
     private:
         QmlStateGroup *group;
@@ -121,7 +121,7 @@ QString QmlStateGroup::state() const
 void QmlStateGroup::setState(const QString &state)
 {
     Q_D(QmlStateGroup);
-    if(d->currentState == state)
+    if (d->currentState == state)
         return;
 
     d->setCurrentStateInternal(state);
@@ -152,27 +152,27 @@ void QmlStateGroup::updateAutoState()
 void QmlStateGroupPrivate::updateAutoState()
 {
     Q_Q(QmlStateGroup);
-    if(!classComplete)
+    if (!classComplete)
         return;
 
     bool revert = false;
-    for(int ii = 0; ii < states.count(); ++ii) {
+    for (int ii = 0; ii < states.count(); ++ii) {
         QmlState *state = states.at(ii);
-        if(state->isWhenKnown()) {
-            if(!state->name().isEmpty()) {
-                if(state->when() && state->when()->value().toBool()) {
-                    if(stateChangeDebug()) 
+        if (state->isWhenKnown()) {
+            if (!state->name().isEmpty()) {
+                if (state->when() && state->when()->value().toBool()) {
+                    if (stateChangeDebug()) 
                         qWarning() << "Setting auto state due to:" 
                                    << state->when()->expression();
                     q->setState(state->name());
                     return;
-                } else if(state->name() == currentState) {
+                } else if (state->name() == currentState) {
                     revert = true;
                 }
             }
         }
     }
-    if(revert)
+    if (revert)
         q->setState(QString());
 }
 
@@ -183,11 +183,11 @@ QmlTransition *QmlStateGroupPrivate::findTransition(const QString &from, const Q
     bool reversed = false;
     bool done = false;
 
-    for(int ii = 0; !done && ii < transitions.count(); ++ii) {
+    for (int ii = 0; !done && ii < transitions.count(); ++ii) {
         QmlTransition *t = transitions.at(ii);
-        for(int ii = 0; ii < 2; ++ii)
+        for (int ii = 0; ii < 2; ++ii)
         {
-            if(ii && (!t->reversible() ||
+            if (ii && (!t->reversible() ||
                       (t->fromState() == QLatin1String("*") && 
                        t->toState() == QLatin1String("*"))))
                 break;
@@ -196,40 +196,40 @@ QmlTransition *QmlStateGroupPrivate::findTransition(const QString &from, const Q
 
             fromState = t->fromState().split(QLatin1Char(','));
             toState = t->toState().split(QLatin1Char(','));
-            if(ii == 1)
+            if (ii == 1)
                 qSwap(fromState, toState);
             int tScore = 0;
-            if(fromState.contains(from))
+            if (fromState.contains(from))
                 tScore += 2;
-            else if(fromState.contains(QLatin1String("*")))
+            else if (fromState.contains(QLatin1String("*")))
                 tScore += 1;
             else
                 continue;
 
-            if(toState.contains(to))
+            if (toState.contains(to))
                 tScore += 2;
-            else if(toState.contains(QLatin1String("*")))
+            else if (toState.contains(QLatin1String("*")))
                 tScore += 1;
             else
                 continue;
 
-            if(ii == 1)
+            if (ii == 1)
                 reversed = true;
             else
                 reversed = false;
 
-            if(tScore == 4) {
+            if (tScore == 4) {
                 highest = t;
                 done = true;
                 break;
-            } else if(tScore > score) {
+            } else if (tScore > score) {
                 score = tScore;
                 highest = t;
             }
         }
     }
 
-    if(highest)
+    if (highest)
         highest->setReversed(reversed);
 
     return highest;
@@ -239,21 +239,21 @@ void QmlStateGroupPrivate::setCurrentStateInternal(const QString &state,
                                                    bool ignoreTrans)
 {
     Q_Q(QmlStateGroup);
-    if(!componentComplete)
+    if (!componentComplete)
         return;
 
     QmlTransition *transition = (ignoreTrans || ignoreTrans) ? 0 : findTransition(currentState, state);
-    if(stateChangeDebug()) {
+    if (stateChangeDebug()) {
         qWarning() << this << "Changing state.  From" << currentState << ". To" << state;
-        if(transition)
+        if (transition)
             qWarning() << "   using transition" << transition->fromState() 
                        << transition->toState();
     }
 
     QmlState *oldState = 0;
-    if(!currentState.isEmpty()) {
-        for(int ii = 0; ii < states.count(); ++ii) {
-            if(states.at(ii)->name() == currentState) {
+    if (!currentState.isEmpty()) {
+        for (int ii = 0; ii < states.count(); ++ii) {
+            if (states.at(ii)->name() == currentState) {
                 oldState = states.at(ii);
                 break;
             }
@@ -263,17 +263,17 @@ void QmlStateGroupPrivate::setCurrentStateInternal(const QString &state,
     currentState = state;
 
     QmlState *newState = 0;
-    for(int ii = 0; ii < states.count(); ++ii) {
-        if(states.at(ii)->name() == currentState) {
+    for (int ii = 0; ii < states.count(); ++ii) {
+        if (states.at(ii)->name() == currentState) {
             newState = states.at(ii);
             break;
         }
     }
 
-    if(oldState == 0 || newState == 0) {
-        if(!nullState) { nullState = new QmlState(q); }
-        if(!oldState) oldState = nullState;
-        if(!newState) newState = nullState;
+    if (oldState == 0 || newState == 0) {
+        if (!nullState) { nullState = new QmlState(q); }
+        if (!oldState) oldState = nullState;
+        if (!newState) newState = nullState;
     }
 
     newState->apply(q, transition, oldState);
@@ -284,7 +284,7 @@ void QmlStateGroup::componentComplete()
     Q_D(QmlStateGroup);
     d->updateAutoState();
     d->componentComplete = true;
-    if(!d->currentState.isEmpty()) {
+    if (!d->currentState.isEmpty()) {
         QString cs = d->currentState;
         d->currentState = QString();
         d->setCurrentStateInternal(cs, true);

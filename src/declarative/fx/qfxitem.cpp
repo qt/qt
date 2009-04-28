@@ -374,7 +374,7 @@ void QFxContents::setItem(QFxItem *item)
 
     This signal is emitted when the item's focus state changes.
 
-    \sa setFocus()
+    \sa QSimpleCanvasItem::setFocus()
 */
 
 /*!
@@ -451,7 +451,7 @@ void QFxItem::setItemParent(QFxItem *parent)
  */
 void QFxItem::moveToParent(QFxItem *parent)
 {
-    if(parent && itemParent()) {
+    if (parent && itemParent()) {
         QPointF me = itemParent()->mapToScene(QPointF(0,0));
         QPointF them = parent->mapToScene(QPointF(0,0));
 
@@ -476,25 +476,25 @@ void QFxItem::moveToParent(QFxItem *parent)
         qreal yDiff = them.y() - me.y();
 
 
-        if(themx.x() == 0.) {
+        if (themx.x() == 0.) {
             ry = xDiff / themy.x();
             rx = (yDiff - ry * themy.y()) / themx.y();
-        } else if(themy.x() == 0.) {
+        } else if (themy.x() == 0.) {
             rx = xDiff / themx.x();
             ry = (yDiff - rx * themx.y()) / themy.y();
-        } else if(themx.y() == 0.) {
+        } else if (themx.y() == 0.) {
             ry = yDiff / themy.y();
             rx = (xDiff - ry * themy.x()) / themx.x();
-        } else if(themy.y() == 0.) {
+        } else if (themy.y() == 0.) {
             rx = yDiff / themx.y();
             ry = (xDiff - rx * themx.x()) / themy.x();
         } else {
             qreal div = (themy.x() * themx.y() - themy.y() * themx.x());
 
-            if(div != 0.) 
+            if (div != 0.) 
                 rx = (themx.y() * xDiff - themx.x() * yDiff) / div;
 
-           if(themy.y() != 0.) ry = (yDiff - rx * themx.y()) / themy.y();
+           if (themy.y() != 0.) ry = (yDiff - rx * themx.y()) / themy.y();
         }
 
         setX(x() - rx);
@@ -570,7 +570,7 @@ bool QFxItem::isClassComplete() const
     It is often desireable to delay some processing until the component is
     completed.
 
-    \sa componentComplete().
+    \sa componentComplete()
 */
 bool QFxItem::isComponentComplete() const
 {
@@ -603,7 +603,7 @@ void QFxItemPrivate::data_append(QObject *o)
 {
     Q_Q(QFxItem);
     QFxItem *i = qobject_cast<QFxItem *>(o);
-    if(i)
+    if (i)
         q->children()->append(i);
     else
         resources_append(o);
@@ -800,9 +800,9 @@ void QFxItem::setQml(const QString &qml)
     if (d->_qml == qml)
         return;
 
-    if(!d->_qml.isEmpty()) {
+    if (!d->_qml.isEmpty()) {
         QmlChildren::Iterator iter = d->_qmlChildren.find(d->_qml);
-        if(iter != d->_qmlChildren.end())
+        if (iter != d->_qmlChildren.end())
             (*iter)->setOpacity(0.);
     }
 
@@ -810,20 +810,20 @@ void QFxItem::setQml(const QString &qml)
     d->_qmlurl = qmlContext(this)->resolvedUri(qml);
     d->qmlItem = 0;
 
-    if(d->_qml.isEmpty()) {
+    if (d->_qml.isEmpty()) {
         emit qmlChanged();
         return;
     }
 
     QmlChildren::Iterator iter = d->_qmlChildren.find(d->_qml);
-    if(iter != d->_qmlChildren.end()) {
+    if (iter != d->_qmlChildren.end()) {
         (*iter)->setOpacity(1.);
         d->qmlItem = (*iter);
         emit qmlChanged();
     } else {
         d->_qmlcomp = 
             new QmlComponent(qmlEngine(this), d->_qmlurl, this);
-        if(!d->_qmlcomp->isLoading())
+        if (!d->_qmlcomp->isLoading())
             qmlLoaded();
         else
             QObject::connect(d->_qmlcomp, SIGNAL(statusChanged(QmlComponent::Status)),
@@ -840,7 +840,7 @@ void QFxItem::qmlLoaded()
         // ###
         for (int i=0; i<d->_qmlnewloading.length(); ++i) {
             QmlComponent *c = d->_qmlnewcomp.at(i);
-            if(c->isLoading())
+            if (c->isLoading())
                 continue;
 
             QmlContext *ctxt = new QmlContext(qmlContext(this));
@@ -866,7 +866,7 @@ void QFxItem::qmlLoaded()
 
         QObject *obj = d->_qmlcomp->create(ctxt);
         QFxItem *qmlChild = qobject_cast<QFxItem *>(obj);
-        if(qmlChild) {
+        if (qmlChild) {
             qmlChild->setItemParent(this);
             d->_qmlChildren.insert(d->_qml, qmlChild);
             d->qmlItem = qmlChild;
@@ -984,23 +984,23 @@ void QFxItem::geometryChanged(const QRectF &newGeometry,
                               const QRectF &oldGeometry)
 {
     Q_D(QFxItem);
-    if(newGeometry.width() != oldGeometry.width()) {
+    if (newGeometry.width() != oldGeometry.width()) {
         int xoffset = oldGeometry.width() - newGeometry.width();
         d->handleWidthChange(xoffset);
     }
 
-    if(newGeometry.height() != oldGeometry.height()) {
+    if (newGeometry.height() != oldGeometry.height()) {
         int yoffset = oldGeometry.height() - newGeometry.height();
         d->handleHeightChange(yoffset);
     }
 
-    if(newGeometry.x() != oldGeometry.x()) {
+    if (newGeometry.x() != oldGeometry.x()) {
         emit leftChanged();
         emit hcenterChanged();
         emit rightChanged();
     }
 
-    if(newGeometry.y() != oldGeometry.y()) {
+    if (newGeometry.y() != oldGeometry.y()) {
         emit topChanged();
         emit vcenterChanged();
         emit bottomChanged();
@@ -1010,7 +1010,7 @@ void QFxItem::geometryChanged(const QRectF &newGeometry,
 void QFxItemPrivate::handleWidthChange(int xoffset)
 {
     Q_Q(QFxItem);
-    if(!_anchors) {
+    if (!_anchors) {
         emit q->hcenterChanged();
         emit q->rightChanged();
     } else {
@@ -1026,9 +1026,9 @@ void QFxItemPrivate::handleWidthChange(int xoffset)
             emit q->rightChanged();
         }
     }
-    if(q->rotation() && q->transformOrigin() != QFxItem::TopLeft)
+    if (q->rotation() && q->transformOrigin() != QFxItem::TopLeft)
         q->setRotation(q->rotation());
-    if(q->scale() && q->transformOrigin() != QFxItem::TopLeft)
+    if (q->scale() && q->transformOrigin() != QFxItem::TopLeft)
         q->setScale(q->scale());
     emit q->widthChanged();
 }
@@ -1036,7 +1036,7 @@ void QFxItemPrivate::handleWidthChange(int xoffset)
 void QFxItemPrivate::handleHeightChange(int yoffset)
 {
     Q_Q(QFxItem);
-    if(!_anchors) {
+    if (!_anchors) {
         emit q->vcenterChanged();
         emit q->bottomChanged();
         emit q->baselineChanged();
@@ -1058,9 +1058,9 @@ void QFxItemPrivate::handleHeightChange(int yoffset)
             emit q->baselineChanged();
         }
     }
-    if(q->rotation() && q->transformOrigin() != QFxItem::TopLeft)
+    if (q->rotation() && q->transformOrigin() != QFxItem::TopLeft)
         q->setRotation(q->rotation());
-    if(q->scale() && q->transformOrigin() != QFxItem::TopLeft)
+    if (q->scale() && q->transformOrigin() != QFxItem::TopLeft)
         q->setScale(q->scale());
     emit q->heightChanged();
 }
@@ -1086,7 +1086,7 @@ bool QFxItem::flipVertically() const
 
 void QFxItem::setFlipVertically(bool v)
 {
-    if(v)
+    if (v)
         setFlip((QSimpleCanvasItem::Flip)(flip() | VerticalFlip));
     else
         setFlip((QSimpleCanvasItem::Flip)(flip() & ~VerticalFlip));
@@ -1105,7 +1105,7 @@ bool QFxItem::flipHorizontally() const
 
 void QFxItem::setFlipHorizontally(bool v)
 {
-    if(v)
+    if (v)
         setFlip((QSimpleCanvasItem::Flip)(flip() | HorizontalFlip));
     else
         setFlip((QSimpleCanvasItem::Flip)(flip() & ~HorizontalFlip));
@@ -1555,11 +1555,11 @@ qreal QFxItem::opacity() const
 
 void QFxItem::setOpacity(qreal v)
 {
-    if(v == QSimpleCanvasItem::visible())
+    if (v == QSimpleCanvasItem::visible())
         return;
 
-    if(v < 0) v = 0;
-    else if(v > 1) v = 1;
+    if (v < 0) v = 0;
+    else if (v > 1) v = 1;
     QSimpleCanvasItem::setVisible(v);
 
     emit opacityChanged();
@@ -1709,7 +1709,7 @@ QmlList<QmlTransition *>* QFxItem::transitions()
 QmlState *QFxItem::findState(const QString &name) const
 {
     Q_D(const QFxItem);
-    if(!d->_stateGroup)
+    if (!d->_stateGroup)
         return 0;
     else
         return d->_stateGroup->findState(name);
@@ -1769,7 +1769,7 @@ QmlState *QFxItem::findState(const QString &name) const
 QString QFxItem::state() const
 {
     Q_D(const QFxItem);
-    if(!d->_stateGroup)
+    if (!d->_stateGroup)
         return QString();
     else
         return d->_stateGroup->state();
@@ -1834,11 +1834,11 @@ bool QFxItem::isVisible() const
 void QFxItem::setVisible(bool visible)
 {
     Q_D(QFxItem);
-    if(visible == d->visible)
+    if (visible == d->visible)
         return;
 
     d->visible = visible;
-    if(visible)
+    if (visible)
         setOpacity(d->visibleOp);
     else {
         d->visibleOp = opacity();
@@ -1881,7 +1881,7 @@ void QFxItem::newChild(const QString &type)
     d->_qmlnewloading.append(url);
     d->_qmlnewcomp.append(new QmlComponent(qmlEngine(this), url, this));
 
-    if(!d->_qmlnewcomp.last()->isLoading())
+    if (!d->_qmlnewcomp.last()->isLoading())
         qmlLoaded();
     else
         connect(d->_qmlnewcomp.last(), SIGNAL(statusChanged(QmlComponent::Status)), 
@@ -1899,7 +1899,7 @@ void QFxItem::classBegin()
     Q_D(QFxItem);
     d->_classComplete = false;
     d->_componentComplete = false;
-    if(d->_stateGroup)
+    if (d->_stateGroup)
         d->_stateGroup->classBegin();
 }
 
@@ -1915,7 +1915,7 @@ void QFxItem::classComplete()
 #endif
     Q_D(QFxItem);
     d->_classComplete = true;
-    if(d->_stateGroup)
+    if (d->_stateGroup)
         d->_stateGroup->classComplete();
 }
 
@@ -1929,13 +1929,13 @@ void QFxItem::componentComplete()
 {
     Q_D(QFxItem);
     d->_componentComplete = true;
-    if(d->_stateGroup)
+    if (d->_stateGroup)
         d->_stateGroup->componentComplete();
-    if(d->_anchors) {
+    if (d->_anchors) {
         d->anchors()->connectHAnchors();
         d->anchors()->connectVAnchors();
     }
-    if(!d->_transform.isEmpty())
+    if (!d->_transform.isEmpty())
         updateTransform();
 }
 
@@ -1960,9 +1960,9 @@ void QFxItem::updateTransform()
 {
     Q_D(QFxItem);
     QSimpleCanvas::Matrix trans;
-    for(int ii = d->_transform.count() - 1; ii >= 0; --ii) {
+    for (int ii = d->_transform.count() - 1; ii >= 0; --ii) {
         QFxTransform *a = d->_transform.at(ii);
-        if(!a->isIdentity()) 
+        if (!a->isIdentity()) 
             trans = a->transform() * trans;
     }
 
@@ -1980,9 +1980,9 @@ void QFxItem::transformChanged(const QSimpleCanvas::Matrix &)
 QmlStateGroup *QFxItemPrivate::states()
 {
     Q_Q(QFxItem);
-    if(!_stateGroup) {
+    if (!_stateGroup) {
         _stateGroup = new QmlStateGroup(q);
-        if(!_classComplete)
+        if (!_classComplete)
             _stateGroup->classBegin();
         QObject::connect(_stateGroup, SIGNAL(stateChanged(QString)),
                          q, SIGNAL(stateChanged(QString)));

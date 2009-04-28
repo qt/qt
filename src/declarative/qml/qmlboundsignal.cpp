@@ -59,7 +59,7 @@ QmlBoundSignal::QmlBoundSignal(QmlContext *ctxt, const QString &val, QObject *me
     // This is thread safe.  Although it may be updated by two threads, they
     // will both set it to the same value - so the worst thing that can happen
     // is that they both do the work to figure it out.  Boo hoo.
-    if(evaluateIdx == -1) evaluateIdx = QmlExpressionObject::staticMetaObject.indexOfMethod("value()");
+    if (evaluateIdx == -1) evaluateIdx = QmlExpressionObject::staticMetaObject.indexOfMethod("value()");
 
     setTrackChange(false);
     QFx_setParent_noEvent(this, parent);
@@ -78,7 +78,7 @@ QmlBoundSignalProxy::QmlBoundSignalProxy(QmlContext *ctxt, const QString &val, Q
 
 int QmlBoundSignalProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
 {
-    if(c == QMetaObject::InvokeMetaMethod && id == evaluateIdx) {
+    if (c == QMetaObject::InvokeMetaMethod && id == evaluateIdx) {
         params->setValues(a);
         value();
         params->clearValues();
@@ -103,17 +103,17 @@ QmlBoundSignalParameters::QmlBoundSignalParameters(const QMetaMethod &method,
     QList<QByteArray> paramTypes = method.parameterTypes();
     QList<QByteArray> paramNames = method.parameterNames();
     types = new int[paramTypes.count()];
-    for(int ii = 0; ii < paramTypes.count(); ++ii) {
+    for (int ii = 0; ii < paramTypes.count(); ++ii) {
         const QByteArray &type = paramTypes.at(ii);
         const QByteArray &name = paramNames.at(ii);
 
-        if(name.isEmpty() || type.isEmpty()) {
+        if (name.isEmpty() || type.isEmpty()) {
             types[ii] = 0;
             continue;
         }
 
         QVariant::Type t = (QVariant::Type)QMetaType::type(type.constData());
-        if(QmlMetaType::isObject(t)) {
+        if (QmlMetaType::isObject(t)) {
             types[ii] = QMetaType::QObjectStar;
             QMetaPropertyBuilder prop = mob.addProperty(name, "QObject*");
             prop.setWritable(false);
@@ -147,7 +147,7 @@ void QmlBoundSignalParameters::clearValues()
 
 int QmlBoundSignalParameters::metaCall(QMetaObject::Call c, int id, void **a)
 {
-    if(c == QMetaObject::ReadProperty && id >= 1) {
+    if (c == QMetaObject::ReadProperty && id >= 1) {
         QmlMetaType::copy(types[id - 1], a[0], values[id]);
         return -1;
     } else {

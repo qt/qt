@@ -57,7 +57,7 @@ void CanvasEGLWidget::updateGL()
 
 void CanvasEGLWidget::updateGL(const QRect &r)
 {
-    if(r.isEmpty())
+    if (r.isEmpty())
         return;
 
     _clip = r;
@@ -66,7 +66,7 @@ void CanvasEGLWidget::updateGL(const QRect &r)
 
 void CanvasEGLWidget::paintGL()
 {
-    if(!_clip.isEmpty()) {
+    if (!_clip.isEmpty()) {
         glEnable(GL_SCISSOR_TEST);
         glScissor(_clip.x(), _clip.y(), _clip.width(), _clip.height());
     } else {
@@ -124,7 +124,7 @@ void QSimpleCanvasPrivate::paintGL()
     p.clipRect = p.sceneRect;
     p.opacity = 1;
     p.forceParamRefresh = false;
-    if(!isSetup) {
+    if (!isSetup) {
         unsigned int zero = 0;
         root->d_func()->setupPainting(0, QRect(), &zero);
     }
@@ -151,7 +151,7 @@ void QSimpleCanvasItemPrivate::simplePaintChild(const GLPaintParameters &params,
 {
     GLPaintParameters childParams = params;
 
-    if(child->d_func()->activeOpacity != 0) {
+    if (child->d_func()->activeOpacity != 0) {
         childParams.boundingRect = child->boundingRect();
         child->d_func()->paint(childParams);
     }
@@ -160,7 +160,7 @@ void QSimpleCanvasItemPrivate::simplePaintChild(const GLPaintParameters &params,
 void QSimpleCanvasItemPrivate::paintChild(const GLPaintParameters &params, 
                                        QSimpleCanvasItem *child)
 {
-    if(params.forceParamRefresh) {
+    if (params.forceParamRefresh) {
         QSimpleCanvas::Matrix t = child->d_func()->transformActive;
         qreal o = child->d_func()->activeOpacity;
         setupChildState(child);
@@ -177,10 +177,10 @@ void QSimpleCanvasItemPrivate::setupChildState(QSimpleCanvasItem *child)
 {
     qreal visible = child->visible().value();
     child->d_func()->activeOpacity = activeOpacity;
-    if(visible != 1)
+    if (visible != 1)
         child->d_func()->activeOpacity *= visible;
 
-    if(child->d_func()->activeOpacity != 0) {
+    if (child->d_func()->activeOpacity != 0) {
         // Calculate child's transform
         qreal x = child->x();
         qreal y = child->y();
@@ -189,19 +189,19 @@ void QSimpleCanvasItemPrivate::setupChildState(QSimpleCanvasItem *child)
 
         QSimpleCanvas::Matrix &am = child->d_func()->transformActive;
         am = transformActive;
-        if(x != 0 || y != 0)
+        if (x != 0 || y != 0)
             am.translate(x, y);
-        if(scale != 1) {
+        if (scale != 1) {
             QPointF to = child->d_func()->transformOrigin();
-            if(to.x() != 0. || to.y() != 0.)
+            if (to.x() != 0. || to.y() != 0.)
                 am.translate(to.x(), to.y());
             am.scale(scale, scale);
-            if(to.x() != 0. || to.y() != 0.)
+            if (to.x() != 0. || to.y() != 0.)
                 am.translate(-to.x(), -to.y());
         }
-        if(child->d_func()->transformUserSet)
+        if (child->d_func()->transformUserSet)
             am *= child->d_func()->transformUser;
-        if(flip) {
+        if (flip) {
             QRectF br = child->boundingRect();
             am.translate(br.width() / 2., br.height() / 2);
             am.rotate(180, (flip & QSimpleCanvasItem::VerticalFlip)?1:0, (flip & QSimpleCanvasItem::HorizontalFlip)?1:0, 0);
@@ -218,15 +218,15 @@ QRectF QSimpleCanvasItemPrivate::setupPainting(int version, const QRect &boundin
 
     unsigned int oldZero = *zero;
 
-    for(int ii = 0; ii < children.count(); ++ii) {
+    for (int ii = 0; ii < children.count(); ++ii) {
         QSimpleCanvasItem *child = children.at(ii);
         setupChildState(child);
 
-        if(child->d_func()->activeOpacity != 0) 
+        if (child->d_func()->activeOpacity != 0) 
             rv |= child->d_func()->setupPainting(version, bounding, zero);
     } 
 
-    if(clip || oldZero != *zero)
+    if (clip || oldZero != *zero)
         (*zero)++;
     transformActive.translate(0, 0, *zero);
 
@@ -241,17 +241,17 @@ void QSimpleCanvasItemPrivate::paintNoClip(GLPaintParameters &params, QSimpleCan
     zOrderChildren();
 
     int upto = 0;
-    for(upto = 0; upto < children.count(); ++upto) {
+    for (upto = 0; upto < children.count(); ++upto) {
         QSimpleCanvasItem *c = children.at(upto);
-        if(c->zValue().value() < 0) {
-            if(layer & QSimpleCanvasFilter::ChildrenUnderItem) 
+        if (c->zValue().value() < 0) {
+            if (layer & QSimpleCanvasFilter::ChildrenUnderItem) 
                 paintChild(params, c);
         } else {
             break;
         }
     }
 
-    if(layer & QSimpleCanvasFilter::Item && 
+    if (layer & QSimpleCanvasFilter::Item && 
        q->options() & QSimpleCanvasItem::HasContents) {
         QSimpleCanvasItem::GLPainter painter(q);
         painter.activeTransform = transformActive;
@@ -261,8 +261,8 @@ void QSimpleCanvasItemPrivate::paintNoClip(GLPaintParameters &params, QSimpleCan
         q->paintGLContents(painter);
     }
 
-    if(layer & QSimpleCanvasFilter::ChildrenAboveItem) {
-        for(; upto < children.count(); ++upto) {
+    if (layer & QSimpleCanvasFilter::ChildrenAboveItem) {
+        for (; upto < children.count(); ++upto) {
             QSimpleCanvasItem *c = children.at(upto);
             paintChild(params, c);
         }
@@ -271,11 +271,11 @@ void QSimpleCanvasItemPrivate::paintNoClip(GLPaintParameters &params, QSimpleCan
 
 void QSimpleCanvasItemPrivate::paint(GLPaintParameters &params, QSimpleCanvasFilter::Layer layer)
 {
-    if(!layer)
+    if (!layer)
         return;
 
     // XXX Handle separate cliping modes
-    if(clip) {
+    if (clip) {
 
         GLSaveScissor ss;
         qreal width = params.boundingRect.width();
@@ -331,7 +331,7 @@ void QSimpleCanvasItemPrivate::paint(GLPaintParameters &params, QSimpleCanvasFil
         int sr_height = ::ceilf(r.bottom()) - sr_y;
 
         QRect sr(sr_x, sr_y, sr_width, sr_height);
-        if(ss.wasEnabled())
+        if (ss.wasEnabled())
             sr &= ss.rect();
 
         glScissor(sr.x(), sr.y(), sr.width(), sr.height());

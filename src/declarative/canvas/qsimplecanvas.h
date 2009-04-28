@@ -100,7 +100,7 @@ namespace QSimpleCanvasConfig
                  (type == Translucent && f == QImage::Format_ARGB32_Premultiplied));
     }
     inline Image convert(ImageType type, const Image &img) {
-        if(type == Opaque)
+        if (type == Opaque)
             return img.convertToFormat(QImage::Format_RGB16);
         else
             return img.convertToFormat(QImage::Format_ARGB32_Premultiplied);

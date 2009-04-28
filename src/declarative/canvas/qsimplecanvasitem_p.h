@@ -156,7 +156,7 @@ public:
 
     QSimpleGraphicsItem *graphicsItem;
     inline QSimpleCanvasItemData *data() const { 
-        if(!data_ptr) data_ptr = new QSimpleCanvasItemData;
+        if (!data_ptr) data_ptr = new QSimpleCanvasItemData;
         return data_ptr; 
     }
     mutable QSimpleCanvasItemData *data_ptr;

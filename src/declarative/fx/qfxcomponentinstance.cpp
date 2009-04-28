@@ -97,7 +97,7 @@ QmlComponent *QFxComponentInstance::component() const
 void QFxComponentInstance::setComponent(QmlComponent *c)
 {
     Q_D(QFxComponentInstance);
-    if(d->component) {
+    if (d->component) {
         qmlInfo(this) << "component is a write-once property.";
         return;
     }
@@ -108,11 +108,11 @@ void QFxComponentInstance::setComponent(QmlComponent *c)
 void QFxComponentInstance::create()
 {
     Q_D(QFxComponentInstance);
-    if(d->component) {
+    if (d->component) {
         QObject *obj= d->component->create(qmlContext(this));
-        if(obj) {
+        if (obj) {
             QFxItem *objitem = qobject_cast<QFxItem *>(obj);
-            if(objitem) {
+            if (objitem) {
                 d->instance = objitem;
                 objitem->setItemParent(this);
                 objitem->setFocus(true);
@@ -130,10 +130,10 @@ void QFxComponentInstance::create()
 void QFxComponentInstance::updateSize()
 {
     QFxItem *i = instance();
-    if(i) {
-        if(!widthValid())
+    if (i) {
+        if (!widthValid())
             setImplicitWidth(i->width());
-        if(!heightValid())
+        if (!heightValid())
             setImplicitHeight(i->height());
     }
 }

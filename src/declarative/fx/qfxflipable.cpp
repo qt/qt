@@ -126,13 +126,13 @@ QFxItem *QFxFlipable::front()
 void QFxFlipable::setFront(QFxItem *front)
 {
     Q_D(QFxFlipable);
-    if(d->front) {
+    if (d->front) {
         qmlInfo(this) << "front is a write-once property";
         return;
     }
     d->front = front;
     children()->append(d->front);
-    if(Back == d->current)
+    if (Back == d->current)
         d->front->setOpacity(0.);
 }
 
@@ -145,13 +145,13 @@ QFxItem *QFxFlipable::back()
 void QFxFlipable::setBack(QFxItem *back)
 {
     Q_D(QFxFlipable);
-    if(d->back) {
+    if (d->back) {
         qmlInfo(this) << "back is a write-once property";
         return;
     }
     d->back = back;
     children()->append(d->back);
-    if(Front == d->current)
+    if (Front == d->current)
         d->back->setOpacity(0.);
 }
 
@@ -182,36 +182,36 @@ void QFxFlipable::transformChanged(const QSimpleCanvas::Matrix &trans)
                   (p1.y() - p2.y()) * (p3.x() - p2.x());
 
     Side newSide;
-    if(cross > 0) {
+    if (cross > 0) {
        newSide = Back;
     } else {
         newSide = Front;
     }
 
-    if(newSide != d->current) {
+    if (newSide != d->current) {
         d->current = newSide;
         if (d->current==Back) {
             QSimpleCanvas::Matrix mat;
 #ifdef QFX_RENDER_OPENGL
             mat.translate(d->back->width()/2,d->back->height()/2, 0);
-            if(d->back->width() && p1.x() >= p2.x())
+            if (d->back->width() && p1.x() >= p2.x())
                 mat.rotate(180, 0, 1, 0);
-            if(d->back->height() && p2.y() >= p3.y())
+            if (d->back->height() && p2.y() >= p3.y())
                 mat.rotate(180, 1, 0, 0);
             mat.translate(-d->back->width()/2,-d->back->height()/2, 0);
 #else
             mat.translate(d->back->width()/2,d->back->height()/2);
-            if(d->back->width() && p1.x() >= p2.x())
+            if (d->back->width() && p1.x() >= p2.x())
                 mat.rotate(180, Qt::YAxis);
-            if(d->back->height() && p2.y() >= p3.y())
+            if (d->back->height() && p2.y() >= p3.y())
                 mat.rotate(180, Qt::XAxis);
             mat.translate(-d->back->width()/2,-d->back->height()/2);
 #endif
             d->back->setTransform(mat);
         }
-        if(d->front)
+        if (d->front)
             d->front->setOpacity((d->current==Front)?1.:0.);
-        if(d->back)
+        if (d->back)
             d->back->setOpacity((d->current==Back)?1.:0.);
         emit sideChanged();
     }

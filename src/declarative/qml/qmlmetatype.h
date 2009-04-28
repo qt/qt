@@ -199,7 +199,7 @@ int qmlRegisterExtendedType(const char *typeName)
 
     QmlAttachedPropertiesFunc attached = 
         QmlPrivate::attachedPropertiesFunc<E>();
-    if(!attached)
+    if (!attached)
         attached = QmlPrivate::attachedPropertiesFunc<T>();
 
     return QmlMetaType::registerType(ids, QmlPrivate::list_nocreate_op<T>, 0, 
@@ -221,7 +221,7 @@ int qmlRegisterExtendedType(const char *qmlName, const char *typeName)
 
     QmlAttachedPropertiesFunc attached = 
         QmlPrivate::attachedPropertiesFunc<E>();
-    if(!attached)
+    if (!attached)
         attached = QmlPrivate::attachedPropertiesFunc<T>();
 
     return QmlMetaType::registerType(ids, QmlPrivate::list_op<T>, 

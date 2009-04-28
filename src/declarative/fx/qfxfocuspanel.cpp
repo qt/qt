@@ -79,7 +79,7 @@ QFxFocusPanel::~QFxFocusPanel()
 bool QFxFocusPanel::isActive() const
 {
     QSimpleCanvas *canvas = QSimpleCanvasItem::canvas();
-    if(canvas)
+    if (canvas)
         return canvas->activeFocusPanel() == this;
     else
         return false;

@@ -96,7 +96,7 @@ int QFxBaseLayout::spacing() const
 void QFxBaseLayout::setSpacing(int s)
 {
     Q_D(QFxBaseLayout);
-    if(s==d->_spacing)
+    if (s==d->_spacing)
         return;
     d->_spacing = s;
     preLayout();
@@ -116,7 +116,7 @@ int QFxBaseLayout::margin() const
 void QFxBaseLayout::setMargin(int s)
 {
     Q_D(QFxBaseLayout);
-    if(s==d->_margin)
+    if (s==d->_margin)
         return;
     d->_margin = s;
     preLayout();
@@ -223,7 +223,7 @@ QFxItem *QFxBaseLayout::layoutItem() const
 void QFxBaseLayout::setLayoutItem(QFxItem *li)
 {
     Q_D(QFxBaseLayout);
-    if(li == d->_layoutItem)
+    if (li == d->_layoutItem)
         return;
     d->_layoutItem = li;
     emit layoutItemChanged();
@@ -246,7 +246,7 @@ void QFxBaseLayout::childrenChanged()
 bool QFxBaseLayout::event(QEvent *e)
 {
     Q_D(QFxBaseLayout);
-    if(e->type() == QEvent::User) {
+    if (e->type() == QEvent::User) {
         d->_ep = false;
         d->_stableItems += d->_newItems;
         d->_leavingItems.clear();
@@ -288,22 +288,22 @@ QSet<QFxItem *>* QFxBaseLayout::leavingItems()
 void QFxBaseLayout::preLayout()
 {
     Q_D(QFxBaseLayout);
-    if(!isComponentComplete() || d->_movingItem)
+    if (!isComponentComplete() || d->_movingItem)
         return;
 
-    if(!d->_ep) {
+    if (!d->_ep) {
         d->_ep = true;
         QCoreApplication::postEvent(this, new QEvent(QEvent::User));
     }
-    if(d->stateGroup) {
+    if (d->stateGroup) {
         delete d->stateGroup; d->stateGroup = 0;
     }
     QSet<QFxItem *> allItems;
-    for(int ii = 0; ii < this->QSimpleCanvasItem::children().count(); ++ii) {
+    for (int ii = 0; ii < this->QSimpleCanvasItem::children().count(); ++ii) {
         QFxItem *child = qobject_cast<QFxItem *>(this->QSimpleCanvasItem::children().at(ii));
-        if(!child)
+        if (!child)
             continue;
-        if(!d->_items.contains(child)){
+        if (!d->_items.contains(child)){
             QObject::connect(child, SIGNAL(visibleChanged()),
                              this, SLOT(preLayout()));
             QObject::connect(child, SIGNAL(heightChanged()),
@@ -312,20 +312,20 @@ void QFxBaseLayout::preLayout()
                              this, SLOT(preLayout()));
             d->_items += child;
         }
-        if(!child->isVisible()){
-            if(d->_stableItems.contains(child)){
+        if (!child->isVisible()){
+            if (d->_stableItems.contains(child)){
                 d->_leavingItems += child;
                 d->_stableItems -= child;
             }
-        }else if(!d->_stableItems.contains(child)){
+        }else if (!d->_stableItems.contains(child)){
             d->_newItems+=child;
         }
         allItems += child;
     }
     QSet<QFxItem *> deletedItems = d->_items - allItems;
     foreach(QFxItem *child, d->_items){
-        if(!allItems.contains(child)){
-            if(!deletedItems.contains(child)) {
+        if (!allItems.contains(child)){
+            if (!deletedItems.contains(child)) {
                 QObject::disconnect(child, SIGNAL(visibleChanged()),
                                  this, SLOT(preLayout()));
                 QObject::disconnect(child, SIGNAL(heightChanged()),
@@ -343,8 +343,8 @@ void QFxBaseLayout::preLayout()
     qreal width=0;
     qreal height=0;
     foreach(QFxItem *item, d->_items){
-        if(item->isVisible()){
-            if(!d->_animated.contains(item)){
+        if (item->isVisible()){
+            if (!d->_animated.contains(item)){
                 setMovingItem(item);
                 item->setPos(QPointF(item->x()+d->_margin, item->y()+d->_margin));
                 setMovingItem(0);
@@ -356,11 +356,11 @@ void QFxBaseLayout::preLayout()
     width += d->_margin;
     height+= d->_margin;
 
-    if(d->aut & Horizontal)
+    if (d->aut & Horizontal)
         setWidth(int(width));
     else
         setImplicitWidth(itemParent()->width());
-    if(d->aut & Vertical)
+    if (d->aut & Vertical)
         setHeight(int(height));
     else
         setImplicitHeight(itemParent()->height());
@@ -372,20 +372,20 @@ void QFxBaseLayout::applyTransition(const QList<QPair<QString, QVariant> >& chan
         QFxItem* target, QmlTransition* trans)
 {
     Q_D(QFxBaseLayout);
-    if(!trans||!target)//TODO: if !trans, just apply changes
+    if (!trans||!target)//TODO: if !trans, just apply changes
         return;
     setLayoutItem(target);
-    if(d->stateGroup)
+    if (d->stateGroup)
         delete d->stateGroup;
     d->stateGroup = new QmlStateGroup(this);
 
     QmlState *state = new QmlState;
     *(d->stateGroup->statesProperty()) << state;
-    for(int ii=0; ii<changes.size(); ++ii){
+    for (int ii=0; ii<changes.size(); ++ii){
             QmlSetProperty *sp = new QmlSetProperty(state);
             sp->setObject(target);
             QVariant val = changes[ii].second;
-            if(d->_margin &&
+            if (d->_margin &&
                     (changes[ii].first == QLatin1String("x") || changes[ii].first == QLatin1String("y"))){
                 val = QVariant(val.toInt() + d->_margin);
             }
@@ -589,14 +589,14 @@ void QFxVerticalLayout::doLayout()
     int voffset = 0;
 
     foreach(QFxItem* item, *leavingItems()){
-        if(remove()){
+        if (remove()){
             QList<QPair<QString,QVariant> > changes;
             applyRemove(changes, item);
         }
     }
-    for(int ii = 0; ii < this->QSimpleCanvasItem::children().count(); ++ii) {
+    for (int ii = 0; ii < this->QSimpleCanvasItem::children().count(); ++ii) {
         QFxItem *child = qobject_cast<QFxItem *>(this->QSimpleCanvasItem::children().at(ii));
-        if(!child || !child->isVisible())
+        if (!child || !child->isVisible())
             continue;
 
         bool needMove = (child->y() != voffset || child->x());
@@ -604,11 +604,11 @@ void QFxVerticalLayout::doLayout()
         QList<QPair<QString, QVariant> > changes;
         changes << qMakePair(QString(QLatin1String("y")),QVariant(voffset));
         changes << qMakePair(QString(QLatin1String("x")),QVariant(0));
-        if(needMove && items()->contains(child) && move()) {
+        if (needMove && items()->contains(child) && move()) {
             applyMove(changes,child);
-        } else if(!items()->contains(child) && add()) {
+        } else if (!items()->contains(child) && add()) {
             applyAdd(changes,child);
-        } else if(needMove) {
+        } else if (needMove) {
             setMovingItem(child);
             child->setY(voffset);
             setMovingItem(0);
@@ -742,14 +742,14 @@ void QFxHorizontalLayout::doLayout()
     int hoffset = 0;
 
     foreach(QFxItem* item, *leavingItems()){
-        if(remove()){
+        if (remove()){
             QList<QPair<QString,QVariant> > changes;
             applyRemove(changes, item);
         }
     }
-    for(int ii = 0; ii < this->QSimpleCanvasItem::children().count(); ++ii) {
+    for (int ii = 0; ii < this->QSimpleCanvasItem::children().count(); ++ii) {
         QFxItem *child = qobject_cast<QFxItem *>(this->QSimpleCanvasItem::children().at(ii));
-        if(!child || !child->isVisible())
+        if (!child || !child->isVisible())
             continue;
 
         bool needMove = (child->x() != hoffset || child->y());
@@ -757,11 +757,11 @@ void QFxHorizontalLayout::doLayout()
         QList<QPair<QString, QVariant> > changes;
         changes << qMakePair(QString(QLatin1String("x")),QVariant(hoffset));
         changes << qMakePair(QString(QLatin1String("y")),QVariant(0));
-        if(needMove && items()->contains(child) && move()) {
+        if (needMove && items()->contains(child) && move()) {
             applyMove(changes,child);
-        } else if(!items()->contains(child) && add()) {
+        } else if (!items()->contains(child) && add()) {
             applyAdd(changes,child);
-        } else if(needMove) {
+        } else if (needMove) {
             setMovingItem(child);
             child->setX(hoffset);
             setMovingItem(0);
@@ -950,32 +950,32 @@ void QFxGridLayout::doLayout()
 {
     int c=_columns,r=_rows;//Actual number of rows/columns
     int numVisible = items()->size() + newItems()->size();
-    if(_columns==-1 && _rows==-1){
+    if (_columns==-1 && _rows==-1){
         c = 4;
         r = (numVisible+2)/3;
-    }else if(_rows==-1){
+    }else if (_rows==-1){
         r = (numVisible+(_columns-1))/_columns;
-    }else if(_columns==-1){
+    }else if (_columns==-1){
         c = (numVisible+(_rows-1))/_rows;
     }
 
     QList<int> maxColWidth;
     QList<int> maxRowHeight;
     int childIndex =0;
-    for(int i=0; i<r; i++){
-        for(int j=0; j<c; j++){
-            if(j==0)
+    for (int i=0; i<r; i++){
+        for (int j=0; j<c; j++){
+            if (j==0)
                 maxRowHeight << 0;
-            if(i==0)
+            if (i==0)
                 maxColWidth << 0;
-            if(childIndex == this->QSimpleCanvasItem::children().count())
+            if (childIndex == this->QSimpleCanvasItem::children().count())
                 continue;
             QFxItem *child = qobject_cast<QFxItem *>(this->QSimpleCanvasItem::children().at(childIndex++));
-            if(!child || !child->isVisible())
+            if (!child || !child->isVisible())
                 continue;
-            if(child->width() > maxColWidth[j])
+            if (child->width() > maxColWidth[j])
                 maxColWidth[j] = child->width();
-            if(child->height() > maxRowHeight[i])
+            if (child->height() > maxRowHeight[i])
                 maxRowHeight[i] = child->height();
         }
     }
@@ -985,23 +985,23 @@ void QFxGridLayout::doLayout()
     int curRow =0;
     int curCol =0;
     foreach(QFxItem* item, *leavingItems()){
-        if(remove()){
+        if (remove()){
             QList<QPair<QString,QVariant> > changes;
             applyRemove(changes, item);
         }
     }
     foreach(QSimpleCanvasItem* schild, this->QSimpleCanvasItem::children()){
         QFxItem *child = qobject_cast<QFxItem *>(schild);
-        if(!child || !child->isVisible())
+        if (!child || !child->isVisible())
             continue;
         bool needMove = (child->x()!=xoffset)||(child->y()!=yoffset);
         QList<QPair<QString, QVariant> > changes;
         changes << qMakePair(QString(QLatin1String("x")),QVariant(xoffset));
         changes << qMakePair(QString(QLatin1String("y")),QVariant(yoffset));
-        if(newItems()->contains(child) && add()) {
+        if (newItems()->contains(child) && add()) {
             applyAdd(changes,child);
-        } else if(needMove) {
-            if(move()){
+        } else if (needMove) {
+            if (move()){
                 applyMove(changes,child);
             }else{
                 setMovingItem(child);
@@ -1012,11 +1012,11 @@ void QFxGridLayout::doLayout()
         xoffset+=maxColWidth[curCol]+spacing();
         curCol++;
         curCol%=c;
-        if(!curCol){
+        if (!curCol){
             yoffset+=maxRowHeight[curRow]+spacing();
             xoffset=0;
             curRow++;
-            if(curRow>=r)
+            if (curRow>=r)
                 return;
         }
     }

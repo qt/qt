@@ -64,7 +64,7 @@ public:
     \qmlclass Connection QmlConnection
     \brief The Connection element describes generalized connections to signals.
 
-    JavaScript-in-HTML style \l {qmlformatsignalscpp}{signal properties} do not allow:
+    JavaScript-in-HTML style signal properties do not allow:
     \list
         \i connecting to signals with the same name but different parameters
         \i conformance checking that parameters are correctly named
@@ -173,12 +173,12 @@ void QmlConnection::connectIfValid()
         QObject *sender = d->signalSender ? d->signalSender : parent();
         const QMetaObject *mo = sender->metaObject();
         int methods = mo->methodCount();
-        for(int ii = 0; ii < methods; ++ii) {
+        for (int ii = 0; ii < methods; ++ii) {
             QMetaMethod method = mo->method(ii);
             QString methodName = QLatin1String(method.signature());
             int idx = methodName.indexOf(QLatin1Char('('));
             methodName = methodName.left(idx);
-            if(methodName == signalname && (lparen<0 || method.parameterNames() == sigparams)) {
+            if (methodName == signalname && (lparen<0 || method.parameterNames() == sigparams)) {
                 sigIdx = ii;
                 break;
             }

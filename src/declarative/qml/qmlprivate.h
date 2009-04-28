@@ -221,7 +221,7 @@ int QmlPrivate::list_op(QmlPrivate::ListOp op, int val,
                         const QVariant &value, 
                         void **out) 
 { 
-    if(op == QmlPrivate::Create) { 
+    if (op == QmlPrivate::Create) { 
         QObject *obj = static_cast<QObject *>(new T);
         *((QObject **)out) = obj; 
         return 0; 
@@ -256,7 +256,7 @@ int QmlPrivate::list_op(QmlPrivate::ListOp op, int val,
         { 
             QObject *fromObj = value.value<QObject *>(); 
             T *me = qobject_cast<T *>(fromObj); 
-            if(me) { 
+            if (me) { 
                 *((QVariant *)*out) = QVariant::fromValue(me); 
             } 
         } 
@@ -304,7 +304,7 @@ int QmlPrivate::list_nocreate_op(QmlPrivate::ListOp op, int val,
         { 
             QObject *fromObj = value.value<QObject *>(); 
             T *me = qobject_cast<T *>(fromObj); 
-            if(me) { 
+            if (me) { 
                 *((QVariant *)*out) = QVariant::fromValue(me); 
             } 
         } 

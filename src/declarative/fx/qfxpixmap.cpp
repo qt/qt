@@ -67,7 +67,7 @@ public:
 
     int refCount;
     void addRef() { ++refCount; }
-    void release() { Q_ASSERT(refCount > 0); --refCount; if(refCount == 0) { qfxPixmapCache.remove(key); delete this; } }
+    void release() { Q_ASSERT(refCount > 0); --refCount; if (refCount == 0) { qfxPixmapCache.remove(key); delete this; } }
 };
 
 static QFxPixmapCacheItem qfxPixmapCacheDummyItem;
@@ -104,7 +104,7 @@ QFxPixmap::QFxPixmap(const QUrl &url)
 #endif
     QString key = url.toString();
     QFxPixmapCache::Iterator iter = qfxPixmapCache.find(key);
-    if(iter == qfxPixmapCache.end()) {
+    if (iter == qfxPixmapCache.end()) {
         qWarning() << "QFxPixmap: URL not loaded" << url;
     } else {
         QNetworkReply *reply = (*iter)->reply;
@@ -180,10 +180,10 @@ QPixmap QFxPixmap::pixmap() const
 void QFxPixmap::setPixmap(const QPixmap &pix)
 {
     QFxPixmapCache::Iterator iter = qfxPixmapCache.find(QString::number(pix.cacheKey()));
-    if(iter == qfxPixmapCache.end()) {
+    if (iter == qfxPixmapCache.end()) {
         QFxPixmapCacheItem *item = new QFxPixmapCacheItem;
         item->key = QString::number(pix.cacheKey());
-        if(d->pixmap)
+        if (d->pixmap)
             d->pixmap->release();
         d->pixmap = item;
         d->pixmap->image = pix.toImage();
@@ -195,7 +195,7 @@ void QFxPixmap::setPixmap(const QPixmap &pix)
 
 #if 0
     int size = 0;
-    for(QFxPixmapCache::Iterator iter = qfxPixmapCache.begin(); iter != qfxPixmapCache.end(); ++iter) {
+    for (QFxPixmapCache::Iterator iter = qfxPixmapCache.begin(); iter != qfxPixmapCache.end(); ++iter) {
         size += (*iter)->image.width() * (*iter)->image.height();
     }
     qWarning() << qfxPixmapCache.count() << size;
@@ -207,8 +207,8 @@ QFxPixmap::operator const QSimpleCanvasConfig::Image &() const
 #if defined(QFX_RENDER_OPENGL)
     return d->pixmap->image;
 #else
-    if(d->opaque) {
-        if(!d->pixmap->image.isNull() && d->pixmap->opaqueImage.isNull()) {
+    if (d->opaque) {
+        if (!d->pixmap->image.isNull() && d->pixmap->opaqueImage.isNull()) {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
             QFxPerfTimer<QFxPerf::PixmapLoad> perf;
 #endif
@@ -218,7 +218,7 @@ QFxPixmap::operator const QSimpleCanvasConfig::Image &() const
         }
         return d->pixmap->opaqueImage;
     } else {
-        if(!d->pixmap->image.isNull() && d->pixmap->image.format() != QImage::Format_ARGB32_Premultiplied) {
+        if (!d->pixmap->image.isNull() && d->pixmap->image.format() != QImage::Format_ARGB32_Premultiplied) {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
             QFxPerfTimer<QFxPerf::PixmapLoad> perf;
 #endif
@@ -238,7 +238,7 @@ void QFxPixmap::get(QmlEngine *engine, const QUrl& url, QObject* obj, const char
 {
     QString key = url.toString();
     QFxPixmapCache::Iterator iter = qfxPixmapCache.find(key);
-    if(iter == qfxPixmapCache.end()) {
+    if (iter == qfxPixmapCache.end()) {
         QFxPixmapCacheItem *item = new QFxPixmapCacheItem;
         item->addRef(); // XXX - will never get deleted.  Need to revisit caching
         item->key = key;
@@ -274,7 +274,7 @@ void QFxPixmap::cancelGet(const QUrl& url, QObject* obj, const char* slot)
 {
     QString key = url.toString();
     QFxPixmapCache::Iterator iter = qfxPixmapCache.find(key);
-    if(iter == qfxPixmapCache.end())
+    if (iter == qfxPixmapCache.end())
         return;
     if ((*iter)->reply)
         QObject::disconnect((*iter)->reply, SIGNAL(finished()), obj, slot);

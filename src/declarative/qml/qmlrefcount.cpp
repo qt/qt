@@ -60,7 +60,7 @@ void QmlRefCount::release()
 {
     Q_ASSERT(refCount > 0);
     --refCount;
-    if(refCount == 0)
+    if (refCount == 0)
         delete this;
 }
 

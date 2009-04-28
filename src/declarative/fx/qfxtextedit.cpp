@@ -270,7 +270,7 @@ QColor QFxTextEdit::color() const
 void QFxTextEdit::setColor(const QColor &color)
 {
     Q_D(QFxTextEdit);
-    if(d->color == color)
+    if (d->color == color)
         return;
 
     clearCache();
@@ -370,7 +370,7 @@ void QFxTextEdit::setWrap(bool w)
 void QFxTextEdit::geometryChanged(const QRectF &newGeometry, 
                                   const QRectF &oldGeometry)
 {
-    if(newGeometry.width() != oldGeometry.width())
+    if (newGeometry.width() != oldGeometry.width())
         updateSize();
     QFxImageItem::geometryChanged(newGeometry, oldGeometry);
 }

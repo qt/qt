@@ -789,7 +789,7 @@ int JavaScript::Lexer::lex()
     case Eof:
         return 0;
     case Other:
-        if(token == JavaScriptGrammar::T_RBRACE || token == JavaScriptGrammar::T_SEMICOLON)
+        if (token == JavaScriptGrammar::T_RBRACE || token == JavaScriptGrammar::T_SEMICOLON)
             delimited = true;
         return token;
     case Identifier:
