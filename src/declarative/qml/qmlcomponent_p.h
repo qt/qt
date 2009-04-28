@@ -81,6 +81,7 @@ public:
     QmlEngine *engine;
 
     void clear();
+    static bool isXml(const QByteArray &);
 };
 
 #endif // QMLCOMPONENT_P_H

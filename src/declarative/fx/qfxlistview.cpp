@@ -98,8 +98,11 @@ public:
     }
 
     static QFxListViewAttached *properties(QObject *obj) {
-        QFxListViewAttached *rv = new QFxListViewAttached(obj);
-        attachedProperties.insert(obj, rv);
+        QFxListViewAttached *rv = attachedProperties.value(obj);
+        if (!rv) {
+            rv = new QFxListViewAttached(obj);
+            attachedProperties.insert(obj, rv);
+        }
         return rv;
     }
 

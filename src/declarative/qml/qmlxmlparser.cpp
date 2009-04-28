@@ -365,6 +365,13 @@ QmlParser::Object *QmlXmlParser::tree() const
     return root;
 }
 
+QmlParser::Object *QmlXmlParser::takeTree()
+{
+    QmlParser::Object *r = root;
+    root = 0;
+    return r;
+}
+
 QString QmlXmlParser::errorDescription() const
 {
     return _error;

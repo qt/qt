@@ -41,11 +41,12 @@
 
 #include "qmldom.h"
 #include "qmldom_p.h"
-#include "private/qmlxmlparser_p.h"
 #include "private/qmlcompiler_p.h"
 #include "qmlcompiledcomponent_p.h"
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstring.h>
+
+#include "qmlscriptparser_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -150,7 +151,7 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
 {
     d->error = QString();
 
-    QmlXmlParser parser;
+    QmlScriptParser parser;
     if(!parser.parse(data)) {
         d->error = parser.errorDescription();
         return false;
@@ -174,6 +175,7 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
 
     return true;
 }
+
 
 /*!
     Returns the last load error.  The load error will be reset after a 
