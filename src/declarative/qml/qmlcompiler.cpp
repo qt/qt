@@ -42,7 +42,7 @@
 #include "private/qmlcompiler_p.h"
 #include <qfxperf.h>
 #include "qmlparser_p.h"
-#include "private/qmlxmlparser_p.h"
+#include "private/qmlscriptparser_p.h"
 #include <qmlpropertyvaluesource.h>
 #include <qmlcomponent.h>
 #include "private/qmetaobjectbuilder_p.h"
@@ -59,6 +59,8 @@
 #include <qmlcontext.h>
 #include <qmlmetatype.h>
 #include <QtCore/qdebug.h>
+
+#include "qmlscriptparser_p.h"
 
 QT_BEGIN_NAMESPACE
 /*

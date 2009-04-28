@@ -70,6 +70,7 @@ public:
     QStringList types() const;
 
     QmlParser::Object *tree() const;
+    QmlParser::Object *takeTree();
 
     void clear();
 
@@ -80,9 +81,9 @@ private:
     QString _error;
 };
 
-#endif // QMLXMLPARSER_P_H
-
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QMLXMLPARSER_P_H
+

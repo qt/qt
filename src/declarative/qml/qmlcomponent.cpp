@@ -51,14 +51,25 @@
 #include <qmlengine.h>
 #include <QFileInfo>
 #include <qmlbindablevalue.h>
-#include "private/qmlxmlparser_p.h"
 #include "qmlcompiledcomponent_p.h"
 #include <QtCore/qdebug.h>
 #include <QApplication>
 
+#include "qmlscriptparser_p.h"
 
 QT_BEGIN_NAMESPACE
 class QByteArray;
+
+bool QmlComponentPrivate::isXml(const QByteArray &ba)
+{
+    for (int i = 0; i < ba.size(); ++i) {
+        char c = ba.at(i);
+        if (c == ' ' || c == '\n' || c == '\r' || c == '\t')
+            continue;
+        return (c == '<');
+    }
+    return true;
+}
 
 /*!
     \class QmlComponent

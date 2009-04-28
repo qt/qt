@@ -917,6 +917,20 @@ QVariant QmlExpression::value()
             scriptEngine->currentContext()->pushScope(context()->d_func()->scopeChain.at(i));
         }
         QScriptValue svalue = scriptEngine->evaluate(expression());
+        if (scriptEngine->hasUncaughtException()) {
+            if (scriptEngine->uncaughtException().isError()){
+                QScriptValue exception = scriptEngine->uncaughtException();
+                if(!exception.property(QLatin1String("fileName")).toString().isEmpty()){
+                    qWarning() << exception.property(QLatin1String("fileName")).toString()
+                            << scriptEngine->uncaughtExceptionLineNumber()
+                            << exception.toString();
+
+                } else {
+                    qWarning() << exception.toString();
+                }
+            }
+        }
+
         context()->d_func()->defaultObjects.removeAt(context()->d_func()->highPriorityCount);
         if(svalue.isArray()) {
             int length = svalue.property(QLatin1String("length")).toInt32();

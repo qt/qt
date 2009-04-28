@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <private/qmlcompositetypemanager_p.h>
-#include <private/qmlxmlparser_p.h>
+#include <private/qmlscriptparser_p.h>
 #include <private/qmlcompiledcomponent_p.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtNetwork/qnetworkreply.h>

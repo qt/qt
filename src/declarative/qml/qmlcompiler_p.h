@@ -50,7 +50,6 @@
 class QStringList;
 
 QT_BEGIN_NAMESPACE
-class QmlXmlParser;
 class QmlEngine;
 class QmlComponent;
 class QmlCompiledComponent;
