@@ -80,8 +80,7 @@ public:
 #ifndef QT_NO_DIRECTFB_KEYBOARD
     QDirectFBKeyboardHandler *keyboard;
 #endif
-    bool videoonly;
-    bool ignoreSystemClip;
+    QDirectFBScreen::DirectFBFlags directFBFlags;
     QImage::Format alphaPixmapFormat;
 };
 
@@ -97,8 +96,7 @@ QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen* screen)
 #ifndef QT_NO_DIRECTFB_KEYBOARD
     , keyboard(0)
 #endif
-    , videoonly(false)
-    , ignoreSystemClip(false)
+    , directFBFlags(QDirectFBScreen::NoFlags)
     , alphaPixmapFormat(QImage::Format_Invalid)
 {
 #ifndef QT_NO_QWS_SIGNALHANDLER
@@ -227,7 +225,7 @@ IDirectFBSurface* QDirectFBScreen::createDFBSurface(const DFBSurfaceDescription 
         return 0;
     }
 
-    if (d_ptr->videoonly && !(desc->flags & DSDESC_PREALLOCATED)) {
+    if (d_ptr->directFBFlags & VideoOnly && !(desc->flags & DSDESC_PREALLOCATED)) {
         // Add the video only capability. This means the surface will be created in video ram
         DFBSurfaceDescription voDesc = *desc;
         if (!(voDesc.flags & DSDESC_CAPS)) {
@@ -347,11 +345,10 @@ void QDirectFBScreen::releaseDFBSurface(IDirectFBSurface *surface)
     //qDebug("Released surface at %p. New count = %d", surface, d_ptr->allocatedSurfaces.count());
 }
 
-bool QDirectFBScreen::preferVideoOnly() const
+QDirectFBScreen::DirectFBFlags QDirectFBScreen::directFBFlags() const
 {
-    return d_ptr->videoonly;
+    return d_ptr->directFBFlags;
 }
-
 IDirectFB* QDirectFBScreen::dfb()
 {
     return d_ptr->dfb;
@@ -825,11 +822,11 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     if (displayArgs.contains(QLatin1String("debug"), Qt::CaseInsensitive))
         printDirectFBInfo(d_ptr->dfb);
 
-    if (displayArgs.contains(QLatin1String("videoonly")))
-        d_ptr->videoonly = true;
+    if (displayArgs.contains(QLatin1String("videoonly"), Qt::CaseInsensitive))
+        d_ptr->directFBFlags |= VideoOnly;
 
     if (displayArgs.contains(QLatin1String("ignoresystemclip"), Qt::CaseInsensitive))
-        d_ptr->ignoreSystemClip = true;
+        d_ptr->directFBFlags |= IgnoreSystemClip;
 
 #ifndef QT_NO_DIRECTFB_WM
     if (displayArgs.contains(QLatin1String("fullscreen")))
@@ -1261,7 +1258,3 @@ uchar *QDirectFBScreen::lockSurface(IDirectFBSurface *surface, DFBSurfaceLockFla
     return reinterpret_cast<uchar*>(mem);
 }
 
-bool QDirectFBScreen::ignoreSystemClip() const
-{
-    return d_ptr->ignoreSystemClip;
-}

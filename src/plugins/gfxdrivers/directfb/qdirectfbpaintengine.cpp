@@ -351,7 +351,7 @@ QDirectFBPaintEnginePrivate::QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p
       dfbHandledClip(false), dfbDevice(0), q(p)
 {
     fb = QDirectFBScreen::instance()->dfb();
-    ignoreSystemClip = QDirectFBScreen::instance()->ignoreSystemClip();
+    ignoreSystemClip = QDirectFBScreen::instance()->directFBFlags() & QDirectFBScreen::IgnoreSystemClip;
     surfaceCache = new SurfaceCache;
     static int cacheLimit = qgetenv("QT_DIRECTFB_IMAGECACHE").toInt();
     if (cacheLimit > 0)

@@ -110,7 +110,7 @@ void QDirectFBSurface::createWindow()
                                                   |DWDESC_PIXELFORMAT);
 
     description.surface_caps = DSCAPS_NONE;
-    if (screen->preferVideoOnly())
+    if (screen->directFBFlags() & QDirectFBScreen::VideoOnly)
         description.surface_caps = DFBSurfaceCapabilities(description.surface_caps|DSCAPS_VIDEOONLY);
     const QImage::Format format = screen->pixelFormat();
     description.pixelformat = QDirectFBScreen::getSurfacePixelFormat(format);

@@ -59,6 +59,16 @@ public:
     QDirectFBScreen(int display_id);
     ~QDirectFBScreen();
 
+    enum DirectFBFlag {
+        NoFlags = 0x00,
+        VideoOnly = 0x01,
+        IgnoreSystemClip = 0x02
+    };
+
+    Q_DECLARE_FLAGS(DirectFBFlags, DirectFBFlag);
+
+    DirectFBFlags directFBFlags() const;
+
     bool connect(const QString &displaySpec);
     void disconnect();
     bool initDevice();
@@ -108,9 +118,6 @@ public:
                                      SurfaceCreationOptions options);
     void releaseDFBSurface(IDirectFBSurface* surface);
 
-    bool preferVideoOnly() const;
-    bool ignoreSystemClip() const;
-
     static int depth(DFBSurfacePixelFormat format);
 
     static DFBSurfacePixelFormat getSurfacePixelFormat(QImage::Format format);
@@ -139,6 +146,7 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDirectFBScreen::SurfaceCreationOptions);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDirectFBScreen::DirectFBFlags);
 
 inline bool QDirectFBScreen::isPremultiplied(QImage::Format format)
 {
