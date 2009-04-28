@@ -694,7 +694,7 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
         QString element;
         QString name;
         QmlClassNode* qmlClass = 0;
-        if (splitQmlArg(arg,element,name)) {
+        if (splitQmlArg(doc,arg,element,name)) {
             Node* n = tre->findNode(QStringList(element),Node::Fake);
             if (n && n->subType() == Node::QmlClass) {
                 qmlClass = static_cast<const QmlClassNode*>(n);
@@ -721,7 +721,8 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
   and returns true. If any of the parts isn't found,
   a debug message is output and false is returned.
  */
-bool CppCodeParser::splitQmlPropertyArg(const QString& arg,
+bool CppCodeParser::splitQmlPropertyArg(const Doc& doc,
+                                        const QString& arg,
                                         QString& type,
                                         QString& element,
                                         QString& property)
@@ -736,10 +737,10 @@ bool CppCodeParser::splitQmlPropertyArg(const QString& arg,
             return true;
         }
         else
-            qDebug() << "Missing QML element name or property name";
+            doc.location().warning(tr("Missing QML element name or property name"));
     }
     else
-        qDebug() << "Missing QML property type or property path";
+        doc.location().warning(tr("Missing QML property type or property path"));
     return false;
 }
 
@@ -753,7 +754,8 @@ bool CppCodeParser::splitQmlPropertyArg(const QString& arg,
   true. If either of the parts isn't found, a debug
   message is output and false is returned.
  */
-bool CppCodeParser::splitQmlArg(const QString& arg,
+bool CppCodeParser::splitQmlArg(const Doc& doc,
+                                const QString& arg,
                                 QString& element,
                                 QString& name)
 {
@@ -764,7 +766,7 @@ bool CppCodeParser::splitQmlArg(const QString& arg,
         return true;
     }
     else
-        qDebug() << "Missing QML element name or signal/method name";
+        doc.location().warning(tr("Missing QML element name or signal/method name"));
     return false;
 }
 
@@ -773,7 +775,8 @@ bool CppCodeParser::splitQmlArg(const QString& arg,
 
   Currently, this function is called only for \e{qmlproperty}.
  */
-Node *CppCodeParser::processTopicCommandGroup(const QString& command,
+Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
+                                              const QString& command,
                                               const QStringList& args)
 {
     QmlPropGroupNode* qmlPropGroup = 0;
@@ -782,7 +785,7 @@ Node *CppCodeParser::processTopicCommandGroup(const QString& command,
         QString element;
         QString property;
         QStringList::ConstIterator arg = args.begin();
-        if (splitQmlPropertyArg(*arg,type,element,property)) {
+        if (splitQmlPropertyArg(doc,(*arg),type,element,property)) {
             Node* n = tre->findNode(QStringList(element),Node::Fake);
             if (n && n->subType() == Node::QmlClass) {
                 QmlClassNode* qmlClass = static_cast<QmlClassNode*>(n);
@@ -794,7 +797,7 @@ Node *CppCodeParser::processTopicCommandGroup(const QString& command,
             new QmlPropertyNode(qmlPropGroup,property,type);
             ++arg;
             while (arg != args.end()) {
-                if (splitQmlPropertyArg(*arg,type,element,property)) {
+                if (splitQmlPropertyArg(doc,(*arg),type,element,property)) {
                     new QmlPropertyNode(qmlPropGroup,property,type);
                 }
                 ++arg;
@@ -1974,7 +1977,7 @@ bool CppCodeParser::matchDocsAndStuff()
 #ifdef QDOC_QML
                 if (topic == COMMAND_QMLPROPERTY) {
                     Doc nodeDoc = doc;
-                    Node *node = processTopicCommandGroup(topic, args);
+                    Node *node = processTopicCommandGroup(nodeDoc,topic,args);
                     if (node != 0) {
                         nodes.append(node);
                         docs.append(nodeDoc);
@@ -1984,7 +1987,7 @@ bool CppCodeParser::matchDocsAndStuff()
                     QStringList::ConstIterator a = args.begin();
                     while (a != args.end()) {
                         Doc nodeDoc = doc;
-                        Node *node = processTopicCommand(nodeDoc, topic, *a);
+                        Node *node = processTopicCommand(nodeDoc,topic,*a);
                         if (node != 0) {
                             nodes.append(node);
                             docs.append(nodeDoc);

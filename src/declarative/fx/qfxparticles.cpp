@@ -268,14 +268,14 @@ void QFxParticleMotionGravity::advance(QFxParticle &p, int interval)
 */
 
 /*!
-    \qmlproperty QFxParticleMotionWander::xvariance
-    \qmlproperty QFxParticleMotionWander::yvariance
+    \qmlproperty int QFxParticleMotionWander::xvariance
+    \qmlproperty int QFxParticleMotionWander::yvariance
 
     These properties set the amount to wander in the x and y directions.
 */
 
 /*!
-    \qmlproperty QFxParticleMotionWander::pace
+    \qmlproperty int QFxParticleMotionWander::pace
     This property holds how quickly the paricles will move from side to side.
 */
 
