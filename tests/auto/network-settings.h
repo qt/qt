@@ -168,15 +168,12 @@ public:
         expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
         return expected;
     }
-<<<<<<< HEAD:tests/auto/network-settings.h
     
     static QByteArray expectedReplyFtp()
     {
         QByteArray expected( "220 (vsFTPd 2.0.5)\r\n221 Goodbye.\r\n" );
         return expected;
     }    
-=======
->>>>>>> 6d41f31... Nwteork server test related data (serever name, IP address ...) can now:tests/auto/network-settings.h
 
 #ifdef Q_OS_SYMBIAN
     static void setDefaultIap()
