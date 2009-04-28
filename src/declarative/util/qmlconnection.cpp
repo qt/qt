@@ -64,7 +64,7 @@ public:
     \qmlclass Connection QmlConnection
     \brief The Connection element describes generalized connections to signals.
 
-    JavaScript-in-HTML style \l {qmlformatsignalscpp}{signal properties} do not allow:
+    JavaScript-in-HTML style signal properties do not allow:
     \list
         \i connecting to signals with the same name but different parameters
         \i conformance checking that parameters are correctly named

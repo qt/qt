@@ -183,7 +183,8 @@ void QFxImage::setPixmap(const QPixmap &pix)
 
     Each scale grid property (left, right, top, and bottom) specifies an offset from the respective side. For example, \c scaleGrid.bottom="10" sets the bottom scale grid line 10 pixels up from the bottom of the image.
 
-    A scale grid can also be specified using a \l {Imagexmlpropertysrc}{.sci file}.
+    A scale grid can also be specified using a
+    \l {Image::src}{.sci file}.
 */
 QFxScaleGrid *QFxImage::scaleGrid()
 {
@@ -792,11 +793,9 @@ QFxImage::Status QFxImage::status() const
 
     Image can handle any image format supported by Qt, loaded from any URL scheme supported by Qt.
 
-    \target Imagexmlpropertysrc
-
     It can also handle .sci files, which are a Qml-specific format. A .sci file uses a simple text-based format that specifies
     \list
-    \i the grid lines describing a \l {ImagexmlpropertiesscaleGrid}{scale grid}.
+    \i the grid lines describing a \l {Image::scaleGrid.left}{scale grid}.
     \i an image file.
     \endlist
 

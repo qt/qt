@@ -374,7 +374,7 @@ void QFxContents::setItem(QFxItem *item)
 
     This signal is emitted when the item's focus state changes.
 
-    \sa setFocus()
+    \sa QSimpleCanvasItem::setFocus()
 */
 
 /*!
@@ -570,7 +570,7 @@ bool QFxItem::isClassComplete() const
     It is often desireable to delay some processing until the component is
     completed.
 
-    \sa componentComplete().
+    \sa componentComplete()
 */
 bool QFxItem::isComponentComplete() const
 {
