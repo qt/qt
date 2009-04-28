@@ -61,9 +61,6 @@ public:
 
     QState *parentState() const;
 
-    void assignProperty(QObject *object, const char *name,
-                        const QVariant &value);
-
 Q_SIGNALS:
     void entered();
     void exited();

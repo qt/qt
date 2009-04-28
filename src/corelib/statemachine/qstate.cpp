@@ -65,6 +65,9 @@ QT_BEGIN_NAMESPACE
   The addTransition() function adds a transition. The removeTransition()
   function removes a transition.
 
+  The assignProperty() function is used for defining property assignments that
+  should be performed when a state is entered.
+
   \section1 States with Child States
 
   For non-parallel state groups, the setInitialState() function must be called
@@ -213,6 +216,24 @@ QList<QAbstractTransition*> QStatePrivate::transitions() const
             result.append(t);
     }
     return result;
+}
+
+/*!
+  Instructs this state to set the property with the given \a name of the given
+  \a object to the given \a value when the state is entered.
+*/
+void QState::assignProperty(QObject *object, const char *name,
+                            const QVariant &value)
+{
+    Q_D(QState);
+    for (int i = 0; i < d->propertyAssignments.size(); ++i) {
+        QPropertyAssignment &assn = d->propertyAssignments[i];
+        if ((assn.object == object) && (assn.propertyName == name)) {
+            assn.value = value;
+            return;
+        }
+    }
+    d->propertyAssignments.append(QPropertyAssignment(object, name, value));
 }
 
 /*!

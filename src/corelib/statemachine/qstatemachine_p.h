@@ -62,7 +62,7 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qset.h>
 
-#include "qabstractstate_p.h"
+#include "qstate_p.h"
 
 QT_BEGIN_NAMESPACE
 

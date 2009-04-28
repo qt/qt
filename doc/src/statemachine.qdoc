@@ -76,11 +76,10 @@
   becomes part of your application's event loop.
 
   The above state machine is perfectly fine, but it doesn't \e do anything; it
-  merely transitions from one state to another. The
-  QAbstractState::assignProperty() function can be used to have a state set a
-  property of a QObject when the state is entered. In the following snippet,
-  the value that should be assigned to a QLabel's text property is specified
-  for each state:
+  merely transitions from one state to another. The QState::assignProperty()
+  function can be used to have a state set a property of a QObject when the
+  state is entered. In the following snippet, the value that should be
+  assigned to a QLabel's text property is specified for each state:
 
   \code
     s1->assignProperty(label, "text", "In state s1");

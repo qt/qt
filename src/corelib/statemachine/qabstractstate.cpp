@@ -41,9 +41,10 @@
 
 #include "qabstractstate.h"
 #include "qabstractstate_p.h"
+#include "qstate.h"
+#include "qstate_p.h"
 #include "qstatemachine.h"
 #include "qstatemachine_p.h"
-#include "qstate.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -58,9 +59,6 @@ QT_BEGIN_NAMESPACE
   The QAbstractState class is the abstract base class of states that are part
   of a QStateMachine. It defines the interface that all state objects have in
   common. QAbstractState is part of \l{The State Machine Framework}.
-
-  The assignProperty() function is used for defining property assignments that
-  should be performed when a state is entered.
 
   The entered() signal is emitted when the state has been entered. The
   exited() signal is emitted when the state has been exited.
@@ -178,24 +176,6 @@ QAbstractState::~QAbstractState()
 QState *QAbstractState::parentState() const
 {
     return qobject_cast<QState*>(parent());
-}
-
-/*!
-  Instructs this state to set the property with the given \a name of the given
-  \a object to the given \a value when the state is entered.
-*/
-void QAbstractState::assignProperty(QObject *object, const char *name,
-                                    const QVariant &value)
-{
-    Q_D(QAbstractState);
-    for (int i = 0; i < d->propertyAssignments.size(); ++i) {
-        QPropertyAssignment &assn = d->propertyAssignments[i];
-        if ((assn.object == object) && (assn.propertyName == name)) {
-            assn.value = value;
-            return;
-        }
-    }
-    d->propertyAssignments.append(QPropertyAssignment(object, name, value));
 }
 
 /*!

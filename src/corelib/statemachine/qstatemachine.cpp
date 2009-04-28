@@ -40,6 +40,8 @@
 ****************************************************************************/
 
 #include "qstatemachine.h"
+#include "qstate.h"
+#include "qstate_p.h"
 #include "qstatemachine_p.h"
 #include "qabstracttransition.h"
 #include "qabstracttransition_p.h"
@@ -52,8 +54,6 @@
 #include "qfinalstate.h"
 #include "qhistorystate.h"
 #include "qhistorystate_p.h"
-#include "qstate.h"
-#include "qstate_p.h"
 #ifndef QT_STATEMACHINE_SOLUTION
 #include "private/qobject_p.h"
 #include "private/qthread_p.h"
@@ -641,9 +641,11 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
     QList<QPropertyAssignment> propertyAssignments;
     QHash<RestorableId, QVariant> pendingRestorables = registeredRestorables;
     for (int i = 0; i < enteredStates.size(); ++i) {
-        QAbstractState *s = enteredStates.at(i);
+        QState *s = qobject_cast<QState*>(enteredStates.at(i));
+        if (!s)
+            continue;
 
-        QList<QPropertyAssignment> assignments = QAbstractStatePrivate::get(s)->propertyAssignments;
+        QList<QPropertyAssignment> assignments = QStatePrivate::get(s)->propertyAssignments;
         for (int j = 0; j < assignments.size(); ++j) {
             const QPropertyAssignment &assn = assignments.at(j);
             if (globalRestorePolicy == QStateMachine::RestoreProperties) {
@@ -1487,7 +1489,7 @@ void QStateMachine::setErrorState(QAbstractState *state)
    \value RestoreProperties The state machine should save the initial values of properties 
           and restore them later.
 
-   \sa setRestorePolicy(), restorePolicy(), QAbstractState::assignProperty()
+   \sa setRestorePolicy(), restorePolicy(), QState::assignProperty()
 */
 
 

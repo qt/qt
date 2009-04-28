@@ -91,8 +91,12 @@ public:
     QAbstractState *initialState() const;
     void setInitialState(QAbstractState *state);
 
+    void assignProperty(QObject *object, const char *name,
+                        const QVariant &value);
+
 Q_SIGNALS:
     void finished();
+    void polished();
 
 protected:
     void onEntry();

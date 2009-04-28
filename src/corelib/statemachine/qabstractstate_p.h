@@ -57,27 +57,9 @@
 #include <private/qobject_p.h>
 #endif
 
-#include <QtCore/qlist.h>
-#include <QtCore/qbytearray.h>
-#include <QtCore/qvariant.h>
-
 QT_BEGIN_NAMESPACE
 
-class QAbstractTransition;
-class QHistoryState;
 class QStateMachine;
-
-struct QPropertyAssignment
-{
-    QPropertyAssignment(QObject *o, const QByteArray &n,
-                        const QVariant &v, bool es = true)
-        : object(o), propertyName(n), value(v), explicitlySet(es)
-        {}
-    QObject *object;
-    QByteArray propertyName;
-    QVariant value;
-    bool explicitlySet;
-};
 
 class QAbstractState;
 class Q_CORE_EXPORT QAbstractStatePrivate
@@ -100,8 +82,6 @@ public:
 
     void emitEntered();
     void emitExited();
-
-    QList<QPropertyAssignment> propertyAssignments;
 
 #ifdef QT_STATEMACHINE_SOLUTION
     QAbstractState *q_ptr;
