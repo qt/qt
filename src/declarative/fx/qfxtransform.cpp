@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 #define M_PI 3.14159265358979323846
 #endif
 
-QML_DEFINE_TYPE(QFxTransform,Transform);
+QML_DEFINE_NOCREATE_TYPE(QFxTransform);
 
 /*!
     \qmlclass Transform
@@ -59,6 +59,10 @@ QML_DEFINE_TYPE(QFxTransform,Transform);
 */
 QFxTransform::QFxTransform(QObject *parent) :
     QObject(parent)
+{
+}
+
+QFxTransform::~QFxTransform()
 {
 }
 
@@ -79,132 +83,181 @@ void QFxTransform::update()
         item->updateTransform();
 }
 
-QML_DEFINE_TYPE(QFxAxis,Axis);
+/*!
+    \qmlclass Axis
+    \brief An axis that can be used for rotation or translation.
+*/
+
+QML_DEFINE_TYPE(QFxAxis, Axis);
 
 QFxAxis::QFxAxis(QObject *parent)
-: QFxTransform(parent), _xStart(0), _yStart(0), _xEnd(0), _yEnd(0), _zEnd(0), _rotation(0), 
-  _translation(0), _distanceToPlane(1024.), _dirty(true)
+: QObject(parent), _startX(0), _startY(0), _endX(0), _endY(0), _endZ(0)
 {
 }
 
-qreal QFxAxis::xStart() const
+QFxAxis::~QFxAxis()
 {
-    return _xStart;
 }
 
-void QFxAxis::setXStart(qreal x)
+qreal QFxAxis::startX() const
 {
-    _xStart = x;
+    return _startX;
+}
+
+void QFxAxis::setStartX(qreal x)
+{
+    _startX = x;
+    emit updated();
+}
+
+qreal QFxAxis::startY() const
+{
+    return _startY;
+}
+
+void QFxAxis::setStartY(qreal y)
+{
+    _startY = y;
+    emit updated();
+}
+
+qreal QFxAxis::endX() const
+{
+    return _endX;
+}
+
+void QFxAxis::setEndX(qreal x)
+{
+    _endX = x;
+    emit updated();
+}
+
+qreal QFxAxis::endY() const
+{
+    return _endY;
+}
+
+void QFxAxis::setEndY(qreal y)
+{
+    _endY = y;
+    emit updated();
+}
+
+qreal QFxAxis::endZ() const
+{
+    return _endZ;
+}
+
+void QFxAxis::setEndZ(qreal z)
+{
+    _endZ = z;
+    emit updated();
+}
+
+/*!
+    \qmlclass AxisRotation
+    \brief The AxisRotation element provides a way to rotate an Item around an axis.
+
+    Here is an example of various rotations applied to an \l Image.
+    \code
+    <HorizontalLayout margin="10" spacing="10">
+        <Image src="qt.png"/>
+        <Image src="qt.png">
+            <transform>
+                <AxisRotation axis.startX="30" axis.endX="30" axis.endY="60" angle="18"/>
+            </transform>
+        </Image>
+        <Image src="qt.png">
+            <transform>
+                <AxisRotation axis.startX="30" axis.endX="30" axis.endY="60" angle="36"/>
+            </transform>
+        </Image>
+        <Image src="qt.png">
+            <transform>
+                <AxisRotation axis.startX="30" axis.endX="30" axis.endY="60" angle="54"/>
+            </transform>
+        </Image>
+        <Image src="qt.png">
+            <transform>
+                <AxisRotation axis.startX="30" axis.endX="30" axis.endY="60" angle="72"/>
+            </transform>
+        </Image>
+    </HorizontalLayout>
+    \endcode
+
+    \image axisrotation.png
+*/
+
+QML_DEFINE_TYPE(QFxRotation,AxisRotation);
+
+QFxRotation::QFxRotation(QObject *parent)
+: QFxTransform(parent), _angle(0), _distanceToPlane(1024.), _dirty(true)
+{
+    connect(&_axis, SIGNAL(updated()), this, SLOT(update()));
+}
+
+QFxRotation::~QFxRotation()
+{
+}
+
+/*!
+    \qmlproperty real AxisRotation::axis.startX
+    \qmlproperty real AxisRotation::axis.startY
+    \qmlproperty real AxisRotation::axis.endX
+    \qmlproperty real AxisRotation::axis.endY
+    \qmlproperty real AxisRotation::axis.endZ
+
+    A rotation axis is specified by 2 points in 3D space: a start point and
+    an end point. The z-position of the start point is assumed to be 0, and cannot
+    be changed.
+*/
+QFxAxis *QFxRotation::axis()
+{
+    return &_axis;
+}
+
+/*!
+    \qmlproperty real AxisRotation::angle
+
+    The angle, in degrees, to rotate around the specified axis.
+*/
+qreal QFxRotation::angle() const
+{
+    return _angle;
+}
+
+void QFxRotation::setAngle(qreal angle)
+{
+    _angle = angle;
     update();
 }
 
-qreal QFxAxis::yStart() const
+bool QFxRotation::isIdentity() const
 {
-    return _yStart;
-}
-
-void QFxAxis::setYStart(qreal y)
-{
-    _yStart = y;
-    update();
-}
-
-qreal QFxAxis::xEnd() const
-{
-    return _xEnd;
-}
-
-void QFxAxis::setXEnd(qreal x)
-{
-    _xEnd = x;
-    update();
-}
-
-qreal QFxAxis::yEnd() const
-{
-    return _yEnd;
-}
-
-void QFxAxis::setYEnd(qreal y)
-{
-    _yEnd = y;
-    update();
-}
-
-qreal QFxAxis::zEnd() const
-{
-    return _zEnd;
-}
-
-void QFxAxis::setZEnd(qreal z)
-{
-#if !defined(QFX_RENDER_OPENGL)
-    if(z != 0. && translation() != 0.) {
-        qmlInfo(this) << "QTransform cannot translate along Z-axis";
-        return;
-    }
-#endif
-
-    _zEnd = z;
-    update();
-}
-
-qreal QFxAxis::rotation() const
-{
-    return _rotation;
-}
-
-void QFxAxis::setRotation(qreal r)
-{
-    _rotation = r;
-    update();
-}
-
-qreal QFxAxis::translation() const
-{
-    return _translation;
-}
-
-void QFxAxis::setTranslation(qreal t)
-{
-#if !defined(QFX_RENDER_OPENGL)
-    if(zEnd() != 0. && t != 0.) {
-        qmlInfo(this) << "QTransform cannot translate along Z-axis";
-        return;
-    }
-#endif
-
-    _translation = t;
-    update();
-}
-
-bool QFxAxis::isIdentity() const
-{
-    return (_rotation == 0. && _translation == 0.) || 
-           (zEnd() == 0. && yEnd() == yStart() && xEnd() == xStart());
+    return (_angle == 0.) || (_axis.endZ() == 0. && _axis.endY() == _axis.startY() && _axis.endX() == _axis.startX());
 }
 
 #if defined(QFX_RENDER_QPAINTER)
 const qreal inv_dist_to_plane = 1. / 1024.;
-QTransform QFxAxis::transform() const
+QTransform QFxRotation::transform() const
 {
     if(_dirty) {
         _transform = QTransform();
 
         if(!isIdentity()) {
-            if(rotation() != 0.) {
+            if(angle() != 0.) {
                 QTransform rotTrans;
-                rotTrans.translate(-xStart(), -yStart());
+                rotTrans.translate(-_axis.startX(), -_axis.startY());
                 QTransform rotTrans2;
-                rotTrans2.translate(xStart(), yStart());
+                rotTrans2.translate(_axis.startX(), _axis.startY());
 
-                qreal rad = rotation() * 2. * M_PI / 360.;
+                qreal rad = angle() * 2. * M_PI / 360.;
                 qreal c = ::cos(rad);
                 qreal s = ::sin(rad);
 
-                qreal x = xEnd() - xStart();
-                qreal y = yEnd() - yStart();
-                qreal z = zEnd();
+                qreal x = _axis.endX() - _axis.startX();
+                qreal y = _axis.endY() - _axis.startY();
+                qreal z = _axis.endZ();
 
                 qreal idtp = inv_dist_to_plane;
                 if(distanceToPlane() != 1024.)
@@ -226,11 +279,140 @@ QTransform QFxAxis::transform() const
                 _transform *= rot;
                 _transform *= rotTrans2;
             }
+        }
 
-            if(translation() != 0.) {
+        _dirty = false;
+    }
+
+    return _transform;
+}
+#elif defined(QFX_RENDER_OPENGL)
+QMatrix4x4 QFxRotation::transform() const
+{
+    if(_dirty) {
+        _dirty = false;
+        _transform = QMatrix4x4();
+
+        if(!isIdentity()) {
+            if(angle() != 0.) {
+                qreal x = _axis.endX() - _axis.startX();
+                qreal y = _axis.endY() - _axis.startY();
+                qreal z = _axis.endZ();
+
+                _transform.translate(_axis.startX(), _axis.startY(), 0);
+                _transform.rotate(angle(), x, y, z);
+                _transform.translate(-_axis.startX(), -_axis.startY(), 0);
+            }
+        }
+    }
+
+    return _transform;
+}
+#endif
+
+/*!
+    \qmlproperty real AxisRotation::distanceToPlane
+*/
+qreal QFxRotation::distanceToPlane() const
+{
+    return _distanceToPlane;
+}
+
+void QFxRotation::setDistanceToPlane(qreal d)
+{
+    _distanceToPlane = d;
+    update();
+}
+
+void QFxRotation::update()
+{
+    _dirty = true;
+    QFxItem *item = qobject_cast<QFxItem *>(parent());
+    if(item)
+        item->updateTransform();
+}
+
+/*!
+    \qmlclass AxisTranslation
+    \brief The AxisTranslation element provides a way to move an Item along an axis.
+
+    The following example translates the image to 10, 3.
+    \code
+    <Image src="logo.png">
+        <transform>
+            <AxisTranslation axis.startX="0" axis.startY="0" axis.endX="1" axis.endY=".3" distance="10"/>
+        </transform>
+    </Image>
+    \endcode
+*/
+
+QML_DEFINE_TYPE(QFxTranslation,AxisTranslation);
+
+QFxTranslation::QFxTranslation(QObject *parent)
+: QFxTransform(parent), _distance(0), _dirty(true)
+{
+    connect(&_axis, SIGNAL(updated()), this, SLOT(update()));
+}
+
+QFxTranslation::~QFxTranslation()
+{
+}
+
+/*!
+    \qmlproperty real AxisTranslation::axis.startX
+    \qmlproperty real AxisTranslation::axis.startY
+    \qmlproperty real AxisTranslation::axis.endX
+    \qmlproperty real AxisTranslation::axis.endY
+    \qmlproperty real AxisTranslation::axis.endZ
+
+    A translation axis is specified by 2 points in 3D space: a start point and
+    an end point. The z-position of the start point is assumed to be 0, and cannot
+    be changed. Changing the z-position of the end point is only valid when running
+    under OpenGL.
+*/
+QFxAxis *QFxTranslation::axis()
+{
+    return &_axis;
+}
+
+/*!
+    \qmlproperty real AxisTranslation::distance
+
+    The distance to translate along the specified axis. distance is a multiplier;
+    in the example below, a distance of 1 would translate to 100, 50, while a distance
+    of 0.5 would translate to 50, 25.
+
+    \code
+    <AxisTranslation axis.startX="0" axis.startY="0" axis.endX="100" axis.endY="50"/>
+    \endcode
+*/
+qreal QFxTranslation::distance() const
+{
+    return _distance;
+}
+
+void QFxTranslation::setDistance(qreal distance)
+{
+    _distance = distance;
+    update();
+}
+
+bool QFxTranslation::isIdentity() const
+{
+    return (_distance == 0.) || (_axis.endZ() == 0. && _axis.endY() == _axis.startY() && _axis.endX() == _axis.startX());
+}
+
+#if defined(QFX_RENDER_QPAINTER)
+QTransform QFxTranslation::transform() const
+{
+    if(_dirty) {
+        _transform = QTransform();
+
+        if(!isIdentity()) {
+            if(distance() != 0.) {
                 QTransform trans;
-                trans.translate((xEnd() - xStart()) * translation(),
-                        (yEnd() - yStart()) * translation());
+                trans.translate((_axis.endX() - _axis.startX()) * distance(),
+                        (_axis.endY() - _axis.startY()) * distance());
                 _transform *= trans;
             }
         }
@@ -241,27 +423,18 @@ QTransform QFxAxis::transform() const
     return _transform;
 }
 #elif defined(QFX_RENDER_OPENGL)
-QMatrix4x4 QFxAxis::transform() const
+QMatrix4x4 QFxRotation::transform() const
 {
     if(_dirty) {
         _dirty = false;
         _transform = QMatrix4x4();
 
         if(!isIdentity()) {
-            if(rotation() != 0.) {
-                qreal x = xEnd() - xStart();
-                qreal y = yEnd() - yStart();
-                qreal z = zEnd();
+            if(distance() != 0.)
+                _transform.translate((_axis.endX() - _axis.startX()) * distance(),
+                                     (_axis.endY() - _axis.startY()) * distance(),
+                                     (_axis.endZ()) * distance());
 
-                _transform.translate(xStart(), yStart(), 0);
-                _transform.rotate(rotation(), x, y, z);
-                _transform.translate(-xStart(), -yStart(), 0);
-            }
-
-            if(translation() != 0.) 
-                _transform.translate((xEnd() - xStart()) * translation(),
-                                     (yEnd() - yStart()) * translation(),
-                                     (zEnd()) * translation());
         }
     }
 
@@ -269,202 +442,37 @@ QMatrix4x4 QFxAxis::transform() const
 }
 #endif
 
-qreal QFxAxis::distanceToPlane() const
-{
-    return _distanceToPlane;
-}
-
-void QFxAxis::setDistanceToPlane(qreal d)
-{
-    _distanceToPlane = d;
-    update();
-}
-
-void QFxAxis::update()
+void QFxTranslation::update()
 {
     _dirty = true;
+
+#if !defined(QFX_RENDER_OPENGL)
+    if(_axis.endZ() != 0. && distance() != 0.) {
+        qmlInfo(this) << "QTransform cannot translate along Z-axis.";
+    }
+#endif
+
     QFxItem *item = qobject_cast<QFxItem *>(parent());
     if(item)
         item->updateTransform();
 }
 
-QML_DEFINE_TYPE(QFxFlipable,Flipable);
-
-class QFxFlipablePrivate : public QFxItemPrivate
-{
-public:
-    QFxFlipablePrivate() : current(QFxFlipable::Front), front(0), back(0) {}
-
-    QFxFlipable::Side current;
-    QFxItem *front;
-    QFxItem *back;
-};
-
 /*!
-    \qmlclass Flipable QFxFlipable
-    \brief The Flipable element provides a surface that can be flipped.
-    \inherits Item
+    \qmlclass Perspective
+    \brief The Perspective element specifies a perspective transformation.
 
-    Flipable allows you to specify a front and a back and then flip between those sides.
-
-    \code
-    <Flipable id="flipable" width="40" height="40">
-        <transform>
-            <Axis id="axis" xStart="20" xEnd="20" yStart="20" yEnd="0" />
-        </transform>
-        <front>
-            <Image file="front.png"/>
-        </front>
-        <back>
-            <Image file="back.png"/>
-        </back>
-        <states>
-            <State name="back">
-                <SetProperty target="{axis}" property="rotation" value="180" />
-            </State>
-        </states>
-        <transitions>
-            <Transition>
-                <NumericAnimation easing="easeInOutQuad" properties="rotation"/>
-            </Transition>
-        </transitions>
-    </Flipable>
-    \endcode
-
-    \image flipable.gif
+    A Perspective transform only affects an item when running under OpenGL; when running under software
+    rasterization it has no effect.
 */
-
-/*!
-    \internal
-    \class QFxFlipable
-    \brief The QFxFlipable class provides a flipable surface.
-
-    \ingroup group_widgets
-
-    QFxFlipable allows you to specify a front and a back, as well as an
-    axis for the flip.
-*/
-
-QFxFlipable::QFxFlipable(QFxItem *parent)
-: QFxItem(*(new QFxFlipablePrivate), parent)
-{
-}
-
-QFxFlipable::~QFxFlipable()
-{
-}
-
-/*!
-  \qmlproperty Item Flipable::front
-  \qmlproperty Item Flipable::back
-
-  The front and back sides of the flipable.
-*/
-
-QFxItem *QFxFlipable::front()
-{
-    Q_D(const QFxFlipable);
-    return d->front;
-}
-
-void QFxFlipable::setFront(QFxItem *front)
-{
-    Q_D(QFxFlipable);
-    if(d->front) {
-        qmlInfo(this) << "front is a write-once property";
-        return;
-    }
-    d->front = front;
-    children()->append(d->front);
-    if(Back == d->current)
-        d->front->setOpacity(0.);
-}
-
-QFxItem *QFxFlipable::back()
-{
-    Q_D(const QFxFlipable);
-    return d->back;
-}
-
-void QFxFlipable::setBack(QFxItem *back)
-{
-    Q_D(QFxFlipable);
-    if(d->back) {
-        qmlInfo(this) << "back is a write-once property";
-        return;
-    }
-    d->back = back;
-    children()->append(d->back);
-    if(Front == d->current)
-        d->back->setOpacity(0.);
-}
-
-/*!
-  \qmlproperty enumeration Flipable::side
-
-  The side of the Flippable currently visible. Possible values are \c
-  Front and \c Back.
-*/
-QFxFlipable::Side QFxFlipable::side() const
-{
-    Q_D(const QFxFlipable);
-    return d->current;
-}
-
-void QFxFlipable::transformChanged(const QSimpleCanvas::Matrix &trans)
-{
-    Q_D(QFxFlipable);
-    QPointF p1(0, 0);
-    QPointF p2(1, 0);
-    QPointF p3(1, 1);
-
-    p1 = trans.map(p1);
-    p2 = trans.map(p2);
-    p3 = trans.map(p3);
-
-    qreal cross = (p1.x() - p2.x()) * (p3.y() - p2.y()) -
-                  (p1.y() - p2.y()) * (p3.x() - p2.x());
-
-    Side newSide;
-    if(cross > 0) {
-       newSide = Back;
-    } else {
-        newSide = Front;
-    }
-
-    if(newSide != d->current) {
-        d->current = newSide;
-        if (d->current==Back) {
-            QSimpleCanvas::Matrix mat;
-#ifdef QFX_RENDER_OPENGL
-            mat.translate(d->back->width()/2,d->back->height()/2, 0);
-            if(d->back->width() && p1.x() >= p2.x())
-                mat.rotate(180, 0, 1, 0);
-            if(d->back->height() && p2.y() >= p3.y())
-                mat.rotate(180, 1, 0, 0);
-            mat.translate(-d->back->width()/2,-d->back->height()/2, 0);
-#else
-            mat.translate(d->back->width()/2,d->back->height()/2);
-            if(d->back->width() && p1.x() >= p2.x())
-                mat.rotate(180, Qt::YAxis);
-            if(d->back->height() && p2.y() >= p3.y())
-                mat.rotate(180, Qt::XAxis);
-            mat.translate(-d->back->width()/2,-d->back->height()/2);
-#endif
-            d->back->setTransform(mat);
-        }
-        if(d->front)
-            d->front->setOpacity((d->current==Front)?1.:0.);
-        if(d->back)
-            d->back->setOpacity((d->current==Back)?1.:0.);
-        emit sideChanged();
-    }
-}
 
 QML_DEFINE_TYPE(QFxPerspective,Perspective);
 
 QFxPerspective::QFxPerspective(QObject *parent)
     : QFxTransform(parent)
+{
+}
+
+QFxPerspective::~QFxPerspective()
 {
 }
 
@@ -486,6 +494,33 @@ QMatrix4x4 QFxPerspective::transform() const
 }
 #endif
 
+/*!
+    \qmlproperty real Perspective::angle
+*/
+
+/*!
+    \qmlproperty real Perspective::aspect
+*/
+
+/*!
+    \qmlproperty real Perspective::x
+*/
+
+/*!
+    \qmlproperty real Perspective::y
+*/
+
+/*!
+    \qmlproperty real Perspective::scale
+*/
+
+/*!
+    \qmlclass Squish
+    \brief The Squish element allows you to distort an items appearance by 'squishing' it.
+
+    A Squish transform only affects an item when running under OpenGL; when running under software
+    rasterization it has no effect.
+*/
 QML_DEFINE_TYPE(QFxSquish,Squish);
 
 QFxSquish::QFxSquish(QObject *parent)
@@ -493,6 +528,13 @@ QFxSquish::QFxSquish(QObject *parent)
 {
 }
 
+QFxSquish::~QFxSquish()
+{
+}
+
+/*!
+    \qmlproperty real Squish::x
+*/
 qreal QFxSquish::x() const
 {
     return p.x();
@@ -504,6 +546,9 @@ void QFxSquish::setX(qreal v)
     update();
 }
 
+/*!
+    \qmlproperty real Squish::y
+*/
 qreal QFxSquish::y() const
 {
     return p.y();
@@ -515,6 +560,9 @@ void QFxSquish::setY(qreal v)
     update();
 }
 
+/*!
+    \qmlproperty real Squish::width
+*/
 qreal QFxSquish::width() const
 {
     return s.width();
@@ -526,6 +574,9 @@ void QFxSquish::setWidth(qreal v)
     update();
 }
 
+/*!
+    \qmlproperty real Squish::height
+*/
 qreal QFxSquish::height() const
 {
     return s.height();
@@ -537,6 +588,10 @@ void QFxSquish::setHeight(qreal v)
     update();
 }
 
+/*!
+    \qmlproperty real Squish::topLeftX
+    \qmlproperty real Squish::topLeftY
+*/
 qreal QFxSquish::topLeft_x() const
 {
     return p1.x();
@@ -559,6 +614,10 @@ void QFxSquish::settopLeft_y(qreal v)
     update();
 }
 
+/*!
+    \qmlproperty real Squish::topRightX
+    \qmlproperty real Squish::topRightY
+*/
 qreal QFxSquish::topRight_x() const
 {
     return p2.x();
@@ -581,6 +640,10 @@ void QFxSquish::settopRight_y(qreal v)
     update();
 }
 
+/*!
+    \qmlproperty real Squish::bottomLeftX
+    \qmlproperty real Squish::bottomLeftY
+*/
 qreal QFxSquish::bottomLeft_x() const
 {
     return p3.x();
@@ -603,6 +666,10 @@ void QFxSquish::setbottomLeft_y(qreal v)
     update();
 }
 
+/*!
+    \qmlproperty real Squish::bottomRightX
+    \qmlproperty real Squish::bottomRightY
+*/
 qreal QFxSquish::bottomRight_x() const
 {
     return p4.x();
@@ -652,5 +719,6 @@ QMatrix4x4 QFxSquish::transform() const
 
     return rv;
 }
-QT_END_NAMESPACE
 #endif
+
+QT_END_NAMESPACE

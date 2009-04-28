@@ -39,51 +39,58 @@
 **
 ****************************************************************************/
 
-#ifndef QFXREPEATER_H
-#define QFXREPEATER_H
+#ifndef QFXFLIPABLE_H
+#define QFXFLIPABLE_H
 
+#include <QObject>
+#include <QTransform>
+#if defined(QFX_RENDER_OPENGL)
+#include <QtGui/qmatrix4x4.h>
+#endif
 #include <qfxitem.h>
-
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class QFxRepeaterPrivate;
-class Q_DECLARATIVE_EXPORT QFxRepeater : public QFxItem
+
+class QFxFlipablePrivate;
+class Q_DECLARATIVE_EXPORT QFxFlipable : public QFxItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(QVariant dataSource READ dataSource WRITE setDataSource)
-    Q_PROPERTY(QmlComponent *component READ component WRITE setComponent)
-    Q_CLASSINFO("DefaultProperty", "component")
+    Q_ENUMS(Side);
+    Q_PROPERTY(QFxItem *front READ front WRITE setFront)
+    Q_PROPERTY(QFxItem *back READ back WRITE setBack)
+    Q_PROPERTY(Side side READ side NOTIFY sideChanged)
 public:
-    QFxRepeater(QFxItem *parent=0);
-    virtual ~QFxRepeater();
+    QFxFlipable(QFxItem *parent=0);
+    ~QFxFlipable();
 
-    QVariant dataSource() const;
-    void setDataSource(const QVariant &);
+    QFxItem *front();
+    void setFront(QFxItem *);
 
-    QmlComponent *component() const;
-    void setComponent(QmlComponent *);
+    QFxItem *back();
+    void setBack(QFxItem *);
 
-private:
-    void regenerate();
+    enum Side { Front, Back };
+    Side side() const;
 
 protected:
-    virtual void componentComplete();
-    virtual void parentChanged(QSimpleCanvasItem *, QSimpleCanvasItem *);
-    QFxRepeater(QFxRepeaterPrivate &dd, QFxItem *parent);
+    virtual void transformChanged(const QSimpleCanvas::Matrix &);
+
+Q_SIGNALS:
+    void sideChanged();
 
 private:
-    Q_DISABLE_COPY(QFxRepeater)
-    Q_DECLARE_PRIVATE(QFxRepeater)
+    Q_DISABLE_COPY(QFxFlipable)
+    Q_DECLARE_PRIVATE(QFxFlipable)
 };
-QML_DECLARE_TYPE(QFxRepeater);
+QML_DECLARE_TYPE(QFxFlipable);
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // _QFXREPEATER_H_
+#endif // QFXFLIPABLE_H
