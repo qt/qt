@@ -3,7 +3,7 @@ include(macros.qdocconf)
 
 project                 = Qt Jambi
 description             = Qt Jambi Reference Documentation
-url                     = http://doc.trolltech.com/qtjambi
+url                     = http://doc.qtsoftware.com/qtjambi
 
 version                 = 4.4.0_01
 
