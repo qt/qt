@@ -334,7 +334,7 @@ public:
 
         QmlAnimationGroupPrivate *anim;
     };
-    
+
     AnimationList animations;
     QAnimationGroup *ag;
 };

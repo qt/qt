@@ -188,13 +188,13 @@ QmlAbstractAnimation::QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObj
     Likewise, the \c running property can be read to determine if the animation
     is running.  In the following example the text element will indicate whether
     or not the animation is running.
-    
+
     \code
     <NumericAnimation id="MyAnimation" />
     <Text text="{MyAnimation.running?'Animation is running':'Animation is not running'}" />
     \endcode
 
-    Animations can also be started and stopped imperatively from JavaScript 
+    Animations can also be started and stopped imperatively from JavaScript
     using the \c start() and \c stop() methods.
 
     By default, animations are not running.
@@ -272,7 +272,7 @@ void QmlAbstractAnimation::componentComplete()
     calling the \c stop() method.  The \c complete() method is not effected
     by this value.
 
-    This behaviour is most useful when the \c repeat property is set, as the 
+    This behaviour is most useful when the \c repeat property is set, as the
     animation will finish playing normally but not restart.
 
     By default, the finishPlaying property is not set.
@@ -297,7 +297,7 @@ void QmlAbstractAnimation::setFinishPlaying(bool f)
     \qmlproperty bool Animation::repeat
     This property holds whether the animation should repeat.
 
-    If set, the animation will continuously repeat until it is explicitly 
+    If set, the animation will continuously repeat until it is explicitly
     stopped - either by setting the \c running property to false, or by calling
     the \c stop() method.
 
@@ -443,7 +443,7 @@ void QmlAbstractAnimation::start()
     \endcode
     was stopped at time 250ms, the \c x property will have a value of 50.
 
-    However, if the \c finishPlaying property is set, the animation will 
+    However, if the \c finishPlaying property is set, the animation will
     continue running until it completes and then stop.  The \c running property
     will still become false immediately.
 */
@@ -482,7 +482,7 @@ void QmlAbstractAnimation::restart()
     </Rect>
     \endcode
     calling \c stop() at time 250ms will result in the \c x property having
-    a value of 50, while calling \c complete() will set the \c x property to 
+    a value of 50, while calling \c complete() will set the \c x property to
     100, exactly as though the animation had played the whole way through.
 */
 void QmlAbstractAnimation::complete()
@@ -766,7 +766,7 @@ void QmlColorAnimation::setEasing(const QString &e)
     This property holds the items selected to be affected by this animation (all if not set).
     \sa exclude
 */
-QList<QObject *> *QmlColorAnimation::filter() 
+QList<QObject *> *QmlColorAnimation::filter()
 {
     Q_D(QmlColorAnimation);
     return &d->filter;
@@ -1187,7 +1187,7 @@ void QmlSetPropertyAction::transition(QmlStateActions &actions,
             objs.insert(obj);
             Action myAction = action;
 
-            if (d->value.isValid()) 
+            if (d->value.isValid())
                 myAction.toValue = d->value;
 
             modified << action.property;
@@ -1251,7 +1251,7 @@ void QmlParentChangeAction::prepare(QmlMetaProperty &p)
 
     if (d->userProperty.isNull)
         d->property = p;
-    else 
+    else
         d->property = d->userProperty;
 
     //XXX
@@ -1556,7 +1556,7 @@ void QmlNumericAnimation::setProperties(const QString &prop)
     This property holds the items selected to be affected by this animation (all if not set).
     \sa exclude
 */
-QList<QObject *> *QmlNumericAnimation::filter() 
+QList<QObject *> *QmlNumericAnimation::filter()
 {
     Q_D(QmlNumericAnimation);
     return &d->filter;
@@ -1671,7 +1671,7 @@ void QmlNumericAnimation::transition(QmlStateActions &actions,
             } else {
                 myAction.fromValue = QVariant();
             }
-            if (d->to.isValid()) 
+            if (d->to.isValid())
                 myAction.toValue = QVariant(d->to);
 
             modified << action.property;
@@ -1687,7 +1687,7 @@ void QmlNumericAnimation::transition(QmlStateActions &actions,
             Action myAction;
             myAction.property = QmlMetaProperty(obj, props.at(jj));
 
-            if (d->from.isValid()) 
+            if (d->from.isValid())
                 myAction.fromValue = QVariant(d->from);
 
             myAction.toValue = QVariant(d->to);
@@ -1805,7 +1805,7 @@ QML_DEFINE_TYPE(QmlSequentialAnimation,SequentialAnimation);
 
     Animations contained in ParallelAnimation will be run at the same time.
 
-    The following animation demonstrates animating the \c MyItem item 
+    The following animation demonstrates animating the \c MyItem item
     to (100,100) by animating the x and y properties in parallel.
 
     \code
@@ -2256,6 +2256,5 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
 
 //XXX whats the best name for this? (just Animation?)
 QML_DEFINE_TYPE(QmlVariantAnimation,VariantAnimation);
-
 
 QT_END_NAMESPACE
