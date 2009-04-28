@@ -79,6 +79,9 @@ private slots:
 
     void codecForHtml();
 
+    void codecForUtfText_data();
+    void codecForUtfText();
+
 #ifdef Q_OS_UNIX
     void toLocal8Bit();
 #endif
@@ -1742,6 +1745,62 @@ void tst_QTextCodec::codecForHtml()
 
     html = "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=ISO-8859-15\" /></head></html>";
     QCOMPARE(QTextCodec::codecForHtml(html, QTextCodec::codecForMib(106))->mibEnum(), 111); // latin 15
+}
+
+void tst_QTextCodec::codecForUtfText_data()
+{
+    QTest::addColumn<QByteArray>("encoded");
+    QTest::addColumn<bool>("detected");
+    QTest::addColumn<int>("mib");
+
+
+    QTest::newRow("utf8 bom")
+        << QByteArray("\xef\xbb\xbfhello")
+        << true
+        << 106;
+    QTest::newRow("utf8 nobom")
+        << QByteArray("hello")
+        << false
+        << 0;
+
+    QTest::newRow("utf16 bom be")
+        << QByteArray("\xfe\xff\0h\0e\0l", 8)
+        << true
+        << 1013;
+    QTest::newRow("utf16 bom le")
+        << QByteArray("\xff\xfeh\0e\0l\0", 8)
+        << true
+        << 1014;
+    QTest::newRow("utf16 nobom")
+        << QByteArray("\0h\0e\0l", 6)
+        << false
+        << 0;
+
+    QTest::newRow("utf32 bom be")
+        << QByteArray("\0\0\xfe\xff\0\0\0h\0\0\0e\0\0\0l", 16)
+        << true
+        << 1018;
+    QTest::newRow("utf32 bom le")
+        << QByteArray("\xff\xfe\0\0h\0\0\0e\0\0\0l\0\0\0", 16)
+        << true
+        << 1019;
+    QTest::newRow("utf32 nobom")
+        << QByteArray("\0\0\0h\0\0\0e\0\0\0l", 12)
+        << false
+        << 0;
+}
+
+void tst_QTextCodec::codecForUtfText()
+{
+    QFETCH(QByteArray, encoded);
+    QFETCH(bool, detected);
+    QFETCH(int, mib);
+
+    QTextCodec *codec = QTextCodec::codecForUtfText(encoded, 0);
+    if (detected)
+        QCOMPARE(codec->mibEnum(), mib);
+    else
+        QVERIFY(codec == 0);
 }
 
 #ifdef Q_OS_UNIX
