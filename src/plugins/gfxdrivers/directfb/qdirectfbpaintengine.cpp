@@ -270,14 +270,14 @@ public:
     inline bool dfbCanHandleClip() const;
     inline bool isSimpleBrush(const QBrush &brush) const;
 
-    void drawLines(const QLine *lines, int count) const;
-    void drawLines(const QLineF *lines, int count) const;
+    void drawLines(const QLine *lines, int count);
+    void drawLines(const QLineF *lines, int count);
 
-    void fillRegion(const QRegion &r) const;
-    void fillRects(const QRect *rects, int count) const;
-    void drawRects(const QRect *rects, int count) const;
-    void fillRects(const QRectF *rects, int count) const;
-    void drawRects(const QRectF *rects, int count) const;
+    void fillRegion(const QRegion &r);
+    void fillRects(const QRect *rects, int count);
+    void drawRects(const QRect *rects, int count);
+    void fillRects(const QRectF *rects, int count);
+    void drawRects(const QRectF *rects, int count);
 
 
     void drawPixmap(const QRectF &dest,
@@ -545,7 +545,7 @@ void QDirectFBPaintEnginePrivate::setDFBColor(const QColor &color)
     surface->SetDrawingFlags(surface, DFBSurfaceDrawingFlags(drawingFlags));
 }
 
-void QDirectFBPaintEnginePrivate::drawLines(const QLine *lines, int n) const
+void QDirectFBPaintEnginePrivate::drawLines(const QLine *lines, int n)
 {
     for (int i = 0; i < n; ++i) {
         const QLine l = transform.map(lines[i]);
@@ -553,7 +553,7 @@ void QDirectFBPaintEnginePrivate::drawLines(const QLine *lines, int n) const
     }
 }
 
-void QDirectFBPaintEnginePrivate::drawLines(const QLineF *lines, int n) const
+void QDirectFBPaintEnginePrivate::drawLines(const QLineF *lines, int n)
 {
     for (int i = 0; i < n; ++i) {
         const QLine l = transform.map(lines[i]).toLine();
@@ -561,14 +561,16 @@ void QDirectFBPaintEnginePrivate::drawLines(const QLineF *lines, int n) const
     }
 }
 
-void QDirectFBPaintEnginePrivate::fillRegion(const QRegion &region) const
+void QDirectFBPaintEnginePrivate::fillRegion(const QRegion &region)
 {
+    Q_ASSERT(isSimpleBrush(q->state()->brush));
+    setDFBColor(q->state()->brush.color());
     const QVector<QRect> rects = region.rects();
     const int n = rects.size();
     fillRects(rects.constData(), n);
 }
 
-void QDirectFBPaintEnginePrivate::fillRects(const QRect *rects, int n) const
+void QDirectFBPaintEnginePrivate::fillRects(const QRect *rects, int n)
 {
     for (int i = 0; i < n; ++i) {
         const QRect r = transform.mapRect(rects[i]);
@@ -577,7 +579,7 @@ void QDirectFBPaintEnginePrivate::fillRects(const QRect *rects, int n) const
     }
 }
 
-void QDirectFBPaintEnginePrivate::fillRects(const QRectF *rects, int n) const
+void QDirectFBPaintEnginePrivate::fillRects(const QRectF *rects, int n)
 {
     for (int i = 0; i < n; ++i) {
         const QRect r = transform.mapRect(rects[i]).toRect();
@@ -586,7 +588,7 @@ void QDirectFBPaintEnginePrivate::fillRects(const QRectF *rects, int n) const
     }
 }
 
-void QDirectFBPaintEnginePrivate::drawRects(const QRect *rects, int n) const
+void QDirectFBPaintEnginePrivate::drawRects(const QRect *rects, int n)
 {
     for (int i = 0; i < n; ++i) {
         const QRect r = transform.mapRect(rects[i]);
@@ -595,7 +597,7 @@ void QDirectFBPaintEnginePrivate::drawRects(const QRect *rects, int n) const
     }
 }
 
-void QDirectFBPaintEnginePrivate::drawRects(const QRectF *rects, int n) const
+void QDirectFBPaintEnginePrivate::drawRects(const QRectF *rects, int n)
 {
     for (int i = 0; i < n; ++i) {
         const QRect r = transform.mapRect(rects[i]).toRect();
