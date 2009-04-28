@@ -140,10 +140,10 @@ void PlayState::onEntry()
     QFinalState *final = new QFinalState(machine->rootState());
 
     //We win we should reach the final state
-    winState->addFinishedTransition(final);
+    winState->addTransition(winState, SIGNAL(finished()), final);
 
     //We lost we should reach the final state
-    lostState->addFinishedTransition(final);
+    lostState->addTransition(lostState, SIGNAL(finished()), final);
 
     machine->start();
 }

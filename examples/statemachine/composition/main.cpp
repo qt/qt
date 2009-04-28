@@ -86,11 +86,11 @@ int main(int argc, char **argv)
       s2_timer->addTransition(&t2, SIGNAL(timeout()), s2_done);
       s2->setInitialState(s2_timer);
 
-    s1->addFinishedTransition(s2);
+    s1->addTransition(s1, SIGNAL(finished()), s2);
 
     QFinalState *s3 = new QFinalState();
     s3->setObjectName("s3");
-    s2->addFinishedTransition(s3);
+    s2->addTransition(s2, SIGNAL(finished()), s3);
 
     machine.addState(s1);
     machine.addState(s2);

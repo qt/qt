@@ -157,14 +157,14 @@ public:
         redGoingYellow->setObjectName("redGoingYellow");
         LightState *yellowGoingGreen = new LightState(widget->yellowLight(), 1000);
         yellowGoingGreen->setObjectName("yellowGoingGreen");
-        redGoingYellow->addFinishedTransition(yellowGoingGreen);
+        redGoingYellow->addTransition(redGoingYellow, SIGNAL(finished()), yellowGoingGreen);
         LightState *greenGoingYellow = new LightState(widget->greenLight(), 3000);
         greenGoingYellow->setObjectName("greenGoingYellow");
-        yellowGoingGreen->addFinishedTransition(greenGoingYellow);
+        yellowGoingGreen->addTransition(yellowGoingGreen, SIGNAL(finished()), greenGoingYellow);
         LightState *yellowGoingRed = new LightState(widget->yellowLight(), 1000);
         yellowGoingRed->setObjectName("yellowGoingRed");
-        greenGoingYellow->addFinishedTransition(yellowGoingRed);
-        yellowGoingRed->addFinishedTransition(redGoingYellow);
+        greenGoingYellow->addTransition(greenGoingYellow, SIGNAL(finished()), yellowGoingRed);
+        yellowGoingRed->addTransition(yellowGoingRed, SIGNAL(finished()), redGoingYellow);
 
         machine->addState(redGoingYellow);
         machine->addState(yellowGoingGreen);
