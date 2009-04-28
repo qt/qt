@@ -265,7 +265,6 @@ QT_BEGIN_NAMESPACE
     \omitvalue CocoaRequestModal
     \omitvalue Bound
     \omitvalue Signal
-    \omitvalue StateFinished
 */
 
 /*!
