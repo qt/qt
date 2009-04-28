@@ -79,8 +79,11 @@ public:
     }
 
     static QFxGridViewAttached *properties(QObject *obj) {
-        QFxGridViewAttached *rv = new QFxGridViewAttached(obj);
-        attachedProperties.insert(obj, rv);
+        QFxGridViewAttached *rv = attachedProperties.value(obj);
+        if(!rv) {
+            rv = new QFxGridViewAttached(obj);
+            attachedProperties.insert(obj, rv);
+        }
         return rv;
     }
 
