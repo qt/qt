@@ -1004,7 +1004,7 @@ void QmlRunScriptActionPrivate::execute()
     }
 
     if(!scriptStr.isEmpty()) {
-        QmlExpression expr(ctxt, scriptStr, q);
+        QmlExpression expr(qmlContext(q), scriptStr, q);
         expr.setTrackChange(false);
         expr.value();
     }

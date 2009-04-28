@@ -60,6 +60,7 @@
 
 #include "qfxitem_p.h"
 #include "qfxitem.h"
+#include "qfxevents_p.h"
 #include <qsimplecanvasfilter.h>
 #include <qmlcomponent.h>
 
@@ -242,24 +243,20 @@ void QFxContents::setItem(QFxItem *item)
 
     This signal is emitted when the baseline of the item changes. 
 
-    The baseline may change in response to a call to setBaselineOffset()
-    or due to the geometry of the item changing.
-
-    \sa baselineOffset(), setBaselineOffset()
+    The baseline may change in response to a change to the baselineOffset
+    property or due to the geometry of the item changing.
 */
 
 /*!
     \fn void QFxItem::baselineOffsetChanged()
 
     This signal is emitted when the baseline of the item is changed
-    via setBaselineOffset(). 
+    via the baselineOffset property.
 
     The baseline corresponds to the baseline of the text contained in
     the element.  It is useful for aligning the text in items placed
     beside each other.  The default baseline is positioned at
     2/3 of the height of the item.
-
-    \sa baselineOffset(), setBaselineOffset()
 */
 
 /*!
@@ -325,33 +322,27 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
-    \fn void QFxItem::keyPress(QObject *event)
+    \qmlsignal Item::onKeyPress(event)
 
-    This signal is emitted when a key is pressed.
+    This handler is called when a key is pressed.
 
-    The key event is available in QML via the QFxKeyEvent \c event
-    property.
+    The key event is available via the KeyEvent \a event.
 
     \qml
     <Item onKeyPress="if (event.key == Qt.Key_Enter) state='Enter'"/>
     \endqml
-
-    \sa keyRelease()
 */
 
 /*!
-    \fn void QFxItem::keyRelease(QObject *event)
+    \qmlsignal Item::onKeyRelease(event)
 
-    This signal is emitted when a key is released.
+    This handler is called when a key is released.
 
-    The key event is available in QML via the QFxKeyEvent \c event
-    property.
+    The key event is available in via the KeyEvent \a event.
 
     \qml
     <Item onKeyRelease="if (event.key == Qt.Key_Enter) state='Enter'"/>
     \endqml
-
-    \sa keyPress()
 */
 
 /*!
@@ -816,7 +807,7 @@ void QFxItem::setQml(const QString &qml)
     }
 
     d->_qml = qml;
-    d->_qmlurl = itemContext()->resolvedUri(qml);
+    d->_qmlurl = qmlContext(this)->resolvedUri(qml);
     d->qmlItem = 0;
 
     if(d->_qml.isEmpty()) {
@@ -831,7 +822,7 @@ void QFxItem::setQml(const QString &qml)
         emit qmlChanged();
     } else {
         d->_qmlcomp = 
-            new QmlComponent(itemContext()->engine(), d->_qmlurl, this);
+            new QmlComponent(qmlEngine(this), d->_qmlurl, this);
         if(!d->_qmlcomp->isLoading())
             qmlLoaded();
         else
@@ -852,12 +843,12 @@ void QFxItem::qmlLoaded()
             if(c->isLoading())
                 continue;
 
-            QmlContext *ctxt = new QmlContext(itemContext());
+            QmlContext *ctxt = new QmlContext(qmlContext(this));
             QObject* o = c ? c->create(ctxt):0;
             QFxItem* ret = qobject_cast<QFxItem*>(o);
             if (ret) {
                 ret->setItemParent(this);
-                QScriptValue v = itemContext()->engine()->scriptEngine()->newQObject(ret);
+                QScriptValue v = qmlEngine(this)->scriptEngine()->newQObject(ret);
                 emit newChildCreated(d->_qmlnewloading.at(i).toString(),v);
             }
 
@@ -870,7 +861,7 @@ void QFxItem::qmlLoaded()
 
     // setQml...
     if (d->_qmlcomp) {
-        QmlContext *ctxt = new QmlContext(itemContext());
+        QmlContext *ctxt = new QmlContext(qmlContext(this));
         ctxt->addDefaultObject(this);
 
         QObject *obj = d->_qmlcomp->create(ctxt);
@@ -1120,34 +1111,13 @@ void QFxItem::setFlipHorizontally(bool v)
         setFlip((QSimpleCanvasItem::Flip)(flip() & ~HorizontalFlip));
 }
 
-class QFxKeyEvent : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(int key READ key);
-    Q_PROPERTY(QString text READ text);
-    Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted);
-public:
-    QFxKeyEvent(int key, const QString &text=QString()) : _accepted(false), _key(key), _text(text) {}
-
-    bool isAccepted() { return _accepted; }
-    void setAccepted(bool accepted) { _accepted = accepted; }
-
-    int key() const { return _key; }
-
-    QString text() const { return _text; }
-
-private:
-    bool _accepted;
-    int _key;
-    QString _text;
-};
 
 /*!
   \reimp
 */
 void QFxItem::keyPressEvent(QKeyEvent *event)
 {
-    QFxKeyEvent ke(event->key(), event->text());
+    QFxKeyEvent ke(*event);
     emit keyPress(&ke);
     event->setAccepted(ke.isAccepted());
     if (itemParent() && !ke.isAccepted())
@@ -1159,7 +1129,7 @@ void QFxItem::keyPressEvent(QKeyEvent *event)
 */
 void QFxItem::keyReleaseEvent(QKeyEvent *event)
 {
-    QFxKeyEvent ke(event->key(), event->text());
+    QFxKeyEvent ke(*event);
     emit keyRelease(&ke);
     event->setAccepted(ke.isAccepted());
     if (itemParent() && !ke.isAccepted())
@@ -1218,36 +1188,54 @@ void QFxItem::setId(const QString &id)
     d->_id = id;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::left() const
 {
     Q_D(const QFxItem);
     return d->anchorLines()->left;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::right() const
 {
     Q_D(const QFxItem);
     return d->anchorLines()->right;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::horizontalCenter() const
 {
     Q_D(const QFxItem);
     return d->anchorLines()->hCenter;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::top() const
 {
     Q_D(const QFxItem);
     return d->anchorLines()->top;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::bottom() const
 {
     Q_D(const QFxItem);
     return d->anchorLines()->bottom;
 }
 
+/*!
+    \internal
+*/
 QFxAnchorLine QFxItem::verticalCenter() const
 {
     Q_D(const QFxItem);
@@ -1382,7 +1370,6 @@ QFxAnchorLine QFxItem::verticalCenter() const
   For non-text items, a default baseline offset of two-thirds of the
   item's height is used to determine the baseline.
 */
-
 int QFxItem::baselineOffset() const
 {
     Q_D(const QFxItem);
@@ -1392,6 +1379,9 @@ int QFxItem::baselineOffset() const
         return d->_baselineOffset;
 }
 
+/*!
+    \internal
+*/
 void QFxItem::setBaselineOffset(int offset)
 {
     Q_D(QFxItem);
@@ -1862,7 +1852,6 @@ void QFxItem::setVisible(bool visible)
 */
 void QFxItem::dump(int depth)
 {
-    Q_D(QFxItem);
     QByteArray ba(depth * 4, ' ');
     qWarning() << ba.constData() << metaObject()->className() << "(" << (void *)static_cast<QFxItem*>(this) << ", " << (void *)static_cast<QSimpleCanvasItem*>(this) << "):" << x() << y() << width() << height() << (void *) itemParent();
 }
@@ -1885,12 +1874,12 @@ void QFxItem::newChild(const QString &type)
 {
     Q_D(QFxItem);
 
-    QUrl url = itemContext()->resolvedUri(type);
+    QUrl url = qmlContext(this)->resolvedUri(type);
     if (url.isEmpty())
         return;
 
     d->_qmlnewloading.append(url);
-    d->_qmlnewcomp.append(new QmlComponent(itemContext()->engine(), url, this));
+    d->_qmlnewcomp.append(new QmlComponent(qmlEngine(this), url, this));
 
     if(!d->_qmlnewcomp.last()->isLoading())
         qmlLoaded();
@@ -1964,6 +1953,9 @@ void QFxItem::reparentItems()
     qFatal("EEK");
 }
 
+/*!
+    \internal
+*/
 void QFxItem::updateTransform()
 {
     Q_D(QFxItem);
@@ -1978,17 +1970,11 @@ void QFxItem::updateTransform()
     transformChanged(trans);
 }
 
+/*!
+    \internal
+*/
 void QFxItem::transformChanged(const QSimpleCanvas::Matrix &)
 {
-}
-
-/*!
-  Returns the current QML context for this item.
-*/
-QmlContext *QFxItem::itemContext() const
-{
-    Q_D(const QFxItem);
-    return d->_ctxt;
 }
 
 QmlStateGroup *QFxItemPrivate::states()
@@ -2021,5 +2007,4 @@ QFxItemPrivate::AnchorLines::AnchorLines(QFxItem *q)
     vCenter.anchorLine = QFxAnchorLine::VCenter;
 }
 
-#include "qfxitem.moc"
 QT_END_NAMESPACE

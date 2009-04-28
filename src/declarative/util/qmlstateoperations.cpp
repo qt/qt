@@ -136,9 +136,8 @@ QmlStateOperation::ActionList QmlParentChange::actions()
 class QmlRunScriptPrivate : public QObjectPrivate
 {
 public:
-    QmlRunScriptPrivate() : ctxt(0) {}
+    QmlRunScriptPrivate() {}
 
-    QmlContext *ctxt;
     QString script;
     QString name;
 };
@@ -151,8 +150,6 @@ QML_DEFINE_TYPE(QmlRunScript,RunScript);
 QmlRunScript::QmlRunScript(QObject *parent)
 : QmlStateOperation(*(new QmlRunScriptPrivate), parent)
 {
-    Q_D(QmlRunScript);
-    d->ctxt = QmlContext::activeContext();
 }
 
 QmlRunScript::~QmlRunScript()
@@ -191,7 +188,7 @@ void QmlRunScript::execute()
 {
     Q_D(QmlRunScript);
     if(!d->script.isEmpty()) {
-        QmlExpression expr(d->ctxt, d->script, this);
+        QmlExpression expr(qmlContext(this), d->script, this);
         expr.setTrackChange(false);
         expr.value();
     }

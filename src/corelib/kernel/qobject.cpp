@@ -842,6 +842,14 @@ QObject::~QObject()
 
     d->eventFilters.clear();
 
+    // As declarativeData is in a union with currentChildBeingDeleted, this must
+    // be done (and declarativeData set back to 0) before deleting children.
+    if(d->declarativeData) {
+        QDeclarativeData *dd = d->declarativeData;
+        d->declarativeData = 0;
+        dd->destroyed(this);
+    }
+
     if (!d->children.isEmpty())
         d->deleteChildren();
 

@@ -225,13 +225,12 @@ class QmlRunScriptActionPrivate : public QmlAbstractAnimationPrivate
     Q_DECLARE_PUBLIC(QmlRunScriptAction);
 public:
     QmlRunScriptActionPrivate()
-        : QmlAbstractAnimationPrivate(), ctxt(QmlContext::activeContext()), proxy(this), rsa(0) {}
+        : QmlAbstractAnimationPrivate(), proxy(this), rsa(0) {}
 
     void init();
 
     QString script;
     QString file;
-    QmlContext* ctxt;
 
     void execute();
 

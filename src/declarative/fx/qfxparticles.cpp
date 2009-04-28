@@ -613,8 +613,8 @@ void QFxParticles::setUrl(const QString &name)
         update();
     } else {
         d->source = name;
-        d->url = itemContext()->resolvedUrl(name);
-        QFxPixmap::get(itemContext()->engine(), d->url, this, SLOT(imageLoaded()));
+        d->url = qmlContext(this)->resolvedUrl(name);
+        QFxPixmap::get(qmlEngine(this), d->url, this, SLOT(imageLoaded()));
     }
 }
 

@@ -84,7 +84,6 @@ public:
     void init(QFxItem *parent)
     {
         Q_Q(QFxItem);
-        _ctxt = QmlContext::activeContext();
 
         if(parent)
             q->setItemParent(parent);
@@ -92,7 +91,6 @@ public:
         q->setAcceptedMouseButtons(Qt::NoButton);
     }
 
-    QmlContext *_ctxt;
     QString _id;
 
     // data property

@@ -42,6 +42,7 @@
 #include <QMetaProperty>
 #include <private/qmlengine_p.h>
 #include <private/qmlcontext_p.h>
+#include <private/qobject_p.h>
 
 #ifdef QT_SCRIPTTOOLS_LIB
 #include <QScriptEngineDebugger>
@@ -593,6 +594,90 @@ QNetworkAccessManager *QmlEngine::networkAccessManager() const
     if(!d->networkAccessManager) 
         d->networkAccessManager = new QNetworkAccessManager;
     return d->networkAccessManager;
+}
+
+QmlContext *QmlEngine::contextForObject(const QObject *object)
+{
+    QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
+
+    QmlSimpleDeclarativeData *data = 
+        static_cast<QmlSimpleDeclarativeData *>(priv->declarativeData);
+
+    return data?data->context:0;
+}
+
+void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
+{
+    QObjectPrivate *priv = QObjectPrivate::get(object);
+
+    QmlSimpleDeclarativeData *data = 
+        static_cast<QmlSimpleDeclarativeData *>(priv->declarativeData);
+
+    if(data && data->context) {
+        qWarning("QmlEngine::setContextForObject(): Object already has a QmlContext");
+        return;
+    }
+
+    if(!data) {
+        priv->declarativeData = &context->d_func()->contextData;
+    } else {
+        // ### - Don't have to use extended data here
+        QmlExtendedDeclarativeData *data = new QmlExtendedDeclarativeData;
+        data->context = context;
+        priv->declarativeData = data;
+    }
+}
+
+QmlContext *qmlContext(const QObject *obj)
+{
+    return QmlEngine::contextForObject(obj);
+}
+
+QmlEngine *qmlEngine(const QObject *obj)
+{
+    QmlContext *context = QmlEngine::contextForObject(obj);
+    return context?context->engine():0;
+}
+
+QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object)
+{
+    QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
+
+
+    QmlSimpleDeclarativeData *data = static_cast<QmlSimpleDeclarativeData *>(priv->declarativeData);
+
+    QmlExtendedDeclarativeData *edata = (data && data->flags & QmlSimpleDeclarativeData::Extended)?static_cast<QmlExtendedDeclarativeData *>(data):0;
+
+    if(edata) {
+        QObject *rv = edata->attachedProperties.value(id);
+        if(rv)
+            return rv;
+    }
+
+    QmlAttachedPropertiesFunc pf = QmlMetaType::attachedPropertiesFuncById(id);
+    if(!pf)
+        return 0;
+
+    QObject *rv = pf(const_cast<QObject *>(object));
+
+    if(rv) {
+        if(!edata) {
+
+            edata = new QmlExtendedDeclarativeData;
+            if(data) edata->context = data->context;
+            priv->declarativeData = edata;
+
+        }
+
+        edata->attachedProperties.insert(id, rv);
+    }
+
+    return rv;
+}
+
+void QmlExtendedDeclarativeData::destroyed(QObject *)
+{
+    delete this;
 }
 
 /*! \internal */

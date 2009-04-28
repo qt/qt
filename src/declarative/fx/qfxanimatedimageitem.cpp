@@ -165,7 +165,7 @@ void QFxAnimatedImageItem::setSource(const QString &url)
     }
 
     d->source = url;
-    d->url = itemContext()->resolvedUrl(url);
+    d->url = qmlContext(this)->resolvedUrl(url);
 
     if(url.isEmpty()) {
         delete d->_movie;
@@ -174,7 +174,7 @@ void QFxAnimatedImageItem::setSource(const QString &url)
         d->status = Loading;
         QNetworkRequest req(d->url);
         req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
-        d->reply = itemContext()->engine()->networkAccessManager()->get(req);
+        d->reply = qmlContext(this)->engine()->networkAccessManager()->get(req);
         QObject::connect(d->reply, SIGNAL(finished()),
                          this, SLOT(movieRequestFinished()));
     }

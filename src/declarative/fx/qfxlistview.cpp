@@ -98,12 +98,9 @@ public:
     }
 
     static QFxListViewAttached *properties(QObject *obj) {
-        if(!attachedProperties.contains(obj)) {
-            QFxListViewAttached *rv = new QFxListViewAttached(obj);
-            attachedProperties.insert(obj, rv);
-            return rv;
-        }
-        return attachedProperties.value(obj);
+        QFxListViewAttached *rv = new QFxListViewAttached(obj);
+        attachedProperties.insert(obj, rv);
+        return rv;
     }
 
     void emitAdd() { emit add(); }
@@ -394,7 +391,7 @@ FxListItem *QFxListViewPrivate::createItem(int modelIndex)
         listItem->index = modelIndex;
         // initialise attached properties
         if (!sectionExpression.isEmpty()) {
-            QmlExpression e(listItem->item->itemContext(), sectionExpression, q);
+            QmlExpression e(qmlContext(listItem->item), sectionExpression, q);
             e.setTrackChange(false);
             listItem->attached->m_section = e.value().toString();
             if (modelIndex > 0) {
@@ -580,7 +577,7 @@ void QFxListViewPrivate::createHighlight()
     if (currentItem) {
         QFxItem *item = 0;
         if (highlightComponent) {
-            QmlContext *highlightContext = new QmlContext(q->itemContext());
+            QmlContext *highlightContext = new QmlContext(qmlContext(q));
             QObject *nobj = highlightComponent->create(highlightContext);
             if (nobj) {
                 highlightContext->setParent(nobj);
@@ -899,7 +896,7 @@ void QFxListView::setModel(const QVariant &model)
         d->model = vim;
     } else {
         if (!d->ownModel) {
-            d->model = new QFxVisualItemModel(itemContext());
+            d->model = new QFxVisualItemModel(qmlContext(this));
             d->ownModel = true;
         }
         d->model->setModel(model);
@@ -944,7 +941,7 @@ void QFxListView::setDelegate(QmlComponent *delegate)
 {
     Q_D(QFxListView);
     if (!d->ownModel) {
-        d->model = new QFxVisualItemModel(itemContext());
+        d->model = new QFxVisualItemModel(qmlContext(this));
         d->ownModel = true;
     }
     d->model->setDelegate(delegate);

@@ -842,7 +842,7 @@ void QFxImage::setSource(const QString &url)
         QFxPixmap::cancelGet(d->sciurl, this, SLOT(requestFinished()));
 
     d->source = url;
-    d->url = itemContext()->resolvedUrl(url);
+    d->url = qmlContext(this)->resolvedUrl(url);
     d->sciurl = QUrl();
 
     if(url.isEmpty()) {
@@ -861,12 +861,12 @@ void QFxImage::setSource(const QString &url)
             {
                 QNetworkRequest req(d->url);
                 req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
-                d->reply = itemContext()->engine()->networkAccessManager()->get(req);
+                d->reply = qmlEngine(this)->networkAccessManager()->get(req);
                 QObject::connect(d->reply, SIGNAL(finished()), 
                                  this, SLOT(sciRequestFinished()));
             }
         } else {
-            QFxPixmap::get(itemContext()->engine(), d->url, this, SLOT(requestFinished()));
+            QFxPixmap::get(qmlEngine(this), d->url, this, SLOT(requestFinished()));
         }
     }
 
@@ -921,7 +921,7 @@ void QFxImage::setGridScaledImage(const QFxGridScaledImage& sci)
         emit statusChanged(d->status);
     } else {
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
-        QFxPixmap::get(itemContext()->engine(), d->sciurl, this, SLOT(requestFinished()));
+        QFxPixmap::get(qmlEngine(this), d->sciurl, this, SLOT(requestFinished()));
         QFxScaleGrid *sg = scaleGrid();
         sg->setTop(sci.gridTop());
         sg->setBottom(sci.gridBottom());
