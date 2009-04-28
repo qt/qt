@@ -337,6 +337,7 @@ private:
 
     bool dirtyClip;
     bool dfbHandledClip;
+    bool ignoreSystemClip;
     QDirectFBPaintDevice *dfbDevice;
 
     QDirectFBPaintEngine *q;
@@ -350,6 +351,7 @@ QDirectFBPaintEnginePrivate::QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p
       dfbHandledClip(false), dfbDevice(0), q(p)
 {
     fb = QDirectFBScreen::instance()->dfb();
+    ignoreSystemClip = QDirectFBScreen::instance()->ignoreSystemClip();
     surfaceCache = new SurfaceCache;
     static int cacheLimit = qgetenv("QT_DIRECTFB_IMAGECACHE").toInt();
     if (cacheLimit > 0)
@@ -774,23 +776,24 @@ void QDirectFBPaintEnginePrivate::updateClip()
     if (!dirtyClip)
         return;
 
-    if (!clip() || !clip()->enabled) {
+    const QClipData *clipData = clip();
+    if (!clipData || !clipData->enabled) {
         surface->SetClip(surface, NULL);
         dfbHandledClip = true;
-    }
-    else if (clip()->hasRectClip) {
+    } else if (clipData->hasRectClip) {
         const DFBRegion r = {
-            clip()->clipRect.x(),
-            clip()->clipRect.y(),
-            clip()->clipRect.x() + clip()->clipRect.width(),
-            clip()->clipRect.y() + clip()->clipRect.height()
+            clipData->clipRect.x(),
+            clipData->clipRect.y(),
+            clipData->clipRect.x() + clipData->clipRect.width(),
+            clipData->clipRect.y() + clipData->clipRect.height()
         };
         surface->SetClip(surface, &r);
-
         dfbHandledClip = true;
-    }
-    else
+    } else if (clipData->hasRegionClip && ignoreSystemClip && clipData->clipRegion == systemClip) {
+        dfbHandledClip = true;
+    } else {
         dfbHandledClip = false;
+    }
 
     dirtyClip = false;
 }

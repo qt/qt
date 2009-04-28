@@ -81,6 +81,7 @@ public:
     QDirectFBKeyboardHandler *keyboard;
 #endif
     bool videoonly;
+    bool ignoreSystemClip;
     QImage::Format alphaPixmapFormat;
 };
 
@@ -97,6 +98,7 @@ QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen* screen)
     , keyboard(0)
 #endif
     , videoonly(false)
+    , ignoreSystemClip(false)
     , alphaPixmapFormat(QImage::Format_Invalid)
 {
 #ifndef QT_NO_QWS_SIGNALHANDLER
@@ -826,6 +828,9 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     if (displayArgs.contains(QLatin1String("videoonly")))
         d_ptr->videoonly = true;
 
+    if (displayArgs.contains(QLatin1String("ignoresystemclip"), Qt::CaseInsensitive))
+        d_ptr->ignoreSystemClip = true;
+
 #ifndef QT_NO_DIRECTFB_WM
     if (displayArgs.contains(QLatin1String("fullscreen")))
 #endif
@@ -1256,3 +1261,7 @@ uchar *QDirectFBScreen::lockSurface(IDirectFBSurface *surface, DFBSurfaceLockFla
     return reinterpret_cast<uchar*>(mem);
 }
 
+bool QDirectFBScreen::ignoreSystemClip() const
+{
+    return d_ptr->ignoreSystemClip;
+}

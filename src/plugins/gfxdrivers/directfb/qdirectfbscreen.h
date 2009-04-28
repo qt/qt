@@ -109,6 +109,7 @@ public:
     void releaseDFBSurface(IDirectFBSurface* surface);
 
     bool preferVideoOnly() const;
+    bool ignoreSystemClip() const;
 
     static int depth(DFBSurfacePixelFormat format);
 
