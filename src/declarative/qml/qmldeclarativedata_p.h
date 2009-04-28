@@ -39,52 +39,32 @@
 **
 ****************************************************************************/
 
-#ifndef QMLCONTEXT_P_H
-#define QMLCONTEXT_P_H
+#ifndef QMLDECLARATIVEDATA_P_H
+#define QMLDECLARATIVEDATA_P_H
 
-#include <qmlcontext.h>
 #include <private/qobject_p.h>
-#include <private/qmldeclarativedata_p.h>
-#include <qhash.h>
-#include <qscriptvalue.h>
 
 QT_BEGIN_NAMESPACE
-class QmlContext;
-class QmlEngine;
-class QmlCompiledComponent;
 
-class QmlContextPrivate : public QObjectPrivate
+class QmlSimpleDeclarativeData : public QDeclarativeData
 {
-    Q_DECLARE_PUBLIC(QmlContext)
 public:
-    QmlContextPrivate();
+    QmlSimpleDeclarativeData() : flags(0), context(0) {}
 
-    QmlContext *parent;
-    QmlEngine *engine;
-    QHash<QString, QObject *> properties;
-    QHash<QString, QVariant> variantProperties;
-
-    QObjectList defaultObjects;
-    int highPriorityCount;
-
-    QScriptValueList scopeChain;
-
-    QmlCompiledComponent *component;
-    void init();
-
-    void dump();
-    void dump(int depth);
-
-    void destroyed(QObject *);
-
-    enum Priority {
-        HighPriority,
-        NormalPriority
-    };
-    void addDefaultObject(QObject *, Priority);
-
-    QmlSimpleDeclarativeData contextData;
+    enum Flag { Extended = 0x00000001 };
+    quint32 flags;
+    QmlContext *context;
 };
+
+class QmlExtendedDeclarativeData : public QmlSimpleDeclarativeData
+{
+public:
+    QmlExtendedDeclarativeData() { flags = Extended; }
+
+    virtual void destroyed(QObject *);
+    QHash<int, QObject *> attachedProperties;
+};
+
 QT_END_NAMESPACE
 
-#endif // QMLCONTEXT_P_H
+#endif // QMLDECLARATIVEDATA_P_H

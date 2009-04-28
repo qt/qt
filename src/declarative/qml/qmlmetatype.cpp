@@ -643,6 +643,18 @@ int QmlMetaType::attachedPropertiesFuncId(const QByteArray &name)
         return -1;
 }
 
+int QmlMetaType::attachedPropertiesFuncId(const QMetaObject *mo)
+{
+    QReadLocker lock(metaTypeDataLock());
+    QmlMetaTypeData *data = metaTypeData();
+
+    QmlType *type = data->metaObjectToType.value(mo);
+    if(type && type->attachedPropertiesFunction())
+        return type->index();
+    else
+        return -1;
+}
+
 QmlAttachedPropertiesFunc QmlMetaType::attachedPropertiesFuncById(int id)
 {
     if(id < 0)

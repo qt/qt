@@ -280,7 +280,7 @@ public:
             int count;
         } createComponent;
         struct {
-            int idx;
+            int id;
         } fetchAttached;
         struct {
             int property;

@@ -550,7 +550,7 @@ QObject *QmlMetaPropertyPrivate::attachedObject() const
     if(attachedFunc == -1)
         return 0;
     else
-        return QmlMetaType::attachedPropertiesFuncById(attachedFunc)(object);
+        return qmlAttachedPropertiesObjectById(attachedFunc, object);
 }
 
 /*!

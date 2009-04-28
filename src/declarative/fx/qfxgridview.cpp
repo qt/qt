@@ -79,12 +79,9 @@ public:
     }
 
     static QFxGridViewAttached *properties(QObject *obj) {
-        if(!attachedProperties.contains(obj)) {
-            QFxGridViewAttached *rv = new QFxGridViewAttached(obj);
-            attachedProperties.insert(obj, rv);
-            return rv;
-        }
-        return attachedProperties.value(obj);
+        QFxGridViewAttached *rv = new QFxGridViewAttached(obj);
+        attachedProperties.insert(obj, rv);
+        return rv;
     }
 
     void emitAdd() { emit add(); }

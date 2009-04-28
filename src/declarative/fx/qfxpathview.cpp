@@ -830,11 +830,9 @@ void QFxPathViewPrivate::snapToCurrent()
 QHash<QObject*, QObject*> QFxPathView::attachedProperties;
 QObject *QFxPathView::qmlAttachedProperties(QObject *obj)
 {
-    if(!attachedProperties.contains(obj)) {
-        QFxPathViewAttached *rv = new QFxPathViewAttached(obj);
-        attachedProperties.insert(obj, rv);
-    }
-    return attachedProperties.value(obj);
+    QFxPathViewAttached *rv = new QFxPathViewAttached(obj);
+    attachedProperties.insert(obj, rv);
+    return rv;
 }
 
 QT_END_NAMESPACE
