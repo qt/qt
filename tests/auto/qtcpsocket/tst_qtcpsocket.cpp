@@ -903,8 +903,12 @@ void tst_QTcpSocket::disconnectWhileConnecting()
         socket->disconnectFromHost();
     }
 
-    connect(socket, SIGNAL(disconnected()), SLOT(exitLoopSlot()));
+    connect(socket, SIGNAL(disconnected()), SLOT(exitLoopSlot()));    
+#ifndef Q_OS_SYMBIAN    
     enterLoop(10);
+#else    
+    enterLoop(30);
+#endif    
     QVERIFY2(!timeout(), "Network timeout");
     QVERIFY(socket->state() == QAbstractSocket::UnconnectedState);
     if (!closeDirectly) {
@@ -1060,7 +1064,11 @@ void tst_QTcpSocket::disconnectWhileLookingUp()
 
     // let anything queued happen
     QEventLoop loop;
+#ifndef Q_OS_SYMBIAN    
     QTimer::singleShot(50, &loop, SLOT(quit()));
+#else    
+    QTimer::singleShot(500, &loop, SLOT(quit()));
+#endif     
     loop.exec();
 
     // recheck
