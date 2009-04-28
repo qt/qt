@@ -465,7 +465,7 @@ void tst_ManualMultitouch::secondTouchPointOnChildGoesToParent()
 {
     MultitouchTestWidget testWidget;
     testWidget.testNameLabel->setText("Additional Touch-Points Over Child's Rect Go to Parent");
-    testWidget.testDescriptionLabel->setText("Press and hold a finger on the red widget, then on the red one, and release.");
+    testWidget.testDescriptionLabel->setText("Press and hold a finger on the red widget, then on the grey one, and release.");
     testWidget.greenWidget->hide();
     testWidget.redWidget->setAttribute(Qt::WA_AcceptTouchEvents);
     testWidget.greyWidget->setAttribute(Qt::WA_AcceptTouchEvents);
