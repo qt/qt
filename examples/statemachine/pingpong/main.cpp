@@ -64,25 +64,21 @@ public:
 class Pinger : public QState
 {
 public:
-    Pinger(QStateMachine *machine, QState *parent)
-        : QState(parent), m_machine(machine) {}
+    Pinger(QState *parent)
+        : QState(parent) {}
 
 protected:
     virtual void onEntry()
     {
-        m_machine->postEvent(new PingEvent());
+        machine()->postEvent(new PingEvent());
         fprintf(stdout, "ping?\n");
     }
-
-private:
-    QStateMachine *m_machine;
 };
 
 class PongTransition : public QAbstractTransition
 {
 public:
-    PongTransition(QStateMachine *machine)
-        : QAbstractTransition(), m_machine(machine) {}
+    PongTransition() {}
 
 protected:
     virtual bool eventTest(QEvent *e) const {
@@ -90,19 +86,15 @@ protected:
     }
     virtual void onTransition()
     {
-        m_machine->postEvent(new PingEvent(), 500);
+        machine()->postEvent(new PingEvent(), 500);
         fprintf(stdout, "ping?\n");
     }
-
-private:
-    QStateMachine *m_machine;
 };
 
 class PingTransition : public QAbstractTransition
 {
 public:
-    PingTransition(QStateMachine *machine)
-        : QAbstractTransition(), m_machine(machine) {}
+    PingTransition() {}
 
 protected:
     virtual bool eventTest(QEvent *e) const {
@@ -110,12 +102,9 @@ protected:
     }
     virtual void onTransition()
     {
-        m_machine->postEvent(new PongEvent(), 500);
+        machine()->postEvent(new PongEvent(), 500);
         fprintf(stdout, "pong!\n");
     }
-
-private:
-    QStateMachine *m_machine;
 };
 
 int main(int argc, char **argv)
@@ -126,13 +115,13 @@ int main(int argc, char **argv)
     QState *group = new QState(QState::ParallelGroup);
     group->setObjectName("group");
 
-    Pinger *pinger = new Pinger(&machine, group);
+    Pinger *pinger = new Pinger(group);
     pinger->setObjectName("pinger");
-    pinger->addTransition(new PongTransition(&machine));
+    pinger->addTransition(new PongTransition());
 
     QState *ponger = new QState(group);
     ponger->setObjectName("ponger");
-    ponger->addTransition(new PingTransition(&machine));
+    ponger->addTransition(new PingTransition());
 
     machine.addState(group);
     machine.setInitialState(group);

@@ -61,7 +61,8 @@ QT_BEGIN_NAMESPACE
   Framework}.
 
   The sourceState() function returns the source of the transition. The
-  targetStates() function returns the targets of the transition.
+  targetStates() function returns the targets of the transition. The machine()
+  function returns the state machine that the transition is part of.
 
   Transitions can cause animations to be played. Use the addAnimation()
   function to add an animation to the transition.
@@ -284,6 +285,16 @@ void QAbstractTransition::setTargetStates(const QList<QAbstractState*> &targets)
 {
     Q_D(QAbstractTransition);
     d->targetStates = targets;
+}
+
+/*!
+  Returns the state machine that this transition is part of, or 0 if the
+  transition is not part of a state machine.
+*/
+QStateMachine *QAbstractTransition::machine() const
+{
+    Q_D(const QAbstractTransition);
+    return d->machine();
 }
 
 #ifndef QT_NO_ANIMATION

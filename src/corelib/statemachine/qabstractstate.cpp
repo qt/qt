@@ -63,7 +63,8 @@ QT_BEGIN_NAMESPACE
   The entered() signal is emitted when the state has been entered. The
   exited() signal is emitted when the state has been exited.
 
-  The parentState() function returns the state's parent state.
+  The parentState() function returns the state's parent state. The machine()
+  function returns the state machine that the state is part of.
 
   \section1 Subclassing
 
@@ -176,6 +177,16 @@ QAbstractState::~QAbstractState()
 QState *QAbstractState::parentState() const
 {
     return qobject_cast<QState*>(parent());
+}
+
+/*!
+  Returns the state machine that this state is part of, or 0 if the state is
+  not part of a state machine.
+*/
+QStateMachine *QAbstractState::machine() const
+{
+    Q_D(const QAbstractState);
+    return d->machine();
 }
 
 /*!

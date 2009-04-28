@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Core)
 
 class QState;
+class QStateMachine;
 
 class QAbstractStatePrivate;
 class Q_CORE_EXPORT QAbstractState : public QObject
@@ -60,6 +61,7 @@ public:
     ~QAbstractState();
 
     QState *parentState() const;
+    QStateMachine *machine() const;
 
 Q_SIGNALS:
     void entered();

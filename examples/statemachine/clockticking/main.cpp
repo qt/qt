@@ -57,25 +57,21 @@ public:
 class ClockState : public QState
 {
 public:
-    ClockState(QStateMachine *machine, QState *parent)
-        : QState(parent), m_machine(machine) {}
+    ClockState(QState *parent)
+        : QState(parent) {}
 
 protected:
     virtual void onEntry()
     {
         fprintf(stdout, "ClockState entered; posting the initial tick\n");
-        m_machine->postEvent(new ClockEvent());
+        machine()->postEvent(new ClockEvent());
     }
-
-private:
-    QStateMachine *m_machine;
 };
 
 class ClockTransition : public QAbstractTransition
 {
 public:
-    ClockTransition(QStateMachine *machine)
-        : QAbstractTransition(), m_machine(machine) { }
+    ClockTransition() {}
 
 protected:
     virtual bool eventTest(QEvent *e) const {
@@ -84,18 +80,14 @@ protected:
     virtual void onTransition()
     {
         fprintf(stdout, "ClockTransition triggered; posting another tick with a delay of 1 second\n");
-        m_machine->postEvent(new ClockEvent(), 1000);
+        machine()->postEvent(new ClockEvent(), 1000);
     }
-
-private:
-    QStateMachine *m_machine;
 };
 
 class ClockListener : public QAbstractTransition
 {
 public:
-    ClockListener()
-        : QAbstractTransition() {}
+    ClockListener() {}
 
 protected:
     virtual bool eventTest(QEvent *e) const {
@@ -115,9 +107,9 @@ int main(int argc, char **argv)
     QState *group = new QState(QState::ParallelGroup);
     group->setObjectName("group");
 
-    ClockState *clock = new ClockState(&machine, group);
+    ClockState *clock = new ClockState(group);
     clock->setObjectName("clock");
-    clock->addTransition(new ClockTransition(&machine));
+    clock->addTransition(new ClockTransition());
 
     QState *listener = new QState(group);
     listener->setObjectName("listener");

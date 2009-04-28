@@ -55,6 +55,7 @@ QT_MODULE(Core)
 class QEvent;
 class QAbstractState;
 class QState;
+class QStateMachine;
 
 #ifndef QT_NO_ANIMATION
 class QAbstractAnimation;
@@ -77,6 +78,8 @@ public:
     void setTargetState(QAbstractState* target);
     QList<QAbstractState*> targetStates() const;
     void setTargetStates(const QList<QAbstractState*> &targets);
+
+    QStateMachine *machine() const;
 
 #ifndef QT_NO_ANIMATION
     void addAnimation(QAbstractAnimation *animation);
