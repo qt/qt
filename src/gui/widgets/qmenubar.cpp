@@ -1045,6 +1045,12 @@ void QMenuBar::setVisible(bool visible)
     if(d->wce_menubar)
         return;
 #endif
+#ifdef Q_OS_SYMBIAN
+    Q_D(QMenuBar);
+    if(d->symbian_menubar)
+        return;
+#endif
+
     QWidget::setVisible(visible);
 }
 
