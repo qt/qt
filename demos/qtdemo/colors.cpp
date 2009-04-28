@@ -73,7 +73,7 @@ int Colors::contentHeight = 510;
 // Properties:
 bool Colors::openGlRendering = false;
 bool Colors::softwareRendering = false;
-bool Colors::openGlAwailable = true;
+bool Colors::openGlAvailable = true;
 bool Colors::xRenderPresent = true;
 
 bool Colors::noTicker = false;
@@ -286,7 +286,6 @@ void Colors::parseArgs(int argc, char *argv[])
 void Colors::setLowSettings()
 {
     Colors::openGlRendering = false;
-    Colors::direct3dRendering = false;
     Colors::softwareRendering = true;
     Colors::noTicker = true;
     Colors::noTimerUpdate = true;
@@ -321,7 +320,7 @@ void Colors::detectSystemResources()
         qDebug() << "- OpenGL not supported by current build of Qt";
 #endif
     {
-        Colors::openGlAwailable = false;
+        Colors::openGlAvailable = false;
         if (Colors::verbose)
             qDebug("- OpenGL not recommended on this system");
     }
@@ -363,7 +362,7 @@ void Colors::postConfigure()
 
     if (!Colors::openGlRendering && !Colors::softwareRendering){
         // The user has not decided rendering system. So we do it instead:
-        if (Colors::openGlAwailable)
+        if (Colors::openGlAvailable)
             Colors::openGlRendering = true;
         else
             Colors::softwareRendering = true;
