@@ -12,7 +12,7 @@ public:
     MultitouchTestWidget(QWidget *parent = 0)
         : QWidget(parent)
     {
-        setAttribute(Qt::WA_QuitOnClose, false);\
+        setAttribute(Qt::WA_QuitOnClose, false);
         setupUi(this);
     }
 
@@ -39,6 +39,8 @@ private slots:
     void ignoringTouchBeginPropagatesToParent();
     void secondTouchPointOnParentGoesToChild();
     void secondTouchPointOnChildGoesToParent();
+    void secondTouchPointOnSiblingGoesToSibling();
+    void secondTouchPointOnCousinGoesToCousin();
 };
 
 tst_ManualMultitouch::tst_ManualMultitouch()
@@ -487,6 +489,64 @@ void tst_ManualMultitouch::secondTouchPointOnChildGoesToParent()
     QVERIFY(!testWidget.greyWidget->seenMousePress);
     QVERIFY(!testWidget.greyWidget->seenMouseMove);
     QVERIFY(!testWidget.greyWidget->seenMouseRelease);
+}
+
+void tst_ManualMultitouch::secondTouchPointOnSiblingGoesToSibling()
+{
+    MultitouchTestWidget testWidget;
+    testWidget.testNameLabel->setText("Multi-Touch Interaction Test, Unrelated Widgets Get Separate Events");
+    testWidget.testDescriptionLabel->setText("Press and hold a finger on the green widget, then the red one, and release.");
+    testWidget.blueWidget->hide();
+    testWidget.greenWidget->setAttribute(Qt::WA_AcceptTouchEvents);
+    testWidget.greenWidget->acceptTouchBegin = true;
+    testWidget.greenWidget->closeWindowOnTouchEnd = true;
+    testWidget.greyWidget->hide();
+    testWidget.redWidget->setAttribute(Qt::WA_AcceptTouchEvents);
+    testWidget.redWidget->acceptTouchBegin = true;
+    testWidget.showMaximized();
+    (void) qApp->exec();
+    QVERIFY(testWidget.greenWidget->seenTouchBegin);
+    QVERIFY(testWidget.greenWidget->seenTouchUpdate);
+    QVERIFY(testWidget.greenWidget->seenTouchEnd);
+    QVERIFY(!testWidget.greenWidget->seenMousePress);
+    QVERIFY(!testWidget.greenWidget->seenMouseMove);
+    QVERIFY(!testWidget.greenWidget->seenMouseRelease);
+    QVERIFY(testWidget.redWidget->seenTouchBegin);
+    QVERIFY(testWidget.redWidget->seenTouchUpdate);
+    QVERIFY(testWidget.redWidget->seenTouchEnd);
+    QVERIFY(!testWidget.redWidget->seenMousePress);
+    QVERIFY(!testWidget.redWidget->seenMouseMove);
+    QVERIFY(!testWidget.redWidget->seenMouseRelease);
+    QVERIFY(testWidget.greenWidget->touchPointCount == 1);
+    QVERIFY(testWidget.redWidget->touchPointCount == 1);
+}
+
+void tst_ManualMultitouch::secondTouchPointOnCousinGoesToCousin()
+{
+    MultitouchTestWidget testWidget;
+    testWidget.testNameLabel->setText("Multi-Touch Interaction Test, Unrelated Widgets Get Separate Events");
+    testWidget.testDescriptionLabel->setText("Press and hold a finger on the blue widget, then the grey one, and release.");
+    testWidget.blueWidget->setAttribute(Qt::WA_AcceptTouchEvents);
+    testWidget.blueWidget->acceptTouchBegin = true;
+    testWidget.blueWidget->closeWindowOnTouchEnd = true;
+    testWidget.greyWidget->setAttribute(Qt::WA_AcceptTouchEvents);
+    testWidget.greyWidget->acceptTouchBegin = true;
+    testWidget.showMaximized();
+    (void) qApp->exec();
+    QVERIFY(testWidget.blueWidget->seenTouchBegin);
+    QVERIFY(testWidget.blueWidget->seenTouchUpdate);
+    QVERIFY(testWidget.blueWidget->seenTouchEnd);
+    QVERIFY(!testWidget.blueWidget->seenMousePress);
+    QVERIFY(!testWidget.blueWidget->seenMouseMove);
+    QVERIFY(!testWidget.blueWidget->seenMouseRelease);
+    QVERIFY(testWidget.greyWidget->seenTouchBegin);
+    QVERIFY(testWidget.greyWidget->seenTouchUpdate);
+    QVERIFY(testWidget.greyWidget->seenTouchEnd);
+    QVERIFY(!testWidget.greyWidget->seenMousePress);
+    QVERIFY(!testWidget.greyWidget->seenMouseMove);
+    QVERIFY(!testWidget.greyWidget->seenMouseRelease);
+    QVERIFY(testWidget.blueWidget->touchPointCount == 1);
+    QVERIFY(testWidget.greyWidget->touchPointCount == 1);
 }
 
 QTEST_MAIN(tst_ManualMultitouch)
