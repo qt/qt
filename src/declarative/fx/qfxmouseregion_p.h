@@ -82,7 +82,6 @@ public:
         lastButton = event->button();
         lastButtons = event->buttons();
         lastModifiers = event->modifiers();
-        qDebug() << "modifiers" << lastModifiers;
     }
 
     bool absorb : 1;
