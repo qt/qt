@@ -2213,8 +2213,11 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
             objs.insert(obj);
             Action myAction = action;
 
-            if (d->from.isValid())
+            if (d->from.isValid()) {
                 myAction.fromValue = QVariant(d->from);
+            } else {
+                myAction.fromValue = QVariant();
+            }
             if (d->to.isValid())
                 myAction.toValue = QVariant(d->to);
 
