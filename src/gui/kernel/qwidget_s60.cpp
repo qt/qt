@@ -195,12 +195,13 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
             data.crect.moveTopLeft(QPoint(clientRect.iTl.iX, clientRect.iTl.iY));
         QSymbianControl *control= new QSymbianControl(q);
         control->ConstructL(true,desktop);
-        if (!desktop)
-        {
+        if (!desktop) {
             QTLWExtra *topExtra = topData();
             topExtra->rwindow = control->DrawableWindow();
             // Request mouse move events.
-            topExtra->rwindow->PointerFilter(EPointerFilterEnterExit | EPointerFilterMove | EPointerFilterDrag, 0);
+            topExtra->rwindow->PointerFilter(EPointerFilterEnterExit
+                | EPointerFilterMove | EPointerFilterDrag, 0);
+            topExtra->rwindow->EnableVisibilityChangeEvents();
         }
 
         id = (WId)control;
