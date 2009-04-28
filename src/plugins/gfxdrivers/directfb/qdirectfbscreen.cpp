@@ -538,16 +538,12 @@ class Q_GUI_EXPORT QDirectFBScreenCursor : public QScreenCursor
 {
 public:
     QDirectFBScreenCursor();
-    ~QDirectFBScreenCursor();
-
-    void set(const QImage &image, int hotx, int hoty);
-    void move(int x, int y);
-    void show();
-    void hide();
-
+    virtual void set(const QImage &image, int hotx, int hoty);
+    virtual void move(int x, int y);
+    virtual void show();
+    virtual void hide();
 private:
     IDirectFBDisplayLayer *layer;
-    bool implicitHide;
 };
 
 QDirectFBScreenCursor::QDirectFBScreenCursor()
@@ -557,64 +553,30 @@ QDirectFBScreenCursor::QDirectFBScreenCursor()
         qFatal("QDirectFBScreenCursor: DirectFB not initialized");
 
     layer = QDirectFBScreen::instance()->dfbDisplayLayer();
-
-    if (layer)
-        layer->SetCooperativeLevel(layer, DLSCL_SHARED); // XXX: hw: remove?
-    else
-        qFatal("QDirectFBScreenCursor: Unable to get primary display layer!");
-
-    enable = true;
-    hwaccel = true;
-    implicitHide = false;
-    supportsAlpha = true;
-
-    set(QImage(), 0, 0);
-}
-
-QDirectFBScreenCursor::~QDirectFBScreenCursor()
-{
-}
-
-void QDirectFBScreenCursor::show()
-{
+    Q_ASSERT(layer);
     DFBResult result;
     result = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);
     if (result != DFB_OK) {
-        DirectFBError("QDirectFBScreenCursor::show: "
+        DirectFBError("QDirectFBScreenCursor::QDirectFBScreenCursor: "
                       "Unable to set cooperative level", result);
     }
     result = layer->EnableCursor(layer, 1);
     if (result != DFB_OK) {
-        DirectFBError("QDirectFBScreenCursor::show: "
+        DirectFBError("QDirectFBScreenCursor::QDirectFBScreenCursor: "
                       "Unable to enable cursor", result);
     }
+
     result = layer->SetCooperativeLevel(layer, DLSCL_SHARED);
     if (result != DFB_OK) {
         DirectFBError("QDirectFBScreenCursor::show: "
-                      "Unable to reset cooperative level", result);
-    }
-    implicitHide = false;
-}
-
-void QDirectFBScreenCursor::hide()
-{
-    DFBResult result;
-    result = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFBScreenCursor::hide: "
                       "Unable to set cooperative level", result);
     }
-    result = layer->EnableCursor(layer, 0);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFBScreenCursor::hide: "
-                      "Unable to disable cursor", result);
-    }
-    result = layer->SetCooperativeLevel(layer, DLSCL_SHARED);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFBScreenCursor::hide: "
-                      "Unable to reset cooperative level", result);
-    }
-    implicitHide = true;
+
+    layer->SetCooperativeLevel(layer, DLSCL_SHARED);
+
+    enable = false;
+    hwaccel = true;
+    supportsAlpha = true;
 }
 
 void QDirectFBScreenCursor::move(int x, int y)
@@ -622,51 +584,89 @@ void QDirectFBScreenCursor::move(int x, int y)
     layer->WarpCursor(layer, x, y);
 }
 
+void QDirectFBScreenCursor::hide()
+{
+    if (enable) {
+        QScreenCursor::hide();
+        DFBResult result;
+        result = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreenCursor::hide: "
+                          "Unable to set cooperative level", result);
+        }
+        result = layer->SetCursorOpacity(layer, 0);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreenCursor::hide: "
+                          "Unable to set cursor opacity", result);
+        }
+        result = layer->SetCooperativeLevel(layer, DLSCL_SHARED);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreenCursor::hide: "
+                          "Unable to set cooperative level", result);
+        }
+    }
+}
+
+void QDirectFBScreenCursor::show()
+{
+    if (!enable) {
+        QScreenCursor::show();
+        DFBResult result;
+        result = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreenCursor::show: "
+                          "Unable to set cooperative level", result);
+        }
+        result = layer->SetCursorOpacity(layer, 255);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreenCursor::show: "
+                          "Unable to set cursor shape", result);
+        }
+        result = layer->SetCooperativeLevel(layer, DLSCL_SHARED);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreenCursor::show: "
+                          "Unable to set cooperative level", result);
+        }
+    }
+}
+
 void QDirectFBScreenCursor::set(const QImage &image, int hotx, int hoty)
 {
-    if (image.isNull() && isVisible()) {
-        hide();
-        implicitHide = true;
-    } else if (!image.isNull() && implicitHide) {
-        show();
-    }
-    cursor = image.convertToFormat(QDirectFBScreen::instance()->alphaPixmapFormat());
+    QDirectFBScreen *screen = QDirectFBScreen::instance();
+    if (!screen)
+        return;
 
-    if (!image.isNull()) {
-        Q_ASSERT(cursor.numColors() == 0);
+    if (image.isNull()) {
+        cursor = QImage();
+        hide();
+    } else {
+        cursor = image.convertToFormat(screen->alphaPixmapFormat());
         size = cursor.size();
         hotspot = QPoint(hotx, hoty);
-
-        DFBSurfaceDescription description;
-        description = QDirectFBScreen::getSurfaceDescription(cursor);
-
-        IDirectFBSurface *surface;
-        surface = QDirectFBScreen::instance()->createDFBSurface(&description,
-                                                                QDirectFBScreen::TrackSurface);
+        IDirectFBSurface *surface = screen->createDFBSurface(cursor, QDirectFBScreen::DontTrackSurface);
         if (!surface) {
             qWarning("QDirectFBScreenCursor::set: Unable to create surface");
             return;
         }
         DFBResult result = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);
         if (result != DFB_OK) {
-            DirectFBError("QDirectFBScreenCursor::set: "
+            DirectFBError("QDirectFBScreenCursor::show: "
                           "Unable to set cooperative level", result);
         }
         result = layer->SetCursorShape(layer, surface, hotx, hoty);
         if (result != DFB_OK) {
-            DirectFBError("QDirectFBScreenCursor::set: Unable to set cursor shape",
-                          result);
+            DirectFBError("QDirectFBScreenCursor::show: "
+                          "Unable to set cursor shape", result);
         }
-
+        surface->Release(surface);
         result = layer->SetCooperativeLevel(layer, DLSCL_SHARED);
         if (result != DFB_OK) {
-            DirectFBError("QDirectFBScreenCursor::set: "
-                          "Unable to reset cooperative level", result);
+            DirectFBError("QDirectFBScreenCursor::show: "
+                          "Unable to set cooperative level", result);
         }
-
-        if (surface)
-            QDirectFBScreen::instance()->releaseDFBSurface(surface);
+        show();
     }
+
 }
 #endif // QT_NO_DIRECTFB_LAYER
 
