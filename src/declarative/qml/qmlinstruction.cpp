@@ -173,7 +173,7 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
         qWarning() << idx << "\t" << line << "\t" << "ASSIGN_OBJECT_LIST\t" << instr->assignObject.property << "\t" << instr->assignObject.castValue << "\t\t" << ((instr->assignObject.property == -1)?QByteArray("default"):datas.at(instr->assignObject.property));
         break;
     case QmlInstruction::FetchAttached:
-        qWarning() << idx << "\t" << line << "\t" << "FETCH_ATTACHED\t\t" << instr->fetchAttached.idx << "\t\t\t" << primitives.at(instr->fetchAttached.idx);
+        qWarning() << idx << "\t" << line << "\t" << "FETCH_ATTACHED\t\t" << instr->fetchAttached.id;
         break;
     case QmlInstruction::FetchQmlList:
         qWarning() << idx << "\t" << line << "\t" << "FETCH_QMLLIST\t\t" << instr->fetchQmlList.property << "\t" << instr->fetchQmlList.type;

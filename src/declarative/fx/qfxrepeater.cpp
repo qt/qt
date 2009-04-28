@@ -235,6 +235,15 @@ void QFxRepeater::setComponent(QmlComponent *_c)
 /*!
     \internal
  */
+void QFxRepeater::componentComplete()
+{
+    QFxItem::componentComplete();
+    regenerate();
+}
+
+/*!
+    \internal
+ */
 void QFxRepeater::parentChanged(QSimpleCanvasItem *o, QSimpleCanvasItem *n)
 {
     QFxItem::parentChanged(o, n);
@@ -250,7 +259,7 @@ void QFxRepeater::regenerate()
     
     qDeleteAll(d->deletables); 
     d->deletables.clear();
-    if(!d->component || !itemParent())
+    if(!d->component || !itemParent() || !isComponentComplete())
         return;
 
     QFxItem *lastItem = this;

@@ -56,7 +56,8 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlmetaproperty_p.h \
     qml/qmlcontext_p.h \
     qml/qmlcompositetypemanager_p.h \
-    qml/qmllist.h
+    qml/qmllist.h \
+    qml/qmldeclarativedata_p.h
 
 # for qtscript debugger
 QT += scripttools

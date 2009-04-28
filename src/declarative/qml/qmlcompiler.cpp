@@ -911,8 +911,10 @@ bool QmlCompiler::compileAttachedProperty(QmlParser::Property *prop,
     QmlInstruction fetch;
     fetch.type = QmlInstruction::FetchAttached;
     fetch.line = prop->line;
-    int ref = output->indexForByteArray(prop->name);
-    fetch.fetchAttached.idx = ref;
+    int id = QmlMetaType::attachedPropertiesFuncId(prop->name);
+    if(id == -1)
+        COMPILE_EXCEPTION("Non-existant attached property object" << prop->name);
+    fetch.fetchAttached.id = id;
     output->bytecode << fetch;
 
     COMPILE_CHECK(compileFetchedObject(prop->value, ctxt + 1));

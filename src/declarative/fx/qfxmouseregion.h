@@ -121,7 +121,7 @@ public:
 Q_SIGNALS:
     void hoveredChanged();
     void pressedChanged();
-    void positionChanged();
+    void positionChanged(QFxMouseEvent *mouse);
 
     void pressed(QFxMouseEvent *mouse);
     void pressAndHold(QFxMouseEvent *mouse);

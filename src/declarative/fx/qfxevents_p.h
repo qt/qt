@@ -52,12 +52,12 @@ QT_BEGIN_NAMESPACE
 class QFxKeyEvent : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int key READ key);
-    Q_PROPERTY(QString text READ text);
-    Q_PROPERTY(Qt::KeyboardModifiers modifiers READ modifiers);
-    Q_PROPERTY(bool isAutoRepeat READ isAutoRepeat);
-    Q_PROPERTY(int count READ count);
-    Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted);
+    Q_PROPERTY(int key READ key)
+    Q_PROPERTY(QString text READ text)
+    Q_PROPERTY(int modifiers READ modifiers)
+    Q_PROPERTY(bool isAutoRepeat READ isAutoRepeat)
+    Q_PROPERTY(int count READ count)
+    Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted)
 
 public:
     QFxKeyEvent(QEvent::Type type, int key, Qt::KeyboardModifiers modifiers, const QString &text=QString(), bool autorep=false, ushort count=1)
@@ -67,7 +67,7 @@ public:
 
     int key() const { return event.key(); }
     QString text() const { return event.text(); }
-    Qt::KeyboardModifiers modifiers() const { return event.modifiers(); }
+    int modifiers() const { return event.modifiers(); }
     bool isAutoRepeat() const { return event.isAutoRepeat(); }
     int count() const { return event.count(); }
 
@@ -83,14 +83,14 @@ QML_DECLARE_TYPE(QFxKeyEvent);
 class QFxMouseEvent : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int x READ x);
-    Q_PROPERTY(int y READ y);
-    Q_PROPERTY(Qt::MouseButton button READ button);
-    Q_PROPERTY(Qt::MouseButtons buttons READ buttons);
-    Q_PROPERTY(Qt::KeyboardModifiers modifiers READ modifiers);
-    Q_PROPERTY(bool wasHeld READ wasHeld);
-    Q_PROPERTY(bool isClick READ isClick);
-    Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted);
+    Q_PROPERTY(int x READ x)
+    Q_PROPERTY(int y READ y)
+    Q_PROPERTY(int button READ button)
+    Q_PROPERTY(int buttons READ buttons)
+    Q_PROPERTY(int modifiers READ modifiers)
+    Q_PROPERTY(bool wasHeld READ wasHeld)
+    Q_PROPERTY(bool isClick READ isClick)
+    Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted)
 
 public:
     QFxMouseEvent(int x, int y, Qt::MouseButton button, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers
@@ -100,9 +100,9 @@ public:
 
     int x() const { return _x; }
     int y() const { return _y; }
-    Qt::MouseButton button() const { return _button; }
-    Qt::MouseButtons buttons() const { return _buttons; }
-    Qt::KeyboardModifiers modifiers() const { return _modifiers; }
+    int button() const { return _button; }
+    int buttons() const { return _buttons; }
+    int modifiers() const { return _modifiers; }
     bool wasHeld() const { return _wasHeld; }
     bool isClick() const { return _isClick; }
 
