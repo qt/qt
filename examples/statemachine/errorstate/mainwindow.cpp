@@ -192,8 +192,7 @@ void MainWindow::addTank()
 {
     Q_ASSERT(!m_spawns.isEmpty());
 
-    QString fileName = QFileDialog::getOpenFileName(this, "Select plugin file", 
-        "plugins/", "*.dll");
+    QString fileName = QFileDialog::getOpenFileName(this, "Select plugin file", "plugins/", "*.dll");
     QPluginLoader loader(fileName);
     
     Plugin *plugin = qobject_cast<Plugin *>(loader.instance());
@@ -203,8 +202,9 @@ void MainWindow::addTank()
         connect(tankItem, SIGNAL(fireCannon()), this, SLOT(addRocket()));
         if (m_spawns.isEmpty())
             emit mapFull();
-
-        plugin->create(m_runningState, tankItem);
+        
+        QState *region = new QState(m_runningState);
+        region->setInitialState(plugin->create(region, tankItem));
     }
 }
 
