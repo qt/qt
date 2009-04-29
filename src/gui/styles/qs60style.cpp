@@ -23,6 +23,9 @@
 #include "qpushbutton.h"
 #include "qmenubar.h"
 #include "qtablewidget.h"
+#include "qtoolbar.h"
+#include "qtoolbutton.h"
+#include "private/qtoolbarextension_p.h"
 #include "private/qcombobox_p.h"
 #include "private/qwidget_p.h"
 #include "qscrollbar.h"
@@ -50,16 +53,16 @@ static const QByteArray propertyKeyCurrentlayout = "currentlayout";
 #if defined(QT_S60STYLE_LAYOUTDATA_SIMULATED)
 const layoutHeader QS60StylePrivate::m_layoutHeaders[] = {
 // *** generated layout data ***
-{240,320,1,12,true,QLatin1String("QVGA Landscape Mirrored")},
-{240,320,1,12,false,QLatin1String("QVGA Landscape")},
-{320,240,1,12,true,QLatin1String("QVGA Portrait Mirrored")},
-{320,240,1,12,false,QLatin1String("QVGA Portrait")},
-{360,640,1,12,true,QLatin1String("NHD Landscape Mirrored")},
-{360,640,1,12,false,QLatin1String("NHD Landscape")},
-{640,360,1,12,true,QLatin1String("NHD Portrait Mirrored")},
-{640,360,1,12,false,QLatin1String("NHD Portrait")},
-{352,800,1,9,true,QLatin1String("E90 Landscape Mirrored")},
-{352,800,1,9,false,QLatin1String("E90 Landscape")}
+{240,320,1,13,true,QLatin1String("QVGA Landscape Mirrored")},
+{240,320,1,13,false,QLatin1String("QVGA Landscape")},
+{320,240,1,13,true,QLatin1String("QVGA Portrait Mirrored")},
+{320,240,1,13,false,QLatin1String("QVGA Portrait")},
+{360,640,1,13,true,QLatin1String("NHD Landscape Mirrored")},
+{360,640,1,13,false,QLatin1String("NHD Landscape")},
+{640,360,1,13,true,QLatin1String("NHD Portrait Mirrored")},
+{640,360,1,13,false,QLatin1String("NHD Portrait")},
+{352,800,1,12,true,QLatin1String("E90 Landscape Mirrored")},
+{352,800,1,12,false,QLatin1String("E90 Landscape")}
 // *** End of generated data ***
 };
 const int QS60StylePrivate::m_numberOfLayouts =
@@ -67,16 +70,17 @@ const int QS60StylePrivate::m_numberOfLayouts =
 
 const short QS60StylePrivate::data[][MAX_PIXELMETRICS] = {
 // *** generated pixel metrics ***
-{5,0,-909,0,0,1,0,0,-1,8,15,22,15,15,7,198,-909,-909,-909,19,15,2,0,0,21,-909,21,-909,4,4,1,-909,-909,0,2,0,0,13,23,17,17,21,21,2,115,21,0,-909,-909,-909,-909,0,0,15,4,-909,0,0,-909,-909,-909,-909,-909,-909,37,21,51,27,51,4,4,5,3,15,-909,5,58,12,5,0,7,4,4,9,4,4,-909,1,-909,-909,-909,-909,4,4,3,1},
-{5,0,-909,0,0,1,0,0,-1,8,15,22,15,15,7,198,-909,-909,-909,19,15,2,0,0,21,-909,21,-909,4,4,1,-909,-909,0,2,0,0,13,23,17,17,21,21,2,115,21,0,-909,-909,-909,-909,0,0,15,5,-909,0,0,-909,-909,-909,-909,-909,-909,37,21,51,27,51,4,4,5,3,15,-909,5,58,12,5,0,4,4,7,9,4,4,-909,1,-909,-909,-909,-909,4,4,3,1},
-{5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,-909,27,-909,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,4,-909,0,0,-909,-909,-909,-909,-909,-909,37,21,65,27,65,4,4,5,3,15,-909,5,58,13,5,0,7,4,4,9,4,4,-909,1,-909,-909,-909,-909,4,4,3,1},
-{5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,-909,27,-909,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,5,-909,0,0,-909,-909,-909,-909,-909,-909,37,21,65,27,65,4,4,5,3,15,-909,5,58,13,5,0,4,4,7,9,4,4,-909,1,-909,-909,-909,-909,4,4,3,1},
-{7,0,-909,0,0,2,0,0,-1,20,53,28,19,19,9,258,-909,-909,-909,29,19,26,0,0,32,-909,72,-909,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,5,-909,0,0,-909,-909,-909,-909,-909,-909,87,27,77,35,77,5,5,6,3,19,-909,7,74,19,7,0,8,5,5,12,5,5,-909,2,-909,-909,-909,-909,7,7,3,1},
-{7,0,-909,0,0,2,0,0,-1,20,53,28,19,19,9,258,-909,-909,-909,29,19,26,0,0,32,-909,72,-909,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,7,-909,0,0,-909,-909,-909,-909,-909,-909,87,27,77,35,77,5,5,6,3,19,-909,7,74,19,7,0,5,5,8,12,5,5,-909,2,-909,-909,-909,-909,7,7,3,1},
-{7,0,-909,0,0,2,0,0,-1,20,52,28,19,19,9,258,-909,-909,-909,29,19,6,0,0,32,-909,60,-909,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,5,-909,0,0,-909,-909,-909,-909,-909,-909,87,27,98,35,98,5,5,6,3,19,-909,7,74,22,7,0,8,5,5,12,5,5,-909,2,-909,-909,-909,-909,7,7,3,1},
-{7,0,-909,0,0,2,0,0,-1,20,52,28,19,19,9,258,-909,-909,-909,29,19,6,0,0,32,-909,60,-909,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,7,-909,0,0,-909,-909,-909,-909,-909,-909,87,27,98,35,98,5,5,6,3,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,2,-909,-909,-909,-909,7,7,3,1},
-{7,0,-909,0,0,2,0,0,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,-909,32,-909,5,5,2,-909,-909,0,2,8,0,16,16,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,5,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,34,7,0,2,2,3,0,1,1,-909,2,-909,-909,-909,-909,7,7,3,1},
-{7,0,-909,0,0,2,0,0,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,-909,32,-909,5,5,2,-909,-909,0,2,8,0,16,16,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,6,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,34,7,0,3,2,2,0,1,1,-909,2,-909,-909,-909,-909,7,7,3,1}
+{5,0,-909,0,0,1,0,0,-1,8,15,22,15,15,7,198,-909,-909,-909,19,15,2,0,0,21,-909,21,-909,4,4,1,-909,-909,0,2,0,0,13,23,17,17,21,21,2,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,51,27,51,4,4,5,3,15,-909,5,58,12,5,0,7,4,4,9,4,4,-909,1,-909,-909,-909,-909,4,4,3,1},
+{5,0,-909,0,0,1,0,0,-1,8,15,22,15,15,7,198,-909,-909,-909,19,15,2,0,0,21,-909,21,-909,4,4,1,-909,-909,0,2,0,0,13,23,17,17,21,21,2,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,51,27,51,4,4,5,3,15,-909,5,58,12,5,0,4,4,7,9,4,4,-909,1,-909,-909,-909,-909,4,4,3,1},
+{5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,-909,27,-909,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,4,4,5,3,15,-909,5,58,13,5,0,7,4,4,9,4,4,-909,1,-909,-909,-909,-909,4,4,3,1},
+{5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,-909,27,-909,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,4,4,5,3,15,-909,5,58,13,5,0,4,4,7,9,4,4,-909,1,-909,-909,-909,-909,4,4,3,1},
+{7,0,-909,0,0,2,0,0,-1,20,53,28,19,19,9,258,-909,-909,-909,29,19,26,0,0,32,-909,72,-909,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,5,5,6,3,19,-909,7,74,19,7,0,8,5,5,12,5,5,-909,2,-909,-909,-909,-909,7,7,3,1},
+{7,0,-909,0,0,2,0,0,-1,20,53,28,19,19,9,258,-909,-909,-909,29,19,26,0,0,32,-909,72,-909,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,5,5,6,3,19,-909,7,74,19,7,0,5,5,8,12,5,5,-909,2,-909,-909,-909,-909,7,7,3,1},
+{7,0,-909,0,0,2,0,0,-1,20,52,28,19,19,9,258,-909,-909,-909,29,19,6,0,0,32,-909,60,-909,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,98,35,98,5,5,6,3,19,-909,7,74,22,7,0,8,5,5,12,5,5,-909,2,-909,-909,-909,-909,7,7,3,1},
+{7,0,-909,0,0,2,0,0,-1,20,52,28,19,19,9,258,-909,-909,-909,29,19,6,0,0,32,-909,60,-909,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,98,35,98,5,5,6,3,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,2,-909,-909,-909,-909,7,7,3,1},
+{7,0,-909,0,0,2,0,0,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,-909,32,-909,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,5,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,8,6,5,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1},
+{7,0,-909,0,0,2,0,0,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,-909,32,-909,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,6,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,5,6,8,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1}
+
 
 // *** End of generated data ***
 };
@@ -95,7 +99,10 @@ const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameEleme
     {SE_SettingsList,         QS60StyleEnums::SP_QsnFrSetOptCenter},
     {SE_TableItem,            QS60StyleEnums::SP_QsnFrCaleCenter},
     {SE_TableHeaderItem,      QS60StyleEnums::SP_QsnFrCaleHeadingCenter},
-    {SE_ToolTip,              QS60StyleEnums::SP_QsnFrPopupPreviewCenter}
+    {SE_ToolTip,              QS60StyleEnums::SP_QsnFrPopupPreviewCenter},
+    {SE_ToolBar,              QS60StyleEnums::SP_QsnFrPopupSubCenter},
+    {SE_ToolBarButton,        QS60StyleEnums::SP_QsnFrSctrlButtonCenter},
+    {SE_ToolBarButtonPressed, QS60StyleEnums::SP_QsnFrSctrlButtonCenterPressed},
 };
 static const int frameElementsCount =
     int(sizeof(QS60StylePrivate::m_frameElementsData)/sizeof(QS60StylePrivate::m_frameElementsData[0]));
@@ -302,6 +309,16 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
     case SE_ToolTip:
         drawFrame(SF_ToolTip, painter, rect, flags | SF_PointNorth);
         break;
+    case SE_ToolBar:
+        drawFrame(SF_ToolBar, painter, rect, flags | SF_PointNorth);
+        break;
+    case SE_ToolBarButton:
+        drawFrame(SF_ToolBarButton, painter, rect, flags | SF_PointNorth);
+        break;
+    case SE_ToolBarButtonPressed:
+        drawFrame(SF_ToolBarButtonPressed, painter, rect, flags | SF_PointNorth);
+        break;
+
     default:
         break;
     }
@@ -831,15 +848,73 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
         if (const QStyleOptionToolButton *toolBtn = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
             const State bflags = toolBtn->state;
             const QRect button(subControlRect(control, toolBtn, SC_ToolButton, widget));
-            QStyleOptionToolButton label = *toolBtn;
+            QStyleOptionToolButton toolButton = *toolBtn;
 
             if (sub&SC_ToolButton) {
                 QStyleOption tool(0);
                 tool.palette = toolBtn->palette;
+
+                // Check if toolbutton is in toolbar.
+                QToolBar *toolBar = 0;
+                if (widget)
+                    toolBar = qobject_cast<QToolBar *>(widget->parentWidget());
+
                 if (bflags & (State_Sunken | State_On | State_Raised)) {
                     tool.rect = button;
                     tool.state = bflags;
-                    drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
+
+                    // todo: I'd like to move extension button next to where last button is
+                    // however, the painter seems to want to clip the button rect even if I turn of the clipping.
+                    if (toolBar && (qobject_cast<const QToolBarExtension *>(widget))){
+                        /*QList<QAction *> actionList = toolBar->actions();
+                        const int actionCount = actionList.count();
+                        const int toolbarWidth = toolBar->width();
+                        const int extButtonWidth = pixelMetric(PM_ToolBarExtensionExtent, option, widget);
+                        const int toolBarButtonWidth = pixelMetric(PM_ToolBarIconSize, option, widget);
+                        const int frame = pixelMetric(PM_ToolBarFrameWidth, option, widget);
+                        const int margin = pixelMetric(PM_ToolBarItemMargin, option, widget);
+                        const int border = frame + margin;
+                        const int spacing = pixelMetric(PM_ToolBarItemSpacing, option, widget);
+                        const int toolBarButtonArea = toolbarWidth - extButtonWidth - spacing - 2*border;
+                        const int numberOfVisibleButtons = toolBarButtonArea / toolBarButtonWidth;
+                        // new extension button place is after border and all the other visible buttons (with spacings)
+                        const int newXForExtensionButton = numberOfVisibleButtons * toolBarButtonWidth + (numberOfVisibleButtons-1)*spacing + border;
+                        painter->save();
+                        painter->setClipping(false);
+                        tool.rect.translate(-newXForExtensionButton,0);
+                        painter->restore();*/
+                    }
+
+                    if (toolBar){
+                        /*if (toolBar->orientation() == Qt::Vertical){
+                            // todo: I'd like to make all vertical buttons the same size, but again the painter
+                            // prefers to use clipping for button rects, even though clipping has been set off.
+                            painter->save();
+                            painter->setClipping(false);
+
+                            const int origWidth = tool.rect.width();
+                            const int newWidth = toolBar->width()-2*pixelMetric(PM_ToolBarFrameWidth, option, widget);
+                            painter->translate(origWidth-newWidth,0);
+                            tool.rect.translate(origWidth-tool.rect.width(),0);
+                            tool.rect.setWidth(newWidth);
+
+                            if (option->state & QStyle::State_Sunken)
+                                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ToolBarButtonPressed, painter, tool.rect, flags);
+                            else
+                                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ToolBarButton, painter, tool.rect, flags);
+
+                        }*/
+                        if (option->state & QStyle::State_Sunken)
+                            QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ToolBarButtonPressed, painter, tool.rect, flags);
+                        else
+                            QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ToolBarButton, painter, tool.rect, flags);
+                        /*
+                        if (toolBar->orientation() == Qt::Vertical)
+                            painter->restore();
+                            */
+                    } else {
+                        drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
+                    }
                 }
             }
             if (toolBtn->state & State_HasFocus) {
@@ -867,15 +942,15 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                         break;
                     default:
                         break; }
-                label.rect = button;
-                drawPrimitive(pe, &label, painter, widget);
+                toolButton.rect = button;
+                drawPrimitive(pe, &toolButton, painter, widget);
             }
 
             if (toolBtn->text.length()>0 ||
                 !toolBtn->icon.isNull()) {
                 const int frameWidth = pixelMetric(PM_DefaultFrameWidth, option, widget);
-                label.rect = button.adjusted(frameWidth, frameWidth, -frameWidth, -frameWidth);
-                drawControl(CE_ToolButtonLabel, &label, painter, widget);
+                toolButton.rect = button.adjusted(frameWidth, frameWidth, -frameWidth, -frameWidth);
+                drawControl(CE_ToolButtonLabel, &toolButton, painter, widget);
                 }
             }
         break;
@@ -1556,6 +1631,50 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             QCommonStyle::drawControl(element, header, painter, widget);
         }
         break;
+
+#ifndef QT_NO_TOOLBAR
+    case CE_ToolBar:
+        if (const QStyleOptionToolBar *toolBar = qstyleoption_cast<const QStyleOptionToolBar *>(option)) {
+            const QToolBar *tbWidget = qobject_cast<const QToolBar *>(widget);
+
+            if (!tbWidget || (widget && qobject_cast<QToolBar *>(widget->parentWidget())))
+                break;
+
+            // Normally in S60 5.0+ there is no background for toolbar, but in some cases with versatile QToolBar,
+            // it looks a bit strange. So, lets fillRect with Button.
+            if (!QS60StylePrivate::isToolBarBackground()) {
+                QList<QAction *> actions = tbWidget->actions();
+                bool justToolButtonsInToolBar = true;
+                for (int i = 0; i < actions.size(); ++i) {
+                    QWidget *childWidget = tbWidget->widgetForAction(actions.at(i));
+                    const QToolButton *button = qobject_cast<const QToolButton *>(childWidget);
+                    if (!button){
+                        justToolButtonsInToolBar = false;
+                    }
+                }
+
+                // Draw frame background
+                // for vertical toolbars with text only and
+                // for toolbars with extension buttons and
+                // for toolbars with widgets in them.
+                if (!justToolButtonsInToolBar ||
+                        (tbWidget &&
+                         (tbWidget->orientation() == Qt::Vertical) &&
+                         (tbWidget->toolButtonStyle() == Qt::ToolButtonTextOnly))) {
+                        painter->save();
+                        if (widget)
+                            painter->setBrush(widget->palette().button());
+                        painter->setOpacity(0.3);
+                        painter->fillRect(toolBar->rect, painter->brush());
+                        painter->restore();
+                }
+            } else {
+                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ToolBar, painter, toolBar->rect, flags);
+            }
+        }
+        break;
+#endif //QT_NO_TOOLBAR
+
     case CE_ShapedFrame:
     case CE_MenuVMargin:
     case CE_MenuHMargin:
@@ -1592,9 +1711,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_ScrollBarFirst:
     case CE_ScrollBarLast:
     case CE_FocusFrame:
-#ifndef QT_NO_TOOLBAR
-    case CE_ToolBar:
-#endif //QT_NO_TOOLBAR
 #ifndef QT_NO_TOOLBOX
     case CE_ToolBoxTab:
     case CE_ToolBoxTabShape:
@@ -1876,6 +1992,14 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         }
         break;
 
+#ifndef QT_NO_TOOLBAR
+    case PE_IndicatorToolBarHandle:
+        // no toolbar handles in S60/AVKON UI
+    case PE_IndicatorToolBarSeparator:
+        // no separators in S60/AVKON UI
+        break;
+#endif //QT_NO_TOOLBAR
+
     case PE_PanelMenuBar:
     case PE_FrameMenu:
         break; //disable frame in menu
@@ -1900,8 +2024,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #endif //QT_NO_PROGRESSBAR
 #ifndef QT_NO_TOOLBAR
     case PE_PanelToolBar:
-    case PE_IndicatorToolBarHandle:
-    case PE_IndicatorToolBarSeparator:
 #endif //QT_NO_TOOLBAR
 #ifndef QT_NO_COLUMNVIEW
     case PE_IndicatorColumnViewArrow:
@@ -2371,7 +2493,7 @@ QVariant QS60Style::styleProperty(const char *name) const
 }
 
 QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
-    const QStyleOption * option, const QWidget * widget) const
+    const QStyleOption *option, const QWidget *widget) const
 {
     const int iconDimension = QS60StylePrivate::pixelMetric(QStyle::PM_ToolBarIconSize);
     const QRect iconSize = (!option) ? QRect(0,0,iconDimension,iconDimension) : option->rect;
@@ -2437,6 +2559,16 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
         case QStyle::SP_TrashIcon:
             part = QS60StyleEnums::SP_QgnNoteErased;
             break;
+        case QStyle::SP_ToolBarHorizontalExtensionButton:
+            part = QS60StyleEnums::SP_QgnIndiSubMenu;
+            if (QApplication::layoutDirection() == Qt::RightToLeft)
+                adjustedFlags |= QS60StylePrivate::SF_PointSouth;
+            break;
+        case QStyle::SP_ToolBarVerticalExtensionButton:
+            adjustedFlags |= QS60StylePrivate::SF_PointEast;
+            part = QS60StyleEnums::SP_QgnIndiSubMenu;
+            break;
+
         default:
             return QCommonStyle::standardIconImplementation(standardIcon, option, widget);
     }
