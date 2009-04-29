@@ -630,6 +630,18 @@ case $rule_number: {
 }   break;
 ./
 
+UiObjectMember: T_PUBLIC T_DEFAULT T_IDENTIFIER T_IDENTIFIER ;
+/.
+case $rule_number: {
+    AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(3).sval, sym(4).sval);
+    node->isDefaultMember = true;
+    node->publicToken = loc(1);
+    node->attributeTypeToken = loc(3);
+    node->identifierToken = loc(4);
+    sym(1).Node = node;
+}   break;
+./
+
 UiObjectMember: T_PUBLIC T_IDENTIFIER T_IDENTIFIER T_COLON Expression ;
 /.
 case $rule_number: {
@@ -639,6 +651,20 @@ case $rule_number: {
     node->attributeTypeToken = loc(2);
     node->identifierToken = loc(3);
     node->colonToken = loc(4);
+    sym(1).Node = node;
+}   break;
+./
+
+UiObjectMember: T_PUBLIC T_DEFAULT T_IDENTIFIER T_IDENTIFIER T_COLON Expression ;
+/.
+case $rule_number: {
+    AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(3).sval, sym(4).sval,
+        sym(6).Expression);
+    node->isDefaultMember = true;
+    node->publicToken = loc(1);
+    node->attributeTypeToken = loc(3);
+    node->identifierToken = loc(4);
+    node->colonToken = loc(5);
     sym(1).Node = node;
 }   break;
 ./

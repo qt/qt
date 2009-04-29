@@ -1351,7 +1351,7 @@ bool QmlCompiler::findDynamicProperties(QmlParser::Property *prop,
         definedProperties << propDef;
     }
 
-    obj->dynamicProperties = definedProperties;
+    obj->dynamicProperties << definedProperties;
     return true;
 }
 
@@ -1407,7 +1407,7 @@ bool QmlCompiler::findDynamicSignals(QmlParser::Property *sigs,
         definedSignals << sigDef;
     }
 
-    obj->dynamicSignals = definedSignals;
+    obj->dynamicSignals << definedSignals;
     return true;
 }
 
