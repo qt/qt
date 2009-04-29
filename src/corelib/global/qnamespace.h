@@ -188,6 +188,12 @@ public:
 #endif
     };
 
+    enum TileRule {
+        Stretch,
+        Repeat,
+        Round
+    };
+
     // Text formatting flags for QPainter::drawText and QLabel.
     // The following two enums can be combined to one integer which
     // is passed as 'flags' to drawText and qt_format_text.
