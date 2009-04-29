@@ -117,6 +117,7 @@ private slots:
     void customErrorStateIsNull();
     void clearError();
     void historyStateHasNowhereToGo();
+    void historyStateAsInitialState();
     void brokenStateIsNeverEntered();
     void customErrorStateNotInGraph();
     void transitionToStateNotInGraph();
@@ -809,6 +810,40 @@ void tst_QStateMachine::clearError()
 
     QCOMPARE(machine.error(), QStateMachine::NoError);
     QVERIFY(machine.errorString().isEmpty());
+}
+
+void tst_QStateMachine::historyStateAsInitialState()
+{
+    QStateMachine machine;
+
+    QHistoryState *hs = machine.rootState()->addHistoryState();
+    machine.setInitialState(hs);
+
+    QState *s1 = new QState(machine.rootState());
+    hs->setDefaultState(s1);
+
+    QState *s2 = new QState(machine.rootState());
+
+    QHistoryState *s2h = s2->addHistoryState();
+    s2->setInitialState(s2h);
+    
+    QState *s21 = new QState(s2);
+    s2h->setDefaultState(s21);
+    
+    s1->addTransition(new EventTransition(QEvent::User, s2));
+
+    machine.start();
+    QCoreApplication::processEvents();
+
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QCoreApplication::processEvents();
+
+    QCOMPARE(machine.configuration().size(), 2);
+    QVERIFY(machine.configuration().contains(s2));
+    QVERIFY(machine.configuration().contains(s21));
 }
 
 void tst_QStateMachine::historyStateHasNowhereToGo()

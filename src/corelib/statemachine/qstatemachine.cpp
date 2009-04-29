@@ -470,36 +470,13 @@ QList<QAbstractState*> QStateMachinePrivate::enterStates(const QList<QAbstractTr
         QState *lca = findLCA(lst);
         for (int j = 1; j < lst.size(); ++j) {
             QAbstractState *s = lst.at(j);
-            if (QHistoryState *h = qobject_cast<QHistoryState*>(s)) {
-                QList<QAbstractState*> hconf = QHistoryStatePrivate::get(h)->configuration;
-                if (!hconf.isEmpty()) {
-                    for (int k = 0; k < hconf.size(); ++k) {
-                        QAbstractState *s0 = hconf.at(k);
-                        addStatesToEnter(s0, lca, statesToEnter, statesForDefaultEntry);
-                    }
-#ifdef QSTATEMACHINE_DEBUG
-                    qDebug() << q << ": restoring"
-                            << ((QHistoryStatePrivate::get(h)->historyType == QHistoryState::DeepHistory) ? "deep" : "shallow")
-                            << "history from" << s << ":" << hconf;
-#endif
-                } else {
-                    QList<QAbstractState*> hlst;
-                    if (QHistoryStatePrivate::get(h)->defaultState)
-                        hlst.append(QHistoryStatePrivate::get(h)->defaultState);
-                    if (hlst.isEmpty()) {
-                        setError(QStateMachine::NoDefaultStateInHistoryState, h);
-                    } else {
-                        for (int k = 0; k < hlst.size(); ++k) {
-                            QAbstractState *s0 = hlst.at(k);
-                            addStatesToEnter(s0, lca, statesToEnter, statesForDefaultEntry);
-                        }
-#ifdef QSTATEMACHINE_DEBUG
-                        qDebug() << q << ": initial history targets for" << s << ":" << hlst;                    
-#endif
-                    }
+			addStatesToEnter(s, lca, statesToEnter, statesForDefaultEntry);
+            if (isParallel(lca)) {
+                QList<QAbstractState*> lcac = QStatePrivate::get(lca)->childStates();
+                foreach (QAbstractState* child,lcac) {
+                    if (!statesToEnter.contains(child))
+                        addStatesToEnter(child,lca,statesToEnter,statesForDefaultEntry);                    
                 }
-            } else {
-                addStatesToEnter(s, lca, statesToEnter, statesForDefaultEntry);
             }
         }
     }
@@ -574,48 +551,78 @@ void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
                                             QSet<QAbstractState*> &statesToEnter,
                                             QSet<QAbstractState*> &statesForDefaultEntry)
 {
-    statesToEnter.insert(s);
-    if (isParallel(s)) {
-        QState *grp = qobject_cast<QState*>(s);
-        QList<QAbstractState*> lst = QStatePrivate::get(grp)->childStates();
-        for (int i = 0; i < lst.size(); ++i) {
-            QAbstractState *child = lst.at(i);
-            addStatesToEnter(child, grp, statesToEnter, statesForDefaultEntry);
-        }
-    } else if (isCompound(s)) {
-        statesForDefaultEntry.insert(s);
-        QState *grp = qobject_cast<QState*>(s);
-        QAbstractState *initial = grp->initialState();
-        if (initial != 0) {
-            addStatesToEnter(initial, grp, statesToEnter, statesForDefaultEntry);
-        } else {
-            setError(QStateMachine::NoInitialStateError, grp);
-            return;
-        }
-    }
-    QList<QState*> ancs = properAncestors(s, root);
-    for (int i = 0; i < ancs.size(); ++i) {
-        QState *anc = ancs.at(i);
-        if (!anc->parentState())
-            continue;
-        statesToEnter.insert(anc);
-        if (isParallel(anc)) {
-            QList<QAbstractState*> lst = QStatePrivate::get(anc)->childStates();
-            for (int j = 0; j < lst.size(); ++j) {
-                QAbstractState *child = lst.at(j);
-                bool hasDescendantInList = false;
-                QSet<QAbstractState*>::const_iterator it;
-                for (it = statesToEnter.constBegin(); it != statesToEnter.constEnd(); ++it) {
-                    if (isDescendantOf(*it, child)) {
-                        hasDescendantInList = true;
-                        break;
-                    }
-                }
-                if (!hasDescendantInList)
-                    addStatesToEnter(child, anc, statesToEnter, statesForDefaultEntry);
-            }
-        }
-    }
+	if (QHistoryState *h = qobject_cast<QHistoryState*>(s)) {
+		QList<QAbstractState*> hconf = QHistoryStatePrivate::get(h)->configuration;
+		if (!hconf.isEmpty()) {
+			for (int k = 0; k < hconf.size(); ++k) {
+				QAbstractState *s0 = hconf.at(k);
+				addStatesToEnter(s0, root, statesToEnter, statesForDefaultEntry);
+			}
+	#ifdef QSTATEMACHINE_DEBUG
+			qDebug() <<q_func() << ": restoring"
+					<< ((QHistoryStatePrivate::get(h)->historyType == QHistoryState::DeepHistory) ? "deep" : "shallow")
+					<< "history from" << s << ":" << hconf;
+	#endif
+		} else {
+			QList<QAbstractState*> hlst;
+			if (QHistoryStatePrivate::get(h)->defaultState)
+				hlst.append(QHistoryStatePrivate::get(h)->defaultState);
+			if (hlst.isEmpty()) {
+				setError(QStateMachine::NoDefaultStateInHistoryState, h);
+			} else {
+				for (int k = 0; k < hlst.size(); ++k) {
+					QAbstractState *s0 = hlst.at(k);
+					addStatesToEnter(s0, root, statesToEnter, statesForDefaultEntry);
+				}
+	#ifdef QSTATEMACHINE_DEBUG
+				qDebug() << q_func() << ": initial history targets for" << s << ":" << hlst;                    
+	#endif
+			}
+		}
+	} else {
+		statesToEnter.insert(s);
+		if (isParallel(s)) {
+			QState *grp = qobject_cast<QState*>(s);
+			QList<QAbstractState*> lst = QStatePrivate::get(grp)->childStates();
+			for (int i = 0; i < lst.size(); ++i) {
+				QAbstractState *child = lst.at(i);
+				addStatesToEnter(child, grp, statesToEnter, statesForDefaultEntry);
+			}
+		} else if (isCompound(s)) {
+			statesForDefaultEntry.insert(s);
+			QState *grp = qobject_cast<QState*>(s);
+			QAbstractState *initial = grp->initialState();
+			if (initial != 0) {
+				addStatesToEnter(initial, grp, statesToEnter, statesForDefaultEntry);
+			} else {
+				setError(QStateMachine::NoInitialStateError, grp);
+				return;
+			}
+		}
+		QList<QState*> ancs = properAncestors(s, root);
+		for (int i = 0; i < ancs.size(); ++i) {
+			QState *anc = ancs.at(i);
+			if (!anc->parentState())
+				continue;
+			statesToEnter.insert(anc);
+			if (isParallel(anc)) {
+				QList<QAbstractState*> lst = QStatePrivate::get(anc)->childStates();
+				for (int j = 0; j < lst.size(); ++j) {
+					QAbstractState *child = lst.at(j);
+					bool hasDescendantInList = false;
+					QSet<QAbstractState*>::const_iterator it;
+					for (it = statesToEnter.constBegin(); it != statesToEnter.constEnd(); ++it) {
+						if (isDescendantOf(*it, child)) {
+							hasDescendantInList = true;
+							break;
+						}
+					}
+					if (!hasDescendantInList)
+						addStatesToEnter(child, anc, statesToEnter, statesForDefaultEntry);
+				}
+			}
+		}
+	}
 }
 
 void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &transitionList,
