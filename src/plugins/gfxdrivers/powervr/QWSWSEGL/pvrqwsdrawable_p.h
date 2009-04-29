@@ -76,6 +76,8 @@ typedef struct {
     void               *mapped;
     int                 mappedLength;
     unsigned long       screenStart;
+    int                 needsUnmap;
+    int                 initialized;
 
 } PvrQwsScreenInfo;
 

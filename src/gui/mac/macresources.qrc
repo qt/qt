@@ -6,4 +6,7 @@
 <file>images/waitcursor.png</file>
 <file>images/pluscursor.png</file>
 </qresource>
+<qresource prefix="/trolltech/mac/style">
+<file>images/leopard-unified-toolbar-on.png</file>
+</qresource>
 </RCC>

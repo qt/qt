@@ -987,16 +987,17 @@ void tst_QShortcut::keypressConsumption()
     cut1->setEnabled(false);
     cut2->setEnabled(false);
 
-    edit->clear();
+    // Make sure keypresses is passed on, since all multiple keysequences
+    // with Ctrl+I are disabled
     sendKeyEvents(edit, Qt::CTRL + Qt::Key_I, 0);   // Send key to edit
     QCOMPARE( currentResult, NoResult );
     QCOMPARE( ambigResult, NoResult );
-    QVERIFY(edit->toPlainText().isEmpty());
+    QVERIFY(edit->toPlainText().endsWith("<Ctrl+I>"));
 
     sendKeyEvents(edit, Qt::Key_A, 'a');         // Send key to edit
     QCOMPARE( currentResult, NoResult );
     QCOMPARE( ambigResult, NoResult );
-    QVERIFY(edit->toPlainText().isEmpty());
+    QVERIFY(edit->toPlainText().endsWith("<Ctrl+I>a"));
 
     clearAllShortcuts();
 }

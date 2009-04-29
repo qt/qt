@@ -121,7 +121,7 @@ QSize QSvgIconEngine::actualSize(const QSize &size, QIcon::Mode mode,
         if (!pm.isNull() && pm.size() == size)
             return size;
     }
-    
+
     QSvgRenderer renderer;
     d->loadDataForModeAndState(&renderer, mode, state);
     if (renderer.isValid()) {
@@ -158,8 +158,12 @@ void QSvgIconEnginePrivate::loadDataForModeAndState(QSvgRenderer *renderer, QIco
 
 QPixmap QSvgIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
                                QIcon::State state)
-{   
+{
     QPixmap pm;
+
+    QString pmckey(d->pmcKey(size, mode, state));
+    if (QPixmapCache::find(pmckey, pm))
+        return pm;
 
     if (d->addedPixmaps) {
         pm = d->addedPixmaps->value(d->hashKey(mode, state));
@@ -175,10 +179,6 @@ QPixmap QSvgIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
     QSize actualSize = renderer.defaultSize();
     if (!actualSize.isNull())
         actualSize.scale(size, Qt::KeepAspectRatio);
-
-    QString pmckey(d->pmcKey(actualSize, mode, state));
-    if (QPixmapCache::find(pmckey, pm))
-        return pm;
 
     QImage img(actualSize, QImage::Format_ARGB32_Premultiplied);
     img.fill(0x00000000);
