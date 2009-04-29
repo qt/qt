@@ -1281,7 +1281,7 @@ void tst_QStateMachine::parallelStates()
 {
     QStateMachine machine;
 
-    QState *s1 = new QState(QState::ParallelGroup);
+    QState *s1 = new QState(QState::ParallelStates);
       QState *s1_1 = new QState(s1);
         QState *s1_1_1 = new QState(s1_1);
         QFinalState *s1_1_f = new QFinalState(s1_1);
@@ -2886,7 +2886,7 @@ void tst_QStateMachine::parallelStateTransition()
 {
     QStateMachine machine;
 
-    QState *parallelState = new QState(QState::ParallelGroup, machine.rootState());
+    QState *parallelState = new QState(QState::ParallelStates, machine.rootState());
     machine.setInitialState(parallelState);
 
     QState *s1 = new QState(parallelState);

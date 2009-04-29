@@ -55,21 +55,24 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Core)
 
 class QAbstractTransition;
-class QHistoryState;
 class QSignalTransition;
 
 class QStatePrivate;
 class Q_CORE_EXPORT QState : public QAbstractState
 {
     Q_OBJECT
+    Q_PROPERTY(QAbstractState* initialState READ initialState WRITE setInitialState)
+    Q_PROPERTY(QAbstractState* errorState READ errorState WRITE setErrorState)
+    Q_PROPERTY(ChildMode childMode READ childMode WRITE setChildMode)
+    Q_ENUMS(ChildMode)
 public:
-    enum Type {
-        Normal,
-        ParallelGroup
+    enum ChildMode {
+        ExclusiveStates,
+        ParallelStates
     };
 
     QState(QState *parent = 0);
-    QState(Type type, QState *parent = 0);
+    QState(ChildMode childMode, QState *parent = 0);
     ~QState();
 
     QAbstractState *errorState() const;
@@ -83,6 +86,9 @@ public:
 
     QAbstractState *initialState() const;
     void setInitialState(QAbstractState *state);
+
+    ChildMode childMode() const;
+    void setChildMode(ChildMode mode);
 
     void assignProperty(QObject *object, const char *name,
                         const QVariant &value);

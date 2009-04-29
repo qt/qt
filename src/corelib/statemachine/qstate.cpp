@@ -81,20 +81,37 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-  \enum QState::Type
+    \property QState::initialState
 
-  This enum specifies the type of a state.
+    \brief the initial state of this state
+*/
 
-  \value Normal A normal state. If the state has no child states, it is an
-  atomic state; otherwise, the child states are mutually exclusive and an
+/*!
+    \property QState::errorState
+
+    \brief the error state of this state
+*/
+
+/*!
+    \property QState::childMode
+
+    \brief the child mode of this state
+*/
+
+/*!
+  \enum QState::ChildMode
+
+  This enum specifies how a state's child states are treated.
+
+  \value ExclusiveStates The child states are mutually exclusive and an
   initial state must be set by calling QState::setInitialState().
 
-  \value ParallelGroup The state is a parallel group state. When a parallel
-  group state is entered, all its child states are entered in parallel.
+  \value ParallelStates The child states are parallel. When the parent state
+  is entered, all its child states are entered in parallel.
 */
 
 QStatePrivate::QStatePrivate()
-    : errorState(0), isParallelGroup(false), initialState(0)
+    : errorState(0), initialState(0), childMode(QState::ExclusiveStates)
 {
 }
 
@@ -131,13 +148,14 @@ QState::QState(QState *parent)
 }
 
 /*!
-  Constructs a new state of the given \a type with the given \a parent state.
+  Constructs a new state with the given \a childMode and the given \a parent
+  state.
 */
-QState::QState(Type type, QState *parent)
+QState::QState(ChildMode childMode, QState *parent)
     : QAbstractState(*new QStatePrivate, parent)
 {
     Q_D(QState);
-    d->isParallelGroup = (type == ParallelGroup);
+    d->childMode = childMode;
 }
 
 /*!
@@ -393,7 +411,7 @@ QAbstractState *QState::initialState() const
 void QState::setInitialState(QAbstractState *state)
 {
     Q_D(QState);
-    if (d->isParallelGroup) {
+    if (d->childMode == QState::ParallelStates) {
         qWarning("QState::setInitialState: ignoring attempt to set initial state "
                  "of parallel state group %p", this);
         return;
@@ -404,6 +422,24 @@ void QState::setInitialState(QAbstractState *state)
         return;
     }
     d->initialState = state;
+}
+
+/*!
+  Returns the child mode of this state.
+*/
+QState::ChildMode QState::childMode() const
+{
+    Q_D(const QState);
+    return d->childMode;
+}
+
+/*!
+  Sets the child \a mode of this state.
+*/
+void QState::setChildMode(ChildMode mode)
+{
+    Q_D(QState);
+    d->childMode = mode;
 }
 
 /*!

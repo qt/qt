@@ -241,11 +241,11 @@
     \caption This is a caption
     \endomit
 
-  To create a parallel state group, pass QState::ParallelStateGroup to the
-  QState constructor.
+  To create a parallel state group, pass QState::ParallelStates to the QState
+  constructor.
 
   \code
-    QState *s1 = new QState(QState::ParallelStateGroup);
+    QState *s1 = new QState(QState::ParallelStates);
     // s11 and s12 will be entered in parallel
     QState *s11 = new QState(s1);
     QState *s12 = new QState(s1);
@@ -253,9 +253,8 @@
 
   \section1 Detecting that a Composite State has Finished
 
-  A child state can be final; when a final child state is entered, a
-  QStateFinishedEvent is generated for the parent state. You can use the
-  QStateFinishedTransition class to trigger a transition based on this event.
+  A child state can be final; when a final child state is entered, the parent
+  state emits the QState::finished() signal.
 
     \img statemachine-finished.png
     \omit

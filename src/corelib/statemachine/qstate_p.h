@@ -94,8 +94,8 @@ public:
     void emitFinished();
 
     QAbstractState *errorState;
-    bool isParallelGroup;
     QAbstractState *initialState;
+    QState::ChildMode childMode;
 
     QList<QPropertyAssignment> propertyAssignments;
 };

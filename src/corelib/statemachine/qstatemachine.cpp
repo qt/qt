@@ -751,7 +751,7 @@ bool QStateMachinePrivate::isFinal(const QAbstractState *s)
 bool QStateMachinePrivate::isParallel(const QAbstractState *s)
 {
     const QState *ss = qobject_cast<const QState*>(s);
-    return ss && QStatePrivate::get(ss)->isParallelGroup;
+    return ss && (QStatePrivate::get(ss)->childMode == QState::ParallelStates);
 }
 
 bool QStateMachinePrivate::isCompound(const QAbstractState *s)
@@ -766,7 +766,7 @@ bool QStateMachinePrivate::isCompound(const QAbstractState *s)
 bool QStateMachinePrivate::isAtomic(const QAbstractState *s)
 {
     const QState *ss = qobject_cast<const QState*>(s);
-    return (ss && !QStatePrivate::get(ss)->isParallelGroup
+    return (ss && (QStatePrivate::get(ss)->childMode != QState::ParallelStates)
             && QStatePrivate::get(ss)->childStates().isEmpty())
         || isFinal(s);
 }

@@ -104,7 +104,7 @@ int main(int argc, char **argv)
     QCoreApplication app(argc, argv);
 
     QStateMachine machine;
-    QState *group = new QState(QState::ParallelGroup);
+    QState *group = new QState(QState::ParallelStates);
     group->setObjectName("group");
 
     ClockState *clock = new ClockState(group);
