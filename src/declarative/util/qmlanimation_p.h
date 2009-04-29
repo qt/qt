@@ -354,8 +354,8 @@ public:
 
     void init();
 
-    QmlNullableValue<QVariant> from;
-    QmlNullableValue<QVariant> to;
+    QVariant from;
+    QVariant to;
 
     QString easing;
 
@@ -364,7 +364,7 @@ public:
     QList<QObject *> exclude;
 
     bool fromSourced;
-    QVariant fromValue;
+
     QmlTimeLineValueAnimator *va;
     virtual void valueChanged(qreal);
 

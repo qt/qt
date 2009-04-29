@@ -1997,7 +1997,7 @@ QVariant QmlVariantAnimation::from() const
 void QmlVariantAnimation::setFrom(const QVariant &f)
 {
     Q_D(QmlVariantAnimation);
-    if (!d->from.isNull && f == d->from)
+    if (d->from.isValid() && f == d->from)
         return;
     d->from = f;
     emit fromChanged(f);
@@ -2021,7 +2021,7 @@ QVariant QmlVariantAnimation::to() const
 void QmlVariantAnimation::setTo(const QVariant &t)
 {
     Q_D(QmlVariantAnimation);
-    if (!d->to.isNull && t == d->to)
+    if (d->to.isValid() && t == d->to)
         return;
     d->to = t;
     emit toChanged(t);
@@ -2113,18 +2113,16 @@ QList<QObject *> *QmlVariantAnimation::exclude()
 void QmlVariantAnimationPrivate::valueChanged(qreal r)
 {
     if (!fromSourced) {
-        if (from.isNull) {
-            fromValue = property.read();
-        } else {
-            fromValue = from;
+        if (!from.isValid()) {
+            from = property.read();
         }
         fromSourced = true;
     }
 
     if (r == 1.) {
-        property.write(to.value);
+        property.write(to);
     } else {
-        QVariant val = interpolateVariant(fromValue, to.value, r);
+        QVariant val = interpolateVariant(from, to, r);
         property.write(val);
     }
 }
@@ -2143,9 +2141,9 @@ void QmlVariantAnimation::prepare(QmlMetaProperty &p)
     else
         d->property = d->userProperty;
 
-    d->convertVariant(d->to.value, (QVariant::Type)d->property.propertyType());
-    if (!d->from.isNull)
-        d->convertVariant(d->from.value, (QVariant::Type)d->property.propertyType());
+    d->convertVariant(d->to, (QVariant::Type)d->property.propertyType());
+    if (d->from.isValid())
+        d->convertVariant(d->from, (QVariant::Type)d->property.propertyType());
 
     d->fromSourced = false;
     d->value.QmlTimeLineValue::setValue(0.);
@@ -2205,12 +2203,12 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
             Action myAction = action;
 
             if (d->from.isValid()) {
-                myAction.fromValue = QVariant(d->from);
+                myAction.fromValue = d->from;
             } else {
                 myAction.fromValue = QVariant();
             }
             if (d->to.isValid())
-                myAction.toValue = QVariant(d->to);
+                myAction.toValue = d->to;
 
             d->convertVariant(myAction.fromValue, (QVariant::Type)myAction.property.propertyType());
             d->convertVariant(myAction.toValue, (QVariant::Type)myAction.property.propertyType());
@@ -2229,12 +2227,12 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
             myAction.property = QmlMetaProperty(obj, props.at(jj));
 
             if (d->from.isValid()) {
-                d->convertVariant(d->from.value, (QVariant::Type)myAction.property.propertyType());
-                myAction.fromValue = QVariant(d->from);
+                d->convertVariant(d->from, (QVariant::Type)myAction.property.propertyType());
+                myAction.fromValue = d->from;
             }
 
-            d->convertVariant(d->to.value, (QVariant::Type)myAction.property.propertyType());
-            myAction.toValue = QVariant(d->to);
+            d->convertVariant(d->to, (QVariant::Type)myAction.property.propertyType());
+            myAction.toValue = d->to;
             myAction.bv = 0;
             myAction.event = 0;
             data->actions << myAction;
