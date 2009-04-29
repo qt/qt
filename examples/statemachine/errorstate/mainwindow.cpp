@@ -110,44 +110,41 @@ void MainWindow::init()
     QAction *quitAction = menuBar()->addAction("&Quit");
     
     connect(addTankAction, SIGNAL(triggered()), this, SLOT(addTank()));
-    connect(stopGameAction, SIGNAL(triggered()), this, SIGNAL(gameOver()));
     connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
         
     m_machine = new QStateMachine(this);
     m_machine->setGlobalRestorePolicy(QStateMachine::RestoreProperties);
     
-    QState *stoppedState = new QState(m_machine->rootState());    
+    QState *stoppedState = new QState(m_machine->rootState());        
     stoppedState->setObjectName("stoppedState");
-    
     stoppedState->assignProperty(runGameAction, "enabled", true);
     stoppedState->assignProperty(stopGameAction, "enabled", false);
     stoppedState->assignProperty(this, "started", false);
     m_machine->setInitialState(stoppedState);
 
     QState *spawnsAvailable = new QState(stoppedState);
-    spawnsAvailable->assignProperty(addTankAction, "enabled", true);
     spawnsAvailable->setObjectName("spawnsAvailable");
+    spawnsAvailable->assignProperty(addTankAction, "enabled", true);
 
     QState *noSpawnsAvailable = new QState(stoppedState);
+    noSpawnsAvailable->setObjectName("noSpawnsAvailable");
     noSpawnsAvailable->assignProperty(addTankAction, "enabled", false);
 
     spawnsAvailable->addTransition(this, SIGNAL(mapFull()), noSpawnsAvailable);
 
     QHistoryState *hs = new QHistoryState(stoppedState);
-    hs->setObjectName("hs");
     hs->setDefaultState(spawnsAvailable);
 
     stoppedState->setInitialState(hs);
 
     m_runningState = new QState(QState::ParallelGroup, m_machine->rootState());
+    m_runningState->setObjectName("runningState");
     m_runningState->assignProperty(addTankAction, "enabled", false);
     m_runningState->assignProperty(runGameAction, "enabled", false);
     m_runningState->assignProperty(stopGameAction, "enabled", true);
         
     stoppedState->addTransition(runGameAction, SIGNAL(triggered()), m_runningState);
-    m_runningState->addTransition(this, SIGNAL(gameOver()), stoppedState);
-
-    m_machine->start();
+    m_runningState->addTransition(stopGameAction, SIGNAL(triggered()), stoppedState);
 
     QTimer *timer = new QTimer(this);
     timer->setInterval(100);
@@ -155,6 +152,7 @@ void MainWindow::init()
     connect(m_runningState, SIGNAL(entered()), timer, SLOT(start()));    
     connect(m_runningState, SIGNAL(exited()), timer, SLOT(stop()));
 
+    m_machine->start();
     m_time.start();
 }   
 
