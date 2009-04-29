@@ -772,9 +772,8 @@ bool QStateMachinePrivate::isCompound(const QAbstractState *s)
 bool QStateMachinePrivate::isAtomic(const QAbstractState *s)
 {
     const QState *ss = qobject_cast<const QState*>(s);
-    return (ss && (QStatePrivate::get(ss)->childMode != QState::ParallelStates)
-            && QStatePrivate::get(ss)->childStates().isEmpty())
-        || isFinal(s);
+    return (ss && QStatePrivate::get(ss)->childStates().isEmpty())
+         || isFinal(s);
 }
 
 

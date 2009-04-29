@@ -135,6 +135,7 @@ private slots:
     //void restorePolicyOnChildState();
 
     void transitionWithParent();
+    void transitionsFromParallelStateWithNoChildren();
     void parallelStateTransition();
     void parallelStateAssignmentsDone();
 
@@ -2887,6 +2888,30 @@ void tst_QStateMachine::parallelStateAssignmentsDone()
     QCOMPARE(propertyHolder->property("foo").toInt(), 321);
     QCOMPARE(propertyHolder->property("bar").toInt(), 654);
     QCOMPARE(propertyHolder->property("zoot").toInt(), 987);
+}
+
+void tst_QStateMachine::transitionsFromParallelStateWithNoChildren()
+{
+    QStateMachine machine;
+    
+    QState *parallelState = new QState(QState::ParallelGroup, machine.rootState());
+    machine.setInitialState(parallelState);
+
+    QState *s1 = new QState(machine.rootState());    
+    parallelState->addTransition(new EventTransition(QEvent::User, s1));
+    
+    machine.start();
+    QCoreApplication::processEvents();
+
+    QCOMPARE(1, machine.configuration().size());
+    QVERIFY(machine.configuration().contains(parallelState));
+
+    machine.postEvent(new QEvent(QEvent::User));
+
+    QCoreApplication::processEvents();
+
+    QCOMPARE(1, machine.configuration().size());
+    QVERIFY(machine.configuration().contains(s1));
 }
 
 void tst_QStateMachine::parallelStateTransition()
