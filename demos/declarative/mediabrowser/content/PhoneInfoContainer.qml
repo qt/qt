@@ -2,8 +2,10 @@
     <properties>
         <Property name="frontContainer" value="{ContainerFront}"/>
         <Property name="flickableArea" value="{Flickable}"/>
-        <Property name="movieTitle" value="N/A"/>
-        <Property name="movieDescription" value="..."/>
+        <Property name="phoneTitle" value="N/A"/>
+        <Property name="phoneDescription" value="..."/>
+        <Property name="phoneSpecifications" value=""/>
+        <Property name="phoneUrl" value=""/>
         <Property name="rating" value="2"/>
     </properties>
 
@@ -22,17 +24,17 @@
             <MediaButton id="BackButton" x="630" y="400" text="Back" onClicked="Container.closed.emit()"/>
             <MediaButton id="MoreButton" x="530" y="400" text="More..." onClicked="Container.state='Back'"/>
 
-            <Text id="TitleText" style="Raised" styleColor="black" color="white" x="320" y="30" width="{parent.width}"
-                  text="{Container.movieTitle}" font.size="22"/>
+            <Text id="TitleText" style="Raised" styleColor="black" color="white" x="420" y="30" width="{parent.width}"
+                  text="{Container.phoneTitle}" font.size="22"/>
 
-            <LikeOMeter x="320" y="75" rating="{Container.rating}"/>
+            <LikeOMeter x="420" y="75" rating="{Container.rating}"/>
 
-            <Flickable id="Flickable" x="320" width="380" height="260" y="120" clip="true" viewportWidth="380"
+            <Flickable id="Flickable" x="420" width="280" height="260" y="120" clip="true" viewportWidth="280"
                        viewportHeight="{DescriptionText.height}">
                 <Text id="DescriptionText"  wrap="true" color="white" width="{parent.width}"
-                      text="{Container.movieDescription}" font.size="12"/>
+                      text="{Container.phoneDescription}" font.size="12"/>
             </Flickable>
-
+            <Text color="white" width="300" x="50" y="300" text="{Container.phoneSpecifications}"/>
             <ScrollBar id="ScrollBar" x="720" y="{Flickable.y}" width="7" height="{Flickable.height}" opacity="0"
                        flickableArea="{Flickable}" clip="true"/>
         </Item>
@@ -41,6 +43,10 @@
     <back>
         <Item anchors.fill="{Container}">
             <Rect anchors.fill="{parent}" color="black" opacity="0.4" pen.color="white" pen.width="2"/>
+            <Flickable x="10" width="{Container.width-20}" height="{Container.height-20}" y="10" clip="true"
+                    viewportWidth="{UrlView.width}" viewportHeight="{UrlView.height}">
+                <WebView id="UrlView" url="{Container.phoneUrl}" idealWidth="{parent.width}"/>
+            </Flickable>
             <MediaButton id="BackButton2" x="630" y="400" text="Back" onClicked="Container.state=''"/>
         </Item>
     </back>
