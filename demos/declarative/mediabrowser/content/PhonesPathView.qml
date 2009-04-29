@@ -3,20 +3,17 @@
     <path>
         <Path startX="-50" startY="40">
             <PathAttribute name="scale" value="0.2"/>
-            <PathAttribute name="opacity" value="0"/>
             <PathCubic x="400" y="220" control1X="140" control1Y="40" control2X="210" control2Y="220"/>
             <PathAttribute name="scale" value="1.2"/>
             <PathAttribute name="z" value="1"/>
-            <PathAttribute name="opacity" value="1"/>
             <PathCubic x="850" y="40" control2X="660" control2Y="40" control1X="590" control1Y="220"/>
             <PathAttribute name="scale" value="0.2"/>
-            <PathAttribute name="opacity" value="0"/>
         </Path>
     </path>
 
     <delegate>
         <Component id="PhoneDelegate">
-            <Item id="Wrapper" width="320" height="200" scale="{Wrapper.PathView.scale}" z="{Wrapper.PathView.z}" opacity="{Wrapper.PathView.opacity}">
+            <Item id="Wrapper" width="320" height="200" scale="{Wrapper.PathView.scale}" z="{Wrapper.PathView.z}">
                 <Connection sender="{PhoneInfoContainer}" script="if (Wrapper.state == 'Details') Wrapper.state = ''" signal="closed()"/>
 
                 <Script>

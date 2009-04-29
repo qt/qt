@@ -12,8 +12,8 @@
             <Image src="content/pics/shadow-right-screen.png" x="150" height="480" tile="true"/>
         </Rect>
 
-        <PhoneInfoContainer id="PhoneInfoContainer" width="750" x="25" y="500" height="440"/>
         <PhonesPathView id="PhonesPathView" model="{PhonesModel}" y="60" width="800" height="360"/>
+        <PhoneInfoContainer id="PhoneInfoContainer" width="750" x="25" y="500" height="440"/>
         <MediaButton id="CloseButton" x="680" y="440" text="Close" onClicked="MainWindow.minimized = true"/>
 
         <states>
