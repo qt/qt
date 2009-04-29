@@ -29,6 +29,8 @@ class QPainterPath;
 class Q_GUI_EXPORT QMouseEventTransition : public QEventTransition
 {
     Q_OBJECT
+    Q_PROPERTY(Qt::MouseButton button READ button WRITE setButton)
+    Q_PROPERTY(Qt::KeyboardModifiers modifiersMask READ modifiersMask WRITE setModifiersMask)
 public:
     QMouseEventTransition(QState *sourceState = 0);
     QMouseEventTransition(QObject *object, QEvent::Type type,
@@ -41,6 +43,9 @@ public:
 
     Qt::MouseButton button() const;
     void setButton(Qt::MouseButton button);
+
+    Qt::KeyboardModifiers modifiersMask() const;
+    void setModifiersMask(Qt::KeyboardModifiers modifiers);
 
     QPainterPath path() const;
     void setPath(const QPainterPath &path);

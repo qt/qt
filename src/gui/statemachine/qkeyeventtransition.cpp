@@ -39,6 +39,12 @@ QT_BEGIN_NAMESPACE
     \brief the key that this key event transition is associated with
 */
 
+/*!
+    \property QKeyEventTransition::modifiersMask
+
+    \brief the keyboard modifiers mask that this key event transition checks for
+*/
+
 class QKeyEventTransitionPrivate : public QEventTransitionPrivate
 {
     Q_DECLARE_PUBLIC(QKeyEventTransition)
@@ -111,22 +117,23 @@ void QKeyEventTransition::setKey(int key)
 }
 
 /*!
-  Returns the keyboard modifiers that this key event transition checks for.
+  Returns the keyboard modifiers mask that this key event transition checks
+  for.
 */
-Qt::KeyboardModifiers QKeyEventTransition::modifiers() const
+Qt::KeyboardModifiers QKeyEventTransition::modifiersMask() const
 {
     Q_D(const QKeyEventTransition);
-    return d->transition->modifiers();
+    return d->transition->modifiersMask();
 }
 
 /*!
-  Sets the keyboard \a modifiers that this key event transition will check
-  for.
+  Sets the keyboard \a modifiers mask that this key event transition will
+  check for.
 */
-void QKeyEventTransition::setModifiers(Qt::KeyboardModifiers modifiers)
+void QKeyEventTransition::setModifiersMask(Qt::KeyboardModifiers modifiersMask)
 {
     Q_D(QKeyEventTransition);
-    d->transition->setModifiers(modifiers);
+    d->transition->setModifiersMask(modifiersMask);
 }
 
 /*!

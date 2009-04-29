@@ -65,9 +65,6 @@ public:
     {
         this->boat = boat;
         this->key = key;
-#if defined(Q_OS_MAC)
-        setModifiers(Qt::KeypadModifier);
-#endif
     }
 protected:
     virtual bool eventTest(QEvent *event) const
@@ -94,9 +91,6 @@ public:
     {
         this->boat = boat;
         this->key = key;
-#if defined(Q_OS_MAC)
-        setModifiers(Qt::KeypadModifier);
-#endif
     }
 protected:
     virtual bool eventTest(QEvent *event) const
@@ -135,9 +129,6 @@ public:
     {
         this->boat = boat;
         this->key = key;
-#if defined(Q_OS_MAC)
-        setModifiers(Qt::KeypadModifier);
-#endif
     }
 protected:
     virtual bool eventTest(QEvent *event) const

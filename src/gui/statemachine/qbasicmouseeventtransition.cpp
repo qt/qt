@@ -39,6 +39,7 @@ public:
 
     QEvent::Type eventType;
     Qt::MouseButton button;
+    Qt::KeyboardModifiers modifiersMask;
     QPainterPath path;
 };
 
@@ -118,6 +119,26 @@ void QBasicMouseEventTransition::setButton(Qt::MouseButton button)
 }
 
 /*!
+  Returns the keyboard modifiers mask that this mouse event transition checks
+  for.
+*/
+Qt::KeyboardModifiers QBasicMouseEventTransition::modifiersMask() const
+{
+    Q_D(const QBasicMouseEventTransition);
+    return d->modifiersMask;
+}
+
+/*!
+  Sets the keyboard modifiers mask that this mouse event transition will check
+  for.
+*/
+void QBasicMouseEventTransition::setModifiersMask(Qt::KeyboardModifiers modifiersMask)
+{
+    Q_D(QBasicMouseEventTransition);
+    d->modifiersMask = modifiersMask;
+}
+
+/*!
   Returns the path for this mouse event transition.
 */
 QPainterPath QBasicMouseEventTransition::path() const
@@ -144,6 +165,7 @@ bool QBasicMouseEventTransition::eventTest(QEvent *event) const
     if (event->type() == d->eventType) {
         QMouseEvent *me = static_cast<QMouseEvent*>(event);
         return (me->button() == d->button)
+            && ((me->modifiers() & d->modifiersMask) == d->modifiersMask)
             && (d->path.isEmpty() || d->path.contains(me->pos()));
     }
     return false;

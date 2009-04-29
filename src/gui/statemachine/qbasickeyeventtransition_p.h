@@ -41,7 +41,8 @@ public:
     QBasicKeyEventTransition(QState *sourceState = 0);
     QBasicKeyEventTransition(QEvent::Type type, int key, QState *sourceState = 0);
     QBasicKeyEventTransition(QEvent::Type type, int key,
-                             Qt::KeyboardModifiers modifiers, QState *sourceState = 0);
+                             Qt::KeyboardModifiers modifiersMask,
+                             QState *sourceState = 0);
     ~QBasicKeyEventTransition();
 
     QEvent::Type eventType() const;
@@ -50,8 +51,8 @@ public:
     int key() const;
     void setKey(int key);
 
-    Qt::KeyboardModifiers modifiers() const;
-    void setModifiers(Qt::KeyboardModifiers modifiers);
+    Qt::KeyboardModifiers modifiersMask() const;
+    void setModifiersMask(Qt::KeyboardModifiers modifiers);
 
 protected:
     bool eventTest(QEvent *event) const;

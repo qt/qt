@@ -34,6 +34,18 @@ QT_BEGIN_NAMESPACE
   \sa QState::addTransition()
 */
 
+/*!
+    \property QMouseEventTransition::button
+
+    \brief the button that this mouse event transition is associated with
+*/
+
+/*!
+    \property QMouseEventTransition::modifiersMask
+
+    \brief the keyboard modifiers mask that this mouse event transition checks for
+*/
+
 class QMouseEventTransitionPrivate : public QEventTransitionPrivate
 {
     Q_DECLARE_PUBLIC(QMouseEventTransition)
@@ -110,6 +122,26 @@ void QMouseEventTransition::setButton(Qt::MouseButton button)
 {
     Q_D(QMouseEventTransition);
     d->transition->setButton(button);
+}
+
+/*!
+  Returns the keyboard modifiers mask that this mouse event transition checks
+  for.
+*/
+Qt::KeyboardModifiers QMouseEventTransition::modifiersMask() const
+{
+    Q_D(const QMouseEventTransition);
+    return d->transition->modifiersMask();
+}
+
+/*!
+  Sets the keyboard \a modifiers mask that this mouse event transition will
+  check for.
+*/
+void QMouseEventTransition::setModifiersMask(Qt::KeyboardModifiers modifiersMask)
+{
+    Q_D(QMouseEventTransition);
+    d->transition->setModifiersMask(modifiersMask);
 }
 
 /*!

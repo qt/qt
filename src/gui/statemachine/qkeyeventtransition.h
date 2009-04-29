@@ -28,6 +28,7 @@ class Q_GUI_EXPORT QKeyEventTransition : public QEventTransition
 {
     Q_OBJECT
     Q_PROPERTY(int key READ key WRITE setKey)
+    Q_PROPERTY(Qt::KeyboardModifiers modifiersMask READ modifiersMask WRITE setModifiersMask)
 public:
     QKeyEventTransition(QState *sourceState = 0);
     QKeyEventTransition(QObject *object, QEvent::Type type, int key,
@@ -40,8 +41,8 @@ public:
     int key() const;
     void setKey(int key);
 
-    Qt::KeyboardModifiers modifiers() const;
-    void setModifiers(Qt::KeyboardModifiers modifiers);
+    Qt::KeyboardModifiers modifiersMask() const;
+    void setModifiersMask(Qt::KeyboardModifiers modifiers);
 
 protected:
     void onTransition();
