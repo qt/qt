@@ -1,49 +1,54 @@
-<PathView id="Container">
+<PathView id="Container" pathItemCount="6">
 
     <path>
         <Path startX="-50" startY="40">
-            <PathAttribute name="scale" value="0.4"/>
+            <PathAttribute name="scale" value="0.2"/>
             <PathCubic x="400" y="220" control1X="140" control1Y="40" control2X="210" control2Y="220"/>
-            <PathAttribute name="scale" value="0.7"/>
+            <PathAttribute name="scale" value="1.2"/>
+            <PathAttribute name="z" value="1"/>
             <PathCubic x="850" y="40" control2X="660" control2Y="40" control1X="590" control1Y="220"/>
-            <PathAttribute name="scale" value="0.4"/>
+            <PathAttribute name="scale" value="0.2"/>
         </Path>
     </path>
 
     <delegate>
-        <Component id="MovieDelegate">
-            <Item id="Wrapper" width="220" height="310" scale="{Wrapper.PathView.scale}">
-                <Connection sender="{MovieInfoContainer}" script="if (Wrapper.state == 'Details') Wrapper.state = ''" signal="closed()"/>
+        <Component id="PhoneDelegate">
+            <Item id="Wrapper" width="320" height="200" scale="{Wrapper.PathView.scale}" z="{Wrapper.PathView.z}">
+                <Connection sender="{PhoneInfoContainer}" script="if (Wrapper.state == 'Details') Wrapper.state = ''" signal="closed()"/>
 
                 <Script>
-                    function movieClicked() {
+                    function phoneClicked() {
                         if (MainWindow.minimized == true) {
                             MainWindow.minimized = false;
                         } else {
-                            MovieInfoContainer.movieTitle = title;
-                            MovieInfoContainer.flickableArea.yPosition = 0;
-                            MovieInfoContainer.movieDescription = description;
-                            MovieInfoContainer.rating = rating;
+                            PhoneInfoContainer.phoneTitle = title;
+                            PhoneInfoContainer.flickableArea.yPosition = 0;
+                            PhoneInfoContainer.phoneDescription = description;
+                            PhoneInfoContainer.phoneSpecifications = specifications;
+                            PhoneInfoContainer.phoneUrl = url;
+                            PhoneInfoContainer.rating = rating;
                             Wrapper.state = "Details";
                         }
                     }
                 </Script>
 
                 <Rect id="Dvd" anchors.fill="{parent}" color="white">
-                    <Image src="{thumb}" width="215" height="305" anchors.centeredIn="{parent}" opaque="true"/>
-                    <Image src="pics/reflection.png" anchors.centeredIn="{parent}"/>
-                    <Image src="pics/shadow-right.png" x="220"/>
-                    <Image src="pics/shadow-bottom.png" y="310"/>
-                    <Image src="pics/shadow-corner.png" x="220" y="310"/>
+                    <Item x="{(parent.width-width)/2}" y="{(parent.height-height)/2}" width="{Thumb.width*Thumb.scale}" height="{Thumb.height*Thumb.scale}">
+                        <Image id="Thumb" src="{thumb}" scale="{0.95*Math.min(Dvd.height/height,Dvd.width/width)}"/>
+                    </Item>
+                    <!-- <Image src="pics/reflection.png" anchors.fill="{parent}"/> -->
+                    <Image src="pics/shadow-right.png" x="{Dvd.width}" height="{Dvd.height}"/>
+                    <Image src="pics/shadow-bottom.png" y="{Dvd.height}" width="{Dvd.width}"/>
+                    <Image id="Corner" src="pics/shadow-corner.png" x="{Dvd.width}" y="{Dvd.height}"/>
                 </Rect>
 
-                <MouseRegion anchors.fill="{Wrapper}" onClicked="movieClicked()"/>
+                <MouseRegion anchors.fill="{Wrapper}" onClicked="phoneClicked()"/>
 
                 <states>
                     <State name="Details">
-                        <ParentChange target="{Wrapper}" parent="{MovieInfoContainer.frontContainer}"/>
+                        <ParentChange target="{Wrapper}" parent="{PhoneInfoContainer.frontContainer}"/>
                         <SetProperties target="{Wrapper}" x="50" y="60" scale="1"/>
-                        <SetProperties target="{MovieInfoContainer}" y="20"/>
+                        <SetProperties target="{PhoneInfoContainer}" y="20"/>
                         <SetProperties target="{Container}" y="-480"/>
                         <SetProperties target="{CloseButton}" opacity="0"/>
                         <SetProperties target="{CategoryText}" y="-50"/>

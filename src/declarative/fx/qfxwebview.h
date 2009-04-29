@@ -103,6 +103,8 @@ class Q_DECLARATIVE_EXPORT QFxWebView : public QFxItem
     Q_PROPERTY(QObject* forward READ forwardAction)
     Q_PROPERTY(QObject* stop READ stopAction)
 
+    Q_PROPERTY(QObject* settings READ settingsObject)
+
 public:
     QFxWebView(QFxItem *parent=0);
     ~QFxWebView();
@@ -164,6 +166,7 @@ public:
 
     QWebHistory *history() const;
     QWebSettings *settings() const;
+    QObject *settingsObject() const;
 
     QString status() const;
 

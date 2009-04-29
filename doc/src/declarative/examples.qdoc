@@ -17,9 +17,13 @@ directory,
     bin/duiviewer $QT_SOURCE_DIR/examples/declarative/mediabrowser/mediabrowser.qml
 \endcode
 
-Many other simple demos can be found under the \c examples/declarative sub 
+Many other simple examples can be found under the \c examples/declarative sub 
 directory.  Some can be run directly using the viewer like those above, and 
 others require you to build and run an executable.
+
+More sophisticated demos of large applications can be found under the \c demos/declarative
+sub directory. These are intended to show more integrated functionality rather than
+to be instructive on specific elements.
 
 Finally, check out the \l {tutorial} to learn a little more about writing your
 own QML-based applications.
