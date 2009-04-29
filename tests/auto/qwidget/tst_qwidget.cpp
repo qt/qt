@@ -6956,7 +6956,7 @@ void tst_QWidget::render_systemClip2()
     // Render entire widget directly onto device.
     widget.render(&image);
 
-#ifndef RENDER_DEBUG
+#ifdef RENDER_DEBUG
     image.save("systemclip_with_device.png");
 #endif
     // All pixels within the system clip should now be
@@ -6972,17 +6972,17 @@ void tst_QWidget::render_systemClip2()
 
     // Refill image with red.
     image.fill(QColor(Qt::red).rgb());
+    paintEngine->setSystemClip(systemClip);
 
     // Do the same with an untransformed painter.
     QPainter painter(&image);
     //Make sure we're using the same paint engine and has the right clip set.
-    paintEngine->setSystemClip(systemClip);
     QCOMPARE(painter.paintEngine(), paintEngine);
     QCOMPARE(paintEngine->systemClip(), systemClip);
 
     widget.render(&painter);
 
-#ifndef RENDER_DEBUG
+#ifdef RENDER_DEBUG
     image.save("systemclip_with_untransformed_painter.png");
 #endif
     // All pixels within the system clip should now be
