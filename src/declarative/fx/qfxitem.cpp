@@ -151,12 +151,15 @@ void QFxContents::calcHeight()
 
     int top = INT_MAX;
     int bottom = 0;
-    foreach(const QSimpleCanvasItem *child, 
-            _item->QSimpleCanvasItem::children()) {
-        if (child->y() + child->height() > bottom)
-            bottom = (int)child->y() + child->height();
-        if (child->y() < top)
-            top = (int)child->y();
+
+    const QList<QSimpleCanvasItem *> &children = _item->QSimpleCanvasItem::children();
+    for (int i = 0; i < children.count(); ++i) {
+        const QSimpleCanvasItem *child = children.at(i);
+        int y = int(child->y());
+        if (y + child->height() > bottom)
+            bottom = y + child->height();
+        if (y < top)
+            top = y;
     }
     _height = bottom - top;
 
@@ -171,12 +174,14 @@ void QFxContents::calcWidth()
 
     int left = INT_MAX;
     int right = 0;
-    foreach(const QSimpleCanvasItem *child, 
-            _item->QSimpleCanvasItem::children()) {
-        if (child->x() + child->width() > right)
-            right = (int)child->x() + child->width();
-        if (child->x() < left)
-            left = (int)child->x();
+    const QList<QSimpleCanvasItem *> &children = _item->QSimpleCanvasItem::children();
+    for (int i = 0; i < children.count(); ++i) {
+        const QSimpleCanvasItem *child = children.at(i);
+        int x = int(child->x());
+        if (x + child->width() > right)
+            right = x + child->width();
+        if (x < left)
+            left = x;
     }
     _width = right - left;
 
@@ -188,8 +193,9 @@ void QFxContents::setItem(QFxItem *item)
 {
     _item = item;
 
-    foreach(const QSimpleCanvasItem *child, 
-            _item->QSimpleCanvasItem::children()) {
+    const QList<QSimpleCanvasItem *> &children = _item->QSimpleCanvasItem::children();
+    for (int i = 0; i < children.count(); ++i) {
+        const QSimpleCanvasItem *child = children.at(i);
         connect(child, SIGNAL(bottomChanged()), this, SLOT(calcHeight()));
         connect(child, SIGNAL(rightChanged()), this, SLOT(calcWidth()));
     }
