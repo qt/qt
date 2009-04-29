@@ -44,6 +44,7 @@
 
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstring.h> // char*->QString conversion
+#include <QtGui/qpixmap.h>
 
 QT_BEGIN_HEADER
 
@@ -60,7 +61,6 @@ class QPoint;
 class QColor;
 class QBrush;
 class QRect;
-class QPixmap;
 
 //
 // Standard shade drawing
