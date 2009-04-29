@@ -2398,7 +2398,6 @@ QRegion QPainter::clipRegion() const
     // ### Falcon: Use QPainterPath
     for (int i=0; i<d->state->clipInfo.size(); ++i) {
         const QPainterClipInfo &info = d->state->clipInfo.at(i);
-        QRegion other;
         switch (info.clipType) {
 
         case QPainterClipInfo::RegionClip: {
@@ -2451,15 +2450,20 @@ QRegion QPainter::clipRegion() const
                 lastWasNothing = false;
                 continue;
             }
-            if (info.operation == Qt::IntersectClip)
-                region &= QRegion(info.rect) * matrix;
-            else if (info.operation == Qt::UniteClip)
+            if (info.operation == Qt::IntersectClip) {
+                // Use rect intersection if possible.
+                if (matrix.type() <= QTransform::TxScale)
+                    region &= matrix.mapRect(info.rect);
+                else
+                    region &= matrix.map(QRegion(info.rect));
+            } else if (info.operation == Qt::UniteClip) {
                 region |= QRegion(info.rect) * matrix;
-            else if (info.operation == Qt::NoClip) {
+            } else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
                 region = QRegion();
-            } else
+            } else {
                 region = QRegion(info.rect) * matrix;
+            }
             break;
         }
 
@@ -2470,15 +2474,20 @@ QRegion QPainter::clipRegion() const
                 lastWasNothing = false;
                 continue;
             }
-            if (info.operation == Qt::IntersectClip)
-                region &= QRegion(info.rectf.toRect()) * matrix;
-            else if (info.operation == Qt::UniteClip)
+            if (info.operation == Qt::IntersectClip) {
+                // Use rect intersection if possible.
+                if (matrix.type() <= QTransform::TxScale)
+                    region &= matrix.mapRect(info.rectf.toRect());
+                else
+                    region &= matrix.map(QRegion(info.rectf.toRect()));
+            } else if (info.operation == Qt::UniteClip) {
                 region |= QRegion(info.rectf.toRect()) * matrix;
-            else if (info.operation == Qt::NoClip) {
+            } else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
                 region = QRegion();
-            } else
+            } else {
                 region = QRegion(info.rectf.toRect()) * matrix;
+            }
             break;
         }
         }
