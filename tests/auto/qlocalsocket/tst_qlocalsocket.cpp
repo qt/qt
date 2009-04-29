@@ -716,12 +716,18 @@ void tst_QLocalSocket::threadedConnection()
 
     QFETCH(int, threads);
     Server server;
+#if defined(Q_OS_SYMBIAN)
+    server.setStackSize(0x14000);
+#endif    
     server.clients = threads;
     server.start();
 
     QList<Client*> clients;
     for (int i = 0; i < threads; ++i) {
         clients.append(new Client());
+#if defined(Q_OS_SYMBIAN)        
+        clients.last()->setStackSize(0x14000);
+#endif        
         clients.last()->start();
     }
 
