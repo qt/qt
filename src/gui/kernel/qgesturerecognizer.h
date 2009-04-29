@@ -58,13 +58,14 @@ class Q_GUI_EXPORT QGestureRecognizer : public QObject
 public:
     enum Result
     {
+        Ignore,
         NotGesture,
         GestureStarted,
         GestureFinished,
         MaybeGesture
     };
 
-    explicit QGestureRecognizer(const QString &type, QObject *parent = 0);
+    explicit QGestureRecognizer(const QString &gestureType, QObject *parent = 0);
 
     QString gestureType() const;
 

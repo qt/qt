@@ -3588,6 +3588,18 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 #endif // !QT_NO_WHEELEVENT || !QT_NO_TABLETEVENT
     }
 
+    if (!d->grabbedGestures.isEmpty() && e->spontaneous() && receiver->isWidgetType()) {
+        const QEvent::Type t = e->type();
+        if (t == QEvent::MouseButtonPress || t == QEvent::MouseButtonRelease || t == QEvent::MouseMove
+            || t == QEvent::MouseButtonDblClick || t == QEvent::Wheel
+            || t == QEvent::KeyPress || t == QEvent::KeyRelease
+            || t == QEvent::TabletPress || t == QEvent::TabletRelease || t == QEvent::TabletMove
+            || t >= QEvent::User) {
+            if (QGestureManager::instance()->filterEvent(static_cast<QWidget*>(receiver), e))
+                return true;
+        }
+    }
+
     // User input and window activation makes tooltips sleep
     switch (e->type()) {
     case QEvent::Wheel:
@@ -3715,28 +3727,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QPoint relpos = mouse->pos();
 
             if (e->spontaneous()) {
-                if (!d->grabbedGestures.isEmpty()) {
-                    QWidget *w = static_cast<QWidget*>(receiver);
-                    // if we are in gesture mode, we send all mouse events
-                    // directly to gesture recognizer.
-                    (void)QGestureManager::instance();
-                    if (d->gestureManager->inGestureMode()) {
-                        if (d->gestureManager->filterEvent(e))
-                            return true;
-                    } else {
-                        if (w && (mouse->type() != QEvent::MouseMove || mouse->buttons() != 0)) {
-                            // find the gesture target widget
-                            QWidget *target = w;
-                            while (target && target->d_func()->gestures.isEmpty())
-                                target = target->parentWidget();
-                            if (target) {
-                                d->gestureManager->setGestureTargetWidget(w);
-                                if (d->gestureManager->filterEvent(e))
-                                    return true;
-                            }
-                        }
-                    }
-                }
                 if (e->type() == QEvent::MouseButtonPress) {
                     QApplicationPrivate::giveFocusAccordingToFocusPolicy(w,
                                                                          Qt::ClickFocus,
@@ -5107,7 +5097,6 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
 */
 void QApplication::addGestureRecognizer(QGestureRecognizer *recognizer)
 {
-    Q_D(QApplication);
     QGestureManager::instance()->addRecognizer(recognizer);
 }
 

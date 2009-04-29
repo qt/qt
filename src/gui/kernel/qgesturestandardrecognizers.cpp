@@ -144,7 +144,7 @@ QGestureRecognizer::Result QGestureRecognizerPan::filterEvent(const QEvent *even
         }
         return result;
     }
-    return QGestureRecognizer::NotGesture;
+    return QGestureRecognizer::Ignore;
 }
 
 QGesture* QGestureRecognizerPan::getGesture()
@@ -202,10 +202,12 @@ QGestureRecognizer::Result QDoubleTapGestureRecognizer::filterEvent(const QEvent
         } else if ((pressedPosition - ev->pos()).manhattanLength() < 10) {
             return QGestureRecognizer::GestureFinished;
         }
+        return QGestureRecognizer::NotGesture;
     } else if (event->type() == QEvent::MouseButtonRelease) {
         const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
         if (!pressedPosition.isNull() && (pressedPosition - ev->pos()).manhattanLength() < 10)
             return QGestureRecognizer::MaybeGesture;
+        return QGestureRecognizer::NotGesture;
     } else if (event->type() == QEvent::MouseButtonDblClick) {
         const QMouseEvent *ev = static_cast<const QMouseEvent*>(event);
         pressedPosition = ev->pos();
@@ -264,7 +266,7 @@ QGestureRecognizer::Result QTapAndHoldGestureRecognizer::filterEvent(const QEven
         timer.stop();
         return QGestureRecognizer::NotGesture;
     }
-    return QGestureRecognizer::NotGesture;
+    return QGestureRecognizer::Ignore;
 }
 
 void QTapAndHoldGestureRecognizer::timerEvent(QTimerEvent *event)

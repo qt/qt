@@ -93,8 +93,17 @@ void QGestureManager::removeRecognizer(QGestureRecognizer *recognizer)
     recognizers.remove(recognizer);
 }
 
-bool QGestureManager::filterEvent(QEvent *event)
+bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
 {
+    if (state != Gesture) {
+        // find the target widget
+        while (receiver && receiver->d_func()->gestures.isEmpty())
+            receiver = receiver->parentWidget();
+        if (!receiver) // no widget in the tree that accepts gestures.
+            return false;
+        targetWidget = receiver;
+    }
+
     QPoint currentPos;
     switch (event->type()) {
     case QEvent::MouseButtonPress:
@@ -133,7 +142,7 @@ bool QGestureManager::filterEvent(QEvent *event)
             } else if (result == QGestureRecognizer::MaybeGesture) {
                 DEBUG() << "QGestureManager: maybe gesture: " << r;
                 newMaybeGestures << r;
-            } else {
+            } else if (result == QGestureRecognizer::NotGesture) {
                 // if it was maybe gesture, but isn't a gesture anymore.
                 DEBUG() << "QGestureManager: not gesture: " << r;
                 notGestures << r;
@@ -230,7 +239,7 @@ bool QGestureManager::filterEvent(QEvent *event)
             } else if (result == QGestureRecognizer::MaybeGesture) {
                 DEBUG() << "QGestureManager: maybe gesture: " << r;
                 newMaybeGestures << r;
-            } else {
+            } else if (result == QGestureRecognizer::NotGesture) {
                 // if it was an active gesture, but isn't a gesture anymore.
                 if (activeGestures.contains(r)) {
                     DEBUG() << "QGestureManager: cancelled gesture: " << r;

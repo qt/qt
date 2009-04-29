@@ -71,7 +71,9 @@ QString qt_getStandardGestureTypeName(Qt::GestureType gestureType);
 
     This enum type defines the state of the gesture recognizer.
 
-    \value NotGesture              Not a gesture.
+    \value Ignore Gesture recognizer ignores the event.
+
+    \value NotGesture Not a gesture.
 
     \value GestureStarted The continuous gesture has started. When the
     recognizer is in this state, a \l{QGestureEvent}{gesture event}
@@ -126,15 +128,16 @@ QGestureRecognizerPrivate::QGestureRecognizerPrivate()
 
 /*!
     Creates a new gesture recognizer object that handles gestures of
-    the specific \a type as a child of \a parent.
+    the specific \a gestureType as a child of \a parent.
 
     \sa QApplication::addGestureRecognizer(),
     QApplication::removeGestureRecognizer(),
 */
-QGestureRecognizer::QGestureRecognizer(const QString &type, QObject *parent)
+QGestureRecognizer::QGestureRecognizer(const QString &gestureType, QObject *parent)
     : QObject(*new QGestureRecognizerPrivate, parent)
 {
-    d_func()->customGestureType = type;
+    Q_D(QGestureRecognizer);
+    d->customGestureType = gestureType;
 }
 
 /*!

@@ -77,7 +77,7 @@ public:
     void addRecognizer(QGestureRecognizer *recognizer);
     void removeRecognizer(QGestureRecognizer *recognizer);
 
-    bool filterEvent(QEvent *event);
+    bool filterEvent(QWidget *receiver, QEvent *event);
     bool inGestureMode();
 
     int makeGestureId(const QString &name);
