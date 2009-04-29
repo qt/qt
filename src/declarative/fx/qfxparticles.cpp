@@ -573,7 +573,7 @@ QFxParticles::~QFxParticles()
 */
 
 /*!
-    \property QFxParticles::src
+    \property QFxParticles::source
     \brief the URL of the particle image.
 */
 QString QFxParticles::source() const
