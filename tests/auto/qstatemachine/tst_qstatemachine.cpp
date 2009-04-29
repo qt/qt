@@ -48,6 +48,7 @@
 #include "qhistorystate.h"
 #include "qkeyeventtransition.h"
 #include "qmouseeventtransition.h"
+#include "private/qstate_p.h"
 #include "private/qstatemachine_p.h"
 
 // Will try to wait for the condition while allowing event processing
@@ -1027,8 +1028,9 @@ void tst_QStateMachine::rootState()
 void tst_QStateMachine::addAndRemoveState()
 {
     QStateMachine machine;
-    QCOMPARE(machine.states().size(), 1); // the error state
-    QCOMPARE(machine.states().at(0), (QAbstractState*)machine.errorState());
+    QStatePrivate *root_d = QStatePrivate::get(machine.rootState());
+    QCOMPARE(root_d->childStates().size(), 1); // the error state
+    QCOMPARE(root_d->childStates().at(0), (QAbstractState*)machine.errorState());
 
     QTest::ignoreMessage(QtWarningMsg, "QStateMachine::addState: cannot add null state");
     machine.addState(0);
@@ -1037,9 +1039,9 @@ void tst_QStateMachine::addAndRemoveState()
     QCOMPARE(s1->parentState(), (QState*)0);
     machine.addState(s1);
     QCOMPARE(s1->parentState(), machine.rootState());
-    QCOMPARE(machine.states().size(), 2);
-    QCOMPARE(machine.states().at(0), (QAbstractState*)machine.errorState());
-    QCOMPARE(machine.states().at(1), (QAbstractState*)s1);
+    QCOMPARE(root_d->childStates().size(), 2);
+    QCOMPARE(root_d->childStates().at(0), (QAbstractState*)machine.errorState());
+    QCOMPARE(root_d->childStates().at(1), (QAbstractState*)s1);
 
     QTest::ignoreMessage(QtWarningMsg, "QStateMachine::addState: state has already been added to this machine");
     machine.addState(s1);
@@ -1048,24 +1050,24 @@ void tst_QStateMachine::addAndRemoveState()
     QCOMPARE(s2->parentState(), (QState*)0);
     machine.addState(s2);
     QCOMPARE(s2->parentState(), machine.rootState());
-    QCOMPARE(machine.states().size(), 3);
-    QCOMPARE(machine.states().at(0), (QAbstractState*)machine.errorState());
-    QCOMPARE(machine.states().at(1), (QAbstractState*)s1);
-    QCOMPARE(machine.states().at(2), (QAbstractState*)s2);
+    QCOMPARE(root_d->childStates().size(), 3);
+    QCOMPARE(root_d->childStates().at(0), (QAbstractState*)machine.errorState());
+    QCOMPARE(root_d->childStates().at(1), (QAbstractState*)s1);
+    QCOMPARE(root_d->childStates().at(2), (QAbstractState*)s2);
 
     QTest::ignoreMessage(QtWarningMsg, "QStateMachine::addState: state has already been added to this machine");
     machine.addState(s2);
 
     machine.removeState(s1);
     QCOMPARE(s1->parentState(), (QState*)0);
-    QCOMPARE(machine.states().size(), 2);
-    QCOMPARE(machine.states().at(0), (QAbstractState*)machine.errorState());
-    QCOMPARE(machine.states().at(1), (QAbstractState*)s2);
+    QCOMPARE(root_d->childStates().size(), 2);
+    QCOMPARE(root_d->childStates().at(0), (QAbstractState*)machine.errorState());
+    QCOMPARE(root_d->childStates().at(1), (QAbstractState*)s2);
 
     machine.removeState(s2);
     QCOMPARE(s2->parentState(), (QState*)0);
-    QCOMPARE(machine.states().size(), 1);
-    QCOMPARE(machine.states().at(0), (QAbstractState*)machine.errorState());
+    QCOMPARE(root_d->childStates().size(), 1);
+    QCOMPARE(root_d->childStates().at(0), (QAbstractState*)machine.errorState());
 
     QTest::ignoreMessage(QtWarningMsg, "QStateMachine::removeState: cannot remove null state");
     machine.removeState(0);

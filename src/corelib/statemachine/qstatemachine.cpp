@@ -1736,15 +1736,6 @@ void QStateMachine::postInternalEvent(QEvent *event)
 }
 
 /*!
-  Returns the list of this state machine's states, or an empty list if the
-  state machine has no states.
-*/
-QList<QAbstractState*> QStateMachine::states() const
-{
-    return QStatePrivate::get(rootState())->childStates();
-}
-
-/*!
   \internal
 
    Returns the maximal consistent set of states (including parallel and final

@@ -370,18 +370,6 @@ void QState::removeTransition(QAbstractTransition *transition)
 }
 
 /*!
-  Returns the list of transitions from this state, or an empty list if there
-  are no transitions from this state.
-
-  \sa addTransition(), removeTransition()
-*/
-QList<QAbstractTransition*> QState::transitions() const
-{
-    Q_D(const QState);
-    return d->transitions();
-}
-
-/*!
   \reimp
 */
 void QState::onEntry()

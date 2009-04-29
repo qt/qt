@@ -82,7 +82,6 @@ public:
     QSignalTransition *addTransition(QObject *sender, const char *signal, QAbstractState *target);
     QAbstractTransition *addTransition(QAbstractState *target);
     void removeTransition(QAbstractTransition *transition);
-    QList<QAbstractTransition*> transitions() const;
 
     QAbstractState *initialState() const;
     void setInitialState(QAbstractState *state);

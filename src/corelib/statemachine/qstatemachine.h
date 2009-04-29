@@ -121,7 +121,6 @@ public:
 
     void postEvent(QEvent *event, int delay = 0);
 
-    QList<QAbstractState*> states() const;
     QSet<QAbstractState*> configuration() const;
 
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
