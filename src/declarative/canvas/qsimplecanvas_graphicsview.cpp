@@ -90,8 +90,8 @@ void QSimpleGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     QSimpleCanvasItem *p = owner->parent();
     while(p) {
-        if(p->options() & QSimpleCanvasItem::ChildMouseFilter) {
-            if(p->mouseFilter(event))
+        if (p->options() & QSimpleCanvasItem::ChildMouseFilter) {
+            if (p->mouseFilter(event))
                 return;
         }
         p = p->parent();
@@ -103,8 +103,8 @@ void QSimpleGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     QSimpleCanvasItem *p = owner->parent();
     while(p) {
-        if(p->options() & QSimpleCanvasItem::ChildMouseFilter) {
-            if(p->mouseFilter(event))
+        if (p->options() & QSimpleCanvasItem::ChildMouseFilter) {
+            if (p->mouseFilter(event))
                 return;
         }
         p = p->parent();
@@ -117,8 +117,8 @@ void QSimpleGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
     QSimpleCanvasItem *p = owner->parent();
     while(p) {
-        if(p->options() & QSimpleCanvasItem::ChildMouseFilter) {
-            if(p->mouseFilter(event))
+        if (p->options() & QSimpleCanvasItem::ChildMouseFilter) {
+            if (p->mouseFilter(event))
                 return;
         }
         p = p->parent();
@@ -130,8 +130,8 @@ void QSimpleGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     QSimpleCanvasItem *p = owner->parent();
     while(p) {
-        if(p->options() & QSimpleCanvasItem::ChildMouseFilter) {
-            if(p->mouseFilter(event))
+        if (p->options() & QSimpleCanvasItem::ChildMouseFilter) {
+            if (p->mouseFilter(event))
                 return;
         }
         p = p->parent();
@@ -142,14 +142,14 @@ void QSimpleGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 bool QSimpleGraphicsItem::sceneEvent(QEvent *event)
 {
     bool rv = QGraphicsItem::sceneEvent(event);
-    if(event->type() == QEvent::UngrabMouse)
+    if (event->type() == QEvent::UngrabMouse)
         owner->mouseUngrabEvent();
     return rv;
 }
 
 QVariant QSimpleGraphicsItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
-    if(change == ItemSceneHasChanged) {
+    if (change == ItemSceneHasChanged) {
         QSimpleCanvasItemPrivate *owner_d = static_cast<QSimpleCanvasItemPrivate*>(owner->d_ptr);
         QSimpleCanvas *oldCanvas = owner_d->canvas;
         owner_d->canvas = sceneMap[scene()];
@@ -164,13 +164,13 @@ QVariant QSimpleGraphicsItem::itemChange(GraphicsItemChange change, const QVaria
                 }
             }
         }
-        if(owner->options() & QSimpleCanvasItem::MouseFilter)
+        if (owner->options() & QSimpleCanvasItem::MouseFilter)
             owner_d->gvRemoveMouseFilter();
 
         if (oldCanvas != owner_d->canvas)
             owner->canvasChanged();
 
-        if(owner->options() & QSimpleCanvasItem::MouseFilter)
+        if (owner->options() & QSimpleCanvasItem::MouseFilter)
             owner_d->gvAddMouseFilter();
     } 
 
@@ -198,7 +198,7 @@ void QSimpleGraphicsItem::focusInEvent(QFocusEvent *)
 void QSimpleCanvasItemPrivate::gvRemoveMouseFilter()
 {
     QGraphicsScene *scene = graphicsItem->scene();
-    if(!scene) return;
+    if (!scene) return;
 
     scene->removeEventFilter(q_ptr);
 }
@@ -206,7 +206,7 @@ void QSimpleCanvasItemPrivate::gvRemoveMouseFilter()
 void QSimpleCanvasItemPrivate::gvAddMouseFilter()
 {
     QGraphicsScene *scene = graphicsItem->scene();
-    if(!scene) return;
+    if (!scene) return;
 
     scene->installEventFilter(q_ptr);
 }

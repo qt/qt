@@ -154,7 +154,7 @@ QSize QFxImageItem::contentsSize() const
 void QFxImageItem::setSmooth(bool smooth)
 {
     Q_D(QFxImageItem);
-    if(d->smooth == smooth) return;
+    if (d->smooth == smooth) return;
     d->smooth = smooth;
     clearCache();
     update();
@@ -168,7 +168,7 @@ void QFxImageItem::setSmooth(bool smooth)
 void QFxImageItem::setContentsSize(const QSize &size)
 {
     Q_D(QFxImageItem);
-    if(d->contentsSize == size) return;
+    if (d->contentsSize == size) return;
     d->contentsSize = size;
     clearCache();
     update();
@@ -233,7 +233,7 @@ void QFxImageItem::paintGLContents(GLPainter &p)
 #if defined(QFX_RENDER_QPAINTER)
     bool oldAntiAliasing = p.testRenderHint(QPainter::Antialiasing);
     bool oldSmoothPixmap = p.testRenderHint(QPainter::SmoothPixmapTransform);
-    if(d->smooth) {
+    if (d->smooth) {
         p.setRenderHints(QPainter::Antialiasing, true);
         p.setRenderHints(QPainter::SmoothPixmapTransform, true);
     }
@@ -336,7 +336,7 @@ void QFxImageItem::paintGLContents(GLPainter &p)
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 #endif
 #if defined(QFX_RENDER_QPAINTER)
-    if(d->smooth) {
+    if (d->smooth) {
         p.setRenderHints(QPainter::Antialiasing, oldAntiAliasing);
         p.setRenderHints(QPainter::SmoothPixmapTransform, oldSmoothPixmap);
     }

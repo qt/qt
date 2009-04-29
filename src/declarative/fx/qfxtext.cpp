@@ -165,7 +165,7 @@ void QFxText::setText(const QString &n)
     QFxPerfTimer<QFxPerf::QFxText_setText> st;
 #endif
     Q_D(QFxText);
-    if(d->text == n)
+    if (d->text == n)
         return;
 
     d->richText = Qt::mightBeRichText(n);   // ### what's the cost?
@@ -205,7 +205,7 @@ QString QFxText::text() const
 void QFxText::setColor(const QColor &color)
 {
     Q_D(QFxText);
-    if(d->color == color)
+    if (d->color == color)
         return;
 
     d->imgDirty = true;
@@ -270,7 +270,7 @@ QFxText::TextStyle QFxText::style() const
 void QFxText::setStyle(QFxText::TextStyle style)
 {
     Q_D(QFxText);
-    if(d->style == style)
+    if (d->style == style)
         return;
 
     d->imgDirty = true;
@@ -281,7 +281,7 @@ void QFxText::setStyle(QFxText::TextStyle style)
 void QFxText::setStyleColor(const QColor &color)
 {
     Q_D(QFxText);
-    if(d->styleColor == color)
+    if (d->styleColor == color)
         return;
 
     d->imgDirty = true;
@@ -424,7 +424,7 @@ void QFxText::geometryChanged(const QRectF &newGeometry,
                               const QRectF &oldGeometry)
 {
     Q_D(QFxText);
-    if(newGeometry.width() != oldGeometry.width()) {
+    if (newGeometry.width() != oldGeometry.width()) {
         if (d->wrap || d->elideMode != Qt::ElideNone) {
             d->imgDirty = true;
             d->updateSize();
@@ -446,10 +446,10 @@ void QFxTextPrivate::updateSize()
 {
     Q_Q(QFxText);
     if (q->isComponentComplete()) {
-        if(text.isEmpty()) {
+        if (text.isEmpty()) {
             return;
         }
-        QFont f; if(_font) f = _font->font();
+        QFont f; if (_font) f = _font->font();
         QFontMetrics fm(f);
         int dy = q->height();
 
@@ -573,7 +573,7 @@ QSize QFxTextPrivate::setupTextLayout(QTextLayout *layout)
     Q_Q(QFxText);
     layout->setCacheEnabled(true);
 
-    QFont f; if(_font) f = _font->font();
+    QFont f; if (_font) f = _font->font();
     QFontMetrics fm = QFontMetrics(f);
 
     int leading = fm.leading();
@@ -613,7 +613,7 @@ QImage QFxTextPrivate::wrappedTextImage(bool drawStyle)
 {
     //do layout
     Q_Q(const QFxText);
-    QFont f; if(_font) f = _font->font();
+    QFont f; if (_font) f = _font->font();
     QString tmp = text;
     if (singleline && elideMode != Qt::ElideNone && q->widthValid()) {
         QFontMetrics fm(f);
@@ -626,11 +626,11 @@ QImage QFxTextPrivate::wrappedTextImage(bool drawStyle)
     int x = 0;
     for (int i = 0; i < textLayout.lineCount(); ++i) {
         QTextLine line = textLayout.lineAt(i);
-        if(hAlign == QFxText::AlignLeft) {
+        if (hAlign == QFxText::AlignLeft) {
             x = 0;
-        } else if(hAlign == QFxText::AlignRight) {
+        } else if (hAlign == QFxText::AlignRight) {
             x = size.width() - (int)line.naturalTextWidth();
-        } else if(hAlign == QFxText::AlignHCenter) {
+        } else if (hAlign == QFxText::AlignHCenter) {
             x = (size.width() - (int)line.naturalTextWidth()) / 2;
         }
         line.setPosition(QPoint(x, (int)line.y()));
@@ -679,7 +679,7 @@ QImage QFxTextPrivate::richTextImage(bool drawStyle)
 
 void QFxTextPrivate::checkImgCache()
 {
-    if(!imgDirty)
+    if (!imgDirty)
         return;
 
     bool empty = text.isEmpty();
@@ -722,7 +722,7 @@ void QFxText::paintContents(QPainter &p)
 {
     Q_D(QFxText);
     d->checkImgCache();
-    if(d->imgCache.isNull())
+    if (d->imgCache.isNull())
         return;
 
     int w = width();
@@ -763,7 +763,7 @@ void QFxText::paintGLContents(GLPainter &p)
 {
     Q_D(QFxText);
     d->checkImgCache();
-    if(d->imgCache.isNull())
+    if (d->imgCache.isNull())
         return;
 
     int w = width();
@@ -826,7 +826,7 @@ void QFxText::paintGLContents(GLPainter &p)
 {
     Q_D(QFxText);
     d->checkImgCache();
-    if(d->imgCache.isNull())
+    if (d->imgCache.isNull())
         return;
 
     int w = width();
@@ -875,7 +875,7 @@ void QFxText::paintGLContents(GLPainter &p)
     glMatrixMode(GL_MODELVIEW);
     glLoadMatrixf(p.activeTransform.data());
     glEnable(GL_TEXTURE_2D);
-    if(p.activeOpacity == 1.) {
+    if (p.activeOpacity == 1.) {
         GLint i = GL_REPLACE;
         glTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &i);
     } else {

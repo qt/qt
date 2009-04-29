@@ -96,7 +96,7 @@ public:
 
 void GLTexturePrivate::genTexture()
 {
-    if(texture)
+    if (texture)
         return;
 
     glGenTextures(1, &texture);
@@ -116,7 +116,7 @@ GLTexture::GLTexture(const QString &file)
 : d(new GLTexturePrivate(this))
 {
     QImage img(file);
-    if(!img.isNull())
+    if (!img.isNull())
         setImage(img);
 }
 
@@ -128,7 +128,7 @@ GLTexture::GLTexture(const QImage &img)
 
 GLTexture::~GLTexture()
 {
-    if(d->texture)
+    if (d->texture)
         glDeleteTextures(1, &d->texture);
     delete d;
     d = 0;
@@ -141,7 +141,7 @@ bool GLTexture::isNull() const
 
 void GLTexture::clear()
 {
-    if(d->texture) {
+    if (d->texture) {
         glDeleteTextures(1, &d->texture);
         d->texture = 0;
         d->width = 0;
@@ -168,7 +168,7 @@ static inline int npot(int size)
  */
 void GLTexture::setImage(const QImage &img)
 {
-    if(img.isNull())
+    if (img.isNull())
         return;
 
     d->genTexture();
@@ -187,9 +187,9 @@ void GLTexture::setImage(const QImage &img)
 #if 0
     glGenerateMipmap(GL_TEXTURE_2D);
     int e = glGetError();
-    if(d->magFilter == Linear)
+    if (d->magFilter == Linear)
         setMagFilter(MipmapLinear);
-    if(d->minFilter == Linear)
+    if (d->minFilter == Linear)
         setMinFilter((GLTexture::FilterMode)GL_LINEAR_MIPMAP_LINEAR);
 #endif
 }
@@ -228,7 +228,7 @@ int GLTexture::height() const
 */
 void GLTexture::setSize(const QSize &size)
 {
-    if(size.width() <= 0 || size.height() <= 0) {
+    if (size.width() <= 0 || size.height() <= 0) {
         clear();
         return;
     }
@@ -253,13 +253,13 @@ GLTexture::WrapMode GLTexture::verticalWrap() const
 void GLTexture::setHorizontalWrap(WrapMode mode)
 {
     d->horizWrap = mode; 
-    if(d->texture) {
+    if (d->texture) {
         GLint last;
         glGetIntegerv(GL_TEXTURE_BINDING_2D, &last);
-        if(GLuint(last) != d->texture)
+        if (GLuint(last) != d->texture)
             glBindTexture(GL_TEXTURE_2D, d->texture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mode);
-        if(GLuint(last) != d->texture)
+        if (GLuint(last) != d->texture)
             glBindTexture(GL_TEXTURE_2D, last);
     }
 }
@@ -270,13 +270,13 @@ void GLTexture::setHorizontalWrap(WrapMode mode)
 void GLTexture::setVerticalWrap(WrapMode mode)
 {
     d->vertWrap = mode; 
-    if(d->texture) {
+    if (d->texture) {
         GLint last;
         glGetIntegerv(GL_TEXTURE_BINDING_2D, &last);
-        if(GLuint(last) != d->texture)
+        if (GLuint(last) != d->texture)
             glBindTexture(GL_TEXTURE_2D, d->texture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mode);
-        if(GLuint(last) != d->texture)
+        if (GLuint(last) != d->texture)
             glBindTexture(GL_TEXTURE_2D, last);
     }
 }
@@ -293,10 +293,10 @@ GLTexture::FilterMode GLTexture::magFilter() const
 
 void GLTexture::setMinFilter(FilterMode f)
 {
-    if(d->minFilter == f)
+    if (d->minFilter == f)
        return;
     d->minFilter = f;
-    if(d->texture) {
+    if (d->texture) {
         glBindTexture(GL_TEXTURE_2D, d->texture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, d->minFilter);
     }
@@ -304,10 +304,10 @@ void GLTexture::setMinFilter(FilterMode f)
 
 void GLTexture::setMagFilter(FilterMode f)
 {
-    if(d->magFilter == f)
+    if (d->magFilter == f)
        return;
     d->magFilter = f;
-    if(d->texture) {
+    if (d->texture) {
         glBindTexture(GL_TEXTURE_2D, d->texture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, d->magFilter);
     }

@@ -89,7 +89,7 @@ public:
 
     QFxScaleGrid *scaleGrid()
     {
-        if(!_scaleGrid) 
+        if (!_scaleGrid) 
             _scaleGrid = new QFxScaleGrid;
         return _scaleGrid;
     }

@@ -51,7 +51,7 @@ QmlOpenMetaObject::QmlOpenMetaObject(QObject *obj, bool automatic)
     mob.setFlags(QMetaObjectBuilder::DynamicMetaObject);
 
     QObjectPrivate *op = QObjectPrivate::get(obj);
-    if(op->metaObject)
+    if (op->metaObject)
         mob.setSuperClass(op->metaObject);
 
     mem = mob.toMetaObject();
@@ -63,21 +63,21 @@ QmlOpenMetaObject::QmlOpenMetaObject(QObject *obj, bool automatic)
 
 QmlOpenMetaObject::~QmlOpenMetaObject()
 {
-    if(parent)
+    if (parent)
         delete parent;
     qFree(mem);
 }
 
 int QmlOpenMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
 {
-    if(( c == QMetaObject::ReadProperty || c == QMetaObject::WriteProperty)
+    if (( c == QMetaObject::ReadProperty || c == QMetaObject::WriteProperty)
             && id >= _propertyOffset) {
         int propId = id - _propertyOffset;
-        if(c == QMetaObject::ReadProperty) {
+        if (c == QMetaObject::ReadProperty) {
             propertyRead(propId);
             *reinterpret_cast<QVariant *>(a[0]) = data[propId];
-        } else if(c == QMetaObject::WriteProperty) {
-            if(data[propId] != *reinterpret_cast<QVariant *>(a[0]))  {
+        } else if (c == QMetaObject::WriteProperty) {
+            if (data[propId] != *reinterpret_cast<QVariant *>(a[0]))  {
                 propertyWrite(propId);
                 data[propId] = *reinterpret_cast<QVariant *>(a[0]);
                 activate(_object, _signalOffset + propId, 0);
@@ -85,7 +85,7 @@ int QmlOpenMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
         } 
         return -1;
     } else {
-        if(parent)
+        if (parent)
             return parent->metaCall(c, id, a);
         else
             return _object->qt_metacall(c, id, a);
@@ -108,7 +108,7 @@ void QmlOpenMetaObject::setValue(int id, const QVariant &value)
 QVariant QmlOpenMetaObject::value(const QByteArray &name) const
 {
     QHash<QByteArray, int>::ConstIterator iter = names.find(name);
-    if(iter == names.end())
+    if (iter == names.end())
         return QVariant();
 
     return data.at(*iter);
@@ -119,13 +119,13 @@ void QmlOpenMetaObject::setValue(const QByteArray &name, const QVariant &val)
     QHash<QByteArray, int>::ConstIterator iter = names.find(name);
 
     int id = -1;
-    if(iter == names.end()) {
+    if (iter == names.end()) {
         id = doCreateProperty(name.constData()) - _propertyOffset;
     } else {
         id = *iter;
     }
 
-    if(data[id] == val)
+    if (data[id] == val)
         return;
 
     data[id] = val;
@@ -134,7 +134,7 @@ void QmlOpenMetaObject::setValue(const QByteArray &name, const QVariant &val)
 
 int QmlOpenMetaObject::createProperty(const char *name, const char *)
 {
-    if(autoCreate) 
+    if (autoCreate) 
         return doCreateProperty(name);
     else
         return -1;

@@ -56,21 +56,21 @@ QmlCompiledComponent::QmlCompiledComponent()
 
 QmlCompiledComponent::~QmlCompiledComponent()
 {
-    for(int ii = 0; ii < mos.count(); ++ii)
+    for (int ii = 0; ii < mos.count(); ++ii)
         qFree(mos.at(ii));
 }
 
 
 void QmlCompiledComponent::dumpInstructions()
 {
-    if(!compilerDump())
+    if (!compilerDump())
         return;
 
-    if(!name.isEmpty())
+    if (!name.isEmpty())
         qWarning() << name;
     qWarning() << "Index\tLine\tOperation\t\tData1\tData2\t\tComments";
     qWarning() << "-------------------------------------------------------------------------------";
-    for(int ii = 0; ii < bytecode.count(); ++ii) {
+    for (int ii = 0; ii < bytecode.count(); ++ii) {
         dump(&bytecode[ii], ii);
     }
     qWarning() << "-------------------------------------------------------------------------------";
@@ -79,29 +79,29 @@ void QmlCompiledComponent::dumpInstructions()
 void QmlCompiledComponent::dump(int indent, Property *p)
 {
     QByteArray ba(indent * 4, ' ');
-    for(int ii = 0; ii < p->values.count(); ++ii)
+    for (int ii = 0; ii < p->values.count(); ++ii)
         dump(indent, p->values.at(ii));
-    if(p->value)
+    if (p->value)
         dump(indent, p->value);
 }
 
 void QmlCompiledComponent::dump(int indent, Object *o)
 {
     QByteArray ba(indent * 4, ' ');
-    if(o->type != -1) {
+    if (o->type != -1) {
         qWarning() << ba.constData() << "Object:" << types.at(o->type).className;
     } else {
         qWarning() << ba.constData() << "Object: fetched";
     }
 
-    for(QHash<QByteArray, Property *>::ConstIterator iter = o->properties.begin();
+    for (QHash<QByteArray, Property *>::ConstIterator iter = o->properties.begin();
             iter != o->properties.end();
             ++iter) {
         qWarning() << ba.constData() << " Property" << iter.key();
         dump(indent + 1, *iter);
     }
 
-    if(o->defaultProperty) {
+    if (o->defaultProperty) {
         qWarning() << ba.constData() << " Default property";
         dump(indent + 1, o->defaultProperty);
     }
@@ -142,7 +142,7 @@ void QmlCompiledComponent::dump(int indent, Value *v)
     };
 
     QByteArray ba(indent * 4, ' ');
-    if(v->object) {
+    if (v->object) {
         qWarning() << ba.constData() << "Value (" << type << "):";
         dump(indent + 1, v->object);
     } else {
@@ -152,7 +152,7 @@ void QmlCompiledComponent::dump(int indent, Value *v)
 
 void QmlCompiledComponent::dumpPre()
 {
-    if(!(dumpStatus & DumpPre)) {
+    if (!(dumpStatus & DumpPre)) {
         dumpInstructions();
         dumpStatus = (DumpStatus)(dumpStatus | DumpPre);
     }
@@ -160,7 +160,7 @@ void QmlCompiledComponent::dumpPre()
 
 void QmlCompiledComponent::dumpPost()
 {
-    if(!(dumpStatus & DumpPost)) {
+    if (!(dumpStatus & DumpPost)) {
         dumpInstructions();
         dumpStatus = (DumpStatus)(dumpStatus | DumpPost);
     }

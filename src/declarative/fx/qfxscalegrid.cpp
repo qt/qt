@@ -153,29 +153,29 @@ QFxGridScaledImage::QFxGridScaledImage(QIODevice *data)
 
     while(!data->atEnd()) {
         QString line = QString::fromUtf8(data->readLine().trimmed());
-        if(line.isEmpty() || line.startsWith(QLatin1String("#"))) 
+        if (line.isEmpty() || line.startsWith(QLatin1String("#"))) 
             continue;
 
         QStringList list = line.split(QLatin1Char(':'));
-        if(list.count() != 2)
+        if (list.count() != 2)
             return;
 
         list[0] = list[0].trimmed();
         list[1] = list[1].trimmed();
 
-        if(list[0] == QLatin1String("gridLeft"))
+        if (list[0] == QLatin1String("gridLeft"))
             l = list[1].toInt();
-        else if(list[0] == QLatin1String("gridRight"))
+        else if (list[0] == QLatin1String("gridRight"))
             r = list[1].toInt();
-        else if(list[0] == QLatin1String("gridTop"))
+        else if (list[0] == QLatin1String("gridTop"))
             t = list[1].toInt();
-        else if(list[0] == QLatin1String("gridBottom"))
+        else if (list[0] == QLatin1String("gridBottom"))
             b = list[1].toInt();
-        else if(list[0] == QLatin1String("imageFile"))
+        else if (list[0] == QLatin1String("imageFile"))
             imgFile = list[1];
     }
 
-    if(l < 0 || r < 0 || t < 0 || b < 0 || imgFile.isEmpty())
+    if (l < 0 || r < 0 || t < 0 || b < 0 || imgFile.isEmpty())
         return;
 
     _l = l; _r = r; _t = t; _b = b;

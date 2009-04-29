@@ -85,7 +85,7 @@ public:
     {
         Q_Q(QFxItem);
 
-        if(parent)
+        if (parent)
             q->setItemParent(parent);
         _baselineOffset.invalidate();
         q->setAcceptedMouseButtons(Qt::NoButton);
@@ -122,7 +122,7 @@ public:
 
     QList<QFxTransform *> _transform;
     QFxAnchors *anchors() {
-        if(!_anchors) {
+        if (!_anchors) {
             Q_Q(QFxItem);
             _anchors = new QFxAnchors;
             _anchors->setItem(q);
@@ -160,7 +160,7 @@ public:
     mutable AnchorLines *_anchorLines;
     AnchorLines *anchorLines() const {
         Q_Q(const QFxItem);
-        if(!_anchorLines) _anchorLines =
+        if (!_anchorLines) _anchorLines =
             new AnchorLines(const_cast<QFxItem *>(q));
         return _anchorLines;
     }

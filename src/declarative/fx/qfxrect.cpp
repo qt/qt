@@ -238,7 +238,7 @@ QColor QFxRect::color() const
 void QFxRect::setColor(const QColor &c)
 {
     Q_D(QFxRect);
-    if(d->_color == c)
+    if (d->_color == c)
         return;
 
     d->_color = c;
@@ -281,7 +281,7 @@ QColor QFxRect::tintColor() const
 void QFxRect::setTintColor(const QColor &c)
 {
     Q_D(QFxRect);
-    if(d->_tintColor == c)
+    if (d->_tintColor == c)
         return;
 
     d->_tintColor = c;
@@ -290,11 +290,11 @@ void QFxRect::setTintColor(const QColor &c)
 
 QColor QFxRectPrivate::getColor()
 {
-    if(_tintColor.isValid()) {
+    if (_tintColor.isValid()) {
         int a = _tintColor.alpha();
-        if(a == 0xFF)
+        if (a == 0xFF)
             return _tintColor;
-        else if(a == 0x00)
+        else if (a == 0x00)
             return _color;
         else {
             uint src = _tintColor.rgba();
@@ -304,7 +304,7 @@ QColor QFxRectPrivate::getColor()
                         ((0xFF - a) * (dest & 0xFF00FF))) >> 8) & 0xFF00FF;
             res |= (((a * ((src >> 8) & 0xFF00FF)) +
                     ((0xFF - a) * ((dest >> 8) & 0xFF00FF)))) & 0xFF00FF00;
-            if((src & 0xFF000000) == 0xFF000000)
+            if ((src & 0xFF000000) == 0xFF000000)
                 res |= 0xFF000000;
 
             return QColor::fromRgba(res);
@@ -344,7 +344,7 @@ QColor QFxRect::gradientColor() const
 void QFxRect::setGradientColor(const QColor &c)
 {
     Q_D(QFxRect);
-    if(d->_gradcolor == c)
+    if (d->_gradcolor == c)
         return;
 
     d->_gradcolor = c;
@@ -438,14 +438,14 @@ void QFxRect::paintContents(QPainter &p)
 void QFxRect::drawRect(QPainter &p)
 {
     Q_D(QFxRect);
-    if(d->_gradcolor.isValid() /*|| p.usingQt() */) {
+    if (d->_gradcolor.isValid() /*|| p.usingQt() */) {
         // XXX This path is still slower than the image path
         // Image path won't work for gradients though
         p.save();
         QPen pn(QColor(pen()->color()), pen()->width());
         p.setRenderHint(QPainter::Antialiasing);
         p.setPen(pn);
-        if(d->_gradcolor.isValid()){
+        if (d->_gradcolor.isValid()){
             QLinearGradient grad(0, 0, 0, height());
             grad.setColorAt(0, d->_color);
             grad.setColorAt(1, d->_gradcolor);
@@ -453,7 +453,7 @@ void QFxRect::drawRect(QPainter &p)
         }else{
             p.setBrush(d->_color);
         }
-        if(d->_radius)
+        if (d->_radius)
             p.drawRoundedRect(0, 0, width(), height(), d->_radius, d->_radius);
         else
             p.drawRect(0, 0, width(), height());
@@ -477,36 +477,36 @@ void QFxRect::drawRect(QPainter &p)
         p.drawImage(QRect(0, 0, offset, offset), d->_rectImage, QRect(0, 0, offset, offset));
 
         // Upper middle
-        if(d->_rectImage.width() - xSide)
+        if (d->_rectImage.width() - xSide)
             p.drawImage(QRect(offset, 0, width() - xSide, offset), d->_rectImage,
                                   QRect(offset, 0, d->_rectImage.width() - xSide, offset));
         // Upper right
-        if(d->_rectImage.width() - offset) {
+        if (d->_rectImage.width() - offset) {
             p.drawImage(QPoint(width()-offset, 0), d->_rectImage,
                                   QRect(d->_rectImage.width()-offset, 0, offset, offset));
         }
         // Middle left
-        if(d->_rectImage.height() - ySide)
+        if (d->_rectImage.height() - ySide)
             p.drawImage(QRect(0, offset, offset, height() - ySide), d->_rectImage,
                                   QRect(0, offset, offset, d->_rectImage.height() - ySide));
 
         // Middle
-        if(d->_rectImage.width() - xSide && d->_rectImage.height() - ySide)
+        if (d->_rectImage.width() - xSide && d->_rectImage.height() - ySide)
             p.drawImage(QRect(offset, offset, width() - xSide, height() - ySide), d->_rectImage,
                                 QRect(offset, offset, d->_rectImage.width() - xSide, d->_rectImage.height() - ySide));
         // Midlle right
-        if(d->_rectImage.height() - ySide)
+        if (d->_rectImage.height() - ySide)
             p.drawImage(QRect(width()-offset, offset, offset, height() - ySide), d->_rectImage,
                                 QRect(d->_rectImage.width()-offset, offset, offset, d->_rectImage.height() - ySide));
         // Lower left 
         p.drawImage(QPoint(0, height() - offset), d->_rectImage, QRect(0, d->_rectImage.height() - offset, offset, offset));
 
         // Lower Middle
-        if(d->_rectImage.width() - xSide)
+        if (d->_rectImage.width() - xSide)
             p.drawImage(QRect(offset, height() - offset, width() - xSide, offset), d->_rectImage,
                                 QRect(offset, d->_rectImage.height() - offset, d->_rectImage.width() - xSide, offset));
         // Lower Right
-        if(d->_rectImage.width() - offset)
+        if (d->_rectImage.width() - offset)
             p.drawImage(QPoint(width()-offset, height() - offset), d->_rectImage,
                             QRect(d->_rectImage.width()-offset, d->_rectImage.height() - offset, offset, offset));
     }
@@ -519,8 +519,8 @@ void QFxRect::drawRect(QPainter &p)
 void QFxRect::paintGLContents(GLPainter &p)
 {
     Q_D(QFxRect);
-    if(d->_radius == 0 && (!d->_pen || !d->_pen->isValid())) {
-        if(d->_gradcolor.isValid()) {
+    if (d->_radius == 0 && (!d->_pen || !d->_pen->isValid())) {
+        if (d->_gradcolor.isValid()) {
             float widthV = width();
             float heightV = height();
 
@@ -582,7 +582,7 @@ void QFxRect::paintGLContents(GLPainter &p)
 
         float imgWidth = d->_rectTexture.width();
         float imgHeight = d->_rectTexture.height();
-        if(!imgWidth || !imgHeight)
+        if (!imgWidth || !imgHeight)
             return;
 
         float widthV = width();
@@ -607,7 +607,7 @@ void QFxRect::paintGLContents(GLPainter &p)
         imgbottom = heightV - offset;
 
         //Bug 231768: Inappropriate interpolation was occuring on 3x3 textures
-        if(offset==1)
+        if (offset==1)
             texleft=texright=textop=texbottom=0.5;
 
         float vert1[] = { 0, 0, 
@@ -686,7 +686,7 @@ void QFxRect::paintGLContents(GLPainter &p)
     glMatrixMode(GL_MODELVIEW);
     glLoadMatrixf(p.activeTransform.data());
     
-    if(d->_radius == 0 && (!d->_pen || !d->_pen->isValid())) {
+    if (d->_radius == 0 && (!d->_pen || !d->_pen->isValid())) {
         GLfloat vertices[] = { 0, heightV,
                                widthV, heightV,
                                0, 0,
@@ -696,7 +696,7 @@ void QFxRect::paintGLContents(GLPainter &p)
         glVertexPointer(2,GL_FLOAT,0,vertices);
 
         QColor c;
-        if(d->_gradcolor.isValid())
+        if (d->_gradcolor.isValid())
             c = d->_color;
         else
             c = d->getColor();
@@ -707,7 +707,7 @@ void QFxRect::paintGLContents(GLPainter &p)
 
         float r2 = r; float g2 = g; float b2 = b; float a2 = a;
 
-        if(d->_gradcolor.isValid()) {
+        if (d->_gradcolor.isValid()) {
             r2 = d->_gradcolor.redF();
             g2 = d->_gradcolor.greenF();
             b2 = d->_gradcolor.blueF();
@@ -736,7 +736,7 @@ void QFxRect::paintGLContents(GLPainter &p)
             offset = d->pen()->width();
         }
 
-        if(p.activeOpacity == 1.) {
+        if (p.activeOpacity == 1.) {
             GLint i = GL_REPLACE;
             glTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &i);
         } else {
@@ -747,7 +747,7 @@ void QFxRect::paintGLContents(GLPainter &p)
 
         float imgWidth = d->_rectTexture.width();
         float imgHeight = d->_rectTexture.height();
-        if(!imgWidth || !imgHeight)
+        if (!imgWidth || !imgHeight)
             return;
 
         float widthV = width();
