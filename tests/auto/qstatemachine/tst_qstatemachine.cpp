@@ -2882,7 +2882,6 @@ void tst_QStateMachine::parallelStateTransition()
 
     QVERIFY(machine.configuration().contains(s1));
     
-    QEXPECT_FAIL("", "This failure is defined in the algorithm. We need to find out what behavior is correct.", Abort);
     QVERIFY(machine.configuration().contains(s2));
     QVERIFY(machine.configuration().contains(s1OtherChild));
     QVERIFY(machine.configuration().contains(s2InitialChild));
