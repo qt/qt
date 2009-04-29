@@ -816,7 +816,7 @@ void tst_QStateMachine::historyStateAsInitialState()
 {
     QStateMachine machine;
 
-    QHistoryState *hs = machine.rootState()->addHistoryState();
+    QHistoryState *hs = new QHistoryState(machine.rootState());
     machine.setInitialState(hs);
 
     QState *s1 = new QState(machine.rootState());
@@ -824,7 +824,7 @@ void tst_QStateMachine::historyStateAsInitialState()
 
     QState *s2 = new QState(machine.rootState());
 
-    QHistoryState *s2h = s2->addHistoryState();
+    QHistoryState *s2h = new QHistoryState(s2);
     s2->setInitialState(s2h);
     
     QState *s21 = new QState(s2);
