@@ -576,7 +576,7 @@ QFxParticles::~QFxParticles()
     \property QFxParticles::src
     \brief the URL of the particle image.
 */
-QString QFxParticles::url() const
+QString QFxParticles::source() const
 {
     Q_D(const QFxParticles);
     return d->source;
@@ -593,7 +593,7 @@ void QFxParticles::imageLoaded()
     update();
 }
 
-void QFxParticles::setUrl(const QString &name)
+void QFxParticles::setSource(const QString &name)
 {
     Q_D(QFxParticles);
 

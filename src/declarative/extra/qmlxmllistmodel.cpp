@@ -192,13 +192,13 @@ QString QmlXmlListModel::toString(int role) const
     return d->roleNames.at(index);
 }
 
-QString QmlXmlListModel::src() const
+QString QmlXmlListModel::source() const
 {
     Q_D(const QmlXmlListModel);
     return d->src;
 }
 
-void QmlXmlListModel::setSrc(const QString &src)
+void QmlXmlListModel::setSource(const QString &src)
 {
     Q_D(QmlXmlListModel);
     d->src = src;

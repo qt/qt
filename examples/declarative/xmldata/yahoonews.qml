@@ -1,6 +1,6 @@
 <Rect color="black" gradientColor="#AAAAAA" width="600" height="600">
   <resources>
-        <XmlListModel id="feedModel" src="http://rss.news.yahoo.com/rss/oceania" query="doc($src)/rss/channel/item">
+        <XmlListModel id="feedModel" source="http://rss.news.yahoo.com/rss/oceania" query="doc($src)/rss/channel/item">
             <Role name="title" query="title/string()"/>
             <Role name="link" query="link/string()"/>
             <Role name="description" query="description/string()" isCData="true"/>

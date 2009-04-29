@@ -5,11 +5,11 @@
     </properties>
 
     <Item id="Background">
-        <Image src="content/pics/background.png" opaque="true"/>
+        <Image source="content/pics/background.png" opaque="true"/>
 
         <Rect id="Menu" x="-150" width="150" height="480" color="#232323">
             <Text id="IconText" x="40" y="110" font.bold="true" font.size="9" text="Nokia Devices" color="white" style="Raised" styleColor="black"/>
-            <Image src="content/pics/shadow-right-screen.png" x="150" height="480" tile="true"/>
+            <Image source="content/pics/shadow-right-screen.png" x="150" height="480" tile="true"/>
         </Rect>
 
         <PhonesPathView id="PhonesPathView" model="{PhonesModel}" y="60" width="800" height="360"/>

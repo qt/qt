@@ -34,11 +34,11 @@
 
                 <Rect id="Dvd" anchors.fill="{parent}" color="white">
                     <Item x="{(parent.width-width)/2}" y="{(parent.height-height)/2}" width="{Thumb.width*Thumb.scale}" height="{Thumb.height*Thumb.scale}">
-                        <Image id="Thumb" src="{thumb}" scale="{0.95*Math.min(Dvd.height/height,Dvd.width/width)}"/>
+                        <Image id="Thumb" source="{thumb}" scale="{0.95*Math.min(Dvd.height/height,Dvd.width/width)}"/>
                     </Item>
-                    <!-- <Image src="pics/reflection.png" anchors.fill="{parent}"/> -->
-                    <Image src="pics/shadow-right.png" x="{Dvd.width}" height="{Dvd.height}"/>
-                    <Image src="pics/shadow-bottom.png" y="{Dvd.height}" width="{Dvd.width}"/>
+                    <!-- <Image source="pics/reflection.png" anchors.fill="{parent}"/> -->
+                    <Image source="pics/shadow-right.png" x="{Dvd.width}" height="{Dvd.height}"/>
+                    <Image source="pics/shadow-bottom.png" y="{Dvd.height}" width="{Dvd.width}"/>
                     <Image id="Corner" src="pics/shadow-corner.png" x="{Dvd.width}" y="{Dvd.height}"/>
                 </Rect>
 
