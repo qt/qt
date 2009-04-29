@@ -58,7 +58,7 @@ class QSignalTransitionPrivate;
 class Q_CORE_EXPORT QSignalTransition : public QAbstractTransition
 {
     Q_OBJECT
-    Q_PROPERTY(QObject* object READ senderObject WRITE setSenderObject)
+    Q_PROPERTY(QObject* senderObject READ senderObject WRITE setSenderObject)
     Q_PROPERTY(QByteArray signal READ signal WRITE setSignal)
 public:
     QSignalTransition(QState *sourceState = 0);

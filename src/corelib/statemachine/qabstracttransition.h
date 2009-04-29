@@ -65,9 +65,9 @@ class QAbstractTransitionPrivate;
 class Q_CORE_EXPORT QAbstractTransition : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QState* source READ sourceState)
-    Q_PROPERTY(QAbstractState* target READ targetState WRITE setTargetState)
-    Q_PROPERTY(QList<QAbstractState*> targets READ targetStates WRITE setTargetStates)
+    Q_PROPERTY(QState* sourceState READ sourceState)
+    Q_PROPERTY(QAbstractState* targetState READ targetState WRITE setTargetState)
+    Q_PROPERTY(QList<QAbstractState*> targetStates READ targetStates WRITE setTargetStates)
 public:
     QAbstractTransition(QState *sourceState = 0);
     QAbstractTransition(const QList<QAbstractState*> &targets, QState *sourceState = 0);

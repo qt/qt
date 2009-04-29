@@ -96,7 +96,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \property QSignalTransition::object
+    \property QSignalTransition::senderObject
 
     \brief the sender object that this signal transition is associated with
 */

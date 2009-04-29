@@ -59,7 +59,7 @@ class QEventTransitionPrivate;
 class Q_CORE_EXPORT QEventTransition : public QAbstractTransition
 {
     Q_OBJECT
-    Q_PROPERTY(QObject* object READ eventSource WRITE setEventSource)
+    Q_PROPERTY(QObject* eventObject READ eventObject WRITE setEventObject)
 #ifndef QT_STATEMACHINE_SOLUTION
     Q_PROPERTY(QEvent::Type eventType READ eventType WRITE setEventType)
 #endif
@@ -70,8 +70,8 @@ public:
                      const QList<QAbstractState*> &targets, QState *sourceState = 0);
     ~QEventTransition();
 
-    QObject *eventSource() const;
-    void setEventSource(QObject *object);
+    QObject *eventObject() const;
+    void setEventObject(QObject *object);
 
     QEvent::Type eventType() const;
     void setEventType(QEvent::Type type);

@@ -1487,10 +1487,10 @@ void tst_QStateMachine::eventTransitions()
         QFinalState *s1 = new QFinalState(machine.rootState());
 
         QEventTransition *trans = new QEventTransition();
-        QCOMPARE(trans->eventSource(), (QObject*)0);
+        QCOMPARE(trans->eventObject(), (QObject*)0);
         QCOMPARE(trans->eventType(), QEvent::None);
-        trans->setEventSource(&button);
-        QCOMPARE(trans->eventSource(), (QObject*)&button);
+        trans->setEventObject(&button);
+        QCOMPARE(trans->eventObject(), (QObject*)&button);
         trans->setEventType(QEvent::MouseButtonPress);
         QCOMPARE(trans->eventType(), QEvent::MouseButtonPress);
         trans->setTargetState(s1);
@@ -1512,10 +1512,10 @@ void tst_QStateMachine::eventTransitions()
         QFinalState *s1 = new QFinalState(machine.rootState());
 
         QMouseEventTransition *trans = new QMouseEventTransition();
-        QCOMPARE(trans->eventSource(), (QObject*)0);
+        QCOMPARE(trans->eventObject(), (QObject*)0);
         QCOMPARE(trans->eventType(), QEvent::None);
         QCOMPARE(trans->button(), Qt::NoButton);
-        trans->setEventSource(&button);
+        trans->setEventObject(&button);
         trans->setEventType(QEvent::MouseButtonPress);
         trans->setButton(Qt::LeftButton);
         trans->setTargetState(s1);
@@ -1559,10 +1559,10 @@ void tst_QStateMachine::eventTransitions()
         QFinalState *s1 = new QFinalState(machine.rootState());
 
         QKeyEventTransition *trans = new QKeyEventTransition();
-        QCOMPARE(trans->eventSource(), (QObject*)0);
+        QCOMPARE(trans->eventObject(), (QObject*)0);
         QCOMPARE(trans->eventType(), QEvent::None);
         QCOMPARE(trans->key(), 0);
-        trans->setEventSource(&button);
+        trans->setEventObject(&button);
         trans->setEventType(QEvent::KeyPress);
         trans->setKey(Qt::Key_A);
         trans->setTargetState(s1);

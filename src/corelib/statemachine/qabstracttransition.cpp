@@ -79,19 +79,19 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \property QAbstractTransition::source
+    \property QAbstractTransition::sourceState
 
     \brief the source state (parent) of this transition
 */
 
 /*!
-    \property QAbstractTransition::target
+    \property QAbstractTransition::targetState
 
     \brief the target state of this transition
 */
 
 /*!
-    \property QAbstractTransition::targets
+    \property QAbstractTransition::targetStates
 
     \brief the target states of this transition
 
