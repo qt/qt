@@ -6,9 +6,7 @@ Rect {
     radius: 5
     resources: [
         Script {
-
             function toggle() {
-                print('removeButton.toggle()');
                 if (removeButton.state == 'opened') {
                     removeButton.state = '';
                 } else {

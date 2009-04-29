@@ -3,14 +3,16 @@ Item {
     clip: true
     width: 230
     height: 30
+//! [use properties and signals]
     RemoveButton {
         id: removeButton
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         expandedWidth: contactField.width
-        onConfirmed: { print('Clear field text'); fieldText.text='' }
+        onConfirmed: { fieldText.text='' }
     }
+//! [use properties and signals]
     Text {
         id: fieldText
         width: contactField.width-80

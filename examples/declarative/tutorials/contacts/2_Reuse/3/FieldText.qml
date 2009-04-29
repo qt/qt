@@ -1,3 +1,4 @@
+//! [value change]
 Rect {
     id: fieldText
     height: 30
@@ -8,6 +9,7 @@ Rect {
         value: ""
         onValueChanged: { reset() }
     }
+//! [value change]
     properties: Property {
         name: "label"
         value: ""
@@ -65,12 +67,13 @@ Rect {
         readOnly: true
         wrap: false
     }
+//! [behavior]
     Text {
         id: textLabel
         x: 5
         width: parent.width-10
         anchors.verticalCenter: parent.verticalCenter
-        hAlign: AlignHCenter
+        hAlign: "AlignHCenter"
         color: "#505050"
         font.italic: true
         text: fieldText.label
@@ -82,6 +85,7 @@ Rect {
             }
         }
     }
+//! [behavior]
     MouseRegion {
         anchors.fill: cancelIcon
         onClicked: { reset() }

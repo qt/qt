@@ -12,10 +12,9 @@ Rect {
         name: "confirmed"
     }
     resources: [
+//! [grab]
         Script {
-
             function toggle() {
-                print('removeButton.toggle()');
                 if (removeButton.state == 'opened') {
                     removeButton.state = '';
                     contactDetails.mouseGrabbed=false;
@@ -28,6 +27,7 @@ Rect {
             }
         
         }
+//! [grab]
     ]
     Image {
         id: trashIcon
@@ -80,7 +80,7 @@ Rect {
         anchors.rightMargin: 4
         font.bold: true
         color: "white"
-        hAlign: AlignHCenter
+        hAlign: "AlignHCenter"
         text: "Remove"
         opacity: 0
     }

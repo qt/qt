@@ -8,6 +8,7 @@ Item {
         value: false
     }
     resources: [
+//! [model]
         SqlConnection {
             id: contactDatabase
             name: "qmlConnection"
@@ -18,9 +19,18 @@ Item {
             id: contactList
             connection: contactDatabase
             query: "SELECT recid, label, email, phone FROM contacts ORDER BY label, recid"
-        },
-        Component {
-            id: contactDelegate
+        }
+//! [model]
+    ]
+//! [view]
+    ListView {
+        id: contactListView
+        anchors.fill: parent
+        clip: true
+        model: contactList
+        focus: true
+//! [delegate]
+        delegate: [
             Text {
                 x: 45
                 y: 12
@@ -30,14 +40,8 @@ Item {
                 font.bold: true
                 text: model.label
             }
-        }
-    ]
-    ListView {
-        id: contactListView
-        anchors.fill: parent
-        clip: true
-        model: contactList
-        delegate: contactDelegate
-        focus: true
+        ]
+//! [delegate]
     }
+//! [view]
 }

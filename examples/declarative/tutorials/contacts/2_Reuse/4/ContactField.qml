@@ -17,7 +17,7 @@ Item {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         expandedWidth: contactField.width
-        onConfirmed: { print('Clear field text'); fieldText.text='' }
+        onConfirmed: { fieldText.text='' }
     }
     FieldText {
         id: fieldText

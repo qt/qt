@@ -1,3 +1,4 @@
+//! [grab property]
 Item {
     id: contactDetails
     width: 230
@@ -6,6 +7,7 @@ Item {
         name: "mouseGrabbed"
         value: false
     }
+//! [grab property]
     properties: Property {
         name: "contactid"
         value: ""

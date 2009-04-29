@@ -371,21 +371,24 @@
     \section1 Loading QML Components
 
     Reusing the RemoveButton itself is very simple.  When parsing a QML file
-    if a Component is refered to that isn't already in the system, Qt
+    if a Component is referred to that isn't already in the system, Qt
     will try to load it from a file of the same name with the ".qml" extension.
 
-    \code
-    <Item id="contactField"
-        clip="true"
-        width="230"
-        height="30">
-        <RemoveButton id="removeButton"
-            anchors.right="{parent.right}"
-            anchors.top="{parent.top}" anchors.bottom="{parent.bottom}"/>
-    \endcode
+    \snippet declarative/tutorials/contacts/2_Reuse/1/ContactField.qml load
 
     The above QML code will attempt to load the RemoveButton component from
-    a file called "RemoveButton.qml".  All the properties of the button are
+    a file with the name "RemoveButton.qml" from the following search paths.
+
+    \list
+    \o Any imported directories. These are listed at the start of the file using
+        \c { import "path" }.
+    \o The run directory
+    \o The run directory + "/qml"
+    \o the directory of the QML code file
+    \o the directory of the QML code file + "/qml"
+    \endlist.
+
+    All the properties of the button are
     accessible and can be overridden from defaults.  The loaded component
     can also refer to elements further up in the tree, so that code within
     RemoveButton.qml could refer to the contactField component.  However only
@@ -396,44 +399,19 @@
 
     \section1 Properties and Signals
 
-    \code
-    <Rect id="removeButton"
-        width="30" height="30"
-        color="red"
-        radius="5">
-        <properties>
-            <Property name="expandedWidth" value="230"/>
-        </properties>
-        <signals>
-            <Signal name="confirmed"/>
-        </signals>
-    \endcode
-
-    \omit
-    Need reference for more information on declaring properties and signals.
-    \endomit
+    \snippet declarative/tutorials/contacts/2_Reuse/2/RemoveButton.qml define properties and signals
 
     These properties and signals are accessed from the contact field the same
     way standard system components are accessed.
 
-    \code
-    <Item id="contactField"
-        clip="true"
-        width="230"
-        height="30">
-        <RemoveButton id="removeButton"
-            anchors.right="{parent.right}"
-            anchors.top="{parent.top}" anchors.bottom="{parent.bottom}"
-            expandedWidth="{contactField.width}"
-            onConfirmed="print('Clear field text'); fieldText.text=''"/>
-    \endcode
+    \snippet declarative/tutorials/contacts/2_Reuse/2/RemoveButton.qml use properties and signals
 
     Now when the remove button is expanded, it will expand to the width of the
     contact field.  Also when the user confirms the remove action, the
     text section of the contact field will be cleared.  When creating a
     component that does have children out of its own
     bounds its important to consider whether the item should be clipped,
-    which is done above with \c{clip="true"}.
+    which is done above with \c{clip: true}.
 
     \section1 States
 
@@ -451,44 +429,7 @@
     contact field itself to move the remove button and the field icon out of
     view.
 
-    \code
-    <Item id="contactField"
-        clip="true"
-        width="230"
-        height="30">
-        <properties>
-            <Property name="label" value="Name"/>
-            <Property name="icon" value="../shared/pics/phone.png"/>
-            <Property name="value"/>
-        </properties>
-        <RemoveButton id="removeButton"
-            anchors.right="{parent.right}"
-            anchors.top="{parent.top}" anchors.bottom="{parent.bottom}"
-            expandedWidth="{contactField.width}"
-            onConfirmed="print('Clear field text'); fieldText.text=''"/>
-        <FieldText id="fieldText"
-            width="{contactField.width-70}"
-            anchors.right="{removeButton.left}" anchors.rightMargin="5"
-            anchors.verticalCenter="{parent.verticalCenter}"
-            label="{contactField.label}"
-            text="{contactField.value}"/>
-        <Image
-            anchors.right="{fieldText.left}" anchors.rightMargin="5"
-            anchors.verticalCenter="{parent.verticalCenter}"
-            src="{contactField.icon}"/>
-        <states>
-            <State name="editingText" when="{fieldText.state == 'editing'}">
-                <SetProperty target="{removeButton.anchors}" property="rightMargin" value="-35"/>
-                <SetProperty target="{fieldText}" property="width" value="{contactField.width}"/>
-            </State>
-        </states>
-        <transitions>
-            <Transition fromState='' toState="*" reversible="true">
-                <NumericAnimation properties="width,rightMargin" duration="200"/>
-            </Transition>
-        </transitions>
-    </Item> 
-    \endcode
+    \snippet declarative/tutorials/contacts/2_Reuse/3/RemoveButton.qml all
 
     Apart from accessing the fieldText.state, the above code also uses the when
     attribute of its own editingText state.  This is an alternative to using
@@ -497,22 +438,7 @@
     that state.  In the FieldText element a similar approach is used to fade
     out the label of the FieldText when the user enters some text of their own.
 
-    \code
-    <Text id="textLabel"
-        x="5" width="{parent.width-10}"
-        anchors.verticalCenter="{parent.verticalCenter}"
-        hAlign="AlignHCenter"
-        color="#505050"
-        font.italic="true"
-        text="{fieldText.label}"
-        opacity="{textEdit.text == '' ? 1 : 0}">
-        <opacity>
-            <Behaviour>
-                <NumericAnimation property="opacity" duration="250"/>
-            </Behaviour>
-        </opacity>
-    </Text>
-   \endcode
+    \snippet declarative/tutorials/contacts/3_Reuse/2/FieldText.qml behavior
 
     fieldText is the enclosing component and textEdit is a TextEdit element
     provided by Qt.  In the QML code above, the opacity of the textLabel is
@@ -526,17 +452,7 @@
     The fieldText element also handles changes to the text using the
     onValueChanged attribute when specifying properties.
 
-    \code
-    <Rect id="fieldText"
-        height="30"
-        radius="5"
-        color="white">
-        <properties>
-            <Property
-                name="text"
-                value=""
-                onValueChanged="reset()"/>
-    \endcode
+    \snippet declarative/tutorials/contacts/2_Reuse/3/FieldText.qml value change
 
     Because the user needs to be able to edit text in the text edit, it
     shouldn't be simply bound to the text property of the FieldText component.
@@ -572,33 +488,11 @@
     In the tutorial we do this with a property of our top level component
     to handle whether we are in this state or not.
 
-    \code
-    <Item id="contactDetails"
-        width="230"
-        height="{layout.height}">
-        <properties>
-            <Property name="mouseGrabbed" value="false"/>
-        </properties>
-    \endcode
+    \snippet declarative/tutorials/contacts/2_Reuse/4/Contact.qml grab property
 
     And in the code where we want to check or avoid allowing mouse interaction.
 
-    \code
-    <Script>
-        function toggle() {
-            print('removeButton.toggle()');
-            if (removeButton.state == 'opened') {
-                removeButton.state = '';
-                contactDetails.mouseGrabbed=false;
-            } else {
-                if (!contactDetails.mouseGrabbed) {
-                    removeButton.state = 'opened';
-                    contactDetails.mouseGrabbed=true;
-                }
-            }
-        }
-    </Script>
-    \endcode
+    \snippet declarative/tutorials/contacts/2_Reuse/4/RemoveButton.qml grab
 
     Handling Key and Mouse focus in QML is quite likely to change before
     the Qt 4.6 release.
@@ -631,15 +525,7 @@
     data model.  This can be declared in the resources section of
     the parent item.
 
-    \code
-    <SqlConnection id="contactDatabase"
-        name="qmlConnection"
-        driver="QSQLITE" databaseName="../../shared/contacts.sqlite"/>
-    <SqlQuery id="contactList"
-        connection="{contactDatabase}">
-        <query>SELECT recid, label, email, phone FROM contacts ORDER BY label, recid</query>
-    </SqlQuery>
-    \endcode
+    \snippet declarative/tutorials/contacts/3_Collections/1/ContactView.qml model
 
     The SqlConnection component describes how to connect to the database in
     much the same ways as the QSqlDatabase::addDatabase() function is used.
@@ -653,18 +539,103 @@
     and orders the results by the label of the contact first, and then by 
     the recid for any contacts with equivalent labels.
 
-    To display the data retrieved from the table, a delegate is needed.  This
-    is also declared in the resources section of the parent item.
+    The ListView component is suitable for displaying models, and is declared
+    much like any other QML component.  However since it might have any number
+    of child items in the list, it has a property that defines how to construct
+    components for items when displayed.
 
-    \code
-    <Component id="contactDelegate">
-        <Text
-            x="45" y="12"
-            width="{contactListView.width-45}"
-            height="30"
-            color="black"
-            font.bold="true"
-            text="{model.label}"/>
-    </Component>
-    \endcode
+    \snippet declarative/tutorials/contacts/3_Collections/1/ContactView.qml delegate
+
+    Unlike a child element, this describes a template on how to build the component
+    for each element, much in the same way that components are loaded from
+    files such as RemoveButton.qml.
+
+    The entire view component will look like:
+
+    \snippet declarative/tutorials/contacts/3_Collections/1/ContactView.qml view
+
+    This gives us a list of contacts that the user can flick through.
+
+    .image.
+
+    \section1 Animating Delegates
+
+    The next step is to allow the user to click on a contact to edit the
+    contact.  We will take advantage of QML to open a Contact component
+    in the list rather than as a new dialog or view.  This is very
+    similar to how the contents of the FieldText and RemoveButton components
+    are swapped in and out.
+
+    \snippet declarative/tutorials/contacts/3_Collections/2/ContactView.qml components
+
+    The first step is to have two children of our delegate component that can
+    be swapped between.  The plain Text component and the Contact component built
+    in the previous chapters.  We also add a MouseRegion that can be clicked upon
+    to change the state of the delegate component.
+
+    \snippet declarative/tutorials/contacts/3_Collections/2/ContactView.qml states
+
+    This defines the open state of the delegate.  It changes the height of the delegate
+    component to that of the whole list view, pushing the other items off each end of
+    the list.  It sets the lists views scroll yPosition of the ListView to the
+    y value of the delegate so that the top of the delegate matches the top of the list view.
+    The next step is to lock the list view.  This prevents  the user being able to flick
+    the list view, meaning while in this state the delegate will continue to
+    fill the ListView's visible area.  The final to properties that are set should
+    be familiar from previous chapters, setting the opacity of the items such
+    that the new item is visible and the old item hidden.
+
+    We then add a transition so that this becomes animated:
+
+    \snippet declarative/tutorials/contacts/3_Collections/2/ContactView.qml transition
+
+    This allows the user to click on an item to enter the open state.
+
+    .image.
+
+    Elsewhere on our contact view we add a button so that the user can leave the
+    detailed view of the contact.
+    \snippet declarative/tutorials/contacts/3_Collections/2/ContactView.qml button
+
+    And connect it's clicked value to some script to set the state of the delegate
+    back to its default state.
+
+    \snippet declarative/tutorials/contacts/3_Collections/2/ContactView.qml connection
+
+    Something worth noting at this point is that every delegate created has this connection.
+    It is important to check whether the delegate is the one in the open state, and
+    taking some effort to ensure only one is, before acting on the signal from the button.
+    
+    \section1 Performance Considerations
+
+    We have now made a contact application that can view a list of contacts, open one,
+    and close it again.  Its now time to take a moment and consider the implications
+    of a list view delegate.  It is created for each and every item in the list,
+    and while the list cleans up after itself and only has delegate components constructed
+    for visible items and any single point of animation, the list can scroll very quickly.
+    This means potentially thousands of delegate components will be constructed and
+    destroyed when the user is flipping through the list.
+
+    Its important then to try and minimize the complexity of the delegate.  This
+    can be done by delaying the loading of the component.  By using the qml property
+    of the Item component, we can delay building the Contact.qml item until the user
+    attempts to open the list.
+
+    \snippet declarative/tutorials/contacts/3_Collections/3/ContactView.qml setting qml
+
+    Each item has a qml property that represents the filename for the contents of
+    a special qmlItem child of the Item.  By setting the qml property of the Details
+    component on clicking the mouse region, the more complex component isn't loaded
+    until needed.  The down side about this though is the properties of Contact
+    cannot be set until the item is loaded.  This requires using the Bind
+    properties of an item.
+
+    \snippet declarative/tutorials/contacts/3_Collections/3/ContactView.qml binding
+
+    The Bind properties bind a value to another component, however the target of
+    this binding can be changed, unlike when setting the properties of a component
+    directly.  This means that when the qml property is set, it will change the
+    qmlItem property of the Details component.  This in turn triggers the Bind
+    elements to set the required properties of the qmlItem, which is now
+    an instance of the Contact component.
 */

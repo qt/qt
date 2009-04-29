@@ -18,9 +18,27 @@ Item {
             id: contactList
             connection: contactDatabase
             query: "SELECT recid AS contactid, label, email, phone FROM contacts ORDER BY label, recid"
-        },
-        Component {
-            id: contactDelegate
+        }
+    ]
+    Button {
+        id: cancelEditButton
+        anchors.top: parent.top
+        anchors.topMargin: 5
+        anchors.right: parent.right
+        anchors.rightMargin: 5
+        icon: "../../shared/pics/cancel.png"
+        opacity: mouseGrabbed ? 0 : 1
+    }
+    ListView {
+        id: contactListView
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: cancelEditButton.bottom
+        anchors.bottom: parent.bottom
+        clip: true
+        model: contactList
+        focus: true
+        delegate: [
             Item {
                 id: wrapper
                 x: 0
@@ -35,15 +53,20 @@ Item {
                     color: "black"
                     font.bold: true
                 }
+//! [setting qml]
                 MouseRegion {
                     anchors.fill: label
-                    onClicked: { Details.qml = 'Contact.qml';
-                        wrapper.state='opened'; }
+                    onClicked: {
+                        Details.qml = 'Contact.qml';
+                        wrapper.state='opened';
+                    }
                 }
                 Item {
                     id: Details
                     anchors.fill: wrapper
                     opacity: 0
+//! [setting qml]
+//! [binding]
                     Bind {
                         target: Details.qmlItem
                         property: "contactid"
@@ -64,6 +87,7 @@ Item {
                         property: "email"
                         value: model.email
                     }
+//! [binding]
                 }
                 states: [
                     State {
@@ -107,34 +131,12 @@ Item {
                     sender: cancelEditButton
                     signal: "clicked()"
                     script: {
-                    
-                                        if (wrapper.state == 'opened') {
-                                            wrapper.state = '';
-                                        }
-                                    
+                        if (wrapper.state == 'opened') {
+                            wrapper.state = '';
+                        }
                     }
                 }
             }
-        },
-        Button {
-            id: cancelEditButton
-            anchors.top: parent.top
-            anchors.topMargin: 5
-            anchors.right: parent.right
-            anchors.rightMargin: 5
-            icon: "../../shared/pics/cancel.png"
-            opacity: mouseGrabbed ? 0 : 1
-        },
-        ListView {
-            id: contactListView
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: cancelEditButton.bottom
-            anchors.bottom: parent.bottom
-            clip: true
-            model: contactList
-            delegate: contactDelegate
-            focus: true
-        }
-    ]
+        ]
+    }
 }

@@ -1,3 +1,4 @@
+//! [define properties and signals]
 Rect {
     id: removeButton
     width: 30
@@ -11,11 +12,10 @@ Rect {
     signals: Signal {
         name: "confirmed"
     }
+//! [define properties and signals]
     resources: [
         Script {
-
             function toggle() {
-                print('removeButton.toggle()');
                 if (removeButton.state == 'opened') {
                     removeButton.state = '';
                 } else {
@@ -76,7 +76,7 @@ Rect {
         anchors.rightMargin: 4
         font.bold: true
         color: "white"
-        hAlign: AlignHCenter
+        hAlign: "AlignHCenter"
         text: "Remove"
         opacity: 0
     }

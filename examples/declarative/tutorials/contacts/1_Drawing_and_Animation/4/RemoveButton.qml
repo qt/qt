@@ -7,9 +7,7 @@ Rect {
 //! [script]
     resources: [
         Script {
-
             function toggle() {
-                print('removeButton.toggle()');
                 if (removeButton.state == 'opened') {
                     removeButton.state = '';
                 } else {

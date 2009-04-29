@@ -1,3 +1,4 @@
+//! [load]
 Item {
     id: contactField
     clip: true
@@ -12,6 +13,7 @@ Item {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
     }
+//! [load]
     Text {
         id: fieldText
         width: contactField.width-80
