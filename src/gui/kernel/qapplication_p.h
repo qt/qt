@@ -438,7 +438,7 @@ public:
 
     QMap<DWORD, int> touchInputIDToTouchPointID;
     QVector<QTouchEvent::TouchPoint *> allTouchPoints;
-    QList<QTouchEvent::TouchPoint *> currentTouchPoints, activeTouchPoints;
+    QList<QTouchEvent::TouchPoint *> currentTouchPoints;
 
     void initializeMultitouch();
     void insertActiveTouch(QTouchEvent::TouchPoint *touchPoint);

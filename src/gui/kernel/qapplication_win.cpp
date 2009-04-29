@@ -4003,7 +4003,6 @@ void QApplicationPrivate::initializeMultitouch()
     touchInputIDToTouchPointID.clear();
     allTouchPoints.clear();
     currentTouchPoints.clear();
-    activeTouchPoints.clear();
 }
 
 void QApplicationPrivate::insertActiveTouch(QTouchEvent::TouchPoint *touchPoint)
@@ -4015,7 +4014,6 @@ void QApplicationPrivate::insertActiveTouch(QTouchEvent::TouchPoint *touchPoint)
             break;
     }
     currentTouchPoints.insert(at, touchPoint);
-    activeTouchPoints = currentTouchPoints;
 
     if (currentTouchPoints.count() > allTouchPoints.count()) {
         qFatal("Qt: INTERNAL ERROR: currentTouchPoints.count() (%d) > allTouchPoints.count() (%d)",
@@ -4042,7 +4040,7 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
     Q_Q(QApplication);
 
     bool sendTouchBegin = currentTouchPoints.isEmpty();
-    activeTouchPoints = currentTouchPoints;
+    QList<QTouchEvent::TouchPoint *> activeTouchPoints = currentTouchPoints;
 
     QVector<TOUCHINPUT> winTouchInputs(msg.wParam);
     memset(winTouchInputs.data(), 0, sizeof(TOUCHINPUT) * winTouchInputs.count());
@@ -4068,6 +4066,7 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
         QPointF globalPos(qreal(touchInput.x) / qreal(100.), qreal(touchInput.y) / qreal(100.));
         if (!down && (touchInput.dwFlags & TOUCHEVENTF_DOWN)) {
             insertActiveTouch(touchPoint);
+            activeTouchPoints = currentTouchPoints;
             touchPoint->d->state = Qt::TouchPointPressed;
             touchPoint->d->globalPos = touchPoint->d->startGlobalPos = touchPoint->d->lastGlobalPos = globalPos;
             touchPoint->d->pressure = qreal(1.);
