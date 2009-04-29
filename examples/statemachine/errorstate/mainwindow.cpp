@@ -117,6 +117,7 @@ void MainWindow::init()
     m_machine->setGlobalRestorePolicy(QStateMachine::RestoreProperties);
     
     QState *stoppedState = new QState(m_machine->rootState());    
+    stoppedState->setObjectName("stoppedState");
     
     stoppedState->assignProperty(runGameAction, "enabled", true);
     stoppedState->assignProperty(stopGameAction, "enabled", false);
@@ -125,15 +126,18 @@ void MainWindow::init()
 
     QState *spawnsAvailable = new QState(stoppedState);
     spawnsAvailable->assignProperty(addTankAction, "enabled", true);
+    spawnsAvailable->setObjectName("spawnsAvailable");
 
     QState *noSpawnsAvailable = new QState(stoppedState);
     noSpawnsAvailable->assignProperty(addTankAction, "enabled", false);
 
     spawnsAvailable->addTransition(this, SIGNAL(mapFull()), noSpawnsAvailable);
 
-    QHistoryState *hs = stoppedState->addHistoryState();
+    QHistoryState *hs = new QHistoryState(stoppedState);
+    hs->setObjectName("hs");
     hs->setDefaultState(spawnsAvailable);
-    stoppedState->setInitialState(spawnsAvailable);
+
+    stoppedState->setInitialState(hs);
 
     m_runningState = new QState(QState::ParallelGroup, m_machine->rootState());
     m_runningState->assignProperty(addTankAction, "enabled", false);
