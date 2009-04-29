@@ -1380,7 +1380,7 @@ bool QAbstractItemView::event(QEvent *event)
         d->executePostedLayout(); //make sure we set the layout properly
         break;
     case QEvent::Show:
-        {
+        if (d->delayedPendingLayout) {
             d->executePostedLayout(); //make sure we set the layout properly
             const QModelIndex current = currentIndex();
             if (current.isValid() && (d->state == QAbstractItemView::EditingState || d->autoScroll))

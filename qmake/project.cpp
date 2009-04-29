@@ -57,7 +57,7 @@
 #include <unistd.h>
 #include <sys/utsname.h>
 #elif defined(Q_OS_WIN32)
-#include <Windows.h>
+#include <windows.h>
 #endif
 #include <stdio.h>
 #include <stdlib.h>
