@@ -509,22 +509,28 @@ void tst_QSslSocket::sslErrors_data()
     QTest::addColumn<SslErrorList>("errors");
 
 #if defined(Q_OS_SYMBIAN)
-    QTest::newRow("aspiriniks.troll.no") << QtNetworkSettings::serverName() << 443
+
+    QTest::newRow(QtNetworkSettings::serverName().toAscii() + " port443") << QtNetworkSettings::serverName() << 443
                                    << (SslErrorList()
                                        << QSslError::SelfSignedCertificate 
-#if !defined(Q_CC_NOKIAX86)
-                                       << QSslError::CertificateNotYetValid
-#endif //!defined(Q_CC_NOKIAX86)
                                        );
-    QTest::newRow("aspiriniks.troll.no") << QtNetworkSettings::serverName() << 993
+    QTest::newRow(QtNetworkSettings::serverName().toAscii() + " port993") << QtNetworkSettings::serverName() << 993
                                         << (SslErrorList()
                                         << QSslError::HostNameMismatch
-                                        << QSslError::SelfSignedCertificate
-
-#if !defined(Q_CC_NOKIAX86)
-                                            << QSslError::CertificateNotYetValid
-#endif //!defined(Q_CC_NOKIAX86)
-                                            );
+                                        << QSslError::SelfSignedCertificate  
+                                       );
+    // TODO: Should we have  QtNetworkSettings::serverName alias 
+    // in order that we could test with different host name                                      
+                                       
+#else
+    QTest::newRow("imap.troll.no") << "imap.troll.no" << 993
+                                   << (SslErrorList()
+                                       << QSslError::HostNameMismatch
+                                       << QSslError::SelfSignedCertificateInChain);
+    QTest::newRow("imap.trolltech.com") << "imap.trolltech.com" << 993
+                                        << (SslErrorList()
+                                            << QSslError::SelfSignedCertificateInChain);
+                                            
 #endif //Q_OS_SYMBIAN
 }
 
@@ -1039,7 +1045,7 @@ void tst_QSslSocket::wildcard()
     // returns the CNAME fluke.troll.no for this domain. The web server
     // responds with the wildcard, and QSslSocket should accept that as a
     // valid connection.  This was broken in 4.3.0.
-    QSslSocketPtr socket = newSocket();;
+    QSslSocketPtr socket = newSocket();
     socket->addCaCertificates(QLatin1String("certs/aspiriniks.ca.crt"));
     this->socket = socket;
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
