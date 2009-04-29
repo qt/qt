@@ -102,7 +102,7 @@ QFxAnimatedImageItem::~QFxAnimatedImageItem()
 bool QFxAnimatedImageItem::isPlaying() const
 {
     Q_D(const QFxAnimatedImageItem);
-    if(!d->_movie)
+    if (!d->_movie)
         return false;
     return d->_movie->state()==QMovie::Running;
 }
@@ -110,9 +110,9 @@ bool QFxAnimatedImageItem::isPlaying() const
 void QFxAnimatedImageItem::setPlaying(bool play)
 {
     Q_D(QFxAnimatedImageItem);
-    if(!d->_movie)
+    if (!d->_movie)
         return;
-    if(play)
+    if (play)
         d->_movie->start();
     else
         d->_movie->stop();
@@ -129,7 +129,7 @@ void QFxAnimatedImageItem::setPlaying(bool play)
 int QFxAnimatedImageItem::currentFrame() const
 {
     Q_D(const QFxAnimatedImageItem);
-    if(!d->_movie)
+    if (!d->_movie)
         return -1;
     return d->_movie->currentFrameNumber();
 }
@@ -137,7 +137,7 @@ int QFxAnimatedImageItem::currentFrame() const
 void QFxAnimatedImageItem::setCurrentFrame(int frame)
 {
     Q_D(QFxAnimatedImageItem);
-    if(!d->_movie)
+    if (!d->_movie)
         return;
     d->_movie->jumpToFrame(frame);
 }
@@ -145,7 +145,7 @@ void QFxAnimatedImageItem::setCurrentFrame(int frame)
 int QFxAnimatedImageItem::frameCount() const
 {
     Q_D(const QFxAnimatedImageItem);
-    if(!d->_movie)
+    if (!d->_movie)
         return 0;
     return d->_movie->frameCount();
 }
@@ -153,13 +153,13 @@ int QFxAnimatedImageItem::frameCount() const
 void QFxAnimatedImageItem::setSource(const QString &url)
 {
     Q_D(QFxAnimatedImageItem);
-    if(url == d->source)
+    if (url == d->source)
         return;
 
     delete d->_movie;
     d->_movie = 0;
 
-    if(d->reply) {
+    if (d->reply) {
         d->reply->deleteLater();
         d->reply = 0;
     }
@@ -167,7 +167,7 @@ void QFxAnimatedImageItem::setSource(const QString &url)
     d->source = url;
     d->url = qmlContext(this)->resolvedUrl(url);
 
-    if(url.isEmpty()) {
+    if (url.isEmpty()) {
         delete d->_movie;
         d->status = Idle;
     } else {
@@ -186,7 +186,7 @@ void QFxAnimatedImageItem::movieRequestFinished()
 {
     Q_D(QFxAnimatedImageItem);
     d->_movie = new QMovie(d->reply);
-    if(!d->_movie->isValid()){
+    if (!d->_movie->isValid()){
         qWarning() << "Error Reading File " << d->url;
         delete d->_movie;
         d->_movie = 0;

@@ -70,7 +70,7 @@ struct QmlXmlParserStateStack : public QStack<QmlXmlParserState>
     void pushProperty(const QString &name, int lineNumber)
     {
         const QmlXmlParserState &state = top();
-        if(state.property) {
+        if (state.property) {
             QmlXmlParserState s(state.property->getValue(), 
                                 state.property->getValue()->getProperty(name.toLatin1()));
             s.property->line = lineNumber;
@@ -86,7 +86,7 @@ struct QmlXmlParserStateStack : public QStack<QmlXmlParserState>
 
 QmlXmlParser::~QmlXmlParser()
 {
-    if(root)
+    if (root)
         root->release();
 }
 
@@ -189,7 +189,7 @@ bool QmlXmlParser::parse(const QByteArray &data, const QUrl &url)
                     if (isType) {
                         // Class
                         int typeId = _typeNames.indexOf(qualifiedname);
-                        if(typeId == -1) {
+                        if (typeId == -1) {
                             typeId = _typeNames.count();
                             _typeNames.append(qualifiedname);
                         }
@@ -214,7 +214,7 @@ bool QmlXmlParser::parse(const QByteArray &data, const QUrl &url)
                         }
 
 
-                        if(!root) { 
+                        if (!root) { 
                             root = obj;
                             states.pushObject(obj);
                         } else {
@@ -222,7 +222,7 @@ bool QmlXmlParser::parse(const QByteArray &data, const QUrl &url)
                             Value *v = new Value;
                             v->object = obj;
                             v->line = line;
-                            if(state.property)
+                            if (state.property)
                                 state.property->addValue(v);
                             else
                                 state.object->getDefaultProperty()->addValue(v);
@@ -235,7 +235,7 @@ bool QmlXmlParser::parse(const QByteArray &data, const QUrl &url)
                             break;
                         }
                         QStringList str = name.split(QLatin1Char('.'));
-                        for(int ii = 0; ii < str.count(); ++ii) {
+                        for (int ii = 0; ii < str.count(); ++ii) {
                             QString s = str.at(ii);
                             states.pushProperty(s, line);
                         }
@@ -253,7 +253,7 @@ bool QmlXmlParser::parse(const QByteArray &data, const QUrl &url)
                     foreach(QXmlStreamAttribute attr, attrs) {
                         QStringList str = attr.name().toString().split(QLatin1Char('.'));
 
-                        for(int ii = 0; ii < str.count(); ++ii) {
+                        for (int ii = 0; ii < str.count(); ++ii) {
                             QString s = str.at(ii);
                             states.pushProperty(s, line);
                         }
@@ -264,7 +264,7 @@ bool QmlXmlParser::parse(const QByteArray &data, const QUrl &url)
                         v->line = reader.lineNumber();
                         state.property->addValue(v);
 
-                        for(int ii = str.count() - 1; ii >= 0; --ii) 
+                        for (int ii = str.count() - 1; ii >= 0; --ii) 
                             states.pop();
                     }
                 }
@@ -280,24 +280,24 @@ bool QmlXmlParser::parse(const QByteArray &data, const QUrl &url)
                 {
                     QString name = reader.name().toString();
                     Q_ASSERT(!name.isEmpty());
-                    if(name.at(0).isUpper() && !name.contains(QLatin1Char('.'))) {
+                    if (name.at(0).isUpper() && !name.contains(QLatin1Char('.'))) {
                         // Class
                         states.pop();
                     } else {
                         // Property
                         QStringList str = name.split(QLatin1Char('.'));
-                        for(int ii = 0; ii < str.count(); ++ii) 
+                        for (int ii = 0; ii < str.count(); ++ii) 
                             states.pop();
                     }
                 }
                 break;
             case QXmlStreamReader::Characters:
-                if(!reader.isWhitespace()) {
+                if (!reader.isWhitespace()) {
                     const QmlXmlParserState &state = states.top();
                     Value *v = new Value;
                     v->primitive = reader.text().toString();
                     v->line = reader.lineNumber();
-                    if(state.property)
+                    if (state.property)
                         state.property->addValue(v);
                     else
                         state.object->getDefaultProperty()->addValue(v);
@@ -309,11 +309,11 @@ bool QmlXmlParser::parse(const QByteArray &data, const QUrl &url)
             case QXmlStreamReader::EntityReference:
                 break;
             case QXmlStreamReader::ProcessingInstruction:
-                if(reader.processingInstructionTarget() == QLatin1String("qtfx")) {
+                if (reader.processingInstructionTarget() == QLatin1String("qtfx")) {
                     QString str = reader.processingInstructionData().toString();
                     QString token, data;
                     int idx = str.indexOf(QLatin1Char(':'));
-                    if(-1 != idx) {
+                    if (-1 != idx) {
                         token = str.left(idx);
                         data = str.mid(idx + 1);
                     } else {
@@ -324,7 +324,7 @@ bool QmlXmlParser::parse(const QByteArray &data, const QUrl &url)
 
                     // <?qtfx namespacepath: namespace=path>
 
-                    if(token == QLatin1String("namespacepath")) {
+                    if (token == QLatin1String("namespacepath")) {
                         int eq=data.indexOf(QLatin1Char('='));
                         if (eq>=0) {
                             _nameSpacePaths.insertMulti(data.left(eq),data.mid(eq+1));
@@ -338,7 +338,7 @@ bool QmlXmlParser::parse(const QByteArray &data, const QUrl &url)
         }
     }
 
-    if(reader.hasError()) {
+    if (reader.hasError()) {
         if (root) {
             root->release();
             root = 0;
@@ -365,6 +365,13 @@ QmlParser::Object *QmlXmlParser::tree() const
     return root;
 }
 
+QmlParser::Object *QmlXmlParser::takeTree()
+{
+    QmlParser::Object *r = root;
+    root = 0;
+    return r;
+}
+
 QString QmlXmlParser::errorDescription() const
 {
     return _error;
@@ -372,7 +379,7 @@ QString QmlXmlParser::errorDescription() const
 
 void QmlXmlParser::clear()
 {
-    if(root) {
+    if (root) {
         root->release();
         root = 0;
     }

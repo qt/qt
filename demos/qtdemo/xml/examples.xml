@@ -118,6 +118,7 @@
     <example filename="threadedfortuneserver" name="Threaded Fort. Server" />
     <example filename="torrent" name="Torrent Client" />
     <example filename="securesocketclient" name="Secure Socket Client" />
+    <example filename="googlesuggest" name="Google Suggest" />
   </category>
   <category dirname="opengl" name="OpenGL">
     <example filename="2dpainting" name="2D Painting" />
@@ -212,6 +213,12 @@
     <example filename="tooltips" name="Tool Tips" />
     <example filename="wiggly" name="Wiggly" />
     <example filename="windowflags" name="Window Flags" />
+  </category>
+  <category dirname="webkit" name="WebKit">
+    <example filename="formextractor" name="Form Extractor" />
+    <example filename="previewer" name="HTML Previewer" />
+    <example filename="fancybrowser" name="Fancy Browser" />
+    <example filename="googlechat" name="Google Chat" />
   </category>
   <category dirname="xml" name="XML">
     <example filename="saxbookmarks" name="SAX Bookmarks" />

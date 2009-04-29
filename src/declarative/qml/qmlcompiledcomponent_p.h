@@ -46,8 +46,8 @@
 #include <private/qmlinstruction_p.h>
 #include <private/qmlcompiler_p.h>
 #include <private/qmlrefcount_p.h>
-class QmlXmlParser;
 
+QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 namespace QmlParser {
     class Property;
@@ -77,4 +77,6 @@ private:
 
 
 QT_END_NAMESPACE
+QT_END_HEADER
+
 #endif // QMLCOMPILEDCOMPONENT_P_H

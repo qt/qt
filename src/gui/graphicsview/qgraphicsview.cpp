@@ -2809,9 +2809,7 @@ void QGraphicsView::setupViewport(QWidget *widget)
 
     const bool isGLWidget = widget->inherits("QGLWidget");
 
-    d->accelerateScrolling = !(isGLWidget
-                               || widget->testAttribute(Qt::WA_MSWindowsUseDirect3D)
-                               || qApp->testAttribute(Qt::AA_MSWindowsUseDirect3DByDefault));
+    d->accelerateScrolling = !(isGLWidget);
 
     widget->setFocusPolicy(Qt::StrongFocus);
 

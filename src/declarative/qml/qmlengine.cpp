@@ -86,7 +86,7 @@ QML_DEFINE_TYPE(QObject,Object);
 static QScriptValue qmlMetaProperty_emit(QScriptContext *ctx, QScriptEngine *engine)
 {
     QmlMetaProperty mp = qscriptvalue_cast<QmlMetaProperty>(ctx->thisObject());
-    if(mp.type() & QmlMetaProperty::Signal)
+    if (mp.type() & QmlMetaProperty::Signal)
         mp.emitSignal();
     return engine->nullValue();
 }
@@ -118,8 +118,8 @@ QmlEngineStack::QmlEngineStack()
 
 QStack<QmlEngine *> *QmlEngineStack::engines()
 {
-    if(mainThread== 0) {
-        if(!QCoreApplication::instance())
+    if (mainThread== 0) {
+        if (!QCoreApplication::instance())
             return 0;
         mainThread = QCoreApplication::instance()->thread();
     }
@@ -127,11 +127,11 @@ QStack<QmlEngine *> *QmlEngineStack::engines()
     // Note: This is very slightly faster than just using the thread storage
     // for everything.
     QStack<QmlEngine *> *engines = 0;
-    if(QThread::currentThread() == mainThread) {
+    if (QThread::currentThread() == mainThread) {
         engines = &mainThreadEngines;
     } else {
         engines = storage.localData();
-        if(!engines) {
+        if (!engines) {
             engines = new QStack<QmlEngine *>;
             storage.setLocalData(engines);
         }
@@ -171,7 +171,7 @@ void QmlEnginePrivate::init()
     objectClass = new QmlObjectScriptClass(q);
     rootContext = new QmlContext(q);
 #ifdef QT_SCRIPTTOOLS_LIB
-    if(debuggerEnabled()){
+    if (debuggerEnabled()){
         debugger = new QScriptEngineDebugger(q);
         debugger->attachTo(&scriptEngine);
     }
@@ -196,7 +196,7 @@ QmlEnginePrivate::queryObject(const QString &propName,
     QScriptClass::QueryFlags rv = 0;
 
     QmlMetaProperty prop(obj, propName);
-    if(prop.type() == QmlMetaProperty::Invalid) {
+    if (prop.type() == QmlMetaProperty::Invalid) {
         QPair<const QMetaObject *, QString> key =
             qMakePair(obj->metaObject(), propName);
         bool isFunction = false;
@@ -209,7 +209,7 @@ QmlEnginePrivate::queryObject(const QString &propName,
             functionCache()->insert(key, isFunction);
         }
 
-        if(isFunction) {
+        if (isFunction) {
             *id = QmlScriptClass::FunctionId;
             rv |= QScriptClass::HandlesReadAccess;
         }
@@ -218,7 +218,7 @@ QmlEnginePrivate::queryObject(const QString &propName,
         *id |= prop.save();
 
         rv |= QScriptClass::HandlesReadAccess;
-        if(prop.isWritable())
+        if (prop.isWritable())
             rv |= QScriptClass::HandlesWriteAccess;
     }
 
@@ -228,25 +228,25 @@ QmlEnginePrivate::queryObject(const QString &propName,
 QScriptValue QmlEnginePrivate::propertyObject(const QScriptString &propName,
                                                   QObject *obj, uint id)
 {
-    if(id == QmlScriptClass::FunctionId) {
+    if (id == QmlScriptClass::FunctionId) {
         QScriptValue sobj = scriptEngine.newQObject(obj);
         QScriptValue func = sobj.property(propName);
         return func;
     } else {
         QmlMetaProperty prop;
         prop.restore(id, obj);
-        if(!prop.isValid())
+        if (!prop.isValid())
             return QScriptValue();
 
-        if(prop.type() & QmlMetaProperty::Signal) {
+        if (prop.type() & QmlMetaProperty::Signal) {
             return scriptEngine.newVariant(qVariantFromValue(prop));
         } else {
             QVariant var = prop.read();
             capturedProperties << prop;
             QObject *varobj = QmlMetaType::toQObject(var);
-            if(!varobj)
+            if (!varobj)
                 varobj = qvariant_cast<QObject *>(var);
-            if(varobj) {
+            if (varobj) {
                 return scriptEngine.newObject(objectClass, scriptEngine.newVariant(QVariant::fromValue(varobj)));
             } else {
                 if (var.type() == QVariant::Bool)
@@ -263,20 +263,20 @@ void QmlEnginePrivate::contextActivated(QmlContext *)
 {
     Q_Q(QmlEngine);
     QmlEngineStack *stack = engineStack();
-    if(!stack)
+    if (!stack)
         return;
     QStack<QmlEngine *> *engines = stack->engines();
-    if(engines)
+    if (engines)
         engines->push(q);
 }
 
 void QmlEnginePrivate::contextDeactivated(QmlContext *)
 {
     QmlEngineStack *stack = engineStack();
-    if(!stack)
+    if (!stack)
         return;
     QStack<QmlEngine *> *engines = stack->engines();
-    if(engines) {
+    if (engines) {
         Q_ASSERT(engines->top() == q_func());
         engines->pop();
     }
@@ -289,19 +289,19 @@ bool QmlEnginePrivate::fetchCache(QmlBasicScriptNodeCache &cache, const QString 
 {
     QmlMetaProperty prop(obj, propName);
 
-    if(!prop.isValid())
+    if (!prop.isValid())
         return false;
 
     capturedProperties << prop;
 
-    if(prop.type() & QmlMetaProperty::Attached) {
+    if (prop.type() & QmlMetaProperty::Attached) {
 
         cache.object = obj;
         cache.type = QmlBasicScriptNodeCache::Attached;
         cache.attached = prop.d->attachedObject();
         return true;
 
-    } else if(prop.type() & QmlMetaProperty::Property) {
+    } else if (prop.type() & QmlMetaProperty::Property) {
 
         cache.object = obj;
         cache.type = QmlBasicScriptNodeCache::Core;
@@ -309,14 +309,14 @@ bool QmlEnginePrivate::fetchCache(QmlBasicScriptNodeCache &cache, const QString 
         cache.coreType = prop.propertyType();
         return true;
 
-    } else if(prop.type() & QmlMetaProperty::SignalProperty) {
+    } else if (prop.type() & QmlMetaProperty::SignalProperty) {
 
         cache.object = obj;
         cache.type = QmlBasicScriptNodeCache::SignalProperty;
         cache.core = prop.coreIndex();
         return true;
 
-    } else if(prop.type() & QmlMetaProperty::Signal) {
+    } else if (prop.type() & QmlMetaProperty::Signal) {
 
         cache.object = obj;
         cache.type = QmlBasicScriptNodeCache::Signal;
@@ -331,25 +331,25 @@ bool QmlEnginePrivate::fetchCache(QmlBasicScriptNodeCache &cache, const QString 
 bool QmlEnginePrivate::loadCache(QmlBasicScriptNodeCache &cache, const QString &propName, QmlContextPrivate *context)
 {
     while(context) {
-        if(context->variantProperties.contains(propName)) {
+        if (context->variantProperties.contains(propName)) {
             cache.object = 0;
             cache.type = QmlBasicScriptNodeCache::Variant;
             cache.context = context;
             return true;
         }
 
-        if(context->properties.contains(propName)) {
+        if (context->properties.contains(propName)) {
             cache.object = context->properties[propName];
             cache.type = QmlBasicScriptNodeCache::Explicit;
             return true;
         }
 
         foreach(QObject *obj, context->defaultObjects) {
-            if(fetchCache(cache, propName, obj))
+            if (fetchCache(cache, propName, obj))
                 return true;
         }
 
-        if(context->parent)
+        if (context->parent)
             context = context->parent->d_func();
         else
             context = 0;
@@ -453,7 +453,7 @@ QmlContext *QmlEngine::rootContext()
 QmlContext *QmlEngine::activeContext()
 {
     Q_D(QmlEngine);
-    if(d->currentBindContext)
+    if (d->currentBindContext)
         return d->currentBindContext;
     else
         return 0;
@@ -591,7 +591,7 @@ void QmlEngine::setNetworkAccessManager(QNetworkAccessManager *network)
 QNetworkAccessManager *QmlEngine::networkAccessManager() const
 {
     Q_D(const QmlEngine);
-    if(!d->networkAccessManager) 
+    if (!d->networkAccessManager) 
         d->networkAccessManager = new QNetworkAccessManager;
     return d->networkAccessManager;
 }
@@ -613,12 +613,12 @@ void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
     QmlSimpleDeclarativeData *data = 
         static_cast<QmlSimpleDeclarativeData *>(priv->declarativeData);
 
-    if(data && data->context) {
+    if (data && data->context) {
         qWarning("QmlEngine::setContextForObject(): Object already has a QmlContext");
         return;
     }
 
-    if(!data) {
+    if (!data) {
         priv->declarativeData = &context->d_func()->contextData;
     } else {
         // ### - Don't have to use extended data here
@@ -648,23 +648,23 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object)
 
     QmlExtendedDeclarativeData *edata = (data && data->flags & QmlSimpleDeclarativeData::Extended)?static_cast<QmlExtendedDeclarativeData *>(data):0;
 
-    if(edata) {
+    if (edata) {
         QObject *rv = edata->attachedProperties.value(id);
-        if(rv)
+        if (rv)
             return rv;
     }
 
     QmlAttachedPropertiesFunc pf = QmlMetaType::attachedPropertiesFuncById(id);
-    if(!pf)
+    if (!pf)
         return 0;
 
     QObject *rv = pf(const_cast<QObject *>(object));
 
-    if(rv) {
-        if(!edata) {
+    if (rv) {
+        if (!edata) {
 
             edata = new QmlExtendedDeclarativeData;
-            if(data) edata->context = data->context;
+            if (data) edata->context = data->context;
             priv->declarativeData = edata;
 
         }
@@ -697,15 +697,15 @@ QScriptEngine *QmlEngine::scriptEngine()
 QmlEngine *QmlEngine::activeEngine()
 {
     QmlEngineStack *stack = engineStack();
-    if(!stack) return 0;
+    if (!stack) return 0;
 
     QStack<QmlEngine *> *engines = stack->engines();
-    if(!engines) {
+    if (!engines) {
         qWarning("QmlEngine::activeEngine() cannot be called before the construction of QCoreApplication");
         return 0;
     }
 
-    if(engines->isEmpty())
+    if (engines->isEmpty())
         return 0;
     else
         return engines->top();
@@ -726,7 +726,7 @@ QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, void *expr, QmlRefC
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, const QString &expr, bool ssecompile)
 : q(b), ctxt(0), expression(expr), sseData(0), proxy(0), me(0), trackChange(true)
 {
-    if(ssecompile) {
+    if (ssecompile) {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
         QFxPerfTimer<QFxPerf::BindCompile> pt;
 #endif
@@ -816,7 +816,7 @@ QmlContext *QmlExpression::context() const
 */
 QString QmlExpression::expression() const
 {
-    if(d->sse.isValid())
+    if (d->sse.isValid())
         return QLatin1String(d->sse.expression());
     else
         return d->expression;
@@ -835,7 +835,7 @@ void QmlExpression::clearExpression()
 */
 void QmlExpression::setExpression(const QString &expression)
 {
-    if(d->sseData) {
+    if (d->sseData) {
         d->sse.deleteScriptState(d->sseData);
         d->sseData = 0;
     }
@@ -844,7 +844,7 @@ void QmlExpression::setExpression(const QString &expression)
 
     d->expression = expression;
 
-    if(d->expression.isEmpty())
+    if (d->expression.isEmpty())
         d->sse.clear();
     else
         d->sse.compile(expression.toLatin1());
@@ -875,10 +875,10 @@ void BindExpressionProxy::changed()
 */
 QVariant QmlExpression::value()
 {
-    if(bindValueDebug())
+    if (bindValueDebug())
         qWarning() << "QmlEngine: Evaluating:" << expression();
     QVariant rv;
-    if(!d->ctxt || (!d->sse.isValid() && d->expression.isEmpty()))
+    if (!d->ctxt || (!d->sse.isValid() && d->expression.isEmpty()))
         return rv;
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
@@ -890,14 +890,14 @@ QVariant QmlExpression::value()
     QmlEnginePrivate *ep = engine()->d_func();
     QmlExpression *lastCurrentExpression = ep->currentExpression;
     ep->currentExpression = this;
-    if(d->sse.isValid()) {
+    if (d->sse.isValid()) {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
         QFxPerfTimer<QFxPerf::BindValueSSE> perfsse;
 #endif
 
         context()->d_func()->defaultObjects.insert(context()->d_func()->highPriorityCount, d->me);
 
-        if(!d->sseData)
+        if (!d->sseData)
             d->sseData = d->sse.newScriptState();
         rv = d->sse.run(context(), d->sseData, &cacheState);
 
@@ -917,15 +917,29 @@ QVariant QmlExpression::value()
             scriptEngine->currentContext()->pushScope(context()->d_func()->scopeChain.at(i));
         }
         QScriptValue svalue = scriptEngine->evaluate(expression());
+        if (scriptEngine->hasUncaughtException()) {
+            if (scriptEngine->uncaughtException().isError()){
+                QScriptValue exception = scriptEngine->uncaughtException();
+                if (!exception.property(QLatin1String("fileName")).toString().isEmpty()){
+                    qWarning() << exception.property(QLatin1String("fileName")).toString()
+                            << scriptEngine->uncaughtExceptionLineNumber()
+                            << exception.toString();
+
+                } else {
+                    qWarning() << exception.toString();
+                }
+            }
+        }
+
         context()->d_func()->defaultObjects.removeAt(context()->d_func()->highPriorityCount);
-        if(svalue.isArray()) {
+        if (svalue.isArray()) {
             int length = svalue.property(QLatin1String("length")).toInt32();
-            if(length && svalue.property(0).isObject()) {
+            if (length && svalue.property(0).isObject()) {
                 QList<QObject *> list;
-                for(int ii = 0; ii < length; ++ii) {
+                for (int ii = 0; ii < length; ++ii) {
                     QScriptValue arrayItem = svalue.property(ii);
                     QObject *d = qvariant_cast<QObject *>(arrayItem.data().toVariant());
-                    if(d) {
+                    if (d) {
                         list << d;
                     } else {
                         list << 0;
@@ -940,7 +954,7 @@ QVariant QmlExpression::value()
             if (objValue.isValid())
                 rv = objValue.toVariant();
         }
-        if(rv.isNull()) {
+        if (rv.isNull()) {
             rv = svalue.toVariant();
         }
 
@@ -953,35 +967,35 @@ QVariant QmlExpression::value()
     }
     ep->currentExpression = lastCurrentExpression;
 
-    if(cacheState != QmlBasicScript::NoChange) {
-        if(cacheState != QmlBasicScript::Incremental && d->proxy) {
+    if (cacheState != QmlBasicScript::NoChange) {
+        if (cacheState != QmlBasicScript::Incremental && d->proxy) {
             delete d->proxy;
             d->proxy = 0;
         }
 
-        if(trackChange() && ep->capturedProperties.count()) {
-            if(!d->proxy)
+        if (trackChange() && ep->capturedProperties.count()) {
+            if (!d->proxy)
                 d->proxy = new BindExpressionProxy(this);
 
             static int changedIndex = -1;
-            if(changedIndex == -1)
+            if (changedIndex == -1)
                 changedIndex = BindExpressionProxy::staticMetaObject.indexOfSlot("changed()");
 
-            if(bindValueDebug())
+            if (bindValueDebug())
                 qWarning() << "    Depends on:";
 
-            for(int ii = 0; ii < ep->capturedProperties.count(); ++ii) {
+            for (int ii = 0; ii < ep->capturedProperties.count(); ++ii) {
                 const QmlMetaProperty &prop = 
                     ep->capturedProperties.at(ii);
 
-                if(prop.hasChangedNotifier()) {
+                if (prop.hasChangedNotifier()) {
                     prop.connectNotifier(d->proxy, changedIndex);
-                    if(bindValueDebug())
+                    if (bindValueDebug())
                         qWarning() << "        property" 
                                    << prop.name()
                                    << prop.object()
                                    << prop.object()->metaObject()->superClass()->className();
-                } else if(bindValueDebug()) {
+                } else if (bindValueDebug()) {
                     qWarning() << "        non-subscribable property" 
                                << prop.name()
                                << prop.object()
@@ -992,7 +1006,7 @@ QVariant QmlExpression::value()
     }
     ep->capturedProperties.clear();
 
-    if(bindValueDebug())
+    if (bindValueDebug())
         qWarning() << "    Result:" << rv 
                    << "(SSE: " << d->sse.isValid() << ")";
     return rv;
@@ -1163,10 +1177,10 @@ QmlContextScriptClass::queryProperty(const QScriptValue &object,
         *id = ObjectListPropertyId;
     }
 
-    for(int ii = 0; !rv && ii < bindContext->d_func()->defaultObjects.count(); ++ii) {
+    for (int ii = 0; !rv && ii < bindContext->d_func()->defaultObjects.count(); ++ii) {
         rv = engine->d_func()->queryObject(propName, id,
                                     bindContext->d_func()->defaultObjects.at(ii));
-        if(rv) 
+        if (rv) 
             *id |= (ii << 24);
     }
 
@@ -1220,7 +1234,7 @@ QScriptValue QmlContextScriptClass::property(const QScriptValue &object,
         QObject *obj = bindContext->d_func()->defaultObjects.at(objId);
         QScriptValue rv = engine->d_func()->propertyObject(name, obj,
                 id & ~QmlScriptClass::ClassIdSelectorMask);
-        if(rv.isValid()) {
+        if (rv.isValid()) {
 #ifdef PROPERTY_DEBUG
             qWarning() << "~Property: Resolved property" << propName
                        << "to context default object" << bindContext << obj <<".  Value:" << rv.toVariant();
@@ -1326,7 +1340,7 @@ QScriptValue QmlObjectScriptClass::property(const QScriptValue &object,
 #endif
 
     QScriptValue rv = engine->d_func()->propertyObject(name, obj, id);
-    if(rv.isValid()) {
+    if (rv.isValid()) {
 #ifdef PROPERTY_DEBUG
         qWarning() << "~Property: Resolved property" << propName
                    << "to object" << obj <<".  Value:" << rv.toVariant();

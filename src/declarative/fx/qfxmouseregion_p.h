@@ -66,7 +66,7 @@ class QFxMouseRegionPrivate : public QFxItemPrivate
 
 public:
     QFxMouseRegionPrivate()
-      : absorb(true), hovered(false), inside(true), pressed(false), longPress(0), drag(0)
+      : absorb(true), hovered(false), inside(true), pressed(false), longPress(false), drag(0)
     {
     }
 
@@ -77,8 +77,6 @@ public:
         q->setOptions(QSimpleCanvasItem::HoverEvents | QSimpleCanvasItem::MouseEvents);
     }
 
-    void bindButtonValue(Qt::MouseButton);
-
     void saveEvent(QGraphicsSceneMouseEvent *event) {
         lastPos = event->pos();
         lastButton = event->button();
@@ -86,16 +84,16 @@ public:
         lastModifiers = event->modifiers();
     }
 
-    bool absorb;
-    bool hovered;
-    bool inside;
-    bool pressed;
-    bool longPress;
+    bool absorb : 1;
+    bool hovered : 1;
+    bool inside : 1;
+    bool pressed : 1;
+    bool longPress : 1;
+    bool moved : 1;
+    bool dragX : 1;
+    bool dragY : 1;
+    bool dragged : 1;
     QFxDrag drag;
-    bool moved;
-    bool dragX;
-    bool dragY;
-    bool dragged;
     QPointF start;
     QPointF startScene;
     int startX;

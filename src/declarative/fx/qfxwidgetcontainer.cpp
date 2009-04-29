@@ -78,16 +78,16 @@ QGraphicsWidget *QFxWidgetContainer::graphicsWidget() const
 */
 void QFxWidgetContainer::setGraphicsWidget(QGraphicsWidget *widget)
 {
-    if(widget == _graphicsWidget)
+    if (widget == _graphicsWidget)
         return;
 
     _graphicsWidget = widget;
 
     QSimpleCanvas *c = canvas();
-    if(!c)
+    if (!c)
         return;
 
-    if(c->canvasMode() != QSimpleCanvas::GraphicsView) {
+    if (c->canvasMode() != QSimpleCanvas::GraphicsView) {
         qWarning("QFxWidgetContainer: Cannot add a widget to a non-graphicsview canvas. You might need to set QFX_USE_GRAPHICSVIEW=1");
         return;
     }
@@ -98,7 +98,7 @@ void QFxWidgetContainer::setGraphicsWidget(QGraphicsWidget *widget)
 
 void QFxWidgetContainer::canvasChanged()
 {
-    if(_graphicsWidget) {
+    if (_graphicsWidget) {
         QGraphicsWidget *w = _graphicsWidget;
         _graphicsWidget = 0;
         setGraphicsWidget(w);

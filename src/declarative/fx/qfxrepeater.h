@@ -72,6 +72,7 @@ private:
     void regenerate();
 
 protected:
+    virtual void componentComplete();
     virtual void parentChanged(QSimpleCanvasItem *, QSimpleCanvasItem *);
     QFxRepeater(QFxRepeaterPrivate &dd, QFxItem *parent);
 

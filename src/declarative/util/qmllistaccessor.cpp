@@ -64,20 +64,20 @@ void QmlListAccessor::setList(const QVariant &v)
 {
     d = v;
 
-    if(!d.isValid()) {
+    if (!d.isValid()) {
         type = Invalid;
-    } else if(d.type() == QVariant::StringList) {
+    } else if (d.type() == QVariant::StringList) {
         type = StringList;
-    } else if(d.type() != QVariant::UserType) {
+    } else if (d.type() != QVariant::UserType) {
         type = Instance;
-    } else if(QmlMetaType::isObject(d.userType())) {
+    } else if (QmlMetaType::isObject(d.userType())) {
         QObject *data = 0;
         data = *(QObject **)v.constData();
         d = QVariant::fromValue(data);
         type = Instance;
-    } else if(QmlMetaType::isQmlList(d.userType())) {
+    } else if (QmlMetaType::isQmlList(d.userType())) {
         type = QmlList;
-    } else if(QmlMetaType::isList(d.userType())) {
+    } else if (QmlMetaType::isList(d.userType())) {
         type = QList;
     } else {
         type = Invalid;

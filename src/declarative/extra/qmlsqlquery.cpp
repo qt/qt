@@ -72,7 +72,7 @@ public:
 
 /*!
     \class QmlSqlBind
-    \brief the QmlSqlBind class specifies a value binding for a QmlSqlQuery.
+    \brief The QmlSqlBind class specifies a value binding for a QmlSqlQuery.
 
     \qmltext
 

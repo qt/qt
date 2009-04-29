@@ -165,7 +165,7 @@ QFxItem *QFxAnchors::fill() const
 void QFxAnchors::setFill(QFxItem *f)
 {
     Q_D(QFxAnchors);
-    if(d->fill) {
+    if (d->fill) {
         QObject::disconnect(d->fill, SIGNAL(leftChanged()), this, SLOT(fillChanged()));
         QObject::disconnect(d->fill, SIGNAL(topChanged()), this, SLOT(fillChanged()));
         QObject::disconnect(d->fill, SIGNAL(widthChanged()), this, SLOT(fillChanged()));
@@ -214,11 +214,11 @@ QFxItem *QFxAnchors::centeredIn() const
 void QFxAnchors::setCenteredIn(QFxItem* c)
 {
     Q_D(QFxAnchors);
-    if(!c){
+    if (!c){
         qmlInfo(d->item) << "Cannot center in null item.";
         return;
     }
-    if(c != d->item->itemParent() && c->itemParent() != d->item->itemParent()){
+    if (c != d->item->itemParent() && c->itemParent() != d->item->itemParent()){
         qmlInfo(d->item) << "Can't anchor to an item that isn't a parent or sibling.";
         return;
     }
@@ -822,7 +822,7 @@ bool QFxAnchorsPrivate::checkHAnchorValid(QFxAnchorLine anchor) const
     if (anchor.anchorLine & QFxAnchorLine::Vertical_Mask) {
         qmlInfo(item) << "Can't anchor a horizontal edge to a vertical edge.";
         return false;
-    }else if(anchor.item == item){
+    }else if (anchor.item == item){
         qmlInfo(item) << "Can't anchor item to self.";
         return false;
     }
@@ -847,7 +847,7 @@ bool QFxAnchorsPrivate::checkVAnchorValid(QFxAnchorLine anchor) const
     if (anchor.anchorLine & QFxAnchorLine::Horizontal_Mask) {
         qmlInfo(item) << "Can't anchor a vertical edge to a horizontal edge.";
         return false;
-    }else if(anchor.item == item){
+    }else if (anchor.item == item){
         qmlInfo(item) << "Can't anchor item to self.";
         return false;
     }

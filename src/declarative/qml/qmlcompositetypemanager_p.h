@@ -43,12 +43,11 @@
 #define QMLCOMPOSITETYPEMANAGER_P_H
 
 #include <qglobal.h>
-#include <private/qmlxmlparser_p.h>
+#include <private/qmlscriptparser_p.h>
 #include <private/qmlrefcount_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QmlXmlParser;
 class QmlEngine;
 class QmlCompiledComponent;
 class QmlComponentPrivate;
@@ -100,7 +99,7 @@ private:
     friend class QmlCompositeTypeManager;
     friend class QmlCompiler;
 
-    QmlXmlParser data;
+    QmlScriptParser data;
     QList<QmlComponentPrivate *> waiters;
     QmlComponent *component;
     QmlCompiledComponent *compiledComponent;

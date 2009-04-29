@@ -2715,6 +2715,16 @@ void tst_QSortFilterProxyModel::task251296_hiddenChildren()
     QCOMPARE(proxy.rowCount(indexA) , 1);
     QModelIndex indexC = proxy.index(0, 0, indexA);
     QCOMPARE(proxy.data(indexC).toString(), QString::fromLatin1("C VISIBLE"));
+
+    proxy.setFilterRegExp("C");
+    QCOMPARE(proxy.rowCount(QModelIndex()), 0);
+    itemC->setText("invisible");
+    itemA->setText("AC");
+
+    QCOMPARE(proxy.rowCount(QModelIndex()), 1);
+    indexA = proxy.index(0,0);
+    QCOMPARE(proxy.data(indexA).toString(), QString::fromLatin1("AC"));
+    QCOMPARE(proxy.rowCount(indexA) , 0);
 }
 
 

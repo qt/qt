@@ -1,12 +1,13 @@
-<Item id="Button" width="50" height="30">
+Item {
+    id: Button; width: 50; height: 30
 
-    <properties>
-        <Property name="operation" type="string"/>
-        <Property name="toggable" value="false"/>
-        <Property name="toggled" value="false"/>
-    </properties>
+    properties: [
+        Property { name: "operation"; type: "string" },
+        Property { name: "toggable"; value: false },
+        Property { name: "toggled"; value: false }
+    ]
 
-    <Script>
+    Script {
         function buttonClicked(operation) {
             if (Button.toggable == true) {
                 if (Button.toggled == true) {
@@ -20,21 +21,42 @@
             else
                 doOp(operation);
         }
-    </Script>
+    }
 
-    <Image id="Image" src="pics/button.sci" width="{Button.width}" height="{Button.height}"/>
-    <Image id="ImagePressed" src="pics/button-pressed.sci" width="{Button.width}" height="{Button.height}" opacity="0"/>
-    <Text anchors.centeredIn="{Image}" text="{Button.operation}" color="white" font.bold="true"/>
-    <MouseRegion id="MouseRegion" anchors.fill="{Button}" onClicked="buttonClicked(Button.operation)"/>
+    Image {
+        id: Image
+        src: "pics/button.sci"
+        width: Button.width; height: Button.height
+    }
 
-    <states>
-        <State name="Pressed" when="{MouseRegion.pressed == true}">
-            <SetProperties target="{ImagePressed}" opacity="1"/>
-        </State>
-        <State name="Toggled" when="{Button.toggled == true}">
-            <SetProperties target="{ImagePressed}" opacity="1"/>
-        </State>
-    </states>
+    Image {
+        id: ImagePressed
+        src: "pics/button-pressed.sci"
+        width: Button.width; height: Button.height
+        opacity: 0
+    }
 
-</Item>
+    Text {
+        anchors.centeredIn: Image
+        text: Button.operation
+        color: "white"
+        font.bold: true
+    }
 
+    MouseRegion {
+        id: MouseRegion
+        anchors.fill: Button
+        onClicked: { buttonClicked(Button.operation) }
+    }
+
+    states: [
+        State {
+            name: "Pressed"; when: MouseRegion.pressed == true
+            SetProperties { target: ImagePressed; opacity: 1 }
+        },
+        State {
+            name: "Toggled"; when: Button.toggled == true
+            SetProperties { target: ImagePressed; opacity: 1 }
+        }
+    ]
+}

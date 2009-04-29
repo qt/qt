@@ -92,13 +92,16 @@ class CppCodeParser : public CodeParser
                                       const QString& arg);
 #ifdef QDOC_QML    
     // might need to implement this in QsCodeParser as well.
-    virtual Node *processTopicCommandGroup(const QString& command,
+    virtual Node *processTopicCommandGroup(const Doc& doc,
+                                           const QString& command,
                                            const QStringList& args);
-    bool splitQmlPropertyArg(const QString& arg,
+    bool splitQmlPropertyArg(const Doc& doc,
+                             const QString& arg,
                              QString& type,
                              QString& element,
                              QString& property);
-    bool splitQmlArg(const QString& arg,
+    bool splitQmlArg(const Doc& doc,
+                     const QString& arg,
                      QString& element,
                      QString& name);
 #endif

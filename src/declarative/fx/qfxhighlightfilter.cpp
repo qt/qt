@@ -131,7 +131,7 @@ void QFxHighlightFilter::imageLoaded()
 {
     QImage img = QFxPixmap(d->url);
 #if defined(QFX_RENDER_OPENGL2)
-    if(!img.isNull()) 
+    if (!img.isNull()) 
         d->tex.setImage(img);
 #endif
     emit sourceChanged(d->source);
@@ -142,14 +142,14 @@ void QFxHighlightFilter::setSource(const QString &f)
 {
     if (d->source == f)
         return;
-    if(!d->source.isEmpty())
+    if (!d->source.isEmpty())
         QFxPixmap::cancelGet(d->url, this, SLOT(imageLoaded()));
     d->source = f;
     d->url = qmlContext(this)->resolvedUrl(f);
 #if defined(QFX_RENDER_OPENGL2)
     d->tex.clear();
 #endif
-    if(!f.isEmpty())
+    if (!f.isEmpty())
         QFxPixmap::get(qmlEngine(this), d->url, this, SLOT(imageLoaded()));
     else
         emit sourceChanged(d->source);
@@ -171,13 +171,13 @@ bool QFxHighlightFilter::tiled() const
 
 void QFxHighlightFilter::setTiled(bool t)
 {
-    if(t == d->tiled)
+    if (t == d->tiled)
         return;
 
     d->tiled = t;
 
 #if defined(QFX_RENDER_OPENGL2)
-    if(d->tiled) {
+    if (d->tiled) {
         d->tex.setHorizontalWrap(GLTexture::ClampToEdge);
         d->tex.setVerticalWrap(GLTexture::ClampToEdge);
     } else {
@@ -206,7 +206,7 @@ int QFxHighlightFilter::xOffset() const
 
 void QFxHighlightFilter::setXOffset(int x)
 {
-    if(x == d->xOffset)
+    if (x == d->xOffset)
         return;
 
     d->xOffset = x;
@@ -227,7 +227,7 @@ int QFxHighlightFilter::yOffset() const
 
 void QFxHighlightFilter::setYOffset(int y)
 {
-    if(y == d->yOffset)
+    if (y == d->yOffset)
         return;
 
     d->yOffset = y;
@@ -240,7 +240,7 @@ void QFxHighlightFilter::setYOffset(int y)
 void QFxHighlightFilter::filterGL(QSimpleCanvasItem::GLPainter &p)
 {
 #if defined(QFX_RENDER_OPENGL2)
-    if(d->tex.isNull()) {
+    if (d->tex.isNull()) {
         renderToScreen();
     } else {
         QSimpleCanvasItem *item = this->item();
@@ -266,9 +266,9 @@ void QFxHighlightFilter::filterGL(QSimpleCanvasItem::GLPainter &p)
         float texXOffset = 0;
         float texYOffset = 0;
 
-        if(xOffset())
+        if (xOffset())
             texXOffset = float(xOffset()) / float(d->tex.width());
-        if(yOffset())
+        if (yOffset())
             texYOffset = float(yOffset()) / float(d->tex.height());
 
         GLfloat addTexVert[] = { texXOffset, texYOffset, 

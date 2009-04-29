@@ -51,14 +51,25 @@
 #include <qmlengine.h>
 #include <QFileInfo>
 #include <qmlbindablevalue.h>
-#include "private/qmlxmlparser_p.h"
 #include "qmlcompiledcomponent_p.h"
 #include <QtCore/qdebug.h>
 #include <QApplication>
 
+#include "qmlscriptparser_p.h"
 
 QT_BEGIN_NAMESPACE
 class QByteArray;
+
+bool QmlComponentPrivate::isXml(const QByteArray &ba)
+{
+    for (int i = 0; i < ba.size(); ++i) {
+        char c = ba.at(i);
+        if (c == ' ' || c == '\n' || c == '\r' || c == '\t')
+            continue;
+        return (c == '<');
+    }
+    return true;
+}
 
 /*!
     \class QmlComponent
@@ -119,7 +130,7 @@ void QmlComponentPrivate::fromTypeData(QmlCompositeTypeData *data)
     url = QUrl(data->url);
     QmlCompiledComponent *c = data->toCompiledComponent(engine);
 
-    if(!c) {
+    if (!c) {
         Q_ASSERT(data->status == QmlCompositeTypeData::Error);
 
         errorDescription = data->errorDescription;
@@ -137,13 +148,13 @@ void QmlComponentPrivate::fromTypeData(QmlCompositeTypeData *data)
 
 void QmlComponentPrivate::clear()
 {
-    if(typeData) {
+    if (typeData) {
         typeData->remWaiter(this);
         typeData->release();
         typeData = 0;
     }
         
-    if(cc) { 
+    if (cc) { 
         cc->release();
         cc = 0;
     }
@@ -175,11 +186,11 @@ QmlComponent::Status QmlComponent::status() const
 {
     Q_D(const QmlComponent);
 
-    if(d->typeData)
+    if (d->typeData)
         return Loading;
-    else if(d->engine && d->cc)
+    else if (d->engine && d->cc)
         return Ready;
-    else if(!d->errorDescription.isEmpty())
+    else if (!d->errorDescription.isEmpty())
         return Error;
     else
         return Null;
@@ -296,7 +307,7 @@ void QmlComponent::setData(const QByteArray &data, const QUrl &url)
     QmlCompositeTypeData *typeData = 
         d->engine->d_func()->typeManager.getImmediate(data, url);
     
-    if(typeData->status == QmlCompositeTypeData::Waiting) {
+    if (typeData->status == QmlCompositeTypeData::Waiting) {
 
         d->typeData = typeData;
         d->typeData->addWaiter(d);
@@ -324,7 +335,7 @@ void QmlComponent::loadUrl(const QUrl &url)
     QmlCompositeTypeData *data = 
         d->engine->d_func()->typeManager.get(url);
 
-    if(data->status == QmlCompositeTypeData::Waiting) {
+    if (data->status == QmlCompositeTypeData::Waiting) {
 
         d->typeData = data;
         d->typeData->addWaiter(d);
@@ -341,7 +352,7 @@ void QmlComponent::loadUrl(const QUrl &url)
 QString QmlComponent::errorDescription() const
 {
     Q_D(const QmlComponent);
-    if(isError())
+    if (isError())
         return d->errorDescription;
     else
         return QString();
@@ -377,10 +388,10 @@ QObject *QmlComponent::create(QmlContext *context)
 {
     Q_D(QmlComponent);
 
-    if(!context)
+    if (!context)
         context = d->engine->rootContext();
 
-    if(context->engine() != d->engine) {
+    if (context->engine() != d->engine) {
         qWarning("QmlComponent::create(): Must create component in context from the same QmlEngine");
         return 0;
     }
@@ -417,12 +428,12 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
 {
     Q_D(QmlComponent);
 
-    if(!context) {
+    if (!context) {
         qWarning("QmlComponent::beginCreate(): Cannot create a component in a null context");
         return 0;
     }
 
-    if(context->engine() != d->engine) {
+    if (context->engine() != d->engine) {
         qWarning("QmlComponent::beginCreate(): Must create component in context from the same QmlEngine");
         return 0;
     }
@@ -432,7 +443,7 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
         return 0;
     }
 
-    if(!isReady()) {
+    if (!isReady()) {
         qWarning("QmlComponent: Cannot create un-ready component");
         return 0;
     }
@@ -440,7 +451,7 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::CreateComponent> perf;
 #endif
-    if(!d->engine->d_func()->rootComponent)
+    if (!d->engine->d_func()->rootComponent)
         d->engine->d_func()->rootComponent = this;
 
     QmlContext *ctxt = 
@@ -451,7 +462,7 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
 
     QmlVME vme;
     QObject *rv = vme.run(ctxt, d->cc, d->start, d->count);
-    if(vme.isError()) {
+    if (vme.isError()) {
         qWarning().nospace()
 #ifdef QML_VERBOSEERRORS_ENABLED
                              << "QmlComponent: "
@@ -463,10 +474,10 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
 
     ctxt->deactivate();
 
-    if(rv) {
+    if (rv) {
         QFx_setParent_noEvent(ctxt, rv);
         QmlEnginePrivate *ep = d->engine->d_func();
-        if(ep->rootComponent == this) {
+        if (ep->rootComponent == this) {
             ep->rootComponent = 0;
 
             d->bindValues = ep->currentBindValues;
@@ -497,13 +508,13 @@ void QmlComponent::completeCreate()
 #ifdef Q_ENABLE_PERFORMANCE_LOG
             QFxPerfTimer<QFxPerf::BindInit> bi;
 #endif
-            for(int ii = 0; ii < d->bindValues.count(); ++ii)
+            for (int ii = 0; ii < d->bindValues.count(); ++ii)
                 d->bindValues.at(ii)->init();
         }
         QSet<QmlParserStatus *> done;
-        for(int ii = 0; ii < d->parserStatus.count(); ++ii) {
+        for (int ii = 0; ii < d->parserStatus.count(); ++ii) {
             QmlParserStatus *ps = d->parserStatus.at(ii);
-            if(!done.contains(ps)) {
+            if (!done.contains(ps)) {
                 done.insert(ps);
                 ps->componentComplete();
             }

@@ -98,8 +98,11 @@ public:
     }
 
     static QFxListViewAttached *properties(QObject *obj) {
-        QFxListViewAttached *rv = new QFxListViewAttached(obj);
-        attachedProperties.insert(obj, rv);
+        QFxListViewAttached *rv = attachedProperties.value(obj);
+        if (!rv) {
+            rv = new QFxListViewAttached(obj);
+            attachedProperties.insert(obj, rv);
+        }
         return rv;
     }
 
@@ -582,7 +585,7 @@ void QFxListViewPrivate::createHighlight()
             if (nobj) {
                 highlightContext->setParent(nobj);
                 item = qobject_cast<QFxItem *>(nobj);
-                if(!item) {
+                if (!item) {
                     delete nobj;
                 } else {
                     item->setParent(q->viewport());
@@ -1191,7 +1194,7 @@ int QFxListView::cacheBuffer() const
 void QFxListView::setCacheBuffer(int b)
 {
     Q_D(QFxListView);
-    if(d->buffer != b) {
+    if (d->buffer != b) {
         d->buffer = b;
         if (isComponentComplete())
             refill();
@@ -1230,7 +1233,7 @@ QString QFxListView::sectionExpression() const
 void QFxListView::setSectionExpression(const QString &expression)
 {
     Q_D(QFxListView);
-    if(d->sectionExpression != expression) {
+    if (d->sectionExpression != expression) {
         d->sectionExpression = expression;
         emit sectionExpressionChanged();
     }
@@ -1543,9 +1546,8 @@ void QFxListView::itemsInserted(int modelIndex, int count)
         }
     }
     // everything is in order now - emit add() signal
-    foreach(FxListItem *item, added)
-        item->attached->emitAdd();
-
+    for (int j = 0; j < added.count(); ++j)
+        added.at(j)->attached->emitAdd();
     emit countChanged();
 }
 

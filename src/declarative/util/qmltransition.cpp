@@ -165,12 +165,12 @@ void QmlTransition::prepare(QmlStateOperation::ActionList &actions,
 {
     Q_D(QmlTransition);
 
-    if(d->reversed) {
-        for(int ii = d->operations.count() - 1; ii >= 0; --ii) {
+    if (d->reversed) {
+        for (int ii = d->operations.count() - 1; ii >= 0; --ii) {
             d->operations.at(ii)->transition(actions, after, QmlAbstractAnimation::Backward);
         }
     } else {
-        for(int ii = 0; ii < d->operations.count(); ++ii) {
+        for (int ii = 0; ii < d->operations.count(); ++ii) {
             d->operations.at(ii)->transition(actions, after, QmlAbstractAnimation::Forward);
         }
     }

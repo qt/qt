@@ -834,11 +834,15 @@ void QPrinter::setPrinterName(const QString &name)
 #endif
 
     QList<QPrinterInfo> prnList = QPrinterInfo::availablePrinters();
-    d->validPrinter = false;
-    for (int i = 0; i < prnList.size(); ++i) {
-        if (prnList[i].printerName() == name) {
-            d->validPrinter = true;
-            break;
+    if (name.isEmpty()) {
+        d->validPrinter = d->outputFormat == QPrinter::PdfFormat || d->outputFormat == QPrinter::PostScriptFormat;
+    } else {
+        d->validPrinter = false;
+        for (int i = 0; i < prnList.size(); ++i) {
+            if (prnList[i].printerName() == name) {
+                d->validPrinter = true;
+                break;
+            }
         }
     }
 

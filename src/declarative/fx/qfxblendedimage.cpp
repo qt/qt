@@ -173,7 +173,7 @@ bool QFxBlendedImage::smoothTransform() const
 
 void QFxBlendedImage::setSmoothTransform(bool s)
 {
-    if(_smooth == s)
+    if (_smooth == s)
         return;
     _smooth = s;
     update();
@@ -186,7 +186,7 @@ void QFxBlendedImage::paintContents(QPainter &p)
     if (primSrc.isNull() && secSrc.isNull())
         return;
 
-    if(_smooth) {
+    if (_smooth) {
         p.save();
         p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, _smooth);
     }
@@ -196,7 +196,7 @@ void QFxBlendedImage::paintContents(QPainter &p)
     else
         p.drawImage(0, 0, secPix);
 
-    if(_smooth) {
+    if (_smooth) {
         p.restore();
     }
 }
@@ -206,10 +206,10 @@ void QFxBlendedImage::paintContents(QPainter &p)
 void QFxBlendedImage::paintGLContents(GLPainter &p)
 {
     static DualTextureBlendShader *shader = 0;
-    if(!shader)
+    if (!shader)
         shader = new DualTextureBlendShader();
 
-    if(dirty) {
+    if (dirty) {
         prim.clear();
         sec.clear();
         prim.setImage(primPix);
@@ -218,7 +218,7 @@ void QFxBlendedImage::paintGLContents(GLPainter &p)
         dirty = false;
     }
 
-    if(prim.isNull() || sec.isNull()) {
+    if (prim.isNull() || sec.isNull()) {
 
         return;
     }
@@ -228,9 +228,9 @@ void QFxBlendedImage::paintGLContents(GLPainter &p)
 
     float widthV = width();
     float heightV = height();
-    if(!widthV)
+    if (!widthV)
         widthV = qMax(primPix.width(), secPix.width());
-    if(!heightV)
+    if (!heightV)
         heightV = qMax(primPix.height(), secPix.height());
 
     vertices[0] = 0; vertices[1] = heightV;
@@ -243,12 +243,12 @@ void QFxBlendedImage::paintGLContents(GLPainter &p)
     texVertices[4] = 0; texVertices[5] = 1;
     texVertices[6] = 1; texVertices[7] = 1;
 
-    if(_blend == 0 || _blend == 1) {
+    if (_blend == 0 || _blend == 1) {
         QGLShaderProgram *tshader = p.useTextureShader();
 
         GLTexture *tex = 0;
 
-        if(_blend == 0)
+        if (_blend == 0)
             tex = &prim;
         else
             tex = &sec;
@@ -271,8 +271,8 @@ void QFxBlendedImage::paintGLContents(GLPainter &p)
         shader->enable();
         shader->setOpacity(1);
         qreal b = _blend;
-        if(b > 1) b = 1;
-        else if(b < 0) b = 0;
+        if (b > 1) b = 1;
+        else if (b < 0) b = 0;
         shader->setBlend(b);
         shader->setTransform(p.activeTransform);
 

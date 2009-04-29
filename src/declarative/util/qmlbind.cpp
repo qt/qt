@@ -193,7 +193,7 @@ void QmlBind::setValue(const QVariant &v)
 void QmlBind::eval()
 {
     Q_D(QmlBind);
-    if(!d->obj || d->value.isNull || !d->when)
+    if (!d->obj || d->value.isNull || !d->when)
         return;
 
     QmlMetaProperty prop(d->obj, d->prop);

@@ -87,7 +87,6 @@ const int StyleMask = NSTitledWindowMask | NSClosableWindowMask | NSResizableWin
     NSButton *mOkButton;
     NSButton *mCancelButton;
     QFontDialogPrivate *mPriv;
-    NSFont *mCocoaFont;
     QFont *mQtFont;
     BOOL mPanelHackedWithButtons;
     CGFloat mDialogExtraWidth;
@@ -119,6 +118,29 @@ const int StyleMask = NSTitledWindowMask | NSClosableWindowMask | NSResizableWin
 - (void)cleanUpAfterMyself;
 @end
 
+static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
+{
+    QFont newFont;
+    if (cocoaFont) {
+        int pSize = qRound([cocoaFont pointSize]);
+        QString family(QCFString::toQString(reinterpret_cast<CFStringRef>([cocoaFont familyName])));
+        QString typeface(QCFString::toQString(reinterpret_cast<CFStringRef>([cocoaFont fontName])));
+//        qDebug() << "original family" << family << "typeface" << typeface << "psize" << pSize;
+        int hyphenPos = typeface.indexOf(QLatin1Char('-'));
+        if (hyphenPos != -1) {
+            typeface.remove(0, hyphenPos + 1);
+        } else {
+            typeface = QLatin1String("Normal");
+        }
+//        qDebug() << " massaged family" << family << "typeface" << typeface << "psize" << pSize;
+        newFont = QFontDatabase().font(family, typeface, pSize);
+        newFont.setUnderline(resolveFont.underline());
+        newFont.setStrikeOut(resolveFont.strikeOut());
+
+    }
+    return newFont;
+}
+
 @implementation QCocoaFontPanelDelegate
 - (id)initWithFontPanel:(NSFontPanel *)panel
        stolenContentView:(NSView *)stolenContentView
@@ -134,7 +156,6 @@ const int StyleMask = NSTitledWindowMask | NSClosableWindowMask | NSResizableWin
     mOkButton = okButton;
     mCancelButton = cancelButton;
     mPriv = priv;
-    mCocoaFont = 0;
     mPanelHackedWithButtons = (okButton != 0);
     mDialogExtraWidth = extraWidth;
     mDialogExtraHeight = extraHeight;
@@ -155,42 +176,14 @@ const int StyleMask = NSTitledWindowMask | NSClosableWindowMask | NSResizableWin
 
 - (void)dealloc
 {
-    if (mCocoaFont)
-        [mCocoaFont release];
     delete mQtFont;
     [super dealloc];
 }
 
 - (void)changeFont:(id)sender
 {
-    Q_UNUSED(sender);
-
-    QFont newFont;
-
-    if (mCocoaFont)
-        [mCocoaFont autorelease];
     NSFont *dummyFont = [NSFont userFontOfSize:12.0];
-    mCocoaFont = [sender convertFont:dummyFont];
-    if (mCocoaFont) {
-        [mCocoaFont retain];
-
-        int pSize = qRound([mCocoaFont pointSize]);
-        QString family(QCFString::toQString(reinterpret_cast<CFStringRef>([mCocoaFont familyName])));
-        QString typeface(QCFString::toQString(reinterpret_cast<CFStringRef>([mCocoaFont fontName])));
-//        qDebug() << "original family" << family << "typeface" << typeface << "psize" << pSize;
-        int hyphenPos = typeface.indexOf(QLatin1Char('-'));
-        if (hyphenPos != -1) {
-            typeface.remove(0, hyphenPos + 1);
-        } else {
-            typeface = QLatin1String("Normal");
-        }
-//        qDebug() << " massaged family" << family << "typeface" << typeface << "psize" << pSize;
-        newFont = QFontDatabase().font(family, typeface, pSize);
-        newFont.setUnderline(mQtFont->underline());
-        newFont.setStrikeOut(mQtFont->strikeOut());
-    }
-
-    [self setQtFont:newFont];
+    [self setQtFont:qfontForCocoaFont([sender convertFont:dummyFont], *mQtFont)];
     if (mPriv)
         mPriv->updateSampleFont(*mQtFont);
 }
@@ -317,6 +310,9 @@ const int StyleMask = NSTitledWindowMask | NSClosableWindowMask | NSResizableWin
 - (void)onOkClicked
 {
     Q_ASSERT(mPanelHackedWithButtons);
+    NSFontManager *fontManager = [NSFontManager sharedFontManager];
+    [self setQtFont:qfontForCocoaFont([fontManager convertFont:[fontManager selectedFont]],
+                                      *mQtFont)];
     [[mStolenContentView window] close];
     [self finishOffWithCode:NSOKButton];
 }
@@ -374,16 +370,7 @@ const int StyleMask = NSTitledWindowMask | NSClosableWindowMask | NSResizableWin
             mModalSession = 0;
         }
 
-        // temporary hack to work around bug in deleteLater() in Qt/Mac Cocoa
-#if 1
-        bool deleteDialog = mPriv->fontDialog()->testAttribute(Qt::WA_DeleteOnClose);
-        mPriv->fontDialog()->setAttribute(Qt::WA_DeleteOnClose, false);
-#endif
         mPriv->done((code == NSOKButton) ? QDialog::Accepted : QDialog::Rejected);
-#if 1
-        if (deleteDialog)
-            delete mPriv->fontDialog();
-#endif
     } else {
         [NSApp stopModalWithCode:code];
     }

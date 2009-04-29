@@ -183,6 +183,7 @@ QWidgetPrivate::QWidgetPrivate(int version) :
         ,inDirtyList(0)
         ,isScrolled(0)
         ,isMoved(0)
+        ,usesDoubleBufferedGLContext(0)
 #ifdef Q_WS_WIN
         ,noPaintOnScreen(0)
 #endif
@@ -2131,6 +2132,10 @@ QWidget *QWidget::find(WId id)
 
     If a widget is non-native (alien) and winId() is invoked on it, that widget
     will be provided a native handle.
+
+    On Mac OS X, the type returned depends on which framework Qt was linked
+    against. If Qt is using Carbon, the {WId} is actually an HIViewRef. If Qt
+    is using Cocoa, {WId} is a pointer to an NSView.
 
     \note We recommend that you do not store this value as it is likely to
     change at run-time.
@@ -4714,10 +4719,13 @@ void QWidget::render(QPaintDevice *target, const QPoint &targetOffset,
     if (redirected) {
         target = redirected;
         offset -= redirectionOffset;
-        if (!inRenderWithPainter) { // Clip handled by shared painter (in qpainter.cpp).
-            const QRegion redirectedSystemClip = redirected->paintEngine()->systemClip();
-            if (!redirectedSystemClip.isEmpty())
-                paintRegion &= redirectedSystemClip.translated(-offset);
+    }
+
+    if (!inRenderWithPainter) { // Clip handled by shared painter (in qpainter.cpp).
+        if (QPaintEngine *targetEngine = target->paintEngine()) {
+            const QRegion targetSystemClip = targetEngine->systemClip();
+            if (!targetSystemClip.isEmpty())
+                paintRegion &= targetSystemClip.translated(-offset);
         }
     }
 
@@ -9792,27 +9800,6 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         QEvent e(QEvent::MouseTrackingChange);
         QApplication::sendEvent(this, &e);
         break; }
-#if !defined(QT_NO_DIRECT3D) && defined(Q_WS_WIN)
-    case Qt::WA_MSWindowsUseDirect3D:
-        if (!qApp->testAttribute(Qt::AA_MSWindowsUseDirect3DByDefault)) {
-            if (on) {
-                if (!d->extra)
-                    d->createExtra();
-                d->extra->had_auto_fill_bg = d->extra->autoFillBackground;
-                d->extra->had_no_system_bg = testAttribute(Qt::WA_NoSystemBackground);
-                d->extra->had_paint_on_screen = testAttribute(Qt::WA_PaintOnScreen);
-                // enforce the opaque widget state D3D needs
-                d->extra->autoFillBackground = true;
-                setAttribute(Qt::WA_PaintOnScreen);
-                setAttribute(Qt::WA_NoSystemBackground);
-            } else if (d->extra) {
-                d->extra->autoFillBackground = d->extra->had_auto_fill_bg;
-                setAttribute(Qt::WA_PaintOnScreen, d->extra->had_paint_on_screen);
-                setAttribute(Qt::WA_NoSystemBackground, d->extra->had_no_system_bg);
-            }
-        }
-        break;
-#endif
     case Qt::WA_NativeWindow: {
         QInputContext *ic = 0;
         if (on && !internalWinId() && testAttribute(Qt::WA_InputMethodEnabled) && hasFocus()) {

@@ -46,7 +46,7 @@
 QT_BEGIN_NAMESPACE
 /*!
     \class QFxPainted
-    \brief QFxPainted is an abstract base class for QFxView items that paint using QPainter.
+    \brief The QFxPainted class is an abstract base class for QFxView items that paint using QPainter.
 
     \ingroup group_coreitems
 

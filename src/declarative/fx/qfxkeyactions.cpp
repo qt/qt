@@ -78,15 +78,15 @@ QFxKeyActionsPrivate::QFxKeyActionsPrivate()
 
 int QFxKeyActionsPrivate::keyToBit(Qt::Key k) const
 {
-    if(k >= Qt::Key_A && k <= Qt::Key_Z ) {
+    if (k >= Qt::Key_A && k <= Qt::Key_Z ) {
         return k - Qt::Key_A;
-    } else if(k >= Qt::Key_Left && k <= Qt::Key_Down) {
+    } else if (k >= Qt::Key_Left && k <= Qt::Key_Down) {
         return 26 + k - Qt::Key_Left;
-    } else if(k >= Qt::Key_0 && k <= Qt::Key_9) {
+    } else if (k >= Qt::Key_0 && k <= Qt::Key_9) {
         return 30 + k - Qt::Key_0;
-    } else if(k >= Qt::Key_Context1 && k <= Qt::Key_Flip) {
+    } else if (k >= Qt::Key_Context1 && k <= Qt::Key_Flip) {
         return 40 + k - Qt::Key_Context1;
-    } else if(k >= Qt::Key_Select && k <= Qt::Key_No) {
+    } else if (k >= Qt::Key_Select && k <= Qt::Key_No) {
         return 47 + k - Qt::Key_Select;
     } else {
         const int start = 50;
@@ -117,7 +117,7 @@ bool QFxKeyActionsPrivate::key(Qt::Key k) const
 {
     int b = keyToBit(k);
     bool rv = testBit(b);
-    if(!rv && k != Qt::Key_Shift)
+    if (!rv && k != Qt::Key_Shift)
         rv = testBit(keyToBit(Qt::Key_unknown));
     return rv;
 }
@@ -125,7 +125,7 @@ bool QFxKeyActionsPrivate::key(Qt::Key k) const
 QString QFxKeyActionsPrivate::action(Qt::Key k) const
 {
     int b = keyToBit(k);
-    if(b != -1 && testBit(b))
+    if (b != -1 && testBit(b))
         return actions.value(k);
     else
         return actions.value(Qt::Key_unknown);
@@ -134,7 +134,7 @@ QString QFxKeyActionsPrivate::action(Qt::Key k) const
 void QFxKeyActionsPrivate::setKey(Qt::Key k, bool v)
 {
     int b = keyToBit(k);
-    if(b == -1)
+    if (b == -1)
         return;
 
     setBit(b, v);
@@ -142,10 +142,10 @@ void QFxKeyActionsPrivate::setKey(Qt::Key k, bool v)
 
 bool QFxKeyActionsPrivate::testBit(int b) const
 {
-    if(b < 0)
+    if (b < 0)
         return false;
 
-    if(b < 32)
+    if (b < 32)
         return keys1 & (1 << b);
     else
         return keys2 & (1 << (b - 32));
@@ -153,13 +153,13 @@ bool QFxKeyActionsPrivate::testBit(int b) const
 
 void QFxKeyActionsPrivate::setBit(int b, bool v) 
 {
-    if(v) {
-        if(b < 32)
+    if (v) {
+        if (b < 32)
             keys1 |= (1 << b);
         else
             keys2 |= (1 << (b - 32));
     } else {
-        if(b < 32)
+        if (b < 32)
             keys1 &= ~(1 << b);
         else
             keys2 &= ~(1 << (b - 32));
@@ -198,7 +198,7 @@ QFxKeyActions::~QFxKeyActions()
 
 QString QFxKeyActionsPrivate::keyExpr(Qt::Key k) const
 {
-    if(key(k))
+    if (key(k))
         return actions.value(k);
     else
         return QString();
@@ -206,8 +206,8 @@ QString QFxKeyActionsPrivate::keyExpr(Qt::Key k) const
 
 void QFxKeyActionsPrivate::setKeyExpr(Qt::Key k, const QString &expr)
 {
-    if(expr.isEmpty()) {
-        if(key(k)) {
+    if (expr.isEmpty()) {
+        if (key(k)) {
             actions.remove(k);
             setKey(k, false);
         }
@@ -231,7 +231,7 @@ bool QFxKeyActions::enabled() const
 
 void QFxKeyActions::setEnabled(bool e)
 {
-    if(d->enabled == e)
+    if (d->enabled == e)
         return;
 
     d->enabled = e;
@@ -239,12 +239,7 @@ void QFxKeyActions::setEnabled(bool e)
 }
 
 /*!
-    \qmlproperty string KeyActions::keyA
-    \qmlproperty string KeyActions::keyB
-    \qmlproperty string KeyActions::keyC
-    \qmlproperty ... KeyActions::...
-    \qmlproperty string KeyActions::keyY
-    \qmlproperty string KeyActions::keyZ
+    \qmlproperty string KeyActions::keyA...keyZ
 
     The action to take for the given letter.
 
@@ -569,11 +564,7 @@ void QFxKeyActions::setKey_Down(const QString &s)
 }
 
 /*!
-    \qmlproperty string KeyActions::digit0
-    \qmlproperty string KeyActions::digit1
-    \qmlproperty string KeyActions::digit2
-    \qmlproperty ... KeyActions::...
-    \qmlproperty string KeyActions::digit9
+    \qmlproperty string KeyActions::digit0...digit9
 
     The action to take for the given number key.
 
@@ -907,7 +898,7 @@ void QFxKeyActions::setKey_Any(const QString &s)
 void QFxKeyActions::keyPressEvent(QKeyEvent *event)
 {
     Qt::Key key = (Qt::Key)event->key();
-    if(d->enabled && d->key(key)) {
+    if (d->enabled && d->key(key)) {
         QmlExpression b(qmlContext(this), d->action(key), this, false);
         b.value();
         event->accept();
@@ -919,7 +910,7 @@ void QFxKeyActions::keyPressEvent(QKeyEvent *event)
 void QFxKeyActions::keyReleaseEvent(QKeyEvent *event)
 {
     Qt::Key key = (Qt::Key)event->key();
-    if(d->enabled && d->key(key)) {
+    if (d->enabled && d->key(key)) {
         event->accept();
     } else {
         QFxItem::keyReleaseEvent(event);

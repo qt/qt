@@ -200,7 +200,7 @@ void QFxView::execute()
         d->component = new QmlComponent(&d->engine, d->xml.toUtf8(), d->source);
     }
 
-    if(!d->component->isLoading()) {
+    if (!d->component->isLoading()) {
         continueExecute();
     } else {
         connect(d->component, SIGNAL(statusChanged(QmlComponent::Status)), this, SLOT(continueExecute()));
@@ -211,18 +211,18 @@ void QFxView::continueExecute()
 {
     disconnect(d->component, SIGNAL(statusChanged(QmlComponent::Status)), this, SLOT(continueExecute()));
 
-    if(!d->component){
+    if (!d->component){
         qWarning() << "Error in loading" << d->source;
         return;
     }
 
     QObject *obj = d->component->create();
     rootContext()->deactivate();
-    if(obj) {
-        if(QFxItem *item = qobject_cast<QFxItem *>(obj)) {
+    if (obj) {
+        if (QFxItem *item = qobject_cast<QFxItem *>(obj)) {
             item->QSimpleCanvasItem::setParent(QSimpleCanvas::root());
 
-            if(itemTreeDump())
+            if (itemTreeDump())
                 item->dump();
 
             QPerformanceLog::displayData();
@@ -231,7 +231,7 @@ void QFxView::continueExecute()
             connect(item, SIGNAL(widthChanged()), this, SLOT(sizeChanged()));
             connect(item, SIGNAL(heightChanged()), this, SLOT(sizeChanged()));
             sizeChanged();
-        } else if(QWidget *wid = qobject_cast<QWidget *>(obj)) {
+        } else if (QWidget *wid = qobject_cast<QWidget *>(obj)) {
             window()->setAttribute(Qt::WA_OpaquePaintEvent, false);
             window()->setAttribute(Qt::WA_NoSystemBackground, false);
             if (!layout()) {
@@ -256,14 +256,14 @@ void QFxView::sizeChanged()
 
 QFxItem* QFxView::addItem(const QString &xml, QFxItem* parent)
 {
-    if(!d->root)
+    if (!d->root)
         return 0;
 
     QmlComponent component(&d->engine, xml.toUtf8(), QUrl()); 
     QObject *obj = component.create();
-    if(obj){
+    if (obj){
         QFxItem *item = static_cast<QFxItem *>(obj);
-        if(!parent)
+        if (!parent)
             parent = d->root;
 
         item->setItemParent(parent);
@@ -280,7 +280,7 @@ void QFxView::reset()
 
 void QFxView::clearItems()
 {
-    if(!d->root)
+    if (!d->root)
         return;
     delete d->root;
     d->root = 0;
@@ -293,7 +293,7 @@ QFxItem *QFxView::root() const
 
 void QFxView::resizeEvent(QResizeEvent *e)
 {
-    if(d->root) {
+    if (d->root) {
         d->root->setWidth(width());
         d->root->setHeight(height());
     }

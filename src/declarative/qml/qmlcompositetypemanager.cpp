@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <private/qmlcompositetypemanager_p.h>
-#include <private/qmlxmlparser_p.h>
+#include <private/qmlscriptparser_p.h>
 #include <private/qmlcompiledcomponent_p.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtNetwork/qnetworkreply.h>
@@ -57,13 +57,13 @@ QmlCompositeTypeData::QmlCompositeTypeData()
 
 QmlCompositeTypeData::~QmlCompositeTypeData()
 {
-    for(int ii = 0; ii < dependants.count(); ++ii)
+    for (int ii = 0; ii < dependants.count(); ++ii)
         dependants.at(ii)->release();
 
-    if(compiledComponent)
+    if (compiledComponent)
         compiledComponent->release();
 
-    if(component) 
+    if (component) 
         delete component;
 }
 
@@ -79,10 +79,10 @@ void QmlCompositeTypeData::remWaiter(QmlComponentPrivate *p)
 
 QmlComponent *QmlCompositeTypeData::toComponent(QmlEngine *engine)
 {
-    if(!component) {
+    if (!component) {
 
         QmlCompiledComponent *cc = toCompiledComponent(engine);
-        if(cc) {
+        if (cc) {
             component = new QmlComponent(engine, cc, -1, -1, 0);
         } else {
             component = new QmlComponent(engine, 0);
@@ -96,14 +96,14 @@ QmlComponent *QmlCompositeTypeData::toComponent(QmlEngine *engine)
 QmlCompiledComponent *
 QmlCompositeTypeData::toCompiledComponent(QmlEngine *engine)
 {
-    if(status == Complete && !compiledComponent) {
+    if (status == Complete && !compiledComponent) {
 
         compiledComponent = new QmlCompiledComponent;
         compiledComponent->url = QUrl(url);
         compiledComponent->name = url.toLatin1(); // ###
 
         QmlCompiler compiler;
-        if(!compiler.compile(engine, this, compiledComponent)) {
+        if (!compiler.compile(engine, this, compiledComponent)) {
             status = Error;
             errorDescription = compiler.errorDescription() + 
                                QLatin1String("@") +
@@ -117,7 +117,7 @@ QmlCompositeTypeData::toCompiledComponent(QmlEngine *engine)
         data.clear();
     }
 
-    if(compiledComponent)
+    if (compiledComponent)
         compiledComponent->addref();
 
     return compiledComponent;
@@ -137,7 +137,7 @@ QmlCompositeTypeData *QmlCompositeTypeManager::get(const QUrl &url)
 {
     QmlCompositeTypeData *unit = components.value(url.toString());
 
-    if(!unit) {
+    if (!unit) {
         unit = new QmlCompositeTypeData;
         unit->status = QmlCompositeTypeData::Waiting;
         unit->url = url.toString();
@@ -162,8 +162,8 @@ QmlCompositeTypeManager::getImmediate(const QByteArray &data, const QUrl &url)
 
 void QmlCompositeTypeManager::clearCache()
 {
-    for(Components::Iterator iter = components.begin(); iter != components.end();) {
-        if((*iter)->status != QmlCompositeTypeData::Waiting) {
+    for (Components::Iterator iter = components.begin(); iter != components.end();) {
+        if ((*iter)->status != QmlCompositeTypeData::Waiting) {
             (*iter)->release();
             iter = components.erase(iter);
         } else {
@@ -180,7 +180,7 @@ void QmlCompositeTypeManager::replyFinished()
     QmlCompositeTypeData *unit = components.value(reply->url().toString());
     Q_ASSERT(unit);
 
-    if(reply->error() != QNetworkReply::NoError) {
+    if (reply->error() != QNetworkReply::NoError) {
 
         QString errorDescription;
         // ### - Fill in error
@@ -204,10 +204,10 @@ void QmlCompositeTypeManager::loadSource(QmlCompositeTypeData *unit)
 {
     QUrl url(unit->url);
 
-    if(url.scheme() == QLatin1String("file")) {
+    if (url.scheme() == QLatin1String("file")) {
 
         QFile file(url.toLocalFile());
-        if(file.open(QFile::ReadOnly)) {
+        if (file.open(QFile::ReadOnly)) {
             QByteArray data = file.readAll();
             setData(unit, data, url);
         } else {
@@ -231,7 +231,7 @@ void QmlCompositeTypeManager::setData(QmlCompositeTypeData *unit,
                                      const QByteArray &data,
                                      const QUrl &url)
 {
-    if(!unit->data.parse(data, url)) {
+    if (!unit->data.parse(data, url)) {
 
         unit->status = QmlCompositeTypeData::Error;
         unit->errorDescription = unit->data.errorDescription();
@@ -247,7 +247,7 @@ void QmlCompositeTypeManager::setData(QmlCompositeTypeData *unit,
 
 void QmlCompositeTypeManager::doComplete(QmlCompositeTypeData *unit)
 {
-    for(int ii = 0; ii < unit->dependants.count(); ++ii) {
+    for (int ii = 0; ii < unit->dependants.count(); ++ii) {
         checkComplete(unit->dependants.at(ii));
         unit->dependants.at(ii)->release();
     }
@@ -261,26 +261,26 @@ void QmlCompositeTypeManager::doComplete(QmlCompositeTypeData *unit)
 
 void QmlCompositeTypeManager::checkComplete(QmlCompositeTypeData *unit)
 {
-    if(unit->status != QmlCompositeTypeData::Waiting)
+    if (unit->status != QmlCompositeTypeData::Waiting)
         return;
 
     int waiting = 0;
-    for(int ii = 0; ii < unit->types.count(); ++ii) {
+    for (int ii = 0; ii < unit->types.count(); ++ii) {
         QmlCompositeTypeData *u = unit->types.at(ii).unit;
 
-        if(!u)
+        if (!u)
             continue;
 
-        if(u->status == QmlCompositeTypeData::Error) {
+        if (u->status == QmlCompositeTypeData::Error) {
             unit->status = QmlCompositeTypeData::Error;
             unit->errorDescription = u->errorDescription;
             doComplete(unit);
             return;
-        } else if(u->status == QmlCompositeTypeData::Waiting) {
+        } else if (u->status == QmlCompositeTypeData::Waiting) {
             waiting++;
         }
     }
-    if(!waiting) {
+    if (!waiting) {
         unit->status = QmlCompositeTypeData::Complete;
         doComplete(unit);
     }
@@ -291,7 +291,7 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
     QStringList typeNames = unit->data.types();
 
     int waiting = 0;
-    for(int ii = 0; ii < typeNames.count(); ++ii) {
+    for (int ii = 0; ii < typeNames.count(); ++ii) {
         QByteArray type = typeNames.at(ii).toLatin1();
 
         QmlCompositeTypeData::TypeReference ref;
@@ -304,14 +304,14 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
         QmlCustomParser *parser = 
             QmlMetaType::customParser(type);
 
-        if(parser) {
+        if (parser) {
             ref.parser = parser;
             unit->types << ref;
             continue;
         }
 
         ref.type = QmlMetaType::qmlType(type);
-        if(ref.type) {
+        if (ref.type) {
             ref.parser = parser;
             unit->types << ref;
             continue;
@@ -320,7 +320,7 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
         QUrl url = engine->componentUrl(QUrl(type + ".qml"), QUrl(unit->url));
         QmlCompositeTypeData *urlUnit = components.value(url.toString());
 
-        if(!urlUnit) {
+        if (!urlUnit) {
             urlUnit = new QmlCompositeTypeData;
             urlUnit->status = QmlCompositeTypeData::Waiting;
             urlUnit->url = url.toString();
@@ -351,7 +351,7 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
         unit->types << ref;
     }
 
-    if(waiting) {
+    if (waiting) {
         unit->status = QmlCompositeTypeData::Waiting;
     } else {
         unit->status = QmlCompositeTypeData::Complete;

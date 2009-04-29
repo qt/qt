@@ -96,7 +96,6 @@ public:
 
     virtual void clipEnabledChanged();
     virtual void penChanged();
-    virtual void brushChanged();
     virtual void opacityChanged();
     virtual void compositionModeChanged();
     virtual void renderHintsChanged();

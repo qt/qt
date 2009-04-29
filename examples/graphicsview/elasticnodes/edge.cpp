@@ -96,7 +96,7 @@ void Edge::adjust()
 
     prepareGeometryChange();
 
-    if (!qFuzzyCompare(length, qreal(0.0))) {
+    if (length > qreal(20.)) {
         QPointF edgeOffset((line.dx() * 10) / length, (line.dy() * 10) / length);
         sourcePoint = line.p1() + edgeOffset;
         destPoint = line.p2() - edgeOffset;
@@ -124,12 +124,15 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
     if (!source || !dest)
         return;
 
-    // Draw the line itself
     QLineF line(sourcePoint, destPoint);
+    if (qFuzzyCompare(line.length(), qreal(0.)))
+        return;
+
+    // Draw the line itself
     painter->setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter->drawLine(line);
 
-    // Draw the arrows if there's enough room
+    // Draw the arrows
     double angle = ::acos(line.dx() / line.length());
     if (line.dy() >= 0)
         angle = TwoPi - angle;

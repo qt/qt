@@ -77,22 +77,22 @@ QPerformanceLog::LogData::LogData(const char *desc)
 
 QPerformanceLog::LogMetric::LogMetric(LogData *l, int id, const char *desc)
 {
-    if(id < 0)
+    if (id < 0)
         qFatal("QPerformanceLog: Invalid log id %d ('%s')", id, desc);
 
     QPerformanceLogData *logData = performanceLogData();
 
     QPerformanceLogData::Logs::Iterator logIter = logData->logs.find(l);
-    if(logIter == logData->logs.end())
+    if (logIter == logData->logs.end())
         qFatal("QPerformanceLog: Unable to locate log for metric '%s'", desc);
     QPerformanceLogData::Log &log = *logIter;
-    if(log.descriptions.contains(id))
+    if (log.descriptions.contains(id))
         qFatal("QPerformanceLog: Duplicate log metric %d ('%s')", id, desc);
     log.descriptions.insert(id, desc);
 
-    if(log.maxId < id) {
+    if (log.maxId < id) {
         log.maxId = id;
-        if(l->data) delete [] l->data;
+        if (l->data) delete [] l->data;
         l->data = new unsigned int[2 * (log.maxId + 1)];
         ::memset(l->data, 0, 2 * (log.maxId + 1) * sizeof(unsigned int));
     }
@@ -107,7 +107,7 @@ static void QPerformanceLog_displayData(const QPerformanceLog::LogData *l, const
 {
     qWarning() << pl->logDescription << "performance data";
     unsigned int total = 0;
-    for(QHash<int, const char *>::ConstIterator iter = pl->descriptions.begin();
+    for (QHash<int, const char *>::ConstIterator iter = pl->descriptions.begin();
             iter != pl->descriptions.end();
             ++iter) {
 
@@ -126,7 +126,7 @@ void QPerformanceLog::displayData()
 {
     QPerformanceLogData *logData = performanceLogData();
 
-    for(QPerformanceLogData::Logs::ConstIterator iter = logData->logs.begin();
+    for (QPerformanceLogData::Logs::ConstIterator iter = logData->logs.begin();
             iter != logData->logs.end();
             ++iter) {
         QPerformanceLog_displayData(iter.key(), &(*iter));
@@ -137,7 +137,7 @@ void QPerformanceLog::clear()
 {
     QPerformanceLogData *logData = performanceLogData();
 
-    for(QPerformanceLogData::Logs::ConstIterator iter = logData->logs.begin();
+    for (QPerformanceLogData::Logs::ConstIterator iter = logData->logs.begin();
             iter != logData->logs.end();
             ++iter) {
         QPerformanceLog_clear(iter.key(), &(*iter));
@@ -148,7 +148,7 @@ void QPerformanceLog::displayData(LogData *l)
 {
     QPerformanceLogData *logData = performanceLogData();
     QPerformanceLogData::Logs::ConstIterator iter = logData->logs.find(l);
-    if(iter == logData->logs.end())
+    if (iter == logData->logs.end())
         qFatal("QPerformanceLog: Internal corruption - unable to locate log");
 
     QPerformanceLog_displayData(iter.key(), &(*iter));
@@ -158,7 +158,7 @@ void QPerformanceLog::clear(LogData *l)
 {
     QPerformanceLogData *logData = performanceLogData();
     QPerformanceLogData::Logs::ConstIterator iter = logData->logs.find(l);
-    if(iter == logData->logs.end())
+    if (iter == logData->logs.end())
         qFatal("QPerformanceLog: Internal corruption - unable to locate log");
 
     QPerformanceLog_clear(iter.key(), &(*iter));
