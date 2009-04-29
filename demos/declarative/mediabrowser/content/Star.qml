@@ -8,7 +8,7 @@
         <Signal name="clicked"/>
     </signals>
 
-    <Image id="Image" src="pics/ghns_star.png" x="6" y="7" opacity="0.4" scale="0.5"/>
+    <Image id="Image" source="pics/ghns_star.png" x="6" y="7" opacity="0.4" scale="0.5"/>
     <MouseRegion anchors.fill="{Container}" onClicked="Container.clicked.emit()"/>
 
     <states>

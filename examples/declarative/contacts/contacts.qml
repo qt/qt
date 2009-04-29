@@ -24,7 +24,7 @@ Rect {
                 }
                 Image {
                     id: portraitPic
-                    src: portrait
+                    source: portrait
                     x: 10
                     y: 10
                 }

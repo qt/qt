@@ -10,10 +10,10 @@
                     <AxisRotation id="axis" axis.startX="20" axis.endX="20" axis.startY="20" axis.endY="0" />
                 </transform>
                 <front>
-                    <Image src="pics/front.png" width="40" height="40">
+                    <Image source="pics/front.png" width="40" height="40">
                         <Image anchors.horizontalCenter="{parent.horizontalCenter}"
                                anchors.verticalCenter="{parent.verticalCenter}"
-                                src="pics/flag.png" opacity="{modelData.hasFlag}">
+                                source="pics/flag.png" opacity="{modelData.hasFlag}">
                                 <opacity>
                                     <Behaviour>
                                         <NumericAnimation property="opacity" duration="250"/>
@@ -23,12 +23,12 @@
                     </Image>
                 </front>
                 <back>
-                    <Image src="pics/back.png" width="40" height="40">
+                    <Image source="pics/back.png" width="40" height="40">
                         <Text anchors.horizontalCenter="{parent.horizontalCenter}" anchors.verticalCenter="{parent.verticalCenter}" 
                               text="{modelData.hint}" color="white" font.bold="true" 
                               opacity="{modelData.hasMine == false &amp;&amp; modelData.hint > 0}"/>
                         <Image anchors.horizontalCenter="{parent.horizontalCenter}" anchors.verticalCenter="{parent.verticalCenter}" 
-                                src="pics/bomb.png" opacity="{modelData.hasMine}"/>
+                                source="pics/bomb.png" opacity="{modelData.hasMine}"/>
                         <Explosion anchors.horizontalCenter="{parent.horizontalCenter}" anchors.verticalCenter="{parent.verticalCenter}" explode="{modelData.hasMine==true &amp;&amp; modelData.flipped==true}"/>
                     </Image>
                 </back>
@@ -50,7 +50,7 @@
             </Flipable>
         </Component>
     </resources>
-    <Image src="pics/No-Ones-Laughing-3.jpg" tile="true"/>
+    <Image source="pics/No-Ones-Laughing-3.jpg" tile="true"/>
     <Description text="Use the 'minehunt' executable to run this demo!" width="300" opacity="{tiles?0:1}" anchors.horizontalCenter="{parent.horizontalCenter}" anchors.verticalCenter="{parent.verticalCenter}"/>
     <Repeater dataSource="{tiles}" x="1" y="1">
         <Component>
@@ -61,12 +61,12 @@
     </Repeater>
     <Item id="gamedata" width="370" height="100" y="380">
         <Text color="white" font.size="18" x="20" y="20">In play:</Text>
-        <Image x="100" y="20" src="pics/bomb-color.png"/>
+        <Image x="100" y="20" source="pics/bomb-color.png"/>
         <Text x="100" y="60" color="white" text="{numMines}"/>
-        <Image x="140" y="20" src="pics/flag-color.png"/>
+        <Image x="140" y="20" source="pics/flag-color.png"/>
         <Text x="140" y="60" color="white" text="{numFlags}"/>
 
-        <Image x="240" y="0" src="{if(isPlaying==true){'pics/smile.png'}else{if(hasWon==true){'pics/glee.png'}else{'pics/frown.png'}}}">
+        <Image x="240" y="0" source="{if(isPlaying==true){'pics/smile.png'}else{if(hasWon==true){'pics/glee.png'}else{'pics/frown.png'}}}">
             <MouseRegion anchors.fill="{parent}" onClicked="reset()"/>
         </Image>
     </Item>

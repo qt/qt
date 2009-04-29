@@ -30,11 +30,11 @@
                 </Script>
 
                 <Rect id="Dvd" anchors.fill="{parent}" color="white">
-                    <Image src="{thumb}" width="215" height="305" anchors.centeredIn="{parent}" opaque="true"/>
-                    <Image src="pics/reflection.png" anchors.centeredIn="{parent}"/>
-                    <Image src="pics/shadow-right.png" x="220"/>
-                    <Image src="pics/shadow-bottom.png" y="310"/>
-                    <Image src="pics/shadow-corner.png" x="220" y="310"/>
+                    <Image source="{thumb}" width="215" height="305" anchors.centeredIn="{parent}" opaque="true"/>
+                    <Image source="pics/reflection.png" anchors.centeredIn="{parent}"/>
+                    <Image source="pics/shadow-right.png" x="220"/>
+                    <Image source="pics/shadow-bottom.png" y="310"/>
+                    <Image source="pics/shadow-corner.png" x="220" y="310"/>
                 </Rect>
 
                 <MouseRegion anchors.fill="{Wrapper}" onClicked="movieClicked()"/>

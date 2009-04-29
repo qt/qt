@@ -6,7 +6,7 @@
     <Image id="searchIcon"
         anchors.left="{parent.left}" anchors.leftMargin="5"
         anchors.verticalCenter="{parent.verticalCenter}"
-        src="../shared/pics/search.png"/>
+        source="../shared/pics/search.png"/>
     <TextEdit id="searchEdit"
         anchors.left="{searchIcon.right}" anchors.right="{parent.right}"
         anchors.leftMargin="5" anchors.rightMargin="5"

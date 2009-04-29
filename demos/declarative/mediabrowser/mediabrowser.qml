@@ -5,11 +5,11 @@
     </properties>
 
     <Item id="Background">
-        <Image src="content/pics/background.png" opaque="true"/>
+        <Image source="content/pics/background.png" opaque="true"/>
 
         <Rect id="Menu" x="-150" width="150" height="480" color="#232323">
             <Text id="IconText" x="30" y="122" font.bold="true" font.size="9" text="Coming Soon" color="white" style="Raised" styleColor="black"/>
-            <Image src="content/pics/shadow-right-screen.png" x="150" height="480" tile="true"/>
+            <Image source="content/pics/shadow-right-screen.png" x="150" height="480" tile="true"/>
         </Rect>
 
         <MovieInfoContainer id="MovieInfoContainer" width="750" x="25" y="500" height="440"/>
