@@ -1327,13 +1327,21 @@ QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include
             // This is an old legacy fix for PowerPC based Macs, which
             // we shouldn't remove
             while (p < end) {
-                *p = 0xFF000000 | (*p>>8);
+                *p = 0xff000000 | (*p>>8);
                 ++p;
             }
         }
     } else {
         // OpenGL gives ABGR (i.e. RGBA backwards); Qt wants ARGB
-        img = img.rgbSwapped();
+        for (int y = 0; y < h; y++) {
+            uint *q = (uint*)img.scanLine(y);
+            for (int x=0; x < w; ++x) {
+                const uint pixel = *q;
+                *q = ((pixel << 16) & 0xff0000) | ((pixel >> 16) & 0xff) | (pixel & 0xff00ff00);
+                q++;
+            }
+        }
+
     }
     return img.mirrored();
 }

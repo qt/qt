@@ -54,6 +54,27 @@
 #include <private/qpixmapdata_p.h>
 #include <private/qpixmap_raster_p.h>
 
+#if defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS || defined QT_DIRECTFB_DISABLE_RASTERFALLBACKS
+#define VOID_ARG() static_cast<bool>(false)
+enum PaintOperation {
+    DRAW_RECTS = 0x0001,
+    DRAW_LINES = 0x0002,
+    DRAW_IMAGE = 0x0004,
+    DRAW_PIXMAP = 0x0008,
+    DRAW_TILED_PIXMAP = 0x0010,
+    STROKE_PATH = 0x0020,
+    DRAW_PATH = 0x0040,
+    DRAW_POINTS = 0x0080,
+    DRAW_ELLIPSE = 0x0100,
+    DRAW_POLYGON = 0x0200,
+    DRAW_TEXT = 0x0400,
+    FILL_PATH = 0x0800,
+    FILL_RECT = 0x1000,
+    DRAW_COLORSPANS = 0x2000,
+    ALL = 0xffff
+};
+#endif
+
 #ifdef QT_DIRECTFB_WARN_ON_RASTERFALLBACKS
 template <typename T> inline const T *ptr(const T &t) { return &t; }
 template <> inline const bool* ptr<bool>(const bool &) { return 0; }
@@ -98,24 +119,31 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
 #endif
 
 #if defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS && defined QT_DIRECTFB_DISABLE_RASTERFALLBACKS
-#define RASTERFALLBACK(one, two, three) rasterFallbackWarn("Disabled raster engine operation", \
-                                                           __FUNCTION__, state()->painter->device(), \
-                                                           d_func()->matrixScale, d_func()->matrixRotShear, \
-                                                           d_func()->simplePen, d_func()->dfbCanHandleClip(), \
-                                                           d_func()->forceRasterPrimitives, \
-                                                           #one, one, #two, two, #three, three); \
-    return;
+#define RASTERFALLBACK(op, one, two, three)                             \
+    if (op & (QT_DIRECTFB_WARN_ON_RASTERFALLBACKS))                     \
+        rasterFallbackWarn("Disabled raster engine operation",          \
+                           __FUNCTION__, state()->painter->device(),    \
+                           d_func()->matrixScale, d_func()->matrixRotShear, \
+                           d_func()->simplePen, d_func()->dfbCanHandleClip(), \
+                           d_func()->forceRasterPrimitives,             \
+                           #one, one, #two, two, #three, three);        \
+    if (op & (QT_DIRECTFB_DISABLE_RASTERFALLBACKS))                     \
+        return;
 #elif defined QT_DIRECTFB_DISABLE_RASTERFALLBACKS
-#define RASTERFALLBACK(one, two, three) return;
+#define RASTERFALLBACK(op, one, two, three)             \
+    if (op & (QT_DIRECTFB_DISABLE_RASTERFALLBACKS))     \
+        return;
 #elif defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS
-#define RASTERFALLBACK(one, two, three) rasterFallbackWarn("Falling back to raster engine for", \
-                                                           __FUNCTION__, state()->painter->device(), \
-                                                           d_func()->matrixScale, d_func()->matrixRotShear, \
-                                                           d_func()->simplePen, d_func()->dfbCanHandleClip(), \
-                                                           d_func()->forceRasterPrimitives, \
-                                                           #one, one, #two, two, #three, three);
+#define RASTERFALLBACK(op, one, two, three)                             \
+    if (op & (QT_DIRECTFB_WARN_ON_RASTERFALLBACKS))                     \
+        rasterFallbackWarn("Falling back to raster engine for",         \
+                           __FUNCTION__, state()->painter->device(),    \
+                           d_func()->matrixScale, d_func()->matrixRotShear, \
+                           d_func()->simplePen, d_func()->dfbCanHandleClip(), \
+                           d_func()->forceRasterPrimitives,             \
+                           #one, one, #two, two, #three, three);
 #else
-#define RASTERFALLBACK(one, two, three)
+#define RASTERFALLBACK(op, one, two, three)
 #endif
 
 static inline uint ALPHA_MUL(uint x, uint a)
@@ -270,14 +298,14 @@ public:
     inline bool dfbCanHandleClip() const;
     inline bool isSimpleBrush(const QBrush &brush) const;
 
-    void drawLines(const QLine *lines, int count) const;
-    void drawLines(const QLineF *lines, int count) const;
+    void drawLines(const QLine *lines, int count);
+    void drawLines(const QLineF *lines, int count);
 
-    void fillRegion(const QRegion &r) const;
-    void fillRects(const QRect *rects, int count) const;
-    void drawRects(const QRect *rects, int count) const;
-    void fillRects(const QRectF *rects, int count) const;
-    void drawRects(const QRectF *rects, int count) const;
+    void fillRegion(const QRegion &r);
+    void fillRects(const QRect *rects, int count);
+    void drawRects(const QRect *rects, int count);
+    void fillRects(const QRectF *rects, int count);
+    void drawRects(const QRectF *rects, int count);
 
 
     void drawPixmap(const QRectF &dest,
@@ -309,6 +337,7 @@ private:
 
     bool dirtyClip;
     bool dfbHandledClip;
+    bool ignoreSystemClip;
     QDirectFBPaintDevice *dfbDevice;
 
     QDirectFBPaintEngine *q;
@@ -322,6 +351,7 @@ QDirectFBPaintEnginePrivate::QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p
       dfbHandledClip(false), dfbDevice(0), q(p)
 {
     fb = QDirectFBScreen::instance()->dfb();
+    ignoreSystemClip = QDirectFBScreen::instance()->directFBFlags() & QDirectFBScreen::IgnoreSystemClip;
     surfaceCache = new SurfaceCache;
     static int cacheLimit = qgetenv("QT_DIRECTFB_IMAGECACHE").toInt();
     if (cacheLimit > 0)
@@ -545,7 +575,7 @@ void QDirectFBPaintEnginePrivate::setDFBColor(const QColor &color)
     surface->SetDrawingFlags(surface, DFBSurfaceDrawingFlags(drawingFlags));
 }
 
-void QDirectFBPaintEnginePrivate::drawLines(const QLine *lines, int n) const
+void QDirectFBPaintEnginePrivate::drawLines(const QLine *lines, int n)
 {
     for (int i = 0; i < n; ++i) {
         const QLine l = transform.map(lines[i]);
@@ -553,7 +583,7 @@ void QDirectFBPaintEnginePrivate::drawLines(const QLine *lines, int n) const
     }
 }
 
-void QDirectFBPaintEnginePrivate::drawLines(const QLineF *lines, int n) const
+void QDirectFBPaintEnginePrivate::drawLines(const QLineF *lines, int n)
 {
     for (int i = 0; i < n; ++i) {
         const QLine l = transform.map(lines[i]).toLine();
@@ -561,14 +591,16 @@ void QDirectFBPaintEnginePrivate::drawLines(const QLineF *lines, int n) const
     }
 }
 
-void QDirectFBPaintEnginePrivate::fillRegion(const QRegion &region) const
+void QDirectFBPaintEnginePrivate::fillRegion(const QRegion &region)
 {
+    Q_ASSERT(isSimpleBrush(q->state()->brush));
+    setDFBColor(q->state()->brush.color());
     const QVector<QRect> rects = region.rects();
     const int n = rects.size();
     fillRects(rects.constData(), n);
 }
 
-void QDirectFBPaintEnginePrivate::fillRects(const QRect *rects, int n) const
+void QDirectFBPaintEnginePrivate::fillRects(const QRect *rects, int n)
 {
     for (int i = 0; i < n; ++i) {
         const QRect r = transform.mapRect(rects[i]);
@@ -577,7 +609,7 @@ void QDirectFBPaintEnginePrivate::fillRects(const QRect *rects, int n) const
     }
 }
 
-void QDirectFBPaintEnginePrivate::fillRects(const QRectF *rects, int n) const
+void QDirectFBPaintEnginePrivate::fillRects(const QRectF *rects, int n)
 {
     for (int i = 0; i < n; ++i) {
         const QRect r = transform.mapRect(rects[i]).toRect();
@@ -586,7 +618,7 @@ void QDirectFBPaintEnginePrivate::fillRects(const QRectF *rects, int n) const
     }
 }
 
-void QDirectFBPaintEnginePrivate::drawRects(const QRect *rects, int n) const
+void QDirectFBPaintEnginePrivate::drawRects(const QRect *rects, int n)
 {
     for (int i = 0; i < n; ++i) {
         const QRect r = transform.mapRect(rects[i]);
@@ -595,7 +627,7 @@ void QDirectFBPaintEnginePrivate::drawRects(const QRect *rects, int n) const
     }
 }
 
-void QDirectFBPaintEnginePrivate::drawRects(const QRectF *rects, int n) const
+void QDirectFBPaintEnginePrivate::drawRects(const QRectF *rects, int n)
 {
     for (int i = 0; i < n; ++i) {
         const QRect r = transform.mapRect(rects[i]).toRect();
@@ -744,23 +776,24 @@ void QDirectFBPaintEnginePrivate::updateClip()
     if (!dirtyClip)
         return;
 
-    if (!clip() || !clip()->enabled) {
+    const QClipData *clipData = clip();
+    if (!clipData || !clipData->enabled) {
         surface->SetClip(surface, NULL);
         dfbHandledClip = true;
-    }
-    else if (clip()->hasRectClip) {
+    } else if (clipData->hasRectClip) {
         const DFBRegion r = {
-            clip()->clipRect.x(),
-            clip()->clipRect.y(),
-            clip()->clipRect.x() + clip()->clipRect.width(),
-            clip()->clipRect.y() + clip()->clipRect.height()
+            clipData->clipRect.x(),
+            clipData->clipRect.y(),
+            clipData->clipRect.x() + clipData->clipRect.width(),
+            clipData->clipRect.y() + clipData->clipRect.height()
         };
         surface->SetClip(surface, &r);
-
         dfbHandledClip = true;
-    }
-    else
+    } else if (clipData->hasRegionClip && ignoreSystemClip && clipData->clipRegion == systemClip) {
+        dfbHandledClip = true;
+    } else {
         dfbHandledClip = false;
+    }
 
     dirtyClip = false;
 }
@@ -890,7 +923,7 @@ void QDirectFBPaintEngine::drawRects(const QRect *rects, int rectCount)
     if (!d->dfbCanHandleClip() || d->matrixRotShear
         || !d->simplePen || d->forceRasterPrimitives
         || !d->isSimpleBrush(brush)) {
-        RASTERFALLBACK(rectCount, static_cast<bool>(false), static_cast<bool>(false));
+        RASTERFALLBACK(DRAW_RECTS, rectCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawRects(rects, rectCount);
         return;
@@ -916,6 +949,7 @@ void QDirectFBPaintEngine::drawRects(const QRectF *rects, int rectCount)
     if (!d->dfbCanHandleClip() || d->matrixRotShear
         || !d->simplePen || d->forceRasterPrimitives
         || !d->isSimpleBrush(brush)) {
+        RASTERFALLBACK(DRAW_RECTS, rectCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawRects(rects, rectCount);
         return;
@@ -938,7 +972,7 @@ void QDirectFBPaintEngine::drawLines(const QLine *lines, int lineCount)
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
     if (!d->simplePen || !d->dfbCanHandleClip() || d->forceRasterPrimitives) {
-        RASTERFALLBACK(lineCount, static_cast<bool>(false), static_cast<bool>(false));
+        RASTERFALLBACK(DRAW_LINES, lineCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawLines(lines, lineCount);
         return;
@@ -956,7 +990,7 @@ void QDirectFBPaintEngine::drawLines(const QLineF *lines, int lineCount)
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
     if (!d->simplePen || !d->dfbCanHandleClip() || d->forceRasterPrimitives) {
-        RASTERFALLBACK(lineCount, static_cast<bool>(false), static_cast<bool>(false));
+        RASTERFALLBACK(DRAW_LINES, lineCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawLines(lines, lineCount);
         return;
@@ -982,7 +1016,7 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
         || QDirectFBScreen::getSurfacePixelFormat(image.format()) == DSPF_UNKNOWN)
 #endif
     {
-        RASTERFALLBACK(r, image.size(), sr);
+        RASTERFALLBACK(DRAW_IMAGE, r, image.size(), sr);
         d->lock();
         QRasterPaintEngine::drawImage(r, image, sr, flags);
         return;
@@ -1006,11 +1040,11 @@ void QDirectFBPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap,
     d->updateClip();
 
     if (pixmap.pixmapData()->classId() != QPixmapData::DirectFBClass) {
-        // not using RASTERFALLBACK since this is the way we do bitmaps?
+        RASTERFALLBACK(DRAW_PIXMAP, r, pixmap.size(), sr);
         d->lock();
         QRasterPaintEngine::drawPixmap(r, pixmap, sr);
     } else if (!d->dfbCanHandleClip(r) || d->matrixRotShear) {
-        RASTERFALLBACK(r, pixmap.size(), sr);
+        RASTERFALLBACK(DRAW_PIXMAP, r, pixmap.size(), sr);
         const QImage *img = static_cast<QDirectFBPixmapData*>(pixmap.pixmapData())->buffer();
         d->lock();
         QRasterPaintEngine::drawImage(r, *img, sr);
@@ -1032,10 +1066,11 @@ void QDirectFBPaintEngine::drawTiledPixmap(const QRectF &r,
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
     if (pixmap.pixmapData()->classId() != QPixmapData::DirectFBClass) {
+        RASTERFALLBACK(DRAW_TILED_PIXMAP, r, pixmap.size(), sp);
         d->lock();
         QRasterPaintEngine::drawTiledPixmap(r, pixmap, sp);
     } else if (!d->dfbCanHandleClip(r) || d->matrixRotShear || !sp.isNull()) {
-        RASTERFALLBACK(r, pixmap.size(), sp);
+        RASTERFALLBACK(DRAW_TILED_PIXMAP, r, pixmap.size(), sp);
         const QImage *img = static_cast<QDirectFBPixmapData*>(pixmap.pixmapData())->buffer();
         d->lock();
         QRasterPixmapData *data = new QRasterPixmapData(QPixmapData::PixmapType);
@@ -1051,6 +1086,7 @@ void QDirectFBPaintEngine::drawTiledPixmap(const QRectF &r,
 
 void QDirectFBPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 {
+    RASTERFALLBACK(STROKE_PATH, path, VOID_ARG(), VOID_ARG());
     Q_D(QDirectFBPaintEngine);
     d->lock();
     QRasterPaintEngine::stroke(path, pen);
@@ -1058,7 +1094,7 @@ void QDirectFBPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 
 void QDirectFBPaintEngine::drawPath(const QPainterPath &path)
 {
-    RASTERFALLBACK(path.boundingRect(), static_cast<bool>(false), static_cast<bool>(false));
+    RASTERFALLBACK(DRAW_PATH, path, VOID_ARG(), VOID_ARG());
     Q_D(QDirectFBPaintEngine);
     d->lock();
     QRasterPaintEngine::drawPath(path);
@@ -1066,7 +1102,7 @@ void QDirectFBPaintEngine::drawPath(const QPainterPath &path)
 
 void QDirectFBPaintEngine::drawPoints(const QPointF *points, int pointCount)
 {
-    RASTERFALLBACK(pointCount, static_cast<bool>(false), static_cast<bool>(false));
+    RASTERFALLBACK(DRAW_POINTS, pointCount, VOID_ARG(), VOID_ARG());
     Q_D(QDirectFBPaintEngine);
     d->lock();
     QRasterPaintEngine::drawPoints(points, pointCount);
@@ -1074,7 +1110,7 @@ void QDirectFBPaintEngine::drawPoints(const QPointF *points, int pointCount)
 
 void QDirectFBPaintEngine::drawPoints(const QPoint *points, int pointCount)
 {
-    RASTERFALLBACK(pointCount, static_cast<bool>(false), static_cast<bool>(false));
+    RASTERFALLBACK(DRAW_POINTS, pointCount, VOID_ARG(), VOID_ARG());
     Q_D(QDirectFBPaintEngine);
     d->lock();
     QRasterPaintEngine::drawPoints(points, pointCount);
@@ -1082,7 +1118,7 @@ void QDirectFBPaintEngine::drawPoints(const QPoint *points, int pointCount)
 
 void QDirectFBPaintEngine::drawEllipse(const QRectF &rect)
 {
-    RASTERFALLBACK(rect, static_cast<bool>(false), static_cast<bool>(false));
+    RASTERFALLBACK(DRAW_ELLIPSE, rect, VOID_ARG(), VOID_ARG());
     Q_D(QDirectFBPaintEngine);
     d->lock();
     QRasterPaintEngine::drawEllipse(rect);
@@ -1091,7 +1127,7 @@ void QDirectFBPaintEngine::drawEllipse(const QRectF &rect)
 void QDirectFBPaintEngine::drawPolygon(const QPointF *points, int pointCount,
                                        PolygonDrawMode mode)
 {
-    RASTERFALLBACK(pointCount, mode, static_cast<bool>(false));
+    RASTERFALLBACK(DRAW_POLYGON, pointCount, mode, VOID_ARG());
     Q_D(QDirectFBPaintEngine);
     d->lock();
     QRasterPaintEngine::drawPolygon(points, pointCount, mode);
@@ -1100,7 +1136,7 @@ void QDirectFBPaintEngine::drawPolygon(const QPointF *points, int pointCount,
 void QDirectFBPaintEngine::drawPolygon(const QPoint *points, int pointCount,
                                        PolygonDrawMode mode)
 {
-    RASTERFALLBACK(pointCount, mode, static_cast<bool>(false));
+    RASTERFALLBACK(DRAW_POLYGON, pointCount, mode, VOID_ARG());
     Q_D(QDirectFBPaintEngine);
     d->lock();
     QRasterPaintEngine::drawPolygon(points, pointCount, mode);
@@ -1109,7 +1145,7 @@ void QDirectFBPaintEngine::drawPolygon(const QPoint *points, int pointCount,
 void QDirectFBPaintEngine::drawTextItem(const QPointF &p,
                                         const QTextItem &textItem)
 {
-    RASTERFALLBACK(p, textItem.text(), static_cast<bool>(false));
+    RASTERFALLBACK(DRAW_TEXT, p, textItem.text(), VOID_ARG());
     Q_D(QDirectFBPaintEngine);
     d->lock();
     QRasterPaintEngine::drawTextItem(p, textItem);
@@ -1117,7 +1153,7 @@ void QDirectFBPaintEngine::drawTextItem(const QPointF &p,
 
 void QDirectFBPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 {
-    RASTERFALLBACK(path, brush, static_cast<bool>(false));
+    RASTERFALLBACK(FILL_PATH, path, brush, VOID_ARG());
     Q_D(QDirectFBPaintEngine);
     d->lock();
     QRasterPaintEngine::fill(path, brush);
@@ -1151,7 +1187,7 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
             break;
         }
     }
-    RASTERFALLBACK(rect, brush, static_cast<bool>(false));
+    RASTERFALLBACK(FILL_RECT, rect, brush, VOID_ARG());
     d->lock();
     QRasterPaintEngine::fillRect(rect, brush);
 }
@@ -1161,7 +1197,7 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QColor &color)
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
     if (!d->dfbCanHandleClip() || d->matrixRotShear || d->forceRasterPrimitives) {
-        RASTERFALLBACK(rect, color, static_cast<bool>(false));
+        RASTERFALLBACK(FILL_RECT, rect, color, VOID_ARG());
         d->lock();
         QRasterPaintEngine::fillRect(rect, color);
     } else {
@@ -1178,7 +1214,7 @@ void QDirectFBPaintEngine::drawColorSpans(const QSpan *spans, int count,
 {
     Q_D(QDirectFBPaintEngine);
     if (d->forceRasterPrimitives) {
-        RASTERFALLBACK(count, color, static_cast<bool>(false));
+        RASTERFALLBACK(DRAW_COLORSPANS, count, color, VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawColorSpans(spans, count, color);
     } else {

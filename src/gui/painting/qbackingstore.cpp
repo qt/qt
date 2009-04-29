@@ -1510,6 +1510,9 @@ void QWidgetPrivate::invalidateBuffer(const QRect &rect)
 
 void QWidgetPrivate::repaint_sys(const QRegion &rgn)
 {
+    if (data.in_destructor)
+        return;
+
     Q_Q(QWidget);
     if (q->testAttribute(Qt::WA_StaticContents)) {
         if (!extra)
