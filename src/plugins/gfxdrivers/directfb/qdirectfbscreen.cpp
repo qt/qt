@@ -568,7 +568,7 @@ void QDirectFBScreenCursor::move(int x, int y)
 void QDirectFBScreenCursor::hide()
 {
     if (enable) {
-        QScreenCursor::hide();
+        enable = false;
         DFBResult result;
         result = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);
         if (result != DFB_OK) {
@@ -591,7 +591,7 @@ void QDirectFBScreenCursor::hide()
 void QDirectFBScreenCursor::show()
 {
     if (!enable) {
-        QScreenCursor::show();
+        enable = true;
         DFBResult result;
         result = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);
         if (result != DFB_OK) {
