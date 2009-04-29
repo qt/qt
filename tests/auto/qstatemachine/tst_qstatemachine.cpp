@@ -135,6 +135,7 @@ private slots:
 
     void transitionWithParent();
     void parallelStateTransition();
+    void parallelStateAssignmentsDone();
 
     void simpleAnimation();
     void twoAnimations();
@@ -2822,7 +2823,7 @@ void tst_QStateMachine::overrideDefaultTargetAnimationWithSource()
     QState *s3 = new QState(machine.rootState());
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
-    QAbstractTransition *at = s1->addTransition(new EventTransition(QEvent::User, s2));
+    s1->addTransition(new EventTransition(QEvent::User, s2));
     
     QPropertyAnimation *defaultAnimation = new QPropertyAnimation(object, "foo");    
     connect(defaultAnimation, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)), &counter, SLOT(slot()));
@@ -2844,6 +2845,43 @@ void tst_QStateMachine::overrideDefaultTargetAnimationWithSource()
     QCOMPARE(counter.counter, 2); // specific animation started and stopped
 }
 
+void tst_QStateMachine::parallelStateAssignmentsDone()
+{
+    QStateMachine machine;
+
+    QObject *propertyHolder = new QObject(&machine);
+    propertyHolder->setProperty("foo", 123);
+    propertyHolder->setProperty("bar", 456);
+    propertyHolder->setProperty("zoot", 789);
+
+    QState *s1 = new QState(machine.rootState());
+    machine.setInitialState(s1);
+
+    QState *parallelState = new QState(QState::ParallelGroup, machine.rootState());
+    parallelState->assignProperty(propertyHolder, "foo", 321);
+
+    QState *s2 = new QState(parallelState);
+    s2->assignProperty(propertyHolder, "bar", 654);
+
+    QState *s3 = new QState(parallelState);
+    s3->assignProperty(propertyHolder, "zoot", 987);
+
+    s1->addTransition(new EventTransition(QEvent::User, parallelState));
+    machine.start();
+    QCoreApplication::processEvents();
+
+    QCOMPARE(propertyHolder->property("foo").toInt(), 123);
+    QCOMPARE(propertyHolder->property("bar").toInt(), 456);
+    QCOMPARE(propertyHolder->property("zoot").toInt(), 789);
+    
+    machine.postEvent(new QEvent(QEvent::User));
+    QCoreApplication::processEvents();
+
+    QCOMPARE(propertyHolder->property("foo").toInt(), 321);
+    QCOMPARE(propertyHolder->property("bar").toInt(), 654);
+    QCOMPARE(propertyHolder->property("zoot").toInt(), 987);
+}
+
 void tst_QStateMachine::parallelStateTransition()
 {
     QStateMachine machine;
@@ -2860,8 +2898,7 @@ void tst_QStateMachine::parallelStateTransition()
     QState *s2InitialChild = new QState(s2);
     s2->setInitialState(s2InitialChild);
 
-    QState *s1OtherChild = new QState(s1);
-    QState *s2OtherChild = new QState(s2);
+    QState *s1OtherChild = new QState(s1);    
 
     s1->addTransition(new EventTransition(QEvent::User, s1OtherChild));
 
