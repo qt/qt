@@ -124,7 +124,7 @@ QFxImage::QFxImage(QFxImagePrivate &dd, QFxItem *parent)
 QFxImage::~QFxImage()
 {
     Q_D(const QFxImage);
-    if(d->reply)
+    if (d->reply)
         d->reply->deleteLater();
 }
 
@@ -251,7 +251,7 @@ bool QFxImage::isOpaque() const
 void QFxImage::setOpaque(bool o)
 {
     Q_D(QFxImage);
-    if(o == d->_opaque)
+    if (o == d->_opaque)
         return;
     d->_opaque = o;
     d->_pix.setOpaque(o);
@@ -300,7 +300,7 @@ bool QFxImage::smoothTransform() const
 void QFxImage::setSmoothTransform(bool s)
 {
     Q_D(QFxImage);
-    if(d->_smooth == s)
+    if (d->_smooth == s)
         return;
     d->_smooth = s;
     update();
@@ -318,10 +318,10 @@ void QFxImage::dump(int depth)
 void QFxImage::paintContents(QPainter &p)
 {
     Q_D(QFxImage);
-    if(d->_pix.isNull())
+    if (d->_pix.isNull())
         return;
 
-    if(d->_smooth) {
+    if (d->_smooth) {
         p.save();
         p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->_smooth);
     }
@@ -348,7 +348,7 @@ void QFxImage::paintContents(QPainter &p)
 
         p.restore();
     } else if (!d->_scaleGrid || d->_scaleGrid->isNull()) {
-        if(width() != pix.width() || height() != pix.height()) {
+        if (width() != pix.width() || height() != pix.height()) {
             QTransform scale;
             scale.scale(width() / qreal(pix.width()), 
                         height() / qreal(pix.height()));
@@ -368,45 +368,45 @@ void QFxImage::paintContents(QPainter &p)
         const int ySide = sgt + sgb;
 
         // Upper left
-        if(sgt && sgl)
+        if (sgt && sgl)
             p.drawImage(QRect(0, 0, sgl, sgt), pix, QRect(0, 0, sgl, sgt));
         // Upper middle
-        if(pix.width() - xSide && sgt)
+        if (pix.width() - xSide && sgt)
             p.drawImage(QRect(sgl, 0, width() - xSide, sgt), pix,
                         QRect(sgl, 0, pix.width() - xSide, sgt));
         // Upper right
-        if(sgt && pix.width() - sgr) 
+        if (sgt && pix.width() - sgr) 
             p.drawImage(QPoint(width()-sgr, 0), pix,
                         QRect(pix.width()-sgr, 0, sgr, sgt));
         // Middle left
-        if(sgl && pix.height() - ySide)
+        if (sgl && pix.height() - ySide)
             p.drawImage(QRect(0, sgt, sgl, height() - ySide), pix,
                         QRect(0, sgt, sgl, pix.height() - ySide));
 
         // Middle
-        if(pix.width() - xSide && pix.height() - ySide)
+        if (pix.width() - xSide && pix.height() - ySide)
             p.drawImage(QRect(sgl, sgt, width() - xSide, height() - ySide), 
                         pix, 
                         QRect(sgl, sgt, pix.width() - xSide, pix.height() - ySide));
         // Middle right
-        if(sgr && pix.height() - ySide)
+        if (sgr && pix.height() - ySide)
             p.drawImage(QRect(width()-sgr, sgt, sgr, height() - ySide), pix,
                         QRect(pix.width()-sgr, sgt, sgr, pix.height() - ySide));
         // Lower left 
-        if(sgl && sgr)
+        if (sgl && sgr)
             p.drawImage(QPoint(0, height() - sgb), pix,
                         QRect(0, pix.height() - sgb, sgl, sgb));
         // Lower Middle
-        if(pix.width() - xSide && sgb)
+        if (pix.width() - xSide && sgb)
             p.drawImage(QRect(sgl, height() - sgb, width() - xSide, sgb), pix,
                         QRect(sgl, pix.height() - sgb, pix.width() - xSide, sgb));
         // Lower Right
-        if(sgr && sgb)
+        if (sgr && sgb)
             p.drawImage(QPoint(width()-sgr, height() - sgb), pix,
                         QRect(pix.width()-sgr, pix.height() - sgb, sgr, sgb));
     }
 
-    if(d->_smooth) {
+    if (d->_smooth) {
         p.restore();
     }
 }
@@ -416,10 +416,10 @@ uint QFxImage::glSimpleItemData(float *vertices, float *texVertices,
 {
     Q_D(QFxImage);
 
-    if(d->_pix.isNull() || (d->_scaleGrid && !d->_scaleGrid->isNull()))
+    if (d->_pix.isNull() || (d->_scaleGrid && !d->_scaleGrid->isNull()))
         return 0;
 
-    if(count < 8) 
+    if (count < 8) 
         return 8;
 
     d->checkDirty();
@@ -434,7 +434,7 @@ uint QFxImage::glSimpleItemData(float *vertices, float *texVertices,
 
     *texture = &d->_tex;
 
-    if(d->_tiled) {
+    if (d->_tiled) {
         float tileWidth = widthV / d->_pix.width();
         float tileHeight = heightV / d->_pix.height();
         texVertices[0] = 0; texVertices[1] = 0;
@@ -453,7 +453,7 @@ uint QFxImage::glSimpleItemData(float *vertices, float *texVertices,
 
 void QFxImagePrivate::checkDirty()
 {
-    if(_texDirty && !_pix.isNull()) {
+    if (_texDirty && !_pix.isNull()) {
         _tex.setImage(_pix);
         _tex.setHorizontalWrap(GLTexture::Repeat);
         _tex.setVerticalWrap(GLTexture::Repeat);
@@ -465,18 +465,18 @@ void QFxImagePrivate::checkDirty()
 void QFxImage::paintGLContents(GLPainter &p)
 {
     Q_D(QFxImage);
-    if(d->_pix.isNull())
+    if (d->_pix.isNull())
         return;
 
     QGLShaderProgram *shader = p.useTextureShader();
 
     bool restoreBlend = false;
-    if(isOpaque() && p.activeOpacity == 1) {
+    if (isOpaque() && p.activeOpacity == 1) {
         glDisable(GL_BLEND);
         restoreBlend = true;
     }
 
-    if(d->_tiled || (!d->_scaleGrid || d->_scaleGrid->isNull())) {
+    if (d->_tiled || (!d->_scaleGrid || d->_scaleGrid->isNull())) {
 
         GLfloat vertices[8];
         GLfloat texVertices[8];
@@ -498,7 +498,7 @@ void QFxImage::paintGLContents(GLPainter &p)
 
         float imgWidth = d->_pix.width();
         float imgHeight = d->_pix.height();
-        if(!imgWidth || !imgHeight) {
+        if (!imgWidth || !imgHeight) {
             if (restoreBlend)
                 glEnable(GL_BLEND);
             return;
@@ -521,19 +521,19 @@ void QFxImage::paintGLContents(GLPainter &p)
         const int sgt = d->_scaleGrid->top();
         const int sgb = d->_scaleGrid->bottom();
 
-        if(sgl) {
+        if (sgl) {
             texleft = float(sgl) / imgWidth;
             imgleft = sgl;
         }
-        if(sgr) {
+        if (sgr) {
             texright = 1. - float(sgr) / imgWidth;
             imgright = widthV - sgr;
         }
-        if(sgt) {
+        if (sgt) {
             textop = 1. - float(sgb) / imgHeight;
             imgtop = sgt;
         }
-        if(sgb) {
+        if (sgb) {
             texbottom = float(sgt) / imgHeight;
             imgbottom = heightV - sgb;
         }
@@ -610,20 +610,20 @@ void QFxImage::paintGLContents(GLPainter &p)
 void QFxImage::paintGLContents(GLPainter &p)
 {
     Q_D(QFxImage);
-    if(d->_pix.isNull())
+    if (d->_pix.isNull())
         return;
 
     glMatrixMode(GL_MODELVIEW);
     glLoadMatrixf(p.activeTransform.data());
 
     bool restoreBlend = false;
-    if(isOpaque() && p.activeOpacity == 1) {
+    if (isOpaque() && p.activeOpacity == 1) {
         glDisable(GL_BLEND);
         restoreBlend = true;
     }
 
     glEnable(GL_TEXTURE_2D);
-    if(p.activeOpacity == 1.) {
+    if (p.activeOpacity == 1.) {
         GLint i = GL_REPLACE;
         glTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &i);
     } else {
@@ -632,7 +632,7 @@ void QFxImage::paintGLContents(GLPainter &p)
         glColor4f(1, 1, 1, p.activeOpacity);
     }
 
-    if(d->_tiled || !d->_scaleGrid || d->_scaleGrid->isNull()) {
+    if (d->_tiled || !d->_scaleGrid || d->_scaleGrid->isNull()) {
 
         GLfloat vertices[8];
         GLfloat texVertices[8];
@@ -660,7 +660,7 @@ void QFxImage::paintGLContents(GLPainter &p)
 
         float imgWidth = d->_pix.width();
         float imgHeight = d->_pix.height();
-        if(!imgWidth || !imgHeight) {
+        if (!imgWidth || !imgHeight) {
             if (restoreBlend)
                 glEnable(GL_BLEND);
             return;
@@ -683,19 +683,19 @@ void QFxImage::paintGLContents(GLPainter &p)
         const int sgt = d->_scaleGrid->top();
         const int sgb = d->_scaleGrid->bottom();
 
-        if(sgl) {
+        if (sgl) {
             texleft = float(sgl) / imgWidth;
             imgleft = sgl;
         }
-        if(sgr) {
+        if (sgr) {
             texright = 1. - float(sgr) / imgWidth;
             imgright = widthV - sgr;
         }
-        if(sgt) {
+        if (sgt) {
             textop = 1. - float(sgb) / imgHeight;
             imgtop = sgt;
         }
-        if(sgb) {
+        if (sgb) {
             texbottom = float(sgt) / imgHeight;
             imgbottom = heightV - sgb;
         }
@@ -827,10 +827,10 @@ QString QFxImage::source() const
 void QFxImage::setSource(const QString &url)
 {
     Q_D(QFxImage);
-    if(url == d->source)
+    if (url == d->source)
         return;
 
-    if(d->reply) {
+    if (d->reply) {
         d->reply->deleteLater();
         d->reply = 0;
     }
@@ -844,7 +844,7 @@ void QFxImage::setSource(const QString &url)
     d->url = qmlContext(this)->resolvedUrl(url);
     d->sciurl = QUrl();
 
-    if(url.isEmpty()) {
+    if (url.isEmpty()) {
         setPixmap(QPixmap());
         d->status = Idle;
     } else {
@@ -898,7 +898,7 @@ void QFxImage::requestFinished()
 void QFxImage::sciRequestFinished()
 {
     Q_D(QFxImage);
-    if(d->reply->error() != QNetworkReply::NoError) {
+    if (d->reply->error() != QNetworkReply::NoError) {
         d->status = Error;
         d->reply->deleteLater();
         d->reply = 0;
@@ -915,7 +915,7 @@ void QFxImage::sciRequestFinished()
 void QFxImage::setGridScaledImage(const QFxGridScaledImage& sci)
 {
     Q_D(QFxImage);
-    if(!sci.isValid()) {
+    if (!sci.isValid()) {
         d->status = Error;
         emit statusChanged(d->status);
     } else {

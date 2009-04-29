@@ -410,7 +410,9 @@ void QTransformedScreen::blit(const QImage &image, const QPoint &topLeft,
 #endif
 #ifdef QT_QWS_DEPTH_8
     case 8:
-        if (image.depth() == 16)
+        if (image.format() == QImage::Format_RGB444)
+            SET_BLIT_FUNC(quint8, qrgb444, trans, func);
+        else if (image.depth() == 16)
             SET_BLIT_FUNC(quint8, quint16, trans, func);
         else
             SET_BLIT_FUNC(quint8, quint32, trans, func);

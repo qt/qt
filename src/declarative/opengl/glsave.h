@@ -82,7 +82,7 @@ public:
 
     ~GLSaveScissor()
     {
-        if(enabled)
+        if (enabled)
             glEnable(GL_SCISSOR_TEST);
         else
             glDisable(GL_SCISSOR_TEST);

@@ -3792,8 +3792,11 @@ void tst_QPainter::imageBlending()
 
 void tst_QPainter::paintOnNullPixmap()
 {
+    QPixmap pix(16, 16);
+
     QPixmap textPixmap;
     QPainter p(&textPixmap);
+    p.drawPixmap(10, 10, pix);
     p.end();
 
     QPixmap textPixmap2(16,16);

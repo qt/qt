@@ -88,7 +88,7 @@ public:
     QColor _gradcolor;
     QColor _tintColor;
     QFxPen *pen() {
-        if(!_pen) {
+        if (!_pen) {
             Q_Q(QFxRect);
             _pen = new QFxPen;
             QObject::connect(_pen, SIGNAL(updated()), q, SLOT(doUpdate()));

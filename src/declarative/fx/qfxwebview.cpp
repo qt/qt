@@ -75,6 +75,73 @@ QML_DEFINE_TYPE(QFxWebView,WebView);
 
 static const int MAX_DOUBLECLICK_TIME=500; // XXX need better gesture system
 
+class QFxWebSettings : public QObject {
+    Q_OBJECT
+    /*
+        StandardFont,
+        FixedFont,
+        SerifFont,
+        SansSerifFont,
+        CursiveFont,
+        FantasyFont
+
+        MinimumFontSize,
+        MinimumLogicalFontSize,
+        DefaultFontSize,
+        DefaultFixedFontSize
+    */
+
+    Q_PROPERTY(bool autoLoadImages READ autoLoadImages WRITE setAutoLoadImages)
+    Q_PROPERTY(bool javascriptEnabled READ javascriptEnabled WRITE setJavascriptEnabled)
+    Q_PROPERTY(bool javaEnabled READ javaEnabled WRITE setJavaEnabled)
+    Q_PROPERTY(bool pluginsEnabled READ pluginsEnabled WRITE setPluginsEnabled)
+    Q_PROPERTY(bool privateBrowsingEnabled READ privateBrowsingEnabled WRITE setPrivateBrowsingEnabled)
+    Q_PROPERTY(bool javascriptCanOpenWindows READ javascriptCanOpenWindows WRITE setJavascriptCanOpenWindows)
+    Q_PROPERTY(bool javascriptCanAccessClipboard READ javascriptCanAccessClipboard WRITE setJavascriptCanAccessClipboard)
+    Q_PROPERTY(bool developerExtrasEnabled READ developerExtrasEnabled WRITE setDeveloperExtrasEnabled)
+    Q_PROPERTY(bool linksIncludedInFocusChain READ linksIncludedInFocusChain WRITE setLinksIncludedInFocusChain)
+    Q_PROPERTY(bool zoomTextOnly READ zoomTextOnly WRITE setZoomTextOnly)
+    Q_PROPERTY(bool printElementBackgrounds READ printElementBackgrounds WRITE setPrintElementBackgrounds)
+    Q_PROPERTY(bool offlineStorageDatabaseEnabled READ offlineStorageDatabaseEnabled WRITE setOfflineStorageDatabaseEnabled)
+    Q_PROPERTY(bool offlineWebApplicationCacheEnabled READ offlineWebApplicationCacheEnabled WRITE setOfflineWebApplicationCacheEnabled)
+    Q_PROPERTY(bool localStorageDatabaseEnabled READ localStorageDatabaseEnabled WRITE setLocalStorageDatabaseEnabled)
+
+public:
+    QFxWebSettings() {}
+
+    bool autoLoadImages() const { return s->testAttribute(QWebSettings::AutoLoadImages); }
+    void setAutoLoadImages(bool on) { s->setAttribute(QWebSettings::AutoLoadImages, on); }
+    bool javascriptEnabled() const { return s->testAttribute(QWebSettings::JavascriptEnabled); }
+    void setJavascriptEnabled(bool on) { s->setAttribute(QWebSettings::JavascriptEnabled, on); }
+    bool javaEnabled() const { return s->testAttribute(QWebSettings::JavaEnabled); }
+    void setJavaEnabled(bool on) { s->setAttribute(QWebSettings::JavaEnabled, on); }
+    bool pluginsEnabled() const { return s->testAttribute(QWebSettings::PluginsEnabled); }
+    void setPluginsEnabled(bool on) { s->setAttribute(QWebSettings::PluginsEnabled, on); }
+    bool privateBrowsingEnabled() const { return s->testAttribute(QWebSettings::PrivateBrowsingEnabled); }
+    void setPrivateBrowsingEnabled(bool on) { s->setAttribute(QWebSettings::PrivateBrowsingEnabled, on); }
+    bool javascriptCanOpenWindows() const { return s->testAttribute(QWebSettings::JavascriptCanOpenWindows); }
+    void setJavascriptCanOpenWindows(bool on) { s->setAttribute(QWebSettings::JavascriptCanOpenWindows, on); }
+    bool javascriptCanAccessClipboard() const { return s->testAttribute(QWebSettings::JavascriptCanAccessClipboard); }
+    void setJavascriptCanAccessClipboard(bool on) { s->setAttribute(QWebSettings::JavascriptCanAccessClipboard, on); }
+    bool developerExtrasEnabled() const { return s->testAttribute(QWebSettings::DeveloperExtrasEnabled); }
+    void setDeveloperExtrasEnabled(bool on) { s->setAttribute(QWebSettings::DeveloperExtrasEnabled, on); }
+    bool linksIncludedInFocusChain() const { return s->testAttribute(QWebSettings::LinksIncludedInFocusChain); }
+    void setLinksIncludedInFocusChain(bool on) { s->setAttribute(QWebSettings::LinksIncludedInFocusChain, on); }
+    bool zoomTextOnly() const { return s->testAttribute(QWebSettings::ZoomTextOnly); }
+    void setZoomTextOnly(bool on) { s->setAttribute(QWebSettings::ZoomTextOnly, on); }
+    bool printElementBackgrounds() const { return s->testAttribute(QWebSettings::PrintElementBackgrounds); }
+    void setPrintElementBackgrounds(bool on) { s->setAttribute(QWebSettings::PrintElementBackgrounds, on); }
+    bool offlineStorageDatabaseEnabled() const { return s->testAttribute(QWebSettings::OfflineStorageDatabaseEnabled); }
+    void setOfflineStorageDatabaseEnabled(bool on) { s->setAttribute(QWebSettings::OfflineStorageDatabaseEnabled, on); }
+    bool offlineWebApplicationCacheEnabled() const { return s->testAttribute(QWebSettings::OfflineWebApplicationCacheEnabled); }
+    void setOfflineWebApplicationCacheEnabled(bool on) { s->setAttribute(QWebSettings::OfflineWebApplicationCacheEnabled, on); }
+    bool localStorageDatabaseEnabled() const { return s->testAttribute(QWebSettings::LocalStorageDatabaseEnabled); }
+    void setLocalStorageDatabaseEnabled(bool on) { s->setAttribute(QWebSettings::LocalStorageDatabaseEnabled, on); }
+
+    QWebSettings *s;
+};
+
+
 class QFxWebViewPrivate : public QFxItemPrivate
 {
     Q_DECLARE_PUBLIC(QFxWebView)
@@ -131,6 +198,7 @@ public:
     QUrl pending_url;
     QString pending_string;
     QByteArray pending_data;
+    mutable QFxWebSettings settings;
 };
 
 
@@ -293,7 +361,7 @@ QString QFxWebView::url() const
 void QFxWebView::setUrl(const QString &n)
 {
     Q_D(QFxWebView);
-    if(n == page()->mainFrame()->url().toString())
+    if (n == page()->mainFrame()->url().toString())
         return;
 
     page()->setViewportSize(QSize(
@@ -331,7 +399,7 @@ int QFxWebView::idealWidth() const
 void QFxWebView::setIdealWidth(int iw)
 {
     Q_D(QFxWebView);
-    if(d->idealwidth == iw) return;
+    if (d->idealwidth == iw) return;
     d->idealwidth = iw;
     expandToWebPage();
     emit idealWidthChanged();
@@ -354,7 +422,7 @@ int QFxWebView::idealHeight() const
 void QFxWebView::setIdealHeight(int ih)
 {
     Q_D(QFxWebView);
-    if(d->idealheight == ih) return;
+    if (d->idealheight == ih) return;
     d->idealheight = ih;
     expandToWebPage();
     emit idealHeightChanged();
@@ -381,7 +449,7 @@ bool QFxWebView::interactive() const
 void QFxWebView::setInteractive(bool i)
 {
     Q_D(QFxWebView);
-    if(d->interactive == i) return;
+    if (d->interactive == i) return;
     d->interactive = i;
     emit interactiveChanged();
 }
@@ -403,7 +471,7 @@ bool QFxWebView::smooth() const
 void QFxWebView::setSmooth(bool i)
 {
     Q_D(QFxWebView);
-    if(d->smooth == i) return;
+    if (d->smooth == i) return;
     d->smooth = i;
     update();
 }
@@ -438,7 +506,7 @@ void QFxWebView::expandToWebPage()
 void QFxWebView::geometryChanged(const QRectF &newGeometry, 
                                  const QRectF &oldGeometry)
 {
-    if(newGeometry.size() != oldGeometry.size())
+    if (newGeometry.size() != oldGeometry.size())
         expandToWebPage();
     QFxItem::geometryChanged(newGeometry, oldGeometry);
 }
@@ -866,9 +934,6 @@ QWebPage *QFxWebView::page() const
 
         wp->setNetworkAccessManager(qmlEngine(this)->networkAccessManager());
 
-        // XXX settable from QML?
-        wp->settings()->setAttribute(QWebSettings::PluginsEnabled, true);
-
         self->setPage(wp);
 
         return wp;
@@ -877,6 +942,13 @@ QWebPage *QFxWebView::page() const
     return d->page;
 }
 
+// The QObject interface to settings().
+QObject *QFxWebView::settingsObject() const
+{
+    Q_D(const QFxWebView);
+    d->settings.s = page()->settings();
+    return &d->settings;
+}
 
 void QFxWebView::setPage(QWebPage *page)
 {
@@ -1031,7 +1103,10 @@ public:
         QmlEngine *engine = qmlEngine(webview);
         component = new QmlComponent(engine, url, this);
         item = 0;
-        connect(engine, SIGNAL(statusChanged(Status)), this, SLOT(qmlLoaded()));
+        if (component->isReady())
+            qmlLoaded();
+        else
+            connect(component, SIGNAL(statusChanged(QmlComponent::Status)), this, SLOT(qmlLoaded()));
     }
 
 public Q_SLOTS:

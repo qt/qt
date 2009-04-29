@@ -49,11 +49,17 @@ QML_DEFINE_TYPE(QFxFlipable,Flipable);
 class QFxFlipablePrivate : public QFxItemPrivate
 {
 public:
-    QFxFlipablePrivate() : current(QFxFlipable::Front), front(0), back(0) {}
+    QFxFlipablePrivate() : current(QFxFlipable::Front), front(0), back(0), axis(0), rotation(0) {}
+
+    void setBackTransform();
+    void _q_updateAxis();
 
     QFxFlipable::Side current;
     QFxItem *front;
     QFxItem *back;
+    QFxAxis *axis;
+    QFxRotation axisRotation;
+    qreal rotation;
 };
 
 /*!
@@ -65,18 +71,18 @@ public:
 
     \code
     <Flipable id="flipable" width="40" height="40">
-        <transform>
-            <Axis id="axis" xStart="20" xEnd="20" yStart="20" yEnd="0" />
-        </transform>
+        <axis>
+            <Axis startX="20" startY="0" endX="20" endY="40" />
+        </axis>
         <front>
-            <Image file="front.png"/>
+            <Image src="front.png"/>
         </front>
         <back>
-            <Image file="back.png"/>
+            <Image src="back.png"/>
         </back>
         <states>
             <State name="back">
-                <SetProperty target="{axis}" property="rotation" value="180" />
+                <SetProperty target="{flipable}" property="rotation" value="180" />
             </State>
         </states>
         <transitions>
@@ -126,13 +132,13 @@ QFxItem *QFxFlipable::front()
 void QFxFlipable::setFront(QFxItem *front)
 {
     Q_D(QFxFlipable);
-    if(d->front) {
+    if (d->front) {
         qmlInfo(this) << "front is a write-once property";
         return;
     }
     d->front = front;
     children()->append(d->front);
-    if(Back == d->current)
+    if (Back == d->current)
         d->front->setOpacity(0.);
 }
 
@@ -145,14 +151,122 @@ QFxItem *QFxFlipable::back()
 void QFxFlipable::setBack(QFxItem *back)
 {
     Q_D(QFxFlipable);
-    if(d->back) {
+    if (d->back) {
         qmlInfo(this) << "back is a write-once property";
         return;
     }
     d->back = back;
     children()->append(d->back);
-    if(Front == d->current)
+    if (Front == d->current)
         d->back->setOpacity(0.);
+    d->setBackTransform();
+}
+
+/*!
+    \qmlproperty Axis Flipable::axis
+
+    The axis to flip around. See the \l Axis documentation for more
+    information on specifying an axis.
+*/
+
+QFxAxis *QFxFlipable::axis()
+{
+    Q_D(QFxFlipable);
+    return d->axis;
+}
+
+void QFxFlipable::setAxis(QFxAxis *axis)
+{
+    Q_D(QFxFlipable);
+    //### disconnect if we are already connected?
+    if (d->axis)
+        disconnect(d->axis, SIGNAL(updated()), this, SLOT(_q_updateAxis()));
+    d->axis = axis;
+    connect(d->axis, SIGNAL(updated()), this, SLOT(_q_updateAxis()));
+    d->_q_updateAxis();
+}
+
+void QFxFlipablePrivate::_q_updateAxis()
+{
+    axisRotation.axis()->setStartX(axis->startX());
+    axisRotation.axis()->setStartY(axis->startY());
+    axisRotation.axis()->setEndX(axis->endX());
+    axisRotation.axis()->setEndY(axis->endY());
+    axisRotation.axis()->setEndZ(axis->endZ());
+
+    setBackTransform();
+}
+
+void QFxFlipablePrivate::setBackTransform()
+{
+    if (!back)
+        return;
+
+    QPointF p1(0, 0);
+    QPointF p2(1, 0);
+    QPointF p3(1, 1);
+
+    axisRotation.setAngle(180);
+    p1 = axisRotation.transform().map(p1);
+    p2 = axisRotation.transform().map(p2);
+    p3 = axisRotation.transform().map(p3);
+    axisRotation.setAngle(rotation);
+
+    QSimpleCanvas::Matrix mat;
+#ifdef QFX_RENDER_OPENGL
+    mat.translate(back->width()/2,back->height()/2, 0);
+    if (back->width() && p1.x() >= p2.x())
+        mat.rotate(180, 0, 1, 0);
+    if (back->height() && p2.y() >= p3.y())
+        mat.rotate(180, 1, 0, 0);
+    mat.translate(-back->width()/2,-back->height()/2, 0);
+#else
+    mat.translate(back->width()/2,back->height()/2);
+    if (back->width() && p1.x() >= p2.x())
+        mat.rotate(180, Qt::YAxis);
+    if (back->height() && p2.y() >= p3.y())
+        mat.rotate(180, Qt::XAxis);
+    mat.translate(-back->width()/2,-back->height()/2);
+#endif
+    back->setTransform(mat);
+}
+
+/*!
+    \qmlproperty real Flipable::rotation
+    The angle to rotate the flipable. For example, to show the back side of the flipable
+    you can set the rotation to 180.
+*/
+qreal QFxFlipable::rotation() const
+{
+    Q_D(const QFxFlipable);
+    return d->rotation;
+}
+
+void QFxFlipable::setRotation(qreal angle)
+{
+    Q_D(QFxFlipable);
+    d->rotation = angle;
+    d->axisRotation.setAngle(angle);
+    setTransform(d->axisRotation.transform());
+
+
+    int simpleAngle = int(angle) % 360;
+
+    Side newSide;
+    if (simpleAngle < 91 || simpleAngle > 270) {
+       newSide = Front;
+    } else {
+        newSide = Back;
+    }
+
+    if (newSide != d->current) {
+        d->current = newSide;
+        if (d->front)
+            d->front->setOpacity((d->current==Front)?1.:0.);
+        if (d->back)
+            d->back->setOpacity((d->current==Back)?1.:0.);
+        emit sideChanged();
+    }
 }
 
 /*!
@@ -167,6 +281,9 @@ QFxFlipable::Side QFxFlipable::side() const
     return d->current;
 }
 
+//in some cases the user may want to specify a more complex transformation.
+//in that case, we still allow the generic use of transform.
+//(the logic here should be kept in sync with setBackTransform and setRotation)
 void QFxFlipable::transformChanged(const QSimpleCanvas::Matrix &trans)
 {
     Q_D(QFxFlipable);
@@ -182,39 +299,41 @@ void QFxFlipable::transformChanged(const QSimpleCanvas::Matrix &trans)
                   (p1.y() - p2.y()) * (p3.x() - p2.x());
 
     Side newSide;
-    if(cross > 0) {
+    if (cross > 0) {
        newSide = Back;
     } else {
         newSide = Front;
     }
 
-    if(newSide != d->current) {
+    if (newSide != d->current) {
         d->current = newSide;
         if (d->current==Back) {
             QSimpleCanvas::Matrix mat;
 #ifdef QFX_RENDER_OPENGL
             mat.translate(d->back->width()/2,d->back->height()/2, 0);
-            if(d->back->width() && p1.x() >= p2.x())
+            if (d->back->width() && p1.x() >= p2.x())
                 mat.rotate(180, 0, 1, 0);
-            if(d->back->height() && p2.y() >= p3.y())
+            if (d->back->height() && p2.y() >= p3.y())
                 mat.rotate(180, 1, 0, 0);
             mat.translate(-d->back->width()/2,-d->back->height()/2, 0);
 #else
             mat.translate(d->back->width()/2,d->back->height()/2);
-            if(d->back->width() && p1.x() >= p2.x())
+            if (d->back->width() && p1.x() >= p2.x())
                 mat.rotate(180, Qt::YAxis);
-            if(d->back->height() && p2.y() >= p3.y())
+            if (d->back->height() && p2.y() >= p3.y())
                 mat.rotate(180, Qt::XAxis);
             mat.translate(-d->back->width()/2,-d->back->height()/2);
 #endif
             d->back->setTransform(mat);
         }
-        if(d->front)
+        if (d->front)
             d->front->setOpacity((d->current==Front)?1.:0.);
-        if(d->back)
+        if (d->back)
             d->back->setOpacity((d->current==Back)?1.:0.);
         emit sideChanged();
     }
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qfxflipable.cpp"

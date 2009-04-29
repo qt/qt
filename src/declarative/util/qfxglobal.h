@@ -88,10 +88,10 @@ QT_MODULE(Declarative)
     static bool name() \
     { \
         static enum { Yes, No, Unknown } status = Unknown; \
-        if(status == Unknown) { \
+        if (status == Unknown) { \
             QByteArray v = qgetenv(#var); \
             bool value = !v.isEmpty() && v != "0" && v != "false"; \
-            if(value) status = Yes; \
+            if (value) status = Yes; \
             else status = No; \
         } \
         return status == Yes; \

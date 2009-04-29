@@ -182,12 +182,12 @@ bool QmlBehaviour::_ignore = false;
 void QmlBehaviour::propertyValueChanged()
 {
     Q_D(QmlBehaviour);
-    if(_ignore)
+    if (_ignore)
         return;
 
     QVariant newValue = d->property.read();
 
-    if((!fromValue().isValid() || fromValue() == d->currentValue) && 
+    if ((!fromValue().isValid() || fromValue() == d->currentValue) && 
        (!toValue().isValid() || toValue() == newValue)) {
 
         //### does this clean up everything needed?
@@ -208,11 +208,11 @@ void QmlBehaviour::propertyValueChanged()
         d->property.write(d->currentValue);
 
         QList<QmlMetaProperty> after;
-        for(int ii = 0; ii < d->operations.count(); ++ii) {
+        for (int ii = 0; ii < d->operations.count(); ++ii) {
             d->operations.at(ii)->transition(actions, after, QmlAbstractAnimation::Forward);
         }
         d->group->start();
-        if(!after.contains(d->property))
+        if (!after.contains(d->property))
             d->property.write(newValue);
         _ignore = false;
     }
@@ -231,7 +231,7 @@ void QmlBehaviour::setTarget(const QmlMetaProperty &property)
 void QmlBehaviour::classBegin()
 {
     Q_D(QmlBehaviour);
-    if(!d->context) {
+    if (!d->context) {
         d->context = new QmlContext(qmlContext(this), this);
         d->context->addDefaultObject(d->valueData);
     }

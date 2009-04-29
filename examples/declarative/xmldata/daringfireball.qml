@@ -1,6 +1,6 @@
 <Rect color="white" width="600" height="600">
   <resources>
-        <XmlListModel id="feedModel" src="http://daringfireball.net/index.xml"
+        <XmlListModel id="feedModel" source="http://daringfireball.net/index.xml"
                                      query="doc($src)/feed/entry">
             <namespaceDeclarations>
                 declare default element namespace 'http://www.w3.org/2005/Atom';

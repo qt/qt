@@ -66,6 +66,8 @@ private slots:
     void getSetCheck();
     void openGLVersionCheck();
     void graphicsViewClipping();
+    void partialGLWidgetUpdates_data();
+    void partialGLWidgetUpdates();
 };
 
 tst_QGL::tst_QGL()
@@ -401,6 +403,69 @@ void tst_QGL::graphicsViewClipping()
     p.end();
 
     QCOMPARE(image, expected);
+#endif
+}
+
+void tst_QGL::partialGLWidgetUpdates_data()
+{
+    QTest::addColumn<bool>("doubleBufferedContext");
+    QTest::addColumn<bool>("autoFillBackground");
+    QTest::addColumn<bool>("supportsPartialUpdates");
+
+    QTest::newRow("Double buffered context") << true << true << false;
+    QTest::newRow("Double buffered context without auto-fill background") << true << false << false;
+    QTest::newRow("Single buffered context") << false << true << false;
+    QTest::newRow("Single buffered context without auto-fill background") << false << false << true;
+}
+
+void tst_QGL::partialGLWidgetUpdates()
+{
+#ifdef QT_NO_OPENGL
+    QSKIP("QGL not yet supported", SkipAll);
+#else
+    if (!QGLFormat::hasOpenGL())
+        QSKIP("QGL not supported on this platform", SkipAll);
+
+    QFETCH(bool, doubleBufferedContext);
+    QFETCH(bool, autoFillBackground);
+    QFETCH(bool, supportsPartialUpdates);
+
+    class MyGLWidget : public QGLWidget
+    {
+        public:
+            QRegion paintEventRegion;
+            void paintEvent(QPaintEvent *e)
+            {
+                paintEventRegion = e->region();
+            }
+    };
+
+    QGLFormat format = QGLFormat::defaultFormat();
+    format.setDoubleBuffer(doubleBufferedContext);
+    QGLFormat::setDefaultFormat(format);
+
+    MyGLWidget widget;
+    widget.setFixedSize(150, 150);
+    widget.setAutoFillBackground(autoFillBackground);
+    widget.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&widget);
+#endif
+    QTest::qWait(200);
+
+    if (widget.format().doubleBuffer() != doubleBufferedContext)
+        QSKIP("Platform does not support requested format", SkipAll);
+
+    widget.paintEventRegion = QRegion();
+    widget.repaint(50, 50, 50, 50);
+#ifdef Q_WS_MAC
+    // repaint() is not immediate on the Mac; it has to go through the event loop.
+    QTest::qWait(200);
+#endif
+    if (supportsPartialUpdates)
+        QCOMPARE(widget.paintEventRegion, QRegion(50, 50, 50, 50));
+    else
+        QCOMPARE(widget.paintEventRegion, QRegion(widget.rect()));
 #endif
 }
 

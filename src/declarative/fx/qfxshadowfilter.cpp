@@ -122,7 +122,7 @@ int QFxShadowFilter::xOffset() const
 */
 void QFxShadowFilter::setXOffset(int offset)
 {
-    if(d->x == offset) return;
+    if (d->x == offset) return;
     d->x = offset;
     emit offsetChanged(d->x, d->y);
 }
@@ -138,7 +138,7 @@ int QFxShadowFilter::yOffset() const
 
 void QFxShadowFilter::setYOffset(int offset)
 {
-    if(d->y == offset) return;
+    if (d->y == offset) return;
     d->y = offset;
     emit offsetChanged(d->x, d->y);
 }

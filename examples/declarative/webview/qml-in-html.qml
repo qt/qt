@@ -1,7 +1,7 @@
 <!-- The WebView supports QML data through the HTML OBJECT tag --> 
 <Flickable width="{250*.75}" height="240"
     viewportWidth="{Web.width*Web.scale}" viewportHeight="{Web.height*Web.scale}">
-<WebView id="Web" width="250" height="420" scale="0.75">
+<WebView id="Web" width="250" height="420" scale="0.75" settings.pluginsEnabled="true">
     <html><![CDATA[
         <html>
         <body bgcolor=white>

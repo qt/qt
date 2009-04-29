@@ -109,10 +109,10 @@ QmlList<QObject *> *QmlPackage::data()
 bool QmlPackage::hasPart(const QString &name)
 {
     Q_D(QmlPackage);
-    for(int ii = 0; ii < d->dataList.count(); ++ii) {
+    for (int ii = 0; ii < d->dataList.count(); ++ii) {
         QObject *obj = d->dataList.at(ii);
         QmlPackageAttached *a = QmlPackageAttached::attached.value(obj);
-        if(a && a->name() == name)
+        if (a && a->name() == name)
             return true;
     }
     return false;
@@ -121,17 +121,17 @@ bool QmlPackage::hasPart(const QString &name)
 QObject *QmlPackage::part(const QString &name)
 {
     Q_D(QmlPackage);
-    if(name.isEmpty() && !d->dataList.isEmpty())
+    if (name.isEmpty() && !d->dataList.isEmpty())
         return d->dataList.at(0);
 
-    for(int ii = 0; ii < d->dataList.count(); ++ii) {
+    for (int ii = 0; ii < d->dataList.count(); ++ii) {
         QObject *obj = d->dataList.at(ii);
         QmlPackageAttached *a = QmlPackageAttached::attached.value(obj);
-        if(a && a->name() == name)
+        if (a && a->name() == name)
             return obj;
     }
 
-    if(name == QLatin1String("default") && !d->dataList.isEmpty())
+    if (name == QLatin1String("default") && !d->dataList.isEmpty())
         return d->dataList.at(0);
 
     return 0;

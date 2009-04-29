@@ -21,7 +21,7 @@
     <Image
         anchors.right="{fieldText.left}" anchors.rightMargin="5"
         anchors.verticalCenter="{parent.verticalCenter}"
-        src="{contactField.icon}"/>
+        source="{contactField.icon}"/>
     <states>
         <State name="editingText" when="{fieldText.state == 'editing'}">
             <SetProperty target="{removeButton.anchors}" property="rightMargin" value="-35"/>

@@ -194,7 +194,7 @@ void QmlScriptPrivate::addScriptToEngine(const QString &script, const QString &f
     if (scriptEngine->hasUncaughtException()) {
         if (scriptEngine->uncaughtException().isError()){
             QScriptValue exception = scriptEngine->uncaughtException();
-            if(!exception.property(QLatin1String("fileName")).toString().isEmpty()){
+            if (!exception.property(QLatin1String("fileName")).toString().isEmpty()){
                 qWarning() << exception.property(QLatin1String("fileName")).toString() 
                            << scriptEngine->uncaughtExceptionLineNumber()
                            << exception.toString();

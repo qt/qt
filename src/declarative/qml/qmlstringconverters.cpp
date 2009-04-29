@@ -51,18 +51,18 @@ QT_BEGIN_NAMESPACE
 static uchar fromHex(const uchar c, const uchar c2)
 {
     uchar rv = 0;
-    if(c >= '0' && c <= '9')
+    if (c >= '0' && c <= '9')
         rv += (c - '0') * 16;
-    else if(c >= 'A' && c <= 'F')
+    else if (c >= 'A' && c <= 'F')
         rv += (c - 'A' + 10) * 16;
-    else if(c >= 'a' && c <= 'f')
+    else if (c >= 'a' && c <= 'f')
         rv += (c - 'a' + 10) * 16;
 
-    if(c2 >= '0' && c2 <= '9')
+    if (c2 >= '0' && c2 <= '9')
         rv += (c2 - '0');
-    else if(c2 >= 'A' && c2 <= 'F')
+    else if (c2 >= 'A' && c2 <= 'F')
         rv += (c2 - 'A' + 10);
-    else if(c2 >= 'a' && c2 <= 'f')
+    else if (c2 >= 'a' && c2 <= 'f')
         rv += (c2 - 'a' + 10);
 
     return rv;
@@ -77,41 +77,41 @@ static uchar fromHex(const QString &s, int idx)
 
 QVariant QmlStringConverters::variantFromString(const QString &s)
 {
-    if(s.isEmpty())
+    if (s.isEmpty())
         return QVariant(s);
-    if(s.startsWith(QLatin1Char('\'')) && s.endsWith(QLatin1Char('\''))) {
+    if (s.startsWith(QLatin1Char('\'')) && s.endsWith(QLatin1Char('\''))) {
         QString data = s.mid(1, s.length() - 2);
         return QVariant(data);
     } 
     bool ok = false;
     QRectF r = rectFFromString(s, &ok);
-    if(ok) return QVariant(r);
+    if (ok) return QVariant(r);
     QColor c = colorFromString(s, &ok);
-    if(ok) return QVariant(c);
+    if (ok) return QVariant(c);
     QPointF p = pointFFromString(s, &ok);
-    if(ok) return QVariant(p);
+    if (ok) return QVariant(p);
     QSizeF sz = sizeFFromString(s, &ok);
-    if(ok) return QVariant(sz);
+    if (ok) return QVariant(sz);
     bool b = boolFromString(s, &ok);
-    if(ok) return QVariant(b);
+    if (ok) return QVariant(b);
 
     return QVariant(s);
 }
 
 QColor QmlStringConverters::colorFromString(const QString &s, bool *ok)
 {
-    if(s.startsWith(QLatin1Char('#')) && s.length() == 9) {
+    if (s.startsWith(QLatin1Char('#')) && s.length() == 9) {
         uchar a = fromHex(s, 1);
         uchar r = fromHex(s, 3);
         uchar g = fromHex(s, 5);
         uchar b = fromHex(s, 7);
-        if(ok) *ok = true;
+        if (ok) *ok = true;
         return QColor(r, g, b, a);
     } else {
         QColor rv;
-        if(s.startsWith(QLatin1Char('#')) || QColor::colorNames().contains(s.toLower()))
+        if (s.startsWith(QLatin1Char('#')) || QColor::colorNames().contains(s.toLower()))
             rv = QColor(s);
-        if(ok) *ok = rv.isValid();
+        if (ok) *ok = rv.isValid();
         return rv;
     }
 }

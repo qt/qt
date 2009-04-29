@@ -79,13 +79,22 @@ QSimpleCanvas::Matrix QFxTransform::transform() const
 void QFxTransform::update()
 {
     QFxItem *item = qobject_cast<QFxItem *>(parent());
-    if(item)
+    if (item)
         item->updateTransform();
 }
 
 /*!
     \qmlclass Axis
-    \brief An axis that can be used for rotation or translation.
+    \brief The Axis element defines an axis that can be used for rotation or translation.
+
+    An axis is specified by 2 points in 3D space: a start point and
+    an end point. While technically the axis is the line running through these two points
+    (and thus many different sets of two points could define the same axis), the distance
+    between the points does matter for translation along an axis.
+
+    \code
+    <Axis startX="0" startY="0" endX="20" endY="30"/>
+    \endcode
 */
 
 QML_DEFINE_TYPE(QFxAxis, Axis);
@@ -99,6 +108,13 @@ QFxAxis::~QFxAxis()
 {
 }
 
+/*!
+    \qmlproperty real Axis::startX
+    \qmlproperty real Axis::startY
+
+    The start point of the axis. The z-position of the start point is assumed to be 0, and cannot
+    be changed.
+*/
 qreal QFxAxis::startX() const
 {
     return _startX;
@@ -121,6 +137,13 @@ void QFxAxis::setStartY(qreal y)
     emit updated();
 }
 
+/*!
+    \qmlproperty real Axis::endX
+    \qmlproperty real Axis::endY
+    \qmlproperty real Axis::endZ
+
+    The end point of the axis.
+*/
 qreal QFxAxis::endX() const
 {
     return _endX;
@@ -241,11 +264,11 @@ bool QFxRotation::isIdentity() const
 const qreal inv_dist_to_plane = 1. / 1024.;
 QTransform QFxRotation::transform() const
 {
-    if(_dirty) {
+    if (_dirty) {
         _transform = QTransform();
 
-        if(!isIdentity()) {
-            if(angle() != 0.) {
+        if (!isIdentity()) {
+            if (angle() != 0.) {
                 QTransform rotTrans;
                 rotTrans.translate(-_axis.startX(), -_axis.startY());
                 QTransform rotTrans2;
@@ -260,11 +283,11 @@ QTransform QFxRotation::transform() const
                 qreal z = _axis.endZ();
 
                 qreal idtp = inv_dist_to_plane;
-                if(distanceToPlane() != 1024.)
+                if (distanceToPlane() != 1024.)
                     idtp = 1. / distanceToPlane();
 
                 qreal len = x * x + y * y + z * z;
-                if(len != 1.) {
+                if (len != 1.) {
                     len = ::sqrt(len);
                     x /= len;
                     y /= len;
@@ -289,12 +312,12 @@ QTransform QFxRotation::transform() const
 #elif defined(QFX_RENDER_OPENGL)
 QMatrix4x4 QFxRotation::transform() const
 {
-    if(_dirty) {
+    if (_dirty) {
         _dirty = false;
         _transform = QMatrix4x4();
 
-        if(!isIdentity()) {
-            if(angle() != 0.) {
+        if (!isIdentity()) {
+            if (angle() != 0.) {
                 qreal x = _axis.endX() - _axis.startX();
                 qreal y = _axis.endY() - _axis.startY();
                 qreal z = _axis.endZ();
@@ -328,7 +351,7 @@ void QFxRotation::update()
 {
     _dirty = true;
     QFxItem *item = qobject_cast<QFxItem *>(parent());
-    if(item)
+    if (item)
         item->updateTransform();
 }
 
@@ -405,11 +428,11 @@ bool QFxTranslation::isIdentity() const
 #if defined(QFX_RENDER_QPAINTER)
 QTransform QFxTranslation::transform() const
 {
-    if(_dirty) {
+    if (_dirty) {
         _transform = QTransform();
 
-        if(!isIdentity()) {
-            if(distance() != 0.) {
+        if (!isIdentity()) {
+            if (distance() != 0.) {
                 QTransform trans;
                 trans.translate((_axis.endX() - _axis.startX()) * distance(),
                         (_axis.endY() - _axis.startY()) * distance());
@@ -425,12 +448,12 @@ QTransform QFxTranslation::transform() const
 #elif defined(QFX_RENDER_OPENGL)
 QMatrix4x4 QFxRotation::transform() const
 {
-    if(_dirty) {
+    if (_dirty) {
         _dirty = false;
         _transform = QMatrix4x4();
 
-        if(!isIdentity()) {
-            if(distance() != 0.)
+        if (!isIdentity()) {
+            if (distance() != 0.)
                 _transform.translate((_axis.endX() - _axis.startX()) * distance(),
                                      (_axis.endY() - _axis.startY()) * distance(),
                                      (_axis.endZ()) * distance());
@@ -447,13 +470,13 @@ void QFxTranslation::update()
     _dirty = true;
 
 #if !defined(QFX_RENDER_OPENGL)
-    if(_axis.endZ() != 0. && distance() != 0.) {
+    if (_axis.endZ() != 0. && distance() != 0.) {
         qmlInfo(this) << "QTransform cannot translate along Z-axis.";
     }
 #endif
 
     QFxItem *item = qobject_cast<QFxItem *>(parent());
-    if(item)
+    if (item)
         item->updateTransform();
 }
 
@@ -695,7 +718,7 @@ void QFxSquish::setbottomRight_y(qreal v)
 void QFxSquish::update()
 {
     QFxItem *item = qobject_cast<QFxItem *>(parent());
-    if(item)
+    if (item)
         item->updateTransform();
 }
 
@@ -714,7 +737,7 @@ QMatrix4x4 QFxSquish::transform() const
 
     QTransform t;
     QMatrix4x4 rv;
-    if(QTransform::quadToQuad(poly, poly2, t))
+    if (QTransform::quadToQuad(poly, poly2, t))
         rv = QMatrix4x4(t);
 
     return rv;

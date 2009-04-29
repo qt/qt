@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,18 +39,13 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
-#include <QUrl>
-#include <QWebView>
+#include <QtGui>
+#include "googlechat.h"
 
-int main(int argc, char *argv[])
+int main(int argc, char * argv[])
 {
     QApplication app(argc, argv);
-    QWidget *parent = 0;
-//! [Using QWebView]
-    QWebView *view = new QWebView(parent);
-    view->load(QUrl("http://qtsoftware.com/"));
-    view->show();
-//! [Using QWebView]
+    GoogleChat *chat = new GoogleChat;
+    chat->show();
     return app.exec();
 }

@@ -224,13 +224,13 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
     QStack<QmlMetaProperty> pushedProperties;
     QObject **savedObjects = 0;
 
-    if(start == -1) start = 0;
-    if(count == -1) count = comp->bytecode.count();
+    if (start == -1) start = 0;
+    if (count == -1) count = comp->bytecode.count();
 
-    for(int ii = start; !isError() && ii < (start + count); ++ii) {
+    for (int ii = start; !isError() && ii < (start + count); ++ii) {
         QmlInstruction &instr = comp->bytecode[ii];
 
-        if(instr.type >= QmlInstruction::StoreInstructionsStart &&
+        if (instr.type >= QmlInstruction::StoreInstructionsStart &&
            instr.type <= QmlInstruction::StoreInstructionsEnd) {
 
             runStoreInstruction(stack, instr, comp);
@@ -240,7 +240,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
         switch(instr.type) {
         case QmlInstruction::Init:
             {
-                if(instr.init.dataSize) {
+                if (instr.init.dataSize) {
                     savedObjects = new QObject*[instr.init.dataSize];
                     ::memset(savedObjects, 0,
                             sizeof(QObject *)*instr.init.dataSize);
@@ -254,10 +254,10 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QFxCompilerTimer<QFxCompiler::InstrCreateObject> cc;
 #endif
                 QObject *o = types.at(instr.create.type).createInstance(QmlContext::activeContext());
-                if(!o)
+                if (!o)
                     VME_EXCEPTION("Unable to create object of type" << types.at(instr.create.type).className);
 
-                if(!stack.isEmpty()) {
+                if (!stack.isEmpty()) {
                     QObject *parent = stack.top();
                     o->setParent(parent);
                 }
@@ -274,11 +274,11 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                     types.at(instr.createCustom.type).parser->create(datas.at(instr.createCustom.data));
                 // XXX
                 QObject *o = QmlMetaType::toQObject(v);
-                if(!o)
+                if (!o)
                     VME_EXCEPTION("Unable to create" << types.at(instr.create.type).className);
                 QmlEngine::setContextForObject(o, QmlContext::activeContext());
 
-                if(!stack.isEmpty()) {
+                if (!stack.isEmpty()) {
                     QObject *parent = stack.top();
                     o->setParent(parent);
                 }
@@ -296,7 +296,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                     QmlContext::activeContext();
                 ctxt->setContextProperty(primitives.at(instr.setId.value), target);
 
-                if(instr.setId.save != -1)
+                if (instr.setId.save != -1)
                     savedObjects[instr.setId.save] = target;
             }
             break;
@@ -365,14 +365,14 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 const QByteArray &pr = datas.at(sigIdx);
 
                 QmlMetaProperty prop(target, QLatin1String(pr));
-                if(prop.type() & QmlMetaProperty::SignalProperty) {
+                if (prop.type() & QmlMetaProperty::SignalProperty) {
                     int coreIdx = prop.coreIndex();
                     int primRef = instr.assignSignal.value;
                     instr.type = QmlInstruction::StoreSignal;
                     instr.storeSignal.signalIndex = coreIdx;
                     instr.storeSignal.value = primRef;
                     --ii;
-                } else if(prop.type() & QmlMetaProperty::Property) {
+                } else if (prop.type() & QmlMetaProperty::Property) {
                     int prop = sigIdx;
                     int primRef = instr.assignSignal.value;
                     instr.type = QmlInstruction::AssignConstant;
@@ -398,18 +398,18 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 const QByteArray &pr = datas.at(sigIdx);
 
                 QmlMetaProperty prop(target, QLatin1String(pr));
-                if(prop.type() & QmlMetaProperty::SignalProperty) {
+                if (prop.type() & QmlMetaProperty::SignalProperty) {
 
                     QMetaMethod method = QmlMetaType::defaultMethod(assign);
-                    if(method.signature() == 0)
+                    if (method.signature() == 0)
                         VME_EXCEPTION("Cannot assign object type" << assign->metaObject()->className() << "with no default method");
 
-                    if(!QMetaObject::checkConnectArgs(prop.method().signature(), method.signature()))
+                    if (!QMetaObject::checkConnectArgs(prop.method().signature(), method.signature()))
                         VME_EXCEPTION("Cannot connect mismatched signal/slot" << method.signature() << prop.method().signature());
 
                     QMetaObject::connect(target, prop.coreIndex(), assign, method.methodIndex());
 
-                } else if(prop.type() & QmlMetaProperty::Property) {
+                } else if (prop.type() & QmlMetaProperty::Property) {
                     instr.type = QmlInstruction::AssignObject;
                     instr.assignObject.castValue = 0;
                     instr.assignObject.property = sigIdx;
@@ -432,7 +432,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QMetaMethod signal = 
                     target->metaObject()->method(instr.storeSignal.signalIndex);
 
-                if(signal.parameterTypes().isEmpty()) {
+                if (signal.parameterTypes().isEmpty()) {
                     (void *)new QmlBoundSignal(QmlContext::activeContext(), primitives.at(instr.storeSignal.value), target, instr.storeSignal.signalIndex, target);
                 } else {
                     (void *)new QmlBoundSignalProxy(new QmlContext(QmlContext::activeContext(), target), primitives.at(instr.storeSignal.value), target, instr.storeSignal.signalIndex, target);
@@ -450,9 +450,9 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 int propIdx = instr.assignConstant.property;
                 int idx = instr.assignConstant.constant;
                 QByteArray pr;
-                if(propIdx == -1) {
+                if (propIdx == -1) {
                     pr = QmlMetaType::defaultProperty(target).name();
-                    if(pr.isEmpty())
+                    if (pr.isEmpty())
                         VME_EXCEPTION("Cannot resolve defalt property on type" << target->metaObject()->className());
                 } else {
                     pr = datas.at(propIdx);
@@ -460,14 +460,14 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
                 int coreIdx = qIndexOfProperty(target, pr);
 
-                if(coreIdx != -1) {
+                if (coreIdx != -1) {
                     QMetaProperty prop = 
                         target->metaObject()->property(coreIdx);
                     bool replace = !prop.isDynamic();
 
                     QmlInstruction *writeInstr = 0;
                     QmlInstruction dummy;
-                    if(replace) {
+                    if (replace) {
                         writeInstr = &instr;
                     } else {
                         writeInstr = &dummy;
@@ -476,8 +476,8 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
                     QmlCompiler::StoreInstructionResult r = QmlCompiler::generateStoreInstruction(*comp, *writeInstr, prop,
                                                  coreIdx, idx, &primitives.at(idx));
-                    if(r != QmlCompiler::Ok) {
-                        if(prop.isEnumType()){
+                    if (r != QmlCompiler::Ok) {
+                        if (prop.isEnumType()){
                             VME_EXCEPTION(primitives.at(idx) << "is not a valid enumeration value");
                         } else if (r == QmlCompiler::UnknownType) {
                             VME_EXCEPTION("Property" << prop.name() << "is of an unknown type");
@@ -507,7 +507,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QmlParserStatus *status = 
                     qobject_cast<QmlParserStatus *>(target);
 
-                if(status) {
+                if (status) {
                     instr.type = QmlInstruction::BeginObject;
                     instr.begin.castValue = int(reinterpret_cast<char *>(status) - reinterpret_cast<char *>(target));
                     --ii;
@@ -538,7 +538,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QmlParserStatus *status = 
                     qobject_cast<QmlParserStatus *>(target);
 
-                if(status) {
+                if (status) {
                     instr.type = QmlInstruction::CompleteObject;
                     instr.complete.castValue = int(reinterpret_cast<char *>(status) - reinterpret_cast<char *>(target));
                     --ii;
@@ -570,10 +570,10 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 int idx = qIndexOfProperty(target, pr);
 
                 // XXX - need to check if the type is QmlBindableValue*
-                if(idx == -1) {
+                if (idx == -1) {
                     VME_EXCEPTION("Unknown property" << pr);
                 } else {
-                    if(QmlInstruction::AssignCompiledBinding == instr.type)
+                    if (QmlInstruction::AssignCompiledBinding == instr.type)
                         instr.type = QmlInstruction::StoreCompiledBinding;
                     else
                         instr.type = QmlInstruction::StoreBinding;
@@ -589,16 +589,16 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QObject *target = stack.at(stack.count() - 2);
                 int propIdx = instr.assignValueSource.property;
                 QByteArray pr;
-                if(propIdx == -1) {
+                if (propIdx == -1) {
                     pr = QmlMetaType::defaultProperty(target).name();
-                    if(pr.isEmpty())
+                    if (pr.isEmpty())
                         VME_EXCEPTION("Unable to resolve default property");
                 } else {
                     pr = datas.at(propIdx);
                 }
 
                 int coreIdx = qIndexOfProperty(target, pr);
-                if(coreIdx != -1) {
+                if (coreIdx != -1) {
                     instr.type = QmlInstruction::StoreValueSource;
                     instr.assignValueSource.property = coreIdx;
                     ii--;
@@ -685,18 +685,18 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 #endif
                 QObject *assign = stack.pop();
                 const ListInstance &list = qliststack.top();
-                if(list.qmlListInterface) {
+                if (list.qmlListInterface) {
                     int type = list.type;
 
                     void *d = 0;
                     void *ptr = 0;
                     bool found = false;
 
-                    if(QmlMetaType::isInterface(type)) {
+                    if (QmlMetaType::isInterface(type)) {
                         const char *iid = QmlMetaType::interfaceIId(type);
-                        if(iid) 
+                        if (iid) 
                             ptr = assign->qt_metacast(iid);
-                        if(ptr) {
+                        if (ptr) {
                             d = &ptr;
                             found = true;
                         }
@@ -706,7 +706,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
                         const QMetaObject *assignMo = assign->metaObject();
                         while(!found && assignMo) {
-                            if(assignMo == mo)
+                            if (assignMo == mo)
                                 found = true;
                             else
                                 assignMo = assignMo->superClass();
@@ -718,7 +718,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                     }
 
 
-                    if(!found) 
+                    if (!found) 
                         VME_EXCEPTION("Cannot assign object to list");
 
                     list.qmlListInterface->append(d);
@@ -726,10 +726,10 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 } else {
                     int type = list.type;
 
-                    if(QmlMetaType::isInterface(type)) {
+                    if (QmlMetaType::isInterface(type)) {
                         void *ptr = 0;
                         const char *iid = QmlMetaType::interfaceIId(type);
-                        if(iid) 
+                        if (iid) 
                             ptr = assign->qt_metacast(iid);
                         QVariant v(list.type, &ptr);
                         QmlMetaType::append(list.list, v);
@@ -750,7 +750,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QObject *target = stack.top();
 
                 QByteArray property;
-                if(instr.assignObject.property == -1) {
+                if (instr.assignObject.property == -1) {
                     // XXX - optimize!
                     property = 
                         QmlMetaType::defaultProperty(target).name();
@@ -760,17 +760,17 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
                 int coreIdx = qIndexOfProperty(target, property);
 
-                if(coreIdx != -1) {
+                if (coreIdx != -1) {
                     QMetaProperty prop = 
                         target->metaObject()->property(coreIdx);
                     int t = prop.userType();
                     // XXX - optimize!
-                    if(QmlMetaType::isList(t)) {
+                    if (QmlMetaType::isList(t)) {
                         QVariant list = prop.read(target);
                         int listtype = QmlMetaType::listType(t);
                         QVariant v = QmlMetaType::fromObject(assign, listtype);
                         QmlMetaType::append(list, v);
-                    } else if(QmlMetaType::isQmlList(t)) {
+                    } else if (QmlMetaType::isQmlList(t)) {
 
                         // XXX - optimize!
                         QVariant list = prop.read(target);
@@ -785,13 +785,13 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                         const QMetaObject *assignMo = assign->metaObject();
                         bool found = false;
                         while(!found && assignMo) {
-                            if(assignMo == mo)
+                            if (assignMo == mo)
                                 found = true;
                             else
                                 assignMo = assignMo->superClass();
                         }
 
-                        if(!found) 
+                        if (!found) 
                             VME_EXCEPTION("Cannot assign object to list");
 
                         // NOTE: This assumes a cast to QObject does not alter 
@@ -799,12 +799,12 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                         void *d = (void *)&assign;
                         li->append(d);
 
-                    } else if(QmlMetaType::isInterface(t)) {
+                    } else if (QmlMetaType::isInterface(t)) {
                         const char *iid = QmlMetaType::interfaceIId(t);
                         bool ok = false;
-                        if(iid) {
+                        if (iid) {
                             void *ptr = assign->qt_metacast(iid);
-                            if(ptr) {
+                            if (ptr) {
                                 void *a[1];
                                 a[0] = &ptr;
                                 QMetaObject::metacall(target, QMetaObject::WriteProperty,
@@ -813,10 +813,10 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                             }
                         } 
 
-                        if(!ok) 
+                        if (!ok) 
                             VME_EXCEPTION("Cannot assign object to interface property" << property);
 
-                    } else if(prop.userType() == -1 /* means qvariant */) {
+                    } else if (prop.userType() == -1 /* means qvariant */) {
                         prop.write(target, qVariantFromValue(assign));
                     } else {
                         const QMetaObject *propmo = 
@@ -831,11 +831,11 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                             c = c->superClass();
                         }
 
-                        if(isAssignable) {
+                        if (isAssignable) {
                             // XXX - optimize!
                             QVariant v = QmlMetaType::fromObject(assign, t);
                             prop.write(target, v);
-                        } else if(isPropertyValue) {
+                        } else if (isPropertyValue) {
                             QmlPropertyValueSource *vs = 
                                 static_cast<QmlPropertyValueSource *>(assign);
                             vs->setParent(target);
@@ -862,7 +862,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
                 QObject *qmlObject = qmlAttachedPropertiesObjectById(instr.fetchAttached.id, target);
 
-                if(!qmlObject)
+                if (!qmlObject)
                     VME_EXCEPTION("Unable to create attached object");
 
                 stack.push(qmlObject);
@@ -883,7 +883,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 a[0] = &list;
                 QMetaObject::metacall(target, QMetaObject::ReadProperty, 
                                       instr.fetchQmlList.property, a);
-                if(!list) 
+                if (!list) 
                     VME_EXCEPTION("Cannot assign to null list");
 
                 qliststack.push(ListInstance(list, instr.fetchQmlList.type));
@@ -911,14 +911,14 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QObject *target = stack.top();
                 const QByteArray &pr = datas.at(instr.fetch.property);
                 int idx = qIndexOfProperty(target, pr);
-                if(idx == -1)
+                if (idx == -1)
                     VME_EXCEPTION("Cannot resolve property" << pr);
                 QMetaProperty prop = target->metaObject()->property(idx);
                 instr.type = QmlInstruction::FetchObject;
                 instr.fetch.property = idx;
-                if(QmlMetaType::isObject(prop.userType())) {
+                if (QmlMetaType::isObject(prop.userType())) {
                     instr.fetch.isObject = true;
-                } else if(prop.userType() == -1) {
+                } else if (prop.userType() == -1) {
                     instr.fetch.isObject = false;
                 } else {
                     VME_EXCEPTION("Cannot set properties on" << prop.name() << "as it is of unknown type");
@@ -935,7 +935,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QObject *target = stack.top();
 
                 QObject *obj = 0;
-                if(instr.fetch.isObject) {
+                if (instr.fetch.isObject) {
                     // NOTE: This assumes a cast to QObject does not alter the 
                     // object pointer
                     void *a[1];
@@ -952,7 +952,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
                 }
 
-                if(!obj)
+                if (!obj)
                     VME_EXCEPTION("Cannot set properties on" << target->metaObject()->property(instr.fetch.property).name() << "as it is null");
 
                 stack.push(obj);
@@ -994,13 +994,13 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
                 bool found = false;
                 while(!found && assignMo) {
-                    if(assignMo == mo)
+                    if (assignMo == mo)
                         found = true;
                     else
                         assignMo = assignMo->superClass();
                 }
 
-                if(!found) 
+                if (!found) 
                     VME_EXCEPTION("Unable to assign object");
 
                 instr.type = QmlInstruction::StoreStackObject;
@@ -1042,8 +1042,8 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
         }
     }
 
-    if(isError()) {
-        if(!stack.isEmpty()) {
+    if (isError()) {
+        if (!stack.isEmpty()) {
             delete stack.at(0);
         }
         return 0;
@@ -1055,10 +1055,10 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
     comp->dumpPost();
 
-    if(savedObjects)
+    if (savedObjects)
         delete [] savedObjects;
 
-    if(stack.isEmpty())
+    if (stack.isEmpty())
         return 0;
     else
         return stack.top();

@@ -73,7 +73,7 @@ public:
     {
         int entry = (_first + _size) % s;
         _array[entry] = t;
-        if(_size == s)
+        if (_size == s)
             _first = (_first + 1) % s;
         else
             _size++;
@@ -127,14 +127,14 @@ void QSimpleCanvasRootLayer::remDirty(QSimpleCanvasItem *i)
 
 void QSimpleCanvasPrivate::clearFocusPanel(QSimpleCanvasItem *panel)
 {
-    if(q->activeFocusPanel() == panel) {
+    if (q->activeFocusPanel() == panel) {
         focusPanels.pop();
 
         switchToFocusPanel(q->activeFocusPanel(), panel, Qt::OtherFocusReason);
         panel->activePanelOutEvent();
     } else {
-        for(int ii = 0; ii < focusPanels.count(); ++ii)
-            if(focusPanels.at(ii) == panel) {
+        for (int ii = 0; ii < focusPanels.count(); ++ii)
+            if (focusPanels.at(ii) == panel) {
                 focusPanels.remove(ii);
                 break;
             }
@@ -143,35 +143,35 @@ void QSimpleCanvasPrivate::clearFocusPanel(QSimpleCanvasItem *panel)
 
 void QSimpleCanvasPrivate::switchToFocusPanel(QSimpleCanvasItem *panel, QSimpleCanvasItem *wasPanel, Qt::FocusReason focusReason)
 {
-    if(panel)
+    if (panel)
         panel->activePanelInEvent();
 
     QSimpleCanvasItem *wasFocusRoot = focusPanelData.value(wasPanel);
-    if(wasFocusRoot)
+    if (wasFocusRoot)
         clearActiveFocusItem(wasFocusRoot, focusReason);
 
     QSimpleCanvasItem *newFocusRoot = focusPanelData.value(panel);
-    if(newFocusRoot)
+    if (newFocusRoot)
         setFocusItem(newFocusRoot, focusReason);
 }
 
 void QSimpleCanvasPrivate::setActiveFocusPanel(QSimpleCanvasItem *panel, Qt::FocusReason focusReason)
 {
-    if(q->activeFocusPanel() == panel)
+    if (q->activeFocusPanel() == panel)
         return;
 
-    if(panel) {
-        for(int ii = 0; ii < focusPanels.count(); ++ii)
-            if(focusPanels.at(ii) == panel) {
+    if (panel) {
+        for (int ii = 0; ii < focusPanels.count(); ++ii)
+            if (focusPanels.at(ii) == panel) {
                 focusPanels.remove(ii);
                 break;
             }
     }
     QSimpleCanvasItem *old = q->activeFocusPanel();
-    if(panel)
+    if (panel)
         focusPanels << panel;
     switchToFocusPanel(panel, old, focusReason);
-    if(old)
+    if (old)
         old->activePanelOutEvent();
 }
 
@@ -181,13 +181,13 @@ void QSimpleCanvasPrivate::clearActiveFocusItem(QSimpleCanvasItem *item,
     if (!item || !item->d_func())
         return;
 
-    if(!item->d_func()->hasActiveFocus)
+    if (!item->d_func()->hasActiveFocus)
         return;
 
     item->d_func()->hasActiveFocus = false;
-    if(item->options() & QSimpleCanvasItem::IsFocusRealm) {
+    if (item->options() & QSimpleCanvasItem::IsFocusRealm) {
         QSimpleCanvasItem *newItem = focusPanelData.value(item);
-        if(newItem) {
+        if (newItem) {
             clearActiveFocusItem(newItem, focusReason);
         } else {
             focusItem = 0;
@@ -200,8 +200,8 @@ void QSimpleCanvasPrivate::clearActiveFocusItem(QSimpleCanvasItem *item,
         item->focusOutEvent(&event);
     }
 
-    if(item->options() & QSimpleCanvasItem::AcceptsInputMethods){
-        if(q->testAttribute(Qt::WA_InputMethodEnabled))
+    if (item->options() & QSimpleCanvasItem::AcceptsInputMethods){
+        if (q->testAttribute(Qt::WA_InputMethodEnabled))
             q->setAttribute(Qt::WA_InputMethodEnabled,false);
     }
     item->activeFocusChanged(true);
@@ -213,9 +213,9 @@ void QSimpleCanvasPrivate::setActiveFocusItem(QSimpleCanvasItem *item,
     while(true) {
         item->d_func()->setActiveFocus(true);
         item->activeFocusChanged(true);
-        if(item->options() & QSimpleCanvasItem::IsFocusRealm) {
+        if (item->options() & QSimpleCanvasItem::IsFocusRealm) {
             QSimpleCanvasItem *newItem = focusPanelData.value(item);
-            if(newItem)
+            if (newItem)
                 item = newItem;
             else
                 break;
@@ -224,8 +224,8 @@ void QSimpleCanvasPrivate::setActiveFocusItem(QSimpleCanvasItem *item,
         }
     }
 
-    if(item->options() & QSimpleCanvasItem::AcceptsInputMethods){
-        if(!q->testAttribute(Qt::WA_InputMethodEnabled))
+    if (item->options() & QSimpleCanvasItem::AcceptsInputMethods){
+        if (!q->testAttribute(Qt::WA_InputMethodEnabled))
             q->setAttribute(Qt::WA_InputMethodEnabled,true);
     }
     focusItem = item;
@@ -244,9 +244,9 @@ void QSimpleCanvasPrivate::clearFocusItem(QSimpleCanvasItem *item)
     QSimpleCanvasItem *scope = 0;
     QSimpleCanvasItem *citem = item;
     while(citem && !scope) {
-        if(citem->options() & QSimpleCanvasItem::IsFocusPanel) 
+        if (citem->options() & QSimpleCanvasItem::IsFocusPanel) 
             scope = citem;
-        else if(citem != item && citem->options() & QSimpleCanvasItem::IsFocusRealm)
+        else if (citem != item && citem->options() & QSimpleCanvasItem::IsFocusRealm)
             scope = citem;
         citem = citem->parent();
     }
@@ -254,23 +254,23 @@ void QSimpleCanvasPrivate::clearFocusItem(QSimpleCanvasItem *item)
 
    bool isActive = false;
 
-   if(scope->options() & QSimpleCanvasItem::IsFocusPanel) 
+   if (scope->options() & QSimpleCanvasItem::IsFocusPanel) 
        isActive = (scope == q->activeFocusPanel());
-   else if(scope->options() & QSimpleCanvasItem::IsFocusRealm)
+   else if (scope->options() & QSimpleCanvasItem::IsFocusRealm)
        isActive = scope->hasActiveFocus();
 
-   if(isActive) clearActiveFocusItem(item, Qt::OtherFocusReason);
+   if (isActive) clearActiveFocusItem(item, Qt::OtherFocusReason);
    item->d_func()->setFocus(false);
    item->focusChanged(false);
 
    focusPanelData.insert(scope, 0);
 
-   if(lastFocusItem == item)
+   if (lastFocusItem == item)
        lastFocusItem = 0;
-   if(focusItem == item)
+   if (focusItem == item)
        focusItem = 0;
 
-   if(scope->options() & QSimpleCanvasItem::IsFocusRealm && scope->hasActiveFocus()) {
+   if (scope->options() & QSimpleCanvasItem::IsFocusRealm && scope->hasActiveFocus()) {
        setActiveFocusItem(scope, Qt::OtherFocusReason);
    } else {
        QSimpleCanvasItem *item = QSimpleCanvasItem::findNextFocus(scope);
@@ -291,21 +291,21 @@ void QSimpleCanvasPrivate::setFocusItem(QSimpleCanvasItem *item,
         item = item->focusProxy();
 #endif
 
-    if(item == focusItem)
+    if (item == focusItem)
         return;
 
     QSimpleCanvasItem *scope = 0;
     QSimpleCanvasItem *citem = item;
     while(citem && !scope) {
-        if(citem->options() & QSimpleCanvasItem::IsFocusPanel) 
+        if (citem->options() & QSimpleCanvasItem::IsFocusPanel) 
             scope = citem;
-        else if(citem != item && citem->options() & QSimpleCanvasItem::IsFocusRealm)
+        else if (citem != item && citem->options() & QSimpleCanvasItem::IsFocusRealm)
             scope = citem;
         citem = citem->parent();
     }
     Q_ASSERT(scope); // At the very least we'll find the canvas root
 
-   if(!overwrite && focusPanelData.contains(scope)) {
+   if (!overwrite && focusPanelData.contains(scope)) {
        item->d_func()->setFocus(false);
        item->focusChanged(false);
        return;
@@ -314,26 +314,26 @@ void QSimpleCanvasPrivate::setFocusItem(QSimpleCanvasItem *item,
    QSimpleCanvasItem *oldFocus = focusPanelData.value(scope);
    bool isActive = false;
 
-   if(scope->options() & QSimpleCanvasItem::IsFocusPanel) 
+   if (scope->options() & QSimpleCanvasItem::IsFocusPanel) 
        isActive = (scope == q->activeFocusPanel());
-   else if(scope->options() & QSimpleCanvasItem::IsFocusRealm)
+   else if (scope->options() & QSimpleCanvasItem::IsFocusRealm)
        isActive = scope->hasActiveFocus();
 
-   if(oldFocus) {
-       if(isActive) clearActiveFocusItem(oldFocus, focusReason);
+   if (oldFocus) {
+       if (isActive) clearActiveFocusItem(oldFocus, focusReason);
        oldFocus->d_func()->setFocus(false);
        oldFocus->focusChanged(false);
    }
 
    focusPanelData.insert(scope, item);
 
-   if(isActive)
+   if (isActive)
        lastFocusItem = item;
 
    if (item) {
        item->d_func()->setFocus(true);
        item->focusChanged(true);
-       if(isActive)
+       if (isActive)
            setActiveFocusItem(item, focusReason);
    }
 }
@@ -351,8 +351,8 @@ bool QSimpleCanvas::eventFilter(QObject *obj, QEvent *event)
         case QEvent::GraphicsSceneMousePress:
         case QEvent::GraphicsSceneMouseRelease: {
             //same logic as filter() function
-            for(int ii = 0; ii < d->mouseFilters.count(); ++ii) {
-                if(d->mouseFilters.at(ii)->mouseFilter((QGraphicsSceneMouseEvent*)event))
+            for (int ii = 0; ii < d->mouseFilters.count(); ++ii) {
+                if (d->mouseFilters.at(ii)->mouseFilter((QGraphicsSceneMouseEvent*)event))
                     return true;
             }
             break;
@@ -375,12 +375,12 @@ void QSimpleCanvasPrivate::removeMouseFilter(QSimpleCanvasItem *item)
 
 bool QSimpleCanvasPrivate::filter(QMouseEvent *e)
 {
-    if(mouseFilters.isEmpty())
+    if (mouseFilters.isEmpty())
         return false;
 
     QGraphicsSceneMouseEvent *me = mouseEventToSceneMouseEvent(e, e->pos());
-    for(int ii = 0; ii < mouseFilters.count(); ++ii) {
-        if(mouseFilters.at(ii)->mouseFilter(me)) {
+    for (int ii = 0; ii < mouseFilters.count(); ++ii) {
+        if (mouseFilters.at(ii)->mouseFilter(me)) {
             delete me;
             return true;
         }
@@ -420,36 +420,36 @@ QGraphicsSceneMouseEvent *QSimpleCanvasPrivate::mouseEventToSceneMouseEvent(QMou
 
 bool QSimpleCanvasPrivate::deliverMousePress(QSimpleCanvasItem *base, QMouseEvent *e, bool seenChildFilter)
 {
-    if(base->clipType()) {
+    if (base->clipType()) {
         QRectF br = base->boundingRect();
         QPointF pos = base->mapFromScene(e->pos());
-        if(!br.contains(pos.toPoint()))
+        if (!br.contains(pos.toPoint()))
             return false;
     }
 
     const QList<QSimpleCanvasItem *> &children = base->d_func()->children;
 
-    if(base->options() & QSimpleCanvasItem::ChildMouseFilter) 
+    if (base->options() & QSimpleCanvasItem::ChildMouseFilter) 
         seenChildFilter = true;
 
-    for(int ii = children.count() - 1; ii >= 0; --ii) {
-        if(children.at(ii)->visible() != 0.)
-            if(deliverMousePress(children.at(ii), e, seenChildFilter))
+    for (int ii = children.count() - 1; ii >= 0; --ii) {
+        if (children.at(ii)->visible() != 0.)
+            if (deliverMousePress(children.at(ii), e, seenChildFilter))
                 return true;
     }
 
-    if(base->acceptedMouseButtons() & e->button() || base->options() & QSimpleCanvasItem::ChildMouseFilter) {
+    if (base->acceptedMouseButtons() & e->button() || base->options() & QSimpleCanvasItem::ChildMouseFilter) {
 
         QRectF br = base->boundingRect();
         QPoint pos = base->mapFromScene(e->pos()).toPoint();
 
-        if(br.contains(pos)) {
+        if (br.contains(pos)) {
             QGraphicsSceneMouseEvent *me = mouseEventToSceneMouseEvent(e, pos);
 
             sendMouseEvent(base, me);
             bool isAccepted = me->isAccepted();
             delete me;
-            if(isAccepted) {
+            if (isAccepted) {
                 lastMouseItem = base;
                 return true;
             }
@@ -463,8 +463,8 @@ void QSimpleCanvasPrivate::sendMouseEvent(QSimpleCanvasItem *item, QGraphicsScen
 {
     QSimpleCanvasItem *p = item->parent();
     while(p) {
-        if(p->options() & QSimpleCanvasItem::ChildMouseFilter) {
-            if(p->mouseFilter(e))
+        if (p->options() & QSimpleCanvasItem::ChildMouseFilter) {
+            if (p->mouseFilter(e))
                 return;
         }
         p = p->parent();
@@ -533,7 +533,7 @@ void QSimpleCanvasGraphicsView::paintEvent(QPaintEvent *pe)
     int frametimer = canvas->frameTimer.elapsed();
     gfxCanvasTiming.append(QSimpleCanvasTiming(r, frametimer, canvas->lrpTime, tbf));
     canvas->lrpTime = 0;
-    if(canvas->canvasServer)
+    if (canvas->canvasServer)
         canvas->canvasServer->addTiming(canvas->lrpTime, frametimer, tbf);
 }
 
@@ -563,20 +563,20 @@ void QSimpleCanvasPrivate::init(QSimpleCanvas::CanvasMode mode)
 {
     this->mode = mode;
 
-    if(mode == QSimpleCanvas::SimpleCanvas)
+    if (mode == QSimpleCanvas::SimpleCanvas)
         qWarning("QSimpleCanvas: Using simple canvas");
     else
         qWarning("QSimpleCanvas: Using GraphicsView canvas");
 
-    if(fullUpdate())
+    if (fullUpdate())
         qWarning("QSimpleCanvas: Full update enabled");
-    if(continuousUpdate())
+    if (continuousUpdate())
         qWarning("QSimpleCanvas: Continuous update enabled");
 
     QByteArray env = qgetenv("GFX_CANVAS_SERVER_PORT");
-    if(!env.isEmpty()){ 
+    if (!env.isEmpty()){ 
         int port = env.toInt();
-        if(port >= 1024)
+        if (port >= 1024)
             canvasServer = new QSimpleCanvasServer(port, q);
     }
 
@@ -584,7 +584,7 @@ void QSimpleCanvasPrivate::init(QSimpleCanvas::CanvasMode mode)
     root->setActiveFocusPanel(true);
     q->setFocusPolicy(Qt::StrongFocus);
 
-    if(mode == QSimpleCanvas::GraphicsView) {
+    if (mode == QSimpleCanvas::GraphicsView) {
         view = new QSimpleCanvasGraphicsView(this);
         QHBoxLayout *layout = new QHBoxLayout(q); 
         layout->setSpacing(0);
@@ -621,7 +621,7 @@ QSimpleCanvas::~QSimpleCanvas()
 void QSimpleCanvasPrivate::paint(QPainter &p)
 {
 #if defined(QFX_RENDER_QPAINTER)
-    if(!isSetup)
+    if (!isSetup)
         root->d_func()->setupPainting(0, q->rect());
 
     lrpTimer.start();
@@ -660,7 +660,7 @@ void QSimpleCanvas::keyReleaseEvent(QKeyEvent *event)
 
 void QSimpleCanvas::inputMethodEvent(QInputMethodEvent *event)
 {
-    if(d->focusItem)
+    if (d->focusItem)
         d->focusItem->inputMethodEvent(event);
     else
         QWidget::inputMethodEvent(event);
@@ -668,14 +668,14 @@ void QSimpleCanvas::inputMethodEvent(QInputMethodEvent *event)
 
 QVariant QSimpleCanvas::inputMethodQuery(Qt::InputMethodQuery query) const
 {
-    if(d->focusItem)
+    if (d->focusItem)
         return d->focusItem->inputMethodQuery(query);
     return QWidget::inputMethodQuery(query);
 }
 
 void QSimpleCanvas::mousePressEvent(QMouseEvent *e)
 {
-    if(d->isSimpleCanvas() && 
+    if (d->isSimpleCanvas() && 
        (d->filter(e) || d->deliverMousePress(d->root, e))) {
         e->accept();
     } else {
@@ -685,7 +685,7 @@ void QSimpleCanvas::mousePressEvent(QMouseEvent *e)
 
 void QSimpleCanvas::mouseDoubleClickEvent(QMouseEvent *e)
 {
-    if(d->isSimpleCanvas() && 
+    if (d->isSimpleCanvas() && 
        (d->filter(e) || d->deliverMousePress(d->root, e))) {
         e->accept();
     } else {
@@ -695,9 +695,9 @@ void QSimpleCanvas::mouseDoubleClickEvent(QMouseEvent *e)
 
 void QSimpleCanvas::mouseMoveEvent(QMouseEvent *e)
 {
-    if(d->isSimpleCanvas() && d->filter(e)) {
+    if (d->isSimpleCanvas() && d->filter(e)) {
         e->accept();
-    } else if(d->isSimpleCanvas() && d->lastMouseItem) {
+    } else if (d->isSimpleCanvas() && d->lastMouseItem) {
         QPoint p = d->lastMouseItem->mapFromScene(e->pos()).toPoint();
         QGraphicsSceneMouseEvent *me = d->mouseEventToSceneMouseEvent(e, p);
         d->sendMouseEvent(d->lastMouseItem, me);
@@ -710,9 +710,9 @@ void QSimpleCanvas::mouseMoveEvent(QMouseEvent *e)
 
 void QSimpleCanvas::mouseReleaseEvent(QMouseEvent *e)
 {
-    if(d->isSimpleCanvas() && d->filter(e)) {
+    if (d->isSimpleCanvas() && d->filter(e)) {
         e->accept();
-    } else if(d->isSimpleCanvas() && d->lastMouseItem) {
+    } else if (d->isSimpleCanvas() && d->lastMouseItem) {
         QPoint p = d->lastMouseItem->mapFromScene(e->pos()).toPoint();
         QGraphicsSceneMouseEvent *me = d->mouseEventToSceneMouseEvent(e, p);
         d->sendMouseEvent(d->lastMouseItem, me);
@@ -734,7 +734,7 @@ void QSimpleCanvas::focusInEvent(QFocusEvent *event)
     } else {
         QSimpleCanvasItem *panel = activeFocusPanel();
         QSimpleCanvasItem *focusItem = 0;
-        if(panel->isFocusable())
+        if (panel->isFocusable())
             focusItem = panel;
         else
             focusItem = QSimpleCanvasItem::findNextFocus(panel);
@@ -775,7 +775,7 @@ bool QSimpleCanvas::focusNextPrevChild(bool)
 
     QSimpleCanvasItem *panel = activeFocusPanel();
     QSimpleCanvasItem *item = 0;
-    if(panel->isFocusable())
+    if (panel->isFocusable())
         item = panel;
     else
         item = next ? QSimpleCanvasItem::findNextFocus(panel) : QSimpleCanvasItem::findPrevFocus(panel);
@@ -798,7 +798,7 @@ void QSimpleCanvas::showEvent(QShowEvent *e)
 #if defined(QFX_RENDER_OPENGL)
     d->egl.resize(width(), height());
 #endif
-    if(d->isGraphicsView())
+    if (d->isGraphicsView())
         d->view->setSceneRect(rect());
 
     QWidget::showEvent(e);
@@ -809,7 +809,7 @@ void QSimpleCanvas::resizeEvent(QResizeEvent *e)
 #if defined(QFX_RENDER_OPENGL)
     d->egl.resize(width(), height());
 #endif
-    if(d->isGraphicsView())
+    if (d->isGraphicsView())
         d->view->setSceneRect(rect());
     QWidget::resizeEvent(e);
 }
@@ -822,7 +822,7 @@ void QSimpleCanvas::remDirty(QSimpleCanvasItem *c)
 
 void QSimpleCanvas::queueUpdate()
 {
-    if(!d->timer)  {
+    if (!d->timer)  {
         QCoreApplication::postEvent(this, new QEvent(QEvent::User));
         d->timer = 1;
     }
@@ -831,15 +831,15 @@ void QSimpleCanvas::queueUpdate()
 void QSimpleCanvas::addDirty(QSimpleCanvasItem *c)
 {
     queueUpdate();
-    if(d->isSimpleCanvas()) {
+    if (d->isSimpleCanvas()) {
         d->oldDirty |= c->d_func()->data()->lastPaintRect;
 #if defined(QFX_RENDER_OPENGL)
         // Check for filters
         QSimpleCanvasItem *fi = c->parent();
         while(fi) {
-            if(fi->d_func()->data()->dirty) {
+            if (fi->d_func()->data()->dirty) {
                 break;
-            } else if(fi->filter()) {
+            } else if (fi->filter()) {
                 fi->update();
                 break;
             }
@@ -853,14 +853,14 @@ void QSimpleCanvas::addDirty(QSimpleCanvasItem *c)
 QRect QSimpleCanvasPrivate::dirtyItemClip() const
 {
     QRect rv;
-    if(isSimpleCanvas()) {
+    if (isSimpleCanvas()) {
 #if defined(QFX_RENDER_OPENGL)
         QRectF r;
-        for(int ii = 0; ii < dirtyItems.count(); ++ii)
+        for (int ii = 0; ii < dirtyItems.count(); ++ii)
             r |= dirtyItems.at(ii)->d_func()->data()->lastPaintRect;
         rv = egl.map(r);
 #else
-        for(int ii = 0; ii < dirtyItems.count(); ++ii)
+        for (int ii = 0; ii < dirtyItems.count(); ++ii)
             rv |= dirtyItems.at(ii)->d_func()->data()->lastPaintRect;
 #endif
     }
@@ -869,7 +869,7 @@ QRect QSimpleCanvasPrivate::dirtyItemClip() const
 
 QRegion QSimpleCanvasPrivate::resetDirty()
 {
-    if(isSimpleCanvas()) {
+    if (isSimpleCanvas()) {
 #if defined(QFX_RENDER_OPENGL)
         QRect r = egl.map(oldDirty) |  dirtyItemClip();
 #else
@@ -877,12 +877,12 @@ QRegion QSimpleCanvasPrivate::resetDirty()
 #endif
         if (!r.isEmpty())
             r.adjust(-1,-1,2,2);    //make sure we get everything (since we rounded from floats to ints)
-        for(int ii = 0; ii < dirtyItems.count(); ++ii)
+        for (int ii = 0; ii < dirtyItems.count(); ++ii)
             static_cast<QSimpleCanvasItemPrivate*>(dirtyItems.at(ii)->d_ptr)->data()->dirty = false;
         dirtyItems.clear();
         oldDirty = QRect();
 
-        if(fullUpdate())
+        if (fullUpdate())
             return QRegion();
         else
             return QRegion(r);
@@ -898,7 +898,7 @@ QSimpleCanvasItem *QSimpleCanvas::focusItem() const
 
 QSimpleCanvasItem *QSimpleCanvas::activeFocusPanel() const
 {
-    if(d->focusPanels.isEmpty())
+    if (d->focusPanels.isEmpty())
         return 0;
     else
         return d->focusPanels.top();
@@ -906,7 +906,7 @@ QSimpleCanvasItem *QSimpleCanvas::activeFocusPanel() const
 
 bool QSimpleCanvas::event(QEvent *e)
 {
-    if(e->type() == QEvent::User && d->isSimpleCanvas()) {
+    if (e->type() == QEvent::User && d->isSimpleCanvas()) {
         d->timer = 0;
         d->isSetup = true;
 #if defined(QFX_RENDER_OPENGL1)
@@ -921,7 +921,7 @@ bool QSimpleCanvas::event(QEvent *e)
         int tbf = d->frameTimer.restart();
 
 #if defined(QFX_RENDER_QPAINTER)
-        if(r.isEmpty() || fullUpdate())
+        if (r.isEmpty() || fullUpdate())
             repaint();
         else 
             repaint(r);
@@ -930,7 +930,7 @@ bool QSimpleCanvas::event(QEvent *e)
         QRect br = r.boundingRect();
         QRect nr(br.x(), height() - br.y() - br.height(), br.width(), br.height());
 
-        if(r.isEmpty() || fullUpdate())
+        if (r.isEmpty() || fullUpdate())
             d->egl.updateGL();
         else
             d->egl.updateGL(nr);
@@ -940,10 +940,10 @@ bool QSimpleCanvas::event(QEvent *e)
 
         int frametimer = d->frameTimer.elapsed();
         gfxCanvasTiming.append(QSimpleCanvasTiming(r, frametimer, d->lrpTime, tbf));
-        if(d->canvasServer)
+        if (d->canvasServer)
             d->canvasServer->addTiming(d->lrpTime, frametimer, tbf);
         d->lrpTime = 0;
-        if(continuousUpdate())
+        if (continuousUpdate())
             queueUpdate();
 
         return true;
@@ -955,7 +955,7 @@ bool QSimpleCanvas::event(QEvent *e)
 void QSimpleCanvas::paintEvent(QPaintEvent *)
 {
 #if defined(QFX_RENDER_QPAINTER)
-    if(d->mode == SimpleCanvas) {
+    if (d->mode == SimpleCanvas) {
         QPainter p(this);
         d->paint(p);
     }
@@ -964,7 +964,7 @@ void QSimpleCanvas::paintEvent(QPaintEvent *)
 
 void QSimpleCanvas::dumpTiming()
 {
-    for(int ii = 0; ii < gfxCanvasTiming.size(); ++ii) {
+    for (int ii = 0; ii < gfxCanvasTiming.size(); ++ii) {
         const QSimpleCanvasTiming &t = gfxCanvasTiming[ii];
 
         qreal repaintFps = 1000. / qreal(t.time);
@@ -985,9 +985,9 @@ void QSimpleCanvas::dumpItems()
 
 void QSimpleCanvas::checkState()
 {
-    if(d->isSimpleCanvas()) {
+    if (d->isSimpleCanvas()) {
         QSimpleCanvasItemPrivate::FocusStateCheckRDatas r;
-        if(d->root->d_func()->checkFocusState(0, &r))
+        if (d->root->d_func()->checkFocusState(0, &r))
             qWarning() << "State OK";
     }
 }
@@ -997,7 +997,7 @@ void QSimpleCanvas::checkState()
 */
 QImage QSimpleCanvas::asImage() const
 { 
-    if(d->isSimpleCanvas()) {
+    if (d->isSimpleCanvas()) {
 #if defined(QFX_RENDER_QPAINTER)
         QImage img(width(),height(),QImage::Format_RGB32);
         QPainter p(&img);

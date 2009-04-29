@@ -298,7 +298,7 @@ qint64 QLocalSocketPrivate::bytesAvailable()
     if (PeekNamedPipe(handle, NULL, 0, NULL, &bytes, NULL)) {
         return bytes;
     } else {
-        if (ERROR_BROKEN_PIPE == GetLastError() && !pipeClosed) {
+        if (!pipeClosed) {
             pipeClosed = true;
             QTimer::singleShot(0, q, SLOT(_q_pipeClosed()));
         }

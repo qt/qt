@@ -80,7 +80,7 @@ public:
 
     static QFxGridViewAttached *properties(QObject *obj) {
         QFxGridViewAttached *rv = attachedProperties.value(obj);
-        if(!rv) {
+        if (!rv) {
             rv = new QFxGridViewAttached(obj);
             attachedProperties.insert(obj, rv);
         }
@@ -998,7 +998,7 @@ int QFxGridView::cacheBuffer() const
 void QFxGridView::setCacheBuffer(int buffer)
 {
     Q_D(QFxGridView);
-    if(d->buffer != buffer) {
+    if (d->buffer != buffer) {
         d->buffer = buffer;
         if (isComponentComplete())
             refill();
@@ -1330,8 +1330,8 @@ void QFxGridView::itemsInserted(int modelIndex, int count)
         }
     }
     // everything is in order now - emit add() signal
-    foreach(FxGridItem *item, added)
-        item->attached->emitAdd();
+    for (int j = 0; j < added.count(); ++j)
+        added.at(j)->attached->emitAdd();
     d->layout();
     emit countChanged();
 }
