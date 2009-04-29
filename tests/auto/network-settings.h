@@ -131,11 +131,10 @@ public:
 
         if(QtNetworkSettings::entries.contains("server.ip")) {
             QtNetworkSettingsRecord* entry = entries["server.ip"];
-            QByteArray valueAsAscii = entry->recordValue().toAscii();
-            if(*serverIPAscii == 0) {
-                ::strcpy(serverIPAscii, valueAsAscii.data());
+            if(serverIp.isNull()) {
+                serverIp = entry->recordValue().toAscii();
             }
-            return serverIPAscii;
+            return serverIp.data();
         }
 #endif
         //return "10.10.0.147";
@@ -168,28 +167,32 @@ public:
         expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
         return expected;
     }
-<<<<<<< HEAD:tests/auto/network-settings.h
     
     static QByteArray expectedReplyFtp()
     {
-        QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID AUTH=PLAIN SASL-IR] " );
-        expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
-        expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+        QByteArray expected( "220 (vsFTPd 2.0.5)\r\n221 Goodbye.\r\n" );
         return expected;
     }    
-=======
->>>>>>> 6d41f31... Nwteork server test related data (serever name, IP address ...) can now:tests/auto/network-settings.h
 
 #ifdef Q_OS_SYMBIAN
     static void setDefaultIap()
     {
+        loadDefaultIap();
+
         struct ifreq ifReq;
-        strcpy( ifReq.ifr_name, getDefaultIap().toAscii().constData());
+        if(entries.contains("iap.default")) {
+            QtNetworkSettingsRecord* entry = entries["iap.default"];
+            QByteArray tmp(entry->recordValue().toAscii());
+            strcpy( ifReq.ifr_name, tmp.data());
+        }
+        else // some default value
+            strcpy( ifReq.ifr_name, "Lab");
+
         int err = setdefaultif( &ifReq );
         if(err)
-            printf("Setting default IAP - '%s' failed: %d\n", getDefaultIap().toAscii().constData(), err);
+            printf("Setting default IAP - '%s' failed: %d\n", ifReq.ifr_name, err);
         else
-            printf("'%s' used as an default IAP\n", getDefaultIap().toAscii().constData());
+            printf("'%s' used as an default IAP\n", ifReq.ifr_name);
     }
 #endif
 
@@ -201,20 +204,14 @@ private:
     static bool bDefaultIapLoaded;
     static bool bTestSettingsLoaded;
     static QString iapFileFullPath;
-    static QString strDefaultIap;
-    static char serverIPAscii[256];
-
-    static QString getDefaultIap() {
-        if(!bDefaultIapLoaded) {
-            if(!loadDefaultIap()) // not found in file - use default
-                strDefaultIap = QString("Lab");
-        }
-
-        return strDefaultIap;
-    }    
+    static QByteArray serverIp;
 
     static bool loadDefaultIap() {
+        if(bDefaultIapLoaded)
+            return true;
+
         QFile iapCfgFile(iapFileFullPath);
+
         bool bFoundDefaultIapTag = false;
 
         if (iapCfgFile.open(QFile::ReadOnly)) {
@@ -227,21 +224,24 @@ private:
 
                 if(line.contains(QString("[DEFAULT]"))) {
                     bFoundDefaultIapTag = true;
-                } else if(line.startsWith(QString("[")) && bFoundDefaultIapTag) {
-                    bFoundDefaultIapTag = false;
-                    break; // stick to default
+                } else if(line.contains(QString("[")) && bFoundDefaultIapTag) {
+                    break;
                 }
 
                 if(bFoundDefaultIapTag && line.contains("name")) {
                     int position = line.indexOf(QString("="));
                     position += QString("=").length();
-                    strDefaultIap = line.mid(position).trimmed();
+
+                    //create record
+                    QtNetworkSettingsRecord *entry = 
+                        new QtNetworkSettingsRecord( QString("iap.default"), line.mid(position).trimmed() );
+                    entries.insert(entry->recordName(), entry);
                     break;
                 }
             } while (!line.isNull());
         }
 
-        return bFoundDefaultIapTag;
+        return bDefaultIapLoaded = bFoundDefaultIapTag;
     }
 
     static bool loadTestSettings() {
@@ -295,8 +295,7 @@ QHash<QString, QtNetworkSettingsRecord* > QtNetworkSettings::entries = QHash<QSt
 bool QtNetworkSettings::bDefaultIapLoaded = false;
 bool QtNetworkSettings::bTestSettingsLoaded = false;
 QString QtNetworkSettings::iapFileFullPath = QString("C:\\Data\\iap.txt");
-QString QtNetworkSettings::strDefaultIap = QString("");
-char QtNetworkSettings::serverIPAscii[256];
+QByteArray QtNetworkSettings::serverIp;
 #endif
 
 #ifdef Q_OS_SYMBIAN

@@ -73,9 +73,6 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     QStringList debugPlatforms = allPlatforms;
     QStringList releasePlatforms = allPlatforms;
     releasePlatforms.removeAll("winscw"); // No release for emulator
-#if !defined(Q_OS_WIN)
-    debugPlatforms.removeAll("winscw"); // Winscw is only for windows
-#endif
 
     bool isSubdirs = getTargetExtension() == "subdirs";
 
@@ -344,7 +341,6 @@ bool SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
 
     t << endl;
 
-#if defined(Q_OS_WIN)
     // Write winscw deployment rules
     QString remoteTestPath = epocRoot() + QLatin1String("epoc32/winscw/c/private/") + privateDirUid;
     DeploymentList depList;
@@ -356,7 +352,10 @@ bool SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
         QString fromItem = depList.at(i).from;
         QString toItem = depList.at(i).to;
         fromItem.replace("\\", "/");
-        toItem.replace("\\", "/").prepend(QDir::current().absolutePath().left(2)); // add drive
+        toItem.replace("\\", "/");
+#if defined(Q_OS_WIN)
+        toItem.prepend(QDir::current().absolutePath().left(2)); // add drive
+#endif
         t << "OPTION DEPLOY_SOURCE " << fromItem << endl;
         t << "OPTION DEPLOY_TARGET " << toItem << endl;
         t << "END" << endl;
@@ -364,7 +363,6 @@ bool SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     t << "#endif" << endl;
 
     t << endl;
-#endif
 
     // ### TODO: Linux emulator (platsim?) deployment
 
