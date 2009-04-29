@@ -68,11 +68,6 @@ public:
         ParallelGroup
     };
 
-    enum HistoryType {
-        ShallowHistory,
-        DeepHistory
-    };
-
     QState(QState *parent = 0);
     QState(Type type, QState *parent = 0);
     ~QState();
@@ -85,8 +80,6 @@ public:
     QAbstractTransition *addTransition(QAbstractState *target);
     void removeTransition(QAbstractTransition *transition);
     QList<QAbstractTransition*> transitions() const;
-
-    QHistoryState *addHistoryState(HistoryType type = ShallowHistory);
 
     QAbstractState *initialState() const;
     void setInitialState(QAbstractState *state);

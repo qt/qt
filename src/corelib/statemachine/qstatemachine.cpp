@@ -415,7 +415,7 @@ QList<QAbstractState*> QStateMachinePrivate::exitStates(const QList<QAbstractTra
                 QSet<QAbstractState*>::const_iterator it;
                 for (it = configuration.constBegin(); it != configuration.constEnd(); ++it) {
                     QAbstractState *s0 = *it;
-                    if (QHistoryStatePrivate::get(h)->historyType == QState::DeepHistory) {
+                    if (QHistoryStatePrivate::get(h)->historyType == QHistoryState::DeepHistory) {
                         if (isAtomic(s0) && isDescendantOf(s0, s))
                             QHistoryStatePrivate::get(h)->configuration.append(s0);
                     } else if (s0->parentState() == s) {
@@ -423,7 +423,7 @@ QList<QAbstractState*> QStateMachinePrivate::exitStates(const QList<QAbstractTra
                     }
                 }
 #ifdef QSTATEMACHINE_DEBUG
-                qDebug() << q_func() << ": recorded" << ((QHistoryStatePrivate::get(h)->historyType == QState::DeepHistory) ? "deep" : "shallow")
+                qDebug() << q_func() << ": recorded" << ((QHistoryStatePrivate::get(h)->historyType == QHistoryState::DeepHistory) ? "deep" : "shallow")
                          << "history for" << s << "in" << h << ":" << QHistoryStatePrivate::get(h)->configuration;
 #endif
             }
@@ -479,7 +479,7 @@ QList<QAbstractState*> QStateMachinePrivate::enterStates(const QList<QAbstractTr
                     }
 #ifdef QSTATEMACHINE_DEBUG
                     qDebug() << q << ": restoring"
-                            << ((QHistoryStatePrivate::get(h)->historyType == QState::DeepHistory) ? "deep" : "shallow")
+                            << ((QHistoryStatePrivate::get(h)->historyType == QHistoryState::DeepHistory) ? "deep" : "shallow")
                             << "history from" << s << ":" << hconf;
 #endif
                 } else {

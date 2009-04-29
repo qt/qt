@@ -75,8 +75,6 @@ QT_BEGIN_NAMESPACE
   and the state machine needs to know which child state to enter when the
   parent state is the target of a transition.
 
-  The addHistoryState() function adds a history state.
-
   The setErrorState() sets the state's error state. The error state is the
   state that the state machine will transition to if an error is detected when
   attempting to enter the state (e.g. because no initial state has been set).
@@ -93,21 +91,6 @@ QT_BEGIN_NAMESPACE
 
   \value ParallelGroup The state is a parallel group state. When a parallel
   group state is entered, all its child states are entered in parallel.
-*/
-
-/*!
-  \enum QState::HistoryType
-
-  This enum specifies the type of history that a QHistoryState records.
-
-  \value ShallowHistory Only the immediate child states of the parent state
-  are recorded. In this case a transition with the history state as its
-  target will end up in the immediate child state that the parent was in the
-  last time it was exited. This is the default.
-
-  \value DeepHistory Nested states are recorded. In this case a transition
-  with the history state as its target will end up in the most deeply nested
-  descendant state the parent was in the last time it was exited.
 */
 
 QStatePrivate::QStatePrivate()
@@ -378,15 +361,6 @@ QList<QAbstractTransition*> QState::transitions() const
 {
     Q_D(const QState);
     return d->transitions();
-}
-
-/*!
-  Creates a history state of the given \a type for this state and returns the
-  new state.  The history state becomes a child of this state.
-*/
-QHistoryState *QState::addHistoryState(HistoryType type)
-{
-    return QHistoryStatePrivate::create(type, this);
 }
 
 /*!

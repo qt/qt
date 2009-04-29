@@ -67,14 +67,11 @@ class QHistoryStatePrivate : public QAbstractStatePrivate
 public:
     QHistoryStatePrivate();
 
-    static QHistoryState *create(QState::HistoryType type,
-                                 QState *parent);
-
     static QHistoryStatePrivate *get(QHistoryState *q);
     static const QHistoryStatePrivate *get(const QHistoryState *q);
 
     QAbstractState *defaultState;
-    QState::HistoryType historyType;
+    QHistoryState::HistoryType historyType;
     QList<QAbstractState*> configuration;
 };
 

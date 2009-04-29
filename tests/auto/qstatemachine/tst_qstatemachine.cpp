@@ -823,7 +823,7 @@ void tst_QStateMachine::historyStateHasNowhereToGo()
     brokenState->setObjectName("brokenState");
     brokenState->setInitialState(new QState(brokenState));
 
-    QHistoryState *historyState = brokenState->addHistoryState();
+    QHistoryState *historyState = new QHistoryState(brokenState);
     historyState->setObjectName("historyState");
     initialState->addTransition(new EventTransition(QEvent::User, historyState));
 
@@ -1587,7 +1587,7 @@ void tst_QStateMachine::historyStates()
       QState *s0 = new QState(root);
         QState *s00 = new QState(s0);
         QState *s01 = new QState(s0);
-        QHistoryState *s0h = s0->addHistoryState();
+        QHistoryState *s0h = new QHistoryState(s0);
       QState *s1 = new QState(root);
       QFinalState *s2 = new QFinalState(root);
 

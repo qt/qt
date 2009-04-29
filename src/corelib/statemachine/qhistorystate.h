@@ -43,9 +43,9 @@
 #define QHISTORYSTATE_H
 
 #ifndef QT_STATEMACHINE_SOLUTION
-#include <QtCore/qstate.h>
+#include <QtCore/qabstractstate.h>
 #else
-#include "qstate.h"
+#include "qabstractstate.h"
 #endif
 
 QT_BEGIN_HEADER
@@ -58,21 +58,30 @@ class QHistoryStatePrivate;
 class Q_CORE_EXPORT QHistoryState : public QAbstractState
 {
     Q_OBJECT
+    Q_PROPERTY(QAbstractState* defaultState READ defaultState WRITE setDefaultState)
+    Q_PROPERTY(HistoryType historyType READ historyType WRITE setHistoryType)
+    Q_ENUMS(HistoryType)
 public:
+    enum HistoryType {
+        ShallowHistory,
+        DeepHistory
+    };
+
+    QHistoryState(QState *parent = 0);
+    QHistoryState(HistoryType type, QState *parent = 0);
     ~QHistoryState();
 
     QAbstractState *defaultState() const;
     void setDefaultState(QAbstractState *state);
+
+    HistoryType historyType() const;
+    void setHistoryType(HistoryType type);
 
 protected:
     void onEntry();
     void onExit();
 
     bool event(QEvent *e);
-
-private:
-    QHistoryState(QState::HistoryType type,
-                  QState *parent = 0);
 
 private:
     Q_DISABLE_COPY(QHistoryState)

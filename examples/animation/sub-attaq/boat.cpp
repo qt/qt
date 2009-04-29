@@ -200,7 +200,7 @@ Boat::Boat(QGraphicsItem * parent, Qt::WindowFlags wFlags)
     stopState->addTransition(downFireMove);
 
     //Finally the launch state should come back to its original state
-    QHistoryState *historyState = moving->addHistoryState();
+    QHistoryState *historyState = new QHistoryState(moving);
     launchStateLeft->addTransition(historyState);
     launchStateRight->addTransition(historyState);
 

@@ -85,15 +85,36 @@ QT_BEGIN_NAMESPACE
   \endcode
 */
 
+/*!
+  \property QHistoryState::defaultState
+
+  \brief the default state of this history state
+*/
+
+/*!
+  \property QHistoryState::historyType
+
+  \brief the type of history that this history state records
+*/
+
+/*!
+  \enum QHistoryState::HistoryType
+
+  This enum specifies the type of history that a QHistoryState records.
+
+  \value ShallowHistory Only the immediate child states of the parent state
+  are recorded. In this case a transition with the history state as its
+  target will end up in the immediate child state that the parent was in the
+  last time it was exited. This is the default.
+
+  \value DeepHistory Nested states are recorded. In this case a transition
+  with the history state as its target will end up in the most deeply nested
+  descendant state the parent was in the last time it was exited.
+*/
+
 QHistoryStatePrivate::QHistoryStatePrivate()
     : defaultState(0)
 {
-}
-
-QHistoryState *QHistoryStatePrivate::create(QState::HistoryType type,
-                                            QState *parent)
-{
-    return new QHistoryState(type, parent);
 }
 
 QHistoryStatePrivate *QHistoryStatePrivate::get(QHistoryState *q)
@@ -107,12 +128,19 @@ const QHistoryStatePrivate *QHistoryStatePrivate::get(const QHistoryState *q)
 }
 
 /*!
-  \internal
-
+  Constructs a new shallow history state with the given \a parent state.
+*/
+QHistoryState::QHistoryState(QState *parent)
+    : QAbstractState(*new QHistoryStatePrivate, parent)
+{
+    Q_D(QHistoryState);
+    d->historyType = ShallowHistory;
+}
+/*!
   Constructs a new history state of the given \a type, with the given \a
   parent state.
 */
-QHistoryState::QHistoryState(QState::HistoryType type, QState *parent)
+QHistoryState::QHistoryState(HistoryType type, QState *parent)
     : QAbstractState(*new QHistoryStatePrivate, parent)
 {
     Q_D(QHistoryState);
@@ -149,6 +177,24 @@ void QHistoryState::setDefaultState(QAbstractState *state)
         return;
     }
     d->defaultState = state;
+}
+
+/*!
+  Returns the type of history that this history state records.
+*/
+QHistoryState::HistoryType QHistoryState::historyType() const
+{
+    Q_D(const QHistoryState);
+    return d->historyType;
+}
+
+/*!
+  Sets the \a type of history that this history state records.
+*/
+void QHistoryState::setHistoryType(HistoryType type)
+{
+    Q_D(QHistoryState);
+    d->historyType = type;
 }
 
 /*!
