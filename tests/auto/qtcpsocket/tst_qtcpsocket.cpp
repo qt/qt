@@ -81,7 +81,8 @@
 #ifndef TEST_QNETWORK_PROXY
 //#define TEST_QNETWORK_PROXY
 #endif
-#ifdef TEST_QNETWORK_PROXY
+#if defined(TEST_QNETWORK_PROXY) || defined (Q_CC_RVCT)
+// RVCT compiles also unused inline methods
 # include <QNetworkProxy>
 #endif
 
