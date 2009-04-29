@@ -986,6 +986,11 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             if ((groupBox->subControls & QStyle::SC_GroupBoxLabel) && !groupBox->text.isEmpty()) {
                 const QColor textColor = groupBox->textColor;
                 painter->save();
+                
+                const QFont suggestedFont = d->s60Font(
+                    QS60StyleEnums::FC_Title, painter->font().pointSizeF());
+                painter->setFont(suggestedFont);
+                
                 if (textColor.isValid())
                     painter->setPen(textColor);
                 int alignment = int(groupBox->textAlignment);
