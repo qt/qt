@@ -123,6 +123,7 @@ bool JavaScriptParser::parse(JavaScriptEnginePrivate *driver)
     first_token = last_token = 0;
 
     tos = -1;
+    program = 0;
 
     do {
         if (++tos == stack_size)
@@ -163,8 +164,9 @@ bool JavaScriptParser::parse(JavaScriptEnginePrivate *driver)
           switch (r) {
 
 case 0: {
-    sym(1).Node = makeAstNode<AST::UiProgram> (driver->nodePool(), sym(1).UiImportList,
+  program = makeAstNode<AST::UiProgram> (driver->nodePool(), sym(1).UiImportList,
         sym(2).UiObjectMemberList->finish());
+  sym(1).UiProgram = program;    
 } break;
 
 case 2: {
@@ -246,7 +248,7 @@ case 19: {
         sym(4).UiObjectMemberList->finish());
     node->colonToken = loc(2);
     node->lbracketToken = loc(3);
-    node->rbraceToken = loc(5);
+    node->rbracketToken = loc(5);
     sym(1).Node = node;
 }   break;
  case 20: 
@@ -1530,6 +1532,7 @@ case 293: {
                 yytoken = *tk;
                 yylval = 0;
                 yylloc = token_buffer[0].loc;
+		yylloc.length = 0;
 
                 first_token = &token_buffer[0];
                 last_token = &token_buffer[2];
@@ -1552,6 +1555,7 @@ case 293: {
                 yytoken = tk;
                 yylval = 0;
                 yylloc = token_buffer[0].loc;
+		yylloc.length = 0;
 
                 action = errorState;
                 goto _Lcheck_token;
