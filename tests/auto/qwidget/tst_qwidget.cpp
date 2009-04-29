@@ -285,6 +285,8 @@ private slots:
     void render_systemClip();
     void render_systemClip2_data();
     void render_systemClip2();
+    void render_systemClip3_data();
+    void render_systemClip3();
 
     void setContentsMargins();
 
@@ -6991,6 +6993,106 @@ void tst_QWidget::render_systemClip2()
                 QCOMPARE(image.pixel(j, i), expectedColor.rgb());
             else
                 QCOMPARE(image.pixel(j, i), QColor(Qt::red).rgb());
+        }
+    }
+}
+
+void tst_QWidget::render_systemClip3_data()
+{
+    QTest::addColumn<QSize>("size");
+    QTest::addColumn<bool>("useSystemClip");
+
+    // Reference: http://en.wikipedia.org/wiki/Flag_of_Norway
+    QTest::newRow("Norwegian Civil Flag") << QSize(220, 160) << false;
+    QTest::newRow("Norwegian War Flag") << QSize(270, 160) << true;
+}
+
+// This test ensures that the current engine clip (systemClip + painter clip)
+// is preserved after QPainter::setClipRegion(..., Qt::ReplaceClip);
+void tst_QWidget::render_systemClip3()
+{
+    QFETCH(QSize, size);
+    QFETCH(bool, useSystemClip);
+
+    // Calculate the inner/outer cross of the flag.
+    QRegion outerCross(0, 0, size.width(), size.height());
+    outerCross -= QRect(0, 0, 60, 60);
+    outerCross -= QRect(100, 0, size.width() - 100, 60);
+    outerCross -= QRect(0, 100, 60, 60);
+    outerCross -= QRect(100, 100, size.width() - 100, 60);
+
+    QRegion innerCross(0, 0, size.width(), size.height());
+    innerCross -= QRect(0, 0, 70, 70);
+    innerCross -= QRect(90, 0, size.width() - 90, 70);
+    innerCross -= QRect(0, 90, 70, 70);
+    innerCross -= QRect(90, 90, size.width() - 90, 70);
+
+    const QRegion redArea(QRegion(0, 0, size.width(), size.height()) - outerCross);
+    const QRegion whiteArea(outerCross - innerCross);
+    const QRegion blueArea(innerCross);
+    QRegion systemClip;
+
+    // Okay, here's the image that should look like a Norwegian civil/war flag in the end.
+    QImage flag(size, QImage::Format_ARGB32);
+    flag.fill(QColor(Qt::transparent).rgba());
+
+    if (useSystemClip) {
+        QPainterPath warClip(QPoint(size.width(), 0));
+        warClip.lineTo(size.width() - 110, 60);
+        warClip.lineTo(size.width(), 80);
+        warClip.lineTo(size.width() - 110, 100);
+        warClip.lineTo(size.width(), 160);
+        warClip.closeSubpath();
+        systemClip = QRegion(0, 0, size.width(), size.height()) - QRegion(warClip.toFillPolygon().toPolygon());
+        flag.paintEngine()->setSystemClip(systemClip);
+    }
+
+    QPainter painter(&flag);
+    painter.fillRect(QRect(QPoint(), size), Qt::red); // Fill image background with red.
+    painter.setClipRegion(outerCross); // Limit widget painting to inside the outer cross.
+
+    // Here's the widget that's supposed to draw the inner/outer cross of the flag.
+    // The outer cross (white) should be drawn when the background is auto-filled, and
+    // the inner cross (blue) should be drawn in the paintEvent.
+    class MyWidget : public QWidget
+    { public:
+        void paintEvent(QPaintEvent *)
+        {
+            QPainter painter(this);
+            // Be evil and try to paint outside the outer cross. This should not be
+            // possible since the shared painter is clipped to the outer cross.
+            painter.setClipRect(0, 0, 60, 60, Qt::ReplaceClip);
+            painter.fillRect(rect(), Qt::green);
+            painter.setClipRegion(clip, Qt::ReplaceClip);
+            painter.fillRect(rect(), Qt::blue);
+        }
+        QRegion clip;
+    };
+
+    MyWidget widget;
+    widget.clip = innerCross;
+    widget.setFixedSize(size);
+    widget.setPalette(Qt::white);
+    widget.setAutoFillBackground(true);
+    widget.render(&painter);
+
+#ifdef RENDER_DEBUG
+    flag.save("flag.png");
+#endif
+
+    // Let's make sure we got a Norwegian flag.
+    for (int i = 0; i < flag.height(); ++i) {
+        for (int j = 0; j < flag.width(); ++j) {
+            const QPoint pixel(j, i);
+            const QRgb pixelValue = flag.pixel(pixel);
+            if (useSystemClip && !systemClip.contains(pixel))
+                QCOMPARE(pixelValue, QColor(Qt::transparent).rgba());
+            else if (redArea.contains(pixel))
+                QCOMPARE(pixelValue, QColor(Qt::red).rgba());
+            else if (whiteArea.contains(pixel))
+                QCOMPARE(pixelValue, QColor(Qt::white).rgba());
+            else
+                QCOMPARE(pixelValue, QColor(Qt::blue).rgba());
         }
     }
 }

@@ -4824,8 +4824,13 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     const QRegion oldSystemClip = enginePriv->systemClip;
     const QRegion oldSystemViewport = enginePriv->systemViewport;
 
-    // This ensures that transformed system clips are inside the current system clip.
-    enginePriv->setSystemViewport(oldSystemClip);
+    // This ensures that all painting triggered by render() is clipped to the current engine clip.
+    if (painter->hasClipping()) {
+        const QRegion painterClip = painter->deviceTransform().map(painter->clipRegion());
+        enginePriv->setSystemViewport(oldSystemClip.isEmpty() ? painterClip : oldSystemClip & painterClip);
+    } else {
+        enginePriv->setSystemViewport(oldSystemClip);
+    }
 
     render(target, targetOffset, toBePainted, renderFlags);
 
