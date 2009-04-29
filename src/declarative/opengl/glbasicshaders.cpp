@@ -127,7 +127,7 @@ BlurTextureShader::BlurTextureShader()
             {\
                 mediump vec4 accum = vec4(0, 0, 0, 0); \
                 mediump vec2 offset; \
-                if(horizontal) \
+                if (horizontal) \
                     offset = vec2(blurStep, 0); \
                 else \
                     offset = vec2(0, blurStep); \
@@ -150,22 +150,22 @@ BlurTextureShader::BlurTextureShader()
             {\
                 mediump vec4 accum = vec4(0, 0, 0, 0); \
                 mediump vec2 offset; \
-                if(horizontal) \
+                if (horizontal) \
                     offset = vec2(blurStep, 0); \
                 else \
                     offset = vec2(0, blurStep); \
                 mediump float sum = 0.0; \
-                for(int ii = 0; ii < blurSteps; ++ii) { \
+                for (int ii = 0; ii < blurSteps; ++ii) { \
                     mediump float frac = float(blurSteps - ii) / float(blurSteps); \
                     mediump vec2 coord = myTexCoord + -float(ii) * offset; \
-                    if(coord.x >= 0.0 && coord.y >= 0.0 && coord.y <= 1.0 && coord.x <=1.0) \
+                    if (coord.x >= 0.0 && coord.y >= 0.0 && coord.y <= 1.0 && coord.x <=1.0) \
                         accum += texture2D(sampler2d, coord) * frac; \
                     sum += frac; \
                 } \
-                for(int ii = 1; ii < blurSteps; ++ii) { \
+                for (int ii = 1; ii < blurSteps; ++ii) { \
                     mediump float frac = float(blurSteps - ii) / float(blurSteps); \
                     mediump vec2 coord = myTexCoord + float(ii) * offset; \
-                    if(coord.x <= 1.0 && coord.y <= 1.0 && coord.x >= 0.0 && coord.y >= 0.0) \
+                    if (coord.x <= 1.0 && coord.y <= 1.0 && coord.x >= 0.0 && coord.y >= 0.0) \
                         accum += texture2D(sampler2d, coord) * frac; \
                     sum += frac; \
                 } \
@@ -207,7 +207,7 @@ void BlurTextureShader::setSteps(int s)
 
 void BlurTextureShader::setMode(Mode m)
 {
-    if(m == Horizontal)
+    if (m == Horizontal)
         setUniformValue(mode, 1);
     else
         setUniformValue(mode, 0);
@@ -545,49 +545,49 @@ GLBasicShaders::~GLBasicShaders()
 
 BlurTextureShader *GLBasicShaders::blurTexture()
 {
-    if(!d->blurTexture) d->blurTexture = new BlurTextureShader();
+    if (!d->blurTexture) d->blurTexture = new BlurTextureShader();
     return d->blurTexture;
 }
 
 SingleTextureShader *GLBasicShaders::singleTexture()
 {
-    if(!d->singleTexture) d->singleTexture = new SingleTextureShader();
+    if (!d->singleTexture) d->singleTexture = new SingleTextureShader();
     return d->singleTexture;
 }
 
 SingleTextureOpacityShader *GLBasicShaders::singleTextureOpacity()
 {
-    if(!d->singleTextureOpacity) d->singleTextureOpacity = new SingleTextureOpacityShader();
+    if (!d->singleTextureOpacity) d->singleTextureOpacity = new SingleTextureOpacityShader();
     return d->singleTextureOpacity;
 }
 
 DualTextureAddShader *GLBasicShaders::dualTextureAdd()
 {
-    if(!d->dualTextureAdd) d->dualTextureAdd = new DualTextureAddShader();
+    if (!d->dualTextureAdd) d->dualTextureAdd = new DualTextureAddShader();
     return d->dualTextureAdd;
 }
 
 SingleTextureVertexOpacityShader *GLBasicShaders::singleTextureVertexOpacity()
 {
-    if(!d->singleTextureVertexOpacity) d->singleTextureVertexOpacity = new SingleTextureVertexOpacityShader();
+    if (!d->singleTextureVertexOpacity) d->singleTextureVertexOpacity = new SingleTextureVertexOpacityShader();
     return d->singleTextureVertexOpacity;
 }
 
 SingleTextureShadowShader *GLBasicShaders::singleTextureShadow()
 {
-    if(!d->singleTextureShadow) d->singleTextureShadow = new SingleTextureShadowShader();
+    if (!d->singleTextureShadow) d->singleTextureShadow = new SingleTextureShadowShader();
     return d->singleTextureShadow;
 }
 
 ConstantColorShader *GLBasicShaders::constantColor()
 {
-    if(!d->constantColor) d->constantColor = new ConstantColorShader();
+    if (!d->constantColor) d->constantColor = new ConstantColorShader();
     return d->constantColor;
 }
 
 ColorShader *GLBasicShaders::color()
 {
-    if(!d->color) d->color = new ColorShader();
+    if (!d->color) d->color = new ColorShader();
     return d->color;
 }
 

@@ -92,6 +92,10 @@ public:
     { return pageAction(QWebPage::Forward)->isEnabled(); }
     inline bool isBackwardAvailable() const
     { return pageAction(QWebPage::Back)->isEnabled(); }
+    inline bool hasLoadFinished() const
+    { return loadFinished; }
+    inline qreal zoom() const
+    { return textSizeMultiplier(); }
 
 public Q_SLOTS:
     void home();
@@ -111,10 +115,12 @@ protected:
 
 private Q_SLOTS:
     void actionChanged();
+    void setLoadFinished(bool ok);
 
 private:
     QHelpEngine *helpEngine;
     CentralWidget* parentWidget;
+    bool loadFinished;
 };
 
 #else

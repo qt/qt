@@ -70,16 +70,16 @@ QmlParser::Object::Object()
 
 QmlParser::Object::~Object() 
 { 
-    if(defaultProperty) defaultProperty->release();
+    if (defaultProperty) defaultProperty->release();
     foreach(Property *prop, properties)
         prop->release();
-    if(dynamicPropertiesProperty) dynamicPropertiesProperty->release();
-    if(dynamicSignalsProperty) dynamicSignalsProperty->release();
+    if (dynamicPropertiesProperty) dynamicPropertiesProperty->release();
+    if (dynamicSignalsProperty) dynamicSignalsProperty->release();
 }
 
 const QMetaObject *Object::metaObject() const
 {
-    if(extObject && metatype)
+    if (extObject && metatype)
         return extObject;
     else
         return metatype;
@@ -87,15 +87,15 @@ const QMetaObject *Object::metaObject() const
 
 QmlParser::Property *Object::getDefaultProperty()
 {
-    if(!defaultProperty)
+    if (!defaultProperty)
         defaultProperty = new Property;
     return defaultProperty;
 }
 
 Property *QmlParser::Object::getProperty(const QByteArray &name, bool create)
 {
-    if(!properties.contains(name)) {
-        if(create)
+    if (!properties.contains(name)) {
+        if (create)
             properties.insert(name, new Property(name));
         else
             return 0;
@@ -140,12 +140,12 @@ QmlParser::Property::~Property()
 { 
     foreach(Value *value, values)
         value->release();
-    if(value) value->release(); 
+    if (value) value->release(); 
 }
 
 Object *QmlParser::Property::getValue()
 {
-    if(!value) value = new Object;
+    if (!value) value = new Object;
     return value;
 }
 
@@ -167,7 +167,7 @@ QmlParser::Value::Value()
 
 QmlParser::Value::~Value() 
 { 
-    if(object) object->release();
+    if (object) object->release();
 }
 
 QT_END_NAMESPACE

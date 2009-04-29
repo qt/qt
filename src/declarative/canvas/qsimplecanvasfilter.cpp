@@ -64,7 +64,7 @@ QSimpleCanvasFilter::QSimpleCanvasFilter(QObject *parent)
 
 QSimpleCanvasFilter::~QSimpleCanvasFilter()
 {
-    if(d->item) d->item->setFilter(0);
+    if (d->item) d->item->setFilter(0);
     delete d; d = 0;
 }
 
@@ -80,7 +80,7 @@ bool QSimpleCanvasFilter::enabled() const
 
 void QSimpleCanvasFilter::setEnabled(bool e) 
 {
-    if(e == d->enabled)
+    if (e == d->enabled)
         return;
     d->enabled = e;
     emit enabledChanged();
@@ -96,7 +96,7 @@ QGLFramebufferObject *QSimpleCanvasFilter::renderToFBO(float scale, const QRectF
 
     QSimpleCanvasItem *item = d->item;
     QRect br = item->itemBoundingRect();
-    if(br.isEmpty())
+    if (br.isEmpty())
         return 0;
     QGLFramebufferObject *fbo = 
         item->canvas()->d->acquire(int(br.width() * scale), int(br.height() * scale));
@@ -141,7 +141,7 @@ QGLFramebufferObject *QSimpleCanvasFilter::renderToFBO(const QRectF &src, const 
 
     QSimpleCanvasItem *item = d->item;
     QRect br = item->itemBoundingRect();
-    if(br.isEmpty())
+    if (br.isEmpty())
         return 0;
     QGLFramebufferObject *fbo = 
         item->canvas()->d->acquire(br.width(), br.height());
@@ -181,7 +181,7 @@ QGLFramebufferObject *QSimpleCanvasFilter::acquireFBO(const QSize &s)
 #if defined(QFX_RENDER_OPENGL2)
     QSize size;
     QSimpleCanvasItem *item = d->item;
-    if(size.isNull()) {
+    if (size.isNull()) {
         QRect br = item->itemBoundingRect();
         size = br.size();
     } else {
@@ -245,14 +245,14 @@ QSimpleCanvasItem *QSimpleCanvasFilter::item() const
 
 void QSimpleCanvasFilter::setItem(QSimpleCanvasItem *i)
 {
-    if(d->item == i)
+    if (d->item == i)
         return;
-    if(d->item) {
+    if (d->item) {
         d->item->setFilter(0);
         d->item = 0;
     }
 
-    if(i->filter() != this) {
+    if (i->filter() != this) {
         i->setFilter(this);
     } else {
         d->item = i;
@@ -283,23 +283,23 @@ void QSimpleCanvasFilter::filter(QPainter &)
 
 void QSimpleCanvasFilter::update()
 {
-    if(d->item)
+    if (d->item)
         d->item->update();
 }
 
 #if defined(QFX_RENDER_OPENGL2)
 bool QSimpleCanvasFilterPrivate::isSimpleItem(QSimpleCanvasItem *item, QSimpleCanvasItem **out, QSimpleCanvas::Matrix *mout)
 {
-    if(item->options() & QSimpleCanvasItem::SimpleItem && !item->hasChildren()) {
+    if (item->options() & QSimpleCanvasItem::SimpleItem && !item->hasChildren()) {
         *out = item;
         return true;
-    } else if(!(item->options() & QSimpleCanvasItem::HasContents) && 
+    } else if (!(item->options() & QSimpleCanvasItem::HasContents) && 
                 item->children().count() == 1) {
         QSimpleCanvasItem *child = item->children().first();
-        if(child->filter() && child->filter()->enabled())
+        if (child->filter() && child->filter()->enabled())
             return false;
         bool rv = isSimpleItem(child, out, mout);
-        if(rv)
+        if (rv)
             *mout *= child->d_func()->localTransform();
         return rv;
     } else {

@@ -60,11 +60,10 @@
 
     \section2 Intel Compiler Support
 
-    Although it is possible to build applications against Qt 4.5.0 using Intel
-    CC 10, these applications will crash when run. A fix for this issue is
-    scheduled for Qt 4.5.1. We recommend that developers who rely on this
-    compiler wait until the fix is applied before upgrading to the Qt 4.5.x
-    series of releases.
+    Although it is possible to build applications against Qt 4.5.x using Intel
+    CC 10, these applications will crash when run.  We recommend that developers
+    who rely on this compiler wait until a fix is available before upgrading to
+    the Qt 4.5.x series of releases.
 
     \section2 X11 Hardware Support
 

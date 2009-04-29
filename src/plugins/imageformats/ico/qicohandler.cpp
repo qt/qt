@@ -80,7 +80,7 @@ typedef struct
 typedef struct {                    // BMP information header
     quint32 biSize;                // size of this struct
     quint32 biWidth;               // pixmap width
-    quint32 biHeight;              // pixmap height
+    quint32 biHeight;              // pixmap height     (specifies the combined height of the XOR and AND masks)
     quint16 biPlanes;              // should be 1
     quint16 biBitCount;            // number of bits per pixel
     quint32 biCompression;         // compression method
@@ -108,7 +108,7 @@ private:
     bool readHeader();
     bool readIconEntry(int index, ICONDIRENTRY * iconEntry);
 
-    bool readBMPHeader(ICONDIRENTRY & iconEntry, BMP_INFOHDR * header);
+    bool readBMPHeader(quint32 imageOffset, BMP_INFOHDR * header);
     void findColorInfo(QImage & image);
     void readColorTable(QImage & image);
 
@@ -343,7 +343,7 @@ bool ICOReader::readHeader()
     return headerRead;
 }
 
-bool ICOReader::readIconEntry(int index, ICONDIRENTRY * iconEntry)
+bool ICOReader::readIconEntry(int index, ICONDIRENTRY *iconEntry)
 {
     if (iod) {
         if (iod->seek(startpos + ICONDIR_SIZE + (index * ICONDIRENTRY_SIZE))) {
@@ -355,37 +355,12 @@ bool ICOReader::readIconEntry(int index, ICONDIRENTRY * iconEntry)
 
 
 
-bool ICOReader::readBMPHeader(ICONDIRENTRY & iconEntry, BMP_INFOHDR * header)
+bool ICOReader::readBMPHeader(quint32 imageOffset, BMP_INFOHDR * header)
 {
-    memset(&icoAttrib, 0, sizeof(IcoAttrib));
     if (iod) {
-        if (iod->seek(startpos + iconEntry.dwImageOffset)) {
+        if (iod->seek(startpos + imageOffset)) {
             if (readBMPInfoHeader(iod, header)) {
-
-                icoAttrib.nbits = header->biBitCount ? header->biBitCount : iconEntry.wBitCount;
-                icoAttrib.h = header->biHeight / 2; // this height is always double the iconEntry height (for the mask)
-                icoAttrib.w = header->biWidth;
-
-                switch (icoAttrib.nbits) {
-                case 32:
-                case 24:
-                case 16:
-                    icoAttrib.depth = 32;
-                    break;
-                case 8:
-                case 4:
-                    icoAttrib.depth = 8;
-                    break;
-                default:
-                    icoAttrib.depth = 1;
-                }
-
-                if ( icoAttrib.depth == 32 )                // there's no colormap
-                    icoAttrib.ncolors = 0;
-                else                    // # colors used
-                    icoAttrib.ncolors = header->biClrUsed ? header->biClrUsed : 1 << icoAttrib.nbits;
-                        //qDebug() << "Bits:" << icoAttrib.nbits << "Depth:" << icoAttrib.depth << "Ncols:" << icoAttrib.ncolors;
-                    return TRUE;
+                return TRUE;
             }
         }
     }
@@ -548,7 +523,28 @@ QImage ICOReader::iconAt(int index)
         if (readIconEntry(index, &iconEntry)) {
 
             BMP_INFOHDR header;
-            if (readBMPHeader(iconEntry, &header)) {
+            if (readBMPHeader(iconEntry.dwImageOffset, &header)) {
+                icoAttrib.nbits = header.biBitCount ? header.biBitCount : iconEntry.wBitCount;
+
+                switch (icoAttrib.nbits) {
+                case 32:
+                case 24:
+                case 16:
+                    icoAttrib.depth = 32;
+                    break;
+                case 8:
+                case 4:
+                    icoAttrib.depth = 8;
+                    break;
+                default:
+                    icoAttrib.depth = 1;
+                }
+                if (icoAttrib.depth == 32)                // there's no colormap
+                    icoAttrib.ncolors = 0;
+                else                    // # colors used
+                    icoAttrib.ncolors = header.biClrUsed ? header.biClrUsed : 1 << icoAttrib.nbits;
+                icoAttrib.w = iconEntry.bWidth;
+                icoAttrib.h = iconEntry.bHeight;
 
                 QImage::Format format = QImage::Format_ARGB32;
                 if (icoAttrib.nbits == 24)

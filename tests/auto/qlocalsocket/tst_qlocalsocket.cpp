@@ -95,6 +95,7 @@ private slots:
 
     void longPath();
     void waitForDisconnect();
+    void waitForDisconnectByServer();
 
     void removeServer();
 
@@ -112,6 +113,8 @@ tst_QLocalSocket::tst_QLocalSocket()
 #endif
                 ))
         qWarning() << "lackey executable doesn't exists!";
+
+    QLocalServer::removeServer("tst_localsocket");
 }
 
 tst_QLocalSocket::~tst_QLocalSocket()
@@ -781,6 +784,25 @@ void tst_QLocalSocket::waitForDisconnect()
     timer.start();
     QVERIFY(serverSocket->waitForDisconnected(3000));
     QVERIFY(timer.elapsed() < 2000);
+}
+
+void tst_QLocalSocket::waitForDisconnectByServer()
+{
+    QString name = "tst_localsocket";
+    LocalServer server;
+    QVERIFY(server.listen(name));
+    LocalSocket socket;
+    QSignalSpy spy(&socket, SIGNAL(disconnected()));
+    QVERIFY(spy.isValid());
+    socket.connectToServer(name);
+    QVERIFY(socket.waitForConnected(3000));
+    QVERIFY(server.waitForNewConnection(3000));
+    QLocalSocket *serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
+    serverSocket->close();
+    QVERIFY(serverSocket->state() == QLocalSocket::UnconnectedState);
+    QVERIFY(socket.waitForDisconnected(3000));
+    QCOMPARE(spy.count(), 1);
 }
 
 void tst_QLocalSocket::removeServer()

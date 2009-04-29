@@ -50,9 +50,10 @@
 
 QT_BEGIN_NAMESPACE
 
-const bool QStyleHelper::UsePixmapCache = true;
+namespace QStyleHelper {
+const bool UsePixmapCache = true;
 
-QString QStyleHelper::uniqueName(const QString &key, const QStyleOption *option, const QSize &size)
+QString uniqueName(const QString &key, const QStyleOption *option, const QSize &size)
 {
     QString tmp;
     const QStyleOptionComplex *complexOption = qstyleoption_cast<const QStyleOptionComplex *>(option);
@@ -74,7 +75,7 @@ QString QStyleHelper::uniqueName(const QString &key, const QStyleOption *option,
 
 #ifndef QT_NO_DIAL
 
-int QStyleHelper::calcBigLineSize(int radius)
+int calcBigLineSize(int radius)
 {
     int bigLineSize = radius / 6;
     if (bigLineSize < 4)
@@ -107,7 +108,7 @@ static QPointF calcRadialPos(const QStyleOptionSlider *dial, qreal offset)
     return pos;
 }
 
-qreal QStyleHelper::angle(const QPointF &p1, const QPointF &p2)
+qreal angle(const QPointF &p1, const QPointF &p2)
 {
     static const qreal rad_factor = 180 / Q_PI;
     qreal _angle = 0;
@@ -139,7 +140,7 @@ qreal QStyleHelper::angle(const QPointF &p1, const QPointF &p2)
     return _angle;
 }
 
-QPolygonF QStyleHelper::calcLines(const QStyleOptionSlider *dial)
+QPolygonF calcLines(const QStyleOptionSlider *dial)
 {
     QPolygonF poly;
     int width = dial->rect.width();
@@ -182,7 +183,7 @@ QPolygonF QStyleHelper::calcLines(const QStyleOptionSlider *dial)
 // This will draw a nice and shiny QDial for us. We don't want
 // all the shinyness in QWindowsStyle, hence we place it here
 
-void QStyleHelper::drawDial(const QStyleOptionSlider *option, QPainter *painter)
+void drawDial(const QStyleOptionSlider *option, QPainter *painter)
 {
     QPalette pal = option->palette;
     QColor buttonColor = pal.button().color();
@@ -292,4 +293,61 @@ void QStyleHelper::drawDial(const QStyleOptionSlider *option, QPainter *painter)
 }
 #endif //QT_NO_DIAL
 
+void drawBorderPixmap(const QPixmap &pixmap, QPainter *painter, const QRect &rect,
+                     int left, int top, int right,
+                     int bottom)
+{
+    QSize size = pixmap.size();
+    //painter->setRenderHint(QPainter::SmoothPixmapTransform);
+
+    //top
+    if (top > 0) {
+        painter->drawPixmap(QRect(rect.left() + left, rect.top(), rect.width() -right - left, top), pixmap,
+                            QRect(left, 0, size.width() -right - left, top));
+
+        //top-left
+        if(left > 0)
+            painter->drawPixmap(QRect(rect.left(), rect.top(), left, top), pixmap,
+                                QRect(0, 0, left, top));
+
+        //top-right
+        if (right > 0)
+            painter->drawPixmap(QRect(rect.left() + rect.width() - right, rect.top(), right, top), pixmap,
+                                QRect(size.width() - right, 0, right, top));
+    }
+
+    //left
+    if (left > 0)
+        painter->drawPixmap(QRect(rect.left(), rect.top()+top, left, rect.height() - top - bottom), pixmap,
+                            QRect(0, top, left, size.height() - bottom - top));
+
+    //center
+    painter->drawPixmap(QRect(rect.left() + left, rect.top()+top, rect.width() -right - left,
+                             rect.height() - bottom - top), pixmap,
+                       QRect(left, top, size.width() -right -left,
+                             size.height() - bottom - top));
+    //right
+    if (right > 0)
+        painter->drawPixmap(QRect(rect.left() +rect.width() - right, rect.top()+top, right, rect.height() - top - bottom), pixmap,
+                            QRect(size.width() - right, top, right, size.height() - bottom - top));
+
+    //bottom
+    if (bottom > 0) {
+        painter->drawPixmap(QRect(rect.left() +left, rect.top() + rect.height() - bottom,
+                                 rect.width() - right - left, bottom), pixmap,
+                            QRect(left, size.height() - bottom,
+                                 size.width() - right - left, bottom));
+        //bottom-left
+        if (left > 0)
+            painter->drawPixmap(QRect(rect.left(), rect.top() + rect.height() - bottom, left, bottom), pixmap,
+                                QRect(0, size.height() - bottom, left, bottom));
+
+        //bottom-right
+        if (right > 0)
+            painter->drawPixmap(QRect(rect.left() + rect.width() - right, rect.top() + rect.height() - bottom, right, bottom), pixmap,
+                                QRect(size.width() - right, size.height() - bottom, right, bottom));
+
+    }
+}
+}
 QT_END_NAMESPACE

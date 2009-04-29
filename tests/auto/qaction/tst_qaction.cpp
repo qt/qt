@@ -46,7 +46,6 @@
 #include <qevent.h>
 #include <qaction.h>
 #include <qmenu.h>
-#include <qlineedit.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -75,7 +74,6 @@ private slots:
     void setStandardKeys();
     void alternateShortcuts();
     void enabledVisibleInteraction();
-    void invisibleActionWithComplexShortcut();
     void task200823_tooltip();
     void task229128TriggeredSignalWithoutActiongroup();
     void task229128TriggeredSignalWhenInActiongroup();
@@ -365,37 +363,6 @@ void tst_QAction::task229128TriggeredSignalWhenInActiongroup()
     // check that both the group and the action have emitted the signal
     QCOMPARE(actionGroupSpy.count(), 1);
     QCOMPARE(actionSpy.count(), 1);
-}
-
-void tst_QAction::invisibleActionWithComplexShortcut()
-{
-    QAction action(0);
-    action.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_E, Qt::Key_1));
-
-    QLineEdit edit;
-    edit.addAction(&action);
-    edit.show();
-    QTest::qWait(100);
-
-    QSignalSpy spy(&action, SIGNAL(triggered()));
-
-    action.setVisible(true);
-    QTest::keyPress(&edit, Qt::Key_E, Qt::ControlModifier);
-    QTest::keyRelease(&edit, Qt::Key_E, Qt::ControlModifier);
-    QTest::keyPress(&edit, Qt::Key_1, Qt::NoModifier);
-    QTest::keyRelease(&edit, Qt::Key_1, Qt::NoModifier);
-    QCOMPARE(spy.count(), 1);
-    QCOMPARE(edit.text(), QLatin1String(""));
-
-    edit.clear();
-    spy.clear();
-    action.setVisible(false);
-    QTest::keyPress(&edit, Qt::Key_E, Qt::ControlModifier);
-    QTest::keyRelease(&edit, Qt::Key_E, Qt::ControlModifier);
-    QTest::keyPress(&edit, Qt::Key_1, Qt::NoModifier);
-    QTest::keyRelease(&edit, Qt::Key_1, Qt::NoModifier);
-    QCOMPARE(spy.count(), 0);
-    QCOMPARE(edit.text(), QLatin1String("1"));
 }
 
 QTEST_MAIN(tst_QAction)

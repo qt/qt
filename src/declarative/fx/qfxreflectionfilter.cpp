@@ -135,7 +135,7 @@ qreal QFxReflectionFilter::alpha() const
 
 void QFxReflectionFilter::setAlpha(qreal a)
 {
-    if(d->alpha == a) return;
+    if (d->alpha == a) return;
     d->alpha = a;
     emit alphaChanged(a);
     update();
@@ -202,7 +202,7 @@ int QFxReflectionFilter::height() const
 
 void QFxReflectionFilter::setHeight(int h)
 {
-    if(d->height == h) return;
+    if (d->height == h) return;
     d->height = h;
     emit heightChanged(h);
     update();
@@ -219,7 +219,7 @@ int QFxReflectionFilter::offset()
 
 void QFxReflectionFilter::setOffset(int o)
 {
-    if(d->offset == o) return;
+    if (d->offset == o) return;
     d->offset = o;
     emit offsetChanged(o);
     update();
@@ -236,7 +236,7 @@ qreal QFxReflectionFilter::scale() const
 
 void QFxReflectionFilter::setScale(qreal s)
 {
-    if(d->scale == s) return;
+    if (d->scale == s) return;
     d->scale = s;
     emit scaleChanged(s);
     update();
@@ -259,12 +259,12 @@ void QFxReflectionFilter::filterGL(QSimpleCanvasItem::GLPainter &p)
     float height = r.height();
 
     float refHeight = height;
-    if(d->height > 0)
+    if (d->height > 0)
         refHeight = min(height, d->height);
 
     QSimpleCanvas::Matrix simpMat;
     QSimpleCanvasItem *simpItem = 0;
-    if(isSimpleItem(&simpItem, &simpMat) &&
+    if (isSimpleItem(&simpItem, &simpMat) &&
        simpItem->glSimpleItemData(0, 0, 0, 0)) {
 
         GLfloat vertices[8];
@@ -276,7 +276,7 @@ void QFxReflectionFilter::filterGL(QSimpleCanvasItem::GLPainter &p)
         GLfloat opacity[4];
 
         float invRefHeight = 1. / refHeight;
-        for(int ii = 0; ii < 4; ++ii) {
+        for (int ii = 0; ii < 4; ++ii) {
             float vertex = vertices[ii * 2 + 1];
             float o = (1. - (height - vertex) * invRefHeight);
             opacity[ii] = o * d->alpha * p.activeOpacity;
@@ -285,7 +285,7 @@ void QFxReflectionFilter::filterGL(QSimpleCanvasItem::GLPainter &p)
         QSimpleCanvas::Matrix trans = p.activeTransform;
         trans.rotate(180, 1, 0, 0);
         trans.translate(0, -r.height() - d->offset);
-        if(d->scale != 1)
+        if (d->scale != 1)
             trans.scale(1, d->scale, 1);
         trans.translate(0, -r.height());
         trans *= simpMat;

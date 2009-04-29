@@ -75,7 +75,7 @@ QmlInfo::QmlInfo(QObject *object)
 : QDebug(QtWarningMsg)
 {
     *this << "QML";
-    if(object) 
+    if (object) 
         *this << object->metaObject()->className();
     *this << "(unknown location):";
 }

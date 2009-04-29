@@ -3,7 +3,7 @@ include(../../qpluginbase.pri)
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/gfxdrivers
 
-# These defines might be necessary if your DirectFB driver doesn't 
+# These defines might be necessary if your DirectFB driver doesn't
 # support all of the DirectFB API.
 #
 #DEFINES += QT_NO_DIRECTFB_WM
@@ -14,6 +14,8 @@ QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/gfxdrivers
 #DEFINES += QT_NO_DIRECTFB_KEYBOARD
 #DEFINES += QT_DIRECTFB_TIMING
 #DEFINES += QT_NO_DIRECTFB_OPAQUE_DETECTION
+#DEFINES += QT_DIRECTFB_WARN_ON_RASTERFALLBACKS
+#DEFINES += QT_DIRECTFB_DISABLE_RASTERFALLBACKS
 
 target.path = $$[QT_INSTALL_PLUGINS]/gfxdrivers
 INSTALLS += target

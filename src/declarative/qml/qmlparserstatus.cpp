@@ -45,7 +45,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QmlParserStatus
-    \brief provides updates on the parser state.
+    \brief The QmlParserStatus class provides updates on the parser state.
 */
 
 /*!

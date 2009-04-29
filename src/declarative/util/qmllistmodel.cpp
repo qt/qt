@@ -70,7 +70,7 @@ public:
     {
         type = QmlListModel::Invalid;
         model = QVariant();
-        if(listModelInterface) 
+        if (listModelInterface) 
             listModelInterface->disconnect(q);
         listModelInterface = 0;
         singleObject = 0;
@@ -80,11 +80,11 @@ public:
 
     void updateRoleCache()
     {
-        if(roleCacheValid)
+        if (roleCacheValid)
             return;
 
         roleCacheValid = true;
-        if(type == QmlListModel::SingleObject) 
+        if (type == QmlListModel::SingleObject) 
             roleCache = QmlMetaProperty::properties(singleObject);
     }
 
@@ -164,7 +164,7 @@ bool QmlListModel::setModel(const QVariant &model)
     d->clear();
 
     QListModelInterface *iface = qvariant_cast<QListModelInterface *>(model);
-    if(iface) {
+    if (iface) {
         QObject::connect(iface, SIGNAL(itemsInserted(int,int)), 
                          this, SIGNAL(itemsInserted(int,int)));
         QObject::connect(iface, SIGNAL(itemsRemoved(int,int)), 
@@ -180,14 +180,14 @@ bool QmlListModel::setModel(const QVariant &model)
     } 
 
     QObject *object = qvariant_cast<QObject *>(model);
-    if(object) {
+    if (object) {
         d->singleObject = object;
         d->type = SingleObject;
         d->model = model;
         return true;
     }
 
-    if(QmlMetaType::isList(model)) {
+    if (QmlMetaType::isList(model)) {
         d->type = SimpleList;
         d->model = model;
         return true;
@@ -214,7 +214,7 @@ QList<int> QmlListModel::roles() const
     case SingleObject:
         {
             QList<int> rv;
-            for(int ii = 0; ii < d->roleCache.count(); ++ii)
+            for (int ii = 0; ii < d->roleCache.count(); ++ii)
                 rv << ii;
             return rv;
         }
@@ -230,14 +230,14 @@ QString QmlListModel::toString(int role) const
     case Invalid:
         return QString();
     case SimpleList:
-        if(role == DATA_ROLE_ID)
+        if (role == DATA_ROLE_ID)
             return QLatin1String(DATA_ROLE_NAME);
         else
             return QString();
     case ListInterface:
         return d->listModelInterface->toString(role);
     case SingleObject:
-        if(role >= d->roleCache.count())
+        if (role >= d->roleCache.count())
             return QString();
         else
             return d->roleCache.at(role);
@@ -272,14 +272,14 @@ QHash<int,QVariant> QmlListModel::data(int index, const QList<int> &roles) const
     case Invalid:
         break;
     case SimpleList:
-        if(roles.contains(DATA_ROLE_ID))
+        if (roles.contains(DATA_ROLE_ID))
             rv.insert(DATA_ROLE_ID, QmlMetaType::listAt(d->model, index));
         break;
     case ListInterface:
         return d->listModelInterface->data(index, roles);
     case SingleObject: 
         {
-            for(int ii = 0; ii < roles.count(); ++ii) {
+            for (int ii = 0; ii < roles.count(); ++ii) {
                 QmlMetaProperty prop(d->singleObject, toString(roles.at(ii)));
                 rv.insert(roles.at(ii), prop.read());
             }
@@ -344,7 +344,7 @@ struct ModelNode
     QHash<QString, ModelNode *> properties;
 
     ListModel *model() {
-        if(!modelCache) { 
+        if (!modelCache) { 
             modelCache = new ListModel;
             modelCache->_root = this; 
         }
@@ -352,7 +352,7 @@ struct ModelNode
     }
 
     ModelObject *object() {
-        if(!objectCache) {
+        if (!objectCache) {
             objectCache = new ModelObject(this);
             QHash<QString, ModelNode *>::iterator it;
             for (it = properties.begin(); it != properties.end(); ++it) {
@@ -382,13 +382,13 @@ ListModel::ListModel(QObject *parent)
 
 void ListModel::checkRoles() const
 {
-    if(_rolesOk)
+    if (_rolesOk)
         return;
 
-    for(int ii = 0; ii < _root->values.count(); ++ii) {
+    for (int ii = 0; ii < _root->values.count(); ++ii) {
         ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(ii));
-        if(node) {
-            foreach(QString role, node->properties.keys())
+        if (node) {
+            foreach (const QString &role, node->properties.keys())
                 addRole(role);
         } 
     }
@@ -398,7 +398,7 @@ void ListModel::checkRoles() const
 
 void ListModel::addRole(const QString &role) const
 {
-    if(!roleStrings.contains(role))
+    if (!roleStrings.contains(role))
         roleStrings << role;
 }
 
@@ -406,7 +406,7 @@ QList<int> ListModel::roles() const
 {
     checkRoles();
     QList<int> rv;
-    for(int ii = 0; ii < roleStrings.count(); ++ii)
+    for (int ii = 0; ii < roleStrings.count(); ++ii)
         rv << ii;
     return rv;
 }
@@ -414,7 +414,7 @@ QList<int> ListModel::roles() const
 QString ListModel::toString(int role) const
 {
     checkRoles();
-    if(role < roleStrings.count())
+    if (role < roleStrings.count())
         return roleStrings.at(role);
     else
         return QString();
@@ -424,30 +424,30 @@ QVariant ListModel::valueForNode(ModelNode *node) const
 {
     QObject *rv = 0;
 
-    if(!node->properties.isEmpty()) {
+    if (!node->properties.isEmpty()) {
         // Object
         rv = node->object();
-    } else if(node->values.count() == 0) {
+    } else if (node->values.count() == 0) {
         // Invalid
         return QVariant();
-    } else if(node->values.count() == 1) {
+    } else if (node->values.count() == 1) {
         // Value
         QVariant &var = node->values[0];
         ModelNode *valueNode = qvariant_cast<ModelNode *>(var);
-        if(valueNode) {
-            if(!valueNode->properties.isEmpty())
+        if (valueNode) {
+            if (!valueNode->properties.isEmpty())
                 rv = valueNode->object();
             else
                 rv = valueNode->model();
         } else {
             return var;
         }
-    } else if(node->values.count() > 1) {
+    } else if (node->values.count() > 1) {
         // List
         rv = node->model();
     }
 
-    if(rv)
+    if (rv)
         return QVariant::fromValue(rv);
     else
         return QVariant();
@@ -457,19 +457,19 @@ QHash<int,QVariant> ListModel::data(int index, const QList<int> &roles) const
 {
     checkRoles();
     QHash<int, QVariant> rv;
-    if(index >= count())
+    if (index >= count())
         return rv;
 
     ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
-    if(!node) 
+    if (!node) 
         return rv;
 
-    for(int ii = 0; ii < roles.count(); ++ii) {
+    for (int ii = 0; ii < roles.count(); ++ii) {
         const QString &roleString = roleStrings.at(roles.at(ii));
 
         QHash<QString, ModelNode *>::ConstIterator iter = 
             node->properties.find(roleString);
-        if(iter != node->properties.end()) {
+        if (iter != node->properties.end()) {
             ModelNode *row = *iter;
             rv.insert(roles.at(ii), valueForNode(row));
         }
@@ -480,7 +480,7 @@ QHash<int,QVariant> ListModel::data(int index, const QList<int> &roles) const
 
 int ListModel::count() const
 {
-    if(!_root) return 0;
+    if (!_root) return 0;
     return _root->values.count();
 }
 
@@ -503,9 +503,9 @@ static void dump(ModelNode *node, int ind)
     QByteArray indentBa(ind * 4, ' ');
     const char *indent = indentBa.constData();
 
-    for(int ii = 0; ii < node->values.count(); ++ii) {
+    for (int ii = 0; ii < node->values.count(); ++ii) {
         ModelNode *subNode = qvariant_cast<ModelNode *>(node->values.at(ii));
-        if(subNode) {
+        if (subNode) {
             qWarning().nospace() << indent << "Sub-node " << ii << ": class " << subNode->className;
             dump(subNode, ind + 1);
         } else {
@@ -513,7 +513,7 @@ static void dump(ModelNode *node, int ind)
         }
     }
 
-    for(QHash<QString, ModelNode *>::ConstIterator iter = node->properties.begin(); iter != node->properties.end(); ++iter) {
+    for (QHash<QString, ModelNode *>::ConstIterator iter = node->properties.begin(); iter != node->properties.end(); ++iter) {
         qWarning().nospace() << indent << "Property " << iter.key() << ":";
         dump(iter.value(), ind + 1);
     }
@@ -527,11 +527,11 @@ ModelNode::ModelNode()
 ModelNode::~ModelNode()
 {
     qDeleteAll(properties);
-    for(int ii = 0; ii < values.count(); ++ii) {
+    for (int ii = 0; ii < values.count(); ++ii) {
         ModelNode *node = qvariant_cast<ModelNode *>(values.at(ii));
-        if(node) { delete node; node = 0; }
+        if (node) { delete node; node = 0; }
     }
-    if(modelCache) { delete modelCache; modelCache = 0; }
+    if (modelCache) { delete modelCache; modelCache = 0; }
 }
 
 struct ListModelData
@@ -650,7 +650,7 @@ QByteArray ListModelParser::compile(QXmlStreamReader& reader, bool *ok)
     lmd->dataOffset = sizeof(ListModelData) + 
                      instr.count() * sizeof(ListInstruction);
     lmd->instrCount = instr.count();
-    for(int ii = 0; ii < instr.count(); ++ii)
+    for (int ii = 0; ii < instr.count(); ++ii)
         lmd->instructions()[ii] = instr.at(ii);
     ::memcpy(rv.data() + lmd->dataOffset, data.constData(), data.count());
 
@@ -668,7 +668,7 @@ QVariant ListModelParser::create(const QByteArray &d)
     const ListModelData *lmd = (const ListModelData *)d.constData();
     const char *data = ((const char *)lmd) + lmd->dataOffset;
 
-    for(int ii = 0; ii < lmd->instrCount; ++ii) {
+    for (int ii = 0; ii < lmd->instrCount; ++ii) {
         const ListInstruction &instr = lmd->instructions()[ii];
 
         switch(instr.type) {

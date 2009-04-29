@@ -55,7 +55,7 @@ QSimpleCanvasServer::QSimpleCanvasServer(int port, QObject *parent)
 
     _time.start();
 
-    if(!_tcpServer->listen(QHostAddress::Any, port)) {
+    if (!_tcpServer->listen(QHostAddress::Any, port)) {
         qWarning() << "QSimpleCanvasServer: Cannot listen on port" << port;
         return;
     }
@@ -85,7 +85,7 @@ void QSimpleCanvasServer::addTiming(quint32 paint,
     QByteArray ba = d.toLatin1();
 
     // XXX
-    for(int ii = 0; ii < _tcpClients.count(); ++ii) 
+    for (int ii = 0; ii < _tcpClients.count(); ++ii) 
 //        _tcpClients.at(ii)->write((const char *)data, 12);
         _tcpClients.at(ii)->write(ba.constData(), ba.length());
 }
@@ -94,8 +94,8 @@ void QSimpleCanvasServer::disconnected()
 {
     QTcpSocket *socket = static_cast<QTcpSocket *>(sender());
 
-    for(int ii = 0; ii < _tcpClients.count(); ++ii) {
-        if(_tcpClients.at(ii) == socket) {
+    for (int ii = 0; ii < _tcpClients.count(); ++ii) {
+        if (_tcpClients.at(ii) == socket) {
             socket->disconnect();
             socket->deleteLater();
             _tcpClients.removeAt(ii);

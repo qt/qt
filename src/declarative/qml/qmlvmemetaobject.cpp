@@ -52,7 +52,7 @@ QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
                                        QmlRefCount *rc)
 : object(obj), ref(rc)
 {
-    if(ref)
+    if (ref)
         ref->addref();
 
     *static_cast<QMetaObject *>(this) = *other;
@@ -64,9 +64,9 @@ QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
     data = new QVariant[propertyCount() - baseProp];
     vTypes.resize(propertyCount() - baseProp);
 
-    for(int ii = baseProp; ii < propertyCount(); ++ii) {
+    for (int ii = baseProp; ii < propertyCount(); ++ii) {
         QMetaProperty prop = property(ii);
-        if((int)prop.type() != -1) {
+        if ((int)prop.type() != -1) {
             data[ii - baseProp] = QVariant((QVariant::Type)prop.userType());
         } else {
             vTypes.setBit(ii - baseProp, true);
@@ -76,27 +76,27 @@ QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
 
 QmlVMEMetaObject::~QmlVMEMetaObject()
 {
-    if(ref)
+    if (ref)
         ref->release();
     delete [] data;
 }
 
 int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
 {
-    if(id >= baseProp) {
+    if (id >= baseProp) {
         int propId = id - baseProp;
         bool needActivate = false;
 
-        if(vTypes.testBit(propId)) {
-            if(c == QMetaObject::ReadProperty) {
+        if (vTypes.testBit(propId)) {
+            if (c == QMetaObject::ReadProperty) {
                 *reinterpret_cast<QVariant *>(a[0]) = data[propId];
-            } else if(c == QMetaObject::WriteProperty) {
+            } else if (c == QMetaObject::WriteProperty) {
                 needActivate = 
                     (data[propId] != *reinterpret_cast<QVariant *>(a[0]));
                 data[propId] = *reinterpret_cast<QVariant *>(a[0]);
             }
         } else {
-            if(c == QMetaObject::ReadProperty) {
+            if (c == QMetaObject::ReadProperty) {
                 switch(data[propId].type()) {
                 case QVariant::Int:
                     *reinterpret_cast<int *>(a[0]) = data[propId].toInt();
@@ -120,7 +120,7 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
                     qFatal("Unknown type");
                     break;
                 }
-            } else if(c == QMetaObject::WriteProperty) {
+            } else if (c == QMetaObject::WriteProperty) {
 
                 QVariant value = QVariant((QVariant::Type)data[propId].type(), a[0]); 
                 needActivate = (data[propId] != value);
@@ -128,7 +128,7 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
             }
         }
 
-        if(c == QMetaObject::WriteProperty && needActivate) {
+        if (c == QMetaObject::WriteProperty && needActivate) {
             activate(object, baseSig + propId, 0);
         }
 

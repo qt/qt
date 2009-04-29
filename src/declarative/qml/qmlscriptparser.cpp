@@ -247,7 +247,7 @@ Object *ProcessAST::defineObjectBinding_helper(int line,
             Value *v = new Value;
             v->object = obj;
             v->line = line;
-            if(state.property)
+            if (state.property)
                 state.property->addValue(v);
             else
                 state.object->getDefaultProperty()->addValue(v);
@@ -403,7 +403,7 @@ QString ProcessAST::getPrimitive(const QByteArray &propertyName, AST::Expression
 {
     QString primitive;
 
-    if(isSignalProperty(propertyName)) {
+    if (isSignalProperty(propertyName)) {
         primitive = asString(expr);
     } else if (propertyName == "id" && expr && expr->kind == AST::Node::Kind_IdentifierExpression) {
         primitive = asString(expr);
@@ -593,7 +593,7 @@ Object *QmlScriptParser::tree() const
 
 void QmlScriptParser::clear()
 {
-    if(root) {
+    if (root) {
         root->release();
         root = 0;
     }

@@ -118,8 +118,8 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlproperty int x
-    \qmlproperty int y
+    \qmlproperty int MouseEvent::x
+    \qmlproperty int MouseEvent::y
 
     These properties hold the position of the mouse event.
 */

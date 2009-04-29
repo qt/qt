@@ -100,10 +100,10 @@ QObject *qmlAttachedPropertiesObject(const QObject *obj)
     // ### is this threadsafe?
     static int idx = -1;
 
-    if(idx == -1)
+    if (idx == -1)
         idx = QmlMetaType::attachedPropertiesFuncId(&T::staticMetaObject);
 
-    if(idx == -1 || !obj)
+    if (idx == -1 || !obj)
         return 0;
 
     return qmlAttachedPropertiesObjectById(obj, idx);

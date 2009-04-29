@@ -2019,7 +2019,9 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                                                           : QIcon::Disabled);
                 QPixmap tabIcon = tabV2.icon.pixmap(iconSize,
                                                     (tabV2.state & State_Enabled) ? QIcon::Normal
-                                                                                  : QIcon::Disabled);
+                                                                                  : QIcon::Disabled,
+                                                    (tabV2.state & State_Selected) ? QIcon::On
+                                                                                   : QIcon::Off);
 
                 int offset = 6;
                 int left = opt->rect.left();

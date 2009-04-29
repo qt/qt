@@ -259,15 +259,15 @@ void QFxRepeater::regenerate()
     
     qDeleteAll(d->deletables); 
     d->deletables.clear();
-    if(!d->component || !itemParent() || !isComponentComplete())
+    if (!d->component || !itemParent() || !isComponentComplete())
         return;
 
     QFxItem *lastItem = this;
 
-    if(d->dataSource.type() == QVariant::StringList) {
+    if (d->dataSource.type() == QVariant::StringList) {
         QStringList sl = qvariant_cast<QStringList>(d->dataSource);
 
-        for(int ii = 0; ii < sl.size(); ++ii) {
+        for (int ii = 0; ii < sl.size(); ++ii) {
             QmlContext *ctxt = new QmlContext(qmlContext(this), this);
             d->deletables << ctxt;
 
@@ -277,12 +277,12 @@ void QFxRepeater::regenerate()
             if (QFxItem *item = d->addItem(ctxt, lastItem))
                 lastItem = item;
         }
-    } else if(QmlMetaType::isList(d->dataSource)) {
+    } else if (QmlMetaType::isList(d->dataSource)) {
         int cnt = QmlMetaType::listCount(d->dataSource);
-        if(cnt <= 0)
+        if (cnt <= 0)
             return;
 
-        for(int ii = 0; ii < cnt; ++ii) {
+        for (int ii = 0; ii < cnt; ++ii) {
             QVariant v = QmlMetaType::listAt(d->dataSource, ii);
             QObject *o = QmlMetaType::toQObject(v);
 
@@ -297,10 +297,10 @@ void QFxRepeater::regenerate()
         }
     } else if (QListModelInterface *model = qobject_cast<QListModelInterface*>(d->dataSource.value<QObject*>())) {
         int cnt = model->count();
-        if(cnt <= 0)
+        if (cnt <= 0)
             return;
 
-        for(int ii = 0; ii < cnt; ++ii) {
+        for (int ii = 0; ii < cnt; ++ii) {
             QmlContext *ctxt = new QmlContext(qmlContext(this), this);
             d->deletables << ctxt;
 
@@ -339,11 +339,11 @@ void QFxRepeater::regenerate()
 
         d->addItem(ctxt, lastItem);
 
-    } else if(d->dataSource.canConvert(QVariant::Int)){
+    } else if (d->dataSource.canConvert(QVariant::Int)){
 
         int count = qvariant_cast<int>(d->dataSource);
 
-        for(int ii = 0; ii < count; ++ii) {
+        for (int ii = 0; ii < count; ++ii) {
             QmlContext *ctxt = new QmlContext(qmlContext(this), this);
             d->deletables << ctxt;
 

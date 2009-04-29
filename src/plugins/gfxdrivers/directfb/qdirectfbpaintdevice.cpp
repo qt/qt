@@ -56,23 +56,16 @@ IDirectFBSurface *QDirectFBPaintDevice::directFBSurface() const
 }
 
 
-// Locks the dfb surface and creates a QImage (lockedImage) from the pointer
-void QDirectFBPaintDevice::lockDirectFB() {
-
+void QDirectFBPaintDevice::lockDirectFB()
+{
     if (lockedImage)
         return; // Already locked
 
-    void *mem;
-    int w, h;
-    DFBResult result = dfbSurface->Lock(dfbSurface, DSLF_WRITE, &mem, &bpl);
-    if (result != DFB_OK || !mem) {
-        DirectFBError("QDirectFBPixmapData::buffer()", result);
-        return;
+    if (uchar *mem = QDirectFBScreen::lockSurface(dfbSurface, DSLF_WRITE, &bpl)) {
+        const QSize s = size();
+        lockedImage = new QImage(mem, s.width(), s.height(), bpl,
+                                 QDirectFBScreen::getImageFormat(dfbSurface));
     }
-
-    dfbSurface->GetSize(dfbSurface, &w, &h);
-    lockedImage = new QImage(static_cast<uchar*>(mem), w, h, bpl,
-                             QDirectFBScreen::getImageFormat(dfbSurface));
 }
 
 

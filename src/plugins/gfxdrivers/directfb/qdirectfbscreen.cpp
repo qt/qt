@@ -159,15 +159,17 @@ IDirectFBSurface* QDirectFBScreen::createDFBSurface(const QImage &img, SurfaceCr
     IDirectFBSurface *surface = createDFBSurface(&desc, options);
 #ifdef QT_NO_DIRECTFB_PREALLOCATED
     if (surface) {
-        char *mem;
         int bpl;
-        surface->Lock(surface, DSLF_WRITE, (void**)&mem, &bpl);
-        const int h = img.height();
-        for (int i = 0; i < h; ++i) {
-            memcpy(mem, img.scanLine(i), bpl);
-            mem += bpl;
+        uchar *mem = QDirectFBScreen::lockSurface(surface, DSLF_WRITE, &bpl);
+        if (mem) {
+            const int h = img.height();
+            const int w = img.width() * img.depth() / 8;
+            for (int i = 0; i < h; ++i) {
+                memcpy(mem, img.scanLine(i), w);
+                mem += bpl;
+            }
+            surface->Unlock(surface);
         }
-        surface->Unlock(surface);
     }
 #endif
 #ifndef QT_NO_DIRECTFB_PALETTE
@@ -317,15 +319,17 @@ IDirectFBSurface *QDirectFBScreen::copyToDFBSurface(const QImage &img,
     imgSurface->Release(imgSurface);
 #else // QT_NO_DIRECTFB_PREALLOCATED
     Q_ASSERT(image.format() == pixmapFormat);
-    char *mem;
     int bpl;
-    dfbSurface->Lock(dfbSurface, DSLF_WRITE, (void**)&mem, &bpl);
-    const int w = image.width() * image.depth() / 8;
-    for (int i = 0; i < image.height(); ++i) {
-        memcpy(mem, image.scanLine(i), w);
-        mem += bpl;
+    uchar *mem = QDirectFBScreen::lockSurface(dfbSurface, DSLF_WRITE, &bpl);
+    if (mem) {
+        const int h = image.height();
+        const int w = image.width() * image.depth() / 8;
+        for (int i=0; i<h; ++i) {
+            memcpy(mem, image.scanLine(i), w);
+            mem += bpl;
+        }
+        dfbSurface->Unlock(dfbSurface);
     }
-    dfbSurface->Unlock(dfbSurface);
 #endif
     return dfbSurface;
 }
@@ -833,15 +837,15 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
         description.flags = DFBSurfaceDescriptionFlags(description.flags | DSDESC_WIDTH);
     if (::setIntOption(displayArgs, QLatin1String("height"), &description.height))
         description.flags = DFBSurfaceDescriptionFlags(description.flags | DSDESC_HEIGHT);
-    description.caps = DFBSurfaceCapabilities(DSCAPS_PRIMARY
-                                              | DSCAPS_DOUBLE
-                                              | DSCAPS_STATIC_ALLOC);
-    if (displayArgs.contains(QLatin1String("forcepremultiplied"),
-                             Qt::CaseInsensitive)) {
-        description.caps = DFBSurfaceCapabilities(description.caps
-                                                  | DSCAPS_PREMULTIPLIED);
+    uint caps = DSCAPS_PRIMARY|DSCAPS_DOUBLE;
+    if (displayArgs.contains(QLatin1String("static_alloc")))
+        caps |= DSCAPS_STATIC_ALLOC;
+
+    if (displayArgs.contains(QLatin1String("forcepremultiplied"), Qt::CaseInsensitive)) {
+        caps |= DSCAPS_PREMULTIPLIED;
     }
 
+    description.caps = DFBSurfaceCapabilities(caps);
     // We don't track the primary surface as it's released in disconnect
     d_ptr->dfbSurface = createDFBSurface(&description, DontTrackSurface);
     if (!d_ptr->dfbSurface) {
@@ -952,16 +956,15 @@ void QDirectFBScreen::disconnect()
 
 bool QDirectFBScreen::initDevice()
 {
-    QWSServer *server = QWSServer::instance();
 #ifndef QT_NO_DIRECTFB_MOUSE
     if (qgetenv("QWS_MOUSE_PROTO").isEmpty()) {
-        server->setDefaultMouse("None");
+        QWSServer::instance()->setDefaultMouse("None");
         d_ptr->mouse = new QDirectFBMouseHandler;
     }
 #endif
 #ifndef QT_NO_DIRECTFB_KEYBOARD
     if (qgetenv("QWS_KEYBOARD").isEmpty()) {
-        server->setDefaultKeyboard("None");
+        QWSServer::instance()->setDefaultKeyboard("None");
         d_ptr->keyboard = new QDirectFBKeyboardHandler(QString());
     }
 #endif
@@ -1188,23 +1191,23 @@ void QDirectFBScreen::blit(IDirectFBSurface *src, const QPoint &topLeft,
                                  points.data(), n);
 }
 
+// This function is only ever called by QScreen::drawBackground which
+// is only ever called by QScreen::compose which is never called with
+// DirectFB so it's really a noop.
 void QDirectFBScreen::solidFill(const QColor &color, const QRegion &region)
 {
     if (region.isEmpty())
         return;
 
     if (QDirectFBScreen::getImageFormat(d_ptr->dfbSurface) == QImage::Format_RGB32) {
-        uchar *mem;
-        int bpl;
-        d_ptr->dfbSurface->Lock(d_ptr->dfbSurface, DSLF_WRITE, (void**)&mem, &bpl);
-        QImage img(mem, w, h, bpl, QImage::Format_RGB32);
-        QPainter p(&img);
-        p.setBrush(color);
-        p.setPen(Qt::NoPen);
-        const QVector<QRect> rects = region.rects();
-        p.drawRects(rects.constData(), rects.size());
-        p.end();
+        data = QDirectFBScreen::lockSurface(d_ptr->dfbSurface, DSLF_WRITE, &lstep);
+        if (!data)
+            return;
+
+        QScreen::solidFill(color, region);
         d_ptr->dfbSurface->Unlock(d_ptr->dfbSurface);
+        data = 0;
+        lstep = 0;
     } else {
         d_ptr->dfbSurface->SetColor(d_ptr->dfbSurface,
                                     color.red(), color.green(), color.blue(),
@@ -1241,3 +1244,15 @@ bool QDirectFBScreen::initSurfaceDescriptionPixelFormat(DFBSurfaceDescription *d
     }
     return true;
 }
+
+uchar *QDirectFBScreen::lockSurface(IDirectFBSurface *surface, DFBSurfaceLockFlags flags, int *bpl)
+{
+    void *mem;
+    const DFBResult result = surface->Lock(surface, flags, static_cast<void**>(&mem), bpl);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBPixmapData::lockSurface()", result);
+    }
+
+    return reinterpret_cast<uchar*>(mem);
+}
+

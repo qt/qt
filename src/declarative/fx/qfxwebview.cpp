@@ -293,7 +293,7 @@ QString QFxWebView::url() const
 void QFxWebView::setUrl(const QString &n)
 {
     Q_D(QFxWebView);
-    if(n == page()->mainFrame()->url().toString())
+    if (n == page()->mainFrame()->url().toString())
         return;
 
     page()->setViewportSize(QSize(
@@ -331,7 +331,7 @@ int QFxWebView::idealWidth() const
 void QFxWebView::setIdealWidth(int iw)
 {
     Q_D(QFxWebView);
-    if(d->idealwidth == iw) return;
+    if (d->idealwidth == iw) return;
     d->idealwidth = iw;
     expandToWebPage();
     emit idealWidthChanged();
@@ -354,7 +354,7 @@ int QFxWebView::idealHeight() const
 void QFxWebView::setIdealHeight(int ih)
 {
     Q_D(QFxWebView);
-    if(d->idealheight == ih) return;
+    if (d->idealheight == ih) return;
     d->idealheight = ih;
     expandToWebPage();
     emit idealHeightChanged();
@@ -381,7 +381,7 @@ bool QFxWebView::interactive() const
 void QFxWebView::setInteractive(bool i)
 {
     Q_D(QFxWebView);
-    if(d->interactive == i) return;
+    if (d->interactive == i) return;
     d->interactive = i;
     emit interactiveChanged();
 }
@@ -403,7 +403,7 @@ bool QFxWebView::smooth() const
 void QFxWebView::setSmooth(bool i)
 {
     Q_D(QFxWebView);
-    if(d->smooth == i) return;
+    if (d->smooth == i) return;
     d->smooth = i;
     update();
 }
@@ -438,7 +438,7 @@ void QFxWebView::expandToWebPage()
 void QFxWebView::geometryChanged(const QRectF &newGeometry, 
                                  const QRectF &oldGeometry)
 {
-    if(newGeometry.size() != oldGeometry.size())
+    if (newGeometry.size() != oldGeometry.size())
         expandToWebPage();
     QFxItem::geometryChanged(newGeometry, oldGeometry);
 }

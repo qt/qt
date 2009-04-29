@@ -808,6 +808,7 @@ void QSvgGradientStyle::resolveStops()
                     static_cast<QSvgGradientStyle*>(prop);
                 st->resolveStops();
                 m_gradient->setStops(st->qgradient()->stops());
+                m_gradientStopsSet = st->gradientStopsSet();
             }
         }
         m_link = QString();

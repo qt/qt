@@ -153,6 +153,9 @@ private slots:
 
     void autoDetectImageFormat();
     void fileNameProbing();
+
+    void pixelCompareWithBaseline_data();
+    void pixelCompareWithBaseline();
 };
 
 // Testing get/set functions
@@ -1366,6 +1369,33 @@ void tst_QImageReader::fileNameProbing()
     QCOMPARE(r.fileName(), name);
     r.read();
     QCOMPARE(r.fileName(), name);
+}
+
+void tst_QImageReader::pixelCompareWithBaseline_data()
+{
+    QTest::addColumn<QString>("fileName");
+
+    QTest::newRow("floppy (16px,32px - 16 colors)") << "35floppy.ico";
+    QTest::newRow("semitransparent") << "semitransparent.ico";
+    QTest::newRow("slightlybroken") << "kde_favicon.ico";
+}
+
+void tst_QImageReader::pixelCompareWithBaseline()
+{
+    QFETCH(QString, fileName);
+
+    QImage icoImg;
+    // might fail if the plugin does not exist, which is ok.
+    if (icoImg.load(QString::fromAscii("images/%1").arg(fileName))) {
+        QString baselineFileName = QString::fromAscii("baseline/%1").arg(fileName);
+#if 0
+        icoImg.save(baselineFileName);
+#else
+        QImage baseImg;
+        QVERIFY(baseImg.load(baselineFileName));
+        QCOMPARE(baseImg, icoImg);
+#endif
+    }
 }
 
 QTEST_MAIN(tst_QImageReader)

@@ -2649,6 +2649,9 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
     case PM_MenuHMargin:
         ret = 0;
         break;
+    case PM_ToolBarFrameWidth:
+        ret = 0;
+        break;
     default:
         ret = QWindowsStyle::pixelMetric(metric, opt, widget);
         break;
@@ -3679,8 +3682,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         if (tb->toolButtonStyle != Qt::ToolButtonIconOnly) {
                             needText = true;
                             if (tb->toolButtonStyle == Qt::ToolButtonTextUnderIcon) {
-                                pr.setHeight(pixmap.size().height() + 6);
-                                cr.adjust(0, pr.bottom(), 0, -3);
+                                pr.setHeight(pixmap.size().height());
+                                cr.adjust(0, pr.bottom() + 1, 0, 1);
                                 alignment |= Qt::AlignCenter;
                             } else {
                                 pr.setWidth(pixmap.width() + 8);
@@ -3688,7 +3691,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                                 alignment |= Qt::AlignLeft | Qt::AlignVCenter;
                             }
                         }
-                        if (down) {
+                        if (opt->state & State_Sunken) {
                             pr.translate(shiftX, shiftY);
                             pixmap = darkenPixmap(pixmap);
                         }
@@ -3718,7 +3721,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         }
                         drawItemText(p, cr, alignment, pal,
                                      tb->state & State_Enabled, tb->text, role);
-                        if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_5 && down) {
+                        if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_5 &&
+                            (tb->state & State_Sunken)) {
                             // Draw a "drop shadow" in earlier versions.
                             drawItemText(p, cr.adjusted(0, 1, 0, 1), alignment,
                                          tb->palette, tb->state & State_Enabled, tb->text);
@@ -4544,9 +4548,10 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     case CE_ToolBar: {
         // For unified tool bars, draw nothing.
         if (w) {
-            if (QMainWindow * mainWindow = qobject_cast<QMainWindow *>(w->window()))
+            if (QMainWindow * mainWindow = qobject_cast<QMainWindow *>(w->window())) {
                 if (mainWindow->unifiedTitleAndToolBarOnMac())
                     break;
+                }
         }
 
         // draw background gradient
@@ -5270,6 +5275,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
         if (const QStyleOptionToolButton *tb
                 = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             if (widget && qobject_cast<QToolBar *>(widget->parentWidget())) {
+//                p->fillRect(tb->rect, QColor(155, 0, 155, 155));
                 if (tb->subControls & SC_ToolButtonMenu) {
                     QStyleOption arrowOpt(0);
                     arrowOpt.rect = subControlRect(cc, tb, SC_ToolButtonMenu, widget);
@@ -5282,16 +5288,22 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     drawToolbarButtonArrow(tb->rect, tds, cg);
                 }
                 if (tb->state & State_On) {
-                    QPen oldPen = p->pen();
-                    p->setPen(QColor(0, 0, 0, 0x3a));
-                    p->fillRect(tb->rect.adjusted(1, 1, -1, -1), QColor(0, 0, 0, 0x12));
-                    p->drawLine(tb->rect.left() + 1, tb->rect.top(),
-                                tb->rect.right() - 1, tb->rect.top());
-                    p->drawLine(tb->rect.left() + 1, tb->rect.bottom(),
-                                tb->rect.right() - 1, tb->rect.bottom());
-                    p->drawLine(tb->rect.topLeft(), tb->rect.bottomLeft());
-                    p->drawLine(tb->rect.topRight(), tb->rect.bottomRight());
-                    p->setPen(oldPen);
+                    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
+                        static QPixmap pm(QLatin1String(":/trolltech/mac/style/images/leopard-unified-toolbar-on.png"));
+                        p->setRenderHint(QPainter::SmoothPixmapTransform);
+                        QStyleHelper::drawBorderPixmap(pm, p, tb->rect, 2, 2, 2, 2);
+                    } else {
+                        QPen oldPen = p->pen();
+                        p->setPen(QColor(0, 0, 0, 0x3a));
+                        p->fillRect(tb->rect.adjusted(1, 1, -1, -1), QColor(0, 0, 0, 0x12));
+                        p->drawLine(tb->rect.left() + 1, tb->rect.top(),
+                                    tb->rect.right() - 1, tb->rect.top());
+                        p->drawLine(tb->rect.left() + 1, tb->rect.bottom(),
+                                    tb->rect.right() - 1, tb->rect.bottom());
+                        p->drawLine(tb->rect.topLeft(), tb->rect.bottomLeft());
+                        p->drawLine(tb->rect.topRight(), tb->rect.bottomRight());
+                        p->setPen(oldPen);
+                    }
                 }
                 drawControl(CE_ToolButtonLabel, opt, p, widget);
             } else {
@@ -6009,6 +6021,14 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         }
         break;
     case CT_ToolButton:
+        if (widget && qobject_cast<const QToolBar *>(widget->parentWidget())) {
+            sz.rwidth() += 4;
+            if (sz.height() <= 32) {
+                // Workaround strange HIToolBar bug when getting constraints.
+                sz.rheight() += 1;
+            }
+            return sz;
+        }
         sz.rwidth() += 10;
         sz.rheight() += 10;
         return sz;

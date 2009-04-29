@@ -746,9 +746,9 @@ static void setupGtkFileChooser(GtkWidget* gtkFileChooser, QWidget *parent,
         foreach (const QString &rawfilter, filters) {
             GtkFileFilter *gtkFilter = QGtk::gtk_file_filter_new ();
             QString name = rawfilter.left(rawfilter.indexOf(QLatin1Char('(')));
-            QGtk::gtk_file_filter_set_name(gtkFilter, qPrintable(name));
-
             QStringList extensions = extract_filter(rawfilter);
+            QGtk::gtk_file_filter_set_name(gtkFilter, qPrintable(name.isEmpty() ? extensions.join(QLS(", ")) : name));
+
             foreach (const QString &fileExtension, extensions) {
                 QGtk::gtk_file_filter_add_pattern (gtkFilter, qPrintable(fileExtension));
             }

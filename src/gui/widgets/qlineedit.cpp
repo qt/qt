@@ -2518,7 +2518,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     // draw text, selections and cursors
 #ifndef QT_NO_STYLE_STYLESHEET
     if (QStyleSheetStyle* cssStyle = qobject_cast<QStyleSheetStyle*>(style())) {
-        cssStyle->focusPalette(this, &panel, &pal);
+        cssStyle->styleSheetPalette(this, &panel, &pal);
     }
 #endif
     p.setPen(pal.text().color());
