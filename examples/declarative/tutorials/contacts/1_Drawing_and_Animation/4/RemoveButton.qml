@@ -1,9 +1,13 @@
-<Rect id="removeButton"
-    width="30" height="30"
-    color="red"
-    radius="5">
-    <resources>
-        <Script>
+Rect {
+    id: removeButton
+    width: 30
+    height: 30
+    color: "red"
+    radius: 5
+//! [script]
+    resources: [
+        Script {
+
             function toggle() {
                 print('removeButton.toggle()');
                 if (removeButton.state == 'opened') {
@@ -12,54 +16,97 @@
                     removeButton.state = 'opened';
                 }
             }
-        </Script>
-    </resources>
-    <Image id="trashIcon"
-        width="22" height="22"
-        anchors.right="{parent.right}" anchors.rightMargin="4"
-        anchors.verticalCenter="{parent.verticalCenter}"
-        src="../../shared/pics/trash.png"
-        opacity="1">
-        <MouseRegion
-            anchors.fill="{parent}"
-            onClicked="toggle()"/>
-    </Image>
-    <Image id="cancelIcon"
-        width="22" height="22"
-        anchors.right="{parent.right}" anchors.rightMargin="4"
-        anchors.verticalCenter="{parent.verticalCenter}"
-        src="../../shared/pics/cancel.png"
-        opacity="0">
-        <MouseRegion
-            anchors.fill="{parent}"
-            onClicked="toggle()"/>
-    </Image>
-    <Image id="confirmIcon"
-        width="22" height="22"
-        anchors.left="{parent.left}" anchors.leftMargin="4"
-        anchors.verticalCenter="{parent.verticalCenter}"
-        src="../../shared/pics/ok.png"
-        opacity="0">
-        <MouseRegion
-            anchors.fill="{parent}"
-            onClicked="toggle()"/>
-    </Image>
-    <Text id="text"
-        anchors.verticalCenter="{parent.verticalCenter}"
-        anchors.left="{confirmIcon.right}" anchors.leftMargin="4"
-        anchors.right="{cancelIcon.left}" anchors.rightMargin="4"
-        font.bold="true"
-        color="white"
-        hAlign="AlignHCenter"
-        text="Remove"
-        opacity="0"/>
-    <states>
-        <State name="opened">
-            <SetProperty target="{removeButton}" property="width" value="230"/>
-            <SetProperty target="{text}" property="opacity" value="1"/>
-            <SetProperty target="{confirmIcon}" property="opacity" value="1"/>
-            <SetProperty target="{cancelIcon}" property="opacity" value="1"/>
-            <SetProperty target="{trashIcon}" property="opacity" value="0"/>
-        </State>
-    </states>
-</Rect>
+        
+        }
+    ]
+//! [script]
+//! [mouse region]
+    Image {
+        id: trashIcon
+        width: 22
+        height: 22
+        anchors.right: parent.right
+        anchors.rightMargin: 4
+        anchors.verticalCenter: parent.verticalCenter
+        src: "../../shared/pics/trash.png"
+        opacity: 1
+        MouseRegion {
+            anchors.fill: parent
+            onClicked: { toggle() }
+        }
+    }
+//! [mouse region]
+    Image {
+        id: cancelIcon
+        width: 22
+        height: 22
+        anchors.right: parent.right
+        anchors.rightMargin: 4
+        anchors.verticalCenter: parent.verticalCenter
+        src: "../../shared/pics/cancel.png"
+        opacity: 0
+        MouseRegion {
+            anchors.fill: parent
+            onClicked: { toggle() }
+        }
+    }
+    Image {
+        id: confirmIcon
+        width: 22
+        height: 22
+        anchors.left: parent.left
+        anchors.leftMargin: 4
+        anchors.verticalCenter: parent.verticalCenter
+        src: "../../shared/pics/ok.png"
+        opacity: 0
+        MouseRegion {
+            anchors.fill: parent
+            onClicked: { toggle() }
+        }
+    }
+    Text {
+        id: text
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.left: confirmIcon.right
+        anchors.leftMargin: 4
+        anchors.right: cancelIcon.left
+        anchors.rightMargin: 4
+        font.bold: true
+        color: "white"
+        hAlign: AlignHCenter
+        text: "Remove"
+        opacity: 0
+    }
+//! [states]
+    states: [
+        State {
+            name: "opened"
+            SetProperty {
+                target: removeButton
+                property: "width"
+                value: 230
+            }
+            SetProperty {
+                target: text
+                property: "opacity"
+                value: 1
+            }
+            SetProperty {
+                target: confirmIcon
+                property: "opacity"
+                value: 1
+            }
+            SetProperty {
+                target: cancelIcon
+                property: "opacity"
+                value: 1
+            }
+            SetProperty {
+                target: trashIcon
+                property: "opacity"
+                value: 0
+            }
+        }
+    ]
+//! [states]
+}

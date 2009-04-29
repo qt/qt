@@ -121,27 +121,14 @@
 
     \image declarative-roundrect.png
 
-    \code
-    <Rect id="removeButton"
-        width="30" height="30"
-        color="red"
-        radius="5"/>
-    \endcode
+    \snippet declarative/tutorials/contacts/1_Drawing_and_Animation/1/RemoveButton.qml 0
 
     This is the simplest of QML components.  It describes a rectangle with
     some simple properties.  In QML all components start with a capital
     letter, and their properties with lower case letters.  Properties
     can either be declared as XML attributes or as children of the 
-    component element.  The above rectangle could equally be written
+    component element.  
     
-    \code
-    <Rect id="removeButton" color="red">
-        <width>30</width>
-        <height>30</height>
-        <radius>5</radius>
-    </Rect>
-    \endcode
-
     The rectangle component is one of the more simple QML components.  Apart
     from the properties all QML components share, it has the properties
 
@@ -183,18 +170,7 @@
 
     \image declarative-removebutton-close.png
 
-    \code
-    <Rect id="removeButton"
-        width="30" height="30"
-            color="red"
-        radius="5">
-        <Image id="trashIcon"
-            width="22" height="22"
-            anchors.right="{parent.right}" anchors.rightMargin="4"
-            anchors.verticalCenter="{parent.verticalCenter}"
-            src="../shared/pics/trash.png"/>
-    </Rect>
-    \endcode
+    \snippet declarative/tutorials/contacts/1_Drawing_and_Animation/2/RemoveButton.qml 0
 
     The trashIcon image is added as a child of the Rectangle.  In this case
     the <children> tag isn't used because the default property of the
@@ -202,20 +178,7 @@
     and use some other default component, when this is the case its possible
     to explicitly list the sub component as a child as follows:
 
-    \code
-    <Rect id="removeButton"
-        width="30" height="30"
-            color="red"
-        radius="5">
-        <children>
-            <Image id="trashIcon"
-                width="22" height="22"
-                anchors.right="{parent.right}" anchors.rightMargin="4"
-                anchors.verticalCenter="{parent.verticalCenter}"
-                src="../shared/pics/trash.png"/>
-        </children>
-    </Rect>
-    \endcode
+    \snippet declarative/tutorials/contacts/1_Drawing_and_Animation/2a/RemoveButton.qml 0
 
     The Image element allows loading an image file for display.  The source
     specified is a URL, and in this case refers to a portable network graphics
@@ -252,31 +215,7 @@
     This is a wider rectangle with two images and some text.  The code to
     draw this state of the button could be written as follows:
 
-    \code
-    <Rect id="removeButton"
-        width="230" height="30"
-        color="red"
-        radius="5">
-        <Image id="cancelIcon"
-            width="22" height="22"
-            anchors.right="{parent.right}" anchors.rightMargin="4"
-            anchors.verticalCenter="{parent.verticalCenter}"
-            src="../shared/pics/cancel.png"/>
-        <Image id="confirmIcon"
-            width="22" height="22"
-            anchors.left="{parent.left}" anchors.leftMargin="4"
-            anchors.verticalCenter="{parent.verticalCenter}"
-            src="../shared/pics/ok.png"/>
-        <Text id="text"
-            anchors.verticalCenter="{parent.verticalCenter}"
-            anchors.left="{confirmIcon.right}" anchors.leftMargin="4"
-            anchors.right="{cancelIcon.left}" anchors.rightMargin="4"
-            font.bold="true"
-            color="white"
-            hAlign="AlignHCenter"
-            text="Remove"/>
-    </Rect>
-    \endcode
+    \snippet declarative/tutorials/contacts/1_Drawing_and_Animation/3/RemoveButton.qml 0
 
     The rectangle with is now wider by 200 pixels.  Also the trashIcon has
     been replaced with the confirm state children.  Normally we wouldn't
@@ -310,21 +249,32 @@
     might look like.
 
     \code
-    <Rect id="removeButton"
-        width="30" height="30"
-            color="red"
-        radius="5">
-        <Image id="trashIcon"
-            width="22" height="22"
-            anchors.right="{parent.right}" anchors.rightMargin="4"
-            anchors.verticalCenter="{parent.verticalCenter}"
-            src="../shared/pics/trash.png"/>
-        <Image id="cancelIcon"
-            width="22" height="22"
-            anchors.right="{parent.right}" anchors.rightMargin="4"
-            anchors.verticalCenter="{parent.verticalCenter}"
-            src="../shared/pics/cancel.png"
-            opacity="0"/>
+    Rect {
+        id: removeButton
+        width: 30
+        height: 30
+        color: "red"                                                                
+        radius: 5                                                                   
+        Image {
+            id: trashIcon
+            width: 22
+            height: 22
+            anchors.right: parent.right
+            anchors.rightMargin: 4
+            anchors.verticalCenter: parent.verticalCenter
+            src: "../../shared/pics/trash.png"
+            opacity: 1
+        }
+        Image {
+            id: cancelIcon
+            width: 22
+            height: 22
+            anchors.right: parent.right
+            anchors.rightMargin: 4
+            anchors.verticalCenter: parent.verticalCenter
+            src: "../../shared/pics/cancel.png"
+            opacity: 0
+        }
     \endcode
 
     The code above includes components from both states of the RemoveButton,
@@ -335,17 +285,7 @@
     should be changed.  For the RemoveButton there is only one non-base state
     required.  In this tutorial we will name it the 'opened' state.
 
-    \code
-    <states>
-        <State name="opened">
-            <SetProperty target="{removeButton}" property="width" value="230"/>
-            <SetProperty target="{text}" property="opacity" value="1"/>
-            <SetProperty target="{confirmIcon}" property="opacity" value="1"/>
-            <SetProperty target="{cancelIcon}" property="opacity" value="1"/>
-            <SetProperty target="{trashIcon}" property="opacity" value="0"/>
-        </State>
-    </states>
-    \endcode
+    \snippet declarative/tutorials/contacts/1_Drawing_and_Animation/4/RemoveButton.qml states
 
     In the opened state the width of the button itself changes from the base
     width of 30 to the new width of 230.  Also the opacity of the children
@@ -357,18 +297,7 @@
     To trigger the change we will react to the 'clicked' signal of a
     MouseRegion component.
 
-    \code
-    <Image id="trashIcon"
-        width="22" height="22"
-        anchors.right="{parent.right}" anchors.rightMargin="4"
-        anchors.verticalCenter="{parent.verticalCenter}"
-        src="../shared/pics/trash.png"
-        opacity="1">
-        <MouseRegion
-            anchors.fill="{parent}"
-            onClicked="toggle()"/>
-    </Image>
-    \endcode
+    \snippet declarative/tutorials/contacts/1_Drawing_and_Animation/4/RemoveButton.qml mouse region
 
     MouseRegion components handle mouse actions within their geometry.  This
     geometry behaves the same way as painted components, such that children
@@ -381,7 +310,7 @@
     a function called toggle() is called.  It might also have been written
 
     \code
-    onClicked="removeButton.state='opened'"
+    onClicked: { removeButton.state='opened' }
     \endcode
 
     However in this case we are using a function because it allows multiple
@@ -391,55 +320,16 @@
     The toggle() function is a new function specified as part of the remove
     button element.
 
-    \code
-    <resources>
-        <Script>
-            function toggle() {
-                print('removeButton.toggle()');
-                if (removeButton.state == 'opened') {
-                    removeButton.state = '';
-                } else {
-                    removeButton.state = 'opened';
-                }
-            }
-        </Script>
-    </resources>
-    \endcode
+    \snippet declarative/tutorials/contacts/1_Drawing_and_Animation/4/RemoveButton.qml script
 
     Any QML component can have a set of resources specified.  One of those
     resources is any Script that might be needed.   See the
     {QtScript Module}{QtScript Module} for more information on how to write
-    script code in Qt.  There are only a couple of additional items to
-    note when using Script with QML components.  The first is that it
-    is an xml file, that means either CDATA or other forms of escaping
-    should be used if special characters are needed.  For example, 
-    the expression;
+    script code in Qt.
 
-    \code
-    if (a && b) {}
-    \endcode
-
-    Should either be escaped as:
-
-    \code
-    if (a &amp;&amp; b) {}
-    \endcode
-
-    or enclosed in a CDATA section as
-
-    \code
-    <![CDATA[if (a && b) {}]]>
-    \endcode
-
-    The other item to note is that you can refer to identified QML components
+    It is possible to refer to identified QML components
     within the script.  Hence the function for our RemoveButton will check
     if the state is already open to determine what the new state should be.
-
-    We also have added a print function.  This isn't required for the button
-    to function, but is useful for tracking down possible bugs when
-    working with QML.
-
-    See the file RemoveButton4.qml for the full multi-state specification.
 
     \section1 Animation
 
@@ -447,13 +337,7 @@
     Fortunately making the transition between states smooth is very simple.
     We only need one more bit of code at the end of our removeButton component.
 
-    \code
-    <transitions>
-        <Transition fromState="*" toState="opened" reversible="true">
-            <NumericAnimation properties="opacity,x,width" duration="200"/>
-        </Transition>
-    </transitions>
-    \endcode
+    \snippet declarative/tutorials/contacts/1_Drawing_and_Animation/5/RemoveButton.qml transition
 
     All QML components have a transitions property.  This describes how
     properties of items within the component should change.  In this case
