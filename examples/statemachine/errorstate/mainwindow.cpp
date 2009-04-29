@@ -137,7 +137,7 @@ void MainWindow::init()
 
     stoppedState->setInitialState(hs);
 
-    m_runningState = new QState(QState::ParallelGroup, m_machine->rootState());
+    m_runningState = new QState(QState::ParallelStates, m_machine->rootState());
     m_runningState->setObjectName("runningState");
     m_runningState->assignProperty(addTankAction, "enabled", false);
     m_runningState->assignProperty(runGameAction, "enabled", false);
