@@ -144,19 +144,21 @@ private slots:
     void nestedTargetStateForAnimation();
     void animatedGlobalRestoreProperty();
     void specificTargetValueOfAnimation();
+
     void addDefaultAnimation();
     void addDefaultAnimationWithUnusedAnimation();
-    void addDefaultAnimationForSource();
-    void addDefaultAnimationForTarget();
     void removeDefaultAnimation();
-    void removeDefaultAnimationForSource();
-    void removeDefaultAnimationForTarget();
-    void overrideDefaultAnimationWithSource();
-    void overrideDefaultAnimationWithTarget();    
     void overrideDefaultAnimationWithSpecific();
-    void overrideDefaultSourceAnimationWithSpecific();
-    void overrideDefaultTargetAnimationWithSpecific();
-    void overrideDefaultTargetAnimationWithSource();
+
+//    void addDefaultAnimationForSource();
+//    void addDefaultAnimationForTarget();
+//    void removeDefaultAnimationForSource();
+//    void removeDefaultAnimationForTarget();
+//    void overrideDefaultAnimationWithSource();
+//    void overrideDefaultAnimationWithTarget();    
+//    void overrideDefaultSourceAnimationWithSpecific();
+//    void overrideDefaultTargetAnimationWithSpecific();
+//    void overrideDefaultTargetAnimationWithSource();
 };
 
 tst_QStateMachine::tst_QStateMachine()
@@ -2417,6 +2419,82 @@ void tst_QStateMachine::addDefaultAnimationWithUnusedAnimation()
     QCOMPARE(counter.counter, 1);
 }
 
+void tst_QStateMachine::removeDefaultAnimation()
+{
+    QStateMachine machine;
+
+    QCOMPARE(machine.defaultAnimations().size(), 0);
+
+    QPropertyAnimation *anim = new QPropertyAnimation(this, "foo");
+
+    machine.addDefaultAnimation(anim);
+
+    QCOMPARE(machine.defaultAnimations().size(), 1);
+    QVERIFY(machine.defaultAnimations().contains(anim));
+
+    machine.removeDefaultAnimation(anim);
+
+    QCOMPARE(machine.defaultAnimations().size(), 0);
+
+    machine.addDefaultAnimation(anim);
+    
+    QPropertyAnimation *anim2 = new QPropertyAnimation(this, "foo");
+    machine.addDefaultAnimation(anim2);
+
+    QCOMPARE(machine.defaultAnimations().size(), 2);
+    QVERIFY(machine.defaultAnimations().contains(anim));
+    QVERIFY(machine.defaultAnimations().contains(anim2));
+
+    machine.removeDefaultAnimation(anim);
+
+    QCOMPARE(machine.defaultAnimations().size(), 1);
+    QVERIFY(machine.defaultAnimations().contains(anim2));
+
+    machine.removeDefaultAnimation(anim2);
+    QCOMPARE(machine.defaultAnimations().size(), 0);
+}
+
+void tst_QStateMachine::overrideDefaultAnimationWithSpecific()
+{
+    QStateMachine machine;
+
+    QObject *object = new QObject();
+    object->setProperty("foo", 1.0);
+
+    SlotCalledCounter counter;
+
+    QState *s1 = new QState(machine.rootState());
+    machine.setInitialState(s1);
+
+    QState *s2 = new QState(machine.rootState());
+    s2->assignProperty(object, "foo", 2.0);
+
+    QState *s3 = new QState(machine.rootState());
+    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
+
+    QAbstractTransition *at = s1->addTransition(new EventTransition(QEvent::User, s2));
+    
+    QPropertyAnimation *defaultAnimation = new QPropertyAnimation(object, "foo");    
+    connect(defaultAnimation, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)), &counter, SLOT(slot()));
+
+    QPropertyAnimation *moreSpecificAnimation = new QPropertyAnimation(object, "foo");
+    s2->addTransition(moreSpecificAnimation, SIGNAL(finished()), s3);
+    connect(moreSpecificAnimation, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)), &counter, SLOT(slot()));
+
+    machine.addDefaultAnimation(defaultAnimation);
+    at->addAnimation(moreSpecificAnimation);
+
+    machine.start();
+    QCoreApplication::processEvents();
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QCOREAPPLICATION_EXEC(5000);
+
+    QVERIFY(machine.configuration().contains(s3));
+    QCOMPARE(counter.counter, 2); // specific animation started and stopped
+}
+
+/*
 void tst_QStateMachine::addDefaultAnimationForSource()
 {
     QStateMachine machine;
@@ -2479,41 +2557,6 @@ void tst_QStateMachine::addDefaultAnimationForTarget()
 
     QVERIFY(machine.configuration().contains(s3));
     QCOMPARE(object->property("foo").toDouble(), 2.0);
-}
-
-void tst_QStateMachine::removeDefaultAnimation()
-{
-    QStateMachine machine;
-
-    QCOMPARE(machine.defaultAnimations().size(), 0);
-
-    QPropertyAnimation *anim = new QPropertyAnimation(this, "foo");
-
-    machine.addDefaultAnimation(anim);
-
-    QCOMPARE(machine.defaultAnimations().size(), 1);
-    QVERIFY(machine.defaultAnimations().contains(anim));
-
-    machine.removeDefaultAnimation(anim);
-
-    QCOMPARE(machine.defaultAnimations().size(), 0);
-
-    machine.addDefaultAnimation(anim);
-    
-    QPropertyAnimation *anim2 = new QPropertyAnimation(this, "foo");
-    machine.addDefaultAnimation(anim2);
-
-    QCOMPARE(machine.defaultAnimations().size(), 2);
-    QVERIFY(machine.defaultAnimations().contains(anim));
-    QVERIFY(machine.defaultAnimations().contains(anim2));
-
-    machine.removeDefaultAnimation(anim);
-
-    QCOMPARE(machine.defaultAnimations().size(), 1);
-    QVERIFY(machine.defaultAnimations().contains(anim2));
-
-    machine.removeDefaultAnimation(anim2);
-    QCOMPARE(machine.defaultAnimations().size(), 0);
 }
 
 void tst_QStateMachine::removeDefaultAnimationForSource()
@@ -2685,46 +2728,6 @@ void tst_QStateMachine::overrideDefaultAnimationWithTarget()
 
 }
 
-void tst_QStateMachine::overrideDefaultAnimationWithSpecific()
-{
-    QStateMachine machine;
-
-    QObject *object = new QObject();
-    object->setProperty("foo", 1.0);
-
-    SlotCalledCounter counter;
-
-    QState *s1 = new QState(machine.rootState());
-    machine.setInitialState(s1);
-
-    QState *s2 = new QState(machine.rootState());
-    s2->assignProperty(object, "foo", 2.0);
-
-    QState *s3 = new QState(machine.rootState());
-    QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
-
-    QAbstractTransition *at = s1->addTransition(new EventTransition(QEvent::User, s2));
-    
-    QPropertyAnimation *defaultAnimation = new QPropertyAnimation(object, "foo");    
-    connect(defaultAnimation, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)), &counter, SLOT(slot()));
-
-    QPropertyAnimation *moreSpecificAnimation = new QPropertyAnimation(object, "foo");
-    s2->addTransition(moreSpecificAnimation, SIGNAL(finished()), s3);
-    connect(moreSpecificAnimation, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)), &counter, SLOT(slot()));
-
-    machine.addDefaultAnimation(defaultAnimation);
-    at->addAnimation(moreSpecificAnimation);
-
-    machine.start();
-    QCoreApplication::processEvents();
-
-    machine.postEvent(new QEvent(QEvent::User));
-    QCOREAPPLICATION_EXEC(5000);
-
-    QVERIFY(machine.configuration().contains(s3));
-    QCOMPARE(counter.counter, 2); // specific animation started and stopped
-}
-
 void tst_QStateMachine::overrideDefaultSourceAnimationWithSpecific()
 {
     QStateMachine machine;
@@ -2844,6 +2847,8 @@ void tst_QStateMachine::overrideDefaultTargetAnimationWithSource()
     QVERIFY(machine.configuration().contains(s3));
     QCOMPARE(counter.counter, 2); // specific animation started and stopped
 }
+
+*/
 
 void tst_QStateMachine::parallelStateAssignmentsDone()
 {

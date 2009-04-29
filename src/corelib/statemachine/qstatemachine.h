@@ -114,14 +114,6 @@ public:
     void addDefaultAnimation(QAbstractAnimation *animation);
     QList<QAbstractAnimation *> defaultAnimations() const;
     void removeDefaultAnimation(QAbstractAnimation *animation);
-
-    void addDefaultAnimationForSourceState(QAbstractState *sourceState, QAbstractAnimation *animation);
-    QList<QAbstractAnimation *> defaultAnimationsForSourceState(QAbstractState *sourceState) const;
-    void removeDefaultAnimationForSourceState(QAbstractState *sourceState, QAbstractAnimation *animation);
-
-    void addDefaultAnimationForTargetState(QAbstractState *targetState, QAbstractAnimation *animation);
-    QList<QAbstractAnimation *> defaultAnimationsForTargetState(QAbstractState *targetState) const;
-    void removeDefaultAnimationForTargetState(QAbstractState *targetState, QAbstractAnimation *animation);
 #endif // QT_NO_ANIMATION
 
     QStateMachine::RestorePolicy globalRestorePolicy() const;
