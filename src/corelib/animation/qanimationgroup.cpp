@@ -41,7 +41,7 @@
 
 /*!
     \class QAnimationGroup
-    \brief The QAnimationGroup is an abstract base class for group of animations.
+    \brief The QAnimationGroup class is an abstract base class for groups of animations.
     \since 4.5
     \ingroup animation
     \preliminary

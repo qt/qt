@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-    \page animation.html
+    \page animation-overview.html
     \title The Animation Framework
     \ingroup architecture
     \ingroup animation
@@ -132,7 +132,7 @@
     \endcode
 
     This code will move \c button from the top left corner of the
-    screen to the position (250, 250).
+    screen to the position (250, 250) in 10 seconds (10000 milliseconds).
 
     The example above will do a linear interpolation between the
     start and end value. It is also possible to set values
@@ -162,7 +162,7 @@
     that is not declared as a Qt property. The only requirement is
     that this value has a setter. You can then subclass the class
     containing the value and declare a property that uses this setter.
-    Note that all Qt properties requires a getter, so you will need to
+    Note that each Qt property requires a getter, so you will need to
     provide a getter yourself if this is not defined.
 
     \code
@@ -184,9 +184,9 @@
     \section1 Animations and the Graphics View Framework
 
     When you want to animate \l{QGraphicsItem}s, you also use
-    QPropertyAnimation. But, unfortunetly, QGraphicsItem does not
-    inherit QObject. A good solution is to subclass the graphics item
-    you wish to animate. This class will then also inherit QObject.
+    QPropertyAnimation. However, QGraphicsItem does not inherit QObject.
+    A good solution is to subclass the graphics item you wish to animate.
+    This class will then also inherit QObject.
     This way, QPropertyAnimation can be used for \l{QGraphicsItem}s.
     The example below shows how this is done. Another possibility is
     to inherit QGraphicsWidget, which already is a QObject.
@@ -326,7 +326,7 @@
     When using a \l{The State Machine Framework}{state machine}, we
     have a special state, QAnimationState, that will play one or more
     animations.
-        
+
     The QState::addAnimatedTransition() convenience function lets you
     associate an animation to a state transition. The function will
     create the QAnimationState for you, and insert it into the state
