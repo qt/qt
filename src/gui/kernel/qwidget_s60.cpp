@@ -606,11 +606,9 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
        TRANSPARENCY
     To a line in the wsini.ini file.
 */
-void QWidgetPrivate::setWindowOpacity_sys(qreal level)
+void QWidgetPrivate::setWindowOpacity_sys(qreal)
 {
-    RWindow* rw = static_cast<RWindow*>(topData()->rwindow);
-    if (rw)
-        rw->SetTransparencyFactor(TRgb::Gray256(255.0 * level));
+    // ### TODO: Implement uniform window transparency
 }
 
 void QWidgetPrivate::updateFrameStrut()
