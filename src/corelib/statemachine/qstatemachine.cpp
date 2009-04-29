@@ -177,6 +177,12 @@ QT_BEGIN_NAMESPACE
     \brief the error string of this state machine
 */
 
+/*!
+    \property QStateMachine::globalRestorePolicy
+
+    \brief the restore policy for states of this state machine.
+*/
+
 #ifndef QT_NO_ANIMATION
 /*!
     \property QStateMachine::animationsEnabled
@@ -1509,7 +1515,7 @@ void QStateMachine::setErrorState(QAbstractState *state)
    \value RestoreProperties The state machine should save the initial values of properties 
           and restore them later.
 
-   \sa setRestorePolicy(), restorePolicy(), QState::assignProperty()
+   \sa QStateMachine::globalRestorePolicy QState::assignProperty()
 */
 
 
