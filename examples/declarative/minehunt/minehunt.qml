@@ -6,9 +6,9 @@
     <resources>
         <Component id="tile">
             <Flipable id="flipable" width="40" height="40">
-                <transform>
-                    <AxisRotation id="axis" axis.startX="20" axis.endX="20" axis.startY="20" axis.endY="0" />
-                </transform>
+                <axis>
+                    <Axis startX="20" startY="20" endX="20" endY="0" />
+                </axis>
                 <front>
                     <Image src="pics/front.png" width="40" height="40">
                         <Image anchors.horizontalCenter="{parent.horizontalCenter}"
@@ -34,19 +34,19 @@
                 </back>
                 <states>
                     <State name="back" when="{modelData.flipped == true}">
-                        <SetProperty target="{axis}" property="angle" value="180" />
+                        <SetProperty target="{flipable}" property="rotation" value="180" />
                     </State>
                 </states>
                 <transitions>
                     <Transition>
                         <SequentialAnimation>
                             <PauseAnimation duration="{var ret = Math.abs(flipable.parent.x-field.clickx) + Math.abs(flipable.parent.y-field.clicky); if (ret > 0) {if(modelData.hasMine==true &amp;&amp; modelData.flipped==true){ret*3;}else{ret;}} else {0}}"/>
-                            <NumericAnimation easing="easeInOutQuad" properties="angle"/>
+                            <NumericAnimation easing="easeInOutQuad" properties="rotation"/>
                         </SequentialAnimation>
                     </Transition>
                 </transitions>
                 <MouseRegion anchors.fill="{parent}"
-                             onClicked="field.clickx = flipable.parent.x; field.clicky = flipable.parent.y; row = Math.floor(index/9); col = index - (Math.floor(index/9) * 9); if(mouseButton==undefined || mouseButton=='Right'){flag(row,col);}else{flip(row,col);}" />
+                             onClicked="field.clickx = flipable.parent.x; field.clicky = flipable.parent.y; row = Math.floor(index/9); col = index - (Math.floor(index/9) * 9); if(mouse.button==undefined || mouse.button==Qt.RightButton){flag(row,col);}else{flip(row,col);}" />
             </Flipable>
         </Component>
     </resources>

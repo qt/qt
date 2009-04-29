@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+class QFxAxis;
 class QFxFlipablePrivate;
 class Q_DECLARATIVE_EXPORT QFxFlipable : public QFxItem
 {
@@ -63,6 +64,8 @@ class Q_DECLARATIVE_EXPORT QFxFlipable : public QFxItem
     Q_ENUMS(Side);
     Q_PROPERTY(QFxItem *front READ front WRITE setFront)
     Q_PROPERTY(QFxItem *back READ back WRITE setBack)
+    Q_PROPERTY(QFxAxis *axis READ axis WRITE setAxis)
+    Q_PROPERTY(qreal rotation READ rotation WRITE setRotation)
     Q_PROPERTY(Side side READ side NOTIFY sideChanged)
 public:
     QFxFlipable(QFxItem *parent=0);
@@ -74,6 +77,12 @@ public:
     QFxItem *back();
     void setBack(QFxItem *);
 
+    QFxAxis *axis();
+    void setAxis(QFxAxis *axis);
+
+    qreal rotation() const;
+    void setRotation(qreal angle);
+
     enum Side { Front, Back };
     Side side() const;
 
@@ -84,6 +93,7 @@ Q_SIGNALS:
     void sideChanged();
 
 private:
+    Q_PRIVATE_SLOT(d_func(), void _q_updateAxis())
     Q_DISABLE_COPY(QFxFlipable)
     Q_DECLARE_PRIVATE(QFxFlipable)
 };
