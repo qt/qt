@@ -13,6 +13,13 @@ PHONON_DIR = $$QT_SOURCE_TREE/src/3rdparty/phonon/phonon
 
 unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui QtNetwork
 
+# Phonon depends on numeric_limits. Enabling STL support in Qt
+# would bring in link dependencies, and we don't need that for
+# numeric_limits, hence we here merely ensure we bring in the necessary
+# header.
+symbian:INCLUDEPATH += $${EPOCROOT}epoc32/include/stdapis/stlport \
+                       $$OS_LAYER_STDCPP_SYSTEMINCLUDE
+
 # Input
 HEADERS += $$PHONON_DIR/abstractaudiooutput.h \
            $$PHONON_DIR/abstractaudiooutput_p.h \
