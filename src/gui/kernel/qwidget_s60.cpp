@@ -99,7 +99,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
             // disable it for this particular widget.
             if (inTopLevelResize)
                 tlwExtra->inTopLevelResize = false;
-            if (!isResize)
+            if (!isResize && maybeBackingStore())
                 moveRect(QRect(oldPos, oldSize), x - oldPos.x(), y - oldPos.y());
             else
                 invalidateBuffer_resizeHelper(oldPos, oldSize);
