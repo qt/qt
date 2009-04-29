@@ -41,7 +41,7 @@
 
 #include "qeventtransition.h"
 #include "qeventtransition_p.h"
-#include "qboundevent_p.h"
+#include "qwrappedevent.h"
 #include "qstate.h"
 #include "qstate_p.h"
 #include "qstatemachine.h"
@@ -79,10 +79,11 @@ QT_BEGIN_NAMESPACE
 
   \section1 Subclassing
 
-  Many event classes have attributes in addition to the event type itself.
-  The testEventCondition() function can be reimplemented to check attributes
-  of an event instance in order to determine whether the transition should be
-  triggered or not.
+  When reimplementing the eventTest() function, you should first call the base
+  implementation to verify that the event is a QWrappedEvent for the proper
+  object and event type. You may then cast the event to a QWrappedEvent and
+  get the original event by calling QWrappedEvent::event(), and perform
+  additional checks on that object.
 
   \sa QState::addTransition()
 */
@@ -257,12 +258,11 @@ bool QEventTransition::eventTest(QEvent *event) const
 #ifdef QT_STATEMACHINE_SOLUTION
     if (event->type() == QEvent::Type(QEvent::User-3)) {
 #else
-    if (event->type() == QEvent::Bound) {
+    if (event->type() == QEvent::Wrapped) {
 #endif
-        QBoundEvent *oe = static_cast<QBoundEvent*>(event);
-        return (oe->object() == d->object)
-            && (oe->event()->type() == d->eventType)
-            && testEventCondition(oe->event());
+        QWrappedEvent *we = static_cast<QWrappedEvent*>(event);
+        return (we->object() == d->object)
+            && (we->event()->type() == d->eventType);
     }
     return false;
 }
@@ -272,20 +272,6 @@ bool QEventTransition::eventTest(QEvent *event) const
 */
 void QEventTransition::onTransition()
 {
-}
-
-/*!
-  Tests an instance of an event associated with this event transition and
-  returns true if the transition should be taken, otherwise returns false.
-  The type of the given \a event will be eventType().
-
-  Reimplement this function if you have custom conditions associated with
-  the transition. The default implementation always returns true.
-*/
-bool QEventTransition::testEventCondition(QEvent *event) const
-{
-    Q_UNUSED(event);
-    return true;
 }
 
 /*!

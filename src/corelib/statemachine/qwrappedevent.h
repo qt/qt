@@ -39,35 +39,24 @@
 **
 ****************************************************************************/
 
-#ifndef QBOUNDEVENT_P_H
-#define QBOUNDEVENT_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#ifndef QWRAPPEDEVENT_H
+#define QWRAPPEDEVENT_H
 
 #include <QtCore/qcoreevent.h>
 
+QT_BEGIN_HEADER
+
 QT_BEGIN_NAMESPACE
 
-class QBoundEvent : public QEvent
+QT_MODULE(Core)
+
+class QObject;
+
+class Q_CORE_EXPORT QWrappedEvent : public QEvent
 {
 public:
-    QBoundEvent(QObject *object, QEvent *event)
-#ifdef QT_STATEMACHINE_SOLUTION
-        : QEvent(QEvent::Type(QEvent::User-3)),
-#else
-        : QEvent(QEvent::Bound),
-#endif
-          m_object(object), m_event(event) {}
-    ~QBoundEvent() {}
+    QWrappedEvent(QObject *object, QEvent *event);
+    ~QWrappedEvent();
 
     inline QObject *object() const { return m_object; }
     inline QEvent *event() const { return m_event; }
@@ -75,8 +64,13 @@ public:
 private:
     QObject *m_object;
     QEvent *m_event;
+
+private:
+    Q_DISABLE_COPY(QWrappedEvent)
 };
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif

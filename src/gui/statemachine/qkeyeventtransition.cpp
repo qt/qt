@@ -11,6 +11,7 @@
 
 #include "qkeyeventtransition.h"
 #include "qbasickeyeventtransition_p.h"
+#include <QtCore/qwrappedevent.h>
 
 #if defined(QT_EXPERIMENTAL_SOLUTION)
 # include "qeventtransition_p.h"
@@ -139,19 +140,14 @@ void QKeyEventTransition::setModifiersMask(Qt::KeyboardModifiers modifiersMask)
 /*!
   \reimp
 */
-bool QKeyEventTransition::testEventCondition(QEvent *event) const
-{
-    Q_D(const QKeyEventTransition);
-    d->transition->setEventType(event->type());
-    return QAbstractTransitionPrivate::get(d->transition)->callEventTest(event);
-}
-
-/*!
-  \reimp
-*/
 bool QKeyEventTransition::eventTest(QEvent *event) const
 {
-    return QEventTransition::eventTest(event);
+    Q_D(const QKeyEventTransition);
+    if (!QEventTransition::eventTest(event))
+        return false;
+    QWrappedEvent *we = static_cast<QWrappedEvent*>(event);
+    d->transition->setEventType(we->event()->type());
+    return QAbstractTransitionPrivate::get(d->transition)->callEventTest(we->event());
 }
 
 /*!

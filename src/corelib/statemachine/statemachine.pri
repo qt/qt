@@ -23,7 +23,7 @@ SOURCES += $$PWD/qstatemachine.cpp \
 	   $$PWD/qsignaltransition.cpp
 
 !contains(DEFINES, QT_NO_STATEMACHINE_EVENTFILTER) {
-HEADERS += $$PWD/qboundevent_p.h \
+HEADERS += $$PWD/qwrappedevent.h \
 	   $$PWD/qeventtransition.h \
 	   $$PWD/qeventtransition_p.h
 SOURCES += $$PWD/qeventtransition.cpp

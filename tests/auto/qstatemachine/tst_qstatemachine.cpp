@@ -2857,7 +2857,7 @@ void tst_QStateMachine::parallelStateAssignmentsDone()
     QState *s1 = new QState(machine.rootState());
     machine.setInitialState(s1);
 
-    QState *parallelState = new QState(QState::ParallelGroup, machine.rootState());
+    QState *parallelState = new QState(QState::ParallelStates, machine.rootState());
     parallelState->assignProperty(propertyHolder, "foo", 321);
 
     QState *s2 = new QState(parallelState);

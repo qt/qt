@@ -11,6 +11,7 @@
 
 #include "qmouseeventtransition.h"
 #include "qbasicmouseeventtransition_p.h"
+#include <QtCore/qwrappedevent.h>
 #include <QtGui/qpainterpath.h>
 
 #if defined(QT_EXPERIMENTAL_SOLUTION)
@@ -169,19 +170,14 @@ void QMouseEventTransition::setPath(const QPainterPath &path)
 /*!
   \reimp
 */
-bool QMouseEventTransition::testEventCondition(QEvent *event) const
-{
-    Q_D(const QMouseEventTransition);
-    d->transition->setEventType(event->type());
-    return QAbstractTransitionPrivate::get(d->transition)->callEventTest(event);
-}
-
-/*!
-  \reimp
-*/
 bool QMouseEventTransition::eventTest(QEvent *event) const
 {
-    return QEventTransition::eventTest(event);
+    Q_D(const QMouseEventTransition);
+    if (!QEventTransition::eventTest(event))
+        return false;
+    QWrappedEvent *we = static_cast<QWrappedEvent*>(event);
+    d->transition->setEventType(we->event()->type());
+    return QAbstractTransitionPrivate::get(d->transition)->callEventTest(we->event());
 }
 
 /*!

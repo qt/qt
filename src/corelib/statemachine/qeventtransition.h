@@ -77,8 +77,6 @@ public:
     void setEventType(QEvent::Type type);
 
 protected:
-    virtual bool testEventCondition(QEvent *event) const; // ### name
-
     bool eventTest(QEvent *event) const;
     void onTransition();
 
