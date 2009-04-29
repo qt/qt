@@ -554,25 +554,6 @@ QDirectFBScreenCursor::QDirectFBScreenCursor()
 
     layer = QDirectFBScreen::instance()->dfbDisplayLayer();
     Q_ASSERT(layer);
-    DFBResult result;
-    result = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFBScreenCursor::QDirectFBScreenCursor: "
-                      "Unable to set cooperative level", result);
-    }
-    result = layer->EnableCursor(layer, 1);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFBScreenCursor::QDirectFBScreenCursor: "
-                      "Unable to enable cursor", result);
-    }
-
-    result = layer->SetCooperativeLevel(layer, DLSCL_SHARED);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFBScreenCursor::show: "
-                      "Unable to set cooperative level", result);
-    }
-
-    layer->SetCooperativeLevel(layer, DLSCL_SHARED);
 
     enable = false;
     hwaccel = true;
@@ -587,7 +568,7 @@ void QDirectFBScreenCursor::move(int x, int y)
 void QDirectFBScreenCursor::hide()
 {
     if (enable) {
-        QScreenCursor::hide();
+        enable = false;
         DFBResult result;
         result = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);
         if (result != DFB_OK) {
@@ -610,7 +591,7 @@ void QDirectFBScreenCursor::hide()
 void QDirectFBScreenCursor::show()
 {
     if (!enable) {
-        QScreenCursor::show();
+        enable = true;
         DFBResult result;
         result = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);
         if (result != DFB_OK) {
