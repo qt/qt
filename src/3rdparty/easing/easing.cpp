@@ -321,7 +321,7 @@ static qreal easeInOutExpo(qreal t)
     if (t==0.0) return qreal(0.0);
     if (t==1.0) return qreal(1.0);
     t*=2.0;
-    if (t < 1) return 0.5 * ::qPow(qreal(2.0), 10 * (t - 1)) - 1.0 * 0.0005;
+    if (t < 1) return 0.5 * ::qPow(qreal(2.0), 10 * (t - 1)) - 0.0005;
     return 0.5 * 1.0005 * (-::qPow(qreal(2.0), -10 * (t - 1)) + 2);
 }
 
@@ -471,8 +471,8 @@ static qreal easeInOutElastic(qreal t, qreal a, qreal p)
         s = p / (2 * M_PI) * ::asin(1.0 / a);
     }
 
-    if (t < 1) return -.5*(a*::qPow(2.0f,10*(t-1)) * ::sin( ((t-1)*1.0-s)*(2*M_PI)/p ));
-    return a*::qPow(2.0f,-10*(t-1)) * ::sin( ((t-1)*1.0-s)*(2*M_PI)/p )*.5 + 1.0;
+    if (t < 1) return -.5*(a*::qPow(2.0f,10*(t-1)) * ::sin( (t-1-s)*(2*M_PI)/p ));
+    return a*::qPow(2.0f,-10*(t-1)) * ::sin( (t-1-s)*(2*M_PI)/p )*.5 + 1.0;
 }
 
 /**
