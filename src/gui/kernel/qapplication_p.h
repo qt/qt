@@ -223,7 +223,7 @@ public:
 #endif
     static bool quitOnLastWindowClosed;
     static void emitLastWindowClosed();
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     static int autoMaximizeThreshold;
     static bool autoSipEnabled;
 #endif
@@ -362,7 +362,7 @@ public:
 #ifdef Q_WS_MAC
     static bool native_modal_dialog_active;
 #endif
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
     static bool inSizeMove;
 #endif
 

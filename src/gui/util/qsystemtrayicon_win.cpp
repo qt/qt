@@ -62,13 +62,13 @@
 #include <QDesktopWidget>
 #include <QSettings>
 
-#if defined(Q_OS_WINCE) && !defined(STANDARDSHELL_UI_MODEL)
+#if defined(Q_WS_WINCE) && !defined(STANDARDSHELL_UI_MODEL)
 #   include <streams.h>
 #endif
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
 static const UINT q_uNOTIFYICONID = 13;     // IDs from 0 to 12 are reserved on WinCE.
 #else
 static const UINT q_uNOTIFYICONID = 0;
@@ -331,7 +331,7 @@ bool QSystemTrayIconSys::showMessageA(const QString &title, const QString &messa
 
 bool QSystemTrayIconSys::trayMessageA(DWORD msg)
 {
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
     NOTIFYICONDATAA tnd;
     memset(&tnd, 0, notifyIconSizeA);
     tnd.uID = q_uNOTIFYICONID;
@@ -462,7 +462,7 @@ bool QSystemTrayIconSys::winEvent( MSG *m, long *result )
                 emit q->activated(QSystemTrayIcon::Trigger);
                 break;
 
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
             case WM_LBUTTONDBLCLK:
                 emit q->activated(QSystemTrayIcon::DoubleClick);
                 break;
@@ -726,7 +726,7 @@ void QSystemTrayIconPrivate::updateMenu_sys()
 
 void QSystemTrayIconPrivate::updateToolTip_sys()
 {
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     // Calling sys->trayMessage(NIM_MODIFY) on an existing icon is broken on Windows CE.
     // So we need to call updateIcon_sys() which creates a new icon handle.
     updateIcon_sys();

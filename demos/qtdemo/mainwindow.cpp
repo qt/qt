@@ -101,7 +101,7 @@ void MainWindow::setRenderingSystem()
     QWidget *viewport = 0;
 
 #ifndef QT_NO_OPENGL
-    else if (Colors::openGlRendering){
+    if (Colors::openGlRendering) {
         QGLWidget *glw = new QGLWidget(QGLFormat(QGL::SampleBuffers));
         if (Colors::noScreenSync)
             glw->format().setSwapInterval(0);
@@ -110,9 +110,10 @@ void MainWindow::setRenderingSystem()
         setCacheMode(QGraphicsView::CacheNone);
         if (Colors::verbose)
             qDebug() << "- using OpenGL";
-    }
+    } else // software rendering
 #endif
-    else{ // software rendering
+    {
+        // software rendering
         viewport = new QWidget;
         setCacheMode(QGraphicsView::CacheBackground);
         if (Colors::verbose)

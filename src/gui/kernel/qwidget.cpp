@@ -183,6 +183,7 @@ QWidgetPrivate::QWidgetPrivate(int version) :
         ,inDirtyList(0)
         ,isScrolled(0)
         ,isMoved(0)
+        ,usesDoubleBufferedGLContext(0)
 #ifdef Q_WS_WIN
         ,noPaintOnScreen(0)
 #endif
@@ -1026,7 +1027,7 @@ void QWidgetPrivate::adjustFlags(Qt::WindowFlags &flags, QWidget *w)
     if (customize)
         ; // don't modify window flags if the user explicitely set them.
     else if (type == Qt::Dialog || type == Qt::Sheet)
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint;
 #else
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
@@ -1093,7 +1094,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (f & Qt::MSWindowsOwnDC)
         q->setAttribute(Qt::WA_NativeWindow);
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     data.window_state_internal = 0;
 #endif
 
@@ -2131,6 +2132,10 @@ QWidget *QWidget::find(WId id)
 
     If a widget is non-native (alien) and winId() is invoked on it, that widget
     will be provided a native handle.
+
+    On Mac OS X, the type returned depends on which framework Qt was linked
+    against. If Qt is using Carbon, the {WId} is actually an HIViewRef. If Qt
+    is using Cocoa, {WId} is a pointer to an NSView.
 
     \note We recommend that you do not store this value as it is likely to
     change at run-time.
@@ -4196,7 +4201,7 @@ const QPalette &QWidget::palette() const
     if (!isEnabled()) {
         data->pal.setCurrentColorGroup(QPalette::Disabled);
     } else if ((!isVisible() || isActiveWindow())
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_WS_WINCE)
         && !QApplicationPrivate::isBlockedByModal(const_cast<QWidget *>(this))
 #endif
         ) {
@@ -7328,7 +7333,7 @@ QSize QWidgetPrivate::adjustedSize() const
 #else // all others
         QRect screen = QApplication::desktop()->screenGeometry(q->pos());
 #endif
-#if defined (Q_OS_WINCE)
+#if defined (Q_WS_WINCE)
         s.setWidth(qMin(s.width(), screen.width()));
         s.setHeight(qMin(s.height(), screen.height()));
 #else

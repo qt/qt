@@ -133,6 +133,42 @@ Q_GUI_EXPORT QT3_SUPPORT void qDrawArrow(QPainter *p, Qt::ArrowType type, Qt::GU
                           const QPalette &pal, bool enabled);
 #endif
 
+struct Q_GUI_EXPORT QMargins
+{
+    inline QMargins(int margin = 0)
+        : top(margin),
+          left(margin),
+          bottom(margin),
+          right(margin) {}
+    inline QMargins(int topMargin, int leftMargin, int bottomMargin, int rightMargin)
+         : top(topMargin),
+           left(leftMargin),
+           bottom(bottomMargin),
+           right(rightMargin) {}
+    int top;
+    int left;
+    int bottom;
+    int right;
+};
+
+struct Q_GUI_EXPORT QTileRules
+{
+    inline QTileRules(Qt::TileRule horizontalRule = Qt::Stretch,
+                      Qt::TileRule verticalRule = Qt::Stretch)
+            : horizontal(horizontalRule),
+              vertical(verticalRule) {}
+    Qt::TileRule horizontal;
+    Qt::TileRule vertical;
+};
+
+Q_GUI_EXPORT void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargins &targetMargins, const QPixmap &pixmap,
+                                    const QRect &sourceRect, const QMargins &sourceMargins, const QTileRules &rules = QTileRules());
+
+Q_GUI_EXPORT inline void qDrawBorderPixmap(QPainter *painter, const QRect &target, const QMargins &margins, const QPixmap &pixmap)
+{
+    qDrawBorderPixmap(painter, target, margins, pixmap, pixmap.rect(), margins);
+}
+
 QT_END_NAMESPACE
 
 QT_END_HEADER

@@ -122,7 +122,7 @@ private:
 };
 
 #ifdef Q_WS_WIN
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
 QPixmap convertHIconToPixmap( const HICON icon);
 #else
 QPixmap convertHIconToPixmap( const HICON icon, bool large = false);

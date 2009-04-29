@@ -89,6 +89,7 @@ private slots:
     void merge_data();
     void merge();
     void task119433_isRowSelected();
+    void task252069_rowIntersectsSelection();
 
 private:
     QAbstractItemModel *model;
@@ -2140,6 +2141,51 @@ void tst_QItemSelectionModel::task119433_isRowSelected()
     QVERIFY(sel.isRowSelected(0, QModelIndex()));
 }
 
+void tst_QItemSelectionModel::task252069_rowIntersectsSelection()
+{
+    QStandardItemModel m;
+    for (int i=0; i<8; ++i) {
+        for (int j=0; j<8; ++j) {
+            QStandardItem *item = new QStandardItem(QString("Item number %1").arg(i));
+            if ((i % 2 == 0 && j == 0)  ||
+                (j % 2 == 0 && i == 0)  ||
+                 j == 5 || i == 5 ) {
+                item->setEnabled(false);
+                //item->setSelectable(false);
+            }
+            m.setItem(i, j, item);
+        }
+    }
+
+    QItemSelectionModel selected(&m);
+    //nothing is selected
+    QVERIFY(!selected.rowIntersectsSelection(0, QModelIndex()));
+    QVERIFY(!selected.rowIntersectsSelection(2, QModelIndex()));
+    QVERIFY(!selected.rowIntersectsSelection(3, QModelIndex()));
+    QVERIFY(!selected.rowIntersectsSelection(5, QModelIndex()));
+    QVERIFY(!selected.columnIntersectsSelection(0, QModelIndex()));
+    QVERIFY(!selected.columnIntersectsSelection(2, QModelIndex()));
+    QVERIFY(!selected.columnIntersectsSelection(3, QModelIndex()));
+    QVERIFY(!selected.columnIntersectsSelection(5, QModelIndex()));
+    selected.select(m.index(2, 0), QItemSelectionModel::Select | QItemSelectionModel::Rows);
+    QVERIFY(!selected.rowIntersectsSelection(0, QModelIndex()));
+    QVERIFY( selected.rowIntersectsSelection(2, QModelIndex()));
+    QVERIFY(!selected.rowIntersectsSelection(3, QModelIndex()));
+    QVERIFY(!selected.rowIntersectsSelection(5, QModelIndex()));
+    QVERIFY(!selected.columnIntersectsSelection(0, QModelIndex()));
+    QVERIFY( selected.columnIntersectsSelection(2, QModelIndex()));
+    QVERIFY( selected.columnIntersectsSelection(3, QModelIndex()));
+    QVERIFY(!selected.columnIntersectsSelection(5, QModelIndex()));
+    selected.select(m.index(0, 5), QItemSelectionModel::Select | QItemSelectionModel::Columns);
+    QVERIFY(!selected.rowIntersectsSelection(0, QModelIndex()));
+    QVERIFY( selected.rowIntersectsSelection(2, QModelIndex()));
+    QVERIFY(!selected.rowIntersectsSelection(3, QModelIndex()));
+    QVERIFY(!selected.rowIntersectsSelection(5, QModelIndex()));
+    QVERIFY(!selected.columnIntersectsSelection(0, QModelIndex()));
+    QVERIFY( selected.columnIntersectsSelection(2, QModelIndex()));
+    QVERIFY( selected.columnIntersectsSelection(3, QModelIndex()));
+    QVERIFY(!selected.columnIntersectsSelection(5, QModelIndex()));
+}
 
 QTEST_MAIN(tst_QItemSelectionModel)
 #include "tst_qitemselectionmodel.moc"

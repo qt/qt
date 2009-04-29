@@ -868,7 +868,7 @@ void QTextEngine::shapeText(int item) const
 
 #if defined(Q_WS_MAC)
     shapeTextMac(item);
-#elif defined(Q_OS_WINCE)
+#elif defined(Q_WS_WINCE)
     shapeTextWithCE(item);
 #else
     shapeTextWithHarfbuzz(item);
@@ -923,7 +923,7 @@ void QTextEngine::shapeText(int item) const
         si.width += glyphs.advances_x[i];
 }
 
-#if defined(Q_OS_WINCE) //TODO
+#if defined(Q_WS_WINCE) //TODO
 // set the glyph attributes heuristically. Assumes a 1 to 1 relationship between chars and glyphs
 // and no reordering.
 // also computes logClusters heuristically

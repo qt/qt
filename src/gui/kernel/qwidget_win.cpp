@@ -62,7 +62,7 @@
 #include <private/qwininputcontext_p.h>
 #include <private/qpaintengine_raster_p.h>
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
 #include "qguifunctions_wince.h"
 QT_USE_NAMESPACE
 extern void qt_wince_maximize(QWidget *widget);                          //defined in qguifunctions_wince.cpp
@@ -251,7 +251,7 @@ extern "C" LRESULT CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
   QWidget member functions
  *****************************************************************************/
 
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
 void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyOldWindow)
 {
     Q_Q(QWidget);
@@ -544,7 +544,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     }
 }
 
-#endif //Q_OS_WINCE
+#endif //Q_WS_WINCE
 
 
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
@@ -572,7 +572,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
         if (destroyWindow && !(windowType() == Qt::Desktop) && internalWinId()) {
             DestroyWindow(internalWinId());
         }
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
         if (destroyWindow && (windowType() == Qt::Desktop) && !GetDesktopWindow()) {
             DestroyWindow(internalWinId());
         }
@@ -679,7 +679,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
             EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_GRAYED);
     }
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     // Show borderless toplevel windows in tasklist & NavBar
     if (!parent) {
         QString txt = q->windowTitle().isEmpty()?qAppName():q->windowTitle();
@@ -875,12 +875,12 @@ QCursor *qt_grab_cursor()
 }
 
 // The procedure does nothing, but is required for mousegrabbing to work
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
 LRESULT CALLBACK qJournalRecordProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     return CallNextHookEx(journalRec, nCode, wParam, lParam);
 }
-#endif //Q_OS_WINCE
+#endif //Q_WS_WINCE
 
 /* Works only as long as pointer is inside the application's window,
    which is good enough for QDockWidget.
@@ -903,7 +903,7 @@ void QWidgetPrivate::grabMouseWhileInWindow()
     }
 }
 
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
 void QWidget::grabMouse()
 {
     if (!qt_nograb()) {
@@ -980,7 +980,7 @@ void QWidget::activateWindow()
     SetForegroundWindow(window()->internalWinId());
 }
 
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
 void QWidget::setWindowState(Qt::WindowStates newstate)
 {
     Q_D(QWidget);
@@ -1082,7 +1082,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
     QWindowStateChangeEvent e(oldstate);
     QApplication::sendEvent(this, &e);
 }
-#endif //Q_OS_WINCE
+#endif //Q_WS_WINCE
 
 
 /*
@@ -1095,7 +1095,7 @@ void QWidgetPrivate::hide_sys()
     Q_Q(QWidget);
     deactivateWidgetCleanup();
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     if (!qt_wince_is_mobile() && q->isFullScreen()) {
         HWND handle = FindWindow(L"HHTaskBar", L"");
         if (handle) {
@@ -1124,7 +1124,7 @@ void QWidgetPrivate::hide_sys()
   \internal
   Platform-specific part of QWidget::show().
 */
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
 void QWidgetPrivate::show_sys()
 {
     Q_Q(QWidget);
@@ -1192,7 +1192,7 @@ void QWidgetPrivate::show_sys()
 
     invalidateBuffer(q->rect());
 }
-#endif //Q_OS_WINCE
+#endif //Q_WS_WINCE
 
 void QWidgetPrivate::setFocus_sys()
 {
@@ -1450,7 +1450,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                 show_sys();
             } else if (!q->testAttribute(Qt::WA_DontShowOnScreen)) {
                 q->setAttribute(Qt::WA_OutsideWSRange, false);
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
                 // If the window is hidden and in maximized state or minimized, instead of moving the
                 // window, set the normal position of the window.
                 WINDOWPLACEMENT wndpl;
@@ -1569,7 +1569,7 @@ bool QWidgetPrivate::shouldShowMaximizeButton()
 
 void QWidgetPrivate::winUpdateIsOpaque()
 {
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
     Q_Q(QWidget);
 
     if (!q->isWindow() || !q->testAttribute(Qt::WA_TranslucentBackground))
@@ -1590,7 +1590,7 @@ void QWidgetPrivate::winUpdateIsOpaque()
 
 void QWidgetPrivate::setConstraints_sys()
 {
-#ifndef Q_OS_WINCE_WM
+#ifndef Q_WS_WINCE_WM
     Q_Q(QWidget);
     if (q->isWindow() && q->testAttribute(Qt::WA_WState_Created)) {
         int style = GetWindowLongA(q->internalWinId(), GWL_STYLE);
@@ -1708,7 +1708,7 @@ int QWidget::metric(PaintDeviceMetric m) const
     return val;
 }
 
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
 void QWidgetPrivate::createSysExtra()
 {
 #ifndef QT_NO_DRAGANDDROP
@@ -1719,7 +1719,7 @@ void QWidgetPrivate::createSysExtra()
 void QWidgetPrivate::deleteSysExtra()
 {
 }
-#endif //Q_OS_WINCE
+#endif //Q_WS_WINCE
 
 void QWidgetPrivate::createTLSysExtra()
 {
@@ -1870,7 +1870,7 @@ void QWidgetPrivate::updateFrameStrut()
                                 GetWindowLongA(q->internalWinId(), GWL_EXSTYLE));
     uint style = QT_WA_INLINE(GetWindowLongW(q->internalWinId(), GWL_STYLE),
                               GetWindowLongA(q->internalWinId(), GWL_STYLE));
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
     if (AdjustWindowRectEx(&rect, style & ~(WS_OVERLAPPED), FALSE, exstyle)) {
 #else
     if (AdjustWindowRectEx(&rect, style, FALSE, exstyle)) {
@@ -1880,7 +1880,7 @@ void QWidgetPrivate::updateFrameStrut()
     }
 }
 
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
 void QWidgetPrivate::setWindowOpacity_sys(qreal level)
 {
     Q_Q(QWidget);
@@ -1915,7 +1915,7 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal level)
     }
     (*ptrSetLayeredWindowAttributes)(q->internalWinId(), 0, (int)(level * 255), Q_LWA_ALPHA);
 }
-#endif //Q_OS_WINCE
+#endif //Q_WS_WINCE
 
 // class QGlobalRasterPaintEngine: public QRasterPaintEngine
 // {
@@ -2076,6 +2076,6 @@ void QWidgetPrivate::setModal_sys()
 
 QT_END_NAMESPACE
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 #       include "qwidget_wince.cpp"
 #endif
