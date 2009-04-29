@@ -375,13 +375,13 @@ void QStateMachinePrivate::microstep(const QList<QAbstractTransition*> &enabledT
     qDebug() << q_func() << ": begin microstep( enabledTransitions:" << enabledTransitions << ")";
     qDebug() << q_func() << ": configuration before exiting states:" << configuration;
 #endif
-    exitStates(enabledTransitions);
+    QList<QAbstractState*> exitedStates = exitStates(enabledTransitions);
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q_func() << ": configuration after exiting states:" << configuration;
 #endif
     executeTransitionContent(enabledTransitions);
     QList<QAbstractState*> enteredStates = enterStates(enabledTransitions);
-    applyProperties(enabledTransitions, enteredStates);
+    applyProperties(enabledTransitions, exitedStates, enteredStates);
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q_func() << ": configuration after entering states:" << configuration;
     qDebug() << q_func() << ": end microstep";
@@ -632,17 +632,79 @@ void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
 }
 
 void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &transitionList,
+                                           const QList<QAbstractState*> &exitedStates,
                                            const QList<QAbstractState*> &enteredStates)
 {
-#ifndef QT_NO_ANIMATION
     Q_Q(QStateMachine);
-    // Gracefully terminate playing animations.
-    for (int i = 0; i < playingAnimations.size(); ++i)
-        playingAnimations.at(i)->stop();
-    playingAnimations.clear();
-    for (int i = 0; i < resetEndValues.size(); ++i)
-        qobject_cast<QVariantAnimation*>(resetEndValues.at(i))->setEndValue(QVariant()); // ### generalize
-    resetEndValues.clear();
+#ifdef QT_NO_ANIMATION
+    Q_UNUSED(transitionList);
+#endif
+    // Process the property assignments of the entered states.
+    QHash<QAbstractState*, QList<QPropertyAssignment> > propertyAssignmentsForState;
+    QHash<RestorableId, QVariant> pendingRestorables = registeredRestorables;
+    for (int i = 0; i < enteredStates.size(); ++i) {
+        QState *s = qobject_cast<QState*>(enteredStates.at(i));
+        if (!s)
+            continue;
+
+        QList<QPropertyAssignment> assignments = QStatePrivate::get(s)->propertyAssignments;
+        for (int j = 0; j < assignments.size(); ++j) {
+            const QPropertyAssignment &assn = assignments.at(j);
+            if (globalRestorePolicy == QStateMachine::RestoreProperties) {
+                registerRestorable(assn.object, assn.propertyName);
+            }
+            pendingRestorables.remove(RestorableId(assn.object, assn.propertyName));
+            propertyAssignmentsForState[s].append(assn);
+        }
+    }
+    if (!pendingRestorables.isEmpty()) {
+        QAbstractState *s;
+        if (!enteredStates.isEmpty())
+            s = enteredStates.last(); // ### handle if parallel
+        else
+            s = 0;
+        propertyAssignmentsForState[s] << restorablesToPropertyList(pendingRestorables);
+    }
+
+#ifndef QT_NO_ANIMATION
+    // Gracefully terminate playing animations for states that are exited.
+    for (int i = 0; i < exitedStates.size(); ++i) {
+        QAbstractState *s = exitedStates.at(i);
+        QList<QAbstractAnimation*> animations = animationsForState.take(s);
+        for (int j = 0; j < animations.size(); ++j) {
+            QAbstractAnimation *anim = animations.at(j);
+            QObject::disconnect(anim, SIGNAL(finished()), q, SLOT(_q_animationFinished()));
+            stateForAnimation.remove(anim);
+            if (resetAnimationEndValues.contains(anim)) {
+                qobject_cast<QVariantAnimation*>(anim)->setEndValue(QVariant()); // ### generalize
+                resetAnimationEndValues.remove(anim);
+            }
+            QPropertyAssignment assn = propertyForAnimation.take(anim);
+            Q_ASSERT(assn.object != 0);
+            // If there is no property assignment that sets this property,
+            // set the property to its target value.
+            bool found = false;
+            QHash<QAbstractState*, QList<QPropertyAssignment> >::const_iterator it;
+            for (it = propertyAssignmentsForState.constBegin(); it != propertyAssignmentsForState.constEnd(); ++it) {
+                const QList<QPropertyAssignment> &assignments = it.value();
+                for (int k = 0; k < assignments.size(); ++k) {
+                    if ((assignments.at(k).object == assn.object)
+                        && (assignments.at(k).propertyName == assn.propertyName)) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (!found) {
+                assn.object->setProperty(assn.propertyName, assn.value);
+            }
+            // Stop the (top-level) animation.
+            // ### Stopping nested animation has weird behavior.
+            while (QAnimationGroup *group = anim->group())
+                anim = group;
+            anim->stop();
+        }
+    }
 
     // Find the animations to use for the state change.
     QList<QAbstractAnimation*> selectedAnimations;
@@ -659,72 +721,47 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
         }
         selectedAnimations << defaultAnimations;
     }
-#else
-    Q_UNUSED(transitionList);
-#endif
 
-    // Process the SetProperty definitions of the entered states.
-    QList<QPropertyAssignment> propertyAssignments;
-    QHash<RestorableId, QVariant> pendingRestorables = registeredRestorables;
-    for (int i = 0; i < enteredStates.size(); ++i) {
-        QState *s = qobject_cast<QState*>(enteredStates.at(i));
-        if (!s)
-            continue;
-
-        QList<QPropertyAssignment> assignments = QStatePrivate::get(s)->propertyAssignments;
-        for (int j = 0; j < assignments.size(); ++j) {
-            const QPropertyAssignment &assn = assignments.at(j);
-            if (globalRestorePolicy == QStateMachine::RestoreProperties) {
-                registerRestorable(assn.object, assn.propertyName);
-            }
-            pendingRestorables.remove(RestorableId(assn.object, assn.propertyName));
-            propertyAssignments.append(assn);
-        }
-    }
-    propertyAssignments << restorablesToPropertyList(pendingRestorables);
-
-#ifndef QT_NO_ANIMATION
-    // Set the animated properties that did not finish animating and that are not
-    // set in the new state.
-    for (int i = 0; i < propertiesForAnimations.size(); ++i) {
-        QPropertyAssignment assn = propertiesForAnimations.at(i).second;
-        bool found = false;
-        for (int j = 0; j < propertyAssignments.size(); ++j) {
-            if ((propertyAssignments.at(j).object == assn.object)
-                && (propertyAssignments.at(j).propertyName == assn.propertyName)) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            assn.object->setProperty(assn.propertyName, assn.value);
-        }
-    }
-
-    // Initialize animations from SetProperty definitions.
-    propertiesForAnimations.clear();
+    // Initialize animations from property assignments.
     for (int i = 0; i < selectedAnimations.size(); ++i) {
         QAbstractAnimation *anim = selectedAnimations.at(i);
-        QList<QPropertyAssignment>::iterator it;
-        for (it = propertyAssignments.begin(); it != propertyAssignments.end(); ) {
-            QPair<QList<QAbstractAnimation*>, QList<QAbstractAnimation*> > ret;
-            ret = initializeAnimation(anim, *it);
-            QList<QAbstractAnimation*> handlers = ret.first;
-            if (!handlers.isEmpty()) {
-                for (int j = 0; j < handlers.size(); ++j)
-                    propertiesForAnimations.append(qMakePair(handlers.at(j), *it));
-                it = propertyAssignments.erase(it);
-            } else {
-                ++it;
+        QHash<QAbstractState*, QList<QPropertyAssignment> >::iterator it;
+        for (it = propertyAssignmentsForState.begin(); it != propertyAssignmentsForState.end(); ) {
+            QList<QPropertyAssignment>::iterator it2;
+            QAbstractState *s = it.key();
+            QList<QPropertyAssignment> &assignments = it.value();
+            for (it2 = assignments.begin(); it2 != assignments.end(); ) {
+                QPair<QList<QAbstractAnimation*>, QList<QAbstractAnimation*> > ret;
+                ret = initializeAnimation(anim, *it2);
+                QList<QAbstractAnimation*> handlers = ret.first;
+                if (!handlers.isEmpty()) {
+                    for (int j = 0; j < handlers.size(); ++j) {
+                        QAbstractAnimation *a = handlers.at(j);
+                        propertyForAnimation.insert(a, *it2);
+                        stateForAnimation.insert(a, s);
+                        animationsForState[s].append(a);
+                        // ### connect to just the top-level animation?
+                        QObject::disconnect(a, SIGNAL(finished()), q, SLOT(_q_animationFinished()));
+                        QObject::connect(a, SIGNAL(finished()), q, SLOT(_q_animationFinished()));
+                    }
+                    it2 = assignments.erase(it2);
+                } else {
+                    ++it2;
+                }
+                for (int j = 0; j < ret.second.size(); ++j)
+                    resetAnimationEndValues.insert(ret.second.at(j));
             }
-            resetEndValues << ret.second;
+            if (assignments.isEmpty())
+                it = propertyAssignmentsForState.erase(it);
+            else
+                ++it;
         }
-
         // We require that at least one animation is valid.
         // ### generalize
         QList<QVariantAnimation*> variantAnims = qFindChildren<QVariantAnimation*>(anim);
         if (QVariantAnimation *va = qobject_cast<QVariantAnimation*>(anim))
             variantAnims.append(va);
+        
         bool hasValidEndValue = false;
         for (int j = 0; j < variantAnims.size(); ++j) {
             if (variantAnims.at(j)->endValue().isValid()) {
@@ -734,18 +771,28 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
         }
 
         if (hasValidEndValue) {
-            QObject::disconnect(anim, SIGNAL(finished()), q, SLOT(_q_animationFinished()));
-            QObject::connect(anim, SIGNAL(finished()), q, SLOT(_q_animationFinished()));
             anim->start();
-            playingAnimations.append(anim);
         }
     }
 #endif // !QT_NO_ANIMATION
 
     // Immediately set the properties that are not animated.
-    for (int i = 0; i < propertyAssignments.size(); ++i) {
-        const QPropertyAssignment &assn = propertyAssignments.at(i);
-        assn.object->setProperty(assn.propertyName, assn.value);
+    {
+        QHash<QAbstractState*, QList<QPropertyAssignment> >::const_iterator it;
+        for (it = propertyAssignmentsForState.constBegin(); it != propertyAssignmentsForState.constEnd(); ++it) {
+            const QList<QPropertyAssignment> &assignments = it.value();
+            for (int i = 0; i < assignments.size(); ++i) {
+                const QPropertyAssignment &assn = assignments.at(i);
+                assn.object->setProperty(assn.propertyName, assn.value);
+            }
+        }
+    }
+
+    // Emit polished signal for entered states that have no animated properties.
+    for (int i = 0; i < enteredStates.size(); ++i) {
+        QState *s = qobject_cast<QState*>(enteredStates.at(i));
+        if (s && !animationsForState.contains(s))
+            QStatePrivate::get(s)->emitPolished();
     }
 }
 
@@ -772,9 +819,8 @@ bool QStateMachinePrivate::isCompound(const QAbstractState *s)
 bool QStateMachinePrivate::isAtomic(const QAbstractState *s)
 {
     const QState *ss = qobject_cast<const QState*>(s);
-    return (ss && (QStatePrivate::get(ss)->childMode != QState::ParallelStates)
-            && QStatePrivate::get(ss)->childStates().isEmpty())
-        || isFinal(s);
+    return (ss && QStatePrivate::get(ss)->childStates().isEmpty())
+         || isFinal(s);
 }
 
 
@@ -966,37 +1012,35 @@ QStateMachinePrivate::initializeAnimation(QAbstractAnimation *abstractAnimation,
     return qMakePair(handledAnimations, localResetEndValues);
 }
 
-static bool isAncestorOf(QObject *anc, QObject *o)
-{
-    for (o = o->parent() ; o != 0; o = o->parent()) {
-        if (o == anc)
-            return true;
-    }
-    return false;
-}
-
 void QStateMachinePrivate::_q_animationFinished()
 {
     Q_Q(QStateMachine);
-    QAbstractAnimation *animation = qobject_cast<QAbstractAnimation*>(q->sender());
-    Q_ASSERT(animation != 0);
-    QList<QPair<QAbstractAnimation*, QPropertyAssignment> >::iterator it;
-    for (it = propertiesForAnimations.begin(); it != propertiesForAnimations.end(); ) {
-        QAbstractAnimation *a = (*it).first;
-        if (a == animation || isAncestorOf(animation, a)) {
-            QPropertyAssignment assn = (*it).second;
-            assn.object->setProperty(assn.propertyName, assn.value);
-            if (!assn.explicitlySet)
-                unregisterRestorable(assn.object, assn.propertyName);
-            it = propertiesForAnimations.erase(it);
-        } else {
-            ++it;
-        }
+    QAbstractAnimation *anim = qobject_cast<QAbstractAnimation*>(q->sender());
+    Q_ASSERT(anim != 0);
+    QObject::disconnect(anim, SIGNAL(finished()), q, SLOT(_q_animationFinished()));
+    if (resetAnimationEndValues.contains(anim)) {
+        qobject_cast<QVariantAnimation*>(anim)->setEndValue(QVariant()); // ### generalize
+        resetAnimationEndValues.remove(anim);
     }
 
-    playingAnimations.removeOne(animation);
-    if (playingAnimations.isEmpty())
-        emit q->animationsFinished();
+    // Set the final property value.
+    QPropertyAssignment assn = propertyForAnimation.take(anim);
+    Q_ASSERT(assn.object != 0);
+    assn.object->setProperty(assn.propertyName, assn.value);
+    if (!assn.explicitlySet)
+        unregisterRestorable(assn.object, assn.propertyName);
+
+    QAbstractState *state = stateForAnimation.take(anim);
+    Q_ASSERT(state != 0);
+    QHash<QAbstractState*, QList<QAbstractAnimation*> >::iterator it;
+    it = animationsForState.find(state);
+    Q_ASSERT(it != animationsForState.end());
+    QList<QAbstractAnimation*> &animations = it.value();
+    animations.removeOne(anim);
+    if (animations.isEmpty()) {
+        animationsForState.erase(it);
+        QStatePrivate::get(qobject_cast<QState*>(state))->emitPolished();
+    }
 }
 
 #endif // !QT_NO_ANIMATION
@@ -1057,7 +1101,8 @@ void QStateMachinePrivate::_q_start()
     transitions.append(initialTransition);
     executeTransitionContent(transitions);
     enterStates(transitions);
-    applyProperties(transitions, QList<QAbstractState*>() << initial);
+    applyProperties(transitions, QList<QAbstractState*>() << start,
+                    QList<QAbstractState*>() << initial);
     delete start;
 
 #ifdef QSTATEMACHINE_DEBUG
@@ -1774,18 +1819,6 @@ QSet<QAbstractState*> QStateMachine::configuration() const
 
   \sa QStateMachine::stop()
 */
-
-#ifndef QT_NO_ANIMATION
-
-/*!
-  \fn QStateMachine::animationsFinished()
-
-  This signal is emitted when the state machine has finished playing all
-  animations associated with the latest transition (i.e., all properties have
-  reached their target values).
-*/
-
-#endif
 
 /*!
   \reimp

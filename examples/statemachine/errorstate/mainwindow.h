@@ -25,7 +25,6 @@ public slots:
     void runStep();
 
 signals:
-    void gameOver();
     void mapFull();
 
 private:

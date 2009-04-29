@@ -131,6 +131,7 @@ public:
                           QSet<QAbstractState*> &statesForDefaultEntry);
 
     void applyProperties(const QList<QAbstractTransition*> &transitionList,
+                         const QList<QAbstractState*> &exitedStates,
                          const QList<QAbstractState*> &enteredStates);
 
     bool isInFinalState(QAbstractState *s) const;
@@ -186,9 +187,10 @@ public:
         initializeAnimation(QAbstractAnimation *abstractAnimation, 
                             const QPropertyAssignment &prop);
 
-    QList<QPair<QAbstractAnimation*, QPropertyAssignment> > propertiesForAnimations;
-    QList<QAbstractAnimation*> playingAnimations;
-    QList<QAbstractAnimation*> resetEndValues;
+    QHash<QAbstractState*, QList<QAbstractAnimation*> > animationsForState;
+    QHash<QAbstractAnimation*, QPropertyAssignment> propertyForAnimation;
+    QHash<QAbstractAnimation*, QAbstractState*> stateForAnimation;
+    QSet<QAbstractAnimation*> resetAnimationEndValues;
 
     QList<QAbstractAnimation *> defaultAnimations;
     QMultiHash<QAbstractState *, QAbstractAnimation *> defaultAnimationsForSource;

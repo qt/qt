@@ -139,6 +139,12 @@ void QStatePrivate::emitFinished()
     emit q->finished();
 }
 
+void QStatePrivate::emitPolished()
+{
+    Q_Q(QState);
+    emit q->polished();
+}
+
 /*!
   Constructs a new state with the given \a parent state.
 */
@@ -222,6 +228,8 @@ QList<QAbstractTransition*> QStatePrivate::transitions() const
 /*!
   Instructs this state to set the property with the given \a name of the given
   \a object to the given \a value when the state is entered.
+
+  \sa polished()
 */
 void QState::assignProperty(QObject *object, const char *name,
                             const QVariant &value)
@@ -442,6 +450,14 @@ bool QState::event(QEvent *e)
   \fn QState::finished()
 
   This signal is emitted when a final child state of this state is entered.
+*/
+
+/*!
+  \fn QState::polished()
+
+  This signal is emitted when all properties have been assigned their final value.
+
+  \sa QState::assignProperty(), QAbstractTransition::addAnimation()
 */
 
 QT_END_NAMESPACE

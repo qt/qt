@@ -175,26 +175,16 @@ void QVariantAnimationPrivate::updateCurrentValue()
                 endProgress = currentInterval.end.first;
     const qreal localProgress = (progress - startProgress) / (endProgress - startProgress);
 
-    bool changed = false;
-    {
-      //we do that here in a limited scope so that ret is dereferenced and frees memory
-      //and the call to updateCurrentValue can recreate QVariant of the same type (for ex. in
-      //QGraphicsItem::setPos
-      QVariant ret = q->interpolated(currentInterval.start.second,
-                                    currentInterval.end.second,
-                                    localProgress);
-      if (currentValue != ret) {
-          changed = true;
-          qSwap(currentValue, ret);
-      }
-    }
-
-    if (changed) {
-        //the value has changed
-        q->updateCurrentValue(currentValue);
+    QVariant ret = q->interpolated(currentInterval.start.second,
+                                   currentInterval.end.second,
+                                   localProgress);
+    qSwap(currentValue, ret);
+    q->updateCurrentValue(currentValue);
 #ifndef QT_EXPERIMENTAL_SOLUTION
         if (connectedSignals & changedSignalMask)
 #endif
+    if (currentValue != ret) {
+        //the value has changed
             emit q->valueChanged(currentValue);
     }
 }
