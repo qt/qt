@@ -39,7 +39,7 @@
                     <!-- <Image source="pics/reflection.png" anchors.fill="{parent}"/> -->
                     <Image source="pics/shadow-right.png" x="{Dvd.width}" height="{Dvd.height}"/>
                     <Image source="pics/shadow-bottom.png" y="{Dvd.height}" width="{Dvd.width}"/>
-                    <Image id="Corner" src="pics/shadow-corner.png" x="{Dvd.width}" y="{Dvd.height}"/>
+                    <Image id="Corner" source="pics/shadow-corner.png" x="{Dvd.width}" y="{Dvd.height}"/>
                 </Rect>
 
                 <MouseRegion anchors.fill="{Wrapper}" onClicked="phoneClicked()"/>
