@@ -61,7 +61,7 @@ class KeyStopTransition : public QKeyEventTransition
 {
 public:
     KeyStopTransition(Boat *boat, QEvent::Type type, int key)
-    : QKeyEventTransition(boat,type, key)
+    : QKeyEventTransition(boat, type, key)
     {
         this->boat = boat;
         this->key = key;
@@ -87,7 +87,7 @@ private:
 {
 public:
     KeyMoveTransition(Boat *boat, QEvent::Type type, int key)
-    : QKeyEventTransition(boat,type, key)
+    : QKeyEventTransition(boat, type, key)
     {
         this->boat = boat;
         this->key = key;
@@ -125,7 +125,7 @@ private:
 {
 public:
     KeyLaunchTransition(Boat *boat, QEvent::Type type, int key)
-    : QKeyEventTransition(boat,type, key)
+    : QKeyEventTransition(boat, type, key)
     {
         this->boat = boat;
         this->key = key;

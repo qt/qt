@@ -46,10 +46,11 @@
 #include "submarine.h"
 #include "torpedo.h"
 #include "animationmanager.h"
+#include "progressitem.h"
 
 //Qt
-#include <QMessageBox>
-#include <QGraphicsView>
+#include <QtGui/QMessageBox>
+#include <QtGui/QGraphicsView>
 #if defined(QT_EXPERIMENTAL_SOLUTION)
 #include "qstatemachine.h"
 #include "qkeyeventtransition.h"
@@ -59,7 +60,7 @@
 #include <QtCore/QStateMachine>
 #include <QtGui/QKeyEventTransition>
 #include <QtCore/QSignalEvent>
-#include <QFinalState>
+#include <QtCore/QFinalState>
 #endif
 
 PlayState::PlayState(GraphicsScene *scene, QState *parent)
@@ -81,27 +82,31 @@ void PlayState::onEntry()
     if (machine) {
         machine->stop();
         scene->clearScene();
+        currentLevel = 0;
+        score = 0;
         delete machine;
     }
 
     machine = new QStateMachine(this);
 
     //This state is when player is playing
-    QState *playState = new QState(machine->rootState());
+    LevelState *levelState = new LevelState(scene, this, machine->rootState());
 
-    initializeLevel();
+    //This state is when the player is actually playing but the game is not paused
+    QState *playingState = new QState(levelState);
+    levelState->setInitialState(playingState);
 
     //This state is when the game is paused
-    PauseState *pauseState = new PauseState(scene, machine->rootState());
+    PauseState *pauseState = new PauseState(scene, levelState);
 
     //We have one view, it receive the key press event
     QKeyEventTransition *pressPplay = new QKeyEventTransition(scene->views().at(0), QEvent::KeyPress, Qt::Key_P);
     pressPplay->setTargetState(pauseState);
     QKeyEventTransition *pressPpause = new QKeyEventTransition(scene->views().at(0), QEvent::KeyPress, Qt::Key_P);
-    pressPpause->setTargetState(playState);
+    pressPpause->setTargetState(playingState);
 
     //Pause "P" is triggered, the player pause the game
-    playState->addTransition(pressPplay);
+    playingState->addTransition(pressPplay);
 
     //To get back playing when the game has been paused
     pauseState->addTransition(pressPpause);
@@ -113,34 +118,37 @@ void PlayState::onEntry()
     WinState *winState = new WinState(scene, this, machine->rootState());
 
     //The boat has been destroyed then the game is finished
-    playState->addTransition(scene->boat, SIGNAL(boatExecutionFinished()),lostState);
+    levelState->addTransition(scene->boat, SIGNAL(boatExecutionFinished()),lostState);
 
     //This transition check if we won or not
     WinTransition *winTransition = new WinTransition(scene, this, winState);
 
     //The boat has been destroyed then the game is finished
-    playState->addTransition(winTransition);
+    levelState->addTransition(winTransition);
 
     //This state is an animation when the score changed
-    UpdateScoreState *scoreState = new UpdateScoreState(this, machine->rootState());
+    UpdateScoreState *scoreState = new UpdateScoreState(this, levelState);
 
     //This transition update the score when a submarine die
-    UpdateScoreTransition *scoreTransition = new UpdateScoreTransition(scene, this, scoreState);
+    UpdateScoreTransition *scoreTransition = new UpdateScoreTransition(scene, this, levelState);
+    scoreTransition->setTargetState(scoreState);
 
     //The boat has been destroyed then the game is finished
-    playState->addTransition(scoreTransition);
+    playingState->addTransition(scoreTransition);
 
     //We go back to play state
-    scoreState->addTransition(playState);
+    scoreState->addTransition(playingState);
 
     //We start playing!!!
-    machine->setInitialState(playState);
+    machine->setInitialState(levelState);
 
     //Final state
     QFinalState *final = new QFinalState(machine->rootState());
 
-    //We win we should reach the final state
-    winState->addTransition(winState, SIGNAL(finished()), final);
+    //This transition is triggered when the player press space after completing a level
+    CustomSpaceTransition *spaceTransition = new CustomSpaceTransition(scene->views().at(0), this, QEvent::KeyPress, Qt::Key_Space);
+    spaceTransition->setTargetState(levelState);
+    winState->addTransition(spaceTransition);
 
     //We lost we should reach the final state
     lostState->addTransition(lostState, SIGNAL(finished()), final);
@@ -148,14 +156,29 @@ void PlayState::onEntry()
     machine->start();
 }
 
-void PlayState::initializeLevel()
+LevelState::LevelState(GraphicsScene *scene, PlayState *game, QState *parent) : QState(parent), scene(scene), game(game)
 {
-    scene->boat = new Boat();
-    scene->addItem(scene->boat);
-    scene->setFocusItem(scene->boat,Qt::OtherFocusReason);
-    scene->boat->setPos(scene->width()/2, scene->sealLevel() - scene->boat->size().height());
+}
+void LevelState::onEntry()
+{
+    initializeLevel();
+}
 
-    GraphicsScene::LevelDescription currentLevelDescription = scene->levelsData.value(currentLevel);
+void LevelState::initializeLevel()
+{
+    //we re-init the boat
+    scene->boat->setPos(scene->width()/2, scene->sealLevel() - scene->boat->size().height());
+    scene->boat->setCurrentSpeed(0);
+    scene->boat->setCurrentDirection(Boat::None);
+    scene->boat->setBombsLaunched(0);
+    scene->boat->show();
+    scene->setFocusItem(scene->boat,Qt::OtherFocusReason);
+    scene->boat->run();
+
+    scene->progressItem->setScore(game->score);
+    scene->progressItem->setLevel(game->currentLevel + 1);
+
+    GraphicsScene::LevelDescription currentLevelDescription = scene->levelsData.value(game->currentLevel);
 
     for (int i = 0; i < currentLevelDescription.submarines.size(); ++i ) {
 
@@ -226,7 +249,7 @@ void WinState::onEntry()
 
     QString message;
     if (scene->levelsData.size() - 1 != game->currentLevel) {
-        message = QString("You win the level %1. Your score is %2.").arg(game->currentLevel+1).arg(game->score);
+        message = QString("You win the level %1. Your score is %2.\nPress Space to continue after closing this dialog.").arg(game->currentLevel+1).arg(game->score);
         //We increment the level number
         game->currentLevel++;
     } else {
@@ -248,14 +271,13 @@ UpdateScoreState::UpdateScoreState(PlayState *game, QState *parent) : QState(par
 }
 void UpdateScoreState::onEntry()
 {
-    //### Make a nice anim to update the score in the scene
     QState::onEntry();
 }
 
 /** Win transition */
 UpdateScoreTransition::UpdateScoreTransition(GraphicsScene *scene, PlayState *game, QAbstractState *target)
     : QSignalTransition(scene,SIGNAL(subMarineDestroyed(int)), QList<QAbstractState*>() << target),
-    game(game)
+    game(game), scene(scene)
 {
 }
 
@@ -266,6 +288,7 @@ bool UpdateScoreTransition::eventTest(QEvent *event) const
     else {
         QSignalEvent *se = static_cast<QSignalEvent*>(event);
         game->score += se->arguments().at(0).toInt();
+        scene->progressItem->setScore(game->score);
         return true;
     }
 }
@@ -273,7 +296,7 @@ bool UpdateScoreTransition::eventTest(QEvent *event) const
 /** Win transition */
 WinTransition::WinTransition(GraphicsScene *scene, PlayState *game, QAbstractState *target)
     : QSignalTransition(scene,SIGNAL(allSubMarineDestroyed(int)), QList<QAbstractState*>() << target),
-    game(game)
+    game(game), scene(scene)
 {
 }
 
@@ -284,6 +307,26 @@ bool WinTransition::eventTest(QEvent *event) const
     else {
         QSignalEvent *se = static_cast<QSignalEvent*>(event);
         game->score += se->arguments().at(0).toInt();
+        scene->progressItem->setScore(game->score);
         return true;
     }
+}
+
+/** Space transition */
+CustomSpaceTransition::CustomSpaceTransition(QWidget *widget, PlayState *game, QEvent::Type type, int key)
+    :   QKeyEventTransition(widget, type, key),
+        game(game)
+{
+}
+
+bool CustomSpaceTransition::eventTest(QEvent *event) const
+{
+    Q_UNUSED(event);
+    if (!QKeyEventTransition::eventTest(event))
+        return false;
+    if (game->currentLevel != 0)
+        return true;
+    else
+        return false;
+
 }

@@ -39,21 +39,29 @@
 **
 ****************************************************************************/
 
-//Own
+#include "progressitem.h"
 #include "pixmapitem.h"
 
-//Qt
-#include <QtCore/QDir>
-
-PixmapItem::PixmapItem(const QString &fileName,GraphicsScene::Mode mode, QGraphicsItem * parent) : QGraphicsPixmapItem(parent),name(fileName)
+ProgressItem::ProgressItem (QGraphicsItem * parent)
+    : QGraphicsTextItem(parent), currentLevel(1), currentScore(0)
 {
-    loadPixmap(mode);
+    setFont(QFont("Comic Sans MS"));
+    setPos(parentItem()->boundingRect().topRight() - QPointF(180, -5));
 }
 
-void PixmapItem::loadPixmap(GraphicsScene::Mode mode)
+void ProgressItem::setLevel(int level)
 {
-    if (mode == GraphicsScene::Big)
-        setPixmap(":/big/" + name);
-    else
-        setPixmap(":/small/" + name);
+    currentLevel = level;
+    updateProgress();
+}
+
+void ProgressItem::setScore(int score)
+{
+    currentScore = score;
+    updateProgress();
+}
+
+void ProgressItem::updateProgress()
+{
+    setHtml(QString("Level : %1 Score : %2").arg(currentLevel).arg(currentScore));
 }

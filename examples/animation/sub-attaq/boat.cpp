@@ -59,12 +59,12 @@
 # include "qpauseanimation.h"
 #include "qsequentialanimationgroup.h"
 #else
-#include <QPropertyAnimation>
-#include <QStateMachine>
-#include <QHistoryState>
-#include <QFinalState>
-#include <QState>
-#include <QSequentialAnimationGroup>
+#include <QtCore/QPropertyAnimation>
+#include <QtCore/QStateMachine>
+#include <QtCore/QHistoryState>
+#include <QtCore/QFinalState>
+#include <QtCore/QState>
+#include <QtCore/QSequentialAnimationGroup>
 #endif
 
 static QAbstractAnimation *setupDestroyAnimation(Boat *boat)
@@ -99,10 +99,30 @@ static QAbstractAnimation *setupDestroyAnimation(Boat *boat)
     anim4->setMemberFunctions((QGraphicsItem*)step4, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
     anim4->setDuration(100);
     anim4->setEndValue(1);
+    CustomPropertyAnimation *anim5 = new CustomPropertyAnimation(boat);
+    anim5->setMemberFunctions((QGraphicsItem*)step1, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
+    anim5->setDuration(100);
+    anim5->setEndValue(0);
+    CustomPropertyAnimation *anim6 = new CustomPropertyAnimation(boat);
+    anim6->setMemberFunctions((QGraphicsItem*)step2, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
+    anim6->setDuration(100);
+    anim6->setEndValue(0);
+    CustomPropertyAnimation *anim7 = new CustomPropertyAnimation(boat);
+    anim7->setMemberFunctions((QGraphicsItem*)step3, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
+    anim7->setDuration(100);
+    anim7->setEndValue(0);
+    CustomPropertyAnimation *anim8 = new CustomPropertyAnimation(boat);
+    anim8->setMemberFunctions((QGraphicsItem*)step4, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
+    anim8->setDuration(100);
+    anim8->setEndValue(0);
     group->addAnimation(anim1);
     group->addAnimation(anim2);
     group->addAnimation(anim3);
     group->addAnimation(anim4);
+    group->addAnimation(anim5);
+    group->addAnimation(anim6);
+    group->addAnimation(anim7);
+    group->addAnimation(anim8);
 #else
     // work around for a bug where we don't transition if the duration is zero.
     QtPauseAnimation *anim = new QtPauseAnimation(group);
@@ -126,37 +146,39 @@ Boat::Boat(QGraphicsItem * parent, Qt::WindowFlags wFlags)
 
     //The movement animation used to animate the boat
     movementAnimation = new QPropertyAnimation(this, "pos");
-    AnimationManager::self()->registerAnimation(movementAnimation);
+
+    //The movement animation used to animate the boat
+    destroyAnimation = setupDestroyAnimation(this);
 
     //We setup the state machien of the boat
-    QStateMachine *machine = new QStateMachine(this);
+    machine = new QStateMachine(this);
     QState *moving = new QState(machine->rootState());
-    StopState *stopState = new StopState(this,moving);
+    StopState *stopState = new StopState(this, moving);
     machine->setInitialState(moving);
     moving->setInitialState(stopState);
-    MoveStateRight *moveStateRight = new MoveStateRight(this,moving);
-    MoveStateLeft *moveStateLeft = new MoveStateLeft(this,moving);
-    LaunchStateRight *launchStateRight = new LaunchStateRight(this,machine->rootState());
-    LaunchStateLeft *launchStateLeft = new LaunchStateLeft(this,machine->rootState());
+    MoveStateRight *moveStateRight = new MoveStateRight(this, moving);
+    MoveStateLeft *moveStateLeft = new MoveStateLeft(this, moving);
+    LaunchStateRight *launchStateRight = new LaunchStateRight(this, machine->rootState());
+    LaunchStateLeft *launchStateLeft = new LaunchStateLeft(this, machine->rootState());
 
     //then setup the transitions for the rightMove state
-    KeyStopTransition *leftStopRight = new KeyStopTransition(this,QEvent::KeyPress,Qt::Key_Left);
+    KeyStopTransition *leftStopRight = new KeyStopTransition(this, QEvent::KeyPress, Qt::Key_Left);
     leftStopRight->setTargetState(stopState);
-    KeyMoveTransition *leftMoveRight = new KeyMoveTransition(this,QEvent::KeyPress,Qt::Key_Left);
+    KeyMoveTransition *leftMoveRight = new KeyMoveTransition(this, QEvent::KeyPress, Qt::Key_Left);
     leftMoveRight->setTargetState(moveStateRight);
-    KeyMoveTransition *rightMoveRight = new KeyMoveTransition(this,QEvent::KeyPress,Qt::Key_Right);
+    KeyMoveTransition *rightMoveRight = new KeyMoveTransition(this, QEvent::KeyPress, Qt::Key_Right);
     rightMoveRight->setTargetState(moveStateRight);
-    KeyMoveTransition *rightMoveStop = new KeyMoveTransition(this,QEvent::KeyPress,Qt::Key_Right);
+    KeyMoveTransition *rightMoveStop = new KeyMoveTransition(this, QEvent::KeyPress, Qt::Key_Right);
     rightMoveStop->setTargetState(moveStateRight);
 
     //then setup the transitions for the leftMove state
-    KeyStopTransition *rightStopLeft = new KeyStopTransition(this,QEvent::KeyPress,Qt::Key_Right);
+    KeyStopTransition *rightStopLeft = new KeyStopTransition(this, QEvent::KeyPress, Qt::Key_Right);
     rightStopLeft->setTargetState(stopState);
-    KeyMoveTransition *rightMoveLeft = new KeyMoveTransition(this,QEvent::KeyPress,Qt::Key_Right);
+    KeyMoveTransition *rightMoveLeft = new KeyMoveTransition(this, QEvent::KeyPress, Qt::Key_Right);
     rightMoveLeft->setTargetState(moveStateLeft);
-    KeyMoveTransition *leftMoveLeft = new KeyMoveTransition(this,QEvent::KeyPress,Qt::Key_Left);
+    KeyMoveTransition *leftMoveLeft = new KeyMoveTransition(this, QEvent::KeyPress,Qt::Key_Left);
     leftMoveLeft->setTargetState(moveStateLeft);
-    KeyMoveTransition *leftMoveStop = new KeyMoveTransition(this,QEvent::KeyPress,Qt::Key_Left);
+    KeyMoveTransition *leftMoveStop = new KeyMoveTransition(this, QEvent::KeyPress,Qt::Key_Left);
     leftMoveStop->setTargetState(moveStateLeft);
 
     //We set up the right move state
@@ -176,17 +198,17 @@ Boat::Boat(QGraphicsItem * parent, Qt::WindowFlags wFlags)
     moveStateRight->addTransition(movementAnimation, SIGNAL(finished()), stopState);
 
     //We set up the keys for dropping bombs
-    KeyLaunchTransition *upFireLeft = new KeyLaunchTransition(this,QEvent::KeyPress,Qt::Key_Up);
+    KeyLaunchTransition *upFireLeft = new KeyLaunchTransition(this, QEvent::KeyPress, Qt::Key_Up);
     upFireLeft->setTargetState(launchStateRight);
-    KeyLaunchTransition *upFireRight = new KeyLaunchTransition(this,QEvent::KeyPress,Qt::Key_Up);
+    KeyLaunchTransition *upFireRight = new KeyLaunchTransition(this, QEvent::KeyPress, Qt::Key_Up);
     upFireRight->setTargetState(launchStateRight);
-    KeyLaunchTransition *upFireStop = new KeyLaunchTransition(this,QEvent::KeyPress,Qt::Key_Up);
+    KeyLaunchTransition *upFireStop = new KeyLaunchTransition(this, QEvent::KeyPress, Qt::Key_Up);
     upFireStop->setTargetState(launchStateRight);
-    KeyLaunchTransition *downFireLeft = new KeyLaunchTransition(this,QEvent::KeyPress,Qt::Key_Down);
+    KeyLaunchTransition *downFireLeft = new KeyLaunchTransition(this, QEvent::KeyPress, Qt::Key_Down);
     downFireLeft->setTargetState(launchStateLeft);
-    KeyLaunchTransition *downFireRight = new KeyLaunchTransition(this,QEvent::KeyPress,Qt::Key_Down);
+    KeyLaunchTransition *downFireRight = new KeyLaunchTransition(this, QEvent::KeyPress, Qt::Key_Down);
     downFireRight->setTargetState(launchStateLeft);
-    KeyLaunchTransition *downFireMove = new KeyLaunchTransition(this,QEvent::KeyPress,Qt::Key_Down);
+    KeyLaunchTransition *downFireMove = new KeyLaunchTransition(this, QEvent::KeyPress, Qt::Key_Down);
     downFireMove->setTargetState(launchStateLeft);
 
     //We set up transitions for fire up
@@ -208,7 +230,7 @@ Boat::Boat(QGraphicsItem * parent, Qt::WindowFlags wFlags)
 
     //This state play the destroyed animation
     QAnimationState *destroyedState = new QAnimationState(machine->rootState());
-    destroyedState->setAnimation(setupDestroyAnimation(this));
+    destroyedState->setAnimation(destroyAnimation);
 
     //Play a nice animation when the boat is destroyed
     moving->addTransition(this, SIGNAL(boatDestroyed()),destroyedState);
@@ -219,7 +241,20 @@ Boat::Boat(QGraphicsItem * parent, Qt::WindowFlags wFlags)
     //The machine has finished to be executed, then the boat is dead
     connect(machine,SIGNAL(finished()),this, SIGNAL(boatExecutionFinished()));
 
+}
+
+void Boat::run()
+{
+    //We register animations
+    AnimationManager::self()->registerAnimation(movementAnimation);
+    AnimationManager::self()->registerAnimation(destroyAnimation);
     machine->start();
+}
+
+void Boat::stop()
+{
+    movementAnimation->stop();
+    machine->stop();
 }
 
 void Boat::updateBoatMovement()

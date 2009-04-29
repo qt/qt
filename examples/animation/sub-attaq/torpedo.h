@@ -43,13 +43,13 @@
 #define __TORPEDO__H__
 
 //Qt
-#include <QObject>
+#include <QtCore/QObject>
 
 #if defined(QT_EXPERIMENTAL_SOLUTION)
 # include "qvariantanimation.h"
 # include "qgraphicswidget.h"
 #else
-# include <QVariantAnimation>
+# include <QtCore/QVariantAnimation>
 # include <QtGui/QGraphicsWidget>
 #endif
 

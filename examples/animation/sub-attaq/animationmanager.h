@@ -42,7 +42,7 @@
 #ifndef ANIMATIONMANAGER_H
 #define ANIMATIONMANAGER_H
 
-#include <QObject>
+#include <QtCore/QObject>
 
 class QAbstractAnimation;
 

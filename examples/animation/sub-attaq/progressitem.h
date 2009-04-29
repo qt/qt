@@ -39,21 +39,23 @@
 **
 ****************************************************************************/
 
-//Own
-#include "pixmapitem.h"
+#ifndef PROGRESSITEM_H
+#define PROGRESSITEM_H
 
 //Qt
-#include <QtCore/QDir>
+#include <QtGui/QGraphicsTextItem>
 
-PixmapItem::PixmapItem(const QString &fileName,GraphicsScene::Mode mode, QGraphicsItem * parent) : QGraphicsPixmapItem(parent),name(fileName)
+class ProgressItem : public QGraphicsTextItem
 {
-    loadPixmap(mode);
-}
+public:
+    ProgressItem(QGraphicsItem * parent = 0);
+    void setLevel(int level);
+    void setScore(int score);
 
-void PixmapItem::loadPixmap(GraphicsScene::Mode mode)
-{
-    if (mode == GraphicsScene::Big)
-        setPixmap(":/big/" + name);
-    else
-        setPixmap(":/small/" + name);
-}
+private:
+    void updateProgress();
+    int currentLevel;
+    int currentScore;
+};
+
+#endif // PROGRESSITEM_H
