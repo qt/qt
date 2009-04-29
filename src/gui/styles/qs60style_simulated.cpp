@@ -131,7 +131,7 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size,
     // The size of topLeft defines all other sizes
     const QSize cornerSize(partSize(topLeft));
     // if frame is so small that corners would cover it completely, draw only center piece
-    const bool drawOnlyCenter = 
+    const bool drawOnlyCenter =
          2 * cornerSize.width() + 1 >= size.width() || 2 * cornerSize.height() + 1 >= size.height();
 
     const int cornerWidth = cornerSize.width();
@@ -199,6 +199,12 @@ bool QS60StylePrivate::isTouchSupported()
     return true;
 #endif
 }
+
+bool QS60StylePrivate::isToolBarBackground()
+{
+    return true;
+}
+
 
 QFont QS60StylePrivate::s60Font_specific(QS60StyleEnums::FontCategories fontCategory, int pointSize)
 {
