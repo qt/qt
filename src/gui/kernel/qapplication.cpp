@@ -4013,6 +4013,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             res = widget->testAttribute(Qt::WA_AcceptTouchEvents)
                   && d->notify_helper(widget, touchEvent);
             eventAccepted = touchEvent->isAccepted();
+            widget->setAttribute(Qt::WA_AcceptedTouchBeginEvent, res && eventAccepted);
             touchEvent->spont = false;
             if (res && eventAccepted) {
                 // the first widget to accept the TouchBegin gets an implicit grab.
