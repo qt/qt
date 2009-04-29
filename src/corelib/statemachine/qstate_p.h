@@ -63,6 +63,8 @@ QT_BEGIN_NAMESPACE
 
 struct QPropertyAssignment
 {
+    QPropertyAssignment()
+        : object(0) {}
     QPropertyAssignment(QObject *o, const QByteArray &n,
                         const QVariant &v, bool es = true)
         : object(o), propertyName(n), value(v), explicitlySet(es)
@@ -92,6 +94,7 @@ public:
     QList<QAbstractTransition*> transitions() const;
 
     void emitFinished();
+    void emitPolished();
 
     QAbstractState *errorState;
     QAbstractState *initialState;

@@ -95,6 +95,8 @@ private slots:
     void rootState();
     void addAndRemoveState();
     void stateEntryAndExit();
+    void assignProperty();
+    void assignPropertyWithAnimation();
     void postEvent();
     void stateFinished();
     void parallelStates();
@@ -1186,6 +1188,155 @@ void tst_QStateMachine::stateEntryAndExit()
     }
 }
 
+void tst_QStateMachine::assignProperty()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(machine.rootState());
+    s1->assignProperty(s1, "objectName", "s1");
+    QFinalState *s2 = new QFinalState(machine.rootState());
+    s1->addTransition(s2);
+    machine.setInitialState(s1);
+    machine.start();
+    QCoreApplication::processEvents();
+    QCOMPARE(s1->objectName(), QString::fromLatin1("s1"));
+
+    s1->assignProperty(s1, "objectName", "foo");
+    machine.start();
+    QCoreApplication::processEvents();
+    QCOMPARE(s1->objectName(), QString::fromLatin1("foo"));
+
+    s1->assignProperty(s1, "noSuchProperty", 123);
+    machine.start();
+    QCoreApplication::processEvents();
+    QCOMPARE(s1->objectName(), QString::fromLatin1("foo"));
+    QCOMPARE(s1->dynamicPropertyNames().size(), 1);
+    QCOMPARE(s1->dynamicPropertyNames().at(0), QByteArray("noSuchProperty"));
+
+    QSignalSpy polishedSpy(s1, SIGNAL(polished()));
+    machine.start();
+    QCoreApplication::processEvents();
+    QCOMPARE(polishedSpy.count(), 1);
+}
+
+void tst_QStateMachine::assignPropertyWithAnimation()
+{
+    // Single animation
+    {
+        QStateMachine machine;
+        QObject obj;
+        QState *s1 = new QState(machine.rootState());
+        s1->assignProperty(&obj, "foo", 123);
+        QState *s2 = new QState(machine.rootState());
+        s2->assignProperty(&obj, "foo", 456);
+        s2->assignProperty(&obj, "bar", 789);
+        QAbstractTransition *trans = s1->addTransition(s2);
+        QPropertyAnimation anim(&obj, "foo");
+        anim.setDuration(250);
+        trans->addAnimation(&anim);
+        QFinalState *s3 = new QFinalState(machine.rootState());
+        s2->addTransition(s2, SIGNAL(polished()), s3);
+
+        machine.setInitialState(s1);
+        QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        machine.start();
+        QTRY_COMPARE(finishedSpy.count(), 1);
+        QCOMPARE(obj.property("foo").toInt(), 456);
+        QCOMPARE(obj.property("bar").toInt(), 789);
+    }
+    // Two animations
+    {
+        QStateMachine machine;
+        QObject obj;
+        QState *s1 = new QState(machine.rootState());
+        s1->assignProperty(&obj, "foo", 123);
+        QState *s2 = new QState(machine.rootState());
+        s2->assignProperty(&obj, "foo", 456);
+        s2->assignProperty(&obj, "bar", 789);
+        QAbstractTransition *trans = s1->addTransition(s2);
+        QPropertyAnimation anim(&obj, "foo");
+        anim.setDuration(150);
+        trans->addAnimation(&anim);
+        QPropertyAnimation anim2(&obj, "bar");
+        anim2.setDuration(150);
+        trans->addAnimation(&anim2);
+        QFinalState *s3 = new QFinalState(machine.rootState());
+        s2->addTransition(s2, SIGNAL(polished()), s3);
+
+        machine.setInitialState(s1);
+        QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        machine.start();
+        QTRY_COMPARE(finishedSpy.count(), 1);
+        QCOMPARE(obj.property("foo").toInt(), 456);
+        QCOMPARE(obj.property("bar").toInt(), 789);
+    }
+    // Animation group
+    {
+        QStateMachine machine;
+        QObject obj;
+        QState *s1 = new QState(machine.rootState());
+        s1->assignProperty(&obj, "foo", 123);
+        s1->assignProperty(&obj, "bar", 321);
+        QState *s2 = new QState(machine.rootState());
+        s2->assignProperty(&obj, "foo", 456);
+        s2->assignProperty(&obj, "bar", 654);
+        s2->assignProperty(&obj, "baz", 789);
+        QAbstractTransition *trans = s1->addTransition(s2);
+        QSequentialAnimationGroup group;
+        group.addAnimation(new QPropertyAnimation(&obj, "foo"));
+        group.addAnimation(new QPropertyAnimation(&obj, "bar"));
+        trans->addAnimation(&group);
+        QFinalState *s3 = new QFinalState(machine.rootState());
+        s2->addTransition(s2, SIGNAL(polished()), s3);
+
+        machine.setInitialState(s1);
+        QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        machine.start();
+        QTRY_COMPARE(finishedSpy.count(), 1);
+        QCOMPARE(obj.property("foo").toInt(), 456);
+        QCOMPARE(obj.property("bar").toInt(), 654);
+        QCOMPARE(obj.property("baz").toInt(), 789);
+    }
+    // Nested states
+    {
+        QStateMachine machine;
+        QObject obj;
+        QState *s1 = new QState(machine.rootState());
+        s1->setObjectName("s1");
+        s1->assignProperty(&obj, "foo", 123);
+        s1->assignProperty(&obj, "bar", 456);
+        QState *s2 = new QState(machine.rootState());
+        s2->setObjectName("s2");
+        s2->assignProperty(&obj, "foo", 321);
+        QState *s21 = new QState(s2);
+        s21->setObjectName("s21");
+        s21->assignProperty(&obj, "bar", 654);
+        QState *s22 = new QState(s2);
+        s22->setObjectName("s22");
+        s22->assignProperty(&obj, "bar", 789);
+        s2->setInitialState(s21);
+
+        QAbstractTransition *trans = s1->addTransition(s2);
+        QPropertyAnimation anim(&obj, "foo");
+        anim.setDuration(500);
+        trans->addAnimation(&anim);
+        QPropertyAnimation anim2(&obj, "bar");
+        anim2.setDuration(250);
+        trans->addAnimation(&anim2);
+
+        s21->addTransition(s21, SIGNAL(polished()), s22);
+
+        QFinalState *s3 = new QFinalState(machine.rootState());
+        s22->addTransition(s2, SIGNAL(polished()), s3);
+
+        machine.setInitialState(s1);
+        QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        machine.start();
+        QTRY_COMPARE(finishedSpy.count(), 1);
+        QCOMPARE(obj.property("foo").toInt(), 321);
+        QCOMPARE(obj.property("bar").toInt(), 789);
+    }
+}
+
 struct StringEvent : public QEvent
 {
 public:
@@ -2113,7 +2264,7 @@ void tst_QStateMachine::twoAnimations()
 
     QState *s3 = new QState(machine.rootState());
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
-    s2->addTransition(&machine, SIGNAL(animationsFinished()), s3);
+    s2->addTransition(s2, SIGNAL(polished()), s3);
 
     machine.setInitialState(s1);
     machine.start();
@@ -2255,7 +2406,7 @@ void tst_QStateMachine::nestedTargetStateForAnimation()
 
     QState *s3 = new QState(machine.rootState());
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
-    s2->addTransition(&machine, SIGNAL(animationsFinished()), s3);
+    s2->addTransition(s2, SIGNAL(polished()), s3);
 
     machine.setInitialState(s1);
     machine.start();

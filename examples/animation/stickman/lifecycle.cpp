@@ -203,14 +203,14 @@ QState *LifeCycle::makeState(QState *parentState, const QString &animationFileNa
             topLevel->setInitialState(frameState);
         } else {
             connectByAnimation(previousState, frameState, 
-                new QSignalTransition(m_machine, SIGNAL(animationsFinished())));
+                new QSignalTransition(previousState, SIGNAL(polished())));
         }
         previousState = frameState;
     }
 
     // Loop
     connectByAnimation(previousState, topLevel->initialState(), 
-        new QSignalTransition(m_machine, SIGNAL(animationsFinished())));
+        new QSignalTransition(previousState, SIGNAL(polished())));
 
     return topLevel;
 

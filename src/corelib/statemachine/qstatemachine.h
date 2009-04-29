@@ -136,10 +136,6 @@ Q_SIGNALS:
     void stopped();
     void finished();
 
-#ifndef QT_NO_ANIMATION
-    void animationsFinished();
-#endif
-
 protected:
     void postInternalEvent(QEvent *event);
 
