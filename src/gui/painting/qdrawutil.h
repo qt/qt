@@ -153,10 +153,10 @@ struct Q_GUI_EXPORT QMargins
 
 struct Q_GUI_EXPORT QTileRules
 {
-    inline QTileRules(Qt::TileRule horizontalRule = Qt::Stretch,
-                      Qt::TileRule verticalRule = Qt::Stretch)
-            : horizontal(horizontalRule),
-              vertical(verticalRule) {}
+    inline QTileRules(Qt::TileRule horizontalRule, Qt::TileRule verticalRule = Qt::Stretch)
+            : horizontal(horizontalRule), vertical(verticalRule) {}
+    inline QTileRules(Qt::TileRule rule = Qt::Stretch)
+            : horizontal(rule), vertical(rule) {}
     Qt::TileRule horizontal;
     Qt::TileRule vertical;
 };
