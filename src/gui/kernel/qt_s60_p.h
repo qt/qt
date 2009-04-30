@@ -227,12 +227,14 @@ static inline QImage::Format qt_TDisplayMode2Format(TDisplayMode mode)
 	    format = QImage::Format_RGB666;
 	    break;
 	case EColor16MU:
-	case EColor16MA:
 	    format = QImage::Format_RGB32;
+	    break;
+	case EColor16MA:
+	    format = QImage::Format_ARGB32;
 	    break;
 #ifdef __S60_50__ 	    
 	case EColor16MAP:
-	    format = QImage::Format_ARGB32;
+	    format = QImage::Format_ARGB32_Premultiplied;
 	    break;
 #endif	    
 	default:
