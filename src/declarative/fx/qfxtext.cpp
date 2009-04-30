@@ -67,15 +67,11 @@ QML_DEFINE_TYPE(QFxText,Text);
     It can display both plain and rich text. For example:
 
     \code
-    <Text text="Hello World!" font.family="Helvetica" font.size="24" color="red"/>
-    <Text>
-        <![CDATA[<b>Hello</b> <i>World!</i>]]]]><![CDATA[>
-    </Text>
+    Text { text: "Hello World!"; font.family: "Helvetica"; font.size: 24; color: "red" }
+    Text { text: "<b>Hello</b> <i>World!</i>" }
     \endcode
 
     \image declarative-text.png
-
-    Additional examples can be found in examples/poc/text.xml
 
     If height and width are not explicitly set, Text will attempt to determine how 
     much room is needed and set it accordingly. Unless \c wrap is set, it will always
@@ -99,18 +95,11 @@ QML_DEFINE_TYPE(QFxText,Text);
     It can display both plain and rich text. For example:
 
     \code
-    <Text text="Hello World!" font.family="Helvetica" font.size="24" color="red"/>
-    <Text>
-        <![CDATA[<b>Hello</b> <i>World!</i>]]>
-    </Text>
+    Text { text: "Hello World!"; font.family: "Helvetica"; font.size: 24; color: "red" }
+    Text { text: "<b>Hello</b> <i>World!</i>" }
     \endcode
 
     \image text.png
-
-    Note that the 'styling' properties such as color and outline are ignored for rich text, styling
-    of rich text should be done within the text itself.
-
-    Additional examples can be found in examples/poc/text.xml
 
     If height and width are not explicitly set, Text will attempt to determine how 
     much room is needed and set it accordingly. Unless \c wrap is set, it will always
@@ -118,7 +107,7 @@ QML_DEFINE_TYPE(QFxText,Text);
 
     The \c elideMode can alternatively be used to fit a line of plain text to a set width.
 
-    A QFxText object can be instantiated in Qml using the tag \c &lt;Text&gt;.
+    A QFxText object can be instantiated in Qml using the tag \c Text.
 */
 QFxText::QFxText(QFxItem *parent)
   : QFxItem(*(new QFxTextPrivate), parent)
@@ -143,9 +132,14 @@ QFxText::~QFxText()
 }
 
 /*!
-    \qmlproperty font Text::font
+    \qmlproperty string Text::font.family
+    \qmlproperty bool Text::font.bold
+    \qmlproperty bool Text::font.italic
+    \qmlproperty real Text::font.size
 
-    Set the Text's font attributes.  \c font.size sets the font's point size.
+    Set the Text's font attributes.
+
+    \note \c font.size sets the font's point size (not pixel size).
 */
 
 /*!
@@ -219,11 +213,11 @@ void QFxText::setColor(const QColor &color)
     The text color.
 
     \code
-    <!-- green text using hexadecimal notation -->
-    <Text color="#00FF00" .../>
+    //green text using hexadecimal notation
+    Text { color: "#00FF00"; ... }
 
-    <!-- steelblue text using SVG color name-->
-    <Text color="steelblue" .../>
+    //steelblue text using SVG color name
+    Text { color: "steelblue"; ... }
     \endcode
 */
 
@@ -241,12 +235,12 @@ QColor QFxText::color() const
     Supported text styles are \c Normal, \c Outline, \c Raised and \c Sunken.
 
     \code
-    <HorizontalLayout>
-        <Text font.size="24" text="Normal" />
-        <Text font.size="24" text="Raised" style="Raised" styleColor="#AAAAAA"/>
-        <Text font.size="24" text="Outline" style="Outline" styleColor="red"/>
-        <Text font.size="24" text="Sunken" style="Sunken" styleColor="#AAAAAA"/>
-    </HorizontalLayout>
+    HorizontalLayout {
+        Text { font.size: 24; text: "Normal" }
+        Text { font.size: 24; text: "Raised";  style: "Raised";  styleColor: "#AAAAAA" }
+        Text { font.size: 24; text: "Outline"; style: "Outline"; styleColor: "red" }
+        Text { font.size: 24; text: "Sunken";  style: "Sunken";  styleColor: "#AAAAAA" }
+    }
     \endcode
 
     \image declarative-textstyle.png
