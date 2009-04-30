@@ -52,6 +52,7 @@ class QmlEngine;
 class QmlCompiledComponent;
 class QmlComponentPrivate;
 class QmlComponent;
+class QmlDomDocument;
 struct QmlCompositeTypeData : public QmlRefCount
 {
     QmlCompositeTypeData();
@@ -98,6 +99,7 @@ struct QmlCompositeTypeData : public QmlRefCount
 private:
     friend class QmlCompositeTypeManager;
     friend class QmlCompiler;
+    friend class QmlDomDocument;
 
     QmlScriptParser data;
     QList<QmlComponentPrivate *> waiters;
