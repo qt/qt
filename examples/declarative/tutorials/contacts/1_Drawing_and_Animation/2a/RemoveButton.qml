@@ -13,7 +13,7 @@ Rect {
             anchors.right: parent.right
             anchors.rightMargin: 4
             anchors.verticalCenter: parent.verticalCenter
-            src: "../../shared/pics/trash.png"
+            source: "../../shared/pics/trash.png"
         }
     ]
 }

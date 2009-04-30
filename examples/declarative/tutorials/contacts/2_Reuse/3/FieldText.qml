@@ -42,7 +42,7 @@ Rect {
         anchors.right: parent.right
         anchors.rightMargin: 4
         anchors.verticalCenter: parent.verticalCenter
-        src: "../../shared/pics/cancel.png"
+        source: "../../shared/pics/cancel.png"
         opacity: 0
     }
     Image {
@@ -52,7 +52,7 @@ Rect {
         anchors.left: parent.left
         anchors.leftMargin: 4
         anchors.verticalCenter: parent.verticalCenter
-        src: "../../shared/pics/ok.png"
+        source: "../../shared/pics/ok.png"
         opacity: 0
     }
     TextEdit {

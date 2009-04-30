@@ -12,7 +12,7 @@ Rect {
         anchors.right: parent.right
         anchors.rightMargin: 4
         anchors.verticalCenter: parent.verticalCenter
-        src: "../../shared/pics/cancel.png"
+        source: "../../shared/pics/cancel.png"
     }
     Image {
         id: confirmIcon
@@ -21,7 +21,7 @@ Rect {
         anchors.left: parent.left
         anchors.leftMargin: 4
         anchors.verticalCenter: parent.verticalCenter
-        src: "../../shared/pics/ok.png"
+        source: "../../shared/pics/ok.png"
     }
     Text {
         id: text

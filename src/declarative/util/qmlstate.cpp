@@ -175,7 +175,6 @@ void QmlState::setWhen(QmlBindableValue *when)
 }
 
 /*!
-    \advanced
     \qmlproperty string State::extends
     This property holds the state that this state extends
 

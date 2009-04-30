@@ -10,7 +10,7 @@
         color="lightgreen"
         radius="5">
         <Image id="iconImage"
-            src="{button.icon}"
+            source="{button.icon}"
             anchors.horizontalCenter="{buttonRect.horizontalCenter}"
             anchors.verticalCenter="{buttonRect.verticalCenter}"/>
         <MouseRegion id="buttonMouseRegion"

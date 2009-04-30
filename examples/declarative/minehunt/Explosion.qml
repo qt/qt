@@ -9,7 +9,7 @@ Item {
         height: 21
         lifeSpan: 3600000
         lifeSpanDeviation: 0
-        src: "pics/star.png"
+        source: "pics/star.png"
         count: 200
         angle: 270
         angleDeviation: 360

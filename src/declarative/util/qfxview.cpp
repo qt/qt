@@ -107,10 +107,10 @@ public:
     \class QFxView
     \brief The QFxView class provides a widget for displaying a Qt Declarative user interface.
 
-    QFxView currently provides a minimal interface for displaying Qml files, and
-    connecting between QML and C++ Qt objects.
+    QFxView currently provides a minimal interface for displaying QML
+    files, and connecting between QML and C++ Qt objects.
 
-    Typcial usage looks something like this:
+    Typcial usage:
     \code
     ...
     QFxView *view = new QFxView(this);
@@ -129,12 +129,24 @@ public:
     \endcode
 */
 
+/*!
+  \fn QFxView::QFxView(QWidget *parent)
+  
+  Constructs a QFxView with the given \a parent.
+*/
 QFxView::QFxView(QWidget *parent)
 : QSimpleCanvas(parent), d(new QFxViewPrivate(this))
 {
     d->init();
 }
 
+/*!
+  \fn QFxView::QFxView(QSimpleCanvas::CanvasMode mode, QWidget *parent)
+  
+  Constructs a QFxView with the given \a parent. The canvas
+  \a mode can be QSimpleCanvas::GraphicsView or
+  QSimpleCanvas::SimpleCanvas.
+*/
 QFxView::QFxView(QSimpleCanvas::CanvasMode mode, QWidget *parent)
 : QSimpleCanvas(mode, parent), d(new QFxViewPrivate(this))
 {
@@ -157,29 +169,49 @@ void QFxViewPrivate::init()
     QFontDatabase database;
 }
 
+/*!
+  The destructor clears the instance and deletes the internal
+  representation.
+
+  \sa clearItems()
+ */
 QFxView::~QFxView()
 {
     clearItems();
     delete d; d = 0;
 }
 
+/*!
+  Sets the source to the \a url. The XML string is set to
+  empty.
+ */
 void QFxView::setUrl(const QUrl& url)
 {
     d->source = url;
     d->xml = QString();
 }
 
+/*!
+  Sets the source to the URL from the \a filename, and sets
+  the XML string to \a xml.
+ */
 void QFxView::setXml(const QString &xml, const QString &filename)
 {
     d->source = QUrl::fromLocalFile(filename);
     d->xml = xml;
 }
 
+/*!
+  Returns the XML string.
+ */
 QString QFxView::xml() const
 {
     return d->xml;
 }
 
+/*!
+  Returns a pointer to the QmlEngine.
+ */
 QmlEngine* QFxView::engine()
 {
     return &d->engine;

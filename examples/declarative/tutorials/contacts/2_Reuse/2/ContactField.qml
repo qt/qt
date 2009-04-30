@@ -24,7 +24,7 @@ Item {
         text: 123123
     }
     Image {
-        src: "../../shared/pics/phone.png"
+        source: "../../shared/pics/phone.png"
         anchors.right: fieldText.left
         anchors.rightMargin: 10
         anchors.verticalCenter: parent.verticalCenter

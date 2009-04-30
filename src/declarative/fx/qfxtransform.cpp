@@ -85,7 +85,16 @@ void QFxTransform::update()
 
 /*!
     \qmlclass Axis
-    \brief An axis that can be used for rotation or translation.
+    \brief The Axis element defines an axis that can be used for rotation or translation.
+
+    An axis is specified by 2 points in 3D space: a start point and
+    an end point. While technically the axis is the line running through these two points
+    (and thus many different sets of two points could define the same axis), the distance
+    between the points does matter for translation along an axis.
+
+    \code
+    <Axis startX="0" startY="0" endX="20" endY="30"/>
+    \endcode
 */
 
 QML_DEFINE_TYPE(QFxAxis, Axis);
@@ -99,6 +108,13 @@ QFxAxis::~QFxAxis()
 {
 }
 
+/*!
+    \qmlproperty real Axis::startX
+    \qmlproperty real Axis::startY
+
+    The start point of the axis. The z-position of the start point is assumed to be 0, and cannot
+    be changed.
+*/
 qreal QFxAxis::startX() const
 {
     return _startX;
@@ -121,6 +137,13 @@ void QFxAxis::setStartY(qreal y)
     emit updated();
 }
 
+/*!
+    \qmlproperty real Axis::endX
+    \qmlproperty real Axis::endY
+    \qmlproperty real Axis::endZ
+
+    The end point of the axis.
+*/
 qreal QFxAxis::endX() const
 {
     return _endX;

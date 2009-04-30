@@ -36,7 +36,7 @@ Item {
         anchors.right: fieldText.left
         anchors.rightMargin: 5
         anchors.verticalCenter: parent.verticalCenter
-        src: contactField.icon
+        source: contactField.icon
     }
     states: [
         State {
