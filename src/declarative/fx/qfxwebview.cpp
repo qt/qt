@@ -1018,11 +1018,11 @@ QString QFxWebView::html() const
 void QFxWebView::setHtml(const QString &html, const QUrl &baseUrl)
 {
     Q_D(QFxWebView);
-    d->page->setViewportSize(QSize(
+    page()->setViewportSize(QSize(
         d->idealwidth>0 ? d->idealwidth : width(),
         d->idealheight>0 ? d->idealheight : height()));
     if (isComponentComplete())
-        d->page->mainFrame()->setHtml(html, baseUrl);
+        page()->mainFrame()->setHtml(html, baseUrl);
     else {
         d->pending = d->PendingHtml;
         d->pending_url = baseUrl;
@@ -1033,12 +1033,12 @@ void QFxWebView::setHtml(const QString &html, const QUrl &baseUrl)
 void QFxWebView::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)
 {
     Q_D(QFxWebView);
-    d->page->setViewportSize(QSize(
+    page()->setViewportSize(QSize(
         d->idealwidth>0 ? d->idealwidth : width(),
         d->idealheight>0 ? d->idealheight : height()));
 
     if (isComponentComplete())
-        d->page->mainFrame()->setContent(data,mimeType,baseUrl);
+        page()->mainFrame()->setContent(data,mimeType,baseUrl);
     else {
         d->pending = d->PendingContent;
         d->pending_url = baseUrl;
