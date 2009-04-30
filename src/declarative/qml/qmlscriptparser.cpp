@@ -547,7 +547,9 @@ bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
     }
 
     const QString fileName = url.toString();
-    const QString code = QString::fromUtf8(data); // ### FIXME
+
+    QTextStream stream(data, QIODevice::ReadOnly);
+    const QString code = stream.readAll();
 
     JavaScriptParser parser;
     JavaScriptEnginePrivate driver;
@@ -562,6 +564,41 @@ bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
     if (! parser.parse(&driver)) {
         _error = parser.errorMessage();
         _errorLine = parser.errorLineNumber();
+
+        const QStringList lines = code.split(QLatin1Char('\n'));
+
+        foreach (const JavaScriptParser::DiagnosticMessage &m, parser.diagnosticMessages()) {
+
+            if (m.isWarning())
+                continue;
+
+            qWarning().nospace() << qPrintable(fileName) << ":"
+                    << m.line << ":"
+                    << m.column << ": "
+                    << "error: "
+                    << qPrintable(m.message);
+
+            const QString textLine = lines.at(m.line - 1);
+
+            qWarning() << qPrintable(textLine);
+
+            int column = qMax(0, m.column - 1);
+            column = qMin(column, textLine.length()); // paranoia check
+
+            QByteArray ind;
+            ind.reserve(column);
+
+            for (int i = 0; i < column; ++i) {
+                const QChar ch = textLine.at(i);
+                if (ch.isSpace())
+                    ind.append(ch.unicode());
+                else
+                    ind.append(' ');
+            }
+            ind.append('^');
+            qWarning() << ind.constData();
+        }
+
         return false;
     }
 
