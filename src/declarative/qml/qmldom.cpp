@@ -150,6 +150,8 @@ int QmlDomDocument::version() const
 */
 bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
 {
+    Q_UNUSED(engine);
+
     d->error = QString();
 
     QmlScriptParser parser;

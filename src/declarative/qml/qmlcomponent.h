@@ -98,7 +98,7 @@ private:
     QmlComponent(QmlEngine *, QmlCompiledComponent *, int, int, QObject *parent);
 
     friend class QmlVME;
-    friend class QmlCompositeTypeData;
+    friend struct QmlCompositeTypeData;
 };
 QML_DECLARE_TYPE(QmlComponent);
 

@@ -211,7 +211,7 @@ void QmlAbstractAnimationPrivate::commence()
 
     q->prepare(userProperty.value);
     q->qtAnimation()->start();
-    if (!q->qtAnimation()->state() == QAbstractAnimation::Running) {
+    if (q->qtAnimation()->state() != QAbstractAnimation::Running) {
         running = false;
         emit q->completed();
     }
