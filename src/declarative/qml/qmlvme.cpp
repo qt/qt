@@ -257,6 +257,11 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 if (!o)
                     VME_EXCEPTION("Unable to create object of type" << types.at(instr.create.type).className);
 
+                if (instr.create.data != -1) {
+                    QmlCustomParser *customParser =
+                        types.at(instr.create.type).type->customParser();
+                    customParser->setCustomData(o, datas.at(instr.create.data));
+                }
                 if (!stack.isEmpty()) {
                     QObject *parent = stack.top();
                     o->setParent(parent);

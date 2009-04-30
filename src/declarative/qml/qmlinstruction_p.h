@@ -174,6 +174,7 @@ public:
         } init;
         struct {
             int type;
+            int data;
         } create;
         struct {
             int data;
