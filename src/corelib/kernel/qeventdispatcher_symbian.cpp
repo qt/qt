@@ -365,9 +365,9 @@ void QSelectThread::requestSocketEvents ( QSocketNotifier *notifier, TRequestSta
         start();
     }
 
-    Q_ASSERT(!m_AOStatuses.contains(notifier));
-
     QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex);
+    
+    Q_ASSERT(!m_AOStatuses.contains(notifier));    
 
     m_AOStatuses.insert(notifier, status);
 

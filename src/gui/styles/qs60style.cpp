@@ -2157,12 +2157,13 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             ret = QCommonStyle::subControlRect(control, option, scontrol, widget);
             switch (scontrol) {
             case SC_GroupBoxCheckBox: //fallthrough
-            case SC_GroupBoxLabel:
+            case SC_GroupBoxLabel: {
                 //slightly indent text and boxes, so that dialog border does not mess with them.
                 const int horizontalSpacing =
                     QS60StylePrivate::pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
                 const int bottomMargin = QS60StylePrivate::pixelMetric(QStyle::PM_LayoutBottomMargin);
                 ret.adjust(2,horizontalSpacing-3,0,0);
+                }
                 break;
             case SC_GroupBoxFrame: {
                 const QRect textBox = subControlRect(control, option, SC_GroupBoxLabel, widget);
