@@ -4039,7 +4039,8 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
 {
     Q_Q(QApplication);
 
-    bool sendTouchBegin = currentTouchPoints.isEmpty();
+    bool sendTouchBegin = false;
+    bool sendTouchEnd = false;
     QList<QTouchEvent::TouchPoint *> activeTouchPoints = currentTouchPoints;
 
     QVector<TOUCHINPUT> winTouchInputs(msg.wParam);
@@ -4065,13 +4066,17 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
         bool down = touchPoint->d->state != Qt::TouchPointReleased;
         QPointF globalPos(qreal(touchInput.x) / qreal(100.), qreal(touchInput.y) / qreal(100.));
         if (!down && (touchInput.dwFlags & TOUCHEVENTF_DOWN)) {
+            sendTouchBegin = currentTouchPoints.isEmpty();
             insertActiveTouch(touchPoint);
             activeTouchPoints = currentTouchPoints;
+
             touchPoint->d->state = Qt::TouchPointPressed;
             touchPoint->d->globalPos = touchPoint->d->startGlobalPos = touchPoint->d->lastGlobalPos = globalPos;
             touchPoint->d->pressure = qreal(1.);
         } else if (down && (touchInput.dwFlags & TOUCHEVENTF_UP)) {
             removeActiveTouch(touchPoint);
+            sendTouchEnd = currentTouchPoints.isEmpty();
+
             touchPoint->d->state = Qt::TouchPointReleased;
             touchPoint->d->lastGlobalPos = touchPoint->d->globalPos;
             touchPoint->d->globalPos = globalPos;
@@ -4086,8 +4091,6 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
         }
     }
     QApplicationPrivate::CloseTouchInputHandle((HANDLE) msg.lParam);
-
-    bool sendTouchEnd = currentTouchPoints.isEmpty();
 
     if (activeTouchPoints.isEmpty())
         return false;
