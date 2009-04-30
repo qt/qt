@@ -105,6 +105,7 @@ void MainWindow::init()
 
     QAction *addTankAction = menuBar()->addAction("&Add tank");   
     QAction *runGameAction = menuBar()->addAction("&Run game");    
+    runGameAction->setObjectName("runGameAction");
     QAction *stopGameAction = menuBar()->addAction("&Stop game");        
     menuBar()->addSeparator();
     QAction *quitAction = menuBar()->addAction("&Quit");
@@ -112,9 +113,7 @@ void MainWindow::init()
     connect(addTankAction, SIGNAL(triggered()), this, SLOT(addTank()));
     connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
         
-    m_machine = new QStateMachine(this);
-    m_machine->setGlobalRestorePolicy(QStateMachine::RestoreProperties);
-    
+    m_machine = new QStateMachine(this);    
     QState *stoppedState = new QState(m_machine->rootState());        
     stoppedState->setObjectName("stoppedState");
     stoppedState->assignProperty(runGameAction, "enabled", true);
@@ -168,7 +167,11 @@ void MainWindow::runStep()
             qreal elapsedSecs = elapsed / 1000.0;
             QList<QGraphicsItem *> items = m_scene->items();
             foreach (QGraphicsItem *item, items) {
-                GameItem *gameItem = qgraphicsitem_cast<GameItem *>(item);
+                // ###
+                GameItem *gameItem = qgraphicsitem_cast<TankItem *>(item);
+                if (gameItem == 0)
+                    gameItem = qgraphicsitem_cast<RocketItem *>(item);
+
                 if (gameItem != 0)
                     gameItem->idle(elapsedSecs);
             }
@@ -206,7 +209,13 @@ void MainWindow::addTank()
             emit mapFull();
         
         QState *region = new QState(m_runningState);
-        region->setInitialState(plugin->create(region, tankItem));
+        QState *pluginState = plugin->create(region, tankItem);
+        region->setInitialState(pluginState);
+
+        // If the plugin has an error it is disabled
+        QState *errorState = new QState(region);
+        errorState->assignProperty(tankItem, "enabled", false);
+        pluginState->setErrorState(errorState);
     }
 }
 

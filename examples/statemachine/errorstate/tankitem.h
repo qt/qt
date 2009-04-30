@@ -10,8 +10,13 @@ class Action;
 class TankItem: public Tank, public GameItem
 {
     Q_OBJECT
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
 public:
+    enum { Type = UserType + 1 };
+
     TankItem(QObject *parent = 0);
+
+    int type() const { return Type; }
     
     virtual void moveForwards(qreal length);
     virtual void moveBackwards(qreal length);
@@ -19,6 +24,7 @@ public:
     virtual void stop();
     virtual qreal direction() const;
     virtual qreal distanceToObstacle() const;
+    virtual qreal distanceToObstacle(QGraphicsItem **item) const;
 
     void setColor(const QColor &color) { m_color = color; }
     QColor color() const { return m_color; }
@@ -33,6 +39,9 @@ public:
 
     void hitByRocket();
 
+    void setEnabled(bool b) { m_enabled = b; }
+    bool enabled() const { return m_enabled; }
+
 signals:
     virtual void fireCannon();
 
@@ -46,6 +55,7 @@ private:
     Action *m_currentAction;
     qreal m_currentDirection;
     QColor m_color;
+    bool m_enabled;
 };
 
 #endif

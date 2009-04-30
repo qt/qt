@@ -1,4 +1,5 @@
 #include "rocketitem.h"
+#include "tankitem.h"
 
 #include <QPainter>
 #include <QGraphicsScene>
@@ -25,10 +26,6 @@ void RocketItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
     painter->drawEllipse(boundingRect());
 }
 
-void RocketItem::hitByRocket()
-{
-}
-
 void RocketItem::idle(qreal elapsed)
 {
     qreal dist = elapsed * speed();
@@ -51,8 +48,8 @@ void RocketItem::idle(qreal elapsed)
     if (requestedPosition == nextPosition) {
         setPos(nextPosition);
     } else {
-        if (GameItem *gameItem = qgraphicsitem_cast<GameItem *>(collidedItem))
-            gameItem->hitByRocket();
+        if (TankItem *tankItem = qgraphicsitem_cast<TankItem *>(collidedItem))
+            tankItem->hitByRocket();
         
         scene()->removeItem(this);
         delete this;

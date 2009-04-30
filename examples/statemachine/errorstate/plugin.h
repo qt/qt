@@ -1,6 +1,8 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
+#include <QtPlugin>
+
 class QState;
 class Tank;
 class Plugin
