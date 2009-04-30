@@ -109,16 +109,15 @@ private:
 };
 QML_DECLARE_TYPE(QFxAxis);
 
-class Q_DECLARATIVE_EXPORT QFxRotation : public QFxTransform
+class Q_DECLARATIVE_EXPORT QFxRotation3D : public QFxTransform
 {
     Q_OBJECT
 
     Q_PROPERTY(QFxAxis *axis READ axis)
     Q_PROPERTY(qreal angle READ angle WRITE setAngle)
-    Q_PROPERTY(qreal distanceToPlane READ distanceToPlane WRITE setDistanceToPlane)
 public:
-    QFxRotation(QObject *parent=0);
-    ~QFxRotation();
+    QFxRotation3D(QObject *parent=0);
+    ~QFxRotation3D();
 
     QFxAxis *axis();
 
@@ -136,22 +135,21 @@ private Q_SLOTS:
 private:
     QFxAxis _axis;
     qreal _angle;
-    qreal _distanceToPlane;
 
     mutable bool _dirty;
     mutable QSimpleCanvas::Matrix _transform;
 };
-QML_DECLARE_TYPE(QFxRotation);
+QML_DECLARE_TYPE(QFxRotation3D);
 
-class Q_DECLARATIVE_EXPORT QFxTranslation : public QFxTransform
+class Q_DECLARATIVE_EXPORT QFxTranslation3D : public QFxTransform
 {
     Q_OBJECT
 
     Q_PROPERTY(QFxAxis *axis READ axis)
     Q_PROPERTY(qreal distance READ distance WRITE setDistance)
 public:
-    QFxTranslation(QObject *parent=0);
-    ~QFxTranslation();
+    QFxTranslation3D(QObject *parent=0);
+    ~QFxTranslation3D();
 
     QFxAxis *axis();
 
@@ -170,7 +168,7 @@ private:
     mutable bool _dirty;
     mutable QSimpleCanvas::Matrix _transform;
 };
-QML_DECLARE_TYPE(QFxTranslation);
+QML_DECLARE_TYPE(QFxTranslation3D);
 
 class Q_DECLARATIVE_EXPORT QFxPerspective : public QFxTransform
 {
@@ -269,10 +267,8 @@ public:
     qreal bottomRight_x() const;
     void setbottomRight_x(qreal);
 
-#if defined(QFX_RENDER_OPENGL)
     virtual bool isIdentity() const;
-    virtual QMatrix4x4 transform() const;
-#endif
+    virtual QSimpleCanvas::Matrix transform() const;
 
 private:
     void update();
