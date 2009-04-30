@@ -31,7 +31,7 @@ bool TouchWidget::event(QEvent *event)
 {
     switch (event->type()) {
     case QEvent::TouchBegin:
-        seenTouchBegin = true;
+        seenTouchBegin = !seenTouchBegin && !seenTouchUpdate && !seenTouchEnd;
         touchPointCount = qMax(touchPointCount, static_cast<QTouchEvent *>(event)->touchPoints().count());
         if (acceptTouchBegin) {
             event->accept();
@@ -39,7 +39,7 @@ bool TouchWidget::event(QEvent *event)
         }
         break;
     case QEvent::TouchUpdate:
-        seenTouchUpdate = true;
+        seenTouchUpdate = seenTouchBegin && !seenTouchEnd;
         touchPointCount = qMax(touchPointCount, static_cast<QTouchEvent *>(event)->touchPoints().count());
         if (acceptTouchUpdate) {
             event->accept();
@@ -47,7 +47,7 @@ bool TouchWidget::event(QEvent *event)
         }
         break;
     case QEvent::TouchEnd:
-        seenTouchEnd = true;
+        seenTouchEnd = seenTouchBegin && !seenTouchEnd;
         touchPointCount = qMax(touchPointCount, static_cast<QTouchEvent *>(event)->touchPoints().count());
         if (closeWindowOnTouchEnd)
             window()->close();
