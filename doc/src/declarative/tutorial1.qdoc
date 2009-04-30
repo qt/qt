@@ -43,10 +43,10 @@ The \c anchors.horizontalCenter property refers to the horizontal center of an e
 
 \section2 Viewing the example
 
-To view what you have created, run the duiviewer (located in the \c bin directory) with your filename as the first argument. For example, to run the provided completed Tutorial 1 example from the install location, you would type:
+To view what you have created, run the qmlviewer (located in the \c bin directory) with your filename as the first argument. For example, to run the provided completed Tutorial 1 example from the install location, you would type:
 
 \code
-bin/duiviewer examples/tutorials/t1/tutorial1.qml
+bin/qmlviewer examples/tutorials/t1/tutorial1.qml
 \endcode
 
 [\l tutorial] [Next: \l tutorial2]

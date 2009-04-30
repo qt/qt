@@ -11,8 +11,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFXVIEWER_H
-#define QFXVIEWER_H
+#ifndef QMLVIEWER_H
+#define QMLVIEWER_H
 
 #include <QWidget>
 #include <QBasicTimer>
@@ -25,11 +25,11 @@ class QFxView;
 class PreviewDeviceSkin;
 class QFxTestEngine;
 
-class QFxViewer : public QWidget
+class QmlViewer : public QWidget
 {
 Q_OBJECT
 public:
-    QFxViewer(QFxTestEngine::TestMode = QFxTestEngine::NoTest, const QString &testDir = QString(), QWidget *parent=0, Qt::WindowFlags flags=0);
+    QmlViewer(QFxTestEngine::TestMode = QFxTestEngine::NoTest, const QString &testDir = QString(), QWidget *parent=0, Qt::WindowFlags flags=0);
 
     void setRecordDither(const QString& s) { record_dither = s; }
     void setRecordPeriod(int ms);
@@ -43,7 +43,7 @@ public:
 
 public slots:
     void sceneResized(QSize size);
-    void openXml(const QString& fileName);
+    void openQml(const QString& fileName);
     void reload();
 
 protected:

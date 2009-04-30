@@ -58,7 +58,7 @@ public:
     QFxItem *front;
     QFxItem *back;
     QFxAxis *axis;
-    QFxRotation axisRotation;
+    QFxRotation3D axisRotation;
     qreal rotation;
 };
 

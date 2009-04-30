@@ -14,7 +14,7 @@
 #include <qfxview.h>
 
 #include "qmlbindablevalue.h"
-#include "qfxviewer.h"
+#include "qmlviewer.h"
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlengine.h>
 #include "qml.h"
@@ -34,7 +34,7 @@
 #include <QProcess>
 #include <QMenu>
 
-QFxViewer::QFxViewer(QFxTestEngine::TestMode testMode, const QString &testDir, QWidget *parent, Qt::WindowFlags flags)
+QmlViewer::QmlViewer(QFxTestEngine::TestMode testMode, const QString &testDir, QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
 {
     testEngine = 0;
@@ -58,12 +58,12 @@ QFxViewer::QFxViewer(QFxTestEngine::TestMode testMode, const QString &testDir, Q
     resize(width, height);
 }
 
-void QFxViewer::reload()
+void QmlViewer::reload()
 {
-    openXml(currentFileName);
+    openQml(currentFileName);
 }
 
-void QFxViewer::openXml(const QString& fileName)
+void QmlViewer::openQml(const QString& fileName)
 {
     setWindowTitle(tr("%1 - Qt Declarative UI Viewer").arg(fileName));
 
@@ -180,7 +180,7 @@ void PreviewDeviceSkin::populateContextMenu(QMenu *menu)
 }
 
 
-void QFxViewer::setSkin(const QString& skinDirectory)
+void QmlViewer::setSkin(const QString& skinDirectory)
 {
     DeviceSkinParameters parameters;
     QString err;
@@ -199,7 +199,7 @@ void QFxViewer::setSkin(const QString& skinDirectory)
     }
 }
 
-void QFxViewer::setAutoRecord(int from, int to)
+void QmlViewer::setAutoRecord(int from, int to)
 {
     record_autotime = to-from;
     if (from) {
@@ -210,12 +210,12 @@ void QFxViewer::setAutoRecord(int from, int to)
     }
 }
 
-void QFxViewer::setRecordPeriod(int ms)
+void QmlViewer::setRecordPeriod(int ms)
 {
     record_period = ms;
 }
 
-void QFxViewer::sceneResized(QSize size)
+void QmlViewer::sceneResized(QSize size)
 {
     if (size.width() > 0 && size.height() > 0) {
         canvas->setFixedSize(size.width(), size.height());
@@ -226,13 +226,13 @@ void QFxViewer::sceneResized(QSize size)
     }
 }
 
-void QFxViewer::resizeEvent(QResizeEvent *)
+void QmlViewer::resizeEvent(QResizeEvent *)
 {
     if (!skin)
         canvas->setFixedSize(width(),height());
 }
 
-void QFxViewer::keyPressEvent(QKeyEvent *event)
+void QmlViewer::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_0 && devicemode)
         exit(0);
@@ -250,7 +250,6 @@ void QFxViewer::keyPressEvent(QKeyEvent *event)
     } else if (event->key() == Qt::Key_F2 || (event->key() == Qt::Key_2 && devicemode)) {
         setRecording(!recordTimer.isActive());
     } else if (event->key() == Qt::Key_F3 || (event->key() == Qt::Key_3 && devicemode)) {
-        setRecording(!recordTimer.isActive());
         canvas->asImage().save("snapshot.png");
         qDebug() << "Wrote snapshot.png";
     } else if (event->key() == Qt::Key_F4 || (event->key() == Qt::Key_4 && devicemode)) {
@@ -274,7 +273,7 @@ void QFxViewer::keyPressEvent(QKeyEvent *event)
     QWidget::keyPressEvent(event);
 }
 
-void QFxViewer::setRecording(bool on)
+void QmlViewer::setRecording(bool on)
 {
     if (on == recordTimer.isActive())
         return;
@@ -328,7 +327,7 @@ void QFxViewer::setRecording(bool on)
     qDebug() << "Recording: " << (recordTimer.isActive()?"ON":"OFF");
 }
 
-void QFxViewer::timerEvent(QTimerEvent *event)
+void QmlViewer::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() == recordTimer.timerId()) {
         frames.append(new QImage(canvas->asImage()));
@@ -343,12 +342,12 @@ void QFxViewer::timerEvent(QTimerEvent *event)
     }
 }
 
-void QFxViewer::setDeviceKeys(bool on)
+void QmlViewer::setDeviceKeys(bool on)
 {
     devicemode = on;
 }
 
-void QFxViewer::setCacheEnabled(bool on)
+void QmlViewer::setCacheEnabled(bool on)
 {
     QNetworkAccessManager * nam = canvas->engine()->networkAccessManager();
     if (on == !!nam->cache())
@@ -364,4 +363,4 @@ void QFxViewer::setCacheEnabled(bool on)
     }
 }
 
-#include "qfxviewer.moc"
+#include "qmlviewer.moc"
