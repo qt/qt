@@ -141,6 +141,7 @@ private slots:
     void parallelStateTransition();
     void parallelStateAssignmentsDone();
     void nestedRestoreProperties();
+    void nestedRestoreProperties2();
 
     void simpleAnimation();
     void twoAnimations();
@@ -3162,6 +3163,69 @@ void tst_QStateMachine::nestedRestoreProperties()
     QCOMPARE(propertyHolder->property("bar").toInt(), 5);
 }
 
+void tst_QStateMachine::nestedRestoreProperties2()
+{
+    QStateMachine machine;
+    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+
+    QObject *propertyHolder = new QObject(&machine);
+    propertyHolder->setProperty("foo", 1);
+    propertyHolder->setProperty("bar", 2);
+
+    QState *s1 = new QState(machine.rootState());
+    machine.setInitialState(s1);
+
+    QState *s2 = new QState(machine.rootState());
+    s2->assignProperty(propertyHolder, "foo", 3);
+
+    QState *s21 = new QState(s2);
+    s21->assignProperty(propertyHolder, "bar", 4);    
+    s2->setInitialState(s21);
+
+    QState *s22 = new QState(s2);
+    s22->assignProperty(propertyHolder, "foo", 6);
+    s22->assignProperty(propertyHolder, "bar", 5);
+
+    s1->addTransition(new EventTransition(QEvent::User, s2));
+    s21->addTransition(new EventTransition(QEvent::User, s22));
+    s22->addTransition(new EventTransition(QEvent::User, s21));
+
+    machine.start();
+    QCoreApplication::processEvents();
+
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+    QCOMPARE(propertyHolder->property("foo").toInt(), 1);
+    QCOMPARE(propertyHolder->property("bar").toInt(), 2);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QCoreApplication::processEvents();
+
+    QCOMPARE(machine.configuration().size(), 2);
+    QVERIFY(machine.configuration().contains(s2));
+    QVERIFY(machine.configuration().contains(s21));
+    QCOMPARE(propertyHolder->property("foo").toInt(), 3);
+    QCOMPARE(propertyHolder->property("bar").toInt(), 4);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QCoreApplication::processEvents();
+
+    QCOMPARE(machine.configuration().size(), 2);
+    QVERIFY(machine.configuration().contains(s2));
+    QVERIFY(machine.configuration().contains(s22));
+    QCOMPARE(propertyHolder->property("foo").toInt(), 6);
+    QCOMPARE(propertyHolder->property("bar").toInt(), 5);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QCoreApplication::processEvents();
+
+    QCOMPARE(machine.configuration().size(), 2);
+    QVERIFY(machine.configuration().contains(s2));
+    QVERIFY(machine.configuration().contains(s21));
+    QCOMPARE(propertyHolder->property("foo").toInt(), 3);
+    QCOMPARE(propertyHolder->property("bar").toInt(), 4);
+
+}
 
 
 QTEST_MAIN(tst_QStateMachine)
