@@ -40,23 +40,22 @@
 ****************************************************************************/
 
 /*!
-    \page duiviewer.html
-    \title Declarative UI Viewer (duiviewer)
+    \page qmlviewer.html
+    \title Qt Declarative UI Viewer (qmlviewer)
     \ingroup qttools
-    \keyword duiviewer
+    \keyword qmlviewer
 
     This page documents the \e{Declarative UI Viewer} for the Qt GUI
-    toolkit. The \c duiviewer reads an XML format declarative user interface definition
-    (\c .qml) file
-    and displays the user interface it describes.
+    toolkit. The \c qmlviewer reads a declarative user interface definition
+    (\c .qml) file and displays the user interface it describes.
 
     \section1 Options
 
-    When run with the \c -help option, duiviewer shows available options.
+    When run with the \c -help option, qmlviewer shows available options.
 
     \section1 Dummy Data
 
-    One use of duiviewer is to allow QML files to be viewed stand-alone,
+    One use of qmlviewer is to allow QML files to be viewed stand-alone,
     rather than being loaded from within a Qt program. Qt applications will
     usually bind objects and properties into the execution context before
     running the QML. To stand-in for such bindings, you can provide dummy

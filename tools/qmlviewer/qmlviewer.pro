@@ -1,8 +1,8 @@
 DESTDIR = ../../bin
 QT += declarative script network sql
 # Input
-HEADERS += qfxviewer.h 
-SOURCES += main.cpp qfxviewer.cpp 
+HEADERS += qmlviewer.h
+SOURCES += main.cpp qmlviewer.cpp
 
 include($$QT_SOURCE_TREE/tools/shared/deviceskin/deviceskin.pri)
 
