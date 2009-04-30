@@ -1,15 +1,17 @@
 import "content"
 Item {
-    width: 640
-    height: 480
     id: WebBrowser
-    state: "Normal"
+
     properties: Property {
         name: "url"
         value: "http://www.qtsoftware.com"
     }
-    Script {
 
+    width: 640
+    height: 480
+    state: "Normal"
+
+    Script {
         function zoomOut() {
             WebBrowser.state = "ZoomedOut";
         }
@@ -22,8 +24,8 @@ Item {
                 zoomOut();
             }
         }
-    
     }
+
     Item {
         id: WebPanel
         anchors.fill: parent
@@ -40,8 +42,8 @@ Item {
         Image {
             source: "content/pics/softshadow-top.png"
             width: WebPanel.width
-            anchors.bottom: Footer.top
             height: 16
+            anchors.bottom: Footer.top
         }
         RectSoftShadow {
             x: -Flick.xPosition
@@ -54,24 +56,31 @@ Item {
             width: parent.width
             height: 60
             z: 1
+
             Image {
                 id: Header
-                width: parent.width
-                state: "Normal"
-                x: Flick.xPosition < 0                                 ? -Flick.xPosition                                 : Flick.xPosition > Flick.viewportWidth-Flick.width                                     ? -Flick.xPosition+Flick.viewportWidth-Flick.width                                     : 0
-                y: Flick.yPosition < 0 ? -Flick.yPosition : progressOff*(Flick.yPosition>height?-height:-Flick.yPosition)
-                height: 64
                 source: "content/pics/header.png"
+                width: parent.width
+                height: 64
+                state: "Normal"
+                x: Flick.xPosition < 0 ? -Flick.xPosition : Flick.xPosition > Flick.viewportWidth-Flick.width
+                                         ? -Flick.xPosition+Flick.viewportWidth-Flick.width : 0
+                y: Flick.yPosition < 0 ? -Flick.yPosition : progressOff*
+                                        (Flick.yPosition>height?-height:-Flick.yPosition)
                 Text {
                     id: HeaderText
+
                     text: WebView.title!='' || WebView.progress == 1.0 ? WebView.title : 'Loading...'
+                    elide: "ElideRight"
+
                     color: "white"
                     styleColor: "black"
                     style: Raised
+
                     font.family: "Helvetica"
                     font.size: 10
                     font.bold: true
-                    elide: "ElideRight"
+
                     anchors.left: Header.left
                     anchors.right: Header.right
                     anchors.leftMargin: 4
@@ -81,17 +90,18 @@ Item {
                     hAlign: AlignHCenter
                 }
                 Item {
+                    width: parent.width
                     anchors.top: HeaderText.bottom
                     anchors.topMargin: 2
                     anchors.bottom: parent.bottom
-                    width: parent.width
+
                     Item {
                         id: UrlBox
+                        height: 31
                         anchors.left: parent.left
                         anchors.leftMargin: 12
                         anchors.right: parent.right
                         anchors.rightMargin: 12
-                        height: 31
                         anchors.top: parent.top
                         clip: true
                         Image {
@@ -101,45 +111,50 @@ Item {
                         Image {
                             id: UrlBoxhl
                             source: "content/pics/addressbar-filled.sci"
-                            opacity: 1-Header.progressOff
-                            clip: true
                             width: parent.width*WebView.progress
                             height: parent.height
+                            opacity: 1-Header.progressOff
+                            clip: true
                         }
+                        /*
                         KeyProxy {
                             id: proxy
                             anchors.left: UrlBox.left
                             anchors.fill: UrlBox
                             focusable: true
-                            targets: {[keyActions,EditUrl]}
+                            targets: [keyActions,EditUrl]
                         }
                         KeyActions {
                             id: keyActions
-                            keyReturn: "WebBrowser.url = EditUrl.text; proxy.focus=false;"
+                            return: "WebBrowser.url = EditUrl.text; proxy.focus=false;"
                         }
+                        */
                         TextEdit {
                             id: EditUrl
-                            color: "#555555"
+
                             text: WebView.url == '' ? ' ' : WebView.url
+                            wrap: false
+                            font.size: 11
+                            color: "#555555"
+
                             anchors.left: UrlBox.left
                             anchors.right: UrlBox.right
                             anchors.leftMargin: 6
                             anchors.verticalCenter: UrlBox.verticalCenter
                             anchors.verticalCenterOffset: 1
-                            font.size: 11
-                            wrap: false
+
                             opacity: 0
                         }
                         Text {
                             id: ShowUrl
-                            color: "#555555"
                             text: WebView.url == '' ? ' ' : WebView.url
+                            font.size: 11
+                            color: "#555555"
                             anchors.left: UrlBox.left
                             anchors.right: UrlBox.right
                             anchors.leftMargin: 6
                             anchors.verticalCenter: UrlBox.verticalCenter
                             anchors.verticalCenterOffset: 1
-                            font.size: 11
                         }
                     }
                     MouseRegion {
@@ -186,13 +201,14 @@ Item {
         }
         Flickable {
             id: Flick
+            width: parent.width
+            viewportWidth: Math.max(parent.width,WebView.width*WebView.scale)
+            viewportHeight: Math.max(parent.height,WebView.height*WebView.scale)
             anchors.top: HeaderSpace.bottom
             anchors.bottom: Footer.top
             anchors.left: parent.left
             anchors.right: parent.right
-            width: parent.width
-            viewportWidth: Math.max(parent.width,WebView.width*WebView.scale)
-            viewportHeight: Math.max(parent.height,WebView.height*WebView.scale)
+
             properties: Property {
                 name: "centerX"
                 value: 0
@@ -203,18 +219,23 @@ Item {
                 value: 0
                 type: "Real"
             }
+
             WebView {
                 id: WebView
                 cacheSize: 4000000
-                smooth: true
+
                 url: WebBrowser.url
-                onDoubleClick: { toggleZoom() }
+                smooth: true
                 focusable: true
                 focus: true
+
                 idealWidth: Flick.width
                 idealHeight: Flick.height/scale
-                onUrlChanged: { Flick.xPosition=0; Flick.yPosition=0; zoomOut() }
                 scale: (width > 0) ? Flick.width/width*zoomedOut+(1-zoomedOut) : 1
+
+                onUrlChanged: { Flick.xPosition=0; Flick.yPosition=0; zoomOut() }
+                onDoubleClick: { toggleZoom() }
+
                 properties: Property {
                     name: "zoomedOut"
                     type: "real"
@@ -223,9 +244,9 @@ Item {
             }
             Rect {
                 id: WebViewTint
-                anchors.fill: WebView
                 color: "black"
                 opacity: 0
+                anchors.fill: WebView
                 MouseRegion {
                     anchors.fill: WebViewTint
                     onClicked: { proxy.focus=false }
@@ -234,10 +255,10 @@ Item {
         }
         Image {
             id: Footer
-            width: parent.width
-            anchors.bottom: parent.bottom
-            height: 43
             source: "content/pics/footer.sci"
+            width: parent.width
+            height: 43
+            anchors.bottom: parent.bottom
             Rect {
                 y: -1
                 width: parent.width
@@ -246,20 +267,20 @@ Item {
             }
             Item {
                 id: backbutton
+                width: back_e.width
+                height: back_e.height
                 anchors.right: reload.left
                 anchors.rightMargin: 10
                 anchors.verticalCenter: parent.verticalCenter
-                width: back_e.width
-                height: back_e.height
                 Image {
-                    anchors.fill: parent
                     id: back_e
                     source: "content/pics/back.png"
+                    anchors.fill: parent
                 }
                 Image {
-                    anchors.fill: parent
                     id: back_d
                     source: "content/pics/back-disabled.png"
+                    anchors.fill: parent
                 }
                 states: [
                     State {
@@ -317,21 +338,21 @@ Item {
             }
             Item {
                 id: forwardbutton
+                width: forward_e.width
+                height: forward_e.height
                 anchors.left: reload.right
                 anchors.leftMargin: 10
                 anchors.verticalCenter: parent.verticalCenter
-                width: forward_e.width
-                height: forward_e.height
                 Image {
-                    anchors.fill: parent
-                    anchors.verticalCenter: parent.verticalCenter
                     id: forward_e
                     source: "content/pics/forward.png"
+                    anchors.fill: parent
+                    anchors.verticalCenter: parent.verticalCenter
                 }
                 Image {
-                    anchors.fill: parent
                     id: forward_d
                     source: "content/pics/forward-disabled.png"
+                    anchors.fill: parent
                 }
                 states: [
                     State {
