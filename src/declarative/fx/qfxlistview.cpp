@@ -797,10 +797,10 @@ void QFxListViewPrivate::fixupX()
     \inherits Flickable
     \brief The ListView element provides a list view of items provided by a model.
 
-    The model is typically provided by a QAbstractListModel "C++ model object", but can also be created directly in XML.
+    The model is typically provided by a QAbstractListModel "C++ model object", but can also be created directly in QML.
     The items are laid out vertically or horizontally and may be flicked to scroll.
 
-    The below example creates a very simple vertical list, using an XML model.
+    The below example creates a very simple vertical list, using a QML model.
     \image trivialListView.png
 
     The user interface defines a delegate to display an item, a highlight,
@@ -808,7 +808,7 @@ void QFxListViewPrivate::fixupX()
 
     \snippet doc/src/snippets/declarative/listview/listview.qml 3
 
-    The model is defined as a ListModel using XML:
+    The model is defined as a ListModel using QML:
     \quotefromfile doc/src/snippets/declarative/listview/dummydata/ContactModel.qml
     \skipto <ListModel
     \printuntil </ListModel
@@ -837,10 +837,10 @@ QFxListView::~QFxListView()
 
     The model provides a set of data that is used to create the items for the view.
     For large or dynamic datasets the model is usually provided by a C++ model object.
-    The C++ model object must be a \l QListModelInterface subclass, a \l VisualModel,
+    The C++ model object must be a \l QAbstractItemModel subclass, a \l VisualModel,
     or a simple list.
 
-    Models can also be created directly in XML, using the \l ListModel element.
+    Models can also be created directly in QML, using the \l ListModel element.
 */
 QVariant QFxListView::model() const
 {

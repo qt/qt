@@ -135,7 +135,7 @@ QFxImage::~QFxImage()
     This property contains the image currently being displayed by this item,
     which may be an empty pixmap if nothing is currently displayed. If this
     property is set, the src property will be unset. This property is intended
-    to be used only in C++, not in XML.
+    to be used only in C++, not in QML.
 */
 QPixmap QFxImage::pixmap() const
 {

@@ -52,7 +52,7 @@ Here is the QML code:
 </states>
 \endcode
 
-First, we create a new state \e down for our text element. This state will be activated when \l {xmlMouseRegion}{MouseRegion} is pressed, and deactivated when it is released.
+First, we create a new state \e down for our text element. This state will be activated when MouseRegion is pressed, and deactivated when it is released.
 
 The \e down state includes a set of property changes from our implicit \e {default state} (the items as they were initially defined in the QML). Specifically, we set the \c y property of the text to 160 and the \c color to red.
 

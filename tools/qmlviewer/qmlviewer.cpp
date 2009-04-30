@@ -241,7 +241,7 @@ void QmlViewer::keyPressEvent(QKeyEvent *event)
                  << "F2 - toggle GIF recording\n"
                  << "F3 - take PNG snapshot\n"
                  << "F4 - show items and state\n"
-                 << "F5 - reload XML\n"
+                 << "F5 - reload QML\n"
                  << "F6 - show object tree\n"
                  << "F7 - show timing\n"
                  << "F8 - show performance (if available)\n"

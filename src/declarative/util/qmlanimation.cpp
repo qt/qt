@@ -811,9 +811,9 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
     struct NTransitionData : public QmlTimeLineValue
     {
         QmlStateActions actions;
-        void write(QmlMetaProperty &property, const QColor &color)
+        void write(QmlMetaProperty &property, const QVariant &color)
         {
-            if (property.propertyType() == qMetaTypeId<QColor>()) {
+            if (property.propertyType() == QVariant::Color) {
                 property.write(color);
             }
         }
@@ -837,13 +837,8 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
 
                     QColor from(action.fromValue.value<QColor>());
 
-                    //XXX consolidate somewhere
-                    uint red = uint(qreal(from.red()) + v * (qreal(to.red()) - qreal(from.red())));
-                    uint green = uint(qreal(from.green()) + v * (qreal(to.green()) - qreal(from.green())));
-                    uint blue = uint(qreal(from.blue()) + v * (qreal(to.blue()) - qreal(from.blue())));
-                    uint alpha = uint(qreal(from.alpha()) + v * (qreal(to.alpha()) - qreal(from.alpha())));
-
-                    write(action.property, QColor(red, green, blue, alpha));
+                    QVariant newColor = QmlColorAnimationPrivate::colorInterpolator(&from, &to, v);
+                    write(action.property, newColor);
                 }
             }
         }
@@ -902,24 +897,20 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
         delete data;
 }
 
+QVariantAnimation::Interpolator QmlColorAnimationPrivate::colorInterpolator = 0;
 
 void QmlColorAnimationPrivate::valueChanged(qreal v)
 {
     if (!fromSourced) {
         if (!fromValue.isValid()) {
-            fromValue = QColor(qvariant_cast<QColor>(property.read()));
+            fromValue = qvariant_cast<QColor>(property.read());
         }
         fromSourced = true;
     }
 
-    //XXX consolidate somewhere
-    uint red = uint(qreal(fromValue.red()) + v * (qreal(toValue.red()) - qreal(fromValue.red())));
-    uint green = uint(qreal(fromValue.green()) + v * (qreal(toValue.green()) - qreal(fromValue.green())));
-    uint blue = uint(qreal(fromValue.blue()) + v * (qreal(toValue.blue()) - qreal(fromValue.blue())));
-    uint alpha = uint(qreal(fromValue.alpha()) + v * (qreal(toValue.alpha()) - qreal(fromValue.alpha())));
-
-    if (property.propertyType() == qMetaTypeId<QColor>()) {
-        property.write(QColor(red, green, blue, alpha));
+    if (property.propertyType() == QVariant::Color) {
+        QVariant newColor = colorInterpolator(&fromValue, &toValue, v);
+        property.write(newColor);
     }
 }
 QML_DEFINE_TYPE(QmlColorAnimation,ColorAnimation);
@@ -2006,7 +1997,7 @@ QVariant QmlVariantAnimation::from() const
 void QmlVariantAnimation::setFrom(const QVariant &f)
 {
     Q_D(QmlVariantAnimation);
-    if (!d->from.isNull && f == d->from)
+    if (d->from.isValid() && f == d->from)
         return;
     d->from = f;
     emit fromChanged(f);
@@ -2030,7 +2021,7 @@ QVariant QmlVariantAnimation::to() const
 void QmlVariantAnimation::setTo(const QVariant &t)
 {
     Q_D(QmlVariantAnimation);
-    if (!d->to.isNull && t == d->to)
+    if (d->to.isValid() && t == d->to)
         return;
     d->to = t;
     emit toChanged(t);
@@ -2122,18 +2113,16 @@ QList<QObject *> *QmlVariantAnimation::exclude()
 void QmlVariantAnimationPrivate::valueChanged(qreal r)
 {
     if (!fromSourced) {
-        if (from.isNull) {
-            fromValue = property.read();
-        } else {
-            fromValue = from;
+        if (!from.isValid()) {
+            from = property.read();
         }
         fromSourced = true;
     }
 
     if (r == 1.) {
-        property.write(to.value);
+        property.write(to);
     } else {
-        QVariant val = interpolateVariant(fromValue, to.value, r);
+        QVariant val = interpolateVariant(from, to, r);
         property.write(val);
     }
 }
@@ -2152,9 +2141,9 @@ void QmlVariantAnimation::prepare(QmlMetaProperty &p)
     else
         d->property = d->userProperty;
 
-    d->convertVariant(d->to.value, (QVariant::Type)d->property.propertyType());
-    if (!d->from.isNull)
-        d->convertVariant(d->from.value, (QVariant::Type)d->property.propertyType());
+    d->convertVariant(d->to, (QVariant::Type)d->property.propertyType());
+    if (d->from.isValid())
+        d->convertVariant(d->from, (QVariant::Type)d->property.propertyType());
 
     d->fromSourced = false;
     d->value.QmlTimeLineValue::setValue(0.);
@@ -2214,12 +2203,12 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
             Action myAction = action;
 
             if (d->from.isValid()) {
-                myAction.fromValue = QVariant(d->from);
+                myAction.fromValue = d->from;
             } else {
                 myAction.fromValue = QVariant();
             }
             if (d->to.isValid())
-                myAction.toValue = QVariant(d->to);
+                myAction.toValue = d->to;
 
             d->convertVariant(myAction.fromValue, (QVariant::Type)myAction.property.propertyType());
             d->convertVariant(myAction.toValue, (QVariant::Type)myAction.property.propertyType());
@@ -2238,12 +2227,12 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
             myAction.property = QmlMetaProperty(obj, props.at(jj));
 
             if (d->from.isValid()) {
-                d->convertVariant(d->from.value, (QVariant::Type)myAction.property.propertyType());
-                myAction.fromValue = QVariant(d->from);
+                d->convertVariant(d->from, (QVariant::Type)myAction.property.propertyType());
+                myAction.fromValue = d->from;
             }
 
-            d->convertVariant(d->to.value, (QVariant::Type)myAction.property.propertyType());
-            myAction.toValue = QVariant(d->to);
+            d->convertVariant(d->to, (QVariant::Type)myAction.property.propertyType());
+            myAction.toValue = d->to;
             myAction.bv = 0;
             myAction.event = 0;
             data->actions << myAction;
