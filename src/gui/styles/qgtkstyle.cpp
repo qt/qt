@@ -951,14 +951,15 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
                                "interior-focus", &interior_focus,
                                "focus-line-width", &focus_line_width, NULL);
 
+        // See https://bugzilla.mozilla.org/show_bug.cgi?id=405421 for info about this hack
+        g_object_set_data(G_OBJECT(gtkEntry), "transparent-bg-hint", GINT_TO_POINTER(TRUE));
+
         if (!interior_focus && option->state & State_HasFocus)
             rect.adjust(focus_line_width, focus_line_width, -focus_line_width, -focus_line_width);
-
         gtkPainter.paintShadow(gtkEntry, "entry", rect, option->state & State_Enabled ? 
                                GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE, 
                                GTK_SHADOW_IN, gtkEntry->style,
                                option->state & State_HasFocus ? QLS("focus") : QString());
-
         if (!interior_focus && option->state & State_HasFocus)
             gtkPainter.paintShadow(gtkEntry, "entry", option->rect, option->state & State_Enabled ? 
                                    GTK_STATE_ACTIVE : GTK_STATE_INSENSITIVE,

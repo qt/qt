@@ -95,6 +95,7 @@ protected:
     virtual void resizeEvent(QResizeEvent *);
     void focusInEvent(QFocusEvent *);
     void focusOutEvent(QFocusEvent *);
+    void timerEvent(QTimerEvent*);
 
 private:
     friend class QFxViewPrivate;

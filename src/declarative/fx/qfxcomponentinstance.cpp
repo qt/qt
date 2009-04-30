@@ -51,15 +51,14 @@ QML_DEFINE_TYPE(QFxComponentInstance,ComponentInstance);
 
 /*!
     \internal
-    \class QFxComponentInstance
-    \qmlclass ComponentInstance
+    \class QFxComponentInstance ComponentInstance
 
     \brief The QFxComponentInstance class provides a way to instantiate an item from a component.
  */
 
 /*!
     \qmlclass ComponentInstance QFxComponentInstance
-    \brief The ComponentInstance element allows you to instantiate an arbitrary component.
+    \brief The ComponentInstance element allows you to instantiate a \l{qml-component.html} {Component}.
 
     \code
     <Item>

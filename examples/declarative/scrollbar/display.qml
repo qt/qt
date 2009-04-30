@@ -7,7 +7,7 @@ Rect {
         anchors.fill: parent
         Image {
             id: Picture
-            src: "pics/niagara_falls.jpg"
+            source: "pics/niagara_falls.jpg"
         }
         viewportWidth: Picture.width
         viewportHeight: Picture.height

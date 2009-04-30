@@ -90,7 +90,7 @@ class Q_DECLARATIVE_EXPORT QmlXmlListModel : public QListModelInterface, public 
     Q_OBJECT
     Q_INTERFACES(QmlParserStatus)
 
-    Q_PROPERTY(QString src READ src WRITE setSrc)
+    Q_PROPERTY(QString source READ source WRITE setSource)
     Q_PROPERTY(QString query READ query WRITE setQuery)
     Q_PROPERTY(QString namespaceDeclarations READ namespaceDeclarations WRITE setNamespaceDeclarations)
     Q_PROPERTY(QmlList<XmlListModelRole *> *roles READ roleObjects)
@@ -106,8 +106,8 @@ public:
 
     QmlList<XmlListModelRole *> *roleObjects();
 
-    QString src() const;
-    void setSrc(const QString&);
+    QString source() const;
+    void setSource(const QString&);
 
     QString query() const;
     void setQuery(const QString&);

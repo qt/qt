@@ -118,6 +118,7 @@ public:
     QmlPrivate::CreateFunc m_extFunc;
     const QMetaObject *m_extMetaObject;
     int m_index;
+    QmlCustomParser *m_customParser;
     mutable volatile bool m_isSetup:1;
     mutable QList<QmlProxyMetaObject::ProxyData> m_metaObjects;
     mutable QByteArray m_hash;
@@ -126,7 +127,8 @@ public:
 QmlTypePrivate::QmlTypePrivate()
 : m_isInterface(false), m_iid(0), m_typeId(0), m_listId(0), m_qmlListId(0),
   m_opFunc(0), m_baseMetaObject(0), m_attachedPropertiesFunc(0),
-  m_parserStatusCast(-1), m_extFunc(0), m_extMetaObject(0), m_index(-1), m_isSetup(false)
+  m_parserStatusCast(-1), m_extFunc(0), m_extMetaObject(0), m_index(-1), 
+  m_customParser(0), m_isSetup(false)
 {
 }
 
@@ -150,7 +152,8 @@ QmlType::QmlType(int type, int listType, int qmlListType,
                  const QMetaObject *metaObject, 
                  QmlAttachedPropertiesFunc attachedPropertiesFunc, 
                  int parserStatusCast, QmlPrivate::CreateFunc extFunc, 
-                 const QMetaObject *extMetaObject, int index)
+                 const QMetaObject *extMetaObject, int index,
+                 QmlCustomParser *customParser)
 : d(new QmlTypePrivate)
 {
     d->m_name = qmlName;
@@ -163,6 +166,7 @@ QmlType::QmlType(int type, int listType, int qmlListType,
     d->m_parserStatusCast = parserStatusCast;
     d->m_extFunc = extFunc;
     d->m_index = index;
+    d->m_customParser = customParser;
 
     if (extMetaObject)
         d->m_extMetaObject = extMetaObject;
@@ -270,6 +274,11 @@ QObject *QmlType::create() const
         (void *)new QmlProxyMetaObject(rv, &d->m_metaObjects);
 
     return rv;
+}
+
+QmlCustomParser *QmlType::customParser() const
+{
+    return d->m_customParser;
 }
 
 bool QmlType::isInterface() const
@@ -396,7 +405,7 @@ int QmlMetaType::registerInterface(const QmlPrivate::MetaTypeIds &id,
     return index;
 }
 
-int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Func func, const char *cname, const QMetaObject *mo, QmlAttachedPropertiesFunc attach, int pStatus, int object, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo)
+int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Func func, const char *cname, const QMetaObject *mo, QmlAttachedPropertiesFunc attach, int pStatus, int object, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *parser)
 {
     Q_UNUSED(object);
     QWriteLocker lock(metaTypeDataLock());
@@ -414,7 +423,7 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
 
     QmlType *type = new QmlType(id.typeId, id.listId, id.qmlListId,
                                 func, cname, mo, attach, pStatus, extFunc,
-                                extmo, index);
+                                extmo, index, parser);
 
     data->types.append(type);
     data->idToType.insert(type->typeId(), type);

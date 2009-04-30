@@ -1,6 +1,6 @@
 <?qtfx namespacepath:http://nokia.com/qml/Chronos=. ?>
 
-<Image id="clock" src="pics/clockface.png" xmlns:This="http://nokia.com/qml/Chronos">
+<Image id="clock" source="pics/clockface.png" xmlns:This="http://nokia.com/qml/Chronos">
     <properties>
         <Property name="hours" value="0"/>
         <Property name="minutes" value="0"/>

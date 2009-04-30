@@ -56,12 +56,6 @@
 #include "private/qbackingstore_p.h"
 #include "private/qwindowsurface_raster_p.h"
 
-#ifndef QT_NO_DIRECT3D
-#include "private/qpaintengine_d3d_p.h"
-#include "private/qwindowsurface_d3d_p.h"
-#endif
-
-
 #include <qdebug.h>
 
 #include <private/qapplication_p.h>
@@ -1716,11 +1710,6 @@ void QWidgetPrivate::createSysExtra()
 #ifndef QT_NO_DRAGANDDROP
     extra->dropTarget = 0;
 #endif
-#ifndef QT_NO_DIRECT3D
-    extra->had_auto_fill_bg = 0;
-    extra->had_paint_on_screen = 0;
-    extra->had_no_system_bg = 0;
-#endif
 }
 
 void QWidgetPrivate::deleteSysExtra()
@@ -1931,22 +1920,6 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal level)
 // };
 // Q_GLOBAL_STATIC(QGlobalRasterPaintEngine, globalRasterPaintEngine)
 
-#ifndef QT_NO_DIRECT3D
-static void cleanup_d3d_engine();
-Q_GLOBAL_STATIC_WITH_INITIALIZER(QDirect3DPaintEngine, _qt_d3dEngine,
-                                 {
-                                     qAddPostRoutine(cleanup_d3d_engine);
-                                 })
-static void cleanup_d3d_engine()
-{
-    _qt_d3dEngine()->cleanup();
-}
-QDirect3DPaintEngine* qt_d3dEngine()
-{
-    return _qt_d3dEngine();
-}
-#endif
-
 
 #ifndef QT_NO_DIRECTDRAW
 static uchar *qt_primary_surface_bits;
@@ -2059,19 +2032,6 @@ void qt_win_initialize_directdraw() { }
 
 QPaintEngine *QWidget::paintEngine() const
 {
-#ifndef QT_NO_DIRECT3D
-    if ((qApp->testAttribute(Qt::AA_MSWindowsUseDirect3DByDefault)
-         || testAttribute(Qt::WA_MSWindowsUseDirect3D))
-        && qt_d3dEngine()->hasDirect3DSupport())
-    {
-        QDirect3DPaintEngine *engine = qt_d3dEngine();
-        if (qApp->testAttribute(Qt::AA_MSWindowsUseDirect3DByDefault))
-            engine->setFlushOnEnd(false);
-        else
-            engine->setFlushOnEnd(true);
-        return engine;
-    }
-#endif
 #ifndef QT_NO_DIRECTDRAW
     QOnScreenRasterPaintEngine *pe = onScreenPaintEngine();
     pe->widget = this;
@@ -2100,13 +2060,6 @@ QPaintEngine *QWidget::paintEngine() const
 QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
 {
     Q_Q(QWidget);
-#ifndef QT_NO_DIRECT3D
-    extern QDirect3DPaintEngine *qt_d3dEngine();
-    if (qApp->testAttribute(Qt::AA_MSWindowsUseDirect3DByDefault) && (q->windowOpacity() == 1.0f)
-        && qt_d3dEngine()->hasDirect3DSupport()) {
-        return new QD3DWindowSurface(q);
-    }
-#endif
     return new QRasterWindowSurface(q);
 }
 

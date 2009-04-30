@@ -18,8 +18,8 @@
 
     <Item id="WebPanel" anchors.fill="{parent}" clip="true">
         <Rect color="#555555" anchors.fill="{parent}"/>
-        <Image src="content/pics/softshadow-bottom.png" width="{WebPanel.width}" height="16" />
-        <Image src="content/pics/softshadow-top.png" width="{WebPanel.width}" anchors.bottom="{Footer.top}" height="16" />
+        <Image source="content/pics/softshadow-bottom.png" width="{WebPanel.width}" height="16" />
+        <Image source="content/pics/softshadow-top.png" width="{WebPanel.width}" anchors.bottom="{Footer.top}" height="16" />
         <RectSoftShadow x="{-Flick.xPosition}" y="{-Flick.yPosition}"
             width="{WebView.width*WebView.scale}" height="{Flick.y+WebView.height*WebView.scale}"/>
         <Item id="HeaderSpace" width="{parent.width}" height="60" z="1">
@@ -30,7 +30,7 @@
                                     ? -Flick.xPosition+Flick.viewportWidth-Flick.width
                                     : 0}"
                     y="{Flick.yPosition &lt; 0 ? -Flick.yPosition : progressOff*(Flick.yPosition>height?-height:-Flick.yPosition)}"
-                    height="64" src="content/pics/header.png">
+                    height="64" source="content/pics/header.png">
                 <Text id="HeaderText" text="{WebView.title!='' || WebView.progress == 1.0 ? WebView.title : 'Loading...'}"
                     color="white" styleColor="black" style="Raised"
                     font.family="Helvetica" font.size="10" font.bold="true" elide="ElideRight"
@@ -39,8 +39,8 @@
                     anchors.top="{Header.top}" anchors.topMargin="4" hAlign="AlignHCenter"/>
                 <Item anchors.top="{HeaderText.bottom}" anchors.topMargin="2" anchors.bottom="{parent.bottom}" width="{parent.width}">
                     <Item id="UrlBox" anchors.left="{parent.left}" anchors.leftMargin="12" anchors.right="{parent.right}" anchors.rightMargin="12" height="31" anchors.top="{parent.top}" clip="true">
-                        <Image src="content/pics/addressbar.sci" anchors.fill="{UrlBox}"/>
-                        <Image id="UrlBoxhl" src="content/pics/addressbar-filled.sci" opacity="{1-Header.progressOff}" clip="true" width="{parent.width*WebView.progress}" height="{parent.height}"/>
+                        <Image source="content/pics/addressbar.sci" anchors.fill="{UrlBox}"/>
+                        <Image id="UrlBoxhl" source="content/pics/addressbar-filled.sci" opacity="{1-Header.progressOff}" clip="true" width="{parent.width*WebView.progress}" height="{parent.height}"/>
                         <KeyProxy id="proxy" anchors.left="{UrlBox.left}" anchors.fill="{UrlBox}" focusable="true" targets="{[keyActions,EditUrl]}"/>
                         <KeyActions id="keyActions" return="WebBrowser.url = EditUrl.text; proxy.focus=false;"/>
                         <TextEdit id="EditUrl" color="#555555" text="{WebView.url == '' ? ' ' : WebView.url}"
@@ -104,11 +104,11 @@
             </Rect>
         </Flickable>
         <Image id="Footer" width="{parent.width}" anchors.bottom="{parent.bottom}"
-                height="43" src="content/pics/footer.sci">
+                height="43" source="content/pics/footer.sci">
             <Rect y="-1" width="{parent.width}" height="1" color="#555555"/>
             <Item id="backbutton" anchors.right="{reload.left}" anchors.rightMargin="10" anchors.verticalCenter="{parent.verticalCenter}" width="{back_e.width}" height="{back_e.height}">
-                <Image anchors.fill="{parent}" id="back_e" src="content/pics/back.png" />
-                <Image anchors.fill="{parent}" id="back_d" src="content/pics/back-disabled.png" />
+                <Image anchors.fill="{parent}" id="back_e" source="content/pics/back.png" />
+                <Image anchors.fill="{parent}" id="back_d" source="content/pics/back-disabled.png" />
                 <states>
                     <State name="Enabled" when="{WebView.back.enabled==true}">
                         <SetProperty target="{back_e}" property="opacity" value="1"/>
@@ -126,11 +126,11 @@
                 </transitions>
                 <MouseRegion anchors.fill="{back_e}" onClicked="if (WebView.back.enabled) WebView.back.trigger()"/>
             </Item>
-            <Image id="reload" src="content/pics/reload.png" anchors.horizontalCenter="{parent.horizontalCenter}" anchors.verticalCenter="{parent.verticalCenter}"/>
+            <Image id="reload" source="content/pics/reload.png" anchors.horizontalCenter="{parent.horizontalCenter}" anchors.verticalCenter="{parent.verticalCenter}"/>
             <MouseRegion anchors.fill="{reload}" onClicked="WebView.reload.trigger()"/>
             <Item id="forwardbutton" anchors.left="{reload.right}" anchors.leftMargin="10" anchors.verticalCenter="{parent.verticalCenter}" width="{forward_e.width}" height="{forward_e.height}">
-                <Image anchors.fill="{parent}" anchors.verticalCenter="{parent.verticalCenter}" id="forward_e" src="content/pics/forward.png" />
-                <Image anchors.fill="{parent}" id="forward_d" src="content/pics/forward-disabled.png" />
+                <Image anchors.fill="{parent}" anchors.verticalCenter="{parent.verticalCenter}" id="forward_e" source="content/pics/forward.png" />
+                <Image anchors.fill="{parent}" id="forward_d" source="content/pics/forward-disabled.png" />
                 <states>
                     <State name="Enabled" when="{WebView.forward.enabled==true}">
                         <SetProperty target="{forward_e}" property="opacity" value="1"/>

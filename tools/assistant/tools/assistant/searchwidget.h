@@ -65,6 +65,9 @@ public:
     void zoomOut();
     void resetZoom();
 
+    bool isAttached() const;
+    void setAttached(bool state);
+
 signals:
     void requestShowLink(const QUrl &url);
     void requestShowLinkInNewTab(const QUrl &url);
@@ -81,6 +84,7 @@ private:
 
 private:
     int zoomCount;
+    bool attached;
     QHelpSearchEngine *searchEngine;
     QHelpSearchResultWidget *resultWidget;
 };

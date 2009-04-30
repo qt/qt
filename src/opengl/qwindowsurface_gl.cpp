@@ -86,7 +86,7 @@ QT_BEGIN_NAMESPACE
 // QGLGraphicsSystem
 //
 #ifdef Q_WS_WIN
-Q_GUI_EXPORT bool qt_win_owndc_required;
+extern Q_GUI_EXPORT bool qt_win_owndc_required;
 #endif
 QGLGraphicsSystem::QGLGraphicsSystem()
     : QGraphicsSystem()

@@ -248,7 +248,11 @@ void QUrlModel::addUrls(const QList<QUrl> &list, int row, bool move)
         if (!url.isValid() || url.scheme() != QLatin1String("file"))
             continue;
         for (int j = 0; move && j < rowCount(); ++j) {
+#if defined(Q_OS_WIN)
+            if (index(j, 0).data(UrlRole).toUrl().toLocalFile().toLower() == url.toLocalFile().toLower()) {
+#else
             if (index(j, 0).data(UrlRole) == url) {
+#endif
                 removeRow(j);
                 if (j <= row)
                     row--;

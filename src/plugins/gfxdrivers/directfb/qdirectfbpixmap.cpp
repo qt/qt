@@ -157,10 +157,13 @@ static bool checkForAlphaPixels(const QImage &img)
     return false;
 }
 
-void QDirectFBPixmapData::fromImage(const QImage &img,
+void QDirectFBPixmapData::fromImage(const QImage &i,
                                     Qt::ImageConversionFlags flags)
 {
-    Q_ASSERT(img.depth() != 1); // these should be handled by QRasterPixmapData
+#ifdef QT_NO_DIRECTFB_OPAQUE_DETECTION
+    Q_UNUSED(flags);
+#endif
+    const QImage img = (i.depth() == 1 ? i.convertToFormat(screen->alphaPixmapFormat()) : i);
     if (img.hasAlphaChannel()
 #ifndef QT_NO_DIRECTFB_OPAQUE_DETECTION
         && (flags & Qt::NoOpaqueDetection || ::checkForAlphaPixels(img))
@@ -267,16 +270,17 @@ void QDirectFBPixmapData::fill(const QColor &color)
     if (forceRaster) {
         // in DSPF_RGB32 all dfb drawing causes the Alpha byte to be
         // set to 0. This causes issues for the raster engine.
-        char *mem;
-        int bpl;
-        const int h = QPixmapData::height();
-        dfbSurface->Lock(dfbSurface, DSLF_WRITE, (void**)&mem, &bpl);
-        const int c = color.rgba();
-        for (int i = 0; i < h; ++i) {
-            memset(mem, c, bpl);
-            mem += bpl;
+        uchar *mem = QDirectFBScreen::lockSurface(dfbSurface, DSLF_WRITE, &bpl);
+        if (mem) {
+            const int h = QPixmapData::height();
+            const int w = QPixmapData::width() * 4; // 4 bytes per 32 bit pixel
+            const int c = color.rgba();
+            for (int i = 0; i < h; ++i) {
+                memset(mem, c, w);
+                mem += bpl;
+            }
+            dfbSurface->Unlock(dfbSurface);
         }
-        dfbSurface->Unlock(dfbSurface);
     } else {
         dfbSurface->Clear(dfbSurface, color.red(), color.green(), color.blue(),
                           color.alpha());

@@ -260,6 +260,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue ApplicationActivated
     \omitvalue ApplicationDeactivated
     \omitvalue MacGLWindowChange
+    \omitvalue MacGLClearDrawable
     \omitvalue NetworkReplyUpdated
     \omitvalue FutureCallOut
     \omitvalue CocoaRequestModal
