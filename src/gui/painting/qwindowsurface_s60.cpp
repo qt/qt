@@ -144,12 +144,13 @@ void QS60WindowSurface::setGeometry(const QRect& rect)
     if (rect == geometry())
         return;
 
+    QWindowSurface::setGeometry(rect);
+
     TRect nativeRect(qt_QRect2TRect(rect));
     User::LeaveIfError(d_ptr->bitmap->Resize(nativeRect.Size()));
 
-    updatePaintDeviceOnBitmap();
-
-    QWindowSurface::setGeometry(rect);
+    if (!rect.isNull())
+        updatePaintDeviceOnBitmap();
 }
 
 void QS60WindowSurface::lockBitmapHeap()
