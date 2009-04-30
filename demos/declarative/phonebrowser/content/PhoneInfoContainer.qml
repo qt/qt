@@ -1,66 +1,113 @@
-<Flipable id="Container">
-    <properties>
-        <Property name="frontContainer" value="{ContainerFront}"/>
-        <Property name="flickableArea" value="{Flickable}"/>
-        <Property name="phoneTitle" value="N/A"/>
-        <Property name="phoneDescription" value="..."/>
-        <Property name="phoneSpecifications" value=""/>
-        <Property name="phoneUrl" value=""/>
-        <Property name="rating" value="2"/>
-    </properties>
+Flipable {
+    id: Container
 
-    <signals>
-        <Signal name="closed"/>
-    </signals>
+    properties: [
+        Property { name: "frontContainer"; value: ContainerFront },
+        Property { name: "flickableArea"; value: Flickable },
+        Property { name: "phoneTitle"; value: "N/A" },
+        Property { name: "phoneDescription"; value: "..." },
+        Property { name: "phoneSpecifications"; value: "" },
+        Property { name: "phoneUrl"; value: "" },
+        Property { name: "rating"; value: 2 }
+    ]
 
-    <axis>
-        <Axis startX="{Container.width / 2}" endX="{Container.width / 2}" endY="1" />
-    </axis>
+    signals: Signal { name: "closed" }
 
-    <front>
-        <Item id="ContainerFront" anchors.fill="{Container}">
-            <Rect anchors.fill="{parent}" color="black" opacity="0.4" pen.color="white" pen.width="2"/>
+    axis: Axis { startX: Container.width / 2; endX: Container.width / 2; endY: 1 }
 
-            <MediaButton id="BackButton" x="630" y="400" text="Back" onClicked="Container.closed.emit()"/>
-            <MediaButton id="MoreButton" x="530" y="400" text="More..." onClicked="Container.state='Back'"/>
+    front: Item {
+        id: ContainerFront; anchors.fill: Container
 
-            <Text id="TitleText" style="Raised" styleColor="black" color="white" x="420" y="30" width="{parent.width}"
-                  text="{Container.phoneTitle}" font.size="22"/>
+        Rect {
+            anchors.fill: parent
+            color: "black"; opacity: 0.4
+            pen.color: "white"; pen.width: 2
+        }
 
-            <LikeOMeter x="420" y="75" rating="{Container.rating}"/>
+        MediaButton {
+            id: BackButton; x: 630; y: 400; text: "Back"
+            onClicked: { Container.closed.emit() }
+        }
 
-            <Flickable id="Flickable" x="420" width="280" height="260" y="120" clip="true" viewportWidth="280"
-                       viewportHeight="{DescriptionText.height}">
-                <Text id="DescriptionText"  wrap="true" color="white" width="{parent.width}"
-                      text="{Container.phoneDescription}" font.size="12"/>
-            </Flickable>
-            <Text color="white" width="300" x="50" y="300" text="{Container.phoneSpecifications}"/>
-            <ScrollBar id="ScrollBar" x="720" y="{Flickable.y}" width="7" height="{Flickable.height}" opacity="0"
-                       flickableArea="{Flickable}" clip="true"/>
-        </Item>
-    </front>
+        MediaButton {
+            id: MoreButton; x: 530; y: 400; text: "More..."
+            onClicked: { Container.state='Back' }
+        }
 
-    <back>
-        <Item anchors.fill="{Container}">
-            <Rect anchors.fill="{parent}" color="black" opacity="0.4" pen.color="white" pen.width="2"/>
-            <Flickable x="10" width="{Container.width-20}" height="{Container.height-20}" y="10" clip="true"
-                    viewportWidth="{UrlView.width}" viewportHeight="{UrlView.height}">
-                <WebView id="UrlView" url="{Container.phoneUrl}" idealWidth="{parent.width}"/>
-            </Flickable>
-            <MediaButton id="BackButton2" x="630" y="400" text="Back" onClicked="Container.state=''"/>
-        </Item>
-    </back>
+        Text {
+            id: TitleText
+            style: Raised; styleColor: "black"
+            color: "white"
+            x: 420; y: 30; width: parent.width
+            text: Container.phoneTitle; font.size: 22
+        }
 
-    <states>
-        <State name="Back">
-            <SetProperty target="{Container}" property="rotation" value="180"/>
-        </State>
-    </states>
+        LikeOMeter { x: 420; y: 75; rating: Container.rating }
 
-    <transitions>
-        <Transition>
-            <NumericAnimation easing="easeInOutQuad" properties="rotation" duration="500"/>
-        </Transition>
-    </transitions>
+        Flickable {
+            id: Flickable
+            x: 420; width: 280; height: 260; y: 120; clip: true
+            viewportWidth: 280; viewportHeight: DescriptionText.height
 
-</Flipable>
+            Text {
+                id: DescriptionText
+                wrap: true
+                color: "white"
+                width: parent.width
+                text: Container.phoneDescription
+                font.size: 12
+            }
+        }
+
+        Text {
+            color: "white"; width: 300; x: 50; y: 300
+            text: Container.phoneSpecifications
+        }
+
+        ScrollBar {
+            id: ScrollBar
+            x: 720; y: Flickable.y; width: 7
+            height: Flickable.height; opacity: 0
+            flickableArea: Flickable; clip: true
+        }
+    }
+
+    back: Item {
+        anchors.fill: Container
+
+        Rect {
+            anchors.fill: parent
+            color: "black"
+            opacity: 0.4
+            pen.color: "white"
+            pen.width: 2
+        }
+
+        Flickable {
+            width: Container.width-20
+            height: Container.height-20
+            x: 10; y: 10; clip: true
+            viewportWidth: UrlView.width
+            viewportHeight: UrlView.height
+
+            WebView { id: UrlView; url: Container.phoneUrl; idealWidth: parent.width }
+        }
+
+        MediaButton {
+            id: BackButton2; x: 630; y: 400; text: "Back"; onClicked: { Container.state='' }
+        }
+    }
+
+    states: [
+        State {
+            name: "Back"
+            SetProperty { target: Container; property: "rotation"; value: 180 }
+        }
+    ]
+
+    transitions: [
+        Transition {
+            NumericAnimation { easing: "easeInOutQuad"; properties: "rotation"; duration: 500 }
+        }
+    ]
+}
