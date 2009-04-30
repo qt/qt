@@ -1,51 +1,50 @@
-<!--
-ListModel allows free form list models to be defined and populated.
-Be sure to name the file the same as the id.
--->
-<ListModel id="MyPetsModel">
-    <Pet>
-        <name>Rover</name>
-        <type>Dog</type>
-        <age>5</age>
-    </Pet>
-    <Pet>
-        <name>Whiskers</name>
-        <type>Cat</type>
-        <age>2</age>
-    </Pet>
-    <Pet>
-        <name>Warren</name>
-        <type>Rabbit</type>
-        <age>2</age>
-    </Pet>
-    <Pet>
-        <name>Polly</name>
-        <type>Parrot</type>
-        <age>12</age>
-    </Pet>
-    <Pet>
-        <name>Spot</name>
-        <type>Dog</type>
-        <age>9</age>
-    </Pet>
-    <Pet>
-        <name>Tiny</name>
-        <type>Elephant</type>
-        <age>15</age>
-    </Pet>
-    <Pet>
-        <name>Penny</name>
-        <type>Turtle</type>
-        <age>4</age>
-    </Pet>
-    <Pet>
-        <name>Joey</name>
-        <type>Kangaroo</type>
-        <age>1</age>
-    </Pet>
-    <Pet>
-        <name>Kimba</name>
-        <type>Bunny</type>
-        <age>65</age>
-    </Pet>
-</ListModel>
+// ListModel allows free form list models to be defined and populated.
+// Be sure to name the file the same as the id.
+ListModel2 {
+    id: MyPetsModel
+    ListElement {
+        name: "Rover"
+        type: "Dog"
+        age: 5
+    }
+    ListElement {
+        name: "Whiskers"
+        type: "Cat"
+        age: 2
+    }
+    ListElement {
+        name: "Warren"
+        type: "Rabbit"
+        age: 2
+    }
+    ListElement {
+        name: "Polly"
+        type: "Parrot"
+        age: 12
+    }
+    ListElement {
+        name: "Spot"
+        type: "Dog"
+        age: 9
+    }
+    ListElement {
+        name: "Tiny"
+        type: "Elephant"
+        age: 15
+    }
+    ListElement {
+        name: "Penny"
+        type: "Turtle"
+        age: 4
+    }
+    ListElement {
+        name: "Joey"
+        type: "Kangaroo"
+        age: 1
+    }
+    ListElement {
+        name: "Kimba"
+        type: "Bunny"
+        age: 65
+    }
+}

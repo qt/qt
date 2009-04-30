@@ -1,67 +1,92 @@
-<Rect id="Window" width="640" height="{Layout.height}" color="white">
+Rect {
+    id: Window
+    width: 640
+    height: Layout.height
+    color: "white"
 
-    <resources>
-        <ListModel id="EasingTypes">
-            <ListItem><type>easeLinear</type></ListItem>
-            <ListItem><type>easeInQuad</type></ListItem>
-            <ListItem><type>easeOutQuad</type></ListItem>
-            <ListItem><type>easeInOutQuad</type></ListItem>
-            <ListItem><type>easeOutInQuad</type></ListItem>
-            <ListItem><type>easeInCubic</type></ListItem>
-            <ListItem><type>easeOutCubic</type></ListItem>
-            <ListItem><type>easeInOutCubic</type></ListItem>
-            <ListItem><type>easeOutInCubic</type></ListItem>
-            <ListItem><type>easeInQuart</type></ListItem>
-            <ListItem><type>easeOutQuart</type></ListItem>
-            <ListItem><type>easeInOutQuart</type></ListItem>
-            <ListItem><type>easeOutInQuart</type></ListItem>
-            <ListItem><type>easeInQuint</type></ListItem>
-            <ListItem><type>easeOutQuint</type></ListItem>
-            <ListItem><type>easeInOutQuint</type></ListItem>
-            <ListItem><type>easeOutInQuint</type></ListItem>
-            <ListItem><type>easeInSine</type></ListItem>
-            <ListItem><type>easeOutSine</type></ListItem>
-            <ListItem><type>easeInOutSine</type></ListItem>
-            <ListItem><type>easeOutInSine</type></ListItem>
-            <ListItem><type>easeInExpo</type></ListItem>
-            <ListItem><type>easeOutExpo</type></ListItem>
-            <ListItem><type>easeInOutExpo</type></ListItem>
-            <ListItem><type>easeOutInExpo</type></ListItem>
-            <ListItem><type>easeInCirc</type></ListItem>
-            <ListItem><type>easeOutCirc</type></ListItem>
-            <ListItem><type>easeInOutCirc</type></ListItem>
-            <ListItem><type>easeOutInCirc</type></ListItem>
-            <ListItem><type>easeInElastic</type></ListItem>
-            <ListItem><type>easeOutElastic</type></ListItem>
-            <ListItem><type>easeInOutElastic</type></ListItem>
-            <ListItem><type>easeOutInElastic</type></ListItem>
-            <ListItem><type>easeInBack</type></ListItem>
-            <ListItem><type>easeOutBack</type></ListItem>
-            <ListItem><type>easeInOutBack</type></ListItem>
-            <ListItem><type>easeOutInBack</type></ListItem>
-            <ListItem><type>easeOutBounce</type></ListItem>
-            <ListItem><type>easeInBounce</type></ListItem>
-            <ListItem><type>easeInOutBounce</type></ListItem>
-            <ListItem><type>easeOutInBounce</type></ListItem>
-        </ListModel>
-    </resources>
-
-    <VerticalLayout id="Layout" anchors.left="{Window.left}" anchors.right="{Window.right}">
-        <Repeater dataSource="{EasingTypes}">
-            <Component>
-                <Text id="Text" text="{type}" height="18" font.italic="true">
-                    <x>
-                        <SequentialAnimation id="Anim">
-                            <NumericAnimation from="0" to="{Window.width / 2}" easing="{type}" duration="1000"/>
-                            <PauseAnimation duration="300"/>
-                            <NumericAnimation to="0" from="{Window.width / 2}" easing="{type}" duration="1000"/>
-                        </SequentialAnimation>
-                    </x>
-                    <children>
-                        <MouseRegion onClicked="Anim.running=true" anchors.fill="{parent}"/>
-                    </children>
-                </Text>
-            </Component>
-        </Repeater>
-    </VerticalLayout>
-</Rect>
+    ListModel2 {
+        id: EasingTypes
+        ListElement { type: "easeLinear" }
+        ListElement { type: "easeInQuad" }
+        ListElement { type: "easeOutQuad" }
+        ListElement { type: "easeInOutQuad" }
+        ListElement { type: "easeOutInQuad" }
+        ListElement { type: "easeInCubic" }
+        ListElement { type: "easeOutCubic" }
+        ListElement { type: "easeInOutCubic" }
+        ListElement { type: "easeOutInCubic" }
+        ListElement { type: "easeInQuart" }
+        ListElement { type: "easeOutQuart" }
+        ListElement { type: "easeInOutQuart" }
+        ListElement { type: "easeOutInQuart" }
+        ListElement { type: "easeInQuint" }
+        ListElement { type: "easeOutQuint" }
+        ListElement { type: "easeInOutQuint" }
+        ListElement { type: "easeOutInQuint" }
+        ListElement { type: "easeInSine" }
+        ListElement { type: "easeOutSine" }
+        ListElement { type: "easeInOutSine" }
+        ListElement { type: "easeOutInSine" }
+        ListElement { type: "easeInExpo" }
+        ListElement { type: "easeOutExpo" }
+        ListElement { type: "easeInOutExpo" }
+        ListElement { type: "easeOutInExpo" }
+        ListElement { type: "easeInCirc" }
+        ListElement { type: "easeOutCirc" }
+        ListElement { type: "easeInOutCirc" }
+        ListElement { type: "easeOutInCirc" }
+        ListElement { type: "easeInElastic" }
+        ListElement { type: "easeOutElastic" }
+        ListElement { type: "easeInOutElastic" }
+        ListElement { type: "easeOutInElastic" }
+        ListElement { type: "easeInBack" }
+        ListElement { type: "easeOutBack" }
+        ListElement { type: "easeInOutBack" }
+        ListElement { type: "easeOutInBack" }
+        ListElement { type: "easeOutBounce" }
+        ListElement { type: "easeInBounce" }
+        ListElement { type: "easeInOutBounce" }
+        ListElement { type: "easeOutInBounce" }
+    }
+    
+    VerticalLayout {
+        id: Layout
+        anchors.left: Window.left
+        anchors.right: Window.right
+        Repeater {
+            dataSource: EasingTypes
+            Component {
+                Text {
+                    id: Text
+                    text: type
+                    height: 18
+                    font.italic: true
+                    x: SequentialAnimation {
+                        id: Anim
+                        NumericAnimation {
+                            from: 0
+                            to: Window.width / 2
+                            easing: type
+                            duration: 1000
+                        }
+                        PauseAnimation {
+                            duration: 300
+                        }
+                        NumericAnimation {
+                            to: 0
+                            from: Window.width / 2
+                            easing: type
+                            duration: 1000
+                        }
+                    }
+                    children: [
+                        MouseRegion {
+                            onClicked: { Anim.running=true }
+                            anchors.fill: parent
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

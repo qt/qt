@@ -736,7 +736,7 @@ void QFxKeyActions::setKey_Space(const QString &s)
 
 /*!
     \qmlproperty string KeyActions::escape
-    \qmlproperty string KeyActions::return
+    \qmlproperty string KeyActions::keyReturn
     \qmlproperty string KeyActions::enter
     \qmlproperty string KeyActions::delete
     \qmlproperty string KeyActions::space
