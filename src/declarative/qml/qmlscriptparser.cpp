@@ -326,6 +326,8 @@ bool ProcessAST::visit(AST::UiImport *node)
     return false;
 }
 
+// UiObjectMember: T_PUBLIC T_DEFAULT UiMemberType T_IDENTIFIER T_COLON Expression
+// UiObjectMember: T_PUBLIC T_DEFAULT UiMemberType T_IDENTIFIER
 // UiObjectMember: T_PUBLIC UiMemberType T_IDENTIFIER T_COLON Expression
 // UiObjectMember: T_PUBLIC UiMemberType T_IDENTIFIER
 //
@@ -334,6 +336,9 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
 {
     const QString memberType = node->memberType->asString();
     const QString name = node->name->asString();
+
+    if (node->isDefaultMember)
+        qWarning() << "default-ness not implemented";
 
     if (memberType == QLatin1String("property")) {
         _stateStack.pushProperty(QLatin1String("properties"), node->publicToken.startLine);

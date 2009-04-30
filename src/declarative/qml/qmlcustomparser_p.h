@@ -39,28 +39,41 @@
 **
 ****************************************************************************/
 
-#ifndef QMLLISTMODEL_H
-#define QMLLISTMODEL_H
+#ifndef QMLCUSTOMPARSER_P_H
+#define QMLCUSTOMPARSER_P_H
 
-#include <QObject>
-#include <qfxglobal.h>
-#include <QStringList>
-#include <QHash>
-#include <QList>
-#include <QVariant>
-#include <qml.h>
-#include <qlistmodelinterface.h>
-
-
-QT_BEGIN_HEADER
+#include <QtCore/qglobal.h>
+#include "qmlcustomparser.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
+namespace QmlParser
+{
+    class Object;
+    class Property;
+};
 
+class QmlCustomParserNodePrivate
+{
+public:
+    QByteArray name;
+    QList<QmlCustomParserProperty> properties;
+
+    static QmlCustomParserNode fromObject(QmlParser::Object *);
+    static QmlCustomParserProperty fromProperty(QmlParser::Property *);
+};
+
+class QmlCustomParserPropertyPrivate
+{
+public:
+    QmlCustomParserPropertyPrivate()
+        : isList(false) {}
+
+    QByteArray name;
+    bool isList;
+    QList<QVariant> values;
+};
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QMLLISTMODEL_H
+#endif // QMLCUSTOMPARSER_P_H

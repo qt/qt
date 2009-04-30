@@ -4,48 +4,57 @@ Be sure to name the file the same as the id.
 -->
 <ListModel id="MyPetsModel">
     <Pet>
-        <name>Rover</name>
-        <type>Dog</type>
-        <age>5</age>
-    </Pet>
-    <Pet>
-        <name>Whiskers</name>
-        <type>Cat</type>
-        <age>2</age>
-    </Pet>
-    <Pet>
-        <name>Warren</name>
-        <type>Rabbit</type>
-        <age>2</age>
-    </Pet>
-    <Pet>
         <name>Polly</name>
         <type>Parrot</type>
         <age>12</age>
-    </Pet>
-    <Pet>
-        <name>Spot</name>
-        <type>Dog</type>
-        <age>9</age>
-    </Pet>
-    <Pet>
-        <name>Tiny</name>
-        <type>Elephant</type>
-        <age>15</age>
+        <size>Small</size>
     </Pet>
     <Pet>
         <name>Penny</name>
         <type>Turtle</type>
         <age>4</age>
+        <size>Small</size>
+    </Pet>
+    <Pet>
+        <name>Warren</name>
+        <type>Rabbit</type>
+        <age>2</age>
+        <size>Small</size>
+    </Pet>
+    <Pet>
+        <name>Spot</name>
+        <type>Dog</type>
+        <age>9</age>
+        <size>Medium</size>
+    </Pet>
+    <Pet>
+        <name>Whiskers</name>
+        <type>Cat</type>
+        <age>2</age>
+        <size>Medium</size>
     </Pet>
     <Pet>
         <name>Joey</name>
         <type>Kangaroo</type>
         <age>1</age>
+        <size>Medium</size>
     </Pet>
     <Pet>
         <name>Kimba</name>
         <type>Bunny</type>
         <age>65</age>
+        <size>Large</size>
+    </Pet>
+    <Pet>
+        <name>Rover</name>
+        <type>Dog</type>
+        <age>5</age>
+        <size>Large</size>
+    </Pet>
+    <Pet>
+        <name>Tiny</name>
+        <type>Elephant</type>
+        <age>15</age>
+        <size>Large</size>
     </Pet>
 </ListModel>

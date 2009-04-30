@@ -2326,13 +2326,13 @@ public:
 
     UiPublicMember(JavaScriptNameIdImpl *memberType,
                    JavaScriptNameIdImpl *name)
-        : memberType(memberType), name(name), expression(0)
+        : memberType(memberType), name(name), expression(0), isDefaultMember(false)
     { kind = K; }
 
     UiPublicMember(JavaScriptNameIdImpl *memberType,
                    JavaScriptNameIdImpl *name,
                    ExpressionNode *expression)
-        : memberType(memberType), name(name), expression(expression)
+        : memberType(memberType), name(name), expression(expression), isDefaultMember(false)
     { kind = K; }
 
     virtual SourceLocation firstSourceLocation() const
@@ -2357,6 +2357,7 @@ public:
     JavaScriptNameIdImpl *memberType;
     JavaScriptNameIdImpl *name;
     ExpressionNode *expression;
+    bool isDefaultMember;
     SourceLocation publicToken;
     SourceLocation attributeTypeToken;
     SourceLocation identifierToken;
