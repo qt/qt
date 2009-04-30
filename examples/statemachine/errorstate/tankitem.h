@@ -10,7 +10,7 @@ class TankItem: public GameItem
 {
     Q_OBJECT
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
-    Q_PROPERTY(qreal direction READ direction WRITE turn)
+    Q_PROPERTY(qreal direction READ direction WRITE turnTo)
     Q_PROPERTY(qreal distanceToObstacle READ distanceToObstacle)
 public:   
     TankItem(QObject *parent = 0);
@@ -42,9 +42,10 @@ signals:
     void cannonFired();
 
 public slots:
-    void moveForwards(qreal length);
-    void moveBackwards(qreal length);
-    void turn(qreal newDirection);
+    void moveForwards(qreal length = 10.0);
+    void moveBackwards(qreal length = 10.0);
+    void turn(qreal degrees = 30.0);
+    void turnTo(qreal degrees = 0.0);
     void stop();
     void fireCannon();
 

@@ -141,6 +141,11 @@ void TankItem::turn(qreal degrees)
     setAction(new TurnAction(this, degrees));
 }
 
+void TankItem::turnTo(qreal degrees)
+{
+    setAction(new TurnAction(this, degrees - direction()));
+}
+
 void TankItem::stop()
 {
     setAction(0);
