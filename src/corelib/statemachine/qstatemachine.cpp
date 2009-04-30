@@ -656,6 +656,17 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
             pendingRestorables.remove(RestorableId(assn.object, assn.propertyName));
             propertyAssignmentsForState[s].append(assn);
         }
+
+        // Remove pending restorables for all parent states to avoid restoring properties
+        // before the state that assigned them is exited.
+        QState *parentState = s;
+        while (parentState = parentState->parentState()) {
+            assignments = QStatePrivate::get(parentState)->propertyAssignments;
+            for (int j=0; j<assignments.size(); ++j) {
+                const QPropertyAssignment &assn = assignments.at(j);
+                pendingRestorables.remove(RestorableId(assn.object, assn.propertyName));
+            }
+        }
     }
     if (!pendingRestorables.isEmpty()) {
         QAbstractState *s;
