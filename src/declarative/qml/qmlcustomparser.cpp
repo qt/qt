@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmlcustomparser.h"
 #include "qmlcustomparser_p.h"
+#include "qmlcustomparser_p_p.h"
 #include "qmlparser_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -50,6 +50,7 @@ using namespace QmlParser;
 /*!
     \class QmlCustomParser
     \brief The QmlCustomParser class allows you to add new arbitrary types to QML.
+    \internal
 
     By subclassing QmlCustomParser, you can add an XML parser for building a
     particular type.

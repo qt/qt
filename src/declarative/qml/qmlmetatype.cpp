@@ -57,7 +57,7 @@
 #include <qvector.h>
 #include <qlocale.h>
 #include <QtCore/qcryptographichash.h>
-#include <qmlcustomparser.h>
+#include <private/qmlcustomparser_p.h>
 
 QT_BEGIN_NAMESPACE
 #ifdef QT_BOOTSTRAPPED

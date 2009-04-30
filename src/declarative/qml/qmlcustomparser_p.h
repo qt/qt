@@ -39,41 +39,90 @@
 **
 ****************************************************************************/
 
-#ifndef QMLCUSTOMPARSER_P_H
-#define QMLCUSTOMPARSER_P_H
+#ifndef QMLCUSTOMPARSER_H
+#define QMLCUSTOMPARSER_H
 
-#include <QtCore/qglobal.h>
-#include "qmlcustomparser.h"
+#include <QtCore/qbytearray.h>
+#include <QtCore/qxmlstream.h>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qmlmetatype.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-namespace QmlParser
-{
-    class Object;
-    class Property;
-};
+QT_MODULE(Declarative)
 
-class QmlCustomParserNodePrivate
+class QmlCustomParserPropertyPrivate;
+class Q_DECLARATIVE_EXPORT QmlCustomParserProperty
 {
 public:
-    QByteArray name;
-    QList<QmlCustomParserProperty> properties;
+    QmlCustomParserProperty();
+    QmlCustomParserProperty(const QmlCustomParserProperty &);
+    QmlCustomParserProperty &operator=(const QmlCustomParserProperty &);
+    ~QmlCustomParserProperty();
 
-    static QmlCustomParserNode fromObject(QmlParser::Object *);
-    static QmlCustomParserProperty fromProperty(QmlParser::Property *);
+    QByteArray name() const;
+
+    bool isList() const;
+    QList<QVariant> assignedValues() const;
+
+private:
+    friend class QmlCustomParserNodePrivate;
+    friend class QmlCustomParserPropertyPrivate;
+    QmlCustomParserPropertyPrivate *d;
 };
+Q_DECLARE_METATYPE(QmlCustomParserProperty);
 
-class QmlCustomParserPropertyPrivate
+class QmlCustomParserNodePrivate;
+class Q_DECLARATIVE_EXPORT QmlCustomParserNode
 {
 public:
-    QmlCustomParserPropertyPrivate()
-        : isList(false) {}
+    QmlCustomParserNode();
+    QmlCustomParserNode(const QmlCustomParserNode &);
+    QmlCustomParserNode &operator=(const QmlCustomParserNode &);
+    ~QmlCustomParserNode();
 
-    QByteArray name;
-    bool isList;
-    QList<QVariant> values;
+    QByteArray name() const;
+
+    QList<QmlCustomParserProperty> properties() const;
+
+private:
+    friend class QmlCustomParserNodePrivate;
+    QmlCustomParserNodePrivate *d;
 };
+Q_DECLARE_METATYPE(QmlCustomParserNode);
+
+class Q_DECLARATIVE_EXPORT QmlCustomParser
+{
+public:
+    virtual ~QmlCustomParser() {}
+
+    virtual QByteArray compile(QXmlStreamReader&, bool *ok)=0;
+    virtual QByteArray compile(const QList<QmlCustomParserProperty> &, bool *ok);
+    virtual QVariant create(const QByteArray &)=0;
+    virtual void setCustomData(QObject *, const QByteArray &);
+
+    struct Register {
+        Register(const char *name, QmlCustomParser *parser) {
+            qmlRegisterCustomParser(name, parser);
+        }
+    };
+    template<typename T>
+    struct Define {
+        static Register instance;
+    };
+};
+#define QML_DEFINE_CUSTOM_PARSER(name, parserClass) \
+    template<> QmlCustomParser::Register QmlCustomParser::Define<parserClass>::instance(# name, new parserClass);
+#define QML_DEFINE_CUSTOM_PARSER_NS(namespacestring, name, parserClass) \
+    template<> QmlCustomParser::Register QmlCustomParser::Define<parserClass>::instance(namespacestring "/" # name, new parserClass);
+
+#define QML_DEFINE_CUSTOM_TYPE(TYPE, NAME, CUSTOMTYPE) \
+    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *>::instance(qmlRegisterCustomType<TYPE>(#NAME, #TYPE, new CUSTOMTYPE));
 
 QT_END_NAMESPACE
 
-#endif // QMLCUSTOMPARSER_P_H
+QT_END_HEADER
+
+#endif

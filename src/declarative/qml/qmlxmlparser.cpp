@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qmlxmlparser_p.h"
-#include "qmlcustomparser.h"
+#include "qmlcustomparser_p.h"
 #include <qfxperf.h>
 #include <QXmlStreamReader>
 #include <QStack>
