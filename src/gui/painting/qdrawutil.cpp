@@ -1039,31 +1039,34 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
 #endif
 
 /*!
-  \struct QMargins
-  \since 4.6
+    \struct QMargins
+    \since 4.6
 
-  Holds the borders used to split a pixmap on into nine segments in order to draw it,
-  similar to CSS3 border-images \l http://www.w3.org/TR/css3-background/.
+    Holds the borders used to split a pixmap into nine segments in order to
+    draw it, similar to \l{http://www.w3.org/TR/css3-background/}
+    {CSS3 border-images}.
 
-  \sa qDrawBorderPixmap, Qt::TileRule, QTileRules
- */
-
-/*!
-  \struct QTileRules
-  \since 4.6
-
-  Holds the rules used to draw a pixmap or image split into nine segments, similar to CSS3 border-images.
-
-  \sa qDrawBorderPixmap, Qt::TileRule, QMargins
- */
+    \sa qDrawBorderPixmap, Qt::TileRule, QTileRules
+*/
 
 /*!
-  \fn qDrawBorderPixmap(QPainter *painter, const QRect &target, const QMargins &margins, const QPixmap &pixmap)
-  \since 4.6
+    \struct QTileRules
+    \since 4.6
 
-  Draws the given \a pixmap into the given \a target rectangle, using the given \a painter.
-  The pixmap will be splitt into nine segments and drawn according to the given \a margins structure.
- */
+    Holds the rules used to draw a pixmap or image split into nine segments,
+    similar to \l{http://www.w3.org/TR/css3-background/}{CSS3 border-images}.
+
+    \sa qDrawBorderPixmap, Qt::TileRule, QMargins
+*/
+
+/*!
+    \fn qDrawBorderPixmap(QPainter *painter, const QRect &target, const QMargins &margins, const QPixmap &pixmap)
+    \since 4.6
+
+    Draws the given \a pixmap into the given \a target rectangle, using the
+    given \a painter. The pixmap will be split into nine segments and drawn
+    according to the \a margins structure.
+*/
 
 static inline void qVerticalRepeat(QPainter *painter, const QRect &target, const QPixmap &pixmap, const QRect &source,
                                    void (*drawPixmap)(QPainter*, const QRect&, const QPixmap&, const QRect&))
@@ -1146,17 +1149,20 @@ static inline void qDrawHorizontallyRoundedPixmap(QPainter *painter, const QRect
 }
 
 /*!
-  \since 4.6
+    \since 4.6
 
-  Draws the indicated \a sourceRect rectangle from the given \a pixmap into the given \a targetRect rectangle,
-  using the given \a painter.
-  The pixmap will be splitt into nine segments according to the given \a targetMargins and
-  \a sourceMargins structures and drawn according to the given \a rules.
+    Draws the indicated \a sourceRect rectangle from the given \a pixmap into
+    the given \a targetRect rectangle, using the given \a painter. The pixmap
+    will be split into nine segments according to the given \a targetMargins
+    and \a sourceMargins structures. Finally, the pixmap will be drawn
+    according to the given \a rules.
 
-  This function is used to draw a scaled pixmap, similar to CSS3 border-images.
+    This function is used to draw a scaled pixmap, similar to
+    \l{http://www.w3.org/TR/css3-background/}{CSS3 border-images}
 
-  \sa Qt::TileRule, QTileRules, QMargins
- */
+    \sa Qt::TileRule, QTileRules, QMargins
+*/
+
 void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargins &targetMargins, const QPixmap &pixmap,
                        const QRect &sourceRect, const QMargins &sourceMargins, const QTileRules &rules)
 {
