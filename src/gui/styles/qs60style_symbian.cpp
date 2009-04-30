@@ -245,15 +245,15 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrSctrlButtonCenter */     {KAknsIIDQsnFrButtonTbCenter,           ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2309}, /*KAknsIIDQgnFrSctrlButtonCenter*/
 
     // No pressed state for toolbar button in 3.1/3.2.
-    /* SP_QsnFrSctrlButtonCornerTlPressed */ {KAknsIIDQsnFrSctrlButtonCornerTlPressed, ENoDraw,    ES60_5_0,    -1,EAknsMajorSkin,0x2171},  /*KAknsIIDQsnFrButtonTbCornerTl*/
-    /* SP_QsnFrSctrlButtonCornerTrPressed */ {KAknsIIDQsnFrSctrlButtonCornerTrPressed, ENoDraw,    ES60_5_0,    -1,EAknsMajorSkin,0x2172},
-    /* SP_QsnFrSctrlButtonCornerBlPressed */ {KAknsIIDQsnFrSctrlButtonCornerBlPressed, ENoDraw,    ES60_5_0,    -1,EAknsMajorSkin,0x2173},
-    /* SP_QsnFrSctrlButtonCornerBrPressed */ {KAknsIIDQsnFrSctrlButtonCornerBrPressed, ENoDraw,    ES60_5_0,    -1,EAknsMajorSkin,0x2174},
-    /* SP_QsnFrSctrlButtonSideTPressed */    {KAknsIIDQsnFrSctrlButtonSideTPressed,    ENoDraw,    ES60_5_0,    -1,EAknsMajorSkin,0x2175},
-    /* SP_QsnFrSctrlButtonSideBPressed */    {KAknsIIDQsnFrSctrlButtonSideBPressed,    ENoDraw,    ES60_5_0,    -1,EAknsMajorSkin,0x2176},
-    /* SP_QsnFrSctrlButtonSideLPressed */    {KAknsIIDQsnFrSctrlButtonSideLPressed,    ENoDraw,    ES60_5_0,    -1,EAknsMajorSkin,0x2177},
-    /* SP_QsnFrSctrlButtonSideRPressed */    {KAknsIIDQsnFrSctrlButtonSideRPressed,    ENoDraw,    ES60_5_0,    -1,EAknsMajorSkin,0x2178},
-    /* SP_QsnFrSctrlButtonCenterPressed */   {KAknsIIDQsnFrSctrlButtonCenterPressed,   ENoDraw,    ES60_5_0,    -1,EAknsMajorSkin,0x2179}
+    /* SP_QsnFrSctrlButtonCornerTlPressed */ {KAknsIIDQsnFrButtonTbCornerTl, ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2621},  /*KAknsIIDQsnFrSctrlButtonCornerTlPressed*/
+    /* SP_QsnFrSctrlButtonCornerTrPressed */ {KAknsIIDQsnFrButtonTbCornerTr, ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2622},
+    /* SP_QsnFrSctrlButtonCornerBlPressed */ {KAknsIIDQsnFrButtonTbCornerBl, ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2623},
+    /* SP_QsnFrSctrlButtonCornerBrPressed */ {KAknsIIDQsnFrButtonTbCornerBl, ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2624},
+    /* SP_QsnFrSctrlButtonSideTPressed */    {KAknsIIDQsnFrButtonTbSideT,    ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2625},
+    /* SP_QsnFrSctrlButtonSideBPressed */    {KAknsIIDQsnFrButtonTbSideB,    ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2626},
+    /* SP_QsnFrSctrlButtonSideLPressed */    {KAknsIIDQsnFrButtonTbSideL,    ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2627},
+    /* SP_QsnFrSctrlButtonSideRPressed */    {KAknsIIDQsnFrButtonTbSideR,    ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2628},
+    /* SP_QsnFrSctrlButtonCenterPressed */   {KAknsIIDQsnFrButtonTbCenter,   ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2629}
 };
 
 QPixmap QS60StyleModeSpecifics::skinnedGraphics(
