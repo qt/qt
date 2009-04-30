@@ -12,7 +12,7 @@
 ****************************************************************************/
 
 #include "qml.h"
-#include "qfxviewer.h"
+#include "qmlviewer.h"
 #include <QWidget>
 #include <QDir>
 #include "qfxtestengine.h"
@@ -21,7 +21,7 @@
 
 void usage()
 {
-    qWarning("Usage: duiviewer [options] <filename>");
+    qWarning("Usage: qmlviewer [options] <filename>");
     qWarning(" ");
     qWarning(" options:");
     qWarning("  -v, -version ............................. display version");
@@ -116,9 +116,9 @@ int main(int argc, char ** argv)
     if (fileName.isEmpty())
         usage();
 
-    QFxViewer viewer(testMode, testDir, 0, frameless ? Qt::FramelessWindowHint : Qt::Widget);
+    QmlViewer viewer(testMode, testDir, 0, frameless ? Qt::FramelessWindowHint : Qt::Widget);
     viewer.setCacheEnabled(cache);
-    viewer.openXml(fileName);
+    viewer.openQml(fileName);
     if (period>0)
         viewer.setRecordPeriod(period);
     if (autorecord_to)

@@ -101,7 +101,7 @@ class Q_DECLARATIVE_EXPORT QFxKeyActions : public QFxItem
     Q_PROPERTY(QString digit9 READ key_9 WRITE setKey_9)
     Q_PROPERTY(QString asterisk READ key_Asterisk WRITE setKey_Asterisk)
     Q_PROPERTY(QString escape READ key_Escape WRITE setKey_Escape)
-    Q_PROPERTY(QString return READ key_Return WRITE setKey_Return)
+    Q_PROPERTY(QString keyReturn READ key_Return WRITE setKey_Return)
     Q_PROPERTY(QString enter READ key_Enter WRITE setKey_Enter)
     Q_PROPERTY(QString delete READ key_Delete WRITE setKey_Delete)
     Q_PROPERTY(QString space READ key_Space WRITE setKey_Space)

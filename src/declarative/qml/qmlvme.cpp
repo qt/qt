@@ -45,7 +45,7 @@
 #include <private/qmlstringconverters_p.h>
 #include "private/qmetaobjectbuilder_p.h"
 #include <qml.h>
-#include <qmlcustomparser.h>
+#include <private/qmlcustomparser_p.h>
 #include <qperformancelog.h>
 #include <QStack>
 #include <private/qmlcompiledcomponent_p.h>
