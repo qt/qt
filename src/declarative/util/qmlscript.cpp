@@ -136,7 +136,7 @@ void QmlScript::setScript(const QString &script)
     the file specified.
  */
 /*!
-    \property QmlScript::src
+    \property QmlScript::source
     \brief the path to a script file.
 */
 QString QmlScript::source() const

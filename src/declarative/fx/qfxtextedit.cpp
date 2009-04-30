@@ -63,16 +63,15 @@ QML_DEFINE_TYPE(QFxTextEdit, TextEdit);
 /*!
     \qmlclass TextEdit
     \brief The TextEdit element allows you to add editable formatted text to a scene.
-    \inherits ImageItem
 
     It can display both plain and rich text. For example:
 
-    \code
+    \qml
     <TextEdit id="edit" focus="true" focusable="true"
             font.family="Helvetica" font.size="20" color="blue" width="240">
         <![CDATA[<b>Hello</b> <i>World!</i>]]/>
     </TextEdit>
-    \endcode
+    \endqml
 
     \image declarative-textedit.gif
 

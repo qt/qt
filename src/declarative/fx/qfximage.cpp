@@ -812,7 +812,7 @@ QFxImage::Status QFxImage::status() const
 */
 
 /*!
-    \property QFxImage::src
+    \property QFxImage::source
     \brief the url of the image to be displayed in this item.
 
     The content specified can be of any image type loadable by QImage. Alternatively,
