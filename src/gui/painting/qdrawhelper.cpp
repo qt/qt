@@ -1499,6 +1499,12 @@ static const uint * QT_FASTCALL fetchConicalGradient(uint *buffer, const Operato
 
 
 
+#if defined(Q_CC_RVCT)
+// Force ARM code generation for blend methods
+#  pragma push
+#  pragma arm
+#endif
+
 /* The constant alpha factor describes an alpha factor that gets applied
    to the result of the composition operation combining it with the destination.
 
@@ -2756,6 +2762,11 @@ static void QT_FASTCALL comp_func_Exclusion(uint *dest, const uint *src, int len
     else
         comp_func_Exclusion_impl(dest, src, length, QPartialCoverage(const_alpha));
 }
+
+#if defined(Q_CC_RVCT)
+// Restore pragma state from previous #pragma arm
+#  pragma pop
+#endif
 
 static void QT_FASTCALL rasterop_solid_SourceOrDestination(uint *dest,
                                                            int length,

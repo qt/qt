@@ -201,8 +201,8 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrPopupSideR */            {KAknsIIDQsnFrPopupSideR,               ENoDraw,    ES60_AllReleases,    -1,-1,-1},
     /* SP_QsnFrPopupCenter */           {KAknsIIDQsnFrPopupCenter,              ENoDraw,    ES60_AllReleases,    -1,-1,-1},
 
-
-    /* SP_QsnFrPopupPreviewCornerTl */  {KAknsIIDQsnFrPopupCornerTl,            ENoDraw,    ES60_3_1,   -1, EAknsMajorSkin, 0x19c5},
+    // ToolTip graphics different in 3.1 vs. 3.2+.
+    /* SP_QsnFrPopupPreviewCornerTl */  {KAknsIIDQsnFrPopupCornerTl,            ENoDraw,    ES60_3_1,   -1, EAknsMajorSkin, 0x19c5}, /* KAknsIIDQsnFrPopupPreviewCornerTl */
     /* SP_QsnFrPopupPreviewCornerTr */  {KAknsIIDQsnFrPopupCornerTr,            ENoDraw,    ES60_3_1,   -1, EAknsMajorSkin, 0x19c6},
     /* SP_QsnFrPopupPreviewCornerBl */  {KAknsIIDQsnFrPopupCornerBl,            ENoDraw,    ES60_3_1,   -1, EAknsMajorSkin, 0x19c3},
     /* SP_QsnFrPopupPreviewCornerBr */  {KAknsIIDQsnFrPopupCornerBr,            ENoDraw,    ES60_3_1,   -1, EAknsMajorSkin, 0x19c4},
@@ -221,6 +221,39 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrSetOptSideL */           {KAknsIIDQsnFrSetOptSideL,              ENoDraw,    ES60_AllReleases,    -1,-1,-1},
     /* SP_QsnFrSetOptSideR */           {KAknsIIDQsnFrSetOptSideR,              ENoDraw,    ES60_AllReleases,    -1,-1,-1},
     /* SP_QsnFrSetOptCenter */          {KAknsIIDQsnFrSetOptCenter,             ENoDraw,    ES60_AllReleases,    -1,-1,-1},
+
+    // No toolbar frame for 5.0+ releases.
+    /* SP_QsnFrPopupSubCornerTl */      {KAknsIIDQsnFrPopupSubCornerTl,         ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
+    /* SP_QsnFrPopupSubCornerTr */      {KAknsIIDQsnFrPopupSubCornerTr,         ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
+    /* SP_QsnFrPopupSubCornerBl */      {KAknsIIDQsnFrPopupSubCornerBl,         ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
+    /* SP_QsnFrPopupSubCornerBr */      {KAknsIIDQsnFrPopupSubCornerBr,         ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
+    /* SP_QsnFrPopupSubSideT */         {KAknsIIDQsnFrPopupSubSideT,            ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
+    /* SP_QsnFrPopupSubSideB */         {KAknsIIDQsnFrPopupSubSideB,            ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
+    /* SP_QsnFrPopupSubSideL */         {KAknsIIDQsnFrPopupSubSideL,            ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
+    /* SP_QsnFrPopupSubSideR */         {KAknsIIDQsnFrPopupSubSideR,            ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
+    /* SP_QsnFrPopupSubCenter */        {KAknsIIDQsnFrPopupCenterSubmenu,       ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
+
+    // Toolbar graphics is different in 3.1/3.2 vs. 5.0
+    /* SP_QsnFrSctrlButtonCornerTl */   {KAknsIIDQsnFrButtonTbCornerTl,         ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2301}, /* KAknsIIDQgnFrSctrlButtonCornerTl*/
+    /* SP_QsnFrSctrlButtonCornerTr */   {KAknsIIDQsnFrButtonTbCornerTr,         ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2302},
+    /* SP_QsnFrSctrlButtonCornerBl */   {KAknsIIDQsnFrButtonTbCornerBl,         ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2303},
+    /* SP_QsnFrSctrlButtonCornerBr */   {KAknsIIDQsnFrButtonTbCornerBr,         ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2304},
+    /* SP_QsnFrSctrlButtonSideT */      {KAknsIIDQsnFrButtonTbSideT,            ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2305},
+    /* SP_QsnFrSctrlButtonSideB */      {KAknsIIDQsnFrButtonTbSideB,            ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2306},
+    /* SP_QsnFrSctrlButtonSideL */      {KAknsIIDQsnFrButtonTbSideL,            ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2307},
+    /* SP_QsnFrSctrlButtonSideR */      {KAknsIIDQsnFrButtonTbSideR,            ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2308},
+    /* SP_QsnFrSctrlButtonCenter */     {KAknsIIDQsnFrButtonTbCenter,           ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2309}, /*KAknsIIDQgnFrSctrlButtonCenter*/
+
+    // No pressed state for toolbar button in 3.1/3.2.
+    /* SP_QsnFrSctrlButtonCornerTlPressed */ {KAknsIIDQsnFrButtonTbCornerTl, ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2621},  /*KAknsIIDQsnFrSctrlButtonCornerTlPressed*/
+    /* SP_QsnFrSctrlButtonCornerTrPressed */ {KAknsIIDQsnFrButtonTbCornerTr, ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2622},
+    /* SP_QsnFrSctrlButtonCornerBlPressed */ {KAknsIIDQsnFrButtonTbCornerBl, ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2623},
+    /* SP_QsnFrSctrlButtonCornerBrPressed */ {KAknsIIDQsnFrButtonTbCornerBl, ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2624},
+    /* SP_QsnFrSctrlButtonSideTPressed */    {KAknsIIDQsnFrButtonTbSideT,    ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2625},
+    /* SP_QsnFrSctrlButtonSideBPressed */    {KAknsIIDQsnFrButtonTbSideB,    ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2626},
+    /* SP_QsnFrSctrlButtonSideLPressed */    {KAknsIIDQsnFrButtonTbSideL,    ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2627},
+    /* SP_QsnFrSctrlButtonSideRPressed */    {KAknsIIDQsnFrButtonTbSideR,    ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2628},
+    /* SP_QsnFrSctrlButtonCenterPressed */   {KAknsIIDQsnFrButtonTbCenter,   ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2629}
 };
 
 QPixmap QS60StyleModeSpecifics::skinnedGraphics(
@@ -370,6 +403,11 @@ QPixmap QS60StylePrivate::backgroundTexture()
 bool QS60StylePrivate::isTouchSupported()
 {
     return bool(AknLayoutUtils::PenEnabled());
+}
+
+bool QS60StylePrivate::isToolBarBackground()
+{
+    return (QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || QSysInfo::s60Version() == QSysInfo::SV_S60_3_2);
 }
 
 void qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset)
@@ -573,11 +611,17 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
     switch(frameElement) {
         case QS60StylePrivate::SF_ToolTip:
             if (QSysInfo::s60Version()==QSysInfo::SV_S60_5_0 || QSysInfo::s60Version()==QSysInfo::SV_S60_3_2) {
-                centerId.Set(EAknsMajorSkin, 0x5300);
-                frameId.Set(EAknsMajorGeneric, 0x19c2);
+                centerId.Set(EAknsMajorGeneric, 0x19c2);
+                frameId.Set(EAknsMajorSkin, 0x5300);
             } else {
                 centerId.Set(KAknsIIDQsnFrPopupCenter);
                 frameId.iMinor = centerId.iMinor - 9;
+            }
+            break;
+        case QS60StylePrivate::SF_ToolBar:
+            if (QSysInfo::s60Version()==QSysInfo::SV_S60_3_1 || QSysInfo::s60Version()==QSysInfo::SV_S60_3_2) {
+                centerId.Set(KAknsIIDQsnFrPopupCenterSubmenu);
+                frameId.Set(KAknsIIDQsnFrPopupSub);
             }
             break;
         default:
