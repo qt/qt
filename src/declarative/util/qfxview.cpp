@@ -49,6 +49,7 @@
 #include "qicon.h"
 #include "qurl.h"
 #include "qboxlayout.h"
+#include "qbasictimer.h"
 
 #include "qmlbindablevalue.h"
 #include "qml.h"
@@ -100,6 +101,8 @@ public:
 
     QmlEngine engine;
     QmlComponent *component;
+    QBasicTimer resizetimer;
+
     void init();
 };
 
@@ -282,8 +285,17 @@ void QFxView::continueExecute()
 
 void QFxView::sizeChanged()
 {
-    if (d->root)
-        emit sceneResized(QSize(d->root->width(),d->root->height()));
+    // delay, so we catch both width and height changing.
+    d->resizetimer.start(0,this);
+}
+
+void QFxView::timerEvent(QTimerEvent* e)
+{
+    if (e->timerId() == d->resizetimer.timerId()) {
+        if (d->root)
+            emit sceneResized(QSize(d->root->width(),d->root->height()));
+        d->resizetimer.stop();
+    }
 }
 
 QFxItem* QFxView::addItem(const QString &xml, QFxItem* parent)
