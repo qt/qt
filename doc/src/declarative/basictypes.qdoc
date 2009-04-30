@@ -1,20 +1,16 @@
 /*!
-    \page basicxmltypes.html
+    \page basicqmltypes.html
     \title Common QML Types
 
     QML uses a range of property types, which you will see
     referenced throughout the element documentation. Almost all of them are
     exactly what you would expect.
 
-    \target basicxmlint
+    \target basicqmlint
     \raw HTML
-    <div class="memitem">
-    <div class="memproto">
-    <table class="memname">
-    <tr><td>int</td></tr>
+    <table>
+    <tr><td><div class="qmltype">int</div></td></tr>
     </table>
-    </div>
-    <div class="memdoc">
     \endraw
 
     ints are whole numbers - things like 0, 10 and -20.  The possible int 
@@ -30,25 +26,16 @@
     <Item width="100" height="200" />
     \endcode
 
-    \raw HTML
-    </div>
-    </div>
-    \endraw
-
-    \target basicxmlbool
+    \target basicqmlbool
     \raw HTML
     <br>
-    <div class="memitem">
-    <div class="memproto">
-    <table class="memname">
-    <tr><td>bool</td></tr>
+    <table>
+    <tr><td><div class="qmltype">bool</div></td></tr>
     </table>
-    </div>
-    <div class="memdoc">
     \endraw
 
     bools are a binary true/false value, represented by the strings
-    "true" and "false" in XML.
+    "true" and "false" in QML.
 
     Setting bools looks like this:
     \code
@@ -58,21 +45,12 @@
     \note Technically bool treats an empty string, "false" and "0" as false and
     everything else as true.  Seriously, though, use "true" and "false".
 
-    \raw HTML
-    </div>
-    </div>
-    \endraw
-
-    \target basicxmlreal
+    \target basicqmlreal
     \raw HTML
     <br>
-    <div class="memitem">
-    <div class="memproto">
-    <table class="memname">
-    <tr><td>real</td></tr>
+    <table>
+    <tr><td><div class="qmltype">real</div></td></tr>
     </table>
-    </div>
-    <div class="memdoc">
     \endraw
 
     reals are numbers - either whole numbers like ints, or fractional numbers
@@ -85,21 +63,12 @@
 
     \note In QML all reals are stored in single precision, \l {http://en.wikipedia.org/wiki/IEEE_754}{IEEE floating point} format.
 
-    \raw HTML
-    </div>
-    </div>
-    \endraw
-
-    \target basicxmlstring
+    \target basicqmlstring
     \raw HTML
     <br>
-    <div class="memitem">
-    <div class="memproto">
-    <table class="memname">
-    <tr><td>string</td></tr>
+    <table>
+    <tr><td><div class="qmltype">string</div></td></tr>
     </table>
-    </div>
-    <div class="memdoc">
     \endraw
 
     strings are free form text, like "hello world", "QML is cool" and
@@ -111,20 +80,14 @@
     \endcode
 
     \raw HTML
-    </div>
-    </div>
     \endraw
 
-    \target basicxmlcolor
+    \target basicqmlcolor
     \raw HTML
     <br>
-    <div class="memitem">
-    <div class="memproto">
-    <table class="memname">
-    <tr><td>color</td></tr>
+    <table>
+    <tr><td><div class="qmltype">color</div></td></tr>
     </table>
-    </div>
-    <div class="memdoc">
     \endraw
 
     Colors are most commonly specified as an \l {http://www.w3.org/TR/SVG/types.html#ColorKeywords}{SVG color name}.  These names include colors like
@@ -143,21 +106,12 @@
     <Rect color="#800000FF" />
     \endcode
 
-    \raw HTML
-    </div>
-    </div>
-    \endraw
-
-    \target basicxmlpoint
+    \target basicqmlpoint
     \raw HTML
     <br>
-    <div class="memitem">
-    <div class="memproto">
-    <table class="memname">
-    <tr><td>point</td></tr>
+    <table>
+    <tr><td><div class="qmltype">point</div></td></tr>
     </table>
-    </div>
-    <div class="memdoc">
     \endraw
 
     Points are specified in \c "x,y" format.
@@ -167,21 +121,12 @@
     <Widget pos="50,50"/>
     \endcode
 
-    \raw HTML
-    </div>
-    </div>
-    \endraw
-
-    \target basicxmlsize
+    \target basicqmlsize
     \raw HTML
     <br>
-    <div class="memitem">
-    <div class="memproto">
-    <table class="memname">
-    <tr><td>size</td></tr>
+    <table>
+    <tr><td><div class="qmltype">size</div></td></tr>
     </table>
-    </div>
-    <div class="memdoc">
     \endraw
 
     Sizes are specified in \c "widthxheight" format.
@@ -191,21 +136,12 @@
     <Widget size="50x50"/>
     \endcode
 
-    \raw HTML
-    </div>
-    </div>
-    \endraw
-
-    \target basicxmlrectangle
+    \target basicqmlrectangle
     \raw HTML
     <br>
-    <div class="memitem">
-    <div class="memproto">
-    <table class="memname">
-    <tr><td>rectangle</td></tr>
+    <table>
+    <tr><td><div class="qmltype">rectangle</div></td></tr>
     </table>
-    </div>
-    <div class="memdoc">
     \endraw
 
     Rectangles are specified in \c "x,y,widthxheight" format.
@@ -215,21 +151,12 @@
     <Widget geometry="50,50,100x100"/>
     \endcode
 
-    \raw HTML
-    </div>
-    </div>
-    \endraw
-
-    \target basicxmldate
+    \target basicqmldate
     \raw HTML
     <br>
-    <div class="memitem">
-    <div class="memproto">
-    <table class="memname">
-    <tr><td>date</td></tr>
+    <table>
+    <tr><td><div class="qmltype">date</div></td></tr>
     </table>
-    </div>
-    <div class="memdoc">
     \endraw
 
     Dates are specified in \c "YYYY-MM-DD" format.
@@ -239,21 +166,12 @@
     <DatePicker minDate="2000-01-01" maxDate="2020-12-31"/>
     \endcode
 
-    \raw HTML
-    </div>
-    </div>
-    \endraw
-
-    \target basicxmltime
+    \target basicqmltime
     \raw HTML
     <br>
-    <div class="memitem">
-    <div class="memproto">
-    <table class="memname">
-    <tr><td>time</td></tr>
+    <table>
+    <tr><td><div class="qmltype">time</div></td></tr>
     </table>
-    </div>
-    <div class="memdoc">
     \endraw
 
     Times are specified in \c "hh:mm:ss" format.
@@ -263,21 +181,12 @@
     <TimePicker time="14:22:15"/>
     \endcode
 
-    \raw HTML
-    </div>
-    </div>
-    \endraw
-
-    \target basicxmlfont
+    \target basicqmlfont
     \raw HTML
     <br>
-    <div class="memitem">
-    <div class="memproto">
-    <table class="memname">
-    <tr><td>font</td></tr>
+    <table>
+    <tr><td><div class="qmltype">font</div></td></tr>
     </table>
-    </div>
-    <div class="memdoc">
     \endraw
     
     The font type has components:
@@ -293,21 +202,12 @@
     <Text font.family="Helvetica" font.size="13" font.bold="true">
     \endcode
 
-    \raw HTML
-    </div>
-    </div>
-    \endraw
-
-    \target basicxmlaction
+    \target basicqmlaction
     \raw HTML
     <br>
-    <div class="memitem">
-    <div class="memproto">
-    <table class="memname">
-    <tr><td>action</td></tr>
+    <table>
+    <tr><td><div class="qmltype">action</div></td></tr>
     </table>
-    </div>
-    <div class="memdoc">
     \endraw
     
     The action type has all the properties of QAction, in particular:
@@ -325,42 +225,24 @@
     <Text text="{someitem.someaction.text}">
     \endcode
 
-    \raw HTML
-    </div>
-    </div>
-    \endraw
-
-    \target basicxmlany
+    \target basicqmlany
     \raw HTML
     <br>
-    <div class="memitem">
-    <div class="memproto">
-    <table class="memname">
-    <tr><td>any</td></tr>
+    <table>
+    <tr><td><div class="qmltype">any</div></td></tr>
     </table>
-    </div>
-    <div class="memdoc">
     \endraw
     
     The any type can accept any basic type, object or list.  Generally this
     is only used in very special cases.  The documentation for elements that
     use the any type will explain the constraints in that particular case.
 
-    \raw HTML
-    </div>
-    </div>
-    \endraw
-
-    \target basicxmllist
+    \target basicqmllist
     \raw HTML
     <br>
-    <div class="memitem">
-    <div class="memproto">
-    <table class="memname">
-    <tr><td>Lists</td></tr>
+    <table>
+    <tr><td><div class="qmltype">Lists</div></td></tr>
     </table>
-    </div>
-    <div class="memdoc">
     \endraw
     
     While not technically a basic type, QML also supports lists of object
@@ -380,8 +262,4 @@
     \endcode
     \c child1, \c child2 and \c child3 will all be added to the children list
     in the order in which they appear.
-    \raw HTML
-    </div>
-    </div>
-    \endraw
 */
