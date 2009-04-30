@@ -589,7 +589,8 @@ void QFxWebView::paintGLContents(GLPainter &p)
 
 #if defined(QFX_RENDER_QPAINTER)
     bool wasAA = p.testRenderHint(QPainter::Antialiasing);
-    p.setRenderHints(QPainter::Antialiasing, d->smooth);
+    bool wasSM = p.testRenderHint(QPainter::SmoothPixmapTransform);
+    p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
     QRectF clipf = p.clipRegion().boundingRect();
     const QRect clip = p.clipRegion().isEmpty() ? content : clipf.toRect();
 #elif defined(QFX_RENDER_OPENGL)
@@ -656,6 +657,7 @@ void QFxWebView::paintGLContents(GLPainter &p)
     }
 #if defined(QFX_RENDER_QPAINTER)
     p.setRenderHints(QPainter::Antialiasing, wasAA);
+    p.setRenderHints(QPainter::SmoothPixmapTransform, wasSM);
 #endif
 }
 
