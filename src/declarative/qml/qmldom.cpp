@@ -42,6 +42,7 @@
 #include "qmldom.h"
 #include "qmldom_p.h"
 #include "private/qmlcompiler_p.h"
+#include "private/qmlengine_p.h"
 #include "qmlcompiledcomponent_p.h"
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstring.h>
@@ -159,15 +160,28 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
 
     QmlCompiledComponent component;
     QmlCompiler compiler;
-    // ###
-//    compiler.compile(engine, parser, &component);
+
+    QmlCompositeTypeData *td = ((QmlEnginePrivate *)QmlEnginePrivate::get(engine))->typeManager.getImmediate(data, QUrl());;
+
+    if(td->status == QmlCompositeTypeData::Error) {
+        d->error = td->errorDescription;
+        td->release();
+        return false;
+    } else if(td->status == QmlCompositeTypeData::Waiting) {
+        d->error = QLatin1String("QmlDomDocument supports local types only");
+        td->release();
+        return false;
+    } 
+
+    compiler.compile(engine, td, &component);
 
     if (compiler.isError()) {
         d->error = compiler.errorDescription();
+        td->release();
         return false;
     }
 
-    if (parser.tree()) {
+    if (td->data.tree()) {
         component.dump(0, parser.tree());
         d->root = parser.tree();
         d->root->addref();
