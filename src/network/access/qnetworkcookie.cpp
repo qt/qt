@@ -976,14 +976,14 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
                     cookie.setExpirationDate(dt);
                 } else if (field.first == "domain") {
                     QByteArray rawDomain = field.second;
-                    QString maybeLeadingDot;
                     if (rawDomain.startsWith('.')) {
-                        maybeLeadingDot = QLatin1Char('.');
                         rawDomain = rawDomain.mid(1);
                     }
-
                     QString normalizedDomain = QUrl::fromAce(QUrl::toAce(QString::fromUtf8(rawDomain)));
-                    cookie.setDomain(maybeLeadingDot + normalizedDomain);
+                    // always add the dot, there are some servers that forget the
+                    // leading dot. This is actually forbidden according to RFC 2109,
+                    // but all browsers accept it anyway so we do that as well
+                    cookie.setDomain(QLatin1Char('.') + normalizedDomain);
                 } else if (field.first == "max-age") {
                     bool ok = false;
                     int secs = field.second.toInt(&ok);
@@ -1184,7 +1184,6 @@ bool QNetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieLis
                           cookie.expirationDate() < now;
 
         // validate the cookie & set the defaults if unset
-        // (RFC 2965: "The request-URI MUST path-match the Path attribute of the cookie.")
         if (cookie.path().isEmpty())
             cookie.setPath(defaultPath);
         else if (!isParentPath(pathAndFileName, cookie.path()))
