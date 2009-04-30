@@ -31,7 +31,7 @@ Item {
     }
     Image {
         id: Groove
-        src: "background.svg"
+        source: "background.svg"
     }
     MouseRegion {
         anchors.fill: Groove
@@ -39,7 +39,7 @@ Item {
     }
     Image {
         id: Knob
-        src: "knob.svg"
+        source: "knob.svg"
         x: 1
         y: 2
     }

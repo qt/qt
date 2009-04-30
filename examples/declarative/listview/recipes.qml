@@ -54,7 +54,7 @@ Rect {
                     width: parent.width
                     Image {
                         id: recipePic
-                        src: picture
+                        source: picture
                         width: 48
                         height: 48
                     }
@@ -115,13 +115,13 @@ Rect {
                     Image {
                         anchors.right: flick.right
                         anchors.top: flick.top
-                        src: "content/pics/moreUp.png"
+                        source: "content/pics/moreUp.png"
                         opacity: flick.atYBeginning ? 0 : 1
                     }
                     Image {
                         anchors.right: flick.right
                         anchors.bottom: flick.bottom
-                        src: "content/pics/moreDown.png"
+                        source: "content/pics/moreDown.png"
                         opacity: flick.atYEnd ? 0 : 1
                     }
                 }

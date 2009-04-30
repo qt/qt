@@ -25,13 +25,13 @@ Item {
 
     Image {
         id: Image
-        src: "pics/button.sci"
+        source: "pics/button.sci"
         width: Button.width; height: Button.height
     }
 
     Image {
         id: ImagePressed
-        src: "pics/button-pressed.sci"
+        source: "pics/button-pressed.sci"
         width: Button.width; height: Button.height
         opacity: 0
     }

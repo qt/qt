@@ -58,7 +58,7 @@ class Q_DECLARATIVE_EXPORT QmlScript : public QObject
     Q_DECLARE_PRIVATE(QmlScript);
 
     Q_PROPERTY(QString script READ script WRITE setScript);
-    Q_PROPERTY(QString src READ source WRITE setSource);
+    Q_PROPERTY(QString source READ source WRITE setSource);
     Q_CLASSINFO("DefaultProperty", "script");
 
 public:

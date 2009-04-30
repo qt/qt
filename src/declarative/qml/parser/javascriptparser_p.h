@@ -143,7 +143,7 @@ public:
     bool parse(JavaScriptEnginePrivate *driver);
 
     JavaScript::AST::UiProgram *ast()
-    { return sym(1).UiProgram; }
+    { return program; }
 
     QList<DiagnosticMessage> diagnosticMessages() const
     { return diagnostic_messages; }
@@ -182,6 +182,8 @@ protected:
     Value *sym_stack;
     int *state_stack;
     JavaScript::AST::SourceLocation *location_stack;
+
+    JavaScript::AST::UiProgram *program;
 
     // error recovery
     enum { TOKEN_BUFFER_SIZE = 3 };

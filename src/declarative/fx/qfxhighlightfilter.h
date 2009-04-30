@@ -56,7 +56,7 @@ class Q_DECLARATIVE_EXPORT QFxHighlightFilter : public QSimpleCanvasFilter
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString src READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(bool tiled READ tiled WRITE setTiled NOTIFY tiledChanged)
     Q_PROPERTY(int xOffset READ xOffset WRITE setXOffset NOTIFY offsetChanged)
     Q_PROPERTY(int yOffset READ yOffset WRITE setYOffset NOTIFY offsetChanged)

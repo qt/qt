@@ -55,7 +55,7 @@ QFxViewer::QFxViewer(QFxTestEngine::TestMode testMode, const QString &testDir, Q
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
     canvas->setFixedSize(width, height);
-    setFixedSize(width, height);
+    resize(width, height);
 }
 
 void QFxViewer::reload()
@@ -217,13 +217,19 @@ void QFxViewer::setRecordPeriod(int ms)
 
 void QFxViewer::sceneResized(QSize size)
 {
-    if(size.width() > 0 && size.height() > 0) {
+    if (size.width() > 0 && size.height() > 0) {
         canvas->setFixedSize(size.width(), size.height());
         if (skin)
             skin->setScreenSize(size);
         else
-            setFixedSize(size);
+            resize(size);
     }
+}
+
+void QFxViewer::resizeEvent(QResizeEvent *)
+{
+    if (!skin)
+        canvas->setFixedSize(width(),height());
 }
 
 void QFxViewer::keyPressEvent(QKeyEvent *event)

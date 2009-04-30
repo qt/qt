@@ -1,12 +1,47 @@
-<Rect id="page" width="{layout.width}" height="{layout.height}" color='white'>
-    <properties>
-        <Property name="mouseGrabbed" value="false"/>
-    </properties>
-    <VerticalLayout id="layout" width="{contents.width}" margin="5" spacing="5">
-        <GroupBox contents="ContactField1.qml" label="Loading Component"/>
-        <GroupBox contents="ContactField2.qml" label="Using properties"/>
-        <GroupBox contents="ContactField3.qml" label="Defining signals"/>
-        <GroupBox contents="Contact3.qml" label="Multiple Items"/>
-        <GroupBox contents="Contact4.qml" label="Mouse Grabbing"/>
-    </VerticalLayout>
-</Rect>
+Rect {
+    id: page
+    width: layout.width
+    height: layout.height
+    color: "white"
+    GridLayout {
+        id: layout
+        columns: 2
+        rows: 4
+        width: contents.width
+        GroupBox {
+            contents: "1/ContactField.qml"
+            label: "Loading: simple"
+        }
+        GroupBox {
+            contents: "1a/ContactField.qml"
+            label: "Loading: qml property"
+        }
+        GroupBox {
+            contents: "1b/ContactField.qml"
+            label: "Loading: added path"
+        }
+        GroupBox {
+            contents: "2/ContactField.qml"
+            label: "Using properties"
+        }
+        GroupBox {
+            id: prev
+            contents: "3/ContactField.qml"
+            label: "Defining signals"
+        }
+        Rect {
+            color: "black"
+            opacity: 0.3
+            width: prev.width
+            height: prev.height
+        }
+        GroupBox {
+            contents: "3/Contact.qml"
+            label: "Multiple Items"
+        }
+        GroupBox {
+            contents: "4/Contact.qml"
+            label: "Mouse Grabbing"
+        }
+    }
+}

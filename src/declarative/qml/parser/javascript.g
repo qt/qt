@@ -87,7 +87,7 @@
 %nonassoc T_IDENTIFIER T_COLON
 %nonassoc REDUCE_HERE
 
-%start Program
+%start UiProgram
 
 /.
 /****************************************************************************
@@ -286,7 +286,7 @@ public:
     bool parse(JavaScriptEnginePrivate *driver);
 
     JavaScript::AST::UiProgram *ast()
-    { return sym(1).UiProgram; }
+    { return program; }
 
     QList<DiagnosticMessage> diagnosticMessages() const
     { return diagnostic_messages; }
@@ -325,6 +325,8 @@ protected:
     Value *sym_stack;
     int *state_stack;
     JavaScript::AST::SourceLocation *location_stack;
+
+    JavaScript::AST::UiProgram *program;
 
     // error recovery
     enum { TOKEN_BUFFER_SIZE = 3 };
@@ -422,6 +424,7 @@ bool JavaScriptParser::parse(JavaScriptEnginePrivate *driver)
     first_token = last_token = 0;
 
     tos = -1;
+    program = 0;
 
     do {
         if (++tos == stack_size)
@@ -466,11 +469,12 @@ bool JavaScriptParser::parse(JavaScriptEnginePrivate *driver)
 -- Declarative UI
 --------------------------------------------------------------------------------------------------------
 
-Program: UiImportListOpt UiObjectMemberList ;
+UiProgram: UiImportListOpt UiObjectMemberList ;
 /.
 case $rule_number: {
-    sym(1).Node = makeAstNode<AST::UiProgram> (driver->nodePool(), sym(1).UiImportList,
+  program = makeAstNode<AST::UiProgram> (driver->nodePool(), sym(1).UiImportList,
         sym(2).UiObjectMemberList->finish());
+  sym(1).UiProgram = program;    
 } break;
 ./
 
@@ -602,7 +606,7 @@ case $rule_number: {
         sym(4).UiObjectMemberList->finish());
     node->colonToken = loc(2);
     node->lbracketToken = loc(3);
-    node->rbraceToken = loc(5);
+    node->rbracketToken = loc(5);
     sym(1).Node = node;
 }   break;
 ./
@@ -2643,6 +2647,7 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
                 yytoken = *tk;
                 yylval = 0;
                 yylloc = token_buffer[0].loc;
+		yylloc.length = 0;
 
                 first_token = &token_buffer[0];
                 last_token = &token_buffer[2];
@@ -2665,6 +2670,7 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
                 yytoken = tk;
                 yylval = 0;
                 yylloc = token_buffer[0].loc;
+		yylloc.length = 0;
 
                 action = errorState;
                 goto _Lcheck_token;
