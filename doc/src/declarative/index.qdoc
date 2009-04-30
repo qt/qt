@@ -13,7 +13,7 @@ user-interfaces.
 
 Building fluid applications is done declaratively, rather than procedurally.
 That is, you specify \e what the UI should look like and how it should behave 
-in an XML-based format called QML instead of specifying step-by-step \e how to 
+in an declarative format called QML instead of specifying step-by-step \e how to
 build it in a language like C++ or JavaScript.  Specifying a UI declaratively 
 does not just include the layout of the interface items, but also the way each
 individual item looks and behaves and the overall flow of the application.
