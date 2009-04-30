@@ -5,12 +5,10 @@
 
 class RocketItem: public GameItem
 {
+    Q_OBJECT
 public:
-    enum { Type = UserType + 2 };
+    RocketItem(QObject *parent = 0);
 
-    RocketItem();
-
-    int type() const { return Type; }
     virtual void idle(qreal elapsed);
     qreal speed() const { return 100.0; }
     void setDirection(qreal direction) { m_direction = direction; }
@@ -18,7 +16,6 @@ public:
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     QRectF boundingRect() const;
-
 
 private:
     qreal m_direction;

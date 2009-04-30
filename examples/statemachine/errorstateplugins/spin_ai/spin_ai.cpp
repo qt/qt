@@ -2,7 +2,7 @@
 
 #include <QtPlugin>
 
-QState *SpinAi::create(QState *parentState, Tank *tank)
+QState *SpinAi::create(QState *parentState, QObject *tank)
 {
     QState *topLevel = new QState(parentState);
     QState *spinState = new SpinState(tank, topLevel);    

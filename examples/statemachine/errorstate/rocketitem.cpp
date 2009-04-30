@@ -10,8 +10,8 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-RocketItem::RocketItem()
-    : m_direction(0.0), m_distance(300.0)
+RocketItem::RocketItem(QObject *parent)
+    : GameItem(parent), m_direction(0.0), m_distance(300.0)
 {
 }
 
@@ -48,8 +48,11 @@ void RocketItem::idle(qreal elapsed)
     if (requestedPosition == nextPosition) {
         setPos(nextPosition);
     } else {
-        if (TankItem *tankItem = qgraphicsitem_cast<TankItem *>(collidedItem))
-            tankItem->hitByRocket();
+        if (GameItem *gameItem = qgraphicsitem_cast<GameItem *>(collidedItem)) {
+            TankItem *tankItem = qobject_cast<TankItem *>(gameItem);
+            if (tankItem != 0)
+                tankItem->hitByRocket();
+        }
         
         scene()->removeItem(this);
         delete this;

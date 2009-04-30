@@ -2,6 +2,10 @@
 
 #include <QGraphicsScene>
 
+GameItem::GameItem(QObject *parent) : QObject(parent)
+{
+}
+
 QPointF GameItem::tryMove(const QPointF &requestedPosition, QLineF *collidedLine, 
                           QGraphicsItem **collidedItem) const
 {

@@ -2,23 +2,23 @@
 #define SPIN_AI_H
 
 #include <errorstate/plugin.h>
-#include <errorstate/tank.h>
 
 #include <QObject>
 #include <QState>
+#include <QVariant>
 
 class SpinState: public QState
 {
     Q_OBJECT
 public:
-    SpinState(Tank *tank, QState *parent) : QState(parent), m_tank(tank)
+    SpinState(QObject *tank, QState *parent) : QState(parent), m_tank(tank)
     {
     }
 
 public slots:
     void spin() 
     {
-        m_tank->turn(90.0);
+        m_tank->setProperty("direction", 90.0);
     }
 
 protected:
@@ -29,7 +29,7 @@ protected:
     }
 
 private:
-    Tank *m_tank;
+    QObject *m_tank;
 
 };
 
@@ -38,7 +38,7 @@ class SpinAi: public QObject, public Plugin
     Q_OBJECT
     Q_INTERFACES(Plugin)
 public:
-    virtual QState *create(QState *parentState, Tank *tank);
+    virtual QState *create(QState *parentState, QObject *tank);
 };
 
 #endif

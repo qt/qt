@@ -86,9 +86,9 @@ private:
 };
 
 TankItem::TankItem(QObject *parent) 
-    : Tank(parent), m_currentAction(0), m_currentDirection(0.0), m_enabled(true)
+    : GameItem(parent), m_currentAction(0), m_currentDirection(0.0), m_enabled(true)
 {
-    connect(this, SIGNAL(fireCannon()), this, SIGNAL(actionCompleted()));
+    connect(this, SIGNAL(cannonFired()), this, SIGNAL(actionCompleted()));
 }
 
 void TankItem::idle(qreal elapsed)
@@ -119,6 +119,11 @@ void TankItem::setAction(Action *newAction)
         delete m_currentAction;
 
     m_currentAction = newAction;
+}
+
+void TankItem::fireCannon()
+{
+    emit cannonFired();
 }
 
 void TankItem::moveForwards(qreal length)

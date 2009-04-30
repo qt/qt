@@ -4,9 +4,15 @@
 #include <QGraphicsItem>
 
 class QLineF;
-class GameItem: public QGraphicsItem
+class GameItem: public QObject, public QGraphicsItem
 {
+    Q_OBJECT
 public:
+    enum { Type = UserType + 1 };
+    int type() const { return Type; }
+
+    GameItem(QObject *parent = 0);
+
     virtual void idle(qreal elapsed) = 0;
 
 protected:

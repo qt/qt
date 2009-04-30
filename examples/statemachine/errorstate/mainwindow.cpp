@@ -167,12 +167,7 @@ void MainWindow::runStep()
             qreal elapsedSecs = elapsed / 1000.0;
             QList<QGraphicsItem *> items = m_scene->items();
             foreach (QGraphicsItem *item, items) {
-                // ###
-                GameItem *gameItem = qgraphicsitem_cast<TankItem *>(item);
-                if (gameItem == 0)
-                    gameItem = qgraphicsitem_cast<RocketItem *>(item);
-
-                if (gameItem != 0)
+                if (GameItem *gameItem = qgraphicsitem_cast<GameItem *>(item))
                     gameItem->idle(elapsedSecs);
             }
         }
@@ -204,7 +199,7 @@ void MainWindow::addTank()
     if (plugin != 0) {
         TankItem *tankItem = m_spawns.takeLast();
         m_scene->addItem(tankItem);
-        connect(tankItem, SIGNAL(fireCannon()), this, SLOT(addRocket()));
+        connect(tankItem, SIGNAL(cannonFired()), this, SLOT(addRocket()));
         if (m_spawns.isEmpty())
             emit mapFull();
         

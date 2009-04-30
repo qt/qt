@@ -56,7 +56,7 @@ class RandomAiPlugin: public QObject, public Plugin
     Q_OBJECT
     Q_INTERFACES(Plugin)
 public:
-    virtual QState *create(QState *parentState, Tank *tank);
+    virtual QState *create(QState *parentState, QObject *tank);
 };
 
 #endif // RANDOM_AI_PLUGIN_H
