@@ -3,18 +3,18 @@
 \target qmlexamples
 \title QML Examples
 
-A viewer application is included that allows you to quickly explore many of the
+A \l {qmlviewer}{viewer} application is included that allows you to quickly explore many of the
 examples.  It has some useful options, revealed by:
 
 \code
-    bin/duiviewer -help
+    bin/qmlviewer -help
 \endcode
 
-There are several illustrative XML examples available.  From your build 
+There are several illustrative QML examples available.  From your build 
 directory, 
 
 \code
-    bin/duiviewer $QT_SOURCE_DIR/examples/declarative/mediabrowser/mediabrowser.qml
+    bin/qmlviewer $QT_SOURCE_DIR/demos/declarative/phonebrowser/phonebrowser.qml
 \endcode
 
 Many other simple examples can be found under the \c examples/declarative sub 
@@ -31,6 +31,5 @@ own QML-based applications.
 \note When running applications that only use the Fluid UI atoms under the 
 software rasterizer, a simple canvas backend is used by default. To use 
 Graphics View instead, set \c QML_USE_GRAPHICSVIEW=1.
-
 
 */

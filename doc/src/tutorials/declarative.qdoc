@@ -77,7 +77,7 @@
     sub directory the files are numbered in an order of increasing features.
 
     The code in this example is not compiled, but interpreted at run time.
-    This means you should use the duiviewer application provided with
+    This means you should use the qmlviewer application provided with
     Qt to run the examples.
 
     \list

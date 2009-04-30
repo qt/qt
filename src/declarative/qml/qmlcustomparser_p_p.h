@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,42 +39,41 @@
 **
 ****************************************************************************/
 
-/*!
-    \page duiviewer.html
-    \title Declarative UI Viewer (duiviewer)
-    \ingroup qttools
-    \keyword duiviewer
+#ifndef QMLCUSTOMPARSER_P_H
+#define QMLCUSTOMPARSER_P_H
 
-    This page documents the \e{Declarative UI Viewer} for the Qt GUI
-    toolkit. The \c duiviewer reads an XML format declarative user interface definition
-    (\c .qml) file
-    and displays the user interface it describes.
+#include <QtCore/qglobal.h>
+#include "qmlcustomparser_p.h"
 
-    \section1 Options
+QT_BEGIN_NAMESPACE
 
-    When run with the \c -help option, duiviewer shows available options.
+namespace QmlParser
+{
+    class Object;
+    class Property;
+};
 
-    \section1 Dummy Data
+class QmlCustomParserNodePrivate
+{
+public:
+    QByteArray name;
+    QList<QmlCustomParserProperty> properties;
 
-    One use of duiviewer is to allow QML files to be viewed stand-alone,
-    rather than being loaded from within a Qt program. Qt applications will
-    usually bind objects and properties into the execution context before
-    running the QML. To stand-in for such bindings, you can provide dummy
-    data: create a directory called "dummydata" in the same directory as
-    the target QML file and create files there with the "qml" extension.
-    All such files will be loaded as QML objects and bound to the root
-    context as a property with the name of the file (without ".qml").
+    static QmlCustomParserNode fromObject(QmlParser::Object *);
+    static QmlCustomParserProperty fromProperty(QmlParser::Property *);
+};
 
-    For example, if the Qt application has a "clock.time" property
-    that is a qreal from 0 to 86400 representing the number of seconds since
-    midnight, dummy data for this could be provided by \c dummydata/clock.qml:
-    \code
-        <Object>
-            <properties>
-                <Property name="time" value="12345"/>
-            </properties>
-        </Object>
-    \endcode
-    Any QML can be used in the dummy data files. You could even animate the
-    fictional data!
-*/
+class QmlCustomParserPropertyPrivate
+{
+public:
+    QmlCustomParserPropertyPrivate()
+        : isList(false) {}
+
+    QByteArray name;
+    bool isList;
+    QList<QVariant> values;
+};
+
+QT_END_NAMESPACE
+
+#endif // QMLCUSTOMPARSER_P_H

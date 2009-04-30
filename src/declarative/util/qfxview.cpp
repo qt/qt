@@ -265,7 +265,7 @@ void QFxView::continueExecute()
             d->root = item;
             connect(item, SIGNAL(widthChanged()), this, SLOT(sizeChanged()));
             connect(item, SIGNAL(heightChanged()), this, SLOT(sizeChanged()));
-            sizeChanged();
+            emit sceneResized(QSize(d->root->width(),d->root->height()));
         } else if (QWidget *wid = qobject_cast<QWidget *>(obj)) {
             window()->setAttribute(Qt::WA_OpaquePaintEvent, false);
             window()->setAttribute(Qt::WA_NoSystemBackground, false);

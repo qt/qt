@@ -650,12 +650,12 @@ void QFxGridViewPrivate::updateCurrent(int modelIndex)
     \brief The GridView element provides a grid view of items provided by a model.
 
     The model is typically provided by a QAbstractListModel "C++ model object",
-    but can also be created directly in XML.
+    but can also be created directly in QML.
 
     The items are laid out top to bottom (vertically) or left to right (horizontally)
     and may be flicked to scroll.
 
-    The below example creates a very simple grid, using an XML model.
+    The below example creates a very simple grid, using a QML model.
     \code
     <resources>
         <ListModel id="contactModel">
@@ -706,7 +706,7 @@ QFxGridView::~QFxGridView()
   The C++ model object must be a \l QListModelInterface subclass, a \l VisualModel,
   or a simple list.
 
-  Models can also be created directly in XML, using the \l ListModel element. For example:
+  Models can also be created directly in QML, using the \l ListModel element. For example:
   \code
   <ListModel id="contactModel">
       <Contact>

@@ -1,103 +1,103 @@
-<ListModel>
-    <Contact>
-        <firstName>Aaron</firstName>
-        <lastName>Kennedy</lastName>
-        <portrait>contact.png</portrait>
-        <emails>
-            <Email address="akennedy@trolltech.com"/>
-            <Email address="aaron.kennedy@trolltech.com"/>
-        </emails>
-    </Contact>
-    <Contact>
-        <firstName>Contact</firstName>
-        <lastName>1</lastName>
-        <portrait>contact.png</portrait>
-    </Contact>
-    <Contact>
-        <firstName>Contact</firstName>
-        <lastName>2</lastName>
-        <portrait>contact.png</portrait>
-    </Contact>
-    <Contact>
-        <firstName>Contact</firstName>
-        <lastName>3</lastName>
-        <portrait>contact.png</portrait>
-    </Contact>
-    <Contact>
-        <firstName>Contact</firstName>
-        <lastName>4</lastName>
-        <portrait>contact.png</portrait>
-    </Contact>
-    <Contact>
-        <firstName>Contact</firstName>
-        <lastName>5</lastName>
-        <portrait>contact.png</portrait>
-    </Contact>
-    <Contact>
-        <firstName>Contact</firstName>
-        <lastName>6</lastName>
-        <portrait>contact.png</portrait>
-    </Contact>
-    <Contact>
-        <firstName>Contact</firstName>
-        <lastName>7</lastName>
-        <portrait>contact.png</portrait>
-    </Contact>
-    <Contact>
-        <firstName>Contact</firstName>
-        <lastName>8</lastName>
-        <portrait>contact.png</portrait>
-    </Contact>
-    <Contact>
-        <firstName>Contact</firstName>
-        <lastName>9</lastName>
-        <portrait>contact.png</portrait>
-    </Contact>
-    <Contact>
-        <firstName>Alan</firstName>
-        <lastName>Alpert</lastName>
-        <portrait>contact.png</portrait>
-    </Contact>
-    <Contact>
-        <firstName>Betty</firstName>
-        <lastName>Boo</lastName>
-        <portrait>contact.png</portrait>
-    </Contact>
-    <Contact>
-        <firstName>Foo</firstName>
-        <lastName>Bar</lastName>
-        <portrait>contact.png</portrait>
-    </Contact>
-    <Contact>
-        <firstName>Marius</firstName>
-        <lastName>Bugge Monsen</lastName>
-        <portrait>contact.png</portrait>
-    </Contact>
-    <Contact>
-        <firstName>Martin</firstName>
-        <lastName>Jones</lastName>
-        <portrait>contact.png</portrait>
-        <emails>
-            <Email address="mjones@trolltech.com"/>
-            <Email address="martin.jones@trolltech.com"/>
-        </emails>
-    </Contact>
-    <Contact>
-        <firstName>Michael</firstName>
-        <lastName>Brasser</lastName>
-        <portrait>contact.png</portrait>
-        <emails>
-            <Email address="mbrasser@trolltech.com"/>
-        </emails>
-    </Contact>
-    <Contact>
-        <firstName>Yann</firstName>
-        <lastName>Bodson</lastName>
-        <portrait>contact.png</portrait>
-    </Contact>
-    <Contact>
-        <firstName>Yogi</firstName>
-        <lastName>Bear</lastName>
-        <portrait>contact.png</portrait>
-    </Contact>
-</ListModel>
+ListModel2 {
+    ListElement {
+        firstName: "Aaron"
+        lastName: "Kennedy"
+        portrait: "contact.png"
+        emails: [ 
+            ListElement { address: "akennedy@trolltech.com" },
+            ListElement { address: "aaron.kennedy@trolltech.com" }
+        ]
+    }
+    ListElement {
+        firstName: "ListElement"
+        lastName: 1
+        portrait: "contact.png"
+    }
+    ListElement {
+        firstName: "ListElement"
+        lastName: 2
+        portrait: "contact.png"
+    }
+    ListElement {
+        firstName: "ListElement"
+        lastName: 3
+        portrait: "contact.png"
+    }
+    ListElement {
+        firstName: "ListElement"
+        lastName: 4
+        portrait: "contact.png"
+    }
+    ListElement {
+        firstName: "ListElement"
+        lastName: 5
+        portrait: "contact.png"
+    }
+    ListElement {
+        firstName: "ListElement"
+        lastName: 6
+        portrait: "contact.png"
+    }
+    ListElement {
+        firstName: "ListElement"
+        lastName: 7
+        portrait: "contact.png"
+    }
+    ListElement {
+        firstName: "ListElement"
+        lastName: 8
+        portrait: "contact.png"
+    }
+    ListElement {
+        firstName: "ListElement"
+        lastName: 9
+        portrait: "contact.png"
+    }
+    ListElement {
+        firstName: "Alan"
+        lastName: "Alpert"
+        portrait: "contact.png"
+    }
+    ListElement {
+        firstName: "Betty"
+        lastName: "Boo"
+        portrait: "contact.png"
+    }
+    ListElement {
+        firstName: "Foo"
+        lastName: "Bar"
+        portrait: "contact.png"
+    }
+    ListElement {
+        firstName: "Marius"
+        lastName: "Bugge Monsen"
+        portrait: "contact.png"
+    }
+    ListElement {
+        firstName: "Martin"
+        lastName: "Jones"
+        portrait: "contact.png"
+        emails: [
+            ListElement { address: "mjones@trolltech.com" },
+            ListElement { address: "martin.jones@trolltech.com" }
+        ]
+    }
+    ListElement {
+        firstName: "Michael"
+        lastName: "Brasser"
+        portrait: "contact.png"
+        emails: ListElement {
+            address: "mbrasser@trolltech.com"
+        }
+    }
+    ListElement {
+        firstName: "Yann"
+        lastName: "Bodson"
+        portrait: "contact.png"
+    }
+    ListElement {
+        firstName: "Yogi"
+        lastName: "Bear"
+        portrait: "contact.png"
+    }
+}

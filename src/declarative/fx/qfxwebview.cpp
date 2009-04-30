@@ -221,7 +221,13 @@ public:
     if the idealHeight is changed after the content is loaded.
 
     \code
-    <WebView url="http://www.nokia.com" smooth="true" scale="0.5" width="490" height="400"/>
+    WebView {
+        url: "http://www.nokia.com"
+        width: 490
+        height: 400
+        scale: 0.5
+        smooth: true
+    }
     \endcode
 
     \image webview.png
@@ -589,7 +595,8 @@ void QFxWebView::paintGLContents(GLPainter &p)
 
 #if defined(QFX_RENDER_QPAINTER)
     bool wasAA = p.testRenderHint(QPainter::Antialiasing);
-    p.setRenderHints(QPainter::Antialiasing, d->smooth);
+    bool wasSM = p.testRenderHint(QPainter::SmoothPixmapTransform);
+    p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
     QRectF clipf = p.clipRegion().boundingRect();
     const QRect clip = p.clipRegion().isEmpty() ? content : clipf.toRect();
 #elif defined(QFX_RENDER_OPENGL)
@@ -656,6 +663,7 @@ void QFxWebView::paintGLContents(GLPainter &p)
     }
 #if defined(QFX_RENDER_QPAINTER)
     p.setRenderHints(QPainter::Antialiasing, wasAA);
+    p.setRenderHints(QPainter::SmoothPixmapTransform, wasSM);
 #endif
 }
 
@@ -996,23 +1004,12 @@ QString QFxWebView::html() const
     \qmlproperty string WebView::html
     This property holds HTML text set directly
 
-    The html property can be set as a string (using CDATA for large blocks),
-    or as xhtml inline using the XML namespace http://www.w3.org/1999/xhtml:
+    The html property can be set as a string.
 
     \code
-    <WebView>
-        <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>This is valid xHTML.</p>
-        </html>
-    </WebView>
-    \endcode
-
-    \code
-    <WebView>
-        <html>&lt;CDATA[
-        <p>This is just HTML.
-    ]]&gt;html>
-    </WebView>
+    WebView {
+        html: "<p>This is <b>HTML</b>."
+    }
     \endcode
 */
 void QFxWebView::setHtml(const QString &html, const QUrl &baseUrl)

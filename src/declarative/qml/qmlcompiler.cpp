@@ -59,7 +59,7 @@
 #include <qmlcontext.h>
 #include <qmlmetatype.h>
 #include <QtCore/qdebug.h>
-#include "private/qmlcustomparser_p.h"
+#include "private/qmlcustomparser_p_p.h"
 
 #include "qmlscriptparser_p.h"
 

@@ -99,7 +99,7 @@ private:
     \brief The PathView element lays out model-provided items on a path.
     \inherits Item
 
-    The model is typically provided by a QAbstractListModel "C++ model object", but can also be created directly in XML.
+    The model is typically provided by a QAbstractListModel "C++ model object", but can also be created directly in QML.
 
     The items are laid out along a path defined by a \l Path and may be flicked to scroll.
 
@@ -140,6 +140,7 @@ QFxPathView::~QFxPathView()
 
     The model provides a set of data that is used to create the items for the view.
     For large or dynamic datasets the model is usually provided by a C++ model object.
+    Models can also be created directly in XML, using the ListModel element.
 */
 
 /*!

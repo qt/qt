@@ -1676,7 +1676,7 @@ QmlList<QmlTransition *>* QFxItem::transitions()
   the item, or giving it a \l Reflection.  Some
   filters may not be available on all canvases; if a filter is not
   available on a certain canvas, it will simply not be applied for
-  that canvas (but the XML will still be considered valid).
+  that canvas (but the QML will still be considered valid).
 
   \qml
   <Item>

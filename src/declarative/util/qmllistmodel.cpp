@@ -42,7 +42,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qstack.h>
 #include <QXmlStreamReader>
-#include "qmlcustomparser.h"
+#include <private/qmlcustomparser_p.h>
 #include "qmlopenmetaobject.h"
 #include <qmlcontext.h>
 #include <qmlbindablevalue.h>

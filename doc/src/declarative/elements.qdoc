@@ -7,7 +7,7 @@ The following table lists the Qml elements provided by the Qt Declarative module
 
 \bold {Standard Qt Declarative Elements}
 
-\table
+\table 100%
 \header
 \o \bold {States}
 \o \bold {Animation and Transitions}
@@ -51,7 +51,7 @@ The following table lists the Qml elements provided by the Qt Declarative module
 
 \bold {Fluid UI Primitives}
 
-\table
+\table 100%
 \header
 \o \bold {Basic Items}
 \o \bold {Utility}
