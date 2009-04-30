@@ -462,7 +462,7 @@ int QS60StylePrivate::focusRectPenWidth()
     return pixelMetric(QS60Style::PM_DefaultFrameWidth);
 }
 
-void QS60StylePrivate::setThemePalette(QWidget *widget) const
+void QS60StylePrivate::setThemePalette(QApplication *app) const
 {
     QPalette widgetPalette = QPalette(Qt::white);
 
@@ -498,31 +498,14 @@ void QS60StylePrivate::setThemePalette(QWidget *widget) const
     QColor toolTipColor = colorFromFrameGraphics(QS60StylePrivate::SF_ToolTip);
     widgetPalette.setColor(QPalette::ToolTipBase, toolTipColor );
 
-    // widget specific colors
-    if (QSlider *slider = qobject_cast<QSlider *>(widget)){
-        widgetPalette.setColor(QPalette::All, QPalette::WindowText,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors, 8, 0));
-    } else if (QPushButton *button = qobject_cast<QPushButton *>(widget)){
-        widgetPalette.setColor(QPalette::Active, QPalette::ButtonText,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
-        widgetPalette.setColor(QPalette::Inactive, QPalette::ButtonText,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
-    } else if (QHeaderView *table = qobject_cast<QHeaderView *>(widget)){
-        widgetPalette.setColor(QPalette::Active, QPalette::ButtonText,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 23, 0));
-    } else if (QMenuBar *menuBar = qobject_cast<QMenuBar *>(widget)){
-        widgetPalette.setColor(QPalette::All, QPalette::ButtonText,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 8, 0));
-    } else if (QTabBar *tabBar = qobject_cast<QTabBar *>(widget)){
-        widgetPalette.setColor(QPalette::Active, QPalette::WindowText,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 4, 0));
-    } else if (QTableView *table = qobject_cast<QTableView *>(widget)){
-        widgetPalette.setColor(QPalette::All, QPalette::Text,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 22, 0));
-    }
+    app->setPalette(widgetPalette);
+}
 
-    if (widget)
-        widget->setPalette(widgetPalette);
+void QS60Style::polish(QApplication *application)
+{
+    Q_D(const QS60Style);
+    originalPalette = application->palette();
+    d->setThemePalette(application);
 }
 
 void QS60Style::polish(QWidget *widget)
@@ -546,10 +529,41 @@ void QS60Style::polish(QWidget *widget)
         widget->setAttribute(Qt::WA_StyledBackground);
     }
 
-    if (widget){
-        d->setThemePalette(widget);
-    }
+    QPalette widgetPalette = widget->palette();
 
+    // widget specific colors
+    if (QSlider *slider = qobject_cast<QSlider *>(widget)){
+        widgetPalette.setColor(QPalette::All, QPalette::WindowText,
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors, 8, 0));
+        QApplication::setPalette(widgetPalette, "QSlider");
+    } else if (QPushButton *button = qobject_cast<QPushButton *>(widget)){
+        widgetPalette.setColor(QPalette::Active, QPalette::ButtonText,
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
+        widgetPalette.setColor(QPalette::Inactive, QPalette::ButtonText,
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
+        QApplication::setPalette(widgetPalette, "QPushButton");
+    } else if (QHeaderView *table = qobject_cast<QHeaderView *>(widget)){
+        widgetPalette.setColor(QPalette::Active, QPalette::ButtonText,
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 23, 0));
+        QApplication::setPalette(widgetPalette, "QHeaderView");
+    } else if (QMenuBar *menuBar = qobject_cast<QMenuBar *>(widget)){
+        widgetPalette.setColor(QPalette::All, QPalette::ButtonText,
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 8, 0));
+        QApplication::setPalette(widgetPalette, "QMenuBar");
+    } else if (QTabBar *tabBar = qobject_cast<QTabBar *>(widget)){
+        widgetPalette.setColor(QPalette::Active, QPalette::WindowText,
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 4, 0));
+        QApplication::setPalette(widgetPalette, "QTabBar");
+    } else if (QTableView *table = qobject_cast<QTableView *>(widget)){
+        widgetPalette.setColor(QPalette::All, QPalette::Text,
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 22, 0));
+        QApplication::setPalette(widgetPalette, "QTableView");
+    }
+}
+
+void QS60Style::unpolish(QApplication *application)
+{
+    application->setPalette(originalPalette);
 }
 
 void QS60Style::unpolish(QWidget *widget)

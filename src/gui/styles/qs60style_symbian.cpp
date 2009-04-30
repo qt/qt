@@ -969,18 +969,18 @@ void QS60Style::handleDynamicLayoutVariantSwitch()
     d->setActiveLayout();
 #endif // QT_S60STYLE_LAYOUTDATA_SIMULATED
     d->refreshUI();
+    d->setThemePalette(qApp);
     foreach (QWidget *widget, QApplication::allWidgets())
-        d->setThemePalette(widget);
+        widget->ensurePolished();
 }
 
 void QS60Style::handleSkinChange()
 {
     Q_D(QS60Style);
     d->clearCaches();
-    foreach (QWidget *topLevelWidget, QApplication::allWidgets()){
-        d->setThemePalette(topLevelWidget);
-        topLevelWidget->update();
-    }
+    d->setThemePalette(qApp);
+    foreach (QWidget *topLevelWidget, QApplication::allWidgets())
+        topLevelWidget->ensurePolished();
 }
 
 QT_END_NAMESPACE
