@@ -3,6 +3,7 @@ Rect {
     width: 640
     height: 480
     color: "#000000"
+
     // Make a ball to bounce
     Rect {
         id: Ball
@@ -11,6 +12,7 @@ Rect {
         height: 20
         color: "#00ee00"
         z: 1
+
         // Add a property for the target y coordinate
         properties: Property {
             name: "targetY"
@@ -20,6 +22,7 @@ Rect {
             name: "direction"
             value: "right"
         }
+
         // Move the ball to the right and back to the left repeatedly
         x: SequentialAnimation {
             running: true
@@ -43,17 +46,22 @@ Rect {
                 value: "right"
             }
         }
+
         // Make y follow the target y coordinate, with a velocity of 200
         y: Follow {
             source: Ball.targetY
             velocity: 200
         }
+
         // Detect the ball hitting the top or bottom of the view and bounce it
-        onTopChanged: { if (y <= 0)
+        onTopChanged: {
+            if (y <= 0)
                 targetY = Page.height-20;
             else if (y >= Page.height-20)
-                targetY = 0; }
+                targetY = 0;
+        }
     }
+
     // Place bats to the left and right of the view, following the y
     // coordinates of the ball.
     Rect {
@@ -80,41 +88,44 @@ Rect {
             enabled: Ball.direction == 'right'
         }
     }
+
     // The rest, to make it look realistic, if neither ever scores...
     Rect {
         color: "#00ee00"
+        x: 320-80
+        y: 0
         width: 40
         height: 60
-        x: 320-80
     }
     Rect {
         color: "#000000"
-        width: 20
-        height: 40
         x: 320-70
         y: 10
+        width: 20
+        height: 40
     }
     Rect {
         color: "#00ee00"
+        x: 320+40
+        y: 0
         width: 40
         height: 60
-        x: 320+40
     }
     Rect {
         color: "#000000"
-        width: 20
-        height: 40
         x: 320+50
         y: 10
+        width: 20
+        height: 40
     }
     Repeater {
         dataSource: 24
         Rect {
             color: "#00ee00"
-            width: 10
-            height: 10
             x: 320-5
             y: index*20
+            width: 10
+            height: 10
         }
     }
 }
