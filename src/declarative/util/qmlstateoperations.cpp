@@ -59,6 +59,7 @@ public:
 };
 
 /*!
+    \preliminary
     \qmlclass ParentChange
     \brief The ParentChange element allows you to reparent an object in a state.
 */
