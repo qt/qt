@@ -119,7 +119,7 @@ QFxHighlightFilter::~QFxHighlightFilter()
 */
 
 /*!
-    \property QFxHighlightFilter::src
+    \property QFxHighlightFilter::source
     \brief the URL of the image to be used as the highlight.
 */
 QString QFxHighlightFilter::source() const

@@ -39,13 +39,13 @@
         width="22" height="22"
         anchors.right="{parent.right}" anchors.rightMargin="4"
         anchors.verticalCenter="{parent.verticalCenter}"
-        src="../shared/pics/cancel.png"
+        source="../shared/pics/cancel.png"
         opacity="0"/>
     <Image id="confirmIcon"
         width="22" height="22"
         anchors.left="{parent.left}" anchors.leftMargin="4"
         anchors.verticalCenter="{parent.verticalCenter}"
-        src="../shared/pics/ok.png"
+        source="../shared/pics/ok.png"
         opacity="0"/>
     <TextEdit id="textEdit"
         anchors.left="{parent.left}" anchors.leftMargin="0"
@@ -63,7 +63,7 @@
         color="#505050"
         font.italic="true"
         text="{fieldText.label}"
-        opacity="{textEdit.text != '' ? 0 : 1}">
+        opacity="{textEdit.text == '' ? 1 : 0}">
         <opacity>
             <Behaviour>
                 <NumericAnimation property="opacity" duration="250"/>

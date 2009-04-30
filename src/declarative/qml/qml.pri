@@ -33,6 +33,7 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlcomponent.h \
     qml/qmlcomponent_p.h \
     qml/qmlcustomparser.h \
+    qml/qmlcustomparser_p.h \
     qml/qmlpropertyvaluesource.h \
     qml/qmlboundsignal_p.h \
     qml/qmlxmlparser_p.h \

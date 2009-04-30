@@ -128,6 +128,11 @@ public:
           startLine(0), startColumn(0)
     { }
 
+    bool isValid() const { return length != 0; }
+
+    quint32 begin() const { return offset; }
+    quint32 end() const { return offset + length; }
+
 // attributes
     // ### encode
     quint32 offset;
@@ -2175,6 +2180,40 @@ public:
     UiObjectMemberList *members;
 };
 
+class UiQualifiedId: public Node
+{
+public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiQualifiedId)
+
+    UiQualifiedId(JavaScriptNameIdImpl *name)
+        : next(this), name(name)
+    { kind = K; }
+
+    UiQualifiedId(UiQualifiedId *previous, JavaScriptNameIdImpl *name)
+        : name(name)
+    {
+        kind = K;
+        next = previous->next;
+        previous->next = this;
+    }
+
+    virtual ~UiQualifiedId() {}
+
+    UiQualifiedId *finish()
+    {
+        UiQualifiedId *head = next;
+        next = 0;
+        return head;
+    }
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    UiQualifiedId *next;
+    JavaScriptNameIdImpl *name;
+    SourceLocation identifierToken;
+};
+
 class UiImport: public Node
 {
 public:
@@ -2227,147 +2266,9 @@ public:
 
 class UiObjectMember: public Node
 {
-};
-
-class UiPublicMember: public UiObjectMember
-{
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiPublicMember)
-
-    UiPublicMember(JavaScriptNameIdImpl *memberType,
-                   JavaScriptNameIdImpl *name)
-        : memberType(memberType), name(name), expression(0)
-    { kind = K; }
-
-    UiPublicMember(JavaScriptNameIdImpl *memberType,
-                   JavaScriptNameIdImpl *name,
-                   ExpressionNode *expression)
-        : memberType(memberType), name(name), expression(expression)
-    { kind = K; }
-
-    virtual void accept0(Visitor *visitor);
-
-// attributes
-    JavaScriptNameIdImpl *memberType;
-    JavaScriptNameIdImpl *name;
-    ExpressionNode *expression;
-    SourceLocation publicToken;
-    SourceLocation attributeTypeToken;
-    SourceLocation identifierToken;
-    SourceLocation colonToken;
-};
-
-class UiObjectDefinition: public UiObjectMember
-{
-public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiObjectDefinition)
-
-    UiObjectDefinition(JavaScriptNameIdImpl *name,
-                       UiObjectInitializer *initializer)
-        : name(name), initializer(initializer)
-    { kind = K; }
-
-    virtual void accept0(Visitor *visitor);
-
-// attributes
-    JavaScriptNameIdImpl *name;
-    UiObjectInitializer *initializer;
-    SourceLocation identifierToken;
-};
-
-class UiObjectInitializer: public Node
-{
-public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiObjectInitializer)
-
-    UiObjectInitializer(UiObjectMemberList *members)
-        : members(members)
-    { kind = K; }
-
-    virtual void accept0(Visitor *visitor);
-
-// attributes
-    SourceLocation lbraceToken;
-    UiObjectMemberList *members;
-    SourceLocation rbraceToken;
-};
-
-class UiSourceElement: public UiObjectMember
-{
-public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiSourceElement)
-
-    UiSourceElement(Node *sourceElement)
-        : sourceElement(sourceElement)
-    { kind = K; }
-
-    virtual void accept0(Visitor *visitor);
-
-// attributes
-    Node *sourceElement;
-};
-
-class UiObjectBinding: public UiObjectMember
-{
-public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiObjectBinding)
-
-    UiObjectBinding(UiQualifiedId *qualifiedId,
-                    JavaScriptNameIdImpl *name,
-                    UiObjectInitializer *initializer)
-        : qualifiedId(qualifiedId),
-          name(name),
-          initializer(initializer)
-    { kind = K; }
-
-    virtual void accept0(Visitor *visitor);
-
-// attributes
-    UiQualifiedId *qualifiedId;
-    JavaScriptNameIdImpl *name;
-    UiObjectInitializer *initializer;
-    SourceLocation colonToken;
-    SourceLocation identifierToken;
-};
-
-class UiScriptBinding: public UiObjectMember
-{
-public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiScriptBinding)
-
-    UiScriptBinding(UiQualifiedId *qualifiedId,
-                    Statement *statement)
-        : qualifiedId(qualifiedId),
-          statement(statement)
-    { kind = K; }
-
-    virtual void accept0(Visitor *visitor);
-
-// attributes
-    UiQualifiedId *qualifiedId;
-    Statement *statement;
-    SourceLocation colonToken;
-};
-
-class UiArrayBinding: public UiObjectMember
-{
-public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiArrayBinding)
-
-    UiArrayBinding(UiQualifiedId *qualifiedId,
-                   UiObjectMemberList *members)
-        : qualifiedId(qualifiedId),
-          members(members)
-    { kind = K; }
-
-    virtual void accept0(Visitor *visitor);
-
-// attributes
-    UiQualifiedId *qualifiedId;
-    UiObjectMemberList *members;
-    SourceLocation colonToken;
-    SourceLocation lbracketToken;
-    SourceLocation rbraceToken;
+    virtual SourceLocation firstSourceLocation() const = 0;
+    virtual SourceLocation lastSourceLocation() const = 0;
 };
 
 class UiObjectMemberList: public Node
@@ -2401,40 +2302,213 @@ public:
     UiObjectMember *member;
 };
 
-class UiQualifiedId: public Node
+class UiObjectInitializer: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiQualifiedId)
+    JAVASCRIPT_DECLARE_AST_NODE(UiObjectInitializer)
 
-    UiQualifiedId(JavaScriptNameIdImpl *name)
-        : next(this), name(name)
+    UiObjectInitializer(UiObjectMemberList *members)
+        : members(members)
     { kind = K; }
 
-    UiQualifiedId(UiQualifiedId *previous, JavaScriptNameIdImpl *name)
-        : name(name)
-    {
-        kind = K;
-        next = previous->next;
-        previous->next = this;
-    }
+    virtual void accept0(Visitor *visitor);
 
-    virtual ~UiQualifiedId() {}
+// attributes
+    SourceLocation lbraceToken;
+    UiObjectMemberList *members;
+    SourceLocation rbraceToken;
+};
 
-    UiQualifiedId *finish()
+class UiPublicMember: public UiObjectMember
+{
+public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiPublicMember)
+
+    UiPublicMember(JavaScriptNameIdImpl *memberType,
+                   JavaScriptNameIdImpl *name)
+        : memberType(memberType), name(name), expression(0), isDefaultMember(false)
+    { kind = K; }
+
+    UiPublicMember(JavaScriptNameIdImpl *memberType,
+                   JavaScriptNameIdImpl *name,
+                   ExpressionNode *expression)
+        : memberType(memberType), name(name), expression(expression), isDefaultMember(false)
+    { kind = K; }
+
+    virtual SourceLocation firstSourceLocation() const
+    { return publicToken; }
+
+    virtual SourceLocation lastSourceLocation() const
     {
-        UiQualifiedId *head = next;
-        next = 0;
-        return head;
+      if (expression)
+	return expression->lastSourceLocation();
+      else if (colonToken.isValid())
+	return colonToken;
+      else if (identifierToken.isValid())
+	return identifierToken;
+      else if (attributeTypeToken.isValid())
+	return attributeTypeToken;
+      return publicToken;
     }
 
     virtual void accept0(Visitor *visitor);
 
 // attributes
-    UiQualifiedId *next;
+    JavaScriptNameIdImpl *memberType;
     JavaScriptNameIdImpl *name;
+    ExpressionNode *expression;
+    bool isDefaultMember;
+    SourceLocation publicToken;
+    SourceLocation attributeTypeToken;
+    SourceLocation identifierToken;
+    SourceLocation colonToken;
+};
+
+class UiObjectDefinition: public UiObjectMember
+{
+public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiObjectDefinition)
+
+    UiObjectDefinition(JavaScriptNameIdImpl *name,
+                       UiObjectInitializer *initializer)
+        : name(name), initializer(initializer)
+    { kind = K; }
+
+    virtual SourceLocation firstSourceLocation() const
+    { return identifierToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    {
+      if (initializer)
+	return initializer->rbraceToken;
+
+      return identifierToken;
+    }
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    JavaScriptNameIdImpl *name;
+    UiObjectInitializer *initializer;
     SourceLocation identifierToken;
 };
 
+class UiSourceElement: public UiObjectMember
+{
+public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiSourceElement)
+
+    UiSourceElement(Node *sourceElement)
+        : sourceElement(sourceElement)
+    { kind = K; }
+
+    virtual SourceLocation firstSourceLocation() const
+    {
+      if (FunctionDeclaration *funDecl = cast<FunctionDeclaration *>(sourceElement))
+	return funDecl->firstSourceLocation();
+      else if (VariableStatement *varStmt = cast<VariableStatement *>(sourceElement))
+	return varStmt->firstSourceLocation();
+
+      return SourceLocation();
+    }
+
+    virtual SourceLocation lastSourceLocation() const
+    {
+      if (FunctionDeclaration *funDecl = cast<FunctionDeclaration *>(sourceElement))
+	return funDecl->lastSourceLocation();
+      else if (VariableStatement *varStmt = cast<VariableStatement *>(sourceElement))
+	return varStmt->lastSourceLocation();
+
+      return SourceLocation();
+    }
+
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    Node *sourceElement;
+};
+
+class UiObjectBinding: public UiObjectMember
+{
+public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiObjectBinding)
+
+    UiObjectBinding(UiQualifiedId *qualifiedId,
+                    JavaScriptNameIdImpl *name,
+                    UiObjectInitializer *initializer)
+        : qualifiedId(qualifiedId),
+          name(name),
+          initializer(initializer)
+    { kind = K; }
+
+    virtual SourceLocation firstSourceLocation() const
+    { return qualifiedId->identifierToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return initializer->rbraceToken; }
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    UiQualifiedId *qualifiedId;
+    JavaScriptNameIdImpl *name;
+    UiObjectInitializer *initializer;
+    SourceLocation colonToken;
+    SourceLocation identifierToken;
+};
+
+class UiScriptBinding: public UiObjectMember
+{
+public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiScriptBinding)
+
+    UiScriptBinding(UiQualifiedId *qualifiedId,
+                    Statement *statement)
+        : qualifiedId(qualifiedId),
+          statement(statement)
+    { kind = K; }
+
+    virtual SourceLocation firstSourceLocation() const
+    { return qualifiedId->identifierToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return statement->lastSourceLocation(); }
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    UiQualifiedId *qualifiedId;
+    Statement *statement;
+    SourceLocation colonToken;
+};
+
+class UiArrayBinding: public UiObjectMember
+{
+public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiArrayBinding)
+
+    UiArrayBinding(UiQualifiedId *qualifiedId,
+                   UiObjectMemberList *members)
+        : qualifiedId(qualifiedId),
+          members(members)
+    { kind = K; }
+
+    virtual SourceLocation firstSourceLocation() const
+    { return lbracketToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return rbracketToken; }
+
+    virtual void accept0(Visitor *visitor);
+
+// attributes
+    UiQualifiedId *qualifiedId;
+    UiObjectMemberList *members;
+    SourceLocation colonToken;
+    SourceLocation lbracketToken;
+    SourceLocation rbracketToken;
+};
 
 } } // namespace AST
 

@@ -57,7 +57,7 @@ class Q_DECLARATIVE_EXPORT QFxImage : public QFxItem
     Q_ENUMS(Status)
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
-    Q_PROPERTY(QString src READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged)
 
     Q_PROPERTY(QFxScaleGrid *scaleGrid READ scaleGrid)
     Q_PROPERTY(bool tile READ isTiled WRITE setTiled)

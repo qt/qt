@@ -8,14 +8,14 @@ Item {
     }
     Image {
         id: Background
-        src: "background.svg"
+        source: "background.svg"
     }
     Item {
         x: 104
         y: 102
         rotation: Needle.rotation
         Image {
-            src: "needle_shadow.svg"
+            source: "needle_shadow.svg"
             x: -104
             y: -102
         }
@@ -31,12 +31,12 @@ Item {
             source: Math.min(Math.max(-130, value*2.2 - 130), 133)
         }
         Image {
-            src: "needle.svg"
+            source: "needle.svg"
             x: -102
             y: -98
         }
     }
     Image {
-        src: "overlay.svg"
+        source: "overlay.svg"
     }
 }

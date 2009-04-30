@@ -47,12 +47,14 @@ QT_BEGIN_NAMESPACE
     \class QmlInfo
     \brief The QmlInfo class prints warnings messages that include the file and line number for QML types.
 
-    When QML types display warning messages, it improves tracibility if they include the
-    QML file and line number on which the particular instance was instantiated.  
+    When QML types display warning messages, it improves tracibility
+    if they include the QML file and line number on which the
+    particular instance was instantiated.
     
-    QmlInfo statements work just like regular Qt qDebug() statements.  To include the file
-    and line number, an object must be passed.  If the file and line number is not available
-    for that instance (either it was not instantiated by the QML engine or location 
+    QmlInfo statements work just like regular Qt qDebug() statements.
+    To include the file and line number, an object must be passed.  If
+    the file and line number is not available for that instance
+    (either it was not instantiated by the QML engine or location
     information is disabled), "unknown location" will be used instead.
 
     For example, 
@@ -69,7 +71,8 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    Construct a QmlInfo, using \a object for file and line number information.
+    Construct a QmlInfo, using \a object for file and line number
+    information.
 */
 QmlInfo::QmlInfo(QObject *object)
 : QDebug(QtWarningMsg)
@@ -81,17 +84,16 @@ QmlInfo::QmlInfo(QObject *object)
 }
 
 /*!
-    \internal
+  The destructor does nothing special.
 */
 QmlInfo::~QmlInfo()
 {
 }
 
 /*!
-    \fn QmlInfo qmlInfo(QObject *me)
-    \internal
-
-    XXX - how do we document these?
+  \relates QmlInfo
+  \fn QmlInfo qmlInfo(QObject *me)
+  Constructs an instance of QmlInfo from \a me and returns it.
 */
 
 QT_END_NAMESPACE

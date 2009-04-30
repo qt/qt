@@ -143,7 +143,7 @@ public:
     bool parse(JavaScriptEnginePrivate *driver);
 
     JavaScript::AST::UiProgram *ast()
-    { return sym(1).UiProgram; }
+    { return program; }
 
     QList<DiagnosticMessage> diagnosticMessages() const
     { return diagnostic_messages; }
@@ -183,6 +183,8 @@ protected:
     int *state_stack;
     JavaScript::AST::SourceLocation *location_stack;
 
+    JavaScript::AST::UiProgram *program;
+
     // error recovery
     enum { TOKEN_BUFFER_SIZE = 3 };
 
@@ -204,9 +206,9 @@ protected:
 };
 
 
-#define J_SCRIPT_REGEXPLITERAL_RULE1 35
+#define J_SCRIPT_REGEXPLITERAL_RULE1 37
 
-#define J_SCRIPT_REGEXPLITERAL_RULE2 36
+#define J_SCRIPT_REGEXPLITERAL_RULE2 38
 
 QT_END_NAMESPACE
 

@@ -31,7 +31,7 @@ Item {
     }
     Image {
         id: Groove
-        src: "background.svg"
+        source: "background.svg"
     }
     MouseRegion {
         anchors.fill: Groove
@@ -39,14 +39,14 @@ Item {
     }
     Image {
         id: Knob
-        src: "knob.svg"
+        source: "knob.svg"
         x: 1
         y: 2
     }
     MouseRegion {
         anchors.fill: Knob
         onClicked: { toggle() }
-        onReleased: { if (!isClick) dorelease() }
+        onReleased: { dorelease() }
         drag.target: Knob
         drag.axis: "x"
         drag.xmin: 1

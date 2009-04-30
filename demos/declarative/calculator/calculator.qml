@@ -2,7 +2,7 @@ Rect {
     id: MainWindow;
     width: 320; height: 270; color: "black"
 
-    Script { src: "calculator.js" }
+    Script { source: "calculator.js" }
 
     VerticalLayout {
         spacing: 2; margin: 2

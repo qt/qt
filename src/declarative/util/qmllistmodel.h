@@ -57,40 +57,10 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class QmlListModelPrivate;
-class Q_DECLARATIVE_EXPORT QmlListModel : public QListModelInterface
-{
-Q_OBJECT
-public:
-    QmlListModel(QObject *parent = 0);
-    virtual ~QmlListModel();
-
-    enum ModelType { 
-        Invalid,
-        SimpleList,
-        ListInterface,
-        SingleObject
-    };
-
-    ModelType modelType() const;
-    bool setModel(const QVariant &);
-    QVariant model() const;
-
-    virtual QList<int> roles() const;
-    virtual QString toString(int role) const;
-
-    Q_PROPERTY(int count READ count);
-    virtual int count() const;
-    virtual QHash<int,QVariant> 
-        data(int index, const QList<int> &roles = (QList<int>())) const;
-private:
-    QmlListModelPrivate *d;
-};
-QML_DECLARE_TYPE(QmlListModel);
-
-#endif // QMLLISTMODEL_H
 
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QMLLISTMODEL_H

@@ -49,6 +49,7 @@ public slots:
 protected:
     virtual void keyPressEvent(QKeyEvent *);
     virtual void timerEvent(QTimerEvent *);
+    virtual void resizeEvent(QResizeEvent *);
 
 private:
     QString currentFileName;

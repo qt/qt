@@ -589,7 +589,8 @@ void QFxWebView::paintGLContents(GLPainter &p)
 
 #if defined(QFX_RENDER_QPAINTER)
     bool wasAA = p.testRenderHint(QPainter::Antialiasing);
-    p.setRenderHints(QPainter::Antialiasing, d->smooth);
+    bool wasSM = p.testRenderHint(QPainter::SmoothPixmapTransform);
+    p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
     QRectF clipf = p.clipRegion().boundingRect();
     const QRect clip = p.clipRegion().isEmpty() ? content : clipf.toRect();
 #elif defined(QFX_RENDER_OPENGL)
@@ -656,6 +657,7 @@ void QFxWebView::paintGLContents(GLPainter &p)
     }
 #if defined(QFX_RENDER_QPAINTER)
     p.setRenderHints(QPainter::Antialiasing, wasAA);
+    p.setRenderHints(QPainter::SmoothPixmapTransform, wasSM);
 #endif
 }
 
@@ -1018,11 +1020,11 @@ QString QFxWebView::html() const
 void QFxWebView::setHtml(const QString &html, const QUrl &baseUrl)
 {
     Q_D(QFxWebView);
-    d->page->setViewportSize(QSize(
+    page()->setViewportSize(QSize(
         d->idealwidth>0 ? d->idealwidth : width(),
         d->idealheight>0 ? d->idealheight : height()));
     if (isComponentComplete())
-        d->page->mainFrame()->setHtml(html, baseUrl);
+        page()->mainFrame()->setHtml(html, baseUrl);
     else {
         d->pending = d->PendingHtml;
         d->pending_url = baseUrl;
@@ -1033,12 +1035,12 @@ void QFxWebView::setHtml(const QString &html, const QUrl &baseUrl)
 void QFxWebView::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)
 {
     Q_D(QFxWebView);
-    d->page->setViewportSize(QSize(
+    page()->setViewportSize(QSize(
         d->idealwidth>0 ? d->idealwidth : width(),
         d->idealheight>0 ? d->idealheight : height()));
 
     if (isComponentComplete())
-        d->page->mainFrame()->setContent(data,mimeType,baseUrl);
+        page()->mainFrame()->setContent(data,mimeType,baseUrl);
     else {
         d->pending = d->PendingContent;
         d->pending_url = baseUrl;

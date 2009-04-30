@@ -53,13 +53,55 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+class QmlCustomParserPropertyPrivate;
+class Q_DECLARATIVE_EXPORT QmlCustomParserProperty
+{
+public:
+    QmlCustomParserProperty();
+    QmlCustomParserProperty(const QmlCustomParserProperty &);
+    QmlCustomParserProperty &operator=(const QmlCustomParserProperty &);
+    ~QmlCustomParserProperty();
+
+    QByteArray name() const;
+
+    bool isList() const;
+    QList<QVariant> assignedValues() const;
+
+private:
+    friend class QmlCustomParserNodePrivate;
+    friend class QmlCustomParserPropertyPrivate;
+    QmlCustomParserPropertyPrivate *d;
+};
+Q_DECLARE_METATYPE(QmlCustomParserProperty);
+
+class QmlCustomParserNodePrivate;
+class Q_DECLARATIVE_EXPORT QmlCustomParserNode
+{
+public:
+    QmlCustomParserNode();
+    QmlCustomParserNode(const QmlCustomParserNode &);
+    QmlCustomParserNode &operator=(const QmlCustomParserNode &);
+    ~QmlCustomParserNode();
+
+    QByteArray name() const;
+
+    QList<QmlCustomParserProperty> properties() const;
+
+private:
+    friend class QmlCustomParserNodePrivate;
+    QmlCustomParserNodePrivate *d;
+};
+Q_DECLARE_METATYPE(QmlCustomParserNode);
+
 class Q_DECLARATIVE_EXPORT QmlCustomParser
 {
 public:
     virtual ~QmlCustomParser() {}
 
     virtual QByteArray compile(QXmlStreamReader&, bool *ok)=0;
+    virtual QByteArray compile(const QList<QmlCustomParserProperty> &, bool *ok);
     virtual QVariant create(const QByteArray &)=0;
+    virtual void setCustomData(QObject *, const QByteArray &);
 
     struct Register {
         Register(const char *name, QmlCustomParser *parser) {
@@ -76,7 +118,11 @@ public:
 #define QML_DEFINE_CUSTOM_PARSER_NS(namespacestring, name, parserClass) \
     template<> QmlCustomParser::Register QmlCustomParser::Define<parserClass>::instance(namespacestring "/" # name, new parserClass);
 
+#define QML_DEFINE_CUSTOM_TYPE(TYPE, NAME, CUSTOMTYPE) \
+    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *>::instance(qmlRegisterCustomType<TYPE>(#NAME, #TYPE, new CUSTOMTYPE));
+
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
 #endif
