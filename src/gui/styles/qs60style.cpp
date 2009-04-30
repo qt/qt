@@ -741,6 +741,9 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
 {
     const QS60StylePrivate::SkinElementFlags flags = (option->state & State_Enabled) ?  QS60StylePrivate::SF_StateEnabled : QS60StylePrivate::SF_StateDisabled;
     SubControls sub = option->subControls;
+    
+    Q_D(const QS60Style);
+    
     switch (control) {
 #ifndef QT_NO_SCROLLBAR
     case CC_ScrollBar:
@@ -2203,12 +2206,12 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 QS60StylePrivate::pixelMetric(QStyle::PM_ButtonIconSize) + 2*buttonMargin;
             //todo: buttonMargin commented out as WAY too big in pixel metrics
             QSize buttonSize;
-            buttonSize.setHeight(qMax(8, spinbox->rect.height()/2 - frameThickness));
+            buttonSize.setHeight(qMax(8, spinbox->rect.height() - frameThickness));
             buttonSize.setWidth(buttonWidth);
             buttonSize = buttonSize.expandedTo(QApplication::globalStrut());
 
             const int y = frameThickness + spinbox->rect.y();
-            const int x = spinbox->rect.x() + spinbox->rect.width() - frameThickness - buttonSize.width();
+            const int x = spinbox->rect.x() + spinbox->rect.width() - frameThickness - 2*buttonSize.width();
 
             switch (scontrol) {
             case SC_SpinBoxUp:
@@ -2219,7 +2222,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             case SC_SpinBoxDown:
                 if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
                     return QRect();
-                ret = QRect(x, y + buttonSize.height(), buttonWidth, buttonSize.height());
+                ret = QRect(x+buttonSize.width(), y, buttonWidth, buttonSize.height());
                 break;
             case SC_SpinBoxEditField:
                 if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
