@@ -743,10 +743,12 @@ QFile::rename(const QString &newName)
                         error = true;
                     }
                 }
-                if (error)
+                if (error) {
                     out.remove();
-                else
+                } else {
+					fileEngine()->setFileName(newName);
                     setFileName(newName);
+                }
                 return !error;
             }
         }
