@@ -741,9 +741,9 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
 {
     const QS60StylePrivate::SkinElementFlags flags = (option->state & State_Enabled) ?  QS60StylePrivate::SF_StateEnabled : QS60StylePrivate::SF_StateDisabled;
     SubControls sub = option->subControls;
-    
+
     Q_D(const QS60Style);
-    
+
     switch (control) {
 #ifndef QT_NO_SCROLLBAR
     case CC_ScrollBar:
@@ -821,7 +821,7 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
             if (sub & SC_ComboBoxArrow) {
                 const int iconRectWidth = buttonOption.rect.width()>>1;
-                const int nudgeWidth =iconRectWidth>>1;
+                const int nudgeWidth = iconRectWidth>>1;
 
                 // Draw the little arrow
                 const QRect arrowRect(((buttonOption.rect.left()+buttonOption.rect.right())>>1) - nudgeWidth,
@@ -962,10 +962,64 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             QStyleOptionSpinBox copy = *spinBox;
+            PrimitiveElement pe;
 
-            // Let the base class draw the wole thing except the qDrawWinPanel 'frame' with Windows95-look
-            copy.frame = false;
-            QCommonStyle::drawComplexControl(control, &copy, painter, widget);
+            /*if (spinBox->frame && (spinBox->subControls & SC_SpinBoxFrame)) {
+                QRect r = subControlRect(CC_SpinBox, spinBox, SC_SpinBoxFrame, widget);
+                qDrawWinPanel(painter, r, spinBox->palette, true);
+            }*/
+
+            if (spinBox->subControls & SC_SpinBoxUp) {
+                copy.subControls = SC_SpinBoxUp;
+                QPalette pal2 = spinBox->palette;
+                if (!(spinBox->stepEnabled & QAbstractSpinBox::StepUpEnabled)) {
+                    pal2.setCurrentColorGroup(QPalette::Disabled);
+                    copy.state &= ~State_Enabled;
+                }
+
+                copy.palette = pal2;
+
+                if (spinBox->activeSubControls == SC_SpinBoxUp && (spinBox->state & State_Sunken)) {
+                    copy.state |= State_On;
+                    copy.state |= State_Sunken;
+                } else {
+                    copy.state |= State_Raised;
+                    copy.state &= ~State_Sunken;
+                }
+                pe = (spinBox->buttonSymbols == QAbstractSpinBox::PlusMinus ? PE_IndicatorSpinPlus
+                      : PE_IndicatorSpinUp);
+
+                copy.rect = subControlRect(CC_SpinBox, spinBox, SC_SpinBoxUp, widget);
+                drawPrimitive(PE_PanelButtonBevel, &copy, painter, widget);
+                copy.rect.adjust(1, 1, -1, -1);
+                drawPrimitive(pe, &copy, painter, widget);
+            }
+
+            if (spinBox->subControls & SC_SpinBoxDown) {
+                copy.subControls = SC_SpinBoxDown;
+                copy.state = spinBox->state;
+                QPalette pal2 = spinBox->palette;
+                if (!(spinBox->stepEnabled & QAbstractSpinBox::StepDownEnabled)) {
+                    pal2.setCurrentColorGroup(QPalette::Disabled);
+                    copy.state &= ~State_Enabled;
+                }
+                copy.palette = pal2;
+
+                if (spinBox->activeSubControls == SC_SpinBoxDown && (spinBox->state & State_Sunken)) {
+                    copy.state |= State_On;
+                    copy.state |= State_Sunken;
+                } else {
+                    copy.state |= State_Raised;
+                    copy.state &= ~State_Sunken;
+                }
+                pe = (spinBox->buttonSymbols == QAbstractSpinBox::PlusMinus ? PE_IndicatorSpinMinus
+                      : PE_IndicatorSpinDown);
+
+                copy.rect = subControlRect(CC_SpinBox, spinBox, SC_SpinBoxDown, widget);
+                drawPrimitive(PE_PanelButtonBevel, &copy, painter, widget);
+                copy.rect.adjust(1, 1, -1, -1);
+                drawPrimitive(pe, &copy, painter, widget);
+            }
         }
         break;
 #endif //QT_NO_SPINBOX
@@ -989,11 +1043,11 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             if ((groupBox->subControls & QStyle::SC_GroupBoxLabel) && !groupBox->text.isEmpty()) {
                 const QColor textColor = groupBox->textColor;
                 painter->save();
-                
+
                 const QFont suggestedFont = d->s60Font(
                     QS60StyleEnums::FC_Title, painter->font().pointSizeF());
                 painter->setFont(suggestedFont);
-                
+
                 if (textColor.isValid())
                     painter->setPen(textColor);
                 int alignment = int(groupBox->textAlignment);
@@ -1884,19 +1938,18 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_IndicatorSpinUp:
     case PE_IndicatorSpinMinus:
     case PE_IndicatorSpinPlus:
-        {
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             QStyleOptionSpinBox optionSpinBox = *spinBox;
-            if (element==PE_IndicatorSpinDown || element==PE_IndicatorSpinUp)
-                optionSpinBox.rect.adjust(2,2,-2,-2);
             QCommonStyle::drawPrimitive(element, &optionSpinBox, painter, widget);
-        } else if (const QStyleOptionFrame *cmb = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
+        }
+#ifndef QT_NO_COMBOBOX
+        else if (const QStyleOptionFrame *cmb = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
             // We want to draw down arrow here for comboboxes as well.
             QStyleOptionFrame comboBox = *cmb;
             comboBox.rect.adjust(0,2,0,-2);
             QCommonStyle::drawPrimitive(element, &comboBox, painter, widget);
         }
-        }
+#endif //QT_NO_COMBOBOX
         break;
 #endif //QT_NO_SPINBOX
     case PE_FrameFocusRect:
