@@ -46,7 +46,7 @@ Item {
     MouseRegion {
         anchors.fill: Knob
         onClicked: { toggle() }
-        onReleased: { if (!isClick) dorelease() }
+        onReleased: { dorelease() }
         drag.target: Knob
         drag.axis: "x"
         drag.xmin: 1
