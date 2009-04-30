@@ -441,8 +441,8 @@ public:
     QList<QTouchEvent::TouchPoint *> currentTouchPoints;
 
     void initializeMultitouch();
-    void insertActiveTouch(QTouchEvent::TouchPoint *touchPoint);
-    void removeActiveTouch(QTouchEvent::TouchPoint *touchPoint);
+    QEvent::Type insertActiveTouch(QTouchEvent::TouchPoint *touchPoint);
+    QEvent::Type removeActiveTouch(QTouchEvent::TouchPoint *touchPoint);
     bool translateTouchEvent(const MSG &msg);
 #endif
 
