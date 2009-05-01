@@ -108,7 +108,12 @@ void QmlSetPropertiesMetaObject::propertyWrite(int id)
     you normally would specify them for the actual item:
 
     \code
-    <SetProperties target="{myRect}" x="52" y="300" width="48"/>
+    SetProperties {
+        target: myRect
+        x: 52
+        y: 300
+        width: 48
+    }
     \endcode
 
     \c target is a property of \c SetProperties, so if the property you want to change
@@ -129,7 +134,12 @@ void QmlSetPropertiesMetaObject::propertyWrite(int id)
     you normally would specify them for the actual item:
 
     \code
-    <SetProperties target="{myRect}" x="52" y="300" width="48"/>
+    SetProperties {
+        target: myRect
+        x: 52
+        y: 300
+        width: 48
+    }
     \endcode
 
     \c target is a property of \c SetProperties, so if the property you want to change

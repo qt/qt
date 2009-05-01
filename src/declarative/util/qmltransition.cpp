@@ -188,9 +188,11 @@ void QmlTransition::prepare(QmlStateOperation::ActionList &actions,
     be applied. By default fromState and toState are both "*" (any state). In the following example,
     the transition is applied when changing from state1 to state2.
     \code
-    <Transition fromState="state1" toState="state2">
+    Transition {
+        fromState: "state1"
+        toState: "state2"
         ...
-    </Transition>
+    }
     \endcode
 */
 
