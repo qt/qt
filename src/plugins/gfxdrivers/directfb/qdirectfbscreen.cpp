@@ -155,8 +155,7 @@ IDirectFBSurface* QDirectFBScreen::createDFBSurface(const QImage &img, SurfaceCr
         return surface;
     }
 
-    DFBSurfaceDescription desc = QDirectFBScreen::getSurfaceDescription(img);
-    IDirectFBSurface *surface = createDFBSurface(&desc, options);
+    IDirectFBSurface *surface = createDFBSurface(QDirectFBScreen::getSurfaceDescription(img), options);
 #ifdef QT_NO_DIRECTFB_PREALLOCATED
     if (surface) {
         int bpl;
@@ -211,11 +210,11 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QSize &size,
         return 0;
     desc.width = size.width();
     desc.height = size.height();
-    return createDFBSurface(&desc, options);
+    return createDFBSurface(desc, options);
 }
 
 
-IDirectFBSurface* QDirectFBScreen::createDFBSurface(const DFBSurfaceDescription *desc, SurfaceCreationOptions options)
+IDirectFBSurface* QDirectFBScreen::createDFBSurface(DFBSurfaceDescription desc, SurfaceCreationOptions options)
 {
     DFBResult result;
     IDirectFBSurface* newSurface = 0;
@@ -225,39 +224,39 @@ IDirectFBSurface* QDirectFBScreen::createDFBSurface(const DFBSurfaceDescription 
         return 0;
     }
 
-    if (d_ptr->directFBFlags & VideoOnly && !(desc->flags & DSDESC_PREALLOCATED)) {
+    if (d_ptr->directFBFlags & VideoOnly && !(desc.flags & DSDESC_PREALLOCATED)) {
         // Add the video only capability. This means the surface will be created in video ram
-        DFBSurfaceDescription voDesc = *desc;
-        if (!(voDesc.flags & DSDESC_CAPS)) {
-            voDesc.caps = DSCAPS_VIDEOONLY;
-            voDesc.flags = DFBSurfaceDescriptionFlags(voDesc.flags | DSDESC_CAPS);
+        if (!(desc.flags & DSDESC_CAPS)) {
+            desc.caps = DSCAPS_VIDEOONLY;
+            desc.flags = DFBSurfaceDescriptionFlags(desc.flags | DSDESC_CAPS);
         } else {
-            voDesc.caps = DFBSurfaceCapabilities(voDesc.caps | DSCAPS_VIDEOONLY);
+            desc.caps = DFBSurfaceCapabilities(desc.caps | DSCAPS_VIDEOONLY);
         }
-        result = d_ptr->dfb->CreateSurface(d_ptr->dfb, &voDesc, &newSurface);
+        result = d_ptr->dfb->CreateSurface(d_ptr->dfb, &desc, &newSurface);
         if (result != DFB_OK
 #ifdef QT_NO_DEBUG
-            && (desc->flags & DSDESC_CAPS) && (desc->caps & DSCAPS_PRIMARY)
+            && (desc.flags & DSDESC_CAPS) && (desc.caps & DSCAPS_PRIMARY)
 #endif
             ) {
             qWarning("QDirectFBScreen::createDFBSurface() Failed to create surface in video memory!\n"
                      "   Flags %0x Caps %0x width %d height %d pixelformat %0x %d preallocated %p %d\n%s",
-                     desc->flags, desc->caps, desc->width, desc->height,
-                     desc->pixelformat, DFB_PIXELFORMAT_INDEX(desc->pixelformat),
-                     desc->preallocated[0].data, desc->preallocated[0].pitch,
+                     desc.flags, desc.caps, desc.width, desc.height,
+                     desc.pixelformat, DFB_PIXELFORMAT_INDEX(desc.pixelformat),
+                     desc.preallocated[0].data, desc.preallocated[0].pitch,
                      DirectFBErrorString(result));
         }
+        desc.caps = DFBSurfaceCapabilities(desc.caps & ~DSCAPS_VIDEOONLY);
     }
 
     if (!newSurface)
-        result = d_ptr->dfb->CreateSurface(d_ptr->dfb, desc, &newSurface);
+        result = d_ptr->dfb->CreateSurface(d_ptr->dfb, &desc, &newSurface);
 
     if (result != DFB_OK) {
         qWarning("QDirectFBScreen::createDFBSurface() Failed!\n"
                  "   Flags %0x Caps %0x width %d height %d pixelformat %0x %d preallocated %p %d\n%s",
-                 desc->flags, desc->caps, desc->width, desc->height,
-                 desc->pixelformat, DFB_PIXELFORMAT_INDEX(desc->pixelformat),
-                 desc->preallocated[0].data, desc->preallocated[0].pitch,
+                 desc.flags, desc.caps, desc.width, desc.height,
+                 desc.pixelformat, DFB_PIXELFORMAT_INDEX(desc.pixelformat),
+                 desc.preallocated[0].data, desc.preallocated[0].pitch,
                  DirectFBErrorString(result));
         return 0;
     }
@@ -830,7 +829,7 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
 
     description.caps = DFBSurfaceCapabilities(caps);
     // We don't track the primary surface as it's released in disconnect
-    d_ptr->dfbSurface = createDFBSurface(&description, DontTrackSurface);
+    d_ptr->dfbSurface = createDFBSurface(description, DontTrackSurface);
     if (!d_ptr->dfbSurface) {
         DirectFBError("QDirectFBScreen: error creating primary surface",
                       result);

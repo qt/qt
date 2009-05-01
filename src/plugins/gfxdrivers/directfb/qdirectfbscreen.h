@@ -103,7 +103,7 @@ public:
         TrackSurface = 1
     };
     Q_DECLARE_FLAGS(SurfaceCreationOptions, SurfaceCreationOption);
-    IDirectFBSurface *createDFBSurface(const DFBSurfaceDescription *desc,
+    IDirectFBSurface *createDFBSurface(DFBSurfaceDescription desc,
                                        SurfaceCreationOptions options);
     IDirectFBSurface *createDFBSurface(const QImage &image,
                                        SurfaceCreationOptions options);
