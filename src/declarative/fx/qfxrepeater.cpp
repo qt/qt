@@ -99,14 +99,9 @@ QML_DEFINE_TYPE(QFxRepeater,Repeater);
     the instantiated items would visually appear stacked between the red and 
     blue rectangles.
 
-    \code
-    <Item>
-        <Rect width="100" height="100" color="red" />
-        <Repeater ...repeater arguments... />
-        <!-- Instantiated items would appear here -->
-        <Rect width="100" height="100" color="blue" />
-    </Item>
-    \endcode
+    \snippet doc/src/snippets/declarative/repeater.qml 0
+
+    \image repeater.png
 
     The repeater instance continues to own all items it instantiates, even
     if they are otherwise manipulated.  It is illegal to manually remove an item
@@ -144,14 +139,7 @@ QML_DEFINE_TYPE(QFxRepeater,Repeater);
     the instantiated items would visually appear stacked between the red and 
     blue rectangles.
 
-    \code
-    <Item>
-        <Rect width="100" height="100" color="red" />
-        <Repeater ...repeater arguments... />
-        <!-- Instantiated items would appear here -->
-        <Rect width="100" height="100" color="blue" />
-    </Item>
-    \endcode
+    \snippet doc/src/snippets/declarative/repeater.qml 0
 
     The QFxRepeater instance continues to own all items it instantiates, even
     if they are otherwise manipulated.  It is illegal to manually delete an item
@@ -191,6 +179,17 @@ QFxRepeater::~QFxRepeater()
     \qmlproperty any Repeater::dataSource
 
     The Repeater's data source.
+
+    The data source may be either an object list, a string list or a Qt model.
+    In each case, the data element and the index is exposed to each instantiated
+    component.  The index is always exposed as an accessible \c index property.
+    In the case of an object or string list, the data element (of type string
+    or object) is available as the \c modelData property.  In the case of a Qt model,
+    all roles are available as named properties just like in the view classes.
+
+    As a special case the data source can also be merely a number. In this case it will
+    create that many instances of the component. They will also be assigned an index
+    based on the order they are created.
 */
 
 /*!

@@ -346,7 +346,7 @@ void QmlXmlListModel::doSubquery(int index) const
                     s.replace(QLatin1String("&gt;"), QLatin1String(">"));
                     s.replace(QLatin1String("&amp;"), QLatin1String("&"));
                 }
-                resultList << s;
+                resultList << s.trimmed();
                 //qDebug() << s;
             }
             b.seek(0);
