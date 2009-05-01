@@ -6,7 +6,7 @@ This tutorial gives an introduction to QML and the Fluid UI atoms. It doesn't co
 
 Chapter one starts with a minimal "Hello world" program and the following chapters introduce new concepts.
 
-The tutorial's source code is located in the $QTDIR/examples/declarative/tutorials directory.
+The tutorial's source code is located in the $QTDIR/examples/declarative/tutorials/helloworld directory.
 
 Tutorial chapters:
 
