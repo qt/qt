@@ -78,6 +78,7 @@
 %token T_CONST "const"
 %token T_DEBUGGER "debugger"
 %token T_RESERVED_WORD "reserved word"
+%token T_MULTILINE_STRING_LITERAL "multiline string literal"
 
 --- context keywords.
 %token T_PUBLIC "public"
@@ -611,6 +612,27 @@ case $rule_number: {
 }   break;
 ./
 
+UiMultilineStringLiteral: T_MULTILINE_STRING_LITERAL ;
+/.
+case $rule_number: {
+  AST::StringLiteral *node = makeAstNode<AST::StringLiteral> (driver->nodePool(), sym(1).sval);
+  node->literalToken = loc(1);
+  sym(1).Node = node;
+} break;
+./
+
+UiMultilineStringStatement: UiMultilineStringLiteral T_AUTOMATIC_SEMICOLON ;  -- automatic semicolon
+UiMultilineStringStatement: UiMultilineStringLiteral T_SEMICOLON ;
+/.
+case $rule_number: {
+  AST::ExpressionStatement *node = makeAstNode<AST::ExpressionStatement> (driver->nodePool(), sym(1).Expression);
+  node->semicolonToken = loc(2);
+  sym(1).Node = node;
+} break;
+./
+
+UiObjectMember: UiQualifiedId T_COLON UiMultilineStringStatement ;
+/.  case $rule_number: ./
 UiArrayObjectMember: UiQualifiedId T_COLON Statement ;
 /. case $rule_number: ./
 UiObjectMember: UiQualifiedId T_COLON Statement ;
