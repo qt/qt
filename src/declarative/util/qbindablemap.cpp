@@ -87,8 +87,8 @@ private:
 
     Then, in QML:
     \code
-    <Text text="{owner.name}"/>
-    <Text text="{owner.phone}"/>
+    Text { text: owner.name }
+    Text { text: owner.phone }
     \endcode
 
     The binding is dynamic - whenever a key's value is updated, anything bound to that

@@ -55,7 +55,7 @@ class QmlFollowPrivate : public QObjectPrivate
 public:
     QmlFollowPrivate()
         : sourceValue(0), maxVelocity(0), lastTime(0)
-        , mass(1.0), spring(0.), damping(0.), velocity(0), enabled(true), mode(Track), clock(this) {}
+        , mass(1.0), spring(0.), damping(0.), velocity(0), epsilon(0.005), enabled(true), mode(Track), clock(this) {}
 
     QmlMetaProperty property;
     qreal currentValue;
@@ -67,6 +67,7 @@ public:
     qreal spring;
     qreal damping;
     qreal velocity;
+    qreal epsilon;
     bool enabled;
 
     enum Mode {
@@ -111,7 +112,7 @@ void QmlFollowPrivate::tick(int time)
             }
             currentValue += velocity * 10.0 / 1000.0;
         }
-        if (qAbs(velocity) < 0.5 && qAbs(sourceValue - currentValue) < 0.5) {
+        if (qAbs(velocity) < epsilon && qAbs(sourceValue - currentValue) < epsilon) {
             velocity = 0.0;
             currentValue = sourceValue;
             clock.stop();
@@ -174,19 +175,29 @@ void QmlFollowPrivate::stop()
 
     In example below, Rect2 will follow Rect1 moving with a velocity of up to 200:
     \code
-    <Rect id="Rect1" y="{200}" width="20" height="20" color="#00ff00">
-        <y>
-            <SequentialAnimation running="true" repeat="true">
-                <NumericAnimation to="{200}" easing="easeOutBounce(amplitude:100)" duration="2000" />
-                <PauseAnimation duration="1000" />
-            </SequentialAnimation>
-        </y>
-    </Rect>
-    <Rect id="Rect2" x="{Rect1.width}" width="20" height="20" color="#ff0000">
-        <y>
-            <Follow source="{Rect1.y}" velocity="200"/>
-        </y>
-    </Rect>
+    Rect {
+        id: Rect1
+        width: 20; height: 20
+        color: "#00ff00"
+        y: 200  //initial value
+        y: SequentialAnimation {
+            running: true
+            repeat: true
+            NumericAnimation {
+                to: 200
+                easing: "easeOutBounce(amplitude:100)"
+                duration: 2000
+            }
+            PauseAnimation { duration: 1000 }
+        }
+    }
+    Rect {
+        id: Rect2
+        x: Rect1.width
+        width: 20; height: 20
+        color: "#ff0000"
+        y: Follow { source: Rect1.y; velocity: 200 }
+    }
     \endcode
 */
 
@@ -288,6 +299,30 @@ void QmlFollow::setDamping(qreal damping)
         damping = 1.;
 
     d->damping = damping;
+}
+
+
+/*!
+    \qmlproperty qreal Follow::epsilon
+    This property holds the spring epsilon
+
+    The epsilon is the rate and amount of change in the value which is close enough
+    to 0 to be considered equal to zero. This will depend on the usage of the value.
+    For pixel positions, 0.25 would suffice. For scale, 0.005 will suffice.
+
+    The default is 0.005. Small performance improvements can result in tuning this
+    value.
+*/
+qreal QmlFollow::epsilon() const
+{
+    Q_D(const QmlFollow);
+    return d->epsilon;
+}
+
+void QmlFollow::setEpsilon(qreal epsilon)
+{
+    Q_D(QmlFollow);
+    d->epsilon = epsilon;
 }
 
 /*!

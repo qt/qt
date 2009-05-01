@@ -450,6 +450,7 @@ int JavaScript::Lexer::lex()
     int token = 0;
     state = Start;
     ushort stringType = 0; // either single or double quotes
+    bool multiLineString = false;
     pos8 = pos16 = 0;
     done = false;
     terminator = false;
@@ -499,6 +500,7 @@ int JavaScript::Lexer::lex()
             } else if (current == '"' || current == '\'') {
                 recordStartPos();
                 state = InString;
+                multiLineString = false;
                 stringType = current;
             } else if (isIdentLetter(current)) {
                 recordStartPos();
@@ -540,6 +542,9 @@ int JavaScript::Lexer::lex()
             if (current == stringType) {
                 shift(1);
                 setDone(String);
+            } else if (isLineTerminator()) {
+                multiLineString = true;
+                record16(current);
             } else if (current == 0 || isLineTerminator()) {
                 setDone(Bad);
                 err = UnclosedStringLiteral;
@@ -817,7 +822,7 @@ int JavaScript::Lexer::lex()
             qsyylval.ustr = driver->intern(buffer16, pos16);
         else
             qsyylval.ustr = 0;
-        return JavaScriptGrammar::T_STRING_LITERAL;
+        return multiLineString?JavaScriptGrammar::T_MULTILINE_STRING_LITERAL:JavaScriptGrammar::T_STRING_LITERAL;
     case Number:
         qsyylval.dval = dval;
         return JavaScriptGrammar::T_NUMERIC_LITERAL;
