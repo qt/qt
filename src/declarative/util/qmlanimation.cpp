@@ -617,7 +617,7 @@ QAbstractAnimation *QmlPauseAnimation::qtAnimation()
     \brief The ColorAnimation allows you to animate color changes.
 
     \code
-    ColorAnimation { from: "white" to: "#c0c0c0"; duration: 100 }
+    ColorAnimation { from: "white"; to: "#c0c0c0"; duration: 100 }
     \endcode
 
     The default property animated is \c color, but like other animations,

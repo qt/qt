@@ -37,42 +37,23 @@ Rect {
                         duration: 500
                         easing: "easeOutBounce"
                     }
-                    ColorAnimation {
-                        duration: 500
-                    }
+                    ColorAnimation { duration: 500 }
                 }
             }
         ]
     }
-    MouseRegion {
-        id: MouseRegion
-        anchors.fill: HelloText
-    }
+    MouseRegion { id: MouseRegion; anchors.fill: HelloText }
     GridLayout {
         id: ColorPicker
         x: 0
         anchors.bottom: Page.bottom
-        width: 120
-        height: 50
-        columns: 3
-        rows: 2
-        Cell {
-            color: "#ff0000"
-        }
-        Cell {
-            color: "#00ff00"
-        }
-        Cell {
-            color: "#0000ff"
-        }
-        Cell {
-            color: "#ffff00"
-        }
-        Cell {
-            color: "#00ffff"
-        }
-        Cell {
-            color: "#ff00ff"
-        }
+        width: 120; height: 50
+        rows: 2; columns: 3
+        Cell { color: "#ff0000" }
+        Cell { color: "#00ff00" }
+        Cell { color: "#0000ff" }
+        Cell { color: "#ffff00" }
+        Cell { color: "#00ffff" }
+        Cell { color: "#ff00ff" }
     }
 }

@@ -44,12 +44,15 @@
 
 #include <qfxitem.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+/*
+WARNING: INTENDED TO MERGE WITH QFxImageItem
+*/
+
 class QFxPaintedPrivate;
 class Q_DECLARATIVE_EXPORT QFxPainted : public QFxItem
 {

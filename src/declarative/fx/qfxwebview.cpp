@@ -140,7 +140,7 @@ public:
     bool localStorageDatabaseEnabled() const { return s->testAttribute(QWebSettings::LocalStorageDatabaseEnabled); }
     void setLocalStorageDatabaseEnabled(bool on) { s->setAttribute(QWebSettings::LocalStorageDatabaseEnabled, on); }
 
-    QString userStyleSheetUrl() const { return s->userStyleSheetUrl(); }
+    QString userStyleSheetUrl() const { return s->userStyleSheetUrl().toString(); }
     void setUserStyleSheetUrl(const QString& url) { s->setUserStyleSheetUrl(url); }
 
     QWebSettings *s;
