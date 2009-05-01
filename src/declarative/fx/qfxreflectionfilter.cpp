@@ -69,35 +69,30 @@ public:
 
     Here is an example of various Reflections applied to an image.
 
-    \code
-    <HorizontalLayout>
-        <Image src="icon.png" >
-            <filter>
-                <Reflection />
-            </filter>
-        </Image>
-        <Image src="icon.png" >
-            <filter>
-                <Reflection offset="1" />
-            </filter>
-        </Image>
-        <Image src="icon.png" >
-            <filter>
-                <Reflection offset="1" alpha="0.5" />
-            </filter>
-        </Image>
-        <Image src="icon.png" >
-            <filter>
-                <Reflection offset="1" alpha="0.5" height="50" />
-            </filter>
-        </Image>
-        <Image src="icon.png" >
-            <filter>
-                <Reflection offset="1" alpha="0.5" height="50" scale="0.5" />
-            </filter>
-        </Image>
-    </HorizontalLayout>
-    \endcode
+    \qml
+HorizontalLayout {
+    Image {
+        src: "icon.png"
+        filter: Reflection { }
+    }
+    Image {
+        src: "icon.png"
+        filter: Reflection { offset: 1 }
+    }
+    Image {
+        src: "icon.png"
+        filter: Reflection { offset: 1; alpha: 0.5 }
+    }
+    Image {
+        src: "icon.png"
+        filter: Reflection { offset: 1; alpha: 0.5; height: 50 }
+    }
+    Image {
+        src: "icon.png"
+        filter: Reflection { offset: 1; alpha: 0.5; height: 50; scale: 0.5 }
+    }
+}
+    \endqml
 
     \image reflection_example.png
 
@@ -149,13 +144,15 @@ void QFxReflectionFilter::setAlpha(qreal a)
     it is set to 50, the bottom 50 pixels of the item are reflected.  Data 
     binding could be used to reflect a percentage of the item.
 
-    \code 
-    <Image id="myImage" src="album.png">
-        <filter>
-            <Reflection height="{myImage.height * 0.5}" />
-        </filter>
-    </Image>
-    \endcode
+    \qml 
+Image {
+    id: myImage
+    src: "album.png"
+    filter: Reflection {
+        height: myImage.height * 0.5
+    }
+}
+    \endqml
  */
 /*!
     \qmlproperty int Reflection::offset

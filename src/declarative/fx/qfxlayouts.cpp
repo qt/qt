@@ -127,15 +127,18 @@ void QFxBaseLayout::setMargin(int s)
     \property QFxBaseLayout::move
     \brief the transition when moving an item.
 
-    \code
-    <BaseLayout id="layout" y="0">
-        <move>
-            <Transition>
-                <NumericAnimation properties="y" ease="easeOutBounce" />
-            </Transition>
-        </move>
-    </BaseLayout>
-    \endcode
+    \qml
+BaseLayout {
+    id: layout
+    y: 0
+    move: Transition {
+        NumericAnimation {
+            properties: "y"
+            ease: "easeOutBounce"
+        }
+    }
+}
+    \endqml
 */
 QmlTransition *QFxBaseLayout::move() const
 {
@@ -153,15 +156,21 @@ void QFxBaseLayout::setMove(QmlTransition *mt)
     \property QFxBaseLayout::add
     \brief the transition when adding an item.
 
-    \code
-    <BaseLayout id="layout" y="0">
-        <add>
-            <Transition >
-                <NumericAnimation target="{layout.item}" properties="opacity" from="0" to="1" duration="500" />
-            </Transition>
-        </add>
-    </BaseLayout>
-    \endcode
+    \qml
+BaseLayout {
+    id: layout
+    y: 0
+    add: Transition {
+        NumericAnimation {
+            target: layout.item
+            properties: "opacity"
+            from: 0
+            to: 1
+            duration: 500
+        }
+    }
+}
+    \endqml
 */
 QmlTransition *QFxBaseLayout::add() const
 {
@@ -182,15 +191,21 @@ void QFxBaseLayout::setAdd(QmlTransition *add)
 
     Note that the item may be 'removed' because its opacity is zero. This can make certain
     transitions difficult to see.
-    \code
-    <BaseLayout id="layout" y="0">
-        <remove>
-            <Transition >
-                <NumericAnimation target="{layout.item}" properties="opacity" from="1" to="0" duration="500" />
-            </Transition>
-        </remove>
-    </BaseLayout>
-    \endcode
+    \qml
+BaseLayout {
+    id: layout
+    y: 0
+    remove: Transition {
+        NumericAnimation {
+            target: layout.item
+            properties: "opacity"
+            from: 1
+            to: 0
+            duration: 500
+        }
+    }
+}
+    \endqml
 */
 QmlTransition *QFxBaseLayout::remove() const
 {
@@ -433,10 +448,10 @@ void QFxBaseLayout::applyRemove(const QList<QPair<QString, QVariant> >& changes,
 QML_DEFINE_TYPE(QFxVerticalLayout, VerticalLayout);
 /*!
   \qmlclass VerticalLayout
-  \brief The VerticalLayout element arranges its children in a vertical layout.
+  \brief The VerticalLayout item arranges its children in a vertical layout.
   \inherits Item
 
-  The VerticalLayout element arranges its child elements so that they are vertically
+  The VerticalLayout item arranges its child items so that they are vertically
     aligned and not overlapping. Spacing between items can be added, as can a margin around all the items.
 
   The below example lays out differently shaped rectangles using a VerticalLayout.
@@ -444,32 +459,34 @@ QML_DEFINE_TYPE(QFxVerticalLayout, VerticalLayout);
   \row
   \o \image verticalLayout_example.png
   \o
-  \code
-  <VerticalLayout spacing="2">
-      <Rect color="red" width="50" height="50"/>
-      <Rect color="green" width="20" height="50"/>
-      <Rect color="blue" width="50" height="20"/>
-  </VerticalLayout>
-  \endcode
+  \qml
+VerticalLayout {
+    spacing: 2
+    Rect { color: "red"; width: 50; height: 50 }
+    Rect { color: "green"; width: 20; height: 50 }
+    Rect { color: "blue"; width: 50; height: 20 }
+}
+  \endqml
   \endtable
 
   VerticalLayout also provides for transitions to be set when items are added, moved,
-  or removed in the layout. Adding and removing apply both to elements which are deleted
+  or removed in the layout. Adding and removing apply both to items which are deleted
   or have their position in the document changed so as to no longer be children of the layout,
-  as well as to elements which have their opacity set to or from zero so as to appear or disappear.
+  as well as to items which have their opacity set to or from zero so as to appear or disappear.
 
   \table
   \row
   \o \image verticalLayout_transition.gif
   \o
-  \code
-  <VerticalLayout spacing="2">
-      ...
-      <remove>...</remove>
-      <add>...</add>
-      <move>...</move>
-  </VerticalLayout>
-  \endcode
+  \qml
+VerticalLayout {
+    spacing: 2
+    remove: ...
+    add: ...
+    move: ...
+    ...
+}
+  \endqml
   \endtable
 
 
@@ -486,17 +503,20 @@ QML_DEFINE_TYPE(QFxVerticalLayout, VerticalLayout);
     \row
     \o \image layout-remove.gif
     \o
-    \code
-    <VerticalLayout id="layout">
-        <remove>
-            <Transition >
-                <NumericAnimation target="{layout.item}"
-                    properties="opacity" from="1" to="0"
-                    duration="500" />
-            </Transition>
-        </remove>
-    </VerticalLayout>
-    \endcode
+    \qml
+VerticalLayout {
+    id: layout
+    remove: Transition {
+        NumericAnimation {
+            target: layout.item
+            properties: "opacity"
+            from: 1
+            to: 0
+            duration: 500
+        }
+    }
+}
+    \endqml
     \endtable
 
 */
@@ -510,17 +530,20 @@ QML_DEFINE_TYPE(QFxVerticalLayout, VerticalLayout);
     \row
     \o \image layout-add.gif
     \o
-    \code
-    <VerticalLayout id="layout">
-        <add>
-            <Transition >
-                <NumericAnimation target="{layout.item}"
-                    properties="opacity" from="0" to="1"
-                    duration="500" />
-            </Transition>
-        </add>
-    </VerticalLayout>
-    \endcode
+    \qml
+VerticalLayout {
+    id: layout
+    add: Transition {
+        NumericAnimation {
+            target: layout.item
+            properties: "opacity"
+            from: 0
+            to: 1
+            duration: 500
+        }
+    }
+}
+    \endqml
     \endtable
 
 */
@@ -534,15 +557,17 @@ QML_DEFINE_TYPE(QFxVerticalLayout, VerticalLayout);
     \row
     \o \image layout-move.gif
     \o
-    \code
-    <VerticalLayout id="layout">
-        <move>
-            <Transition>
-                <NumericAnimation properties="y" ease="easeOutBounce" />
-            </Transition>
-        </move>
-    </VerticalLayout>
-    \endcode
+    \qml
+VerticalLayout {
+    id: layout
+    move: Transition {
+        NumericAnimation {
+            properties: "y"
+            ease: "easeOutBounce"
+        }
+    }
+}
+    \endqml
     \endtable
 */
 /*!
@@ -624,19 +649,20 @@ void QFxVerticalLayout::doLayout()
 QML_DEFINE_TYPE(QFxHorizontalLayout,HorizontalLayout);
 /*!
   \qmlclass HorizontalLayout
-  \brief The HorizontalLayout element arranges its children in a horizontal layout.
+  \brief The HorizontalLayout item arranges its children in a horizontal layout.
   \inherits Item
 
-  The HorizontalLayout element arranges its child elements so that they are horizontally aligned and not overlapping. Spacing can be added between the items, and a margin around all items can also be added. It also provides for transitions to be set when items are added, moved, or removed in the layout. Adding and removing apply both to elements which are deleted or have their position in the document changed so as to no longer be children of the layout, as well as to elements which have their opacity set to or from zero so as to appear or disappear.
+  The HorizontalLayout item arranges its child items so that they are horizontally aligned and not overlapping. Spacing can be added between the items, and a margin around all items can also be added. It also provides for transitions to be set when items are added, moved, or removed in the layout. Adding and removing apply both to items which are deleted or have their position in the document changed so as to no longer be children of the layout, as well as to items which have their opacity set to or from zero so as to appear or disappear.
 
   The below example lays out differently shaped rectangles using a HorizontalLayout.
-  \code
-  <HorizontalLayout spacing="2">
-      <Rect color="red" width="50" height="50"/>
-      <Rect color="green" width="20" height="50"/>
-      <Rect color="blue" width="50" height="20"/>
-  </HorizontalLayout>
-  \endcode
+  \qml
+HorizontalLayout {
+    spacing: 2
+    Rect { color: "red"; width: 50; height: 50 }
+    Rect { color: "green"; width: 20; height: 50 }
+    Rect { color: "blue"; width: 50; height: 20 }
+}
+  \endqml
   \image horizontalLayout_example.png
 
 */
@@ -648,15 +674,20 @@ QML_DEFINE_TYPE(QFxHorizontalLayout,HorizontalLayout);
 
     Note that if the item counts as removed because its opacity is zero it will not be visible during the transition unless you set the opacity in the transition, like in the below example.
 
-    \code
-    <HorizontalLayout id="layout">
-        <remove>
-            <Transition >
-                <NumericAnimation target="{layout.item}" properties="opacity" from="1" to="0" duration="500" />
-            </Transition>
-        </remove>
-    </HorizontalLayout>
-    \endcode
+    \qml
+HorizontalLayout {
+    id: layout
+    remove: Transition {
+        NumericAnimation {
+            target: layout.item
+            properties: "opacity"
+            from: 1
+            to: 0
+            duration: 500
+        }
+    }
+}
+    \endqml
 
 */
 /*!
@@ -665,15 +696,20 @@ QML_DEFINE_TYPE(QFxHorizontalLayout,HorizontalLayout);
 
     Added can mean that either the object has been created or reparented, and thus is now a child or the layout, or that the object has had its opacity increased from zero, and thus is now visible.
 
-    \code
-    <HorizontalLayout id="layout">
-        <add>
-            <Transition >
-                <NumericAnimation target="{layout.item}" properties="opacity" from="0" to="1" duration="500" />
-            </Transition>
-        </add>
-    </HorizontalLayout>
-    \endcode
+    \qml
+HorizontalLayout {
+    id: layout
+    add: Transition {
+        NumericAnimation {
+            target: layout.item
+            properties: "opacity"
+            from: 0
+            to: 1
+            duration: 500
+        }
+    }
+}
+    \endqml
 
 */
 /*!
@@ -682,15 +718,17 @@ QML_DEFINE_TYPE(QFxHorizontalLayout,HorizontalLayout);
 
     This can happen when other items are added or removed from the layout, or when items resize themselves.
 
-    \code
-    <HorizontalLayout id="layout">
-        <move>
-            <Transition>
-                <NumericAnimation properties="x" ease="easeOutBounce" />
-            </Transition>
-        </move>
-    </HorizontalLayout>
-    \endcode
+    \qml
+HorizontalLayout {
+    id: layout
+    move: Transition {
+        NumericAnimation {
+            properties: "x"
+            ease: "easeOutBounce"
+        }
+    }
+}
+    \endqml
 
 */
 /*!
@@ -776,21 +814,21 @@ QML_DEFINE_TYPE(QFxGridLayout,GridLayout);
 
 /*!
   \qmlclass GridLayout QFxGridLayout
-  \brief The GridLayout element arranges its children in a grid layout.
+  \brief The GridLayout item arranges its children in a grid layout.
   \inherits Item
 
-  The GridLayout element arranges its child elements so that they are
+  The GridLayout item arranges its child items so that they are
   aligned in a grid and are not overlapping. Spacing can be added
   between the items, and a margin around all the items can also be
   defined. It also provides for transitions to be set when items are
   added, moved, or removed in the layout. Adding and removing apply
-  both to elements which are deleted or have their position in the
+  both to items which are deleted or have their position in the
   document changed so as to no longer be children of the layout, as
-  well as to elements which have their opacity set to or from zero so
+  well as to items which have their opacity set to or from zero so
   as to appear or disappear.
 
   The GridLayout defaults to using four columns, and as many rows as
-  are necessary to fit all the child elements. The number of rows
+  are necessary to fit all the child items. The number of rows
   and/or the number of columns can be constrained by setting the rows
   or columns properties. The grid layout calculates a grid with
   rectangular cells of sufficient size to hold all items, and then
@@ -802,15 +840,17 @@ QML_DEFINE_TYPE(QFxGridLayout,GridLayout);
   \row 
   \o \image gridLayout_example.png
   \o
-  \code
-  <GridLayout columns="3" spacing="2">
-      <Rect color="red" width="50" height="50"/>
-      <Rect color="green" width="20" height="50"/>
-      <Rect color="blue" width="50" height="20"/>
-      <Rect color="cyan" width="50" height="50"/>
-      <Rect color="magenta" width="10" height="10"/>
-  </GridLayout>
-  \endcode
+  \qml
+GridLayout {
+    columns: 3
+    spacing: 2
+    Rect { color: "red"; width: 50; height: 50 }
+    Rect { color: "green"; width: 20; height: 50 }
+    Rect { color: "blue"; width: 50; height: 20 }
+    Rect { color: "cyan"; width: 50; height: 50 }
+    Rect { color: "magenta"; width: 10; height: 10 }
+}
+  \endqml
   \endtable
 */
 /*!
@@ -826,15 +866,20 @@ QML_DEFINE_TYPE(QFxGridLayout,GridLayout);
     zero it will not be visible during the transition unless you set
     the opacity in the transition, like in the below example.
 
-    \code
-    <GridLayout id="layout">
-        <remove>
-            <Transition >
-                <NumericAnimation target="{layout.item}" properties="opacity" from="1" to="0" duration="500" />
-            </Transition>
-        </remove>
-    </GridLayout>
-    \endcode
+    \qml
+GridLayout {
+    id: layout
+    remove: Transition {
+        NumericAnimation {
+            target: layout.item
+            properties: "opacity"
+            from: 1
+            to: 0
+            duration: 500
+        }
+    }
+}
+    \endqml
 
 */
 /*!
@@ -846,15 +891,20 @@ QML_DEFINE_TYPE(QFxGridLayout,GridLayout);
     object has had its opacity increased from zero, and thus is now
     visible.
 
-    \code
-    <GridLayout id="layout">
-        <add>
-            <Transition >
-                <NumericAnimation target="{layout.item}" properties="opacity" from="0" to="1" duration="500" />
-            </Transition>
-        </add>
-    </GridLayout>
-    \endcode
+    \qml
+GridLayout {
+    id: layout
+    add: Transition {
+        NumericAnimation {
+            target: layout.item
+            properties: "opacity"
+            from: 0
+            to: 1
+            duration: 500
+        }
+    }
+}
+    \endqml
 
 */
 /*!
@@ -864,15 +914,17 @@ QML_DEFINE_TYPE(QFxGridLayout,GridLayout);
     This can happen when other items are added or removed from the layout, or
     when items resize themselves.
 
-    \code
-    <GridLayout id="layout">
-        <move>
-            <Transition>
-                <NumericAnimation properties="x,y" ease="easeOutBounce" />
-            </Transition>
-        </move>
-    </GridLayout>
-    \endcode
+    \qml
+GridLayout {
+    id: layout
+    move: Transition {
+        NumericAnimation {
+            properties: "x,y"
+            ease: "easeOutBounce"
+        }
+    }
+}
+    \endqml
 
 */
 /*!
