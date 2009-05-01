@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
     \row 
     \o \image animatedimageitem.gif
     \o
-    \code
+    \qml
 Item {
     width: anim.width; height: anim.height+8
     AnimatedImage { id: anim; source: "pics/games-anim.gif" }
@@ -74,7 +74,7 @@ Item {
         x: (anim.width-width)*anim.currentFrame/(anim.frameCount-1)
     }
 }
-    \endcode
+    \endqml
     \endtable
 */
 QML_DEFINE_TYPE(QFxAnimatedImageItem, AnimatedImage);

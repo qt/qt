@@ -64,25 +64,28 @@ public:
     \brief The Blur filter blurs an item and its contents.
     \inherits Filter
 
-    Blurring reduces the clarity of a visual element.  The following example
+    Blurring reduces the clarity of a visual item.  The following example
     shows an icon at a blur radius of 0, 5 and 10.
 
     \table
     \row
     \o
-    \code
-    <HorizontalLayout>
-        <Image src="icon.png">
-            <filter><Blur radius="0" /></filter>
-        </Image>
-        <Image src="icon.png">
-            <filter><Blur radius="5" /></filter>
-        </Image>
-        <Image src="icon.png">
-            <filter><Blur radius="10" /></filter>
-        </Image>
-    </HorizontalLayout>
-    \endcode
+    \qml
+HorizontalLayout {
+    Image {
+        src: "icon.png"
+        filter: Blur { radius: 0 }
+    }
+    Image {
+        src: "icon.png"
+        filter: Blur { radius: 5 }
+    }
+    Image {
+        src: "icon.png"
+        filter: Blur { radius: 10 }
+    }
+}
+    \endqml
     \row
     \o \image blur_example.png
     \endtable
@@ -110,7 +113,9 @@ QFxBlurFilter::~QFxBlurFilter()
 /*!
     \qmlproperty real Blur::radius
 
-    Sets the blur kernel radius.  The larger the radius the more blurry the item will appear. A radius of 0 (or less) is equivalent to no blur.
+    Sets the blur kernel radius.
+    The larger the radius the more blurry the item will appear.
+    A radius of 0 (or less) is equivalent to no blur.
  */
 
 /*!
