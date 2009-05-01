@@ -371,18 +371,13 @@ void QDirectFBSurface::flush(QWidget *widget, const QRegion &region,
     } else {
         if (region.numRects() > 1) {
             const QVector<QRect> rects = region.rects();
-            DFBSurfaceFlipFlags tmpFlags = flipFlags;
-            if (flipFlags & DSFLIP_WAIT)
-                tmpFlags = DFBSurfaceFlipFlags(flipFlags & ~DSFLIP_WAIT);
+            const DFBSurfaceFlipFlags nonWaitFlags = DFBSurfaceFlipFlags(flipFlags & ~DSFLIP_WAIT);
             for (int i=0; i<rects.size(); ++i) {
                 const QRect &r = rects.at(i);
                 const DFBRegion dfbReg = { r.x() + offset.x(), r.y() + offset.y(),
                                            r.x() + r.width() + offset.x(),
                                            r.y() + r.height() + offset.y() };
-                dfbSurface->Flip(dfbSurface, &dfbReg,
-                                 i + 1 < rects.size()
-                                 ? tmpFlags
-                                 : flipFlags);
+                dfbSurface->Flip(dfbSurface, &dfbReg, i + 1 < rects.size() ? nonWaitFlags : flipFlags);
             }
         } else {
             const QRect r = region.boundingRect();
