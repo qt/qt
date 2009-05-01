@@ -106,6 +106,8 @@ class QFxWebSettings : public QObject {
     Q_PROPERTY(bool offlineWebApplicationCacheEnabled READ offlineWebApplicationCacheEnabled WRITE setOfflineWebApplicationCacheEnabled)
     Q_PROPERTY(bool localStorageDatabaseEnabled READ localStorageDatabaseEnabled WRITE setLocalStorageDatabaseEnabled)
 
+    Q_PROPERTY(QString userStyleSheetUrl READ userStyleSheetUrl WRITE setUserStyleSheetUrl)
+
 public:
     QFxWebSettings() {}
 
@@ -137,6 +139,9 @@ public:
     void setOfflineWebApplicationCacheEnabled(bool on) { s->setAttribute(QWebSettings::OfflineWebApplicationCacheEnabled, on); }
     bool localStorageDatabaseEnabled() const { return s->testAttribute(QWebSettings::LocalStorageDatabaseEnabled); }
     void setLocalStorageDatabaseEnabled(bool on) { s->setAttribute(QWebSettings::LocalStorageDatabaseEnabled, on); }
+
+    QString userStyleSheetUrl() const { return s->userStyleSheetUrl(); }
+    void setUserStyleSheetUrl(const QString& url) { s->setUserStyleSheetUrl(url); }
 
     QWebSettings *s;
 };
@@ -951,6 +956,21 @@ QWebPage *QFxWebView::page() const
 }
 
 // The QObject interface to settings().
+/*!
+    \qmlproperty QWebSettings WebView::settings
+
+    This property gives access to the settings controlling the web view.
+
+    See QWebSettings for the list of sub-properties.
+
+    \code
+        WebView {
+            settings.pluginsEnabled: true
+            settings.userStyleSheetUrl: "mystyle.css"
+            ...
+        }
+    \endcode
+*/
 QObject *QFxWebView::settingsObject() const
 {
     Q_D(const QFxWebView);

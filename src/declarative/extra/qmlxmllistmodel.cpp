@@ -74,11 +74,14 @@ QML_DEFINE_TYPE(QmlXmlListModel, XmlListModel);
 
     The following is an example of a model containing news from a Yahoo RSS feed:
     \qml
-    <XmlListModel id="FeedModel" src="http://rss.news.yahoo.com/rss/oceania" query="doc($src)/rss/channel/item">
-        <Role name="title" query="title/string()"/>
-        <Role name="link" query="link/string()"/>
-        <Role name="description" query="description/string()" isCData="true"/>
-    </XmlListModel>
+    XmlListModel {
+        id: FeedModel
+        source: "http://rss.news.yahoo.com/rss/oceania"
+        query: "doc($src)/rss/channel/item"
+        Role { name: "title"; query: "title/string()" }
+        Role { name: "link"; query: "link/string()" }
+        Role { name: "description"; query: "description/string()"; isCData: true }
+    }
     \endqml
     \note The model is currently static, so the above is really just a snapshot of an RSS feed.
 */
@@ -343,7 +346,7 @@ void QmlXmlListModel::doSubquery(int index) const
                     s.replace(QLatin1String("&gt;"), QLatin1String(">"));
                     s.replace(QLatin1String("&amp;"), QLatin1String("&"));
                 }
-                resultList << s;
+                resultList << s.trimmed();
                 //qDebug() << s;
             }
             b.seek(0);

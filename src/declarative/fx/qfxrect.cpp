@@ -54,7 +54,7 @@ QML_DEFINE_TYPE(QFxPen,Pen);
 
     Example:
     \code
-    <Rect pen.width="2" pen.color="red".../>
+    Rect { pen.width: 2; pen.color: "red" ... }
     \endcode
 */
 
@@ -73,11 +73,11 @@ QML_DEFINE_TYPE(QFxPen,Pen);
     or as an \l {http://www.w3.org/TR/SVG/types.html#ColorKeywords}{SVG color keyword name}
      (as defined by the World Wide Web Consortium). For example:
     \code
-    <!-- rect with green border using hexidecimal notation -->
-    <Rect pen.color="#00FF00" .../>
+    // rect with green border using hexidecimal notation
+    Rect { pen.color: "#00FF00" }
 
-    <!-- rect with steelblue border using SVG color name-->
-    <Rect pen.color="steelblue" .../>
+    // rect with steelblue border using SVG color name
+    Rect { pen.color: "steelblue" }
     \endcode
 
     For the full set of ways to specify color, see Qt's QColor::setNamedColor documentation.
@@ -102,7 +102,7 @@ QML_DEFINE_TYPE(QFxRect,Rect);
     A Rect is painted having a solid fill (color) and an optional border (pen). You can also create rounded rectangles using the radius property.
 
     \code
-    <Rect width="100" height="100" color="red" pen.color="black" pen.width="5" radius="10"/>
+    Rect { width: 100; height: 100; color: "red"; pen.color: "black"; pen.width: 5; radius: 10 }
     \endcode
 
     \image declarative-rect.png
@@ -116,7 +116,7 @@ QML_DEFINE_TYPE(QFxRect,Rect);
     A Rect is painted having a solid fill (color) and an optional border (pen). You can also create rounded rectangles using the radius property.
 
     \code
-    <Rect width="100" height="100" color="red" pen.color="black" pen.width="5" radius="10"/>
+    Rect { width: 100; height: 100; color: "red"; pen.color: "black"; pen.width: 5; radius: 10 }
     \endcode
 
     \image declarative-rect.png
@@ -217,11 +217,11 @@ void QFxRect::dump(int depth)
     This property holds the color used to fill the rect.
 
     \code
-    <!-- green rect using hexidecimal notation -->
-    <Rect color="#00FF00" .../>
+    // green rect using hexidecimal notation
+    Rect { color: "#00FF00" }
 
-    <!-- steelblue rect using SVG color name-->
-    <Rect color="steelblue" .../>
+    // steelblue rect using SVG color name
+    Rect { color: "steelblue" }
     \endcode
 */
 
@@ -260,8 +260,8 @@ void QFxRect::setColor(const QColor &c)
     This color will be drawn over the rect's color when the rect is painted. The tint color should usually be mostly transparent, or you will not be able to see the underlying color. The below example provides a slight red tint by having the tint color be pure red which is only 1/16th opaque.
 
     \code
-    <Rect x="0" width="80" height="80" color="lightsteelblue"/>
-    <Rect x="100" width="80" height="80" color="lightsteelblue" tintColor="#10FF0000"/>
+    Rect { x: 0; width: 80; height: 80; color: "lightsteelblue" }
+    Rect { x: 100; width: 80; height: 80; color: "lightsteelblue"; tintColor: "#10FF0000" }
     \endcode
     \image declarative-rect_tint.png
 
@@ -321,11 +321,11 @@ QColor QFxRectPrivate::getColor()
     This property allows for the easy construction of simple horizontal gradients. Other gradients may by formed by adding rotation to the rect. The gradient will blend linearly from the rect's main color to the color specified for gradient color.
 
     \code
-    <Rect y="0" width="80" height="80" color="lightsteelblue"/>
-    <Rect y="100" width="80" height="80" color="lightsteelblue" gradientColor="blue"/>
-    <Rect rotation="90" x="80" y="200" width="80" height="80" color="lightsteelblue"
-        gradientColor="blue"/>
-    <!-- The x offset is needed because the rotation is from the top left corner -->
+    Rect { y: 0; width: 80; height: 80; color: "lightsteelblue" }
+    Rect { y: 100; width: 80; height: 80; color: "lightsteelblue"; gradientColor="blue" }
+    Rect { rotation: 90; x: 80; y: 200; width: 80; height: 80; color="lightsteelblue"
+            gradientColor: "blue" }
+    // The x offset is needed because the rotation is from the top left corner
     \endcode
     \image declarative-rect_gradient.png
 */
