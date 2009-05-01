@@ -906,7 +906,7 @@ void QDirectFBPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
 {
     Q_D(QDirectFBPaintEngine);
     d->setClipDirty();
-    if (!d->clip()->hasRectClip && d->clip()->enabled) {
+    if (d->clip() && !d->clip()->hasRectClip && d->clip()->enabled) {
         const QPoint bottom = d->transform.map(QPoint(0, rect.bottom()));
         if (bottom.y() >= d->lastLockedHeight)
             d->lock();
