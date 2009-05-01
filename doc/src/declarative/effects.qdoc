@@ -1,17 +1,15 @@
 /*! 
 \page effects.html
-\target effects
+\target qmleffects
 \title Visual Effects
 
-
 \section1 Basic Effects
-
-These effects are currently supported by all canvas backends.
 
 \list
 \o Scaling (\l Item \bold scale property)
 \o Opacity (\l Item \bold opacity property)
-\o Z-Axis Rotation (\l Item \bold rotation property)
+\o Rotation (\l Item \bold rotation property, and Rotation3D)
+\o Affine Transforms (\l Squish)
 \endlist
 
 \section1 Advanced Effects
@@ -20,7 +18,7 @@ These effects are currently only supported by the OpenGL canvas backend. Support
 backends may be added if the performance can be made acceptable.
 
 \list
-\o X/Y-Axis Rotation (see \l Transform)
+\o Perspective Transforms (\l Perspective, Translation3D)
 \o \l Shadow
 \o \l Blur
 \o \l Reflection

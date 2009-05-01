@@ -45,6 +45,7 @@
 
 QT_BEGIN_NAMESPACE
 /*!
+    \internal
     \class GLTexture
     \brief The GLTexture class simplifies the use of OpenGL textures.
 */

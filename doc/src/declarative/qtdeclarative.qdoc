@@ -1,0 +1,93 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \module QtDeclarative
+    \title QtDeclarative Module
+    \ingroup modules
+
+    \brief The Qt Declarative module provides a declarative framework for building
+    highly dynamic and fluid applications.
+
+    Qt Declarative is targetted at the sorts of user
+    interface (and the sorts of hardware) in embedded devices such as phones, media
+    players, and set-top boxes. It is also appropriate for highly custom desktop
+    user-interfaces, or special elements in more traditional desktop
+    user-interfaces.
+
+    Building fluid applications is done declaratively, rather than procedurally.
+    That is, you specify \e what the UI should look like and how it should behave
+    in an declarative format called QML, rather than specifying step-by-step \e how to
+    build it in a language like C++ or JavaScript.  Specifying a UI declaratively
+    does not just include the layout of the interface items, but also the way each
+    individual item looks and behaves and the overall flow of the application.
+
+    Getting Started:
+    \list
+    \o \l {qmlexamples}{Examples}
+    \o \l {tutorial}{Tutorial: 'Hello World'}
+    \o \l {tutorials-declarative-contacts.html}{Tutorial: 'Introduction to QML'}
+    \o \l {qmlforcpp}{Qt Declarative Markup Language For C++ Programmers}
+    \endlist
+
+    Core Features:
+    \list
+    \o \l {binding}{Data Binding}
+    \o \l {anchor-layout}{Layout Anchors}
+    \o \l {qmlanimation}{Animation}
+    \o \l {qmleffects}{Visual Effects}
+    \o \l {components}{Components}
+    \o \l {qmlmodules}{Modules}
+    \o \l {qmlfocus}{Keyboard Focus}
+    \endlist
+
+    QML Reference:
+    \list
+    \o \l {elements}{Qml Elements}
+    \endlist
+
+    C++ Reference:
+    \list
+    \o \l {qtprogrammers}{QML for Qt programmers}
+    \o \l {qtbinding}{C++ Data Binding}
+    \o \l {cppitem}{C++ Components}
+    \endlist
+*/

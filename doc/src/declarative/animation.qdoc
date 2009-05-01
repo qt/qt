@@ -1,6 +1,6 @@
 /*! 
-\page animation.html
-\target animation
+\page qmlanimation.html
+\target qmlanimation
 \title QML Animation
 
 QML supports three different forms of animation - basic property animation, 

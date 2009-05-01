@@ -67,16 +67,8 @@ public:
 
 /*!
     \qmlclass SqlBind QmlSqlBind
-    \brief the SqlBind element specifies a value binding for an SqlQuery element.
-*/
+    \brief The SqlBind element specifies a value binding for an SqlQuery element.
 
-/*!
-    \class QmlSqlBind
-    \brief The QmlSqlBind class specifies a value binding for a QmlSqlQuery.
-
-    \qmltext
-
-    \qml
     By using bindings its possible to cause a SqlQuery to update itself
     when values bound through the SqlBind change.  Hence in the example
     below the results for the SqlQuery will change as searchText changes.
@@ -84,6 +76,7 @@ public:
     If the query is not a SELECT statement, the effects of the bound
     values will only apply when the SqlQuery exec() slot is called.
 
+    \qml
     <SqlQuery>
         SELECT * FROM mytable WHERE name LIKE :value
         <bindings>
@@ -97,7 +90,12 @@ public:
         </bindings>
     <SqlQuery>
     \endqml
-    \endqmltext
+*/
+
+/*!
+    \internal
+    \class QmlSqlBind
+    \brief The QmlSqlBind class specifies a value binding for a QmlSqlQuery.
 */
 
 /*!
@@ -235,13 +233,7 @@ public:
 /*!
     \qmlclass SqlQuery QmlSqlQuery
     \brief The SqlQuery element describes a query into an SQL database.
-*/
 
-/*
-    \class QmlSqlQuery
-    \brief the QmlSqlQuery class manages a query into an SQL database.
-
-    \qmltext
     The SqlQuery element has three parts.  The first is the query itself,
     which can either be specified using the query property or by the
     default text for the element.  The second specifies the connection
@@ -256,11 +248,11 @@ public:
     the query.
 
     If the query is a select statement it can be used as a model for a ListView.
-    The roles will be the columns of the result set.  Use the SQL AS keyword 
+    The roles will be the columns of the result set.  Use the SQL AS keyword
     in the query if you want to override the column names from that of the
     table selected.  You should also use the AS keyword if there is no
     appropriate table column name for the result column.
-        
+
     \qml
     <SqlQuery connection="{qmlConnectionId}" query="DELETE FROM mytable"/>
     <SqlQuery connection="connectionName">
@@ -268,7 +260,11 @@ public:
     </SqlQuery>
     <SqlQuery>SELECT id AS recordId, (firstName || ' ' || lastName) AS fullName FROM mytable</SqlQuery>
     \endqml
-    \endqmltext
+*/
+
+/*
+    \class QmlSqlQuery
+    \brief the QmlSqlQuery class manages a query into an SQL database.
 */
 
 /*!

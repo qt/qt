@@ -1,51 +1,51 @@
-/*! 
-\page qml.html
-\title 'Qt Declarative' Documentation
+/*!
+    \page qml.html
+    \title 'Qt Declarative' Documentation
 
-\target qtdeclarativemainpage
+    \target qtdeclarativemainpage
 
-The Qt Declarative module provides a user interface framework for building 
-highly dynamic and fluid applications.  It is targetted at the sorts of user 
-interface and the sorts of hardware in embedded devices such as phones, media 
-players, and set-top boxes. It is also appropriate for highly custom desktop 
-user-interfaces, or special elements in more traditional desktop 
-user-interfaces.
+    The Qt Declarative module provides a declarative framework for building
+    highly dynamic and fluid applications. It is targetted at the sorts of user
+    interface (and the sorts of hardware) in embedded devices such as phones, media
+    players, and set-top boxes. It is also appropriate for highly custom desktop
+    user-interfaces, or special elements in more traditional desktop
+    user-interfaces.
 
-Building fluid applications is done declaratively, rather than procedurally.
-That is, you specify \e what the UI should look like and how it should behave 
-in an declarative format called QML instead of specifying step-by-step \e how to
-build it in a language like C++ or JavaScript.  Specifying a UI declaratively 
-does not just include the layout of the interface items, but also the way each
-individual item looks and behaves and the overall flow of the application.
+    Building fluid applications is done declaratively, rather than procedurally.
+    That is, you specify \e what the UI should look like and how it should behave
+    in an declarative format called QML, rather than specifying step-by-step \e how to
+    build it in a language like C++ or JavaScript.  Specifying a UI declaratively
+    does not just include the layout of the interface items, but also the way each
+    individual item looks and behaves and the overall flow of the application.
 
-Getting Started:
-\list
-\o \l {qmlexamples}{Examples}
-\o \l {tutorial}{Tutorial}
-\o \l {qmlforcpp}{Qt Declarative Markup Language For C++ Programmers}
-\endlist
+    Getting Started:
+    \list
+    \o \l {qmlexamples}{Examples}
+    \o \l {tutorial}{Tutorial: 'Hello World'}
+    \o \l {tutorials-declarative-contacts.html}{Tutorial: 'Introduction to QML'}
+    \o \l {qmlforcpp}{Qt Declarative Markup Language For C++ Programmers}
+    \endlist
 
-Core Features:
-\list
-\o \l {binding}{Data Binding}
-\o \l {anchor-layout}{Layout Anchors}
-\o \l {animation}{Animation}
-\o \l {effects}{Visual Effects}
-\o \l {components}{Components}
-\o \l {qmlmodules}{Modules}
-\o \l {qmlfocus}{Keyboard Focus}
-\endlist
+    Core Features:
+    \list
+    \o \l {binding}{Data Binding}
+    \o \l {anchor-layout}{Layout Anchors}
+    \o \l {qmlanimation}{Animation}
+    \o \l {qmleffects}{Visual Effects}
+    \o \l {components}{Components}
+    \o \l {qmlmodules}{Modules}
+    \o \l {qmlfocus}{Keyboard Focus}
+    \endlist
 
-QML Reference:
-\list
-\o \l {elements}{Qml Elements}
-\endlist
+    QML Reference:
+    \list
+    \o \l {elements}{Qml Elements}
+    \endlist
 
-C++ Reference:
-\list
-\o \l {qtprogrammers}{QML for Qt programmers}
-\o \l {qtbinding}{C++ Data Binding}
-\o \l {cppitem}{C++ Components}
-\endlist
-
+    C++ Reference:
+    \list
+    \o \l {qtprogrammers}{QML for Qt programmers}
+    \o \l {qtbinding}{C++ Data Binding}
+    \o \l {cppitem}{C++ Components}
+    \endlist
 */

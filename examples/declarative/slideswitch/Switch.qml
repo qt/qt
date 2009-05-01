@@ -14,7 +14,6 @@ Item {
                 Switch.state = "On";
         }
         function dorelease() {
-            print(Knob.x);
             if(Knob.x == 1) {
                 if(Switch.state == "Off") 
                     return;

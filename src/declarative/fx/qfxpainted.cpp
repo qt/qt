@@ -45,12 +45,13 @@
 
 QT_BEGIN_NAMESPACE
 /*!
+    \internal
     \class QFxPainted
-    \brief The QFxPainted class is an abstract base class for QFxView items that paint using QPainter.
+    \brief The QFxPainted class is an abstract base class for QFxView items that want cached painting.
 
     \ingroup group_coreitems
 
-    This is a convenience class allowing easy use of QPainter within a custom item.
+    This is a convenience class allowing easy use of cached painting within a custom item.
     The contents of the item are cached behind the scenes. Any time you change the contents
     you should call markDirty to make sure the cache is refreshed the next time painting occurs.
 
