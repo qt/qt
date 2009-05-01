@@ -209,12 +209,12 @@ public:
 
 /*!
     \qmlclass WebView
-    \brief The WebView element allows you to add web content to a canvas.
+    \brief The WebView item allows you to add web content to a canvas.
     \inherits Item
 
     A WebView renders web content based on a URL.
 
-    If the width and height of the element is not set, they will
+    If the width and height of the item is not set, they will
     dynamically adjust to a size appropriate for the content.
     This width may be large (eg. 980) for typical online web pages.
 
@@ -237,7 +237,7 @@ public:
 
     \image webview.png
 
-    The element includes no scrolling, scaling,
+    The item includes no scrolling, scaling,
     toolbars, etc., those must be implemented around WebView. See the WebBrowser example
     for a demonstration of this.
 */
@@ -251,7 +251,7 @@ public:
 
     \image webview.png
 
-    The element includes no scrolling, scaling,
+    The item includes no scrolling, scaling,
     toolbars, etc., those must be implemented around WebView. See the WebBrowser example
     for a demonstration of this.
 
@@ -939,7 +939,7 @@ QWebPage *QFxWebView::page() const
         QFxWebView *self = const_cast<QFxWebView*>(this);
         QWebPage *wp = new QFxWebPage(self);
 
-        // QML elements don't default to having a background,
+        // QML items don't default to having a background,
         // even though most we pages will set one anyway.
         QPalette pal = QApplication::palette();
         pal.setBrush(QPalette::Base, QColor::fromRgbF(0, 0, 0, 0));
@@ -1039,7 +1039,7 @@ void QFxWebView::setHtml(const QString &html, const QUrl &baseUrl)
         d->idealwidth>0 ? d->idealwidth : width(),
         d->idealheight>0 ? d->idealheight : height()));
     if (isComponentComplete())
-        page()->mainFrame()->setHtml(html, baseUrl);
+        page()->mainFrame()->setHtml(html, qmlContext(this)->resolvedUrl(baseUrl));
     else {
         d->pending = d->PendingHtml;
         d->pending_url = baseUrl;
@@ -1055,7 +1055,7 @@ void QFxWebView::setContent(const QByteArray &data, const QString &mimeType, con
         d->idealheight>0 ? d->idealheight : height()));
 
     if (isComponentComplete())
-        page()->mainFrame()->setContent(data,mimeType,baseUrl);
+        page()->mainFrame()->setContent(data,mimeType,qmlContext(this)->resolvedUrl(baseUrl));
     else {
         d->pending = d->PendingContent;
         d->pending_url = baseUrl;
