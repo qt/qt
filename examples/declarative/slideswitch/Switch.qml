@@ -2,9 +2,9 @@ Item {
     id: Switch
     width: Groove.width
     height: Groove.height
-    properties: Property {
-        name: "on"
-    }
+
+    property var on
+
     Script {
 
         function toggle() {

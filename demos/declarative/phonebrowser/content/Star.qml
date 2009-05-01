@@ -1,12 +1,10 @@
 Item {
+    property var rating
+    property var on
+
     id: Container
     width: 24
     height: 24
-
-    properties: [
-        Property { name: "rating" },
-        Property { name: "on" }
-    ]
 
     signals: Signal {
         name: "clicked"

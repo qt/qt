@@ -5,13 +5,13 @@ Rect {
 
     // Make a ball to bounce
     Rect {
+        // Add a property for the target y coordinate
+        property var targetY : Page.height-10
+        property var direction : "right"
+
         id: Ball
         color: "#00ee00"
         x: 20; width: 20; height: 20; z: 1
-
-        // Add a property for the target y coordinate
-        properties: Property { name: "targetY"; value: Page.height-10 }
-        properties: Property { name: "direction"; value: "right" }
 
         // Move the ball to the right and back to the left repeatedly
         x: SequentialAnimation {

@@ -1,10 +1,10 @@
 Item {
+    property var color
+
     id: CellContainer
     width: 40
     height: 25
-    properties: Property {
-        name: "color"
-    }
+
     Rect {
         anchors.fill: parent
         color: CellContainer.color

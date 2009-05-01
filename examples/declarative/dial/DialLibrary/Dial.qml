@@ -1,11 +1,9 @@
 Item {
+    property real value : 0
+
     width: 210
     height: 210
-    properties: Property {
-        name: "value"
-        type: "real"
-        value: 0
-    }
+
     Image {
         id: Background
         source: "background.svg"

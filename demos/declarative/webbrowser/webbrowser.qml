@@ -3,10 +3,7 @@ import "content"
 Item {
     id: WebBrowser
 
-    properties: Property {
-        name: "url"
-        value: "http://www.qtsoftware.com"
-    }
+    property var url : "http://www.qtsoftware.com"
 
     width: 640
     height: 480
@@ -163,11 +160,8 @@ Item {
                         onClicked: { proxy.focus=true }
                     }
                 }
-                properties: Property {
-                    name: "progressOff"
-                    value: 1
-                    type: "Real"
-                }
+
+                property real progressOff : 1
                 states: [
                     State {
                         name: "Normal"
@@ -210,16 +204,8 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
 
-            properties: Property {
-                name: "centerX"
-                value: 0
-                type: "Real"
-            }
-            properties: Property {
-                name: "centerY"
-                value: 0
-                type: "Real"
-            }
+            property real centerX : 0
+            property real centerY : 0
 
             WebView {
                 id: WebView
@@ -237,11 +223,7 @@ Item {
                 onUrlChanged: { Flick.xPosition=0; Flick.yPosition=0; zoomOut() }
                 onDoubleClick: { toggleZoom() }
 
-                properties: Property {
-                    name: "zoomedOut"
-                    type: "real"
-                    value: 1
-                }
+                property real zoomedOut : 1
             }
             Rect {
                 id: WebViewTint

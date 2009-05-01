@@ -1,8 +1,7 @@
 Item {
+    property var flickableArea
+
     id: Container
-    properties: Property {
-        name: "flickableArea"
-    }
     Rect {
         radius: 5
         color: "black"

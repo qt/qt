@@ -5,16 +5,10 @@ Item {
     // height of the page, i.e. a pageSize of 0.5 means that you can see 50%
     // of the height of the view.
     // orientation can be either 'Vertical' or 'Horizontal'
-    properties: Property {
-        name: "position"
-    }
-    properties: Property {
-        name: "pageSize"
-    }
-    properties: Property {
-        name: "orientation"
-        value: "Vertical"
-    }
+    property var position
+    property var pageSize
+    property var orientation : "Vertical"
+
     // A light, semi-transparent background
     Rect {
         id: Background
