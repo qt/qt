@@ -44,7 +44,8 @@
 
 #include <QtGui>
 
-#include "vector.h"
+#include <QtGui/qvector3d.h>
+#include <QtGui/qquaternion.h>
 
 class TrackBall
 {
@@ -55,17 +56,17 @@ public:
         Sphere,
     };
     TrackBall(TrackMode mode = Sphere);
-    TrackBall(float angularVelocity, const gfx::Vector3f& axis, TrackMode mode = Sphere);
+    TrackBall(float angularVelocity, const QVector3D& axis, TrackMode mode = Sphere);
     // coordinates in [-1,1]x[-1,1]
-    void push(const QPointF& p, const gfx::Quaternionf &transformation);
-    void move(const QPointF& p, const gfx::Quaternionf &transformation);
-    void release(const QPointF& p, const gfx::Quaternionf &transformation);
+    void push(const QPointF& p, const QQuaternion &transformation);
+    void move(const QPointF& p, const QQuaternion &transformation);
+    void release(const QPointF& p, const QQuaternion &transformation);
     void start(); // starts clock
     void stop(); // stops clock
-    gfx::Quaternionf rotation() const;
+    QQuaternion rotation() const;
 private:
-    gfx::Quaternionf m_rotation;
-    gfx::Vector3f m_axis;
+    QQuaternion m_rotation;
+    QVector3D m_axis;
     float m_angularVelocity;
 
     QPointF m_lastPos;
