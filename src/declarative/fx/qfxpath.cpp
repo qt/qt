@@ -57,9 +57,9 @@ QML_DEFINE_TYPE(QFxPathCubic,PathCubic);
 
 /*!
     \qmlclass PathElement
-    \brief PathElement is the base path element.
+    \brief PathElement is the base path type.
 
-    This element is the base for all path elements.  It cannot
+    This type is the base for all path types.  It cannot
     be instantiated.
 
     \sa Path, PathAttribute, PathPercent, PathLine, PathQuad, PathCubic
@@ -73,13 +73,13 @@ QML_DEFINE_TYPE(QFxPathCubic,PathCubic);
 
 /*!
     \qmlclass Path QFxPath
-    \brief The Path element defines a path for use by \l PathView.
+    \brief A Path object defines a path for use by \l PathView.
 
     A Path is composed of one or more path segments - PathLine, PathQuad,
     PathCubic.
 
-    The spacing of the items along the Path can be adjusted via the
-    PathPercent element.
+    The spacing of the items along the Path can be adjusted via a
+    PathPercent object.
 
     PathAttribute allows named attributes with values to be defined
     along the path.
@@ -151,11 +151,11 @@ void QFxPath::setStartY(qreal y)
 
 /*!
     \qmlproperty list<PathElement> Path::pathElements
-    This property holds the elements composing the path.
+    This property holds the objects composing the path.
 
     \default
 
-    A path can contain the following path elements:
+    A path can contain the following path objects:
     \list
         \i \l PathLine - a straight line to a given position.
         \i \l PathQuad - a quadratic Bezier curve to a given position with a control point.
@@ -478,7 +478,7 @@ void QFxCurve::setY(qreal y)
     \qmlclass PathAttribute
     \brief The PathAttribute allows setting an attribute at a given position in a Path.
 
-    The PathAttribute element allows attibutes consisting of a name and a
+    The PathAttribute object allows attibutes consisting of a name and a
     value to be specified for the endpoints of path segments.  The attributes
     are exposed to the delegate as \l {Attached Properties}.  The value of
     an attribute at any particular point is interpolated from the PathAttributes
@@ -557,12 +557,12 @@ void QFxPathAttribute::setValue(qreal value)
     The example below creates a path consisting of a straight line from
     0,100 to 200,100:
 
-    \code
+    \qml
     Path {
         startX: 0; startY: 100
         PathLine { x: 200; y: 100 }
     }
-    \endcode
+    \endqml
 
     \sa Path, PathQuad, PathCubic
 */
@@ -599,12 +599,12 @@ void QFxPathLine::addToPath(QPainterPath &path)
     \row
     \o \image declarative-pathquad.png
     \o
-    \code
+    \qml
     Path {
         startX: 0; startY: 0
         PathQuad x: 200; y: 0; controlX: 100; controlY: 150 }
     }
-    \endcode
+    \endqml
     \endtable
 
     \sa Path, PathCubic, PathLine
@@ -683,7 +683,7 @@ void QFxPathQuad::addToPath(QPainterPath &path)
     \row
     \o \image declarative-pathcubic.png
     \o
-    \code
+    \qml
     Path {
         startX: 20; startY: 0
         PathCubic {
@@ -691,7 +691,7 @@ void QFxPathQuad::addToPath(QPainterPath &path)
                           control2X: 210; control2Y: 90
         }
     }
-    \endcode
+    \endqml
     \endtable
 
     \sa Path, PathQuad, PathLine
@@ -813,18 +813,18 @@ void QFxPathCubic::addToPath(QPainterPath &path)
     \row
     \o \image declarative-nopercent.png
     \o
-    \code
+    \qml
     Path {
         startX: 20; startY: 0
         PathQuad { x: 50; y: 80; controlX: 0; controlY: 80 }
         PathLine { x: 150; y: 80 }
         PathQuad { x: 180; y: 0; controlX: 200; controlY: 80 }
     }
-    \endcode
+    \endqml
     \row
     \o \image declarative-percent.png
     \o
-    \code
+    \qml
     Path {
         startX: 20; startY: 0
         PathQuad { x: 50; y: 80; controlX: 0; controlY: 80 }
@@ -834,7 +834,7 @@ void QFxPathCubic::addToPath(QPainterPath &path)
         PathQuad { x: 180; y: 0; controlX: 200; controlY: 80 }
         PathPercent { value: 1 }
     }
-    \endcode
+    \endqml
     \endtable
 
     \sa Path
