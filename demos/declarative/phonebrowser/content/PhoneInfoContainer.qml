@@ -8,8 +8,7 @@ Flipable {
     property var phoneSpecifications : ""
     property var phoneUrl : ""
     property var rating : 2
-
-    signals: Signal { name: "closed" }
+    signal closed
 
     axis: Axis { startX: Container.width / 2; endX: Container.width / 2; endY: 1 }
 
