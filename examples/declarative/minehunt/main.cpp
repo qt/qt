@@ -130,8 +130,8 @@ MyWidget::MyWidget(int width, int height, QWidget *parent, Qt::WindowFlags flags
 
     QFile file(fileName);
     file.open(QFile::ReadOnly);
-    QString xml = file.readAll();
-    canvas->setXml(xml, fileName);
+    QString qml = file.readAll();
+    canvas->setQml(qml, fileName);
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->activate();

@@ -97,7 +97,7 @@ public:
     QFxItem *root;
 
     QUrl source;
-    QString xml;
+    QString qml;
 
     QmlEngine engine;
     QmlComponent *component;
@@ -113,20 +113,15 @@ public:
     QFxView currently provides a minimal interface for displaying QML
     files, and connecting between QML and C++ Qt objects.
 
-    Typcial usage:
+    Typical usage:
     \code
     ...
     QFxView *view = new QFxView(this);
     vbox->addWidget(view);
 
-    QFile file(fileName);
-    file.open(QFile::ReadOnly);
-    QString xml = file.readAll();
-    view->setXml(xml, fileName);
-
-    QFileInfo fi(file);
-    view->setPath(fi.path());
-
+    QUrl url(fileName);
+    view->setUrl(url);
+    ...
     view->execute();
     ...
     \endcode
@@ -185,31 +180,31 @@ QFxView::~QFxView()
 }
 
 /*!
-  Sets the source to the \a url. The XML string is set to
+  Sets the source to the \a url. The QML string is set to
   empty.
  */
 void QFxView::setUrl(const QUrl& url)
 {
     d->source = url;
-    d->xml = QString();
+    d->qml = QString();
 }
 
 /*!
   Sets the source to the URL from the \a filename, and sets
-  the XML string to \a xml.
+  the QML string to \a qml.
  */
-void QFxView::setXml(const QString &xml, const QString &filename)
+void QFxView::setQml(const QString &qml, const QString &filename)
 {
     d->source = QUrl::fromLocalFile(filename);
-    d->xml = xml;
+    d->qml = qml;
 }
 
 /*!
-  Returns the XML string.
+  Returns the QML string.
  */
-QString QFxView::xml() const
+QString QFxView::qml() const
 {
-    return d->xml;
+    return d->qml;
 }
 
 /*!
@@ -240,10 +235,10 @@ void QFxView::execute()
 {
     rootContext()->activate();
 
-    if (d->xml.isEmpty()) {
+    if (d->qml.isEmpty()) {
         d->component = new QmlComponent(&d->engine, d->source, this);
     } else {
-        d->component = new QmlComponent(&d->engine, d->xml.toUtf8(), d->source);
+        d->component = new QmlComponent(&d->engine, d->qml.toUtf8(), d->source);
     }
 
     if (!d->component->isLoading()) {
@@ -324,17 +319,17 @@ void QFxView::timerEvent(QTimerEvent* e)
 }
 
 /*!
-  Creates a \l{QmlComponent} {component} from the \a xml
+  Creates a \l{QmlComponent} {component} from the \a qml
   string, and returns it as an \l {QFxItem} {item}. If the
   \a parent item is provided, it becomes the new item's
   parent. \a parent should be in this view's item hierarchy.
  */
-QFxItem* QFxView::addItem(const QString &xml, QFxItem* parent)
+QFxItem* QFxView::addItem(const QString &qml, QFxItem* parent)
 {
     if (!d->root)
         return 0;
 
-    QmlComponent component(&d->engine, xml.toUtf8(), QUrl()); 
+    QmlComponent component(&d->engine, qml.toUtf8(), QUrl());
     QObject *obj = component.create();
     if (obj){
         QFxItem *item = static_cast<QFxItem *>(obj);
