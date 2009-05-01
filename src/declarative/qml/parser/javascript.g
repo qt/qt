@@ -687,6 +687,20 @@ case $rule_number: {
 }   break;
 ./
 
+UiQualifiedId: T_RESERVED_WORD ;
+/.
+case $rule_number:
+./
+UiQualifiedId: T_RETURN ;
+/.
+case $rule_number:
+{
+    AST::UiQualifiedId *node = makeAstNode<AST::UiQualifiedId> (driver->nodePool(), driver->intern(lexer->characterBuffer(), lexer->characterCount()));
+    node->identifierToken = loc(1);
+    sym(1).Node = node;
+}   break;
+./
+
 UiQualifiedId: T_IDENTIFIER ;
 /.
 case $rule_number: {

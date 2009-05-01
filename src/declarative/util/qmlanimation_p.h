@@ -203,7 +203,11 @@ class QmlColorAnimationPrivate : public QmlAbstractAnimationPrivate
     Q_DECLARE_PUBLIC(QmlColorAnimation);
 public:
     QmlColorAnimationPrivate()
-    : QmlAbstractAnimationPrivate(), fromSourced(false), ca(0), value(this, &QmlColorAnimationPrivate::valueChanged) {}
+    : QmlAbstractAnimationPrivate(), fromSourced(false), ca(0), value(this, &QmlColorAnimationPrivate::valueChanged)
+    {
+        if (!colorInterpolator)
+            colorInterpolator = QVariantAnimationPrivate::getInterpolator(QVariant::Color);
+    }
 
     void init();
 
@@ -218,6 +222,8 @@ public:
     virtual void valueChanged(qreal);
 
     QmlTimeLineValueProxy<QmlColorAnimationPrivate> value;
+
+    static QVariantAnimation::Interpolator colorInterpolator;
 };
 
 class QmlRunScriptActionPrivate : public QmlAbstractAnimationPrivate
@@ -348,8 +354,8 @@ public:
 
     void init();
 
-    QmlNullableValue<QVariant> from;
-    QmlNullableValue<QVariant> to;
+    QVariant from;
+    QVariant to;
 
     QString easing;
 
@@ -358,7 +364,7 @@ public:
     QList<QObject *> exclude;
 
     bool fromSourced;
-    QVariant fromValue;
+
     QmlTimeLineValueAnimator *va;
     virtual void valueChanged(qreal);
 

@@ -105,15 +105,19 @@ public:
     \qmlclass Behaviour QmlBehaviour
     \brief The Behaviour element allows you to specify a default animation for a property change.
 
-    In example below, Rect1 will use a bounce easing curve over 200 millisecond for any changes to its y property:
+    In example below, the rect will use a bounce easing curve over 200 millisecond for any changes to its y property:
     \code
-    <Rect id="Rect1" y="200" width="20" height="20" color="#00ff00">
-        <y>
-            <Behaviour>
-                <NumericAnimation easing="easeOutBounce(amplitude:100)" duration="200" />
-            </Behaviour>
-        </y>
-    </Rect>
+    Rect {
+        width: 20; height: 20
+        color: "#00ff00"
+        y: 200  //initial value
+        y: Behaviour {
+            NumericAnimation {
+                easing: "easeOutBounce(amplitude:100)"
+                duration: 200
+            }
+        }
+    }
     \endcode
 */
 

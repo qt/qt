@@ -145,7 +145,7 @@ QFxView::QFxView(QWidget *parent)
 
 /*!
   \fn QFxView::QFxView(QSimpleCanvas::CanvasMode mode, QWidget *parent)
-  
+  \internal
   Constructs a QFxView with the given \a parent. The canvas
   \a mode can be QSimpleCanvas::GraphicsView or
   QSimpleCanvas::SimpleCanvas.
@@ -173,8 +173,8 @@ void QFxViewPrivate::init()
 }
 
 /*!
-  The destructor clears the instance and deletes the internal
-  representation.
+  The destructor clears the view's \l {QFxItem} {items} and
+  deletes the internal representation.
 
   \sa clearItems()
  */
@@ -213,18 +213,29 @@ QString QFxView::xml() const
 }
 
 /*!
-  Returns a pointer to the QmlEngine.
+  Returns a pointer to the QmlEngine used for instantiating
+  QML Components.
  */
 QmlEngine* QFxView::engine()
 {
     return &d->engine;
 }
 
+/*!
+  This function returns the root of the context hierarchy.  Each QML
+  component is instantiated in a QmlContext.  QmlContext's are
+  essential for passing data to QML components.  In QML, contexts are
+  arranged hierarchically and this hierarchy is managed by the
+  QmlEngine.
+ */
 QmlContext* QFxView::rootContext()
 {
     return d->engine.rootContext();
 }
 
+/*!
+  Displays the Qt Declarative user interface.
+*/
 void QFxView::execute()
 {
     rootContext()->activate();
@@ -242,6 +253,9 @@ void QFxView::execute()
     }
 }
 
+/*!
+  \internal
+ */
 void QFxView::continueExecute()
 {
     disconnect(d->component, SIGNAL(statusChanged(QmlComponent::Status)), this, SLOT(continueExecute()));
@@ -283,12 +297,23 @@ void QFxView::continueExecute()
     }
 }
 
+/*! \fn void QFxView::sceneResized(QSize size)
+  This signal is emitted when the view is resized.
+ */
+
+/*!
+  \internal
+ */
 void QFxView::sizeChanged()
 {
     // delay, so we catch both width and height changing.
     d->resizetimer.start(0,this);
 }
 
+/*!
+  If the \l {QTimerEvent} {timer event} \a e is this
+  view's resize timer, sceneResized() is emitted.
+ */
 void QFxView::timerEvent(QTimerEvent* e)
 {
     if (e->timerId() == d->resizetimer.timerId()) {
@@ -298,6 +323,12 @@ void QFxView::timerEvent(QTimerEvent* e)
     }
 }
 
+/*!
+  Creates a \l{QmlComponent} {component} from the \a xml
+  string, and returns it as an \l {QFxItem} {item}. If the
+  \a parent item is provided, it becomes the new item's
+  parent. \a parent should be in this view's item hierarchy.
+ */
 QFxItem* QFxView::addItem(const QString &xml, QFxItem* parent)
 {
     if (!d->root)
@@ -316,12 +347,19 @@ QFxItem* QFxView::addItem(const QString &xml, QFxItem* parent)
     return 0;
 }
 
+/*!
+  Deletes the view's \l {QFxItem} {items} and the \l {QmlEngine}
+  {QML engine's} Component cache.
+ */
 void QFxView::reset()
 {
     clearItems();
     d->engine.clearComponentCache();
 }
 
+/*!
+  Deletes the view's \l {QFxItem} {items}.
+ */
 void QFxView::clearItems()
 {
     if (!d->root)
@@ -330,11 +368,18 @@ void QFxView::clearItems()
     d->root = 0;
 }
 
+/*!
+  Returns the view's root \l {QFxItem} {item}.
+ */
 QFxItem *QFxView::root() const
 {
     return d->root;
 }
 
+/*!
+  This function handles the \l {QResizeEvent} {resize event}
+  \a e.
+ */
 void QFxView::resizeEvent(QResizeEvent *e)
 {
     if (d->root) {
@@ -344,17 +389,26 @@ void QFxView::resizeEvent(QResizeEvent *e)
     QSimpleCanvas::resizeEvent(e);
 }
 
+/*! \fn void QFxView::focusInEvent(QFocusEvent *e)
+  This virtual function does nothing in this class.
+ */
 void QFxView::focusInEvent(QFocusEvent *)
 {
     // Do nothing (do not call QWidget::update())
 }
 
+
+/*! \fn void QFxView::focusOutEvent(QFocusEvent *e)
+  This virtual function does nothing in this class.
+ */
 void QFxView::focusOutEvent(QFocusEvent *)
 {
     // Do nothing (do not call QWidget::update())
 }
 
-
+/*!
+  \internal
+ */
 void QFxView::dumpRoot()
 {
     root()->dump();

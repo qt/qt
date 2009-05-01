@@ -561,7 +561,7 @@ void QmlTimeLine::sync(QmlTimeLineValue &timeLineValue)
     }
 }
 
-/*!
+/*
     Synchronize all currently and future scheduled values in this timeline to
     the longest action currently scheduled.
 

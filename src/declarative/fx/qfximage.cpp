@@ -68,28 +68,27 @@ QML_DEFINE_TYPE(QFxImage,Image);
     \o \image declarative-qtlogo1.png
     \o Untransformed
     \code
-    <Image src="pics/qtlogo.png"/>
+    Image { source: "pics/qtlogo.png" }
     \endcode
     \row
     \o \image declarative-qtlogo2.png
     \o Stretched
     \code
-    <Image width="160" height="160" src="pics/qtlogo.png"/>
+    Image { width: 160; height: 160; source: "pics/qtlogo.png" }
     \endcode
     \row
     \o \image declarative-qtlogo4.png
     \o Grid-scaled
     \code
-    <Image scaleGrid.left="20" scaleGrid.right="10"
-           scaleGrid.top="14" scaleGrid.bottom="14"
-        width="160" height="160" src="pics/qtlogo.png"/>
+    Image { scaleGrid.left: 20; scaleGrid.right: 10
+            scaleGrid.top: 14; scaleGrid.bottom: 14
+            width: 160; height: 160; source: "pics/qtlogo.png" }
     \endcode
     \row
     \o \image declarative-qtlogo3.png
     \o Tiled
     \code
-    <Image tile="true"
-        width="160" height="160" src="pics/qtlogo.png"/>
+    Image { tile: true; width: 160; height: 160; source: "pics/qtlogo.png" }
     \endcode
     \endtable
  */
@@ -103,7 +102,7 @@ QML_DEFINE_TYPE(QFxImage,Image);
 
     Example:
     \code
-    <Image src="pics/star.png"/>
+    Image { source: "pics/star.png" }
     \endcode
 
     A QFxImage object can be instantiated in Qml using the tag \l Image.
@@ -200,11 +199,11 @@ QFxScaleGrid *QFxImage::scaleGrid()
     of unscaled tiles, clipped to the size of the Image.
 
     \code
-    <Item>
-        <Image src="tile.png" />
-        <Image x="80" width="100" height="100" src="tile.png" />
-        <Image x="190" width="100" height="100" tile="true" src="tile.png" />
-    </Item>
+    Item {
+        Image { source: "tile.png" }
+        Image { x: 80; width: 100; height: 100; src: "tile.png" }
+        Image { x: 190; width: 100; height: 100; tile: true; src: "tile.png" }
+    }
     \endcode
     \image declarative-image_tile.png
 
@@ -812,7 +811,7 @@ QFxImage::Status QFxImage::status() const
 */
 
 /*!
-    \property QFxImage::src
+    \property QFxImage::source
     \brief the url of the image to be displayed in this item.
 
     The content specified can be of any image type loadable by QImage. Alternatively,

@@ -113,6 +113,8 @@ protected:
 private Q_SLOTS:
     void refill();
     void ticked();
+    void itemsInserted(int index, int count);
+    void itemsRemoved(int index, int count);
 
 protected:
     QFxPathView(QFxPathViewPrivate &dd, QFxItem *parent);
