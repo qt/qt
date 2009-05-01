@@ -151,7 +151,7 @@ void QFxAnchors::fillChanged()
 
 /*!
     \property QFxAnchors::fill
-    \brief what item the item should fill.
+    \brief which item the item should fill.
 
     This is a convenience property. It is the same as anchoring the left, right, top, and bottom
     to another item's left, right, top, and bottom.
@@ -200,7 +200,7 @@ void QFxAnchors::setFill(QFxItem *f)
 
 /*!
     \property QFxAnchors::centeredIn
-    \brief what item the item should stay centered in the middle of.
+    \brief which item the item should stay centered in.
 
     This is a convenience property. It is the same as anchoring the horizontalCenter
     and verticalCenter to another item's horizontalCenter and verticalCenter.

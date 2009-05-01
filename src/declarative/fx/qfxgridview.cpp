@@ -647,7 +647,7 @@ void QFxGridViewPrivate::updateCurrent(int modelIndex)
 /*!
     \qmlclass GridView
     \inherits Flickable
-    \brief The GridView element provides a grid view of items provided by a model.
+    \brief The GridView item provides a grid view of items provided by a model.
 
     The model is typically provided by a QAbstractListModel "C++ model object",
     but can also be created directly in QML.
@@ -706,7 +706,7 @@ QFxGridView::~QFxGridView()
   The C++ model object must be a \l QListModelInterface subclass, a \l VisualModel,
   or a simple list.
 
-  Models can also be created directly in QML, using the \l ListModel element. For example:
+  Models can also be created directly in QML, using the \l ListModel object. For example:
   \code
   <ListModel id="contactModel">
       <Contact>

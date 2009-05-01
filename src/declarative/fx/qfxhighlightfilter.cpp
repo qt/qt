@@ -73,18 +73,24 @@ public:
     \brief The Highlight filter adds a highlight to an item.
     \inherits Filter
 
-    \code
-<Text id="highlighttext" color="red" font.size="32" text="Highlight">
-    <filter>
-        <Highlight src="pics/highlight.png">
-            <xOffset>
-                <NumericAnimation running="true" repeat="true"
-                    from="320" to="-320" duration="2000"/>
-            </xOffset>
-        </Highlight>
-    </filter>
-</Text>
-    \endcode
+    \qml
+Text {
+    id: highlighttext
+    color: "red"
+    font.size: 32
+    text: "Highlight"
+    filter: Highlight {
+        source: "pics/highlight.png"
+        xOffset: NumericAnimation {
+            running: true
+            repeat: true
+            from: 320
+            to: -320
+            duration: 2000
+        }
+    }
+}
+    \endqml
     \image highlight.gif
 
     Highlighting is only supported when Qt Declarative is compiled for OpenGL ES 2.0.
@@ -114,7 +120,7 @@ QFxHighlightFilter::~QFxHighlightFilter()
 }
 
 /*!
-    \qmlproperty string Highlight::src
+    \qmlproperty string Highlight::source
     This property holds the URL of the image to be used as the highlight.
 */
 

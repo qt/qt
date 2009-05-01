@@ -226,7 +226,7 @@ QML_DEFINE_TYPE(QFxFlickable,Flickable);
 
 /*!
     \qmlclass Flickable
-    \brief The Flickable element provides a surface that can be "flicked".
+    \brief The Flickable item provides a surface that can be "flicked".
     \inherits Item
 
     Flickable places its children on a surface that can be dragged and flicked.

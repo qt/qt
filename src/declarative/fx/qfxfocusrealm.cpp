@@ -47,7 +47,7 @@ QML_DEFINE_TYPE(QFxFocusRealm,FocusRealm);
 
 /*!
     \qmlclass FocusRealm
-    \brief The FocusRealm element explicitly creates a focus realm.
+    \brief The FocusRealm object explicitly creates a focus realm.
     \inherits Item
 
     Focus realms assist in keyboard focus handling when building reusable QML

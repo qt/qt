@@ -108,22 +108,31 @@ QML_DEFINE_TYPE(QFxContent,Content);
     specified by Content.
 
     Example:
-    \code
-    <!--GroupBox component definition-->
-    <Rect width="{parent.width}" color="white" pen.width="2" pen.color="#adaeb0" radius="10" clip="false" height="{contents.height}">
-        <VerticalLayout id="layout" width="{parent.width}">
-            <Content/>
-        </VerticalLayout>
-    </Rect>
+    \qml
+// GroupBox component definition
+Rect {
+    width: parent.width
+    color: "white"
+    pen.width: 2
+    pen.color: "#adaeb0"
+    radius: 10
+    clip: false
+    height: contents.height
+    VerticalLayout {
+        id: layout
+        width: parent.width
+        Content { } // content property will go here
+    }
+}
 
-    <!--component use-->
-    <GroupBox>
-        <content>
-            <Text text="First Item"/>
-            ...
-        </content>
-    </GroupBox>
-    \endcode
+// component use
+GroupBox {
+    content: Text {
+        text: "First Item"
+        ...
+    }
+}
+    \endqml
 */
 
 QT_END_NAMESPACE

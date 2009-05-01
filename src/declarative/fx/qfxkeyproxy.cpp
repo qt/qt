@@ -47,7 +47,7 @@ QML_DEFINE_TYPE(QFxKeyProxy,KeyProxy);
 
 /*!
     \qmlclass KeyProxy
-    \brief The KeyProxy element proxies key presses to a number of other elements.
+    \brief The KeyProxy item proxies key presses to a number of other items.
     \inherits Item
 
 */
@@ -55,7 +55,7 @@ QML_DEFINE_TYPE(QFxKeyProxy,KeyProxy);
 /*!
     \internal
     \class QFxKeyProxy
-    \brief The QFxKeyProxy class proxies key presses to a number of other elements.
+    \brief The QFxKeyProxy class proxies key presses to a number of other items.
     \ingroup group_utility
 */
 
