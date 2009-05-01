@@ -60,36 +60,38 @@ QML_DEFINE_TYPE(QFxImage,Image);
     \brief The Image element allows you to add bitmaps to a scene.
     \inherits Item
 
-    The Image element supports untransformed, stretched, grid-scaled and tiled images. For an explanation of grid-scaling see the scaleGrid property description or the QFxScaleGrid class description.
+    The Image element supports untransformed, stretched, grid-scaled and tiled images.
+    For an explanation of grid-scaling see the scaleGrid property description
+    or the QFxScaleGrid class description.
 
     Examples:
     \table
     \row
     \o \image declarative-qtlogo1.png
     \o Untransformed
-    \code
+    \qml
     Image { source: "pics/qtlogo.png" }
-    \endcode
+    \endqml
     \row
     \o \image declarative-qtlogo2.png
     \o Stretched
-    \code
+    \qml
     Image { width: 160; height: 160; source: "pics/qtlogo.png" }
-    \endcode
+    \endqml
     \row
     \o \image declarative-qtlogo4.png
     \o Grid-scaled
-    \code
+    \qml
     Image { scaleGrid.left: 20; scaleGrid.right: 10
             scaleGrid.top: 14; scaleGrid.bottom: 14
             width: 160; height: 160; source: "pics/qtlogo.png" }
-    \endcode
+    \endqml
     \row
     \o \image declarative-qtlogo3.png
     \o Tiled
-    \code
+    \qml
     Image { tile: true; width: 160; height: 160; source: "pics/qtlogo.png" }
-    \endcode
+    \endqml
     \endtable
  */
 
@@ -101,9 +103,9 @@ QML_DEFINE_TYPE(QFxImage,Image);
     \ingroup group_coreitems
 
     Example:
-    \code
+    \qml
     Image { source: "pics/star.png" }
-    \endcode
+    \endqml
 
     A QFxImage object can be instantiated in Qml using the tag \l Image.
 */
@@ -198,13 +200,13 @@ QFxScaleGrid *QFxImage::scaleGrid()
     bitmap file to its size.  If tiling is enabled, the bitmap is repeated as a set
     of unscaled tiles, clipped to the size of the Image.
 
-    \code
+    \qml
     Item {
         Image { source: "tile.png" }
         Image { x: 80; width: 100; height: 100; src: "tile.png" }
         Image { x: 190; width: 100; height: 100; tile: true; src: "tile.png" }
     }
-    \endcode
+    \endqml
     \image declarative-image_tile.png
 
     If both tiling and the scaleGrid are set, tiling takes precedence.
