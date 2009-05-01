@@ -87,16 +87,16 @@ void setBrightness(int b)
 Next, make an instance of this class visible to the Qml bind engine:
 \code
 QFxView *view = new QFxView;
-view->setXml("MyUI.qml");
+view->setUrl("MyUI.qml");
 
 MyScreen *screen = new MyScreen;
-QmlBindContext *ctxt = view->bindContext();
-ctxt->setProperty("screen", screen);
+QmlBindContext *ctxt = view->rootContext();
+ctxt->setContextProperty("screen", screen);
 
 view->execute();
 \endcode
 
-\note Bindings must be made after setXml() but before execute().
+\note Bindings must be made after setUrl() but before execute().
 
 Finally, in Qml you can make the appropriate bindings, so in \c "MyUI.qml":
 
