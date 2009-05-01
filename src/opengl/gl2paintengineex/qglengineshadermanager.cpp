@@ -156,7 +156,7 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
     simpleShaderProg->link();
     if (!simpleShaderProg->isValid()) {
         qCritical() << "Errors linking simple shader:"
-                    << simpleShaderProg->errors();
+                    << simpleShaderProg->log();
     }
 }
 
@@ -432,7 +432,7 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
               << "    compositionFragShader = "<< requiredProgram.compositionFragShader->objectName() << '\n'
 #endif
               << "  Error Log:" << '\n'
-              << "    " << requiredProgram.program->errors();
+              << "    " << requiredProgram.program->log();
         qWarning() << error;
     }
     else {
