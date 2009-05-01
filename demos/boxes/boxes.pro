@@ -15,8 +15,7 @@ HEADERS += 3rdparty/fbm.h \
            qtbox.h \
            roundedbox.h \
            scene.h \
-           trackball.h \
-           vector.h
+           trackball.h
 SOURCES += 3rdparty/fbm.c \
            glbuffers.cpp \
            glextensions.cpp \
