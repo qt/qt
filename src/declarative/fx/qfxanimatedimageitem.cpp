@@ -67,11 +67,13 @@ QT_BEGIN_NAMESPACE
     \o \image animatedimageitem.gif
     \o
     \code
-<Item width="{anim.width}" height="{anim.height+8}">
-    <AnimatedImage id="anim" file="pics/games-anim.gif"/>
-    <Rect color="red" width="4" height="8" y="{anim.height}"
-        x="{(anim.width-width)*anim.currentFrame/(anim.frameCount-1)}"/>
-</Item>
+Item {
+    width: anim.width; height: anim.height+8
+    AnimatedImage { id: anim; source: "pics/games-anim.gif" }
+    Rect { color: "red"; width: 4; height: 8; y: anim.height
+        x: (anim.width-width)*anim.currentFrame/(anim.frameCount-1)
+    }
+}
     \endcode
     \endtable
 */
