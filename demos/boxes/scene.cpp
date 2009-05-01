@@ -531,11 +531,11 @@ Scene::~Scene()
         if (texture) delete texture;
     if (m_mainCubemap)
         delete m_mainCubemap;
-    foreach (GLProgram *program, m_programs)
+    foreach (QGLShaderProgram *program, m_programs)
         if (program) delete program;
     if (m_vertexShader)
         delete m_vertexShader;
-    foreach (GLFragmentShader *shader, m_fragmentShaders)
+    foreach (QGLShader *shader, m_fragmentShaders)
         if (shader) delete shader;
     foreach (GLRenderTargetCube *rt, m_cubemaps)
         if (rt) delete rt;
@@ -549,16 +549,18 @@ void Scene::initGL()
 {
     m_box = new GLRoundedBox(0.25f, 1.0f, 10);
 
-    m_vertexShader = new GLVertexShader(":/res/boxes/basic.vsh");
+    m_vertexShader = new QGLShader(":/res/boxes/basic.vsh", QGLShader::VertexShader);
 
     QStringList list;
     list << ":/res/boxes/cubemap_posx.jpg" << ":/res/boxes/cubemap_negx.jpg" << ":/res/boxes/cubemap_posy.jpg"
          << ":/res/boxes/cubemap_negy.jpg" << ":/res/boxes/cubemap_posz.jpg" << ":/res/boxes/cubemap_negz.jpg";
     m_environment = new GLTextureCube(list, qMin(1024, m_maxTextureSize));
-    m_environmentShader = new GLFragmentShader(environmentShaderText, strlen(environmentShaderText));
-    m_environmentProgram = new GLProgram;
-    m_environmentProgram->attach(*m_vertexShader);
-    m_environmentProgram->attach(*m_environmentShader);
+    m_environmentShader = new QGLShader(QGLShader::FragmentShader);
+    m_environmentShader->setSourceCode(environmentShaderText);
+    m_environmentProgram = new QGLShaderProgram;
+    m_environmentProgram->addShader(m_vertexShader);
+    m_environmentProgram->addShader(m_environmentShader);
+    m_environmentProgram->link();
 
     const int NOISE_SIZE = 128; // for a different size, B and BM in fbm.c must also be changed
     m_noise = new GLTexture3D(NOISE_SIZE, NOISE_SIZE, NOISE_SIZE); 
@@ -610,19 +612,19 @@ void Scene::initGL()
     filter = QStringList("*.fsh");
     files = QDir(":/res/boxes/").entryInfoList(filter, QDir::Files | QDir::Readable);
     foreach (QFileInfo file, files) {
-        GLProgram *program = new GLProgram;
-        GLFragmentShader* shader = new GLFragmentShader(file.absoluteFilePath());
+        QGLShaderProgram *program = new QGLShaderProgram;
+        QGLShader* shader = new QGLShader(file.absoluteFilePath(), QGLShader::FragmentShader);
         // The program does not take ownership over the shaders, so store them in a vector so they can be deleted afterwards.
-        program->attach(*m_vertexShader);
-        program->attach(*shader);
-        if (program->failed()) {
+        program->addShader(m_vertexShader);
+        program->addShader(shader);
+        if (!program->link()) {
             qWarning("Failed to compile and link shader program");
             qWarning("Vertex shader log:");
-            qWarning() << m_vertexShader->log();
+            qWarning() << m_vertexShader->errors();
             qWarning() << "Fragment shader log ( file =" << file.absoluteFilePath() << "):";
-            qWarning() << shader->log();
+            qWarning() << shader->errors();
             qWarning("Shader program log:");
-            qWarning() << program->log();
+            qWarning() << program->errors();
 
             delete shader;
             delete program;
@@ -633,13 +635,13 @@ void Scene::initGL()
         m_programs << program;
         m_renderOptions->addShader(file.baseName());
 
-        program->bind();
-        m_cubemaps << (program->hasParameter("env") ? new GLRenderTargetCube(qMin(256, m_maxTextureSize)) : 0);
-        program->unbind();
+        program->enable();
+        m_cubemaps << ((program->uniformLocation("env") != -1) ? new GLRenderTargetCube(qMin(256, m_maxTextureSize)) : 0);
+        program->disable();
     }
 
     if (m_programs.size() == 0)
-        m_programs << new GLProgram;
+        m_programs << new QGLShaderProgram;
 
     m_renderOptions->emitParameterChanged();
 }
@@ -674,12 +676,12 @@ void Scene::renderBoxes(const gfx::Matrix4x4f &view, int excludeBox)
     // Don't render the environment if the environment texture can't be set for the correct sampler.
     if (glActiveTexture) {
         m_environment->bind();
-        m_environmentProgram->bind();
-        m_environmentProgram->setInt("tex", 0);
-        m_environmentProgram->setInt("env", 1);
-        m_environmentProgram->setInt("noise", 2);
+        m_environmentProgram->enable();
+        m_environmentProgram->setUniformValue("tex", 0);
+        m_environmentProgram->setUniformValue("env", 1);
+        m_environmentProgram->setUniformValue("noise", 2);
         m_box->draw();
-        m_environmentProgram->unbind();
+        m_environmentProgram->disable();
         m_environment->unbind();
     }
 
@@ -707,14 +709,18 @@ void Scene::renderBoxes(const gfx::Matrix4x4f &view, int excludeBox)
             else
                 m_environment->bind();
         }
-        m_programs[i]->bind();
-        m_programs[i]->setInt("tex", 0);
-        m_programs[i]->setInt("env", 1);
-        m_programs[i]->setInt("noise", 2);
-        m_programs[i]->setMatrix("view", view);
-        m_programs[i]->setMatrix("invView", invView);
+        m_programs[i]->enable();
+        m_programs[i]->setUniformValue("tex", 0);
+        m_programs[i]->setUniformValue("env", 1);
+        m_programs[i]->setUniformValue("noise", 2);
+        QMatrix4x4 mview;
+        QMatrix4x4 minvview;
+        memcpy(mview.data(), view.bits(), sizeof(float) * 16);
+        memcpy(minvview.data(), invView.bits(), sizeof(float) * 16);
+        m_programs[i]->setUniformValue("view", mview);
+        m_programs[i]->setUniformValue("invView", minvview);
         m_box->draw();
-        m_programs[i]->unbind();
+        m_programs[i]->disable();
 
         if (glActiveTexture) {
             if (m_dynamicCubemap && m_cubemaps[i])
@@ -737,14 +743,18 @@ void Scene::renderBoxes(const gfx::Matrix4x4f &view, int excludeBox)
                 m_environment->bind();
         }
 
-        m_programs[m_currentShader]->bind();
-        m_programs[m_currentShader]->setInt("tex", 0);
-        m_programs[m_currentShader]->setInt("env", 1);
-        m_programs[m_currentShader]->setInt("noise", 2);
-        m_programs[m_currentShader]->setMatrix("view", view);
-        m_programs[m_currentShader]->setMatrix("invView", invView);
+        m_programs[m_currentShader]->enable();
+        m_programs[m_currentShader]->setUniformValue("tex", 0);
+        m_programs[m_currentShader]->setUniformValue("env", 1);
+        m_programs[m_currentShader]->setUniformValue("noise", 2);
+        QMatrix4x4 mview;
+        QMatrix4x4 minvview;
+        memcpy(mview.data(), view.bits(), sizeof(float) * 16);
+        memcpy(minvview.data(), invView.bits(), sizeof(float) * 16);
+        m_programs[m_currentShader]->setUniformValue("view", mview);
+        m_programs[m_currentShader]->setUniformValue("invView", minvview);
         m_box->draw();
-        m_programs[m_currentShader]->unbind();
+        m_programs[m_currentShader]->disable();
 
         if (glActiveTexture) {
             if (m_dynamicCubemap)
@@ -1021,20 +1031,20 @@ void Scene::toggleDynamicCubemap(int state)
 void Scene::setColorParameter(const QString &name, QRgb color)
 {
     // set the color in all programs
-    foreach (GLProgram *program, m_programs) {
-        program->bind();
-        program->setColor(name, color);
-        program->unbind();
+    foreach (QGLShaderProgram *program, m_programs) {
+        program->enable();
+        program->setUniformValue(program->uniformLocation(name), QColor(color));
+        program->disable();
     }
 }
 
 void Scene::setFloatParameter(const QString &name, float value)
 {
     // set the color in all programs
-    foreach (GLProgram *program, m_programs) {
-        program->bind();
-        program->setFloat(name, value);
-        program->unbind();
+    foreach (QGLShaderProgram *program, m_programs) {
+        program->enable();
+        program->setUniformValue(program->uniformLocation(name), value);
+        program->disable();
     }
 }
 
