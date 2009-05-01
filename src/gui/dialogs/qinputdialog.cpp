@@ -424,26 +424,27 @@ void QInputDialogPrivate::_q_currentRowChanged(const QModelIndex &newIndex,
 
 /*!
     \class QInputDialog
-    \brief The QInputDialog class provides a simple convenience dialog to get a single value from the user.
+    \brief The QInputDialog class provides a simple convenience dialog to get a
+    single value from the user.
     \ingroup dialogs
     \mainclass
 
-    The input value can be a string, a number or an item from a list. A
-    label must be set to tell the user what they should enter.
+    The input value can be a string, a number or an item from a list. A label
+    must be set to tell the user what they should enter.
 
-    Four static convenience functions are provided:
-    getText(), getInt(), getDouble(), and getItem(). All the
-    functions can be used in a similar way, for example:
+    Four static convenience functions are provided: getText(), getInt(),
+    getDouble(), and getItem(). All the functions can be used in a similar way,
+    for example:
 
     \snippet examples/dialogs/standarddialogs/dialog.cpp 3
 
-    The \c ok variable is set to true if the user clicks \gui OK;
-    otherwise it is set to false.
+    The \c ok variable is set to true if the user clicks \gui OK; otherwise it
+    is set to false.
 
     \img inputdialogs.png Input Dialogs
 
-    The \l{dialogs/standarddialogs}{Standard Dialogs} example shows
-    how to use QInputDialog as well as other built-in Qt dialogs.
+    The \l{dialogs/standarddialogs}{Standard Dialogs} example shows how to use
+    QInputDialog as well as other built-in Qt dialogs.
 
     \sa QMessageBox, {Standard Dialogs Example}
 */
@@ -452,11 +453,13 @@ void QInputDialogPrivate::_q_currentRowChanged(const QModelIndex &newIndex,
     \enum QInputDialog::InputMode
     \since 4.5
 
-    This enum describes the different modes of input that can be selected for the dialog.
+    This enum describes the different modes of input that can be selected for
+    the dialog.
 
     \value TextInput   Used to input text strings.
     \value IntInput    Used to input integers.
-    \value DoubleInput Used to input floating point numbers with double precision accuracy.
+    \value DoubleInput Used to input floating point numbers with double
+                       precision accuracy.
 
     \sa inputMode
 */
@@ -487,7 +490,8 @@ QInputDialog::~QInputDialog()
 
     \brief the mode used for input
 
-    This property help determines which widget is used for entering input into the dialog.
+    This property help determines which widget is used for entering input into
+    the dialog.
 */
 void QInputDialog::setInputMode(InputMode mode)
 {
@@ -1104,15 +1108,18 @@ void QInputDialog::done(int result)
 }
 
 /*!
-    Static convenience function to get a string from the user. \a
-    title is the text which is displayed in the title bar of the
-    dialog. \a label is the text which is shown to the user (it should
-    say what should be entered). \a text is the default text which is
-    placed in the line edit. The \a mode is the echo mode the line
-    edit will use. If \a ok is nonnull \e *\a ok will be set to true
-    if the user pressed \gui OK and to false if the user pressed
-    \gui Cancel. The dialog's parent is \a parent. The dialog will be
-    modal and uses the specified widget \a flags.
+    Static convenience function to get a string from the user.
+
+    \a title is the text which is displayed in the title bar of the dialog.
+    \a label is the text which is shown to the user (it should say what should
+    be entered).
+    \a text is the default text which is placed in the line edit.
+    \a mode is the echo mode the line edit will use.
+
+    If \a ok is nonnull \e *\a ok will be set to true if the user pressed
+    \gui OK and to false if the user pressed \gui Cancel. The dialog's parent
+    is \a parent. The dialog will be modal and uses the specified widget
+    \a flags.
 
     This function returns the text which has been entered in the line
     edit. It will not return an empty string.
@@ -1121,11 +1128,11 @@ void QInputDialog::done(int result)
 
     \snippet examples/dialogs/standarddialogs/dialog.cpp 3
 
-  \warning Do not delete \a parent during the execution of the dialog.
-           If you want to do this, you should create the dialog
-           yourself using one of the QInputDialog constructors.
+    \warning Do not delete \a parent during the execution of the dialog. If you
+    want to do this, you should create the dialog yourself using one of the
+    QInputDialog constructors.
 
-    \sa getInteger(), getDouble(), getItem()
+    \sa getInt(), getDouble(), getItem()
 */
 
 QString QInputDialog::getText(QWidget *parent, const QString &title, const QString &label,
@@ -1149,30 +1156,32 @@ QString QInputDialog::getText(QWidget *parent, const QString &title, const QStri
 }
 
 /*!
-    Static convenience function to get an integer input from the
-    user. \a title is the text which is displayed in the title bar
-    of the dialog.  \a label is the text which is shown to the user
-    (it should say what should be entered). \a value is the default
-    integer which the spinbox will be set to.  \a min and \a
-    max are the minimum and maximum values the user may choose,
-    and \a step is the amount by which the values change as the user
-    presses the arrow buttons to increment or decrement the value.
+    \since 4.5
 
-    If \a ok is nonnull *\a ok will be set to true if the user
-    pressed \gui OK and to false if the user pressed \gui Cancel. The
-    dialog's parent is \a parent. The dialog will be modal and uses
-    the widget \a flags.
+    Static convenience function to get an integer input from the user.
 
-    On success, this function returns the integer which has been
-    entered by the user; on failure, it returns the initial \a value.
+    \a title is the text which is displayed in the title bar of the dialog.
+    \a label is the text which is shown to the user (it should say what should
+    be entered).
+    \a value is the default integer which the spinbox will be set to.
+    \a min and \a max are the minimum and maximum values the user may choose.
+    \a step is the amount by which the values change as the user presses the
+    arrow buttons to increment or decrement the value.
+
+    If \a ok is nonnull *\a ok will be set to true if the user pressed \gui OK
+    and to false if the user pressed \gui Cancel. The dialog's parent is
+    \a parent. The dialog will be modal and uses the widget \a flags.
+
+    On success, this function returns the integer which has been entered by the
+    user; on failure, it returns the initial \a value.
 
     Use this static function like this:
 
     \snippet examples/dialogs/standarddialogs/dialog.cpp 0
 
-  \warning Do not delete \a parent during the execution of the dialog.
-           If you want to do this, you should create the dialog
-           yourself using one of the QInputDialog constructors.
+    \warning Do not delete \a parent during the execution of the dialog. If you
+    want to do this, you should create the dialog yourself using one of the
+    QInputDialog constructors.
 
     \sa getText(), getDouble(), getItem()
 */
@@ -1198,32 +1207,32 @@ int QInputDialog::getInt(QWidget *parent, const QString &title, const QString &l
 }
 
 /*!
-    Static convenience function to get a floating point number from
-    the user. \a title is the text which is displayed in the title
-    bar of the dialog. \a label is the text which is shown to the user
-    (it should say what should be entered). \a value is the default
-    floating point number that the line edit will be set to. \a
-    min and \a max are the minimum and maximum values the
-    user may choose, and \a decimals is the maximum number of decimal
-    places the number may have.
+    Static convenience function to get a floating point number from the user.
 
-    If \a ok is nonnull, *\a ok will be set to true if the user
-    pressed \gui OK and to false if the user pressed \gui Cancel. The
-    dialog's parent is \a parent. The dialog will be modal and uses
-    the widget \a flags.
+    \a title is the text which is displayed in the title bar of the dialog.
+    \a label is the text which is shown to the user (it should say what should
+    be entered).
+    \a value is the default floating point number that the line edit will be
+    set to.
+    \a min and \a max are the minimum and maximum values the user may choose.
+    \a decimals is the maximum number of decimal places the number may have.
 
-    This function returns the floating point number which has been
-    entered by the user.
+    If \a ok is nonnull, *\a ok will be set to true if the user pressed \gui OK
+    and to false if the user pressed \gui Cancel. The dialog's parent is
+    \a parent. The dialog will be modal and uses the widget \a flags.
+
+    This function returns the floating point number which has been entered by
+    the user.
 
     Use this static function like this:
 
     \snippet examples/dialogs/standarddialogs/dialog.cpp 1
 
-  \warning Do not delete \a parent during the execution of the dialog.
-           If you want to do this, you should create the dialog
-           yourself using one of the QInputDialog constructors.
+    \warning Do not delete \a parent during the execution of the dialog. If you
+    want to do this, you should create the dialog yourself using one of the
+    QInputDialog constructors.
 
-    \sa getText(), getInteger(), getItem()
+    \sa getText(), getInt(), getItem()
 */
 
 double QInputDialog::getDouble(QWidget *parent, const QString &title, const QString &label,
@@ -1248,32 +1257,34 @@ double QInputDialog::getDouble(QWidget *parent, const QString &title, const QStr
 }
 
 /*!
-    Static convenience function to let the user select an item from a
-    string list. \a title is the text which is displayed in the title
-    bar of the dialog. \a label is the text which is shown to the user (it
-    should say what should be entered). \a items is the
-    string list which is inserted into the combobox, and \a current is the number
-    of the item which should be the current item. If \a editable is true
-    the user can enter their own text; if \a editable is false the user
-    may only select one of the existing items.
+    Static convenience function to let the user select an item from a string
+    list.
 
-    If \a ok is nonnull \e *\a ok will be set to true if the user
-    pressed \gui OK and to false if the user pressed \gui Cancel. The
-    dialog's parent is \a parent. The dialog will be modal and uses
-    the widget \a flags.
+    \a title is the text which is displayed in the title bar of the dialog.
+    \a label is the text which is shown to the user (it should say what should
+    be entered).
+    \a items is the string list which is inserted into the combobox.
+    \a current is the number  of the item which should be the current item.
 
-    This function returns the text of the current item, or if \a
-    editable is true, the current text of the combobox.
+    If \a editable is true the user can enter their own text; otherwise the
+    user may only select one of the existing items.
+
+    If \a ok is nonnull \e *\a ok will be set to true if the user pressed
+    \gui OK and to false if the user pressed \gui Cancel. The dialog's parent
+    is \a parent. The dialog will be modal and uses the widget \a flags.
+
+    This function returns the text of the current item, or if \a editable is
+    true, the current text of the combobox.
 
     Use this static function like this:
 
     \snippet examples/dialogs/standarddialogs/dialog.cpp 2
 
-  \warning Do not delete \a parent during the execution of the dialog.
-           If you want to do this, you should create the dialog
-           yourself using one of the QInputDialog constructors.
+    \warning Do not delete \a parent during the execution of the dialog. If you
+    want to do this, you should create the dialog yourself using one of the
+    QInputDialog constructors.
 
-    \sa getText(), getInteger(), getDouble()
+    \sa getText(), getInt(), getDouble()
 */
 
 QString QInputDialog::getItem(QWidget *parent, const QString &title, const QString &label,

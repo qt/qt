@@ -240,7 +240,6 @@ static QString settingsPath(const char *path = "")
     return QDir::toNativeSeparators(tempPath + "/tst_QSettings/" + QLatin1String(path));
 }
 
-#if QT_VERSION >= 0x040100
 static bool readCustom1File(QIODevice &device, QSettings::SettingsMap &map)
 {
     QDataStream in(&device);
@@ -297,7 +296,6 @@ static bool writeCustom3File(QIODevice &device, const QSettings::SettingsMap &ma
     out << "OK";
     return true;
 }
-#endif
 
 static void populateWithFormats()
 {
@@ -305,15 +303,12 @@ static void populateWithFormats()
 
     QTest::newRow("native") << QSettings::NativeFormat;
     QTest::newRow("ini") << QSettings::IniFormat;
-#if QT_VERSION >= 0x040100
     QTest::newRow("custom1") << QSettings::CustomFormat1;
     QTest::newRow("custom2") << QSettings::CustomFormat2;
-#endif
 }
 
 tst_QSettings::tst_QSettings()
 {
-#if QT_VERSION >= 0x040100
     QSettings::Format custom1 = QSettings::registerFormat("custom1", readCustom1File, writeCustom1File);
     QSettings::Format custom2 = QSettings::registerFormat("custom2", readCustom2File, writeCustom2File
 #ifndef QT_QSETTINGS_ALWAYS_CASE_SENSITIVE_AND_FORGET_ORIGINAL_KEY_ORDER
@@ -322,7 +317,6 @@ tst_QSettings::tst_QSettings()
                                                           );
     QVERIFY(custom1 == QSettings::CustomFormat1);
     QVERIFY(custom2 == QSettings::CustomFormat2);
-#endif
 }
 
 void tst_QSettings::init()
@@ -1138,9 +1132,9 @@ void tst_QSettings::testVariantTypes()
     l4 << QVariant(m2) << QVariant(l2) << QVariant(l3);
     testVal("key13", l4, QVariantList, List);
 
-    // With Qt 4.2 we store key sequences as strings instead of binary variant blob, for improved
+    // We store key sequences as strings instead of binary variant blob, for improved
     // readability in the resulting format.
-    if (format >= QSettings::InvalidFormat || QT_VERSION < 0x040200) {
+    if (format >= QSettings::InvalidFormat) {
         testVal("keysequence", QKeySequence(Qt::ControlModifier + Qt::Key_F1), QKeySequence, KeySequence);
     } else {
         testVal("keysequence", QKeySequence(Qt::ControlModifier + Qt::Key_F1), QString, String);
@@ -2637,14 +2631,12 @@ void tst_QSettings::testCaseSensitivity()
         case QSettings::IniFormat:
             cs = false;
             break;
-#if QT_VERSION >= 0x040100
         case QSettings::CustomFormat1:
             cs = true;
             break;
         case QSettings::CustomFormat2:
             cs = false;
             break;
-#endif
         default:
             ;
         }
@@ -3543,7 +3535,6 @@ void tst_QSettings::allKeys()
     }
 }
 
-#if QT_VERSION >= 0x040100
 void tst_QSettings::registerFormat()
 {
     QSettings settings1(QSettings::IniFormat, QSettings::UserScope, "software.org", "KillerAPP");
@@ -3641,7 +3632,6 @@ void tst_QSettings::setPath()
         TEST_PATH(i == 0, "custom2", CustomFormat2, SystemScope, "iota")
     }
 }
-#endif
 
 void tst_QSettings::setDefaultFormat()
 {

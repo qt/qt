@@ -224,7 +224,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn InnerT *QGenericMatrix::data()
 
-    Returns a pointer to the raw data of this matrix.  This is indended
+    Returns a pointer to the raw data of this matrix.  This is intended
     for use with raw GL functions.
 
     \sa constData()
@@ -234,7 +234,7 @@ QT_BEGIN_NAMESPACE
     \fn const InnerT *QGenericMatrix::data() const
 
     Returns a constant pointer to the raw data of this matrix.
-    This is indended for use with raw GL functions.
+    This is intended for use with raw GL functions.
 
     \sa constData()
 */
@@ -243,7 +243,7 @@ QT_BEGIN_NAMESPACE
     \fn const InnerT *QGenericMatrix::constData() const
 
     Returns a constant pointer to the raw data of this matrix.
-    This is indended for use with raw GL functions.
+    This is intended for use with raw GL functions.
 
     \sa data()
 */

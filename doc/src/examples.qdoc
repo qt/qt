@@ -209,6 +209,7 @@
     \o  \l{network/loopback}{Loopback}
     \o  \l{network/threadedfortuneserver}{Threaded Fortune Server}\raisedaster
     \o  \l{network/torrent}{Torrent}
+    \o  \l{network/googlesuggest}{Google Suggest}
     \endlist
 
     \section1 OpenGL
@@ -348,6 +349,8 @@
     \list
     \o \l{webkit/previewer}{Previewer}\raisedaster
     \o \l{webkit/formextractor}{Form Extractor}
+    \o \l{webkit/googlechat}{Google Chat}
+    \o \l{webkit/fancybrowser}{Fancy Browser}
     \endlist
 
     \section1 Widgets

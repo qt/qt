@@ -188,14 +188,10 @@ bool qt_resolve_glsl_extensions(QGLContext *ctx)
         glGetProgramiv = (_glGetProgramiv) ctx->getProcAddress(QLatin1String("glGetProgramiv"));
         glGetProgramInfoLog = (_glGetProgramInfoLog) ctx->getProcAddress(QLatin1String("glGetProgramInfoLog"));
 
-        glGetActiveUniform = (_glGetActiveUniform) ctx->getProcAddress(QLatin1String("glGetActiveUniform"));//### REMOVE
         glGetUniformLocation = (_glGetUniformLocation) ctx->getProcAddress(QLatin1String("glGetUniformLocation"));
-        glUniform4f = (_glUniform4f) ctx->getProcAddress(QLatin1String("glUniform4f")); //### REMOVE
         glUniform4fv = (_glUniform4fv) ctx->getProcAddress(QLatin1String("glUniform4fv"));
         glUniform3fv = (_glUniform3fv) ctx->getProcAddress(QLatin1String("glUniform3fv"));
-        glUniform2f = (_glUniform2f) ctx->getProcAddress(QLatin1String("glUniform2f")); //### REMOVE
         glUniform2fv = (_glUniform2fv) ctx->getProcAddress(QLatin1String("glUniform2fv"));
-        glUniform1f = (_glUniform1f) ctx->getProcAddress(QLatin1String("glUniform1f")); //### REMOVE
         glUniform1fv = (_glUniform1fv) ctx->getProcAddress(QLatin1String("glUniform1fv"));
         glUniform1i = (_glUniform1i) ctx->getProcAddress(QLatin1String("glUniform1i"));
         glUniform1iv = (_glUniform1iv) ctx->getProcAddress(QLatin1String("glUniform1iv"));
@@ -209,7 +205,6 @@ bool qt_resolve_glsl_extensions(QGLContext *ctx)
         glUniformMatrix4x2fv = (_glUniformMatrix4x2fv) ctx->getProcAddress(QLatin1String("glUniformMatrix4x2fv"));
         glUniformMatrix4x3fv = (_glUniformMatrix4x3fv) ctx->getProcAddress(QLatin1String("glUniformMatrix4x3fv"));
 
-        glGetActiveAttrib = (_glGetActiveAttrib) ctx->getProcAddress(QLatin1String("glGetActiveAttrib"));  //### REMOVE
         glBindAttribLocation = (_glBindAttribLocation) ctx->getProcAddress(QLatin1String("glBindAttribLocation"));
         glGetAttribLocation = (_glGetAttribLocation) ctx->getProcAddress(QLatin1String("glGetAttribLocation"));
         glVertexAttrib1fv = (_glVertexAttrib1fv) ctx->getProcAddress(QLatin1String("glVertexAttrib1fv"));
@@ -221,7 +216,6 @@ bool qt_resolve_glsl_extensions(QGLContext *ctx)
         glEnableVertexAttribArray = (_glEnableVertexAttribArray) ctx->getProcAddress(QLatin1String("glEnableVertexAttribArray"));
 
         glStencilOpSeparate = (_glStencilOpSeparate) ctx->getProcAddress(QLatin1String("glStencilOpSeparate")); //### Not really a glsl extension, but needed for gl2
-
     } else {
         // We may not have the standard shader functions, but we might
         // have the older ARB functions instead.
@@ -246,14 +240,10 @@ bool qt_resolve_glsl_extensions(QGLContext *ctx)
         glGetProgramiv = (_glGetProgramiv) ctx->getProcAddress(QLatin1String("glGetObjectParameterivARB"));
         glGetProgramInfoLog = (_glGetProgramInfoLog) ctx->getProcAddress(QLatin1String("glGetInfoLogARB"));
 
-        glGetActiveUniform = (_glGetActiveUniform) ctx->getProcAddress(QLatin1String("glGetActiveUniformARB"));//### REMOVE
         glGetUniformLocation = (_glGetUniformLocation) ctx->getProcAddress(QLatin1String("glGetUniformLocationARB"));
-        glUniform4f = (_glUniform4f) ctx->getProcAddress(QLatin1String("glUniform4fARB")); //### REMOVE
         glUniform4fv = (_glUniform4fv) ctx->getProcAddress(QLatin1String("glUniform4fvARB"));
         glUniform3fv = (_glUniform3fv) ctx->getProcAddress(QLatin1String("glUniform3fvARB"));
-        glUniform2f = (_glUniform2f) ctx->getProcAddress(QLatin1String("glUniform2fARB")); //### REMOVE
         glUniform2fv = (_glUniform2fv) ctx->getProcAddress(QLatin1String("glUniform2fvARB"));
-        glUniform1f = (_glUniform1f) ctx->getProcAddress(QLatin1String("glUniform1fARB")); //### REMOVE
         glUniform1fv = (_glUniform1fv) ctx->getProcAddress(QLatin1String("glUniform1fvARB"));
         glUniform1i = (_glUniform1i) ctx->getProcAddress(QLatin1String("glUniform1iARB"));
         glUniform1iv = (_glUniform1iv) ctx->getProcAddress(QLatin1String("glUniform1ivARB"));
@@ -267,7 +257,6 @@ bool qt_resolve_glsl_extensions(QGLContext *ctx)
         glUniformMatrix4x2fv = (_glUniformMatrix4x2fv) ctx->getProcAddress(QLatin1String("glUniformMatrix4x2fvARB"));
         glUniformMatrix4x3fv = (_glUniformMatrix4x3fv) ctx->getProcAddress(QLatin1String("glUniformMatrix4x3fvARB"));
 
-        glGetActiveAttrib = (_glGetActiveAttrib) ctx->getProcAddress(QLatin1String("glGetActiveAttribARB"));  //### REMOVE
         glBindAttribLocation = (_glBindAttribLocation) ctx->getProcAddress(QLatin1String("glBindAttribLocationARB"));
         glGetAttribLocation = (_glGetAttribLocation) ctx->getProcAddress(QLatin1String("glGetAttribLocationARB"));
         glVertexAttrib1fv = (_glVertexAttrib1fv) ctx->getProcAddress(QLatin1String("glVertexAttrib1fvARB"));
@@ -300,21 +289,16 @@ bool qt_resolve_glsl_extensions(QGLContext *ctx)
         glGetShaderSource &&
         glGetProgramiv &&
         glGetProgramInfoLog &&
-        glGetActiveUniform && //### REMOVE
         glGetUniformLocation &&
-        glUniform1f && //### REMOVE
         glUniform1fv &&
-        glUniform2f && //### REMOVE
         glUniform2fv &&
         glUniform3fv &&
-        glUniform4f && //### REMOVE
         glUniform4fv &&
         glUniform1i &&
         glUniform1iv &&
         glUniformMatrix2fv &&
         glUniformMatrix3fv &&
         glUniformMatrix4fv &&
-        glGetActiveAttrib && //### REMOVE
         glBindAttribLocation &&
         glGetAttribLocation &&
         glVertexAttrib1fv &&

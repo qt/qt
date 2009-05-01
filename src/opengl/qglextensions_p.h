@@ -741,19 +741,6 @@ struct QGLExtensionFuncs
 
 #endif // QT_OPENGL_ES_2
 
-#define glGetActiveAttrib QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetActiveAttrib
-#define glGetAttribLocation QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetAttribLocation
-#define glGetActiveUniform QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetActiveUniform
-#define glGetProgramInfoLog QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glGetProgramInfoLog
-#define glUniform1f QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniform1f
-#define glUniform2f QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniform2f
-#define glUniform4f QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniform4f
-#define glUniformMatrix2fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniformMatrix2fv
-#define glUniformMatrix3fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniformMatrix3fv
-#define glUniformMatrix4fv QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glUniformMatrix4fv
-#define glEnableVertexAttribArray QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glEnableVertexAttribArray
-#define glDisableVertexAttribArray QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glDisableVertexAttribArray
-#define glVertexAttribPointer QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glVertexAttribPointer
 #define glStencilOpSeparate QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glStencilOpSeparate
 
 #if !defined(QT_OPENGL_ES_2)

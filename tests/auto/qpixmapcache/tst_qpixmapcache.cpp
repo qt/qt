@@ -166,6 +166,16 @@ void tst_QPixmapCache::insert()
     QVERIFY(estimatedNum - 1 <= num <= estimatedNum + 1);
     QPixmap p3;
     QPixmapCache::insert("null", p3);
+
+    QPixmap c1(10, 10);
+    c1.fill(Qt::yellow);
+    QPixmapCache::insert("custom", c1);
+    QVERIFY(!c1.isDetached());
+    QPixmap c2(10, 10);
+    c2.fill(Qt::red);
+    QPixmapCache::insert("custom", c2);
+    //We have deleted the old pixmap in the cache for the same key
+    QVERIFY(c1.isDetached());
 }
 
 void tst_QPixmapCache::remove()

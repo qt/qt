@@ -45,10 +45,6 @@
 #include <ceconfig.h>
 #endif
 
-#if QT_VERSION < 0x040200
-QTEST_NOOP_MAIN
-#else
-
 #include <QtGui>
 #include <math.h>
 
@@ -3589,4 +3585,3 @@ void tst_QGraphicsScene::stickyFocus()
 
 QTEST_MAIN(tst_QGraphicsScene)
 #include "tst_qgraphicsscene.moc"
-#endif

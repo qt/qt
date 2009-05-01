@@ -72,29 +72,6 @@ private slots:
     void transpose();
 };
 
-#if QT_VERSION < 0x040100
-namespace QTest
-{
-    // Qt < 4.1 didn't do fuzzy comparisons
-    template<>
-    inline bool compare(QSizeF const &t1, QSizeF const &t2, const char *file, int line)
-    {
-        char msg[1024];
-        msg[0] = '\0';
-        bool isOk = true;
-        if ((qAbs(t1.width() - t2.width()) > 0.000000000001) || (qAbs(t1.height() - t2.height()) > 0.000000000001)) {
-            qt_snprintf(msg, 1024, "Compared values of type QSizeF are not the same (fuzzy compare).\n"
-                    "   Actual  : w: %lf h: %lf \n"
-                    "   Expected: w: %lf h: %lf", t1.width(), t1.height(), t2.width(), t2.height());
-            isOk = false;
-        } else {
-            qt_snprintf(msg, 1024, "QCOMPARE('%lf %lf', QSizeF)", t1.width(), t1.height());
-        }
-        return compare_helper(isOk, msg, file, line);
-    }
-}
-#endif
-
 tst_QSizeF::tst_QSizeF() {
 }
 

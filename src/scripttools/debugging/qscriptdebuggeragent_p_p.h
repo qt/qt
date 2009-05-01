@@ -68,9 +68,7 @@ QT_BEGIN_NAMESPACE
 
 class QScriptDebuggerAgent;
 class QScriptDebuggerAgentPrivate
-#if QT_VERSION >= 0x040500
     : public QScriptEngineAgentPrivate
-#endif
 {
     Q_DECLARE_PUBLIC(QScriptDebuggerAgent)
 public:
@@ -125,10 +123,6 @@ public:
     int statementCounter;
 
     QScriptDebuggerBackendPrivate *backend;
-
-#if QT_VERSION < 0x040500
-    QScriptDebuggerAgent *q_ptr;
-#endif
 };
 
 QT_END_NAMESPACE

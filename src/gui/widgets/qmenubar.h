@@ -110,7 +110,7 @@ public:
     static bool macUpdateMenuBar();
 #endif
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     void setDefaultAction(QAction *);
     QAction *defaultAction() const;
 
@@ -339,7 +339,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_internalShortcutActivated(int))
     Q_PRIVATE_SLOT(d_func(), void _q_updateLayout())
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     Q_PRIVATE_SLOT(d_func(), void _q_updateDefaultAction())
 #endif
 

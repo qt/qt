@@ -90,7 +90,6 @@ public:
           highlightSelected(false),
           stretchLastSection(false),
           cascadingResizing(false),
-          forceInitializing(false),
           resizeRecursionBlock(false),
           stretchSections(0),
           contentsSections(0),
@@ -271,7 +270,6 @@ public:
     bool highlightSelected;
     bool stretchLastSection;
     bool cascadingResizing;
-    bool forceInitializing;
     bool resizeRecursionBlock;
     int stretchSections;
     int contentsSections;
@@ -307,6 +305,7 @@ public:
     void createSectionSpan(int start, int end, int size, QHeaderView::ResizeMode mode);
     void removeSectionsFromSpans(int start, int end);
     void resizeSectionSpan(int visualIndex, int oldSize, int newSize);
+    void setDefaultSectionSize(int size);
 
     inline int headerSectionCount() const { // for debugging
         int count = 0;

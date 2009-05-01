@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(OpenGL)
 
-#if !defined(QT_OPENGL_ES_1_CL) && !defined(QT_GL_FIXED_PREFERRED)
+#if !defined(QT_OPENGL_ES_1_CL) && !defined(QT_OPENGL_ES_1)
 
 class QGLShaderProgram;
 class QGLShaderPrivate;
@@ -96,7 +96,7 @@ public:
     QByteArray sourceCode() const;
 
     bool isCompiled() const;
-    QString errors() const;
+    QString log() const;
 
     GLuint shaderId() const;
 
@@ -136,10 +136,10 @@ public:
 
     virtual bool link();
     bool isLinked() const;
-    QString errors() const;
+    QString log() const;
 
     bool enable();
-    void disable();
+    static void disable();
 
     GLuint programId() const;
 
@@ -248,6 +248,7 @@ public:
 
     void setUniformValueArray(int location, const GLfloat *values, int count, int size);
     void setUniformValueArray(int location, const GLint *values, int count);
+    void setUniformValueArray(int location, const GLuint *values, int count);
     void setUniformValueArray(int location, const QVector2D *values, int count);
     void setUniformValueArray(int location, const QVector3D *values, int count);
     void setUniformValueArray(int location, const QVector4D *values, int count);
@@ -263,6 +264,7 @@ public:
 
     void setUniformValueArray(const char *name, const GLfloat *values, int count, int size);
     void setUniformValueArray(const char *name, const GLint *values, int count);
+    void setUniformValueArray(const char *name, const GLuint *values, int count);
     void setUniformValueArray(const char *name, const QVector2D *values, int count);
     void setUniformValueArray(const char *name, const QVector3D *values, int count);
     void setUniformValueArray(const char *name, const QVector4D *values, int count);

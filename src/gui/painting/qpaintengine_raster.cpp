@@ -1148,6 +1148,33 @@ void QRasterPaintEnginePrivate::updateMatrixData(QSpanData *spanData, const QBru
     }
 }
 
+// #define QT_CLIPPING_RATIOS
+
+#ifdef QT_CLIPPING_RATIOS
+int rectClips;
+int regionClips;
+int totalClips;
+
+static void checkClipRatios(QRasterPaintEnginePrivate *d)
+{
+    if (d->clip()->hasRectClip)
+        rectClips++;
+    if (d->clip()->hasRegionClip)
+        regionClips++;
+    totalClips++;
+
+    if ((totalClips % 5000) == 0) {
+        printf("Clipping ratio: rectangular=%f%%, region=%f%%, complex=%f%%\n",
+               rectClips * 100.0 / (qreal) totalClips,
+               regionClips * 100.0 / (qreal) totalClips,
+               (totalClips - rectClips - regionClips) * 100.0 / (qreal) totalClips);
+        totalClips = 0;
+        rectClips = 0;
+        regionClips = 0;
+    }
+
+}
+#endif
 
 /*!
     \internal
@@ -1249,6 +1276,10 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 
     d->solid_color_filler.clip = d->clip();
     d->solid_color_filler.adjustSpanMethods();
+
+#ifdef QT_CLIPPING_RATIOS
+    checkClipRatios(d);
+#endif
 }
 
 
@@ -1323,6 +1354,11 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
 
     d->solid_color_filler.clip = d->clip();
     d->solid_color_filler.adjustSpanMethods();
+
+
+#ifdef QT_CLIPPING_RATIOS
+    checkClipRatios(d);
+#endif
 }
 
 /*!
@@ -3158,7 +3194,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     // ### cases we should delegate painting to the font engine
     // ### directly...
 
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
     QFontEngine::Type fontEngineType = ti.fontEngine->type();
     // qDebug() << "type" << fontEngineType << s->matrix.type();
     if ((fontEngineType == QFontEngine::Win && !((QFontEngineWin *) ti.fontEngine)->ttf && s->matrix.type() > QTransform::TxTranslate)
@@ -4385,6 +4421,9 @@ void QClipData::fixup()
  */
 void QClipData::setClipRect(const QRect &rect)
 {
+    if (rect == clipRect)
+        return;
+
 //    qDebug() << "setClipRect" << clipSpanHeight << count << allocated << rect;
     hasRectClip = true;
     clipRect = rect;
@@ -4393,6 +4432,11 @@ void QClipData::setClipRect(const QRect &rect)
     xmax = rect.x() + rect.width();
     ymin = qMin(rect.y(), clipSpanHeight);
     ymax = qMin(rect.y() + rect.height(), clipSpanHeight);
+
+    if (m_spans) {
+        delete m_spans;
+        m_spans = 0;
+    }
 
 //    qDebug() << xmin << xmax << ymin << ymax;
 }
@@ -4417,6 +4461,12 @@ void QClipData::setClipRegion(const QRegion &region)
         ymin = rect.y();
         ymax = rect.y() + rect.height();
     }
+
+    if (m_spans) {
+        delete m_spans;
+        m_spans = 0;
+    }
+
 }
 
 /*!

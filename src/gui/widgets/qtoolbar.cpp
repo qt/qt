@@ -1153,7 +1153,7 @@ bool QToolBar::event(QEvent *event)
         if (d->mouseMoveEvent(static_cast<QMouseEvent*>(event)))
             return true;
         break;
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     case QEvent::ContextMenu:
         {
             QContextMenuEvent* contextMenuEvent = static_cast<QContextMenuEvent*>(event);

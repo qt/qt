@@ -102,9 +102,7 @@ tst_QImageReader::tst_QImageReader()
     images << QPair<QString, QByteArray>(QLatin1String("4bpp-rle.bmp"), QByteArray("bmp"));
     images << QPair<QString, QByteArray>(QLatin1String("tst7.bmp"), QByteArray("bmp"));
     images << QPair<QString, QByteArray>(QLatin1String("16bpp.bmp"), QByteArray("bmp"));
-#if QT_VERSION >= 0x040200
     images << QPair<QString, QByteArray>(QLatin1String("negativeheight.bmp"), QByteArray("bmp"));
-#endif
     images << QPair<QString, QByteArray>(QLatin1String("marble.xpm"), QByteArray("xpm"));
     images << QPair<QString, QByteArray>(QLatin1String("kollada.png"), QByteArray("png"));
     images << QPair<QString, QByteArray>(QLatin1String("teapot.ppm"), QByteArray("ppm"));

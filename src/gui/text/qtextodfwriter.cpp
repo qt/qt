@@ -477,7 +477,7 @@ void QTextOdfWriter::writeBlockFormat(QXmlStreamWriter &writer, QTextBlockFormat
     if (format.hasProperty(QTextFormat::BlockRightMargin))
         writer.writeAttribute(foNS, QString::fromLatin1("margin-right"), pixelToPoint(qMax(qreal(0.), format.rightMargin())) );
     if (format.hasProperty(QTextFormat::TextIndent))
-        writer.writeAttribute(foNS, QString::fromLatin1("text-indent"), QString::number(format.textIndent()));
+        writer.writeAttribute(foNS, QString::fromLatin1("text-indent"), pixelToPoint(format.textIndent()));
     if (format.hasProperty(QTextFormat::PageBreakPolicy)) {
         if (format.pageBreakPolicy() & QTextFormat::PageBreak_AlwaysBefore)
             writer.writeAttribute(foNS, QString::fromLatin1("break-before"), QString::fromLatin1("page"));

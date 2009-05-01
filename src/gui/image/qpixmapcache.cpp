@@ -86,7 +86,7 @@ QT_BEGIN_NAMESPACE
     \sa QCache, QPixmap
 */
 
-#if defined(Q_WS_QWS) || defined(Q_OS_WINCE)
+#if defined(Q_WS_QWS) || defined(Q_WS_WINCE)
 static int cache_limit = 2048; // 2048 KB cache limit for embedded
 #else
 static int cache_limit = 10240; // 10 MB cache limit for desktop
@@ -187,6 +187,11 @@ bool QPMCache::insert(const QString& key, const QPixmap &pixmap, int cost)
         cacheKeys.insert(key, cacheKey);
         return true;
     }
+    qint64 oldCacheKey = cacheKeys.value(key, -1);
+    //If for the same key we add already a pixmap we should delete it
+    if (oldCacheKey != -1)
+        QCache<qint64, QDetachedPixmap>::remove(oldCacheKey);
+
     bool success = QCache<qint64, QDetachedPixmap>::insert(cacheKey, new QDetachedPixmap(pixmap), cost);
     if (success) {
         cacheKeys.insert(key, cacheKey);
@@ -275,7 +280,8 @@ bool QPixmapCache::insert(const QString &key, const QPixmap &pm)
 /*!
     Returns the cache limit (in kilobytes).
 
-    The default cache limit is 2048 KB for Embedded, 10240 KB for Desktops.
+    The default cache limit is 2048 KB for Embedded, 10240 KB for
+    Desktops.
 
     \sa setCacheLimit()
 */
@@ -288,7 +294,8 @@ int QPixmapCache::cacheLimit()
 /*!
     Sets the cache limit to \a n kilobytes.
 
-    The default setting is 1024 kilobytes.
+    The default setting is 2048 KB for Embedded, 10240 KB for
+    Desktops.
 
     \sa cacheLimit()
 */

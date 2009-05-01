@@ -125,9 +125,6 @@ public:
                        const QVariant &argument = QVariant());
 
 private:
-#if QT_VERSION < 0x040500
-    QScriptDebuggerAgentPrivate *d_ptr;
-#endif
     Q_DECLARE_PRIVATE(QScriptDebuggerAgent)
     Q_DISABLE_COPY(QScriptDebuggerAgent)
 };

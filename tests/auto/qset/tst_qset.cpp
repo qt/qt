@@ -654,9 +654,6 @@ void tst_QSet::stlIterator()
 
 void tst_QSet::stlMutableIterator()
 {
-#if QT_VERSION < 0x040200
-    QSKIP("Needs Qt >= 4.2", SkipAll);
-#else
     QSet<QString> set1;
     for (int i = 0; i < 25000; ++i)
         set1.insert(QString::number(i));
@@ -714,7 +711,6 @@ void tst_QSet::stlMutableIterator()
 #endif
         QVERIFY(*i == "foo");
     }
-#endif
 }
 
 void tst_QSet::javaIterator()
@@ -803,9 +799,6 @@ void tst_QSet::javaIterator()
 
 void tst_QSet::javaMutableIterator()
 {
-#if QT_VERSION < 0x040200
-    QSKIP("Needs Qt >= 4.2", SkipAll);
-#else
     QSet<QString> set1;
     for (int k = 0; k < 25000; ++k)
         set1.insert(QString::number(k));
@@ -891,7 +884,6 @@ void tst_QSet::javaMutableIterator()
         QVERIFY(set2.isEmpty());
         QVERIFY(set3.isEmpty());
     }
-#endif
 }
 
 void tst_QSet::makeSureTheComfortFunctionsCompile()

@@ -574,10 +574,8 @@ void tst_QAlgorithms::test_qLowerBound()
 
     QCOMPARE(qLowerBound(data.constBegin(), data.constEnd(), resultValue), data.constBegin() + resultIndex);
     QCOMPARE(qLowerBound(data.begin(), data.end(), resultValue), data.begin() + resultIndex);
-#if QT_VERSION >= 0x040200
     QCOMPARE(qLowerBound(data, resultValue), data.constBegin() + resultIndex);
     QCOMPARE(qLowerBound(data.constBegin(), data.constEnd(), resultValue, qLess<int>()), data.constBegin() + resultIndex);
-#endif
 }
 
 void tst_QAlgorithms::test_qUpperBound_data()
@@ -597,10 +595,8 @@ void tst_QAlgorithms::test_qUpperBound()
 
     QCOMPARE(qUpperBound(data.constBegin(), data.constEnd(), resultValue), data.constBegin() + resultIndex);
     QCOMPARE(qUpperBound(data.begin(), data.end(), resultValue), data.begin() + resultIndex);
-#if QT_VERSION >= 0x040200
     QCOMPARE(qUpperBound(data, resultValue), data.constBegin() + resultIndex);
     QCOMPARE(qUpperBound(data.constBegin(), data.constEnd(), resultValue, qLess<int>()), data.constBegin() + resultIndex);
-#endif
 }
 
 void tst_QAlgorithms::test_qBinaryFind_data()
@@ -618,10 +614,8 @@ void tst_QAlgorithms::test_qBinaryFind()
 
     QCOMPARE(*qBinaryFind(data.constBegin(), data.constEnd(), resultValue), resultValue);
     QCOMPARE(*qBinaryFind(data.begin(), data.end(), resultValue), resultValue);
-#if QT_VERSION >= 0x040200
     QCOMPARE(*qBinaryFind(data, resultValue), resultValue);
     QCOMPARE(*qBinaryFind(data.constBegin(), data.constEnd(), resultValue, qLess<int>()), resultValue);
-#endif
 }
 
 void tst_QAlgorithms::qBinaryFindOneEntry()
@@ -802,7 +796,6 @@ void tst_QAlgorithms::stableSortCorrectnessTest()
 void tst_QAlgorithms::convenienceAPI()
 {
     // Compile-test for QAlgorithm convenience functions.
-#if QT_VERSION >= 0x040200
     QList<int> list, list2;
 
     qCopy(list.begin(), list.end(), list2.begin());
@@ -844,7 +837,6 @@ void tst_QAlgorithms::convenienceAPI()
     QList<int *> pointerList;
     qDeleteAll(pointerList);
     qDeleteAll(pointerList.begin(), pointerList.end());
-#endif
 }
 
 template <typename DataType>
