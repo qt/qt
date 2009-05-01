@@ -658,7 +658,7 @@ void QFxPathView::itemsInserted(int modelIndex, int count)
 {
     //XXX support animated insertion
     Q_D(QFxPathView);
-    if (d->pathItems == -1 || d->items.count() < d->pathItems) {
+    if (d->pathItems == -1) {
         for (int i = 0; i < count; ++i) {
             QFxItem *item = d->model->item(modelIndex + i);
             item->setZ(modelIndex + i);
