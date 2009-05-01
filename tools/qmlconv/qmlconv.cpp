@@ -448,7 +448,7 @@ int main(int argc, char *argv[])
     }
 
     if (args.isEmpty() && optionInPlace) {
-        qWarning() << "Usage: qmlconf [ [-i] filename ]";
+        qWarning() << "Usage: qmlconv [ [-i] filename ]";
         exit(1);
     }
 
