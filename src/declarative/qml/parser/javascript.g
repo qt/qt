@@ -660,6 +660,18 @@ case $rule_number: {
 
 UiPropertyType: T_IDENTIFIER ;
 
+UiObjectMember: T_SIGNAL T_IDENTIFIER ;
+/.
+case $rule_number: {
+    AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), (JavaScriptNameIdImpl *)0, sym(2).sval);
+    node->type = AST::UiPublicMember::Signal;
+    node->propertyToken = loc(1);
+    node->typeToken = loc(2);
+    node->identifierToken = loc(3);
+    sym(1).Node = node;
+}   break;
+./
+
 UiObjectMember: T_PROPERTY UiPropertyType T_IDENTIFIER ;
 /.
 case $rule_number: {

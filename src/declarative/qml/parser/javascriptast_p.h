@@ -2326,13 +2326,13 @@ public:
 
     UiPublicMember(JavaScriptNameIdImpl *memberType,
                    JavaScriptNameIdImpl *name)
-        : memberType(memberType), name(name), expression(0), isDefaultMember(false)
+        : type(Property), memberType(memberType), name(name), expression(0), isDefaultMember(false)
     { kind = K; }
 
     UiPublicMember(JavaScriptNameIdImpl *memberType,
                    JavaScriptNameIdImpl *name,
                    ExpressionNode *expression)
-        : memberType(memberType), name(name), expression(expression), isDefaultMember(false)
+        : type(Property), memberType(memberType), name(name), expression(expression), isDefaultMember(false)
     { kind = K; }
 
     virtual SourceLocation firstSourceLocation() const
@@ -2354,6 +2354,7 @@ public:
     virtual void accept0(Visitor *visitor);
 
 // attributes
+    enum { Signal, Property } type;
     JavaScriptNameIdImpl *memberType;
     JavaScriptNameIdImpl *name;
     ExpressionNode *expression;
