@@ -214,10 +214,10 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QSize &size,
 }
 
 
-IDirectFBSurface* QDirectFBScreen::createDFBSurface(DFBSurfaceDescription desc, SurfaceCreationOptions options)
+IDirectFBSurface *QDirectFBScreen::createDFBSurface(DFBSurfaceDescription desc, SurfaceCreationOptions options)
 {
-    DFBResult result;
-    IDirectFBSurface* newSurface = 0;
+    DFBResult result = DFB_OK;
+    IDirectFBSurface *newSurface = 0;
 
     if (!d_ptr->dfb) {
         qWarning("QDirectFBScreen::createDFBSurface() - not connected");
@@ -247,6 +247,8 @@ IDirectFBSurface* QDirectFBScreen::createDFBSurface(DFBSurfaceDescription desc, 
         }
         desc.caps = DFBSurfaceCapabilities(desc.caps & ~DSCAPS_VIDEOONLY);
     }
+    if (d_ptr->directFBFlags & SystemOnly)
+        desc.caps = DFBSurfaceCapabilities(desc.caps | DSCAPS_SYSTEMONLY);
 
     if (!newSurface)
         result = d_ptr->dfb->CreateSurface(d_ptr->dfb, &desc, &newSurface);
@@ -805,6 +807,14 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     if (displayArgs.contains(QLatin1String("videoonly"), Qt::CaseInsensitive))
         d_ptr->directFBFlags |= VideoOnly;
 
+    if (displayArgs.contains(QLatin1String("systemonly"), Qt::CaseInsensitive)) {
+        if (d_ptr->directFBFlags & VideoOnly) {
+            qWarning("QDirectFBScreen: error. videoonly and systemonly are mutually exclusive");
+        } else {
+            d_ptr->directFBFlags |= SystemOnly;
+        }
+    }
+
     if (displayArgs.contains(QLatin1String("ignoresystemclip"), Qt::CaseInsensitive))
         d_ptr->directFBFlags |= IgnoreSystemClip;
 
@@ -819,9 +829,23 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
         description.flags = DFBSurfaceDescriptionFlags(description.flags | DSDESC_WIDTH);
     if (::setIntOption(displayArgs, QLatin1String("height"), &description.height))
         description.flags = DFBSurfaceDescriptionFlags(description.flags | DSDESC_HEIGHT);
+
     uint caps = DSCAPS_PRIMARY|DSCAPS_DOUBLE;
-    if (displayArgs.contains(QLatin1String("static_alloc")))
-        caps |= DSCAPS_STATIC_ALLOC;
+    struct {
+        const char *name;
+        const DFBSurfaceCapabilities cap;
+    } const capabilities[] = {
+        { "static_alloc", DSCAPS_STATIC_ALLOC },
+        { "triplebuffer", DSCAPS_TRIPLE },
+        { "interlaced", DSCAPS_INTERLACED },
+        { "separated", DSCAPS_SEPARATED },
+//        { "depthbuffer", DSCAPS_DEPTH }, // only makes sense with TextureTriangles which are not supported
+        { 0, DSCAPS_NONE }
+    };
+    for (int i=0; capabilities[i].name; ++i) {
+        if (displayArgs.contains(QString::fromLatin1(capabilities[i].name), Qt::CaseInsensitive))
+            caps |= capabilities[i].cap;
+    }
 
     if (displayArgs.contains(QLatin1String("forcepremultiplied"), Qt::CaseInsensitive)) {
         caps |= DSCAPS_PREMULTIPLIED;

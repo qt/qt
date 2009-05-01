@@ -62,7 +62,8 @@ public:
     enum DirectFBFlag {
         NoFlags = 0x00,
         VideoOnly = 0x01,
-        IgnoreSystemClip = 0x02
+        SystemOnly = 0x02,
+        IgnoreSystemClip = 0x04
     };
 
     Q_DECLARE_FLAGS(DirectFBFlags, DirectFBFlag);
