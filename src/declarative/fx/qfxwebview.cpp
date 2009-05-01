@@ -106,8 +106,6 @@ class QFxWebSettings : public QObject {
     Q_PROPERTY(bool offlineWebApplicationCacheEnabled READ offlineWebApplicationCacheEnabled WRITE setOfflineWebApplicationCacheEnabled)
     Q_PROPERTY(bool localStorageDatabaseEnabled READ localStorageDatabaseEnabled WRITE setLocalStorageDatabaseEnabled)
 
-    Q_PROPERTY(QString userStyleSheetUrl READ userStyleSheetUrl WRITE setUserStyleSheetUrl)
-
 public:
     QFxWebSettings() {}
 
@@ -139,9 +137,6 @@ public:
     void setOfflineWebApplicationCacheEnabled(bool on) { s->setAttribute(QWebSettings::OfflineWebApplicationCacheEnabled, on); }
     bool localStorageDatabaseEnabled() const { return s->testAttribute(QWebSettings::LocalStorageDatabaseEnabled); }
     void setLocalStorageDatabaseEnabled(bool on) { s->setAttribute(QWebSettings::LocalStorageDatabaseEnabled, on); }
-
-    QString userStyleSheetUrl() const { return s->userStyleSheetUrl().toString(); }
-    void setUserStyleSheetUrl(const QString& url) { s->setUserStyleSheetUrl(url); }
 
     QWebSettings *s;
 };
@@ -225,7 +220,7 @@ public:
     Due to WebKit limitations, the height may be more than necessary
     if the idealHeight is changed after the content is loaded.
 
-    \code
+    \qml
     WebView {
         url: "http://www.nokia.com"
         width: 490
@@ -233,7 +228,7 @@ public:
         scale: 0.5
         smooth: true
     }
-    \endcode
+    \endqml
 
     \image webview.png
 
@@ -955,21 +950,34 @@ QWebPage *QFxWebView::page() const
     return d->page;
 }
 
+
 // The QObject interface to settings().
 /*!
-    \qmlproperty QWebSettings WebView::settings
+    \qmlproperty bool WebView::settings::autoLoadImages
+    \qmlproperty bool WebView::settings::javascriptEnabled
+    \qmlproperty bool WebView::settings::javaEnabled
+    \qmlproperty bool WebView::settings::pluginsEnabled
+    \qmlproperty bool WebView::settings::privateBrowsingEnabled
+    \qmlproperty bool WebView::settings::javascriptCanOpenWindows
+    \qmlproperty bool WebView::settings::javascriptCanAccessClipboard
+    \qmlproperty bool WebView::settings::developerExtrasEnabled
+    \qmlproperty bool WebView::settings::linksIncludedInFocusChain
+    \qmlproperty bool WebView::settings::zoomTextOnly
+    \qmlproperty bool WebView::settings::printElementBackgrounds
+    \qmlproperty bool WebView::settings::offlineStorageDatabaseEnabled
+    \qmlproperty bool WebView::settings::offlineWebApplicationCacheEnabled
+    \qmlproperty bool WebView::settings::localStorageDatabaseEnabled
 
-    This property gives access to the settings controlling the web view.
+    These properties give access to the settings controlling the web view.
 
     See QWebSettings for the list of sub-properties.
 
-    \code
+    \qml
         WebView {
             settings.pluginsEnabled: true
-            settings.userStyleSheetUrl: "mystyle.css"
             ...
         }
-    \endcode
+    \endqml
 */
 QObject *QFxWebView::settingsObject() const
 {
@@ -1026,11 +1034,11 @@ QString QFxWebView::html() const
 
     The html property can be set as a string.
 
-    \code
+    \qml
     WebView {
         html: "<p>This is <b>HTML</b>."
     }
-    \endcode
+    \endqml
 */
 void QFxWebView::setHtml(const QString &html, const QUrl &baseUrl)
 {
