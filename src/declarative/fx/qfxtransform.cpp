@@ -93,7 +93,7 @@ void QFxTransform::update()
     between the points does matter for translation along an axis.
 
     \code
-    <Axis startX="0" startY="0" endX="20" endY="30"/>
+    Axis { startX: 0; startY: 0; endX: 20; endY: 30 }
     \endcode
 */
 
@@ -182,31 +182,7 @@ void QFxAxis::setEndZ(qreal z)
     \brief The Rotation3D element provides a way to rotate an Item around an axis.
 
     Here is an example of various rotations applied to an \l Image.
-    \code
-    <HorizontalLayout margin="10" spacing="10">
-        <Image src="qt.png"/>
-        <Image src="qt.png">
-            <transform>
-                <Rotation3D axis.startX="30" axis.endX="30" axis.endY="60" angle="18"/>
-            </transform>
-        </Image>
-        <Image src="qt.png">
-            <transform>
-                <Rotation3D axis.startX="30" axis.endX="30" axis.endY="60" angle="36"/>
-            </transform>
-        </Image>
-        <Image src="qt.png">
-            <transform>
-                <Rotation3D axis.startX="30" axis.endX="30" axis.endY="60" angle="54"/>
-            </transform>
-        </Image>
-        <Image src="qt.png">
-            <transform>
-                <Rotation3D axis.startX="30" axis.endX="30" axis.endY="60" angle="72"/>
-            </transform>
-        </Image>
-    </HorizontalLayout>
-    \endcode
+    \snippet doc/src/snippets/declarative/rotation.qml 0
 
     \image axisrotation.png
 */
@@ -233,6 +209,8 @@ QFxRotation3D::~QFxRotation3D()
     A rotation axis is specified by 2 points in 3D space: a start point and
     an end point. The z-position of the start point is assumed to be 0, and cannot
     be changed.
+
+    \sa Axis
 */
 QFxAxis *QFxRotation3D::axis()
 {
@@ -374,6 +352,8 @@ QFxTranslation3D::~QFxTranslation3D()
     an end point. The z-position of the start point is assumed to be 0, and cannot
     be changed. Changing the z-position of the end point is only valid when running
     under OpenGL.
+
+    \sa Axis
 */
 QFxAxis *QFxTranslation3D::axis()
 {
@@ -388,7 +368,7 @@ QFxAxis *QFxTranslation3D::axis()
     of 0.5 would translate to 50, 25.
 
     \code
-    <Translation3D axis.startX="0" axis.startY="0" axis.endX="100" axis.endY="50"/>
+    Translation3D { axis.startX: 0; axis.startY: 0; axis.endX: 100; axis.endY: 50 }
     \endcode
 */
 qreal QFxTranslation3D::distance() const

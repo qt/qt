@@ -41,7 +41,6 @@
 
 #include <math.h>
 #include <QDebug>
-#include <QPen>
 #include <QEvent>
 #include "qmlbindablevalue.h"
 #include "qmlstate.h"
@@ -51,7 +50,6 @@
 #include "qfxpathview.h"
 #include "qfxpathview_p.h"
 #include <QGraphicsSceneEvent>
-#include <QTimer>
 
 static const int FlickThreshold = 5;
 
@@ -103,13 +101,7 @@ private:
 
     The items are laid out along a path defined by a \l Path and may be flicked to scroll.
 
-    \code
-    <PathView id="pathview" delegate="{contactDelegate}">
-        <resources><Component id="contactDelegate">...</Component></resources>
-        <model>...</model>
-        <path>...</path>
-    </PathView>
-    \endcode
+    \snippet doc/src/snippets/declarative/pathview/pathview.qml 0
 
     \image pathview.gif
 
@@ -320,23 +312,7 @@ void QFxPathView::setDragMargin(qreal dragMargin)
     The delegate provides a template describing what each item in the view should look and act like.
 
     Here is an example delegate:
-    \code
-    <PathView delegate="{contactDelegate}" ...>
-        <resources>
-            <Component id="contactDelegate">
-                <Item id="wrapper" scale="{PathView.sc}" opacity="{PathView.op}" z="{PathView.z}">
-                    <Image id="pic" width="100" height="100" file="{portrait}"
-                            anchors.horizontalCenter="{parent.horizontalCenter}"/>
-                    <Text id="name" text="{firstName + ' ' + lastName}"
-                            font.size="20"
-                            anchors.top="{pic.bottom}" anchors.topMargin="5"
-                            anchors.horizontalCenter="{parent.horizontalCenter}"/>
-                </Item>
-            </Component>
-        </resources>
-        ...
-    </PathView>
-    \endcode
+    \snippet doc/src/snippets/declarative/pathview/pathview.qml 1
 */
 
 /*!
@@ -682,7 +658,7 @@ void QFxPathView::itemsInserted(int modelIndex, int count)
 {
     //XXX support animated insertion
     Q_D(QFxPathView);
-    if (d->pathItems == -1 || d->items.count() < d->pathItems) {
+    if (d->pathItems == -1) {
         for (int i = 0; i < count; ++i) {
             QFxItem *item = d->model->item(modelIndex + i);
             item->setZ(modelIndex + i);

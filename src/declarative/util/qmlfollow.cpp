@@ -174,19 +174,29 @@ void QmlFollowPrivate::stop()
 
     In example below, Rect2 will follow Rect1 moving with a velocity of up to 200:
     \code
-    <Rect id="Rect1" y="{200}" width="20" height="20" color="#00ff00">
-        <y>
-            <SequentialAnimation running="true" repeat="true">
-                <NumericAnimation to="{200}" easing="easeOutBounce(amplitude:100)" duration="2000" />
-                <PauseAnimation duration="1000" />
-            </SequentialAnimation>
-        </y>
-    </Rect>
-    <Rect id="Rect2" x="{Rect1.width}" width="20" height="20" color="#ff0000">
-        <y>
-            <Follow source="{Rect1.y}" velocity="200"/>
-        </y>
-    </Rect>
+    Rect {
+        id: Rect1
+        width: 20; height: 20
+        color: "#00ff00"
+        y: 200  //initial value
+        y: SequentialAnimation {
+            running: true
+            repeat: true
+            NumericAnimation {
+                to: 200
+                easing: "easeOutBounce(amplitude:100)"
+                duration: 2000
+            }
+            PauseAnimation { duration: 1000 }
+        }
+    }
+    Rect {
+        id: Rect2
+        x: Rect1.width
+        width: 20; height: 20
+        color: "#ff0000"
+        y: Follow { source: Rect1.y; velocity: 200 }
+    }
     \endcode
 */
 
