@@ -59,8 +59,8 @@ class JavaScriptGrammar
 public:
   enum {
     EOF_SYMBOL = 0,
-    REDUCE_HERE = 87,
-    SHIFT_THERE = 86,
+    REDUCE_HERE = 88,
+    SHIFT_THERE = 87,
     T_AND = 1,
     T_AND_AND = 2,
     T_AND_EQ = 3,
@@ -95,7 +95,7 @@ public:
     T_GT_GT_GT_EQ = 28,
     T_IDENTIFIER = 29,
     T_IF = 30,
-    T_IMPORT = 85,
+    T_IMPORT = 86,
     T_IN = 31,
     T_INSTANCEOF = 32,
     T_LBRACE = 33,
@@ -108,6 +108,7 @@ public:
     T_MINUS = 40,
     T_MINUS_EQ = 41,
     T_MINUS_MINUS = 42,
+    T_MULTILINE_STRING_LITERAL = 84,
     T_NEW = 43,
     T_NOT = 44,
     T_NOT_EQ = 45,
@@ -120,7 +121,7 @@ public:
     T_PLUS = 51,
     T_PLUS_EQ = 52,
     T_PLUS_PLUS = 53,
-    T_PUBLIC = 84,
+    T_PUBLIC = 85,
     T_QUESTION = 54,
     T_RBRACE = 55,
     T_RBRACKET = 56,
@@ -147,15 +148,15 @@ public:
     T_XOR = 76,
     T_XOR_EQ = 77,
 
-    ACCEPT_STATE = 526,
-    RULE_COUNT = 300,
-    STATE_COUNT = 527,
-    TERMINAL_COUNT = 88,
-    NON_TERMINAL_COUNT = 98,
+    ACCEPT_STATE = 531,
+    RULE_COUNT = 304,
+    STATE_COUNT = 532,
+    TERMINAL_COUNT = 89,
+    NON_TERMINAL_COUNT = 100,
 
-    GOTO_INDEX_OFFSET = 527,
-    GOTO_INFO_OFFSET = 1723,
-    GOTO_CHECK_OFFSET = 1723
+    GOTO_INDEX_OFFSET = 532,
+    GOTO_INFO_OFFSET = 1798,
+    GOTO_CHECK_OFFSET = 1798
   };
 
   static const char  *const spell [];
