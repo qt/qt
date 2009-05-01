@@ -2336,7 +2336,7 @@ public:
     { kind = K; }
 
     virtual SourceLocation firstSourceLocation() const
-    { return publicToken; }
+    { return propertyToken; }
 
     virtual SourceLocation lastSourceLocation() const
     {
@@ -2346,9 +2346,9 @@ public:
 	return colonToken;
       else if (identifierToken.isValid())
 	return identifierToken;
-      else if (attributeTypeToken.isValid())
-	return attributeTypeToken;
-      return publicToken;
+      else if (typeToken.isValid())
+	return typeToken;
+      return propertyToken;
     }
 
     virtual void accept0(Visitor *visitor);
@@ -2358,8 +2358,8 @@ public:
     JavaScriptNameIdImpl *name;
     ExpressionNode *expression;
     bool isDefaultMember;
-    SourceLocation publicToken;
-    SourceLocation attributeTypeToken;
+    SourceLocation propertyToken;
+    SourceLocation typeToken;
     SourceLocation identifierToken;
     SourceLocation colonToken;
 };
