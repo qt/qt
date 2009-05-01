@@ -73,15 +73,15 @@ public:
     \qml
 HorizontalLayout {
     Image {
-        src: "icon.png"
+        source: "icon.png"
         filter: Blur { radius: 0 }
     }
     Image {
-        src: "icon.png"
+        source: "icon.png"
         filter: Blur { radius: 5 }
     }
     Image {
-        src: "icon.png"
+        source: "icon.png"
         filter: Blur { radius: 10 }
     }
 }
