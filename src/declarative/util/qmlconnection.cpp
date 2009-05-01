@@ -62,7 +62,7 @@ public:
 
 /*!
     \qmlclass Connection QmlConnection
-    \brief The Connection element describes generalized connections to signals.
+    \brief A Connection object describes generalized connections to signals.
 
     JavaScript-in-HTML style signal properties do not allow:
     \list
@@ -73,31 +73,40 @@ public:
         \i signals in classes with coincidentally-named on<Signal> properties
     \endlist
 
-    When any of these is needed, the Connection element can be used instead.
+    When any of these is needed, the Connection object can be used instead.
     Where a signal could be connected like this:
 
-    \code
-    <MouseRegion onClicked="foo(x+123,y+456)" />
-    \endcode
+    \qml
+MouseRegion {
+    onClicked: { foo(x+123,y+456) }
+}
+    \endqml
 
-    An equivalent binding can be made with a Connection element:
+    An equivalent binding can be made with a Connection object:
 
-    \code
-    <MouseRegion>
-        <Connection signal="clicked(x,y)" script="foo(x+123,y+456)" />
-    </MouseRegion>
-    \endcode
+    \qml
+MouseRegion {
+    Connection {
+        signal: "clicked(x,y)"
+        script: { foo(x+123,y+456) }
+    }
+}
+    \endqml
 
-    More generally, the Connection element can be a child of some other element than
+    More generally, the Connection object can be a child of some other object than
     the sender of the signal, and the script is the default attribute:
 
-    \code
-    <MouseRegion id="mr"/>
-    ...
-    <Connection sender="{mr}" signal="clicked(x,y)">
-        foo(x+123,y+456)
-    </Connection>
-    \endcode
+    \qml
+MouseRegion {
+    id: mr
+}
+...
+Connection {
+    sender: mr
+    signal: "clicked(x,y)"
+    script: { foo(x+123,y+456) }
+}
+    \endqml
 */
 
 /*!
@@ -257,9 +266,12 @@ void QmlConnection::setScript(const QString& script)
 
     The signal must have its formal parameter names given in parentheses:
 
-    \code
-        <Connection signal="clicked(x,y)" ... />
-    \endcode
+    \qml
+Connection {
+    signal: "clicked(x,y)"
+    script: { ... }
+}
+    \endqml
 */
 
 /*!

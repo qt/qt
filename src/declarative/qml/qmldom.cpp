@@ -220,11 +220,13 @@ QByteArray QmlDomDocument::save() const
     document has no root.
 
     In the sample QML below, the root object will be the QFxItem type.
-    \code
-    <Item>
-        <Text text="Hello World" />
-    </Item>
-    \endcode
+    \qml
+Item {
+    Text {
+        text: "Hello World"
+    }
+}
+    \endqml
 */
 QmlDomObject QmlDomDocument::rootObject() const
 {
@@ -296,9 +298,13 @@ QmlDomProperty &QmlDomProperty::operator=(const QmlDomProperty &other)
 /*!
     Return the name of this property.  
     
-    \code
-    <Text x="10" y="10" font.bold="true" />
-    \endcode
+    \qml
+Text {
+    x: 10
+    y: 10
+    font.bold: true
+}
+    \endqml
     
     As illustrated above, a property name can be a simple string, such as "x" or
     "y", or a more complex "dot property", such as "font.bold".  In both cases
@@ -318,9 +324,13 @@ QByteArray QmlDomProperty::propertyName() const
     Return the name of this property, split into multiple parts in the case
     of dot properties.
 
-    \code
-    <Text x="10" y="10" font.bold="true" />
-    \endcode
+    \qml
+Text {
+    x: 10
+    y: 10
+    font.bold: true
+}
+    \endqml
 
     For each of the properties shown above, this method would return ("x"), 
     ("y") and ("font", "bold").
@@ -337,10 +347,10 @@ QList<QByteArray> QmlDomProperty::propertyNameParts() const
     Return true if this property is used as a default property in the QML 
     document.
 
-    \code
-    <Text text="hello" />
-    <Text>hello</Text>
-    \endcode
+    \qml
+<Text text="hello"/>
+<Text>hello</Text>
+    \endqml
 
     The above two examples return the same DOM tree, except that the second has
     the default property flag set on the text property.  Observe that whether
@@ -456,9 +466,12 @@ QmlDomObjectPrivate::properties(QmlParser::Property *property) const
     Each QmlDomProperty represents a QML property assignment on the instantiated
     object.  For example,
 
-    \code
-    <QGraphicsWidget opacity="0.5" size="100x100" />
-    \endcode
+    \qml
+QGraphicsWidget {
+    opacity: 0.5
+    size: "100x100"
+}
+    \endqml
 
     describes a single QmlDomObject - "QGraphicsWidget" - with two properties,
     "opacity" and "size".  Obviously QGraphicsWidget has many more properties than just
@@ -525,9 +538,9 @@ bool QmlDomObject::isValid() const
     Returns the type name of this object.
 
     For example, the type of this object would be "QGraphicsWidget".
-    \code
-    <QGraphicsWidget />
-    \endcode
+    \qml
+QGraphicsWidget { }
+    \endqml
 */
 QByteArray QmlDomObject::objectType() const
 {
@@ -540,9 +553,9 @@ QByteArray QmlDomObject::objectType() const
     has been assigned.
 
     For example, the object id of this object would be "MyText".
-    \code
-    <Text id="MyText" />
-    \endcode
+    \qml
+Text { id: MyText }
+    \endqml
 */
 QByteArray QmlDomObject::objectId() const
 {
@@ -565,9 +578,12 @@ void QmlDomObject::setObjectId(const QByteArray &id)
     Returns the list of assigned properties on this object. 
 
     In the following example, "text" and "x" properties would be returned.
-    \code
-    <Text text="Hello world!" x="100" />
-    \endcode
+    \qml
+Text {
+    text: "Hello world!"
+    x: 100
+}
+    \endqml
 */
 QList<QmlDomProperty> QmlDomObject::properties() const
 {
@@ -605,9 +621,9 @@ QList<QmlDomProperty> QmlDomObject::properties() const
     In the example below, \c {object.property("src")} would return a valid
     QmlDomProperty, and \c {object.property("tile")} an invalid QmlDomProperty.
 
-    \code
-    <Image src="sample.jpg" />
-    \endcode
+    \qml
+Image { src: "sample.jpg" }
+    \endqml
 */
 QmlDomProperty QmlDomObject::property(const QByteArray &name) const
 {
@@ -730,9 +746,13 @@ QmlDomBasicValuePrivate::~QmlDomBasicValuePrivate()
     example below, the "x", "y" and "color" properties are being assigned
     literal values.
 
-    \code
-    <Rect x="10" y="10" color="red" />
-    \endcode
+    \qml
+Rect {
+    x: 10
+    y: 10
+    color: "red"
+}
+    \endqml
 */
 
 /*!
@@ -771,9 +791,9 @@ QmlDomValueLiteral &QmlDomValueLiteral::operator=(const QmlDomValueLiteral &othe
     Return the literal value.
 
     In the example below, the literal value will be the string "10".
-    \code
-    <Rect x="10" />
-    \endcode
+    \qml
+Rect { x: 10 }
+    \endqml
 */
 QString QmlDomValueLiteral::literal() const
 {
@@ -797,9 +817,9 @@ void QmlDomValueLiteral::setLiteral(const QString &value)
     A property binding is an ECMAScript expression assigned to a property.  In
     the example below, the "x" property is being assigned a property binding.
 
-    \code
-    <Rect x="{Other.x}" />
-    \endcode
+    \qml
+Rect { x: Other.x }
+    \endqml
 */
 
 /*!
@@ -837,9 +857,9 @@ QmlDomValueBinding &QmlDomValueBinding::operator=(const QmlDomValueBinding &othe
     Return the binding expression.
 
     In the example below, the string "Other.x" will be returned.
-    \code
-    <Rect x="{Other.x}" />
-    \endcode
+    \qml
+Rect { x: Other.x }
+    \endqml
 */
 QString QmlDomValueBinding::binding() const
 {
@@ -867,13 +887,16 @@ void QmlDomValueBinding::setBinding(const QString &expression)
     class.  In the example below, the "x" property is being assigned the 
     NumericAnimation value source.
 
-    \code
-    <Rect>
-        <x>
-            <NumericAnimation from="0" to="100" repeat="true" running="true" />
-        </x>
-    </Rect>
-    \endcode
+    \qml
+Rect {
+    x: NumericAnimation {
+        from: 0
+        to: 100
+        repeat: true
+        running: true
+    }
+}
+    \endqml
 */
 
 /*!
@@ -912,13 +935,16 @@ QmlDomValueValueSource &QmlDomValueValueSource::operator=(const QmlDomValueValue
 
     In the example below, an object representing the NumericAnimation will be
     returned.
-    \code
-    <Rect>
-        <x>
-            <NumericAnimation from="0" to="100" repeat="true" running="true" />
-        </x>
-    </Rect>
-    \endcode
+    \qml
+Rect {
+    x: NumericAnimation {
+        from: 0
+        to: 100
+        repeat: true
+        running: true
+    }
+}
+    \endqml
 */
 QmlDomObject QmlDomValueValueSource::object() const
 {
@@ -972,9 +998,12 @@ QmlDomValuePrivate::~QmlDomValuePrivate()
 
     For example, in the following example,
 
-    \code
-    <Text text="Hello World!" y="{Other.y}" />
-    \endcode
+    \qml
+Text {
+    text: "Hello World!"
+    y: Other.y
+}
+    \endqml
 
     The text property is being assigned a literal, and the y property a property
     binding.  To output the values assigned to the text and y properties in the
@@ -1213,24 +1242,27 @@ QmlDomList QmlDomValue::toList() const
 
     Lists of values can be assigned to properties.  For example, the following
     example assigns multiple objects to Item's "children" property
-    \code
-    <Item>
-        <children>
-            <Text />
-            <Rect />
-        </children>
-    </Item>
-    \endcode
+    \qml
+Item {
+    children: [
+        Text { },
+        Rect { }
+    ]
+}
+    \endqml
 
     Lists can also be implicitly created by assigning multiple 
     \l {QmlDomValueValueSource}{value sources} or constants to a property.
-    \code
-    <Item x="10">
-        <x>
-            <NumericAnimation running="false" from="0" to="100" />
-        </x>
-    </Item>
-    \endcode
+    \qml
+Item {
+    x: 10
+    x: NumericAnimation {
+        running: false
+        from: 0
+        to: 100
+    }
+}
+    \endqml
 */
 
 /*!
@@ -1301,13 +1333,16 @@ void QmlDomList::setValues(const QList<QmlDomValue> &values)
     following example shows the definition of a sub-component with the id 
     "ListDelegate".
 
-    \code
-    <Item>
-        <Component id="ListDelegate">
-            <Text text="{modelData.text}" />
-        </Component>
-    </Item>
-    \endcode
+    \qml
+Item {
+    Component {
+        id: ListDelegate
+        Text {
+            text: modelData.text
+        }
+    }
+}
+    \endqml
 
     Like QmlDomDocument's, components contain a single root object.
 */
@@ -1347,13 +1382,16 @@ QmlDomComponent &QmlDomComponent::operator=(const QmlDomComponent &other)
     Returns the component's root object.
 
     In the example below, the root object is the "Text" object.
-    \code
-    <Item>
-        <Component id="ListDelegate">
-            <Text text="{modelData.text}" />
-        </Component>
-    </Item>
-    \endcode
+    \qml
+Item {
+    Component {
+        id: ListDelegate
+        Text {
+            text: modelData.text
+        }
+    }
+}
+    \endqml
 */
 QmlDomObject QmlDomComponent::componentRoot() const
 {

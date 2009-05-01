@@ -89,16 +89,20 @@ bool QmlComponentPrivate::isXml(const QByteArray &ba)
     file, or for defining a component that logically belongs with the
     file containing it.
 
-    \code
-    <Item>
-        <Component id="RedSquare">
-            <Rect color="red" width="10" height="10"/>
-        </Component>
-
-        <ComponentInstance component="{RedSquare}"/>
-        <ComponentInstance component="{RedSquare}" x="20"/>
-    </Item>
-    \endcode
+    \qml
+Item {
+    Component {
+        id: RedSquare
+        Rect {
+            color: "red"
+            width: 10
+            height: 10
+        }
+    }
+    ComponentInstance { component: RedSquare }
+    ComponentInstance { component: RedSquare; x: 20 }
+}
+    \endqml
 */
 QML_DEFINE_TYPE(QmlComponent,Component);
 
