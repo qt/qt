@@ -148,12 +148,11 @@ void QFxDrag::setYmax(int m)
     \brief The MouseRegion element enables simple mouse handling.
     \inherits Item
 
-    A MouseRegion is typically used in conjunction with a visible element, where the MouseRegion effectively 'proxies' mouse handling for that element. For example, we can put a MouseRegion in a Rect that changes the Rect color to red when clicked:
-    \code
-    <Rect width="100" height="100">
-        <MouseRegion anchors.fill="{parent}" onClick="parent.color = 'red';"/>
-    </Rect>
-    \endcode
+    A MouseRegion is typically used in conjunction with a visible element,
+    where the MouseRegion effectively 'proxies' mouse handling for that
+    element. For example, we can put a MouseRegion in a Rect that changes
+    the Rect color to red when clicked:
+    \snippet doc/src/snippets/declarative/mouseregion.qml 0
 
     Many MouseRegion signals pass a \l {MouseEvent}{mouse} parameter that contains
     additional information about the mouse event, such as the position, button,
@@ -161,11 +160,7 @@ void QFxDrag::setYmax(int m)
 
     Below we have the previous
     example extended so as to give a different color when you right click.
-    \code
-    <Rect width="100" height="100">
-        <MouseRegion anchors.fill="{parent}" onClick="if (mouse.button==Qt.RightButton) { parent.color='blue';} else { parent.color = 'red';}"/>
-    </Rect>
-    \endcode
+    \snippet doc/src/snippets/declarative/mouseregion.qml 1
 
     For basic key handling, see \l KeyActions.
 
@@ -578,19 +573,8 @@ QFxDrag *QFxMouseRegion::drag()
     \i the min and max properties limit how far the target can be dragged along the corresponding axes.
     \endlist
 
-    The following example uses drag to blur an image as it moves to the right:
-    \code
-    <Item id="blurtest" width="600" height="200">
-        <Image id="pic" file="pic.png" anchors.verticalCenter="{parent.verticalCenter}" >
-            <filter><Blur radius="{pic.x/10}"/></filter>
-            <MouseRegion anchors.fill="{parent}"
-                        drag.target="{pic}"
-                        drag.axis="x"
-                        drag.xmin="0"
-                        drag.xmax="{blurtest.width-pic.width}" />
-        </Image>
-    </Item>
-    \endcode
+    The following example uses drag to reduce the opacity of an image as it moves to the right:
+    \snippet doc/src/snippets/declarative/drag.qml 0
 */
 
 QT_END_NAMESPACE

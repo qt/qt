@@ -245,7 +245,7 @@ void QFxKeyActions::setEnabled(bool e)
 
     The following example sets actions for the 'c' and 'x' keys.
     \code
-    <KeyActions keyC="print('c is for cookie')" keyX="print('I like cookies')" />
+    KeyActions { keyC: "print('c is for cookie')"; keyX: "print('I like cookies')" }
     \endcode
 */
 QString QFxKeyActions::key_A() const
@@ -519,7 +519,7 @@ void QFxKeyActions::setKey_Z(const QString &s)
 
     The following example sets actions for the left and right arrow keys.
     \code
-    <KeyActions leftArrow="print('You pressed left')" rightArrow="print('You pressed right')" />
+    KeyActions { leftArrow: "print('You pressed left')"; rightArrow: "print('You pressed right')" }
     \endcode
 */
 
@@ -570,7 +570,7 @@ void QFxKeyActions::setKey_Down(const QString &s)
 
     The following example sets actions for the '5' and '6' keys.
     \code
-    <KeyActions digit5="print('5 is a prime number')" digit6="print('6 is a composite number')" />
+    KeyActions { digit5: "print('5 is a prime number')"; digit6: "print('6 is a composite number')"; focus: true }
     \endcode
 */
 
@@ -745,7 +745,7 @@ void QFxKeyActions::setKey_Space(const QString &s)
 
     The following example sets an action for the space key.
     \code
-    <KeyActions space="print('Space pressed')" />
+    KeyActions { space: "print('Space pressed')" }
     \endcode
 */
 
@@ -766,7 +766,7 @@ void QFxKeyActions::setKey_Space(const QString &s)
 
     The following example sets an action for the hangup key.
     \code
-    <KeyActions hangup="print('Go away now')" />
+    KeyActions { hangup: "print('Go away now')" }
     \endcode
 */
 
