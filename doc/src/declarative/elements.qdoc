@@ -7,10 +7,11 @@ The following table lists the Qml elements provided by the Qt Declarative module
 
 \bold {Standard Qt Declarative Elements}
 
-\table 100%
+\table 80%
 \header
 \o \bold {States}
 \o \bold {Animation and Transitions}
+\o \bold {Working with Data}
 \o \bold {Utility}
 \row
 
@@ -40,22 +41,30 @@ The following table lists the Qml elements provided by the Qt Declarative module
 
 \o
 \list
-\o \l Script
 \o \l Bind
+\o \l ListModel
+\o \l XmlListModel
+\o \l SqlQuery, \l SqlConnection, and \l SqlBind
+\o \l DateTimeFormatter
+\o \l NumberFormatter
+\endlist
+
+\o
+\list
+\o \l Script
 \o \l Connection
 \o \l Component
-\o \l ListModel
-\o \l DateTimeFormatter
 \endlist
 \endtable
 
 \bold {Fluid UI Primitives}
 
-\table 100%
+\table 80%
 \header
-\o \bold {Basic Items}
-\o \bold {Utility}
+\o \bold {Basic Visual Items}
+\o \bold {Basic Interaction Items}
 \o \bold {Widgets}
+\o \bold {Utility}
 
 \row
 \o
@@ -65,20 +74,17 @@ The following table lists the Qml elements provided by the Qt Declarative module
 \o \l Text
 \o \l TextEdit
 \o \l Rect
-\o \l MouseRegion
-\o \l KeyActions
 \o \l AnimatedImage
 \o \l BlendedImage
 \endlist
 
 \o
 \list
-\o \l Repeater
-\o \l Content
+\o \l MouseRegion
+\o \l KeyActions
 \o \l FocusPanel
 \o \l FocusRealm
 \o \l KeyProxy
-\o \l ComponentInstance
 \endlist
 
 \o
@@ -88,9 +94,18 @@ The following table lists the Qml elements provided by the Qt Declarative module
 \o \l WebView
 \endlist
 
+\o
+\list
+\o \l Repeater
+\o \l Content
+\o \l ComponentInstance
+\o \l WidgetContainer
+\endlist
+
 \header
 \o \bold {Views}
 \o \bold {Layouts}
+\o \bold {Transforms}
 \o \bold {Effects}
 
 \row
@@ -118,6 +133,14 @@ The following table lists the Qml elements provided by the Qt Declarative module
 \o \l VerticalLayout
 \o \l HorizontalLayout
 \o \l GridLayout
+\endlist
+
+\o
+\list
+\o \l Squish
+\o \l Perspective
+\o \l Rotation3D
+\o \l Translation3D
 \endlist
 
 \o
