@@ -342,10 +342,15 @@ case 37:
     sym(1).Node = node;
 }   break;
 
-case 39:
+case 39: {
+    QString s = QLatin1String(JavaScriptGrammar::spell[T_PROPERTY]);
+    sym(1).sval = driver->intern(s.constData(), s.length());
+    break;
+}
 
 case 40: {
-    sym(1).sval = driver->intern(lexer->characterBuffer(), lexer->characterCount());
+    QString s = QLatin1String(JavaScriptGrammar::spell[T_SIGNAL]);
+    sym(1).sval = driver->intern(s.constData(), s.length());
     break;
 }
 

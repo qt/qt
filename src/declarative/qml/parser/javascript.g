@@ -753,12 +753,17 @@ case $rule_number:
 JsIdentifier: T_IDENTIFIER;
 JsIdentifier: T_PROPERTY ;
 /.
-case $rule_number:
+case $rule_number: {
+    QString s = QLatin1String(JavaScriptGrammar::spell[T_PROPERTY]);
+    sym(1).sval = driver->intern(s.constData(), s.length());
+    break;
+}
 ./
 JsIdentifier: T_SIGNAL ;
 /.
 case $rule_number: {
-    sym(1).sval = driver->intern(lexer->characterBuffer(), lexer->characterCount());
+    QString s = QLatin1String(JavaScriptGrammar::spell[T_SIGNAL]);
+    sym(1).sval = driver->intern(s.constData(), s.length());
     break;
 }
 ./
