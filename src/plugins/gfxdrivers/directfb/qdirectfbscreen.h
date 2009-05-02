@@ -83,19 +83,19 @@ public:
     void setMode(int width, int height, int depth);
     void blank(bool on);
 
-    QWSWindowSurface* createSurface(QWidget *widget) const;
-    QWSWindowSurface* createSurface(const QString &key) const;
+    QWSWindowSurface *createSurface(QWidget *widget) const;
+    QWSWindowSurface *createSurface(const QString &key) const;
 
-    static inline QDirectFBScreen* instance() {
+    static inline QDirectFBScreen *instance() {
         QScreen *inst = QScreen::instance();
         Q_ASSERT(!inst || inst->classId() == QScreen::DirectFBClass);
         return static_cast<QDirectFBScreen*>(inst);
     }
 
-    IDirectFB* dfb();
-    IDirectFBSurface* dfbSurface();
+    IDirectFB *dfb();
+    IDirectFBSurface *dfbSurface();
 #ifndef QT_NO_DIRECTFB_LAYER
-    IDirectFBDisplayLayer* dfbDisplayLayer();
+    IDirectFBDisplayLayer *dfbDisplayLayer();
 #endif
 
     // Track surface creation/release so we can release all on exit
@@ -117,7 +117,7 @@ public:
     IDirectFBSurface *copyToDFBSurface(const QImage &image,
                                      QImage::Format format,
                                      SurfaceCreationOptions options);
-    void releaseDFBSurface(IDirectFBSurface* surface);
+    void releaseDFBSurface(IDirectFBSurface *surface);
 
     static int depth(DFBSurfacePixelFormat format);
 

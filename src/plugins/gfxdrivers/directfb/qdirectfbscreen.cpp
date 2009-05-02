@@ -84,7 +84,7 @@ public:
     QImage::Format alphaPixmapFormat;
 };
 
-QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen* screen)
+QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *screen)
     : QWSGraphicsSystem(screen), dfb(0), dfbSurface(0), flipFlags(DSFLIP_NONE)
 #ifndef QT_NO_DIRECTFB_LAYER
     , dfbLayer(0)
@@ -113,7 +113,7 @@ QDirectFBScreenPrivate::~QDirectFBScreenPrivate()
     delete keyboard;
 #endif
 
-    foreach (IDirectFBSurface* surf, allocatedSurfaces)
+    foreach (IDirectFBSurface *surf, allocatedSurfaces)
         surf->Release(surf);
     allocatedSurfaces.clear();
 
@@ -137,7 +137,7 @@ QDirectFBScreenPrivate::~QDirectFBScreenPrivate()
 // creates a preallocated surface with the same format as the image if
 // possible.
 
-IDirectFBSurface* QDirectFBScreen::createDFBSurface(const QImage &img, SurfaceCreationOptions options)
+IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QImage &img, SurfaceCreationOptions options)
 {
     if (img.isNull()) // assert?
         return 0;
@@ -350,18 +350,18 @@ QDirectFBScreen::DirectFBFlags QDirectFBScreen::directFBFlags() const
 {
     return d_ptr->directFBFlags;
 }
-IDirectFB* QDirectFBScreen::dfb()
+IDirectFB *QDirectFBScreen::dfb()
 {
     return d_ptr->dfb;
 }
 
-IDirectFBSurface* QDirectFBScreen::dfbSurface()
+IDirectFBSurface *QDirectFBScreen::dfbSurface()
 {
     return d_ptr->dfbSurface;
 }
 
 #ifndef QT_NO_DIRECTFB_LAYER
-IDirectFBDisplayLayer* QDirectFBScreen::dfbDisplayLayer()
+IDirectFBDisplayLayer *QDirectFBScreen::dfbDisplayLayer()
 {
     return d_ptr->dfbLayer;
 }
@@ -731,7 +731,7 @@ void QDirectFBScreenPrivate::setFlipFlags(const QStringList &args)
     }
 }
 
-QPixmapData* QDirectFBScreenPrivate::createPixmapData(QPixmapData::PixelType type) const
+QPixmapData *QDirectFBScreenPrivate::createPixmapData(QPixmapData::PixelType type) const
 {
     if (type == QPixmapData::BitmapType)
         return QWSGraphicsSystem::createPixmapData(type);
@@ -1025,7 +1025,7 @@ void QDirectFBScreen::disconnect()
     d_ptr->dfbSurface->Release(d_ptr->dfbSurface);
     d_ptr->dfbSurface = 0;
 
-    foreach (IDirectFBSurface* surf, d_ptr->allocatedSurfaces)
+    foreach (IDirectFBSurface *surf, d_ptr->allocatedSurfaces)
         surf->Release(surf);
     d_ptr->allocatedSurfaces.clear();
 
@@ -1094,7 +1094,7 @@ void QDirectFBScreen::blank(bool on)
                                    (on ? DSPM_ON : DSPM_SUSPEND));
 }
 
-QWSWindowSurface* QDirectFBScreen::createSurface(QWidget *widget) const
+QWSWindowSurface *QDirectFBScreen::createSurface(QWidget *widget) const
 {
 #ifdef QT_NO_DIRECTFB_WM
     if (QApplication::type() == QApplication::GuiServer) {
@@ -1107,7 +1107,7 @@ QWSWindowSurface* QDirectFBScreen::createSurface(QWidget *widget) const
 #endif
 }
 
-QWSWindowSurface* QDirectFBScreen::createSurface(const QString &key) const
+QWSWindowSurface *QDirectFBScreen::createSurface(const QString &key) const
 {
     if (key == QLatin1String("directfb")) {
         return new QDirectFBSurface(d_ptr->flipFlags, const_cast<QDirectFBScreen*>(this));
