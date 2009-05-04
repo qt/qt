@@ -133,6 +133,7 @@ private slots:
     void task248868_dynamicSorting();
     void task250023_fetchMore();
     void task251296_hiddenChildren();
+    void task252507_mapFromToSource();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
@@ -2612,6 +2613,7 @@ class QtTestModel: public QAbstractItemModel
             return fetched.contains(parent) ? rows : 0;
         }
         int columnCount(const QModelIndex& parent = QModelIndex()) const {
+            Q_UNUSED(parent);
             return cols;
         }
 
@@ -2717,6 +2719,22 @@ void tst_QSortFilterProxyModel::task251296_hiddenChildren()
     QCOMPARE(proxy.data(indexC).toString(), QString::fromLatin1("C VISIBLE"));
 }
 
+void tst_QSortFilterProxyModel::task252507_mapFromToSource()
+{
+    QtTestModel source(10,10);
+    source.fetchMore(QModelIndex());
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&source);
+    QCOMPARE(proxy.mapFromSource(source.index(5, 4)), proxy.index(5, 4));
+    QCOMPARE(proxy.mapToSource(proxy.index(3, 2)), source.index(3, 2));
+    QCOMPARE(proxy.mapFromSource(QModelIndex()), QModelIndex());
+    QCOMPARE(proxy.mapToSource(QModelIndex()), QModelIndex());
+
+    QTest::ignoreMessage(QtWarningMsg, "QSortFilterProxyModel: index from wrong model passed to mapToSource ");
+    QCOMPARE(proxy.mapToSource(source.index(2, 3)), QModelIndex());
+    QTest::ignoreMessage(QtWarningMsg, "QSortFilterProxyModel: index from wrong model passed to mapFromSource ");
+    QCOMPARE(proxy.mapFromSource(proxy.index(6, 2)), QModelIndex());
+}
 
 QTEST_MAIN(tst_QSortFilterProxyModel)
 #include "tst_qsortfilterproxymodel.moc"
