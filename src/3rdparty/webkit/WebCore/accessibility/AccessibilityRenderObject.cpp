@@ -2112,13 +2112,12 @@ AccessibilityObject* AccessibilityRenderObject::observableObject() const
     
 typedef HashMap<String, AccessibilityRole, CaseFoldingHash> ARIARoleMap;
 
+struct RoleEntry {
+    String ariaRole;
+    AccessibilityRole webcoreRole;
+};
 static const ARIARoleMap& createARIARoleMap()
 {
-    struct RoleEntry {
-        String ariaRole;
-        AccessibilityRole webcoreRole;
-    };
-
     const RoleEntry roles[] = {
         { "button", ButtonRole },
         { "checkbox", CheckBoxRole },
