@@ -62,7 +62,7 @@ env.insert("TMPDIR", "C:\\MyApp\\temp"); // Add an environment variable
 env["PATH"] += ";C:\\Bin";
 process.setEnvironment(env);
 process.start("myapp");
-//! [0]
+//! [1]
     }
 }
 
