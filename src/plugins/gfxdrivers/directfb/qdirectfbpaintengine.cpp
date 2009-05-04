@@ -189,11 +189,10 @@ CachedImage::CachedImage(const QImage &image)
     : s(0)
 {
     IDirectFBSurface *tmpSurface = 0;
-    DFBSurfaceDescription description;
-    description = QDirectFBScreen::getSurfaceDescription(image);
+    DFBSurfaceDescription description = QDirectFBScreen::getSurfaceDescription(image);
     QDirectFBScreen* screen = QDirectFBScreen::instance();
 
-    tmpSurface = screen->createDFBSurface(&description, QDirectFBScreen::TrackSurface);
+    tmpSurface = screen->createDFBSurface(description, QDirectFBScreen::TrackSurface);
     if (!tmpSurface) {
         qWarning("CachedImage CreateSurface failed!");
         return;
@@ -205,7 +204,7 @@ CachedImage::CachedImage(const QImage &image)
 
     description.flags = DFBSurfaceDescriptionFlags(description.flags & ~DSDESC_PREALLOCATED);
 
-    s = screen->createDFBSurface(&description, QDirectFBScreen::TrackSurface);
+    s = screen->createDFBSurface(description, QDirectFBScreen::TrackSurface);
     if (!s)
         qWarning("QDirectFBPaintEngine failed caching image");
 
@@ -237,10 +236,8 @@ IDirectFBSurface* SurfaceCache::getSurface(const uint *buf, int size)
 
     clear();
 
-    DFBSurfaceDescription description;
-    description = QDirectFBScreen::getSurfaceDescription(buf, size);
-
-    surface = QDirectFBScreen::instance()->createDFBSurface(&description, QDirectFBScreen::TrackSurface);
+    const DFBSurfaceDescription description = QDirectFBScreen::getSurfaceDescription(buf, size);
+    surface = QDirectFBScreen::instance()->createDFBSurface(description, QDirectFBScreen::TrackSurface);
     if (!surface)
         qWarning("QDirectFBPaintEngine: SurfaceCache: Unable to create surface");
 
@@ -736,10 +733,8 @@ void QDirectFBPaintEnginePrivate::drawImage(const QRectF &dest,
         }
 
         if (!imgSurface) {
-            DFBSurfaceDescription description;
-
-            description = QDirectFBScreen::getSurfaceDescription(image);
-            imgSurface = QDirectFBScreen::instance()->createDFBSurface(&description,
+            DFBSurfaceDescription description = QDirectFBScreen::getSurfaceDescription(image);
+            imgSurface = QDirectFBScreen::instance()->createDFBSurface(description,
                                                                        QDirectFBScreen::DontTrackSurface);
             if (!imgSurface) {
                 qWarning("QDirectFBPaintEnginePrivate::drawImage");
@@ -906,7 +901,7 @@ void QDirectFBPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
 {
     Q_D(QDirectFBPaintEngine);
     d->setClipDirty();
-    if (!d->clip()->hasRectClip && d->clip()->enabled) {
+    if (d->clip() && !d->clip()->hasRectClip && d->clip()->enabled) {
         const QPoint bottom = d->transform.map(QPoint(0, rect.bottom()));
         if (bottom.y() >= d->lastLockedHeight)
             d->lock();

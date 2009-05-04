@@ -204,6 +204,8 @@ static void cleanupCocoaApplicationDelegate()
 {
     Q_UNUSED(aNotification);
     inLaunch = false;
+    extern void qt_release_apple_event_handler(); //qapplication_mac.mm
+    qt_release_apple_event_handler();
 }
 
 - (void)application:(NSApplication *)sender openFiles:(NSArray *)filenames

@@ -234,7 +234,7 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     QTest::newRow("path-with-utf8-2") << "a=b;path=/R%C3%A9sum%C3%A9" << cookie;
 
     cookie.setPath(QString());
-    cookie.setDomain("trolltech.com");
+    cookie.setDomain(".trolltech.com");
     QTest::newRow("plain-domain1") << "a=b;domain=trolltech.com" << cookie;
     QTest::newRow("plain-domain2") << "a=b; domain=trolltech.com " << cookie;
     QTest::newRow("plain-domain3") << "a=b;domain=TROLLTECH.COM" << cookie;
@@ -246,7 +246,7 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     QTest::newRow("dot-domain3") << "a=b; domain=.TROLLTECH.COM" << cookie;
     QTest::newRow("dot-domain4") << "a=b; Domain = .TROLLTECH.COM" << cookie;
 
-    cookie.setDomain(QString::fromUtf8("d\303\270gn\303\245pent.troll.no"));
+    cookie.setDomain(QString::fromUtf8(".d\303\270gn\303\245pent.troll.no"));
     QTest::newRow("idn-domain1") << "a=b;domain=xn--dgnpent-gxa2o.troll.no" << cookie;
     QTest::newRow("idn-domain2") << "a=b;domain=d\303\270gn\303\245pent.troll.no" << cookie;
     QTest::newRow("idn-domain3") << "a=b;domain=XN--DGNPENT-GXA2O.TROLL.NO" << cookie;
@@ -259,7 +259,7 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     QTest::newRow("dot-idn-domain3") << "a=b;domain=.XN--DGNPENT-GXA2O.TROLL.NO" << cookie;
     QTest::newRow("dot-idn-domain4") << "a=b;domain=.D\303\230GN\303\205PENT.troll.NO" << cookie;
 
-    cookie.setDomain("trolltech.com");
+    cookie.setDomain(".trolltech.com");
     cookie.setPath("/");
     QTest::newRow("two-fields") << "a=b;domain=trolltech.com;path=/" << cookie;
     QTest::newRow("two-fields2") << "a=b; domain=trolltech.com; path=/" << cookie;
@@ -662,7 +662,7 @@ void tst_QNetworkCookie::parseMultipleCookies_data()
     QTest::newRow("complex-1") << "c=d, a=, foo=bar; path=/" << list;
 
     cookie.setName("baz");
-    cookie.setDomain("trolltech.com");
+    cookie.setDomain(".trolltech.com");
     list.prepend(cookie);
     QTest::newRow("complex-2") << "baz=bar; path=/; domain=trolltech.com, c=d,a=,foo=bar; path=/" << list;
 
