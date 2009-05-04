@@ -58,12 +58,12 @@ QT_BEGIN_HEADER
 
 QT_MODULE(Gui)
 
-class QDirectFBSurface : public QWSWindowSurface, public QDirectFBPaintDevice
+class QDirectFBWindowSurface : public QWSWindowSurface, public QDirectFBPaintDevice
 {
 public:
-    QDirectFBSurface(DFBSurfaceFlipFlags flipFlags, QDirectFBScreen* scr);
-    QDirectFBSurface(DFBSurfaceFlipFlags flipFlags, QDirectFBScreen* scr, QWidget *widget);
-    ~QDirectFBSurface();
+    QDirectFBWindowSurface(DFBSurfaceFlipFlags flipFlags, QDirectFBScreen* scr);
+    QDirectFBWindowSurface(DFBSurfaceFlipFlags flipFlags, QDirectFBScreen* scr, QWidget *widget);
+    ~QDirectFBWindowSurface();
 
     bool isValid() const;
 

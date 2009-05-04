@@ -43,7 +43,7 @@
 
 #ifndef QT_NO_DIRECTFB
 
-#include "qdirectfbsurface.h"
+#include "qdirectfbwindowsurface.h"
 #include "qdirectfbscreen.h"
 #include "qdirectfbpixmap.h"
 #include <directfb.h>
