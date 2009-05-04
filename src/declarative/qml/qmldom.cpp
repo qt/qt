@@ -949,7 +949,7 @@ QmlDomObject QmlDomValueValueSource::object() const
         rv.d->object = d->value->object;
         rv.d->object->addref();
     } 
-    return QmlDomObject();
+    return rv;
 }
 
 /*!
