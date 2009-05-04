@@ -4398,6 +4398,13 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
     case DateSectionMask:
         qWarning("QDateTimeParser::sectionMaxSize: Invalid section %s",
                  sectionName(s).toLatin1().constData());
+
+    case NoSectionIndex:
+    case FirstSectionIndex:
+    case LastSectionIndex:
+    case CalendarPopupIndex:
+        // these cases can't happen
+        break;
     }
     return -1;
 }
