@@ -12,9 +12,10 @@
 #include <qglobal.h> // for Q_WS_WIN define (non-PCH)
 
 #include <QtGui/qpaintdevice.h>
-#include <QtGui/qwidget.h>
+#include <private/qwidget_p.h>
 #include "qwindowsurface_s60_p.h"
 #include "qt_s60_p.h"
+#include "private/qdrawhelper_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -35,12 +36,17 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
     d_ptr->bytes = 0;
     d_ptr->bitmap = 0;
 
-    TSize size(0, 0);
     TDisplayMode mode = S60->screenDevice()->DisplayMode();
+    bool isOpaque = qt_widget_private(widget)->isOpaque;
+    if (mode == EColor16MA && isOpaque)
+        mode = EColor16MU; // Faster since 16MU -> 16MA is typically accelerated
+    else if (mode == EColor16MU && !isOpaque)
+        mode = EColor16MA; // Try for transparency anyway
 
-	// We create empty CFbsBitmap here -> it will be resized in setGeometry
+
+    // We create empty CFbsBitmap here -> it will be resized in setGeometry
     d_ptr->bitmap = new (ELeave) CFbsBitmap;
-    User::LeaveIfError( d_ptr->bitmap->Create( size, mode ) );
+    User::LeaveIfError( d_ptr->bitmap->Create(TSize(0, 0), mode ) );
 
     updatePaintDeviceOnBitmap();
 
@@ -56,7 +62,7 @@ QS60WindowSurface::~QS60WindowSurface()
     delete d_ptr;
 }
 
-void QS60WindowSurface::beginPaint(const QRegion &)
+void QS60WindowSurface::beginPaint(const QRegion &rgn)
 {
     if(!d_ptr->bitmap)
         return;
@@ -64,6 +70,26 @@ void QS60WindowSurface::beginPaint(const QRegion &)
     Q_ASSERT(!QS60WindowSurfacePrivate::lockedSurface);
     QS60WindowSurfacePrivate::lockedSurface = this;
     lockBitmapHeap();
+
+    if (!qt_widget_private(window())->isOpaque) {
+        QRgb *data = reinterpret_cast<QRgb *>(d_ptr->device.bits());
+        const int row_stride = d_ptr->device.bytesPerLine() / 4;
+
+        const QVector<QRect> rects = rgn.rects();
+        for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
+            const int x_start = it->x();
+            const int width = it->width();
+
+            const int y_start = it->y();
+            const int height = it->height();
+
+            QRgb *row = data + row_stride * y_start;
+            for (int y = 0; y < height; ++y) {
+                qt_memfill(row + x_start, 0U, width);
+                row += row_stride;
+            }
+        }
+    }
 }
 
 void QS60WindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &)
@@ -118,12 +144,13 @@ void QS60WindowSurface::setGeometry(const QRect& rect)
     if (rect == geometry())
         return;
 
+    QWindowSurface::setGeometry(rect);
+
     TRect nativeRect(qt_QRect2TRect(rect));
     User::LeaveIfError(d_ptr->bitmap->Resize(nativeRect.Size()));
 
-    updatePaintDeviceOnBitmap();
-
-    QWindowSurface::setGeometry(rect);
+    if (!rect.isNull())
+        updatePaintDeviceOnBitmap();
 }
 
 void QS60WindowSurface::lockBitmapHeap()
@@ -143,6 +170,9 @@ void QS60WindowSurface::lockBitmapHeap()
 
         // Get some values for QImage creation
         TDisplayMode mode  = bitmap->DisplayMode();
+        if (mode == EColor16MA
+            && qt_widget_private(QS60WindowSurfacePrivate::lockedSurface->window())->isOpaque)
+            mode = EColor16MU;
         QImage::Format format = qt_TDisplayMode2Format( mode );
         TSize bitmapSize = bitmap->SizeInPixels();
         int bytesPerLine = CFbsBitmap::ScanLineLength( bitmapSize.iWidth, mode);
