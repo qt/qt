@@ -3169,43 +3169,48 @@ int QApplication::x11ProcessEvent(XEvent* event)
 #ifdef ALIEN_DEBUG
     //qDebug() << "QApplication::x11ProcessEvent:" << event->type;
 #endif
+    Time time = 0, userTime = 0;
     switch (event->type) {
     case ButtonPress:
         pressed_window = event->xbutton.window;
-        X11->userTime = event->xbutton.time;
+        userTime = event->xbutton.time;
         // fallthrough intended
     case ButtonRelease:
-        X11->time = event->xbutton.time;
+        time = event->xbutton.time;
         break;
     case MotionNotify:
-        X11->time = event->xmotion.time;
+        time = event->xmotion.time;
         break;
     case XKeyPress:
-        X11->userTime = event->xkey.time;
+        userTime = event->xkey.time;
         // fallthrough intended
     case XKeyRelease:
-        X11->time = event->xkey.time;
+        time = event->xkey.time;
         break;
     case PropertyNotify:
-        X11->time = event->xproperty.time;
+        time = event->xproperty.time;
         break;
     case EnterNotify:
     case LeaveNotify:
-        X11->time = event->xcrossing.time;
+        time = event->xcrossing.time;
         break;
     case SelectionClear:
-        X11->time = event->xselectionclear.time;
+        time = event->xselectionclear.time;
         break;
     default:
+#ifndef QT_NO_XFIXES
+        if (X11->use_xfixes && event->type == (X11->xfixes_eventbase + XFixesSelectionNotify)) {
+            XFixesSelectionNotifyEvent *req =
+                reinterpret_cast<XFixesSelectionNotifyEvent *>(event);
+            time = req->selection_timestamp;
+        }
+#endif
         break;
     }
-#ifndef QT_NO_XFIXES
-    if (X11->use_xfixes && event->type == (X11->xfixes_eventbase + XFixesSelectionNotify)) {
-        XFixesSelectionNotifyEvent *req =
-            reinterpret_cast<XFixesSelectionNotifyEvent *>(event);
-        X11->time = req->selection_timestamp;
-    }
-#endif
+    if (time > X11->time)
+        X11->time = time;
+    if (userTime > X11->userTime)
+        X11->userTime = userTime;
 
     QETWidget *widget = (QETWidget*)QWidget::find((WId)event->xany.window);
 
