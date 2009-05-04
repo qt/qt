@@ -226,7 +226,7 @@ void *QThreadPrivate::start(void *arg)
 }
 
 #ifdef Q_OS_SYMBIAN
-void QThreadPrivate::finish(void *arg, bool lockAnyway)
+void QThreadPrivate::finish(void *arg, bool lockAnyway, bool closeNativeHandle)
 #else
 void QThreadPrivate::finish(void *arg)
 #endif
@@ -258,7 +258,8 @@ void QThreadPrivate::finish(void *arg)
 
     d->thread_id = 0;
 #ifdef Q_OS_SYMBIAN
-    d->data->symbian_thread_handle.Close();
+    if (closeNativeHandle)
+    	d->data->symbian_thread_handle.Close();
 #endif
     d->thread_done.wakeAll();
 #ifdef Q_OS_SYMBIAN
@@ -530,10 +531,11 @@ void QThread::terminate()
         d->terminatePending = true;
         return;
     }
-    
-    d->data->symbian_thread_handle.Terminate(KErrNone);
-    
+   
     d->terminated = true;
+    QThreadPrivate::finish(this, false, false);
+    d->data->symbian_thread_handle.Terminate(KErrNone);         
+    d->data->symbian_thread_handle.Close();
 #endif
 
 
