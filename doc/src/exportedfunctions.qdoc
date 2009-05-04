@@ -130,7 +130,7 @@
     default.
 
     In Qt 4.6, this is equivalent to
-    \c { QApplication::instance()->setAttribute(Qt::AA_MacDontUseNativeMenuBar); }.
+    \c { QApplication::instance()->setAttribute(Qt::AA_DontUseNativeMenuBar); }.
 
     \section1 void qt_mac_set_press_and_hold_context(bool \e{enable})
 
