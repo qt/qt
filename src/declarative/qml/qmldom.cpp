@@ -154,12 +154,6 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
 
     d->error = QString();
 
-    QmlScriptParser parser;
-    if (!parser.parse(data)) {
-        d->error = parser.errorDescription();
-        return false;
-    }
-
     QmlCompiledComponent component;
     QmlCompiler compiler;
 
@@ -184,8 +178,8 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
     }
 
     if (td->data.tree()) {
-        component.dump(0, parser.tree());
-        d->root = parser.tree();
+        component.dump(0, td->data.tree());
+        d->root = td->data.tree();
         d->root->addref();
     }
 
