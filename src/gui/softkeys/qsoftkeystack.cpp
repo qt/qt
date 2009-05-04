@@ -50,7 +50,7 @@ void QSoftKeyStackPrivate::setNativeSoftKeys()
         QSoftKeyAction* softKeyAction = top.at(index);
         HBufC* text = qt_QString2HBufCNewL(softKeyAction->text());
         CleanupStack::PushL(text);
-        nativeContainer->SetCommandL(index+veryWeirdMagic, softKeyAction->role(), *text);
+        nativeContainer->SetCommandL(index+veryWeirdMagic, SOFTKEYSTART+index, *text);
         CleanupStack::PopAndDestroy();
         if (veryWeirdMagic==0)
             veryWeirdMagic=1;

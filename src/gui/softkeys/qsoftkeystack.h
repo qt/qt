@@ -19,7 +19,8 @@
 #include "qsoftkeyaction.h"
 
 #define QSoftkeySet QList <QSoftKeyAction*>
-
+#define SOFTKEYSTART 5000
+#define SOFTKEYEND 5004
 class QSoftKeyStackPrivate : public QObject
     {
     Q_OBJECT
