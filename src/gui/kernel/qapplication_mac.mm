@@ -194,8 +194,8 @@ static bool        appNoGrab        = false;        // mouse/keyboard grabbing
 #ifndef QT_MAC_USE_COCOA
 static EventHandlerRef app_proc_handler = 0;
 static EventHandlerUPP app_proc_handlerUPP = 0;
-static AEEventHandlerUPP app_proc_ae_handlerUPP = NULL;
 #endif
+static AEEventHandlerUPP app_proc_ae_handlerUPP = NULL;
 static EventHandlerRef tablet_proximity_handler = 0;
 static EventHandlerUPP tablet_proximity_UPP = 0;
 bool QApplicationPrivate::native_modal_dialog_active;
@@ -951,7 +951,6 @@ void qt_mac_event_release(QWidget *w)
     }
 }
 
-#ifndef QT_MAC_USE_COCOA
 struct QMacAppleEventTypeSpec {
     AEEventClass mac_class;
     AEEventID mac_id;
@@ -959,6 +958,7 @@ struct QMacAppleEventTypeSpec {
     { kCoreEventClass, kAEQuitApplication },
     { kCoreEventClass, kAEOpenDocuments }
 };
+#ifndef QT_MAC_USE_COCOA
 /* watched events */
 static EventTypeSpec app_events[] = {
     { kEventClassQt, kEventQtRequestWindowChange },
@@ -1156,13 +1156,13 @@ void qt_init(QApplicationPrivate *priv, int)
             qt_init_app_proc_handler();
         }
 
+#endif
         if (!app_proc_ae_handlerUPP) {
             app_proc_ae_handlerUPP = AEEventHandlerUPP(QApplicationPrivate::globalAppleEventProcessor);
             for(uint i = 0; i < sizeof(app_apple_events) / sizeof(QMacAppleEventTypeSpec); ++i)
                 AEInstallEventHandler(app_apple_events[i].mac_class, app_apple_events[i].mac_id,
                         app_proc_ae_handlerUPP, SRefCon(qApp), true);
         }
-#endif
 
         if (QApplicationPrivate::app_style) {
             QEvent ev(QEvent::Style);
@@ -1210,6 +1210,17 @@ void qt_init(QApplicationPrivate *priv, int)
 
 }
 
+void qt_release_apple_event_handler()
+{
+    if(app_proc_ae_handlerUPP) {
+        for(uint i = 0; i < sizeof(app_apple_events) / sizeof(QMacAppleEventTypeSpec); ++i)
+            AERemoveEventHandler(app_apple_events[i].mac_class, app_apple_events[i].mac_id,
+                    app_proc_ae_handlerUPP, true);
+        DisposeAEEventHandlerUPP(app_proc_ae_handlerUPP);
+        app_proc_ae_handlerUPP = 0;
+    }
+}
+
 /*****************************************************************************
   qt_cleanup() - cleans up when the application is finished
  *****************************************************************************/
@@ -1223,15 +1234,8 @@ void qt_cleanup()
         DisposeEventHandlerUPP(app_proc_handlerUPP);
         app_proc_handlerUPP = 0;
     }
-    if(app_proc_ae_handlerUPP) {
-        for(uint i = 0; i < sizeof(app_apple_events) / sizeof(QMacAppleEventTypeSpec); ++i)
-            AERemoveEventHandler(app_apple_events[i].mac_class, app_apple_events[i].mac_id,
-                    app_proc_ae_handlerUPP, true);
-        DisposeAEEventHandlerUPP(app_proc_ae_handlerUPP);
-        app_proc_ae_handlerUPP = NULL;
-    }
 #endif
-
+    qt_release_apple_event_handler();
     qt_release_tablet_proximity_handler();
     if (tablet_proximity_UPP)
         DisposeEventHandlerUPP(tablet_proximity_UPP);
@@ -2367,6 +2371,12 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
 #endif
 }
 
+// In Carbon this is your one stop for apple events.
+// In Cocoa, it ISN'T. This is the catch-all Apple Event handler that exists
+// for the time between instantiating the NSApplication, but before the
+// NSApplication has installed it's OWN Apple Event handler. When Cocoa has
+// that set up, we remove this.  So, if you are debugging problems, you likely
+// want to check out QCocoaApplicationDelegate instead.
 OSStatus QApplicationPrivate::globalAppleEventProcessor(const AppleEvent *ae, AppleEvent *, long handlerRefcon)
 {
     QApplication *app = (QApplication *)handlerRefcon;
