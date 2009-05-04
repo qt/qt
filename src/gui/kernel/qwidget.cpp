@@ -8498,6 +8498,10 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
 {
     Q_D(QWidget);
     d->imHints = hints;
+    if (testAttribute(Qt::WA_InputMethodEnabled)) {
+        Q_ASSERT(inputContext());
+        inputContext()->update();
+    }
 }
 
 
