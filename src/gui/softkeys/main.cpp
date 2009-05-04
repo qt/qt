@@ -23,11 +23,24 @@ MainWindow::MainWindow(QWidget *parent)
     layout->addWidget(button);
 
     QSoftKeyStack *stack = new QSoftKeyStack(central);
-    QSoftKeyAction action(central);
-    action.setRole(QSoftKeyAction::Back);
-    int role = action.role();
-    stack->push(&action);
+    QSoftKeyAction action1(central);
+    action1.setText(QString("text1"));
+    action1.setRole(QSoftKeyAction::Ok);
+    QSoftKeyAction action2(central);
+    action2.setText(QString("text2"));
+    action2.setRole(QSoftKeyAction::Back);
+    QSoftKeyAction action3(central);
+    action3.setText(QString("text3"));
+    action3.setRole(QSoftKeyAction::Cancel);
 
+    QList<QSoftKeyAction*> myActionList;
+    myActionList.append(&action1);
+    myActionList.append(&action2);
+    myActionList.append(&action3);
+    stack->push(myActionList);
+    stack->pop();
+    stack->push(&action1);
+    
     setCentralWidget(central);
 }
 
