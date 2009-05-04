@@ -357,7 +357,7 @@ QImage QDirectFBPixmapData::toImage() const
     return img->copy();
 }
 
-QPaintEngine* QDirectFBPixmapData::paintEngine() const
+QPaintEngine *QDirectFBPixmapData::paintEngine() const
 {
     if (!engine) {
         // QDirectFBPixmapData is also a QCustomRasterPaintDevice, so pass
@@ -368,10 +368,15 @@ QPaintEngine* QDirectFBPixmapData::paintEngine() const
     return engine;
 }
 
-
-QImage* QDirectFBPixmapData::buffer()
+QImage *QDirectFBPixmapData::buffer()
 {
-    lockDirectFB();
+    lockDirectFB(DSLF_READ|DSLF_WRITE);
+    return lockedImage;
+}
+
+QImage * QDirectFBPixmapData::buffer(uint lockFlags)
+{
+    lockDirectFB(lockFlags);
     return lockedImage;
 }
 
@@ -381,3 +386,4 @@ void QDirectFBPixmapData::invalidate()
     alpha = false;
     format = QImage::Format_Invalid;
 }
+

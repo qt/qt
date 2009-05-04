@@ -423,7 +423,7 @@ void QDirectFBSurface::endPaint(const QRegion &)
 }
 
 
-QImage* QDirectFBSurface::buffer(const QWidget *widget)
+QImage *QDirectFBSurface::buffer(const QWidget *widget)
 {
     if (!lockedImage)
         return 0;

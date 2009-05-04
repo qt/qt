@@ -58,7 +58,7 @@ QT_BEGIN_HEADER
 
 QT_MODULE(Gui)
 
-class QDirectFBSurface: public QWSWindowSurface, public QDirectFBPaintDevice
+class QDirectFBSurface : public QWSWindowSurface, public QDirectFBPaintDevice
 {
 public:
     QDirectFBSurface(DFBSurfaceFlipFlags flipFlags, QDirectFBScreen* scr);
@@ -79,15 +79,15 @@ public:
     QRegion move(const QPoint &offset, const QRegion &newClip);
 
     QImage image() const { return QImage(); }
-    QPaintDevice* paintDevice() { return this; }
-    QPaintEngine* paintEngine() const;
+    QPaintDevice *paintDevice() { return this; }
+    QPaintEngine *paintEngine() const;
 
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
 
     void beginPaint(const QRegion &);
     void endPaint(const QRegion &);
 
-    QImage* buffer(const QWidget *widget);
+    QImage *buffer(const QWidget *widget);
 
 private:
 #ifndef QT_NO_DIRECTFB_WM

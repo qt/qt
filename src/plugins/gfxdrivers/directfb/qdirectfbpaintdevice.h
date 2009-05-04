@@ -58,7 +58,7 @@ public:
 
     IDirectFBSurface *directFBSurface() const;
 
-    void lockDirectFB();
+    void lockDirectFB(uint flags);
     void unlockDirectFB();
 
     inline bool forceRasterPrimitives() const { return forceRaster; }
@@ -76,7 +76,9 @@ protected:
           dfbSurface(0),
           lockedImage(0),
           screen(scr),
-          forceRaster(false) {}
+          forceRaster(false),
+          lockFlags(0)
+    {}
 
     inline int dotsPerMeterX() const
     {
@@ -92,6 +94,7 @@ protected:
     QDirectFBScreen *screen;
     int bpl;
     bool forceRaster;
+    uint lockFlags;
 private:
     Q_DISABLE_COPY(QDirectFBPaintDevice)
 };
