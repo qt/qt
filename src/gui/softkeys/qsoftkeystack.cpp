@@ -30,6 +30,29 @@ QSoftKeyStackPrivate::~QSoftKeyStackPrivate()
 
 }
 
+void QSoftKeyStackPrivate::mapSoftKeys(QSoftkeySet& top)
+{
+    if( top.count() == 1)
+    {
+        top.at(0)->setNativePosition(2);
+        top.at(0)->setQtContextKey(Qt::Key_Context2);
+    }
+    else
+    {
+    // FIX THIS
+    // veryWeirdMagic is needes as s60 5th edition sdk always panics if cba is set with index 1, this hops over it
+    // This needs further investigation why so that the hack can be removed
+        int veryWeirdMagic = 0;
+        for (int index=0;index<top.count();index++)
+        {
+            top.at(index)->setNativePosition(index+veryWeirdMagic);
+            top.at(index)->setQtContextKey(Qt::Key_Context1+index);
+            if (veryWeirdMagic==0)
+                veryWeirdMagic=1;
+        }
+    }
+}
+
 void QSoftKeyStackPrivate::setNativeSoftKeys()
 {
     CCoeAppUi* appui = CEikonEnv::Static()->AppUi();
@@ -40,20 +63,14 @@ void QSoftKeyStackPrivate::setNativeSoftKeys()
         return;
 
     QSoftkeySet top = softKeyStack.top();
-
-    // FIX THIS
-    // veryWeirdMagic is needes as s60 5th edition sdk always panics if cba is set with index 1, this hops over it
-    // This needs further investigation why so that the hack can be removed
-    int veryWeirdMagic = 0;
+    mapSoftKeys(top);
     for (int index=0;index<top.count();index++)
     {
         QSoftKeyAction* softKeyAction = top.at(index);
         HBufC* text = qt_QString2HBufCNewL(softKeyAction->text());
         CleanupStack::PushL(text);
-        nativeContainer->SetCommandL(index+veryWeirdMagic, SOFTKEYSTART+index, *text);
+        nativeContainer->SetCommandL(softKeyAction->nativePosition(), SOFTKEYSTART+softKeyAction->qtContextKey(), *text);
         CleanupStack::PopAndDestroy();
-        if (veryWeirdMagic==0)
-            veryWeirdMagic=1;
     }
 }
 

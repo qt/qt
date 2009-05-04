@@ -26,6 +26,8 @@ public:
 
     QSoftKeyAction::StandardRole role;
     QString roleName;
+    int nativePosition;
+    int qtContextKey;
 };
 
 /*!
@@ -136,4 +138,24 @@ void QSoftKeyAction::setRole(const QString& role)
     d->role = QSoftKeyAction::Custom;
     d->roleName = role;
     emit changed();
+}
+
+int QSoftKeyAction::nativePosition()
+{
+    return d->nativePosition;
+}
+
+void QSoftKeyAction::setNativePosition(int position)
+{
+    d->nativePosition = position;
+}
+
+int QSoftKeyAction::qtContextKey()
+{
+    return d->qtContextKey;
+}
+
+void QSoftKeyAction::setQtContextKey(int key)
+{
+    d->qtContextKey = key;
 }

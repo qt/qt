@@ -20,7 +20,7 @@
 
 #define QSoftkeySet QList <QSoftKeyAction*>
 #define SOFTKEYSTART 5000
-#define SOFTKEYEND 5004
+#define SOFTKEYEND 5005
 class QSoftKeyStackPrivate : public QObject
     {
     Q_OBJECT
@@ -34,6 +34,7 @@ public:
     void pop();   
     
 private:
+    void mapSoftKeys(QSoftkeySet& top);
     void setNativeSoftKeys();
     
 private:

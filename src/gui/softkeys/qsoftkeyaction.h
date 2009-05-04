@@ -52,6 +52,10 @@ public:
 
     void setRole(QSoftKeyAction::StandardRole role);
     void setRole(const QString& role);
+    int nativePosition();
+    void setNativePosition(int position);
+    int qtContextKey();
+    void setQtContextKey(int position);
 
     QSoftKeyActionPrivate *d;
 };
