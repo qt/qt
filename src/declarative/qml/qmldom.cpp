@@ -612,11 +612,11 @@ QList<QmlDomProperty> QmlDomObject::properties() const
     Returns the object's \a name property if a value has been assigned to
     it, or an invalid QmlDomProperty otherwise.
 
-    In the example below, \c {object.property("src")} would return a valid
+    In the example below, \c {object.property("source")} would return a valid
     QmlDomProperty, and \c {object.property("tile")} an invalid QmlDomProperty.
 
     \qml
-Image { src: "sample.jpg" }
+Image { source: "sample.jpg" }
     \endqml
 */
 QmlDomProperty QmlDomObject::property(const QByteArray &name) const
