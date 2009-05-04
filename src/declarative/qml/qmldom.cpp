@@ -897,7 +897,8 @@ Rect {
 /*!
     Construct an empty QmlDomValueValueSource.
 */
-QmlDomValueValueSource::QmlDomValueValueSource()
+QmlDomValueValueSource::QmlDomValueValueSource():
+        d(new QmlDomBasicValuePrivate)
 {
 }
 
