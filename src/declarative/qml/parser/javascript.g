@@ -45,7 +45,7 @@
 %parser         JavaScriptGrammar
 %decl           javascriptparser_p.h
 %impl           javascriptparser.cpp
-%expect         8
+%expect         2
 %expect-rr      1
 
 %token T_AND "&"                T_AND_AND "&&"              T_AND_EQ "&="
@@ -86,7 +86,7 @@
 %token T_IMPORT "import"
 
 %nonassoc SHIFT_THERE
-%nonassoc T_IDENTIFIER T_COLON
+%nonassoc T_IDENTIFIER T_COLON T_SIGNAL T_PROPERTY
 %nonassoc REDUCE_HERE
 
 %start UiProgram
@@ -737,9 +737,8 @@ case $rule_number: {
 ./
 
 UiQualifiedId: T_RESERVED_WORD ;
-/.
-case $rule_number:
-./
+/.case $rule_number: ./
+
 UiQualifiedId: T_RETURN ;
 /.
 case $rule_number:
@@ -751,6 +750,7 @@ case $rule_number:
 ./
 
 JsIdentifier: T_IDENTIFIER;
+
 JsIdentifier: T_PROPERTY ;
 /.
 case $rule_number: {
@@ -759,6 +759,7 @@ case $rule_number: {
     break;
 }
 ./
+
 JsIdentifier: T_SIGNAL ;
 /.
 case $rule_number: {
@@ -1043,6 +1044,8 @@ case $rule_number: {
 ./
 
 PropertyName: T_SIGNAL ;
+/.case $rule_number:./
+
 PropertyName: T_PROPERTY ;
 /.
 case $rule_number: {
@@ -2445,6 +2448,8 @@ case $rule_number: {
 ./
 
 LabelledStatement: T_SIGNAL T_COLON Statement ;
+/.case $rule_number:./
+
 LabelledStatement: T_PROPERTY T_COLON Statement ;
 /.
 case $rule_number: {
@@ -2535,22 +2540,7 @@ case $rule_number: {
 } break;
 ./
 
-FunctionDeclaration: T_FUNCTION T_SIGNAL T_LPAREN FormalParameterListOpt T_RPAREN T_LBRACE FunctionBodyOpt T_RBRACE ;
-FunctionDeclaration: T_FUNCTION T_PROPERTY T_LPAREN FormalParameterListOpt T_RPAREN T_LBRACE FunctionBodyOpt T_RBRACE ;
-/.
-case $rule_number: {
-  AST::FunctionDeclaration *node = makeAstNode<AST::FunctionDeclaration> (driver->nodePool(), driver->intern(lexer->characterBuffer(), lexer->characterCount()), sym(4).FormalParameterList, sym(7).FunctionBody);
-  node->functionToken = loc(1);
-  node->identifierToken = loc(2);
-  node->lparenToken = loc(3);
-  node->rparenToken = loc(5);
-  node->lbraceToken = loc(6);
-  node->rbraceToken = loc(8);
-  sym(1).Node = node;
-} break;
-./
-
-FunctionDeclaration: T_FUNCTION T_IDENTIFIER T_LPAREN FormalParameterListOpt T_RPAREN T_LBRACE FunctionBodyOpt T_RBRACE ;
+FunctionDeclaration: T_FUNCTION JsIdentifier T_LPAREN FormalParameterListOpt T_RPAREN T_LBRACE FunctionBodyOpt T_RBRACE ;
 /.
 case $rule_number: {
   AST::FunctionDeclaration *node = makeAstNode<AST::FunctionDeclaration> (driver->nodePool(), sym(2).sval, sym(4).FormalParameterList, sym(7).FunctionBody);
