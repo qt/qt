@@ -182,7 +182,7 @@ public:
 
     static void *start(void *arg);
 #if defined(Q_OS_SYMBIAN)
-    static void finish(void *arg, bool lockAnyway=true);
+    static void finish(void *arg, bool lockAnyway=true, bool closeNativeHandle=true);
 #else
     static void finish(void *);
 #endif
