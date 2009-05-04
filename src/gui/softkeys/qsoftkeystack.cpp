@@ -15,6 +15,9 @@
 #include <aknappui.h>
 #include <avkon.rsg>
 
+#include "private/qcore_symbian_p.h"
+
+
 #include "qsoftkeystack.h"
 
 QSoftKeyStackPrivate::QSoftKeyStackPrivate()
@@ -29,41 +32,50 @@ QSoftKeyStackPrivate::~QSoftKeyStackPrivate()
 
 void QSoftKeyStackPrivate::setNativeSoftKeys()
 {
-    QSoftkeySet top = softKeyStack.top();
     CCoeAppUi* appui = CEikonEnv::Static()->AppUi();
     CAknAppUi* aknAppUi = static_cast <CAknAppUi*>(appui);
     CEikButtonGroupContainer* nativeContainer = aknAppUi->Cba();
-    int role = top.at(0)->role();
+    nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+    if(softKeyStack.isEmpty())
+        return;
 
-    switch( top.at(0)->role() )
+    QSoftkeySet top = softKeyStack.top();
+
+    // FIX THIS
+    // veryWeirdMagic is needes as s60 5th edition sdk always panics if cba is set with index 1, this hops over it
+    // This needs further investigation why so that the hack can be removed
+    int veryWeirdMagic = 0;
+    for (int index=0;index<top.count();index++)
     {
-        case(QSoftKeyAction::Back):
-        {
-        nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_BACK);
-        }
-        break;
-        default:
-        {
-        }
+        QSoftKeyAction* softKeyAction = top.at(index);
+        HBufC* text = qt_QString2HBufCNewL(softKeyAction->text());
+        CleanupStack::PushL(text);
+        nativeContainer->SetCommandL(index+veryWeirdMagic, softKeyAction->role(), *text);
+        CleanupStack::PopAndDestroy();
+        if (veryWeirdMagic==0)
+            veryWeirdMagic=1;
     }
 }
 
 void QSoftKeyStackPrivate::push(QSoftKeyAction *softKey)
 {
-    QSoftkeySet softkeys;
-    softkeys.append( softKey );
-    softKeyStack.push(softkeys);
+    QSoftkeySet softKeySet;
+    softKeySet.append( softKey );
+    softKeyStack.push(softKeySet);
     setNativeSoftKeys();
 
 }
 void QSoftKeyStackPrivate::push( QList<QSoftKeyAction*> softkeys)
 {
-
+    QSoftkeySet softKeySet(softkeys);
+    softKeyStack.push(softKeySet);
+    setNativeSoftKeys();
 }
 
 void QSoftKeyStackPrivate::pop()
 {
     softKeyStack.pop();
+    setNativeSoftKeys();
 }
 
 EXPORT_C QSoftKeyStack::QSoftKeyStack(QWidget *parent)
