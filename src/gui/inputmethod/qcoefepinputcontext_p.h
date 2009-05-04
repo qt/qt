@@ -63,6 +63,7 @@ public:
 
 private:
     void commitCurrentString();
+    void applyHints(Qt::InputMethodHints hints);
 
     // From MCoeFepAwareTextEditor
 public:
@@ -98,6 +99,8 @@ private:
     QSymbianControl *m_parent;
     CAknEdwinState *m_fepState;
     QString m_preeditString;
+    Qt::InputMethodHints m_lastImHints;
+    TUint m_textCapabilities;
     bool m_isEditing;
     bool m_inDestruction;
     int m_cursorVisibility;
