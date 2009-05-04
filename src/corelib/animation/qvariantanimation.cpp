@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QVariantAnimation
-    \ingroup animation
+    \ingroup group_animation
     \brief The QVariantAnimation class provides an abstract base class for animations.
     \since 4.5
     \preliminary

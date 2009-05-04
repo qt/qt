@@ -819,7 +819,8 @@ Rect { x: Other.x }
 /*!
     Construct an empty QmlDomValueBinding.
 */
-QmlDomValueBinding::QmlDomValueBinding()
+QmlDomValueBinding::QmlDomValueBinding():
+        d(new QmlDomBasicValuePrivate)
 {
 }
 
@@ -896,7 +897,8 @@ Rect {
 /*!
     Construct an empty QmlDomValueValueSource.
 */
-QmlDomValueValueSource::QmlDomValueValueSource()
+QmlDomValueValueSource::QmlDomValueValueSource():
+        d(new QmlDomBasicValuePrivate)
 {
 }
 
