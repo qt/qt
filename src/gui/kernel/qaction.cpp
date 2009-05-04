@@ -1370,7 +1370,7 @@ QAction::MenuRole QAction::menuRole() const
 void QAction::setIconVisibleInMenu(bool visible)
 {
     Q_D(QAction);
-    if (visible != (bool)d->iconVisibleInMenu) {
+    if (d->iconVisibleInMenu == -1 || visible != bool(d->iconVisibleInMenu)) {
         int oldValue = d->iconVisibleInMenu;
         d->iconVisibleInMenu = visible;
         // Only send data changed if we really need to.

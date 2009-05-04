@@ -61,6 +61,8 @@
 QT_BEGIN_NAMESPACE
 
 #define ObjectSelectionBrush (QTextFormat::ForegroundBrush + 1)
+#define SuppressText 0x5012
+#define SuppressBackground 0x513
 
 static inline QFixed leadingSpaceWidth(QTextEngine *eng, const QScriptLine &line)
 {
@@ -1143,6 +1145,7 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QVector<FormatRang
     }
 
     QPainterPath excludedRegion;
+    QPainterPath needsTextButNoBackground;
     for (int i = 0; i < selections.size(); ++i) {
         FormatRange selection = selections.at(i);
         const QBrush bg = selection.format.background();
@@ -1211,14 +1214,35 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QVector<FormatRang
         selection.format.setProperty(QTextFormat::BackgroundBrush, QBrush());
         selection.format.clearProperty(QTextFormat::OutlinePen);
 
+        bool noText = (selection.format.foreground().style() == Qt::NoBrush);
+
+        selection.format.setProperty(SuppressText, noText);
+
         for (int line = firstLine; line < lastLine; ++line) {
             QTextLine l(line, d);
             l.draw(p, position, &selection);
         }
         p->restore();
 
-        if (selection.format.foreground().style() != Qt::NoBrush) // i.e. we have drawn text
-            excludedRegion += region;
+        if (noText)
+            needsTextButNoBackground += region;
+        else
+            needsTextButNoBackground -= region;
+        excludedRegion += region;
+    }
+
+    if (!needsTextButNoBackground.isEmpty()){
+        p->save();
+        p->setClipPath(needsTextButNoBackground, Qt::IntersectClip);
+        FormatRange selection;
+        selection.start = 0;
+        selection.length = INT_MAX;
+        selection.format.setProperty(SuppressBackground, true);
+        for (int line = firstLine; line < lastLine; ++line) {
+            QTextLine l(line, d);
+            l.draw(p, position, &selection);
+        }
+        p->restore();
     }
 
     if (!excludedRegion.isEmpty()) {
@@ -1912,14 +1936,17 @@ static void drawMenuText(QPainter *p, QFixed x, QFixed y, const QScriptItem &si,
 static void setPenAndDrawBackground(QPainter *p, const QPen &defaultPen, const QTextCharFormat &chf, const QRectF &r)
 {
     QBrush c = chf.foreground();
-    if (c.style() == Qt::NoBrush)
+    if (c.style() == Qt::NoBrush) {
         p->setPen(defaultPen);
+    }
 
     QBrush bg = chf.background();
-    if (bg.style() != Qt::NoBrush)
+    if (bg.style() != Qt::NoBrush && !chf.property(SuppressBackground).toBool())
         p->fillRect(r, bg);
-    if (c.style() != Qt::NoBrush)
+    if (c.style() != Qt::NoBrush) {
         p->setPen(QPen(c, 0));
+    }
+
 }
 
 /*!
@@ -1933,7 +1960,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
     const QScriptLine &line = eng->lines[i];
     QPen pen = p->pen();
 
-    bool noText = (selection && selection->format.foreground().style() == Qt::NoBrush);
+    bool noText = (selection && selection->format.property(SuppressText).toBool());
 
     if (!line.length) {
         if (selection

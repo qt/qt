@@ -81,6 +81,7 @@
 #include <private/qwidget_p.h>
 #include <QAbstractSpinBox>
 #include <QLabel>
+#include "qdrawutil.h"
 
 #include <limits.h>
 
@@ -312,15 +313,10 @@ struct QStyleSheetBorderImageData : public QSharedData
         for (int i = 0; i < 4; i++)
             cuts[i] = -1;
     }
-    QPixmap topEdge, bottomEdge, leftEdge, rightEdge, middle;
-    QRect topEdgeRect, bottomEdgeRect, leftEdgeRect, rightEdgeRect, middleRect;
-    QRect topLeftCorner, topRightCorner, bottomRightCorner, bottomLeftCorner;
     int cuts[4];
     QPixmap pixmap;
     QImage image;
     QCss::TileMode horizStretch, vertStretch;
-
-    void cutBorderImage();
 };
 
 struct QStyleSheetBackgroundData : public QSharedData
@@ -1122,176 +1118,27 @@ void QRenderRule::fixupBorder(int nativeWidth)
         for (int i = 0; i < 4; i++) // assume, cut = border
             bi->cuts[i] = int(border()->borders[i]);
     }
-    bi->cutBorderImage();
 }
 
-void QStyleSheetBorderImageData::cutBorderImage()
-{
-    const int w = pixmap.width();
-    const int h = pixmap.height();
-    const int &l = cuts[LeftEdge], &r = cuts[RightEdge],
-              &t = cuts[TopEdge], &b = cuts[BottomEdge];
-
-    topEdgeRect = QRect(l, 0, w - r - l, t);
-    bottomEdgeRect = QRect(l, h - b, w - l - r, b);
-    if (horizStretch != TileMode_Stretch) {
-        if (topEdgeRect.isValid())
-            topEdge = pixmap.copy(topEdgeRect).scaledToHeight(t);
-        if (bottomEdgeRect.isValid())
-            bottomEdge = pixmap.copy(bottomEdgeRect).scaledToHeight(b);
-    }
-
-    leftEdgeRect = QRect(0, t, l, h - b - t);
-    rightEdgeRect = QRect(w - r, t, r, h - t- b);
-    if (vertStretch != TileMode_Stretch) {
-        if (leftEdgeRect.isValid())
-            leftEdge = pixmap.copy(leftEdgeRect).scaledToWidth(l);
-        if (rightEdgeRect.isValid())
-            rightEdge = pixmap.copy(rightEdgeRect).scaledToWidth(r);
-    }
-
-    middleRect = QRect(l, t, w - r -l, h - t - b);
-    if (middleRect.isValid()
-        && !(horizStretch == TileMode_Stretch && vertStretch == TileMode_Stretch)) {
-        middle = pixmap.copy(middleRect);
-    }
-}
-
-static void qDrawCenterTiledPixmap(QPainter *p, const QRectF& r, const QPixmap& pix)
-{
-    p->drawTiledPixmap(r, pix, QPoint(pix.width() - int(r.width())%pix.width(),
-                                      pix.height() - int(r.height())%pix.height()));
-}
-
-// Note: Round is not supported
 void QRenderRule::drawBorderImage(QPainter *p, const QRect& rect)
 {
-    setClip(p, rect);
-    const QRectF br(rect);
-    const int *borders = border()->borders;
-    const int &l = borders[LeftEdge], &r = borders[RightEdge],
-              &t = borders[TopEdge],  &b = borders[BottomEdge];
-    QRectF pr = br.adjusted(l, t, -r, -b);
+    static const Qt::TileRule tileMode2TileRule[] = {
+        Qt::Stretch, Qt::Round, Qt::Stretch, Qt::Repeat, Qt::Stretch };
+
+    const QStyleSheetBorderImageData *borderImageData = border()->borderImage();
+    const int *targetBorders = border()->borders;
+    const int *sourceBorders = borderImageData->cuts;
+    QMargins sourceMargins(sourceBorders[TopEdge], sourceBorders[LeftEdge],
+                           sourceBorders[BottomEdge], sourceBorders[RightEdge]);
+    QMargins targetMargins(targetBorders[TopEdge], targetBorders[LeftEdge],
+                           targetBorders[BottomEdge], targetBorders[RightEdge]);
 
     bool wasSmoothPixmapTransform = p->renderHints() & QPainter::SmoothPixmapTransform;
     p->setRenderHint(QPainter::SmoothPixmapTransform);
-
-    const QStyleSheetBorderImageData *bi = border()->borderImage();
-    const QPixmap& pix = bi->pixmap;
-    const int *c = bi->cuts;
-    QRectF tlc(0, 0, c[LeftEdge], c[TopEdge]);
-    if (tlc.isValid())
-        p->drawPixmap(QRectF(br.topLeft(), QSizeF(l, t)), pix, tlc);
-    QRectF trc(pix.width() - c[RightEdge], 0, c[RightEdge], c[TopEdge]);
-    if (trc.isValid())
-        p->drawPixmap(QRectF(br.left() + br.width() - r, br.y(), r, t), pix, trc);
-    QRectF blc(0, pix.height() - c[BottomEdge], c[LeftEdge], c[BottomEdge]);
-    if (blc.isValid())
-        p->drawPixmap(QRectF(br.x(), br.y() + br.height() - b, l, b), pix, blc);
-    QRectF brc(pix.width() - c[RightEdge], pix.height() - c[BottomEdge],
-               c[RightEdge], c[BottomEdge]);
-    if (brc.isValid())
-        p->drawPixmap(QRectF(br.x() + br.width() - r, br.y() + br.height() - b, r, b),
-                      pix, brc);
-
-    QRectF topEdgeRect(br.x() + l, br.y(), pr.width(), t);
-    QRectF bottomEdgeRect(br.x() + l, br.y() + br.height() - b, pr.width(), b);
-
-    switch (bi->horizStretch) {
-    case TileMode_Stretch:
-        if (bi->topEdgeRect.isValid())
-            p->drawPixmap(topEdgeRect, pix, bi->topEdgeRect);
-        if (bi->bottomEdgeRect.isValid())
-            p->drawPixmap(bottomEdgeRect, pix, bi->bottomEdgeRect);
-        if (bi->middleRect.isValid()) {
-            if (bi->vertStretch == TileMode_Stretch)
-                p->drawPixmap(pr, pix, bi->middleRect);
-            else if (bi->vertStretch == TileMode_Repeat) {
-                QPixmap scaled = bi->middle.scaled(int(pr.width()), bi->middle.height());
-                qDrawCenterTiledPixmap(p, pr, scaled);
-            }
-        }
-        break;
-    case TileMode_Repeat:
-        if (!bi->topEdge.isNull() && !topEdgeRect.isEmpty()) {
-            QPixmap scaled = bi->topEdge.scaled(bi->topEdge.width(), t);
-            qDrawCenterTiledPixmap(p, topEdgeRect, scaled);
-        }
-        if (!bi->bottomEdge.isNull() && !bottomEdgeRect.isEmpty()) {
-            QPixmap scaled = bi->bottomEdge.scaled(bi->bottomEdge.width(), b);
-            qDrawCenterTiledPixmap(p, bottomEdgeRect, scaled);
-        }
-        if (bi->middleRect.isValid()) {
-            if (bi->vertStretch == TileMode_Repeat) {
-                qDrawCenterTiledPixmap(p, pr, bi->middle);
-            } else if (bi->vertStretch == TileMode_Stretch) {
-                QPixmap scaled = bi->middle.scaled(bi->middle.width(), int(pr.height()));
-                qDrawCenterTiledPixmap(p, pr, scaled);
-            }
-        }
-        break;
-    case TileMode_Round:
-        if (!bi->topEdge.isNull()) {
-            int rwh = (int)pr.width()/ceil(pr.width()/bi->topEdge.width());
-            QPixmap scaled = bi->topEdge.scaled(rwh, bi->topEdge.height());
-            int blank = int(pr.width()) % rwh;
-            p->drawTiledPixmap(QRectF(br.x() + l + blank/2, br.y(), pr.width() - blank, t),
-                               scaled);
-        }
-        if (!bi->bottomEdge.isNull()) {
-            int rwh = (int) pr.width()/ceil(pr.width()/bi->bottomEdge.width());
-            QPixmap scaled = bi->bottomEdge.scaled(rwh, bi->bottomEdge.height());
-            int blank = int(pr.width()) % rwh;
-            p->drawTiledPixmap(QRectF(br.x() + l+ blank/2, br.y()+br.height()-b,
-                                      pr.width() - blank, b), scaled);
-        }
-        break;
-    default:
-        break;
-    }
-
-    QRectF leftEdgeRect(br.x(), br.y() + t, l, pr.height());
-    QRectF rightEdgeRect(br.x() + br.width()- r, br.y() + t, r, pr.height());
-
-    switch (bi->vertStretch) {
-    case TileMode_Stretch:
-         if (bi->leftEdgeRect.isValid())
-              p->drawPixmap(leftEdgeRect, pix, bi->leftEdgeRect);
-        if (bi->rightEdgeRect.isValid())
-            p->drawPixmap(rightEdgeRect, pix, bi->rightEdgeRect);
-        break;
-    case TileMode_Repeat:
-        if (!bi->leftEdge.isNull() && !leftEdgeRect.isEmpty()) {
-            QPixmap scaled = bi->leftEdge.scaled(l, bi->leftEdge.height());
-            qDrawCenterTiledPixmap(p, leftEdgeRect, scaled);
-        }
-        if (!bi->rightEdge.isNull() && !rightEdgeRect.isEmpty()) {
-            QPixmap scaled = bi->rightEdge.scaled(r, bi->rightEdge.height());
-            qDrawCenterTiledPixmap(p, rightEdgeRect, scaled);
-        }
-        break;
-    case TileMode_Round:
-        if (!bi->leftEdge.isNull()) {
-            int rwh = (int) pr.height()/ceil(pr.height()/bi->leftEdge.height());
-            QPixmap scaled = bi->leftEdge.scaled(bi->leftEdge.width(), rwh);
-            int blank = int(pr.height()) % rwh;
-            p->drawTiledPixmap(QRectF(br.x(), br.y() + t + blank/2, l, pr.height() - blank),
-                               scaled);
-        }
-        if (!bi->rightEdge.isNull()) {
-            int rwh = (int) pr.height()/ceil(pr.height()/bi->rightEdge.height());
-            QPixmap scaled = bi->rightEdge.scaled(bi->rightEdge.width(), rwh);
-            int blank = int(pr.height()) % rwh;
-            p->drawTiledPixmap(QRectF(br.x() + br.width() - r, br.y()+t+blank/2, r,
-                                      pr.height() - blank), scaled);
-        }
-        break;
-    default:
-        break;
-    }
-
+    qDrawBorderPixmap(p, rect, targetMargins, borderImageData->pixmap,
+                      QRect(QPoint(), borderImageData->pixmap.size()), sourceMargins,
+                      QTileRules(tileMode2TileRule[borderImageData->horizStretch], tileMode2TileRule[borderImageData->vertStretch]));
     p->setRenderHint(QPainter::SmoothPixmapTransform, wasSmoothPixmapTransform);
-    unsetClip(p);
 }
 
 QRect QRenderRule::originRect(const QRect &rect, Origin origin) const
@@ -1525,7 +1372,7 @@ void QRenderRule::configurePalette(QPalette *p, QPalette::ColorGroup cg, const Q
         /* For embedded widgets (ComboBox, SpinBox and ScrollArea) we want the embedded widget
          * to be transparent when we have a transparent background or border image */
         if ((hasBackground() && background()->isTransparent())
-            || (hasBorder() && border()->hasBorderImage() && border()->borderImage()->middleRect.isValid()))
+            || (hasBorder() && border()->hasBorderImage() && !border()->borderImage()->pixmap.isNull()))
             p->setBrush(cg, w->backgroundRole(), Qt::NoBrush);
     }
 
@@ -5827,7 +5674,7 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
 
 bool QStyleSheetStyle::event(QEvent *e)
 {
-    return baseStyle()->event(e) || ParentStyle::event(e);
+    return (baseStyle()->event(e) && e->isAccepted()) || ParentStyle::event(e);
 }
 
 void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
