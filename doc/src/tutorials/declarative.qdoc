@@ -404,7 +404,7 @@
     These properties and signals are accessed from the contact field the same
     way standard system components are accessed.
 
-    \snippet declarative/tutorials/contacts/2_Reuse/2/RemoveButton.qml use properties and signals
+    \snippet declarative/tutorials/contacts/2_Reuse/2/ContactField.qml use properties and signals
 
     Now when the remove button is expanded, it will expand to the width of the
     contact field.  Also when the user confirms the remove action, the
@@ -438,7 +438,7 @@
     that state.  In the FieldText element a similar approach is used to fade
     out the label of the FieldText when the user enters some text of their own.
 
-    \snippet declarative/tutorials/contacts/3_Reuse/2/FieldText.qml behavior
+    \snippet declarative/tutorials/contacts/2_Reuse/3/FieldText.qml behavior
 
     fieldText is the enclosing component and textEdit is a TextEdit element
     provided by Qt.  In the QML code above, the opacity of the textLabel is
@@ -587,7 +587,7 @@
 
     We then add a transition so that this becomes animated:
 
-    \snippet declarative/tutorials/contacts/3_Collections/2/ContactView.qml transition
+    \snippet declarative/tutorials/contacts/3_Collections/2/ContactView.qml transitions
 
     This allows the user to click on an item to enter the open state.
 
@@ -600,7 +600,7 @@
     And connect it's clicked value to some script to set the state of the delegate
     back to its default state.
 
-    \snippet declarative/tutorials/contacts/3_Collections/2/ContactView.qml connection
+    \snippet declarative/tutorials/contacts/3_Collections/2/ContactView.qml connections
 
     Something worth noting at this point is that every delegate created has this connection.
     It is important to check whether the delegate is the one in the open state, and
