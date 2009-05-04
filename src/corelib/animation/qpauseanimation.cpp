@@ -43,7 +43,7 @@
     \class QPauseAnimation
     \brief The QPauseAnimation class provides a pause for QSequentialAnimationGroup.
     \since 4.5
-    \ingroup animation
+    \ingroup group_animation
     \preliminary
 */
 

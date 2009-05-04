@@ -43,7 +43,7 @@
     \class QParallelAnimationGroup
     \brief The QParallelAnimationGroup class provides a parallel group of animations.
     \since 4.5
-    \ingroup animation
+    \ingroup group_animation
     \preliminary
 
     The animations are all started at the same time, and run in parallel. The animation group

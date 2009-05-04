@@ -63,7 +63,7 @@ void tst_qmldom::loadProperties()
 
 void tst_qmldom::loadChildObject()
 {
-    QByteArray qml = "Item { Item }";
+    QByteArray qml = "Item { Item {} }";
     //QByteArray qml = "<Item> <Item/> </Item>";
 
     QmlDomDocument document;
