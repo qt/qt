@@ -8482,7 +8482,10 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
     set, the input method may change its visual components to reflect
     that only numbers can be entered.
 
-    The effect may vary between input method implementations.
+    \note The flags are only hints, so the particular input method
+          implementation is free to ignore them. If you want to be
+          sure that for instance only uppercase letters are entered,
+          you should also set a QValidator on the widget.
 
     \since 4.6
 
