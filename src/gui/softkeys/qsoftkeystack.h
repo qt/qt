@@ -20,7 +20,8 @@
 
 #define QSoftkeySet QList <QSoftKeyAction*>
 #define SOFTKEYSTART 5000
-#define SOFTKEYEND 5005
+#define SOFTKEYEND 5000+Qt::Key_Context4
+
 class QSoftKeyStackPrivate : public QObject
     {
     Q_OBJECT
