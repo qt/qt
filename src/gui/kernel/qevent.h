@@ -746,6 +746,7 @@ public:
     private:
         QTouchEventTouchPointPrivate *d;
 
+        friend class QApplication;
         friend class QApplicationPrivate;
     };
 
@@ -759,6 +760,7 @@ public:
 protected:
     QList<TouchPoint *> _touchPoints;
 
+    friend class QApplication;
     friend class QApplicationPrivate;
 };
 

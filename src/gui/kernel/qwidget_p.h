@@ -663,6 +663,9 @@ public:
     }
 
     QSize adjustedSize() const;
+
+    QEvent::Type touchEventType;
+    QList<QTouchEvent::TouchPoint *> currentTouchPoints, activeTouchPoints;
 };
 
 inline QWExtra *QWidgetPrivate::extraData() const

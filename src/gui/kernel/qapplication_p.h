@@ -428,7 +428,6 @@ public:
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif
 
-    QPointer<QWidget> currentMultitouchWidget;
     static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
 
 #if defined(Q_WS_WIN)
@@ -437,12 +436,14 @@ public:
     static qt_CloseTouchInputHandlePtr CloseTouchInputHandle;
 
     QMap<DWORD, int> touchInputIDToTouchPointID;
-    QVector<QTouchEvent::TouchPoint *> allTouchPoints;
-    QList<QTouchEvent::TouchPoint *> currentTouchPoints;
+    QVector<QTouchEvent::TouchPoint *> appAllTouchPoints;
+    QList<QTouchEvent::TouchPoint *> appCurrentTouchPoints;
 
     void initializeMultitouch();
-    QEvent::Type insertActiveTouch(QTouchEvent::TouchPoint *touchPoint);
-    QEvent::Type removeActiveTouch(QTouchEvent::TouchPoint *touchPoint);
+    static QTouchEvent::TouchPoint *findClosestTouchPoint(const QList<QTouchEvent::TouchPoint *> &activeTouchPoints,
+                                                          const QPointF &pos);
+    QEvent::Type appendTouchPoint(QTouchEvent::TouchPoint *touchPoint);
+    QEvent::Type removeTouchPoint(QTouchEvent::TouchPoint *touchPoint);
     bool translateTouchEvent(const MSG &msg);
 #endif
 
