@@ -235,6 +235,10 @@ void QState::assignProperty(QObject *object, const char *name,
                             const QVariant &value)
 {
     Q_D(QState);
+    if (!object) {
+        qWarning("QState::assignProperty: cannot assign property '%s' of null object", name);
+        return;
+    }
     for (int i = 0; i < d->propertyAssignments.size(); ++i) {
         QPropertyAssignment &assn = d->propertyAssignments[i];
         if ((assn.object == object) && (assn.propertyName == name)) {

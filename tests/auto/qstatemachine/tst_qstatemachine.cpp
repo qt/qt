@@ -1194,6 +1194,10 @@ void tst_QStateMachine::assignProperty()
 {
     QStateMachine machine;
     QState *s1 = new QState(machine.rootState());
+
+    QTest::ignoreMessage(QtWarningMsg, "QState::assignProperty: cannot assign property 'foo' of null object");
+    s1->assignProperty(0, "foo", QVariant());
+
     s1->assignProperty(s1, "objectName", "s1");
     QFinalState *s2 = new QFinalState(machine.rootState());
     s1->addTransition(s2);
