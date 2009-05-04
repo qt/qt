@@ -896,6 +896,10 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
         }
     }
 
+    if (displayArgs.contains(QLatin1String("boundingrectflip"), Qt::CaseInsensitive)) {
+        d_ptr->directFBFlags |= BoundingRectFlip;
+    }
+
     if (displayArgs.contains(QLatin1String("ignoresystemclip"), Qt::CaseInsensitive))
         d_ptr->directFBFlags |= IgnoreSystemClip;
 

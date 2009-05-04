@@ -63,7 +63,8 @@ public:
         NoFlags = 0x00,
         VideoOnly = 0x01,
         SystemOnly = 0x02,
-        IgnoreSystemClip = 0x04
+        IgnoreSystemClip = 0x04,
+        BoundingRectFlip = 0x08
     };
 
     Q_DECLARE_FLAGS(DirectFBFlags, DirectFBFlag);

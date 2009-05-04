@@ -50,13 +50,14 @@
 
 //#define QT_DIRECTFB_DEBUG_SURFACES 1
 
-QDirectFBSurface::QDirectFBSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen* scr)
+QDirectFBSurface::QDirectFBSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen *scr)
     : QDirectFBPaintDevice(scr)
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
 #endif
     , engine(0)
     , flipFlags(flip)
+    , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
 {
     setSurfaceFlags(Opaque | Buffered);
 #ifdef QT_DIRECTFB_TIMING
@@ -72,6 +73,7 @@ QDirectFBSurface::QDirectFBSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen *sc
 #endif
     , engine(0)
     , flipFlags(flip)
+    , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
 {
     onscreen = widget->testAttribute(Qt::WA_PaintOnScreen);
     if (onscreen)
@@ -369,7 +371,7 @@ void QDirectFBSurface::flush(QWidget *widget, const QRegion &region,
     if (!(flipFlags & DSFLIP_BLIT)) {
         dfbSurface->Flip(dfbSurface, 0, flipFlags);
     } else {
-        if (region.numRects() > 1) {
+        if (!boundingRectFlip && region.numRects() > 1) {
             const QVector<QRect> rects = region.rects();
             const DFBSurfaceFlipFlags nonWaitFlags = DFBSurfaceFlipFlags(flipFlags & ~DSFLIP_WAIT);
             for (int i=0; i<rects.size(); ++i) {

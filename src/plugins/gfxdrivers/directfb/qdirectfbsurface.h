@@ -100,6 +100,7 @@ private:
 
     QList<QImage*> bufferImages;
     DFBSurfaceFlipFlags flipFlags;
+    bool boundingRectFlip;
 #ifdef QT_DIRECTFB_TIMING
     int frames;
     QTime timer;
