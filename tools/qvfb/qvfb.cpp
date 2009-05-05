@@ -711,7 +711,16 @@ void QVFb::configure()
 	}
 	view->setViewFormat(displayFormat);
 	view->setTouchscreenEmulation( config->touchScreen->isChecked() );
-	view->setRgbSwapped(config->rgbSwapped->isChecked());
+        if (view->rgbSwapped() != config->rgbSwapped->isChecked()) {
+            //### the windowTitle logic is inside init(), and init isn't always invoked
+            QString caption = windowTitle();
+            if (!config->rgbSwapped->isChecked())
+                caption.replace(QLatin1String(" BGR"), QString());
+            else
+                caption.append(QLatin1String(" BGR"));
+            setWindowTitle(caption);
+            view->setRgbSwapped(config->rgbSwapped->isChecked());
+        }
 	bool lcdEmulation = config->lcdScreen->isChecked();
 	view->setLcdScreenEmulation( lcdEmulation );
 	if ( lcdEmulation )

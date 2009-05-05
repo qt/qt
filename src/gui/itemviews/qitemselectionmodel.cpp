@@ -1313,11 +1313,11 @@ bool QItemSelectionModel::rowIntersectsSelection(int row, const QModelIndex &par
         int left = sel.at(i).left();
         int right = sel.at(i).right();
         if (top <= row && bottom >= row) {
-            Qt::ItemFlags leftFlags = d->model->index(row, left, parent).flags();
-            Qt::ItemFlags rightFlags = d->model->index(row, right, parent).flags();
-            if ((leftFlags & Qt::ItemIsSelectable) && (leftFlags & Qt::ItemIsEnabled)
-                && (rightFlags & Qt::ItemIsSelectable) && (rightFlags & Qt::ItemIsEnabled))
-                return true;
+            for (int j = left; j <= right; j++) {
+                const Qt::ItemFlags flags = d->model->index(row, j, parent).flags();
+                if ((flags & Qt::ItemIsSelectable) && (flags & Qt::ItemIsEnabled))
+                    return true;
+            }
         }
     }
 
@@ -1342,11 +1342,11 @@ bool QItemSelectionModel::columnIntersectsSelection(int column, const QModelInde
         int top =  sel.at(i).top();
         int bottom =  sel.at(i).bottom();
         if (left <= column && right >= column) {
-            Qt::ItemFlags topFlags = d->model->index(top, column, parent).flags();
-            Qt::ItemFlags bottomFlags = d->model->index(bottom, column, parent).flags();
-            if ((topFlags & Qt::ItemIsSelectable) && (topFlags & Qt::ItemIsEnabled)
-                && (bottomFlags & Qt::ItemIsSelectable) && (bottomFlags & Qt::ItemIsEnabled))
-                return true;
+            for (int j = top; j <= bottom; j++) {
+                const Qt::ItemFlags flags = d->model->index(j, column, parent).flags();
+                if ((flags & Qt::ItemIsSelectable) && (flags & Qt::ItemIsEnabled))
+                    return true;
+            }
         }
     }
 

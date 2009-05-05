@@ -890,7 +890,10 @@ int QFont::pointSize() const
 */
 void QFont::setPointSize(int pointSize)
 {
-    Q_ASSERT_X (pointSize > 0, "QFont::setPointSize", "point size must be greater than 0");
+    if (pointSize <= 0) {
+        qWarning("QFont::setPointSize: Point size <= 0 (%d), must be greater than 0", pointSize);
+        return;
+    }
 
     detach();
 
@@ -909,7 +912,10 @@ void QFont::setPointSize(int pointSize)
 */
 void QFont::setPointSizeF(qreal pointSize)
 {
-    Q_ASSERT_X(pointSize > 0.0, "QFont::setPointSizeF", "point size must be greater than 0");
+    if (pointSize <= 0) {
+        qWarning("QFont::setPointSizeF: Point size <= 0 (%d), must be greater than 0", pointSize);
+        return;
+    }
 
     detach();
 

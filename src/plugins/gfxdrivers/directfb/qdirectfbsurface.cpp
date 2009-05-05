@@ -50,13 +50,14 @@
 
 //#define QT_DIRECTFB_DEBUG_SURFACES 1
 
-QDirectFBSurface::QDirectFBSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen* scr)
+QDirectFBSurface::QDirectFBSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen *scr)
     : QDirectFBPaintDevice(scr)
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
 #endif
     , engine(0)
     , flipFlags(flip)
+    , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
 {
     setSurfaceFlags(Opaque | Buffered);
 #ifdef QT_DIRECTFB_TIMING
@@ -72,6 +73,7 @@ QDirectFBSurface::QDirectFBSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen *sc
 #endif
     , engine(0)
     , flipFlags(flip)
+    , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
 {
     onscreen = widget->testAttribute(Qt::WA_PaintOnScreen);
     if (onscreen)
@@ -110,7 +112,7 @@ void QDirectFBSurface::createWindow()
                                                   |DWDESC_PIXELFORMAT);
 
     description.surface_caps = DSCAPS_NONE;
-    if (screen->preferVideoOnly())
+    if (screen->directFBFlags() & QDirectFBScreen::VideoOnly)
         description.surface_caps = DFBSurfaceCapabilities(description.surface_caps|DSCAPS_VIDEOONLY);
     const QImage::Format format = screen->pixelFormat();
     description.pixelformat = QDirectFBScreen::getSurfacePixelFormat(format);
@@ -184,7 +186,7 @@ void QDirectFBSurface::setGeometry(const QRect &rect, const QRegion &mask)
                 description.height = rect.height();
                 QDirectFBScreen::initSurfaceDescriptionPixelFormat(&description,
                                                                    screen->pixelFormat());
-                dfbSurface = screen->createDFBSurface(&description, false);
+                dfbSurface = screen->createDFBSurface(description, false);
                 forceRaster = (dfbSurface && QDirectFBScreen::getImageFormat(dfbSurface) == QImage::Format_RGB32);
             } else {
                 Q_ASSERT(dfbSurface);
@@ -369,20 +371,15 @@ void QDirectFBSurface::flush(QWidget *widget, const QRegion &region,
     if (!(flipFlags & DSFLIP_BLIT)) {
         dfbSurface->Flip(dfbSurface, 0, flipFlags);
     } else {
-        if (region.numRects() > 1) {
+        if (!boundingRectFlip && region.numRects() > 1) {
             const QVector<QRect> rects = region.rects();
-            DFBSurfaceFlipFlags tmpFlags = flipFlags;
-            if (flipFlags & DSFLIP_WAIT)
-                tmpFlags = DFBSurfaceFlipFlags(flipFlags & ~DSFLIP_WAIT);
+            const DFBSurfaceFlipFlags nonWaitFlags = DFBSurfaceFlipFlags(flipFlags & ~DSFLIP_WAIT);
             for (int i=0; i<rects.size(); ++i) {
                 const QRect &r = rects.at(i);
                 const DFBRegion dfbReg = { r.x() + offset.x(), r.y() + offset.y(),
                                            r.x() + r.width() + offset.x(),
                                            r.y() + r.height() + offset.y() };
-                dfbSurface->Flip(dfbSurface, &dfbReg,
-                                 i + 1 < rects.size()
-                                 ? tmpFlags
-                                 : flipFlags);
+                dfbSurface->Flip(dfbSurface, &dfbReg, i + 1 < rects.size() ? nonWaitFlags : flipFlags);
             }
         } else {
             const QRect r = region.boundingRect();
