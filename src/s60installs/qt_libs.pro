@@ -69,4 +69,9 @@ symbian: {
        iconengines_plugins.path = $$QT_PLUGINS_BASE_DIR/iconengines
        DEPLOYMENT += iconengines_plugins
     }
+
+    contains(QT_CONFIG, phonon): {
+    	qtlibraries.sources += QtPhonon.dll
+    }    
+
 }
