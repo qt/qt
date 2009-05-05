@@ -661,7 +661,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
         // before the state that assigned them is exited. If state does not explicitly 
         // assign a property which is assigned by the parent, it inherits the parent's assignment.
         QState *parentState = s;
-        while (parentState = parentState->parentState()) {
+        while ((parentState = parentState->parentState()) != 0) {
             assignments = QStatePrivate::get(parentState)->propertyAssignments;
             for (int j=0; j<assignments.size(); ++j) {
                 const QPropertyAssignment &assn = assignments.at(j);
