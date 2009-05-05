@@ -313,13 +313,6 @@ QVariantAnimation::~QVariantAnimation()
     The easing curve is used with the interpolator, the interpolated()
     virtual function, the animation's duration, and iterationCount, to
     control how the current value changes as the animation progresses.
-
-<<<<<<< Updated upstream:src/corelib/animation/qvariantanimation.cpp
-    The easing curve is used with the interpolator, the interpolated() virtual
-    function, the animation's duration, and loopCount, to control how the
-    current value changes as the animation progresses.
-=======
->>>>>>> Stashed changes:src/corelib/animation/qvariantanimation.cpp
 */
 QEasingCurve QVariantAnimation::easingCurve() const
 {
