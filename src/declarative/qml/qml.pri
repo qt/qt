@@ -22,7 +22,8 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlclassfactory.cpp \
     qml/qmlparserstatus.cpp \
     qml/qmlcompositetypemanager.cpp \
-    qml/qmlinfo.cpp
+    qml/qmlinfo.cpp \
+    qml/qmlerror.cpp
 
 HEADERS += qml/qmlparser_p.h \
     qml/qmlinstruction_p.h \
@@ -58,7 +59,8 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlcontext_p.h \
     qml/qmlcompositetypemanager_p.h \
     qml/qmllist.h \
-    qml/qmldeclarativedata_p.h
+    qml/qmldeclarativedata_p.h \
+    qml/qmlerror.h
 
 # for qtscript debugger
 QT += scripttools

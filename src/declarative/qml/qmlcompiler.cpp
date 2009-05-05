@@ -147,7 +147,7 @@ int QmlCompiledData::indexForInt(int *data, int count)
 }
 
 QmlCompiler::QmlCompiler()
-: exceptionLine(-1), output(0)
+: exceptionLine(-1), exceptionColumn(-1), output(0)
 {
 }
 
@@ -156,14 +156,19 @@ bool QmlCompiler::isError() const
     return exceptionLine != -1;
 }
 
-qint64 QmlCompiler::errorLine() const
+QList<QmlError> QmlCompiler::errors() const
 {
-    return exceptionLine;
-}
+    QList<QmlError> rv;
 
-QString QmlCompiler::errorDescription() const
-{
-    return exceptionDescription;
+    if(isError()) {
+        QmlError error;
+        error.setDescription(exceptionDescription);
+        error.setLine(exceptionLine);
+        error.setColumn(exceptionColumn);
+        rv << error;
+    }
+
+    return rv;
 }
 
 bool QmlCompiler::isValidId(const QString &val)
@@ -437,9 +442,19 @@ void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
     cc->bytecode.clear();
 }
 
+#define COMPILE_EXCEPTION2(token, desc) \
+    {  \
+        exceptionLine = token->line;  \
+        exceptionColumn = token->column;  \
+        QDebug d(&exceptionDescription); \
+        d << desc;  \
+        return false; \
+    } 
+
 #define COMPILE_EXCEPTION(desc) \
     {  \
         exceptionLine = obj->line;  \
+        exceptionColumn = obj->column;  \
         QDebug d(&exceptionDescription); \
         d << desc;  \
         return false; \
@@ -1215,10 +1230,10 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
                 //### we are restricted to a rather generic message here. If we can find a way to move
                 //    the exception into generateStoreInstruction we could potentially have better messages.
                 //    (the problem is that both compile and run exceptions can be generated, though)
-                COMPILE_EXCEPTION("Cannot assign value" << v->primitive << "to property" << obj->metaObject()->property(prop->index).name());
+                COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive << "to property" << obj->metaObject()->property(prop->index).name());
                 doassign = false;
             } else if (r == ReadOnly) {
-                COMPILE_EXCEPTION("Cannot assign value" << v->primitive << "to the read-only property" << obj->metaObject()->property(prop->index).name());
+                COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive << "to the read-only property" << obj->metaObject()->property(prop->index).name());
             } else {
                 doassign = true;
             }

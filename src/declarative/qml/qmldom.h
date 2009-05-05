@@ -44,6 +44,7 @@
 
 #include <QtCore/qlist.h>
 #include <QtCore/qshareddata.h>
+#include <QtDeclarative/qmlerror.h>
 
 QT_BEGIN_HEADER
 
@@ -71,6 +72,7 @@ public:
 
     int version() const;
     
+    QList<QmlError> errors() const;
     QString loadError() const;
     bool load(QmlEngine *, const QByteArray &);
     QByteArray save() const;

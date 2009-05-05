@@ -152,11 +152,11 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
 {
     Q_UNUSED(engine);
 
-    d->error = QString();
+    d->errors.clear();
 
     QmlScriptParser parser;
     if (!parser.parse(data)) {
-        d->error = parser.errorDescription();
+        d->errors = parser.errors();
         return false;
     }
 
@@ -166,11 +166,13 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
     QmlCompositeTypeData *td = ((QmlEnginePrivate *)QmlEnginePrivate::get(engine))->typeManager.getImmediate(data, QUrl());;
 
     if(td->status == QmlCompositeTypeData::Error) {
-        d->error = td->errorDescription;
+        d->errors = td->errors;
         td->release();
         return false;
     } else if(td->status == QmlCompositeTypeData::Waiting) {
-        d->error = QLatin1String("QmlDomDocument supports local types only");
+        QmlError error;
+        error.setDescription(QLatin1String("QmlDomDocument supports local types only"));
+        d->errors << error;
         td->release();
         return false;
     } 
@@ -178,7 +180,7 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
     compiler.compile(engine, td, &component);
 
     if (compiler.isError()) {
-        d->error = compiler.errorDescription();
+        d->errors = compiler.errors();
         td->release();
         return false;
     }
@@ -194,14 +196,14 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
 
 
 /*!
-    Returns the last load error.  The load error will be reset after a 
+    Returns the last load errors.  The load errors will be reset after a 
     successful call to load().
 
     \sa load()
 */
-QString QmlDomDocument::loadError() const
+QList<QmlError> QmlDomDocument::errors() const
 {
-    return d->error;
+    return d->errors;
 }
 
 /*!
