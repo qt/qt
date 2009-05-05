@@ -64,17 +64,6 @@
 #include "qmlscriptparser_p.h"
 
 QT_BEGIN_NAMESPACE
-/*
-    New properties and signals can be added to any QObject type from QML.
-    <QObject>
-        <properties><Property name="myProperty" /></properties>
-        <signals><Signal name="mySignal" /></signals>
-    </QObject
-    The special names used as magical properties (in the above case "properties"
-    and "signals") are defined here.
-*/
-#define PROPERTIES_NAME "properties"
-#define SIGNALS_NAME "signals"
 
 using namespace QmlParser;
 
@@ -547,27 +536,6 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
 
     ctxt = 0;
 
-    // Only use magical "properties" and "signals" properties if the type 
-    // doesn't have already have them
-    bool ignoreProperties = false;
-    bool ignoreSignals = false;
-    if (obj->metatype && obj->metatype->indexOfProperty(PROPERTIES_NAME) != -1)
-        ignoreProperties = true;
-    if (obj->metatype && obj->metatype->indexOfProperty(SIGNALS_NAME) != -1)
-        ignoreSignals = true;
-
-    Property *propertiesProperty = ignoreProperties?0:obj->getProperty(PROPERTIES_NAME, false);
-    Property *signalsProperty = ignoreSignals?0:obj->getProperty(SIGNALS_NAME, false);
-
-    if (propertiesProperty) {
-        obj->dynamicPropertiesProperty = propertiesProperty;
-        obj->properties.remove(PROPERTIES_NAME);
-    }
-    if (signalsProperty) {
-        obj->dynamicSignalsProperty = signalsProperty;
-        obj->properties.remove(SIGNALS_NAME);
-    }
-
     int createInstrIdx = output->bytecode.count();
     // Create the object
     QmlInstruction create;
@@ -602,9 +570,7 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
     QList<QmlCustomParserProperty> customProps;
 
     foreach(Property *prop, obj->properties) {
-        if (!ignoreProperties && prop->name == PROPERTIES_NAME) {
-        } else if (!ignoreSignals && prop->name == SIGNALS_NAME) {
-        } else if (prop->name.length() >= 3 && prop->name.startsWith("on") && 
+        if (prop->name.length() >= 3 && prop->name.startsWith("on") && 
            ('A' <= prop->name.at(2) && 'Z' >= prop->name.at(2))) {
             if (!isCustomParser) {
                 COMPILE_CHECK(compileSignal(prop, obj));
@@ -1246,209 +1212,9 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
     return true;
 }
 
-bool QmlCompiler::findDynamicProperties(QmlParser::Property *prop,
-                                        QmlParser::Object *obj)
-{
-    QList<Object::DynamicProperty> definedProperties;
-
-    struct TypeNameToType {
-        const char *name;
-        Object::DynamicProperty::Type type;
-    } propTypeNameToTypes[] = {
-        { "", Object::DynamicProperty::Variant },
-        { "int", Object::DynamicProperty::Int },
-        { "bool", Object::DynamicProperty::Bool },
-        { "double", Object::DynamicProperty::Real },
-        { "real", Object::DynamicProperty::Real },
-        { "string", Object::DynamicProperty::String },
-        { "color", Object::DynamicProperty::Color },
-        { "date", Object::DynamicProperty::Date },
-        { "variant", Object::DynamicProperty::Variant }
-    };
-    const int propTypeNameToTypesCount = sizeof(propTypeNameToTypes) / 
-                                         sizeof(propTypeNameToTypes[0]);
-
-
-    if (prop->value)
-        COMPILE_EXCEPTION("Invalid property specification");
-
-    bool seenDefault = false;
-    for (int ii = 0; ii < prop->values.count(); ++ii) {
-        QmlParser::Value *val = prop->values.at(ii);
-        if (!val->object)
-            COMPILE_EXCEPTION("Invalid property specification");
-
-        QmlParser::Object *obj = val->object;
-        if (obj->type == -1 || output->types.at(obj->type).className != "Property") 
-            COMPILE_EXCEPTION("Use Property tag to specify properties");
-
-
-        enum Seen { None = 0, Name = 0x01, 
-                    Type = 0x02, Value = 0x04, 
-                    ValueChanged = 0x08,
-                    Default = 0x10 } seen = None;
-
-        Object::DynamicProperty propDef;
-
-        for (QHash<QByteArray, QmlParser::Property *>::ConstIterator iter =
-                obj->properties.begin();
-                iter != obj->properties.end();
-                ++iter) {
-
-            QmlParser::Property *property = *iter;
-            if (property->name == "name") {
-                if (seen & Name) 
-                    COMPILE_EXCEPTION("May only specify Property name once");
-                seen = (Seen)(seen | Name);
-
-                if (property->value || property->values.count() != 1 ||
-                   property->values.at(0)->object)
-                    COMPILE_EXCEPTION("Invalid Property name");
-
-                propDef.name = property->values.at(0)->primitive.toLatin1();
-
-            } else if (property->name == "type") {
-                if (seen & Type) 
-                    COMPILE_EXCEPTION("May only specify Property type once");
-                seen = (Seen)(seen | Type);
-
-                if (property->value || property->values.count() != 1 ||
-                   property->values.at(0)->object)
-                    COMPILE_EXCEPTION("Invalid Property type");
-
-                QString type = property->values.at(0)->primitive.toLower();
-                bool found = false;
-                for (int ii = 0; !found && ii < propTypeNameToTypesCount; ++ii) {
-                    if (type == QLatin1String(propTypeNameToTypes[ii].name)){
-                        found = true;
-                        propDef.type = propTypeNameToTypes[ii].type;
-                    }
-
-                }
-
-                if (!found) 
-                    COMPILE_EXCEPTION("Invalid Property type");
-
-            } else if (property->name == "value") {
-                if (seen & Value) 
-                    COMPILE_EXCEPTION("May only specify Property value once");
-                seen = (Seen)(seen | Value);
-
-                propDef.defaultValue = property;
-            } else if (property->name == "onValueChanged") {
-                if (seen & ValueChanged) 
-                    COMPILE_EXCEPTION("May only specify Property onValueChanged once");
-                seen = (Seen)(seen | ValueChanged);
-
-                if (property->value || property->values.count() != 1 ||
-                   property->values.at(0)->object)
-                    COMPILE_EXCEPTION("Invalid Property onValueChanged");
-
-                propDef.onValueChanged = property->values.at(0)->primitive;
-
-            } else if (property->name == "default") {
-                if (seen & Default)
-                    COMPILE_EXCEPTION("May only specify Property default once");
-                seen = (Seen)(seen | Default);
-                if (property->value || property->values.count() != 1 ||
-                   property->values.at(0)->object)
-                    COMPILE_EXCEPTION("Invalid Property default");
-
-                bool defaultValue = 
-                    QmlStringConverters::boolFromString(property->values.at(0)->primitive);
-                propDef.isDefaultProperty = defaultValue;
-                if (defaultValue) {
-                    if (seenDefault) 
-                        COMPILE_EXCEPTION("Only one property may be the default");
-                    seenDefault = true;
-                }
-
-            } else {
-                COMPILE_EXCEPTION("Invalid Property property");
-            }
-
-        }
-        if (obj->defaultProperty) {
-            if (seen & Value)
-                COMPILE_EXCEPTION("May only specify Property value once");
-
-            seen = (Seen)(seen | Value);
-            propDef.defaultValue = obj->defaultProperty;
-        }
-
-        if (!(seen & Name)) 
-            COMPILE_EXCEPTION("Must specify Property name");
-
-        definedProperties << propDef;
-    }
-
-    obj->dynamicProperties << definedProperties;
-    return true;
-}
-
-bool QmlCompiler::findDynamicSignals(QmlParser::Property *sigs,
-                                     QmlParser::Object *obj)
-{
-    QList<Object::DynamicSignal> definedSignals;
-
-    if (sigs->value)
-        COMPILE_EXCEPTION("Invalid signal specification");
-
-    for (int ii = 0; ii < sigs->values.count(); ++ii) {
-        QmlParser::Value *val = sigs->values.at(ii);
-        if (!val->object)
-            COMPILE_EXCEPTION("Invalid signal specification");
-
-        QmlParser::Object *obj = val->object;
-        if (obj->type == -1 || output->types.at(obj->type).className != "Signal") 
-            COMPILE_EXCEPTION("Use Signal tag to specify signals");
-
-        enum Seen { None = 0, Name = 0x01 } seen = None;
-        Object::DynamicSignal sigDef;
-
-        for (QHash<QByteArray, QmlParser::Property *>::ConstIterator iter =
-                obj->properties.begin();
-                iter != obj->properties.end();
-                ++iter) {
-
-            QmlParser::Property *property = *iter;
-            if (property->name == "name") {
-                if (seen & Name) 
-                    COMPILE_EXCEPTION("May only specify Signal name once");
-                seen = (Seen)(seen | Name);
-
-                if (property->value || property->values.count() != 1 ||
-                   property->values.at(0)->object)
-                    COMPILE_EXCEPTION("Invalid Signal name");
-
-                sigDef.name = property->values.at(0)->primitive.toLatin1();
-
-            } else {
-                COMPILE_EXCEPTION("Invalid Signal property");
-            }
-
-        }
-
-        if (obj->defaultProperty) 
-            COMPILE_EXCEPTION("Invalid Signal property");
-
-        if (!(seen & Name)) 
-            COMPILE_EXCEPTION("Must specify Signal name");
-
-        definedSignals << sigDef;
-    }
-
-    obj->dynamicSignals << definedSignals;
-    return true;
-}
-
 bool QmlCompiler::compileDynamicPropertiesAndSignals(QmlParser::Object *obj)
 {
-    if (obj->dynamicPropertiesProperty)
-        findDynamicProperties(obj->dynamicPropertiesProperty, obj);
-    if (obj->dynamicSignalsProperty)
-        findDynamicSignals(obj->dynamicSignalsProperty, obj);
-
+    // ### FIXME - Check that there is only one default property etc.
     if (obj->dynamicProperties.isEmpty() && obj->dynamicSignals.isEmpty())
         return true;
 
