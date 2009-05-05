@@ -336,6 +336,7 @@ private:
     bool dfbHandledClip;
     bool ignoreSystemClip;
     QDirectFBPaintDevice *dfbDevice;
+    void *lockedMemory;
 
     QDirectFBPaintEngine *q;
 };
@@ -345,7 +346,7 @@ QDirectFBPaintEnginePrivate::QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p
       matrixRotShear(false), scale(NoScale), lastLockedHeight(-1),
       fbWidth(-1), fbHeight(-1), opacity(255), drawFlagsFromCompositionMode(0),
       blitFlagsFromCompositionMode(0), porterDuffRule(DSPD_SRC_OVER), dirtyClip(true),
-      dfbHandledClip(false), dfbDevice(0), q(p)
+      dfbHandledClip(false), dfbDevice(0), lockedMemory(0), q(p)
 {
     fb = QDirectFBScreen::instance()->dfb();
     ignoreSystemClip = QDirectFBScreen::instance()->directFBFlags() & QDirectFBScreen::IgnoreSystemClip;
@@ -392,16 +393,21 @@ void QDirectFBPaintEnginePrivate::lock()
     // We will potentially get a new pointer to the buffer after a
     // lock so we need to call the base implementation of prepare so
     // it updates its rasterBuffer to point to the new buffer address.
-    lastLockedHeight = dfbDevice->height();
-
     Q_ASSERT(dfbDevice);
-    prepare(dfbDevice);
+    if (dfbDevice->lockFlags() != (DSLF_WRITE|DSLF_READ)
+        || dfbDevice->height() != lastLockedHeight
+        || dfbDevice->memory() != lockedMemory) {
+        prepare(dfbDevice);
+        lastLockedHeight = dfbDevice->height();
+        lockedMemory = dfbDevice->memory();
+    }
 }
 
 void QDirectFBPaintEnginePrivate::unlock()
 {
     Q_ASSERT(dfbDevice);
     dfbDevice->unlockDirectFB();
+    lockedMemory = 0;
 }
 
 void QDirectFBPaintEnginePrivate::setTransform(const QTransform &m)
@@ -436,6 +442,7 @@ void QDirectFBPaintEnginePrivate::begin(QPaintDevice *device)
         qFatal("QDirectFBPaintEngine used on an invalid device: 0x%x",
                device->devType());
     }
+    lockedMemory = 0;
     forceRasterPrimitives = dfbDevice->forceRasterPrimitives();
 
     surface->GetSize(surface, &fbWidth, &fbHeight);
@@ -451,6 +458,7 @@ void QDirectFBPaintEnginePrivate::begin(QPaintDevice *device)
 
 void QDirectFBPaintEnginePrivate::end()
 {
+    lockedMemory = 0;
     dfbDevice = 0;
     surface->ReleaseSource(surface);
     surface->SetClip(surface, NULL);

@@ -58,18 +58,18 @@ IDirectFBSurface *QDirectFBPaintDevice::directFBSurface() const
 
 void QDirectFBPaintDevice::lockDirectFB(uint flags)
 {
-    if (lockedImage) {
-        if (lockFlags & flags)
-            return;
-        unlockDirectFB();
-    }
-    if (uchar *mem = QDirectFBScreen::lockSurface(dfbSurface, flags, &bpl)) {
-        const QSize s = size();
-        lockedImage = new QImage(mem, s.width(), s.height(), bpl,
-                                 QDirectFBScreen::getImageFormat(dfbSurface));
-        lockFlags = flags;
-    } else {
-        lockFlags = 0;
+    if (!(lock & flags)) {
+        if (lock)
+            unlockDirectFB();
+        if ((mem = QDirectFBScreen::lockSurface(dfbSurface, flags, &bpl))) {
+            const QSize s = size();
+            lockedImage = new QImage(mem, s.width(), s.height(), bpl,
+                                     QDirectFBScreen::getImageFormat(dfbSurface));
+            lock = flags;
+            Q_ASSERT(mem);
+        } else {
+            lock = 0;
+        }
     }
 }
 
@@ -82,15 +82,19 @@ void QDirectFBPaintDevice::unlockDirectFB()
     dfbSurface->Unlock(dfbSurface);
     delete lockedImage;
     lockedImage = 0;
+    mem = 0;
+    lock = 0;
 }
 
 
 void *QDirectFBPaintDevice::memory() const
 {
-    QDirectFBPaintDevice* that = const_cast<QDirectFBPaintDevice*>(this);
-    that->lockDirectFB(DSLF_READ|DSLF_WRITE);
-    Q_ASSERT(that->lockedImage);
-    return that->lockedImage->bits();
+    if (lock != (DSLF_READ|DSLF_WRITE)) {
+        QDirectFBPaintDevice *that = const_cast<QDirectFBPaintDevice*>(this);
+        that->lockDirectFB(DSLF_READ|DSLF_WRITE);
+        Q_ASSERT(that->lockedImage);
+    }
+    return mem;
 }
 
 

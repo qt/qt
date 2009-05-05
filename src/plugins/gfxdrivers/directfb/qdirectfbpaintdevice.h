@@ -69,6 +69,7 @@ public:
     int bytesPerLine() const;
     QSize size() const;
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
+    uint lockFlags() const { return lock; }
 protected:
     // Shouldn't create QDirectFBPaintDevice by itself but only sub-class it:
     QDirectFBPaintDevice(QDirectFBScreen *scr = QDirectFBScreen::instance())
@@ -77,7 +78,8 @@ protected:
           lockedImage(0),
           screen(scr),
           forceRaster(false),
-          lockFlags(0)
+          lock(0),
+          mem(0)
     {}
 
     inline int dotsPerMeterX() const
@@ -94,7 +96,8 @@ protected:
     QDirectFBScreen *screen;
     int bpl;
     bool forceRaster;
-    uint lockFlags;
+    uint lock;
+    uchar *mem;
 private:
     Q_DISABLE_COPY(QDirectFBPaintDevice)
 };
