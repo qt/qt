@@ -190,8 +190,6 @@ ModelObject::ModelObject(ModelNode *node)
 {
 }
 
-QML_DECLARE_TYPE(ListModel);
-QML_DEFINE_TYPE(ListModel,ListModel);
 ListModel::ListModel(QObject *parent)
 : QListModelInterface(parent), _rolesOk(false), _root(0)
 {
@@ -304,14 +302,10 @@ int ListModel::count() const
 class ListModelParser : public QmlCustomParser
 {
 public:
-    virtual QByteArray compile(QXmlStreamReader& reader, bool *);
     QByteArray compile(const QList<QmlCustomParserProperty> &, bool *ok);
-    virtual QVariant create(const QByteArray &);
-
     bool compileProperty(const QmlCustomParserProperty &prop, QList<ListInstruction> &instr, QByteArray &data);
     void setCustomData(QObject *, const QByteArray &);
 };
-QML_DEFINE_CUSTOM_PARSER(ListModel, ListModelParser);
 
 bool ListModelParser::compileProperty(const QmlCustomParserProperty &prop, QList<ListInstruction> &instr, QByteArray &data)
 {
@@ -462,13 +456,10 @@ void ListModelParser::setCustomData(QObject *obj, const QByteArray &d)
     }
 }
 
-class ListModel2 : public ListModel
-{
-Q_OBJECT
-};
-QML_DECLARE_TYPE(ListModel2);
-QML_DEFINE_CUSTOM_TYPE(ListModel2, ListModel2, ListModelParser);
+QML_DECLARE_TYPE(ListModel);
+QML_DEFINE_CUSTOM_TYPE(ListModel, ListModel, ListModelParser);
 
+// ### FIXME
 class ListElement : public QObject
 {
 Q_OBJECT
@@ -510,171 +501,6 @@ ModelNode::~ModelNode()
         if (node) { delete node; node = 0; }
     }
     if (modelCache) { delete modelCache; modelCache = 0; }
-}
-
-QByteArray ListModelParser::compile(QXmlStreamReader& reader, bool *ok)
-{
-    *ok = true;
-
-    QByteArray data;
-    QList<ListInstruction> instr;
-    int depth=0;
-
-    while(!reader.atEnd() && depth >= 0) {
-        switch(reader.readNext()) {
-            case QXmlStreamReader::StartElement:
-                {
-                    QStringRef name = reader.name();
-                    bool isType = name.at(0).isUpper();
-
-                    if (isType) {
-                        ListInstruction li;
-                        li.type = ListInstruction::Push;
-                        li.dataIdx = -1;
-                        instr << li;
-
-                        for (int i = 0; i < reader.attributes().count(); ++i) {
-                            const QXmlStreamAttribute &attr = reader.attributes().at(i);
-                            QStringRef attrName = attr.name();
-                            QStringRef attrValue = attr.value();
-
-                            ListInstruction li;
-                            int ref = data.count();
-                            data.append(attrName.toString().toLatin1());
-                            data.append('\0');
-                            li.type = ListInstruction::Set;
-                            li.dataIdx = ref;
-                            instr << li;
-
-                            ref = data.count();
-                            data.append(attrValue.toString().toLatin1());
-                            data.append('\0');
-                            li.type = ListInstruction::Value;
-                            li.dataIdx = ref;
-                            instr << li;
-
-                            li.type = ListInstruction::Pop;
-                            li.dataIdx = -1;
-                            instr << li;
-                        }
-                    } else {
-                        ListInstruction li;
-                        int ref = data.count();
-                        data.append(name.toString().toLatin1());
-                        data.append('\0');
-                        li.type = ListInstruction::Set;
-                        li.dataIdx = ref;
-                        instr << li;
-                    }
-                }
-                ++depth;
-                break;
-            case QXmlStreamReader::EndElement:
-                {
-                    ListInstruction li;
-                    li.type = ListInstruction::Pop;
-                    li.dataIdx = -1;
-                    instr << li;
-                    --depth;
-                }
-                break;
-            case QXmlStreamReader::Characters:
-                if (!reader.isWhitespace()) {
-                    int ref = data.count();
-                    QByteArray d = reader.text().toString().toLatin1();
-                    d.append('\0');
-                    data.append(d);
-
-                    ListInstruction li;
-                    li.type = ListInstruction::Value;
-                    li.dataIdx = ref;
-                    instr << li;
-                }
-                break;
-
-            case QXmlStreamReader::Invalid:
-            case QXmlStreamReader::NoToken:
-            case QXmlStreamReader::StartDocument:
-            case QXmlStreamReader::EndDocument:
-            case QXmlStreamReader::Comment:
-            case QXmlStreamReader::DTD:
-            case QXmlStreamReader::EntityReference:
-            case QXmlStreamReader::ProcessingInstruction:
-                break;
-        }
-    }
-
-    if (reader.hasError())
-        *ok = true;
-
-    if (!*ok)
-        return QByteArray();
-
-    int size = sizeof(ListModelData) + 
-               instr.count() * sizeof(ListInstruction) + 
-               data.count();
-
-    QByteArray rv;
-    rv.resize(size);
-
-    ListModelData *lmd = (ListModelData *)rv.data();
-    lmd->dataOffset = sizeof(ListModelData) + 
-                     instr.count() * sizeof(ListInstruction);
-    lmd->instrCount = instr.count();
-    for (int ii = 0; ii < instr.count(); ++ii)
-        lmd->instructions()[ii] = instr.at(ii);
-    ::memcpy(rv.data() + lmd->dataOffset, data.constData(), data.count());
-
-    return rv;
-}
-
-QVariant ListModelParser::create(const QByteArray &d)
-{
-    ListModel *rv = new ListModel;
-    ModelNode *root = new ModelNode;
-    rv->_root = root;
-    QStack<ModelNode *> nodes;
-    nodes << root;
-
-    const ListModelData *lmd = (const ListModelData *)d.constData();
-    const char *data = ((const char *)lmd) + lmd->dataOffset;
-
-    for (int ii = 0; ii < lmd->instrCount; ++ii) {
-        const ListInstruction &instr = lmd->instructions()[ii];
-
-        switch(instr.type) {
-        case ListInstruction::Push:
-            {
-                ModelNode *n = nodes.top();
-                ModelNode *n2 = new ModelNode;
-                n->values << qVariantFromValue(n2);
-                nodes.push(n2);
-            }
-            break;
-
-        case ListInstruction::Pop:
-            nodes.pop();
-            break;
-
-        case ListInstruction::Value:
-            {
-                ModelNode *n = nodes.top();
-                n->values.append(QByteArray(data + instr.dataIdx));
-            }
-            break;
-
-        case ListInstruction::Set:
-            {
-                ModelNode *n = nodes.top();
-                ModelNode *n2 = new ModelNode;
-                n->properties.insert(QLatin1String(data + instr.dataIdx), n2);
-                nodes.push(n2);
-            }
-            break;
-        }
-    }
-
-    return QVariant::fromValue(rv);
 }
 
 QT_END_NAMESPACE

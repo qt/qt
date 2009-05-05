@@ -62,12 +62,12 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFxImageItemPrivate : public QFxItemPrivate
+class QFxPaintedItemPrivate : public QFxItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxImageItem)
+    Q_DECLARE_PUBLIC(QFxPaintedItem)
 
 public:
-    QFxImageItemPrivate()
+    QFxPaintedItemPrivate()
       : max_imagecache_size(1000*1000), smooth(false)
     {
     }

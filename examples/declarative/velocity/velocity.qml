@@ -2,7 +2,7 @@ Rect {
     color: "lightSteelBlue"
     width: 800
     height: 600
-    ListModel2 {
+    ListModel {
         id: List
         ListElement {
             name: "Sunday"

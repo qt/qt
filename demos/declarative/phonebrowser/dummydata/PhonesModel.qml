@@ -1,4 +1,4 @@
-ListModel2 {
+ListModel {
     id: "PhonesModel"
 
     ListElement {

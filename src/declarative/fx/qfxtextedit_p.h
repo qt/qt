@@ -54,7 +54,7 @@
 //
 
 #include "qfxitem.h"
-#include "qfximageitem_p.h"
+#include "qfxpainteditem_p.h"
 #include "qml.h"
 
 
@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 class QTextLayout;
 class QTextDocument;
 class QTextControl;
-class QFxTextEditPrivate : public QFxImageItemPrivate
+class QFxTextEditPrivate : public QFxPaintedItemPrivate
 {
     Q_DECLARE_PUBLIC(QFxTextEdit)
 

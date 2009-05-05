@@ -79,13 +79,14 @@ public:
     Qml the query should connect using its name.
 
     \qml
-    <SqlConnection id="myConnection">
-        <name>qmlConnection</name>
-        <driver>QSQLITE</driver>
-        <databaseName>"mydb.sqlite"</databaseName>
-    </SqlConnection>
-    <SqlQuery id="listmodel" connection="{myConnection}">SELECT * FROM mytable</SqlQuery>
-    <SqlQuery id="othermodel" connection="qmlConnection">SELECT * FROM myothertable</SqlQuery>
+    SqlConnection {
+        id: myConnection
+        name: "qmlConnection"
+        driver: "QSQLITE"
+        databaseName: "mydb.sqlite"
+    }
+    SqlQuery { id: listmodel; connection: myConnection; query: "SELECT * FROM mytable" }
+    SqlQuery { id: othermodel; connection: "qmlConnection"; query: "SELECT * FROM myothertable" }
     \endqml
 */
 
@@ -99,34 +100,34 @@ public:
 */
 
 /*!
-    \qmlproperty QStringList SqlConnection::tables
+    \qmlproperty list<string> SqlConnection::tables
 
     Defines the set of tables that exist in the database for the connection.
 */
 
 /*!
-    \qmlproperty QString SqlConnection::databaseName
+    \qmlproperty string SqlConnection::databaseName
 
     Defines the connection's database name.  This is used when opening the
     connection to the database.
 */
 
 /*!
-    \qmlproperty QString SqlConnection::driver
+    \qmlproperty string SqlConnection::driver
 
     Defines the driver type of the connection.  This is used when opening the
     connection to the database.
 */
 
 /*!
-    \qmlproperty QString SqlConnection::connectOptions
+    \qmlproperty string SqlConnection::connectOptions
 
     Defines the options used when connecting to the database.  These are used
     when opening the connection to the database.
 */
 
 /*!
-    \qmlproperty QString SqlConnection::hostName
+    \qmlproperty string SqlConnection::hostName
 
     Defines the connection's host name.  This is used when opening the
     connection to the database.
@@ -140,21 +141,21 @@ public:
 */
 
 /*!
-    \qmlproperty QString SqlConnection::userName
+    \qmlproperty string SqlConnection::userName
 
     Defines the connection's user name.  This is used when opening the
     connection to the database.
 */
 
 /*!
-    \qmlproperty QString SqlConnection::password
+    \qmlproperty string SqlConnection::password
 
     Defines the connection's password.  This is used when opening the
     connection to the database.
 */
 
 /*!
-    \qmlproperty QString SqlConnection::lastError
+    \qmlproperty string SqlConnection::lastError
 
     Defines the last error, if one occurred, when working with the database.
     If the error occurred in conjunction with an SQL query the error will be

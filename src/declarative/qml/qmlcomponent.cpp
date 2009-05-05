@@ -60,17 +60,6 @@
 QT_BEGIN_NAMESPACE
 class QByteArray;
 
-bool QmlComponentPrivate::isXml(const QByteArray &ba)
-{
-    for (int i = 0; i < ba.size(); ++i) {
-        char c = ba.at(i);
-        if (c == ' ' || c == '\n' || c == '\r' || c == '\t')
-            continue;
-        return (c == '<');
-    }
-    return true;
-}
-
 /*!
     \class QmlComponent
     \brief The QmlComponent class encapsulates a QML component description.
@@ -137,9 +126,7 @@ void QmlComponentPrivate::fromTypeData(QmlCompositeTypeData *data)
     if (!c) {
         Q_ASSERT(data->status == QmlCompositeTypeData::Error);
 
-        errorDescription = data->errorDescription;
-        qWarning().nospace() << "QmlComponent: "
-                             << data->errorDescription.toLatin1().constData();
+        errors = data->errors;
 
     } else {
 
@@ -192,10 +179,10 @@ QmlComponent::Status QmlComponent::status() const
 
     if (d->typeData)
         return Loading;
+    else if (!d->errors.isEmpty())
+        return Error;
     else if (d->engine && d->cc)
         return Ready;
-    else if (!d->errorDescription.isEmpty())
-        return Error;
     else
         return Null;
 }
@@ -269,7 +256,7 @@ QmlComponent::QmlComponent(QmlEngine *engine, const QUrl &url, QObject *parent)
 }
 
 /*!
-    Create a QmlComponent from the given XML \a data.  If provided, \a filename
+    Create a QmlComponent from the given QML \a data.  If provided, \a url
     is used to set the component name, and to provide a base path for items
     resolved by this component.
 */
@@ -296,8 +283,8 @@ QmlComponent::QmlComponent(QmlEngine *engine, QmlCompiledComponent *cc, int star
 }
 
 /*!
-    Sets the QmlComponent to use the given XML \a data.  If provided, 
-    \a filename is used to set the component name, and to provide a base path 
+    Sets the QmlComponent to use the given QML \a data.  If provided,
+    \a url is used to set the component name, and to provide a base path
     for items resolved by this component.
 */
 void QmlComponent::setData(const QByteArray &data, const QUrl &url)
@@ -353,13 +340,17 @@ void QmlComponent::loadUrl(const QUrl &url)
     emit statusChanged(status());
 }
 
-QString QmlComponent::errorDescription() const
+/*!
+    Return the list of errors that occured during the last compile or create
+    operation.  An empty list is returned if isError() is not set.
+*/
+QList<QmlError> QmlComponent::errors() const
 {
     Q_D(const QmlComponent);
     if (isError())
-        return d->errorDescription;
+        return d->errors;
     else
-        return QString();
+        return QList<QmlError>();
 }
 
 /*!
@@ -448,7 +439,7 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
     }
 
     if (!isReady()) {
-        qWarning("QmlComponent: Cannot create un-ready component");
+        qWarning("QmlComponent: Component is not ready");
         return 0;
     }
 
@@ -466,15 +457,9 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
 
     QmlVME vme;
     QObject *rv = vme.run(ctxt, d->cc, d->start, d->count);
-    if (vme.isError()) {
-        qWarning().nospace()
-#ifdef QML_VERBOSEERRORS_ENABLED
-                             << "QmlComponent: "
-#endif
-                             << vme.errorDescription().toLatin1().constData() << " @"
-                             << d->url.toString().toLatin1().constData() << ":" << vme.errorLine();
-    }
 
+    if (vme.isError()) 
+        d->errors = vme.errors();
 
     ctxt->deactivate();
 

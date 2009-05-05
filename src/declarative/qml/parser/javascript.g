@@ -688,7 +688,8 @@ UiObjectMember: T_DEFAULT T_PROPERTY UiPropertyType T_IDENTIFIER ;
 case $rule_number: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(3).sval, sym(4).sval);
     node->isDefaultMember = true;
-    node->propertyToken = loc(1);
+    node->defaultToken = loc(1);
+    node->propertyToken = loc(2);
     node->typeToken = loc(3);
     node->identifierToken = loc(4);
     sym(1).Node = node;
@@ -714,7 +715,8 @@ case $rule_number: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(3).sval, sym(4).sval,
         sym(6).Expression);
     node->isDefaultMember = true;
-    node->propertyToken = loc(1);
+    node->defaultToken = loc(1);
+    node->propertyToken = loc(2);
     node->typeToken = loc(3);
     node->identifierToken = loc(4);
     node->colonToken = loc(5);

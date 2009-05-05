@@ -98,26 +98,9 @@ class Q_DECLARATIVE_EXPORT QmlCustomParser
 public:
     virtual ~QmlCustomParser() {}
 
-    virtual QByteArray compile(QXmlStreamReader&, bool *ok)=0;
     virtual QByteArray compile(const QList<QmlCustomParserProperty> &, bool *ok);
-    virtual QVariant create(const QByteArray &)=0;
     virtual void setCustomData(QObject *, const QByteArray &);
-
-    struct Register {
-        Register(const char *name, QmlCustomParser *parser) {
-            qmlRegisterCustomParser(name, parser);
-        }
-    };
-    template<typename T>
-    struct Define {
-        static Register instance;
-    };
 };
-#define QML_DEFINE_CUSTOM_PARSER(name, parserClass) \
-    template<> QmlCustomParser::Register QmlCustomParser::Define<parserClass>::instance(# name, new parserClass);
-#define QML_DEFINE_CUSTOM_PARSER_NS(namespacestring, name, parserClass) \
-    template<> QmlCustomParser::Register QmlCustomParser::Define<parserClass>::instance(namespacestring "/" # name, new parserClass);
-
 #define QML_DEFINE_CUSTOM_TYPE(TYPE, NAME, CUSTOMTYPE) \
     template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *>::instance(qmlRegisterCustomType<TYPE>(#NAME, #TYPE, new CUSTOMTYPE));
 

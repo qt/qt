@@ -1,4 +1,4 @@
-ListModel2 {
+ListModel {
     ListElement {
         firstName: "Aaron"
         lastName: "Kennedy"

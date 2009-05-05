@@ -62,10 +62,12 @@ Rect {
         anchors.verticalCenter: parent.verticalCenter
         source: "../../shared/pics/ok.png"
         opacity: 0
+//! [use signal]
         MouseRegion {
             anchors.fill: parent
             onClicked: { toggle(); removeButton.confirmed.emit() }
         }
+//! [use signal]
     }
     Text {
         id: text
@@ -83,11 +85,13 @@ Rect {
     states: [
         State {
             name: "opened"
+//! [use width]
             SetProperty {
                 target: removeButton
                 property: "width"
                 value: removeButton.expandedWidth
             }
+//! [use width]
             SetProperty {
                 target: text
                 property: "opacity"

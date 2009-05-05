@@ -105,10 +105,9 @@ QmlCompositeTypeData::toCompiledComponent(QmlEngine *engine)
         QmlCompiler compiler;
         if (!compiler.compile(engine, this, compiledComponent)) {
             status = Error;
-            errorDescription = compiler.errorDescription() + 
-                               QLatin1String("@") +
-                               url + QLatin1String(":") + 
-                               QString::number(compiler.errorLine());
+            errors = compiler.errors();
+            for(int ii = 0; ii < errors.count(); ++ii)
+                errors[ii].setUrl(url);
             compiledComponent->release();
             compiledComponent = 0;
         }
@@ -188,7 +187,10 @@ void QmlCompositeTypeManager::replyFinished()
                       reply->url().toString();
 
         unit->status = QmlCompositeTypeData::Error;
-        unit->errorDescription = errorDescription;
+        // ### FIXME
+        QmlError error;
+        error.setDescription(errorDescription);
+        unit->errors << error;
         doComplete(unit);
 
     } else {
@@ -215,7 +217,10 @@ void QmlCompositeTypeManager::loadSource(QmlCompositeTypeData *unit)
             // ### - Fill in error
             errorDescription = QLatin1String("File error for URL ") + url.toString();
             unit->status = QmlCompositeTypeData::Error;
-            unit->errorDescription = errorDescription;
+            // ### FIXME
+            QmlError error;
+            error.setDescription(errorDescription);
+            unit->errors << error;
             doComplete(unit);
         }
 
@@ -234,7 +239,7 @@ void QmlCompositeTypeManager::setData(QmlCompositeTypeData *unit,
     if (!unit->data.parse(data, url)) {
 
         unit->status = QmlCompositeTypeData::Error;
-        unit->errorDescription = unit->data.errorDescription();
+        unit->errors << unit->data.errors();
         doComplete(unit);
 
     } else {
@@ -273,7 +278,7 @@ void QmlCompositeTypeManager::checkComplete(QmlCompositeTypeData *unit)
 
         if (u->status == QmlCompositeTypeData::Error) {
             unit->status = QmlCompositeTypeData::Error;
-            unit->errorDescription = u->errorDescription;
+            unit->errors = u->errors;
             doComplete(unit);
             return;
         } else if (u->status == QmlCompositeTypeData::Waiting) {
@@ -334,7 +339,7 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
         case QmlCompositeTypeData::Invalid:
         case QmlCompositeTypeData::Error:
             unit->status = QmlCompositeTypeData::Error;
-            unit->errorDescription = urlUnit->errorDescription;
+            unit->errors = urlUnit->errors;
             doComplete(unit);
             return;
 

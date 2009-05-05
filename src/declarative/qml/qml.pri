@@ -8,7 +8,6 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlcontext.cpp \
     qml/qmlcustomparser.cpp \
     qml/qmlpropertyvaluesource.cpp \
-    qml/qmlxmlparser.cpp \
     qml/qmlproxymetaobject.cpp \
     qml/qmlvme.cpp \
     qml/qmlcompiler.cpp \
@@ -22,7 +21,8 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlclassfactory.cpp \
     qml/qmlparserstatus.cpp \
     qml/qmlcompositetypemanager.cpp \
-    qml/qmlinfo.cpp
+    qml/qmlinfo.cpp \
+    qml/qmlerror.cpp
 
 HEADERS += qml/qmlparser_p.h \
     qml/qmlinstruction_p.h \
@@ -36,7 +36,6 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlcustomparser_p_p.h \
     qml/qmlpropertyvaluesource.h \
     qml/qmlboundsignal_p.h \
-    qml/qmlxmlparser_p.h \
     qml/qmlparserstatus.h \
     qml/qmlproxymetaobject_p.h \
     qml/qmlcompiledcomponent_p.h \
@@ -58,7 +57,8 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlcontext_p.h \
     qml/qmlcompositetypemanager_p.h \
     qml/qmllist.h \
-    qml/qmldeclarativedata_p.h
+    qml/qmldeclarativedata_p.h \
+    qml/qmlerror.h
 
 # for qtscript debugger
 QT += scripttools
