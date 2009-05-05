@@ -341,7 +341,7 @@ QmlContext *QmlContext::activeContext()
     simply returned. If there is no containing component,
     an empty URL is returned.
 
-    \sa QmlEngine::componentUrl(), setBaseUrl
+    \sa QmlEngine::componentUrl(), setBaseUrl()
 */
 QUrl QmlContext::resolvedUrl(const QUrl &src)
 {
@@ -370,7 +370,7 @@ QUrl QmlContext::resolvedUrl(const QUrl &src)
     \l {QmlEngine::nameSpacePaths()} {namespace paths} of the
     context's engine, returning the resolved URL.
 
-    \sa QmlEngine::componentUrl(), setBaseUrl
+    \sa QmlEngine::componentUrl(), setBaseUrl()
 */
 QUrl QmlContext::resolvedUri(const QUrl &src)
 {
@@ -394,11 +394,13 @@ QUrl QmlContext::resolvedUri(const QUrl &src)
 }
 
 /*!
-    Explicitly sets the url both resolveUri() and resolveUrl() will use for relative references.
+    Explicitly sets the url both resolveUri() and resolveUrl() will
+    use for relative references to \a baseUrl.
 
-    Calling this function will override the url of the containing component used by default.
+    Calling this function will override the url of the containing
+    component used by default.
 
-    \sa resolvedUrl, resolvedUri
+    \sa resolvedUrl(), resolvedUri()
 */
 void QmlContext::setBaseUrl(const QUrl &baseUrl)
 {

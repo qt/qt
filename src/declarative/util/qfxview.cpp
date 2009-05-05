@@ -348,7 +348,7 @@ void QFxView::continueExecute()
 }
 
 /*! \fn void QFxView::sceneResized(QSize size)
-  This signal is emitted when the view is resized.
+  This signal is emitted when the view is resized to \a size.
  */
 
 /*!
@@ -458,7 +458,8 @@ void QFxView::resizeEvent(QResizeEvent *e)
 }
 
 /*! \fn void QFxView::focusInEvent(QFocusEvent *e)
-  This virtual function does nothing in this class.
+  This virtual function does nothing with the event \a e
+  in this class.
  */
 void QFxView::focusInEvent(QFocusEvent *)
 {
@@ -467,7 +468,8 @@ void QFxView::focusInEvent(QFocusEvent *)
 
 
 /*! \fn void QFxView::focusOutEvent(QFocusEvent *e)
-  This virtual function does nothing in this class.
+  This virtual function does nothing with the event \a e
+  in this class.
  */
 void QFxView::focusOutEvent(QFocusEvent *)
 {
