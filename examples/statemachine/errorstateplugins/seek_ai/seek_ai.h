@@ -95,10 +95,10 @@ protected:
         qreal angleOfWall = m_lastLine.angle();
 
         qreal newDirection;
-        if (qAbs(currentDirection - angleOfWall) < qAbs(angleOfWall - currentDirection))
+        if (qrand() % 2 == 0)
             newDirection = angleOfWall;
         else
-            newDirection = -angleOfWall; 
+            newDirection = angleOfWall - 180.0; 
 
         m_turnTo->assignProperty(m_tank, "direction", newDirection);
     }
