@@ -190,10 +190,10 @@ QmlComponent::Status QmlComponent::status() const
 
     if (d->typeData)
         return Loading;
-    else if (d->engine && d->cc)
-        return Ready;
     else if (!d->errors.isEmpty())
         return Error;
+    else if (d->engine && d->cc)
+        return Ready;
     else
         return Null;
 }
