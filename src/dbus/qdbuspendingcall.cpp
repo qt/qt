@@ -432,9 +432,14 @@ inline void QDBusPendingCallWatcherPrivate::_q_finished()
 QDBusPendingCallWatcher::QDBusPendingCallWatcher(const QDBusPendingCall &call, QObject *parent)
     : QObject(*new QDBusPendingCallWatcherPrivate, parent), QDBusPendingCall(call)
 {
-    if (d) {
-        if (!d->watcherHelper)
+    if (d) {                    // QDBusPendingCall::d
+        if (!d->watcherHelper) {
             d->watcherHelper = new QDBusPendingCallWatcherHelper;
+            if (isFinished()) {
+                // cause a signal emission anyways
+                QMetaObject::invokeMethod(d->watcherHelper, "finished", Qt::QueuedConnection);
+            }
+        }
         d->watcherHelper->add(this);
     }
 }
@@ -464,6 +469,7 @@ void QDBusPendingCallWatcher::waitForFinished()
         d->waitForFinished();
 
         // our signals were queued, so deliver them
+        QCoreApplication::sendPostedEvents(d->watcherHelper, QEvent::MetaCall);
         QCoreApplication::sendPostedEvents(this, QEvent::MetaCall);
     }
 }
