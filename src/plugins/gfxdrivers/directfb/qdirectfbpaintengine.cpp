@@ -214,18 +214,6 @@ public:
     QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p);
     ~QDirectFBPaintEnginePrivate();
 
-    IDirectFBSurface *surface;
-
-    QPen pen;
-
-    bool antialiased;
-    bool forceRasterPrimitives;
-
-    bool simplePen;
-
-    bool matrixRotShear;
-    enum Scale { NoScale, Scaled, NegativeScale } scale;
-
     void setTransform(const QTransform &m);
     void setPen(const QPen &pen);
     void setCompositionMode(QPainter::CompositionMode mode);
@@ -255,7 +243,6 @@ public:
     void blit(const QRectF &dest, IDirectFBSurface *surface, const QRectF &src);
 
     inline void updateClip();
-    inline void setClipDirty();
     void systemStateChanged();
 
     void begin(QPaintDevice *device);
@@ -268,10 +255,23 @@ public:
 #endif
 
     void prepareForBlit(bool alpha);
+private:
+    IDirectFBSurface *surface;
+
+    QPen pen;
+
+    bool antialiased;
+    bool forceRasterPrimitives;
+
+    bool simplePen;
+
+    bool matrixRotShear;
+    enum Scale { NoScale, Scaled, NegativeScale } scale;
+
     SurfaceCache *surfaceCache;
     QTransform transform;
     int lastLockedHeight;
-private:
+
     IDirectFB *fb;
     DFBSurfaceDescription fbDescription;
     int fbWidth;
@@ -289,6 +289,7 @@ private:
     void *lockedMemory;
 
     QDirectFBPaintEngine *q;
+    friend class QDirectFBPaintEngine;
 };
 
 QDirectFBPaintEngine::QDirectFBPaintEngine(QPaintDevice *device)
@@ -322,7 +323,7 @@ bool QDirectFBPaintEngine::end()
 void QDirectFBPaintEngine::clipEnabledChanged()
 {
     Q_D(QDirectFBPaintEngine);
-    d->setClipDirty();
+    d->dirtyClip = true;
     QRasterPaintEngine::clipEnabledChanged();
 }
 
@@ -370,7 +371,7 @@ void QDirectFBPaintEngine::setState(QPainterState *s)
 {
     Q_D(QDirectFBPaintEngine);
     QRasterPaintEngine::setState(s);
-    d->setClipDirty();
+    d->dirtyClip = true;
     d->setPen(state()->pen);
     d->setOpacity(quint8(state()->opacity * 255));
     d->setCompositionMode(state()->compositionMode());
@@ -380,7 +381,7 @@ void QDirectFBPaintEngine::setState(QPainterState *s)
 void QDirectFBPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 {
     Q_D(QDirectFBPaintEngine);
-    d->setClipDirty();
+    d->dirtyClip = true;
     const QPoint bottom = d->transform.map(QPoint(0, path.controlPointRect().y2));
     if (bottom.y() >= d->lastLockedHeight)
         d->lock();
@@ -390,7 +391,7 @@ void QDirectFBPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 void QDirectFBPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
 {
     Q_D(QDirectFBPaintEngine);
-    d->setClipDirty();
+    d->dirtyClip = true;
     if (d->clip() && !d->clip()->hasRectClip && d->clip()->enabled) {
         const QPoint bottom = d->transform.map(QPoint(0, rect.bottom()));
         if (bottom.y() >= d->lastLockedHeight)
@@ -839,11 +840,6 @@ bool QDirectFBPaintEnginePrivate::isSimpleBrush(const QBrush &brush) const
     return (brush.style() == Qt::NoBrush) || (brush.style() == Qt::SolidPattern && !antialiased);
 }
 
-void QDirectFBPaintEnginePrivate::setClipDirty()
-{
-    dirtyClip = true;
-}
-
 void QDirectFBPaintEnginePrivate::lock()
 {
     // We will potentially get a new pointer to the buffer after a
@@ -1235,7 +1231,7 @@ void QDirectFBPaintEnginePrivate::updateClip()
 
 void QDirectFBPaintEnginePrivate::systemStateChanged()
 {
-    setClipDirty();
+    dirtyClip = true;
     QRasterPaintEnginePrivate::systemStateChanged();
 }
 
