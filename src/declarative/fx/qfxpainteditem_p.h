@@ -39,62 +39,57 @@
 **
 ****************************************************************************/
 
-#ifndef QFXIMAGEITEM_H
-#define QFXIMAGEITEM_H
+#ifndef QFXIMAGEITEM_P_H
+#define QFXIMAGEITEM_P_H
 
-#include <qfxglobal.h>
-#include <qfxitem.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
+#include "qfxitem_p.h"
+#include <qsimplecanvas.h>
 
-QT_BEGIN_HEADER
+#if defined(QFX_RENDER_OPENGL)
+#include "gltexture.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-/*
-WARNING: SHORT TERM CLASS.  INTENDED TO MERGE INTO QFxPainted
-*/
-
-class QFxImageItemPrivate;
-class Q_DECLARATIVE_EXPORT QFxImageItem : public QFxItem
+class QFxPaintedItemPrivate : public QFxItemPrivate
 {
-    Q_OBJECT
+    Q_DECLARE_PUBLIC(QFxPaintedItem)
+
 public:
-    QFxImageItem(QFxItem *parent=0);
-    ~QFxImageItem();
+    QFxPaintedItemPrivate()
+      : max_imagecache_size(1000*1000), smooth(false)
+    {
+    }
 
-    Q_PROPERTY(QSize contentsSize READ contentsSize WRITE setContentsSize);
-    Q_PROPERTY(bool smooth READ isSmooth WRITE setSmooth);
-
-#if defined(QFX_RENDER_QPAINTER)
-    void paintContents(QPainter &painter);
-#elif defined(QFX_RENDER_OPENGL)
-    void paintGLContents(GLPainter &);
+    struct ImageCacheItem {
+        ImageCacheItem() : age(0) {}
+        ~ImageCacheItem() { }
+        int age;
+        QRect area;
+#if defined(QFX_RENDER_QPAINTER) 
+        QSimpleCanvasConfig::Image image;
+#else
+        GLTexture image;
 #endif
+    };
 
-    bool isSmooth() const;
-    QSize contentsSize() const;
+    QList<ImageCacheItem*> imagecache;
 
-    void setSmooth(bool);
-    void setContentsSize(const QSize &);
-protected:
-    QFxImageItem(QFxImageItemPrivate &dd, QFxItem *parent);
-
-    virtual void drawContents(QPainter *p, const QRect &) = 0;
-
-protected Q_SLOTS:
-    void dirtyCache(const QRect &);
-    void clearCache();
-
-private:
-    void init();
-    Q_DISABLE_COPY(QFxImageItem)
-    Q_DECLARE_PRIVATE(QFxImageItem)
+    const int max_imagecache_size;
+    bool smooth;
+    QSize contentsSize;
 };
-QML_DECLARE_TYPE(QFxImageItem);
-
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 #endif

@@ -39,57 +39,59 @@
 **
 ****************************************************************************/
 
-#ifndef QFXIMAGEITEM_P_H
-#define QFXIMAGEITEM_P_H
+#ifndef QFXIMAGEITEM_H
+#define QFXIMAGEITEM_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <qfxglobal.h>
+#include <qfxitem.h>
 
-#include "qfxitem_p.h"
-#include <qsimplecanvas.h>
 
-#if defined(QFX_RENDER_OPENGL)
-#include "gltexture.h"
-#endif
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QFxImageItemPrivate : public QFxItemPrivate
+QT_MODULE(Declarative)
+
+class QFxPaintedItemPrivate;
+class Q_DECLARATIVE_EXPORT QFxPaintedItem : public QFxItem
 {
-    Q_DECLARE_PUBLIC(QFxImageItem)
-
+    Q_OBJECT
 public:
-    QFxImageItemPrivate()
-      : max_imagecache_size(1000*1000), smooth(false)
-    {
-    }
+    QFxPaintedItem(QFxItem *parent=0);
+    ~QFxPaintedItem();
 
-    struct ImageCacheItem {
-        ImageCacheItem() : age(0) {}
-        ~ImageCacheItem() { }
-        int age;
-        QRect area;
-#if defined(QFX_RENDER_QPAINTER) 
-        QSimpleCanvasConfig::Image image;
-#else
-        GLTexture image;
+    Q_PROPERTY(QSize contentsSize READ contentsSize WRITE setContentsSize);
+    Q_PROPERTY(bool smooth READ isSmooth WRITE setSmooth);
+
+#if defined(QFX_RENDER_QPAINTER)
+    void paintContents(QPainter &painter);
+#elif defined(QFX_RENDER_OPENGL)
+    void paintGLContents(GLPainter &);
 #endif
-    };
 
-    QList<ImageCacheItem*> imagecache;
+    bool isSmooth() const;
+    QSize contentsSize() const;
 
-    const int max_imagecache_size;
-    bool smooth;
-    QSize contentsSize;
+    void setSmooth(bool);
+    void setContentsSize(const QSize &);
+protected:
+    QFxPaintedItem(QFxPaintedItemPrivate &dd, QFxItem *parent);
+
+    virtual void drawContents(QPainter *p, const QRect &) = 0;
+
+protected Q_SLOTS:
+    void dirtyCache(const QRect &);
+    void clearCache();
+
+private:
+    void init();
+    Q_DISABLE_COPY(QFxPaintedItem)
+    Q_DECLARE_PRIVATE(QFxPaintedItem)
 };
+QML_DECLARE_TYPE(QFxPaintedItem);
+
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
 #endif

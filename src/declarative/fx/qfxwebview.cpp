@@ -68,7 +68,7 @@
 
 #include "qfxwebview.h"
 #include <qsimplecanvasfilter.h>
-#include <private/qfximageitem_p.h>
+#include <private/qfxpainteditem_p.h>
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(QFxWebView,WebView);
@@ -142,13 +142,13 @@ public:
 };
 
 
-class QFxWebViewPrivate : public QFxImageItemPrivate
+class QFxWebViewPrivate : public QFxPaintedItemPrivate
 {
     Q_DECLARE_PUBLIC(QFxWebView)
 
 public:
     QFxWebViewPrivate()
-      : QFxImageItemPrivate(), page(0), idealwidth(0), idealheight(0), interactive(true), lastPress(0), lastRelease(0), mouseX(0), mouseY(0),
+      : QFxPaintedItemPrivate(), page(0), idealwidth(0), idealheight(0), interactive(true), lastPress(0), lastRelease(0), mouseX(0), mouseY(0),
             max_imagecache_size(100000), progress(1.0), pending(PendingNone)
     {
     }
@@ -253,13 +253,13 @@ public:
 */
 
 QFxWebView::QFxWebView(QFxItem *parent)
-  : QFxImageItem(*(new QFxWebViewPrivate), parent)
+  : QFxPaintedItem(*(new QFxWebViewPrivate), parent)
 {
     init();
 }
 
 QFxWebView::QFxWebView(QFxWebViewPrivate &dd, QFxItem *parent)
-  : QFxImageItem(dd, parent)
+  : QFxPaintedItem(dd, parent)
 {
     init();
 }
@@ -283,7 +283,7 @@ void QFxWebView::init()
 
 void QFxWebView::componentComplete()
 {
-    QFxImageItem::componentComplete();
+    QFxPaintedItem::componentComplete();
     Q_D(QFxWebView);
     switch (d->pending) {
         case QFxWebViewPrivate::PendingUrl:
@@ -491,7 +491,7 @@ void QFxWebView::geometryChanged(const QRectF &newGeometry,
 {
     if (newGeometry.size() != oldGeometry.size())
         expandToWebPage();
-    QFxImageItem::geometryChanged(newGeometry, oldGeometry);
+    QFxPaintedItem::geometryChanged(newGeometry, oldGeometry);
 }
 
 void QFxWebView::paintPage(const QRect& r)
@@ -554,7 +554,7 @@ void QFxWebView::dump(int depth)
 {
     QByteArray ba(depth * 4, ' ');
     qWarning() << ba.constData() << "url:" << url();
-    QFxImageItem::dump(depth);
+    QFxPaintedItem::dump(depth);
 }
 
 void QFxWebView::drawContents(QPainter *p, const QRect &r)
@@ -656,7 +656,7 @@ void QFxWebView::mousePressEvent(QGraphicsSceneMouseEvent *event)
         event->setAccepted(false);
     }
     if (!event->isAccepted())
-        QFxImageItem::mousePressEvent(event);
+        QFxPaintedItem::mousePressEvent(event);
 }
 
 void QFxWebView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -670,7 +670,7 @@ void QFxWebView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         event->setAccepted(false);
     }
     if (!event->isAccepted())
-        QFxImageItem::mouseReleaseEvent(event);
+        QFxPaintedItem::mouseReleaseEvent(event);
 }
 
 void QFxWebView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -691,7 +691,7 @@ void QFxWebView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         event->setAccepted(false);
     }
     if (!event->isAccepted())
-        QFxImageItem::mouseMoveEvent(event);
+        QFxPaintedItem::mouseMoveEvent(event);
 }
 
 void QFxWebView::keyPressEvent(QKeyEvent* event)
@@ -700,7 +700,7 @@ void QFxWebView::keyPressEvent(QKeyEvent* event)
     if (d->interactive)
         page()->event(event);
     if (!event->isAccepted())
-        QFxImageItem::keyPressEvent(event);
+        QFxPaintedItem::keyPressEvent(event);
 }
 
 void QFxWebView::keyReleaseEvent(QKeyEvent* event)
@@ -709,7 +709,7 @@ void QFxWebView::keyReleaseEvent(QKeyEvent* event)
     if (d->interactive)
         page()->event(event);
     if (!event->isAccepted())
-        QFxImageItem::keyReleaseEvent(event);
+        QFxPaintedItem::keyReleaseEvent(event);
 }
 
 /*!

@@ -45,7 +45,7 @@
 #include <QAction>
 #include <QUrl>
 #include <qfxglobal.h>
-#include <qfximageitem.h>
+#include <qfxpainteditem.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QWebPage>
 
@@ -74,7 +74,7 @@ private:
 };
 
 
-class Q_DECLARATIVE_EXPORT QFxWebView : public QFxImageItem
+class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
 {
     Q_OBJECT
 

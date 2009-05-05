@@ -17,8 +17,8 @@ HEADERS += \
            fx/qfxgridview.h \
            fx/qfxhighlightfilter.h \
            fx/qfximage.h \
-           fx/qfximageitem.h \
-           fx/qfximageitem_p.h \
+           fx/qfxpainteditem.h \
+           fx/qfxpainteditem_p.h \
            fx/qfximage_p.h \
            fx/qfxitem.h \
            fx/qfxitem_p.h \
@@ -65,7 +65,7 @@ SOURCES += \
            fx/qfxgridview.cpp \
            fx/qfxhighlightfilter.cpp \
            fx/qfximage.cpp \
-           fx/qfximageitem.cpp \
+           fx/qfxpainteditem.cpp \
            fx/qfxitem.cpp \
            fx/qfxkeyactions.cpp \
            fx/qfxkeyproxy.cpp \
