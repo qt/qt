@@ -176,9 +176,14 @@ QmlVME::QmlVME()
 
 #define VME_EXCEPTION(desc) \
     { \
-        exceptionLine = instr.line; \
-        QDebug d(&exceptionDescription); \
-        d << desc;  \
+        QString str; \
+        QDebug d(&str); \
+        d << desc; \
+        QmlError error; \
+        error.setDescription(str); \
+        error.setLine(instr.line); \
+        error.setUrl(comp->url); \
+        vmeErrors << error; \
         break; \
     }
 
@@ -223,6 +228,8 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
     QStack<QmlMetaProperty> pushedProperties;
     QObject **savedObjects = 0;
+
+    vmeErrors.clear();
 
     if (start == -1) start = 0;
     if (count == -1) count = comp->bytecode.count();
@@ -1072,17 +1079,12 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
 bool QmlVME::isError() const
 {
-    return exceptionLine != -1;
+    return !vmeErrors.isEmpty();
 }
 
-qint64 QmlVME::errorLine() const
+QList<QmlError> QmlVME::errors() const
 {
-    return exceptionLine;
-}
-
-QString QmlVME::errorDescription() const
-{
-    return exceptionDescription;
+    return vmeErrors;
 }
 
 void QmlVME::runStoreInstruction(QStack<QObject *> &stack,

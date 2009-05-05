@@ -39,52 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef QMLCOMPONENT_P_H
-#define QMLCOMPONENT_P_H
+#ifndef QMLERROR_H
+#define QMLERROR_H
 
-#include <QString>
-#include <QStringList>
-#include <QList>
-#include "private/qobject_p.h"
-#include "private/qmlcompositetypemanager_p.h"
-#include <qmlerror.h>
-#include "qmlcomponent.h"
-class QmlComponent;
-class QmlEngine;
-class QmlCompiledComponent;
-#include "qml.h"
+#include <QtCore/qurl.h>
+#include <QtCore/qstring.h>
 
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QmlComponentPrivate : public QObjectPrivate
+QT_MODULE(Declarative)
+
+class QDebug;
+class QmlErrorPrivate;
+class Q_DECLARATIVE_EXPORT QmlError
 {
-    Q_DECLARE_PUBLIC(QmlComponent)
-        
 public:
-    QmlComponentPrivate() : typeData(0), start(-1), count(-1), cc(0), completePending(false), engine(0) {}
+    QmlError();
+    QmlError(const QmlError &);
+    QmlError &operator=(const QmlError &);
+    ~QmlError();
 
-    QmlCompositeTypeData *typeData;
-    void typeDataReady();
-    
-    void fromTypeData(QmlCompositeTypeData *data);
-
-    QList<QmlError> errors;
-    QUrl url;
-
-    int start;
-    int count;
-    QmlCompiledComponent *cc;
-    QList<QmlBindableValue *> bindValues;
-    QList<QmlParserStatus *> parserStatus;
-    bool completePending;
-
-    QmlEngine *engine;
-
-    void clear();
-    static bool isXml(const QByteArray &);
+    QUrl url() const;
+    void setUrl(const QUrl &);
+    QString description() const;
+    void setDescription(const QString &);
+    int line() const;
+    void setLine(int);
+    int column() const;
+    void setColumn(int);
+private:
+    QmlErrorPrivate *d;
 };
 
-#endif // QMLCOMPONENT_P_H
+QDebug Q_DECLARATIVE_EXPORT operator<<(QDebug debug, const QmlError &error);
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QMLERROR_H

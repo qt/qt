@@ -1,3 +1,4 @@
+//! [all]
 Rect {
     id: removeButton
     width: 30
@@ -120,3 +121,4 @@ Rect {
         }
     ]
 }
+//! [all]

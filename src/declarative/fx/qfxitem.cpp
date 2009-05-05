@@ -1604,12 +1604,20 @@ void QFxItem::setKeepMouseGrab(bool keep)
     d->_keepMouse = keep;
 }
 
-void QFxItem::activeFocusChanged(bool)
+/*!
+  This function emits the \e activeFocusChanged signal.
+  \a flag is not used.
+ */
+void QFxItem::activeFocusChanged(bool flag)
 {
     emit activeFocusChanged();
 }
 
-void QFxItem::focusChanged(bool)
+/*!
+  This function emits the \e focusChanged signal.
+  \a flag is not used.
+ */
+void QFxItem::focusChanged(bool flag)
 {
     emit focusChanged();
 }

@@ -2336,7 +2336,12 @@ public:
     { kind = K; }
 
     virtual SourceLocation firstSourceLocation() const
-    { return propertyToken; }
+    {
+      if (defaultToken.isValid())
+	return defaultToken;
+
+      return propertyToken;
+    }
 
     virtual SourceLocation lastSourceLocation() const
     {
@@ -2359,6 +2364,7 @@ public:
     JavaScriptNameIdImpl *name;
     ExpressionNode *expression;
     bool isDefaultMember;
+    SourceLocation defaultToken;
     SourceLocation propertyToken;
     SourceLocation typeToken;
     SourceLocation identifierToken;

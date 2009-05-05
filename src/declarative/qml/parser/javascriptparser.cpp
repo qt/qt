@@ -298,7 +298,8 @@ case 30: {
 case 31: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(3).sval, sym(4).sval);
     node->isDefaultMember = true;
-    node->propertyToken = loc(1);
+    node->defaultToken = loc(1);
+    node->propertyToken = loc(2);
     node->typeToken = loc(3);
     node->identifierToken = loc(4);
     sym(1).Node = node;
@@ -318,7 +319,8 @@ case 33: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(3).sval, sym(4).sval,
         sym(6).Expression);
     node->isDefaultMember = true;
-    node->propertyToken = loc(1);
+    node->defaultToken = loc(1);
+    node->propertyToken = loc(2);
     node->typeToken = loc(3);
     node->identifierToken = loc(4);
     node->colonToken = loc(5);
@@ -332,9 +334,7 @@ case 34: {
 case 35: {
     sym(1).Node = makeAstNode<AST::UiSourceElement>(driver->nodePool(), sym(1).Node);
 }   break;
-
-case 36:
-
+case 36: 
 case 37:
 {
     AST::UiQualifiedId *node = makeAstNode<AST::UiQualifiedId> (driver->nodePool(), driver->intern(lexer->characterBuffer(), lexer->characterCount()));
@@ -531,7 +531,7 @@ case 66: {
   node->propertyNameToken = loc(1);
   sym(1).Node = node;  
 } break;
-
+case 67:
 case 68: {
   AST::IdentifierPropertyName *node = makeAstNode<AST::IdentifierPropertyName> (driver->nodePool(), driver->intern(lexer->characterBuffer(), lexer->characterCount()));
   node->propertyNameToken = loc(1);
@@ -1394,7 +1394,7 @@ case 284: {
   node->colonToken = loc(2);
   sym(1).Node = node;
 } break;
-
+case 285:
 case 286: {
   AST::LabelledStatement *node = makeAstNode<AST::LabelledStatement> (driver->nodePool(), driver->intern(lexer->characterBuffer(), lexer->characterCount()), sym(3).Statement);
   node->identifierToken = loc(1);
@@ -1456,18 +1456,7 @@ case 296: {
   sym(1).Node = node;
 } break;
 
-case 298: {
-  AST::FunctionDeclaration *node = makeAstNode<AST::FunctionDeclaration> (driver->nodePool(), driver->intern(lexer->characterBuffer(), lexer->characterCount()), sym(4).FormalParameterList, sym(7).FunctionBody);
-  node->functionToken = loc(1);
-  node->identifierToken = loc(2);
-  node->lparenToken = loc(3);
-  node->rparenToken = loc(5);
-  node->lbraceToken = loc(6);
-  node->rbraceToken = loc(8);
-  sym(1).Node = node;
-} break;
-
-case 299: {
+case 297: {
   AST::FunctionDeclaration *node = makeAstNode<AST::FunctionDeclaration> (driver->nodePool(), sym(2).sval, sym(4).FormalParameterList, sym(7).FunctionBody);
   node->functionToken = loc(1);
   node->identifierToken = loc(2);
@@ -1478,7 +1467,7 @@ case 299: {
   sym(1).Node = node;
 } break;
 
-case 300: {
+case 298: {
   AST::FunctionExpression *node = makeAstNode<AST::FunctionExpression> (driver->nodePool(), sym(2).sval, sym(4).FormalParameterList, sym(7).FunctionBody);
   node->functionToken = loc(1);
   if (sym(2).sval)
@@ -1490,56 +1479,56 @@ case 300: {
   sym(1).Node = node;
 } break;
 
-case 301: {
+case 299: {
   AST::FormalParameterList *node = makeAstNode<AST::FormalParameterList> (driver->nodePool(), sym(1).sval);
   node->identifierToken = loc(1);
   sym(1).Node = node;
 } break;
 
-case 302: {
+case 300: {
   AST::FormalParameterList *node = makeAstNode<AST::FormalParameterList> (driver->nodePool(), sym(1).FormalParameterList, sym(3).sval);
   node->commaToken = loc(2);
   node->identifierToken = loc(3);
   sym(1).Node = node;
 } break;
 
+case 301: {
+  sym(1).Node = 0;
+} break;
+
+case 302: {
+  sym(1).Node = sym(1).FormalParameterList->finish ();
+} break;
+
 case 303: {
   sym(1).Node = 0;
 } break;
 
-case 304: {
-  sym(1).Node = sym(1).FormalParameterList->finish ();
-} break;
-
 case 305: {
-  sym(1).Node = 0;
-} break;
-
-case 307: {
   sym(1).Node = makeAstNode<AST::FunctionBody> (driver->nodePool(), sym(1).SourceElements->finish ());
 } break;
 
-case 308: {
+case 306: {
   sym(1).Node = makeAstNode<AST::SourceElements> (driver->nodePool(), sym(1).SourceElement);
 } break;
 
-case 309: {
+case 307: {
   sym(1).Node = makeAstNode<AST::SourceElements> (driver->nodePool(), sym(1).SourceElements, sym(2).SourceElement);
 } break;
 
-case 310: {
+case 308: {
   sym(1).Node = makeAstNode<AST::StatementSourceElement> (driver->nodePool(), sym(1).Statement);
 } break;
 
-case 311: {
+case 309: {
   sym(1).Node = makeAstNode<AST::FunctionSourceElement> (driver->nodePool(), sym(1).FunctionDeclaration);
 } break;
 
-case 312: {
+case 310: {
   sym(1).sval = 0;
 } break;
 
-case 314: {
+case 312: {
   sym(1).Node = 0;
 } break;
 

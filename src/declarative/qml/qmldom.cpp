@@ -70,6 +70,7 @@ QmlDomDocumentPrivate::~QmlDomDocumentPrivate()
 
 /*!
     \class QmlDomDocument
+    \internal
     \brief The QmlDomDocument class represents the root of a QML document
 
     A QML document is a self-contained snippet of QML, usually contained in a
@@ -152,13 +153,7 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
 {
     Q_UNUSED(engine);
 
-    d->error = QString();
-
-    QmlScriptParser parser;
-    if (!parser.parse(data)) {
-        d->error = parser.errorDescription();
-        return false;
-    }
+    d->errors.clear();
 
     QmlCompiledComponent component;
     QmlCompiler compiler;
@@ -166,11 +161,13 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
     QmlCompositeTypeData *td = ((QmlEnginePrivate *)QmlEnginePrivate::get(engine))->typeManager.getImmediate(data, QUrl());;
 
     if(td->status == QmlCompositeTypeData::Error) {
-        d->error = td->errorDescription;
+        d->errors = td->errors;
         td->release();
         return false;
     } else if(td->status == QmlCompositeTypeData::Waiting) {
-        d->error = QLatin1String("QmlDomDocument supports local types only");
+        QmlError error;
+        error.setDescription(QLatin1String("QmlDomDocument supports local types only"));
+        d->errors << error;
         td->release();
         return false;
     } 
@@ -178,14 +175,14 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
     compiler.compile(engine, td, &component);
 
     if (compiler.isError()) {
-        d->error = compiler.errorDescription();
+        d->errors = compiler.errors();
         td->release();
         return false;
     }
 
     if (td->data.tree()) {
-        component.dump(0, parser.tree());
-        d->root = parser.tree();
+        component.dump(0, td->data.tree());
+        d->root = td->data.tree();
         d->root->addref();
     }
 
@@ -194,14 +191,14 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
 
 
 /*!
-    Returns the last load error.  The load error will be reset after a 
+    Returns the last load errors.  The load errors will be reset after a 
     successful call to load().
 
     \sa load()
 */
-QString QmlDomDocument::loadError() const
+QList<QmlError> QmlDomDocument::errors() const
 {
-    return d->error;
+    return d->errors;
 }
 
 /*!
@@ -255,6 +252,7 @@ QmlDomPropertyPrivate::~QmlDomPropertyPrivate()
 
 /*!
     \class QmlDomProperty
+    \internal
     \brief The QmlDomProperty class represents one property assignment in the 
     QML DOM tree
 
@@ -456,6 +454,7 @@ QmlDomObjectPrivate::properties(QmlParser::Property *property) const
 
 /*!
     \class QmlDomObject
+    \internal
     \brief The QmlDomObject class represents an object instantiation.
 
     Each object instantiated in a QML file has a corresponding QmlDomObject
@@ -618,11 +617,11 @@ QList<QmlDomProperty> QmlDomObject::properties() const
     Returns the object's \a name property if a value has been assigned to
     it, or an invalid QmlDomProperty otherwise.
 
-    In the example below, \c {object.property("src")} would return a valid
+    In the example below, \c {object.property("source")} would return a valid
     QmlDomProperty, and \c {object.property("tile")} an invalid QmlDomProperty.
 
     \qml
-Image { src: "sample.jpg" }
+Image { source: "sample.jpg" }
     \endqml
 */
 QmlDomProperty QmlDomObject::property(const QByteArray &name) const
@@ -740,6 +739,7 @@ QmlDomBasicValuePrivate::~QmlDomBasicValuePrivate()
 
 /*!
     \class QmlDomValueLiteral
+    \internal
     \brief The QmlDomValueLiteral class represents a literal value.
 
     A literal value is a simple value, written inline with the QML.  In the
@@ -812,6 +812,7 @@ void QmlDomValueLiteral::setLiteral(const QString &value)
 
 /*!
     \class QmlDomValueBinding
+    \internal
     \brief The QmlDomValueBinding class represents a property binding.
 
     A property binding is an ECMAScript expression assigned to a property.  In
@@ -825,7 +826,8 @@ Rect { x: Other.x }
 /*!
     Construct an empty QmlDomValueBinding.
 */
-QmlDomValueBinding::QmlDomValueBinding()
+QmlDomValueBinding::QmlDomValueBinding():
+        d(new QmlDomBasicValuePrivate)
 {
 }
 
@@ -880,6 +882,7 @@ void QmlDomValueBinding::setBinding(const QString &expression)
 
 /*!
     \class QmlDomValueValueSource
+    \internal
     \brief The QmlDomValueValueSource class represents a value source assignment value.
 
     In QML, value sources are special value generating types that may be 
@@ -902,7 +905,8 @@ Rect {
 /*!
     Construct an empty QmlDomValueValueSource.
 */
-QmlDomValueValueSource::QmlDomValueValueSource()
+QmlDomValueValueSource::QmlDomValueValueSource():
+        d(new QmlDomBasicValuePrivate)
 {
 }
 
@@ -953,7 +957,7 @@ QmlDomObject QmlDomValueValueSource::object() const
         rv.d->object = d->value->object;
         rv.d->object->addref();
     } 
-    return QmlDomObject();
+    return rv;
 }
 
 /*!
@@ -987,6 +991,7 @@ QmlDomValuePrivate::~QmlDomValuePrivate()
 
 /*!
     \class QmlDomValue
+    \internal
     \brief The QmlDomValue class represents a generic Qml value.
 
     QmlDomValue's can be assigned to QML \l {QmlDomProperty}{properties}.  In 
@@ -1238,6 +1243,7 @@ QmlDomList QmlDomValue::toList() const
 
 /*!
     \class QmlDomList
+    \internal
     \brief The QmlDomList class represents a list of values assigned to a QML property.
 
     Lists of values can be assigned to properties.  For example, the following
@@ -1327,6 +1333,7 @@ void QmlDomList::setValues(const QList<QmlDomValue> &values)
 
 /*!
     \class QmlDomComponent
+    \internal
     \brief The QmlDomComponent class represents sub-component within a QML document.
 
     Sub-components are QmlComponents defined within a QML document.  The 

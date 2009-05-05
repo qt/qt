@@ -57,7 +57,7 @@ public:
     QmlDomDocumentPrivate(const QmlDomDocumentPrivate &);
     ~QmlDomDocumentPrivate();
 
-    QString error;
+    QList<QmlError> errors;
     QmlParser::Object *root;
 };
 

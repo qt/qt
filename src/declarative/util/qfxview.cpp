@@ -233,8 +233,6 @@ QmlContext* QFxView::rootContext()
 */
 void QFxView::execute()
 {
-    rootContext()->activate();
-
     if (d->qml.isEmpty()) {
         d->component = new QmlComponent(&d->engine, d->source, this);
     } else {
@@ -245,6 +243,45 @@ void QFxView::execute()
         continueExecute();
     } else {
         connect(d->component, SIGNAL(statusChanged(QmlComponent::Status)), this, SLOT(continueExecute()));
+    }
+}
+
+/*!
+    \internal
+*/
+void QFxView::printErrorLine(const QmlError &error)
+{
+    QUrl url = error.url();
+    if (error.line() > 0 && error.column() > 0 && 
+        url.scheme() == QLatin1String("file")) {
+        QString file = url.toLocalFile();
+        QFile f(file);
+        if (f.open(QIODevice::ReadOnly)) {
+            QByteArray data = f.readAll();
+            QTextStream stream(data, QIODevice::ReadOnly);
+            const QString code = stream.readAll();
+            const QStringList lines = code.split(QLatin1Char('\n'));
+
+            if (lines.count() >= error.line()) {
+                const QString &line = lines.at(error.line() - 1);
+                qWarning() << qPrintable(line);
+
+                int column = qMax(0, error.column() - 1);
+                column = qMin(column, line.length()); 
+
+                QByteArray ind;
+                ind.reserve(column);
+                for (int i = 0; i < column; ++i) {
+                    const QChar ch = line.at(i);
+                    if (ch.isSpace())
+                        ind.append(ch.unicode());
+                    else
+                        ind.append(' ');
+                }
+                ind.append('^');
+                qWarning() << ind.constData();
+            }
+        }
     }
 }
 
@@ -260,8 +297,26 @@ void QFxView::continueExecute()
         return;
     }
 
+    if(d->component->isError()) {
+        QList<QmlError> errors = d->component->errors();
+        foreach (const QmlError &error, errors) {
+            qWarning() << error;
+        }
+
+        return;
+    }
+
     QObject *obj = d->component->create();
-    rootContext()->deactivate();
+
+    if(d->component->isError()) {
+        QList<QmlError> errors = d->component->errors();
+        foreach (const QmlError &error, errors) {
+            qWarning() << error;
+        }
+
+        return;
+    }
+
     if (obj) {
         if (QFxItem *item = qobject_cast<QFxItem *>(obj)) {
             item->QSimpleCanvasItem::setParent(QSimpleCanvas::root());
@@ -330,7 +385,25 @@ QFxItem* QFxView::addItem(const QString &qml, QFxItem* parent)
         return 0;
 
     QmlComponent component(&d->engine, qml.toUtf8(), QUrl());
+    if(d->component->isError()) {
+        QList<QmlError> errors = d->component->errors();
+        foreach (const QmlError &error, errors) {
+            qWarning() << error;
+        }
+
+        return 0;
+    }
+
     QObject *obj = component.create();
+    if(d->component->isError()) {
+        QList<QmlError> errors = d->component->errors();
+        foreach (const QmlError &error, errors) {
+            qWarning() << error;
+        }
+
+        return 0;
+    }
+
     if (obj){
         QFxItem *item = static_cast<QFxItem *>(obj);
         if (!parent)
