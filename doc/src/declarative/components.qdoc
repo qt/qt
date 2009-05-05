@@ -23,10 +23,18 @@ This example describes how to create a component from an existing snippet of Qml
 Assume you have an existing UI with a single 'Save' button, defined as follows:
 
 \code
-<Image file="pics/button-background.png">
-    <Text text="Save" anchors.horizontalCenter="{parent.horizontalCenter}" anchors.verticalCenter="{parent.verticalCenter}"/>
-    <MouseRegion anchors.fill="{parent}" onClick="saveData()"/>
-</Image>
+Image {
+    source: "pics/button-background.png"
+    Text {
+        text: "Save"
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
+    }
+    MouseRegion {
+        anchors.fill: parent
+        onClick: { saveData() }
+    }
+}
 \endcode
 
 For the next release, you plan to add 'Cancel' and 'Reset' buttons. Rather than copying and pasting the above markup, you can create a component:
@@ -36,12 +44,20 @@ For the next release, you plan to add 'Cancel' and 'Reset' buttons. Rather than 
 \o Make some minor changes to define the component's interface:
 
 \code
-<Image file="pics/button-background.png">
-    <properties><Property name="label"/></properties>
-    <signals><Signal name="click"/></signals>
-    <Text text="{parent.label}" anchors.horizontalCenter="{parent.horizontalCenter}" anchors.verticalCenter="{parent.verticalCenter}"/>
-    <MouseRegion anchors.fill="{parent}" onClick="parent.click.emit()"/>
-</Image>
+Image {
+    property string label
+    signal clicked
+    source: "pics/button-background.png"
+    Text {
+        text: parent.label
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
+    }
+    MouseRegion {
+        anchors.fill: parent
+        onClick: { parent.click.emit() }
+    }
+}
 \endcode
 
 The \a label property and \a click signal that were added effectively become part of the 'public API' of the MyButton component. In a similar manner, the Text and MouseRegion elements become invisible to anyone using the component. Note that the Text element now binds in its data from \a label, and the MouseRegion emits a generic signal.
@@ -49,11 +65,11 @@ The \a label property and \a click signal that were added effectively become par
 \o The component can now be used elsewhere as MyButton:
 
 \code
-<MyButton label="Save" onClick="saveData()"/>
+MyButton { label: "Save"; onClicked: saveData() }
 ...
-<MyButton label="Cancel" onClick="cancelData()"/>
+MyButton { label: "Cancel"; onClicked: cancelData() }
 ...
-<MyButton label="Reset" onClick="resetData()"/>
+MyButton { label: "Reset"; onClicked: resetData() }
 \endcode
 
 \endlist

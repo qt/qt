@@ -203,8 +203,8 @@ QFxScaleGrid *QFxImage::scaleGrid()
     \qml
     Item {
         Image { source: "tile.png" }
-        Image { x: 80; width: 100; height: 100; src: "tile.png" }
-        Image { x: 190; width: 100; height: 100; tile: true; src: "tile.png" }
+        Image { x: 80; width: 100; height: 100; source: "tile.png" }
+        Image { x: 190; width: 100; height: 100; tile: true; source: "tile.png" }
     }
     \endqml
     \image declarative-image_tile.png
