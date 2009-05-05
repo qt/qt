@@ -58,9 +58,8 @@ QT_BEGIN_NAMESPACE
   other child states of the parent state. QHistoryState is part of \l{The
   State Machine Framework}.
 
-  Use QState::addHistoryState() to construct a history state. Use the
-  setDefaultState() function to set the state that should be entered if the
-  parent state has never been entered.  Example:
+  Use the setDefaultState() function to set the state that should be entered
+  if the parent state has never been entered.  Example:
 
   \code
   QStateMachine machine;
@@ -69,7 +68,7 @@ QT_BEGIN_NAMESPACE
   QState *s11 = new QState(s1);
   QState *s12 = new QState(s1);
 
-  QState *s1h = s1->addHistoryState();
+  QHistoryState *s1h = new QHistoryState(s1);
   s1h->setDefaultState(s11);
 
   machine.addState(s1);
@@ -83,6 +82,9 @@ QT_BEGIN_NAMESPACE
   // state if s1 has never been entered.
   s1->addTransition(button, SIGNAL(clicked()), s1h);
   \endcode
+
+  By default a history state is shallow, meaning that it won't remember nested
+  states. This can be configured through the historyType property.
 */
 
 /*!
@@ -95,6 +97,8 @@ QT_BEGIN_NAMESPACE
   \property QHistoryState::historyType
 
   \brief the type of history that this history state records
+
+  The default value of this property is QHistoryState::ShallowHistory.
 */
 
 /*!

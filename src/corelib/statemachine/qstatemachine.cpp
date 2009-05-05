@@ -163,6 +163,8 @@ QT_BEGIN_NAMESPACE
     \property QStateMachine::initialState
 
     \brief the initial state of this state machine
+
+    The initial state must be one of the rootState()'s child states.
 */
 
 /*!
@@ -181,6 +183,9 @@ QT_BEGIN_NAMESPACE
     \property QStateMachine::globalRestorePolicy
 
     \brief the restore policy for states of this state machine.
+
+    The default value of this property is
+    QStateMachine::DoNotRestoreProperties.
 */
 
 #ifndef QT_NO_ANIMATION
@@ -188,6 +193,10 @@ QT_BEGIN_NAMESPACE
     \property QStateMachine::animationsEnabled
 
     \brief whether animations are enabled
+
+    The default value of this property is true.
+
+    \sa QAbstractTransition::addAnimation()
 */
 #endif
 
@@ -1663,7 +1672,7 @@ void QStateMachine::setInitialState(QAbstractState *state)
   If the state is already in a different machine, it will first be removed
   from its old machine, and then added to this machine.
 
-  \sa removeState(), rootState()
+  \sa removeState(), rootState(), setInitialState()
 */
 void QStateMachine::addState(QAbstractState *state)
 {
@@ -1700,10 +1709,9 @@ void QStateMachine::removeState(QAbstractState *state)
 }
 
 /*!
-  Starts this state machine.
-  The machine will reset its configuration and transition to the initial
-  state.  When a final top-level state is entered, the machine will emit the
-  finished() signal.
+  Starts this state machine.  The machine will reset its configuration and
+  transition to the initial state.  When a final top-level state (QFinalState)
+  is entered, the machine will emit the finished() signal.
 
   \sa started(), finished(), stop(), initialState()
 */
@@ -1730,9 +1738,10 @@ void QStateMachine::start()
 }
 
 /*!
-  Stops this state machine.
+  Stops this state machine. The state machine will stop processing events and
+  then emit the stopped() signal.
 
-  \sa stopped()
+  \sa stopped(), start()
 */
 void QStateMachine::stop()
 {
@@ -1813,7 +1822,8 @@ QSet<QAbstractState*> QStateMachine::configuration() const
 /*!
   \fn QStateMachine::started()
 
-  This signal is emitted when the state machine has entered its initial state.
+  This signal is emitted when the state machine has entered its initial state
+  (QStateMachine::initialState).
 
   \sa QStateMachine::finished(), QStateMachine::start()
 */
@@ -1822,7 +1832,7 @@ QSet<QAbstractState*> QStateMachine::configuration() const
   \fn QStateMachine::finished()
 
   This signal is emitted when the state machine has reached a top-level final
-  state.
+  state (QFinalState).
 
   \sa QStateMachine::started()
 */
@@ -1832,7 +1842,7 @@ QSet<QAbstractState*> QStateMachine::configuration() const
 
   This signal is emitted when the state machine has stopped.
 
-  \sa QStateMachine::stop()
+  \sa QStateMachine::stop(), QStateMachine::finished()
 */
 
 /*!
@@ -2110,7 +2120,7 @@ QSignalEvent::~QSignalEvent()
 
   Returns the index of the signal.
 
-  \sa QMetaObject::indexOfSignal()
+  \sa QMetaObject::indexOfSignal(), QMetaObject::method()
 */
 
 /*!
