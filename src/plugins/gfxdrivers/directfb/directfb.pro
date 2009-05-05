@@ -22,7 +22,7 @@ target.path = $$[QT_INSTALL_PLUGINS]/gfxdrivers
 INSTALLS += target
 
 HEADERS = qdirectfbscreen.h \
-          qdirectfbsurface.h \
+          qdirectfbwindowsurface.h \
           qdirectfbpaintengine.h \
           qdirectfbpaintdevice.h \
           qdirectfbpixmap.h \
@@ -31,7 +31,7 @@ HEADERS = qdirectfbscreen.h \
 
 SOURCES = qdirectfbscreen.cpp \
           qdirectfbscreenplugin.cpp \
-          qdirectfbsurface.cpp \
+          qdirectfbwindowsurface.cpp \
           qdirectfbpaintengine.cpp \
           qdirectfbpaintdevice.cpp \
           qdirectfbpixmap.cpp \

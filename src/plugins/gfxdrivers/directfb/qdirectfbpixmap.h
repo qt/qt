@@ -69,7 +69,8 @@ public:
                         Qt::TransformationMode mode) const;
     QImage toImage() const;
     QPaintEngine* paintEngine() const;
-    QImage *buffer();
+    virtual QImage *buffer();
+    QImage *buffer(uint lockFlags);
 
     // Pure virtual in QPixmapData, so re-implement here and delegate to QDirectFBPaintDevice
     int metric(QPaintDevice::PaintDeviceMetric m) const {return QDirectFBPaintDevice::metric(m);}

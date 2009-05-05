@@ -56,15 +56,20 @@ IDirectFBSurface *QDirectFBPaintDevice::directFBSurface() const
 }
 
 
-void QDirectFBPaintDevice::lockDirectFB()
+void QDirectFBPaintDevice::lockDirectFB(uint flags)
 {
-    if (lockedImage)
-        return; // Already locked
-
-    if (uchar *mem = QDirectFBScreen::lockSurface(dfbSurface, DSLF_WRITE, &bpl)) {
+    if (lockedImage) {
+        if (lockFlags & flags)
+            return;
+        unlockDirectFB();
+    }
+    if (uchar *mem = QDirectFBScreen::lockSurface(dfbSurface, flags, &bpl)) {
         const QSize s = size();
         lockedImage = new QImage(mem, s.width(), s.height(), bpl,
                                  QDirectFBScreen::getImageFormat(dfbSurface));
+        lockFlags = flags;
+    } else {
+        lockFlags = 0;
     }
 }
 
@@ -80,10 +85,10 @@ void QDirectFBPaintDevice::unlockDirectFB()
 }
 
 
-void* QDirectFBPaintDevice::memory() const
+void *QDirectFBPaintDevice::memory() const
 {
     QDirectFBPaintDevice* that = const_cast<QDirectFBPaintDevice*>(this);
-    that->lockDirectFB();
+    that->lockDirectFB(DSLF_READ|DSLF_WRITE);
     Q_ASSERT(that->lockedImage);
     return that->lockedImage->bits();
 }
@@ -101,7 +106,7 @@ int QDirectFBPaintDevice::bytesPerLine() const
         // Can only get the stride when we lock the surface
         Q_ASSERT(!lockedImage);
         QDirectFBPaintDevice* that = const_cast<QDirectFBPaintDevice*>(this);
-        that->lockDirectFB();
+        that->lockDirectFB(DSLF_READ);
         Q_ASSERT(bpl != -1);
     }
     return bpl;

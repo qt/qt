@@ -1197,6 +1197,13 @@ bool QNetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieLis
                 || isParentDomain(defaultDomain, domain))) {
                     continue;           // not accepted
             }
+
+            // reject if domain is like ".com"
+            // (i.e., reject if domain does not contain embedded dots, see RFC 2109 section 4.3.2)
+            // this is just a rudimentary check and does not cover all cases
+            if (domain.lastIndexOf(QLatin1Char('.')) == 0)
+                continue;           // not accepted
+
         }
 
         QList<QNetworkCookie>::Iterator it = d->allCookies.begin(),

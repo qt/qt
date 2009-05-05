@@ -137,7 +137,7 @@ public:
                                      const QImage &image);
 #endif
 
-    static uchar *lockSurface(IDirectFBSurface *surface, DFBSurfaceLockFlags flags, int *bpl = 0);
+    static uchar *lockSurface(IDirectFBSurface *surface, uint flags, int *bpl = 0);
 
 private:
     void compose(const QRegion &r);

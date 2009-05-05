@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qdirectfbscreen.h"
-#include "qdirectfbsurface.h"
+#include "qdirectfbwindowsurface.h"
 #include "qdirectfbpixmap.h"
 #include "qdirectfbmouse.h"
 #include "qdirectfbkeyboard.h"
@@ -1102,19 +1102,19 @@ QWSWindowSurface *QDirectFBScreen::createSurface(QWidget *widget) const
 {
 #ifdef QT_NO_DIRECTFB_WM
     if (QApplication::type() == QApplication::GuiServer) {
-        return new QDirectFBSurface(d_ptr->flipFlags, const_cast<QDirectFBScreen*>(this), widget);
+        return new QDirectFBWindowSurface(d_ptr->flipFlags, const_cast<QDirectFBScreen*>(this), widget);
     } else {
         return QScreen::createSurface(widget);
     }
 #else
-    return new QDirectFBSurface(d_ptr->flipFlags, const_cast<QDirectFBScreen*>(this), widget);
+    return new QDirectFBWindowSurface(d_ptr->flipFlags, const_cast<QDirectFBScreen*>(this), widget);
 #endif
 }
 
 QWSWindowSurface *QDirectFBScreen::createSurface(const QString &key) const
 {
     if (key == QLatin1String("directfb")) {
-        return new QDirectFBSurface(d_ptr->flipFlags, const_cast<QDirectFBScreen*>(this));
+        return new QDirectFBWindowSurface(d_ptr->flipFlags, const_cast<QDirectFBScreen*>(this));
     }
     return QScreen::createSurface(key);
 }
@@ -1147,7 +1147,7 @@ void QDirectFBScreen::compose(const QRegion &region)
             const QPoint offset = win->requestedRegion().boundingRect().topLeft();
 
             if (surface->key() == QLatin1String("directfb")) {
-                QDirectFBSurface *s = static_cast<QDirectFBSurface*>(surface);
+                QDirectFBWindowSurface *s = static_cast<QDirectFBWindowSurface*>(surface);
                 blit(s->directFBSurface(), offset, r);
             } else {
                 blit(surface->image(), offset, r);
@@ -1196,7 +1196,7 @@ void QDirectFBScreen::compose(const QRegion &region)
         const QPoint offset = win->requestedRegion().boundingRect().topLeft();
 
         if (surface->key() == QLatin1String("directfb")) {
-            QDirectFBSurface *s = static_cast<QDirectFBSurface*>(surface);
+            QDirectFBWindowSurface *s = static_cast<QDirectFBWindowSurface*>(surface);
             blit(s->directFBSurface(), offset, r);
         } else {
             blit(surface->image(), offset, r);
@@ -1336,12 +1336,12 @@ bool QDirectFBScreen::initSurfaceDescriptionPixelFormat(DFBSurfaceDescription *d
     return true;
 }
 
-uchar *QDirectFBScreen::lockSurface(IDirectFBSurface *surface, DFBSurfaceLockFlags flags, int *bpl)
+uchar *QDirectFBScreen::lockSurface(IDirectFBSurface *surface, uint flags, int *bpl)
 {
     void *mem;
-    const DFBResult result = surface->Lock(surface, flags, static_cast<void**>(&mem), bpl);
+    const DFBResult result = surface->Lock(surface, static_cast<DFBSurfaceLockFlags>(flags), static_cast<void**>(&mem), bpl);
     if (result != DFB_OK) {
-        DirectFBError("QDirectFBPixmapData::lockSurface()", result);
+        DirectFBError("QDirectFBScreen::lockSurface()", result);
     }
 
     return reinterpret_cast<uchar*>(mem);

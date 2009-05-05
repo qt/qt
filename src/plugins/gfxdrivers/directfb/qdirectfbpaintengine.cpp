@@ -43,7 +43,7 @@
 
 #ifndef QT_NO_DIRECTFB
 
-#include "qdirectfbsurface.h"
+#include "qdirectfbwindowsurface.h"
 #include "qdirectfbscreen.h"
 #include "qdirectfbpixmap.h"
 #include <directfb.h>
@@ -1040,7 +1040,7 @@ void QDirectFBPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap,
         QRasterPaintEngine::drawPixmap(r, pixmap, sr);
     } else if (!d->dfbCanHandleClip(r) || d->matrixRotShear) {
         RASTERFALLBACK(DRAW_PIXMAP, r, pixmap.size(), sr);
-        const QImage *img = static_cast<QDirectFBPixmapData*>(pixmap.pixmapData())->buffer();
+        const QImage *img = static_cast<QDirectFBPixmapData*>(pixmap.pixmapData())->buffer(DSLF_READ);
         d->lock();
         QRasterPaintEngine::drawImage(r, *img, sr);
     } else {
@@ -1066,7 +1066,7 @@ void QDirectFBPaintEngine::drawTiledPixmap(const QRectF &r,
         QRasterPaintEngine::drawTiledPixmap(r, pixmap, sp);
     } else if (!d->dfbCanHandleClip(r) || d->matrixRotShear || !sp.isNull()) {
         RASTERFALLBACK(DRAW_TILED_PIXMAP, r, pixmap.size(), sp);
-        const QImage *img = static_cast<QDirectFBPixmapData*>(pixmap.pixmapData())->buffer();
+        const QImage *img = static_cast<QDirectFBPixmapData*>(pixmap.pixmapData())->buffer(DSLF_READ);
         d->lock();
         QRasterPixmapData *data = new QRasterPixmapData(QPixmapData::PixmapType);
         data->fromImage(*img, Qt::AutoColor);

@@ -457,6 +457,7 @@
     \row \o QToolButton::offIconSet \o Use the \l{QIcon::Off}{off component} of QAbstractButton::icon instead.
     \row \o QToolButton::onIconSet \o Use the \l{QIcon::On}{on component} of QAbstractButton::icon instead.
     \row \o QWidget::microFocusHint \o N/A
+    \row \o QMimeSource::serialNumber () \o N/A 
     \endtable
 
 \omit
