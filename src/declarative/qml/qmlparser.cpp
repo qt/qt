@@ -123,6 +123,15 @@ QmlParser::Object::DynamicSignal::DynamicSignal(const DynamicSignal &o)
 {
 }
 
+QmlParser::Object::DynamicSlot::DynamicSlot()
+{
+}
+
+QmlParser::Object::DynamicSlot::DynamicSlot(const DynamicSlot &o)
+: name(o.name), body(o.body)
+{
+}
+
 QmlParser::Property::Property()
 : type(0), index(-1), value(0), isDefault(true), line(-1), column(-1)
 {
