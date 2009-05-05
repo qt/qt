@@ -1,6 +1,5 @@
 
 #include "qmlscriptparser_p.h"
-#include "qmlxmlparser_p.h"
 #include "qmlparser_p.h"
 
 #include "parser/javascriptengine_p.h"
@@ -523,7 +522,11 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
 {
     QmlParser::Object *obj = currentObject();
     if (! (obj && obj->typeName == "Script")) {
-        // ### warning
+        QmlError error;
+        error.setDescription("JavaScript declaration outside Script element");
+        error.setLine(node->firstSourceLocation().startLine);
+        error.setColumn(node->firstSourceLocation().startColumn);
+        _parser->_errors << error;
         return false;
     }
 
@@ -562,24 +565,6 @@ QmlScriptParser::~QmlScriptParser()
 
 bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
 {
-    if (QmlComponentPrivate::isXml(data)) {
-        // parse using the XML parser.
-        QmlXmlParser xmlParser;
-        if (xmlParser.parse(data, url)) {
-            _nameSpacePaths = xmlParser.nameSpacePaths();
-            root = xmlParser.takeTree();
-            _typeNames = xmlParser.types();
-            return true;
-        }
-
-        QmlError error;
-        error.setUrl(url);
-        error.setDescription(xmlParser.errorDescription());
-        _errors << error;
-
-        return false;
-    }
-
     const QString fileName = url.toString();
 
     QTextStream stream(data, QIODevice::ReadOnly);

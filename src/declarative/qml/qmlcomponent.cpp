@@ -60,17 +60,6 @@
 QT_BEGIN_NAMESPACE
 class QByteArray;
 
-bool QmlComponentPrivate::isXml(const QByteArray &ba)
-{
-    for (int i = 0; i < ba.size(); ++i) {
-        char c = ba.at(i);
-        if (c == ' ' || c == '\n' || c == '\r' || c == '\t')
-            continue;
-        return (c == '<');
-    }
-    return true;
-}
-
 /*!
     \class QmlComponent
     \brief The QmlComponent class encapsulates a QML component description.
@@ -190,10 +179,10 @@ QmlComponent::Status QmlComponent::status() const
 
     if (d->typeData)
         return Loading;
-    else if (d->engine && d->cc)
-        return Ready;
     else if (!d->errors.isEmpty())
         return Error;
+    else if (d->engine && d->cc)
+        return Ready;
     else
         return Null;
 }
@@ -351,6 +340,10 @@ void QmlComponent::loadUrl(const QUrl &url)
     emit statusChanged(status());
 }
 
+/*!
+    Return the list of errors that occured during the last compile or create
+    operation.  An empty list is returned if isError() is not set.
+*/
 QList<QmlError> QmlComponent::errors() const
 {
     Q_D(const QmlComponent);

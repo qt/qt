@@ -63,8 +63,7 @@ QT_BEGIN_NAMESPACE
 using namespace QmlParser;
 
 QmlParser::Object::Object()
-: type(-1), metatype(0), extObject(0), defaultProperty(0), line(-1), column(-1),
-  dynamicPropertiesProperty(0), dynamicSignalsProperty(0)
+: type(-1), metatype(0), extObject(0), defaultProperty(0), line(-1), column(-1)
 {
 }
 
@@ -73,8 +72,6 @@ QmlParser::Object::~Object()
     if (defaultProperty) defaultProperty->release();
     foreach(Property *prop, properties)
         prop->release();
-    if (dynamicPropertiesProperty) dynamicPropertiesProperty->release();
-    if (dynamicSignalsProperty) dynamicSignalsProperty->release();
 }
 
 const QMetaObject *Object::metaObject() const

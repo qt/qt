@@ -277,27 +277,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
             }
             break;
 
-        case QmlInstruction::CreateCustomObject:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrCreateCustomObject> cc;
-#endif
-                QVariant v = 
-                    types.at(instr.createCustom.type).parser->create(datas.at(instr.createCustom.data));
-                // XXX
-                QObject *o = QmlMetaType::toQObject(v);
-                if (!o)
-                    VME_EXCEPTION("Unable to create" << types.at(instr.create.type).className);
-                QmlEngine::setContextForObject(o, QmlContext::activeContext());
-
-                if (!stack.isEmpty()) {
-                    QObject *parent = stack.top();
-                    o->setParent(parent);
-                }
-                stack.push(o);
-            }
-            break;
-
         case QmlInstruction::SetId:
             {
 #ifdef Q_ENABLE_PERFORMANCE_LOG

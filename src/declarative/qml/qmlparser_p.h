@@ -124,10 +124,6 @@ namespace QmlParser
             QByteArray name;
         };
 
-        // The "properties" property
-        Property *dynamicPropertiesProperty;
-        // The "signals" property
-        Property *dynamicSignalsProperty;
         // The list of dynamic properties described in the "properties" property
         QList<DynamicProperty> dynamicProperties;
         // The list of dynamic signals described in the "signals" property

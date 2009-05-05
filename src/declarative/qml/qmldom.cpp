@@ -70,6 +70,7 @@ QmlDomDocumentPrivate::~QmlDomDocumentPrivate()
 
 /*!
     \class QmlDomDocument
+    \internal
     \brief The QmlDomDocument class represents the root of a QML document
 
     A QML document is a self-contained snippet of QML, usually contained in a
@@ -251,6 +252,7 @@ QmlDomPropertyPrivate::~QmlDomPropertyPrivate()
 
 /*!
     \class QmlDomProperty
+    \internal
     \brief The QmlDomProperty class represents one property assignment in the 
     QML DOM tree
 
@@ -452,6 +454,7 @@ QmlDomObjectPrivate::properties(QmlParser::Property *property) const
 
 /*!
     \class QmlDomObject
+    \internal
     \brief The QmlDomObject class represents an object instantiation.
 
     Each object instantiated in a QML file has a corresponding QmlDomObject
@@ -736,6 +739,7 @@ QmlDomBasicValuePrivate::~QmlDomBasicValuePrivate()
 
 /*!
     \class QmlDomValueLiteral
+    \internal
     \brief The QmlDomValueLiteral class represents a literal value.
 
     A literal value is a simple value, written inline with the QML.  In the
@@ -808,6 +812,7 @@ void QmlDomValueLiteral::setLiteral(const QString &value)
 
 /*!
     \class QmlDomValueBinding
+    \internal
     \brief The QmlDomValueBinding class represents a property binding.
 
     A property binding is an ECMAScript expression assigned to a property.  In
@@ -877,6 +882,7 @@ void QmlDomValueBinding::setBinding(const QString &expression)
 
 /*!
     \class QmlDomValueValueSource
+    \internal
     \brief The QmlDomValueValueSource class represents a value source assignment value.
 
     In QML, value sources are special value generating types that may be 
@@ -985,6 +991,7 @@ QmlDomValuePrivate::~QmlDomValuePrivate()
 
 /*!
     \class QmlDomValue
+    \internal
     \brief The QmlDomValue class represents a generic Qml value.
 
     QmlDomValue's can be assigned to QML \l {QmlDomProperty}{properties}.  In 
@@ -1236,6 +1243,7 @@ QmlDomList QmlDomValue::toList() const
 
 /*!
     \class QmlDomList
+    \internal
     \brief The QmlDomList class represents a list of values assigned to a QML property.
 
     Lists of values can be assigned to properties.  For example, the following
@@ -1325,6 +1333,7 @@ void QmlDomList::setValues(const QList<QmlDomValue> &values)
 
 /*!
     \class QmlDomComponent
+    \internal
     \brief The QmlDomComponent class represents sub-component within a QML document.
 
     Sub-components are QmlComponents defined within a QML document.  The 

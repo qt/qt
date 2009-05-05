@@ -163,11 +163,6 @@ private:
                                           QmlParser::Value *value,
                                           int ctxt);
 
-    bool findDynamicProperties(QmlParser::Property *prop,
-                               QmlParser::Object *obj);
-    bool findDynamicSignals(QmlParser::Property *sigs,
-                            QmlParser::Object *obj);
-
     bool compileDynamicPropertiesAndSignals(QmlParser::Object *obj);
     void compileBinding(const QString &, QmlParser::Property *prop,
                         int ctxt, const QMetaObject *, qint64);
