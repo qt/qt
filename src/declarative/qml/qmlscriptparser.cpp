@@ -334,12 +334,6 @@ bool ProcessAST::visit(AST::UiImport *node)
     return false;
 }
 
-// UiObjectMember: T_PUBLIC T_DEFAULT UiMemberType T_IDENTIFIER T_COLON Expression
-// UiObjectMember: T_PUBLIC T_DEFAULT UiMemberType T_IDENTIFIER
-// UiObjectMember: T_PUBLIC UiMemberType T_IDENTIFIER T_COLON Expression
-// UiObjectMember: T_PUBLIC UiMemberType T_IDENTIFIER
-//
-// UiMemberType: "property" | "signal"
 bool ProcessAST::visit(AST::UiPublicMember *node)
 {
     if(node->type == AST::UiPublicMember::Signal) {
