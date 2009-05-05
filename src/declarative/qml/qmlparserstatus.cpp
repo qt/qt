@@ -49,6 +49,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    Destroys the parser status instance.
+*/
+QmlParserStatus::~QmlParserStatus()
+{
+}
+
+/*!
     Invoked after class creation, but before any properties have been set.
 */
 void QmlParserStatus::classBegin()

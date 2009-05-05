@@ -44,6 +44,7 @@
 
 #include <QString>
 #include <QStack>
+#include <qmlerror.h>
 class QObject;
 
 QT_BEGIN_NAMESPACE
@@ -60,13 +61,13 @@ public:
     QObject *run(QmlContext *, QmlCompiledComponent *, int start = -1, int end = -1);
 
     bool isError() const;
-    qint64 errorLine() const;
-    QString errorDescription() const;
+    QList<QmlError> errors() const;
 
 private:
     void runStoreInstruction(QStack<QObject *> &stack,
                              QmlInstruction &, QmlCompiledData *);
 
+    QList<QmlError> vmeErrors;
     qint64 exceptionLine;
     QString exceptionDescription;
 };

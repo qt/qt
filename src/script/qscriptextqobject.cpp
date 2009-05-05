@@ -736,7 +736,7 @@ static void callQtMethod(QScriptContextPrivate *context, QMetaMethod::MethodType
                 meta->static_metacall(QMetaObject::CreateInstance, chosenIndex, params);
             } else {
                 Q_ASSERT(thisQObject != 0);
-                thisQObject->qt_metacall(QMetaObject::InvokeMetaMethod, chosenIndex, params);
+                QMetaObject::metacall(thisQObject, QMetaObject::InvokeMetaMethod, chosenIndex, params);
             }
 
             if (scriptable)

@@ -1,4 +1,4 @@
-ListModel2 {
+ListModel {
     id: MenuModel
     ListElement {
         name: "Bill Jones"

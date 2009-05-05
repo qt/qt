@@ -39,46 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef QFXPAINTED_P_H
-#define QFXPAINTED_P_H
+#ifndef QMLERROR_H
+#define QMLERROR_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtCore/qurl.h>
+#include <QtCore/qstring.h>
 
-#include "qfxitem_p.h"
-#if defined(QFX_RENDER_OPENGL)
-#include "gltexture.h"
-#endif
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QFxPaintedPrivate : public QFxItemPrivate
+QT_MODULE(Declarative)
+
+class QDebug;
+class QmlErrorPrivate;
+class Q_DECLARATIVE_EXPORT QmlError
 {
-    Q_DECLARE_PUBLIC(QFxPainted)
-
 public:
-    QFxPaintedPrivate()
-        : dirty(true)
-    {
-    }
+    QmlError();
+    QmlError(const QmlError &);
+    QmlError &operator=(const QmlError &);
+    ~QmlError();
 
-    bool dirty;
-
-#if defined(QFX_RENDER_QPAINTER) 
-    QSimpleCanvasConfig::Image cachedImage;
-#elif defined(QFX_RENDER_OPENGL)
-    GLTexture cachedTexture;
-#endif
+    QUrl url() const;
+    void setUrl(const QUrl &);
+    QString description() const;
+    void setDescription(const QString &);
+    int line() const;
+    void setLine(int);
+    int column() const;
+    void setColumn(int);
+private:
+    QmlErrorPrivate *d;
 };
+
+QDebug Q_DECLARATIVE_EXPORT operator<<(QDebug debug, const QmlError &error);
 
 QT_END_NAMESPACE
 
-#endif // QFXPAINTED_P_H
+QT_END_HEADER
+
+#endif // QMLERROR_H

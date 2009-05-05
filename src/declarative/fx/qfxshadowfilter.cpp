@@ -86,7 +86,7 @@ Rect {
 }
 
 Image {
-    src: "pics/qtlogo.png"
+    source: "pics/qtlogo.png"
     filter: Shadow {
         yOffset: 8
         xOffset: 8

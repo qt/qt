@@ -1,7 +1,6 @@
 Rect {
-    width: 400
-    height: 300
-    color: "white"
+    width: 400; height: 300; color: "white"
+
     // MyPets model is defined in dummydata/MyPetsModel.qml
     // The viewer automatically loads files in dummydata/* to assist
     // development without a real data source.
@@ -12,18 +11,11 @@ Rect {
         id: PetDelegate
         Item {
             id: Wrapper
-            width: 200
-            height: 50
+            width: 200; height: 50
             VerticalLayout {
-                Text {
-                    text: 'Name: ' + name
-                }
-                Text {
-                    text: 'Type: ' + type
-                }
-                Text {
-                    text: 'Age: ' + age
-                }
+                Text { text: 'Name: ' + name }
+                Text { text: 'Type: ' + type }
+                Text { text: 'Age: ' + age }
             }
             // Use the ListView.isCurrentItem attached property to
             // indent the item if it is the current item.
@@ -32,17 +24,14 @@ Rect {
                     name: "Current"
                     when: Wrapper.ListView.isCurrentItem
                     SetProperty {
-                        target: Wrapper
-                        property: "x"
-                        value: 10
+                        target: Wrapper; property: "x"; value: 10
                     }
                 }
             ]
             transitions: [
                 Transition {
                     NumericAnimation {
-                        properties: "x"
-                        duration: 200
+                        properties: "x"; duration: 200
                     }
                 }
             ]
@@ -54,24 +43,15 @@ Rect {
     Component {
         id: PetHighlight
         Rect {
-            width: 200
-            height: 50
-            color: "#FFFF88"
-            y: Follow {
-                source: List1.current.y
-                spring: 3
-                damping: 0.1
-            }
+            width: 200; height: 50; color: "#FFFF88"
+            y: Follow { source: List1.current.y; spring: 3; damping: 0.1 }
         }
     }
     ListView {
         id: List1
-        width: 200
-        height: parent.height
-        model: MyPetsModel
-        delegate: PetDelegate
-        highlight: PetHighlight
-        autoHighlight: false
+        width: 200; height: parent.height
+        model: MyPetsModel; delegate: PetDelegate
+        highlight: PetHighlight; autoHighlight: false
         focus: true
     }
 }

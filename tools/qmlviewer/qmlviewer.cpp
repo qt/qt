@@ -85,6 +85,14 @@ void QmlViewer::openQml(const QString& fileName)
             QmlComponent comp(canvas->engine());
             comp.setData(data, QUrl());
             QObject *dummyData = comp.create();
+
+            if(comp.isError()) {
+                QList<QmlError> errors = comp.errors();
+                foreach (const QmlError &error, errors) {
+                    qWarning() << error;
+                }
+            }
+
             if (dummyData) {
                 qWarning() << "Loaded dummy data:" << dir.filePath(qml);
                 qml.truncate(qml.length()-4);

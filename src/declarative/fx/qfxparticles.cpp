@@ -116,6 +116,10 @@ QML_DEFINE_TYPE(QFxParticleMotion,ParticleMotion);
 
     \sa QFxParticles
 */
+
+/*!
+    Constructs a QFxParticleMotion with parent object \a parent.
+*/
 QFxParticleMotion::QFxParticleMotion(QObject *parent) :
     QObject(parent)
 {
@@ -251,7 +255,7 @@ Rect {
         y: 0
         width: parent.width
         height: 30
-        src: "star.png"
+        source: "star.png"
         lifeSpan: 5000
         count: 50
         angle: 70
@@ -543,7 +547,7 @@ Rect {
         y: 0
         width: parent.width
         height: 30
-        src: "star.png"
+        source: "star.png"
         lifeSpan: 5000
         count: 50
         angle: 70
@@ -560,7 +564,7 @@ Rect {
         x: 120
         width: 1
         height: 1
-        src: "star.png"
+        source: "star.png"
         lifeSpan: 5000
         count: 200
         angle: 270
@@ -698,7 +702,7 @@ void QFxParticles::setCount(int cnt)
 
     \qml
 Particles {
-    src: "star.png"
+    source: "star.png"
     lifeSpan: 200
     lifeSpanDeviation: 100
 }
@@ -735,7 +739,7 @@ void QFxParticles::setLifeSpan(int ls)
 
 \qml
 Particles {
-    src: "star.png"
+    source: "star.png"
     lifeSpan: 200
     lifeSpanDeviation: 100
 }
@@ -813,7 +817,7 @@ void QFxParticles::setFadeOutDuration(int dur)
 
     \qml
 Particles {
-    src: "star.png"
+    source: "star.png"
     angle: 60
     angleDeviation: 90
 }
@@ -848,7 +852,7 @@ void QFxParticles::setAngle(qreal angle)
 
 \qml
 Particles {
-    src: "star.png"
+    source: "star.png"
     angle: 60
     angleDeviation: 90
 }
@@ -880,7 +884,7 @@ void QFxParticles::setAngleDeviation(qreal dev)
 
     \qml
 Particles {
-    src: "star.png"
+    source: "star.png"
     velocity: 50
     velocityDeviation: 20
 }
@@ -915,7 +919,7 @@ void QFxParticles::setVelocity(qreal velocity)
 
 \qml
 Particles {
-    src: "star.png"
+    source: "star.png"
     velocity: 50
     velocityDeviation: 20
 }

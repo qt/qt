@@ -1,6 +1,5 @@
 
 #include "qmlscriptparser_p.h"
-#include "qmlxmlparser_p.h"
 #include "qmlparser_p.h"
 
 #include "parser/javascriptengine_p.h"
@@ -65,10 +64,12 @@ protected:
     Object *defineObjectBinding(int line,
                              AST::UiQualifiedId *propertyName,
                              const QString &objectType,
+                             AST::SourceLocation typeLocation,
                              AST::UiObjectInitializer *initializer = 0);
     Object *defineObjectBinding_helper(int line,
                              AST::UiQualifiedId *propertyName,
                              const QString &objectType,
+                             AST::SourceLocation typeLocation,
                              AST::UiObjectInitializer *initializer = 0);
     QString getPrimitive(const QByteArray &propertyName, AST::ExpressionNode *expr);
     void defineProperty(const QString &propertyName, int line, const QString &primitive);
@@ -194,11 +195,17 @@ QString ProcessAST::asString(AST::UiQualifiedId *node) const
 Object *ProcessAST::defineObjectBinding_helper(int line,
                                      AST::UiQualifiedId *propertyName,
                                      const QString &objectType,
+                                     AST::SourceLocation typeLocation,
                                      AST::UiObjectInitializer *initializer)
 {
     bool isType = !objectType.isEmpty() && objectType.at(0).isUpper() && !objectType.contains(QLatin1Char('.'));
+
     if (!isType) {
-        qWarning() << "bad name for a class"; // ### FIXME
+        QmlError error;
+        error.setDescription("Expected type name");
+        error.setLine(typeLocation.startLine);
+        error.setColumn(typeLocation.startColumn);
+        _parser->_errors << error;
         return false;
     }
 
@@ -235,7 +242,7 @@ Object *ProcessAST::defineObjectBinding_helper(int line,
 
             if (!_parser->scriptFile().isEmpty()) {
                 _stateStack.pushObject(obj);
-                Object *scriptObject= defineObjectBinding(line, 0, QLatin1String("Script"));
+                Object *scriptObject= defineObjectBinding(line, 0, QLatin1String("Script"), AST::SourceLocation());
                 _stateStack.pushObject(scriptObject);
                 defineProperty(QLatin1String("src"), line, _parser->scriptFile());
                 _stateStack.pop(); // scriptObject
@@ -264,11 +271,12 @@ Object *ProcessAST::defineObjectBinding_helper(int line,
 Object *ProcessAST::defineObjectBinding(int line,
                                      AST::UiQualifiedId *qualifiedId,
                                      const QString &objectType,
+                                     AST::SourceLocation typeLocation,
                                      AST::UiObjectInitializer *initializer)
 {
     if (objectType == QLatin1String("Connection")) {
 
-        Object *obj = defineObjectBinding_helper(line, 0, QLatin1String("Connection"));
+        Object *obj = defineObjectBinding_helper(line, 0, objectType, typeLocation);
 
         _stateStack.pushObject(obj);
 
@@ -297,7 +305,7 @@ Object *ProcessAST::defineObjectBinding(int line,
         return obj;
     }
 
-    return defineObjectBinding_helper(line, qualifiedId, objectType, initializer);
+    return defineObjectBinding_helper(line, qualifiedId, objectType, typeLocation, initializer);
 }
 
 void ProcessAST::defineProperty(const QString &propertyName, int line, const QString &primitive)
@@ -372,7 +380,11 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         }
         
         if(!typeFound) {
-            qWarning() << "Unknown property type" << memberType; // ### FIXME
+            QmlError error;
+            error.setDescription("Expected property type");
+            error.setLine(node->typeToken.startLine);
+            error.setColumn(node->typeToken.startColumn);
+            _parser->_errors << error;
             return false;
         }
 
@@ -402,6 +414,7 @@ bool ProcessAST::visit(AST::UiObjectDefinition *node)
     defineObjectBinding(node->identifierToken.startLine,
                         0,
                         node->name->asString(),
+                        node->identifierToken,
                         node->initializer);
 
     return false;
@@ -414,6 +427,7 @@ bool ProcessAST::visit(AST::UiObjectBinding *node)
     defineObjectBinding(node->identifierToken.startLine,
                         node->qualifiedId,
                         node->name->asString(),
+                        node->identifierToken,
                         node->initializer);
 
     return false;
@@ -476,7 +490,8 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
 
     Value *v = new Value;
     v->primitive = primitive;
-    v->line = node->colonToken.startLine;
+    v->line = node->statement->firstSourceLocation().startLine;
+    v->column = node->statement->firstSourceLocation().startColumn;
     prop->addValue(v);
 
     while (propertyCount--)
@@ -506,27 +521,54 @@ bool ProcessAST::visit(AST::UiArrayBinding *node)
 bool ProcessAST::visit(AST::UiSourceElement *node)
 {
     QmlParser::Object *obj = currentObject();
-    if (! (obj && obj->typeName == "Script")) {
-        // ### warning
+
+    bool isScript = (obj && obj->typeName == "Script");
+
+    if (!isScript) {
+
+        if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement)) {
+
+            if(funDecl->formals) {
+                QmlError error;
+                error.setDescription("Slot declarations must be parameterless");
+                error.setLine(funDecl->lparenToken.startLine);
+                error.setColumn(funDecl->lparenToken.startColumn);
+                _parser->_errors << error;
+                return false;
+            }
+
+            QString body = textAt(funDecl->lbraceToken, funDecl->rbraceToken);
+            Object::DynamicSlot slot;
+            slot.name = funDecl->name->asString().toUtf8();
+            slot.body = body;
+            obj->dynamicSlots << slot;
+        } else {
+            QmlError error;
+            error.setDescription("JavaScript declaration outside Script element");
+            error.setLine(node->firstSourceLocation().startLine);
+            error.setColumn(node->firstSourceLocation().startColumn);
+            _parser->_errors << error;
+        }
         return false;
+
+    } else {
+        QString source;
+
+        int line = 0;
+        if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement)) {
+            line = funDecl->functionToken.startLine;
+            source = asString(funDecl);
+        } else if (AST::VariableStatement *varStmt = AST::cast<AST::VariableStatement *>(node->sourceElement)) {
+            // ignore variable declarations
+            line = varStmt->declarationKindToken.startLine;
+        }
+
+        Value *value = new Value;
+        value->primitive = source;
+        value->line = line;
+
+        obj->getDefaultProperty()->addValue(value);
     }
-
-    QString source;
-
-    int line = 0;
-    if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement)) {
-        line = funDecl->functionToken.startLine;
-        source = asString(funDecl);
-    } else if (AST::VariableStatement *varStmt = AST::cast<AST::VariableStatement *>(node->sourceElement)) {
-        // ignore variable declarations
-        line = varStmt->declarationKindToken.startLine;
-    }
-
-    Value *value = new Value;
-    value->primitive = source;
-    value->line = line;
-
-    obj->getDefaultProperty()->addValue(value);
 
     return false;
 }
@@ -535,7 +577,7 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
 
 
 QmlScriptParser::QmlScriptParser()
-    : root(0), _errorLine(-1)
+: root(0)
 {
 
 }
@@ -546,21 +588,6 @@ QmlScriptParser::~QmlScriptParser()
 
 bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
 {
-    if (QmlComponentPrivate::isXml(data)) {
-        // parse using the XML parser.
-        QmlXmlParser xmlParser;
-        if (xmlParser.parse(data, url)) {
-            _nameSpacePaths = xmlParser.nameSpacePaths();
-            root = xmlParser.takeTree();
-            _typeNames = xmlParser.types();
-            return true;
-        }
-
-        _error = xmlParser.errorDescription();
-        _errorLine = 0; // ### FIXME
-        return false;
-    }
-
     const QString fileName = url.toString();
 
     QTextStream stream(data, QIODevice::ReadOnly);
@@ -576,61 +603,34 @@ bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
     lexer.setCode(code, /*line = */ 1);
     driver.setLexer(&lexer);
 
-    if (! parser.parse(&driver)) {
-        _error = parser.errorMessage();
-        _errorLine = parser.errorLineNumber();
+    if (! parser.parse(&driver) || !_errors.isEmpty()) {
 
-        const QStringList lines = code.split(QLatin1Char('\n'));
-
+        // Extract errors from the parser
         foreach (const JavaScriptParser::DiagnosticMessage &m, parser.diagnosticMessages()) {
 
             if (m.isWarning())
                 continue;
 
-            qWarning().nospace() << qPrintable(fileName) << ":"
-                    << m.line << ":"
-                    << m.column << ": "
-                    << "error: "
-                    << qPrintable(m.message);
+            QmlError error;
+            error.setUrl(url);
+            error.setDescription(m.message);
+            error.setLine(m.line);
+            error.setColumn(m.column);
+            _errors << error;
 
-            const QString textLine = lines.at(m.line - 1);
-
-            qWarning() << qPrintable(textLine);
-
-            int column = qMax(0, m.column - 1);
-            column = qMin(column, textLine.length()); // paranoia check
-
-            QByteArray ind;
-            ind.reserve(column);
-
-            for (int i = 0; i < column; ++i) {
-                const QChar ch = textLine.at(i);
-                if (ch.isSpace())
-                    ind.append(ch.unicode());
-                else
-                    ind.append(' ');
-            }
-            ind.append('^');
-            qWarning() << ind.constData();
         }
-
-        return false;
     }
 
-    ProcessAST process(this);
-    process(code, parser.ast());
+    if (_errors.isEmpty()) {
+        ProcessAST process(this);
+        process(code, parser.ast());
 
-    return true;
-}
+        // Set the url for process errors
+        for(int ii = 0; ii < _errors.count(); ++ii) 
+            _errors[ii].setUrl(url);
+    }
 
-QString QmlScriptParser::errorDescription() const
-{
-    return _error;
-}
-
-int QmlScriptParser::errorLine() const
-{
-    return _errorLine;
+    return _errors.isEmpty();
 }
 
 QMap<QString,QString> QmlScriptParser::nameSpacePaths() const
@@ -648,6 +648,11 @@ Object *QmlScriptParser::tree() const
     return root;
 }
 
+QList<QmlError> QmlScriptParser::errors() const
+{
+    return _errors;
+}
+
 void QmlScriptParser::clear()
 {
     if (root) {
@@ -656,9 +661,8 @@ void QmlScriptParser::clear()
     }
     _nameSpacePaths.clear();
     _typeNames.clear();
-    _error.clear();
+    _errors.clear();
     _scriptFile.clear();
-    _errorLine = 0;
 }
 
 int QmlScriptParser::findOrCreateTypeId(const QString &name)

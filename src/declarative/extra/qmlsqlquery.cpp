@@ -77,18 +77,19 @@ public:
     values will only apply when the SqlQuery exec() slot is called.
 
     \qml
-    <SqlQuery>
-        SELECT * FROM mytable WHERE name LIKE :value
-        <bindings>
-            <SqlBind name=":value" value="{searchText + '%'}"/>
-        </bindings>
-    </SqlQuery>
-    <SqlQuery>
-        SELECT * FROM mytable WHERE type = ?
-        <bindings>
-            <SqlBind value="simple"/>
-        </bindings>
-    <SqlQuery>
+    SqlQuery {
+        query: "SELECT * FROM mytable WHERE name LIKE :value"
+        bindings: SqlBind {
+            name: ":value"
+            value: searchText + '%'
+        }
+    }
+    SqlQuery {
+        query: "SELECT * FROM mytable WHERE type = ?"
+        bindings: SqlBind {
+            value: "simple"
+        }
+    }
     \endqml
 */
 
@@ -254,11 +255,12 @@ public:
     appropriate table column name for the result column.
 
     \qml
-    <SqlQuery connection="{qmlConnectionId}" query="DELETE FROM mytable"/>
-    <SqlQuery connection="connectionName">
-        SELECT * FROM mytable
-    </SqlQuery>
-    <SqlQuery>SELECT id AS recordId, (firstName || ' ' || lastName) AS fullName FROM mytable</SqlQuery>
+    SqlQuery { connection: qmlConnectionId; query: "DELETE FROM mytable" }
+    SqlQuery {
+        connection: "connectionName"
+        query: "SELECT * FROM mytable"
+    }
+    SqlQuery { query: "SELECT id AS recordId, (firstName || ' ' || lastName) AS fullName FROM mytable" }
     \endqml
 */
 
