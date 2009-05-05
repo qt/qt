@@ -944,7 +944,7 @@ public:
         : server(0), ok(false), quit(false)
     { }
 
-    ~ReceiverThread() { wait(); delete server; }
+    ~ReceiverThread() { /*delete server;*/ terminate(); wait();  }
 
     bool listen()
     {
@@ -969,7 +969,11 @@ protected:
 
         QTcpSocket *socket = server->nextPendingConnection();
         while (!quit) {
+#ifndef Q_OS_SYMBIAN    
             if (socket->waitForDisconnected(500))
+#else    
+            if (socket->waitForDisconnected(1000))
+#endif     
                 break;
             if (socket->error() != QAbstractSocket::SocketTimeoutError)
                 return;
@@ -992,8 +996,6 @@ void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop_data()
 
 void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop()
 {
-    QSKIP("Check this", SkipAll);
-    
     QFETCH(QByteArray, data);
 
     ReceiverThread thread;
@@ -1019,7 +1021,11 @@ void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop()
         socket->disconnectFromHost();
     }
 
+#ifndef Q_OS_SYMBIAN    
     QVERIFY2(socket->waitForDisconnected(10000), "Network timeout");
+#else    
+    QVERIFY2(socket->waitForDisconnected(20000), "Network timeout");
+#endif     
     QVERIFY(socket->state() == QAbstractSocket::UnconnectedState);
     if (!closeDirectly) {
         QCOMPARE(int(socket->openMode()), int(QIODevice::ReadWrite));
