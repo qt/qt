@@ -4,6 +4,7 @@
 #include <errorstate/plugin.h>
 
 #include <QState>
+#include <QFinalState>
 #include <QSignalTransition>
 #include <QSignalEvent>
 #include <QVariant>
@@ -72,7 +73,7 @@ class CollisionTransition: public QSignalTransition
 {
 public:
     CollisionTransition(QObject *tank, QState *turnTo) 
-        : QSignalTransition(tank, SIGNAL(collision(QLineF)), turnTo),
+        : QSignalTransition(tank, SIGNAL(collision(QLineF))),
           m_tank(tank),
           m_turnTo(turnTo)
     {
@@ -82,16 +83,16 @@ public:
 protected:
     bool eventTest(QEvent *event) const
     {
-        if (event->type() == QEvent::Signal) {
+        bool b = QSignalTransition::eventTest(event);
+        if (b) {
             QSignalEvent *se = static_cast<QSignalEvent *>(event);
             m_lastLine = se->arguments().at(0).toLineF();
         }
-        return QSignalTransition::eventTest(event);
+        return b;
     }
 
     void onTransition(QEvent *)
     {
-        qreal currentDirection = m_tank->property("direction").toDouble();
         qreal angleOfWall = m_lastLine.angle();
 
         qreal newDirection;
@@ -107,6 +108,87 @@ private:
     mutable QLineF m_lastLine;
     QObject *m_tank;
     QState *m_turnTo;
+};
+
+class ChaseState: public QState
+{
+    class GoToLocationState: public QState
+    {
+    public:
+        GoToLocationState(QObject *tank, QState *parentState = 0) 
+            : QState(parentState), m_tank(tank), m_distance(0.0)
+        {
+        }
+
+        void setDistance(qreal distance) { m_distance = distance; }
+
+    protected:
+        void onEntry() 
+        {
+            QMetaObject::invokeMethod(m_tank, "moveForwards", Q_ARG(qreal, m_distance));
+        }
+
+    private:
+        QObject *m_tank;
+        qreal m_distance;
+    };
+
+public:
+    ChaseState(QObject *tank, QState *parentState = 0) : QState(parentState), m_tank(tank)
+    {
+        QState *fireCannon = new QState(this);
+        connect(fireCannon, SIGNAL(entered()), tank, SLOT(fireCannon()));
+        setInitialState(fireCannon);
+
+        m_goToLocation = new GoToLocationState(this);
+        fireCannon->addTransition(tank, SIGNAL(actionCompleted()), m_goToLocation);
+
+        m_turnToDirection = new QState(this);
+        m_goToLocation->addTransition(tank, SIGNAL(actionCompleted()), m_turnToDirection);
+
+        QFinalState *finalState = new QFinalState(this);
+        m_turnToDirection->addTransition(tank, SIGNAL(actionCompleted()), finalState);
+    }
+
+    void setDirection(qreal direction)
+    {
+        m_turnToDirection->assignProperty(m_tank, "direction", direction);
+    }
+
+    void setDistance(qreal distance)
+    {
+        m_goToLocation->setDistance(distance);
+    }
+
+private:
+    QObject *m_tank;
+    GoToLocationState *m_goToLocation;
+    QState *m_turnToDirection;
+
+};
+
+class TankSpottedTransition: public QSignalTransition
+{
+public:
+    TankSpottedTransition(QObject *tank, ChaseState *target) : QSignalTransition(tank, SIGNAL(tankSpotted(qreal,qreal))), m_chase(target)
+    {
+        setTargetState(target);
+    }
+
+protected:
+    bool eventTest(QEvent *event) const
+    {
+        bool b = QSignalTransition::eventTest(event);
+        if (b) {
+            QSignalEvent *se = static_cast<QSignalEvent *>(event);
+            m_chase->setDirection(se->arguments().at(0).toDouble());
+            m_chase->setDistance(se->arguments().at(1).toDouble());
+        }
+        return b;
+    }
+
+private:
+    ChaseState *m_chase;
 };
 
 class SeekAi: public QObject, public Plugin

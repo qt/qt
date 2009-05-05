@@ -36,6 +36,12 @@ QState *SeekAi::create(QState *parentState, QObject *tank)
     
     turnTo->addTransition(tank, SIGNAL(actionCompleted()), driveToFirstObstacle);
 
+    ChaseState *chase = new ChaseState(tank, topLevel);
+    chase->setObjectName("chase");    
+    seek->addTransition(new TankSpottedTransition(tank, chase));   
+    chase->addTransition(chase, SIGNAL(finished()), driveToFirstObstacle);
+    chase->addTransition(new TankSpottedTransition(tank, chase));
+    
     return topLevel;
 }
 
