@@ -8484,7 +8484,7 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 
     \note The flags are only hints, so the particular input method
           implementation is free to ignore them. If you want to be
-          sure that for instance only uppercase letters are entered,
+          sure that a certain type of characters are entered,
           you should also set a QValidator on the widget.
 
     \since 4.6
