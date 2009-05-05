@@ -73,7 +73,6 @@ public:
     int version() const;
     
     QList<QmlError> errors() const;
-    QString loadError() const;
     bool load(QmlEngine *, const QByteArray &);
     QByteArray save() const;
 

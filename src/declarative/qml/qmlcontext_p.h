@@ -69,7 +69,8 @@ public:
 
     QScriptValueList scopeChain;
 
-    QmlCompiledComponent *component;
+    QUrl url;
+
     void init();
 
     void dump();

@@ -461,8 +461,7 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
 
     QmlContext *ctxt = 
         new QmlContext(context, 0);
-    static_cast<QmlContextPrivate*>(ctxt->d_ptr)->component = d->cc;
-    static_cast<QmlContextPrivate*>(ctxt->d_ptr)->component->addref();
+    static_cast<QmlContextPrivate*>(ctxt->d_ptr)->url = d->cc->url;
     ctxt->activate();
 
     QmlVME vme;

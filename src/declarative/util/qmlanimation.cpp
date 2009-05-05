@@ -703,9 +703,10 @@ QColor QmlColorAnimation::from() const
 void QmlColorAnimation::setFrom(const QColor &f)
 {
     Q_D(QmlColorAnimation);
-    if (d->fromValue.isValid() && f == d->fromValue)
+    if (d->fromIsDefined && f == d->fromValue)
         return;
     d->fromValue = f;
+    d->fromIsDefined = f.isValid();
     emit fromChanged(f);
 }
 
@@ -726,9 +727,10 @@ QColor QmlColorAnimation::to() const
 void QmlColorAnimation::setTo(const QColor &t)
 {
     Q_D(QmlColorAnimation);
-    if (d->toValue.isValid() && t == d->toValue)
+    if (d->toIsDefined && t == d->toValue)
         return;
     d->toValue = t;
+    d->toIsDefined = t.isValid();
     emit toChanged(t);
 }
 
@@ -860,9 +862,13 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
            (!target() || target() == obj)) {
             objs.insert(obj);
             Action myAction = action;
-            if (d->fromValue.isValid())
+
+            if (d->fromIsDefined) {
                 myAction.fromValue = QVariant(d->fromValue);
-            if (d->toValue.isValid())
+            } else {
+                myAction.fromValue = QVariant();
+            }
+            if (d->toIsDefined)
                 myAction.toValue = QVariant(d->toValue);
 
             modified << action.property;
@@ -877,7 +883,7 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
             Action myAction;
             myAction.property = QmlMetaProperty(obj, props.at(jj));
 
-            if (d->fromValue.isValid())
+            if (d->fromIsDefined)
                 myAction.fromValue = QVariant(d->fromValue);
 
             myAction.toValue = QVariant(d->toValue);
@@ -898,7 +904,7 @@ QVariantAnimation::Interpolator QmlColorAnimationPrivate::colorInterpolator = 0;
 void QmlColorAnimationPrivate::valueChanged(qreal v)
 {
     if (!fromSourced) {
-        if (!fromValue.isValid()) {
+        if (!fromIsDefined) {
             fromValue = qvariant_cast<QColor>(property.read());
         }
         fromSourced = true;
@@ -1993,9 +1999,10 @@ QVariant QmlVariantAnimation::from() const
 void QmlVariantAnimation::setFrom(const QVariant &f)
 {
     Q_D(QmlVariantAnimation);
-    if (d->from.isValid() && f == d->from)
+    if (d->fromIsDefined && f == d->from)
         return;
     d->from = f;
+    d->fromIsDefined = f.isValid();
     emit fromChanged(f);
 }
 
@@ -2017,9 +2024,10 @@ QVariant QmlVariantAnimation::to() const
 void QmlVariantAnimation::setTo(const QVariant &t)
 {
     Q_D(QmlVariantAnimation);
-    if (d->to.isValid() && t == d->to)
+    if (d->toIsDefined && t == d->to)
         return;
     d->to = t;
+    d->toIsDefined = t.isValid();
     emit toChanged(t);
 }
 
@@ -2109,7 +2117,7 @@ QList<QObject *> *QmlVariantAnimation::exclude()
 void QmlVariantAnimationPrivate::valueChanged(qreal r)
 {
     if (!fromSourced) {
-        if (!from.isValid()) {
+        if (!fromIsDefined) {
             from = property.read();
         }
         fromSourced = true;
@@ -2138,7 +2146,7 @@ void QmlVariantAnimation::prepare(QmlMetaProperty &p)
         d->property = d->userProperty;
 
     d->convertVariant(d->to, (QVariant::Type)d->property.propertyType());
-    if (d->from.isValid())
+    if (d->fromIsDefined)
         d->convertVariant(d->from, (QVariant::Type)d->property.propertyType());
 
     d->fromSourced = false;
@@ -2198,12 +2206,12 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
             objs.insert(obj);
             Action myAction = action;
 
-            if (d->from.isValid()) {
+            if (d->fromIsDefined) {
                 myAction.fromValue = d->from;
             } else {
                 myAction.fromValue = QVariant();
             }
-            if (d->to.isValid())
+            if (d->toIsDefined)
                 myAction.toValue = d->to;
 
             d->convertVariant(myAction.fromValue, (QVariant::Type)myAction.property.propertyType());
@@ -2216,13 +2224,13 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
         }
     }
 
-    if (d->to.isValid() && target() && !objs.contains(target())) {
+    if (d->toIsDefined && target() && !objs.contains(target())) {
         QObject *obj = target();
         for (int jj = 0; jj < props.count(); ++jj) {
             Action myAction;
             myAction.property = QmlMetaProperty(obj, props.at(jj));
 
-            if (d->from.isValid()) {
+            if (d->fromIsDefined) {
                 d->convertVariant(d->from, (QVariant::Type)myAction.property.propertyType());
                 myAction.fromValue = d->from;
             }
