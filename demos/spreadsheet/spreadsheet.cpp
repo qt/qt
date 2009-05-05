@@ -481,7 +481,7 @@ void SpreadSheet::setupContents()
     table->setItem(3, 0, new SpreadSheetItem("Lunch"));
     table->setItem(4, 0, new SpreadSheetItem("Flight (LA)"));
     table->setItem(5, 0, new SpreadSheetItem("Taxi"));
-    table->setItem(6, 0, new SpreadSheetItem("Diinner"));
+    table->setItem(6, 0, new SpreadSheetItem("Dinner"));
     table->setItem(7, 0, new SpreadSheetItem("Hotel"));
     table->setItem(8, 0, new SpreadSheetItem("Flight (Oslo)"));
     table->setItem(9, 0, new SpreadSheetItem("Total:"));
