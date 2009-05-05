@@ -43,7 +43,7 @@
 #define PIXELMETRICS_H
 
 #include <e32base.h>
-//#define S60_Rnd_Env
+#define S60_Rnd_Env
 
 #ifdef S60_Rnd_Env
 #pragma message ("Building in supported environment")

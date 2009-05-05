@@ -50,9 +50,9 @@ CAPABILITY CAP_APPLICATION
 VENDORID VID_DEFAULT
 
 SOURCEPATH      .
-SOURCE          pmmapperview.cpp
-SOURCE          pmmapperapp.cpp
-SOURCE          ..\src\pixel_metrics.cpp
+SOURCE          pm_mapperview.cpp
+SOURCE          pm_mapperapp.cpp
+SOURCE          pixel_metrics.cpp
 
 START RESOURCE  pm_mapper.rss
 HEADER
@@ -65,7 +65,6 @@ END
 
 APP_LAYER_SYSTEMINCLUDE
 USERINCLUDE     .
-USERINCLUDE ..\inc
 
 LIBRARY    eikcoctl.lib
 LIBRARY    avkon.lib
