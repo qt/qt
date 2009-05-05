@@ -101,16 +101,16 @@ QStateMachine *QAbstractStatePrivate::machine() const
     return 0;
 }
 
-void QAbstractStatePrivate::callOnEntry()
+void QAbstractStatePrivate::callOnEntry(QEvent *e)
 {
     Q_Q(QAbstractState);
-    q->onEntry();
+    q->onEntry(e);
 }
 
-void QAbstractStatePrivate::callOnExit()
+void QAbstractStatePrivate::callOnExit(QEvent *e)
 {
     Q_Q(QAbstractState);
-    q->onExit();
+    q->onExit(e);
 }
 
 void QAbstractStatePrivate::emitEntered()
@@ -190,17 +190,19 @@ QStateMachine *QAbstractState::machine() const
 }
 
 /*!
-  \fn QAbstractState::onExit()
+  \fn QAbstractState::onExit(QEvent *event)
 
-  This function is called when the state is exited.  Reimplement this function
-  to perform custom processing when the state is exited.
+  This function is called when the state is exited. The given \a event is what
+  caused the state to be exited. Reimplement this function to perform custom
+  processing when the state is exited.
 */
 
 /*!
-  \fn QAbstractState::onEntry()
+  \fn QAbstractState::onEntry(QEvent *event)
 
-  This function is called when the state is entered. Reimplement this function
-  to perform custom processing when the state is entered.
+  This function is called when the state is entered. The given \a event is
+  what caused the state to be entered. Reimplement this function to perform
+  custom processing when the state is entered.
 */
 
 /*!

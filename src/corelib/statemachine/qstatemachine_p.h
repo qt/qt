@@ -120,12 +120,12 @@ public:
     void _q_animationFinished();
 #endif
 
-    void microstep(const QList<QAbstractTransition*> &transitionList);
+    void microstep(QEvent *event, const QList<QAbstractTransition*> &transitionList);
     bool isPreempted(const QAbstractState *s, const QSet<QAbstractTransition*> &transitions) const;
     QSet<QAbstractTransition*> selectTransitions(QEvent *event) const;
-    QList<QAbstractState*> exitStates(const QList<QAbstractTransition*> &transitionList);
-    void executeTransitionContent(const QList<QAbstractTransition*> &transitionList);
-    QList<QAbstractState*> enterStates(const QList<QAbstractTransition*> &enabledTransitions);
+    QList<QAbstractState*> exitStates(QEvent *event, const QList<QAbstractTransition*> &transitionList);
+    void executeTransitionContent(QEvent *event, const QList<QAbstractTransition*> &transitionList);
+    QList<QAbstractState*> enterStates(QEvent *event, const QList<QAbstractTransition*> &enabledTransitions);
     void addStatesToEnter(QAbstractState *s, QState *root,
                           QSet<QAbstractState*> &statesToEnter,
                           QSet<QAbstractState*> &statesForDefaultEntry);

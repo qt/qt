@@ -183,9 +183,9 @@ bool QMouseEventTransition::eventTest(QEvent *event) const
 /*!
   \reimp
 */
-void QMouseEventTransition::onTransition()
+void QMouseEventTransition::onTransition(QEvent *event)
 {
-    QEventTransition::onTransition();
+    QEventTransition::onTransition(event);
 }
 
 QT_END_NAMESPACE

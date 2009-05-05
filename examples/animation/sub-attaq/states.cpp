@@ -76,7 +76,7 @@ PlayState::~PlayState()
 {
 }
 
-void PlayState::onEntry()
+void PlayState::onEntry(QEvent *)
 {
     //We are now playing?
     if (machine) {
@@ -159,7 +159,7 @@ void PlayState::onEntry()
 LevelState::LevelState(GraphicsScene *scene, PlayState *game, QState *parent) : QState(parent), scene(scene), game(game)
 {
 }
-void LevelState::onEntry()
+void LevelState::onEntry(QEvent *)
 {
     initializeLevel();
 }
@@ -202,12 +202,12 @@ void LevelState::initializeLevel()
 PauseState::PauseState(GraphicsScene *scene, QState *parent) : QState(parent),scene(scene)
 {
 }
-void PauseState::onEntry()
+void PauseState::onEntry(QEvent *)
 {
     AnimationManager::self()->pauseAll();
     scene->boat->setEnabled(false);
 }
-void PauseState::onExit()
+void PauseState::onExit(QEvent *)
 {
     AnimationManager::self()->resumeAll();
     scene->boat->setEnabled(true);
@@ -219,7 +219,7 @@ LostState::LostState(GraphicsScene *scene, PlayState *game, QState *parent) : QS
 {
 }
 
-void LostState::onEntry()
+void LostState::onEntry(QEvent *)
 {
     //The message to display
     QString message = QString("You lose on level %1. Your score is %2.").arg(game->currentLevel+1).arg(game->score);
@@ -242,7 +242,7 @@ WinState::WinState(GraphicsScene *scene, PlayState *game, QState *parent) : QSta
 {
 }
 
-void WinState::onEntry()
+void WinState::onEntry(QEvent *)
 {
     //We clear the scene
     scene->clearScene();
@@ -269,9 +269,9 @@ UpdateScoreState::UpdateScoreState(PlayState *game, QState *parent) : QState(par
 {
     this->game = game;
 }
-void UpdateScoreState::onEntry()
+void UpdateScoreState::onEntry(QEvent *e)
 {
-    QState::onEntry();
+    QState::onEntry(e);
 }
 
 /** Win transition */

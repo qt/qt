@@ -369,18 +369,18 @@ QSet<QAbstractTransition*> QStateMachinePrivate::selectTransitions(QEvent *event
     return enabledTransitions;
 }
 
-void QStateMachinePrivate::microstep(const QList<QAbstractTransition*> &enabledTransitions)
+void QStateMachinePrivate::microstep(QEvent *event, const QList<QAbstractTransition*> &enabledTransitions)
 {
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q_func() << ": begin microstep( enabledTransitions:" << enabledTransitions << ")";
     qDebug() << q_func() << ": configuration before exiting states:" << configuration;
 #endif
-    QList<QAbstractState*> exitedStates = exitStates(enabledTransitions);
+    QList<QAbstractState*> exitedStates = exitStates(event, enabledTransitions);
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q_func() << ": configuration after exiting states:" << configuration;
 #endif
-    executeTransitionContent(enabledTransitions);
-    QList<QAbstractState*> enteredStates = enterStates(enabledTransitions);
+    executeTransitionContent(event, enabledTransitions);
+    QList<QAbstractState*> enteredStates = enterStates(event, enabledTransitions);
     applyProperties(enabledTransitions, exitedStates, enteredStates);
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q_func() << ": configuration after entering states:" << configuration;
@@ -388,7 +388,7 @@ void QStateMachinePrivate::microstep(const QList<QAbstractTransition*> &enabledT
 #endif
 }
 
-QList<QAbstractState*> QStateMachinePrivate::exitStates(const QList<QAbstractTransition*> &enabledTransitions)
+QList<QAbstractState*> QStateMachinePrivate::exitStates(QEvent *event, const QList<QAbstractTransition*> &enabledTransitions)
 {
 //    qDebug() << "exitStates(" << enabledTransitions << ")";
     QSet<QAbstractState*> statesToExit;
@@ -440,25 +440,25 @@ QList<QAbstractState*> QStateMachinePrivate::exitStates(const QList<QAbstractTra
 #ifdef QSTATEMACHINE_DEBUG
         qDebug() << q_func() << ": exiting" << s;
 #endif
-        QAbstractStatePrivate::get(s)->callOnExit();
+        QAbstractStatePrivate::get(s)->callOnExit(event);
         configuration.remove(s);
         QAbstractStatePrivate::get(s)->emitExited();
     }
     return statesToExit_sorted;
 }
 
-void QStateMachinePrivate::executeTransitionContent(const QList<QAbstractTransition*> &enabledTransitions)
+void QStateMachinePrivate::executeTransitionContent(QEvent *event, const QList<QAbstractTransition*> &enabledTransitions)
 {
     for (int i = 0; i < enabledTransitions.size(); ++i) {
         QAbstractTransition *t = enabledTransitions.at(i);
 #ifdef QSTATEMACHINE_DEBUG
         qDebug() << q_func() << ": triggering" << t;
 #endif
-        QAbstractTransitionPrivate::get(t)->callOnTransition();
+        QAbstractTransitionPrivate::get(t)->callOnTransition(event);
     }
 }
 
-QList<QAbstractState*> QStateMachinePrivate::enterStates(const QList<QAbstractTransition*> &enabledTransitions)
+QList<QAbstractState*> QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractTransition*> &enabledTransitions)
 {
 #ifdef QSTATEMACHINE_DEBUG
     Q_Q(QStateMachine);
@@ -506,7 +506,7 @@ QList<QAbstractState*> QStateMachinePrivate::enterStates(const QList<QAbstractTr
 #endif
         configuration.insert(s);
         registerTransitions(s);
-        QAbstractStatePrivate::get(s)->callOnEntry();
+        QAbstractStatePrivate::get(s)->callOnEntry(event);
         QAbstractStatePrivate::get(s)->emitEntered();
         if (statesForDefaultEntry.contains(s)) {
             // ### executeContent(s.initial.transition.children())
@@ -1067,8 +1067,8 @@ public:
     StartState(QState *parent)
         : QState(parent) {}
 protected:
-    void onEntry() {}
-    void onExit() {}
+    void onEntry(QEvent *) {}
+    void onExit(QEvent *) {}
 };
 
 class InitialTransition : public QAbstractTransition
@@ -1078,7 +1078,7 @@ public:
         : QAbstractTransition(QList<QAbstractState*>() << target) {}
 protected:
     virtual bool eventTest(QEvent *) const { return true; }
-    virtual void onTransition() {}
+    virtual void onTransition(QEvent *) {}
 };
 
 } // namespace
@@ -1113,8 +1113,9 @@ void QStateMachinePrivate::_q_start()
     start->addTransition(initialTransition);
     QList<QAbstractTransition*> transitions;
     transitions.append(initialTransition);
-    executeTransitionContent(transitions);
-    enterStates(transitions);
+    QEvent nullEvent(QEvent::None);
+    executeTransitionContent(&nullEvent, transitions);
+    enterStates(&nullEvent, transitions);
     applyProperties(transitions, QList<QAbstractState*>() << start,
                     QList<QAbstractState*>() << initial);
     delete start;
@@ -1180,7 +1181,7 @@ void QStateMachinePrivate::_q_process()
         }
         if (!enabledTransitions.isEmpty()) {
             q->beginMicrostep(e);
-            microstep(enabledTransitions.toList());
+            microstep(e, enabledTransitions.toList());
             q->endMicrostep(e);
         }
 #ifdef QSTATEMACHINE_DEBUG
@@ -1455,7 +1456,7 @@ public:
         setObjectName(QString::fromLatin1("DefaultErrorState"));
     }
 
-    void onEntry()
+    void onEntry(QEvent *)
     {
         QAbstractStatePrivate *d = QAbstractStatePrivate::get(this);
         QStateMachine *machine = d->machine();
@@ -1464,7 +1465,7 @@ public:
                  qPrintable(machine->errorString()));
     }
 
-    void onExit() {}
+    void onExit(QEvent *) {}
 };
 
 class RootState : public QState
@@ -1475,8 +1476,8 @@ public:
     {                
     }
 
-    void onEntry() {}
-    void onExit() {}
+    void onEntry(QEvent *) {}
+    void onExit(QEvent *) {}
 };
 
 } // namespace

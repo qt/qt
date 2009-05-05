@@ -90,7 +90,7 @@ public:
 protected:
     virtual bool eventTest(QEvent *event) const = 0;
 
-    virtual void onTransition() = 0;
+    virtual void onTransition(QEvent *event) = 0;
 
     bool event(QEvent *e);
 

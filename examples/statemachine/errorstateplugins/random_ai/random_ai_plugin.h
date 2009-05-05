@@ -21,7 +21,7 @@ signals:
     void turnSelected();
     
 protected:
-    void onEntry()
+    void onEntry(QEvent *)
     {
         int rand = qrand() % 4;
         switch (rand) {
@@ -45,7 +45,7 @@ signals:
     void distanceComputed(qreal distance);
 
 protected:
-    void onEntry() 
+    void onEntry(QEvent *)
     {
         emit distanceComputed(qreal(qrand() % 180));
     }

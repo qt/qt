@@ -68,7 +68,7 @@ public:
     ~PlayState();
 
  protected:
-    void onEntry();
+    void onEntry(QEvent *);
 
 private :
     GraphicsScene *scene;
@@ -91,7 +91,7 @@ class LevelState : public QState
 public:
     LevelState(GraphicsScene *scene, PlayState *game, QState *parent = 0);
 protected:
-    void onEntry();
+    void onEntry(QEvent *);
 private :
     void initializeLevel();
     GraphicsScene *scene;
@@ -104,8 +104,8 @@ public:
     PauseState(GraphicsScene *scene, QState *parent = 0);
 
 protected:
-    void onEntry();
-    void onExit();
+    void onEntry(QEvent *);
+    void onExit(QEvent *);
 private :
     GraphicsScene *scene;
     Boat *boat;
@@ -117,7 +117,7 @@ public:
     LostState(GraphicsScene *scene, PlayState *game, QState *parent = 0);
 
 protected:
-    void onEntry();
+    void onEntry(QEvent *);
 private :
     GraphicsScene *scene;
     PlayState *game;
@@ -129,7 +129,7 @@ public:
     WinState(GraphicsScene *scene, PlayState *game, QState *parent = 0);
 
 protected:
-    void onEntry();
+    void onEntry(QEvent *);
 private :
     GraphicsScene *scene;
     PlayState *game;
@@ -140,7 +140,7 @@ class UpdateScoreState : public QState
 public:
     UpdateScoreState(PlayState *game, QState *parent);
 protected:
-    void onEntry();
+    void onEntry(QEvent *);
 private:
     QPropertyAnimation *scoreAnimation;
     PlayState *game;

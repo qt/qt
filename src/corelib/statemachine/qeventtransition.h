@@ -78,7 +78,7 @@ public:
 
 protected:
     bool eventTest(QEvent *event) const;
-    void onTransition();
+    void onTransition(QEvent *event);
 
     bool event(QEvent *e);
 

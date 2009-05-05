@@ -200,14 +200,14 @@ void QHistoryState::setHistoryType(HistoryType type)
 /*!
   \reimp
 */
-void QHistoryState::onEntry()
+void QHistoryState::onEntry(QEvent *event)
 {
 }
 
 /*!
   \reimp
 */
-void QHistoryState::onExit()
+void QHistoryState::onExit(QEvent *event)
 {
 }
 

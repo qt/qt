@@ -108,15 +108,17 @@ QFinalState::~QFinalState()
 /*!
   \reimp
 */
-void QFinalState::onEntry()
+void QFinalState::onEntry(QEvent *event)
 {
+    Q_UNUSED(event);
 }
 
 /*!
   \reimp
 */
-void QFinalState::onExit()
+void QFinalState::onExit(QEvent *event)
 {
+    Q_UNUSED(event);
 }
 
 /*!

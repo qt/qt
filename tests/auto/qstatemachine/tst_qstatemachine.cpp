@@ -186,10 +186,10 @@ public:
         : QState(parent) {}
     QList<QPair<int, Event> > events;
 protected:
-    virtual void onEntry() {
+    virtual void onEntry(QEvent *) {
         events.append(qMakePair(globalTick++, Entry));
     }
-    virtual void onExit() {
+    virtual void onExit(QEvent *) {
         events.append(qMakePair(globalTick++, Exit));
     }
 };
@@ -204,7 +204,7 @@ protected:
     virtual bool eventTest(QEvent *) const {
         return true;
     }
-    virtual void onTransition() {
+    virtual void onTransition(QEvent *) {
         triggers.append(globalTick++);
     }
 };
@@ -246,7 +246,7 @@ protected:
     virtual bool eventTest(QEvent *e) const {
         return (e->type() == m_type);
     }
-    virtual void onTransition() {}
+    virtual void onTransition(QEvent *) {}
 private:
     QEvent::Type m_type;
 };
@@ -380,7 +380,7 @@ public:
     {
     }
 
-    void onEntry() 
+    void onEntry(QEvent *)
     {
         error = m_machine->error();        
         errorString = m_machine->errorString();
@@ -1367,7 +1367,7 @@ protected:
         StringEvent *se = static_cast<StringEvent*>(e);
         return (m_value == se->value) && (!m_cond.isValid() || (m_cond.indexIn(m_value) != -1));
     }
-    virtual void onTransition() {}
+    virtual void onTransition(QEvent *) {}
 
 private:
     QString m_value;
@@ -1384,11 +1384,11 @@ public:
         { m_value = value; }
 
 protected:
-    virtual void onEntry()
+    virtual void onEntry(QEvent *)
     {
         m_machine->postEvent(new StringEvent(m_value));
     }
-    virtual void onExit() {}
+    virtual void onExit(QEvent *) {}
 
 private:
     QStateMachine *m_machine;

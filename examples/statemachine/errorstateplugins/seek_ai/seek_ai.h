@@ -48,13 +48,13 @@ signals:
     void nearestObstacleStraightAhead();
 
 protected:
-    void onEntry() 
+    void onEntry(QEvent *)
     {
         connect(m_tank, SIGNAL(actionCompleted()), this, SLOT(turnAlittle()));
         turnAlittle();
     }
 
-    void onExit() 
+    void onExit(QEvent *)
     {
         disconnect(m_tank, SIGNAL(actionCompleted()), this, SLOT(turnAlittle()));
         disconnect(m_tank, SIGNAL(actionCompleted()), this, SLOT(nearestObstacleStraightAhead()));
@@ -89,7 +89,7 @@ protected:
         return QSignalTransition::eventTest(event);
     }
 
-    void onTransition()
+    void onTransition(QEvent *)
     {
         qreal currentDirection = m_tank->property("direction").toDouble();
         qreal angleOfWall = m_lastLine.angle();

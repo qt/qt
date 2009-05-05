@@ -59,7 +59,7 @@ public:
 
 protected:
     bool eventTest(QEvent *event) const;
-    void onTransition();
+    void onTransition(QEvent *);
 
 private:
     Q_DISABLE_COPY(QBasicMouseEventTransition)

@@ -339,7 +339,7 @@ public:
     UnconditionalTransition(QAbstractState *target)
         : QAbstractTransition(QList<QAbstractState*>() << target) {}
 protected:
-    void onTransition() {}
+    void onTransition(QEvent *) {}
     bool eventTest(QEvent *) const { return true; }
 };
 
@@ -384,15 +384,17 @@ void QState::removeTransition(QAbstractTransition *transition)
 /*!
   \reimp
 */
-void QState::onEntry()
+void QState::onEntry(QEvent *event)
 {
+    Q_UNUSED(event);
 }
 
 /*!
   \reimp
 */
-void QState::onExit()
+void QState::onExit(QEvent *event)
 {
+    Q_UNUSED(event);
 }
 
 /*!

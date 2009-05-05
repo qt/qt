@@ -22,7 +22,7 @@ public slots:
     }
 
 protected:
-    void onEntry()
+    void onEntry(QEvent *)
     {
         connect(m_tank, SIGNAL(actionCompleted()), this, SLOT(spin()));
         spin();        

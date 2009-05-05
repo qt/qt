@@ -70,8 +70,8 @@ Q_SIGNALS:
 protected:
     QAbstractState(QState *parent = 0);
 
-    virtual void onEntry() = 0;
-    virtual void onExit() = 0;
+    virtual void onEntry(QEvent *event) = 0;
+    virtual void onExit(QEvent *event) = 0;
 
     bool event(QEvent *e);
 
