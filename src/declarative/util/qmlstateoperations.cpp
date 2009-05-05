@@ -59,6 +59,7 @@ public:
 };
 
 /*!
+    \preliminary
     \qmlclass ParentChange
     \brief The ParentChange element allows you to reparent an object in a state.
 */
@@ -211,17 +212,36 @@ QmlRunScript::ActionList QmlRunScript::actions()
     the current state:
 
     \code
-    <Rect id="myrect" width="50" height="50" color="red"/>
+    Rect {
+        id: myrect
+        width: 50
+        height: 50
+        color: "red"
+    }
 
-    <states>
-        <State name="Position1">
-            <SetProperty target="{myrect}" property="x" value="150"/>
-            <SetProperty target="{myrect}" property="y" value="50"/>
-        </State>
-        <State name="Position2">
-            <SetProperty target="{myrect}" property="y" value="200"/>
-        </State>
-    </states>
+    states: [
+        State {
+            name: "Position1"
+            SetProperty {
+                target: myrect
+                property: "x"
+                value: 150
+            }
+            SetProperty {
+                target: myrect
+                property: "y"
+                value: 50
+            }
+        },
+        State {
+            name: "Position2"
+            SetProperty {
+                target: myrect
+                property: "y"
+                value: 200
+            }
+        }
+    ]
     \endcode
 
     \sa SetProperties

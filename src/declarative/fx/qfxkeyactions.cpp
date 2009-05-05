@@ -169,22 +169,22 @@ void QFxKeyActionsPrivate::setBit(int b, bool v)
 
 /*!
     \qmlclass KeyActions
-    \brief The KeyActions element enables simple key handling.
+    \brief The KeyActions item enables simple key handling.
     \inherits Item
 
     KeyActions is typically used in basic key handling scenarios where writing
     JavaScript key handling routines would be unnecessarily complicated.  The
-    KeyActions element has a collection of properties that correspond to a
-    selection of common keys.  When a given key is pressed, the element executes
+    KeyActions item has a collection of properties that correspond to a
+    selection of common keys.  When a given key is pressed, the item executes
     the action script assigned to the matching property.  If no action has
-    been set the KeyActions element does nothing.
+    been set the KeyActions item does nothing.
 
     To receive (and susequently respond to) key presses, the KeyActions class 
-    must be in the current focus chain, just like any other element.
+    must be in the current focus chain, just like any other item.
 
     For basic mouse handling, see \l MouseRegion.
 
-    KeyActions is an invisible element: it is never painted.  
+    KeyActions is an invisible item: it is never painted.  
 */
 QFxKeyActions::QFxKeyActions(QFxItem *parent)
 : QFxItem(parent), d(new QFxKeyActionsPrivate)
@@ -221,7 +221,7 @@ void QFxKeyActionsPrivate::setKeyExpr(Qt::Key k, const QString &expr)
     \qmlproperty bool KeyActions::enabled
 
     Enables or disables KeyActions' key handling.  When not enabled, the 
-    KeyActions instance does not respond to any key presses.  The element is
+    KeyActions instance does not respond to any key presses.  The item is
     enabled by default.
 */
 bool QFxKeyActions::enabled() const
@@ -244,9 +244,9 @@ void QFxKeyActions::setEnabled(bool e)
     The action to take for the given letter.
 
     The following example sets actions for the 'c' and 'x' keys.
-    \code
-    <KeyActions keyC="print('c is for cookie')" keyX="print('I like cookies')" />
-    \endcode
+    \qml
+    KeyActions { keyC: "print('c is for cookie')"; keyX: "print('I like cookies')" }
+    \endqml
 */
 QString QFxKeyActions::key_A() const
 {
@@ -518,9 +518,9 @@ void QFxKeyActions::setKey_Z(const QString &s)
     The action to take for the given arrow key.
 
     The following example sets actions for the left and right arrow keys.
-    \code
-    <KeyActions leftArrow="print('You pressed left')" rightArrow="print('You pressed right')" />
-    \endcode
+    \qml
+    KeyActions { leftArrow: "print('You pressed left')"; rightArrow: "print('You pressed right')" }
+    \endqml
 */
 
 QString QFxKeyActions::key_Left() const
@@ -569,9 +569,9 @@ void QFxKeyActions::setKey_Down(const QString &s)
     The action to take for the given number key.
 
     The following example sets actions for the '5' and '6' keys.
-    \code
-    <KeyActions digit5="print('5 is a prime number')" digit6="print('6 is a composite number')" />
-    \endcode
+    \qml
+    KeyActions { digit5: "print('5 is a prime number')"; digit6: "print('6 is a composite number')"; focus: true }
+    \endqml
 */
 
 QString QFxKeyActions::key_0() const
@@ -736,7 +736,7 @@ void QFxKeyActions::setKey_Space(const QString &s)
 
 /*!
     \qmlproperty string KeyActions::escape
-    \qmlproperty string KeyActions::return
+    \qmlproperty string KeyActions::keyReturn
     \qmlproperty string KeyActions::enter
     \qmlproperty string KeyActions::delete
     \qmlproperty string KeyActions::space
@@ -744,9 +744,9 @@ void QFxKeyActions::setKey_Space(const QString &s)
     The action to take for the given utility key.
 
     The following example sets an action for the space key.
-    \code
-    <KeyActions space="print('Space pressed')" />
-    \endcode
+    \qml
+    KeyActions { space: "print('Space pressed')" }
+    \endqml
 */
 
 /*!
@@ -765,9 +765,9 @@ void QFxKeyActions::setKey_Space(const QString &s)
     The action to take for the given device key.
 
     The following example sets an action for the hangup key.
-    \code
-    <KeyActions hangup="print('Go away now')" />
-    \endcode
+    \qml
+    KeyActions { hangup: "print('Go away now')" }
+    \endqml
 */
 
 QString QFxKeyActions::key_Back() const

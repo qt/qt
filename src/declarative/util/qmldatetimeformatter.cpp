@@ -74,8 +74,8 @@ public:
     \brief The DateTimeFormatter allows you to control the format of a date string.
 
     \code
-    <DateTimeFormatter id="Formatter" date="{System.date}"/>
-    <Text text="{Formatter.dateText}"/>
+    DateTimeFormatter { id: Formatter; date: System.date }
+    Text { text: Formatter.dateText }
     \endcode
 
     By default, the text properties (dateText, timeText, and dateTimeText) will return the
@@ -110,18 +110,18 @@ QmlDateTimeFormatter::~QmlDateTimeFormatter()
     will use the system locale's default 'short' setting.
 
     \code
-    <!-- specify source date (assuming today is February 19, 2009) -->
-    <DateTimeFormatter id="formatter" dateTime="{Today.date}"/>
+    // specify source date (assuming today is February 19, 2009)
+    DateTimeFormatter { id: formatter; dateTime: Today.date }
 
-    <!-- display the full date and time -->
-    <Text text="{formatter.dateText}"/>
+    // display the full date and time
+    Text { text: formatter.dateText }
     \endcode
 
     Would be equivalent to the following for a US English locale:
 
     \code
-    <!-- display the date -->
-    <Text text="2/19/09"/>
+    // display the date
+    Text { text: "2/19/09" }
     \endcode
 */
 QString QmlDateTimeFormatter::dateTimeText() const
@@ -150,14 +150,14 @@ QString QmlDateTimeFormatter::timeText() const
     The source date and time to be used by the formatter.
 
     \code
-    <!-- setting the date and time -->
-    <DateTimeFormatter date="{System.date}" time="{System.time}"/>
+    // setting the date and time
+    DateTimeFormatter { date: System.date; time: System.time }
     \endcode
 
     For convienience it is possible to set the datetime property to set both the date and the time.
     \code
-    <!-- setting the datetime -->
-    <DateTimeFormatter dateTime="{System.dateTime}"/>
+    // setting the datetime
+    DateTimeFormatter { dateTime: System.dateTime }
     \endcode
 
     There can only be one instance of date and time per formatter; if date, time, and dateTime are all
@@ -208,8 +208,8 @@ QDateTime QmlDateTimeFormatter::dateTime() const
     Syntax for the format is based on the QDateTime::toString() formatting options.
 
     \code
-    <!-- Format the date such that the dateText is: '1997-12-12'>
-    <DateFormatter id="formatter" dateTime="{Today.dateTime}" formatDate="yyyy-MM-d"/>
+    // Format the date such that the dateText is: '1997-12-12'
+    DateTimeFormatter { id: formatter; dateTime: Today.dateTime; formatDate: "yyyy-MM-d" }
     \endcode
 
     Assigning an empty string to a particular format will reset it.

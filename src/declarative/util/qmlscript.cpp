@@ -85,13 +85,13 @@ public:
     within a QmlScript, it is best to limit yourself to defining functions.
 
     \qml
-    <Script>
+    Script {
         function debugMyComponent() {
             print(text.text);
             print(otherinterestingitem.property);
         }
-    </Script>
-    <MouseRegion onClicked="debugMyComponent()" />
+    }
+    MouseRegion { onClicked: debugMyComponent() }
     \endqml
 
     \note QmlScript executes JavaScript as soon as it is specified.
@@ -136,7 +136,7 @@ void QmlScript::setScript(const QString &script)
     the file specified.
  */
 /*!
-    \property QmlScript::src
+    \property QmlScript::source
     \brief the path to a script file.
 */
 QString QmlScript::source() const

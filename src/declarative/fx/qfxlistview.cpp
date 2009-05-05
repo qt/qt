@@ -795,40 +795,26 @@ void QFxListViewPrivate::fixupX()
 /*!
     \qmlclass ListView
     \inherits Flickable
-    \brief The ListView element provides a list view of items provided by a model.
+    \brief The ListView item provides a list view of items provided by a model.
 
-    The model is typically provided by a QAbstractListModel "C++ model object", but can also be created directly in XML.
-
+    The model is typically provided by a QAbstractListModel "C++ model object", but can also be created directly in QML.
     The items are laid out vertically or horizontally and may be flicked to scroll.
 
-    The below example creates a very simple vertical list, using an XML model.
+    The below example creates a very simple vertical list, using a QML model.
     \image trivialListView.png
-    \code
-    <resources>
-        <ListModel id="contactModel">
-            <Contact>
-                <firstName>John</firstName>
-                <lastName>Smith</lastName>
-            </Contact>
-            <Contact>
-                <firstName>Bill</firstName>
-                <lastName>Jones</lastName>
-            </Contact>
-            <Contact>
-                <firstName>Jane</firstName>
-                <lastName>Doe</lastName>
-            </Contact>
-            </ListModel>
-            <Component id="contactDelegate">
-                <Rect pen.color="blue" z="-1" height="20" width="80" color="white" radius="2">
-                    <Text id="name" text="{firstName + ' ' + lastName}" font.size="11"/>
-                </Rect>
-        </Component>
-    </resources>
 
-    <ListView id="list" width="320" height="240" clip="true"
-                model="{contactModel}" delegate="{contactDelegate}"/>
-    \endcode
+    The user interface defines a delegate to display an item, a highlight,
+    and the ListView which uses the above.
+
+    \snippet doc/src/snippets/declarative/listview/listview.qml 3
+
+    The model is defined as a ListModel using QML:
+    \quotefromfile doc/src/snippets/declarative/listview/dummydata/ContactModel.qml
+    \skipto <ListModel
+    \printuntil </ListModel
+
+    In this case ListModel is a handy way for us to test our UI.  In practice
+    the model would be implemented in C++, or perhaps via a SQL data source.
 */
 
 QFxListView::QFxListView(QFxItem *parent)
@@ -851,28 +837,10 @@ QFxListView::~QFxListView()
 
     The model provides a set of data that is used to create the items for the view.
     For large or dynamic datasets the model is usually provided by a C++ model object.
-    The C++ model object must be a \l QListModelInterface subclass, a \l VisualModel,
+    The C++ model object must be a \l QAbstractItemModel subclass, a \l VisualModel,
     or a simple list.
 
-    Models can also be created directly in XML, using the \l ListModel element. For example:
-    \code
-    <ListModel id="contactModel">
-        <Contact>
-            <firstName>John</firstName>
-            <lastName>Smith</lastName>
-        </Contact>
-        <Contact>
-            <firstName>Bill</firstName>
-            <lastName>Jones</lastName>
-        </Contact>
-        <Contact>
-            <firstName>Jane</firstName>
-            <lastName>Doe</lastName>
-        </Contact>
-    </ListModel>
-
-    <ListView model="{contactModel}" .../>
-    \endcode
+    Models can also be created directly in QML, using a \l ListModel.
 */
 QVariant QFxListView::model() const
 {
@@ -922,17 +890,7 @@ void QFxListView::setModel(const QVariant &model)
     The delegate provides a template describing what each item in the view should look and act like.
 
     Here is an example delegate:
-    \code
-    <Component id="contactDelegate">
-        <Item id="wrapper">
-            <Image id="pic" width="100" height="100" file="{portrait}"/>
-            <Text id="name" text="{firstName + ' ' + lastName}"
-                    anchors.left="{pic.right}" anchors.leftMargin="5"/>
-        </Item>
-    </Component>
-    ...
-    <ListView delegate="{contactDelegate}" .../>
-    \endcode
+    \snippet doc/src/snippets/declarative/listview/listview.qml 0
 */
 QmlComponent *QFxListView::delegate() const
 {
@@ -1012,13 +970,9 @@ int QFxListView::count() const
 
     The below example demonstrates how to make a simple highlight
     for a vertical list.
-    \code
-    <Component id="ListHighlight">
-        <Rect color="lightsteelblue" radius="4"/>
-    </Component>
-    <ListView highlight="{ListHighlight}">
-    \endcode
-    \image ListViewHighlight.png
+
+    \snippet doc/src/snippets/declarative/listview/listview.qml 1
+    \image trivialListView.png
 
     \sa autoHighlight
 */
@@ -1043,17 +997,12 @@ void QFxListView::setHighlight(QmlComponent *highlight)
     If autoHighlight is true, the highlight will be moved smoothly
     to follow the current item.  If autoHighlight is false, the
     highlight will not be moved by the view, and must be implemented
-    by the highlight, for example:
+    by the highlight.  The following example creates a highlight with
+    its motion defined by the spring \l {Follow}:
 
-    \code
-    <Component id="Highlight">
-        <Rect id="Wrapper" color="#242424" radius="4" width="320" height="60" >
-            <y>
-                <Follow source="{Wrapper.ListView.view.current.y}" spring="3" damping="0.2"/>
-            </y>
-        </Rect>
-    </Component>
-    \endcode
+    \snippet doc/src/snippets/declarative/listview/highlight.qml 1
+
+    \sa highlight
 */
 bool QFxListView::autoHighlight() const
 {
@@ -1079,11 +1028,18 @@ void QFxListView::setAutoHighlight(bool autoHighlight)
     The modes supported are:
     \list
     \i Free - For Mouse, the current item may be positioned anywhere,
-    whether within the visible area, or outside.  during Keyboard interaction,
+    whether within the visible area, or outside.  During Keyboard interaction,
     the current item can move within the visible area, and the view will
     scroll to keep the highlight visible.
-    \i Snap -
-    \i SnapAuto -
+    \i Snap - For mouse, the current item may be positioned anywhere,
+    whether within the visible area, or outside.  During keyboard interaction,
+    the current item will be kept in the visible area and will prefer to be
+    positioned at the \l snapPosition, however the view will never scroll
+    beyond the beginning or end of the view.
+    \i SnapAuto - For both mouse and keyboard, the current item will be
+    kept at the \l {snapPosition}. Additionally, if the view is dragged or
+    flicked, the current item will be automatically updated to be the item
+    currently at the snapPosition.
     \endlist
 */
 QFxListView::CurrentItemPositioning QFxListView::currentItemPositioning() const
@@ -1121,10 +1077,10 @@ void QFxListView::setSnapPosition(int pos)
     \qmlproperty enumeration ListView::orientation
     This property holds the orientation of the list.
 
-    Possible values are \c Qt::Vertical (default) and \c Qt::Horizontal.
+    Possible values are \c Vertical (default) and \c Horizontal.
 
     Vertical Example:
-    \image ListViewVertical.png
+    \image trivialListView.png
     Horizontal Example:
     \image ListViewHorizontal.png
 */
@@ -1205,24 +1161,15 @@ void QFxListView::setCacheBuffer(int b)
     \qmlproperty string ListView::sectionExpression
     This property holds the expression to be evaluated for the section attached property.
 
-    Each item in the list has attached properties named \c section and
-    \c prevSection.  These may be used to place a section header for
-    related items.  The example below assumes that the model is alphabetically
-    sorted.  The section expression is the first character of the \c description
-    property.  If \c section and \c prevSection differ, the item will
-    display a section header.
+    Each item in the list has attached properties named \c ListView.section and
+    \c ListView.prevSection.  These may be used to place a section header for
+    related items.  The example below assumes that the model is sorted by size of
+    pet.  The section expression is the size property.  If \c ListView.section and
+    \c ListView.prevSection differ, the item will display a section header.
 
-    \code
-    <Component id="Delegate">
-        <Item id="wrapper" x="0" width="240" height="{Separator.height + Desc.height}">
-            <Item id="Separator" height="{wrapper.ListView.prevSection != wrapper.ListView.section ? 10 : 0}" width="240">
-                <Text text="{wrapper.ListView.section}" anchors.fill="{parent}"/>
-            </Item>
-            <Text id="Desc" text="{description} width="{parent.width}" height="30"/>
-        </Item>
-    </Component>
-    <ListView anchors.fill="{parent}" sectionExpression="{String(description).charAt(0)}" delegate="{Delegate}" model="{Model}"/>
-    \endcode
+    \snippet examples/declarative/listview/sections.qml 0
+
+    \image ListViewSections.png
 */
 QString QFxListView::sectionExpression() const
 {

@@ -57,9 +57,9 @@ QML_DEFINE_TYPE(QFxPathCubic,PathCubic);
 
 /*!
     \qmlclass PathElement
-    \brief PathElement is the base path element.
+    \brief PathElement is the base path type.
 
-    This element is the base for all path elements.  It cannot
+    This type is the base for all path types.  It cannot
     be instantiated.
 
     \sa Path, PathAttribute, PathPercent, PathLine, PathQuad, PathCubic
@@ -73,13 +73,13 @@ QML_DEFINE_TYPE(QFxPathCubic,PathCubic);
 
 /*!
     \qmlclass Path QFxPath
-    \brief The Path element defines a path for use by \l PathView.
+    \brief A Path object defines a path for use by \l PathView.
 
     A Path is composed of one or more path segments - PathLine, PathQuad,
     PathCubic.
 
-    The spacing of the items along the Path can be adjusted via the
-    PathPercent element.
+    The spacing of the items along the Path can be adjusted via a
+    PathPercent object.
 
     PathAttribute allows named attributes with values to be defined
     along the path.
@@ -151,11 +151,11 @@ void QFxPath::setStartY(qreal y)
 
 /*!
     \qmlproperty list<PathElement> Path::pathElements
-    This property holds the elements composing the path.
+    This property holds the objects composing the path.
 
     \default
 
-    A path can contain the following path elements:
+    A path can contain the following path objects:
     \list
         \i \l PathLine - a straight line to a given position.
         \i \l PathQuad - a quadratic Bezier curve to a given position with a control point.
@@ -164,16 +164,7 @@ void QFxPath::setStartY(qreal y)
         \i \l PathPercent - a way to spread out items along various segments of the path.
     \endlist
 
-    \code
-    <Path startX="240" startY="350">
-        <PathAttribute name="scale" value="1.0"/>
-        <PathAttribute name="opacity" value="1"/>
-        <PathQuad x="240" y="150" controlX="660" controlY="250"/>
-        <PathAttribute name="scale" value="0.1"/>
-        <PathAttribute name="opacity" value="-0.5"/>
-        <PathCubic x="240" y="350" control1X="-180" control1Y="250" control2X="0" control2Y="25"/>
-    </Path>
-    \endcode
+    \snippet doc/src/snippets/declarative/pathview/pathattributes.qml 2
 */
 
 QList<QFxPathElement *>* QFxPath::pathElements()
@@ -487,37 +478,21 @@ void QFxCurve::setY(qreal y)
     \qmlclass PathAttribute
     \brief The PathAttribute allows setting an attribute at a given position in a Path.
 
-    The PathAttribute element allows attibutes consisting of a name and a
+    The PathAttribute object allows attibutes consisting of a name and a
     value to be specified for the endpoints of path segments.  The attributes
     are exposed to the delegate as \l {Attached Properties}.  The value of
     an attribute at any particular point is interpolated from the PathAttributes
     bounding the point.
 
-    The example below shows a path with the items scaled to 10% at the ends of
-    the path and scaled 100% along the PathLine in the middle.  Note the use
-    of the PathView.scale attached property to set the scale of the delegate.
+    The example below shows a path with the items scaled to 30% with opacity 50%
+     at the top of the path and scaled 100% with opacity 100% at the bottom.
+    Note the use of the PathView.scale and PathView.opacity attached properties
+    to set the scale and opacity of the delegate.
     \table
     \row
     \o \image declarative-pathattribute.png
     \o
-    \code
-    <Component id="Delegate">
-        <Rect id="Wrapper" width="20" height="20" scale="{PathView.scale}" color="steelblue"/>
-    </Component>
-    <PathView width="200" height="100" model="{Model}" delegate="{Delegate}">
-        <path>
-            <Path startX="20" startY="0">
-                <PathAttribute name="scale" value="0.1"/>
-                <PathQuad x="50" y="80" controlX="0" controlY="80"/>
-                <PathAttribute name="scale" value="1"/>
-                <PathLine x="150" y="80"/>
-                <PathAttribute name="scale" value="1"/>
-                <PathQuad x="180" y="0" controlX="200" controlY="80"/>
-                <PathAttribute name="scale" value="0.1"/>
-            </Path>
-        </path>
-    </PathView>
-    \endcode
+    \snippet doc/src/snippets/declarative/pathview/pathattributes.qml 0
     \endtable
 
    \sa Path
@@ -582,11 +557,12 @@ void QFxPathAttribute::setValue(qreal value)
     The example below creates a path consisting of a straight line from
     0,100 to 200,100:
 
-    \code
-    <Path startX="0" startY="100">
-        <PathLine x="200" y="100"/>
-    </Path>
-    \endcode
+    \qml
+    Path {
+        startX: 0; startY: 100
+        PathLine { x: 200; y: 100 }
+    }
+    \endqml
 
     \sa Path, PathQuad, PathCubic
 */
@@ -623,11 +599,12 @@ void QFxPathLine::addToPath(QPainterPath &path)
     \row
     \o \image declarative-pathquad.png
     \o
-    \code
-    <Path startX="0" startY="0">
-        <PathQuad x="200" y="0" controlX="100" controlY="150"/>
-    </Path>
-    \endcode
+    \qml
+    Path {
+        startX: 0; startY: 0
+        PathQuad x: 200; y: 0; controlX: 100; controlY: 150 }
+    }
+    \endqml
     \endtable
 
     \sa Path, PathCubic, PathLine
@@ -706,12 +683,15 @@ void QFxPathQuad::addToPath(QPainterPath &path)
     \row
     \o \image declarative-pathcubic.png
     \o
-    \code
-    <Path startX="20" startY="0">
-         <PathCubic x="180" y="0" control1X="-10" control1Y="90"
-                    control2X="210" control2Y="90"/>
-    </Path>
-    \endcode
+    \qml
+    Path {
+        startX: 20; startY: 0
+        PathCubic {
+            x: 180; y: 0; control1X: -10; control1Y: 90
+                          control2X: 210; control2Y: 90
+        }
+    }
+    \endqml
     \endtable
 
     \sa Path, PathQuad, PathLine
@@ -833,26 +813,28 @@ void QFxPathCubic::addToPath(QPainterPath &path)
     \row
     \o \image declarative-nopercent.png
     \o
-    \code
-    <Path startX="20" startY="0">
-        <PathQuad x="50" y="80" controlX="0" controlY="80"/>
-        <PathLine x="150" y="80"/>
-        <PathQuad x="180" y="0" controlX="200" controlY="80"/>
-    </Path>
-    \endcode
+    \qml
+    Path {
+        startX: 20; startY: 0
+        PathQuad { x: 50; y: 80; controlX: 0; controlY: 80 }
+        PathLine { x: 150; y: 80 }
+        PathQuad { x: 180; y: 0; controlX: 200; controlY: 80 }
+    }
+    \endqml
     \row
     \o \image declarative-percent.png
     \o
-    \code
-    <Path startX="20" startY="0">
-        <PathQuad x="50" y="80" controlX="0" controlY="80"/>
-        <PathPercent value=".25"/>
-        <PathLine x="150" y="80"/>
-        <PathPercent value=".75"/>
-        <PathQuad x="180" y="0" controlX="200" controlY="80"/>
-        <PathPercent value="1"/>
-    </Path>
-    \endcode
+    \qml
+    Path {
+        startX: 20; startY: 0
+        PathQuad { x: 50; y: 80; controlX: 0; controlY: 80 }
+        PathPercent { value: 0.25 }
+        PathLine { x: 150; y: 80 }
+        PathPercent { value: 0.75 }
+        PathQuad { x: 180; y: 0; controlX: 200; controlY: 80 }
+        PathPercent { value: 1 }
+    }
+    \endqml
     \endtable
 
     \sa Path

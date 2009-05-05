@@ -41,7 +41,6 @@
 
 #include <math.h>
 #include <QDebug>
-#include <QPen>
 #include <QEvent>
 #include "qmlbindablevalue.h"
 #include "qmlstate.h"
@@ -51,7 +50,6 @@
 #include "qfxpathview.h"
 #include "qfxpathview_p.h"
 #include <QGraphicsSceneEvent>
-#include <QTimer>
 
 static const int FlickThreshold = 5;
 
@@ -99,17 +97,11 @@ private:
     \brief The PathView element lays out model-provided items on a path.
     \inherits Item
 
-    The model is typically provided by a QAbstractListModel "C++ model object", but can also be created directly in XML.
+    The model is typically provided by a QAbstractListModel "C++ model object", but can also be created directly in QML.
 
     The items are laid out along a path defined by a \l Path and may be flicked to scroll.
 
-    \code
-    <PathView id="pathview" delegate="{contactDelegate}">
-        <resources><Component id="contactDelegate">...</Component></resources>
-        <model>...</model>
-        <path>...</path>
-    </PathView>
-    \endcode
+    \snippet doc/src/snippets/declarative/pathview/pathview.qml 0
 
     \image pathview.gif
 
@@ -140,28 +132,7 @@ QFxPathView::~QFxPathView()
 
     The model provides a set of data that is used to create the items for the view.
     For large or dynamic datasets the model is usually provided by a C++ model object.
-    However, models can also be created directly in XML, for example:
-    \code
-<model>
-    <ListModel>
-        <Contact>
-            <portrait>pics/john.png</portrait>
-            <firstName>John</firstName>
-            <lastName>Smith</lastName>
-        </Contact>
-        <Contact>
-            <portrait>pics/bill.png</portrait>
-            <firstName>Bill</firstName>
-            <lastName>Jones</lastName>
-        </Contact>
-        <Contact>
-            <portrait>pics/jane.png</portrait>
-            <firstName>Jane</firstName>
-            <lastName>Doe</lastName>
-        </Contact>
-    </ListModel>
-</model>
-    \endcode
+    Models can also be created directly in XML, using the ListModel element.
 */
 
 /*!
@@ -180,6 +151,10 @@ QVariant QFxPathView::model() const
 void QFxPathView::setModel(const QVariant &model)
 {
     Q_D(QFxPathView);
+    if (d->model) {
+        disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
+        disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+    }
     if (QFxVisualItemModel *m = qvariant_cast<QFxVisualItemModel*>(model)) {
         if (d->ownModel) {
             delete d->model;
@@ -193,6 +168,12 @@ void QFxPathView::setModel(const QVariant &model)
         }
         d->model->setModel(model);
     }
+    if (d->model) {
+        connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
+        connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+    }
+    d->firstIndex = 0;
+    d->pathOffset = 0;
     d->regenerate();
     d->fixOffset();
 }
@@ -331,23 +312,7 @@ void QFxPathView::setDragMargin(qreal dragMargin)
     The delegate provides a template describing what each item in the view should look and act like.
 
     Here is an example delegate:
-    \code
-    <PathView delegate="{contactDelegate}" ...>
-        <resources>
-            <Component id="contactDelegate">
-                <Item id="wrapper" scale="{PathView.sc}" opacity="{PathView.op}" z="{PathView.z}">
-                    <Image id="pic" width="100" height="100" file="{portrait}"
-                            anchors.horizontalCenter="{parent.horizontalCenter}"/>
-                    <Text id="name" text="{firstName + ' ' + lastName}"
-                            font.size="20"
-                            anchors.top="{pic.bottom}" anchors.topMargin="5"
-                            anchors.horizontalCenter="{parent.horizontalCenter}"/>
-                </Item>
-            </Component>
-        </resources>
-        ...
-    </PathView>
-    \endcode
+    \snippet doc/src/snippets/declarative/pathview/pathview.qml 1
 */
 
 /*!
@@ -425,6 +390,8 @@ QPointF QFxPathViewPrivate::pointNear(const QPointF &point, qreal *nearPercent) 
 void QFxPathView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxPathView);
+    if (!d->items.count())
+        return;
     QPointF scenePoint = mapToScene(event->pos());
     int idx = 0;
     for (; idx < d->items.count(); ++idx) {
@@ -576,9 +543,6 @@ bool QFxPathView::mouseFilter(QGraphicsSceneMouseEvent *e)
 void QFxPathViewPrivate::regenerate()
 {
     Q_Q(QFxPathView);
-    if (!model || model->count() <= 0 || !model->delegate() || !path)
-        return;
-
     for (int i=0; i<items.count(); i++){
         QFxItem *p = items[i];
         q->attachedProperties.remove(p);
@@ -586,29 +550,23 @@ void QFxPathViewPrivate::regenerate()
     }
     items.clear();
 
-    firstIndex = 0;
-    pathOffset = 0;
+    if (!model || model->count() <= 0 || !model->delegate() || !path)
+        return;
 
-    int numItems = (pathItems>=0 ? pathItems : model->count());
-    qreal minDiff = 1e9;
-    int minI = -1;
-    for (int i=0; i<numItems; i++){
-        QFxItem *item = model->item(i);
+    if (firstIndex >= model->count())
+        firstIndex = model->count()-1;
+    if (pathOffset >= model->count())
+        pathOffset = model->count()-1;
+
+    int numItems = pathItems >= 0 ? pathItems : model->count();
+    for (int i=0; i < numItems && i < model->count(); ++i){
+        QFxItem *item = model->item((i + firstIndex) % model->count());
         if (!item)
             return;
         items.append(item);
         item->setZ(i);
         item->setParent(q);
-        qreal percent = i * (100.0 / (numItems));
-        percent /= 100.0;
-        updateItem(items.last(), percent);
-        qreal diff = qAbs(percent - snapPos);
-        if (diff < minDiff){
-            minDiff = diff;
-            minI = i;
-        }
     }
-    q->setCurrentIndex(minI);
 
     q->refill();
 }
@@ -639,10 +597,9 @@ void QFxPathView::refill()
         positions << qAbs(percent/100.0);
     }
 
-    if (d->pathItems==-1){
-        for (int i=0; i<positions.count(); i++){
+    if (d->pathItems==-1) {
+        for (int i=0; i<positions.count(); i++)
             d->updateItem(d->items.at(i), positions[i]);
-        }
         return;
     }
 
@@ -650,54 +607,110 @@ void QFxPathView::refill()
     for (int i=0; i<d->items.count(); i++)
         rotatedPositions << positions[(i + d->pathOffset + d->items.count()) % d->items.count()];
 
-    int firstFind = -1;
-    int i;
-    for (i=0; i<d->items.count()-1; i++)
-    {
+    int wrapIndex= -1;
+    for (int i=0; i<d->items.count()-1; i++) {
         if (rotatedPositions[i] > rotatedPositions[i+1]){
-            firstFind = i;
+            wrapIndex = i;
             break;
         }
     }
-    if (firstFind!=-1 ){
+    if (wrapIndex != -1 ){
         //A wraparound has occured
-        if (firstFind<(d->items.count()/2)){
-            while(firstFind-- >= 0){
+        if (wrapIndex < d->items.count()/2){
+            while(wrapIndex-- >= 0){
                 QFxItem* p = d->items.takeFirst();
                 attachedProperties.remove(p);
                 d->model->release(p);
                 d->firstIndex++;
-                d->firstIndex%=d->model->count();
+                d->firstIndex %= d->model->count();
                 int index = (d->firstIndex + d->items.count())%d->model->count();
                 d->items << d->model->item(index);
-                d->items.last()->setZ(i);
+                d->items.last()->setZ(wrapIndex);
                 d->items.last()->setParent(this);
                 d->pathOffset++;
                 d->pathOffset=d->pathOffset % d->items.count();
             }
-        }else{
-            while(firstFind++ < (d->items.count()-1)){
+        } else {
+            while(wrapIndex++ < d->items.count()-1){
                 QFxItem* p = d->items.takeLast();
                 attachedProperties.remove(p);
                 d->model->release(p);
                 d->firstIndex--;
-                if (d->firstIndex<0)
+                if (d->firstIndex < 0)
                     d->firstIndex = d->model->count() - 1;
                 d->items.prepend(d->model->item(d->firstIndex));
                 d->items.first()->setZ(d->firstIndex);
                 d->items.first()->setParent(this);
                 d->pathOffset--;
-                if (d->pathOffset<0)
+                if (d->pathOffset < 0)
                     d->pathOffset = d->items.count() - 1;
             }
         }
         for (int i=0; i<d->items.count(); i++)
             rotatedPositions[i] = positions[(i + d->pathOffset + d->items.count())
-                % d->items.count()];
+                                    % d->items.count()];
     }
-    for (int i=0; i<d->items.count(); i++){
+    for (int i=0; i<d->items.count(); i++)
         d->updateItem(d->items.at(i), rotatedPositions[i]);
+}
+
+void QFxPathView::itemsInserted(int modelIndex, int count)
+{
+    //XXX support animated insertion
+    Q_D(QFxPathView);
+    if (d->pathItems == -1) {
+        for (int i = 0; i < count; ++i) {
+            QFxItem *item = d->model->item(modelIndex + i);
+            item->setZ(modelIndex + i);
+            item->setParent(this);
+            d->items.insert(modelIndex + i, item);
+        }
+        refill();
+    } else {
+        //XXX This is pretty heavy handed until we reference count items.
+        d->regenerate();
     }
+
+    // make sure the current item is still at the snap position
+    int itemIndex = (d->currentIndex - d->firstIndex + d->model->count())%d->model->count();
+    itemIndex += d->pathOffset;
+    itemIndex %= d->items.count();
+    qreal targetOffset = fmod(100 + (d->snapPos*100) - 100.0 * itemIndex / d->items.count(), 100);
+
+    if (targetOffset < 0)
+        targetOffset = 100.0 + targetOffset;
+    if (targetOffset != d->_offset)
+        d->moveOffset.setValue(targetOffset);
+}
+
+void QFxPathView::itemsRemoved(int modelIndex, int count)
+{
+    //XXX support animated removal
+    Q_D(QFxPathView);
+    if (d->pathItems == -1) {
+        for (int i = 0; i < count; ++i) {
+            QFxItem* p = d->items.takeAt(modelIndex);
+            attachedProperties.remove(p);
+            d->model->release(p);
+        }
+        d->snapToCurrent();
+        refill();
+    } else {
+        d->regenerate();
+    }
+
+    // make sure the current item is still at the snap position
+    if (d->currentIndex >= d->model->count())
+        d->currentIndex = d->model->count() - 1;
+    int itemIndex = (d->currentIndex - d->firstIndex + d->model->count())%d->model->count();
+    itemIndex += d->pathOffset;
+    itemIndex %= d->items.count();
+    qreal targetOffset = fmod(100 + (d->snapPos*100) - 100.0 * itemIndex / d->items.count(), 100);
+
+    if (targetOffset < 0)
+        targetOffset = 100.0 + targetOffset;
+    if (targetOffset != d->_offset)
+        d->moveOffset.setValue(targetOffset);
 }
 
 void QFxPathView::ticked()
@@ -715,7 +728,7 @@ int QFxPathViewPrivate::calcCurrentIndex()
         if (_offset < 0)
             _offset += 100.0;
 
-        if (pathItems == -1){
+        if (pathItems == -1) {
             qreal delta = fmod(_offset - snapPos, 100.0);
             if (delta < 0)
                 delta = 100.0 + delta;
@@ -723,7 +736,7 @@ int QFxPathViewPrivate::calcCurrentIndex()
             if (ii < 0)
                 ii = 0;
             current = ii;
-        }else{
+        } else {
             qreal bestDiff=1e9;
             int bestI=-1;
             for (int i=0; i<items.count(); i++){
@@ -778,11 +791,11 @@ void QFxPathViewPrivate::snapToCurrent()
     if (!model || model->count() <= 0)
         return;
 
-    int itemIndex = (currentIndex - firstIndex + model->count())%model->count();
+    int itemIndex = (currentIndex - firstIndex + model->count()) % model->count();
 
     //Rounds is the number of times round to make the current item visible
     int rounds = itemIndex / items.count();
-    int otherWayRounds = (model->count() - (itemIndex))/items.count() + 1;
+    int otherWayRounds = (model->count() - (itemIndex)) / items.count() + 1;
     if (otherWayRounds < rounds)
         rounds = -otherWayRounds;
 
@@ -792,7 +805,7 @@ void QFxPathViewPrivate::snapToCurrent()
 
     if (targetOffset < 0)
         targetOffset = 100.0 + targetOffset;
-    if (targetOffset == _offset && rounds==0)
+    if (targetOffset == _offset && rounds == 0)
         return;
 
     moveReason = Other;

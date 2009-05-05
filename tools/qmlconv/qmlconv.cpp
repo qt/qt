@@ -442,24 +442,26 @@ int main(int argc, char *argv[])
     QStringList args = a.arguments();
     args.removeFirst();
 
-again:
-    if (args.isEmpty()) {
-        qWarning() << "Usage: qmlconf [-i] filename";
-        exit(1);
-    }
-
-    if (args.first() == QLatin1String("-i")) {
+    if (!args.isEmpty() && args.first() == QLatin1String("-i")) {
         optionInPlace = true;
         args.removeFirst();
-        goto again;
     }
 
-    const QString fileName = args.first();
+    if (args.isEmpty() && optionInPlace) {
+        qWarning() << "Usage: qmlconv [ [-i] filename ]";
+        exit(1);
+    }
+
+    const QString fileName = args.isEmpty() ? QString("-") : args.first();
 
     QFile file(fileName);
-    if (! file.open(QIODevice::ReadOnly)) {
-        qWarning() << "qmlconv: no input file";
-        exit(1);
+    if (fileName == "-") {
+        file.open(0,QIODevice::ReadOnly);
+    } else {
+        if (! file.open(QIODevice::ReadOnly)) {
+            qWarning() << "qmlconv: no input file";
+            exit(1);
+        }
     }
 
     Reader r(&file);

@@ -62,17 +62,22 @@ QML_DEFINE_TYPE(QFxTextEdit, TextEdit);
 
 /*!
     \qmlclass TextEdit
-    \brief The TextEdit element allows you to add editable formatted text to a scene.
-    \inherits ImageItem
+    \brief The TextEdit item allows you to add editable formatted text to a scene.
 
     It can display both plain and rich text. For example:
 
-    \code
-    <TextEdit id="edit" focus="true" focusable="true"
-            font.family="Helvetica" font.size="20" color="blue" width="240">
-        <![CDATA[<b>Hello</b> <i>World!</i>]]/>
-    </TextEdit>
-    \endcode
+    \qml
+TextEdit {
+    id: edit
+    text: "<b>Hello</b> <i>World!</i>"
+    focus: true
+    focusable: true
+    font.family: "Helvetica"
+    font.size: 20
+    color: "blue"
+    width: 240
+}
+    \endqml
 
     \image declarative-textedit.gif
 
@@ -178,19 +183,24 @@ void QFxTextEdit::setText(const QString &text)
     \table
     \row
     \o
-    \code
-    <VerticalLayout>
-        <TextEdit font.size="24">
-            <![CDATA[<b>Hello</b> <i>World!</i>]]]]><![CDATA[>
-        </TextEdit>
-        <TextEdit font.size="24" textFormat="RichText">
-            <![CDATA[<b>Hello</b> <i>World!</i>]]]]><![CDATA[>
-        </TextEdit>
-        <TextEdit font.size="24" textFormat="PlainText">
-            <![CDATA[<b>Hello</b> <i>World!</i>]]]]><![CDATA[>
-        </TextEdit>
-    </VerticalLayout>
-    \endcode
+    \qml
+VerticalLayout {
+    TextEdit {
+        font.size: 24
+        text: "<b>Hello</b> <i>World!</i>"
+    }
+    TextEdit {
+        font.size: 24
+        textFormat: "RichText"
+        text: "<b>Hello</b> <i>World!</i>"
+    }
+    TextEdit {
+        font.size: 24
+        textFormat: "PlainText"
+        text: "<b>Hello</b> <i>World!</i>"
+    }
+}
+    \endqml
     \o \image declarative-textformat.png
     \endtable
 */
@@ -248,13 +258,13 @@ QmlFont *QFxTextEdit::font()
 
     The text color.
 
-    \code
-    <!-- green text using hexadecimal notation -->
-    <TextEdit color="#00FF00" .../>
+    \qml
+// green text using hexadecimal notation
+TextEdit { color: "#00FF00"; ...  }
 
-    <!-- steelblue text using SVG color name-->
-    <TextEdit color="steelblue" .../>
-    \endcode
+// steelblue text using SVG color name
+TextEdit { color: "steelblue"; ...  }
+    \endqml
 */
 
 /*!
@@ -285,7 +295,7 @@ void QFxTextEdit::setColor(const QColor &color)
     \qmlproperty enumeration TextEdit::hAlign
     \qmlproperty enumeration TextEdit::vAlign
 
-    Sets the horizontal and vertical alignment of the text within the TextEdit elements
+    Sets the horizontal and vertical alignment of the text within the TextEdit items
     width and height.  By default, the text is top-left aligned.
 
     The valid values for \c hAlign are \c AlignLeft, \c AlignRight and 
@@ -346,7 +356,8 @@ bool QFxTextEdit::wrap() const
 /*!
     \qmlproperty bool TextEdit::wrap
 
-    Set this property to wrap the text to the TextEdit element's width.  The text will only wrap if an explicit width has been set.
+    Set this property to wrap the text to the TextEdit item's width.
+    The text will only wrap if an explicit width has been set.
 
     Wrapping is done on word boundaries (i.e. it is a "word-wrap"). Wrapping is off by default.
 */
@@ -411,7 +422,7 @@ void QFxTextEdit::componentComplete()
 /*!
     \qmlproperty bool TextEdit::readOnly
 
-    Whether the user an interact with the TextEdit element.  If this
+    Whether the user an interact with the TextEdit item.  If this
     property is set to true the text cannot be edited by user interaction.
 
     By default this property is false.
@@ -419,8 +430,7 @@ void QFxTextEdit::componentComplete()
 
 /*!
     \property QFxTextEdit::readOnly
-    \brief If this property is true the text can not be edited by
-    user interaction.
+    \brief If this property is true the text can not be edited by user interaction.
 
     Changing this property will modify the text interaction flags.  If
     you require more specific control about how user interaction

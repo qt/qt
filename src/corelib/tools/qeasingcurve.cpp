@@ -53,7 +53,7 @@
 
 /*!
     \class QEasingCurve
-    \ingroup animation
+    \ingroup group_animation
     \brief The QEasingCurve class provides easing curves for controlling animation.
 
     Easing curves describe a function that controls how the speed of the interpolation

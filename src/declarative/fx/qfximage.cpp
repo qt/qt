@@ -60,37 +60,38 @@ QML_DEFINE_TYPE(QFxImage,Image);
     \brief The Image element allows you to add bitmaps to a scene.
     \inherits Item
 
-    The Image element supports untransformed, stretched, grid-scaled and tiled images. For an explanation of grid-scaling see the scaleGrid property description or the QFxScaleGrid class description.
+    The Image element supports untransformed, stretched, grid-scaled and tiled images.
+    For an explanation of grid-scaling see the scaleGrid property description
+    or the QFxScaleGrid class description.
 
     Examples:
     \table
     \row
     \o \image declarative-qtlogo1.png
     \o Untransformed
-    \code
-    <Image src="pics/qtlogo.png"/>
-    \endcode
+    \qml
+    Image { source: "pics/qtlogo.png" }
+    \endqml
     \row
     \o \image declarative-qtlogo2.png
     \o Stretched
-    \code
-    <Image width="160" height="160" src="pics/qtlogo.png"/>
-    \endcode
+    \qml
+    Image { width: 160; height: 160; source: "pics/qtlogo.png" }
+    \endqml
     \row
     \o \image declarative-qtlogo4.png
     \o Grid-scaled
-    \code
-    <Image scaleGrid.left="20" scaleGrid.right="10"
-           scaleGrid.top="14" scaleGrid.bottom="14"
-        width="160" height="160" src="pics/qtlogo.png"/>
-    \endcode
+    \qml
+    Image { scaleGrid.left: 20; scaleGrid.right: 10
+            scaleGrid.top: 14; scaleGrid.bottom: 14
+            width: 160; height: 160; source: "pics/qtlogo.png" }
+    \endqml
     \row
     \o \image declarative-qtlogo3.png
     \o Tiled
-    \code
-    <Image tile="true"
-        width="160" height="160" src="pics/qtlogo.png"/>
-    \endcode
+    \qml
+    Image { tile: true; width: 160; height: 160; source: "pics/qtlogo.png" }
+    \endqml
     \endtable
  */
 
@@ -102,9 +103,9 @@ QML_DEFINE_TYPE(QFxImage,Image);
     \ingroup group_coreitems
 
     Example:
-    \code
-    <Image src="pics/star.png"/>
-    \endcode
+    \qml
+    Image { source: "pics/star.png" }
+    \endqml
 
     A QFxImage object can be instantiated in Qml using the tag \l Image.
 */
@@ -135,7 +136,7 @@ QFxImage::~QFxImage()
     This property contains the image currently being displayed by this item,
     which may be an empty pixmap if nothing is currently displayed. If this
     property is set, the src property will be unset. This property is intended
-    to be used only in C++, not in XML.
+    to be used only in C++, not in QML.
 */
 QPixmap QFxImage::pixmap() const
 {
@@ -199,13 +200,13 @@ QFxScaleGrid *QFxImage::scaleGrid()
     bitmap file to its size.  If tiling is enabled, the bitmap is repeated as a set
     of unscaled tiles, clipped to the size of the Image.
 
-    \code
-    <Item>
-        <Image src="tile.png" />
-        <Image x="80" width="100" height="100" src="tile.png" />
-        <Image x="190" width="100" height="100" tile="true" src="tile.png" />
-    </Item>
-    \endcode
+    \qml
+    Item {
+        Image { source: "tile.png" }
+        Image { x: 80; width: 100; height: 100; src: "tile.png" }
+        Image { x: 190; width: 100; height: 100; tile: true; src: "tile.png" }
+    }
+    \endqml
     \image declarative-image_tile.png
 
     If both tiling and the scaleGrid are set, tiling takes precedence.
@@ -812,7 +813,7 @@ QFxImage::Status QFxImage::status() const
 */
 
 /*!
-    \property QFxImage::src
+    \property QFxImage::source
     \brief the url of the image to be displayed in this item.
 
     The content specified can be of any image type loadable by QImage. Alternatively,

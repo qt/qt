@@ -10,9 +10,20 @@ This first program is a simple "Hello world" example. The picture below is a scr
 Here is the QML code for the application:
 
 \code
-<Rect id="Page" width="480" height="200" color="white">
-    <Text id="HelloText" text="Hello world!" font.size="24" font.bold="true" y="30" anchors.horizontalCenter="{Page.horizontalCenter}"/>
-</Rect>
+Rect {
+    id: Page
+    width: 480
+    height: 200
+    color: "white"
+    Text {
+        id: HelloText
+        text: "Hello world!"
+        font.size: 24
+        font.bold: true
+        y: 30
+        anchors.horizontalCenter: Page.horizontalCenter
+    }
+}
 \endcode
 
 \section1 Walkthrough
@@ -20,7 +31,12 @@ Here is the QML code for the application:
 \section2 Rect element
 
 \code
-<Rect id="Page" width="480" height="200" color="white">
+Rect {
+    id: Page
+    width: 480
+    height: 200
+    color: "white"
+}
 \endcode
 
 First, we declare a root element of type \l Rect. It is one of the basic building blocks you can use to create an application in QML.
@@ -30,7 +46,14 @@ The \l Rect element contains many other properties (such as \c x and \c y), but 
 \section2 Text element
 
 \code
-<Text id="HelloText" text="Hello world!" y="30" font.size="24" font.bold="true" anchors.horizontalCenter="{Page.horizontalCenter}"/>
+Text {
+    id: HelloText
+    text: "Hello world!"
+    font.size: 24
+    font.bold: true
+    y: 30
+    anchors.horizontalCenter: Page.horizontalCenter
+}
 \endcode
 
 We add a text element as a child of our root element to display the text 'Hello world!'.
@@ -39,14 +62,14 @@ The \c y property is used to position the text vertically at 30 pixels from the 
 
 The \c font.size and \c font.bold properties are related to fonts and use the 'dot' notation (see \l {declarative}{Declarative UI} ).
 
-The \c anchors.horizontalCenter property refers to the horizontal center of an element. In this case, we bind the center of our text element to the center of the \e Page element. We use braces to indicate that \c Page.horizontalCenter is a bound ECMAScript expression that needs to be evaluated. It also means that if the center of \e Page changes (for example if it is resized) our text will be re-centered automatically (see \l binding).
+The \c anchors.horizontalCenter property refers to the horizontal center of an element. In this case, we specify that our text element should be horizontally centered in the \e Page element.
 
 \section2 Viewing the example
 
-To view what you have created, run the duiviewer (located in the \c bin directory) with your filename as the first argument. For example, to run the provided completed Tutorial 1 example from the install location, you would type:
+To view what you have created, run the qmlviewer (located in the \c bin directory) with your filename as the first argument. For example, to run the provided completed Tutorial 1 example from the install location, you would type:
 
 \code
-bin/duiviewer examples/tutorials/t1/tutorial1.qml
+bin/qmlviewer $QTDIR/examples/declarative/tutorials/helloworld/t1/tutorial1.qml
 \endcode
 
 [\l tutorial] [Next: \l tutorial2]

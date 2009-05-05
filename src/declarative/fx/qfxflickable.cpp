@@ -226,15 +226,16 @@ QML_DEFINE_TYPE(QFxFlickable,Flickable);
 
 /*!
     \qmlclass Flickable
-    \brief The Flickable element provides a surface that can be "flicked".
+    \brief The Flickable item provides a surface that can be "flicked".
     \inherits Item
 
     Flickable places its children on a surface that can be dragged and flicked.
 
     \code
-    <Flickable width="200" height="200" viewportWidth="{image.width}" viewportHeight="{image.height}">
-        <Image id="image" file="bigimage.png"/>
-    </Flickable>
+    Flickable {
+        width: 200; height: 200; viewportWidth: image.width; viewportHeight: image.height
+        Image { id: image; source: "bigimage.png" }
+    }
     \endcode
 
     \image flickable.gif
@@ -257,9 +258,10 @@ QML_DEFINE_TYPE(QFxFlickable,Flickable);
     QFxFlickable allows its children to be dragged and flicked.
     
 \code
-<Flickable width="320" height="480" viewportWidth="{image.width}" viewportHeight="{image.height}">
-    <Image id="image" file="bigimage.png"/>
-</Flickable>
+Flickable {
+    width: 320; height: 480; viewportWidth: image.width; viewportHeight: image.height
+    Image { id: image; source: "bigimage.png" }
+}
 \endcode
 
     Note that QFxFlickable does not automatically clip its contents. If
@@ -475,9 +477,11 @@ bool QFxFlickable::isAtYBeginning() const
 
     These properties are typically used to draw a scrollbar, for example:
     \code
-    <Rect opacity="0.5" anchors.right="{MyListView.right-2}" width="6"
-            y="{MyListView.pageYPosition * MyListView.height}"
-            height="{MyListView.pageHeight * MyListView.height}"/>
+    Rect {
+        opacity: 0.5; anchors.right: MyListView.right-2; width: 6
+        y: MyListView.pageYPosition * MyListView.height
+        height: MyListView.pageHeight * MyListView.height
+    }
     \endcode
 */
 qreal QFxFlickable::pageWidth() const
@@ -879,9 +883,10 @@ void QFxFlickable::setOverShoot(bool o)
     should be set to the combined size of the items placed in the Flickable.
 
     \code
-    <Flickable width="320" height="480" viewportWidth="{image.width}" viewportHeight="{image.height}">
-        <Image id="image" file="bigimage.png"/>
-    </Flickable>
+    Flickable {
+        width: 320; height: 480; viewportWidth: image.width; viewportHeight: image.height
+        Image { id: image; source: "bigimage.png" }
+    }
     \endcode
 */
 

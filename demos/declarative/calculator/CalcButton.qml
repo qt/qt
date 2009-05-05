@@ -1,11 +1,9 @@
 Item {
-    id: Button; width: 50; height: 30
+    property string operation
+    property bool toggable : false
+    property bool toggled : false
 
-    properties: [
-        Property { name: "operation"; type: "string" },
-        Property { name: "toggable"; value: false },
-        Property { name: "toggled"; value: false }
-    ]
+    id: Button; width: 50; height: 30
 
     Script {
         function buttonClicked(operation) {

@@ -65,10 +65,12 @@ protected:
     Object *defineObjectBinding(int line,
                              AST::UiQualifiedId *propertyName,
                              const QString &objectType,
+                             AST::SourceLocation typeLocation,
                              AST::UiObjectInitializer *initializer = 0);
     Object *defineObjectBinding_helper(int line,
                              AST::UiQualifiedId *propertyName,
                              const QString &objectType,
+                             AST::SourceLocation typeLocation,
                              AST::UiObjectInitializer *initializer = 0);
     QString getPrimitive(const QByteArray &propertyName, AST::ExpressionNode *expr);
     void defineProperty(const QString &propertyName, int line, const QString &primitive);
@@ -194,11 +196,17 @@ QString ProcessAST::asString(AST::UiQualifiedId *node) const
 Object *ProcessAST::defineObjectBinding_helper(int line,
                                      AST::UiQualifiedId *propertyName,
                                      const QString &objectType,
+                                     AST::SourceLocation typeLocation,
                                      AST::UiObjectInitializer *initializer)
 {
     bool isType = !objectType.isEmpty() && objectType.at(0).isUpper() && !objectType.contains(QLatin1Char('.'));
+
     if (!isType) {
-        qWarning() << "bad name for a class"; // ### FIXME
+        QmlError error;
+        error.setDescription("Expected type name");
+        error.setLine(typeLocation.startLine);
+        error.setColumn(typeLocation.startColumn);
+        _parser->_errors << error;
         return false;
     }
 
@@ -235,7 +243,7 @@ Object *ProcessAST::defineObjectBinding_helper(int line,
 
             if (!_parser->scriptFile().isEmpty()) {
                 _stateStack.pushObject(obj);
-                Object *scriptObject= defineObjectBinding(line, 0, QLatin1String("Script"));
+                Object *scriptObject= defineObjectBinding(line, 0, QLatin1String("Script"), AST::SourceLocation());
                 _stateStack.pushObject(scriptObject);
                 defineProperty(QLatin1String("src"), line, _parser->scriptFile());
                 _stateStack.pop(); // scriptObject
@@ -264,11 +272,12 @@ Object *ProcessAST::defineObjectBinding_helper(int line,
 Object *ProcessAST::defineObjectBinding(int line,
                                      AST::UiQualifiedId *qualifiedId,
                                      const QString &objectType,
+                                     AST::SourceLocation typeLocation,
                                      AST::UiObjectInitializer *initializer)
 {
     if (objectType == QLatin1String("Connection")) {
 
-        Object *obj = defineObjectBinding_helper(line, 0, QLatin1String("Connection"));
+        Object *obj = defineObjectBinding_helper(line, 0, objectType, typeLocation);
 
         _stateStack.pushObject(obj);
 
@@ -297,7 +306,7 @@ Object *ProcessAST::defineObjectBinding(int line,
         return obj;
     }
 
-    return defineObjectBinding_helper(line, qualifiedId, objectType, initializer);
+    return defineObjectBinding_helper(line, qualifiedId, objectType, typeLocation, initializer);
 }
 
 void ProcessAST::defineProperty(const QString &propertyName, int line, const QString &primitive)
@@ -326,52 +335,76 @@ bool ProcessAST::visit(AST::UiImport *node)
     return false;
 }
 
+// UiObjectMember: T_PUBLIC T_DEFAULT UiMemberType T_IDENTIFIER T_COLON Expression
+// UiObjectMember: T_PUBLIC T_DEFAULT UiMemberType T_IDENTIFIER
 // UiObjectMember: T_PUBLIC UiMemberType T_IDENTIFIER T_COLON Expression
 // UiObjectMember: T_PUBLIC UiMemberType T_IDENTIFIER
 //
 // UiMemberType: "property" | "signal"
 bool ProcessAST::visit(AST::UiPublicMember *node)
 {
-    const QString memberType = node->memberType->asString();
-    const QString name = node->name->asString();
+    if(node->type == AST::UiPublicMember::Signal) {
+        const QString name = node->name->asString();
 
-    if (memberType == QLatin1String("property")) {
-        _stateStack.pushProperty(QLatin1String("properties"), node->publicToken.startLine);
+        Object::DynamicSignal signal;
+        signal.name = name.toUtf8();
 
-        Object *obj = defineObjectBinding(node->identifierToken.startLine,
-                                          0,
-                                          QLatin1String("Property"));
-
-        _stateStack.pushObject(obj);
-
-        defineProperty(QLatin1String("name"), node->identifierToken.startLine, name);
-        if (node->expression) // default value
-            defineProperty(QLatin1String("value"), node->identifierToken.startLine, getPrimitive("value", node->expression));
-
-        _stateStack.pop(); // object
-        _stateStack.pop(); // properties
-
-    } else if (memberType == QLatin1String("signal")) {
-        _stateStack.pushProperty(QLatin1String("signals"), node->publicToken.startLine);
-
-        Object *obj = defineObjectBinding(node->identifierToken.startLine,
-                                          0,
-                                          QLatin1String("Signal"));
-
-        _stateStack.pushObject(obj);
-
-        defineProperty(QLatin1String("name"), node->identifierToken.startLine, name);
-
-        _stateStack.pop(); // object
-        _stateStack.pop(); // signals
+        _stateStack.top().object->dynamicSignals << signal;
     } else {
-        qWarning() << "bad public identifier" << memberType; // ### FIXME
+        const QString memberType = node->memberType->asString();
+        const QString name = node->name->asString();
+
+        const struct TypeNameToType {
+            const char *name;
+            Object::DynamicProperty::Type type;
+        } propTypeNameToTypes[] = {
+            { "int", Object::DynamicProperty::Int },
+            { "bool", Object::DynamicProperty::Bool },
+            { "double", Object::DynamicProperty::Real },
+            { "real", Object::DynamicProperty::Real },
+            { "string", Object::DynamicProperty::String },
+            { "color", Object::DynamicProperty::Color },
+            { "date", Object::DynamicProperty::Date },
+            { "var", Object::DynamicProperty::Variant },
+            { "variant", Object::DynamicProperty::Variant }
+        };
+        const int propTypeNameToTypesCount = sizeof(propTypeNameToTypes) / 
+                                             sizeof(propTypeNameToTypes[0]);
+
+        bool typeFound = false;
+        Object::DynamicProperty::Type type;
+        for(int ii = 0; !typeFound && ii < propTypeNameToTypesCount; ++ii) {
+            if(QLatin1String(propTypeNameToTypes[ii].name) == memberType) {
+                type = propTypeNameToTypes[ii].type;
+                typeFound = true;
+            }
+        }
+        
+        if(!typeFound) {
+            QmlError error;
+            error.setDescription("Expected property type");
+            error.setLine(node->typeToken.startLine);
+            error.setColumn(node->typeToken.startColumn);
+            _parser->_errors << error;
+            return false;
+        }
+
+        Object::DynamicProperty property;
+        property.isDefaultProperty = node->isDefaultMember;
+        property.type = type;
+        property.name = name.toUtf8();
+
+        if (node->expression) { // default value
+            property.defaultValue = new Property;
+            Value *value = new Value;
+            value->primitive = getPrimitive("value", node->expression);
+            property.defaultValue->values << value;
+        }
+
+        _stateStack.top().object->dynamicProperties << property;
     }
 
-
-    // ### TODO drop initializer (unless some example needs differnet properties than name and type and value.
-
-    return false;
+    return true;
 }
 
 
@@ -382,6 +415,7 @@ bool ProcessAST::visit(AST::UiObjectDefinition *node)
     defineObjectBinding(node->identifierToken.startLine,
                         0,
                         node->name->asString(),
+                        node->identifierToken,
                         node->initializer);
 
     return false;
@@ -394,6 +428,7 @@ bool ProcessAST::visit(AST::UiObjectBinding *node)
     defineObjectBinding(node->identifierToken.startLine,
                         node->qualifiedId,
                         node->name->asString(),
+                        node->identifierToken,
                         node->initializer);
 
     return false;
@@ -456,7 +491,8 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
 
     Value *v = new Value;
     v->primitive = primitive;
-    v->line = node->colonToken.startLine;
+    v->line = node->statement->firstSourceLocation().startLine;
+    v->column = node->statement->firstSourceLocation().startColumn;
     prop->addValue(v);
 
     while (propertyCount--)
@@ -515,7 +551,7 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
 
 
 QmlScriptParser::QmlScriptParser()
-    : root(0), _errorLine(-1)
+: root(0)
 {
 
 }
@@ -536,13 +572,18 @@ bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
             return true;
         }
 
-        _error = xmlParser.errorDescription();
-        _errorLine = 0; // ### FIXME
+        QmlError error;
+        error.setUrl(url);
+        error.setDescription(xmlParser.errorDescription());
+        _errors << error;
+
         return false;
     }
 
     const QString fileName = url.toString();
-    const QString code = QString::fromUtf8(data); // ### FIXME
+
+    QTextStream stream(data, QIODevice::ReadOnly);
+    const QString code = stream.readAll();
 
     JavaScriptParser parser;
     JavaScriptEnginePrivate driver;
@@ -554,26 +595,34 @@ bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
     lexer.setCode(code, /*line = */ 1);
     driver.setLexer(&lexer);
 
-    if (! parser.parse(&driver)) {
-        _error = parser.errorMessage();
-        _errorLine = parser.errorLineNumber();
-        return false;
+    if (! parser.parse(&driver) || !_errors.isEmpty()) {
+
+        // Extract errors from the parser
+        foreach (const JavaScriptParser::DiagnosticMessage &m, parser.diagnosticMessages()) {
+
+            if (m.isWarning())
+                continue;
+
+            QmlError error;
+            error.setUrl(url);
+            error.setDescription(m.message);
+            error.setLine(m.line);
+            error.setColumn(m.column);
+            _errors << error;
+
+        }
     }
 
-    ProcessAST process(this);
-    process(code, parser.ast());
+    if (_errors.isEmpty()) {
+        ProcessAST process(this);
+        process(code, parser.ast());
 
-    return true;
-}
+        // Set the url for process errors
+        for(int ii = 0; ii < _errors.count(); ++ii) 
+            _errors[ii].setUrl(url);
+    }
 
-QString QmlScriptParser::errorDescription() const
-{
-    return _error;
-}
-
-int QmlScriptParser::errorLine() const
-{
-    return _errorLine;
+    return _errors.isEmpty();
 }
 
 QMap<QString,QString> QmlScriptParser::nameSpacePaths() const
@@ -591,6 +640,11 @@ Object *QmlScriptParser::tree() const
     return root;
 }
 
+QList<QmlError> QmlScriptParser::errors() const
+{
+    return _errors;
+}
+
 void QmlScriptParser::clear()
 {
     if (root) {
@@ -599,9 +653,8 @@ void QmlScriptParser::clear()
     }
     _nameSpacePaths.clear();
     _typeNames.clear();
-    _error.clear();
+    _errors.clear();
     _scriptFile.clear();
-    _errorLine = 0;
 }
 
 int QmlScriptParser::findOrCreateTypeId(const QString &name)

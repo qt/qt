@@ -45,6 +45,7 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qset.h>
 #include <qml.h>
+#include <qmlerror.h>
 #include <private/qmlinstruction_p.h>
 #include <private/qmlcompositetypemanager_p.h>
 class QStringList;
@@ -115,8 +116,7 @@ public:
     bool compile(QmlEngine *, QmlCompositeTypeData *, QmlCompiledComponent *);
 
     bool isError() const;
-    qint64 errorLine() const;
-    QString errorDescription() const;
+    QList<QmlError> errors() const;
 
     static bool isValidId(const QString &);
     static bool isBinding(const QString &);
@@ -139,6 +139,7 @@ private:
     bool compileComponentFromRoot(QmlParser::Object *obj, int);
     bool compileFetchedObject(QmlParser::Object *obj, int);
     bool compileSignal(QmlParser::Property *prop, QmlParser::Object *obj);
+    bool testProperty(QmlParser::Property *prop, QmlParser::Object *obj);
     bool compileProperty(QmlParser::Property *prop, QmlParser::Object *obj, int);
     bool compileIdProperty(QmlParser::Property *prop, 
                            QmlParser::Object *obj);
@@ -175,6 +176,7 @@ private:
 
     QSet<QString> ids;
     qint64 exceptionLine;
+    qint64 exceptionColumn;
     QString exceptionDescription;
     QmlCompiledData *output;
 };

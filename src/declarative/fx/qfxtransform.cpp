@@ -85,16 +85,16 @@ void QFxTransform::update()
 
 /*!
     \qmlclass Axis
-    \brief The Axis element defines an axis that can be used for rotation or translation.
+    \brief A Axis object defines an axis that can be used for rotation or translation.
 
     An axis is specified by 2 points in 3D space: a start point and
     an end point. While technically the axis is the line running through these two points
     (and thus many different sets of two points could define the same axis), the distance
     between the points does matter for translation along an axis.
 
-    \code
-    <Axis startX="0" startY="0" endX="20" endY="30"/>
-    \endcode
+    \qml
+    Axis { startX: 0; startY: 0; endX: 20; endY: 30 }
+    \endqml
 */
 
 QML_DEFINE_TYPE(QFxAxis, Axis);
@@ -178,91 +178,69 @@ void QFxAxis::setEndZ(qreal z)
 }
 
 /*!
-    \qmlclass AxisRotation
-    \brief The AxisRotation element provides a way to rotate an Item around an axis.
+    \qmlclass Rotation3D
+    \brief A Rotation3D object provides a way to rotate an Item around an axis.
 
     Here is an example of various rotations applied to an \l Image.
-    \code
-    <HorizontalLayout margin="10" spacing="10">
-        <Image src="qt.png"/>
-        <Image src="qt.png">
-            <transform>
-                <AxisRotation axis.startX="30" axis.endX="30" axis.endY="60" angle="18"/>
-            </transform>
-        </Image>
-        <Image src="qt.png">
-            <transform>
-                <AxisRotation axis.startX="30" axis.endX="30" axis.endY="60" angle="36"/>
-            </transform>
-        </Image>
-        <Image src="qt.png">
-            <transform>
-                <AxisRotation axis.startX="30" axis.endX="30" axis.endY="60" angle="54"/>
-            </transform>
-        </Image>
-        <Image src="qt.png">
-            <transform>
-                <AxisRotation axis.startX="30" axis.endX="30" axis.endY="60" angle="72"/>
-            </transform>
-        </Image>
-    </HorizontalLayout>
-    \endcode
+    \snippet doc/src/snippets/declarative/rotation.qml 0
 
     \image axisrotation.png
 */
 
-QML_DEFINE_TYPE(QFxRotation,AxisRotation);
+QML_DEFINE_TYPE(QFxRotation3D,Rotation3D);
 
-QFxRotation::QFxRotation(QObject *parent)
-: QFxTransform(parent), _angle(0), _distanceToPlane(1024.), _dirty(true)
+QFxRotation3D::QFxRotation3D(QObject *parent)
+: QFxTransform(parent), _angle(0), _dirty(true)
 {
     connect(&_axis, SIGNAL(updated()), this, SLOT(update()));
 }
 
-QFxRotation::~QFxRotation()
+QFxRotation3D::~QFxRotation3D()
 {
 }
 
 /*!
-    \qmlproperty real AxisRotation::axis.startX
-    \qmlproperty real AxisRotation::axis.startY
-    \qmlproperty real AxisRotation::axis.endX
-    \qmlproperty real AxisRotation::axis.endY
-    \qmlproperty real AxisRotation::axis.endZ
+    \qmlproperty real Rotation3D::axis.startX
+    \qmlproperty real Rotation3D::axis.startY
+    \qmlproperty real Rotation3D::axis.endX
+    \qmlproperty real Rotation3D::axis.endY
+    \qmlproperty real Rotation3D::axis.endZ
 
     A rotation axis is specified by 2 points in 3D space: a start point and
     an end point. The z-position of the start point is assumed to be 0, and cannot
     be changed.
+
+    \sa Axis
 */
-QFxAxis *QFxRotation::axis()
+QFxAxis *QFxRotation3D::axis()
 {
     return &_axis;
 }
 
 /*!
-    \qmlproperty real AxisRotation::angle
+    \qmlproperty real Rotation3D::angle
 
     The angle, in degrees, to rotate around the specified axis.
 */
-qreal QFxRotation::angle() const
+qreal QFxRotation3D::angle() const
 {
     return _angle;
 }
 
-void QFxRotation::setAngle(qreal angle)
+void QFxRotation3D::setAngle(qreal angle)
 {
     _angle = angle;
     update();
 }
 
-bool QFxRotation::isIdentity() const
+bool QFxRotation3D::isIdentity() const
 {
     return (_angle == 0.) || (_axis.endZ() == 0. && _axis.endY() == _axis.startY() && _axis.endX() == _axis.startX());
 }
 
 #if defined(QFX_RENDER_QPAINTER)
 const qreal inv_dist_to_plane = 1. / 1024.;
-QTransform QFxRotation::transform() const
+QTransform QFxRotation3D::transform() const
 {
     if (_dirty) {
         _transform = QTransform();
@@ -282,10 +260,6 @@ QTransform QFxRotation::transform() const
                 qreal y = _axis.endY() - _axis.startY();
                 qreal z = _axis.endZ();
 
-                qreal idtp = inv_dist_to_plane;
-                if (distanceToPlane() != 1024.)
-                    idtp = 1. / distanceToPlane();
-
                 qreal len = x * x + y * y + z * z;
                 if (len != 1.) {
                     len = ::sqrt(len);
@@ -294,8 +268,8 @@ QTransform QFxRotation::transform() const
                     z /= len;
                 }
 
-                QTransform rot(x*x*(1-c)+c, x*y*(1-c)-z*s, x*z*(1-c)+y*s*idtp,
-                               y*x*(1-c)+z*s, y*y*(1-c)+c, y*z*(1-c)-x*s*idtp,
+                QTransform rot(x*x*(1-c)+c, x*y*(1-c)-z*s, x*z*(1-c)+y*s*inv_dist_to_plane,
+                               y*x*(1-c)+z*s, y*y*(1-c)+c, y*z*(1-c)-x*s*inv_dist_to_plane,
                                0, 0, 1);
 
                 _transform *= rotTrans;
@@ -310,7 +284,7 @@ QTransform QFxRotation::transform() const
     return _transform;
 }
 #elif defined(QFX_RENDER_OPENGL)
-QMatrix4x4 QFxRotation::transform() const
+QMatrix4x4 QFxRotation3D::transform() const
 {
     if (_dirty) {
         _dirty = false;
@@ -333,21 +307,7 @@ QMatrix4x4 QFxRotation::transform() const
 }
 #endif
 
-/*!
-    \qmlproperty real AxisRotation::distanceToPlane
-*/
-qreal QFxRotation::distanceToPlane() const
-{
-    return _distanceToPlane;
-}
-
-void QFxRotation::setDistanceToPlane(qreal d)
-{
-    _distanceToPlane = d;
-    update();
-}
-
-void QFxRotation::update()
+void QFxRotation3D::update()
 {
     _dirty = true;
     QFxItem *item = qobject_cast<QFxItem *>(parent());
@@ -356,77 +316,86 @@ void QFxRotation::update()
 }
 
 /*!
-    \qmlclass AxisTranslation
-    \brief The AxisTranslation element provides a way to move an Item along an axis.
+    \qmlclass Translation3D
+    \brief A Translation3D object provides a way to move an Item along an axis.
 
     The following example translates the image to 10, 3.
-    \code
-    <Image src="logo.png">
-        <transform>
-            <AxisTranslation axis.startX="0" axis.startY="0" axis.endX="1" axis.endY=".3" distance="10"/>
-        </transform>
-    </Image>
-    \endcode
+    \qml
+Image {
+    src: "logo.png"
+    transform: [
+        Translation3D {
+            axis.startX: 0
+            axis.startY: 0
+            axis.endX: 1
+            axis.endY: .3
+            distance: 10
+        }
+    ]
+}
+    \endqml
 */
 
-QML_DEFINE_TYPE(QFxTranslation,AxisTranslation);
+QML_DEFINE_TYPE(QFxTranslation3D,Translation3D);
 
-QFxTranslation::QFxTranslation(QObject *parent)
+QFxTranslation3D::QFxTranslation3D(QObject *parent)
 : QFxTransform(parent), _distance(0), _dirty(true)
 {
     connect(&_axis, SIGNAL(updated()), this, SLOT(update()));
 }
 
-QFxTranslation::~QFxTranslation()
+QFxTranslation3D::~QFxTranslation3D()
 {
 }
 
 /*!
-    \qmlproperty real AxisTranslation::axis.startX
-    \qmlproperty real AxisTranslation::axis.startY
-    \qmlproperty real AxisTranslation::axis.endX
-    \qmlproperty real AxisTranslation::axis.endY
-    \qmlproperty real AxisTranslation::axis.endZ
+    \qmlproperty real Translation3D::axis.startX
+    \qmlproperty real Translation3D::axis.startY
+    \qmlproperty real Translation3D::axis.endX
+    \qmlproperty real Translation3D::axis.endY
+    \qmlproperty real Translation3D::axis.endZ
 
     A translation axis is specified by 2 points in 3D space: a start point and
     an end point. The z-position of the start point is assumed to be 0, and cannot
     be changed. Changing the z-position of the end point is only valid when running
     under OpenGL.
+
+    \sa Axis
 */
-QFxAxis *QFxTranslation::axis()
+QFxAxis *QFxTranslation3D::axis()
 {
     return &_axis;
 }
 
 /*!
-    \qmlproperty real AxisTranslation::distance
+    \qmlproperty real Translation3D::distance
 
     The distance to translate along the specified axis. distance is a multiplier;
     in the example below, a distance of 1 would translate to 100, 50, while a distance
     of 0.5 would translate to 50, 25.
 
-    \code
-    <AxisTranslation axis.startX="0" axis.startY="0" axis.endX="100" axis.endY="50"/>
-    \endcode
+    \qml
+    Translation3D { axis.startX: 0; axis.startY: 0; axis.endX: 100; axis.endY: 50 }
+    \endqml
 */
-qreal QFxTranslation::distance() const
+qreal QFxTranslation3D::distance() const
 {
     return _distance;
 }
 
-void QFxTranslation::setDistance(qreal distance)
+void QFxTranslation3D::setDistance(qreal distance)
 {
     _distance = distance;
     update();
 }
 
-bool QFxTranslation::isIdentity() const
+bool QFxTranslation3D::isIdentity() const
 {
     return (_distance == 0.) || (_axis.endZ() == 0. && _axis.endY() == _axis.startY() && _axis.endX() == _axis.startX());
 }
 
 #if defined(QFX_RENDER_QPAINTER)
-QTransform QFxTranslation::transform() const
+QTransform QFxTranslation3D::transform() const
 {
     if (_dirty) {
         _transform = QTransform();
@@ -446,7 +415,7 @@ QTransform QFxTranslation::transform() const
     return _transform;
 }
 #elif defined(QFX_RENDER_OPENGL)
-QMatrix4x4 QFxRotation::transform() const
+QMatrix4x4 QFxTranslation3D::transform() const
 {
     if (_dirty) {
         _dirty = false;
@@ -465,7 +434,7 @@ QMatrix4x4 QFxRotation::transform() const
 }
 #endif
 
-void QFxTranslation::update()
+void QFxTranslation3D::update()
 {
     _dirty = true;
 
@@ -482,7 +451,7 @@ void QFxTranslation::update()
 
 /*!
     \qmlclass Perspective
-    \brief The Perspective element specifies a perspective transformation.
+    \brief A Perspective object specifies a perspective transformation.
 
     A Perspective transform only affects an item when running under OpenGL; when running under software
     rasterization it has no effect.
@@ -539,10 +508,64 @@ QMatrix4x4 QFxPerspective::transform() const
 
 /*!
     \qmlclass Squish
-    \brief The Squish element allows you to distort an items appearance by 'squishing' it.
+    \brief A Squish object allows you to distort an items appearance by 'squishing' it.
 
-    A Squish transform only affects an item when running under OpenGL; when running under software
-    rasterization it has no effect.
+    Here is an example of various \l Image squishes.
+    \qml
+    Rect {
+        id: Screen
+        width: 360; height: 80
+        color: "white"
+
+        HorizontalLayout {
+            margin: 10
+            spacing: 10
+            Image { src: "qt.png" }
+            Image {
+                src: "qt.png"
+                transform: Squish {
+                    x:0; y:0; width:60; height:60
+                    topLeftX:0; topLeftY:0
+                    topRightX:50; topRightY:10
+                    bottomLeftX:0; bottomLeftY:60
+                    bottomRightX: 60; bottomRightY:60
+                }
+            }
+            Image {
+                src: "qt.png"
+                transform: Squish {
+                    x:0; y:0; width:60; height:60
+                    topLeftX:0; topLeftY:0
+                    topRightX:50; topRightY:0
+                    bottomLeftX:10; bottomLeftY:50
+                    bottomRightX: 60; bottomRightY:60
+                }
+            }
+            Image {
+                src: "qt.png"
+                transform: Squish {
+                    x:0; y:0; width:60; height:60
+                    topLeftX:0; topLeftY:10
+                    topRightX:60; topRightY:10
+                    bottomLeftX:0; bottomLeftY:50
+                    bottomRightX: 60; bottomRightY:50
+                }
+            }
+            Image {
+                src: "qt.png"
+                transform: Squish {
+                    x:0; y:0; width:60; height:60
+                    topLeftX:10; topLeftY:0
+                    topRightX:50; topRightY:0
+                    bottomLeftX:10; bottomLeftY:60
+                    bottomRightX: 50; bottomRightY:60
+                }
+            }
+        }
+    }
+    \endqml
+
+    \image squish.png
 */
 QML_DEFINE_TYPE(QFxSquish,Squish);
 
@@ -557,6 +580,11 @@ QFxSquish::~QFxSquish()
 
 /*!
     \qmlproperty real Squish::x
+    \qmlproperty real Squish::y
+    \qmlproperty real Squish::width
+    \qmlproperty real Squish::height
+
+    This is usually set to the original geometry of the item being squished.
 */
 qreal QFxSquish::x() const
 {
@@ -569,9 +597,6 @@ void QFxSquish::setX(qreal v)
     update();
 }
 
-/*!
-    \qmlproperty real Squish::y
-*/
 qreal QFxSquish::y() const
 {
     return p.y();
@@ -583,9 +608,6 @@ void QFxSquish::setY(qreal v)
     update();
 }
 
-/*!
-    \qmlproperty real Squish::width
-*/
 qreal QFxSquish::width() const
 {
     return s.width();
@@ -597,9 +619,6 @@ void QFxSquish::setWidth(qreal v)
     update();
 }
 
-/*!
-    \qmlproperty real Squish::height
-*/
 qreal QFxSquish::height() const
 {
     return s.height();
@@ -614,6 +633,8 @@ void QFxSquish::setHeight(qreal v)
 /*!
     \qmlproperty real Squish::topLeftX
     \qmlproperty real Squish::topLeftY
+
+    The top left point for the squish.
 */
 qreal QFxSquish::topLeft_x() const
 {
@@ -640,6 +661,8 @@ void QFxSquish::settopLeft_y(qreal v)
 /*!
     \qmlproperty real Squish::topRightX
     \qmlproperty real Squish::topRightY
+
+    The top right point for the squish.
 */
 qreal QFxSquish::topRight_x() const
 {
@@ -666,6 +689,8 @@ void QFxSquish::settopRight_y(qreal v)
 /*!
     \qmlproperty real Squish::bottomLeftX
     \qmlproperty real Squish::bottomLeftY
+
+    The bottom left point for the squish.
 */
 qreal QFxSquish::bottomLeft_x() const
 {
@@ -692,6 +717,8 @@ void QFxSquish::setbottomLeft_y(qreal v)
 /*!
     \qmlproperty real Squish::bottomRightX
     \qmlproperty real Squish::bottomRightY
+
+    The bottom right point for the squish.
 */
 qreal QFxSquish::bottomRight_x() const
 {
@@ -722,12 +749,24 @@ void QFxSquish::update()
         item->updateTransform();
 }
 
-#if defined(QFX_RENDER_OPENGL)
 bool QFxSquish::isIdentity() const
 {
     return false;
 }
 
+#if defined(QFX_RENDER_QPAINTER)
+QTransform QFxSquish::transform() const
+{
+    QPolygonF poly;
+    poly << p << QPointF(p.x() + s.width(), p.y()) << QPointF(p.x() + s.width(), p.y() + s.height()) << QPointF(p.x(), p.y() + s.height());
+    QPolygonF poly2;
+    poly2 << p1 << p2 << p4 << p3;
+
+    QTransform t;
+    QTransform::quadToQuad(poly, poly2, t);
+    return t;
+}
+#elif defined(QFX_RENDER_OPENGL)
 QMatrix4x4 QFxSquish::transform() const
 {
     QPolygonF poly;

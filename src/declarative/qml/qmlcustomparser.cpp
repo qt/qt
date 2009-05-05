@@ -39,14 +39,18 @@
 **
 ****************************************************************************/
 
-#include "qmlcustomparser.h"
-
+#include "qmlcustomparser_p.h"
+#include "qmlcustomparser_p_p.h"
+#include "qmlparser_p.h"
 
 QT_BEGIN_NAMESPACE
+
+using namespace QmlParser;
 
 /*!
     \class QmlCustomParser
     \brief The QmlCustomParser class allows you to add new arbitrary types to QML.
+    \internal
 
     By subclassing QmlCustomParser, you can add an XML parser for building a
     particular type.
@@ -92,5 +96,129 @@ QT_BEGIN_NAMESPACE
     the same-named type as this custom parser is defined for).
 */
 
+QmlCustomParserNode 
+QmlCustomParserNodePrivate::fromObject(QmlParser::Object *root)
+{
+    QmlCustomParserNode rootNode;
+    rootNode.d->name = root->typeName;
+
+    for(QHash<QByteArray, Property *>::Iterator iter = root->properties.begin();
+        iter != root->properties.end();
+        ++iter) {
+
+        Property *p = *iter;
+
+        rootNode.d->properties << fromProperty(p);
+    }
+
+    return rootNode;
+}
+
+QmlCustomParserProperty 
+QmlCustomParserNodePrivate::fromProperty(QmlParser::Property *p)
+{
+    QmlCustomParserProperty prop;
+    prop.d->name = p->name;
+    prop.d->isList = (p->values.count() > 1);
+
+    for(int ii = 0; ii < p->values.count(); ++ii) {
+        Value *v = p->values.at(ii);
+
+        // We skip fetched properties for now
+        if(v->object && v->object->type == -1)
+            continue;
+
+        if(v->object) {
+            QmlCustomParserNode node = fromObject(v->object);
+            prop.d->values << QVariant::fromValue(node);
+        } else {
+            prop.d->values << QVariant::fromValue(v->primitive);
+        }
+
+    }
+
+    return prop;
+}
+
+QmlCustomParserNode::QmlCustomParserNode()
+: d(new QmlCustomParserNodePrivate)
+{
+}
+
+QmlCustomParserNode::QmlCustomParserNode(const QmlCustomParserNode &other)
+: d(new QmlCustomParserNodePrivate)
+{
+    *this = other;
+}
+
+QmlCustomParserNode &QmlCustomParserNode::operator=(const QmlCustomParserNode &other)
+{
+    d->name = other.d->name;
+    d->properties = other.d->properties;
+    return *this;
+}
+
+QmlCustomParserNode::~QmlCustomParserNode()
+{
+    delete d; d = 0;
+}
+
+QByteArray QmlCustomParserNode::name() const
+{
+    return d->name;
+}
+
+QList<QmlCustomParserProperty> QmlCustomParserNode::properties() const
+{
+    return d->properties;
+}
+
+QmlCustomParserProperty::QmlCustomParserProperty()
+: d(new QmlCustomParserPropertyPrivate)
+{
+}
+
+QmlCustomParserProperty::QmlCustomParserProperty(const QmlCustomParserProperty &other)
+: d(new QmlCustomParserPropertyPrivate)
+{
+    *this = other;
+}
+
+QmlCustomParserProperty &QmlCustomParserProperty::operator=(const QmlCustomParserProperty &other)
+{
+    d->name = other.d->name;
+    d->isList = other.d->isList;
+    d->values = other.d->values;
+    return *this;
+}
+
+QmlCustomParserProperty::~QmlCustomParserProperty()
+{
+    delete d; d = 0;
+}
+
+QByteArray QmlCustomParserProperty::name() const
+{
+    return d->name;
+}
+
+bool QmlCustomParserProperty::isList() const
+{
+    return d->isList;
+}
+
+QList<QVariant> QmlCustomParserProperty::assignedValues() const
+{
+    return d->values;
+}
+
+QByteArray QmlCustomParser::compile(const QList<QmlCustomParserProperty> &, bool *ok)
+{
+    return QByteArray();
+}
+
+void QmlCustomParser::setCustomData(QObject *, const QByteArray &)
+{
+}
 
 QT_END_NAMESPACE

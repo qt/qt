@@ -42,7 +42,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qstack.h>
 #include <QXmlStreamReader>
-#include "qmlcustomparser.h"
+#include <private/qmlcustomparser_p.h>
 #include "qmlopenmetaobject.h"
 #include <qmlcontext.h>
 #include <qmlbindablevalue.h>
@@ -53,55 +53,23 @@ QT_BEGIN_NAMESPACE
 #define DATA_ROLE_ID 1
 #define DATA_ROLE_NAME "data"
 
-Q_DECLARE_METATYPE(QListModelInterface *);
-class QmlListModelPrivate
+struct ListInstruction
 {
-public:
-    QmlListModelPrivate(QmlListModel *m)
-        : q(m),
-          type(QmlListModel::Invalid),
-          listModelInterface(0),
-          singleObject(0),
-          roleCacheValid(false)
-    {
-    }
-
-    void clear()
-    {
-        type = QmlListModel::Invalid;
-        model = QVariant();
-        if (listModelInterface) 
-            listModelInterface->disconnect(q);
-        listModelInterface = 0;
-        singleObject = 0;
-        roleCacheValid = false;
-        roleCache.clear();
-    }
-
-    void updateRoleCache()
-    {
-        if (roleCacheValid)
-            return;
-
-        roleCacheValid = true;
-        if (type == QmlListModel::SingleObject) 
-            roleCache = QmlMetaProperty::properties(singleObject);
-    }
-
-    QmlListModel *q;
-    
-    QmlListModel::ModelType type;
-
-    QVariant model;
-    QListModelInterface *listModelInterface;
-    QObject *singleObject;
-
-    bool roleCacheValid;
-    QStringList roleCache;
+    enum { Push, Pop, Value, Set } type;
+    int dataIdx;
 };
 
+struct ListModelData
+{
+    int dataOffset;
+    int instrCount;
+    ListInstruction *instructions() const { return (ListInstruction *)((char *)this + sizeof(ListModelData)); }
+};
+
+Q_DECLARE_METATYPE(QListModelInterface *);
+
 /*!
-    \qmlclass ListModel QmlListModel
+    \qmlclass ListModel 
     \brief The ListModel element defines a free-form list data source.
 
     The ListModel is a simple XML heirarchy of items containing data roles.
@@ -140,157 +108,6 @@ public:
     <ListView model="{FruitModel}" delegate="{FruitDelegate}" anchors.fill="{parent}"/>
     \endcode
 */
-/*!
-    \internal
-    \class QmlListModel
-*/
-QmlListModel::QmlListModel(QObject *parent)
-: QListModelInterface(parent), d(new QmlListModelPrivate(this))
-{
-}
-
-QmlListModel::~QmlListModel()
-{
-    delete d; d = 0;
-}
-
-QmlListModel::ModelType QmlListModel::modelType() const
-{
-    return d->type;
-}
-
-bool QmlListModel::setModel(const QVariant &model)
-{
-    d->clear();
-
-    QListModelInterface *iface = qvariant_cast<QListModelInterface *>(model);
-    if (iface) {
-        QObject::connect(iface, SIGNAL(itemsInserted(int,int)), 
-                         this, SIGNAL(itemsInserted(int,int)));
-        QObject::connect(iface, SIGNAL(itemsRemoved(int,int)), 
-                         this, SIGNAL(itemsRemoved(int,int)));
-        QObject::connect(iface, SIGNAL(itemsMoved(int,int,int)), 
-                         this, SIGNAL(itemsMoved(int,int,int)));
-        QObject::connect(iface, SIGNAL(itemsChanged(int,int,QList<int>)), 
-                         this, SIGNAL(itemsChanged(int,int,QList<int>)));
-        d->listModelInterface = iface;
-        d->type = ListInterface;
-        d->model = model;
-        return true;
-    } 
-
-    QObject *object = qvariant_cast<QObject *>(model);
-    if (object) {
-        d->singleObject = object;
-        d->type = SingleObject;
-        d->model = model;
-        return true;
-    }
-
-    if (QmlMetaType::isList(model)) {
-        d->type = SimpleList;
-        d->model = model;
-        return true;
-    }
-
-    return false;
-}
-
-QVariant QmlListModel::model() const
-{
-    return d->model;
-}
-
-QList<int> QmlListModel::roles() const
-{
-    d->updateRoleCache();
-    switch(modelType()) {
-    case Invalid:
-        return QList<int>();
-    case SimpleList:
-        return QList<int>() << DATA_ROLE_ID;
-    case ListInterface:
-        return d->listModelInterface->roles();
-    case SingleObject:
-        {
-            QList<int> rv;
-            for (int ii = 0; ii < d->roleCache.count(); ++ii)
-                rv << ii;
-            return rv;
-        }
-        break;
-    };
-    return QList<int>();
-}
-
-QString QmlListModel::toString(int role) const
-{
-    d->updateRoleCache();
-    switch(modelType()) {
-    case Invalid:
-        return QString();
-    case SimpleList:
-        if (role == DATA_ROLE_ID)
-            return QLatin1String(DATA_ROLE_NAME);
-        else
-            return QString();
-    case ListInterface:
-        return d->listModelInterface->toString(role);
-    case SingleObject:
-        if (role >= d->roleCache.count())
-            return QString();
-        else
-            return d->roleCache.at(role);
-    };
-    return QString();
-}
-
-/*!
-    \qmlproperty int ListModel::count
-    This property holds the number of items in the list.
-*/
-int QmlListModel::count() const
-{
-    switch(modelType()) {
-    case Invalid:
-        return 0;
-    case SimpleList:
-        return QmlMetaType::listCount(model());
-    case ListInterface:
-        return d->listModelInterface->count();
-    case SingleObject:
-        return 1;
-    }
-    return 0;
-}
-
-QHash<int,QVariant> QmlListModel::data(int index, const QList<int> &roles) const
-{
-    d->updateRoleCache();
-    QHash<int, QVariant> rv;
-    switch(modelType()) {
-    case Invalid:
-        break;
-    case SimpleList:
-        if (roles.contains(DATA_ROLE_ID))
-            rv.insert(DATA_ROLE_ID, QmlMetaType::listAt(d->model, index));
-        break;
-    case ListInterface:
-        return d->listModelInterface->data(index, roles);
-    case SingleObject: 
-        {
-            for (int ii = 0; ii < roles.count(); ++ii) {
-                QmlMetaProperty prop(d->singleObject, toString(roles.at(ii)));
-                rv.insert(roles.at(ii), prop.read());
-            }
-        }
-        break;
-    };
-
-    return rv;
-}
-
-
 
 struct ModelNode;
 class ListModel : public QListModelInterface
@@ -484,19 +301,180 @@ int ListModel::count() const
     return _root->values.count();
 }
 
-struct ListInstruction
-{
-    enum { Push, Pop, Value, Set } type;
-    int dataIdx;
-};
-
 class ListModelParser : public QmlCustomParser
 {
 public:
     virtual QByteArray compile(QXmlStreamReader& reader, bool *);
+    QByteArray compile(const QList<QmlCustomParserProperty> &, bool *ok);
     virtual QVariant create(const QByteArray &);
+
+    bool compileProperty(const QmlCustomParserProperty &prop, QList<ListInstruction> &instr, QByteArray &data);
+    void setCustomData(QObject *, const QByteArray &);
 };
 QML_DEFINE_CUSTOM_PARSER(ListModel, ListModelParser);
+
+bool ListModelParser::compileProperty(const QmlCustomParserProperty &prop, QList<ListInstruction> &instr, QByteArray &data)
+{
+    QList<QVariant> values = prop.assignedValues();
+    for(int ii = 0; ii < values.count(); ++ii) {
+        const QVariant &value = values.at(ii);
+
+        if(value.userType() == qMetaTypeId<QmlCustomParserNode>()) {
+            QmlCustomParserNode node = 
+                qvariant_cast<QmlCustomParserNode>(value);
+
+            {
+            ListInstruction li;
+            li.type = ListInstruction::Push;
+            li.dataIdx = -1;
+            instr << li;
+            }
+
+            QList<QmlCustomParserProperty> props = node.properties();
+            for(int jj = 0; jj < props.count(); ++jj) {
+                const QmlCustomParserProperty &nodeProp = props.at(jj);
+                if(nodeProp.name() == "")
+                    return false;
+
+                ListInstruction li;
+                int ref = data.count();
+                data.append(nodeProp.name());
+                data.append('\0');
+                li.type = ListInstruction::Set;
+                li.dataIdx = ref;
+                instr << li;
+
+                if(!compileProperty(nodeProp, instr, data))
+                    return false;
+
+                li.type = ListInstruction::Pop;
+                li.dataIdx = -1;
+                instr << li;
+            }
+
+            {
+            ListInstruction li;
+            li.type = ListInstruction::Pop;
+            li.dataIdx = -1;
+            instr << li;
+            }
+
+        } else {
+
+            int ref = data.count();
+            QByteArray d = value.toString().toLatin1();
+            d.append('\0');
+            data.append(d);
+
+            ListInstruction li;
+            li.type = ListInstruction::Value;
+            li.dataIdx = ref;
+            instr << li;
+
+        }
+    }
+
+    return true;
+}
+
+QByteArray ListModelParser::compile(const QList<QmlCustomParserProperty> &customProps, bool *ok)
+{
+    *ok = true;
+    QList<ListInstruction> instr;
+    QByteArray data;
+
+    for(int ii = 0; ii < customProps.count(); ++ii) {
+        const QmlCustomParserProperty &prop = customProps.at(ii);
+        if(prop.name() != "") { // isn't default property
+            *ok = false;
+            return QByteArray();
+        }
+
+        if(!compileProperty(prop, instr, data)) {
+            *ok = false;
+            return QByteArray();
+        }
+    }
+
+    int size = sizeof(ListModelData) + 
+               instr.count() * sizeof(ListInstruction) + 
+               data.count();
+
+    QByteArray rv;
+    rv.resize(size);
+
+    ListModelData *lmd = (ListModelData *)rv.data();
+    lmd->dataOffset = sizeof(ListModelData) + 
+                     instr.count() * sizeof(ListInstruction);
+    lmd->instrCount = instr.count();
+    for (int ii = 0; ii < instr.count(); ++ii)
+        lmd->instructions()[ii] = instr.at(ii);
+    ::memcpy(rv.data() + lmd->dataOffset, data.constData(), data.count());
+
+    return rv;
+}
+
+void ListModelParser::setCustomData(QObject *obj, const QByteArray &d)
+{
+    ListModel *rv = static_cast<ListModel *>(obj);
+
+    ModelNode *root = new ModelNode;
+    rv->_root = root;
+    QStack<ModelNode *> nodes;
+    nodes << root;
+
+    const ListModelData *lmd = (const ListModelData *)d.constData();
+    const char *data = ((const char *)lmd) + lmd->dataOffset;
+
+    for (int ii = 0; ii < lmd->instrCount; ++ii) {
+        const ListInstruction &instr = lmd->instructions()[ii];
+
+        switch(instr.type) {
+        case ListInstruction::Push:
+            {
+                ModelNode *n = nodes.top();
+                ModelNode *n2 = new ModelNode;
+                n->values << qVariantFromValue(n2);
+                nodes.push(n2);
+            }
+            break;
+
+        case ListInstruction::Pop:
+            nodes.pop();
+            break;
+
+        case ListInstruction::Value:
+            {
+                ModelNode *n = nodes.top();
+                n->values.append(QByteArray(data + instr.dataIdx));
+            }
+            break;
+
+        case ListInstruction::Set:
+            {
+                ModelNode *n = nodes.top();
+                ModelNode *n2 = new ModelNode;
+                n->properties.insert(QLatin1String(data + instr.dataIdx), n2);
+                nodes.push(n2);
+            }
+            break;
+        }
+    }
+}
+
+class ListModel2 : public ListModel
+{
+Q_OBJECT
+};
+QML_DECLARE_TYPE(ListModel2);
+QML_DEFINE_CUSTOM_TYPE(ListModel2, ListModel2, ListModelParser);
+
+class ListElement : public QObject
+{
+Q_OBJECT
+};
+QML_DECLARE_TYPE(ListElement);
+QML_DEFINE_TYPE(ListElement,ListElement);
 
 static void dump(ModelNode *node, int ind)
 {
@@ -533,13 +511,6 @@ ModelNode::~ModelNode()
     }
     if (modelCache) { delete modelCache; modelCache = 0; }
 }
-
-struct ListModelData
-{
-    int dataOffset;
-    int instrCount;
-    ListInstruction *instructions() const { return (ListInstruction *)((char *)this + sizeof(ListModelData)); }
-};
 
 QByteArray ListModelParser::compile(QXmlStreamReader& reader, bool *ok)
 {

@@ -58,17 +58,18 @@ QML_DEFINE_TYPE(QFxComponentInstance,ComponentInstance);
 
 /*!
     \qmlclass ComponentInstance QFxComponentInstance
-    \brief The ComponentInstance element allows you to instantiate a \l{qml-component.html} {Component}.
+    \brief The ComponentInstance item allows you to instantiate a \l{qml-component.html} {Component}.
 
-    \code
-    <Item>
-        <Component id="RedSquare">
-            <Rect color="red" width="10" height="10"/>
-        </Component>
+    \qml
+    Item {
+        Component {
+            id: RedSquare
+            Rect { color: "red"; width: 10; height: 10 }
+        }
 
-        <ComponentInstance component="{RedSquare}"/>
-    </Item>
-    \endcode
+        ComponentInstance { component: RedSquare }
+    }
+    \endqml
 */
 QFxComponentInstance::QFxComponentInstance(QFxItem *parent)
   : QFxItem(*(new QFxComponentInstancePrivate), parent)

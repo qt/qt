@@ -49,6 +49,7 @@
 #include "qicon.h"
 #include "qurl.h"
 #include "qboxlayout.h"
+#include "qbasictimer.h"
 
 #include "qmlbindablevalue.h"
 #include "qml.h"
@@ -96,10 +97,12 @@ public:
     QFxItem *root;
 
     QUrl source;
-    QString xml;
+    QString qml;
 
     QmlEngine engine;
     QmlComponent *component;
+    QBasicTimer resizetimer;
+
     void init();
 };
 
@@ -110,20 +113,15 @@ public:
     QFxView currently provides a minimal interface for displaying QML
     files, and connecting between QML and C++ Qt objects.
 
-    Typcial usage:
+    Typical usage:
     \code
     ...
     QFxView *view = new QFxView(this);
     vbox->addWidget(view);
 
-    QFile file(fileName);
-    file.open(QFile::ReadOnly);
-    QString xml = file.readAll();
-    view->setXml(xml, fileName);
-
-    QFileInfo fi(file);
-    view->setPath(fi.path());
-
+    QUrl url(fileName);
+    view->setUrl(url);
+    ...
     view->execute();
     ...
     \endcode
@@ -142,7 +140,7 @@ QFxView::QFxView(QWidget *parent)
 
 /*!
   \fn QFxView::QFxView(QSimpleCanvas::CanvasMode mode, QWidget *parent)
-  
+  \internal
   Constructs a QFxView with the given \a parent. The canvas
   \a mode can be QSimpleCanvas::GraphicsView or
   QSimpleCanvas::SimpleCanvas.
@@ -170,8 +168,8 @@ void QFxViewPrivate::init()
 }
 
 /*!
-  The destructor clears the instance and deletes the internal
-  representation.
+  The destructor clears the view's \l {QFxItem} {items} and
+  deletes the internal representation.
 
   \sa clearItems()
  */
@@ -182,54 +180,63 @@ QFxView::~QFxView()
 }
 
 /*!
-  Sets the source to the \a url. The XML string is set to
+  Sets the source to the \a url. The QML string is set to
   empty.
  */
 void QFxView::setUrl(const QUrl& url)
 {
     d->source = url;
-    d->xml = QString();
+    d->qml = QString();
 }
 
 /*!
   Sets the source to the URL from the \a filename, and sets
-  the XML string to \a xml.
+  the QML string to \a qml.
  */
-void QFxView::setXml(const QString &xml, const QString &filename)
+void QFxView::setQml(const QString &qml, const QString &filename)
 {
     d->source = QUrl::fromLocalFile(filename);
-    d->xml = xml;
+    d->qml = qml;
 }
 
 /*!
-  Returns the XML string.
+  Returns the QML string.
  */
-QString QFxView::xml() const
+QString QFxView::qml() const
 {
-    return d->xml;
+    return d->qml;
 }
 
 /*!
-  Returns a pointer to the QmlEngine.
+  Returns a pointer to the QmlEngine used for instantiating
+  QML Components.
  */
 QmlEngine* QFxView::engine()
 {
     return &d->engine;
 }
 
+/*!
+  This function returns the root of the context hierarchy.  Each QML
+  component is instantiated in a QmlContext.  QmlContext's are
+  essential for passing data to QML components.  In QML, contexts are
+  arranged hierarchically and this hierarchy is managed by the
+  QmlEngine.
+ */
 QmlContext* QFxView::rootContext()
 {
     return d->engine.rootContext();
 }
 
+/*!
+  Displays the Qt Declarative user interface.
+*/
 void QFxView::execute()
 {
-    rootContext()->activate();
-
-    if (d->xml.isEmpty()) {
+    if (d->qml.isEmpty()) {
         d->component = new QmlComponent(&d->engine, d->source, this);
     } else {
-        d->component = new QmlComponent(&d->engine, d->xml.toUtf8(), d->source);
+        d->component = new QmlComponent(&d->engine, d->qml.toUtf8(), d->source);
     }
 
     if (!d->component->isLoading()) {
@@ -239,6 +246,48 @@ void QFxView::execute()
     }
 }
 
+/*!
+    \internal
+*/
+void QFxView::printErrorLine(const QmlError &error)
+{
+    QUrl url = error.url();
+    if (error.line() > 0 && error.column() > 0 && 
+        url.scheme() == QLatin1String("file")) {
+        QString file = url.toLocalFile();
+        QFile f(file);
+        if (f.open(QIODevice::ReadOnly)) {
+            QByteArray data = f.readAll();
+            QTextStream stream(data, QIODevice::ReadOnly);
+            const QString code = stream.readAll();
+            const QStringList lines = code.split(QLatin1Char('\n'));
+
+            if (lines.count() >= error.line()) {
+                const QString &line = lines.at(error.line() - 1);
+                qWarning() << qPrintable(line);
+
+                int column = qMax(0, error.column() - 1);
+                column = qMin(column, line.length()); 
+
+                QByteArray ind;
+                ind.reserve(column);
+                for (int i = 0; i < column; ++i) {
+                    const QChar ch = line.at(i);
+                    if (ch.isSpace())
+                        ind.append(ch.unicode());
+                    else
+                        ind.append(' ');
+                }
+                ind.append('^');
+                qWarning() << ind.constData();
+            }
+        }
+    }
+}
+
+/*!
+  \internal
+ */
 void QFxView::continueExecute()
 {
     disconnect(d->component, SIGNAL(statusChanged(QmlComponent::Status)), this, SLOT(continueExecute()));
@@ -248,8 +297,26 @@ void QFxView::continueExecute()
         return;
     }
 
+    if(d->component->isError()) {
+        QList<QmlError> errors = d->component->errors();
+        foreach (const QmlError &error, errors) {
+            qWarning() << error;
+        }
+
+        return;
+    }
+
     QObject *obj = d->component->create();
-    rootContext()->deactivate();
+
+    if(d->component->isError()) {
+        QList<QmlError> errors = d->component->errors();
+        foreach (const QmlError &error, errors) {
+            qWarning() << error;
+        }
+
+        return;
+    }
+
     if (obj) {
         if (QFxItem *item = qobject_cast<QFxItem *>(obj)) {
             item->QSimpleCanvasItem::setParent(QSimpleCanvas::root());
@@ -262,7 +329,7 @@ void QFxView::continueExecute()
             d->root = item;
             connect(item, SIGNAL(widthChanged()), this, SLOT(sizeChanged()));
             connect(item, SIGNAL(heightChanged()), this, SLOT(sizeChanged()));
-            sizeChanged();
+            emit sceneResized(QSize(d->root->width(),d->root->height()));
         } else if (QWidget *wid = qobject_cast<QWidget *>(obj)) {
             window()->setAttribute(Qt::WA_OpaquePaintEvent, false);
             window()->setAttribute(Qt::WA_NoSystemBackground, false);
@@ -280,19 +347,63 @@ void QFxView::continueExecute()
     }
 }
 
+/*! \fn void QFxView::sceneResized(QSize size)
+  This signal is emitted when the view is resized.
+ */
+
+/*!
+  \internal
+ */
 void QFxView::sizeChanged()
 {
-    if (d->root)
-        emit sceneResized(QSize(d->root->width(),d->root->height()));
+    // delay, so we catch both width and height changing.
+    d->resizetimer.start(0,this);
 }
 
-QFxItem* QFxView::addItem(const QString &xml, QFxItem* parent)
+/*!
+  If the \l {QTimerEvent} {timer event} \a e is this
+  view's resize timer, sceneResized() is emitted.
+ */
+void QFxView::timerEvent(QTimerEvent* e)
+{
+    if (e->timerId() == d->resizetimer.timerId()) {
+        if (d->root)
+            emit sceneResized(QSize(d->root->width(),d->root->height()));
+        d->resizetimer.stop();
+    }
+}
+
+/*!
+  Creates a \l{QmlComponent} {component} from the \a qml
+  string, and returns it as an \l {QFxItem} {item}. If the
+  \a parent item is provided, it becomes the new item's
+  parent. \a parent should be in this view's item hierarchy.
+ */
+QFxItem* QFxView::addItem(const QString &qml, QFxItem* parent)
 {
     if (!d->root)
         return 0;
 
-    QmlComponent component(&d->engine, xml.toUtf8(), QUrl()); 
+    QmlComponent component(&d->engine, qml.toUtf8(), QUrl());
+    if(d->component->isError()) {
+        QList<QmlError> errors = d->component->errors();
+        foreach (const QmlError &error, errors) {
+            qWarning() << error;
+        }
+
+        return 0;
+    }
+
     QObject *obj = component.create();
+    if(d->component->isError()) {
+        QList<QmlError> errors = d->component->errors();
+        foreach (const QmlError &error, errors) {
+            qWarning() << error;
+        }
+
+        return 0;
+    }
+
     if (obj){
         QFxItem *item = static_cast<QFxItem *>(obj);
         if (!parent)
@@ -304,12 +415,19 @@ QFxItem* QFxView::addItem(const QString &xml, QFxItem* parent)
     return 0;
 }
 
+/*!
+  Deletes the view's \l {QFxItem} {items} and the \l {QmlEngine}
+  {QML engine's} Component cache.
+ */
 void QFxView::reset()
 {
     clearItems();
     d->engine.clearComponentCache();
 }
 
+/*!
+  Deletes the view's \l {QFxItem} {items}.
+ */
 void QFxView::clearItems()
 {
     if (!d->root)
@@ -318,11 +436,18 @@ void QFxView::clearItems()
     d->root = 0;
 }
 
+/*!
+  Returns the view's root \l {QFxItem} {item}.
+ */
 QFxItem *QFxView::root() const
 {
     return d->root;
 }
 
+/*!
+  This function handles the \l {QResizeEvent} {resize event}
+  \a e.
+ */
 void QFxView::resizeEvent(QResizeEvent *e)
 {
     if (d->root) {
@@ -332,17 +457,26 @@ void QFxView::resizeEvent(QResizeEvent *e)
     QSimpleCanvas::resizeEvent(e);
 }
 
+/*! \fn void QFxView::focusInEvent(QFocusEvent *e)
+  This virtual function does nothing in this class.
+ */
 void QFxView::focusInEvent(QFocusEvent *)
 {
     // Do nothing (do not call QWidget::update())
 }
 
+
+/*! \fn void QFxView::focusOutEvent(QFocusEvent *e)
+  This virtual function does nothing in this class.
+ */
 void QFxView::focusOutEvent(QFocusEvent *)
 {
     // Do nothing (do not call QWidget::update())
 }
 
-
+/*!
+  \internal
+ */
 void QFxView::dumpRoot()
 {
     root()->dump();

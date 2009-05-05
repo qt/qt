@@ -45,6 +45,7 @@
 #include <qglobal.h>
 #include <private/qmlscriptparser_p.h>
 #include <private/qmlrefcount_p.h>
+#include <qmlerror.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -52,6 +53,7 @@ class QmlEngine;
 class QmlCompiledComponent;
 class QmlComponentPrivate;
 class QmlComponent;
+class QmlDomDocument;
 struct QmlCompositeTypeData : public QmlRefCount
 {
     QmlCompositeTypeData();
@@ -64,7 +66,8 @@ struct QmlCompositeTypeData : public QmlRefCount
         Waiting
     };
     Status status;
-    QString errorDescription;
+
+    QList<QmlError> errors;
 
     QString url;
     QList<QmlCompositeTypeData *> dependants;
@@ -98,6 +101,7 @@ struct QmlCompositeTypeData : public QmlRefCount
 private:
     friend class QmlCompositeTypeManager;
     friend class QmlCompiler;
+    friend class QmlDomDocument;
 
     QmlScriptParser data;
     QList<QmlComponentPrivate *> waiters;

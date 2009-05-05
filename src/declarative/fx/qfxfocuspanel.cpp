@@ -47,7 +47,7 @@ QML_DEFINE_TYPE(QFxFocusPanel,FocusPanel);
 
 /*!
    \qmlclass FocusPanel
-   \brief The FocusPanel element explicitly creates a focus panel.
+   \brief The FocusPanel object explicitly creates a focus panel.
    \inherits Item
 
     Focus panels assist in keyboard focus handling when building QML
@@ -73,7 +73,7 @@ QFxFocusPanel::~QFxFocusPanel()
 /*!
     \qmlproperty bool FocusPanel::active
 
-    Sets whether the element is the active focus panel.
+    Sets whether the object is the active focus panel.
 */
 
 bool QFxFocusPanel::isActive() const

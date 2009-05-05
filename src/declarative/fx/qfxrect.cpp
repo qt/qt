@@ -53,9 +53,9 @@ QML_DEFINE_TYPE(QFxPen,Pen);
     \brief The QFxPen class provides a pen used for drawing rect borders on a QFxView.
 
     Example:
-    \code
-    <Rect pen.width="2" pen.color="red".../>
-    \endcode
+    \qml
+    Rect { pen.width: 2; pen.color: "red" ... }
+    \endqml
 */
 
 /*! \property QFxPen::width
@@ -72,13 +72,13 @@ QML_DEFINE_TYPE(QFxPen,Pen);
     color is most commonly specified in hexidecimal notation (#RRGGBB)
     or as an \l {http://www.w3.org/TR/SVG/types.html#ColorKeywords}{SVG color keyword name}
      (as defined by the World Wide Web Consortium). For example:
-    \code
-    <!-- rect with green border using hexidecimal notation -->
-    <Rect pen.color="#00FF00" .../>
+    \qml
+    // rect with green border using hexidecimal notation
+    Rect { pen.color: "#00FF00" }
 
-    <!-- rect with steelblue border using SVG color name-->
-    <Rect pen.color="steelblue" .../>
-    \endcode
+    // rect with steelblue border using SVG color name
+    Rect { pen.color: "steelblue" }
+    \endqml
 
     For the full set of ways to specify color, see Qt's QColor::setNamedColor documentation.
 */
@@ -96,14 +96,22 @@ QML_DEFINE_TYPE(QFxRect,Rect);
 
 /*!
     \qmlclass Rect QFxRect
-    \brief The Rect element allows you to add rectangles to a scene.
+    \brief The Rect item allows you to add rectangles to a scene.
     \inherits Item
 
-    A Rect is painted having a solid fill (color) and an optional border (pen). You can also create rounded rectangles using the radius property.
+    A Rect is painted having a solid fill (color) and an optional border (pen).
+    You can also create rounded rectangles using the radius property.
 
-    \code
-    <Rect width="100" height="100" color="red" pen.color="black" pen.width="5" radius="10"/>
-    \endcode
+    \qml
+    Rect {
+        width: 100
+        height: 100
+        color: "red"
+        pen.color: "black"
+        pen.width: 5
+        radius: 10
+    }
+    \endqml
 
     \image declarative-rect.png
 */
@@ -113,11 +121,19 @@ QML_DEFINE_TYPE(QFxRect,Rect);
     \class QFxRect
     \brief The QFxRect class provides a rect item that you can add to a QFxView.
 
-    A Rect is painted having a solid fill (color) and an optional border (pen). You can also create rounded rectangles using the radius property.
+    A Rect is painted having a solid fill (color) and an optional border (pen).
+    You can also create rounded rectangles using the radius property.
 
-    \code
-    <Rect width="100" height="100" color="red" pen.color="black" pen.width="5" radius="10"/>
-    \endcode
+    \qml
+    Rect {
+        width: 100
+        height: 100
+        color: "red"
+        pen.color: "black"
+        pen.width: 5
+        radius: 10
+    }
+    \endqml
 
     \image declarative-rect.png
 
@@ -216,13 +232,13 @@ void QFxRect::dump(int depth)
     \qmlproperty color Rect::color
     This property holds the color used to fill the rect.
 
-    \code
-    <!-- green rect using hexidecimal notation -->
-    <Rect color="#00FF00" .../>
+    \qml
+    // green rect using hexidecimal notation
+    Rect { color: "#00FF00" }
 
-    <!-- steelblue rect using SVG color name-->
-    <Rect color="steelblue" .../>
-    \endcode
+    // steelblue rect using SVG color name
+    Rect { color: "steelblue" }
+    \endqml
 */
 
 /*!
@@ -259,10 +275,10 @@ void QFxRect::setColor(const QColor &c)
 
     This color will be drawn over the rect's color when the rect is painted. The tint color should usually be mostly transparent, or you will not be able to see the underlying color. The below example provides a slight red tint by having the tint color be pure red which is only 1/16th opaque.
 
-    \code
-    <Rect x="0" width="80" height="80" color="lightsteelblue"/>
-    <Rect x="100" width="80" height="80" color="lightsteelblue" tintColor="#10FF0000"/>
-    \endcode
+    \qml
+    Rect { x: 0; width: 80; height: 80; color: "lightsteelblue" }
+    Rect { x: 100; width: 80; height: 80; color: "lightsteelblue"; tintColor: "#10FF0000" }
+    \endqml
     \image declarative-rect_tint.png
 
     This attribute is not intended to be used with a single color over the lifetime of an user interface. It is most useful when a subtle change is intended to be conveyed due to some event; you can then use the tint color to more effectively tune the visible color.
@@ -320,13 +336,13 @@ QColor QFxRectPrivate::getColor()
 
     This property allows for the easy construction of simple horizontal gradients. Other gradients may by formed by adding rotation to the rect. The gradient will blend linearly from the rect's main color to the color specified for gradient color.
 
-    \code
-    <Rect y="0" width="80" height="80" color="lightsteelblue"/>
-    <Rect y="100" width="80" height="80" color="lightsteelblue" gradientColor="blue"/>
-    <Rect rotation="90" x="80" y="200" width="80" height="80" color="lightsteelblue"
-        gradientColor="blue"/>
-    <!-- The x offset is needed because the rotation is from the top left corner -->
-    \endcode
+    \qml
+    Rect { y: 0; width: 80; height: 80; color: "lightsteelblue" }
+    Rect { y: 100; width: 80; height: 80; color: "lightsteelblue"; gradientColor="blue" }
+    Rect { rotation: 90; x: 80; y: 200; width: 80; height: 80; color="lightsteelblue"
+            gradientColor: "blue" }
+    // The x offset is needed because the rotation is from the top left corner
+    \endqml
     \image declarative-rect_gradient.png
 */
 

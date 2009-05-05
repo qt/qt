@@ -2326,17 +2326,22 @@ public:
 
     UiPublicMember(JavaScriptNameIdImpl *memberType,
                    JavaScriptNameIdImpl *name)
-        : memberType(memberType), name(name), expression(0)
+        : type(Property), memberType(memberType), name(name), expression(0), isDefaultMember(false)
     { kind = K; }
 
     UiPublicMember(JavaScriptNameIdImpl *memberType,
                    JavaScriptNameIdImpl *name,
                    ExpressionNode *expression)
-        : memberType(memberType), name(name), expression(expression)
+        : type(Property), memberType(memberType), name(name), expression(expression), isDefaultMember(false)
     { kind = K; }
 
     virtual SourceLocation firstSourceLocation() const
-    { return publicToken; }
+    {
+      if (defaultToken.isValid())
+	return defaultToken;
+
+      return propertyToken;
+    }
 
     virtual SourceLocation lastSourceLocation() const
     {
@@ -2346,19 +2351,22 @@ public:
 	return colonToken;
       else if (identifierToken.isValid())
 	return identifierToken;
-      else if (attributeTypeToken.isValid())
-	return attributeTypeToken;
-      return publicToken;
+      else if (typeToken.isValid())
+	return typeToken;
+      return propertyToken;
     }
 
     virtual void accept0(Visitor *visitor);
 
 // attributes
+    enum { Signal, Property } type;
     JavaScriptNameIdImpl *memberType;
     JavaScriptNameIdImpl *name;
     ExpressionNode *expression;
-    SourceLocation publicToken;
-    SourceLocation attributeTypeToken;
+    bool isDefaultMember;
+    SourceLocation defaultToken;
+    SourceLocation propertyToken;
+    SourceLocation typeToken;
     SourceLocation identifierToken;
     SourceLocation colonToken;
 };

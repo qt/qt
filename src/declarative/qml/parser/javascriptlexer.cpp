@@ -291,6 +291,10 @@ int JavaScript::Lexer::findReservedWord(const QChar *c, int size) const
             && c[2] == QLatin1Char('p') && c[3] == QLatin1Char('o')
             && c[4] == QLatin1Char('r') && c[5] == QLatin1Char('t'))
             return JavaScriptGrammar::T_IMPORT;
+        else if (c[0] == QLatin1Char('s') && c[1] == QLatin1Char('i')
+            && c[2] == QLatin1Char('g') && c[3] == QLatin1Char('n')
+            && c[4] == QLatin1Char('a') && c[5] == QLatin1Char('l'))
+            return JavaScriptGrammar::T_SIGNAL;
         else if (check_reserved) {
             if (c[0] == QLatin1Char('e') && c[1] == QLatin1Char('x')
                     && c[2] == QLatin1Char('p') && c[3] == QLatin1Char('o')
@@ -311,7 +315,7 @@ int JavaScript::Lexer::findReservedWord(const QChar *c, int size) const
             else if (c[0] == QLatin1Char('p') && c[1] == QLatin1Char('u')
                     && c[2] == QLatin1Char('b') && c[3] == QLatin1Char('l')
                     && c[4] == QLatin1Char('i') && c[5] == QLatin1Char('c'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return JavaScriptGrammar::T_PUBLIC;
             else if (c[0] == QLatin1Char('n') && c[1] == QLatin1Char('a')
                     && c[2] == QLatin1Char('t') && c[3] == QLatin1Char('i')
                     && c[4] == QLatin1Char('v') && c[5] == QLatin1Char('e'))
@@ -374,6 +378,11 @@ int JavaScript::Lexer::findReservedWord(const QChar *c, int size) const
                 && c[4] == QLatin1Char('g') && c[5] == QLatin1Char('g')
                 && c[6] == QLatin1Char('e') && c[7] == QLatin1Char('r'))
             return JavaScriptGrammar::T_DEBUGGER;
+        else if (c[0] == QLatin1Char('p') && c[1] == QLatin1Char('r')
+                && c[2] == QLatin1Char('o') && c[3] == QLatin1Char('p')
+                && c[4] == QLatin1Char('e') && c[5] == QLatin1Char('r')
+                && c[6] == QLatin1Char('t') && c[7] == QLatin1Char('y')) 
+            return JavaScriptGrammar::T_PROPERTY;
         else if (check_reserved) {
             if (c[0] == QLatin1Char('a') && c[1] == QLatin1Char('b')
                     && c[2] == QLatin1Char('s') && c[3] == QLatin1Char('t')
@@ -450,6 +459,7 @@ int JavaScript::Lexer::lex()
     int token = 0;
     state = Start;
     ushort stringType = 0; // either single or double quotes
+    bool multiLineString = false;
     pos8 = pos16 = 0;
     done = false;
     terminator = false;
@@ -499,6 +509,7 @@ int JavaScript::Lexer::lex()
             } else if (current == '"' || current == '\'') {
                 recordStartPos();
                 state = InString;
+                multiLineString = false;
                 stringType = current;
             } else if (isIdentLetter(current)) {
                 recordStartPos();
@@ -540,6 +551,9 @@ int JavaScript::Lexer::lex()
             if (current == stringType) {
                 shift(1);
                 setDone(String);
+            } else if (isLineTerminator()) {
+                multiLineString = true;
+                record16(current);
             } else if (current == 0 || isLineTerminator()) {
                 setDone(Bad);
                 err = UnclosedStringLiteral;
@@ -817,7 +831,7 @@ int JavaScript::Lexer::lex()
             qsyylval.ustr = driver->intern(buffer16, pos16);
         else
             qsyylval.ustr = 0;
-        return JavaScriptGrammar::T_STRING_LITERAL;
+        return multiLineString?JavaScriptGrammar::T_MULTILINE_STRING_LITERAL:JavaScriptGrammar::T_STRING_LITERAL;
     case Number:
         qsyylval.dval = dval;
         return JavaScriptGrammar::T_NUMERIC_LITERAL;

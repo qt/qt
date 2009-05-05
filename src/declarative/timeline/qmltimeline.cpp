@@ -51,10 +51,6 @@
 
 QT_BEGIN_NAMESPACE
 
-//
-// Timeline stuff
-//
-
 struct Update {
     Update(QmlTimeLineValue *_g, qreal _v)
         : g(_g), v(_v) {}
@@ -561,7 +557,7 @@ void QmlTimeLine::sync(QmlTimeLineValue &timeLineValue)
     }
 }
 
-/*!
+/*
     Synchronize all currently and future scheduled values in this timeline to
     the longest action currently scheduled.
 
@@ -868,9 +864,10 @@ void QmlTimeLine::remove(QmlTimeLineObject *v)
 }
 
 /*!
+    \internal
     \class QmlTimeLineValue
     \ingroup group_animation
-    \brief The QmlTimeLineValue class is modified by QmlTimeLine.
+    \brief The QmlTimeLineValue class provides a value that can be modified by QmlTimeLine.
 */
 
 /*!

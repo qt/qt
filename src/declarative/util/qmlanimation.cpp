@@ -177,12 +177,14 @@ QmlAbstractAnimation::QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObj
     whenever the \l MouseRegion is pressed.
 
     \code
-    <Rect width="100" height="100">
-        <x>
-            <NumericAnimation running="{MyMouse.pressed}" from="0" to="100" />
-        </x>
-        <MouseRegion id="MyMouse" />
-    </Rect>
+    Rect {
+        width: 100; height: 100
+        x: NumericAnimation {
+            running: MyMouse.pressed
+            from: 0; to: 100
+        }
+        MouseRegion { id: MyMouse }
+    }
     \endcode
 
     Likewise, the \c running property can be read to determine if the animation
@@ -190,8 +192,8 @@ QmlAbstractAnimation::QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObj
     or not the animation is running.
 
     \code
-    <NumericAnimation id="MyAnimation" />
-    <Text text="{MyAnimation.running?'Animation is running':'Animation is not running'}" />
+    NumericAnimation { id: MyAnimation }
+    Text { text: MyAnimation.running ? "Animation is running" : "Animation is not running" }
     \endcode
 
     Animations can also be started and stopped imperatively from JavaScript
@@ -211,7 +213,7 @@ void QmlAbstractAnimationPrivate::commence()
 
     q->prepare(userProperty.value);
     q->qtAnimation()->start();
-    if (!q->qtAnimation()->state() == QAbstractAnimation::Running) {
+    if (q->qtAnimation()->state() != QAbstractAnimation::Running) {
         running = false;
         emit q->completed();
     }
@@ -304,11 +306,9 @@ void QmlAbstractAnimation::setFinishPlaying(bool f)
     In the following example, the rectangle will spin indefinately.
 
     \code
-    <Rect>
-        <rotation>
-            <NumericAnimation running="true" repeat="true" from="0" to="360" />
-        </rotation>
-    </Rect>
+    Rect {
+        rotation: NumericAnimation { running: true; repeat: true; from: 0 to: 360 }
+    }
     \endcode
 */
 bool QmlAbstractAnimation::repeat() const
@@ -435,11 +435,9 @@ void QmlAbstractAnimation::start()
     Normally \c stop() stops the animation immediately, and the animation has
     no further influence on property values.  In this example animation
     \code
-    <Rect>
-        <x>
-            <NumericAnimation from="0" to="100" duration="500" />
-        </x>
-    </Rect>
+    Rect {
+        x: NumericAnimation { from: 0; to: 100; duration: 500 }
+    }
     \endcode
     was stopped at time 250ms, the \c x property will have a value of 50.
 
@@ -475,11 +473,9 @@ void QmlAbstractAnimation::restart()
     Unlike \c stop(), \c complete() immediately fast-forwards the animation to
     its end.  In the following example,
     \code
-    <Rect>
-        <x>
-            <NumericAnimation from="0" to="100" duration="500" />
-        </x>
-    </Rect>
+    Rect {
+        x: NumericAnimation { from: 0; to: 100; duration: 500 }
+    }
     \endcode
     calling \c stop() at time 250ms will result in the \c x property having
     a value of 50, while calling \c complete() will set the \c x property to
@@ -529,11 +525,11 @@ void QmlAbstractAnimation::timelineComplete()
 
     A 500ms animation sequence, with a 100ms pause between two animations:
     \code
-    <SequentialAnimation>
-        <NumericAnimation ... duration="200"/>
-        <PauseAnimation duration="100"/>
-        <NumericAnimation ... duration="200"/>
-    </SequentialAnimation>
+    SequentialAnimation {
+        NumericAnimation { ... duration: 200 }
+        PauseAnimation { duration: 100 }
+        NumericAnimation { ... duration: 200 }
+    }
     \endcode
 */
 /*!
@@ -621,7 +617,7 @@ QAbstractAnimation *QmlPauseAnimation::qtAnimation()
     \brief The ColorAnimation allows you to animate color changes.
 
     \code
-    <ColorAnimation from="white" to="#c0c0c0" duration="100"/>
+    ColorAnimation { from: "white"; to: "#c0c0c0"; duration: 100 }
     \endcode
 
     The default property animated is \c color, but like other animations,
@@ -811,9 +807,9 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
     struct NTransitionData : public QmlTimeLineValue
     {
         QmlStateActions actions;
-        void write(QmlMetaProperty &property, const QColor &color)
+        void write(QmlMetaProperty &property, const QVariant &color)
         {
-            if (property.propertyType() == qMetaTypeId<QColor>()) {
+            if (property.propertyType() == QVariant::Color) {
                 property.write(color);
             }
         }
@@ -837,13 +833,8 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
 
                     QColor from(action.fromValue.value<QColor>());
 
-                    //XXX consolidate somewhere
-                    uint red = uint(qreal(from.red()) + v * (qreal(to.red()) - qreal(from.red())));
-                    uint green = uint(qreal(from.green()) + v * (qreal(to.green()) - qreal(from.green())));
-                    uint blue = uint(qreal(from.blue()) + v * (qreal(to.blue()) - qreal(from.blue())));
-                    uint alpha = uint(qreal(from.alpha()) + v * (qreal(to.alpha()) - qreal(from.alpha())));
-
-                    write(action.property, QColor(red, green, blue, alpha));
+                    QVariant newColor = QmlColorAnimationPrivate::colorInterpolator(&from, &to, v);
+                    write(action.property, newColor);
                 }
             }
         }
@@ -902,24 +893,20 @@ void QmlColorAnimation::transition(QmlStateActions &actions,
         delete data;
 }
 
+QVariantAnimation::Interpolator QmlColorAnimationPrivate::colorInterpolator = 0;
 
 void QmlColorAnimationPrivate::valueChanged(qreal v)
 {
     if (!fromSourced) {
         if (!fromValue.isValid()) {
-            fromValue = QColor(qvariant_cast<QColor>(property.read()));
+            fromValue = qvariant_cast<QColor>(property.read());
         }
         fromSourced = true;
     }
 
-    //XXX consolidate somewhere
-    uint red = uint(qreal(fromValue.red()) + v * (qreal(toValue.red()) - qreal(fromValue.red())));
-    uint green = uint(qreal(fromValue.green()) + v * (qreal(toValue.green()) - qreal(fromValue.green())));
-    uint blue = uint(qreal(fromValue.blue()) + v * (qreal(toValue.blue()) - qreal(fromValue.blue())));
-    uint alpha = uint(qreal(fromValue.alpha()) + v * (qreal(toValue.alpha()) - qreal(fromValue.alpha())));
-
-    if (property.propertyType() == qMetaTypeId<QColor>()) {
-        property.write(QColor(red, green, blue, alpha));
+    if (property.propertyType() == QVariant::Color) {
+        QVariant newColor = colorInterpolator(&fromValue, &toValue, v);
+        property.write(newColor);
     }
 }
 QML_DEFINE_TYPE(QmlColorAnimation,ColorAnimation);
@@ -1025,12 +1012,12 @@ QML_DEFINE_TYPE(QmlRunScriptAction, RunScriptAction);
 
     Explicitly set \c theimage.smooth=true during a transition:
     \code
-    <SetPropertyAction target="{theimage}" property="smooth" value="true"/>
+    SetPropertyAction { target: theimage; property: "smooth"; value: true }
     \endcode
 
     Set \c thewebview.url to the value set for the destination state:
     \code
-    <SetPropertyAction target="{thewebview}" property="url"/>
+    SetPropertyAction { target: thewebview; property: "url" }
     \endcode
 
     The SetPropertyAction is immediate -
@@ -1333,7 +1320,7 @@ QML_DEFINE_TYPE(QmlParentChangeAction,ParentChangeAction);
     Animate a set of properties over 200ms, from their values in the start state to
     their values in the end state of the transition:
     \code
-    <NumericAnimation properties="x,y,scale" duration="200"/>
+    NumericAnimation { properties: "x,y,scale"; duration: 200 }
     \endcode
 */
 
@@ -1732,10 +1719,10 @@ QmlList<QmlAbstractAnimation *> *QmlAnimationGroup::animations()
     object will animate from its current x position to 100, and then back to 0.
 
     \code
-    <SequentialAnimation>
-        <NumericAnimation target="{MyItem}" property="x" to="100" />
-        <NumericAnimation target="{MyItem}" property="x" to="0" />
-    <SequentialAnimation>
+    SequentialAnimation {
+        NumericAnimation { target: MyItem; property: "x"; to: 100 }
+        NumericAnimation { target: MyItem; property: "x"; to: 0 }
+    }
     \endcode
 
     \sa ParallelAnimation
@@ -1809,10 +1796,10 @@ QML_DEFINE_TYPE(QmlSequentialAnimation,SequentialAnimation);
     to (100,100) by animating the x and y properties in parallel.
 
     \code
-    <ParallelAnimation>
-        <NumericAnimation target="{MyItem}" property="x" to="100" />
-        <NumericAnimation target="{MyItem}" property="y" to="100" />
-    </ParallelAnimation>
+    ParallelAnimation {
+        NumericAnimation { target: MyItem; property: "x"; to: 100 }
+        NumericAnimation { target: MyItem; property: "y"; to: 100 }
+    }
     \endcode
 
     \sa SequentialAnimation
@@ -1933,7 +1920,7 @@ void QmlVariantAnimationPrivate::convertVariant(QVariant &variant, QVariant::Typ
 
     Animate a size property over 200ms, from its current size to 20-by-20:
     \code
-    <VariantAnimation property="size" to="20x20" duration="200"/>
+    VariantAnimation { property: "size"; to: "20x20"; duration: 200 }
     \endcode
 */
 
@@ -2006,7 +1993,7 @@ QVariant QmlVariantAnimation::from() const
 void QmlVariantAnimation::setFrom(const QVariant &f)
 {
     Q_D(QmlVariantAnimation);
-    if (!d->from.isNull && f == d->from)
+    if (d->from.isValid() && f == d->from)
         return;
     d->from = f;
     emit fromChanged(f);
@@ -2030,7 +2017,7 @@ QVariant QmlVariantAnimation::to() const
 void QmlVariantAnimation::setTo(const QVariant &t)
 {
     Q_D(QmlVariantAnimation);
-    if (!d->to.isNull && t == d->to)
+    if (d->to.isValid() && t == d->to)
         return;
     d->to = t;
     emit toChanged(t);
@@ -2122,18 +2109,16 @@ QList<QObject *> *QmlVariantAnimation::exclude()
 void QmlVariantAnimationPrivate::valueChanged(qreal r)
 {
     if (!fromSourced) {
-        if (from.isNull) {
-            fromValue = property.read();
-        } else {
-            fromValue = from;
+        if (!from.isValid()) {
+            from = property.read();
         }
         fromSourced = true;
     }
 
     if (r == 1.) {
-        property.write(to.value);
+        property.write(to);
     } else {
-        QVariant val = interpolateVariant(fromValue, to.value, r);
+        QVariant val = interpolateVariant(from, to, r);
         property.write(val);
     }
 }
@@ -2152,9 +2137,9 @@ void QmlVariantAnimation::prepare(QmlMetaProperty &p)
     else
         d->property = d->userProperty;
 
-    d->convertVariant(d->to.value, (QVariant::Type)d->property.propertyType());
-    if (!d->from.isNull)
-        d->convertVariant(d->from.value, (QVariant::Type)d->property.propertyType());
+    d->convertVariant(d->to, (QVariant::Type)d->property.propertyType());
+    if (d->from.isValid())
+        d->convertVariant(d->from, (QVariant::Type)d->property.propertyType());
 
     d->fromSourced = false;
     d->value.QmlTimeLineValue::setValue(0.);
@@ -2214,12 +2199,12 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
             Action myAction = action;
 
             if (d->from.isValid()) {
-                myAction.fromValue = QVariant(d->from);
+                myAction.fromValue = d->from;
             } else {
                 myAction.fromValue = QVariant();
             }
             if (d->to.isValid())
-                myAction.toValue = QVariant(d->to);
+                myAction.toValue = d->to;
 
             d->convertVariant(myAction.fromValue, (QVariant::Type)myAction.property.propertyType());
             d->convertVariant(myAction.toValue, (QVariant::Type)myAction.property.propertyType());
@@ -2238,12 +2223,12 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
             myAction.property = QmlMetaProperty(obj, props.at(jj));
 
             if (d->from.isValid()) {
-                d->convertVariant(d->from.value, (QVariant::Type)myAction.property.propertyType());
-                myAction.fromValue = QVariant(d->from);
+                d->convertVariant(d->from, (QVariant::Type)myAction.property.propertyType());
+                myAction.fromValue = d->from;
             }
 
-            d->convertVariant(d->to.value, (QVariant::Type)myAction.property.propertyType());
-            myAction.toValue = QVariant(d->to);
+            d->convertVariant(d->to, (QVariant::Type)myAction.property.propertyType());
+            myAction.toValue = d->to;
             myAction.bv = 0;
             myAction.event = 0;
             data->actions << myAction;

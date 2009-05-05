@@ -204,12 +204,12 @@ public:
 
 /*!
     \qmlclass WebView
-    \brief The WebView element allows you to add web content to a canvas.
+    \brief The WebView item allows you to add web content to a canvas.
     \inherits Item
 
     A WebView renders web content based on a URL.
 
-    If the width and height of the element is not set, they will
+    If the width and height of the item is not set, they will
     dynamically adjust to a size appropriate for the content.
     This width may be large (eg. 980) for typical online web pages.
 
@@ -220,13 +220,19 @@ public:
     Due to WebKit limitations, the height may be more than necessary
     if the idealHeight is changed after the content is loaded.
 
-    \code
-    <WebView url="http://www.nokia.com" smooth="true" scale="0.5" width="490" height="400"/>
-    \endcode
+    \qml
+    WebView {
+        url: "http://www.nokia.com"
+        width: 490
+        height: 400
+        scale: 0.5
+        smooth: true
+    }
+    \endqml
 
     \image webview.png
 
-    The element includes no scrolling, scaling,
+    The item includes no scrolling, scaling,
     toolbars, etc., those must be implemented around WebView. See the WebBrowser example
     for a demonstration of this.
 */
@@ -240,7 +246,7 @@ public:
 
     \image webview.png
 
-    The element includes no scrolling, scaling,
+    The item includes no scrolling, scaling,
     toolbars, etc., those must be implemented around WebView. See the WebBrowser example
     for a demonstration of this.
 
@@ -589,7 +595,8 @@ void QFxWebView::paintGLContents(GLPainter &p)
 
 #if defined(QFX_RENDER_QPAINTER)
     bool wasAA = p.testRenderHint(QPainter::Antialiasing);
-    p.setRenderHints(QPainter::Antialiasing, d->smooth);
+    bool wasSM = p.testRenderHint(QPainter::SmoothPixmapTransform);
+    p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
     QRectF clipf = p.clipRegion().boundingRect();
     const QRect clip = p.clipRegion().isEmpty() ? content : clipf.toRect();
 #elif defined(QFX_RENDER_OPENGL)
@@ -656,6 +663,7 @@ void QFxWebView::paintGLContents(GLPainter &p)
     }
 #if defined(QFX_RENDER_QPAINTER)
     p.setRenderHints(QPainter::Antialiasing, wasAA);
+    p.setRenderHints(QPainter::SmoothPixmapTransform, wasSM);
 #endif
 }
 
@@ -926,7 +934,7 @@ QWebPage *QFxWebView::page() const
         QFxWebView *self = const_cast<QFxWebView*>(this);
         QWebPage *wp = new QFxWebPage(self);
 
-        // QML elements don't default to having a background,
+        // QML items don't default to having a background,
         // even though most we pages will set one anyway.
         QPalette pal = QApplication::palette();
         pal.setBrush(QPalette::Base, QColor::fromRgbF(0, 0, 0, 0));
@@ -942,7 +950,35 @@ QWebPage *QFxWebView::page() const
     return d->page;
 }
 
+
 // The QObject interface to settings().
+/*!
+    \qmlproperty bool WebView::settings::autoLoadImages
+    \qmlproperty bool WebView::settings::javascriptEnabled
+    \qmlproperty bool WebView::settings::javaEnabled
+    \qmlproperty bool WebView::settings::pluginsEnabled
+    \qmlproperty bool WebView::settings::privateBrowsingEnabled
+    \qmlproperty bool WebView::settings::javascriptCanOpenWindows
+    \qmlproperty bool WebView::settings::javascriptCanAccessClipboard
+    \qmlproperty bool WebView::settings::developerExtrasEnabled
+    \qmlproperty bool WebView::settings::linksIncludedInFocusChain
+    \qmlproperty bool WebView::settings::zoomTextOnly
+    \qmlproperty bool WebView::settings::printElementBackgrounds
+    \qmlproperty bool WebView::settings::offlineStorageDatabaseEnabled
+    \qmlproperty bool WebView::settings::offlineWebApplicationCacheEnabled
+    \qmlproperty bool WebView::settings::localStorageDatabaseEnabled
+
+    These properties give access to the settings controlling the web view.
+
+    See QWebSettings for the list of sub-properties.
+
+    \qml
+        WebView {
+            settings.pluginsEnabled: true
+            ...
+        }
+    \endqml
+*/
 QObject *QFxWebView::settingsObject() const
 {
     Q_D(const QFxWebView);
@@ -996,33 +1032,22 @@ QString QFxWebView::html() const
     \qmlproperty string WebView::html
     This property holds HTML text set directly
 
-    The html property can be set as a string (using CDATA for large blocks),
-    or as xhtml inline using the XML namespace http://www.w3.org/1999/xhtml:
+    The html property can be set as a string.
 
-    \code
-    <WebView>
-        <html xmlns="http://www.w3.org/1999/xhtml">
-            <p>This is valid xHTML.</p>
-        </html>
-    </WebView>
-    \endcode
-
-    \code
-    <WebView>
-        <html>&lt;CDATA[
-        <p>This is just HTML.
-    ]]&gt;html>
-    </WebView>
-    \endcode
+    \qml
+    WebView {
+        html: "<p>This is <b>HTML</b>."
+    }
+    \endqml
 */
 void QFxWebView::setHtml(const QString &html, const QUrl &baseUrl)
 {
     Q_D(QFxWebView);
-    d->page->setViewportSize(QSize(
+    page()->setViewportSize(QSize(
         d->idealwidth>0 ? d->idealwidth : width(),
         d->idealheight>0 ? d->idealheight : height()));
     if (isComponentComplete())
-        d->page->mainFrame()->setHtml(html, baseUrl);
+        page()->mainFrame()->setHtml(html, qmlContext(this)->resolvedUrl(baseUrl));
     else {
         d->pending = d->PendingHtml;
         d->pending_url = baseUrl;
@@ -1033,12 +1058,12 @@ void QFxWebView::setHtml(const QString &html, const QUrl &baseUrl)
 void QFxWebView::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)
 {
     Q_D(QFxWebView);
-    d->page->setViewportSize(QSize(
+    page()->setViewportSize(QSize(
         d->idealwidth>0 ? d->idealwidth : width(),
         d->idealheight>0 ? d->idealheight : height()));
 
     if (isComponentComplete())
-        d->page->mainFrame()->setContent(data,mimeType,baseUrl);
+        page()->mainFrame()->setContent(data,mimeType,qmlContext(this)->resolvedUrl(baseUrl));
     else {
         d->pending = d->PendingContent;
         d->pending_url = baseUrl;

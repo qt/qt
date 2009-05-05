@@ -7,7 +7,7 @@
 #include <QTime>
 #include <QVBoxLayout>
 
-const char *defaultFileName("contacts.xml");
+const char *defaultFileName("contacts.qml");
 
 class Contacts : public QWidget
 {
@@ -43,8 +43,8 @@ Contacts::Contacts(const QString &fileName, int width, int height, QWidget *pare
 
     QFile file(fileName);
     file.open(QFile::ReadOnly);
-    QString xml = file.readAll();
-    canvas->setXml(xml, fileName);
+    QString qml = file.readAll();
+    canvas->setQml(qml, fileName);
 
     canvas->execute();
 }

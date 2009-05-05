@@ -89,16 +89,20 @@ bool QmlComponentPrivate::isXml(const QByteArray &ba)
     file, or for defining a component that logically belongs with the
     file containing it.
 
-    \code
-    <Item>
-        <Component id="RedSquare">
-            <Rect color="red" width="10" height="10"/>
-        </Component>
-
-        <ComponentInstance component="{RedSquare}"/>
-        <ComponentInstance component="{RedSquare}" x="20"/>
-    </Item>
-    \endcode
+    \qml
+Item {
+    Component {
+        id: RedSquare
+        Rect {
+            color: "red"
+            width: 10
+            height: 10
+        }
+    }
+    ComponentInstance { component: RedSquare }
+    ComponentInstance { component: RedSquare; x: 20 }
+}
+    \endqml
 */
 QML_DEFINE_TYPE(QmlComponent,Component);
 
@@ -133,9 +137,7 @@ void QmlComponentPrivate::fromTypeData(QmlCompositeTypeData *data)
     if (!c) {
         Q_ASSERT(data->status == QmlCompositeTypeData::Error);
 
-        errorDescription = data->errorDescription;
-        qWarning().nospace() << "QmlComponent: "
-                             << data->errorDescription.toLatin1().constData();
+        errors = data->errors;
 
     } else {
 
@@ -190,7 +192,7 @@ QmlComponent::Status QmlComponent::status() const
         return Loading;
     else if (d->engine && d->cc)
         return Ready;
-    else if (!d->errorDescription.isEmpty())
+    else if (!d->errors.isEmpty())
         return Error;
     else
         return Null;
@@ -349,13 +351,13 @@ void QmlComponent::loadUrl(const QUrl &url)
     emit statusChanged(status());
 }
 
-QString QmlComponent::errorDescription() const
+QList<QmlError> QmlComponent::errors() const
 {
     Q_D(const QmlComponent);
     if (isError())
-        return d->errorDescription;
+        return d->errors;
     else
-        return QString();
+        return QList<QmlError>();
 }
 
 /*!
@@ -444,7 +446,7 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
     }
 
     if (!isReady()) {
-        qWarning("QmlComponent: Cannot create un-ready component");
+        qWarning("QmlComponent: Component is not ready");
         return 0;
     }
 
@@ -462,15 +464,9 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
 
     QmlVME vme;
     QObject *rv = vme.run(ctxt, d->cc, d->start, d->count);
-    if (vme.isError()) {
-        qWarning().nospace()
-#ifdef QML_VERBOSEERRORS_ENABLED
-                             << "QmlComponent: "
-#endif
-                             << vme.errorDescription().toLatin1().constData() << " @"
-                             << d->url.toString().toLatin1().constData() << ":" << vme.errorLine();
-    }
 
+    if (vme.isError()) 
+        d->errors = vme.errors();
 
     ctxt->deactivate();
 

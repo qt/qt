@@ -48,7 +48,7 @@ element whose text is determined by whether or not it has \e {active focus}.
 An \l Item requests focus by setting the \c {Item::focus} property to true.  
 
 For very simple cases simply setting the \c {Item::focus} property is sometimes
-sufficient.  If we run the following example in the \c duiviewer, we see that
+sufficient.  If we run the following example in the \c qmlviewer, we see that
 the \c {<KeyActions/>} element has \e {active focus} and pressing the
 \e A, \e B, or \e C keys modifies the text appropriately.
 

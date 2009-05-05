@@ -77,8 +77,8 @@ QML_DEFINE_TYPE(QmlBind,Bind);
     property into QML.  You could use Bind to update the enteredText property 
     like this.
     \code
-    <TextEdit id="myTextField" text="Please type here..." />
-    <Bind target="{app}" property="enteredText" value="{myTextField.text}" />
+    TextEdit { id: myTextField; text: "Please type here..." }
+    Bind { target: app; property: "enteredText"; value: myTextField.text />
     \endcode
     Whenever the text in the TextEdit is updated, the C++ property will be
     updated also.

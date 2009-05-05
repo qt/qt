@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef _QFXVIEW_H_
-#define _QFXVIEW_H_
+#ifndef QFXVIEW_H
+#define QFXVIEW_H
 
 #include <qfxglobal.h>
 #include <QtCore/qdatetime.h>
@@ -48,16 +48,16 @@
 #include <QtGui/qwidget.h>
 #include <qsimplecanvas.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QFxItem;
 class QmlEngine;
 class QmlContext;
-class Canvas;
+class QmlError;
 
 class QFxViewPrivate;
 class Q_DECLARATIVE_EXPORT QFxView : public QSimpleCanvas
@@ -70,20 +70,21 @@ public:
     virtual ~QFxView();
 
     void setUrl(const QUrl&);
-    void setXml(const QString &xml, const QString &filename=QString());
-    QString xml() const;
+    void setQml(const QString &qml, const QString &filename=QString());
+    QString qml() const;
     QmlEngine* engine();
     QmlContext* rootContext();
     virtual void execute();
     virtual void reset();
 
-    virtual QFxItem* addItem(const QString &xml, QFxItem* parent=0);
+    virtual QFxItem* addItem(const QString &qml, QFxItem* parent=0);
     virtual void clearItems();
 
     virtual QFxItem *root() const;
 
     void dumpRoot();
 
+    static void printErrorLine(const QmlError &);
 Q_SIGNALS:
     void sceneResized(QSize size);
 
@@ -95,14 +96,15 @@ protected:
     virtual void resizeEvent(QResizeEvent *);
     void focusInEvent(QFocusEvent *);
     void focusOutEvent(QFocusEvent *);
+    void timerEvent(QTimerEvent*);
 
 private:
     friend class QFxViewPrivate;
     QFxViewPrivate *d;
 };
 
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
-#endif // _QFXVIEW_H_
+
+#endif // QFXVIEW_H

@@ -73,14 +73,26 @@ public:
     \row
     \o \image shadow_example.png
     \o
-    \code
-    <Rect radius="5" color="lightsteelblue" width="100" height="100">
-        <filter><Shadow yOffset="8" xOffset="8" /></filter>
-    </Rect>
-    <Image src="pics/qtlogo.png">
-        <filter><Shadow yOffset="8" xOffset="8" /></filter>
-    </Image>
-    \endcode
+    \qml
+Rect {
+    radius: 5
+    color: "lightsteelblue"
+    width: 100
+    height: 100
+    filter: Shadow {
+        yOffset: 8
+        xOffset: 8
+    }
+}
+
+Image {
+    src: "pics/qtlogo.png"
+    filter: Shadow {
+        yOffset: 8
+        xOffset: 8
+    }
+}
+    \endqml
     \endtable
 
     Shadows are only supported when Qt Qt Declarative is compiled for OpenGL ES 2.0.

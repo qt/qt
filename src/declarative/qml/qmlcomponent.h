@@ -46,7 +46,7 @@
 #include <QtCore/qstring.h>
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
-
+#include <QtDeclarative/qmlerror.h>
 
 QT_BEGIN_HEADER
 
@@ -77,7 +77,8 @@ public:
     bool isReady() const;
     bool isError() const;
     bool isLoading() const;
-    QString errorDescription() const;
+
+    QList<QmlError> errors() const;
 
     QUrl url() const;
 
@@ -98,7 +99,7 @@ private:
     QmlComponent(QmlEngine *, QmlCompiledComponent *, int, int, QObject *parent);
 
     friend class QmlVME;
-    friend class QmlCompositeTypeData;
+    friend struct QmlCompositeTypeData;
 };
 QML_DECLARE_TYPE(QmlComponent);
 

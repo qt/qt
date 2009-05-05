@@ -58,40 +58,50 @@ public:
     QFxItem *front;
     QFxItem *back;
     QFxAxis *axis;
-    QFxRotation axisRotation;
+    QFxRotation3D axisRotation;
     qreal rotation;
 };
 
 /*!
     \qmlclass Flipable QFxFlipable
-    \brief The Flipable element provides a surface that can be flipped.
+    \brief The Flipable item provides a surface that can be flipped.
     \inherits Item
 
     Flipable allows you to specify a front and a back and then flip between those sides.
 
-    \code
-    <Flipable id="flipable" width="40" height="40">
-        <axis>
-            <Axis startX="20" startY="0" endX="20" endY="40" />
-        </axis>
-        <front>
-            <Image src="front.png"/>
-        </front>
-        <back>
-            <Image src="back.png"/>
-        </back>
-        <states>
-            <State name="back">
-                <SetProperty target="{flipable}" property="rotation" value="180" />
-            </State>
-        </states>
-        <transitions>
-            <Transition>
-                <NumericAnimation easing="easeInOutQuad" properties="rotation"/>
-            </Transition>
-        </transitions>
-    </Flipable>
-    \endcode
+    \qml
+Flipable {
+    id: flipable
+    width: 40
+    height: 40
+    axis: Axis {
+        startX: 20
+        startY: 0
+        endX: 20
+        endY: 40
+    }
+    front: Image { src: "front.png" }
+    back: Image { src: "back.png" }
+    states: [
+        State {
+            name: "back"
+            SetProperty {
+                target: flipable
+                property: "rotation"
+                value: 180
+            }
+        }
+    ]
+    transitions: [
+        Transition {
+            NumericAnimation {
+                easing: "easeInOutQuad"
+                properties: "rotation"
+            }
+        }
+    ]
+}
+    \endqml
 
     \image flipable.gif
 */

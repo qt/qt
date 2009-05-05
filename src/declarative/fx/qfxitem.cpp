@@ -206,7 +206,7 @@ void QFxContents::setItem(QFxItem *item)
 
 /*!
     \qmlclass Item QFxItem
-    \brief The Item element is the most basic of all visual canvas members.
+    \brief The Item is the most basic of all visual items in QML.
  */
 
 /*!
@@ -214,19 +214,32 @@ void QFxContents::setItem(QFxItem *item)
     \brief The QFxItem class is a generic QFxView item. It is the base class for all other view items.
 
     \qmltext
-    All visual elements in Qt Declarative inherit from QFxItem.  Although QFxItem
+    All visual items in Qt Declarative inherit from QFxItem.  Although QFxItem
     has no visual appearance, it defines all the properties that are
-    common across visual elements - like the x and y position, and the
+    common across visual items - like the x and y position, and the
     width and height.
 
-    QFxItem is also useful for grouping elements together.
+    QFxItem is also useful for grouping items together.
 
     \qml
-    <Item>
-        <Image file="tile.png" />
-        <Image x="80" width="100" height="100" file="tile.png" />
-        <Image x="190" width="100" height="100" tile="true" file="tile.png" />
-    </Item>
+    Item {
+        Image {
+            file: "tile.png"
+        }
+        Image {
+            x: 80
+            width: 100
+            height: 100
+            file: "tile.png"
+        }
+        Image {
+            x: 190
+            width: 100
+            height: 100
+            tile: true
+            file: "tile.png"
+        }
+    }
     \endqml
     \endqmltext
     
@@ -260,7 +273,7 @@ void QFxContents::setItem(QFxItem *item)
     via the baselineOffset property.
 
     The baseline corresponds to the baseline of the text contained in
-    the element.  It is useful for aligning the text in items placed
+    the item.  It is useful for aligning the text in items placed
     beside each other.  The default baseline is positioned at
     2/3 of the height of the item.
 */
@@ -335,7 +348,9 @@ void QFxContents::setItem(QFxItem *item)
     The key event is available via the KeyEvent \a event.
 
     \qml
-    <Item onKeyPress="if (event.key == Qt.Key_Enter) state='Enter'"/>
+    Item {
+        onKeyPress: { if (event.key == Qt.Key_Enter) state='Enter' }
+    }
     \endqml
 */
 
@@ -347,7 +362,9 @@ void QFxContents::setItem(QFxItem *item)
     The key event is available in via the KeyEvent \a event.
 
     \qml
-    <Item onKeyRelease="if (event.key == Qt.Key_Enter) state='Enter'"/>
+    Item {
+        onKeyRelease: { if (event.key == Qt.Key_Enter) state='Enter' }
+    }
     \endqml
 */
 
@@ -429,9 +446,13 @@ QFxItem::~QFxItem()
     \image declarative-transformorigin.png
 
     This example scales an image about its center.
-    \code
-    <Image src="myimage.png" transformOrigin="Center" scale="4" />
-    \endcode
+    \qml
+    Image {
+        src: "myimage.png"
+        transformOrigin: "Center"
+        scale: 4
+    }
+    \endqml
 
     The default transform origin is \c TopLeft.
 */
@@ -522,7 +543,7 @@ QFxItem *QFxItem::itemParent() const
     \qmlproperty list<Item> Item::children
     \qmlproperty list<Object> Item::resources
 
-    The children property contains the list of visual children of this element. 
+    The children property contains the list of visual children of this item. 
     The resources property contains non-visual resources that you want to 
     reference by name.
     
@@ -702,7 +723,7 @@ void QFxItemPrivate::children_clear()
     \default
 
     The data property is allows you to freely mix visual children and resources
-    of an element.  If you assign a visual element to the data list it becomes
+    of an item.  If you assign a visual item to the data list it becomes
     a child and if you assign any other object type, it is added as a resource.
 
     So you can write:
@@ -1583,12 +1604,20 @@ void QFxItem::setKeepMouseGrab(bool keep)
     d->_keepMouse = keep;
 }
 
-void QFxItem::activeFocusChanged(bool)
+/*!
+  This function emits the \e activeFocusChanged signal.
+  \a flag is not used.
+ */
+void QFxItem::activeFocusChanged(bool flag)
 {
     emit activeFocusChanged();
 }
 
-void QFxItem::focusChanged(bool)
+/*!
+  This function emits the \e focusChanged signal.
+  \a flag is not used.
+ */
+void QFxItem::focusChanged(bool flag)
 {
     emit focusChanged();
 }
@@ -1676,7 +1705,7 @@ QmlList<QmlTransition *>* QFxItem::transitions()
   the item, or giving it a \l Reflection.  Some
   filters may not be available on all canvases; if a filter is not
   available on a certain canvas, it will simply not be applied for
-  that canvas (but the XML will still be considered valid).
+  that canvas (but the QML will still be considered valid).
 
   \qml
   <Item>
@@ -1926,7 +1955,7 @@ void QFxItem::classComplete()
 }
 
 /*!
-  componentComplete() is called when all elements in the component
+  componentComplete() is called when all items in the component
   have been constructed.  It is often desireable to delay some
   processing until the component is complete an all bindings in the
   component have been resolved.

@@ -59,6 +59,7 @@
 #include <qmlcontext.h>
 #include <qmlmetatype.h>
 #include <QtCore/qdebug.h>
+#include "private/qmlcustomparser_p_p.h"
 
 #include "qmlscriptparser_p.h"
 
@@ -146,7 +147,7 @@ int QmlCompiledData::indexForInt(int *data, int count)
 }
 
 QmlCompiler::QmlCompiler()
-: exceptionLine(-1), output(0)
+: exceptionLine(-1), exceptionColumn(-1), output(0)
 {
 }
 
@@ -155,14 +156,19 @@ bool QmlCompiler::isError() const
     return exceptionLine != -1;
 }
 
-qint64 QmlCompiler::errorLine() const
+QList<QmlError> QmlCompiler::errors() const
 {
-    return exceptionLine;
-}
+    QList<QmlError> rv;
 
-QString QmlCompiler::errorDescription() const
-{
-    return exceptionDescription;
+    if(isError()) {
+        QmlError error;
+        error.setDescription(exceptionDescription);
+        error.setLine(exceptionLine);
+        error.setColumn(exceptionColumn);
+        rv << error;
+    }
+
+    return rv;
 }
 
 bool QmlCompiler::isValidId(const QString &val)
@@ -436,9 +442,19 @@ void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
     cc->bytecode.clear();
 }
 
+#define COMPILE_EXCEPTION2(token, desc) \
+    {  \
+        exceptionLine = token->line;  \
+        exceptionColumn = token->column;  \
+        QDebug d(&exceptionDescription); \
+        d << desc;  \
+        return false; \
+    } 
+
 #define COMPILE_EXCEPTION(desc) \
     {  \
         exceptionLine = obj->line;  \
+        exceptionColumn = obj->column;  \
         QDebug d(&exceptionDescription); \
         d << desc;  \
         return false; \
@@ -552,6 +568,7 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
         obj->properties.remove(SIGNALS_NAME);
     }
 
+    int createInstrIdx = output->bytecode.count();
     if (obj->type != -1 && output->types.at(obj->type).parser) {
         QByteArray data = obj->custom;
         int ref = output->indexForByteArray(data);
@@ -567,6 +584,7 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
         QmlInstruction create;
         create.type = QmlInstruction::CreateObject;
         create.line = obj->line;
+        create.create.data = -1;
         create.create.type = obj->type;
         output->bytecode << create;
     }
@@ -591,19 +609,48 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
         }
     } 
 
+    bool isCustomParser = output->types.at(obj->type).type &&  
+                          output->types.at(obj->type).type->customParser() != 0;
+    QList<QmlCustomParserProperty> customProps;
+
     foreach(Property *prop, obj->properties) {
         if (!ignoreProperties && prop->name == PROPERTIES_NAME) {
         } else if (!ignoreSignals && prop->name == SIGNALS_NAME) {
         } else if (prop->name.length() >= 3 && prop->name.startsWith("on") && 
            ('A' <= prop->name.at(2) && 'Z' >= prop->name.at(2))) {
-            COMPILE_CHECK(compileSignal(prop, obj));
+            if (!isCustomParser) {
+                COMPILE_CHECK(compileSignal(prop, obj));
+            } else {
+                customProps << QmlCustomParserNodePrivate::fromProperty(prop);
+            }
         } else {
-            COMPILE_CHECK(compileProperty(prop, obj, ctxt));
+            if (!isCustomParser || (isCustomParser && testProperty(prop, obj))) {
+                COMPILE_CHECK(compileProperty(prop, obj, ctxt));
+            } else {
+                customProps << QmlCustomParserNodePrivate::fromProperty(prop);
+            }
         }
     }
 
-    if (obj->defaultProperty) 
-        COMPILE_CHECK(compileProperty(obj->defaultProperty, obj, ctxt));
+    if (obj->defaultProperty)  {
+        if(!isCustomParser || (isCustomParser && testProperty(obj->defaultProperty, obj))) {
+            COMPILE_CHECK(compileProperty(obj->defaultProperty, obj, ctxt));
+        } else {
+            customProps << QmlCustomParserNodePrivate::fromProperty(obj->defaultProperty);
+        }
+    }
+
+    if (isCustomParser && !customProps.isEmpty()) {
+        // ### Check for failure
+        bool ok = false;
+        QmlCustomParser *cp = output->types.at(obj->type).type->customParser();
+        QByteArray customData = cp->compile(customProps, &ok);
+        if(!ok)
+            COMPILE_EXCEPTION("Failure compiling custom type");
+        if(!customData.isEmpty())
+            output->bytecode[createInstrIdx].create.data = 
+                output->indexForByteArray(customData);
+    }
 
     if (obj->type != -1) {
         if (output->types.at(obj->type).component) {
@@ -764,65 +811,61 @@ bool QmlCompiler::compileSignal(Property *prop, Object *obj)
     return true;
 }
 
+// Returns true if prop exists on obj, false otherwise
+bool QmlCompiler::testProperty(QmlParser::Property *prop, 
+                               QmlParser::Object *obj)
+{
+    if(isAttachedProperty(prop->name) || prop->name == "id")
+        return true;
+
+    const QMetaObject *mo = obj->metaObject();
+    if (mo) {
+        if (prop->isDefault) {
+            QMetaProperty p = QmlMetaType::defaultProperty(mo);
+            return p.name() != 0;
+        } else {
+            int idx = mo->indexOfProperty(prop->name.constData());
+            return idx != -1;
+        }
+    }
+    
+    return false;
+}
+
 bool QmlCompiler::compileProperty(Property *prop, Object *obj, int ctxt)
 {
     if (prop->values.isEmpty() && !prop->value) 
         return true;
 
     // First we're going to need a reference to this property
-    if (obj->type != -1) {
+    const QMetaObject *mo = obj->metaObject();
+    if (mo && !isAttachedProperty(prop->name)) {
+        if (prop->isDefault) {
+            QMetaProperty p = QmlMetaType::defaultProperty(mo);
+            // XXX
+            // Currently we don't handle enums in the static analysis
+            // so we let them drop through to generateStoreInstruction()
+            if (p.name() && !p.isEnumType()) {
+                prop->index = mo->indexOfProperty(p.name());
+                prop->name = p.name();
 
-        const QMetaObject *mo = obj->metaObject();
-        if (mo) {
-            if (prop->isDefault) {
-                QMetaProperty p = QmlMetaType::defaultProperty(mo);
-                // XXX
-                // Currently we don't handle enums in the static analysis
-                // so we let them drop through to generateStoreInstruction()
-                if (p.name() && !p.isEnumType()) {
-                    prop->index = mo->indexOfProperty(p.name());
-                    prop->name = p.name();
-
-                    int t = p.type();
-                    if (t == QVariant::UserType)
-                        t = p.userType();
-
-                    prop->type = t;
-                }
-            } else {
-                prop->index = mo->indexOfProperty(prop->name.constData());
-                QMetaProperty p = mo->property(prop->index);
-                // XXX
-                // Currently we don't handle enums in the static analysis
-                // so we let them drop through to generateStoreInstruction()
-                if (p.name() && !p.isEnumType()) {
-                    int t = p.type();
-                    if (t == QVariant::UserType)
-                        t = p.userType();
-
-                    prop->type = t;
-                }
-            }
-        }
-    } else {
-        const QMetaObject *mo = obj->metaObject();
-        if (mo) {
-            if (prop->isDefault) {
-                QMetaProperty p = QmlMetaType::defaultProperty(mo);
-                if (p.name()) {
-                    prop->index = mo->indexOfProperty(p.name());
-                    prop->name = p.name();
-                } 
                 int t = p.type();
                 if (t == QVariant::UserType)
                     t = p.userType();
+
                 prop->type = t;
-            } else {
-                prop->index = mo->indexOfProperty(prop->name.constData());
-                QMetaProperty p = mo->property(prop->index);
+            }
+        } else {
+            prop->index = mo->indexOfProperty(prop->name.constData());
+            QMetaProperty p = mo->property(prop->index);
+            // XXX
+            // Currently we don't handle enums in the static analysis
+            // so we let them drop through to generateStoreInstruction()
+            if (p.name() && !p.isEnumType()) {
                 int t = p.type();
                 if (t == QVariant::UserType)
                     t = p.userType();
+
                 prop->type = t;
             }
         }
@@ -841,7 +884,7 @@ bool QmlCompiler::compileProperty(Property *prop, Object *obj, int ctxt)
         COMPILE_CHECK(compileNestedProperty(prop, ctxt));
 
     } else if (QmlMetaType::isQmlList(prop->type) || 
-              QmlMetaType::isList(prop->type)) {
+               QmlMetaType::isList(prop->type)) {
 
         COMPILE_CHECK(compileListProperty(prop, obj, ctxt));
 
@@ -1187,10 +1230,10 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
                 //### we are restricted to a rather generic message here. If we can find a way to move
                 //    the exception into generateStoreInstruction we could potentially have better messages.
                 //    (the problem is that both compile and run exceptions can be generated, though)
-                COMPILE_EXCEPTION("Cannot assign value" << v->primitive << "to property" << obj->metaObject()->property(prop->index).name());
+                COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive << "to property" << obj->metaObject()->property(prop->index).name());
                 doassign = false;
             } else if (r == ReadOnly) {
-                COMPILE_EXCEPTION("Cannot assign value" << v->primitive << "to the read-only property" << obj->metaObject()->property(prop->index).name());
+                COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive << "to the read-only property" << obj->metaObject()->property(prop->index).name());
             } else {
                 doassign = true;
             }
@@ -1351,7 +1394,7 @@ bool QmlCompiler::findDynamicProperties(QmlParser::Property *prop,
         definedProperties << propDef;
     }
 
-    obj->dynamicProperties = definedProperties;
+    obj->dynamicProperties << definedProperties;
     return true;
 }
 
@@ -1407,7 +1450,7 @@ bool QmlCompiler::findDynamicSignals(QmlParser::Property *sigs,
         definedSignals << sigDef;
     }
 
-    obj->dynamicSignals = definedSignals;
+    obj->dynamicSignals << definedSignals;
     return true;
 }
 

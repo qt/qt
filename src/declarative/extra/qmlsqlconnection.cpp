@@ -67,6 +67,26 @@ public:
 /*!
     \qmlclass SqlConnection QmlSqlConnection
     \brief The SqlConnection element describes a connection to an SQL database.
+
+    The SqlConnection element works in a similar way to
+    QSqlDatabase::addDatabase().  It allows setting the database properties
+    such that the connection does not need to be set up in C++ code.
+    It differs from QSqlDatabase::addDatabase() in that it will automatically
+    open the database.
+
+    The database can then either be used from an SqlQuery element using its id
+    as a bind, or using its name.  If the database is set up externally to
+    Qml the query should connect using its name.
+
+    \qml
+    <SqlConnection id="myConnection">
+        <name>qmlConnection</name>
+        <driver>QSQLITE</driver>
+        <databaseName>"mydb.sqlite"</databaseName>
+    </SqlConnection>
+    <SqlQuery id="listmodel" connection="{myConnection}">SELECT * FROM mytable</SqlQuery>
+    <SqlQuery id="othermodel" connection="qmlConnection">SELECT * FROM myothertable</SqlQuery>
+    \endqml
 */
 
 /*!
@@ -142,32 +162,9 @@ public:
 */
 
 /*!
+    \internal
     \class QmlSqlConnection
     \brief The QmlSqlConnection class manages a connection to an SQL database.
-
-    \qmltext
-
-    The SqlConnection element works in a similar way to
-    QSqlDatabase::addDatabase().  It allows setting the database properties
-    such that the connection does not need to be set up in C++ code.
-    It differs from QSqlDatabase::addDatabase() in that it will automatically
-    open the database.
-
-    The database can then either be used from an SqlQuery element using its id
-    as a bind, or using its name.  If the database is set up externally to
-    Qml the query should connect using its name.
-
-    \qml
-    <SqlConnection id="myConnection">
-        <name>qmlConnection</name>
-        <driver>QSQLITE</driver>
-        <databaseName>"mydb.sqlite"</databaseName>
-    </SqlConnection>
-    <SqlQuery id="listmodel" connection="{myConnection}">SELECT * FROM mytable</SqlQuery>
-    <SqlQuery id="othermodel" connection="qmlConnection">SELECT * FROM myothertable</SqlQuery>
-    \endqml
-
-    \endqmltext
 */
 
 /*!

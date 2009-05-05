@@ -59,8 +59,8 @@ QFxTestView::QFxTestView(const QString &filename, const QString &testdir)
 
     QFile file(filename);
     file.open(QFile::ReadOnly);
-    QString xml = QString::fromUtf8(file.readAll());
-    setXml(xml, filename);
+    QString qml = QString::fromUtf8(file.readAll());
+    setQml(qml, filename);
 
     execute();
 }

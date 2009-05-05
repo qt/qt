@@ -77,7 +77,7 @@
     sub directory the files are numbered in an order of increasing features.
 
     The code in this example is not compiled, but interpreted at run time.
-    This means you should use the duiviewer application provided with
+    This means you should use the qmlviewer application provided with
     Qt to run the examples.
 
     \list
@@ -627,7 +627,7 @@
 
     We then add a transition so that this becomes animated:
 
-    \snippet declarative/tutorials/contacts/3_Collections/2/ContactView.qml transition
+    \snippet declarative/tutorials/contacts/3_Collections/2/ContactView.qml transitions
 
     This allows the user to click on an item to enter the open state.
 
@@ -640,7 +640,7 @@
     And connect it's clicked value to some script to set the state of the delegate
     back to its default state.
 
-    \snippet declarative/tutorials/contacts/3_Collections/2/ContactView.qml connection
+    \snippet declarative/tutorials/contacts/3_Collections/2/ContactView.qml connections
 
     Something worth noting at this point is that every delegate created has this connection.
     It is important to check whether the delegate is the one in the open state, and
