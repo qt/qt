@@ -55,6 +55,7 @@
 
 #include <qlistwidget.h>
 #include <qstandarditemmodel.h>
+#include <qstyleditemdelegate.h>
 #include <qurl.h>
 
 #ifndef QT_NO_FILEDIALOG
@@ -62,13 +63,23 @@
 QT_BEGIN_NAMESPACE
 
 class QFileSystemModel;
+
+class QSideBarDelegate : public QStyledItemDelegate
+{
+ public:
+     QSideBarDelegate(QWidget *parent = 0) : QStyledItemDelegate(parent) {}
+     void initStyleOption(QStyleOptionViewItem *option,
+                          const QModelIndex &index) const;
+};
+
 class Q_AUTOTEST_EXPORT QUrlModel : public QStandardItemModel
 {
     Q_OBJECT
 
 public:
     enum Roles {
-        UrlRole = Qt::UserRole + 1
+        UrlRole = Qt::UserRole + 1,
+        EnabledRole = Qt::UserRole + 2
     };
 
     QUrlModel(QObject *parent = 0);

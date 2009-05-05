@@ -195,12 +195,12 @@ struct TranslatorMessagePtr {
 
 Q_DECLARE_TYPEINFO(TranslatorMessagePtr, Q_MOVABLE_TYPE);
 
-static inline int qHash(TranslatorMessagePtr tmp)
+inline int qHash(TranslatorMessagePtr tmp)
 {
     return qHash(*tmp.ptr);
 }
 
-static inline bool operator==(TranslatorMessagePtr tmp1, TranslatorMessagePtr tmp2)
+inline bool operator==(TranslatorMessagePtr tmp1, TranslatorMessagePtr tmp2)
 {
     return *tmp1.ptr == *tmp2.ptr;
 }

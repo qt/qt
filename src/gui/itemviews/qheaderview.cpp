@@ -1195,7 +1195,7 @@ QHeaderView::ResizeMode QHeaderView::resizeMode(int logicalIndex) const
     Q_D(const QHeaderView);
     int visual = visualIndex(logicalIndex);
     Q_ASSERT(visual != -1);
-    return d->visualIndexResizeMode(visual);
+    return d->headerSectionResizeMode(visual);
 }
 
 /*!
@@ -1234,7 +1234,7 @@ void QHeaderView::setSortIndicatorShown(bool show)
     if (sortIndicatorSection() < 0 || sortIndicatorSection() > count())
         return;
 
-    if (d->visualIndexResizeMode(sortIndicatorSection()) == ResizeToContents)
+    if (d->headerSectionResizeMode(sortIndicatorSection()) == ResizeToContents)
         resizeSections();
 
     d->viewport->update();
@@ -1388,8 +1388,7 @@ int QHeaderView::defaultSectionSize() const
 void QHeaderView::setDefaultSectionSize(int size)
 {
     Q_D(QHeaderView);
-    d->defaultSectionSize = size;
-    d->forceInitializing = true;
+    d->setDefaultSectionSize(size);
 }
 
 /*!
@@ -1894,9 +1893,6 @@ void QHeaderView::initializeSections()
         //make sure we update the hidden sections
         if (newCount < oldCount)
             d->updateHiddenSections(0, newCount-1);
-    } else if (d->forceInitializing) {
-        initializeSections(0, newCount - 1);
-        d->forceInitializing = false;
     }
 }
 
@@ -1952,7 +1948,7 @@ void QHeaderView::initializeSections(int start, int end)
     if (!d->sectionHidden.isEmpty())
         d->sectionHidden.resize(d->sectionCount);
 
-    if (d->sectionCount > oldCount || d->forceInitializing)
+    if (d->sectionCount > oldCount)
         d->createSectionSpan(start, end, (end - start + 1) * d->defaultSectionSize, d->globalResizeMode);
     //Q_ASSERT(d->headerLength() == d->length);
 
@@ -2937,22 +2933,25 @@ int QHeaderViewPrivate::lastVisibleVisualIndex() const
 void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool useGlobalMode)
 {
     Q_Q(QHeaderView);
+    //stop the timer in case it is delayed
+    delayedResize.stop();
 
     executePostedLayout();
     if (sectionCount == 0)
         return;
+
+    if (resizeRecursionBlock)
+        return;
+    resizeRecursionBlock = true;
+
     invalidateCachedSizeHint();
+
+    const int lastVisibleSection = lastVisibleVisualIndex();
 
     // find stretchLastSection if we have it
     int stretchSection = -1;
-    if (stretchLastSection && !useGlobalMode) {
-        for (int i = sectionCount - 1; i >= 0; --i) {
-            if (!isVisualIndexHidden(i)) {
-                stretchSection = i;
-                break;
-            }
-        }
-    }
+    if (stretchLastSection && !useGlobalMode)
+        stretchSection = lastVisibleVisualIndex();
 
     // count up the number of strected sections and how much space left for them
     int lengthToStrech = (orientation == Qt::Horizontal ? viewport->width() : viewport->height());
@@ -2966,7 +2965,7 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
         if (useGlobalMode && (i != stretchSection))
             resizeMode = globalMode;
         else
-            resizeMode = (i == stretchSection ? QHeaderView::Stretch : visualIndexResizeMode(i));
+            resizeMode = (i == stretchSection ? QHeaderView::Stretch : headerSectionResizeMode(i));
 
         if (resizeMode == QHeaderView::Stretch) {
             ++numberOfStretchedSections;
@@ -2998,7 +2997,6 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
 
     int spanStartSection = 0;
     int previousSectionLength = 0;
-    const int lastVisibleSection = lastVisibleVisualIndex();
 
     QHeaderView::ResizeMode previousSectionResizeMode = QHeaderView::Interactive;
 
@@ -3017,7 +3015,7 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
             else
                 resizeMode = (i == stretchSection
                               ? QHeaderView::Stretch
-                              : visualIndexResizeMode(i));
+                              : newSectionResizeMode);
             if (resizeMode == QHeaderView::Stretch && stretchSectionLength != -1) {
                 if (i == lastVisibleSection)
                     newSectionLength = qMax(stretchSectionLength, lastSectionSize);
@@ -3054,7 +3052,7 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
                       (sectionCount - spanStartSection) * previousSectionLength,
                       previousSectionResizeMode);
     //Q_ASSERT(headerLength() == length);
-
+    resizeRecursionBlock = false;
     viewport->update();
 }
 
@@ -3361,6 +3359,29 @@ void QHeaderViewPrivate::cascadingResize(int visual, int newSize)
         doDelayedResizeSections();
 
     viewport->update();
+}
+
+void QHeaderViewPrivate::setDefaultSectionSize(int size)
+{
+    Q_Q(QHeaderView);
+    defaultSectionSize = size;
+    int currentVisualIndex = 0;
+    for (int i = 0; i < sectionSpans.count(); ++i) {
+        QHeaderViewPrivate::SectionSpan &span = sectionSpans[i];
+        if (span.size > 0) {
+            //we resize it if it is not hidden (ie size > 0)
+            const int newSize = span.count * size;
+            if (newSize != span.size) {
+                length += newSize - span.size; //the whole length is changed
+                const int oldSectionSize = span.sectionSize();
+                span.size = span.count * size;
+                for (int i = currentVisualIndex; i < currentVisualIndex + span.count; ++i) {
+                    emit q->sectionResized(logicalIndex(i), oldSectionSize, size);
+                }
+            }
+        }
+        currentVisualIndex += span.count;
+    }
 }
 
 void QHeaderViewPrivate::resizeSectionSpan(int visualIndex, int oldSize, int newSize)

@@ -1102,7 +1102,7 @@ void QDBusConnectionPrivate::socketWrite(int fd)
     }
 
     for (int i = 0; i < pendingWatches.size(); ++i)
-        if (!q_dbus_watch_handle(pendingWatches[i], DBUS_WATCH_READABLE))
+        if (!q_dbus_watch_handle(pendingWatches[i], DBUS_WATCH_WRITABLE))
             qDebug("OUT OF MEM");
 }
 

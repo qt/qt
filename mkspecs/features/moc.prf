@@ -8,30 +8,50 @@ isEmpty(MOC_DIR):MOC_DIR = .
 isEmpty(QMAKE_H_MOD_MOC):QMAKE_H_MOD_MOC = moc_
 isEmpty(QMAKE_EXT_CPP_MOC):QMAKE_EXT_CPP_MOC = .moc
 
-# This function on Windows puts the includes into a .inc file which moc will read, if the project
-# has more than 30 includes. We do this to overcome a command-line limit on Win < XP
-# Otherwise the function simply returns the normal command-line for moc
+# On Windows, put the includes into a .inc file which moc will read, if the project
+# has too many includes. We do this to overcome a command-line limit on Win < XP
+INCLUDETEMP=
+WIN_INCLUDETEMP=
+win32:count($$list($$INCPATH), 40, >) {
+    INCLUDETEMP = $$MOC_DIR/mocinclude.tmp
+
+    # Remove any existing mocinclude.tmp when qmake runs
+    WIN_INCLUDETEMP=$$INCLUDETEMP
+    WIN_INCLUDETEMP~=s,/,\,g
+    system($$QMAKE_DEL_FILE $$WIN_INCLUDETEMP > NUL 2>&1)
+
+    EOC = $$escape_expand(\n\t)
+
+    if(contains(TEMPLATE, "vc.*")|contains(TEMPLATE_PREFIX, "vc")) {
+        # the VCPROJ generator will replace the \r\h with the coded \r\n: &#x0d;&#x0a;
+        # No other generator understands the \h
+        if(win32-msvc.net|win32-msvc2*|wince*msvc*): EOC = $$escape_expand(\r\h)
+        else: EOC = $$escape_expand(\\)$$escape_expand(\n\t)
+    }
+
+    unset(INCFILELIST)
+    RET =
+    for(incfile, $$list($$INCPATH)) {
+        INCFILELIST = -I$$incfile
+        isEmpty(RET): RET += @echo $$INCFILELIST> $$WIN_INCLUDETEMP $$EOC
+        else:         RET += @echo $$INCFILELIST>> $$WIN_INCLUDETEMP $$EOC
+    }
+    !isEmpty(INCFILELIST):RET += @echo $$INCFILELIST>> $$WIN_INCLUDETEMP $$EOC
+
+    build_pass|isEmpty(BUILDS) {
+        mocinclude.target = $$INCLUDETEMP
+        mocinclude.commands = $$RET
+        QMAKE_EXTRA_TARGETS += mocinclude
+    }
+}
+
 defineReplace(mocCmd) {
-    win32:count($$list($$INCPATH), 40, >) {
-        EOC = $$escape_expand(\n\t)
-
-        if(contains(TEMPLATE, "vc.*")|contains(TEMPLATE_PREFIX, "vc")) {
-            # the VCPROJ generator will replace the \r\h with the coded \r\n: &#x0d;&#x0a;
-            # No other generator understands the \h
-            if(win32-msvc.net|win32-msvc2*|wince*msvc*): EOC = $$escape_expand(\r\h)
-            else: EOC = $$escape_expand(\\)$$escape_expand(\n\t)
-        }
-
-        INCLUDETEMP = mocinclude.tmp
-        unset(INCFILELIST)
+    !isEmpty(WIN_INCLUDETEMP) {
         RET =
-        for(incfile, $$list($$INCPATH)) {
-            INCFILELIST = -I$$incfile
-            isEmpty(RET): RET += @echo $$INCFILELIST> $$INCLUDETEMP $$EOC
-            else:         RET += @echo $$INCFILELIST>> $$INCLUDETEMP $$EOC
+        if(contains(TEMPLATE, "vc.*")|contains(TEMPLATE_PREFIX, "vc")) {
+            RET += $$mocinclude.commands
         }
-        !isEmpty(INCFILELIST):RET += @echo $$INCFILELIST>> $$INCLUDETEMP $$EOC
-        RET += $$QMAKE_MOC $(DEFINES) @$$INCLUDETEMP $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$1 -o $$2
+        RET += $$QMAKE_MOC $(DEFINES) @$$WIN_INCLUDETEMP $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$1 -o $$2
         return($$RET)
     }
     return($$QMAKE_MOC $(DEFINES) $(INCPATH) $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$1 -o $$2)
@@ -45,6 +65,7 @@ moc_header.output = $$MOC_DIR/$${QMAKE_H_MOD_MOC}${QMAKE_FILE_BASE}$${first(QMAK
 moc_header.input = HEADERS
 moc_header.variable_out = SOURCES
 moc_header.name = MOC ${QMAKE_FILE_IN}
+!isEmpty(INCLUDETEMP):moc_header.depends += $$INCLUDETEMP
 silent:moc_header.commands = @echo moc ${QMAKE_FILE_IN} && $$moc_header.commands
 QMAKE_EXTRA_COMPILERS += moc_header
 INCREDIBUILD_XGE += moc_header
@@ -56,6 +77,7 @@ moc_source.commands = ${QMAKE_FUNC_mocCmd}
 moc_source.output = $$MOC_DIR/$${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}$${QMAKE_EXT_CPP_MOC}
 moc_source.input = SOURCES OBJECTIVE_SOURCES
 moc_source.name = MOC ${QMAKE_FILE_IN}
+!isEmpty(INCLUDETEMP):moc_source.depends += $$INCLUDETEMP
 silent:moc_source.commands = @echo moc ${QMAKE_FILE_IN} && $$moc_source.commands
 QMAKE_EXTRA_COMPILERS += moc_source
 INCREDIBUILD_XGE += moc_source

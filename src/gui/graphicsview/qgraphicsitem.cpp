@@ -885,6 +885,38 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool de
 /*!
     \internal
 
+    Returns the bounding rect of this item's children (excluding itself).
+*/
+void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rect)
+{
+    for (int i = 0; i < children.size(); ++i) {
+        QGraphicsItem *child = children.at(i);
+        QGraphicsItemPrivate *childd = child->d_ptr;
+        bool hasX = childd->hasTransform;
+        bool hasPos = !childd->pos.isNull();
+        if (hasPos || hasX) {
+            QTransform matrix;
+            if (hasX)
+                matrix = child->transform();
+            if (hasPos) {
+                const QPointF &p = childd->pos;
+                matrix *= QTransform::fromTranslate(p.x(), p.y());
+            }
+            matrix *= *x;
+            *rect |= matrix.mapRect(child->boundingRect());
+            if (!childd->children.isEmpty())
+                childd->childrenBoundingRectHelper(&matrix, rect);
+        } else {
+            *rect |= x->mapRect(child->boundingRect());
+            if (!childd->children.isEmpty())
+                childd->childrenBoundingRectHelper(x, rect);
+        }
+    }
+}
+
+/*!
+    \internal
+
     Empty all cached pixmaps from the pixmap cache.
 */
 void QGraphicsItemCache::purge()
@@ -1906,11 +1938,11 @@ void QGraphicsItem::setOpacity(qreal opacity)
     newOpacity = qBound<qreal>(0.0, newOpacity, 1.0);
 
     // No change? Done.
-    if (qIsFuzzyNull(newOpacity - this->opacity()))
+    if (qFuzzyIsNull(newOpacity - this->opacity()))
         return;
 
     // Assign local opacity.
-    if (qIsFuzzyNull(newOpacity - 1)) {
+    if (qFuzzyIsNull(newOpacity - 1)) {
         // Opaque, unset opacity.
         d_ptr->hasOpacity = 0;
         d_ptr->unsetExtra(QGraphicsItemPrivate::ExtraOpacity);
@@ -3019,13 +3051,8 @@ void QGraphicsItem::setZValue(qreal z)
 QRectF QGraphicsItem::childrenBoundingRect() const
 {
     QRectF childRect;
-    foreach (QGraphicsItem *child, children()) {
-        QPointF childPos = child->pos();
-        QTransform matrix = child->transform();
-        if (!childPos.isNull())
-            matrix *= QTransform::fromTranslate(childPos.x(), childPos.y());
-        childRect |= matrix.mapRect(child->boundingRect() | child->childrenBoundingRect());
-    }
+    QTransform x;
+    d_ptr->childrenBoundingRectHelper(&x, &childRect);
     return childRect;
 }
 
@@ -3771,7 +3798,7 @@ void QGraphicsItemPrivate::resolveEffectiveOpacity(qreal parentEffectiveOpacity)
     }
 
     // Set this item's resolved opacity.
-    if (qIsFuzzyNull(myEffectiveOpacity - 1)) {
+    if (qFuzzyIsNull(myEffectiveOpacity - 1)) {
         // Opaque, unset effective opacity.
         hasEffectiveOpacity = 0;
         unsetExtra(ExtraEffectiveOpacity);
@@ -4002,11 +4029,18 @@ bool QGraphicsItemPrivate::isProxyWidget() const
 */
 void QGraphicsItem::update(const QRectF &rect)
 {
-    if ((rect.isEmpty() && !rect.isNull()) || d_ptr->discardUpdateRequest())
+    if (rect.isEmpty() && !rect.isNull())
         return;
 
     if (CacheMode(d_ptr->cacheMode) != NoCache) {
         QGraphicsItemCache *cache = d_ptr->extraItemCache();
+        if (d_ptr->discardUpdateRequest(/* ignoreVisibleBit = */ false,
+                                        /* ignoreClipping = */ false,
+                                        /* ignoreDirtyBit = */ true)) {
+            return;
+        }
+
+        // Invalidate cache.
         if (!cache->allExposed) {
             if (rect.isNull()) {
                 cache->allExposed = true;
@@ -4015,6 +4049,11 @@ void QGraphicsItem::update(const QRectF &rect)
                 cache->exposed.append(rect);
             }
         }
+        // Only invalidate cache; item is already dirty.
+        if (d_ptr->dirty)
+            return;
+    } else if (d_ptr->discardUpdateRequest()) {
+        return;
     }
 
     // Effectively the same as updateHelper(rect);
@@ -4091,7 +4130,7 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
         return;
     if (d->cacheMode != NoCache) {
         QGraphicsItemCache *c;
-        bool scrollCache = qFuzzyCompare(dx - int(dx), qreal(0.0)) && qFuzzyCompare(dy - int(dy), qreal(0.0))
+        bool scrollCache = qFuzzyIsNull(dx - int(dx)) && qFuzzyIsNull(dy - int(dy))
                            && (c = (QGraphicsItemCache *)qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraCacheData)))
                            && (d->cacheMode == ItemCoordinateCache && !c->fixedSize.isValid());
         if (scrollCache) {
@@ -4285,7 +4324,9 @@ QPointF QGraphicsItem::mapToItem(const QGraphicsItem *item, const QPointF &point
 */
 QPointF QGraphicsItem::mapToParent(const QPointF &point) const
 {
-    return d_ptr->pos + (d_ptr->hasTransform ? transform().map(point) : point);
+    if (!d_ptr->hasTransform)
+        return point + d_ptr->pos;
+    return transform().map(point) + d_ptr->pos;
 }
 
 /*!
@@ -4351,8 +4392,8 @@ QPolygonF QGraphicsItem::mapToItem(const QGraphicsItem *item, const QRectF &rect
 QPolygonF QGraphicsItem::mapToParent(const QRectF &rect) const
 {
     if (!d_ptr->hasTransform)
-        return QPolygonF(rect.translated(d_ptr->pos));
-    return transform().map(rect.translated(d_ptr->pos));
+        return rect.translated(d_ptr->pos);
+    return transform().map(rect).translated(d_ptr->pos);
 }
 
 /*!
@@ -4419,8 +4460,8 @@ QRectF QGraphicsItem::mapRectToItem(const QGraphicsItem *item, const QRectF &rec
 */
 QRectF QGraphicsItem::mapRectToParent(const QRectF &rect) const
 {
-    QRectF r = rect.translated(d_ptr->pos.x(), d_ptr->pos.y());
-    return !d_ptr->hasTransform ? r : transform().mapRect(r);
+    QRectF r = !d_ptr->hasTransform ? rect : transform().mapRect(rect);
+    return r.translated(d_ptr->pos);
 }
 
 /*!
@@ -4551,9 +4592,9 @@ QPolygonF QGraphicsItem::mapToItem(const QGraphicsItem *item, const QPolygonF &p
 */
 QPolygonF QGraphicsItem::mapToParent(const QPolygonF &polygon) const
 {
-    QPolygonF p = polygon;
-    p.translate(d_ptr->pos);
-    return d_ptr->hasTransform ? transform().map(p) : p;
+    if (!d_ptr->hasTransform)
+        return polygon.translated(d_ptr->pos);
+    return transform().map(polygon).translated(d_ptr->pos);
 }
 
 /*!
@@ -4595,9 +4636,9 @@ QPainterPath QGraphicsItem::mapToItem(const QGraphicsItem *item, const QPainterP
 */
 QPainterPath QGraphicsItem::mapToParent(const QPainterPath &path) const
 {
-    QPainterPath p(path);
-    p.translate(d_ptr->pos);
-    return d_ptr->hasTransform ? transform().map(p) : p;
+    if (!d_ptr->hasTransform)
+        return path.translated(d_ptr->pos);
+    return transform().map(path).translated(d_ptr->pos);
 }
 
 /*!
@@ -5822,12 +5863,11 @@ void QGraphicsItem::removeFromIndex()
 */
 void QGraphicsItem::prepareGeometryChange()
 {
-    if (!d_ptr->scene)
-        return;
-
-    d_ptr->updateHelper(QRectF(), false, /*maybeDirtyClipPath=*/!d_ptr->inSetPosHelper);
-    QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
-    scenePrivate->index->updateItem(this);
+    if (d_ptr->scene) {
+        d_ptr->updateHelper(QRectF(), false, /*maybeDirtyClipPath=*/!d_ptr->inSetPosHelper);
+        QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
+        scenePrivate->index->updateItem(this);
+    }
 
     if (d_ptr->inSetPosHelper)
         return;
@@ -5850,7 +5890,7 @@ static void qt_graphicsItem_highlightSelected(
     QGraphicsItem *item, QPainter *painter, const QStyleOptionGraphicsItem *option)
 {
     const QRectF murect = painter->transform().mapRect(QRectF(0, 0, 1, 1));
-    if (qIsFuzzyNull(qMax(murect.width(), murect.height())))
+    if (qFuzzyIsNull(qMax(murect.width(), murect.height())))
         return;
 
     const QRectF mbrect = painter->transform().mapRect(item->boundingRect());
@@ -8612,6 +8652,7 @@ void QGraphicsSimpleTextItem::setText(const QString &text)
         return;
     d->text = text;
     d->updateBoundingRect();
+    update();
 }
 
 /*!

@@ -509,16 +509,20 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
 
     if (d->mono_surface)
         d->glyphCacheType = QFontEngineGlyphCache::Raster_Mono;
-#ifdef Q_WS_WIN
-    else if (qt_cleartype_enabled) {
+#if defined(Q_WS_WIN)
+    else if (qt_cleartype_enabled)
+#elif defined (Q_WS_MAC)
+    else if (true)
+#else
+    else if (false)
+#endif
+    {
         QImage::Format format = static_cast<QImage *>(d->device)->format();
         if (format == QImage::Format_ARGB32_Premultiplied || format == QImage::Format_RGB32)
             d->glyphCacheType = QFontEngineGlyphCache::Raster_RGBMask;
         else
             d->glyphCacheType = QFontEngineGlyphCache::Raster_A8;
-    }
-#endif
-    else
+    } else
         d->glyphCacheType = QFontEngineGlyphCache::Raster_A8;
 
     setActive(true);
@@ -618,22 +622,22 @@ void QRasterPaintEngine::updateMatrix(const QTransform &matrix)
     d->isPlain45DegreeRotation = false;
     if (txop >= QTransform::TxRotate) {
         d->isPlain45DegreeRotation =
-            (qFuzzyCompare(matrix.m11() + 1, qreal(1))
-             && qFuzzyCompare(matrix.m12(), qreal(1))
-             && qFuzzyCompare(matrix.m21(), qreal(-1))
-             && qFuzzyCompare(matrix.m22() + 1, qreal(1))
+            (qFuzzyIsNull(matrix.m11())
+             && qFuzzyIsNull(matrix.m12() - qreal(1))
+             && qFuzzyIsNull(matrix.m21() + qreal(1))
+             && qFuzzyIsNull(matrix.m22())
                 )
             ||
-            (qFuzzyCompare(matrix.m11(), qreal(-1))
-             && qFuzzyCompare(matrix.m12() + 1, qreal(1))
-             && qFuzzyCompare(matrix.m21() + 1, qreal(1))
-             && qFuzzyCompare(matrix.m22(), qreal(-1))
+            (qFuzzyIsNull(matrix.m11() + qreal(1))
+             && qFuzzyIsNull(matrix.m12())
+             && qFuzzyIsNull(matrix.m21())
+             && qFuzzyIsNull(matrix.m22() + qreal(1))
                 )
             ||
-            (qFuzzyCompare(matrix.m11() + 1, qreal(1))
-             && qFuzzyCompare(matrix.m12(), qreal(-1))
-             && qFuzzyCompare(matrix.m21(), qreal(1))
-             && qFuzzyCompare(matrix.m22() + 1, qreal(1))
+            (qFuzzyIsNull(matrix.m11())
+             && qFuzzyIsNull(matrix.m12() + qreal(1))
+             && qFuzzyIsNull(matrix.m21() - qreal(1))
+             && qFuzzyIsNull(matrix.m22())
                 )
             ;
     }
@@ -1140,6 +1144,33 @@ void QRasterPaintEnginePrivate::updateMatrixData(QSpanData *spanData, const QBru
     }
 }
 
+// #define QT_CLIPPING_RATIOS
+
+#ifdef QT_CLIPPING_RATIOS
+int rectClips;
+int regionClips;
+int totalClips;
+
+static void checkClipRatios(QRasterPaintEnginePrivate *d)
+{
+    if (d->clip()->hasRectClip)
+        rectClips++;
+    if (d->clip()->hasRegionClip)
+        regionClips++;
+    totalClips++;
+
+    if ((totalClips % 5000) == 0) {
+        printf("Clipping ratio: rectangular=%f%%, region=%f%%, complex=%f%%\n",
+               rectClips * 100.0 / (qreal) totalClips,
+               regionClips * 100.0 / (qreal) totalClips,
+               (totalClips - rectClips - regionClips) * 100.0 / (qreal) totalClips);
+        totalClips = 0;
+        rectClips = 0;
+        regionClips = 0;
+    }
+
+}
+#endif
 
 /*!
     \internal
@@ -1241,6 +1272,10 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 
     d->solid_color_filler.clip = d->clip();
     d->solid_color_filler.adjustSpanMethods();
+
+#ifdef QT_CLIPPING_RATIOS
+    checkClipRatios(d);
+#endif
 }
 
 
@@ -1315,6 +1350,11 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
 
     d->solid_color_filler.clip = d->clip();
     d->solid_color_filler.adjustSpanMethods();
+
+
+#ifdef QT_CLIPPING_RATIOS
+    checkClipRatios(d);
+#endif
 }
 
 /*!
@@ -3142,7 +3182,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     // ### cases we should delegate painting to the font engine
     // ### directly...
 
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
     QFontEngine::Type fontEngineType = ti.fontEngine->type();
     // qDebug() << "type" << fontEngineType << s->matrix.type();
     if ((fontEngineType == QFontEngine::Win && !((QFontEngineWin *) ti.fontEngine)->ttf && s->matrix.type() > QTransform::TxTranslate)
@@ -4369,6 +4409,9 @@ void QClipData::fixup()
  */
 void QClipData::setClipRect(const QRect &rect)
 {
+    if (rect == clipRect)
+        return;
+
 //    qDebug() << "setClipRect" << clipSpanHeight << count << allocated << rect;
     hasRectClip = true;
     clipRect = rect;
@@ -4377,6 +4420,11 @@ void QClipData::setClipRect(const QRect &rect)
     xmax = rect.x() + rect.width();
     ymin = qMin(rect.y(), clipSpanHeight);
     ymax = qMin(rect.y() + rect.height(), clipSpanHeight);
+
+    if (m_spans) {
+        delete m_spans;
+        m_spans = 0;
+    }
 
 //    qDebug() << xmin << xmax << ymin << ymax;
 }
@@ -4401,6 +4449,12 @@ void QClipData::setClipRegion(const QRegion &region)
         ymin = rect.y();
         ymax = rect.y() + rect.height();
     }
+
+    if (m_spans) {
+        delete m_spans;
+        m_spans = 0;
+    }
+
 }
 
 /*!

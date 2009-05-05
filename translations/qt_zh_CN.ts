@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
 <TS version="2.0" language="zh">
-<defaultcodec></defaultcodec>
 <context>
     <name>AudioOutput</name>
     <message>
-        <location filename="../src/3rdparty/phonon/phonon/audiooutput.cpp" line="+374"/>
+        <location filename="../src/3rdparty/phonon/phonon/audiooutput.cpp" line="+375"/>
         <source>&lt;html&gt;The audio playback device &lt;b&gt;%1&lt;/b&gt; does not work.&lt;br/&gt;Falling back to &lt;b&gt;%2&lt;/b&gt;.&lt;/html&gt;</source>
         <translation>&lt;html&gt;音频回放设备 &lt;b&gt;%1&lt;/b&gt; 没有工作。&lt;br/&gt;回滚到 &lt;b&gt;%2&lt;/b&gt;。&lt;/html&gt;</translation>
     </message>
@@ -23,7 +22,7 @@
 <context>
     <name>CloseButton</name>
     <message>
-        <location filename="../src/gui/widgets/qtabbar.cpp" line="+2217"/>
+        <location filename="../src/gui/widgets/qtabbar.cpp" line="+2251"/>
         <source>Close Tab</source>
         <translation>关闭标签页</translation>
     </message>
@@ -81,7 +80,7 @@
 <context>
     <name>Phonon::Gstreamer::MediaObject</name>
     <message>
-        <location filename="../src/3rdparty/phonon/gstreamer/mediaobject.cpp" line="+88"/>
+        <location filename="../src/3rdparty/phonon/gstreamer/mediaobject.cpp" line="+90"/>
         <source>Cannot start playback. 
 
 Check your Gstreamer installation and make sure you 
@@ -97,24 +96,24 @@ have libgstreamer-plugins-base installed.</source>
         <translation>缺少一个需要的解码器。您需要安装如下解码器来播放这个内容：%0</translation>
     </message>
     <message>
-        <location line="+653"/>
-        <location line="+9"/>
+        <location line="+676"/>
+        <location line="+8"/>
         <location line="+15"/>
-        <location line="+7"/>
-        <location line="+5"/>
-        <location line="+20"/>
-        <location line="+317"/>
+        <location line="+9"/>
+        <location line="+6"/>
+        <location line="+19"/>
+        <location line="+335"/>
         <location line="+24"/>
         <source>Could not open media source.</source>
         <translation>不能打开媒体源。</translation>
     </message>
     <message>
-        <location line="-381"/>
+        <location line="-403"/>
         <source>Invalid source type.</source>
         <translation>无效的源类型。</translation>
     </message>
     <message>
-        <location line="+355"/>
+        <location line="+377"/>
         <source>Could not locate media source.</source>
         <translation>不能定位媒体源。</translation>
     </message>
@@ -148,7 +147,7 @@ have libgstreamer-plugins-base installed.</source>
 <context>
     <name>Q3Accel</name>
     <message>
-        <location filename="../src/qt3support/other/q3accel.cpp" line="+451"/>
+        <location filename="../src/qt3support/other/q3accel.cpp" line="+481"/>
         <source>%1, %2 not defined</source>
         <translation>%1，%2未定义</translation>
     </message>
@@ -161,7 +160,7 @@ have libgstreamer-plugins-base installed.</source>
 <context>
     <name>Q3DataTable</name>
     <message>
-        <location filename="../src/qt3support/sql/q3datatable.cpp" line="+253"/>
+        <location filename="../src/qt3support/sql/q3datatable.cpp" line="+285"/>
         <source>True</source>
         <translation>真</translation>
     </message>
@@ -189,7 +188,7 @@ have libgstreamer-plugins-base installed.</source>
 <context>
     <name>Q3FileDialog</name>
     <message>
-        <location filename="../src/qt3support/dialogs/q3filedialog.cpp" line="+834"/>
+        <location filename="../src/qt3support/dialogs/q3filedialog.cpp" line="+864"/>
         <source>Copy or Move a File</source>
         <translation>复制或者移动一个文件</translation>
     </message>
@@ -214,7 +213,7 @@ have libgstreamer-plugins-base installed.</source>
         <location line="-157"/>
         <location line="+49"/>
         <location line="+2153"/>
-        <location filename="../src/qt3support/dialogs/q3filedialog_mac.cpp" line="+80"/>
+        <location filename="../src/qt3support/dialogs/q3filedialog_mac.cpp" line="+110"/>
         <source>All Files (*)</source>
         <translation>所有文件 (*)</translation>
     </message>
@@ -354,7 +353,7 @@ have libgstreamer-plugins-base installed.</source>
     <message>
         <location line="+704"/>
         <location line="+2100"/>
-        <location filename="../src/qt3support/dialogs/q3filedialog_win.cpp" line="+307"/>
+        <location filename="../src/qt3support/dialogs/q3filedialog_win.cpp" line="+337"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -523,7 +522,7 @@ Check path and filename.</source>
 <context>
     <name>Q3LocalFs</name>
     <message>
-        <location filename="../src/qt3support/network/q3localfs.cpp" line="+100"/>
+        <location filename="../src/qt3support/network/q3localfs.cpp" line="+130"/>
         <location line="+10"/>
         <source>Could not read directory
 %1</source>
@@ -573,7 +572,7 @@ to
 <context>
     <name>Q3MainWindow</name>
     <message>
-        <location filename="../src/qt3support/widgets/q3mainwindow.cpp" line="+2021"/>
+        <location filename="../src/qt3support/widgets/q3mainwindow.cpp" line="+2051"/>
         <source>Line up</source>
         <translation>排列</translation>
     </message>
@@ -586,7 +585,7 @@ to
 <context>
     <name>Q3NetworkProtocol</name>
     <message>
-        <location filename="../src/qt3support/network/q3networkprotocol.cpp" line="+824"/>
+        <location filename="../src/qt3support/network/q3networkprotocol.cpp" line="+854"/>
         <source>Operation stopped by the user</source>
         <translation>操作被用户停止</translation>
     </message>
@@ -594,7 +593,7 @@ to
 <context>
     <name>Q3ProgressDialog</name>
     <message>
-        <location filename="../src/qt3support/dialogs/q3progressdialog.cpp" line="+194"/>
+        <location filename="../src/qt3support/dialogs/q3progressdialog.cpp" line="+224"/>
         <location line="+61"/>
         <source>Cancel</source>
         <translation>取消</translation>
@@ -603,7 +602,7 @@ to
 <context>
     <name>Q3TabDialog</name>
     <message>
-        <location filename="../src/qt3support/dialogs/q3tabdialog.cpp" line="+159"/>
+        <location filename="../src/qt3support/dialogs/q3tabdialog.cpp" line="+189"/>
         <location line="+814"/>
         <source>OK</source>
         <translation>确认</translation>
@@ -632,7 +631,7 @@ to
 <context>
     <name>Q3TextEdit</name>
     <message>
-        <location filename="../src/qt3support/text/q3textedit.cpp" line="+5399"/>
+        <location filename="../src/qt3support/text/q3textedit.cpp" line="+5429"/>
         <source>&amp;Undo</source>
         <translation>撤消(&amp;U)</translation>
     </message>
@@ -671,7 +670,7 @@ to
 <context>
     <name>Q3TitleBar</name>
     <message>
-        <location filename="../src/plugins/accessible/compat/q3complexwidgets.cpp" line="+216"/>
+        <location filename="../src/plugins/accessible/compat/q3complexwidgets.cpp" line="+246"/>
         <source>System</source>
         <translation>系统</translation>
     </message>
@@ -739,7 +738,7 @@ to
 <context>
     <name>Q3ToolBar</name>
     <message>
-        <location filename="../src/qt3support/widgets/q3toolbar.cpp" line="+662"/>
+        <location filename="../src/qt3support/widgets/q3toolbar.cpp" line="+692"/>
         <source>More...</source>
         <translation>更多...</translation>
     </message>
@@ -747,7 +746,7 @@ to
 <context>
     <name>Q3UrlOperator</name>
     <message>
-        <location filename="../src/qt3support/network/q3urloperator.cpp" line="+356"/>
+        <location filename="../src/qt3support/network/q3urloperator.cpp" line="+386"/>
         <location line="+260"/>
         <location line="+4"/>
         <source>The protocol `%1&apos; is not supported</source>
@@ -799,7 +798,7 @@ to
 <context>
     <name>Q3Wizard</name>
     <message>
-        <location filename="../src/qt3support/dialogs/q3wizard.cpp" line="+147"/>
+        <location filename="../src/qt3support/dialogs/q3wizard.cpp" line="+177"/>
         <source>&amp;Cancel</source>
         <translation>取消(&amp;C)</translation>
     </message>
@@ -827,9 +826,9 @@ to
 <context>
     <name>QAbstractSocket</name>
     <message>
-        <location filename="../src/network/socket/qabstractsocket.cpp" line="+838"/>
-        <location filename="../src/network/socket/qhttpsocketengine.cpp" line="+585"/>
-        <location filename="../src/network/socket/qsocks5socketengine.cpp" line="+627"/>
+        <location filename="../src/network/socket/qabstractsocket.cpp" line="+868"/>
+        <location filename="../src/network/socket/qhttpsocketengine.cpp" line="+615"/>
+        <location filename="../src/network/socket/qsocks5socketengine.cpp" line="+657"/>
         <location line="+26"/>
         <source>Host not found</source>
         <translation>主机未找到</translation>
@@ -872,7 +871,7 @@ to
 <context>
     <name>QAbstractSpinBox</name>
     <message>
-        <location filename="../src/gui/widgets/qabstractspinbox.cpp" line="+1169"/>
+        <location filename="../src/gui/widgets/qabstractspinbox.cpp" line="+1199"/>
         <source>&amp;Step up</source>
         <translation>增加(&amp;S)</translation>
     </message>
@@ -890,12 +889,12 @@ to
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="../src/gui/accessible/qaccessibleobject.cpp" line="+346"/>
+        <location filename="../src/gui/accessible/qaccessibleobject.cpp" line="+376"/>
         <source>Activate</source>
         <translation>激活</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qmessagebox.h" line="+322"/>
+        <location filename="../src/gui/dialogs/qmessagebox.h" line="+352"/>
         <source>Executable &apos;%1&apos; requires Qt %2, found Qt %3.</source>
         <translation>执行“%1”需要Qt %2，只找到了Qt %3。</translation>
     </message>
@@ -905,7 +904,7 @@ to
         <translation>不兼容的Qt错误</translation>
     </message>
     <message>
-        <location filename="../src/gui/kernel/qapplication.cpp" line="+2212"/>
+        <location filename="../src/gui/kernel/qapplication.cpp" line="+2248"/>
         <source>QT_LAYOUT_DIRECTION</source>
         <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
         <translation>LTR</translation>
@@ -942,7 +941,7 @@ to
 <context>
     <name>QCheckBox</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="+84"/>
+        <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="+114"/>
         <source>Uncheck</source>
         <translation>取消选中</translation>
     </message>
@@ -960,7 +959,7 @@ to
 <context>
     <name>QColorDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qcolordialog.cpp" line="+1219"/>
+        <location filename="../src/gui/dialogs/qcolordialog.cpp" line="+1253"/>
         <source>Hu&amp;e:</source>
         <translation>色调(&amp;E)：</translation>
     </message>
@@ -1022,13 +1021,13 @@ to
 <context>
     <name>QComboBox</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/complexwidgets.cpp" line="+1741"/>
+        <location filename="../src/plugins/accessible/widgets/complexwidgets.cpp" line="+1771"/>
         <location line="+65"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemviews/qitemeditorfactory.cpp" line="+514"/>
+        <location filename="../src/gui/itemviews/qitemeditorfactory.cpp" line="+544"/>
         <source>False</source>
         <translation>假</translation>
     </message>
@@ -1071,7 +1070,7 @@ to
         <translation type="obsolete">%1：未知错误 %2</translation>
     </message>
     <message>
-        <location filename="../src/corelib/kernel/qsystemsemaphore_unix.cpp" line="+89"/>
+        <location filename="../src/corelib/kernel/qsystemsemaphore_unix.cpp" line="+119"/>
         <source>%1: key is empty</source>
         <comment>QSystemSemaphore</comment>
         <translation>%1：键是空的</translation>
@@ -1092,12 +1091,12 @@ to
 <context>
     <name>QDB2Driver</name>
     <message>
-        <location filename="../src/sql/drivers/db2/qsql_db2.cpp" line="+1217"/>
+        <location filename="../src/sql/drivers/db2/qsql_db2.cpp" line="+1276"/>
         <source>Unable to connect</source>
         <translation>不能连接</translation>
     </message>
     <message>
-        <location line="+263"/>
+        <location line="+303"/>
         <source>Unable to commit transaction</source>
         <translation>不能提交事务</translation>
     </message>
@@ -1115,8 +1114,8 @@ to
 <context>
     <name>QDB2Result</name>
     <message>
-        <location line="-986"/>
-        <location line="+242"/>
+        <location line="-1043"/>
+        <location line="+243"/>
         <source>Unable to execute statement</source>
         <translation>不能执行语句</translation>
     </message>
@@ -1131,7 +1130,7 @@ to
         <translation>不能帮定变量</translation>
     </message>
     <message>
-        <location line="+91"/>
+        <location line="+92"/>
         <source>Unable to fetch record %1</source>
         <translation>不能获取记录%1</translation>
     </message>
@@ -1149,7 +1148,7 @@ to
 <context>
     <name>QDateTimeEdit</name>
     <message>
-        <location filename="../src/gui/widgets/qdatetimeedit.cpp" line="+2265"/>
+        <location filename="../src/gui/widgets/qdatetimeedit.cpp" line="+2295"/>
         <source>AM</source>
         <translation>AM</translation>
     </message>
@@ -1172,7 +1171,7 @@ to
 <context>
     <name>QDial</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/rangecontrols.cpp" line="+921"/>
+        <location filename="../src/plugins/accessible/widgets/rangecontrols.cpp" line="+951"/>
         <source>QDial</source>
         <translation>QDial</translation>
     </message>
@@ -1190,7 +1189,7 @@ to
 <context>
     <name>QDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qdialog.cpp" line="+567"/>
+        <location filename="../src/gui/dialogs/qdialog.cpp" line="+597"/>
         <source>What&apos;s This?</source>
         <translation>这是什么？</translation>
     </message>
@@ -1203,9 +1202,9 @@ to
 <context>
     <name>QDialogButtonBox</name>
     <message>
-        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="+1830"/>
+        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="+1866"/>
         <location line="+464"/>
-        <location filename="../src/gui/widgets/qdialogbuttonbox.cpp" line="+531"/>
+        <location filename="../src/gui/widgets/qdialogbuttonbox.cpp" line="+561"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>
@@ -1328,7 +1327,7 @@ to
 <context>
     <name>QDirModel</name>
     <message>
-        <location filename="../src/gui/itemviews/qdirmodel.cpp" line="+423"/>
+        <location filename="../src/gui/itemviews/qdirmodel.cpp" line="+453"/>
         <source>Name</source>
         <translation>名称</translation>
     </message>
@@ -1358,7 +1357,7 @@ to
 <context>
     <name>QDockWidget</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/qaccessiblewidgets.cpp" line="+1209"/>
+        <location filename="../src/plugins/accessible/widgets/qaccessiblewidgets.cpp" line="+1239"/>
         <source>Close</source>
         <translation>关闭</translation>
     </message>
@@ -1389,7 +1388,7 @@ to
 <context>
     <name>QErrorMessage</name>
     <message>
-        <location filename="../src/gui/dialogs/qerrormessage.cpp" line="+162"/>
+        <location filename="../src/gui/dialogs/qerrormessage.cpp" line="+192"/>
         <source>Debug Message:</source>
         <translation>调试消息：</translation>
     </message>
@@ -1417,13 +1416,18 @@ to
 <context>
     <name>QFile</name>
     <message>
-        <location filename="../src/corelib/io/qfile.cpp" line="+678"/>
-        <location line="+130"/>
+        <location filename="../src/corelib/io/qfile.cpp" line="+708"/>
+        <location line="+141"/>
         <source>Destination file exists</source>
         <translation>目标文件已存在</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="-108"/>
+        <source>Cannot remove source file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+120"/>
         <source>Cannot open %1 for input</source>
         <translation>无法输入 %1 </translation>
     </message>
@@ -1446,37 +1450,37 @@ to
 <context>
     <name>QFileDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+484"/>
-        <location line="+423"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+515"/>
+        <location line="+444"/>
         <source>All Files (*)</source>
         <translation>所有文件 (*)</translation>
     </message>
     <message>
-        <location line="+218"/>
+        <location line="+222"/>
         <source>Directories</source>
         <translation>目录</translation>
     </message>
     <message>
         <location line="-3"/>
         <location line="+50"/>
-        <location line="+1440"/>
+        <location line="+1471"/>
         <location line="+75"/>
         <source>&amp;Open</source>
         <translation>打开(&amp;O)</translation>
     </message>
     <message>
-        <location line="-1565"/>
+        <location line="-1596"/>
         <location line="+50"/>
         <source>&amp;Save</source>
         <translation>保存(&amp;S)</translation>
     </message>
     <message>
-        <location line="-705"/>
+        <location line="-730"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
     <message>
-        <location line="+1469"/>
+        <location line="+1515"/>
         <source>%1 already exists.
 Do you want to replace it?</source>
         <translation>%1已经存在。
@@ -1497,7 +1501,7 @@ Please verify the correct file name was given.</source>
         <translation>我的计算机</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-1458"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-1504"/>
         <source>&amp;Rename</source>
         <translation>重命名(&amp;R)</translation>
     </message>
@@ -1543,13 +1547,13 @@ Please verify the correct file name was given.</source>
     </message>
     <message>
         <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+6"/>
-        <location line="+623"/>
+        <location line="+648"/>
         <source>Directory:</source>
         <translation>目录：</translation>
     </message>
     <message>
-        <location line="+773"/>
-        <location line="+851"/>
+        <location line="+794"/>
+        <location line="+862"/>
         <source>%1
 Directory not found.
 Please verify the correct directory name was given.</source>
@@ -1558,7 +1562,7 @@ Please verify the correct directory name was given.</source>
 请核实已给定正确目录名。</translation>
     </message>
     <message>
-        <location line="-217"/>
+        <location line="-218"/>
         <source>&apos;%1&apos; is write protected.
 Do you want to delete it anyway?</source>
         <translation>“%1“是写保护的。
@@ -1575,17 +1579,17 @@ Do you want to delete it anyway?</source>
         <translation>不能删除目录。</translation>
     </message>
     <message>
-        <location line="+406"/>
+        <location line="+407"/>
         <source>Recent Places</source>
         <translation>最近的地方</translation>
     </message>
     <message>
-        <location line="-2493"/>
+        <location line="-2550"/>
         <source>Save As</source>
         <translation>另存为</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemviews/qfileiconprovider.cpp" line="+381"/>
+        <location filename="../src/gui/itemviews/qfileiconprovider.cpp" line="+411"/>
         <source>Drive</source>
         <translation>驱动器</translation>
     </message>
@@ -1617,29 +1621,29 @@ Do you want to delete it anyway?</source>
         <translation>前进</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+1914"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+1970"/>
         <source>New Folder</source>
         <translation>新建文件夹</translation>
     </message>
     <message>
-        <location line="-1907"/>
+        <location line="-1963"/>
         <source>&amp;New Folder</source>
         <translation>新建文件夹(&amp;N)</translation>
     </message>
     <message>
-        <location line="+631"/>
+        <location line="+656"/>
         <location line="+38"/>
         <source>&amp;Choose</source>
         <translation>选择(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qsidebar.cpp" line="+388"/>
+        <location filename="../src/gui/dialogs/qsidebar.cpp" line="+418"/>
         <source>Remove</source>
         <translation>移除</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-662"/>
-        <location line="+627"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-687"/>
+        <location line="+652"/>
         <source>File &amp;name:</source>
         <translation>文件名称(&amp;N)：</translation>
     </message>
@@ -1656,7 +1660,7 @@ Do you want to delete it anyway?</source>
         <translation>创建新文件夹</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog_win.cpp" line="+130"/>
+        <location filename="../src/gui/dialogs/qfiledialog_win.cpp" line="+160"/>
         <source>All Files (*.*)</source>
         <translation>所有文件 (*.*)</translation>
     </message>
@@ -1664,7 +1668,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QFileSystemModel</name>
     <message>
-        <location filename="../src/gui/dialogs/qfilesystemmodel.cpp" line="+707"/>
+        <location filename="../src/gui/dialogs/qfilesystemmodel.cpp" line="+744"/>
         <source>%1 TB</source>
         <translation>%1 TB</translation>
     </message>
@@ -1726,7 +1730,7 @@ Do you want to delete it anyway?</source>
         <translation>日期被修改</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfilesystemmodel_p.h" line="+204"/>
+        <location filename="../src/gui/dialogs/qfilesystemmodel_p.h" line="+234"/>
         <source>My Computer</source>
         <translation>我的计算机</translation>
     </message>
@@ -1739,7 +1743,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QFontDatabase</name>
     <message>
-        <location filename="../src/gui/text/qfontdatabase.cpp" line="+60"/>
+        <location filename="../src/gui/text/qfontdatabase.cpp" line="+90"/>
         <location line="+1176"/>
         <source>Normal</source>
         <translation>普通</translation>
@@ -1956,7 +1960,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QFontDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qfontdialog.cpp" line="+742"/>
+        <location filename="../src/gui/dialogs/qfontdialog.cpp" line="+772"/>
         <source>&amp;Font</source>
         <translation>字体(&amp;F)</translation>
     </message>
@@ -2005,8 +2009,8 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QFtp</name>
     <message>
-        <location filename="../src/network/access/qftp.cpp" line="+796"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+653"/>
+        <location filename="../src/network/access/qftp.cpp" line="+826"/>
+        <location filename="../src/qt3support/network/q3ftp.cpp" line="+683"/>
         <source>Not connected</source>
         <translation>没有连接</translation>
     </message>
@@ -2151,7 +2155,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QHostInfo</name>
     <message>
-        <location filename="../src/network/kernel/qhostinfo_p.h" line="+153"/>
+        <location filename="../src/network/kernel/qhostinfo_p.h" line="+183"/>
         <source>Unknown error</source>
         <translation>未知的错误</translation>
     </message>
@@ -2159,11 +2163,11 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QHostInfoAgent</name>
     <message>
-        <location filename="../src/network/kernel/qhostinfo_unix.cpp" line="+148"/>
+        <location filename="../src/network/kernel/qhostinfo_unix.cpp" line="+178"/>
         <location line="+9"/>
         <location line="+64"/>
         <location line="+31"/>
-        <location filename="../src/network/kernel/qhostinfo_win.cpp" line="+150"/>
+        <location filename="../src/network/kernel/qhostinfo_win.cpp" line="+180"/>
         <location line="+9"/>
         <location line="+40"/>
         <location line="+27"/>
@@ -2189,21 +2193,21 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QHttp</name>
     <message>
-        <location filename="../src/network/access/qhttp.cpp" line="+1544"/>
-        <location line="+816"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="+1130"/>
+        <location filename="../src/network/access/qhttp.cpp" line="+1574"/>
+        <location line="+820"/>
+        <location filename="../src/qt3support/network/q3http.cpp" line="+1160"/>
         <location line="+567"/>
         <source>Unknown error</source>
         <translation>未知的错误</translation>
     </message>
     <message>
-        <location line="-564"/>
+        <location line="-568"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="-370"/>
         <source>Request aborted</source>
         <translation>请求被放弃了</translation>
     </message>
     <message>
-        <location line="+575"/>
+        <location line="+579"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="+381"/>
         <source>No server set to connect to</source>
         <translation>没有设置要连接的服务器</translation>
@@ -2221,18 +2225,23 @@ Do you want to delete it anyway?</source>
         <translation>服务器异常地关闭了连接</translation>
     </message>
     <message>
-        <location line="+357"/>
+        <location line="+179"/>
+        <source>Unknown authentication method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+183"/>
         <source>Error writing response to device</source>
         <translation>向设备中进行写回复时发生错误</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+1712"/>
+        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+876"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="+38"/>
         <source>Connection refused</source>
         <translation>连接被拒绝</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qhttp.cpp" line="-299"/>
+        <location filename="../src/network/access/qhttp.cpp" line="-304"/>
         <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="-4"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="+3"/>
         <source>Host %1 not found</source>
@@ -2253,7 +2262,7 @@ Do you want to delete it anyway?</source>
         <translation>无效的HTTP响应头</translation>
     </message>
     <message>
-        <location line="+120"/>
+        <location line="+125"/>
         <location line="+48"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="+40"/>
         <location line="+47"/>
@@ -2302,7 +2311,7 @@ Do you want to delete it anyway?</source>
         <translation>需要认证</translation>
     </message>
     <message>
-        <location line="-133"/>
+        <location line="-138"/>
         <source>Connection refused (or timed out)</source>
         <translation>连接被拒绝(或者超时)</translation>
     </message>
@@ -2332,7 +2341,7 @@ Do you want to delete it anyway?</source>
         <translation>SSL 握手失败</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qhttp.cpp" line="-2259"/>
+        <location filename="../src/network/access/qhttp.cpp" line="-2263"/>
         <source>HTTPS connection requested but SSL support not compiled in</source>
         <translation>HTTPS 连接需要 SSL，但它没有被编译进来</translation>
     </message>
@@ -2388,7 +2397,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QIBaseDriver</name>
     <message>
-        <location filename="../src/sql/drivers/ibase/qsql_ibase.cpp" line="+1378"/>
+        <location filename="../src/sql/drivers/ibase/qsql_ibase.cpp" line="+1428"/>
         <source>Error opening database</source>
         <translation>打开数据库错误</translation>
     </message>
@@ -2411,7 +2420,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QIBaseResult</name>
     <message>
-        <location line="-1077"/>
+        <location line="-1097"/>
         <source>Unable to create BLOB</source>
         <translation>不能创建BLOB</translation>
     </message>
@@ -2431,7 +2440,7 @@ Do you want to delete it anyway?</source>
         <translation>不能读取BLOB</translation>
     </message>
     <message>
-        <location line="+124"/>
+        <location line="+125"/>
         <location line="+189"/>
         <source>Could not find array</source>
         <translation>不能找到数组</translation>
@@ -2501,7 +2510,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QIODevice</name>
     <message>
-        <location filename="../src/corelib/global/qglobal.cpp" line="+1830"/>
+        <location filename="../src/corelib/global/qglobal.cpp" line="+1869"/>
         <source>Permission denied</source>
         <translation>权限被拒绝</translation>
     </message>
@@ -2521,7 +2530,7 @@ Do you want to delete it anyway?</source>
         <translation>设备上没有空间了</translation>
     </message>
     <message>
-        <location filename="../src/corelib/io/qiodevice.cpp" line="+1506"/>
+        <location filename="../src/corelib/io/qiodevice.cpp" line="+1536"/>
         <source>Unknown error</source>
         <translation>未知的错误</translation>
     </message>
@@ -2529,7 +2538,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QInputContext</name>
     <message>
-        <location filename="../src/gui/inputmethod/qinputcontextfactory.cpp" line="+212"/>
+        <location filename="../src/gui/inputmethod/qinputcontextfactory.cpp" line="+242"/>
         <source>XIM</source>
         <translation>XIM</translation>
     </message>
@@ -2552,7 +2561,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QInputDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qinputdialog.cpp" line="+193"/>
+        <location filename="../src/gui/dialogs/qinputdialog.cpp" line="+223"/>
         <source>Enter a value:</source>
         <translation>输入一个值：</translation>
     </message>
@@ -2572,7 +2581,7 @@ Do you want to delete it anyway?</source>
         <translation type="obsolete">QLibrary::resolve_sys: 符号“%1”在%2（%3）没有被定义</translation>
     </message>
     <message>
-        <location filename="../src/corelib/plugin/qlibrary.cpp" line="+348"/>
+        <location filename="../src/corelib/plugin/qlibrary.cpp" line="+378"/>
         <source>Could not mmap &apos;%1&apos;: %2</source>
         <translation>不能映射”%1“：%2</translation>
     </message>
@@ -2603,7 +2612,7 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <location line="-377"/>
-        <location filename="../src/corelib/plugin/qpluginloader.cpp" line="+250"/>
+        <location filename="../src/corelib/plugin/qpluginloader.cpp" line="+280"/>
         <source>The shared library was not found.</source>
         <translation>共享库没有被找到。</translation>
     </message>
@@ -2618,8 +2627,8 @@ Do you want to delete it anyway?</source>
         <translation>插件“%1“使用了不兼容的Qt库。(不能混合使用库的调试版本和发布版本。)</translation>
     </message>
     <message>
-        <location filename="../src/corelib/plugin/qlibrary_unix.cpp" line="+179"/>
-        <location filename="../src/corelib/plugin/qlibrary_win.cpp" line="+69"/>
+        <location filename="../src/corelib/plugin/qlibrary_unix.cpp" line="+209"/>
+        <location filename="../src/corelib/plugin/qlibrary_win.cpp" line="+99"/>
         <source>Cannot load library %1: %2</source>
         <translation>无法加载库%1：%2</translation>
     </message>
@@ -2639,7 +2648,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QLineEdit</name>
     <message>
-        <location filename="../src/gui/widgets/qlineedit.cpp" line="+2649"/>
+        <location filename="../src/gui/widgets/qlineedit.cpp" line="+2680"/>
         <source>&amp;Undo</source>
         <translation>撤消(&amp;U)</translation>
     </message>
@@ -2677,8 +2686,8 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QLocalServer</name>
     <message>
-        <location filename="../src/network/socket/qlocalserver.cpp" line="+196"/>
-        <location filename="../src/network/socket/qlocalserver_unix.cpp" line="+201"/>
+        <location filename="../src/network/socket/qlocalserver.cpp" line="+226"/>
+        <location filename="../src/network/socket/qlocalserver_unix.cpp" line="+231"/>
         <source>%1: Name error</source>
         <translation>%1: 名称错误</translation>
     </message>
@@ -2694,7 +2703,7 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <location line="+5"/>
-        <location filename="../src/network/socket/qlocalserver_win.cpp" line="+127"/>
+        <location filename="../src/network/socket/qlocalserver_win.cpp" line="+158"/>
         <source>%1: Unknown error %2</source>
         <translation>%1：未知错误 %2</translation>
     </message>
@@ -2702,8 +2711,8 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QLocalSocket</name>
     <message>
-        <location filename="../src/network/socket/qlocalsocket_tcp.cpp" line="+102"/>
-        <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+104"/>
+        <location filename="../src/network/socket/qlocalsocket_tcp.cpp" line="+132"/>
+        <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+134"/>
         <source>%1: Connection refused</source>
         <translation>%1：连接被拒绝</translation>
     </message>
@@ -2716,7 +2725,7 @@ Do you want to delete it anyway?</source>
     <message>
         <location line="+3"/>
         <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
-        <location filename="../src/network/socket/qlocalsocket_win.cpp" line="+50"/>
+        <location filename="../src/network/socket/qlocalsocket_win.cpp" line="+80"/>
         <location line="+43"/>
         <source>%1: Invalid name</source>
         <translation>%1：无效名称</translation>
@@ -2773,7 +2782,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QMYSQLDriver</name>
     <message>
-        <location filename="../src/sql/drivers/mysql/qsql_mysql.cpp" line="+1200"/>
+        <location filename="../src/sql/drivers/mysql/qsql_mysql.cpp" line="+1231"/>
         <source>Unable to open database &apos;</source>
         <translation>不能打开数据库</translation>
     </message>
@@ -2783,7 +2792,7 @@ Do you want to delete it anyway?</source>
         <translation>不能连接</translation>
     </message>
     <message>
-        <location line="+123"/>
+        <location line="+127"/>
         <source>Unable to begin transaction</source>
         <translation>不能开始事务</translation>
     </message>
@@ -2801,7 +2810,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QMYSQLResult</name>
     <message>
-        <location line="-917"/>
+        <location line="-922"/>
         <source>Unable to fetch data</source>
         <translation>不能获取数据</translation>
     </message>
@@ -2816,7 +2825,7 @@ Do you want to delete it anyway?</source>
         <translation>不能存储结果</translation>
     </message>
     <message>
-        <location line="+189"/>
+        <location line="+190"/>
         <location line="+8"/>
         <source>Unable to prepare statement</source>
         <translation>不能准备语句</translation>
@@ -2861,7 +2870,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QMdiArea</name>
     <message>
-        <location filename="../src/gui/widgets/qmdiarea.cpp" line="+260"/>
+        <location filename="../src/gui/widgets/qmdiarea.cpp" line="+290"/>
         <source>(Untitled)</source>
         <translation>(未命名的)</translation>
     </message>
@@ -2869,7 +2878,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QMdiSubWindow</name>
     <message>
-        <location filename="../src/gui/widgets/qmdisubwindow.cpp" line="+250"/>
+        <location filename="../src/gui/widgets/qmdisubwindow.cpp" line="+280"/>
         <source>%1 - [%2]</source>
         <translation>%1 - [%2]</translation>
     </message>
@@ -2962,7 +2971,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QMenu</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/qaccessiblemenu.cpp" line="+127"/>
+        <location filename="../src/plugins/accessible/widgets/qaccessiblemenu.cpp" line="+157"/>
         <location line="+225"/>
         <source>Close</source>
         <translation>关闭</translation>
@@ -3035,7 +3044,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QMessageBox</name>
     <message>
-        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="-1105"/>
+        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="-1111"/>
         <source>Help</source>
         <translation>帮助</translation>
     </message>
@@ -3048,17 +3057,16 @@ Do you want to delete it anyway?</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location line="+503"/>
+        <location line="+509"/>
         <source>About Qt</source>
         <translation>关于Qt</translation>
     </message>
     <message>
-        <location line="-15"/>
         <source>&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;这个程序使用的是Qt %1版。&lt;/p&gt;</translation>
+        <translation type="obsolete">&lt;p&gt;这个程序使用的是Qt %1版。&lt;/p&gt;</translation>
     </message>
     <message>
-        <location line="-1584"/>
+        <location line="-1605"/>
         <source>Show Details...</source>
         <translation>显示细节……</translation>
     </message>
@@ -3069,13 +3077,16 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <location line="+1570"/>
-        <source>&lt;h3&gt;About Qt&lt;/h3&gt;%1&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qtsoftware.com/qt/&quot;&gt;qtsoftware.com/qt/&lt;/a&gt; for more information.&lt;/p&gt;</source>
-        <translation>&lt;h3&gt;关于Qt&lt;/h3&gt;%1&lt;p&gt;Qt是一个用于跨平台应用程序开发的C++工具包。&lt;/p&gt;&lt;p&gt;对于MS&amp;nbsp;Windows、Mac&amp;nbsp;OS&amp;nbsp;X、Linux和所有主流商业Unix，Qt提供了单一源程序的可移植性。Qt也有用于嵌入式Linux和Windows CE的版本。&lt;/p&gt;&lt;p&gt;Qt是Nokia的产品。有关更多信息，请参考&lt;a href=&quot;http://qtsoftware.com/qt/&quot;&gt;qtsoftware.com/qt/&lt;/a&gt;。&lt;/p&gt;</translation>
+        <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://www.qtsoftware.com/products/licensing&quot;&gt;www.qtsoftware.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://www.qtsoftware.com/qt/&quot;&gt;www.qtsoftware.com/qt&lt;/a&gt; for more information.&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
+        <source>&lt;h3&gt;About Qt&lt;/h3&gt;%1&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qtsoftware.com/qt/&quot;&gt;qtsoftware.com/qt/&lt;/a&gt; for more information.&lt;/p&gt;</source>
+        <translation type="obsolete">&lt;h3&gt;关于Qt&lt;/h3&gt;%1&lt;p&gt;Qt是一个用于跨平台应用程序开发的C++工具包。&lt;/p&gt;&lt;p&gt;对于MS&amp;nbsp;Windows、Mac&amp;nbsp;OS&amp;nbsp;X、Linux和所有主流商业Unix，Qt提供了单一源程序的可移植性。Qt也有用于嵌入式Linux和Windows CE的版本。&lt;/p&gt;&lt;p&gt;Qt是Nokia的产品。有关更多信息，请参考&lt;a href=&quot;http://qtsoftware.com/qt/&quot;&gt;qtsoftware.com/qt/&lt;/a&gt;。&lt;/p&gt;</translation>
+    </message>
+    <message>
         <source>&lt;p&gt;This program uses Qt Open Source Edition version %1.&lt;/p&gt;&lt;p&gt;Qt Open Source Edition is intended for the development of Open Source applications. You need a commercial Qt license for development of proprietary (closed source) applications.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qtsoftware.com/company/model/&quot;&gt;qtsoftware.com/company/model/&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;这个程序使用了Qt %1开源版本。&lt;/p&gt;&lt;p&gt;Qt开源版本只用于开源应用程序的开发。如果要开发私有（闭源）软件，你需要一个商业的Qt协议。&lt;/p&gt;&lt;p&gt;有关Qt协议的概览，请参考&lt;a href=&quot;http://qtsoftware.com/company/model/&quot;&gt;qtsoftware.com/company/model/&lt;/a&gt;。&lt;/p&gt;</translation>
+        <translation type="obsolete">&lt;p&gt;这个程序使用了Qt %1开源版本。&lt;/p&gt;&lt;p&gt;Qt开源版本只用于开源应用程序的开发。如果要开发私有（闭源）软件，你需要一个商业的Qt协议。&lt;/p&gt;&lt;p&gt;有关Qt协议的概览，请参考&lt;a href=&quot;http://qtsoftware.com/company/model/&quot;&gt;qtsoftware.com/company/model/&lt;/a&gt;。&lt;/p&gt;</translation>
     </message>
     <message>
         <source>&lt;h3&gt;About Qt&lt;/h3&gt;%1&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt Embedded.&lt;/p&gt;&lt;p&gt;Qt is a Trolltech product. See &lt;a href=&quot;http://qtsoftware.com/qt/&quot;&gt;qtsoftware.com/qt/&lt;/a&gt; for more information.&lt;/p&gt;</source>
@@ -3085,7 +3096,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QMultiInputContext</name>
     <message>
-        <location filename="../src/plugins/inputmethods/imsw-multi/qmultiinputcontext.cpp" line="+58"/>
+        <location filename="../src/plugins/inputmethods/imsw-multi/qmultiinputcontext.cpp" line="+88"/>
         <source>Select IM</source>
         <translation>选择输入法</translation>
     </message>
@@ -3093,7 +3104,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QMultiInputContextPlugin</name>
     <message>
-        <location filename="../src/plugins/inputmethods/imsw-multi/qmultiinputcontextplugin.cpp" line="+65"/>
+        <location filename="../src/plugins/inputmethods/imsw-multi/qmultiinputcontextplugin.cpp" line="+95"/>
         <source>Multiple input method switcher</source>
         <translation>多输入法切换器</translation>
     </message>
@@ -3106,7 +3117,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QNativeSocketEngine</name>
     <message>
-        <location filename="../src/network/socket/qnativesocketengine.cpp" line="+176"/>
+        <location filename="../src/network/socket/qnativesocketengine.cpp" line="+206"/>
         <source>The remote host closed the connection</source>
         <translation>远端主机关闭了这个连接</translation>
     </message>
@@ -3239,7 +3250,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QNetworkAccessCacheBackend</name>
     <message>
-        <location filename="../src/network/access/qnetworkaccesscachebackend.cpp" line="+35"/>
+        <location filename="../src/network/access/qnetworkaccesscachebackend.cpp" line="+65"/>
         <source>Error opening %1</source>
         <translation>打开%1发生错误</translation>
     </message>
@@ -3247,7 +3258,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QNetworkAccessFileBackend</name>
     <message>
-        <location filename="../src/network/access/qnetworkaccessfilebackend.cpp" line="+69"/>
+        <location filename="../src/network/access/qnetworkaccessfilebackend.cpp" line="+99"/>
         <source>Request for opening non-local file %1</source>
         <translation>正在打开非本地文件 %1 的请求</translation>
     </message>
@@ -3275,7 +3286,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QNetworkAccessFtpBackend</name>
     <message>
-        <location filename="../src/network/access/qnetworkaccessftpbackend.cpp" line="+135"/>
+        <location filename="../src/network/access/qnetworkaccessftpbackend.cpp" line="+165"/>
         <source>No suitable proxy found</source>
         <translation>未找到合适的代理</translation>
     </message>
@@ -3285,7 +3296,7 @@ Do you want to delete it anyway?</source>
         <translation>无法读取 %1：是一个目录</translation>
     </message>
     <message>
-        <location line="+131"/>
+        <location line="+130"/>
         <source>Logging in to %1 failed: authentication required</source>
         <translation>登入 %1 失败：需要验证</translation>
     </message>
@@ -3303,7 +3314,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QNetworkAccessHttpBackend</name>
     <message>
-        <location filename="../src/network/access/qnetworkaccesshttpbackend.cpp" line="+565"/>
+        <location filename="../src/network/access/qnetworkaccesshttpbackend.cpp" line="+597"/>
         <source>No suitable proxy found</source>
         <translation>未找到合适的代理</translation>
     </message>
@@ -3316,7 +3327,7 @@ Do you want to delete it anyway?</source>
         <translation>下载 %1 错误 - 服务器回复：%2</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="+37"/>
+        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="+68"/>
         <source>Protocol &quot;%1&quot; is unknown</source>
         <translation>协议“%1”是未知的</translation>
     </message>
@@ -3324,7 +3335,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QNetworkReplyImpl</name>
     <message>
-        <location line="+422"/>
+        <location line="+432"/>
         <location line="+22"/>
         <source>Operation canceled</source>
         <translation>操作被取消</translation>
@@ -3333,7 +3344,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QOCIDriver</name>
     <message>
-        <location filename="../src/sql/drivers/oci/qsql_oci.cpp" line="+2027"/>
+        <location filename="../src/sql/drivers/oci/qsql_oci.cpp" line="+2069"/>
         <source>Unable to logon</source>
         <translation>不能登录</translation>
     </message>
@@ -3362,7 +3373,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QOCIResult</name>
     <message>
-        <location line="-976"/>
+        <location line="-963"/>
         <location line="+161"/>
         <location line="+15"/>
         <source>Unable to bind column for batch execute</source>
@@ -3389,18 +3400,16 @@ Do you want to delete it anyway?</source>
         <translation>不能准备语句</translation>
     </message>
     <message>
-        <location line="+29"/>
-        <location line="+37"/>
+        <location line="+36"/>
         <source>Unable to bind value</source>
         <translation>不能绑定值</translation>
     </message>
     <message>
-        <location line="-20"/>
         <source>Unable to execute select statement</source>
-        <translation>不能执行选择语句</translation>
+        <translation type="obsolete">不能执行选择语句</translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+19"/>
         <source>Unable to execute statement</source>
         <translation>不能执行语句</translation>
     </message>
@@ -3408,7 +3417,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QODBCDriver</name>
     <message>
-        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1657"/>
+        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1785"/>
         <source>Unable to connect</source>
         <translation>不能连接</translation>
     </message>
@@ -3418,7 +3427,7 @@ Do you want to delete it anyway?</source>
         <translation>不能连接—驱动程序不支持所有功能</translation>
     </message>
     <message>
-        <location line="+234"/>
+        <location line="+242"/>
         <source>Unable to disable autocommit</source>
         <translation>不能禁止自动提交</translation>
     </message>
@@ -3441,19 +3450,19 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QODBCResult</name>
     <message>
-        <location line="-1204"/>
+        <location line="-1218"/>
         <location line="+349"/>
         <source>QODBCResult::reset: Unable to set &apos;SQL_CURSOR_STATIC&apos; as statement attribute. Please check your ODBC driver configuration</source>
         <translation>QODBCResult::reset: 不能把“SQL_CURSOR_STATIC”设置为语句属性。请检查你的ODBC驱动程序设置。</translation>
     </message>
     <message>
         <location line="-332"/>
-        <location line="+625"/>
+        <location line="+626"/>
         <source>Unable to execute statement</source>
         <translation>不能执行语句</translation>
     </message>
     <message>
-        <location line="-554"/>
+        <location line="-555"/>
         <source>Unable to fetch next</source>
         <translation>不能获取下一个</translation>
     </message>
@@ -3463,19 +3472,19 @@ Do you want to delete it anyway?</source>
         <translation>不能准备语句</translation>
     </message>
     <message>
-        <location line="+267"/>
+        <location line="+268"/>
         <source>Unable to bind variable</source>
         <translation>不能帮定变量</translation>
     </message>
     <message>
         <location filename="../src/sql/drivers/db2/qsql_db2.cpp" line="+194"/>
-        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="-474"/>
-        <location line="+577"/>
+        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="-475"/>
+        <location line="+578"/>
         <source>Unable to fetch last</source>
         <translation>不能获取最后一个</translation>
     </message>
     <message>
-        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="-671"/>
+        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="-672"/>
         <source>Unable to fetch</source>
         <translation>不能获取</translation>
     </message>
@@ -3493,12 +3502,12 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/gui/util/qdesktopservices_mac.cpp" line="+134"/>
+        <location filename="../src/gui/util/qdesktopservices_mac.cpp" line="+165"/>
         <source>Home</source>
         <translation>家</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qnetworkaccessdatabackend.cpp" line="+44"/>
+        <location filename="../src/network/access/qnetworkaccessdatabackend.cpp" line="+74"/>
         <source>Operation not supported on %1</source>
         <translation>在 %1 上不被支持的操作</translation>
     </message>
@@ -3508,7 +3517,7 @@ Do you want to delete it anyway?</source>
         <translation>无效的 URI：%1</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qnetworkaccessdebugpipebackend.cpp" line="+145"/>
+        <location filename="../src/network/access/qnetworkaccessdebugpipebackend.cpp" line="+175"/>
         <source>Write error writing to %1: %2</source>
         <translation>写入 %1 错误：%2</translation>
     </message>
@@ -3533,7 +3542,7 @@ Do you want to delete it anyway?</source>
         <translation>协议错误：收到了大小为 0 的包</translation>
     </message>
     <message>
-        <location filename="../src/network/kernel/qhostinfo.cpp" line="+147"/>
+        <location filename="../src/network/kernel/qhostinfo.cpp" line="+177"/>
         <location line="+57"/>
         <source>No host name given</source>
         <translation>未指定主机名</translation>
@@ -3542,7 +3551,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QPPDOptionsModel</name>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="+1165"/>
+        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="+1195"/>
         <source>Name</source>
         <translation>名称</translation>
     </message>
@@ -3555,7 +3564,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QPSQLDriver</name>
     <message>
-        <location filename="../src/sql/drivers/psql/qsql_psql.cpp" line="+732"/>
+        <location filename="../src/sql/drivers/psql/qsql_psql.cpp" line="+763"/>
         <source>Unable to connect</source>
         <translation>不能连接</translation>
     </message>
@@ -3575,7 +3584,7 @@ Do you want to delete it anyway?</source>
         <translation>不能回滚事务</translation>
     </message>
     <message>
-        <location line="+336"/>
+        <location line="+358"/>
         <source>Unable to subscribe</source>
         <translation>不能订阅</translation>
     </message>
@@ -3588,12 +3597,12 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QPSQLResult</name>
     <message>
-        <location line="-1035"/>
+        <location line="-1058"/>
         <source>Unable to create query</source>
         <translation>不能创建查询</translation>
     </message>
     <message>
-        <location line="+373"/>
+        <location line="+374"/>
         <source>Unable to prepare statement</source>
         <translation>不能准备语句</translation>
     </message>
@@ -3601,7 +3610,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QPageSetupWidget</name>
     <message>
-        <location filename="../src/gui/dialogs/qpagesetupdialog_unix.cpp" line="+274"/>
+        <location filename="../src/gui/dialogs/qpagesetupdialog_unix.cpp" line="+304"/>
         <source>Centimeters (cm)</source>
         <translation>厘米 (cm)</translation>
     </message>
@@ -3717,7 +3726,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QPrintDialog</name>
     <message>
-        <location filename="../src/gui/painting/qprinterinfo_unix.cpp" line="+68"/>
+        <location filename="../src/gui/painting/qprinterinfo_unix.cpp" line="+98"/>
         <source>locally connected</source>
         <translation>本地已经连接的</translation>
     </message>
@@ -3734,7 +3743,7 @@ Do you want to delete it anyway?</source>
         <translation>未知的</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="+345"/>
+        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="+375"/>
         <source>Print all</source>
         <translation>打印全部</translation>
     </message>
@@ -3899,12 +3908,12 @@ Do you want to delete it anyway?</source>
         <translation>美国普通10号信封 (105 x 241 毫米)</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="+238"/>
+        <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="+268"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qabstractprintdialog.cpp" line="+80"/>
+        <location filename="../src/gui/dialogs/qabstractprintdialog.cpp" line="+110"/>
         <location line="+13"/>
         <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="-2"/>
         <source>Print</source>
@@ -4146,13 +4155,13 @@ Please choose a different file name.</source>
 <context>
     <name>QPrintPreviewDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qabstractpagesetupdialog.cpp" line="+38"/>
+        <location filename="../src/gui/dialogs/qabstractpagesetupdialog.cpp" line="+68"/>
         <location line="+12"/>
         <source>Page Setup</source>
         <translation>页面设置</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintpreviewdialog.cpp" line="+222"/>
+        <location filename="../src/gui/dialogs/qprintpreviewdialog.cpp" line="+252"/>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
@@ -4419,8 +4428,8 @@ Please choose a different file name.</source>
 <context>
     <name>QProcess</name>
     <message>
-        <location filename="../src/corelib/io/qprocess_unix.cpp" line="+445"/>
-        <location filename="../src/corelib/io/qprocess_win.cpp" line="+117"/>
+        <location filename="../src/corelib/io/qprocess_unix.cpp" line="+475"/>
+        <location filename="../src/corelib/io/qprocess_win.cpp" line="+147"/>
         <source>Could not open input redirection for reading</source>
         <translation>无法打开用于读取的输入重定向</translation>
     </message>
@@ -4449,7 +4458,7 @@ Please choose a different file name.</source>
         <translation>进程处理超时</translation>
     </message>
     <message>
-        <location filename="../src/corelib/io/qprocess.cpp" line="+503"/>
+        <location filename="../src/corelib/io/qprocess.cpp" line="+533"/>
         <location line="+52"/>
         <location filename="../src/corelib/io/qprocess_win.cpp" line="-211"/>
         <location line="+50"/>
@@ -4469,6 +4478,11 @@ Please choose a different file name.</source>
         <translation>进程已崩溃</translation>
     </message>
     <message>
+        <location line="+912"/>
+        <source>No program defined</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/corelib/io/qprocess_win.cpp" line="-341"/>
         <source>Process failed to start</source>
         <translation>启动进程失败</translation>
@@ -4477,7 +4491,7 @@ Please choose a different file name.</source>
 <context>
     <name>QProgressDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qprogressdialog.cpp" line="+152"/>
+        <location filename="../src/gui/dialogs/qprogressdialog.cpp" line="+182"/>
         <source>Cancel</source>
         <translation>撤消</translation>
     </message>
@@ -4501,7 +4515,7 @@ Please choose a different file name.</source>
 <context>
     <name>QRegExp</name>
     <message>
-        <location filename="../src/corelib/tools/qregexp.cpp" line="+34"/>
+        <location filename="../src/corelib/tools/qregexp.cpp" line="+64"/>
         <source>no error occurred</source>
         <translation>没有错误发生</translation>
     </message>
@@ -4549,7 +4563,7 @@ Please choose a different file name.</source>
 <context>
     <name>QSQLite2Driver</name>
     <message>
-        <location filename="../src/sql/drivers/sqlite2/qsql_sqlite2.cpp" line="+353"/>
+        <location filename="../src/sql/drivers/sqlite2/qsql_sqlite2.cpp" line="+396"/>
         <source>Error to open database</source>
         <translation>打开数据库错误</translation>
     </message>
@@ -4572,12 +4586,12 @@ Please choose a different file name.</source>
 <context>
     <name>QSQLite2Result</name>
     <message>
-        <location line="-310"/>
+        <location line="-323"/>
         <source>Unable to fetch results</source>
         <translation>不能获取结果</translation>
     </message>
     <message>
-        <location line="+139"/>
+        <location line="+147"/>
         <source>Unable to execute statement</source>
         <translation>不能执行语句</translation>
     </message>
@@ -4585,7 +4599,7 @@ Please choose a different file name.</source>
 <context>
     <name>QSQLiteDriver</name>
     <message>
-        <location filename="../src/sql/drivers/sqlite/qsql_sqlite.cpp" line="+498"/>
+        <location filename="../src/sql/drivers/sqlite/qsql_sqlite.cpp" line="+528"/>
         <source>Error opening database</source>
         <translation>打开数据库错误</translation>
     </message>
@@ -4648,12 +4662,12 @@ Please choose a different file name.</source>
 <context>
     <name>QScrollBar</name>
     <message>
-        <location filename="../src/gui/widgets/qscrollbar.cpp" line="+419"/>
+        <location filename="../src/gui/widgets/qscrollbar.cpp" line="+448"/>
         <source>Scroll here</source>
         <translation>滚动到这里</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+2"/>
         <source>Left edge</source>
         <translation>左边缘</translation>
     </message>
@@ -4663,7 +4677,7 @@ Please choose a different file name.</source>
         <translation>顶部</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Right edge</source>
         <translation>右边缘</translation>
     </message>
@@ -4673,7 +4687,7 @@ Please choose a different file name.</source>
         <translation>底部</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+2"/>
         <source>Page left</source>
         <translation>左一页</translation>
     </message>
@@ -4684,7 +4698,7 @@ Please choose a different file name.</source>
         <translation>上一页</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Page right</source>
         <translation>右一页</translation>
     </message>
@@ -4695,7 +4709,7 @@ Please choose a different file name.</source>
         <translation>下一页</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+2"/>
         <source>Scroll left</source>
         <translation>向左滚动</translation>
     </message>
@@ -4705,7 +4719,7 @@ Please choose a different file name.</source>
         <translation>向上滚动</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Scroll right</source>
         <translation>向右滚动</translation>
     </message>
@@ -4733,7 +4747,7 @@ Please choose a different file name.</source>
 <context>
     <name>QSharedMemory</name>
     <message>
-        <location filename="../src/corelib/kernel/qsharedmemory.cpp" line="+177"/>
+        <location filename="../src/corelib/kernel/qsharedmemory.cpp" line="+207"/>
         <source>%1: unable to set key on lock</source>
         <translation>%1：无法设置锁定的键</translation>
     </message>
@@ -4744,7 +4758,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <location line="+168"/>
-        <location filename="../src/corelib/kernel/qsharedmemory_p.h" line="+118"/>
+        <location filename="../src/corelib/kernel/qsharedmemory_p.h" line="+148"/>
         <source>%1: unable to lock</source>
         <translation>%1：无法锁定</translation>
     </message>
@@ -4754,8 +4768,8 @@ Please choose a different file name.</source>
         <translation>%1：无法取消锁定</translation>
     </message>
     <message>
-        <location filename="../src/corelib/kernel/qsharedmemory_unix.cpp" line="+48"/>
-        <location filename="../src/corelib/kernel/qsharedmemory_win.cpp" line="+57"/>
+        <location filename="../src/corelib/kernel/qsharedmemory_unix.cpp" line="+78"/>
+        <location filename="../src/corelib/kernel/qsharedmemory_win.cpp" line="+87"/>
         <source>%1: permission denied</source>
         <translation>%1：权限被拒绝</translation>
     </message>
@@ -4833,7 +4847,7 @@ Please choose a different file name.</source>
 <context>
     <name>QShortcut</name>
     <message>
-        <location filename="../src/gui/kernel/qkeysequence.cpp" line="+343"/>
+        <location filename="../src/gui/kernel/qkeysequence.cpp" line="+373"/>
         <source>Space</source>
         <translation>空格</translation>
     </message>
@@ -5418,7 +5432,7 @@ Please choose a different file name.</source>
 <context>
     <name>QSql</name>
     <message>
-        <location filename="../src/qt3support/sql/q3sqlmanager_p.cpp" line="+860"/>
+        <location filename="../src/qt3support/sql/q3sqlmanager_p.cpp" line="+890"/>
         <source>Delete</source>
         <translation>删除</translation>
     </message>
@@ -5475,7 +5489,7 @@ Please choose a different file name.</source>
 <context>
     <name>QSslSocket</name>
     <message>
-        <location filename="../src/network/ssl/qsslsocket_openssl.cpp" line="+539"/>
+        <location filename="../src/network/ssl/qsslsocket_openssl.cpp" line="+569"/>
         <source>Unable to write data: %1</source>
         <translation>不能写入数据：%1</translation>
     </message>
@@ -5534,7 +5548,7 @@ Please choose a different file name.</source>
     <name>QSystemSemaphore</name>
     <message>
         <location filename="../src/corelib/kernel/qsystemsemaphore_unix.cpp" line="-41"/>
-        <location filename="../src/corelib/kernel/qsystemsemaphore_win.cpp" line="+36"/>
+        <location filename="../src/corelib/kernel/qsystemsemaphore_win.cpp" line="+66"/>
         <source>%1: out of resources</source>
         <translation>%1：资源耗尽了</translation>
     </message>
@@ -5564,7 +5578,7 @@ Please choose a different file name.</source>
 <context>
     <name>QTDSDriver</name>
     <message>
-        <location filename="../src/sql/drivers/tds/qsql_tds.cpp" line="+552"/>
+        <location filename="../src/sql/drivers/tds/qsql_tds.cpp" line="+584"/>
         <source>Unable to open connection</source>
         <translation>不能打开连接</translation>
     </message>
@@ -5590,7 +5604,7 @@ Please choose a different file name.</source>
 <context>
     <name>QTcpServer</name>
     <message>
-        <location filename="../src/network/socket/qtcpserver.cpp" line="+252"/>
+        <location filename="../src/network/socket/qtcpserver.cpp" line="+282"/>
         <source>Operation on socket is not supported</source>
         <translation>socket操作不被支持</translation>
     </message>
@@ -5598,7 +5612,7 @@ Please choose a different file name.</source>
 <context>
     <name>QTextControl</name>
     <message>
-        <location filename="../src/gui/text/qtextcontrol.cpp" line="+1942"/>
+        <location filename="../src/gui/text/qtextcontrol.cpp" line="+1973"/>
         <source>&amp;Undo</source>
         <translation>撤消(&amp;U)</translation>
     </message>
@@ -5656,7 +5670,7 @@ Please choose a different file name.</source>
 <context>
     <name>QUdpSocket</name>
     <message>
-        <location filename="../src/network/socket/qudpsocket.cpp" line="+139"/>
+        <location filename="../src/network/socket/qudpsocket.cpp" line="+169"/>
         <source>This platform does not support IPv6</source>
         <translation>这个平台不支持IPv6</translation>
     </message>
@@ -5664,7 +5678,7 @@ Please choose a different file name.</source>
 <context>
     <name>QUndoGroup</name>
     <message>
-        <location filename="../src/gui/util/qundogroup.cpp" line="+356"/>
+        <location filename="../src/gui/util/qundogroup.cpp" line="+386"/>
         <source>Undo</source>
         <translation>撤销</translation>
     </message>
@@ -5677,7 +5691,7 @@ Please choose a different file name.</source>
 <context>
     <name>QUndoModel</name>
     <message>
-        <location filename="../src/gui/util/qundoview.cpp" line="+71"/>
+        <location filename="../src/gui/util/qundoview.cpp" line="+101"/>
         <source>&lt;empty&gt;</source>
         <translation>&lt;空白&gt;</translation>
     </message>
@@ -5685,7 +5699,7 @@ Please choose a different file name.</source>
 <context>
     <name>QUndoStack</name>
     <message>
-        <location filename="../src/gui/util/qundostack.cpp" line="+804"/>
+        <location filename="../src/gui/util/qundostack.cpp" line="+834"/>
         <source>Undo</source>
         <translation>撤销</translation>
     </message>
@@ -5756,7 +5770,7 @@ Please choose a different file name.</source>
 <context>
     <name>QWebFrame</name>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/FrameLoaderClientQt.cpp" line="+686"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/FrameLoaderClientQt.cpp" line="+692"/>
         <source>Request cancelled</source>
         <translation>请求被取消了</translation>
     </message>
@@ -6166,7 +6180,7 @@ Please choose a different file name.</source>
         </translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/Api/qwebpage.cpp" line="+1342"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/Api/qwebpage.cpp" line="+1322"/>
         <source>JavaScript Alert - %1</source>
         <translation>JavaScript警告 - %1</translation>
     </message>
@@ -6242,6 +6256,11 @@ Please choose a different file name.</source>
     </message>
     <message>
         <location line="+3"/>
+        <source>Select all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Select to the next character</source>
         <translation>选中到下一个字符</translation>
     </message>
@@ -6310,11 +6329,21 @@ Please choose a different file name.</source>
         <source>Delete to the end of the word</source>
         <translation>删除到单词尾</translation>
     </message>
+    <message>
+        <location line="+33"/>
+        <source>Insert a new paragraph</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Insert a new line</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QWhatsThisAction</name>
     <message>
-        <location filename="../src/gui/kernel/qwhatsthis.cpp" line="+492"/>
+        <location filename="../src/gui/kernel/qwhatsthis.cpp" line="+522"/>
         <source>What&apos;s This?</source>
         <translation>这是什么？</translation>
     </message>
@@ -6322,7 +6351,7 @@ Please choose a different file name.</source>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../src/gui/kernel/qwidget.cpp" line="+5290"/>
+        <location filename="../src/gui/kernel/qwidget.cpp" line="+5326"/>
         <source>*</source>
         <translation>*</translation>
     </message>
@@ -6330,7 +6359,7 @@ Please choose a different file name.</source>
 <context>
     <name>QWizard</name>
     <message>
-        <location filename="../src/gui/dialogs/qwizard.cpp" line="+605"/>
+        <location filename="../src/gui/dialogs/qwizard.cpp" line="+637"/>
         <source>Go Back</source>
         <translation>返回</translation>
     </message>
@@ -6392,7 +6421,7 @@ Please choose a different file name.</source>
 <context>
     <name>QWorkspace</name>
     <message>
-        <location filename="../src/gui/widgets/qworkspace.cpp" line="+1064"/>
+        <location filename="../src/gui/widgets/qworkspace.cpp" line="+1094"/>
         <source>&amp;Restore</source>
         <translation>恢复(&amp;R)</translation>
     </message>
@@ -6462,7 +6491,7 @@ Please choose a different file name.</source>
 <context>
     <name>QXml</name>
     <message>
-        <location filename="../src/xml/sax/qxml.cpp" line="+28"/>
+        <location filename="../src/xml/sax/qxml.cpp" line="+58"/>
         <source>no error occurred</source>
         <translation>没有错误发生</translation>
     </message>
@@ -6580,8 +6609,8 @@ Please choose a different file name.</source>
 <context>
     <name>QXmlStream</name>
     <message>
-        <location filename="../src/corelib/xml/qxmlstream.cpp" line="+562"/>
-        <location filename="../src/corelib/xml/qxmlstream_p.h" line="+1739"/>
+        <location filename="../src/corelib/xml/qxmlstream.cpp" line="+592"/>
+        <location filename="../src/corelib/xml/qxmlstream_p.h" line="+1769"/>
         <source>Extra content at end of document.</source>
         <translation>文档末尾有额外内容。</translation>
     </message>
@@ -6765,7 +6794,7 @@ Please choose a different file name.</source>
 <context>
     <name>QtXmlPatterns</name>
     <message>
-        <location filename="../src/xmlpatterns/acceltree/qacceltreebuilder.cpp" line="+175"/>
+        <location filename="../src/xmlpatterns/acceltree/qacceltreebuilder.cpp" line="+205"/>
         <source>An %1-attribute with value %2 has already been declared.</source>
         <translation>带有值 %2 的 %1 属性已经声明过了。</translation>
     </message>
@@ -6775,12 +6804,12 @@ Please choose a different file name.</source>
         <translation>一个 %1 属性必须带有一个有效的 %2 作为值，但 %3 却不是。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/api/qiodevicedelegate.cpp" line="+54"/>
+        <location filename="../src/xmlpatterns/api/qiodevicedelegate.cpp" line="+84"/>
         <source>Network timeout.</source>
         <translation>网络超时。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/api/qxmlserializer.cpp" line="+290"/>
+        <location filename="../src/xmlpatterns/api/qxmlserializer.cpp" line="+320"/>
         <source>Element %1 can&apos;t be serialized because it appears outside the document element.</source>
         <translation>元素 %1 不能被串行化，因为它出现在文档元素之外。</translation>
     </message>
@@ -6789,7 +6818,7 @@ Please choose a different file name.</source>
         <translation type="obsolete">属性元素 %1 不能被串行化，因为它出现在最顶层。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qabstractdatetime.cpp" line="+50"/>
+        <location filename="../src/xmlpatterns/data/qabstractdatetime.cpp" line="+80"/>
         <source>Year %1 is invalid because it begins with %2.</source>
         <translation>%1 年是无效的，因为应该从 %2 开始。</translation>
     </message>
@@ -6829,7 +6858,7 @@ Please choose a different file name.</source>
         <translation>溢出：数据无法被呈现。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qabstractduration.cpp" line="+69"/>
+        <location filename="../src/xmlpatterns/data/qabstractduration.cpp" line="+99"/>
         <location line="+15"/>
         <source>At least one component must be present.</source>
         <translation>至少有一个组件被呈现。</translation>
@@ -6840,7 +6869,7 @@ Please choose a different file name.</source>
         <translation>至少一个时间组件必须出现在这个 %1 界限之后。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qabstractfloatmathematician.cpp" line="+34"/>
+        <location filename="../src/xmlpatterns/data/qabstractfloatmathematician.cpp" line="+64"/>
         <source>No operand in an integer division, %1, can be %2.</source>
         <translation>在整数除法中没有操作数，%1，可以是 %2。</translation>
     </message>
@@ -6855,17 +6884,17 @@ Please choose a different file name.</source>
         <translation>除法中的第二个操作数，%1，不能是零(%2)。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qanyuri_p.h" line="+102"/>
+        <location filename="../src/xmlpatterns/data/qanyuri_p.h" line="+132"/>
         <source>%1 is not a valid value of type %2.</source>
         <translation>%1 不是类型为 %2 的有效值。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qatomiccasters_p.h" line="+193"/>
+        <location filename="../src/xmlpatterns/data/qatomiccasters_p.h" line="+223"/>
         <source>When casting to %1 from %2, the source value cannot be %3.</source>
         <translation>当从 %2 抛出到 %1 时，源值不能是 %3。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qatomicmathematicians.cpp" line="+35"/>
+        <location filename="../src/xmlpatterns/data/qatomicmathematicians.cpp" line="+65"/>
         <source>Integer division (%1) by zero (%2) is undefined.</source>
         <translation>整数除法(%1)除零(%2)是未定义的。</translation>
     </message>
@@ -6896,17 +6925,17 @@ Please choose a different file name.</source>
         <translation>一个类型为 %1 的值乘以 %2 或者 %3(正负无穷)是不允许的。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qatomicvalue.cpp" line="+49"/>
+        <location filename="../src/xmlpatterns/data/qatomicvalue.cpp" line="+79"/>
         <source>A value of type %1 cannot have an Effective Boolean Value.</source>
         <translation>一个类型为 %1 的值不能是一个有效的布尔值(Effective Boolean Value)。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qboolean.cpp" line="+48"/>
+        <location filename="../src/xmlpatterns/data/qboolean.cpp" line="+78"/>
         <source>Effective Boolean Value cannot be calculated for a sequence containing two or more atomic values.</source>
         <translation>有效的布尔值(Effective Boolean Value)不能被用于计算一个包含两个或者更多原子值的序列。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qderivedinteger_p.h" line="+372"/>
+        <location filename="../src/xmlpatterns/data/qderivedinteger_p.h" line="+402"/>
         <source>Value %1 of type %2 exceeds maximum (%3).</source>
         <translation>类型为 %2 的值 %1 超过了最大值(%3)。</translation>
     </message>
@@ -6916,7 +6945,7 @@ Please choose a different file name.</source>
         <translation>类型为 %2 的值 %1 超过了最小值(%3)。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qhexbinary.cpp" line="+61"/>
+        <location filename="../src/xmlpatterns/data/qhexbinary.cpp" line="+91"/>
         <source>A value of type %1 must contain an even number of digits. The value %2 does not.</source>
         <translation>类型为 %1 的值必须包含偶数个数字。值 %2 不是这样的。</translation>
     </message>
@@ -6926,7 +6955,7 @@ Please choose a different file name.</source>
         <translation>%1 不是类型为 %2 的有效值。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qarithmeticexpression.cpp" line="+177"/>
+        <location filename="../src/xmlpatterns/expr/qarithmeticexpression.cpp" line="+207"/>
         <source>Operator %1 cannot be used on type %2.</source>
         <translation>操作符 %1 不能被用于类型 %2。</translation>
     </message>
@@ -6936,7 +6965,7 @@ Please choose a different file name.</source>
         <translation>操作符 %1 不能被用于类型为 %2 和 %3 的原子值。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qattributenamevalidator.cpp" line="+36"/>
+        <location filename="../src/xmlpatterns/expr/qattributenamevalidator.cpp" line="+66"/>
         <source>The namespace URI in the name for a computed attribute cannot be %1.</source>
         <translation>一个被计算的属性的名称中的命名空间 URI 不能是 %1。</translation>
     </message>
@@ -6946,7 +6975,7 @@ Please choose a different file name.</source>
         <translation>一个被计算的属性的名称不能使用带有本地名称 %2 的命名空间 URI %1。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qcastas.cpp" line="+58"/>
+        <location filename="../src/xmlpatterns/expr/qcastas.cpp" line="+88"/>
         <source>Type error in cast, expected %1, received %2.</source>
         <translation>抛出类型错误，期望的是 %1，收到的是 %2。</translation>
     </message>
@@ -6956,7 +6985,7 @@ Please choose a different file name.</source>
         <translation>当抛出到 %1 或者它的派生类时，源类型必须是同一类型，或者它必须是一个字符串类型。类型 %2 是不被允许的。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qcastingplatform.cpp" line="+104"/>
+        <location filename="../src/xmlpatterns/expr/qcastingplatform.cpp" line="+134"/>
         <source>No casting is possible with %1 as the target type.</source>
         <translation>无法以 %1 为目标类型进行抛出。</translation>
     </message>
@@ -6981,7 +7010,7 @@ Please choose a different file name.</source>
         <translation>从 %2 抛出到 %1 失败：%3</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qcommentconstructor.cpp" line="+37"/>
+        <location filename="../src/xmlpatterns/expr/qcommentconstructor.cpp" line="+67"/>
         <source>A comment cannot contain %1</source>
         <translation>注释不能包含 %1</translation>
     </message>
@@ -6991,7 +7020,7 @@ Please choose a different file name.</source>
         <translation>注释不能以 %1 结尾。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qcomparisonplatform.cpp" line="+137"/>
+        <location filename="../src/xmlpatterns/expr/qcomparisonplatform.cpp" line="+167"/>
         <source>No comparisons can be done involving the type %1.</source>
         <translation>对于类型 %1 不能进行比较。</translation>
     </message>
@@ -7001,12 +7030,12 @@ Please choose a different file name.</source>
         <translation>在类型 %2 和 %3 的原子值之间，操作符 %1 是不可用的。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qdocumentcontentvalidator.cpp" line="+56"/>
+        <location filename="../src/xmlpatterns/expr/qdocumentcontentvalidator.cpp" line="+86"/>
         <source>An attribute node cannot be a child of a document node. Therefore, the attribute %1 is out of place.</source>
         <translation>一个属性节点不能是一个文档节点的子节点。因此，这个属性 %1 所在位置是不合适的。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qexpressionfactory.cpp" line="+139"/>
+        <location filename="../src/xmlpatterns/expr/qexpressionfactory.cpp" line="+169"/>
         <source>A library module cannot be evaluated directly. It must be imported from a main module.</source>
         <translation>一个库模块不能被直接评估。它必须从一个主模块中导入。</translation>
     </message>
@@ -7016,7 +7045,7 @@ Please choose a different file name.</source>
         <translation>没有名为 %1 的模板存在。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qgenericpredicate.cpp" line="+76"/>
+        <location filename="../src/xmlpatterns/expr/qgenericpredicate.cpp" line="+106"/>
         <source>A value of type %1 cannot be a predicate. A predicate must have either a numeric type or an Effective Boolean Value type.</source>
         <translation>类型为 %1 的值不能被判断。一个判断必须是数值类型或者一个有效的布尔值(Effective Boolean Value)类型。</translation>
     </message>
@@ -7026,7 +7055,7 @@ Please choose a different file name.</source>
         <translation>一个定位判断必须评估一个单一数值。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qncnameconstructor_p.h" line="+83"/>
+        <location filename="../src/xmlpatterns/expr/qncnameconstructor_p.h" line="+113"/>
         <source>The target name in a processing instruction cannot be %1 in any combination of upper and lower case. Therefore, is %2 invalid.</source>
         <translation>一个处理指令中的目标名称不能是任何大小写混合的 %1。因此，%2 是无效的。</translation>
     </message>
@@ -7036,33 +7065,33 @@ Please choose a different file name.</source>
         <translation>%1 不是处理指令的有效目标名称。它必须是值 %2，例如 %3。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qpath.cpp" line="+79"/>
+        <location filename="../src/xmlpatterns/expr/qpath.cpp" line="+109"/>
         <source>The last step in a path must contain either nodes or atomic values. It cannot be a mixture between the two.</source>
         <translation>一个路径中的最后一步必须包含节点或者原子值。它不能是两者的一个组合。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qprocessinginstructionconstructor.cpp" line="+54"/>
+        <location filename="../src/xmlpatterns/expr/qprocessinginstructionconstructor.cpp" line="+84"/>
         <source>The data of a processing instruction cannot contain the string %1</source>
         <translation>处理指令的数据不能包含字符串 %1</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qqnameconstructor.cpp" line="+52"/>
+        <location filename="../src/xmlpatterns/expr/qqnameconstructor.cpp" line="+82"/>
         <source>No namespace binding exists for the prefix %1</source>
         <translation>对于前缀 %1，没有存在绑定的命名空间。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qqnameconstructor_p.h" line="+126"/>
+        <location filename="../src/xmlpatterns/expr/qqnameconstructor_p.h" line="+156"/>
         <source>No namespace binding exists for the prefix %1 in %2</source>
         <translation>对于 %2 中的前缀 %1，没有存在绑定的命名空间。</translation>
     </message>
     <message>
         <location line="+12"/>
-        <location filename="../src/xmlpatterns/functions/qqnamefns.cpp" line="+39"/>
+        <location filename="../src/xmlpatterns/functions/qqnamefns.cpp" line="+69"/>
         <source>%1 is an invalid %2</source>
         <translation>%1 是一个无效的 %2。</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/xmlpatterns/functions/qabstractfunctionfactory.cpp" line="+47"/>
+        <location filename="../src/xmlpatterns/functions/qabstractfunctionfactory.cpp" line="+77"/>
         <source>%1 takes at most %n argument(s). %2 is therefore invalid.</source>
         <translation>
             <numerusform>%1 最多可以有 %n 个参数。因此 %2 是无效的。</numerusform>
@@ -7076,7 +7105,7 @@ Please choose a different file name.</source>
         </translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qaggregatefns.cpp" line="+90"/>
+        <location filename="../src/xmlpatterns/functions/qaggregatefns.cpp" line="+120"/>
         <source>The first argument to %1 cannot be of type %2. It must be a numeric type, xs:yearMonthDuration or xs:dayTimeDuration.</source>
         <translation>%1 的第一个参数不能是类型 %2 的。它必须是数字类型的，xs:yearMonthDuration 或者 xs:dayTimeDuration。</translation>
     </message>
@@ -7091,27 +7120,27 @@ Please choose a different file name.</source>
         <translation>%1 的第二个参数不能是类型 %2 的。它必须是类型 %3、%4 或者 %5 的。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qassemblestringfns.cpp" line="+58"/>
+        <location filename="../src/xmlpatterns/functions/qassemblestringfns.cpp" line="+88"/>
         <source>%1 is not a valid XML 1.0 character.</source>
         <translation>%1 不是一个有效的 XML 1.0 字符。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qcomparingaggregator.cpp" line="+167"/>
+        <location filename="../src/xmlpatterns/functions/qcomparingaggregator.cpp" line="+197"/>
         <source>The first argument to %1 cannot be of type %2.</source>
         <translation>%1 的第一个参数不能是类型 %2 的。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qdatetimefn.cpp" line="+56"/>
+        <location filename="../src/xmlpatterns/functions/qdatetimefn.cpp" line="+86"/>
         <source>If both values have zone offsets, they must have the same zone offset. %1 and %2 are not the same.</source>
         <translation>如果两个值都有区偏移(zone offset)，它们必须拥有相同的区偏移。%1 和 %2 的区偏移是不同的。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qerrorfn.cpp" line="+31"/>
+        <location filename="../src/xmlpatterns/functions/qerrorfn.cpp" line="+61"/>
         <source>%1 was called.</source>
         <translation>%1 被调用了。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qpatternmatchingfns.cpp" line="+64"/>
+        <location filename="../src/xmlpatterns/functions/qpatternmatchingfns.cpp" line="+94"/>
         <source>%1 must be followed by %2 or %3, not at the end of the replacement string.</source>
         <translation>%1 必须被 %2 或者 %3 跟随，不能在替换字符串的末尾。</translation>
     </message>
@@ -7126,7 +7155,7 @@ Please choose a different file name.</source>
         <translation>在这个替换字符串中，%1 只能被用于转义它本身或者 %2，而不是 %3</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qpatternplatform.cpp" line="+62"/>
+        <location filename="../src/xmlpatterns/functions/qpatternplatform.cpp" line="+92"/>
         <source>%1 matches newline characters</source>
         <translation>%1 匹配了换行符</translation>
     </message>
@@ -7161,17 +7190,17 @@ Please choose a different file name.</source>
         <translation>如果第一个参数是空序列或者零长度字符串(无命名空间)，那么就不能指定前缀。前缀 %1 被指定了。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qsequencefns.cpp" line="+317"/>
+        <location filename="../src/xmlpatterns/functions/qsequencefns.cpp" line="+347"/>
         <source>It will not be possible to retrieve %1.</source>
         <translation>将不能获取 %1。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qcontextnodechecker.cpp" line="+24"/>
+        <location filename="../src/xmlpatterns/functions/qcontextnodechecker.cpp" line="+54"/>
         <source>The root node of the second argument to function %1 must be a document node. %2 is not a document node.</source>
         <translation>函数 %1 的第二个参数的根节点必须是一个文档节点。%2 不是一个文档节点。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qsequencegeneratingfns.cpp" line="+249"/>
+        <location filename="../src/xmlpatterns/functions/qsequencegeneratingfns.cpp" line="+279"/>
         <source>The default collection is undefined</source>
         <translation>默认收集(collection)是未定义的</translation>
     </message>
@@ -7181,12 +7210,12 @@ Please choose a different file name.</source>
         <translation>无法获取 %1</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qstringvaluefns.cpp" line="+222"/>
+        <location filename="../src/xmlpatterns/functions/qstringvaluefns.cpp" line="+252"/>
         <source>The normalization form %1 is unsupported. The supported forms are %2, %3, %4, and %5, and none, i.e. the empty string (no normalization).</source>
         <translation>不支持正规化(normalization)表单 %1。被支持的表单是 %2、%3、%4 和 %5，以及无，例如空字符串(无正规化)。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qtimezonefns.cpp" line="+57"/>
+        <location filename="../src/xmlpatterns/functions/qtimezonefns.cpp" line="+87"/>
         <source>A zone offset must be in the range %1..%2 inclusive. %3 is out of range.</source>
         <translation>区偏移(zone offset)必须在 %1...%2 范围之内。%3 是在范围之外的。</translation>
     </message>
@@ -7196,17 +7225,17 @@ Please choose a different file name.</source>
         <translation>%1 不是分钟的整数。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/janitors/qcardinalityverifier.cpp" line="+28"/>
+        <location filename="../src/xmlpatterns/janitors/qcardinalityverifier.cpp" line="+58"/>
         <source>Required cardinality is %1; got cardinality %2.</source>
         <translation>所需要的表间关系是 %1；得到的表间关系却是 %2。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/janitors/qitemverifier.cpp" line="+37"/>
+        <location filename="../src/xmlpatterns/janitors/qitemverifier.cpp" line="+67"/>
         <source>The item %1 did not match the required type %2.</source>
         <translation>项 %1 和所需的类型 %2 不匹配。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/parser/qquerytransformparser.cpp" line="+319"/>
+        <location filename="../src/xmlpatterns/parser/qquerytransformparser.cpp" line="+379"/>
         <location line="+7253"/>
         <source>%1 is an unknown schema type.</source>
         <translation>%1 是一个未知的方案类型。</translation>
@@ -7227,7 +7256,7 @@ Please choose a different file name.</source>
         <translation>没有名称为 %1 的变量存在。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/parser/qparsercontext.cpp" line="+63"/>
+        <location filename="../src/xmlpatterns/parser/qparsercontext.cpp" line="+93"/>
         <source>The variable %1 is unused</source>
         <translation>变量 %1 没有被使用</translation>
     </message>
@@ -7525,7 +7554,7 @@ Please choose a different file name.</source>
         <translation>一个扩展表达式的名称必须在一个命名空间中。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/type/qcardinality.cpp" line="+25"/>
+        <location filename="../src/xmlpatterns/type/qcardinality.cpp" line="+55"/>
         <source>empty</source>
         <translation>空白</translation>
     </message>
@@ -7550,7 +7579,7 @@ Please choose a different file name.</source>
         <translation>零或者更多</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/type/qtypechecker.cpp" line="+33"/>
+        <location filename="../src/xmlpatterns/type/qtypechecker.cpp" line="+63"/>
         <source>Required type is %1, but %2 was found.</source>
         <translation>需要的类型是 %1，但是找到的是 %2。</translation>
     </message>
@@ -7565,7 +7594,7 @@ Please choose a different file name.</source>
         <translation>焦点未定义。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/utils/qoutputvalidator.cpp" line="+56"/>
+        <location filename="../src/xmlpatterns/utils/qoutputvalidator.cpp" line="+86"/>
         <source>It&apos;s not possible to add attributes after any other kind of node.</source>
         <translation>不能在任何其它类型节点后添加属性。</translation>
     </message>
@@ -7575,7 +7604,7 @@ Please choose a different file name.</source>
         <translation>一个名称为 %1 的属性已经被创建。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/utils/qxpathhelper_p.h" line="+90"/>
+        <location filename="../src/xmlpatterns/utils/qxpathhelper_p.h" line="+120"/>
         <source>Only the Unicode Codepoint Collation is supported(%1). %2 is unsupported.</source>
         <translation>只支持 Unicode 代码点校验(Unicode Codepoint Collation)(%1)。%2 是不被支持的。</translation>
     </message>
@@ -7585,7 +7614,7 @@ Please choose a different file name.</source>
         <translation>属性 %1 不能被串行化，因为它出现在最顶层。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/acceltree/qacceltreeresourceloader.cpp" line="+284"/>
+        <location filename="../src/xmlpatterns/acceltree/qacceltreeresourceloader.cpp" line="+314"/>
         <source>%1 is an unsupported encoding.</source>
         <translation> %1 是不被支持的编码。</translation>
     </message>
@@ -7600,14 +7629,18 @@ Please choose a different file name.</source>
         <translation>在使用编码%3的%2中出现的代码点%1不是一个有效的XML字符。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qapplytemplate.cpp" line="+89"/>
+        <location filename="../src/xmlpatterns/expr/qapplytemplate.cpp" line="+119"/>
         <source>Ambiguous rule match.</source>
         <translation>含糊规则匹配。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qcomputednamespaceconstructor.cpp" line="+39"/>
         <source>In a namespace constructor, the value for a namespace value cannot be an empty string.</source>
-        <translation>在一个命名空间构造中，命名空间的值不能为空字符串。</translation>
+        <translation type="obsolete">在一个命名空间构造中，命名空间的值不能为空字符串。</translation>
+    </message>
+    <message>
+        <location filename="../src/xmlpatterns/expr/qcomputednamespaceconstructor.cpp" line="+69"/>
+        <source>In a namespace constructor, the value for a namespace cannot be an empty string.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+11"/>
@@ -7625,12 +7658,12 @@ Please choose a different file name.</source>
         <translation>只有前缀%1可以绑定到%2，反之也一样</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qevaluationcache.cpp" line="+87"/>
+        <location filename="../src/xmlpatterns/expr/qevaluationcache.cpp" line="+117"/>
         <source>Circularity detected</source>
         <translation>检测到环</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qtemplate.cpp" line="+115"/>
+        <location filename="../src/xmlpatterns/expr/qtemplate.cpp" line="+145"/>
         <source>The parameter %1 is required, but no corresponding %2 is supplied.</source>
         <translation>需要参数%1，但是没有提供对应的%2。</translation>
     </message>
@@ -7640,12 +7673,12 @@ Please choose a different file name.</source>
         <translation>参数%1已传递，但没有相应的%2存在。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qunparsedtextfn.cpp" line="+35"/>
+        <location filename="../src/xmlpatterns/functions/qunparsedtextfn.cpp" line="+65"/>
         <source>The URI cannot have a fragment</source>
         <translation>URI不能有片段</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/parser/qxslttokenizer.cpp" line="+489"/>
+        <location filename="../src/xmlpatterns/parser/qxslttokenizer.cpp" line="+519"/>
         <source>Element %1 is not allowed at this location.</source>
         <translation>元素%1不能在这个位置。</translation>
     </message>
@@ -7700,7 +7733,7 @@ Please choose a different file name.</source>
         <translation>在元素%2的%1属性中至少要指定一个模式。</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/parser/qmaintainingreader.cpp" line="+153"/>
+        <location filename="../src/xmlpatterns/parser/qmaintainingreader.cpp" line="+183"/>
         <source>Attribute %1 cannot appear on the element %2. Only the standard attributes can appear.</source>
         <translation>属性%1不能出现在元素%2上。只有标准属性可以出现。</translation>
     </message>
@@ -7775,7 +7808,7 @@ Please choose a different file name.</source>
         <translation>元素%1不能有子元素。</translation>
     </message>
     <message>
-        <location line="+432"/>
+        <location line="+434"/>
         <source>Element %1 cannot have a sequence constructor.</source>
         <translation>元素%1不能有顺序构造。</translation>
     </message>

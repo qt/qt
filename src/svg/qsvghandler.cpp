@@ -2541,6 +2541,9 @@ static QSvgNode *createImageNode(QSvgNode *parent,
         return 0;
     }
 
+    if (image.format() == QImage::Format_ARGB32)
+        image = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+
     QSvgNode *img = new QSvgImage(parent,
                                   image,
                                   QRect(int(nx),

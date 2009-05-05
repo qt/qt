@@ -519,6 +519,15 @@ namespace Phonon
 
             qSwap(m_graphs[0], m_graphs[1]); //swap the graphs
 
+            if (currentGraph()->mediaSource().type() != Phonon::MediaSource::Invalid &&
+                catchComError(currentGraph()->renderResult())) {
+                    setState(Phonon::ErrorState);
+                    return;
+            }
+
+            //we need to play the next media
+            play();
+
             //we tell the video widgets to switch now to the new source
 #ifndef QT_NO_PHONON_VIDEO
             for (int i = 0; i < m_videoWidgets.count(); ++i) {
@@ -527,15 +536,6 @@ namespace Phonon
 #endif //QT_NO_PHONON_VIDEO
 
             emit currentSourceChanged(currentGraph()->mediaSource());
-
-            if (currentGraph()->isLoading()) {
-                //will simply tell that when loading is finished 
-                //it should start the playback
-                play(); 
-            }
-
-
-
             emit metaDataChanged(currentGraph()->metadata());
 
             if (nextGraph()->hasVideo() != currentGraph()->hasVideo()) {
@@ -548,15 +548,6 @@ namespace Phonon
 #ifndef QT_NO_PHONON_MEDIACONTROLLER
             setTitles(currentGraph()->titles());
 #endif //QT_NO_PHONON_MEDIACONTROLLER
-
-            //this manages only gapless transitions
-            if (currentGraph()->mediaSource().type() != Phonon::MediaSource::Invalid) {
-                if (catchComError(currentGraph()->renderResult())) {
-                    setState(Phonon::ErrorState);
-                } else {
-                    play();
-                }
-            }
         }
 
         Phonon::State MediaObject::state() const

@@ -169,31 +169,11 @@ VersionDialog::VersionDialog(QWidget *parent)
     VersionLabel *label = new VersionLabel;
     QLabel *lbl = new QLabel;
     QString version = tr("<h3>%1</h3><br/><br/>Version %2");
-#if QT_EDITION == QT_EDITION_OPENSOURCE
-    QString open = tr(" Open Source Edition");
-    version.append(open);
-#endif
     version = version.arg(tr("Qt Designer")).arg(QLatin1String(QT_VERSION_STR));
     version.append(tr("<br/>Qt Designer is a graphical user interface designer for Qt applications.<br/>"));
 
-    QString edition =
-#if QT_EDITION == QT_EDITION_OPENSOURCE
-                    tr("This version of Qt Designer is part of the Qt Open Source Edition, for use "
-                    "in the development of Open Source applications. "
-                    "Qt is a comprehensive C++ framework for cross-platform application "
-                    "development.<br/><br/>"
-                    "You need a commercial Qt license for development of proprietary (closed "
-                    "source) applications. Please see <a href=\"http://qtsoftware.com/company/about/businessmodel\">http://qtsoftware.com/company/about/businessmodel"
-                    ".html</a> for an overview of Qt licensing.<br/>");
-#elif defined(QT_PRODUCT_LICENSE)
-                    tr("This program is licensed to you under the terms of the "
-                    "Qt %1 License Agreement. For details, see the license file "
-                    "that came with this software distribution.<br/>").arg(QT_PRODUCT_LICENSE);
-#else
-                    tr("This program is licensed to you under the terms of the "
-                    "Qt Commercial License Agreement. For details, see the file LICENSE "
-                    "that came with this software distribution.<br/>");
-#endif
+    // TODO: Remove this variable for 4.6.0.  Must keep this way for 4.5.x due to string freeze
+    QString edition;
 
     lbl->setText(tr("%1"
                     "<br/>%2"

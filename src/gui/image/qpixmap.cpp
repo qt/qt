@@ -1359,14 +1359,6 @@ bool QPixmap::isDetached() const
 void QPixmap::deref()
 {
     if (data && !data->ref.deref()) { // Destroy image if last ref
-#if !defined(QT_NO_DIRECT3D) && defined(Q_WS_WIN)
-        if (data->classId() == QPixmapData::RasterClass) {
-            QRasterPixmapData *rData = static_cast<QRasterPixmapData*>(data);
-            if (rData->texture)
-                rData->texture->Release();
-            rData->texture = 0;
-        }
-#endif
         if (data->is_cached && qt_pixmap_cleanup_hook_64)
             qt_pixmap_cleanup_hook_64(cacheKey());
         delete data;
@@ -1903,7 +1895,7 @@ int QPixmap::defaultDepth()
     return QScreen::instance()->depth();
 #elif defined(Q_WS_X11)
     return QX11Info::appDepth();
-#elif defined(Q_OS_WINCE)
+#elif defined(Q_WS_WINCE)
     return QColormap::instance().depth();
 #elif defined(Q_WS_WIN)
     return 32; // XXX
@@ -1938,12 +1930,6 @@ void QPixmap::detach()
     if (id == QPixmapData::RasterClass) {
         QRasterPixmapData *rasterData = static_cast<QRasterPixmapData*>(data);
         rasterData->image.detach();
-#if defined(Q_WS_WIN) && !defined(QT_NO_DIRECT3D)
-        if (rasterData->texture) {
-            rasterData->texture->Release();
-            rasterData->texture = 0;
-        }
-#endif
     }
 
     if (data->is_cached && qt_pixmap_cleanup_hook_64 && data->ref == 1)

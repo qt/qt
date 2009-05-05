@@ -178,6 +178,7 @@ public:
     void addChild(QGraphicsItem *child);
     void removeChild(QGraphicsItem *child);
     void setParentItemHelper(QGraphicsItem *parent, bool deleting);
+    void childrenBoundingRectHelper(QTransform *x, QRectF *rect);
 
     virtual void resolveFont(uint inheritedMask)
     {
@@ -269,7 +270,7 @@ public:
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
 
     inline bool isFullyTransparent() const
-    { return hasEffectiveOpacity && qIsFuzzyNull(q_func()->effectiveOpacity()); }
+    { return hasEffectiveOpacity && qFuzzyIsNull(q_func()->effectiveOpacity()); }
 
     inline bool childrenCombineOpacity() const
     { return allChildrenCombineOpacity || children.isEmpty(); }

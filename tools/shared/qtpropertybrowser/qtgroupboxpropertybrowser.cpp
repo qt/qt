@@ -47,9 +47,7 @@
 #include <QtCore/QTimer>
 #include <QtCore/QMap>
 
-#if QT_VERSION >= 0x040400
 QT_BEGIN_NAMESPACE
-#endif
 
 class QtGroupBoxPropertyBrowserPrivate
 {
@@ -528,8 +526,6 @@ void QtGroupBoxPropertyBrowser::itemChanged(QtBrowserItem *item)
     d_ptr->propertyChanged(item);
 }
 
-#if QT_VERSION >= 0x040400
 QT_END_NAMESPACE
-#endif
 
 #include "moc_qtgroupboxpropertybrowser.cpp"

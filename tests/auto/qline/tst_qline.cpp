@@ -201,8 +201,8 @@ void tst_QLine::testIntersection_data()
         b = b.translated(1, 1);
 
         QTest::newRow(qPrintable(QString::fromLatin1("rotation-%0").arg(i)))
-            << a.x1() << a.y1() << a.x2() << a.y2()
-            << b.x1() << b.y1() << b.x2() << b.y2()
+            << (double)a.x1() << (double)a.y1() << (double)a.x2() << (double)a.y2()
+            << (double)b.x1() << (double)b.y1() << (double)b.x2() << (double)b.y2()
             << int(QLineF::BoundedIntersection)
             << 1.0
             << 1.0;
@@ -232,8 +232,8 @@ void tst_QLine::testIntersection()
 
     QCOMPARE(int(itype), type);
     if (type != QLineF::NoIntersection) {
-        QCOMPARE(ip.x(), qreal(ix));
-        QCOMPARE(ip.y(), qreal(iy));
+        QVERIFY(qAbs(ip.x() - ix) < epsilon);
+        QVERIFY(qAbs(ip.y() - iy) < epsilon);
     }
 }
 

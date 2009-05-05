@@ -1760,7 +1760,10 @@ void QX11PaintEngine::drawPath(const QPainterPath &path)
         QRectF deviceRect(0, 0, d->pdev->width(), d->pdev->height());
         // necessary to get aliased alphablended primitives to be drawn correctly
         if (d->cpen.isCosmetic() || d->has_scaling_xform) {
-            stroker.setWidth(width == 0 ? 1 : width * d->xform_scale);
+            if (d->cpen.isCosmetic())
+                stroker.setWidth(width == 0 ? 1 : width);
+            else
+                stroker.setWidth(width * d->xform_scale);
             stroker.d_ptr->stroker.setClipRect(deviceRect);
             stroke = stroker.createStroke(path * d->matrix);
             if (stroke.isEmpty())
@@ -2349,7 +2352,9 @@ void QX11PaintEngine::drawFreetype(const QPointF &p, const QTextItemInt &ti)
         GlyphSet glyphSet = set->id;
         const QColor &pen = d->cpen.color();
         ::Picture src = X11->getSolidFill(d->scrn, pen);
-        XRenderPictFormat *maskFormat = XRenderFindStandardFormat(X11->display, ft->xglyph_format);
+        XRenderPictFormat *maskFormat = 0;
+        if (ft->xglyph_format != PictStandardA1)
+            maskFormat = XRenderFindStandardFormat(X11->display, ft->xglyph_format);
 
         enum { t_min = SHRT_MIN, t_max = SHRT_MAX };
 

@@ -47,7 +47,7 @@
 QT_BEGIN_NAMESPACE
 class QLabel;
 QT_END_NAMESPACE
-
+//! [0]
 class Window : public QWidget
 {
     Q_OBJECT
@@ -55,5 +55,6 @@ class Window : public QWidget
 public:
     Window();
 };
+//! [0]
 
 #endif

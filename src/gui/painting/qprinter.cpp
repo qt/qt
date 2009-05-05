@@ -284,6 +284,10 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
   to send PostScript or PDF output to the printer. As an alternative,
   the printProgram() function can be used to specify the command or utility
   to use instead of the system default.
+  
+  Note that setting parameters like paper size and resolution on an 
+  invalid printer is undefined. You can use QPrinter::isValid() to
+  verify this before changing any parameters.
 
   QPrinter supports a number of parameters, most of which can be
   changed by the end user through a \l{QPrintDialog}{print dialog}. In
@@ -830,11 +834,15 @@ void QPrinter::setPrinterName(const QString &name)
 #endif
 
     QList<QPrinterInfo> prnList = QPrinterInfo::availablePrinters();
-    d->validPrinter = false;
-    for (int i = 0; i < prnList.size(); ++i) {
-        if (prnList[i].printerName() == name) {
-            d->validPrinter = true;
-            break;
+    if (name.isEmpty()) {
+        d->validPrinter = d->outputFormat == QPrinter::PdfFormat || d->outputFormat == QPrinter::PostScriptFormat;
+    } else {
+        d->validPrinter = false;
+        for (int i = 0; i < prnList.size(); ++i) {
+            if (prnList[i].printerName() == name) {
+                d->validPrinter = true;
+                break;
+            }
         }
     }
 

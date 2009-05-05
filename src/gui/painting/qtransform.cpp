@@ -353,8 +353,8 @@ QTransform QTransform::inverted(bool *invertible) const
         invert.affine._dy = -affine._dy;
         break;
     case TxScale:
-        inv = !qIsFuzzyNull(affine._m11);
-        inv &= !qIsFuzzyNull(affine._m22);
+        inv = !qFuzzyIsNull(affine._m11);
+        inv &= !qFuzzyIsNull(affine._m22);
         if (inv) {
             invert.affine._m11 = 1. / affine._m11;
             invert.affine._m22 = 1. / affine._m22;
@@ -369,7 +369,7 @@ QTransform QTransform::inverted(bool *invertible) const
     default:
         // general case
         qreal det = determinant();
-        inv = !qIsFuzzyNull(det);
+        inv = !qFuzzyIsNull(det);
         if (inv)
             invert = adjoint() / det;
         break;
@@ -1387,11 +1387,15 @@ QRegion QTransform::map(const QRegion &r) const
     TransformationType t = inline_type();
     if (t == TxNone)
         return r;
+
     if (t == TxTranslate) {
         QRegion copy(r);
         copy.translate(qRound(affine._dx), qRound(affine._dy));
         return copy;
     }
+
+    if (t == TxScale && r.numRects() == 1)
+        return QRegion(mapRect(r.boundingRect()));
 
     QPainterPath p = map(qt_regionToPath(r));
     return p.toFillPolygon(QTransform()).toPolygon();
@@ -1784,13 +1788,12 @@ QRect QTransform::mapRect(const QRect &rect) const
         return QRect(x, y, w, h);
     } else if (t < TxProject) {
         // see mapToPolygon for explanations of the algorithm.
-        qreal x0 = 0, y0 = 0;
-        qreal x, y;
-        MAP(rect.left(), rect.top(), x0, y0);
-        qreal xmin = x0;
-        qreal ymin = y0;
-        qreal xmax = x0;
-        qreal ymax = y0;
+        qreal x = 0, y = 0;
+        MAP(rect.left(), rect.top(), x, y);
+        qreal xmin = x;
+        qreal ymin = y;
+        qreal xmax = x;
+        qreal ymax = y;
         MAP(rect.right() + 1, rect.top(), x, y);
         xmin = qMin(xmin, x);
         ymin = qMin(ymin, y);
@@ -1854,13 +1857,12 @@ QRectF QTransform::mapRect(const QRectF &rect) const
         }
         return QRectF(x, y, w, h);
     } else if (t < TxProject) {
-        qreal x0 = 0, y0 = 0;
-        qreal x, y;
-        MAP(rect.x(), rect.y(), x0, y0);
-        qreal xmin = x0;
-        qreal ymin = y0;
-        qreal xmax = x0;
-        qreal ymax = y0;
+        qreal x = 0, y = 0;
+        MAP(rect.x(), rect.y(), x, y);
+        qreal xmin = x;
+        qreal ymin = y;
+        qreal xmax = x;
+        qreal ymax = y;
         MAP(rect.x() + rect.width(), rect.y(), x, y);
         xmin = qMin(xmin, x);
         ymin = qMin(ymin, y);
@@ -1958,27 +1960,27 @@ QTransform::TransformationType QTransform::type() const
 
     switch (static_cast<TransformationType>(m_dirty)) {
     case TxProject:
-        if (!qIsFuzzyNull(m_13) || !qIsFuzzyNull(m_23) || !qIsFuzzyNull(m_33 - 1)) {
+        if (!qFuzzyIsNull(m_13) || !qFuzzyIsNull(m_23) || !qFuzzyIsNull(m_33 - 1)) {
              m_type = TxProject;
              break;
          }
     case TxShear:
     case TxRotate:
-        if (!qIsFuzzyNull(affine._m12) || !qIsFuzzyNull(affine._m21)) {
+        if (!qFuzzyIsNull(affine._m12) || !qFuzzyIsNull(affine._m21)) {
             const qreal dot = affine._m11 * affine._m12 + affine._m21 * affine._m22;
-            if (qIsFuzzyNull(dot))
+            if (qFuzzyIsNull(dot))
                 m_type = TxRotate;
             else
                 m_type = TxShear;
             break;
         }
     case TxScale:
-        if (!qIsFuzzyNull(affine._m11 - 1) || !qIsFuzzyNull(affine._m22 - 1)) {
+        if (!qFuzzyIsNull(affine._m11 - 1) || !qFuzzyIsNull(affine._m22 - 1)) {
             m_type = TxScale;
             break;
         }
     case TxTranslate:
-        if (!qIsFuzzyNull(affine._dx) || !qIsFuzzyNull(affine._dy)) {
+        if (!qFuzzyIsNull(affine._dx) || !qFuzzyIsNull(affine._dy)) {
             m_type = TxTranslate;
             break;
         }

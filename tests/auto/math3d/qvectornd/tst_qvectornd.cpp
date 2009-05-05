@@ -2040,24 +2040,6 @@ void tst_QVector::dotProduct4()
     QCOMPARE(QVector4D::dotProduct(v1, v2), d);
 }
 
-// Force the fixed-point version of the test case to put a
-// different test name on the front of failure reports.
-class tst_QVectorFixed : public tst_QVector
-{
-    Q_OBJECT
-public:
-    tst_QVectorFixed() {}
-    ~tst_QVectorFixed() {}
-};
-
-#ifdef QT_GL_FIXED_PREFERRED
-
-QTEST_APPLESS_MAIN(tst_QVectorFixed)
-
-#else
-
 QTEST_APPLESS_MAIN(tst_QVector)
-
-#endif
 
 #include "tst_qvectornd.moc"

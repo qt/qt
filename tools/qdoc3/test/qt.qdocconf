@@ -8,7 +8,7 @@ project                 = Qt
 versionsym              =
 version                 = %VERSION%
 description             = Qt Reference Documentation
-url                     = http://doc.trolltech.com/4.5
+url                     = http://doc.qtsoftware.com/4.5
 
 edition.Console.modules = QtCore QtDBus QtNetwork QtScript QtSql QtXml \
                           QtXmlPatterns QtTest
@@ -22,10 +22,10 @@ edition.DesktopLight.groups       = -graphicsview-api
 qhp.projects            = Qt
 
 qhp.Qt.file                = qt.qhp
-qhp.Qt.namespace           = com.trolltech.qt.450
+qhp.Qt.namespace           = com.trolltech.qt.452
 qhp.Qt.virtualFolder       = qdoc
 qhp.Qt.indexTitle          = Qt Reference Documentation
-qhp.Qt.indexRoot           = 
+qhp.Qt.indexRoot           =
 
 # Files not referenced in any qdoc file (last four are needed by qtdemo)
 # See also extraimages.HTML
@@ -35,7 +35,7 @@ qhp.Qt.extraFiles          = classic.css \
                              images/taskmenuextension-example.png \
                              images/coloreditorfactoryimage.png \
                              images/dynamiclayouts-example.png \
-                             images/stylesheet-coffee-plastique.png                             
+                             images/stylesheet-coffee-plastique.png
 
 qhp.Qt.filterAttributes    = qt 4.6.0 qtrefdoc
 qhp.Qt.customFilters.Qt.name = Qt 4.6.0
@@ -107,7 +107,8 @@ exampledirs             = $QTDIR/doc/src \
                           $QTDIR/examples \
                           $QTDIR/examples/tutorials \
                           $QTDIR \
-                          $QTDIR/qmake/examples
+                          $QTDIR/qmake/examples \
+                          $QTDIR/src/3rdparty/webkit/WebKit/qt/docs
 imagedirs               = $QTDIR/doc/src/images \
                           $QTDIR/examples
 outputdir               = $QTDIR/doc/html

@@ -271,7 +271,7 @@ void TextEditor::fileActionActivated()
     const QString newPath = m_core->dialogGui()->getOpenFileName(this, tr("Choose a File"), oldPath);
     if (newPath.isEmpty() || newPath == oldPath)
         return;
-    const QString newText = QLatin1String("file:") + newPath;
+    const QString newText = QUrl::fromLocalFile(newPath).toString();
     m_editor->setText(newText);
     emit textChanged(newText);
 }

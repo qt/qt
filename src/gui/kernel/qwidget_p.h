@@ -177,11 +177,6 @@ struct QWExtra {
 //bit flags at the end to improve packing
 #if defined(Q_WS_WIN)
     uint shown_mode : 8; // widget show mode
-#ifndef QT_NO_DIRECT3D
-    uint had_paint_on_screen : 1;
-    uint had_no_system_bg : 1;
-    uint had_auto_fill_bg : 1;
-#endif
 #endif
 #if defined(Q_WS_X11)
     uint compress_events : 1;
@@ -257,6 +252,8 @@ public:
     void macUpdateIsOpaque();
     void setEnabled_helper_sys(bool enable);
     bool isRealWindow() const;
+    void adjustWithinMaxAndMinSize(int &w, int &h);
+    void applyMaxAndMinSizeOnWindow();
 #endif
 
     void raise_sys();
@@ -535,6 +532,7 @@ public:
     uint inDirtyList : 1;
     uint isScrolled : 1;
     uint isMoved : 1;
+    uint usesDoubleBufferedGLContext : 1;
 
 #ifdef Q_WS_WIN
     uint noPaintOnScreen : 1; // see qwidget_win.cpp ::paintEngine()

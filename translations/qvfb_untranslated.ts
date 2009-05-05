@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0">
+<!DOCTYPE TS>
+<TS version="2.0">
 <context>
     <name>AnimationSaveWidget</name>
     <message>
-        <location filename="../tools/qvfb/qvfb.cpp" line="+824"/>
+        <location filename="../tools/qvfb/qvfb.cpp" line="+850"/>
         <location line="+204"/>
         <source>Record</source>
         <translation type="unfinished"></translation>
@@ -248,7 +249,7 @@
 <context>
     <name>DeviceSkin</name>
     <message>
-        <location filename="../tools/shared/deviceskin/deviceskin.cpp" line="+49"/>
+        <location filename="../tools/shared/deviceskin/deviceskin.cpp" line="+79"/>
         <source>The image file &apos;%1&apos; could not be loaded.</source>
         <translation type="unfinished"></translation>
     </message>

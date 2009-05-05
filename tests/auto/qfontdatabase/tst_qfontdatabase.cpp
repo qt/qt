@@ -149,9 +149,7 @@ void tst_QFontDatabase::fixedPitch()
     if (!fdb.families().contains(font))
 	QSKIP( "Font not installed", SkipSingle);
 
-#if QT_VERSION >= 0x030200
     QCOMPARE(fdb.isFixedPitch(font), fixedPitch);
-#endif
 
     QFont qfont(font);
     QFontInfo fi(qfont);

@@ -86,9 +86,9 @@ QT_BEGIN_NAMESPACE
 
 MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     : QMainWindow(parent)
+    , m_filterCombo(0)
     , m_toolBarMenu(0)
     , m_cmdLine(cmdLine)
-    , m_searchWidget(0)
     , m_progressWidget(0)
     , m_qtDocInstaller(0)
     , m_connectedInitSignals(false)
@@ -125,20 +125,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     connect(searchEngine, SIGNAL(indexingStarted()), this, SLOT(indexingStarted()));
     connect(searchEngine, SIGNAL(indexingFinished()), this, SLOT(indexingFinished()));
 
-#ifdef QT_CLUCENE_SUPPORT
     m_centralWidget->createSearchWidget(searchEngine);
-#else
-    QDockWidget *dock = new QDockWidget(tr("Search"), this);
-    dock->setObjectName(QLatin1String("SearchWindow"));
-    m_searchWidget = new SearchWidget(searchEngine, this);
-    dock->setWidget(m_searchWidget);
-    addDockWidget(Qt::LeftDockWidgetArea, dock);
-
-    connect(m_searchWidget, SIGNAL(requestShowLink(const QUrl&)),
-        m_centralWidget, SLOT(setSource(const QUrl&)));
-    connect(m_searchWidget, SIGNAL(requestShowLinkInNewTab(const QUrl&)),
-        m_centralWidget, SLOT(setSourceInNewTab(const QUrl&)));
-#endif
 
     QString defWindowTitle = tr("Qt Assistant");
     setWindowTitle(defWindowTitle);
@@ -228,6 +215,20 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         else if (m_cmdLine->bookmarks() == CmdLineParser::Activate)
             showBookmarks();
 
+        if (!m_cmdLine->currentFilter().isEmpty()) {
+            const QString &curFilter = m_cmdLine->currentFilter();
+            m_helpEngine->setCurrentFilter(curFilter);
+            if (m_filterCombo) {
+                int idx = m_filterCombo->findText(curFilter);
+                if (idx >= 0) {
+                    bool blocked = m_filterCombo->signalsBlocked();
+                    m_filterCombo->blockSignals(true);
+                    m_filterCombo->setCurrentIndex(idx);
+                    m_filterCombo->blockSignals(blocked);
+                }
+            }
+        }
+
         if (usesDefaultCollection())
             QTimer::singleShot(0, this, SLOT(lookForNewQtDocumentation()));
         else
@@ -304,6 +305,7 @@ bool MainWindow::initHelpDB()
             hc.addCustomFilter(tr("Unfiltered"), QStringList());
             hc.setCustomValue(unfiltered, 1);
         }
+
         m_helpEngine->blockSignals(true);
         m_helpEngine->setCurrentFilter(tr("Unfiltered"));
         m_helpEngine->blockSignals(false);
@@ -318,10 +320,10 @@ bool MainWindow::initHelpDB()
 void MainWindow::lookForNewQtDocumentation()
 {
     m_qtDocInstaller = new QtDocInstaller(m_helpEngine->collectionFile());
-    connect(m_qtDocInstaller, SIGNAL(errorMessage(const QString&)),
-        this, SLOT(displayInstallationError(const QString&)));
-    connect(m_qtDocInstaller, SIGNAL(docsInstalled(bool)),
-        this, SLOT(qtDocumentationInstalled(bool)));
+    connect(m_qtDocInstaller, SIGNAL(errorMessage(QString)), this,
+        SLOT(displayInstallationError(QString)));
+    connect(m_qtDocInstaller, SIGNAL(docsInstalled(bool)), this,
+        SLOT(qtDocumentationInstalled(bool)));
 
     QString versionKey = QString(QLatin1String("qtVersion%1$$$qt")).
         arg(QLatin1String(QT_VERSION_STR));
@@ -353,8 +355,8 @@ void MainWindow::checkInitState()
         if (!m_connectedInitSignals) {
             connect(m_helpEngine->contentModel(), SIGNAL(contentsCreated()),
                 this, SLOT(checkInitState()));
-            connect(m_helpEngine->indexModel(), SIGNAL(indexCreated()),
-                this, SLOT(checkInitState()));
+            connect(m_helpEngine->indexModel(), SIGNAL(indexCreated()), this,
+                SLOT(checkInitState()));
             m_connectedInitSignals = true;
         }
     } else {
@@ -533,6 +535,8 @@ void MainWindow::setupActions()
         SLOT(copyAvailable(bool)));
     connect(m_centralWidget, SIGNAL(currentViewerChanged()), this,
         SLOT(updateNavigationItems()));
+    connect(m_centralWidget, SIGNAL(currentViewerChanged()), this,
+        SLOT(updateTabCloseAction()));
     connect(m_centralWidget, SIGNAL(forwardAvailable(bool)), this,
         SLOT(updateNavigationItems()));
     connect(m_centralWidget, SIGNAL(backwardAvailable(bool)), this,
@@ -601,8 +605,8 @@ void MainWindow::setupFilterToolbar()
 
     connect(m_helpEngine, SIGNAL(setupFinished()), this,
         SLOT(setupFilterCombo()));
-    connect(m_filterCombo, SIGNAL(activated(const QString&)), this,
-        SLOT(filterDocumentation(const QString&)));
+    connect(m_filterCombo, SIGNAL(activated(QString)), this,
+        SLOT(filterDocumentation(QString)));
 
     setupFilterCombo();
 }
@@ -626,12 +630,12 @@ void MainWindow::setupAddressToolbar()
     toolBarMenu()->addAction(addressToolBar->toggleViewAction());
 
     // address lineedit
-    connect(m_addressLineEdit, SIGNAL(returnPressed()),
-        this, SLOT(gotoAddress()));
-    connect(m_centralWidget, SIGNAL(currentViewerChanged()),
-        this, SLOT(showNewAddress()));
-    connect(m_centralWidget, SIGNAL(sourceChanged(const QUrl&)),
-        this, SLOT(showNewAddress(const QUrl&)));
+    connect(m_addressLineEdit, SIGNAL(returnPressed()), this,
+        SLOT(gotoAddress()));
+    connect(m_centralWidget, SIGNAL(currentViewerChanged()), this,
+        SLOT(showNewAddress()));
+    connect(m_centralWidget, SIGNAL(sourceChanged(QUrl)), this,
+        SLOT(showNewAddress(QUrl)));
 }
 
 void MainWindow::updateAboutMenuText()
@@ -695,8 +699,12 @@ void MainWindow::updateNavigationItems()
     m_printAction->setEnabled(hasCurrentViewer);
     m_nextAction->setEnabled(m_centralWidget->isForwardAvailable());
     m_backAction->setEnabled(m_centralWidget->isBackwardAvailable());
-    m_closeTabAction->setEnabled(hasCurrentViewer);
     m_newTabAction->setEnabled(hasCurrentViewer);
+}
+
+void MainWindow::updateTabCloseAction()
+{
+    m_closeTabAction->setEnabled(m_centralWidget->enableTabCloseAction());
 }
 
 void MainWindow::showTopicChooser(const QMap<QString, QUrl> &links,
@@ -712,10 +720,10 @@ void MainWindow::showPreferences()
 {
     PreferencesDialog dia(m_helpEngine, this);
 
-    connect(&dia, SIGNAL(updateApplicationFont()),
-        this, SLOT(updateApplicationFont()));
-    connect(&dia, SIGNAL(updateBrowserFont()),
-        m_centralWidget, SLOT(updateBrowserFont()));
+    connect(&dia, SIGNAL(updateApplicationFont()), this,
+        SLOT(updateApplicationFont()));
+    connect(&dia, SIGNAL(updateBrowserFont()), m_centralWidget,
+        SLOT(updateBrowserFont()));
 
     dia.showDialog();
 }
@@ -787,26 +795,11 @@ void MainWindow::showAboutDialog()
             aboutDia.setPixmap(pix);
         aboutDia.setWindowTitle(aboutDia.documentTitle());
     } else {
-#if QT_EDITION == QT_EDITION_OPENSOURCE
-        QString edition = tr("Open Source Edition");
-        QString info = tr("This version of Qt Assistant is part of the Qt Open "
-            "Source Edition, for use "
-            "in the development of Open Source applications. "
-            "Qt is a comprehensive C++ framework for cross-platform application "
-            "development.");
-        QString moreInfo = tr("You need a commercial Qt license for development "
-            "of proprietary (closed source) applications. Please see "
-            "<a href=\"http://qtsoftware.com/company/about/businessmodel"
-            "\">http://qtsoftware.com/company/about/businessmodel</a> for an "
-            "overview of Qt licensing.");
-#else
+        // TODO: Remove these variables for 4.6.0.  Must keep this way for 4.5.x due to string freeze.
         QString edition;
         QString info;
-        QString moreInfo(tr("This program is licensed to you under the terms of the "
-            "Qt Commercial License Agreement. For details, see the file LICENSE "
-            "that came with this software distribution."));
+        QString moreInfo;
 
-#endif
         QByteArray resources;
         aboutDia.setText(QString::fromLatin1("<center>"
             "<h3>%1</h3>"
@@ -884,19 +877,12 @@ void MainWindow::activateCurrentCentralWidgetTab()
 
 void MainWindow::showSearch()
 {
-    if (m_searchWidget)
-        activateDockWidget(m_searchWidget);
-    else
-        m_centralWidget->activateSearch();
+    m_centralWidget->activateSearchWidget();
 }
 
 void MainWindow::hideSearch()
 {
-    if (m_searchWidget) {
-        m_searchWidget->parentWidget()->parentWidget()->hide();
-    } else {
-        m_centralWidget->removeSearchWidget();
-    }
+    m_centralWidget->removeSearchWidget();
 }
 
 void MainWindow::updateApplicationFont()
@@ -965,8 +951,7 @@ QWidget* MainWindow::setupBookmarkWidget()
 {
     m_bookmarkManager = new BookmarkManager(m_helpEngine);
     m_bookmarkWidget = new BookmarkWidget(m_bookmarkManager, this);
-    connect(m_bookmarkWidget, SIGNAL(addBookmark()),
-        this, SLOT(addBookmark()));
+    connect(m_bookmarkWidget, SIGNAL(addBookmark()), this, SLOT(addBookmark()));
     return m_bookmarkWidget;
 }
 

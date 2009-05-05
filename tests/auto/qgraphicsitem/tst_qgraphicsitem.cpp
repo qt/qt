@@ -42,10 +42,6 @@
 
 #include <QtTest/QtTest>
 
-#if QT_VERSION < 0x040200
-QTEST_NOOP_MAIN
-#else
-
 #include <private/qtextcontrol_p.h>
 #include <private/qgraphicsitem_p.h>
 #include <QAbstractTextDocumentLayout>
@@ -163,6 +159,8 @@ private slots:
     void mapFromToParent();
     void mapFromToScene();
     void mapFromToItem();
+    void mapRectFromToParent_data();
+    void mapRectFromToParent();
     void isAncestorOf();
     void commonAncestorItem();
     void data();
@@ -174,6 +172,7 @@ private slots:
     void boundingRects2();
     void sceneBoundingRect();
     void childrenBoundingRect();
+    void childrenBoundingRectTransformed();
     void group();
     void setGroup();
     void nestedGroups();
@@ -217,10 +216,12 @@ private slots:
     void tabChangesFocus();
     void tabChangesFocus_data();
     void cacheMode();
+    void updateCachedItemAfterMove();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
     void task128696_textItemEnsureMovable();
+    void ensureUpdateOnTextItem();
     void task177918_lineItemUndetected();
     void task240400_clickOnTextItem_data();
     void task240400_clickOnTextItem();
@@ -2539,6 +2540,87 @@ void tst_QGraphicsItem::mapFromToItem()
     delete item4;
 }
 
+void tst_QGraphicsItem::mapRectFromToParent_data()
+{
+    QTest::addColumn<bool>("parent");
+    QTest::addColumn<QPointF>("parentPos");
+    QTest::addColumn<QTransform>("parentTransform");
+    QTest::addColumn<QPointF>("pos");
+    QTest::addColumn<QTransform>("transform");
+    QTest::addColumn<QRectF>("inputRect");
+    QTest::addColumn<QRectF>("outputRect");
+
+    QTest::newRow("nil") << false << QPointF() << QTransform() << QPointF() << QTransform() << QRectF() << QRectF();
+    QTest::newRow("simple") << false << QPointF() << QTransform() << QPointF() << QTransform()
+                            << QRectF(0, 0, 10, 10) << QRectF(0, 0, 10, 10);
+    QTest::newRow("simple w/parent") << true
+                                     << QPointF() << QTransform()
+                                     << QPointF() << QTransform()
+                                     << QRectF(0, 0, 10, 10) << QRectF(0, 0, 10, 10);
+    QTest::newRow("simple w/parent parentPos") << true
+                                               << QPointF(50, 50) << QTransform()
+                                               << QPointF() << QTransform()
+                                               << QRectF(0, 0, 10, 10) << QRectF(0, 0, 10, 10);
+    QTest::newRow("simple w/parent parentPos parentRotation") << true
+                                                              << QPointF(50, 50) << QTransform().rotate(45)
+                                                              << QPointF() << QTransform()
+                                                              << QRectF(0, 0, 10, 10) << QRectF(0, 0, 10, 10);
+    QTest::newRow("pos w/parent") << true
+                                  << QPointF() << QTransform()
+                                  << QPointF(50, 50) << QTransform()
+                                  << QRectF(0, 0, 10, 10) << QRectF(50, 50, 10, 10);
+    QTest::newRow("rotation w/parent") << true
+                                       << QPointF() << QTransform()
+                                       << QPointF() << QTransform().rotate(90)
+                                       << QRectF(0, 0, 10, 10) << QRectF(-10, 0, 10, 10);
+    QTest::newRow("pos rotation w/parent") << true
+                                           << QPointF() << QTransform()
+                                           << QPointF(50, 50) << QTransform().rotate(90)
+                                           << QRectF(0, 0, 10, 10) << QRectF(40, 50, 10, 10);
+    QTest::newRow("pos rotation w/parent parentPos parentRotation") << true
+                                                                    << QPointF(-170, -190) << QTransform().rotate(90)
+                                                                    << QPointF(50, 50) << QTransform().rotate(90)
+                                                                    << QRectF(0, 0, 10, 10) << QRectF(40, 50, 10, 10);
+}
+
+void tst_QGraphicsItem::mapRectFromToParent()
+{
+    QFETCH(bool, parent);
+    QFETCH(QPointF, parentPos);
+    QFETCH(QTransform, parentTransform);
+    QFETCH(QPointF, pos);
+    QFETCH(QTransform, transform);
+    QFETCH(QRectF, inputRect);
+    QFETCH(QRectF, outputRect);
+
+    QGraphicsRectItem *rect = new QGraphicsRectItem;
+    rect->setPos(pos);
+    rect->setTransform(transform);
+
+    if (parent) {
+        QGraphicsRectItem *rectParent = new QGraphicsRectItem;
+        rect->setParentItem(rectParent);
+        rectParent->setPos(parentPos);
+        rectParent->setTransform(parentTransform);
+    }
+
+    // Make sure we use non-destructive transform operations (e.g., 90 degree
+    // rotations).
+    QCOMPARE(rect->mapRectToParent(inputRect), outputRect);
+    QCOMPARE(rect->mapRectFromParent(outputRect), inputRect);
+    QCOMPARE(rect->itemTransform(rect->parentItem()).mapRect(inputRect), outputRect);
+    QCOMPARE(rect->mapToParent(inputRect).boundingRect(), outputRect);
+    QCOMPARE(rect->mapToParent(QPolygonF(inputRect)).boundingRect(), outputRect);
+    QCOMPARE(rect->mapFromParent(outputRect).boundingRect(), inputRect);
+    QCOMPARE(rect->mapFromParent(QPolygonF(outputRect)).boundingRect(), inputRect);
+    QPainterPath inputPath;
+    inputPath.addRect(inputRect);
+    QPainterPath outputPath;
+    outputPath.addRect(outputRect);
+    QCOMPARE(rect->mapToParent(inputPath).boundingRect(), outputPath.boundingRect());
+    QCOMPARE(rect->mapFromParent(outputPath).boundingRect(), inputPath.boundingRect());
+}
+
 void tst_QGraphicsItem::isAncestorOf()
 {
     QGraphicsItem *grandPa = new QGraphicsRectItem;
@@ -2836,7 +2918,55 @@ void tst_QGraphicsItem::childrenBoundingRect()
     childChild->setParentItem(child);
     childChild->setPos(500, 500);
     child->rotate(90);
+
+
+    scene.addPolygon(parent->mapToScene(parent->boundingRect() | parent->childrenBoundingRect()))->setPen(QPen(Qt::red));;
+
+    QGraphicsView view(&scene);
+    view.show();
+
+    QTest::qWait(5000);
+
     QCOMPARE(parent->childrenBoundingRect(), QRectF(-500, -100, 600, 800));
+}
+
+void tst_QGraphicsItem::childrenBoundingRectTransformed()
+{
+    QGraphicsScene scene;
+
+    QGraphicsRectItem *rect = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsRectItem *rect2 = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsRectItem *rect3 = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsRectItem *rect4 = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsRectItem *rect5 = scene.addRect(QRectF(0, 0, 100, 100));
+    rect2->setParentItem(rect);
+    rect3->setParentItem(rect2);
+    rect4->setParentItem(rect3);
+    rect5->setParentItem(rect4);
+
+    rect2->setTransform(QTransform().translate(50, 50).rotate(45));
+    rect2->setPos(25, 25);
+    rect3->setTransform(QTransform().translate(50, 50).rotate(45));
+    rect3->setPos(25, 25);
+    rect4->setTransform(QTransform().translate(50, 50).rotate(45));
+    rect4->setPos(25, 25);
+    rect5->setTransform(QTransform().translate(50, 50).rotate(45));
+    rect5->setPos(25, 25);
+
+    QRectF subTreeRect = rect->childrenBoundingRect();
+    QCOMPARE(subTreeRect.left(), qreal(-206.0660171779821));
+    QCOMPARE(subTreeRect.top(), qreal(75.0));
+    QCOMPARE(subTreeRect.width(), qreal(351.7766952966369));
+    QCOMPARE(subTreeRect.height(), qreal(251.7766952966369));
+
+    rect->rotate(45);
+    rect2->rotate(-45);
+    rect3->rotate(45);
+    rect4->rotate(-45);
+    rect5->rotate(45);
+
+    subTreeRect = rect->childrenBoundingRect();
+    QCOMPARE(rect->childrenBoundingRect(), QRectF(-100, 75, 275, 250));
 }
 
 void tst_QGraphicsItem::group()
@@ -3582,6 +3712,8 @@ void tst_QGraphicsItem::defaultItemTest_QGraphicsEllipseItem()
 class ItemChangeTester : public QGraphicsRectItem
 {
 public:
+    ItemChangeTester(){}
+    ItemChangeTester(QGraphicsItem *parent) : QGraphicsRectItem(parent) {}
     QVariant itemChangeReturnValue;
     QGraphicsScene *itemSceneChangeTargetScene;
 
@@ -3870,6 +4002,39 @@ void tst_QGraphicsItem::itemChange()
         QCOMPARE(tester.changes.size(), ++changeCount);
         QCOMPARE(tester.changes.last(), QGraphicsItem::ItemChildRemovedChange);
         QCOMPARE(qVariantValue<QGraphicsItem *>(tester.values.last()), (QGraphicsItem *)&testerHelper);
+
+        // ItemChildRemovedChange 1
+        ItemChangeTester *test = new ItemChangeTester;
+        test->itemSceneChangeTargetScene = 0;
+        int count = 0;
+        QGraphicsScene *scene = new QGraphicsScene;
+        scene->addItem(test);
+        count = test->changes.size();
+        //We test here the fact that when a child is deleted the parent receive only one ItemChildRemovedChange
+        QGraphicsRectItem *child = new QGraphicsRectItem(test);
+        //We received ItemChildAddedChange
+        QCOMPARE(test->changes.size(), ++count);
+        QCOMPARE(test->changes.last(), QGraphicsItem::ItemChildAddedChange);
+        delete child;
+        child = 0;
+        QCOMPARE(test->changes.size(), ++count);
+        QCOMPARE(test->changes.last(), QGraphicsItem::ItemChildRemovedChange);
+
+        ItemChangeTester *childTester = new ItemChangeTester(test);
+        //Changes contains all sceneHasChanged and so on, we don't want to test that
+        int childCount = childTester->changes.size();
+        //We received ItemChildAddedChange
+        QCOMPARE(test->changes.size(), ++count);
+        child = new QGraphicsRectItem(childTester);
+        //We received ItemChildAddedChange
+        QCOMPARE(childTester->changes.size(), ++childCount);
+        QCOMPARE(childTester->changes.last(), QGraphicsItem::ItemChildAddedChange);
+        //Delete the child of the top level with all its children
+        delete childTester;
+        //Only one removal
+        QCOMPARE(test->changes.size(), ++count);
+        QCOMPARE(test->changes.last(), QGraphicsItem::ItemChildRemovedChange);
+        delete scene;
     }
     {
         // ItemChildRemovedChange 2
@@ -4059,6 +4224,25 @@ void tst_QGraphicsItem::sceneEventFilter()
     QCOMPARE(tester->filteredEventReceivers.at(6), static_cast<QGraphicsItem *>(text2));
 
     QVERIFY(text2->hasFocus());
+
+    //Let check if the items are correctly removed from the sceneEventFilters array
+    //to avoid stale pointers.
+    QGraphicsView gv;
+    QGraphicsScene *anotherScene = new QGraphicsScene;
+    QGraphicsTextItem *ti = anotherScene->addText("This is a test #1");
+    ti->moveBy(50, 50);
+    QGraphicsTextItem *ti2 = anotherScene->addText("This is a test #2");
+    QGraphicsTextItem *ti3 = anotherScene->addText("This is a test #3");
+    gv.setScene(anotherScene);
+    gv.show();
+    QTest::qWait(250);
+    ti->installSceneEventFilter(ti2);
+    ti3->installSceneEventFilter(ti);
+    delete ti2;
+    //we souldn't crash
+    QTest::mouseMove(gv.viewport(), gv.mapFromScene(ti->scenePos()));
+    QTest::qWait(250);
+    delete ti;
 }
 
 class GeometryChanger : public QGraphicsItem
@@ -5192,6 +5376,39 @@ void tst_QGraphicsItem::task240400_clickOnTextItem()
         QCOMPARE(item->textCursor().columnNumber(), 0);
 }
 
+class TextItem : public QGraphicsSimpleTextItem
+{
+public:
+    TextItem(const QString& text) : QGraphicsSimpleTextItem(text)
+    {
+        updates = 0;
+    }
+
+    void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
+    {
+        updates++;
+        QGraphicsSimpleTextItem::paint(painter, option, widget);
+    }
+
+    int updates;
+};
+
+void tst_QGraphicsItem::ensureUpdateOnTextItem()
+{
+    QGraphicsScene scene;
+    TextItem *text1 = new TextItem(QLatin1String("123"));
+    scene.addItem(text1);
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWait(250);
+    QCOMPARE(text1->updates,1);
+
+    //same bouding rect but we have to update
+    text1->setText(QLatin1String("321"));
+    QTest::qWait(250);
+    QCOMPARE(text1->updates,2);
+}
+
 void tst_QGraphicsItem::task243707_addChildBeforeParent()
 {
     // Task reports that adding the child before the parent leads to an
@@ -5928,6 +6145,46 @@ void tst_QGraphicsItem::cacheMode()
     QCOMPARE(testerChild2->repaints, 6);
 }
 
+void tst_QGraphicsItem::updateCachedItemAfterMove()
+{
+    // A simple item that uses ItemCoordinateCache
+    EventTester *tester = new EventTester;
+    tester->setCacheMode(QGraphicsItem::ItemCoordinateCache);
+
+    // Add to a scene, show in a view, ensure it's painted and reset its
+    // repaint counter.
+    QGraphicsScene scene;
+    scene.addItem(tester);
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(125);
+    tester->repaints = 0;
+
+    // Move the item, should not cause repaints
+    tester->setPos(10, 0);
+    QTest::qWait(125);
+    QCOMPARE(tester->repaints, 0);
+
+    // Move then update, should cause one repaint
+    tester->setPos(20, 0);
+    tester->update();
+    QTest::qWait(125);
+    QCOMPARE(tester->repaints, 1);
+
+    // Hiding the item doesn't cause a repaint
+    tester->hide();
+    QTest::qWait(125);
+    QCOMPARE(tester->repaints, 1);
+
+    // Moving a hidden item doesn't cause a repaint
+    tester->setPos(30, 0);
+    tester->update();
+    QTest::qWait(125);
+    QCOMPARE(tester->repaints, 1);
+}
+
 QTEST_MAIN(tst_QGraphicsItem)
 #include "tst_qgraphicsitem.moc"
-#endif

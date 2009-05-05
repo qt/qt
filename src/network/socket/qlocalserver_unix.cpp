@@ -148,9 +148,11 @@ void QLocalServerPrivate::closeServer()
         QT_CLOSE(listenSocket);
     listenSocket = -1;
 
-    if (socketNotifier)
+    if (socketNotifier) {
+        socketNotifier->setEnabled(false); // Otherwise, closed socket is checked before deleter runs
         socketNotifier->deleteLater();
-    socketNotifier = 0;
+        socketNotifier = 0;
+    }
 
     if (!fullServerName.isEmpty())
         QFile::remove(fullServerName);

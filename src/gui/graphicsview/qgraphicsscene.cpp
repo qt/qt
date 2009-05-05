@@ -552,6 +552,15 @@ void QGraphicsScenePrivate::_q_removeItemLater(QGraphicsItem *item)
     unpolishedItems.removeAll(item);
     dirtyItems.removeAll(item);
 
+    //We remove all references of item from the sceneEventFilter arrays
+    QMultiMap<QGraphicsItem*, QGraphicsItem*>::iterator iterator = sceneEventFilters.begin();
+    while (iterator != sceneEventFilters.end()) {
+        if (iterator.value() == item || iterator.key() == item)
+            iterator = sceneEventFilters.erase(iterator);
+        else
+            ++iterator;
+    }
+
     // Remove from scene transform cache
     int transformIndex = item->d_func()->sceneTransformIndex;
     if (transformIndex != -1) {
@@ -635,11 +644,18 @@ void QGraphicsScenePrivate::grabMouse(QGraphicsItem *item, bool implicit)
 {
     // Append to list of mouse grabber items, and send a mouse grab event.
     if (mouseGrabberItems.contains(item)) {
-        if (mouseGrabberItems.last() == item)
-            qWarning("QGraphicsItem::grabMouse: already a mouse grabber");
-        else
+        if (mouseGrabberItems.last() == item) {
+            Q_ASSERT(!implicit);
+            if (!lastMouseGrabberItemHasImplicitMouseGrab) {
+                qWarning("QGraphicsItem::grabMouse: already a mouse grabber");
+            } else {
+                // Upgrade to an explicit mouse grab
+                lastMouseGrabberItemHasImplicitMouseGrab = false;
+            }
+        } else {
             qWarning("QGraphicsItem::grabMouse: already blocked by mouse grabber: %p",
                      mouseGrabberItems.last());
+        }
         return;
     }
 
@@ -3089,6 +3105,16 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
     d->unpolishedItems.removeAll(item);
     d->dirtyItems.removeAll(item);
 
+    //We remove all references of item from the sceneEventFilter arrays
+    QMultiMap<QGraphicsItem*, QGraphicsItem*>::iterator iterator = d->sceneEventFilters.begin();
+    while (iterator != d->sceneEventFilters.end()) {
+        if (iterator.value() == item || iterator.key() == item)
+            iterator = d->sceneEventFilters.erase(iterator);
+        else
+            ++iterator;
+    }
+
+
     //Ensure dirty flag have the correct default value so the next time it will be added it will receive updates
     item->d_func()->dirty = 0;
     item->d_func()->dirtyChildren = 0;
@@ -4389,7 +4415,7 @@ static void _q_paintItem(QGraphicsItem *item, QPainter *painter,
                                 ? proxy->widget()->windowOpacity() : 1.0;
     const qreal oldPainterOpacity = painter->opacity();
 
-    if (qIsFuzzyNull(windowOpacity))
+    if (qFuzzyIsNull(windowOpacity))
         return;
     // Set new painter opacity.
     if (windowOpacity < 1.0)
@@ -4666,9 +4692,11 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             if (newCacheIndent != deviceData->cacheIndent || deviceRect.size() != pix.size()) {
                 QPoint diff = newCacheIndent - deviceData->cacheIndent;
                 QPixmap newPix(deviceRect.size());
+                // ### Investigate removing this fill (test with Plasma and
+                // graphicssystem raster).
+                newPix.fill(Qt::transparent);
                 if (!pix.isNull()) {
                     QPainter newPixPainter(&newPix);
-                    newPixPainter.setCompositionMode(QPainter::CompositionMode_Source);
                     newPixPainter.drawPixmap(-diff, pix);
                     newPixPainter.end();
                 }
@@ -5029,7 +5057,7 @@ void QGraphicsScene::itemUpdated(QGraphicsItem *item, const QRectF &rect)
     // Deliver the actual update.
     if (!d->updateAll) {
         if (d->views.isEmpty() || ((d->connectedSignals & d->changedSignalMask) && !item->d_ptr->itemIsUntransformable()
-                                   && qIsFuzzyNull(item->boundingRegionGranularity()))) {
+                                   && qFuzzyIsNull(item->boundingRegionGranularity()))) {
             // This block of code is kept for compatibility. Since 4.5, by default
             // QGraphicsView does not connect the signal and we use the below
             // method of delivering updates.

@@ -115,7 +115,6 @@ private slots:
     void checkChildren();
     void data();
     void clear();
-#if QT_VERSION >= 0x040200
     void sort_data();
     void sort();
     void sortRole_data();
@@ -133,10 +132,9 @@ private slots:
     void useCase1();
     void useCase2();
     void useCase3();
-#endif
 
     void rootItemFlags();
-    void treeDragAndDrop();   
+    void treeDragAndDrop();
 
 private:
     QAbstractItemModel *m_model;
@@ -144,7 +142,7 @@ private:
     QVector<QModelIndex> rcParent;
     QVector<int> rcFirst;
     QVector<int> rcLast;
-    
+
     //return true if models have the same structure, and all child have the same text
     bool compareModels(QStandardItemModel *model1, QStandardItemModel *model2);
     //return true if models have the same structure, and all child have the same text
@@ -154,9 +152,7 @@ private:
 static const int defaultSize = 3;
 
 Q_DECLARE_METATYPE(QModelIndex)
-#if QT_VERSION >= 0x040200
 Q_DECLARE_METATYPE(QStandardItem*)
-#endif
 Q_DECLARE_METATYPE(Qt::Orientation)
 Q_DECLARE_METATYPE(QVariantList)
 
@@ -181,9 +177,7 @@ tst_QStandardItemModel::~tst_QStandardItemModel()
 void tst_QStandardItemModel::init()
 {
     qRegisterMetaType<QModelIndex>("QModelIndex");
-#if QT_VERSION >= 0x040200
     qRegisterMetaType<QStandardItem*>("QStandardItem*");
-#endif
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
 
     m_model = new QStandardItemModel(defaultSize, defaultSize);
@@ -768,7 +762,6 @@ void tst_QStandardItemModel::clear()
     QCOMPARE(model.hasChildren(), false);
 }
 
-#if QT_VERSION >= 0x040200
 void tst_QStandardItemModel::sort_data()
 {
     QTest::addColumn<int>("sortOrder");
@@ -1383,8 +1376,6 @@ void tst_QStandardItemModel::useCase3()
     delete childItem;
 }
 
-#endif // QT_VERSION >= 0x040200
-
 void tst_QStandardItemModel::rootItemFlags()
 {
     QStandardItemModel model(6, 4);
@@ -1426,7 +1417,7 @@ bool tst_QStandardItemModel::compareItems(QStandardItem *item1, QStandardItem *i
     }
     for (int row = 0; row < item1->columnCount(); row++)
         for (int col = 0; col < item1->columnCount(); col++) {
-        
+
         if (!compareItems(item1->child(row, col), item2->child(row, col)))
             return false;
     }
@@ -1438,19 +1429,19 @@ static QStandardItem *itemFromText(QStandardItem *parent, const QString &text)
     QStandardItem *item = 0;
     for(int i = 0; i < parent->columnCount(); i++)
         for(int j = 0; j < parent->rowCount(); j++) {
-            
+
         QStandardItem *child = parent->child(j, i);
-    
+
         if(!child)
             continue;
-        
+
         if (child->text() == text) {
             if (item) {
                 return 0;
             }
             item = child;
         }
-        
+
         QStandardItem *candidate = itemFromText(child, text);
         if(candidate) {
             if (item) {
@@ -1470,9 +1461,9 @@ static QModelIndex indexFromText(QStandardItemModel *model, const QString &text)
 }
 
 
-struct FriendlyTreeView : public QTreeView 
+struct FriendlyTreeView : public QTreeView
 {
-    friend class tst_QStandardItemModel; 
+    friend class tst_QStandardItemModel;
 	Q_DECLARE_PRIVATE(QTreeView)
 };
 
@@ -1480,7 +1471,7 @@ void tst_QStandardItemModel::treeDragAndDrop()
 {
     const int nRow = 5;
     const int nCol = 3;
-    
+
     QStandardItemModel model;
     QStandardItemModel checkModel;
 
@@ -1489,13 +1480,13 @@ void tst_QStandardItemModel::treeDragAndDrop()
         for (int c = 0 ; c < nCol; c ++)
             colItems1 << new QStandardItem(QString("item %1 - %0").arg(c).arg(i));
         model.appendRow(colItems1);
-        
+
         for (int j = 0; j < nRow; ++j) {
             QList<QStandardItem *> colItems2;
             for (int c = 0 ; c < nCol; c ++)
                 colItems2 << new QStandardItem(QString("item %1/%2 - %0").arg(c).arg(i).arg(j));
             colItems1.at(0)->appendRow(colItems2);
-            
+
             for (int k = 0; k < nRow; ++k) {
                 QList<QStandardItem *> colItems3;
                 for (int c = 0 ; c < nCol; c ++)
@@ -1504,21 +1495,19 @@ void tst_QStandardItemModel::treeDragAndDrop()
             }
         }
     }
-    
-    
-    
+
     for (int i = 0; i < nRow; ++i) {
         QList<QStandardItem *> colItems1;
         for (int c = 0 ; c < nCol; c ++)
             colItems1 << new QStandardItem(QString("item %1 - %0").arg(c).arg(i));
         checkModel.appendRow(colItems1);
-        
+
         for (int j = 0; j < nRow; ++j) {
             QList<QStandardItem *> colItems2;
             for (int c = 0 ; c < nCol; c ++)
                 colItems2 << new QStandardItem(QString("item %1/%2 - %0").arg(c).arg(i).arg(j));
             colItems1.at(0)->appendRow(colItems2);
-            
+
             for (int k = 0; k < nRow; ++k) {
                 QList<QStandardItem *> colItems3;
                 for (int c = 0 ; c < nCol; c ++)
@@ -1527,9 +1516,9 @@ void tst_QStandardItemModel::treeDragAndDrop()
             }
         }
     }
-    
+
     QVERIFY(compareModels(&model, &checkModel));
-    
+
     FriendlyTreeView  view;
     view.setModel(&model);
     view.expandAll();
@@ -1556,14 +1545,13 @@ void tst_QStandardItemModel::treeDragAndDrop()
         if(model.dropMimeData(data, Qt::MoveAction, 0, 0, indexFromText(&model, "item 4 - 0")))
             view.d_func()->clearOrRemove();
         delete data;
-        
+
         QVERIFY(!compareModels(&model, &checkModel)); //the model must be different at this point
         QStandardItem *item4 = itemFromText(checkModel.invisibleRootItem(), "item 4 - 0");
         item4->insertRow(0, checkModel.takeRow(1));
         item4->insertRow(1, checkModel.takeRow(1));
         QVERIFY(compareModels(&model, &checkModel));
     }
-
 
     //
     // step2  drag  "item 3" and "item 3/0"   into "item 4"
@@ -1572,10 +1560,10 @@ void tst_QStandardItemModel::treeDragAndDrop()
         selection->clear();
         selection->select(QItemSelection(indexFromText(&model, QString("item 3 - 0")),
                                           indexFromText(&model, QString("item 3 - %0").arg(nCol-1))), QItemSelectionModel::Select);
-                                          
+
         selection->select(QItemSelection(indexFromText(&model, QString("item 3/0 - 0")),
                                         indexFromText(&model, QString("item 3/0 - %0").arg(nCol-1))), QItemSelectionModel::Select);
-        
+
         //code based from QAbstractItemView::startDrag and QAbstractItemView::dropEvent
         QModelIndexList indexes = view.selectedIndexes();
         QMimeData *data = model.mimeData(indexes);

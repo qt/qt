@@ -145,7 +145,7 @@ void tst_QSqlTableModel::dropTestTables()
                    << qTableName("bigtable")
                    << qTableName("foo");
         if (testWhiteSpaceNames(db.driverName()))
-            tableNames << qTableName("qtestw hitespace");
+            tableNames << qTableName("qtestw hitespace", db.driver());
 
         tst_Databases::safeDropTables(db, tableNames);
 
@@ -277,6 +277,7 @@ void tst_QSqlTableModel::setRecord()
 
     QList<QSqlTableModel::EditStrategy> policies = QList<QSqlTableModel::EditStrategy>() << QSqlTableModel::OnFieldChange << QSqlTableModel::OnRowChange << QSqlTableModel::OnManualSubmit;
 
+    QString Xsuffix;
     foreach( QSqlTableModel::EditStrategy submitpolicy, policies) {
 
         QSqlTableModel model(0, db);
@@ -295,6 +296,8 @@ void tst_QSqlTableModel::setRecord()
 
             if ((QSqlTableModel::EditStrategy)submitpolicy == QSqlTableModel::OnManualSubmit)
                 QVERIFY(model.submitAll());
+            else if ((QSqlTableModel::EditStrategy)submitpolicy == QSqlTableModel::OnRowChange && i == model.rowCount() -1)
+                model.submit();
             else {
                 // dataChanged() is not emitted when submitAll() is called
                 QCOMPARE(spy.count(), 2);
@@ -304,10 +307,12 @@ void tst_QSqlTableModel::setRecord()
             }
         }
 
-        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("fooX"));
-        QCOMPARE(model.data(model.index(0, 2)).toString(), QString("barX"));
-        QCOMPARE(model.data(model.index(1, 1)).toString(), QString("bazX"));
-        QCOMPARE(model.data(model.index(1, 2)).toString(), QString("joeX"));
+        Xsuffix.append('X');
+
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("foo").append(Xsuffix));
+        QCOMPARE(model.data(model.index(0, 2)).toString(), QString("bar").append(Xsuffix));
+        QCOMPARE(model.data(model.index(1, 1)).toString(), QString("baz").append(Xsuffix));
+        QCOMPARE(model.data(model.index(1, 2)).toString(), QString("joe").append(Xsuffix));
     }
 }
 

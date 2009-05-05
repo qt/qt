@@ -35,7 +35,6 @@ TRANSLATIONS=$$[QT_INSTALL_TRANSLATIONS]/assistant_adp_de.ts \
              $$[QT_INSTALL_TRANSLATIONS]/assistant_adp_ja.ts \
              $$[QT_INSTALL_TRANSLATIONS]/assistant_adp_pl.ts \
              $$[QT_INSTALL_TRANSLATIONS]/assistant_adp_untranslated.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/assistant_adp_tr_TR.ts \
              $$[QT_INSTALL_TRANSLATIONS]/assistant_adp_zh_CN.ts \
              $$[QT_INSTALL_TRANSLATIONS]/assistant_adp_zh_TW.ts
 error("This is a dummy profile to be used for translations ONLY.")

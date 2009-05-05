@@ -57,14 +57,16 @@
 
 #ifdef Q_IME_DEBUG
 #include "qdebug.h"
-#endif 
+#endif
+
+#if defined(Q_WS_WINCE)
+extern void qt_wince_show_SIP(bool show);   // defined in qguifunctions_wince.cpp
+#endif
 
 QT_BEGIN_NAMESPACE
 
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*);
-#if defined(Q_OS_WINCE)
-extern void qt_wince_show_SIP(bool show);   // defined in qguifunctions_wince.cpp
-#endif
+
 
 DEFINE_GUID(IID_IActiveIMMApp,
 0x08c0e040, 0x62d1, 0x11d1, 0x93, 0x26, 0x0, 0x60, 0xb0, 0x67, 0xb8, 0x6e);
@@ -235,7 +237,7 @@ QWinInputContext::QWinInputContext(QObject *parent)
             aimmpump->Start();
     }
 
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
     QSysInfo::WinVersion ver = QSysInfo::windowsVersion();
     if (ver & QSysInfo::WV_NT_based  && ver >= QSysInfo::WV_VISTA) {
         // Since the IsValidLanguageGroup/IsValidLocale functions always return true on 
@@ -347,7 +349,7 @@ static LONG getCompositionString(HIMC himc, DWORD dwIndex, LPVOID lpbuf, DWORD d
         if(QSysInfo::WindowsVersion != QSysInfo::WV_95) {
             len = ImmGetCompositionStringW(himc, dwIndex, lpbuf, dBufLen);
         }
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
         else {
             len = ImmGetCompositionStringA(himc, dwIndex, lpbuf, dBufLen);
             if (unicode)
@@ -736,7 +738,7 @@ inline void enableIme(QWidget *w,  bool value)
         // enable ime
         if (defaultContext)
             ImmAssociateContext(w->effectiveWinId(), defaultContext);
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
         if (qApp->autoSipEnabled())
             qt_wince_show_SIP(true);
 #endif
@@ -745,7 +747,7 @@ inline void enableIme(QWidget *w,  bool value)
         HIMC oldimc = ImmAssociateContext(w->effectiveWinId(), 0);
         if (!defaultContext)
             defaultContext = oldimc;
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
         if (qApp->autoSipEnabled())
             qt_wince_show_SIP(false);
 #endif

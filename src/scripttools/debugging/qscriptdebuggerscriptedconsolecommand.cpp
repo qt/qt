@@ -410,11 +410,7 @@ void QScriptDebuggerScriptedConsoleCommandJob::start()
     for (int i = 0; i < d->arguments.size(); ++i)
         args.append(QScriptValue(engine, d->arguments.at(i)));
     QScriptDebuggerConsoleGlobalObject *global;
-#if QT_VERSION >= 0x040500
     global = qobject_cast<QScriptDebuggerConsoleGlobalObject*>(engine->globalObject().toQObject());
-#else
-    global = qobject_cast<QScriptDebuggerConsoleGlobalObject*>(engine->globalObject().scope().toQObject());
-#endif
     Q_ASSERT(global != 0);
     global->setScheduler(this);
     global->setResponseHandler(this);
@@ -444,11 +440,7 @@ void QScriptDebuggerScriptedConsoleCommandJob::handleResponse(
     args.append(qScriptValueFromValue(engine, response));
     args.append(QScriptValue(engine, commandId));
     QScriptDebuggerConsoleGlobalObject *global;
-#if QT_VERSION >= 0x040500
     global = qobject_cast<QScriptDebuggerConsoleGlobalObject*>(engine->globalObject().toQObject());
-#else
-    global = qobject_cast<QScriptDebuggerConsoleGlobalObject*>(engine->globalObject().scope().toQObject());
-#endif
     Q_ASSERT(global != 0);
     global->setScheduler(this);
     global->setResponseHandler(this);
@@ -566,12 +558,7 @@ QScriptDebuggerScriptedConsoleCommand *QScriptDebuggerScriptedConsoleCommand::pa
     QScriptDebuggerConsoleGlobalObject *cppGlobal = new QScriptDebuggerConsoleGlobalObject();
     QScriptValue global = engine->newQObject(cppGlobal,
                                              QScriptEngine::ScriptOwnership,
-#if QT_VERSION >= 0x040500
                                              QScriptEngine::ExcludeSuperClassContents);
-#else
-                                             QScriptEngine::ExcludeSuperClassMethods
-                                             | QScriptEngine::ExcludeSuperClassProperties);
-#endif
     {
         QScriptValueIterator it(engine->globalObject());
         while (it.hasNext()) {
@@ -579,12 +566,7 @@ QScriptDebuggerScriptedConsoleCommand *QScriptDebuggerScriptedConsoleCommand::pa
             global.setProperty(it.scriptName(), it.value(), it.flags());
         }
     }
-#if QT_VERSION >= 0x040500
     engine->setGlobalObject(global);
-#else
-    engine->globalObject().setScope(global);
-    global = engine->globalObject();
-#endif
 
     cppGlobal->setMessageHandler(messageHandler);
     QScriptValue ret = engine->evaluate(program, fileName);
