@@ -1,7 +1,6 @@
 Rect {
-    width: 600
-    height: 300
-    color: "white"
+    width: 600; height: 300; color: "white"
+
     // MyPets model is defined in dummydata/MyPetsModel.qml
     // The viewer automatically loads files in dummydata/* to assist
     // development without a real data source.
@@ -12,29 +11,22 @@ Rect {
         id: PetDelegate
         Item {
             id: Wrapper
-            width: 200
-            height: 50
+            width: 200; height: 50
             VerticalLayout {
-                Text {
-                    text: 'Name: ' + name
-                }
-                Text {
-                    text: 'Type: ' + type
-                }
-                Text {
-                    text: 'Age: ' + age
-                }
+                Text { text: 'Name: ' + name }
+                Text { text: 'Type: ' + type }
+                Text { text: 'Age: ' + age }
             }
         }
     }
+
     // Define a highlight component.  Just one of these will be instantiated
     // by each ListView and placed behind the current item.
     Component {
         id: PetHighlight
-        Rect {
-            color: "#FFFF88"
-        }
+        Rect { color: "#FFFF88" }
     }
+
     // Show the model in three lists, with different currentItemPositioning.
     // currentItemPositioning determines how the list behaves when the
     // current item changes.  Note that the second and third ListView
@@ -54,35 +46,23 @@ Rect {
     // the mouse, the current index of List1 will be changed.
     ListView {
         id: List1
-        width: 200
-        height: parent.height
-        model: MyPetsModel
-        delegate: PetDelegate
-        highlight: PetHighlight
-        currentIndex: List3.currentIndex
+        width: 200; height: parent.height
+        model: MyPetsModel; delegate: PetDelegate
+        highlight: PetHighlight; currentIndex: List3.currentIndex
         focus: true
     }
     ListView {
         id: List2
-        x: 200
-        width: 200
-        height: parent.height
-        model: MyPetsModel
-        delegate: PetDelegate
-        highlight: PetHighlight
-        currentItemPositioning: "Snap"
-        snapPosition: 125
+        x: 200; width: 200; height: parent.height
+        model: MyPetsModel; delegate: PetDelegate; highlight: PetHighlight
+        currentItemPositioning: "Snap"; snapPosition: 125
         currentIndex: List1.currentIndex
     }
     ListView {
         id: List3
-        x: 400
-        width: 200
-        height: parent.height
-        model: MyPetsModel
-        delegate: PetDelegate
-        currentItemPositioning: "SnapAuto"
-        snapPosition: 125
+        x: 400; width: 200; height: parent.height
+        model: MyPetsModel; delegate: PetDelegate
+        currentItemPositioning: "SnapAuto"; snapPosition: 125
         currentIndex: List1.currentIndex
         children: [
             // Position a static highlight rather than a normal highlight so that
@@ -92,11 +72,8 @@ Rect {
             // Note that we specify the 'children' property.  This is because
             // the default property of a ListView is 'delegate'.
             Rect {
-                y: 125
-                width: 200
-                height: 50
-                color: "#FFFF88"
-                z: -1
+                y: 125; width: 200; height: 50
+                color: "#FFFF88"; z: -1
             }
         ]
     }
