@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFXPAINTED_P_H
-#define QFXPAINTED_P_H
+#ifndef QFXIMAGEITEM_P_H
+#define QFXIMAGEITEM_P_H
 
 //
 //  W A R N I N G
@@ -54,31 +54,42 @@
 //
 
 #include "qfxitem_p.h"
+#include <qsimplecanvas.h>
+
 #if defined(QFX_RENDER_OPENGL)
 #include "gltexture.h"
 #endif
 
 QT_BEGIN_NAMESPACE
 
-class QFxPaintedPrivate : public QFxItemPrivate
+class QFxPaintedItemPrivate : public QFxItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxPainted)
+    Q_DECLARE_PUBLIC(QFxPaintedItem)
 
 public:
-    QFxPaintedPrivate()
-        : dirty(true)
+    QFxPaintedItemPrivate()
+      : max_imagecache_size(1000*1000), smooth(false)
     {
     }
 
-    bool dirty;
-
+    struct ImageCacheItem {
+        ImageCacheItem() : age(0) {}
+        ~ImageCacheItem() { }
+        int age;
+        QRect area;
 #if defined(QFX_RENDER_QPAINTER) 
-    QSimpleCanvasConfig::Image cachedImage;
-#elif defined(QFX_RENDER_OPENGL)
-    GLTexture cachedTexture;
+        QSimpleCanvasConfig::Image image;
+#else
+        GLTexture image;
 #endif
+    };
+
+    QList<ImageCacheItem*> imagecache;
+
+    const int max_imagecache_size;
+    bool smooth;
+    QSize contentsSize;
 };
 
 QT_END_NAMESPACE
-
-#endif // QFXPAINTED_P_H
+#endif

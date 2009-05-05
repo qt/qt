@@ -39,49 +39,59 @@
 **
 ****************************************************************************/
 
-#ifndef QFXPAINTED_H
-#define QFXPAINTED_H
+#ifndef QFXIMAGEITEM_H
+#define QFXIMAGEITEM_H
 
+#include <qfxglobal.h>
 #include <qfxitem.h>
+
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-/*
-WARNING: INTENDED TO MERGE WITH QFxImageItem
-*/
 
-class QFxPaintedPrivate;
-class Q_DECLARATIVE_EXPORT QFxPainted : public QFxItem
+class QFxPaintedItemPrivate;
+class Q_DECLARATIVE_EXPORT QFxPaintedItem : public QFxItem
 {
-Q_OBJECT
+    Q_OBJECT
 public:
-    QFxPainted(QFxItem *parent);
-    ~QFxPainted();
+    QFxPaintedItem(QFxItem *parent=0);
+    ~QFxPaintedItem();
 
-    virtual void paint(QPainter *painter) = 0;
+    Q_PROPERTY(QSize contentsSize READ contentsSize WRITE setContentsSize);
+    Q_PROPERTY(bool smooth READ isSmooth WRITE setSmooth);
 
-#if defined(QFX_RENDER_QPAINTER) 
+#if defined(QFX_RENDER_QPAINTER)
     void paintContents(QPainter &painter);
-#elif defined(QFX_RENDER_OPENGL2)
+#elif defined(QFX_RENDER_OPENGL)
     void paintGLContents(GLPainter &);
 #endif
 
-protected Q_SLOTS:
-    void markDirty();
+    bool isSmooth() const;
+    QSize contentsSize() const;
 
+    void setSmooth(bool);
+    void setContentsSize(const QSize &);
 protected:
-    QFxPainted(QFxPaintedPrivate &dd, QFxItem *parent);
+    QFxPaintedItem(QFxPaintedItemPrivate &dd, QFxItem *parent);
+
+    virtual void drawContents(QPainter *p, const QRect &) = 0;
+
+protected Q_SLOTS:
+    void dirtyCache(const QRect &);
+    void clearCache();
 
 private:
-    Q_DISABLE_COPY(QFxPainted)
-    Q_DECLARE_PRIVATE(QFxPainted)
+    void init();
+    Q_DISABLE_COPY(QFxPaintedItem)
+    Q_DECLARE_PRIVATE(QFxPaintedItem)
 };
+QML_DECLARE_TYPE(QFxPaintedItem);
+
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
-
-#endif // QFXPAINTED_H
+#endif

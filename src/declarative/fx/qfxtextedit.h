@@ -43,7 +43,7 @@
 #define QFXTEXTEDIT_H
 
 #include <qfxtext.h>
-#include <qfximageitem.h>
+#include <qfxpainteditem.h>
 
 #include <QtGui/qtextdocument.h>
 #include <QtGui/qtextoption.h>
@@ -60,7 +60,7 @@ QT_MODULE(Declarative)
 WARNING: SHORT TERM CLASS.  INTENDED TO MERGE INTO QFxTextItem
 */
 class QFxTextEditPrivate;
-class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxImageItem
+class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
 {
     Q_OBJECT
     Q_ENUMS(VAlignment)

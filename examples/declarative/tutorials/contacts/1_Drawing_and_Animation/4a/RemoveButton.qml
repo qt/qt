@@ -1,18 +1,10 @@
-//! [define properties and signals]
 Rect {
     id: removeButton
     width: 30
     height: 30
     color: "red"
     radius: 5
-    properties: Property {
-        name: "expandedWidth"
-        value: 230
-    }
-    signals: Signal {
-        name: "confirmed"
-    }
-//! [define properties and signals]
+//! [script]
     resources: [
         Script {
             function toggle() {
@@ -25,6 +17,8 @@ Rect {
         
         }
     ]
+//! [script]
+//! [mouse region]
     Image {
         id: trashIcon
         width: 22
@@ -35,10 +29,18 @@ Rect {
         source: "../../shared/pics/trash.png"
         opacity: 1
         MouseRegion {
+            id: trashMouseRegion
             anchors.fill: parent
-            onClicked: { toggle() }
+        }
+        Connection {
+            sender: trashMouseRegion
+            signal: clicked()
+            script: {
+                toggle()
+            }
         }
     }
+//! [mouse region]
     Image {
         id: cancelIcon
         width: 22
@@ -62,12 +64,10 @@ Rect {
         anchors.verticalCenter: parent.verticalCenter
         source: "../../shared/pics/ok.png"
         opacity: 0
-//! [use signal]
         MouseRegion {
             anchors.fill: parent
-            onClicked: { toggle(); removeButton.confirmed.emit() }
+            onClicked: { toggle() }
         }
-//! [use signal]
     }
     Text {
         id: text
@@ -78,20 +78,19 @@ Rect {
         anchors.rightMargin: 4
         font.bold: true
         color: "white"
-        hAlign: "AlignHCenter"
+        hAlign: AlignHCenter
         text: "Remove"
         opacity: 0
     }
+//! [states]
     states: [
         State {
             name: "opened"
-//! [use width]
             SetProperty {
                 target: removeButton
                 property: "width"
-                value: removeButton.expandedWidth
+                value: 230
             }
-//! [use width]
             SetProperty {
                 target: text
                 property: "opacity"
@@ -114,15 +113,5 @@ Rect {
             }
         }
     ]
-    transitions: [
-        Transition {
-            fromState: "*"
-            toState: "opened"
-            reversible: true
-            NumericAnimation {
-                properties: "opacity,x,width"
-                duration: 200
-            }
-        }
-    ]
+//! [states]
 }

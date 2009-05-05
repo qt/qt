@@ -17,8 +17,8 @@ HEADERS += \
            fx/qfxgridview.h \
            fx/qfxhighlightfilter.h \
            fx/qfximage.h \
-           fx/qfximageitem.h \
-           fx/qfximageitem_p.h \
+           fx/qfxpainteditem.h \
+           fx/qfxpainteditem_p.h \
            fx/qfximage_p.h \
            fx/qfxitem.h \
            fx/qfxitem_p.h \
@@ -28,8 +28,6 @@ HEADERS += \
            fx/qfxlayouts_p.h \
            fx/qfxmouseregion.h \
            fx/qfxmouseregion_p.h \
-           fx/qfxpainted.h \
-           fx/qfxpainted_p.h \
            fx/qfxparticles.h \
            fx/qfxpath.h \
            fx/qfxpath_p.h \
@@ -67,13 +65,12 @@ SOURCES += \
            fx/qfxgridview.cpp \
            fx/qfxhighlightfilter.cpp \
            fx/qfximage.cpp \
-           fx/qfximageitem.cpp \
+           fx/qfxpainteditem.cpp \
            fx/qfxitem.cpp \
            fx/qfxkeyactions.cpp \
            fx/qfxkeyproxy.cpp \
            fx/qfxlayouts.cpp \
            fx/qfxmouseregion.cpp \
-           fx/qfxpainted.cpp \
            fx/qfxparticles.cpp \
            fx/qfxpath.cpp \
            fx/qfxpathview.cpp \
