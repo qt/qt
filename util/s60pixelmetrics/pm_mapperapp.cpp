@@ -43,9 +43,9 @@
 
 #include <avkon.rsg>
 #include <avkon.hrh>
-#include "pmmapper.hrh"
-#include "pmmapperApp.h"
-#include "pmmapperView.h"
+#include "pm_mapper.hrh"
+#include "pm_mapperapp.h"
+#include "pm_mapperview.h"
 #include <pm_mapper.rsg>
 
 #include <BldVariant.hrh>
@@ -290,7 +290,7 @@ void CPixelMetricsMapperAppUi::HandleCommandL( TInt aCommand )
         case ECmdSwitchOrientation:
             {
             ClearL();
-			#ifndef __SERIES60_31__
+            #ifndef __SERIES60_31__
             if (!iAvkonAppUi->OrientationCanBeChanged())
                 {
                 HBufC* buffer = HBufC::NewLC( 100 );
@@ -301,7 +301,7 @@ void CPixelMetricsMapperAppUi::HandleCommandL( TInt aCommand )
                 bufferPtr.Zero();
                 delete buffer;
                 }
-			#endif //__SERIES60_31__
+            #endif //__SERIES60_31__
             if ( iAvkonAppUi->Orientation() == CAknAppUiBase::EAppUiOrientationPortrait)
                 {
                 iAvkonAppUi->SetOrientationL(CAknAppUiBase::EAppUiOrientationLandscape);
@@ -402,16 +402,16 @@ void CPixelMetricsMapperAppUi::HandleCommandL( TInt aCommand )
         }
     }
 void CPixelMetricsMapperAppUi::DoAutoOperationL()
-	{
-	HandleCommandL(ECmdStartCalculations);
-	iMode = EFalse;
-	HandleCommandL(ECmdSwitchMirroring);
-	}
+    {
+    HandleCommandL(ECmdStartCalculations);
+    iMode = EFalse;
+    HandleCommandL(ECmdSwitchMirroring);
+    }
 
 TBool CPixelMetricsMapperAppUi::ReadyForAutoOp() const
-	{
-	return (iAutoMode && iMode);
-	}
+    {
+    return (iAutoMode && iMode);
+    }
 
 // -----------------------------------------------------------------------------
 //
@@ -853,9 +853,9 @@ void CPixelMetricsMapperAppUi::CreateHeaderFileL() const
             else
                 {
                 if (nextValue == -909)
-                	bufferPMData.Append(_L("ECommonStyleValue"));
+                    bufferPMData.Append(_L("ECommonStyleValue"));
                 else
-                	bufferPMData.AppendNum(nextValue);
+                    bufferPMData.AppendNum(nextValue);
                 }
             oneline.Zero();
             loop++;

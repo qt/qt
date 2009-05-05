@@ -746,6 +746,7 @@ private:
 #endif
 #ifdef Q_WS_S60
     friend class QSymbianControl;
+    friend class QS60WindowSurface;
 #endif
 #ifdef Q_WS_X11
     friend void qt_net_update_user_time(QWidget *tlw, unsigned long timestamp);

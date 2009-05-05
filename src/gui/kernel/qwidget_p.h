@@ -270,6 +270,10 @@ public:
     void applyMaxAndMinSizeConstraints(int &w, int &h);
 #endif
 
+#ifdef Q_WS_S60
+    void s60UpdateIsOpaque();
+#endif
+
     void raise_sys();
     void lower_sys();
     void stackUnder_sys(QWidget *);

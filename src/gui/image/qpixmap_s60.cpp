@@ -27,7 +27,7 @@ QPixmap QPixmap::grabWindow(WId winId, int x, int y, int w, int h )
     // Find out if this is one of our windows.
     QSymbianControl *sControl;
     sControl = winId->MopGetObject(sControl);
-    if (sControl && sControl->widget()->windowType() & Qt::Desktop) {
+    if (sControl && sControl->widget()->windowType() == Qt::Desktop) {
         // Grabbing desktop widget
         srcSize = screenSize;
     } else {

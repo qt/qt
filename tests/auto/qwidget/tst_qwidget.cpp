@@ -8790,8 +8790,8 @@ void tst_QWidget::toplevelLineEditFocus()
 #endif
     QTest::qWait(200);
 
-    QCOMPARE(QApplication::activeWindow(), &w);
-    QCOMPARE(QApplication::focusWidget(), &w);
+    QCOMPARE(QApplication::activeWindow(), (QWidget*)&w);
+    QCOMPARE(QApplication::focusWidget(), (QWidget*)&w);
 }
 
 QTEST_MAIN(tst_QWidget)

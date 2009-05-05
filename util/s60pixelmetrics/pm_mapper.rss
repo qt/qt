@@ -55,7 +55,7 @@ NAME TATR
 #include <data_caging_paths_strings.hrh>
 #include <appinfo.rh>
 
-#include "pmmapper.hrh"
+#include "pm_mapper.hrh"
 
 
 //  RESOURCE DEFINITIONS
