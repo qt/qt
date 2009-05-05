@@ -154,12 +154,6 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
 
     d->errors.clear();
 
-    QmlScriptParser parser;
-    if (!parser.parse(data)) {
-        d->errors = parser.errors();
-        return false;
-    }
-
     QmlCompiledComponent component;
     QmlCompiler compiler;
 
@@ -186,8 +180,8 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
     }
 
     if (td->data.tree()) {
-        component.dump(0, parser.tree());
-        d->root = parser.tree();
+        component.dump(0, td->data.tree());
+        d->root = td->data.tree();
         d->root->addref();
     }
 
@@ -620,11 +614,11 @@ QList<QmlDomProperty> QmlDomObject::properties() const
     Returns the object's \a name property if a value has been assigned to
     it, or an invalid QmlDomProperty otherwise.
 
-    In the example below, \c {object.property("src")} would return a valid
+    In the example below, \c {object.property("source")} would return a valid
     QmlDomProperty, and \c {object.property("tile")} an invalid QmlDomProperty.
 
     \qml
-Image { src: "sample.jpg" }
+Image { source: "sample.jpg" }
     \endqml
 */
 QmlDomProperty QmlDomObject::property(const QByteArray &name) const
@@ -827,7 +821,8 @@ Rect { x: Other.x }
 /*!
     Construct an empty QmlDomValueBinding.
 */
-QmlDomValueBinding::QmlDomValueBinding()
+QmlDomValueBinding::QmlDomValueBinding():
+        d(new QmlDomBasicValuePrivate)
 {
 }
 
@@ -904,7 +899,8 @@ Rect {
 /*!
     Construct an empty QmlDomValueValueSource.
 */
-QmlDomValueValueSource::QmlDomValueValueSource()
+QmlDomValueValueSource::QmlDomValueValueSource():
+        d(new QmlDomBasicValuePrivate)
 {
 }
 
@@ -955,7 +951,7 @@ QmlDomObject QmlDomValueValueSource::object() const
         rv.d->object = d->value->object;
         rv.d->object->addref();
     } 
-    return QmlDomObject();
+    return rv;
 }
 
 /*!

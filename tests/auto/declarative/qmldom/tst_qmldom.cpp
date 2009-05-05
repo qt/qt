@@ -16,6 +16,8 @@ private slots:
     void loadProperties();
     void loadChildObject();
 
+    void testValueSource();
+
 private:
     QmlEngine engine;
 };
@@ -63,7 +65,7 @@ void tst_qmldom::loadProperties()
 
 void tst_qmldom::loadChildObject()
 {
-    QByteArray qml = "Item { Item }";
+    QByteArray qml = "Item { Item {} }";
     //QByteArray qml = "<Item> <Item/> </Item>";
 
     QmlDomDocument document;
@@ -83,6 +85,37 @@ void tst_qmldom::loadChildObject()
     QmlDomObject childItem = list.values().first().toObject();
     QVERIFY(childItem.isValid());
     QVERIFY(childItem.objectType() == "Item");
+}
+
+void tst_qmldom::testValueSource()
+{
+    QByteArray qml = "Rect { height: Follow { spring: 1.4; damping: .15; source: Math.min(Math.max(-130, value*2.2 - 130), 133); }}";
+
+    QmlEngine freshEngine;
+    QmlDomDocument document;
+    QVERIFY(document.load(&freshEngine, qml));
+
+    QmlDomObject rootItem = document.rootObject();
+    QVERIFY(rootItem.isValid());
+    QmlDomProperty heightProperty = rootItem.properties().at(0);
+    QVERIFY(heightProperty.propertyName() == "height");
+    QVERIFY(heightProperty.value().isValueSource());
+
+    const QmlDomValueValueSource valueSource = heightProperty.value().toValueSource();
+    QmlDomObject valueSourceObject = valueSource.object();
+    QVERIFY(valueSourceObject.isValid());
+
+    QVERIFY(valueSourceObject.objectType() == "Follow");
+    
+    const QmlDomValue springValue = valueSourceObject.property("spring").value();
+    QVERIFY(!springValue.isInvalid());
+    QVERIFY(springValue.isLiteral());
+    QVERIFY(springValue.toLiteral().literal() == "1.4");
+
+    const QmlDomValue sourceValue = valueSourceObject.property("source").value();
+    QVERIFY(!sourceValue.isInvalid());
+    QVERIFY(sourceValue.isBinding());
+    QVERIFY(sourceValue.toBinding().binding() == "Math.min(Math.max(-130, value*2.2 - 130), 133)");
 }
 
 QTEST_MAIN(tst_qmldom)
