@@ -88,18 +88,19 @@ void MainWindow::init()
     }
 
     QPointF centerOfMap = sceneRect.center();
+
     addWall(QRectF(centerOfMap + QPointF(-50.0, -60.0), centerOfMap + QPointF(50.0, -50.0)));
     addWall(QRectF(centerOfMap - QPointF(-50.0, -60.0), centerOfMap - QPointF(50.0, -50.0)));
     addWall(QRectF(centerOfMap + QPointF(-50.0, -50.0), centerOfMap + QPointF(-40.0, 50.0)));
     addWall(QRectF(centerOfMap - QPointF(-50.0, -50.0), centerOfMap - QPointF(-40.0, 50.0)));
-
-    addWall(QRectF(sceneRect.topLeft() + QPointF(sceneRect.width() / 2.0 - 5.0, 0.0),
+   
+    addWall(QRectF(sceneRect.topLeft() + QPointF(sceneRect.width() / 2.0 - 5.0, -10.0),
                    sceneRect.topLeft() + QPointF(sceneRect.width() / 2.0 + 5.0, 100.0)));
-    addWall(QRectF(sceneRect.bottomLeft() + QPointF(sceneRect.width() / 2.0 - 5.0, 0.0),
+    addWall(QRectF(sceneRect.bottomLeft() + QPointF(sceneRect.width() / 2.0 - 5.0, 10.0),
                    sceneRect.bottomLeft() + QPointF(sceneRect.width() / 2.0 + 5.0, -100.0)));
-    addWall(QRectF(sceneRect.topLeft() + QPointF(0.0, sceneRect.height() / 2.0 - 5.0),
+    addWall(QRectF(sceneRect.topLeft() + QPointF(-10.0, sceneRect.height() / 2.0 - 5.0),
                    sceneRect.topLeft() + QPointF(100.0, sceneRect.height() / 2.0 + 5.0)));
-    addWall(QRectF(sceneRect.topRight() + QPointF(0.0, sceneRect.height() / 2.0 - 5.0),
+    addWall(QRectF(sceneRect.topRight() + QPointF(10.0, sceneRect.height() / 2.0 - 5.0),
                    sceneRect.topRight() + QPointF(-100.0, sceneRect.height() / 2.0 + 5.0)));
 
 
