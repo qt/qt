@@ -545,7 +545,7 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
     create.create.type = obj->type;
     output->bytecode << create;
 
-    COMPILE_CHECK(compileDynamicPropertiesAndSignals(obj));
+    COMPILE_CHECK(compileDynamicMeta(obj));
 
     if (obj->type != -1) {
         if (output->types.at(obj->type).component) {
@@ -1212,10 +1212,12 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
     return true;
 }
 
-bool QmlCompiler::compileDynamicPropertiesAndSignals(QmlParser::Object *obj)
+bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
 {
     // ### FIXME - Check that there is only one default property etc.
-    if (obj->dynamicProperties.isEmpty() && obj->dynamicSignals.isEmpty())
+    if (obj->dynamicProperties.isEmpty() && 
+        obj->dynamicSignals.isEmpty() &&
+        obj->dynamicSlots.isEmpty())
         return true;
 
     QMetaObjectBuilder builder;
@@ -1263,6 +1265,14 @@ bool QmlCompiler::compileDynamicPropertiesAndSignals(QmlParser::Object *obj)
         builder.addSignal(s.name + "()");
     }
 
+    int slotStart = obj->dynamicSlots.isEmpty()?-1:output->primitives.count();
+
+    for (int ii = 0; ii < obj->dynamicSlots.count(); ++ii) {
+        const Object::DynamicSlot &s = obj->dynamicSlots.at(ii);
+        builder.addSlot(s.name + "()");
+        output->primitives << s.body;
+    }
+
     if (obj->metatype)
         builder.setSuperClass(obj->metatype);
 
@@ -1272,6 +1282,7 @@ bool QmlCompiler::compileDynamicPropertiesAndSignals(QmlParser::Object *obj)
     QmlInstruction store;
     store.type = QmlInstruction::StoreMetaObject;
     store.storeMeta.data = output->mos.count() - 1;
+    store.storeMeta.slotData = slotStart;
     store.line = obj->line;
     output->bytecode << store;
 

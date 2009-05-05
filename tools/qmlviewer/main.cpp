@@ -27,11 +27,15 @@ void usage()
     qWarning("  -v, -version ............................. display version");
     qWarning("  -frameless ............................... run with no window frame");
     qWarning("  -skin <qvfbskindir> ...................... run with a skin window frame");
-    qWarning("  -recorddither ordered|threshold|floyd .... set dither mode used for recording");
+    qWarning("  -recordfile <output> ..................... set output file");
+    qWarning("                                              - ImageMagick 'convert' for GIF)");
+    qWarning("                                              - png file for raw frames");
+    qWarning("                                              - 'ffmpeg' for other formats");
+    qWarning("  -recorddither ordered|threshold|floyd .... set GIF dither recording mode");
     qWarning("  -recordperiod <milliseconds> ............. set time between recording frames");
-    qWarning("  -autorecord [from-]<tomilliseconds> ...... set recording to start and stop automatically");
+    qWarning("  -autorecord [from-]<tomilliseconds> ...... set recording to start and stop");
     qWarning("  -devicekeys .............................. use numeric keys (see F1)");
-    qWarning("  -cache ................................... enable a disk cache of remote content");
+    qWarning("  -cache ................................... disk cache remote content");
     qWarning("  -recordtest <directory> .................. record an autotest");
     qWarning("  -runtest <directory> ..................... run a previously recorded test");
     qWarning(" ");
@@ -66,7 +70,8 @@ int main(int argc, char ** argv)
     int period = 0;
     int autorecord_from = 0;
     int autorecord_to = 0;
-    QString dither = "threshold";
+    QString dither = "none";
+    QString recordfile = "animation.gif";
     QString skin;
     bool devkeys = false;
     bool cache = false;
@@ -83,6 +88,10 @@ int main(int argc, char ** argv)
             cache = true;
         } else if (arg == "-recordperiod") {
             period = QString(argv[++i]).toInt();
+        } else if (arg == "-recordfile") {
+            recordfile = QString(argv[++i]);
+        } else if (arg == "-recorddither") {
+            dither = QString(argv[++i]);
         } else if (arg == "-autorecord") {
             QString range = QString(argv[++i]);
             int dash = range.indexOf('-');
@@ -119,6 +128,7 @@ int main(int argc, char ** argv)
     QmlViewer viewer(testMode, testDir, 0, frameless ? Qt::FramelessWindowHint : Qt::Widget);
     viewer.setCacheEnabled(cache);
     viewer.openQml(fileName);
+    viewer.setRecordFile(recordfile);
     if (period>0)
         viewer.setRecordPeriod(period);
     if (autorecord_to)

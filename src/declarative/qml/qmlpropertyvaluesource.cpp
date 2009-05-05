@@ -50,20 +50,26 @@ QT_BEGIN_NAMESPACE
  */
 QML_DEFINE_NOCREATE_TYPE(QmlPropertyValueSource);
 
+/*!
+    Constructs a QmlPropertyValueSource with parent \a parent.
+*/
 QmlPropertyValueSource::QmlPropertyValueSource(QObject *parent)
     : QObject(parent)
     
 {
 }
 
+/*!
+  \internal
+ */
 QmlPropertyValueSource::QmlPropertyValueSource(QObjectPrivate &dd, QObject *parent)
     : QObject(dd, parent)
 {
 }
 
 /*!
-    Set the target \a property for the value source.  This method will be called
-    by the QML engine when assigning a value source.
+    Set the target \a property for the value source.  This method will
+    be called by the QML engine when assigning a value source.
 
     The default implementation does nothing.
 */

@@ -373,7 +373,7 @@ bool QmlEnginePrivate::loadCache(QmlBasicScriptNodeCache &cache, const QString &
     
     \code
     QmlEngine engine;
-    QmlComponent component("<Text text=\"Hello world!\"/>");
+    QmlComponent component("Text { text: \"Hello world!\" }");
     QFxItem *item = qobject_cast<QFxItem *>(component.create(&engine));
 
     //add item to view, etc
@@ -408,6 +408,9 @@ QmlEngine::~QmlEngine()
 {
 }
 
+/*!
+  Clears the engine's internal component cache.
+ */
 void QmlEngine::clearComponentCache()
 {
     Q_D(QmlEngine);
@@ -582,8 +585,8 @@ void QmlEngine::setNetworkAccessManager(QNetworkAccessManager *network)
 }
 
 /*!
-    Returns the common QNetworkAccessManager used by all QML elements instantiated by
-    this engine.
+    Returns the common QNetworkAccessManager used by all QML elements
+    instantiated by this engine.
 
     The default implements no caching, cookiejar, etc., just a default 
     QNetworkAccessManager.
@@ -596,6 +599,9 @@ QNetworkAccessManager *QmlEngine::networkAccessManager() const
     return d->networkAccessManager;
 }
 
+/*!
+  Returns the QmlContext for the \a object.
+ */
 QmlContext *QmlEngine::contextForObject(const QObject *object)
 {
     QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
@@ -606,6 +612,11 @@ QmlContext *QmlEngine::contextForObject(const QObject *object)
     return data?data->context:0;
 }
 
+/*!
+  Sets the QmlContext for the \a object to \a context.
+  If the \a object already has a context, a warning is
+  output, but the context is not changed.
+ */
 void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
 {
     QObjectPrivate *priv = QObjectPrivate::get(object);

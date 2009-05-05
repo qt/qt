@@ -24,7 +24,7 @@ mac {
 
 SUBDIRS += kmap2qmap
 
-contains(QT_CONFIG, declarative):SUBDIRS += qmlviewer qmlconv
+contains(QT_CONFIG, declarative):SUBDIRS += qmlviewer 
 contains(QT_CONFIG, dbus):SUBDIRS += qdbus
 !wince*:contains(QT_CONFIG, xmlpatterns): SUBDIRS += xmlpatterns
 embedded: SUBDIRS += makeqpf

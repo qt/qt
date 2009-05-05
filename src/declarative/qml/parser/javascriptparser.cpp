@@ -1547,12 +1547,15 @@ case 312: {
             tk.dval = yylval;
             tk.loc = yylloc;
 
+            yylloc = yyprevlloc;
+            yylloc.offset += yylloc.length;
+            yylloc.startColumn += yylloc.length;
             yylloc.length = 0;
 
             const QString msg = QString::fromUtf8("Missing `;'");
 
             diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Warning,
-                yyprevlloc.startLine, yyprevlloc.startColumn, msg));
+                yylloc.startLine, yylloc.startColumn, msg));
 
             first_token = &token_buffer[0];
             last_token = &token_buffer[1];

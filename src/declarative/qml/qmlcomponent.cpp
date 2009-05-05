@@ -173,6 +173,9 @@ QmlComponent::~QmlComponent()
         d->cc->release();
 }
 
+/*!
+  Returns the component's current \l{QmlComponent::Status} {status}.
+ */
 QmlComponent::Status QmlComponent::status() const
 {
     Q_D(const QmlComponent);
@@ -235,7 +238,8 @@ bool QmlComponent::isLoading() const
 */
 
 /*!
-    Create a QmlComponent with no data. Set setData().
+    Create a QmlComponent with no data and give it the specified
+    \a engine and \a parent. Set the data with setData().
 */
 QmlComponent::QmlComponent(QmlEngine *engine, QObject *parent)
     : QObject(*(new QmlComponentPrivate), parent)
@@ -245,7 +249,10 @@ QmlComponent::QmlComponent(QmlEngine *engine, QObject *parent)
 }
 
 /*!
-    Create a QmlComponent from the given \a url.
+    Create a QmlComponent from the given \a url and give it the
+    specified \a parent and \a engine.
+
+    \sa loadUrl()
 */
 QmlComponent::QmlComponent(QmlEngine *engine, const QUrl &url, QObject *parent)
 : QObject(*(new QmlComponentPrivate), parent)
@@ -256,9 +263,12 @@ QmlComponent::QmlComponent(QmlEngine *engine, const QUrl &url, QObject *parent)
 }
 
 /*!
-    Create a QmlComponent from the given XML \a data.  If provided, \a filename
-    is used to set the component name, and to provide a base path for items
-    resolved by this component.
+    Create a QmlComponent from the given QML \a data and give it the
+    specified \a parent.  If \a url is provided, it is used to set
+    the component name, and to provide a base path for items resolved
+    by this component.
+
+    \sa setData()
 */
 QmlComponent::QmlComponent(QmlEngine *engine, const QByteArray &data, const QUrl &url, QObject *parent)
     : QObject(*(new QmlComponentPrivate), parent)
@@ -283,9 +293,9 @@ QmlComponent::QmlComponent(QmlEngine *engine, QmlCompiledComponent *cc, int star
 }
 
 /*!
-    Sets the QmlComponent to use the given XML \a data.  If provided, 
-    \a filename is used to set the component name, and to provide a base path 
-    for items resolved by this component.
+    Sets the QmlComponent to use the given QML \a data.  If \a url
+    is provided, it is used to set the component name and to provide
+    a base path for items resolved by this component.
 */
 void QmlComponent::setData(const QByteArray &data, const QUrl &url)
 {
@@ -451,8 +461,7 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
 
     QmlContext *ctxt = 
         new QmlContext(context, 0);
-    static_cast<QmlContextPrivate*>(ctxt->d_ptr)->component = d->cc;
-    static_cast<QmlContextPrivate*>(ctxt->d_ptr)->component->addref();
+    static_cast<QmlContextPrivate*>(ctxt->d_ptr)->url = d->cc->url;
     ctxt->activate();
 
     QmlVME vme;

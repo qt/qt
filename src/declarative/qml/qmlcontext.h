@@ -80,6 +80,8 @@ public:
     QUrl resolvedUri(const QUrl &);
     QUrl resolvedUrl(const QUrl &);
 
+    void setBaseUrl(const QUrl &);
+
 private Q_SLOTS:
     void objectDestroyed(QObject *);
 

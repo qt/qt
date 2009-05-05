@@ -476,6 +476,10 @@ void QFxItem::setItemParent(QFxItem *parent)
   \property QFxItem::moveToParent
   Playing around with view2view transitions.
  */
+
+/*!
+  \internal
+ */
 void QFxItem::moveToParent(QFxItem *parent)
 {
     if (parent && itemParent()) {
@@ -551,17 +555,18 @@ QFxItem *QFxItem::itemParent() const
     you, but it can come in handy in some cases.
 
     \qml
-    <Item>
-        <children>
-            <Text />
-            <Rect />
-        </children>
-        <resources>
-            <Component id="myComponent">
-                <Text />
-            </Component>
-        </resources>
-    </Item>
+    Item {
+        children: [
+            Text {},
+            Rect {}
+        ]
+        resources: [
+            Component {
+                id: myComponent
+                Text {}
+            }
+        ]
+    }
     \endqml
 */
 
@@ -728,24 +733,24 @@ void QFxItemPrivate::children_clear()
 
     So you can write:
     \qml
-    <Item>
-        <Text />
-        <Rect />
-        <Script />
-    </Item>
+    Item {
+        Text {}
+        Rect {}
+        Script {}
+    }
     \endqml
 
     instead of:
     \qml
-    <Item>
-        <children>
-            <Text />
-            <Rect />
-        </children>
-        <resources>
-            <Script/>
-        </resources>
-    </Item>
+    Item {
+        children: [
+            Text {},
+            Rect {}
+        ]
+        resources: [
+            Script {}
+        ]
+    }
     \endqml
 
     data is a behind-the-scenes property: you should never need to explicitly 
@@ -792,6 +797,9 @@ QFxContents *QFxItem::contents()
   \property QFxItem::qmlItem
 */
 
+/*! \fn QFxItem *QFxItem::qmlItem() const
+  \internal
+ */
 QFxItem *QFxItem::qmlItem() const
 {
     Q_D(const QFxItem);
@@ -806,6 +814,13 @@ QFxItem *QFxItem::qmlItem() const
     item. Querying for the QML only has meaning if the QML has been
     dynamically set; otherwise an empty string is returned.
 */
+
+/*! \fn void QFxItem::qmlChanged()
+  This signal is emitted whenever the item's dynamic QML
+  string changes.
+
+  \sa setQml()
+ */
 
 /*!
     \property QFxItem::qml
@@ -858,7 +873,14 @@ void QFxItem::setQml(const QString &qml)
     }
 }
 
+/*! \fn void QFxItem::newChildCreated(const QString &url, QScriptValue v)
+  This signal is emitted with the \a url and the script value \a v,
+  when a new child is created.
+ */
 
+/*!
+  \internal
+ */
 void QFxItem::qmlLoaded()
 {
     Q_D(QFxItem);
@@ -916,7 +938,7 @@ void QFxItem::qmlLoaded()
   Defines the item's position and size relative to its parent.
 
   \qml
-  <Item x="100" y="100" width="100" height="100" />
+  Item { x: 100; y: 100; width: 100; height: 100 }
   \endqml
  */
 
@@ -970,43 +992,72 @@ void QFxItem::qmlLoaded()
   \o \image declarative-item_stacking1.png
   \o Same \c z - later children above earlier children:
   \qml
-  <Item>
-    <Rect color="red" width="100" height="100" />
-    <Rect color="blue" x="50" y="50" width="100" height="100" />
-  </Item>
+  Item {
+      Rect {
+          color: "red"
+          width: 100; height: 100
+      }
+      Rect {
+          color: "blue"
+          x: 50; y: 50; width: 100; height: 100
+      }
+  }
   \endqml
   \row
   \o \image declarative-item_stacking2.png
   \o Higher \c z on top:
   \qml
-  <Item>
-    <Rect z="1" color="red" width="100" height="100" />
-    <Rect color="blue" x="50" y="50" width="100" height="100" />
-  </Item>
+  Item {
+      Rect {
+          z: 1
+          color: "red"
+          width: 100; height: 100
+      }
+      Rect {
+          color: "blue"
+          x: 50; y: 50; width: 100; height: 100
+      }
+  }
   \endqml
   \row
   \o \image declarative-item_stacking3.png
   \o Same \c z - children above parents:
   \qml
-  <Item>
-    <Rect color="red" width="100" height="100">
-      <Rect color="blue" x="50" y="50" width="100" height="100" />
-    </Rect>
-  </Item>
+  Item {
+      Rect {
+          color: "red"
+          width: 100; height: 100
+          Rect {
+              color: "blue"
+              x: 50; y: 50; width: 100; height: 100
+          }
+      }
+  }
   \endqml
   \row
   \o \image declarative-item_stacking4.png
   \o Lower \c z below:
   \qml
-  <Item>
-    <Rect color="red" width="100" height="100">
-      <Rect z="-1" color="blue" x="50" y="50" width="100" height="100" />
-    </Rect>
-  </Item>
+  Item {
+      Rect {
+          color: "red"
+          width: 100; height: 100
+          Rect {
+              z: -1
+              color: "blue"
+              x: 50; y: 50; width: 100; height: 100
+          }
+      }
+  }
   \endqml
   \endtable
  */
 
+/*!
+  This function is called to handle this item's changes in
+  geometry from \a oldGeometry to \a newGeometry. If the two
+  geometries are the same, it doesn't do anything.
+ */
 void QFxItem::geometryChanged(const QRectF &newGeometry, 
                               const QRectF &oldGeometry)
 {
@@ -1138,6 +1189,13 @@ void QFxItem::setFlipHorizontally(bool v)
         setFlip((QSimpleCanvasItem::Flip)(flip() & ~HorizontalFlip));
 }
 
+/*! \fn void QFxItem::keyPress(QFxKeyEvent *event)
+  This signal is emitted by keyPressEvent() for the \a event.
+ */
+
+/*! \fn void QFxItem::keyRelease(QFxKeyEvent *event)
+  This signal is emitted by keyReleaseEvent() for the \a event.
+ */
 
 /*!
   \reimp
@@ -1179,8 +1237,8 @@ QRectF QFxItem::sceneBoundingRect() const
   refer to the item. For example:
 
   \qml
-  <Text id="myText" .../>
-  <Text text="{myText.text}"/>
+  Text { id: myText; ... }
+  Text { text: myText.text }
   \endqml
 
   The identifier is available throughout to the \l {components}{component}
@@ -1195,8 +1253,8 @@ QRectF QFxItem::sceneBoundingRect() const
   refer to the item. For example:
 
   \qml
-  <Text id="myText" .../>
-  <Text text="{myText.text}"/>
+  Text { id: myText; ... }
+  Text { text: myText.text }
   \endqml
 
   The identifier is available throughout the \l {components}{component}
@@ -1359,10 +1417,14 @@ QFxAnchorLine QFxItem::verticalCenter() const
   \o \image declarative-anchors_example.png
   \o Text anchored to Image, horizontally centered and vertically below, with a margin.
   \qml
-  <Image id="pic" .../>
-  <Text id="label" anchors.horizontalCenter="{pic.horizontalCenter}"
-                   anchors.top="{pic.bottom}"
-                   anchors.topMargin="5" .../>
+  Image { id: pic; ... }
+  Text {
+      id: label
+      anchors.horizontalCenter: pic.horizontalCenter
+      anchors.top: pic.bottom
+      anchors.topMargin: 5
+      ...
+  }
   \endqml
   \row
   \o \image declarative-anchors_example2.png
@@ -1371,9 +1433,13 @@ QFxAnchorLine QFxItem::verticalCenter() const
   property of both defaults to 0.
 
   \qml
-    <Image id="pic" .../>
-    <Text id="label" anchors.left="{pic.right}"
-                     anchors.leftMargin="5" .../>
+    Image { id: pic; ... }
+    Text {
+        id: label
+        anchors.left: pic.right
+        anchors.leftMargin: 5
+        ...
+    }
   \endqml
   \endtable
 
@@ -1432,13 +1498,28 @@ void QFxItem::setBaselineOffset(int offset)
   \o \image declarative-rotation.png
   \o
   \qml
-  <Rect color="blue" width="100" height="100">
-      <Rect color="green" width="25" height="25"/>
-      <Rect color="red" width="50" height="50" x="25" y="25" rotation="30"/>
-  </Rect>
+  Rect {
+      color: "blue"
+      width: 100; height: 100
+      Rect {
+          color: "green"
+          width: 25; height: 25
+      }
+      Rect {
+          color: "red"
+          x: 25; y: 25; width: 50; height: 50
+          rotation: 30
+      }
+  }
   \endqml
   \endtable
 */
+
+/*! \fn void QFxItem::rotationChanged()
+  This signal is emitted when the rotation property is changed.
+
+  \sa setRotation()
+ */
 
 /*!
   \property QFxItem::rotation
@@ -1495,10 +1576,19 @@ void QFxItem::setRotation(qreal rotation)
   \o \image declarative-scale.png
   \o
   \qml
-  <Rect color="blue" width="100" height="100">
-      <Rect color="green" width="25" height="25"/>
-      <Rect color="red" width="50" height="50" x="25" y="25" scale="1.4"/>
-  </Rect>
+  Rect {
+      color: "blue"
+      width: 100; height: 100
+      Rect {
+          color: "green"
+          width: 25; height: 25
+      }
+      Rect {
+          color: "red"
+          x: 25; y: 25; width: 50; height: 50
+          scale: 1.4
+      }
+  }
   \endqml
   \endtable
 */
@@ -1546,21 +1636,32 @@ void QFxItem::setScale(qreal s)
   \o \image declarative-item_opacity1.png
   \o
   \qml
-  <Item>
-    <Rect color="red" width="100" height="100">
-      <Rect color="blue" x="50" y="50" width="100" height="100" />
-    </Rect>
-  </Item>
+    Item {
+        Rect {
+            color: "red"
+            width: 100; height: 100
+            Rect {
+                color: "blue"
+                x: 50; y: 50; width: 100; height: 100
+            }
+        }
+    }
   \endqml
   \row
   \o \image declarative-item_opacity2.png
   \o
   \qml
-  <Item>
-    <Rect opacity="0.5" color="red" width="100" height="100">
-      <Rect color="blue" x="50" y="50" width="100" height="100" />
-    </Rect>
-  </Item>
+    Item {
+        Rect {
+            opacity: 0.5
+            color: "red"
+            width: 100; height: 100
+            Rect {
+                color: "blue"
+                x: 50; y: 50; width: 100; height: 100
+            }
+        }
+    }
   \endqml
   \endtable
 */
@@ -1592,12 +1693,20 @@ void QFxItem::setOpacity(qreal v)
     emit opacityChanged();
 }
 
+/*!
+  Returns a value indicating whether the mouse should
+  remain with this item.
+ */
 bool QFxItem::keepMouseGrab() const
 {
     Q_D(const QFxItem);
     return d->_keepMouse;
 }
 
+/*!
+  The flag indicating whether the mouse should remain
+  with this item is set to \a keep.
+ */
 void QFxItem::setKeepMouseGrab(bool keep)
 {
     Q_D(QFxItem);
@@ -1639,13 +1748,13 @@ QmlList<QObject *> *QFxItem::resources()
   This property holds a list of states defined by the item.
 
   \qml
-  <Item>
-    <states>
-      <State .../>
-      <State .../>
-            ...
-    </states>
-  </Item>
+  Item {
+    states: [
+      State { ... },
+      State { ... }
+      ...
+    ]
+  }
   \endqml
 
   \sa {states-transitions}{States and Transitions}
@@ -1668,13 +1777,13 @@ QmlList<QmlState *>* QFxItem::states()
   This property holds a list of transitions defined by the item.
 
   \qml
-  <Item>
-    <transitions>
-      <Transition .../>
-      <Transition .../>
-            ...
-    </transitions>
-  </Item>
+  Item {
+    transitions: [
+      Transition { ... },
+      Transition { ... }
+      ...
+    ]
+  }
   \endqml
 
   \sa {states-transitions}{States and Transitions}
@@ -1708,13 +1817,13 @@ QmlList<QmlTransition *>* QFxItem::transitions()
   that canvas (but the QML will still be considered valid).
 
   \qml
-  <Item>
-    <filter>
-      <Blur .../>
-      <Relection .../>
-            ...
-    </filter>
-  </Item>
+  Item {
+    filter: [
+      Blur { ... },
+      Relection { ... }
+      ...
+    ]
+  }
   \endqml
 */
 
@@ -1759,14 +1868,14 @@ QmlState *QFxItem::findState(const QString &name) const
   example:
 
   \qml
-    <Script>
+    Script {
         function toggle() {
             if (button.state == 'On')
                 button.state = 'Off';
             else
                 button.state = 'On';
         }
-    </Script>
+    }
   \endqml
 
   If the item is in its base state (i.e. no explicit state has been
@@ -1785,14 +1894,14 @@ QmlState *QFxItem::findState(const QString &name) const
   example:
 
   \qml
-    <Script>
+    Script {
         function toggle() {
             if (button.state == 'On')
                 button.state = 'Off';
             else
                 button.state = 'On';
         }
-    </Script>
+    }
   \endqml
 
   If the item is in its base state (i.e. no explicit state has been
