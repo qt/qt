@@ -120,3 +120,9 @@ contains(QT_CONFIG, dbus) {
 }
 
 contains(QT_CONFIG, reduce_exports): CONFIG += hide_symbols
+
+symbian: {
+	# Without this setting, code using numeric_limits will fail
+	# for winscw, although armv5 works fine no matter what.
+	MMP_RULES += "option cw -wchar_t on"
+}
