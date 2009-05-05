@@ -382,6 +382,7 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 
             QRegion dirtyRegion = QRegion(window()->rect()) - d_ptr->paintedRegion;
 
+#if !defined(QT_OPENGL_ES_2)
             if (!dirtyRegion.isEmpty()) {
                 context()->makeCurrent();
 
@@ -407,6 +408,7 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
                     drawTexture(rect, d_ptr->tex_id, window()->size(), rect);
                 }
             }
+#endif
             d_ptr->paintedRegion = QRegion();
 
             context()->swapBuffers();
@@ -455,7 +457,9 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
                 GL_NEAREST);
 
         glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, d_ptr->fbo->handle());
-    } else {
+    }
+#if !defined(QT_OPENGL_ES_2)
+    else {
         glDisable(GL_DEPTH_TEST);
 
         if (d_ptr->fbo) {
@@ -485,6 +489,7 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         if (d_ptr->fbo)
             d_ptr->fbo->bind();
     }
+#endif
 
     if (ctx->format().doubleBuffer())
         ctx->swapBuffers();
@@ -568,6 +573,7 @@ void QGLWindowSurface::updateGeometry()
             glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glBindTexture(target, 0);
 
+#if !defined(QT_OPENGL_ES_2)
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
 #ifndef QT_OPENGL_ES
@@ -575,6 +581,7 @@ void QGLWindowSurface::updateGeometry()
 #else
             glOrthof(0, d_ptr->pb->width(), d_ptr->pb->height(), 0, -999999, 999999);
 #endif
+#endif // !defined(QT_OPENGL_ES_2)
 
             d_ptr->pb->d_ptr->qctx->d_func()->internal_context = true;
             return;
@@ -672,6 +679,7 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
     extern void qt_add_rect_to_array(const QRectF &r, q_vertexType *array); // qpaintengine_opengl.cpp
     qt_add_rect_to_array(rect, vertexArray);
 
+#if !defined(QT_OPENGL_ES_2)
     glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
     glTexCoordPointer(2, q_vertexTypeEnum, 0, texCoordArray);
 
@@ -683,6 +691,7 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+#endif
 
     glDisable(target);
     glBindTexture(target, 0);

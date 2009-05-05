@@ -1365,7 +1365,9 @@ QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alp
     QImage img(size, alpha_format ? QImage::Format_ARGB32 : QImage::Format_RGB32);
     int w = size.width();
     int h = size.height();
+#if !defined(QT_OPENGL_ES_2) //### glGetTexImage not in GL ES 2.0, need to do something else here!
     glGetTexImage(qt_gl_preferredTextureTarget(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+#endif
     convertFromGLImage(img, w, h, alpha_format, include_alpha);
     return img;
 }

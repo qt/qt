@@ -15,10 +15,10 @@ contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1
 contains(QT_CONFIG, opengles2):CONFIG += opengles2
 
-!contains(QT_CONFIG, opengles2) {
+#!contains(QT_CONFIG, opengles2) {
     HEADERS += qgraphicssystem_gl_p.h qwindowsurface_gl_p.h qpixmapdata_gl_p.h
     SOURCES += qgraphicssystem_gl.cpp qwindowsurface_gl.cpp qpixmapdata_gl.cpp
-}
+#}
 
 HEADERS += qgl.h \
 	   qgl_p.h \
