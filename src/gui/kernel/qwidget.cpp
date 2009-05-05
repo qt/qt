@@ -8501,9 +8501,11 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
 {
     Q_D(QWidget);
     d->imHints = hints;
-    if (testAttribute(Qt::WA_InputMethodEnabled)) {
-        Q_ASSERT(inputContext());
-        inputContext()->update();
+    // Optimisation to update input context only it has already been created.
+    if (d->ic || qApp->d_func()->inputContext) {
+        QInputContext *ic = inputContext();
+        if (ic)
+            ic->update();
     }
 }
 
