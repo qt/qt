@@ -3,8 +3,8 @@
  Copyright    :	Copyright (c) Imagination Technologies Limited.
 				This specification is protected by copyright laws and contains
 				material proprietary to Imagination Technologies Limited.
-				You may use and distribute this specification free of charge for implementing 
-				the functionality therein, without altering or removing any trademark, copyright, 
+				You may use and distribute this specification free of charge for implementing
+				the functionality therein, without altering or removing any trademark, copyright,
 				or other notice from the specification.
  Platform     : ANSI
 *****************************************************************************/
