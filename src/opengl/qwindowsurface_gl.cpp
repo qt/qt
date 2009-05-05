@@ -449,14 +449,14 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         const int y0 = h - (rect.top() + rect.height());
         const int y1 = h - rect.top();
 
-        glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, 0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, 0);
 
         glBlitFramebufferEXT(x0, y0, x1, y1,
                 x0, y0, x1, y1,
                 GL_COLOR_BUFFER_BIT,
                 GL_NEAREST);
 
-        glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, d_ptr->fbo->handle());
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, d_ptr->fbo->handle());
     }
 #if !defined(QT_OPENGL_ES_2)
     else {

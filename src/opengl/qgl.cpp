@@ -1573,7 +1573,7 @@ void QGLContextPrivate::cleanup()
     Q_Q(QGLContext);
     if (pbo) {
         QGLContext *ctx = q;
-        glDeleteBuffersARB(1, &pbo);
+        glDeleteBuffers(1, &pbo);
         pbo = 0;
     }
 }
@@ -1838,7 +1838,7 @@ GLuint QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint 
 
         use_pbo = qt_resolve_buffer_extensions(ctx);
         if (use_pbo && pbo == 0)
-            glGenBuffersARB(1, &pbo);
+            glGenBuffers(1, &pbo);
     }
 
     // the GL_BGRA format is only present in GL version >= 1.2
@@ -1889,8 +1889,8 @@ GLuint QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint 
 
     uchar *ptr = 0;
     if (use_pbo) {
-        glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
-        glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB, img.width() * img.height() * 4, 0, GL_STREAM_DRAW_ARB);
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
+        glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, img.width() * img.height() * 4, 0, GL_STREAM_DRAW_ARB);
         ptr = reinterpret_cast<uchar *>(glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY_ARB));
     }
 
@@ -1917,7 +1917,7 @@ GLuint QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint 
     }
 
     if (use_pbo)
-        glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
 
     // this assumes the size of a texture is always smaller than the max cache size
     int cost = img.width()*img.height()*4/1024;

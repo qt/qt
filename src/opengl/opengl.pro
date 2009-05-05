@@ -26,7 +26,8 @@ HEADERS += qgl.h \
 	   qglpixelbuffer.h \
 	   qglframebufferobject.h  \
 	   qglpixmapfilter_p.h  \
-           qglshaderprogram.h
+           qglshaderprogram.h \
+        qglextensions_p.h
 
 SOURCES	+= qgl.cpp \
 	   qglcolormap.cpp \
