@@ -1225,18 +1225,16 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             const QStyleOptionViewItemV4 *tableOption = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option);
             const QTableView *table = qobject_cast<const QTableView *>(widget);
             if (table && tableOption) {
-                const QModelIndex indexCurrent = tableOption->index;
-                // Draw cell background only once - for the first cell
-                //todo: calc area based on viewport only so that 1000x1000 table doesn't get ridiculously big background
-                //todo: try to do this only once. For some reason, if I try to
-                //if ( indexCurrent.column() == 2 && indexCurrent.row() == 2 ) {
-                    QStyleOptionViewItemV4 voptAdj2 = voptAdj2;
-                    const QModelIndex index = table->model()->index(0,0);
-                    const QModelIndex indexLast = table->model()->index(
-                            table->model()->rowCount()-1,table->model()->columnCount()-1);
-                    voptAdj2.rect = QRect( table->visualRect(index).topLeft(), table->visualRect(indexLast).bottomRight());
-                    drawPrimitive(PE_PanelItemViewItem, &voptAdj2, painter, widget);
-                //}
+                const QModelIndex index = tableOption->index;
+                //todo: Draw cell background only once - for the first cell.
+                QStyleOptionViewItemV4 voptAdj2 = voptAdj2;
+                const QModelIndex indexFirst = table->model()->index(0,0);
+                const QModelIndex indexLast = table->model()->index(
+                    table->model()->rowCount()-1,table->model()->columnCount()-1);
+                if (table->viewport())
+                    voptAdj2.rect = QRect( table->visualRect(indexFirst).topLeft(), 
+                        table->visualRect(indexLast).bottomRight()).intersect(table->viewport()->rect());
+                drawPrimitive(PE_PanelItemViewItem, &voptAdj2, painter, widget);
             }
 
             // draw the focus rect
