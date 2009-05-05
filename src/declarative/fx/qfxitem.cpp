@@ -448,7 +448,7 @@ QFxItem::~QFxItem()
     This example scales an image about its center.
     \qml
     Image {
-        src: "myimage.png"
+        source: "myimage.png"
         transformOrigin: "Center"
         scale: 4
     }

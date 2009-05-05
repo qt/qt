@@ -126,6 +126,9 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
     subTypeHash["module"] = Node::Module;
     subTypeHash["page"] = Node::Page;
     subTypeHash["externalpage"] = Node::ExternalPage;
+#ifdef QDOC_QML
+    subTypeHash["qmlclass"] = Node::QmlClass;
+#endif
 
     QSet<Node::SubType> allSubTypes = QSet<Node::SubType>::fromList(subTypeHash.values());
 

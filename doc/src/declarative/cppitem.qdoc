@@ -76,7 +76,7 @@ For example:
 QML_DECLARE_TYPE(MyCircle);
 QML_DEFINE_TYPE(MyCircle,Circle);
 \endcode
-would make the \e MyCircle class accessable though the \c <Circle/> tag in QML.
+would make the \e MyCircle class accessable though the \c Circle type in QML.
 
 
 \section1 Creating a new 'Fx' item in C++
