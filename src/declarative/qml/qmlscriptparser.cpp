@@ -521,31 +521,54 @@ bool ProcessAST::visit(AST::UiArrayBinding *node)
 bool ProcessAST::visit(AST::UiSourceElement *node)
 {
     QmlParser::Object *obj = currentObject();
-    if (! (obj && obj->typeName == "Script")) {
-        QmlError error;
-        error.setDescription("JavaScript declaration outside Script element");
-        error.setLine(node->firstSourceLocation().startLine);
-        error.setColumn(node->firstSourceLocation().startColumn);
-        _parser->_errors << error;
+
+    bool isScript = (obj && obj->typeName == "Script");
+
+    if (!isScript) {
+
+        if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement)) {
+
+            if(funDecl->formals) {
+                QmlError error;
+                error.setDescription("Slot declarations must be parameterless");
+                error.setLine(funDecl->lparenToken.startLine);
+                error.setColumn(funDecl->lparenToken.startColumn);
+                _parser->_errors << error;
+                return false;
+            }
+
+            QString body = textAt(funDecl->lbraceToken, funDecl->rbraceToken);
+            Object::DynamicSlot slot;
+            slot.name = funDecl->name->asString().toUtf8();
+            slot.body = body;
+            obj->dynamicSlots << slot;
+        } else {
+            QmlError error;
+            error.setDescription("JavaScript declaration outside Script element");
+            error.setLine(node->firstSourceLocation().startLine);
+            error.setColumn(node->firstSourceLocation().startColumn);
+            _parser->_errors << error;
+        }
         return false;
+
+    } else {
+        QString source;
+
+        int line = 0;
+        if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement)) {
+            line = funDecl->functionToken.startLine;
+            source = asString(funDecl);
+        } else if (AST::VariableStatement *varStmt = AST::cast<AST::VariableStatement *>(node->sourceElement)) {
+            // ignore variable declarations
+            line = varStmt->declarationKindToken.startLine;
+        }
+
+        Value *value = new Value;
+        value->primitive = source;
+        value->line = line;
+
+        obj->getDefaultProperty()->addValue(value);
     }
-
-    QString source;
-
-    int line = 0;
-    if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement)) {
-        line = funDecl->functionToken.startLine;
-        source = asString(funDecl);
-    } else if (AST::VariableStatement *varStmt = AST::cast<AST::VariableStatement *>(node->sourceElement)) {
-        // ignore variable declarations
-        line = varStmt->declarationKindToken.startLine;
-    }
-
-    Value *value = new Value;
-    value->primitive = source;
-    value->line = line;
-
-    obj->getDefaultProperty()->addValue(value);
 
     return false;
 }
