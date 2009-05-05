@@ -62,7 +62,9 @@ public:
     enum DirectFBFlag {
         NoFlags = 0x00,
         VideoOnly = 0x01,
-        IgnoreSystemClip = 0x02
+        SystemOnly = 0x02,
+        IgnoreSystemClip = 0x04,
+        BoundingRectFlip = 0x08
     };
 
     Q_DECLARE_FLAGS(DirectFBFlags, DirectFBFlag);
@@ -82,19 +84,19 @@ public:
     void setMode(int width, int height, int depth);
     void blank(bool on);
 
-    QWSWindowSurface* createSurface(QWidget *widget) const;
-    QWSWindowSurface* createSurface(const QString &key) const;
+    QWSWindowSurface *createSurface(QWidget *widget) const;
+    QWSWindowSurface *createSurface(const QString &key) const;
 
-    static inline QDirectFBScreen* instance() {
+    static inline QDirectFBScreen *instance() {
         QScreen *inst = QScreen::instance();
         Q_ASSERT(!inst || inst->classId() == QScreen::DirectFBClass);
         return static_cast<QDirectFBScreen*>(inst);
     }
 
-    IDirectFB* dfb();
-    IDirectFBSurface* dfbSurface();
+    IDirectFB *dfb();
+    IDirectFBSurface *dfbSurface();
 #ifndef QT_NO_DIRECTFB_LAYER
-    IDirectFBDisplayLayer* dfbDisplayLayer();
+    IDirectFBDisplayLayer *dfbDisplayLayer();
 #endif
 
     // Track surface creation/release so we can release all on exit
@@ -103,7 +105,7 @@ public:
         TrackSurface = 1
     };
     Q_DECLARE_FLAGS(SurfaceCreationOptions, SurfaceCreationOption);
-    IDirectFBSurface *createDFBSurface(const DFBSurfaceDescription *desc,
+    IDirectFBSurface *createDFBSurface(DFBSurfaceDescription desc,
                                        SurfaceCreationOptions options);
     IDirectFBSurface *createDFBSurface(const QImage &image,
                                        SurfaceCreationOptions options);
@@ -116,7 +118,7 @@ public:
     IDirectFBSurface *copyToDFBSurface(const QImage &image,
                                      QImage::Format format,
                                      SurfaceCreationOptions options);
-    void releaseDFBSurface(IDirectFBSurface* surface);
+    void releaseDFBSurface(IDirectFBSurface *surface);
 
     static int depth(DFBSurfacePixelFormat format);
 

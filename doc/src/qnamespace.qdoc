@@ -146,10 +146,16 @@
            widgets stay non-native unless specifically set by the
            Qt::WA_NativeWindow attribute.
 
-    \value AA_MacPluginApplication Stops the a Qt mac application from doing
+    \value AA_MacPluginApplication Stops the Qt mac application from doing
            specific initializations that do not necessarily make sense when using Qt
            to author a plugin. This includes avoiding loading our nib for the main
-           menu and not taking possession of the native menu bar.
+           menu and not taking possession of the native menu bar. When setting this
+           attribute to true will also set the AA_DontUseNativeMenuBar attribute
+           to true.
+
+    \value AA_DontUseNativeMenuBar All menubars created while this attribute is
+           set to true won't be used as a native menubar (e.g, the menubar at
+           the top of the main screen on Mac OS X or at the bottom in Windows CE).
 
     \omitvalue AA_AttributeCount
 */

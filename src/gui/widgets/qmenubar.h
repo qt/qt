@@ -64,6 +64,7 @@ class Q_GUI_EXPORT QMenuBar : public QWidget
     Q_OBJECT
 
     Q_PROPERTY(bool defaultUp READ isDefaultUp WRITE setDefaultUp)
+    Q_PROPERTY(bool nativeMenuBar READ isNativeMenuBar WRITE setNativeMenuBar)
 
 public:
     explicit QMenuBar(QWidget *parent = 0);
@@ -117,6 +118,9 @@ public:
     static void wceCommands(uint command, HWND controlHandle);
     static void wceRefresh();
 #endif
+
+    bool isNativeMenuBar() const;
+    void setNativeMenuBar(bool nativeMenuBar);
 
 public Q_SLOTS:
     virtual void setVisible(bool visible);

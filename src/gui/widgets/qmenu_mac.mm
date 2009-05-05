@@ -71,7 +71,6 @@ QT_BEGIN_NAMESPACE
 /*****************************************************************************
   QMenu globals
  *****************************************************************************/
-bool qt_mac_no_native_menubar = false;
 bool qt_mac_no_menubar_merge = false;
 bool qt_mac_quit_menu_item_enabled = true;
 int qt_mac_menus_open_count = 0;
@@ -166,7 +165,7 @@ bool qt_mac_activate_action(MenuRef menu, uint command, QAction::ActionEvent act
         QMenuMergeList *list = 0;
         GetMenuItemProperty(menu, 0, kMenuCreatorQt, kMenuPropertyMergeList,
                             sizeof(list), 0, &list);
-        if (!list && qt_mac_current_menubar.qmenubar) {
+        if (!list && qt_mac_current_menubar.qmenubar && qt_mac_current_menubar.qmenubar->isNativeMenuBar()) {
             MenuRef apple_menu = qt_mac_current_menubar.qmenubar->d_func()->mac_menubar->apple_menu;
             GetMenuItemProperty(apple_menu, 0, kMenuCreatorQt, kMenuPropertyMergeList, sizeof(list), 0, &list);
             if (list)
@@ -728,6 +727,18 @@ QMacMenuAction::~QMacMenuAction()
 {
 #ifdef QT_MAC_USE_COCOA
     [menu release];
+    if (action) {
+        QAction::MenuRole role = action->menuRole();
+        // Check if the item is owned by Qt, and should be hidden to keep it from causing
+        // problems. Do it for everything but the quit menu item since that should always
+        // be visible.
+        if (role > QAction::ApplicationSpecificRole && role < QAction::QuitRole) {
+            [menuItem setHidden:YES];
+        } else if (role == QAction::TextHeuristicRole
+                   && menuItem != [getMenuLoader() quitMenuItem]) {
+            [menuItem setHidden:YES];
+        }
+    }
     [menuItem setTag:nil];
     [menuItem release];
 #endif
@@ -931,7 +942,8 @@ static QKeySequence qt_mac_menu_merge_accel(QMacMenuAction *action)
 
 void Q_GUI_EXPORT qt_mac_set_menubar_icons(bool b)
 { QApplication::instance()->setAttribute(Qt::AA_DontShowIconsInMenus, !b); }
-void Q_GUI_EXPORT qt_mac_set_native_menubar(bool b) { qt_mac_no_native_menubar = !b; }
+void Q_GUI_EXPORT qt_mac_set_native_menubar(bool b)
+{  QApplication::instance()->setAttribute(Qt::AA_DontUseNativeMenuBar, !b); }
 void Q_GUI_EXPORT qt_mac_set_menubar_merge(bool b) { qt_mac_no_menubar_merge = !b; }
 
 /*****************************************************************************
@@ -1728,9 +1740,14 @@ QMenuBarPrivate::macCreateMenuBar(QWidget *parent)
 {
     Q_Q(QMenuBar);
     static int checkEnv = -1;
+    // We call the isNativeMenuBar function here
+    // becasue that will make sure that local overrides
+    // are dealt with correctly.
+    bool qt_mac_no_native_menubar = !q->isNativeMenuBar();
     if (qt_mac_no_native_menubar == false && checkEnv < 0) {
         checkEnv = !qgetenv("QT_MAC_NO_NATIVE_MENUBAR").isEmpty();
-        qt_mac_no_native_menubar = checkEnv;
+        QApplication::instance()->setAttribute(Qt::AA_DontUseNativeMenuBar, checkEnv);
+        qt_mac_no_native_menubar = !q->isNativeMenuBar();
     }
     if (!qt_mac_no_native_menubar) {
         extern void qt_event_request_menubarupdate(); //qapplication_mac.cpp
@@ -1765,7 +1782,7 @@ void QMenuBarPrivate::macDestroyMenuBar()
 OSMenuRef QMenuBarPrivate::macMenu()
 {
     Q_Q(QMenuBar);
-    if (!mac_menubar) {
+    if (!q->isNativeMenuBar() || !mac_menubar) {
         return 0;
     } else if (!mac_menubar->menu) {
         mac_menubar->menu = qt_mac_create_menu(q);
@@ -1886,9 +1903,6 @@ static void cancelAllMenuTracking()
 */
 bool QMenuBar::macUpdateMenuBar()
 {
-    if (qt_mac_no_native_menubar) //nothing to be done..
-        return true;
-
     cancelAllMenuTracking();
     QMenuBar *mb = 0;
     //find a menu bar
@@ -1922,7 +1936,7 @@ bool QMenuBar::macUpdateMenuBar()
         mb = fallback;
     //now set it
     bool ret = false;
-    if (mb) {
+    if (mb && mb->isNativeMenuBar()) {
 #ifdef QT_MAC_USE_COCOA
         QMacCocoaAutoReleasePool pool;
 #endif
@@ -1943,7 +1957,7 @@ bool QMenuBar::macUpdateMenuBar()
         qt_mac_current_menubar.qmenubar = mb;
         qt_mac_current_menubar.modal = QApplicationPrivate::modalState();
         ret = true;
-    } else if (qt_mac_current_menubar.qmenubar) {
+    } else if (qt_mac_current_menubar.qmenubar && qt_mac_current_menubar.qmenubar->isNativeMenuBar()) {
         const bool modal = QApplicationPrivate::modalState();
         if (modal != qt_mac_current_menubar.modal) {
             ret = true;

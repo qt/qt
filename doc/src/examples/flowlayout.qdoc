@@ -53,7 +53,7 @@
 
 	The Flowlayout class mainly uses QLayout and QWidgetItem, while the
 	Window uses QWidget and QLabel. We will only document the definition 
-	and implementation of \cFlowLayout below.
+	and implementation of \c FlowLayout below.
 
     \section1 FlowLayout Class Definition
     

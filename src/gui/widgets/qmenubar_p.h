@@ -70,7 +70,8 @@ class QMenuBarPrivate : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QMenuBar)
 public:
     QMenuBarPrivate() : itemsDirty(0), itemsWidth(0), itemsStart(-1), currentAction(0), mouseDown(0),
-                         closePopupMode(0), defaultPopDown(1), popupState(0), keyboardState(0), altPressed(0)
+                         closePopupMode(0), defaultPopDown(1), popupState(0), keyboardState(0), altPressed(0),
+                         nativeMenuBar(-1)
 #ifdef Q_WS_MAC
                          , mac_menubar(0)
 #endif
@@ -119,6 +120,8 @@ public:
     uint keyboardState : 1, altPressed : 1;
     QPointer<QWidget> keyboardFocusWidget;
 
+
+    int nativeMenuBar : 3;  // Only has values -1, 0, and 1
     //firing of events
     void activateAction(QAction *, QAction::ActionEvent);
 
