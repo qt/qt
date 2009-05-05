@@ -59,26 +59,68 @@ QT_BEGIN_NAMESPACE
     \since 4.5
     \preliminary
 
-    This class is part of {The Animation Framework}. It serves as a base class
-    for property and item animations, with functions for shared functionality.
+    This class is part of \l{The Animation Framework}. It serves as a
+    base class for property and item animations, with functions for
+    shared functionality.
 
-    If you want to create an animation, you should look at QPropertyAnimation instead.
-
+    QVariantAnimation cannot be used directly as it is an abstract
+    class; it does not implement
+    \l{QAbstractAnimation::}{updateCurrentValue()} from
+    QAbstractAnimation. The class performs interpolation over
+    \l{QVariant}s, but leaves using the interpolated values to its
+    subclasses. Currently, Qt provides QPropertyAnimation, which
+    animates Qt \l{Qt's Property System}{properties}. See the
+    QPropertyAnimation class description if you wish to animate such
+    properties.
+    
     You can then set start and end values for the property by calling
     setStartValue() and setEndValue(), and finally call start() to
-    start the animation. When control goes back to the event loop, QVariantAnimation
-    will interpolate the property of the target object and emit the valueChanged
-    signal. To react to a change in the current value you have to reimplement the
-    updateCurrentValue virtual method.
+    start the animation. QVariantAnimation will interpolate the
+    property of the target object and emit valueChanged(). To react to
+    a change in the current value you have to reimplement the
+    updateCurrentValue() virtual function.
 
-    There are two ways to affect how QVariantAnimation interpolates the values.
-    You can set an easing curve by calling setEasingCurve(), and configure the
-    duration by calling setDuration(). You can change how the QVariants are
-    interpolated by creating a subclass of QVariantAnimation, and reimplementing the
-    virtual interpolated() function.
+    It is also possible to set values at specified steps situated
+    between the start and end value. The interpolation will then
+    touch these points at the specified steps. Note that the start and
+    end values are defined as the key values at 0.0 and 1.0.
 
+    There are two ways to affect how QVariantAnimation interpolates
+    the values. You can set an easing curve by calling
+    setEasingCurve(), and configure the duration by calling
+    setDuration(). You can change how the QVariants are interpolated
+    by creating a subclass of QVariantAnimation, and reimplementing
+    the virtual interpolated() function.
 
-    \sa QPropertyAnimation, {The Animation Framework}
+    Subclassing QVariantAnimation can be an alternative if you have
+    \l{QVariant}s that you do not wish to declare as Qt properties.
+    Note, however, that you in most cases will be better off declaring
+    your QVariant as a property.
+
+    Not all QVariant types are supported. Below is a list of currently
+    supported QVariant types:
+
+    \list
+        \o \l{QMetaType::}{Int}
+        \o \l{QMetaType::}{Double}
+        \o \l{QMetaType::}{Float}
+        \o \l{QMetaType::}{QLine}
+        \o \l{QMetaType::}{QLineF}
+        \o \l{QMetaType::}{QPoint}
+        \o \l{QMetaType::}{QSize}
+        \o \l{QMetaType::}{QSizeF}
+        \o \l{QMetaType::}{QRect}
+        \o \l{QMetaType::}{QRectF}
+    \endlist 
+
+    If you need to interpolate other variant types, including custom
+    types, you have to implement interpolation for these yourself.
+    You do this by reimplementing interpolated(), which returns
+    interpolation values for the value being interpolated. 
+
+    \omit We need some snippets around here. \endomit
+
+    \sa QPropertyAnimation, QAbstractAnimation, {The Animation Framework}
 */
 
 /*!
@@ -261,16 +303,23 @@ QVariantAnimation::~QVariantAnimation()
     \property QVariantAnimation::easingCurve
     \brief the easing curve of the animation
 
-    This property defines the easing curve of the animation. By default, a
-    linear easing curve is used, resulting in linear interpolation of the
-    end property. For many animations, it's useful to try different easing
-    curves, including QEasingCurve::InCirc, which provides a circular entry curve,
-    and QEasingCurve::InOutElastic, which provides an elastic effect on the values
-    of the interpolated property.
+    This property defines the easing curve of the animation. By
+    default, a linear easing curve is used, resulting in linear
+    interpolation. Other curves are provided, for instance,
+    QEasingCurve::InCirc, which provides a circular entry curve.
+    Another example is QEasingCurve::InOutElastic, which provides an
+    elastic effect on the values of the interpolated variant.
 
+    The easing curve is used with the interpolator, the interpolated()
+    virtual function, the animation's duration, and iterationCount, to
+    control how the current value changes as the animation progresses.
+
+<<<<<<< Updated upstream:src/corelib/animation/qvariantanimation.cpp
     The easing curve is used with the interpolator, the interpolated() virtual
     function, the animation's duration, and loopCount, to control how the
     current value changes as the animation progresses.
+=======
+>>>>>>> Stashed changes:src/corelib/animation/qvariantanimation.cpp
 */
 QEasingCurve QVariantAnimation::easingCurve() const
 {
@@ -372,8 +421,8 @@ QVariantAnimation::Interpolator QVariantAnimationPrivate::getInterpolator(int in
     \property QVariantAnimation::duration
     \brief the duration of the animation
 
-    This property describes the duration of the animation. The default
-    duration is 250 milliseconds.
+    This property describes the duration in milliseconds of the
+    animation. The default duration is 250 milliseconds.
 
     \sa QAbstractAnimation::duration()
  */
@@ -509,17 +558,22 @@ void QVariantAnimation::setKeyValues(const KeyValues &keyValues)
 
 /*!
     \property QVariantAnimation::currentValue
-    \brief the current value of the animation
+    \brief the current value of the animation.
 
-    This property describes the current value; an interpolation between the
-    start value and the end value, using the current time for progress.
+    This property describes the current value; an interpolated value
+    between the \l{startValue}{start value} and the \l{endValue}{end
+    value}, using the current time for progress. The value itself is
+    obtained from interpolated(), which is called repeatedly as the
+    animation is running.
 
-    QVariantAnimation calls the virtual updateCurrentValue() function when the
-    current value changes. This is particularily useful for subclasses that
-    need to track updates.
+    QVariantAnimation calls the virtual updateCurrentValue() function
+    when the current value changes. This is particularly useful for
+    subclasses that need to track updates. For example,
+    QPropertyAnimation uses this function to animate Qt \l{Qt's
+    Property System}{properties}.
 
     \sa startValue, endValue
- */
+*/
 QVariant QVariantAnimation::currentValue() const
 {
     Q_D(const QVariantAnimation);
@@ -549,13 +603,22 @@ void QVariantAnimation::updateState(QAbstractAnimation::State oldState,
 }
 
 /*!
-    This virtual function returns the linear interpolation between variants \a
-    from and \a to, at \a progress, usually a value between 0 and 1. You can reimplement
-    this function in a subclass of QVariantAnimation to provide your own interpolation
-    algorithm. Note that in order for the interpolation to work with a QEasingCurve
-    that return a value smaller than 0 or larger than 1 (such as QEasingCurve::InBack)
-    you should make sure that it can extrapolate. If the semantic of the datatype
-    does not allow extrapolation this function should handle that gracefully.
+
+    This virtual function returns the linear interpolation between
+    variants \a from and \a to, at \a progress, usually a value
+    between 0 and 1. You can reimplement this function in a subclass
+    of QVariantAnimation to provide your own interpolation algorithm.
+
+    Note that in order for the interpolation to work with a
+    QEasingCurve that return a value smaller than 0 or larger than 1
+    (such as QEasingCurve::InBack) you should make sure that it can
+    extrapolate. If the semantic of the datatype does not allow
+    extrapolation this function should handle that gracefully.
+
+    You should call the QVariantAnimation implementation of this
+    function if you want your class to handle the types already
+    supported by Qt (see class QVariantAnimation description for a
+    list of supported types).
 
     \sa QEasingCurve
  */

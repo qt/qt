@@ -46,14 +46,13 @@
     \since 4.5
     \preliminary
 
-    This class is part of \l{The Animation Framework}. It serves as a base class
-    for standard animations and groups, with functions for shared
-    functionality, and it also makes it easy for you to define custom
-    animations that plug into the rest of the animation framework.
+    The class defines the functions for the functionality shared
+    between all animations. By inheriting this class, you can create
+    custom animations that plug into the rest of the animation
+    framework.
 
-    If you want to create an animation, you should look at the two subclasses,
-    QVariantAnimation and QAnimationGroup, instead.
-
+    
+    
     QAbstractAnimation provides an interface for the current time and
     duration, the loop count, and the state of an animation. These properties
     define the base functionality common to all animations in Qt. The virtual
@@ -85,6 +84,11 @@
     reimplementing updateState(), you can track the animation's state
     changes, which is particularily useful for animations that are not driven
     by time.
+
+    \omit
+    If you want to create an animation, you should look at the two subclasses,
+    QVariantAnimation and QAnimationGroup, instead.
+    \endomit
 
     \sa QVariantAnimation, QAnimationGroup, {The Animation Framework}
 */
