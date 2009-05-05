@@ -53,7 +53,7 @@ QT_MODULE(Declarative)
 class Q_DECLARATIVE_EXPORT QmlParserStatus
 {
 public:
-    virtual ~QmlParserStatus() {}
+    virtual ~QmlParserStatus();
 
     virtual void classBegin();
     virtual void classComplete();
