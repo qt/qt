@@ -8,6 +8,7 @@
 #include <QSignalEvent>
 #include <QVariant>
 #include <QLineF>
+#include <QDebug>
 
 class SearchState: public QState
 {
@@ -75,14 +76,16 @@ public:
           m_tank(tank),
           m_turnTo(turnTo)
     {
+        setTargetState(turnTo);
     }
 
 protected:
-    bool eventTest(QEvent *event) 
+    bool eventTest(QEvent *event) const
     {
-        QSignalEvent *se = static_cast<QSignalEvent *>(event);
-        m_lastLine = se->arguments().at(0).toLineF();
-
+        if (event->type() == QEvent::Signal) {
+            QSignalEvent *se = static_cast<QSignalEvent *>(event);
+            m_lastLine = se->arguments().at(0).toLineF();
+        }
         return QSignalTransition::eventTest(event);
     }
 
@@ -101,7 +104,7 @@ protected:
     }
 
 private:
-    QLineF m_lastLine;
+    mutable QLineF m_lastLine;
     QObject *m_tank;
     QState *m_turnTo;
 };
