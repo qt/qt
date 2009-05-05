@@ -103,7 +103,7 @@ TextEdit {
     Constructs a new QFxTextEdit.
 */
 QFxTextEdit::QFxTextEdit(QFxItem *parent)
-: QFxImageItem(*(new QFxTextEditPrivate), parent)
+: QFxPaintedItem(*(new QFxTextEditPrivate), parent)
 {
     Q_D(QFxTextEdit);
     d->init();
@@ -113,7 +113,7 @@ QFxTextEdit::QFxTextEdit(QFxItem *parent)
 \internal
 */
 QFxTextEdit::QFxTextEdit(QFxTextEditPrivate &dd, QFxItem *parent)
-    : QFxImageItem(dd, parent)
+    : QFxPaintedItem(dd, parent)
 {
     Q_D(QFxTextEdit);
     d->init();
@@ -383,7 +383,7 @@ void QFxTextEdit::geometryChanged(const QRectF &newGeometry,
 {
     if (newGeometry.width() != oldGeometry.width())
         updateSize();
-    QFxImageItem::geometryChanged(newGeometry, oldGeometry);
+    QFxPaintedItem::geometryChanged(newGeometry, oldGeometry);
 }
 
 /*!
@@ -393,7 +393,7 @@ void QFxTextEdit::dump(int depth)
 {
     QByteArray ba(depth * 4, ' ');
     qWarning() << ba.constData() << propertyInfo();
-    QFxImageItem::dump(depth);
+    QFxPaintedItem::dump(depth);
 }
 
 /*!
@@ -412,7 +412,7 @@ QString QFxTextEdit::propertyInfo() const
 void QFxTextEdit::componentComplete()
 {
     Q_D(QFxTextEdit);
-    QFxImageItem::componentComplete();
+    QFxPaintedItem::componentComplete();
     if (d->dirty) {
         updateSize();
         d->dirty = false;
@@ -588,7 +588,7 @@ Handles the given focus \a event.
 void QFxTextEdit::focusInEvent(QFocusEvent *event)
 {
     Q_D(QFxTextEdit);
-    QFxImageItem::focusInEvent(event);
+    QFxPaintedItem::focusInEvent(event);
     d->control->processEvent(event, QPointF(0, 0));
 }
 
@@ -599,7 +599,7 @@ Handles the given focus \a event.
 void QFxTextEdit::focusOutEvent(QFocusEvent *event)
 {
     Q_D(QFxTextEdit);
-    QFxImageItem::focusOutEvent(event);
+    QFxPaintedItem::focusOutEvent(event);
     d->control->processEvent(event, QPointF(0, 0));
 }
 
@@ -638,7 +638,7 @@ void QFxTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
     event->setAccepted(me->isAccepted());
     delete me;
     if (!event->isAccepted())
-        QFxImageItem::mousePressEvent(event);
+        QFxPaintedItem::mousePressEvent(event);
 }
 
 /*!
@@ -653,7 +653,7 @@ void QFxTextEdit::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     event->setAccepted(me->isAccepted());
     delete me;
     if (!event->isAccepted())
-        QFxImageItem::mousePressEvent(event);
+        QFxPaintedItem::mousePressEvent(event);
 }
 
 /*!
@@ -668,7 +668,7 @@ void QFxTextEdit::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     event->setAccepted(me->isAccepted());
     delete me;
     if (!event->isAccepted())
-        QFxImageItem::mousePressEvent(event);
+        QFxPaintedItem::mousePressEvent(event);
 }
 
 /*!

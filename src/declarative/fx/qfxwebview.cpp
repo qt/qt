@@ -68,7 +68,7 @@
 
 #include "qfxwebview.h"
 #include <qsimplecanvasfilter.h>
-#include <private/qfxitem_p.h>
+#include <private/qfxpainteditem_p.h>
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(QFxWebView,WebView);
@@ -142,14 +142,14 @@ public:
 };
 
 
-class QFxWebViewPrivate : public QFxItemPrivate
+class QFxWebViewPrivate : public QFxPaintedItemPrivate
 {
     Q_DECLARE_PUBLIC(QFxWebView)
 
 public:
     QFxWebViewPrivate()
-      : page(0), idealwidth(0), idealheight(0), interactive(true), lastPress(0), lastRelease(0), mouseX(0), mouseY(0),
-            smooth(true), max_imagecache_size(100000), progress(1.0), pending(PendingNone)
+      : QFxPaintedItemPrivate(), page(0), idealwidth(0), idealheight(0), interactive(true), lastPress(0), lastRelease(0), mouseX(0), mouseY(0),
+            max_imagecache_size(100000), progress(1.0), pending(PendingNone)
     {
     }
 
@@ -189,7 +189,6 @@ public:
     bool interactive;
     QMouseEvent *lastPress, *lastRelease;
     int mouseX, mouseY;
-    bool smooth;
     int max_imagecache_size;
     qreal progress;
     QBasicTimer dcTimer;
@@ -254,13 +253,13 @@ public:
 */
 
 QFxWebView::QFxWebView(QFxItem *parent)
-  : QFxItem(*(new QFxWebViewPrivate), parent)
+  : QFxPaintedItem(*(new QFxWebViewPrivate), parent)
 {
     init();
 }
 
 QFxWebView::QFxWebView(QFxWebViewPrivate &dd, QFxItem *parent)
-  : QFxItem(dd, parent)
+  : QFxPaintedItem(dd, parent)
 {
     init();
 }
@@ -284,7 +283,7 @@ void QFxWebView::init()
 
 void QFxWebView::componentComplete()
 {
-    QFxItem::componentComplete();
+    QFxPaintedItem::componentComplete();
     Q_D(QFxWebView);
     switch (d->pending) {
         case QFxWebViewPrivate::PendingUrl:
@@ -460,28 +459,6 @@ void QFxWebView::setInteractive(bool i)
     emit interactiveChanged();
 }
 
-/*!
-    \qmlproperty bool WebView::smooth
-    This property holds hints as to whether the item should be drawn anti-aliased.
-*/
-/*!
-    \property QFxWebView::smooth
-    \brief hints as to whether the item should be drawn anti-aliased.
-*/
-bool QFxWebView::smooth() const
-{
-    Q_D(const QFxWebView);
-    return d->smooth;
-}
-
-void QFxWebView::setSmooth(bool i)
-{
-    Q_D(QFxWebView);
-    if (d->smooth == i) return;
-    d->smooth = i;
-    update();
-}
-
 void QFxWebView::updateCacheForVisibility()
 {
     Q_D(QFxWebView);
@@ -514,13 +491,15 @@ void QFxWebView::geometryChanged(const QRectF &newGeometry,
 {
     if (newGeometry.size() != oldGeometry.size())
         expandToWebPage();
-    QFxItem::geometryChanged(newGeometry, oldGeometry);
+    QFxPaintedItem::geometryChanged(newGeometry, oldGeometry);
 }
 
 void QFxWebView::paintPage(const QRect& r)
 {
     Q_D(QFxWebView);
-    d->dirtyCache(r);
+    if (d->page->mainFrame()->contentsSize() != contentsSize())
+        setContentsSize(d->page->mainFrame()->contentsSize());
+    dirtyCache(r);
     update();
 }
 
@@ -575,96 +554,12 @@ void QFxWebView::dump(int depth)
 {
     QByteArray ba(depth * 4, ' ');
     qWarning() << ba.constData() << "url:" << url();
-    QFxItem::dump(depth);
+    QFxPaintedItem::dump(depth);
 }
 
-#if defined(QFX_RENDER_QPAINTER) 
-void QFxWebView::paintContents(QPainter &p)
-#elif defined(QFX_RENDER_OPENGL)
-void QFxWebView::paintGLContents(GLPainter &p)
-#else
-#error "What render?"
-#endif
+void QFxWebView::drawContents(QPainter *p, const QRect &r)
 {
-    Q_D(QFxWebView);
-    QWebFrame *frame = page()->mainFrame();
-    const QRect content(QPoint(0,0),frame->contentsSize());
-
-    if (content.width() <= 0 || content.height() <= 0)
-        return;
-
-#if defined(QFX_RENDER_QPAINTER)
-    bool wasAA = p.testRenderHint(QPainter::Antialiasing);
-    bool wasSM = p.testRenderHint(QPainter::SmoothPixmapTransform);
-    p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
-    QRectF clipf = p.clipRegion().boundingRect();
-    const QRect clip = p.clipRegion().isEmpty() ? content : clipf.toRect();
-#elif defined(QFX_RENDER_OPENGL)
-    const QRectF clipf = p.sceneClipRect;
-    const QRect clip = mapFromScene(clipf).toRect();
-#endif
-
-    QRegion topaint(clip);
-    topaint &= content;
-    QRegion uncached(content);
-
-    int cachesize=0;
-    for (int i=0; i<d->imagecache.count(); ++i) {
-        QRect area = d->imagecache[i]->area;
-        if (topaint.contains(area)) {
-            p.drawImage(area, d->imagecache[i]->image);
-            topaint -= area;
-            d->imagecache[i]->age=0;
-        } else {
-            d->imagecache[i]->age++;
-        }
-        cachesize += area.width()*area.height();
-        uncached -= area;
-    }
-
-    if (!topaint.isEmpty()) {
-        // Find a sensible larger area, otherwise will paint lots of tiny images.
-        QRect biggerrect = topaint.boundingRect().adjusted(-64,-64,128,128);
-        cachesize += biggerrect.width() * biggerrect.height();
-        while (d->imagecache.count() && cachesize > d->max_imagecache_size) {
-            int oldest=-1;
-            int age=-1;
-            for (int i=0; i<d->imagecache.count(); ++i) {
-                int a = d->imagecache[i]->age;
-                if (a > age) {
-                    oldest = i;
-                    age = a;
-                }
-            }
-            cachesize -= d->imagecache[oldest]->area.width()*d->imagecache[oldest]->area.height();
-            uncached += d->imagecache[oldest]->area;
-            d->imagecache.removeAt(oldest);
-        }
-        const QRegion bigger = QRegion(biggerrect) & uncached;
-        const QVector<QRect> rects = bigger.rects();
-        foreach (QRect r, rects) {
-            QImage img(r.size(),QImage::Format_ARGB32_Premultiplied);
-            img.fill(0);
-            {
-                QPainter qp(&img);
-                qp.translate(-r.x(),-r.y());
-                frame->render(&qp,r);
-            }
-            QFxWebViewPrivate::ImageCacheItem *newitem = new QFxWebViewPrivate::ImageCacheItem;
-            newitem->area = r;
-#if defined(QFX_RENDER_QPAINTER)
-            newitem->image = QSimpleCanvasConfig::Image(QSimpleCanvasConfig::toImage(img));
-#else
-            newitem->image.setImage(img);
-#endif
-            d->imagecache.append(newitem);
-            p.drawImage(r, newitem->image);
-        }
-    }
-#if defined(QFX_RENDER_QPAINTER)
-    p.setRenderHints(QPainter::Antialiasing, wasAA);
-    p.setRenderHints(QPainter::SmoothPixmapTransform, wasSM);
-#endif
+    page()->mainFrame()->render(p,r);
 }
 
 QString QFxWebView::propertyInfo() const
@@ -761,7 +656,7 @@ void QFxWebView::mousePressEvent(QGraphicsSceneMouseEvent *event)
         event->setAccepted(false);
     }
     if (!event->isAccepted())
-        QFxItem::mousePressEvent(event);
+        QFxPaintedItem::mousePressEvent(event);
 }
 
 void QFxWebView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -775,7 +670,7 @@ void QFxWebView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         event->setAccepted(false);
     }
     if (!event->isAccepted())
-        QFxItem::mouseReleaseEvent(event);
+        QFxPaintedItem::mouseReleaseEvent(event);
 }
 
 void QFxWebView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -796,7 +691,7 @@ void QFxWebView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         event->setAccepted(false);
     }
     if (!event->isAccepted())
-        QFxItem::mouseMoveEvent(event);
+        QFxPaintedItem::mouseMoveEvent(event);
 }
 
 void QFxWebView::keyPressEvent(QKeyEvent* event)
@@ -805,7 +700,7 @@ void QFxWebView::keyPressEvent(QKeyEvent* event)
     if (d->interactive)
         page()->event(event);
     if (!event->isAccepted())
-        QFxItem::keyPressEvent(event);
+        QFxPaintedItem::keyPressEvent(event);
 }
 
 void QFxWebView::keyReleaseEvent(QKeyEvent* event)
@@ -814,7 +709,7 @@ void QFxWebView::keyReleaseEvent(QKeyEvent* event)
     if (d->interactive)
         page()->event(event);
     if (!event->isAccepted())
-        QFxItem::keyReleaseEvent(event);
+        QFxPaintedItem::keyReleaseEvent(event);
 }
 
 /*!

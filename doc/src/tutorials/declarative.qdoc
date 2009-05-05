@@ -97,10 +97,7 @@
     \tableofcontents
 
     The first part of this tutorial covers basic drawing of elements on the
-    screen and causing them to animate.  The file 1_Drawing_and_Animation.qml
-    loads and displays each of the five stages of this tutorial in a single
-    window.  For now you don't need to worry about the contents of
-    1_Drawing_and_Animation.qml.
+    screen and causing them to animate.
 
     \section1 Drawing
 
@@ -115,7 +112,9 @@
     Because Declarative UI is declarative, you don't pass instructions on
     what to paint in a sequential manner as you may be used to.  Instead
     elements and how they appear on the screen are declared in much the
-    same was as elements on a web page are declared.
+    same was as elements on a web page are declared.  This is done using
+    the Qt Markup Language which we will refer to by the abbreviation QML
+    for the remainder of the tutorial.
 
     We will start by drawing a simple red rectangle with rounded corners.
 
@@ -123,14 +122,11 @@
 
     \snippet declarative/tutorials/contacts/1_Drawing_and_Animation/1/RemoveButton.qml 0
 
-    This is the simplest of QML components.  It describes a rectangle with
+    This is one of the simplest of QML components.  It describes a rectangle with
     some simple properties.  In QML all components start with a capital
-    letter, and their properties with lower case letters.  Properties
-    can either be declared as XML attributes or as children of the 
-    component element.  
+    letter, and their properties with lower case letters.
     
-    The rectangle component is one of the more simple QML components.  Apart
-    from the properties all QML components share, it has the properties
+    Apart from the properties all QML components share, the \l{qml-rect}{Rect} component has the properties
 
     \list
     \o color - The background color of the rectangle
@@ -140,13 +136,9 @@
     \o radius - The corner radius used to draw rounded rectangles.
     \endlist
 
-    \omit
-    For more information on the Rect element, see: TODO
-    \endomit
-
-    There are also a number of properties all QML components share.  To see
-    a full description of the base QML item, see {QFxItem}.  The rectangle
-    drawn in the above code uses the properties;
+    There are also a number of properties all QML components shares, described
+    in the \l{qml-item}{Item} element reference documentation.  The rectangle drawn in the
+    above code uses the properties;
 
     \list
     \o id - An identifier of the component
@@ -154,61 +146,61 @@
     \o height - the height of the component when drawn
     \endlist
 
-    All items have properties to handle their position on the screen, size,
-    clipping, rotation, scale and layout in regards to other elements.  In
-    the current example width and height refer to how large to draw the
-    rectangle.  The identifier allows other components to refer to the
-    identified component.
-
-    Another important property of a component is its children.  All components
-    have a list of children.  When drawing, first any components earlier
-    siblings are drawn, then the component, then any of the components children.
+    Currently we have described a rectangle with a width and height of 30 pixels, filled in with
+    the color red and with rounded corners using a radius of 5.
 
     \section1 Layout
 
-    The next step of the tutorial adds an image over the rectangle.
+    The next step of the tutorial adds an image over the rectangle.  We
+    will do this by adding an \l{qml-image}{Image} component as a child of the
+    \l{qml-rect}{Rect} component.  All QML components have a list of children which
+    are drawn in order after the parent component has been drawn.
+    By having the \l{qml-image}{Image}
+    component as a child of the \l{qml-rect}{Rect} component we ensure it is drawn
+    over the \l{qml-rect}{Rect} component.  Children also are affected by the opacity
+    of the parent component and calculate their position in within the bounds of
+    the parent component.
 
     \image declarative-removebutton-close.png
 
     \snippet declarative/tutorials/contacts/1_Drawing_and_Animation/2/RemoveButton.qml 0
 
     The trashIcon image is added as a child of the Rectangle.  In this case
-    the <children> tag isn't used because the default property of the
-    Rect component is its children.  Some elements don't often have children
-    and use some other default component, when this is the case its possible
+    the children property isn't explicitly used because the default property
+    of the \l{qml-rect}{Rect} component is its children.  Some elements often don't have children
+    and use some other default component.  When this is the case its possible
     to explicitly list the sub component as a child as follows:
 
     \snippet declarative/tutorials/contacts/1_Drawing_and_Animation/2a/RemoveButton.qml 0
 
-    The Image element allows loading an image file for display.  The source
+    The \l{qml-image}{Image} element allows loading an image file for display.  The source
     specified is a URL, and in this case refers to a portable network graphics
     file in a relative directory to where the QML file was loaded from.
 
     Also new in this code is the use of anchors.  In QML components can either
     have their position and size specified explicitly using x, y, width
     and height, or they can instead specify the size and position in relation
-    to elements either parent or sibling elements.  The Image component uses
+    to either parent or sibling elements.  The \l{qml-image}{Image} component uses
     a combination of both styles.  It has a fixed size, but specifies its
     position to align to the right of its parent and for its vertical center
-    to align with the vertical center of its parent.  The braces "{}" are
-    used to indicate that the value is not a static value, but instead a
-    binding to an expression.  In this case it binds to the parent
-    element, which is a special identifier that always refers to the
-    parent component of a component.  The removeButton identifier can
-    be used interchangeably with parent in this case, however it must
-    always be a parent or sibling.  Because of this its most common to
-    use the parent identifier as it makes later refactoring of code easier.
+    to align with the vertical center of its parent.  Setting a property
+    by the identifier of a separate property binds them.  This means
+    that if while running the example the position of the \l{qml-rect}{Rect} component's
+    vertical center changed, so to would the vertical center of
+    the \l{qml-image}{Image} component.
+
+    The parent value is a special identifier that always refers to the
+    parent component of a component.
 
     Anchors are most useful when the size of items might change based on
-    the component state or contents.
-
-    \omit
-    See TODO for full list of anchor properties.
-    \endomit
+    the component state or contents.  However they are limited in that they
+    must always refer to a parent or sibling component.  See
+    \l{anchor-layout}{Anchor-based Layout} for more information on using
+    anchors in QML.
 
     At this point the initial state of the RemoveButton is complete.  A small
-    rounded rectangle with a trash icon.  The component also needs a
-    description of its open state:
+    rounded rectangle with a trash icon.  Next we will design the open
+    state for the button.
 
     \image declarative-removebutton-open.png
 
@@ -217,32 +209,31 @@
 
     \snippet declarative/tutorials/contacts/1_Drawing_and_Animation/3/RemoveButton.qml 0
 
-    The rectangle with is now wider by 200 pixels.  Also the trashIcon has
-    been replaced with the confirm state children.  Normally we wouldn't
+    The rectangle width is now wider by 200 pixels.  Also the trashIcon has
+    been replaced.  Normally we wouldn't
     remove the trashIcon when developing an alternate state of the RemoveButton,
     however since this is a tutorial its been done so that its easier to
     understand the alternate state we are aiming for and how it relates to
     transitioning between states.
 
-    We also introduce the Text element, which is used to display read only
-    text.  \omit see {Text} for more information on the text element \endomit
-    Because we want text to fill the space between the icons, rather than
-    a fixed with the left and right anchors are specified instead.  This
+    We also introduce the \l{qml-text}{Text} element.
+    Left and Right anchors are specified in terms of the neighboring icons
+    because we want text to fill the space between the icons.  This
     means as the parent removeButton gets wider, so will the text component.
     It also means that if we animate a width change on the removeButton,
-    any bindings, that is the values specified by a braced expression such as
-    "{parent.left}" will be evaluated and animated as well.
+    any bindings, that is the values specified by an expression such as
+    \c{parent.left} will be evaluated and animated as well.
 
     \section1 Defining States
 
     When designing a component with multiple states, it should be developed
-    with the initial state and the changes that would be made specified
-    as an additional state.  Its not possible to add new children to an
-    element when changing state, only changing the properties of existing
-    children.  This means that all possible child components should be included
+    in the initial state and the changes that would be made specified
+    as an additional state.  Its not normally possible to add new children
+    to an element when changing state
+    This means that all possible child components should be included
     in the initial state, and those that should not be visible in the initial
     state should have their opacity set to zero.  Thus
-    for the RemoveButton we specify the starting size of the removeButton
+    for the RemoveButton we specify the starting size of the RemoveButton
     and hide any items that should not initially be visible.
 
     The code snippet below shows what the start of the duel state specification
@@ -305,9 +296,9 @@
     all the children of the earlier sibling, should they overlap.
 
     When a component has a signal, such as clicked, the action for the signal
-    can be specified using on<SignalName>, as is done above.  In this
+    can be specified using \c{onSignalName}, as is done above.  In this
     case when the clicked signal is emitted by the MouseRegion component,
-    a function called toggle() is called.  It might also have been written
+    a function called \c{toggle()} is called.  It might also have been written
 
     \code
     onClicked: { removeButton.state='opened' }
@@ -317,14 +308,21 @@
     mouse regions to use the same functionality, and also makes it
     easier to specify complex behavior in response to a signal.
 
-    The toggle() function is a new function specified as part of the remove
+    An alternative would be to explicitly state the connection:
+
+    \snippet declarative/tutorials/contacts/1_Drawing_and_Animation/4a/RemoveButton.qml mouse region
+
+    This will connect to the \c{clicked()} signal of the trashMouseRegion component
+    and execute the associated script.
+
+    The \c{toggle()} function is a new function specified as part of the remove
     button element.
 
     \snippet declarative/tutorials/contacts/1_Drawing_and_Animation/4/RemoveButton.qml script
 
     Any QML component can have a set of resources specified.  One of those
     resources is any Script that might be needed.   See the
-    {QtScript Module}{QtScript Module} for more information on how to write
+    \l{qtscript}{QtScript Module} for more information on how to write
     script code in Qt.
 
     It is possible to refer to identified QML components
@@ -333,7 +331,7 @@
 
     \section1 Animation
 
-    Currently the RemoveButton is function, but snaps between our two states.
+    Currently the RemoveButton is functional, but snaps between our two states.
     Fortunately making the transition between states smooth is very simple.
     We only need one more bit of code at the end of our removeButton component.
 
@@ -368,6 +366,8 @@
     editing a field of our contact.  This ContactField in turn is intended
     to be used in a contact editing control.
 
+    \image declarative-reuse-3.png
+
     \section1 Loading QML Components
 
     Reusing the RemoveButton itself is very simple.  When parsing a QML file
@@ -386,50 +386,88 @@
     \o The run directory + "/qml"
     \o the directory of the QML code file
     \o the directory of the QML code file + "/qml"
-    \endlist.
+    \endlist
 
     All the properties of the button are
     accessible and can be overridden from defaults.  The loaded component
     can also refer to elements further up in the tree, so that code within
-    RemoveButton.qml could refer to the contactField component.  However only
-    properties of the top level element in RemoveButton.qml are visible to
-    the contact field.  In order to allow contact field to modify how wide
-    the remove button will be when opened we need to add a property to the
-    remove button.
+    RemoveButton.qml could refer to the contactField component.
+    Only properties of the top level element in RemoveButton.qml are visible to
+    the contact field.
+
+    There are also two other ways to reuse components in QML.  A component
+    can be reused from within the same QML file using Component and ComponentInstance
+    elements.  The next code snippet produces three red rounded rectangles
+    within a large blue rectangle.
+    
+    \image declarative-reuse-bluerect.png
+
+    \snippet declarative/tutorials/contacts/2_Reuse/1b/BlueRect.qml all
+
+    This can be useful when the component is not complex enough to justify its
+    own file.  The third way to reuse components allows for delaying loading
+    of the QML until some later event.  Each \l{qml-item}{Item} includes
+    a special child, qmlItem, which has its definition provided by the
+    contents of the qml property of its parent.
+
+    \snippet declarative/tutorials/contacts/2_Reuse/1a/ContactField.qml load
+
+    This last method is useful if the contents of a item need to change at
+    run time or if the initial complexity of the loaded QML needs to be
+    reduced in order to improve the time it takes to start the application. In
+    chapter three this method is used to improve performance of
+    scrolling through very large numbers of items.
+
+    Because of its simplicity, the first method is the recommended in most
+    cases and will be the focus of the remainder of this chapter.
 
     \section1 Properties and Signals
 
+    The next task is to be able to control aspects of the RemoveButton from
+    the components that use it.  In particular controlling how far it
+    expands and how it reacts when the user clicks on the confirm icon
+    of the remove button.  When reusing a component in a separate QML file
+    only the attributes of the root element are visible.  To allow controlling
+    attributes of child elements within an imported component we need to define
+    some properties and signals for the RemoveButton.
+
     \snippet declarative/tutorials/contacts/2_Reuse/2/RemoveButton.qml define properties and signals
 
-    These properties and signals are accessed from the contact field the same
-    way standard system components are accessed.
+    The children of the remove button can use these properties and signals.  The
+    opened state can now bind the expanded width to the expandedWidth property.
+
+    \snippet declarative/tutorials/contacts/2_Reuse/2/RemoveButton.qml use width
+
+    Also when the confirm icon is clicked, as well as toggling the state it will
+    emit the confirmed signal of the RemoveButton component.
+
+    \snippet declarative/tutorials/contacts/2_Reuse/2/RemoveButton.qml use signal
+
+    These properties and signals can also be accessed from the contact field the same
+    way standard system component properties and signals are accessed.
 
     \snippet declarative/tutorials/contacts/2_Reuse/2/ContactField.qml use properties and signals
 
     Now when the remove button is expanded, it will expand to the width of the
     contact field.  Also when the user confirms the remove action, the
-    text section of the contact field will be cleared.  When creating a
-    component that does have children out of its own
-    bounds its important to consider whether the item should be clipped,
-    which is done above with \c{clip: true}.
+    text section of the contact field will be cleared.
 
     \section1 States
 
     Its also possible to access the state of included components.  The FieldText
     component we will use in this tutorial is also been written specifically
-    for our contacts application, as was the RemoveButton component.  In
+    for our contacts application.  In
     this case we want it to expand when editing.  One way to do this would
     be to anchor the field text component to the center of its parent and
     then let its own width change push the remove button away, however that
     would make it difficult to have the remove button also push the field
-    text to the left when the remove button expands.
-
-    So instead we will anchor the right edge of the field text to 
-    the left edge of the remove button and use a state change in the
-    contact field itself to move the remove button and the field icon out of
+    text to the left when the remove button expands.  Instead we will anchor
+    the right edge of the field text to the left edge of the remove button
+    and use a state change in the contact field itself to move the
+    remove button and the field icon out of
     view.
 
-    \snippet declarative/tutorials/contacts/2_Reuse/3/RemoveButton.qml all
+    \snippet declarative/tutorials/contacts/2_Reuse/3/ContactField.qml all
 
     Apart from accessing the fieldText.state, the above code also uses the when
     attribute of its own editingText state.  This is an alternative to using
@@ -440,61 +478,63 @@
 
     \snippet declarative/tutorials/contacts/2_Reuse/3/FieldText.qml behavior
 
-    fieldText is the enclosing component and textEdit is a TextEdit element
+    \c{fieldText} is the enclosing component and \c{textEdit} is a TextEdit element
     provided by Qt.  In the QML code above, the opacity of the textLabel is
-    only 1 if there is text for the textEdit is empty.  This is a form of
+    only 1 if the text for the textEdit is empty.  This is a form of
     short cut to using states for an element, useful if only one property
     is changing as it is for the textLabel.  To animate a property change is
     similar to animating a state change.  Using the Behavior element we can
     specify how the property changes if it does change state, allowing for
     a smooth transition.
 
-    The fieldText element also handles changes to the text using the
-    onValueChanged attribute when specifying properties.
-
-    \snippet declarative/tutorials/contacts/2_Reuse/3/FieldText.qml value change
-
-    Because the user needs to be able to edit text in the text edit, it
-    shouldn't be simply bound to the text property of the FieldText component.
-    However if a component using the FieldText component sets the text
-    property of the FieldText component it should in turn set the text
-    of the text edit.
-
     \section1 Key and Mouse Focus
 
-    Unlike in Qt setting focus to true on a component does not always mean
+    Setting focus to true on a component does not always mean
     that the component has focus.  This is due to the declarative nature
     of QML, and can be affected by multiple components both indicating
     focus to be true.  At the time of writing this tutorial both key and mouse
     focus handling are still being improved.  Hence we will only lightly cover
     the topic.
 
-    Normally in QML this is handled by FocusRealm components.  A focus realm
-    is a sort of cut off point for determining focus.  If a FocusRealm does
-    not have focus then any children of it won't be able to get focus even
-    if they do set focus to true.  If your component has multiple child
-    components that could gain focus ensure that they are guarded by FocusRealm
-    component, and add code to handle which focus realms have focus
-    at that level.  The alternative and approach done at this stage in
-    the tutorial is to only have one component set focus to true at a time.
+    For an item to have key focus in QML it is required that:
+
+    \list
+    \o If there is a FocusRealm ancestor of the component that it has focus as well.
+    \o That it is the most recent component within the focus realms descendent's
+        to receive focus
+    \endlist
+
+    The read-only property activeFocus can be used to determine whether a 
+    component will receive key input.  Any un-handled keys will be passed to
+    the components parent, which in turn will pass keys it doesn't handle up to its
+    own ancestors.
+
+    Some components such as ListView components are also FocusRealm components, as they
+    handle focus among the child list items.
+
+    At this stage of the tutorial it is sufficient to use the setting of 'focus'
+    as we only have a list of line edits and only one should be active at any given time.
 
     Currently if multiple contact fields were put into our contact editor,
     any of the FieldText components could be clicked and opened, and
     any of the RemoveButton components could be clicked and opened, all
-    at the same time.  We would like this behavior to be some what modal
-    instead, encouraging the user to either accept or cancel the current
-    action before moving onto a new action.
+    at the same time.  This leads to situations where the users actions
+    are ambiguous
 
-    In the tutorial we do this with a property of our top level component
-    to handle whether we are in this state or not.
+    \image declarative-reuse-focus.png
+
+    To counteract this we will add a property of the root element to indicate
+    when an element has 'grabbed' mouse interaction, preventing other
+    clickable elements from reacting.
 
     \snippet declarative/tutorials/contacts/2_Reuse/4/Contact.qml grab property
 
-    And in the code where we want to check or avoid allowing mouse interaction.
+    The code that we want to disable then simply needs to check this property before
+    acting.
 
     \snippet declarative/tutorials/contacts/2_Reuse/4/RemoveButton.qml grab
 
-    Handling Key and Mouse focus in QML is quite likely to change before
+    \note Handling Key and Mouse focus in QML is quite likely to change before
     the Qt 4.6 release.
 */
 
@@ -618,13 +658,13 @@
 
     Its important then to try and minimize the complexity of the delegate.  This
     can be done by delaying the loading of the component.  By using the qml property
-    of the Item component, we can delay building the Contact.qml item until the user
+    of the \l{qml-item}{Item} component, we can delay building the Contact.qml item until the user
     attempts to open the list.
 
     \snippet declarative/tutorials/contacts/3_Collections/3/ContactView.qml setting qml
 
     Each item has a qml property that represents the filename for the contents of
-    a special qmlItem child of the Item.  By setting the qml property of the Details
+    a special qmlItem child of the \l{qml-item}{Item}.  By setting the qml property of the Details
     component on clicking the mouse region, the more complex component isn't loaded
     until needed.  The down side about this though is the properties of Contact
     cannot be set until the item is loaded.  This requires using the Bind

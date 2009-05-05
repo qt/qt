@@ -320,7 +320,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QFxCompilerTimer<QFxCompiler::InstrStoreMetaObject> cc;
 #endif
                 QObject *target = stack.top();
-                new QmlVMEMetaObject(target, mos.at(instr.storeMeta.data), comp);
+                new QmlVMEMetaObject(target, mos.at(instr.storeMeta.data), &comp->primitives, instr.storeMeta.slotData, comp);
             }
             break;
 

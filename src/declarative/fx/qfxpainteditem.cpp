@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qfximageitem.h"
-#include "qfximageitem_p.h"
+#include "qfxpainteditem.h"
+#include "qfxpainteditem_p.h"
 
 #include <QDebug>
 #include <QPen>
@@ -57,30 +57,30 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \class QFxImageItem
-    \brief The QFxImageItem class is an abstract base class for QFxView items that want cached painting.
+    \class QFxPaintedItem
+    \brief The QFxPaintedItem class is an abstract base class for QFxView items that want cached painting.
     \ingroup group_coreitems
 
-    This is a convenience class allowing easy use of cached painting within a custom
-    item.  The contents of the item are are cached behind the scenes.
+    This is a convenience class for implementing items that paint their contents
+    using a QPainter.  The contents of the item are are cached behind the scenes.
     The dirtyCache() function should be called if the contents change to
     ensure the cache is refreshed the next time painting occurs.
 
-    To subclass QFxImageItem, you must reimplement drawContents() to draw
+    To subclass QFxPaintedItem, you must reimplement drawContents() to draw
     the contents of the item.
 */
 
 /*!
-    \fn void QFxImageItem::drawContents(QPainter *painter, const QRect &rect)
+    \fn void QFxPaintedItem::drawContents(QPainter *painter, const QRect &rect)
 
     This function is called when the cache needs to be refreshed. When
-    sub-classing QFxImageItem this function should be implemented so as to
+    sub-classing QFxPaintedItem this function should be implemented so as to
     paint the contents of the item using the given \a painter for the
     area of the contents specified by \a rect.
 */
 
 /*!
-    \property QFxImageItem::contentsSize
+    \property QFxPaintedItem::contentsSize
     \brief The size of the contents
 
     The contents size is the size of the item in regards to how it is painted
@@ -89,7 +89,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \property QFxImageItem::smooth
+    \property QFxPaintedItem::smooth
     \brief Setting for whether smooth scaling is enabled.
 */
 
@@ -99,9 +99,9 @@ QT_BEGIN_NAMESPACE
 
     \sa clearCache()
 */
-void QFxImageItem::dirtyCache(const QRect& rect)
+void QFxPaintedItem::dirtyCache(const QRect& rect)
 {
-    Q_D(QFxImageItem);
+    Q_D(QFxPaintedItem);
     for (int i=0; i < d->imagecache.count(); ) {
         if (d->imagecache[i]->area.intersects(rect)) {
             d->imagecache.removeAt(i);
@@ -116,9 +116,9 @@ void QFxImageItem::dirtyCache(const QRect& rect)
 
     \sa dirtyCache()
 */
-void QFxImageItem::clearCache()
+void QFxPaintedItem::clearCache()
 {
-    Q_D(QFxImageItem);
+    Q_D(QFxPaintedItem);
     qDeleteAll(d->imagecache);
     d->imagecache.clear();
 }
@@ -128,9 +128,9 @@ void QFxImageItem::clearCache()
 
     \sa setSmooth()
 */
-bool QFxImageItem::isSmooth() const
+bool QFxPaintedItem::isSmooth() const
 {
-    Q_D(const QFxImageItem);
+    Q_D(const QFxPaintedItem);
     return d->smooth;
 }
 
@@ -139,9 +139,9 @@ bool QFxImageItem::isSmooth() const
 
     \sa setContentsSize()
 */
-QSize QFxImageItem::contentsSize() const
+QSize QFxPaintedItem::contentsSize() const
 {
-    Q_D(const QFxImageItem);
+    Q_D(const QFxPaintedItem);
     return d->contentsSize;
 }
 
@@ -151,9 +151,9 @@ QSize QFxImageItem::contentsSize() const
 
     \sa isSmooth()
 */
-void QFxImageItem::setSmooth(bool smooth)
+void QFxPaintedItem::setSmooth(bool smooth)
 {
-    Q_D(QFxImageItem);
+    Q_D(QFxPaintedItem);
     if (d->smooth == smooth) return;
     d->smooth = smooth;
     clearCache();
@@ -165,9 +165,9 @@ void QFxImageItem::setSmooth(bool smooth)
 
     \sa contentsSize()
 */
-void QFxImageItem::setContentsSize(const QSize &size)
+void QFxPaintedItem::setContentsSize(const QSize &size)
 {
-    Q_D(QFxImageItem);
+    Q_D(QFxPaintedItem);
     if (d->contentsSize == size) return;
     d->contentsSize = size;
     clearCache();
@@ -175,20 +175,20 @@ void QFxImageItem::setContentsSize(const QSize &size)
 }
 
 /*!
-    Constructs a new QFxImageItem with the given \a parent.
+    Constructs a new QFxPaintedItem with the given \a parent.
 */
-QFxImageItem::QFxImageItem(QFxItem *parent)
-  : QFxItem(*(new QFxImageItemPrivate), parent)
+QFxPaintedItem::QFxPaintedItem(QFxItem *parent)
+  : QFxItem(*(new QFxPaintedItemPrivate), parent)
 {
     init();
 }
 
 /*!
     \internal
-    Constructs a new QFxImageItem with the given \a parent and
+    Constructs a new QFxPaintedItem with the given \a parent and
     initialized private data member \a dd.
 */
-QFxImageItem::QFxImageItem(QFxImageItemPrivate &dd, QFxItem *parent)
+QFxPaintedItem::QFxPaintedItem(QFxPaintedItemPrivate &dd, QFxItem *parent)
   : QFxItem(dd, parent)
 {
     init();
@@ -197,14 +197,14 @@ QFxImageItem::QFxImageItem(QFxImageItemPrivate &dd, QFxItem *parent)
 /*!
     Destroys the image item.
 */
-QFxImageItem::~QFxImageItem()
+QFxPaintedItem::~QFxPaintedItem()
 {
 }
 
 /*!
     \internal
 */
-void QFxImageItem::init()
+void QFxPaintedItem::init()
 {
     connect(this,SIGNAL(widthChanged()),this,SLOT(clearCache()));
     connect(this,SIGNAL(heightChanged()),this,SLOT(clearCache()));
@@ -215,17 +215,17 @@ void QFxImageItem::init()
 /*!
     \reimp
 */
-void QFxImageItem::paintContents(QPainter &p)
+void QFxPaintedItem::paintContents(QPainter &p)
 #elif defined(QFX_RENDER_OPENGL)
 /*!
     \reimp
 */
-void QFxImageItem::paintGLContents(GLPainter &p)
+void QFxPaintedItem::paintGLContents(GLPainter &p)
 #else
 #error "What render?"
 #endif
 {
-    Q_D(QFxImageItem);
+    Q_D(QFxPaintedItem);
     const QRect content(QPoint(0,0),d->contentsSize);
     if (content.width() <= 0 || content.height() <= 0)
         return;
@@ -316,7 +316,7 @@ void QFxImageItem::paintGLContents(GLPainter &p)
                 qp.translate(-r.x(),-r.y());
                 drawContents(&qp, r);
             }
-            QFxImageItemPrivate::ImageCacheItem *newitem = new QFxImageItemPrivate::ImageCacheItem;
+            QFxPaintedItemPrivate::ImageCacheItem *newitem = new QFxPaintedItemPrivate::ImageCacheItem;
             newitem->area = r;
 #if defined(QFX_RENDER_QPAINTER)
             newitem->image = QSimpleCanvasConfig::Image(QSimpleCanvasConfig::toImage(img));

@@ -177,6 +177,7 @@ public:
         } create;
         struct {
             int data;
+            int slotData;
         } storeMeta;
         struct {
             int value;

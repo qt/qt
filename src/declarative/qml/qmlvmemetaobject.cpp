@@ -44,13 +44,18 @@
 #include <private/qmlrefcount_p.h>
 #include <QColor>
 #include <QDate>
+#include <QtCore/qlist.h>
+#include <QtCore/qdebug.h>
+#include <qmlexpression.h>
 
 
 QT_BEGIN_NAMESPACE
 QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
-                                       const QMetaObject *other, 
-                                       QmlRefCount *rc)
-: object(obj), ref(rc)
+                                   const QMetaObject *other, 
+                                   QList<QString> *strData,
+                                   int slotData,
+                                   QmlRefCount *rc)
+: object(obj), ref(rc), slotData(strData), slotDataIdx(slotData)
 {
     if (ref)
         ref->addref();
@@ -64,6 +69,7 @@ QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
     data = new QVariant[propertyCount() - baseProp];
     vTypes.resize(propertyCount() - baseProp);
 
+    // ### Optimize
     for (int ii = baseProp; ii < propertyCount(); ++ii) {
         QMetaProperty prop = property(ii);
         if ((int)prop.type() != -1) {
@@ -72,6 +78,23 @@ QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
             vTypes.setBit(ii - baseProp, true);
         }
     }
+
+    baseSlot = -1;
+    slotCount = 0;
+    for (int ii = baseSig; ii < methodCount(); ++ii) {
+        QMetaMethod m = method(ii);
+        if (m.methodType() == QMetaMethod::Slot) {
+            if (baseSlot == -1)
+                baseSlot = ii;
+        } else {
+            if (baseSlot != -1) {
+                slotCount = ii - baseSlot;
+                break;
+            }
+        }
+    }
+    if(baseSlot != -1 && !slotCount)
+        slotCount = methodCount() - baseSlot;
 }
 
 QmlVMEMetaObject::~QmlVMEMetaObject()
@@ -83,58 +106,69 @@ QmlVMEMetaObject::~QmlVMEMetaObject()
 
 int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
 {
-    if (id >= baseProp) {
-        int propId = id - baseProp;
-        bool needActivate = false;
+    if(c == QMetaObject::ReadProperty || c == QMetaObject::WriteProperty) {
+        if (id >= baseProp) {
+            int propId = id - baseProp;
+            bool needActivate = false;
 
-        if (vTypes.testBit(propId)) {
-            if (c == QMetaObject::ReadProperty) {
-                *reinterpret_cast<QVariant *>(a[0]) = data[propId];
-            } else if (c == QMetaObject::WriteProperty) {
-                needActivate = 
-                    (data[propId] != *reinterpret_cast<QVariant *>(a[0]));
-                data[propId] = *reinterpret_cast<QVariant *>(a[0]);
-            }
-        } else {
-            if (c == QMetaObject::ReadProperty) {
-                switch(data[propId].type()) {
-                case QVariant::Int:
-                    *reinterpret_cast<int *>(a[0]) = data[propId].toInt();
-                    break;
-                case QVariant::Bool:
-                    *reinterpret_cast<bool *>(a[0]) = data[propId].toBool();
-                    break;
-                case QVariant::Double:
-                    *reinterpret_cast<double *>(a[0]) = data[propId].toDouble();
-                    break;
-                case QVariant::String:
-                    *reinterpret_cast<QString *>(a[0]) = data[propId].toString();
-                    break;
-                case QVariant::Color:
-                    *reinterpret_cast<QColor *>(a[0]) = data[propId].value<QColor>();
-                    break;
-                case QVariant::Date:
-                    *reinterpret_cast<QDate *>(a[0]) = data[propId].toDate();
-                    break;
-                default:
-                    qFatal("Unknown type");
-                    break;
+            if (vTypes.testBit(propId)) {
+                if (c == QMetaObject::ReadProperty) {
+                    *reinterpret_cast<QVariant *>(a[0]) = data[propId];
+                } else if (c == QMetaObject::WriteProperty) {
+                    needActivate = 
+                        (data[propId] != *reinterpret_cast<QVariant *>(a[0]));
+                    data[propId] = *reinterpret_cast<QVariant *>(a[0]);
                 }
-            } else if (c == QMetaObject::WriteProperty) {
+            } else {
+                if (c == QMetaObject::ReadProperty) {
+                    switch(data[propId].type()) {
+                    case QVariant::Int:
+                        *reinterpret_cast<int *>(a[0]) = data[propId].toInt();
+                        break;
+                    case QVariant::Bool:
+                        *reinterpret_cast<bool *>(a[0]) = data[propId].toBool();
+                        break;
+                    case QVariant::Double:
+                        *reinterpret_cast<double *>(a[0]) = data[propId].toDouble();
+                        break;
+                    case QVariant::String:
+                        *reinterpret_cast<QString *>(a[0]) = data[propId].toString();
+                        break;
+                    case QVariant::Color:
+                        *reinterpret_cast<QColor *>(a[0]) = data[propId].value<QColor>();
+                        break;
+                    case QVariant::Date:
+                        *reinterpret_cast<QDate *>(a[0]) = data[propId].toDate();
+                        break;
+                    default:
+                        qFatal("Unknown type");
+                        break;
+                    }
+                } else if (c == QMetaObject::WriteProperty) {
 
-                QVariant value = QVariant((QVariant::Type)data[propId].type(), a[0]); 
-                needActivate = (data[propId] != value);
-                data[propId] = value;
+                    QVariant value = QVariant((QVariant::Type)data[propId].type(), a[0]); 
+                    needActivate = (data[propId] != value);
+                    data[propId] = value;
+                }
             }
-        }
 
-        if (c == QMetaObject::WriteProperty && needActivate) {
-            activate(object, baseSig + propId, 0);
-        }
+            if (c == QMetaObject::WriteProperty && needActivate) {
+                activate(object, baseSig + propId, 0);
+            }
 
-        return id;
-    } else {
-        return object->qt_metacall(c, id, a);
+            return id;
+        } 
+    } else if(c == QMetaObject::InvokeMetaMethod) {
+        if(id >= baseSlot && id < (baseSlot + slotCount)) {
+            int idx = id - baseSlot + slotDataIdx;
+            QmlContext *ctxt = qmlContext(object);
+            QmlExpression expr(ctxt, slotData->at(idx), object);
+            expr.setTrackChange(false);
+            expr.value();
+            return id;
+        }
     }
+
+    return object->qt_metacall(c, id, a);
 }
 QT_END_NAMESPACE
