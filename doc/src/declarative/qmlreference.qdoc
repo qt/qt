@@ -1,11 +1,10 @@
 /*!
-    \page qmlfordesigners.html
-    \title Qt Declarative for Designers
+    \page qmlreference.html
+    \title Qml Reference
 
     \target qtdeclarativemainpage
 
-    The Qt Declarative module provides a declarative framework for building
-    highly dynamic and fluid applications. It is targetted at the sorts of user
+    QML is a language for building highly dynamic and fluid applications. It is targetted at the sorts of user
     interface (and the sorts of hardware) in embedded devices such as phones, media
     players, and set-top boxes. It is also appropriate for highly custom desktop
     user-interfaces, or special elements in more traditional desktop

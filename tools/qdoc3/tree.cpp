@@ -1901,9 +1901,14 @@ QString Tree::fullDocumentLocation(const Node *node) const
         else
             return "";
     }
-    else if (node->type() == Node::Fake)
+    else if (node->type() == Node::Fake) {
+#ifdef QDOC_QML
+        if (node->subType() == Node::QmlClass)
+            return "qml-" + node->fileBase() + ".html";
+        else
+#endif
         return node->fileBase() + ".html";
-    else if (node->fileBase().isEmpty())
+    } else if (node->fileBase().isEmpty())
         return "";
 
     QString parentName;

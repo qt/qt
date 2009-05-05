@@ -29,19 +29,30 @@ The simplest form of animation is using \c &lt;NumericAnimation/&gt;
 
 The following example creates a bouncing effect:
 \code
-<Rect id="rect" width="120" height="200" color="white">
-    <Image id="img" file="pics/qtlogo.png"
-            x="{60-img.width/2}" y="{200-img.height}">
-        <y>
-            <SequentialAnimation running="true" repeat="true">
-                <NumericAnimation to="{200-img.height}"
-                    easing="easeOutBounce(amplitude:100)"
-                    duration="2000" />
-                <PauseAnimation duration="1000" />
-            </SequentialAnimation>
-        </y>
-    </Image>
-</Rect>
+Rect {
+    id: rect
+    width: 120
+    height: 200
+    color: "white"
+    Image {
+        id: img
+        source: "pics/qtlogo.png"
+        x: 60-img.width/2
+        y: 200-img.height
+        y: SequentialAnimation {
+            running: true
+            repeat: true
+            NumericAnimation {
+                to: 200-img.height
+                easing: "easeOutBounce(amplitude:100)"
+                duration: 2000
+            }
+            PauseAnimation {
+                duration: 1000
+            }
+        }
+    }
+}
 \endcode
 
 \image propanim.gif
@@ -76,15 +87,28 @@ In QML:
 The following example shows a simple use of states. In the default state \c myrect is positioned at 0,0. In the 'moved' state it is positioned at 50,50.
 
 \code
-<Item>
-    <Rect id="myrect" width="100" height="100"/>
-    <states>
-        <State name="moved">
-            <SetProperty target="{myrect}" property="x" value="50"/>
-            <SetProperty target="{myrect}" property="y" value="50"/>
-        </State>
-    </states>
-</Item>
+Item {
+    Rect {
+        id: myrect
+        width: 100
+        height: 100
+    }
+    states: [
+        State {
+            name: "moved"
+            SetProperty {
+                target: myrect
+                property: "x"
+                value: 50
+            }
+            SetProperty {
+                target: myrect
+                property: "y"
+                value: 50
+            }
+        }
+    ]
+}
 \endcode
 
 \section2 Transitions
@@ -94,34 +118,56 @@ QML transitions describe animations to perform when state changes occur.
 For the previous example, a transition could describe how \c myrect moved from its initial position to its new position:
 
 \code
-<transitions>
-    <Transition>
-        <NumericAnimation properties="x,y" easing="easeOutBounce" duration="200" />
-    </Transition>
-</transitions>
+transitions: [
+    Transition {
+        NumericAnimation {
+            properties: "x,y"
+            easing: "easeOutBounce"
+            duration: 200
+        }
+    }
+]
 \endcode
 
 QML transitions can use selectors to determine which state changes a transition should apply to:
 
 \code
-<Transition fromState="*" toState="Details">
-...
-</Transition>
+Transition {
+    fromState: "*"
+    toState: "Details"
+    ...
+}
 \endcode
 
 Transitions can happen in parallel, in sequence, or in any combination of the two:;
 
 \code
-<Transition fromState="*" toState="MyState" reversible="true" >
-    <SequentialAnimation>
-        <ColorAnimation duration="1000" />
-        <PauseAnimation duration="1000" />
-        <ParallelAnimation>
-            <NumericAnimation duration="1000" easing="easeOutBounce" target="{box1}" properties="x,y" />
-            <NumericAnimation duration="1000" target="{box2}" properties="x,y" />
-        </ParallelAnimation>
-    </SequentialAnimation>
-</Transition>
+Transition {
+    fromState: "*"
+    toState: "MyState"
+    reversible: true
+    SequentialAnimation {
+        ColorAnimation {
+            duration: 1000
+        }
+        PauseAnimation {
+            duration: 1000
+        }
+        ParallelAnimation {
+            NumericAnimation {
+                duration: 1000
+                easing: "easeOutBounce"
+                target: box1
+                properties: "x,y"
+            }
+            NumericAnimation {
+                duration: 1000
+                target: box2
+                properties: "x,y"
+            }
+        }
+    }
+}
 \endcode
 
 \section1 Property Behaviors

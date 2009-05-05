@@ -23,7 +23,7 @@
 
     Setting ints looks like this:
     \code
-    <Item width="100" height="200" />
+    Item { width: 100; height:200 }
     \endcode
 
     \target basicqmlbool
@@ -39,7 +39,7 @@
 
     Setting bools looks like this:
     \code
-    <Item focusable="true" clip="false" />
+    Item { focusable: true; clip: false }
     \endcode
 
     \note Technically bool treats an empty string, "false" and "0" as false and
@@ -58,7 +58,7 @@
 
     Setting reals looks like this:
     \code
-    <Item x="-10" y="100.8" />
+    Item { x: -10; y: 100.8 }
     \endcode
 
     \note In QML all reals are stored in single precision, \l {http://en.wikipedia.org/wiki/IEEE_754}{IEEE floating point} format.
@@ -76,7 +76,7 @@
 
     Setting a string looks like this:
     \code
-    <Text text="Hello world!" />
+    Text { text: "Hello world!" }
     \endcode
 
     \raw HTML
@@ -101,9 +101,9 @@
 
     Setting a color looks like this:
     \code
-    <Rect color="steelblue" />
-    <Rect color="#FF0000" />
-    <Rect color="#800000FF" />
+    Rect { color: "steelblue" }
+    Rect { color: "#FF0000" }
+    Rect { color: "#800000FF" }
     \endcode
 
     \target basicqmlpoint
@@ -118,7 +118,7 @@
 
     Setting a point looks like this:
     \code
-    <Widget pos="50,50"/>
+    Widget { pos: "50,50" }
     \endcode
 
     \target basicqmlsize
@@ -133,7 +133,7 @@
 
     Setting a size looks like this:
     \code
-    <Widget size="50x50"/>
+    Widget { size: "50x50" }
     \endcode
 
     \target basicqmlrectangle
@@ -148,7 +148,7 @@
 
     Setting a rectangle looks like this:
     \code
-    <Widget geometry="50,50,100x100"/>
+    Widget { geometry: "50,50,100x100" }
     \endcode
 
     \target basicqmldate
@@ -163,7 +163,7 @@
 
     Setting a date looks like this:
     \code
-    <DatePicker minDate="2000-01-01" maxDate="2020-12-31"/>
+    DatePicker { minDate: "2000-01-01"; maxDate: "2020-12-31" }
     \endcode
 
     \target basicqmltime
@@ -178,7 +178,7 @@
 
     Setting a time looks like this:
     \code
-    <TimePicker time="14:22:15"/>
+    TimePicker { time: "14:22:15" }
     \endcode
 
     \target basicqmlfont
@@ -199,7 +199,7 @@
 
     Setting a font looks like this:
     \code
-    <Text font.family="Helvetica" font.size="13" font.bold="true">
+    Text { font.family: "Helvetica"; font.size: 13; font.bold: true }
     \endcode
 
     \target basicqmlaction
@@ -220,9 +220,9 @@
     Actions are used like this:
 
     \code
-    <MouseRegion onClick="{someitem.someaction.trigger()}">
-    <State name="enabled" when="{someitem.someaction.enabled=='true'}">
-    <Text text="{someitem.someaction.text}">
+    MouseRegion { onClicked: someitem.someaction.trigger() }
+    State { name: "enabled"; when: someitem.someaction.enabled=='true' }
+    Text { text: someitem.someaction.text }
     \endcode
 
     \target basicqmlany
@@ -252,13 +252,13 @@
     For example, the \l Item class has a children list property
     that can be used like this:
     \code
-    <Item>
-        <children>
-            <Item id="child1" />
-            <Rect id="child2" />
-            <Text id="child3" />
-        </children>
-    </Item>
+    Item {
+        children [
+            Item { id: child1 },
+            Rect { id: child2 },
+            Text { id: child3 }
+        ]
+    }
     \endcode
     \c child1, \c child2 and \c child3 will all be added to the children list
     in the order in which they appear.

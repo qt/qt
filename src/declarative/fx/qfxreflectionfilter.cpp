@@ -72,23 +72,23 @@ public:
     \qml
 HorizontalLayout {
     Image {
-        src: "icon.png"
+        source: "icon.png"
         filter: Reflection { }
     }
     Image {
-        src: "icon.png"
+        source: "icon.png"
         filter: Reflection { offset: 1 }
     }
     Image {
-        src: "icon.png"
+        source: "icon.png"
         filter: Reflection { offset: 1; alpha: 0.5 }
     }
     Image {
-        src: "icon.png"
+        source: "icon.png"
         filter: Reflection { offset: 1; alpha: 0.5; height: 50 }
     }
     Image {
-        src: "icon.png"
+        source: "icon.png"
         filter: Reflection { offset: 1; alpha: 0.5; height: 50; scale: 0.5 }
     }
 }
@@ -147,7 +147,7 @@ void QFxReflectionFilter::setAlpha(qreal a)
     \qml 
 Image {
     id: myImage
-    src: "album.png"
+    source: "album.png"
     filter: Reflection {
         height: myImage.height * 0.5
     }
