@@ -46,6 +46,10 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \class QmlError
+    \brief The QmlError class encapsulates a QML error
+*/
 class QmlErrorPrivate
 {
 public:
@@ -62,17 +66,26 @@ QmlErrorPrivate::QmlErrorPrivate()
 {
 }
 
+/*!
+    Create an empty error object.
+*/
 QmlError::QmlError()
 : d(new QmlErrorPrivate)
 {
 }
 
+/*!
+    Create a copy of \a other.
+*/
 QmlError::QmlError(const QmlError &other)
 : d(new QmlErrorPrivate)
 {
     *this = other;
 }
 
+/*!
+    Assign \a other to this error object.
+*/
 QmlError &QmlError::operator=(const QmlError &other)
 {
     d->url = other.d->url;
@@ -82,50 +95,84 @@ QmlError &QmlError::operator=(const QmlError &other)
     return *this;
 }
 
+/*!
+    \internal 
+*/
 QmlError::~QmlError()
 {
     delete d; d = 0;
 }
 
+/*!
+    Return the url for the file that caused this error.
+*/
 QUrl QmlError::url() const
 {
     return d->url;
 }
 
+/*!
+    Set the \a url for the file that caused this error.
+*/
 void QmlError::setUrl(const QUrl &url)
 {
     d->url = url;
 }
 
+/*!
+    Return the error description.
+*/
 QString QmlError::description() const
 {
     return d->description;
 }
 
+/*!
+    Set the error \a description.
+*/
 void QmlError::setDescription(const QString &description)
 {
     d->description = description;
 }
 
+/*!
+    Return the error line number.
+*/
 int QmlError::line() const
 {
     return d->line;
 }
 
+/*!
+    Set the error \a line number.
+*/
 void QmlError::setLine(int line)
 {
     d->line = line;
 }
 
+/*!
+    Return the error column number.
+*/
 int QmlError::column() const
 {
     return d->column;
 }
 
+/*!
+    Set the error \a column number.
+*/
 void QmlError::setColumn(int column)
 {
     d->column = column;
 }
+
+/*!
+    \relates QmlError
+    \fn QDebug operator<<(QDebug debug, const QmlError &error)
+
+    Output a human readable version of \a error to \a debug.
+*/
 
 QDebug operator<<(QDebug debug, const QmlError &error)
 {

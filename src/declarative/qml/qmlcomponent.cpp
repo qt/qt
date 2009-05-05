@@ -351,6 +351,10 @@ void QmlComponent::loadUrl(const QUrl &url)
     emit statusChanged(status());
 }
 
+/*!
+    Return the list of errors that occured during the last compile or create
+    operation.  An empty list is returned if isError() is not set.
+*/
 QList<QmlError> QmlComponent::errors() const
 {
     Q_D(const QmlComponent);
