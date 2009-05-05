@@ -46,6 +46,16 @@
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(QFxContentWrapper,ContentWrapper);
 
+/*!
+    \qmlclass ContentWrapper QFxContentWrapper
+    \ingroup group_utility
+    \brief ContentWrapper provides a component which contains content.
+    \inherits Item
+
+    The ContentWrapper element is used to place content within a component.
+    See \l Content for usage.
+*/
+
 QFxContentWrapper::QFxContentWrapper(QFxItem *parent)
 : QFxItem(*(new QFxContentWrapperPrivate), parent)
 {
@@ -56,6 +66,14 @@ QFxContentWrapper::QFxContentWrapper(QFxContentWrapperPrivate &dd, QFxItem *pare
 {
 }
 
+/*!
+    \qmlproperty list<Item> QFxContentWrapper::content
+
+    Contains the list of elements to replace the \l Content
+    placeholder.
+
+    \sa Content
+*/
 QList<QFxItem *> *QFxContentWrapper::content()
 {
     Q_D(QFxContentWrapper);
@@ -101,38 +119,24 @@ QML_DEFINE_TYPE(QFxContent,Content);
 
     In some cases the content of a component is not defined by the component itself.
     For example, the items placed in a group box need to be specified external to
-    the where the group box component itself is defined.
+    group box component definition itself.
     In cases like these Content can be used to specify at what location in the component
-    the content should be placed. It is used in conjuntion with the content property of 
-    the component instance: any items listed as content will be placed in the location 
-    specified by Content.
+    the content should be placed. It is used in conjuntion with the \e content property of
+    the ContentWrapper element: any items listed as content will be placed in the location
+    specified by Content.  The component containing the Content must be of type
+    ContentWrapper.
 
-    Example:
-    \qml
-// GroupBox component definition
-Rect {
-    width: parent.width
-    color: "white"
-    pen.width: 2
-    pen.color: "#adaeb0"
-    radius: 10
-    clip: false
-    height: contents.height
-    VerticalLayout {
-        id: layout
-        width: parent.width
-        Content { } // content property will go here
-    }
-}
+    GroupBox component definition:
+    \quotefile doc/src/snippets/declarative/GroupBox.qml
 
-// component use
-GroupBox {
-    content: Text {
-        text: "First Item"
-        ...
-    }
-}
-    \endqml
+    \bold Note that in the above component definition ContentWrapper's \e children
+    property is specified explicitly since \e content is the default property.
+
+    Component use:
+    \table
+    \row \o \image content.png
+    \o \quotefile doc/src/snippets/declarative/content.qml
+    \endtable
 */
 
 QT_END_NAMESPACE
