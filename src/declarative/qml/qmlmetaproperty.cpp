@@ -261,6 +261,33 @@ QmlMetaProperty::QmlMetaProperty(const QmlMetaProperty &other)
 }
 
 /*!
+  \enum QmlMetaProperty::PropertyCategory
+
+  This enum specifies a category of QML property.
+
+  \value Unknown
+  \value InvalidProperty
+  \value Bindable
+  \value List
+  \value QmlList
+  \value Object
+  \value Normal
+ */
+
+/*!
+  \enum QmlMetaProperty::Type
+
+  This enum specifies a type of QML property.
+
+  \value Invalid
+  \value Property
+  \value SignalProperty
+  \value Signal
+  \value Default
+  \value Attached
+*/
+
+/*!
     Returns the property category.
 */
 QmlMetaProperty::PropertyCategory QmlMetaProperty::propertyCategory() const
@@ -472,13 +499,17 @@ QStringList QmlMetaProperty::properties(QObject *obj)
 }
 
 /*!
-    Return the name of this property.
+    Return the name of this QML property.
 */
 QString QmlMetaProperty::name() const
 {
     return d->name;
 }
 
+/*!
+  Returns the \l{QMetaProperty} {Qt property} associated with
+  this QML property.
+ */
 const QMetaProperty &QmlMetaProperty::property() const
 {
     return d->prop;
@@ -1037,9 +1068,10 @@ quint32 QmlMetaProperty::save() const
 }
 
 /*!
-    Restore a QmlMetaProperty from a previously saved id.  \a obj must be the
-    same object as used in the previous call to QmlMetaProperty::save().  Only
-    the bottom 24-bits are used, the high bits can be set to any value.
+  Restore a QmlMetaProperty from a previously saved \a id.
+  \a obj must be the same object as used in the previous call
+  to QmlMetaProperty::save().  Only the bottom 24-bits are
+  used, the high bits can be set to any value.
 */
 void QmlMetaProperty::restore(quint32 id, QObject *obj)
 {
