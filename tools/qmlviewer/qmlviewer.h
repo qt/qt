@@ -60,6 +60,7 @@ private:
     void init(QFxTestEngine::TestMode, const QString &, const QString& fileName);
     QBasicTimer recordTimer;
     QList<QImage*> frames;
+    QIODevice* frame_stream;
     QBasicTimer autoStartTimer;
     QTime autoTimer;
     QString record_dither;
