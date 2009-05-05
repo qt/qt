@@ -1022,7 +1022,7 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
                                           int alpha,
                                           const QRect &sr)
 {
-    if (!clip.isValid())
+    if (alpha == 0 || !clip.isValid())
         return;
     Q_ASSERT(img.depth() >= 8);
 
