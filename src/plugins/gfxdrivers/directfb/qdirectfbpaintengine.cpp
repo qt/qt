@@ -156,22 +156,42 @@ static inline uint ALPHA_MUL(uint x, uint a)
 class SurfaceCache
 {
 public:
-    SurfaceCache();
-    ~SurfaceCache();
+    SurfaceCache() : surface(0), buffer(0), bufsize(0) {}
+    ~SurfaceCache() { clear(); }
 
-    inline IDirectFBSurface *getSurface(const uint *buffer, int size);
-    inline void clear();
 
+    IDirectFBSurface *getSurface(const uint *buf, int size)
+    {
+        if (buffer == buf && bufsize == size)
+            return surface;
+
+        clear();
+
+        const DFBSurfaceDescription description = QDirectFBScreen::getSurfaceDescription(buf, size);
+        surface = QDirectFBScreen::instance()->createDFBSurface(description, QDirectFBScreen::TrackSurface);
+        if (!surface)
+            qWarning("QDirectFBPaintEngine: SurfaceCache: Unable to create surface");
+
+        buffer = const_cast<uint*>(buf);
+        bufsize = size;
+
+        return surface;
+    }
+
+    void clear()
+    {
+        if (surface && QDirectFBScreen::instance())
+            QDirectFBScreen::instance()->releaseDFBSurface(surface);
+        surface = 0;
+        buffer = 0;
+        bufsize = 0;
+    }
 private:
     IDirectFBSurface *surface;
     uint *buffer;
     int bufsize;
 };
 
-SurfaceCache::SurfaceCache()
-    : surface(0), buffer(0), bufsize(0)
-{
-}
 
 class CachedImage
 {
@@ -228,39 +248,6 @@ CachedImage::~CachedImage()
 }
 
 static QCache<qint64, CachedImage> imageCache(4*1024*1024); // 4 MB
-
-IDirectFBSurface* SurfaceCache::getSurface(const uint *buf, int size)
-{
-    if (buffer == buf && bufsize == size)
-        return surface;
-
-    clear();
-
-    const DFBSurfaceDescription description = QDirectFBScreen::getSurfaceDescription(buf, size);
-    surface = QDirectFBScreen::instance()->createDFBSurface(description, QDirectFBScreen::TrackSurface);
-    if (!surface)
-        qWarning("QDirectFBPaintEngine: SurfaceCache: Unable to create surface");
-
-    buffer = const_cast<uint*>(buf);
-    bufsize = size;
-
-    return surface;
-}
-
-void SurfaceCache::clear()
-{
-    if (surface)
-        QDirectFBScreen::instance()->releaseDFBSurface(surface);
-    surface = 0;
-    buffer = 0;
-    bufsize = 0;
-}
-
-SurfaceCache::~SurfaceCache()
-{
-    clear();
-}
-
 class QDirectFBPaintEnginePrivate : public QRasterPaintEnginePrivate
 {
 public:
