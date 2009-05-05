@@ -58,9 +58,6 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::CreateObject:
         qWarning() << idx << "\t" << line << "\t" << "CREATE\t\t\t" << instr->create.type << "\t\t\t" << types.at(instr->create.type).className;
         break;
-    case QmlInstruction::CreateCustomObject:
-        qWarning() << idx << "\t" << line << "\t" << "CREATE_CUSTOM\t\t" << instr->createCustom.type << "\t" << instr->createCustom.data << "\t\t" << types.at(instr->create.type).className;
-        break;
     case QmlInstruction::SetId:
         qWarning() << idx << "\t" << line << "\t" << "SETID\t\t\t" << instr->setId.value << "\t" << instr->setId.save << "\t\t" << primitives.at(instr->setId.value);
         break;

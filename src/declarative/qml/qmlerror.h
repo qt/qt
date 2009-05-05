@@ -39,12 +39,11 @@
 **
 ****************************************************************************/
 
-#ifndef QMLXMLPARSER_P_H
-#define QMLXMLPARSER_P_H
+#ifndef QMLERROR_H
+#define QMLERROR_H
 
-#include <QList>
-#include <QUrl>
-#include <qml.h>
+#include <QtCore/qurl.h>
+#include <QtCore/qstring.h>
 
 QT_BEGIN_HEADER
 
@@ -52,38 +51,32 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-namespace QmlParser {
-    class Object;
-}
-
-class QByteArray;
-class QmlXmlParser 
+class QDebug;
+class QmlErrorPrivate;
+class Q_DECLARATIVE_EXPORT QmlError
 {
 public:
-    QmlXmlParser();
-    ~QmlXmlParser();
+    QmlError();
+    QmlError(const QmlError &);
+    QmlError &operator=(const QmlError &);
+    ~QmlError();
 
-    bool parse(const QByteArray &data, const QUrl &url=QUrl());
-    QString errorDescription() const;
-
-    QMap<QString,QString> nameSpacePaths() const;
-    QStringList types() const;
-
-    QmlParser::Object *tree() const;
-    QmlParser::Object *takeTree();
-
-    void clear();
-
+    QUrl url() const;
+    void setUrl(const QUrl &);
+    QString description() const;
+    void setDescription(const QString &);
+    int line() const;
+    void setLine(int);
+    int column() const;
+    void setColumn(int);
 private:
-    QMap<QString,QString> _nameSpacePaths;
-    QmlParser::Object *root;
-    QStringList _typeNames;
-    QString _error;
+    QmlErrorPrivate *d;
 };
+
+QDebug Q_DECLARATIVE_EXPORT operator<<(QDebug debug, const QmlError &error);
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QMLXMLPARSER_P_H
-
+#endif // QMLERROR_H

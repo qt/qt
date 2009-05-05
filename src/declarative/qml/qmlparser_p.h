@@ -103,6 +103,7 @@ namespace QmlParser
         QHash<QByteArray, Property *> properties;
 
         qint64 line;
+        qint64 column;
 
         struct DynamicProperty {
             DynamicProperty();
@@ -123,10 +124,6 @@ namespace QmlParser
             QByteArray name;
         };
 
-        // The "properties" property
-        Property *dynamicPropertiesProperty;
-        // The "signals" property
-        Property *dynamicSignalsProperty;
         // The list of dynamic properties described in the "properties" property
         QList<DynamicProperty> dynamicProperties;
         // The list of dynamic signals described in the "signals" property
@@ -167,6 +164,7 @@ namespace QmlParser
         Object *object;
 
         qint64 line;
+        qint64 column;
     };
 
     class Property : public QmlRefCount
@@ -197,6 +195,7 @@ namespace QmlParser
         bool isDefault;
 
         qint64 line;
+        qint64 column;
     };
 }
 

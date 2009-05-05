@@ -47,6 +47,7 @@
 #include <QList>
 #include "private/qobject_p.h"
 #include "private/qmlcompositetypemanager_p.h"
+#include <qmlerror.h>
 #include "qmlcomponent.h"
 class QmlComponent;
 class QmlEngine;
@@ -68,7 +69,7 @@ public:
     
     void fromTypeData(QmlCompositeTypeData *data);
 
-    QString errorDescription;
+    QList<QmlError> errors;
     QUrl url;
 
     int start;
@@ -81,7 +82,6 @@ public:
     QmlEngine *engine;
 
     void clear();
-    static bool isXml(const QByteArray &);
 };
 
 #endif // QMLCOMPONENT_P_H

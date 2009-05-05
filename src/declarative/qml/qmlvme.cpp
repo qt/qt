@@ -176,9 +176,14 @@ QmlVME::QmlVME()
 
 #define VME_EXCEPTION(desc) \
     { \
-        exceptionLine = instr.line; \
-        QDebug d(&exceptionDescription); \
-        d << desc;  \
+        QString str; \
+        QDebug d(&str); \
+        d << desc; \
+        QmlError error; \
+        error.setDescription(str); \
+        error.setLine(instr.line); \
+        error.setUrl(comp->url); \
+        vmeErrors << error; \
         break; \
     }
 
@@ -224,6 +229,8 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
     QStack<QmlMetaProperty> pushedProperties;
     QObject **savedObjects = 0;
 
+    vmeErrors.clear();
+
     if (start == -1) start = 0;
     if (count == -1) count = comp->bytecode.count();
 
@@ -262,27 +269,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                         types.at(instr.create.type).type->customParser();
                     customParser->setCustomData(o, datas.at(instr.create.data));
                 }
-                if (!stack.isEmpty()) {
-                    QObject *parent = stack.top();
-                    o->setParent(parent);
-                }
-                stack.push(o);
-            }
-            break;
-
-        case QmlInstruction::CreateCustomObject:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrCreateCustomObject> cc;
-#endif
-                QVariant v = 
-                    types.at(instr.createCustom.type).parser->create(datas.at(instr.createCustom.data));
-                // XXX
-                QObject *o = QmlMetaType::toQObject(v);
-                if (!o)
-                    VME_EXCEPTION("Unable to create" << types.at(instr.create.type).className);
-                QmlEngine::setContextForObject(o, QmlContext::activeContext());
-
                 if (!stack.isEmpty()) {
                     QObject *parent = stack.top();
                     o->setParent(parent);
@@ -1072,17 +1058,12 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
 bool QmlVME::isError() const
 {
-    return exceptionLine != -1;
+    return !vmeErrors.isEmpty();
 }
 
-qint64 QmlVME::errorLine() const
+QList<QmlError> QmlVME::errors() const
 {
-    return exceptionLine;
-}
-
-QString QmlVME::errorDescription() const
-{
-    return exceptionDescription;
+    return vmeErrors;
 }
 
 void QmlVME::runStoreInstruction(QStack<QObject *> &stack,
