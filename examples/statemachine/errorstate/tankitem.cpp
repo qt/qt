@@ -41,7 +41,7 @@ public:
         m_distance -= dist;
         if (m_reverse && m_distance > 0.0)
             return false;
-        else if (m_distance < 0.0)
+        else if (!m_reverse && m_distance < 0.0)
             return false;
 
         qreal a = item()->direction() * M_PI / 180.0;
@@ -73,7 +73,7 @@ public:
         m_distance -= dist;
         if (m_reverse && m_distance > 0.0)
             return false;
-        else if (m_distance < 0.0)
+        else if (!m_reverse && m_distance < 0.0)
             return false;
 
         item()->setDirection(item()->direction() + dist);
