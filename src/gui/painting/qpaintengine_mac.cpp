@@ -996,15 +996,14 @@ void QCoreGraphicsPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, co
     } else if (differentSize) {
 #if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-            CGImageRef img = (CGImageRef)pm.macCGHandle();
+            QCFType<CGImageRef> img = pm.toMacCGImageRef();
             image = CGImageCreateWithImageInRect(img, CGRectMake(qRound(sr.x()), qRound(sr.y()), qRound(sr.width()), qRound(sr.height())));
-            CGImageRelease(img);
         } else
 #endif
         {
             const int sx = qRound(sr.x()), sy = qRound(sr.y()), sw = qRound(sr.width()), sh = qRound(sr.height());
             const QMacPixmapData *pmData = static_cast<const QMacPixmapData*>(pm.data);
-            quint32 *pantherData = pmData->pixels + (sy * pm.width() + sx);
+            quint32 *pantherData = pmData->pixels + sy * (pmData->bytesPerRow / 4) + sx;
             QCFType<CGDataProviderRef> provider = CGDataProviderCreateWithData(0, pantherData, sw*sh*pmData->bytesPerRow, 0);
             image = CGImageCreate(sw, sh, 8, 32, pmData->bytesPerRow,
                                   macGenericColorSpace(),
