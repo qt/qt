@@ -45,7 +45,7 @@
 #include <QAction>
 #include <QUrl>
 #include <qfxglobal.h>
-#include <qfxitem.h>
+#include <qfximageitem.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QWebPage>
 
@@ -74,7 +74,7 @@ private:
 };
 
 
-class Q_DECLARATIVE_EXPORT QFxWebView : public QFxItem
+class Q_DECLARATIVE_EXPORT QFxWebView : public QFxImageItem
 {
     Q_OBJECT
 
@@ -91,7 +91,6 @@ class Q_DECLARATIVE_EXPORT QFxWebView : public QFxItem
     Q_PROPERTY(int idealWidth READ idealWidth WRITE setIdealWidth NOTIFY idealWidthChanged)
     Q_PROPERTY(int idealHeight READ idealHeight WRITE setIdealHeight NOTIFY idealHeightChanged)
     Q_PROPERTY(QString url READ url WRITE setUrl NOTIFY urlChanged)
-    Q_PROPERTY(bool smooth READ smooth WRITE setSmooth)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
 
     Q_PROPERTY(bool interactive READ interactive WRITE setInteractive NOTIFY interactiveChanged)
@@ -128,9 +127,6 @@ public:
     int mouseX() const;
     int mouseY() const;
 
-    bool smooth() const;
-    void setSmooth(bool);
-
     int idealWidth() const;
     void setIdealWidth(int);
     int idealHeight() const;
@@ -146,11 +142,6 @@ public:
 
     virtual void dump(int depth);
     virtual QString propertyInfo() const;
-#if defined(QFX_RENDER_QPAINTER) 
-    void paintContents(QPainter &painter);
-#elif defined(QFX_RENDER_OPENGL)
-    void paintGLContents(GLPainter &);
-#endif
 
     QWebPage *page() const;
     void setPage(QWebPage *page);
@@ -197,6 +188,9 @@ private Q_SLOTS:
 
 protected:
     QFxWebView(QFxWebViewPrivate &dd, QFxItem *parent);
+
+    void drawContents(QPainter *, const QRect &);
+
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);

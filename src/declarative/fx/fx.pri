@@ -28,8 +28,6 @@ HEADERS += \
            fx/qfxlayouts_p.h \
            fx/qfxmouseregion.h \
            fx/qfxmouseregion_p.h \
-           fx/qfxpainted.h \
-           fx/qfxpainted_p.h \
            fx/qfxparticles.h \
            fx/qfxpath.h \
            fx/qfxpath_p.h \
@@ -73,7 +71,6 @@ SOURCES += \
            fx/qfxkeyproxy.cpp \
            fx/qfxlayouts.cpp \
            fx/qfxmouseregion.cpp \
-           fx/qfxpainted.cpp \
            fx/qfxparticles.cpp \
            fx/qfxpath.cpp \
            fx/qfxpathview.cpp \
