@@ -8,7 +8,6 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlcontext.cpp \
     qml/qmlcustomparser.cpp \
     qml/qmlpropertyvaluesource.cpp \
-    qml/qmlxmlparser.cpp \
     qml/qmlproxymetaobject.cpp \
     qml/qmlvme.cpp \
     qml/qmlcompiler.cpp \
@@ -37,7 +36,6 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlcustomparser_p_p.h \
     qml/qmlpropertyvaluesource.h \
     qml/qmlboundsignal_p.h \
-    qml/qmlxmlparser_p.h \
     qml/qmlparserstatus.h \
     qml/qmlproxymetaobject_p.h \
     qml/qmlcompiledcomponent_p.h \

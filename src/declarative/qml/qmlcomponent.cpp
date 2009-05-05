@@ -60,17 +60,6 @@
 QT_BEGIN_NAMESPACE
 class QByteArray;
 
-bool QmlComponentPrivate::isXml(const QByteArray &ba)
-{
-    for (int i = 0; i < ba.size(); ++i) {
-        char c = ba.at(i);
-        if (c == ' ' || c == '\n' || c == '\r' || c == '\t')
-            continue;
-        return (c == '<');
-    }
-    return true;
-}
-
 /*!
     \class QmlComponent
     \brief The QmlComponent class encapsulates a QML component description.
