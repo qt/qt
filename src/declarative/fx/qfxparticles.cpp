@@ -116,6 +116,10 @@ QML_DEFINE_TYPE(QFxParticleMotion,ParticleMotion);
 
     \sa QFxParticles
 */
+
+/*!
+    Constructs a QFxParticleMotion with parent object \a parent.
+*/
 QFxParticleMotion::QFxParticleMotion(QObject *parent) :
     QObject(parent)
 {

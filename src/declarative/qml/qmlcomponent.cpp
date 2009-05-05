@@ -256,7 +256,7 @@ QmlComponent::QmlComponent(QmlEngine *engine, const QUrl &url, QObject *parent)
 }
 
 /*!
-    Create a QmlComponent from the given XML \a data.  If provided, \a filename
+    Create a QmlComponent from the given QML \a data.  If provided, \a url
     is used to set the component name, and to provide a base path for items
     resolved by this component.
 */
@@ -283,8 +283,8 @@ QmlComponent::QmlComponent(QmlEngine *engine, QmlCompiledComponent *cc, int star
 }
 
 /*!
-    Sets the QmlComponent to use the given XML \a data.  If provided, 
-    \a filename is used to set the component name, and to provide a base path 
+    Sets the QmlComponent to use the given QML \a data.  If provided,
+    \a url is used to set the component name, and to provide a base path
     for items resolved by this component.
 */
 void QmlComponent::setData(const QByteArray &data, const QUrl &url)
