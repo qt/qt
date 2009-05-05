@@ -52,8 +52,28 @@ QML_DEFINE_TYPE(QFxContentWrapper,ContentWrapper);
     \brief ContentWrapper provides a component which contains content.
     \inherits Item
 
-    The ContentWrapper element is used to place content within a component.
-    See \l Content for usage.
+    In some cases the content of a component is not defined by the component itself.
+    For example, the items placed in a group box need to be specified external to
+    group box component definition itself.
+    In cases like these \l Content can be used to specify at what location in the component
+    the content should be placed. It is used in conjuntion with the \e content property of
+    ContentWrapper: any items listed as content will be placed in the location
+    specified by Content.  The component containing the Content must be of type
+    ContentWrapper.
+
+    GroupBox component definition:
+    \quotefile doc/src/snippets/declarative/GroupBox.qml
+
+    \bold Note that in the above component definition ContentWrapper's \e children
+    property is specified explicitly since \e content is the default property.
+
+    Component use:
+    \table
+    \row \o \image content.png
+    \o \quotefile doc/src/snippets/declarative/content.qml
+    \endtable
+
+    \sa Content
 */
 
 QFxContentWrapper::QFxContentWrapper(QFxItem *parent)
@@ -67,7 +87,7 @@ QFxContentWrapper::QFxContentWrapper(QFxContentWrapperPrivate &dd, QFxItem *pare
 }
 
 /*!
-    \qmlproperty list<Item> QFxContentWrapper::content
+    \qmlproperty list<Item> ContentWrapper::content
 
     Contains the list of elements to replace the \l Content
     placeholder.
@@ -117,26 +137,8 @@ QML_DEFINE_TYPE(QFxContent,Content);
     \brief Content is used as a placeholder for the content of a component.
     \inherits Item
 
-    In some cases the content of a component is not defined by the component itself.
-    For example, the items placed in a group box need to be specified external to
-    group box component definition itself.
-    In cases like these Content can be used to specify at what location in the component
-    the content should be placed. It is used in conjuntion with the \e content property of
-    the ContentWrapper element: any items listed as content will be placed in the location
-    specified by Content.  The component containing the Content must be of type
-    ContentWrapper.
-
-    GroupBox component definition:
-    \quotefile doc/src/snippets/declarative/GroupBox.qml
-
-    \bold Note that in the above component definition ContentWrapper's \e children
-    property is specified explicitly since \e content is the default property.
-
-    Component use:
-    \table
-    \row \o \image content.png
-    \o \quotefile doc/src/snippets/declarative/content.qml
-    \endtable
+    The Content element is used to place content within a component.
+    See \l ContentWrapper for usage.
 */
 
 QT_END_NAMESPACE
