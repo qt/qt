@@ -124,7 +124,7 @@ void tst_QIODevice::constructing_QTcpSocket()
 
     QVERIFY(!device->isOpen());
 
-    socket.connectToHost(FTP_TEST_SERVER_NAME_1, 21);
+    socket.connectToHost(QtNetworkSettings::serverName(), 21);
     QVERIFY(socket.waitForConnected(5000));
     QVERIFY(device->isOpen());
 

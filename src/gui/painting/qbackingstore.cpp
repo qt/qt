@@ -61,11 +61,6 @@
 #include <private/qwsmanager_p.h>
 #endif
 
-#ifdef Q_WS_S60
-#include <unistd.h> // For usleep
-#include <qt_s60_p.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 extern QRegion qt_dirtyRegion(QWidget *);
