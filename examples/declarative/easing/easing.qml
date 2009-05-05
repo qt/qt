@@ -4,7 +4,7 @@ Rect {
     height: Layout.height
     color: "white"
 
-    ListModel2 {
+    ListModel {
         id: EasingTypes
         ListElement { type: "easeLinear" }
         ListElement { type: "easeInQuad" }

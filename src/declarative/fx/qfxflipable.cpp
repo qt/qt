@@ -80,8 +80,8 @@ Flipable {
         endX: 20
         endY: 40
     }
-    front: Image { src: "front.png" }
-    back: Image { src: "back.png" }
+    front: Image { source: "front.png" }
+    back: Image { source: "back.png" }
     states: [
         State {
             name: "back"

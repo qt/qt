@@ -57,7 +57,7 @@ QT_MODULE(Declarative)
 class QFxItem;
 class QmlEngine;
 class QmlContext;
-class Canvas;
+class QmlError;
 
 class QFxViewPrivate;
 class Q_DECLARATIVE_EXPORT QFxView : public QSimpleCanvas
@@ -84,6 +84,7 @@ public:
 
     void dumpRoot();
 
+    static void printErrorLine(const QmlError &);
 Q_SIGNALS:
     void sceneResized(QSize size);
 

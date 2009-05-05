@@ -322,7 +322,7 @@ void QFxRotation3D::update()
     The following example translates the image to 10, 3.
     \qml
 Image {
-    src: "logo.png"
+    source: "logo.png"
     transform: [
         Translation3D {
             axis.startX: 0
@@ -520,9 +520,9 @@ QMatrix4x4 QFxPerspective::transform() const
         HorizontalLayout {
             margin: 10
             spacing: 10
-            Image { src: "qt.png" }
+            Image { source: "qt.png" }
             Image {
-                src: "qt.png"
+                source: "qt.png"
                 transform: Squish {
                     x:0; y:0; width:60; height:60
                     topLeftX:0; topLeftY:0
@@ -532,7 +532,7 @@ QMatrix4x4 QFxPerspective::transform() const
                 }
             }
             Image {
-                src: "qt.png"
+                source: "qt.png"
                 transform: Squish {
                     x:0; y:0; width:60; height:60
                     topLeftX:0; topLeftY:0
@@ -542,7 +542,7 @@ QMatrix4x4 QFxPerspective::transform() const
                 }
             }
             Image {
-                src: "qt.png"
+                source: "qt.png"
                 transform: Squish {
                     x:0; y:0; width:60; height:60
                     topLeftX:0; topLeftY:10
@@ -552,7 +552,7 @@ QMatrix4x4 QFxPerspective::transform() const
                 }
             }
             Image {
-                src: "qt.png"
+                source: "qt.png"
                 transform: Squish {
                     x:0; y:0; width:60; height:60
                     topLeftX:10; topLeftY:0

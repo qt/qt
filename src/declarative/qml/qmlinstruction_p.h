@@ -63,7 +63,6 @@ public:
         //                      top of the stack.
         Init,                     /* init */
         CreateObject,             /* create */
-        CreateCustomObject,       /* createCustom */
         SetId,                    /* setId */
         SetDefault,
         CreateComponent,          /* createComponent */
@@ -179,10 +178,6 @@ public:
         struct {
             int data;
         } storeMeta;
-        struct {
-            int type;
-            int data;
-        } createCustom;
         struct {
             int value;
             int save;

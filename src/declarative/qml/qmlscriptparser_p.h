@@ -3,6 +3,7 @@
 
 #include <QtCore/QList>
 #include <QtCore/QUrl>
+#include <QtDeclarative/qmlerror.h>
 #include <qml.h>
 
 QT_BEGIN_HEADER
@@ -23,8 +24,6 @@ public:
     ~QmlScriptParser();
 
     bool parse(const QByteArray &data, const QUrl &url = QUrl());
-    QString errorDescription() const;
-    int errorLine() const;
 
     QMap<QString,QString> nameSpacePaths() const;
     QStringList types() const;
@@ -32,6 +31,8 @@ public:
     QmlParser::Object *tree() const;
 
     void clear();
+
+    QList<QmlError> errors() const;
 
 // ### private:
     int findOrCreateTypeId(const QString &name);
@@ -42,12 +43,12 @@ public:
 
     void addNamespacePath(const QString &path);
 
-private:
+// ### private:
+    QList<QmlError> _errors;
+
     QMap<QString,QString> _nameSpacePaths;
     QmlParser::Object *root;
     QStringList _typeNames;
-    QString _error;
-    int _errorLine;
     QString _scriptFile;
 };
 

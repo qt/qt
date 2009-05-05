@@ -148,9 +148,9 @@ Item {
             text: numFlags
         }
         Image {
-            x: 240
-            y: 0
-            source: if(isPlaying==true){'pics/smile.png'}else{if(hasWon==true){'pics/glee.png'}else{'pics/frown.png'}}
+            x: 280
+            y: 10
+            source: if(isPlaying==true){'pics/face-smile.png'}else{if(hasWon==true){'pics/face-smile-big.png'}else{'pics/face-sad.png'}}
             MouseRegion {
                 anchors.fill: parent
                 onClicked: { reset() }
