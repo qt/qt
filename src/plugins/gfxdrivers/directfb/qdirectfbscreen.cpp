@@ -113,9 +113,9 @@ QDirectFBScreenPrivate::~QDirectFBScreenPrivate()
     delete keyboard;
 #endif
 
-    foreach (IDirectFBSurface *surf, allocatedSurfaces)
-        surf->Release(surf);
-    allocatedSurfaces.clear();
+    for (QSet<IDirectFBSurface*>::const_iterator it = allocatedSurfaces.begin(); it != allocatedSurfaces.end(); ++it) {
+        (*it)->Release(*it);
+    }
 
     if (dfbSurface)
         dfbSurface->Release(dfbSurface);
@@ -350,6 +350,7 @@ QDirectFBScreen::DirectFBFlags QDirectFBScreen::directFBFlags() const
 {
     return d_ptr->directFBFlags;
 }
+
 IDirectFB *QDirectFBScreen::dfb()
 {
     return d_ptr->dfb;
@@ -899,6 +900,12 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     if (displayArgs.contains(QLatin1String("boundingrectflip"), Qt::CaseInsensitive)) {
         d_ptr->directFBFlags |= BoundingRectFlip;
     }
+
+#ifdef QT_DIRECTFB_IMAGECACHE
+    int imageCacheSize = 4 * 1024 * 1024; // 4 MB
+    ::setIntOption(displayArgs, QLatin1String("imagecachesize"), &imageCacheSize);
+    QDirectFBPaintEngine::initImageCache(imageCacheSize);
+#endif
 
     if (displayArgs.contains(QLatin1String("ignoresystemclip"), Qt::CaseInsensitive))
         d_ptr->directFBFlags |= IgnoreSystemClip;

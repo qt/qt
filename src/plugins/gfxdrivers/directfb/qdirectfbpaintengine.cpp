@@ -193,61 +193,21 @@ private:
 };
 
 
-class CachedImage
+#ifdef QT_DIRECTFB_IMAGECACHE
+#include <private/qimage_p.h>
+struct CachedImage
 {
-public:
-    CachedImage(const QImage &image);
-    ~CachedImage();
-
-    IDirectFBSurface *surface() { return s; }
-
-private:
-    IDirectFBSurface *s;
+    IDirectFBSurface *surface;
+    ~CachedImage()
+    {
+        if (surface && QDirectFBScreen::instance()) {
+            QDirectFBScreen::instance()->releaseDFBSurface(surface);
+        }
+    }
 };
-
-CachedImage::CachedImage(const QImage &image)
-    : s(0)
-{
-    IDirectFBSurface *tmpSurface = 0;
-    DFBSurfaceDescription description = QDirectFBScreen::getSurfaceDescription(image);
-    QDirectFBScreen* screen = QDirectFBScreen::instance();
-
-    tmpSurface = screen->createDFBSurface(description, QDirectFBScreen::TrackSurface);
-    if (!tmpSurface) {
-        qWarning("CachedImage CreateSurface failed!");
-        return;
-    }
-
-#ifndef QT_NO_DIRECTFB_PALETTE
-    QDirectFBScreen::setSurfaceColorTable(tmpSurface, image);
-#endif
-
-    description.flags = DFBSurfaceDescriptionFlags(description.flags & ~DSDESC_PREALLOCATED);
-
-    s = screen->createDFBSurface(description, QDirectFBScreen::TrackSurface);
-    if (!s)
-        qWarning("QDirectFBPaintEngine failed caching image");
-
-#ifndef QT_NO_DIRECTFB_PALETTE
-    QDirectFBScreen::setSurfaceColorTable(s, image);
-#endif
-
-    if (s) {
-        s->SetBlittingFlags(s, DSBLIT_NOFX);
-        s->Blit(s, tmpSurface, 0, 0, 0);
-        s->ReleaseSource(s);
-    }
-    if (tmpSurface)
-        screen->releaseDFBSurface(tmpSurface);
-}
-
-CachedImage::~CachedImage()
-{
-    if (s && QDirectFBScreen::instance())
-        QDirectFBScreen::instance()->releaseDFBSurface(s);
-}
-
 static QCache<qint64, CachedImage> imageCache(4*1024*1024); // 4 MB
+#endif
+
 class QDirectFBPaintEnginePrivate : public QRasterPaintEnginePrivate
 {
 public:
@@ -291,11 +251,8 @@ public:
     void fillRects(const QRectF *rects, int count);
     void drawRects(const QRectF *rects, int count);
 
-
-    void drawPixmap(const QRectF &dest,
-                    const QPixmap &pixmap, const QRectF &src);
     void drawTiledPixmap(const QRectF &dest, const QPixmap &pixmap);
-    void drawImage(const QRectF &dest, const QImage &image, const QRectF &src);
+    void blit(const QRectF &dest, IDirectFBSurface *surface, const QRectF &src);
 
     inline void updateClip();
     inline void setClipDirty();
@@ -303,6 +260,12 @@ public:
 
     void begin(QPaintDevice *device);
     void end();
+
+    static IDirectFBSurface *getSurface(const QImage &img, bool *release);
+
+#ifdef QT_DIRECTFB_IMAGECACHE
+    static inline int cacheCost(const QImage &img) { return img.width() * img.height() * img.depth() / 8; }
+#endif
 
     void prepareForBlit(bool alpha);
     SurfaceCache *surfaceCache;
@@ -338,9 +301,6 @@ QDirectFBPaintEnginePrivate::QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p
     fb = QDirectFBScreen::instance()->dfb();
     ignoreSystemClip = QDirectFBScreen::instance()->directFBFlags() & QDirectFBScreen::IgnoreSystemClip;
     surfaceCache = new SurfaceCache;
-    static int cacheLimit = qgetenv("QT_DIRECTFB_IMAGECACHE").toInt();
-    if (cacheLimit > 0)
-        imageCache.setMaxCost(cacheLimit * 1024);
 }
 
 QDirectFBPaintEnginePrivate::~QDirectFBPaintEnginePrivate()
@@ -634,15 +594,43 @@ void QDirectFBPaintEnginePrivate::drawRects(const QRectF *rects, int n)
     }
 }
 
-void QDirectFBPaintEnginePrivate::drawPixmap(const QRectF &dest,
-                                             const QPixmap &pixmap,
-                                             const QRectF &src)
+IDirectFBSurface *QDirectFBPaintEnginePrivate::getSurface(const QImage &img, bool *release)
 {
-    prepareForBlit(pixmap.hasAlphaChannel());
-    QPixmapData *data = pixmap.pixmapData();
-    Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
-    QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
-    IDirectFBSurface *s = dfbData->directFBSurface();
+#ifndef QT_DIRECTFB_IMAGECACHE
+    *release = true;
+    return QDirectFBScreen::instance()->createDFBSurface(img, QDirectFBScreen::DontTrackSurface);
+#else
+    const qint64 key = img.cacheKey();
+    *release = false;
+    if (imageCache.contains(key)) {
+        return imageCache[key]->surface;
+    }
+
+    const int cost = cacheCost(img);
+    const bool cache = cost <= imageCache.maxCost();
+    QDirectFBScreen *screen = QDirectFBScreen::instance();
+    const QImage::Format format = (img.format() == screen->alphaPixmapFormat() || QDirectFBPixmapData::hasAlphaChannel(img)
+                                   ? screen->alphaPixmapFormat() : screen->pixelFormat());
+
+    IDirectFBSurface *surface = screen->copyToDFBSurface(img, format,
+                                                         cache
+                                                         ? QDirectFBScreen::TrackSurface
+                                                         : QDirectFBScreen::DontTrackSurface);
+    if (cache) {
+        CachedImage *cachedImage = new CachedImage;
+        const_cast<QImage&>(img).data_ptr()->is_cached = true;
+        cachedImage->surface = surface;
+        imageCache.insert(key, cachedImage, cost);
+    } else {
+        *release = true;
+    }
+    return surface;
+#endif
+}
+
+
+void QDirectFBPaintEnginePrivate::blit(const QRectF &dest, IDirectFBSurface *s, const QRectF &src)
+{
     const QRect sr = src.toRect();
     const QRect dr = transform.mapRect(dest).toRect();
     const DFBRectangle sRect = { sr.x(), sr.y(), sr.width(), sr.height() };
@@ -709,64 +697,6 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest,
         DirectFBError("QDirectFBPaintEngine::drawTiledPixmap()", result);
 }
 
-void QDirectFBPaintEnginePrivate::drawImage(const QRectF &dest,
-                                            const QImage &image,
-                                            const QRectF &src)
-{
-    Q_ASSERT(QDirectFBScreen::getSurfacePixelFormat(image.format()) != DSPF_UNKNOWN);
-    CachedImage *img = imageCache[image.cacheKey()];
-    IDirectFBSurface *imgSurface = 0;
-    bool doRelease = false;
-
-    if (img) {
-        imgSurface = img->surface();
-    } else {
-        const int cost = image.width() * image.height() * image.depth() / 8;
-        if (cost <= imageCache.maxCost()) {
-            img = new CachedImage(image);
-            imgSurface = img->surface();
-            if (imgSurface) {
-                imageCache.insert(image.cacheKey(), img, cost);
-            } else {
-                delete img;
-                img = 0;
-            }
-        }
-
-        if (!imgSurface) {
-            DFBSurfaceDescription description = QDirectFBScreen::getSurfaceDescription(image);
-            imgSurface = QDirectFBScreen::instance()->createDFBSurface(description,
-                                                                       QDirectFBScreen::DontTrackSurface);
-            if (!imgSurface) {
-                qWarning("QDirectFBPaintEnginePrivate::drawImage");
-                return;
-            }
-
-#ifndef QT_NO_DIRECTFB_PALETTE
-            QDirectFBScreen::setSurfaceColorTable(surface, image);
-#endif
-            doRelease = (imgSurface != 0);
-        }
-    }
-
-    const QRect sr = src.toRect();
-    const QRect dr = transform.mapRect(dest).toRect();
-    const DFBRectangle sRect = { sr.x(), sr.y(), sr.width(), sr.height() };
-
-    prepareForBlit(image.hasAlphaChannel());
-    if (dr.size() == sr.size()) {
-        surface->Blit(surface, imgSurface, &sRect, dr.x(), dr.y());
-    } else {
-        const DFBRectangle dRect = { dr.x(), dr.y(),
-                                     dr.width(), dr.height() };
-        surface->StretchBlit(surface, imgSurface, &sRect, &dRect);
-    }
-    if (doRelease) {
-        surface->ReleaseSource(surface);
-        imgSurface->Release(imgSurface);
-    }
-}
-
 void QDirectFBPaintEnginePrivate::updateClip()
 {
     if (!dirtyClip)
@@ -827,8 +757,6 @@ bool QDirectFBPaintEngine::end()
     d->end();
     return QRasterPaintEngine::end();
 }
-
-
 
 void QDirectFBPaintEngine::clipEnabledChanged()
 {
@@ -1004,13 +932,36 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
                                      Qt::ImageConversionFlags flags)
 {
     Q_D(QDirectFBPaintEngine);
-    Q_UNUSED(flags); // XXX
+    Q_UNUSED(flags);
 
-#ifndef QT_NO_DIRECTFB_PREALLOCATED
+    /*  This is hard to read. The way it works is like this:
+
+    - If you do not have support for preallocated surfaces and do not use an
+    image cache we always fall back to raster engine.
+
+    - If it's rotated/sheared/mirrored (negative scale) or we can't
+    clip it we fall back to raster engine.
+
+    - If we don't cache the image, but we do have support for
+    preallocated surfaces we fall back to the raster engine if the
+    image is in a format DirectFB can't handle.
+
+    - If we do cache the image but don't have support for preallocated
+    images and the cost of caching the image (bytes used) is higher
+    than the max image cache size we fall back to raster engine.
+    */
+
     d->updateClip();
-    if (!d->dfbCanHandleClip(r) || d->matrixRotShear
+#if !defined QT_NO_DIRECTFB_PREALLOCATED || defined QT_DIRECTFB_IMAGECACHE
+    if (d->matrixRotShear
         || d->scale == QDirectFBPaintEnginePrivate::NegativeScale
-        || QDirectFBScreen::getSurfacePixelFormat(image.format()) == DSPF_UNKNOWN)
+        || !d->dfbCanHandleClip(r)
+#ifndef QT_DIRECTFB_IMAGECACHE
+        || QDirectFBScreen::getSurfacePixelFormat(image.format()) == DSPF_UNKNOWN
+#elif defined QT_NO_DIRECTFB_PREALLOCATED
+        || QDirectFBPaintEnginePrivate::cacheCost(image) > imageCache.maxCost()
+#endif
+        )
 #endif
     {
         RASTERFALLBACK(DRAW_IMAGE, r, image.size(), sr);
@@ -1018,10 +969,16 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
         QRasterPaintEngine::drawImage(r, image, sr, flags);
         return;
     }
-
-#ifndef QT_NO_DIRECTFB_PREALLOCATED
+#if !defined QT_NO_DIRECTFB_PREALLOCATED || defined QT_DIRECTFB_IMAGECACHE
     d->unlock();
-    d->drawImage(r, image, sr);
+    bool release;
+    IDirectFBSurface *imgSurface = d->getSurface(image, &release);
+    d->prepareForBlit(QDirectFBScreen::hasAlpha(imgSurface));
+    d->blit(r, imgSurface, sr);
+    if (release) {
+        imgSurface->ReleaseSource(imgSurface);
+        imgSurface->Release(imgSurface);
+    }
 #endif
 }
 
@@ -1048,7 +1005,12 @@ void QDirectFBPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap,
         QRasterPaintEngine::drawImage(r, *img, sr);
     } else {
         d->unlock();
-        d->drawPixmap(r, pixmap, sr);
+        d->prepareForBlit(pixmap.hasAlphaChannel());
+        QPixmapData *data = pixmap.pixmapData();
+        Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
+        QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
+        IDirectFBSurface *s = dfbData->directFBSurface();
+        d->blit(r, s, sr);
     }
 }
 
@@ -1258,4 +1220,19 @@ void QDirectFBPaintEngine::drawBufferSpan(const uint *buffer, int bufsize,
     d->surface->Blit(d->surface, src, &rect, x, y);
 }
 
+#ifdef QT_DIRECTFB_IMAGECACHE
+static void cachedImageCleanupHook(qint64 key)
+{
+    delete imageCache.take(key);
+}
+void QDirectFBPaintEngine::initImageCache(int size)
+{
+    Q_ASSERT(size >= 0);
+    imageCache.setMaxCost(size);
+    typedef void (*_qt_image_cleanup_hook_64)(qint64);
+    extern Q_GUI_EXPORT _qt_image_cleanup_hook_64 qt_image_cleanup_hook_64;
+    qt_image_cleanup_hook_64 = ::cachedImageCleanupHook;
+}
+
+#endif // QT_DIRECTFB_IMAGECACHE
 #endif // QT_NO_DIRECTFB
