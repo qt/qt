@@ -61,15 +61,15 @@ QML_DEFINE_TYPE(QFxText,Text);
 
 /*!
     \qmlclass Text QFxText
-    \brief The Text element allows you to add formatted text to a scene.
+    \brief The Text item allows you to add formatted text to a scene.
     \inherits Item
 
     It can display both plain and rich text. For example:
 
-    \code
+    \qml
     Text { text: "Hello World!"; font.family: "Helvetica"; font.size: 24; color: "red" }
     Text { text: "<b>Hello</b> <i>World!</i>" }
-    \endcode
+    \endqml
 
     \image declarative-text.png
 
@@ -94,10 +94,10 @@ QML_DEFINE_TYPE(QFxText,Text);
     Text was designed for read-only text; it does not allow for any text editing. 
     It can display both plain and rich text. For example:
 
-    \code
+    \qml
     Text { text: "Hello World!"; font.family: "Helvetica"; font.size: 24; color: "red" }
     Text { text: "<b>Hello</b> <i>World!</i>" }
-    \endcode
+    \endqml
 
     \image text.png
 
@@ -105,7 +105,7 @@ QML_DEFINE_TYPE(QFxText,Text);
     much room is needed and set it accordingly. Unless \c wrap is set, it will always
     prefer width to height (all text will be placed on a single line).
 
-    The \c elideMode can alternatively be used to fit a line of plain text to a set width.
+    The \c elide property can alternatively be used to fit a line of plain text to a set width.
 
     A QFxText object can be instantiated in Qml using the tag \c Text.
 */
@@ -212,13 +212,13 @@ void QFxText::setColor(const QColor &color)
 
     The text color.
 
-    \code
+    \qml
     //green text using hexadecimal notation
     Text { color: "#00FF00"; ... }
 
     //steelblue text using SVG color name
     Text { color: "steelblue"; ... }
-    \endcode
+    \endqml
 */
 
 QColor QFxText::color() const
@@ -234,14 +234,14 @@ QColor QFxText::color() const
 
     Supported text styles are \c Normal, \c Outline, \c Raised and \c Sunken.
 
-    \code
+    \qml
     HorizontalLayout {
         Text { font.size: 24; text: "Normal" }
         Text { font.size: 24; text: "Raised";  style: "Raised";  styleColor: "#AAAAAA" }
         Text { font.size: 24; text: "Outline"; style: "Outline"; styleColor: "red" }
         Text { font.size: 24; text: "Sunken";  style: "Sunken";  styleColor: "#AAAAAA" }
     }
-    \endcode
+    \endqml
 
     \image declarative-textstyle.png
 */
@@ -302,7 +302,7 @@ QColor QFxText::styleColor() const
     \qmlproperty enumeration Text::hAlign
     \qmlproperty enumeration Text::vAlign
 
-    Sets the horizontal and vertical alignment of the text within the Text elements
+    Sets the horizontal and vertical alignment of the text within the Text items
     width and height.  By default, the text is top-left aligned.
 
     The valid values for \c hAlign are \c AlignLeft, \c AlignRight and 
@@ -349,7 +349,7 @@ void QFxText::setVAlign(VAlignment align)
 /*!
     \qmlproperty bool Text::wrap
 
-    Set this property to wrap the text to the Text element's width.  The text will only
+    Set this property to wrap the text to the Text item's width.  The text will only
     wrap if an explicit width has been set.
 
     Wrapping is done on word boundaries (i.e. it is a "word-wrap"). If the text cannot be
@@ -378,9 +378,9 @@ void QFxText::setWrap(bool w)
 }
 
 /*!
-    \qmlproperty Qt::TextElideMode Text::elideMode
+    \qmlproperty Qt::TextElideMode Text::elide
 
-    Set this property to elide parts of the text fit to the Text element's width.
+    Set this property to elide parts of the text fit to the Text item's width.
     The text will only elide if an explicit width has been set.
 
     This property cannot be used with wrap enabled or with rich text.

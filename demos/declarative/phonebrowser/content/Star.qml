@@ -1,16 +1,12 @@
 Item {
+    property var rating
+    property var on
+    signal clicked
+
     id: Container
     width: 24
     height: 24
 
-    properties: [
-        Property { name: "rating" },
-        Property { name: "on" }
-    ]
-
-    signals: Signal {
-        name: "clicked"
-    }
     Image {
         id: Image
         source: "pics/ghns_star.png"

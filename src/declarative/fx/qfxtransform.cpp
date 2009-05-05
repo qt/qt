@@ -85,16 +85,16 @@ void QFxTransform::update()
 
 /*!
     \qmlclass Axis
-    \brief The Axis element defines an axis that can be used for rotation or translation.
+    \brief A Axis object defines an axis that can be used for rotation or translation.
 
     An axis is specified by 2 points in 3D space: a start point and
     an end point. While technically the axis is the line running through these two points
     (and thus many different sets of two points could define the same axis), the distance
     between the points does matter for translation along an axis.
 
-    \code
+    \qml
     Axis { startX: 0; startY: 0; endX: 20; endY: 30 }
-    \endcode
+    \endqml
 */
 
 QML_DEFINE_TYPE(QFxAxis, Axis);
@@ -179,7 +179,7 @@ void QFxAxis::setEndZ(qreal z)
 
 /*!
     \qmlclass Rotation3D
-    \brief The Rotation3D element provides a way to rotate an Item around an axis.
+    \brief A Rotation3D object provides a way to rotate an Item around an axis.
 
     Here is an example of various rotations applied to an \l Image.
     \snippet doc/src/snippets/declarative/rotation.qml 0
@@ -317,16 +317,23 @@ void QFxRotation3D::update()
 
 /*!
     \qmlclass Translation3D
-    \brief The Translation3D element provides a way to move an Item along an axis.
+    \brief A Translation3D object provides a way to move an Item along an axis.
 
     The following example translates the image to 10, 3.
-    \code
-    <Image src="logo.png">
-        <transform>
-            <Translation3D axis.startX="0" axis.startY="0" axis.endX="1" axis.endY=".3" distance="10"/>
-        </transform>
-    </Image>
-    \endcode
+    \qml
+Image {
+    src: "logo.png"
+    transform: [
+        Translation3D {
+            axis.startX: 0
+            axis.startY: 0
+            axis.endX: 1
+            axis.endY: .3
+            distance: 10
+        }
+    ]
+}
+    \endqml
 */
 
 QML_DEFINE_TYPE(QFxTranslation3D,Translation3D);
@@ -367,9 +374,9 @@ QFxAxis *QFxTranslation3D::axis()
     in the example below, a distance of 1 would translate to 100, 50, while a distance
     of 0.5 would translate to 50, 25.
 
-    \code
+    \qml
     Translation3D { axis.startX: 0; axis.startY: 0; axis.endX: 100; axis.endY: 50 }
-    \endcode
+    \endqml
 */
 qreal QFxTranslation3D::distance() const
 {
@@ -444,7 +451,7 @@ void QFxTranslation3D::update()
 
 /*!
     \qmlclass Perspective
-    \brief The Perspective element specifies a perspective transformation.
+    \brief A Perspective object specifies a perspective transformation.
 
     A Perspective transform only affects an item when running under OpenGL; when running under software
     rasterization it has no effect.
@@ -501,10 +508,10 @@ QMatrix4x4 QFxPerspective::transform() const
 
 /*!
     \qmlclass Squish
-    \brief The Squish element allows you to distort an items appearance by 'squishing' it.
+    \brief A Squish object allows you to distort an items appearance by 'squishing' it.
 
     Here is an example of various \l Image squishes.
-    \code
+    \qml
     Rect {
         id: Screen
         width: 360; height: 80
@@ -556,7 +563,7 @@ QMatrix4x4 QFxPerspective::transform() const
             }
         }
     }
-    \endcode
+    \endqml
 
     \image squish.png
 */

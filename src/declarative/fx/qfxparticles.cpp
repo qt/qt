@@ -151,7 +151,7 @@ void QFxParticleMotion::destroy(QFxParticle &particle)
 
 /*!
     \qmlclass ParticleMotionLinear
-    \brief The ParticleMotionLinear element moves particles linearly.
+    \brief The ParticleMotionLinear object moves particles linearly.
 
     \sa Particles
 */
@@ -175,7 +175,7 @@ void QFxParticleMotionLinear::advance(QFxParticle &p, int interval)
 
 /*!
     \qmlclass ParticleMotionGravity
-    \brief The ParticleMotionGravity element moves particles towards a point.
+    \brief The ParticleMotionGravity object moves particles towards a point.
 
     \sa Particles
 */
@@ -234,23 +234,37 @@ void QFxParticleMotionGravity::advance(QFxParticle &p, int interval)
 
 /*!
     \qmlclass ParticleMotionWander
-    \brief The ParticleMotionWander element moves particles in a somewhat random fashion.
+    \brief The ParticleMotionWander object moves particles in a somewhat random fashion.
 
     The particles will continue roughly in the original direction, however will randomly
     drift to each side.
 
     The code below produces an effect similar to falling snow.
 
-    \code
-    <Rect width="240" height="320" color="black">
-        <Particles y="0" width="{parent.width}" height="30"
-                src="star.png" lifeSpan="5000" count="50"
-                angle="70" angleDeviation="36"
-                velocity="30" velocityDeviation="10">
-            <ParticleMotionWander xvariance="30" pace="100"/>
-        </Particles>
-    </Rect>
-    \endcode
+    \qml
+Rect {
+    width: 240
+    height: 320
+    color: "black"
+
+    Particles {
+        y: 0
+        width: parent.width
+        height: 30
+        src: "star.png"
+        lifeSpan: 5000
+        count: 50
+        angle: 70
+        angleDeviation: 36
+        velocity: 30
+        velocityDeviation: 10
+        ParticleMotionWander {
+            xvariance: 30
+            pace: 100
+        }
+    }
+}
+    \endqml
 
     \sa Particles
 */
@@ -508,35 +522,59 @@ QML_DEFINE_TYPE(QFxParticles,Particles);
 
 /*!
     \qmlclass Particles
-    \brief The Particles element generates and moves particles.
+    \brief The Particles object generates and moves particles.
     \inherits Item
 
-    The particles created by this element cannot be dealt with directly, they can only be controlled through the parameters of the Particles element. The particles are all the same pixmap, specified by the user.
+    The particles created by this object cannot be dealt with directly, they can only be controlled through the parameters of the Particles object. The particles are all the same pixmap, specified by the user.
 
-    The particles are painted relative to the parent of the Particles element.  Moving the
-    Particles element will not move the particles already emitted.
+    The particles are painted relative to the parent of the Particles object.  Moving the
+    Particles object will not move the particles already emitted.
 
     The below example creates two differently behaving particle sources.
     The top one has particles falling from the top like snow,
     the lower one has particles expelled up like a fountain.
 
-    \code
-    <Rect width="240" height="320" color="black">
-        <Particles y="0" width="{parent.width}" height="30"
-                src="star.png" lifeSpan="5000" count="50"
-                angle="70" angleDeviation="36"
-                velocity="30" velocityDeviation="10">
-            <ParticleMotionWander xvariance="30" pace="100"/>
-        </Particles>
-        <Particles y="300" x="120" width="1" height="1"
-                src="star.png" lifeSpan="5000" count="200"
-                angle="270" angleDeviation="45"
-                velocity="50" velocityDeviation="30">
-            <ParticleMotionGravity yattractor="1000"
-                xattractor="0" acceleration="25"/>
-        </Particles>
-    </Rect>
-    \endcode
+    \qml
+Rect {
+    width: 240
+    height: 320
+    color: "black"
+    Particles {
+        y: 0
+        width: parent.width
+        height: 30
+        src: "star.png"
+        lifeSpan: 5000
+        count: 50
+        angle: 70
+        angleDeviation: 36
+        velocity: 30
+        velocityDeviation: 10
+        ParticleMotionWander {
+            xvariance: 30
+            pace: 100
+        }
+    }
+    Particles {
+        y: 300
+        x: 120
+        width: 1
+        height: 1
+        src: "star.png"
+        lifeSpan: 5000
+        count: 200
+        angle: 270
+        angleDeviation: 45
+        velocity: 50
+        velocityDeviation: 30
+        ParticleMotionGravity {
+            yattractor: 1000
+            xattractor: 0
+            acceleration: 25
+        }
+    }
+}
+    \endqml
     \image particles.gif
 */
 
@@ -658,9 +696,13 @@ void QFxParticles::setCount(int cnt)
     example, the following creates particles whose lifeSpan will vary
     from 150ms to 250ms:
 
-    \code
-    <Particles src="star.png" lifeSpan="200" lifeSpanDeviation="100"/>
-    \endcode
+    \qml
+Particles {
+    src: "star.png"
+    lifeSpan: 200
+    lifeSpanDeviation: 100
+}
+    \endqml
 */
 
 /*!
@@ -691,9 +733,13 @@ void QFxParticles::setLifeSpan(int ls)
     example, the following creates particles whose lifeSpan will vary
     from 150ms to 250ms:
 
-\code
-<Particles src="star.png" lifeSpan="200" lifeSpanDeviation="100"/>
-\endcode
+\qml
+Particles {
+    src: "star.png"
+    lifeSpan: 200
+    lifeSpanDeviation: 100
+}
+\endqml
 
     \sa QFxParticles::lifeSpan
 */
@@ -765,9 +811,13 @@ void QFxParticles::setFadeOutDuration(int dur)
     example, the following creates particles whose initial direction will
     vary from 15 degrees to 105 degrees:
 
-    \code
-    <Particles src="star.png" angle="60" angleDeviation="90"/>
-    \endcode
+    \qml
+Particles {
+    src: "star.png"
+    angle: 60
+    angleDeviation: 90
+}
+    \endqml
 */
 
 /*!
@@ -796,9 +846,13 @@ void QFxParticles::setAngle(qreal angle)
     example, the following creates particles whose initial direction will
     vary from 15 degrees to 105 degrees:
 
-\code
-<Particles src="star.png" angle="60" angleDeviation="90"/>
-\endcode
+\qml
+Particles {
+    src: "star.png"
+    angle: 60
+    angleDeviation: 90
+}
+\endqml
 
     \sa QFxParticles::angle
 */
@@ -824,9 +878,13 @@ void QFxParticles::setAngleDeviation(qreal dev)
     example, the following creates particles whose initial velocity will
     vary from 40 to 60.
 
-    \code
-    <Particles src="star.png" velocity="50" velocityDeviation="20"/>
-    \endcode
+    \qml
+Particles {
+    src: "star.png"
+    velocity: 50
+    velocityDeviation: 20
+}
+    \endqml
 */
 
 /*!
@@ -855,9 +913,13 @@ void QFxParticles::setVelocity(qreal velocity)
     example, the following creates particles whose initial velocity will
     vary from 40 to 60.
 
-\code
-<Particles src="star.png" velocity="50" velocityDeviation="20"/>
-\endcode
+\qml
+Particles {
+    src: "star.png"
+    velocity: 50
+    velocityDeviation: 20
+}
+\endqml
 
     \sa QFxParticles::velocity
 */

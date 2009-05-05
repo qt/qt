@@ -1,13 +1,8 @@
 Item {
+    properties var period : 250
+    properties var color : "black"
     id: Root
-    properties: Property {
-        name: "period"
-        value: 250
-    }
-    properties: Property {
-        name: "color"
-        value: "black"
-    }
+
     Item {
         x: Root.width/2
         y: Root.height/2

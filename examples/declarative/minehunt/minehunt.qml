@@ -2,16 +2,10 @@ Item {
     id: field
     width: 370
     height: 480
-    properties: Property {
-        name: "clickx"
-        type: "Int"
-        value: 0
-    }
-    properties: Property {
-        name: "clicky"
-        type: "Int"
-        value: 0
-    }
+
+    property int clickx : 0
+    property int clicky : 0
+
     resources: [
         Component {
             id: tile

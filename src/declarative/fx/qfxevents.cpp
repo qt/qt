@@ -44,17 +44,18 @@
 QT_BEGIN_NAMESPACE
 /*!
     \qmlclass KeyEvent QFxKeyEvent
-    \brief The KeyEvent element provides information about a key event.
+    \brief The KeyEvent object provides information about a key event.
 
     For example, the following changes the Item's state property when the Enter
     key is pressed:
-    \code
-    <Item focus="true">
-        <onKeyPress>if (event.key == Qt.Key_Enter) state = 'ShowDetails';</onKeyPress>
-    </Item>
-    \endcode
+    \qml
+Item {
+    focus: true
+    onKeyPress: { if (event.key == Qt.Key_Enter) state = 'ShowDetails'; }
+}
+    \endqml
 
-    The \l KeyActions element could also be used to achieve the above with
+    The \l KeyActions object could also be used to achieve the above with
     a clearer syntax.
 
     \sa KeyActions
@@ -106,7 +107,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass MouseEvent QFxMouseEvent
-    \brief The MouseEvent element provides information about a mouse event.
+    \brief The MouseEvent object provides information about a mouse event.
 
     The position of the mouse can be found via the x and y properties.
     The button that caused the event is available via the button property.
@@ -168,15 +169,11 @@ QT_BEGIN_NAMESPACE
     \endlist
 
     For example, to react to a Shift key + Left mouse button click:
-    \code
-    <MouseRegion>
-        <onClick>
-            <![CDATA[
-                if (mouse.button == Qt.LeftButton && mouse.modifiers & Qt.ShiftModifier) doSomething();
-            ]]>
-        </onclick>
-    </MouseRegion>
-    \endcode
+    \qml
+MouseRegion {
+    onClick: { if (mouse.button == Qt.LeftButton && mouse.modifiers & Qt.ShiftModifier) doSomething(); }
+}
+    \endqml
 */
 
 QML_DEFINE_NOCREATE_TYPE(QFxKeyEvent);

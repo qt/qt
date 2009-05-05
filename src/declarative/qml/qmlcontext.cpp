@@ -261,10 +261,10 @@ QmlContext *QmlContext::parentContext() const
     Add a default \a object to this context.  The object will be added after
     any existing default objects.
 */
-void QmlContext::addDefaultObject(QObject *defaultObject)
+void QmlContext::addDefaultObject(QObject *object)
 {
     Q_D(QmlContext);
-    d->addDefaultObject(defaultObject, QmlContextPrivate::NormalPriority);
+    d->addDefaultObject(object, QmlContextPrivate::NormalPriority);
 }
 
 /*!
@@ -340,13 +340,11 @@ QmlContext *QmlContext::activeContext()
 
 /*!
     Resolves the URL \a src relative to the URL of the
-    containing component.
+    containing component. If \a src is absolute, it is
+    simply returned. If there is no containing component,
+    an empty URL is returned.
 
-    If \a src is absolute, it is simply returned.
-
-    If there is no containing component, an empty URL is returned.
-
-    \sa componentUrl
+    \sa QmlEngine::componentUrl()
 */
 QUrl QmlContext::resolvedUrl(const QUrl &src)
 {
@@ -372,10 +370,10 @@ QUrl QmlContext::resolvedUrl(const QUrl &src)
 /*!
     Resolves the component URI \a src relative to the URL of the
     containing component, and according to the
-    \link QmlEngine::nameSpacePaths() namespace paths\endlink of the
+    \l {QmlEngine::nameSpacePaths()} {namespace paths} of the
     context's engine, returning the resolved URL.
 
-    \sa componentUrl
+    \sa QmlEngine::componentUrl()
 */
 QUrl QmlContext::resolvedUri(const QUrl &src)
 {

@@ -1,9 +1,7 @@
 Item {
     id: Page
     height: MyText.height + 20
-    properties: Property {
-        name: "text"
-    }
+    property var text
     MouseRegion {
         anchors.fill: parent
         drag.target: Page

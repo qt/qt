@@ -51,10 +51,6 @@
 
 QT_BEGIN_NAMESPACE
 
-//
-// Timeline stuff
-//
-
 struct Update {
     Update(QmlTimeLineValue *_g, qreal _v)
         : g(_g), v(_v) {}
@@ -868,9 +864,10 @@ void QmlTimeLine::remove(QmlTimeLineObject *v)
 }
 
 /*!
+    \internal
     \class QmlTimeLineValue
     \ingroup group_animation
-    \brief The QmlTimeLineValue class is modified by QmlTimeLine.
+    \brief The QmlTimeLineValue class provides a value that can be modified by QmlTimeLine.
 */
 
 /*!

@@ -1,16 +1,12 @@
 Rect {
+    property string day
+    property var stickies
+
     width: 400
     height: 500
     radius: 7
     pen.color: "black"
     id: Page
-    properties: Property {
-        name: "day"
-        type: "string"
-    }
-    properties: Property {
-        name: "stickies"
-    }
     Image {
         x: 10
         y: 10

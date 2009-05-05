@@ -2,6 +2,7 @@ Item {
     id: contactDetails
     width: 230
     height: layout.height
+
     properties: Property {
         name: "contactid"
         value: ""

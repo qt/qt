@@ -1,17 +1,14 @@
 Flipable {
     id: Container
 
-    properties: [
-        Property { name: "frontContainer"; value: ContainerFront },
-        Property { name: "flickableArea"; value: Flickable },
-        Property { name: "phoneTitle"; value: "N/A" },
-        Property { name: "phoneDescription"; value: "..." },
-        Property { name: "phoneSpecifications"; value: "" },
-        Property { name: "phoneUrl"; value: "" },
-        Property { name: "rating"; value: 2 }
-    ]
-
-    signals: Signal { name: "closed" }
+    property var frontContainer : ContainerFront
+    property var flickableArea : Flickable
+    property var phoneTitle : "N/A"
+    property var phoneDescription : "..."
+    property var phoneSpecifications : ""
+    property var phoneUrl : ""
+    property var rating : 2
+    signal closed
 
     axis: Axis { startX: Container.width / 2; endX: Container.width / 2; endY: 1 }
 

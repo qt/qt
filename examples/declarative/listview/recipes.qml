@@ -16,11 +16,8 @@ Rect {
                 // We can bind multiple element's opacity to this one property,
                 // rather than having a "SetProperty" line for each element we
                 // want to fade.
-                properties: Property {
-                    name: "detailsOpacity"
-                    value: 0
-                    type: "real"
-                }
+                property real detailsOpacity : 0
+
                 // A simple rounded rectangle for the background
                 Rect {
                     id: background

@@ -58,10 +58,10 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QFxImageItem
-    \brief The QFxImageItem class is an abstract base class for QFxView items that render using QPainter.
+    \brief The QFxImageItem class is an abstract base class for QFxView items that want cached painting.
     \ingroup group_coreitems
 
-    This is a convenience class allowing easy use of a QPainter within a custom
+    This is a convenience class allowing easy use of cached painting within a custom
     item.  The contents of the item are are cached behind the scenes.
     The dirtyCache() function should be called if the contents change to
     ensure the cache is refreshed the next time painting occurs.

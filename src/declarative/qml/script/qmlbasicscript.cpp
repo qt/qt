@@ -252,6 +252,7 @@ struct QmlBasicScriptCompiler
 };
 
 /*!
+    \internal
     \class QmlBasicScript
     \brief The QmlBasicScript class provides a fast implementation of a limited subset of JavaScript bindings.
 

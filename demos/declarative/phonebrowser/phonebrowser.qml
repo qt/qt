@@ -3,7 +3,7 @@ import "content"
 Item {
     id: MainWindow; width: 800; height: 480
 
-    properties: Property { name: "minimized"; value: false }
+    property var minimized : false
 
     Item {
         id: Background

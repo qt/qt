@@ -2,9 +2,9 @@ Item {
     id: Switch
     width: Groove.width
     height: Groove.height
-    properties: Property {
-        name: "on"
-    }
+
+    property var on
+
     Script {
 
         function toggle() {
@@ -14,7 +14,6 @@ Item {
                 Switch.state = "On";
         }
         function dorelease() {
-            print(Knob.x);
             if(Knob.x == 1) {
                 if(Switch.state == "Off") 
                     return;

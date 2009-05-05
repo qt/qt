@@ -42,7 +42,7 @@
 /*!
     \class QPropertyAnimation
     \brief The QPropertyAnimation class animates properties for QObject(and QWidget)
-    \ingroup animation
+    \ingroup group_animation
     \preliminary
 
     This class is part of {The Animation Framework}.  You can use QPropertyAnimation

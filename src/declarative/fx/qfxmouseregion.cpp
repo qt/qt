@@ -145,12 +145,12 @@ void QFxDrag::setYmax(int m)
 
 /*!
     \qmlclass MouseRegion
-    \brief The MouseRegion element enables simple mouse handling.
+    \brief The MouseRegion item enables simple mouse handling.
     \inherits Item
 
-    A MouseRegion is typically used in conjunction with a visible element,
+    A MouseRegion is typically used in conjunction with a visible item,
     where the MouseRegion effectively 'proxies' mouse handling for that
-    element. For example, we can put a MouseRegion in a Rect that changes
+    item. For example, we can put a MouseRegion in a Rect that changes
     the Rect color to red when clicked:
     \snippet doc/src/snippets/declarative/mouseregion.qml 0
 
@@ -164,7 +164,7 @@ void QFxDrag::setYmax(int m)
 
     For basic key handling, see \l KeyActions.
 
-    MouseRegion is an invisible element: it is never painted.
+    MouseRegion is an invisible item: it is never painted.
 
     \sa MouseEvent
 */

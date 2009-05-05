@@ -1,9 +1,6 @@
 Item {
-    properties: Property {
-        name: "explode"
-        type: "Bool"
-        value: false
-    }
+    property bool explode : false
+
     Particles {
         width: 38
         height: 21

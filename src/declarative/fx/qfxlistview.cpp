@@ -795,7 +795,7 @@ void QFxListViewPrivate::fixupX()
 /*!
     \qmlclass ListView
     \inherits Flickable
-    \brief The ListView element provides a list view of items provided by a model.
+    \brief The ListView item provides a list view of items provided by a model.
 
     The model is typically provided by a QAbstractListModel "C++ model object", but can also be created directly in QML.
     The items are laid out vertically or horizontally and may be flicked to scroll.
@@ -840,7 +840,7 @@ QFxListView::~QFxListView()
     The C++ model object must be a \l QAbstractItemModel subclass, a \l VisualModel,
     or a simple list.
 
-    Models can also be created directly in QML, using the \l ListModel element.
+    Models can also be created directly in QML, using a \l ListModel.
 */
 QVariant QFxListView::model() const
 {

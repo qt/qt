@@ -334,49 +334,64 @@ bool ProcessAST::visit(AST::UiImport *node)
 // UiMemberType: "property" | "signal"
 bool ProcessAST::visit(AST::UiPublicMember *node)
 {
-    const QString memberType = node->memberType->asString();
-    const QString name = node->name->asString();
+    if(node->type == AST::UiPublicMember::Signal) {
+        const QString name = node->name->asString();
 
-    if (node->isDefaultMember)
-        qWarning() << "default-ness not implemented";
+        Object::DynamicSignal signal;
+        signal.name = name.toUtf8();
 
-    if (memberType == QLatin1String("property")) {
-        _stateStack.pushProperty(QLatin1String("properties"), node->publicToken.startLine);
-
-        Object *obj = defineObjectBinding(node->identifierToken.startLine,
-                                          0,
-                                          QLatin1String("Property"));
-
-        _stateStack.pushObject(obj);
-
-        defineProperty(QLatin1String("name"), node->identifierToken.startLine, name);
-        if (node->expression) // default value
-            defineProperty(QLatin1String("value"), node->identifierToken.startLine, getPrimitive("value", node->expression));
-
-        _stateStack.pop(); // object
-        _stateStack.pop(); // properties
-
-    } else if (memberType == QLatin1String("signal")) {
-        _stateStack.pushProperty(QLatin1String("signals"), node->publicToken.startLine);
-
-        Object *obj = defineObjectBinding(node->identifierToken.startLine,
-                                          0,
-                                          QLatin1String("Signal"));
-
-        _stateStack.pushObject(obj);
-
-        defineProperty(QLatin1String("name"), node->identifierToken.startLine, name);
-
-        _stateStack.pop(); // object
-        _stateStack.pop(); // signals
+        _stateStack.top().object->dynamicSignals << signal;
     } else {
-        qWarning() << "bad public identifier" << memberType; // ### FIXME
+        const QString memberType = node->memberType->asString();
+        const QString name = node->name->asString();
+
+        const struct TypeNameToType {
+            const char *name;
+            Object::DynamicProperty::Type type;
+        } propTypeNameToTypes[] = {
+            { "int", Object::DynamicProperty::Int },
+            { "bool", Object::DynamicProperty::Bool },
+            { "double", Object::DynamicProperty::Real },
+            { "real", Object::DynamicProperty::Real },
+            { "string", Object::DynamicProperty::String },
+            { "color", Object::DynamicProperty::Color },
+            { "date", Object::DynamicProperty::Date },
+            { "var", Object::DynamicProperty::Variant },
+            { "variant", Object::DynamicProperty::Variant }
+        };
+        const int propTypeNameToTypesCount = sizeof(propTypeNameToTypes) / 
+                                             sizeof(propTypeNameToTypes[0]);
+
+        bool typeFound = false;
+        Object::DynamicProperty::Type type;
+        for(int ii = 0; !typeFound && ii < propTypeNameToTypesCount; ++ii) {
+            if(QLatin1String(propTypeNameToTypes[ii].name) == memberType) {
+                type = propTypeNameToTypes[ii].type;
+                typeFound = true;
+            }
+        }
+        
+        if(!typeFound) {
+            qWarning() << "Unknown property type" << memberType; // ### FIXME
+            return false;
+        }
+
+        Object::DynamicProperty property;
+        property.isDefaultProperty = node->isDefaultMember;
+        property.type = type;
+        property.name = name.toUtf8();
+
+        if (node->expression) { // default value
+            property.defaultValue = new Property;
+            Value *value = new Value;
+            value->primitive = getPrimitive("value", node->expression);
+            property.defaultValue->values << value;
+        }
+
+        _stateStack.top().object->dynamicProperties << property;
     }
 
-
-    // ### TODO drop initializer (unless some example needs differnet properties than name and type and value.
-
-    return false;
+    return true;
 }
 
 
