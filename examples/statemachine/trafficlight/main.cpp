@@ -151,6 +151,7 @@ public:
         QVBoxLayout *vbox = new QVBoxLayout(this);
         TrafficLightWidget *widget = new TrafficLightWidget();
         vbox->addWidget(widget);
+        vbox->setMargin(0);
 
         QStateMachine *machine = new QStateMachine(this);
         LightState *redGoingYellow = new LightState(widget->redLight(), 3000);
@@ -182,7 +183,7 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
 
     TrafficLight widget;
-    widget.resize(120, 300);
+    widget.resize(110, 300);
     widget.show();
 
     return app.exec();
