@@ -569,25 +569,13 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
     }
 
     int createInstrIdx = output->bytecode.count();
-    if (obj->type != -1 && output->types.at(obj->type).parser) {
-        QByteArray data = obj->custom;
-        int ref = output->indexForByteArray(data);
-
-        QmlInstruction create;
-        create.type = QmlInstruction::CreateCustomObject;
-        create.line = obj->line;
-        create.createCustom.type = obj->type;
-        create.createCustom.data = ref;
-        output->bytecode << create;
-    } else {
-        // Create the object
-        QmlInstruction create;
-        create.type = QmlInstruction::CreateObject;
-        create.line = obj->line;
-        create.create.data = -1;
-        create.create.type = obj->type;
-        output->bytecode << create;
-    }
+    // Create the object
+    QmlInstruction create;
+    create.type = QmlInstruction::CreateObject;
+    create.line = obj->line;
+    create.create.data = -1;
+    create.create.type = obj->type;
+    output->bytecode << create;
 
     COMPILE_CHECK(compileDynamicPropertiesAndSignals(obj));
 
