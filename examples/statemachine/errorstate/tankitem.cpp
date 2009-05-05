@@ -2,6 +2,7 @@
 
 #include <QPainter>
 #include <QGraphicsScene>
+#include <QDebug>
 
 #include <math.h>
 
@@ -38,11 +39,12 @@ public:
     {
         qreal dist = timeDelta * item()->speed() * (m_reverse ? -1.0 : 1.0);
 
+        bool done = false;        
+        if (qAbs(m_distance) < qAbs(dist)) {            
+            done = true;
+            dist = m_distance;
+        } 
         m_distance -= dist;
-        if (m_reverse && m_distance > 0.0)
-            return false;
-        else if (!m_reverse && m_distance < 0.0)
-            return false;
 
         qreal a = item()->direction() * M_PI / 180.0;
 
@@ -50,7 +52,7 @@ public:
         qreal xd = dist * sin(M_PI / 2.0 - a);
 
         item()->setPos(item()->pos() + QPointF(xd, yd));
-        return true;
+        return !done;
     }
 
 private:
@@ -70,14 +72,15 @@ public:
     bool apply(qreal timeDelta) 
     {
         qreal dist = timeDelta * item()->angularSpeed() * (m_reverse ? -1.0 : 1.0);
+        bool done = false;        
+        if (qAbs(m_distance) < qAbs(dist)) {
+            done = true;
+            dist = m_distance;
+        } 
         m_distance -= dist;
-        if (m_reverse && m_distance > 0.0)
-            return false;
-        else if (!m_reverse && m_distance < 0.0)
-            return false;
 
         item()->setDirection(item()->direction() + dist);
-        return true;
+        return !done;
     }
 
 private:
@@ -219,6 +222,9 @@ qreal TankItem::direction() const
 
 void TankItem::setDirection(qreal newDirection)
 {
+    int fullRotations = int(newDirection) / 360;    
+    newDirection -= fullRotations * 360.0;
+
     qreal diff = newDirection - m_currentDirection;
     m_currentDirection = newDirection;
     rotate(diff);
