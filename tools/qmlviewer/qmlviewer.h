@@ -33,6 +33,7 @@ public:
 
     void setRecordDither(const QString& s) { record_dither = s; }
     void setRecordPeriod(int ms);
+    void setRecordFile(const QString&);
     int recordPeriod() const { return record_period; }
     void setRecording(bool on);
     bool isRecording() const { return recordTimer.isActive(); }
@@ -62,6 +63,7 @@ private:
     QBasicTimer autoStartTimer;
     QTime autoTimer;
     QString record_dither;
+    QString record_file;
     int record_period;
     int record_autotime;
     bool devicemode;

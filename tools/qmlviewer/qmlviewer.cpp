@@ -210,6 +210,11 @@ void QmlViewer::setAutoRecord(int from, int to)
     }
 }
 
+void QmlViewer::setRecordFile(const QString& f)
+{
+    record_file = f;
+}
+
 void QmlViewer::setRecordPeriod(int ms)
 {
     record_period = ms;
@@ -238,7 +243,7 @@ void QmlViewer::keyPressEvent(QKeyEvent *event)
         exit(0);
     else if (event->key() == Qt::Key_F1 || (event->key() == Qt::Key_1 && devicemode)) {
         qDebug() << "F1 - help\n"
-                 << "F2 - toggle GIF recording\n"
+                 << "F2 - toggle video recording\n"
                  << "F3 - take PNG snapshot\n"
                  << "F4 - show items and state\n"
                  << "F5 - reload QML\n"
@@ -286,9 +291,21 @@ void QmlViewer::setRecording(bool on)
         QStringList inputs;
         qDebug() << "Saving frames...";
 
+        QString framename;
+        bool png_output = false;
+        if (record_file.right(4).toLower()==".png") {
+            if (record_file.contains('%'))
+                framename = record_file;
+            else
+                framename = record_file.left(record_file.length()-4)+"%04d"+record_file.right(4);
+            png_output = true;
+        } else {
+            framename = "tmp-frame%04d.png";
+            png_output = false;
+        }
         foreach (QImage* img, frames) {
             QString name;
-            name.sprintf("tmp-frame%04d.png",frame++);
+            name.sprintf(framename.toLocal8Bit(),frame++);
             if (record_dither=="ordered")
                 img->convertToFormat(QImage::Format_Indexed8,Qt::PreferDither|Qt::OrderedDither).save(name);
             else if (record_dither=="threshold")
@@ -296,27 +313,57 @@ void QmlViewer::setRecording(bool on)
             else if (record_dither=="floyd")
                 img->convertToFormat(QImage::Format_Indexed8,Qt::PreferDither).save(name);
             else
-                img->convertToFormat(QImage::Format_Indexed8).save(name);
+                img->save(name);
             inputs << name;
             delete img;
         }
-        QString output="animation.gif";
 
-        QStringList args;
-
-        args << "-delay" << QString::number(record_period/10);
-        args << inputs;
-        args << output;
-        qDebug() << "Converting..." << output;
-        if (0!=QProcess::execute("convert", args)) {
-            qWarning() << "Cannot run ImageMagick 'convert' - not converted to gif";
+        if (png_output) {
+            framename.replace(QRegExp("%\\d*."),"*");
+            qDebug() << "Wrote frames" << framename;
             inputs.clear(); // don't remove them
-            qDebug() << "Wrote frames tmp-frame*.png";
         } else {
-            qDebug() << "Compressing..." << output;
-            if (0!=QProcess::execute("gifsicle", QStringList() << "-O2" << "-o" << output << output))
-                qWarning() << "Cannot run 'gifsicle' - not compressed";
-            qDebug() << "Wrote" << output;
+            if (record_file.right(4).toLower()==".gif") {
+                // ImageMagick and gifsicle for GIF encoding
+                QStringList args;
+                args << "-delay" << QString::number(record_period/10);
+                args << inputs;
+                args << record_file;
+                qDebug() << "Converting..." << record_file;
+                if (0!=QProcess::execute("convert", args)) {
+                    qWarning() << "Cannot run ImageMagick 'convert' - recorded frames not converted";
+                    inputs.clear(); // don't remove them
+                    qDebug() << "Wrote frames tmp-frame*.png";
+                } else {
+                    if (record_file.right(4).toLower() == ".gif") {
+                        qDebug() << "Compressing..." << record_file;
+                        if (0!=QProcess::execute("gifsicle", QStringList() << "-O2" << "-o" << record_file << record_file))
+                            qWarning() << "Cannot run 'gifsicle' - not compressed";
+                    }
+                    qDebug() << "Wrote" << record_file;
+                }
+            } else {
+                // ffmpeg for other formats (eg. MPEG)
+
+                // Ensure no old file after end
+                QString name;
+                name.sprintf(framename.toLocal8Bit(),frame++);
+                QFile::remove(name);
+
+                QStringList args;
+                args << "-sameq"; // ie. high
+                args << "-y";
+                args << "-r" << QString::number(1000/record_period);
+                args << "-i" << framename;
+                args << "-s" << QString("%1x%2").arg(canvas->width()).arg(canvas->height());
+                args << record_file;
+                qDebug() << "Converting..." << record_file;
+                if (0!=QProcess::execute("ffmpeg", args)) {
+                    qWarning() << "Cannot run ffmpeg - recorded frames not converted";
+                    inputs.clear(); // don't remove them
+                    qDebug() << "Wrote frames tmp-frame*.png";
+                }
+            }
         }
 
         foreach (QString name, inputs)
