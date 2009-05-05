@@ -279,7 +279,7 @@ if [ "$COMMERCIAL_USER" = "ask" ]; then
         if [ "$commercial" = "c" ]; then
             COMMERCIAL_USER="yes"
             break
-        else [ "$commercial" = "o" ];
+        elif [ "$commercial" = "o" ]; then
             COMMERCIAL_USER="no"
             break
         fi
