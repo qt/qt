@@ -2549,13 +2549,16 @@ void QGraphicsScene::clearSelection()
 void QGraphicsScene::clear()
 {
     Q_D(QGraphicsScene);
+    QList<QGraphicsItem *> items;
     // Recursive descent delete
     for (int i = 0; i < d->index->indexedItems().size(); ++i) {
         if (QGraphicsItem *item = d->index->indexedItems().at(i)) {
             if (!item->parentItem())
-                delete item;
+                items << item;
         }
     }
+    //We delete all top level items
+    qDeleteAll(items);
     d->lastItemCount = 0;
     d->index->clear();
     d->largestUntransformableItem = QRectF();
@@ -2693,9 +2696,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     // Add the item to this scene
     item->d_func()->scene = targetScene;
 
-    // Indexing requires sceneBoundingRect(), but because \a item might
-    // not be completely constructed at this point, we need to store it in
-    // a temporary list and schedule an indexing for later.
+    // Add the item in the index
     d->index->insertItem(item);
 
     // Add to list of toplevels if this item is a toplevel.
