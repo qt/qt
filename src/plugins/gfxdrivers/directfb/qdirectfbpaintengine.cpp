@@ -80,7 +80,7 @@ template <typename T> inline const T *ptr(const T &t) { return &t; }
 template <> inline const bool* ptr<bool>(const bool &) { return 0; }
 template <typename device, typename T1, typename T2, typename T3>
 static void rasterFallbackWarn(const char *msg, const char *func, const device *dev,
-                               bool matrixScale, bool matrixRotShear, bool simplePen,
+                               QDirectFBPaintEnginePrivate::Scale scale, bool matrixRotShear, bool simplePen,
                                bool dfbHandledClip, bool forceRasterPrimitives,
                                const char *nameOne, const T1 &one,
                                const char *nameTwo, const T2 &two,
@@ -95,7 +95,7 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
         dbg << dev << "of type" << dev->devType();
     }
 
-    dbg << "matrixScale" << matrixScale
+    dbg << "scale" << scale
         << "matrixRotShear" << matrixRotShear
         << "simplePen" << simplePen
         << "dfbHandledClip" << dfbHandledClip
@@ -123,7 +123,7 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
     if (op & (QT_DIRECTFB_WARN_ON_RASTERFALLBACKS))                     \
         rasterFallbackWarn("Disabled raster engine operation",          \
                            __FUNCTION__, state()->painter->device(),    \
-                           d_func()->matrixScale, d_func()->matrixRotShear, \
+                           d_func()->scale, d_func()->matrixRotShear, \
                            d_func()->simplePen, d_func()->dfbCanHandleClip(), \
                            d_func()->forceRasterPrimitives,             \
                            #one, one, #two, two, #three, three);        \
@@ -138,7 +138,7 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
     if (op & (QT_DIRECTFB_WARN_ON_RASTERFALLBACKS))                     \
         rasterFallbackWarn("Falling back to raster engine for",         \
                            __FUNCTION__, state()->painter->device(),    \
-                           d_func()->matrixScale, d_func()->matrixRotShear, \
+                           d_func()->scale, d_func()->matrixRotShear, \
                            d_func()->simplePen, d_func()->dfbCanHandleClip(), \
                            d_func()->forceRasterPrimitives,             \
                            #one, one, #two, two, #three, three);
@@ -277,7 +277,7 @@ public:
     bool simplePen;
 
     bool matrixRotShear;
-    bool matrixScale;
+    enum Scale { NoScale, Scaled, NegativeScale } scale;
 
     void setTransform(const QTransform &m);
     void setPen(const QPen &pen);
@@ -342,7 +342,7 @@ private:
 
 QDirectFBPaintEnginePrivate::QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p)
     : surface(0), antialiased(false), forceRasterPrimitives(false), simplePen(false),
-      matrixRotShear(false), matrixScale(false), lastLockedHeight(-1),
+      matrixRotShear(false), scale(NoScale), lastLockedHeight(-1),
       fbWidth(-1), fbHeight(-1), opacity(255), drawFlagsFromCompositionMode(0),
       blitFlagsFromCompositionMode(0), porterDuffRule(DSPD_SRC_OVER), dirtyClip(true),
       dfbHandledClip(false), dfbDevice(0), q(p)
@@ -408,7 +408,13 @@ void QDirectFBPaintEnginePrivate::setTransform(const QTransform &m)
 {
     transform = m;
     matrixRotShear = (transform.m12() != 0 || transform.m21() != 0);
-    matrixScale = (transform.m11() != 1 || transform.m22() != 1);
+    if (qMin(transform.m11(), transform.m22()) < 0) {
+        scale = NegativeScale;
+    } else if (transform.m11() != 1 || transform.m22() != 1) {
+        scale = Scaled;
+    } else {
+        scale = NoScale;
+    }
 }
 
 void QDirectFBPaintEnginePrivate::begin(QPaintDevice *device)
@@ -458,7 +464,7 @@ void QDirectFBPaintEnginePrivate::setPen(const QPen &p)
                 (pen.style() == Qt::SolidLine
                  && !antialiased
                  && (pen.brush().style() == Qt::SolidPattern)
-                 && (pen.widthF() <= 1 && !matrixScale));
+                 && (pen.widthF() <= 1 && scale != NoScale));
 }
 
 void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode mode)
@@ -668,9 +674,9 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest,
     const QRect dr = transform.mapRect(dest).toRect();
     DFBResult result = DFB_OK;
 
-    if (!matrixScale && dr == QRect(0, 0, fbWidth, fbHeight)) {
+    if (scale == NoScale && dr == QRect(0, 0, fbWidth, fbHeight)) {
         result = surface->TileBlit(surface, s, 0, 0, 0);
-    } else if (!matrixScale) {
+    } else if (scale == NoScale) {
         const int dx = pixmap.width();
         const int dy = pixmap.height();
         const DFBRectangle rect = { 0, 0, dx, dy };
@@ -868,9 +874,9 @@ void QDirectFBPaintEngine::renderHintsChanged()
 void QDirectFBPaintEngine::transformChanged()
 {
     Q_D(QDirectFBPaintEngine);
-    const bool old = d->matrixScale;
+    const QDirectFBPaintEnginePrivate::Scale old = d->scale;
     d->setTransform(state()->transform());
-    if (d->matrixScale != old) {
+    if (d->scale != old) {
         d->setPen(state()->pen);
     }
     QRasterPaintEngine::transformChanged();
@@ -1008,6 +1014,7 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
 #ifndef QT_NO_DIRECTFB_PREALLOCATED
     d->updateClip();
     if (!d->dfbCanHandleClip(r) || d->matrixRotShear
+        || d->scale == QDirectFBPaintEnginePrivate::NegativeScale
         || QDirectFBScreen::getSurfacePixelFormat(image.format()) == DSPF_UNKNOWN)
 #endif
     {
@@ -1038,7 +1045,8 @@ void QDirectFBPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap,
         RASTERFALLBACK(DRAW_PIXMAP, r, pixmap.size(), sr);
         d->lock();
         QRasterPaintEngine::drawPixmap(r, pixmap, sr);
-    } else if (!d->dfbCanHandleClip(r) || d->matrixRotShear) {
+    } else if (!d->dfbCanHandleClip(r) || d->matrixRotShear
+               || d->scale == QDirectFBPaintEnginePrivate::NegativeScale) {
         RASTERFALLBACK(DRAW_PIXMAP, r, pixmap.size(), sr);
         const QImage *img = static_cast<QDirectFBPixmapData*>(pixmap.pixmapData())->buffer(DSLF_READ);
         d->lock();
@@ -1064,7 +1072,8 @@ void QDirectFBPaintEngine::drawTiledPixmap(const QRectF &r,
         RASTERFALLBACK(DRAW_TILED_PIXMAP, r, pixmap.size(), sp);
         d->lock();
         QRasterPaintEngine::drawTiledPixmap(r, pixmap, sp);
-    } else if (!d->dfbCanHandleClip(r) || d->matrixRotShear || !sp.isNull()) {
+    } else if (!d->dfbCanHandleClip(r) || d->matrixRotShear || !sp.isNull()
+               || d->scale == QDirectFBPaintEnginePrivate::NegativeScale) {
         RASTERFALLBACK(DRAW_TILED_PIXMAP, r, pixmap.size(), sp);
         const QImage *img = static_cast<QDirectFBPixmapData*>(pixmap.pixmapData())->buffer(DSLF_READ);
         d->lock();
