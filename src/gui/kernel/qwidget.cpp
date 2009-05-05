@@ -8478,8 +8478,8 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 
     This is only relevant for input widgets. It is used by
     the input method to retrieve hints as to how the input method
-    should operate. For example, if the Qt::ImhNumbersOnly flag is
-    set, the input method may change its visual components to reflect
+    should operate. For example, if the Qt::ImhFormattedNumbersOnly flag
+    is set, the input method may change its visual components to reflect
     that only numbers can be entered.
 
     \note The flags are only hints, so the particular input method
