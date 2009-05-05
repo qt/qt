@@ -1,6 +1,7 @@
 #include "gameitem.h"
 
 #include <QGraphicsScene>
+#include <QDebug>
 
 GameItem::GameItem(QObject *parent) : QObject(parent)
 {
@@ -56,15 +57,31 @@ QPointF GameItem::tryMove(const QPointF &requestedPosition, QLineF *collidedLine
         }
     }
 
+
     // Don't go outside of map
-    if (nextPoint.x() < sceneRect.left())
+    if (nextPoint.x() < sceneRect.left()) {
         nextPoint.rx() = sceneRect.left();
-    if (nextPoint.x() > sceneRect.right())
+        if (collidedLine != 0)
+            *collidedLine = QLineF(scene()->sceneRect().topLeft(), scene()->sceneRect().bottomLeft());
+    }
+    
+    if (nextPoint.x() > sceneRect.right()) {
         nextPoint.rx() = sceneRect.right();
-    if (nextPoint.y() < sceneRect.top())
+        if (collidedLine != 0)
+            *collidedLine = QLineF(scene()->sceneRect().topRight(), scene()->sceneRect().bottomRight());        
+    }
+    
+    if (nextPoint.y() < sceneRect.top()) {
         nextPoint.ry() = sceneRect.top();
-    if (nextPoint.y() > sceneRect.bottom())
+        if (collidedLine != 0)
+            *collidedLine = QLineF(scene()->sceneRect().topLeft(), scene()->sceneRect().topRight());
+    }
+    
+    if (nextPoint.y() > sceneRect.bottom()) {
         nextPoint.ry() = sceneRect.bottom();
+        if (collidedLine != 0)
+            *collidedLine = QLineF(scene()->sceneRect().bottomLeft(), scene()->sceneRect().bottomRight());
+    }
 
     return nextPoint;
 }
