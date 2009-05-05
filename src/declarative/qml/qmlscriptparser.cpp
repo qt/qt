@@ -522,7 +522,11 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
 {
     QmlParser::Object *obj = currentObject();
     if (! (obj && obj->typeName == "Script")) {
-        // ### warning
+        QmlError error;
+        error.setDescription("JavaScript declaration outside Script element");
+        error.setLine(node->firstSourceLocation().startLine);
+        error.setColumn(node->firstSourceLocation().startColumn);
+        _parser->_errors << error;
         return false;
     }
 
