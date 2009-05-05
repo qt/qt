@@ -33,6 +33,7 @@ public:
 
     void setRecordDither(const QString& s) { record_dither = s; }
     void setRecordPeriod(int ms);
+    void setRecordFile(const QString&);
     int recordPeriod() const { return record_period; }
     void setRecording(bool on);
     bool isRecording() const { return recordTimer.isActive(); }
@@ -59,9 +60,11 @@ private:
     void init(QFxTestEngine::TestMode, const QString &, const QString& fileName);
     QBasicTimer recordTimer;
     QList<QImage*> frames;
+    QIODevice* frame_stream;
     QBasicTimer autoStartTimer;
     QTime autoTimer;
     QString record_dither;
+    QString record_file;
     int record_period;
     int record_autotime;
     bool devicemode;
