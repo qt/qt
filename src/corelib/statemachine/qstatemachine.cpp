@@ -1019,13 +1019,6 @@ QStateMachinePrivate::initializeAnimation(QAbstractAnimation *abstractAnimation,
             && prop.object == animation->targetObject()
             && prop.propertyName == animation->propertyName()) {
 
-            if (!animation->startValue().isValid()) {
-                QByteArray propertyName = animation->propertyName();
-                QVariant currentValue = animation->targetObject()->property(propertyName);
-
-                QVariantAnimationPrivate::get(animation)->setDefaultStartValue(currentValue);
-            }
-
             // Only change end value if it is undefined
             if (!animation->endValue().isValid()) {
                 animation->setEndValue(prop.value);
