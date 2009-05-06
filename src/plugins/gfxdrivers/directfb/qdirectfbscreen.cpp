@@ -818,7 +818,7 @@ static const QByteArray flagDescriptions(uint mask, const FlagDescription *flags
 
 
 
-static void printDirectFBInfo(IDirectFB *fb)
+static void printDirectFBInfo(IDirectFB *fb, IDirectFBSurface *primarySurface)
 {
     DFBResult result;
     DFBGraphicsDeviceDescription dev;
@@ -829,10 +829,14 @@ static void printDirectFBInfo(IDirectFB *fb)
         return;
     }
 
-    qDebug("Device: %s (%s), Driver: %s v%i.%i (%s)\n"
+    DFBSurfacePixelFormat pixelFormat;
+    primarySurface->GetPixelFormat(primarySurface, &pixelFormat);
+
+    qDebug("Device: %s (%s), Driver: %s v%i.%i (%s) Pixelformat: %d (%d)\n"
            "acceleration: 0x%x%s\nblit: 0x%x%s\ndraw: 0x%0x%s\nvideo: %iKB\n",
            dev.name, dev.vendor, dev.driver.name, dev.driver.major,
-           dev.driver.minor, dev.driver.vendor, dev.acceleration_mask,
+           dev.driver.minor, dev.driver.vendor, DFB_PIXELFORMAT_INDEX(pixelFormat),
+           QDirectFBScreen::getImageFormat(primarySurface), dev.acceleration_mask,
            ::flagDescriptions(dev.acceleration_mask, accelerationDescriptions).constData(),
            dev.blitting_flags, ::flagDescriptions(dev.blitting_flags, blitDescriptions).constData(),
            dev.drawing_flags, ::flagDescriptions(dev.drawing_flags, drawDescriptions).constData(),
@@ -882,9 +886,6 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
                       result);
         return false;
     }
-
-    if (displayArgs.contains(QLatin1String("debug"), Qt::CaseInsensitive))
-        printDirectFBInfo(d_ptr->dfb);
 
     if (displayArgs.contains(QLatin1String("videoonly"), Qt::CaseInsensitive))
         d_ptr->directFBFlags |= VideoOnly;
@@ -951,6 +952,9 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
                       result);
         return false;
     }
+
+    if (displayArgs.contains(QLatin1String("debug"), Qt::CaseInsensitive))
+        printDirectFBInfo(d_ptr->dfb, d_ptr->dfbSurface);
 
     // Work out what format we're going to use for surfaces with an alpha channel
     d_ptr->alphaPixmapFormat = QDirectFBScreen::getImageFormat(d_ptr->dfbSurface);
