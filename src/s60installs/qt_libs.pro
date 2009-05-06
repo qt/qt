@@ -6,12 +6,7 @@ symbian: {
 
     SUBDIRS=
     TARGET = "QtLibs pre-release"
-    contains(QT_EDITION, OpenSource) {
-        # Can't use UID in protected range for self signed packages.
-        TARGET.UID3 = 0xE001E61C
-    } else {
-        TARGET.UID3 = 0x2001E61C
-    }
+    TARGET.UID3 = 0x2001E61C
     VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 
     qtresources.sources = $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/s60main.rsc 

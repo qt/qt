@@ -666,6 +666,8 @@ bool SymbianMakefileGenerator::writeMmpFile(QString &filename, QStringList &symb
 
         writeMmpFileCompilerOptionPart(t);
 
+        writeMmpFileBinaryVersionPart(t);
+
         writeMmpFileRulesPart(t);
     } else {
         return false;
@@ -944,6 +946,45 @@ bool SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t) {
     if (!armcc.isEmpty())
         t << "OPTION" << '\t' << " ARMCC "<< armcc <<  endl;
     // others to come
+
+    t <<  endl;
+    return true;
+}
+
+bool SymbianMakefileGenerator::writeMmpFileBinaryVersionPart(QTextStream& t) {
+    QString applicationVersion = project->first("VERSION");
+    QStringList verNumList = applicationVersion.split('.');
+    uint major = 0;
+    uint minor = 0;
+    uint patch = 0;
+    bool success = false;
+
+    if (verNumList.size() > 0) {
+        major = verNumList[0].toUInt(&success);
+        if (success && verNumList.size() > 1) {
+            minor = verNumList[1].toUInt(&success);
+            if (success && verNumList.size() > 2) {
+                patch = verNumList[2].toUInt(&success);
+            }
+        }
+    }
+
+    QString mmpVersion;
+    if (success && major <= 0xFFFF && minor <= 0xFF && patch <= 0xFF) {
+        // Symbian binary version only has major and minor components, so compress
+        // Qt's minor and patch values into the minor component. Since Symbian's minor
+        // component is a 16 bit value, only allow 8 bits for each to avoid overflow.
+        mmpVersion.append(QString::number(major))
+            .append('.')
+            .append(QString::number((minor << 8) + patch));
+    } else {
+        if (!applicationVersion.isEmpty())
+            fprintf(stderr, "Invalid VERSION string: %s\n", qPrintable(applicationVersion));
+        mmpVersion = "10.0"; // Default binary version for symbian is 10.0
+    }
+
+    t << "VERSION " << mmpVersion  << endl;
+
     return true;
 }
 

@@ -89,6 +89,7 @@ private:
 };
 
 const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
+    /* SP_QgnGrafBarWait */             {KAknsIIDQgnGrafBarWaitAnim,            EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_graf_bar_wait_1        ,-1,-1},
     /* SP_QgnGrafBarFrameCenter */      {KAknsIIDQgnGrafBarFrameCenter,         EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_graf_bar_frame_center  ,-1,-1},
     /* SP_QgnGrafBarFrameSideL */       {KAknsIIDQgnGrafBarFrameSideL,          EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_graf_bar_frame_side_l  ,-1,-1},
     /* SP_QgnGrafBarFrameSideR */       {KAknsIIDQgnGrafBarFrameSideR,          EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_graf_bar_frame_side_r  ,-1,-1},

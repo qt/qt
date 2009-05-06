@@ -571,12 +571,7 @@ template<typename T> T qvariant_cast(const QVariant &v)
         if (qvariant_cast_helper(v, QVariant::Type(vid), &t))
             return t;
     }
-#ifdef Q_CC_NOKIAX86
-    T t;
-    return t;
-#else
     return T();
-#endif
 }
 
 template<typename T>
