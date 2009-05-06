@@ -67,7 +67,7 @@ public:
     QGraphicsSceneIndex(QGraphicsScene *scene = 0);
     virtual ~QGraphicsSceneIndex();
 
-    QGraphicsScene* scene();
+    QGraphicsScene* scene() const;
 
     virtual void setRect(const QRectF &rect) = 0;
     virtual QRectF rect() const = 0;

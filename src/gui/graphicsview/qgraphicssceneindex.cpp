@@ -104,9 +104,9 @@ QGraphicsSceneIndex::~QGraphicsSceneIndex()
 */
 
 /*!
-    Returns the scene of this scene index.
+    Returns the scene of this index.
 */
-QGraphicsScene* QGraphicsSceneIndex::scene()
+QGraphicsScene* QGraphicsSceneIndex::scene() const
 {
      return m_scene;
 }
