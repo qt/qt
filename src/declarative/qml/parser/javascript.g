@@ -471,7 +471,7 @@ bool JavaScriptParser::parse(JavaScriptEnginePrivate *driver)
 -- Declarative UI
 --------------------------------------------------------------------------------------------------------
 
-UiProgram: UiImportListOpt UiObjectMemberList ;
+UiProgram: UiImportListOpt UiRootMember ;
 /.
 case $rule_number: {
   program = makeAstNode<AST::UiProgram> (driver->nodePool(), sym(1).UiImportList,
@@ -519,6 +519,13 @@ Empty: ;
 /.
 case $rule_number: {
     sym(1).Node = 0;
+} break;
+./
+
+UiRootMember: UiObjectDefinition ;
+/.
+case $rule_number: {
+    sym(1).Node = makeAstNode<AST::UiObjectMemberList> (driver->nodePool(), sym(1).UiObjectMember);
 } break;
 ./
 
@@ -587,9 +594,7 @@ case $rule_number: {
 }   break;
 ./
 
-UiArrayObjectMember: T_IDENTIFIER UiObjectInitializer ;
-/. case $rule_number: ./
-UiObjectMember: T_IDENTIFIER UiObjectInitializer ;
+UiObjectDefinition: T_IDENTIFIER UiObjectInitializer ;
 /.
 case $rule_number: {
     AST::UiObjectDefinition *node = makeAstNode<AST::UiObjectDefinition> (driver->nodePool(), sym(1).sval,
@@ -598,6 +603,9 @@ case $rule_number: {
     sym(1).Node = node;
 }   break;
 ./
+
+UiArrayObjectMember: UiObjectDefinition ;
+UiObjectMember: UiObjectDefinition ;
 
 UiArrayObjectMember: UiQualifiedId T_COLON T_LBRACKET UiArrayMemberList T_RBRACKET ;
 /. case $rule_number: ./
