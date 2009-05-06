@@ -2402,9 +2402,10 @@
     \value ImhUppercaseOnly          Only upper case letter input is allowed.
     \value ImhLowercaseOnly          Only lower case letter input is allowed.
     \value ImhNoAutoUppercase        The input method should not try to automatically switch to upper case
-                                     when a sentence ends.
+                                     at the beginning of a sentence.
     \value ImhPreferNumbers          Numbers are preferred (but not required). This can include only digits,
-                                     or all numbers, depending on which one of the \c ImhDigitsOnly and
+                                     phone numbers, or all numbers, depending on which one of the
+                                     \c ImhDigitsOnly, \c ImhDialableCharactersOnly and
                                      \c ImhFormattedNumbersOnly flags is given.
     \value ImhPreferUppercase        Upper case letters are preferred (but not required).
     \value ImhPreferLowercase        Lower case letters are preferred (but not required).
@@ -2414,6 +2415,8 @@
     \note If several flags ending with \c Only are ORed together, the resulting character set will
           consist of the union of the specified sets. For instance specifying \c ImhNumbersOnly and
           \c ImhUppercaseOnly would yield a set consisting of numbers and uppercase letters.
+
+    \note If several flags of the \c Prefer type are ORed together, the result is undefined.
 
     \sa QWidget::inputMethodHints
 */

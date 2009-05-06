@@ -8487,6 +8487,8 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
           sure that a certain type of characters are entered,
           you should also set a QValidator on the widget.
 
+    The default value is Qt::ImhNone.
+
     \since 4.6
 
     \sa inputMethodQuery(), QInputContext
