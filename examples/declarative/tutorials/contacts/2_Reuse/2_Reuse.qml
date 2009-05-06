@@ -17,10 +17,6 @@ Rect {
             label: "Loading: qml property"
         }
         GroupBox {
-            contents: "1b/ContactField.qml"
-            label: "Loading: added path"
-        }
-        GroupBox {
             contents: "2/ContactField.qml"
             label: "Using properties"
         }
@@ -28,12 +24,6 @@ Rect {
             id: prev
             contents: "3/ContactField.qml"
             label: "Defining signals"
-        }
-        Rect {
-            color: "black"
-            opacity: 0.3
-            width: prev.width
-            height: prev.height
         }
         GroupBox {
             contents: "3/Contact.qml"

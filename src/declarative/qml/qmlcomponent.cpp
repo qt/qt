@@ -462,6 +462,11 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
     QmlContext *ctxt = 
         new QmlContext(context, 0);
     static_cast<QmlContextPrivate*>(ctxt->d_ptr)->url = d->cc->url;
+    if(d->start != -1) {
+        // ### FIXME
+        static_cast<QmlContextPrivate*>(ctxt->d_ptr)->startLine = d->cc->bytecode.at(d->start - 1).line;
+        static_cast<QmlContextPrivate*>(ctxt->d_ptr)->endLine = d->cc->bytecode.at(d->start - 1).createComponent.endLine;
+    }
     ctxt->activate();
 
     QmlVME vme;

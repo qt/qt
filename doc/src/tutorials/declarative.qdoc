@@ -84,7 +84,6 @@
     \o \l{tutorials/declarative/contacts/part1}{Drawing and Animation}
     \o \l{tutorials/declarative/contacts/part2}{Reusing QML Components}
     \o \l{tutorials/declarative/contacts/part3}{Models, Views and Delegates}
-    \o \l{tutorials/declarative/contacts/part4}{Other Tricks}
     \endlist
 */
 
@@ -126,7 +125,7 @@
     some simple properties.  In QML all components start with a capital
     letter, and their properties with lower case letters.
     
-    Apart from the properties all QML components share, the \l{qml-rect}{Rect} component has the properties
+    Apart from the properties all QML components share, the \l{Rect}{Rect} component has the properties
 
     \list
     \o color - The background color of the rectangle
@@ -137,7 +136,7 @@
     \endlist
 
     There are also a number of properties all QML components shares, described
-    in the \l{qml-item}{Item} element reference documentation.  The rectangle drawn in the
+    in the \l{Item}{Item} element reference documentation.  The rectangle drawn in the
     above code uses the properties;
 
     \list
@@ -152,12 +151,12 @@
     \section1 Layout
 
     The next step of the tutorial adds an image over the rectangle.  We
-    will do this by adding an \l{qml-image}{Image} component as a child of the
-    \l{qml-rect}{Rect} component.  All QML components have a list of children which
+    will do this by adding an \l{Image}{Image} component as a child of the
+    \l{Rect}{Rect} component.  All QML components have a list of children which
     are drawn in order after the parent component has been drawn.
-    By having the \l{qml-image}{Image}
-    component as a child of the \l{qml-rect}{Rect} component we ensure it is drawn
-    over the \l{qml-rect}{Rect} component.  Children also are affected by the opacity
+    By having the \l{Image}{Image}
+    component as a child of the \l{Rect}{Rect} component we ensure it is drawn
+    over the \l{Rect}{Rect} component.  Children also are affected by the opacity
     of the parent component and calculate their position in within the bounds of
     the parent component.
 
@@ -167,27 +166,27 @@
 
     The trashIcon image is added as a child of the Rectangle.  In this case
     the children property isn't explicitly used because the default property
-    of the \l{qml-rect}{Rect} component is its children.  Some elements often don't have children
+    of the \l{Rect}{Rect} component is its children.  Some elements often don't have children
     and use some other default component.  When this is the case its possible
     to explicitly list the sub component as a child as follows:
 
     \snippet declarative/tutorials/contacts/1_Drawing_and_Animation/2a/RemoveButton.qml 0
 
-    The \l{qml-image}{Image} element allows loading an image file for display.  The source
+    The \l{Image}{Image} element allows loading an image file for display.  The source
     specified is a URL, and in this case refers to a portable network graphics
     file in a relative directory to where the QML file was loaded from.
 
     Also new in this code is the use of anchors.  In QML components can either
     have their position and size specified explicitly using x, y, width
     and height, or they can instead specify the size and position in relation
-    to either parent or sibling elements.  The \l{qml-image}{Image} component uses
+    to either parent or sibling elements.  The \l{Image}{Image} component uses
     a combination of both styles.  It has a fixed size, but specifies its
     position to align to the right of its parent and for its vertical center
     to align with the vertical center of its parent.  Setting a property
     by the identifier of a separate property binds them.  This means
-    that if while running the example the position of the \l{qml-rect}{Rect} component's
+    that if while running the example the position of the \l{Rect}{Rect} component's
     vertical center changed, so to would the vertical center of
-    the \l{qml-image}{Image} component.
+    the \l{Image}{Image} component.
 
     The parent value is a special identifier that always refers to the
     parent component of a component.
@@ -216,7 +215,7 @@
     understand the alternate state we are aiming for and how it relates to
     transitioning between states.
 
-    We also introduce the \l{qml-text}{Text} element.
+    We also introduce the \l{Text}{Text} element.
     Left and Right anchors are specified in terms of the neighboring icons
     because we want text to fill the space between the icons.  This
     means as the parent removeButton gets wider, so will the text component.
@@ -322,7 +321,7 @@
 
     Any QML component can have a set of resources specified.  One of those
     resources is any Script that might be needed.   See the
-    \l{qtscript}{QtScript Module} for more information on how to write
+    \l{QtScript Module} for more information on how to write
     script code in Qt.
 
     It is possible to refer to identified QML components
@@ -406,7 +405,7 @@
 
     This can be useful when the component is not complex enough to justify its
     own file.  The third way to reuse components allows for delaying loading
-    of the QML until some later event.  Each \l{qml-item}{Item} includes
+    of the QML until some later event.  Each \l{Item}{Item} includes
     a special child, qmlItem, which has its definition provided by the
     contents of the qml property of its parent.
 
@@ -542,7 +541,6 @@
     \page tutorials-declarative-contacts-part3.html
     \contentspage {Declarative UI Tutorial}{Contents}
     \previouspage {tutorials/declarative/contacts/part2}{Chapter 2}
-    \nextpage {tutorials/declarative/contacts/part4}{Chapter 4}
     \example tutorials/declarative/contacts/part3
     \title Models, Views and Delegates
     \tableofcontents
@@ -553,13 +551,15 @@
 
     As the previous elements will not be changed in this section, they have
     been moved to a lib directory for this tutorial and the relevant
-    name space path has been used.
+    import path has been used.
 
     \section1 Simple List View
 
     Displaying lists requires three components.  A model that holds the
     data displayed, a delegate to indicate how elements are drawn and
     a view to arrange the elements.
+
+    \image declarative-tutorial-list.png
 
     For the purposes of this tutorial we will be using an SQL query as our
     data model.  This can be declared in the resources section of
@@ -579,24 +579,22 @@
     and orders the results by the label of the contact first, and then by 
     the recid for any contacts with equivalent labels.
 
-    The ListView component is suitable for displaying models, and is declared
-    much like any other QML component.  However since it might have any number
-    of child items in the list, it has a property that defines how to construct
-    components for items when displayed.
+    The ListView component is suitable for displaying models and is declared
+    much like any other QML component.  The ListView component also has
+    a delegate property that defines how to construct components for items in the list.
 
     \snippet declarative/tutorials/contacts/3_Collections/1/ContactView.qml delegate
 
     Unlike a child element, this describes a template on how to build the component
     for each element, much in the same way that components are loaded from
-    files such as RemoveButton.qml.
+    files such as RemoveButton.qml.  The are constructed or destroyed as items
+    scroll into our out of the visible area of the list.
 
     The entire view component will look like:
 
     \snippet declarative/tutorials/contacts/3_Collections/1/ContactView.qml view
 
     This gives us a list of contacts that the user can flick through.
-
-    .image.
 
     \section1 Animating Delegates
 
@@ -605,6 +603,9 @@
     in the list rather than as a new dialog or view.  This is very
     similar to how the contents of the FieldText and RemoveButton components
     are swapped in and out.
+
+    \image declarative-tutorial-list-closed.png
+    \image declarative-tutorial-list-open.png
 
     \snippet declarative/tutorials/contacts/3_Collections/2/ContactView.qml components
 
@@ -619,9 +620,8 @@
     component to that of the whole list view, pushing the other items off each end of
     the list.  It sets the lists views scroll yPosition of the ListView to the
     y value of the delegate so that the top of the delegate matches the top of the list view.
-    The next step is to lock the list view.  This prevents  the user being able to flick
-    the list view, meaning while in this state the delegate will continue to
-    fill the ListView's visible area.  The final to properties that are set should
+    The next step is to lock the list view.  This prevents the user being able to flick
+    the list view. The final to properties that are set should
     be familiar from previous chapters, setting the opacity of the items such
     that the new item is visible and the old item hidden.
 
@@ -629,12 +629,9 @@
 
     \snippet declarative/tutorials/contacts/3_Collections/2/ContactView.qml transitions
 
-    This allows the user to click on an item to enter the open state.
+    This allows the user to click on an item to enter the open state.  Elsewhere on our
+    contact view we add a button so that the user can leave the detailed view of the contact.
 
-    .image.
-
-    Elsewhere on our contact view we add a button so that the user can leave the
-    detailed view of the contact.
     \snippet declarative/tutorials/contacts/3_Collections/2/ContactView.qml button
 
     And connect it's clicked value to some script to set the state of the delegate
@@ -654,27 +651,27 @@
     and while the list cleans up after itself and only has delegate components constructed
     for visible items and any single point of animation, the list can scroll very quickly.
     This means potentially thousands of delegate components will be constructed and
-    destroyed when the user is flipping through the list.
+    destroyed when the user is flicking through the list.
 
     Its important then to try and minimize the complexity of the delegate.  This
     can be done by delaying the loading of the component.  By using the qml property
-    of the \l{qml-item}{Item} component, we can delay building the Contact.qml item until the user
+    of the \l{Item}{Item} component, we can delay building the Contact.qml item until the user
     attempts to open the list.
 
     \snippet declarative/tutorials/contacts/3_Collections/3/ContactView.qml setting qml
 
     Each item has a qml property that represents the filename for the contents of
-    a special qmlItem child of the \l{qml-item}{Item}.  By setting the qml property of the Details
+    a special qmlItem child of the \l{Item}{Item}.  By setting the qml property of the Details
     component on clicking the mouse region, the more complex component isn't loaded
     until needed.  The down side about this though is the properties of Contact
-    cannot be set until the item is loaded.  This requires using the Bind
-    properties of an item.
+    cannot be set until the item is loaded.  This requires using the Bind element.
+
 
     \snippet declarative/tutorials/contacts/3_Collections/3/ContactView.qml binding
 
-    The Bind properties bind a value to another component, however the target of
-    this binding can be changed, unlike when setting the properties of a component
-    directly.  This means that when the qml property is set, it will change the
+    Unlike binding a value to the property of a component directly, the Bind element
+    allows both the target and the property set to themselves be to dynamic values.
+    This means that when the qml property is set, it will change the
     qmlItem property of the Details component.  This in turn triggers the Bind
     elements to set the required properties of the qmlItem, which is now
     an instance of the Contact component.

@@ -53,7 +53,7 @@
 QT_BEGIN_NAMESPACE
 
 QmlContextPrivate::QmlContextPrivate()
-    : parent(0), engine(0), highPriorityCount(0)
+    : parent(0), engine(0), highPriorityCount(0), startLine(-1), endLine(-1)
 {
 }
 
@@ -136,7 +136,7 @@ void QmlContextPrivate::addDefaultObject(QObject *object, Priority priority)
     QmlContext context(engine.rootContext());
     context.setContextProperty("myModel", modelData);
 
-    QmlComponent component("<ListView model=\"{myModel}\" />");
+    QmlComponent component("ListView { model=myModel }");
     component.create(&context);
     \endcode
 
@@ -163,7 +163,7 @@ void QmlContextPrivate::addDefaultObject(QObject *object, Priority priority)
     QmlContext context(engine.rootContext());
     context.addDefaultObject(&myDataSet);
 
-    QmlComponent component("<ListView model=\"{myModel}\" />");
+    QmlComponent component("ListView { model=myModel }");
     component.create(&context);
     \endcode
 

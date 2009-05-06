@@ -60,6 +60,7 @@
 #include <qmlmetatype.h>
 #include <QtCore/qdebug.h>
 #include "private/qmlcustomparser_p_p.h"
+#include <private/qmlcontext_p.h>
 
 #include "qmlscriptparser_p.h"
 
@@ -675,6 +676,7 @@ bool QmlCompiler::compileComponentFromRoot(Object *obj, int ctxt)
     QmlInstruction &create = output->bytecode.last();
     create.type = QmlInstruction::CreateComponent;
     create.line = obj->line;
+    create.createComponent.endLine = obj->endLine;
     int count = output->bytecode.count();
 
     QmlInstruction init;
@@ -1468,7 +1470,12 @@ QObject *QmlCompiledData::TypeReference::createInstance(QmlContext *ctxt) const
             QmlEngine::setContextForObject(rv, ctxt);
         return rv;
     } else if (component) {
-        return component->create(ctxt);
+        QObject *rv = component->create(ctxt);
+        QmlContext *ctxt = qmlContext(rv);
+        if(ctxt) {
+            static_cast<QmlContextPrivate *>(QObjectPrivate::get(ctxt))->typeName = className;
+        }
+        return rv;
     } else {
         return 0;
     }
