@@ -45,10 +45,8 @@
 #include <QByteArray>
 #include <QList>
 #include <qml.h>
-#include "qmlcomponent_p.h"
 #include <private/qmlrefcount_p.h>
-#include "qmlcompiledcomponent_p.h"
-
+#include <private/qobject_p.h>
 
 QT_BEGIN_HEADER
 

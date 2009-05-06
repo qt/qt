@@ -136,6 +136,22 @@ int QmlCompiledData::indexForInt(int *data, int count)
     return idx;
 }
 
+int QmlCompiledData::indexForLocation(const QmlParser::Location &l)
+{
+    // ### FIXME
+    int rv = locations.count();
+    locations << l;
+    return rv;
+}
+
+int QmlCompiledData::indexForLocation(const QmlParser::LocationSpan &l)
+{
+    // ### FIXME
+    int rv = locations.count();
+    locations << l.start << l.end;
+    return rv;
+}
+
 QmlCompiler::QmlCompiler()
 : exceptionLine(-1), exceptionColumn(-1), output(0)
 {
