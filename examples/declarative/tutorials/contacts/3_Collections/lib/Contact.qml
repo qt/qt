@@ -1,22 +1,16 @@
 Item {
     id: contactDetails
     anchors.fill: parent
-    properties: Property {
-        name: "contactid"
-        value: ""
-    }
-    properties: Property {
-        name: "label"
-        onValueChanged: { labelField.value = label }
-    }
-    properties: Property {
-        name: "phone"
-        onValueChanged: { phoneField.value = phone }
-    }
-    properties: Property {
-        name: "email"
-        onValueChanged: { emailField.value = email }
-    }
+
+    property var contactId: ""
+    property var label: ""
+    property var phone: ""
+    property var email: ""
+
+    onLabelChanged: { labelField.value = label }
+    onEmailChanged: { emailField.value = email }
+    onPhoneChanged: { phoneField.value = phone }
+
     VerticalLayout {
         id: layout
         anchors.fill: parent

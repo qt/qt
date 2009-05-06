@@ -2,12 +2,10 @@ FocusRealm {
     id: groupBox
     width: Math.max(270, subItem.width+40)
     height: Math.max(70, subItem.height+40)
-    properties: Property {
-        name: "contents"
-    }
-    properties: Property {
-        name: "label"
-    }
+
+    property var contents
+    property var label
+
     Rect {
         id: wrapper
         x: 5
