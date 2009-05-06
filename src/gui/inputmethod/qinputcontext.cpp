@@ -476,7 +476,7 @@ bool QInputContext::x11FilterEvent(QWidget * /*keywidget*/, XEvent * /*event*/)
     This function may be overridden only if input method is depending
     on Symbian and you need raw TWsEvent. Otherwise, this function must not.
 
-    This function is designed to filter raw key events for XIM, but
+    This function is designed to filter raw key events on S60, but
     other input methods may use this to implement some special
     features.
 
