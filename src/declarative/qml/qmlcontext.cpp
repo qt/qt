@@ -53,7 +53,7 @@
 QT_BEGIN_NAMESPACE
 
 QmlContextPrivate::QmlContextPrivate()
-    : parent(0), engine(0), highPriorityCount(0)
+    : parent(0), engine(0), highPriorityCount(0), startLine(-1), endLine(-1)
 {
 }
 

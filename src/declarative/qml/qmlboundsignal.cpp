@@ -99,6 +99,7 @@ QmlBoundSignalParameters::QmlBoundSignalParameters(const QMetaMethod &method,
     // ### Ensure only supported types are allowed, otherwise it might crash
     QMetaObjectBuilder mob;
     mob.setSuperClass(&QmlBoundSignalParameters::staticMetaObject);
+    mob.setClassName("QmlBoundSignalParameters");
 
     QList<QByteArray> paramTypes = method.parameterTypes();
     QList<QByteArray> paramNames = method.parameterNames();

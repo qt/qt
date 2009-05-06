@@ -21,5 +21,6 @@ include(timeline/timeline.pri)
 include(extra/extra.pri)
 include(widgets/widgets.pri)
 include(test/test.pri)
+include(debugger/debugger.pri)
 
 contains(QT_CONFIG, opengles2)|contains(QT_CONFIG, opengles1):include(opengl/opengl.pri)
