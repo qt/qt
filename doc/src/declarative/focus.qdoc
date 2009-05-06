@@ -17,14 +17,15 @@ When the user presses or releases a key, the following occurs:
 \o The key event is delivered by the scene to the fluid UI \l Item with \e {active focus}.  If no fluid UI \l Item has \e {active focus}, the key event is \l {QEvent::ignore()}{ignored} and regular Qt key handling continues.
 \o If the fluid UI \l Item with \e {active focus} accepts the key event, propagation stops.  Otherwise the event is "bubbled up", by recursively passing it to each \l Item's parent until either the event is accepted, or the root \l Item is reached.
 
-If the \c {<Rect/>} element in the following example has active focus and the \e A key is pressed, it will bubble up to the \c {<KeyActions/>}.  However, pressing the \e B key will bubble up to the root item and thus subsequently be \l {QEvent::ignore()}{ignored}.
+If the \c {Rect} element in the following example has active focus and the \e A key is pressed, it will bubble up to the \c {KeyActions}.  However, pressing the \e B key will bubble up to the root item and thus subsequently be \l {QEvent::ignore()}{ignored}.
 
 \code
-<Item>
-    <KeyActions keyA="print('Key A was pressed')">
-        <Rect />
-    </KeyActions>
-</Item>
+Item {
+    KeyActions {
+        keyA: "print('Key A was pressed')"
+        Rect {}
+    }
+}
 \endcode
 
 \o If the root \l Item is reached, the key event is \l {QEvent::ignore()}{ignored} and regular Qt key handling continues.
@@ -38,9 +39,9 @@ read-only property \c {Item::activeFocus}.  For example, here we have a \l Text
 element whose text is determined by whether or not it has \e {active focus}.
 
 \code
-<Text>
-    <text>{activeFocus?"I have active focus!":"I do not have active focus"}</text>
-</Text>
+Text {
+    text: activeFocus ? "I have active focus!" : "I do not have active focus"
+}
 \endcode
 
 \section1 Acquiring Focus and Focus Realms
@@ -55,14 +56,16 @@ the \c {<KeyActions/>} element has \e {active focus} and pressing the
 \table
 \row
 \o \code
-    <Rect color="lightsteelblue" width="240" height="25">
-        <Text id="MyText" />
-        <KeyActions focus="true">
-            <keyA>MyText.text = "Key A was pressed"</keyA>
-            <keyB>MyText.text = "Key B was pressed"</keyB>
-            <keyC>MyText.text = "Key C was pressed"</keyC>
-        </KeyActions>
-    </Rect>
+    Rect {
+        color: "lightsteelblue"; width: 240; height: 25
+        Text { id: MyText }
+        KeyActions {
+            focus: true
+            keyA: "MyText.text = 'Key A was pressed'"
+            keyB: "MyText.text = 'Key B was pressed'"
+            keyC: "MyText.text = 'Key C was pressed'"
+        }
+    }
 \endcode
 \o \image declarative-qmlfocus1.png
 \endtable
@@ -78,34 +81,42 @@ reponds accordingly.
 \table
 \row
 \o \code
-<Rect color="red" width="240" height="55">
-    <MyWidget />
-    <MyWidget y="30" focus="true"/>
-</Rect>
+Rect {
+    color: "red"; width: 240; height: 55
+    MyWidget {}
+    MyWidget { y: 30; focus: true }
+}
 \endcode
 \o \code
-<Rect color="red" width="240" height="55">
-    <Rect color="lightsteelblue" width="240" height="25">
-        <Text id="MyText" />
-        <KeyActions focus="true">
-            <keyA>MyText.text = "Key A was pressed"</keyA>
-            <keyB>MyText.text = "Key B was pressed"</keyB>
-            <keyC>MyText.text = "Key C was pressed"</keyC>
-        </KeyActions>
-    </Rect>
-    <Rect y="30" focus="true" color="lightsteelblue" width="240" height="25">
-        <Text id="MyText" />
-        <KeyActions focus="true">
-            <keyA>MyText.text = "Key A was pressed"</keyA>
-            <keyB>MyText.text = "Key B was pressed"</keyB>
-            <keyC>MyText.text = "Key C was pressed"</keyC>
-        </KeyActions>
-    </Rect>
+Rect {
+    color: "red"; width: 240; height: 55
+    Rect {
+        color: "lightsteelblue"; width: 240; height: 25
+        Text { id: MyText }
+        KeyActions {
+            focus: true
+            keyA: "MyText.text = 'Key A was pressed'"
+            keyB: "MyText.text = 'Key B was pressed'"
+            keyC: "MyText.text = 'Key C was pressed'"
+        }
+    }
+    Rect {
+        y: 30; focus: true
+        color: "lightsteelblue"; width: 240; height: 25
+        Text { id: MyText }
+        KeyActions {
+            focus: true
+            keyA: "MyText.text = 'Key A was pressed'"
+            keyB: "MyText.text = 'Key B was pressed'"
+            keyC: "MyText.text = 'Key C was pressed'"
+        }
+    }
+}
 \endcode
 \endtable
 
 The right hand side of the example shows the expanded code - the equivalent QML
-without the use of the component \c {<MyWidget/>}.  From this, the problem is
+without the use of the component \c {MyWidget}.  From this, the problem is
 evident - there are no less than three elements that have the \c {Item::focus} 
 property set to true.  Ultimately only one element can have focus, and the 
 system has to decide which on.  In this case the first appearance of the 
@@ -113,12 +124,12 @@ system has to decide which on.  In this case the first appearance of the
 of \c {Item::focus} in the other two instances is reverted back to false.  This
 is exactly the opposite of what was wanted!
 
-This problem is fundamentally one of visibility.  The \c {<MyWidget/>} 
-components each set their \c {<KeyActions/>} as focused as that is all they can
+This problem is fundamentally one of visibility.  The \c {MyWidget} 
+components each set their \c {KeyActions} as focused as that is all they can
 do - they don't know how they are going to be used, but they do know that when
-they're in use their \c {<KeyActions/>} element is what needs focus.  Likewise
-the code that uses the \c {<MyWidget/>}'s sets the second \c {<MyWidget/>} as
-focused because, while it doesn't know exactly how the \c {<MyWidget/>} is 
+they're in use their \c {KeyActions} element is what needs focus.  Likewise
+the code that uses the \c {MyWidget}'s sets the second \c {MyWidget} as
+focused because, while it doesn't know exactly how the \c {MyWidget} is 
 implemented, it knows that it wants the second one to be focused.  No one piece
 of code knows everything about the other, which is exactly how it should be.
 
@@ -134,16 +145,19 @@ result shown.
 \table
 \row
 \o \code
-<FocusRealm width="240" height="25">
-    <Rect color="lightsteelblue" width="240" height="25">
-        <Text id="MyText" />
-        <KeyActions focus="true">
-            <keyA>MyText.text = "Key A was pressed"</keyA>
-            <keyB>MyText.text = "Key B was pressed"</keyB>
-            <keyC>MyText.text = "Key C was pressed"</keyC>
-        </KeyActions>
-    </Rect>
-</FocusRealm>
+FocusRealm {
+    width: 240; height: 25
+    Rect {
+        color: "lightsteelblue"; width: 240; height: 25
+        Text { id: MyText }
+        KeyActions {
+            focus: true
+            keyA: "MyText.text = 'Key A was pressed'"
+            keyB: "MyText.text = 'Key B was pressed'"
+            keyC: "MyText.text = 'Key C was pressed'"
+        }
+    }
+}
 \endcode
 \o \image declarative-qmlfocus2.png
 \endtable
@@ -164,16 +178,18 @@ then on clicking the either one gives it focus.
 \table
 \row 
 \o \code
-<Rect color="red" width="240" height="55">
-    <MyClickableWidget />
-    <MyClickableWidget y="30" focus="true"/>
-</Rect>
+Rect {
+    color: "red"; width: 240; height: 55
+    MyClickableWidget {}
+    MyClickableWidget { y: 30; focus: true }
+}
 \endcode
 \o \code
-<FocusRealm id="Page" width="240" height="25">
-    <MyWidget focus="true" />
-    <MouseRegion anchors.fill="{parent}" onClick="Page.focus = true" />
-</FocusRealm>
+FocusRealm {
+    id: Page; width: 240; height: 25
+    MyWidget { focus: true }
+    MouseRegion { anchors.fill: parent; onClicked: { Page.focus = true } }
+}
 \endcode
 \endtable
 
@@ -201,25 +217,23 @@ print the name of the current list item.
 \table
 \row
 \o \code
-<Rect color="lightsteelblue" width="240" height="320">
+Rect {
+    color: "lightsteelblue"; width: 240; height: 320
 
-    <ListView id="MyView" anchors.fill="{parent}" focus="true">
-        <model>
-            <ListModel>
-                <Row><name>Bob</name></Row>
-                <Row><name>John</name></Row>
-                <Row><name>Michael</name></Row>
-            </ListModel>
-        </model>
-        <delegate>
-            <FocusRealm width="{contents.width}" height="{contents.height}">
-                <Text text="{name}" />
-                <KeyActions return="print(name)" focus="true" />
-            </FocusRealm>
-        </delegate>
-    </ListView>
-
-</Rect>
+    ListView {
+        id: MyView; anchors.fill: parent; focus: true
+        model: ListModel {
+            ListElement { name: "Bob" }
+            ListElement { name: "John" }
+            ListElement { name: "Michael" }
+        }
+        delegate: FocusRealm {
+            width: contents.width; height: contents.height
+            Text { text: name }
+            KeyActions { return: "print(name)"; focus: true }
+        }
+    }
+}
 \endcode
 \o \image declarative-qmlfocus4.png
 \endtable

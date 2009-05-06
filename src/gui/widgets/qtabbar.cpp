@@ -176,12 +176,11 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
         if (tw->cornerWidget(Qt::TopRightCorner) || tw->cornerWidget(Qt::BottomRightCorner))
             option->cornerWidgets |= QStyleOptionTab::RightCornerWidget;
     }
+#endif
 
     QRect textRect = style()->subElementRect(QStyle::SE_TabBarTabText, option, this);
-
     option->text = fontMetrics().elidedText(option->text, d->elideMode, textRect.width(),
                         Qt::TextShowMnemonic);
-#endif
 }
 
 /*!

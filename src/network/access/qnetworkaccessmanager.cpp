@@ -477,7 +477,8 @@ void QNetworkAccessManager::setCache(QAbstractNetworkCache *cache)
     if (d->networkCache != cache) {
         delete d->networkCache;
         d->networkCache = cache;
-        d->networkCache->setParent(this);
+        if (d->networkCache)
+            d->networkCache->setParent(this);
     }
 }
 

@@ -264,7 +264,7 @@ QmlComponent::QmlComponent(QmlEngine *engine, const QUrl &url, QObject *parent)
 
 /*!
     Create a QmlComponent from the given QML \a data and give it the
-    specified \a parent.  If \a url is provided, it is used to set
+    specified \a parent and \a engine.  If \a url is provided, it is used to set
     the component name, and to provide a base path for items resolved
     by this component.
 

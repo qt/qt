@@ -97,7 +97,10 @@ The following table lists the Qml elements provided by the Qt Declarative module
 \o
 \list
 \o \l Repeater
-\o \l Content
+\o \l ContentWrapper
+    \list
+    \o \l Content
+    \endlist
 \o \l ComponentInstance
 \o \l WidgetContainer
 \endlist

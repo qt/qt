@@ -5,8 +5,8 @@
 
 \section1 Making a C++ object available in QML
 
-In QML, XML tags and attributes correspond to Qt objects and properties. Thus, any Qt object
-can potentially be used as an element in QML. More specifically, to make an object available in QML,
+In QML, the item types and properties correspond to Qt objects and properties. Thus, any Qt object
+can potentially be used as an item in QML. More specifically, to make an object available in QML,
 it should:
 \list
 \o Be a subclass of QObject.

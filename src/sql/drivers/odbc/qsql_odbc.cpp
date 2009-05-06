@@ -70,17 +70,14 @@ QT_BEGIN_NAMESPACE
 #endif
 
 // newer platform SDKs use SQLLEN instead of SQLINTEGER
-#if defined(SQLLEN) || defined(Q_OS_WIN64)
-# define QSQLLEN SQLLEN
-#else
+#if defined(WIN32) && (_MSC_VER < 1300)
 # define QSQLLEN SQLINTEGER
+# define QSQLULEN SQLUINTEGER
+#else
+# define QSQLLEN SQLLEN
+# define QSQLULEN SQLULEN
 #endif
 
-#if defined(SQLULEN) || defined(Q_OS_WIN64)
-# define QSQLULEN SQLULEN
-#else
-# define QSQLULEN SQLUINTEGER
-#endif
 
 static const int COLNAMESIZE = 256;
 //Map Qt parameter types to ODBC types

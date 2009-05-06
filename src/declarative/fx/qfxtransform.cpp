@@ -92,8 +92,10 @@ void QFxTransform::update()
     (and thus many different sets of two points could define the same axis), the distance
     between the points does matter for translation along an axis.
 
+    \image 3d-axis.png
+
     \qml
-    Axis { startX: 0; startY: 0; endX: 20; endY: 30 }
+    Axis { startX: 20; startY: 0; endX: 40; endY: 60; endZ: 20 }
     \endqml
 */
 
@@ -209,6 +211,8 @@ QFxRotation3D::~QFxRotation3D()
     A rotation axis is specified by 2 points in 3D space: a start point and
     an end point. The z-position of the start point is assumed to be 0, and cannot
     be changed.
+
+    \image 3d-rotation-axis.png
 
     \sa Axis
 */
@@ -508,7 +512,12 @@ QMatrix4x4 QFxPerspective::transform() const
 
 /*!
     \qmlclass Squish
-    \brief A Squish object allows you to distort an items appearance by 'squishing' it.
+    \brief A Squish object allows you to distort an item's appearance by 'squishing' it.
+
+    Conceptually, a Squish works by allowing you to move the four corners of an item,
+    and distorting the item to fit into the newly created polygon.
+
+    \image squish-transform.png
 
     Here is an example of various \l Image squishes.
     \qml

@@ -72,12 +72,12 @@
 #include "qdebug.h"
 #include "qtabwidget.h"
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 #include "qt_windows.h"
 #include "qguifunctions_wince.h"
 extern bool qt_wince_is_high_dpi();   //defined in qguifunctions_wince.cpp
 extern bool qt_wince_is_smartphone(); //defined in qguifunctions_wince.cpp
-#endif // Q_OS_WINCE
+#endif // Q_WS_WINCE
 
 QT_BEGIN_NAMESPACE
 
@@ -685,13 +685,13 @@ QWindowsMobileStyle::QWindowsMobileStyle() : QWindowsStyle(*new QWindowsMobileSt
 
 QWindowsMobileStylePrivate::QWindowsMobileStylePrivate() :QWindowsStylePrivate() {
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
    doubleControls = qt_wince_is_high_dpi();
    smartphone = qt_wince_is_smartphone();
 #else
    doubleControls = false;
    smartphone = false;
-#endif //Q_OS_WINCE
+#endif //Q_WS_WINCE
 
 #ifndef QT_NO_IMAGEFORMAT_XPM
 

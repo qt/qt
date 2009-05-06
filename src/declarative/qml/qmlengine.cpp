@@ -410,6 +410,9 @@ QmlEngine::~QmlEngine()
 
 /*!
   Clears the engine's internal component cache.
+
+  Normally the QmlEngine caches components loaded from qml files.  This method
+  clears this cache and forces the component to be reloaded.
  */
 void QmlEngine::clearComponentCache()
 {
@@ -498,32 +501,21 @@ void QmlEngine::addNameSpacePath(const QString& ns, const QString& path)
 /*!
     Returns the mapping from namespace URIs to URLs.
 
-    Namespaces in QML allow types to be specified by a URI,
-    using standard XML namespaces:
+    Currently, only the empty namespace is supported
+    (i.e. types cannot be qualified with a namespace).
+
+    The QML \c import statement can be used to import a directory of
+    components into the empty namespace.
+
+    \qml
+    import "MyModuleDirectory"
+    \endqml
+
+    This is also possible from C++:
 
     \code
-        <Item xmlns:foo="xyz://abc/def">
-            <foo:Bar/>
-        </Item>
+        engine->addNameSpacePath("","file:///opt/abcdef");
     \endcode
-
-    Actual QML types can be defined in URLs, in which case a mapping
-    may be made from URIs (such as "xyz://abc/def/Bar.qml" above, to
-    URLs (such as "file:///opt/abcdef/Bar.qml"):
-
-    \code
-        engine->addNameSpacePath("xyz://abc/def","file:///opt/abcdef");
-    \endcode
-
-    If only a prefix of the URI is mapped, the path of the URI is
-    mapped similarly to the URL:
-
-    \code
-        engine->addNameSpacePath("xyz://abc","file:///opt/jkl");
-    \endcode
-
-    In the above case, "xyz://abc/def/Bar.qml" would then map to
-    "file:///opt/jkl/def/Bar.qml".
 
     \sa componentUrl()
 */
@@ -600,7 +592,11 @@ QNetworkAccessManager *QmlEngine::networkAccessManager() const
 }
 
 /*!
-  Returns the QmlContext for the \a object.
+  Returns the QmlContext for the \a object, or 0 if no context has been set.
+
+  When the QmlEngine instantiates a QObject, the context is set automatically.
+  
+  \sa qmlContext()
  */
 QmlContext *QmlEngine::contextForObject(const QObject *object)
 {
@@ -616,6 +612,8 @@ QmlContext *QmlEngine::contextForObject(const QObject *object)
   Sets the QmlContext for the \a object to \a context.
   If the \a object already has a context, a warning is
   output, but the context is not changed.
+
+  When the QmlEngine instantiates a QObject, the context is set automatically.
  */
 void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
 {

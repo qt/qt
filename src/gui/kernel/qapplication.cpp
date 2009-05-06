@@ -89,7 +89,7 @@
 
 #include "qapplication.h"
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 #include "qdatetime.h"
 #include "qguifunctions_wince.h"
 extern bool qt_wince_is_smartphone(); //qguifunctions_wince.cpp
@@ -101,7 +101,7 @@ extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 
 static void initResources()
 {
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     Q_INIT_RESOURCE(qstyle_wince);
 #else
     Q_INIT_RESOURCE(qstyle);
@@ -127,7 +127,7 @@ QInputContext *QApplicationPrivate::inputContext;
 
 bool QApplicationPrivate::quitOnLastWindowClosed = true;
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 int QApplicationPrivate::autoMaximizeThreshold = -1;
 bool QApplicationPrivate::autoSipEnabled = false;
 #endif
@@ -439,7 +439,7 @@ bool QApplicationPrivate::fade_tooltip = false;
 bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
 QString* QApplicationPrivate::styleOverride = 0;
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
 bool QApplicationPrivate::inSizeMove = false;
 #endif
 #ifdef QT_KEYPAD_NAVIGATION
@@ -859,7 +859,7 @@ void QApplicationPrivate::initialize()
         q->setAttribute(Qt::AA_NativeWindows);
 #endif
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 #ifdef QT_AUTO_MAXIMIZE_THRESHOLD
     autoMaximizeThreshold = QT_AUTO_MAXIMIZE_THRESHOLD;
 #else
@@ -868,7 +868,7 @@ void QApplicationPrivate::initialize()
     else
         autoMaximizeThreshold = -1;
 #endif //QT_AUTO_MAXIMIZE_THRESHOLD
-#endif //Q_OS_WINCE
+#endif //Q_WS_WINCE
 
     // Set up which span functions should be used in raster engine...
     qInitDrawhelperAsm();
@@ -1223,7 +1223,7 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     the WA_InputMethodEnabled attribute set.
 */
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 void QApplication::setAutoMaximizeThreshold(const int threshold)
 {
     QApplicationPrivate::autoMaximizeThreshold = threshold;
@@ -1298,7 +1298,7 @@ QStyle *QApplication::style()
             delete QApplicationPrivate::styleOverride;
             QApplicationPrivate::styleOverride = 0;
         } else {
-#if defined(Q_WS_WIN) && defined(Q_OS_WINCE)
+#if defined(Q_WS_WIN) && defined(Q_WS_WINCE)
     if (qt_wince_is_smartphone() || qt_wince_is_pocket_pc())
         style = QLatin1String("WindowsMobile");
      else
@@ -4033,7 +4033,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
     if (receiver->isWidgetType()) {
         QWidget *widget = static_cast<QWidget *>(receiver);
 
-#if !defined(Q_OS_WINCE) || (defined(GWES_ICONCURS) && !defined(QT_NO_CURSOR))
+#if !defined(Q_WS_WINCE) || (defined(GWES_ICONCURS) && !defined(QT_NO_CURSOR))
         // toggle HasMouse widget state on enter and leave
         if ((e->type() == QEvent::Enter || e->type() == QEvent::DragEnter) &&
             (!qApp->activePopupWidget() || qApp->activePopupWidget() == widget->window()))
