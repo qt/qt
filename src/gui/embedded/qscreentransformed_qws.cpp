@@ -400,7 +400,19 @@ void QTransformedScreen::blit(const QImage &image, const QPoint &topLeft,
 #endif
 #if defined(QT_QWS_DEPTH_16) || defined(QT_QWS_DEPTH_15) || defined(QT_QWS_DEPTH_12)
     case 16:
+#if defined QT_QWS_ROTATE_BGR
+        if (pixelType() == BGRPixel && image.depth() == 16) {
+            SET_BLIT_FUNC(qbgr565, quint16, trans, func);
+            break;
+        } //fall-through here!!!
+#endif
     case 15:
+#if defined QT_QWS_ROTATE_BGR
+        if (pixelType() == BGRPixel && image.format() == QImage::Format_RGB555) {
+            SET_BLIT_FUNC(qbgr555, qrgb555, trans, func);
+            break;
+        } //fall-through here!!!
+#endif
     case 12:
         if (image.depth() == 16)
             SET_BLIT_FUNC(quint16, quint16, trans, func);

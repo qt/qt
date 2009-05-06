@@ -58,7 +58,7 @@
 #include <qdebug.h>
 #include <qapplication.h>
 #include <qstylepainter.h>
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
 #include "ui_qfiledialog.h"
 #else
 #include "ui_qfiledialog_wince.h"
@@ -96,9 +96,8 @@ Q_GUI_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook 
   order to select one or many files or a directory.
 
   The easiest way to create a QFileDialog is to use the static
-  functions. On Windows, these static functions will call the native
-  Windows file dialog, and on Mac OS X these static function will call
-  the native Mac OS X file dialog.
+  functions. On Windows, Mac OS X, KDE and GNOME, these static functions will
+  call the native file dialog when possible.
 
   \snippet doc/src/snippets/code/src_gui_dialogs_qfiledialog.cpp 0
 
@@ -216,7 +215,7 @@ Q_GUI_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook 
     are resolved.
     \value DontConfirmOverwrite Don't ask for confirmation if an existing file is selected.
     By default confirmation is requested.
-    \value DontUseNativeDialog Don't use the native file dialog. By default on Mac OS X and Windows,
+    \value DontUseNativeDialog Don't use the native file dialog. By default on Mac OS X,
     the native file dialog is used unless you use a subclass of QFileDialog that contains the
     Q_OBJECT macro.
     \value ReadOnly Indicates that the model is readonly.
@@ -1862,7 +1861,7 @@ QString QFileDialog::getExistingDirectory(QWidget *parent,
 
 #if defined(Q_WS_WIN)
     if (qt_use_native_dialogs && !(args.options & DontUseNativeDialog) && (options & ShowDirsOnly)
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
         && qt_priv_ptr_valid
 #endif
         ) {
@@ -2076,7 +2075,7 @@ void QFileDialogPrivate::init(const QString &directory, const QString &nameFilte
     q->restoreState(settings.value(QLatin1String("filedialog")).toByteArray());
 #endif
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     qFileDialogUi->lookInLabel->setVisible(false);
     qFileDialogUi->fileNameLabel->setVisible(false);
     qFileDialogUi->fileTypeLabel->setVisible(false);
@@ -2793,7 +2792,7 @@ void QFileDialogPrivate::_q_enterDirectory(const QModelIndex &index)
 {
     Q_Q(QFileDialog);
     // My Computer or a directory
-    QModelIndex sourceIndex = mapToSource(index);
+    QModelIndex sourceIndex = index.model() == proxyModel ? mapToSource(index) : index;
     QString path = sourceIndex.data(QFileSystemModel::FilePathRole).toString();
     if (path.isEmpty() || model->isDir(sourceIndex)) {
         q->setDirectory(path);

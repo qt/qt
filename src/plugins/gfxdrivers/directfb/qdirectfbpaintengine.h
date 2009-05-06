@@ -106,6 +106,7 @@ public:
     virtual void clip(const QVectorPath &path, Qt::ClipOperation op);
     virtual void clip(const QRect &rect, Qt::ClipOperation op);
 
+    static void initImageCache(int size);
 };
 
 QT_END_HEADER

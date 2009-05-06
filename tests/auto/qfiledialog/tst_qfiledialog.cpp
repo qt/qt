@@ -1602,6 +1602,19 @@ void tst_QFiledialog::task227304_proxyOnFileDialog()
     QTest::keyClick(list, Qt::Key_Return);
     QTest::qWait(200);
 
+    dialog->close();
+    fd.close();
+
+    QNonNativeFileDialog fd2(0, "I should not crash with a proxy", QDir::tempPath(), 0);
+    QSortFilterProxyModel *pm = new QSortFilterProxyModel;
+    fd2.setProxyModel(pm);
+    fd2.show();
+    QSidebar *sidebar = qFindChild<QSidebar*>(&fd2, "sidebar");
+    sidebar->setFocus();
+    sidebar->selectUrl(QUrl::fromLocalFile(QDir::homePath()));
+    QTest::mouseClick(sidebar->viewport(), Qt::LeftButton, 0, sidebar->visualRect(sidebar->model()->index(1, 0)).center());
+    QTest::qWait(250);
+    //We shouldn't crash
 }
 
 void tst_QFiledialog::task227930_correctNavigationKeyboardBehavior()

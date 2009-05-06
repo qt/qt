@@ -232,6 +232,12 @@ public:
         ImageWidth = 0x5010,
         ImageHeight = 0x5011,
 
+        // internal
+        /*
+           SuppressText = 0x5012,
+           SuppressBackground = 0x513
+        */
+
         // selection properties
         FullWidthSelection = 0x06000,
 

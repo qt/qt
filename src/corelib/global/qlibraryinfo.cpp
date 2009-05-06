@@ -485,100 +485,27 @@ QT_END_NAMESPACE
 
 #if defined(Q_CC_GNU) && defined(Q_OS_LINUX) && !defined(QT_LINUXBASE) && !defined(QT_BOOTSTRAPPED)
 
-#  include <sys/syscall.h>
-#  include <unistd.h>
+#  include <stdio.h>
+#  include <stdlib.h>
 
-static const char boilerplate[] =
-    "This is the QtCore library version " QT_VERSION_STR "\n"
-    "Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).\n"
-    "Contact: Qt Software Information (qt-info@nokia.com)\n"
-    "\n"
-    "Build key:           " QT_BUILD_KEY;
+extern const char qt_core_interpreter[] __attribute__((section(".interp")))
+    = "/lib/ld-linux.so.2";
 
-extern "C" {
-void qt_core_init_boilerplate() __attribute__((noreturn));
-}
-
-#  if defined(QT_ARCH_I386)
-#define sysinit() (void)0
-#define syswrite(msg, len)                                              \
-    ({ int res;                                                         \
-        asm volatile ("movl  %%ebx, %%edi\n"                            \
-                      "movl  $1, %%ebx\n"                               \
-                      "int   $0x80\n"                                   \
-                      "movl  %%edi, %%ebx\n"                            \
-                      : "=a" (res) : "0" (SYS_write), "c" (msg), "d" (len) : "edi"); res; })
-#define sysexit(c)                              \
-    asm ("xor   %%ebx, %%ebx\n"                 \
-         "int   $0x80\n"                        \
-         : : "a" (SYS_exit)); _exit(c)
-
-#  elif defined(QT_ARCH_X86_64)
-#define sysinit() (void)0
-#define syswrite(msg, len)                                              \
-    ({ int res;                                                         \
-        asm volatile ("syscall\n"                                       \
-                      : "=a" (res) : "0" (SYS_write), "D" (1), "S" (msg), "d" (len) : "rcx"); res; })
-#define sysexit(c)                              \
-    asm ("syscall\n"                            \
-         : : "a" (SYS_exit), "D" (0)); _exit(c)
-
-#  elif defined(QT_ARCH_IA64)
-#define sysinit()                                               \
-    asm volatile ("{.mlx\n"                                     \
-                  "      nop.m  0\n"                            \
-                  "      movl   r2  = @pcrel(boilerplate);;"    \
-                  "}\n"                                         \
-                  "{.mii\n"                                     \
-                  "      mov   r10 = @ltoffx(boilerplate)\n"    \
-                  "      mov   r1  = ip\n"                      \
-                  "      adds  r2  = -16, r2\n;;\n"             \
-                  "}\n"                                         \
-                  "      add   r1  = r2, r1;;\n"                \
-                  "      sub   r1  = r1, r10;;\n"               \
-                  : : : "r2", "r10")
-#define syswrite(msg, len)                                              \
-    ({ const char *_msg = msg;                                          \
-        asm ("mov    out0=%1\n"                                         \
-             "mov    out1=%2\n"                                         \
-             "mov    out2=%3\n"                                         \
-             ";;\n"                                                     \
-             "mov    r15=%0\n"                                          \
-             "break  0x100000;;\n"                                      \
-             : : "I" (SYS_write), "I" (1), "r" (_msg), "r" (len)); })
-#define sysexit(c)                                                      \
-    asm ("mov    out0=%1\n"                                             \
-         ";;\n"                                                         \
-         "mov    r15=%0\n"                                              \
-         "break  0x100000;;\n"                                          \
-         : : "I" (SYS_exit), "O" (0)); write(1, 0, 0); _exit(c)
-# else
-#define sysinit() (void)0
-#define syswrite(msg, len) (msg); (len)
-#define sysexit(c)         __builtin_exit(c)
-#  endif
-
-#define sysputs(msg) syswrite(msg, -1 + sizeof(msg))
-#define sysendl()    syswrite("\n", 1)
-#define print_qt_configure(_which)              \
-    ({const char *which = _which;               \
-        which += 12;                            \
-        int len = 0;                            \
-        while (which[len]) ++len;               \
-        syswrite(which, len); })
-
+extern "C"
 void qt_core_init_boilerplate()
 {
-    sysinit();
-    sysputs(boilerplate);
-    sysputs("\nInstallation prefix: ");
-    print_qt_configure(qt_configure_prefix_path_str);
-    sysputs("\nLibrary path:        ");
-    print_qt_configure(qt_configure_libraries_path_str);
-    sysputs("\nInclude path:        ");
-    print_qt_configure(qt_configure_headers_path_str);
-    sysendl();
-    sysexit(0);
+    printf("This is the QtCore library version " QT_VERSION_STR "\n"
+           "Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).\n"
+           "Contact: Qt Software Information (qt-info@nokia.com)\n"
+           "\n"
+           "Build key:           " QT_BUILD_KEY "\n"
+           "Installation prefix: %s\n"
+           "Library path:        %s\n"
+           "Include path:        %s\n",
+           qt_configure_prefix_path_str + 12,
+           qt_configure_libraries_path_str + 12,
+           qt_configure_headers_path_str + 12);
+    exit(0);
 }
 
 #endif

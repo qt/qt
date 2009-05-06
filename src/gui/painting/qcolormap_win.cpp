@@ -44,7 +44,7 @@
 #include "qvector.h"
 #include "qt_windows.h"
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
 #include "qguifunctions_wince.h"
 #endif
 
@@ -138,7 +138,11 @@ void QColormap::cleanup()
 }
 
 QColormap QColormap::instance(int)
-{ return QColormap(); }
+{
+    Q_ASSERT_X(screenMap, "QColormap",
+               "A QApplication object needs to be constructed before QColormap is used.");
+    return QColormap();
+}
 
 QColormap::QColormap()
     : d(screenMap)
