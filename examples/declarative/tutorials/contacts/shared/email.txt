@@ -1,0 +1,7 @@
+emails.com
+emails.net
+mailserver.org
+mailserver.net
+mailserver.com
+BobsMail.com
+BillMail.com

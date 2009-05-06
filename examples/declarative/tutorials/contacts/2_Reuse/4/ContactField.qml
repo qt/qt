@@ -2,15 +2,9 @@ Item {
     id: contactField
     clip: true
     height: 30
-    properties: Property {
-        name: "label"
-    }
-    properties: Property {
-        name: "icon"
-    }
-    properties: Property {
-        name: "value"
-    }
+    property var label: "Name"
+    property var icon: "../../shared/pics/phone.png"
+    property var value: ""
     RemoveButton {
         id: removeButton
         anchors.right: parent.right
