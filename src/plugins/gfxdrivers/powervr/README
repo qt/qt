@@ -29,11 +29,12 @@ strictly Unix-style markers.
 
 ***************************************************************************
 * IMPORTANT: To build the QScreen plugin and the WSEGL library it depends *
-* on, the pvr2d.h, wsegl.h headers for your platform are required. These  *
-* can be obtained either through your platform provider or directly from  *
-* Imagination Technologies.                                               *
+* on, the pvr2d.h, wsegl.h headers for your platform are required.  You   *
+* can find a copy of these headers in src/3rdparty/powervr for SGX based  *
+* platforms like the TI OMAP3xxx. They may also work on MBX platforms too *
+* depending on how old your libEGL is. You can tell Qt where to find      *
+* these headers by setting QMAKE_INCDIR_POWERVR in the mkspec.            *
 ***************************************************************************
-
 
 When you start a Qt/Embedded application, you should modify the QWS_DISPLAY
 environment variable to use the "powervr" driver instead of "LinuxFb".  For

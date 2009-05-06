@@ -1387,11 +1387,15 @@ QRegion QTransform::map(const QRegion &r) const
     TransformationType t = inline_type();
     if (t == TxNone)
         return r;
+
     if (t == TxTranslate) {
         QRegion copy(r);
         copy.translate(qRound(affine._dx), qRound(affine._dy));
         return copy;
     }
+
+    if (t == TxScale && r.numRects() == 1)
+        return QRegion(mapRect(r.boundingRect()));
 
     QPainterPath p = map(qt_regionToPath(r));
     return p.toFillPolygon(QTransform()).toPolygon();

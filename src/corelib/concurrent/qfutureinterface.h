@@ -165,6 +165,8 @@ public:
 
     QFutureInterface &operator=(const QFutureInterface &other)
     {
+        if (referenceCountIsOne())
+            resultStore().clear();
         QFutureInterfaceBase::operator=(other);
         return *this;
     }

@@ -105,6 +105,8 @@ private slots:
     void task203585_selectAll();
     void task228566_infiniteRelayout();
     void task248430_crashWith0SizedItem();
+    void task250446_scrollChanged();
+    void keyboardSearch();
 };
 
 // Testing get/set functions
@@ -1526,6 +1528,57 @@ void tst_QListView::task248430_crashWith0SizedItem()
     view.setModel(&model);
     view.show();
     QTest::qWait(100);
+}
+
+void tst_QListView::task250446_scrollChanged()
+{
+    QStandardItemModel model(200, 1);
+    QListView view;
+    view.setModel(&model);
+    QModelIndex index = model.index(0, 0);
+    QVERIFY(index.isValid());
+    view.setCurrentIndex(index);
+    view.show();
+    QTest::qWait(100);
+    const int scrollValue = view.verticalScrollBar()->maximum();
+    view.verticalScrollBar()->setValue(scrollValue);
+    QCOMPARE(view.verticalScrollBar()->value(), scrollValue);
+    QCOMPARE(view.currentIndex(), index);
+
+    view.showMinimized();
+    QTest::qWait(100);
+    QCOMPARE(view.verticalScrollBar()->value(), scrollValue);
+    QCOMPARE(view.currentIndex(), index);
+
+    view.showNormal();
+    QTest::qWait(100);
+    QCOMPARE(view.verticalScrollBar()->value(), scrollValue);
+    QCOMPARE(view.currentIndex(), index);
+}
+
+void tst_QListView::keyboardSearch()
+{
+    QStringList items;
+    items << "AB" << "AC" << "BA" << "BB" << "BD" << "KAFEINE" << "KONQUEROR" << "KOPETE" << "KOOKA" << "OKULAR";
+    QStringListModel model(items);
+
+    QListView view;
+    view.setModel(&model);
+    view.show();
+    QTest::qWait(30);
+//    QCOMPARE(view.currentIndex() , model.index(0,0));
+
+    QTest::keyClick(&view, Qt::Key_K);
+    QTest::qWait(10);
+    QCOMPARE(view.currentIndex() , model.index(5,0)); //KAFEINE
+
+    QTest::keyClick(&view, Qt::Key_O);
+    QTest::qWait(10);
+    QCOMPARE(view.currentIndex() , model.index(6,0)); //KONQUEROR
+
+    QTest::keyClick(&view, Qt::Key_N);
+    QTest::qWait(10);
+    QCOMPARE(view.currentIndex() , model.index(6,0)); //KONQUEROR
 }
 
 QTEST_MAIN(tst_QListView)

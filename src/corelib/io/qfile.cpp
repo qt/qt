@@ -708,6 +708,7 @@ QFile::rename(const QString &newName)
         d->setError(QFile::RenameError, tr("Destination file exists"));
         return false;
     }
+    unsetError();
     close();
     if(error() == QFile::NoError) {
         if (fileEngine()->rename(newName)) {
@@ -849,6 +850,7 @@ QFile::copy(const QString &newName)
         d->setError(QFile::CopyError, tr("Destination file exists"));
         return false;
     }
+    unsetError();
     close();
     if(error() == QFile::NoError) {
         if(fileEngine()->copy(newName)) {
@@ -908,6 +910,7 @@ QFile::copy(const QString &newName)
                         out.setAutoRemove(false);
 #endif
                 }
+                close();
             }
             if(!error) {
                 QFile::setPermissions(newName, permissions());

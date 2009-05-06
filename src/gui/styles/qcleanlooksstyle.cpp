@@ -3768,6 +3768,20 @@ QSize QCleanlooksStyle::sizeFromContents(ContentsType type, const QStyleOption *
         }
         break;
     case CT_GroupBox:
+        // Since we use a bold font we have to recalculate base width
+        if (const QGroupBox *gb = qobject_cast<const QGroupBox*>(widget)) {
+            QFont font = gb->font();
+            font.setBold(true);
+            QFontMetrics metrics(font);
+            int baseWidth = metrics.width(gb->title()) + metrics.width(QLatin1Char(' '));
+            if (gb->isCheckable()) {
+                baseWidth += pixelMetric(QStyle::PM_IndicatorWidth, option, widget);
+                baseWidth += pixelMetric(QStyle::PM_CheckBoxLabelSpacing, option, widget);
+            }
+            newSize.setWidth(qMax(baseWidth, newSize.width()));
+        }
+        newSize += QSize(0, 1);
+        break;
     case CT_RadioButton:
     case CT_CheckBox:
         newSize += QSize(0, 1);

@@ -171,6 +171,17 @@ void tst_QNetworkCookieJar::setCookiesFromUrl_data()
     result.clear();
     result += finalCookie;
     QTest::newRow("defaults-2") << preset << cookie << "http://www.foo.tld" << result << true;
+
+    // security test: do not accept cookie domains like ".com" nor ".com." (see RFC 2109 section 4.3.2)
+    result.clear();
+    preset.clear();
+    cookie.setDomain(".com");
+    QTest::newRow("rfc2109-4.3.2-ex3") << preset << cookie << "http://x.foo.com" << result << false;
+
+    result.clear();
+    preset.clear();
+    cookie.setDomain(".com.");
+    QTest::newRow("rfc2109-4.3.2-ex3-2") << preset << cookie << "http://x.foo.com" << result << false;
 }
 
 void tst_QNetworkCookieJar::setCookiesFromUrl()

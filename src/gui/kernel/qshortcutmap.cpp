@@ -61,8 +61,6 @@
 
 QT_BEGIN_NAMESPACE
 
-extern bool qt_mac_no_native_menubar; // qmenu_mac.cpp
-
 // To enable verbose output uncomment below
 //#define DEBUG_QSHORTCUTMAP
 
@@ -660,7 +658,7 @@ bool QShortcutMap::correctWidgetContext(Qt::ShortcutContext context, QWidget *w,
 {
     bool visible = w->isVisible();    
 #ifdef Q_WS_MAC
-    if (!qt_mac_no_native_menubar && qobject_cast<QMenuBar *>(w))
+    if (!qApp->testAttribute(Qt::AA_DontUseNativeMenuBar) && qobject_cast<QMenuBar *>(w))
         visible = true;
 #endif
 
@@ -723,7 +721,7 @@ bool QShortcutMap::correctGraphicsWidgetContext(Qt::ShortcutContext context, QGr
 {
     bool visible = w->isVisible();
 #ifdef Q_WS_MAC
-    if (!qt_mac_no_native_menubar && qobject_cast<QMenuBar *>(w))
+    if (!qApp->testAttribute(Qt::AA_DontUseNativeMenuBar) && qobject_cast<QMenuBar *>(w))
         visible = true;
 #endif
 

@@ -1239,7 +1239,7 @@ bool QLayout::activate()
     Must be implemented in subclasses to remove the layout item at \a
     index from the layout, and return the item. If there is no such
     item, the function must do nothing and return 0.  Items are numbered
-    consecutively from 0. If an item is deleted, other items will be
+    consecutively from 0. If an item is removed, other items will be
     renumbered.
 
     The following code fragment shows a safe way to remove all items
