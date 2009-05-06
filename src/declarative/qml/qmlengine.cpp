@@ -74,10 +74,7 @@
 
 QT_BEGIN_NAMESPACE
 
-DEFINE_BOOL_CONFIG_OPTION(bindValueDebug, QML_BINDVALUE_DEBUG);
-#ifdef QT_SCRIPTTOOLS_LIB
-DEFINE_BOOL_CONFIG_OPTION(debuggerEnabled, QML_DEBUGGER);
-#endif
+DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER);
 
 Q_DECLARE_METATYPE(QmlMetaProperty);
 
@@ -171,7 +168,7 @@ void QmlEnginePrivate::init()
     objectClass = new QmlObjectScriptClass(q);
     rootContext = new QmlContext(q);
 #ifdef QT_SCRIPTTOOLS_LIB
-    if (debuggerEnabled()){
+    if (qmlDebugger()){
         debugger = new QScriptEngineDebugger(q);
         debugger->attachTo(&scriptEngine);
     }
@@ -723,17 +720,17 @@ QmlEngine *QmlEngine::activeEngine()
 
 
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b)
-: q(b), ctxt(0), sseData(0), proxy(0), me(0), trackChange(false)
+: q(b), ctxt(0), sseData(0), proxy(0), me(0), trackChange(false), log(0)
 {
 }
 
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, void *expr, QmlRefCount *rc)
-: q(b), ctxt(0), sse((const char *)expr, rc), sseData(0), proxy(0), me(0), trackChange(true)
+: q(b), ctxt(0), sse((const char *)expr, rc), sseData(0), proxy(0), me(0), trackChange(true), log(0)
 {
 }
 
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, const QString &expr, bool ssecompile)
-: q(b), ctxt(0), expression(expr), sseData(0), proxy(0), me(0), trackChange(true)
+: q(b), ctxt(0), expression(expr), sseData(0), proxy(0), me(0), trackChange(true), log(0)
 {
     if (ssecompile) {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
@@ -748,6 +745,7 @@ QmlExpressionPrivate::~QmlExpressionPrivate()
     sse.deleteScriptState(sseData);
     sseData = 0;
     delete proxy;
+    delete log;
 }
 
 /*!
@@ -884,8 +882,6 @@ void BindExpressionProxy::changed()
 */
 QVariant QmlExpression::value()
 {
-    if (bindValueDebug())
-        qWarning() << "QmlEngine: Evaluating:" << expression();
     QVariant rv;
     if (!d->ctxt || (!d->sse.isValid() && d->expression.isEmpty()))
         return rv;
@@ -990,34 +986,51 @@ QVariant QmlExpression::value()
             if (changedIndex == -1)
                 changedIndex = BindExpressionProxy::staticMetaObject.indexOfSlot("changed()");
 
-            if (bindValueDebug())
-                qWarning() << "    Depends on:";
+            if(qmlDebugger()) {
+                QmlExpressionLog log;
+                log.setExpression(expression());
+                log.setResult(rv);
 
-            for (int ii = 0; ii < ep->capturedProperties.count(); ++ii) {
-                const QmlMetaProperty &prop = 
-                    ep->capturedProperties.at(ii);
+                for (int ii = 0; ii < ep->capturedProperties.count(); ++ii) {
+                    const QmlMetaProperty &prop = 
+                        ep->capturedProperties.at(ii);
 
-                if (prop.hasChangedNotifier()) {
-                    prop.connectNotifier(d->proxy, changedIndex);
-                    if (bindValueDebug())
-                        qWarning() << "        property" 
-                                   << prop.name()
-                                   << prop.object()
-                                   << prop.object()->metaObject()->superClass()->className();
-                } else if (bindValueDebug()) {
-                    qWarning() << "        non-subscribable property" 
-                               << prop.name()
-                               << prop.object()
-                               << prop.object()->metaObject()->superClass()->className();
+                    if (prop.hasChangedNotifier()) {
+                        prop.connectNotifier(d->proxy, changedIndex);
+                    } else {
+                        QString warn = QLatin1String("Expression depends on property without a NOTIFY signal: ") + QLatin1String(prop.object()->metaObject()->className()) + QLatin1String(".") + prop.name();
+                        log.addWarning(warn);
+                    }
+                }
+                d->addLog(log);
+
+            } else {
+                for (int ii = 0; ii < ep->capturedProperties.count(); ++ii) {
+                    const QmlMetaProperty &prop = 
+                        ep->capturedProperties.at(ii);
+
+                    if (prop.hasChangedNotifier()) 
+                        prop.connectNotifier(d->proxy, changedIndex);
                 }
             }
+        } else {
+            QmlExpressionLog log;
+            log.setExpression(expression());
+            log.setResult(rv);
+            d->addLog(log);
+        }
+
+    } else {
+        if(qmlDebugger()) {
+            QmlExpressionLog log;
+            log.setExpression(expression());
+            log.setResult(rv);
+            d->addLog(log);
         }
     }
+
     ep->capturedProperties.clear();
 
-    if (bindValueDebug())
-        qWarning() << "    Result:" << rv 
-                   << "(SSE: " << d->sse.isValid() << ")";
     return rv;
 }
 
@@ -1394,6 +1407,67 @@ void QmlObjectScriptClass::setProperty(QScriptValue &object,
     prop.write(v);
 
     scriptEngine->currentContext()->setActivationObject(oldact);
+}
+
+void QmlExpressionPrivate::addLog(const QmlExpressionLog &l)
+{
+    if (!log)
+        log = new QList<QmlExpressionLog>();
+    log->append(l);
+}
+
+QmlExpressionLog::QmlExpressionLog()
+{
+}
+
+QmlExpressionLog::QmlExpressionLog(const QmlExpressionLog &o)
+: m_expression(o.m_expression),
+  m_result(o.m_result),
+  m_warnings(o.m_warnings)
+{
+}
+
+QmlExpressionLog::~QmlExpressionLog()
+{
+}
+
+QmlExpressionLog &QmlExpressionLog::operator=(const QmlExpressionLog &o)
+{
+    m_expression = o.m_expression;
+    m_result = o.m_result;
+    m_warnings = o.m_warnings;
+    return *this;
+}
+
+
+QString QmlExpressionLog::expression() const
+{
+    return m_expression;
+}
+
+void QmlExpressionLog::setExpression(const QString &e)
+{
+    m_expression = e;
+}
+
+QStringList QmlExpressionLog::warnings() const
+{
+    return m_warnings;
+}
+
+void QmlExpressionLog::addWarning(const QString &w)
+{
+    m_warnings << w;
+}
+
+QVariant QmlExpressionLog::result() const
+{
+    return m_result;
+}
+
+void QmlExpressionLog::setResult(const QVariant &r)
+{
+    m_result = r;
 }
 
 QT_END_NAMESPACE

@@ -192,6 +192,30 @@ public:
                              const QScriptValue &value);
 };
 
+class QmlExpressionLog
+{
+public:
+    QmlExpressionLog();
+    QmlExpressionLog(const QmlExpressionLog &);
+    ~QmlExpressionLog();
+
+    QmlExpressionLog &operator=(const QmlExpressionLog &);
+
+    QString expression() const;
+    void setExpression(const QString &);
+
+    QStringList warnings() const;
+    void addWarning(const QString &);
+
+    QVariant result() const;
+    void setResult(const QVariant &);
+
+private:
+    QString m_expression;
+    QVariant m_result;
+    QStringList m_warnings;
+};
+
 class QmlExpressionPrivate
 {
 public:
@@ -208,6 +232,9 @@ public:
     BindExpressionProxy *proxy;
     QObject *me;
     bool trackChange;
+
+    void addLog(const QmlExpressionLog &);
+    QList<QmlExpressionLog> *log;
 };
 QT_END_NAMESPACE
 
