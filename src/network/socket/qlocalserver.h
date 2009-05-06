@@ -86,13 +86,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QLocalServer)
-#if defined(QT_LOCALSOCKET_TCP)
     Q_PRIVATE_SLOT(d_func(), void _q_onNewConnection())
-#elif defined(Q_OS_WIN)
-    Q_PRIVATE_SLOT(d_func(), void _q_onNewConnection())
-#else
-    Q_PRIVATE_SLOT(d_func(), void _q_socketActivated())
-#endif
 };
 
 #endif // QT_NO_LOCALSERVER

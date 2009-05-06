@@ -89,9 +89,9 @@ public:
     static bool removeServer(const QString &name);
     void closeServer();
     void waitForNewConnection(int msec, bool *timedOut);
+    void _q_onNewConnection();
 
 #if defined(QT_LOCALSOCKET_TCP)
-    void _q_onNewConnection();
 
     QTcpServer tcpServer;
     QMap<quintptr, QTcpSocket*> socketMap;
@@ -103,14 +103,12 @@ public:
 
     void setError(const QString &function);
     bool addListener();
-    void _q_onNewConnection();
 
     QList<Listener> listeners;
     HANDLE eventHandle;
     QWinEventNotifier *connectionEventNotifier;
 #else
     void setError(const QString &function);
-    void _q_socketActivated();
 
     int listenSocket;
     QSocketNotifier *socketNotifier;
