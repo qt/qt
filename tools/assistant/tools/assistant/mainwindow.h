@@ -92,6 +92,7 @@ public slots:
     void showIndex();
     void showBookmarks();
     void showSearch();
+    void showSearchWidget();
     void syncContents();
     void activateCurrentCentralWidgetTab();
 

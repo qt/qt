@@ -699,6 +699,12 @@ void QFxPathView::itemsRemoved(int modelIndex, int count)
         d->regenerate();
     }
 
+    if (d->model->count() == 0) {
+        d->currentIndex = -1;
+        d->moveOffset.setValue(0);
+        return;
+    }
+
     // make sure the current item is still at the snap position
     if (d->currentIndex >= d->model->count())
         d->currentIndex = d->model->count() - 1;

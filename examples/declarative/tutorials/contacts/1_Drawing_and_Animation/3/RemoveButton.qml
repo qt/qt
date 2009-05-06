@@ -32,7 +32,7 @@ Rect {
         anchors.rightMargin: 4
         font.bold: true
         color: "white"
-        hAlign: AlignHCenter
+        hAlign: "AlignHCenter"
         text: "Remove"
     }
 }

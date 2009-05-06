@@ -614,8 +614,8 @@ bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
             QmlError error;
             error.setUrl(url);
             error.setDescription(m.message);
-            error.setLine(m.line);
-            error.setColumn(m.column);
+            error.setLine(m.loc.startLine);
+            error.setColumn(m.loc.startColumn);
             _errors << error;
 
         }
