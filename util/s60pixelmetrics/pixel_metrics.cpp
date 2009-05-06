@@ -50,7 +50,7 @@
 // so that we can keep dynamic and static values inline.
 // Please adjust version data if correcting dynamic PM calculations.
 const TInt KPMMajorVersion = 1;
-const TInt KPMMinorVersion = 13;
+const TInt KPMMinorVersion = 14;
 
 TPixelMetricsVersion PixelMetrics::Version()
     {
@@ -295,17 +295,21 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
                   B is gap between icon and text
                   C is right padding
             */
+
             TRect rectParent( mainPaneRect );
             TAknLayoutRect layoutRect;
-            layoutRect.LayoutRect( rectParent,AknLayoutScalable_Avkon::list_set_graphic_pane(0).LayoutLine() );
+            layoutRect.LayoutRect( rectParent, AknLayoutScalable_Avkon::listscroll_gen_pane(0).LayoutLine() );
+
             TAknLayoutRect layoutRect2;
+            layoutRect2.LayoutRect( layoutRect.Rect(), AknLayoutScalable_Avkon::list_gen_pane(0).LayoutLine() );
             TAknLayoutRect layoutRect3;
-            layoutRect2.LayoutRect( layoutRect.Rect(),AknLayoutScalable_Avkon::set_content_pane().LayoutLine() );
+            layoutRect3.LayoutRect( layoutRect2.Rect(), AknLayoutScalable_Avkon::list_single_graphic_pane(0).LayoutLine() );
 
             TAknLayoutText itemText;
-            itemText.LayoutText( layoutRect2.Rect(), AknLayoutScalable_Avkon::list_set_graphic_pane_t1(0) );
+            itemText.LayoutText( layoutRect3.Rect(), AknLayoutScalable_Avkon::list_single_graphic_pane_t1(0) );
             TAknLayoutRect iconLayoutRect;
-            iconLayoutRect.LayoutRect( layoutRect2.Rect(), AknLayoutScalable_Avkon::list_set_graphic_pane_g1(0).LayoutLine() );
+            iconLayoutRect.LayoutRect( layoutRect3.Rect(), AknLayoutScalable_Avkon::list_single_graphic_pane_g1(0).LayoutLine() );
+
             if ( !AknLayoutUtils::LayoutMirrored() )
                 {
                 value = itemText.TextRect().iTl.iX - iconLayoutRect.Rect().iBr.iX;
@@ -973,6 +977,7 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
             inputFocusInnerRect.LayoutRect(mainPaneRect, AknLayoutScalable_Avkon::input_focus_pane_g1());
 
             value = inputFocusRect.Rect().iBr.iX - inputFocusInnerRect.Rect().iBr.iX;
+            value+= 2; //visually better value for generic cases
             }
             break;
         case QStyle::PM_Custom_FrameCornerHeight:
@@ -982,6 +987,7 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
             TAknLayoutRect inputFocusInnerRect;
             inputFocusInnerRect.LayoutRect(mainPaneRect, AknLayoutScalable_Avkon::input_focus_pane_g1());
             value = inputFocusRect.Rect().iBr.iY - inputFocusInnerRect.Rect().iBr.iY;
+            value+= 2; //visually better value for generic cases
             }
             break;
         case QStyle::PM_Custom_BoldLineWidth:

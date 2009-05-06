@@ -535,6 +535,8 @@ void MainWindow::setupActions()
         SLOT(copyAvailable(bool)));
     connect(m_centralWidget, SIGNAL(currentViewerChanged()), this,
         SLOT(updateNavigationItems()));
+    connect(m_centralWidget, SIGNAL(currentViewerChanged()), this,
+        SLOT(updateTabCloseAction()));
     connect(m_centralWidget, SIGNAL(forwardAvailable(bool)), this,
         SLOT(updateNavigationItems()));
     connect(m_centralWidget, SIGNAL(backwardAvailable(bool)), this,
@@ -697,8 +699,12 @@ void MainWindow::updateNavigationItems()
     m_printAction->setEnabled(hasCurrentViewer);
     m_nextAction->setEnabled(m_centralWidget->isForwardAvailable());
     m_backAction->setEnabled(m_centralWidget->isBackwardAvailable());
-    m_closeTabAction->setEnabled(hasCurrentViewer);
     m_newTabAction->setEnabled(hasCurrentViewer);
+}
+
+void MainWindow::updateTabCloseAction()
+{
+    m_closeTabAction->setEnabled(m_centralWidget->enableTabCloseAction());
 }
 
 void MainWindow::showTopicChooser(const QMap<QString, QUrl> &links,
@@ -871,7 +877,7 @@ void MainWindow::activateCurrentCentralWidgetTab()
 
 void MainWindow::showSearch()
 {
-    m_centralWidget->activateSearch();
+    m_centralWidget->activateSearchWidget();
 }
 
 void MainWindow::hideSearch()

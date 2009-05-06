@@ -183,27 +183,32 @@ static void cleanupCocoaApplicationDelegate()
 {
     Q_UNUSED(sender);
     // The reflection delegate gets precedence
-    NSApplicationTerminateReply reply = NSTerminateCancel;
     if (reflectionDelegate
         && [reflectionDelegate respondsToSelector:@selector(applicationShouldTerminate:)]) {
         return [reflectionDelegate applicationShouldTerminate:sender];
     }
 
     if (qtPrivate->canQuit()) {
-        reply = NSTerminateNow;
         if (!startedQuit) {
             startedQuit = true;
             qAppInstance()->quit();
             startedQuit = false;
         }
     }
-    return reply;
+
+    // Prevent Cocoa from terminating the application, since this simply
+    // exits the program whithout allowing QApplication::exec() to return.
+    // The call to QApplication::quit() above will instead quit the
+    // application from the Qt side.
+    return NSTerminateCancel;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     Q_UNUSED(aNotification);
     inLaunch = false;
+    extern void qt_release_apple_event_handler(); //qapplication_mac.mm
+    qt_release_apple_event_handler();
 }
 
 - (void)application:(NSApplication *)sender openFiles:(NSArray *)filenames

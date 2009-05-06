@@ -53,14 +53,14 @@ static const QByteArray propertyKeyCurrentlayout = "currentlayout";
 #if defined(QT_S60STYLE_LAYOUTDATA_SIMULATED)
 const layoutHeader QS60StylePrivate::m_layoutHeaders[] = {
 // *** generated layout data ***
-{240,320,1,13,true,QLatin1String("QVGA Landscape Mirrored")},
-{240,320,1,13,false,QLatin1String("QVGA Landscape")},
-{320,240,1,13,true,QLatin1String("QVGA Portrait Mirrored")},
-{320,240,1,13,false,QLatin1String("QVGA Portrait")},
-{360,640,1,13,true,QLatin1String("NHD Landscape Mirrored")},
-{360,640,1,13,false,QLatin1String("NHD Landscape")},
-{640,360,1,13,true,QLatin1String("NHD Portrait Mirrored")},
-{640,360,1,13,false,QLatin1String("NHD Portrait")},
+{240,320,1,14,true,QLatin1String("QVGA Landscape Mirrored")},
+{240,320,1,14,false,QLatin1String("QVGA Landscape")},
+{320,240,1,14,true,QLatin1String("QVGA Portrait Mirrored")},
+{320,240,1,14,false,QLatin1String("QVGA Portrait")},
+{360,640,1,14,true,QLatin1String("NHD Landscape Mirrored")},
+{360,640,1,14,false,QLatin1String("NHD Landscape")},
+{640,360,1,14,true,QLatin1String("NHD Portrait Mirrored")},
+{640,360,1,14,false,QLatin1String("NHD Portrait")},
 {352,800,1,12,true,QLatin1String("E90 Landscape Mirrored")},
 {352,800,1,12,false,QLatin1String("E90 Landscape")}
 // *** End of generated data ***
@@ -70,14 +70,14 @@ const int QS60StylePrivate::m_numberOfLayouts =
 
 const short QS60StylePrivate::data[][MAX_PIXELMETRICS] = {
 // *** generated pixel metrics ***
-{5,0,-909,0,0,1,0,0,-1,8,15,22,15,15,7,198,-909,-909,-909,19,15,2,0,0,21,-909,21,-909,4,4,1,-909,-909,0,2,0,0,13,23,17,17,21,21,2,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,51,27,51,4,4,5,3,15,-909,5,58,12,5,0,7,4,4,9,4,4,-909,1,-909,-909,-909,-909,4,4,3,1},
-{5,0,-909,0,0,1,0,0,-1,8,15,22,15,15,7,198,-909,-909,-909,19,15,2,0,0,21,-909,21,-909,4,4,1,-909,-909,0,2,0,0,13,23,17,17,21,21,2,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,51,27,51,4,4,5,3,15,-909,5,58,12,5,0,4,4,7,9,4,4,-909,1,-909,-909,-909,-909,4,4,3,1},
-{5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,-909,27,-909,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,4,4,5,3,15,-909,5,58,13,5,0,7,4,4,9,4,4,-909,1,-909,-909,-909,-909,4,4,3,1},
-{5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,-909,27,-909,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,4,4,5,3,15,-909,5,58,13,5,0,4,4,7,9,4,4,-909,1,-909,-909,-909,-909,4,4,3,1},
-{7,0,-909,0,0,2,0,0,-1,20,53,28,19,19,9,258,-909,-909,-909,29,19,26,0,0,32,-909,72,-909,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,5,5,6,3,19,-909,7,74,19,7,0,8,5,5,12,5,5,-909,2,-909,-909,-909,-909,7,7,3,1},
-{7,0,-909,0,0,2,0,0,-1,20,53,28,19,19,9,258,-909,-909,-909,29,19,26,0,0,32,-909,72,-909,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,5,5,6,3,19,-909,7,74,19,7,0,5,5,8,12,5,5,-909,2,-909,-909,-909,-909,7,7,3,1},
-{7,0,-909,0,0,2,0,0,-1,20,52,28,19,19,9,258,-909,-909,-909,29,19,6,0,0,32,-909,60,-909,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,98,35,98,5,5,6,3,19,-909,7,74,22,7,0,8,5,5,12,5,5,-909,2,-909,-909,-909,-909,7,7,3,1},
-{7,0,-909,0,0,2,0,0,-1,20,52,28,19,19,9,258,-909,-909,-909,29,19,6,0,0,32,-909,60,-909,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,98,35,98,5,5,6,3,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,2,-909,-909,-909,-909,7,7,3,1},
+{5,0,-909,0,0,1,0,0,-1,8,15,22,15,15,7,198,-909,-909,-909,19,15,2,0,0,21,-909,21,-909,4,4,1,-909,-909,0,2,0,0,13,23,17,17,21,21,2,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,51,27,51,4,4,5,10,15,-909,5,58,12,5,0,7,4,4,9,4,4,-909,1,-909,-909,-909,-909,4,4,3,1},
+{5,0,-909,0,0,1,0,0,-1,8,15,22,15,15,7,198,-909,-909,-909,19,15,2,0,0,21,-909,21,-909,4,4,1,-909,-909,0,2,0,0,13,23,17,17,21,21,2,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,51,27,51,4,4,5,10,15,-909,5,58,12,5,0,4,4,7,9,4,4,-909,1,-909,-909,-909,-909,4,4,3,1},
+{5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,-909,27,-909,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,4,4,5,10,15,-909,5,58,13,5,0,7,4,4,9,4,4,-909,1,-909,-909,-909,-909,4,4,3,1},
+{5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,-909,27,-909,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,4,4,5,10,15,-909,5,58,13,5,0,4,4,7,9,4,4,-909,1,-909,-909,-909,-909,4,4,3,1},
+{7,0,-909,0,0,2,0,0,-1,20,53,28,19,19,9,258,-909,-909,-909,29,19,26,0,0,32,-909,72,-909,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,5,5,6,8,19,-909,7,74,19,7,0,8,5,5,12,5,5,-909,2,-909,-909,-909,-909,7,7,3,1},
+{7,0,-909,0,0,2,0,0,-1,20,53,28,19,19,9,258,-909,-909,-909,29,19,26,0,0,32,-909,72,-909,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,5,5,6,8,19,-909,7,74,19,7,0,5,5,8,12,5,5,-909,2,-909,-909,-909,-909,7,7,3,1},
+{7,0,-909,0,0,2,0,0,-1,20,52,28,19,19,9,258,-909,-909,-909,29,19,6,0,0,32,-909,60,-909,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,98,35,98,5,5,6,8,19,-909,7,74,22,7,0,8,5,5,12,5,5,-909,2,-909,-909,-909,-909,7,7,3,1},
+{7,0,-909,0,0,2,0,0,-1,20,52,28,19,19,9,258,-909,-909,-909,29,19,6,0,0,32,-909,60,-909,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,98,35,98,5,5,6,8,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,2,-909,-909,-909,-909,7,7,3,1},
 {7,0,-909,0,0,2,0,0,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,-909,32,-909,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,5,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,8,6,5,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1},
 {7,0,-909,0,0,2,0,0,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,-909,32,-909,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,6,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,5,6,8,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1}
 
@@ -1225,18 +1225,16 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             const QStyleOptionViewItemV4 *tableOption = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option);
             const QTableView *table = qobject_cast<const QTableView *>(widget);
             if (table && tableOption) {
-                const QModelIndex indexCurrent = tableOption->index;
-                // Draw cell background only once - for the first cell
-                //todo: calc area based on viewport only so that 1000x1000 table doesn't get ridiculously big background
-                //todo: try to do this only once. For some reason, if I try to
-                //if ( indexCurrent.column() == 2 && indexCurrent.row() == 2 ) {
-                    QStyleOptionViewItemV4 voptAdj2 = voptAdj2;
-                    const QModelIndex index = table->model()->index(0,0);
-                    const QModelIndex indexLast = table->model()->index(
-                            table->model()->rowCount()-1,table->model()->columnCount()-1);
-                    voptAdj2.rect = QRect( table->visualRect(index).topLeft(), table->visualRect(indexLast).bottomRight());
-                    drawPrimitive(PE_PanelItemViewItem, &voptAdj2, painter, widget);
-                //}
+                const QModelIndex index = tableOption->index;
+                //todo: Draw cell background only once - for the first cell.
+                QStyleOptionViewItemV4 voptAdj2 = voptAdj2;
+                const QModelIndex indexFirst = table->model()->index(0,0);
+                const QModelIndex indexLast = table->model()->index(
+                    table->model()->rowCount()-1,table->model()->columnCount()-1);
+                if (table->viewport())
+                    voptAdj2.rect = QRect( table->visualRect(indexFirst).topLeft(), 
+                        table->visualRect(indexLast).bottomRight()).intersect(table->viewport()->rect());
+                drawPrimitive(PE_PanelItemViewItem, &voptAdj2, painter, widget);
             }
 
             // draw the focus rect
@@ -1474,21 +1472,27 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_ProgressBarContents:
         if (const QStyleOptionProgressBarV2 *optionProgressBar = qstyleoption_cast<const QStyleOptionProgressBarV2 *>(option)) {
             QRect progressRect = optionProgressBar->rect;
-            const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? 1.0
-                : (qreal)optionProgressBar->progress / optionProgressBar->maximum;
-            if (optionProgressBar->orientation == Qt::Horizontal) {
-                progressRect.setWidth(int(progressRect.width() * progressFactor));
-                if(optionProgressBar->direction == Qt::RightToLeft)
-                    progressRect.translate(optionProgressBar->rect.width()-progressRect.width(),0);
-                progressRect.adjust(1, 0, -1, 0);
-            } else {
-                progressRect.adjust(0, 1, 0, -1);
-                progressRect.setTop(progressRect.bottom() - int(progressRect.height() * progressFactor));
-            }
 
-            const QS60StylePrivate::SkinElements skinElement = optionProgressBar->orientation == Qt::Horizontal ?
-                QS60StylePrivate::SE_ProgressBarIndicatorHorizontal : QS60StylePrivate::SE_ProgressBarIndicatorVertical;
-            QS60StylePrivate::drawSkinElement(skinElement, painter, progressRect, flags);
+            if (optionProgressBar->minimum == optionProgressBar->maximum && optionProgressBar->minimum == 0) {
+                // busy indicator
+                QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafBarWait, painter, progressRect,flags);           
+            } else {
+                const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? 1.0
+                    : (qreal)optionProgressBar->progress / optionProgressBar->maximum;
+                if (optionProgressBar->orientation == Qt::Horizontal) {
+                    progressRect.setWidth(int(progressRect.width() * progressFactor));
+                    if(optionProgressBar->direction == Qt::RightToLeft)
+                        progressRect.translate(optionProgressBar->rect.width()-progressRect.width(),0);
+                    progressRect.adjust(1, 0, -1, 0);
+                } else {
+                    progressRect.adjust(0, 1, 0, -1);
+                    progressRect.setTop(progressRect.bottom() - int(progressRect.height() * progressFactor));
+                }
+    
+                const QS60StylePrivate::SkinElements skinElement = optionProgressBar->orientation == Qt::Horizontal ?
+                    QS60StylePrivate::SE_ProgressBarIndicatorHorizontal : QS60StylePrivate::SE_ProgressBarIndicatorVertical;
+                QS60StylePrivate::drawSkinElement(skinElement, painter, progressRect, flags);
+            }
         }
         break;
     case CE_ProgressBarGroove:

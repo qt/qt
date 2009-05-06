@@ -83,6 +83,9 @@ private slots:
     void updateButtons();
 
 private:
+    QToolButton* setupToolButton(const QString &text, const QString &icon);
+
+private:
     QLineEdit *editFind;
     QCheckBox *checkCase;
     QLabel *labelWrapped;
@@ -113,9 +116,13 @@ public:
     void setGlobalActions(const QList<QAction*> &actions);
     HelpViewer *currentHelpViewer() const;
     void activateTab(bool onlyHelpViewer = false);
-    void activateSearch();
+
     void createSearchWidget(QHelpSearchEngine *searchEngine);
+    void activateSearchWidget();
     void removeSearchWidget();
+
+    int availableHelpViewer() const;
+    bool enableTabCloseAction() const;
 
     void closeTabAt(int index);
     QMap<int, QString> currentSourceFileList() const;
@@ -167,7 +174,7 @@ private slots:
     void setSourceFromSearchInNewTab(const QUrl &url);
 
 private:
-    void connectSignals();    
+    void connectSignals();
     bool eventFilter(QObject *object, QEvent *e);
     void find(QString ttf, bool forward, bool backward);
     void initPrinter();
@@ -180,13 +187,13 @@ private:
     QList<QAction*> globalActionList;
 
     QWidget *findBar;
-    QTabWidget* tabWidget;
+    QTabWidget *tabWidget;
     FindWidget *findWidget;
     QHelpEngine *helpEngine;
     QPrinter *printer;
     bool usesDefaultCollection;
-    
-    SearchWidget* m_searchWidget;
+
+    SearchWidget *m_searchWidget;
 };
 
 QT_END_NAMESPACE

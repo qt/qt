@@ -43,7 +43,7 @@
 
 #include "flowlayout.h"
 #include "window.h"
-
+//! [1]
 Window::Window()
 {
     FlowLayout *flowLayout = new FlowLayout;
@@ -57,3 +57,4 @@ Window::Window()
 
     setWindowTitle(tr("Flow Layout"));
 }
+//! [1]

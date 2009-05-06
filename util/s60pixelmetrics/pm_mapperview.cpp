@@ -46,10 +46,10 @@
 #include <aknviewappui.h>
 #include <aknconsts.h>
 
-#include "pmmapper.hrh"
+#include "pm_mapper.hrh"
 #include <pm_mapper.rsg>
-#include "pmmapperView.h"
-#include "pmmapperApp.h"
+#include "pm_mapperView.h"
+#include "pm_mapperApp.h"
 
 #include <aknlists.h>
 #include <avkon.hrh>

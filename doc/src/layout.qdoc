@@ -371,7 +371,7 @@
             should store the value in a local variable if you need it again
             later within in the same function.
         \o  You should not call QLayoutItem::setGeometry() twice on the same
-            item in the smae function. This call can be very expensive if the
+            item in the same function. This call can be very expensive if the
             item has several child widgets, because the layout manager must do
             a complete layout every time. Instead, calculate the geometry and
             then set it. (This does not only apply to layouts, you should do

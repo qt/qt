@@ -94,6 +94,8 @@ public:
     { return pageAction(QWebPage::Back)->isEnabled(); }
     inline bool hasLoadFinished() const
     { return loadFinished; }
+    inline qreal zoom() const
+    { return textSizeMultiplier(); }
 
 public Q_SLOTS:
     void home();

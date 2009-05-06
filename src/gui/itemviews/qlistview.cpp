@@ -1997,12 +1997,13 @@ bool QListViewPrivate::doItemsLayout(int delta)
     int first = batchStartRow();
     int last = qMin(first + delta - 1, max);
 
-    if (max < 0 || last < first)
-        return true; // nothing to do
-
     if (first == 0) {
         layoutChildren(); // make sure the viewport has the right size
         prepareItemsLayout();
+    }
+
+    if (max < 0 || last < first) {
+        return true; // nothing to do
     }
 
     QListViewLayoutInfo info;

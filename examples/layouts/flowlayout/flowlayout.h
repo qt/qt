@@ -45,7 +45,7 @@
 #include <QLayout>
 #include <QRect>
 #include <QWidgetItem>
-
+//! [0]
 class FlowLayout : public QLayout
 {
 public:
@@ -74,5 +74,6 @@ private:
     int m_hSpace;
     int m_vSpace;
 };
+//! [0]
 
 #endif
