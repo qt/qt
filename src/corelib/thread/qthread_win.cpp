@@ -292,8 +292,7 @@ unsigned int __stdcall QThreadPrivate::start(void *arg)
 
     data->quitNow = false;
     // ### TODO: allow the user to create a custom event dispatcher
-    if (QCoreApplication::instance())
-        createEventDispatcher(data);
+    createEventDispatcher(data);
 
 #if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC) && !defined(Q_OS_WINCE)
     // sets the name of the current thread.

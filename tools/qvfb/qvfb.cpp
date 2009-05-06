@@ -217,16 +217,10 @@ QVFb::QVFb( int display_id, int w, int h, int d, int r, const QString &skin, Dis
     setWindowIcon( pix );
     rateDlg = 0;
     refreshRate = 30;
-#if QT_VERSION >= 0x030000
-    // When compiling with Qt 3 we need to create the menu first to
-    // avoid scroll bars in the main window
+    // Create the menu first to avoid scroll bars in the main window
     createMenu( menuBar() );
     init( display_id, w, h, d, r, skin );
     enableCursor( true );
-#else
-    init( display_id, w, h, d, r, skin );
-    createMenu( menuBar() );
-#endif
 }
 
 QVFb::~QVFb()
@@ -354,9 +348,7 @@ void QVFb::init( int display_id, int pw, int ph, int d, int r, const QString& sk
 	scroller->setWidget(view);
 	view->setContentsMargins( 0, 0, 0, 0 );
 	setCentralWidget(scroller);
-#if QT_VERSION >= 0x030000
 	ph += 2;					// avoid scrollbar
-#endif
 	scroller->show();
 	// delete defaultbuttons.conf if it was left behind...
 	unlink(QFileInfo(QString("/tmp/qtembedded-%1/defaultbuttons.conf").arg(view->displayId())).absoluteFilePath().toLatin1().constData());
@@ -643,6 +635,7 @@ void QVFb::configure()
     config->touchScreen->setChecked(view->touchScreenEmulation());
     config->lcdScreen->setChecked(view->lcdScreenEmulation());
     chooseDepth(view->displayDepth(), view->displayFormat());
+    config->rgbSwapped->setChecked(view->rgbSwapped());
     connect(config->skin, SIGNAL(activated(int)), this, SLOT(skinConfigChosen(int)));
     if ( view->gammaRed() == view->gammaGreen() && view->gammaGreen() == view->gammaBlue() ) {
 	config->gammaslider->setValue(int(view->gammaRed()*400));
@@ -686,6 +679,8 @@ void QVFb::configure()
 	int d;
 	if ( config->depth_1->isChecked() )
 	    d=1;
+	else if ( config->depth_2gray->isChecked() )
+	    d=2;
 	else if ( config->depth_4gray->isChecked() )
 	    d=4;
 	else if ( config->depth_8->isChecked() )
@@ -716,6 +711,7 @@ void QVFb::configure()
 	}
 	view->setViewFormat(displayFormat);
 	view->setTouchscreenEmulation( config->touchScreen->isChecked() );
+	view->setRgbSwapped(config->rgbSwapped->isChecked());
 	bool lcdEmulation = config->lcdScreen->isChecked();
 	view->setLcdScreenEmulation( lcdEmulation );
 	if ( lcdEmulation )
@@ -749,6 +745,7 @@ void QVFb::chooseSize(const QSize& sz)
 void QVFb::chooseDepth(int depth, QVFbView::PixelFormat displayFormat)
 {
     config->depth_1->setChecked(depth==1);
+    config->depth_2gray->setChecked(depth==2);
     config->depth_4gray->setChecked(depth==4);
     config->depth_8->setChecked(depth==8);
     config->depth_12->setChecked(depth==12);

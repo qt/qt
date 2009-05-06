@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
 <TS version="2.0" language="zh_CN">
-<defaultcodec></defaultcodec>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/qtconfig/mainwindow.cpp" line="+344"/>
+        <location filename="../tools/qtconfig/mainwindow.cpp" line="+351"/>
         <source>On The Spot</source>
         <translation>客户端程序预编辑模式(On The Spot)</translation>
     </message>
     <message>
-        <location line="+157"/>
+        <location line="+162"/>
         <source>Over The Spot</source>
         <translation>光标跟随风格(Over The Spot)</translation>
     </message>
@@ -25,17 +24,16 @@
         <translation>输入服务器预编辑模式(Root)</translation>
     </message>
     <message>
-        <location line="+455"/>
+        <location line="+466"/>
         <source>Select a Directory</source>
         <translation>选择一个目录</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2</source>
-        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;版本 %2</translation>
+        <translation type="obsolete">&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;版本 %2</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+23"/>
         <location line="+1"/>
         <location line="+8"/>
         <source>Qt Configuration</source>
@@ -67,7 +65,7 @@
         <translation>取消(&amp;C)</translation>
     </message>
     <message>
-        <location line="-577"/>
+        <location line="-578"/>
         <source>No changes to be saved.</source>
         <translation>没有变化被保存。</translation>
     </message>
@@ -77,7 +75,7 @@
         <translation>正在保存变化...</translation>
     </message>
     <message>
-        <location line="-80"/>
+        <location line="-81"/>
         <location line="+1"/>
         <location line="+38"/>
         <location line="+1"/>
@@ -85,7 +83,17 @@
         <translation>自动(默认)</translation>
     </message>
     <message>
-        <location line="-38"/>
+        <location line="-222"/>
+        <source>Desktop Settings (Default)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Choose style and palette based on your desktop settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+179"/>
         <source>Choose audio output automatically.</source>
         <translation>自动选择音频输出。</translation>
     </message>
@@ -133,7 +141,12 @@
         <translation>使用简单的软件渲染。</translation>
     </message>
     <message>
-        <location line="-47"/>
+        <location line="+566"/>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-613"/>
         <location line="+1"/>
         <source>aRts</source>
         <translation>aRts</translation>
@@ -807,6 +820,14 @@ p, li { white-space: pre-wrap; }
         <location/>
         <source>Close dialog and discard all changes.</source>
         <translation>关闭对话框并且抛弃所有变化。</translation>
+    </message>
+</context>
+<context>
+    <name>PreviewFrame</name>
+    <message>
+        <location filename="../tools/qtconfig/previewframe.cpp" line="+81"/>
+        <source>Desktop settings will only take effect after an application restart.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

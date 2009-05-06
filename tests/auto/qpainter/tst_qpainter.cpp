@@ -2573,23 +2573,6 @@ void tst_QPainter::setOpacity()
     p.fillRect(imageRect, QColor(127, 127, 127));
     p.end();
 
-#if defined(Q_WS_QWS) && (QT_VERSION < 0x040500)
-    // embedded has an optimized implementation in 4.4
-    if ((dest.format() == QImage::Format_ARGB8555_Premultiplied ||
-         dest.format() == QImage::Format_RGB555 ||
-         dest.format() == QImage::Format_RGB666 ||
-         dest.format() == QImage::Format_RGB888 ||
-         dest.format() == QImage::Format_ARGB8565_Premultiplied) &&
-        src.format() != QImage::Format_RGB32)
-    {
-        QColor c1 = expected.pixel(1, 1);
-        QColor c2 = dest.pixel(1, 1);
-        QVERIFY(qAbs(c1.red() - c2.red()) < 2);
-        QVERIFY(qAbs(c1.green() - c2.green()) < 2);
-        QVERIFY(qAbs(c1.blue() - c2.blue()) < 2);
-        QVERIFY(qAbs(c1.alpha() - c2.alpha()) < 2);
-    } else
-#endif
     QCOMPARE(dest, expected);
 }
 
@@ -3809,8 +3792,11 @@ void tst_QPainter::imageBlending()
 
 void tst_QPainter::paintOnNullPixmap()
 {
+    QPixmap pix(16, 16);
+
     QPixmap textPixmap;
     QPainter p(&textPixmap);
+    p.drawPixmap(10, 10, pix);
     p.end();
 
     QPixmap textPixmap2(16,16);

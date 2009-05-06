@@ -1484,7 +1484,9 @@ void QPainter::initFrom(const QWidget *widget)
     d->state->bgBrush = pal.brush(widget->backgroundRole());
     d->state->deviceFont = QFont(widget->font(), const_cast<QWidget*> (widget));
     d->state->font = d->state->deviceFont;
-    if (d->engine) {
+    if (d->extended) {
+        d->extended->penChanged();
+    } else if (d->engine) {
         d->engine->setDirty(QPaintEngine::DirtyPen);
         d->engine->setDirty(QPaintEngine::DirtyBrush);
         d->engine->setDirty(QPaintEngine::DirtyFont);
@@ -2396,7 +2398,6 @@ QRegion QPainter::clipRegion() const
     // ### Falcon: Use QPainterPath
     for (int i=0; i<d->state->clipInfo.size(); ++i) {
         const QPainterClipInfo &info = d->state->clipInfo.at(i);
-        QRegion other;
         switch (info.clipType) {
 
         case QPainterClipInfo::RegionClip: {
@@ -2449,15 +2450,20 @@ QRegion QPainter::clipRegion() const
                 lastWasNothing = false;
                 continue;
             }
-            if (info.operation == Qt::IntersectClip)
-                region &= QRegion(info.rect) * matrix;
-            else if (info.operation == Qt::UniteClip)
+            if (info.operation == Qt::IntersectClip) {
+                // Use rect intersection if possible.
+                if (matrix.type() <= QTransform::TxScale)
+                    region &= matrix.mapRect(info.rect);
+                else
+                    region &= matrix.map(QRegion(info.rect));
+            } else if (info.operation == Qt::UniteClip) {
                 region |= QRegion(info.rect) * matrix;
-            else if (info.operation == Qt::NoClip) {
+            } else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
                 region = QRegion();
-            } else
+            } else {
                 region = QRegion(info.rect) * matrix;
+            }
             break;
         }
 
@@ -2468,15 +2474,20 @@ QRegion QPainter::clipRegion() const
                 lastWasNothing = false;
                 continue;
             }
-            if (info.operation == Qt::IntersectClip)
-                region &= QRegion(info.rectf.toRect()) * matrix;
-            else if (info.operation == Qt::UniteClip)
+            if (info.operation == Qt::IntersectClip) {
+                // Use rect intersection if possible.
+                if (matrix.type() <= QTransform::TxScale)
+                    region &= matrix.mapRect(info.rectf.toRect());
+                else
+                    region &= matrix.map(QRegion(info.rectf.toRect()));
+            } else if (info.operation == Qt::UniteClip) {
                 region |= QRegion(info.rectf.toRect()) * matrix;
-            else if (info.operation == Qt::NoClip) {
+            } else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
                 region = QRegion();
-            } else
+            } else {
                 region = QRegion(info.rectf.toRect()) * matrix;
+            }
             break;
         }
         }
@@ -5165,6 +5176,9 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
 
     Q_D(QPainter);
 
+    if (!d->engine)
+        return;
+
 #ifndef QT_NO_DEBUG
     qt_painter_thread_test(d->device->devType(), "drawPixmap()");
 #endif
@@ -5173,9 +5187,6 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
         d->extended->drawPixmap(p, pm);
         return;
     }
-
-    if (!d->engine)
-        return;
 
     qreal x = p.x();
     qreal y = p.y();

@@ -885,6 +885,38 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool de
 /*!
     \internal
 
+    Returns the bounding rect of this item's children (excluding itself).
+*/
+void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rect)
+{
+    for (int i = 0; i < children.size(); ++i) {
+        QGraphicsItem *child = children.at(i);
+        QGraphicsItemPrivate *childd = child->d_ptr;
+        bool hasX = childd->hasTransform;
+        bool hasPos = !childd->pos.isNull();
+        if (hasPos || hasX) {
+            QTransform matrix;
+            if (hasX)
+                matrix = child->transform();
+            if (hasPos) {
+                const QPointF &p = childd->pos;
+                matrix *= QTransform::fromTranslate(p.x(), p.y());
+            }
+            matrix *= *x;
+            *rect |= matrix.mapRect(child->boundingRect());
+            if (!childd->children.isEmpty())
+                childd->childrenBoundingRectHelper(&matrix, rect);
+        } else {
+            *rect |= x->mapRect(child->boundingRect());
+            if (!childd->children.isEmpty())
+                childd->childrenBoundingRectHelper(x, rect);
+        }
+    }
+}
+
+/*!
+    \internal
+
     Empty all cached pixmaps from the pixmap cache.
 */
 void QGraphicsItemCache::purge()
@@ -3019,13 +3051,8 @@ void QGraphicsItem::setZValue(qreal z)
 QRectF QGraphicsItem::childrenBoundingRect() const
 {
     QRectF childRect;
-    foreach (QGraphicsItem *child, children()) {
-        QPointF childPos = child->pos();
-        QTransform matrix = child->transform();
-        if (!childPos.isNull())
-            matrix *= QTransform::fromTranslate(childPos.x(), childPos.y());
-        childRect |= matrix.mapRect(child->boundingRect() | child->childrenBoundingRect());
-    }
+    QTransform x;
+    d_ptr->childrenBoundingRectHelper(&x, &childRect);
     return childRect;
 }
 
@@ -4002,11 +4029,18 @@ bool QGraphicsItemPrivate::isProxyWidget() const
 */
 void QGraphicsItem::update(const QRectF &rect)
 {
-    if ((rect.isEmpty() && !rect.isNull()) || d_ptr->discardUpdateRequest())
+    if (rect.isEmpty() && !rect.isNull())
         return;
 
     if (CacheMode(d_ptr->cacheMode) != NoCache) {
         QGraphicsItemCache *cache = d_ptr->extraItemCache();
+        if (d_ptr->discardUpdateRequest(/* ignoreVisibleBit = */ false,
+                                        /* ignoreClipping = */ false,
+                                        /* ignoreDirtyBit = */ true)) {
+            return;
+        }
+
+        // Invalidate cache.
         if (!cache->allExposed) {
             if (rect.isNull()) {
                 cache->allExposed = true;
@@ -4015,6 +4049,11 @@ void QGraphicsItem::update(const QRectF &rect)
                 cache->exposed.append(rect);
             }
         }
+        // Only invalidate cache; item is already dirty.
+        if (d_ptr->dirty)
+            return;
+    } else if (d_ptr->discardUpdateRequest()) {
+        return;
     }
 
     // Effectively the same as updateHelper(rect);

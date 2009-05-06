@@ -92,7 +92,6 @@ void tst_Q3PtrList::cleanup()
 
 void tst_Q3PtrList::replace()
 {
-#if QT_VERSION >= 0x030100
     Q3PtrList<int> list;
     int foo = 4;
     list.setAutoDelete( TRUE );
@@ -110,15 +109,10 @@ void tst_Q3PtrList::replace()
     int *p = new int(7);
     QCOMPARE( list.insert(2, p), (bool)TRUE );
     QCOMPARE( list.replace(2, p), (bool)TRUE );
-
-#else
-    QSKIP( "Not tested with Qt versions < 3.1", SkipAll);
-#endif
 }
 
 void tst_Q3PtrList::replaceStrDeep()
 {
-#if QT_VERSION >= 0x030100
     Q3StrList list;
     const char *str;
 
@@ -137,14 +131,10 @@ void tst_Q3PtrList::replaceStrDeep()
 
     QCOMPARE( list.insert(2, str), (bool)TRUE );
     QCOMPARE( list.replace(2, str), (bool)TRUE );
-#else
-    QSKIP( "Not tested with Qt versions < 3.1", SkipAll);
-#endif
 }
 
 void tst_Q3PtrList::replaceStrShallow()
 {
-#if QT_VERSION >= 0x030100
     Q3StrList list( FALSE );
     char str1[] = "This is string 1";
     char str2[] = "This is string 2";
@@ -166,9 +156,6 @@ void tst_Q3PtrList::replaceStrShallow()
 
     QCOMPARE( list.insert(2, str), (bool)TRUE );
     QCOMPARE( list.replace(2, str), (bool)TRUE );
-#else
-    QSKIP( "Not tested with Qt versions < 3.1", SkipAll);
-#endif
 }
 
 void tst_Q3PtrList::take()

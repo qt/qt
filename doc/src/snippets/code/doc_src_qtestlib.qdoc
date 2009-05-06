@@ -61,7 +61,7 @@ void TestQString::toUpper()
 
 
 //! [9]
-/myTestDirectory$ qmake -project "QT += testlib"
+/myTestDirectory$ qmake -project "CONFIG += qtestlib"
 /myTestDirectory$ qmake
 /myTestDirectory$ make
 //! [9]
@@ -69,7 +69,7 @@ void TestQString::toUpper()
 
 //! [10]
 ********* Start testing of TestQString *********
-Config: Using QTest library 4.1.0, Qt 4.1.0
+Config: Using QTest library %VERSION%, Qt %VERSION%
 PASS   : TestQString::initTestCase()
 PASS   : TestQString::toUpper()
 PASS   : TestQString::cleanupTestCase()

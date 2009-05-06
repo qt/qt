@@ -377,10 +377,8 @@ void tst_QCheckBox::onStateChanged( int state )
 
 void tst_QCheckBox::stateChanged()
 {
-#if  QT_VERSION > 0x040101
     QSignalSpy stateChangedSpy(testWidget, SIGNAL(stateChanged(int)));
-#endif
-   connect(testWidget, SIGNAL(stateChanged(int)), this, SLOT(onStateChanged(int)));
+    connect(testWidget, SIGNAL(stateChanged(int)), this, SLOT(onStateChanged(int)));
     cur_state = -1;
     testWidget->setChecked( TRUE );
     qApp->processEvents();
@@ -396,12 +394,10 @@ void tst_QCheckBox::stateChanged()
     qApp->processEvents();
     QCOMPARE( cur_state, (int)1 );
 
-#if  QT_VERSION > 0x040101
     QCOMPARE(stateChangedSpy.count(), 3);
     testWidget->setCheckState(Qt::PartiallyChecked);
     qApp->processEvents();
     QCOMPARE(stateChangedSpy.count(), 3);
-#endif
 }
 
 void tst_QCheckBox::isToggleButton()

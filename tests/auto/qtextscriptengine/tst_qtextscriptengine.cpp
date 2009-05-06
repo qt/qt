@@ -533,7 +533,7 @@ void tst_QScriptEngine::bengali()
 
 void tst_QScriptEngine::gurmukhi()
 {
-#if QT_VERSION >= 0x040001 && defined(Q_WS_X11)
+#if defined(Q_WS_X11)
     {
         if (QFontDatabase().families(QFontDatabase::Gurmukhi).contains("Lohit Punjabi")) {
             QFont f("Lohit Punjabi");

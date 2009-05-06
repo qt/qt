@@ -49,7 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1_CL) && !defined(QT_OPENGL_ES_1)
 
 /*!
     \class QGLShaderProgram
@@ -261,7 +261,7 @@ public:
     bool compiled;
     bool isPartial;
     bool hasPartialSource;
-    QString errors;
+    QString log;
     QByteArray partialSource;
 
     bool create();
@@ -309,12 +309,12 @@ bool QGLShaderPrivate::compile()
     value = 0;
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &value);
     if (!compiled && value > 1) {
-        char *log = new char [value];
+        char *logbuf = new char [value];
         GLint len;
-        glGetShaderInfoLog(shader, value, &len, log);
-        errors = QString::fromLatin1(log);
-        qWarning() << "QGLShader::compile:" << errors;
-        delete [] log;
+        glGetShaderInfoLog(shader, value, &len, logbuf);
+        log = QString::fromLatin1(logbuf);
+        qWarning() << "QGLShader::compile:" << log;
+        delete [] logbuf;
     }
     return compiled;
 }
@@ -696,13 +696,13 @@ bool QGLShader::isCompiled() const
 }
 
 /*!
-    Returns the errors that occurred during the last compile.
+    Returns the errors and warnings that occurred during the last compile.
 
     \sa setSourceCode()
 */
-QString QGLShader::errors() const
+QString QGLShader::log() const
 {
-    return d->errors;
+    return d->log;
 }
 
 /*!
@@ -746,7 +746,7 @@ public:
     bool linked;
     bool inited;
     bool hasPartialShaders;
-    QString errors;
+    QString log;
     QList<QGLShader *> shaders;
     QList<QGLShader *> anonShaders;
     QGLShader *vertexShader;
@@ -868,13 +868,13 @@ bool QGLShaderProgram::addShader(QGLShader *shader)
     Compiles \a source as a shader of the specified \a type and
     adds it to this shader program.  Returns true if compilation
     was successful, false otherwise.  The compilation errors
-    will be made available via errors().
+    and warnings will be made available via log().
 
     This function is intended to be a short-cut for quickly
     adding vertex and fragment shaders to a shader program without
     creating an instance of QGLShader first.
 
-    \sa removeShader(), link(), errors(), removeAllShaders()
+    \sa removeShader(), link(), log(), removeAllShaders()
 */
 bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const char *source)
 {
@@ -882,7 +882,7 @@ bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const char *source)
         return false;
     QGLShader *shader = new QGLShader(type, this);
     if (!shader->setSourceCode(source)) {
-        d->errors = shader->errors();
+        d->log = shader->log();
         delete shader;
         return false;
     }
@@ -896,13 +896,13 @@ bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const char *source)
     Compiles \a source as a shader of the specified \a type and
     adds it to this shader program.  Returns true if compilation
     was successful, false otherwise.  The compilation errors
-    will be made available via errors().
+    and warnings will be made available via log().
 
     This function is intended to be a short-cut for quickly
     adding vertex and fragment shaders to a shader program without
     creating an instance of QGLShader first.
 
-    \sa removeShader(), link(), errors(), removeAllShaders()
+    \sa removeShader(), link(), log(), removeAllShaders()
 */
 bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const QByteArray& source)
 {
@@ -915,13 +915,13 @@ bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const QByteArray& s
     Compiles \a source as a shader of the specified \a type and
     adds it to this shader program.  Returns true if compilation
     was successful, false otherwise.  The compilation errors
-    will be made available via errors().
+    and warnings will be made available via log().
 
     This function is intended to be a short-cut for quickly
     adding vertex and fragment shaders to a shader program without
     creating an instance of QGLShader first.
 
-    \sa removeShader(), link(), errors(), removeAllShaders()
+    \sa removeShader(), link(), log(), removeAllShaders()
 */
 bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const QString& source)
 {
@@ -1052,14 +1052,14 @@ bool QGLShaderProgram::setProgramBinary(int format, const QByteArray& binary)
     d->linked = (value != 0);
     value = 0;
     glGetProgramiv(d->program, GL_INFO_LOG_LENGTH, &value);
-    d->errors = QString();
+    d->log = QString();
     if (value > 1) {
-        char *log = new char [value];
+        char *logbuf = new char [value];
         GLint len;
-        glGetProgramInfoLog(d->program, value, &len, log);
-        d->errors = QString::fromLatin1(log);
-        qWarning() << "QGLShaderProgram::setProgramBinary:" << d->errors;
-        delete [] log;
+        glGetProgramInfoLog(d->program, value, &len, logbuf);
+        d->log = QString::fromLatin1(logbuf);
+        qWarning() << "QGLShaderProgram::setProgramBinary:" << d->log;
+        delete [] logbuf;
     }
     return d->linked;
 #else
@@ -1073,7 +1073,7 @@ bool QGLShaderProgram::setProgramBinary(int format, const QByteArray& binary)
     Returns the list of program binary formats that are accepted by
     this system for use with setProgramBinary().
 
-    \sa programBinary, setProgramBinary()
+    \sa programBinary(), setProgramBinary()
 */
 QList<int> QGLShaderProgram::programBinaryFormats()
 {
@@ -1095,7 +1095,7 @@ QList<int> QGLShaderProgram::programBinaryFormats()
     Links together the shaders that were added to this program with
     addShader().  Returns true if the link was successful or
     false otherwise.  If the link failed, the error messages can
-    be retrieved with errors().
+    be retrieved with log().
 
     Subclasses can override this function to initialize attributes
     and uniform variables for use in specific shader programs.
@@ -1103,7 +1103,7 @@ QList<int> QGLShaderProgram::programBinaryFormats()
     If the shader program was already linked, calling this
     function again will force it to be re-linked.
 
-    \sa addShader(), errors()
+    \sa addShader(), log()
 */
 bool QGLShaderProgram::link()
 {
@@ -1131,7 +1131,7 @@ bool QGLShaderProgram::link()
                     new QGLShader(QGLShader::VertexShader, this);
             }
             if (!d->vertexShader->setSourceCode(vertexSource)) {
-                d->errors = d->vertexShader->errors();
+                d->log = d->vertexShader->log();
                 return false;
             }
             glAttachShader(d->program, d->vertexShader->d->shader);
@@ -1148,7 +1148,7 @@ bool QGLShaderProgram::link()
                     new QGLShader(QGLShader::FragmentShader, this);
             }
             if (!d->fragmentShader->setSourceCode(fragmentSource)) {
-                d->errors = d->fragmentShader->errors();
+                d->log = d->fragmentShader->log();
                 return false;
             }
             glAttachShader(d->program, d->fragmentShader->d->shader);
@@ -1160,14 +1160,14 @@ bool QGLShaderProgram::link()
     d->linked = (value != 0);
     value = 0;
     glGetProgramiv(d->program, GL_INFO_LOG_LENGTH, &value);
-    d->errors = QString();
+    d->log = QString();
     if (value > 1) {
-        char *log = new char [value];
+        char *logbuf = new char [value];
         GLint len;
-        glGetProgramInfoLog(d->program, value, &len, log);
-        d->errors = QString::fromLatin1(log);
-        qWarning() << "QGLShaderProgram::link:" << d->errors;
-        delete [] log;
+        glGetProgramInfoLog(d->program, value, &len, logbuf);
+        d->log = QString::fromLatin1(logbuf);
+        qWarning() << "QGLShaderProgram::link:" << d->log;
+        delete [] logbuf;
     }
     return d->linked;
 }
@@ -1183,14 +1183,14 @@ bool QGLShaderProgram::isLinked() const
 }
 
 /*!
-    Returns the errors that occurred during the last link()
+    Returns the errors and warnings that occurred during the last link()
     or addShader() with explicitly specified source code.
 
     \sa link()
 */
-QString QGLShaderProgram::errors() const
+QString QGLShaderProgram::log() const
 {
-    return d->errors;
+    return d->log;
 }
 
 /*!
@@ -1211,8 +1211,11 @@ bool QGLShaderProgram::enable()
     return true;
 }
 
+#undef ctx
+#define ctx QGLContext::currentContext()
+
 /*!
-    Disables this shader program in the currently active QGLContext.
+    Disables the active shader program in the current QGLContext.
     This is equivalent to calling \c{glUseProgram(0)}.
 
     \sa enable()
@@ -1226,6 +1229,9 @@ void QGLShaderProgram::disable()
         glUseProgram(0);
 #endif
 }
+
+#undef ctx
+#define ctx d->context
 
 /*!
     Returns the OpenGL identifier associated with this shader program.
@@ -1812,7 +1818,6 @@ void QGLShaderProgram::setUniformValue(const char *name, GLfloat value)
 
 /*!
     Sets the uniform variable at \a location in the current context to \a value.
-    This function must be used when setting sampler values.
 
     \sa setAttributeValue()
 */
@@ -1826,7 +1831,7 @@ void QGLShaderProgram::setUniformValue(int location, GLint value)
     \overload
 
     Sets the uniform variable called \a name in the current context
-    to \a value.  This function must be used when setting sampler values.
+    to \a value.
 
     \sa setAttributeValue()
 */
@@ -1837,6 +1842,7 @@ void QGLShaderProgram::setUniformValue(const char *name, GLint value)
 
 /*!
     Sets the uniform variable at \a location in the current context to \a value.
+    This function should be used when setting sampler values.
 
     \sa setAttributeValue()
 */
@@ -1850,7 +1856,7 @@ void QGLShaderProgram::setUniformValue(int location, GLuint value)
     \overload
 
     Sets the uniform variable called \a name in the current context
-    to \a value.
+    to \a value.  This function should be used when setting sampler values.
 
     \sa setAttributeValue()
 */
@@ -2045,7 +2051,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QColor& color)
 
 /*!
     Sets the uniform variable at \a location in the current context to
-    the x() & y() coordinates of \a point.
+    the x and y coordinates of \a point.
 
     \sa setAttributeValue()
 */
@@ -2060,8 +2066,8 @@ void QGLShaderProgram::setUniformValue(int location, const QPoint& point)
 /*!
     \overload
 
-    Sets the uniform variable at \a location in the current context to
-    the x() & y() coordinates of \a point.
+    Sets the uniform variable associated with \a name in the current
+    context to the x and y coordinates of \a point.
 
     \sa setAttributeValue()
 */
@@ -2072,7 +2078,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QPoint& point)
 
 /*!
     Sets the uniform variable at \a location in the current context to
-    the x() & y() coordinates of \a point.
+    the x and y coordinates of \a point.
 
     \sa setAttributeValue()
 */
@@ -2087,8 +2093,8 @@ void QGLShaderProgram::setUniformValue(int location, const QPointF& point)
 /*!
     \overload
 
-    Sets the uniform variable at \a location in the current context to
-    the x() & y() coordinates of \a point.
+    Sets the uniform variable associated with \a name in the current
+    context to the x and y coordinates of \a point.
 
     \sa setAttributeValue()
 */
@@ -2099,7 +2105,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QPointF& point)
 
 /*!
     Sets the uniform variable at \a location in the current context to
-    the width() & height() of the given \a size.
+    the width and height of the given \a size.
 
     \sa setAttributeValue()
 */
@@ -2114,8 +2120,8 @@ void QGLShaderProgram::setUniformValue(int location, const QSize& size)
 /*!
     \overload
 
-    Sets the uniform variable at \a location in the current context to
-    the width() & height() of the given \a size.
+    Sets the uniform variable associated with \a name in the current
+    context to the width and height of the given \a size.
 
     \sa setAttributeValue()
 */
@@ -2126,7 +2132,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QSize& size)
 
 /*!
     Sets the uniform variable at \a location in the current context to
-    the width() & height() of the given \a size.
+    the width and height of the given \a size.
 
     \sa setAttributeValue()
 */
@@ -2141,8 +2147,8 @@ void QGLShaderProgram::setUniformValue(int location, const QSizeF& size)
 /*!
     \overload
 
-    Sets the uniform variable at \a location in the current context to
-    the width() & height() of the given \a size.
+    Sets the uniform variable associated with \a name in the current
+    context to the width and height of the given \a size.
 
     \sa setAttributeValue()
 */
@@ -2513,8 +2519,7 @@ void QGLShaderProgram::setUniformValue
 
 /*!
     Sets the uniform variable array at \a location in the current
-    context to the \a count elements of \a values.  This overload
-    must be used when setting an array of sampler values.
+    context to the \a count elements of \a values.
 
     \sa setAttributeValue()
 */
@@ -2528,13 +2533,40 @@ void QGLShaderProgram::setUniformValueArray(int location, const GLint *values, i
     \overload
 
     Sets the uniform variable array called \a name in the current
-    context to the \a count elements of \a values.  This overload
-    must be used when setting an array of sampler values.
+    context to the \a count elements of \a values.
 
     \sa setAttributeValue()
 */
 void QGLShaderProgram::setUniformValueArray
         (const char *name, const GLint *values, int count)
+{
+    setUniformValueArray(uniformLocation(name), values, count);
+}
+
+/*!
+    Sets the uniform variable array at \a location in the current
+    context to the \a count elements of \a values.  This overload
+    should be used when setting an array of sampler values.
+
+    \sa setAttributeValue()
+*/
+void QGLShaderProgram::setUniformValueArray(int location, const GLuint *values, int count)
+{
+    if (location != -1)
+        glUniform1iv(location, count, reinterpret_cast<const GLint *>(values));
+}
+
+/*!
+    \overload
+
+    Sets the uniform variable array called \a name in the current
+    context to the \a count elements of \a values.  This overload
+    should be used when setting an array of sampler values.
+
+    \sa setAttributeValue()
+*/
+void QGLShaderProgram::setUniformValueArray
+        (const char *name, const GLuint *values, int count)
 {
     setUniformValueArray(uniformLocation(name), values, count);
 }

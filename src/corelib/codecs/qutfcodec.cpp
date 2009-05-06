@@ -413,9 +413,7 @@ QByteArray QUtf16Codec::name() const
 
 QList<QByteArray> QUtf16Codec::aliases() const
 {
-    QList<QByteArray> list;
-    list << "ISO-10646-UCS-2";
-    return list;
+    return QList<QByteArray>();
 }
 
 int QUtf16BECodec::mibEnum() const

@@ -1167,13 +1167,13 @@ void QTabBar::setCurrentIndex(int index)
         d->currentIndex = index;
         update();
         d->makeVisible(index);
+        d->tabList[index].lastTab = oldIndex;
+        d->layoutWidgets(oldIndex);
+        d->layoutWidgets(index);
 #ifdef QT3_SUPPORT
         emit selected(index);
 #endif
         emit currentChanged(index);
-        d->tabList[index].lastTab = oldIndex;
-        d->layoutWidgets(oldIndex);
-        d->layoutWidgets(index);
     }
 }
 
@@ -1941,8 +1941,10 @@ void QTabBar::changeEvent(QEvent *event)
     if (event->type() == QEvent::StyleChange) {
         d->elideMode = Qt::TextElideMode(style()->styleHint(QStyle::SH_TabBar_ElideMode, 0, this));
         d->useScrollButtons = !style()->styleHint(QStyle::SH_TabBar_PreferNoArrows, 0, this);
+        d->refresh();
+    } else if (event->type() == QEvent::FontChange) {
+        d->refresh();
     }
-    d->refresh();
     QWidget::changeEvent(event);
 }
 

@@ -70,17 +70,15 @@ QT_BEGIN_NAMESPACE
 #endif
 
 // newer platform SDKs use SQLLEN instead of SQLINTEGER
-#if defined(SQLLEN) || defined(Q_OS_WIN64)
+//#if defined(SQLLEN) || defined(Q_OS_WIN64)
+#if ODBCVER >= 0x0270
 # define QSQLLEN SQLLEN
-#else
-# define QSQLLEN SQLINTEGER
-#endif
-
-#if defined(SQLULEN) || defined(Q_OS_WIN64)
 # define QSQLULEN SQLULEN
 #else
+# define QSQLLEN SQLINTEGER
 # define QSQLULEN SQLUINTEGER
 #endif
+
 
 static const int COLNAMESIZE = 256;
 //Map Qt parameter types to ODBC types
@@ -355,7 +353,7 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
             } else {
                 fieldVal += QString::fromAscii(buf, rSize);
             }
-            if (fieldVal.size() + lengthIndicator >= colSize) {
+            if (lengthIndicator - fieldVal.size() <= 0) {
                 // workaround for Drivermanagers that don't return SQL_NO_DATA
                 break;
             }

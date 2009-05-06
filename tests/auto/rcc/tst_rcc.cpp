@@ -59,8 +59,6 @@ public:
 private slots:
     void rcc_data();
     void rcc();
-
-private:
 };
 
 
@@ -68,18 +66,9 @@ QString findExpectedFile(const QString &base)
 {
     QString expectedrccfile = base;
 
-    if (QT_VERSION >= 0x040500 && QFileInfo(expectedrccfile + QLatin1String(".450")).exists())
+    // Must be updated with each minor release.
+    if (QFileInfo(expectedrccfile + QLatin1String(".450")).exists())
         expectedrccfile += QLatin1String(".450");
-    else if (QT_VERSION >= 0x040400 && QFileInfo(expectedrccfile + QLatin1String(".440")).exists())
-        expectedrccfile += QLatin1String(".440");
-    else if (QT_VERSION >= 0x040300 && QFileInfo(expectedrccfile + QLatin1String(".430")).exists())
-        expectedrccfile += QLatin1String(".430");
-    else if (QT_VERSION >= 0x040200 && QFileInfo(expectedrccfile + QLatin1String(".420")).exists())
-        expectedrccfile += QLatin1String(".420");
-    else if (QT_VERSION >= 0x040100 && QFileInfo(expectedrccfile + QLatin1String(".410")).exists())
-        expectedrccfile += QLatin1String(".410");
-    else if (QT_VERSION >= 0x040000 && QFileInfo(expectedrccfile + QLatin1String(".400")).exists())
-        expectedrccfile += QLatin1String(".400");
 
     return expectedrccfile;
 }

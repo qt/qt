@@ -103,12 +103,6 @@ win32 {
                 painting/qprinterinfo_win.cpp \
                 painting/qregion_win.cpp
         !win32-borland:!wince*:LIBS += -lmsimg32
-        contains(QT_CONFIG, direct3d) {
-                HEADERS += painting/qpaintengine_d3d_p.h
-                SOURCES += painting/qpaintengine_d3d.cpp
-                RESOURCES += painting/qpaintengine_d3d.qrc
-                LIBS += -ldxguid
-        }
 }
 
 embedded {
@@ -362,8 +356,4 @@ embedded {
         SOURCES += painting/qwindowsurface_qws.cpp
 }
 
-win32:contains(QT_CONFIG, direct3d) {
-        HEADERS += painting/qwindowsurface_d3d_p.h
-        SOURCES += painting/qwindowsurface_d3d.cpp
-}
 

@@ -265,6 +265,11 @@ bool QHttpNetworkConnectionPrivate::ensureConnection(QAbstractSocket *socket)
     if (socket->state() != QAbstractSocket::ConnectedState) {
         // connect to the host if not already connected.
         int index = indexOf(socket);
+        // resend this request after we receive the disconnected signal
+        if (socket->state() == QAbstractSocket::ClosingState) {
+            channels[index].resendCurrent = true;
+            return false;
+        }
         channels[index].state = ConnectingState;
         channels[index].pendingEncrypt = encrypt;
 
@@ -982,6 +987,9 @@ void QHttpNetworkConnectionPrivate::_q_disconnected()
         channels[i].state = ReadingState;
         if (channels[i].reply)
             receiveReply(socket, channels[i].reply);
+    } else if (channels[i].state == IdleState && channels[i].resendCurrent) {
+        // re-sending request because the socket was in ClosingState
+        QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
     }
     channels[i].state = IdleState;
 }

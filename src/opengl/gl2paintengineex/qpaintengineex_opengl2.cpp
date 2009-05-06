@@ -1059,8 +1059,9 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->height = sz.height();
     d->mode = BrushDrawingMode;
 
-    qt_resolve_version_1_3_functions(d->ctx);
-    qt_resolve_glsl_extensions(d->ctx);
+#if !defined(QT_OPENGL_ES_2)
+    qt_resolve_version_2_0_functions(d->ctx);
+#endif
 
     d->last_engine = d->ctx->d_ptr->active_engine;
     d->ctx->d_ptr->active_engine = this;

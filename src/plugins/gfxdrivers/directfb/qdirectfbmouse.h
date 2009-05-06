@@ -61,7 +61,6 @@ public:
 
     void suspend();
     void resume();
-
 protected:
     QDirectFBMouseHandlerPrivate *d;
 };

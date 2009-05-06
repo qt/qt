@@ -902,11 +902,18 @@ void QGraphicsScenePrivate::grabMouse(QGraphicsItem *item, bool implicit)
 {
     // Append to list of mouse grabber items, and send a mouse grab event.
     if (mouseGrabberItems.contains(item)) {
-        if (mouseGrabberItems.last() == item)
-            qWarning("QGraphicsItem::grabMouse: already a mouse grabber");
-        else
+        if (mouseGrabberItems.last() == item) {
+            Q_ASSERT(!implicit);
+            if (!lastMouseGrabberItemHasImplicitMouseGrab) {
+                qWarning("QGraphicsItem::grabMouse: already a mouse grabber");
+            } else {
+                // Upgrade to an explicit mouse grab
+                lastMouseGrabberItemHasImplicitMouseGrab = false;
+            }
+        } else {
             qWarning("QGraphicsItem::grabMouse: already blocked by mouse grabber: %p",
                      mouseGrabberItems.last());
+        }
         return;
     }
 
@@ -4938,9 +4945,11 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             if (newCacheIndent != deviceData->cacheIndent || deviceRect.size() != pix.size()) {
                 QPoint diff = newCacheIndent - deviceData->cacheIndent;
                 QPixmap newPix(deviceRect.size());
+                // ### Investigate removing this fill (test with Plasma and
+                // graphicssystem raster).
+                newPix.fill(Qt::transparent);
                 if (!pix.isNull()) {
                     QPainter newPixPainter(&newPix);
-                    newPixPainter.setCompositionMode(QPainter::CompositionMode_Source);
                     newPixPainter.drawPixmap(-diff, pix);
                     newPixPainter.end();
                 }

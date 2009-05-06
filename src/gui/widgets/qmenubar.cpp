@@ -67,7 +67,7 @@
 #include "qmenubar_p.h"
 #include "qdebug.h"
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 extern bool qt_wince_is_mobile(); //defined in qguifunctions_wce.cpp
 #endif
 
@@ -725,7 +725,7 @@ void QMenuBarPrivate::init()
     if(mac_menubar)
         q->hide();
 #endif
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     if (qt_wince_is_mobile()) {
         wceCreateMenuBar(q->parentWidget());
         if(wce_menubar)
@@ -776,7 +776,7 @@ QMenuBar::~QMenuBar()
     Q_D(QMenuBar);
     d->macDestroyMenuBar();
 #endif
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     Q_D(QMenuBar);
     if (qt_wince_is_mobile())
         d->wceDestroyMenuBar();
@@ -1030,7 +1030,7 @@ void QMenuBar::setVisible(bool visible)
     if(d->mac_menubar)
         return;
 #endif
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     Q_D(QMenuBar);
     if(d->wce_menubar)
         return;
@@ -1282,7 +1282,7 @@ void QMenuBar::actionEvent(QActionEvent *e)
             d->mac_menubar->syncAction(e->action());
     }
 #endif
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     if(d->wce_menubar) {
         if(e->type() == QEvent::ActionAdded)
             d->wce_menubar->addAction(e->action(), d->wce_menubar->findAction(e->before()));
@@ -1374,7 +1374,7 @@ void QMenuBarPrivate::handleReparent()
     macCreateMenuBar(newParent);
 #endif
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     if (qt_wince_is_mobile() && wce_menubar)
         wce_menubar->rebuild();
 #endif
@@ -1614,7 +1614,7 @@ QSize QMenuBar::minimumSizeHint() const
     Q_D(const QMenuBar);
 #ifdef Q_WS_MAC
     const bool as_gui_menubar = !d->mac_menubar;
-#elif defined (Q_OS_WINCE)
+#elif defined (Q_WS_WINCE)
     const bool as_gui_menubar = !d->wce_menubar;
 #else
     const bool as_gui_menubar = true;
@@ -1674,7 +1674,7 @@ QSize QMenuBar::sizeHint() const
     Q_D(const QMenuBar);
 #ifdef Q_WS_MAC
     const bool as_gui_menubar = !d->mac_menubar;
-#elif defined (Q_OS_WINCE)
+#elif defined (Q_WS_WINCE)
     const bool as_gui_menubar = !d->wce_menubar;
 #else
     const bool as_gui_menubar = true;
@@ -1737,7 +1737,7 @@ int QMenuBar::heightForWidth(int) const
     Q_D(const QMenuBar);
 #ifdef Q_WS_MAC
     const bool as_gui_menubar = !d->mac_menubar;
-#elif defined (Q_OS_WINCE)
+#elif defined (Q_WS_WINCE)
     const bool as_gui_menubar = !d->wce_menubar;
 #else
     const bool as_gui_menubar = true;
@@ -1869,13 +1869,13 @@ QWidget *QMenuBar::cornerWidget(Qt::Corner corner) const
   \sa defaultAction()
 */
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 void QMenuBar::setDefaultAction(QAction *act)
 {
     Q_D(QMenuBar);
     if (d->defaultAction == act)
         return;
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     if (qt_wince_is_mobile())
         if (d->defaultAction) {
             disconnect(d->defaultAction, SIGNAL(changed()), this, SLOT(_q_updateDefaultAction()));
@@ -1883,7 +1883,7 @@ void QMenuBar::setDefaultAction(QAction *act)
         }
 #endif
     d->defaultAction = act;
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     if (qt_wince_is_mobile())
         if (d->defaultAction) {
             connect(d->defaultAction, SIGNAL(changed()), this, SLOT(_q_updateDefaultAction()));

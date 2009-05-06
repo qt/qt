@@ -1144,6 +1144,33 @@ void QRasterPaintEnginePrivate::updateMatrixData(QSpanData *spanData, const QBru
     }
 }
 
+// #define QT_CLIPPING_RATIOS
+
+#ifdef QT_CLIPPING_RATIOS
+int rectClips;
+int regionClips;
+int totalClips;
+
+static void checkClipRatios(QRasterPaintEnginePrivate *d)
+{
+    if (d->clip()->hasRectClip)
+        rectClips++;
+    if (d->clip()->hasRegionClip)
+        regionClips++;
+    totalClips++;
+
+    if ((totalClips % 5000) == 0) {
+        printf("Clipping ratio: rectangular=%f%%, region=%f%%, complex=%f%%\n",
+               rectClips * 100.0 / (qreal) totalClips,
+               regionClips * 100.0 / (qreal) totalClips,
+               (totalClips - rectClips - regionClips) * 100.0 / (qreal) totalClips);
+        totalClips = 0;
+        rectClips = 0;
+        regionClips = 0;
+    }
+
+}
+#endif
 
 static void qrasterpaintengine_state_setNoClip(QRasterPaintEngineState *s)
 {
@@ -3192,7 +3219,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     // ### cases we should delegate painting to the font engine
     // ### directly...
 
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
     QFontEngine::Type fontEngineType = ti.fontEngine->type();
     // qDebug() << "type" << fontEngineType << s->matrix.type();
     if ((fontEngineType == QFontEngine::Win && !((QFontEngineWin *) ti.fontEngine)->ttf && s->matrix.type() > QTransform::TxTranslate)
@@ -4438,6 +4465,9 @@ void QClipData::fixup()
  */
 void QClipData::setClipRect(const QRect &rect)
 {
+    if (rect == clipRect)
+        return;
+
 //    qDebug() << "setClipRect" << clipSpanHeight << count << allocated << rect;
     hasRectClip = true;
     hasRegionClip = false;
@@ -4452,7 +4482,6 @@ void QClipData::setClipRect(const QRect &rect)
         delete m_spans;
         m_spans = 0;
     }
-
 
 //    qDebug() << xmin << xmax << ymin << ymax;
 }

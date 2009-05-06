@@ -364,7 +364,7 @@ void addFontToDatabase(QString familyName, const QString &scriptName,
                 signature->fsUsb[0], signature->fsUsb[1],
                 signature->fsUsb[2], signature->fsUsb[3]
             };
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
             if (signature->fsUsb[0] == 0) {
                 // If the unicode ranges bit mask is zero then
                 // EnumFontFamiliesEx failed to determine it properly.
@@ -699,6 +699,7 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
     }
 
     bool stockFont = false;
+    bool preferClearTypeAA = false;
 
     HFONT hfont = 0;
 
@@ -714,7 +715,7 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
             f = deffnt;
         else if (fam == QLatin1String("system"))
             f = SYSTEM_FONT;
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
         else if (fam == QLatin1String("system_fixed"))
             f = SYSTEM_FIXED_FONT;
         else if (fam == QLatin1String("ansi_fixed"))
@@ -773,7 +774,7 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
         int strat = OUT_DEFAULT_PRECIS;
         if (request.styleStrategy & QFont::PreferBitmap) {
             strat = OUT_RASTER_PRECIS;
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
         } else if (request.styleStrategy & QFont::PreferDevice) {
             strat = OUT_DEVICE_PRECIS;
         } else if (request.styleStrategy & QFont::PreferOutline) {
@@ -793,16 +794,18 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
 
         if (request.styleStrategy & QFont::PreferMatch)
             qual = DRAFT_QUALITY;
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
         else if (request.styleStrategy & QFont::PreferQuality)
             qual = PROOF_QUALITY;
 #endif
 
         if (request.styleStrategy & QFont::PreferAntialias) {
-            if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP)
+            if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP) {
                 qual = 5; // == CLEARTYPE_QUALITY;
-            else
+                preferClearTypeAA = true;
+            } else {
                 qual = ANTIALIASED_QUALITY;
+            }
         } else if (request.styleStrategy & QFont::NoAntialias) {
             qual = NONANTIALIASED_QUALITY;
         }
@@ -869,7 +872,7 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
                 qErrnoWarning("QFontEngine::loadEngine: CreateFontIndirect with stretch failed");
         }
 
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
         if (hfont == 0) {
             hfont = (HFONT)GetStockObject(ANSI_VAR_FONT);
             stockFont = true;
@@ -883,6 +886,9 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
 
     }
     QFontEngineWin *few = new QFontEngineWin(font_name, hfont, stockFont, lf);
+
+    if (preferClearTypeAA)
+        few->glyphFormat = QFontEngineGlyphCache::Raster_RGBMask;
 
     // Also check for OpenType tables when using complex scripts
     // ### TODO: This only works for scripts that require OpenType. More generally
@@ -1134,7 +1140,7 @@ static void getFamiliesAndSignatures(const QByteArray &fontData, QFontDatabasePr
             signature.fsUsb[1] = qFromBigEndian<quint32>(table + 46);
             signature.fsUsb[2] = qFromBigEndian<quint32>(table + 50);
             signature.fsUsb[3] = qFromBigEndian<quint32>(table + 54);
-    
+
             signature.fsCsb[0] = qFromBigEndian<quint32>(table + 78);
             signature.fsCsb[1] = qFromBigEndian<quint32>(table + 82);
         }

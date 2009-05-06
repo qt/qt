@@ -280,10 +280,10 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
     ensureCreated();
 
     if (!ctx->d_ptr->fbo)
-        glGenFramebuffersEXT(1, &ctx->d_ptr->fbo);
+        glGenFramebuffers(1, &ctx->d_ptr->fbo);
 
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, ctx->d_ptr->fbo);
-    glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+    glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
         qt_gl_preferredTextureTarget(), m_textureId, 0);
 
     const int x0 = 0;
@@ -291,7 +291,7 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
     const int y0 = 0;
     const int y1 = m_height;
 
-    glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, m_renderFbo->handle());
+    glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, m_renderFbo->handle());
 
     glDisable(GL_SCISSOR_TEST);
 
@@ -301,7 +301,7 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
             GL_NEAREST);
 
     if (keepCurrentFboBound)
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
 }
 
 void QGLPixmapData::swapBuffers()

@@ -42,10 +42,6 @@
 
 #include <QtTest/QtTest>
 
-#if QT_VERSION < 0x040200
-QTEST_NOOP_MAIN
-#else
-
 #include <qcoreapplication.h>
 #include <qnetworkinterface.h>
 #include <qtcpsocket.h>
@@ -210,5 +206,3 @@ void tst_QNetworkInterface::copyInvalidInterface()
 
 QTEST_MAIN(tst_QNetworkInterface)
 #include "tst_qnetworkinterface.moc"
-
-#endif

@@ -121,9 +121,6 @@ void tst_QPrinter::getSetCheck()
     obj1.setCollateCopies(false);
     QCOMPARE(false, obj1.collateCopies());
     obj1.setCollateCopies(true);
-#if !defined(Q_OS_UNIX) && QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Apparently only the Unix (ps) printer supports collate at the moment", Continue);
-#endif
     QCOMPARE(true, obj1.collateCopies());
 
     obj1.setColorMode(QPrinter::GrayScale);
@@ -185,9 +182,6 @@ void tst_QPrinter::getSetCheck()
     obj1.setFontEmbeddingEnabled(false);
     QCOMPARE(false, obj1.fontEmbeddingEnabled());
     obj1.setFontEmbeddingEnabled(true);
-#if !defined(Q_OS_UNIX) && QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Apparently only the Unix (ps) printer supports font embedding at the moment", Continue);
-#endif
     QCOMPARE(true, obj1.fontEmbeddingEnabled());
 
     // PageSize QPrinter::pageSize()
@@ -255,19 +249,12 @@ void tst_QPrinter::cleanup()
 
 void tst_QPrinter::testPageSetupDialog()
 {
-#if QT_VERSION < 0x040102
-    QSKIP("QPrinter::OutputFormat doesn't exist in Qt 4.0.x and test crashes on < 4.1.2");
-#else
-
     // Make sure this doesn't crash at least
     {
         QPrinter printer;
         QPageSetupDialog dialog(&printer);
     }
-#endif
 }
-
-
 
 void tst_QPrinter::testPageSize()
 {
@@ -332,10 +319,6 @@ void tst_QPrinter::testPageRectAndPaperRect_data()
 
 void tst_QPrinter::testPageRectAndPaperRect()
 {
-#if QT_VERSION <= 0x040100
-    QEXPECT_FAIL("", "Fixed in Qt 4.1.1", Continue);
-#endif
-
     QFETCH(bool,  withPainter);
     QFETCH(int,  orientation);
     QFETCH(int, resolution);
@@ -529,9 +512,6 @@ void tst_QPrinter::testMulitpleSets()
     QPrinter::PageSize printerPageSize = QPrinter::PageSize(pageSize);
     QPrinter printer(mode);
     printer.setFullPage(true);
-#if QT_VERSION < 0x040103
-    QEXPECT_FAIL("", "Fixed in Qt 4.1.3", SkipAll);
-#endif
 
     int paperWidth, paperHeight;
     //const int Tolerance = 2;

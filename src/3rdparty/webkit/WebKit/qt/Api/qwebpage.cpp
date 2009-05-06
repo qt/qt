@@ -1095,7 +1095,7 @@ QVariant QWebPage::inputMethodQuery(Qt::InputMethodQuery property) const
     This enum describes the types of action which can be performed on the web page.
 
     Actions only have an effect when they are applicable. The availability of
-    actions can be be determined by checking \l{QAction::}{enabled()} on the
+    actions can be be determined by checking \l{QAction::}{isEnabled()} on the
     action returned by \l{QWebPage::}{action()}.
 
     One method of enabling the text editing, cursor movement, and text selection actions
@@ -1198,18 +1198,18 @@ QVariant QWebPage::inputMethodQuery(Qt::InputMethodQuery property) const
 
     Suppose we have a \c Thumbnail class as follows:
 
-    \snippet doc/src/snippets/webkit/webpage/main.cpp 0
+    \snippet webkitsnippets/webpage/main.cpp 0
 
     The \c Thumbnail's constructor takes in a \a url. We connect our QWebPage
     object's \l{QWebPage::}{loadFinished()} signal to our private slot,
     \c render().
 
-    \snippet doc/src/snippets/webkit/webpage/main.cpp 1
+    \snippet webkitsnippets/webpage/main.cpp 1
 
     The \c render() function shows how we can paint a thumbnail using a
     QWebPage object.
 
-    \snippet doc/src/snippets/webkit/webpage/main.cpp 2
+    \snippet webkitsnippets/webpage/main.cpp 2
 
     We begin by setting the \l{QWebPage::viewportSize()}{viewportSize} and
     then we instantiate a QImage object, \c image, with the same size as our
@@ -1450,9 +1450,16 @@ void QWebPage::triggerAction(WebAction action, bool checked)
             openNewWindow(url, frame);
             break;
         }
-        case CopyLinkToClipboard:
+        case CopyLinkToClipboard: {
+#if defined(Q_WS_X11)
+            bool oldSelectionMode = Pasteboard::generalPasteboard()->isSelectionMode();
+            Pasteboard::generalPasteboard()->setSelectionMode(true);
+            editor->copyURL(d->hitTestResult.linkUrl(), d->hitTestResult.linkText());
+            Pasteboard::generalPasteboard()->setSelectionMode(oldSelectionMode);
+#endif
             editor->copyURL(d->hitTestResult.linkUrl(), d->hitTestResult.linkText());
             break;
+        }
         case OpenImageInNewWindow:
             openNewWindow(d->hitTestResult.imageUrl(), frame);
             break;
@@ -2517,7 +2524,7 @@ void QWebPagePrivate::_q_onLoadProgressChanged(int) {
     \sa bytesReceived()
 */
 quint64 QWebPage::totalBytes() const {
-    return d->m_bytesReceived;
+    return d->m_totalBytes;
 }
 
 
@@ -2527,7 +2534,7 @@ quint64 QWebPage::totalBytes() const {
     \sa totalBytes()
 */
 quint64 QWebPage::bytesReceived() const {
-    return d->m_totalBytes;
+    return d->m_bytesReceived;
 }
 
 /*!

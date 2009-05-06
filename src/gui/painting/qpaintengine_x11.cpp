@@ -2352,7 +2352,9 @@ void QX11PaintEngine::drawFreetype(const QPointF &p, const QTextItemInt &ti)
         GlyphSet glyphSet = set->id;
         const QColor &pen = d->cpen.color();
         ::Picture src = X11->getSolidFill(d->scrn, pen);
-        XRenderPictFormat *maskFormat = XRenderFindStandardFormat(X11->display, ft->xglyph_format);
+        XRenderPictFormat *maskFormat = 0;
+        if (ft->xglyph_format != PictStandardA1)
+            maskFormat = XRenderFindStandardFormat(X11->display, ft->xglyph_format);
 
         enum { t_min = SHRT_MIN, t_max = SHRT_MAX };
 

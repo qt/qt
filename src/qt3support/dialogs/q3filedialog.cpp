@@ -631,6 +631,7 @@ public:
 protected:
     void keyPressEvent(QKeyEvent *e);
     void focusOutEvent(QFocusEvent *e);
+    void emitDoRename();
 
 signals:
     void cancelRename();
@@ -1143,16 +1144,20 @@ void QRenameEdit::keyPressEvent(QKeyEvent *e)
 
 void QRenameEdit::focusOutEvent(QFocusEvent *)
 {
-    if (!doRenameAlreadyEmitted) {
-        doRenameAlreadyEmitted = true;
-        emit doRename();
-    }
+    if (!doRenameAlreadyEmitted)
+        emitDoRename();
 }
 
 void QRenameEdit::slotReturnPressed()
 {
+    emitDoRename();
+}
+
+void QRenameEdit::emitDoRename()
+{
     doRenameAlreadyEmitted = true;
     emit doRename();
+    doRenameAlreadyEmitted = false;
 }
 
 /************************************************************************

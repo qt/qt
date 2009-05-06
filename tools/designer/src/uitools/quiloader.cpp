@@ -259,9 +259,9 @@ public:
                 const int row_cnt = tablew->rowCount();
                 const int col_cnt = tablew->columnCount();
                 for (int j = 0; j < col_cnt; ++j)
-                    reTranslateTableItem(tablew->verticalHeaderItem(j), m_className);
+                    reTranslateTableItem(tablew->horizontalHeaderItem(j), m_className);
                 for (int i = 0; i < row_cnt; ++i) {
-                    reTranslateTableItem(tablew->horizontalHeaderItem(i), m_className);
+                    reTranslateTableItem(tablew->verticalHeaderItem(i), m_className);
                     for (int j = 0; j < col_cnt; ++j)
                         reTranslateTableItem(tablew->item(i, j), m_className);
                 }

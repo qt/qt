@@ -105,100 +105,100 @@ QT_BEGIN_NAMESPACE
  */
 static int _gettemp(char *path, int *doopen, int domkdir, int slen)
 {
-	char *start, *trv, *suffp;
-	QT_STATBUF sbuf;
-	int rval;
+    char *start, *trv, *suffp;
+    QT_STATBUF sbuf;
+    int rval;
 #if defined(Q_OS_WIN)
     int pid;
 #else
-	pid_t pid;
+    pid_t pid;
 #endif
 
-	if (doopen && domkdir) {
-		errno = EINVAL;
-		return(0);
-	}
+    if (doopen && domkdir) {
+        errno = EINVAL;
+        return 0;
+    }
 
-	for (trv = path; *trv; ++trv)
-		;
-	trv -= slen;
-	suffp = trv;
-	--trv;
-	if (trv < path) {
-		errno = EINVAL;
-		return (0);
-	}
+    for (trv = path; *trv; ++trv)
+        ;
+    trv -= slen;
+    suffp = trv;
+    --trv;
+    if (trv < path) {
+        errno = EINVAL;
+        return 0;
+    }
 #if defined(Q_OS_WIN) && defined(_MSC_VER) && _MSC_VER >= 1400
-        pid = _getpid();
+    pid = _getpid();
 #else
-        pid = getpid();
+    pid = getpid();
 #endif
-	while (trv >= path && *trv == 'X' && pid != 0) {
-		*trv-- = (pid % 10) + '0';
-		pid /= 10;
-        }
+    while (trv >= path && *trv == 'X' && pid != 0) {
+        *trv-- = (pid % 10) + '0';
+        pid /= 10;
+    }
 
 #ifndef S_ISDIR
-#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#  define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 
-        while (trv >= path && *trv == 'X') {
-            char c;
+    while (trv >= path && *trv == 'X') {
+        char c;
 
-            // CHANGE arc4random() -> random()
-            pid = (qrand() & 0xffff) % (26+26);
-		if (pid < 26)
-			c = pid + 'A';
-		else
-			c = (pid - 26) + 'a';
-		*trv-- = c;
-	}
-	start = trv + 1;
+        // CHANGE arc4random() -> random()
+        pid = (qrand() & 0xffff) % (26+26);
+        if (pid < 26)
+            c = pid + 'A';
+        else
+            c = (pid - 26) + 'a';
+        *trv-- = c;
+    }
+    start = trv + 1;
 
-	/*
-	 * check the target directory; if you have six X's and it
-	 * doesn't exist this runs for a *very* long time.
-	 */
-	if (doopen || domkdir) {
-		for (;; --trv) {
-			if (trv <= path)
-				break;
-			if (*trv == '/') {
-				*trv = '\0';
+    /*
+     * check the target directory; if you have six X's and it
+     * doesn't exist this runs for a *very* long time.
+     */
+    if (doopen || domkdir) {
+        for (;; --trv) {
+            if (trv <= path)
+                break;
+            if (*trv == '/') {
+                *trv = '\0';
 #if defined (Q_OS_WIN) && !defined(Q_OS_WINCE)
-                                if (trv - path == 2 && path[1] == ':') {
-                                    // Special case for Windows drives
-                                    // (e.g., "C:" => "C:\").
-                                    // ### Better to use a Windows
-                                    // call for this.
-									char drive[] = "c:\\";
-                                    drive[0] = path[0];
-                                    rval = QT_STAT(drive, &sbuf);
-                                } else
+                if (trv - path == 2 && path[1] == ':') {
+                    // Special case for Windows drives
+                    // (e.g., "C:" => "C:\").
+                    // ### Better to use a Windows
+                    // call for this.
+                    char drive[] = "c:\\";
+                    drive[0] = path[0];
+                    rval = QT_STAT(drive, &sbuf);
+                } else
 #endif
-				rval = QT_STAT(path, &sbuf);
-				*trv = '/';
-				if (rval != 0)
-					return(0);
-				if (!S_ISDIR(sbuf.st_mode)) {
-					errno = ENOTDIR;
-					return(0);
-				}
-				break;
-			}
-		}
-	}
+                    rval = QT_STAT(path, &sbuf);
+                *trv = '/';
+                if (rval != 0)
+                    return 0;
+                if (!S_ISDIR(sbuf.st_mode)) {
+                    errno = ENOTDIR;
+                    return 0;
+                }
+                break;
+            }
+        }
+    }
 
-	for (;;) {
-		if (doopen) {
+    for (;;) {
+        if (doopen) {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && defined(_MSC_VER) && _MSC_VER >= 1400
-                        if (_sopen_s(doopen, path, QT_OPEN_CREAT|O_EXCL|QT_OPEN_RDWR|QT_OPEN_BINARY
-#ifdef QT_LARGEFILE_SUPPORT
-                                     |QT_OPEN_LARGEFILE
-#endif
-                                     , _SH_DENYNO, _S_IREAD | _S_IWRITE)== 0)
-#else
-#if defined(Q_OS_WINCE)
+            if (_sopen_s(doopen, path, QT_OPEN_CREAT|O_EXCL|QT_OPEN_RDWR|QT_OPEN_BINARY
+#  ifdef QT_LARGEFILE_SUPPORT
+                                       |QT_OPEN_LARGEFILE
+#  endif
+                         , _SH_DENYNO, _S_IREAD | _S_IWRITE)== 0)
+#else // WIN && !CE
+#  if defined(Q_OS_WINCE)
             QString targetPath;
             if (QDir::isAbsolutePath(QString::fromLatin1(path)))
                 targetPath = QLatin1String(path);
@@ -207,72 +207,82 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
 
             if ((*doopen =
                 QT_OPEN(targetPath.toLocal8Bit(), O_CREAT|O_EXCL|O_RDWR
-#else
-                        if ((*doopen =
-                            open(path, QT_OPEN_CREAT|O_EXCL|QT_OPEN_RDWR
-#endif
-#ifdef QT_LARGEFILE_SUPPORT
-                                 |QT_OPEN_LARGEFILE
-#endif
-#  if defined(Q_OS_WINCE)
-                                                             |_O_BINARY
-#  elif defined(Q_OS_WIN)
-                                 |O_BINARY
+#  else // CE
+            if ((*doopen =
+                open(path, QT_OPEN_CREAT|O_EXCL|QT_OPEN_RDWR
 #  endif
-                                 , 0600)) >= 0)
+#  ifdef QT_LARGEFILE_SUPPORT
+                           |QT_OPEN_LARGEFILE
+#  endif
+#  if defined(Q_OS_WINCE)
+                           |_O_BINARY
+#  elif defined(Q_OS_WIN)
+                           |O_BINARY
+#  endif
+#  ifdef O_CLOEXEC
+                           // supported on Linux >= 2.6.23; avoids one extra system call
+                           // and avoids a race condition: if another thread forks, we could
+                           // end up leaking a file descriptor...
+                           |O_CLOEXEC
+#  endif
+                     , 0600)) >= 0)
+#endif // WIN && !CE
+            {
+#if defined(Q_OS_UNIX) && !defined(O_CLOEXEC)
+                fcntl(*doopen, F_SETFD, FD_CLOEXEC);
 #endif
-
-                                return(1);
-                        if (errno != EEXIST)
-                                return(0);
-                } else if (domkdir) {
-#ifdef Q_OS_WIN
-                    if (QT_MKDIR(path) == 0)
-#else
-                    if (mkdir(path, 0700) == 0)
-#endif
-                                return(1);
-                        if (errno != EEXIST)
-                                return(0);
-            }
-#ifndef Q_OS_WIN
-            else if (QT_LSTAT(path, &sbuf))
-			return(errno == ENOENT ? 1 : 0);
-#else
-            if (!QFileInfo(QLatin1String(path)).exists())
                 return 1;
+            }
+            if (errno != EEXIST)
+                return 0;
+        } else if (domkdir) {
+#ifdef Q_OS_WIN
+            if (QT_MKDIR(path) == 0)
+#else
+            if (mkdir(path, 0700) == 0)
+#endif
+                return 1;
+            if (errno != EEXIST)
+                return 0;
+        }
+#ifndef Q_OS_WIN
+        else if (QT_LSTAT(path, &sbuf))
+            return (errno == ENOENT) ? 1 : 0;
+#else
+        if (!QFileInfo(QLatin1String(path)).exists())
+            return 1;
 #endif
 
-                /* tricky little algorwwithm for backward compatibility */
-                for (trv = start;;) {
-                        if (!*trv)
-                                return (0);
-                        if (*trv == 'Z') {
-                                if (trv == suffp)
-                                        return (0);
-                                *trv++ = 'a';
-                        } else {
-                                if (isdigit(*trv))
-                                        *trv = 'a';
-                                else if (*trv == 'z')	/* inc from z to A */
-                                        *trv = 'A';
-                                else {
-                                        if (trv == suffp)
-                                                return (0);
-                                        ++*trv;
-                                }
-                                break;
-                        }
+        /* tricky little algorwwithm for backward compatibility */
+        for (trv = start;;) {
+            if (!*trv)
+                return 0;
+            if (*trv == 'Z') {
+                if (trv == suffp)
+                    return 0;
+                *trv++ = 'a';
+            } else {
+                if (isdigit(*trv))
+                    *trv = 'a';
+                else if (*trv == 'z') /* inc from z to A */
+                    *trv = 'A';
+                else {
+                    if (trv == suffp)
+                        return 0;
+                    ++*trv;
                 }
+                break;
+            }
         }
-        /*NOTREACHED*/
+    }
+    /*NOTREACHED*/
 }
 
 #ifndef Q_WS_WIN
 static int qt_mkstemps(char *path, int slen)
 {
-        int fd = 0;
-        return (_gettemp(path, &fd, 0, slen) ? fd : -1);
+    int fd = 0;
+    return (_gettemp(path, &fd, 0, slen) ? fd : -1);
 }
 #endif
 

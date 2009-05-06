@@ -475,11 +475,7 @@ void tst_QTreeView::construction()
     QCOMPARE(view.iconSize(), QSize());
     QCOMPARE(view.indexAt(QPoint()), QModelIndex());
     QVERIFY(!view.indexWidget(QModelIndex()));
-#if QT_VERSION >= 0x040400
     QVERIFY(qobject_cast<QStyledItemDelegate *>(view.itemDelegate()));
-#else
-    QVERIFY(qobject_cast<QItemDelegate *>(view.itemDelegate()));
-#endif
     QVERIFY(!view.itemDelegateForColumn(-1));
     QVERIFY(!view.itemDelegateForColumn(0));
     QVERIFY(!view.itemDelegateForColumn(1));
@@ -1004,11 +1000,7 @@ void tst_QTreeView::itemDelegate()
 
     {
         QTreeView view;
-#if QT_VERSION >= 0x040400
         QVERIFY(qobject_cast<QStyledItemDelegate *>(view.itemDelegate()));
-#else
-        QVERIFY(qobject_cast<QItemDelegate *>(view.itemDelegate()));
-#endif
         QPointer<QAbstractItemDelegate> oldDelegate = view.itemDelegate();
 
         otherItemDelegate = new QItemDelegate;
@@ -1683,9 +1675,16 @@ void tst_QTreeView::moveCursor()
     view.setColumnHidden(0, true);
     QVERIFY(view.isColumnHidden(0));
     view.show();
+    qApp->setActiveWindow(&view);
 
-    QModelIndex actual = view.moveCursor(PublicView::MoveDown, Qt::NoModifier);
+    //here the first visible index should be selected
+    //because the view got the focus
     QModelIndex expected = model.index(1, 1, QModelIndex());
+    QCOMPARE(view.currentIndex(), expected);
+
+    //then pressing down should go to the next line
+    QModelIndex actual = view.moveCursor(PublicView::MoveDown, Qt::NoModifier);
+    expected = model.index(2, 1, QModelIndex());
     QCOMPARE(actual, expected);
 
     view.setRowHidden(0, QModelIndex(), false);
@@ -1865,14 +1864,8 @@ void tst_QTreeView::indexBelow()
     i = view.indexBelow(i);
     QVERIFY(i.isValid());
     QCOMPARE(i.row(), 1);
-#if QT_VERSION >= 0x040100
     i = view.indexBelow(i);
     QVERIFY(!i.isValid());
-#else
-    // Qt 4.0.x returns the bottom index
-    i = view.indexBelow(i);
-    QVERIFY(i.isValid());
-#endif
 }
 
 void tst_QTreeView::clicked()

@@ -42,10 +42,6 @@
 
 #include <QtTest/QtTest>
 
-#if QT_VERSION < 0x040200
-QTEST_NOOP_MAIN
-#else
-
 #include <qtimeline.h>
 
 //TESTED_CLASS=
@@ -705,5 +701,3 @@ void tst_QTimeLine::resume()
 
 QTEST_MAIN(tst_QTimeLine)
 #include "tst_qtimeline.moc"
-
-#endif //QT_VERSION

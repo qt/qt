@@ -684,7 +684,7 @@ void tst_QMenu::task250673_activeMutliColumnSubMenuPosition()
     class MyMenu : public QMenu
     {
     public:
-        friend class tst_QMenu;
+        int columnCount() const { return QMenu::columnCount(); }
     };
 
     QMenu sub;

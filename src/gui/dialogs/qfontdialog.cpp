@@ -311,11 +311,11 @@ void QFontDialogPrivate::init()
     buttonBox->addButton(QDialogButtonBox::Cancel);
     QObject::connect(buttonBox, SIGNAL(rejected()), q, SLOT(reject()));
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
     q->resize(180, 120);
 #else
     q->resize(500, 360);
-#endif // Q_OS_WINCE
+#endif // Q_WS_WINCE
 
     sizeEdit->installEventFilter(q);
     familyList->installEventFilter(q);

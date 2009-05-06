@@ -787,9 +787,7 @@ void tst_QDir::cd_data()
 #endif
     QTest::newRow("non existant") << "." << "../anonexistingdir" << false << QDir::currentPath();
     QTest::newRow("self") << "." << (QString("../") + QFileInfo(QDir::currentPath()).fileName()) << true << QDir::currentPath();
-#if QT_VERSION > 0x040100
     QTest::newRow("file") << "." << "qdir.pro" << false << "";
-#endif
 }
 
 void tst_QDir::cd()
@@ -827,10 +825,8 @@ void tst_QDir::setNameFilters_data()
 			  			  << QString("foo. bar,foo.bar").split(",");
     QTest::newRow("files1")  << appPath + "testdir/dir" << QString("*r.cpp *.pro").split(" ")
 						  << QString("qdir.pro,qrc_qdir.cpp,tst_qdir.cpp").split(",");
-#if QT_VERSION >= 0x040000
     QTest::newRow("resources1") << QString(":/tst_qdir/resources/entryList") << QStringList("*.data")
                              << QString("file1.data,file2.data,file3.data").split(',');
-#endif
 }
 
 void tst_QDir::setNameFilters()
