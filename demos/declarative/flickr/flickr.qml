@@ -30,7 +30,7 @@ Item {
             scale: Wrapper.PathView.scale; z: Wrapper.PathView.z
 
             transform: [
-                Rotation3D { axis.startX: 30; axis.endX: 30; axis.endY: 60; angle: Wrapper.PathView.angle }
+                Rotation3D { id: Rotation; axis.startX: 30; axis.endX: 30; axis.endY: 60; angle: Wrapper.PathView.angle }
             ]
 
             Connection {
@@ -76,6 +76,7 @@ Item {
                     name: "Details"
                     ParentChange { target: Wrapper; parent: ImageDetails.frontContainer }
                     SetProperties { target: Wrapper; x: 45; y: 35; scale: 1 }
+                    SetProperties { target: Rotation; angle: 0 }
                     SetProperties { target: Shadows; opacity: 0 }
                     SetProperties { target: ImageDetails; y: 20 }
                     SetProperties { target: PhotoGridView; y: "-480" }
@@ -90,7 +91,7 @@ Item {
                 Transition {
                     fromState: "*"; toState: "*"
                     ParentChangeAction { }
-                    NumericAnimation { properties: "x,y,scale,opacity"; duration: 500; easing: "easeInOutQuad" }
+                    NumericAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
                 }
             ]
         }
