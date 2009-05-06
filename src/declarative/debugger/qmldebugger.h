@@ -39,56 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef QMLCONTEXT_P_H
-#define QMLCONTEXT_P_H
+#ifndef QMLDEBUGGER_H
+#define QMLDEBUGGER_H
 
-#include <qmlcontext.h>
-#include <private/qobject_p.h>
-#include <private/qmldeclarativedata_p.h>
-#include <qhash.h>
-#include <qscriptvalue.h>
+#include <QtCore/qpointer.h>
+#include <QtGui/qwidget.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-class QmlContext;
-class QmlEngine;
-class QmlCompiledComponent;
 
-class QmlContextPrivate : public QObjectPrivate
+QT_MODULE(Declarative)
+
+class QTreeWidget;
+class QTreeWidgetItem;
+class QPlainTextEdit;
+class QmlDebugger : public QWidget
 {
-    Q_DECLARE_PUBLIC(QmlContext)
+Q_OBJECT
 public:
-    QmlContextPrivate();
+    QmlDebugger(QWidget *parent = 0);
 
-    QmlContext *parent;
-    QmlEngine *engine;
-    QHash<QString, QObject *> properties;
-    QHash<QString, QVariant> variantProperties;
+    void setDebugObject(QObject *);
 
-    QObjectList defaultObjects;
-    int highPriorityCount;
+public slots:
+    void refresh();
 
-    QScriptValueList scopeChain;
+private slots:
+    void itemPressed(QTreeWidgetItem *);
 
-    QUrl url;
-    QByteArray typeName; 
-    int startLine;
-    int endLine;
-
-    void init();
-
-    void dump();
-    void dump(int depth);
-
-    void destroyed(QObject *);
-
-    enum Priority {
-        HighPriority,
-        NormalPriority
-    };
-    void addDefaultObject(QObject *, Priority);
-
-    QmlSimpleDeclarativeData contextData;
+private:
+    QTreeWidget *m_tree;
+    QPlainTextEdit *m_text;
+    QPointer<QObject> m_object;
 };
+
 QT_END_NAMESPACE
 
-#endif // QMLCONTEXT_P_H
+QT_END_HEADER
+
+#endif // QMLDEBUGGER_H
+

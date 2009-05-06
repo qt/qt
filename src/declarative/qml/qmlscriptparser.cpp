@@ -235,6 +235,11 @@ Object *ProcessAST::defineObjectBinding_helper(int line,
         _scope.removeLast();
         obj->line = line;
 
+        if(initializer) {
+            obj->endLine = initializer->rbraceToken.startLine;
+            obj->endColumn = initializer->rbraceToken.startColumn;
+        }
+
         if (propertyCount) {
             Property *prop = currentProperty();
             Value *v = new Value;

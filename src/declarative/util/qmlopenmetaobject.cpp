@@ -48,6 +48,7 @@ QmlOpenMetaObject::QmlOpenMetaObject(QObject *obj, bool automatic)
 : autoCreate(automatic), parent(0), mem(0), _object(obj)
 {
     mob.setSuperClass(obj->metaObject());
+    mob.setClassName(obj->metaObject()->className());
     mob.setFlags(QMetaObjectBuilder::DynamicMetaObject);
 
     QObjectPrivate *op = QObjectPrivate::get(obj);

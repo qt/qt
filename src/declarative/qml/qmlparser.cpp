@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 using namespace QmlParser;
 
 QmlParser::Object::Object()
-: type(-1), metatype(0), extObjectData(0), defaultProperty(0), line(-1), column(-1)
+: type(-1), metatype(0), extObjectData(0), defaultProperty(0), line(-1), column(-1), endLine(-1), endColumn(-1)
 {
 }
 
