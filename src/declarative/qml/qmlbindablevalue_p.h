@@ -39,56 +39,25 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBINDABLEVALUE_H
-#define QMLBINDABLEVALUE_H
+#ifndef QMLBINDABLEVALUE_P_H
+#define QMLBINDABLEVALUE_P_H
 
-#include <QObject>
-#include <qfxglobal.h>
-#include <qml.h>
-#include <qmlpropertyvaluesource.h>
-#include <QtDeclarative/qmlexpression.h>
-
-
-QT_BEGIN_HEADER
+#include <private/qobject_p.h>
+#include <qmlbindablevalue.h>
+#include <qmlmetaproperty.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-class QmlExpression;
-class QmlContext;
-class QmlBindableValuePrivate;
-class Q_DECLARATIVE_EXPORT QmlBindableValue : public QmlPropertyValueSource, 
-                                              public QmlExpression
+class QmlBindableValuePrivate : public QObjectPrivate
 {
-Q_OBJECT
+    Q_DECLARE_PUBLIC(QmlBindableValue);
 public:
-    QmlBindableValue(QObject *parent);
-    QmlBindableValue(const QString &, QObject *, bool = true, QObject *parent=0);
-    QmlBindableValue(void *, QmlRefCount *, QObject *, QObject *parent);
-    ~QmlBindableValue();
+    QmlBindableValuePrivate();
 
-    virtual void setTarget(const QmlMetaProperty &);
-    QmlMetaProperty property() const;
-
-    Q_CLASSINFO("DefaultProperty", "expression");
-    Q_PROPERTY(QString expression READ expression WRITE setExpression);
-    virtual void setExpression(const QString &);
-
-    void init();
-
-private Q_SLOTS:
-    void update();
-
-protected:
-    virtual void valueChanged();
-
-private:
-    Q_DECLARE_PRIVATE(QmlBindableValue)
+    bool inited;
+    QmlMetaProperty property;
 };
-QML_DECLARE_TYPE(QmlBindableValue);
-
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-#endif // QMLBINDABLEVALUE_H
+#endif // QMLBINDABLEVALUE_P_H
