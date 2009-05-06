@@ -89,7 +89,12 @@
     and QWidget::setCursor(), and it also has a \c RESET function,
     QWidget::unsetCursor(), since no call to QWidget::setCursor() can
     mean \e {reset to the context specific cursor}. The \c RESET
-    function musrt return void and take no parameters.
+    function must return void and take no parameters.
+
+    \o A \c NOTIFY signal is optional. If defined, the signal will be
+    emitted whenever the value of the property changes. The signal must
+    take one parameter, which must be of the same type as the property; the
+    parameter will take the new value of the property.
 
     \o The \c DESIGNABLE attribute indicates whether the property
     should be visible in the property editor of GUI design tool (e.g.,
