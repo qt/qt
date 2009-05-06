@@ -83,6 +83,7 @@ protected:
     bool writeMmpFileLibraryPart(QTextStream& t);
     bool writeMmpFileCapabilityPart(QTextStream& t);
     bool writeMmpFileCompilerOptionPart(QTextStream& t);
+    bool writeMmpFileBinaryVersionPart(QTextStream& t);
     bool writeMmpFileRulesPart(QTextStream& t);
 
     bool writeRegRssFile(QString &appname, QStringList &useritems);
