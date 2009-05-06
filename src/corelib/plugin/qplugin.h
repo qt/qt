@@ -63,6 +63,21 @@ typedef QObject *(*QtPluginInstanceFunction)();
 
 void Q_CORE_EXPORT qRegisterStaticPluginInstanceFunction(QtPluginInstanceFunction function);
 
+struct qt_plugin_instance_deleter
+{
+    qt_plugin_instance_deleter(QPointer<QObject> &instance)
+        : instance_(instance)
+    {
+    }
+
+    ~qt_plugin_instance_deleter()
+    {
+        delete instance_;
+    }
+
+    QPointer<QObject> &instance_;
+};
+
 #define Q_IMPORT_PLUGIN(PLUGIN) \
         extern QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance_##PLUGIN(); \
         class Static##PLUGIN##PluginInstance{ \
@@ -76,8 +91,10 @@ void Q_CORE_EXPORT qRegisterStaticPluginInstanceFunction(QtPluginInstanceFunctio
 #define Q_PLUGIN_INSTANCE(IMPLEMENTATION) \
         { \
             static QT_PREPEND_NAMESPACE(QPointer)<QT_PREPEND_NAMESPACE(QObject)> _instance; \
-            if (!_instance)      \
+            if (!_instance) { \
+                static QT_PREPEND_NAMESPACE(qt_plugin_instance_deleter) deleter(_instance); \
                 _instance = new IMPLEMENTATION; \
+            } \
             return _instance; \
         }
 
