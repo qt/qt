@@ -67,7 +67,8 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
     \snippet doc/src/snippets/code/src_corelib_io_qtextstream.cpp 1
 
     Note that you cannot use QTextStream::atEnd(), which returns true when you
-    have reached the end of the data stream, with stdin.
+    have reached the end of the data stream, with stdin because as long as the
+    application is running, stdin has no end.
 
     Besides using QTextStream's constructors, you can also set the
     device or string QTextStream operates on by calling setDevice() or
