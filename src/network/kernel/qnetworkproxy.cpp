@@ -86,10 +86,11 @@
     The SOCKS5 support in Qt 4 is based on \l{RFC 1928} and \l{RFC 1929}.
     The supported authentication methods are no authentication and
     username/password authentication.  Both IPv4 and IPv6 are
-    supported, but domain name resolution via the SOCKS server is not
-    supported; i.e. all domain names are resolved locally. There are
-    several things to remember when using SOCKS5 with QUdpSocket and
-    QTcpServer:
+    supported. Domain names are resolved through the SOCKS5 server if
+    the QNetworkProxy::HostNameLookupCapability is enabled, otherwise
+    they are resolved locally and the IP address is sent to the
+    server. There are several things to remember when using SOCKS5
+    with QUdpSocket and QTcpServer:
 
     With QUdpSocket, a call to \l {QUdpSocket::bind()}{bind()} may fail
     with a timeout error. If a port number other than 0 is passed to
