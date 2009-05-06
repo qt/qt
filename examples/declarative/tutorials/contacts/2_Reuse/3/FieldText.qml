@@ -4,19 +4,11 @@ Rect {
     height: 30
     radius: 5
     color: "white"
-    properties: Property {
-        name: "text"
-        value: ""
-        onValueChanged: { reset() }
-    }
+    property var text: ""
+    onTextChanged: { reset() }
 //! [value change]
-    properties: Property {
-        name: "label"
-        value: ""
-    }
-    signals: Signal {
-        name: "confirmed"
-    }
+    property var label: ""
+    signal confirmed
     resources: [
         Script {
 

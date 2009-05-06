@@ -5,13 +5,8 @@ Rect {
     height: 30
     color: "red"
     radius: 5
-    properties: Property {
-        name: "expandedWidth"
-        value: 230
-    }
-    signals: Signal {
-        name: "confirmed"
-    }
+    property var expandedWidth: 230
+    signal confirmed
     resources: [
         Script {
             function toggle() {
