@@ -1472,21 +1472,27 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_ProgressBarContents:
         if (const QStyleOptionProgressBarV2 *optionProgressBar = qstyleoption_cast<const QStyleOptionProgressBarV2 *>(option)) {
             QRect progressRect = optionProgressBar->rect;
-            const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? 1.0
-                : (qreal)optionProgressBar->progress / optionProgressBar->maximum;
-            if (optionProgressBar->orientation == Qt::Horizontal) {
-                progressRect.setWidth(int(progressRect.width() * progressFactor));
-                if(optionProgressBar->direction == Qt::RightToLeft)
-                    progressRect.translate(optionProgressBar->rect.width()-progressRect.width(),0);
-                progressRect.adjust(1, 0, -1, 0);
-            } else {
-                progressRect.adjust(0, 1, 0, -1);
-                progressRect.setTop(progressRect.bottom() - int(progressRect.height() * progressFactor));
-            }
 
-            const QS60StylePrivate::SkinElements skinElement = optionProgressBar->orientation == Qt::Horizontal ?
-                QS60StylePrivate::SE_ProgressBarIndicatorHorizontal : QS60StylePrivate::SE_ProgressBarIndicatorVertical;
-            QS60StylePrivate::drawSkinElement(skinElement, painter, progressRect, flags);
+            if (optionProgressBar->minimum == optionProgressBar->maximum && optionProgressBar->minimum == 0) {
+                // busy indicator
+                QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafBarWait, painter, progressRect,flags);           
+            } else {
+                const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? 1.0
+                    : (qreal)optionProgressBar->progress / optionProgressBar->maximum;
+                if (optionProgressBar->orientation == Qt::Horizontal) {
+                    progressRect.setWidth(int(progressRect.width() * progressFactor));
+                    if(optionProgressBar->direction == Qt::RightToLeft)
+                        progressRect.translate(optionProgressBar->rect.width()-progressRect.width(),0);
+                    progressRect.adjust(1, 0, -1, 0);
+                } else {
+                    progressRect.adjust(0, 1, 0, -1);
+                    progressRect.setTop(progressRect.bottom() - int(progressRect.height() * progressFactor));
+                }
+    
+                const QS60StylePrivate::SkinElements skinElement = optionProgressBar->orientation == Qt::Horizontal ?
+                    QS60StylePrivate::SE_ProgressBarIndicatorHorizontal : QS60StylePrivate::SE_ProgressBarIndicatorVertical;
+                QS60StylePrivate::drawSkinElement(skinElement, painter, progressRect, flags);
+            }
         }
         break;
     case CE_ProgressBarGroove:
