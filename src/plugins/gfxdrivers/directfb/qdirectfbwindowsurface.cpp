@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdirectfbsurface.h"
+#include "qdirectfbwindowsurface.h"
 #include "qdirectfbscreen.h"
 #include "qdirectfbpaintengine.h"
 
@@ -50,13 +50,14 @@
 
 //#define QT_DIRECTFB_DEBUG_SURFACES 1
 
-QDirectFBSurface::QDirectFBSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen* scr)
+QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen *scr)
     : QDirectFBPaintDevice(scr)
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
 #endif
     , engine(0)
     , flipFlags(flip)
+    , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
 {
     setSurfaceFlags(Opaque | Buffered);
 #ifdef QT_DIRECTFB_TIMING
@@ -65,13 +66,14 @@ QDirectFBSurface::QDirectFBSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen* sc
 #endif
 }
 
-QDirectFBSurface::QDirectFBSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen *scr, QWidget *widget)
+QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen *scr, QWidget *widget)
     : QWSWindowSurface(widget), QDirectFBPaintDevice(scr)
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
 #endif
     , engine(0)
     , flipFlags(flip)
+    , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
 {
     onscreen = widget->testAttribute(Qt::WA_PaintOnScreen);
     if (onscreen)
@@ -84,17 +86,17 @@ QDirectFBSurface::QDirectFBSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen *sc
 #endif
 }
 
-QDirectFBSurface::~QDirectFBSurface()
+QDirectFBWindowSurface::~QDirectFBWindowSurface()
 {
 }
 
-bool QDirectFBSurface::isValid() const
+bool QDirectFBWindowSurface::isValid() const
 {
     return true;
 }
 
 #ifndef QT_NO_DIRECTFB_WM
-void QDirectFBSurface::createWindow()
+void QDirectFBWindowSurface::createWindow()
 {
 #ifdef QT_NO_DIRECTFB_LAYER
 #warning QT_NO_DIRECTFB_LAYER requires QT_NO_DIRECTFB_WM
@@ -110,7 +112,7 @@ void QDirectFBSurface::createWindow()
                                                   |DWDESC_PIXELFORMAT);
 
     description.surface_caps = DSCAPS_NONE;
-    if (screen->preferVideoOnly())
+    if (screen->directFBFlags() & QDirectFBScreen::VideoOnly)
         description.surface_caps = DFBSurfaceCapabilities(description.surface_caps|DSCAPS_VIDEOONLY);
     const QImage::Format format = screen->pixelFormat();
     description.pixelformat = QDirectFBScreen::getSurfacePixelFormat(format);
@@ -130,7 +132,7 @@ void QDirectFBSurface::createWindow()
 }
 #endif // QT_NO_DIRECTFB_WM
 
-void QDirectFBSurface::setGeometry(const QRect &rect, const QRegion &mask)
+void QDirectFBWindowSurface::setGeometry(const QRect &rect, const QRegion &mask)
 {
     if (rect.isNull()) {
 #ifndef QT_NO_DIRECTFB_WM
@@ -184,7 +186,7 @@ void QDirectFBSurface::setGeometry(const QRect &rect, const QRegion &mask)
                 description.height = rect.height();
                 QDirectFBScreen::initSurfaceDescriptionPixelFormat(&description,
                                                                    screen->pixelFormat());
-                dfbSurface = screen->createDFBSurface(&description, false);
+                dfbSurface = screen->createDFBSurface(description, false);
                 forceRaster = (dfbSurface && QDirectFBScreen::getImageFormat(dfbSurface) == QImage::Format_RGB32);
             } else {
                 Q_ASSERT(dfbSurface);
@@ -209,13 +211,13 @@ void QDirectFBSurface::setGeometry(const QRect &rect, const QRegion &mask)
         }
 
         if (result != DFB_OK)
-            DirectFBErrorFatal("QDirectFBSurface::setGeometry()", result);
+            DirectFBErrorFatal("QDirectFBWindowSurface::setGeometry()", result);
     }
 
     QWSWindowSurface::setGeometry(rect, mask);
 }
 
-QByteArray QDirectFBSurface::permanentState() const
+QByteArray QDirectFBWindowSurface::permanentState() const
 {
     QByteArray array;
 #ifdef QT_NO_DIRECTFB_WM
@@ -234,7 +236,7 @@ QByteArray QDirectFBSurface::permanentState() const
     return array;
 }
 
-void QDirectFBSurface::setPermanentState(const QByteArray &state)
+void QDirectFBWindowSurface::setPermanentState(const QByteArray &state)
 {
     SurfaceFlags flags;
     const char *ptr = state.constData();
@@ -248,7 +250,7 @@ void QDirectFBSurface::setPermanentState(const QByteArray &state)
 #endif
 }
 
-bool QDirectFBSurface::scroll(const QRegion &region, int dx, int dy)
+bool QDirectFBWindowSurface::scroll(const QRegion &region, int dx, int dy)
 {
     if (!dfbSurface || !(flipFlags & DSFLIP_BLIT))
         return false;
@@ -276,7 +278,7 @@ bool QDirectFBSurface::scroll(const QRegion &region, int dx, int dy)
     return true;
 }
 
-bool QDirectFBSurface::move(const QPoint &offset)
+bool QDirectFBWindowSurface::move(const QPoint &offset)
 {
     QWSWindowSurface::move(offset);
 
@@ -291,7 +293,7 @@ bool QDirectFBSurface::move(const QPoint &offset)
 #endif
 }
 
-QRegion QDirectFBSurface::move(const QPoint &offset, const QRegion &newClip)
+QRegion QDirectFBWindowSurface::move(const QPoint &offset, const QRegion &newClip)
 {
 #ifdef QT_NO_DIRECTFB_WM
     return QWSWindowSurface::move(offset, newClip);
@@ -304,10 +306,10 @@ QRegion QDirectFBSurface::move(const QPoint &offset, const QRegion &newClip)
 #endif
 }
 
-QPaintEngine* QDirectFBSurface::paintEngine() const
+QPaintEngine* QDirectFBWindowSurface::paintEngine() const
 {
     if (!engine) {
-        QDirectFBSurface *that = const_cast<QDirectFBSurface*>(this);
+        QDirectFBWindowSurface *that = const_cast<QDirectFBWindowSurface*>(this);
         that->engine = new QDirectFBPaintEngine(that);
         return that->engine;
     }
@@ -337,7 +339,7 @@ inline bool isWidgetOpaque(const QWidget *w)
 
     return false;
 }
-void QDirectFBSurface::flush(QWidget *widget, const QRegion &region,
+void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
                              const QPoint &offset)
 {
     Q_UNUSED(widget);
@@ -369,20 +371,15 @@ void QDirectFBSurface::flush(QWidget *widget, const QRegion &region,
     if (!(flipFlags & DSFLIP_BLIT)) {
         dfbSurface->Flip(dfbSurface, 0, flipFlags);
     } else {
-        if (region.numRects() > 1) {
+        if (!boundingRectFlip && region.numRects() > 1) {
             const QVector<QRect> rects = region.rects();
-            DFBSurfaceFlipFlags tmpFlags = flipFlags;
-            if (flipFlags & DSFLIP_WAIT)
-                tmpFlags = DFBSurfaceFlipFlags(flipFlags & ~DSFLIP_WAIT);
+            const DFBSurfaceFlipFlags nonWaitFlags = DFBSurfaceFlipFlags(flipFlags & ~DSFLIP_WAIT);
             for (int i=0; i<rects.size(); ++i) {
                 const QRect &r = rects.at(i);
                 const DFBRegion dfbReg = { r.x() + offset.x(), r.y() + offset.y(),
                                            r.x() + r.width() + offset.x(),
                                            r.y() + r.height() + offset.y() };
-                dfbSurface->Flip(dfbSurface, &dfbReg,
-                                 i + 1 < rects.size()
-                                 ? tmpFlags
-                                 : flipFlags);
+                dfbSurface->Flip(dfbSurface, &dfbReg, i + 1 < rects.size() ? nonWaitFlags : flipFlags);
             }
         } else {
             const QRect r = region.boundingRect();
@@ -405,15 +402,15 @@ void QDirectFBSurface::flush(QWidget *widget, const QRegion &region,
 }
 
 
-void QDirectFBSurface::beginPaint(const QRegion &)
+void QDirectFBWindowSurface::beginPaint(const QRegion &)
 {
 }
 
-void QDirectFBSurface::endPaint(const QRegion &)
+void QDirectFBWindowSurface::endPaint(const QRegion &)
 {
 #ifdef QT_DIRECTFB_DEBUG_SURFACES
     if (bufferImages.count()) {
-        qDebug("QDirectFBSurface::endPaint() this=%p", this);
+        qDebug("QDirectFBWindowSurface::endPaint() this=%p", this);
 
         foreach(QImage* bufferImg, bufferImages)
             qDebug("   Deleting buffer image %p", bufferImg);
@@ -426,7 +423,7 @@ void QDirectFBSurface::endPaint(const QRegion &)
 }
 
 
-QImage* QDirectFBSurface::buffer(const QWidget *widget)
+QImage *QDirectFBWindowSurface::buffer(const QWidget *widget)
 {
     if (!lockedImage)
         return 0;
@@ -444,7 +441,7 @@ QImage* QDirectFBSurface::buffer(const QWidget *widget)
     bufferImages.append(img);
 
 #ifdef QT_DIRECTFB_DEBUG_SURFACES
-    qDebug("QDirectFBSurface::buffer() Created & returned %p", img);
+    qDebug("QDirectFBWindowSurface::buffer() Created & returned %p", img);
 #endif
 
     return img;

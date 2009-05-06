@@ -1510,6 +1510,9 @@ void QWidgetPrivate::invalidateBuffer(const QRect &rect)
 
 void QWidgetPrivate::repaint_sys(const QRegion &rgn)
 {
+    if (data.in_destructor)
+        return;
+
     Q_Q(QWidget);
     if (q->testAttribute(Qt::WA_StaticContents)) {
         if (!extra)
@@ -1517,13 +1520,20 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
         extra->staticContentsSize = data.crect.size();
     }
 
+    QPaintEngine *engine = q->paintEngine();
+    // QGLWidget does not support partial updates if:
+    // 1) The context is double buffered
+    // 2) The context is single buffered and auto-fill background is enabled.
+    const bool noPartialUpdateSupport = (engine && engine->type() == QPaintEngine::OpenGL)
+                                        && (usesDoubleBufferedGLContext || q->autoFillBackground());
+    QRegion toBePainted(noPartialUpdateSupport ? q->rect() : rgn);
+
 #ifdef Q_WS_MAC
     // No difference between update() and repaint() on the Mac.
-    update_sys(rgn);
+    update_sys(toBePainted);
     return;
 #endif
 
-    QRegion toBePainted(rgn);
     toBePainted &= clipRect();
     clipToEffectiveMask(toBePainted);
     if (toBePainted.isEmpty())

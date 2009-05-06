@@ -56,9 +56,7 @@ public:
     QDirectFBMouseHandlerPrivate(QDirectFBMouseHandler *h);
     ~QDirectFBMouseHandlerPrivate();
 
-    void suspend();
-    void resume();
-
+    void setEnabled(bool on);
 private:
     QDirectFBMouseHandler *handler;
     IDirectFBEventBuffer *eventBuffer;
@@ -130,7 +128,7 @@ QDirectFBMouseHandlerPrivate::QDirectFBMouseHandlerPrivate(QDirectFBMouseHandler
 
     mouseNotifier = new QSocketNotifier(fd, QSocketNotifier::Read, this);
     connect(mouseNotifier, SIGNAL(activated(int)),this, SLOT(readMouseData()));
-    resume();
+    setEnabled(true);
 }
 
 QDirectFBMouseHandlerPrivate::~QDirectFBMouseHandlerPrivate()
@@ -139,15 +137,32 @@ QDirectFBMouseHandlerPrivate::~QDirectFBMouseHandlerPrivate()
         eventBuffer->Release(eventBuffer);
 }
 
-void QDirectFBMouseHandlerPrivate::suspend()
+void QDirectFBMouseHandlerPrivate::setEnabled(bool on)
 {
-    mouseNotifier->setEnabled(false);
-}
+    if (mouseNotifier->isEnabled() != on) {
+#ifndef QT_NO_DIRECTFB_LAYER
+        DFBResult result;
+        result = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreenCursor::QDirectFBScreenCursor: "
+                          "Unable to set cooperative level", result);
+        }
+        result = layer->EnableCursor(layer, on ? 1 : 0);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreenCursor::QDirectFBScreenCursor: "
+                          "Unable to enable cursor", result);
+        }
 
-void QDirectFBMouseHandlerPrivate::resume()
-{
-    eventBuffer->Reset(eventBuffer);
-    mouseNotifier->setEnabled(true);
+        result = layer->SetCooperativeLevel(layer, DLSCL_SHARED);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreenCursor::show: "
+                          "Unable to set cooperative level", result);
+        }
+
+        layer->SetCooperativeLevel(layer, DLSCL_SHARED);
+#endif
+        mouseNotifier->setEnabled(on);
+    }
 }
 
 void QDirectFBMouseHandlerPrivate::readMouseData()
@@ -260,12 +275,12 @@ QDirectFBMouseHandler::~QDirectFBMouseHandler()
 
 void QDirectFBMouseHandler::suspend()
 {
-    d->suspend();
+    d->setEnabled(false);
 }
 
 void QDirectFBMouseHandler::resume()
 {
-    d->resume();
+    d->setEnabled(true);
 }
 
 #include "qdirectfbmouse.moc"

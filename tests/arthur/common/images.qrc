@@ -3,6 +3,7 @@
 <qresource>
    <file>images/alpha.png</file>
    <file>images/border.png</file>
+   <file>images/borderimage.png</file>
    <file>images/dome_argb32.png</file>
    <file>images/dome_indexed.png</file>
    <file>images/dome_mono_palette.png</file>

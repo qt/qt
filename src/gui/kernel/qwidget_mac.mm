@@ -4039,7 +4039,11 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     QMacCocoaAutoReleasePool pool;
     bool realWindow = isRealWindow();
 
-    if (realWindow && !(w == 0 && h == 0) && !q->testAttribute(Qt::WA_DontShowOnScreen)) {
+    if (realWindow && !q->testAttribute(Qt::WA_DontShowOnScreen)
+#ifndef QT_MAC_USE_COCOA
+            && !(w == 0 && h == 0)
+#endif
+       ){
         applyMaxAndMinSizeConstraints(w, h);
         topData()->isSetGeometry = 1;
         topData()->isMove = isMove;
@@ -4054,7 +4058,24 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                                     fStrut.top() + fStrut.bottom() + h));
         NSRect cocoaFrameRect = NSMakeRect(frameRect.x(), flipYCoordinate(frameRect.bottom() + 1),
                                            frameRect.width(), frameRect.height());
-        [window setFrame:cocoaFrameRect display:NO];
+
+        QPoint currTopLeft = data.crect.topLeft();
+        if (currTopLeft.x() == x && currTopLeft.y() == y
+                && cocoaFrameRect.size.width != 0
+                && cocoaFrameRect.size.height != 0) {
+            [window setFrame:cocoaFrameRect display:NO];
+        } else {
+            // The window is moved and resized (or resized to zero).
+            // Since Cocoa usually only sends us a resize callback after
+            // setting a window frame, we issue an explicit move as
+            // well. To stop Cocoa from optimize away the move (since the move
+            // would have the same origin as the setFrame call) we shift the
+            // window back and forth inbetween.
+            cocoaFrameRect.origin.y += 1;
+            [window setFrame:cocoaFrameRect display:NO];
+            cocoaFrameRect.origin.y -= 1;
+            [window setFrameOrigin:cocoaFrameRect.origin];
+        }
 #endif
         topData()->isSetGeometry = 0;
     } else {
