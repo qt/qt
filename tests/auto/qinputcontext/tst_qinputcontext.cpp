@@ -45,6 +45,8 @@
 #include <qinputcontext.h>
 #include <qlineedit.h>
 #include <qplaintextedit.h>
+#include <qlayout.h>
+#include <qradiobutton.h>
 
 class tst_QInputContext : public QObject
 {
@@ -62,6 +64,8 @@ public slots:
 private slots:
     void maximumTextLength();
     void filterMouseEvents();
+    void requestSoftwareInputPanel();
+    void closeSoftwareInputPanel();
 };
 
 void tst_QInputContext::maximumTextLength()
@@ -82,7 +86,7 @@ void tst_QInputContext::maximumTextLength()
 class QFilterInputContext : public QInputContext
 {
 public:
-    QFilterInputContext() : successful(false) {}
+    QFilterInputContext() : lastType(QEvent::None) {}
     ~QFilterInputContext() {}
 
     QString identifierName() { return QString(); }
@@ -94,25 +98,97 @@ public:
 
     bool filterEvent( const QEvent *event )
     {
-        successful = event->type() == QEvent::MouseButtonRelease;
+        lastType = event->type();
+        return false;
     }
 
 public:
-    bool successful;
+    QEvent::Type lastType;
 };
 
 void tst_QInputContext::filterMouseEvents()
 {
     QLineEdit le;
     le.show();
+    QApplication::setActiveWindow(&le);
 
     QFilterInputContext *ic = new QFilterInputContext;
     le.setInputContext(ic);
     QTest::mouseClick(&le, Qt::LeftButton);
 
-    QVERIFY(ic->successful);
+    QCOMPARE(ic->lastType, QEvent::MouseButtonRelease);
 
     le.setInputContext(0);
+}
+
+void tst_QInputContext::requestSoftwareInputPanel()
+{
+    QWidget w;
+    QLayout *layout = new QVBoxLayout;
+    QLineEdit *le1, *le2;
+    le1 = new QLineEdit;
+    le2 = new QLineEdit;
+    layout->addWidget(le1);
+    layout->addWidget(le2);
+    w.setLayout(layout);
+
+    QFilterInputContext *ic1, *ic2;
+    ic1 = new QFilterInputContext;
+    ic2 = new QFilterInputContext;
+    le1->setInputContext(ic1);
+    le2->setInputContext(ic2);
+
+    w.show();
+    QApplication::setActiveWindow(&w);
+
+    // Testing single click panel activation.
+    QApplication::setTwoClicksToRequestSIP(false);
+    QTest::mouseClick(le2, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
+    QCOMPARE(ic2->lastType, QEvent::RequestSoftwareInputPanel);
+
+    // Testing double click panel activation.
+    QApplication::setTwoClicksToRequestSIP(true);
+    QTest::mouseClick(le1, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
+    QVERIFY(ic1->lastType != QEvent::RequestSoftwareInputPanel);
+    QTest::mouseClick(le1, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
+    QCOMPARE(ic1->lastType, QEvent::RequestSoftwareInputPanel);
+
+    // Testing right mouse button
+    QTest::mouseClick(le1, Qt::RightButton, Qt::NoModifier, QPoint(5, 5));
+    QVERIFY(ic1->lastType != QEvent::RequestSoftwareInputPanel);
+}
+
+void tst_QInputContext::closeSoftwareInputPanel()
+{
+    QWidget w;
+    QLayout *layout = new QVBoxLayout;
+    QLineEdit *le1, *le2;
+    QRadioButton *rb;
+    le1 = new QLineEdit;
+    le2 = new QLineEdit;
+    rb = new QRadioButton;
+    layout->addWidget(le1);
+    layout->addWidget(le2);
+    layout->addWidget(rb);
+    w.setLayout(layout);
+
+    QFilterInputContext *ic1, *ic2;
+    ic1 = new QFilterInputContext;
+    ic2 = new QFilterInputContext;
+    le1->setInputContext(ic1);
+    le2->setInputContext(ic2);
+
+    w.show();
+    QApplication::setActiveWindow(&w);
+
+    // Testing that panel doesn't close between two input methods aware widgets.
+    QTest::mouseClick(le1, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
+    QTest::mouseClick(le2, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
+    QVERIFY(ic2->lastType != QEvent::CloseSoftwareInputPanel);
+
+    // Testing that panel closes when focusing non-aware widget.
+    QTest::mouseClick(rb, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
+    QCOMPARE(ic2->lastType, QEvent::CloseSoftwareInputPanel);
 }
 
 QTEST_MAIN(tst_QInputContext)

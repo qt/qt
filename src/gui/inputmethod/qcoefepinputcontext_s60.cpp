@@ -31,6 +31,8 @@ QT_BEGIN_NAMESPACE
 QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
     : QInputContext(parent),
       m_fepState(new (ELeave) CAknEdwinState),
+      m_lastImHints(Qt::ImhNone),
+      m_textCapabilities(TCoeInputCapabilities::EAllText),
       m_isEditing(false),
       m_inDestruction(false),
       m_cursorVisibility(1),
@@ -41,12 +43,10 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
     m_fepState->SetObjectProvider(this);
     m_fepState->SetFlags(EAknEditorFlagDefault);
     m_fepState->SetDefaultInputMode( EAknEditorTextInputMode );
-    m_fepState->SetCurrentInputMode( EAknEditorTextInputMode );
     m_fepState->SetPermittedInputModes( EAknEditorAllInputModes );
     m_fepState->SetLocalLanguage(ELangEnglish);
     m_fepState->SetDefaultLanguage(ELangEnglish);
     m_fepState->SetDefaultCase( EAknEditorLowerCase );
-    m_fepState->SetCurrentCase( EAknEditorLowerCase );
     m_fepState->SetPermittedCases( EAknEditorLowerCase|EAknEditorUpperCase );
     m_fepState->SetSpecialCharacterTableResourceId( 0 );
     m_fepState->SetNumericKeymap( EAknEditorStandardNumberModeKeymap );
@@ -74,7 +74,9 @@ void QCoeFepInputContext::reset()
 
 void QCoeFepInputContext::update()
 {
-    // For pre-5.0 SDKs, we don't do any work.
+    updateHints();
+
+    // For pre-5.0 SDKs, we don't do text updates on S60 side.
     if (QSysInfo::s60Version() != QSysInfo::SV_S60_5_0) {
         return;
     }
@@ -92,6 +94,8 @@ void QCoeFepInputContext::setFocusWidget(QWidget *w)
     CCoeEnv::Static()->Fep()->CancelTransaction();
 
     QInputContext::setFocusWidget(w);
+
+    updateHints();
 }
 
 void QCoeFepInputContext::widgetDestroyed(QWidget *w)
@@ -203,44 +207,45 @@ QString QCoeFepInputContext::language()
 
 bool QCoeFepInputContext::filterEvent(const QEvent *event)
 {
-    // For pre-5.0 SDKs, we don't do any work.
+    Q_ASSERT(focusWidget());
+
+    if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) {
+        const QKeyEvent *keyEvent = static_cast<const QKeyEvent *>(event);
+        Q_ASSERT(m_lastImHints == focusWidget()->inputMethodHints());
+        if (keyEvent->key() == Qt::Key_F20 && m_lastImHints & Qt::ImhHiddenText) {
+            // Special case in Symbian. On editors with secret text, F20 is for some reason
+            // considered to be a backspace.
+            QKeyEvent modifiedEvent(keyEvent->type(), Qt::Key_Backspace, keyEvent->modifiers(),
+                    keyEvent->text(), keyEvent->isAutoRepeat(), keyEvent->count());
+            QApplication::sendEvent(focusWidget(), &modifiedEvent);
+            return true;
+        }
+    }
+
+    // For pre-5.0 SDKs, we don't launch the keyboard.
     if (QSysInfo::s60Version() != QSysInfo::SV_S60_5_0) {
         return false;
     }
 
-    if (event->type() == QEvent::MouseButtonPress) {
-        const QMouseEvent *mEvent = static_cast<const QMouseEvent *>(event);
-        m_mousePressPos = mEvent->globalPos();
-    } else if (event->type() == QEvent::MouseButtonRelease) {
+    if (event->type() == QEvent::RequestSoftwareInputPanel) {
         // Notify S60 that we want the virtual keyboard to show up.
-        const QMouseEvent *mEvent = static_cast<const QMouseEvent *>(event);
+        QSymbianControl *sControl;
+        sControl = focusWidget()->effectiveWinId()->MopGetObject(sControl);
+        Q_ASSERT(sControl);
 
-        if (mEvent->modifiers() == Qt::NoModifier
-                && mEvent->button() == Qt::LeftButton
-                && focusWidget() // Not set if prior MouseButtonPress was not on this widget
-                && focusWidget()->rect().contains(focusWidget()->mapFromGlobal(mEvent->globalPos()))
-                && (m_mousePressPos - mEvent->globalPos()).manhattanLength() < QApplication::startDragDistance()) {
-
-            QSymbianControl *sControl;
-            sControl = focusWidget()->effectiveWinId()->MopGetObject(sControl);
-            // The FEP UI temporarily steals focus when it shows up the first time, causing
-            // all sorts of weird effects on the focused widgets. Since it will immediately give
-            // back focus to us, we temporarily disable focus handling until the job's done.
-            if (sControl) {
-                sControl->setIgnoreFocusChanged(true);
-            }
-
-            m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::QT_EAknActivatePenInputRequest);
-
-            if (sControl) {
-                sControl->setIgnoreFocusChanged(false);
-            }
-
-            // Although it is tempting to let the click through by returning false, we have to return
-            // true because the event might have caused focus switches, which may in turn delete
-            // widgets.
-            return true;
+        // The FEP UI temporarily steals focus when it shows up the first time, causing
+        // all sorts of weird effects on the focused widgets. Since it will immediately give
+        // back focus to us, we temporarily disable focus handling until the job's done.
+        if (sControl) {
+            sControl->setIgnoreFocusChanged(true);
         }
+
+        m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::QT_EAknActivatePenInputRequest);
+
+        if (sControl) {
+            sControl->setIgnoreFocusChanged(false);
+        }
+        return true;
     }
 
     return false;
@@ -307,7 +312,7 @@ TCoeInputCapabilities QCoeFepInputContext::inputCapabilities()
         return TCoeInputCapabilities(TCoeInputCapabilities::ENone, 0, 0);
     }
 
-    return TCoeInputCapabilities(TCoeInputCapabilities::EAllText, this, 0);
+    return TCoeInputCapabilities(m_textCapabilities, this, 0);
 }
 
 static QTextCharFormat qt_TCharFormat2QTextCharFormat(const TCharFormat &cFormat)
@@ -321,6 +326,139 @@ static QTextCharFormat qt_TCharFormat2QTextCharFormat(const TCharFormat &cFormat
     qFormat.setFontUnderline(cFormat.iFontPresentation.iUnderline == EUnderlineOn);
 
     return qFormat;
+}
+
+void QCoeFepInputContext::updateHints()
+{
+    QWidget *w = focusWidget();
+    if (w) {
+        Qt::InputMethodHints hints = w->inputMethodHints();
+        if (hints != m_lastImHints) {
+            m_lastImHints = hints;
+            applyHints(hints);
+        }
+    }
+}
+
+void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
+{
+    using namespace Qt;
+
+    bool numbersOnly = hints & ImhDigitsOnly || hints & ImhFormattedNumbersOnly
+            || hints & ImhDialableCharactersOnly;
+    bool noOnlys = !(numbersOnly || hints & ImhUppercaseOnly
+            || hints & ImhLowercaseOnly);
+    TInt flags;
+    Qt::InputMethodHints oldHints = hints;
+
+    // Some sanity checking. Make sure that only one preference is set.
+    InputMethodHints prefs = ImhPreferNumbers | ImhPreferUppercase | ImhPreferLowercase;
+    prefs &= hints;
+    if (prefs != ImhPreferNumbers && prefs != ImhPreferUppercase && prefs != ImhPreferLowercase) {
+        hints &= ~prefs;
+    }
+    if (!noOnlys) {
+        // Make sure that the preference is within the permitted set.
+        if (hints & ImhPreferNumbers && !(hints & ImhDigitsOnly || hints & ImhFormattedNumbersOnly
+                || hints & ImhDialableCharactersOnly)) {
+            hints &= ~ImhPreferNumbers;
+        } else if (hints & ImhPreferUppercase && !(hints & ImhUppercaseOnly)) {
+            hints &= ~ImhPreferUppercase;
+        } else if (hints & ImhPreferLowercase && !(hints & ImhLowercaseOnly)) {
+            hints &= ~ImhPreferLowercase;
+        }
+        // If there is no preference, set it to something within the permitted set.
+        if (!(hints & ImhPreferNumbers || hints & ImhPreferUppercase || hints & ImhPreferLowercase)) {
+            if (hints & ImhLowercaseOnly) {
+                hints |= ImhPreferLowercase;
+            } else if (hints & ImhUppercaseOnly) {
+                hints |= ImhPreferUppercase;
+            } else if (hints & ImhDigitsOnly || hints & ImhFormattedNumbersOnly
+                    || hints & ImhDialableCharactersOnly) {
+                hints |= ImhPreferNumbers;
+            }
+        }
+    }
+
+    if (hints & ImhPreferNumbers) {
+        m_fepState->SetDefaultInputMode(EAknEditorNumericInputMode);
+        m_fepState->SetCurrentInputMode(EAknEditorNumericInputMode);
+    } else {
+        m_fepState->SetDefaultInputMode(EAknEditorTextInputMode);
+        m_fepState->SetCurrentInputMode(EAknEditorTextInputMode);
+    }
+    flags = 0;
+    if (numbersOnly) {
+        flags |= EAknEditorNumericInputMode;
+    }
+    if (hints & ImhUppercaseOnly || hints & ImhLowercaseOnly) {
+        flags |= EAknEditorTextInputMode;
+    }
+    if (flags == 0) {
+        flags = EAknEditorAllInputModes;
+    }
+    m_fepState->SetPermittedInputModes(flags);
+    m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateInputModeUpdate);
+
+    if (hints & ImhPreferLowercase) {
+        m_fepState->SetDefaultCase(EAknEditorLowerCase);
+        m_fepState->SetCurrentCase(EAknEditorLowerCase);
+    } else if (hints & ImhPreferUppercase) {
+        m_fepState->SetDefaultCase(EAknEditorUpperCase);
+        m_fepState->SetCurrentCase(EAknEditorUpperCase);
+    } else if (hints & ImhNoAutoUppercase) {
+        m_fepState->SetDefaultCase(EAknEditorLowerCase);
+        m_fepState->SetCurrentCase(EAknEditorLowerCase);
+    } else {
+        m_fepState->SetDefaultCase(EAknEditorTextCase);
+        m_fepState->SetCurrentCase(EAknEditorTextCase);
+    }
+    flags = 0;
+    if (hints & ImhUppercaseOnly) {
+        flags |= EAknEditorUpperCase;
+    }
+    if (hints & ImhLowercaseOnly) {
+        flags |= EAknEditorLowerCase;
+    }
+    if (flags == 0) {
+        flags = EAknEditorAllCaseModes;
+        if (hints & ImhNoAutoUppercase) {
+            flags &= ~EAknEditorTextCase;
+        }
+    }
+    m_fepState->SetPermittedCases(flags);
+    m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateCaseModeUpdate);
+
+    flags = 0;
+    if (hints & ImhUppercaseOnly && !(hints & ImhLowercaseOnly)
+            || hints & ImhLowercaseOnly && !(hints & ImhUppercaseOnly)) {
+        flags |= EAknEditorFlagFixedCase;
+    }
+    // Using T9 and hidden text together may actually crash the FEP, so check for hidden text too.
+    if (hints & ImhNoPredictiveText || hints & ImhHiddenText) {
+        flags |= EAknEditorFlagNoT9;
+    }
+    m_fepState->SetFlags(flags);
+    m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateFlagsUpdate);
+
+    if (hints & ImhFormattedNumbersOnly) {
+        flags = EAknEditorCalculatorNumberModeKeymap;
+    } else if (hints & ImhDigitsOnly) {
+        flags = EAknEditorPlainNumberModeKeymap;
+    } else {
+        // ImhDialableCharactersOnly is the fallback as well, so we don't need to check for
+        // that flag.
+        flags = EAknEditorStandardNumberModeKeymap;
+    }
+    m_fepState->SetNumericKeymap(static_cast<TAknEditorNumericKeymap>(flags));
+
+    if (hints & ImhHiddenText) {
+        m_textCapabilities = TCoeInputCapabilities::EAllText | TCoeInputCapabilities::ESecretText;
+    } else {
+        m_textCapabilities = TCoeInputCapabilities::EAllText;
+    }
+
+    CCoeEnv::Static()->InputCapabilitiesChanged();
 }
 
 void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
