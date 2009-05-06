@@ -119,10 +119,10 @@ public:
         enum Kind { Warning, Error };
 
         DiagnosticMessage()
-            : kind(Error), line(0), column(0) {}
+            : kind(Error) {}
 
-        DiagnosticMessage(Kind kind, int line, int column, const QString &message)
-            : kind(kind), line(line), column(column), message(message) {}
+        DiagnosticMessage(Kind kind, const JavaScript::AST::SourceLocation &loc, const QString &message)
+            : kind(kind), loc(loc), message(message) {}
 
         bool isWarning() const
         { return kind == Warning; }
@@ -131,8 +131,7 @@ public:
         { return kind == Error; }
 
         Kind kind;
-        int line;
-        int column;
+        JavaScript::AST::SourceLocation loc;
         QString message;
     };
 
@@ -162,10 +161,10 @@ public:
     { return diagnosticMessage().message; }
 
     inline int errorLineNumber() const
-    { return diagnosticMessage().line; }
+    { return diagnosticMessage().loc.startLine; }
 
     inline int errorColumnNumber() const
-    { return diagnosticMessage().column; }
+    { return diagnosticMessage().loc.startColumn; }
 
 protected:
     void reallocateStack();

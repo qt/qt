@@ -264,10 +264,10 @@ public:
         enum Kind { Warning, Error };
 
         DiagnosticMessage()
-            : kind(Error), line(0), column(0) {}
+            : kind(Error) {}
 
-        DiagnosticMessage(Kind kind, int line, int column, const QString &message)
-            : kind(kind), line(line), column(column), message(message) {}
+        DiagnosticMessage(Kind kind, const JavaScript::AST::SourceLocation &loc, const QString &message)
+            : kind(kind), loc(loc), message(message) {}
 
         bool isWarning() const
         { return kind == Warning; }
@@ -276,8 +276,7 @@ public:
         { return kind == Error; }
 
         Kind kind;
-        int line;
-        int column;
+        JavaScript::AST::SourceLocation loc;
         QString message;
     };
 
@@ -307,10 +306,10 @@ public:
     { return diagnosticMessage().message; }
 
     inline int errorLineNumber() const
-    { return diagnosticMessage().line; }
+    { return diagnosticMessage().loc.startLine; }
 
     inline int errorColumnNumber() const
-    { return diagnosticMessage().column; }
+    { return diagnosticMessage().loc.startColumn; }
 
 protected:
     void reallocateStack();
@@ -873,9 +872,8 @@ PrimaryExpression: T_DIVIDE_ ;
 case $rule_number: {
   bool rx = lexer->scanRegExp(Lexer::NoPrefix);
   if (!rx) {
-    diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, lexer->startLineNo(),
-        lexer->startColumnNo(), lexer->errorMessage()));
-      return false;
+    diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, location(lexer), lexer->errorMessage()));
+    return false; // ### remove me
   }
   AST::RegExpLiteral *node = makeAstNode<AST::RegExpLiteral> (driver->nodePool(), lexer->pattern, lexer->flags);
   node->literalToken = loc(1);
@@ -891,9 +889,8 @@ PrimaryExpression: T_DIVIDE_EQ ;
 case $rule_number: {
   bool rx = lexer->scanRegExp(Lexer::EqualPrefix);
   if (!rx) {
-    diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, lexer->startLineNo(),
-        lexer->startColumnNo(), lexer->errorMessage()));
-      return false;
+    diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, location(lexer), lexer->errorMessage()));
+    return false;
   }
   AST::RegExpLiteral *node = makeAstNode<AST::RegExpLiteral> (driver->nodePool(), lexer->pattern, lexer->flags);
   node->literalToken = loc(1);
@@ -2703,10 +2700,8 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
             yylloc.startColumn += yylloc.length;
             yylloc.length = 0;
 
-            const QString msg = QString::fromUtf8("Missing `;'");
-
-            diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Warning,
-                yylloc.startLine, yylloc.startColumn, msg));
+            //const QString msg = QString::fromUtf8("Missing `;'");
+            //diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Warning, yylloc, msg));
 
             first_token = &token_buffer[0];
             last_token = &token_buffer[1];
@@ -2731,9 +2726,7 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
 
         if (t_action(errorState, yytoken)) {
             const QString msg = QString::fromUtf8("Unexpected token `%1'").arg(QLatin1String(spell[token_buffer[0].token]));
-
-            diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error,
-                token_buffer[0].loc.startLine, token_buffer[0].loc.startColumn, msg));
+            diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, token_buffer[0].loc, msg));
 
             action = errorState;
             goto _Lcheck_token;
@@ -2761,9 +2754,7 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
             int a = t_action(errorState, *tk);
             if (a > 0 && t_action(a, yytoken)) {
                 const QString msg = QString::fromUtf8("Expected token `%1'").arg(QLatin1String(spell[*tk]));
-
-                diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error,
-                    token_buffer[0].loc.startLine, token_buffer[0].loc.startColumn, msg));
+                diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, token_buffer[0].loc, msg));
 
                 yytoken = *tk;
                 yylval = 0;
@@ -2785,8 +2776,7 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
             int a = t_action(errorState, tk);
             if (a > 0 && t_action(a, yytoken)) {
                 const QString msg = QString::fromUtf8("Expected token `%1'").arg(QLatin1String(spell[tk]));
-                diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error,
-                    token_buffer[0].loc.startLine, token_buffer[0].loc.startColumn, msg));
+                diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, token_buffer[0].loc, msg));
 
                 yytoken = tk;
                 yylval = 0;
@@ -2799,8 +2789,7 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
         }
 
         const QString msg = QString::fromUtf8("Syntax error");
-        diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error,
-            token_buffer[0].loc.startLine, token_buffer[0].loc.startColumn, msg));
+        diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, token_buffer[0].loc, msg));
     }
 
     return false;
