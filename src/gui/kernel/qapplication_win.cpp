@@ -2432,10 +2432,12 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                     widget = (QETWidget*)qApp->focusWidget();
                 HWND focus = ::GetFocus();
                 //if there is a current widget and the new widget belongs to the same toplevel window
+                //or if the current widget was embedded into non-qt window (i.e. we won't get WM_ACTIVATEAPP)
                 //then we clear the focus on the widget
                 //in case the new widget belongs to a different widget hierarchy, clearing the focus
                 //will be handled because the active window will change
-                if (widget && ::IsChild(widget->window()->internalWinId(), focus)) {
+                const bool embedded = widget && ((QETWidget*)widget->window())->topData()->embedded;
+                if (widget && (embedded || ::IsChild(widget->window()->internalWinId(), focus))) {
                     widget->clearFocus();
                     result = true;
                 } else {

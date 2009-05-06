@@ -62,6 +62,7 @@ QT_BEGIN_NAMESPACE
 SearchWidget::SearchWidget(QHelpSearchEngine *engine, QWidget *parent)
     : QWidget(parent)
     , zoomCount(0)
+    , attached(false)
     , searchEngine(engine)
 {
     QVBoxLayout *vLayout = new QVBoxLayout(this);
@@ -120,6 +121,16 @@ void SearchWidget::resetZoom()
         browser->zoomOut(zoomCount);
         zoomCount = 0;
     }
+}
+
+bool SearchWidget::isAttached() const
+{
+    return attached;
+}
+
+void SearchWidget::setAttached(bool state)
+{
+    attached = state;
 }
 
 void SearchWidget::search() const

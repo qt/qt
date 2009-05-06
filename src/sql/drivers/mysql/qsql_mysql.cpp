@@ -224,7 +224,7 @@ static QTextCodec* codec(MYSQL* mysql)
 static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
                             const QMYSQLDriverPrivate* p)
 {
-    const char *cerr = mysql_error(p->mysql);
+    const char *cerr = p->mysql ? mysql_error(p->mysql) : 0;
     return QSqlError(QLatin1String("QMYSQL: ") + err,
                      p->tc ? toUnicode(p->tc, cerr) : QString::fromLatin1(cerr),
                      type, mysql_errno(p->mysql));

@@ -346,8 +346,15 @@ bool QFSFileEnginePrivate::uncListSharesOnServer(const QString &server, QStringL
 static bool isUncRoot(const QString &server)
 {
     QString localPath = QDir::toNativeSeparators(server);
-    QStringList parts = localPath.split(QLatin1Char('\\'), QString::SkipEmptyParts);
-    return localPath.startsWith(QLatin1String("\\\\")) && parts.count() <= 1;
+    if (!localPath.startsWith(QLatin1String("\\\\")))
+        return false;
+
+    int idx = localPath.indexOf(QLatin1Char('\\'), 2);
+    if (idx == -1 || idx + 1 == localPath.length())
+        return true;
+
+    localPath = localPath.right(localPath.length() - idx - 1).trimmed();
+    return localPath.isEmpty();
 }
 
 static bool isUncPath(const QString &path)

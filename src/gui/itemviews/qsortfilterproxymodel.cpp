@@ -144,6 +144,7 @@ public:
         const QModelIndex &proxy_index) const
     {
         Q_ASSERT(proxy_index.isValid());
+        Q_ASSERT(proxy_index.model() == q_func());
         const void *p = proxy_index.internalPointer();
         Q_ASSERT(p);
         QMap<QModelIndex, Mapping *>::const_iterator it =
@@ -311,6 +312,10 @@ QModelIndex QSortFilterProxyModelPrivate::proxy_to_source(const QModelIndex &pro
 {
     if (!proxy_index.isValid())
         return QModelIndex(); // for now; we may want to be able to set a root index later
+    if (proxy_index.model() != q_func()) {
+        qWarning() << "QSortFilterProxyModel: index from wrong model passed to mapToSource";
+        return QModelIndex();
+    }
     IndexMap::const_iterator it = index_to_iterator(proxy_index);
     Mapping *m = it.value();
     if ((proxy_index.row() >= m->source_rows.size()) || (proxy_index.column() >= m->source_columns.size()))
@@ -324,6 +329,10 @@ QModelIndex QSortFilterProxyModelPrivate::source_to_proxy(const QModelIndex &sou
 {
     if (!source_index.isValid())
         return QModelIndex(); // for now; we may want to be able to set a root index later
+    if (source_index.model() != model) {
+        qWarning() << "QSortFilterProxyModel: index from wrong model passed to mapFromSource";
+        return QModelIndex();
+    }
     QModelIndex source_parent = source_index.parent();
     IndexMap::const_iterator it = create_mapping(source_parent);
     Mapping *m = it.value();

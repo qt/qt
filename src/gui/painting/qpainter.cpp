@@ -2398,7 +2398,6 @@ QRegion QPainter::clipRegion() const
     // ### Falcon: Use QPainterPath
     for (int i=0; i<d->state->clipInfo.size(); ++i) {
         const QPainterClipInfo &info = d->state->clipInfo.at(i);
-        QRegion other;
         switch (info.clipType) {
 
         case QPainterClipInfo::RegionClip: {
@@ -2451,15 +2450,20 @@ QRegion QPainter::clipRegion() const
                 lastWasNothing = false;
                 continue;
             }
-            if (info.operation == Qt::IntersectClip)
-                region &= QRegion(info.rect) * matrix;
-            else if (info.operation == Qt::UniteClip)
+            if (info.operation == Qt::IntersectClip) {
+                // Use rect intersection if possible.
+                if (matrix.type() <= QTransform::TxScale)
+                    region &= matrix.mapRect(info.rect);
+                else
+                    region &= matrix.map(QRegion(info.rect));
+            } else if (info.operation == Qt::UniteClip) {
                 region |= QRegion(info.rect) * matrix;
-            else if (info.operation == Qt::NoClip) {
+            } else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
                 region = QRegion();
-            } else
+            } else {
                 region = QRegion(info.rect) * matrix;
+            }
             break;
         }
 
@@ -2470,15 +2474,20 @@ QRegion QPainter::clipRegion() const
                 lastWasNothing = false;
                 continue;
             }
-            if (info.operation == Qt::IntersectClip)
-                region &= QRegion(info.rectf.toRect()) * matrix;
-            else if (info.operation == Qt::UniteClip)
+            if (info.operation == Qt::IntersectClip) {
+                // Use rect intersection if possible.
+                if (matrix.type() <= QTransform::TxScale)
+                    region &= matrix.mapRect(info.rectf.toRect());
+                else
+                    region &= matrix.map(QRegion(info.rectf.toRect()));
+            } else if (info.operation == Qt::UniteClip) {
                 region |= QRegion(info.rectf.toRect()) * matrix;
-            else if (info.operation == Qt::NoClip) {
+            } else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
                 region = QRegion();
-            } else
+            } else {
                 region = QRegion(info.rectf.toRect()) * matrix;
+            }
             break;
         }
         }
@@ -5133,6 +5142,11 @@ void QPainter::drawConvexPolygon(const QPointF *points, int pointCount)
     d->engine->drawPolygon(points, pointCount, QPaintEngine::ConvexMode);
 }
 
+static inline QPointF roundInDeviceCoordinates(const QPointF &p, const QTransform &m)
+{
+    return m.inverted().map(QPointF(m.map(p).toPoint()));
+}
+
 /*!
     \fn void QPainter::drawPixmap(const QRectF &target, const QPixmap &pixmap, const QRectF &source)
 
@@ -5201,11 +5215,12 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
         || (d->state->opacity != 1.0 && !d->engine->hasFeature(QPaintEngine::ConstantOpacity)))
     {
         save();
-        // If there is no scaling or transformation involved we have to make sure we use the
+        // If there is no rotation involved we have to make sure we use the
         // antialiased and not the aliased coordinate system by rounding the coordinates.
-        if (d->state->matrix.type() <= QTransform::TxTranslate) {
-            x = qRound(x + d->state->matrix.dx()) - d->state->matrix.dx();
-            y = qRound(y + d->state->matrix.dy()) - d->state->matrix.dy();
+        if (d->state->matrix.type() <= QTransform::TxScale) {
+            const QPointF p = roundInDeviceCoordinates(QPointF(x, y), d->state->matrix);
+            x = p.x();
+            y = p.y();
         }
         translate(x, y);
         setBackgroundMode(Qt::TransparentMode);
@@ -5315,16 +5330,21 @@ void QPainter::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
         || ((sw != w || sh != h) && !d->engine->hasFeature(QPaintEngine::PixmapTransform)))
     {
         save();
-        // If there is no scaling or transformation involved we have to make sure we use the
+        // If there is no rotation involved we have to make sure we use the
         // antialiased and not the aliased coordinate system by rounding the coordinates.
+        if (d->state->matrix.type() <= QTransform::TxScale) {
+            const QPointF p = roundInDeviceCoordinates(QPointF(x, y), d->state->matrix);
+            x = p.x();
+            y = p.y();
+        }
+
         if (d->state->matrix.type() <= QTransform::TxTranslate && sw == w && sh == h) {
-            x = qRound(x + d->state->matrix.dx()) - d->state->matrix.dx();
-            y = qRound(y + d->state->matrix.dy()) - d->state->matrix.dy();
             sx = qRound(sx);
             sy = qRound(sy);
             sw = qRound(sw);
             sh = qRound(sh);
         }
+
         translate(x, y);
         scale(w / sw, h / sh);
         setBackgroundMode(Qt::TransparentMode);
@@ -5474,11 +5494,12 @@ void QPainter::drawImage(const QPointF &p, const QImage &image)
         || (d->state->opacity != 1.0 && !d->engine->hasFeature(QPaintEngine::ConstantOpacity)))
     {
         save();
-        // If there is no scaling or transformation involved we have to make sure we use the
+        // If there is no rotation involved we have to make sure we use the
         // antialiased and not the aliased coordinate system by rounding the coordinates.
-        if (d->state->matrix.type() <= QTransform::TxTranslate) {
-            x = qRound(x + d->state->matrix.dx()) - d->state->matrix.dx();
-            y = qRound(y + d->state->matrix.dy()) - d->state->matrix.dy();
+        if (d->state->matrix.type() <= QTransform::TxScale) {
+            const QPointF p = roundInDeviceCoordinates(QPointF(x, y), d->state->matrix);
+            x = p.x();
+            y = p.y();
         }
         translate(x, y);
         setBackgroundMode(Qt::TransparentMode);
@@ -5577,11 +5598,15 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
         || (d->state->opacity != 1.0 && !d->engine->hasFeature(QPaintEngine::ConstantOpacity)))
     {
         save();
-        // If there is no scaling or transformation involved we have to make sure we use the
+        // If there is no rotation involved we have to make sure we use the
         // antialiased and not the aliased coordinate system by rounding the coordinates.
+        if (d->state->matrix.type() <= QTransform::TxScale) {
+            const QPointF p = roundInDeviceCoordinates(QPointF(x, y), d->state->matrix);
+            x = p.x();
+            y = p.y();
+        }
+
         if (d->state->matrix.type() <= QTransform::TxTranslate && sw == w && sh == h) {
-            x = qRound(x + d->state->matrix.dx()) - d->state->matrix.dx();
-            y = qRound(y + d->state->matrix.dy()) - d->state->matrix.dy();
             sx = qRound(sx);
             sy = qRound(sy);
             sw = qRound(sw);
@@ -6324,17 +6349,18 @@ void QPainter::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPo
         setBrush(QBrush(d->state->pen.color(), pixmap));
         setPen(Qt::NoPen);
 
-        // If there is no scaling or transformation involved we have to make sure we use the
+        // If there is no rotation involved we have to make sure we use the
         // antialiased and not the aliased coordinate system by rounding the coordinates.
-        if (d->state->matrix.type() <= QTransform::TxTranslate) {
-            qreal x = qRound(r.x() + d->state->matrix.dx()) - d->state->matrix.dx();
-            qreal y = qRound(r.y() + d->state->matrix.dy()) - d->state->matrix.dy();
-            qreal w = qRound(r.width());
-            qreal h = qRound(r.height());
-            sx = qRound(sx);
-            sy = qRound(sy);
+        if (d->state->matrix.type() <= QTransform::TxScale) {
+            const QPointF p = roundInDeviceCoordinates(r.topLeft(), d->state->matrix);
+
+            if (d->state->matrix.type() <= QTransform::TxTranslate) {
+                sx = qRound(sx);
+                sy = qRound(sy);
+            }
+
             setBrushOrigin(QPointF(r.x()-sx, r.y()-sy));
-            drawRect(QRectF(x, y, w, h));
+            drawRect(QRectF(p, r.size()));
         } else {
             setBrushOrigin(QPointF(r.x()-sx, r.y()-sy));
             drawRect(r);

@@ -1327,13 +1327,21 @@ QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include
             // This is an old legacy fix for PowerPC based Macs, which
             // we shouldn't remove
             while (p < end) {
-                *p = 0xFF000000 | (*p>>8);
+                *p = 0xff000000 | (*p>>8);
                 ++p;
             }
         }
     } else {
         // OpenGL gives ABGR (i.e. RGBA backwards); Qt wants ARGB
-        img = img.rgbSwapped();
+        for (int y = 0; y < h; y++) {
+            uint *q = (uint*)img.scanLine(y);
+            for (int x=0; x < w; ++x) {
+                const uint pixel = *q;
+                *q = ((pixel << 16) & 0xff0000) | ((pixel >> 16) & 0xff) | (pixel & 0xff00ff00);
+                q++;
+            }
+        }
+
     }
     return img.mirrored();
 }
@@ -2398,6 +2406,10 @@ bool QGLContext::create(const QGLContext* shareContext)
         return false;
     reset();
     d->valid = chooseContext(shareContext);
+    if (d->valid && d->paintDevice->devType() == QInternal::Widget) {
+        QWidgetPrivate *wd = qt_widget_private(static_cast<QWidget *>(d->paintDevice));
+        wd->usesDoubleBufferedGLContext = d->glFormat.doubleBuffer();
+    }
     if (d->sharing)  // ok, we managed to share
         qgl_share_reg()->addShare(this, shareContext);
     return d->valid;

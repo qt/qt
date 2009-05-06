@@ -5842,7 +5842,7 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
 
 bool QStyleSheetStyle::event(QEvent *e)
 {
-    return baseStyle()->event(e) || ParentStyle::event(e);
+    return (baseStyle()->event(e) && e->isAccepted()) || ParentStyle::event(e);
 }
 
 void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
