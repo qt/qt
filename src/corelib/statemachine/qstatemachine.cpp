@@ -698,6 +698,13 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
             QAbstractAnimation *anim = animations.at(j);
             QObject::disconnect(anim, SIGNAL(finished()), q, SLOT(_q_animationFinished()));
             stateForAnimation.remove(anim);
+
+            // Stop the (top-level) animation.
+            // ### Stopping nested animation has weird behavior.
+            while (QAnimationGroup *group = anim->group())
+                anim = group;
+            anim->stop();
+
             if (resetAnimationEndValues.contains(anim)) {
                 qobject_cast<QVariantAnimation*>(anim)->setEndValue(QVariant()); // ### generalize
                 resetAnimationEndValues.remove(anim);
@@ -721,11 +728,6 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
             if (!found) {
                 assn.object->setProperty(assn.propertyName, assn.value);
             }
-            // Stop the (top-level) animation.
-            // ### Stopping nested animation has weird behavior.
-            while (QAnimationGroup *group = anim->group())
-                anim = group;
-            anim->stop();
         }
     }
 
