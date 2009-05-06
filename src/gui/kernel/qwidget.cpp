@@ -4805,7 +4805,7 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     Q_ASSERT(engine);
     QPaintEnginePrivate *enginePriv = engine->d_func();
     Q_ASSERT(enginePriv);
-    QPaintDevice *target = painter->worldMatrixEnabled() ? engine->paintDevice() : painter->device();
+    QPaintDevice *target = engine->paintDevice();
     Q_ASSERT(target);
 
     // Render via a pixmap when dealing with non-opaque painters or printers.
