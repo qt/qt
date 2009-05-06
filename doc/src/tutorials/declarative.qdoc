@@ -106,7 +106,7 @@
     confirm icon on the left, the text "Remove" in the middle, and a
     cancel icon on the right.
 
-    \image declarative-removebutton.png
+    \image declarative-removebutton.gif
 
     Because Declarative UI is declarative, you don't pass instructions on
     what to paint in a sequential manner as you may be used to.  Instead
@@ -559,7 +559,7 @@
     data displayed, a delegate to indicate how elements are drawn and
     a view to arrange the elements.
 
-    \image declarative-tutorial-list.png
+    \image declarative-tutorial-list.gif
 
     For the purposes of this tutorial we will be using an SQL query as our
     data model.  This can be declared in the resources section of
@@ -604,8 +604,7 @@
     similar to how the contents of the FieldText and RemoveButton components
     are swapped in and out.
 
-    \image declarative-tutorial-list-closed.png
-    \image declarative-tutorial-list-open.png
+    \image declarative-tutorial-list-open.gif
 
     \snippet declarative/tutorials/contacts/3_Collections/2/ContactView.qml components
 
