@@ -354,11 +354,13 @@ bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
         delayedPressTimer = startTimer(eventDeliveryDelayTimeout);
         if (!delayedPressTimer)
             qWarning("QGestureManager: couldn't start delayed press timer!");
-    }
-    // if we have postponed a mouse press event, postpone all
-    // following event
-    if (delayedPressTimer)
         ret = true;
+    }
+    if (delayedPressTimer && event->type() == QEvent::MouseMove) {
+        // if we have postponed a mouse press event, postpone all
+        // subsequent mouse move events as well.
+        ret = true;
+    }
 
     lastPos = currentPos;
     return ret;
