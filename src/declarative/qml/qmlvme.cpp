@@ -170,7 +170,6 @@ static inline int qIndexOfProperty(QObject *o, const char *name)
 }
 
 QmlVME::QmlVME()
-: exceptionLine(-1)
 {
 }
 
@@ -261,8 +260,12 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QFxCompilerTimer<QFxCompiler::InstrCreateObject> cc;
 #endif
                 QObject *o = types.at(instr.create.type).createInstance(QmlContext::activeContext());
-                if (!o)
+                if (!o) {
+                    if(types.at(instr.create.type).component)
+                        vmeErrors << types.at(instr.create.type).component->errors();
+
                     VME_EXCEPTION("Unable to create object of type" << types.at(instr.create.type).className);
+                }
 
                 if (instr.create.data != -1) {
                     QmlCustomParser *customParser =

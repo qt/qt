@@ -68,8 +68,6 @@ private:
                              QmlInstruction &, QmlCompiledData *);
 
     QList<QmlError> vmeErrors;
-    qint64 exceptionLine;
-    QString exceptionDescription;
 };
 
 QT_END_NAMESPACE

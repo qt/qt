@@ -188,10 +188,9 @@ QDebug operator<<(QDebug debug, const QmlError &error)
 
     output += QLatin1String(": ") + error.description();
 
-    debug << qPrintable(output) << "\n";
+    debug << qPrintable(output);
 
-    if (error.line() > 0 && error.column() > 0 && 
-        url.scheme() == QLatin1String("file")) {
+    if (error.line() > 0 && url.scheme() == QLatin1String("file")) {
         QString file = url.toLocalFile();
         QFile f(file);
         if (f.open(QIODevice::ReadOnly)) {
@@ -202,22 +201,24 @@ QDebug operator<<(QDebug debug, const QmlError &error)
 
             if (lines.count() >= error.line()) {
                 const QString &line = lines.at(error.line() - 1);
-                debug << qPrintable(line) << "\n";
+                debug << "\n    " << qPrintable(line);
 
-                int column = qMax(0, error.column() - 1);
-                column = qMin(column, line.length()); 
+                if(error.column() > 0) {
+                    int column = qMax(0, error.column() - 1);
+                    column = qMin(column, line.length()); 
 
-                QByteArray ind;
-                ind.reserve(column);
-                for (int i = 0; i < column; ++i) {
-                    const QChar ch = line.at(i);
-                    if (ch.isSpace())
-                        ind.append(ch.unicode());
-                    else
-                        ind.append(' ');
+                    QByteArray ind;
+                    ind.reserve(column);
+                    for (int i = 0; i < column; ++i) {
+                        const QChar ch = line.at(i);
+                        if (ch.isSpace())
+                            ind.append(ch.unicode());
+                        else
+                            ind.append(' ');
+                    }
+                    ind.append('^');
+                    debug << "\n    " << ind.constData();
                 }
-                ind.append('^');
-                debug << ind.constData();
             }
         }
     }

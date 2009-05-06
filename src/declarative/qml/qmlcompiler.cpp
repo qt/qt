@@ -1276,9 +1276,10 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
     if (obj->metatype)
         builder.setSuperClass(obj->metatype);
 
-    obj->extObject = builder.toMetaObject();
+    obj->extObjectData = builder.toMetaObject();
+    static_cast<QMetaObject &>(obj->extObject) = *obj->extObjectData;
 
-    output->mos << obj->extObject;
+    output->mos << obj->extObjectData;
     QmlInstruction store;
     store.type = QmlInstruction::StoreMetaObject;
     store.storeMeta.data = output->mos.count() - 1;
