@@ -235,6 +235,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         else
             checkInitState();
     }
+    setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);
 }
 
 MainWindow::~MainWindow()
