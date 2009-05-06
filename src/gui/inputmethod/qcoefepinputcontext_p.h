@@ -63,6 +63,7 @@ public:
 
 private:
     void commitCurrentString();
+    void updateHints();
     void applyHints(Qt::InputMethodHints hints);
 
     // From MCoeFepAwareTextEditor

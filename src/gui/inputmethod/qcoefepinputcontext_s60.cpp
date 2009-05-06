@@ -74,15 +74,7 @@ void QCoeFepInputContext::reset()
 
 void QCoeFepInputContext::update()
 {
-    QWidget *w = focusWidget();
-    if (w) {
-        Qt::InputMethodHints hints = w->inputMethodHints();
-        if (hints != m_lastImHints) {
-            m_lastImHints = hints;
-            applyHints(hints);
-            CCoeEnv::Static()->InputCapabilitiesChanged();
-        }
-    }
+    updateHints();
 
     // For pre-5.0 SDKs, we don't do text updates on S60 side.
     if (QSysInfo::s60Version() != QSysInfo::SV_S60_5_0) {
@@ -102,6 +94,8 @@ void QCoeFepInputContext::setFocusWidget(QWidget *w)
     CCoeEnv::Static()->Fep()->CancelTransaction();
 
     QInputContext::setFocusWidget(w);
+
+    updateHints();
 }
 
 void QCoeFepInputContext::widgetDestroyed(QWidget *w)
@@ -334,29 +328,67 @@ static QTextCharFormat qt_TCharFormat2QTextCharFormat(const TCharFormat &cFormat
     return qFormat;
 }
 
+void QCoeFepInputContext::updateHints()
+{
+    QWidget *w = focusWidget();
+    if (w) {
+        Qt::InputMethodHints hints = w->inputMethodHints();
+        if (hints != m_lastImHints) {
+            m_lastImHints = hints;
+            applyHints(hints);
+        }
+    }
+}
+
 void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
 {
     using namespace Qt;
 
-    // Some sanity checking. Just make sure that the preferred set is within
-    // the permitted set.
-    InputMethodHints prefs = ImhNumbersOnly | ImhUppercaseOnly | ImhLowercaseOnly;
-    prefs &= hints;
-    if (prefs != ImhNumbersOnly && prefs != ImhUppercaseOnly && prefs != ImhLowercaseOnly) {
-        hints &= ~prefs;
-    }
-
-    bool noOnlys = !(hints & ImhNumbersOnly || hints & ImhUppercaseOnly
+    bool numbersOnly = hints & ImhDigitsOnly || hints & ImhFormattedNumbersOnly
+            || hints & ImhDialableCharactersOnly;
+    bool noOnlys = !(numbersOnly || hints & ImhUppercaseOnly
             || hints & ImhLowercaseOnly);
     TInt flags;
+    Qt::InputMethodHints oldHints = hints;
 
-    if (hints & ImhPreferNumbers && noOnlys || hints & ImhNumbersOnly) {
+    // Some sanity checking. Make sure that only one preference is set.
+    InputMethodHints prefs = ImhPreferNumbers | ImhPreferUppercase | ImhPreferLowercase;
+    prefs &= hints;
+    if (prefs != ImhPreferNumbers && prefs != ImhPreferUppercase && prefs != ImhPreferLowercase) {
+        hints &= ~prefs;
+    }
+    if (!noOnlys) {
+        // Make sure that the preference is within the permitted set.
+        if (hints & ImhPreferNumbers && !(hints & ImhDigitsOnly || hints & ImhFormattedNumbersOnly
+                || hints & ImhDialableCharactersOnly)) {
+            hints &= ~ImhPreferNumbers;
+        } else if (hints & ImhPreferUppercase && !(hints & ImhUppercaseOnly)) {
+            hints &= ~ImhPreferUppercase;
+        } else if (hints & ImhPreferLowercase && !(hints & ImhLowercaseOnly)) {
+            hints &= ~ImhPreferLowercase;
+        }
+        // If there is no preference, set it to something within the permitted set.
+        if (!(hints & ImhPreferNumbers || hints & ImhPreferUppercase || hints & ImhPreferLowercase)) {
+            if (hints & ImhLowercaseOnly) {
+                hints |= ImhPreferLowercase;
+            } else if (hints & ImhUppercaseOnly) {
+                hints |= ImhPreferUppercase;
+            } else if (hints & ImhDigitsOnly || hints & ImhFormattedNumbersOnly
+                    || hints & ImhDialableCharactersOnly) {
+                hints |= ImhPreferNumbers;
+            }
+        }
+    }
+
+    if (hints & ImhPreferNumbers) {
         m_fepState->SetDefaultInputMode(EAknEditorNumericInputMode);
+        m_fepState->SetCurrentInputMode(EAknEditorNumericInputMode);
     } else {
         m_fepState->SetDefaultInputMode(EAknEditorTextInputMode);
+        m_fepState->SetCurrentInputMode(EAknEditorTextInputMode);
     }
     flags = 0;
-    if (hints & ImhNumbersOnly) {
+    if (numbersOnly) {
         flags |= EAknEditorNumericInputMode;
     }
     if (hints & ImhUppercaseOnly || hints & ImhLowercaseOnly) {
@@ -368,14 +400,18 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     m_fepState->SetPermittedInputModes(flags);
     m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateInputModeUpdate);
 
-    if (hints & ImhPreferLowercase && noOnlys || hints & ImhLowercaseOnly) {
+    if (hints & ImhPreferLowercase) {
         m_fepState->SetDefaultCase(EAknEditorLowerCase);
-    } else if (hints & ImhPreferUppercase && noOnlys || hints & ImhUppercaseOnly) {
+        m_fepState->SetCurrentCase(EAknEditorLowerCase);
+    } else if (hints & ImhPreferUppercase) {
         m_fepState->SetDefaultCase(EAknEditorUpperCase);
+        m_fepState->SetCurrentCase(EAknEditorUpperCase);
     } else if (hints & ImhNoAutoUppercase) {
         m_fepState->SetDefaultCase(EAknEditorLowerCase);
+        m_fepState->SetCurrentCase(EAknEditorLowerCase);
     } else {
         m_fepState->SetDefaultCase(EAknEditorTextCase);
+        m_fepState->SetCurrentCase(EAknEditorTextCase);
     }
     flags = 0;
     if (hints & ImhUppercaseOnly) {
@@ -405,11 +441,24 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     m_fepState->SetFlags(flags);
     m_fepState->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateFlagsUpdate);
 
+    if (hints & ImhFormattedNumbersOnly) {
+        flags = EAknEditorCalculatorNumberModeKeymap;
+    } else if (hints & ImhDigitsOnly) {
+        flags = EAknEditorPlainNumberModeKeymap;
+    } else {
+        // ImhDialableCharactersOnly is the fallback as well, so we don't need to check for
+        // that flag.
+        flags = EAknEditorStandardNumberModeKeymap;
+    }
+    m_fepState->SetNumericKeymap(static_cast<TAknEditorNumericKeymap>(flags));
+
     if (hints & ImhHiddenText) {
         m_textCapabilities = TCoeInputCapabilities::EAllText | TCoeInputCapabilities::ESecretText;
     } else {
         m_textCapabilities = TCoeInputCapabilities::EAllText;
     }
+
+    CCoeEnv::Static()->InputCapabilitiesChanged();
 }
 
 void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
