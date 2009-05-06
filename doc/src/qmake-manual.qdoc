@@ -932,6 +932,7 @@
     \o \l{qmake Variable Reference#QT}{QT}
     \o \l{qmake Variable Reference#RCC_DIR}{RCC_DIR}
     \o \l{qmake Variable Reference#REQUIRES}{REQUIRES}
+    \o \l{qmake Variable Reference#RESOURCES}{RESOURCES}
     \o \l{qmake Variable Reference#SOURCES}{SOURCES}
     \o \l{qmake Variable Reference#SUBDIRS}{SUBDIRS}
     \o \l{qmake Variable Reference#TARGET}{TARGET}
@@ -2419,6 +2420,12 @@
     missing.
 
     This is mainly used in Qt's build system for building the examples.
+
+    \section1 RESOURCES
+
+    This variable contains the name of the resource collection file (qrc) 
+    for the application. Further information about the resource collection
+    file can be found at \l{The Qt Resource System}.
 
     \section1 RES_FILE
 
