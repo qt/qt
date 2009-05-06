@@ -624,7 +624,7 @@ void QPlainTextEditPrivate::setTopBlock(int blockNumber, int lineNumber, int dx)
 
     if (viewport->updatesEnabled() && viewport->isVisible()) {
         int dy = 0;
-        if (doc->findBlockByLineNumber(control->topBlock).isValid()) {
+        if (doc->findBlockByNumber(control->topBlock).isValid()) {
             dy = (int)(-q->blockBoundingGeometry(block).y())
                  + verticalOffset() - verticalOffset(blockNumber, lineNumber);
         }
