@@ -200,72 +200,73 @@ Object *ProcessAST::defineObjectBinding_helper(int line,
 {
     bool isType = !objectType.isEmpty() && objectType.at(0).isUpper() && !objectType.contains(QLatin1Char('.'));
 
-    if (!isType) {
-        QmlError error;
-        error.setDescription("Expected type name");
-        error.setLine(typeLocation.startLine);
-        error.setColumn(typeLocation.startColumn);
-        _parser->_errors << error;
-        return false;
-    }
-
     int propertyCount = 0;
     for (; propertyName; propertyName = propertyName->next){
         ++propertyCount;
         _stateStack.pushProperty(propertyName->name->asString(), propertyName->identifierToken.startLine);
     }
 
-    // Class
-    const int typeId = _parser->findOrCreateTypeId(objectType);
+    if (!isType) {
 
-    Object *obj = new Object;
-    obj->type = typeId;
-    _scope.append(objectType);
-    obj->typeName = qualifiedNameId().toLatin1();
-    _scope.removeLast();
-    obj->line = line;
+        if(propertyCount || !currentObject()) {
+            QmlError error;
+            error.setDescription("Expected type name");
+            error.setLine(typeLocation.startLine);
+            error.setColumn(typeLocation.startColumn);
+            _parser->_errors << error;
+            return 0;
+        }
 
-    if (propertyCount) {
-        Property *prop = currentProperty();
-        Value *v = new Value;
-        v->object = obj;
-        v->line = line;
-        prop->addValue(v);
+        _stateStack.pushProperty(objectType, line);
+        accept(initializer);
+        _stateStack.pop();
 
-        while (propertyCount--)
-            _stateStack.pop();
+        return 0;
 
     } else {
 
-        if (! _parser->tree()) {
-            _parser->setTree(obj);
+        // Class
+        const int typeId = _parser->findOrCreateTypeId(objectType);
 
-            if (!_parser->scriptFile().isEmpty()) {
-                _stateStack.pushObject(obj);
-                Object *scriptObject= defineObjectBinding(line, 0, QLatin1String("Script"), AST::SourceLocation());
-                _stateStack.pushObject(scriptObject);
-                defineProperty(QLatin1String("src"), line, _parser->scriptFile());
-                _stateStack.pop(); // scriptObject
-                _stateStack.pop(); // object
-            }
+        Object *obj = new Object;
+        obj->type = typeId;
+        _scope.append(objectType);
+        obj->typeName = qualifiedNameId().toLatin1();
+        _scope.removeLast();
+        obj->line = line;
 
-        } else {
-            const State state = _stateStack.top();
+        if (propertyCount) {
+            Property *prop = currentProperty();
             Value *v = new Value;
             v->object = obj;
             v->line = line;
-            if (state.property)
-                state.property->addValue(v);
-            else
-                state.object->getDefaultProperty()->addValue(v);
+            prop->addValue(v);
+
+            while (propertyCount--)
+                _stateStack.pop();
+
+        } else {
+
+            if (! _parser->tree()) {
+                _parser->setTree(obj);
+            } else {
+                const State state = _stateStack.top();
+                Value *v = new Value;
+                v->object = obj;
+                v->line = line;
+                if (state.property)
+                    state.property->addValue(v);
+                else
+                    state.object->getDefaultProperty()->addValue(v);
+            }
         }
+
+        _stateStack.pushObject(obj);
+        accept(initializer);
+        _stateStack.pop();
+
+        return obj;
     }
-
-    _stateStack.pushObject(obj);
-    accept(initializer);
-    _stateStack.pop();
-
-    return obj;
 }
 
 Object *ProcessAST::defineObjectBinding(int line,
@@ -334,12 +335,6 @@ bool ProcessAST::visit(AST::UiImport *node)
     return false;
 }
 
-// UiObjectMember: T_PUBLIC T_DEFAULT UiMemberType T_IDENTIFIER T_COLON Expression
-// UiObjectMember: T_PUBLIC T_DEFAULT UiMemberType T_IDENTIFIER
-// UiObjectMember: T_PUBLIC UiMemberType T_IDENTIFIER T_COLON Expression
-// UiObjectMember: T_PUBLIC UiMemberType T_IDENTIFIER
-//
-// UiMemberType: "property" | "signal"
 bool ProcessAST::visit(AST::UiPublicMember *node)
 {
     if(node->type == AST::UiPublicMember::Signal) {
@@ -662,7 +657,6 @@ void QmlScriptParser::clear()
     _nameSpacePaths.clear();
     _typeNames.clear();
     _errors.clear();
-    _scriptFile.clear();
 }
 
 int QmlScriptParser::findOrCreateTypeId(const QString &name)

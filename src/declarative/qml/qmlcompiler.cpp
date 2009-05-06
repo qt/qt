@@ -1256,7 +1256,7 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
             break;
         }
 
-        builder.addSignal("qml__" + QByteArray::number(ii) + "()");
+        builder.addSignal(p.name + "Changed()");
         builder.addProperty(p.name, type, ii);
     }
 
@@ -1276,9 +1276,10 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
     if (obj->metatype)
         builder.setSuperClass(obj->metatype);
 
-    obj->extObject = builder.toMetaObject();
+    obj->extObjectData = builder.toMetaObject();
+    static_cast<QMetaObject &>(obj->extObject) = *obj->extObjectData;
 
-    output->mos << obj->extObject;
+    output->mos << obj->extObjectData;
     QmlInstruction store;
     store.type = QmlInstruction::StoreMetaObject;
     store.storeMeta.data = output->mos.count() - 1;
@@ -1300,7 +1301,7 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
             assign.type = QmlInstruction::AssignSignal;
             assign.line = obj->line;
             assign.assignSignal.signal = 
-                output->indexForByteArray("onQml__" + QByteArray::number(ii));
+                output->indexForByteArray(p.name + "Changed()");
             assign.assignSignal.value = 
                 output->indexForString(p.onValueChanged);
             output->bytecode << assign;
