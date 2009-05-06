@@ -200,6 +200,7 @@ QWidgetPrivate::QWidgetPrivate(int version) :
         ,needWindowChange(0)
         ,isGLWidget(0)
 #endif
+        ,imHints(Qt::ImhNone)
         ,polished(0)
 
         , size_policy(QSizePolicy::Preferred, QSizePolicy::Preferred)
@@ -8474,7 +8475,7 @@ void QWidget::inputMethodEvent(QInputMethodEvent *event)
 
     \a query specifies which property is queried.
 
-    \sa inputMethodEvent(), QInputMethodEvent, QInputContext
+    \sa inputMethodEvent(), QInputMethodEvent, QInputContext, inputMethodHints
 */
 QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 {
@@ -8487,6 +8488,46 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
         return QVariant();
     }
 }
+
+/*!
+    \property QWidget::inputMethodHints
+    \brief What input method specific hints the widget has.
+
+    This is only relevant for input widgets. It is used by
+    the input method to retrieve hints as to how the input method
+    should operate. For example, if the Qt::ImhFormattedNumbersOnly flag
+    is set, the input method may change its visual components to reflect
+    that only numbers can be entered.
+
+    \note The flags are only hints, so the particular input method
+          implementation is free to ignore them. If you want to be
+          sure that a certain type of characters are entered,
+          you should also set a QValidator on the widget.
+
+    The default value is Qt::ImhNone.
+
+    \since 4.6
+
+    \sa inputMethodQuery(), QInputContext
+*/
+Qt::InputMethodHints QWidget::inputMethodHints() const
+{
+    Q_D(const QWidget);
+    return d->imHints;
+}
+
+void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
+{
+    Q_D(QWidget);
+    d->imHints = hints;
+    // Optimisation to update input context only it has already been created.
+    if (d->ic || qApp->d_func()->inputContext) {
+        QInputContext *ic = inputContext();
+        if (ic)
+            ic->update();
+    }
+}
+
 
 #ifndef QT_NO_DRAGANDDROP
 
