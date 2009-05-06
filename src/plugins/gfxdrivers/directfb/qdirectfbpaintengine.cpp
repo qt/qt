@@ -211,6 +211,8 @@ static QCache<qint64, CachedImage> imageCache(4*1024*1024); // 4 MB
 class QDirectFBPaintEnginePrivate : public QRasterPaintEnginePrivate
 {
 public:
+    enum Scale { NoScale, Scaled, NegativeScale };
+
     QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p);
     ~QDirectFBPaintEnginePrivate();
 
@@ -266,7 +268,7 @@ private:
     bool simplePen;
 
     bool matrixRotShear;
-    enum Scale { NoScale, Scaled, NegativeScale } scale;
+    Scale scale;
 
     SurfaceCache *surfaceCache;
     QTransform transform;
