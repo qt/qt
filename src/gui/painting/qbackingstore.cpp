@@ -491,7 +491,7 @@ static inline void sendUpdateRequest(QWidget *widget, bool updateImmediately)
     if (!widget)
         return;
 
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
     if (QApplicationPrivate::inSizeMove && widget->internalWinId() && !updateImmediately) {
         // Tell Windows to send us a paint event if we're in WM_SIZE/WM_MOVE; posted events
         // are blocked until the mouse button is released. See task 146849.
@@ -1510,6 +1510,9 @@ void QWidgetPrivate::invalidateBuffer(const QRect &rect)
 
 void QWidgetPrivate::repaint_sys(const QRegion &rgn)
 {
+    if (data.in_destructor)
+        return;
+
     Q_Q(QWidget);
     if (q->testAttribute(Qt::WA_StaticContents)) {
         if (!extra)

@@ -72,24 +72,25 @@ Q_DECLARE_METATYPE(QListModelInterface *);
     \qmlclass ListModel 
     \brief The ListModel element defines a free-form list data source.
 
-    The ListModel is a simple XML heirarchy of items containing data roles.
+    The ListModel is a simple heirarchy of items containing data roles.
     For example:
 
     \code
-    <ListModel id="FruitModel">
-        <Fruit>
-            <name>Apple</name>
-            <cost>2.45</cost>
-        <Fruit>
-        <Fruit>
-            <name>Orange</name>
-            <cost>3.25</cost>
-        </Fruit>
-        <Fruit>
-            <name>Banana</name>
-            <cost>1.95</cost>
-        </Fruit>
-    </ListModel>
+    ListModel {
+        id: FruitModel
+        ListElement {
+            name: "Apple"
+            cost: 2.45
+        }
+        ListElement {
+            name: "Orange"
+            cost: 3.25
+        }
+        ListElement {
+            name: "Banana"
+            cost: 1.95
+        }
+    }
     \endcode
 
     Elements beginning with a capital are items.  Elements beginning
@@ -98,14 +99,26 @@ Q_DECLARE_METATYPE(QListModelInterface *);
 
     The defined model can be used in views such as ListView:
     \code
-    <Component id="FruitDelegate">
-        <Item width="200" height="50">
-            <Text text="{name}"/>
-            <Text text="{'$'+cost}" anchors.right="{parent.right}"/>
-        </Item>
-    </Component>
+    Component {
+        id: FruitDelegate
+        Item {
+            width: 200
+            height: 50
+            Text {
+                text: name
+            }
+            Text {
+                text: '$'+cost
+                anchors.right: parent.right
+            }
+        }
+    }
 
-    <ListView model="{FruitModel}" delegate="{FruitDelegate}" anchors.fill="{parent}"/>
+    ListView {
+        model: FruitModel
+        delegate: FruitDelegate
+        anchors.fill: parent
+    }
     \endcode
 */
 

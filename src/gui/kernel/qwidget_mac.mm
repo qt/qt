@@ -2156,6 +2156,7 @@ void QWidgetPrivate::finishCreateWindow_sys_Carbon(OSWindowRef windowRef)
     setWindowModified_sys(q->isWindowModified());
     updateFrameStrut();
     qt_mac_update_sizer(q);
+    applyMaxAndMinSizeOnWindow();
 }
 #else  // QT_MAC_USE_COCOA
 void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWindowRef)
@@ -2241,6 +2242,7 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
     syncCocoaMask();
     macUpdateIsOpaque();
     qt_mac_update_sizer(q);
+    applyMaxAndMinSizeOnWindow();
 }
 
 #endif // QT_MAC_USE_COCOA
@@ -3995,7 +3997,7 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
     }
 }
 
-void QWidgetPrivate::applyMaxAndMinSizeConstraints(int &w, int &h)
+void QWidgetPrivate::adjustWithinMaxAndMinSize(int &w, int &h)
 {
     if (QWExtra *extra = extraData()) {
         w = qMin(w, extra->maxw);
@@ -4022,6 +4024,26 @@ void QWidgetPrivate::applyMaxAndMinSizeConstraints(int &w, int &h)
     }
 }
 
+void QWidgetPrivate::applyMaxAndMinSizeOnWindow()
+{
+    Q_Q(QWidget);
+    const float max_f(20000);
+#ifndef QT_MAC_USE_COCOA
+#define SF(x) ((x > max_f) ? max_f : x)
+    HISize max = CGSizeMake(SF(extra->maxw), SF(extra->maxh));
+    HISize min = CGSizeMake(SF(extra->minw), SF(extra->minh));
+#undef SF
+    SetWindowResizeLimits(qt_mac_window_for(q), &min, &max);
+#else
+#define SF(x) ((x > max_f) ? max_f : x)
+    NSSize max = NSMakeSize(SF(extra->maxw), SF(extra->maxh));
+    NSSize min = NSMakeSize(SF(extra->minw), SF(extra->minh));
+#undef SF
+    [qt_mac_window_for(q) setMinSize:min];
+    [qt_mac_window_for(q) setMaxSize:max];
+#endif
+}
+
 void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 {
     Q_Q(QWidget);
@@ -4033,13 +4055,18 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     QMacCocoaAutoReleasePool pool;
     bool realWindow = isRealWindow();
 
-    if (realWindow && !(w == 0 && h == 0) && !q->testAttribute(Qt::WA_DontShowOnScreen)) {
-        applyMaxAndMinSizeConstraints(w, h);
-        topData()->isSetGeometry = 1;
-        topData()->isMove = isMove;
+    if (realWindow && !q->testAttribute(Qt::WA_DontShowOnScreen)){
+        adjustWithinMaxAndMinSize(w, h);
 #ifndef QT_MAC_USE_COCOA
-        Rect r; SetRect(&r, x, y, x + w, y + h);
-        SetWindowBounds(qt_mac_window_for(q), kWindowContentRgn, &r);
+        if (w != 0 && h != 0) {
+            topData()->isSetGeometry = 1;
+            topData()->isMove = isMove;
+            Rect r; SetRect(&r, x, y, x + w, y + h);
+            SetWindowBounds(qt_mac_window_for(q), kWindowContentRgn, &r);
+            topData()->isSetGeometry = 0;
+        } else {
+            setGeometry_sys_helper(x, y, w, h, isMove);
+        }
 #else
         NSWindow *window = qt_mac_window_for(q);
         const QRect &fStrut = frameStrut();
@@ -4048,9 +4075,25 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                                     fStrut.top() + fStrut.bottom() + h));
         NSRect cocoaFrameRect = NSMakeRect(frameRect.x(), flipYCoordinate(frameRect.bottom() + 1),
                                            frameRect.width(), frameRect.height());
-        [window setFrame:cocoaFrameRect display:NO];
+
+        QPoint currTopLeft = data.crect.topLeft();
+        if (currTopLeft.x() == x && currTopLeft.y() == y
+                && cocoaFrameRect.size.width != 0
+                && cocoaFrameRect.size.height != 0) {
+            [window setFrame:cocoaFrameRect display:NO];
+        } else {
+            // The window is moved and resized (or resized to zero).
+            // Since Cocoa usually only sends us a resize callback after
+            // setting a window frame, we issue an explicit move as
+            // well. To stop Cocoa from optimize away the move (since the move
+            // would have the same origin as the setFrame call) we shift the
+            // window back and forth inbetween.
+            cocoaFrameRect.origin.y += 1;
+            [window setFrame:cocoaFrameRect display:NO];
+            cocoaFrameRect.origin.y -= 1;
+            [window setFrameOrigin:cocoaFrameRect.origin];
+        }
 #endif
-        topData()->isSetGeometry = 0;
     } else {
         setGeometry_sys_helper(x, y, w, h, isMove);
     }
@@ -4075,40 +4118,19 @@ void QWidgetPrivate::setGeometry_sys_helper(int x, int y, int w, int h, bool isM
     data.crect = QRect(x, y, w, h);
 
     if (realWindow) {
-        if (QWExtra *extra = extraData()) {
-            applyMaxAndMinSizeConstraints(w, h);
-            qt_mac_update_sizer(q);
+        adjustWithinMaxAndMinSize(w, h);
+        qt_mac_update_sizer(q);
 
-            if (q->windowFlags() & Qt::WindowMaximizeButtonHint) {
 #ifndef QT_MAC_USE_COCOA
-                OSWindowRef window = qt_mac_window_for(q);
-                if(extra->maxw && extra->maxh && extra->maxw == extra->minw
-                        && extra->maxh == extra->minh) {
-                    ChangeWindowAttributes(window, kWindowNoAttributes, kWindowFullZoomAttribute);
-                } else {
-                    ChangeWindowAttributes(window, kWindowFullZoomAttribute, kWindowNoAttributes);
-                }
-#endif
+        if (q->windowFlags() & Qt::WindowMaximizeButtonHint) {
+            OSWindowRef window = qt_mac_window_for(q);
+            if (extra->maxw && extra->maxh && extra->maxw == extra->minw
+                    && extra->maxh == extra->minh) {
+                ChangeWindowAttributes(window, kWindowNoAttributes, kWindowFullZoomAttribute);
+            } else {
+                ChangeWindowAttributes(window, kWindowFullZoomAttribute, kWindowNoAttributes);
             }
-
-            // Update max and min constraints:
-            const float max_f(20000);
-#ifndef QT_MAC_USE_COCOA
-#define SF(x) ((x > max_f) ? max_f : x)
-            HISize max = CGSizeMake(SF(extra->maxw), SF(extra->maxh));
-            HISize min = CGSizeMake(SF(extra->minw), SF(extra->minh));
-#undef SF
-            SetWindowResizeLimits(qt_mac_window_for(q), &min, &max);
-#else
-#define SF(x) ((x > max_f) ? max_f : x)
-            NSSize max = NSMakeSize(SF(extra->maxw), SF(extra->maxh));
-            NSSize min = NSMakeSize(SF(extra->minw), SF(extra->minh));
-#undef SF
-            [qt_mac_window_for(q) setMinSize:min];
-            [qt_mac_window_for(q) setMaxSize:max];
-#endif
         }
-#ifndef QT_MAC_USE_COCOA
         HIRect bounds = CGRectMake(0, 0, w, h);
         HIViewSetFrame(qt_mac_nativeview_for(q), &bounds);
 #else
@@ -4154,6 +4176,7 @@ void QWidgetPrivate::setGeometry_sys_helper(int x, int y, int w, int h, bool isM
 void QWidgetPrivate::setConstraints_sys()
 {
     updateMaximizeButton_sys();
+    applyMaxAndMinSizeOnWindow();
 }
 
 void QWidgetPrivate::updateMaximizeButton_sys()

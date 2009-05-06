@@ -63,7 +63,7 @@
 #include <QtGui/qfontmetrics.h>
 #include <QtGui/qclipboard.h>
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 extern bool qt_wince_is_mobile();    //defined in qguifunctions_wince.cpp
 extern bool qt_wince_is_smartphone();//defined in qguifunctions_wince.cpp
 extern bool qt_wince_is_pocket_pc(); //defined in qguifunctions_wince.cpp
@@ -152,7 +152,7 @@ public:
     int layoutMinimumWidth();
     void retranslateStrings();
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     void hideSpecial();
 #endif
 
@@ -272,14 +272,14 @@ void QMessageBoxPrivate::updateSize()
         return;
 
     QSize screenSize = QApplication::desktop()->availableGeometry(QCursor::pos()).size();
-#ifdef Q_WS_QWS
-    // the width of the screen, less the window border.
-    int hardLimit = screenSize.width() - (q->frameGeometry().width() - q->geometry().width());
-#elif defined(Q_OS_WINCE)
+#if defined(Q_WS_QWS) || defined(Q_WS_WINCE)
     // the width of the screen, less the window border.
     int hardLimit = screenSize.width() - (q->frameGeometry().width() - q->geometry().width());
 #else
     int hardLimit = qMin(screenSize.width() - 480, 1000); // can never get bigger than this
+    // on small screens allows the messagebox be the same size as the screen
+    if (screenSize.width() <= 1024)
+        hardLimit = screenSize.width();
 #endif
 #ifdef Q_WS_MAC
     int softLimit = qMin(screenSize.width()/2, 420);
@@ -287,11 +287,11 @@ void QMessageBoxPrivate::updateSize()
     int softLimit = qMin(hardLimit, 500);
 #else
     // note: ideally on windows, hard and soft limits but it breaks compat
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
     int softLimit = qMin(screenSize.width()/2, 500);
 #else
     int softLimit = qMin(screenSize.width() * 3 / 4, 500);
-#endif //Q_OS_WINCE
+#endif //Q_WS_WINCE
 #endif
 
     if (informativeLabel)
@@ -348,7 +348,7 @@ void QMessageBoxPrivate::updateSize()
 }
 
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 /*!
   \internal
   Hides special buttons which are rather shown in the title bar
@@ -1210,7 +1210,7 @@ bool QMessageBox::event(QEvent *e)
         case QEvent::LanguageChange:
             d_func()->retranslateStrings();
             break;
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
         case QEvent::OkRequest:
         case QEvent::HelpRequest: {
           QString bName =
@@ -1353,7 +1353,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
     QDialog::keyPressEvent(e);
 }
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 /*!
     \reimp
 */
@@ -1422,7 +1422,7 @@ void QMessageBox::showEvent(QShowEvent *e)
     Q_D(QMessageBox);
     if (d->autoAddOkButton) {
         addButton(Ok);
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
         d->hideSpecial();
 #endif
     }
@@ -1730,7 +1730,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
     QPixmap pm(QLatin1String(":/trolltech/qmessagebox/images/qtlogo-64.png"));
     if (!pm.isNull())
         msgBox->setIconPixmap(pm);
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
     msgBox->setDefaultButton(msgBox->addButton(QMessageBox::Ok));
 #endif
 

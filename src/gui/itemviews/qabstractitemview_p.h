@@ -359,6 +359,7 @@ public:
     QBasicTimer autoScrollTimer;
     int autoScrollMargin;
     int autoScrollCount;
+    bool shouldScrollToCurrentOnShow; //used to know if we should scroll to current on show event
 
     bool alternatingColors;
 

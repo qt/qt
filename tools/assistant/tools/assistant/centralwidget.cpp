@@ -394,8 +394,10 @@ void CentralWidget::setLastShownPages()
         QString::SkipEmptyParts);
 
     const int pageCount = lastShownPageList.count();
-    if (pageCount == 0 && usesDefaultCollection)
-        return setSource(QUrl(QLatin1String("help")));
+    if (pageCount == 0 && usesDefaultCollection) {
+        setSource(QUrl(QLatin1String("help")));
+        return;
+    }
 
 #if !defined(QT_NO_WEBKIT)
     const QLatin1String zoom("LastPagesZoomWebView");

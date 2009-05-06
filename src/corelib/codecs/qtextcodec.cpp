@@ -1508,9 +1508,14 @@ QString QTextDecoder::toUnicode(const QByteArray &ba)
 /*!
     \since 4.4
 
-    Tries to detect the encoding of the provided snippet of HTML in the given byte array, \a ba,
-    and returns a QTextCodec instance that is capable of decoding the html to unicode.
-    If the codec cannot be detected from the content provided, \a defaultCodec is returned.
+    Tries to detect the encoding of the provided snippet of HTML in
+    the given byte array, \a ba, by checking the BOM (Byte Order Mark)
+    and the content-type meta header and returns a QTextCodec instance
+    that is capable of decoding the html to unicode.  If the codec
+    cannot be detected from the content provided, \a defaultCodec is
+    returned.
+
+    \sa codecForUtfText
 */
 QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba, QTextCodec *defaultCodec)
 {
@@ -1518,15 +1523,8 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba, QTextCodec *defaultCo
     int pos;
     QTextCodec *c = 0;
 
-    if (ba.size() > 1 && (((uchar)ba[0] == 0xfe && (uchar)ba[1] == 0xff)
-                          || ((uchar)ba[0] == 0xff && (uchar)ba[1] == 0xfe))) {
-        c = QTextCodec::codecForMib(1015); // utf16
-    } else if (ba.size() > 2
-             && (uchar)ba[0] == 0xef
-             && (uchar)ba[1] == 0xbb
-             && (uchar)ba[2] == 0xbf) {
-        c = QTextCodec::codecForMib(106); // utf-8
-    } else {
+    c = QTextCodec::codecForUtfText(ba, c);
+    if (!c) {
         QByteArray header = ba.left(512).toLower();
         if ((pos = header.indexOf("http-equiv=")) != -1) {
             pos = header.indexOf("charset=", pos) + int(strlen("charset="));
@@ -1552,6 +1550,61 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba, QTextCodec *defaultCo
 QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba)
 {
     return codecForHtml(ba, QTextCodec::codecForMib(/*Latin 1*/ 4));
+}
+
+/*!
+    \since 4.6
+
+    Tries to detect the encoding of the provided snippet \a ba by
+    using the BOM (Byte Order Mark) and returns a QTextCodec instance
+    that is capable of decoding the text to unicode.  If the codec
+    cannot be detected from the content provided, \a defaultCodec is
+    returned.
+
+    \sa codecForHtml
+*/
+QTextCodec *QTextCodec::codecForUtfText(const QByteArray &ba, QTextCodec *defaultCodec)
+{
+    const uint arraySize = ba.size();
+
+    if (arraySize > 3) {
+        if ((uchar)ba[0] == 0x00
+            && (uchar)ba[1] == 0x00
+            && (uchar)ba[2] == 0xFE
+            && (uchar)ba[3] == 0xFF)
+            return QTextCodec::codecForMib(1018); // utf-32 be
+        else if ((uchar)ba[0] == 0xFF
+                 && (uchar)ba[1] == 0xFE
+                 && (uchar)ba[2] == 0x00
+                 && (uchar)ba[3] == 0x00)
+            return QTextCodec::codecForMib(1019); // utf-32 le
+    }
+
+    if (arraySize < 2)
+        return defaultCodec;
+    if ((uchar)ba[0] == 0xfe && (uchar)ba[1] == 0xff)
+        return QTextCodec::codecForMib(1013); // utf16 be
+    else if ((uchar)ba[0] == 0xff && (uchar)ba[1] == 0xfe)
+        return QTextCodec::codecForMib(1014); // utf16 le
+
+    if (arraySize < 3)
+        return defaultCodec;
+    if ((uchar)ba[0] == 0xef
+        && (uchar)ba[1] == 0xbb
+        && (uchar)ba[2] == 0xbf)
+        return QTextCodec::codecForMib(106); // utf-8
+
+    return defaultCodec;
+}
+
+/*!
+  \overload
+
+  If the codec cannot be detected, this overload returns a Latin-1 QTextCodec.
+*/
+QTextCodec *QTextCodec::codecForUtfText(const QByteArray &ba)
+{
+    return codecForUtfText(ba, QTextCodec::codecForMib(/*Latin 1*/ 4));
 }
 
 

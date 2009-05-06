@@ -501,32 +501,21 @@ void QmlEngine::addNameSpacePath(const QString& ns, const QString& path)
 /*!
     Returns the mapping from namespace URIs to URLs.
 
-    Namespaces in QML allow types to be specified by a URI,
-    using standard XML namespaces:
+    Currently, only the empty namespace is supported
+    (i.e. types cannot be qualified with a namespace).
+
+    The QML \c import statement can be used to import a directory of
+    components into the empty namespace.
+
+    \qml
+    import "MyModuleDirectory"
+    \endqml
+
+    This is also possible from C++:
 
     \code
-        <Item xmlns:foo="xyz://abc/def">
-            <foo:Bar/>
-        </Item>
+        engine->addNameSpacePath("","file:///opt/abcdef");
     \endcode
-
-    Actual QML types can be defined in URLs, in which case a mapping
-    may be made from URIs (such as "xyz://abc/def/Bar.qml" above, to
-    URLs (such as "file:///opt/abcdef/Bar.qml"):
-
-    \code
-        engine->addNameSpacePath("xyz://abc/def","file:///opt/abcdef");
-    \endcode
-
-    If only a prefix of the URI is mapped, the path of the URI is
-    mapped similarly to the URL:
-
-    \code
-        engine->addNameSpacePath("xyz://abc","file:///opt/jkl");
-    \endcode
-
-    In the above case, "xyz://abc/def/Bar.qml" would then map to
-    "file:///opt/jkl/def/Bar.qml".
 
     \sa componentUrl()
 */

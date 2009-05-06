@@ -142,13 +142,11 @@ files_to_remove="$files_to_remove WebKit/qt/QtLauncher/QtLauncher.pro"
 files_to_remove="$files_to_remove WebKit/qt/QtLauncher/main.cpp"
 
 files_to_remove="$files_to_remove JavaScriptCore/AllInOneFile.cpp"
-files_to_remove="$files_to_remove JavaScriptCore/JavaScriptCore.scons"
 files_to_remove="$files_to_remove JavaScriptCore/JavaScriptCoreSources.bkl"
 files_to_remove="$files_to_remove JavaScriptCore/SConstruct"
 files_to_remove="$files_to_remove JavaScriptCore/jscore.bkl"
 
 files_to_remove="$files_to_remove WebCore/SConstruct"
-files_to_remove="$files_to_remove WebCore/WebCore.scons"
 files_to_remove="$files_to_remove WebCore/WebCoreSources.bkl"
 files_to_remove="$files_to_remove WebCore/webcore-base.bkl"
 files_to_remove="$files_to_remove WebCore/webcore-wx.bkl"

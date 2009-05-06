@@ -92,6 +92,14 @@ QT_DECL_MEMROTATE(quint32, quint8);
 QT_DECL_MEMROTATE(quint16, quint8);
 QT_DECL_MEMROTATE(qrgb444, quint8);
 QT_DECL_MEMROTATE(quint8, quint8);
+
+#ifdef QT_QWS_ROTATE_BGR
+QT_DECL_MEMROTATE(quint16, qbgr565);
+QT_DECL_MEMROTATE(quint32, qbgr565);
+QT_DECL_MEMROTATE(qrgb555, qbgr555);
+QT_DECL_MEMROTATE(quint32, qbgr555);
+#endif
+
 #ifdef QT_QWS_DEPTH_GENERIC
 QT_DECL_MEMROTATE(quint32, qrgb_generic16);
 QT_DECL_MEMROTATE(quint16, qrgb_generic16);

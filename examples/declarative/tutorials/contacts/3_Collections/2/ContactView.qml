@@ -3,10 +3,7 @@ Item {
     id: contacts
     width: 240
     height: 230
-    properties: Property {
-        name: "mouseGrabbed"
-        value: false
-    }
+    property var mouseGrabbed: false
     resources: [
         SqlConnection {
             id: contactDatabase
@@ -58,12 +55,12 @@ Item {
                 }
                 MouseRegion {
                     anchors.fill: label
-                    onClicked: { wrapper.state='opened' }
+                    onClicked: { wrapper.state='opened'; }
                 }
                 Contact {
-                    id: details
+                    id: Details
                     anchors.fill: parent
-                    contactid: model.recid
+                    contactId: model.recid
                     label: model.label
                     email: model.email
                     phone: model.phone
@@ -95,7 +92,7 @@ Item {
                             value: 0
                         }
                         SetProperty {
-                            target: details
+                            target: Details
                             property: "opacity"
                             value: 1
                         }

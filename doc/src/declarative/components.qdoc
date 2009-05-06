@@ -12,7 +12,9 @@ Writing and using components allows you to:
 \o Create new Qml elements without writing a new C++ class. (See \l {cppitem}{Creating Qml elements in C++})
 \endlist
 
-Components are placed in \e <Name>.qml files, allowing \e <Name> to then be used as a tag elsewhere. For example, if you have a Slider.qml file, you can then use \c <Slider> to place a slider.
+Components are placed in \e <Name>.qml files, allowing \e <Name> to then be used as a tag
+elsewhere. For example, if you have a Slider.qml file, you can then use \c {Slider \{\}} to
+place a slider.
 
 Components may be collected into \l {qmlmodules}{modules}.
 

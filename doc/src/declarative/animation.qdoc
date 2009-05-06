@@ -25,15 +25,13 @@ Other Features:
 \o Animation synchronization
 \endlist
 
-The simplest form of animation is using \c &lt;NumericAnimation/&gt;
+The simplest form of animation is using \c NumericAnimation
 
 The following example creates a bouncing effect:
 \code
 Rect {
     id: rect
-    width: 120
-    height: 200
-    color: "white"
+    width: 120; height: 200; color: "white"
     Image {
         id: img
         source: "pics/qtlogo.png"

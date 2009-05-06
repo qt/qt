@@ -3,133 +3,20 @@
 \target qmlmodules
 \title Modules of Components
 
-A \bold module is a collection of \l Components, in an XML namespace.
+A \bold module is a collection of \l Components.
 
-Named component in QML may include a namespace qualification,
-and standard XML namespace scoping is allowed. This allows
-components to be provided by different modules (even if they otherwise
-have the same name).
-
-To use a module:
+To use a module, include the following statement at the begining
+of your QML:
 
 \code
-<Item xmlns:Clock="http://nokia.com/qml/Clock">
-    <Clock:AnalogClock>
-        ...
-    </Clock:AnalogClock>
-</Item>
+import "path"
 \endcode
 
-To create a modules:
+This allows all components defined in the directory \c path to be used in
+the component where this statement appears.
 
-Create the components, with appropriate exported properties, signals, and slots (slots not currently supported),
-in a single directory:
+Currently, \c path may only be a directory relative to the directory containing
+the component issuing the import.
 
-\c Clock/Face.qml: ...
-
-\c Clock/Hand.qml: ...
-
-\c Clock/AnalogClock.qml:
-\code
-<Item xmlns:Clock="http://nokia.com/qml/Clock">
-    <Clock:Face .../>
-    <Clock:Hand .../>
-    <Clock:Hand .../>
-    <Clock:Hand .../>
-    ...
-</Item>
-\endcode
-
-Associate the directory with the namespace:
-
-\code
-    Qml::addNameSpacePath("http://nokia.com/qml/Clock", "/usr/lib/qml/Clock");
-\endcode
-
-Whole blocks of directories can be set:
-
-\code
-    Qml::addNameSpacePath("http://nokia.com/qml", "/usr/lib/qml");
-\endcode
-
-Associations can also be declared in the QML itself as a processing directive:
-
-\code
-    <?qtfx namespacepath:http://nokia.com/qml=/usr/lib/qml ?>
-\endcode
-
-*/
-
-/*
-
-A kludgey way to do unexported components:
-
-Clock/AnalogClock.qml:
-<Item>
-    <properties>
-        <Property name="time" ... />
-    </properties>
-
-    <Component name="Hand"> ... </Component> <!-- invisible compoent -->
-
-    <ComponentInstance component="Hand" size="100"/>
-    <ComponentInstance component="Hand" size="200"/>
-    <ComponentInstance component="Hand" size="300"/>
-</Item>
-
-Another kludgey way (if _ handled specially)):
-
-Clock/_Hand.qml: ...
-
-A non-XML extension to improve syntax (XMLNS blows):
-
-<qml>
-    <using ns="http://nokia.com/qml/Clock"/>
-    <Face .../>
-    ...
-</qml>
-
-*/
-
-/*
-    IMPLEMENTATION
-
-    Fully Qualifying names. CHOICE
-     IF QmlXmlParser qualifies names:
-      QmlXmlParser processes <qml> and <using> tags to create a list of QmlModuleDependency.
-       It uses talks with the same creators as QmlCompiler::compileTypes to qualify the names.
-       Each of QmlMetaType, QmlCustomParser, and the QmlCompiledComponent::classFactory(ies)
-       must know fully-qualified names.
-      Pro: simpler
-      Con: may be harder to regenerate original XML if unqualified name is lost
-      Con: should QmlXmlParser "know" about the type creators?
-     ELSE
-      QmlXmlParser processes <qml> and <using> tags to create a list of QmlModuleDependency,
-       which get stored in the QCompiledComponent.
-      When QmlCompiler::compileTypes creates components, module dependencies are used
-       to find the correct component - turning a name into a fully-qualified name
-       at "ref.className = type" before passing it to the creators. QmlMetaType::typeFunc must allow
-       qualified names even for builtin types, for example, QFxText might be
-       declared with the name Qt:Text. The QML::customParser must also understand
-       the concept, for example ListModel might be declared with the name Qt:ListModel.
-      QmlXmlParser::Object::typeName should be removed (used by DOM?), as redundant.
-      QmlXmlParser::Object::type will not define a fully qualified typename, just a name,
-       so types that are actually the same may have different type id because they
-       were named differently ("Qt:Text" vs "Text"). Need to check if this is a problem,
-       or whether QmlCompiler::output->types should be compressed.
-
-    XML Namespaces. CHOICE CHOSEN
-     The advantage is that the namespaces could be fixed (per version), allowing proper DTDs, etc.
-
-    Attached properties. PROBLEM
-     Type references in JavaScript can be either unqualified, in which case QmlMetaProperty
-      would have to FQ the type, which seems impossible, or qualified, the syntax
-      of which would be odd, like Qt.GridLayout.row or property["Qt:GridLayout.row"].
-
-    Access restrictions. PROBLEM
-     All use of the bind context must prevent direct access between objects that
-      are in different modules (i.e. between types with different module prefixes).
-     Maybe this is accomplishable just from having the right context tree.
-     Components in the same module can refer to their containing components (they
-      need to be careful if they're allowed to be used outside).
+The import statement cannot be used by remote content.
 */

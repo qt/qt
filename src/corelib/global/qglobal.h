@@ -763,6 +763,10 @@ namespace QtExperimental {}
 #  endif
 #elif defined(Q_OS_WINCE)
 #  define Q_WS_WIN32
+#  define Q_WS_WINCE
+#  if defined(Q_OS_WINCE_WM)
+#    define Q_WS_WINCE_WM
+#  endif
 #elif defined(Q_OS_OS2)
 #  define Q_WS_PM
 #  error "Qt does not work with OS/2 Presentation Manager or Workplace Shell"
@@ -780,9 +784,10 @@ namespace QtExperimental {}
 #  endif
 #endif
 
-#if defined(Q_WS_WIN16) || defined(Q_WS_WIN32)
+#if defined(Q_WS_WIN16) || defined(Q_WS_WIN32) || defined(Q_WS_WINCE)
 #  define Q_WS_WIN
 #endif
+
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE

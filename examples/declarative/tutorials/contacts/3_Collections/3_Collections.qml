@@ -15,15 +15,15 @@ Rect {
         height: contents.height
         GroupBox {
             contents: "1/ContactView.qml"
-            label: "something"
+            label: "list only"
         }
         GroupBox {
             contents: "2/ContactView.qml"
-            label: "something"
+            label: "dynamic delegate"
         }
         GroupBox {
             contents: "3/ContactView.qml"
-            label: "something"
+            label: "delayed loading"
         }
     }
 }

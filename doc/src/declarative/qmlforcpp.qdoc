@@ -8,7 +8,7 @@
     The QML syntax declaratively describes how to construct an in memory
     object tree.  QML is usually used to describe a visual scene graph 
     but it is not conceptually limited to this: the QML format is an abstract 
-    description of \b any object tree.  
+    description of \bold any object tree.  
 
     QML also includes property bindings.  Bindings are ECMAScript expressions 
     of a properties value.  Whenever the value of the expression changes - 
@@ -49,7 +49,7 @@
         y: 10
         width: 100
         height: 100
-        src: "background.png"
+        source: "background.png"
 
         Text {
             height: 50
@@ -62,10 +62,23 @@
     \endcode
 
     The QML snippet shown above instantiates one \c Image instance and one 
-    \c Text instance and sets properties on both.  \b Everything in QML 
+    \c Text instance and sets properties on both.  \bold Everything in QML 
     ultimately comes down to either instantiating an object instance, or
     assigning a property a value.  QML relies heavily on Qt's meta object system
     and can only instantiate classes that derive from QObject.
+
+    In the above example, each property is placed on its own line.  You can
+    also place multiple properties on one line by separating them with a
+    semi-colon. The code below is equivalent to the example above.
+
+    \code
+    Image {
+        id: myRect
+        x: 10; y: 10; width: 100; height: 100
+        source: "background.png"
+        Text { height: 50; width: 100; color: "white"; font.fontSize: 16; text: "Hello world!" }
+    }
+    \endcode
 
     QML can set properties that are more complex than just simple types like 
     integers and strings.  Properties can be object pointers or Qt interface 
@@ -251,9 +264,9 @@
 
     \code
     Image {
-        src: "background.png"
+        source: "background.png"
         Text {
-            text: src
+            text: source
         }
     }
     \endcode
@@ -505,7 +518,7 @@
     objects are not associated with any particular instance.  How the values
     of the attached properties apply to the behaviour they are controlling is
     entirely implementation dependent.  An additional consequence of this is
-    that \b any object can attach \b any attached property.  The following is
+    that \bold any object can attach \bold any attached property.  The following is
     perfectly valid, although the attached property has no actual effect:
 
     \code
