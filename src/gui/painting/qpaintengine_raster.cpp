@@ -1026,7 +1026,7 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
                                           int alpha,
                                           const QRect &sr)
 {
-    if (!clip.isValid())
+    if (alpha == 0 || !clip.isValid())
         return;
     Q_ASSERT(img.depth() >= 8);
 
@@ -2668,7 +2668,13 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
 
         QRectF rr = r;
         rr.translate(s->matrix.dx(), s->matrix.dy());
-        fillRect_normalized(toRect_normalized(rr), &d->image_filler, d);
+
+        const int x1 = qRound(rr.x());
+        const int y1 = qRound(rr.y());
+        const int x2 = qRound(rr.right());
+        const int y2 = qRound(rr.bottom());
+
+        fillRect_normalized(QRect(x1, y1, x2-x1, y2-y1), &d->image_filler, d);
     }
 }
 
@@ -5151,7 +5157,11 @@ void QSpanData::adjustSpanMethods()
 
 void QSpanData::setupMatrix(const QTransform &matrix, int bilin)
 {
-    QTransform inv = matrix.inverted();
+    QTransform delta;
+    // make sure we round off correctly in qdrawhelper.cpp
+    delta.translate(1.0 / 65536, 1.0 / 65536);
+
+    QTransform inv = (delta * matrix).inverted();
     m11 = inv.m11();
     m12 = inv.m12();
     m13 = inv.m13();
