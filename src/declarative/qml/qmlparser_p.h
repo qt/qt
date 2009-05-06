@@ -94,7 +94,8 @@ namespace QmlParser
         const QMetaObject *metatype;
         // The synthesized metaobject, if QML added signals or properties to
         // this type.  Otherwise null
-        QMetaObject *extObject;
+        QMetaObject *extObjectData;
+        QAbstractDynamicMetaObject extObject;
 
         Property *getDefaultProperty();
         Property *getProperty(const QByteArray &name, bool create=true);
