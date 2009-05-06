@@ -257,7 +257,8 @@ public:
     void macUpdateIsOpaque();
     void setEnabled_helper_sys(bool enable);
     bool isRealWindow() const;
-    void applyMaxAndMinSizeConstraints(int &w, int &h);
+    void adjustWithinMaxAndMinSize(int &w, int &h);
+    void applyMaxAndMinSizeOnWindow();
 #endif
 
     void raise_sys();

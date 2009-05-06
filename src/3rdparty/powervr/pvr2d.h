@@ -5,8 +5,8 @@
 @Copyright     Copyright (c) by Imagination Technologies Limited.
 				This specification is protected by copyright laws and contains
 				material proprietary to Imagination Technologies Limited.
-				You may use and distribute this specification free of charge for implementing 
-				the functionality therein, without altering or removing any trademark, copyright, 
+				You may use and distribute this specification free of charge for implementing
+				the functionality therein, without altering or removing any trademark, copyright,
 				or other notice from the specification.
 @Platform      Generic
 @Description   PVR2D definitions for PVR2D clients
@@ -23,7 +23,7 @@ $Log: pvr2d.h $
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 /* PVR2D Platform-specific definitions */
 #define PVR2D_EXPORT
@@ -469,7 +469,7 @@ PVR2DERROR PVR2DSetPresentFlipProperties(PVR2DCONTEXTHANDLE hContext,
 										 unsigned long ulPropertyMask,
 										 long lDstXPos,
 										 long lDstYPos,
-										 unsigned long ulNumClipRects, 
+										 unsigned long ulNumClipRects,
 										 PVR2DRECT *pClipRects,
 										 unsigned long ulSwapInterval);
 

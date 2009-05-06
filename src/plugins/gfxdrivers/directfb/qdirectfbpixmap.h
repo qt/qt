@@ -75,6 +75,7 @@ public:
     // Pure virtual in QPixmapData, so re-implement here and delegate to QDirectFBPaintDevice
     int metric(QPaintDevice::PaintDeviceMetric m) const {return QDirectFBPaintDevice::metric(m);}
     inline QImage::Format pixelFormat() const { return format; }
+    static bool hasAlphaChannel(const QImage &img);
 private:
     void invalidate();
     QDirectFBPaintEngine *engine;

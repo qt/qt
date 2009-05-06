@@ -6,6 +6,7 @@ QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/gfxdrivers
 # These defines might be necessary if your DirectFB driver doesn't
 # support all of the DirectFB API.
 #
+#DEFINES += QT_DIRECTFB_IMAGECACHE
 #DEFINES += QT_NO_DIRECTFB_WM
 #DEFINES += QT_NO_DIRECTFB_LAYER
 #DEFINES += QT_NO_DIRECTFB_PALETTE
@@ -40,4 +41,4 @@ SOURCES = qdirectfbscreen.cpp \
 
 QMAKE_CXXFLAGS += $$QT_CFLAGS_DIRECTFB
 LIBS += $$QT_LIBS_DIRECTFB
-
+DEFINES += $$QT_DEFINES_DIRECTFB

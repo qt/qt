@@ -105,8 +105,6 @@ public:
         TrackSurface = 1
     };
     Q_DECLARE_FLAGS(SurfaceCreationOptions, SurfaceCreationOption);
-    IDirectFBSurface *createDFBSurface(DFBSurfaceDescription desc,
-                                       SurfaceCreationOptions options);
     IDirectFBSurface *createDFBSurface(const QImage &image,
                                        SurfaceCreationOptions options);
     IDirectFBSurface *createDFBSurface(const QSize &size,
@@ -130,6 +128,7 @@ public:
     static bool initSurfaceDescriptionPixelFormat(DFBSurfaceDescription *description, QImage::Format format);
     static inline bool isPremultiplied(QImage::Format format);
     static inline bool hasAlpha(DFBSurfacePixelFormat format);
+    static inline bool hasAlpha(IDirectFBSurface *surface);
     QImage::Format alphaPixmapFormat() const;
 
 #ifndef QT_NO_DIRECTFB_PALETTE
@@ -140,11 +139,14 @@ public:
     static uchar *lockSurface(IDirectFBSurface *surface, uint flags, int *bpl = 0);
 
 private:
+    IDirectFBSurface *createDFBSurface(DFBSurfaceDescription desc,
+                                       SurfaceCreationOptions options);
     void compose(const QRegion &r);
     void blit(IDirectFBSurface *src, const QPoint &topLeft,
               const QRegion &region);
 
     QDirectFBScreenPrivate *d_ptr;
+    friend class SurfaceCache;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDirectFBScreen::SurfaceCreationOptions);
@@ -184,6 +186,14 @@ inline bool QDirectFBScreen::hasAlpha(DFBSurfacePixelFormat format)
     default:
         return false;
     }
+}
+
+inline bool QDirectFBScreen::hasAlpha(IDirectFBSurface *surface)
+{
+    Q_ASSERT(surface);
+    DFBSurfacePixelFormat format;
+    surface->GetPixelFormat(surface, &format);
+    return QDirectFBScreen::hasAlpha(format);
 }
 
 QT_END_HEADER

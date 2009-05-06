@@ -113,9 +113,9 @@ QDirectFBScreenPrivate::~QDirectFBScreenPrivate()
     delete keyboard;
 #endif
 
-    foreach (IDirectFBSurface *surf, allocatedSurfaces)
-        surf->Release(surf);
-    allocatedSurfaces.clear();
+    for (QSet<IDirectFBSurface*>::const_iterator it = allocatedSurfaces.begin(); it != allocatedSurfaces.end(); ++it) {
+        (*it)->Release(*it);
+    }
 
     if (dfbSurface)
         dfbSurface->Release(dfbSurface);
@@ -350,6 +350,7 @@ QDirectFBScreen::DirectFBFlags QDirectFBScreen::directFBFlags() const
 {
     return d_ptr->directFBFlags;
 }
+
 IDirectFB *QDirectFBScreen::dfb()
 {
     return d_ptr->dfb;
@@ -751,43 +752,43 @@ struct FlagDescription {
 };
 
 static const FlagDescription accelerationDescriptions[] = {
-    { "DFXL_NONE ", DFXL_NONE },
-    { "DFXL_FILLRECTANGLE", DFXL_FILLRECTANGLE },
-    { "DFXL_DRAWRECTANGLE", DFXL_DRAWRECTANGLE },
-    { "DFXL_DRAWLINE", DFXL_DRAWLINE },
-    { "DFXL_FILLTRIANGLE", DFXL_FILLTRIANGLE },
-    { "DFXL_BLIT", DFXL_BLIT },
-    { "DFXL_STRETCHBLIT", DFXL_STRETCHBLIT },
-    { "DFXL_TEXTRIANGLES", DFXL_TEXTRIANGLES },
-    { "DFXL_DRAWSTRING", DFXL_DRAWSTRING },
+    { " DFXL_NONE ", DFXL_NONE },
+    { " DFXL_FILLRECTANGLE", DFXL_FILLRECTANGLE },
+    { " DFXL_DRAWRECTANGLE", DFXL_DRAWRECTANGLE },
+    { " DFXL_DRAWLINE", DFXL_DRAWLINE },
+    { " DFXL_FILLTRIANGLE", DFXL_FILLTRIANGLE },
+    { " DFXL_BLIT", DFXL_BLIT },
+    { " DFXL_STRETCHBLIT", DFXL_STRETCHBLIT },
+    { " DFXL_TEXTRIANGLES", DFXL_TEXTRIANGLES },
+    { " DFXL_DRAWSTRING", DFXL_DRAWSTRING },
     { 0, 0 }
 };
 
 static const FlagDescription blitDescriptions[] = {
-    { "DSBLIT_NOFX", DSBLIT_NOFX },
-    { "DSBLIT_BLEND_ALPHACHANNEL", DSBLIT_BLEND_ALPHACHANNEL },
-    { "DSBLIT_BLEND_COLORALPHA", DSBLIT_BLEND_COLORALPHA },
-    { "DSBLIT_COLORIZE", DSBLIT_COLORIZE },
-    { "DSBLIT_SRC_COLORKEY", DSBLIT_SRC_COLORKEY },
-    { "DSBLIT_DST_COLORKEY", DSBLIT_DST_COLORKEY },
-    { "DSBLIT_SRC_PREMULTIPLY", DSBLIT_SRC_PREMULTIPLY },
-    { "DSBLIT_DST_PREMULTIPLY", DSBLIT_DST_PREMULTIPLY },
-    { "DSBLIT_DEMULTIPLY", DSBLIT_DEMULTIPLY },
-    { "DSBLIT_DEINTERLACE", DSBLIT_DEINTERLACE },
-    { "DSBLIT_SRC_PREMULTCOLOR", DSBLIT_SRC_PREMULTCOLOR },
-    { "DSBLIT_XOR", DSBLIT_XOR },
-    { "DSBLIT_INDEX_TRANSLATION", DSBLIT_INDEX_TRANSLATION },
+    { " DSBLIT_NOFX", DSBLIT_NOFX },
+    { " DSBLIT_BLEND_ALPHACHANNEL", DSBLIT_BLEND_ALPHACHANNEL },
+    { " DSBLIT_BLEND_COLORALPHA", DSBLIT_BLEND_COLORALPHA },
+    { " DSBLIT_COLORIZE", DSBLIT_COLORIZE },
+    { " DSBLIT_SRC_COLORKEY", DSBLIT_SRC_COLORKEY },
+    { " DSBLIT_DST_COLORKEY", DSBLIT_DST_COLORKEY },
+    { " DSBLIT_SRC_PREMULTIPLY", DSBLIT_SRC_PREMULTIPLY },
+    { " DSBLIT_DST_PREMULTIPLY", DSBLIT_DST_PREMULTIPLY },
+    { " DSBLIT_DEMULTIPLY", DSBLIT_DEMULTIPLY },
+    { " DSBLIT_DEINTERLACE", DSBLIT_DEINTERLACE },
+    { " DSBLIT_SRC_PREMULTCOLOR", DSBLIT_SRC_PREMULTCOLOR },
+    { " DSBLIT_XOR", DSBLIT_XOR },
+    { " DSBLIT_INDEX_TRANSLATION", DSBLIT_INDEX_TRANSLATION },
     { 0, 0 }
 };
 
 static const FlagDescription drawDescriptions[] = {
-    { "DSDRAW_NOFX", DSDRAW_NOFX },
-    { "DSDRAW_BLEND", DSDRAW_BLEND },
-    { "DSDRAW_DST_COLORKEY", DSDRAW_DST_COLORKEY },
-    { "DSDRAW_SRC_PREMULTIPLY", DSDRAW_SRC_PREMULTIPLY },
-    { "DSDRAW_DST_PREMULTIPLY", DSDRAW_DST_PREMULTIPLY },
-    { "DSDRAW_DEMULTIPLY", DSDRAW_DEMULTIPLY },
-    { "DSDRAW_XOR", DSDRAW_XOR },
+    { " DSDRAW_NOFX", DSDRAW_NOFX },
+    { " DSDRAW_BLEND", DSDRAW_BLEND },
+    { " DSDRAW_DST_COLORKEY", DSDRAW_DST_COLORKEY },
+    { " DSDRAW_SRC_PREMULTIPLY", DSDRAW_SRC_PREMULTIPLY },
+    { " DSDRAW_DST_PREMULTIPLY", DSDRAW_DST_PREMULTIPLY },
+    { " DSDRAW_DEMULTIPLY", DSDRAW_DEMULTIPLY },
+    { " DSDRAW_XOR", DSDRAW_XOR },
     { 0, 0 }
 };
 #endif
@@ -829,7 +830,7 @@ static void printDirectFBInfo(IDirectFB *fb)
     }
 
     qDebug("Device: %s (%s), Driver: %s v%i.%i (%s)\n"
-           "  acceleration: 0x%x%s,\nblit: 0x%x%s,\ndraw: 0x%0x%s\nvideo: %iKB\n",
+           "acceleration: 0x%x%s\nblit: 0x%x%s\ndraw: 0x%0x%s\nvideo: %iKB\n",
            dev.name, dev.vendor, dev.driver.name, dev.driver.major,
            dev.driver.minor, dev.driver.vendor, dev.acceleration_mask,
            ::flagDescriptions(dev.acceleration_mask, accelerationDescriptions).constData(),
@@ -899,6 +900,12 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     if (displayArgs.contains(QLatin1String("boundingrectflip"), Qt::CaseInsensitive)) {
         d_ptr->directFBFlags |= BoundingRectFlip;
     }
+
+#ifdef QT_DIRECTFB_IMAGECACHE
+    int imageCacheSize = 4 * 1024 * 1024; // 4 MB
+    ::setIntOption(displayArgs, QLatin1String("imagecachesize"), &imageCacheSize);
+    QDirectFBPaintEngine::initImageCache(imageCacheSize);
+#endif
 
     if (displayArgs.contains(QLatin1String("ignoresystemclip"), Qt::CaseInsensitive))
         d_ptr->directFBFlags |= IgnoreSystemClip;
