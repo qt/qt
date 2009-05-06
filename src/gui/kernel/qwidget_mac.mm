@@ -4497,8 +4497,8 @@ void QWidgetPrivate::registerDropSite(bool on)
     SetControlDragTrackingEnabled(qt_mac_nativeview_for(q), on);
 #else
     NSView *view = qt_mac_nativeview_for(q);
-    if ([view isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaView) class]]) {
-        [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(view) registerDragTypes:on];
+    if (on && [view isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaView) class]]) {
+        [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(view) registerDragTypes];
     }
 #endif
 }
