@@ -1543,6 +1543,8 @@ void QX11PaintEnginePrivate::fillPolygon_dev(const QPointF *polygonPoints, int p
                                              QX11PaintEnginePrivate::GCMode gcMode,
                                              QPaintEngine::PolygonDrawMode mode)
 {
+    Q_Q(QX11PaintEngine);
+
     int clippedCount = 0;
     qt_float_point *clippedPoints = 0;
 
@@ -1617,7 +1619,29 @@ void QX11PaintEnginePrivate::fillPolygon_dev(const QPointF *polygonPoints, int p
     } else
 #endif
         if (fill.style() != Qt::NoBrush) {
-            if (clippedCount > 0) {
+            if (clippedCount > 200000) {
+                QPolygon poly;
+                for (int i = 0; i < clippedCount; ++i)
+                    poly << QPoint(qFloor(clippedPoints[i].x), qFloor(clippedPoints[i].y));
+
+                const QRect bounds = poly.boundingRect();
+                const QRect aligned = bounds
+                    & QRect(QPoint(), QSize(pdev->width(), pdev->height()));
+
+                QImage img(aligned.size(), QImage::Format_ARGB32_Premultiplied);
+                img.fill(0);
+
+                QPainter painter(&img);
+                painter.translate(-aligned.x(), -aligned.y());
+                painter.setPen(Qt::NoPen);
+                painter.setBrush(fill);
+                if (gcMode == BrushGC)
+                    painter.setBrushOrigin(q->painter()->brushOrigin());
+                painter.drawPolygon(poly);
+                painter.end();
+
+                q->drawImage(aligned, img, img.rect(), Qt::AutoColor);
+            } else if (clippedCount > 0) {
                 QVarLengthArray<XPoint> xpoints(clippedCount);
                 for (int i = 0; i < clippedCount; ++i) {
                     xpoints[i].x = qFloor(clippedPoints[i].x);
