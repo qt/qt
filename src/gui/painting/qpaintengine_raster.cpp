@@ -2573,7 +2573,11 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
     QRasterPaintEngineState *s = state();
     const bool aa = s->flags.antialiased || s->flags.bilinear;
     if (!aa && sr.size() == QSize(1, 1)) {
-        fillRect(r, QColor::fromRgba(img.pixel(sr.x(), sr.y())));
+        // as fillRect will apply the aliased coordinate delta we need to
+        // subtract it here as we don't use it for image drawing
+        const QRectF targetRect = r.translated(-aliasedCoordinateDelta,
+                                               -aliasedCoordinateDelta);
+        fillRect(targetRect, QColor::fromRgba(img.pixel(sr.x(), sr.y())));
         return;
     }
 
