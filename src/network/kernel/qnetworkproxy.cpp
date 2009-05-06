@@ -366,7 +366,8 @@ static QNetworkProxy::Capabilities defaultCapabilitiesForType(QNetworkProxy::Pro
          int(QNetworkProxy::HostNameLookupCapability)),
     };
 
-    Q_ASSERT(int(type) >= 0 && int(type) <= int(QNetworkProxy::FtpCachingProxy));
+    if (int(type) < 0 && int(type) > int(QNetworkProxy::FtpCachingProxy))
+        type = QNetworkProxy::DefaultProxy;
     return QNetworkProxy::Capabilities(defaults[int(type)]);
 }
 
@@ -379,6 +380,7 @@ public:
     QNetworkProxy::Capabilities capabilities;
     quint16 port;
     QNetworkProxy::ProxyType type;
+    bool capabilitiesSet;
 
     inline QNetworkProxyPrivate(QNetworkProxy::ProxyType t = QNetworkProxy::DefaultProxy,
                                 const QString &h = QString(), quint16 p = 0,
@@ -388,7 +390,8 @@ public:
           password(pw),
           capabilities(defaultCapabilitiesForType(t)),
           port(p),
-          type(t)
+          type(t),
+          capabilitiesSet(false)
     { }
 
     inline bool operator==(const QNetworkProxyPrivate &other) const
@@ -491,13 +494,16 @@ QNetworkProxy &QNetworkProxy::operator=(const QNetworkProxy &other)
     Sets the proxy type for this instance to be \a type.
 
     Note that changing the type of a proxy does not change
-    the set of capabilities this QNetworkProxy object holds.
+    the set of capabilities this QNetworkProxy object holds if any
+    capabilities have been set with setCapabilities().
 
     \sa type(), setCapabilities()
 */
 void QNetworkProxy::setType(QNetworkProxy::ProxyType type)
 {
     d->type = type;
+    if (!d->capabilitiesSet)
+        d->capabilities = defaultCapabilitiesForType(type);
 }
 
 /*!
@@ -520,6 +526,7 @@ QNetworkProxy::ProxyType QNetworkProxy::type() const
 void QNetworkProxy::setCapabilities(Capabilities capabilities)
 {
     d->capabilities = capabilities;
+    d->capabilitiesSet = true;
 }
 
 /*!
