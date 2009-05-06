@@ -106,6 +106,9 @@ namespace QmlParser
         qint64 line;
         qint64 column;
 
+        qint64 endLine;
+        qint64 endColumn;
+
         struct DynamicProperty {
             DynamicProperty();
             DynamicProperty(const DynamicProperty &);

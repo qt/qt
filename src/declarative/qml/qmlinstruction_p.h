@@ -275,6 +275,7 @@ public:
         } assignSignalObject;
         struct {
             int count;
+            int endLine;
         } createComponent;
         struct {
             int id;

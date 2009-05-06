@@ -116,6 +116,8 @@ public:
     void setNamespaceDeclarations(const QString&);
 
     virtual void classComplete();
+
+public Q_SLOTS:
     void fetch();
 
 protected:

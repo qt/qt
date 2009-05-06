@@ -50,7 +50,7 @@ An \l Item requests focus by setting the \c {Item::focus} property to true.
 
 For very simple cases simply setting the \c {Item::focus} property is sometimes
 sufficient.  If we run the following example in the \c qmlviewer, we see that
-the \c {<KeyActions/>} element has \e {active focus} and pressing the
+the \c {KeyActions} element has \e {active focus} and pressing the
 \e A, \e B, or \e C keys modifies the text appropriately.
 
 \table
@@ -244,7 +244,7 @@ property.  As the \l ListView is a \e {focus realm}, this doesn't effect the
 rest of the application.  However, if the \l ListView itself has 
 \e {active focus} this causes the delegate itself to receive \e {active focus}.
 In this example, the root element of the delegate is also a \e {focus realm},
-which in turn gives \e {active focus} to the \c {<KeyActions/>} element that
+which in turn gives \e {active focus} to the \c {KeyActions} element that
 actually performs the work of handling the \e {Return} key.
 
 All of the fluid UI view classes, such as \l PathView and \l GridView, behave

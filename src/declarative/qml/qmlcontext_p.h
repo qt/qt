@@ -70,6 +70,9 @@ public:
     QScriptValueList scopeChain;
 
     QUrl url;
+    QByteArray typeName; 
+    int startLine;
+    int endLine;
 
     void init();
 

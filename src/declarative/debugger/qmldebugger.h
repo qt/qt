@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the demonstration applications of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,34 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef ROUNDEDBOX_H
-#define ROUNDEDBOX_H
+#ifndef QMLDEBUGGER_H
+#define QMLDEBUGGER_H
 
-//#include <GL/glew.h>
-#include "glextensions.h"
+#include <QtCore/qpointer.h>
+#include <QtGui/qwidget.h>
 
-#include <QtGui>
-#include <QtOpenGL>
+QT_BEGIN_HEADER
 
-#include "gltrianglemesh.h"
-#include <QtGui/qvector3d.h>
-#include <QtGui/qvector2d.h>
-#include "glbuffers.h"
+QT_BEGIN_NAMESPACE
 
-struct P3T2N3Vertex
+QT_MODULE(Declarative)
+
+class QTreeWidget;
+class QTreeWidgetItem;
+class QPlainTextEdit;
+class QmlDebugger : public QWidget
 {
-    QVector3D position;
-    QVector2D texCoord;
-    QVector3D normal;
-    static VertexDescription description[];
-};
-
-class GLRoundedBox : public GLTriangleMesh<P3T2N3Vertex, unsigned short>
-{
+Q_OBJECT
 public:
-    // 0 < r < 0.5, 0 <= n <= 125
-    GLRoundedBox(float r = 0.25f, float scale = 1.0f, int n = 10);
+    QmlDebugger(QWidget *parent = 0);
+
+    void setDebugObject(QObject *);
+
+public slots:
+    void refresh();
+
+private slots:
+    void itemPressed(QTreeWidgetItem *);
+
+private:
+    QTreeWidget *m_tree;
+    QPlainTextEdit *m_text;
+    QPointer<QObject> m_object;
 };
 
+QT_END_NAMESPACE
 
-#endif
+QT_END_HEADER
+
+#endif // QMLDEBUGGER_H
+
