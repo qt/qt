@@ -67,7 +67,7 @@ static const unsigned int MaximumGestureRecognitionTimeout = 2000;
 
 QGestureManager::QGestureManager(QObject *parent)
     : QObject(parent), targetWidget(0), eventDeliveryDelayTimeout(300),
-      delayedPressTimer(0), lastMousePressEvent(QEvent::None, QPoint(), Qt::NoButton, 0, 0),
+      delayedPressTimer(0), lastMousePressReceiver(0), lastMousePressEvent(QEvent::None, QPoint(), Qt::NoButton, 0, 0),
       lastGestureId(0), state(NotGesture)
 {
     qRegisterMetaType<Qt::DirectionType>();
@@ -97,11 +97,12 @@ bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
 {
     if (state != Gesture) {
         // find the target widget
-        while (receiver && receiver->d_func()->gestures.isEmpty())
-            receiver = receiver->parentWidget();
-        if (!receiver) // no widget in the tree that accepts gestures.
+        QWidget *w = receiver;
+        while (w && w->d_func()->gestures.isEmpty())
+            w = w->parentWidget();
+        if (!w) // no widget in the tree that accepts gestures.
             return false;
-        targetWidget = receiver;
+        targetWidget = w;
     }
 
     QPoint currentPos;
@@ -316,6 +317,7 @@ bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
         DEBUG() << "QGestureManager: gesture started. Forgetting about postponed mouse press event";
         killTimer(delayedPressTimer);
         delayedPressTimer = 0;
+        lastMousePressReceiver = 0;
     } else if (delayedPressTimer && (state == NotGesture ||
                                      event->type() == QEvent::MouseButtonRelease)) {
         // not a gesture or released button too fast, so replay press
@@ -330,14 +332,16 @@ bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
         maybeGestures.clear();
         state = NotGesture;
 
-        Q_ASSERT(targetWidget != 0);
-        QApplication::sendEvent(targetWidget, &lastMousePressEvent);
-        if (event->type() == QEvent::MouseButtonRelease) {
-            QMouseEvent *me = static_cast<QMouseEvent*>(event);
-            QMouseEvent move(QEvent::MouseMove, me->pos(), me->globalPos(), me->button(),
-                             me->buttons(), me->modifiers());
-            QApplication::sendEvent(targetWidget, &move);
-            ret = false;
+        if (lastMousePressReceiver) {
+            QApplication::sendEvent(lastMousePressReceiver, &lastMousePressEvent);
+            if (event->type() == QEvent::MouseButtonRelease) {
+                QMouseEvent *me = static_cast<QMouseEvent*>(event);
+                QMouseEvent move(QEvent::MouseMove, me->pos(), me->globalPos(), me->button(),
+                                 me->buttons(), me->modifiers());
+                QApplication::sendEvent(lastMousePressReceiver, &move);
+                ret = false;
+            }
+            lastMousePressReceiver = 0;
         }
         killTimer(delayedPressTimer);
         delayedPressTimer = 0;
@@ -347,6 +351,7 @@ bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
         // sure whether it is a gesture.
         DEBUG() << "QGestureManager: postponing mouse press event";
         QMouseEvent *me = static_cast<QMouseEvent*>(event);
+        lastMousePressReceiver = receiver;
         lastMousePressEvent = QMouseEvent(QEvent::MouseButtonPress, me->pos(),
                                           me->globalPos(), me->button(),
                                           me->buttons(), me->modifiers());
@@ -382,9 +387,12 @@ void QGestureManager::timerEvent(QTimerEvent *event)
         maybeGestures.clear();
         state = NotGesture;
 
-        // we neither received a mouse release event nor gesture
-        // started, so we replay stored mouse press event.
-        QApplication::sendEvent(targetWidget, &lastMousePressEvent);
+        if (lastMousePressReceiver) {
+            // we neither received a mouse release event nor gesture
+            // started, so we replay stored mouse press event.
+            QApplication::sendEvent(lastMousePressReceiver, &lastMousePressEvent);
+            lastMousePressReceiver = 0;
+        }
 
         killTimer(delayedPressTimer);
         delayedPressTimer = 0;

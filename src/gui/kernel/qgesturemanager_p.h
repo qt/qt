@@ -57,6 +57,7 @@
 #include "qset.h"
 #include "qevent.h"
 #include "qbasictimer.h"
+#include "qpointer.h"
 
 #include "qgesturerecognizer.h"
 
@@ -105,6 +106,7 @@ private:
 
     int eventDeliveryDelayTimeout;
     int delayedPressTimer;
+    QPointer<QWidget> lastMousePressReceiver;
     QMouseEvent lastMousePressEvent;
 
     QMap<int, QString> gestureIdMap;
