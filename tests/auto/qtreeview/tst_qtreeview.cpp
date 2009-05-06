@@ -226,6 +226,7 @@ private slots:
     void task244304_clickOnDecoration();
     void task246536_scrollbarsNotWorking();
     void task250683_wrongSectionSize();
+    void task239271_addRowsWithFirstColumnHidden();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -3288,6 +3289,45 @@ void tst_QTreeView::task250683_wrongSectionSize()
 
     QCOMPARE(treeView.header()->sectionSize(0) + treeView.header()->sectionSize(1), treeView.viewport()->width());
 }
+
+void tst_QTreeView::task239271_addRowsWithFirstColumnHidden()
+{
+    class MyDelegate : public QStyledItemDelegate
+    {
+    public:
+        void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index ) const
+        {
+            paintedIndexes << index;
+            QStyledItemDelegate::paint(painter, option, index);
+        }
+
+        mutable QSet<QModelIndex> paintedIndexes;
+    };
+
+    QTreeView view;
+    QStandardItemModel model;
+    view.setModel(&model);
+    MyDelegate delegate;
+    view.setItemDelegate(&delegate);
+    QStandardItem root0("root0"), root1("root1");
+    model.invisibleRootItem()->appendRow(QList<QStandardItem*>() << &root0 << &root1);
+    QStandardItem sub0("sub0"), sub00("sub00");
+    root0.appendRow(QList<QStandardItem*>() << &sub0 << &sub00);
+    view.expand(root0.index());
+
+    view.hideColumn(0);
+    view.show();
+    QTest::qWait(200);
+    delegate.paintedIndexes.clear();
+    QStandardItem sub1("sub1"), sub11("sub11");
+    root0.appendRow(QList<QStandardItem*>() << &sub1 << &sub11);
+
+    QTest::qWait(200);
+    //items in the 2nd column should have been painted
+    QVERIFY(delegate.paintedIndexes.contains(sub00.index()));
+    QVERIFY(delegate.paintedIndexes.contains(sub11.index()));
+}
+
 
 
 QTEST_MAIN(tst_QTreeView)
