@@ -99,7 +99,7 @@ class QFSCompletor :  public QCompleter {
 public:
     QFSCompletor(QAbstractItemModel *model, QObject *parent = 0) : QCompleter(model, parent), proxyModel(0), sourceModel(0)
     {
-#ifdef Q_OS_WIN || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
         setCaseSensitivity(Qt::CaseInsensitive);
 #endif
     }

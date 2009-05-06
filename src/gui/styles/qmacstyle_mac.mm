@@ -2146,8 +2146,11 @@ void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QPoint 
 /*! \reimp */
 void QMacStyle::polish(QPalette &pal)
 {
-    if (qt_mac_backgroundPattern == 0)
+    if (!qt_mac_backgroundPattern) {
+        if (!qApp)
+            return;
         qt_mac_backgroundPattern = new QPixmap(d->generateBackgroundPattern());
+    }
 
     QColor pc(Qt::black);
     pc = qcolorForTheme(kThemeBrushDialogBackgroundActive);

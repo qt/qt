@@ -74,6 +74,7 @@ public:
     };
 
     enum SkinParts {
+        SP_QgnGrafBarWait,
         SP_QgnGrafBarFrameCenter,
         SP_QgnGrafBarFrameSideL,
         SP_QgnGrafBarFrameSideR,

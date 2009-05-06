@@ -807,10 +807,10 @@ extern "C" {
         QWheelEvent qwe(qlocal, qglobal, deltaY, buttons, keyMods, Qt::Vertical);
         qt_sendSpontaneousEvent(qwidget, &qwe);
         wheelOK = qwe.isAccepted();
-        if (wheelOK && QApplicationPrivate::focus_widget
+        if (!wheelOK && QApplicationPrivate::focus_widget
             && QApplicationPrivate::focus_widget != qwidget) {
             QWheelEvent qwe2(QApplicationPrivate::focus_widget->mapFromGlobal(qglobal), qglobal,
-                             deltaZ, buttons, keyMods, Qt::Vertical);
+                             deltaY, buttons, keyMods, Qt::Vertical);
             qt_sendSpontaneousEvent(QApplicationPrivate::focus_widget, &qwe2);
             wheelOK = qwe2.isAccepted();
         }

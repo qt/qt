@@ -391,6 +391,7 @@ bool SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
         t << "OPTION SOURCES -c32 " << iconFile << endl;
         t << "OPTION SOURCEDIR " << iconPath << endl;
         t << "OPTION TARGETFILE " << uid3 << ".mif" << endl;
+        t << "OPTION SVGENCODINGVERSION 3" << endl; // Compatibility with S60 3.1 devices and up
         t << "END" << endl;
     }
 

@@ -194,7 +194,6 @@ static void cleanupCocoaWindowDelegate()
 {
     NSWindow *window = [notification object];
     QWidget *qwidget = m_windowHash->value(window);
-    // Just here to handle the is zoomed method.
     QWidgetData *widgetData = qt_qwidget_data(qwidget);
     if (!(qwidget->windowState() & (Qt::WindowMaximized | Qt::WindowFullScreen)) && [window isZoomed]) {
         widgetData->window_state = widgetData->window_state | Qt::WindowMaximized;
@@ -202,7 +201,6 @@ static void cleanupCocoaWindowDelegate()
                                                    & ~Qt::WindowMaximized));
         qt_sendSpontaneousEvent(qwidget, &e);
     }
-    [self checkForMove:[window frame] forWidget:qwidget];
     NSRect rect = [[window contentView] frame];
     const QSize newSize(rect.size.width, rect.size.height);
     const QSize &oldSize = widgetData->crect.size();
@@ -212,12 +210,18 @@ static void cleanupCocoaWindowDelegate()
     }
 }
 
-- (void)checkForMove:(const NSRect &)newRect forWidget:(QWidget *)qwidget
+- (void)windowDidMove:(NSNotification *)notification
 {
-    // newRect's origin is bottom left.
+    // The code underneath needs to translate the window location
+    // from bottom left (which is the origin used by Cocoa) to
+    // upper left (which is the origin used by Qt):
+    NSWindow *window = [notification object];
+    NSRect newRect = [window frame];
+    QWidget *qwidget = m_windowHash->value(window);
     QPoint qtPoint = flipPoint(NSMakePoint(newRect.origin.x,
                                            newRect.origin.y + newRect.size.height)).toPoint();
     const QRect &oldRect = qwidget->frameGeometry();
+
     if (qtPoint.x() != oldRect.x() || qtPoint.y() != oldRect.y()) {
         QWidgetData *widgetData = qt_qwidget_data(qwidget);
         QRect oldCRect = widgetData->crect;
@@ -231,11 +235,6 @@ static void cleanupCocoaWindowDelegate()
             qt_sendSpontaneousEvent(qwidget, &qme);
         }
     }
-}
-
-- (void)windowDidMove:(NSNotification *)notification
-{
-    [self windowDidResize:notification];
 }
 
 -(BOOL)windowShouldClose:(id)windowThatWantsToClose

@@ -104,6 +104,7 @@ private slots:
     void showAboutDialog();
     void copyAvailable(bool yes);
     void updateNavigationItems();
+    void updateTabCloseAction();
     void showNewAddress(const QUrl &url);
     void addNewBookmark(const QString &title, const QString &url);
     void showTopicChooser(const QMap<QString, QUrl> &links, const QString &keyword);
