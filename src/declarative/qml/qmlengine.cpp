@@ -410,6 +410,9 @@ QmlEngine::~QmlEngine()
 
 /*!
   Clears the engine's internal component cache.
+
+  Normally the QmlEngine caches components loaded from qml files.  This method
+  clears this cache and forces the component to be reloaded.
  */
 void QmlEngine::clearComponentCache()
 {
@@ -600,7 +603,11 @@ QNetworkAccessManager *QmlEngine::networkAccessManager() const
 }
 
 /*!
-  Returns the QmlContext for the \a object.
+  Returns the QmlContext for the \a object, or 0 if no context has been set.
+
+  When the QmlEngine instantiates a QObject, the context is set automatically.
+  
+  \sa qmlContext()
  */
 QmlContext *QmlEngine::contextForObject(const QObject *object)
 {
@@ -616,6 +623,8 @@ QmlContext *QmlEngine::contextForObject(const QObject *object)
   Sets the QmlContext for the \a object to \a context.
   If the \a object already has a context, a warning is
   output, but the context is not changed.
+
+  When the QmlEngine instantiates a QObject, the context is set automatically.
  */
 void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
 {

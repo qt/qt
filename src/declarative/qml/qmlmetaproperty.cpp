@@ -265,13 +265,13 @@ QmlMetaProperty::QmlMetaProperty(const QmlMetaProperty &other)
 
   This enum specifies a category of QML property.
 
-  \value Unknown
-  \value InvalidProperty
-  \value Bindable
-  \value List
-  \value QmlList
-  \value Object
-  \value Normal
+  \value Unknown The category is unknown.  This will never be returned from propertyCategory()
+  \value InvalidProperty The property is invalid.
+  \value Bindable The property is a QmlBindableValue.
+  \value List The property is a QList pointer
+  \value QmlList The property is a QmlList pointer
+  \value Object The property is a QObject derived type pointer
+  \value Normal The property is none of the above.
  */
 
 /*!
@@ -279,12 +279,12 @@ QmlMetaProperty::QmlMetaProperty(const QmlMetaProperty &other)
 
   This enum specifies a type of QML property.
 
-  \value Invalid
-  \value Property
-  \value SignalProperty
-  \value Signal
-  \value Default
-  \value Attached
+  \value Invalid The property is invalid.
+  \value Property The property is a regular Qt property.
+  \value SignalProperty The property is a signal property.
+  \value Signal The property is a signal.
+  \value Default The property is the default property.
+  \value Attached The property is an attached property.
 */
 
 /*!
