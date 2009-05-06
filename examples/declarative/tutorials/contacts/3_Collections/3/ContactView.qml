@@ -3,10 +3,7 @@ Item {
     id: contacts
     width: 240
     height: 230
-    properties: Property {
-        name: "mouseGrabbed"
-        value: false
-    }
+    property var mouseGrabbed: false
     resources: [
         SqlConnection {
             id: contactDatabase
@@ -17,7 +14,7 @@ Item {
         SqlQuery {
             id: contactList
             connection: contactDatabase
-            query: "SELECT recid AS contactid, label, email, phone FROM contacts ORDER BY label, recid"
+            query: "SELECT recid, label, email, phone FROM contacts ORDER BY label, recid"
         }
     ]
     Button {
@@ -49,9 +46,9 @@ Item {
                     x: 45
                     y: 12
                     width: parent.width-45
-                    text: model.label
                     color: "black"
                     font.bold: true
+                    text: model.label
                 }
 //! [setting qml]
                 MouseRegion {
@@ -63,14 +60,14 @@ Item {
                 }
                 Item {
                     id: Details
-                    anchors.fill: wrapper
+                    anchors.fill: parent
                     opacity: 0
 //! [setting qml]
 //! [binding]
                     Bind {
                         target: Details.qmlItem
-                        property: "contactid"
-                        value: model.contactid
+                        property: "contactId"
+                        value: model.recid
                     }
                     Bind {
                         target: Details.qmlItem

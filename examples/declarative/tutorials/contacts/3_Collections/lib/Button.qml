@@ -2,12 +2,8 @@ Item {
     id: button
     width: 30
     height: 30
-    properties: Property {
-        name: "icon"
-    }
-    signals: Signal {
-        name: "clicked"
-    }
+    property var icon: ""
+    signal clicked
     Rect {
         id: buttonRect
         anchors.fill: parent

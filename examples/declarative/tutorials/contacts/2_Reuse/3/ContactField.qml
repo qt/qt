@@ -4,17 +4,9 @@ Item {
     clip: true
     width: 230
     height: 30
-    properties: Property {
-        name: "label"
-        value: "Name"
-    }
-    properties: Property {
-        name: "icon"
-        value: "../../shared/pics/phone.png"
-    }
-    properties: Property {
-        name: "value"
-    }
+    property var label: "Name"
+    property var icon: "../../shared/pics/phone.png"
+    property var value: ""
     RemoveButton {
         id: removeButton
         anchors.right: parent.right

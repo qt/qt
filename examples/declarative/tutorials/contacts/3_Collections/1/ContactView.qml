@@ -3,10 +3,7 @@ Item {
     id: contacts
     width: 240
     height: 230
-    properties: Property {
-        name: "mouseGrabbed"
-        value: false
-    }
+    property var mouseGrabbed: false
     resources: [
 //! [model]
         SqlConnection {

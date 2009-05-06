@@ -265,7 +265,7 @@ void QmlTransition::setToState(const QString &t)
     This property holds a list of the animations to be run for this transition.
 
     The top-level animations in operations are run in parallel.
-    To run them sequentially, you can create a single <SequentialAnimation>
+    To run them sequentially, you can create a single SequentialAnimation
     which contains all the animations, and assign that to operations.
     \default
 */
