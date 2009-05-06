@@ -226,6 +226,13 @@ system.
     application. This tutorial is also available with
     \l{Tutoriel "Carnet d'adresses"}{French explanation}.
 
+    \section1 \l{Declarative UI Tutorial}
+
+    \inlineimage declarative-tutorial-list-open.png
+
+    A beginner's guide to getting started with Declarative UI and QML.  This
+    allows for creating user interfaces that are highly animated and
+    graphically rich.
 */
 
 /*!
