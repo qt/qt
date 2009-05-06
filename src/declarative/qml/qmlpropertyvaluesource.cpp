@@ -59,14 +59,17 @@ QmlPropertyValueSource::QmlPropertyValueSource(QObject *parent)
 {
 }
 
+/*!
+  \internal
+ */
 QmlPropertyValueSource::QmlPropertyValueSource(QObjectPrivate &dd, QObject *parent)
     : QObject(dd, parent)
 {
 }
 
 /*!
-    Set the target \a property for the value source.  This method will be called
-    by the QML engine when assigning a value source.
+    Set the target \a property for the value source.  This method will
+    be called by the QML engine when assigning a value source.
 
     The default implementation does nothing.
 */

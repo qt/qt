@@ -135,7 +135,7 @@ QFxImage::~QFxImage()
 
     This property contains the image currently being displayed by this item,
     which may be an empty pixmap if nothing is currently displayed. If this
-    property is set, the src property will be unset. This property is intended
+    property is set, the source property will be unset. This property is intended
     to be used only in C++, not in QML.
 */
 QPixmap QFxImage::pixmap() const
@@ -790,7 +790,7 @@ QFxImage::Status QFxImage::status() const
 }
 
 /*!
-    \qmlproperty string Image::src
+    \qmlproperty string Image::source
 
     Image can handle any image format supported by Qt, loaded from any URL scheme supported by Qt.
 

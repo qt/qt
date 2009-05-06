@@ -476,6 +476,10 @@ void QFxItem::setItemParent(QFxItem *parent)
   \property QFxItem::moveToParent
   Playing around with view2view transitions.
  */
+
+/*!
+  \internal
+ */
 void QFxItem::moveToParent(QFxItem *parent)
 {
     if (parent && itemParent()) {
@@ -793,6 +797,9 @@ QFxContents *QFxItem::contents()
   \property QFxItem::qmlItem
 */
 
+/*! \fn QFxItem *QFxItem::qmlItem() const
+  \internal
+ */
 QFxItem *QFxItem::qmlItem() const
 {
     Q_D(const QFxItem);
@@ -807,6 +814,13 @@ QFxItem *QFxItem::qmlItem() const
     item. Querying for the QML only has meaning if the QML has been
     dynamically set; otherwise an empty string is returned.
 */
+
+/*! \fn void QFxItem::qmlChanged()
+  This signal is emitted whenever the item's dynamic QML
+  string changes.
+
+  \sa setQml()
+ */
 
 /*!
     \property QFxItem::qml
@@ -859,7 +873,14 @@ void QFxItem::setQml(const QString &qml)
     }
 }
 
+/*! \fn void QFxItem::newChildCreated(const QString &url, QScriptValue v)
+  This signal is emitted with the \a url and the script value \a v,
+  when a new child is created.
+ */
 
+/*!
+  \internal
+ */
 void QFxItem::qmlLoaded()
 {
     Q_D(QFxItem);
@@ -1032,6 +1053,11 @@ void QFxItem::qmlLoaded()
   \endtable
  */
 
+/*!
+  This function is called to handle this item's changes in
+  geometry from \a oldGeometry to \a newGeometry. If the two
+  geometries are the same, it doesn't do anything.
+ */
 void QFxItem::geometryChanged(const QRectF &newGeometry, 
                               const QRectF &oldGeometry)
 {
@@ -1163,6 +1189,13 @@ void QFxItem::setFlipHorizontally(bool v)
         setFlip((QSimpleCanvasItem::Flip)(flip() & ~HorizontalFlip));
 }
 
+/*! \fn void QFxItem::keyPress(QFxKeyEvent *event)
+  This signal is emitted by keyPressEvent() for the \a event.
+ */
+
+/*! \fn void QFxItem::keyRelease(QFxKeyEvent *event)
+  This signal is emitted by keyReleaseEvent() for the \a event.
+ */
 
 /*!
   \reimp
@@ -1482,6 +1515,12 @@ void QFxItem::setBaselineOffset(int offset)
   \endtable
 */
 
+/*! \fn void QFxItem::rotationChanged()
+  This signal is emitted when the rotation property is changed.
+
+  \sa setRotation()
+ */
+
 /*!
   \property QFxItem::rotation
   This property holds the rotation of the item in degrees.
@@ -1654,12 +1693,20 @@ void QFxItem::setOpacity(qreal v)
     emit opacityChanged();
 }
 
+/*!
+  Returns a value indicating whether the mouse should
+  remain with this item.
+ */
 bool QFxItem::keepMouseGrab() const
 {
     Q_D(const QFxItem);
     return d->_keepMouse;
 }
 
+/*!
+  The flag indicating whether the mouse should remain
+  with this item is set to \a keep.
+ */
 void QFxItem::setKeepMouseGrab(bool keep)
 {
     Q_D(QFxItem);

@@ -113,8 +113,6 @@ QML_DEFINE_TYPE(QFxParticleMotion,ParticleMotion);
     \brief The QFxParticleMotion class is the base class for particle motion.
 
     This class causes the particles to remain static.
-
-    \sa QFxParticles
 */
 
 /*!
@@ -165,8 +163,6 @@ void QFxParticleMotion::destroy(QFxParticle &particle)
     \class QFxParticleMotionLinear
     \ingroup group_effects
     \brief The QFxParticleMotionLinear class moves the particles linearly.
-
-    \sa QFxParticles
 */
 
 QML_DEFINE_TYPE(QFxParticleMotionLinear,ParticleMotionLinear);
@@ -189,8 +185,6 @@ void QFxParticleMotionLinear::advance(QFxParticle &p, int interval)
     \class QFxParticleMotionGravity
     \ingroup group_effects
     \brief The QFxParticleMotionGravity class moves the particles towards a point.
-
-    \sa QFxParticles
 */
 
 QML_DEFINE_TYPE(QFxParticleMotionGravity,ParticleMotionGravity);
@@ -281,8 +275,6 @@ Rect {
 
     The particles will continue roughly in the original direction, however will randomly
     drift to each side.
-
-    \sa QFxParticles
 */
 
 /*!

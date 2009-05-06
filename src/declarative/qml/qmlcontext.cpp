@@ -42,7 +42,6 @@
 #include <qmlcontext.h>
 #include <private/qmlcontext_p.h>
 #include <private/qmlengine_p.h>
-#include <private/qmlcompiledcomponent_p.h>
 #include <qmlengine.h>
 #include <qscriptengine.h>
 
@@ -54,7 +53,7 @@
 QT_BEGIN_NAMESPACE
 
 QmlContextPrivate::QmlContextPrivate()
-    : parent(0), engine(0), highPriorityCount(0), component(0)
+    : parent(0), engine(0), highPriorityCount(0)
 {
 }
 
@@ -232,8 +231,6 @@ QmlContext::QmlContext(QmlContext *parentContext, QObject *parent)
  */
 QmlContext::~QmlContext()
 {
-    Q_D(QmlContext);
-    if (d->component) d->component->release();
 }
 
 
@@ -344,7 +341,7 @@ QmlContext *QmlContext::activeContext()
     simply returned. If there is no containing component,
     an empty URL is returned.
 
-    \sa QmlEngine::componentUrl()
+    \sa QmlEngine::componentUrl(), setBaseUrl()
 */
 QUrl QmlContext::resolvedUrl(const QUrl &src)
 {
@@ -352,14 +349,14 @@ QUrl QmlContext::resolvedUrl(const QUrl &src)
     if (src.isRelative()) {
         if (ctxt) {
             while(ctxt) {
-                if (ctxt->d_func()->component)
+                if(ctxt->d_func()->url.isValid())
                     break;
                 else
                     ctxt = ctxt->parentContext();
             }
 
             if (ctxt)
-                return ctxt->d_func()->component->url.resolved(src);
+                return ctxt->d_func()->url.resolved(src);
         }
         return QUrl();
     } else {
@@ -373,7 +370,7 @@ QUrl QmlContext::resolvedUrl(const QUrl &src)
     \l {QmlEngine::nameSpacePaths()} {namespace paths} of the
     context's engine, returning the resolved URL.
 
-    \sa QmlEngine::componentUrl()
+    \sa QmlEngine::componentUrl(), setBaseUrl()
 */
 QUrl QmlContext::resolvedUri(const QUrl &src)
 {
@@ -381,19 +378,33 @@ QUrl QmlContext::resolvedUri(const QUrl &src)
     if (src.isRelative()) {
         if (ctxt) {
             while(ctxt) {
-                if (ctxt->d_func()->component)
+                if (ctxt->d_func()->url.isValid())
                     break;
                 else
                     ctxt = ctxt->parentContext();
             }
 
             if (ctxt)
-                return ctxt->d_func()->engine->componentUrl(src, ctxt->d_func()->component->url);
+                return ctxt->d_func()->engine->componentUrl(src, ctxt->d_func()->url);
         }
         return QUrl();
     } else {
         return ctxt->d_func()->engine->componentUrl(src, QUrl());
     }
+}
+
+/*!
+    Explicitly sets the url both resolveUri() and resolveUrl() will
+    use for relative references to \a baseUrl.
+
+    Calling this function will override the url of the containing
+    component used by default.
+
+    \sa resolvedUrl(), resolvedUri()
+*/
+void QmlContext::setBaseUrl(const QUrl &baseUrl)
+{
+    d_func()->url = baseUrl;
 }
 
 void QmlContext::objectDestroyed(QObject *object)

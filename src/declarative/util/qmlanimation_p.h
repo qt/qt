@@ -203,7 +203,8 @@ class QmlColorAnimationPrivate : public QmlAbstractAnimationPrivate
     Q_DECLARE_PUBLIC(QmlColorAnimation);
 public:
     QmlColorAnimationPrivate()
-    : QmlAbstractAnimationPrivate(), fromSourced(false), ca(0), value(this, &QmlColorAnimationPrivate::valueChanged)
+    : QmlAbstractAnimationPrivate(), fromSourced(false), fromIsDefined(false), toIsDefined(false),
+      ca(0), value(this, &QmlColorAnimationPrivate::valueChanged)
     {
         if (!colorInterpolator)
             colorInterpolator = QVariantAnimationPrivate::getInterpolator(QVariant::Color);
@@ -213,11 +214,16 @@ public:
 
     QString easing;
 
-    QList<QObject *> filter;
-    QList<QObject *> exclude;
-    bool fromSourced;
     QColor fromValue;
     QColor toValue;
+
+    QList<QObject *> filter;
+    QList<QObject *> exclude;
+
+    bool fromSourced;
+    bool fromIsDefined;
+    bool toIsDefined;
+
     QmlTimeLineValueAnimator *ca;
     virtual void valueChanged(qreal);
 
@@ -350,7 +356,8 @@ class QmlVariantAnimationPrivate : public QmlAbstractAnimationPrivate
     Q_DECLARE_PUBLIC(QmlVariantAnimation);
 public:
     QmlVariantAnimationPrivate()
-    : QmlAbstractAnimationPrivate(), fromSourced(false), va(0), value(this, &QmlVariantAnimationPrivate::valueChanged) {}
+    : QmlAbstractAnimationPrivate(), fromSourced(false), fromIsDefined(false), toIsDefined(false),
+      va(0), value(this, &QmlVariantAnimationPrivate::valueChanged) {}
 
     void init();
 
@@ -364,6 +371,8 @@ public:
     QList<QObject *> exclude;
 
     bool fromSourced;
+    bool fromIsDefined;
+    bool toIsDefined;
 
     QmlTimeLineValueAnimator *va;
     virtual void valueChanged(qreal);
