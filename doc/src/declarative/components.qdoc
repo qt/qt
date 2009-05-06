@@ -78,15 +78,15 @@ MyButton { label: "Reset"; onClicked: resetData() }
 
 \section1 Placing .qml Files
 
-Component files should be placed in specific locations in order to be found by the Qml engine:
+When one component refers to a another, the second must be found either in the same directory
+as the first, or in a directory imported using the \c import statement:
 
-\list
-\o the run directory
-\o the run directory + "/qml"
-\o the directory of the Qml you are running
-\o the directory of the Qml you are running + "/qml"
-\endlist
+\code
+import "library"
+\endcode
 
-In the future library-like directories will be defined (in the meantime the first two options above effectively serve this purpose).
+\section1 Namespaces
+
+Namespaces for QML will be supported in Qt 4.6.
 
 */
