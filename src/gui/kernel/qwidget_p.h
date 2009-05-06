@@ -60,6 +60,7 @@
 #include "QtGui/qregion.h"
 #include "QtGui/qsizepolicy.h"
 #include "QtGui/qstyle.h"
+#include "QtGui/qevent.h"
 
 #ifdef Q_WS_WIN
 #include "QtCore/qt_windows.h"
