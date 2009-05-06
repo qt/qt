@@ -2165,11 +2165,12 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         }
 #endif
         bool modified = (event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier));
-        if (!event->text().isEmpty() && !modified) {
-            if (!edit(currentIndex(), AnyKeyPressed, event))
-                keyboardSearch(event->text());
+        if (!event->text().isEmpty() && !modified && !edit(currentIndex(), AnyKeyPressed, event)) {
+            keyboardSearch(event->text());
+            event->accept();
+        } else {
+            event->ignore();
         }
-        event->ignore();
         break; }
     }
 }

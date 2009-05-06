@@ -587,10 +587,6 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
         return;
     if (!scene)
         return;
-    if (scene->d_func()->allItemsIgnoreHoverEvents && scene->d_func()->allItemsUseDefaultCursor
-        && !event->buttons()) { // forward event to the scene if something is pressed.
-        return; // No need to process this event further.
-    }
 
     QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
     mouseEvent.setWidget(q->viewport());

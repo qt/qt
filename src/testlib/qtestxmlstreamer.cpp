@@ -54,7 +54,7 @@ void QTestXmlStreamer::formatStart(const QTestElement *element, char *formatted)
             QXmlTestLogger::xmlCdata(cdataTag, element->attributeValue(QTest::AI_Tag),
                 sizeof(cdataTag));
             QTest::qt_snprintf(formatted, 1024, "<Incident type=\"%s\" %s>\n"
-                "    <DataTag><![CDATA[%s]]></Description>\n"
+                "    <DataTag><![CDATA[%s]]></DataTag>\n"
                 "    <Description><![CDATA[%s]]></Description>\n"
                 "</Incident>\n", element->attributeValue(QTest::AI_Result),
                 location, cdataTag, cdataDesc);

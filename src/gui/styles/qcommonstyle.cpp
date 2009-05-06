@@ -2873,9 +2873,11 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 tr.setRect(0, 0, tr.height(), tr.width());
             int verticalShift = pixelMetric(QStyle::PM_TabBarTabShiftVertical, tab, widget);
             int horizontalShift = pixelMetric(QStyle::PM_TabBarTabShiftHorizontal, tab, widget);
+            int hpadding = pixelMetric(QStyle::PM_TabBarTabHSpace, opt, widget) / 2;
+            int vpadding = pixelMetric(QStyle::PM_TabBarTabVSpace, opt, widget) / 2;
             if (tabV2.shape == QTabBar::RoundedSouth || tabV2.shape == QTabBar::TriangularSouth)
                 verticalShift = -verticalShift;
-            tr.adjust(0, 0, horizontalShift, verticalShift);
+            tr.adjust(hpadding, vpadding, horizontalShift - hpadding, verticalShift - vpadding);
             bool selected = tabV2.state & State_Selected;
             if (selected) {
                 tr.setBottom(tr.bottom() - verticalShift);

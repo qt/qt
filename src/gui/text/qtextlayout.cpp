@@ -1145,7 +1145,7 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QVector<FormatRang
     }
 
     QPainterPath excludedRegion;
-    QPainterPath needsTextButNoBackground;
+    QPainterPath textDoneRegion;
     for (int i = 0; i < selections.size(); ++i) {
         FormatRange selection = selections.at(i);
         const QBrush bg = selection.format.background();
@@ -1205,18 +1205,25 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QVector<FormatRang
         }
 
 
+
+        bool hasText = (selection.format.foreground().style() != Qt::NoBrush);
+        bool hasBackground= (selection.format.background().style() != Qt::NoBrush);
+        
+        if (hasBackground) {
+            selection.format.setProperty(ObjectSelectionBrush, selection.format.property(QTextFormat::BackgroundBrush));
+            // don't just clear the property, set an empty brush that overrides a potential
+            // background brush specified in the text
+            selection.format.setProperty(QTextFormat::BackgroundBrush, QBrush());
+            selection.format.clearProperty(QTextFormat::OutlinePen);
+        }
+
+        selection.format.setProperty(SuppressText, !hasText);
+
+        if (hasText && !hasBackground && !(textDoneRegion & region).isEmpty())
+            continue;
+
         p->save();
         p->setClipPath(region, Qt::IntersectClip);
-
-        selection.format.setProperty(ObjectSelectionBrush, selection.format.property(QTextFormat::BackgroundBrush));
-        // don't just clear the property, set an empty brush that overrides a potential
-        // background brush specified in the text
-        selection.format.setProperty(QTextFormat::BackgroundBrush, QBrush());
-        selection.format.clearProperty(QTextFormat::OutlinePen);
-
-        bool noText = (selection.format.foreground().style() == Qt::NoBrush);
-
-        selection.format.setProperty(SuppressText, noText);
 
         for (int line = firstLine; line < lastLine; ++line) {
             QTextLine l(line, d);
@@ -1224,13 +1231,17 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QVector<FormatRang
         }
         p->restore();
 
-        if (noText)
-            needsTextButNoBackground += region;
-        else
-            needsTextButNoBackground -= region;
+        if (hasText) {
+            textDoneRegion += region;
+        } else {
+            if (hasBackground)
+                textDoneRegion -= region;
+        }
+
         excludedRegion += region;
     }
 
+    QPainterPath needsTextButNoBackground = excludedRegion - textDoneRegion;
     if (!needsTextButNoBackground.isEmpty()){
         p->save();
         p->setClipPath(needsTextButNoBackground, Qt::IntersectClip);

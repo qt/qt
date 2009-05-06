@@ -58,6 +58,8 @@ private slots:
     void badMessage() const;
     void badMessage_data() const;
 
+    void failWithNoFile() const;
+
 public:
     static QList<QByteArray> const& badStrings();
 };
@@ -114,6 +116,11 @@ void tst_BadXml::badDataTag_data() const
     foreach (char const* str, badStrings()) {
         QTest::newRow(str) << 0;
     }
+}
+
+void tst_BadXml::failWithNoFile() const
+{
+    QTest::qFail("failure message", 0, 0);
 }
 
 /*
