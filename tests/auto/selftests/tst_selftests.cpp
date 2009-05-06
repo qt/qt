@@ -324,34 +324,41 @@ void tst_Selftests::checkXML() const
     if(m_checkXMLBlacklist.contains(subdir))
         return;
 
-    arguments.prepend("-xml");
-    arguments.prepend("-flush");
+    QStringList args;
+    /* Test both old (-flush) and new XML logger implementation */
+    for (int i = 0; i < 2; ++i) {
+        bool flush = i;
+        args = arguments;
+        args.prepend("-xml");
+        if (flush) args.prepend("-flush");
 
-    QProcess proc;
-    proc.setEnvironment(QStringList(""));
-    proc.start(subdir + "/" + subdir, arguments);
-    QVERIFY(proc.waitForFinished());
+        QProcess proc;
+        proc.setEnvironment(QStringList(""));
+        proc.start(subdir + "/" + subdir, args);
+        QVERIFY(proc.waitForFinished());
 
-    QByteArray out(proc.readAllStandardOutput());
-    QByteArray err(proc.readAllStandardError());
+        QByteArray out(proc.readAllStandardOutput());
+        QByteArray err(proc.readAllStandardError());
 
-    /* Some platforms decides to output a message for uncaught exceptions. For instance,
-     * this is what windows platforms says:
-     * "This application has requested the Runtime to terminate it in an unusual way.
-     * Please contact the application's support team for more information." */
-    if(subdir != QLatin1String("exception") && subdir != QLatin1String("fetchbogus"))
-        QVERIFY2(err.isEmpty(), err.constData());
+        /* Some platforms decides to output a message for uncaught exceptions. For instance,
+         * this is what windows platforms says:
+         * "This application has requested the Runtime to terminate it in an unusual way.
+         * Please contact the application's support team for more information." */
+        if(subdir != QLatin1String("exception") && subdir != QLatin1String("fetchbogus"))
+            QVERIFY2(err.isEmpty(), err.constData());
 
-    QXmlStreamReader reader(out);
+        QXmlStreamReader reader(out);
 
-    while(!reader.atEnd())
-        reader.readNext();
+        while(!reader.atEnd())
+            reader.readNext();
 
-    QVERIFY2(!reader.error(), qPrintable(QString("line %1, col %2: %3")
-        .arg(reader.lineNumber())
-        .arg(reader.columnNumber())
-        .arg(reader.errorString())
-    ));
+        QVERIFY2(!reader.error(), qPrintable(QString("(flush %0) line %1, col %2: %3")
+            .arg(flush)
+            .arg(reader.lineNumber())
+            .arg(reader.columnNumber())
+            .arg(reader.errorString())
+        ));
+    }
 }
 
 void tst_Selftests::checkXunitxml() const
