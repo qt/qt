@@ -809,9 +809,7 @@ void QFxListViewPrivate::fixupX()
     \snippet doc/src/snippets/declarative/listview/listview.qml 3
 
     The model is defined as a ListModel using QML:
-    \quotefromfile doc/src/snippets/declarative/listview/dummydata/ContactModel.qml
-    \skipto <ListModel
-    \printuntil </ListModel
+    \quotefile doc/src/snippets/declarative/listview/dummydata/ContactModel.qml
 
     In this case ListModel is a handy way for us to test our UI.  In practice
     the model would be implemented in C++, or perhaps via a SQL data source.

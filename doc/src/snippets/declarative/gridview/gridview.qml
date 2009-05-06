@@ -1,8 +1,6 @@
 //! [3]
 Rect {
-    width: 180
-    height: 200
-    color: "white"
+    width: 240; height: 180; color: "white"
     // ContactModel model is defined in dummydata/ContactModel.qml
     // The viewer automatically loads files in dummydata/* to assist
     // development without a real data source.
@@ -14,16 +12,10 @@ Rect {
         id: Delegate
         Item {
             id: Wrapper
-            width: 180
-            height: 40
+            width: 80; height: 78
             VerticalLayout {
-                x: 5; y: 5
-                Text {
-                    text: '<b>Name:</b> ' + name
-                }
-                Text {
-                    text: '<b>Number:</b> ' + number
-                }
+                Image { source: portrait; anchors.horizontalCenter: parent.horizontalCenter }
+                Text { text: name; anchors.horizontalCenter: parent.horizontalCenter }
             }
         }
     }
@@ -39,13 +31,12 @@ Rect {
         }
     }
 //! [1]
-    // The actual list
+    // The actual grid
 //! [2]
-    ListView {
-        width: 480
-        height: parent.height
-        model: ContactModel
-        delegate: Delegate
+    GridView {
+        width: parent.width; height: parent.height
+        model: ContactModel; delegate: Delegate
+        cellWidth: 80; cellHeight: 80
         highlight: Highlight
         focus: true
     }

@@ -656,32 +656,18 @@ void QFxGridViewPrivate::updateCurrent(int modelIndex)
     and may be flicked to scroll.
 
     The below example creates a very simple grid, using a QML model.
-    \code
-    <resources>
-        <ListModel id="contactModel">
-            <Contact>
-                <firstName>John</firstName>
-                <lastName>Smith</lastName>
-            </Contact>
-            <Contact>
-                <firstName>Bill</firstName>
-                <lastName>Jones</lastName>
-            </Contact>
-            <Contact>
-                <firstName>Jane</firstName>
-                <lastName>Doe</lastName>
-            </Contact>
-            </ListModel>
-            <Component id="contactDelegate">
-                <Rect pen.color="blue" z="-1" height="20" width="80" color="white" radius="2">
-                    <Text id="name" text="{firstName + ' ' + lastName}" font.size="11"/>
-                </Rect>
-        </Component>
-    </resources>
 
-    <GridView id="Grid" width="160" height="240" cellWidth="80" cellHeight="20" clip="true"
-                model="{contactModel}" delegate="{contactDelegate}"/>
-    \endcode
+    \image gridview.png
+
+    \snippet doc/src/snippets/declarative/gridview/gridview.qml 3
+
+    The model is defined as a ListModel using QML:
+    \quotefile doc/src/snippets/declarative/gridview/dummydata/ContactModel.qml
+
+    In this case ListModel is a handy way for us to test our UI.  In practice
+    the model would be implemented in C++, or perhaps via a SQL data source.
+
+
 */
 QFxGridView::QFxGridView(QFxItem *parent)
     : QFxFlickable(*(new QFxGridViewPrivate), parent)
@@ -703,28 +689,8 @@ QFxGridView::~QFxGridView()
 
   The model provides a set of data that is used to create the items for the view.
   For large or dynamic datasets the model is usually provided by a C++ model object.
-  The C++ model object must be a \l QListModelInterface subclass, a \l VisualModel,
+  The C++ model object must be a \l QAbstractItemModel subclass, a \l VisualModel,
   or a simple list.
-
-  Models can also be created directly in QML, using the \l ListModel object. For example:
-  \code
-  <ListModel id="contactModel">
-      <Contact>
-          <firstName>John</firstName>
-          <lastName>Smith</lastName>
-      </Contact>
-      <Contact>
-          <firstName>Bill</firstName>
-          <lastName>Jones</lastName>
-      </Contact>
-      <Contact>
-          <firstName>Jane</firstName>
-          <lastName>Doe</lastName>
-      </Contact>
-  </ListModel>
-
-  <GridView model="{contactModel}" .../>
-  \endcode
 */
 QVariant QFxGridView::model() const
 {
@@ -774,17 +740,7 @@ void QFxGridView::setModel(const QVariant &model)
   The delegate provides a template describing what each item in the view should look and act like.
 
   Here is an example delegate:
-  \code
-  <Component id="contactDelegate">
-      <Item id="wrapper">
-          <Image id="pic" width="100" height="100" file="{portrait}"/>
-          <Text id="name" text="{firstName + ' ' + lastName}"
-              anchors.left="{pic.right}" anchors.leftMargin="5"/>
-      </Item>
-  </Component>
-  ...
-  <GridView delegate="{contactDelegate}" .../>
-  \endcode
+  \snippet doc/src/snippets/declarative/gridview/gridview.qml 0
 */
 QmlComponent *QFxGridView::delegate() const
 {
@@ -860,12 +816,7 @@ int QFxGridView::count() const
   so as to stay with the current item, unless the autoHighlight property is false.
 
   The below example demonstrates how to make a simple highlight:
-  \code
-  <Component id="ListHighlight">
-      <Rect color="lightsteelblue" radius="4"/>
-  </Component>
-  <GridView highlight="{ListHighlight}">
-  \endcode
+  \snippet doc/src/snippets/declarative/gridview/gridview.qml 1
 
   \sa autoHighlight
 */
@@ -890,19 +841,17 @@ void QFxGridView::setHighlight(QmlComponent *highlight)
   If autoHighlight is true, the highlight will be moved smoothly
   to follow the current item.  If autoHighlight is false, the
   highlight will not be moved by the view, and must be implemented
-  by the highlight, for example:
+  by the highlight component, for example:
 
   \code
-  <Component id="Highlight">
-      <Rect id="Wrapper" color="#242424" radius="4" width="320" height="60" >
-          <y>
-              <Follow source="{Wrapper.GridView.view.current.y}" spring="3" damping="0.2"/>
-          </y>
-          <x>
-              <Follow source="{Wrapper.GridView.view.current.x}" spring="3" damping="0.2"/>
-          </x>
-      </Rect>
-  </Component>
+  Component {
+      id: Highlight
+      Rect {
+          id: Wrapper; color: "lightsteelblue"; radius: 4; width: 320; height: 60 >
+          y: Follow { source: Wrapper.GridView.view.current.y; spring: 3; damping: 0.2 }
+          x: Follow { source: Wrapper.GridView.view.current.x; spring: 3; damping: 0.2 }
+      }
+  }
   \endcode
 */
 bool QFxGridView::autoHighlight() const
@@ -1007,9 +956,11 @@ void QFxGridView::setCacheBuffer(int buffer)
 
 /*!
   \qmlproperty int GridView::cellWidth
-  This property holds the width of each cell in the grid
+  \qmlproperty int GridView::cellHeight
 
-  The default cellWidth is 100.
+  These properties holds the width and height of each cell in the grid
+
+  The default sell size is 100x100.
 */
 int QFxGridView::cellWidth() const
 {
@@ -1028,12 +979,6 @@ void QFxGridView::setCellWidth(int cellWidth)
     }
 }
 
-/*!
-  \qmlproperty int GridView::cellHeight
-  This property holds the height of each cell in the grid
-
-  The default cellHeight is 100.
-*/
 int QFxGridView::cellHeight() const
 {
     Q_D(const QFxGridView);
