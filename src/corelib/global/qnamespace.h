@@ -1401,15 +1401,16 @@ public:
     enum InputMethodHint {
         ImhNone = 0x0,
         ImhHiddenText = 0x1,
-        ImhNumbersOnly = 0x2,
-        ImhUppercaseOnly = 0x4,
-        ImhLowercaseOnly = 0x8,
-        ImhNoAutoUppercase = 0x10,
-        ImhPreferNumbers = 0x20,
-        ImhPreferUppercase = 0x40,
-        ImhPreferLowercase = 0x80,
-        ImhNoPredictiveText = 0x100,
-        ImhDialableCharactersOnly = 0x200
+        ImhDigitsOnly = 0x2,
+        ImhFormattedNumbersOnly = 0x4,
+        ImhUppercaseOnly = 0x8,
+        ImhLowercaseOnly = 0x10,
+        ImhNoAutoUppercase = 0x20,
+        ImhPreferNumbers = 0x40,
+        ImhPreferUppercase = 0x80,
+        ImhPreferLowercase = 0x100,
+        ImhNoPredictiveText = 0x200,
+        ImhDialableCharactersOnly = 0x400
     };
     Q_DECLARE_FLAGS(InputMethodHints, InputMethodHint)
 
