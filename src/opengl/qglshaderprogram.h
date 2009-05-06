@@ -1,27 +1,46 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #ifndef QGLSHADERPROGRAM_H
 #define QGLSHADERPROGRAM_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
 
 #include <QtOpenGL/qgl.h>
 #include <QtGui/qvector2d.h>
@@ -35,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(OpenGL)
 
-#if !defined(QT_OPENGL_ES_1_CL) && !defined(QT_GL_FIXED_PREFERRED)
+#if !defined(QT_OPENGL_ES_1_CL) && !defined(QT_OPENGL_ES_1)
 
 class QGLShaderProgram;
 class QGLShaderPrivate;
@@ -77,7 +96,7 @@ public:
     QByteArray sourceCode() const;
 
     bool isCompiled() const;
-    QString errors() const;
+    QString log() const;
 
     GLuint shaderId() const;
 
@@ -117,10 +136,10 @@ public:
 
     virtual bool link();
     bool isLinked() const;
-    QString errors() const;
+    QString log() const;
 
     bool enable();
-    void disable();
+    static void disable();
 
     GLuint programId() const;
 
@@ -177,6 +196,7 @@ public:
 
     void setUniformValue(int location, GLfloat value);
     void setUniformValue(int location, GLint value);
+    void setUniformValue(int location, GLuint value);
     void setUniformValue(int location, GLfloat x, GLfloat y);
     void setUniformValue(int location, GLfloat x, GLfloat y, GLfloat z);
     void setUniformValue(int location, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
@@ -184,6 +204,10 @@ public:
     void setUniformValue(int location, const QVector3D& value);
     void setUniformValue(int location, const QVector4D& value);
     void setUniformValue(int location, const QColor& color);
+    void setUniformValue(int location, const QPoint& point);
+    void setUniformValue(int location, const QPointF& point);
+    void setUniformValue(int location, const QSize& size);
+    void setUniformValue(int location, const QSizeF& size);
     void setUniformValue(int location, const QMatrix2x2& value);
     void setUniformValue(int location, const QMatrix2x3& value);
     void setUniformValue(int location, const QMatrix2x4& value);
@@ -198,6 +222,7 @@ public:
 
     void setUniformValue(const char *name, GLfloat value);
     void setUniformValue(const char *name, GLint value);
+    void setUniformValue(const char *name, GLuint value);
     void setUniformValue(const char *name, GLfloat x, GLfloat y);
     void setUniformValue(const char *name, GLfloat x, GLfloat y, GLfloat z);
     void setUniformValue(const char *name, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
@@ -205,6 +230,10 @@ public:
     void setUniformValue(const char *name, const QVector3D& value);
     void setUniformValue(const char *name, const QVector4D& value);
     void setUniformValue(const char *name, const QColor& color);
+    void setUniformValue(const char *name, const QPoint& point);
+    void setUniformValue(const char *name, const QPointF& point);
+    void setUniformValue(const char *name, const QSize& size);
+    void setUniformValue(const char *name, const QSizeF& size);
     void setUniformValue(const char *name, const QMatrix2x2& value);
     void setUniformValue(const char *name, const QMatrix2x3& value);
     void setUniformValue(const char *name, const QMatrix2x4& value);
@@ -219,6 +248,7 @@ public:
 
     void setUniformValueArray(int location, const GLfloat *values, int count, int size);
     void setUniformValueArray(int location, const GLint *values, int count);
+    void setUniformValueArray(int location, const GLuint *values, int count);
     void setUniformValueArray(int location, const QVector2D *values, int count);
     void setUniformValueArray(int location, const QVector3D *values, int count);
     void setUniformValueArray(int location, const QVector4D *values, int count);
@@ -234,6 +264,7 @@ public:
 
     void setUniformValueArray(const char *name, const GLfloat *values, int count, int size);
     void setUniformValueArray(const char *name, const GLint *values, int count);
+    void setUniformValueArray(const char *name, const GLuint *values, int count);
     void setUniformValueArray(const char *name, const QVector2D *values, int count);
     void setUniformValueArray(const char *name, const QVector3D *values, int count);
     void setUniformValueArray(const char *name, const QVector4D *values, int count);
