@@ -67,9 +67,6 @@ public:
 private:
     enum DumpStatus { NoDump = 0x00, DumpPre = 0x01, DumpPost = 0x02 } dumpStatus;
     void dumpInstructions();
-    void dump(int indent, QmlParser::Property *p);
-    void dump(int indent, QmlParser::Object *o);
-    void dump(int indent, QmlParser::Value *v);
     void dump(QmlInstruction *, int idx = -1);
     friend class QmlCompiler;
     friend class QmlDomDocument;
