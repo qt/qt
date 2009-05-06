@@ -848,20 +848,20 @@ QWebPage *QFxWebView::page() const
 
 // The QObject interface to settings().
 /*!
-    \qmlproperty bool WebView::settings::autoLoadImages
-    \qmlproperty bool WebView::settings::javascriptEnabled
-    \qmlproperty bool WebView::settings::javaEnabled
-    \qmlproperty bool WebView::settings::pluginsEnabled
-    \qmlproperty bool WebView::settings::privateBrowsingEnabled
-    \qmlproperty bool WebView::settings::javascriptCanOpenWindows
-    \qmlproperty bool WebView::settings::javascriptCanAccessClipboard
-    \qmlproperty bool WebView::settings::developerExtrasEnabled
-    \qmlproperty bool WebView::settings::linksIncludedInFocusChain
-    \qmlproperty bool WebView::settings::zoomTextOnly
-    \qmlproperty bool WebView::settings::printElementBackgrounds
-    \qmlproperty bool WebView::settings::offlineStorageDatabaseEnabled
-    \qmlproperty bool WebView::settings::offlineWebApplicationCacheEnabled
-    \qmlproperty bool WebView::settings::localStorageDatabaseEnabled
+    \qmlproperty bool WebView::settings.autoLoadImages
+    \qmlproperty bool WebView::settings.javascriptEnabled
+    \qmlproperty bool WebView::settings.javaEnabled
+    \qmlproperty bool WebView::settings.pluginsEnabled
+    \qmlproperty bool WebView::settings.privateBrowsingEnabled
+    \qmlproperty bool WebView::settings.javascriptCanOpenWindows
+    \qmlproperty bool WebView::settings.javascriptCanAccessClipboard
+    \qmlproperty bool WebView::settings.developerExtrasEnabled
+    \qmlproperty bool WebView::settings.linksIncludedInFocusChain
+    \qmlproperty bool WebView::settings.zoomTextOnly
+    \qmlproperty bool WebView::settings.printElementBackgrounds
+    \qmlproperty bool WebView::settings.offlineStorageDatabaseEnabled
+    \qmlproperty bool WebView::settings.offlineWebApplicationCacheEnabled
+    \qmlproperty bool WebView::settings.localStorageDatabaseEnabled
 
     These properties give access to the settings controlling the web view.
 
