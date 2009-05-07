@@ -582,25 +582,17 @@ void QFxTextEdit::keyReleaseEvent(QKeyEvent *event)
 }
 
 /*!
-\overload
-Handles the given focus \a event.
+    \overload
+    Handles changing of the focus property.  Focus is applied to the control
+    even if the edit does not have active focus.  This is because things
+    like KeyProxy can give the behavior of focus even when activeFocus isn't
+    true.
 */
-void QFxTextEdit::focusInEvent(QFocusEvent *event)
+void QFxTextEdit::focusChanged(bool hasFocus)
 {
     Q_D(QFxTextEdit);
-    QFxPaintedItem::focusInEvent(event);
-    d->control->processEvent(event, QPointF(0, 0));
-}
-
-/*!
-\overload
-Handles the given focus \a event.
-*/
-void QFxTextEdit::focusOutEvent(QFocusEvent *event)
-{
-    Q_D(QFxTextEdit);
-    QFxPaintedItem::focusOutEvent(event);
-    d->control->processEvent(event, QPointF(0, 0));
+    QFocusEvent focusEvent(hasFocus ? QEvent::FocusIn : QEvent::FocusOut);
+    d->control->processEvent(&focusEvent, QPointF(0, 0));
 }
 
 static QMouseEvent *sceneMouseEventToMouseEvent(QGraphicsSceneMouseEvent *e)

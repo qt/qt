@@ -904,6 +904,13 @@ QSimpleCanvasItem *QSimpleCanvas::activeFocusPanel() const
         return d->focusPanels.top();
 }
 
+QSimpleCanvasItem *QSimpleCanvas::focusItem(QSimpleCanvasItem *item) const
+{
+    while (item && d->focusPanelData.contains(item))
+        item = d->focusPanelData.value(item);
+    return item;
+}
+
 bool QSimpleCanvas::event(QEvent *e)
 {
     if (e->type() == QEvent::User && d->isSimpleCanvas()) {
