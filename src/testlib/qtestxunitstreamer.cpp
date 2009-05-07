@@ -40,6 +40,17 @@ void QTestXunitStreamer::formatStart(const QTestElement *element, char *formatte
     char indent[20];
     indentForElement(element, indent, sizeof(indent));
 
+    // Errors are written as CDATA within system-err, comments elsewhere
+    if (element->elementType() == QTest::LET_Error) {
+        if (element->parentElement()->elementType() == QTest::LET_SystemError) {
+            QTest::qt_snprintf(formatted, 1024, "<![CDATA[");
+        }
+        else {
+            QTest::qt_snprintf(formatted, 1024, "%s<!--", indent);
+        }
+        return;
+    }
+
     QTest::qt_snprintf(formatted, 1024, "%s<%s", indent, element->elementName());
 }
 
@@ -59,12 +70,22 @@ void QTestXunitStreamer::formatEnd(const QTestElement *element, char *formatted)
     QTest::qt_snprintf(formatted, 1024, "%s</%s>\n", indent, element->elementName());
 }
 
-void QTestXunitStreamer::formatAttributes(const QTestElementAttribute *attribute, char *formatted) const
+void QTestXunitStreamer::formatAttributes(const QTestElement* element, const QTestElementAttribute *attribute, char *formatted) const
 {
     if(!attribute || !formatted )
         return;
 
     QTest::AttributeIndex attrindex = attribute->index();
+
+    // For errors within system-err, we only want to output `message'
+    if (element && element->elementType() == QTest::LET_Error
+        && element->parentElement()->elementType() == QTest::LET_SystemError) {
+
+        if (attrindex != QTest::AI_Description) return;
+
+        QXmlTestLogger::xmlCdata(formatted, attribute->value(), 1024);
+        return;
+    }
 
     char const* key = 0;
     if (attrindex == QTest::AI_Description)
@@ -87,10 +108,21 @@ void QTestXunitStreamer::formatAfterAttributes(const QTestElement *element, char
     if(!element || !formatted )
         return;
 
-        if(!element->childElements())
-            QTest::qt_snprintf(formatted, 10, "/>\n");
-        else
-            QTest::qt_snprintf(formatted, 10, ">\n");
+    // Errors are written as CDATA within system-err, comments elsewhere
+    if (element->elementType() == QTest::LET_Error) {
+        if (element->parentElement()->elementType() == QTest::LET_SystemError) {
+            QTest::qt_snprintf(formatted, 1024, "]]>\n");
+        }
+        else {
+            QTest::qt_snprintf(formatted, 1024, " -->\n");
+        }
+        return;
+    }
+
+    if(!element->childElements())
+        QTest::qt_snprintf(formatted, 10, "/>\n");
+    else
+        QTest::qt_snprintf(formatted, 10, ">\n");
 }
 
 void QTestXunitStreamer::output(QTestElement *element) const
@@ -122,7 +154,7 @@ void QTestXunitStreamer::outputElements(QTestElement *element, bool) const
             formatBeforeAttributes(element, buf);
             outputString(buf);
 
-            outputElementAttributes(element->attributes());
+            outputElementAttributes(element, element->attributes());
 
             formatAfterAttributes(element, buf);
             outputString(buf);

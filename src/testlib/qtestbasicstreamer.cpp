@@ -55,7 +55,7 @@ void QTestBasicStreamer::formatAfterAttributes(const QTestElement *element, char
     QTest::qt_snprintf(formatted, 10, "");
 }
 
-void QTestBasicStreamer::formatAttributes(const QTestElementAttribute *attribute, char *formatted) const
+void QTestBasicStreamer::formatAttributes(const QTestElement *, const QTestElementAttribute *attribute, char *formatted) const
 {
     if(!attribute || !formatted )
         return;
@@ -90,7 +90,7 @@ void QTestBasicStreamer::outputElements(QTestElement *element, bool) const
         formatBeforeAttributes(element, buf);
         outputString(buf);
 
-        outputElementAttributes(element->attributes());
+        outputElementAttributes(element, element->attributes());
 
         formatAfterAttributes(element, buf);
         outputString(buf);
@@ -105,11 +105,11 @@ void QTestBasicStreamer::outputElements(QTestElement *element, bool) const
     }
 }
 
-void QTestBasicStreamer::outputElementAttributes(QTestElementAttribute *attribute) const
+void QTestBasicStreamer::outputElementAttributes(const QTestElement* element, QTestElementAttribute *attribute) const
 {
     char buf[1024];
     while(attribute){
-        formatAttributes(attribute, buf);
+        formatAttributes(element, attribute, buf);
         outputString(buf);
         attribute = attribute->nextElement();
     }

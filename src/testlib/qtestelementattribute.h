@@ -37,7 +37,8 @@ namespace QTest {
         LET_Error = 3,
         LET_TestCase = 4,
         LET_TestSuite = 5,
-        LET_Benchmark = 6
+        LET_Benchmark = 6,
+        LET_SystemError = 7
     };
 }
 

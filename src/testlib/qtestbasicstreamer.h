@@ -30,9 +30,9 @@ class QTestBasicStreamer
         virtual void formatEnd(const QTestElement *element = 0, char *formatted = 0) const;
         virtual void formatBeforeAttributes(const QTestElement *element = 0, char *formatted = 0) const;
         virtual void formatAfterAttributes(const QTestElement *element = 0, char *formatted = 0) const;
-        virtual void formatAttributes(const QTestElementAttribute *attribute = 0, char *formatted = 0) const;
+        virtual void formatAttributes(const QTestElement *element = 0, const QTestElementAttribute *attribute = 0, char *formatted = 0) const;
         virtual void outputElements(QTestElement *element, bool isChildElement = false) const;
-        virtual void outputElementAttributes(QTestElementAttribute *attribute) const;
+        virtual void outputElementAttributes(const QTestElement *element, QTestElementAttribute *attribute) const;
 
     private:
         const QTestLogger *testLogger;

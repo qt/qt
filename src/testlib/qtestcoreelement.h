@@ -90,7 +90,8 @@ const char *QTestCoreElement<ElementType>::elementName() const
         "error",
         "testcase",
         "testsuite",
-        "benchmark"
+        "benchmark",
+        "system-err"
     };
 
     if(type != QTest::LET_Undefined)

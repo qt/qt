@@ -14,7 +14,7 @@
 QT_BEGIN_NAMESPACE
 
 QTestLogger::QTestLogger(int fm)
-    :listOfTestcases(0), currentLogElement(0),
+    :listOfTestcases(0), currentLogElement(0), errorLogElement(0),
     logFormatter(0), format( (TestLoggerFormat)fm ), filelogger(new QTestFileLogger),
     testCounter(0), passCounter(0),
     failureCounter(0), errorCounter(0),
@@ -49,6 +49,8 @@ void QTestLogger::startLogging()
         break;
     }case TLF_XunitXml:{
         logFormatter = new QTestXunitStreamer;
+        delete errorLogElement;
+        errorLogElement = new QTestElement(QTest::LET_SystemError);
         filelogger->init();
         break;
     }
@@ -100,6 +102,8 @@ void QTestLogger::stopLogging()
             testcase->setParent(currentLogElement);
             testcase = testcase->nextElement();
         }
+
+        currentLogElement->addLogElement(errorLogElement);
 
         QTestElement *it = currentLogElement;
         logFormatter->output(it);
@@ -276,6 +280,13 @@ void QTestLogger::addMessage(MessageTypes type, const char *message, const char 
 
     currentLogElement->addLogElement(errorElement);
     ++errorCounter;
+
+    // Also add the message to the system error log (i.e. stderr), if one exists
+    if (errorLogElement) {
+        QTestElement *systemErrorElement = new QTestElement(QTest::LET_Error);
+        systemErrorElement->addAttribute(QTest::AI_Description, message);
+        errorLogElement->addLogElement(systemErrorElement);
+    }
 }
 
 void QTestLogger::setLogFormat(TestLoggerFormat fm)

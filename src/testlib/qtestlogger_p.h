@@ -52,6 +52,7 @@ class QTestLogger : public QAbstractTestLogger
     private:
         QTestElement *listOfTestcases;
         QTestElement *currentLogElement;
+        QTestElement *errorLogElement;
         QTestBasicStreamer *logFormatter;
         TestLoggerFormat format;
         QTestFileLogger *filelogger;

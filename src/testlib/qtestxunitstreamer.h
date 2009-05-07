@@ -16,7 +16,7 @@ class QTestXunitStreamer: public QTestBasicStreamer
         void formatStart(const QTestElement *element = 0, char *formatted = 0) const;
         void formatEnd(const QTestElement *element = 0, char *formatted = 0) const;
         void formatAfterAttributes(const QTestElement *element = 0, char *formatted = 0) const;
-        void formatAttributes(const QTestElementAttribute *attribute = 0, char *formatted = 0) const;
+        void formatAttributes(const QTestElement *element = 0, const QTestElementAttribute *attribute = 0, char *formatted = 0) const;
         void output(QTestElement *element) const;
         void outputElements(QTestElement *element, bool isChildElement = false) const;
 
