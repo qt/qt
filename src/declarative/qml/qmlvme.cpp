@@ -48,6 +48,7 @@
 #include <private/qmlcustomparser_p.h>
 #include <qperformancelog.h>
 #include <QStack>
+#include <QWidget>
 #include <private/qmlcompiledcomponent_p.h>
 #include <QColor>
 #include <QPointF>
@@ -274,7 +275,11 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 }
                 if (!stack.isEmpty()) {
                     QObject *parent = stack.top();
-                    o->setParent(parent);
+                    if (o->isWidgetType()) {
+                        qobject_cast<QWidget*>(o)->setParent(qobject_cast<QWidget*>(parent));
+                    } else {
+                        o->setParent(parent);
+                    }
                 }
                 stack.push(o);
             }

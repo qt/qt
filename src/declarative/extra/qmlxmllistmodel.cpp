@@ -239,12 +239,15 @@ void QmlXmlListModel::classComplete()
 void QmlXmlListModel::fetch()
 {
     Q_D(QmlXmlListModel);
+
+    //clear existing data
+    d->size = 0;
+    int count = d->data.count();
+    d->data.clear();
+    emit itemsRemoved(0, count);
+
     if (d->src.isEmpty()) {
         qWarning() << "Can't fetch empty src string";
-        //clear existing data?
-        //int count = d->data.count();
-        //d->data.clear();
-        //emit itemsRemoved(0, count);
         return;
     }
 
