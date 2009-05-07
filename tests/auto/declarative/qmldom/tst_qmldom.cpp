@@ -95,10 +95,19 @@ void tst_qmldom::loadComposite()
     QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
 
     QmlDomDocument document;
-    QVERIFY(document.load(&engine, file.readAll()));
+    QVERIFY(document.load(&engine, file.readAll(), QUrl::fromLocalFile(file.fileName())));
     QVERIFY(document.errors().isEmpty());
 
-    // TODO: How should sub components be represented?
+    QmlDomObject rootItem = document.rootObject();
+    QVERIFY(rootItem.isValid());
+    QCOMPARE(rootItem.objectType(), QByteArray("MyComponent"));
+    QCOMPARE(rootItem.properties().size(), 2);
+
+    QmlDomProperty widthProperty = rootItem.property("width");
+    QVERIFY(widthProperty.value().isLiteral());
+
+    QmlDomProperty heightProperty = rootItem.property("height");
+    QVERIFY(heightProperty.value().isLiteral());
 }
 
 void tst_qmldom::testValueSource()
