@@ -39,78 +39,83 @@
 **
 ****************************************************************************/
 
-#include "qfxkeyproxy.h"
+#include "qmlpropertyview_p.h"
+#include <QtGui/qboxlayout.h>
+#include <QtGui/qtreewidget.h>
+#include <QtCore/qmetaobject.h>
 
-
-QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxKeyProxy,KeyProxy);
-
-/*!
-    \qmlclass KeyProxy
-    \brief The KeyProxy item proxies key presses to a number of other items.
-    \inherits Item
-
-*/
-
-/*!
-    \internal
-    \class QFxKeyProxy
-    \brief The QFxKeyProxy class proxies key presses to a number of other items.
-    \ingroup group_utility
-*/
-
-class QFxKeyProxyPrivate
+QmlPropertyView::QmlPropertyView(QWidget *parent)
+: QWidget(parent), m_tree(0)
 {
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+    setLayout(layout);
+
+    m_tree = new QTreeWidget(this);
+    m_tree->setHeaderLabels(QStringList() << "Property" << "Value");
+
+    m_tree->setColumnCount(2);
+
+    layout->addWidget(m_tree);
+}
+
+class QmlPropertyViewItem : public QObject, public QTreeWidgetItem
+{
+Q_OBJECT
 public:
-    QList<QFxItem *> targets;
+    QmlPropertyViewItem(QTreeWidget *widget);
+
+    QObject *object;
+    QMetaProperty property;
+
+public slots:
+    void refresh();
 };
 
-QFxKeyProxy::QFxKeyProxy(QFxItem *parent)
-: QFxItem(parent), d(new QFxKeyProxyPrivate)
+QmlPropertyViewItem::QmlPropertyViewItem(QTreeWidget *widget)
+: QTreeWidgetItem(widget)
 {
 }
 
-QFxKeyProxy::~QFxKeyProxy()
+void QmlPropertyViewItem::refresh()
 {
-    delete d; d = 0;
+    setText(1, property.read(object).toString());
 }
 
-/*!
-    \qmlproperty list<Item> KeyProxy::targets
-
-    The proxy targets.
-*/
-
-/*!
-    \property QFxKeyProxy::targets
-    \brief the proxy targets.
-*/
-
-QList<QFxItem *> *QFxKeyProxy::targets() const
+void QmlPropertyView::setObject(QObject *object)
 {
-    return &d->targets;
-}
+    m_object = object;
 
-void QFxKeyProxy::keyPressEvent(QKeyEvent *e)
-{
-    for (int ii = 0; ii < d->targets.count(); ++ii) {
-        QSimpleCanvasItem *i = d->targets.at(ii);
-        if (i)
-            canvas()->focusItem(i)->keyPressEvent(e);
-        if (e->isAccepted())
-            return;
+    m_tree->clear();
+    if(!m_object)
+        return;
+
+    const QMetaObject *mo = object->metaObject();
+    for(int ii = 0; ii < mo->propertyCount(); ++ii) {
+        QmlPropertyViewItem *item = new QmlPropertyViewItem(m_tree);
+
+        QMetaProperty p = mo->property(ii);
+        item->object = object;
+        item->property = p;
+
+        item->setText(0, QLatin1String(p.name()));
+
+        static int refreshIdx = -1;
+        if(refreshIdx == -1) 
+            refreshIdx = QmlPropertyViewItem::staticMetaObject.indexOfMethod("refresh()");
+
+        if(p.hasNotifySignal()) 
+            QMetaObject::connect(object, p.notifySignalIndex(), 
+                                 item, refreshIdx);
+
+        item->refresh();
     }
 }
 
-void QFxKeyProxy::keyReleaseEvent(QKeyEvent *e)
+void QmlPropertyView::refresh()
 {
-    for (int ii = 0; ii < d->targets.count(); ++ii) {
-        QSimpleCanvasItem *i = d->targets.at(ii);
-        if (i)
-            canvas()->focusItem(i)->keyReleaseEvent(e);
-        if (e->isAccepted())
-            return;
-    }
+    setObject(m_object);
 }
 
-QT_END_NAMESPACE
+#include "qmlpropertyview.moc"

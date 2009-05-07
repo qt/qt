@@ -114,6 +114,11 @@ public:
 
     QmlCompositeTypeManager typeManager;
     QMap<QString,QString> nameSpacePaths;
+
+    mutable quint32 uniqueId;
+    quint32 getUniqueId() const {
+        return uniqueId++;
+    }
 };
 
 
@@ -201,6 +206,9 @@ public:
 
     QmlExpressionLog &operator=(const QmlExpressionLog &);
 
+    void setTime(quint32);
+    quint32 time() const;
+
     QString expression() const;
     void setExpression(const QString &);
 
@@ -211,6 +219,7 @@ public:
     void setResult(const QVariant &);
 
 private:
+    quint32 m_time;
     QString m_expression;
     QVariant m_result;
     QStringList m_warnings;
@@ -232,6 +241,8 @@ public:
     BindExpressionProxy *proxy;
     QObject *me;
     bool trackChange;
+
+    quint32 id;
 
     void addLog(const QmlExpressionLog &);
     QList<QmlExpressionLog> *log;

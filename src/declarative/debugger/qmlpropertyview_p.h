@@ -39,78 +39,32 @@
 **
 ****************************************************************************/
 
-#include "qfxkeyproxy.h"
+#ifndef QMLPROPERTYVIEW_P_H
+#define QMLPROPERTYVIEW_P_H
 
+#include <QtGui/qwidget.h>
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxKeyProxy,KeyProxy);
 
-/*!
-    \qmlclass KeyProxy
-    \brief The KeyProxy item proxies key presses to a number of other items.
-    \inherits Item
-
-*/
-
-/*!
-    \internal
-    \class QFxKeyProxy
-    \brief The QFxKeyProxy class proxies key presses to a number of other items.
-    \ingroup group_utility
-*/
-
-class QFxKeyProxyPrivate
+class QTreeWidget;
+class QmlPropertyView : public QWidget
 {
+    Q_OBJECT
 public:
-    QList<QFxItem *> targets;
+    QmlPropertyView(QWidget *parent = 0);
+
+    void setObject(QObject *);
+
+public slots:
+    void refresh();
+
+private:
+    QPointer<QObject> m_object;
+    QTreeWidget *m_tree;
 };
 
-QFxKeyProxy::QFxKeyProxy(QFxItem *parent)
-: QFxItem(parent), d(new QFxKeyProxyPrivate)
-{
-}
-
-QFxKeyProxy::~QFxKeyProxy()
-{
-    delete d; d = 0;
-}
-
-/*!
-    \qmlproperty list<Item> KeyProxy::targets
-
-    The proxy targets.
-*/
-
-/*!
-    \property QFxKeyProxy::targets
-    \brief the proxy targets.
-*/
-
-QList<QFxItem *> *QFxKeyProxy::targets() const
-{
-    return &d->targets;
-}
-
-void QFxKeyProxy::keyPressEvent(QKeyEvent *e)
-{
-    for (int ii = 0; ii < d->targets.count(); ++ii) {
-        QSimpleCanvasItem *i = d->targets.at(ii);
-        if (i)
-            canvas()->focusItem(i)->keyPressEvent(e);
-        if (e->isAccepted())
-            return;
-    }
-}
-
-void QFxKeyProxy::keyReleaseEvent(QKeyEvent *e)
-{
-    for (int ii = 0; ii < d->targets.count(); ++ii) {
-        QSimpleCanvasItem *i = d->targets.at(ii);
-        if (i)
-            canvas()->focusItem(i)->keyReleaseEvent(e);
-        if (e->isAccepted())
-            return;
-    }
-}
-
 QT_END_NAMESPACE
+
+#endif // QMLPROPERTYVIEW_P_H
+

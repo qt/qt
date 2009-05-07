@@ -39,78 +39,29 @@
 **
 ****************************************************************************/
 
-#include "qfxkeyproxy.h"
+#ifndef QMLDEBUGGERSTATUS_P_H
+#define QMLDEBUGGERSTATUS_P_H
 
+#include <QtCore/qobject.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxKeyProxy,KeyProxy);
 
-/*!
-    \qmlclass KeyProxy
-    \brief The KeyProxy item proxies key presses to a number of other items.
-    \inherits Item
+QT_MODULE(Declarative)
 
-*/
-
-/*!
-    \internal
-    \class QFxKeyProxy
-    \brief The QFxKeyProxy class proxies key presses to a number of other items.
-    \ingroup group_utility
-*/
-
-class QFxKeyProxyPrivate
+class Q_DECLARATIVE_EXPORT QmlDebuggerStatus
 {
 public:
-    QList<QFxItem *> targets;
+    virtual ~QmlDebuggerStatus();
+
+    virtual void setSelectedState(bool);
 };
-
-QFxKeyProxy::QFxKeyProxy(QFxItem *parent)
-: QFxItem(parent), d(new QFxKeyProxyPrivate)
-{
-}
-
-QFxKeyProxy::~QFxKeyProxy()
-{
-    delete d; d = 0;
-}
-
-/*!
-    \qmlproperty list<Item> KeyProxy::targets
-
-    The proxy targets.
-*/
-
-/*!
-    \property QFxKeyProxy::targets
-    \brief the proxy targets.
-*/
-
-QList<QFxItem *> *QFxKeyProxy::targets() const
-{
-    return &d->targets;
-}
-
-void QFxKeyProxy::keyPressEvent(QKeyEvent *e)
-{
-    for (int ii = 0; ii < d->targets.count(); ++ii) {
-        QSimpleCanvasItem *i = d->targets.at(ii);
-        if (i)
-            canvas()->focusItem(i)->keyPressEvent(e);
-        if (e->isAccepted())
-            return;
-    }
-}
-
-void QFxKeyProxy::keyReleaseEvent(QKeyEvent *e)
-{
-    for (int ii = 0; ii < d->targets.count(); ++ii) {
-        QSimpleCanvasItem *i = d->targets.at(ii);
-        if (i)
-            canvas()->focusItem(i)->keyReleaseEvent(e);
-        if (e->isAccepted())
-            return;
-    }
-}
+Q_DECLARE_INTERFACE(QmlDebuggerStatus, "com.trolltech.qml.QmlDebuggerStatus");
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QLMDEBUGGERSTATUS_P_H
+

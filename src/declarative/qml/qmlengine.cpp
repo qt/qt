@@ -139,7 +139,7 @@ QStack<QmlEngine *> *QmlEngineStack::engines()
 
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : rootContext(0), currentBindContext(0), currentExpression(0), q(e),
-  rootComponent(0), networkAccessManager(0), typeManager(e)
+  rootComponent(0), networkAccessManager(0), typeManager(e), uniqueId(1)
 {
     QScriptValue proto = scriptEngine.newObject();
     proto.setProperty(QLatin1String("emit"), 
@@ -720,17 +720,17 @@ QmlEngine *QmlEngine::activeEngine()
 
 
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b)
-: q(b), ctxt(0), sseData(0), proxy(0), me(0), trackChange(false), log(0)
+: q(b), ctxt(0), sseData(0), proxy(0), me(0), trackChange(false), id(0), log(0)
 {
 }
 
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, void *expr, QmlRefCount *rc)
-: q(b), ctxt(0), sse((const char *)expr, rc), sseData(0), proxy(0), me(0), trackChange(true), log(0)
+: q(b), ctxt(0), sse((const char *)expr, rc), sseData(0), proxy(0), me(0), trackChange(true), id(0), log(0)
 {
 }
 
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, const QString &expr, bool ssecompile)
-: q(b), ctxt(0), expression(expr), sseData(0), proxy(0), me(0), trackChange(true), log(0)
+: q(b), ctxt(0), expression(expr), sseData(0), proxy(0), me(0), trackChange(true), id(0), log(0)
 {
     if (ssecompile) {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
@@ -765,6 +765,8 @@ QmlExpression::QmlExpression(QmlContext *ctxt, void *expr,
 : d(new QmlExpressionPrivate(this, expr, rc))
 {
     d->ctxt = ctxt;
+    if(ctxt && ctxt->engine())
+        d->id = ctxt->engine()->d_func()->getUniqueId();
     d->me = me;
 }
 
@@ -774,6 +776,8 @@ QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expr,
 : d(new QmlExpressionPrivate(this, expr, ssecompile))
 {
     d->ctxt = ctxt;
+    if(ctxt && ctxt->engine())
+        d->id = ctxt->engine()->d_func()->getUniqueId();
     d->me = me;
 }
 
@@ -789,6 +793,8 @@ QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expression,
 : d(new QmlExpressionPrivate(this, expression, true))
 {
     d->ctxt = ctxt;
+    if(ctxt && ctxt->engine())
+        d->id = ctxt->engine()->d_func()->getUniqueId();
     d->me = scope;
 }
 
@@ -810,7 +816,7 @@ QmlEngine *QmlExpression::engine() const
 }
 
 /*!
-    Returns teh QmlContext this expression is associated with, or 0 if there
+    Returns the QmlContext this expression is associated with, or 0 if there
     is no association or the QmlContext has been destroyed.
 */
 QmlContext *QmlExpression::context() const
@@ -988,6 +994,7 @@ QVariant QmlExpression::value()
 
             if(qmlDebugger()) {
                 QmlExpressionLog log;
+                log.setTime(engine()->d_func()->getUniqueId());
                 log.setExpression(expression());
                 log.setResult(rv);
 
@@ -997,8 +1004,8 @@ QVariant QmlExpression::value()
 
                     if (prop.hasChangedNotifier()) {
                         prop.connectNotifier(d->proxy, changedIndex);
-                    } else {
-                        QString warn = QLatin1String("Expression depends on property without a NOTIFY signal: ") + QLatin1String(prop.object()->metaObject()->className()) + QLatin1String(".") + prop.name();
+                    } else if (prop.needsChangedNotifier()) {
+                        QString warn = QLatin1String("Expression depends on property without a NOTIFY signal: [") + QLatin1String(prop.object()->metaObject()->className()) + QLatin1String("].") + prop.name();
                         log.addWarning(warn);
                     }
                 }
@@ -1015,6 +1022,7 @@ QVariant QmlExpression::value()
             }
         } else {
             QmlExpressionLog log;
+            log.setTime(engine()->d_func()->getUniqueId());
             log.setExpression(expression());
             log.setResult(rv);
             d->addLog(log);
@@ -1023,6 +1031,7 @@ QVariant QmlExpression::value()
     } else {
         if(qmlDebugger()) {
             QmlExpressionLog log;
+            log.setTime(engine()->d_func()->getUniqueId());
             log.setExpression(expression());
             log.setResult(rv);
             d->addLog(log);
@@ -1421,7 +1430,8 @@ QmlExpressionLog::QmlExpressionLog()
 }
 
 QmlExpressionLog::QmlExpressionLog(const QmlExpressionLog &o)
-: m_expression(o.m_expression),
+: m_time(o.m_time),
+  m_expression(o.m_expression),
   m_result(o.m_result),
   m_warnings(o.m_warnings)
 {
@@ -1433,12 +1443,22 @@ QmlExpressionLog::~QmlExpressionLog()
 
 QmlExpressionLog &QmlExpressionLog::operator=(const QmlExpressionLog &o)
 {
+    m_time = o.m_time;
     m_expression = o.m_expression;
     m_result = o.m_result;
     m_warnings = o.m_warnings;
     return *this;
 }
 
+void QmlExpressionLog::setTime(quint32 time)
+{
+    m_time = time;
+}
+
+quint32 QmlExpressionLog::time() const
+{
+    return m_time;
+}
 
 QString QmlExpressionLog::expression() const
 {

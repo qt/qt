@@ -141,6 +141,8 @@ public:
     void checkState();
 
     QSimpleCanvasItem *focusItem() const;
+    QSimpleCanvasItem *focusItem(QSimpleCanvasItem *item) const;
+
     QSimpleCanvasItem *activeFocusPanel() const;
     QImage asImage() const;
 

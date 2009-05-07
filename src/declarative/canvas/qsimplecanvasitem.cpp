@@ -1380,6 +1380,14 @@ QSimpleCanvasItem::operator QGraphicsItem *()
     return d->graphicsItem;
 }
 
+QSimpleCanvasItem::operator QmlDebuggerStatus *()
+{
+    Q_D(QSimpleCanvasItem);
+    if(!d->debuggerStatus)
+        d->debuggerStatus = new QSimpleCanvasItemDebuggerStatus(this);
+    return d->debuggerStatus;
+}
+
 QPointF QSimpleCanvasItemPrivate::transformOrigin() const
 {
     Q_Q(const QSimpleCanvasItem);
