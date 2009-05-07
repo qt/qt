@@ -35,14 +35,18 @@ Item {
 
             Connection {
                 sender: ImageDetails; signal: "closed()"
-                script: { if (Wrapper.state == 'Details') Wrapper.state = '' }
+                script: {
+                    if (Wrapper.state == 'Details') {
+                        Wrapper.state = '';
+                        ImageDetails.photoUrl = "";
+                    }
+                }
             }
 
             Script {
                function photoClicked() {
                    ImageDetails.photoTitle = title;
                    ImageDetails.flickableArea.yPosition = 0;
-                   ImageDetails.fullScreenArea.source = "";
                    ImageDetails.photoDescription = description;
                    ImageDetails.photoWidth = photoWidth;
                    ImageDetails.photoHeight = photoHeight;

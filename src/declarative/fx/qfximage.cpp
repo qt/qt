@@ -880,6 +880,17 @@ void QFxImage::setSource(const QString &url)
     if (url.isEmpty()) {
         setPixmap(QPixmap());
         d->status = Idle;
+        d->progress = 1.0;
+        setImplicitWidth(0);
+        setImplicitHeight(0);
+#if defined(QFX_RENDER_OPENGL)
+        d->_texDirty = true;
+        d->_tex.clear();
+#endif
+        emit statusChanged(d->status);
+        emit sourceChanged(d->source);
+        emit progressChanged(1.0);
+        update();
     } else {
         d->status = Loading;
         if (d->url.path().endsWith(QLatin1String(".sci"))) {

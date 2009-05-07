@@ -3,7 +3,6 @@ Flipable {
 
     property var frontContainer: ContainerFront
     property var flickableArea: Flickable
-    property var fullScreenArea: BigImage
     property string photoTitle: ""
     property string photoDescription: ""
     property int photoWidth
