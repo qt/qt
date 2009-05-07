@@ -57,9 +57,11 @@
 #include <QtGui/qpushbutton.h>
 #include <QtGui/qtablewidget.h>
 #include <QtGui/qevent.h>
+#include <private/qmlpropertyview_p.h>
 
 QmlDebugger::QmlDebugger(QWidget *parent)
-: QWidget(parent), m_tree(0), m_warnings(0), m_watchers(0), m_text(0)
+: QWidget(parent), m_tree(0), m_warnings(0), m_watchers(0), m_properties(0),
+  m_text(0)
 {
     QHBoxLayout *layout = new QHBoxLayout;
     setLayout(layout);
@@ -96,6 +98,9 @@ QmlDebugger::QmlDebugger(QWidget *parent)
     m_watchers = new QTableWidget(this);
     m_watchers->setSelectionMode(QTableWidget::NoSelection);
     tabs->addTab(m_watchers, "Watchers");
+
+    m_properties = new QmlPropertyView(this);
+    tabs->addTab(m_properties, "Properties");
 
     splitter->addWidget(tabs);
     splitter->setStretchFactor(1, 2);
@@ -162,6 +167,8 @@ void QmlDebugger::itemClicked(QTreeWidgetItem *i)
             debug->setSelectedState(true);
             m_selectedItem = item->object;
         }
+
+        m_properties->setObject(item->object);
     } 
 
     if(item->url.scheme() == QLatin1String("file")) {
