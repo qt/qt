@@ -62,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_CORE_EXPORT QVariantAnimationPrivate : public QAbstractAnimationPrivate
+class QVariantAnimationPrivate : public QAbstractAnimationPrivate
 {
     Q_DECLARE_PUBLIC(QVariantAnimation)
 public:
