@@ -624,6 +624,7 @@ QVariant xaxisQPointInterpolator(const QPointF &f, const QPointF &t, qreal progr
 void tst_QPropertyAnimation::interpolated()
 {
     QObject o;
+    o.setProperty("point", QPointF()); //this will avoid warnings
     o.setProperty("number", qVariantFromValue<Number>(Number(42)));
     QCOMPARE(qVariantValue<Number>(o.property("number")), Number(42));
     {
@@ -649,9 +650,9 @@ void tst_QPropertyAnimation::interpolated()
     anim.start();
     anim.pause();
     anim.setCurrentTime(100);
-    QCOMPARE(o.property("point").toPointF(), QPointF(10, 0));
+    QCOMPARE(o.property("point"), QVariant(QPointF(10, 0)));
     anim.setCurrentTime(500);
-    QCOMPARE(o.property("point").toPointF(), QPointF(50, 0));
+    QCOMPARE(o.property("point"), QVariant(QPointF(50, 0)));
     }
     {
     // unregister it and see if we get back the default behaviour

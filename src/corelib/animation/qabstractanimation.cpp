@@ -162,7 +162,7 @@ QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer);
 
-QUnifiedTimer::QUnifiedTimer() : QObject(), lastTick(0)
+QUnifiedTimer::QUnifiedTimer() : QObject(), lastTick(0), consistentTimingInterval(0)
 {
 }
 
@@ -189,12 +189,22 @@ void QUnifiedTimer::updateRecentlyStartedAnimations()
     animationsToStart.clear();
 }
 
+/*
+   this allows to haeve a consistent timer interval at each tick from the timer
+   not taking the real time that passed into account.
+   Just set this to 0 if you want to get back to a time-driven behaviour.
+ */
+void QUnifiedTimer::setConsitentTiming(int interval)
+{
+    consistentTimingInterval = interval;
+}
+
 void QUnifiedTimer::timerEvent(QTimerEvent *event)
 {
     //this is simply the time we last received a tick
-    int oldLastTick = lastTick;
+    const int oldLastTick = lastTick;
     if (time.isValid())
-        lastTick = time.elapsed();
+        lastTick = consistentTimingInterval > 0 ? oldLastTick + consistentTimingInterval : time.elapsed();
 
     //we transfer the waiting animations into the "really running" state
     updateRecentlyStartedAnimations();
