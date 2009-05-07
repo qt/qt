@@ -344,6 +344,7 @@ public:
     // calculates average color based on button skin graphics (minus borders).
     QColor colorFromFrameGraphics(QS60StylePrivate::SkinFrameElements frame) const;
     void setThemePalette(QApplication *application) const;
+    void setBackgroundTexture(QApplication *application) const;
 
     static int focusRectPenWidth();
 

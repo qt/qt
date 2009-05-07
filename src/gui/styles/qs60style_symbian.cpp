@@ -1014,7 +1014,7 @@ void QS60Style::handleDynamicLayoutVariantSwitch()
     d->setActiveLayout();
 #endif // QT_S60STYLE_LAYOUTDATA_SIMULATED
     d->refreshUI();
-    d->setThemePalette(qApp);
+    d->setBackgroundTexture(qApp);
     foreach (QWidget *widget, QApplication::allWidgets())
         widget->ensurePolished();
 }
@@ -1024,8 +1024,11 @@ void QS60Style::handleSkinChange()
     Q_D(QS60Style);
     d->clearCaches();
     d->setThemePalette(qApp);
-    foreach (QWidget *topLevelWidget, QApplication::allWidgets())
+    foreach (QWidget *topLevelWidget, QApplication::allWidgets()){
+        QEvent e(QEvent::StyleChange);
+        QApplication::sendEvent(topLevelWidget, &e);
         topLevelWidget->ensurePolished();
+    }
 }
 
 QT_END_NAMESPACE
