@@ -76,7 +76,7 @@ public:
 #if defined(QFX_RENDER_OPENGL)
         _texDirty(true),
 #endif
-        status(QFxImage::Idle), reply(0)
+        status(QFxImage::Idle), reply(0), progress(0.0)
     {
     }
 
@@ -95,10 +95,10 @@ public:
     }
             
     QFxScaleGrid *_scaleGrid;
-    bool _tiled;
     QFxPixmap _pix;
-    bool _smooth;
-    bool _opaque;
+    bool _tiled : 1;
+    bool _smooth : 1;
+    bool _opaque : 1;
 #if defined(QFX_RENDER_OPENGL)
     void checkDirty();
     bool _texDirty;
@@ -109,7 +109,8 @@ public:
     QString source;
     QUrl url;
     QUrl sciurl;
-    QNetworkReply *reply;
+    QPointer<QNetworkReply> reply;
+    qreal progress;
 };
 
 QT_END_NAMESPACE

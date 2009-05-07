@@ -68,7 +68,8 @@ Flipable {
 
         Rect { anchors.fill: parent; color: "black"; opacity: 0.4; pen.color: "white"; pen.width: 2 }
 
-        Loading { anchors.centeredIn: parent; visible: BigImage.status }
+//        Loading { anchors.centeredIn: parent; visible: BigImage.status }
+        Progress { anchors.centeredIn: parent; width: 200; height: 18; progress: BigImage.progress; visible: BigImage.status }
         Flickable {
             id: Flick; width: Container.width - 10; height: Container.height - 10
             x: 5; y: 5; clip: true; viewportWidth: (BigImage.width * BigImage.scale) + BigImage.x;
@@ -83,6 +84,11 @@ Flipable {
 
         MediaButton {
             id: BackButton2; x: 630; y: 370; text: "Back"; onClicked: { Container.state = '' }
+        }
+        Text {
+            text: "Image Unavailable"
+            visible: BigImage.status == 'Error'
+            anchors.centeredIn: parent; color: "white"; font.bold: true
         }
 
         Slider { id: Slider; x: 25; y: 374; imageWidth: Container.photoWidth; imageHeight: Container.photoHeight }
