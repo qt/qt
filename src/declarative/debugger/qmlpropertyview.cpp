@@ -39,57 +39,83 @@
 **
 ****************************************************************************/
 
-#ifndef QMLDEBUGGER_H
-#define QMLDEBUGGER_H
+#include "qmlpropertyview_p.h"
+#include <QtGui/qboxlayout.h>
+#include <QtGui/qtreewidget.h>
+#include <QtCore/qmetaobject.h>
 
-#include <QtCore/qpointer.h>
-#include <QtCore/qset.h>
-#include <QtGui/qwidget.h>
+QmlPropertyView::QmlPropertyView(QWidget *parent)
+: QWidget(parent), m_tree(0)
+{
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+    setLayout(layout);
 
-QT_BEGIN_HEADER
+    m_tree = new QTreeWidget(this);
+    m_tree->setHeaderLabels(QStringList() << "Property" << "Value");
 
-QT_BEGIN_NAMESPACE
+    m_tree->setColumnCount(2);
 
-QT_MODULE(Declarative)
+    layout->addWidget(m_tree);
+}
 
-class QTreeWidget;
-class QTreeWidgetItem;
-class QPlainTextEdit;
-class QmlDebuggerItem;
-class QTableWidget;
-class QmlPropertyView;
-class QmlDebugger : public QWidget
+class QmlPropertyViewItem : public QObject, public QTreeWidgetItem
 {
 Q_OBJECT
 public:
-    QmlDebugger(QWidget *parent = 0);
+    QmlPropertyViewItem(QTreeWidget *widget);
 
-    void setDebugObject(QObject *);
+    QObject *object;
+    QMetaProperty property;
 
 public slots:
     void refresh();
-
-private slots:
-    void itemClicked(QTreeWidgetItem *);
-    void itemDoubleClicked(QTreeWidgetItem *);
-
-private:
-    void buildTree(QObject *obj, QmlDebuggerItem *parent);
-    bool makeItem(QObject *obj, QmlDebuggerItem *item);
-    QTreeWidget *m_tree;
-    QTreeWidget *m_warnings;
-    QTableWidget *m_watchers;
-    QmlPropertyView *m_properties;
-    QPlainTextEdit *m_text;
-    QPointer<QObject> m_object;
-    QList<QPair<quint32, QPair<int, QString> > > m_expressions;
-    QSet<quint32> m_watchedIds;
-    QPointer<QObject> m_selectedItem;
 };
 
-QT_END_NAMESPACE
+QmlPropertyViewItem::QmlPropertyViewItem(QTreeWidget *widget)
+: QTreeWidgetItem(widget)
+{
+}
 
-QT_END_HEADER
+void QmlPropertyViewItem::refresh()
+{
+    setText(1, property.read(object).toString());
+}
 
-#endif // QMLDEBUGGER_H
+void QmlPropertyView::setObject(QObject *object)
+{
+    m_object = object;
 
+    m_tree->clear();
+    if(!m_object)
+        return;
+
+    const QMetaObject *mo = object->metaObject();
+    for(int ii = 0; ii < mo->propertyCount(); ++ii) {
+        QmlPropertyViewItem *item = new QmlPropertyViewItem(m_tree);
+
+        QMetaProperty p = mo->property(ii);
+        item->object = object;
+        item->property = p;
+
+        item->setText(0, QLatin1String(p.name()));
+
+        static int refreshIdx = -1;
+        if(refreshIdx == -1) 
+            refreshIdx = QmlPropertyViewItem::staticMetaObject.indexOfMethod("refresh()");
+
+        if(p.hasNotifySignal()) 
+            QMetaObject::connect(object, p.notifySignalIndex(), 
+                                 item, refreshIdx);
+
+        item->refresh();
+    }
+}
+
+void QmlPropertyView::refresh()
+{
+    setObject(m_object);
+}
+
+#include "qmlpropertyview.moc"
