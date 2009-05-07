@@ -170,7 +170,7 @@ bool QBasicKeyEventTransition::eventTest(QEvent *event) const
 /*!
   \reimp
 */
-void QBasicKeyEventTransition::onTransition()
+void QBasicKeyEventTransition::onTransition(QEvent *)
 {
 }
 

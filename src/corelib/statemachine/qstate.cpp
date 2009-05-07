@@ -68,22 +68,30 @@ QT_BEGIN_NAMESPACE
   The assignProperty() function is used for defining property assignments that
   should be performed when a state is entered.
 
+  Top-level states must be passed QStateMachine::rootState() as their parent
+  state, or added to a state machine using QStateMachine::addState().
+
   \section1 States with Child States
 
-  For non-parallel state groups, the setInitialState() function must be called
-  to set the initial state. The child states are mutually exclusive states,
-  and the state machine needs to know which child state to enter when the
-  parent state is the target of a transition.
+  The childMode property determines how child states are treated. For
+  non-parallel state groups, the setInitialState() function must be called to
+  set the initial state. The child states are mutually exclusive states, and
+  the state machine needs to know which child state to enter when the parent
+  state is the target of a transition.
+
+  The state emits the QState::finished() signal when a final child state
+  (QFinalState) is entered.
 
   The setErrorState() sets the state's error state. The error state is the
   state that the state machine will transition to if an error is detected when
   attempting to enter the state (e.g. because no initial state has been set).
+
 */
 
 /*!
     \property QState::initialState
 
-    \brief the initial state of this state
+    \brief the initial state of this state (one of its child states)
 */
 
 /*!
@@ -96,6 +104,8 @@ QT_BEGIN_NAMESPACE
     \property QState::childMode
 
     \brief the child mode of this state
+
+    The default value of this property is QState::ExclusiveStates.
 */
 
 /*!
@@ -235,6 +245,10 @@ void QState::assignProperty(QObject *object, const char *name,
                             const QVariant &value)
 {
     Q_D(QState);
+    if (!object) {
+        qWarning("QState::assignProperty: cannot assign property '%s' of null object", name);
+        return;
+    }
     for (int i = 0; i < d->propertyAssignments.size(); ++i) {
         QPropertyAssignment &assn = d->propertyAssignments[i];
         if ((assn.object == object) && (assn.propertyName == name)) {
@@ -335,7 +349,7 @@ public:
     UnconditionalTransition(QAbstractState *target)
         : QAbstractTransition(QList<QAbstractState*>() << target) {}
 protected:
-    void onTransition() {}
+    void onTransition(QEvent *) {}
     bool eventTest(QEvent *) const { return true; }
 };
 
@@ -380,15 +394,17 @@ void QState::removeTransition(QAbstractTransition *transition)
 /*!
   \reimp
 */
-void QState::onEntry()
+void QState::onEntry(QEvent *event)
 {
+    Q_UNUSED(event);
 }
 
 /*!
   \reimp
 */
-void QState::onExit()
+void QState::onExit(QEvent *event)
 {
+    Q_UNUSED(event);
 }
 
 /*!
@@ -450,6 +466,8 @@ bool QState::event(QEvent *e)
   \fn QState::finished()
 
   This signal is emitted when a final child state of this state is entered.
+
+  \sa QFinalState
 */
 
 /*!

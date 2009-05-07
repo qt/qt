@@ -131,10 +131,10 @@ bool QAbstractTransitionPrivate::callEventTest(QEvent *e) const
     return q->eventTest(e);
 }
 
-void QAbstractTransitionPrivate::callOnTransition()
+void QAbstractTransitionPrivate::callOnTransition(QEvent *e)
 {
     Q_Q(QAbstractTransition);
-    q->onTransition();
+    q->onTransition(e);
 }
 
 QState *QAbstractTransitionPrivate::sourceState() const
@@ -353,10 +353,11 @@ QList<QAbstractAnimation*> QAbstractTransition::animations() const
 */
 
 /*!
-  \fn QAbstractTransition::onTransition()
+  \fn QAbstractTransition::onTransition(QEvent *event)
 
-  This function is called when the transition is triggered.  Reimplement this
-  function to perform custom processing when the transition is triggered.
+  This function is called when the transition is triggered. The given \a event
+  is what caused the transition to trigger. Reimplement this function to
+  perform custom processing when the transition is triggered.
 */
 
 /*!

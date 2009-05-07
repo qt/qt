@@ -1,13 +1,11 @@
 #include "random_ai_plugin.h"
 
-#include <errorstate/tank.h>
-
 #include <QState>
 #include <QtPlugin>
 
 #include <time.h>
 
-QState *RandomAiPlugin::create(QState *parentState, Tank *tank)
+QState *RandomAiPlugin::create(QState *parentState, QObject *tank)
 {
     qsrand(uint(time(NULL)));
 

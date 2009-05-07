@@ -260,7 +260,7 @@ protected:
         return e->type() == m_type;
     }
 
-    void onTransition() {}
+    void onTransition(QEvent *) {}
 
 private:
     QEvent::Type m_type;
@@ -274,7 +274,7 @@ void tst_QState::historyInitialState()
     QState *s1 = new QState(machine.rootState());
     
     QState *s2 = new QState(machine.rootState());
-    QHistoryState *h1 = s2->addHistoryState();
+    QHistoryState *h1 = new QHistoryState(s2);
     
     s2->setInitialState(h1);
 

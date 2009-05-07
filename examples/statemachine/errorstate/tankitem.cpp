@@ -2,6 +2,7 @@
 
 #include <QPainter>
 #include <QGraphicsScene>
+#include <QDebug>
 
 #include <math.h>
 
@@ -38,11 +39,12 @@ public:
     {
         qreal dist = timeDelta * item()->speed() * (m_reverse ? -1.0 : 1.0);
 
+        bool done = false;        
+        if (qAbs(m_distance) < qAbs(dist)) {            
+            done = true;
+            dist = m_distance;
+        } 
         m_distance -= dist;
-        if (m_reverse && m_distance > 0.0)
-            return false;
-        else if (m_distance < 0.0)
-            return false;
 
         qreal a = item()->direction() * M_PI / 180.0;
 
@@ -50,7 +52,7 @@ public:
         qreal xd = dist * sin(M_PI / 2.0 - a);
 
         item()->setPos(item()->pos() + QPointF(xd, yd));
-        return true;
+        return !done;
     }
 
 private:
@@ -70,14 +72,15 @@ public:
     bool apply(qreal timeDelta) 
     {
         qreal dist = timeDelta * item()->angularSpeed() * (m_reverse ? -1.0 : 1.0);
+        bool done = false;        
+        if (qAbs(m_distance) < qAbs(dist)) {
+            done = true;
+            dist = m_distance;
+        } 
         m_distance -= dist;
-        if (m_reverse && m_distance > 0.0)
-            return false;
-        else if (m_distance < 0.0)
-            return false;
 
         item()->setDirection(item()->direction() + dist);
-        return true;
+        return !done;
     }
 
 private:
@@ -85,17 +88,25 @@ private:
     bool m_reverse;
 };
 
-TankItem::TankItem(QObject *parent) : Tank(parent), m_currentAction(0), m_currentDirection(0.0)
+TankItem::TankItem(QObject *parent) 
+    : GameItem(parent), m_currentAction(0), m_currentDirection(0.0), m_enabled(true)
 {
-    connect(this, SIGNAL(fireCannon()), this, SIGNAL(actionCompleted()));
+    connect(this, SIGNAL(cannonFired()), this, SIGNAL(actionCompleted()));
 }
 
 void TankItem::idle(qreal elapsed)
 {
-    if (m_currentAction != 0) {
-        if (!m_currentAction->apply(elapsed)) {
-            setAction(0);
-            emit actionCompleted();
+    if (m_enabled) {
+        if (m_currentAction != 0) {
+            if (!m_currentAction->apply(elapsed)) {
+                setAction(0);
+                emit actionCompleted();
+            }
+
+            QGraphicsItem *item = 0;
+            qreal distance = distanceToObstacle(&item);
+            if (TankItem *tankItem = qgraphicsitem_cast<TankItem *>(item))
+                emit tankSpotted(tankItem->direction(), distance);        
         }
     }
 }
@@ -113,6 +124,11 @@ void TankItem::setAction(Action *newAction)
     m_currentAction = newAction;
 }
 
+void TankItem::fireCannon()
+{
+    emit cannonFired();
+}
+
 void TankItem::moveForwards(qreal length)
 {
     setAction(new MoveAction(this, length));
@@ -126,6 +142,11 @@ void TankItem::moveBackwards(qreal length)
 void TankItem::turn(qreal degrees)
 {
     setAction(new TurnAction(this, degrees));
+}
+
+void TankItem::turnTo(qreal degrees)
+{
+    setAction(new TurnAction(this, degrees - direction()));
 }
 
 void TankItem::stop()
@@ -176,6 +197,17 @@ void TankItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
                                    QPointF(brect.right() - 2.0, brect.bottom()));
     painter->fillRect(rightTrackRect, Qt::darkYellow);
     painter->drawRect(rightTrackRect);
+
+    if (!m_enabled) {
+        painter->setPen(QPen(Qt::red, 5));
+
+        painter->drawEllipse(brect);
+
+        QPainterPath path;
+        path.addEllipse(brect);
+        painter->setClipPath(path);
+        painter->drawLine(brect.topRight(), brect.bottomLeft());
+    }
 }
 
 QRectF TankItem::boundingRect() const
@@ -190,16 +222,40 @@ qreal TankItem::direction() const
 
 void TankItem::setDirection(qreal newDirection)
 {
+    int fullRotations = int(newDirection) / 360;    
+    newDirection -= fullRotations * 360.0;
+
     qreal diff = newDirection - m_currentDirection;
     m_currentDirection = newDirection;
     rotate(diff);
 }
 
+qreal TankItem::distanceToObstacle(QGraphicsItem **obstacle) const
+{
+    qreal dist = sqrt(pow(scene()->sceneRect().width(), 2) + pow(scene()->sceneRect().height(), 2));
+
+    qreal a = m_currentDirection * M_PI / 180.0;
+
+    qreal yd = dist * sin(a);
+    qreal xd = dist * sin(M_PI / 2.0 - a);
+
+    QPointF requestedPosition = pos() + QPointF(xd, yd);
+    QGraphicsItem *collidedItem = 0;
+    QPointF nextPosition = tryMove(requestedPosition, 0, &collidedItem);
+    if (collidedItem != 0) {
+        if (obstacle != 0)
+            *obstacle = collidedItem;        
+        
+        QPointF d = nextPosition - pos();
+        return sqrt(pow(d.x(), 2) + pow(d.y(), 2));
+    } else {
+        return 0.0;
+    }
+}
+
 qreal TankItem::distanceToObstacle() const
 {
-    // ###
-
-    return 0.0;
+    return distanceToObstacle(0);
 }
 
 

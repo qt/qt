@@ -78,8 +78,8 @@ public:
     void setHistoryType(HistoryType type);
 
 protected:
-    void onEntry();
-    void onExit();
+    void onEntry(QEvent *event);
+    void onExit(QEvent *event);
 
     bool event(QEvent *e);
 

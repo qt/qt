@@ -1,25 +1,20 @@
 #ifndef TANKITEM_H
 #define TANKITEM_H
 
-#include "tank.h"
 #include "gameitem.h"
 
 #include <QColor>
 
 class Action;
-class TankItem: public Tank, public GameItem
+class TankItem: public GameItem
 {
     Q_OBJECT
-public:
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
+    Q_PROPERTY(qreal direction READ direction WRITE turnTo)
+    Q_PROPERTY(qreal distanceToObstacle READ distanceToObstacle)
+public:   
     TankItem(QObject *parent = 0);
-    
-    virtual void moveForwards(qreal length);
-    virtual void moveBackwards(qreal length);
-    virtual void turn(qreal newDirection);
-    virtual void stop();
-    virtual qreal direction() const;
-    virtual qreal distanceToObstacle() const;
-
+        
     void setColor(const QColor &color) { m_color = color; }
     QColor color() const { return m_color; }
 
@@ -33,8 +28,26 @@ public:
 
     void hitByRocket();
 
+    void setEnabled(bool b) { m_enabled = b; }
+    bool enabled() const { return m_enabled; }
+
+    qreal direction() const;
+    qreal distanceToObstacle() const;
+    qreal distanceToObstacle(QGraphicsItem **item) const;
+
 signals:
-    virtual void fireCannon();
+    void tankSpotted(qreal direction, qreal distance);
+    void collision(const QLineF &collidedLine);
+    void actionCompleted();
+    void cannonFired();
+
+public slots:
+    void moveForwards(qreal length = 10.0);
+    void moveBackwards(qreal length = 10.0);
+    void turn(qreal degrees = 30.0);
+    void turnTo(qreal degrees = 0.0);
+    void stop();
+    void fireCannon();
 
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);    
@@ -46,6 +59,7 @@ private:
     Action *m_currentAction;
     qreal m_currentDirection;
     QColor m_color;
+    bool m_enabled;
 };
 
 #endif

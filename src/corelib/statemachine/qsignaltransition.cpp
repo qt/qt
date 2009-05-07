@@ -245,8 +245,9 @@ bool QSignalTransition::eventTest(QEvent *event) const
 /*!
   \reimp
 */
-void QSignalTransition::onTransition()
+void QSignalTransition::onTransition(QEvent *event)
 {
+    Q_UNUSED(event);
 }
 
 /*!

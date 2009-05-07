@@ -88,23 +88,25 @@ void MainWindow::init()
     }
 
     QPointF centerOfMap = sceneRect.center();
+
     addWall(QRectF(centerOfMap + QPointF(-50.0, -60.0), centerOfMap + QPointF(50.0, -50.0)));
     addWall(QRectF(centerOfMap - QPointF(-50.0, -60.0), centerOfMap - QPointF(50.0, -50.0)));
     addWall(QRectF(centerOfMap + QPointF(-50.0, -50.0), centerOfMap + QPointF(-40.0, 50.0)));
     addWall(QRectF(centerOfMap - QPointF(-50.0, -50.0), centerOfMap - QPointF(-40.0, 50.0)));
-
-    addWall(QRectF(sceneRect.topLeft() + QPointF(sceneRect.width() / 2.0 - 5.0, 0.0),
+   
+    addWall(QRectF(sceneRect.topLeft() + QPointF(sceneRect.width() / 2.0 - 5.0, -10.0),
                    sceneRect.topLeft() + QPointF(sceneRect.width() / 2.0 + 5.0, 100.0)));
-    addWall(QRectF(sceneRect.bottomLeft() + QPointF(sceneRect.width() / 2.0 - 5.0, 0.0),
+    addWall(QRectF(sceneRect.bottomLeft() + QPointF(sceneRect.width() / 2.0 - 5.0, 10.0),
                    sceneRect.bottomLeft() + QPointF(sceneRect.width() / 2.0 + 5.0, -100.0)));
-    addWall(QRectF(sceneRect.topLeft() + QPointF(0.0, sceneRect.height() / 2.0 - 5.0),
+    addWall(QRectF(sceneRect.topLeft() + QPointF(-10.0, sceneRect.height() / 2.0 - 5.0),
                    sceneRect.topLeft() + QPointF(100.0, sceneRect.height() / 2.0 + 5.0)));
-    addWall(QRectF(sceneRect.topRight() + QPointF(0.0, sceneRect.height() / 2.0 - 5.0),
+    addWall(QRectF(sceneRect.topRight() + QPointF(10.0, sceneRect.height() / 2.0 - 5.0),
                    sceneRect.topRight() + QPointF(-100.0, sceneRect.height() / 2.0 + 5.0)));
 
 
     QAction *addTankAction = menuBar()->addAction("&Add tank");   
     QAction *runGameAction = menuBar()->addAction("&Run game");    
+    runGameAction->setObjectName("runGameAction");
     QAction *stopGameAction = menuBar()->addAction("&Stop game");        
     menuBar()->addSeparator();
     QAction *quitAction = menuBar()->addAction("&Quit");
@@ -112,9 +114,7 @@ void MainWindow::init()
     connect(addTankAction, SIGNAL(triggered()), this, SLOT(addTank()));
     connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
         
-    m_machine = new QStateMachine(this);
-    m_machine->setGlobalRestorePolicy(QStateMachine::RestoreProperties);
-    
+    m_machine = new QStateMachine(this);    
     QState *stoppedState = new QState(m_machine->rootState());        
     stoppedState->setObjectName("stoppedState");
     stoppedState->assignProperty(runGameAction, "enabled", true);
@@ -168,8 +168,7 @@ void MainWindow::runStep()
             qreal elapsedSecs = elapsed / 1000.0;
             QList<QGraphicsItem *> items = m_scene->items();
             foreach (QGraphicsItem *item, items) {
-                GameItem *gameItem = qgraphicsitem_cast<GameItem *>(item);
-                if (gameItem != 0)
+                if (GameItem *gameItem = qgraphicsitem_cast<GameItem *>(item))
                     gameItem->idle(elapsedSecs);
             }
         }
@@ -201,12 +200,18 @@ void MainWindow::addTank()
     if (plugin != 0) {
         TankItem *tankItem = m_spawns.takeLast();
         m_scene->addItem(tankItem);
-        connect(tankItem, SIGNAL(fireCannon()), this, SLOT(addRocket()));
+        connect(tankItem, SIGNAL(cannonFired()), this, SLOT(addRocket()));
         if (m_spawns.isEmpty())
             emit mapFull();
         
         QState *region = new QState(m_runningState);
-        region->setInitialState(plugin->create(region, tankItem));
+        QState *pluginState = plugin->create(region, tankItem);
+        region->setInitialState(pluginState);
+
+        // If the plugin has an error it is disabled
+        QState *errorState = new QState(region);
+        errorState->assignProperty(tankItem, "enabled", false);
+        pluginState->setErrorState(errorState);
     }
 }
 

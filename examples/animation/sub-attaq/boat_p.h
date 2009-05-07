@@ -104,7 +104,7 @@ protected:
             return false;
 
     }
-    void onTransition()
+    void onTransition(QEvent *)
     {
         //We decrease the speed if needed
         if (key == Qt::Key_Left && boat->currentDirection() == Boat::Right)
@@ -156,7 +156,7 @@ public:
         this->boat = boat;
     }
 protected:
-    void onEntry()
+    void onEntry(QEvent *)
     {
         boat->setCurrentDirection(Boat::Right);
         boat->updateBoatMovement();
@@ -174,7 +174,7 @@ public:
         this->boat = boat;
     }
 protected:
-    void onEntry()
+    void onEntry(QEvent *)
     {
         boat->setCurrentDirection(Boat::Left);
         boat->updateBoatMovement();
@@ -192,7 +192,7 @@ public:
         this->boat = boat;
     }
 protected:
-    void onEntry()
+    void onEntry(QEvent *)
     {
         boat->setCurrentSpeed(0);
         boat->setCurrentDirection(Boat::None);
@@ -211,7 +211,7 @@ public:
         this->boat = boat;
     }
 protected:
-    void onEntry()
+    void onEntry(QEvent *)
     {
         Bomb *b = new Bomb();
         b->setPos(boat->x()+boat->size().width(),boat->y());
@@ -233,7 +233,7 @@ public:
         this->boat = boat;
     }
 protected:
-    void onEntry()
+    void onEntry(QEvent *)
     {
         Bomb *b = new Bomb();
         b->setPos(boat->x() - b->size().width(), boat->y());

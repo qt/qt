@@ -21,7 +21,7 @@ signals:
     void turnSelected();
     
 protected:
-    void onEntry()
+    void onEntry(QEvent *)
     {
         int rand = qrand() % 4;
         switch (rand) {
@@ -45,7 +45,7 @@ signals:
     void distanceComputed(qreal distance);
 
 protected:
-    void onEntry() 
+    void onEntry(QEvent *)
     {
         emit distanceComputed(qreal(qrand() % 180));
     }
@@ -56,7 +56,7 @@ class RandomAiPlugin: public QObject, public Plugin
     Q_OBJECT
     Q_INTERFACES(Plugin)
 public:
-    virtual QState *create(QState *parentState, Tank *tank);
+    virtual QState *create(QState *parentState, QObject *tank);
 };
 
 #endif // RANDOM_AI_PLUGIN_H

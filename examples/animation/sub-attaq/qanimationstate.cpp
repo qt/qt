@@ -146,7 +146,7 @@ QAbstractAnimation* QAnimationState::animation() const
 /*!
   \reimp
 */
-void QAnimationState::onEntry()
+void QAnimationState::onEntry(QEvent *)
 {
     Q_D(QAnimationState);
     if (d->animation)
@@ -156,7 +156,7 @@ void QAnimationState::onEntry()
 /*!
   \reimp
 */
-void QAnimationState::onExit()
+void QAnimationState::onExit(QEvent *)
 {
     Q_D(QAnimationState);
     if (d->animation)

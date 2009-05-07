@@ -61,7 +61,7 @@ public:
         : QState(parent) {}
 
 protected:
-    virtual void onEntry()
+    virtual void onEntry(QEvent *)
     {
         fprintf(stdout, "ClockState entered; posting the initial tick\n");
         machine()->postEvent(new ClockEvent());
@@ -77,7 +77,7 @@ protected:
     virtual bool eventTest(QEvent *e) const {
         return (e->type() == QEvent::User+2);
     }
-    virtual void onTransition()
+    virtual void onTransition(QEvent *)
     {
         fprintf(stdout, "ClockTransition triggered; posting another tick with a delay of 1 second\n");
         machine()->postEvent(new ClockEvent(), 1000);
@@ -93,7 +93,7 @@ protected:
     virtual bool eventTest(QEvent *e) const {
         return (e->type() == QEvent::User+2);
     }
-    virtual void onTransition()
+    virtual void onTransition(QEvent *)
     {
         fprintf(stdout, "ClockListener heard a tick!\n");
     }
