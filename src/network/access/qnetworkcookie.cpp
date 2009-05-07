@@ -913,6 +913,17 @@ static QDateTime parseDateString(const QByteArray &dateString)
 */
 QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieString)
 {
+    // cookieString can be a number of set-cookie header strings joined together
+    // by \n, parse each line separately.
+    QList<QNetworkCookie> cookies;
+    QList<QByteArray> list = cookieString.split('\n');
+    for (int a = 0; a < list.size(); a++)
+        cookies += QNetworkCookiePrivate::parseSetCookieHeaderLine(list.at(a));
+    return cookies;
+}
+
+QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByteArray &cookieString)
+{
     // According to http://wp.netscape.com/newsref/std/cookie_spec.html,<
     // the Set-Cookie response header is of the format:
     //
@@ -930,12 +941,6 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
     while (position < length) {
         QNetworkCookie cookie;
 
-        // When there are multiple SetCookie headers they are join with a new line
-        // \n will always be the start of a new cookie
-        int endOfSetCookie = cookieString.indexOf('\n', position);
-        if (endOfSetCookie == -1)
-            endOfSetCookie = length;
-
         // The first part is always the "NAME=VALUE" part
         QPair<QByteArray,QByteArray> field = nextField(cookieString, position);
         if (field.first.isEmpty() || field.second.isNull())
@@ -946,7 +951,7 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
 
         position = nextNonWhitespace(cookieString, position);
         bool endOfCookie = false;
-        while (!endOfCookie && position < endOfSetCookie)
+        while (!endOfCookie && position < length) {
             switch (cookieString.at(position++)) {
             case ',':
                 // end of the cookie
@@ -969,9 +974,7 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
                     position = end;
                     QDateTime dt = parseDateString(dateString.toLower());
                     if (!dt.isValid()) {
-                        cookie = QNetworkCookie();
-                        endOfCookie = true;
-                        continue;
+                        return result;
                     }
                     cookie.setExpirationDate(dt);
                 } else if (field.first == "domain") {
@@ -988,8 +991,7 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
                     bool ok = false;
                     int secs = field.second.toInt(&ok);
                     if (!ok)
-                        // invalid cookie string
-                        return QList<QNetworkCookie>();
+                        return result;
                     cookie.setExpirationDate(now.addSecs(secs));
                 } else if (field.first == "path") {
                     QString path = QUrl::fromPercentEncoding(field.second);
@@ -1003,9 +1005,7 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
                 } else if (field.first == "version") {
                     if (field.second != "1") {
                         // oops, we don't know how to handle this cookie
-                        cookie = QNetworkCookie();
-                        endOfCookie = true;
-                        continue;
+                        return result;
                     }
                 } else {
                     // got an unknown field in the cookie
@@ -1013,9 +1013,8 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
                 }
 
                 position = nextNonWhitespace(cookieString, position);
-                if (position > endOfSetCookie)
-                    endOfCookie = true;
             }
+        }
 
         if (!cookie.name().isEmpty())
             result += cookie;
