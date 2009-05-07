@@ -75,6 +75,7 @@ private slots:
     void stylePropagation() const;
     void matrixForElement() const;
     void gradientStops() const;
+    void gradientRefs();
     void fillRule();
     void opacity();
     void paths();
@@ -535,7 +536,10 @@ void tst_QSvgRenderer::gradientStops() const
 
         QCOMPARE(image, refImage);
     }
+}
 
+void tst_QSvgRenderer::gradientRefs()
+{
     const char *svgs[] = {
         "<svg>"
             "<defs>"
@@ -567,6 +571,17 @@ void tst_QSvgRenderer::gradientStops() const
                 "</linearGradient>"
             "</defs>"
             "<rect fill=\"url(#gradient)\" height=\"8\" width=\"256\" x=\"0\" y=\"0\"/>"
+        "</svg>",
+        "<svg>"
+            "<rect fill=\"url(#gradient)\" height=\"8\" width=\"256\" x=\"0\" y=\"0\"/>"
+            "<defs>"
+                "<linearGradient id=\"gradient0\">"
+                    "<stop offset=\"0\" stop-color=\"red\" stop-opacity=\"0\"/>"
+                    "<stop offset=\"1\" stop-color=\"blue\"/>"
+                "</linearGradient>"
+                "<linearGradient id=\"gradient\" xlink:href=\"#gradient0\">"
+                "</linearGradient>"
+            "</defs>"
         "</svg>"
     };
     for (int i = 0 ; i < sizeof(svgs) / sizeof(svgs[0]) ; ++i)
@@ -590,6 +605,7 @@ void tst_QSvgRenderer::gradientStops() const
         QVERIFY((qAlpha(right) > 253) && (qRed(right) < 3) && (qGreen(right) == 0) && (qBlue(right) > 251));
     }
 }
+
 
 #ifndef QT_NO_COMPRESS
 void tst_QSvgRenderer::testGzLoading()

@@ -639,17 +639,22 @@ static void parseBrush(QSvgNode *node,
             f = Qt::OddEvenFill;
         if (value.startsWith(QLatin1String("url"))) {
             value = value.remove(0, 3);
+            QSvgFillStyle *prop = new QSvgFillStyle(0);
             QSvgStyleProperty *style = styleFromUrl(node, value);
             if (style) {
-                QSvgFillStyle *prop = new QSvgFillStyle(style);
-                if (!opacity.isEmpty()) {
-                    qreal clampedOpacity = qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity)));
-                    prop->setFillOpacity(clampedOpacity);
-                }
-                node->appendStyleProperty(prop, myId);
+                prop->setFillStyle(style);
             } else {
-                qWarning("Couldn't resolve property: %s", qPrintable(idFromUrl(value)));
+                QString id = idFromUrl(value);
+                prop->setGradientId(id);
+                prop->setGradientResolved(false);
             }
+            if (!opacity.isEmpty()) {
+                qreal clampedOpacity = qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity)));
+                prop->setFillOpacity(clampedOpacity);
+            }
+            if (!fillRule.isEmpty())
+                prop->setFillRule(f);
+            node->appendStyleProperty(prop,myId);
         } else if (value != QLatin1String("none")) {
             QColor color;
             if (constructColor(value, opacity, color, handler)) {
@@ -3580,8 +3585,34 @@ bool QSvgHandler::endElement(const QStringRef &localName)
             node->popFormat();
     }
 
-    if (node == Graphics)
+    if (node == Graphics) {
+        // Iterate through the m_renderers to resolve any unresolved gradients.
+        QSvgNode* curNode = static_cast<QSvgNode*>(m_nodes.top());
+        if (curNode->type() == QSvgNode::DOC ||
+            curNode->type() == QSvgNode::G ||
+            curNode->type() == QSvgNode::DEFS ||
+            curNode->type() == QSvgNode::SWITCH) {
+            QSvgStructureNode* structureNode = static_cast<QSvgStructureNode*>(curNode);
+            QList<QSvgNode*> ren = structureNode->renderers();
+            QList<QSvgNode*>::iterator itr = ren.begin();
+            while (itr != ren.end()) {
+                QSvgNode *eleNode = *itr++;
+                QSvgFillStyle *prop = static_cast<QSvgFillStyle*>(eleNode->styleProperty(QSvgStyleProperty::FILL));
+                if (prop && !(prop->isGradientResolved())) {
+                    QString id = prop->getGradientId();
+                    QSvgStyleProperty *style = structureNode->scopeStyle(id);
+                    if (style) {
+                        prop->setFillStyle(style);
+                    } else {
+                        qWarning("Couldn't resolve property : %s",qPrintable(id));
+                        prop->setBrush(QBrush(Qt::NoBrush));
+                    }
+                }
+            }
+        }
         m_nodes.pop();
+    }
+
     else if (m_style && !m_skipNodes.isEmpty() && m_skipNodes.top() != Style)
         m_style = 0;
 
