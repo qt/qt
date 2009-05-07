@@ -713,9 +713,10 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
 
             // Stop the (top-level) animation.
             // ### Stopping nested animation has weird behavior.
-            while (QAnimationGroup *group = anim->group())
-                anim = group;
-            anim->stop();
+            QAbstractAnimation *topLevelAnim = anim;
+            while (QAnimationGroup *group = topLevelAnim->group())
+                topLevelAnim = group;
+            topLevelAnim->stop();
 
             if (resetAnimationEndValues.contains(anim)) {
                 qobject_cast<QVariantAnimation*>(anim)->setEndValue(QVariant()); // ### generalize
