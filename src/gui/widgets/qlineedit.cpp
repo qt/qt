@@ -97,8 +97,7 @@ extern void qt_mac_secure_keyboard(bool); //qapplication_mac.cpp
 
 static inline bool shouldEnableInputMethod(QLineEdit *lineedit)
 {
-    const QLineEdit::EchoMode mode = lineedit->echoMode();
-    return !lineedit->isReadOnly() && (mode == QLineEdit::Normal || mode == QLineEdit::PasswordEchoOnEdit);
+    return !lineedit->isReadOnly();
 }
 
 /*!
@@ -544,7 +543,13 @@ void QLineEdit::setEchoMode(EchoMode mode)
     Q_D(QLineEdit);
     if (mode == (EchoMode)d->echoMode)
         return;
-    setAttribute(Qt::WA_InputMethodEnabled, shouldEnableInputMethod(this));
+    Qt::InputMethodHints imHints = inputMethodHints();
+    if (mode == Password) {
+        imHints |= Qt::ImhHiddenText;
+    } else {
+        imHints &= ~Qt::ImhHiddenText;
+    }
+    setInputMethodHints(imHints);
     d->echoMode = mode;
     d->passwordEchoEditing = false;
     d->updateTextLayout();
@@ -1768,6 +1773,13 @@ void QLineEdit::mouseReleaseEvent(QMouseEvent* e)
         }
     }
 #endif
+
+    if (e->button() == Qt::LeftButton && (!d->clickCausedFocus
+            || QApplication::autoSipOnMouseFocus())) {
+        QEvent event(QEvent::RequestSoftwareInputPanel);
+        QApplication::sendEvent(this, &event);
+    }
+    d->clickCausedFocus = 0;
 }
 
 /*! \reimp
@@ -2350,6 +2362,8 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
             d->moveCursor(d->nextMaskBlank(0));
         else if (!d->hasSelectedText())
             selectAll();
+    } else if (e->reason() == Qt::MouseFocusReason) {
+        d->clickCausedFocus = 1;
     }
 #ifdef QT_KEYPAD_NAVIGATION
     if (!QApplication::keypadNavigationEnabled() || (hasEditFocus() && e->reason() == Qt::PopupFocusReason))

@@ -1505,12 +1505,27 @@ void tst_QSslSocket::disconnectFromHostWhenConnected()
     QSslSocketPtr socket = newSocket();
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 993);
     socket->ignoreSslErrors();
+#ifndef Q_OS_SYMBIAN     
     QVERIFY(socket->waitForEncrypted(5000));
+#else    
+    QVERIFY(socket->waitForEncrypted(10000));    
+#endif    
     socket->write("XXXX LOGOUT\r\n");
     QCOMPARE(socket->state(), QAbstractSocket::ConnectedState);
     socket->disconnectFromHost();
     QCOMPARE(socket->state(), QAbstractSocket::ClosingState);
-    QVERIFY(socket->waitForDisconnected(5000));
+#ifdef Q_OS_SYMBIAN   
+    // I don't understand how socket->waitForDisconnected can work on other platforms
+    // since socket->write will end to:
+    //   QMetaObject::invokeMethod(this, "_q_flushWriteBuffer", Qt::QueuedConnection);
+    // In order that _q_flushWriteBuffer will be called the eventloop need to run
+    // If we just call waitForDisconnected, which blocks the whole thread how that can happen?
+    connect(socket, SIGNAL(disconnected()), this, SLOT(exitLoop()));
+    enterLoop(5);
+    QVERIFY(!timeout());
+#else   
+    QVERIFY(socket->waitForDisconnected(5000));    
+#endif 
     QCOMPARE(socket->bytesToWrite(), qint64(0));
 }
 
