@@ -31,6 +31,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QVBoxLayout>
+#include <QProgressDialog>
 #include <QProcess>
 #include <QMenuBar>
 #include <QMenu>
@@ -86,15 +87,15 @@ void QmlViewer::createMenuBar()
     fileMenu->addSeparator();
     fileMenu->addAction(quitAction);
 
-    /*QMenu *recordMenu = menuBar()->addMenu(tr("&Recording"));
+    QMenu *recordMenu = menuBar()->addMenu(tr("&Recording"));
 
-    QAction *snapshotAction = new QAction(tr("&Take Snapsot"), this);
+    QAction *snapshotAction = new QAction(tr("&Take Snapsot\tF3"), this);
     connect(snapshotAction, SIGNAL(triggered()), this, SLOT(takeSnapShot()));
     recordMenu->addAction(snapshotAction);
     
-    recordAction = new QAction(tr("&Start Recording Video"), this);
-    connect(recordAction, SIGNAL(triggered()), this, SLOT(toggleRecording()));
-    recordMenu->addAction(recordAction);*/
+    recordAction = new QAction(tr("Start Recording &Video\tF2"), this);
+    connect(recordAction, SIGNAL(triggered()), this, SLOT(toggleRecordingWithSelection()));
+    recordMenu->addAction(recordAction);
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     QAction *aboutAction = new QAction(tr("&About Qt..."), this);
@@ -111,12 +112,30 @@ void QmlViewer::takeSnapShot()
     ++snapshotcount;
 }
 
+void QmlViewer::toggleRecordingWithSelection()
+{
+    if (!recordTimer.isActive()) {
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Save Video File"), "", tr("Common Video files (*.avi *.mpeg *.mov);; GIF Animation (*.gif);; Individual PNG frames (*.png);; All ffmpeg formats (*.*)"));
+        if (fileName.isEmpty())
+            return;
+        if (!fileName.contains(QRegExp(".[^\\/]*$")))
+            fileName += ".avi";
+        setRecordFile(fileName);
+    }
+    toggleRecording();
+}
+
 void QmlViewer::toggleRecording()
 {
-    bool recording = recordTimer.isActive();
-    //recordAction->setText(recording ? tr("&Start Recording Video") : tr("&End Recording Video"));
-    setRecording(!recording);
+    if (record_file.isEmpty()) {
+        toggleRecordingWithSelection();
+        return;
+    }
+    bool recording = !recordTimer.isActive();
+    recordAction->setText(recording ? tr("&Stop Recording Video\tF2") : tr("&Start Recording Video\tF2"));
+    setRecording(recording);
 }
+
 
 void QmlViewer::reload()
 {
@@ -389,6 +408,9 @@ void QmlViewer::setRecording(bool on)
             frame_stream->close();
             qDebug() << "Wrote" << record_file;
         } else {
+            QProgressDialog progress(tr("Saving frames..."), tr("Cancel"), 0, frames.count()+10, this);
+            progress.setWindowModality(Qt::WindowModal);
+
             int frame=0;
             QStringList inputs;
             qDebug() << "Saving frames...";
@@ -406,6 +428,9 @@ void QmlViewer::setRecording(bool on)
                 png_output = false;
             }
             foreach (QImage* img, frames) {
+                progress.setValue(progress.value()+1);
+                if (progress.wasCanceled())
+                    break;
                 QString name;
                 name.sprintf(framename.toLocal8Bit(),frame++);
                 if (record_dither=="ordered")
@@ -420,31 +445,35 @@ void QmlViewer::setRecording(bool on)
                 delete img;
             }
 
-            if (png_output) {
-                framename.replace(QRegExp("%\\d*."),"*");
-                qDebug() << "Wrote frames" << framename;
-                inputs.clear(); // don't remove them
-            } else {
-                // ImageMagick and gifsicle for GIF encoding
-                QStringList args;
-                args << "-delay" << QString::number(record_period/10);
-                args << inputs;
-                args << record_file;
-                qDebug() << "Converting..." << record_file << "(this may take a while)";
-                if (0!=QProcess::execute("convert", args)) {
-                    qWarning() << "Cannot run ImageMagick 'convert' - recorded frames not converted";
+            if (!progress.wasCanceled()) {
+                if (png_output) {
+                    framename.replace(QRegExp("%\\d*."),"*");
+                    qDebug() << "Wrote frames" << framename;
                     inputs.clear(); // don't remove them
-                    qDebug() << "Wrote frames tmp-frame*.png";
                 } else {
-                    if (record_file.right(4).toLower() == ".gif") {
-                        qDebug() << "Compressing..." << record_file;
-                        if (0!=QProcess::execute("gifsicle", QStringList() << "-O2" << "-o" << record_file << record_file))
-                            qWarning() << "Cannot run 'gifsicle' - not compressed";
+                    // ImageMagick and gifsicle for GIF encoding
+                    progress.setLabelText(tr("Converting frames to GIF file..."));
+                    QStringList args;
+                    args << "-delay" << QString::number(record_period/10);
+                    args << inputs;
+                    args << record_file;
+                    qDebug() << "Converting..." << record_file << "(this may take a while)";
+                    if (0!=QProcess::execute("convert", args)) {
+                        qWarning() << "Cannot run ImageMagick 'convert' - recorded frames not converted";
+                        inputs.clear(); // don't remove them
+                        qDebug() << "Wrote frames tmp-frame*.png";
+                    } else {
+                        if (record_file.right(4).toLower() == ".gif") {
+                            qDebug() << "Compressing..." << record_file;
+                            if (0!=QProcess::execute("gifsicle", QStringList() << "-O2" << "-o" << record_file << record_file))
+                                qWarning() << "Cannot run 'gifsicle' - not compressed";
+                        }
+                        qDebug() << "Wrote" << record_file;
                     }
-                    qDebug() << "Wrote" << record_file;
                 }
             }
 
+            progress.setValue(progress.maximum()-1);
             foreach (QString name, inputs)
                 QFile::remove(name);
 
