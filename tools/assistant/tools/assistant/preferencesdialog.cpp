@@ -44,6 +44,7 @@
 #include "installdialog.h"
 #include "fontpanel.h"
 #include "centralwidget.h"
+#include "aboutdialog.h"
 
 #include <QtAlgorithms>
 
@@ -52,6 +53,8 @@
 #include <QtGui/QMessageBox>
 #include <QtGui/QMenu>
 #include <QtGui/QFontDatabase>
+#include <QtGui/QApplication>
+#include <QtGui/QDesktopWidget>
 
 #include <QtHelp/QHelpEngineCore>
 
@@ -254,25 +257,48 @@ void PreferencesDialog::addDocumentationLocal()
     if (fileNames.isEmpty())
         return;
 
+    QStringList invalidFiles;
+    QStringList alreadyRegistered;
     foreach (const QString &fileName, fileNames) {
-        const QString ns = QHelpEngineCore::namespaceName(fileName);
-        if (ns.isEmpty()) {
-            QMessageBox::warning(this, tr("Add Documentation"),
-                tr("The specified file is not a valid Qt Help File!"));
+        const QString nameSpace = QHelpEngineCore::namespaceName(fileName);
+        if (nameSpace.isEmpty()) {
+            invalidFiles.append(fileName);
             continue;
         }
 
-        if (m_ui.registeredDocsListWidget->findItems(ns, Qt::MatchFixedString).count()) {
-            QMessageBox::warning(this, tr("Add Documentation"),
-                tr("The namespace %1 is already registered!").arg(ns));
-            continue;
+        if (m_ui.registeredDocsListWidget->findItems(nameSpace,
+            Qt::MatchFixedString).count()) {
+                alreadyRegistered.append(nameSpace);
+                continue;
         }
 
         m_helpEngine->registerDocumentation(fileName);
-        m_ui.registeredDocsListWidget->addItem(ns);
-        m_regDocs.append(ns);
-        m_unregDocs.removeAll(ns);
+        m_ui.registeredDocsListWidget->addItem(nameSpace);
+        m_regDocs.append(nameSpace);
+        m_unregDocs.removeAll(nameSpace);
     }
+
+    if (!invalidFiles.isEmpty() || !alreadyRegistered.isEmpty()) {
+        QString message;
+        if (!alreadyRegistered.isEmpty()) {
+            foreach (const QString &ns, alreadyRegistered) {
+                message += tr("The namespace %1 is already registered!")
+                    .arg(QString("<b>%1</b>").arg(ns)) + QLatin1String("<br>");
+            }
+            if (!invalidFiles.isEmpty())
+                message.append(QLatin1String("<br>"));
+        }
+
+        if (!invalidFiles.isEmpty()) {
+            message += tr("The specified file is not a valid Qt Help File!");
+            message.append(QLatin1String("<ul>"));
+            foreach (const QString &file, invalidFiles)
+                message += QLatin1String("<li>") + file + QLatin1String("</li>");
+            message.append(QLatin1String("</ul>"));
+        }
+        QMessageBox::warning(this, tr("Add Documentation"), message);
+    }
+
     updateFilterPage();
 }
 
