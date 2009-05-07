@@ -4,6 +4,7 @@
 #include <QtDeclarative/qmldom.h>
 
 #include <QtCore/QDebug>
+#include <QtCore/QFile>
 
 class tst_qmldom : public QObject
 {
@@ -15,6 +16,7 @@ private slots:
     void loadSimple();
     void loadProperties();
     void loadChildObject();
+    void loadComposite();
 
     void testValueSource();
 
@@ -30,7 +32,7 @@ void tst_qmldom::loadSimple()
 
     QmlDomDocument document;
     QVERIFY(document.load(&engine, qml));
-    QVERIFY(document.loadError().isEmpty());
+    QVERIFY(document.errors().isEmpty());
 
     QmlDomObject rootObject = document.rootObject();
     QVERIFY(rootObject.isValid());
@@ -85,6 +87,18 @@ void tst_qmldom::loadChildObject()
     QmlDomObject childItem = list.values().first().toObject();
     QVERIFY(childItem.isValid());
     QVERIFY(childItem.objectType() == "Item");
+}
+
+void tst_qmldom::loadComposite()
+{
+    QFile file(SRCDIR  "/top.qml");
+    QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
+
+    QmlDomDocument document;
+    QVERIFY(document.load(&engine, file.readAll()));
+    QVERIFY(document.errors().isEmpty());
+
+    // TODO: How should sub components be represented?
 }
 
 void tst_qmldom::testValueSource()
