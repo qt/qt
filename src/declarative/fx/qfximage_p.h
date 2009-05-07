@@ -76,7 +76,7 @@ public:
 #if defined(QFX_RENDER_OPENGL)
         _texDirty(true),
 #endif
-        status(QFxImage::Idle), reply(0), progress(0.0)
+        status(QFxImage::Idle), sciReply(0), progress(0.0)
     {
     }
 
@@ -109,6 +109,7 @@ public:
     QString source;
     QUrl url;
     QUrl sciurl;
+    QNetworkReply *sciReply;
     QPointer<QNetworkReply> reply;
     qreal progress;
 };

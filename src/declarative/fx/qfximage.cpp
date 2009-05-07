@@ -125,8 +125,8 @@ QFxImage::QFxImage(QFxImagePrivate &dd, QFxItem *parent)
 QFxImage::~QFxImage()
 {
     Q_D(const QFxImage);
-    if (d->reply)
-        d->reply->deleteLater();
+    if (d->sciReply)
+        d->sciReply->deleteLater();
 }
 
 /*!
@@ -859,9 +859,9 @@ void QFxImage::setSource(const QString &url)
     if (url == d->source)
         return;
 
-    if (d->reply) {
-        d->reply->deleteLater();
-        d->reply = 0;
+    if (d->sciReply) {
+        d->sciReply->deleteLater();
+        d->sciReply = 0;
     }
 
     if (!d->url.isEmpty())
@@ -904,8 +904,8 @@ void QFxImage::setSource(const QString &url)
             {
                 QNetworkRequest req(d->url);
                 req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
-                d->reply = qmlEngine(this)->networkAccessManager()->get(req);
-                QObject::connect(d->reply, SIGNAL(finished()), 
+                d->sciReply = qmlEngine(this)->networkAccessManager()->get(req);
+                QObject::connect(d->sciReply, SIGNAL(finished()),
                                  this, SLOT(sciRequestFinished()));
             }
         } else {
@@ -958,15 +958,15 @@ void QFxImage::requestFinished()
 void QFxImage::sciRequestFinished()
 {
     Q_D(QFxImage);
-    if (d->reply->error() != QNetworkReply::NoError) {
+    if (d->sciReply->error() != QNetworkReply::NoError) {
         d->status = Error;
-        d->reply->deleteLater();
-        d->reply = 0;
+        d->sciReply->deleteLater();
+        d->sciReply = 0;
         emit statusChanged(d->status);
     } else {
-        QFxGridScaledImage sci(d->reply);
-        d->reply->deleteLater();
-        d->reply = 0;
+        QFxGridScaledImage sci(d->sciReply);
+        d->sciReply->deleteLater();
+        d->sciReply = 0;
         setGridScaledImage(sci);
     }
 }
