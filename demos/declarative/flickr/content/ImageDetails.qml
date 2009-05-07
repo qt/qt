@@ -3,6 +3,7 @@ Flipable {
 
     property var frontContainer: ContainerFront
     property var flickableArea: Flickable
+    property var slider: Slider
     property string photoTitle: ""
     property string photoDescription: ""
     property string photoTags: ""
@@ -96,7 +97,7 @@ Flipable {
             anchors.centeredIn: parent; color: "white"; font.bold: true
         }
 
-        Slider { id: Slider; x: 25; y: 374; imageWidth: Container.photoWidth; imageHeight: Container.photoHeight }
+        Slider { id: Slider; x: 25; y: 374; visible: BigImage.status == 0; imageWidth: Container.photoWidth; imageHeight: Container.photoHeight }
     }
 
     states: [
