@@ -123,6 +123,21 @@ end_block one_pixel_border
 
 resetMatrix
 
+translate 205.1 626.1
+scale 0.4 0.4
+
+repeat_block one_pixel_border
+
+resetMatrix
+
+translate 255.1 624.1
+scale 0.4 0.4
+rotate 10
+
+repeat_block one_pixel_border
+
+resetMatrix
+
 setPen red
 
 drawRect 0 0 70 680
@@ -145,5 +160,5 @@ drawText 174 114 "smoothpixmaptransform off"
 drawRect 164 128 224 134
 drawText 174 252 "smoothpixmaptransform on"
 
-drawRect 200 520 97 128
-drawText 210 638 "1x1 edges"
+drawRect 200 520 97 188
+drawText 210 698 "1x1 edges"

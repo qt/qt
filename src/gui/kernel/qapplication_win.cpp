@@ -1722,6 +1722,21 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             // fall-through intended
         case WM_KEYUP:
         case WM_SYSKEYUP:
+#if Q_OS_WINCE_WM
+        case WM_HOTKEY:
+            if(HIWORD(msg.lParam) == VK_TBACK) {
+                const bool hotKeyDown = !(LOWORD(msg.lParam) & MOD_KEYUP);
+                msg.lParam = 0x69 << 16;
+                msg.wParam = VK_BACK;
+                if (hotKeyDown) {
+                    msg.message = WM_KEYDOWN;
+                    qt_keymapper_private()->updateKeyMap(msg);
+                } else {
+                    msg.message = WM_KEYUP;
+                }
+            }
+            // fall-through intended
+#endif
         case WM_IME_CHAR:
         case WM_IME_KEYDOWN:
         case WM_CHAR: {
