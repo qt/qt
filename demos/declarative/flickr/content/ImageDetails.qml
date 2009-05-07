@@ -43,7 +43,7 @@ Flipable {
 
         LikeOMeter { x: 40; y: 250; rating: Container.rating }
 
-        Flickable { id: Flickable; x: 220; width: 480; height: 230; y: 120; clip: true
+        Flickable { id: Flickable; x: 220; width: 480; height: 210; y: 130; clip: true
                     viewportWidth: 480; viewportHeight: DescriptionText.height
 
             WebView { id: DescriptionText; width: parent.width

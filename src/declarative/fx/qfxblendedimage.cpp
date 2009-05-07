@@ -101,7 +101,7 @@ void QFxBlendedImage::setPrimaryUrl(const QString &url)
     if (primSrc == url)
         return;
     if (!primSrc.isEmpty())
-        QFxPixmap::cancelGet(primUrl,this,SLOT(primaryLoaded()));
+        QFxPixmap::cancelGet(primUrl,this);
     primSrc = url;
     primUrl = qmlContext(this)->resolvedUrl(url);
     if (!primSrc.isEmpty())
@@ -129,7 +129,7 @@ void QFxBlendedImage::setSecondaryUrl(const QString &url)
     if (secSrc == url)
         return;
     if (!secSrc.isEmpty())
-        QFxPixmap::cancelGet(secUrl,this,SLOT(secondaryLoaded()));
+        QFxPixmap::cancelGet(secUrl,this);
     secSrc = url;
     secUrl = qmlContext(this)->resolvedUrl(url);
     if (!secSrc.isEmpty())

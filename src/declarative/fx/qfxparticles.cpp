@@ -635,7 +635,7 @@ void QFxParticles::setSource(const QString &name)
         return;
 
     if (!d->source.isEmpty())
-        QFxPixmap::cancelGet(d->url, this, SLOT(imageLoaded()));
+        QFxPixmap::cancelGet(d->url, this);
     if (name.isEmpty()) {
         d->source = name;
         d->url = QUrl();

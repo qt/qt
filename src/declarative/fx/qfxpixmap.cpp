@@ -275,15 +275,18 @@ QNetworkReply *QFxPixmap::get(QmlEngine *engine, const QUrl& url, QObject* obj, 
 /*!
     Stops the given slot being invoked if the given url finishes loading.
     May also cancel loading (eg. if no other pending request).
+
+    Any connections to the QNetworkReply returned by get() will be
+    disconnected.
 */
-void QFxPixmap::cancelGet(const QUrl& url, QObject* obj, const char* slot)
+void QFxPixmap::cancelGet(const QUrl& url, QObject* obj)
 {
     QString key = url.toString();
     QFxPixmapCache::Iterator iter = qfxPixmapCache.find(key);
     if (iter == qfxPixmapCache.end())
         return;
     if ((*iter)->reply)
-        QObject::disconnect((*iter)->reply, SIGNAL(finished()), obj, slot);
+        QObject::disconnect((*iter)->reply, 0, obj, 0);
     // XXX - loading not cancelled. Need to revisit caching
 }
 
