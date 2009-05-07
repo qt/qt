@@ -79,6 +79,12 @@ void QmlViewer::createMenuBar()
     connect(reloadAction, SIGNAL(triggered()), this, SLOT(reload()));
     fileMenu->addAction(reloadAction);
 
+    QAction *quitAction = new QAction(tr("&Quit"), this);
+    quitAction->setShortcut(QKeySequence("Ctrl+Q"));
+    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    fileMenu->addSeparator();
+    fileMenu->addAction(quitAction);
+
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     QAction *aboutAction = new QAction(tr("&About Qt..."), this);
     connect(aboutAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
