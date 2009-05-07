@@ -86,7 +86,7 @@ public:
     enum Error {
         NoError, 
         NoInitialStateError,
-        NoDefaultStateInHistoryState,
+        NoDefaultStateInHistoryStateError,
         NoCommonAncestorForTransitionError
     };
 

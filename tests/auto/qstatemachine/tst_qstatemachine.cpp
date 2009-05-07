@@ -877,7 +877,7 @@ void tst_QStateMachine::historyStateHasNowhereToGo()
 
     QCOMPARE(machine.configuration().count(), 1);
     QVERIFY(machine.configuration().contains(machine.errorState()));
-    QCOMPARE(machine.error(), QStateMachine::NoDefaultStateInHistoryState);
+    QCOMPARE(machine.error(), QStateMachine::NoDefaultStateInHistoryStateError);
     QCOMPARE(machine.errorString(), QString::fromLatin1("Missing default state in history state 'historyState'"));
 }
 

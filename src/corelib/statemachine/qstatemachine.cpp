@@ -595,7 +595,7 @@ void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
 				hlst.append(QHistoryStatePrivate::get(h)->defaultState);
 
 			if (hlst.isEmpty()) {
-				setError(QStateMachine::NoDefaultStateInHistoryState, h);
+				setError(QStateMachine::NoDefaultStateInHistoryStateError, h);
 			} else {
 				for (int k = 0; k < hlst.size(); ++k) {
 					QAbstractState *s0 = hlst.at(k);
@@ -981,7 +981,7 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
                         .arg(currentContext->objectName());
 
         break;
-    case QStateMachine::NoDefaultStateInHistoryState:
+    case QStateMachine::NoDefaultStateInHistoryStateError:
         Q_ASSERT(currentContext != 0);
 
         errorString = QStateMachine::tr("Missing default state in history state '%1'")
@@ -1568,9 +1568,9 @@ void QStateMachine::setErrorState(QAbstractState *state)
     \value NoInitialStateError The machine has entered a QState with children which does not have an
            initial state set. The context of this error is the state which is missing an initial
            state.
-    \value NoDefaultStateInHistoryState The machine has entered a QHistoryState which does not have 
+    \value NoDefaultStateInHistoryStateError The machine has entered a QHistoryState which does not have 
            a default state set. The context of this error is the QHistoryState which is missing a
-           default state.          
+           default state.
 
     \sa setErrorState()
 */
