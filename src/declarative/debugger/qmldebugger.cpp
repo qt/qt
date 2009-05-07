@@ -46,6 +46,7 @@
 #include <QTextBlock>
 #include <QtGui/qtabwidget.h>
 #include <QtDeclarative/qmlbindablevalue.h>
+#include <QtDeclarative/qmldebuggerstatus.h>
 #include <private/qmlboundsignal_p.h>
 #include <private/qmlcontext_p.h>
 #include <private/qmlengine_p.h>
@@ -56,9 +57,11 @@
 #include <QtGui/qpushbutton.h>
 #include <QtGui/qtablewidget.h>
 #include <QtGui/qevent.h>
+#include <private/qmlpropertyview_p.h>
 
 QmlDebugger::QmlDebugger(QWidget *parent)
-: QWidget(parent), m_tree(0), m_warnings(0), m_watchers(0), m_text(0)
+: QWidget(parent), m_tree(0), m_warnings(0), m_watchers(0), m_properties(0),
+  m_text(0)
 {
     QHBoxLayout *layout = new QHBoxLayout;
     setLayout(layout);
@@ -96,6 +99,9 @@ QmlDebugger::QmlDebugger(QWidget *parent)
     m_watchers->setSelectionMode(QTableWidget::NoSelection);
     tabs->addTab(m_watchers, "Watchers");
 
+    m_properties = new QmlPropertyView(this);
+    tabs->addTab(m_properties, "Properties");
+
     splitter->addWidget(tabs);
     splitter->setStretchFactor(1, 2);
 
@@ -119,6 +125,7 @@ public:
     int endLine;
     QUrl url;
 
+    QPointer<QObject> object;
     QPointer<QmlBindableValue> bindableValue;
 };
 
@@ -144,6 +151,26 @@ void QmlDebugger::itemDoubleClicked(QTreeWidgetItem *i)
 void QmlDebugger::itemClicked(QTreeWidgetItem *i)
 {
     QmlDebuggerItem *item = static_cast<QmlDebuggerItem *>(i);
+
+    if(m_selectedItem) {
+        QmlDebuggerStatus *debug = 
+            qobject_cast<QmlDebuggerStatus *>(m_selectedItem);
+        Q_ASSERT(debug);
+        debug->setSelectedState(false);
+        m_selectedItem = 0;
+    }
+
+    if(item->object) {
+        QmlDebuggerStatus *debug = 
+            qobject_cast<QmlDebuggerStatus *>(item->object);
+        if(debug) {
+            debug->setSelectedState(true);
+            m_selectedItem = item->object;
+        }
+
+        m_properties->setObject(item->object);
+    } 
+
     if(item->url.scheme() == QLatin1String("file")) {
         QString f = item->url.toLocalFile();
         QFile file(f);
@@ -193,6 +220,8 @@ bool QmlDebugger::makeItem(QObject *obj, QmlDebuggerItem *item)
     bool rv = true;
 
     QString text;
+
+    item->object = obj;
 
     if(QmlBindableValue *bv = qobject_cast<QmlBindableValue *>(obj)) {
         QmlExpressionPrivate *p = bv->d;

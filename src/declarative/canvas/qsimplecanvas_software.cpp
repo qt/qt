@@ -172,6 +172,11 @@ void QSimpleCanvasItemPrivate::paint(QPainter &p)
 
     if (clip) 
         p.restore();
+
+    if (debuggerStatus && debuggerStatus->selected)  {
+        p.setWorldTransform(data()->transformActive);
+        p.fillRect(q->boundingRect(), QColor(255, 0, 0, 80));
+    }
 }
 
 void QSimpleCanvasItemPrivate::paintChild(QPainter &p, QSimpleCanvasItem *c)

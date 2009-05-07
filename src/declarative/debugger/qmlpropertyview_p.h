@@ -39,57 +39,32 @@
 **
 ****************************************************************************/
 
-#ifndef QMLDEBUGGER_H
-#define QMLDEBUGGER_H
+#ifndef QMLPROPERTYVIEW_P_H
+#define QMLPROPERTYVIEW_P_H
 
-#include <QtCore/qpointer.h>
-#include <QtCore/qset.h>
 #include <QtGui/qwidget.h>
-
-QT_BEGIN_HEADER
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
 class QTreeWidget;
-class QTreeWidgetItem;
-class QPlainTextEdit;
-class QmlDebuggerItem;
-class QTableWidget;
-class QmlPropertyView;
-class QmlDebugger : public QWidget
+class QmlPropertyView : public QWidget
 {
-Q_OBJECT
+    Q_OBJECT
 public:
-    QmlDebugger(QWidget *parent = 0);
+    QmlPropertyView(QWidget *parent = 0);
 
-    void setDebugObject(QObject *);
+    void setObject(QObject *);
 
 public slots:
     void refresh();
 
-private slots:
-    void itemClicked(QTreeWidgetItem *);
-    void itemDoubleClicked(QTreeWidgetItem *);
-
 private:
-    void buildTree(QObject *obj, QmlDebuggerItem *parent);
-    bool makeItem(QObject *obj, QmlDebuggerItem *item);
-    QTreeWidget *m_tree;
-    QTreeWidget *m_warnings;
-    QTableWidget *m_watchers;
-    QmlPropertyView *m_properties;
-    QPlainTextEdit *m_text;
     QPointer<QObject> m_object;
-    QList<QPair<quint32, QPair<int, QString> > > m_expressions;
-    QSet<quint32> m_watchedIds;
-    QPointer<QObject> m_selectedItem;
+    QTreeWidget *m_tree;
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QMLDEBUGGER_H
+#endif // QMLPROPERTYVIEW_P_H
 
