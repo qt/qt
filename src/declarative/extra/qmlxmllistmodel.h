@@ -118,7 +118,7 @@ public:
     virtual void classComplete();
 
 public Q_SLOTS:
-    void fetch();
+    void reload();
 
 protected:
     void doQuery(QByteArray &rawData);
