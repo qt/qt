@@ -1571,6 +1571,11 @@ void QStateMachine::setErrorState(QAbstractState *state)
     \value NoDefaultStateInHistoryStateError The machine has entered a QHistoryState which does not have 
            a default state set. The context of this error is the QHistoryState which is missing a
            default state.
+    \value NoCommonAncestorForTransitionError The machine has selected a transition whose source 
+           and targets are not part of the same tree of states, and thus are not part of the same 
+           state machine. Commonly, this could mean that one of the states has not been given 
+           any parent or added to any machine. The context of this error is the source state of 
+           the transition.
 
     \sa setErrorState()
 */
