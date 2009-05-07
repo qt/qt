@@ -791,6 +791,7 @@ void QmlColorAnimation::prepare(QmlMetaProperty &p)
     d->fromSourced = false;
     d->value.QmlTimeLineValue::setValue(0.);
     d->ca->setAnimValue(&d->value, QAbstractAnimation::KeepWhenStopped);
+    d->ca->setFromSourcedValue(&d->fromSourced);
 }
 
 QAbstractAnimation *QmlColorAnimation::qtAnimation()
@@ -1595,6 +1596,7 @@ void QmlNumericAnimation::prepare(QmlMetaProperty &p)
     d->fromSourced = false;
     d->value.QmlTimeLineValue::setValue(0.);
     d->na->setAnimValue(&d->value, QAbstractAnimation::KeepWhenStopped);
+    d->na->setFromSourcedValue(&d->fromSourced);
 }
 
 QAbstractAnimation *QmlNumericAnimation::qtAnimation()
@@ -2152,6 +2154,7 @@ void QmlVariantAnimation::prepare(QmlMetaProperty &p)
     d->fromSourced = false;
     d->value.QmlTimeLineValue::setValue(0.);
     d->va->setAnimValue(&d->value, QAbstractAnimation::KeepWhenStopped);
+    d->va->setFromSourcedValue(&d->fromSourced);
 }
 
 void QmlVariantAnimation::transition(QmlStateActions &actions,

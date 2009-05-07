@@ -60,7 +60,6 @@ int main(int argc, char ** argv)
     char raster[] = "raster";
     newargv[argc+1] = raster;
 
-
     QApplication app(newargc, newargv);
     app.setApplicationName("viewer");
 

@@ -53,7 +53,8 @@ QmlViewer::QmlViewer(QFxTestEngine::TestMode testMode, const QString &testDir, Q
 
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_NoSystemBackground);
-    createMenuBar();
+    if (!(flags & Qt::FramelessWindowHint))
+        createMenuBar();
 
     canvas = new QFxView(this);
     if(testMode != QFxTestEngine::NoTest)
@@ -79,10 +80,42 @@ void QmlViewer::createMenuBar()
     connect(reloadAction, SIGNAL(triggered()), this, SLOT(reload()));
     fileMenu->addAction(reloadAction);
 
+    QAction *quitAction = new QAction(tr("&Quit"), this);
+    quitAction->setShortcut(QKeySequence("Ctrl+Q"));
+    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    fileMenu->addSeparator();
+    fileMenu->addAction(quitAction);
+
+    /*QMenu *recordMenu = menuBar()->addMenu(tr("&Recording"));
+
+    QAction *snapshotAction = new QAction(tr("&Take Snapsot"), this);
+    connect(snapshotAction, SIGNAL(triggered()), this, SLOT(takeSnapShot()));
+    recordMenu->addAction(snapshotAction);
+    
+    recordAction = new QAction(tr("&Start Recording Video"), this);
+    connect(recordAction, SIGNAL(triggered()), this, SLOT(toggleRecording()));
+    recordMenu->addAction(recordAction);*/
+
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     QAction *aboutAction = new QAction(tr("&About Qt..."), this);
     connect(aboutAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
     helpMenu->addAction(aboutAction);
+}
+
+void QmlViewer::takeSnapShot()
+{
+    static int snapshotcount = 1;
+    QString snapFileName = QString(QLatin1String("snapshot%1.png")).arg(snapshotcount);
+    canvas->asImage().save(snapFileName);
+    qDebug() << "Wrote" << snapFileName;
+    ++snapshotcount;
+}
+
+void QmlViewer::toggleRecording()
+{
+    bool recording = recordTimer.isActive();
+    //recordAction->setText(recording ? tr("&Start Recording Video") : tr("&End Recording Video"));
+    setRecording(!recording);
 }
 
 void QmlViewer::reload()
@@ -297,10 +330,9 @@ void QmlViewer::keyPressEvent(QKeyEvent *event)
                  << "device keys: 0=quit, 1..8=F1..F8"
                 ;
     } else if (event->key() == Qt::Key_F2 || (event->key() == Qt::Key_2 && devicemode)) {
-        setRecording(!recordTimer.isActive());
+        toggleRecording();
     } else if (event->key() == Qt::Key_F3 || (event->key() == Qt::Key_3 && devicemode)) {
-        canvas->asImage().save("snapshot.png");
-        qDebug() << "Wrote snapshot.png";
+        takeSnapShot();
     } else if (event->key() == Qt::Key_F4 || (event->key() == Qt::Key_4 && devicemode)) {
         canvas->dumpItems();
         canvas->checkState();
@@ -398,7 +430,7 @@ void QmlViewer::setRecording(bool on)
                 args << "-delay" << QString::number(record_period/10);
                 args << inputs;
                 args << record_file;
-                qDebug() << "Converting..." << record_file;
+                qDebug() << "Converting..." << record_file << "(this may take a while)";
                 if (0!=QProcess::execute("convert", args)) {
                     qWarning() << "Cannot run ImageMagick 'convert' - recorded frames not converted";
                     inputs.clear(); // don't remove them

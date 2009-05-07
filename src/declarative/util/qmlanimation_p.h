@@ -116,14 +116,17 @@ private:
 class QmlTimeLineValueAnimator : public QVariantAnimation
 {
 public:
-    QmlTimeLineValueAnimator(QObject *parent = 0) : QVariantAnimation(parent), animValue(0), policy(KeepWhenStopped) {}
-    QmlTimeLineValueAnimator(QmlTimeLineValue *value, QObject *parent = 0) : QVariantAnimation(parent), animValue(value), policy(KeepWhenStopped) {}
+    QmlTimeLineValueAnimator(QObject *parent = 0) : QVariantAnimation(parent), animValue(0), fromSourced(0), policy(KeepWhenStopped) {}
     void setAnimValue(QmlTimeLineValue *value, DeletionPolicy p)
     {
         if (state() == Running)
             stop();
         animValue = value;
         policy = p;
+    }
+    void setFromSourcedValue(bool *value)
+    {
+        fromSourced = value;
     }
 protected:
     virtual void updateCurrentValue(const QVariant &value)
@@ -134,7 +137,11 @@ protected:
     virtual void updateState(State oldState, State newState)
     {
         QVariantAnimation::updateState(oldState, newState);
-        if (newState == Stopped && policy == DeleteWhenStopped) {
+        if (newState == Running) {
+            //check for new from every loop
+            if (fromSourced)
+                *fromSourced = false;
+        } else if (newState == Stopped && policy == DeleteWhenStopped) {
             delete animValue;
             animValue = 0;
         }
@@ -142,6 +149,7 @@ protected:
 
 private:
     QmlTimeLineValue *animValue;
+    bool *fromSourced;
     DeletionPolicy policy;
 };
 

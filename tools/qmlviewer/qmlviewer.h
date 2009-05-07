@@ -48,6 +48,8 @@ public slots:
     void openQml(const QString& fileName);
     void open();
     void reload();
+    void takeSnapShot();
+    void toggleRecording();
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);
@@ -70,6 +72,7 @@ private:
     int record_period;
     int record_autotime;
     bool devicemode;
+    QAction *recordAction;
 
     QFxTestEngine *testEngine;
 };
