@@ -700,7 +700,7 @@ void QFxPathView::itemsRemoved(int modelIndex, int count)
     }
 
     if (d->model->count() == 0) {
-        d->currentIndex == -1;
+        d->currentIndex = -1;
         d->moveOffset.setValue(0);
         return;
     }

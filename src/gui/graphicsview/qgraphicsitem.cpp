@@ -1966,7 +1966,7 @@ void QGraphicsItem::setOpacity(qreal opacity)
     itemChange(ItemOpacityHasChanged, newOpacity);
 
     // Update.
-    d_ptr->fullUpdateHelper();
+    d_ptr->fullUpdateHelper(/*childrenOnly=*/false, /*maybeDirtyClipPath=*/false, /*ignoreOpacity=*/true);
 }
 
 /*!
@@ -3512,10 +3512,16 @@ bool QGraphicsItem::contains(const QPointF &point) const
 }
 
 /*!
-    Returns true if this item collides with \a other; otherwise returns false.
-    The ways items collide is determined by \a mode. The default value for \a
-    mode is Qt::IntersectsItemShape; \a other collides with this item if it
-    either intersects, contains, or is contained by this item's shape.
+
+    Returns true if this item collides with \a other; otherwise
+    returns false.
+
+    The \a mode is applied to \a other, and the resulting shape or
+    bounding rectangle is then compared to this item's shape. The
+    default value for \a mode is Qt::IntersectsItemShape; \a other
+    collides with this item if it either intersects, contains, or is
+    contained by this item's shape (see Qt::ItemSelectionMode for
+    details).
 
     The default implementation is based on shape intersection, and it calls
     shape() on both items. Because the complexity of arbitrary shape-shape
@@ -3570,6 +3576,11 @@ bool QGraphicsItem::collidesWithItem(const QGraphicsItem *other, Qt::ItemSelecti
     Qt::IntersectsItemShape; \a path collides with this item if it either
     intersects, contains, or is contained by this item's shape.
 
+    Note that this function checks whether the item's shape or
+    bounding rectangle (depending on \a mode) is contained within \a
+    path, and not whether \a path is contained within the items shape
+    or bounding rectangle. 
+
     \sa collidesWithItem(), contains(), shape()
 */
 bool QGraphicsItem::collidesWithPath(const QPainterPath &path, Qt::ItemSelectionMode mode) const
@@ -3610,11 +3621,12 @@ bool QGraphicsItem::collidesWithPath(const QPainterPath &path, Qt::ItemSelection
 /*!
     Returns a list of all items that collide with this item.
 
-    The way collisions are detected is determined by \a mode. The default
-    value for \a mode is Qt::IntersectsItemShape; All items whose shape
-    intersects or is contained by this item's shape are returned.
+    The way collisions are detected is determined by applying \a mode
+    to items that are compared to this item, i.e., each item's shape
+    or bounding rectangle is checked against this item's shape. The
+    default value for \a mode is Qt::IntersectsItemShape.
 
-    \sa QGraphicsScene::collidingItems(), collidesWithItem()
+    \sa collidesWithItem()
 */
 QList<QGraphicsItem *> QGraphicsItem::collidingItems(Qt::ItemSelectionMode mode) const
 {
@@ -3898,9 +3910,8 @@ void QGraphicsItem::setBoundingRegionGranularity(qreal granularity)
     \internal
     Returns true if we can discard an update request; otherwise false.
 */
-bool QGraphicsItemPrivate::discardUpdateRequest(bool ignoreClipping,
-                                                bool ignoreVisibleBit,
-                                                bool ignoreDirtyBit) const
+bool QGraphicsItemPrivate::discardUpdateRequest(bool ignoreClipping, bool ignoreVisibleBit,
+                                                bool ignoreDirtyBit, bool ignoreOpacity) const
 {
     // No scene, or if the scene is updating everything, means we have nothing
     // to do. The only exception is if the scene tracks the growing scene rect.
@@ -3909,7 +3920,7 @@ bool QGraphicsItemPrivate::discardUpdateRequest(bool ignoreClipping,
            || !scene
            || (scene->d_func()->updateAll && scene->d_func()->hasSceneRect)
            || (!ignoreClipping && (childrenClippedToShape() && isClippedAway()))
-           || (childrenCombineOpacity() && isFullyTransparent());
+           || (!ignoreOpacity && childrenCombineOpacity() && isFullyTransparent());
 }
 
 /*!
@@ -3939,11 +3950,10 @@ void QGraphicsItemPrivate::updateHelper(const QRectF &rect, bool force, bool may
 
     Propagates updates to \a item and all its children.
 */
-void QGraphicsItemPrivate::fullUpdateHelper(bool childrenOnly, bool maybeDirtyClipPath)
+void QGraphicsItemPrivate::fullUpdateHelper(bool childrenOnly, bool maybeDirtyClipPath, bool ignoreOpacity)
 {
-    if (discardUpdateRequest(/*ignoreClipping=*/maybeDirtyClipPath,
-                             /*ignoreVisibleBit=*/false,
-                             /*ignoreDirtyBit=*/true)) {
+    if (discardUpdateRequest(/*ignoreClipping=*/maybeDirtyClipPath, /*ignoreVisibleBit=*/false,
+                             /*ignoreDirtyBit=*/true, ignoreOpacity)) {
         return;
     }
 

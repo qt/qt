@@ -826,13 +826,28 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
     QWidget *qwidget = [theView qt_qwidget];
     QWidget *widgetToGetMouse = qwidget;
     QWidget *popup = qAppInstance()->activePopupWidget();
-    if (popup && popup != qwidget->window())
-        widgetToGetMouse = popup;
     NSView *tmpView = theView;
-    if (widgetToGetMouse != qwidget) {
-        tmpView = qt_mac_nativeview_for(widgetToGetMouse);
+
+    if (popup && popup != qwidget->window()) {
+        widgetToGetMouse = popup;
+        tmpView = qt_mac_nativeview_for(popup);
         windowPoint = [[tmpView window] convertScreenToBase:globalPoint];
+
+        QPoint qWindowPoint(windowPoint.x, windowPoint.y);
+        if (widgetToGetMouse->rect().contains(qWindowPoint)) {
+            // Keeping the mouse pressed on a combobox button will make
+            // the popup pop in front of the mouse. But all mouse events
+            // will be sendt to the button. Since we want mouse events
+            // to be sendt to widgets inside the popup, we search for the
+            // widget in front of the mouse:
+            tmpView = [tmpView hitTest:windowPoint];
+            if (!tmpView)
+                return false;
+            widgetToGetMouse =
+                [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(tmpView) qt_qwidget];
+        }
     }
+
     NSPoint localPoint = [tmpView convertPoint:windowPoint fromView:nil];
     QPoint qlocalPoint(localPoint.x, localPoint.y);
 
