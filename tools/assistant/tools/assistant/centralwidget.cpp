@@ -810,7 +810,7 @@ bool CentralWidget::eventFilter(QObject *object, QEvent *e)
         }
     }
 
-    if (QTabBar *tabBar = qobject_cast<QTabBar*>(object)) {
+    if (qobject_cast<QTabBar*>(object)) {
         const bool dblClick = e->type() == QEvent::MouseButtonDblClick;
         if ((e->type() == QEvent::MouseButtonRelease) || dblClick) {
             QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(e);

@@ -2400,8 +2400,7 @@ static inline int color_burn_op(int dst, int src, int da, int sa)
 
     if (src == 0 || src_da + dst_sa <= sa_da)
         return qt_div_255(temp);
-    else
-        return qt_div_255(sa * (src_da + dst_sa - sa_da) / src + temp);
+    return qt_div_255(sa * (src_da + dst_sa - sa_da) / src + temp);
 }
 
 template <typename T>
