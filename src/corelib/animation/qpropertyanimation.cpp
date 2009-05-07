@@ -97,6 +97,8 @@ void QPropertyAnimationPrivate::updateMetaProperty()
             property = mo->property(propertyIndex);
             propertyType = property.userType();
         } else {
+            if (!target->dynamicPropertyNames().contains(propertyName))
+                qWarning("QPropertyAnimation: you're trying to animate a non-existing property %s of your QObject", propertyName.constData());
             hasMetaProperty = 2;
         }
     }
