@@ -181,7 +181,7 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
     }
 
     if (td->data.tree()) {
-        component.dump(0, td->data.tree());
+        td->data.tree()->dump();
         d->root = td->data.tree();
         d->root->addref();
     }

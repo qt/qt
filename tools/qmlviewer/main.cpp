@@ -18,7 +18,6 @@
 #include "qfxtestengine.h"
 #include <QApplication>
 
-
 void usage()
 {
     qWarning("Usage: qmlviewer [options] <filename>");

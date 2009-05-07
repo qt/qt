@@ -32,10 +32,14 @@
 #include <QFileInfo>
 #include <QVBoxLayout>
 #include <QProcess>
+#include <QMenuBar>
 #include <QMenu>
+#include <QAction>
+#include <QFileDialog>
+#include <QTimer>
 
 QmlViewer::QmlViewer(QFxTestEngine::TestMode testMode, const QString &testDir, QWidget *parent, Qt::WindowFlags flags)
-    : QWidget(parent, flags), frame_stream(0)
+    : QMainWindow(parent, flags), frame_stream(0)
 {
     testEngine = 0;
     devicemode = false;
@@ -44,10 +48,12 @@ QmlViewer::QmlViewer(QFxTestEngine::TestMode testMode, const QString &testDir, Q
     record_autotime = 0;
     record_period = 20;
 
-    int width=240;
-    int height=320;
+    int width = 240;
+    int height = 320;
+
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_NoSystemBackground);
+    createMenuBar();
 
     canvas = new QFxView(this);
     if(testMode != QFxTestEngine::NoTest)
@@ -56,11 +62,41 @@ QmlViewer::QmlViewer(QFxTestEngine::TestMode testMode, const QString &testDir, Q
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
     canvas->setFixedSize(width, height);
     resize(width, height);
+    setCentralWidget(canvas);
+}
+
+void QmlViewer::createMenuBar()
+{
+    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+
+    QAction *openAction = new QAction(tr("&Open..."), this);
+    openAction->setShortcut(QKeySequence("Ctrl+O"));
+    connect(openAction, SIGNAL(triggered()), this, SLOT(open()));
+    fileMenu->addAction(openAction);
+
+    QAction *reloadAction = new QAction(tr("&Reload"), this);
+    reloadAction->setShortcut(QKeySequence("Ctrl+R"));
+    connect(reloadAction, SIGNAL(triggered()), this, SLOT(reload()));
+    fileMenu->addAction(reloadAction);
+
+    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
+    QAction *aboutAction = new QAction(tr("&About Qt..."), this);
+    connect(aboutAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+    helpMenu->addAction(aboutAction);
 }
 
 void QmlViewer::reload()
 {
     openQml(currentFileName);
+}
+
+void QmlViewer::open()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open QML file"), "", tr("QML Files (*.qml)"));
+    if (!fileName.isEmpty()) {
+        openQml(fileName);
+        QTimer::singleShot(0, this, SLOT(reload()));
+    }
 }
 
 void QmlViewer::openQml(const QString& fileName)
@@ -187,7 +223,6 @@ void PreviewDeviceSkin::populateContextMenu(QMenu *menu)
      connect(menu->addAction(tr("&Close")), SIGNAL(triggered()), parentWidget(), SLOT(close()));
 }
 
-
 void QmlViewer::setSkin(const QString& skinDirectory)
 {
     DeviceSkinParameters parameters;
@@ -239,10 +274,11 @@ void QmlViewer::sceneResized(QSize size)
     }
 }
 
-void QmlViewer::resizeEvent(QResizeEvent *)
+void QmlViewer::resizeEvent(QResizeEvent *e)
 {
-    if (!skin)
-        canvas->setFixedSize(width(),height());
+    QMainWindow::resizeEvent(e);
+    //if (!skin)
+        //canvas->setFixedSize(width(),height());
 }
 
 void QmlViewer::keyPressEvent(QKeyEvent *event)
