@@ -70,9 +70,10 @@ tst_QSocketNotifier::~tst_QSocketNotifier()
 class UnexpectedDisconnectTester : public QObject
 {
     Q_OBJECT
+    int sequence;
+
 public:
     QNativeSocketEngine *readEnd1, *readEnd2;
-    int sequence;
 
     UnexpectedDisconnectTester(QNativeSocketEngine *s1, QNativeSocketEngine *s2)
         : readEnd1(s1), readEnd2(s2), sequence(0)
@@ -85,17 +86,25 @@ public:
         connect(notifier2, SIGNAL(activated(int)), SLOT(handleActivated()));
     }
 
+    const int getSequence() {
+        return sequence;
+    }
+
+    void incSequence() {
+        ++sequence;
+    }
+
 public slots:
     void handleActivated()
     {
         char data1[1], data2[1];
-        ++sequence;
-        if (sequence == 1) {
+        incSequence();
+        if (getSequence() == 1) {
             // read from both ends
             (void) readEnd1->read(data1, sizeof(data1));
             (void) readEnd2->read(data2, sizeof(data2));
             emit finished();
-        } else if (sequence == 2) {
+        } else if (getSequence() == 2) {
             QCOMPARE(readEnd2->read(data2, sizeof(data2)), qint64(-2));
             QVERIFY(readEnd2->isValid());
         }
@@ -155,7 +164,12 @@ void tst_QSocketNotifier::unexpectedDisconnection()
     writeEnd2->flush();
 
     UnexpectedDisconnectTester tester(&readEnd1, &readEnd2);
-    QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+
+    do {
+        // we have to wait until sequence value changes
+        // as any event can make us jump out processing 
+        QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+    }  while(tester.getSequence() <= 0);
 
     QVERIFY(readEnd1.state() == QAbstractSocket::ConnectedState);
     QVERIFY(readEnd2.state() == QAbstractSocket::ConnectedState);
@@ -163,7 +177,7 @@ void tst_QSocketNotifier::unexpectedDisconnection()
     qWarning("### Windows returns 1 activation, Unix returns 2.");
     QCOMPARE(tester.sequence, 1);
 #else
-    QCOMPARE(tester.sequence, 2);
+    QCOMPARE(tester.getSequence(), 2);
 #endif
 
     readEnd1.close();
