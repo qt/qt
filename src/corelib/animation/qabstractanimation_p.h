@@ -123,6 +123,8 @@ public:
     void registerAnimation(QAbstractAnimation *animation);
     void unregisterAnimation(QAbstractAnimation *animation);
 
+    void setConsitentTiming(int interval);
+
 
 private:
     void updateRecentlyStartedAnimations();
@@ -130,6 +132,7 @@ private:
     QBasicTimer animationTimer, startStopAnimationTimer;
     QTime time;
     int lastTick;
+    int consistentTimingInterval;
     QList<QAbstractAnimation*> animations, animationsToStart;
 };
 
