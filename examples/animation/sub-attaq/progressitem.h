@@ -39,42 +39,23 @@
 **
 ****************************************************************************/
 
-#ifndef QACTIONTRANSITION_P_H
-#define QACTIONTRANSITION_P_H
+#ifndef PROGRESSITEM_H
+#define PROGRESSITEM_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+//Qt
+#include <QtGui/QGraphicsTextItem>
 
-#include "qabstracttransition_p.h"
-
-#include <QtCore/qlist.h>
-
-QT_BEGIN_NAMESPACE
-
-class QStateAction;
-
-class QActionTransition;
-class Q_CORE_EXPORT QActionTransitionPrivate : public QAbstractTransitionPrivate
+class ProgressItem : public QGraphicsTextItem
 {
-    Q_DECLARE_PUBLIC(QActionTransition)
 public:
-    QActionTransitionPrivate();
-    ~QActionTransitionPrivate();
+    ProgressItem(QGraphicsItem * parent = 0);
+    void setLevel(int level);
+    void setScore(int score);
 
-    static QActionTransitionPrivate *get(QActionTransition *q);
-    static const QActionTransitionPrivate *get(const QActionTransition *q);
-
-    QList<QStateAction*> actions() const;
+private:
+    void updateProgress();
+    int currentLevel;
+    int currentScore;
 };
 
-QT_END_NAMESPACE
-
-#endif
+#endif // PROGRESSITEM_H

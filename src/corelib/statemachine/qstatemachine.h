@@ -43,9 +43,9 @@
 #define QSTATEMACHINE_H
 
 #ifndef QT_STATEMACHINE_SOLUTION
-#  include <QtCore/qactionstate.h>
+#  include <QtCore/qabstractstate.h>
 #else
-#  include "qactionstate.h"
+#  include "qabstractstate.h"
 #endif
 
 #include <QtCore/qlist.h>
@@ -63,6 +63,8 @@ class QAbstractState;
 class QState;
 
 class QStateMachinePrivate;
+class QAbstractAnimation;
+class QAbstractState;
 class Q_CORE_EXPORT QStateMachine : public QObject
 {
     Q_OBJECT
@@ -70,12 +72,22 @@ class Q_CORE_EXPORT QStateMachine : public QObject
     Q_PROPERTY(QAbstractState* initialState READ initialState WRITE setInitialState)
     Q_PROPERTY(QAbstractState* errorState READ errorState WRITE setErrorState)
     Q_PROPERTY(QString errorString READ errorString)
+    Q_PROPERTY(RestorePolicy globalRestorePolicy READ globalRestorePolicy WRITE setGlobalRestorePolicy)
+    Q_ENUMS(RestorePolicy)
+#ifndef QT_NO_ANIMATION
+    Q_PROPERTY(bool animationsEnabled READ animationsEnabled WRITE setAnimationsEnabled)
+#endif
 public:
+    enum RestorePolicy {
+        DoNotRestoreProperties,
+        RestoreProperties
+    };
 
     enum Error {
         NoError, 
         NoInitialStateError,
-        NoDefaultStateInHistoryState,
+        NoDefaultStateInHistoryStateError,
+        NoCommonAncestorForTransitionError
     };
 
     QStateMachine(QObject *parent = 0);
@@ -96,12 +108,22 @@ public:
     QString errorString() const;
     void clearError();
 
-    QAbstractState::RestorePolicy globalRestorePolicy() const;
-    void setGlobalRestorePolicy(QAbstractState::RestorePolicy restorePolicy);
+    bool isRunning() const;
+
+#ifndef QT_NO_ANIMATION
+    bool animationsEnabled() const;
+    void setAnimationsEnabled(bool enabled);
+
+    void addDefaultAnimation(QAbstractAnimation *animation);
+    QList<QAbstractAnimation *> defaultAnimations() const;
+    void removeDefaultAnimation(QAbstractAnimation *animation);
+#endif // QT_NO_ANIMATION
+
+    QStateMachine::RestorePolicy globalRestorePolicy() const;
+    void setGlobalRestorePolicy(QStateMachine::RestorePolicy restorePolicy);
 
     void postEvent(QEvent *event, int delay = 0);
 
-    QList<QAbstractState*> states() const;
     QSet<QAbstractState*> configuration() const;
 
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
@@ -116,10 +138,6 @@ Q_SIGNALS:
     void started();
     void stopped();
     void finished();
-
-#ifndef QT_NO_ANIMATION
-    void animationsFinished();
-#endif
 
 protected:
     void postInternalEvent(QEvent *event);

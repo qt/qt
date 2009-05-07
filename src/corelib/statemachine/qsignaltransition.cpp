@@ -96,7 +96,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \property QSignalTransition::object
+    \property QSignalTransition::senderObject
 
     \brief the sender object that this signal transition is associated with
 */
@@ -137,7 +137,7 @@ void QSignalTransitionPrivate::invalidate()
   Constructs a new signal transition with the given \a sourceState.
 */
 QSignalTransition::QSignalTransition(QState *sourceState)
-    : QActionTransition(*new QSignalTransitionPrivate, sourceState)
+    : QAbstractTransition(*new QSignalTransitionPrivate, sourceState)
 {
 }
 
@@ -147,7 +147,7 @@ QSignalTransition::QSignalTransition(QState *sourceState)
 */
 QSignalTransition::QSignalTransition(QObject *sender, const char *signal,
                                      QState *sourceState)
-    : QActionTransition(*new QSignalTransitionPrivate, sourceState)
+    : QAbstractTransition(*new QSignalTransitionPrivate, sourceState)
 {
     Q_D(QSignalTransition);
     d->sender = sender;
@@ -162,7 +162,7 @@ QSignalTransition::QSignalTransition(QObject *sender, const char *signal,
 QSignalTransition::QSignalTransition(QObject *sender, const char *signal,
                                      const QList<QAbstractState*> &targets,
                                      QState *sourceState)
-    : QActionTransition(*new QSignalTransitionPrivate, targets, sourceState)
+    : QAbstractTransition(*new QSignalTransitionPrivate, targets, sourceState)
 {
     Q_D(QSignalTransition);
     d->sender = sender;
@@ -245,9 +245,17 @@ bool QSignalTransition::eventTest(QEvent *event) const
 /*!
   \reimp
 */
+void QSignalTransition::onTransition(QEvent *event)
+{
+    Q_UNUSED(event);
+}
+
+/*!
+  \reimp
+*/
 bool QSignalTransition::event(QEvent *e)
 {
-    return QActionTransition::event(e);
+    return QAbstractTransition::event(e);
 }
 
 QT_END_NAMESPACE

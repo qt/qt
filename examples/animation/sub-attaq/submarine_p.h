@@ -51,9 +51,9 @@
 #if defined(QT_EXPERIMENTAL_SOLUTION)
 #include "qpropertyanimation.h"
 #else
-#include <QPropertyAnimation>
+#include <QtCore/QPropertyAnimation>
 #endif
-#include <QGraphicsScene>
+#include <QtGui/QGraphicsScene>
 
 //This state is describing when the boat is moving right
 class MovementState : public QAnimationState
@@ -77,7 +77,7 @@ protected slots:
     }
 
 protected:
-    void onEntry()
+    void onEntry(QEvent *e)
     {
         if (submarine->currentDirection() == SubMarine::Left) {
             movementAnimation->setEndValue(QPointF(0,submarine->y()));
@@ -88,7 +88,7 @@ protected:
             movementAnimation->setDuration((submarine->scene()->width()-submarine->size().width()-submarine->x())/submarine->currentSpeed()*12);
         }
         movementAnimation->setStartValue(submarine->pos());
-        QAnimationState::onEntry();
+        QAnimationState::onEntry(e);
     }
 
 private:
@@ -109,19 +109,19 @@ public:
     }
 
 protected:
-    void onEntry()
+    void onEntry(QEvent *e)
     {
         returnAnimation->stop();
         returnAnimation->setStartValue(submarine->yRotation());
         returnAnimation->setEndValue(submarine->currentDirection() == SubMarine::Right ? 360. : 180.);
         returnAnimation->setDuration(500);
-        QAnimationState::onEntry();
+        QAnimationState::onEntry(e);
     }
 
-    void onExit()
+    void onExit(QEvent *e)
     {
         submarine->currentDirection() == SubMarine::Right ? submarine->setCurrentDirection(SubMarine::Left) : submarine->setCurrentDirection(SubMarine::Right);
-        QAnimationState::onExit();
+        QAnimationState::onExit(e);
     }
 
 private:

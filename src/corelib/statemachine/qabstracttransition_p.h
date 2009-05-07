@@ -79,7 +79,7 @@ public:
     static const QAbstractTransitionPrivate *get(const QAbstractTransition *q);
 
     bool callEventTest(QEvent *e) const;
-    void callOnTransition();
+    void callOnTransition(QEvent *e);
     QState *sourceState() const;
     QStateMachine *machine() const;
 
