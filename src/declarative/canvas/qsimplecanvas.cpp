@@ -556,7 +556,7 @@ QSimpleCanvas::QSimpleCanvas(CanvasMode mode, QWidget *parent)
 QSimpleCanvas::QSimpleCanvas(QWidget *parent)
 : QWidget(parent), d(new QSimpleCanvasPrivate(this))
 {
-    d->init(useGraphicsView()?GraphicsView:SimpleCanvas);
+    d->init(useGraphicsView()?SimpleCanvas:GraphicsView);
 }
 
 void QSimpleCanvasPrivate::init(QSimpleCanvas::CanvasMode mode)

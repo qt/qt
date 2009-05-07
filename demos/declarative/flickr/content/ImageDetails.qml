@@ -6,6 +6,7 @@ Flipable {
     property var fullScreenArea: BigImage
     property string photoTitle: ""
     property string photoDescription: ""
+    property string photoTags: ""
     property int photoWidth
     property int photoHeight
     property string photoType
@@ -58,6 +59,10 @@ Flipable {
                text: "<b>Author:</b> " + Container.photoAuthor }
         Text { id: Date; color: "white"; width: 300; x: 220; anchors.top: Author.bottom
                text: "<b>Published:</b> " + Container.photoDate }
+        Text { id: TagsLabel; color: "white"; x: 220; anchors.top: Date.bottom;
+               text: Container.photoTags == "" ? "" : "<b>Tags:</b> " }
+        Text { id: Tags; color: "white"; width: parent.width-x-20; anchors.left: TagsLabel.right; anchors.top: Date.bottom; elide: "ElideRight"
+               text: Container.photoTags == "" ? "" : Container.photoTags }
 
         ScrollBar { id: ScrollBar; x: 720; y: Flickable.y; width: 7; height: Flickable.height; opacity: 0;
                     flickableArea: Flickable; clip: true }

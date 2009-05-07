@@ -2,7 +2,7 @@ Rect {
     id: Page
     width: 480
     height: 200
-    color: "white"
+    color: "LightGrey"
     Text {
         id: HelloText
         text: "Hello world!"

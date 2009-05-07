@@ -8,7 +8,8 @@ Item {
     resources: [
         XmlListModel {
             id: FeedModel
-            source: "http://api.flickr.com/services/feeds/photos_public.gne?format=rss2"
+            property string tags : ""
+            source: "http://api.flickr.com/services/feeds/photos_public.gne?"+(tags ? "tags="+tags+"&" : "")+"format=rss2"
             query: "doc($src)/rss/channel/item"
             namespaceDeclarations: "declare namespace media=\"http://search.yahoo.com/mrss/\";"
 
@@ -16,6 +17,7 @@ Item {
             Role { name: "imagePath"; query: "media:thumbnail/@url/string()" }
             Role { name: "url"; query: "media:content/@url/string()" }
             Role { name: "description"; query: "description/string()"; isCData: true }
+            Role { name: "tags"; query: "media:category/string()" }
             Role { name: "photoWidth"; query: "media:content/@width/string()" }
             Role { name: "photoHeight"; query: "media:content/@height/string()" }
             Role { name: "photoType"; query: "media:content/@type/string()" }
@@ -44,6 +46,7 @@ Item {
                    ImageDetails.flickableArea.yPosition = 0;
                    ImageDetails.fullScreenArea.source = "";
                    ImageDetails.photoDescription = description;
+                   ImageDetails.photoTags = tags;
                    ImageDetails.photoWidth = photoWidth;
                    ImageDetails.photoHeight = photoHeight;
                    ImageDetails.photoType = photoType;
@@ -144,7 +147,7 @@ Item {
                 }
 
                 PathAttribute { name: "scale"; value: 1 }
-                PathAttribute { name: "angle"; value: 45 }
+                PathAttribute { name: "angle"; value: -45 }
             }
 
         }
@@ -161,7 +164,7 @@ Item {
             text: "Update"
             anchors.right: CloseButton.left; anchors.rightMargin: 5
             anchors.top: CloseButton.top
-            onClicked: { FeedModel.fetch(); }
+            onClicked: { FeedModel.reload(); }
         }
 
         states: [
@@ -182,7 +185,9 @@ Item {
     }
 
     Text {
-        id: CategoryText;  anchors.horizontalCenter: parent.horizontalCenter; y: 15; text: "Flickr - Uploads from everyone"
+        id: CategoryText;  anchors.horizontalCenter: parent.horizontalCenter; y: 15;
+        text: "Flickr - " +
+            (FeedModel.tags=="" ? "Uploads from everyone" : "Recent Uploads tagged " + FeedModel.tags)
         font.size: 16; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
     }
 }
