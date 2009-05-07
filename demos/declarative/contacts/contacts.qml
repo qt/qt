@@ -39,9 +39,11 @@ Rect {
                     children: [
                         MouseRegion {
                             anchors.fill: parent
-                            onClicked: { Details.qml = 'Contact.qml';
+                            onClicked: {
+                                Details.qml = 'Contact.qml';
                                 wrapper.state='opened';
-                                contacts.mode = 'edit'; }
+                                contacts.mode = 'edit';
+                            }
                         }
                     ]
                 }
@@ -142,7 +144,7 @@ Rect {
         anchors.right: parent.right
         anchors.rightMargin: 5
         icon: "pics/new.png"
-        onClicked: { print("open new contact edit"); newContactItem.label = ''; newContactItem.phone = ''; newContactItem.email = ''; contacts.mode = 'new' }
+        onClicked: { newContactItem.refresh(); contacts.mode = 'new' }
         opacity: contacts.mode == 'list' ? 1 : 0
     }
     Button {
@@ -174,10 +176,15 @@ Rect {
         delegate: contactDelegate
         focus: false
     }
-    Contact {
-        id: newContactItem
+    FocusRealm {
+        id: newContactWrapper
         anchors.fill: contactListView
         opacity: 0
+        focus: contacts.mode == 'new'
+        Contact {
+            id: newContactItem
+            anchors.fill: parent
+        }
     }
     Connection {
         sender: confirmEditButton
@@ -234,7 +241,7 @@ Rect {
         ]
     }
     KeyProxy {
-        focus: true
+        focus: contacts.mode != 'new'
         targets: { contacts.mode == "list" ? [searchBarWrapper, contactListView] : [contactListView]}
     }
     states: [
@@ -247,7 +254,7 @@ Rect {
                 value: 0
             }
             SetProperty {
-                target: newContactItem
+                target: newContactWrapper
                 property: "opacity"
                 value: 1
             }
