@@ -1368,13 +1368,6 @@ QString QApplicationPrivate::appName() const
 
 extern uint qGlobalPostedEventsCount();
 
-/*!
-    \internal
-    \since 4.1
-
-    If \a gotFocus is true, \a widget will become the active window.
-    Otherwise the active window is reset to 0.
-*/
 void QApplication::winFocus(QWidget *widget, bool gotFocus)
 {
     if (d_func()->inPopupMode()) // some delayed focus event to ignore
@@ -2918,7 +2911,6 @@ void qt_win_eatMouseMove()
 
 // In DnD, the mouse release event never appears, so the
 // mouse button state machine must be manually reset
-/*! \internal */
 void QApplication::winMouseButtonUp()
 {
     qt_button_down = 0;
