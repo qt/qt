@@ -45,10 +45,8 @@
 #include <QByteArray>
 #include <QList>
 #include <qml.h>
-#include "qmlcomponent_p.h"
 #include <private/qmlrefcount_p.h>
-#include "qmlcompiledcomponent_p.h"
-
+#include <private/qobject_p.h>
 
 QT_BEGIN_HEADER
 
@@ -69,6 +67,19 @@ QT_MODULE(Declarative)
 */
 namespace QmlParser
 {
+    struct Location 
+    {
+        Location() : line(-1), column(-1) {}
+        int line;
+        int column;
+    };
+
+    struct LocationSpan
+    {
+        Location start;
+        Location end;
+    };
+
     class Property;
     class Object : public QmlRefCount
     {
@@ -103,11 +114,7 @@ namespace QmlParser
         Property *defaultProperty;
         QHash<QByteArray, Property *> properties;
 
-        qint64 line;
-        qint64 column;
-
-        qint64 endLine;
-        qint64 endColumn;
+        LocationSpan location;
 
         struct DynamicProperty {
             DynamicProperty();
@@ -141,6 +148,8 @@ namespace QmlParser
         QList<DynamicSignal> dynamicSignals;
         // The list of dynamic slots
         QList<DynamicSlot> dynamicSlots;
+
+        void dump(int = 0) const;
     };
 
     class Value : public QmlRefCount
@@ -176,8 +185,9 @@ namespace QmlParser
         // Object value
         Object *object;
 
-        qint64 line;
-        qint64 column;
+        LocationSpan location;
+
+        void dump(int = 0) const;
     };
 
     class Property : public QmlRefCount
@@ -207,8 +217,9 @@ namespace QmlParser
         // True if this property was accessed as the default property.  
         bool isDefault;
 
-        qint64 line;
-        qint64 column;
+        LocationSpan location;
+
+        void dump(int = 0) const;
     };
 }
 

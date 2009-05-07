@@ -14,7 +14,7 @@
 #ifndef QMLVIEWER_H
 #define QMLVIEWER_H
 
-#include <QWidget>
+#include <QMainWindow>
 #include <QBasicTimer>
 #include <QTime>
 #include <qfxtestengine.h>
@@ -25,12 +25,13 @@ class QFxView;
 class PreviewDeviceSkin;
 class QFxTestEngine;
 
-class QmlViewer : public QWidget
+class QmlViewer : public QMainWindow
 {
 Q_OBJECT
 public:
     QmlViewer(QFxTestEngine::TestMode = QFxTestEngine::NoTest, const QString &testDir = QString(), QWidget *parent=0, Qt::WindowFlags flags=0);
 
+    void createMenuBar();
     void setRecordDither(const QString& s) { record_dither = s; }
     void setRecordPeriod(int ms);
     void setRecordFile(const QString&);
@@ -45,6 +46,7 @@ public:
 public slots:
     void sceneResized(QSize size);
     void openQml(const QString& fileName);
+    void open();
     void reload();
 
 protected:

@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 class QmlExpression;
 class QmlContext;
+class QmlBindableValuePrivate;
 class Q_DECLARATIVE_EXPORT QmlBindableValue : public QmlPropertyValueSource, 
                                               public QmlExpression
 {
@@ -67,7 +68,7 @@ public:
     ~QmlBindableValue();
 
     virtual void setTarget(const QmlMetaProperty &);
-    QmlMetaProperty property() const { return _property; }
+    QmlMetaProperty property() const;
 
     Q_CLASSINFO("DefaultProperty", "expression");
     Q_PROPERTY(QString expression READ expression WRITE setExpression);
@@ -82,8 +83,7 @@ protected:
     virtual void valueChanged();
 
 private:
-    bool _inited;
-    QmlMetaProperty _property;
+    Q_DECLARE_PRIVATE(QmlBindableValue)
 };
 QML_DECLARE_TYPE(QmlBindableValue);
 

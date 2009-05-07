@@ -74,8 +74,9 @@ Item {
             states: [
                 State {
                     name: "Details"
+                    SetProperties { target: ImageDetails; z: 2 }
                     ParentChange { target: Wrapper; parent: ImageDetails.frontContainer }
-                    SetProperties { target: Wrapper; x: 45; y: 35; scale: 1 }
+                    SetProperties { target: Wrapper; x: 45; y: 35; scale: 1; z: 1000 }
                     SetProperties { target: Rotation; angle: 0 }
                     SetProperties { target: Shadows; opacity: 0 }
                     SetProperties { target: ImageDetails; y: 20 }
@@ -89,11 +90,20 @@ Item {
 
             transitions: [
                 Transition {
-                    fromState: "*"; toState: "*"
+                    fromState: "*"; toState: "Details"
                     ParentChangeAction { }
                     NumericAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                },
+                Transition {
+                    fromState: "Details"; toState: "*"
+                    SequentialAnimation {
+                        ParentChangeAction { }
+                        NumericAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                        SetPropertyAction { filter: Wrapper; properties: "z" }
+                    }
                 }
             ]
+         
         }
         }
     ]
@@ -105,12 +115,12 @@ Item {
 
         GridView {
             id: PhotoGridView; model: FeedModel; delegate: PhotoDelegate
-            cellWidth: 105; cellHeight: 105; x:32; y: 80; width: 800; height: 330
+            cellWidth: 105; cellHeight: 105; x:32; y: 80; width: 800; height: 330; z: 1
         }
 
         PathView {
             id: PhotoPathView; model: FeedModel; delegate: PhotoDelegate
-            y: -380; width: 800; height: 330; pathItemCount: 10
+            y: -380; width: 800; height: 330; pathItemCount: 10; z: 1
             path: Path {
                 startX: -50; startY: 40;
 
