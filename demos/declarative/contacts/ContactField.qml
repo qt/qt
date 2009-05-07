@@ -5,7 +5,7 @@ Item {
     property var label: "Name"
     property var icon: "pics/phone.png"
     property var value: ""
-    onValueChanged: { fieldText.text=field.value }
+    onValueChanged: { fieldText.text = contactField.value }
     RemoveButton {
         id: removeButton
         anchors.right: parent.right
