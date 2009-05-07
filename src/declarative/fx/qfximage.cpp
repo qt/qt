@@ -125,8 +125,8 @@ QFxImage::QFxImage(QFxImagePrivate &dd, QFxItem *parent)
 QFxImage::~QFxImage()
 {
     Q_D(const QFxImage);
-    if (d->reply)
-        d->reply->deleteLater();
+    if (d->sciReply)
+        d->sciReply->deleteLater();
 }
 
 /*!
@@ -783,10 +783,38 @@ QString QFxImage::propertyInfo() const
     return d->url.toString();
 }
 
+/*!
+    \qmlproperty enum Image::status
+
+    This property holds the status of image loading.  It can be one of:
+    \list
+    \o Idle - no image has been set, or the image has been loaded
+    \o Loading - the images is currently being loaded
+    \o Error - an error occurred while loading the image
+    \endlist
+
+    \sa progress
+*/
+
 QFxImage::Status QFxImage::status() const
 {
     Q_D(const QFxImage);
     return d->status;
+}
+
+/*!
+    \qmlproperty real Image::progress
+
+    This property holds the progress of image loading, from 0.0 (nothing loaded)
+    to 1.0 (finished).
+
+    \sa status
+*/
+
+qreal QFxImage::progress() const
+{
+    Q_D(const QFxImage);
+    return d->progress;
 }
 
 /*!
@@ -831,9 +859,9 @@ void QFxImage::setSource(const QString &url)
     if (url == d->source)
         return;
 
-    if (d->reply) {
-        d->reply->deleteLater();
-        d->reply = 0;
+    if (d->sciReply) {
+        d->sciReply->deleteLater();
+        d->sciReply = 0;
     }
 
     if (!d->url.isEmpty())
@@ -844,10 +872,25 @@ void QFxImage::setSource(const QString &url)
     d->source = url;
     d->url = qmlContext(this)->resolvedUrl(url);
     d->sciurl = QUrl();
+    if (d->progress != 0.0) {
+        d->progress = 0.0;
+        emit progressChanged(d->progress);
+    }
 
     if (url.isEmpty()) {
         setPixmap(QPixmap());
         d->status = Idle;
+        d->progress = 1.0;
+        setImplicitWidth(0);
+        setImplicitHeight(0);
+#if defined(QFX_RENDER_OPENGL)
+        d->_texDirty = true;
+        d->_tex.clear();
+#endif
+        emit statusChanged(d->status);
+        emit sourceChanged(d->source);
+        emit progressChanged(1.0);
+        update();
     } else {
         d->status = Loading;
         if (d->url.path().endsWith(QLatin1String(".sci"))) {
@@ -861,12 +904,19 @@ void QFxImage::setSource(const QString &url)
             {
                 QNetworkRequest req(d->url);
                 req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
-                d->reply = qmlEngine(this)->networkAccessManager()->get(req);
-                QObject::connect(d->reply, SIGNAL(finished()), 
+                d->sciReply = qmlEngine(this)->networkAccessManager()->get(req);
+                QObject::connect(d->sciReply, SIGNAL(finished()),
                                  this, SLOT(sciRequestFinished()));
             }
         } else {
-            QFxPixmap::get(qmlEngine(this), d->url, this, SLOT(requestFinished()));
+            d->reply = QFxPixmap::get(qmlEngine(this), d->url, this, SLOT(requestFinished()));
+            if (d->reply) {
+                connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
+                        this, SLOT(requestProgress(qint64,qint64)));
+            } else {
+                d->progress = 1.0;
+                emit progressChanged(d->progress);
+            }
         }
     }
 
@@ -879,6 +929,12 @@ void QFxImage::requestFinished()
     if (d->url.path().endsWith(QLatin1String(".sci"))) {
         d->_pix = QFxPixmap(d->sciurl);
     } else {
+        if (d->reply) {
+            disconnect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
+                       this, SLOT(requestProgress(qint64,qint64)));
+            if (d->reply->error() != QNetworkReply::NoError)
+                d->status = Error;
+        }
         d->_pix = QFxPixmap(d->url);
         d->_pix.setOpaque(d->_opaque);
         setOptions(QFxImage::SimpleItem, true);
@@ -886,32 +942,43 @@ void QFxImage::requestFinished()
     setImplicitWidth(d->_pix.width());
     setImplicitHeight(d->_pix.height());
 
-    d->status = Idle;
+    if (d->status == Loading)
+        d->status = Idle;
+    d->progress = 1.0;
 #if defined(QFX_RENDER_OPENGL)
     d->_texDirty = true;
     d->_tex.clear();
 #endif
     emit statusChanged(d->status);
     emit sourceChanged(d->source);
+    emit progressChanged(1.0);
     update();
 }
 
 void QFxImage::sciRequestFinished()
 {
     Q_D(QFxImage);
-    if (d->reply->error() != QNetworkReply::NoError) {
+    if (d->sciReply->error() != QNetworkReply::NoError) {
         d->status = Error;
-        d->reply->deleteLater();
-        d->reply = 0;
+        d->sciReply->deleteLater();
+        d->sciReply = 0;
         emit statusChanged(d->status);
     } else {
-        QFxGridScaledImage sci(d->reply);
-        d->reply->deleteLater();
-        d->reply = 0;
+        QFxGridScaledImage sci(d->sciReply);
+        d->sciReply->deleteLater();
+        d->sciReply = 0;
         setGridScaledImage(sci);
     }
 }
 
+void QFxImage::requestProgress(qint64 received, qint64 total)
+{
+    Q_D(QFxImage);
+    if (d->status == Loading && total > 0) {
+        d->progress = qreal(received)/total;
+        emit progressChanged(d->progress);
+    }
+}
 
 void QFxImage::setGridScaledImage(const QFxGridScaledImage& sci)
 {
@@ -921,7 +988,14 @@ void QFxImage::setGridScaledImage(const QFxGridScaledImage& sci)
         emit statusChanged(d->status);
     } else {
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
-        QFxPixmap::get(qmlEngine(this), d->sciurl, this, SLOT(requestFinished()));
+        d->reply = QFxPixmap::get(qmlEngine(this), d->sciurl, this, SLOT(requestFinished()));
+        if (d->reply) {
+            connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
+                    this, SLOT(requestProgress(qint64,qint64)));
+        } else {
+            d->progress = 1.0;
+            emit progressChanged(d->progress);
+        }
         QFxScaleGrid *sg = scaleGrid();
         sg->setTop(sci.gridTop());
         sg->setBottom(sci.gridBottom());

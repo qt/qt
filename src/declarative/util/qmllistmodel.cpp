@@ -93,8 +93,7 @@ Q_DECLARE_METATYPE(QListModelInterface *);
     }
     \endcode
 
-    Elements beginning with a capital are items.  Elements beginning
-    with lower-case are the data roles.  The above example defines a
+    Item roles (properties) must begin with a lower-case letter.  The above example defines a
     ListModel containing three items, with the roles "name" and "cost".
 
     The defined model can be used in views such as ListView:
@@ -102,15 +101,9 @@ Q_DECLARE_METATYPE(QListModelInterface *);
     Component {
         id: FruitDelegate
         Item {
-            width: 200
-            height: 50
-            Text {
-                text: name
-            }
-            Text {
-                text: '$'+cost
-                anchors.right: parent.right
-            }
+            width: 200; height: 50
+            Text { text: name }
+            Text { text: '$'+cost; anchors.right: parent.right }
         }
     }
 
@@ -120,6 +113,59 @@ Q_DECLARE_METATYPE(QListModelInterface *);
         anchors.fill: parent
     }
     \endcode
+
+    It is possible for roles to contain list data.  In the example below we create a list of fruit attributes:
+
+    \code
+    ListModel {
+        id: FruitModel
+        ListElement {
+            name: "Apple"
+            cost: 2.45
+            attributes: [
+                ListElement { description: "Core" },
+                ListElement { description: "Deciduous" }
+            ]
+        }
+        ListElement {
+            name: "Orange"
+            cost: 3.25
+            attributes: [
+                ListElement { description: "Citrus" }
+            ]
+        }
+        ListElement {
+            name: "Banana"
+            cost: 1.95
+            attributes: [
+                ListElement { description: "Tropical" }
+                ListElement { description: "Seedless" }
+            ]
+        }
+    }
+    \endcode
+
+    The delegate below will list all the fruit attributes:
+    \code
+    Component {
+        id: FruitDelegate
+        Item {
+            width: 200; height: 50
+            Text { id: Name; text: name }
+            Text { text: '$'+cost; anchors.right: parent.right }
+            HorizontalLayout {
+                anchors.top: Name.bottom
+                spacing: 5
+                Text { text: "Attributes:" }
+                Repeater {
+                    dataSource: attributes
+                    Component { Text { text: description } }
+                }
+            }
+        }
+    }
+    \endcode
+
 */
 
 struct ModelNode;

@@ -233,8 +233,11 @@ QFxPixmap::operator const QSimpleCanvasConfig::Image &() const
     Starts a network request to load \a url. When the URL is loaded,
     the given slot is invoked. Note that if the image is already cached,
     the slot may be invoked immediately.
+
+    Returns a QNetworkReply if the image is not immediately available, otherwise
+    returns 0.  The QNetworkReply must not be stored - it may be destroyed at any time.
 */
-void QFxPixmap::get(QmlEngine *engine, const QUrl& url, QObject* obj, const char* slot)
+QNetworkReply *QFxPixmap::get(QmlEngine *engine, const QUrl& url, QObject* obj, const char* slot)
 {
     QString key = url.toString();
     QFxPixmapCache::Iterator iter = qfxPixmapCache.find(key);
@@ -259,11 +262,14 @@ void QFxPixmap::get(QmlEngine *engine, const QUrl& url, QObject* obj, const char
     if ((*iter)->reply) {
         // still loading
         QObject::connect((*iter)->reply, SIGNAL(finished()), obj, slot);
+        return (*iter)->reply;
     } else {
         // already loaded
         QObject dummy;
         QObject::connect(&dummy, SIGNAL(destroyed()), obj, slot);
     }
+
+    return 0;
 }
 
 /*!

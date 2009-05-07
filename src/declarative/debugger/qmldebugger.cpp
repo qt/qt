@@ -43,6 +43,8 @@
 #include <QtGui/qtreewidget.h>
 #include <QtGui/qboxlayout.h>
 #include <QtGui/qplaintextedit.h>
+#include <QTextBlock>
+#include <QtGui/qtabwidget.h>
 #include <QtDeclarative/qmlbindablevalue.h>
 #include <private/qmlboundsignal_p.h>
 #include <private/qmlcontext_p.h>
@@ -52,10 +54,11 @@
 #include <QtCore/qurl.h>
 #include <QtGui/qsplitter.h>
 #include <QtGui/qpushbutton.h>
+#include <QtGui/qtablewidget.h>
 #include <QtGui/qevent.h>
 
 QmlDebugger::QmlDebugger(QWidget *parent)
-: QWidget(parent), m_tree(0)
+: QWidget(parent), m_tree(0), m_warnings(0), m_watchers(0), m_text(0)
 {
     QHBoxLayout *layout = new QHBoxLayout;
     setLayout(layout);
@@ -69,18 +72,34 @@ QmlDebugger::QmlDebugger(QWidget *parent)
     splitter->addWidget(treeWid);
 
     m_tree = new QTreeWidget(treeWid);
+    m_tree->setSelectionMode(QTreeWidget::NoSelection);
     m_tree->setHeaderHidden(true);
-    QObject::connect(m_tree, SIGNAL(itemPressed(QTreeWidgetItem *, int)), this, SLOT(itemPressed(QTreeWidgetItem *)));
+    QObject::connect(m_tree, SIGNAL(itemClicked(QTreeWidgetItem *, int)), this, SLOT(itemClicked(QTreeWidgetItem *)));
+    QObject::connect(m_tree, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), this, SLOT(itemDoubleClicked(QTreeWidgetItem *)));
     vlayout->addWidget(m_tree);
 
     QPushButton *pb = new QPushButton("Refresh", treeWid);
     QObject::connect(pb, SIGNAL(clicked()), this, SLOT(refresh()));
     vlayout->addWidget(pb);
 
+    QTabWidget *tabs = new QTabWidget(this);
+
     m_text = new QPlainTextEdit(this);
     m_text->setReadOnly(true);
-    splitter->addWidget(m_text);
+    tabs->addTab(m_text, "File");
+
+    m_warnings = new QTreeWidget(this);
+    m_warnings->setHeaderHidden(true);
+    tabs->addTab(m_warnings, "Warnings");
+
+    m_watchers = new QTableWidget(this);
+    m_watchers->setSelectionMode(QTableWidget::NoSelection);
+    tabs->addTab(m_watchers, "Watchers");
+
+    splitter->addWidget(tabs);
     splitter->setStretchFactor(1, 2);
+
+    setGeometry(0, 100, 800, 600);
 }
 
 class QmlDebuggerItem : public QTreeWidgetItem
@@ -103,31 +122,29 @@ public:
     QPointer<QmlBindableValue> bindableValue;
 };
 
-void QmlDebugger::itemPressed(QTreeWidgetItem *i)
+void QmlDebugger::itemDoubleClicked(QTreeWidgetItem *i)
 {
     QmlDebuggerItem *item = static_cast<QmlDebuggerItem *>(i);
 
     if(item->bindableValue) {
 
-        QString str;
-
         QmlExpressionPrivate *p = item->bindableValue->d;
-        if(p->log) {
-            QString str;
-            QDebug d(&str);
-            for(int ii = 0; ii < p->log->count(); ++ii) {
-                d << p->log->at(ii).result() << "\n";
-                QStringList warnings = p->log->at(ii).warnings();
-                foreach(const QString &warning, warnings)
-                    d << "    " << warning << "\n";
-            }
-            m_text->setPlainText(str);
 
+        if(m_watchedIds.contains(p->id)) {
+            m_watchedIds.remove(p->id);
+            item->setForeground(0, Qt::green);
         } else {
-            m_text->setPlainText("No history");
+            m_watchedIds.insert(p->id);
+            item->setForeground(0, QColor("purple"));
         }
 
-    } else if(item->url.scheme() == QLatin1String("file")) {
+    }
+}
+
+void QmlDebugger::itemClicked(QTreeWidgetItem *i)
+{
+    QmlDebuggerItem *item = static_cast<QmlDebuggerItem *>(i);
+    if(item->url.scheme() == QLatin1String("file")) {
         QString f = item->url.toLocalFile();
         QFile file(f);
         file.open(QIODevice::ReadOnly);
@@ -141,17 +158,11 @@ void QmlDebugger::itemPressed(QTreeWidgetItem *i)
             QTextDocument *document = m_text->document();
             QTextCharFormat format;
             format.setForeground(Qt::lightGray);
-            {
-                QTextCursor cursor(document);
-                cursor.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor);
-                cursor.movePosition(QTextCursor::Down, QTextCursor::KeepAnchor, item->startLine - 1);
-                cursor.setCharFormat(format);
-            }
 
             {
                 QTextCursor cursor(document);
                 cursor.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor);
-                cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, item->endLine);
+                cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, item->endLine);
                 cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
                 cursor.setCharFormat(format);
             }
@@ -159,31 +170,87 @@ void QmlDebugger::itemPressed(QTreeWidgetItem *i)
             {
                 QTextCursor cursor(document);
                 cursor.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor);
-                cursor.setCharFormat(QTextCharFormat());
+                cursor.movePosition(QTextCursor::NextBlock, QTextCursor::KeepAnchor, item->startLine - 1);
+                cursor.setCharFormat(format);
             }
 
             {
                 QTextCursor cursor(document);
                 cursor.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor);
-                cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, item->startLine - 1);
+                cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, item->startLine - 1);
                 m_text->setTextCursor(cursor);
                 m_text->centerCursor();
             }
+
+
         }
 
     }
 }
 
-static bool makeItem(QObject *obj, QmlDebuggerItem *item)
+bool QmlDebugger::makeItem(QObject *obj, QmlDebuggerItem *item)
 {
     bool rv = true;
 
     QString text;
 
     if(QmlBindableValue *bv = qobject_cast<QmlBindableValue *>(obj)) {
+        QmlExpressionPrivate *p = bv->d;
+
         text = bv->property().name() + ": " + bv->expression();
-        item->setForeground(0, Qt::green);
+        bool watched = m_watchedIds.contains(p->id);
+        if(watched)
+            item->setForeground(0, QColor("purple"));
+        else
+            item->setForeground(0, Qt::green);
         item->bindableValue = bv;
+
+        if(p->log) {
+            QTreeWidgetItem *warningItem = 0;
+
+            int column = m_watchers->columnCount();
+
+            if(watched) {
+                m_watchers->insertColumn(column);
+                QTableWidgetItem *tableheader = new QTableWidgetItem;
+                tableheader->setText(bv->expression());
+                tableheader->setToolTip(bv->expression());
+                m_watchers->setHorizontalHeaderItem(column, tableheader);
+            }
+
+            for(int ii = 0; ii < p->log->count(); ++ii) {
+                const QmlExpressionLog &log = p->log->at(ii);
+
+                QString variant; QDebug d(&variant); d << log.result();
+                if(watched) {
+                    QString str = log.result().toString();
+                    if(str.isEmpty())
+                        str = variant;
+                    m_expressions << qMakePair(log.time(), qMakePair(column, str));
+                }
+
+                if(!log.warnings().isEmpty()) {
+
+                    if(!warningItem) {
+                        warningItem = new QTreeWidgetItem(m_warnings);
+                        warningItem->setText(0, bv->expression());
+                    }
+
+                    QTreeWidgetItem *entry = new QTreeWidgetItem(warningItem);
+                    entry->setExpanded(true);
+
+                    entry->setText(0, variant);
+
+                    foreach(const QString &warning, log.warnings()) {
+                        QTreeWidgetItem *w = new QTreeWidgetItem(entry);
+                        w->setText(0, warning);
+                    }
+                }
+
+            }
+
+        }
+
     } else if(QmlBoundSignal *bs = qobject_cast<QmlBoundSignal *>(obj)) {
         QMetaMethod method = obj->parent()->metaObject()->method(bs->index());
         QByteArray sig = method.signature();
@@ -237,7 +304,7 @@ static bool makeItem(QObject *obj, QmlDebuggerItem *item)
     return rv;
 }
 
-static void buildTree(QObject *obj, QmlDebuggerItem *parent)
+void QmlDebugger::buildTree(QObject *obj, QmlDebuggerItem *parent)
 {
     QObjectList children = obj->children();
 
@@ -253,9 +320,20 @@ void QmlDebugger::refresh()
     setDebugObject(m_object);
 }
 
+bool operator<(const QPair<quint32, QPair<int, QString> > &lhs,
+               const QPair<quint32, QPair<int, QString> > &rhs)
+{
+    return lhs.first < rhs.first;
+}
+
 void QmlDebugger::setDebugObject(QObject *obj)
 {
     m_tree->clear();
+    m_warnings->clear();
+    m_watchers->clear();
+    m_watchers->setColumnCount(0);
+    m_watchers->setRowCount(0);
+    m_expressions.clear();
 
     m_object = obj;
     if(!obj)
@@ -265,6 +343,20 @@ void QmlDebugger::setDebugObject(QObject *obj)
     makeItem(obj, item);
     buildTree(obj, item);
     item->setExpanded(true);
-    setGeometry(0, 100, 800, 600);
+
+    m_watchers->setRowCount(m_expressions.count());
+
+    qSort(m_expressions.begin(), m_expressions.end());
+
+    for(int ii = 0; ii < m_expressions.count(); ++ii) {
+
+        const QPair<quint32, QPair<int, QString> > &expr = m_expressions.at(ii);
+        QTableWidgetItem *item = new QTableWidgetItem;
+        item->setText(expr.second.second);
+        m_watchers->setItem(ii, expr.second.first, item);
+
+    }
+
+
 }
 

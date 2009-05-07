@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 class QmlEngine;
+class QNetworkReply;
 class QFxPixmapPrivate;
 class Q_DECLARATIVE_EXPORT QFxPixmap
 {
@@ -65,7 +66,7 @@ public:
 
     QFxPixmap &operator=(const QFxPixmap &);
 
-    static void get(QmlEngine *, const QUrl& url, QObject*, const char* slot);
+    static QNetworkReply *get(QmlEngine *, const QUrl& url, QObject*, const char* slot);
     static void cancelGet(const QUrl& url, QObject* obj, const char* slot);
 
     bool isNull() const;
