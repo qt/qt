@@ -13,8 +13,8 @@ Writing and using components allows you to:
 \endlist
 
 Components are placed in \e <Name>.qml files, allowing \e <Name> to then be used as a tag
-elsewhere. For example, if you have a Slider.qml file, you can then use \c {Slider \{\}} to
-place a slider.
+elsewhere. For example, if you have a Slider.qml file, you can then use \c {Slider { ... }} to
+make a slider, just as if it was a built-in type.
 
 Components may be collected into \l {qmlmodules}{modules}.
 
