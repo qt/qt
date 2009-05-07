@@ -264,16 +264,14 @@ void tst_QStateMachine::transitionToRootState()
     machine.start();
     QCoreApplication::processEvents();
 
-    QCOMPARE(machine.configuration().count(), 2);
+    QCOMPARE(machine.configuration().count(), 1);
     QVERIFY(machine.configuration().contains(initialState));
-    QVERIFY(machine.configuration().contains(machine.rootState()));
 
     machine.postEvent(new QEvent(QEvent::User));
     QCoreApplication::processEvents();
 
-    QCOMPARE(machine.configuration().count(), 2);
+    QCOMPARE(machine.configuration().count(), 1);
     QVERIFY(machine.configuration().contains(initialState));
-    QVERIFY(machine.configuration().contains(machine.rootState()));
 }
 
 void tst_QStateMachine::transitionEntersParent()
@@ -880,7 +878,7 @@ void tst_QStateMachine::historyStateHasNowhereToGo()
     QCOMPARE(machine.configuration().count(), 1);
     QVERIFY(machine.configuration().contains(machine.errorState()));
     QCOMPARE(machine.error(), QStateMachine::NoDefaultStateInHistoryState);
-    QCOMPARE(machine.errorString(), QString::fromLatin1("Missing transition from history state 'historyState'"));
+    QCOMPARE(machine.errorString(), QString::fromLatin1("Missing default state in history state 'historyState'"));
 }
 
 void tst_QStateMachine::brokenStateIsNeverEntered()
