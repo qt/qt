@@ -52,6 +52,11 @@ Item {
         }
 
     ]
+    function refresh() {
+        labelField.value = label;
+        emailField.value = email;
+        phoneField.value = phone;
+    }
     function update() {
         updateContactQuery.exec();
     }
