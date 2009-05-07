@@ -43,6 +43,7 @@
 #define QMLDEBUGGER_H
 
 #include <QtCore/qpointer.h>
+#include <QtCore/qset.h>
 #include <QtGui/qwidget.h>
 
 QT_BEGIN_HEADER
@@ -54,6 +55,8 @@ QT_MODULE(Declarative)
 class QTreeWidget;
 class QTreeWidgetItem;
 class QPlainTextEdit;
+class QmlDebuggerItem;
+class QTableWidget;
 class QmlDebugger : public QWidget
 {
 Q_OBJECT
@@ -66,12 +69,19 @@ public slots:
     void refresh();
 
 private slots:
-    void itemPressed(QTreeWidgetItem *);
+    void itemClicked(QTreeWidgetItem *);
+    void itemDoubleClicked(QTreeWidgetItem *);
 
 private:
+    void buildTree(QObject *obj, QmlDebuggerItem *parent);
+    bool makeItem(QObject *obj, QmlDebuggerItem *item);
     QTreeWidget *m_tree;
+    QTreeWidget *m_warnings;
+    QTableWidget *m_watchers;
     QPlainTextEdit *m_text;
     QPointer<QObject> m_object;
+    QList<QPair<quint32, QPair<int, QString> > > m_expressions;
+    QSet<quint32> m_watchedIds;
 };
 
 QT_END_NAMESPACE

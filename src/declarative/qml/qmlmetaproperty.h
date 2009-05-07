@@ -89,6 +89,7 @@ public:
     void emitSignal();
 
     bool hasChangedNotifier() const;
+    bool needsChangedNotifier() const;
     bool connectNotifier(QObject *dest, const char *slot) const;
     bool connectNotifier(QObject *dest, int method) const;
 

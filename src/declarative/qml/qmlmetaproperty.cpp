@@ -988,6 +988,18 @@ bool QmlMetaProperty::hasChangedNotifier() const
 }
 
 /*!
+    Returns true if the property needs a change notifier signal for bindings
+    to remain upto date, false otherwise.
+
+    Some properties, such as attached properties or those whose value never 
+    changes, do not require a change notifier.
+*/
+bool QmlMetaProperty::needsChangedNotifier() const
+{
+    return type() & Property && !(type() & Attached);
+}
+
+/*!
     Connects the property's change notifier signal to the
     specified \a method of the \a dest object and returns
     true. Returns false if this metaproperty does not
