@@ -582,6 +582,7 @@ void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
 			QList<QAbstractState*> hlst;
 			if (QHistoryStatePrivate::get(h)->defaultState)
 				hlst.append(QHistoryStatePrivate::get(h)->defaultState);
+
 			if (hlst.isEmpty()) {
 				setError(QStateMachine::NoDefaultStateInHistoryState, h);
 			} else {
@@ -946,15 +947,15 @@ QAbstractState *QStateMachinePrivate::findErrorState(QAbstractState *context)
 
     // Find error state recursively in parent hierarchy if not set explicitly for context state
     QAbstractState *errorState = 0;
+    
     QState *s = qobject_cast<QState*>(context);
-    if (s) {
+    if (s)
         errorState = s->errorState();
-        if (!errorState)
-            errorState = findErrorState(s->parentState());
-        return errorState;
-    }
 
-    return errorState;
+    if (!errorState)
+        errorState = findErrorState(context->parentState());
+    
+    return errorState;   
 }
 
 void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractState *currentContext)
@@ -990,10 +991,9 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
         currentErrorState = initialErrorStateForRoot;
     }
 
-    if (currentErrorState) {
-        QState *lca = findLCA(QList<QAbstractState*>() << currentErrorState << currentContext);
-        addStatesToEnter(currentErrorState, lca, pendingErrorStates, pendingErrorStatesForDefaultEntry);
-    }
+    Q_ASSERT(currentErrorState != 0);
+    QState *lca = findLCA(QList<QAbstractState*>() << currentErrorState << currentContext);
+    addStatesToEnter(currentErrorState, lca, pendingErrorStates, pendingErrorStatesForDefaultEntry);
 }
 
 #ifndef QT_NO_ANIMATION
