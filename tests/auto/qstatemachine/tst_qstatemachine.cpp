@@ -919,8 +919,6 @@ void tst_QStateMachine::brokenStateIsNeverEntered()
 
 void tst_QStateMachine::transitionToStateNotInGraph()
 {
-    QSKIP("Hangs", SkipAll);
-
     s_countWarnings = false;
 
     QStateMachine machine;
@@ -930,13 +928,14 @@ void tst_QStateMachine::transitionToStateNotInGraph()
     machine.setInitialState(initialState);
 
     QState *independentState = new QState();
+    independentState->setObjectName("independentState");
     initialState->addTransition(independentState);
 
     machine.start();
     QCoreApplication::processEvents();
 
     QCOMPARE(machine.configuration().count(), 1);
-    QVERIFY(machine.configuration().contains(initialState));
+    QVERIFY(machine.configuration().contains(qobject_cast<QState*>(machine.rootState())->errorState()));
 }
 
 void tst_QStateMachine::customErrorStateNotInGraph()

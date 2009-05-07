@@ -87,6 +87,7 @@ public:
         NoError, 
         NoInitialStateError,
         NoDefaultStateInHistoryState,
+        NoCommonAncestorForTransitionError
     };
 
     QStateMachine(QObject *parent = 0);

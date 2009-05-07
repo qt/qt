@@ -409,6 +409,15 @@ QList<QAbstractState*> QStateMachinePrivate::exitStates(QEvent *event, const QLi
             continue;
         lst.prepend(t->sourceState());
         QAbstractState *lca = findLCA(lst);
+        if (lca == 0) {
+            setError(QStateMachine::NoCommonAncestorForTransitionError, t->sourceState());
+            lst = pendingErrorStates.toList();
+            lst.prepend(t->sourceState());
+            
+            lca = findLCA(lst);
+            Q_ASSERT(lca != 0);
+        }
+
         {
             QSet<QAbstractState*>::const_iterator it;
             for (it = configuration.constBegin(); it != configuration.constEnd(); ++it) {
@@ -476,21 +485,23 @@ QList<QAbstractState*> QStateMachinePrivate::enterStates(QEvent *event, const QL
     QSet<QAbstractState*> statesToEnter;
     QSet<QAbstractState*> statesForDefaultEntry;
 
-    for (int i = 0; i < enabledTransitions.size(); ++i) {
-        QAbstractTransition *t = enabledTransitions.at(i);
-        QList<QAbstractState*> lst = t->targetStates();
-        if (lst.isEmpty())
-            continue;
-        lst.prepend(t->sourceState());
-        QState *lca = findLCA(lst);
-        for (int j = 1; j < lst.size(); ++j) {
-            QAbstractState *s = lst.at(j);
-			addStatesToEnter(s, lca, statesToEnter, statesForDefaultEntry);
-            if (isParallel(lca)) {
-                QList<QAbstractState*> lcac = QStatePrivate::get(lca)->childStates();
-                foreach (QAbstractState* child,lcac) {
-                    if (!statesToEnter.contains(child))
-                        addStatesToEnter(child,lca,statesToEnter,statesForDefaultEntry);                    
+    if (pendingErrorStates.isEmpty()) {
+        for (int i = 0; i < enabledTransitions.size(); ++i) {
+            QAbstractTransition *t = enabledTransitions.at(i);
+            QList<QAbstractState*> lst = t->targetStates();
+            if (lst.isEmpty())
+                continue;
+            lst.prepend(t->sourceState());
+            QState *lca = findLCA(lst);
+            for (int j = 1; j < lst.size(); ++j) {
+                QAbstractState *s = lst.at(j);
+			    addStatesToEnter(s, lca, statesToEnter, statesForDefaultEntry);
+                if (isParallel(lca)) {
+                    QList<QAbstractState*> lcac = QStatePrivate::get(lca)->childStates();
+                    foreach (QAbstractState* child,lcac) {
+                        if (!statesToEnter.contains(child))
+                            addStatesToEnter(child,lca,statesToEnter,statesForDefaultEntry);                    
+                    }
                 }
             }
         }
@@ -974,6 +985,13 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
         Q_ASSERT(currentContext != 0);
 
         errorString = QStateMachine::tr("Missing default state in history state '%1'")
+                        .arg(currentContext->objectName());
+        break;
+
+    case QStateMachine::NoCommonAncestorForTransitionError:
+        Q_ASSERT(currentContext != 0);
+
+        errorString = QStateMachine::tr("No common ancestor for targets and source of transition from state '%1'")
                         .arg(currentContext->objectName());
         break;
     default:
