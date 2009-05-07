@@ -42,10 +42,11 @@
 #ifndef QSIMPLECANVASITEM_H
 #define QSIMPLECANVASITEM_H
 
-#include <qfxglobal.h>
-#include <qsimplecanvas.h>
-#include <QObject>
-#include <QGraphicsItem>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qmldebuggerstatus.h>
+#include <QtDeclarative/qsimplecanvas.h>
+#include <QtCore/qobject.h>
+#include <QtGui/qgraphicsitem.h>
 class QPainter;
 
 QT_BEGIN_HEADER
@@ -70,6 +71,7 @@ class Q_DECLARATIVE_EXPORT QSimpleCanvasItem : public QObject
 {
     Q_OBJECT
     Q_CAST_INTERFACES(QGraphicsItem)
+    Q_CAST_INTERFACES(QmlDebuggerStatus)
     Q_DECLARE_PRIVATE(QSimpleCanvasItem)
     Q_ENUMS(TransformOrigin)
     Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin);
@@ -94,6 +96,7 @@ public:
     QSimpleCanvasItem(QSimpleCanvasItem *parent=0);
     virtual ~QSimpleCanvasItem();
     operator QGraphicsItem *();
+    operator QmlDebuggerStatus *();
 
     bool clip() const;
     void setClip(bool);

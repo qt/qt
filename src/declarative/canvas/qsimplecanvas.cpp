@@ -60,7 +60,7 @@
 QT_BEGIN_NAMESPACE
 DEFINE_BOOL_CONFIG_OPTION(fullUpdate, GFX_CANVAS_FULL_UPDATE);
 DEFINE_BOOL_CONFIG_OPTION(continuousUpdate, GFX_CANVAS_CONTINUOUS_UPDATE);
-DEFINE_BOOL_CONFIG_OPTION(useGraphicsView, QFX_USE_GRAPHICSVIEW);
+DEFINE_BOOL_CONFIG_OPTION(useSimpleCanvas, QFX_USE_SIMPLECANVAS);
 
 template<class T, int s = 60>
 class CircularList
@@ -556,7 +556,7 @@ QSimpleCanvas::QSimpleCanvas(CanvasMode mode, QWidget *parent)
 QSimpleCanvas::QSimpleCanvas(QWidget *parent)
 : QWidget(parent), d(new QSimpleCanvasPrivate(this))
 {
-    d->init(useGraphicsView()?SimpleCanvas:GraphicsView);
+    d->init(useSimpleCanvas()?SimpleCanvas:GraphicsView);
 }
 
 void QSimpleCanvasPrivate::init(QSimpleCanvas::CanvasMode mode)

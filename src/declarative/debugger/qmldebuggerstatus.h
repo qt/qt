@@ -39,12 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QMLDEBUGGER_H
-#define QMLDEBUGGER_H
+#ifndef QMLDEBUGGERSTATUS_P_H
+#define QMLDEBUGGERSTATUS_P_H
 
-#include <QtCore/qpointer.h>
-#include <QtCore/qset.h>
-#include <QtGui/qwidget.h>
+#include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
 
@@ -52,42 +50,18 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QTreeWidget;
-class QTreeWidgetItem;
-class QPlainTextEdit;
-class QmlDebuggerItem;
-class QTableWidget;
-class QmlDebugger : public QWidget
+class Q_DECLARATIVE_EXPORT QmlDebuggerStatus
 {
-Q_OBJECT
 public:
-    QmlDebugger(QWidget *parent = 0);
+    virtual ~QmlDebuggerStatus();
 
-    void setDebugObject(QObject *);
-
-public slots:
-    void refresh();
-
-private slots:
-    void itemClicked(QTreeWidgetItem *);
-    void itemDoubleClicked(QTreeWidgetItem *);
-
-private:
-    void buildTree(QObject *obj, QmlDebuggerItem *parent);
-    bool makeItem(QObject *obj, QmlDebuggerItem *item);
-    QTreeWidget *m_tree;
-    QTreeWidget *m_warnings;
-    QTableWidget *m_watchers;
-    QPlainTextEdit *m_text;
-    QPointer<QObject> m_object;
-    QList<QPair<quint32, QPair<int, QString> > > m_expressions;
-    QSet<quint32> m_watchedIds;
-    QPointer<QObject> m_selectedItem;
+    virtual void setSelectedState(bool);
 };
+Q_DECLARE_INTERFACE(QmlDebuggerStatus, "com.trolltech.qml.QmlDebuggerStatus");
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QMLDEBUGGER_H
+#endif // QLMDEBUGGERSTATUS_P_H
 

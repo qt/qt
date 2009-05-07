@@ -110,6 +110,22 @@ public:
 #endif
 };
 
+class QSimpleCanvasItemDebuggerStatus : public QmlDebuggerStatus
+{
+public:
+    QSimpleCanvasItemDebuggerStatus(QSimpleCanvasItem *i)
+        : item(i), selected(false) {}
+
+    virtual void setSelectedState(bool state)
+    {
+        selected = state;
+        item->update();
+    }
+
+    QSimpleCanvasItem *item;
+    bool selected;
+};
+
 class QSimpleCanvasFilter;
 class QGraphicsQSimpleCanvasItem;
 class QSimpleCanvasItemPrivate : public QObjectPrivate
@@ -117,7 +133,8 @@ class QSimpleCanvasItemPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QSimpleCanvasItem);
 public:
     QSimpleCanvasItemPrivate()
-    : parent(0), canvas(0), filter(0), clip(QSimpleCanvasItem::NoClip),
+    : parent(0), canvas(0), debuggerStatus(0), filter(0),
+      clip(QSimpleCanvasItem::NoClip),
       origin(QSimpleCanvasItem::TopLeft), options(QSimpleCanvasItem::NoOption),
       focusable(false), wantsActiveFocusPanelPendingCanvas(false),
       hasBeenActiveFocusPanel(false),
@@ -127,12 +144,16 @@ public:
     {
     }
 
-    virtual ~QSimpleCanvasItemPrivate() {}
+    virtual ~QSimpleCanvasItemPrivate() 
+    {
+        if(debuggerStatus) delete debuggerStatus;
+    }
 
     QSimpleCanvasItem *parent;
     QSimpleCanvas *canvas;
     QList<QSimpleCanvasItem *> children;
 
+    QSimpleCanvasItemDebuggerStatus *debuggerStatus;
     QSimpleCanvasFilter *filter;
 
     QSimpleCanvasItem::ClipType clip:3;

@@ -46,6 +46,7 @@
 #include <QTextBlock>
 #include <QtGui/qtabwidget.h>
 #include <QtDeclarative/qmlbindablevalue.h>
+#include <QtDeclarative/qmldebuggerstatus.h>
 #include <private/qmlboundsignal_p.h>
 #include <private/qmlcontext_p.h>
 #include <private/qmlengine_p.h>
@@ -119,6 +120,7 @@ public:
     int endLine;
     QUrl url;
 
+    QPointer<QObject> object;
     QPointer<QmlBindableValue> bindableValue;
 };
 
@@ -144,6 +146,24 @@ void QmlDebugger::itemDoubleClicked(QTreeWidgetItem *i)
 void QmlDebugger::itemClicked(QTreeWidgetItem *i)
 {
     QmlDebuggerItem *item = static_cast<QmlDebuggerItem *>(i);
+
+    if(m_selectedItem) {
+        QmlDebuggerStatus *debug = 
+            qobject_cast<QmlDebuggerStatus *>(m_selectedItem);
+        Q_ASSERT(debug);
+        debug->setSelectedState(false);
+        m_selectedItem = 0;
+    }
+
+    if(item->object) {
+        QmlDebuggerStatus *debug = 
+            qobject_cast<QmlDebuggerStatus *>(item->object);
+        if(debug) {
+            debug->setSelectedState(true);
+            m_selectedItem = item->object;
+        }
+    } 
+
     if(item->url.scheme() == QLatin1String("file")) {
         QString f = item->url.toLocalFile();
         QFile file(f);
@@ -193,6 +213,8 @@ bool QmlDebugger::makeItem(QObject *obj, QmlDebuggerItem *item)
     bool rv = true;
 
     QString text;
+
+    item->object = obj;
 
     if(QmlBindableValue *bv = qobject_cast<QmlBindableValue *>(obj)) {
         QmlExpressionPrivate *p = bv->d;
