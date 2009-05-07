@@ -8,7 +8,8 @@ Item {
     resources: [
         XmlListModel {
             id: FeedModel
-            source: "http://api.flickr.com/services/feeds/photos_public.gne?format=rss2"
+            property string tags : ""
+            source: "http://api.flickr.com/services/feeds/photos_public.gne?"+(tags ? "tags="+tags+"&" : "")+"format=rss2"
             query: "doc($src)/rss/channel/item"
             namespaceDeclarations: "declare namespace media=\"http://search.yahoo.com/mrss/\";"
 
@@ -16,6 +17,7 @@ Item {
             Role { name: "imagePath"; query: "media:thumbnail/@url/string()" }
             Role { name: "url"; query: "media:content/@url/string()" }
             Role { name: "description"; query: "description/string()"; isCData: true }
+            Role { name: "tags"; query: "media:category/string()" }
             Role { name: "photoWidth"; query: "media:content/@width/string()" }
             Role { name: "photoHeight"; query: "media:content/@height/string()" }
             Role { name: "photoType"; query: "media:content/@type/string()" }
@@ -44,6 +46,7 @@ Item {
                    ImageDetails.flickableArea.yPosition = 0;
                    ImageDetails.fullScreenArea.source = "";
                    ImageDetails.photoDescription = description;
+                   ImageDetails.photoTags = tags;
                    ImageDetails.photoWidth = photoWidth;
                    ImageDetails.photoHeight = photoHeight;
                    ImageDetails.photoType = photoType;
@@ -74,8 +77,9 @@ Item {
             states: [
                 State {
                     name: "Details"
+                    SetProperties { target: ImageDetails; z: 2 }
                     ParentChange { target: Wrapper; parent: ImageDetails.frontContainer }
-                    SetProperties { target: Wrapper; x: 45; y: 35; scale: 1 }
+                    SetProperties { target: Wrapper; x: 45; y: 35; scale: 1; z: 1000 }
                     SetProperties { target: Rotation; angle: 0 }
                     SetProperties { target: Shadows; opacity: 0 }
                     SetProperties { target: ImageDetails; y: 20 }
@@ -89,11 +93,20 @@ Item {
 
             transitions: [
                 Transition {
-                    fromState: "*"; toState: "*"
+                    fromState: "*"; toState: "Details"
                     ParentChangeAction { }
                     NumericAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                },
+                Transition {
+                    fromState: "Details"; toState: "*"
+                    SequentialAnimation {
+                        ParentChangeAction { }
+                        NumericAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                        SetPropertyAction { filter: Wrapper; properties: "z" }
+                    }
                 }
             ]
+         
         }
         }
     ]
@@ -105,12 +118,12 @@ Item {
 
         GridView {
             id: PhotoGridView; model: FeedModel; delegate: PhotoDelegate
-            cellWidth: 105; cellHeight: 105; x:32; y: 80; width: 800; height: 330
+            cellWidth: 105; cellHeight: 105; x:32; y: 80; width: 800; height: 330; z: 1
         }
 
         PathView {
             id: PhotoPathView; model: FeedModel; delegate: PhotoDelegate
-            y: -380; width: 800; height: 330; pathItemCount: 10
+            y: -380; width: 800; height: 330; pathItemCount: 10; z: 1
             path: Path {
                 startX: -50; startY: 40;
 
@@ -134,7 +147,7 @@ Item {
                 }
 
                 PathAttribute { name: "scale"; value: 1 }
-                PathAttribute { name: "angle"; value: 45 }
+                PathAttribute { name: "angle"; value: -45 }
             }
 
         }
@@ -151,7 +164,7 @@ Item {
             text: "Update"
             anchors.right: CloseButton.left; anchors.rightMargin: 5
             anchors.top: CloseButton.top
-            onClicked: { FeedModel.fetch(); }
+            onClicked: { FeedModel.reload(); }
         }
 
         states: [
@@ -172,7 +185,9 @@ Item {
     }
 
     Text {
-        id: CategoryText;  anchors.horizontalCenter: parent.horizontalCenter; y: 15; text: "Flickr - Uploads from everyone"
+        id: CategoryText;  anchors.horizontalCenter: parent.horizontalCenter; y: 15;
+        text: "Flickr - " +
+            (FeedModel.tags=="" ? "Uploads from everyone" : "Recent Uploads tagged " + FeedModel.tags)
         font.size: 16; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
     }
 }
