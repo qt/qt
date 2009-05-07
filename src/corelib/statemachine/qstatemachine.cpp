@@ -1728,6 +1728,17 @@ void QStateMachine::removeState(QAbstractState *state)
 }
 
 /*!
+  Returns whether this state machine is running.
+
+  start(), stop()
+*/
+bool QStateMachine::isRunning() const
+{
+    Q_D(const QStateMachine);
+    return (d->state == QStateMachinePrivate::Running);
+}
+
+/*!
   Starts this state machine.  The machine will reset its configuration and
   transition to the initial state.  When a final top-level state (QFinalState)
   is entered, the machine will emit the finished() signal.

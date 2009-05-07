@@ -104,6 +104,7 @@ private slots:
     void signalTransitions();
     void eventTransitions();
     void historyStates();
+    void startAndStop();
     void transitionToRootState();
     void transitionEntersParent();
     
@@ -1094,14 +1095,17 @@ void tst_QStateMachine::stateEntryAndExit()
         s2->addTransition(s3);
 
         QSignalSpy startedSpy(&machine, SIGNAL(started()));
+        QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
         machine.setInitialState(s1);
         QVERIFY(machine.configuration().isEmpty());
         globalTick = 0;
+        QVERIFY(!machine.isRunning());
         machine.start();
 
         QTRY_COMPARE(startedSpy.count(), 1);
         QTRY_COMPARE(finishedSpy.count(), 1);
+        QTRY_COMPARE(stoppedSpy.count(), 0);
         QCOMPARE(machine.configuration().count(), 1);
         QVERIFY(machine.configuration().contains(s3));
 
@@ -1824,6 +1828,44 @@ void tst_QStateMachine::historyStates()
     QVERIFY(machine.configuration().contains(s2));
 
     QTRY_COMPARE(finishedSpy.count(), 1);
+}
+
+void tst_QStateMachine::startAndStop()
+{
+    QStateMachine machine;
+    QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
+    QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    QVERIFY(!machine.isRunning());
+    QTest::ignoreMessage(QtWarningMsg, "QStateMachine::start: No initial state set for machine. Refusing to start.");
+    machine.start();
+    QCOMPARE(startedSpy.count(), 0);
+    QCOMPARE(stoppedSpy.count(), 0);
+    QCOMPARE(finishedSpy.count(), 0);
+    QVERIFY(!machine.isRunning());
+    machine.stop();
+    QCOMPARE(startedSpy.count(), 0);
+    QCOMPARE(stoppedSpy.count(), 0);
+    QCOMPARE(finishedSpy.count(), 0);
+
+    QState *s1 = new QState(machine.rootState());
+    machine.setInitialState(s1);
+    machine.start();
+    QTRY_COMPARE(machine.isRunning(), true);
+    QTRY_COMPARE(startedSpy.count(), 1);
+    QCOMPARE(stoppedSpy.count(), 0);
+    QCOMPARE(finishedSpy.count(), 0);
+    QCOMPARE(machine.configuration().count(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+
+    machine.stop();
+    QTRY_COMPARE(machine.isRunning(), false);
+    QTRY_COMPARE(stoppedSpy.count(), 1);
+    QCOMPARE(startedSpy.count(), 1);
+    QCOMPARE(finishedSpy.count(), 0);
+
+    QCOMPARE(machine.configuration().count(), 1);
+    QVERIFY(machine.configuration().contains(s1));
 }
 
 void tst_QStateMachine::defaultGlobalRestorePolicy()

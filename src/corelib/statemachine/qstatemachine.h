@@ -108,6 +108,8 @@ public:
     QString errorString() const;
     void clearError();
 
+    bool isRunning() const;
+
 #ifndef QT_NO_ANIMATION
     bool animationsEnabled() const;
     void setAnimationsEnabled(bool enabled);
