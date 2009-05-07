@@ -332,7 +332,7 @@ inline bool isWidgetOpaque(const QWidget *w)
     return false;
 }
 void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
-                             const QPoint &offset)
+                                   const QPoint &offset)
 {
     Q_UNUSED(widget);
 #ifdef QT_NO_DIRECTFB_WM
