@@ -254,6 +254,8 @@ private:
 
 void tst_QStateMachine::transitionToRootState()
 {
+    s_countWarnings = false;
+
     QStateMachine machine;
 
     QState *initialState = new QState();
@@ -668,6 +670,8 @@ void tst_QStateMachine::errorStateHasErrors()
 
 void tst_QStateMachine::errorStateIsRootState()
 {
+    s_countWarnings = false;
+
     QStateMachine machine;
     machine.setErrorState(machine.rootState());
 
@@ -691,9 +695,8 @@ void tst_QStateMachine::errorStateIsRootState()
     machine.postEvent(new QEvent(QEvent::Type(QEvent::User + 1)));
     QCoreApplication::processEvents();
 
-    QEXPECT_FAIL("", "Covered by transitionToRootState test. Remove this when that test passes", Continue);
     QCOMPARE(machine.configuration().count(), 1);    
-    QVERIFY(machine.configuration().contains(initialState));
+    QVERIFY(machine.configuration().contains(machine.errorState()));
 }
 
 void tst_QStateMachine::errorStateEntersParentFirst()

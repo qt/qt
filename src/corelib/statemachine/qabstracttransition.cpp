@@ -180,7 +180,7 @@ QAbstractTransition::QAbstractTransition(const QList<QAbstractState*> &targets,
     d_ptr->q_ptr = this;
 #endif
     Q_D(QAbstractTransition);
-    d->targetStates = targets;
+    setTargetStates(targets);
 }
 
 /*!
@@ -221,7 +221,7 @@ QAbstractTransition::QAbstractTransition(QAbstractTransitionPrivate &dd,
     d_ptr->q_ptr = this;
 #endif
     Q_D(QAbstractTransition);
-    d->targetStates = targets;
+    setTargetStates(targets);
 }
 
 /*!
@@ -265,7 +265,7 @@ void QAbstractTransition::setTargetState(QAbstractState* target)
     if (!target)
         d->targetStates.clear();
     else
-        d->targetStates = QList<QAbstractState*>() << target;
+        setTargetStates(QList<QAbstractState*>() << target);
 }
 
 /*!
@@ -284,6 +284,15 @@ QList<QAbstractState*> QAbstractTransition::targetStates() const
 void QAbstractTransition::setTargetStates(const QList<QAbstractState*> &targets)
 {
     Q_D(QAbstractTransition);
+
+    for (int i=0; i<targets.size(); ++i) {
+        QAbstractState *target = targets.at(i);
+        if (target->machine() != 0 && target->machine()->rootState() == target) {
+            qWarning("QAbstractTransition::setTargetStates: root state cannot be target of transition");
+            return;
+        }
+    }
+
     d->targetStates = targets;
 }
 

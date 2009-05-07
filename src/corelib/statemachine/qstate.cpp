@@ -280,9 +280,13 @@ QAbstractState *QState::errorState() const
 void QState::setErrorState(QAbstractState *state)
 {
     Q_D(QState);
-    if (state != 0 && QAbstractStatePrivate::get(state)->machine() != d->machine()) {
+    if (state != 0 && state->machine() != machine()) {
         qWarning("QState::setErrorState: error state cannot belong "
                  "to a different state machine");
+        return;
+    }
+    if (state->machine() != 0 && state->machine()->rootState() == state) {
+        qWarning("QStateMachine::setErrorState: root state cannot be error state");
         return;
     }
 
@@ -301,6 +305,13 @@ QAbstractTransition *QState::addTransition(QAbstractTransition *transition)
         qWarning("QState::addTransition: cannot add null transition");
         return 0;
     }
+
+    // machine() will always be non-null for root state
+    if (machine() != 0 && machine()->rootState() == this) {
+        qWarning("QState::addTransition: cannot add transition from root state");
+        return 0;
+    }
+
     const QList<QAbstractState*> &targets = QAbstractTransitionPrivate::get(transition)->targetStates;
     for (int i = 0; i < targets.size(); ++i) {
         QAbstractState *t = targets.at(i);

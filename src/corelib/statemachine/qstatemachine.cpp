@@ -1011,6 +1011,8 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
     }
 
     Q_ASSERT(currentErrorState != 0);
+    Q_ASSERT(currentErrorState != rootState);
+    
     QState *lca = findLCA(QList<QAbstractState*>() << currentErrorState << currentContext);
     addStatesToEnter(currentErrorState, lca, pendingErrorStates, pendingErrorStatesForDefaultEntry);
 }
