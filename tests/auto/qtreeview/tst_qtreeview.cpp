@@ -2028,6 +2028,8 @@ void tst_QTreeView::scrollTo()
     //
 
     view.show();
+    view.setVerticalScrollMode(QAbstractItemView::ScrollPerItem); //some styles change that in Polish
+   
     view.resize(300, 200);
     //view.verticalScrollBar()->setValue(0);
 
@@ -2040,6 +2042,7 @@ void tst_QTreeView::scrollTo()
     QCOMPARE(view.verticalScrollBar()->value(), 5);
 
     view.scrollTo(model.index(60, 60, QModelIndex()));
+    
     CHECK_VISIBLE(60,60);
     view.scrollTo(model.index(60, 30, QModelIndex()));
     CHECK_VISIBLE(60,30);
@@ -2915,7 +2918,7 @@ void tst_QTreeView::styleOptionViewItem()
     delegate.count = 0;
     view.showMaximized();
     QTest::qWait(30);
-    QVERIFY(delegate.count > 13);
+    QVERIFY(delegate.count >= 13);
 }
 
 class task174627_TreeView : public QTreeView
