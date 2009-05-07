@@ -2075,10 +2075,51 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_PanelMenuBar:
     case PE_FrameMenu:
         break; //disable frame in menu
+    
+    case PE_IndicatorBranch: 
+        {
+#if defined(Q_WS_S60)        
+        if (QSysInfo::s60Version() == QSysInfo::SV_S60_3_1) {
+#else
+        if (true) {
+#endif        
+            QCommonStyle::drawPrimitive(element, option, painter, widget);
+        } else {
+            if (option->state & State_Children) {
+                QS60StyleEnums::SkinParts skinPart = 
+                        (option->state & State_Open) ? QS60StyleEnums::SP_QgnIndiHlColSuper : QS60StyleEnums::SP_QgnIndiHlExpSuper;                
+                const int minDimension = qMin(option->rect.width(), option->rect.height());
+                const QRect iconRect(option->rect.topLeft(), QSize(minDimension, minDimension));
+                QS60StylePrivate::drawSkinPart(skinPart, painter, iconRect, flags);            
+            }
 
+            const bool rightLine = option->state & State_Item;
+            const bool downLine = option->state & State_Sibling;
+            const bool upLine = option->state & (State_Open | State_Children | State_Item | State_Sibling);
+
+            QS60StyleEnums::SkinParts skinPart;
+            bool drawSkinPart = false;
+            if (rightLine && downLine && upLine) {
+                skinPart = QS60StyleEnums::SP_QgnIndiHlLineBranch;
+                drawSkinPart = true;
+            } else if (rightLine && upLine) {
+                skinPart = QS60StyleEnums::SP_QgnIndiHlLineEnd;
+                drawSkinPart = true;
+            } else if (upLine && downLine) {
+                skinPart = QS60StyleEnums::SP_QgnIndiHlLineStraight;
+                drawSkinPart = true;
+            }
+        
+            if ( drawSkinPart ) {
+                QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect,
+                        (flags | QS60StylePrivate::SF_ColorSkinned));                        
+            }            
+        }
+        }        
+        break;         
+        
         // todo: items are below with #ifdefs "just in case". in final version, remove all non-required cases
     case PE_FrameLineEdit:
-    case PE_IndicatorBranch:
     case PE_IndicatorButtonDropDown:
     case PE_IndicatorDockWidgetResizeHandle:
     case PE_PanelTipLabel:

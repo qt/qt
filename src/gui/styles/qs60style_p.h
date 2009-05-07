@@ -87,6 +87,11 @@ public:
         SP_QgnGrafTabPassiveR,
         SP_QgnIndiCheckboxOff,
         SP_QgnIndiCheckboxOn,
+        SP_QgnIndiHlColSuper,     // Available in S60 release 3.2 and later.
+        SP_QgnIndiHlExpSuper,     // Available in S60 release 3.2 and later.
+        SP_QgnIndiHlLineBranch,   // Available in S60 release 3.2 and later.
+        SP_QgnIndiHlLineEnd,      // Available in S60 release 3.2 and later.
+        SP_QgnIndiHlLineStraight, // Available in S60 release 3.2 and later.
         SP_QgnIndiMarkedAdd,
         SP_QgnIndiNaviArrowLeft,
         SP_QgnIndiNaviArrowRight,

@@ -102,6 +102,13 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QgnGrafTabPassiveR */         {KAknsIIDQgnGrafTabPassiveR,            EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_graf_tab_passive_r     ,-1,-1},
     /* SP_QgnIndiCheckboxOff */         {KAknsIIDQgnIndiCheckboxOff,            EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_indi_checkbox_off      ,-1,-1},
     /* SP_QgnIndiCheckboxOn */          {KAknsIIDQgnIndiCheckboxOn,             EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_indi_checkbox_on       ,-1,-1},
+    // Following 5 items (SP_QgnIndiHlColSuper - SP_QgnIndiHlLineStraight) are available starting from S60 release 3.2.
+    // In 3.1 CommonStyle drawing is used for these QTreeView elements, since no similar icons in AVKON UI.
+    /* SP_QgnIndiHlColSuper */          {KAknsIIDNone,                          EDrawIcon,   0,                 0x4456 /* EMbmAvkonQgn_indi_hl_col_super */     , EAknsMajorGeneric, 0x17d5 /* KAknsIIDQgnIndiHlColSuper */},
+    /* SP_QgnIndiHlExpSuper */          {KAknsIIDNone,                          EDrawIcon,   0,                 0x4458 /* EMbmAvkonQgn_indi_hl_exp_super */     , EAknsMajorGeneric, 0x17d6 /* KAknsIIDQgnIndiHlExpSuper */},
+    /* SP_QgnIndiHlLineBranch */        {KAknsIIDNone,                          EDrawIcon,   0,                 0x445A /* EMbmAvkonQgn_indi_hl_line_branch */   , EAknsMajorGeneric, 0x17d7 /* KAknsIIDQgnIndiHlLineBranch */},
+    /* SP_QgnIndiHlLineEnd */           {KAknsIIDNone,                          EDrawIcon,   0,                 0x445C /* EMbmAvkonQgn_indi_hl_line_end */      , EAknsMajorGeneric, 0x17d8 /* KAknsIIDQgnIndiHlLineEnd */},
+    /* SP_QgnIndiHlLineStraight */      {KAknsIIDNone,                          EDrawIcon,   0,                 0x445E /* EMbmAvkonQgn_indi_hl_line_straight */ , EAknsMajorGeneric, 0x17d9 /* KAknsIIDQgnIndiHlLineStraight */},
     /* SP_QgnIndiMarkedAdd */           {KAknsIIDQgnIndiMarkedAdd,              EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_indi_marked_add        ,-1,-1},
     /* SP_QgnIndiNaviArrowLeft */       {KAknsIIDQgnGrafScrollArrowLeft,        EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_indi_navi_arrow_left   ,-1,-1},
     /* SP_QgnIndiNaviArrowRight */      {KAknsIIDQgnGrafScrollArrowRight,       EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_indi_navi_arrow_right  ,-1,-1},
@@ -994,6 +1001,12 @@ void QS60StyleModeSpecifics::colorGroupAndIndex(
     QS60StyleEnums::SkinParts skinID, TAknsItemID &colorGroup, int colorIndex)
 {
     switch(skinID) {
+        case QS60StyleEnums::SP_QgnIndiSubMenu:
+        case QS60StyleEnums::SP_QgnIndiHlColSuper:
+        case QS60StyleEnums::SP_QgnIndiHlExpSuper:
+        case QS60StyleEnums::SP_QgnIndiHlLineBranch:
+        case QS60StyleEnums::SP_QgnIndiHlLineEnd:
+        case QS60StyleEnums::SP_QgnIndiHlLineStraight:
         case QS60StyleEnums::SP_QgnIndiRadiobuttOff:
         case QS60StyleEnums::SP_QgnIndiRadiobuttOn:
         case QS60StyleEnums::SP_QgnIndiCheckboxOff:
