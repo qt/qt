@@ -346,6 +346,15 @@ QSignalTransition *QState::addTransition(QObject *sender, const char *signal,
         qWarning("QState::addTransition: signal cannot be null");
         return 0;
     }
+    if (!target) {
+        qWarning("QState::addTransition: cannot add transition to null state");
+        return 0;
+    }
+    if (*signal && sender->metaObject()->indexOfSignal(signal+1) == -1) {
+        qWarning("QState::addTransition: no such signal %s::%s",
+                 sender->metaObject()->className(), signal+1);
+        return 0;
+    }
     QSignalTransition *trans = new QSignalTransition(sender, signal, QList<QAbstractState*>() << target);
     addTransition(trans);
     return trans;
