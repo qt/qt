@@ -336,6 +336,10 @@ void QFxVisualItemModel::setModel(const QVariant &model)
                          this, SIGNAL(itemsRemoved(int,int)));
         QObject::disconnect(d->m_visualItemModel, SIGNAL(itemsMoved(int,int,int)),
                          this, SIGNAL(itemsMoved(int,int,int)));
+        QObject::disconnect(d->m_visualItemModel, SIGNAL(packageCreated(int,QmlPackage*)),
+                         this, SLOT(_q_packageCreated(int,QmlPackage*)));
+        QObject::disconnect(d->m_visualItemModel, SIGNAL(destroyingPackage(QmlPackage*)),
+                         this, SLOT(_q_destroyingPackage(QmlPackage*)));
         d->m_visualItemModel = 0;
     }
 
@@ -385,6 +389,10 @@ void QFxVisualItemModel::setModel(const QVariant &model)
                          this, SIGNAL(itemsRemoved(int,int)));
         QObject::connect(d->m_visualItemModel, SIGNAL(itemsMoved(int,int,int)),
                          this, SIGNAL(itemsMoved(int,int,int)));
+        QObject::connect(d->m_visualItemModel, SIGNAL(packageCreated(int,QmlPackage*)),
+                         this, SLOT(_q_packageCreated(int,QmlPackage*)));
+        QObject::connect(d->m_visualItemModel, SIGNAL(destroyingPackage(QmlPackage*)),
+                         this, SLOT(_q_destroyingPackage(QmlPackage*)));
         return;
     }
     if (!d->m_modelList)
@@ -397,6 +405,8 @@ void QFxVisualItemModel::setModel(const QVariant &model)
 QmlComponent *QFxVisualItemModel::delegate() const
 {
     Q_D(const QFxVisualItemModel);
+    if (d->m_visualItemModel)
+        return d->m_visualItemModel->delegate();
     return d->m_delegate;
 }
 
@@ -404,7 +414,6 @@ void QFxVisualItemModel::setDelegate(QmlComponent *delegate)
 {
     Q_D(QFxVisualItemModel);
     d->m_delegate = delegate;
-
     if (d->modelCount())
         emit itemsInserted(0, d->modelCount());
 }
@@ -445,6 +454,7 @@ void QFxVisualItemModel::release(QFxItem *item)
     item->setItemParent(0);
     QObject *obj = item;
 
+    bool inPackage = false;
     if (QmlPackage *package = d->m_packaged.value(item)) {
         static_cast<QObject*>(item)->setParent(package);
         d->m_packaged.remove(item);
@@ -454,6 +464,7 @@ void QFxVisualItemModel::release(QFxItem *item)
             if (*iter == package)
                 return;
         }
+        inPackage = true;
         obj = package; // fall through and delete
     }
 
@@ -461,6 +472,8 @@ void QFxVisualItemModel::release(QFxItem *item)
     for (QHash<int, QObject *>::Iterator iter = d->m_cache.begin();
         iter != d->m_cache.end(); ++iter) {
         if (*iter == obj) {
+            if (inPackage)
+                emit destroyingPackage(qobject_cast<QmlPackage*>(obj));
             delete obj;
             d->m_cache.erase(iter);
             return;
@@ -511,6 +524,7 @@ QFxItem *QFxVisualItemModel::item(int index, const QByteArray &viewId, bool comp
             QObject *o = package->part(QLatin1String(viewId));
             item = qobject_cast<QFxItem *>(o);
             d->m_packaged[o] = package;
+            emit packageCreated(index, package);
         }
     }
 
@@ -686,6 +700,18 @@ void QFxVisualItemModel::_q_dataChanged(const QModelIndex &begin, const QModelIn
 {
     Q_D(QFxVisualItemModel);
     _q_itemsChanged(begin.row(), end.row() - begin.row() + 1, d->m_roles);
+}
+
+void QFxVisualItemModel::_q_packageCreated(int index, QmlPackage *package)
+{
+    Q_D(QFxVisualItemModel);
+    emit itemCreated(index, qobject_cast<QFxItem*>(package->part(d->m_part)));
+}
+
+void QFxVisualItemModel::_q_destroyingPackage(QmlPackage *package)
+{
+    Q_D(QFxVisualItemModel);
+    emit destroyingItem(qobject_cast<QFxItem*>(package->part(d->m_part)));
 }
 
 QML_DEFINE_TYPE(QFxVisualItemModel,VisualModel);

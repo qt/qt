@@ -143,28 +143,30 @@ Item {
                 ]
                 transitions: [
                     Transition {
-                        fromState: "*"
-                        toState: "*"
+                        fromState: "left"
+                        toState: "right"
                         SequentialAnimation {
                             SetPropertyAction {
                                 target: Wrapper
                                 property: "moveToParent"
-                                value: Bounce
                             }
                             ParallelAnimation {
                                 NumericAnimation {
                                     target: Wrapper
-                                    properties: "x"
+                                    properties: "x,y"
                                     to: 0
-                                    duration: 250
+                                    easing: "easeOutQuad"
+                                    duration: 350
                                 }
-                                NumericAnimation {
-                                    target: Wrapper
-                                    properties: "y"
-                                    to: 0
-                                    easing: "easeInQuad"
-                                    duration: 250
-                                }
+                            }
+                        }
+                    },
+                    Transition {
+                        fromState: "right"
+                        toState: "left"
+                        SequentialAnimation {
+                            PauseAnimation {
+                                duration: Math.floor(index/7)*100
                             }
                             SetPropertyAction {
                                 target: Wrapper
@@ -173,13 +175,7 @@ Item {
                             ParallelAnimation {
                                 NumericAnimation {
                                     target: Wrapper
-                                    properties: "x"
-                                    to: 0
-                                    duration: 250
-                                }
-                                NumericAnimation {
-                                    target: Wrapper
-                                    properties: "y"
+                                    properties: "x,y"
                                     to: 0
                                     easing: "easeOutQuad"
                                     duration: 250
@@ -203,14 +199,20 @@ Item {
         GridView {
             id: PhotoGridView; model: MyVisualModel.parts.leftBox
             cellWidth: 105; cellHeight: 105; x:32; y: 80; width: 800; height: 330; z: 1
+            cacheBuffer: 100
         }
 
         PathView {
             id: PhotoPathView; model: MyVisualModel.parts.rightBox
             y: 80; width: 800; height: 330; z: 1
+            pathItemCount: 10; snapPosition: 0.001
             path: Path {
-                startX: -50; startY: 40;
+                startX: -150; startY: 40;
 
+                PathPercent { value: 0 }
+                PathLine { x: -50; y: 40 }
+
+                PathPercent { value: 0.001 }
                 PathAttribute { name: "scale"; value: 1 }
                 PathAttribute { name: "angle"; value: -45 }
 
@@ -232,6 +234,10 @@ Item {
 
                 PathAttribute { name: "scale"; value: 1 }
                 PathAttribute { name: "angle"; value: -45 }
+
+                PathPercent { value: 0.999 }
+                PathLine { x: 950; y: 40 }
+                PathPercent { value: 1.0 }
             }
 
         }

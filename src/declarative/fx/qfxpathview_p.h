@@ -77,7 +77,7 @@ public:
       : path(0), currentIndex(0), startPc(0), lastDist(0)
         , lastElapsed(0), stealMouse(false), ownModel(false), activeItem(0)
         , snapPos(0), dragMargin(0), moveOffset(this, &QFxPathViewPrivate::setOffset)
-        , firstIndex(0), pathItems(-1), pathOffset(0), model(0)
+        , firstIndex(0), pathItems(-1), pathOffset(0), requestedIndex(-1), model(0)
         , moveReason(Other)
     {
         fixupOffsetEvent = QmlTimeLineEvent::timeLineEvent<QFxPathViewPrivate, &QFxPathViewPrivate::fixOffset>(&moveOffset, this);
@@ -90,6 +90,20 @@ public:
         q->setAcceptedMouseButtons(Qt::NoButton);
         q->setOptions(QSimpleCanvasItem::MouseFilter | QSimpleCanvasItem::MouseEvents | QSimpleCanvasItem::IsFocusRealm);
         q->connect(&tl, SIGNAL(updated()), q, SLOT(ticked()));
+    }
+
+    QFxItem *getItem(int modelIndex) {
+        Q_Q(QFxPathView);
+        requestedIndex = modelIndex;
+        QFxItem *item = model->item(modelIndex);
+        if (item)
+            item->setItemParent(q);
+        requestedIndex = -1;
+        return item;
+    }
+
+    bool isValid() const {
+        return model && model->count() > 0 && model->delegate() && path;
     }
 
     int calcCurrentIndex();
@@ -108,8 +122,8 @@ public:
     qreal lastDist;
     int lastElapsed;
     qreal _offset;
-    int stealMouse : 1;
-    int ownModel : 1;
+    bool stealMouse : 1;
+    bool ownModel : 1;
     QTime lastPosTime;
     QPointF lastPos;
     QFxItem *activeItem;
@@ -121,6 +135,7 @@ public:
     int firstIndex;
     int pathItems;
     int pathOffset;
+    int requestedIndex;
     QList<QFxItem *> items;
     QFxVisualItemModel *model;
     QVariant modelVariant;
