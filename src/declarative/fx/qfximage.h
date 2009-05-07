@@ -43,6 +43,7 @@
 #define QFXIMAGE_H
 
 #include <qfxitem.h>
+#include <QtNetwork/qnetworkreply.h>
 
 
 QT_BEGIN_HEADER
@@ -58,6 +59,7 @@ class Q_DECLARATIVE_EXPORT QFxImage : public QFxItem
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
 
     Q_PROPERTY(QFxScaleGrid *scaleGrid READ scaleGrid)
     Q_PROPERTY(bool tile READ isTiled WRITE setTiled)
@@ -84,6 +86,7 @@ public:
 
     enum Status { Idle, Loading, Error };
     Status status() const;
+    qreal progress() const;
 
     QString source() const;
     virtual void setSource(const QString &url);
@@ -101,6 +104,7 @@ public:
 Q_SIGNALS:
     void sourceChanged(const QString &);
     void statusChanged(Status);
+    void progressChanged(qreal progress);
 
 protected:
     QFxImage(QFxImagePrivate &dd, QFxItem *parent);
@@ -109,6 +113,7 @@ protected:
 private Q_SLOTS:
     void requestFinished();
     void sciRequestFinished();
+    void requestProgress(qint64,qint64);
 
 private:
     Q_DISABLE_COPY(QFxImage)
