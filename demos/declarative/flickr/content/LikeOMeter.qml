@@ -1,7 +1,8 @@
 Item {
-    property var rating : 2
-
     id: Container
+
+    property int rating: 2
+
     HorizontalLayout {
         Star {
             rating: 0

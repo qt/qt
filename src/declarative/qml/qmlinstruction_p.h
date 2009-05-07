@@ -165,6 +165,9 @@ public:
         //    NoOp - Do nothing
         NoOp
     };
+    QmlInstruction()
+        : type(NoOp), line(0) {}
+
     Type type;
     unsigned short line;
     union {

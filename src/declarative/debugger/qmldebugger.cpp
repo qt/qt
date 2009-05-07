@@ -46,6 +46,7 @@
 #include <QtDeclarative/qmlbindablevalue.h>
 #include <private/qmlboundsignal_p.h>
 #include <private/qmlcontext_p.h>
+#include <private/qmlengine_p.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qurl.h>
@@ -98,13 +99,35 @@ public:
     int startLine;
     int endLine;
     QUrl url;
+
+    QPointer<QmlBindableValue> bindableValue;
 };
 
 void QmlDebugger::itemPressed(QTreeWidgetItem *i)
 {
     QmlDebuggerItem *item = static_cast<QmlDebuggerItem *>(i);
 
-    if(item->url.scheme() == QLatin1String("file")) {
+    if(item->bindableValue) {
+
+        QString str;
+
+        QmlExpressionPrivate *p = item->bindableValue->d;
+        if(p->log) {
+            QString str;
+            QDebug d(&str);
+            for(int ii = 0; ii < p->log->count(); ++ii) {
+                d << p->log->at(ii).result() << "\n";
+                QStringList warnings = p->log->at(ii).warnings();
+                foreach(const QString &warning, warnings)
+                    d << "    " << warning << "\n";
+            }
+            m_text->setPlainText(str);
+
+        } else {
+            m_text->setPlainText("No history");
+        }
+
+    } else if(item->url.scheme() == QLatin1String("file")) {
         QString f = item->url.toLocalFile();
         QFile file(f);
         file.open(QIODevice::ReadOnly);
@@ -160,6 +183,7 @@ static bool makeItem(QObject *obj, QmlDebuggerItem *item)
     if(QmlBindableValue *bv = qobject_cast<QmlBindableValue *>(obj)) {
         text = bv->property().name() + ": " + bv->expression();
         item->setForeground(0, Qt::green);
+        item->bindableValue = bv;
     } else if(QmlBoundSignal *bs = qobject_cast<QmlBoundSignal *>(obj)) {
         QMetaMethod method = obj->parent()->metaObject()->method(bs->index());
         QByteArray sig = method.signature();
@@ -203,6 +227,9 @@ static bool makeItem(QObject *obj, QmlDebuggerItem *item)
         } else {
             item->setExpanded(true);
         }
+
+        if(!context)
+            item->setForeground(0, Qt::lightGray);
     }
 
     item->setText(0, text);

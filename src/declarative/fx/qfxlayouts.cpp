@@ -361,7 +361,12 @@ void QFxBaseLayout::preLayout()
         if (item->isVisible()){
             if (!d->_animated.contains(item)){
                 setMovingItem(item);
-                item->setPos(QPointF(item->x()+d->_margin, item->y()+d->_margin));
+                QPointF p(item->x(), item->y());
+                if(d->aut & Horizontal)
+                    p.setX(p.x() + d->_margin);
+                if(d->aut & Vertical)
+                    p.setY(p.y() + d->_margin);
+                item->setPos(p);
                 setMovingItem(0);
             }
             width = qMax(width, item->x() + item->width());

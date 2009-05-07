@@ -37,18 +37,19 @@ class ProcessAST: protected AST::Visitor
             push(State(obj));
         }
 
-        void pushProperty(const QString &name, int lineNumber)
+        void pushProperty(const QString &name, const LocationSpan &location)
         {
             const State &state = top();
             if (state.property) {
                 State s(state.property->getValue(),
                         state.property->getValue()->getProperty(name.toLatin1()));
-                s.property->line = lineNumber;
+                s.property->location = location;
                 push(s);
             } else {
                 State s(state.object,
                         state.object->getProperty(name.toLatin1()));
-                s.property->line = lineNumber;
+
+                s.property->location = location;
                 push(s);
             }
         }
@@ -65,14 +66,19 @@ protected:
                              AST::UiQualifiedId *propertyName,
                              const QString &objectType,
                              AST::SourceLocation typeLocation,
+                             LocationSpan location,
                              AST::UiObjectInitializer *initializer = 0);
     Object *defineObjectBinding_helper(int line,
                              AST::UiQualifiedId *propertyName,
                              const QString &objectType,
                              AST::SourceLocation typeLocation,
+                             LocationSpan location,
                              AST::UiObjectInitializer *initializer = 0);
     QString getPrimitive(const QByteArray &propertyName, AST::ExpressionNode *expr);
-    void defineProperty(const QString &propertyName, int line, const QString &primitive);
+    void defineProperty(const QString &propertyName, const LocationSpan &location, const QString &primitive);
+
+    LocationSpan location(AST::SourceLocation start, AST::SourceLocation end);
+    LocationSpan location(AST::UiQualifiedId *);
 
     using AST::Visitor::visit;
     using AST::Visitor::endVisit;
@@ -192,18 +198,21 @@ QString ProcessAST::asString(AST::UiQualifiedId *node) const
     return s;
 }
 
-Object *ProcessAST::defineObjectBinding_helper(int line,
-                                     AST::UiQualifiedId *propertyName,
-                                     const QString &objectType,
-                                     AST::SourceLocation typeLocation,
-                                     AST::UiObjectInitializer *initializer)
+Object *
+ProcessAST::defineObjectBinding_helper(int line,
+                                       AST::UiQualifiedId *propertyName,
+                                       const QString &objectType,
+                                       AST::SourceLocation typeLocation,
+                                       LocationSpan location,
+                                       AST::UiObjectInitializer *initializer)
 {
     bool isType = !objectType.isEmpty() && objectType.at(0).isUpper() && !objectType.contains(QLatin1Char('.'));
 
     int propertyCount = 0;
     for (; propertyName; propertyName = propertyName->next){
         ++propertyCount;
-        _stateStack.pushProperty(propertyName->name->asString(), propertyName->identifierToken.startLine);
+        _stateStack.pushProperty(propertyName->name->asString(), 
+                                 this->location(propertyName));
     }
 
     if (!isType) {
@@ -217,7 +226,8 @@ Object *ProcessAST::defineObjectBinding_helper(int line,
             return 0;
         }
 
-        _stateStack.pushProperty(objectType, line);
+        _stateStack.pushProperty(objectType, 
+                                 this->location(propertyName));
         accept(initializer);
         _stateStack.pop();
 
@@ -233,18 +243,14 @@ Object *ProcessAST::defineObjectBinding_helper(int line,
         _scope.append(objectType);
         obj->typeName = qualifiedNameId().toLatin1();
         _scope.removeLast();
-        obj->line = line;
-
-        if(initializer) {
-            obj->endLine = initializer->rbraceToken.startLine;
-            obj->endColumn = initializer->rbraceToken.startColumn;
-        }
+        obj->location = location;
 
         if (propertyCount) {
+
             Property *prop = currentProperty();
             Value *v = new Value;
             v->object = obj;
-            v->line = line;
+            v->location = obj->location;
             prop->addValue(v);
 
             while (propertyCount--)
@@ -258,7 +264,7 @@ Object *ProcessAST::defineObjectBinding_helper(int line,
                 const State state = _stateStack.top();
                 Value *v = new Value;
                 v->object = obj;
-                v->line = line;
+                v->location = obj->location;
                 if (state.property)
                     state.property->addValue(v);
                 else
@@ -278,11 +284,12 @@ Object *ProcessAST::defineObjectBinding(int line,
                                      AST::UiQualifiedId *qualifiedId,
                                      const QString &objectType,
                                      AST::SourceLocation typeLocation,
+                                     LocationSpan location,
                                      AST::UiObjectInitializer *initializer)
 {
     if (objectType == QLatin1String("Connection")) {
 
-        Object *obj = defineObjectBinding_helper(line, 0, objectType, typeLocation);
+        Object *obj = defineObjectBinding_helper(line, 0, objectType, typeLocation, location);
 
         _stateStack.pushObject(obj);
 
@@ -300,7 +307,10 @@ Object *ProcessAST::defineObjectBinding(int line,
                 } else {
                     script = asString(scriptBinding->statement);
                 }
-                defineProperty(QLatin1String("script"), line, script);
+
+                LocationSpan l = this->location(scriptBinding->statement->firstSourceLocation(), 
+                                                scriptBinding->statement->lastSourceLocation());
+                defineProperty(QLatin1String("script"), l, script);
             } else {
                 accept(it->member);
             }
@@ -311,15 +321,30 @@ Object *ProcessAST::defineObjectBinding(int line,
         return obj;
     }
 
-    return defineObjectBinding_helper(line, qualifiedId, objectType, typeLocation, initializer);
+    return defineObjectBinding_helper(line, qualifiedId, objectType, typeLocation, location, initializer);
 }
 
-void ProcessAST::defineProperty(const QString &propertyName, int line, const QString &primitive)
+LocationSpan ProcessAST::location(AST::UiQualifiedId *id)
 {
-    _stateStack.pushProperty(propertyName, line);
+    return location(id->identifierToken, id->identifierToken);
+}
+
+LocationSpan ProcessAST::location(AST::SourceLocation start, AST::SourceLocation end)
+{
+    LocationSpan rv;
+    rv.start.line = start.startLine;
+    rv.start.column = start.startColumn;
+    rv.end.line = end.startLine;
+    rv.end.column = end.startColumn + end.length - 1;
+    return rv;
+}
+
+void ProcessAST::defineProperty(const QString &propertyName, const LocationSpan &location, const QString &primitive)
+{
+    _stateStack.pushProperty(propertyName, location);
     Value *value = new Value;
     value->primitive = primitive;
-    value->line = line;
+    value->location = location;
     currentProperty()->addValue(value);
     _stateStack.pop();
 }
@@ -396,6 +421,8 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         if (node->expression) { // default value
             property.defaultValue = new Property;
             Value *value = new Value;
+            value->location = location(node->expression->firstSourceLocation(),
+                                       node->expression->lastSourceLocation());
             value->primitive = getPrimitive("value", node->expression);
             property.defaultValue->values << value;
         }
@@ -410,11 +437,14 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
 // UiObjectMember: T_IDENTIFIER UiObjectInitializer ;
 bool ProcessAST::visit(AST::UiObjectDefinition *node)
 {
+    LocationSpan l = location(node->firstSourceLocation(),
+                              node->lastSourceLocation());;
 
     defineObjectBinding(node->identifierToken.startLine,
                         0,
                         node->name->asString(),
                         node->identifierToken,
+                        l,
                         node->initializer);
 
     return false;
@@ -424,10 +454,14 @@ bool ProcessAST::visit(AST::UiObjectDefinition *node)
 // UiObjectMember: UiQualifiedId T_COLON T_IDENTIFIER UiObjectInitializer ;
 bool ProcessAST::visit(AST::UiObjectBinding *node)
 {
+    LocationSpan l;
+    l = location(node->identifierToken, node->initializer->rbraceToken);
+
     defineObjectBinding(node->identifierToken.startLine,
                         node->qualifiedId,
                         node->name->asString(),
                         node->identifierToken,
+                        l,
                         node->initializer);
 
     return false;
@@ -467,7 +501,8 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
     AST::UiQualifiedId *propertyName = node->qualifiedId;
     for (; propertyName; propertyName = propertyName->next){
         ++propertyCount;
-        _stateStack.pushProperty(propertyName->name->asString(), propertyName->identifierToken.startLine);
+        _stateStack.pushProperty(propertyName->name->asString(), 
+                                 location(propertyName));
     }
 
     Property *prop = currentProperty();
@@ -490,8 +525,9 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
 
     Value *v = new Value;
     v->primitive = primitive;
-    v->line = node->statement->firstSourceLocation().startLine;
-    v->column = node->statement->firstSourceLocation().startColumn;
+    v->location = location(node->statement->firstSourceLocation(),
+                           node->statement->lastSourceLocation());
+
     prop->addValue(v);
 
     while (propertyCount--)
@@ -507,7 +543,8 @@ bool ProcessAST::visit(AST::UiArrayBinding *node)
     AST::UiQualifiedId *propertyName = node->qualifiedId;
     for (; propertyName; propertyName = propertyName->next){
         ++propertyCount;
-        _stateStack.pushProperty(propertyName->name->asString(), propertyName->identifierToken.startLine);
+        _stateStack.pushProperty(propertyName->name->asString(), 
+                                 location(propertyName));
     }
 
     accept(node->members);
@@ -564,8 +601,9 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
         }
 
         Value *value = new Value;
+        value->location = location(node->firstSourceLocation(), 
+                                   node->lastSourceLocation());
         value->primitive = source;
-        value->line = line;
 
         obj->getDefaultProperty()->addValue(value);
     }
@@ -614,8 +652,8 @@ bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
             QmlError error;
             error.setUrl(url);
             error.setDescription(m.message);
-            error.setLine(m.line);
-            error.setColumn(m.column);
+            error.setLine(m.loc.startLine);
+            error.setColumn(m.loc.startColumn);
             _errors << error;
 
         }

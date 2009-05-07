@@ -1,8 +1,10 @@
 Item {
-    property var text
+    id: Container
+
     signal clicked
 
-    id: Container
+    property string text
+
     Image {
         id: Image
         source: "pics/button.png"

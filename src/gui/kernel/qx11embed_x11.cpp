@@ -1297,9 +1297,6 @@ bool QX11EmbedContainer::eventFilter(QObject *o, QEvent *event)
 	// focus is set to our focus proxy. We want to intercept all
 	// keypresses.
 	if (o == window() && d->client) {
-            if (!d->isEmbedded() && d->activeContainer == this)
-                d->moveInputToProxy();
-
             if (d->clientIsXEmbed) {
                 sendXEmbedMessage(d->client, x11Info().display(), XEMBED_WINDOW_ACTIVATE);
             } else {
@@ -1307,6 +1304,8 @@ bool QX11EmbedContainer::eventFilter(QObject *o, QEvent *event)
                 if (hasFocus())
                     XSetInputFocus(x11Info().display(), d->client, XRevertToParent, x11Time());
             }
+            if (!d->isEmbedded())
+                d->moveInputToProxy();
 	}
 	break;
     case QEvent::WindowDeactivate:
@@ -1729,10 +1728,10 @@ void QX11EmbedContainerPrivate::acceptClient(WId window)
         checkGrab();
         if (q->hasFocus()) {
             XSetInputFocus(q->x11Info().display(), client, XRevertToParent, x11Time());
-        } else {
-            if (!isEmbedded())
-                moveInputToProxy();
         }
+    } else {
+        if (!isEmbedded())
+            moveInputToProxy();
     }
 
     emit q->clientIsEmbedded();
@@ -1749,11 +1748,9 @@ void QX11EmbedContainerPrivate::acceptClient(WId window)
 void QX11EmbedContainerPrivate::moveInputToProxy()
 {
     Q_Q(QX11EmbedContainer);
-    WId focus;
-    int revert_to;
-    XGetInputFocus(q->x11Info().display(), &focus, &revert_to);
-    if (focus != focusProxy->internalWinId())
-        XSetInputFocus(q->x11Info().display(), focusProxy->internalWinId(), XRevertToParent, x11Time());
+    // Following Owen Taylor's advice from the XEmbed specification to
+    // always use CurrentTime when no explicit user action is involved.
+    XSetInputFocus(q->x11Info().display(), focusProxy->internalWinId(), XRevertToParent, CurrentTime);
 }
 
 /*! \internal

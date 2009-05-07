@@ -158,7 +158,10 @@ void QTestLogger::addIncident(IncidentTypes type, const char *description,
     if (type == QAbstractTestLogger::Fail || type == QAbstractTestLogger::XFail) {
         QTestElement *failureElement = new QTestElement(QTest::LET_Failure);
         failureElement->addAttribute(QTest::AI_Result, typeBuf);
-        failureElement->addAttribute(QTest::AI_File, file);
+        if(file)
+            failureElement->addAttribute(QTest::AI_File, file);
+        else
+            failureElement->addAttribute(QTest::AI_File, "");
         QTest::qt_snprintf(buf, sizeof(buf), "%i", line);
         failureElement->addAttribute(QTest::AI_Line, buf);
         failureElement->addAttribute(QTest::AI_Description, description);

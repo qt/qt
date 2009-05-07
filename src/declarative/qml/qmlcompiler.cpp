@@ -136,6 +136,22 @@ int QmlCompiledData::indexForInt(int *data, int count)
     return idx;
 }
 
+int QmlCompiledData::indexForLocation(const QmlParser::Location &l)
+{
+    // ### FIXME
+    int rv = locations.count();
+    locations << l;
+    return rv;
+}
+
+int QmlCompiledData::indexForLocation(const QmlParser::LocationSpan &l)
+{
+    // ### FIXME
+    int rv = locations.count();
+    locations << l.start << l.end;
+    return rv;
+}
+
 QmlCompiler::QmlCompiler()
 : exceptionLine(-1), exceptionColumn(-1), output(0)
 {
@@ -434,8 +450,8 @@ void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
 
 #define COMPILE_EXCEPTION2(token, desc) \
     {  \
-        exceptionLine = token->line;  \
-        exceptionColumn = token->column;  \
+        exceptionLine = token->location.start.line;  \
+        exceptionColumn = token->location.start.column;  \
         QDebug d(&exceptionDescription); \
         d << desc;  \
         return false; \
@@ -443,8 +459,8 @@ void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
 
 #define COMPILE_EXCEPTION(desc) \
     {  \
-        exceptionLine = obj->line;  \
-        exceptionColumn = obj->column;  \
+        exceptionLine = obj->location.start.line;  \
+        exceptionColumn = obj->location.start.column;  \
         QDebug d(&exceptionDescription); \
         d << desc;  \
         return false; \
@@ -541,7 +557,7 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
     // Create the object
     QmlInstruction create;
     create.type = QmlInstruction::CreateObject;
-    create.line = obj->line;
+    create.line = obj->location.start.line;
     create.create.data = -1;
     create.create.type = obj->type;
     output->bytecode << create;
@@ -552,7 +568,7 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
         if (output->types.at(obj->type).component) {
             QmlInstruction begin;
             begin.type = QmlInstruction::TryBeginObject;
-            begin.line = obj->line;
+            begin.line = obj->location.start.line;
             output->bytecode << begin;
         } else {
             int cast = QmlMetaType::qmlParserStatusCast(QmlMetaType::type(output->types.at(obj->type).className));
@@ -560,7 +576,7 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
                 QmlInstruction begin;
                 begin.type = QmlInstruction::BeginObject;
                 begin.begin.castValue = cast;
-                begin.line = obj->line;
+                begin.line = obj->location.start.line;
                 output->bytecode << begin;
             }
         }
@@ -611,7 +627,7 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
         if (output->types.at(obj->type).component) {
             QmlInstruction complete;
             complete.type = QmlInstruction::TryCompleteObject;
-            complete.line = obj->line;
+            complete.line = obj->location.start.line;
             output->bytecode << complete;
         } else {
             int cast = QmlMetaType::qmlParserStatusCast(QmlMetaType::type(output->types.at(obj->type).className));
@@ -619,7 +635,7 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
                 QmlInstruction complete;
                 complete.type = QmlInstruction::CompleteObject;
                 complete.complete.castValue = cast;
-                complete.line = obj->line;
+                complete.line = obj->location.start.line;
                 output->bytecode << complete;
             }
         }
@@ -661,7 +677,7 @@ bool QmlCompiler::compileComponent(Object *obj, int ctxt)
         int pref = output->indexForString(val);
         QmlInstruction id;
         id.type = QmlInstruction::SetId;
-        id.line = idProp->line;
+        id.line = idProp->location.start.line;
         id.setId.value = pref;
         id.setId.save = -1;
         output->bytecode << id;
@@ -675,14 +691,14 @@ bool QmlCompiler::compileComponentFromRoot(Object *obj, int ctxt)
     output->bytecode.push_back(QmlInstruction());
     QmlInstruction &create = output->bytecode.last();
     create.type = QmlInstruction::CreateComponent;
-    create.line = obj->line;
-    create.createComponent.endLine = obj->endLine;
+    create.line = obj->location.start.line;
+    create.createComponent.endLine = obj->location.end.line;
     int count = output->bytecode.count();
 
     QmlInstruction init;
     init.type = QmlInstruction::Init;
     init.init.dataSize = 0;
-    init.line = obj->line;
+    init.line = obj->location.start.line;
     output->bytecode << init;
 
     QSet<QString> oldIds = ids;
@@ -732,7 +748,7 @@ bool QmlCompiler::compileSignal(Property *prop, Object *obj)
         if (rv) {
             QmlInstruction assign;
             assign.type = QmlInstruction::AssignSignalObject;
-            assign.line = prop->values.at(0)->line;
+            assign.line = prop->values.at(0)->location.start.line;
             assign.assignSignalObject.signal = pr;
 
             output->bytecode << assign;
@@ -755,7 +771,7 @@ bool QmlCompiler::compileSignal(Property *prop, Object *obj)
 
         QmlInstruction assign;
         assign.type = QmlInstruction::AssignSignal;
-        assign.line = prop->values.at(0)->line;
+        assign.line = prop->values.at(0)->location.start.line;
         assign.assignSignal.signal = pr;
         assign.assignSignal.value = idx;
 
@@ -878,7 +894,7 @@ bool QmlCompiler::compileIdProperty(QmlParser::Property *prop,
             assign.type = QmlInstruction::StoreString;
             assign.storeString.propertyIndex = prop->index;
             assign.storeString.value = pref;
-            assign.line = prop->values.at(0)->line;
+            assign.line = prop->values.at(0)->location.start.line;
             output->bytecode << assign;
 
             prop->values.at(0)->type = Value::Id;
@@ -888,10 +904,9 @@ bool QmlCompiler::compileIdProperty(QmlParser::Property *prop,
 
         QmlInstruction id;
         id.type = QmlInstruction::SetId;
-        id.line = prop->values.at(0)->line;
+        id.line = prop->values.at(0)->location.start.line;
         id.setId.value = pref;
         id.setId.save = -1;
-        id.line = prop->values.at(0)->line;
         output->bytecode << id;
 
         obj->id = val.toLatin1();
@@ -909,7 +924,7 @@ bool QmlCompiler::compileAttachedProperty(QmlParser::Property *prop,
 
     QmlInstruction fetch;
     fetch.type = QmlInstruction::FetchAttached;
-    fetch.line = prop->line;
+    fetch.line = prop->location.start.line;
     int id = QmlMetaType::attachedPropertiesFuncId(prop->name);
     if (id == -1)
         COMPILE_EXCEPTION("Non-existant attached property object" << prop->name);
@@ -920,7 +935,7 @@ bool QmlCompiler::compileAttachedProperty(QmlParser::Property *prop,
 
     QmlInstruction pop;
     pop.type = QmlInstruction::PopFetchedObject;
-    pop.line = prop->line;
+    pop.line = prop->location.start.line;
     output->bytecode << pop;
 
     return true;
@@ -942,14 +957,14 @@ bool QmlCompiler::compileNestedProperty(QmlParser::Property *prop,
         fetch.type = QmlInstruction::ResolveFetchObject;
         fetch.fetch.property = output->indexForByteArray(prop->name);
     }
-    fetch.line = prop->line;
+    fetch.line = prop->location.start.line;
     output->bytecode << fetch;
 
     COMPILE_CHECK(compileFetchedObject(prop->value, ctxt + 1));
 
     QmlInstruction pop;
     pop.type = QmlInstruction::PopFetchedObject;
-    pop.line = prop->line;
+    pop.line = prop->location.start.line;
     output->bytecode << pop;
 
     return true;
@@ -962,7 +977,7 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
     int t = prop->type;
     if (QmlMetaType::isQmlList(t)) {
         QmlInstruction fetch;
-        fetch.line = prop->line;
+        fetch.line = prop->location.start.line;
         fetch.type = QmlInstruction::FetchQmlList;
         fetch.fetchQmlList.property = prop->index;
         fetch.fetchQmlList.type = QmlMetaType::qmlListType(t);
@@ -975,7 +990,7 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
                 COMPILE_CHECK(compileObject(v->object, ctxt));
                 QmlInstruction assign;
                 assign.type = QmlInstruction::AssignObjectList;
-                assign.line = prop->line;
+                assign.line = prop->location.start.line;
                 assign.assignObject.property = output->indexForByteArray(prop->name);
                 assign.assignObject.castValue = 0;
                 output->bytecode << assign;
@@ -986,14 +1001,14 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
 
         QmlInstruction pop;
         pop.type = QmlInstruction::PopQList;
-        pop.line = prop->line;
+        pop.line = prop->location.start.line;
         output->bytecode << pop;
     } else {
         Q_ASSERT(QmlMetaType::isList(t));
 
         QmlInstruction fetch;
         fetch.type = QmlInstruction::FetchQList;
-        fetch.line = prop->line;
+        fetch.line = prop->location.start.line;
         fetch.fetch.property = prop->index;
         output->bytecode << fetch;
 
@@ -1005,7 +1020,7 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
                 COMPILE_CHECK(compileObject(v->object, ctxt));
                 QmlInstruction assign;
                 assign.type = QmlInstruction::AssignObjectList;
-                assign.line = v->line;
+                assign.line = v->location.start.line;
                 assign.assignObject.property = output->indexForByteArray(prop->name);
                 assign.assignObject.castValue = 0;
                 output->bytecode << assign;
@@ -1013,7 +1028,7 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
                 if (assignedBinding)
                     COMPILE_EXCEPTION("Can only assign one binding to lists");
 
-                compileBinding(v->primitive, prop, ctxt, obj->metaObject(), v->line);
+                compileBinding(v->primitive, prop, ctxt, obj->metaObject(), v->location.start.line);
                 v->type = Value::PropertyBinding;
             } else {
                 COMPILE_EXCEPTION("Cannot assign primitives to lists");
@@ -1021,7 +1036,7 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
         }
 
         QmlInstruction pop;
-        pop.line = prop->line;
+        pop.line = prop->location.start.line;
         pop.type = QmlInstruction::PopQList;
         output->bytecode << pop;
     }
@@ -1086,7 +1101,7 @@ bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
 
             QmlInstruction assign;
             assign.type = QmlInstruction::AssignObject;
-            assign.line = v->object->line;
+            assign.line = v->object->location.start.line;
             assign.assignObject.castValue = 0;
             if (prop->isDefault)
                 assign.assignObject.property = -1;
@@ -1101,7 +1116,7 @@ bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
 
             QmlInstruction assign;
             assign.type = QmlInstruction::StoreObject;
-            assign.line = v->object->line;
+            assign.line = v->object->location.start.line;
             assign.storeObject.propertyIndex = prop->index;
             // XXX - this cast may not be 0
             assign.storeObject.cast = 0;
@@ -1114,7 +1129,7 @@ bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
 
             QmlInstruction assign;
             assign.type = QmlInstruction::StoreObject;
-            assign.line = v->object->line;
+            assign.line = v->object->location.start.line;
             assign.storeObject.propertyIndex = prop->index;
             // XXX - this cast may not be 0
             assign.storeObject.cast = 0;
@@ -1127,13 +1142,13 @@ bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
             if (prop->index != -1) {
                 QmlInstruction assign;
                 assign.type = QmlInstruction::StoreValueSource;
-                assign.line = v->object->line;
+                assign.line = v->object->location.start.line;
                 assign.assignValueSource.property = prop->index;
                 output->bytecode << assign;
             } else {
                 QmlInstruction assign;
                 assign.type = QmlInstruction::AssignValueSource;
-                assign.line = v->object->line;
+                assign.line = v->object->location.start.line;
                 assign.assignValueSource.property = output->indexForByteArray(prop->name);;
                 output->bytecode << assign;
             }
@@ -1148,7 +1163,7 @@ bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
 
         QmlInstruction assign;
         assign.type = QmlInstruction::AssignObject;
-        assign.line = v->object->line;
+        assign.line = v->object->location.start.line;
         assign.assignObject.property = output->indexForByteArray(prop->name);
         assign.assignObject.castValue = 0;
         output->bytecode << assign;
@@ -1166,14 +1181,14 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
 {
     if (isBinding(v->primitive)) {
 
-        compileBinding(v->primitive, prop, ctxt, obj->metaObject(), v->line);
+        compileBinding(v->primitive, prop, ctxt, obj->metaObject(), v->location.start.line);
 
         v->type = Value::PropertyBinding;
 
     } else {
 
         QmlInstruction assign;
-        assign.line = v->line;
+        assign.line = v->location.start.line;
 
         bool doassign = true;
         if (prop->index != -1) {
@@ -1286,7 +1301,7 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
     store.type = QmlInstruction::StoreMetaObject;
     store.storeMeta.data = output->mos.count() - 1;
     store.storeMeta.slotData = slotStart;
-    store.line = obj->line;
+    store.line = obj->location.start.line;
     output->bytecode << store;
 
     for (int ii = 0; ii < obj->dynamicProperties.count(); ++ii) {
@@ -1301,7 +1316,7 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
         if (!p.onValueChanged.isEmpty()) {
             QmlInstruction assign;
             assign.type = QmlInstruction::AssignSignal;
-            assign.line = obj->line;
+            assign.line = obj->location.start.line;
             assign.assignSignal.signal = 
                 output->indexForByteArray(p.name + "Changed()");
             assign.assignSignal.value = 

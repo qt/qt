@@ -29,6 +29,7 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlvmemetaobject_p.h \
     qml/qml.h \
     qml/qmlbindablevalue.h \
+    qml/qmlbindablevalue_p.h \
     qml/qmlmetaproperty.h \
     qml/qmlcomponent.h \
     qml/qmlcomponent_p.h \

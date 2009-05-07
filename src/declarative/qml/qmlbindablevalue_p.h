@@ -39,78 +39,25 @@
 **
 ****************************************************************************/
 
-#ifndef QMLEXPRESSION_H
-#define QMLEXPRESSION_H
+#ifndef QMLBINDABLEVALUE_P_H
+#define QMLBINDABLEVALUE_P_H
 
-#include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
-
-QT_BEGIN_HEADER
+#include <private/qobject_p.h>
+#include <qmlbindablevalue.h>
+#include <qmlmetaproperty.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QString;
-class QmlRefCount;
-class QmlEngine;
-class QmlContext;
-class QmlExpressionPrivate;
-class QmlBasicScript;
-class Q_DECLARATIVE_EXPORT QmlExpression 
+class QmlBindableValuePrivate : public QObjectPrivate
 {
+    Q_DECLARE_PUBLIC(QmlBindableValue);
 public:
-    QmlExpression();
-    QmlExpression(QmlContext *, const QString &, QObject *);
-    QmlExpression(QmlContext *, const QString &, QObject *, bool);
-    QmlExpression(QmlContext *, void *, QmlRefCount *rc, QObject *me);
-    virtual ~QmlExpression();
+    QmlBindableValuePrivate();
 
-    QmlEngine *engine() const;
-    QmlContext *context() const;
-
-    QString expression() const;
-    void clearExpression();
-    virtual void setExpression(const QString &);
-    QVariant value();
-    bool isConstant() const;
-
-    bool trackChange() const;
-    void setTrackChange(bool);
-
-    QObject *scopeObject() const;
-
-protected:
-    virtual void valueChanged();
-
-private:
-    friend class BindExpressionProxy;
-    friend class QmlDebugger;
-    QmlExpressionPrivate *d;
+    bool inited;
+    QmlMetaProperty property;
 };
-
-// LK: can't we merge with QmlExpression????
-class Q_DECLARATIVE_EXPORT QmlExpressionObject : public QObject, 
-                                                 public QmlExpression
-{
-    Q_OBJECT
-public:
-    QmlExpressionObject(QObject *parent = 0);
-    QmlExpressionObject(QmlContext *, const QString &, QObject *scope, QObject *parent = 0);
-    QmlExpressionObject(QmlContext *, const QString &, QObject *scope, bool);
-    QmlExpressionObject(QmlContext *, void *, QmlRefCount *, QObject *);
-
-public Q_SLOTS:
-    QVariant value();
-
-Q_SIGNALS:
-    void valueChanged();
-};
-
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QMLEXPRESSION_H
-
+#endif // QMLBINDABLEVALUE_P_H
