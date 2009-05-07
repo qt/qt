@@ -18,7 +18,7 @@ Rect {
             query: "SELECT recid, label, email, phone FROM contacts WHERE lower(label) LIKE lower(:searchTerm) ORDER BY label, recid"
             bindings: SqlBind {
                 name: ":searchTerm"
-                value: searchBar.text + '%' 
+                value: '%' + searchBar.text + '%' 
             }
         },
         Component {
@@ -172,7 +172,7 @@ Rect {
         clip: true
         model: contactList
         delegate: contactDelegate
-        focus: contacts.mode != 'list'
+        focus: false
     }
     Contact {
         id: newContactItem
@@ -206,7 +206,7 @@ Rect {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottomMargin: 0
-        focus: contacts.mode == 'list'
+        focus: false
         SearchBar {
             id: searchBar
             anchors.fill: parent
@@ -232,6 +232,10 @@ Rect {
                 }
             }
         ]
+    }
+    KeyProxy {
+        focus: true
+        targets: { contacts.mode == "list" ? [searchBarWrapper, contactListView] : [contactListView]}
     }
     states: [
         State {
