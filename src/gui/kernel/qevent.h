@@ -736,6 +736,7 @@ protected:
     QSet<QString> m_cancelledGestures;
 
     friend class QApplication;
+    friend class QGestureManager;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

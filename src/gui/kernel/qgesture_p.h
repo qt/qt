@@ -85,6 +85,8 @@ public:
     QString type;
     Qt::GestureState state;
 
+    QPointer<QWidget> widget;
+
     QRect rect;
     QPoint hotSpot;
     QDateTime startTime;

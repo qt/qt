@@ -70,8 +70,6 @@ class Q_GUI_EXPORT QGestureManager : public QObject
 public:
     QGestureManager(QObject *parent);
 
-    void setGestureTargetWidget(QWidget *widget);
-
     int eventDeliveryDelay() const;
     void setEventDeliveryDelay(int ms);
 
@@ -95,13 +93,13 @@ private slots:
     void recognizerStateChanged(QGestureRecognizer::Result);
 
 private:
-    bool sendGestureEvent(QWidget *receiver, QGestureEvent *event);
+    bool sendGestureEvent(QWidget *receiver, const QList<QGesture*> &gestures,
+                          const QSet<QString> &cancelled = QSet<QString>());
 
     QSet<QGestureRecognizer*> activeGestures;
     QMap<QGestureRecognizer*, int> maybeGestures;
     QSet<QGestureRecognizer*> recognizers;
 
-    QWidget *targetWidget;
     QPoint lastPos;
 
     int eventDeliveryDelayTimeout;
