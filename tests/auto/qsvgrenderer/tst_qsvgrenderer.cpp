@@ -79,6 +79,7 @@ private slots:
     void fillRule();
     void opacity();
     void paths();
+    void displayMode();
 
 #ifndef QT_NO_COMPRESS
     void testGzLoading();
@@ -856,6 +857,71 @@ void tst_QSvgRenderer::paths()
         if (i != 0) {
             QCOMPARE(images[i], images[0]);
         }
+    }
+}
+
+void tst_QSvgRenderer::displayMode()
+{
+    static const char *svgs[] = {
+        // All visible.
+        "<svg>"
+        "   <g>"
+        "       <rect x=\"0\" y=\"0\" height=\"10\" width=\"10\" fill=\"red\" />"
+        "       <rect x=\"0\" y=\"0\" height=\"10\" width=\"10\" fill=\"blue\" />"
+        "   </g>"
+        "</svg>",
+        // Don't display svg element.
+        "<svg display=\"none\">"
+        "   <g>"
+        "       <rect x=\"0\" y=\"0\" height=\"10\" width=\"10\" fill=\"red\" />"
+        "       <rect x=\"0\" y=\"0\" height=\"10\" width=\"10\" fill=\"blue\" />"
+        "   </g>"
+        "</svg>",
+        // Don't display g element.
+        "<svg>"
+        "   <g display=\"none\">"
+        "       <rect x=\"0\" y=\"0\" height=\"10\" width=\"10\" fill=\"red\" />"
+        "       <rect x=\"0\" y=\"0\" height=\"10\" width=\"10\" fill=\"blue\" />"
+        "   </g>"
+        "</svg>",
+        // Don't display first rect element.
+        "<svg>"
+        "   <g>"
+        "       <rect x=\"0\" y=\"0\" height=\"10\" width=\"10\" fill=\"red\" display=\"none\" />"
+        "       <rect x=\"0\" y=\"0\" height=\"10\" width=\"10\" fill=\"blue\" />"
+        "   </g>"
+        "</svg>",
+        // Don't display second rect element.
+        "<svg>"
+        "   <g>"
+        "       <rect x=\"0\" y=\"0\" height=\"10\" width=\"10\" fill=\"red\" />"
+        "       <rect x=\"0\" y=\"0\" height=\"10\" width=\"10\" fill=\"blue\" display=\"none\" />"
+        "   </g>"
+        "</svg>",
+        // Don't display svg element, but set display mode to "inline" for other elements.
+        "<svg display=\"none\">"
+        "   <g display=\"inline\">"
+        "       <rect x=\"0\" y=\"0\" height=\"10\" width=\"10\" fill=\"red\" display=\"inline\" />"
+        "       <rect x=\"0\" y=\"0\" height=\"10\" width=\"10\" fill=\"blue\" display=\"inline\" />"
+        "   </g>"
+        "</svg>"
+    };
+
+    QRgb expectedColors[] = {0xff0000ff, 0xff00ff00, 0xff00ff00, 0xff0000ff, 0xffff0000, 0xff00ff00};
+
+    const int COUNT = sizeof(svgs) / sizeof(svgs[0]);
+    QPainter p;
+
+    for (int i = 0; i < COUNT; ++i) {
+        QByteArray data(svgs[i]);
+        QSvgRenderer renderer(data);
+        QVERIFY(renderer.isValid());
+        QImage image(10, 10, QImage::Format_ARGB32_Premultiplied);
+        image.fill(0xff00ff00);
+        p.begin(&image);
+        renderer.render(&p);
+        p.end();
+        QCOMPARE(image.pixel(5, 5), expectedColors[i]);
     }
 }
 
