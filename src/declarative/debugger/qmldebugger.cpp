@@ -93,6 +93,7 @@ QmlDebugger::QmlDebugger(QWidget *parent)
     tabs->addTab(m_warnings, "Warnings");
 
     m_watchers = new QTableWidget(this);
+    m_watchers->setSelectionMode(QTableWidget::NoSelection);
     tabs->addTab(m_watchers, "Watchers");
 
     splitter->addWidget(tabs);
