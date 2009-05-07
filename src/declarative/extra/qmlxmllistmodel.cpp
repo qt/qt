@@ -90,8 +90,9 @@ class QmlXmlListModelPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlXmlListModel)
 public:
-    QmlXmlListModelPrivate() : size(-1), highestRole(Qt::UserRole), reply(0), roleObjects(this) {}
+    QmlXmlListModelPrivate() : isClassComplete(false), size(-1), highestRole(Qt::UserRole), reply(0), roleObjects(this) {}
 
+    bool isClassComplete;
     QString src;
     QString query;
     QString namespaces;
@@ -204,7 +205,10 @@ QString QmlXmlListModel::source() const
 void QmlXmlListModel::setSource(const QString &src)
 {
     Q_D(QmlXmlListModel);
-    d->src = src;
+    if (d->src != src) {
+        d->src = src;
+        reload();
+    }
 }
 
 QString QmlXmlListModel::query() const
@@ -216,7 +220,10 @@ QString QmlXmlListModel::query() const
 void QmlXmlListModel::setQuery(const QString &query)
 {
     Q_D(QmlXmlListModel);
-    d->query = query;
+    if (d->query != query) {
+        d->query = query;
+        reload();
+    }
 }
 
 QString QmlXmlListModel::namespaceDeclarations() const
@@ -228,27 +235,42 @@ QString QmlXmlListModel::namespaceDeclarations() const
 void QmlXmlListModel::setNamespaceDeclarations(const QString &declarations)
 {
     Q_D(QmlXmlListModel);
-    d->namespaces = declarations;
+    if (d->namespaces != declarations) {
+        d->namespaces = declarations;
+        reload();
+    }
 }
 
 void QmlXmlListModel::classComplete()
 {
-    fetch();
+    Q_D(QmlXmlListModel);
+    d->isClassComplete = true;
+    reload();
 }
 
-void QmlXmlListModel::fetch()
+void QmlXmlListModel::reload()
 {
     Q_D(QmlXmlListModel);
+
+    if (!d->isClassComplete)
+        return;
 
     //clear existing data
     d->size = 0;
     int count = d->data.count();
     d->data.clear();
-    emit itemsRemoved(0, count);
+    if (count > 0)
+        emit itemsRemoved(0, count);
 
     if (d->src.isEmpty()) {
-        qWarning() << "Can't fetch empty src string";
+        qWarning() << "Can't load empty src string";
         return;
+    }
+
+    if (d->reply) {
+        d->reply->abort();
+        d->reply->deleteLater();
+        d->reply = 0;
     }
 
     QNetworkRequest req((QUrl(d->src)));
@@ -316,7 +338,9 @@ void QmlXmlListModel::doQuery(QByteArray &rawData)
     d->xml = xml;
 
     d->size = count;
-    emit itemsInserted(0, count);
+
+    if (count > 0)
+        emit itemsInserted(0, count);
 }
 
 void QmlXmlListModel::doSubquery(int index) const

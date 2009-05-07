@@ -13,8 +13,8 @@ Writing and using components allows you to:
 \endlist
 
 Components are placed in \e <Name>.qml files, allowing \e <Name> to then be used as a tag
-elsewhere. For example, if you have a Slider.qml file, you can then use \c {Slider \{\}} to
-place a slider.
+elsewhere. For example, if you have a Slider.qml file, you can then use \c {Slider { ... }} to
+make a slider, just as if it was a built-in type.
 
 Components may be collected into \l {qmlmodules}{modules}.
 
@@ -78,15 +78,15 @@ MyButton { label: "Reset"; onClicked: resetData() }
 
 \section1 Placing .qml Files
 
-Component files should be placed in specific locations in order to be found by the Qml engine:
+When one component refers to a another, the second must be found either in the same directory
+as the first, or in a directory imported using the \c import statement:
 
-\list
-\o the run directory
-\o the run directory + "/qml"
-\o the directory of the Qml you are running
-\o the directory of the Qml you are running + "/qml"
-\endlist
+\code
+import "library"
+\endcode
 
-In the future library-like directories will be defined (in the meantime the first two options above effectively serve this purpose).
+\section1 Namespaces
+
+Namespaces for QML will be supported in Qt 4.6.
 
 */

@@ -27,9 +27,4 @@ to be instructive on specific elements.
 
 Finally, check out the \l {tutorial} to learn a little more about writing your
 own QML-based applications.
-
-\note When running applications that only use the Fluid UI atoms under the 
-software rasterizer, a simple canvas backend is used by default. To use 
-Graphics View instead, set \c QML_USE_GRAPHICSVIEW=1.
-
 */
