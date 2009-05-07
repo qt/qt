@@ -41,6 +41,7 @@
 
 #include <qml.h>
 #include "qmlbindablevalue.h"
+#include "qmlbindablevalue_p.h"
 #include <qmlcontext.h>
 #include <QVariant>
 #include <qfxperf.h>
@@ -50,20 +51,25 @@
 QT_BEGIN_NAMESPACE
 DEFINE_BOOL_CONFIG_OPTION(scriptWarnings, QML_SCRIPT_WARNINGS);
 
+QmlBindableValuePrivate::QmlBindableValuePrivate()
+: inited(false)
+{
+}
+
 QML_DEFINE_NOCREATE_TYPE(QmlBindableValue);
 QmlBindableValue::QmlBindableValue(QObject *parent)
-: QmlPropertyValueSource(parent), _inited(false)
+: QmlPropertyValueSource(*new QmlBindableValuePrivate, parent)
 {
     qFatal("QmlBindableValue: Default constructor not supported");
 }
 
 QmlBindableValue::QmlBindableValue(void *data, QmlRefCount *rc, QObject *obj, QObject *parent)
-: QmlPropertyValueSource(parent), QmlExpression(QmlContext::activeContext(), data, rc, obj), _inited(false)
+: QmlPropertyValueSource(*new QmlBindableValuePrivate, parent), QmlExpression(QmlContext::activeContext(), data, rc, obj)
 {
 }
 
 QmlBindableValue::QmlBindableValue(const QString &str, QObject *obj, bool sse, QObject *parent)
-: QmlPropertyValueSource(parent), QmlExpression(QmlContext::activeContext(), str, obj, sse), _inited(false)
+: QmlPropertyValueSource(*new QmlBindableValuePrivate, parent), QmlExpression(QmlContext::activeContext(), str, obj, sse)
 {
 }
 
@@ -73,16 +79,25 @@ QmlBindableValue::~QmlBindableValue()
 
 void QmlBindableValue::setTarget(const QmlMetaProperty &prop)
 {
-    _property = prop;
+    Q_D(QmlBindableValue);
+    d->property = prop;
 
     update();
 }
 
+QmlMetaProperty QmlBindableValue::property() const 
+{
+   Q_D(const QmlBindableValue);
+   return d->property; 
+}
+
 void QmlBindableValue::init()
 {
-    if (_inited)
+    Q_D(QmlBindableValue);
+
+    if (d->inited)
         return;
-    _inited = true;
+    d->inited = true;
     update();
 }
 
@@ -95,20 +110,22 @@ void QmlBindableValue::setExpression(const QString &expr)
 Q_DECLARE_METATYPE(QList<QObject *>);
 void QmlBindableValue::update()
 {
+    Q_D(QmlBindableValue);
+
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::BindableValueUpdate> bu;
 #endif
-    if (!_inited)
+    if (!d->inited)
         return;
 
-    if (_property.propertyCategory() == QmlMetaProperty::List) {
+    if (d->property.propertyCategory() == QmlMetaProperty::List) {
         QVariant value = this->value();
-        int listType = QmlMetaType::listType(_property.propertyType());
+        int listType = QmlMetaType::listType(d->property.propertyType());
 
         if (value.userType() == qMetaTypeId<QList<QObject *> >()) {
             const QList<QObject *> &list = 
                 qvariant_cast<QList<QObject *> >(value);
-            QVariant listVar = _property.read();
+            QVariant listVar = d->property.read();
             QmlMetaType::clear(listVar);
             for (int ii = 0; ii < list.count(); ++ii) {
                 QVariant v = QmlMetaType::fromObject(list.at(ii), listType);
@@ -117,14 +134,14 @@ void QmlBindableValue::update()
 
         } else if (value.type() == uint(listType) ||
                   value.userType() == listType) {
-            QVariant listVar = _property.read();
+            QVariant listVar = d->property.read();
             QmlMetaType::clear(listVar);
             QmlMetaType::append(listVar, value);
         }
-    } else if (_property.propertyCategory() == QmlMetaProperty::QmlList) {
+    } else if (d->property.propertyCategory() == QmlMetaProperty::QmlList) {
         // XXX - optimize!
         QVariant value = this->value();
-        QVariant list = _property.read();
+        QVariant list = d->property.read();
         QmlPrivate::ListInterface *li =
             *(QmlPrivate::ListInterface **)list.constData();
 
@@ -153,20 +170,20 @@ void QmlBindableValue::update()
             void *d = (void *)&obj;
             li->append(d);
         }
-    } else if (_property.propertyCategory() == QmlMetaProperty::Bindable) {
+    } else if (d->property.propertyCategory() == QmlMetaProperty::Bindable) {
 
         // NOTE: We assume that only core properties can have 
         // propertyType == Bindable
-        int idx = _property.coreIndex();
+        int idx = d->property.coreIndex();
         Q_ASSERT(idx != -1);
 
         void *a[1];
         QmlBindableValue *t = this;
         a[0] = (void *)&t;
-        _property.object()->qt_metacall(QMetaObject::WriteProperty,
-                                        idx, a);
+        d->property.object()->qt_metacall(QMetaObject::WriteProperty,
+                                          idx, a);
 
-    } else if (_property.propertyCategory() == QmlMetaProperty::Object) {
+    } else if (d->property.propertyCategory() == QmlMetaProperty::Object) {
 
         QVariant value = this->value();
         if ((int)value.type() != qMetaTypeId<QObject *>()) {
@@ -186,17 +203,17 @@ void QmlBindableValue::update()
 
         // NOTE: We assume that only core properties can have 
         // propertyType == Object
-        int idx = _property.coreIndex();
+        int idx = d->property.coreIndex();
         Q_ASSERT(idx != -1);
 
         void *a[1];
         a[0] = (void *)&obj;
-        _property.object()->qt_metacall(QMetaObject::WriteProperty,
+        d->property.object()->qt_metacall(QMetaObject::WriteProperty,
                                         idx, a);
 
-    } else if (_property.propertyCategory() == QmlMetaProperty::Normal) {
+    } else if (d->property.propertyCategory() == QmlMetaProperty::Normal) {
         QVariant value = this->value();
-        _property.write(value);
+        d->property.write(value);
     }
 }
 

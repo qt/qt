@@ -48,6 +48,8 @@
 #include <qmlerror.h>
 #include <private/qmlinstruction_p.h>
 #include <private/qmlcompositetypemanager_p.h>
+#include <private/qmlparser_p.h>
+
 class QStringList;
 
 QT_BEGIN_NAMESPACE
@@ -55,12 +57,6 @@ class QmlEngine;
 class QmlComponent;
 class QmlCompiledComponent;
 class QmlContext;
-
-namespace QmlParser {
-    class Object;
-    class Property;
-    class Value;
-};
 
 class QmlCompiledData 
 {
@@ -98,6 +94,7 @@ public:
     QList<CustomTypeData> customTypeData;
     QList<QByteArray> datas;
     QList<QMetaObject *> mos;
+    QList<QmlParser::Location> locations;
     QList<QmlInstruction> bytecode;
 
 private:
@@ -106,6 +103,8 @@ private:
     int indexForByteArray(const QByteArray &);
     int indexForFloat(float *, int);
     int indexForInt(int *, int);
+    int indexForLocation(const QmlParser::Location &);
+    int indexForLocation(const QmlParser::LocationSpan &);
 };
 
 class Q_DECLARATIVE_EXPORT QmlCompiler 
