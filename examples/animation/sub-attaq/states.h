@@ -47,12 +47,14 @@
 #include "qstate.h"
 #include "qsignaltransition.h"
 #include "qpropertyanimation.h"
+#include "qkeyeventtransition.h"
 #else
-#include <QState>
-#include <QSignalTransition>
-#include <QPropertyAnimation>
+#include <QtCore/QState>
+#include <QtCore/QSignalTransition>
+#include <QtCore/QPropertyAnimation>
+# include <QtGui/QKeyEventTransition>
 #endif
-#include <QSet>
+#include <QtCore/QSet>
 
 class GraphicsScene;
 class Boat;
@@ -64,10 +66,9 @@ class PlayState : public QState
 public:
     PlayState(GraphicsScene *scene, QState *parent = 0);
     ~PlayState();
-    void initializeLevel();
 
  protected:
-    void onEntry();
+    void onEntry(QEvent *);
 
 private :
     GraphicsScene *scene;
@@ -79,8 +80,22 @@ private :
     friend class UpdateScoreState;
     friend class UpdateScoreTransition;
     friend class WinTransition;
+    friend class CustomSpaceTransition;
     friend class WinState;
     friend class LostState;
+    friend class LevelState;
+};
+
+class LevelState : public QState
+{
+public:
+    LevelState(GraphicsScene *scene, PlayState *game, QState *parent = 0);
+protected:
+    void onEntry(QEvent *);
+private :
+    void initializeLevel();
+    GraphicsScene *scene;
+    PlayState *game;
 };
 
 class PauseState : public QState
@@ -89,8 +104,8 @@ public:
     PauseState(GraphicsScene *scene, QState *parent = 0);
 
 protected:
-    void onEntry();
-    void onExit();
+    void onEntry(QEvent *);
+    void onExit(QEvent *);
 private :
     GraphicsScene *scene;
     Boat *boat;
@@ -102,7 +117,7 @@ public:
     LostState(GraphicsScene *scene, PlayState *game, QState *parent = 0);
 
 protected:
-    void onEntry();
+    void onEntry(QEvent *);
 private :
     GraphicsScene *scene;
     PlayState *game;
@@ -114,7 +129,7 @@ public:
     WinState(GraphicsScene *scene, PlayState *game, QState *parent = 0);
 
 protected:
-    void onEntry();
+    void onEntry(QEvent *);
 private :
     GraphicsScene *scene;
     PlayState *game;
@@ -125,7 +140,7 @@ class UpdateScoreState : public QState
 public:
     UpdateScoreState(PlayState *game, QState *parent);
 protected:
-    void onEntry();
+    void onEntry(QEvent *);
 private:
     QPropertyAnimation *scoreAnimation;
     PlayState *game;
@@ -140,6 +155,7 @@ protected:
     virtual bool eventTest(QEvent *event) const;
 private:
     PlayState * game;
+    GraphicsScene *scene;
 };
 
 //These transtion test if we have won the game
@@ -151,6 +167,19 @@ protected:
     virtual bool eventTest(QEvent *event) const;
 private:
     PlayState * game;
+    GraphicsScene *scene;
+};
+
+//These transtion is true if one level has been completed and the player want to continue
+ class CustomSpaceTransition : public QKeyEventTransition
+{
+public:
+    CustomSpaceTransition(QWidget *widget, PlayState *game, QEvent::Type type, int key);
+protected:
+    virtual bool eventTest(QEvent *event) const;
+private:
+    PlayState *game;
+    int key;
 };
 
 #endif // STATES_H

@@ -44,11 +44,12 @@
 #include <QtCore/qdebug.h>
 #include <QtGui/qcolor.h>
 #include <QtDeclarative/qmlmetatype.h>
+#include <QtDeclarative/qmlexpression.h>
 
-static QString objectToString(QObject *obj)
+QString QmlWatches::objectToString(QObject *obj)
 {
     if(!obj)
-        return QString();
+        return QLatin1String("NULL");
 
     QString objectName = obj->objectName();
     if(objectName.isEmpty())
@@ -69,6 +70,10 @@ public:
                     int column,
                     QmlWatches *parent = 0);
 
+    QmlWatchesProxy(QmlExpressionObject *object,
+                    int column,
+                    QmlWatches *parent = 0);
+
 public slots:
     void refresh();
 
@@ -76,15 +81,25 @@ private:
     QmlWatches *m_watches;
     QObject *m_object;
     QMetaProperty m_property;
+
+    QmlExpressionObject *m_expr;
     int m_column;
 };
+
+QmlWatchesProxy::QmlWatchesProxy(QmlExpressionObject *object,
+                                 int column,
+                                 QmlWatches *parent)
+: QObject(parent), m_watches(parent), m_object(0), m_expr(object), m_column(column)
+{
+    QObject::connect(m_expr, SIGNAL(valueChanged()), this, SLOT(refresh()));
+}
 
 QmlWatchesProxy::QmlWatchesProxy(QObject *object, 
                                  const QMetaProperty &prop, 
                                  int column,
                                  QmlWatches *parent)
 : QObject(parent), m_watches(parent), m_object(object), m_property(prop), 
-  m_column(column)
+  m_expr(0), m_column(column)
 {
     static int refreshIdx = -1;
     if(refreshIdx == -1)
@@ -96,7 +111,10 @@ QmlWatchesProxy::QmlWatchesProxy(QObject *object,
 
 void QmlWatchesProxy::refresh()
 {
-    QVariant v = m_property.read(m_object);
+    QVariant v;
+    if(m_expr) v = m_expr->value();
+    else v= m_property.read(m_object);
+
     m_watches->addValue(m_column, v);
 }
 
@@ -110,13 +128,30 @@ bool QmlWatches::hasWatch(quint32 objectId, const QByteArray &property)
     return m_watches.contains(qMakePair(objectId, property));
 }
 
+void QmlWatches::addWatch(QmlExpressionObject *expr)
+{
+    int oldColumn = columnCount(QModelIndex());
+
+    m_watches.append(qMakePair(quint32(0), QByteArray()));
+
+    beginInsertColumns(QModelIndex(), oldColumn, oldColumn);
+    endInsertColumns();
+
+    m_columnNames.append(expr->expression());
+
+    QmlWatchesProxy *proxy = new QmlWatchesProxy(expr, oldColumn, this);
+    m_proxies.append(proxy);
+
+    proxy->refresh();
+    m_values[m_values.count() - 1].first = true;
+}
+
 void QmlWatches::addWatch(quint32 objectId, const QByteArray &property)
 {
     if(hasWatch(objectId, property))
         return;
 
     int oldColumn = columnCount(QModelIndex());
-
 
     m_watches.append(qMakePair(objectId, property));
 
@@ -128,36 +163,38 @@ void QmlWatches::addWatch(quint32 objectId, const QByteArray &property)
     QMetaProperty prop = 
         obj->metaObject()->property(obj->metaObject()->indexOfProperty(property.constData()));
     QmlWatchesProxy *proxy = new QmlWatchesProxy(obj, prop, oldColumn, this);
+    m_proxies.append(proxy);
     proxy->refresh();
     m_values[m_values.count() - 1].first = true;
 }
 
 void QmlWatches::remWatch(quint32 objectId, const QByteArray &property)
 {
-    m_watches.removeAll(qMakePair(objectId, property));
-}
+    QPair<quint32, QByteArray> watch = qMakePair(objectId, property);
+    for(int ii = 0; ii < m_watches.count(); ++ii) {
+        if(m_watches.at(ii) == watch) {
+            m_watches.removeAt(ii);
+            m_columnNames.removeAt(ii);
+            if(m_proxies.at(ii))
+                delete m_proxies.at(ii);
+            m_proxies.removeAt(ii);
 
-bool QmlWatches::hasWatch(quint32 exprId)
-{
-    return m_exprWatches.contains(exprId);
-}
 
-void QmlWatches::remWatch(quint32 exprId)
-{
-    m_exprWatches.removeAll(exprId);
-}
-
-void QmlWatches::addWatch(quint32 exprId)
-{
-    if (hasWatch(exprId))
-        return;
-
-    int oldColumn = columnCount(QModelIndex());
-
-    m_exprWatches.append(exprId);
-
-    beginInsertColumns(QModelIndex(), oldColumn, oldColumn);
-    endInsertColumns();
+            for(QList<Value>::Iterator iter = m_values.begin();
+                    iter != m_values.end();
+               ) {
+                if(iter->column == ii) {
+                    iter = m_values.erase(iter);
+                } else {
+                    if(iter->column > ii)
+                        --iter->column;
+                    ++iter;
+                }
+            }
+            reset();
+            return;
+        }
+    }
 }
 
 quint32 QmlWatches::objectId(QObject *object)
@@ -210,7 +247,7 @@ void QmlWatches::addValue(int column, const QVariant &value)
 
 int QmlWatches::columnCount(const QModelIndex &) const
 {
-    return m_watches.count() + m_exprWatches.count();
+    return m_watches.count();
 }
 
 int QmlWatches::rowCount(const QModelIndex &) const

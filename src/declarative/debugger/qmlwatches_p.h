@@ -52,6 +52,8 @@
 QT_BEGIN_NAMESPACE
 
 class QmlWatchesProxy;
+class QmlExpressionObject;
+
 class QmlWatches : public QAbstractTableModel
 {
     Q_OBJECT
@@ -62,13 +64,12 @@ public:
     void addWatch(quint32 objectId, const QByteArray &property);
     void remWatch(quint32 objectId, const QByteArray &property);
 
-    bool hasWatch(quint32 exprId);
-    void remWatch(quint32 exprId);
-    void addWatch(quint32 exprId);
+    void addWatch(QmlExpressionObject *);
 
     quint32 objectId(QObject *);
     QObject *object(quint32);
 
+    static QString objectToString(QObject *obj);
 protected:
     int columnCount(const QModelIndex &) const;
     int rowCount(const QModelIndex &) const;
@@ -78,7 +79,6 @@ protected:
 private:
     friend class QmlWatchesProxy;
     QList<QPair<quint32, QByteArray> > m_watches;
-    QList<quint32> m_exprWatches;
 
     void addValue(int, const QVariant &);
     struct Value {
@@ -88,6 +88,7 @@ private:
     };
     QList<Value> m_values;
     QStringList m_columnNames;
+    QList<QPointer<QmlWatchesProxy> > m_proxies;
 
     quint32 m_uniqueId;
     QHash<QObject *, QPair<QPointer<QObject>, quint32> *> m_objects;

@@ -43,9 +43,9 @@
 #define QSTATE_H
 
 #ifndef QT_STATEMACHINE_SOLUTION
-#include <QtCore/qactionstate.h>
+#include <QtCore/qabstractstate.h>
 #else
-#include "qactionstate.h"
+#include "qabstractstate.h"
 #endif
 
 QT_BEGIN_HEADER
@@ -55,47 +55,50 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Core)
 
 class QAbstractTransition;
-class QHistoryState;
 class QSignalTransition;
-class QStateFinishedTransition;
 
 class QStatePrivate;
-class Q_CORE_EXPORT QState : public QActionState
+class Q_CORE_EXPORT QState : public QAbstractState
 {
     Q_OBJECT
+    Q_PROPERTY(QAbstractState* initialState READ initialState WRITE setInitialState)
+    Q_PROPERTY(QAbstractState* errorState READ errorState WRITE setErrorState)
+    Q_PROPERTY(ChildMode childMode READ childMode WRITE setChildMode)
+    Q_ENUMS(ChildMode)
 public:
-    enum Type {
-        Normal,
-        ParallelGroup
-    };
-
-    enum HistoryType {
-        ShallowHistory,
-        DeepHistory
+    enum ChildMode {
+        ExclusiveStates,
+        ParallelStates
     };
 
     QState(QState *parent = 0);
-    QState(Type type, QState *parent = 0);
+    QState(ChildMode childMode, QState *parent = 0);
     ~QState();
 
     QAbstractState *errorState() const;
     void setErrorState(QAbstractState *state);
 
-    void addTransition(QAbstractTransition *transition);
+    QAbstractTransition *addTransition(QAbstractTransition *transition);
     QSignalTransition *addTransition(QObject *sender, const char *signal, QAbstractState *target);
     QAbstractTransition *addTransition(QAbstractState *target);
-    QStateFinishedTransition *addFinishedTransition(QAbstractState *target);
     void removeTransition(QAbstractTransition *transition);
-    QList<QAbstractTransition*> transitions() const;
-
-    QHistoryState *addHistoryState(HistoryType type = ShallowHistory);
 
     QAbstractState *initialState() const;
     void setInitialState(QAbstractState *state);
 
+    ChildMode childMode() const;
+    void setChildMode(ChildMode mode);
+
+    void assignProperty(QObject *object, const char *name,
+                        const QVariant &value);
+
+Q_SIGNALS:
+    void finished();
+    void polished();
+
 protected:
-    void onEntry();
-    void onExit();
+    void onEntry(QEvent *event);
+    void onExit(QEvent *event);
 
     bool event(QEvent *e);
 

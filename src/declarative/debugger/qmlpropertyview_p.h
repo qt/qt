@@ -58,9 +58,13 @@ public:
 
     void setObject(QObject *);
 
+signals:
+    void objectClicked(quint32);
+
 public slots:
     void refresh();
     void itemDoubleClicked(QTreeWidgetItem *);
+    void itemClicked(QTreeWidgetItem *);
 
 private:
     QPointer<QObject> m_object;

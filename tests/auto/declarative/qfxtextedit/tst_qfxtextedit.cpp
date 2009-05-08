@@ -43,8 +43,8 @@ tst_qfxtextedit::tst_qfxtextedit()
     standard << "the quick brown fox jumped over the lazy dog"
              << "the quick brown fox\n jumped over the lazy dog";
 
-    richText << "<i>the <b>quick</b> brown <a href=\"http://www.google.com\">fox</a> jumped over the <b>lazy</b> dog</i>"
-             << "<i>the <b>quick</b> brown <a href=\"http://www.google.com\">fox</a><br>jumped over the <b>lazy</b> dog</i>";
+    richText << "<i>the <b>quick</b> brown <a href=\\\"http://www.google.com\\\">fox</a> jumped over the <b>lazy</b> dog</i>"
+             << "<i>the <b>quick</b> brown <a href=\\\"http://www.google.com\\\">fox</a><br>jumped over the <b>lazy</b> dog</i>";
 
     hAlignmentStrings << "AlignLeft"
                       << "AlignRight"
@@ -84,7 +84,7 @@ tst_qfxtextedit::tst_qfxtextedit()
 void tst_qfxtextedit::text()
 {
     {
-        QmlComponent texteditComponent(&engine, "<TextEdit text=\"\" />");
+        QmlComponent texteditComponent(&engine, "TextEdit {  text: \"\"  }");
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
         QVERIFY(textEditObject != 0);
@@ -93,7 +93,7 @@ void tst_qfxtextedit::text()
 
     for (int i = 0; i < standard.size(); i++)
     {
-        QString componentStr = "<TextEdit>" + standard.at(i) + "</TextEdit>";
+        QString componentStr = "TextEdit { text: \"" + standard.at(i) + "\" }";
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
@@ -103,7 +103,7 @@ void tst_qfxtextedit::text()
 
     for (int i = 0; i < richText.size(); i++)
     {
-        QString componentStr = "<TextEdit><![CDATA[" + richText.at(i) + "]]></TextEdit>";
+        QString componentStr = "TextEdit { text: \"" + richText.at(i) + "\" }";
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
@@ -121,7 +121,7 @@ void tst_qfxtextedit::width()
 {
     // uses Font metrics to find the width for standard and document to find the width for rich
     {
-        QmlComponent texteditComponent(&engine, "<TextEdit text=\"\"/>");
+        QmlComponent texteditComponent(&engine, "TextEdit {  text: \"\" }");
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
         QCOMPARE(textEditObject->width(), 0.);
@@ -133,7 +133,7 @@ void tst_qfxtextedit::width()
         QFontMetrics fm(f);
         int metricWidth = fm.size(Qt::TextExpandTabs && Qt::TextShowMnemonic, standard.at(i)).width();
 
-        QString componentStr = "<TextEdit>" + standard.at(i) + "</TextEdit>";
+        QString componentStr = "TextEdit { text: \"" + standard.at(i) + "\" }";
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
@@ -148,7 +148,7 @@ void tst_qfxtextedit::width()
 
         int documentWidth = document.idealWidth();
 
-        QString componentStr = "<TextEdit><![CDATA[" + richText.at(i) + "]]></TextEdit>";
+        QString componentStr = "TextEdit { text: \"" + richText.at(i) + "\" }";
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
@@ -160,7 +160,7 @@ void tst_qfxtextedit::wrap()
 {
     // for specified width and wrap set true
     {
-        QmlComponent texteditComponent(&engine, "<TextEdit text=\"\" wrap=\"true\" width=\"300\"/>");
+        QmlComponent texteditComponent(&engine, "TextEdit {  text: \"\"; wrap: true; width: 300 }");
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
         QCOMPARE(textEditObject->width(), 300.);
@@ -168,7 +168,7 @@ void tst_qfxtextedit::wrap()
 
     for (int i = 0; i < standard.size(); i++)
     {
-        QString componentStr = "<TextEdit wrap=\"true\" width=\"300\">" + standard.at(i) + "</TextEdit>";
+        QString componentStr = "TextEdit {  wrap: true; width: 300; text: \"" + standard.at(i) + "\" }";
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
@@ -177,7 +177,7 @@ void tst_qfxtextedit::wrap()
 
     for (int i = 0; i < richText.size(); i++)
     {
-        QString componentStr = "<TextEdit wrap=\"true\" width=\"300\"><![CDATA[" + richText.at(i) + "]]></TextEdit>";
+        QString componentStr = "TextEdit {  wrap: true; width: 300; text: \"" + richText.at(i) + "\" }";
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
@@ -195,7 +195,7 @@ void tst_qfxtextedit::hAlign()
     {
         for (int j=0; j < hAlignmentStrings.size(); j++)
         {
-            QString componentStr = "<TextEdit hAlign=\"" + hAlignmentStrings.at(j) + "\">" + standard.at(i) + "</TextEdit>";
+            QString componentStr = "TextEdit {  hAlign: \"" + hAlignmentStrings.at(j) + "\"; text: \"" + standard.at(i) + "\" }";
             QmlComponent texteditComponent(&engine, componentStr.toLatin1());
             QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
@@ -207,7 +207,7 @@ void tst_qfxtextedit::hAlign()
     {
         for (int j=0; j < hAlignmentStrings.size(); j++)
         {
-            QString componentStr = "<TextEdit hAlign=\"" + hAlignmentStrings.at(j) + "\"><![CDATA[" + richText.at(i) + "]]></TextEdit>";
+            QString componentStr = "TextEdit {  hAlign: \"" + hAlignmentStrings.at(j) + "\"; text: \"" + richText.at(i) + "\" }";
             QmlComponent texteditComponent(&engine, componentStr.toLatin1());
             QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
@@ -225,7 +225,7 @@ void tst_qfxtextedit::vAlign()
     {
         for (int j=0; j < vAlignmentStrings.size(); j++)
         {
-            QString componentStr = "<TextEdit vAlign=\"" + vAlignmentStrings.at(j) + "\">" + standard.at(i) + "</TextEdit>";
+            QString componentStr = "TextEdit {  vAlign: \"" + vAlignmentStrings.at(j) + "\"; text: \"" + standard.at(i) + "\" }";
             QmlComponent texteditComponent(&engine, componentStr.toLatin1());
             QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
@@ -237,7 +237,7 @@ void tst_qfxtextedit::vAlign()
     {
         for (int j=0; j < vAlignmentStrings.size(); j++)
         {
-            QString componentStr = "<TextEdit vAlign=\"" + vAlignmentStrings.at(j) + "\"><![CDATA[" + richText.at(i) + "]]></TextEdit>";
+            QString componentStr = "TextEdit {  vAlign: \"" + vAlignmentStrings.at(j) + "\"; text: \"" + richText.at(i) + "\" }";
             QmlComponent texteditComponent(&engine, componentStr.toLatin1());
             QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
@@ -251,7 +251,7 @@ void tst_qfxtextedit::font()
 {
     //test size, then bold, then italic, then family
     { 
-        QString componentStr = "<TextEdit font.size=\"40\" text=\"Hello World\"/>";
+        QString componentStr = "TextEdit {  font.size: 40; text: \"Hello World\" }";
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
@@ -261,7 +261,7 @@ void tst_qfxtextedit::font()
     }
 
     { 
-        QString componentStr = "<TextEdit font.bold=\"true\" text=\"Hello World\"/>";
+        QString componentStr = "TextEdit {  font.bold: true; text: \"Hello World\" }";
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
@@ -270,7 +270,7 @@ void tst_qfxtextedit::font()
     }
 
     { 
-        QString componentStr = "<TextEdit font.italic=\"true\" text=\"Hello World\"/>";
+        QString componentStr = "TextEdit {  font.italic: true; text: \"Hello World\" }";
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
@@ -279,7 +279,7 @@ void tst_qfxtextedit::font()
     }
  
     { 
-        QString componentStr = "<TextEdit font.family=\"Helvetica\" text=\"Hello World\"/>";
+        QString componentStr = "TextEdit {  font.family: \"Helvetica\"; text: \"Hello World\" }";
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
@@ -289,7 +289,7 @@ void tst_qfxtextedit::font()
     }
 
     { 
-        QString componentStr = "<TextEdit font.family=\"\" text=\"Hello World\"/>";
+        QString componentStr = "TextEdit {  font.family: \"\"; text: \"Hello World\" }";
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 
@@ -302,7 +302,7 @@ void tst_qfxtextedit::color()
     //test style
     for (int i = 0; i < colorStrings.size(); i++)
     { 
-        QString componentStr = "<TextEdit color=\"" + colorStrings.at(i) + "\" text=\"Hello World\"/>";
+        QString componentStr = "TextEdit {  color: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
         //qDebug() << "textEditObject: " << textEditObject->color() << "vs. " << QColor(colorStrings.at(i));
@@ -314,7 +314,7 @@ void tst_qfxtextedit::color()
         QColor testColor("#001234");
         testColor.setAlpha(170);
 
-        QString componentStr = "<TextEdit color=\"" + colorStr + "\" text=\"Hello World\"/>";
+        QString componentStr = "TextEdit {  color: \"" + colorStr + "\"; text: \"Hello World\" }";
         QmlComponent texteditComponent(&engine, componentStr.toLatin1());
         QFxTextEdit *textEditObject = qobject_cast<QFxTextEdit*>(texteditComponent.create());
 

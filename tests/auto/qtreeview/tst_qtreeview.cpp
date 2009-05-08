@@ -208,8 +208,8 @@ private slots:
 
     void indexRowSizeHint();
     void addRowsWhileSectionsAreHidden();
-
     void filterProxyModelCrash();
+    void styleOptionViewItem();
 
     // task-specific tests:
     void task174627_moveLeftToRoot();
@@ -2028,6 +2028,8 @@ void tst_QTreeView::scrollTo()
     //
 
     view.show();
+    view.setVerticalScrollMode(QAbstractItemView::ScrollPerItem); //some styles change that in Polish
+   
     view.resize(300, 200);
     //view.verticalScrollBar()->setValue(0);
 
@@ -2040,6 +2042,7 @@ void tst_QTreeView::scrollTo()
     QCOMPARE(view.verticalScrollBar()->value(), 5);
 
     view.scrollTo(model.index(60, 60, QModelIndex()));
+    
     CHECK_VISIBLE(60,60);
     view.scrollTo(model.index(60, 30, QModelIndex()));
     CHECK_VISIBLE(60,30);
@@ -2849,6 +2852,75 @@ void tst_QTreeView::filterProxyModelCrash()
     view.repaint(); //used to crash
 }
 
+void tst_QTreeView::styleOptionViewItem()
+{
+    class MyDelegate : public QStyledItemDelegate
+    {
+        public:
+            void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index ) const
+            {
+                QVERIFY(qstyleoption_cast<const QStyleOptionViewItemV4 *>(&option));
+                QStyleOptionViewItemV4 opt(option);
+                initStyleOption(&opt, index);
+
+                QVERIFY(!opt.text.isEmpty());
+                QCOMPARE(opt.index, index);
+                QCOMPARE(!(opt.features & QStyleOptionViewItemV2::Alternate), !(index.row() % 2));
+                QCOMPARE(!(opt.features & QStyleOptionViewItemV2::HasCheckIndicator), !opt.text.contains("Checkable"));
+
+                if (opt.text.contains("Beginning"))
+                    QCOMPARE(opt.viewItemPosition, QStyleOptionViewItemV4::Beginning);
+
+                if (opt.text.contains("Middle"))
+                    QCOMPARE(opt.viewItemPosition, QStyleOptionViewItemV4::Middle);
+
+                if (opt.text.contains("End"))
+                    QCOMPARE(opt.viewItemPosition, QStyleOptionViewItemV4::End);
+
+                if (opt.text.contains("OnlyOne"))
+                    QCOMPARE(opt.viewItemPosition, QStyleOptionViewItemV4::OnlyOne);
+
+                if (opt.text.contains("Checked"))
+                    QCOMPARE(opt.checkState, Qt::Checked);
+                else
+                    QCOMPARE(opt.checkState, Qt::Unchecked);
+
+                QVERIFY(!opt.text.contains("Assert"));
+
+                QStyledItemDelegate::paint(painter, option, index);
+                count++;
+            }
+            mutable int count;
+    };
+
+    QTreeView view;
+    QStandardItemModel model;
+    view.setModel(&model);
+    MyDelegate delegate;
+    view.setItemDelegate(&delegate);
+    model.appendRow(QList<QStandardItem*>()
+        << new QStandardItem("Beginning") <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+    model.appendRow(QList<QStandardItem*>()
+        << new QStandardItem("Beginning") <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+    model.appendRow(QList<QStandardItem*>()
+        << new QStandardItem("OnlyOne") <<  new QStandardItem("Assert") << new QStandardItem("Assert") << new QStandardItem("Assert") );
+    QStandardItem *checkable = new QStandardItem("Checkable");
+    checkable->setCheckable(true);
+    QStandardItem *checked = new QStandardItem("Checkable Checked");
+    checkable->setCheckable(true);
+    checked->setCheckState(Qt::Checked);
+    model.appendRow(QList<QStandardItem*>()
+        << new QStandardItem("Beginning") <<  checkable << checked << new QStandardItem("End") );
+
+    view.setFirstColumnSpanned(2, QModelIndex(), true);
+    view.setAlternatingRowColors(true);
+
+    delegate.count = 0;
+    view.showMaximized();
+    QTest::qWait(30);
+    QVERIFY(delegate.count >= 13);
+}
+
 class task174627_TreeView : public QTreeView
 {
     Q_OBJECT
@@ -3327,8 +3399,6 @@ void tst_QTreeView::task239271_addRowsWithFirstColumnHidden()
     QVERIFY(delegate.paintedIndexes.contains(sub00.index()));
     QVERIFY(delegate.paintedIndexes.contains(sub11.index()));
 }
-
-
 
 QTEST_MAIN(tst_QTreeView)
 #include "tst_qtreeview.moc"

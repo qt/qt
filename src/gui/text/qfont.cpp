@@ -913,7 +913,7 @@ void QFont::setPointSize(int pointSize)
 void QFont::setPointSizeF(qreal pointSize)
 {
     if (pointSize <= 0) {
-        qWarning("QFont::setPointSizeF: Point size <= 0 (%d), must be greater than 0", pointSize);
+        qWarning("QFont::setPointSizeF: Point size <= 0 (%f), must be greater than 0", pointSize);
         return;
     }
 

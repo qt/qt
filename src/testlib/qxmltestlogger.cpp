@@ -325,6 +325,10 @@ void QXmlTestLogger::xmlQuote(char* dest, char const* src, size_t n)
             MAP_ENTITY('"', "&quot;");
             MAP_ENTITY('&', "&amp;");
 
+            // not strictly necessary, but allows handling of comments without
+            // having to explicitly look for `--'
+            MAP_ENTITY('-', "&#x002D;");
+
 #undef MAP_ENTITY
 
             case 0:

@@ -50,6 +50,7 @@
 #include <private/qmlboundsignal_p.h>
 #include <private/qmlcontext_p.h>
 #include <private/qmlengine_p.h>
+#include <private/qmlobjecttree_p.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qurl.h>
@@ -57,12 +58,13 @@
 #include <QtGui/qpushbutton.h>
 #include <QtGui/qtablewidget.h>
 #include <QtGui/qevent.h>
+#include <QtDeclarative/qmlexpression.h>
 #include <private/qmlpropertyview_p.h>
 #include <private/qmlwatches_p.h>
 
 QmlDebugger::QmlDebugger(QWidget *parent)
 : QWidget(parent), m_tree(0), m_warnings(0), m_watchTable(0), m_watches(0), 
-  m_properties(0), m_text(0)
+  m_properties(0), m_text(0), m_highlightedItem(0)
 {
     QHBoxLayout *layout = new QHBoxLayout;
     setLayout(layout);
@@ -75,10 +77,11 @@ QmlDebugger::QmlDebugger(QWidget *parent)
     treeWid->setLayout(vlayout);
     splitter->addWidget(treeWid);
 
-    m_tree = new QTreeWidget(treeWid);
+    m_tree = new QmlObjectTree(treeWid);
     m_tree->setHeaderHidden(true);
     QObject::connect(m_tree, SIGNAL(itemClicked(QTreeWidgetItem *, int)), this, SLOT(itemClicked(QTreeWidgetItem *)));
     QObject::connect(m_tree, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), this, SLOT(itemDoubleClicked(QTreeWidgetItem *)));
+    QObject::connect(m_tree, SIGNAL(addWatch(QObject*,QString)), this, SLOT(addWatch(QObject*,QString)));
     vlayout->addWidget(m_tree);
 
     QPushButton *pb = new QPushButton("Refresh", treeWid);
@@ -102,7 +105,10 @@ QmlDebugger::QmlDebugger(QWidget *parent)
     tabs->addTab(m_watchTable, "Watches");
 
     m_properties = new QmlPropertyView(m_watches, this);
+    QObject::connect(m_properties, SIGNAL(objectClicked(quint32)), 
+                     this, SLOT(highlightObject(quint32)));
     tabs->addTab(m_properties, "Properties");
+    tabs->setCurrentWidget(m_properties);
 
     splitter->addWidget(tabs);
     splitter->setStretchFactor(1, 2);
@@ -110,29 +116,33 @@ QmlDebugger::QmlDebugger(QWidget *parent)
     setGeometry(0, 100, 800, 600);
 }
 
-class QmlDebuggerItem : public QTreeWidgetItem
+void QmlDebugger::itemDoubleClicked(QTreeWidgetItem *)
 {
-public:
-    QmlDebuggerItem(QTreeWidget *wid)
-        : QTreeWidgetItem(wid), startLine(-1), endLine(-1)
-    {
+}
+
+void QmlDebugger::addWatch(QObject *obj, const QString &expr)
+{
+    QmlContext *ctxt = qmlContext(obj);
+    if(ctxt) {
+        QmlExpressionObject *e= new QmlExpressionObject(ctxt, expr, obj, m_watches);
+        m_watches->addWatch(e);
+    }
+}
+
+void QmlDebugger::highlightObject(quint32 id)
+{
+    QHash<quint32, QTreeWidgetItem *>::ConstIterator iter = m_items.find(id);
+    if (m_highlightedItem) {
+        m_highlightedItem->setBackground(0, QPalette().base());
+        m_highlightedItem = 0;
     }
 
-    QmlDebuggerItem(QTreeWidgetItem *item)
-        : QTreeWidgetItem(item), startLine(-1), endLine(-1)
-    {
-    }
-
-    int startLine;
-    int endLine;
-    QUrl url;
-
-    QPointer<QObject> object;
-    QPointer<QmlBindableValue> bindableValue;
-};
-
-void QmlDebugger::itemDoubleClicked(QTreeWidgetItem *i)
-{
+    if (iter != m_items.end())  {
+        m_highlightedItem = *iter;
+        m_highlightedItem->setBackground(0, QColor("cyan"));
+        m_tree->expandItem(m_highlightedItem);
+        m_tree->scrollToItem(m_highlightedItem);
+    } 
 }
 
 void QmlDebugger::itemClicked(QTreeWidgetItem *i)
@@ -293,6 +303,7 @@ bool QmlDebugger::makeItem(QObject *obj, QmlDebuggerItem *item)
             item->setForeground(0, Qt::lightGray);
     }
 
+    m_items.insert(m_watches->objectId(obj), item);
     item->setText(0, text);
 
     return rv;
@@ -324,6 +335,8 @@ void QmlDebugger::setDebugObject(QObject *obj)
 {
     m_tree->clear();
     m_warnings->clear();
+    m_items.clear();
+    m_highlightedItem = 0;
 
     m_object = obj;
     if(!obj)

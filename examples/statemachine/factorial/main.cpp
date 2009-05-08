@@ -104,7 +104,7 @@ public:
         return m_fact->property("x").toInt() > 1;
     }
 
-    virtual void onTransition()
+    virtual void onTransition(QEvent *)
     {
         int x = m_fact->property("x").toInt();
         int fac = m_fact->property("fac").toInt();
@@ -128,7 +128,7 @@ public:
         return m_fact->property("x").toInt() <= 1;
     }
 
-    virtual void onTransition()
+    virtual void onTransition(QEvent *)
     {
         fprintf(stdout, "%d\n", m_fact->property("fac").toInt());
     }

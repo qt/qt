@@ -789,7 +789,9 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
                         state = Incremental;
                     }
 
-                    qWarning("ReferenceError: %s is not defined", id);
+                    if(!n.isValid())
+                        qWarning("ReferenceError: %s is not defined", id);
+
                 } else { // instr.type == ScriptInstruction::Fetch
 
                     QVariant o = stack.pop();

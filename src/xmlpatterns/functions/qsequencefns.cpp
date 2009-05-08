@@ -246,8 +246,7 @@ Item::Iterator::Ptr SubsequenceFN::evaluateSequence(const DynamicContext::Ptr &c
 
     if(length < 1 && length != -1)
         return CommonValues::emptyIterator;
-    else
-        return Item::Iterator::Ptr(new SubsequenceIterator(it, startingLoc, length));
+    return Item::Iterator::Ptr(new SubsequenceIterator(it, startingLoc, length));
 }
 
 Item SubsequenceFN::evaluateSingleton(const DynamicContext::Ptr &context) const

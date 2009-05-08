@@ -61,13 +61,10 @@ class KeyStopTransition : public QKeyEventTransition
 {
 public:
     KeyStopTransition(Boat *boat, QEvent::Type type, int key)
-    : QKeyEventTransition(boat,type, key)
+    : QKeyEventTransition(boat, type, key)
     {
         this->boat = boat;
         this->key = key;
-#if defined(Q_OS_MAC)
-        setModifiers(Qt::KeypadModifier);
-#endif
     }
 protected:
     virtual bool eventTest(QEvent *event) const
@@ -90,13 +87,10 @@ private:
 {
 public:
     KeyMoveTransition(Boat *boat, QEvent::Type type, int key)
-    : QKeyEventTransition(boat,type, key)
+    : QKeyEventTransition(boat, type, key)
     {
         this->boat = boat;
         this->key = key;
-#if defined(Q_OS_MAC)
-        setModifiers(Qt::KeypadModifier);
-#endif
     }
 protected:
     virtual bool eventTest(QEvent *event) const
@@ -110,7 +104,7 @@ protected:
             return false;
 
     }
-    void onTransition()
+    void onTransition(QEvent *)
     {
         //We decrease the speed if needed
         if (key == Qt::Key_Left && boat->currentDirection() == Boat::Right)
@@ -131,13 +125,10 @@ private:
 {
 public:
     KeyLaunchTransition(Boat *boat, QEvent::Type type, int key)
-    : QKeyEventTransition(boat,type, key)
+    : QKeyEventTransition(boat, type, key)
     {
         this->boat = boat;
         this->key = key;
-#if defined(Q_OS_MAC)
-        setModifiers(Qt::KeypadModifier);
-#endif
     }
 protected:
     virtual bool eventTest(QEvent *event) const
@@ -165,7 +156,7 @@ public:
         this->boat = boat;
     }
 protected:
-    void onEntry()
+    void onEntry(QEvent *)
     {
         boat->setCurrentDirection(Boat::Right);
         boat->updateBoatMovement();
@@ -183,7 +174,7 @@ public:
         this->boat = boat;
     }
 protected:
-    void onEntry()
+    void onEntry(QEvent *)
     {
         boat->setCurrentDirection(Boat::Left);
         boat->updateBoatMovement();
@@ -201,7 +192,7 @@ public:
         this->boat = boat;
     }
 protected:
-    void onEntry()
+    void onEntry(QEvent *)
     {
         boat->setCurrentSpeed(0);
         boat->setCurrentDirection(Boat::None);
@@ -220,7 +211,7 @@ public:
         this->boat = boat;
     }
 protected:
-    void onEntry()
+    void onEntry(QEvent *)
     {
         Bomb *b = new Bomb();
         b->setPos(boat->x()+boat->size().width(),boat->y());
@@ -242,7 +233,7 @@ public:
         this->boat = boat;
     }
 protected:
-    void onEntry()
+    void onEntry(QEvent *)
     {
         Bomb *b = new Bomb();
         b->setPos(boat->x() - b->size().width(), boat->y());

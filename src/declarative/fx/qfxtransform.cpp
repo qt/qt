@@ -179,6 +179,85 @@ void QFxAxis::setEndZ(qreal z)
     emit updated();
 }
 
+QFxRotation::QFxRotation(QObject *parent)
+: QFxTransform(parent), _originX(0), _originY(0), _angle(0), _dirty(true)
+{
+}
+
+QFxRotation::~QFxRotation()
+{
+}
+
+qreal QFxRotation::originX() const
+{
+    return _originX;
+}
+
+void QFxRotation::setOriginX(qreal ox)
+{
+    _originX = ox;
+    update();
+}
+
+qreal QFxRotation::originY() const
+{
+    return _originY;
+}
+
+void QFxRotation::setOriginY(qreal oy)
+{
+    _originY = oy;
+    update();
+}
+
+qreal QFxRotation::angle() const
+{
+    return _angle;
+}
+
+void QFxRotation::setAngle(qreal angle)
+{
+    _angle = angle;
+    update();
+}
+
+bool QFxRotation::isIdentity() const
+{
+    return (_angle == 0.);
+}
+
+#if defined(QFX_RENDER_QPAINTER)
+QTransform QFxRotation::transform() const
+{
+    if (_dirty) {
+        _transform = QTransform();
+        _dirty = false;
+        _transform.translate(_originX, _originY);
+        _transform.rotate(_angle);
+        _transform.translate(-_originX, -_originY);
+    }
+    return _transform;
+}
+#elif defined(QFX_RENDER_OPENGL)
+QMatrix4x4 QFxRotation::transform() const
+{
+    if (_dirty) {
+        _transform = QMatrix4x4();
+        _dirty = false;
+        _transform.rotate(_angle, _originX, _originY);
+    }
+    return _transform;
+}
+#endif
+
+void QFxRotation::update()
+{
+    _dirty = true;
+    QFxTransform::update();
+}
+
+QML_DEFINE_TYPE(QFxRotation, Rotation);
+
 /*!
     \qmlclass Rotation3D
     \brief A Rotation3D object provides a way to rotate an Item around an axis.
@@ -314,12 +393,11 @@ QMatrix4x4 QFxRotation3D::transform() const
 void QFxRotation3D::update()
 {
     _dirty = true;
-    QFxItem *item = qobject_cast<QFxItem *>(parent());
-    if (item)
-        item->updateTransform();
+    QFxTransform::update();
 }
 
 /*!
+    \internal
     \qmlclass Translation3D
     \brief A Translation3D object provides a way to move an Item along an axis.
 
@@ -448,12 +526,11 @@ void QFxTranslation3D::update()
     }
 #endif
 
-    QFxItem *item = qobject_cast<QFxItem *>(parent());
-    if (item)
-        item->updateTransform();
+    QFxTransform::update();
 }
 
 /*!
+    \internal
     \qmlclass Perspective
     \brief A Perspective object specifies a perspective transformation.
 
@@ -749,13 +826,6 @@ void QFxSquish::setbottomRight_y(qreal v)
 {
     p4.setY(v);
     update();
-}
-
-void QFxSquish::update()
-{
-    QFxItem *item = qobject_cast<QFxItem *>(parent());
-    if (item)
-        item->updateTransform();
 }
 
 bool QFxSquish::isIdentity() const

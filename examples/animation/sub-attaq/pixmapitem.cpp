@@ -43,7 +43,7 @@
 #include "pixmapitem.h"
 
 //Qt
-#include <QDir>
+#include <QtCore/QDir>
 
 PixmapItem::PixmapItem(const QString &fileName,GraphicsScene::Mode mode, QGraphicsItem * parent) : QGraphicsPixmapItem(parent),name(fileName)
 {

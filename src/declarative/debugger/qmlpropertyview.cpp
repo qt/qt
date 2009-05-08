@@ -59,6 +59,8 @@ QmlPropertyView::QmlPropertyView(QmlWatches *watches, QWidget *parent)
     m_tree->setHeaderLabels(QStringList() << "Property" << "Value");
     QObject::connect(m_tree, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)),
                      this, SLOT(itemDoubleClicked(QTreeWidgetItem *)));
+    QObject::connect(m_tree, SIGNAL(itemClicked(QTreeWidgetItem *, int)),
+                     this, SLOT(itemClicked(QTreeWidgetItem *)));
 
     m_tree->setColumnCount(2);
 
@@ -93,7 +95,31 @@ QmlPropertyViewItem::QmlPropertyViewItem(QTreeWidgetItem *parent)
 
 void QmlPropertyViewItem::refresh()
 {
-    setText(1, property.read(object).toString());
+    QVariant v = property.read(object);
+    QString str = v.toString();
+
+    if (QmlMetaType::isObject(v.userType())) 
+        str = QmlWatches::objectToString(QmlMetaType::toQObject(v));
+
+    setText(1, str);
+}
+
+void QmlPropertyView::itemClicked(QTreeWidgetItem *i)
+{
+    QmlPropertyViewItem *item = static_cast<QmlPropertyViewItem *>(i);
+
+    if(item->object) {
+        QVariant v = item->property.read(item->object);
+        if (QmlMetaType::isObject(v.userType())) {
+            QObject *obj = QmlMetaType::toQObject(v);
+
+            if(obj) {
+                quint32 id = m_watches->objectId(obj);
+                emit objectClicked(id);
+            }
+        }
+    }
+
 }
 
 void QmlPropertyView::itemDoubleClicked(QTreeWidgetItem *i)
@@ -110,17 +136,8 @@ void QmlPropertyView::itemDoubleClicked(QTreeWidgetItem *i)
             m_watches->addWatch(objectId, item->property.name());
             item->setForeground(0, Qt::red);
         }
-    } else if(item->exprId) {
-
-        if(m_watches->hasWatch(item->exprId)) {
-            m_watches->remWatch(item->exprId);
-            item->setForeground(1, Qt::green);
-        } else {
-            m_watches->addWatch(item->exprId);
-            item->setForeground(1, Qt::darkGreen);
-        }
-
     }
+
 }
 
 void QmlPropertyView::setObject(QObject *object)
@@ -180,10 +197,7 @@ void QmlPropertyView::setObject(QObject *object)
             QmlPropertyViewItem *binding = new QmlPropertyViewItem(item);
             binding->exprId = iter.value().second;
             binding->setText(1, iter.value().first);
-            if (m_watches->hasWatch(binding->exprId))
-                binding->setForeground(1, Qt::darkGreen);
-            else
-                binding->setForeground(1, Qt::green);
+            binding->setForeground(1, Qt::green);
             ++iter;
         }
 

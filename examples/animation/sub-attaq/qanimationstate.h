@@ -74,8 +74,8 @@ Q_SIGNALS:
     void animationFinished();
 
 protected:
-    void onEntry();
-    void onExit();
+    void onEntry(QEvent *);
+    void onExit(QEvent *);
     bool event(QEvent *e);
 
 private:

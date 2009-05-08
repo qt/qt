@@ -52,9 +52,9 @@
 #include "qstatemachine.h"
 #include "qfinalstate.h"
 #else
-#include <QPropertyAnimation>
-#include <QStateMachine>
-#include <QFinalState>
+#include <QtCore/QPropertyAnimation>
+#include <QtCore/QStateMachine>
+#include <QtCore/QFinalState>
 #endif
 
 Torpedo::Torpedo(QGraphicsItem * parent, Qt::WindowFlags wFlags)

@@ -61,7 +61,8 @@ QT_BEGIN_NAMESPACE
   Framework}.
 
   The sourceState() function returns the source of the transition. The
-  targetStates() function returns the targets of the transition.
+  targetStates() function returns the targets of the transition. The machine()
+  function returns the state machine that the transition is part of.
 
   Transitions can cause animations to be played. Use the addAnimation()
   function to add an animation to the transition.
@@ -78,19 +79,19 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \property QAbstractTransition::source
+    \property QAbstractTransition::sourceState
 
     \brief the source state (parent) of this transition
 */
 
 /*!
-    \property QAbstractTransition::target
+    \property QAbstractTransition::targetState
 
     \brief the target state of this transition
 */
 
 /*!
-    \property QAbstractTransition::targets
+    \property QAbstractTransition::targetStates
 
     \brief the target states of this transition
 
@@ -130,10 +131,10 @@ bool QAbstractTransitionPrivate::callEventTest(QEvent *e) const
     return q->eventTest(e);
 }
 
-void QAbstractTransitionPrivate::callOnTransition()
+void QAbstractTransitionPrivate::callOnTransition(QEvent *e)
 {
     Q_Q(QAbstractTransition);
-    q->onTransition();
+    q->onTransition(e);
 }
 
 QState *QAbstractTransitionPrivate::sourceState() const
@@ -286,6 +287,16 @@ void QAbstractTransition::setTargetStates(const QList<QAbstractState*> &targets)
     d->targetStates = targets;
 }
 
+/*!
+  Returns the state machine that this transition is part of, or 0 if the
+  transition is not part of a state machine.
+*/
+QStateMachine *QAbstractTransition::machine() const
+{
+    Q_D(const QAbstractTransition);
+    return d->machine();
+}
+
 #ifndef QT_NO_ANIMATION
 
 /*!
@@ -342,10 +353,11 @@ QList<QAbstractAnimation*> QAbstractTransition::animations() const
 */
 
 /*!
-  \fn QAbstractTransition::onTransition()
+  \fn QAbstractTransition::onTransition(QEvent *event)
 
-  This function is called when the transition is triggered.  Reimplement this
-  function to perform custom processing when the transition is triggered.
+  This function is called when the transition is triggered. The given \a event
+  is what caused the transition to trigger. Reimplement this function to
+  perform custom processing when the transition is triggered.
 */
 
 /*!
