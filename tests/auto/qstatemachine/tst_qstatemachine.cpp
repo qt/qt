@@ -105,6 +105,7 @@ private slots:
     void eventTransitions();
     void historyStates();
     void startAndStop();
+    void targetStateWithNoParent();
     void transitionToRootState();
     void transitionEntersParent();
     
@@ -1490,6 +1491,8 @@ void tst_QStateMachine::parallelStates()
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
     machine.start();
     QTRY_COMPARE(finishedSpy.count(), 1);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s2));
 }
 
 void tst_QStateMachine::allSourceToTargetConfigurations()
@@ -1913,6 +1916,28 @@ void tst_QStateMachine::startAndStop()
 
     QCOMPARE(machine.configuration().count(), 1);
     QVERIFY(machine.configuration().contains(s1));
+}
+
+void tst_QStateMachine::targetStateWithNoParent()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(machine.rootState());
+    s1->setObjectName("s1");
+    QState *s2 = new QState();
+    s1->addTransition(s2);
+    machine.setInitialState(s1);
+    QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
+    QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    machine.start();
+    QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: No common ancestor for targets and source of transition from state 's1'");
+    QTRY_COMPARE(machine.isRunning(), true);
+    QTRY_COMPARE(startedSpy.count(), 1);
+    QCOMPARE(stoppedSpy.count(), 0);
+    QCOMPARE(finishedSpy.count(), 0);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(machine.errorState()));
+    QCOMPARE(machine.error(), QStateMachine::NoCommonAncestorForTransitionError);
 }
 
 void tst_QStateMachine::defaultGlobalRestorePolicy()
