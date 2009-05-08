@@ -57,7 +57,7 @@ void tst_namespaces::simple()
 
     QFxView canvas(0);
     canvas.rootContext()->engine()->addNameSpacePath("http://nokia.com/qml", SRCDIR "/data");
-    canvas.setXml(qml);
+    canvas.setQml(qml);
     canvas.execute();
     qApp->processEvents();
 

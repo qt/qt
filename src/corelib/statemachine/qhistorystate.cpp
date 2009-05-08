@@ -58,9 +58,8 @@ QT_BEGIN_NAMESPACE
   other child states of the parent state. QHistoryState is part of \l{The
   State Machine Framework}.
 
-  Use QState::addHistoryState() to construct a history state. Use the
-  setDefaultState() function to set the state that should be entered if the
-  parent state has never been entered.  Example:
+  Use the setDefaultState() function to set the state that should be entered
+  if the parent state has never been entered.  Example:
 
   \code
   QStateMachine machine;
@@ -69,7 +68,7 @@ QT_BEGIN_NAMESPACE
   QState *s11 = new QState(s1);
   QState *s12 = new QState(s1);
 
-  QState *s1h = s1->addHistoryState();
+  QHistoryState *s1h = new QHistoryState(s1);
   s1h->setDefaultState(s11);
 
   machine.addState(s1);
@@ -83,17 +82,43 @@ QT_BEGIN_NAMESPACE
   // state if s1 has never been entered.
   s1->addTransition(button, SIGNAL(clicked()), s1h);
   \endcode
+
+  By default a history state is shallow, meaning that it won't remember nested
+  states. This can be configured through the historyType property.
+*/
+
+/*!
+  \property QHistoryState::defaultState
+
+  \brief the default state of this history state
+*/
+
+/*!
+  \property QHistoryState::historyType
+
+  \brief the type of history that this history state records
+
+  The default value of this property is QHistoryState::ShallowHistory.
+*/
+
+/*!
+  \enum QHistoryState::HistoryType
+
+  This enum specifies the type of history that a QHistoryState records.
+
+  \value ShallowHistory Only the immediate child states of the parent state
+  are recorded. In this case a transition with the history state as its
+  target will end up in the immediate child state that the parent was in the
+  last time it was exited. This is the default.
+
+  \value DeepHistory Nested states are recorded. In this case a transition
+  with the history state as its target will end up in the most deeply nested
+  descendant state the parent was in the last time it was exited.
 */
 
 QHistoryStatePrivate::QHistoryStatePrivate()
     : defaultState(0)
 {
-}
-
-QHistoryState *QHistoryStatePrivate::create(QState::HistoryType type,
-                                            QState *parent)
-{
-    return new QHistoryState(type, parent);
 }
 
 QHistoryStatePrivate *QHistoryStatePrivate::get(QHistoryState *q)
@@ -107,12 +132,19 @@ const QHistoryStatePrivate *QHistoryStatePrivate::get(const QHistoryState *q)
 }
 
 /*!
-  \internal
-
+  Constructs a new shallow history state with the given \a parent state.
+*/
+QHistoryState::QHistoryState(QState *parent)
+    : QAbstractState(*new QHistoryStatePrivate, parent)
+{
+    Q_D(QHistoryState);
+    d->historyType = ShallowHistory;
+}
+/*!
   Constructs a new history state of the given \a type, with the given \a
   parent state.
 */
-QHistoryState::QHistoryState(QState::HistoryType type, QState *parent)
+QHistoryState::QHistoryState(HistoryType type, QState *parent)
     : QAbstractState(*new QHistoryStatePrivate, parent)
 {
     Q_D(QHistoryState);
@@ -152,17 +184,37 @@ void QHistoryState::setDefaultState(QAbstractState *state)
 }
 
 /*!
-  \reimp
+  Returns the type of history that this history state records.
 */
-void QHistoryState::onEntry()
+QHistoryState::HistoryType QHistoryState::historyType() const
 {
+    Q_D(const QHistoryState);
+    return d->historyType;
+}
+
+/*!
+  Sets the \a type of history that this history state records.
+*/
+void QHistoryState::setHistoryType(HistoryType type)
+{
+    Q_D(QHistoryState);
+    d->historyType = type;
 }
 
 /*!
   \reimp
 */
-void QHistoryState::onExit()
+void QHistoryState::onEntry(QEvent *event)
 {
+    Q_UNUSED(event);
+}
+
+/*!
+  \reimp
+*/
+void QHistoryState::onExit(QEvent *event)
+{
+    Q_UNUSED(event);
 }
 
 /*!

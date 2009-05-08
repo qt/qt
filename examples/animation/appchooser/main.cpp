@@ -90,13 +90,14 @@ void createStates(const QObjectList &objects,
     for (int i = 0; i < objects.size(); ++i) {
         QState *state = new QState(parent);
         state->assignProperty(objects.at(i), "geometry", selectedRect);
-        QAbstractTransition *trans = parent->addTransition(objects.at(i), SIGNAL(clicked()), state);
-        for (int j = 0; j < objects.size(); ++j) {
-            QPropertyAnimation *animation = new QPropertyAnimation(objects.at(j), "geometry");
-            animation->setDuration(2000);
-            trans->addAnimation(animation);
-        }
+        parent->addTransition(objects.at(i), SIGNAL(clicked()), state);
     }
+}
+
+void createAnimations(const QObjectList &objects, QStateMachine *machine)
+{
+    for (int i=0; i<objects.size(); ++i)
+        machine->addDefaultAnimation(new QPropertyAnimation(objects.at(i), "geometry"));    
 }
 
 int main(int argc, char **argv)
@@ -134,7 +135,7 @@ int main(int argc, char **argv)
     window.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QState::RestoreProperties);
+    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
 
     QState *group = new QState(machine.rootState());
     group->setObjectName("group");
@@ -143,7 +144,10 @@ int main(int argc, char **argv)
     QState *idleState = new QState(group);
     group->setInitialState(idleState);
 
-    createStates(QObjectList() << p1 << p2 << p3 << p4, selectedRect, group);
+    QObjectList objects; 
+    objects << p1 << p2 << p3 << p4;
+    createStates(objects, selectedRect, group);
+    createAnimations(objects, &machine);
 
     machine.setInitialState(group);
     machine.start();

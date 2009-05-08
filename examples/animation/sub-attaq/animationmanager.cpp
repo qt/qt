@@ -48,7 +48,7 @@
 #else
 # include <QtCore/QAbstractAnimation>
 #endif
-#include <QDebug>
+#include <QtCore/QDebug>
 
 // the universe's only animation manager
 AnimationManager *AnimationManager::instance = 0;

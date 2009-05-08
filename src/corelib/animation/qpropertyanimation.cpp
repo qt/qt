@@ -41,27 +41,48 @@
 
 /*!
     \class QPropertyAnimation
-    \brief The QPropertyAnimation class animates properties for QObject(and QWidget)
-    \ingroup group_animation
+    \brief The QPropertyAnimation class animates Qt properties
+    \ingroup animation
     \preliminary
 
-    This class is part of {The Animation Framework}.  You can use QPropertyAnimation
-    by itself as a simple animation class, or as part of more complex
-    animations through QAnimationGroup.
+    QPropertyAnimation interpolates over \l{Qt's Property System}{Qt
+    properties}. As property values are stored in \l{QVariant}s, the
+    class inherits QVariantAnimation, and supports animation of the
+    same \l{QVariant::Type}{variant types} as its super class. 
 
-    The most common way to use QPropertyAnimation is to construct an instance
-    of it by passing a pointer to a QObject or a QWidget, and the name of the
-    property you would like to animate to QPropertyAnimation's constructor.
+    A class declaring properties must be a QObject. To make it
+    possible to animate a property, it must provide a setter (so that
+    QPropertyAnimation can set the property's value). Note that this
+    makes it possible to animate many of Qt's widgets. Let's look at
+    an example:
+    
+    \code
+        QPropertyAnimation animation(myWidget, "geometry");
+        animation.setDuration(10000);
+        animation.setStartValue(QRect(0, 0, 100, 30));
+        animation.setEndValue(QRect(250, 250, 100, 30));
 
-    The start value of the animation is optional. If you do not set any start
-    value, the animation will operate on the target's current property value
-    at the point when the animation was started. You can call setStartValue()
-    to set the start value, and setEndValue() to set the target value for
-    the animated property.
+        animation.start();
+    \endcode
 
-    Animations can operate on QObjects and QWidgets. You can choose to assign a
-    target object by either calling setTargetObject() or by passing a QObject
-    pointer to QPropertyAnimation's constructor.
+    The property name and the QObject instance of which property
+    should be animated are passed to the constructor. You can then
+    specify the start and end value of the property. The procedure is
+    equal for properties in classes you have implemented
+    yourself--just check with QVariantAnimation that your QVariant
+    type is supported.
+
+    The QVariantAnimation class description explains how to set up the
+    animation in detail. Note, however, that if a start value is not
+    set, the property will start at the value it had when the
+    QPropertyAnimation instance was created.
+
+    QPropertyAnimation works like a charm on its own. For complex
+    animations that, for instance, contain several objects,
+    QAnimationGroup is provided. An animation group is an animation
+    that can contain other animations, and that can manage when its
+    animations are played. Look at QParallelAnimationGroup for an
+    example.
 
     \sa QVariantAnimation, QAnimationGroup, {The Animation Framework}
 */
@@ -97,6 +118,8 @@ void QPropertyAnimationPrivate::updateMetaProperty()
             property = mo->property(propertyIndex);
             propertyType = property.userType();
         } else {
+            if (!target->dynamicPropertyNames().contains(propertyName))
+                qWarning("QPropertyAnimation: you're trying to animate a non-existing property %s of your QObject", propertyName.constData());
             hasMetaProperty = 2;
         }
     }

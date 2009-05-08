@@ -203,9 +203,9 @@ MainWindow::MainWindow() : QMainWindow(0)
 
     setCentralWidget(view);
 
-    state3->invokeMethodOnEntry(this, "onEnterState3");
-    state2->invokeMethodOnEntry(this, "onEnterState2");
-    state1->invokeMethodOnEntry(this, "onEnterState1");
+    QObject::connect(state3, SIGNAL(entered()), this, SLOT(onEnterState3()));
+    QObject::connect(state2, SIGNAL(entered()), this, SLOT(onEnterState2()));
+    QObject::connect(state1, SIGNAL(entered()), this, SLOT(onEnterState1()));
 
     connect(listWidget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onItemClicked(QListWidgetItem*)));
     connect(button3, SIGNAL(clicked()), this, SLOT(onRemoveClicked()));

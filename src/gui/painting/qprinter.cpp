@@ -284,8 +284,8 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
   to send PostScript or PDF output to the printer. As an alternative,
   the printProgram() function can be used to specify the command or utility
   to use instead of the system default.
-  
-  Note that setting parameters like paper size and resolution on an 
+
+  Note that setting parameters like paper size and resolution on an
   invalid printer is undefined. You can use QPrinter::isValid() to
   verify this before changing any parameters.
 
@@ -744,7 +744,7 @@ void QPrinter::setOutputFormat(OutputFormat format)
 
 #ifndef QT_NO_PDF
     Q_D(QPrinter);
-    if (d->outputFormat == format)
+    if (d->validPrinter && d->outputFormat == format)
         return;
     d->outputFormat = format;
 
@@ -773,8 +773,8 @@ void QPrinter::setOutputFormat(OutputFormat format)
     if (def_engine)
         delete oldPrintEngine;
 
-    d->validPrinter = d->outputFormat == QPrinter::PdfFormat || d->outputFormat == QPrinter::PostScriptFormat;
-
+    d->validPrinter = (d->outputFormat == QPrinter::PdfFormat
+                       || d->outputFormat == QPrinter::PostScriptFormat);
 #else
     Q_UNUSED(format);
 #endif

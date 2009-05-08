@@ -57,51 +57,43 @@ public:
 class ClockState : public QState
 {
 public:
-    ClockState(QStateMachine *machine, QState *parent)
-        : QState(parent), m_machine(machine) {}
+    ClockState(QState *parent)
+        : QState(parent) {}
 
 protected:
-    virtual void onEntry()
+    virtual void onEntry(QEvent *)
     {
         fprintf(stdout, "ClockState entered; posting the initial tick\n");
-        m_machine->postEvent(new ClockEvent());
+        machine()->postEvent(new ClockEvent());
     }
-
-private:
-    QStateMachine *m_machine;
 };
 
 class ClockTransition : public QAbstractTransition
 {
 public:
-    ClockTransition(QStateMachine *machine)
-        : QAbstractTransition(), m_machine(machine) { }
+    ClockTransition() {}
 
 protected:
     virtual bool eventTest(QEvent *e) const {
         return (e->type() == QEvent::User+2);
     }
-    virtual void onTransition()
+    virtual void onTransition(QEvent *)
     {
         fprintf(stdout, "ClockTransition triggered; posting another tick with a delay of 1 second\n");
-        m_machine->postEvent(new ClockEvent(), 1000);
+        machine()->postEvent(new ClockEvent(), 1000);
     }
-
-private:
-    QStateMachine *m_machine;
 };
 
 class ClockListener : public QAbstractTransition
 {
 public:
-    ClockListener()
-        : QAbstractTransition() {}
+    ClockListener() {}
 
 protected:
     virtual bool eventTest(QEvent *e) const {
         return (e->type() == QEvent::User+2);
     }
-    virtual void onTransition()
+    virtual void onTransition(QEvent *)
     {
         fprintf(stdout, "ClockListener heard a tick!\n");
     }
@@ -112,12 +104,12 @@ int main(int argc, char **argv)
     QCoreApplication app(argc, argv);
 
     QStateMachine machine;
-    QState *group = new QState(QState::ParallelGroup);
+    QState *group = new QState(QState::ParallelStates);
     group->setObjectName("group");
 
-    ClockState *clock = new ClockState(&machine, group);
+    ClockState *clock = new ClockState(group);
     clock->setObjectName("clock");
-    clock->addTransition(new ClockTransition(&machine));
+    clock->addTransition(new ClockTransition());
 
     QState *listener = new QState(group);
     listener->setObjectName("listener");

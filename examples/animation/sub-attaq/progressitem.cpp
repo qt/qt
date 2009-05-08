@@ -39,58 +39,29 @@
 **
 ****************************************************************************/
 
-#ifndef QACTIONTRANSITION_H
-#define QACTIONTRANSITION_H
+#include "progressitem.h"
+#include "pixmapitem.h"
 
-#ifndef QT_STATEMACHINE_SOLUTION
-#include <QtCore/qabstracttransition.h>
-#else
-#include "qabstracttransition.h"
-#endif
-
-#include <QtCore/qvariant.h>
-#include <QtCore/qlist.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Core)
-
-class QStateAction;
-
-class QActionTransitionPrivate;
-class Q_CORE_EXPORT QActionTransition : public QAbstractTransition
+ProgressItem::ProgressItem (QGraphicsItem * parent)
+    : QGraphicsTextItem(parent), currentLevel(1), currentScore(0)
 {
-    Q_OBJECT
-public:
-    QActionTransition(QState *sourceState = 0);
-    QActionTransition(const QList<QAbstractState*> &targets, QState *sourceState = 0);
-    ~QActionTransition();
+    setFont(QFont("Comic Sans MS"));
+    setPos(parentItem()->boundingRect().topRight() - QPointF(180, -5));
+}
 
-    void invokeMethodOnTransition(QObject *object, const char *method,
-                                  const QList<QVariant> &args = QList<QVariant>());
+void ProgressItem::setLevel(int level)
+{
+    currentLevel = level;
+    updateProgress();
+}
 
-    void addAction(QStateAction *action);
-    void removeAction(QStateAction *action);
-    QList<QStateAction*> actions() const;
+void ProgressItem::setScore(int score)
+{
+    currentScore = score;
+    updateProgress();
+}
 
-protected:
-    virtual void onTransition();
-
-    bool event(QEvent *e);
-
-protected:
-    QActionTransition(QActionTransitionPrivate &dd, QState *parent);
-    QActionTransition(QActionTransitionPrivate &dd, const QList<QAbstractState*> &targets, QState *parent);
-
-private:
-    Q_DISABLE_COPY(QActionTransition)
-    Q_DECLARE_PRIVATE(QActionTransition)
-};
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif
+void ProgressItem::updateProgress()
+{
+    setHtml(QString("Level : %1 Score : %2").arg(currentLevel).arg(currentScore));
+}

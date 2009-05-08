@@ -50,6 +50,7 @@
 #include "custompropertyanimation.h"
 #include "animationmanager.h"
 #include "qanimationstate.h"
+#include "progressitem.h"
 
 //Qt
 #if defined(QT_EXPERIMENTAL_SOLUTION)
@@ -60,20 +61,20 @@
 #include "qfinalstate.h"
 #include "qpauseanimation.h"
 #else
-#include <QPropertyAnimation>
-#include <QSequentialAnimationGroup>
-#include <QParallelAnimationGroup>
-#include <QStateMachine>
-#include <QFinalState>
-#include <QPauseAnimation>
+#include <QtCore/QPropertyAnimation>
+#include <QtCore/QSequentialAnimationGroup>
+#include <QtCore/QParallelAnimationGroup>
+#include <QtCore/QStateMachine>
+#include <QtCore/QFinalState>
+#include <QtCore/QPauseAnimation>
 #endif
-#include <QAction>
-#include <QDir>
-#include <QApplication>
-#include <QMessageBox>
-#include <QGraphicsView>
-#include <QGraphicsSceneMouseEvent>
-#include <QXmlStreamReader>
+#include <QtGui/QAction>
+#include <QtCore/QDir>
+#include <QtGui/QApplication>
+#include <QtGui/QMessageBox>
+#include <QtGui/QGraphicsView>
+#include <QtGui/QGraphicsSceneMouseEvent>
+#include <QtCore/QXmlStreamReader>
 
 //helper function that creates an animation for position and inserts it into group
 static CustomPropertyAnimation *addGraphicsItemPosAnimation(QSequentialAnimationGroup *group,
@@ -116,6 +117,15 @@ GraphicsScene::GraphicsScene(int x, int y, int width, int height, Mode mode)
     surfaceItem->setZValue(3);
     surfaceItem->setPos(0,sealLevel() - surfaceItem->boundingRect().height()/2);
     addItem(surfaceItem);
+
+    //The item that display score and level
+    progressItem = new ProgressItem(backgroundItem);
+
+    //We create the boat
+    boat = new Boat();
+    addItem(boat);
+    boat->setPos(this->width()/2, sealLevel() - boat->size().height());
+    boat->hide();
 
     //parse the xml that contain all data of the game
     QXmlStreamReader reader;
@@ -335,17 +345,17 @@ void GraphicsScene::clearScene()
 {
     foreach (SubMarine *sub,submarines) {
         sub->destroy();
-        delete sub;
+        sub->deleteLater();
     }
 
     foreach (Torpedo *torpedo,torpedos) {
         torpedo->destroy();
-        delete torpedo;
+        torpedo->deleteLater();
     }
 
     foreach (Bomb *bomb,bombs) {
         bomb->destroy();
-        delete bomb;
+        bomb->deleteLater();
     }
 
     submarines.clear();
@@ -354,10 +364,8 @@ void GraphicsScene::clearScene()
 
     AnimationManager::self()->unregisterAllAnimations();
 
-    if (boat) {
-        delete boat;
-        boat = 0;
-    }
+    boat->stop();
+    boat->hide();
 }
 
 QGraphicsPixmapItem *GraphicsScene::addWelcomeItem(const QPixmap &pm)

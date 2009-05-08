@@ -81,9 +81,6 @@ int QPaintDevice::metric(PaintDeviceMetric m) const
     }
 }
 
-/*!
-    \internal
-*/
 QWSDisplay *QPaintDevice::qwsDisplay()
 {
     return qt_fbdpy;
