@@ -7525,6 +7525,9 @@ bool QWidget::event(QEvent *event)
         case QEvent::MouseButtonRelease:
         case QEvent::MouseButtonDblClick:
         case QEvent::MouseMove:
+        case QEvent::TouchBegin:
+        case QEvent::TouchUpdate:
+        case QEvent::TouchEnd:
         case QEvent::ContextMenu:
 #ifndef QT_NO_WHEELEVENT
         case QEvent::Wheel:
