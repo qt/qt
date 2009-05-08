@@ -505,7 +505,6 @@ void QEventDispatcherSymbian::closingDown()
 
     delete m_wakeUpAO;
     if (m_activeScheduler) {
-        CActiveScheduler::Install(NULL);
         delete m_activeScheduler;
     }
 }
