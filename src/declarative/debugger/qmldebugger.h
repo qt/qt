@@ -59,6 +59,8 @@ class QmlDebuggerItem;
 class QTableView;
 class QmlPropertyView;
 class QmlWatches;
+class QmlObjectTree;
+class QmlContext;
 class QmlDebugger : public QWidget
 {
 Q_OBJECT
@@ -74,11 +76,12 @@ private slots:
     void itemClicked(QTreeWidgetItem *);
     void itemDoubleClicked(QTreeWidgetItem *);
     void highlightObject(quint32);
+    void addWatch(QObject *, const QString &);
 
 private:
     void buildTree(QObject *obj, QmlDebuggerItem *parent);
     bool makeItem(QObject *obj, QmlDebuggerItem *item);
-    QTreeWidget *m_tree;
+    QmlObjectTree *m_tree;
     QTreeWidget *m_warnings;
     QTableView *m_watchTable;
     QmlWatches *m_watches;

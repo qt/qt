@@ -39,62 +39,37 @@
 **
 ****************************************************************************/
 
-#ifndef QMLWATCHES_P_H
-#define QMLWATCHES_P_H
+#include <private/qmlobjecttree_p.h>
+#include <QtDeclarative/qml.h>
+#include <QtGui/qevent.h>
+#include <QtGui/qmenu.h>
+#include <QtCore/qlist.h>
+#include <QtGui/qaction.h>
+#include <QtGui/qinputdialog.h>
+#include <QtGui/qboxlayout.h>
 
-#include <QtCore/qbytearray.h>
-#include <QtCore/qobject.h>
-#include <QtCore/qpointer.h>
-#include <QtCore/qset.h>
-#include <QtCore/qstringlist.h>
-#include <QtCore/qabstractitemmodel.h>
-
-QT_BEGIN_NAMESPACE
-
-class QmlWatchesProxy;
-class QmlExpressionObject;
-
-class QmlWatches : public QAbstractTableModel
+QmlObjectTree::QmlObjectTree(QWidget *parent)
+: QTreeWidget(parent)
 {
-    Q_OBJECT
-public:
-    QmlWatches(QObject *parent = 0);
+}
 
-    bool hasWatch(quint32 objectId, const QByteArray &property);
-    void addWatch(quint32 objectId, const QByteArray &property);
-    void remWatch(quint32 objectId, const QByteArray &property);
+void QmlObjectTree::mousePressEvent(QMouseEvent *me)
+{
+    QTreeWidget::mousePressEvent(me);
+    if(me->button()  == Qt::RightButton && me->type() == QEvent::MouseButtonPress) {
+        QAction action("Add watch...", 0);
+        QList<QAction *> actions;
+        actions << &action;
+        QmlDebuggerItem *item = static_cast<QmlDebuggerItem *>(currentItem());
+        if(item && qmlContext(item->object) && 
+           QMenu::exec(actions, me->globalPos())) {
 
-    void addWatch(QmlExpressionObject *);
+            bool ok = false;
+            QString watch = QInputDialog::getText(this, "Watch expression", "Expression:", QLineEdit::Normal, QString(), &ok);
 
-    quint32 objectId(QObject *);
-    QObject *object(quint32);
+            if(ok && !watch.isEmpty()) 
+                emit addWatch(item->object, watch);
+        }
+    } 
+}
 
-    static QString objectToString(QObject *obj);
-protected:
-    int columnCount(const QModelIndex &) const;
-    int rowCount(const QModelIndex &) const;
-    QVariant data(const QModelIndex &, int) const;
-    QVariant headerData(int, Qt::Orientation, int) const;
-
-private:
-    friend class QmlWatchesProxy;
-    QList<QPair<quint32, QByteArray> > m_watches;
-
-    void addValue(int, const QVariant &);
-    struct Value {
-        int column;
-        QVariant variant;
-        bool first;
-    };
-    QList<Value> m_values;
-    QStringList m_columnNames;
-    QList<QPointer<QmlWatchesProxy> > m_proxies;
-
-    quint32 m_uniqueId;
-    QHash<QObject *, QPair<QPointer<QObject>, quint32> *> m_objects;
-    QHash<quint32, QPair<QPointer<QObject>, quint32> *> m_objectIds;
-};
-
-QT_END_NAMESPACE
-
-#endif // QMLWATCHES_P_H
