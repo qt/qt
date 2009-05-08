@@ -20,7 +20,8 @@ SUBDIRS       = \
                 widgets \
                 uitools \
                 xml \
-                script
+                script \
+                multitouch
 
 contains(QT_CONFIG, phonon):!static: SUBDIRS += phonon
 contains(QT_CONFIG, webkit): SUBDIRS += webkit
