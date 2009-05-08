@@ -76,6 +76,12 @@ Rect {
         text: "Remove"
         opacity: 0
     }
+    opacity: Behaviour {
+        NumericAnimation {
+            property: "opacity"
+            duration: 250
+        }
+    }
     states: [
         State {
             name: "opened"

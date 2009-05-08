@@ -80,6 +80,7 @@ public:
 
     QObject *scopeObject() const;
 
+    quint32 id() const;
 protected:
     virtual void valueChanged();
 

@@ -3,7 +3,7 @@ Item {
     clip: true
     height: 30
     property var label: "Name"
-    property var icon: "pics/phone.png"
+    property var icon: ""
     property var value: ""
     onValueChanged: { fieldText.text = contactField.value }
     RemoveButton {

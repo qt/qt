@@ -39,40 +39,62 @@
 **
 ****************************************************************************/
 
-#ifndef QMLPROPERTYVIEW_P_H
-#define QMLPROPERTYVIEW_P_H
+#ifndef QMLWATCHES_P_H
+#define QMLWATCHES_P_H
 
-#include <QtGui/qwidget.h>
+#include <QtCore/qbytearray.h>
+#include <QtCore/qobject.h>
 #include <QtCore/qpointer.h>
-#include <private/qmlwatches_p.h>
+#include <QtCore/qset.h>
+#include <QtCore/qstringlist.h>
+#include <QtCore/qabstractitemmodel.h>
 
 QT_BEGIN_NAMESPACE
 
-class QTreeWidget;
-class QTreeWidgetItem;
-class QmlPropertyView : public QWidget
+class QmlWatchesProxy;
+class QmlWatches : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    QmlPropertyView(QmlWatches *watches, QWidget *parent = 0);
+    QmlWatches(QObject *parent = 0);
 
-    void setObject(QObject *);
+    bool hasWatch(quint32 objectId, const QByteArray &property);
+    void addWatch(quint32 objectId, const QByteArray &property);
+    void remWatch(quint32 objectId, const QByteArray &property);
 
-signals:
-    void objectClicked(quint32);
+    bool hasWatch(quint32 exprId);
+    void remWatch(quint32 exprId);
+    void addWatch(quint32 exprId);
 
-public slots:
-    void refresh();
-    void itemDoubleClicked(QTreeWidgetItem *);
-    void itemClicked(QTreeWidgetItem *);
+    quint32 objectId(QObject *);
+    QObject *object(quint32);
+
+    static QString objectToString(QObject *obj);
+protected:
+    int columnCount(const QModelIndex &) const;
+    int rowCount(const QModelIndex &) const;
+    QVariant data(const QModelIndex &, int) const;
+    QVariant headerData(int, Qt::Orientation, int) const;
 
 private:
-    QPointer<QObject> m_object;
-    QTreeWidget *m_tree;
-    QmlWatches *m_watches;
+    friend class QmlWatchesProxy;
+    QList<QPair<quint32, QByteArray> > m_watches;
+    QList<quint32> m_exprWatches;
+
+    void addValue(int, const QVariant &);
+    struct Value {
+        int column;
+        QVariant variant;
+        bool first;
+    };
+    QList<Value> m_values;
+    QStringList m_columnNames;
+
+    quint32 m_uniqueId;
+    QHash<QObject *, QPair<QPointer<QObject>, quint32> *> m_objects;
+    QHash<quint32, QPair<QPointer<QObject>, quint32> *> m_objectIds;
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLPROPERTYVIEW_P_H
-
+#endif // QMLWATCHES_P_H

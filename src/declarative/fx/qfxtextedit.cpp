@@ -377,6 +377,28 @@ void QFxTextEdit::setWrap(bool w)
     updateSize();
 }
 
+/*!
+    \property QFxTextEdit::cursorVisible
+    \brief If true the text edit shows a cursor.
+
+    This property is set and unset when the text edit gets focus, but it can also
+    be set directly (useful, for example, if a KeyProxy might forward keys to it).
+*/
+bool QFxTextEdit::isCursorVisible() const
+{
+    Q_D(const QFxTextEdit);
+    return d->cursorVisible;
+}
+
+void QFxTextEdit::setCursorVisible(bool on)
+{
+    Q_D(QFxTextEdit);
+    if (d->cursorVisible == on)
+        return;
+    d->cursorVisible = on;
+    QFocusEvent focusEvent(on ? QEvent::FocusIn : QEvent::FocusOut);
+    d->control->processEvent(&focusEvent, QPointF(0, 0));
+}
 
 void QFxTextEdit::geometryChanged(const QRectF &newGeometry, 
                                   const QRectF &oldGeometry)
@@ -591,8 +613,15 @@ void QFxTextEdit::keyReleaseEvent(QKeyEvent *event)
 void QFxTextEdit::focusChanged(bool hasFocus)
 {
     Q_D(QFxTextEdit);
-    QFocusEvent focusEvent(hasFocus ? QEvent::FocusIn : QEvent::FocusOut);
-    d->control->processEvent(&focusEvent, QPointF(0, 0));
+}
+
+/*!
+    Causes all text to be selected.
+*/
+void QFxTextEdit::selectAll()
+{
+    Q_D(QFxTextEdit);
+    d->control->selectAll();
 }
 
 static QMouseEvent *sceneMouseEventToMouseEvent(QGraphicsSceneMouseEvent *e)
@@ -737,6 +766,7 @@ void QFxTextEditPrivate::init()
     document->setDocumentMargin(0);
     document->setUndoRedoEnabled(false); // flush undo buffer.
     document->setUndoRedoEnabled(true);
+    updateDefaultTextOption();
 }
 
 void QFxTextEdit::q_textChanged()
@@ -785,14 +815,13 @@ void QFxTextEdit::updateSize()
 
 void QFxTextEditPrivate::updateDefaultTextOption()
 {
-    QTextDocument *doc = control->document();
-
-    QTextOption opt = doc->defaultTextOption();
+    QTextOption opt = document->defaultTextOption();
     int oldAlignment = opt.alignment();
     opt.setAlignment((Qt::Alignment)(int)(hAlign | vAlign));
     
     QTextOption::WrapMode oldWrapMode = opt.wrapMode();
 
+qDebug() << "wrap mode is" << opt.wrapMode();
     if (wrap)
         opt.setWrapMode(QTextOption::WordWrap);
     else
@@ -800,7 +829,8 @@ void QFxTextEditPrivate::updateDefaultTextOption()
 
     if (oldWrapMode == opt.wrapMode() && oldAlignment == opt.alignment())
         return;
-    doc->setDefaultTextOption(opt);
+qDebug() << "wrap mode set to" << opt.wrapMode();
+    document->setDefaultTextOption(opt);
 }
 
 QT_END_NAMESPACE
