@@ -76,6 +76,7 @@ private slots:
     void matrixForElement() const;
     void gradientStops() const;
     void fillRule();
+    void opacity();
 
 #ifndef QT_NO_COMPRESS
     void testGzLoading();
@@ -714,6 +715,79 @@ void tst_QSvgRenderer::fillRule()
         QCOMPARE(image, i % 3 == 2 ? refImageEvenOdd : refImageNonZero);
     }
 }
+
+static void opacity_drawSvgAndVerify(const QByteArray &data)
+{
+    QSvgRenderer renderer(data);
+    QVERIFY(renderer.isValid());
+    QImage image(10, 10, QImage::Format_ARGB32_Premultiplied);
+    image.fill(0xffff00ff);
+    QPainter painter(&image);
+    renderer.render(&painter);
+    painter.end();
+    QCOMPARE(image.pixel(5, 5), 0xff7f7f7f);
+}
+
+void tst_QSvgRenderer::opacity()
+{
+    static const char *opacities[] = {"-1,4641", "0", "0.5", "1", "1.337"};
+    static const char *firstColors[] = {"#7f7f7f", "#7f7f7f", "#402051", "blue", "#123456"};
+    static const char *secondColors[] = {"red", "#bad", "#bedead", "#7f7f7f", "#7f7f7f"};
+
+    // Fill-opacity
+    for (int i = 0; i < 5; ++i) {
+        QByteArray data("<svg><rect x=\"0\" y=\"0\" height=\"10\" width=\"10\" fill=\"");
+        data.append(firstColors[i]);
+        data.append("\"/><rect x=\"0\" y=\"0\" height=\"10\" width=\"10\" fill=\"");
+        data.append(secondColors[i]);
+        data.append("\" fill-opacity=\"");
+        data.append(opacities[i]);
+        data.append("\"/></svg>");
+        opacity_drawSvgAndVerify(data);
+    }
+    // Stroke-opacity
+    for (int i = 0; i < 5; ++i) {
+        QByteArray data("<svg viewBox=\"0 0 10 10\"><polyline points=\"0 5 10 5\" fill=\"none\" stroke=\"");
+        data.append(firstColors[i]);
+        data.append("\" stroke-width=\"10\"/><line x1=\"5\" y1=\"0\" x2=\"5\" y2=\"10\" fill=\"none\" stroke=\"");
+        data.append(secondColors[i]);
+        data.append("\" stroke-width=\"10\" stroke-opacity=\"");
+        data.append(opacities[i]);
+        data.append("\"/></svg>");
+        opacity_drawSvgAndVerify(data);
+    }
+    // As gradients:
+    // Fill-opacity
+    for (int i = 0; i < 5; ++i) {
+        QByteArray data("<svg><defs><linearGradient id=\"gradient\"><stop offset=\"0\" stop-color=\"");
+        data.append(secondColors[i]);
+        data.append("\"/><stop offset=\"1\" stop-color=\"");
+        data.append(secondColors[i]);
+        data.append("\"/></linearGradient></defs><rect x=\"0\" y=\"0\" height=\"10\" width=\"10\" fill=\"");
+        data.append(firstColors[i]);
+        data.append("\"/><rect x=\"0\" y=\"0\" height=\"10\" width=\"10\" fill=\"url(#gradient)\" fill-opacity=\"");
+        data.append(opacities[i]);
+        data.append("\"/></svg>");
+        opacity_drawSvgAndVerify(data);
+    }
+    // When support for gradients on strokes has been implemented, add the code below.
+    /*
+    // Stroke-opacity
+    for (int i = 0; i < 5; ++i) {
+        QByteArray data("<svg viewBox=\"0 0 10 10\"><defs><linearGradient id=\"grad\"><stop offset=\"0\" stop-color=\"");
+        data.append(secondColors[i]);
+        data.append("\"/><stop offset=\"1\" stop-color=\"");
+        data.append(secondColors[i]);
+        data.append("\"/></linearGradient></defs><polyline points=\"0 5 10 5\" fill=\"none\" stroke=\"");
+        data.append(firstColors[i]);
+        data.append("\" stroke-width=\"10\" /><line x1=\"5\" y1=\"0\" x2=\"5\" y2=\"10\" fill=\"none\" stroke=\"url(#grad)\" stroke-width=\"10\" stroke-opacity=\"");
+        data.append(opacities[i]);
+        data.append("\" /></svg>");
+        opacity_drawSvgAndVerify(data);
+    }
+    */
+}
+
 
 QTEST_MAIN(tst_QSvgRenderer)
 #include "tst_qsvgrenderer.moc"

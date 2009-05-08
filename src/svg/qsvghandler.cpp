@@ -497,10 +497,8 @@ static bool constructColor(const QString &colorStr, const QString &opacity,
     if (!resolveColor(colorStr, color, handler))
         return false;
     if (!opacity.isEmpty()) {
-        qreal op = toDouble(opacity);
-        if (op <= 1)
-            op *= 255;
-        color.setAlpha(int(op));
+        qreal op = qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity)));
+        color.setAlphaF(op);
     }
     return true;
 }
@@ -644,8 +642,10 @@ static void parseBrush(QSvgNode *node,
             QSvgStyleProperty *style = styleFromUrl(node, value);
             if (style) {
                 QSvgFillStyle *prop = new QSvgFillStyle(style);
-                if (!opacity.isEmpty())
-                    prop->setFillOpacity(toDouble(opacity));
+                if (!opacity.isEmpty()) {
+                    qreal clampedOpacity = qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity)));
+                    prop->setFillOpacity(clampedOpacity);
+                }
                 node->appendStyleProperty(prop, myId);
             } else {
                 qWarning("Couldn't resolve property: %s", qPrintable(idFromUrl(value)));
@@ -1943,7 +1943,7 @@ static void parseOpacity(QSvgNode *node,
     qreal op = value.toDouble(&ok);
 
     if (ok) {
-        QSvgOpacityStyle *opacity = new QSvgOpacityStyle(op);
+        QSvgOpacityStyle *opacity = new QSvgOpacityStyle(qMin(qreal(1.0), qMax(qreal(0.0), op)));
         node->appendStyleProperty(opacity, someId(attributes));
     }
 }
