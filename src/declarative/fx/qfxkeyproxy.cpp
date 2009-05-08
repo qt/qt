@@ -94,9 +94,9 @@ QList<QFxItem *> *QFxKeyProxy::targets() const
 void QFxKeyProxy::keyPressEvent(QKeyEvent *e)
 {
     for (int ii = 0; ii < d->targets.count(); ++ii) {
-        QSimpleCanvasItem *i = d->targets.at(ii);
+        QSimpleCanvasItem *i = canvas()->focusItem(d->targets.at(ii));
         if (i)
-            canvas()->focusItem(i)->keyPressEvent(e);
+            i->keyPressEvent(e);
         if (e->isAccepted())
             return;
     }
@@ -105,9 +105,9 @@ void QFxKeyProxy::keyPressEvent(QKeyEvent *e)
 void QFxKeyProxy::keyReleaseEvent(QKeyEvent *e)
 {
     for (int ii = 0; ii < d->targets.count(); ++ii) {
-        QSimpleCanvasItem *i = d->targets.at(ii);
+        QSimpleCanvasItem *i = canvas()->focusItem(d->targets.at(ii));
         if (i)
-            canvas()->focusItem(i)->keyReleaseEvent(e);
+            i->keyReleaseEvent(e);
         if (e->isAccepted())
             return;
     }

@@ -116,9 +116,6 @@ public:
     void setSectionExpression(const QString &);
     QString currentSection() const;
 
-    virtual void setHeight(int height);
-    virtual void setWidth(int width);
-
     static QObject *qmlAttachedProperties(QObject *);
 
 Q_SIGNALS:
@@ -137,10 +134,8 @@ protected:
     virtual void keyReleaseEvent(QKeyEvent *);
     virtual void componentComplete();
 
-private:
-    void refill();
-
 private Q_SLOTS:
+    void refill();
     void trackedPositionChanged();
     void itemResized();
     void itemsInserted(int index, int count);
