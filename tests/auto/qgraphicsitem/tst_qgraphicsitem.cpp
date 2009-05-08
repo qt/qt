@@ -247,50 +247,59 @@ void tst_QGraphicsItem::construction()
             QCOMPARE(int(item->type()), int(QGraphicsEllipseItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsEllipseItem *>(item), (QGraphicsEllipseItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 1:
             item = new QGraphicsLineItem;
             QCOMPARE(int(item->type()), int(QGraphicsLineItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsLineItem *>(item), (QGraphicsLineItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 2:
             item = new QGraphicsPathItem;
             QCOMPARE(int(item->type()), int(QGraphicsPathItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsPathItem *>(item), (QGraphicsPathItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 3:
             item = new QGraphicsPixmapItem;
             QCOMPARE(int(item->type()), int(QGraphicsPixmapItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsPixmapItem *>(item), (QGraphicsPixmapItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 4:
             item = new QGraphicsPolygonItem;
             QCOMPARE(int(item->type()), int(QGraphicsPolygonItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsPolygonItem *>(item), (QGraphicsPolygonItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 5:
             item = new QGraphicsRectItem;
             QCOMPARE(int(item->type()), int(QGraphicsRectItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsLineItem *>(item), (QGraphicsLineItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 6:
-        default:
             item = new QGraphicsTextItem;
             QCOMPARE(int(item->type()), int(QGraphicsTextItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsTextItem *>(item), (QGraphicsTextItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            // This is the only item that uses an extended style option.
+            QCOMPARE(item->flags(), QGraphicsItem::GraphicsItemFlags(QGraphicsItem::ItemUsesExtendedStyleOption));
+            break;
+        default:
+            qFatal("You broke the logic, please fix!");
             break;
         }
 
         QCOMPARE(item->scene(), (QGraphicsScene *)0);
         QCOMPARE(item->parentItem(), (QGraphicsItem *)0);
         QVERIFY(item->children().isEmpty());
-        QCOMPARE(item->flags(), 0);
         QVERIFY(item->isVisible());
         QVERIFY(item->isEnabled());
         QVERIFY(!item->isSelected());

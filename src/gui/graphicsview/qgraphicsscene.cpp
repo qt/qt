@@ -2247,8 +2247,6 @@ void QGraphicsScene::setSceneRect(const QRectF &rect)
 void QGraphicsScene::render(QPainter *painter, const QRectF &target, const QRectF &source,
                             Qt::AspectRatioMode aspectRatioMode)
 {
-    Q_D(QGraphicsScene);
-
     // Default source rect = scene rect
     QRectF sourceRect = source;
     if (sourceRect.isNull())
@@ -2305,36 +2303,8 @@ void QGraphicsScene::render(QPainter *painter, const QRectF &target, const QRect
 
     // Generate the style options
     QStyleOptionGraphicsItem *styleOptionArray = new QStyleOptionGraphicsItem[numItems];
-    for (int i = 0; i < numItems; ++i) {
-        QGraphicsItem *item = itemArray[i];
-
-        QStyleOptionGraphicsItem option;
-        option.state = QStyle::State_None;
-        option.rect = item->boundingRect().toRect();
-        if (item->isSelected())
-            option.state |= QStyle::State_Selected;
-        if (item->isEnabled())
-            option.state |= QStyle::State_Enabled;
-        if (item->hasFocus())
-            option.state |= QStyle::State_HasFocus;
-        if (d->hoverItems.contains(item))
-            option.state |= QStyle::State_MouseOver;
-        if (item == mouseGrabberItem())
-            option.state |= QStyle::State_Sunken;
-
-        // Calculate a simple level-of-detail metric.
-        // ### almost identical code in QGraphicsView::paintEvent()
-        //     and QGraphicsView::render() - consider refactoring
-        QTransform itemToDeviceTransform = item->deviceTransform(painterTransform);
-
-        option.levelOfDetail = qSqrt(itemToDeviceTransform.map(v1).length() * itemToDeviceTransform.map(v2).length());
-        option.matrix = itemToDeviceTransform.toAffine(); //### discards perspective
-
-        option.exposedRect = item->boundingRect();
-        option.exposedRect &= itemToDeviceTransform.inverted().mapRect(targetRect);
-
-        styleOptionArray[i] = option;
-    }
+    for (int i = 0; i < numItems; ++i)
+        itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], painterTransform, targetRect.toRect());
 
     // Render the scene.
     drawBackground(painter, sourceRect);

@@ -2371,7 +2371,7 @@ public:
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *viewport)
     {
-        lastLod = option->levelOfDetail;
+        lastLod = option->levelOfDetailFromTransform(painter->worldTransform());
         QGraphicsRectItem::paint(painter, option, viewport);
     }
 
