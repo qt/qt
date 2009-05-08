@@ -3532,10 +3532,11 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
     are being executed and a list of gesture that were cancelled (\a
     cancelledGestures).
 */
-QGestureEvent::QGestureEvent(const QList<QGesture*> &gestures,
+QGestureEvent::QGestureEvent(const QSet<QGesture*> &gestures,
                              const QSet<QString> &cancelledGestures)
     : QEvent(QEvent::Gesture), m_cancelledGestures(cancelledGestures)
 {
+    setAccepted(false);
     foreach(QGesture *r, gestures)
         m_gestures.insert(r->type(), r);
 }
@@ -3604,6 +3605,54 @@ QList<QGesture*> QGestureEvent::gestures() const
 QSet<QString> QGestureEvent::cancelledGestures() const
 {
     return m_cancelledGestures;
+}
+
+/*!
+    Sets the accept flag of the all gestures inside the event object,
+    the equivalent of calling \l{QEvent::accept()}{accept()} or
+    \l{QEvent::setAccepted()}{setAccepted(true)}.
+
+    Setting the accept parameter indicates that the event receiver
+    wants the gesture. Unwanted gestures might be propagated to the parent
+    widget.
+*/
+void QGestureEvent::acceptAll()
+{
+    QHash<QString, QGesture*>::iterator it = m_gestures.begin(),
+                                         e = m_gestures.end();
+    for(; it != e; ++it)
+        it.value()->accept();
+    setAccepted(true);
+}
+
+/*!
+    Sets the accept flag of the specified gesture inside the event
+    object, the equivalent of calling
+    \l{QGestureEvent::gesture()}{gesture(type)}->\l{QGesture::accept()}{accept()}
+
+    Setting the accept parameter indicates that the event receiver
+    wants the gesture. Unwanted gestures might be propagated to the parent
+    widget.
+*/
+void QGestureEvent::accept(Qt::GestureType type)
+{
+    if (QGesture *g = m_gestures.value(qt_getStandardGestureTypeName(type), 0))
+        g->accept();
+}
+
+/*!
+    Sets the accept flag of the specified gesture inside the event
+    object, the equivalent of calling
+    \l{QGestureEvent::gesture()}{gesture(type)}->\l{QGesture::accept()}{accept()}
+
+    Setting the accept parameter indicates that the event receiver
+    wants the gesture. Unwanted gestures might be propagated to the parent
+    widget.
+*/
+void QGestureEvent::accept(const QString &type)
+{
+    if (QGesture *g = m_gestures.value(type, 0))
+        g->accept();
 }
 
 /*! \class QTouchEvent

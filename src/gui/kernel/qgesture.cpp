@@ -79,7 +79,7 @@ QString qt_getStandardGestureTypeName(Qt::GestureType type);
     QGestureRecognizer classes.
 */
 QGesture::QGesture(QObject *parent, const QString &type, Qt::GestureState state)
-    : QObject(*new QGesturePrivate, parent)
+    : QObject(*new QGesturePrivate, parent), m_accept(0)
 {
     Q_D(QGesture);
     d->type = type;

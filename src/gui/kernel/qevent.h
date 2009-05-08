@@ -716,7 +716,7 @@ private:
 class Q_GUI_EXPORT QGestureEvent : public QEvent
 {
 public:
-    QGestureEvent(const QList<QGesture*> &gestures,
+    QGestureEvent(const QSet<QGesture*> &gestures,
                   const QSet<QString> &cancelledGestures = QSet<QString>());
     ~QGestureEvent();
 
@@ -730,6 +730,15 @@ public:
     QList<QGesture*> gestures() const;
 
     QSet<QString> cancelledGestures() const;
+
+    void acceptAll();
+#ifndef Q_NO_USING_KEYWORD
+    using QEvent::accept;
+#else
+    inline void accept() { QEvent::accept(); }
+#endif
+    void accept(Qt::GestureType type);
+    void accept(const QString &type);
 
 protected:
     QHash<QString, QGesture*> m_gestures;

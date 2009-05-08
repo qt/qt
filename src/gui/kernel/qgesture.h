@@ -82,6 +82,12 @@ public:
              uint duration, Qt::GestureState state);
     virtual ~QGesture();
 
+    inline void setAccepted(bool accepted) { m_accept = accepted; }
+    inline bool isAccepted() const { return m_accept; }
+
+    inline void accept() { m_accept = true; }
+    inline void ignore() { m_accept = false; }
+
     QString type() const;
     Qt::GestureState state() const;
 
@@ -100,6 +106,8 @@ protected:
     virtual void translate(const QPoint &offset);
 
 private:
+    ushort m_accept : 1;
+
     friend class QGestureManager;
     friend class QApplication;
     friend class QGestureRecognizerPan;

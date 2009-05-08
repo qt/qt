@@ -4019,37 +4019,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         }
         break;
 #endif
-
-    case QEvent::Gesture: {
-        QWidget *w = static_cast<QWidget*>(receiver);
-        QGestureEvent *ge = static_cast<QGestureEvent*>(e);
-        QSet<QString> eventGestures;
-        foreach(const QString &gesture, ge->gestureTypes())
-            eventGestures << gesture;
-        bool eventAccepted = ge->isAccepted();
-
-        QPoint offset;
-        while (w) {
-            QSet<int> widgetGestures = w->d_func()->gestures;
-            foreach(int gestureId, widgetGestures) {
-                if (eventGestures.contains(QGestureManager::instance()->gestureNameFromId(gestureId))) {
-                    foreach(QGesture *gesture, ge->gestures())
-                        gesture->translate(offset);
-                    offset = QPoint();
-                    res = d->notify_helper(w, ge);
-                    ge->spont = false;
-                    eventAccepted = ge->isAccepted();
-                    if (res && eventAccepted)
-                        break;
-                }
-            }
-            if (w->isWindow())
-                break;
-            offset += w->pos();
-            w = w->parentWidget();
-        }
-        break;
-    }
     case QEvent::TouchBegin:
     // Note: TouchUpdate and TouchEnd events are sent to d->currentMultitouchWidget and never propagated
     {

@@ -93,7 +93,8 @@ private slots:
     void recognizerStateChanged(QGestureRecognizer::Result);
 
 private:
-    bool sendGestureEvent(QWidget *receiver, const QList<QGesture*> &gestures,
+    bool widgetHasGesture(QWidget *widget, QGesture *gesture) const;
+    bool sendGestureEvent(QWidget *receiver, const QSet<QGesture*> &gestures,
                           const QSet<QString> &cancelled = QSet<QString>());
 
     QSet<QGestureRecognizer*> activeGestures;
