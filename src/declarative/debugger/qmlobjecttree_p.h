@@ -39,62 +39,48 @@
 **
 ****************************************************************************/
 
-#ifndef QMLWATCHES_P_H
-#define QMLWATCHES_P_H
+#ifndef QMLOBJECTTREE_P_H
+#define QMLOBJECTTREE_P_H
 
-#include <QtCore/qbytearray.h>
-#include <QtCore/qobject.h>
+#include <QtGui/qtreewidget.h>
+#include <QtCore/qurl.h>
 #include <QtCore/qpointer.h>
-#include <QtCore/qset.h>
-#include <QtCore/qstringlist.h>
-#include <QtCore/qabstractitemmodel.h>
 
-QT_BEGIN_NAMESPACE
+class QmlBindableValue;
+class QmlDebuggerItem : public QTreeWidgetItem
+{
+public:
+    QmlDebuggerItem(QTreeWidget *wid)
+        : QTreeWidgetItem(wid), startLine(-1), endLine(-1)
+    {
+    }
 
-class QmlWatchesProxy;
-class QmlExpressionObject;
+    QmlDebuggerItem(QTreeWidgetItem *item)
+        : QTreeWidgetItem(item), startLine(-1), endLine(-1)
+    {
+    }
 
-class QmlWatches : public QAbstractTableModel
+    int startLine;
+    int endLine;
+    QUrl url;
+
+    QPointer<QObject> object;
+    QPointer<QmlBindableValue> bindableValue;
+};
+
+class QmlContext;
+class QmlObjectTree : public QTreeWidget
 {
     Q_OBJECT
 public:
-    QmlWatches(QObject *parent = 0);
+    QmlObjectTree(QWidget *parent = 0);
 
-    bool hasWatch(quint32 objectId, const QByteArray &property);
-    void addWatch(quint32 objectId, const QByteArray &property);
-    void remWatch(quint32 objectId, const QByteArray &property);
+signals:
+    void addWatch(QObject *, const QString &);
 
-    void addWatch(QmlExpressionObject *);
-
-    quint32 objectId(QObject *);
-    QObject *object(quint32);
-
-    static QString objectToString(QObject *obj);
 protected:
-    int columnCount(const QModelIndex &) const;
-    int rowCount(const QModelIndex &) const;
-    QVariant data(const QModelIndex &, int) const;
-    QVariant headerData(int, Qt::Orientation, int) const;
-
-private:
-    friend class QmlWatchesProxy;
-    QList<QPair<quint32, QByteArray> > m_watches;
-
-    void addValue(int, const QVariant &);
-    struct Value {
-        int column;
-        QVariant variant;
-        bool first;
-    };
-    QList<Value> m_values;
-    QStringList m_columnNames;
-    QList<QPointer<QmlWatchesProxy> > m_proxies;
-
-    quint32 m_uniqueId;
-    QHash<QObject *, QPair<QPointer<QObject>, quint32> *> m_objects;
-    QHash<quint32, QPair<QPointer<QObject>, quint32> *> m_objectIds;
+    virtual void mousePressEvent(QMouseEvent *);
 };
 
-QT_END_NAMESPACE
+#endif // QMLOBJECTTREE_P_H
 
-#endif // QMLWATCHES_P_H

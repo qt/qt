@@ -136,17 +136,8 @@ void QmlPropertyView::itemDoubleClicked(QTreeWidgetItem *i)
             m_watches->addWatch(objectId, item->property.name());
             item->setForeground(0, Qt::red);
         }
-    } else if(item->exprId) {
-
-        if(m_watches->hasWatch(item->exprId)) {
-            m_watches->remWatch(item->exprId);
-            item->setForeground(1, Qt::green);
-        } else {
-            m_watches->addWatch(item->exprId);
-            item->setForeground(1, Qt::darkGreen);
-        }
-
     }
+
 }
 
 void QmlPropertyView::setObject(QObject *object)
@@ -206,10 +197,7 @@ void QmlPropertyView::setObject(QObject *object)
             QmlPropertyViewItem *binding = new QmlPropertyViewItem(item);
             binding->exprId = iter.value().second;
             binding->setText(1, iter.value().first);
-            if (m_watches->hasWatch(binding->exprId))
-                binding->setForeground(1, Qt::darkGreen);
-            else
-                binding->setForeground(1, Qt::green);
+            binding->setForeground(1, Qt::green);
             ++iter;
         }
 

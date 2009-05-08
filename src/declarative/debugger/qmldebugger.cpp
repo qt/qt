@@ -50,6 +50,7 @@
 #include <private/qmlboundsignal_p.h>
 #include <private/qmlcontext_p.h>
 #include <private/qmlengine_p.h>
+#include <private/qmlobjecttree_p.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qurl.h>
@@ -57,6 +58,7 @@
 #include <QtGui/qpushbutton.h>
 #include <QtGui/qtablewidget.h>
 #include <QtGui/qevent.h>
+#include <QtDeclarative/qmlexpression.h>
 #include <private/qmlpropertyview_p.h>
 #include <private/qmlwatches_p.h>
 
@@ -75,10 +77,11 @@ QmlDebugger::QmlDebugger(QWidget *parent)
     treeWid->setLayout(vlayout);
     splitter->addWidget(treeWid);
 
-    m_tree = new QTreeWidget(treeWid);
+    m_tree = new QmlObjectTree(treeWid);
     m_tree->setHeaderHidden(true);
     QObject::connect(m_tree, SIGNAL(itemClicked(QTreeWidgetItem *, int)), this, SLOT(itemClicked(QTreeWidgetItem *)));
     QObject::connect(m_tree, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), this, SLOT(itemDoubleClicked(QTreeWidgetItem *)));
+    QObject::connect(m_tree, SIGNAL(addWatch(QObject*,QString)), this, SLOT(addWatch(QObject*,QString)));
     vlayout->addWidget(m_tree);
 
     QPushButton *pb = new QPushButton("Refresh", treeWid);
@@ -113,29 +116,17 @@ QmlDebugger::QmlDebugger(QWidget *parent)
     setGeometry(0, 100, 800, 600);
 }
 
-class QmlDebuggerItem : public QTreeWidgetItem
+void QmlDebugger::itemDoubleClicked(QTreeWidgetItem *)
 {
-public:
-    QmlDebuggerItem(QTreeWidget *wid)
-        : QTreeWidgetItem(wid), startLine(-1), endLine(-1)
-    {
-    }
+}
 
-    QmlDebuggerItem(QTreeWidgetItem *item)
-        : QTreeWidgetItem(item), startLine(-1), endLine(-1)
-    {
-    }
-
-    int startLine;
-    int endLine;
-    QUrl url;
-
-    QPointer<QObject> object;
-    QPointer<QmlBindableValue> bindableValue;
-};
-
-void QmlDebugger::itemDoubleClicked(QTreeWidgetItem *i)
+void QmlDebugger::addWatch(QObject *obj, const QString &expr)
 {
+    QmlContext *ctxt = qmlContext(obj);
+    if(ctxt) {
+        QmlExpressionObject *e= new QmlExpressionObject(ctxt, expr, obj, m_watches);
+        m_watches->addWatch(e);
+    }
 }
 
 void QmlDebugger::highlightObject(quint32 id)
