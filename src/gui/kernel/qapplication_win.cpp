@@ -4175,6 +4175,7 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
         return false;
 
     bool returnValue = false;
+    qt_tabletChokeMouse = false;
 
     QHash<QWidget *, QTouchEvent>::ConstIterator it = widgetsNeedingEvents.constBegin();
     const QHash<QWidget *, QTouchEvent>::ConstIterator end = widgetsNeedingEvents.constEnd();
@@ -4194,7 +4195,7 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
             widget->setAttribute(Qt::WA_AcceptedTouchBeginEvent);
             bool res = QApplication::sendSpontaneousEvent(widget, &touchEvent)
                        && touchEvent.isAccepted();
-            returnValue = returnValue || (qt_tabletChokeMouse = res);
+            returnValue = returnValue || (qt_tabletChokeMouse = qt_tabletChokeMouse || res);
             break;
         }
         case QEvent::TouchEnd:
@@ -4206,8 +4207,6 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
             if (widget->testAttribute(Qt::WA_AcceptedTouchBeginEvent)) {
                 (void) QApplication::sendSpontaneousEvent(widget, &touchEvent);
                 qt_tabletChokeMouse = true;
-            } else {
-                qt_tabletChokeMouse = false;
             }
             returnValue = returnValue || qt_tabletChokeMouse;
             break;
