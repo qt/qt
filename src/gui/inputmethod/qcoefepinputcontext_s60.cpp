@@ -207,7 +207,11 @@ QString QCoeFepInputContext::language()
 
 bool QCoeFepInputContext::filterEvent(const QEvent *event)
 {
-    Q_ASSERT(focusWidget());
+    // The CloseSoftwareInputPanel event is not handled here, because the VK will automatically
+    // close when it discovers that the underlying widget does not have input capabilities.
+
+    if (!focusWidget())
+        return false;
 
     if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) {
         const QKeyEvent *keyEvent = static_cast<const QKeyEvent *>(event);
