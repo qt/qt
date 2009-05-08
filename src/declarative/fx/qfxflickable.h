@@ -133,8 +133,6 @@ public:
     qreal pageYPosition() const;
     qreal pageHeight() const;
 
-    virtual void setWidth(int);
-    virtual void setHeight(int);
     QFxItem *viewport();
 
 Q_SIGNALS:
@@ -165,6 +163,8 @@ protected Q_SLOTS:
     virtual void ticked();
     void movementStarting();
     void movementEnding();
+    void heightChange();
+    void widthChange();
 
 protected:
     virtual qreal minXExtent() const;

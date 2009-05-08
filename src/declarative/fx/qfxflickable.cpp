@@ -116,6 +116,8 @@ void QFxFlickablePrivate::init()
     QObject::connect(_flick, SIGNAL(topChanged()), q, SIGNAL(positionChanged()));
     QObject::connect(&elasticX, SIGNAL(updated()), q, SLOT(ticked()));
     QObject::connect(&elasticY, SIGNAL(updated()), q, SLOT(ticked()));
+    QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(heightChange()));
+    QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(widthChange()));
 }
 
 void QFxFlickablePrivate::fixupX()
@@ -914,23 +916,21 @@ void QFxFlickable::setViewportWidth(int w)
     d->updateBeginningEnd();
 }
 
-void QFxFlickable::setWidth(int w)
+void QFxFlickable::widthChange()
 {
     Q_D(QFxFlickable);
-    QFxItem::setWidth(w);
     if (d->vWidth < 0) {
-        d->_flick->setWidth(w);
+        d->_flick->setWidth(width());
         emit viewportWidthChanged();
         d->updateBeginningEnd();
     }
 }
 
-void QFxFlickable::setHeight(int h)
+void QFxFlickable::heightChange()
 {
     Q_D(QFxFlickable);
-    QFxItem::setHeight(h);
     if (d->vHeight < 0) {
-        d->_flick->setHeight(h);
+        d->_flick->setHeight(height());
         emit viewportHeightChanged();
         d->updateBeginningEnd();
     }

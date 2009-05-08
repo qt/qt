@@ -109,9 +109,6 @@ public:
     int cellHeight() const;
     void setCellHeight(int);
 
-    virtual void setHeight(int height);
-    virtual void setWidth(int width);
-
     static QObject *qmlAttachedProperties(QObject *);
 
 Q_SIGNALS:
@@ -134,6 +131,7 @@ private Q_SLOTS:
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
     void destroyRemoved();
+    void sizeChange();
 
 private:
     void refill();
