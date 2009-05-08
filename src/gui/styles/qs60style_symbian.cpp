@@ -93,7 +93,7 @@ private:
     static void unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap* aTrgBitmap, CFbsBitmap* aSrcBitmap);
     static void colorGroupAndIndex(QS60StyleEnums::SkinParts skinID,
         TAknsItemID &colorGroup, int colorIndex);
-    static TDesC mapFallBackFileName(const int fileID);
+    static const TDesC& mapFallBackFileName(const int fileID);
     static bool checkSupport(const int supportedRelease);
     static TAknsItemID checkAndUpdateReleaseSpecificGraphics(int part);
     // Array to match the skin ID, fallback graphics and Qt widget graphics.
@@ -354,14 +354,14 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphics(
     return error ? QPixmap() : colorGraphics;
 }
 
-TDesC QS60StyleModeSpecifics::mapFallBackFileName(const int fileID)
+const TDesC& QS60StyleModeSpecifics::mapFallBackFileName(const int fileID)
 {
     switch(fileID){
         case ELastMbm:
-            return KNullDesC;
+            return KNullDesC();
         case EAvkonMbm:
         default:
-            return KAvkonBitmapFile;
+            return KAvkonBitmapFile();
     }
 }
 
@@ -371,7 +371,7 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsL(
 {
     const int stylepartIndex = (int)stylepart;
     const TAknsItemID skinId = m_partMap[stylepartIndex].skinID;
-    const TDesC fallbackFileName = mapFallBackFileName(m_fallbackMap[stylepartIndex].fallbackGraphicID);
+    const TDesC& fallbackFileName = mapFallBackFileName(m_fallbackMap[stylepartIndex].fallbackGraphicID);
     const TInt fallbackGraphicID =
         (fallbackFileName!=KNullDesC) ? m_fallbackMap[stylepartIndex].fallbackGraphicID : KErrNotFound;
 
@@ -536,7 +536,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsL(
     switch (drawType) {
     case EDrawIcon:
     {
-        const TDesC fallbackFileName = mapFallBackFileName(m_fallbackMap[stylepartIndex].fallbackGraphicID);
+        const TDesC& fallbackFileName = mapFallBackFileName(m_fallbackMap[stylepartIndex].fallbackGraphicID);
         const TInt fallbackGraphicID =
             (fallbackFileName!=KNullDesC) ? m_fallbackMap[stylepartIndex].fallbackGraphicID : KErrNotFound;
 
