@@ -68,14 +68,19 @@ private slots:
     void itemClicked(QTreeWidgetItem *);
     void itemExpanded(QTreeWidgetItem *);
     void itemCollapsed(QTreeWidgetItem *);
+    void setX(int);
+    void setY(int);
 
 private:
+    void setOpacityRecur(QTreeWidgetItem *, qreal);
     void clone(QTreeWidgetItem *, QSimpleCanvasItem *me, QSimpleCanvasItem *them);
 
     QmlWatches *m_watches;
     QTreeWidget *m_tree;
     QSimpleCanvas *m_canvas;
+    QSimpleCanvasItem *m_canvasRoot;
     QPointer<QSimpleCanvas> m_debugCanvas;
+    QTreeWidgetItem *m_selected;
 };
 
 QT_END_NAMESPACE
