@@ -127,9 +127,22 @@ Rect {
                     sender: cancelEditButton
                     signal: "clicked()"
                     script: {
-                    if (wrapper.state == 'opened' && !contacts.mouseGrabbed) {
+                        if (wrapper.state == 'opened' && !contacts.mouseGrabbed) {
                             wrapper.state = '';
                             contacts.mode = 'list';
+                        }
+                                    
+                    }
+                }
+                Connection {
+                    sender: removeContactButton
+                    signal: "confirmed()"
+                    script: {
+                        if (wrapper.state == 'opened' && !contacts.mouseGrabbed) {
+                            Details.qmlItem.remove();
+                            wrapper.state = '';
+                            contacts.mode = 'list';
+                            contactList.exec();
                         }
                                     
                     }
@@ -164,6 +177,13 @@ Rect {
         anchors.rightMargin: 5
         icon: "pics/cancel.png"
         opacity: contacts.mode == 'list' || contacts.mouseGrabbed ? 0 : 1
+    }
+    RemoveButton {
+        id: removeContactButton
+        anchors.top: parent.top
+        anchors.topMargin: 5
+        anchors.horizontalCenter: parent.horizontalCenter
+        opacity: (contacts.mode == 'edit' && (!contacts.mouseGrabbed || removeContactButton.state =='opened')) ? 1 : 0
     }
     ListView {
         id: contactListView

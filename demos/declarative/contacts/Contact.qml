@@ -16,41 +16,53 @@ Item {
             id: updateContactQuery
             connection: contactDatabase
             query: "UPDATE contacts SET label = :l, email = :e, phone = :p WHERE recid = :r"
-            bindings: SqlBind {
-                name: ":r"
-                value: contactId
-            }
-            bindings: SqlBind {
-                name: ":l"
-                value: labelField.value
-            }
-            bindings: SqlBind {
-                name: ":e"
-                value: emailField.value
-            }
-            bindings: SqlBind {
-                name: ":p"
-                value: phoneField.value
-            }
+            bindings: [
+                SqlBind {
+                    name: ":r"
+                    value: contactId
+                },
+                SqlBind {
+                    name: ":l"
+                    value: labelField.value
+                },
+                SqlBind {
+                    name: ":e"
+                    value: emailField.value
+                },
+                SqlBind {
+                    name: ":p"
+                    value: phoneField.value
+                }
+            ]
         },
         SqlQuery {
             id: insertContactQuery
             connection: contactDatabase
             query: "INSERT INTO contacts (label, email, phone) VALUES(:l, :e, :p)"
+            bindings: [
+                SqlBind {
+                    name: ":l"
+                    value: labelField.value
+                },
+                SqlBind {
+                    name: ":e"
+                    value: emailField.value
+                },
+                SqlBind {
+                    name: ":p"
+                    value: phoneField.value
+                }
+            ]
+        },
+        SqlQuery {
+            id: removeContactQuery
+            connection: contactDatabase
+            query: "DELETE FROM contacts WHERE recid = :r"
             bindings: SqlBind {
-                name: ":l"
-                value: labelField.value
-            }
-            bindings: SqlBind {
-                name: ":e"
-                value: emailField.value
-            }
-            bindings: SqlBind {
-                name: ":p"
-                value: phoneField.value
+                name: ":r"
+                value: contactId
             }
         }
-
     ]
     function refresh() {
         labelField.value = label;
@@ -62,6 +74,9 @@ Item {
     }
     function insert() {
         insertContactQuery.exec();
+    }
+    function remove() {
+        removeContactQuery.exec();
     }
     VerticalLayout {
         id: layout

@@ -356,6 +356,8 @@ void QFxListViewPrivate::init()
 {
     Q_Q(QFxListView);
     q->setOptions(QFxListView::IsFocusRealm);
+    QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(refill()));
+    QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(refill()));
 }
 
 void QFxListViewPrivate::clear()
@@ -1188,28 +1190,6 @@ QString QFxListView::currentSection() const
 {
     Q_D(const QFxListView);
     return d->currentSection;
-}
-
-/*!
-    \reimp
-*/
-void QFxListView::setHeight(int height)
-{
-    Q_D(QFxListView);
-    QFxFlickable::setHeight(height);
-    if (d->orient == Qt::Vertical && isComponentComplete())
-        refill();
-}
-
-/*!
-    \reimp
-*/
-void QFxListView::setWidth(int width)
-{
-    Q_D(QFxListView);
-    QFxFlickable::setWidth(width);
-    if (d->orient == Qt::Horizontal && isComponentComplete())
-        refill();
 }
 
 void QFxListView::viewportMoved()

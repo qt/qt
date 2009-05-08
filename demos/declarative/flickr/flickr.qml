@@ -58,6 +58,7 @@ Item {
                    ImageDetails.photoDate = photoDate;
                    ImageDetails.photoUrl = url;
                    ImageDetails.rating = 0;
+                   ImageDetails.slider.handle.x = ImageDetails.slider.xMax;
                    Wrapper.state = "Details";
                }
             }
@@ -121,7 +122,7 @@ Item {
         Image { source: "content/pics/background.png"; opaque: true }
 
         GridView {
-            id: PhotoGridView; model: FeedModel; delegate: PhotoDelegate
+            id: PhotoGridView; model: FeedModel; delegate: PhotoDelegate; cacheBuffer: 100
             cellWidth: 105; cellHeight: 105; x:32; y: 80; width: 800; height: 330; z: 1
         }
 
