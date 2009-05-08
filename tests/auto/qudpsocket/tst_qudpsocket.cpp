@@ -482,17 +482,21 @@ void tst_QUdpSocket::writeDatagram()
 
 void tst_QUdpSocket::performance()
 {
-    
 #if defined(Q_OS_SYMBIAN)
+	// Large packets seems not to go through on Symbian
+	// Reason might be also fragmentation due to VPN connection etc
+    
     QFETCH_GLOBAL(bool, setProxy);
-    if (setProxy) {
-        QFETCH_GLOBAL(int, proxyType);
-        if (proxyType == QNetworkProxy::Socks5Proxy) {
-            QSKIP("Symbian: With socks5 proxy performance test hangs on Symbian OS.", SkipAll);
-        }  
-    }
+    QFETCH_GLOBAL(int, proxyType); 
+    
+    int arrSize = 8192;
+    if (setProxy && proxyType == QNetworkProxy::Socks5Proxy)    
+    	arrSize = 1024;
+    	
+    QByteArray arr(arrSize, '@'); 
+#else
+    QByteArray arr(8192, '@');      
 #endif // Q_OS_SYMBIAN
-
     
     QUdpSocket server;
     QVERIFY2(server.bind(), server.errorString().toLatin1().constData());
@@ -503,15 +507,13 @@ void tst_QUdpSocket::performance()
 
     QUdpSocket client;
     client.connectToHost(serverAddress, server.localPort());
-
-    QByteArray arr(8192, '@');
-
+    
     QTime stopWatch;
     stopWatch.start();
 
     qint64 nbytes = 0;
     while (stopWatch.elapsed() < 5000) {
-        for (int i = 0; i < 100; ++i) {
+        for (int i = 0; i < 100; ++i) {    
             if (client.write(arr.data(), arr.size()) > 0) {
                 do {
                     nbytes += server.readDatagram(arr.data(), arr.size());
@@ -523,6 +525,14 @@ void tst_QUdpSocket::performance()
     float secs = stopWatch.elapsed() / 1000.0;
     qDebug("\t%.2fMB/%.2fs: %.2fMB/s", float(nbytes / (1024.0*1024.0)),
            secs, float(nbytes / (1024.0*1024.0)) / secs);
+    
+#if defined(Q_OS_SYMBIAN)        
+    if(nbytes == 0) {
+    	qDebug("No bytes passed through local UDP socket, since UDP socket write returns EWOULDBLOCK");
+    	qDebug("Should try with blocking sockets, but it is not currently possible due to Open C defect");
+    }
+#endif    	
+    
 }
 
 void tst_QUdpSocket::bindMode()
