@@ -157,7 +157,6 @@ void QFxPathView::setModel(const QVariant &model)
         disconnect(d->model, SIGNAL(itemCreated(int, QFxItem*)), this, SLOT(itemCreated(int,QFxItem*)));
         for (int i=0; i<d->items.count(); i++){
             QFxItem *p = d->items[i];
-            attachedProperties.remove(p);
             d->model->release(p);
         }
         d->items.clear();
@@ -557,7 +556,6 @@ void QFxPathViewPrivate::regenerate()
     Q_Q(QFxPathView);
     for (int i=0; i<items.count(); i++){
         QFxItem *p = items[i];
-        q->attachedProperties.remove(p);
         model->release(p);
     }
     items.clear();
@@ -631,7 +629,6 @@ void QFxPathView::refill()
             while(wrapIndex-- >= 0){
                 QFxItem* p = d->items.takeFirst();
                 d->updateItem(p, 0.0);
-                attachedProperties.remove(p);
                 d->model->release(p);
                 d->firstIndex++;
                 d->firstIndex %= d->model->count();
@@ -645,7 +642,6 @@ void QFxPathView::refill()
             while(wrapIndex++ < d->items.count()-1){
                 QFxItem* p = d->items.takeLast();
                 d->updateItem(p, 1.0);
-                attachedProperties.remove(p);
                 d->model->release(p);
                 d->firstIndex--;
                 if (d->firstIndex < 0)
@@ -704,7 +700,6 @@ void QFxPathView::itemsRemoved(int modelIndex, int count)
     if (d->pathItems == -1) {
         for (int i = 0; i < count; ++i) {
             QFxItem* p = d->items.takeAt(modelIndex);
-            attachedProperties.remove(p);
             d->model->release(p);
         }
         d->snapToCurrent();
@@ -876,8 +871,11 @@ void QFxPathViewPrivate::snapToCurrent()
 QHash<QObject*, QObject*> QFxPathView::attachedProperties;
 QObject *QFxPathView::qmlAttachedProperties(QObject *obj)
 {
-    QFxPathViewAttached *rv = new QFxPathViewAttached(obj);
-    attachedProperties.insert(obj, rv);
+    QObject *rv = attachedProperties.value(obj);
+    if (!rv) {
+        rv = new QFxPathViewAttached(obj);
+        attachedProperties.insert(obj, rv);
+    }
     return rv;
 }
 

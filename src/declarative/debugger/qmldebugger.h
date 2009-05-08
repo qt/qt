@@ -56,8 +56,9 @@ class QTreeWidget;
 class QTreeWidgetItem;
 class QPlainTextEdit;
 class QmlDebuggerItem;
-class QTableWidget;
+class QTableView;
 class QmlPropertyView;
+class QmlWatches;
 class QmlDebugger : public QWidget
 {
 Q_OBJECT
@@ -72,19 +73,22 @@ public slots:
 private slots:
     void itemClicked(QTreeWidgetItem *);
     void itemDoubleClicked(QTreeWidgetItem *);
+    void highlightObject(quint32);
 
 private:
     void buildTree(QObject *obj, QmlDebuggerItem *parent);
     bool makeItem(QObject *obj, QmlDebuggerItem *item);
     QTreeWidget *m_tree;
     QTreeWidget *m_warnings;
-    QTableWidget *m_watchers;
+    QTableView *m_watchTable;
+    QmlWatches *m_watches;
     QmlPropertyView *m_properties;
     QPlainTextEdit *m_text;
     QPointer<QObject> m_object;
-    QList<QPair<quint32, QPair<int, QString> > > m_expressions;
-    QSet<quint32> m_watchedIds;
     QPointer<QObject> m_selectedItem;
+
+    QTreeWidgetItem *m_highlightedItem;
+    QHash<quint32, QTreeWidgetItem *> m_items;
 };
 
 QT_END_NAMESPACE

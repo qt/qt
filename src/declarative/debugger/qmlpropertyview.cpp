@@ -43,9 +43,12 @@
 #include <QtGui/qboxlayout.h>
 #include <QtGui/qtreewidget.h>
 #include <QtCore/qmetaobject.h>
+#include <QtCore/qdebug.h>
+#include <QtDeclarative/qmlbindablevalue.h>
+#include <private/qmlboundsignal_p.h>
 
-QmlPropertyView::QmlPropertyView(QWidget *parent)
-: QWidget(parent), m_tree(0)
+QmlPropertyView::QmlPropertyView(QmlWatches *watches, QWidget *parent)
+: QWidget(parent), m_tree(0), m_watches(watches)
 {
     QVBoxLayout *layout = new QVBoxLayout;
     layout->setContentsMargins(0, 0, 0, 0);
@@ -54,6 +57,10 @@ QmlPropertyView::QmlPropertyView(QWidget *parent)
 
     m_tree = new QTreeWidget(this);
     m_tree->setHeaderLabels(QStringList() << "Property" << "Value");
+    QObject::connect(m_tree, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)),
+                     this, SLOT(itemDoubleClicked(QTreeWidgetItem *)));
+    QObject::connect(m_tree, SIGNAL(itemClicked(QTreeWidgetItem *, int)),
+                     this, SLOT(itemClicked(QTreeWidgetItem *)));
 
     m_tree->setColumnCount(2);
 
@@ -65,22 +72,81 @@ class QmlPropertyViewItem : public QObject, public QTreeWidgetItem
 Q_OBJECT
 public:
     QmlPropertyViewItem(QTreeWidget *widget);
+    QmlPropertyViewItem(QTreeWidgetItem *parent);
 
     QObject *object;
     QMetaProperty property;
+
+    quint32 exprId;
 
 public slots:
     void refresh();
 };
 
 QmlPropertyViewItem::QmlPropertyViewItem(QTreeWidget *widget)
-: QTreeWidgetItem(widget)
+: QTreeWidgetItem(widget), object(0), exprId(0)
+{
+}
+
+QmlPropertyViewItem::QmlPropertyViewItem(QTreeWidgetItem *parent)
+: QTreeWidgetItem(parent), object(0), exprId(0)
 {
 }
 
 void QmlPropertyViewItem::refresh()
 {
-    setText(1, property.read(object).toString());
+    QVariant v = property.read(object);
+    QString str = v.toString();
+
+    if (QmlMetaType::isObject(v.userType())) 
+        str = QmlWatches::objectToString(QmlMetaType::toQObject(v));
+
+    setText(1, str);
+}
+
+void QmlPropertyView::itemClicked(QTreeWidgetItem *i)
+{
+    QmlPropertyViewItem *item = static_cast<QmlPropertyViewItem *>(i);
+
+    if(item->object) {
+        QVariant v = item->property.read(item->object);
+        if (QmlMetaType::isObject(v.userType())) {
+            QObject *obj = QmlMetaType::toQObject(v);
+
+            if(obj) {
+                quint32 id = m_watches->objectId(obj);
+                emit objectClicked(id);
+            }
+        }
+    }
+
+}
+
+void QmlPropertyView::itemDoubleClicked(QTreeWidgetItem *i)
+{
+    QmlPropertyViewItem *item = static_cast<QmlPropertyViewItem *>(i);
+
+    if(item->object) {
+        quint32 objectId = m_watches->objectId(item->object);
+
+        if(m_watches->hasWatch(objectId, item->property.name())) {
+            m_watches->remWatch(objectId, item->property.name());
+            item->setForeground(0, Qt::black);
+        } else {
+            m_watches->addWatch(objectId, item->property.name());
+            item->setForeground(0, Qt::red);
+        }
+    } else if(item->exprId) {
+
+        if(m_watches->hasWatch(item->exprId)) {
+            m_watches->remWatch(item->exprId);
+            item->setForeground(1, Qt::green);
+        } else {
+            m_watches->addWatch(item->exprId);
+            item->setForeground(1, Qt::darkGreen);
+        }
+
+    }
 }
 
 void QmlPropertyView::setObject(QObject *object)
@@ -91,15 +157,38 @@ void QmlPropertyView::setObject(QObject *object)
     if(!m_object)
         return;
 
+    QMultiHash<QByteArray, QPair<QString, quint32> > bindings;
+    QHash<QByteArray, QString> sigs;
+    QObjectList children = object->children();
+
+    foreach(QObject *child, children) {
+        if(QmlBindableValue *value = qobject_cast<QmlBindableValue *>(child)) {
+            bindings.insert(value->property().name().toUtf8(), qMakePair(value->expression(), value->id()));
+        } else if(QmlBoundSignal *signal = qobject_cast<QmlBoundSignal *>(child)) {
+            QMetaMethod method = object->metaObject()->method(signal->index());
+            QByteArray sig = method.signature();
+            sigs.insert(sig, signal->expression());
+        } 
+    }
+
+    quint32 objectId = m_watches->objectId(object);
+
     const QMetaObject *mo = object->metaObject();
     for(int ii = 0; ii < mo->propertyCount(); ++ii) {
+        QMetaProperty p = mo->property(ii);
+
+        if(QmlMetaType::isList(p.userType()) ||
+           QmlMetaType::isQmlList(p.userType()))
+            continue;
+
         QmlPropertyViewItem *item = new QmlPropertyViewItem(m_tree);
 
-        QMetaProperty p = mo->property(ii);
         item->object = object;
         item->property = p;
 
         item->setText(0, QLatin1String(p.name()));
+        if(m_watches->hasWatch(objectId, p.name()))
+            item->setForeground(0, Qt::red);
 
         static int refreshIdx = -1;
         if(refreshIdx == -1) 
@@ -109,7 +198,33 @@ void QmlPropertyView::setObject(QObject *object)
             QMetaObject::connect(object, p.notifySignalIndex(), 
                                  item, refreshIdx);
 
+
+        QMultiHash<QByteArray, QPair<QString, quint32> >::Iterator iter = 
+            bindings.find(p.name());
+
+        while(iter != bindings.end() && iter.key() == p.name()) {
+            QmlPropertyViewItem *binding = new QmlPropertyViewItem(item);
+            binding->exprId = iter.value().second;
+            binding->setText(1, iter.value().first);
+            if (m_watches->hasWatch(binding->exprId))
+                binding->setForeground(1, Qt::darkGreen);
+            else
+                binding->setForeground(1, Qt::green);
+            ++iter;
+        }
+
+        item->setExpanded(true);
         item->refresh();
+    }
+    
+    for(QHash<QByteArray, QString>::ConstIterator iter = sigs.begin();
+            iter != sigs.end();
+            ++iter) {
+
+        QTreeWidgetItem *item = new QTreeWidgetItem(m_tree);
+        item->setText(0, iter.key());
+        item->setForeground(0, Qt::blue);
+        item->setText(1, iter.value());
     }
 }
 

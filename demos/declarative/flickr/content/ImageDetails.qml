@@ -3,6 +3,7 @@ Flipable {
 
     property var frontContainer: ContainerFront
     property var flickableArea: Flickable
+    property var slider: Slider
     property string photoTitle: ""
     property string photoDescription: ""
     property string photoTags: ""
@@ -42,7 +43,7 @@ Flipable {
 
         LikeOMeter { x: 40; y: 250; rating: Container.rating }
 
-        Flickable { id: Flickable; x: 220; width: 480; height: 230; y: 120; clip: true
+        Flickable { id: Flickable; x: 220; width: 480; height: 210; y: 130; clip: true
                     viewportWidth: 480; viewportHeight: DescriptionText.height
 
             WebView { id: DescriptionText; width: parent.width
@@ -96,7 +97,7 @@ Flipable {
             anchors.centeredIn: parent; color: "white"; font.bold: true
         }
 
-        Slider { id: Slider; x: 25; y: 374; imageWidth: Container.photoWidth; imageHeight: Container.photoHeight }
+        Slider { id: Slider; x: 25; y: 374; visible: BigImage.status == 0; imageWidth: Container.photoWidth; imageHeight: Container.photoHeight }
     }
 
     states: [

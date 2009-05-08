@@ -8,7 +8,7 @@ Item {
     resources: [
         XmlListModel {
             id: FeedModel
-            property string tags : ""
+            property string tags : TagsEdit.text
             source: "http://api.flickr.com/services/feeds/photos_public.gne?"+(tags ? "tags="+tags+"&" : "")+"format=rss2"
             query: "doc($src)/rss/channel/item"
             namespaceDeclarations: "declare namespace media=\"http://search.yahoo.com/mrss/\";"
@@ -58,6 +58,7 @@ Item {
                    ImageDetails.photoDate = photoDate;
                    ImageDetails.photoUrl = url;
                    ImageDetails.rating = 0;
+                   ImageDetails.slider.handle.x = ImageDetails.slider.xMax;
                    Wrapper.state = "Details";
                }
             }
@@ -89,7 +90,8 @@ Item {
                     SetProperties { target: ImageDetails; y: 20 }
                     SetProperties { target: PhotoGridView; y: "-480" }
                     SetProperties { target: PhotoPathView; y: "-480" }
-                    SetProperties { target: CloseButton; opacity: 0 }
+                    SetProperties { target: ViewModeButton; opacity: 0 }
+                    SetProperties { target: TagsEdit; opacity: 0 }
                     SetProperties { target: FetchButton; opacity: 0 }
                     SetProperties { target: CategoryText; y: "-50" }
                 }
@@ -121,7 +123,7 @@ Item {
         Image { source: "content/pics/background.png"; opaque: true }
 
         GridView {
-            id: PhotoGridView; model: FeedModel; delegate: PhotoDelegate
+            id: PhotoGridView; model: FeedModel; delegate: PhotoDelegate; cacheBuffer: 100
             cellWidth: 105; cellHeight: 105; x:32; y: 80; width: 800; height: 330; z: 1
         }
 
@@ -159,16 +161,23 @@ Item {
         ImageDetails { id: ImageDetails; width: 750; x: 25; y: 500; height: 410 }
 
         MediaButton {
-            id: CloseButton; x: 680; y: 410; text: "View Mode"
+            id: ViewModeButton; x: 680; y: 410; text: "View Mode"
             onClicked: { if (MainWindow.showPathView == true) MainWindow.showPathView = false; else MainWindow.showPathView = true }
         }
 
         MediaButton {
             id: FetchButton
             text: "Update"
-            anchors.right: CloseButton.left; anchors.rightMargin: 5
-            anchors.top: CloseButton.top
+            anchors.right: ViewModeButton.left; anchors.rightMargin: 5
+            anchors.top: ViewModeButton.top
             onClicked: { FeedModel.reload(); }
+        }
+
+        MediaLineEdit {
+            id: TagsEdit;
+            label: "Tags"
+            anchors.right: FetchButton.left; anchors.rightMargin: 5
+            anchors.top: ViewModeButton.top
         }
 
         states: [

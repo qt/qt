@@ -39,55 +39,62 @@
 **
 ****************************************************************************/
 
-#ifndef QFXPIXMAP_H
-#define QFXPIXMAP_H
+#ifndef QMLWATCHES_P_H
+#define QMLWATCHES_P_H
 
-#include <QString>
-#include <qsimplecanvas.h>
-#include <qfxglobal.h>
-#include <QPixmap>
-
-
-QT_BEGIN_HEADER
+#include <QtCore/qbytearray.h>
+#include <QtCore/qobject.h>
+#include <QtCore/qpointer.h>
+#include <QtCore/qset.h>
+#include <QtCore/qstringlist.h>
+#include <QtCore/qabstractitemmodel.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-class QmlEngine;
-class QNetworkReply;
-class QFxPixmapPrivate;
-class Q_DECLARATIVE_EXPORT QFxPixmap
+class QmlWatchesProxy;
+class QmlWatches : public QAbstractTableModel
 {
+    Q_OBJECT
 public:
-    QFxPixmap();
-    QFxPixmap(const QUrl& url); // url must have been passed to QFxPixmap::get, and finished.
-    QFxPixmap(const QFxPixmap &);
-    virtual ~QFxPixmap();
+    QmlWatches(QObject *parent = 0);
 
-    QFxPixmap &operator=(const QFxPixmap &);
+    bool hasWatch(quint32 objectId, const QByteArray &property);
+    void addWatch(quint32 objectId, const QByteArray &property);
+    void remWatch(quint32 objectId, const QByteArray &property);
 
-    static QNetworkReply *get(QmlEngine *, const QUrl& url, QObject*, const char* slot);
-    static void cancelGet(const QUrl& url, QObject* obj);
+    bool hasWatch(quint32 exprId);
+    void remWatch(quint32 exprId);
+    void addWatch(quint32 exprId);
 
-    bool isNull() const;
+    quint32 objectId(QObject *);
+    QObject *object(quint32);
 
-    bool opaque() const;
-    void setOpaque(bool);
-
-    int width() const;
-    int height() const;
-
-    QPixmap pixmap() const;
-    void setPixmap(const QPixmap &pix);
-
-    operator const QSimpleCanvasConfig::Image &() const;
+    static QString objectToString(QObject *obj);
+protected:
+    int columnCount(const QModelIndex &) const;
+    int rowCount(const QModelIndex &) const;
+    QVariant data(const QModelIndex &, int) const;
+    QVariant headerData(int, Qt::Orientation, int) const;
 
 private:
-    QFxPixmapPrivate *d;
-};
+    friend class QmlWatchesProxy;
+    QList<QPair<quint32, QByteArray> > m_watches;
+    QList<quint32> m_exprWatches;
 
+    void addValue(int, const QVariant &);
+    struct Value {
+        int column;
+        QVariant variant;
+        bool first;
+    };
+    QList<Value> m_values;
+    QStringList m_columnNames;
+
+    quint32 m_uniqueId;
+    QHash<QObject *, QPair<QPointer<QObject>, quint32> *> m_objects;
+    QHash<quint32, QPair<QPointer<QObject>, quint32> *> m_objectIds;
+};
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-#endif // QFXPIXMAP_H
+#endif // QMLWATCHES_P_H

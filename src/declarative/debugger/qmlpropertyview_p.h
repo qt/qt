@@ -44,24 +44,32 @@
 
 #include <QtGui/qwidget.h>
 #include <QtCore/qpointer.h>
+#include <private/qmlwatches_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QTreeWidget;
+class QTreeWidgetItem;
 class QmlPropertyView : public QWidget
 {
     Q_OBJECT
 public:
-    QmlPropertyView(QWidget *parent = 0);
+    QmlPropertyView(QmlWatches *watches, QWidget *parent = 0);
 
     void setObject(QObject *);
 
+signals:
+    void objectClicked(quint32);
+
 public slots:
     void refresh();
+    void itemDoubleClicked(QTreeWidgetItem *);
+    void itemClicked(QTreeWidgetItem *);
 
 private:
     QPointer<QObject> m_object;
     QTreeWidget *m_tree;
+    QmlWatches *m_watches;
 };
 
 QT_END_NAMESPACE
