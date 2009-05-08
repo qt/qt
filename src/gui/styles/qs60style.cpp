@@ -2088,8 +2088,11 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             if (option->state & State_Children) {
                 QS60StyleEnums::SkinParts skinPart = 
                         (option->state & State_Open) ? QS60StyleEnums::SP_QgnIndiHlColSuper : QS60StyleEnums::SP_QgnIndiHlExpSuper;                
-                const int minDimension = qMin(option->rect.width(), option->rect.height());
-                const QRect iconRect(option->rect.topLeft(), QSize(minDimension, minDimension));
+                int minDimension = qMin(option->rect.width(), option->rect.height());
+                const int resizeValue = minDimension >> 1;
+                minDimension += resizeValue; // Adjust the icon bigger because of empty space in svg icon.
+                QRect iconRect(option->rect.topLeft(), QSize(minDimension, minDimension));
+                iconRect.translate(3, 2 - resizeValue);
                 QS60StylePrivate::drawSkinPart(skinPart, painter, iconRect, flags);            
             }
 
