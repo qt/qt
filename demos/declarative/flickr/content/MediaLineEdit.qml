@@ -4,7 +4,7 @@ Item {
     property string label
     property string text
 
-    width: Label.width + Editor.width + 20
+    width: Math.max(94,Label.width + Editor.width + 20)
     height: Image.height
 
     states: [
@@ -13,6 +13,11 @@ Item {
             SetProperties {
                 target: Label
                 text: Container.label + ": "
+            }
+            SetProperty {
+                target: Label
+                property: "x"
+                binding: 10
             }
             SetProperties {
                 target: Editor
@@ -36,13 +41,7 @@ Item {
     ]
     transitions: [
         Transition {
-            ParallelAnimation {
-                NumericAnimation { properties: "width"; duration: 500; easing: "easeInOutQuad" }
-                SequentialAnimation {
-                    PauseAnimation { duration: 100 }
-                    SetPropertyAction { properties: "text" }
-                }
-            }
+            NumericAnimation { properties: "x,width"; duration: 500; easing: "easeInOutQuad" }
         }
     ]
 
@@ -82,8 +81,7 @@ Item {
         font.bold: true
         color: "white"
         anchors.verticalCenter: Container.verticalCenter
-        anchors.left: Container.left
-        anchors.leftMargin: 10
+        x: (Container.width - width)/2
         text: Container.label + "..."
     }
 
