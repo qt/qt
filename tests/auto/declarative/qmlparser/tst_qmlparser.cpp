@@ -147,13 +147,13 @@ private slots:
     //void readWriteDotProperty();
     void emptyInput();
     void missingObject();
-    void invalidXML();
+    //void invalidXML();
     void duplicateIDs();
     void invalidID();
     void interfaceProperty();
     void interfaceQmlList();
     void interfaceQList();
-    void cannotAssignBindingToSignal();
+    //void cannotAssignBindingToSignal();
     void assignObjectToSignal();
 
 private:
@@ -162,14 +162,14 @@ private:
 
 void tst_qmlparser::simpleObject()
 {
-    QmlComponent component(&engine, "<MyQmlObject/>");
+    QmlComponent component(&engine, "MyQmlObject {}");
     QObject *object = component.create();
     QVERIFY(object != 0);
 }
 
 void tst_qmlparser::simpleContainer()
 {
-    QmlComponent component(&engine, "<MyContainer>\n<MyQmlObject/>\n<MyQmlObject/>\n</MyContainer>");
+    QmlComponent component(&engine, "MyContainer {\nMyQmlObject{}\nMyQmlObject{}\n}");
     MyContainer *container= qobject_cast<MyContainer*>(component.create());
     QVERIFY(container != 0);
     QCOMPARE(container->children()->count(),2);
@@ -177,7 +177,7 @@ void tst_qmlparser::simpleContainer()
 
 void tst_qmlparser::unregisteredObject()
 {
-    QmlComponent component(&engine, "<UnRegisteredObject/>", QUrl("myprogram.qml"));
+    QmlComponent component(&engine, "UnRegisteredObject {}", QUrl("myprogram.qml"));
     QTest::ignoreMessage(QtWarningMsg, "Unable to create object of type 'UnRegisteredObject' @myprogram.qml:1");
     QObject *object = component.create();
     QVERIFY(object == 0);
@@ -187,14 +187,14 @@ void tst_qmlparser::nonexistantProperty()
 {
     //NOTE: these first 3 should all have the same error message
     {
-        QmlComponent component(&engine, "<MyQmlObject something=\"24\"/>");
+        QmlComponent component(&engine, "MyQmlObject { something: 24 }");
         QTest::ignoreMessage(QtWarningMsg, "Unknown property 'something' @<unspecified file>:1");
         QObject *object = component.create();
         QVERIFY(object == 0);
     }
 
     {
-        QmlComponent component(&engine, "<MyQmlObject>\n<something>24</something>\n</MyQmlObject>");
+        QmlComponent component(&engine, "MyQmlObject {\n something: 24\n}");
         QTest::ignoreMessage(QtWarningMsg, "Unknown property 'something' @<unspecified file>:2");
         QObject *object = component.create();
         QVERIFY(object == 0);
@@ -202,21 +202,21 @@ void tst_qmlparser::nonexistantProperty()
 
     //non-existant using binding
     {
-        QmlComponent component(&engine, "<MyQmlObject something=\"{1}\"/>");
+        QmlComponent component(&engine, "MyQmlObject { something: 1 + 1 }");
         QTest::ignoreMessage(QtWarningMsg, "Unknown property 'something' @<unspecified file>:1");
         QObject *object = component.create();
         QVERIFY(object == 0);
     }
 
     {
-        QmlComponent component(&engine, "<MyQmlObject><something></something></MyQmlObject>");
+        QmlComponent component(&engine, "MyQmlObject { something: }");
         QObject *object = component.create();
         QVERIFY(object != 0);
     }
 
     //non-existant value-type default property
     {
-        QmlComponent component(&engine, "<MyQmlObject>\n24\n</MyQmlObject>");
+        QmlComponent component(&engine, "MyQmlObject {\n24\n}");
         QTest::ignoreMessage(QtWarningMsg, "Unable to resolve default property @<unspecified file>:3");
         // XXX would 2 be a better line number in this case? Message should also be improved.
         QObject *object = component.create();
@@ -225,7 +225,7 @@ void tst_qmlparser::nonexistantProperty()
 
     //non-existant object-type default property
     {
-        QmlComponent component(&engine, "<MyQmlObject>\n<MyQmlObject/>\n</MyQmlObject>");
+        QmlComponent component(&engine, "MyQmlObject {\nMyQmlObject{}\n}");
         QTest::ignoreMessage(QtWarningMsg, "Unable to assign to non-existant property  @<unspecified file>:2");
         // XXX Message needs to be improved (and should be closer to value-type message).
         QObject *object = component.create();
@@ -236,7 +236,7 @@ void tst_qmlparser::nonexistantProperty()
 void tst_qmlparser::unsupportedProperty()
 {
     QTest::ignoreMessage(QtWarningMsg, "Property 'matrix' is of an unknown type @<unspecified file>:1");
-    QmlComponent component(&engine, "<MyQmlObject matrix=\"1,0,0,0,1,0,0,0,1\"/>");
+    QmlComponent component(&engine, "MyQmlObject { matrix: \"1,0,0,0,1,0,0,0,1\" }");
     MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object == 0);
 }
@@ -246,7 +246,7 @@ void tst_qmlparser::wrongType()
     //string for int
     {
         QTest::ignoreMessage(QtWarningMsg, "Can't assign value 'hello' to property 'value' @<unspecified file>:1");
-        QmlComponent component(&engine, "<MyQmlObject value=\"hello\"/>");
+        QmlComponent component(&engine, "MyQmlObject { value: \"hello\" }");
         MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
         QVERIFY(object == 0);
     }
@@ -254,7 +254,7 @@ void tst_qmlparser::wrongType()
     //int for bool
     {
         QTest::ignoreMessage(QtWarningMsg, "Can't assign value '5' to property 'enabled' @<unspecified file>:1");
-        QmlComponent component(&engine, "<MyQmlObject enabled=\"5\"/>");
+        QmlComponent component(&engine, "MyQmlObject { enabled: 5 }");
         MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
         QVERIFY(object == 0);
     }
@@ -262,7 +262,7 @@ void tst_qmlparser::wrongType()
     //bad format for rect
     {
         QTest::ignoreMessage(QtWarningMsg, "Can't assign value '5,5x10' to property 'rect' @<unspecified file>:1");
-        QmlComponent component(&engine, "<MyQmlObject rect=\"5,5x10\"/>");
+        QmlComponent component(&engine, "MyQmlObject { rect: \"5,5x10\" }");
         MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
         QVERIFY(object == 0);
     }
@@ -274,14 +274,14 @@ void tst_qmlparser::readOnly()
 {
     {
         QTest::ignoreMessage(QtWarningMsg, "Can't assign value 'hello' to property 'readOnlyString' because 'readOnlyString' is read-only @<unspecified file>:1");
-        QmlComponent component(&engine, "<MyQmlObject readOnlyString=\"hello\"/>");
+        QmlComponent component(&engine, "MyQmlObject { readOnlyString: \"hello\" }");
         QObject *object = component.create();
         QVERIFY(object == 0);
     }
 
     {
         QTest::ignoreMessage(QtWarningMsg, "Can't assign a binding to property 'readOnlyString' because 'readOnlyString' is read-only @<unspecified file>:1");
-        QmlComponent component(&engine, "<MyQmlObject readOnlyString=\"{'hello'}\"/>");
+        QmlComponent component(&engine, "MyQmlObject { readOnlyString: {'hello'} }");
         QObject *object = component.create();
         QVERIFY(object == 0);
     }
@@ -290,7 +290,7 @@ void tst_qmlparser::readOnly()
 void tst_qmlparser::nullDotProperty()
 {
     QTest::ignoreMessage(QtWarningMsg, "Can't set properties on 'obj' because it is null @<unspecified file>:1");
-    QmlComponent component(&engine, "<MyDotPropertyObject obj.value=\"1\"/>");
+    QmlComponent component(&engine, "MyDotPropertyObject { obj.value: 1 }");
     QObject *object = component.create();
     QVERIFY(object == 0);
 }
@@ -298,7 +298,7 @@ void tst_qmlparser::nullDotProperty()
 void tst_qmlparser::fakeDotProperty()
 {
     QTest::ignoreMessage(QtWarningMsg, "Can't set properties on 'value' because it isn't a known object type @<unspecified file>:1");
-    QmlComponent component(&engine, "<MyQmlObject value.something=\"hello\"/>");
+    QmlComponent component(&engine, "MyQmlObject { value.something: \"hello\" }");
     QObject *object = component.create();
     QVERIFY(object == 0);
 }
@@ -306,13 +306,13 @@ void tst_qmlparser::fakeDotProperty()
 //XXX need to define correct behavior first
 /*void tst_qmlparser::readWriteDotProperty()
 {
-    QmlComponent component(&engine, "<MyDotPropertyObject readWriteObj.value=\"1\"/>");
+    QmlComponent component(&engine, "MyDotPropertyObject { readWriteObj.value: 1 }");
     MyDotPropertyObject *object = qobject_cast<MyDotPropertyObject*>(component.create());
     QVERIFY(object != 0);
     QCOMPARE(object->readWriteObj()->value(),1);
 
     {
-        QmlComponent component(&engine, "<MyContainer><MyQmlObject id=\"Obj\" value=\"1\"/><MyDotPropertyObject readWriteObj=\"{Obj}\"/></MyContainer>");
+        QmlComponent component(&engine, "MyContainer { MyQmlObject { id: Obj value: 1 } MyDotPropertyObject { readWriteObj: Obj } }");
         MyContainer *object = qobject_cast<MyContainer*>(component.create());
         QVERIFY(object != 0);
         MyDotPropertyObject *dpo = qobject_cast<MyDotPropertyObject *>(object->children()->at(1));
@@ -333,13 +333,13 @@ void tst_qmlparser::missingObject()
 {
     QTest::ignoreMessage(QtCriticalMsg, "Can't have a property with no object @<unspecified file>:1");
     QTest::ignoreMessage(QtWarningMsg, "Can't compile because of earlier errors @<unspecified file>:-1");
-    QmlComponent component(&engine, "<something/>");
+    QmlComponent component(&engine, "something:");
     QObject *object = component.create();
     QVERIFY(object == 0);
 }
 
 
-void tst_qmlparser::invalidXML()
+/*void tst_qmlparser::invalidXML()
 {
     //extra stuff on end
     {
@@ -375,12 +375,12 @@ void tst_qmlparser::invalidXML()
         QVERIFY(object == 0);
     }
 
-}
+}*/
 
 void tst_qmlparser::duplicateIDs()
 {
     QTest::ignoreMessage(QtWarningMsg, "An id (\"MyID\") is not unique within its scope. @<unspecified file>:3");
-    QmlComponent component(&engine, "<MyContainer>\n<MyQmlObject id=\"MyID\"/>\n<MyQmlObject id=\"MyID\"/>\n</MyContainer>");
+    QmlComponent component(&engine, "MyContainer {\nMyQmlObject { id: MyID }\nMyQmlObject { id: MyID }\n}");
     QObject *object = component.create();
     QVERIFY(object == 0);
 }
@@ -388,14 +388,14 @@ void tst_qmlparser::duplicateIDs()
 void tst_qmlparser::invalidID()
 {
     QTest::ignoreMessage(QtWarningMsg, "'1' is not a valid id @<unspecified file>:1");
-    QmlComponent component(&engine, "<MyQmlObject id=\"1\"/>");
+    QmlComponent component(&engine, "MyQmlObject { id: 1 }");
     QObject *object = component.create();
     QVERIFY(object == 0);
 }
 
 void tst_qmlparser::interfaceProperty()
 {
-    QmlComponent component(&engine, "<MyQmlObject><interface>\n<MyQmlObject/></interface>\n</MyQmlObject>");
+    QmlComponent component(&engine, "MyQmlObject { interface: MyQmlObject }");
     MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object != 0);
     QVERIFY(object->interface());
@@ -404,7 +404,7 @@ void tst_qmlparser::interfaceProperty()
 
 void tst_qmlparser::interfaceQmlList()
 {
-    QmlComponent component(&engine, "<MyContainer><qmllistInterfaces>\n<MyQmlObject/>\n<MyQmlObject/>\n</qmllistInterfaces>\n</MyContainer>");
+    QmlComponent component(&engine, "MyContainer { qmllistInterfaces: MyQmlObject {} }");
     MyContainer *container= qobject_cast<MyContainer*>(component.create());
     QVERIFY(container != 0);
     QVERIFY(container->qmllistAccessor().count() == 2);
@@ -414,7 +414,7 @@ void tst_qmlparser::interfaceQmlList()
 
 void tst_qmlparser::interfaceQList()
 {
-    QmlComponent component(&engine, "<MyContainer><qlistInterfaces>\n<MyQmlObject/>\n<MyQmlObject/>\n</qlistInterfaces>\n</MyContainer>");
+    QmlComponent component(&engine, "MyContainer { qlistInterfaces: MyQmlObject {} }");
     MyContainer *container= qobject_cast<MyContainer*>(component.create());
     QVERIFY(container != 0);
     QVERIFY(container->qlistInterfaces()->count() == 2);
@@ -422,17 +422,17 @@ void tst_qmlparser::interfaceQList()
         QVERIFY(container->qlistInterfaces()->at(ii)->id == 913);
 }
 
-void tst_qmlparser::cannotAssignBindingToSignal()
+/*void tst_qmlparser::cannotAssignBindingToSignal()
 {
     QTest::ignoreMessage(QtWarningMsg, "Cannot assign binding to signal property @<unspecified file>:1");
     QmlComponent component(&engine, "<MyQmlObject onBasicSignal=\"{print(1921)}\" />");
     MyContainer *container= qobject_cast<MyContainer*>(component.create());
     QVERIFY(container == 0);
-}
+}*/
 
 void tst_qmlparser::assignObjectToSignal()
 {
-    QmlComponent component(&engine, "<MyQmlObject><onBasicSignal><MyQmlObject /></onBasicSignal></MyQmlObject>");
+    QmlComponent component(&engine, "MyQmlObject { onBasicSignal: MyQmlObject {} }");
     MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
     QVERIFY(object != 0);
     QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlot");
