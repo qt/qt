@@ -34,14 +34,14 @@ Rect {
                     y: 12
                     width: parent.width-30
                     text: model.label
-                    color: "white"
+                    color: wrapper.ListView.isCurrentItem ? "black" : "white"
                     font.bold: true
                     children: [
                         MouseRegion {
                             anchors.fill: parent
                             onClicked: {
                                 Details.qml = 'Contact.qml';
-                                wrapper.state='opened';
+                                wrapper.state ='opened';
                                 contacts.mode = 'edit';
                             }
                         }
@@ -190,10 +190,26 @@ Rect {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: cancelEditButton.bottom
-        anchors.bottom: searchBarWrapper.bottom
+        anchors.bottom: searchBarWrapper.top
+        anchors.topMargin: 5
         clip: true
         model: contactList
         delegate: contactDelegate
+        highlight: [
+            Rect {
+                id: contactHighlight
+                pen.width: 0
+                color: 'white'
+                opacity: contacts.mode == 'list' ? 1 : 0
+                opacity: Behaviour {
+                    NumericAnimation {
+                        property: "opacity"
+                        duration: 250
+                    }
+                }
+            }
+        ]
+        autoHighlight: true
         focus: false
     }
     FocusRealm {
