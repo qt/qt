@@ -71,7 +71,8 @@ public:
     QmlDomDocument &operator=(const QmlDomDocument &);
 
     int version() const;
-    
+    QList<QUrl> imports() const;
+
     QList<QmlError> errors() const;
     bool load(QmlEngine *, const QByteArray &, const QUrl & = QUrl());
     QByteArray save() const;

@@ -362,6 +362,16 @@ bool ProcessAST::visit(AST::UiImport *node)
 {
     QString fileName = node->fileName->asString();
     _parser->addNamespacePath(fileName);
+
+    AST::SourceLocation startLoc = node->importToken;
+    AST::SourceLocation endLoc = node->semicolonToken;
+
+    QmlScriptParser::Import import;
+    import.location = location(startLoc, endLoc);
+    import.uri = fileName;
+
+    _parser->_imports << import;
+
     return false;
 }
 
@@ -684,6 +694,11 @@ QStringList QmlScriptParser::types() const
 Object *QmlScriptParser::tree() const
 {
     return root;
+}
+
+QList<QmlScriptParser::Import> QmlScriptParser::imports() const
+{
+    return _imports;
 }
 
 QList<QmlError> QmlScriptParser::errors() const
