@@ -89,6 +89,7 @@ Item {
         id: Editor
         font.bold: true
         color: "white"
+        highlightColor: "green"
         width: 0
         clip: true
         anchors.left: Label.right
