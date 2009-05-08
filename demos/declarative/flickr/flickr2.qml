@@ -198,12 +198,12 @@ Item {
             path: Path {
                 startX: -150; startY: 40;
 
+                PathAttribute { name: "scale"; value: 0.9 }
+                PathAttribute { name: "angle"; value: -45 }
                 PathPercent { value: 0 }
                 PathLine { x: -50; y: 40 }
 
                 PathPercent { value: 0.001 }
-                PathAttribute { name: "scale"; value: 0.9 }
-                PathAttribute { name: "angle"; value: -45 }
 
                 PathCubic {
                     x: 400; y: 220
@@ -221,12 +221,11 @@ Item {
                     control1X: 590; control1Y: 220
                 }
 
-                PathAttribute { name: "scale"; value: 0.9 }
-                PathAttribute { name: "angle"; value: -45 }
-
                 PathPercent { value: 0.999 }
                 PathLine { x: 950; y: 40 }
                 PathPercent { value: 1.0 }
+                PathAttribute { name: "scale"; value: 0.9 }
+                PathAttribute { name: "angle"; value: -45 }
             }
         }
 
