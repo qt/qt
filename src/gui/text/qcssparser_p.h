@@ -495,7 +495,7 @@ const quint64 PseudoClass_Alternate        = Q_UINT64_C(0x0000100000000000);
 const quint64 PseudoClass_Any              = Q_UINT64_C(0x0000ffffffffffff);
 const int NumPseudos = 46;
 
-struct Q_GUI_EXPORT Pseudo
+struct Pseudo
 {
     Pseudo() : negated(false) { }
     quint64 type;
@@ -504,7 +504,7 @@ struct Q_GUI_EXPORT Pseudo
     bool negated;
 };
 
-struct Q_GUI_EXPORT AttributeSelector
+struct AttributeSelector
 {
     enum ValueMatchType {
         NoMatch,
@@ -519,7 +519,7 @@ struct Q_GUI_EXPORT AttributeSelector
     ValueMatchType valueMatchCriterium;
 };
 
-struct Q_GUI_EXPORT BasicSelector
+struct BasicSelector
 {
     inline BasicSelector() : relationToNext(NoRelation) {}
 
@@ -586,7 +586,7 @@ private:
     QPalette pal;
 };
 
-struct Q_GUI_EXPORT StyleRule
+struct StyleRule
 {
     StyleRule() : order(0) { }
     QVector<Selector> selectors;
@@ -594,19 +594,19 @@ struct Q_GUI_EXPORT StyleRule
     int order;
 };
 
-struct Q_GUI_EXPORT MediaRule
+struct MediaRule
 {
     QStringList media;
     QVector<StyleRule> styleRules;
 };
 
-struct Q_GUI_EXPORT PageRule
+struct PageRule
 {
     QString selector;
     QVector<Declaration> declarations;
 };
 
-struct Q_GUI_EXPORT ImportRule
+struct ImportRule
 {
     QString href;
     QStringList media;
