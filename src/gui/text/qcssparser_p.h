@@ -403,7 +403,7 @@ struct BorderData {
 // 4. QVector<Declaration> - { prop1: value1; prop2: value2; }
 // 5. Declaration - prop1: value1;
 
-struct Q_GUI_EXPORT Declaration
+struct Declaration
 {
     struct DeclarationData : public QSharedData
     {
@@ -539,7 +539,7 @@ struct BasicSelector
     Relation relationToNext;
 };
 
-struct Q_GUI_EXPORT Selector
+struct Selector
 {
     QVector<BasicSelector> basicSelectors;
     int specificity() const;
@@ -552,7 +552,7 @@ struct MediaRule;
 struct PageRule;
 struct ImportRule;
 
-struct Q_GUI_EXPORT ValueExtractor
+struct ValueExtractor
 {
     ValueExtractor(const QVector<Declaration> &declarations, const QPalette & = QPalette());
 
@@ -620,7 +620,7 @@ enum StyleSheetOrigin {
     StyleSheetOrigin_Inline
 };
 
-struct Q_GUI_EXPORT StyleSheet
+struct StyleSheet
 {
     StyleSheet() : origin(StyleSheetOrigin_Unspecified), depth(0) { }
     QVector<StyleRule> styleRules;  //only contains rules that are not indexed
