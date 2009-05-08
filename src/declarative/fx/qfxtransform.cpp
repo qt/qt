@@ -180,7 +180,7 @@ void QFxAxis::setEndZ(qreal z)
 }
 
 QFxRotation::QFxRotation(QObject *parent)
-: QFxTransform(parent), _angle(0), _originX(0), _originY(0), _dirty(true)
+: QFxTransform(parent), _originX(0), _originY(0), _angle(0), _dirty(true)
 {
 }
 
