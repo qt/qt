@@ -1091,11 +1091,28 @@ void tst_QStateMachine::stateEntryAndExit()
         QStateMachine machine;
 
         TestState *s1 = new TestState(machine.rootState());
+        QTest::ignoreMessage(QtWarningMsg, "QState::addTransition: cannot add transition to null state");
+        s1->addTransition((QAbstractState*)0);
+        QTest::ignoreMessage(QtWarningMsg, "QState::addTransition: cannot add null transition");
+        s1->addTransition((QAbstractTransition*)0);
+        QTest::ignoreMessage(QtWarningMsg, "QState::removeTransition: cannot remove null transition");
+        s1->removeTransition((QAbstractTransition*)0);
+
         TestState *s2 = new TestState(machine.rootState());
         QFinalState *s3 = new QFinalState(machine.rootState());
         TestTransition *t = new TestTransition(s2);
-        s1->addTransition(t);
-        s2->addTransition(s3);
+        QCOMPARE(s1->addTransition(t), (QAbstractTransition*)t);
+        {
+            QAbstractTransition *trans = s2->addTransition(s3);
+            QVERIFY(trans != 0);
+            QCOMPARE(trans->sourceState(), (QAbstractState*)s2);
+            QCOMPARE(trans->targetState(), (QAbstractState*)s3);
+            s2->removeTransition(trans);
+            QCOMPARE(trans->sourceState(), (QAbstractState*)0);
+            QCOMPARE(trans->targetState(), (QAbstractState*)s3);
+            QCOMPARE(s2->addTransition(trans), trans);
+            QCOMPARE(trans->sourceState(), (QAbstractState*)s2);
+        }
 
         QSignalSpy startedSpy(&machine, SIGNAL(started()));
         QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
@@ -1311,6 +1328,8 @@ void tst_QStateMachine::assignPropertyWithAnimation()
         QStateMachine machine;
         QObject obj;
         QState *s1 = new QState(machine.rootState());
+        QCOMPARE(s1->childMode(), QState::ExclusiveStates);
+        QCOMPARE(s1->initialState(), (QAbstractState*)0);
         s1->setObjectName("s1");
         s1->assignProperty(&obj, "foo", 123);
         s1->assignProperty(&obj, "bar", 456);
@@ -1324,6 +1343,7 @@ void tst_QStateMachine::assignPropertyWithAnimation()
         s22->setObjectName("s22");
         s22->assignProperty(&obj, "bar", 789);
         s2->setInitialState(s21);
+        QCOMPARE(s2->initialState(), (QAbstractState*)s21);
 
         QAbstractTransition *trans = s1->addTransition(s2);
         QPropertyAnimation anim(&obj, "foo");
@@ -1448,6 +1468,7 @@ void tst_QStateMachine::parallelStates()
     QStateMachine machine;
 
     QState *s1 = new QState(QState::ParallelStates);
+    QCOMPARE(s1->childMode(), QState::ParallelStates);
       QState *s1_1 = new QState(s1);
         QState *s1_1_1 = new QState(s1_1);
         QFinalState *s1_1_f = new QFinalState(s1_1);

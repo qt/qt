@@ -381,9 +381,12 @@ protected:
 */
 QAbstractTransition *QState::addTransition(QAbstractState *target)
 {
+    if (!target) {
+        qWarning("QState::addTransition: cannot add transition to null state");
+        return 0;
+    }
     UnconditionalTransition *trans = new UnconditionalTransition(target);
-    addTransition(trans);
-    return trans;
+    return addTransition(trans);
 }
 
 /*!
