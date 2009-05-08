@@ -331,7 +331,7 @@ void tst_QSvgRenderer::nestedQXmlStreamReader() const
     QCOMPARE(reader.readNext(), QXmlStreamReader::StartDocument);
     QCOMPARE(reader.readNext(), QXmlStreamReader::StartElement);
     QCOMPARE(reader.name().toString(), QLatin1String("bar"));
-    
+
     QPicture picture;
     QPainter painter(&picture);
     QSvgRenderer renderer(&reader);
@@ -653,22 +653,66 @@ void tst_QSvgRenderer::testGzHelper()
 
 void tst_QSvgRenderer::fillRule()
 {
-    QByteArray data(
+    static const char *svgs[] = {
+        // Paths
+        // Default fill-rule (nonzero)
         "<svg>"
-        "<rect x=\"0\" y=\"0\" height=\"300\" width=\"400\" fill=\"blue\" />"
-        "<path d=\"M100 200 L300 200 L300 100 L100 100 M100 200 L300 200 L300 100 L100 100 Z\" fill=\"red\" stroke=\"black\" />"
-        "</svg>");
+        "   <rect x=\"0\" y=\"0\" height=\"30\" width=\"30\" fill=\"blue\" />"
+        "   <path d=\"M10 0 L30 0 L30 30 L0 30 L0 10 L20 10 L20 20 L10 20 Z\" fill=\"red\" />"
+        "</svg>",
+        // nonzero
+        "<svg>"
+        "   <rect x=\"0\" y=\"0\" height=\"30\" width=\"30\" fill=\"blue\" />"
+        "   <path d=\"M10 0 L30 0 L30 30 L0 30 L0 10 L20 10 L20 20 L10 20 Z\" fill=\"red\" fill-rule=\"nonzero\" />"
+        "</svg>",
+        // evenodd
+        "<svg>"
+        "   <rect x=\"0\" y=\"0\" height=\"30\" width=\"30\" fill=\"blue\" />"
+        "   <path d=\"M10 0 L30 0 L30 30 L0 30 L0 10 L20 10 L20 20 L10 20 Z\" fill=\"red\" fill-rule=\"evenodd\" />"
+        "</svg>",
 
-    QSvgRenderer renderer(data);
+        // Polygons
+        // Default fill-rule (nonzero)
+        "<svg>"
+        "   <rect x=\"0\" y=\"0\" height=\"30\" width=\"30\" fill=\"blue\" />"
+        "   <polygon points=\"10 0 30 0 30 30 0 30 0 10 20 10 20 20 10 20\" fill=\"red\" />"
+        "</svg>",
+        // nonzero
+        "<svg>"
+        "   <rect x=\"0\" y=\"0\" height=\"30\" width=\"30\" fill=\"blue\" />"
+        "   <polygon points=\"10 0 30 0 30 30 0 30 0 10 20 10 20 20 10 20\" fill=\"red\" fill-rule=\"nonzero\" />"
+        "</svg>",
+        // evenodd
+        "<svg>"
+        "   <rect x=\"0\" y=\"0\" height=\"30\" width=\"30\" fill=\"blue\" />"
+        "   <polygon points=\"10 0 30 0 30 30 0 30 0 10 20 10 20 20 10 20\" fill=\"red\" fill-rule=\"evenodd\" />"
+        "</svg>"
+    };
 
-    QImage image(128, 128, QImage::Format_ARGB32_Premultiplied);
-    image.fill(0);
+    const int COUNT = sizeof(svgs) / sizeof(svgs[0]);
+    QImage refImageNonZero(30, 30, QImage::Format_ARGB32_Premultiplied);
+    QImage refImageEvenOdd(30, 30, QImage::Format_ARGB32_Premultiplied);
+    refImageNonZero.fill(0xffff0000);
+    refImageEvenOdd.fill(0xffff0000);
+    QPainter p;
+    p.begin(&refImageNonZero);
+    p.fillRect(QRectF(0, 0, 10, 10), Qt::blue);
+    p.end();
+    p.begin(&refImageEvenOdd);
+    p.fillRect(QRectF(0, 0, 10, 10), Qt::blue);
+    p.fillRect(QRectF(10, 10, 10, 10), Qt::blue);
+    p.end();
 
-    QPainter painter(&image);
-    renderer.render(&painter);
-    painter.end();
-
-    QCOMPARE(image.pixel(64, 64), QColor(Qt::red).rgba());
+    for (int i = 0; i < COUNT; ++i) {
+        QByteArray data(svgs[i]);
+        QSvgRenderer renderer(data);
+        QImage image(30, 30, QImage::Format_ARGB32_Premultiplied);
+        image.fill(0);
+        p.begin(&image);
+        renderer.render(&p);
+        p.end();
+        QCOMPARE(image, i % 3 == 2 ? refImageEvenOdd : refImageNonZero);
+    }
 }
 
 QTEST_MAIN(tst_QSvgRenderer)
