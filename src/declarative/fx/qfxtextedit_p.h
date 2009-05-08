@@ -80,6 +80,7 @@ public:
     QString text;
     QmlFont font;
     QColor  color;
+    QColor  highlightColor;
     QString style;
     QColor  styleColor;
     bool imgDirty;
