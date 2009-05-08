@@ -252,9 +252,7 @@ void QFxPaintedItem::paintGLContents(GLPainter &p)
     const QRectF clipf = p.sceneClipRect;
 #endif
 
-    qreal hscale = widthValid() ? qreal(width()) / content.width() : heightValid() ? qreal(height()) / content.height() : 1.0;
-    qreal vscale = heightValid() ? qreal(height()) / content.height() : widthValid() ? qreal(width()) / content.width() : 1.0;
-    const QRect clip = mapFromScene(QRectF(clipf.x()/hscale,clipf.y()/vscale,clipf.width()/hscale,clipf.height()/vscale)).toRect();
+    const QRect clip = mapFromScene(clipf).toRect();
 
     QRegion topaint(clip);
     topaint &= content;
@@ -272,7 +270,7 @@ void QFxPaintedItem::paintGLContents(GLPainter &p)
     for (int i=0; i<d->imagecache.count(); ++i) {
         QRect area = d->imagecache[i]->area;
         if (topaint.contains(area)) {
-            QRectF target(area.x()*hscale, area.y()*vscale, area.width()*hscale, area.height()*vscale);
+            QRectF target(area.x(), area.y(), area.width(), area.height());
             p.drawImage(target.toRect(), d->imagecache[i]->image);
             topaint -= area;
             d->imagecache[i]->age=0;
@@ -324,7 +322,7 @@ void QFxPaintedItem::paintGLContents(GLPainter &p)
             newitem->image.setImage(img);
 #endif
             d->imagecache.append(newitem);
-            QRectF target(r.x()*hscale, r.y()*vscale, r.width()*hscale, r.height()*vscale);
+            QRectF target(r.x(), r.y(), r.width(), r.height());
             p.drawImage(target.toRect(), newitem->image);
         }
     }
