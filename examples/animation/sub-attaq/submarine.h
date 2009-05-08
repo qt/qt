@@ -47,8 +47,8 @@
 #include "qvariantanimation.h"
 #include "qgraphicswidget.h"
 #else
-#include <QVariantAnimation>
-#include <QGraphicsWidget>
+#include <QtCore/QVariantAnimation>
+#include <QtGui/QGraphicsWidget>
 #endif
 
 class PixmapItem;

@@ -1,5 +1,5 @@
 #include <qtest.h>
-#include <QtDeclarative/QmlEngine.h>
+#include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlmetaproperty.h>
 #include <QtGui/QLineEdit>

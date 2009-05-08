@@ -73,7 +73,7 @@ public:
         s1->addTransition(pb, SIGNAL(clicked()), s2);
         s2->addTransition(pb, SIGNAL(clicked()), s1);
 
-        QHistoryState *h = process->addHistoryState();
+        QHistoryState *h = new QHistoryState(process);
         h->setDefaultState(s1);
 
         QState *interrupted = new QState(machine->rootState());

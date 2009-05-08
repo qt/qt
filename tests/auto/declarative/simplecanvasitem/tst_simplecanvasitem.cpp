@@ -69,7 +69,7 @@ QFxView *tst_SimpleCanvasItem::createView(const QString &filename)
     QFile file(filename);
     file.open(QFile::ReadOnly);
     QString xml = file.readAll();
-    canvas->setXml(xml, filename);
+    canvas->setQml(xml, filename);
 
     return canvas;
 }

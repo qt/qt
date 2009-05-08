@@ -51,12 +51,15 @@ public:
     Qt::MouseButton button() const;
     void setButton(Qt::MouseButton button);
 
+    Qt::KeyboardModifiers modifiersMask() const;
+    void setModifiersMask(Qt::KeyboardModifiers modifiers);
+
     QPainterPath path() const;
     void setPath(const QPainterPath &path);
 
 protected:
     bool eventTest(QEvent *event) const;
-    void onTransition();
+    void onTransition(QEvent *);
 
 private:
     Q_DISABLE_COPY(QBasicMouseEventTransition)

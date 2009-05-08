@@ -61,6 +61,7 @@ class QNetworkCookiePrivate: public QSharedData
 {
 public:
     inline QNetworkCookiePrivate() : secure(false), httpOnly(false) { }
+    static QList<QNetworkCookie> parseSetCookieHeaderLine(const QByteArray &cookieString);
 
     QDateTime expirationDate;
     QString domain;

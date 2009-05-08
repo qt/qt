@@ -18,7 +18,7 @@ private slots:
 void tst_datetimeformatter::date()
 {
     QmlEngine engine;
-    QmlComponent formatterComponent(&engine, "<DateTimeFormatter date=\"2008-12-24\"/>");
+    QmlComponent formatterComponent(&engine, "DateTimeFormatter { date: \"2008-12-24\" }");
     QmlDateTimeFormatter *formatter = qobject_cast<QmlDateTimeFormatter*>(formatterComponent.create());
     QVERIFY(formatter != 0);
 
@@ -38,7 +38,7 @@ void tst_datetimeformatter::date()
 void tst_datetimeformatter::time()
 {
     QmlEngine engine;
-    QmlComponent formatterComponent(&engine, "<DateTimeFormatter time=\"14:15:38.200\"/>");
+    QmlComponent formatterComponent(&engine, "DateTimeFormatter { time: \"14:15:38.200\" }");
     QmlDateTimeFormatter *formatter = qobject_cast<QmlDateTimeFormatter*>(formatterComponent.create());
     QVERIFY(formatter != 0);
 
@@ -64,7 +64,7 @@ void tst_datetimeformatter::time()
 void tst_datetimeformatter::dateTime()
 {
     QmlEngine engine;
-    QmlComponent formatterComponent(&engine, "<DateTimeFormatter dateTime=\"1978-03-04T09:13:54\"/>");
+    QmlComponent formatterComponent(&engine, "DateTimeFormatter { dateTime: \"1978-03-04T09:13:54\" }");
     QmlDateTimeFormatter *formatter = qobject_cast<QmlDateTimeFormatter*>(formatterComponent.create());
     QVERIFY(formatter != 0);
 

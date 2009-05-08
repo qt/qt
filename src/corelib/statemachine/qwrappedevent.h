@@ -39,69 +39,38 @@
 **
 ****************************************************************************/
 
-#ifndef QSTATEACTION_P_H
-#define QSTATEACTION_P_H
+#ifndef QWRAPPEDEVENT_H
+#define QWRAPPEDEVENT_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtCore/qcoreevent.h>
 
-#ifndef QT_STATEMACHINE_SOLUTION
-#include <private/qobject_p.h>
-#endif
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QStateAction;
-class QStateActionPrivate
-#ifndef QT_STATEMACHINE_SOLUTION
-    : public QObjectPrivate
-#endif
+QT_MODULE(Core)
+
+class QObject;
+
+class Q_CORE_EXPORT QWrappedEvent : public QEvent
 {
-    Q_DECLARE_PUBLIC(QStateAction)
 public:
-    QStateActionPrivate();
-    ~QStateActionPrivate();
+    QWrappedEvent(QObject *object, QEvent *event);
+    ~QWrappedEvent();
 
-    static QStateActionPrivate *get(QStateAction *q);
+    inline QObject *object() const { return m_object; }
+    inline QEvent *event() const { return m_event; }
 
-    void callExecute();
+private:
+    QObject *m_object;
+    QEvent *m_event;
 
-    enum When {
-        ExecuteOnEntry,
-        ExecuteOnExit
-    };
-
-    When when;
-
-#ifdef QT_STATEMACHINE_SOLUTION
-    QStateAction *q_ptr;
-#endif
-};
-
-class QStateInvokeMethodAction;
-class QStateInvokeMethodActionPrivate : public QStateActionPrivate
-{
-    Q_DECLARE_PUBLIC(QStateInvokeMethodAction)
-public:
-    QStateInvokeMethodActionPrivate() {}
-    ~QStateInvokeMethodActionPrivate() {}
-
-    static QStateInvokeMethodActionPrivate *get(QStateInvokeMethodAction *q);
-
-    QObject *target;
-    QByteArray methodName;
-    int methodIndex;
-    QList<QVariant> args;
+private:
+    Q_DISABLE_COPY(QWrappedEvent)
 };
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif

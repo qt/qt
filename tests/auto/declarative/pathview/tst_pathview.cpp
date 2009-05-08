@@ -221,7 +221,7 @@ QFxView *tst_QFxPathView::createView(const QString &filename)
     QFile file(filename);
     file.open(QFile::ReadOnly);
     QString xml = file.readAll();
-    canvas->setXml(xml, filename);
+    canvas->setQml(xml, filename);
 
     return canvas;
 }
@@ -238,7 +238,7 @@ T *tst_QFxPathView::findItem(QFxItem *parent, const QString &id, int index)
         QFxItem *item = parent->children()->at(i);
         if (mo.cast(item) && (id.isEmpty() || item->id() == id)) {
             if (index != -1) {
-                QmlExpression e(item->itemContext(), "index", item);
+                QmlExpression e(qmlContext(item), "index", item);
                 e.setTrackChange(false);
                 if (e.value().toInt() == index)
                     return static_cast<T*>(item);

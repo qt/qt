@@ -109,6 +109,41 @@ private:
 };
 QML_DECLARE_TYPE(QFxAxis);
 
+class Q_DECLARATIVE_EXPORT QFxRotation : public QFxTransform
+{
+    Q_OBJECT
+
+    Q_PROPERTY(qreal originX READ originX WRITE setOriginX)
+    Q_PROPERTY(qreal originY READ originY WRITE setOriginY)
+    Q_PROPERTY(qreal angle READ angle WRITE setAngle)
+public:
+    QFxRotation(QObject *parent=0);
+    ~QFxRotation();
+
+    qreal originX() const;
+    void setOriginX(qreal);
+
+    qreal originY() const;
+    void setOriginY(qreal);
+
+    qreal angle() const;
+    void setAngle(qreal);
+
+    virtual bool isIdentity() const;
+    virtual QSimpleCanvas::Matrix transform() const;
+
+private Q_SLOTS:
+    void update();
+private:
+    qreal _originX;
+    qreal _originY;
+    qreal _angle;
+
+    mutable bool _dirty;
+    mutable QSimpleCanvas::Matrix _transform;
+};
+QML_DECLARE_TYPE(QFxRotation);
+
 class Q_DECLARATIVE_EXPORT QFxRotation3D : public QFxTransform
 {
     Q_OBJECT
@@ -123,9 +158,6 @@ public:
 
     qreal angle() const;
     void setAngle(qreal);
-
-    qreal distanceToPlane() const;
-    void setDistanceToPlane(qreal);
 
     virtual bool isIdentity() const;
     virtual QSimpleCanvas::Matrix transform() const;
@@ -271,8 +303,6 @@ public:
     virtual QSimpleCanvas::Matrix transform() const;
 
 private:
-    void update();
-
     QPointF p;
     QSizeF s;
     QPointF p1, p2, p3, p4;

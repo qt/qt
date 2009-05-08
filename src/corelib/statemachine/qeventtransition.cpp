@@ -41,7 +41,7 @@
 
 #include "qeventtransition.h"
 #include "qeventtransition_p.h"
-#include "qboundevent_p.h"
+#include "qwrappedevent.h"
 #include "qstate.h"
 #include "qstate_p.h"
 #include "qstatemachine.h"
@@ -79,16 +79,17 @@ QT_BEGIN_NAMESPACE
 
   \section1 Subclassing
 
-  Many event classes have attributes in addition to the event type itself.
-  The testEventCondition() function can be reimplemented to check attributes
-  of an event instance in order to determine whether the transition should be
-  triggered or not.
+  When reimplementing the eventTest() function, you should first call the base
+  implementation to verify that the event is a QWrappedEvent for the proper
+  object and event type. You may then cast the event to a QWrappedEvent and
+  get the original event by calling QWrappedEvent::event(), and perform
+  additional checks on that object.
 
   \sa QState::addTransition()
 */
 
 /*!
-    \property QEventTransition::object
+    \property QEventTransition::eventObject
 
     \brief the event source that this event transition is associated with
 */
@@ -129,7 +130,7 @@ void QEventTransitionPrivate::invalidate()
   Constructs a new QEventTransition object with the given \a sourceState.
 */
 QEventTransition::QEventTransition(QState *sourceState)
-    : QActionTransition(*new QEventTransitionPrivate, sourceState)
+    : QAbstractTransition(*new QEventTransitionPrivate, sourceState)
 {
 }
 
@@ -139,7 +140,7 @@ QEventTransition::QEventTransition(QState *sourceState)
 */
 QEventTransition::QEventTransition(QObject *object, QEvent::Type type,
                                    QState *sourceState)
-    : QActionTransition(*new QEventTransitionPrivate, sourceState)
+    : QAbstractTransition(*new QEventTransitionPrivate, sourceState)
 {
     Q_D(QEventTransition);
     d->registered = false;
@@ -155,7 +156,7 @@ QEventTransition::QEventTransition(QObject *object, QEvent::Type type,
 QEventTransition::QEventTransition(QObject *object, QEvent::Type type,
                                    const QList<QAbstractState*> &targets,
                                    QState *sourceState)
-    : QActionTransition(*new QEventTransitionPrivate, targets, sourceState)
+    : QAbstractTransition(*new QEventTransitionPrivate, targets, sourceState)
 {
     Q_D(QEventTransition);
     d->registered = false;
@@ -167,7 +168,7 @@ QEventTransition::QEventTransition(QObject *object, QEvent::Type type,
   \internal
 */
 QEventTransition::QEventTransition(QEventTransitionPrivate &dd, QState *parent)
-    : QActionTransition(dd, parent)
+    : QAbstractTransition(dd, parent)
 {
 }
 
@@ -176,7 +177,7 @@ QEventTransition::QEventTransition(QEventTransitionPrivate &dd, QState *parent)
 */
 QEventTransition::QEventTransition(QEventTransitionPrivate &dd, QObject *object,
                                    QEvent::Type type, QState *parent)
-    : QActionTransition(dd, parent)
+    : QAbstractTransition(dd, parent)
 {
     Q_D(QEventTransition);
     d->registered = false;
@@ -190,7 +191,7 @@ QEventTransition::QEventTransition(QEventTransitionPrivate &dd, QObject *object,
 QEventTransition::QEventTransition(QEventTransitionPrivate &dd, QObject *object,
                                    QEvent::Type type, const QList<QAbstractState*> &targets,
                                    QState *parent)
-    : QActionTransition(dd, targets, parent)
+    : QAbstractTransition(dd, targets, parent)
 {
     Q_D(QEventTransition);
     d->registered = false;
@@ -229,7 +230,7 @@ void QEventTransition::setEventType(QEvent::Type type)
 /*!
   Returns the event source associated with this event transition.
 */
-QObject *QEventTransition::eventSource() const
+QObject *QEventTransition::eventObject() const
 {
     Q_D(const QEventTransition);
     return d->object;
@@ -239,7 +240,7 @@ QObject *QEventTransition::eventSource() const
   Sets the event source associated with this event transition to be the given
   \a object.
 */
-void QEventTransition::setEventSource(QObject *object)
+void QEventTransition::setEventObject(QObject *object)
 {
     Q_D(QEventTransition);
     if (d->object == object)
@@ -257,28 +258,21 @@ bool QEventTransition::eventTest(QEvent *event) const
 #ifdef QT_STATEMACHINE_SOLUTION
     if (event->type() == QEvent::Type(QEvent::User-3)) {
 #else
-    if (event->type() == QEvent::Bound) {
+    if (event->type() == QEvent::Wrapped) {
 #endif
-        QBoundEvent *oe = static_cast<QBoundEvent*>(event);
-        return (oe->object() == d->object)
-            && (oe->event()->type() == d->eventType)
-            && testEventCondition(oe->event());
+        QWrappedEvent *we = static_cast<QWrappedEvent*>(event);
+        return (we->object() == d->object)
+            && (we->event()->type() == d->eventType);
     }
     return false;
 }
 
 /*!
-  Tests an instance of an event associated with this event transition and
-  returns true if the transition should be taken, otherwise returns false.
-  The type of the given \a event will be eventType().
-
-  Reimplement this function if you have custom conditions associated with
-  the transition. The default implementation always returns true.
+  \reimp
 */
-bool QEventTransition::testEventCondition(QEvent *event) const
+void QEventTransition::onTransition(QEvent *event)
 {
     Q_UNUSED(event);
-    return true;
 }
 
 /*!
@@ -286,7 +280,7 @@ bool QEventTransition::testEventCondition(QEvent *event) const
 */
 bool QEventTransition::event(QEvent *e)
 {
-    return QActionTransition::event(e);
+    return QAbstractTransition::event(e);
 }
 
 QT_END_NAMESPACE

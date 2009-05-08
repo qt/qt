@@ -178,15 +178,7 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect, const QRegion &mask)
                            "Unable to get DirectFB handle!");
                 }
 
-                DFBSurfaceDescription description;
-                description.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH |
-                                                               DSDESC_HEIGHT |
-                                                               DSDESC_PIXELFORMAT);
-                description.width = rect.width();
-                description.height = rect.height();
-                QDirectFBScreen::initSurfaceDescriptionPixelFormat(&description,
-                                                                   screen->pixelFormat());
-                dfbSurface = screen->createDFBSurface(description, false);
+                dfbSurface = screen->createDFBSurface(rect.size(), screen->pixelFormat(), QDirectFBScreen::DontTrackSurface);
                 forceRaster = (dfbSurface && QDirectFBScreen::getImageFormat(dfbSurface) == QImage::Format_RGB32);
             } else {
                 Q_ASSERT(dfbSurface);
@@ -340,7 +332,7 @@ inline bool isWidgetOpaque(const QWidget *w)
     return false;
 }
 void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
-                             const QPoint &offset)
+                                   const QPoint &offset)
 {
     Q_UNUSED(widget);
 #ifdef QT_NO_DIRECTFB_WM
