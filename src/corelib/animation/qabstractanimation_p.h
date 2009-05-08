@@ -122,7 +122,7 @@ public:
     void unregisterAnimation(QAbstractAnimation *animation);
 
     void setTimingInterval(int interval);
-    void setConsitentTiming(bool consistent);
+    void setConsistentTiming(bool consistent);
 
     int elapsedTime() const;
 

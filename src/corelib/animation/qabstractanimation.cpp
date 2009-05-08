@@ -205,7 +205,7 @@ void QUnifiedTimer::setTimingInterval(int interval)
    this allows to have a consistent timer interval at each tick from the timer
    not taking the real time that passed into account.
 */
-void QUnifiedTimer::setConsitentTiming(bool b)
+void QUnifiedTimer::setConsistentTiming(bool b)
 {
     consistentTiming = b;
 }
