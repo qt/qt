@@ -1631,6 +1631,8 @@ void tst_QStateMachine::signalTransitions()
         emitter.emitSignalWithNoArg();
 
         QTRY_COMPARE(finishedSpy.count(), 1);
+
+        emitter.emitSignalWithNoArg();
     }
     {
         QStateMachine machine;
@@ -1722,6 +1724,8 @@ void tst_QStateMachine::eventTransitions()
         QCoreApplication::processEvents();
 
         QTRY_COMPARE(finishedSpy.count(), 1);
+
+        QTest::mousePress(&button, Qt::LeftButton);
     }
     {
         QStateMachine machine;
