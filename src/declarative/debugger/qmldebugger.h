@@ -73,6 +73,7 @@ public slots:
 private slots:
     void itemClicked(QTreeWidgetItem *);
     void itemDoubleClicked(QTreeWidgetItem *);
+    void highlightObject(quint32);
 
 private:
     void buildTree(QObject *obj, QmlDebuggerItem *parent);
@@ -85,6 +86,9 @@ private:
     QPlainTextEdit *m_text;
     QPointer<QObject> m_object;
     QPointer<QObject> m_selectedItem;
+
+    QTreeWidgetItem *m_highlightedItem;
+    QHash<quint32, QTreeWidgetItem *> m_items;
 };
 
 QT_END_NAMESPACE

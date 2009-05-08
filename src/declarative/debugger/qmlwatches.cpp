@@ -45,10 +45,10 @@
 #include <QtGui/qcolor.h>
 #include <QtDeclarative/qmlmetatype.h>
 
-static QString objectToString(QObject *obj)
+QString QmlWatches::objectToString(QObject *obj)
 {
     if(!obj)
-        return QString();
+        return QLatin1String("NULL");
 
     QString objectName = obj->objectName();
     if(objectName.isEmpty())

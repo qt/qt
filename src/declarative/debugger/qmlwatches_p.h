@@ -69,6 +69,7 @@ public:
     quint32 objectId(QObject *);
     QObject *object(quint32);
 
+    static QString objectToString(QObject *obj);
 protected:
     int columnCount(const QModelIndex &) const;
     int rowCount(const QModelIndex &) const;
