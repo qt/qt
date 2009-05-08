@@ -3,6 +3,7 @@ Item {
 
     property var value: Handle.x / Slider.xMax
     property int xMax: Slider.width - Handle.width - 2
+    property var handle: Handle
     property int imageWidth
     property int imageHeight
 
