@@ -156,6 +156,9 @@ private slots:
     //void cannotAssignBindingToSignal();
     void assignObjectToSignal();
 
+    // regression tests for crashes
+    void crash1();
+
 private:
     QmlEngine engine;
 };
@@ -437,6 +440,12 @@ void tst_qmlparser::assignObjectToSignal()
     QVERIFY(object != 0);
     QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlot");
     emit object->basicSignal();
+}
+
+void tst_qmlparser::crash1()
+{
+    QmlComponent component(&engine, "Component {}");
+    MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
 }
 
 QTEST_MAIN(tst_qmlparser)
