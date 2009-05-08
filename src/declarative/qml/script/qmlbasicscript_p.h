@@ -39,6 +39,7 @@ public:
     };
     int coreType;
 
+    bool isValid() const { return type != Invalid; }
     bool isCore() const { return type == Core; }
     bool isExplicit() const { return type == Explicit; }
     void clear();
