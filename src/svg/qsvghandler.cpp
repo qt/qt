@@ -1377,6 +1377,11 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                 y = y0 = arg[1] + offsetY;
                 path.moveTo(x0, y0);
                 arg.pop_front(); arg.pop_front();
+
+                 // As per 1.2  spec 8.3.2 The "moveto" commands
+                 // If a 'moveto' is followed by multiple pairs of coordinates without explicit commands,
+                 // the subsequent pairs shall be treated as implicit 'lineto' commands.
+                 pathElem = QLatin1Char('l');
             }
                 break;
             case 'M': {
@@ -1389,6 +1394,11 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
 
                 path.moveTo(x0, y0);
                 arg.pop_front(); arg.pop_front();
+
+                // As per 1.2  spec 8.3.2 The "moveto" commands
+                // If a 'moveto' is followed by multiple pairs of coordinates without explicit commands,
+                // the subsequent pairs shall be treated as implicit 'lineto' commands.
+                pathElem = QLatin1Char('L');
             }
                 break;
             case 'z':

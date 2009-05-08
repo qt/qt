@@ -77,6 +77,7 @@ private slots:
     void gradientStops() const;
     void fillRule();
     void opacity();
+    void paths();
 
 #ifndef QT_NO_COMPRESS
     void testGzLoading();
@@ -788,6 +789,59 @@ void tst_QSvgRenderer::opacity()
     */
 }
 
+void tst_QSvgRenderer::paths()
+{
+    static const char *svgs[] = {
+        // Absolute coordinates, explicit commands.
+        "<svg>"
+        "   <rect x=\"0\" y=\"0\" height=\"50\" width=\"50\" fill=\"blue\" />"
+        "   <path d=\"M50 0 V50 H0 Q0 25 25 25 T50 0 C25 0 50 50 25 50 S25 0 0 0 Z\" fill=\"red\" fill-rule=\"evenodd\"/>"
+        "</svg>",
+        // Absolute coordinates, implicit commands.
+        "<svg>"
+        "   <rect x=\"0\" y=\"0\" height=\"50\" width=\"50\" fill=\"blue\" />"
+        "   <path d=\"M50 0 50 50 0 50 Q0 25 25 25 Q50 25 50 0 C25 0 50 50 25 50 C0 50 25 0 0 0 Z\" fill=\"red\" fill-rule=\"evenodd\" />"
+        "</svg>",
+        // Relative coordinates, explicit commands.
+        "<svg>"
+        "   <rect x=\"0\" y=\"0\" height=\"50\" width=\"50\" fill=\"blue\" />"
+        "   <path d=\"m50 0 v50 h-50 q0 -25 25 -25 t25 -25 c-25 0 0 50 -25 50 s0 -50 -25 -50 z\" fill=\"red\" fill-rule=\"evenodd\" />"
+        "</svg>",
+        // Relative coordinates, implicit commands.
+        "<svg>"
+        "   <rect x=\"0\" y=\"0\" height=\"50\" width=\"50\" fill=\"blue\" />"
+        "   <path d=\"m50 0 0 50 -50 0 q0 -25 25 -25 25 0 25 -25 c-25 0 0 50 -25 50 -25 0 0 -50 -25 -50 z\" fill=\"red\" fill-rule=\"evenodd\" />"
+        "</svg>",
+        // Absolute coordinates, explicit commands, minimal whitespace.
+        "<svg>"
+        "   <rect x=\"0\" y=\"0\" height=\"50\" width=\"50\" fill=\"blue\" />"
+        "   <path d=\"m50 0v50h-50q0-25 25-25t25-25c-25 0 0 50-25 50s0-50-25-50z\" fill=\"red\" fill-rule=\"evenodd\" />"
+        "</svg>",
+        // Absolute coordinates, explicit commands, extra whitespace.
+        "<svg>"
+        "   <rect x=\"0\" y=\"0\" height=\"50\" width=\"50\" fill=\"blue\" />"
+        "   <path d=\" M  50  0  V  50  H  0  Q 0  25   25 25 T  50 0 C 25   0 50  50 25 50 S  25 0 0  0 Z  \" fill=\"red\" fill-rule=\"evenodd\" />"
+        "</svg>"
+    };
+
+    const int COUNT = sizeof(svgs) / sizeof(svgs[0]);
+    QImage images[COUNT];
+    QPainter p;
+
+    for (int i = 0; i < COUNT; ++i) {
+        QByteArray data(svgs[i]);
+        QSvgRenderer renderer(data);
+        QVERIFY(renderer.isValid());
+        images[i] = QImage(50, 50, QImage::Format_ARGB32_Premultiplied);
+        images[i].fill(0);
+        p.begin(&images[i]);
+        renderer.render(&p);
+        p.end();
+        if (i != 0) {
+            QCOMPARE(images[i], images[0]);
+        }
+    }
+}
 
 QTEST_MAIN(tst_QSvgRenderer)
 #include "tst_qsvgrenderer.moc"
