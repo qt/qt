@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,58 +39,48 @@
 **
 ****************************************************************************/
 
-#ifndef QACTIONTRANSITION_H
-#define QACTIONTRANSITION_H
+#ifndef QMLOBJECTTREE_P_H
+#define QMLOBJECTTREE_P_H
 
-#ifndef QT_STATEMACHINE_SOLUTION
-#include <QtCore/qabstracttransition.h>
-#else
-#include "qabstracttransition.h"
-#endif
+#include <QtGui/qtreewidget.h>
+#include <QtCore/qurl.h>
+#include <QtCore/qpointer.h>
 
-#include <QtCore/qvariant.h>
-#include <QtCore/qlist.h>
+class QmlBindableValue;
+class QmlDebuggerItem : public QTreeWidgetItem
+{
+public:
+    QmlDebuggerItem(QTreeWidget *wid)
+        : QTreeWidgetItem(wid), startLine(-1), endLine(-1)
+    {
+    }
 
-QT_BEGIN_HEADER
+    QmlDebuggerItem(QTreeWidgetItem *item)
+        : QTreeWidgetItem(item), startLine(-1), endLine(-1)
+    {
+    }
 
-QT_BEGIN_NAMESPACE
+    int startLine;
+    int endLine;
+    QUrl url;
 
-QT_MODULE(Core)
+    QPointer<QObject> object;
+    QPointer<QmlBindableValue> bindableValue;
+};
 
-class QStateAction;
-
-class QActionTransitionPrivate;
-class Q_CORE_EXPORT QActionTransition : public QAbstractTransition
+class QmlContext;
+class QmlObjectTree : public QTreeWidget
 {
     Q_OBJECT
 public:
-    QActionTransition(QState *sourceState = 0);
-    QActionTransition(const QList<QAbstractState*> &targets, QState *sourceState = 0);
-    ~QActionTransition();
+    QmlObjectTree(QWidget *parent = 0);
 
-    void invokeMethodOnTransition(QObject *object, const char *method,
-                                  const QList<QVariant> &args = QList<QVariant>());
-
-    void addAction(QStateAction *action);
-    void removeAction(QStateAction *action);
-    QList<QStateAction*> actions() const;
+signals:
+    void addWatch(QObject *, const QString &);
 
 protected:
-    virtual void onTransition();
-
-    bool event(QEvent *e);
-
-protected:
-    QActionTransition(QActionTransitionPrivate &dd, QState *parent);
-    QActionTransition(QActionTransitionPrivate &dd, const QList<QAbstractState*> &targets, QState *parent);
-
-private:
-    Q_DISABLE_COPY(QActionTransition)
-    Q_DECLARE_PRIVATE(QActionTransition)
+    virtual void mousePressEvent(QMouseEvent *);
 };
 
-QT_END_NAMESPACE
+#endif // QMLOBJECTTREE_P_H
 
-QT_END_HEADER
-
-#endif

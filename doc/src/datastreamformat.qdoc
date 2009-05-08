@@ -69,6 +69,10 @@
     the application happens to be running on.
 
     \table
+    \row \o bool
+	 \o \list
+	    \o boolean
+	    \endlist
     \row \o qint8
          \o \list
             \o signed byte
@@ -297,6 +301,12 @@
          \o \list
             \o Milliseconds since midnight (quint32)
             \endlist
+
+    \row \o QUrl
+         \o \list
+            \o Holds an URL (QString)
+            \endlist
+
     \row \o QVariant
          \o \list
             \o The type of the data (quint32)

@@ -1,6 +1,3 @@
-INCLUDEPATH += $$PWD
-DEPENDPATH += $$PWD
-
 SOURCES += $$PWD/qguistatemachine.cpp
 !contains(DEFINES, QT_NO_STATEMACHINE_EVENTFILTER) {
     HEADERS += \

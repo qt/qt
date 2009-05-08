@@ -39,42 +39,29 @@
 **
 ****************************************************************************/
 
-#ifndef QACTIONTRANSITION_P_H
-#define QACTIONTRANSITION_P_H
+#include "progressitem.h"
+#include "pixmapitem.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qabstracttransition_p.h"
-
-#include <QtCore/qlist.h>
-
-QT_BEGIN_NAMESPACE
-
-class QStateAction;
-
-class QActionTransition;
-class Q_CORE_EXPORT QActionTransitionPrivate : public QAbstractTransitionPrivate
+ProgressItem::ProgressItem (QGraphicsItem * parent)
+    : QGraphicsTextItem(parent), currentLevel(1), currentScore(0)
 {
-    Q_DECLARE_PUBLIC(QActionTransition)
-public:
-    QActionTransitionPrivate();
-    ~QActionTransitionPrivate();
+    setFont(QFont("Comic Sans MS"));
+    setPos(parentItem()->boundingRect().topRight() - QPointF(180, -5));
+}
 
-    static QActionTransitionPrivate *get(QActionTransition *q);
-    static const QActionTransitionPrivate *get(const QActionTransition *q);
+void ProgressItem::setLevel(int level)
+{
+    currentLevel = level;
+    updateProgress();
+}
 
-    QList<QStateAction*> actions() const;
-};
+void ProgressItem::setScore(int score)
+{
+    currentScore = score;
+    updateProgress();
+}
 
-QT_END_NAMESPACE
-
-#endif
+void ProgressItem::updateProgress()
+{
+    setHtml(QString("Level : %1 Score : %2").arg(currentLevel).arg(currentScore));
+}

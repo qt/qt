@@ -52,7 +52,7 @@ public:
     S0(QState *parent = 0)
         : QState(parent) {}
 
-    virtual void onEntry()
+    virtual void onEntry(QEvent *)
     {
         fprintf(stdout, "Hello world!\n");
     }

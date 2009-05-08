@@ -74,7 +74,6 @@ Flipable {
 
         Rect { anchors.fill: parent; color: "black"; opacity: 0.4; pen.color: "white"; pen.width: 2 }
 
-//        Loading { anchors.centeredIn: parent; visible: BigImage.status }
         Progress { anchors.centeredIn: parent; width: 200; height: 18; progress: BigImage.progress; visible: BigImage.status }
         Flickable {
             id: Flick; width: Container.width - 10; height: Container.height - 10

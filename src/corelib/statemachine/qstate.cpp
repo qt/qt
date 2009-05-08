@@ -46,7 +46,6 @@
 #include "qabstracttransition.h"
 #include "qabstracttransition_p.h"
 #include "qsignaltransition.h"
-#include "qstatefinishedtransition.h"
 #include "qstatemachine.h"
 #include "qstatemachine_p.h"
 
@@ -66,53 +65,63 @@ QT_BEGIN_NAMESPACE
   The addTransition() function adds a transition. The removeTransition()
   function removes a transition.
 
+  The assignProperty() function is used for defining property assignments that
+  should be performed when a state is entered.
+
+  Top-level states must be passed QStateMachine::rootState() as their parent
+  state, or added to a state machine using QStateMachine::addState().
+
   \section1 States with Child States
 
-  For non-parallel state groups, the setInitialState() function must be called
-  to set the initial state. The child states are mutually exclusive states,
-  and the state machine needs to know which child state to enter when the
-  parent state is the target of a transition.
+  The childMode property determines how child states are treated. For
+  non-parallel state groups, the setInitialState() function must be called to
+  set the initial state. The child states are mutually exclusive states, and
+  the state machine needs to know which child state to enter when the parent
+  state is the target of a transition.
 
-  The addHistoryState() function adds a history state.
-
-  The addFinishedTransition() function creates and adds a transition that's
-  triggered when a final child state is entered.
+  The state emits the QState::finished() signal when a final child state
+  (QFinalState) is entered.
 
   The setErrorState() sets the state's error state. The error state is the
   state that the state machine will transition to if an error is detected when
   attempting to enter the state (e.g. because no initial state has been set).
+
 */
 
 /*!
-  \enum QState::Type
+    \property QState::initialState
 
-  This enum specifies the type of a state.
+    \brief the initial state of this state (one of its child states)
+*/
 
-  \value Normal A normal state. If the state has no child states, it is an
-  atomic state; otherwise, the child states are mutually exclusive and an
+/*!
+    \property QState::errorState
+
+    \brief the error state of this state
+*/
+
+/*!
+    \property QState::childMode
+
+    \brief the child mode of this state
+
+    The default value of this property is QState::ExclusiveStates.
+*/
+
+/*!
+  \enum QState::ChildMode
+
+  This enum specifies how a state's child states are treated.
+
+  \value ExclusiveStates The child states are mutually exclusive and an
   initial state must be set by calling QState::setInitialState().
 
-  \value ParallelGroup The state is a parallel group state. When a parallel
-  group state is entered, all its child states are entered in parallel.
-*/
-
-/*!
-  \enum QState::HistoryType
-
-  This enum specifies the type of history that a QHistoryState records.
-
-  \value ShallowHistory Only the immediate child states of the parent state
-  are recorded. In this case a transition with the history state as its
-  target will end up in the immediate child state that the parent was in the
-  last time it was exited. This is the default.
-
-  \value DeepHistory Nested states are recorded. In this case a transition
-  with the history state as its target will end up in the most deeply nested
-  descendant state the parent was in the last time it was exited.
+  \value ParallelStates The child states are parallel. When the parent state
+  is entered, all its child states are entered in parallel.
 */
 
 QStatePrivate::QStatePrivate()
-    : errorState(0), isParallelGroup(false), initialState(0)
+    : errorState(0), initialState(0), childMode(QState::ExclusiveStates)
 {
 }
 
@@ -134,29 +143,42 @@ const QStatePrivate *QStatePrivate::get(const QState *q)
     return q->d_func();
 }
 
+void QStatePrivate::emitFinished()
+{
+    Q_Q(QState);
+    emit q->finished();
+}
+
+void QStatePrivate::emitPolished()
+{
+    Q_Q(QState);
+    emit q->polished();
+}
+
 /*!
   Constructs a new state with the given \a parent state.
 */
 QState::QState(QState *parent)
-    : QActionState(*new QStatePrivate, parent)
+    : QAbstractState(*new QStatePrivate, parent)
 {
 }
 
 /*!
-  Constructs a new state of the given \a type with the given \a parent state.
+  Constructs a new state with the given \a childMode and the given \a parent
+  state.
 */
-QState::QState(Type type, QState *parent)
-    : QActionState(*new QStatePrivate, parent)
+QState::QState(ChildMode childMode, QState *parent)
+    : QAbstractState(*new QStatePrivate, parent)
 {
     Q_D(QState);
-    d->isParallelGroup = (type == ParallelGroup);
+    d->childMode = childMode;
 }
 
 /*!
   \internal
 */
 QState::QState(QStatePrivate &dd, QState *parent)
-    : QActionState(dd, parent)
+    : QAbstractState(dd, parent)
 {
 }
 
@@ -214,6 +236,30 @@ QList<QAbstractTransition*> QStatePrivate::transitions() const
 }
 
 /*!
+  Instructs this state to set the property with the given \a name of the given
+  \a object to the given \a value when the state is entered.
+
+  \sa polished()
+*/
+void QState::assignProperty(QObject *object, const char *name,
+                            const QVariant &value)
+{
+    Q_D(QState);
+    if (!object) {
+        qWarning("QState::assignProperty: cannot assign property '%s' of null object", name);
+        return;
+    }
+    for (int i = 0; i < d->propertyAssignments.size(); ++i) {
+        QPropertyAssignment &assn = d->propertyAssignments[i];
+        if ((assn.object == object) && (assn.propertyName == name)) {
+            assn.value = value;
+            return;
+        }
+    }
+    d->propertyAssignments.append(QPropertyAssignment(object, name, value));
+}
+
+/*!
   Returns this state group's error state. 
 
   \sa QStateMachine::errorState(), QStateMachine::setErrorState()
@@ -245,30 +291,32 @@ void QState::setErrorState(QAbstractState *state)
 
 /*!
   Adds the given \a transition. The transition has this state as the source.
-  This state takes ownership of the transition.
+  This state takes ownership of the transition. If the transition is successfully
+  added, the function will return the \a transition pointer. Otherwise it will return null.
 */
-void QState::addTransition(QAbstractTransition *transition)
+QAbstractTransition *QState::addTransition(QAbstractTransition *transition)
 {
     Q_D(QState);
     if (!transition) {
         qWarning("QState::addTransition: cannot add null transition");
-        return;
+        return 0;
     }
     const QList<QAbstractState*> &targets = QAbstractTransitionPrivate::get(transition)->targetStates;
     for (int i = 0; i < targets.size(); ++i) {
         QAbstractState *t = targets.at(i);
         if (!t) {
             qWarning("QState::addTransition: cannot add transition to null state");
-            return;
+            return 0;
         }
         if ((QAbstractStatePrivate::get(t)->machine() != d->machine())
             && QAbstractStatePrivate::get(t)->machine() && d->machine()) {
             qWarning("QState::addTransition: cannot add transition "
                      "to a state in a different state machine");
-            return;
+            return 0;
         }
     }
     transition->setParent(this);
+    return transition;
 }
 
 /*!
@@ -292,20 +340,6 @@ QSignalTransition *QState::addTransition(QObject *sender, const char *signal,
     return trans;
 }
 
-/*!
-  Adds a transition that's triggered by the finished event of this state, and
-  returns the new QStateFinishedTransition object. The transition has the
-  given \a target state.
-
-  \sa QStateFinishedEvent
-*/
-QStateFinishedTransition *QState::addFinishedTransition(QAbstractState *target)
-{
-    QStateFinishedTransition *trans = new QStateFinishedTransition(this, QList<QAbstractState*>() << target);
-    addTransition(trans);
-    return trans;
-}
-
 namespace {
 
 // ### Make public?
@@ -315,7 +349,7 @@ public:
     UnconditionalTransition(QAbstractState *target)
         : QAbstractTransition(QList<QAbstractState*>() << target) {}
 protected:
-    void onTransition() {}
+    void onTransition(QEvent *) {}
     bool eventTest(QEvent *) const { return true; }
 };
 
@@ -358,40 +392,19 @@ void QState::removeTransition(QAbstractTransition *transition)
 }
 
 /*!
-  Returns the list of transitions from this state, or an empty list if there
-  are no transitions from this state.
-
-  \sa addTransition(), removeTransition()
+  \reimp
 */
-QList<QAbstractTransition*> QState::transitions() const
+void QState::onEntry(QEvent *event)
 {
-    Q_D(const QState);
-    return d->transitions();
-}
-
-/*!
-  Creates a history state of the given \a type for this state and returns the
-  new state.  The history state becomes a child of this state.
-*/
-QHistoryState *QState::addHistoryState(HistoryType type)
-{
-    return QHistoryStatePrivate::create(type, this);
+    Q_UNUSED(event);
 }
 
 /*!
   \reimp
 */
-void QState::onEntry()
+void QState::onExit(QEvent *event)
 {
-    QActionState::onEntry();
-}
-
-/*!
-  \reimp
-*/
-void QState::onExit()
-{
-    QActionState::onExit();
+    Q_UNUSED(event);
 }
 
 /*!
@@ -410,7 +423,7 @@ QAbstractState *QState::initialState() const
 void QState::setInitialState(QAbstractState *state)
 {
     Q_D(QState);
-    if (d->isParallelGroup) {
+    if (d->childMode == QState::ParallelStates) {
         qWarning("QState::setInitialState: ignoring attempt to set initial state "
                  "of parallel state group %p", this);
         return;
@@ -424,11 +437,45 @@ void QState::setInitialState(QAbstractState *state)
 }
 
 /*!
+  Returns the child mode of this state.
+*/
+QState::ChildMode QState::childMode() const
+{
+    Q_D(const QState);
+    return d->childMode;
+}
+
+/*!
+  Sets the child \a mode of this state.
+*/
+void QState::setChildMode(ChildMode mode)
+{
+    Q_D(QState);
+    d->childMode = mode;
+}
+
+/*!
   \reimp
 */
 bool QState::event(QEvent *e)
 {
-    return QActionState::event(e);
+    return QAbstractState::event(e);
 }
+
+/*!
+  \fn QState::finished()
+
+  This signal is emitted when a final child state of this state is entered.
+
+  \sa QFinalState
+*/
+
+/*!
+  \fn QState::polished()
+
+  This signal is emitted when all properties have been assigned their final value.
+
+  \sa QState::assignProperty(), QAbstractTransition::addAnimation()
+*/
 
 QT_END_NAMESPACE

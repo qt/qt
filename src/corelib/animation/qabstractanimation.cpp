@@ -41,52 +41,59 @@
 
 /*!
     \class QAbstractAnimation
-    \ingroup group_animation
-    \brief The QAbstractAnimation class provides an abstract base class for animations.
+    \ingroup animation
+    \brief The QAbstractAnimation class is the base of all animations.
     \since 4.5
     \preliminary
 
-    This class is part of \l{The Animation Framework}. It serves as a base class
-    for standard animations and groups, with functions for shared
-    functionality, and it also makes it easy for you to define custom
+    The class defines the functions for the functionality shared by
+    all animations. By inheriting this class, you can create custom
     animations that plug into the rest of the animation framework.
 
-    If you want to create an animation, you should look at the two subclasses,
-    QVariantAnimation and QAnimationGroup, instead.
+    The progress of an animation is given by its current time
+    (currentTime()), which is measured in milliseconds from the start
+    of the animation (0) to its end (duration()). The value is updated
+    automatically while the animation is running. It can also be set
+    directly with setCurrentTime().
 
-    QAbstractAnimation provides an interface for the current time and
-    duration, the loop count, and the state of an animation. These properties
-    define the base functionality common to all animations in Qt. The virtual
-    duration() function returns the local duration of the animation; i.e., for
-    how long the animation should update the current time before
-    looping. Subclasses can implement this function differently; for example,
-    QVariantAnimation returns the duration of a simple animated property, whereas
-    QAnimationGroup returns the duration of a set or sequence of
-    animations. You can also set a loop count by calling setLoopCount(); a
-    loop count of 2 will let the animation run twice (the default value is
-    1).
+    At any point an animation is in one of three states:
+    \l{QAbstractAnimation::}{Running},
+    \l{QAbstractAnimation::}{Stopped}, or
+    \l{QAbstractAnimation::}{Paused}--as defined by the
+    \l{QAbstractAnimation::}{State} enum. The current state can be
+    changed by calling start(), stop(), pause(), or resume(). An
+    animation will always reset its \l{currentTime()}{current time}
+    when it is started. If paused, it will continue with the same
+    current time when resumed. When an animation is stopped, it cannot
+    be resumed, but will keep its current time (until started again).
+    QAbstractAnimation will emit stateChanged() whenever its state
+    changes.
 
-    Like QTimeLine, QAbstractAnimation also provides an interface for starting
-    and stopping an animation, and for tracking its progress. You can call the
-    start() slot to start the animation. When the animation starts, the
-    stateChanged() signal is emitted, and state() returns Running. If you call the
-    stop() slot, the stateChanged() signal is emitted, and state() returns
-    Stopped. If you call the pause() slot, the stateChanged() signal is emitted
-    and state() returns Paused. If the animation reaches the end, the finished()
-    signal is emitted. You can check the current state by calling state().
+    An animation can loop any number of times by setting the loopCount
+    property. When an animation's current time reaches its duration(),
+    it will reset the current time and keep running. A loop count of 1
+    (the default value) means that the animation will run one time.
+    Note that a duration of -1 means that the animation will run until
+    stopped; the current time will increase indefinitely. When the
+    current time equals duration() and the animation is in its
+    final loop, the \l{QAbstractAnimation::}{Stopped} state is
+    entered, and the finished() signal is emitted.
 
-    QAbstractAnimation provides two functions that are pure virtual, and must
-    be reimplemented in a subclass: duration(), and updateCurrentTime(). The
-    duration() function lets you report a duration for the animation (a return
-    value of -1 signals that the animation runs forever until explicitly
-    stopped). The current time is delivered by the framework through calls to
-    updateCurrentTime(). By reimplementing this function, you can track the
-    animation progress and update your target objects accordingly. By
-    reimplementing updateState(), you can track the animation's state
-    changes, which is particularily useful for animations that are not driven
-    by time.
+    QAbstractAnimation provides pure virtual functions used by
+    subclasses to track the progress of the animation: duration() and
+    updateCurrentTime(). The duration() function lets you report a
+    duration for the animation (as discussed above). The current time
+    is delivered by the animation framework through calls to
+    updateCurrentTime(). By reimplementing this function, you can
+    track the animation progress. Note that neither the interval
+    between calls nor the number of calls to this function are
+    defined; though, it will normally be 60 updates per second.
 
-    \sa QVariantAnimation, QAnimationGroup, {The Animation Framework}
+    By reimplementing updateState(), you can track the animation's
+    state changes, which is particularly useful for animations that
+    are not driven by time.
+
+    \sa QVariantAnimation, QPropertyAnimation, QAnimationGroup, {The Animation Framework}
 */
 
 /*!
@@ -149,13 +156,13 @@
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qpointer.h>
 
-#define TIMER_INTERVAL 5
+#define DEFAULT_TIMER_INTERVAL 16
 
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer);
 
-QUnifiedTimer::QUnifiedTimer() : QObject(), lastTick(0), consistentTiming(false)
+QUnifiedTimer::QUnifiedTimer() : QObject(), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL), consistentTiming(false)
 {
 }
 
@@ -182,12 +189,28 @@ void QUnifiedTimer::updateRecentlyStartedAnimations()
     animationsToStart.clear();
 }
 
-void QUnifiedTimer::setConsistentTiming(bool c)
+/*
+  defines the timing interval. Default is DEFAULT_TIMER_INTERVAL
+*/
+void QUnifiedTimer::setTimingInterval(int interval)
 {
-    consistentTiming = c;
+    timingInterval = interval;
+    if (animationTimer.isActive()) {
+        //we changed the timing interval
+        animationTimer.start(timingInterval, this);
+    }
 }
 
-int QUnifiedTimer::elapsedTime()
+/*
+   this allows to have a consistent timer interval at each tick from the timer
+   not taking the real time that passed into account.
+*/
+void QUnifiedTimer::setConsistentTiming(bool b)
+{
+    consistentTiming = b;
+}
+
+int QUnifiedTimer::elapsedTime() const
 {
     return lastTick;
 }
@@ -195,9 +218,9 @@ int QUnifiedTimer::elapsedTime()
 void QUnifiedTimer::timerEvent(QTimerEvent *event)
 {
     //this is simply the time we last received a tick
-    int oldLastTick = lastTick;
+    const int oldLastTick = lastTick;
     if (time.isValid())
-        lastTick = consistentTiming ? oldLastTick + 5 : time.elapsed();
+        lastTick = consistentTiming ? oldLastTick + timingInterval : time.elapsed();
 
     //we transfer the waiting animations into the "really running" state
     updateRecentlyStartedAnimations();
@@ -208,7 +231,7 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
             animationTimer.stop();
             time = QTime();
         } else {
-            animationTimer.start(TIMER_INTERVAL, this);
+            animationTimer.start(timingInterval, this);
             lastTick = 0;
             time.start();
         }

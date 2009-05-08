@@ -46,7 +46,7 @@
 #include "graphicsscene.h"
 
 //Qt
-#include <QGraphicsPixmapItem>
+#include <QtGui/QGraphicsPixmapItem>
 
 class PixmapItem : public QGraphicsPixmapItem
 {

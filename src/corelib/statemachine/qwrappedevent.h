@@ -39,17 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QACTIONSTATE_H
-#define QACTIONSTATE_H
+#ifndef QWRAPPEDEVENT_H
+#define QWRAPPEDEVENT_H
 
-#ifndef QT_STATEMACHINE_SOLUTION
-#include <QtCore/qabstractstate.h>
-#else
-#include "qabstractstate.h"
-#endif
-
-#include <QtCore/qlist.h>
-#include <QtCore/qvariant.h>
+#include <QtCore/qcoreevent.h>
 
 QT_BEGIN_HEADER
 
@@ -57,42 +50,23 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
-class QStateAction;
+class QObject;
 
-class QActionStatePrivate;
-class Q_CORE_EXPORT QActionState : public QAbstractState
+class Q_CORE_EXPORT QWrappedEvent : public QEvent
 {
-    Q_OBJECT
 public:
-    QActionState(QState *parent = 0);
-    ~QActionState();
+    QWrappedEvent(QObject *object, QEvent *event);
+    ~QWrappedEvent();
 
-    void invokeMethodOnEntry(QObject *object, const char *method,
-                             const QList<QVariant> &args = QList<QVariant>());
-    void invokeMethodOnExit(QObject *object, const char *method,
-                            const QList<QVariant> &args = QList<QVariant>());
-
-    void addEntryAction(QStateAction *action);
-    void addExitAction(QStateAction *action);
-
-    void removeEntryAction(QStateAction *action);
-    void removeExitAction(QStateAction *action);
-
-    QList<QStateAction*> entryActions() const;
-    QList<QStateAction*> exitActions() const;
-
-protected:
-    void onEntry();
-    void onExit();
-
-    bool event(QEvent *e);
-
-protected:
-    QActionState(QActionStatePrivate &dd, QState *parent);
+    inline QObject *object() const { return m_object; }
+    inline QEvent *event() const { return m_event; }
 
 private:
-    Q_DISABLE_COPY(QActionState)
-    Q_DECLARE_PRIVATE(QActionState)
+    QObject *m_object;
+    QEvent *m_event;
+
+private:
+    Q_DISABLE_COPY(QWrappedEvent)
 };
 
 QT_END_NAMESPACE
