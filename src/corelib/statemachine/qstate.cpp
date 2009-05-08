@@ -312,7 +312,7 @@ QAbstractTransition *QState::addTransition(QAbstractTransition *transition)
         return 0;
     }
 
-    const QList<QAbstractState*> &targets = QAbstractTransitionPrivate::get(transition)->targetStates;
+    const QList<QPointer<QAbstractState> > &targets = QAbstractTransitionPrivate::get(transition)->targetStates;
     for (int i = 0; i < targets.size(); ++i) {
         QAbstractState *t = targets.at(i);
         if (!t) {

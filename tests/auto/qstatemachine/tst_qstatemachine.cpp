@@ -106,6 +106,7 @@ private slots:
     void historyStates();
     void startAndStop();
     void targetStateWithNoParent();
+    void targetStateDeleted();
     void transitionToRootState();
     void transitionEntersParent();
     
@@ -1938,6 +1939,18 @@ void tst_QStateMachine::targetStateWithNoParent()
     QCOMPARE(machine.configuration().size(), 1);
     QVERIFY(machine.configuration().contains(machine.errorState()));
     QCOMPARE(machine.error(), QStateMachine::NoCommonAncestorForTransitionError);
+}
+
+void tst_QStateMachine::targetStateDeleted()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(machine.rootState());
+    s1->setObjectName("s1");
+    QState *s2 = new QState(machine.rootState());
+    QAbstractTransition *trans = s1->addTransition(s2);
+    delete s2;
+    QCOMPARE(trans->targetState(), (QAbstractState*)0);
+    QVERIFY(trans->targetStates().isEmpty());
 }
 
 void tst_QStateMachine::defaultGlobalRestorePolicy()

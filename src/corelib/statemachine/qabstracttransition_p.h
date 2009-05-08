@@ -58,6 +58,7 @@
 #endif
 
 #include <QtCore/qlist.h>
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -83,7 +84,7 @@ public:
     QState *sourceState() const;
     QStateMachine *machine() const;
 
-    QList<QAbstractState*> targetStates;
+    QList<QPointer<QAbstractState> > targetStates;
 
 #ifndef QT_NO_ANIMATION
     QList<QAbstractAnimation*> animations;
