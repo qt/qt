@@ -179,7 +179,6 @@ QAbstractTransition::QAbstractTransition(const QList<QAbstractState*> &targets,
 #ifdef QT_STATEMACHINE_SOLUTION
     d_ptr->q_ptr = this;
 #endif
-    Q_D(QAbstractTransition);
     setTargetStates(targets);
 }
 
@@ -220,7 +219,6 @@ QAbstractTransition::QAbstractTransition(QAbstractTransitionPrivate &dd,
 #ifdef QT_STATEMACHINE_SOLUTION
     d_ptr->q_ptr = this;
 #endif
-    Q_D(QAbstractTransition);
     setTargetStates(targets);
 }
 
