@@ -53,14 +53,33 @@
 // We mean it.
 //
 
-#include "qactionstate_p.h"
+#include "qabstractstate_p.h"
 
 #include <QtCore/qlist.h>
+#include <QtCore/qbytearray.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
+struct QPropertyAssignment
+{
+    QPropertyAssignment()
+        : object(0) {}
+    QPropertyAssignment(QObject *o, const QByteArray &n,
+                        const QVariant &v, bool es = true)
+        : object(o), propertyName(n), value(v), explicitlySet(es)
+        {}
+    QObject *object;
+    QByteArray propertyName;
+    QVariant value;
+    bool explicitlySet;
+};
+
+class QAbstractTransition;
+class QHistoryState;
+
 class QState;
-class Q_CORE_EXPORT QStatePrivate : public QActionStatePrivate
+class Q_CORE_EXPORT QStatePrivate : public QAbstractStatePrivate
 {
     Q_DECLARE_PUBLIC(QState)
 public:
@@ -74,9 +93,14 @@ public:
     QList<QHistoryState*> historyStates() const;
     QList<QAbstractTransition*> transitions() const;
 
+    void emitFinished();
+    void emitPolished();
+
     QAbstractState *errorState;
-    bool isParallelGroup;
     QAbstractState *initialState;
+    QState::ChildMode childMode;
+
+    QList<QPropertyAssignment> propertyAssignments;
 };
 
 QT_END_NAMESPACE

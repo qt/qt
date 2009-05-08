@@ -11,6 +11,7 @@
 
 #include "qkeyeventtransition.h"
 #include "qbasickeyeventtransition_p.h"
+#include <QtCore/qwrappedevent.h>
 
 #if defined(QT_EXPERIMENTAL_SOLUTION)
 # include "qeventtransition_p.h"
@@ -37,6 +38,12 @@ QT_BEGIN_NAMESPACE
     \property QKeyEventTransition::key
 
     \brief the key that this key event transition is associated with
+*/
+
+/*!
+    \property QKeyEventTransition::modifiersMask
+
+    \brief the keyboard modifiers mask that this key event transition checks for
 */
 
 class QKeyEventTransitionPrivate : public QEventTransitionPrivate
@@ -111,32 +118,23 @@ void QKeyEventTransition::setKey(int key)
 }
 
 /*!
-  Returns the keyboard modifiers that this key event transition checks for.
-*/
-Qt::KeyboardModifiers QKeyEventTransition::modifiers() const
-{
-    Q_D(const QKeyEventTransition);
-    return d->transition->modifiers();
-}
-
-/*!
-  Sets the keyboard \a modifiers that this key event transition will check
+  Returns the keyboard modifiers mask that this key event transition checks
   for.
 */
-void QKeyEventTransition::setModifiers(Qt::KeyboardModifiers modifiers)
+Qt::KeyboardModifiers QKeyEventTransition::modifiersMask() const
 {
-    Q_D(QKeyEventTransition);
-    d->transition->setModifiers(modifiers);
+    Q_D(const QKeyEventTransition);
+    return d->transition->modifiersMask();
 }
 
 /*!
-  \reimp
+  Sets the keyboard \a modifiers mask that this key event transition will
+  check for.
 */
-bool QKeyEventTransition::testEventCondition(QEvent *event) const
+void QKeyEventTransition::setModifiersMask(Qt::KeyboardModifiers modifiersMask)
 {
-    Q_D(const QKeyEventTransition);
-    d->transition->setEventType(event->type());
-    return QAbstractTransitionPrivate::get(d->transition)->callEventTest(event);
+    Q_D(QKeyEventTransition);
+    d->transition->setModifiersMask(modifiersMask);
 }
 
 /*!
@@ -144,15 +142,20 @@ bool QKeyEventTransition::testEventCondition(QEvent *event) const
 */
 bool QKeyEventTransition::eventTest(QEvent *event) const
 {
-    return QEventTransition::eventTest(event);
+    Q_D(const QKeyEventTransition);
+    if (!QEventTransition::eventTest(event))
+        return false;
+    QWrappedEvent *we = static_cast<QWrappedEvent*>(event);
+    d->transition->setEventType(we->event()->type());
+    return QAbstractTransitionPrivate::get(d->transition)->callEventTest(we->event());
 }
 
 /*!
   \reimp
 */
-void QKeyEventTransition::onTransition()
+void QKeyEventTransition::onTransition(QEvent *event)
 {
-    QEventTransition::onTransition();
+    QEventTransition::onTransition(event);
 }
 
 QT_END_NAMESPACE

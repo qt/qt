@@ -319,6 +319,8 @@ void QFxGridViewPrivate::init()
 {
     Q_Q(QFxGridView);
     q->setOptions(QFxGridView::IsFocusRealm);
+    QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(sizeChange()));
+    QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(sizeChange()));
 }
 
 void QFxGridViewPrivate::clear()
@@ -996,26 +998,9 @@ void QFxGridView::setCellHeight(int cellHeight)
     }
 }
 
-/*!
-  \reimp
-*/
-void QFxGridView::setHeight(int height)
+void QFxGridView::sizeChange()
 {
     Q_D(QFxGridView);
-    QFxFlickable::setHeight(height);
-    if (isComponentComplete()) {
-        d->updateGrid();
-        d->layout();
-    }
-}
-
-/*!
-  \reimp
-*/
-void QFxGridView::setWidth(int width)
-{
-    Q_D(QFxGridView);
-    QFxFlickable::setWidth(width);
     if (isComponentComplete()) {
         d->updateGrid();
         d->layout();

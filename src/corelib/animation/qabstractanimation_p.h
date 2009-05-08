@@ -58,7 +58,6 @@
 #include <QtCore/qtimer.h>
 #ifndef QT_EXPERIMENTAL_SOLUTION
 #include <private/qobject_p.h>
-#include <qabstractanimation.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -119,13 +118,17 @@ private:
 public:
     static QUnifiedTimer *instance();
 
-    void timerEvent(QTimerEvent *);
-    void updateTimer();
     void registerAnimation(QAbstractAnimation *animation);
     void unregisterAnimation(QAbstractAnimation *animation);
 
-    void setConsistentTiming(bool c);
-    int elapsedTime();
+    void setTimingInterval(int interval);
+    void setConsistentTiming(bool consistent);
+
+    int elapsedTime() const;
+
+protected:
+    void timerEvent(QTimerEvent *);
+    void updateTimer();
 
 private:
     void updateRecentlyStartedAnimations();
@@ -133,6 +136,7 @@ private:
     QBasicTimer animationTimer, startStopAnimationTimer;
     QTime time;
     int lastTick;
+    int timingInterval;
     bool consistentTiming;
     QList<QAbstractAnimation*> animations, animationsToStart;
 };

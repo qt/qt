@@ -111,14 +111,12 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
 
     // Set up intial state graph
     m_machine = new QStateMachine();
-    m_machine->setGlobalRestorePolicy(QState::RestoreProperties);
 
     m_alive = new QState(m_machine->rootState());
     m_alive->setObjectName("alive");
     
     // Make it blink when lightning strikes before entering dead animation
     QState *lightningBlink = new QState(m_machine->rootState());    
-    lightningBlink->setRestorePolicy(QState::DoNotRestoreProperties);
     lightningBlink->assignProperty(m_stickMan->scene(), "backgroundBrush", Qt::white);
     lightningBlink->assignProperty(m_stickMan, "penColor", Qt::black);
     lightningBlink->assignProperty(m_stickMan, "fillColor", Qt::white);
@@ -127,11 +125,10 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
     QTimer *timer = new QTimer(lightningBlink);
     timer->setSingleShot(true);
     timer->setInterval(100);
-    lightningBlink->invokeMethodOnEntry(timer, "start");
-    lightningBlink->invokeMethodOnExit(timer, "stop");
+    QObject::connect(lightningBlink, SIGNAL(entered()), timer, SLOT(start()));
+    QObject::connect(lightningBlink, SIGNAL(exited()), timer, SLOT(stop()));
   
     m_dead = new QState(m_machine->rootState());
-    m_dead->setRestorePolicy(QState::DoNotRestoreProperties);
     m_dead->assignProperty(m_stickMan->scene(), "backgroundBrush", Qt::black);
     m_dead->assignProperty(m_stickMan, "penColor", Qt::white);
     m_dead->assignProperty(m_stickMan, "fillColor", Qt::black);
@@ -149,15 +146,6 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
     connectByAnimation(lightningBlink, m_dead, new QSignalTransition(timer, SIGNAL(timeout())));
 
     m_machine->setInitialState(m_alive);
-}
-
-void LifeCycle::setResetKey(Qt::Key resetKey)
-{
-    // When resetKey is pressed, enter the idle state and do a restoration animation
-    // (requires no animation pointer, since no property is being set in the idle state)
-    KeyPressTransition *trans = new KeyPressTransition(m_keyReceiver, resetKey, m_idle);
-    trans->addAnimation(m_animationGroup);
-    m_alive->addTransition(trans);
 }
 
 void LifeCycle::setDeathAnimation(const QString &fileName)
@@ -215,14 +203,14 @@ QState *LifeCycle::makeState(QState *parentState, const QString &animationFileNa
             topLevel->setInitialState(frameState);
         } else {
             connectByAnimation(previousState, frameState, 
-                new QSignalTransition(m_machine, SIGNAL(animationsFinished())));
+                new QSignalTransition(previousState, SIGNAL(polished())));
         }
         previousState = frameState;
     }
 
     // Loop
     connectByAnimation(previousState, topLevel->initialState(), 
-        new QSignalTransition(m_machine, SIGNAL(animationsFinished())));
+        new QSignalTransition(previousState, SIGNAL(polished())));
 
     return topLevel;
 

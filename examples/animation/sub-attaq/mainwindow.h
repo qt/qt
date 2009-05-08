@@ -43,7 +43,7 @@
 #define __MAINWINDOW__H__
 
 //Qt
-#include <QMainWindow>
+#include <QtGui/QMainWindow>
 
 class GraphicsScene;
 class QGraphicsView;

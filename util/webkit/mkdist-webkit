@@ -58,6 +58,7 @@ excluded_directories="$excluded_directories WebCore/Configurations"
 excluded_directories="$excluded_directories WebCore/bridge/objc"
 excluded_directories="$excluded_directories WebCore/bridge/testbindings.pro"
 excluded_directories="$excluded_directories WebCore/bindings/objc"
+excluded_directories="$excluded_directories WebCore/bindings/v8"
 
 excluded_directories="$excluded_directories JavaScriptCore/icu"
 

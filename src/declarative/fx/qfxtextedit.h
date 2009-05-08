@@ -75,7 +75,9 @@ class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
     Q_PROPERTY(bool wrap READ wrap WRITE setWrap)
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat)
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
+    Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible)
     Q_CLASSINFO("DefaultProperty", "text")
+
 public:
     QFxTextEdit(QFxItem *parent=0);
 
@@ -118,6 +120,9 @@ public:
     bool wrap() const;
     void setWrap(bool w);
 
+    bool isCursorVisible() const;
+    void setCursorVisible(bool on);
+
     virtual void dump(int depth);
     virtual QString propertyInfo() const;
 
@@ -144,6 +149,9 @@ public:
 Q_SIGNALS:
     void textChanged(const QString &);
     void cursorPositionChanged();
+
+public Q_SLOTS:
+    void selectAll();
 
 private Q_SLOTS:
     void fontChanged();

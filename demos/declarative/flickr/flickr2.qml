@@ -10,7 +10,7 @@ Item {
             model:
                 XmlListModel {
                     id: FeedModel
-                    property string tags : ""
+                    property string tags : TagsEdit.text
                     source: "http://api.flickr.com/services/feeds/photos_public.gne?"+(tags ? "tags="+tags+"&" : "")+"format=rss2"
                     query: "doc($src)/rss/channel/item"
                     namespaceDeclarations: "declare namespace media=\"http://search.yahoo.com/mrss/\";"
@@ -30,7 +30,7 @@ Item {
             delegate: Package {
                 Item {
                     id: Wrapper; width: 85; height: 85; scale: {1.0}
-                    z: RightBox.PathView.z
+                    z: PathViewPackage.PathView.z
                     property real angle: 0 * 0
 
                     transform: [
@@ -41,24 +41,23 @@ Item {
                     ]
 
                     Connection {
-                        sender: ImageDetails; signal: "closed()"
+                        sender: Background.imageDetails; signal: "closed()"
                         script: { if (Wrapper.state == 'Details') Wrapper.state = '' }
                     }
 
                     Script {
                         function photoClicked() {
-                            ImageDetails.photoTitle = title;
-                            ImageDetails.flickableArea.yPosition = 0;
-                            ImageDetails.fullScreenArea.source = "";
-                            ImageDetails.photoDescription = description;
-                            ImageDetails.photoTags = tags;
-                            ImageDetails.photoWidth = photoWidth;
-                            ImageDetails.photoHeight = photoHeight;
-                            ImageDetails.photoType = photoType;
-                            ImageDetails.photoAuthor = photoAuthor;
-                            ImageDetails.photoDate = photoDate;
-                            ImageDetails.photoUrl = url;
-                            ImageDetails.rating = 0;
+                            Background.imageDetails.photoTitle = title;
+                            Background.imageDetails.flickableArea.yPosition = 0;
+                            Background.imageDetails.photoDescription = description;
+                            Background.imageDetails.photoTags = tags;
+                            Background.imageDetails.photoWidth = photoWidth;
+                            Background.imageDetails.photoHeight = photoHeight;
+                            Background.imageDetails.photoType = photoType;
+                            Background.imageDetails.photoAuthor = photoAuthor;
+                            Background.imageDetails.photoDate = photoDate;
+                            Background.imageDetails.photoUrl = url;
+                            Background.imageDetails.rating = 0;
                             Wrapper.state = "Details";
                         }
                     }
@@ -82,15 +81,16 @@ Item {
                     states: [
                         State {
                             name: "Details"
-                            SetProperties { target: ImageDetails; z: 2 }
-                            ParentChange { target: Wrapper; parent: ImageDetails.frontContainer }
+                            SetProperties { target: Background.imageDetails; z: 2 }
+                            ParentChange { target: Wrapper; parent: Background.imageDetails.frontContainer }
                             SetProperties { target: Wrapper; x: 45; y: 35; scale: 1; z: 1000 }
                             SetProperties { target: Rotation; angle: 0 }
                             SetProperties { target: Shadows; opacity: 0 }
-                            SetProperties { target: ImageDetails; y: 20 }
+                            SetProperties { target: Background.imageDetails; y: 20 }
                             SetProperties { target: PhotoGridView; y: "-480" }
                             SetProperties { target: PhotoPathView; y: "-480" }
-                            SetProperties { target: CloseButton; opacity: 0 }
+                            SetProperties { target: ViewModeButton; opacity: 0 }
+                            SetProperties { target: TagsEdit; opacity: 0 }
                             SetProperties { target: FetchButton; opacity: 0 }
                             SetProperties { target: CategoryText; y: "-50" }
                         }
@@ -114,35 +114,35 @@ Item {
                 }
 
                 Item {
-                    Package.name: "rightBox"
-                    id: RightBox; width: 85; height: 85
+                    Package.name: "pathView"
+                    id: PathViewPackage; width: 85; height: 85
                 }
 
                 Item {
-                    Package.name: "leftBox"
-                    id: LeftBox; width: 85; height: 85
+                    Package.name: "gridView"
+                    id: GridViewPackage; width: 85; height: 85
                 }
 
                 Item {
                     id: MyItem
-                    state: MainWindow.showPathView ? "right" : "left"
+                    state: MainWindow.showPathView ? "pathView" : "gridView"
                     states: [
                         State {
-                            name: "left"
-                            SetProperty { target: Wrapper; property: "moveToParent"; value: LeftBox }
+                            name: "gridView"
+                            SetProperty { target: Wrapper; property: "moveToParent"; value: GridViewPackage }
                         },
                         State {
-                            name: "right"
-                            SetProperty { target: Wrapper; property: "scale"; value: RightBox.PathView.scale }
-                            SetProperty { target: Wrapper; property: "scale"; binding: "RightBox.PathView.scale" }
-                            SetProperty { target: Wrapper; property: "angle"; value: RightBox.PathView.angle }
-                            SetProperty { target: Wrapper; property: "angle"; binding: "RightBox.PathView.angle" }
-                            SetProperty { target: Wrapper; property: "moveToParent"; value: RightBox }
+                            name: "pathView"
+                            SetProperty { target: Wrapper; property: "scale"; value: PathViewPackage.PathView.scale }
+                            SetProperty { target: Wrapper; property: "scale"; binding: "PathViewPackage.PathView.scale" }
+                            SetProperty { target: Wrapper; property: "angle"; value: PathViewPackage.PathView.angle }
+                            SetProperty { target: Wrapper; property: "angle"; binding: "PathViewPackage.PathView.angle" }
+                            SetProperty { target: Wrapper; property: "moveToParent"; value: PathViewPackage }
                         }
                     ]
                     transitions: [
                         Transition {
-                            toState: "right"
+                            toState: "pathView"
                             SequentialAnimation {
                                 SetPropertyAction { target: Wrapper; property: "moveToParent" }
                                 ParallelAnimation {
@@ -158,7 +158,7 @@ Item {
                             }
                         },
                         Transition {
-                            toState: "left"
+                            toState: "gridView"
                             SequentialAnimation {
                                 PauseAnimation { duration: Math.floor(index/7)*100 }
                                 SetPropertyAction { target: Wrapper; property: "moveToParent" }
@@ -182,17 +182,18 @@ Item {
 
     Item {
         id: Background
+        property var imageDetails: ImageDetails
 
         Image { source: "content/pics/background.png"; opaque: true }
 
         GridView {
-            id: PhotoGridView; model: MyVisualModel.parts.leftBox
+            id: PhotoGridView; model: MyVisualModel.parts.gridView
             cellWidth: 105; cellHeight: 105; x:32; y: 80; width: 800; height: 330; z: 1
             cacheBuffer: 100
         }
 
         PathView {
-            id: PhotoPathView; model: MyVisualModel.parts.rightBox
+            id: PhotoPathView; model: MyVisualModel.parts.pathView
             y: 80; width: 800; height: 330; z: 1
             pathItemCount: 10; snapPosition: 0.001
             path: Path {
@@ -225,37 +226,32 @@ Item {
                 PathLine { x: 950; y: 40 }
                 PathPercent { value: 1.0 }
                 PathAttribute { name: "scale"; value: 0.9 }
-                PathAttribute { name: "angle"; value: -45 }
+                PathAttribute { name: "angle"; value: 45 }
             }
         }
 
         ImageDetails { id: ImageDetails; width: 750; x: 25; y: 500; height: 410 }
 
         MediaButton {
-            id: CloseButton; x: 680; y: 410; text: "View Mode"
+            id: ViewModeButton; x: 680; y: 410; text: "View Mode"
             onClicked: { if (MainWindow.showPathView == true) MainWindow.showPathView = false; else MainWindow.showPathView = true }
         }
 
         MediaButton {
             id: FetchButton
             text: "Update"
-            anchors.right: CloseButton.left; anchors.rightMargin: 5
-            anchors.top: CloseButton.top
+            anchors.right: ViewModeButton.left; anchors.rightMargin: 5
+            anchors.top: ViewModeButton.top
             onClicked: { FeedModel.reload(); }
         }
 
-        states: [
-            State {
-                name: "PathView"
-            }
-        ]
+        MediaLineEdit {
+            id: TagsEdit;
+            label: "Tags"
+            anchors.right: FetchButton.left; anchors.rightMargin: 5
+            anchors.top: ViewModeButton.top
+        }
 
-        transitions: [
-            Transition {
-                fromState: "*"; toState: "*"
-                NumericAnimation { properties: "y"; duration: 650; easing: "easeOutBounce(amplitude:0.1)" }
-            }
-        ]
     }
 
     Text {

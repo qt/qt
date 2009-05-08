@@ -67,7 +67,7 @@ void tst_Xunit::testFunc1()
 
 void tst_Xunit::testFunc2()
 {
-    qDebug("a qDebug() call!");
+    qDebug("a qDebug() call with comment-ending stuff -->");
     QCOMPARE(2, 3);
 }
 

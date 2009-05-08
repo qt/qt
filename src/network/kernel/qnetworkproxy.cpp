@@ -86,10 +86,11 @@
     The SOCKS5 support in Qt 4 is based on \l{RFC 1928} and \l{RFC 1929}.
     The supported authentication methods are no authentication and
     username/password authentication.  Both IPv4 and IPv6 are
-    supported, but domain name resolution via the SOCKS server is not
-    supported; i.e. all domain names are resolved locally. There are
-    several things to remember when using SOCKS5 with QUdpSocket and
-    QTcpServer:
+    supported. Domain names are resolved through the SOCKS5 server if
+    the QNetworkProxy::HostNameLookupCapability is enabled, otherwise
+    they are resolved locally and the IP address is sent to the
+    server. There are several things to remember when using SOCKS5
+    with QUdpSocket and QTcpServer:
 
     With QUdpSocket, a call to \l {QUdpSocket::bind()}{bind()} may fail
     with a timeout error. If a port number other than 0 is passed to
@@ -365,7 +366,8 @@ static QNetworkProxy::Capabilities defaultCapabilitiesForType(QNetworkProxy::Pro
          int(QNetworkProxy::HostNameLookupCapability)),
     };
 
-    Q_ASSERT(int(type) >= 0 && int(type) <= int(QNetworkProxy::FtpCachingProxy));
+    if (int(type) < 0 && int(type) > int(QNetworkProxy::FtpCachingProxy))
+        type = QNetworkProxy::DefaultProxy;
     return QNetworkProxy::Capabilities(defaults[int(type)]);
 }
 
@@ -378,6 +380,7 @@ public:
     QNetworkProxy::Capabilities capabilities;
     quint16 port;
     QNetworkProxy::ProxyType type;
+    bool capabilitiesSet;
 
     inline QNetworkProxyPrivate(QNetworkProxy::ProxyType t = QNetworkProxy::DefaultProxy,
                                 const QString &h = QString(), quint16 p = 0,
@@ -387,7 +390,8 @@ public:
           password(pw),
           capabilities(defaultCapabilitiesForType(t)),
           port(p),
-          type(t)
+          type(t),
+          capabilitiesSet(false)
     { }
 
     inline bool operator==(const QNetworkProxyPrivate &other) const
@@ -490,13 +494,16 @@ QNetworkProxy &QNetworkProxy::operator=(const QNetworkProxy &other)
     Sets the proxy type for this instance to be \a type.
 
     Note that changing the type of a proxy does not change
-    the set of capabilities this QNetworkProxy object holds.
+    the set of capabilities this QNetworkProxy object holds if any
+    capabilities have been set with setCapabilities().
 
     \sa type(), setCapabilities()
 */
 void QNetworkProxy::setType(QNetworkProxy::ProxyType type)
 {
     d->type = type;
+    if (!d->capabilitiesSet)
+        d->capabilities = defaultCapabilitiesForType(type);
 }
 
 /*!
@@ -519,6 +526,7 @@ QNetworkProxy::ProxyType QNetworkProxy::type() const
 void QNetworkProxy::setCapabilities(Capabilities capabilities)
 {
     d->capabilities = capabilities;
+    d->capabilitiesSet = true;
 }
 
 /*!

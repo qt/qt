@@ -36,7 +36,7 @@ tst_QFxLayouts::tst_QFxLayouts()
 
 void tst_QFxLayouts::test_horizontal()
 {
-    QFxView *canvas = createView(SRCDIR "/data/horizontal.xml");
+    QFxView *canvas = createView(SRCDIR "/data/horizontal.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -60,7 +60,7 @@ void tst_QFxLayouts::test_horizontal()
 
 void tst_QFxLayouts::test_horizontal_spacing()
 {
-    QFxView *canvas = createView(SRCDIR "/data/horizontal-spacing.xml");
+    QFxView *canvas = createView(SRCDIR "/data/horizontal-spacing.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -84,7 +84,7 @@ void tst_QFxLayouts::test_horizontal_spacing()
 
 void tst_QFxLayouts::test_horizontal_margin()
 {
-    QFxView *canvas = createView(SRCDIR "/data/horizontal-margin.xml");
+    QFxView *canvas = createView(SRCDIR "/data/horizontal-margin.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -108,7 +108,7 @@ void tst_QFxLayouts::test_horizontal_margin()
 
 void tst_QFxLayouts::test_horizontal_spacing_margin()
 {
-    QFxView *canvas = createView(SRCDIR "/data/horizontal-spacing-margin.xml");
+    QFxView *canvas = createView(SRCDIR "/data/horizontal-spacing-margin.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -132,7 +132,7 @@ void tst_QFxLayouts::test_horizontal_spacing_margin()
 
 void tst_QFxLayouts::test_vertical()
 {
-    QFxView *canvas = createView(SRCDIR "/data/vertical.xml");
+    QFxView *canvas = createView(SRCDIR "/data/vertical.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -156,7 +156,7 @@ void tst_QFxLayouts::test_vertical()
 
 void tst_QFxLayouts::test_vertical_spacing()
 {
-    QFxView *canvas = createView(SRCDIR "/data/vertical-spacing.xml");
+    QFxView *canvas = createView(SRCDIR "/data/vertical-spacing.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -180,7 +180,7 @@ void tst_QFxLayouts::test_vertical_spacing()
 
 void tst_QFxLayouts::test_vertical_margin()
 {
-    QFxView *canvas = createView(SRCDIR "/data/vertical-margin.xml");
+    QFxView *canvas = createView(SRCDIR "/data/vertical-margin.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -204,7 +204,7 @@ void tst_QFxLayouts::test_vertical_margin()
 
 void tst_QFxLayouts::test_vertical_spacing_margin()
 {
-    QFxView *canvas = createView(SRCDIR "/data/vertical-spacing-margin.xml");
+    QFxView *canvas = createView(SRCDIR "/data/vertical-spacing-margin.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -228,7 +228,7 @@ void tst_QFxLayouts::test_vertical_spacing_margin()
 
 void tst_QFxLayouts::test_grid()
 {
-    QFxView *canvas = createView("data/grid.xml");
+    QFxView *canvas = createView("data/grid.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -258,7 +258,7 @@ void tst_QFxLayouts::test_grid()
 
 void tst_QFxLayouts::test_grid_spacing()
 {
-    QFxView *canvas = createView("data/grid-spacing.xml");
+    QFxView *canvas = createView("data/grid-spacing.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -288,7 +288,7 @@ void tst_QFxLayouts::test_grid_spacing()
 
 void tst_QFxLayouts::test_grid_margin()
 {
-    QFxView *canvas = createView("data/grid-margin.xml");
+    QFxView *canvas = createView("data/grid-margin.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -319,7 +319,7 @@ void tst_QFxLayouts::test_grid_margin()
 
 void tst_QFxLayouts::test_grid_spacing_margin()
 {
-    QFxView *canvas = createView("data/grid-spacing-margin.xml");
+    QFxView *canvas = createView("data/grid-spacing-margin.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -354,7 +354,7 @@ QFxView *tst_QFxLayouts::createView(const QString &filename)
     QFile file(filename);
     file.open(QFile::ReadOnly);
     QString xml = file.readAll();
-    canvas->setXml(xml, filename);
+    canvas->setQml(xml, filename);
 
     return canvas;
 }
@@ -371,7 +371,7 @@ T *tst_QFxLayouts::findItem(QFxItem *parent, const QString &id, int index)
         QFxItem *item = parent->children()->at(i);
         if (mo.cast(item) && (id.isEmpty() || item->id() == id)) {
             if (index != -1) {
-                QmlExpression e(item->itemContext(), "index", item);
+                QmlExpression e(qmlContext(item), "index", item);
                 e.setTrackChange(false);
                 if (e.value().toInt() == index)
                     return static_cast<T*>(item);

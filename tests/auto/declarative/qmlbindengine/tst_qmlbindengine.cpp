@@ -59,13 +59,13 @@ private:
 void tst_qmlbindengine::boolPropertiesEvaluateAsBool()
 {
     {
-        QmlComponent component(&engine, "<MyQmlObject stringProperty=\"{trueProperty?'pass':'fail'}\" />");
+        QmlComponent component(&engine, "MyQmlObject { stringProperty: trueProperty?'pass':'fail' }");
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->stringProperty(), QLatin1String("pass"));
     }
     {
-        QmlComponent component(&engine, "<MyQmlObject stringProperty=\"{falseProperty?'fail':'pass'}\" />");
+        QmlComponent component(&engine, "MyQmlObject { stringProperty: falseProperty?'fail':'pass' }");
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->stringProperty(), QLatin1String("pass"));
@@ -75,7 +75,7 @@ void tst_qmlbindengine::boolPropertiesEvaluateAsBool()
 void tst_qmlbindengine::signalAssignment()
 {
     {
-        QmlComponent component(&engine, "<MyQmlObject onBasicSignal=\"setString('pass')\" />");
+        QmlComponent component(&engine, "MyQmlObject { onBasicSignal: setString('pass') }");
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->string(), QString());
@@ -84,7 +84,7 @@ void tst_qmlbindengine::signalAssignment()
     }
 
     {
-        QmlComponent component(&engine, "<MyQmlObject onArgumentSignal=\"setString('pass ' + a + ' ' + b + ' ' + c)\" />");
+        QmlComponent component(&engine, "MyQmlObject { onArgumentSignal: setString('pass ' + a + ' ' + b + ' ' + c) }");
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->string(), QString());
@@ -96,7 +96,7 @@ void tst_qmlbindengine::signalAssignment()
 void tst_qmlbindengine::methods()
 {
     {
-        QmlComponent component(&engine, "<MyQmlObject id=\"MyObject\" onBasicSignal=\"MyObject.method()\" />");
+        QmlComponent component(&engine, "MyQmlObject { id: MyObject; onBasicSignal: MyObject.method() }");
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->methodCalled(), false);
@@ -107,7 +107,7 @@ void tst_qmlbindengine::methods()
     }
 
     {
-        QmlComponent component(&engine, "<MyQmlObject id=\"MyObject\" onBasicSignal=\"MyObject.method(163)\" />");
+        QmlComponent component(&engine, "MyQmlObject { id: MyObject; onBasicSignal: MyObject.method(163) }");
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->methodCalled(), false);

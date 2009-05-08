@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qfinalstate.h"
-#include "qactionstate_p.h"
+#include "qabstractstate_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -55,9 +55,9 @@ QT_BEGIN_NAMESPACE
   A final state is used to communicate that (part of) a QStateMachine has
   finished its work. When a final top-level state is entered, the state
   machine's \l{QStateMachine::finished()}{finished}() signal is emitted. In
-  general, when a final substate (a child of a QState) is entered, a
-  QStateFinishedEvent is generated for the final state's parent
-  state. QFinalState is part of \l{The State Machine Framework}.
+  general, when a final substate (a child of a QState) is entered, the parent
+  state's \l{QState::finished()}{finished}() signal is emitted.  QFinalState
+  is part of \l{The State Machine Framework}.
 
   To use a final state, you create a QFinalState object and add a transition
   to it from another state. Example:
@@ -77,10 +77,10 @@ QT_BEGIN_NAMESPACE
   machine.start();
   \endcode
 
-  \sa QStateFinishedTransition
+  \sa QStateMachine::finished(), QState::finished()
 */
 
-class QFinalStatePrivate : public QActionStatePrivate
+class QFinalStatePrivate : public QAbstractStatePrivate
 {
     Q_DECLARE_PUBLIC(QFinalState)
 
@@ -96,7 +96,7 @@ QFinalStatePrivate::QFinalStatePrivate()
   Constructs a new QFinalState object with the given \a parent state.
 */
 QFinalState::QFinalState(QState *parent)
-    : QActionState(*new QFinalStatePrivate, parent)
+    : QAbstractState(*new QFinalStatePrivate, parent)
 {
 }
 
@@ -110,17 +110,17 @@ QFinalState::~QFinalState()
 /*!
   \reimp
 */
-void QFinalState::onEntry()
+void QFinalState::onEntry(QEvent *event)
 {
-    QActionState::onEntry();
+    Q_UNUSED(event);
 }
 
 /*!
   \reimp
 */
-void QFinalState::onExit()
+void QFinalState::onExit(QEvent *event)
 {
-    QActionState::onExit();
+    Q_UNUSED(event);
 }
 
 /*!
@@ -128,7 +128,7 @@ void QFinalState::onExit()
 */
 bool QFinalState::event(QEvent *e)
 {
-    return QActionState::event(e);
+    return QAbstractState::event(e);
 }
 
 QT_END_NAMESPACE

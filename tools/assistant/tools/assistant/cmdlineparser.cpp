@@ -56,6 +56,7 @@ CmdLineParser::CmdLineParser()
     m_bookmarks(Untouched),
     m_search(Untouched),
     m_register(None),
+    m_removeSearchIndex(false),
     m_copy(false),
     m_quiet(false)
 {
@@ -83,6 +84,7 @@ CmdLineParser::CmdLineParser()
         "                           (.qch) from the give collection\n"
         "                           file.\n"
         "-setCurrentFilter filter   Set the filter as the active filter.\n"
+        "-remove-search-index       Removes the full text search index.\n"
         "-quiet                     Does not display any error or\n"
         "                           status message.\n"
         "-help                      Displays this help.\n"
@@ -217,6 +219,8 @@ CmdLineParser::Result CmdLineParser::parse(const QStringList &arguments)
                 error = QObject::tr("Missing filter argument!");
                 break;
             }
+        } else if (arg == QLatin1String("-remove-search-index")) {
+            m_removeSearchIndex = true;
         } else if (arg == QLatin1String("-quiet")) {
             continue;
         } else if (arg == QLatin1String("-help")) {
@@ -305,6 +309,11 @@ CmdLineParser::ShowState CmdLineParser::search() const
 QString CmdLineParser::currentFilter() const
 {
     return m_currentFilter;
+}
+
+bool CmdLineParser::removeSearchIndex() const
+{
+    return m_removeSearchIndex;
 }
 
 CmdLineParser::RegisterState CmdLineParser::registerRequest() const

@@ -7,49 +7,49 @@ static inline int interpolateInteger(int from, int to, qreal progress)
 }
 
 
-RectAnimation::RectAnimation(DummyObject *obj) : object(obj), dura(250)
+RectAnimation::RectAnimation(DummyObject *obj) : m_object(obj), m_dura(250)
 {
 }
 
 void RectAnimation::setEndValue(const QRect &rect)
 {
-    end = rect;
+    m_end = rect;
 }
 
 void RectAnimation::setStartValue(const QRect &rect)
 {
-    start = rect;
+    m_start = rect;
 }
 
 void RectAnimation::setDuration(int d)
 {
-    dura = d;
+    m_dura = d;
 }
 
 int RectAnimation::duration() const
 {
-    return dura;
+    return m_dura;
 }
 
 
 void RectAnimation::updateCurrentTime(int msecs)
 {
-    qreal progress = easing.valueForProgress( qreal(msecs) / qreal(dura) );
+    qreal progress = m_easing.valueForProgress( qreal(msecs) / qreal(m_dura) );
     QRect now;
-    now.setCoords(interpolateInteger(start.left(), end.left(), progress),
-                  interpolateInteger(start.top(), end.top(), progress),
-                  interpolateInteger(start.right(), end.right(), progress),
-                  interpolateInteger(start.bottom(), end.bottom(), progress));
+    now.setCoords(interpolateInteger(m_start.left(), m_end.left(), progress),
+                  interpolateInteger(m_start.top(), m_end.top(), progress),
+                  interpolateInteger(m_start.right(), m_end.right(), progress),
+                  interpolateInteger(m_start.bottom(), m_end.bottom(), progress));
 
-    bool changed = (now != current);
+    bool changed = (now != m_current);
     if (changed)
-        current = now;
+        m_current = now;
 
     if (state() == Stopped)
         return;
 
-    if (object)
-        object->setRect(current);
+    if (m_object)
+        m_object->setRect(m_current);
 }
 
 void RectAnimation::updateState(QAbstractAnimation::State state)

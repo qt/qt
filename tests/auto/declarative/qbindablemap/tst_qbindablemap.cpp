@@ -59,7 +59,7 @@ void tst_QBindableMap::changed()
     QmlEngine engine;
     QmlContext *ctxt = engine.rootContext();
     ctxt->setContextProperty(QLatin1String("data"), &map);
-    QmlComponent component(&engine, "<Script script=\"data.key1 = 'Hello World';\"/>");
+    QmlComponent component(&engine, "Script { script: \"data.key1 = 'Hello World';\" }");
     component.create();
     QCOMPARE(spy.count(), 1);
     QList<QVariant> arguments = spy.takeFirst();

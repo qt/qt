@@ -597,6 +597,9 @@ QNetworkAccessManager *QmlEngine::networkAccessManager() const
  */
 QmlContext *QmlEngine::contextForObject(const QObject *object)
 {
+    if(!object)
+        return 0;
+
     QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
 
     QmlSimpleDeclarativeData *data = 
@@ -1090,6 +1093,14 @@ void QmlExpression::setTrackChange(bool trackChange)
 QObject *QmlExpression::scopeObject() const
 {
     return d->me;
+}
+
+/*!
+    \internal
+*/
+quint32 QmlExpression::id() const
+{
+    return d->id;
 }
 
 /*!

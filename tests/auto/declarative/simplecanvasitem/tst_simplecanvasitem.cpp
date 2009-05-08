@@ -26,7 +26,7 @@ tst_SimpleCanvasItem::tst_SimpleCanvasItem()
 
 void tst_SimpleCanvasItem::test_pos()
 {
-    QFxView *canvas = createView(SRCDIR "/data/test.xml");
+    QFxView *canvas = createView(SRCDIR "/data/test.qml");
     canvas->execute();
     qApp->processEvents();
     QSimpleCanvasItem* root = qobject_cast<QSimpleCanvasItem*>(canvas->root());
@@ -42,7 +42,7 @@ void tst_SimpleCanvasItem::test_pos()
 
 void tst_SimpleCanvasItem::test_scenePos()
 {
-    QFxView *canvas = createView(SRCDIR "/data/test.xml");
+    QFxView *canvas = createView(SRCDIR "/data/test.qml");
     canvas->execute();
     qApp->processEvents();
     QSimpleCanvasItem* root = qobject_cast<QSimpleCanvasItem*>(canvas->root());
@@ -69,7 +69,7 @@ QFxView *tst_SimpleCanvasItem::createView(const QString &filename)
     QFile file(filename);
     file.open(QFile::ReadOnly);
     QString xml = file.readAll();
-    canvas->setXml(xml, filename);
+    canvas->setQml(xml, filename);
 
     return canvas;
 }

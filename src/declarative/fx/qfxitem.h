@@ -90,7 +90,6 @@ private:
 QML_DECLARE_TYPE(QFxContents);
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFxAnchors::UsedAnchors);
 
-class QmlContext;
 class QmlState;
 class QmlTransition;
 class QFxTransform;

@@ -90,6 +90,8 @@ private Q_SLOTS:
     void watcher();
     void watcher_error();
     void watcher_waitForFinished();
+    void watcher_waitForFinished_alreadyFinished();
+    void watcher_waitForFinished_alreadyFinished_eventLoop();
     void watcher_waitForFinished_error();
     void callInsideWaitForFinished();
 
@@ -361,6 +363,77 @@ void tst_QDBusPendingCall::watcher_waitForFinished()
             SLOT(finished(QDBusPendingCallWatcher*)));
 
     watch.waitForFinished();
+
+    QVERIFY(ac.isFinished());
+    QVERIFY(!ac.isError());
+
+    QCOMPARE(callCount, 1);
+    QCOMPARE(slotCalled, (int)FinishCalled);
+    QCOMPARE(watchArgument, &watch);
+    QVERIFY(!watch.isError());
+
+    const QVariantList args2 = ac.reply().arguments();
+    QVERIFY(!args2.isEmpty());
+    QVERIFY(args2.at(0).toStringList().contains(conn.baseService()));
+}
+
+void tst_QDBusPendingCall::watcher_waitForFinished_alreadyFinished()
+{
+    QDBusPendingCall ac = sendMessage();
+    QVERIFY(!ac.isFinished());
+    QVERIFY(!ac.isError());
+    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
+
+    ac.waitForFinished();
+    QVERIFY(ac.isFinished());
+    QVERIFY(!ac.isError());
+
+    callCount = 0;
+    watchArgument = 0;
+
+    // create a watcher on an already-finished reply
+    QDBusPendingCallWatcher watch(ac);
+    connect(&watch, SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(finished(QDBusPendingCallWatcher*)));
+
+    watch.waitForFinished();
+
+    QVERIFY(ac.isFinished());
+    QVERIFY(!ac.isError());
+
+    QCOMPARE(callCount, 1);
+    QCOMPARE(slotCalled, (int)FinishCalled);
+    QCOMPARE(watchArgument, &watch);
+    QVERIFY(!watch.isError());
+
+    const QVariantList args2 = ac.reply().arguments();
+    QVERIFY(!args2.isEmpty());
+    QVERIFY(args2.at(0).toStringList().contains(conn.baseService()));
+}
+
+void tst_QDBusPendingCall::watcher_waitForFinished_alreadyFinished_eventLoop()
+{
+    QDBusPendingCall ac = sendMessage();
+    QVERIFY(!ac.isFinished());
+    QVERIFY(!ac.isError());
+    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
+
+    ac.waitForFinished();
+    QVERIFY(ac.isFinished());
+    QVERIFY(!ac.isError());
+
+    callCount = 0;
+    watchArgument = 0;
+
+    // create a watcher on an already-finished reply
+    QDBusPendingCallWatcher watch(ac);
+    connect(&watch, SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(finished(QDBusPendingCallWatcher*)));
+    connect(&watch, SIGNAL(finished(QDBusPendingCallWatcher*)),
+            &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+    QTestEventLoop::instance().enterLoop(1);
+    QVERIFY(!QTestEventLoop::instance().timeout());
 
     QVERIFY(ac.isFinished());
     QVERIFY(!ac.isError());

@@ -76,11 +76,10 @@
   becomes part of your application's event loop.
 
   The above state machine is perfectly fine, but it doesn't \e do anything; it
-  merely transitions from one state to another. The
-  QAbstractState::assignProperty() function can be used to have a state set a
-  property of a QObject when the state is entered. In the following snippet,
-  the value that should be assigned to a QLabel's text property is specified
-  for each state:
+  merely transitions from one state to another. The QState::assignProperty()
+  function can be used to have a state set a property of a QObject when the
+  state is entered. In the following snippet, the value that should be
+  assigned to a QLabel's text property is specified for each state:
 
   \code
     s1->assignProperty(label, "text", "In state s1");
@@ -91,13 +90,12 @@
   When any of the states is entered, the label's text will be changed
   accordingly.
 
-  The QActionState::invokeMethodOnEntry() function can be used to have a state
-  invoke a method (a slot) of a QObject when the state is entered. In the
+  The QActionState::entered() signal is emitted when the state is entered. In the
   following snippet, the button's showMaximized() slot will be called when
   state \c s3 is entered:
 
   \code
-    s2->invokeMethodOnEntry(button, "showMaximized");
+    QObject::connect(s3, SIGNAL(entered()), button, SLOT(showMaximized()));
   \endcode
 
   \section1 Sharing Transitions By Grouping States
@@ -209,7 +207,7 @@
     mbox.addButton(QMessageBox::Ok);
     mbox.setText("Interrupted!");
     mbox.setIcon(QMessageBox::Information);
-    s3->invokeMethodOnEntry(&mbox, "exec");
+    QObject::connect(s3, SIGNAL(entered()), &mbox, SLOT(exec()));
     s3->addTransition(s1h);
     machine.addState(s3);
 
@@ -243,11 +241,11 @@
     \caption This is a caption
     \endomit
 
-  To create a parallel state group, pass QState::ParallelStateGroup to the
-  QState constructor.
+  To create a parallel state group, pass QState::ParallelStates to the QState
+  constructor.
 
   \code
-    QState *s1 = new QState(QState::ParallelStateGroup);
+    QState *s1 = new QState(QState::ParallelStates);
     // s11 and s12 will be entered in parallel
     QState *s11 = new QState(s1);
     QState *s12 = new QState(s1);
@@ -255,9 +253,8 @@
 
   \section1 Detecting that a Composite State has Finished
 
-  A child state can be final; when a final child state is entered, a
-  QStateFinishedEvent is generated for the parent state. You can use the
-  QStateFinishedTransition class to trigger a transition based on this event.
+  A child state can be final; when a final child state is entered, the parent
+  state emits the QState::finished() signal.
 
     \img statemachine-finished.png
     \omit
