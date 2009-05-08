@@ -165,7 +165,7 @@ void tst_numberformat::number()
     QFETCH(QString, string);
     QFETCH(float, number);
 
-    QString componentStr = QString("<NumberFormatter number=\"") + string + QString("\"/>");
+    QString componentStr = QString("NumberFormatter { number: \"") + string + QString("\" }");
 
     QmlEngine engine;
     QmlComponent formatterComponent(&engine, componentStr.toAscii());
@@ -200,7 +200,7 @@ void tst_numberformat::text()
     QFETCH(QString, format);
     QFETCH(QString, text);
 
-    QString componentStr = QString("<NumberFormatter number=\"") + string + QString("\" format=\"") + format + QString("\" />");
+    QString componentStr = QString("NumberFormatter { number: \"") + string + QString("\"; format: \"") + format + QString("\" }");
 
     QmlEngine engine;
     QmlComponent formatterComponent(&engine, componentStr.toAscii());
