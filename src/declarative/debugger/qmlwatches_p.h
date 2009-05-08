@@ -39,57 +39,61 @@
 **
 ****************************************************************************/
 
-#ifndef QMLDEBUGGER_H
-#define QMLDEBUGGER_H
+#ifndef QMLWATCHES_P_H
+#define QMLWATCHES_P_H
 
+#include <QtCore/qbytearray.h>
+#include <QtCore/qobject.h>
 #include <QtCore/qpointer.h>
 #include <QtCore/qset.h>
-#include <QtGui/qwidget.h>
-
-QT_BEGIN_HEADER
+#include <QtCore/qstringlist.h>
+#include <QtCore/qabstractitemmodel.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QTreeWidget;
-class QTreeWidgetItem;
-class QPlainTextEdit;
-class QmlDebuggerItem;
-class QTableView;
-class QmlPropertyView;
-class QmlWatches;
-class QmlDebugger : public QWidget
+class QmlWatchesProxy;
+class QmlWatches : public QAbstractTableModel
 {
-Q_OBJECT
+    Q_OBJECT
 public:
-    QmlDebugger(QWidget *parent = 0);
+    QmlWatches(QObject *parent = 0);
 
-    void setDebugObject(QObject *);
+    bool hasWatch(quint32 objectId, const QByteArray &property);
+    void addWatch(quint32 objectId, const QByteArray &property);
+    void remWatch(quint32 objectId, const QByteArray &property);
 
-public slots:
-    void refresh();
+    bool hasWatch(quint32 exprId);
+    void remWatch(quint32 exprId);
+    void addWatch(quint32 exprId);
 
-private slots:
-    void itemClicked(QTreeWidgetItem *);
-    void itemDoubleClicked(QTreeWidgetItem *);
+    quint32 objectId(QObject *);
+    QObject *object(quint32);
+
+protected:
+    int columnCount(const QModelIndex &) const;
+    int rowCount(const QModelIndex &) const;
+    QVariant data(const QModelIndex &, int) const;
+    QVariant headerData(int, Qt::Orientation, int) const;
 
 private:
-    void buildTree(QObject *obj, QmlDebuggerItem *parent);
-    bool makeItem(QObject *obj, QmlDebuggerItem *item);
-    QTreeWidget *m_tree;
-    QTreeWidget *m_warnings;
-    QTableView *m_watchTable;
-    QmlWatches *m_watches;
-    QmlPropertyView *m_properties;
-    QPlainTextEdit *m_text;
-    QPointer<QObject> m_object;
-    QPointer<QObject> m_selectedItem;
+    friend class QmlWatchesProxy;
+    QList<QPair<quint32, QByteArray> > m_watches;
+    QList<quint32> m_exprWatches;
+
+    void addValue(int, const QVariant &);
+    struct Value {
+        int column;
+        QVariant variant;
+        bool first;
+    };
+    QList<Value> m_values;
+    QStringList m_columnNames;
+
+    quint32 m_uniqueId;
+    QHash<QObject *, QPair<QPointer<QObject>, quint32> *> m_objects;
+    QHash<quint32, QPair<QPointer<QObject>, quint32> *> m_objectIds;
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QMLDEBUGGER_H
-
+#endif // QMLWATCHES_P_H
