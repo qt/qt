@@ -43,6 +43,7 @@ enum TDrawType {
 };
 
 enum TSupportRelease {
+    ES60_None     = 0x0000, //indicates that the commonstyle should draw the graphics
     ES60_3_1      = 0x0001,
     ES60_3_2      = 0x0002,
     ES60_5_0      = 0x0004,
@@ -54,10 +55,20 @@ typedef struct {
     const TAknsItemID &skinID;
     TDrawType drawType;
     int supportInfo;
-    int fallbackGraphicID;
     int newMajorSkinId;
     int newMinorSkinId;
 } partMapEntry;
+
+enum TFallbackMbmFile {
+    EAvkonMbm = 0,
+    ELastMbm
+};
+
+typedef struct {
+    const QS60StyleEnums::SkinParts partID;
+    TFallbackMbmFile fallbackFileID; //to avoid putting large char strings to table, lets only have a mapping value
+    int fallbackGraphicID;
+} fallbackMapEntry;
 
 class QS60StyleModeSpecifics
 {
@@ -82,186 +93,229 @@ private:
     static void unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap* aTrgBitmap, CFbsBitmap* aSrcBitmap);
     static void colorGroupAndIndex(QS60StyleEnums::SkinParts skinID,
         TAknsItemID &colorGroup, int colorIndex);
+    static TDesC mapFallBackFileName(const int fileID);
     static bool checkSupport(const int supportedRelease);
     static TAknsItemID checkAndUpdateReleaseSpecificGraphics(int part);
     // Array to match the skin ID, fallback graphics and Qt widget graphics.
     static const partMapEntry m_partMap[];
+    static const fallbackMapEntry m_fallbackMap[];
+};
+
+//FallbackMap has fallback graphics from various mbm-files in case that the requested icon is not in
+//active or root skin.
+// No fallback graphics for screen elements (it is guaranteed that the root skin contains these).
+const fallbackMapEntry QS60StyleModeSpecifics::m_fallbackMap[] = {
+    {QS60StyleEnums::SP_QgnGrafBarWait,         EAvkonMbm,    EMbmAvkonQgn_graf_bar_wait_1},
+    {QS60StyleEnums::SP_QgnGrafBarFrameCenter,  EAvkonMbm,    EMbmAvkonQgn_graf_bar_frame_center},
+    {QS60StyleEnums::SP_QgnGrafBarFrameSideL,   EAvkonMbm,    EMbmAvkonQgn_graf_bar_frame_side_l},
+    {QS60StyleEnums::SP_QgnGrafBarFrameSideR,   EAvkonMbm,    EMbmAvkonQgn_graf_bar_frame_side_r},
+    {QS60StyleEnums::SP_QgnGrafBarProgress,     EAvkonMbm,    EMbmAvkonQgn_graf_bar_progress},
+    {QS60StyleEnums::SP_QgnGrafTabActiveL,      EAvkonMbm,    EMbmAvkonQgn_graf_tab_active_l},
+    {QS60StyleEnums::SP_QgnGrafTabActiveM,      EAvkonMbm,    EMbmAvkonQgn_graf_tab_active_m},
+    {QS60StyleEnums::SP_QgnGrafTabActiveR,      EAvkonMbm,    EMbmAvkonQgn_graf_tab_active_r},
+    {QS60StyleEnums::SP_QgnGrafTabPassiveL,     EAvkonMbm,    EMbmAvkonQgn_graf_tab_passive_l},
+    {QS60StyleEnums::SP_QgnGrafTabPassiveM,     EAvkonMbm,    EMbmAvkonQgn_graf_tab_passive_m},
+    {QS60StyleEnums::SP_QgnGrafTabPassiveR,     EAvkonMbm,    EMbmAvkonQgn_graf_tab_passive_r},
+    {QS60StyleEnums::SP_QgnIndiCheckboxOff,     EAvkonMbm,    EMbmAvkonQgn_indi_checkbox_off},
+    {QS60StyleEnums::SP_QgnIndiCheckboxOn,      EAvkonMbm,    EMbmAvkonQgn_indi_checkbox_on},
+    {QS60StyleEnums::SP_QgnIndiHlColSuper,      EAvkonMbm,    0x4456 }, /* EMbmAvkonQgn_indi_hl_col_super */
+    {QS60StyleEnums::SP_QgnIndiHlExpSuper,      EAvkonMbm,    0x4458 }, /* EMbmAvkonQgn_indi_hl_exp_super */
+    {QS60StyleEnums::SP_QgnIndiHlLineBranch,    EAvkonMbm,    0x445A }, /* EMbmAvkonQgn_indi_hl_line_branch */
+    {QS60StyleEnums::SP_QgnIndiHlLineEnd,       EAvkonMbm,    0x445C }, /* EMbmAvkonQgn_indi_hl_line_end */
+    {QS60StyleEnums::SP_QgnIndiHlLineStraight,  EAvkonMbm,    0x445E }, /* EMbmAvkonQgn_indi_hl_line_straight */
+    {QS60StyleEnums::SP_QgnIndiMarkedAdd,       EAvkonMbm,    EMbmAvkonQgn_indi_marked_add      },
+    {QS60StyleEnums::SP_QgnIndiNaviArrowLeft,   EAvkonMbm,    EMbmAvkonQgn_indi_navi_arrow_left },
+    {QS60StyleEnums::SP_QgnIndiNaviArrowRight,  EAvkonMbm,    EMbmAvkonQgn_indi_navi_arrow_right},
+    {QS60StyleEnums::SP_QgnIndiRadiobuttOff,    EAvkonMbm,    EMbmAvkonQgn_indi_radiobutt_off   },
+    {QS60StyleEnums::SP_QgnIndiRadiobuttOn,     EAvkonMbm,    EMbmAvkonQgn_indi_radiobutt_on    },
+    {QS60StyleEnums::SP_QgnIndiSliderEdit,      EAvkonMbm,    EMbmAvkonQgn_indi_slider_edit     },
+    {QS60StyleEnums::SP_QgnIndiSubMenu,         EAvkonMbm,    EMbmAvkonQgn_indi_submenu         },
+    {QS60StyleEnums::SP_QgnNoteErased,          EAvkonMbm,    EMbmAvkonQgn_note_erased          },
+    {QS60StyleEnums::SP_QgnNoteError,           EAvkonMbm,    EMbmAvkonQgn_note_error           },
+    {QS60StyleEnums::SP_QgnNoteInfo,            EAvkonMbm,    EMbmAvkonQgn_note_info            },
+    {QS60StyleEnums::SP_QgnNoteOk,              EAvkonMbm,    EMbmAvkonQgn_note_ok              },
+    {QS60StyleEnums::SP_QgnNoteQuery,           EAvkonMbm,    EMbmAvkonQgn_note_query           },
+    {QS60StyleEnums::SP_QgnNoteWarning,         EAvkonMbm,    EMbmAvkonQgn_note_warning         },
+    {QS60StyleEnums::SP_QgnPropFileSmall,       EAvkonMbm,    EMbmAvkonQgn_prop_file_small      },
+    {QS60StyleEnums::SP_QgnPropFolderCurrent,   EAvkonMbm,    EMbmAvkonQgn_prop_folder_current  },
+    {QS60StyleEnums::SP_QgnPropFolderSmall,     EAvkonMbm,    EMbmAvkonQgn_prop_folder_small    },
+    {QS60StyleEnums::SP_QgnPropFolderSmallNew,  EAvkonMbm,    EMbmAvkonQgn_prop_folder_small_new},
+    {QS60StyleEnums::SP_QgnPropPhoneMemcLarge,  EAvkonMbm,    EMbmAvkonQgn_prop_phone_memc_large}
 };
 
 const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
-    /* SP_QgnGrafBarWait */             {KAknsIIDQgnGrafBarWaitAnim,            EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_graf_bar_wait_1        ,-1,-1},
-    /* SP_QgnGrafBarFrameCenter */      {KAknsIIDQgnGrafBarFrameCenter,         EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_graf_bar_frame_center  ,-1,-1},
-    /* SP_QgnGrafBarFrameSideL */       {KAknsIIDQgnGrafBarFrameSideL,          EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_graf_bar_frame_side_l  ,-1,-1},
-    /* SP_QgnGrafBarFrameSideR */       {KAknsIIDQgnGrafBarFrameSideR,          EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_graf_bar_frame_side_r  ,-1,-1},
-    /* SP_QgnGrafBarProgress */         {KAknsIIDQgnGrafBarProgress,            EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_graf_bar_progress      ,-1,-1},
-    /* SP_QgnGrafTabActiveL */          {KAknsIIDQgnGrafTabActiveL,             EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_graf_tab_active_l      ,-1,-1},
-    /* SP_QgnGrafTabActiveM */          {KAknsIIDQgnGrafTabActiveM,             EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_graf_tab_active_m      ,-1,-1},
-    /* SP_QgnGrafTabActiveR */          {KAknsIIDQgnGrafTabActiveR,             EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_graf_tab_active_r      ,-1,-1},
-    /* SP_QgnGrafTabPassiveL */         {KAknsIIDQgnGrafTabPassiveL,            EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_graf_tab_passive_l     ,-1,-1},
-    /* SP_QgnGrafTabPassiveM */         {KAknsIIDQgnGrafTabPassiveM,            EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_graf_tab_passive_m     ,-1,-1},
-    /* SP_QgnGrafTabPassiveR */         {KAknsIIDQgnGrafTabPassiveR,            EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_graf_tab_passive_r     ,-1,-1},
-    /* SP_QgnIndiCheckboxOff */         {KAknsIIDQgnIndiCheckboxOff,            EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_indi_checkbox_off      ,-1,-1},
-    /* SP_QgnIndiCheckboxOn */          {KAknsIIDQgnIndiCheckboxOn,             EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_indi_checkbox_on       ,-1,-1},
+    /* SP_QgnGrafBarWait */             {KAknsIIDQgnGrafBarWaitAnim,          EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafBarFrameCenter */      {KAknsIIDQgnGrafBarFrameCenter,       EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafBarFrameSideL */       {KAknsIIDQgnGrafBarFrameSideL,        EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafBarFrameSideR */       {KAknsIIDQgnGrafBarFrameSideR,        EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafBarProgress */         {KAknsIIDQgnGrafBarProgress,          EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafTabActiveL */          {KAknsIIDQgnGrafTabActiveL,           EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafTabActiveM */          {KAknsIIDQgnGrafTabActiveM,           EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafTabActiveR */          {KAknsIIDQgnGrafTabActiveR,           EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafTabPassiveL */         {KAknsIIDQgnGrafTabPassiveL,          EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafTabPassiveM */         {KAknsIIDQgnGrafTabPassiveM,          EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafTabPassiveR */         {KAknsIIDQgnGrafTabPassiveR,          EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnIndiCheckboxOff */         {KAknsIIDQgnIndiCheckboxOff,          EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnIndiCheckboxOn */          {KAknsIIDQgnIndiCheckboxOn,           EDrawIcon,   ES60_AllReleases,  -1,-1},
     // Following 5 items (SP_QgnIndiHlColSuper - SP_QgnIndiHlLineStraight) are available starting from S60 release 3.2.
     // In 3.1 CommonStyle drawing is used for these QTreeView elements, since no similar icons in AVKON UI.
-    /* SP_QgnIndiHlColSuper */          {KAknsIIDNone,                          EDrawIcon,   0,                 0x4456 /* EMbmAvkonQgn_indi_hl_col_super */     , EAknsMajorGeneric, 0x17d5 /* KAknsIIDQgnIndiHlColSuper */},
-    /* SP_QgnIndiHlExpSuper */          {KAknsIIDNone,                          EDrawIcon,   0,                 0x4458 /* EMbmAvkonQgn_indi_hl_exp_super */     , EAknsMajorGeneric, 0x17d6 /* KAknsIIDQgnIndiHlExpSuper */},
-    /* SP_QgnIndiHlLineBranch */        {KAknsIIDNone,                          EDrawIcon,   0,                 0x445A /* EMbmAvkonQgn_indi_hl_line_branch */   , EAknsMajorGeneric, 0x17d7 /* KAknsIIDQgnIndiHlLineBranch */},
-    /* SP_QgnIndiHlLineEnd */           {KAknsIIDNone,                          EDrawIcon,   0,                 0x445C /* EMbmAvkonQgn_indi_hl_line_end */      , EAknsMajorGeneric, 0x17d8 /* KAknsIIDQgnIndiHlLineEnd */},
-    /* SP_QgnIndiHlLineStraight */      {KAknsIIDNone,                          EDrawIcon,   0,                 0x445E /* EMbmAvkonQgn_indi_hl_line_straight */ , EAknsMajorGeneric, 0x17d9 /* KAknsIIDQgnIndiHlLineStraight */},
-    /* SP_QgnIndiMarkedAdd */           {KAknsIIDQgnIndiMarkedAdd,              EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_indi_marked_add        ,-1,-1},
-    /* SP_QgnIndiNaviArrowLeft */       {KAknsIIDQgnGrafScrollArrowLeft,        EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_indi_navi_arrow_left   ,-1,-1},
-    /* SP_QgnIndiNaviArrowRight */      {KAknsIIDQgnGrafScrollArrowRight,       EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_indi_navi_arrow_right  ,-1,-1},
-    /* SP_QgnIndiRadiobuttOff */        {KAknsIIDQgnIndiRadiobuttOff,           EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_indi_radiobutt_off     ,-1,-1},
-    /* SP_QgnIndiRadiobuttOn */         {KAknsIIDQgnIndiRadiobuttOn,            EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_indi_radiobutt_on      ,-1,-1},
-    /* SP_QgnIndiSliderEdit */          {KAknsIIDQgnIndiSliderEdit,             EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_indi_slider_edit       ,-1,-1},
-    /* SP_QgnIndiSubMenu */             {KAknsIIDQgnIndiSubmenu,                EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_indi_submenu           ,-1,-1},
-    /* SP_QgnNoteErased */              {KAknsIIDQgnNoteErased,                 EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_note_erased            ,-1,-1},
-    /* SP_QgnNoteError */               {KAknsIIDQgnNoteError,                  EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_note_error             ,-1,-1},
-    /* SP_QgnNoteInfo */                {KAknsIIDQgnNoteInfo,                   EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_note_info              ,-1,-1},
-    /* SP_QgnNoteOk */                  {KAknsIIDQgnNoteOk,                     EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_note_ok                ,-1,-1},
-    /* SP_QgnNoteQuery */               {KAknsIIDQgnNoteQuery,                  EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_note_query             ,-1,-1},
-    /* SP_QgnNoteWarning */             {KAknsIIDQgnNoteWarning,                EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_note_warning           ,-1,-1},
-    /* SP_QgnPropFileSmall */           {KAknsIIDQgnPropFileSmall,              EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_prop_file_small        ,-1,-1},
-    /* SP_QgnPropFolderCurrent */       {KAknsIIDQgnPropFolderCurrent,          EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_prop_folder_current    ,-1,-1},
-    /* SP_QgnPropFolderSmall */         {KAknsIIDQgnPropFolderSmall,            EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_prop_folder_small      ,-1,-1},
-    /* SP_QgnPropFolderSmallNew */      {KAknsIIDQgnPropFolderSmallNew,         EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_prop_folder_small_new  ,-1,-1},
-    /* SP_QgnPropPhoneMemcLarge */      {KAknsIIDQgnPropPhoneMemcLarge,         EDrawIcon,   ES60_AllReleases,  EMbmAvkonQgn_prop_phone_memc_large  ,-1,-1},
+    /* SP_QgnIndiHlColSuper */          {KAknsIIDNone,                        EDrawIcon,   ES60_None,         EAknsMajorGeneric, 0x17d5 /* KAknsIIDQgnIndiHlColSuper */},
+    /* SP_QgnIndiHlExpSuper */          {KAknsIIDNone,                        EDrawIcon,   ES60_None,         EAknsMajorGeneric, 0x17d6 /* KAknsIIDQgnIndiHlExpSuper */},
+    /* SP_QgnIndiHlLineBranch */        {KAknsIIDNone,                        EDrawIcon,   ES60_None,         EAknsMajorGeneric, 0x17d7 /* KAknsIIDQgnIndiHlLineBranch */},
+    /* SP_QgnIndiHlLineEnd */           {KAknsIIDNone,                        EDrawIcon,   ES60_None,         EAknsMajorGeneric, 0x17d8 /* KAknsIIDQgnIndiHlLineEnd */},
+    /* SP_QgnIndiHlLineStraight */      {KAknsIIDNone,                        EDrawIcon,   ES60_None,         EAknsMajorGeneric, 0x17d9 /* KAknsIIDQgnIndiHlLineStraight */},
+    /* SP_QgnIndiMarkedAdd */           {KAknsIIDQgnIndiMarkedAdd,            EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnIndiNaviArrowLeft */       {KAknsIIDQgnGrafScrollArrowLeft,      EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnIndiNaviArrowRight */      {KAknsIIDQgnGrafScrollArrowRight,     EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnIndiRadiobuttOff */        {KAknsIIDQgnIndiRadiobuttOff,         EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnIndiRadiobuttOn */         {KAknsIIDQgnIndiRadiobuttOn,          EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnIndiSliderEdit */          {KAknsIIDQgnIndiSliderEdit,           EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnIndiSubMenu */             {KAknsIIDQgnIndiSubmenu,              EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnNoteErased */              {KAknsIIDQgnNoteErased,               EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnNoteError */               {KAknsIIDQgnNoteError,                EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnNoteInfo */                {KAknsIIDQgnNoteInfo,                 EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnNoteOk */                  {KAknsIIDQgnNoteOk,                   EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnNoteQuery */               {KAknsIIDQgnNoteQuery,                EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnNoteWarning */             {KAknsIIDQgnNoteWarning,              EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnPropFileSmall */           {KAknsIIDQgnPropFileSmall,            EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnPropFolderCurrent */       {KAknsIIDQgnPropFolderCurrent,        EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnPropFolderSmall */         {KAknsIIDQgnPropFolderSmall,          EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnPropFolderSmallNew */      {KAknsIIDQgnPropFolderSmallNew,       EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnPropPhoneMemcLarge */      {KAknsIIDQgnPropPhoneMemcLarge,       EDrawIcon,   ES60_AllReleases,  -1,-1},
 
-// No fallback graphics for screen elements (it is guaranteed that the root skin contains these).
-    /* SP_QsnBgScreen */                {KAknsIIDQsnBgScreen,                   EDrawBackground,   ES60_AllReleases, -1,-1,-1},
+    /* SP_QsnBgScreen */                {KAknsIIDQsnBgScreen,                 EDrawBackground,   ES60_AllReleases, -1,-1},
 
-    /* SP_QsnCpScrollBgBottom */        {KAknsIIDQsnCpScrollBgBottom,           EDrawIcon,  ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnCpScrollBgMiddle */        {KAknsIIDQsnCpScrollBgMiddle,           EDrawIcon,  ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnCpScrollBgTop */           {KAknsIIDQsnCpScrollBgTop,              EDrawIcon,  ES60_AllReleases,    -1,-1,-1},
+    /* SP_QsnCpScrollBgBottom */        {KAknsIIDQsnCpScrollBgBottom,         EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QsnCpScrollBgMiddle */        {KAknsIIDQsnCpScrollBgMiddle,         EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QsnCpScrollBgTop */           {KAknsIIDQsnCpScrollBgTop,            EDrawIcon,   ES60_AllReleases,  -1,-1},
 
-    /* SP_QsnCpScrollHandleBottom */    {KAknsIIDQsnCpScrollHandleBottom,       EDrawIcon,  ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnCpScrollHandleMiddle */    {KAknsIIDQsnCpScrollHandleMiddle,       EDrawIcon,  ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnCpScrollHandleTop */       {KAknsIIDQsnCpScrollHandleTop,          EDrawIcon,  ES60_AllReleases,    -1,-1,-1},
+    /* SP_QsnCpScrollHandleBottom */    {KAknsIIDQsnCpScrollHandleBottom,     EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QsnCpScrollHandleMiddle */    {KAknsIIDQsnCpScrollHandleMiddle,     EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QsnCpScrollHandleTop */       {KAknsIIDQsnCpScrollHandleTop,        EDrawIcon,   ES60_AllReleases,  -1,-1},
 
-    /* SP_QsnFrButtonTbCornerTl */      {KAknsIIDQsnFrButtonTbCornerTl,         ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbCornerTr */      {KAknsIIDQsnFrButtonTbCornerTr,         ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbCornerBl */      {KAknsIIDQsnFrButtonTbCornerBl,         ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbCornerBr */      {KAknsIIDQsnFrButtonTbCornerBr,         ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbSideT */         {KAknsIIDQsnFrButtonTbSideT,            ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbSideB */         {KAknsIIDQsnFrButtonTbSideB,            ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbSideL */         {KAknsIIDQsnFrButtonTbSideL,            ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbSideR */         {KAknsIIDQsnFrButtonTbSideR,            ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbCenter */        {KAknsIIDQsnFrButtonTbCenter,           EDrawIcon,  ES60_AllReleases,    -1,-1,-1},
+    /* SP_QsnFrButtonTbCornerTl */      {KAknsIIDQsnFrButtonTbCornerTl,       ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbCornerTr */      {KAknsIIDQsnFrButtonTbCornerTr,       ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbCornerBl */      {KAknsIIDQsnFrButtonTbCornerBl,       ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbCornerBr */      {KAknsIIDQsnFrButtonTbCornerBr,       ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbSideT */         {KAknsIIDQsnFrButtonTbSideT,          ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbSideB */         {KAknsIIDQsnFrButtonTbSideB,          ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbSideL */         {KAknsIIDQsnFrButtonTbSideL,          ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbSideR */         {KAknsIIDQsnFrButtonTbSideR,          ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbCenter */        {KAknsIIDQsnFrButtonTbCenter,         EDrawIcon,   ES60_AllReleases,  -1,-1},
 
-    /* SP_QsnFrButtonTbCornerTlPressed */{KAknsIIDQsnFrButtonTbCornerTlPressed, ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbCornerTrPressed */{KAknsIIDQsnFrButtonTbCornerTrPressed, ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbCornerBlPressed */{KAknsIIDQsnFrButtonTbCornerBlPressed, ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbCornerBrPressed */{KAknsIIDQsnFrButtonTbCornerBrPressed, ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbSideTPressed */  {KAknsIIDQsnFrButtonTbSideTPressed,     ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbSideBPressed */  {KAknsIIDQsnFrButtonTbSideBPressed,     ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbSideLPressed */  {KAknsIIDQsnFrButtonTbSideLPressed,     ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbSideRPressed */  {KAknsIIDQsnFrButtonTbSideRPressed,     ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbCenterPressed */ {KAknsIIDQsnFrButtonTbCenterPressed,    EDrawIcon,  ES60_AllReleases,    -1,-1,-1},
+    /* SP_QsnFrButtonTbCornerTlPressed */{KAknsIIDQsnFrButtonTbCornerTlPressed, ENoDraw,   ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbCornerTrPressed */{KAknsIIDQsnFrButtonTbCornerTrPressed, ENoDraw,   ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbCornerBlPressed */{KAknsIIDQsnFrButtonTbCornerBlPressed, ENoDraw,   ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbCornerBrPressed */{KAknsIIDQsnFrButtonTbCornerBrPressed, ENoDraw,   ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbSideTPressed */   {KAknsIIDQsnFrButtonTbSideTPressed,    ENoDraw,   ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbSideBPressed */   {KAknsIIDQsnFrButtonTbSideBPressed,    ENoDraw,   ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbSideLPressed */   {KAknsIIDQsnFrButtonTbSideLPressed,    ENoDraw,   ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbSideRPressed */   {KAknsIIDQsnFrButtonTbSideRPressed,    ENoDraw,   ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbCenterPressed */  {KAknsIIDQsnFrButtonTbCenterPressed,   EDrawIcon, ES60_AllReleases,  -1,-1},
 
-    /* SP_QsnFrCaleCornerTl */          {KAknsIIDQsnFrCaleCornerTl,             ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrCaleCornerTr */          {KAknsIIDQsnFrCaleCornerTr,             ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrCaleCornerBl */          {KAknsIIDQsnFrCaleCornerBl,             ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrCaleCornerBr */          {KAknsIIDQsnFrCaleCornerBr,             ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrCaleGSideT */            {KAknsIIDQsnFrCaleSideT,                ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrCaleGSideB */            {KAknsIIDQsnFrCaleSideB,                ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrCaleGSideL */            {KAknsIIDQsnFrCaleSideL,                ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrCaleGSideR */            {KAknsIIDQsnFrCaleSideR,                ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrCaleCenter */            {KAknsIIDQsnFrCaleCenter,               ENoDraw,    ES60_AllReleases,    -1,-1,-1},
+    /* SP_QsnFrCaleCornerTl */          {KAknsIIDQsnFrCaleCornerTl,           ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrCaleCornerTr */          {KAknsIIDQsnFrCaleCornerTr,           ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrCaleCornerBl */          {KAknsIIDQsnFrCaleCornerBl,           ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrCaleCornerBr */          {KAknsIIDQsnFrCaleCornerBr,           ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrCaleGSideT */            {KAknsIIDQsnFrCaleSideT,              ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrCaleGSideB */            {KAknsIIDQsnFrCaleSideB,              ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrCaleGSideL */            {KAknsIIDQsnFrCaleSideL,              ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrCaleGSideR */            {KAknsIIDQsnFrCaleSideR,              ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrCaleCenter */            {KAknsIIDQsnFrCaleCenter,             ENoDraw,     ES60_AllReleases,  -1,-1},
 
-    /* SP_QsnFrCaleHeadingCornerTl */   {KAknsIIDQsnFrCaleHeadingCornerTl,      ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrCaleHeadingCornerTr */   {KAknsIIDQsnFrCaleHeadingCornerTr,      ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrCaleHeadingCornerBl */   {KAknsIIDQsnFrCaleHeadingCornerBl,      ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrCaleHeadingCornerBr */   {KAknsIIDQsnFrCaleHeadingCornerBr,      ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrCaleHeadingSideT */      {KAknsIIDQsnFrCaleHeadingSideT,         ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrCaleHeadingSideB */      {KAknsIIDQsnFrCaleHeadingSideB,         ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrCaleHeadingSideL */      {KAknsIIDQsnFrCaleHeadingSideL,         ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrCaleHeadingSideR */      {KAknsIIDQsnFrCaleHeadingSideR,         ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrCaleHeadingCenter */     {KAknsIIDQsnFrCaleHeadingCenter,        ENoDraw,    ES60_AllReleases,    -1,-1,-1},
+    /* SP_QsnFrCaleHeadingCornerTl */   {KAknsIIDQsnFrCaleHeadingCornerTl,    ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrCaleHeadingCornerTr */   {KAknsIIDQsnFrCaleHeadingCornerTr,    ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrCaleHeadingCornerBl */   {KAknsIIDQsnFrCaleHeadingCornerBl,    ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrCaleHeadingCornerBr */   {KAknsIIDQsnFrCaleHeadingCornerBr,    ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrCaleHeadingSideT */      {KAknsIIDQsnFrCaleHeadingSideT,       ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrCaleHeadingSideB */      {KAknsIIDQsnFrCaleHeadingSideB,       ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrCaleHeadingSideL */      {KAknsIIDQsnFrCaleHeadingSideL,       ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrCaleHeadingSideR */      {KAknsIIDQsnFrCaleHeadingSideR,       ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrCaleHeadingCenter */     {KAknsIIDQsnFrCaleHeadingCenter,      ENoDraw,     ES60_AllReleases,  -1,-1},
 
-    /* SP_QsnFrInputCornerTl */         {KAknsIIDQsnFrInputCornerTl,            ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrInputCornerTr */         {KAknsIIDQsnFrInputCornerTr,            ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrInputCornerBl */         {KAknsIIDQsnFrInputCornerBl,            ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrInputCornerBr */         {KAknsIIDQsnFrInputCornerBr,            ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrInputSideT */            {KAknsIIDQsnFrInputSideT,               ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrInputSideB */            {KAknsIIDQsnFrInputSideB,               ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrInputSideL */            {KAknsIIDQsnFrInputSideL,               ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrInputSideR */            {KAknsIIDQsnFrInputSideR,               ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrInputCenter */           {KAknsIIDQsnFrInputCenter,              ENoDraw,    ES60_AllReleases,    -1,-1,-1},
+    /* SP_QsnFrInputCornerTl */         {KAknsIIDQsnFrInputCornerTl,          ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrInputCornerTr */         {KAknsIIDQsnFrInputCornerTr,          ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrInputCornerBl */         {KAknsIIDQsnFrInputCornerBl,          ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrInputCornerBr */         {KAknsIIDQsnFrInputCornerBr,          ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrInputSideT */            {KAknsIIDQsnFrInputSideT,             ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrInputSideB */            {KAknsIIDQsnFrInputSideB,             ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrInputSideL */            {KAknsIIDQsnFrInputSideL,             ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrInputSideR */            {KAknsIIDQsnFrInputSideR,             ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrInputCenter */           {KAknsIIDQsnFrInputCenter,            ENoDraw,     ES60_AllReleases,  -1,-1},
 
-    /* SP_QsnFrListCornerTl */          {KAknsIIDQsnFrListCornerTl,             ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrListCornerTr */          {KAknsIIDQsnFrListCornerTr,             ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrListCornerBl */          {KAknsIIDQsnFrListCornerBl,             ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrListCornerBr */          {KAknsIIDQsnFrListCornerBr,             ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrListSideT */             {KAknsIIDQsnFrListSideT,                ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrListSideB */             {KAknsIIDQsnFrListSideB,                ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrListSideL */             {KAknsIIDQsnFrListSideL,                ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrListSideR */             {KAknsIIDQsnFrListSideR,                ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrListCenter */            {KAknsIIDQsnFrListCenter,               ENoDraw,    ES60_AllReleases,    -1,-1,-1},
+    /* SP_QsnFrListCornerTl */          {KAknsIIDQsnFrListCornerTl,           ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrListCornerTr */          {KAknsIIDQsnFrListCornerTr,           ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrListCornerBl */          {KAknsIIDQsnFrListCornerBl,           ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrListCornerBr */          {KAknsIIDQsnFrListCornerBr,           ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrListSideT */             {KAknsIIDQsnFrListSideT,              ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrListSideB */             {KAknsIIDQsnFrListSideB,              ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrListSideL */             {KAknsIIDQsnFrListSideL,              ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrListSideR */             {KAknsIIDQsnFrListSideR,              ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrListCenter */            {KAknsIIDQsnFrListCenter,             ENoDraw,     ES60_AllReleases,  -1,-1},
 
-    /* SP_QsnFrPopupCornerTl */         {KAknsIIDQsnFrPopupCornerTl,            ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrPopupCornerTr */         {KAknsIIDQsnFrPopupCornerTr,            ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrPopupCornerBl */         {KAknsIIDQsnFrPopupCornerBl,            ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrPopupCornerBr */         {KAknsIIDQsnFrPopupCornerBr,            ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrPopupSideT */            {KAknsIIDQsnFrPopupSideT,               ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrPopupSideB */            {KAknsIIDQsnFrPopupSideB,               ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrPopupSideL */            {KAknsIIDQsnFrPopupSideL,               ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrPopupSideR */            {KAknsIIDQsnFrPopupSideR,               ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrPopupCenter */           {KAknsIIDQsnFrPopupCenter,              ENoDraw,    ES60_AllReleases,    -1,-1,-1},
+    /* SP_QsnFrPopupCornerTl */         {KAknsIIDQsnFrPopupCornerTl,          ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrPopupCornerTr */         {KAknsIIDQsnFrPopupCornerTr,          ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrPopupCornerBl */         {KAknsIIDQsnFrPopupCornerBl,          ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrPopupCornerBr */         {KAknsIIDQsnFrPopupCornerBr,          ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrPopupSideT */            {KAknsIIDQsnFrPopupSideT,             ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrPopupSideB */            {KAknsIIDQsnFrPopupSideB,             ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrPopupSideL */            {KAknsIIDQsnFrPopupSideL,             ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrPopupSideR */            {KAknsIIDQsnFrPopupSideR,             ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrPopupCenter */           {KAknsIIDQsnFrPopupCenter,            ENoDraw,     ES60_AllReleases,  -1,-1},
 
     // ToolTip graphics different in 3.1 vs. 3.2+.
-    /* SP_QsnFrPopupPreviewCornerTl */  {KAknsIIDQsnFrPopupCornerTl,            ENoDraw,    ES60_3_1,   -1, EAknsMajorSkin, 0x19c5}, /* KAknsIIDQsnFrPopupPreviewCornerTl */
-    /* SP_QsnFrPopupPreviewCornerTr */  {KAknsIIDQsnFrPopupCornerTr,            ENoDraw,    ES60_3_1,   -1, EAknsMajorSkin, 0x19c6},
-    /* SP_QsnFrPopupPreviewCornerBl */  {KAknsIIDQsnFrPopupCornerBl,            ENoDraw,    ES60_3_1,   -1, EAknsMajorSkin, 0x19c3},
-    /* SP_QsnFrPopupPreviewCornerBr */  {KAknsIIDQsnFrPopupCornerBr,            ENoDraw,    ES60_3_1,   -1, EAknsMajorSkin, 0x19c4},
-    /* SP_QsnFrPopupPreviewSideT */     {KAknsIIDQsnFrPopupSideT,               ENoDraw,    ES60_3_1,   -1, EAknsMajorSkin, 0x19ca},
-    /* SP_QsnFrPopupPreviewSideB */     {KAknsIIDQsnFrPopupSideB,               ENoDraw,    ES60_3_1,   -1, EAknsMajorSkin, 0x19c7},
-    /* SP_QsnFrPopupPreviewSideL */     {KAknsIIDQsnFrPopupSideL,               ENoDraw,    ES60_3_1,   -1, EAknsMajorSkin, 0x19c8},
-    /* SP_QsnFrPopupPreviewSideR */     {KAknsIIDQsnFrPopupSideR,               ENoDraw,    ES60_3_1,   -1, EAknsMajorSkin, 0x19c9},
-    /* SP_QsnFrPopupPreviewCenter */    {KAknsIIDQsnFrPopupCenter,              ENoDraw,    ES60_3_1,   -1, EAknsMajorSkin, 0x19c2},
+    /* SP_QsnFrPopupPreviewCornerTl */  {KAknsIIDQsnFrPopupCornerTl,          ENoDraw,     ES60_3_1,  EAknsMajorSkin, 0x19c5}, /* KAknsIIDQsnFrPopupPreviewCornerTl */
+    /* SP_QsnFrPopupPreviewCornerTr */  {KAknsIIDQsnFrPopupCornerTr,          ENoDraw,     ES60_3_1,  EAknsMajorSkin, 0x19c6},
+    /* SP_QsnFrPopupPreviewCornerBl */  {KAknsIIDQsnFrPopupCornerBl,          ENoDraw,     ES60_3_1,  EAknsMajorSkin, 0x19c3},
+    /* SP_QsnFrPopupPreviewCornerBr */  {KAknsIIDQsnFrPopupCornerBr,          ENoDraw,     ES60_3_1,  EAknsMajorSkin, 0x19c4},
+    /* SP_QsnFrPopupPreviewSideT */     {KAknsIIDQsnFrPopupSideT,             ENoDraw,     ES60_3_1,  EAknsMajorSkin, 0x19ca},
+    /* SP_QsnFrPopupPreviewSideB */     {KAknsIIDQsnFrPopupSideB,             ENoDraw,     ES60_3_1,  EAknsMajorSkin, 0x19c7},
+    /* SP_QsnFrPopupPreviewSideL */     {KAknsIIDQsnFrPopupSideL,             ENoDraw,     ES60_3_1,  EAknsMajorSkin, 0x19c8},
+    /* SP_QsnFrPopupPreviewSideR */     {KAknsIIDQsnFrPopupSideR,             ENoDraw,     ES60_3_1,  EAknsMajorSkin, 0x19c9},
+    /* SP_QsnFrPopupPreviewCenter */    {KAknsIIDQsnFrPopupCenter,            ENoDraw,     ES60_3_1,  EAknsMajorSkin, 0x19c2},
 
-    /* SP_QsnFrSetOptCornerTl */        {KAknsIIDQsnFrSetOptCornerTl,           ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrSetOptCornerTr */        {KAknsIIDQsnFrSetOptCornerTr,           ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrSetOptCornerBl */        {KAknsIIDQsnFrSetOptCornerBl,           ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrSetOptCornerBr */        {KAknsIIDQsnFrSetOptCornerBr,           ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrSetOptSideT */           {KAknsIIDQsnFrSetOptSideT,              ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrSetOptSideB */           {KAknsIIDQsnFrSetOptSideB,              ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrSetOptSideL */           {KAknsIIDQsnFrSetOptSideL,              ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrSetOptSideR */           {KAknsIIDQsnFrSetOptSideR,              ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrSetOptCenter */          {KAknsIIDQsnFrSetOptCenter,             ENoDraw,    ES60_AllReleases,    -1,-1,-1},
+    /* SP_QsnFrSetOptCornerTl */        {KAknsIIDQsnFrSetOptCornerTl,         ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrSetOptCornerTr */        {KAknsIIDQsnFrSetOptCornerTr,         ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrSetOptCornerBl */        {KAknsIIDQsnFrSetOptCornerBl,         ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrSetOptCornerBr */        {KAknsIIDQsnFrSetOptCornerBr,         ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrSetOptSideT */           {KAknsIIDQsnFrSetOptSideT,            ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrSetOptSideB */           {KAknsIIDQsnFrSetOptSideB,            ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrSetOptSideL */           {KAknsIIDQsnFrSetOptSideL,            ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrSetOptSideR */           {KAknsIIDQsnFrSetOptSideR,            ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrSetOptCenter */          {KAknsIIDQsnFrSetOptCenter,           ENoDraw,     ES60_AllReleases,  -1,-1},
 
     // No toolbar frame for 5.0+ releases.
-    /* SP_QsnFrPopupSubCornerTl */      {KAknsIIDQsnFrPopupSubCornerTl,         ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
-    /* SP_QsnFrPopupSubCornerTr */      {KAknsIIDQsnFrPopupSubCornerTr,         ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
-    /* SP_QsnFrPopupSubCornerBl */      {KAknsIIDQsnFrPopupSubCornerBl,         ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
-    /* SP_QsnFrPopupSubCornerBr */      {KAknsIIDQsnFrPopupSubCornerBr,         ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
-    /* SP_QsnFrPopupSubSideT */         {KAknsIIDQsnFrPopupSubSideT,            ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
-    /* SP_QsnFrPopupSubSideB */         {KAknsIIDQsnFrPopupSubSideB,            ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
-    /* SP_QsnFrPopupSubSideL */         {KAknsIIDQsnFrPopupSubSideL,            ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
-    /* SP_QsnFrPopupSubSideR */         {KAknsIIDQsnFrPopupSubSideR,            ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
-    /* SP_QsnFrPopupSubCenter */        {KAknsIIDQsnFrPopupCenterSubmenu,       ENoDraw,    ES60_3_1 | ES60_3_2,    -1,-1,-1},
+    /* SP_QsnFrPopupSubCornerTl */      {KAknsIIDQsnFrPopupSubCornerTl,       ENoDraw,   ES60_3_1 | ES60_3_2,  -1,-1},
+    /* SP_QsnFrPopupSubCornerTr */      {KAknsIIDQsnFrPopupSubCornerTr,       ENoDraw,   ES60_3_1 | ES60_3_2,  -1,-1},
+    /* SP_QsnFrPopupSubCornerBl */      {KAknsIIDQsnFrPopupSubCornerBl,       ENoDraw,   ES60_3_1 | ES60_3_2,  -1,-1},
+    /* SP_QsnFrPopupSubCornerBr */      {KAknsIIDQsnFrPopupSubCornerBr,       ENoDraw,   ES60_3_1 | ES60_3_2,  -1,-1},
+    /* SP_QsnFrPopupSubSideT */         {KAknsIIDQsnFrPopupSubSideT,          ENoDraw,   ES60_3_1 | ES60_3_2,  -1,-1},
+    /* SP_QsnFrPopupSubSideB */         {KAknsIIDQsnFrPopupSubSideB,          ENoDraw,   ES60_3_1 | ES60_3_2,  -1,-1},
+    /* SP_QsnFrPopupSubSideL */         {KAknsIIDQsnFrPopupSubSideL,          ENoDraw,   ES60_3_1 | ES60_3_2,  -1,-1},
+    /* SP_QsnFrPopupSubSideR */         {KAknsIIDQsnFrPopupSubSideR,          ENoDraw,   ES60_3_1 | ES60_3_2,  -1,-1},
+    /* SP_QsnFrPopupSubCenter */        {KAknsIIDQsnFrPopupCenterSubmenu,     ENoDraw,   ES60_3_1 | ES60_3_2,  -1,-1},
 
     // Toolbar graphics is different in 3.1/3.2 vs. 5.0
-    /* SP_QsnFrSctrlButtonCornerTl */   {KAknsIIDQsnFrButtonTbCornerTl,         ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2301}, /* KAknsIIDQgnFrSctrlButtonCornerTl*/
-    /* SP_QsnFrSctrlButtonCornerTr */   {KAknsIIDQsnFrButtonTbCornerTr,         ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2302},
-    /* SP_QsnFrSctrlButtonCornerBl */   {KAknsIIDQsnFrButtonTbCornerBl,         ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2303},
-    /* SP_QsnFrSctrlButtonCornerBr */   {KAknsIIDQsnFrButtonTbCornerBr,         ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2304},
-    /* SP_QsnFrSctrlButtonSideT */      {KAknsIIDQsnFrButtonTbSideT,            ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2305},
-    /* SP_QsnFrSctrlButtonSideB */      {KAknsIIDQsnFrButtonTbSideB,            ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2306},
-    /* SP_QsnFrSctrlButtonSideL */      {KAknsIIDQsnFrButtonTbSideL,            ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2307},
-    /* SP_QsnFrSctrlButtonSideR */      {KAknsIIDQsnFrButtonTbSideR,            ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2308},
-    /* SP_QsnFrSctrlButtonCenter */     {KAknsIIDQsnFrButtonTbCenter,           ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2309}, /*KAknsIIDQgnFrSctrlButtonCenter*/
+    /* SP_QsnFrSctrlButtonCornerTl */   {KAknsIIDQsnFrButtonTbCornerTl,       ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2301}, /* KAknsIIDQgnFrSctrlButtonCornerTl*/
+    /* SP_QsnFrSctrlButtonCornerTr */   {KAknsIIDQsnFrButtonTbCornerTr,       ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2302},
+    /* SP_QsnFrSctrlButtonCornerBl */   {KAknsIIDQsnFrButtonTbCornerBl,       ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2303},
+    /* SP_QsnFrSctrlButtonCornerBr */   {KAknsIIDQsnFrButtonTbCornerBr,       ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2304},
+    /* SP_QsnFrSctrlButtonSideT */      {KAknsIIDQsnFrButtonTbSideT,          ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2305},
+    /* SP_QsnFrSctrlButtonSideB */      {KAknsIIDQsnFrButtonTbSideB,          ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2306},
+    /* SP_QsnFrSctrlButtonSideL */      {KAknsIIDQsnFrButtonTbSideL,          ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2307},
+    /* SP_QsnFrSctrlButtonSideR */      {KAknsIIDQsnFrButtonTbSideR,          ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2308},
+    /* SP_QsnFrSctrlButtonCenter */     {KAknsIIDQsnFrButtonTbCenter,         ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2309}, /*KAknsIIDQgnFrSctrlButtonCenter*/
 
     // No pressed state for toolbar button in 3.1/3.2.
-    /* SP_QsnFrSctrlButtonCornerTlPressed */ {KAknsIIDQsnFrButtonTbCornerTl, ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2621},  /*KAknsIIDQsnFrSctrlButtonCornerTlPressed*/
-    /* SP_QsnFrSctrlButtonCornerTrPressed */ {KAknsIIDQsnFrButtonTbCornerTr, ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2622},
-    /* SP_QsnFrSctrlButtonCornerBlPressed */ {KAknsIIDQsnFrButtonTbCornerBl, ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2623},
-    /* SP_QsnFrSctrlButtonCornerBrPressed */ {KAknsIIDQsnFrButtonTbCornerBl, ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2624},
-    /* SP_QsnFrSctrlButtonSideTPressed */    {KAknsIIDQsnFrButtonTbSideT,    ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2625},
-    /* SP_QsnFrSctrlButtonSideBPressed */    {KAknsIIDQsnFrButtonTbSideB,    ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2626},
-    /* SP_QsnFrSctrlButtonSideLPressed */    {KAknsIIDQsnFrButtonTbSideL,    ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2627},
-    /* SP_QsnFrSctrlButtonSideRPressed */    {KAknsIIDQsnFrButtonTbSideR,    ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2628},
-    /* SP_QsnFrSctrlButtonCenterPressed */   {KAknsIIDQsnFrButtonTbCenter,   ENoDraw,    ES60_3_1 | ES60_3_2,    -1,EAknsMajorSkin,0x2629}
+    /* SP_QsnFrSctrlButtonCornerTlPressed */ {KAknsIIDQsnFrButtonTbCornerTl,  ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2621},  /*KAknsIIDQsnFrSctrlButtonCornerTlPressed*/
+    /* SP_QsnFrSctrlButtonCornerTrPressed */ {KAknsIIDQsnFrButtonTbCornerTr,  ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2622},
+    /* SP_QsnFrSctrlButtonCornerBlPressed */ {KAknsIIDQsnFrButtonTbCornerBl,  ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2623},
+    /* SP_QsnFrSctrlButtonCornerBrPressed */ {KAknsIIDQsnFrButtonTbCornerBl,  ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2624},
+    /* SP_QsnFrSctrlButtonSideTPressed */    {KAknsIIDQsnFrButtonTbSideT,     ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2625},
+    /* SP_QsnFrSctrlButtonSideBPressed */    {KAknsIIDQsnFrButtonTbSideB,     ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2626},
+    /* SP_QsnFrSctrlButtonSideLPressed */    {KAknsIIDQsnFrButtonTbSideL,     ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2627},
+    /* SP_QsnFrSctrlButtonSideRPressed */    {KAknsIIDQsnFrButtonTbSideR,     ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2628},
+    /* SP_QsnFrSctrlButtonCenterPressed */   {KAknsIIDQsnFrButtonTbCenter,    ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2629}
 };
 
 QPixmap QS60StyleModeSpecifics::skinnedGraphics(
@@ -300,13 +354,27 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphics(
     return error ? QPixmap() : colorGraphics;
 }
 
+TDesC QS60StyleModeSpecifics::mapFallBackFileName(const int fileID)
+{
+    switch(fileID){
+        case ELastMbm:
+            return KNullDesC;
+        case EAvkonMbm:
+        default:
+            return KAvkonBitmapFile;
+    }
+}
+
 QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsL(
     const QS60StyleEnums::SkinParts &stylepart,
     const QSize &size, QS60StylePrivate::SkinElementFlags flags)
 {
     const int stylepartIndex = (int)stylepart;
     const TAknsItemID skinId = m_partMap[stylepartIndex].skinID;
-    const TInt fallbackGraphicID = m_partMap[stylepartIndex].fallbackGraphicID;
+    const TDesC fallbackFileName = mapFallBackFileName(m_fallbackMap[stylepartIndex].fallbackGraphicID);
+    const TInt fallbackGraphicID =
+        (fallbackFileName!=KNullDesC) ? m_fallbackMap[stylepartIndex].fallbackGraphicID : KErrNotFound;
+
     TAknsItemID colorGroup = KAknsIIDQsnIconColors;
     int colorIndex = 0;
     colorGroupAndIndex(stylepart, colorGroup, colorIndex);
@@ -321,7 +389,7 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsL(
         fallbackGraphicID == KErrNotFound?KErrNotFound:fallbackGraphicID+1; //masks are auto-generated as next in mif files
     MAknsSkinInstance* skinInstance = AknsUtils::SkinInstance();
     AknsUtils::CreateColorIconLC(
-        skinInstance, skinId, colorGroup, colorIndex, icon, iconMask, KAvkonBitmapFile, fallbackGraphicID , fallbackGraphicsMaskID, KRgbBlack);
+        skinInstance, skinId, colorGroup, colorIndex, icon, iconMask, fallbackFileName, fallbackGraphicID , fallbackGraphicsMaskID, KRgbBlack);
     User::LeaveIfError(AknIconUtils::SetSize(icon, targetSize, EAspectRatioNotPreserved));
     User::LeaveIfError(AknIconUtils::SetSize(iconMask, targetSize, EAspectRatioNotPreserved));
     QPixmap result = fromFbsBitmap(icon, iconMask, flags, qt_TDisplayMode2Format(icon->DisplayMode()));
@@ -456,7 +524,6 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsL(
     const int stylepartIndex = (int)part;
     const TDrawType drawType = m_partMap[stylepartIndex].drawType;
     Q_ASSERT(drawType != ENoDraw);
-    const TInt fallbackGraphicID = m_partMap[stylepartIndex].fallbackGraphicID;
     const bool rotatedBy90or270 =
         (flags & (QS60StylePrivate::SF_PointEast | QS60StylePrivate::SF_PointWest));
     TSize targetSize =
@@ -469,12 +536,16 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsL(
     switch (drawType) {
     case EDrawIcon:
     {
+        const TDesC fallbackFileName = mapFallBackFileName(m_fallbackMap[stylepartIndex].fallbackGraphicID);
+        const TInt fallbackGraphicID =
+            (fallbackFileName!=KNullDesC) ? m_fallbackMap[stylepartIndex].fallbackGraphicID : KErrNotFound;
+
         CFbsBitmap *icon = 0;
         CFbsBitmap *iconMask = 0;
         const TInt fallbackGraphicsMaskID =
             fallbackGraphicID == KErrNotFound?KErrNotFound:fallbackGraphicID+1; //masks are auto-generated as next in mif files
 //        QS60WindowSurface::unlockBitmapHeap();
-        AknsUtils::CreateIconLC(skinInstance, skinId, icon, iconMask, KAvkonBitmapFile, fallbackGraphicID , fallbackGraphicsMaskID);
+        AknsUtils::CreateIconLC(skinInstance, skinId, icon, iconMask, fallbackFileName, fallbackGraphicID , fallbackGraphicsMaskID);
         User::LeaveIfError(AknIconUtils::SetSize(icon, targetSize, EAspectRatioNotPreserved));
         User::LeaveIfError(AknIconUtils::SetSize(iconMask, targetSize, EAspectRatioNotPreserved));
         result = fromFbsBitmap(icon, iconMask, flags, qt_TDisplayMode2Format(icon->DisplayMode()));

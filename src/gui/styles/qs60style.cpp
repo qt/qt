@@ -826,8 +826,7 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
 #endif // QT_NO_SLIDER
 #ifndef QT_NO_COMBOBOX
     case CC_ComboBox:
-        if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(option))
-        {
+        if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
             const QRect cmbxEditField = subControlRect(CC_ComboBox, option, SC_ComboBoxEditField, widget);
             const QRect cmbxFrame = subControlRect(CC_ComboBox, option, SC_ComboBoxFrame, widget);
 
@@ -1127,26 +1126,26 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     switch (element) {
         case CE_PushButton:
             if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            
+
                 drawControl(CE_PushButtonBevel, btn, painter, widget);
                 QStyleOptionButton subopt = *btn;
                 subopt.rect = subElementRect(SE_PushButtonContents, btn, widget);
-                
+
                 if (const QAbstractButton *buttonWidget = (qobject_cast<const QAbstractButton *>(widget))) {
                     if (buttonWidget->isCheckable()) {
                         QStyleOptionButton checkopt = subopt;
-                        
-                        const int indicatorHeight(pixelMetric(PM_IndicatorHeight));                        
+
+                        const int indicatorHeight(pixelMetric(PM_IndicatorHeight));
                         const int verticalAdjust = (option->rect.height() - indicatorHeight) >> 1;
-                        
+
                         checkopt.rect.adjust(pixelMetric(PM_ButtonMargin), verticalAdjust, 0, 0);
                         checkopt.rect.setWidth(pixelMetric(PM_IndicatorWidth));
                         checkopt.rect.setHeight(indicatorHeight);
-                        
+
                         drawPrimitive(PE_IndicatorCheckBox, &checkopt, painter, widget);
                     }
                 }
-                
+
                 drawControl(CE_PushButtonLabel, &subopt, painter, widget);
                 if (btn->state & State_HasFocus) {
                     QStyleOptionFocusRect fropt;
@@ -1155,9 +1154,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
                 }
             }
-            break;    
+            break;
     case CE_PushButtonBevel:
-        {
         if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
             const bool isPressed = option->state & QStyle::State_Sunken;
             if (button->features & QStyleOptionButton::Flat) {
@@ -1170,16 +1168,15 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 QS60StylePrivate::drawSkinElement(skinElement, painter, option->rect, flags);
             }
         }
-        }
         break;
     case CE_PushButtonLabel:
         if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
             QStyleOptionButton optionButton = *button;
-            
+
             if (const QAbstractButton *buttonWidget = (qobject_cast<const QAbstractButton *>(widget))) {
                 if (buttonWidget->isCheckable()) {
                 // space for check box.
-                optionButton.rect.adjust(pixelMetric(PM_IndicatorWidth) 
+                optionButton.rect.adjust(pixelMetric(PM_IndicatorWidth)
                         + pixelMetric(PM_ButtonMargin) + pixelMetric(PM_CheckBoxLabelSpacing), 0, 0, 0);
                 }
             }
@@ -2121,25 +2118,25 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_PanelMenuBar:
     case PE_FrameMenu:
         break; //disable frame in menu
-    
-    case PE_IndicatorBranch: 
+
+    case PE_IndicatorBranch:
         {
-#if defined(Q_WS_S60)        
+#if defined(Q_WS_S60)
         if (QSysInfo::s60Version() == QSysInfo::SV_S60_3_1) {
 #else
         if (true) {
-#endif        
+#endif
             QCommonStyle::drawPrimitive(element, option, painter, widget);
         } else {
             if (option->state & State_Children) {
-                QS60StyleEnums::SkinParts skinPart = 
-                        (option->state & State_Open) ? QS60StyleEnums::SP_QgnIndiHlColSuper : QS60StyleEnums::SP_QgnIndiHlExpSuper;                
+                QS60StyleEnums::SkinParts skinPart =
+                        (option->state & State_Open) ? QS60StyleEnums::SP_QgnIndiHlColSuper : QS60StyleEnums::SP_QgnIndiHlExpSuper;
                 int minDimension = qMin(option->rect.width(), option->rect.height());
                 const int resizeValue = minDimension >> 1;
                 minDimension += resizeValue; // Adjust the icon bigger because of empty space in svg icon.
                 QRect iconRect(option->rect.topLeft(), QSize(minDimension, minDimension));
                 iconRect.translate(3, 2 - resizeValue);
-                QS60StylePrivate::drawSkinPart(skinPart, painter, iconRect, flags);            
+                QS60StylePrivate::drawSkinPart(skinPart, painter, iconRect, flags);
             }
 
             const bool rightLine = option->state & State_Item;
@@ -2158,15 +2155,15 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 skinPart = QS60StyleEnums::SP_QgnIndiHlLineStraight;
                 drawSkinPart = true;
             }
-        
+
             if ( drawSkinPart ) {
                 QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect,
-                        (flags | QS60StylePrivate::SF_ColorSkinned));                        
-            }            
+                        (flags | QS60StylePrivate::SF_ColorSkinned));
+            }
         }
-        }        
-        break;         
-        
+        }
+        break;
+
         // todo: items are below with #ifdefs "just in case". in final version, remove all non-required cases
     case PE_FrameLineEdit:
     case PE_IndicatorButtonDropDown:
@@ -2583,35 +2580,33 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
             }
             break;
         case SE_ItemViewItemCheckIndicator:
-            {
-                if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
-                    const QListWidget *listItem = qobject_cast<const QListWidget *>(widget);
+            if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
+                const QListWidget *listItem = qobject_cast<const QListWidget *>(widget);
 
-                    const bool singleSelection = listItem &&
-                        (listItem->selectionMode() == QAbstractItemView::SingleSelection ||
-                         listItem->selectionMode() == QAbstractItemView::NoSelection);
-                    const bool checkBoxOnly = (vopt->features & QStyleOptionViewItemV2::HasCheckIndicator) &&
-                        listItem &&
-                        singleSelection;
+                const bool singleSelection = listItem &&
+                    (listItem->selectionMode() == QAbstractItemView::SingleSelection ||
+                     listItem->selectionMode() == QAbstractItemView::NoSelection);
+                const bool checkBoxOnly = (vopt->features & QStyleOptionViewItemV2::HasCheckIndicator) &&
+                    listItem &&
+                    singleSelection;
 
-                    // Selection check mark rect.
-                    const int indicatorWidth = QS60StylePrivate::pixelMetric(QStyle::PM_IndicatorWidth);
-                    const int indicatorHeight = QS60StylePrivate::pixelMetric(QStyle::PM_IndicatorHeight);
-                    const int spacing = QS60StylePrivate::pixelMetric(QStyle::PM_CheckBoxLabelSpacing);
+                // Selection check mark rect.
+                const int indicatorWidth = QS60StylePrivate::pixelMetric(QStyle::PM_IndicatorWidth);
+                const int indicatorHeight = QS60StylePrivate::pixelMetric(QStyle::PM_IndicatorHeight);
+                const int spacing = QS60StylePrivate::pixelMetric(QStyle::PM_CheckBoxLabelSpacing);
 
-                    const int itemHeight = opt->rect.height();
-                    int heightOffset = 0;
-                    if (indicatorHeight < itemHeight)
-                        heightOffset = ((itemHeight - indicatorHeight)>>1);
-                    if (checkBoxOnly) {
-                        // Move rect and make it slightly smaller, so that
-                        // a) highlight border does not cross the rect
-                        // b) in s60 list checkbox is smaller than normal checkbox
-                        ret.setRect(opt->rect.left()+3, opt->rect.top() + heightOffset, indicatorWidth-3, indicatorHeight-3);
-                    } else {
-                        ret.setRect(opt->rect.right() - indicatorWidth - spacing, opt->rect.top() + heightOffset,
-                            indicatorWidth, indicatorHeight);
-                    }
+                const int itemHeight = opt->rect.height();
+                int heightOffset = 0;
+                if (indicatorHeight < itemHeight)
+                    heightOffset = ((itemHeight - indicatorHeight)>>1);
+                if (checkBoxOnly) {
+                    // Move rect and make it slightly smaller, so that
+                    // a) highlight border does not cross the rect
+                    // b) in s60 list checkbox is smaller than normal checkbox
+                    ret.setRect(opt->rect.left()+3, opt->rect.top() + heightOffset, indicatorWidth-3, indicatorHeight-3);
+                } else {
+                    ret.setRect(opt->rect.right() - indicatorWidth - spacing, opt->rect.top() + heightOffset,
+                        indicatorWidth, indicatorHeight);
                 }
             }
             break;
@@ -2664,8 +2659,7 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
     if (option)
         adjustedFlags = (option->state & State_Enabled) ?  QS60StylePrivate::SF_StateEnabled : QS60StylePrivate::SF_StateDisabled;
 
-    switch(standardIcon)
-    {
+    switch(standardIcon) {
         case QStyle::SP_MessageBoxWarning:
             part = QS60StyleEnums::SP_QgnNoteWarning;
             break;
