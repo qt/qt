@@ -31,6 +31,9 @@ bool TouchWidget::event(QEvent *event)
 {
     switch (event->type()) {
     case QEvent::TouchBegin:
+        if (seenTouchBegin) qWarning("TouchBegin: already seen a TouchBegin");
+        if (seenTouchUpdate) qWarning("TouchBegin: TouchUpdate cannot happen before TouchBegin");
+        if (seenTouchEnd) qWarning("TouchBegin: TouchEnd cannot happen before TouchBegin");
         seenTouchBegin = !seenTouchBegin && !seenTouchUpdate && !seenTouchEnd;
         touchPointCount = qMax(touchPointCount, static_cast<QTouchEvent *>(event)->touchPoints().count());
         if (acceptTouchBegin) {
@@ -39,6 +42,8 @@ bool TouchWidget::event(QEvent *event)
         }
         break;
     case QEvent::TouchUpdate:
+        if (!seenTouchBegin) qWarning("TouchUpdate: have not seen TouchBegin");
+        if (seenTouchEnd) qWarning("TouchUpdate: TouchEnd cannot happen before TouchUpdate");
         seenTouchUpdate = seenTouchBegin && !seenTouchEnd;
         touchPointCount = qMax(touchPointCount, static_cast<QTouchEvent *>(event)->touchPoints().count());
         if (acceptTouchUpdate) {
@@ -47,6 +52,8 @@ bool TouchWidget::event(QEvent *event)
         }
         break;
     case QEvent::TouchEnd:
+        if (!seenTouchBegin) qWarning("TouchEnd: have not seen TouchBegin");
+        if (seenTouchEnd) qWarning("TouchEnd: already seen a TouchEnd");
         seenTouchEnd = seenTouchBegin && !seenTouchEnd;
         touchPointCount = qMax(touchPointCount, static_cast<QTouchEvent *>(event)->touchPoints().count());
         if (closeWindowOnTouchEnd)
