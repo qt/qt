@@ -39,67 +39,77 @@
 **
 ****************************************************************************/
 
-#ifndef QLISTMODELINTERFACE_H
-#define QLISTMODELINTERFACE_H
-
-#include <QHash>
-#include <QVariant>
-#include <qfxglobal.h>
-
-
-QT_BEGIN_HEADER
+#include "qlistmodelinterface.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
+/*!
+  \class QListModelInterface
+  \brief The QListModelInterface class can be subclassed to provide C++ models to QFx Views
 
-class Q_DECLARATIVE_EXPORT QListModelInterface : public QObject
-{
-    Q_OBJECT
- public:
-    QListModelInterface(QObject *parent = 0) : QObject(parent) {}
-    virtual ~QListModelInterface() {}
+  This class is comprised primarily of pure virtual functions which
+  you must implement in a subclass. You can then use the subclass
+  as a model for a QFx view, such as a QFxListView.
+*/
 
-    // ### move these into the Qt namespace
-    enum Roles {
-        TextRole = Qt::DisplayRole,
-        IconRole = Qt::DecorationRole
-    };
+/*! \fn QListModelInterface::QListModelInterface(QObject *parent)
+  Constructs a QListModelInterface with the specified \a parent.
 
-    virtual int count() const = 0;
+  /*! \fn QListModelInterface::QListModelInterface(QObjectPrivate &dd, QObject *parent)
 
-    typedef QHash<int, QVariant> QHash_int;
-    typedef QList<int> QList_int;
-    virtual QHash_int data(int index, const QList_int &roles = QList_int) const = 0;
+  \internal
+ */
 
-    virtual bool setData(int index, const QHash_int &values) 
-    { Q_UNUSED(index); Q_UNUSED(values); return false; }
+/*! \fn QListModelInterface::~QListModelInterface()
+  The destructor is virtual.
+ */
 
-    inline bool setData(int index, const QVariant &value, int role)
-    {
-        QHash_int values;
-        values.insert(role, value);
-        return setData(index, values);
-    }
+/*! \fn int QListModelInterface::count() const
+  Returns the number of data entries in the model.
+*/
 
-    virtual QList_int roles() const = 0;
-    virtual QString toString(int role) const = 0;
+/*! \fn QHash_int QListModelInterface::data(int index, const QList_int &roles) const
+  Returns the data at the given \a index for the specifed \a roles.
+*/
 
-    //void bind(int index, int role, QObject *object, const char *propertyName, bool readOnly = true);
+/*! \fn bool QListModelInterface::setData(int index, const QHash_int &values)
+  Sets the data at the given \a index. \a values is a mapping of
+  QVariant values to roles.
+*/
 
- Q_SIGNALS:
-    void itemsInserted(int index, int count);
-    void itemsRemoved(int index, int count);
-    void itemsMoved(int from, int to, int count);
-    void itemsChanged(int index, int count, const QList_int &roles);
+/*! \fn bool QListModelInterface::setData(int index, const QVariant &value, int role)
+  This convenience function builds a QHash_int from
+  the specified \a role and \a value and calls the other setData()
+  with the QHash and the \a index.
+*/
 
- protected:
-    QListModelInterface(QObjectPrivate &dd, QObject *parent) 
-        : QObject(dd, parent) {}
-};
+/*! \fn QList_int QListModelInterface::roles() const
+  Returns the list of roles for which the list model interface
+  provides data.
+*/
 
+/*! \fn QString QListModelInterface::toString(int role) const
+  Returns a string description of the specified \a role.
+*/
 
+/*! \enum QListModelInterface::Roles
+
+  Values for representing roles.
+
+  \value TextRole
+
+  \value IconRole
+*/ 
+
+/*!
+  \typedef QListModelInterface::QHash_int
+  
+  Synonym for QHash<int, QVariant>.
+*/
+
+/*!
+  \typedef QListModelInterface::QList_int
+  
+  Synonym for QList<int>.
+*/
 QT_END_NAMESPACE
-
-QT_END_HEADER
-#endif //QTREEMODELINTERFACE_H
