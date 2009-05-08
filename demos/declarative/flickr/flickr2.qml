@@ -29,11 +29,15 @@ Item {
 
             delegate: Package {
                 Item {
-                    id: Wrapper; width: 85; height: 85
-                    scale: Wrapper.PathView.scale; z: Wrapper.PathView.z
+                    id: Wrapper; width: 85; height: 85; scale: {1.0}
+                    z: RightBox.PathView.z
+                    property real angle: 0 * 0
 
                     transform: [
-                        Rotation3D { id: Rotation; axis.startX: 30; axis.endX: 30; axis.endY: 60; angle: Wrapper.PathView.angle }
+                        Rotation3D {
+                            id: Rotation; axis.startX: 30; axis.endX: 30; axis.endY: 60
+                            angle: Wrapper.angle
+                        }
                     ]
 
                     Connection {
@@ -111,7 +115,7 @@ Item {
 
                 Item {
                     Package.name: "rightBox"
-                    id: RightBox; x: 200; width: 85; height: 85
+                    id: RightBox; width: 85; height: 85
                 }
 
                 Item {
@@ -120,73 +124,58 @@ Item {
                 }
 
                 Item {
-                id: MyItem
-                states: [
-                    State {
-                        name: "left"
-                        when: MainWindow.showPathView == true
-                        SetProperty {
-                            target: Wrapper
-                            property: "moveToParent"
-                            value: LeftBox
+                    id: MyItem
+                    state: MainWindow.showPathView ? "right" : "left"
+                    states: [
+                        State {
+                            name: "left"
+                            SetProperty { target: Wrapper; property: "moveToParent"; value: LeftBox }
+                        },
+                        State {
+                            name: "right"
+                            SetProperty { target: Wrapper; property: "scale"; value: RightBox.PathView.scale }
+                            SetProperty { target: Wrapper; property: "scale"; binding: "RightBox.PathView.scale" }
+                            SetProperty { target: Wrapper; property: "angle"; value: RightBox.PathView.angle }
+                            SetProperty { target: Wrapper; property: "angle"; binding: "RightBox.PathView.angle" }
+                            SetProperty { target: Wrapper; property: "moveToParent"; value: RightBox }
                         }
-                    },
-                    State {
-                        name: "right"
-                        when: MainWindow.showPathView == false
-                            SetProperty {
-                            target: Wrapper
-                            property: "moveToParent"
-                            value: RightBox
-                        }
-                    }
-                ]
-                transitions: [
-                    Transition {
-                        fromState: "left"
-                        toState: "right"
-                        SequentialAnimation {
-                            SetPropertyAction {
-                                target: Wrapper
-                                property: "moveToParent"
+                    ]
+                    transitions: [
+                        Transition {
+                            toState: "right"
+                            SequentialAnimation {
+                                SetPropertyAction { target: Wrapper; property: "moveToParent" }
+                                ParallelAnimation {
+                                    NumericAnimation {
+                                        target: Wrapper
+                                        properties: "x,y"
+                                        to: 0
+                                        easing: "easeOutQuad"
+                                        duration: 350
+                                    }
+                                    NumericAnimation { target: Wrapper; properties: "scale,angle"; duration: 350 }
+                                }
                             }
-                            ParallelAnimation {
-                                NumericAnimation {
-                                    target: Wrapper
-                                    properties: "x,y"
-                                    to: 0
-                                    easing: "easeOutQuad"
-                                    duration: 350
+                        },
+                        Transition {
+                            toState: "left"
+                            SequentialAnimation {
+                                PauseAnimation { duration: Math.floor(index/7)*100 }
+                                SetPropertyAction { target: Wrapper; property: "moveToParent" }
+                                ParallelAnimation {
+                                    NumericAnimation {
+                                        target: Wrapper
+                                        properties: "x,y"
+                                        to: 0
+                                        easing: "easeOutQuad"
+                                        duration: 250
+                                    }
+                                    NumericAnimation { target: Wrapper; properties: "scale,angle"; duration: 250 }
                                 }
                             }
                         }
-                    },
-                    Transition {
-                        fromState: "right"
-                        toState: "left"
-                        SequentialAnimation {
-                            PauseAnimation {
-                                duration: Math.floor(index/7)*100
-                            }
-                            SetPropertyAction {
-                                target: Wrapper
-                                property: "moveToParent"
-                            }
-                            ParallelAnimation {
-                                NumericAnimation {
-                                    target: Wrapper
-                                    properties: "x,y"
-                                    to: 0
-                                    easing: "easeOutQuad"
-                                    duration: 250
-                                }
-                            }
-                        }
-                    }
-                ]
-                state: "right"
-            }
-
+                    ]
+                }
             }
         }
 
@@ -213,7 +202,7 @@ Item {
                 PathLine { x: -50; y: 40 }
 
                 PathPercent { value: 0.001 }
-                PathAttribute { name: "scale"; value: 1 }
+                PathAttribute { name: "scale"; value: 0.9 }
                 PathAttribute { name: "angle"; value: -45 }
 
                 PathCubic {
@@ -232,14 +221,13 @@ Item {
                     control1X: 590; control1Y: 220
                 }
 
-                PathAttribute { name: "scale"; value: 1 }
+                PathAttribute { name: "scale"; value: 0.9 }
                 PathAttribute { name: "angle"; value: -45 }
 
                 PathPercent { value: 0.999 }
                 PathLine { x: 950; y: 40 }
                 PathPercent { value: 1.0 }
             }
-
         }
 
         ImageDetails { id: ImageDetails; width: 750; x: 25; y: 500; height: 410 }
