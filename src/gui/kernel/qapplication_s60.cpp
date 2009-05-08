@@ -27,6 +27,7 @@
 #endif
 #include "private/qwindowsurface_s60_p.h"
 #include "qpaintengine.h"
+#include "qmenubar.h"
 
 #include "apgwgnam.h" // For CApaWindowGroupName
 #include <MdaAudioTonePlayer.h>     // For CMdaAudioToneUtility
@@ -1026,6 +1027,21 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
 bool QApplication::s60EventFilter(TWsEvent *aEvent)
 {
     return false;
+}
+
+void QApplication::s60HandleCommandL(int command)
+{
+    switch (command) {
+    case EEikCmdExit:
+    case EAknSoftkeyBack:
+    case EAknSoftkeyExit:
+        qApp->exit();
+        break;
+    default:
+        // For now assume all unknown menu items are Qt menu items
+        QMenuBar::symbianCommands(command);
+        break;
+    }
 }
 
 #ifndef QT_NO_WHEELEVENT
