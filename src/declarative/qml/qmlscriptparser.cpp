@@ -226,9 +226,12 @@ ProcessAST::defineObjectBinding_helper(int line,
             return 0;
         }
 
-        _stateStack.pushProperty(objectType, 
-                                 this->location(propertyName));
-        accept(initializer);
+        SourceLocation loc = typeLocation;
+        if (propertyName)
+            loc = location(propertyName);
+
+        _stateStack.pushProperty(objectType, loc);
+       accept(initializer);
         _stateStack.pop();
 
         return 0;
