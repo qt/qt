@@ -69,4 +69,7 @@ symbian: {
     	qtlibraries.sources += QtPhonon.dll
     }    
 
+    BLD_INF_RULES.prj_exports += "qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"
+    BLD_INF_RULES.prj_exports += "qtvggraphicssystem.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qtvggraphicssystem.iby)"
+    BLD_INF_RULES.prj_exports += "qtdemoapps.iby $$CORE_APP_LAYER_IBY_EXPORT_PATH(qtdemoapps.iby)"
 }
