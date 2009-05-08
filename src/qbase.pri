@@ -67,11 +67,6 @@ mac:!static:contains(QT_CONFIG, qt_framework) {
 
 mac {
    CONFIG += explicitlib
-   true { #we want to use O2 on Qt itself (Os was used to fix other failures in older GCC)
-      QMAKE_CFLAGS_RELEASE ~= s,-Os,-O2,
-      QMAKE_CXXFLAGS_RELEASE ~= s,-Os,-O2,
-      QMAKE_OBJECTIVE_CFLAGS_RELEASE ~= s,-Os,-O2,
-   }
    macx-g++ {
        QMAKE_CFLAGS += -fconstant-cfstrings
        QMAKE_CXXFLAGS += -fconstant-cfstrings
