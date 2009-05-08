@@ -91,6 +91,7 @@ Item {
                     SetProperties { target: PhotoGridView; y: "-480" }
                     SetProperties { target: PhotoPathView; y: "-480" }
                     SetProperties { target: ViewModeButton; opacity: 0 }
+                    SetProperties { target: TagsEdit; opacity: 0 }
                     SetProperties { target: FetchButton; opacity: 0 }
                     SetProperties { target: CategoryText; y: "-50" }
                 }
