@@ -156,13 +156,13 @@
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qpointer.h>
 
-#define TIMER_INTERVAL 16
+#define DEFAULT_TIMER_INTERVAL 16
 
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer);
 
-QUnifiedTimer::QUnifiedTimer() : QObject(), lastTick(0), consistentTimingInterval(0)
+QUnifiedTimer::QUnifiedTimer() : QObject(), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL), consistentTiming(false)
 {
 }
 
@@ -190,13 +190,29 @@ void QUnifiedTimer::updateRecentlyStartedAnimations()
 }
 
 /*
-   this allows to haeve a consistent timer interval at each tick from the timer
-   not taking the real time that passed into account.
-   Just set this to 0 if you want to get back to a time-driven behaviour.
- */
-void QUnifiedTimer::setConsitentTiming(int interval)
+  defines the timing interval. Default is DEFAULT_TIMER_INTERVAL
+*/
+void QUnifiedTimer::setTimingInterval(int interval)
 {
-    consistentTimingInterval = interval;
+    timingInterval = interval;
+    if (animationTimer.isActive()) {
+        //we changed the timing interval
+        animationTimer.start(timingInterval, this);
+    }
+}
+
+/*
+   this allows to have a consistent timer interval at each tick from the timer
+   not taking the real time that passed into account.
+*/
+void QUnifiedTimer::setConsistentTiming(bool b)
+{
+    consistentTiming = b;
+}
+
+int QUnifiedTimer::elapsedTime() const
+{
+    return lastTick;
 }
 
 void QUnifiedTimer::timerEvent(QTimerEvent *event)
@@ -204,7 +220,7 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
     //this is simply the time we last received a tick
     const int oldLastTick = lastTick;
     if (time.isValid())
-        lastTick = consistentTimingInterval > 0 ? oldLastTick + consistentTimingInterval : time.elapsed();
+        lastTick = consistentTiming ? oldLastTick + timingInterval : time.elapsed();
 
     //we transfer the waiting animations into the "really running" state
     updateRecentlyStartedAnimations();
@@ -215,7 +231,7 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
             animationTimer.stop();
             time = QTime();
         } else {
-            animationTimer.start(TIMER_INTERVAL, this);
+            animationTimer.start(timingInterval, this);
             lastTick = 0;
             time.start();
         }

@@ -110,7 +110,7 @@ private:
 };
 
 
-class QUnifiedTimer : public QObject
+class Q_CORE_EXPORT QUnifiedTimer : public QObject
 {
 private:
     QUnifiedTimer();
@@ -118,13 +118,17 @@ private:
 public:
     static QUnifiedTimer *instance();
 
-    void timerEvent(QTimerEvent *);
-    void updateTimer();
     void registerAnimation(QAbstractAnimation *animation);
     void unregisterAnimation(QAbstractAnimation *animation);
 
-    void setConsitentTiming(int interval);
+    void setTimingInterval(int interval);
+    void setConsistentTiming(bool consistent);
 
+    int elapsedTime() const;
+
+protected:
+    void timerEvent(QTimerEvent *);
+    void updateTimer();
 
 private:
     void updateRecentlyStartedAnimations();
@@ -132,7 +136,8 @@ private:
     QBasicTimer animationTimer, startStopAnimationTimer;
     QTime time;
     int lastTick;
-    int consistentTimingInterval;
+    int timingInterval;
+    bool consistentTiming;
     QList<QAbstractAnimation*> animations, animationsToStart;
 };
 
