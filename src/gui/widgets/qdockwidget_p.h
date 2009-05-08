@@ -128,7 +128,7 @@ public:
     bool isAnimating() const;
 };
 
-class Q_GUI_EXPORT QDockWidgetLayout : public QLayout
+class QDockWidgetLayout : public QLayout
 {
     Q_OBJECT
 public:

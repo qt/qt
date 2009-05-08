@@ -3187,6 +3187,25 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                                }
         break;
 #endif //QT_NO_ITEMVIEWS
+#ifndef QT_NO_TOOLBAR
+    case SE_ToolBarHandle:
+        if (const QStyleOptionToolBar *tbopt = qstyleoption_cast<const QStyleOptionToolBar *>(opt)) {
+            if (tbopt->features & QStyleOptionToolBar::Movable) {
+                ///we need to access the widget here because the style option doesn't 
+                //have all the information we need (ie. the layout's margin)
+                const QToolBar *tb = qobject_cast<const QToolBar*>(widget);
+                const int margin = tb && tb->layout() ? tb->layout()->margin() : 2;
+                const int handleExtent = pixelMetric(QStyle::PM_ToolBarExtensionExtent, opt, tb);
+                if (tbopt->state & QStyle::State_Horizontal) {
+                    r = QRect(margin, margin, handleExtent, tbopt->rect.height() - 2*margin);
+                    r = QStyle::visualRect(tbopt->direction, tbopt->rect, r);
+                } else {
+                    r = QRect(margin, margin, tbopt->rect.width() - 2*margin, handleExtent);
+                }
+            }
+        }
+        break;
+#endif //QT_NO_TOOLBAR
     default:
         break;
     }
