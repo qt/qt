@@ -80,6 +80,7 @@ private slots:
     void opacity();
     void paths();
     void displayMode();
+    void strokeInherit();
 
 #ifndef QT_NO_COMPRESS
     void testGzLoading();
@@ -922,6 +923,129 @@ void tst_QSvgRenderer::displayMode()
         renderer.render(&p);
         p.end();
         QCOMPARE(image.pixel(5, 5), expectedColors[i]);
+    }
+}
+
+void tst_QSvgRenderer::strokeInherit()
+{
+    static const char *svgs[] = {
+        // Reference.
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"blue\" stroke-width=\"20\" stroke-linecap=\"butt\""
+        "       stroke-linejoin=\"miter\" stroke-miterlimit=\"1\" stroke-dasharray=\"20,10\""
+        "       stroke-dashoffset=\"10\" stroke-opacity=\"0.5\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\"/>"
+        "   </g>"
+        "   <g stroke=\"green\" stroke-width=\"0\" stroke-dasharray=\"3,3,1\" stroke-dashoffset=\"4.5\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\"/>"
+        "   </g>"
+        "</svg>",
+        // stroke
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"none\" stroke-width=\"20\" stroke-linecap=\"butt\""
+        "       stroke-linejoin=\"miter\" stroke-miterlimit=\"1\" stroke-dasharray=\"20,10\""
+        "       stroke-dashoffset=\"10\" stroke-opacity=\"0.5\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\" stroke=\"blue\"/>"
+        "   </g>"
+        "   <g stroke=\"yellow\" stroke-width=\"0\" stroke-dasharray=\"3,3,1\" stroke-dashoffset=\"4.5\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\" stroke=\"green\"/>"
+        "   </g>"
+        "</svg>",
+        // stroke-width
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"blue\" stroke-width=\"0\" stroke-linecap=\"butt\""
+        "       stroke-linejoin=\"miter\" stroke-miterlimit=\"1\" stroke-dasharray=\"20,10\""
+        "       stroke-dashoffset=\"10\" stroke-opacity=\"0.5\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\" stroke-width=\"20\"/>"
+        "   </g>"
+        "   <g stroke=\"green\" stroke-width=\"10\" stroke-dasharray=\"3,3,1\" stroke-dashoffset=\"4.5\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\" stroke-width=\"0\"/>"
+        "   </g>"
+        "</svg>",
+        // stroke-linecap
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"blue\" stroke-width=\"20\" stroke-linecap=\"round\""
+        "       stroke-linejoin=\"miter\" stroke-miterlimit=\"1\" stroke-dasharray=\"20,10\""
+        "       stroke-dashoffset=\"10\" stroke-opacity=\"0.5\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\" stroke-linecap=\"butt\"/>"
+        "   </g>"
+        "   <g stroke=\"green\" stroke-width=\"0\" stroke-dasharray=\"3,3,1\" stroke-dashoffset=\"4.5\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\"/>"
+        "   </g>"
+        "</svg>",
+        // stroke-linejoin
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"blue\" stroke-width=\"20\" stroke-linecap=\"butt\""
+        "       stroke-linejoin=\"round\" stroke-miterlimit=\"1\" stroke-dasharray=\"20,10\""
+        "       stroke-dashoffset=\"10\" stroke-opacity=\"0.5\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\" stroke-linejoin=\"miter\"/>"
+        "   </g>"
+        "   <g stroke=\"green\" stroke-width=\"0\" stroke-dasharray=\"3,3,1\" stroke-dashoffset=\"4.5\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\"/>"
+        "   </g>"
+        "</svg>",
+        // stroke-miterlimit
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"blue\" stroke-width=\"20\" stroke-linecap=\"butt\""
+        "       stroke-linejoin=\"miter\" stroke-miterlimit=\"2\" stroke-dasharray=\"20,10\""
+        "       stroke-dashoffset=\"10\" stroke-opacity=\"0.5\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\" stroke-miterlimit=\"1\"/>"
+        "   </g>"
+        "   <g stroke=\"green\" stroke-width=\"0\" stroke-dasharray=\"3,3,1\" stroke-dashoffset=\"4.5\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\"/>"
+        "   </g>"
+        "</svg>",
+        // stroke-dasharray
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"blue\" stroke-width=\"20\" stroke-linecap=\"butt\""
+        "       stroke-linejoin=\"miter\" stroke-miterlimit=\"1\" stroke-dasharray=\"1,1,1,1,1,1,3,1,3,1,3,1,1,1,1,1,1,3\""
+        "       stroke-dashoffset=\"10\" stroke-opacity=\"0.5\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\" stroke-dasharray=\"20,10\"/>"
+        "   </g>"
+        "   <g stroke=\"green\" stroke-width=\"0\" stroke-dasharray=\"none\" stroke-dashoffset=\"4.5\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\" stroke-dasharray=\"3,3,1\"/>"
+        "   </g>"
+        "</svg>",
+        // stroke-dashoffset
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"blue\" stroke-width=\"20\" stroke-linecap=\"butt\""
+        "       stroke-linejoin=\"miter\" stroke-miterlimit=\"1\" stroke-dasharray=\"20,10\""
+        "       stroke-dashoffset=\"0\" stroke-opacity=\"0.5\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\" stroke-dashoffset=\"10\"/>"
+        "   </g>"
+        "   <g stroke=\"green\" stroke-width=\"0\" stroke-dasharray=\"3,3,1\" stroke-dashoffset=\"0\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\" stroke-dashoffset=\"4.5\"/>"
+        "   </g>"
+        "</svg>",
+        // stroke-opacity
+        "<svg viewBox=\"0 0 200 30\">"
+        "   <g stroke=\"blue\" stroke-width=\"20\" stroke-linecap=\"butt\""
+        "       stroke-linejoin=\"miter\" stroke-miterlimit=\"1\" stroke-dasharray=\"20,10\""
+        "       stroke-dashoffset=\"10\" stroke-opacity=\"0\">"
+        "       <polyline fill=\"none\" points=\"10 10 100 10 100 20 190 20\" stroke-opacity=\"0.5\"/>"
+        "   </g>"
+        "   <g stroke=\"green\" stroke-width=\"0\" stroke-dasharray=\"3,3,1\" stroke-dashoffset=\"4.5\">"
+        "       <polyline fill=\"none\" points=\"10 25 80 25\"/>"
+        "   </g>"
+        "</svg>"
+    };
+
+    const int COUNT = sizeof(svgs) / sizeof(svgs[0]);
+    QImage images[COUNT];
+    QPainter p;
+
+    for (int i = 0; i < COUNT; ++i) {
+        QByteArray data(svgs[i]);
+        QSvgRenderer renderer(data);
+        QVERIFY(renderer.isValid());
+        images[i] = QImage(200, 30, QImage::Format_ARGB32_Premultiplied);
+        images[i].fill(-1);
+        p.begin(&images[i]);
+        renderer.render(&p);
+        p.end();
+        if (i != 0) {
+            QCOMPARE(images[0], images[i]);
+        }
     }
 }
 

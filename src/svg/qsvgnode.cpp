@@ -320,7 +320,7 @@ qreal QSvgNode::strokeWidth() const
 {
     QSvgStrokeStyle *stroke = static_cast<QSvgStrokeStyle*>(
         styleProperty(QSvgStyleProperty::STROKE));
-    if (!stroke || stroke->qpen().style() == Qt::NoPen)
+    if (!stroke || !stroke->strokePresent())
         return 0;
     return stroke->qpen().widthF();
 }
