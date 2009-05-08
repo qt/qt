@@ -865,9 +865,9 @@ void QFxImage::setSource(const QString &url)
     }
 
     if (!d->url.isEmpty())
-        QFxPixmap::cancelGet(d->url, this, SLOT(requestFinished()));
+        QFxPixmap::cancelGet(d->url, this);
     if (!d->sciurl.isEmpty())
-        QFxPixmap::cancelGet(d->sciurl, this, SLOT(requestFinished()));
+        QFxPixmap::cancelGet(d->sciurl, this);
 
     d->source = url;
     d->url = qmlContext(this)->resolvedUrl(url);

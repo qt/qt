@@ -149,16 +149,15 @@ int QmlDomDocument::version() const
 
     \sa QmlDomDocument::save() QmlDomDocument::loadError()
 */
-bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data)
+bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl &url)
 {
     Q_UNUSED(engine);
-
     d->errors.clear();
 
     QmlCompiledComponent component;
     QmlCompiler compiler;
 
-    QmlCompositeTypeData *td = ((QmlEnginePrivate *)QmlEnginePrivate::get(engine))->typeManager.getImmediate(data, QUrl());;
+    QmlCompositeTypeData *td = ((QmlEnginePrivate *)QmlEnginePrivate::get(engine))->typeManager.getImmediate(data, url);;
 
     if(td->status == QmlCompositeTypeData::Error) {
         d->errors = td->errors;

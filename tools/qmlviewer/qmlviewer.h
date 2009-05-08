@@ -50,6 +50,7 @@ public slots:
     void reload();
     void takeSnapShot();
     void toggleRecording();
+    void toggleRecordingWithSelection();
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);

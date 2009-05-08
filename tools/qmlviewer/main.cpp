@@ -26,7 +26,7 @@ void usage()
     qWarning("  -v, -version ............................. display version");
     qWarning("  -frameless ............................... run with no window frame");
     qWarning("  -skin <qvfbskindir> ...................... run with a skin window frame");
-    qWarning("  -recordfile <output> ..................... set output file");
+    qWarning("  -recordfile <output> ..................... set video recording file");
     qWarning("                                              - ImageMagick 'convert' for GIF)");
     qWarning("                                              - png file for raw frames");
     qWarning("                                              - 'ffmpeg' for other formats");
@@ -69,7 +69,7 @@ int main(int argc, char ** argv)
     int autorecord_from = 0;
     int autorecord_to = 0;
     QString dither = "none";
-    QString recordfile = "animation.gif";
+    QString recordfile;
     QString skin;
     bool devkeys = false;
     bool cache = false;

@@ -60,6 +60,7 @@ QT_MODULE(Declarative)
 
 class QFxItem;
 class QmlComponent;
+class QmlPackage;
 class QFxVisualItemModelPrivate;
 class QFxVisualItemModel : public QObject
 {
@@ -98,6 +99,10 @@ Q_SIGNALS:
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
     void itemsMoved(int from, int to, int count);
+    void itemCreated(int index, QFxItem *item);
+    void packageCreated(int index, QmlPackage *package);
+    void destroyingItem(QFxItem *item);
+    void destroyingPackage(QmlPackage *package);
 
 private Q_SLOTS:
     void _q_itemsChanged(int, int, const QList<int> &);
@@ -107,6 +112,8 @@ private Q_SLOTS:
     void _q_rowsInserted(const QModelIndex &,int,int);
     void _q_rowsRemoved(const QModelIndex &,int,int);
     void _q_dataChanged(const QModelIndex&,const QModelIndex&);
+    void _q_packageCreated(int index, QmlPackage *package);
+    void _q_destroyingPackage(QmlPackage *package);
 
 private:
     Q_DISABLE_COPY(QFxVisualItemModel)
