@@ -67,7 +67,7 @@ public:
     QFxPixmap &operator=(const QFxPixmap &);
 
     static QNetworkReply *get(QmlEngine *, const QUrl& url, QObject*, const char* slot);
-    static void cancelGet(const QUrl& url, QObject* obj, const char* slot);
+    static void cancelGet(const QUrl& url, QObject* obj);
 
     bool isNull() const;
 

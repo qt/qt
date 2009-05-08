@@ -149,7 +149,7 @@ void QFxHighlightFilter::setSource(const QString &f)
     if (d->source == f)
         return;
     if (!d->source.isEmpty())
-        QFxPixmap::cancelGet(d->url, this, SLOT(imageLoaded()));
+        QFxPixmap::cancelGet(d->url, this);
     d->source = f;
     d->url = qmlContext(this)->resolvedUrl(f);
 #if defined(QFX_RENDER_OPENGL2)
