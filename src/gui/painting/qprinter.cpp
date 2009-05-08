@@ -773,8 +773,8 @@ void QPrinter::setOutputFormat(OutputFormat format)
     if (def_engine)
         delete oldPrintEngine;
 
-    d->validPrinter = (d->outputFormat == QPrinter::PdfFormat
-                       || d->outputFormat == QPrinter::PostScriptFormat);
+    if (d->outputFormat == QPrinter::PdfFormat || d->outputFormat == QPrinter::PostScriptFormat)
+        d->validPrinter = true;
 #else
     Q_UNUSED(format);
 #endif
