@@ -1125,17 +1125,64 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     Q_D(const QS60Style);
     const QS60StylePrivate::SkinElementFlags flags = (option->state & State_Enabled) ?  QS60StylePrivate::SF_StateEnabled : QS60StylePrivate::SF_StateDisabled;
     switch (element) {
+        case CE_PushButton:
+            if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
+            
+                drawControl(CE_PushButtonBevel, btn, painter, widget);
+                QStyleOptionButton subopt = *btn;
+                subopt.rect = subElementRect(SE_PushButtonContents, btn, widget);
+                
+                if (const QAbstractButton *buttonWidget = (qobject_cast<const QAbstractButton *>(widget))) {
+                    if (buttonWidget->isCheckable()) {
+                        QStyleOptionButton checkopt = subopt;
+                        
+                        const int indicatorHeight(pixelMetric(PM_IndicatorHeight));                        
+                        const int verticalAdjust = (option->rect.height() - indicatorHeight) >> 1;
+                        
+                        checkopt.rect.adjust(pixelMetric(PM_ButtonMargin), verticalAdjust, 0, 0);
+                        checkopt.rect.setWidth(pixelMetric(PM_IndicatorWidth));
+                        checkopt.rect.setHeight(indicatorHeight);
+                        
+                        drawPrimitive(PE_IndicatorCheckBox, &checkopt, painter, widget);
+                    }
+                }
+                
+                drawControl(CE_PushButtonLabel, &subopt, painter, widget);
+                if (btn->state & State_HasFocus) {
+                    QStyleOptionFocusRect fropt;
+                    fropt.QStyleOption::operator=(*btn);
+                    fropt.rect = subElementRect(SE_PushButtonFocusRect, btn, widget);
+                    drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
+                }
+            }
+            break;    
     case CE_PushButtonBevel:
         {
+        if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
             const bool isPressed = option->state & QStyle::State_Sunken;
-            const QS60StylePrivate::SkinElements skinElement =
-                isPressed ? QS60StylePrivate::SE_ButtonPressed : QS60StylePrivate::SE_ButtonNormal;
-            QS60StylePrivate::drawSkinElement(skinElement, painter, option->rect, flags);
+            if (button->features & QStyleOptionButton::Flat) {
+                const QS60StyleEnums::SkinParts skinPart =
+                    isPressed ? QS60StyleEnums::SP_QsnFrButtonTbCenterPressed : QS60StyleEnums::SP_QsnFrButtonTbCenter;
+                QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, flags);
+            } else {
+                const QS60StylePrivate::SkinElements skinElement =
+                    isPressed ? QS60StylePrivate::SE_ButtonPressed : QS60StylePrivate::SE_ButtonNormal;
+                QS60StylePrivate::drawSkinElement(skinElement, painter, option->rect, flags);
+            }
+        }
         }
         break;
     case CE_PushButtonLabel:
         if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
             QStyleOptionButton optionButton = *button;
+            
+            if (const QAbstractButton *buttonWidget = (qobject_cast<const QAbstractButton *>(widget))) {
+                if (buttonWidget->isCheckable()) {
+                // space for check box.
+                optionButton.rect.adjust(pixelMetric(PM_IndicatorWidth) 
+                        + pixelMetric(PM_ButtonMargin) + pixelMetric(PM_CheckBoxLabelSpacing), 0, 0, 0);
+                }
+            }
             QCommonStyle::drawControl(element, &optionButton, painter, widget);
         }
         break;
@@ -1756,7 +1803,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_MenuTearoff:
 #endif //QT_NO_MENU
 
-    case CE_PushButton:
     case CE_CheckBox:
     case CE_RadioButton:
 #ifndef QT_NO_TABBAR

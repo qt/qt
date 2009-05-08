@@ -147,7 +147,7 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrButtonTbSideB */         {KAknsIIDQsnFrButtonTbSideB,            ENoDraw,    ES60_AllReleases,    -1,-1,-1},
     /* SP_QsnFrButtonTbSideL */         {KAknsIIDQsnFrButtonTbSideL,            ENoDraw,    ES60_AllReleases,    -1,-1,-1},
     /* SP_QsnFrButtonTbSideR */         {KAknsIIDQsnFrButtonTbSideR,            ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbCenter */        {KAknsIIDQsnFrButtonTbCenter,           ENoDraw,    ES60_AllReleases,    -1,-1,-1},
+    /* SP_QsnFrButtonTbCenter */        {KAknsIIDQsnFrButtonTbCenter,           EDrawIcon,  ES60_AllReleases,    -1,-1,-1},
 
     /* SP_QsnFrButtonTbCornerTlPressed */{KAknsIIDQsnFrButtonTbCornerTlPressed, ENoDraw,    ES60_AllReleases,    -1,-1,-1},
     /* SP_QsnFrButtonTbCornerTrPressed */{KAknsIIDQsnFrButtonTbCornerTrPressed, ENoDraw,    ES60_AllReleases,    -1,-1,-1},
@@ -157,7 +157,7 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrButtonTbSideBPressed */  {KAknsIIDQsnFrButtonTbSideBPressed,     ENoDraw,    ES60_AllReleases,    -1,-1,-1},
     /* SP_QsnFrButtonTbSideLPressed */  {KAknsIIDQsnFrButtonTbSideLPressed,     ENoDraw,    ES60_AllReleases,    -1,-1,-1},
     /* SP_QsnFrButtonTbSideRPressed */  {KAknsIIDQsnFrButtonTbSideRPressed,     ENoDraw,    ES60_AllReleases,    -1,-1,-1},
-    /* SP_QsnFrButtonTbCenterPressed */ {KAknsIIDQsnFrButtonTbCenterPressed,    ENoDraw,    ES60_AllReleases,    -1,-1,-1},
+    /* SP_QsnFrButtonTbCenterPressed */ {KAknsIIDQsnFrButtonTbCenterPressed,    EDrawIcon,  ES60_AllReleases,    -1,-1,-1},
 
     /* SP_QsnFrCaleCornerTl */          {KAknsIIDQsnFrCaleCornerTl,             ENoDraw,    ES60_AllReleases,    -1,-1,-1},
     /* SP_QsnFrCaleCornerTr */          {KAknsIIDQsnFrCaleCornerTr,             ENoDraw,    ES60_AllReleases,    -1,-1,-1},
