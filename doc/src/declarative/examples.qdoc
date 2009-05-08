@@ -14,7 +14,7 @@ There are several illustrative QML examples available.  From your build
 directory, 
 
 \code
-    bin/qmlviewer $QT_SOURCE_DIR/demos/declarative/phonebrowser/phonebrowser.qml
+    bin/qmlviewer $QT_SOURCE_DIR/demos/declarative/flickr/flickr.qml
 \endcode
 
 Many other simple examples can be found under the \c examples/declarative sub 
