@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 
 /*! \fn QListModelInterface::QListModelInterface(QObject *parent)
   Constructs a QListModelInterface with the specified \a parent.
+*/
 
   /*! \fn QListModelInterface::QListModelInterface(QObjectPrivate &dd, QObject *parent)
 
