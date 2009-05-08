@@ -139,7 +139,7 @@ public:
         MoveCursor = 1
     };
     quint16 command;
-    quint8 block; ///< All undo commands that have this set to zero/false are combined with the preceding command on undo/redo.
+    quint8 block; ///< All undo commands that have this set to true are combined with the preceding command on undo/redo.
     quint8 operation;
     int format;
     quint32 strPos;
@@ -202,6 +202,7 @@ public:
     inline void beginEditBlock() { editBlock++; }
     void joinPreviousEditBlock();
     void endEditBlock();
+    void finishEdit();
     inline bool isInEditBlock() const { return editBlock; }
     void enableUndoRedo(bool enable);
     inline bool isUndoRedoEnabled() const { return undoEnabled; }
