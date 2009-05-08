@@ -126,6 +126,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     connect(searchEngine, SIGNAL(indexingFinished()), this, SLOT(indexingFinished()));
 
     m_centralWidget->createSearchWidget(searchEngine);
+    m_centralWidget->activateSearchWidget();
 
     QString defWindowTitle = tr("Qt Assistant");
     setWindowTitle(defWindowTitle);
@@ -234,6 +235,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         else
             checkInitState();
     }
+    setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);
 }
 
 MainWindow::~MainWindow()
@@ -461,7 +463,7 @@ void MainWindow::setupActions()
         QKeySequence(tr("ALT+I")));
     m_viewMenu->addAction(tr("Bookmarks"), this, SLOT(showBookmarks()),
         QKeySequence(tr("ALT+O")));
-    m_viewMenu->addAction(tr("Search"), this, SLOT(showSearch()),
+    m_viewMenu->addAction(tr("Search"), this, SLOT(showSearchWidget()),
         QKeySequence(tr("ALT+S")));
 
     menu = menuBar()->addMenu(tr("&Go"));
@@ -878,6 +880,11 @@ void MainWindow::activateCurrentCentralWidgetTab()
 void MainWindow::showSearch()
 {
     m_centralWidget->activateSearchWidget();
+}
+
+void MainWindow::showSearchWidget()
+{
+    m_centralWidget->activateSearchWidget(true);
 }
 
 void MainWindow::hideSearch()

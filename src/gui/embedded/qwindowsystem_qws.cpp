@@ -4044,7 +4044,7 @@ void QWSServer::setDesktopBackground(const QImage &img)
 */
 void QWSServer::setDesktopBackground(const QColor &c)
 {
-    setDesktopBackground(QBrush(c));
+    setBackground(QBrush(c));
 }
 #endif //QT3_SUPPORT
 

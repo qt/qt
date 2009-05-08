@@ -2975,15 +2975,10 @@ QWidget *QApplication::topLevelAt(const QPoint &p)
 #endif
 }
 
-/*!
-    Synchronizes with the X server in the X11 implementation. This
-    normally takes some time. Does nothing on other platforms.
-*/
-
 void QApplication::syncX()
 {
     if (X11->display)
-        XSync(X11->display, False);                        // don't discard events
+        XSync(X11->display, False);  // don't discard events
 }
 
 
@@ -3085,9 +3080,6 @@ static QETWidget *qPRFindWidget(Window oldwin)
     return wPRmapper ? (QETWidget*)wPRmapper->value((int)oldwin, 0) : 0;
 }
 
-/*!
-    \internal
-*/
 int QApplication::x11ClientMessage(QWidget* w, XEvent* event, bool passive_only)
 {
     if (w && !w->internalWinId())
@@ -3150,17 +3142,6 @@ int QApplication::x11ClientMessage(QWidget* w, XEvent* event, bool passive_only)
     return 0;
 }
 
-/*!
-    This function does the core processing of individual X
-    \a{event}s, normally by dispatching Qt events to the right
-    destination.
-
-    It returns 1 if the event was consumed by special handling, 0 if
-    the \a event was consumed by normal handling, and -1 if the \a
-    event was for an unrecognized widget.
-
-    \sa x11EventFilter()
-*/
 int QApplication::x11ProcessEvent(XEvent* event)
 {
     Q_D(QApplication);
@@ -3168,43 +3149,48 @@ int QApplication::x11ProcessEvent(XEvent* event)
 #ifdef ALIEN_DEBUG
     //qDebug() << "QApplication::x11ProcessEvent:" << event->type;
 #endif
+    Time time = 0, userTime = 0;
     switch (event->type) {
     case ButtonPress:
         pressed_window = event->xbutton.window;
-        X11->userTime = event->xbutton.time;
+        userTime = event->xbutton.time;
         // fallthrough intended
     case ButtonRelease:
-        X11->time = event->xbutton.time;
+        time = event->xbutton.time;
         break;
     case MotionNotify:
-        X11->time = event->xmotion.time;
+        time = event->xmotion.time;
         break;
     case XKeyPress:
-        X11->userTime = event->xkey.time;
+        userTime = event->xkey.time;
         // fallthrough intended
     case XKeyRelease:
-        X11->time = event->xkey.time;
+        time = event->xkey.time;
         break;
     case PropertyNotify:
-        X11->time = event->xproperty.time;
+        time = event->xproperty.time;
         break;
     case EnterNotify:
     case LeaveNotify:
-        X11->time = event->xcrossing.time;
+        time = event->xcrossing.time;
         break;
     case SelectionClear:
-        X11->time = event->xselectionclear.time;
+        time = event->xselectionclear.time;
         break;
     default:
+#ifndef QT_NO_XFIXES
+        if (X11->use_xfixes && event->type == (X11->xfixes_eventbase + XFixesSelectionNotify)) {
+            XFixesSelectionNotifyEvent *req =
+                reinterpret_cast<XFixesSelectionNotifyEvent *>(event);
+            time = req->selection_timestamp;
+        }
+#endif
         break;
     }
-#ifndef QT_NO_XFIXES
-    if (X11->use_xfixes && event->type == (X11->xfixes_eventbase + XFixesSelectionNotify)) {
-        XFixesSelectionNotifyEvent *req =
-            reinterpret_cast<XFixesSelectionNotifyEvent *>(event);
-        X11->time = req->selection_timestamp;
-    }
-#endif
+    if (time > X11->time)
+        X11->time = time;
+    if (userTime > X11->userTime)
+        X11->userTime = userTime;
 
     QETWidget *widget = (QETWidget*)QWidget::find((WId)event->xany.window);
 
@@ -3836,29 +3822,6 @@ int QApplication::x11ProcessEvent(XEvent* event)
 
     return 0;
 }
-
-/*!
-    \fn bool QApplication::x11EventFilter(XEvent *event)
-
-    \warning This virtual function is only implemented under X11.
-
-    If you create an application that inherits QApplication and
-    reimplement this function, you get direct access to all X events
-    that the are received from the X server. The events are passed in
-    the \a event parameter.
-
-    Return true if you want to stop the event from being processed.
-    Return false for normal event dispatching. The default
-    implementation returns false.
-
-    It is only the directly addressed messages that are filtered.
-    You must install an event filter directly on the event
-    dispatcher, which is returned by
-    QAbstractEventDispatcher::instance(), to handle system wide
-    messages.
-
-    \sa x11ProcessEvent()
-*/
 
 bool QApplication::x11EventFilter(XEvent *)
 {

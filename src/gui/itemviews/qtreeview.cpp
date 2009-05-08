@@ -1544,7 +1544,7 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
                                  ? logicalIndexBeforeLeft
                                  : logicalIndices.at(currentLogicalSection - 1);
         if (columnCount == 1 || (nextLogicalSection == 0 && prevLogicalSection == -1)
-            || (headerSection == 0 && nextLogicalSection == -1))
+            || (headerSection == 0 && nextLogicalSection == -1) || spanning)
             opt.viewItemPosition = QStyleOptionViewItemV4::OnlyOne;
         else if (headerSection == 0 || (nextLogicalSection != 0 && prevLogicalSection == -1))
             opt.viewItemPosition = QStyleOptionViewItemV4::Beginning;

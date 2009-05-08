@@ -1788,9 +1788,11 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g)
 
     GlyphFormat glyph_format = antialias ? Format_A8 : Format_Mono;
 
-    Glyph *glyph = loadGlyph(g, glyph_format);
-    if (!glyph)
-        return QImage();
+    Glyph *glyph = defaultGlyphSet.outline_drawing ? 0 : loadGlyph(g, glyph_format);
+    if (!glyph) {
+        unlockFace();
+        return QFontEngine::alphaMapForGlyph(g);
+    }
 
     const int pitch = antialias ? (glyph->width + 3) & ~3 : ((glyph->width + 31)/32) * 4;
 
