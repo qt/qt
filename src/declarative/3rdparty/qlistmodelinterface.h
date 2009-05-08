@@ -70,7 +70,7 @@ class Q_DECLARATIVE_EXPORT QListModelInterface : public QObject
 
     typedef QHash<int, QVariant> QHash_int;
     typedef QList<int> QList_int;
-    virtual QHash_int data(int index, const QList_int &roles = QList_int) const = 0;
+    virtual QHash_int data(int index, const QList_int &roles = QList_int()) const = 0;
 
     virtual bool setData(int index, const QHash_int &values) 
     { Q_UNUSED(index); Q_UNUSED(values); return false; }
