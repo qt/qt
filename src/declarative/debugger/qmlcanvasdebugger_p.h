@@ -39,68 +39,51 @@
 **
 ****************************************************************************/
 
-#ifndef QMLDEBUGGER_H
-#define QMLDEBUGGER_H
+#ifndef QMLCANVASDEBUGGER_P_H
+#define QMLCANVASDEBUGGER_P_H
 
-#include <QtCore/qpointer.h>
-#include <QtCore/qset.h>
 #include <QtGui/qwidget.h>
-
-QT_BEGIN_HEADER
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
+class QSimpleCanvas;
+class QSimpleCanvasItem;
 class QTreeWidget;
 class QTreeWidgetItem;
-class QPlainTextEdit;
-class QmlDebuggerItem;
-class QTableView;
-class QmlPropertyView;
 class QmlWatches;
-class QmlObjectTree;
-class QmlContext;
-class QmlCanvasDebugger;
-class QSimpleCanvas;
-class QmlDebugger : public QWidget
+class QmlCanvasDebugger : public QWidget
 {
-Q_OBJECT
+    Q_OBJECT
 public:
-    QmlDebugger(QWidget *parent = 0);
+    QmlCanvasDebugger(QmlWatches *, QWidget *parent = 0);
 
-    void setDebugObject(QObject *);
     void setCanvas(QSimpleCanvas *);
 
-public slots:
-    void refresh();
+signals:
+    void objectClicked(quint32);
 
 private slots:
+    void refresh();
     void itemClicked(QTreeWidgetItem *);
-    void itemDoubleClicked(QTreeWidgetItem *);
-    void highlightObject(quint32);
-    void addWatch(QObject *, const QString &);
+    void itemExpanded(QTreeWidgetItem *);
+    void itemCollapsed(QTreeWidgetItem *);
+    void setX(int);
+    void setY(int);
 
 private:
-    void buildTree(QObject *obj, QmlDebuggerItem *parent);
-    bool makeItem(QObject *obj, QmlDebuggerItem *item);
-    QmlObjectTree *m_tree;
-    QTreeWidget *m_warnings;
-    QTableView *m_watchTable;
-    QmlWatches *m_watches;
-    QmlCanvasDebugger *m_canvas;
-    QmlPropertyView *m_properties;
-    QPlainTextEdit *m_text;
-    QPointer<QObject> m_object;
-    QPointer<QObject> m_selectedItem;
+    void setOpacityRecur(QTreeWidgetItem *, qreal);
+    void clone(QTreeWidgetItem *, QSimpleCanvasItem *me, QSimpleCanvasItem *them);
 
-    QTreeWidgetItem *m_highlightedItem;
-    QHash<quint32, QTreeWidgetItem *> m_items;
+    QmlWatches *m_watches;
+    QTreeWidget *m_tree;
+    QSimpleCanvas *m_canvas;
+    QSimpleCanvasItem *m_canvasRoot;
+    QPointer<QSimpleCanvas> m_debugCanvas;
+    QTreeWidgetItem *m_selected;
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QMLDEBUGGER_H
+#endif // QMLCANVASDEBUGGER_P_H
 

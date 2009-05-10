@@ -39,68 +39,78 @@
 **
 ****************************************************************************/
 
-#ifndef QMLDEBUGGER_H
-#define QMLDEBUGGER_H
-
-#include <QtCore/qpointer.h>
-#include <QtCore/qset.h>
-#include <QtGui/qwidget.h>
-
-QT_BEGIN_HEADER
+#include "qlistmodelinterface.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
+/*!
+  \class QListModelInterface
+  \brief The QListModelInterface class can be subclassed to provide C++ models to QFx Views
 
-class QTreeWidget;
-class QTreeWidgetItem;
-class QPlainTextEdit;
-class QmlDebuggerItem;
-class QTableView;
-class QmlPropertyView;
-class QmlWatches;
-class QmlObjectTree;
-class QmlContext;
-class QmlCanvasDebugger;
-class QSimpleCanvas;
-class QmlDebugger : public QWidget
-{
-Q_OBJECT
-public:
-    QmlDebugger(QWidget *parent = 0);
+  This class is comprised primarily of pure virtual functions which
+  you must implement in a subclass. You can then use the subclass
+  as a model for a QFx view, such as a QFxListView.
+*/
 
-    void setDebugObject(QObject *);
-    void setCanvas(QSimpleCanvas *);
+/*! \fn QListModelInterface::QListModelInterface(QObject *parent)
+  Constructs a QListModelInterface with the specified \a parent.
+*/
 
-public slots:
-    void refresh();
+  /*! \fn QListModelInterface::QListModelInterface(QObjectPrivate &dd, QObject *parent)
 
-private slots:
-    void itemClicked(QTreeWidgetItem *);
-    void itemDoubleClicked(QTreeWidgetItem *);
-    void highlightObject(quint32);
-    void addWatch(QObject *, const QString &);
+  \internal
+ */
 
-private:
-    void buildTree(QObject *obj, QmlDebuggerItem *parent);
-    bool makeItem(QObject *obj, QmlDebuggerItem *item);
-    QmlObjectTree *m_tree;
-    QTreeWidget *m_warnings;
-    QTableView *m_watchTable;
-    QmlWatches *m_watches;
-    QmlCanvasDebugger *m_canvas;
-    QmlPropertyView *m_properties;
-    QPlainTextEdit *m_text;
-    QPointer<QObject> m_object;
-    QPointer<QObject> m_selectedItem;
+/*! \fn QListModelInterface::~QListModelInterface()
+  The destructor is virtual.
+ */
 
-    QTreeWidgetItem *m_highlightedItem;
-    QHash<quint32, QTreeWidgetItem *> m_items;
-};
+/*! \fn int QListModelInterface::count() const
+  Returns the number of data entries in the model.
+*/
 
+/*! \fn QHash_int QListModelInterface::data(int index, const QList_int &roles) const
+  Returns the data at the given \a index for the specifed \a roles.
+*/
+
+/*! \fn bool QListModelInterface::setData(int index, const QHash_int &values)
+  Sets the data at the given \a index. \a values is a mapping of
+  QVariant values to roles.
+*/
+
+/*! \fn bool QListModelInterface::setData(int index, const QVariant &value, int role)
+  This convenience function builds a QHash_int from
+  the specified \a role and \a value and calls the other setData()
+  with the QHash and the \a index.
+*/
+
+/*! \fn QList_int QListModelInterface::roles() const
+  Returns the list of roles for which the list model interface
+  provides data.
+*/
+
+/*! \fn QString QListModelInterface::toString(int role) const
+  Returns a string description of the specified \a role.
+*/
+
+/*! \enum QListModelInterface::Roles
+
+  Values for representing roles.
+
+  \value TextRole
+
+  \value IconRole
+*/ 
+
+/*!
+  \typedef QListModelInterface::QHash_int
+  
+  Synonym for QHash<int, QVariant>.
+*/
+
+/*!
+  \typedef QListModelInterface::QList_int
+  
+  Synonym for QList<int>.
+*/
 QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QMLDEBUGGER_H
-
