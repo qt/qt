@@ -78,12 +78,6 @@ QT_BEGIN_NAMESPACE
   QVariant values to roles.
 */
 
-/*! \fn bool QListModelInterface::setData(int index, const QVariant &value, int role)
-  This convenience function builds a QHash<int> from
-  the specified \a role and \a value and calls the other setData()
-  with the QHash and the \a index.
-*/
-
 /*! \fn QList<int> QListModelInterface::roles() const
   Returns the list of roles for which the list model interface
   provides data.
