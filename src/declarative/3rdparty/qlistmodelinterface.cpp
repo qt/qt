@@ -69,22 +69,22 @@ QT_BEGIN_NAMESPACE
   Returns the number of data entries in the model.
 */
 
-/*! \fn QHash_int QListModelInterface::data(int index, const QList_int &roles) const
+/*! \fn QHash_int QListModelInterface::data(int index, const QList<int> &roles) const
   Returns the data at the given \a index for the specifed \a roles.
 */
 
-/*! \fn bool QListModelInterface::setData(int index, const QHash_int &values)
+/*! \fn bool QListModelInterface::setData(int index, const QHash<int> &values)
   Sets the data at the given \a index. \a values is a mapping of
   QVariant values to roles.
 */
 
 /*! \fn bool QListModelInterface::setData(int index, const QVariant &value, int role)
-  This convenience function builds a QHash_int from
+  This convenience function builds a QHash<int> from
   the specified \a role and \a value and calls the other setData()
   with the QHash and the \a index.
 */
 
-/*! \fn QList_int QListModelInterface::roles() const
+/*! \fn QList<int> QListModelInterface::roles() const
   Returns the list of roles for which the list model interface
   provides data.
 */
@@ -102,15 +102,4 @@ QT_BEGIN_NAMESPACE
   \value IconRole
 */ 
 
-/*!
-  \typedef QListModelInterface::QHash_int
-  
-  Synonym for QHash<int, QVariant>.
-*/
-
-/*!
-  \typedef QListModelInterface::QList_int
-  
-  Synonym for QList<int>.
-*/
 QT_END_NAMESPACE

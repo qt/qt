@@ -68,21 +68,19 @@ class Q_DECLARATIVE_EXPORT QListModelInterface : public QObject
 
     virtual int count() const = 0;
 
-    typedef QHash<int, QVariant> QHash_int;
-    typedef QList<int> QList_int;
-    virtual QHash_int data(int index, const QList_int &roles = QList_int()) const = 0;
+    virtual QHash<int,QVariant> data(int index, const QList<int> &roles = (QList<int>())) const = 0;
 
-    virtual bool setData(int index, const QHash_int &values) 
+    virtual bool setData(int index, const QHash<int,QVariant> &values)
     { Q_UNUSED(index); Q_UNUSED(values); return false; }
 
     inline bool setData(int index, const QVariant &value, int role)
     {
-        QHash_int values;
+        QHash<int,QVariant> values;
         values.insert(role, value);
         return setData(index, values);
     }
 
-    virtual QList_int roles() const = 0;
+    virtual QList<int> roles() const = 0;
     virtual QString toString(int role) const = 0;
 
     //void bind(int index, int role, QObject *object, const char *propertyName, bool readOnly = true);
@@ -91,7 +89,7 @@ class Q_DECLARATIVE_EXPORT QListModelInterface : public QObject
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
     void itemsMoved(int from, int to, int count);
-    void itemsChanged(int index, int count, const QList_int &roles);
+    void itemsChanged(int index, int count, const QList<int> &roles);
 
  protected:
     QListModelInterface(QObjectPrivate &dd, QObject *parent) 
