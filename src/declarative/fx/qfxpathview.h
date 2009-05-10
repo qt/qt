@@ -122,6 +122,7 @@ protected:
     QFxPathView(QFxPathViewPrivate &dd, QFxItem *parent);
 
 private:
+    friend class QFxPathViewAttached;
     static QHash<QObject*, QObject*> attachedProperties;
     Q_DISABLE_COPY(QFxPathView)
     Q_DECLARE_PRIVATE(QFxPathView)
