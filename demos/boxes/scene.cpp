@@ -680,9 +680,9 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
     if (glActiveTexture) {
         m_environment->bind();
         m_environmentProgram->enable();
-        m_environmentProgram->setUniformValue("tex", 0);
-        m_environmentProgram->setUniformValue("env", 1);
-        m_environmentProgram->setUniformValue("noise", 2);
+        m_environmentProgram->setUniformValue("tex", GLint(0));
+        m_environmentProgram->setUniformValue("env", GLint(1));
+        m_environmentProgram->setUniformValue("noise", GLint(2));
         m_box->draw();
         m_environmentProgram->disable();
         m_environment->unbind();
@@ -715,9 +715,9 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
                 m_environment->bind();
         }
         m_programs[i]->enable();
-        m_programs[i]->setUniformValue("tex", 0);
-        m_programs[i]->setUniformValue("env", 1);
-        m_programs[i]->setUniformValue("noise", 2);
+        m_programs[i]->setUniformValue("tex", GLint(0));
+        m_programs[i]->setUniformValue("env", GLint(1));
+        m_programs[i]->setUniformValue("noise", GLint(2));
         m_programs[i]->setUniformValue("view", view);
         m_programs[i]->setUniformValue("invView", invView);
         m_box->draw();
@@ -746,9 +746,9 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
         }
 
         m_programs[m_currentShader]->enable();
-        m_programs[m_currentShader]->setUniformValue("tex", 0);
-        m_programs[m_currentShader]->setUniformValue("env", 1);
-        m_programs[m_currentShader]->setUniformValue("noise", 2);
+        m_programs[m_currentShader]->setUniformValue("tex", GLint(0));
+        m_programs[m_currentShader]->setUniformValue("env", GLint(1));
+        m_programs[m_currentShader]->setUniformValue("noise", GLint(2));
         m_programs[m_currentShader]->setUniformValue("view", view);
         m_programs[m_currentShader]->setUniformValue("invView", invView);
         m_box->draw();

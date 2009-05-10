@@ -183,7 +183,7 @@ QGLPixmapColorizeFilter::QGLPixmapColorizeFilter()
     m_program.addShader(QGLShader::FragmentShader, qt_gl_colorize_filter);
     m_program.link();
     m_program.enable();
-    m_program.setUniformValue(m_program.uniformLocation("texture"), 0); // GL_TEXTURE_0
+    m_program.setUniformValue(m_program.uniformLocation("texture"), GLint(0)); // GL_TEXTURE_0
     m_colorUniform = m_program.uniformLocation("color");
 }
 
