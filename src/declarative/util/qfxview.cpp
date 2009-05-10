@@ -329,6 +329,7 @@ void QFxView::continueExecute()
             if(qmlDebugger()) {
                 QmlDebugger *debugger = new QmlDebugger;
                 debugger->setDebugObject(item);
+                debugger->setCanvas(this);
                 debugger->show();
                 raise();
                 debugger->raise();

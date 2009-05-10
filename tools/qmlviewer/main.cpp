@@ -47,18 +47,24 @@ int main(int argc, char ** argv)
     //### default to using raster graphics backend for now
     int newargc = argc + 2;
     char **newargv;
-    newargv = new char * [newargc];
+    bool gsSpecified = false;
     for (int i = 0; i < argc; ++i) {
-        newargv[i] = argv[i];
         if (!qstrcmp(argv[i], "-graphicssystem")) {
+            gsSpecified = true;
             newargc -= 2;
             break;
         }
     }
-    char system[] = "-graphicssystem";
-    newargv[argc] = system;
-    char raster[] = "raster";
-    newargv[argc+1] = raster;
+    newargv = new char * [newargc];
+    for (int i = 0; i < argc; ++i) {
+        newargv[i] = argv[i];
+    }
+    if (!gsSpecified) {
+        char system[] = "-graphicssystem";
+        newargv[argc] = system;
+        char raster[] = "raster";
+        newargv[argc+1] = raster;
+    }
 
     QApplication app(newargc, newargv);
     app.setApplicationName("viewer");
