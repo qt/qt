@@ -1,6 +1,8 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlengine.h>
+#include <QtDeclarative/qmlexpression.h>
+#include <QtDeclarative/qmlcontext.h>
 
 class MyQmlObject : public QObject
 {
@@ -75,6 +77,7 @@ private slots:
     void methods();
     void signalAssignment();
     void bindingLoop();
+    void contextPropertiesTriggerReeval();
 
 private:
     QmlEngine engine;
@@ -141,7 +144,7 @@ void tst_qmlbindengine::methods()
         QCOMPARE(object->methodIntCalled(), true);
     }
 }
-#include <QDebug>
+
 void tst_qmlbindengine::bindingLoop()
 {
     QmlComponent component(&engine, "MyQmlContainer { children : [ "\
@@ -151,6 +154,31 @@ void tst_qmlbindengine::bindingLoop()
     //QTest::ignoreMessage(QtWarningMsg, "QML MyQmlObject (unknown location): Binding loop detected for property \"stringProperty\"");
     QObject *object = component.create();
     QVERIFY(object != 0);
+}
+
+class MyExpression : public QmlExpression
+{
+public:
+    MyExpression(QmlContext *ctxt, const QString &expr)
+        : QmlExpression(ctxt, expr, 0), changed(false)
+    {
+    }
+
+    bool changed;
+};
+
+void tst_qmlbindengine::contextPropertiesTriggerReeval()
+{
+    QmlContext context(engine.rootContext());
+    context.setContextProperty("testProp", QVariant(1));
+
+    MyExpression expr(&context, "testProp + 1");
+    QCOMPARE(expr.changed, false);
+    QCOMPARE(expr.value(), QVariant(2));
+
+    context.setContextProperty("testProp", QVariant(2));
+    QCOMPARE(expr.changed, true);
+    QCOMPARE(expr.value(), QVariant(3));
 }
 
 QTEST_MAIN(tst_qmlbindengine)
