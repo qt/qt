@@ -1,6 +1,8 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlengine.h>
+#include <QtDeclarative/qmlexpression.h>
+#include <QtDeclarative/qmlcontext.h>
 
 class MyQmlObject : public QObject
 {
@@ -75,6 +77,7 @@ private slots:
     void methods();
     void signalAssignment();
     void bindingLoop();
+    void contextPropertiesTriggerReeval();
 
 private:
     QmlEngine engine;
@@ -141,7 +144,7 @@ void tst_qmlbindengine::methods()
         QCOMPARE(object->methodIntCalled(), true);
     }
 }
-#include <QDebug>
+
 void tst_qmlbindengine::bindingLoop()
 {
     QmlComponent component(&engine, "MyQmlContainer { children : [ "\
@@ -151,6 +154,73 @@ void tst_qmlbindengine::bindingLoop()
     //QTest::ignoreMessage(QtWarningMsg, "QML MyQmlObject (unknown location): Binding loop detected for property \"stringProperty\"");
     QObject *object = component.create();
     QVERIFY(object != 0);
+}
+
+class MyExpression : public QmlExpression
+{
+public:
+    MyExpression(QmlContext *ctxt, const QString &expr)
+        : QmlExpression(ctxt, expr, 0), changed(false)
+    {
+    }
+
+    virtual void valueChanged() {
+        changed = true;
+    }
+    bool changed;
+};
+
+void tst_qmlbindengine::contextPropertiesTriggerReeval()
+{
+    QmlContext context(engine.rootContext());
+    MyQmlObject object1;
+    MyQmlObject object2;
+
+    object1.setStringProperty("Hello");
+    object2.setStringProperty("World");
+
+    context.setContextProperty("testProp", QVariant(1));
+    context.setContextProperty("testObj", &object1);
+
+    { 
+        MyExpression expr(&context, "testProp + 1");
+        QCOMPARE(expr.changed, false);
+        QCOMPARE(expr.value(), QVariant(2));
+
+        context.setContextProperty("testProp", QVariant(2));
+        QCOMPARE(expr.changed, true);
+        QCOMPARE(expr.value(), QVariant(3));
+    }
+
+    { 
+        MyExpression expr(&context, "testProp + testProp + testProp");
+        QCOMPARE(expr.changed, false);
+        QCOMPARE(expr.value(), QVariant(6));
+
+        context.setContextProperty("testProp", QVariant(4));
+        QCOMPARE(expr.changed, true);
+        QCOMPARE(expr.value(), QVariant(12));
+    }
+
+    { 
+        MyExpression expr(&context, "testObj.stringProperty");
+        QCOMPARE(expr.changed, false);
+        QCOMPARE(expr.value(), QVariant("Hello"));
+
+        context.setContextProperty("testObj", &object2);
+        QCOMPARE(expr.changed, true);
+        QCOMPARE(expr.value(), QVariant("World"));
+    }
+
+    { 
+        MyExpression expr(&context, "testObj.stringProperty /**/");
+        QCOMPARE(expr.changed, false);
+        QCOMPARE(expr.value(), QVariant("World"));
+
+        context.setContextProperty("testObj", &object1);
+        QCOMPARE(expr.changed, true);
+        QCOMPARE(expr.value(), QVariant("Hello"));
+    }
 }
 
 QTEST_MAIN(tst_qmlbindengine)
