@@ -45,6 +45,22 @@
     \since 4.5
     \ingroup animation
     \preliminary
+
+    If you wish to introduce a delay between animations in a
+    QSequentialAnimationGroup, you can insert a QPauseAnimation. This
+    class does not animate anything, but does not
+    \l{QAbstractAnimation::finished()}{finish} before a specified
+    number of milliseconds have elapsed from when it was started. You
+    specify the duration of the pause in the constructor. It can also
+    be set directly with setDuration().    
+
+    It is not necessary to construct a QPauseAnimation yourself.
+    QSequentialAnimationGroup provides the convenience functions
+    \l{QSequentialAnimationGroup::}{addPause()} and
+    \l{QSequentialAnimationGroup::}{insertPauseAt()}. These functions
+    simply take the number of milliseconds the pause should last.
+
+    \sa QSequentialAnimationGroup
 */
 
 #ifndef QT_NO_ANIMATION
