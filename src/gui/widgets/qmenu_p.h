@@ -61,6 +61,9 @@
 #include "QtCore/qbasictimer.h"
 #include "private/qwidget_p.h"
 
+#ifdef Q_OS_SYMBIAN
+class CEikMenuPane;
+#endif
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_MENU
@@ -121,7 +124,6 @@ struct QWceMenuAction {
 };
 #endif
 #ifdef Q_OS_SYMBIAN
-class CEikMenuPane;
 struct QSymbianMenuAction {
     uint command;
     int parent;

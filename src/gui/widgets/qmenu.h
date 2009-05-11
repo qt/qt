@@ -52,13 +52,15 @@
 #endif
 
 QT_BEGIN_HEADER
+#ifdef Q_OS_SYMBIAN
+    class CEikMenuPane;
+#endif
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
 #ifdef Q_OS_SYMBIAN
-    class CEikMenuPane;
     IMPORT_C void qt_symbian_show_toplevel(CEikMenuPane* menuPane);
     IMPORT_C void qt_symbian_show_submenu(CEikMenuPane* menuPane, int id);
 #endif

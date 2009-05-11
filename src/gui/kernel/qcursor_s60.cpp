@@ -14,6 +14,7 @@
 #include <qt_s60_p.h>
 
 #ifdef QT_NO_CURSOR
+QT_BEGIN_NAMESPACE
 
 QPoint QCursor::pos()
 {

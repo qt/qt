@@ -61,6 +61,10 @@
 
 QT_BEGIN_HEADER
 
+#if defined(Q_WS_S60)
+class TWsEvent;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
@@ -84,9 +88,6 @@ class QApplicationPrivate;
 #endif
 #define qApp (static_cast<QApplication *>(QCoreApplication::instance()))
 
-#if defined(Q_WS_S60)
-class TWsEvent;
-#endif
 
 class Q_GUI_EXPORT QApplication : public QCoreApplication
 {
