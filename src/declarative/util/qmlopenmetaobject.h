@@ -43,16 +43,16 @@
 #define QMLOPENMETAOBJECT_H
 
 #include <QMetaObject>
-#include "private/qmetaobjectbuilder_p.h"
-#include <private/qobject_p.h>
+#include <QtCore/private/qobject_p.h>
 #include <QObject>
-
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+class QmlOpenMetaObjectPrivate;
+class QMetaPropertyBuilder;
 class Q_DECLARATIVE_EXPORT QmlOpenMetaObject : public QAbstractDynamicMetaObject
 {
 public:
@@ -78,15 +78,8 @@ protected:
 
 private:
     int doCreateProperty(const char *);
-    bool autoCreate;
-    QAbstractDynamicMetaObject *parent;
-    int _propertyOffset;
-    int _signalOffset;
-    QList<QVariant> data;
-    QHash<QByteArray, int> names;
-    QMetaObjectBuilder mob;
-    QMetaObject *mem;
-    QObject *_object;
+
+    QmlOpenMetaObjectPrivate *d;
 };
 
 
