@@ -1332,6 +1332,7 @@ QSimpleCanvasItem::~QSimpleCanvasItem()
             parent()->remChild(this);
         delete d->graphicsItem;
     } else {
+        update();
         setOptions(MouseFilter, false);
 
         if (d->canvas){
