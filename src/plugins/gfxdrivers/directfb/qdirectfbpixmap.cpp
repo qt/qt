@@ -51,7 +51,7 @@ static int global_ser_no = 0;
 
 QDirectFBPixmapData::QDirectFBPixmapData(PixelType pixelType)
     : QPixmapData(pixelType, DirectFBClass),
-      engine(0)
+      engine(0), format(QImage::Format_Invalid), alpha(false)
 {
     setSerialNumber(0);
 }
@@ -67,81 +67,132 @@ QDirectFBPixmapData::~QDirectFBPixmapData()
 void QDirectFBPixmapData::resize(int width, int height)
 {
     if (width <= 0 || height <= 0) {
-        setSerialNumber(0);
+        invalidate();
         return;
     }
 
-    DFBSurfaceDescription description;
-    description.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH |
-                                                   DSDESC_HEIGHT);
-    description.width = width;
-    description.height = height;
-
-    dfbSurface = screen->createDFBSurface(&description);
-    if (!dfbSurface)
-        qCritical("QDirectFBPixmapData::resize(): Unable to allocate surface");
+    format = screen->pixelFormat();
+    dfbSurface = QDirectFBScreen::instance()->createDFBSurface(QSize(width, height),
+                                                               format,
+                                                               QDirectFBScreen::TrackSurface);
+    alpha = false;
+    forceRaster = (format == QImage::Format_RGB32);
+    if (!dfbSurface) {
+        invalidate();
+        qWarning("QDirectFBPixmapData::resize(): Unable to allocate surface");
+        return;
+    }
 
     setSerialNumber(++global_ser_no);
 }
 
-void QDirectFBPixmapData::fromImage(const QImage &img,
-                                    Qt::ImageConversionFlags)
+
+// mostly duplicated from qimage.cpp (QImageData::checkForAlphaPixels)
+static bool checkForAlphaPixels(const QImage &img)
 {
-    QImage image;
-    if (QDirectFBScreen::getSurfacePixelFormat(img) == DSPF_UNKNOWN)
-        image = img.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-    else
-        image = img;
+    const uchar *bits = img.bits();
+    const int bytes_per_line = img.bytesPerLine();
+    const uchar *end_bits = bits + bytes_per_line;
+    const int width = img.width();
+    const int height = img.height();
+    switch (img.format()) {
+    case QImage::Format_Indexed8:
+        return img.hasAlphaChannel();
+    case QImage::Format_ARGB32:
+    case QImage::Format_ARGB32_Premultiplied:
+        for (int y=0; y<height; ++y) {
+            for (int x=0; x<width; ++x) {
+                if ((((uint *)bits)[x] & 0xff000000) != 0xff000000) {
+                    return true;
+                }
+            }
+            bits += bytes_per_line;
+        }
+        break;
 
-    DFBSurfaceDescription description;
-    description = QDirectFBScreen::getSurfaceDescription(image);
+    case QImage::Format_ARGB8555_Premultiplied:
+    case QImage::Format_ARGB8565_Premultiplied:
+        for (int y=0; y<height; ++y) {
+            while (bits < end_bits) {
+                if (bits[0] != 0) {
+                    return true;
+                }
+                bits += 3;
+            }
+            bits = end_bits;
+            end_bits += bytes_per_line;
+        }
+        break;
 
-#ifndef QT_NO_DIRECTFB_PREALLOCATED
-    IDirectFBSurface *imgSurface;
-    imgSurface = screen->createDFBSurface(&description);
-    if (!imgSurface) {
-        qWarning("QDirectFBPixmapData::fromImage()");
-        setSerialNumber(0);
-        return;
+    case QImage::Format_ARGB6666_Premultiplied:
+        for (int y=0; y<height; ++y) {
+            while (bits < end_bits) {
+                if ((bits[0] & 0xfc) != 0) {
+                    return true;
+                }
+                bits += 3;
+            }
+            bits = end_bits;
+            end_bits += bytes_per_line;
+        }
+        break;
+
+    case QImage::Format_ARGB4444_Premultiplied:
+        for (int y=0; y<height; ++y) {
+            while (bits < end_bits) {
+                if ((bits[0] & 0xf0) != 0) {
+                    return true;
+                }
+                bits += 2;
+            }
+            bits = end_bits;
+            end_bits += bytes_per_line;
+        }
+        break;
+
+    default:
+        break;
     }
-#ifndef QT_NO_DIRECTFB_PALETTE
-    QDirectFBScreen::setSurfaceColorTable(imgSurface, image);
-#endif
-#endif // QT_NO_DIRECTFB_PREALLOCATED
 
-    description.flags = DFBSurfaceDescriptionFlags(description.flags
-                                                   & ~DSDESC_PREALLOCATED);
-    dfbSurface = screen->createDFBSurface(&description);
+    return false;
+}
+
+bool QDirectFBPixmapData::hasAlphaChannel(const QImage &img)
+{
+#ifndef QT_NO_DIRECTFB_OPAQUE_DETECTION
+    return ::checkForAlphaPixels(img);
+#else
+    return img.hasAlphaChannel();
+#endif
+}
+
+
+void QDirectFBPixmapData::fromImage(const QImage &i,
+                                    Qt::ImageConversionFlags flags)
+{
+#ifdef QT_NO_DIRECTFB_OPAQUE_DETECTION
+    Q_UNUSED(flags);
+#endif
+    const QImage img = (i.depth() == 1 ? i.convertToFormat(screen->alphaPixmapFormat()) : i);
+    if (img.hasAlphaChannel()
+#ifndef QT_NO_DIRECTFB_OPAQUE_DETECTION
+        && (flags & Qt::NoOpaqueDetection || QDirectFBPixmapData::hasAlphaChannel(img))
+#endif
+        ) {
+        alpha = true;
+        format = screen->alphaPixmapFormat();
+    } else {
+        alpha = false;
+        format = screen->pixelFormat();
+    }
+    dfbSurface = screen->copyToDFBSurface(img, format,
+                                          QDirectFBScreen::TrackSurface);
+    forceRaster = (format == QImage::Format_RGB32);
     if (!dfbSurface) {
         qWarning("QDirectFBPixmapData::fromImage()");
-        setSerialNumber(0);
+        invalidate();
         return;
     }
-
-#ifndef QT_NO_DIRECTFB_PALETTE
-    QDirectFBScreen::setSurfaceColorTable(dfbSurface, image);
-#endif
-
-#ifdef QT_NO_DIRECTFB_PREALLOCATED
-    char *mem;
-    surface->Lock(surface, DSLF_WRITE, (void**)&mem, &bpl);
-    const int w = image.width() * image.depth() / 8;
-    for (int i = 0; i < image.height(); ++i) {
-        memcpy(mem, image.scanLine(i), w);
-        mem += bpl;
-    }
-    surface->Unlock(surface);
-#else
-    DFBResult result;
-    dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
-    result = dfbSurface->Blit(dfbSurface, imgSurface, 0, 0, 0);
-    if (result != DFB_OK)
-        DirectFBError("QDirectFBPixmapData::fromImage()", result);
-    dfbSurface->Flip(dfbSurface, 0, DSFLIP_NONE);
-    dfbSurface->ReleaseSource(dfbSurface);
-    screen->releaseDFBSurface(imgSurface);
-#endif // QT_NO_DIRECTFB_PREALLOCATED
-
     setSerialNumber(++global_ser_no);
 }
 
@@ -152,43 +203,55 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
         return;
     }
 
-    IDirectFBSurface *src = static_cast<const QDirectFBPixmapData*>(data)->directFbSurface();
+    IDirectFBSurface *src = static_cast<const QDirectFBPixmapData*>(data)->directFBSurface();
+    const bool hasAlpha = data->hasAlphaChannel();
+    format = (hasAlpha
+              ? QDirectFBScreen::instance()->alphaPixmapFormat()
+              : QDirectFBScreen::instance()->pixelFormat());
 
-    DFBSurfaceDescription description;
-    description.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH |
-                                                   DSDESC_HEIGHT |
-                                                   DSDESC_PIXELFORMAT);
-    description.width = rect.width();
-    description.height = rect.height();
-    src->GetPixelFormat(src, &description.pixelformat);
-
-    dfbSurface = screen->createDFBSurface(&description);
+    dfbSurface = screen->createDFBSurface(rect.size(), format,
+                                          QDirectFBScreen::TrackSurface);
     if (!dfbSurface) {
         qWarning("QDirectFBPixmapData::copy()");
-        setSerialNumber(0);
+        invalidate();
         return;
     }
+    forceRaster = (format == QImage::Format_RGB32);
 
-    DFBResult result;
-#ifndef QT_NO_DIRECTFB_PALETTE
-    IDirectFBPalette *palette;
-    result = src->GetPalette(src, &palette);
-    if (result == DFB_OK) {
-        dfbSurface->SetPalette(dfbSurface, palette);
-        palette->Release(palette);
+    if (hasAlpha) {
+        dfbSurface->Clear(dfbSurface, 0, 0, 0, 0);
+        dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_BLEND_ALPHACHANNEL);
+    } else {
+        dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
     }
-#endif
-
-    dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
     const DFBRectangle blitRect = { rect.x(), rect.y(),
                                     rect.width(), rect.height() };
-    result = dfbSurface->Blit(dfbSurface, src, &blitRect, 0, 0);
-    if (result != DFB_OK)
+    DFBResult result = dfbSurface->Blit(dfbSurface, src, &blitRect, 0, 0);
+    dfbSurface->ReleaseSource(dfbSurface);
+    if (result != DFB_OK) {
         DirectFBError("QDirectFBPixmapData::copy()", result);
+        invalidate();
+        return;
+    }
 
     setSerialNumber(++global_ser_no);
 }
 
+static inline bool isOpaqueFormat(QImage::Format format)
+{
+    switch (format) {
+    case QImage::Format_RGB32:
+    case QImage::Format_RGB16:
+    case QImage::Format_RGB666:
+    case QImage::Format_RGB555:
+    case QImage::Format_RGB888:
+    case QImage::Format_RGB444:
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
 
 void QDirectFBPixmapData::fill(const QColor &color)
 {
@@ -197,72 +260,40 @@ void QDirectFBPixmapData::fill(const QColor &color)
 
     Q_ASSERT(dfbSurface);
 
-    if (color.alpha() < 255 && !hasAlphaChannel()) {
-        // convert to surface supporting alpha channel
-        DFBSurfacePixelFormat format;
-        dfbSurface->GetPixelFormat(dfbSurface, &format);
-        switch (format) {
-        case DSPF_YUY2:
-        case DSPF_UYVY:
-            format = DSPF_AYUV;
-            break;
-#if (Q_DIRECTFB_VERSION >= 0x010100)
-        case DSPF_RGB444:
-            format = DSPF_ARGB4444;
-            break;
-        case DSPF_RGB555:
-#endif
-        case DSPF_RGB18:
-            format = DSPF_ARGB6666;
-            break;
-        default:
-            format = DSPF_ARGB;
-            break;
-        }
+    alpha = (color.alpha() < 255);
 
-        DFBSurfaceDescription description;
-        description.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH |
-                                                       DSDESC_HEIGHT |
-                                                       DSDESC_PIXELFORMAT);
-        dfbSurface->GetSize(dfbSurface, &description.width, &description.height);
-        description.pixelformat = format;
-        screen->releaseDFBSurface(dfbSurface); // release old surface
-
-        dfbSurface = screen->createDFBSurface(&description);
+    if (alpha && ::isOpaqueFormat(format)) {
+        QSize size;
+        dfbSurface->GetSize(dfbSurface, &size.rwidth(), &size.rheight());
+        screen->releaseDFBSurface(dfbSurface);
+        format = screen->alphaPixmapFormat();
+        dfbSurface = screen->createDFBSurface(size, screen->alphaPixmapFormat(), QDirectFBScreen::TrackSurface);
+        forceRaster = false;
+        setSerialNumber(++global_ser_no);
         if (!dfbSurface) {
-            qWarning("QDirectFBPixmapData::fill()");
-            setSerialNumber(0);
+            qWarning("QDirecttFBPixmapData::fill()");
+            invalidate();
             return;
         }
     }
 
-    dfbSurface->Clear(dfbSurface, color.red(), color.green(), color.blue(),
-                      color.alpha());
-}
-
-bool QDirectFBPixmapData::hasAlphaChannel() const
-{
-    if (!serialNumber())
-        return false;
-
-    DFBSurfacePixelFormat format;
-    dfbSurface->GetPixelFormat(dfbSurface, &format);
-    switch (format) {
-    case DSPF_ARGB1555:
-    case DSPF_ARGB:
-    case DSPF_LUT8:
-    case DSPF_AiRGB:
-    case DSPF_A1:
-    case DSPF_ARGB2554:
-    case DSPF_ARGB4444:
-    case DSPF_AYUV:
-    case DSPF_A4:
-    case DSPF_ARGB1666:
-    case DSPF_ARGB6666:
-    case DSPF_LUT2:
-        return true;
-    default:
-        return false;
+    if (forceRaster) {
+        // in DSPF_RGB32 all dfb drawing causes the Alpha byte to be
+        // set to 0. This causes issues for the raster engine.
+        uchar *mem = QDirectFBScreen::lockSurface(dfbSurface, DSLF_WRITE, &bpl);
+        if (mem) {
+            const int h = QPixmapData::height();
+            const int w = QPixmapData::width() * 4; // 4 bytes per 32 bit pixel
+            const int c = color.rgba();
+            for (int i = 0; i < h; ++i) {
+                memset(mem, c, w);
+                mem += bpl;
+            }
+            dfbSurface->Unlock(dfbSurface);
+        }
+    } else {
+        dfbSurface->Clear(dfbSurface, color.red(), color.green(), color.blue(),
+                          color.alpha());
     }
 }
 
@@ -274,14 +305,12 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
     {
         QDirectFBPixmapData *that = const_cast<QDirectFBPixmapData*>(this);
         const QImage *image = that->buffer();
-        if (image) { // avoid deep copy
-            const QImage transformed = image->transformed(transform, mode);
-            that->unlockDirectFB();
-            QDirectFBPixmapData *data = new QDirectFBPixmapData(pixelType());
-            data->fromImage(transformed, Qt::AutoColor);
-            return QPixmap(data);
-        }
-        return QPixmapData::transformed(transform, mode);
+        Q_ASSERT(image);
+        const QImage transformed = image->transformed(transform, mode);
+        that->unlockDirectFB();
+        QDirectFBPixmapData *data = new QDirectFBPixmapData(QPixmapData::PixmapType);
+        data->fromImage(transformed, Qt::AutoColor);
+        return QPixmap(data);
     }
 
     int w, h;
@@ -291,15 +320,23 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
     if (size.isEmpty())
         return QPixmap();
 
-    QDirectFBPixmapData *data = new QDirectFBPixmapData(pixelType());
-    data->resize(size.width(), size.height());
+    QDirectFBPixmapData *data = new QDirectFBPixmapData(QPixmapData::PixmapType);
+    DFBSurfaceBlittingFlags flags = DSBLIT_NOFX;
+    data->alpha = alpha;
+    if (alpha) {
+        flags = DSBLIT_BLEND_ALPHACHANNEL;
+    }
+    data->dfbSurface = screen->createDFBSurface(size,
+                                                format,
+                                                QDirectFBScreen::TrackSurface);
+    if (flags & DSBLIT_BLEND_ALPHACHANNEL) {
+        data->dfbSurface->Clear(data->dfbSurface, 0, 0, 0, 0);
+    }
+    data->dfbSurface->SetBlittingFlags(data->dfbSurface, flags);
 
-    IDirectFBSurface *dest = data->dfbSurface;
-    dest->SetBlittingFlags(dest, DSBLIT_NOFX);
-
-    const DFBRectangle srcRect = { 0, 0, w, h };
     const DFBRectangle destRect = { 0, 0, size.width(), size.height() };
-    dest->StretchBlit(dest, dfbSurface, &srcRect, &destRect);
+    data->dfbSurface->StretchBlit(data->dfbSurface, dfbSurface, 0, &destRect);
+    data->dfbSurface->ReleaseSource(data->dfbSurface);
 
     return QPixmap(data);
 }
@@ -309,42 +346,28 @@ QImage QDirectFBPixmapData::toImage() const
     if (!dfbSurface)
         return QImage();
 
-#ifdef QT_NO_DIRECTFB_PREALLOCATED
+#ifndef QT_NO_DIRECTFB_PREALLOCATED
+    QImage ret(size(), QDirectFBScreen::getImageFormat(dfbSurface));
+    if (IDirectFBSurface *imgSurface = screen->createDFBSurface(ret, QDirectFBScreen::DontTrackSurface)) {
+        if (hasAlphaChannel()) {
+            imgSurface->SetBlittingFlags(imgSurface, DSBLIT_BLEND_ALPHACHANNEL);
+            imgSurface->Clear(imgSurface, 0, 0, 0, 0);
+        } else {
+            imgSurface->SetBlittingFlags(imgSurface, DSBLIT_NOFX);
+        }
+        imgSurface->Blit(imgSurface, dfbSurface, 0, 0, 0);
+        imgSurface->ReleaseSource(imgSurface);
+        imgSurface->Release(imgSurface);
+        return ret;
+    }
+#endif
+
     QDirectFBPixmapData *that = const_cast<QDirectFBPixmapData*>(this);
     const QImage *img = that->buffer();
-    const QImage copied = img->copy();
-    that->unlockDirectFB();
-    return copied;
-#else
-
-    int w, h;
-    dfbSurface->GetSize(dfbSurface, &w, &h);
-
-    // Always convert to ARGB32:
-    QImage image(w, h, QImage::Format_ARGB32);
-
-    DFBSurfaceDescription description;
-    description = QDirectFBScreen::getSurfaceDescription(image);
-
-    IDirectFBSurface *imgSurface = screen->createDFBSurface(&description);
-    if (!imgSurface) {
-        qWarning("QDirectFBPixmapData::toImage()");
-        return QImage();
-    }
-
-    imgSurface->SetBlittingFlags(imgSurface, DSBLIT_NOFX);
-    DFBResult result = imgSurface->Blit(imgSurface, dfbSurface, 0, 0, 0);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFBPixmapData::toImage() blit failed", result);
-        return QImage();
-    }
-    screen->releaseDFBSurface(imgSurface);
-
-    return image;
-#endif // QT_NO_DIRECTFB_PREALLOCATED
+    return img->copy();
 }
 
-QPaintEngine* QDirectFBPixmapData::paintEngine() const
+QPaintEngine *QDirectFBPixmapData::paintEngine() const
 {
     if (!engine) {
         // QDirectFBPixmapData is also a QCustomRasterPaintDevice, so pass
@@ -355,9 +378,22 @@ QPaintEngine* QDirectFBPixmapData::paintEngine() const
     return engine;
 }
 
-
-QImage* QDirectFBPixmapData::buffer()
+QImage *QDirectFBPixmapData::buffer()
 {
-    lockDirectFB();
+    lockDirectFB(DSLF_READ|DSLF_WRITE);
     return lockedImage;
 }
+
+QImage * QDirectFBPixmapData::buffer(uint lockFlags)
+{
+    lockDirectFB(lockFlags);
+    return lockedImage;
+}
+
+void QDirectFBPixmapData::invalidate()
+{
+    setSerialNumber(0);
+    alpha = false;
+    format = QImage::Format_Invalid;
+}
+

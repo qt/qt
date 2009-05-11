@@ -365,9 +365,9 @@ void QSelectThread::requestSocketEvents ( QSocketNotifier *notifier, TRequestSta
         start();
     }
 
-    Q_ASSERT(!m_AOStatuses.contains(notifier));
-
     QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex);
+    
+    Q_ASSERT(!m_AOStatuses.contains(notifier));    
 
     m_AOStatuses.insert(notifier, status);
 
@@ -502,15 +502,11 @@ void QEventDispatcherSymbian::closingDown()
     if (m_selectThread.isRunning()) {
         m_selectThread.stop();
     }
-/*
-    We do have bug in AO cancel mechanism, unfortunately it was too late
-    to fix it for Garden release. This has to be fixed after Garden, see task: 246600
+
     delete m_wakeUpAO;
     if (m_activeScheduler) {
-        CActiveScheduler::Install(NULL);
         delete m_activeScheduler;
     }
-    */
 }
 
 bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags flags )

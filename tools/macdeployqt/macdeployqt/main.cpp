@@ -63,7 +63,7 @@ int main(int argc, char **argv)
         qDebug() << "framework. The accessibilty, image formats, and text codec";
         qDebug() << "plugins are always copied, unless \"-no-plugins\" is specified.";
         qDebug() << "";
-        qDebug() << "See the \"Deploying an Application on Qt/Mac\" typic in the";
+        qDebug() << "See the \"Deploying an Application on Qt/Mac\" topic in the";
         qDebug() << "documentation for more information about deployment on Mac OS X.";
 
         return 0;

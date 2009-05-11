@@ -52,6 +52,8 @@
 
 #include <QtHelp/QHelpEngineCore>
 
+#include <QtNetwork/QLocalSocket>
+
 #include <QtSql/QSqlDatabase>
 
 #include "mainwindow.h"
@@ -166,6 +168,17 @@ referencedHelpFilesExistAll(QHelpEngineCore& user, QStringList& nameSpaces)
     return (counter != nameSpaces.count()) ? false : true;
 }
 
+QString indexFilesFolder(const QString &collectionFile)
+{
+    QString indexFilesFolder = QLatin1String(".fulltextsearch");
+    if (!collectionFile.isEmpty()) {
+        QFileInfo fi(collectionFile);
+        indexFilesFolder = QLatin1Char('.') +
+            fi.fileName().left(fi.fileName().lastIndexOf(QLatin1String(".qhc")));
+    }
+    return indexFilesFolder;
+}
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -210,6 +223,28 @@ int main(int argc, char *argv[])
         }
         help.setCustomValue(QLatin1String("DocUpdate"), true);
         return 0;
+    }
+
+    if (cmd.removeSearchIndex()) {
+        QString file = cmdCollectionFile;
+        if (file.isEmpty())
+            file = MainWindow::defaultHelpCollectionFileName();
+        QString path = QFileInfo(file).path();
+        path += QLatin1String("/") + indexFilesFolder(file);
+
+        QLocalSocket localSocket;
+        localSocket.connectToServer(QString(QLatin1String("QtAssistant%1"))
+            .arg(QLatin1String(QT_VERSION_STR)));
+
+        QDir dir(path); // check if there is no other instance ruinning
+        if (!localSocket.waitForConnected() && dir.exists()) {
+            QStringList lst = dir.entryList(QDir::Files | QDir::Hidden);
+            foreach (const QString &item, lst)
+                dir.remove(item);
+            return 0;
+        } else {
+            return -1;
+        }
     }
 
     {

@@ -1,6 +1,6 @@
 TEMPLATE = lib
 isEmpty(QT_MAJOR_VERSION) {
-   VERSION=4.5.1
+   VERSION=4.5.2
 } else {
    VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 }
@@ -16,9 +16,5 @@ wince*:LIBS += $$QMAKE_LIBS_GUI
 
 symbian: {
     TARGET.EPOCALLOWDLLDATA=1
-    contains(QT_EDITION, OpenSource) {
-        TARGET.CAPABILITY = LocalServices NetworkServices ReadUserData UserEnvironment WriteUserData
-    } else {
-        TARGET.CAPABILITY = All -Tcb        
-    }
+    TARGET.CAPABILITY = All -Tcb        
 }

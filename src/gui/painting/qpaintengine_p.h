@@ -83,10 +83,12 @@ public:
         if (systemClip.isEmpty())
             return;
 
-        if (systemTransform.type() <= QTransform::TxTranslate)
-            systemClip.translate(qRound(systemTransform.dx()), qRound(systemTransform.dy()));
-        else
-            systemClip = systemTransform.map(systemClip);
+        if (hasSystemTransform) {
+            if (systemTransform.type() <= QTransform::TxTranslate)
+                systemClip.translate(qRound(systemTransform.dx()), qRound(systemTransform.dy()));
+            else
+                systemClip = systemTransform.map(systemClip);
+        }
 
         // Make sure we're inside the viewport.
         if (hasSystemViewport) {
@@ -101,7 +103,7 @@ public:
     inline void setSystemTransform(const QTransform &xform)
     {
         systemTransform = xform;
-        if ((hasSystemTransform = !xform.isIdentity()))
+        if ((hasSystemTransform = !xform.isIdentity()) || hasSystemViewport)
             transformSystemClip();
         systemStateChanged();
     }

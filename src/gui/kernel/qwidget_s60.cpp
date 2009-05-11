@@ -99,7 +99,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
             // disable it for this particular widget.
             if (inTopLevelResize)
                 tlwExtra->inTopLevelResize = false;
-            if (!isResize)
+            if (!isResize && maybeBackingStore())
                 moveRect(QRect(oldPos, oldSize), x - oldPos.x(), y - oldPos.y());
             else
                 invalidateBuffer_resizeHelper(oldPos, oldSize);
@@ -195,13 +195,22 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
             data.crect.moveTopLeft(QPoint(clientRect.iTl.iX, clientRect.iTl.iY));
         QSymbianControl *control= new QSymbianControl(q);
         control->ConstructL(true,desktop);
-        if (!desktop)
-        {
+        if (!desktop) {
             QTLWExtra *topExtra = topData();
             topExtra->rwindow = control->DrawableWindow();
             // Request mouse move events.
-            topExtra->rwindow->PointerFilter(EPointerFilterEnterExit | EPointerFilterMove | EPointerFilterDrag, 0);
+            topExtra->rwindow->PointerFilter(EPointerFilterEnterExit
+                | EPointerFilterMove | EPointerFilterDrag, 0);
+            topExtra->rwindow->EnableVisibilityChangeEvents();
+
+            if (!isOpaque) {
+                RWindow *rwindow = static_cast<RWindow*>(topExtra->rwindow);
+                TDisplayMode gotDM = (TDisplayMode)rwindow->SetRequiredDisplayMode(EColor16MA);
+                if (rwindow->SetTransparencyAlphaChannel() == KErrNone)
+                    rwindow->SetBackgroundColor(TRgb(255, 255, 255, 0));
+            }
         }
+
 
         id = (WId)control;
 
@@ -428,6 +437,30 @@ void QWidgetPrivate::setConstraints_sys()
 
 }
 
+
+void QWidgetPrivate::s60UpdateIsOpaque()
+{
+    Q_Q(QWidget);
+
+    if (!q->testAttribute(Qt::WA_WState_Created) || !q->testAttribute(Qt::WA_TranslucentBackground))
+        return;
+
+    if ((data.window_flags & Qt::FramelessWindowHint) == 0)
+        return;
+
+    if (!isOpaque) {
+        QTLWExtra *topExtra = topData();
+        RWindow *rwindow = static_cast<RWindow*>(topExtra->rwindow);
+        TDisplayMode gotDM = (TDisplayMode)rwindow->SetRequiredDisplayMode(EColor16MA);
+        if (rwindow->SetTransparencyAlphaChannel() == KErrNone)
+            rwindow->SetBackgroundColor(TRgb(255, 255, 255, 0));
+    } else {
+        QTLWExtra *topExtra = topData();
+        RWindow *rwindow = static_cast<RWindow*>(topExtra->rwindow);
+        rwindow->SetTransparentRegion(TRegionFix<1>());
+    }
+}
+
 CFbsBitmap* qt_pixmapToNativeBitmapL(QPixmap pixmap, bool invert)
 {
     CFbsBitmap* fbsBitmap = new(ELeave)CFbsBitmap;
@@ -573,9 +606,9 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
        TRANSPARENCY
     To a line in the wsini.ini file.
 */
-void QWidgetPrivate::setWindowOpacity_sys(qreal level)
+void QWidgetPrivate::setWindowOpacity_sys(qreal)
 {
-
+    // ### TODO: Implement uniform window transparency
 }
 
 void QWidgetPrivate::updateFrameStrut()

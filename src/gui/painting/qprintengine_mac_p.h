@@ -143,6 +143,7 @@ public:
                                hasCustomPaperSize(false), hasCustomPageMargins(false) {}
     ~QMacPrintEnginePrivate();
     void initialize();
+    void releaseSession();
     bool newPage_helper();
     void setPaperSize(QPrinter::PaperSize ps);
     QPrinter::PaperSize paperSize() const;

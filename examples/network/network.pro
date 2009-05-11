@@ -11,6 +11,7 @@ SUBDIRS       = blockingfortuneclient \
                 http \
                 loopback \
                 threadedfortuneserver \
+                googlesuggest \
                 torrent
 
 symbian: SUBDIRS = ftp

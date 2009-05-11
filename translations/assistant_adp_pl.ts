@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="pl">
+<!DOCTYPE TS>
+<TS version="2.0" language="pl">
 <context>
     <name>AssistantServer</name>
     <message>
-        <location filename="../tools/assistant/compat/main.cpp" line="+195"/>
+        <location filename="../tools/assistant/compat/main.cpp" line="+225"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
     </message>
@@ -16,7 +17,7 @@
 <context>
     <name>FontPanel</name>
     <message>
-        <location filename="../tools/shared/fontpanel/fontpanel.cpp" line="+33"/>
+        <location filename="../tools/shared/fontpanel/fontpanel.cpp" line="+63"/>
         <source>Font</source>
         <translation>Czcionka</translation>
     </message>
@@ -44,7 +45,7 @@
 <context>
     <name>FontSettingsDialog</name>
     <message>
-        <location filename="../tools/assistant/compat/fontsettingsdialog.cpp" line="+33"/>
+        <location filename="../tools/assistant/compat/fontsettingsdialog.cpp" line="+63"/>
         <source>Font Settings</source>
         <translation>Ustawienia czcionki</translation>
     </message>
@@ -72,7 +73,7 @@
 <context>
     <name>HelpDialog</name>
     <message>
-        <location filename="../tools/assistant/compat/helpdialog.cpp" line="+248"/>
+        <location filename="../tools/assistant/compat/helpdialog.cpp" line="+279"/>
         <source>Open Link in Current Tab</source>
         <translation>Otwórz odsyłacz w bieżącej karcie</translation>
     </message>
@@ -95,12 +96,12 @@
     <message>
         <location line="-64"/>
         <location line="+16"/>
-        <location line="+659"/>
+        <location line="+661"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location line="-675"/>
+        <location line="-677"/>
         <source>Failed to load keyword index file
 Assistant will not work!</source>
         <translation>Nie można wczytać indeksu słów kluczowych
@@ -141,7 +142,7 @@ Plik zostaje pominięty.</translation>
     </message>
     <message>
         <location line="+48"/>
-        <location line="+467"/>
+        <location line="+469"/>
         <source>Done</source>
         <translation>Zrobione</translation>
     </message>
@@ -346,7 +347,7 @@ Assistant nie będzie działał!</translation>
 <context>
     <name>HelpWindow</name>
     <message>
-        <location filename="../tools/assistant/compat/helpwindow.cpp" line="+67"/>
+        <location filename="../tools/assistant/compat/helpwindow.cpp" line="+97"/>
         <source>Help</source>
         <translation>Pomoc</translation>
     </message>
@@ -396,7 +397,7 @@ Assistant nie będzie działał!</translation>
 <context>
     <name>Index</name>
     <message>
-        <location filename="../tools/assistant/compat/index.cpp" line="+355"/>
+        <location filename="../tools/assistant/compat/index.cpp" line="+385"/>
         <source>Untitled</source>
         <translation>Nienazwany</translation>
     </message>
@@ -404,7 +405,7 @@ Assistant nie będzie działał!</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+73"/>
+        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+103"/>
         <source>Sidebar</source>
         <translation>Panel</translation>
     </message>
@@ -479,22 +480,15 @@ Assistant nie będzie działał!</translation>
         <translation>Pokazuje główną stronę wybranego zestawu dokumentacji.</translation>
     </message>
     <message>
-        <location line="+35"/>
         <source>Open Source Edition</source>
-        <translation>Wydanie Open Source</translation>
+        <translation type="obsolete">Wydanie Open Source</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>This version of Qt Assistant is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.</source>
-        <translation>Ta wersja Qt Assistant jest częścią wydania Qt Open Source, przeznaczonego do tworzenia aplikacji Open Source. Qt zawiera obszerny zestaw bibliotek wykorzystywanych do pisania przenośnych aplikacji.</translation>
+        <translation type="obsolete">Ta wersja Qt Assistant jest częścią wydania Qt Open Source, przeznaczonego do tworzenia aplikacji Open Source. Qt zawiera obszerny zestaw bibliotek wykorzystywanych do pisania przenośnych aplikacji.</translation>
     </message>
     <message>
-        <location line="+16"/>
-        <source>This program is licensed to you under the terms of the Qt Commercial License Agreement. For details, see the file LICENSE that came with this software distribution.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
+        <location line="+49"/>
         <location line="+1"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
@@ -865,14 +859,8 @@ Assistant nie będzie działał!</translation>
         <translation>Ustawienia czcionki...</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="-492"/>
         <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qtsoftware.com/company/model&quot;&gt;qtsoftware.com/company/model&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation>Aby móc tworzyć przy pomocy Qt własne aplikacje bez publikowania kodu (closed source) potrzebujesz wydania komercyjnego. Opis sposobów licencjonowania Qt znajduje się na stronie &lt;a href=&quot;http://qtsoftware.com/company/model.html&quot;&gt;qtsoftware.com/company/model.html&lt;/a&gt;.</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>This program is licensed to you under the terms of the Qt %1 License Agreement. For details, see the license file that came with this software distribution.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Aby móc tworzyć przy pomocy Qt własne aplikacje bez publikowania kodu (closed source) potrzebujesz wydania komercyjnego. Opis sposobów licencjonowania Qt znajduje się na stronie &lt;a href=&quot;http://qtsoftware.com/company/model.html&quot;&gt;qtsoftware.com/company/model.html&lt;/a&gt;.</translation>
     </message>
 </context>
 <context>
@@ -882,7 +870,7 @@ Assistant nie będzie działał!</translation>
         <translation type="obsolete">Qt Assistant Trolltech&apos;a</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/config.cpp" line="+320"/>
+        <location filename="../tools/assistant/compat/config.cpp" line="+350"/>
         <source>Qt Assistant by Nokia</source>
         <translation type="unfinished"></translation>
     </message>
@@ -890,7 +878,7 @@ Assistant nie będzie działał!</translation>
 <context>
     <name>TabbedBrowser</name>
     <message>
-        <location filename="../tools/assistant/compat/tabbedbrowser.cpp" line="+119"/>
+        <location filename="../tools/assistant/compat/tabbedbrowser.cpp" line="+149"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -958,7 +946,7 @@ Assistant nie będzie działał!</translation>
 <context>
     <name>TopicChooser</name>
     <message>
-        <location filename="../tools/assistant/compat/topicchooser.cpp" line="+26"/>
+        <location filename="../tools/assistant/compat/topicchooser.cpp" line="+56"/>
         <source>Choose a topic for &lt;b&gt;%1&lt;/b&gt;</source>
         <translation>Wybierz temat dla &lt;b&gt;%1&lt;/b&gt;</translation>
     </message>

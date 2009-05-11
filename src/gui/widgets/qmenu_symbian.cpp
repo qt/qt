@@ -33,7 +33,7 @@ QT_BEGIN_NAMESPACE
 
 // ### FIX/Document this, we need some safe range of menu id's for Qt that don't clash with AIW ones
 #define QT_FIRST_MENU_ITEM 32000
-static QMenuBarPrivate *s60_menubar=0;
+static QList<QMenuBarPrivate *> s60_menubars;
 
 struct SymbianMenuItem
 {
@@ -167,7 +167,7 @@ static void setSoftkeys()
 {
     CEikButtonGroupContainer* cba = CEikonEnv::Static()->AppUiFactory()->Cba();
     if (cba){
-    if (s60_menubar)
+    if (s60_menubars.count()>0)
         cba->SetCommandSetL(R_AVKON_SOFTKEYS_OPTIONS_EXIT);
     else
         cba->SetCommandSetL(R_AVKON_SOFTKEYS_EXIT);
@@ -178,11 +178,11 @@ static void rebuildMenu()
 {
     qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
     deleteAll( &symbianMenus );
-    if (!s60_menubar)
+    if (s60_menubars.count()==0)
         return;
-    for (int i = 0; i < s60_menubar->actions.size(); ++i) {
+    for (int i = 0; i < s60_menubars.last()->actions.size(); ++i) {
         QSymbianMenuAction *symbianActionTopLevel = new QSymbianMenuAction;
-        symbianActionTopLevel->action = s60_menubar->actions.at(i);
+        symbianActionTopLevel->action = s60_menubars.last()->actions.at(i);
         symbianActionTopLevel->parent = 0;
         symbianActionTopLevel->command = qt_symbian_menu_static_cmd_id++;
         qt_symbian_insert_action(symbianActionTopLevel, &symbianMenus);
@@ -193,7 +193,7 @@ static void rebuildMenu()
 
 Q_GUI_EXPORT void qt_symbian_show_toplevel( CEikMenuPane* menuPane)
 {
-    if (!s60_menubar)
+    if (s60_menubars.count()==0)
         return;
     rebuildMenu();
     for (int i = 0; i < symbianMenus.count(); ++i)
@@ -261,15 +261,17 @@ void QMenuBarPrivate::symbianDestroyMenuBar()
     Q_Q(QMenuBar);
     int index = nativeMenuBars.indexOf(q);
     nativeMenuBars.removeAt(index);
+    s60_menubars.removeLast();
+    rebuildMenu();
     if (symbian_menubar)
-      delete symbian_menubar;
+        delete symbian_menubar;
     symbian_menubar = 0;
 }
 
 QMenuBarPrivate::QSymbianMenuBarPrivate::QSymbianMenuBarPrivate(QMenuBarPrivate *menubar)
 {
     d = menubar;
-    s60_menubar = menubar;
+    s60_menubars.append(menubar);
 }
 
 QMenuBarPrivate::QSymbianMenuBarPrivate::~QSymbianMenuBarPrivate()
@@ -277,7 +279,7 @@ QMenuBarPrivate::QSymbianMenuBarPrivate::~QSymbianMenuBarPrivate()
     deleteAll( &symbianMenus );
     symbianMenus.clear();
     d = 0;
-    s60_menubar = 0;
+    rebuild();    
 }
 
 QMenuPrivate::QSymbianMenuPrivate::QSymbianMenuPrivate()
@@ -362,7 +364,7 @@ void QMenuBarPrivate::QSymbianMenuBarPrivate::removeAction(QSymbianMenuAction *a
 void QMenuBarPrivate::QSymbianMenuBarPrivate::rebuild()
 {
     setSoftkeys();
-    if (!s60_menubar)
+    if (s60_menubars.count()==0)
         return;
 
     rebuildMenu();

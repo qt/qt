@@ -47,11 +47,8 @@
 #include <qfile.h>
 #include <qdir.h>
 #include <qfileinfo.h>
-
-#if (QT_VERSION) >= 0x040000
 #include <QtGui>
 #include <QtCore>
-#endif
 
 class MyClass : public QWidget
 {
@@ -95,11 +92,9 @@ protected:
 //! [0]
     }
 
-    QPixmap channelImage, pixmap; 
+    QPixmap channelImage, pixmap;
     QSize sizeHint() const { return QSize(500, 500); }
 };
-
-    
 
 int main(int argc, char **argv)
 {

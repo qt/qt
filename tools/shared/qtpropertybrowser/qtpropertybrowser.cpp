@@ -48,9 +48,7 @@
 #    pragma warning(disable: 4786) /* MS VS 6: truncating debug info after 255 characters */
 #endif
 
-#if QT_VERSION >= 0x040400
 QT_BEGIN_NAMESPACE
-#endif
 
 class QtPropertyPrivate
 {
@@ -1958,8 +1956,6 @@ void QtAbstractPropertyBrowser::setCurrentItem(QtBrowserItem *item)
         emit  currentItemChanged(item);
 }
 
-#if QT_VERSION >= 0x040400
 QT_END_NAMESPACE
-#endif
 
 #include "moc_qtpropertybrowser.cpp"

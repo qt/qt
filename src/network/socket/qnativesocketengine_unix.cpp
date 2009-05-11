@@ -526,26 +526,11 @@ int QNativeSocketEnginePrivate::nativeAccept()
 
 qint64 QNativeSocketEnginePrivate::nativeBytesAvailable() const
 {
-    /*
-      Apparently, there is not consistency among different operating
-      systems on how to use FIONREAD.
-
-      FreeBSD, Linux and Solaris all expect the 3rd argument to
-      ioctl() to be an int, which is normally 32-bit even on 64-bit
-      machines.
-
-      IRIX, on the other hand, expects a size_t, which is 64-bit on
-      64-bit machines.
-
-      So, the solution is to use size_t initialized to zero to make
-      sure all bits are set to zero, preventing underflow with the
-      FreeBSD/Linux/Solaris ioctls.
-    */
-    size_t nbytes = 0;
+    int nbytes = 0;
     // gives shorter than true amounts on Unix domain sockets.
     qint64 available = 0;
     if (::ioctl(socketDescriptor, FIONREAD, (char *) &nbytes) >= 0)
-        available = (qint64) *((int *) &nbytes);
+        available = (qint64) nbytes;
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativeBytesAvailable() == %lli", available);
@@ -900,17 +885,38 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
     tv.tv_sec = timeout / 1000;
     tv.tv_usec = (timeout % 1000) * 1000;
 
+#ifdef Q_OS_SYMBIAN    
+    fd_set fdexec;
+    FD_ZERO(&fdexec);
+    FD_SET(socketDescriptor, &fdexec);    
+#endif   
+
     QTime timer;
     timer.start();
 
     int retval;
     do {
         if (selectForRead)
-           //retval = ::select(socketDescriptor + 1, &fds, 0, 0, timeout < 0 ? 0 : &tv);
+#ifndef Q_OS_SYMBIAN
            retval = qt_socket_select(socketDescriptor + 1, &fds, 0, 0, timeout < 0 ? 0 : &tv);
+#else            
+           retval = qt_socket_select(socketDescriptor + 1, &fds, 0, &fdexec, timeout < 0 ? 0 : &tv); 
+#endif             
         else
-           //retval = ::select(socketDescriptor + 1, 0, &fds, 0, timeout < 0 ? 0 : &tv);
+#ifndef Q_OS_SYMBIAN
            retval = qt_socket_select(socketDescriptor + 1, 0, &fds, 0, timeout < 0 ? 0 : &tv);
+#else            
+           retval = qt_socket_select(socketDescriptor + 1, 0, &fds, &fdexec, timeout < 0 ? 0 : &tv); 
+#endif                 
+
+            
+#ifdef Q_OS_SYMBIAN            
+        bool selectForExec = FD_ISSET(socketDescriptor, &fdexec);        
+        if(selectForExec) {
+            qWarning("nativeSelect (selectForRead %d, retVal %d, errno %d) Unexpected expectfds ready in fd %d", 
+            		selectForRead, retval, errno, socketDescriptor);
+			}
+#endif            
 
         if (retval != -1 || errno != EINTR) {
             break;
@@ -918,15 +924,15 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
 
         if (timeout > 0) {
             // recalculate the timeout
-            timeout -= timer.elapsed();
-            tv.tv_sec = timeout / 1000;
-            tv.tv_usec = (timeout % 1000) * 1000;
-
-            if (timeout < 0) {
+            int t = timeout - timer.elapsed();
+            if (t < 0) {
                 // oops, timeout turned negative?
                 retval = -1;
                 break;
             }
+
+            tv.tv_sec = t / 1000;
+            tv.tv_usec = (t % 1000) * 1000;
         }
     } while (true);
 
@@ -945,6 +951,12 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
     FD_ZERO(&fdwrite);
     if (checkWrite)
         FD_SET(socketDescriptor, &fdwrite);
+    
+#ifdef Q_OS_SYMBIAN    
+    fd_set fdexec;
+    FD_ZERO(&fdexec);
+    FD_SET(socketDescriptor, &fdexec);    
+#endif    
 
     struct timeval tv;
     tv.tv_sec = timeout / 1000;
@@ -955,25 +967,39 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
 
     int ret;
     do {
-
+#ifndef Q_OS_SYMBIAN
         ret = qt_socket_select(socketDescriptor + 1, &fdread, &fdwrite, 0, timeout < 0 ? 0 : &tv);
-        //ret = ::select(socketDescriptor + 1, &fdread, &fdwrite, 0, timeout < 0 ? 0 : &tv);
-
+#else            
+        ret = qt_socket_select(socketDescriptor + 1, &fdread, &fdwrite, &fdexec, timeout < 0 ? 0 : &tv);
+        bool selectForExec = FD_ISSET(socketDescriptor, &fdexec);        
+        if(selectForExec) {
+        	qWarning("nativeSelect (checkRead %d, checkWrite %d, ret %d, errno %d): Unexpected expectfds ready in fd %d", 
+        			checkRead, checkWrite, ret, errno, socketDescriptor);
+        	if (checkRead)
+        	    FD_SET(socketDescriptor, &fdread);
+        	if (checkWrite)
+				FD_SET(socketDescriptor, &fdwrite);           	     		
+				
+            if ((ret == -1) && ( errno == ECONNREFUSED || errno == EPIPE ))				
+                ret = 1;
+            				
+        }
+#endif        
         if (ret != -1 || errno != EINTR) {
             break;
         }
 
         if (timeout > 0) {
             // recalculate the timeout
-            timeout -= timer.elapsed();
-            tv.tv_sec = timeout / 1000;
-            tv.tv_usec = (timeout % 1000) * 1000;
-
-            if (timeout < 0) {
+            int t = timeout - timer.elapsed();
+            if (t < 0) {
                 // oops, timeout turned negative?
                 ret = -1;
                 break;
             }
+
+            tv.tv_sec = t / 1000;
+            tv.tv_usec = (t % 1000) * 1000;
         }
     } while (true);
     if (ret <= 0)

@@ -97,6 +97,8 @@ class Q_GUI_EXPORT QApplication : public QCoreApplication
     Q_PROPERTY(int cursorFlashTime READ cursorFlashTime WRITE setCursorFlashTime)
     Q_PROPERTY(int doubleClickInterval  READ doubleClickInterval WRITE setDoubleClickInterval)
     Q_PROPERTY(int keyboardInputInterval READ keyboardInputInterval WRITE setKeyboardInputInterval)
+    Q_PROPERTY(bool autoSipOnMouseFocus READ autoSipOnMouseFocus
+               WRITE setAutoSipOnMouseFocus)
 #ifndef QT_NO_WHEELEVENT
     Q_PROPERTY(int wheelScrollLines  READ wheelScrollLines WRITE setWheelScrollLines)
 #endif
@@ -199,6 +201,9 @@ public:
     static void setKeyboardInputInterval(int);
     static int keyboardInputInterval();
 
+    static void setAutoSipOnMouseFocus(bool);
+    static bool autoSipOnMouseFocus();
+
 #ifndef QT_NO_WHEELEVENT
     static void setWheelScrollLines(int);
     static int wheelScrollLines();
@@ -231,6 +236,7 @@ public:
 #if defined(Q_WS_S60)
     int s60ProcessEvent(TWsEvent *event);
     virtual bool s60EventFilter(TWsEvent *aEvent);
+    void s60HandleCommandL(int command);
 #endif
 #if defined(Q_WS_QWS)
     virtual bool qwsEventFilter(QWSEvent *);

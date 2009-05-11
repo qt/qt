@@ -6,12 +6,7 @@ symbian: {
 
     SUBDIRS=
     TARGET = "QtLibs pre-release"
-    contains(QT_EDITION, OpenSource) {
-        # Can't use UID in protected range for self signed packages.
-        TARGET.UID3 = 0xE001E61C
-    } else {
-        TARGET.UID3 = 0x2001E61C
-    }
+    TARGET.UID3 = 0x2001E61C
     VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 
     qtresources.sources = $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/s60main.rsc 
@@ -42,11 +37,9 @@ symbian: {
     #ENDIF      
 
     qtlibraries.path = /sys/bin
-    qtlibraries.depends = "(0x20009a80), 1, 5, 0, {\"Symbian OS PIPS\"}"
+    qtlibraries.depends = "(0x20013851), 1, 5, 1, {\"PIPS Installer\"}"
     contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
-        qtlibraries.depends += "(0x200110CB), 1, 5, 0, {\"Open C LIBSSL Common\"}"
-        qtlibraries.depends += "(0x10281f34), 1, 5, 0, {\"Open C LIBSSL\"}"
-        qtlibraries.depends += "(0x2001B28B), 1, 5, 0, {\"OpenC LIBZ Support Files\"}"
+        qtlibraries.depends += "(0x200110CB), 1, 5, 1, {\"Open C LIBSSL Common\"}"
     }
     contains(QT_CONFIG, stl) {
         qtlibraries.depends += "(0x2000F866), 1, 0, 0, {\"Standard C++ Library Common\"}"
@@ -71,4 +64,12 @@ symbian: {
        iconengines_plugins.path = $$QT_PLUGINS_BASE_DIR/iconengines
        DEPLOYMENT += iconengines_plugins
     }
+
+    contains(QT_CONFIG, phonon): {
+    	qtlibraries.sources += QtPhonon.dll
+    }    
+
+    BLD_INF_RULES.prj_exports += "qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"
+    BLD_INF_RULES.prj_exports += "qtvggraphicssystem.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qtvggraphicssystem.iby)"
+    BLD_INF_RULES.prj_exports += "qtdemoapps.iby $$CORE_APP_LAYER_IBY_EXPORT_PATH(qtdemoapps.iby)"
 }

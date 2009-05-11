@@ -62,6 +62,7 @@ public:
 
 private slots:
     void getSetCheck();
+    void testStandAloneTextObject();
 };
 
 tst_QTextObject::tst_QTextObject()
@@ -103,6 +104,24 @@ void tst_QTextObject::getSetCheck()
     QCOMPARE(INT_MIN, obj2.userState());
     obj2.setUserState(INT_MAX);
     QCOMPARE(INT_MAX, obj2.userState());
+}
+
+class TestTextObject : public QTextObject
+{
+public:
+    TestTextObject(QTextDocument *document) : QTextObject(document) {}
+};
+
+void tst_QTextObject::testStandAloneTextObject()
+{
+    QTextDocument document;
+    TestTextObject textObject(&document);
+
+    QCOMPARE(textObject.document(), &document);
+    // don't crash
+    textObject.format();
+    textObject.formatIndex();
+    QCOMPARE(textObject.objectIndex(), -1);
 }
 
 QTEST_MAIN(tst_QTextObject)

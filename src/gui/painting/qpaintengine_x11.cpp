@@ -62,6 +62,7 @@
 #include <private/qpaintengine_x11_p.h>
 #include <private/qfontengine_x11_p.h>
 #include <private/qwidget_p.h>
+#include <private/qpainterpath_p.h>
 
 #include "qpen.h"
 #include "qcolor.h"
@@ -1479,14 +1480,10 @@ void QX11PaintEngine::drawEllipse(const QRect &rect)
         return;
     }
     d->setupAdaptedOrigin(rect.topLeft());
-    if (d->has_brush) {          // draw filled ellipse
-        if (!d->has_pen) {
-            XFillArc(d->dpy, d->hd, d->gc_brush, x, y, w-1, h-1, 0, 360*64);
+    if (d->has_brush) {             // draw filled ellipse
+        XFillArc(d->dpy, d->hd, d->gc_brush, x, y, w, h, 0, 360*64);
+        if (!d->has_pen)            // make smoother outline
             XDrawArc(d->dpy, d->hd, d->gc_brush, x, y, w-1, h-1, 0, 360*64);
-            return;
-        } else{
-            XFillArc(d->dpy, d->hd, d->gc_brush, x, y, w, h, 0, 360*64);
-        }
     }
     if (d->has_pen)                // draw outline
         XDrawArc(d->dpy, d->hd, d->gc, x, y, w, h, 0, 360*64);
@@ -1546,6 +1543,8 @@ void QX11PaintEnginePrivate::fillPolygon_dev(const QPointF *polygonPoints, int p
                                              QX11PaintEnginePrivate::GCMode gcMode,
                                              QPaintEngine::PolygonDrawMode mode)
 {
+    Q_Q(QX11PaintEngine);
+
     int clippedCount = 0;
     qt_float_point *clippedPoints = 0;
 
@@ -1620,7 +1619,29 @@ void QX11PaintEnginePrivate::fillPolygon_dev(const QPointF *polygonPoints, int p
     } else
 #endif
         if (fill.style() != Qt::NoBrush) {
-            if (clippedCount > 0) {
+            if (clippedCount > 200000) {
+                QPolygon poly;
+                for (int i = 0; i < clippedCount; ++i)
+                    poly << QPoint(qFloor(clippedPoints[i].x), qFloor(clippedPoints[i].y));
+
+                const QRect bounds = poly.boundingRect();
+                const QRect aligned = bounds
+                    & QRect(QPoint(), QSize(pdev->width(), pdev->height()));
+
+                QImage img(aligned.size(), QImage::Format_ARGB32_Premultiplied);
+                img.fill(0);
+
+                QPainter painter(&img);
+                painter.translate(-aligned.x(), -aligned.y());
+                painter.setPen(Qt::NoPen);
+                painter.setBrush(fill);
+                if (gcMode == BrushGC)
+                    painter.setBrushOrigin(q->painter()->brushOrigin());
+                painter.drawPolygon(poly);
+                painter.end();
+
+                q->drawImage(aligned, img, img.rect(), Qt::AutoColor);
+            } else if (clippedCount > 0) {
                 QVarLengthArray<XPoint> xpoints(clippedCount);
                 for (int i = 0; i < clippedCount; ++i) {
                     xpoints[i].x = qFloor(clippedPoints[i].x);
@@ -1760,9 +1781,14 @@ void QX11PaintEngine::drawPath(const QPainterPath &path)
         QPainterPath stroke;
         qreal width = d->cpen.widthF();
         QPolygonF poly;
+        QRectF deviceRect(0, 0, d->pdev->width(), d->pdev->height());
         // necessary to get aliased alphablended primitives to be drawn correctly
         if (d->cpen.isCosmetic() || d->has_scaling_xform) {
-            stroker.setWidth(width == 0 ? 1 : width * d->xform_scale);
+            if (d->cpen.isCosmetic())
+                stroker.setWidth(width == 0 ? 1 : width);
+            else
+                stroker.setWidth(width * d->xform_scale);
+            stroker.d_ptr->stroker.setClipRect(deviceRect);
             stroke = stroker.createStroke(path * d->matrix);
             if (stroke.isEmpty())
                 return;
@@ -1770,6 +1796,7 @@ void QX11PaintEngine::drawPath(const QPainterPath &path)
             d->fillPath(stroke, QX11PaintEnginePrivate::PenGC, false);
         } else {
             stroker.setWidth(width);
+            stroker.d_ptr->stroker.setClipRect(d->matrix.inverted().mapRect(deviceRect));
             stroke = stroker.createStroke(path);
             if (stroke.isEmpty())
                 return;
@@ -2349,7 +2376,9 @@ void QX11PaintEngine::drawFreetype(const QPointF &p, const QTextItemInt &ti)
         GlyphSet glyphSet = set->id;
         const QColor &pen = d->cpen.color();
         ::Picture src = X11->getSolidFill(d->scrn, pen);
-        XRenderPictFormat *maskFormat = XRenderFindStandardFormat(X11->display, ft->xglyph_format);
+        XRenderPictFormat *maskFormat = 0;
+        if (ft->xglyph_format != PictStandardA1)
+            maskFormat = XRenderFindStandardFormat(X11->display, ft->xglyph_format);
 
         enum { t_min = SHRT_MIN, t_max = SHRT_MAX };
 

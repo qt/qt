@@ -59,7 +59,7 @@
 #include <unistd.h>
 #include <sys/utsname.h>
 #elif defined(Q_OS_WIN32)
-#include <Windows.h>
+#include <windows.h>
 #endif
 #include <stdio.h>
 #include <stdlib.h>
@@ -1182,7 +1182,7 @@ QMakeProject::parse(const QString &t, QMap<QString, QStringList> &place, int num
                     }
                 }
             }
-    } else if(!parens && *(d+d_off) == QLatin1Char('}')) {
+        } else if(!parens && *(d+d_off) == QLatin1Char('}')) {
             if(start_block) {
                 --start_block;
             } else if(!scope_blocks.count()) {

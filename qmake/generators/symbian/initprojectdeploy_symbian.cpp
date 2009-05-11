@@ -58,7 +58,7 @@ static void createPluginStub(const QFileInfo& info,
         // Add note to stub so that people will not wonder what it is.
         // Creation date is added to make new stub to deploy always to
         // force plugin cache miss when loading plugins.
-        t << "This file is a Qt plugin stub file. The real Qt plugin is located in \\sys\\bin. Created:" << QDateTime::currentDateTime().toString() << "\n";
+        t << "This file is a Qt plugin stub file. The real Qt plugin is located in \\sys\\bin. Created:" << QDateTime::currentDateTime().toString(Qt::ISODate) << "\n";
     } else {
         fprintf(stderr, "cannot deploy \"%s\" because of plugin stub file creation failed\n", info.fileName().toLatin1().constData());
     }

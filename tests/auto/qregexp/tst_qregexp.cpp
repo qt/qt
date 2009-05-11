@@ -557,7 +557,6 @@ void tst_QRegExp::setMinimal()
 
 void tst_QRegExp::exactMatch()
 {
-#if QT_VERSION >= 0x030100
     QRegExp rx_d( "\\d" );
     QRegExp rx_s( "\\s" );
     QRegExp rx_w( "\\w" );
@@ -570,9 +569,7 @@ void tst_QRegExp::exactMatch()
 	bool is_d = ( ch.category() == QChar::Number_DecimalDigit );
 	bool is_s = ch.isSpace();
 	bool is_w = ( ch.isLetterOrNumber()
-#if QT_VERSION >= 0x040200
         || ch.isMark()
-#endif
         || ch == '_' );
 
 	QVERIFY( rx_d.exactMatch(QString(ch)) == is_d );
@@ -582,7 +579,6 @@ void tst_QRegExp::exactMatch()
 	QVERIFY( rx_S.exactMatch(QString(ch)) != is_s );
 	QVERIFY( rx_W.exactMatch(QString(ch)) != is_w );
     }
-#endif
 }
 
 void tst_QRegExp::capturedTexts()
@@ -593,13 +589,11 @@ void tst_QRegExp::capturedTexts()
     QCOMPARE(rx1.cap(0), QString("aaa"));
     QCOMPARE(rx1.cap(1), QString("aaa"));
 
-#if QT_VERSION >= 0x040200
     QRegExp rx2("a*(a*)", Qt::CaseSensitive, QRegExp::RegExp2);
     rx2.exactMatch("aaa");
     QCOMPARE(rx2.matchedLength(), 3);
     QCOMPARE(rx2.cap(0), QString("aaa"));
     QCOMPARE(rx2.cap(1), QString(""));
-#endif
 
     QRegExp rx3("(?:a|aa)(a*)", Qt::CaseSensitive, QRegExp::RegExp);
     rx3.exactMatch("aaa");
@@ -607,13 +601,11 @@ void tst_QRegExp::capturedTexts()
     QCOMPARE(rx3.cap(0), QString("aaa"));
     QCOMPARE(rx3.cap(1), QString("aa"));
 
-#if QT_VERSION >= 0x040200
     QRegExp rx4("(?:a|aa)(a*)", Qt::CaseSensitive, QRegExp::RegExp2);
     rx4.exactMatch("aaa");
     QCOMPARE(rx4.matchedLength(), 3);
     QCOMPARE(rx4.cap(0), QString("aaa"));
     QCOMPARE(rx4.cap(1), QString("a"));
-#endif
 
     QRegExp rx5("(a)*(a*)", Qt::CaseSensitive, QRegExp::RegExp);
     rx5.exactMatch("aaa");
@@ -622,14 +614,12 @@ void tst_QRegExp::capturedTexts()
     QCOMPARE(rx5.cap(1), QString("a"));
     QCOMPARE(rx5.cap(2), QString("aa"));
 
-#if QT_VERSION >= 0x040200
     QRegExp rx6("(a)*(a*)", Qt::CaseSensitive, QRegExp::RegExp2);
     rx6.exactMatch("aaa");
     QCOMPARE(rx6.matchedLength(), 3);
     QCOMPARE(rx6.cap(0), QString("aaa"));
     QCOMPARE(rx6.cap(1), QString("a"));
     QCOMPARE(rx6.cap(2), QString(""));
-#endif
 
     QRegExp rx7("([A-Za-z_])([A-Za-z_0-9]*)");
     rx7.setCaseSensitivity(Qt::CaseSensitive);
@@ -689,7 +679,6 @@ void tst_QRegExp::indexIn()
         }
     }
 
-#if QT_VERSION >= 0x040200
     // same as above, but with RegExp2
     {
         QRegExp rx( regexpStr, Qt::CaseSensitive, QRegExp::RegExp2 );
@@ -707,7 +696,6 @@ void tst_QRegExp::indexIn()
 	        QCOMPARE( mycaps[i], caps[i] );
         }
     }
-#endif
 }
 
 void tst_QRegExp::lastIndexIn()
@@ -746,7 +734,6 @@ void tst_QRegExp::lastIndexIn()
         }
     }
 
-#if QT_VERSION >= 0x040200
     {
         QRegExp rx( regexpStr, Qt::CaseSensitive, QRegExp::RegExp2 );
         QVERIFY( rx.isValid() );
@@ -766,7 +753,6 @@ void tst_QRegExp::lastIndexIn()
 	    }
         }
     }
-#endif
 }
 
 void tst_QRegExp::matchedLength()
@@ -1161,10 +1147,8 @@ void tst_QRegExp::prepareEngineOptimization()
     QRegExp rx4("foo", Qt::CaseInsensitive, QRegExp::RegExp);
     QVERIFY(rx4.isValid());
 
-#if QT_VERSION >= 0x040200
     QRegExp rx5("foo", Qt::CaseInsensitive, QRegExp::RegExp2);
     QVERIFY(rx5.isValid());
-#endif
 
     QRegExp rx6("foo", Qt::CaseInsensitive, QRegExp::FixedString);
     QVERIFY(rx6.isValid());
@@ -1175,10 +1159,8 @@ void tst_QRegExp::prepareEngineOptimization()
     QRegExp rx8("][", Qt::CaseInsensitive, QRegExp::RegExp);
     QVERIFY(!rx8.isValid());
 
-#if QT_VERSION >= 0x040200
     QRegExp rx9("][", Qt::CaseInsensitive, QRegExp::RegExp2);
     QVERIFY(!rx9.isValid());
-#endif
 
     QRegExp rx10("][", Qt::CaseInsensitive, QRegExp::Wildcard);
     QVERIFY(!rx10.isValid());

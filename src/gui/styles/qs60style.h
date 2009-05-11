@@ -45,6 +45,8 @@ public:
     QRect subElementRect(SubElement element, const QStyleOption *opt, const QWidget *widget = 0) const;
     void polish(QWidget *widget);
     void unpolish(QWidget *widget);
+    void polish(QApplication *application);
+    void unpolish(QApplication *application);
 
     void setStyleProperty(const char *name, const QVariant &value);
     QVariant styleProperty(const char *name) const;
@@ -69,6 +71,7 @@ protected slots:
 private:
     Q_DISABLE_COPY(QS60Style)
     friend class QStyleFactory;
+    QPalette originalPalette;
 };
 
 #endif // QT_NO_STYLE_S60

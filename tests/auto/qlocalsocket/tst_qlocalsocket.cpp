@@ -100,6 +100,7 @@ private slots:
 
     void longPath();
     void waitForDisconnect();
+    void waitForDisconnectByServer();
 
     void removeServer();
 
@@ -121,6 +122,8 @@ tst_QLocalSocket::tst_QLocalSocket()
 #endif
                 ))
         qWarning() << "lackey executable doesn't exists!";
+
+    QLocalServer::removeServer("tst_localsocket");
 }
 
 tst_QLocalSocket::~tst_QLocalSocket()
@@ -490,8 +493,10 @@ void tst_QLocalSocket::sendData()
     socket.connectToServer(name);
     bool timedOut = true;
     QCOMPARE(server.waitForNewConnection(3000, &timedOut), canListen);
-#if defined(QT_LOCALSOCKET_TCP) || defined (Q_OS_SYMBIAN) 
+#if defined(QT_LOCALSOCKET_TCP) 
     QTest::qWait(250);
+#elif defined(Q_OS_SYMBIAN) 
+    QTest::qWait(10000);
 #endif
     QVERIFY(!timedOut);
     QCOMPARE(spyConnected.count(), canListen ? 1 : 0);
@@ -642,7 +647,7 @@ public:
                   || socket.error() == QLocalSocket::ConnectionRefusedError)
 		 && tries < 1000);
         if (tries == 0 && socket.state() != QLocalSocket::ConnectedState) {
-            QVERIFY(socket.waitForConnected(3000));
+            QVERIFY(socket.waitForConnected(30000));
             QVERIFY(socket.state() == QLocalSocket::ConnectedState);
         }
 
@@ -672,7 +677,7 @@ public:
         int done = clients;
         while (done > 0) {
             bool timedOut = true;
-            QVERIFY(server.waitForNewConnection(3000, &timedOut));
+            QVERIFY(server.waitForNewConnection(30000, &timedOut));
             QVERIFY(!timedOut);
             QLocalSocket *serverSocket = server.nextPendingConnection();
             QVERIFY(serverSocket);
@@ -713,18 +718,24 @@ void tst_QLocalSocket::threadedConnection()
 
     QFETCH(int, threads);
     Server server;
+#if defined(Q_OS_SYMBIAN)
+    server.setStackSize(0x14000);
+#endif    
     server.clients = threads;
     server.start();
 
     QList<Client*> clients;
     for (int i = 0; i < threads; ++i) {
         clients.append(new Client());
+#if defined(Q_OS_SYMBIAN)        
+        clients.last()->setStackSize(0x14000);
+#endif        
         clients.last()->start();
     }
 
     server.wait();
     while (!clients.isEmpty()) {
-        QVERIFY(clients.first()->wait(30000));
+        QVERIFY(clients.first()->wait(300000));
         Client *client =clients.takeFirst();
 	client->terminate();
 	delete client;
@@ -818,6 +829,25 @@ void tst_QLocalSocket::waitForDisconnect()
     timer.start();
     QVERIFY(serverSocket->waitForDisconnected(3000));
     QVERIFY(timer.elapsed() < 2000);
+}
+
+void tst_QLocalSocket::waitForDisconnectByServer()
+{
+    QString name = "tst_localsocket";
+    LocalServer server;
+    QVERIFY(server.listen(name));
+    LocalSocket socket;
+    QSignalSpy spy(&socket, SIGNAL(disconnected()));
+    QVERIFY(spy.isValid());
+    socket.connectToServer(name);
+    QVERIFY(socket.waitForConnected(3000));
+    QVERIFY(server.waitForNewConnection(3000));
+    QLocalSocket *serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
+    serverSocket->close();
+    QVERIFY(serverSocket->state() == QLocalSocket::UnconnectedState);
+    QVERIFY(socket.waitForDisconnected(3000));
+    QCOMPARE(spy.count(), 1);
 }
 
 void tst_QLocalSocket::removeServer()

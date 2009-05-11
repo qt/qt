@@ -4,7 +4,7 @@ SOURCES     = main.cpp \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/movie
-sources.files = $$SOURCES $$HEADERS $$RESOURCES movie.pro movies
+sources.files = $$SOURCES $$HEADERS $$RESOURCES movie.pro animation.mng
 sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/movie
 INSTALLS += target sources
 

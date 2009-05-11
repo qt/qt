@@ -43,6 +43,8 @@
 #ifdef Q_OS_SYMBIAN
 #include <sys/socket.h>
 #include <net/if.h>
+#include <QSharedPointer>
+#include <QHash>
 #endif
 #if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
 // In emulator we use WINSOCK connectivity by default. Unfortunately winsock
@@ -55,22 +57,62 @@
 //#define SYMBIAN_WINSOCK_CONNECTIVITY
 #endif
 
+    class QtNetworkSettingsRecord {
+    public:
+        QtNetworkSettingsRecord() { }
+
+        QtNetworkSettingsRecord(const QString& recName, const QString& recVal)
+            : strRecordName(recName), strRecordValue(recVal) { }
+
+        QtNetworkSettingsRecord(const QtNetworkSettingsRecord & other)
+             : strRecordName(other.strRecordName), strRecordValue(other.strRecordValue) { }
+
+        ~QtNetworkSettingsRecord() { }
+
+        const QString& recordName() const { return strRecordName; }
+        const QString& recordValue() const { return strRecordValue; }
+
+    private:
+        QString strRecordName;
+        QString strRecordValue;
+    };
+
 class QtNetworkSettings
 {
 public:
+
     static QString serverLocalName()
     {
+#ifdef Q_OS_SYMBIAN
+        loadTestSettings();
+
+        if(QtNetworkSettings::entries.contains("server.localname")) {
+            QtNetworkSettingsRecord* entry = entries["server.localname"];
+            return entry->recordValue();
+        }
+#endif
         return QString("qttest");
         //return QString("aspiriniks");
         //return QString("qt-test-server");
     }
     static QString serverDomainName()
     {
+#ifdef Q_OS_SYMBIAN
+        loadTestSettings();
+
+        if(QtNetworkSettings::entries.contains("server.domainname")) {
+            QtNetworkSettingsRecord* entry = entries["server.domainname"];
+            return entry->recordValue();
+        }
+#endif
         return QString("it.local");
         //return QString("troll.no");
     }
     static QString serverName()
     {
+#ifdef Q_OS_SYMBIAN
+        loadTestSettings();
+#endif
         return serverLocalName() + "." + serverDomainName();
     }
     static QString winServerName()
@@ -84,105 +126,196 @@ public:
     }
     static const char *serverIP()
     {
-        //return "10.10.0.147";
+#ifdef Q_OS_SYMBIAN
+        loadTestSettings();
+
+        if(QtNetworkSettings::entries.contains("server.ip")) {
+            QtNetworkSettingsRecord* entry = entries["server.ip"];
+            if(serverIp.isNull()) {
+                serverIp = entry->recordValue().toAscii();
+            }
+            return serverIp.data();
+        }
+#endif
         return "10.10.14.172";
-        //return "10.3.7.2";
-        //return "10.3.3.69";
     }
     
     static QByteArray expectedReplyIMAP()
     {
-        //QByteArray expected( "* OK esparsett Cyrus IMAP4 v2.2.8 server ready\r\n" );
-        
-        
-    	QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] " );
-  	    expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
-        expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+#ifdef Q_OS_SYMBIAN
+        loadTestSettings();
 
-        /*
+        if(QtNetworkSettings::entries.contains("imap.expectedreply")) {
+            QtNetworkSettingsRecord* entry = entries["imap.expectedreply"];
+            if(imapExpectedReply.isNull()) {
+                imapExpectedReply = entry->recordValue().toAscii();
+                imapExpectedReply.append('\r').append('\n');
+            }
+            return imapExpectedReply.data();
+        }
+#endif
+        /*QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] " );
+        expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
+        expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");*/
+
         QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4REV1] " );
         expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
         expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
-        */
+        
         return expected;
     }
 
     static QByteArray expectedReplySSL()
     {
-        QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID AUTH=PLAIN SASL-IR] " );
-        expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
-        expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
-        return expected;
+        loadTestSettings();
+
+        if(QtNetworkSettings::entries.contains("imap.expectedreplyssl")) {
+            QtNetworkSettingsRecord* entry = entries["imap.expectedreplyssl"];
+            if(imapExpectedReplySsl.isNull()) {
+                imapExpectedReplySsl = entry->recordValue().toAscii();
+                imapExpectedReplySsl.append('\r').append('\n');
+            }
+            return imapExpectedReplySsl.data();
+        } else {
+            QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID AUTH=PLAIN SASL-IR] " );
+            expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
+            expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+            return expected;
+        }
     }
     
     static QByteArray expectedReplyFtp()
     {
-        QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID AUTH=PLAIN SASL-IR] " );
-        expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
-        expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+        QByteArray expected( "220 (vsFTPd 2.0.5)\r\n221 Goodbye.\r\n" );
         return expected;
     }    
 
 #ifdef Q_OS_SYMBIAN
     static void setDefaultIap()
     {
+        loadDefaultIap();
+
         struct ifreq ifReq;
-        strcpy( ifReq.ifr_name, getDefaultIap().toAscii().constData());
+        if(entries.contains("iap.default")) {
+            QtNetworkSettingsRecord* entry = entries["iap.default"];
+            QByteArray tmp(entry->recordValue().toAscii());
+            strcpy( ifReq.ifr_name, tmp.data());
+        }
+        else // some default value
+            strcpy( ifReq.ifr_name, "Lab");
+
         int err = setdefaultif( &ifReq );
         if(err)
-            printf("Setting default IAP - '%s' failed: %d\n", getDefaultIap().toAscii().constData(), err);
+            printf("Setting default IAP - '%s' failed: %d\n", ifReq.ifr_name, err);
         else
-            printf("'%s' used as an default IAP\n", getDefaultIap().toAscii().constData());
+            printf("'%s' used as an default IAP\n", ifReq.ifr_name);
     }
 #endif
 
 private:
 
 #ifdef Q_OS_SYMBIAN
-    static bool bIsIapLoaded;
+
+    static  QHash<QString, QtNetworkSettingsRecord* > entries;
+    static bool bDefaultIapLoaded;
+    static bool bTestSettingsLoaded;
     static QString iapFileFullPath;
-    static QString defaultIap;
+    static QByteArray serverIp;
+    static QByteArray imapExpectedReply;
+    static QByteArray imapExpectedReplySsl;
 
-    static QString getDefaultIap() {
-        if(!bIsIapLoaded)
-            loadIapCfg();
+    static bool loadDefaultIap() {
+        if(bDefaultIapLoaded)
+            return true;
 
-        return defaultIap;
-    }    
-
-    static void loadIapCfg() {
         QFile iapCfgFile(iapFileFullPath);
+
+        bool bFoundDefaultIapTag = false;
+
         if (iapCfgFile.open(QFile::ReadOnly)) {
             QTextStream input(&iapCfgFile);
             QString line;
-            bool bFoundDefaultTag = false;
             do {
                 line = input.readLine().trimmed();
                 if(line.startsWith(QString("#")))
                     continue; // comment found
 
                 if(line.contains(QString("[DEFAULT]"))) {
-                    bFoundDefaultTag = true;
-                } else if(line.startsWith(QString("[")) && bFoundDefaultTag) {
-                    break; // stick to default
+                    bFoundDefaultIapTag = true;
+                } else if(line.contains(QString("[")) && bFoundDefaultIapTag) {
+                    break;
                 }
 
-                if(bFoundDefaultTag && line.contains("name")) {
+                if(bFoundDefaultIapTag && line.contains("name")) {
                     int position = line.indexOf(QString("="));
                     position += QString("=").length();
-                    defaultIap = line.mid(position).trimmed();
+
+                    //create record
+                    QtNetworkSettingsRecord *entry = 
+                        new QtNetworkSettingsRecord( QString("iap.default"), line.mid(position).trimmed() );
+                    entries.insert(entry->recordName(), entry);
                     break;
                 }
             } while (!line.isNull());
         }
+
+        return bDefaultIapLoaded = bFoundDefaultIapTag;
+    }
+
+    static bool loadTestSettings() {
+        if(bTestSettingsLoaded)
+            return true;
+
+        QFile cfgFile(iapFileFullPath);
+        bool bFoundTestTag = false;
+
+        if (cfgFile.open(QFile::ReadOnly)) {
+            QTextStream input(&cfgFile);
+            QString line;
+            do {
+                line = input.readLine().trimmed();
+
+                if(line.startsWith(QString("#")) || line.length() == 0)
+                    continue; // comment or empty line found
+
+                if(line.contains(QString("[TEST]"))) {
+                    bFoundTestTag = true;
+                } else if(line.startsWith(QString("[")) && bFoundTestTag) {
+                    bFoundTestTag = false;
+                    break; // finished with test tag
+                }
+
+                if(bFoundTestTag) { // non-empty line
+                    int position = line.indexOf(QString("="));
+
+                    if(position <= 0) // not found
+                        continue;
+
+                    // found - extract
+
+                    QString recname = line.mid(0, position - QString("=").length()).trimmed();
+                    QString recval = line.mid(position + QString("=").length()).trimmed();
+
+                    //create record
+                    QtNetworkSettingsRecord *entry = new QtNetworkSettingsRecord(recname, recval);
+                    entries.insert(entry->recordName(), entry);
+                }
+            } while (!line.isNull());
+        }
+
+        return bTestSettingsLoaded = true;
     }
 #endif
 
 };
 #ifdef Q_OS_SYMBIAN
-bool QtNetworkSettings::bIsIapLoaded = false;
+QHash<QString, QtNetworkSettingsRecord* > QtNetworkSettings::entries = QHash<QString, QtNetworkSettingsRecord* > ();
+bool QtNetworkSettings::bDefaultIapLoaded = false;
+bool QtNetworkSettings::bTestSettingsLoaded = false;
 QString QtNetworkSettings::iapFileFullPath = QString("C:\\Data\\iap.txt");
-QString QtNetworkSettings::defaultIap = QString("Lab"); // this will be default value
+QByteArray QtNetworkSettings::serverIp;
+QByteArray QtNetworkSettings::imapExpectedReply;
+QByteArray QtNetworkSettings::imapExpectedReplySsl;
 #endif
 
 #ifdef Q_OS_SYMBIAN

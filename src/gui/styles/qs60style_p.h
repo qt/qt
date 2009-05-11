@@ -74,6 +74,7 @@ public:
     };
 
     enum SkinParts {
+        SP_QgnGrafBarWait,
         SP_QgnGrafBarFrameCenter,
         SP_QgnGrafBarFrameSideL,
         SP_QgnGrafBarFrameSideR,
@@ -86,6 +87,11 @@ public:
         SP_QgnGrafTabPassiveR,
         SP_QgnIndiCheckboxOff,
         SP_QgnIndiCheckboxOn,
+        SP_QgnIndiHlColSuper,     // Available in S60 release 3.2 and later.
+        SP_QgnIndiHlExpSuper,     // Available in S60 release 3.2 and later.
+        SP_QgnIndiHlLineBranch,   // Available in S60 release 3.2 and later.
+        SP_QgnIndiHlLineEnd,      // Available in S60 release 3.2 and later.
+        SP_QgnIndiHlLineStraight, // Available in S60 release 3.2 and later.
         SP_QgnIndiMarkedAdd,
         SP_QgnIndiNaviArrowLeft,
         SP_QgnIndiNaviArrowRight,
@@ -191,7 +197,34 @@ public:
         SP_QsnFrSetOptSideB,
         SP_QsnFrSetOptSideL,
         SP_QsnFrSetOptSideR,
-        SP_QsnFrSetOptCenter
+        SP_QsnFrSetOptCenter,
+        SP_QsnFrPopupSubCornerTl,           // Toolbar background
+        SP_QsnFrPopupSubCornerTr,
+        SP_QsnFrPopupSubCornerBl,
+        SP_QsnFrPopupSubCornerBr,
+        SP_QsnFrPopupSubSideT,
+        SP_QsnFrPopupSubSideB,
+        SP_QsnFrPopupSubSideL,
+        SP_QsnFrPopupSubSideR,
+        SP_QsnFrPopupSubCenter,
+        SP_QsnFrSctrlButtonCornerTl,        // Toolbar button
+        SP_QsnFrSctrlButtonCornerTr,
+        SP_QsnFrSctrlButtonCornerBl,
+        SP_QsnFrSctrlButtonCornerBr,
+        SP_QsnFrSctrlButtonSideT,
+        SP_QsnFrSctrlButtonSideB,
+        SP_QsnFrSctrlButtonSideL,
+        SP_QsnFrSctrlButtonSideR,
+        SP_QsnFrSctrlButtonCenter,
+        SP_QsnFrSctrlButtonCornerTlPressed,    // Toolbar button, pressed
+        SP_QsnFrSctrlButtonCornerTrPressed,
+        SP_QsnFrSctrlButtonCornerBlPressed,
+        SP_QsnFrSctrlButtonCornerBrPressed,
+        SP_QsnFrSctrlButtonSideTPressed,
+        SP_QsnFrSctrlButtonSideBPressed,
+        SP_QsnFrSctrlButtonSideLPressed,
+        SP_QsnFrSctrlButtonSideRPressed,
+        SP_QsnFrSctrlButtonCenterPressed
     };
 
     enum ColorLists {
@@ -245,7 +278,11 @@ public:
         SE_SettingsList,
         SE_TableItem,
         SE_TableHeaderItem,
-        SE_ToolTip //own graphic available on 3.2+ releases
+        SE_ToolTip, //own graphic available on 3.2+ releases,
+        SE_ToolBar,
+        SE_ToolBarButton,
+        SE_ToolBarButtonPressed,
+        SE_PanelBackground
     };
 
     enum SkinFrameElements {
@@ -257,7 +294,11 @@ public:
         SF_SettingsList,
         SF_TableItem,
         SF_TableHeaderItem,
-        SF_ToolTip
+        SF_ToolTip,
+        SF_ToolBar,
+        SF_ToolBarButton,
+        SF_ToolBarButtonPressed,
+        SF_PanelBackground
     };
 
     enum SkinElementFlag {
@@ -305,9 +346,12 @@ public:
     static QPixmap backgroundTexture();
 
     static bool isTouchSupported();
+    static bool isToolBarBackground();
+
     // calculates average color based on button skin graphics (minus borders).
     QColor colorFromFrameGraphics(QS60StylePrivate::SkinFrameElements frame) const;
-    void setThemePalette(QWidget *widget) const;
+    void setThemePalette(QApplication *application) const;
+    void setBackgroundTexture(QApplication *application) const;
 
     static int focusRectPenWidth();
 

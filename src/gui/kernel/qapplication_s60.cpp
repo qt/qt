@@ -27,6 +27,7 @@
 #endif
 #include "private/qwindowsurface_s60_p.h"
 #include "qpaintengine.h"
+#include "qmenubar.h"
 
 #include "apgwgnam.h" // For CApaWindowGroupName
 #include <MdaAudioTonePlayer.h>     // For CMdaAudioToneUtility
@@ -531,13 +532,19 @@ TCoeInputCapabilities QSymbianControl::InputCapabilities() const
 void QSymbianControl::Draw(const TRect& r) const
 {
     QWindowSurface *surface = qwidget->windowSurface();
+    if (!surface)
+        return;
+
     QPaintEngine *engine = surface->paintDevice()->paintEngine();
     if (!engine)
         return;
     if (engine->type() == QPaintEngine::Raster) {
         QS60WindowSurface *s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
         CFbsBitmap *bitmap = s60Surface->symbianBitmap();
-        SystemGc().BitBlt(r.iTl, bitmap, r);
+        CWindowGc &gc = SystemGc();
+        if (qwidget->d_func()->isOpaque)
+            gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
+        gc.BitBlt(r.iTl, bitmap, r);
     } else {
         surface->flush(qwidget, QRegion(qt_TRect2QRect(r)), QPoint());
     }
@@ -948,6 +955,7 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
     // Qt event handling. Handle some events regardless of if the handle is in our
     // widget map or not.
     CCoeControl* control = reinterpret_cast<CCoeControl*>(event->Handle());
+    const bool controlInMap = QWidgetPrivate::mapper && QWidgetPrivate::mapper->contains(control);
     switch (event->Type()) {
 #ifndef QT_NO_IM
     case EEventKey:
@@ -970,17 +978,12 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
     }
 #endif
     case EEventPointerEnter:
-        if (QWidgetPrivate::mapper && QWidgetPrivate::mapper->contains(control))
-        {
-            // Qt::Enter will be generated in HandlePointerL
-            return 1;
-        }
+        if (controlInMap)
+            return 1; // Qt::Enter will be generated in HandlePointerL
         break;
     case EEventPointerExit:
-        if (QWidgetPrivate::mapper && QWidgetPrivate::mapper->contains(control))
-        {
-            if (S60)
-            {
+        if (controlInMap) {
+            if (S60) {
                 // mouseEvent outside our window, send leave event to last focused widget
                 QMouseEvent mEvent(QEvent::Leave, S60->lastPointerEventPos, S60->lastCursorPos,
                     Qt::NoButton, QApplicationPrivate::mouse_buttons, Qt::NoModifier);
@@ -995,11 +998,27 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
         if (S60)
             S60->updateScreenSize();
         return 0; // Propagate to CONE
+    case EEventWindowVisibilityChanged:
+        if (controlInMap) {
+            const TWsVisibilityChangedEvent *visChangedEvent = event->VisibilityChanged();
+            QWidget *w = QWidgetPrivate::mapper->value(control);
+            if (!w->d_func()->maybeTopData())
+                break;
+            if (visChangedEvent->iFlags & TWsVisibilityChangedEvent::ENotVisible) {
+                delete w->d_func()->topData()->backingStore;
+                w->d_func()->topData()->backingStore = 0;
+            } else if ((visChangedEvent->iFlags & TWsVisibilityChangedEvent::EPartiallyVisible)
+                       && !w->d_func()->maybeBackingStore()) {
+                w->d_func()->topData()->backingStore = new QWidgetBackingStore(w);
+            }
+            return 1;
+        }
+        break;
     default:
         break;
     }
 
-    if (!QWidgetPrivate::mapper || !QWidgetPrivate::mapper->contains(control))
+    if (!controlInMap)
         return -1;
 
     return 0;
@@ -1008,6 +1027,21 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
 bool QApplication::s60EventFilter(TWsEvent *aEvent)
 {
     return false;
+}
+
+void QApplication::s60HandleCommandL(int command)
+{
+    switch (command) {
+    case EEikCmdExit:
+    case EAknSoftkeyBack:
+    case EAknSoftkeyExit:
+        qApp->exit();
+        break;
+    default:
+        // For now assume all unknown menu items are Qt menu items
+        QMenuBar::symbianCommands(command);
+        break;
+    }
 }
 
 #ifndef QT_NO_WHEELEVENT

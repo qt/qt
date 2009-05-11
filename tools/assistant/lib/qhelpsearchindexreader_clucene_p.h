@@ -54,6 +54,8 @@
 //
 
 #include "qhelpsearchengine.h"
+
+#include "fulltextsearch/qanalyzer_p.h"
 #include "fulltextsearch/qquery_p.h"
 
 #include <QtCore/QList>
@@ -93,12 +95,13 @@ signals:
 
 private:
     void run();
-    bool defaultQuery(const QString &term,
-        QCLuceneBooleanQuery &booleanQuery);
-    bool buildQuery(QCLuceneBooleanQuery &booleanQuery,
-        const QList<QHelpSearchQuery> &queryList);
-    void boostSearchHits(const QHelpEngineCore &engine,
-        QList<QHelpSearchEngine::SearchHit> &hitList,
+    bool defaultQuery(const QString &term, QCLuceneBooleanQuery &booleanQuery,
+        QCLuceneStandardAnalyzer &analyzer);
+    bool buildQuery(QCLuceneBooleanQuery &booleanQuery, const QList<QHelpSearchQuery> &queryList,
+        QCLuceneStandardAnalyzer &analyzer);
+    bool buildTryHarderQuery(QCLuceneBooleanQuery &booleanQuery,
+        const QList<QHelpSearchQuery> &queryList, QCLuceneStandardAnalyzer &analyzer);
+    void boostSearchHits(const QHelpEngineCore &engine, QList<QHelpSearchEngine::SearchHit> &hitList,
         const QList<QHelpSearchQuery> &queryList);
 
 private:

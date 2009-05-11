@@ -185,6 +185,7 @@ bld.inf
 !s60main.rss
 *.pkg
 plugin_commonU.def
+*.qtplugin
 *.sis
 *.sisx
 

@@ -369,7 +369,7 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
     QRgb brushColor = state->pen().brush().color().rgb();
     bool fallBack = state->pen().brush().style() != Qt::SolidPattern
                     || qAlpha(brushColor) != 0xff
-                    || QT_WA_INLINE(false, d->txop >= QTransform::TxScale)
+                    || QT_WA_INLINE(d->txop >= QTransform::TxProject, d->txop >= QTransform::TxScale)
                     || ti.fontEngine->type() != QFontEngine::Win;
 
 
@@ -1532,7 +1532,7 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
             value = rect;
         } else {
             value = QTransform(1/d->stretch_x, 0, 0, 1/d->stretch_y, 0, 0)
-                    .mapRect(d->fullPage ? d->devPaperRect : d->devPageRect);
+                    .mapRect(d->fullPage ? d->devPhysicalPageRect : d->devPageRect);
         }
         break;
 

@@ -93,6 +93,8 @@ static QColor qcolorFromCGColor(CGColorRef cgcolor)
         pc.setRgbF(components[0], components[1], components[2], components[3]);
     } else if (model == kCGColorSpaceModelCMYK) {
         pc.setCmykF(components[0], components[1], components[2], components[3]);
+    } else if (model == kCGColorSpaceModelMonochrome) {
+        pc.setRgbF(components[0], components[0], components[0], components[1]);
     } else {
         // Colorspace we can't deal with.
         qWarning("Qt: qcolorFromCGColor: cannot convert from colorspace model: %d", model);
@@ -129,16 +131,47 @@ QColor qcolorForTheme(ThemeBrush brush)
 
 QColor qcolorForThemeTextColor(ThemeTextColor themeColor)
 {
-#ifndef QT_MAC_USE_COCOA
+#ifdef Q_OS_MAC32
     RGBColor c;
     GetThemeTextColor(themeColor, 32, true, &c);
-    return QColor(c.red / 265, c.green / 256, c.blue / 256);
+    QColor color = QColor(c.red / 265, c.green / 256, c.blue / 256);
+    return color;
 #else
-    QNativeImage nativeImage(16,16, QNativeImage::systemFormat());
-    CGRect cgrect = CGRectMake(0, 0, 16, 16);
-    HIThemeSetTextFill(themeColor, 0, nativeImage.cg, kHIThemeOrientationNormal);
-    CGContextFillRect(nativeImage.cg, cgrect);
-    return QColor(nativeImage.image.pixel(0 , 0));
+    // There is no equivalent to GetThemeTextColor in 64-bit and it was rather bad that
+    // I didn't file a request to implement this for Snow Leopard. So, in the meantime
+    // I've encoded the values from the GetThemeTextColor. This is not exactly ideal
+    // as if someone really wants to mess with themeing, these colors will be wrong.
+    // It also means that we need to make sure the values for differences between
+    // OS releases (and it will be likely that we are a step behind.)
+    switch (themeColor) {
+    case kThemeTextColorAlertActive:
+    case kThemeTextColorTabFrontActive:
+    case kThemeTextColorBevelButtonActive:
+    case kThemeTextColorListView:
+    case kThemeTextColorPlacardActive:
+    case kThemeTextColorPopupButtonActive:
+    case kThemeTextColorPopupLabelActive:
+    case kThemeTextColorPushButtonActive:
+        return Qt::black;
+    case kThemeTextColorAlertInactive:
+    case kThemeTextColorDialogInactive:
+    case kThemeTextColorPlacardInactive:
+        return QColor(67, 69, 69, 255);
+    case kThemeTextColorPopupButtonInactive:
+    case kThemeTextColorPopupLabelInactive:
+    case kThemeTextColorPushButtonInactive:
+    case kThemeTextColorTabFrontInactive:
+    case kThemeTextColorBevelButtonInactive:
+        return QColor(123, 127, 127, 255);
+    default: {
+        QNativeImage nativeImage(16,16, QNativeImage::systemFormat());
+        CGRect cgrect = CGRectMake(0, 0, 16, 16);
+        HIThemeSetTextFill(themeColor, 0, nativeImage.cg, kHIThemeOrientationNormal);
+        CGContextFillRect(nativeImage.cg, cgrect);
+        QColor color = nativeImage.image.pixel(0,0);
+        return QColor(nativeImage.image.pixel(0 , 0));
+    }
+    }
 #endif
 }
 QT_END_NAMESPACE

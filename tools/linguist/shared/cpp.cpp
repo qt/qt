@@ -130,12 +130,19 @@ static int yyInPos;
 
 static uint getChar()
 {
-    if (yyInPos >= yyInStr.size())
-        return EOF;
-    QChar c = yyInStr[yyInPos++];
-    if (c.unicode() == '\n')
-        ++yyCurLineNo;
-    return c.unicode();
+    forever {
+        if (yyInPos >= yyInStr.size())
+            return EOF;
+        uint c = yyInStr[yyInPos++].unicode();
+        if (c == '\\' && yyInPos < yyInStr.size() && yyInStr[yyInPos].unicode() == '\n') {
+            ++yyCurLineNo;
+            ++yyInPos;
+            continue;
+        }
+        if (c == '\n')
+            ++yyCurLineNo;
+        return c;
+    }
 }
 
 static uint getToken()
@@ -784,7 +791,7 @@ static void parse(Translator *tor, const QString &initialContext, const QString 
                     if (yyTok == Tok_ColonColon)
                         fullName.append(QString());
                     while (yyTok == Tok_ColonColon || yyTok == Tok_Ident) {
-                        if (yyTok == Tok_Ident) 
+                        if (yyTok == Tok_Ident)
                             fullName.append(yyIdent);
                         yyTok = getToken();
                     }

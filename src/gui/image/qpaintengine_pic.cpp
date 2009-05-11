@@ -346,7 +346,7 @@ void QPicturePaintEngine::writeCmdLength(int pos, const QRectF &r, bool corr)
         if (corr) {                             // widen bounding rect
             int w2 = painter()->pen().width() / 2;
             br.setCoords(br.left() - w2, br.top() - w2,
-                        br.right() + w2, br.bottom() + w2);
+                         br.right() + w2, br.bottom() + w2);
         }
         br = painter()->transform().mapRect(br);
         if (painter()->hasClipping()) {
@@ -454,6 +454,25 @@ void QPicturePaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap
         d->s << r << index << s;
     } else {
         d->s << r << pixmap << s;
+    }
+    writeCmdLength(pos, r, false);
+}
+
+void QPicturePaintEngine::drawImage(const QRectF &r, const QImage &image, const QRectF &sr,
+                                    Qt::ImageConversionFlags flags)
+{
+    Q_D(QPicturePaintEngine);
+#ifdef QT_PICTURE_DEBUG
+    qDebug() << " -> drawImage():" << r << sr;
+#endif
+    int pos;
+    SERIALIZE_CMD(QPicturePrivate::PdcDrawImage);
+    if (d->pic_d->in_memory_only) {
+        int index = d->pic_d->image_list.size();
+        d->pic_d->image_list.append(image);
+        d->s << r << index << sr << (quint32) flags;
+    } else {
+        d->s << r << image << sr << (quint32) flags;
     }
     writeCmdLength(pos, r, false);
 }

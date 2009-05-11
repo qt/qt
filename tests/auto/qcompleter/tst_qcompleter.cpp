@@ -140,6 +140,11 @@ private slots:
     // task-specific tests below me
     void task178797_activatedOnReturn();
     void task189564_omitNonSelectableItems();
+    void task246056_setCompletionPrefix();
+    void task250064_lostFocus();
+
+    void task253125_lineEditCompletion_data();
+    void task253125_lineEditCompletion();
 
 private:
     void filter();
@@ -1094,6 +1099,138 @@ void tst_QCompleter::task189564_omitNonSelectableItems()
     QModelIndexList matches2 =
         completionModel->match(completionModel->index(0, 0), Qt::DisplayRole, omitString);
     QVERIFY(matches2.isEmpty());
+}
+
+class task246056_ComboBox : public QComboBox
+{
+    Q_OBJECT
+public:
+    task246056_ComboBox()
+    {
+        setEditable(true);
+        setInsertPolicy(NoInsert);
+        Q_ASSERT(completer());
+        completer()->setCompletionMode(QCompleter::PopupCompletion);
+        completer()->setCompletionRole(Qt::DisplayRole);
+        connect(lineEdit(), SIGNAL(editingFinished()), SLOT(setCompletionPrefix()));
+    }
+private slots:
+    void setCompletionPrefix() { completer()->setCompletionPrefix(lineEdit()->text()); }
+};
+
+void tst_QCompleter::task246056_setCompletionPrefix()
+{
+    task246056_ComboBox *comboBox = new task246056_ComboBox;
+    comboBox->addItem("");
+    comboBox->addItem("a1");
+    comboBox->addItem("a2");
+    comboBox->show();
+    comboBox->setFocus();
+    QTest::qWait(100);
+    QTest::keyPress(comboBox, 'a');
+    QTest::keyPress(comboBox->completer()->popup(), Qt::Key_Down);
+    QTest::keyPress(comboBox->completer()->popup(), Qt::Key_Down);
+    QTest::keyPress(comboBox->completer()->popup(), Qt::Key_Enter); // don't crash!
+}
+
+class task250064_TextEdit : public QTextEdit
+{
+public:
+    QCompleter *completer;
+
+    task250064_TextEdit()
+    {
+        completer = new QCompleter;
+        completer->setWidget(this);
+    }
+
+    void keyPressEvent (QKeyEvent *e)
+    {
+        completer->popup();
+        QTextEdit::keyPressEvent(e);
+    }
+};
+
+class task250064_Widget : public QWidget
+{
+    Q_OBJECT
+public:
+    task250064_TextEdit *textEdit;
+
+    task250064_Widget(task250064_TextEdit *textEdit)
+        : textEdit(textEdit)
+    {
+        QTabWidget *tabWidget = new QTabWidget;
+        tabWidget->setFocusPolicy(Qt::ClickFocus);
+        tabWidget->addTab(textEdit, "untitled");
+
+        QVBoxLayout *layout = new QVBoxLayout(this);
+        layout->addWidget(tabWidget);
+
+        textEdit->setPlainText("bla bla bla");
+        textEdit->setFocus();
+    }
+
+    void setCompletionModel()
+    {
+        textEdit->completer->setModel(0);
+    }
+};
+
+void tst_QCompleter::task250064_lostFocus()
+{
+    task250064_TextEdit *textEdit = new task250064_TextEdit;
+    task250064_Widget *widget = new task250064_Widget(textEdit);
+    widget->show();
+    QTest::qWait(100);
+    QTest::keyPress(textEdit, 'a');
+    Qt::FocusPolicy origPolicy = textEdit->focusPolicy();
+    QVERIFY(origPolicy != Qt::NoFocus);
+    widget->setCompletionModel();
+    QCOMPARE(textEdit->focusPolicy(), origPolicy);
+}
+
+void tst_QCompleter::task253125_lineEditCompletion_data()
+{
+    QTest::addColumn<QStringList>("list");
+    QTest::addColumn<int>("completionMode");
+
+    QStringList list = QStringList()
+        << "alpha" << "beta"    << "gamma"   << "delta" << "epsilon" << "zeta"
+        << "eta"   << "theta"   << "iota"    << "kappa" << "lambda"  << "mu"
+        << "nu"    << "xi"      << "omicron" << "pi"    << "rho"     << "sigma"
+        << "tau"   << "upsilon" << "phi"     << "chi"   << "psi"     << "omega";
+
+    QTest::newRow("Inline") << list << (int)QCompleter::InlineCompletion;
+    QTest::newRow("Filtered") << list << (int)QCompleter::PopupCompletion;
+    QTest::newRow("Unfiltered") << list << (int)QCompleter::UnfilteredPopupCompletion;
+}
+
+void tst_QCompleter::task253125_lineEditCompletion()
+{
+    QFETCH(QStringList, list);
+    QFETCH(int, completionMode);
+
+    QStringListModel *model = new QStringListModel;
+    model->setStringList(list);
+
+    QCompleter *completer = new QCompleter(list);
+    completer->setModel(model);
+    completer->setCompletionMode((QCompleter::CompletionMode)completionMode);
+
+    QLineEdit edit;
+    edit.setCompleter(completer);
+    edit.show();
+    edit.setFocus();
+
+    QTest::qWait(100);
+
+    QTest::keyClick(&edit, 'i');
+    QCOMPARE(edit.completer()->currentCompletion(), QString("iota"));
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
+
+    QCOMPARE(edit.text(), QString("iota"));
 }
 
 QTEST_MAIN(tst_QCompleter)

@@ -1187,6 +1187,16 @@ static void fooFromScriptValue(const QScriptValue &value, Foo &foo)
     foo.y = value.property("y").toInt32();
 }
 
+static QScriptValue fooToScriptValueV2(QScriptEngine *eng, const Foo &foo)
+{
+    return QScriptValue(eng, foo.x);
+}
+
+static void fooFromScriptValueV2(const QScriptValue &value, Foo &foo)
+{
+    foo.x = value.toInt32();
+}
+
 Q_DECLARE_METATYPE(QLinkedList<QString>)
 Q_DECLARE_METATYPE(QList<Foo>)
 Q_DECLARE_METATYPE(QVector<QChar>)
@@ -1426,6 +1436,24 @@ void tst_QScriptEngine::valueConversion()
         QScriptValue val = qScriptValueFromValue(&eng, var);
         QVERIFY(val.isVariant());
         QCOMPARE(val.toVariant(), var);
+    }
+
+    // task 248802
+    qScriptRegisterMetaType<Foo>(&eng, fooToScriptValueV2, fooFromScriptValueV2);
+    {
+        QScriptValue num(&eng, 123);
+        Foo foo = qScriptValueToValue<Foo>(num);
+        QCOMPARE(foo.x, 123);
+    }
+    {
+        QScriptValue num(123);
+        Foo foo = qScriptValueToValue<Foo>(num);
+        QCOMPARE(foo.x, -1);
+    }
+    {
+        QScriptValue str(&eng, "123");
+        Foo foo = qScriptValueToValue<Foo>(str);
+        QCOMPARE(foo.x, 123);
     }
 }
 

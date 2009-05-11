@@ -284,9 +284,7 @@ public:
         WindowStaysOnTopHint = 0x00040000,
         // reserved for Qt3Support:
         // WMouseNoMask = 0x00080000,
-        WindowOkButtonHint = 0x00080000,
         // WDestructiveClose = 0x00100000,
-        WindowCancelButtonHint = 0x00100000,
         // WStaticContents = 0x00200000,
         // WGroupLeader = 0x00400000,
         // WShowModal = 0x00800000,
@@ -295,7 +293,9 @@ public:
         WindowStaysOnBottomHint = 0x04000000,
         WindowCloseButtonHint = 0x08000000,
         MacWindowToolBarButtonHint = 0x10000000,
-        BypassGraphicsProxyWidget = 0x20000000
+        BypassGraphicsProxyWidget = 0x20000000,
+        WindowOkButtonHint = 0x00080000,
+        WindowCancelButtonHint = 0x00100000
 
 #ifdef QT3_SUPPORT
         ,
@@ -1398,6 +1398,22 @@ public:
         ImMaximumTextLength
     };
 
+    enum InputMethodHint {
+        ImhNone = 0x0,
+        ImhHiddenText = 0x1,
+        ImhDigitsOnly = 0x2,
+        ImhFormattedNumbersOnly = 0x4,
+        ImhUppercaseOnly = 0x8,
+        ImhLowercaseOnly = 0x10,
+        ImhNoAutoUppercase = 0x20,
+        ImhPreferNumbers = 0x40,
+        ImhPreferUppercase = 0x80,
+        ImhPreferLowercase = 0x100,
+        ImhNoPredictiveText = 0x200,
+        ImhDialableCharactersOnly = 0x400
+    };
+    Q_DECLARE_FLAGS(InputMethodHints, InputMethodHint)
+
     enum ToolButtonStyle {
         ToolButtonIconOnly,
         ToolButtonTextOnly,
@@ -1559,6 +1575,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::DropActions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ItemFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MatchFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TextInteractionFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::InputMethodHints)
 
 typedef bool (*qInternalCallback)(void **);
 

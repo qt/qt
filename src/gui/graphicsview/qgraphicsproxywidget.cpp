@@ -177,6 +177,10 @@ QT_BEGIN_NAMESPACE
     while the widget is embedded. In this state, the widget may differ slightly
     in behavior from when it is not embedded.
 
+    \warning This class is provided for convenience when bridging
+    QWidgets and QGraphicsItems, it should not be used for
+    high-performance scenarios.
+
     \sa QGraphicsScene::addWidget(), QGraphicsWidget
 */
 
@@ -1033,7 +1037,7 @@ void QGraphicsProxyWidget::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
         if (receiver != d->dragDropWidget) {
             // Try to enter before we leave
             QDragEnterEvent dragEnter(receiverPos, event->possibleActions(), event->mimeData(), event->buttons(), event->modifiers());
-            dragEnter.setDropAction(event->proposedAction());            
+            dragEnter.setDropAction(event->proposedAction());
             QApplication::sendEvent(receiver, &dragEnter);
             event->setAccepted(dragEnter.isAccepted());
             event->setDropAction(dragEnter.dropAction());
@@ -1431,7 +1435,7 @@ int QGraphicsProxyWidget::type() const
 
   Creates a proxy widget for the given \a child of the widget
   contained in this proxy.
-  
+
   This function makes it possible to aquire proxies for
   non top-level widgets. For instance, you can embed a dialog,
   and then transform only one of its widgets.

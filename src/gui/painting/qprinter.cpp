@@ -285,6 +285,10 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
   the printProgram() function can be used to specify the command or utility
   to use instead of the system default.
 
+  Note that setting parameters like paper size and resolution on an
+  invalid printer is undefined. You can use QPrinter::isValid() to
+  verify this before changing any parameters.
+
   QPrinter supports a number of parameters, most of which can be
   changed by the end user through a \l{QPrintDialog}{print dialog}. In
   general, QPrinter passes these functions onto the underlying QPrintEngine.
@@ -740,7 +744,7 @@ void QPrinter::setOutputFormat(OutputFormat format)
 
 #ifndef QT_NO_PDF
     Q_D(QPrinter);
-    if (d->outputFormat == format)
+    if (d->validPrinter && d->outputFormat == format)
         return;
     d->outputFormat = format;
 
@@ -769,8 +773,8 @@ void QPrinter::setOutputFormat(OutputFormat format)
     if (def_engine)
         delete oldPrintEngine;
 
-    d->validPrinter = d->outputFormat == QPrinter::PdfFormat || d->outputFormat == QPrinter::PostScriptFormat;
-
+    if (d->outputFormat == QPrinter::PdfFormat || d->outputFormat == QPrinter::PostScriptFormat)
+        d->validPrinter = true;
 #else
     Q_UNUSED(format);
 #endif
@@ -849,7 +853,7 @@ void QPrinter::setPrinterName(const QString &name)
   Returns true if the printer currently selected is a valid printer
   in the system, or a pure PDF/PostScript printer; otherwise returns false.
 
-  To detect other failures check the output of QPainter::begin() or QPainter::nextPage().
+  To detect other failures check the output of QPainter::begin() or QPrinter::newPage().
 
   \snippet doc/src/snippets/printing-qprinter/errors.cpp 0
 

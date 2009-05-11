@@ -93,28 +93,28 @@ private slots:
     void addDatabase();
 
     //database specific tests
-    void recordMySQL_data();
+    void recordMySQL_data() { generic_data("QMYSQL"); }
     void recordMySQL();
-    void recordPSQL_data();
+    void recordPSQL_data() { generic_data("QPSQL"); }
     void recordPSQL();
-    void recordOCI_data();
+    void recordOCI_data() { generic_data("QOCI"); }
     void recordOCI();
-    void recordTDS_data();
+    void recordTDS_data() { generic_data("QTDS"); }
     void recordTDS();
-    void recordDB2_data();
+    void recordDB2_data() { generic_data("QDB2"); }
     void recordDB2();
-    void recordSQLite_data();
+    void recordSQLite_data() { generic_data("QSQLITE"); }
     void recordSQLite();
-    void recordAccess_data();
+    void recordAccess_data() { generic_data("QODBC"); }
     void recordAccess();
-    void recordSQLServer_data();
+    void recordSQLServer_data() { generic_data("QODBC"); }
     void recordSQLServer();
-    void recordIBase_data();
+    void recordIBase_data() {generic_data("QIBASE"); }
     void recordIBase();
 
-    void eventNotificationIBase_data() { generic_data(); }
+    void eventNotificationIBase_data() { generic_data("QIBASE"); }
     void eventNotificationIBase();
-    void eventNotificationPSQL_data() { generic_data(); }
+    void eventNotificationPSQL_data() { generic_data("QPSQL"); }
     void eventNotificationPSQL();
 
     //database specific 64 bit integer test
@@ -141,59 +141,65 @@ private slots:
     void precisionPolicy_data() { generic_data(); }
     void precisionPolicy();
 
-    void db2_valueCacheUpdate_data() { generic_data(); }
+    void db2_valueCacheUpdate_data() { generic_data("QDB2"); }
     void db2_valueCacheUpdate();
 
-    void psql_schemas_data();
+    void psql_schemas_data() { generic_data("QPSQL"); }
     void psql_schemas();
-    void psql_escapedIdentifiers_data(){ psql_schemas_data(); }
+    void psql_escapedIdentifiers_data() { generic_data("QPSQL"); }
     void psql_escapedIdentifiers();
-    void psql_escapeBytea_data() { generic_data(); }
+    void psql_escapeBytea_data() { generic_data("QPSQL"); }
     void psql_escapeBytea();
+    void bug_249059_data() { generic_data("QPSQL"); }
+    void bug_249059();
 
     void mysqlOdbc_unsignedIntegers_data() { generic_data(); }
     void mysqlOdbc_unsignedIntegers();
-    void mysql_multiselect_data() { generic_data(); }
+    void mysql_multiselect_data() { generic_data("QMYSQL"); }
     void mysql_multiselect();  // For task 144331
 
     void accessOdbc_strings_data() { generic_data(); }
     void accessOdbc_strings();
 
-    void ibase_numericFields_data() { generic_data(); }
+    void ibase_numericFields_data() { generic_data("QIBASE"); }
     void ibase_numericFields(); // For task 125053
-    void ibase_fetchBlobs_data() { generic_data(); }
+    void ibase_fetchBlobs_data() { generic_data("QIBASE"); }
     void ibase_fetchBlobs(); // For task 143471
-    void ibase_useCustomCharset_data() { generic_data(); }
+    void ibase_useCustomCharset_data() { generic_data("QIBASE"); }
     void ibase_useCustomCharset(); // For task 134608
-    void ibase_procWithoutReturnValues_data() { generic_data(); } // For task 165423
+    void ibase_procWithoutReturnValues_data() { generic_data("QIBASE"); } // For task 165423
     void ibase_procWithoutReturnValues();
-    void ibase_procWithReturnValues_data() { generic_data(); } // For task 177530
+    void ibase_procWithReturnValues_data() { generic_data("QIBASE"); } // For task 177530
     void ibase_procWithReturnValues();
 
-    void odbc_reopenDatabase_data() { generic_data(); }
+    void odbc_reopenDatabase_data() { generic_data("QODBC"); }
     void odbc_reopenDatabase();
-    void odbc_uniqueidentifier_data() { generic_data(); }
+    void odbc_uniqueidentifier_data() { generic_data("QODBC"); }
     void odbc_uniqueidentifier(); // For task 141822
-    void odbc_uintfield_data() { generic_data(); }
+    void odbc_uintfield_data() { generic_data("QODBC"); }
     void odbc_uintfield();
-    void odbc_bindBoolean_data() { generic_data(); }
+    void odbc_bindBoolean_data() { generic_data("QODBC"); }
     void odbc_bindBoolean();
 
-    void oci_serverDetach_data() { generic_data(); }
+    void oci_serverDetach_data() { generic_data("QOCI"); }
     void oci_serverDetach(); // For task 154518
-    void oci_xmltypeSupport_data() { generic_data(); }
+    void oci_xmltypeSupport_data() { generic_data("QOCI"); }
     void oci_xmltypeSupport();
-    void oci_fieldLength_data() { generic_data(); }
+    void oci_fieldLength_data() { generic_data("QOCI"); }
     void oci_fieldLength();
 
-    void sqlite_bindAndFetchUInt_data() { generic_data(); }
+    void sqlite_bindAndFetchUInt_data() { generic_data("QSQLITE3"); }
     void sqlite_bindAndFetchUInt();
+
+    void sqlStatementUseIsNull_189093_data() { generic_data(); }
+    void sqlStatementUseIsNull_189093();
+
 
 private:
     void createTestTables(QSqlDatabase db);
     void dropTestTables(QSqlDatabase db);
     void populateTestTables(QSqlDatabase db);
-    void generic_data();
+    void generic_data(const QString &engine=QString());
 
 #ifdef QT3_SUPPORT
     void testRecordInfo(const FieldDef fieldDefs[], const Q3SqlRecordInfo& inf);
@@ -337,7 +343,8 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
             << qTableName("qtestBindBool")
             << qTableName("qtest_sqlguid")
             << qTableName("uint_table")
-            << qTableName("uint_test");
+            << qTableName("uint_test")
+            << qTableName("bug_249059");
 
     QSqlQuery q(0, db);
     if (db.driverName().startsWith("QPSQL"))
@@ -360,6 +367,7 @@ void tst_QSqlDatabase::populateTestTables(QSqlDatabase db)
     QVERIFY_SQL(q, exec("insert into " + qTableName("qtest") + " (id, t_varchar, t_char, t_numeric) values (1, 'VarChar1', 'Char1', 2.2)"));
     QVERIFY_SQL(q, exec("insert into " + qTableName("qtest") + " (id, t_varchar, t_char, t_numeric) values (2, 'VarChar2', 'Char2', 3.3)"));
     QVERIFY_SQL(q, exec("insert into " + qTableName("qtest") + " (id, t_varchar, t_char, t_numeric) values (3, 'VarChar3', 'Char3', 4.4)"));
+    QVERIFY_SQL(q, exec("insert into " + qTableName("qtest") + " (id, t_varchar, t_char, t_numeric) values (4, 'VarChar4', NULL, NULL)"));
 }
 
 void tst_QSqlDatabase::initTestCase()
@@ -394,70 +402,14 @@ void tst_QSqlDatabase::cleanup()
 {
 }
 
-void tst_QSqlDatabase::recordOCI_data()
+void tst_QSqlDatabase::generic_data(const QString& engine)
 {
-    if (dbs.fillTestTable("QOCI") == 0)
-        QSKIP("No Oracle database drivers are available in this Qt configuration", SkipAll);
-}
-
-void tst_QSqlDatabase::recordPSQL_data()
-{
-    if (dbs.fillTestTable("QPSQL") == 0)
-        QSKIP("No PostgreSQL database drivers are available in this Qt configuration", SkipAll);
-}
-
-void tst_QSqlDatabase::recordMySQL_data()
-{
-    if (dbs.fillTestTable("QMYSQL") == 0)
-        QSKIP("No MySQL database drivers are available in this Qt configuration", SkipAll);
-}
-
-void tst_QSqlDatabase::recordTDS_data()
-{
-    if (dbs.fillTestTable("QTDS") == 0)
-        QSKIP("No TDS database drivers are available in this Qt configuration", SkipAll);
-}
-
-void tst_QSqlDatabase::recordDB2_data()
-{
-    if (dbs.fillTestTable("QDB2") == 0)
-        QSKIP("No DB2 database drivers are available in this Qt configuration", SkipAll);
-}
-
-void tst_QSqlDatabase::recordSQLite_data()
-{
-    if (dbs.fillTestTable("QSQLITE") == 0)
-        QSKIP("No SQLite database drivers are available in this Qt configuration", SkipAll);
-}
-
-void tst_QSqlDatabase::recordAccess_data()
-{
-    if (dbs.fillTestTable("QODBC") == 0)
-        QSKIP("No ODBC database drivers are available in this Qt configuration", SkipAll);
-}
-
-void tst_QSqlDatabase::recordSQLServer_data()
-{
-    if (dbs.fillTestTable("QODBC") == 0)
-        QSKIP("No ODBC database drivers are available in this Qt configuration", SkipAll);
-}
-
-void tst_QSqlDatabase::recordIBase_data()
-{
-    if (dbs.fillTestTable("QIBASE") == 0)
-        QSKIP("No Interbase database drivers are available in this Qt configuration", SkipAll);
-}
-
-void tst_QSqlDatabase::psql_schemas_data()
-{
-    if (dbs.fillTestTable("QPSQL") == 0)
-        QSKIP("No Postgres database drivers are available in this Qt configuration", SkipAll);
-}
-
-void tst_QSqlDatabase::generic_data()
-{
-    if (dbs.fillTestTable() == 0)
-        QSKIP("No database drivers are available in this Qt configuration", SkipAll);
+    if ( dbs.fillTestTable(engine) == 0 ) {
+        if(engine.isEmpty())
+           QSKIP( "No database drivers are available in this Qt configuration", SkipAll );
+        else
+           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit(), SkipAll );
+    }
 }
 
 void tst_QSqlDatabase::addDatabase()
@@ -565,6 +517,8 @@ void tst_QSqlDatabase::tables()
             // MySQL doesn't give back anything when calling QSqlDatabase::tables() with QSql::Views
             // May be fixable by doing a select on informational_schema.views instead of using the client library api
             QEXPECT_FAIL("", "MySQL driver thinks that views are tables", Continue);
+        if(!tables.contains(qTableName("qtest_view"), Qt::CaseInsensitive))
+            qDebug() << "failed to find" << qTableName("qtest_view") << "in" << tables;
         QVERIFY(tables.contains(qTableName("qtest_view"), Qt::CaseInsensitive));
     }
     if (tempTables)
@@ -885,7 +839,6 @@ void tst_QSqlDatabase::recordTDS()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QTDS");
 
     static const FieldDef fieldDefs[] = {
     FieldDef("tinyint", QVariant::Int,		255),
@@ -934,7 +887,6 @@ void tst_QSqlDatabase::recordOCI()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QOCI");
 
     // runtime check for Oracle version since V8 doesn't support TIMESTAMPs
     if (tst_Databases::getOraVersion(db) >= 9) {
@@ -1010,7 +962,6 @@ void tst_QSqlDatabase::recordPSQL()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QPSQL");
 
     FieldDef byteadef;
     if (db.driver()->hasFeature(QSqlDriver::BLOB))
@@ -1095,13 +1046,13 @@ void tst_QSqlDatabase::recordMySQL()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QMYSQL");
 
     FieldDef bin10, varbin10;
     int major = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt();
     int minor = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 1, 1 ).toInt();
     int revision = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 2, 2 ).toInt();
 
+#ifdef QT3_SUPPORT
     /* The below is broken in mysql below 5.0.15
         see http://dev.mysql.com/doc/refman/5.0/en/binary-varbinary.html
         specifically: Before MySQL 5.0.15, the pad value is space. Values are right-padded
@@ -1176,7 +1127,6 @@ void tst_QSqlDatabase::recordDB2()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QDB2");
 
     static const FieldDef fieldDefs[] = {
     FieldDef("char(20)", QVariant::String,		QString("Blah1")),
@@ -1222,7 +1172,6 @@ void tst_QSqlDatabase::recordIBase()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QIBASE");
 
     static const FieldDef fieldDefs[] = {
         FieldDef("char(20)", QVariant::String, QString("Blah1"), false),
@@ -1253,7 +1202,6 @@ void tst_QSqlDatabase::recordSQLite()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QSQLITE");
 
     static const FieldDef fieldDefs[] = {
         // The affinity of these fields are TEXT so SQLite should give us strings, not ints or doubles.
@@ -1596,7 +1544,6 @@ void tst_QSqlDatabase::psql_escapeBytea()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QPSQL");
 
     const char dta[4] = {'\x71', '\x14', '\x32', '\x81'};
     QByteArray ba(dta, 4);
@@ -1621,6 +1568,38 @@ void tst_QSqlDatabase::psql_escapeBytea()
     }
 
     QCOMPARE(i, 4);
+}
+
+void tst_QSqlDatabase::bug_249059()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q(db);
+    QString tableName = qTableName("bug_249059");
+    QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (dt timestamp, t time)").arg(tableName)));
+
+    QSqlQuery iq(db);
+    QVERIFY_SQL(iq, prepare(QString("INSERT INTO %1 VALUES (?, ?)").arg(tableName)));
+    iq.bindValue(0, QVariant(QString("2001-09-09 04:05:06.789 -5:00")));
+    iq.bindValue(1, QVariant(QString("04:05:06.789 -5:00")));
+    QVERIFY_SQL(iq, exec());
+    iq.bindValue(0, QVariant(QString("2001-09-09 04:05:06.789 +5:00")));
+    iq.bindValue(1, QVariant(QString("04:05:06.789 +5:00")));
+    QVERIFY_SQL(iq, exec());
+
+    QVERIFY_SQL(q, exec(QString("SELECT dt, t FROM %1").arg(tableName)));
+    QVERIFY_SQL(q, next());
+    QDateTime dt1=q.value(0).toDateTime();
+    QTime t1=q.value(1).toTime();
+    QVERIFY_SQL(q, next());
+    QDateTime dt2=q.value(0).toDateTime();
+    QTime t2=q.value(1).toTime();
+
+    // These will fail when timezone support is added, when that's the case, set the second record to 14:05:06.789 and it should work correctly
+    QCOMPARE(dt1, dt2);
+    QCOMPARE(t1, t2);
 }
 
 // This test should be rewritten to work with Oracle as well - or the Oracle driver
@@ -1769,7 +1748,6 @@ void tst_QSqlDatabase::ibase_numericFields()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QIBASE");
 
     QSqlQuery q(db);
     QString tableName = qTableName("numericfields");
@@ -1843,7 +1821,6 @@ void tst_QSqlDatabase::ibase_fetchBlobs()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QIBASE");
 
     QString tableName = qTableName("qtest_ibaseblobs");
     QSqlQuery q(db);
@@ -1876,7 +1853,6 @@ void tst_QSqlDatabase::ibase_procWithoutReturnValues()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QIBASE");
 
     QSqlQuery q(db);
     QString procName = qTableName("qtest_proc1");
@@ -1907,17 +1883,26 @@ void tst_QSqlDatabase::ibase_procWithReturnValues()
                         "\nRESULT INTEGER)"
                         "\nAS"
                         "\nbegin"
-                        "\nRESULT = 10;"
+                        "\nRESULT = 10 * ABC;"
                         "\nsuspend;"
                         "\nend"));
 
     // Interbase procedures can be executed in two ways: EXECUTE PROCEDURE or SELECT
     QVERIFY_SQL(q, exec(QString("execute procedure %1(123)").arg(procName)));
     QVERIFY_SQL(q, next());
-    QCOMPARE(q.value(0).toInt(), 10);
+    QCOMPARE(q.value(0).toInt(), 1230);
     QVERIFY_SQL(q, exec(QString("select result from %1(456)").arg(procName)));
     QVERIFY_SQL(q, next());
-    QCOMPARE(q.value(0).toInt(), 10);
+    QCOMPARE(q.value(0).toInt(), 4560);
+    QVERIFY_SQL(q, prepare(QLatin1String("execute procedure ")+procName+QLatin1String("(?)")));
+    q.bindValue(0, 123);
+    QVERIFY_SQL(q, exec());
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 1230);
+    q.bindValue(0, 456);
+    QVERIFY_SQL(q, exec());
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 4560);
 
     q.exec(QString("drop procedure %1").arg(procName));
 }
@@ -1957,11 +1942,6 @@ void tst_QSqlDatabase::odbc_reopenDatabase()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    if (!tst_Databases::isSqlServer(db)) {
-        QSKIP("SQL Server (ODBC) specific test", SkipSingle);
-        return;
-    }
-
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("SELECT * from " + qTableName("qtest")));
     QVERIFY_SQL(q, next());
@@ -1976,7 +1956,6 @@ void tst_QSqlDatabase::odbc_bindBoolean()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QODBC");
 
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("qtestBindBool") + "(id int, boolvalue bit)"));
@@ -2005,7 +1984,6 @@ void tst_QSqlDatabase::mysql_multiselect()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QMYSQL");
 
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("select version()"));
@@ -2027,7 +2005,6 @@ void tst_QSqlDatabase::ibase_useCustomCharset()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QIBASE");
     QString nonlatin1string("��");
 
     db.close();
@@ -2051,7 +2028,6 @@ void tst_QSqlDatabase::oci_serverDetach()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QOCI");
 
     for (int i = 0; i < 2; i++) {
         db.close();
@@ -2072,7 +2048,6 @@ void tst_QSqlDatabase::oci_xmltypeSupport()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QOCI");
 
     QString tableName = qTableName("qtest_xmltype");
     QString xml("<?xml version=\"1.0\"?><TABLE_NAME>MY_TABLE</TABLE_NAME>");
@@ -2101,7 +2076,6 @@ void tst_QSqlDatabase::oci_fieldLength()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QOCI");
 
     QString tableName = qTableName("qtest");
     QSqlQuery q(db);
@@ -2166,7 +2140,6 @@ void tst_QSqlDatabase::odbc_uintfield()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QODBC");
 
     QString tableName = qTableName("uint_table");
     unsigned int val = 4294967295U;
@@ -2228,7 +2201,6 @@ void tst_QSqlDatabase::eventNotificationIBase()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QIBASE");
 
     QString procedureName = qTableName("posteventProc");
     QSqlDriver *driver=db.driver();
@@ -2258,7 +2230,6 @@ void tst_QSqlDatabase::eventNotificationPSQL()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QPSQL");
 
     QSqlQuery query(db);
     QString procedureName = qTableName("posteventProc");
@@ -2279,7 +2250,6 @@ void tst_QSqlDatabase::sqlite_bindAndFetchUInt()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QSQLITE3");
 
     QSqlQuery q(db);
     QString tableName = qTableName("uint_test");
@@ -2301,7 +2271,6 @@ void tst_QSqlDatabase::db2_valueCacheUpdate()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    DBMS_SPECIFIC(db, "QDB2");
 
     QString tableName = qTableName("qtest");
     QSqlQuery q(db);
@@ -2316,6 +2285,29 @@ void tst_QSqlDatabase::db2_valueCacheUpdate()
     QCOMPARE(c2.toString(), q.value(1).toString());
     QCOMPARE(c1.toString(), q.value(0).toString());
 }
+
+void tst_QSqlDatabase::sqlStatementUseIsNull_189093()
+{
+    // NULL = NULL is unknown, the sqlStatment must use IS NULL
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    // select a record with NULL value
+    QSqlQuery q(QString::null, db);
+    QVERIFY_SQL(q, exec("select * from " + qTableName("qtest") + " where id = 4"));
+    QVERIFY_SQL(q, next());
+
+    QSqlDriver *driver = db.driver();
+    QVERIFY(driver);
+
+    QString preparedStatment = driver->sqlStatement(QSqlDriver::WhereStatement, QString("qtest"), q.record(), true);
+    QCOMPARE(preparedStatment.count("IS NULL", Qt::CaseInsensitive), 2);
+
+    QString statment = driver->sqlStatement(QSqlDriver::WhereStatement, QString("qtest"), q.record(), false);
+    QCOMPARE(statment.count("IS NULL", Qt::CaseInsensitive), 2);
+}
+
 
 QTEST_MAIN(tst_QSqlDatabase)
 #include "tst_qsqldatabase.moc"

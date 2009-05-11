@@ -759,13 +759,21 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
             QImage image;
             if (d->formatMajor < 4) {
                 s >> p >> image;
-                painter->drawPixmap(p, QPixmap::fromImage(image));
+                painter->drawImage(p, image);
             } else if (d->formatMajor <= 5){
                 s >> ir >> image;
-                painter->drawPixmap(ir, QPixmap::fromImage(image), QRect(0, 0, ir.width(), ir.height()));
+                painter->drawImage(ir, image, QRect(0, 0, ir.width(), ir.height()));
             } else {
-                s >> r >> image;
-                painter->drawPixmap(r, QPixmap::fromImage(image), QRectF(0, 0, r.width(), r.height()));
+                QRectF sr;
+                if (d->in_memory_only) {
+                    int index;
+                    s >> r >> index >> sr >> ul;
+                    Q_ASSERT(index < d->image_list.size());
+                    image = d->image_list.at(index);
+                } else {
+                    s >> r >> image >> sr >> ul;
+                }
+                painter->drawImage(r, image, sr, Qt::ImageConversionFlags(ul));
             }
         }
             break;

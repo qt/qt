@@ -177,3 +177,22 @@ repeat_block drawShapes
 setPen black 4
 translate 75 0
 repeat_block drawShapes
+
+resetMatrix
+setRenderHint Antialiasing off
+setPen nopen
+translate 550 100
+setBrush #7f7f7fff
+drawRect -0.5 -0.5 21 21
+setBrush red
+drawEllipse 0 0 20 20
+setBrush nobrush
+setPen black
+drawEllipse 0 0 20 20
+
+translate 25 0
+setPen nopen
+setBrush #7f7f7fff
+drawRect 0 0 20 20
+setBrush red
+drawEllipse 0 0 20 20

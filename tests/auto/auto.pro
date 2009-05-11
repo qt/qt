@@ -408,8 +408,7 @@ SUBDIRS += checkxmlfiles                \
            xmlpatternsdiagnosticsts     \
            xmlpatternsview              \
            xmlpatternsxqts              \
-           xmlpatternsxslts             \
-           xmlpatterns
+           xmlpatternsxslts
 
 xmlpatternsdiagnosticsts.depends = xmlpatternsxqts
 xmlpatternsview.depends = xmlpatternsxqts

@@ -277,6 +277,8 @@ public:
     QPainterPath createStroke(const QPainterPath &path) const;
 
 private:
+    friend class QX11PaintEngine;
+
     QPainterPathStrokerPrivate *d_ptr;
 };
 

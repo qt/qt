@@ -342,11 +342,9 @@ void QScriptEdit::extraAreaPaintEvent(QPaintEvent *e)
                 icon.paint(&painter, r, Qt::AlignCenter);
             }
 
-#if QT_VERSION >= 0x040500
             if (!m_executableLineNumbers.contains(lineNumber))
                 painter.setPen(pal.color(QPalette::Mid));
             else
-#endif
                 painter.setPen(QColor(Qt::darkCyan));
             QString number = QString::number(lineNumber);
             painter.drawText(rect.x() + markWidth, (int)top, rect.x() + extraAreaWidth - markWidth - 4,
@@ -370,10 +368,8 @@ void QScriptEdit::extraAreaMouseEvent(QMouseEvent *e)
 
     if (e->type() == QEvent::MouseMove && e->buttons() == 0) { // mouse tracking
         bool hand = (e->pos().x() <= markWidth);
-#if QT_VERSION >= 0x040500
         int lineNumber = cursor.blockNumber() + m_baseLineNumber;
         hand = hand && m_executableLineNumbers.contains(lineNumber);
-#endif
 #ifndef QT_NO_CURSOR
         if (hand != (m_extraArea->cursor().shape() == Qt::PointingHandCursor))
             m_extraArea->setCursor(hand ? Qt::PointingHandCursor : Qt::ArrowCursor);
@@ -382,12 +378,8 @@ void QScriptEdit::extraAreaMouseEvent(QMouseEvent *e)
 
     if (e->type() == QEvent::MouseButtonPress) {
         if (e->button() == Qt::LeftButton) {
-#if QT_VERSION >= 0x040500
             int lineNumber = cursor.blockNumber() + m_baseLineNumber;
             bool executable = m_executableLineNumbers.contains(lineNumber);
-#else
-            bool executable = true;
-#endif
             if ((e->pos().x() <= markWidth) && executable)
                 m_extraAreaToggleBlockNumber = cursor.blockNumber();
             else
@@ -402,10 +394,8 @@ void QScriptEdit::extraAreaMouseEvent(QMouseEvent *e)
             }
         } else if (e->button() == Qt::RightButton) {
             int lineNumber = cursor.blockNumber() + m_baseLineNumber;
-#if QT_VERSION >= 0x040500
             if (!m_executableLineNumbers.contains(lineNumber))
                 return;
-#endif
             bool has = m_breakpoints.contains(lineNumber);
             QMenu *popup = new QMenu();
             QAction *toggleAct = new QAction(QObject::tr("Toggle Breakpoint"), popup);

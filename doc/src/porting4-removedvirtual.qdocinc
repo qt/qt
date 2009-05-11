@@ -22,7 +22,7 @@
 \row \o void QButton::drawButtonLabel(QPainter *) \o Use Q3Button instead or reimplement QButton::paintEvent().
 \row \o void QButton::setAccel(const QKeySequence &) \o Setter.
 \row \o void QButton::setAutoRepeat(bool) \o Setter.
-\row \o void QButton::setDown(bool) \o Setter.
+\row \o void QButton::setDown(bool) \o Use Q3Button instead or reimplement or port to the new QPushButton API.
 \row \o void QButton::setPixmap(const QPixmap &) \o Setter.
 \row \o void QButton::setState(ToggleState) \o Setter.
 \row \o void QButton::setText(const QString &) \o Use the QAbstractButton::setText() setter function.

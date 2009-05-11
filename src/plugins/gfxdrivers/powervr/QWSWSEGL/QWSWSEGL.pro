@@ -22,3 +22,5 @@ LIBS += -lpvr2d
 DESTDIR = $$QMAKE_LIBDIR_QT
 target.path = $$[QT_INSTALL_LIBS]
 INSTALLS += target
+
+include(../powervr.pri)

@@ -1288,6 +1288,12 @@ void QX11PixmapData::setMask(const QBitmap &newmask)
                              0, 0, 0, 0, 0, 0, w, h);
             release();
             *this = newData;
+            // the new QX11PixmapData object isn't referenced yet, so
+            // ref it
+            ref.ref();
+
+            // the below is to make sure the QX11PixmapData destructor
+            // doesn't delete our newly created render picture
             newData.hd = 0;
             newData.x11_mask = 0;
             newData.picture = 0;
@@ -1431,7 +1437,7 @@ QImage QX11PixmapData::toImage() const
 
         // we may have to swap the byte order
         if ((QSysInfo::ByteOrder == QSysInfo::LittleEndian && xi->byte_order == MSBFirst)
-            || (QSysInfo::ByteOrder == QSysInfo::BigEndian))
+            || (QSysInfo::ByteOrder == QSysInfo::BigEndian && xi->byte_order == LSBFirst))
         {
             for (int i=0; i < image.height(); i++) {
                 uint *p = (uint*)image.scanLine(i);

@@ -4,7 +4,7 @@ INCLUDEPATH *= $$QMAKE_INCDIR_QT/$$TARGET #just for today to have some compat
 isEmpty(QT_ARCH):!isEmpty(ARCH):QT_ARCH=$$ARCH #another compat that will rot for change #215700
 TEMPLATE	= lib
 isEmpty(QT_MAJOR_VERSION) {
-   VERSION=4.5.1
+   VERSION=4.5.2
 } else {
    VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 }
@@ -97,11 +97,7 @@ win32 {
 symbian {
     !static {
         DEFINES+=QT_MAKEDLL
-        contains(QT_EDITION, OpenSource) {
-            TARGET.CAPABILITY = LocalServices NetworkServices ReadUserData UserEnvironment WriteUserData
-        } else {
-            TARGET.CAPABILITY = All -Tcb        
-        }
+        TARGET.CAPABILITY = All -Tcb        
     }
 }
 win32-borland:INCLUDEPATH += kernel

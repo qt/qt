@@ -457,8 +457,8 @@ void tst_QMenuBar::accel()
 
 void tst_QMenuBar::accel_noQt3()
 {
-#ifdef Q_WS_MAC
-    QSKIP("On Mac, native key events are needed to test menu action activation", SkipAll);
+#if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
+    QSKIP("On Mac/WinCE, native key events are needed to test menu action activation", SkipAll);
 #endif
 #ifdef Q_OS_SYMBIAN
     QSKIP("On Symbian OS, native key events are needed to test menu action activation", SkipAll);
@@ -490,8 +490,8 @@ void tst_QMenuBar::activatedCount()
 
 void tst_QMenuBar::activatedCount_noQt3()
 {
-#ifdef Q_WS_MAC
-    QSKIP("On Mac, native key events are needed to test menu action activation", SkipAll);
+#if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
+    QSKIP("On Mac/WinCE, native key events are needed to test menu action activation", SkipAll);
 #endif
     // create a popup menu with menu items set the accelerators later...
     initSimpleMenubar_noQt3();
@@ -892,8 +892,8 @@ void tst_QMenuBar::insertItem_QString_QObject_noQt3()
 
 void tst_QMenuBar::check_accelKeys()
 {
-#ifdef Q_WS_MAC
-    QSKIP("On Mac, native key events are needed to test menu action activation", SkipAll);
+#if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
+    QSKIP("On Mac/WinCE, native key events are needed to test menu action activation", SkipAll);
 #endif
 #ifdef QT3_SUPPORT
     initComplexMenubar();
@@ -965,8 +965,8 @@ void tst_QMenuBar::check_accelKeys()
 
 void tst_QMenuBar::check_cursorKeys1()
 {
-#ifdef Q_WS_MAC
-    QSKIP("Qt/Mac does not use the native popups/menubar", SkipAll);
+#if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
+    QSKIP("Qt/Mac,WinCE does not use the native popups/menubar", SkipAll);
 #endif
 
 #ifdef QT3_SUPPORT
@@ -1000,8 +1000,8 @@ void tst_QMenuBar::check_cursorKeys1()
 
 void tst_QMenuBar::check_cursorKeys2()
 {
-#ifdef Q_WS_MAC
-    QSKIP("Qt/Mac does not use the native popups/menubar", SkipAll);
+#if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
+    QSKIP("Qt/Mac,WinCE does not use the native popups/menubar", SkipAll);
 #endif
 
 #ifdef QT3_SUPPORT
@@ -1034,8 +1034,8 @@ void tst_QMenuBar::check_cursorKeys2()
 */
 void tst_QMenuBar::check_cursorKeys3()
 {
-#ifdef Q_WS_MAC
-    QSKIP("Qt/Mac does not use the native popups/menubar", SkipAll);
+#if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
+    QSKIP("Qt/Mac,WinCE does not use the native popups/menubar", SkipAll);
 #endif
 
 #ifdef QT3_SUPPORT
@@ -1190,8 +1190,8 @@ void tst_QMenuBar::check_escKey()
 
 void tst_QMenuBar::check_escKey_noQt3()
 {
-#ifdef Q_WS_MAC
-    QSKIP("Qt/Mac does not use the native popups/menubar", SkipAll);
+#if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
+    QSKIP("Qt/Mac,WinCE does not use the native popups/menubar", SkipAll);
 #endif
 
     initComplexMenubar_noQt3();
@@ -1333,7 +1333,7 @@ void tst_QMenuBar::check_escKey_noQt3()
 void
 tst_QMenuBar::allowActiveAndDisabled()
 {
-#ifndef Q_WS_MAC
+#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE_WM)
     mb->hide();
     mb->clear();
 
@@ -1341,7 +1341,6 @@ tst_QMenuBar::allowActiveAndDisabled()
     // disabled menu items are added
 
     QMenu fileMenu("&File");
-    QAction disabledAction()    ;      
     // Task 241043 : check that second menu is activated 
     // if all items are disabled
     QAction *act = fileMenu.addAction("Disabled");
@@ -1398,8 +1397,8 @@ void tst_QMenuBar::check_altPress()
 
 void tst_QMenuBar::check_shortcutPress()
 {
-#ifdef Q_WS_MAC
-    QSKIP("Qt/Mac does not use the native popups/menubar", SkipAll);
+#if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
+    QSKIP("Qt/Mac,WinCE does not use the native popups/menubar", SkipAll);
 #endif
 
 #ifdef QT3_SUPPORT
@@ -1434,7 +1433,7 @@ void tst_QMenuBar::check_menuPosition()
 #ifdef Q_WS_MAC
     QSKIP("Qt/Mac does not use the native popups/menubar", SkipAll);
 #endif
-#ifdef Q_OS_WINCE
+#ifdef Q_OS_WINCE_WM
     QSKIP("Qt/CE uses native menubar", SkipAll);
 #endif
     QMenu menu;

@@ -661,9 +661,13 @@ QSqlIndex QSQLiteDriver::primaryIndex(const QString &tblname) const
     if (!isOpen())
         return QSqlIndex();
 
+    QString table = tblname;
+    if (isIdentifierEscaped(table, QSqlDriver::TableName))
+        table = stripDelimiters(table, QSqlDriver::TableName);
+
     QSqlQuery q(createResult());
     q.setForwardOnly(true);
-    return qGetTableInfo(q, tblname, true);
+    return qGetTableInfo(q, table, true);
 }
 
 QSqlRecord QSQLiteDriver::record(const QString &tbl) const
@@ -671,9 +675,13 @@ QSqlRecord QSQLiteDriver::record(const QString &tbl) const
     if (!isOpen())
         return QSqlRecord();
 
+    QString table = tbl;
+    if (isIdentifierEscaped(table, QSqlDriver::TableName))
+        table = stripDelimiters(table, QSqlDriver::TableName);
+
     QSqlQuery q(createResult());
     q.setForwardOnly(true);
-    return qGetTableInfo(q, tbl);
+    return qGetTableInfo(q, table);
 }
 
 QVariant QSQLiteDriver::handle() const
@@ -681,10 +689,10 @@ QVariant QSQLiteDriver::handle() const
     return qVariantFromValue(d->access);
 }
 
-QString QSQLiteDriver::escapeIdentifier(const QString &identifier, IdentifierType /*type*/) const
+QString QSQLiteDriver::escapeIdentifier(const QString &identifier, IdentifierType type) const
 {
     QString res = identifier;
-    if(!identifier.isEmpty() && identifier.left(1) != QString(QLatin1Char('"')) && identifier.right(1) != QString(QLatin1Char('"')) ) {
+    if(!identifier.isEmpty() && !isIdentifierEscaped(identifier, type) ) {
         res.replace(QLatin1Char('"'), QLatin1String("\"\""));
         res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
         res.replace(QLatin1Char('.'), QLatin1String("\".\""));

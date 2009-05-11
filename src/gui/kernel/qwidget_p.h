@@ -268,6 +268,12 @@ public:
     void macUpdateIsOpaque();
     void setEnabled_helper_sys(bool enable);
     bool isRealWindow() const;
+    void adjustWithinMaxAndMinSize(int &w, int &h);
+    void applyMaxAndMinSizeOnWindow();
+#endif
+
+#ifdef Q_WS_S60
+    void s60UpdateIsOpaque();
 #endif
 
     void raise_sys();
@@ -364,8 +370,6 @@ public:
     void setWindowIcon_helper();
     void setWindowIcon_sys(bool forceReset = false);
     void setWindowOpacity_sys(qreal opacity);
-
-    void focusInputContext();
 
     void adjustQuitOnCloseAttribute();
 
@@ -548,6 +552,7 @@ public:
     uint inDirtyList : 1;
     uint isScrolled : 1;
     uint isMoved : 1;
+    uint usesDoubleBufferedGLContext : 1;
 
 #ifdef Q_WS_WIN
     uint noPaintOnScreen : 1; // see qwidget_win.cpp ::paintEngine()
@@ -605,6 +610,8 @@ public:
     uint needWindowChange : 1;
     uint isGLWidget : 1;
 #endif
+
+    Qt::InputMethodHints imHints;
 
 #if defined(Q_WS_X11) || defined (Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_WS_S60)
 #ifdef Q_WS_MAC

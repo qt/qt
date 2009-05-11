@@ -83,6 +83,10 @@ int main(int argc, char **argv)
     view.resize(400, 300);
     view.show();
 
+    QTimer timer;
+    QObject::connect(&timer, SIGNAL(timeout()), &scene, SLOT(advance()));
+    timer.start(1000 / 33);
+
     return app.exec();
 }
 //! [6]

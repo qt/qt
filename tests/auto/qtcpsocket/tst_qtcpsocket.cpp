@@ -81,7 +81,8 @@
 #ifndef TEST_QNETWORK_PROXY
 //#define TEST_QNETWORK_PROXY
 #endif
-#ifdef TEST_QNETWORK_PROXY
+#if defined(TEST_QNETWORK_PROXY) || defined (Q_CC_RVCT)
+// RVCT compiles also unused inline methods
 # include <QNetworkProxy>
 #endif
 
@@ -903,8 +904,12 @@ void tst_QTcpSocket::disconnectWhileConnecting()
         socket->disconnectFromHost();
     }
 
-    connect(socket, SIGNAL(disconnected()), SLOT(exitLoopSlot()));
+    connect(socket, SIGNAL(disconnected()), SLOT(exitLoopSlot()));    
+#ifndef Q_OS_SYMBIAN    
     enterLoop(10);
+#else    
+    enterLoop(30);
+#endif    
     QVERIFY2(!timeout(), "Network timeout");
     QVERIFY(socket->state() == QAbstractSocket::UnconnectedState);
     if (!closeDirectly) {
@@ -939,7 +944,7 @@ public:
         : server(0), ok(false), quit(false)
     { }
 
-    ~ReceiverThread() { wait(); delete server; }
+    ~ReceiverThread() { /*delete server;*/ terminate(); wait();  }
 
     bool listen()
     {
@@ -964,7 +969,11 @@ protected:
 
         QTcpSocket *socket = server->nextPendingConnection();
         while (!quit) {
+#ifndef Q_OS_SYMBIAN    
             if (socket->waitForDisconnected(500))
+#else    
+            if (socket->waitForDisconnected(1000))
+#endif     
                 break;
             if (socket->error() != QAbstractSocket::SocketTimeoutError)
                 return;
@@ -1012,7 +1021,11 @@ void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop()
         socket->disconnectFromHost();
     }
 
+#ifndef Q_OS_SYMBIAN    
     QVERIFY2(socket->waitForDisconnected(10000), "Network timeout");
+#else    
+    QVERIFY2(socket->waitForDisconnected(20000), "Network timeout");
+#endif     
     QVERIFY(socket->state() == QAbstractSocket::UnconnectedState);
     if (!closeDirectly) {
         QCOMPARE(int(socket->openMode()), int(QIODevice::ReadWrite));
@@ -1058,7 +1071,11 @@ void tst_QTcpSocket::disconnectWhileLookingUp()
 
     // let anything queued happen
     QEventLoop loop;
+#ifndef Q_OS_SYMBIAN    
     QTimer::singleShot(50, &loop, SLOT(quit()));
+#else    
+    QTimer::singleShot(500, &loop, SLOT(quit()));
+#endif     
     loop.exec();
 
     // recheck

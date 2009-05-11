@@ -207,6 +207,10 @@ private slots:
     void drawImage_task217400_data();
     void drawImage_task217400();
     void drawRect_task215378();
+    void drawRect_task247505();
+
+    void drawImage_data();
+    void drawImage();
 
     void clippedImage();
 
@@ -224,6 +228,8 @@ private slots:
     void inactivePainter();
 
     void extendedBlendModes();
+
+    void zeroOpacity();
 
 private:
     void fillData();
@@ -2572,23 +2578,6 @@ void tst_QPainter::setOpacity()
     p.fillRect(imageRect, QColor(127, 127, 127));
     p.end();
 
-#if defined(Q_WS_QWS) && (QT_VERSION < 0x040500)
-    // embedded has an optimized implementation in 4.4
-    if ((dest.format() == QImage::Format_ARGB8555_Premultiplied ||
-         dest.format() == QImage::Format_RGB555 ||
-         dest.format() == QImage::Format_RGB666 ||
-         dest.format() == QImage::Format_RGB888 ||
-         dest.format() == QImage::Format_ARGB8565_Premultiplied) &&
-        src.format() != QImage::Format_RGB32)
-    {
-        QColor c1 = expected.pixel(1, 1);
-        QColor c2 = dest.pixel(1, 1);
-        QVERIFY(qAbs(c1.red() - c2.red()) < 2);
-        QVERIFY(qAbs(c1.green() - c2.green()) < 2);
-        QVERIFY(qAbs(c1.blue() - c2.blue()) < 2);
-        QVERIFY(qAbs(c1.alpha() - c2.alpha()) < 2);
-    } else
-#endif
     QCOMPARE(dest, expected);
 }
 
@@ -3589,6 +3578,97 @@ void tst_QPainter::drawRect_task215378()
     QVERIFY(img.pixel(0, 0) != img.pixel(1, 1));
 }
 
+void tst_QPainter::drawRect_task247505()
+{
+    QImage a(10, 10, QImage::Format_ARGB32_Premultiplied);
+    a.fill(0);
+    QImage b = a;
+
+    QPainter p(&a);
+    p.setPen(Qt::NoPen);
+    p.setBrush(Qt::black);
+    p.drawRect(QRectF(10, 0, -10, 10));
+    p.end();
+    p.begin(&b);
+    p.setPen(Qt::NoPen);
+    p.setBrush(Qt::black);
+    p.drawRect(QRectF(0, 0, 10, 10));
+    p.end();
+
+    QCOMPARE(a, b);
+}
+
+void tst_QPainter::drawImage_data()
+{
+    QTest::addColumn<int>("x");
+    QTest::addColumn<int>("y");
+    QTest::addColumn<int>("w");
+    QTest::addColumn<int>("h");
+    QTest::addColumn<QImage::Format>("srcFormat");
+    QTest::addColumn<QImage::Format>("dstFormat");
+
+    for (int srcFormat = QImage::Format_Mono; srcFormat < QImage::NImageFormats; ++srcFormat) {
+        for (int dstFormat = QImage::Format_Mono; dstFormat < QImage::NImageFormats; ++dstFormat) {
+            if (dstFormat == QImage::Format_Indexed8)
+                continue;
+            for (int odd_x = 0; odd_x <= 1; ++odd_x) {
+                for (int odd_width = 0; odd_width <= 1; ++odd_width) {
+                    QString description =
+                        QString("srcFormat %1, dstFormat %2, odd x: %3, odd width: %4")
+                            .arg(srcFormat).arg(dstFormat).arg(odd_x).arg(odd_width);
+
+                    QTest::newRow(qPrintable(description)) << (10 + odd_x) << 10 << (20 + odd_width) << 20
+                        << QImage::Format(srcFormat)
+                        << QImage::Format(dstFormat);
+                }
+            }
+        }
+    }
+}
+
+bool verifyImage(const QImage &img, int x, int y, int w, int h, uint background)
+{
+    int imgWidth = img.width();
+    int imgHeight = img.height();
+    for (int i = 0; i < imgHeight; ++i) {
+        for (int j = 0; j < imgWidth; ++j) {
+            uint pixel = img.pixel(j, i);
+            bool outside = j < x || j >= (x + w) || i < y || i >= (y + h);
+            if (outside != (pixel == background)) {
+                //printf("%d %d, expected %x, got %x, outside: %d\n", x, y, background, pixel, outside);
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+void tst_QPainter::drawImage()
+{
+    QFETCH(int, x);
+    QFETCH(int, y);
+    QFETCH(int, w);
+    QFETCH(int, h);
+    QFETCH(QImage::Format, srcFormat);
+    QFETCH(QImage::Format, dstFormat);
+
+    QImage dst(40, 40, QImage::Format_RGB32);
+    dst.fill(0xffffffff);
+
+    dst = dst.convertToFormat(dstFormat);
+    uint background = dst.pixel(0, 0);
+
+    QImage src(w, h, QImage::Format_RGB32);
+    src.fill(0xff000000);
+    src = src.convertToFormat(srcFormat);
+
+    QPainter p(&dst);
+    p.drawImage(x, y, src);
+    p.end();
+
+    QVERIFY(verifyImage(dst, x, y, w, h, background));
+}
 
 void tst_QPainter::imageCoordinateLimit()
 {
@@ -3717,8 +3797,11 @@ void tst_QPainter::imageBlending()
 
 void tst_QPainter::paintOnNullPixmap()
 {
+    QPixmap pix(16, 16);
+
     QPixmap textPixmap;
     QPainter p(&textPixmap);
+    p.drawPixmap(10, 10, pix);
     p.end();
 
     QPixmap textPixmap2(16,16);
@@ -4070,6 +4153,22 @@ void tst_QPainter::extendedBlendModes()
     QVERIFY(testCompositionMode( 63, 127, 127, QPainter::CompositionMode_Exclusion));
     QVERIFY(testCompositionMode( 63,  63,  95, QPainter::CompositionMode_Exclusion));
     QVERIFY(testCompositionMode(191, 191,  96, QPainter::CompositionMode_Exclusion));
+}
+
+void tst_QPainter::zeroOpacity()
+{
+    QImage source(1, 1, QImage::Format_ARGB32_Premultiplied);
+    source.fill(0xffffffff);
+
+    QImage target(1, 1, QImage::Format_RGB32);
+    target.fill(0xff000000);
+
+    QPainter p(&target);
+    p.setOpacity(0.0);
+    p.drawImage(0, 0, source);
+    p.end();
+
+    QCOMPARE(target.pixel(0, 0), 0xff000000);
 }
 
 QTEST_MAIN(tst_QPainter)

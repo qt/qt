@@ -109,6 +109,7 @@ protected:
 private:
     friend class QPixmap;
     friend class QGLContextPrivate;
+    friend class QX11PixmapData;
 
     QAtomicInt ref;
     int detach_no;
