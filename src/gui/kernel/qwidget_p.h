@@ -79,6 +79,13 @@
 #include "QtGui/qscreen_qws.h"
 #endif
 
+#if defined(Q_WS_S60)
+class RDrawableWindow;
+class CCoeControl;
+class CAknTitlePane;
+class CAknContextPane;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // Extra QWidget data
@@ -89,12 +96,6 @@ class QWSManager;
 #endif
 #if defined(Q_WS_MAC)
 class QCoreGraphicsPaintEnginePrivate;
-#endif
-#if defined(Q_WS_S60)
-class RDrawableWindow;
-class CCoeControl;
-class CAknTitlePane;
-class CAknContextPane;
 #endif
 class QPaintEngine;
 class QPixmap;

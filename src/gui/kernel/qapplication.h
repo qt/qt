@@ -61,6 +61,10 @@
 
 QT_BEGIN_HEADER
 
+#if defined(Q_WS_S60)
+class TWsEvent;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
@@ -84,9 +88,6 @@ class QApplicationPrivate;
 #endif
 #define qApp (static_cast<QApplication *>(QCoreApplication::instance()))
 
-#if defined(Q_WS_S60)
-class TWsEvent;
-#endif
 
 class Q_GUI_EXPORT QApplication : public QCoreApplication
 {
@@ -110,8 +111,8 @@ class Q_GUI_EXPORT QApplication : public QCoreApplication
 #endif
 #ifdef Q_OS_WINCE
     Q_PROPERTY(int autoMaximizeThreshold READ autoMaximizeThreshold WRITE setAutoMaximizeThreshold)
-    Q_PROPERTY(bool autoSipEnabled READ autoSipEnabled WRITE setAutoSipEnabled)
 #endif
+    Q_PROPERTY(bool autoSipEnabled READ autoSipEnabled WRITE setAutoSipEnabled)
 
 public:
     enum Type { Tty, GuiClient, GuiServer };
@@ -199,9 +200,6 @@ public:
 
     static void setKeyboardInputInterval(int);
     static int keyboardInputInterval();
-
-    static void setAutoSipOnMouseFocus(bool);
-    static bool autoSipOnMouseFocus();
 
 #ifndef QT_NO_WHEELEVENT
     static void setWheelScrollLines(int);
@@ -297,9 +295,11 @@ public Q_SLOTS:
 #ifdef Q_OS_WINCE
     void setAutoMaximizeThreshold(const int threshold);
     int autoMaximizeThreshold() const;
+#endif
     void setAutoSipEnabled(const bool enabled);
     bool autoSipEnabled() const;
-#endif
+    void setAutoSipOnMouseFocus(bool);
+    bool autoSipOnMouseFocus();
     static void closeAllWindows();
     static void aboutQt();
 

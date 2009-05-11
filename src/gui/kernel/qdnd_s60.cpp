@@ -26,8 +26,6 @@
 #include <w32std.h>
 #include <gdi.h>
 QT_BEGIN_NAMESPACE
-
-QT_USE_NAMESPACE
 //### artistic impression of Symbians default DnD cursor ?
 
 static QPixmap *defaultPm = 0;
@@ -363,8 +361,5 @@ QStringList QDropData::formats_sys() const
     return QStringList();
 }
 
-
-#endif // QT_NO_DRAGANDDROP
-
-
 QT_END_NAMESPACE
+#endif // QT_NO_DRAGANDDROP

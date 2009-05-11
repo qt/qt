@@ -387,4 +387,6 @@ void QMenuBarPrivate::QSymbianMenuBarPrivate::rebuild()
     }
 }
 
+QT_END_NAMESPACE
+
 #endif //QT_NO_MENUBAR

@@ -25,9 +25,6 @@
 #include <baclipb.h>
 QT_BEGIN_NAMESPACE
 
-QT_USE_NAMESPACE
-
-
 //###  Mime Type mapping to UIDs
 
 const TUid KQtCbDataStream = {0x666777};
@@ -246,7 +243,5 @@ void QClipboard::connectNotify( const char * )
 void QClipboard::ownerDestroyed()
 {
 }
-
-#endif // QT_NO_CLIPBOARD
-
 QT_END_NAMESPACE
+#endif // QT_NO_CLIPBOARD

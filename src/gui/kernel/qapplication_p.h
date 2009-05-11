@@ -221,8 +221,8 @@ public:
     static void emitLastWindowClosed();
 #ifdef Q_OS_WINCE
     static int autoMaximizeThreshold;
-    static bool autoSipEnabled;
 #endif
+    static bool autoSipEnabled;
 
     static QGraphicsSystem *graphicsSystem()
 #if !defined(Q_WS_QWS)

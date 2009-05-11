@@ -18,8 +18,10 @@
 #include "contenttab.h"
 
 // FORWARD DECLARATIONS
+QT_BEGIN_NAMESPACE
 class QWidget;
 class QListWidgetItem;
+QT_END_NAMESPACE
 
 // CLASS DECLARATION
 
