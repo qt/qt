@@ -95,6 +95,7 @@ private:
     friend class QmlComponent;
     friend class QmlScriptPrivate;
     friend class QmlBoundSignalProxy;
+    friend class QmlSimpleDeclarativeData;
     QmlContext(QmlEngine *);
 };
 

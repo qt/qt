@@ -47,10 +47,13 @@
 #include <private/qmldeclarativedata_p.h>
 #include <qhash.h>
 #include <qscriptvalue.h>
+#include <QtCore/qset.h>
 
 QT_BEGIN_NAMESPACE
 class QmlContext;
+class QmlExpression;
 class QmlEngine;
+class QmlExpression;
 class QmlCompiledComponent;
 
 class QmlContextPrivate : public QObjectPrivate
@@ -87,7 +90,12 @@ public:
     };
     void addDefaultObject(QObject *, Priority);
 
+    void invalidateEngines();
+    QSet<QmlContext *> childContexts;
+    QSet<QmlExpression *> childExpressions;
+
     QmlSimpleDeclarativeData contextData;
+    QObjectList contextObjects;
 };
 QT_END_NAMESPACE
 

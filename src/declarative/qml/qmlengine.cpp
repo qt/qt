@@ -659,11 +659,10 @@ void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
     if (!data) {
         priv->declarativeData = &context->d_func()->contextData;
     } else {
-        // ### - Don't have to use extended data here
-        QmlExtendedDeclarativeData *data = new QmlExtendedDeclarativeData;
         data->context = context;
-        priv->declarativeData = data;
     }
+
+    context->d_func()->contextObjects.append(object);
 }
 
 QmlContext *qmlContext(const QObject *obj)
@@ -713,8 +712,15 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object)
     return rv;
 }
 
-void QmlExtendedDeclarativeData::destroyed(QObject *)
+void QmlSimpleDeclarativeData::destroyed(QObject *object)
 {
+    if (context) 
+        context->d_func()->contextObjects.removeAll(object);
+}
+
+void QmlExtendedDeclarativeData::destroyed(QObject *object)
+{
+    QmlSimpleDeclarativeData::destroyed(object);
     delete this;
 }
 
@@ -799,6 +805,8 @@ QmlExpression::QmlExpression(QmlContext *ctxt, void *expr,
     d->ctxt = ctxt;
     if(ctxt && ctxt->engine())
         d->id = ctxt->engine()->d_func()->getUniqueId();
+    if(ctxt)
+        ctxt->d_func()->childExpressions.insert(this);
     d->me = me;
 }
 
@@ -810,6 +818,8 @@ QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expr,
     d->ctxt = ctxt;
     if(ctxt && ctxt->engine())
         d->id = ctxt->engine()->d_func()->getUniqueId();
+    if(ctxt)
+        ctxt->d_func()->childExpressions.insert(this);
     d->me = me;
 }
 
@@ -827,6 +837,8 @@ QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expression,
     d->ctxt = ctxt;
     if(ctxt && ctxt->engine())
         d->id = ctxt->engine()->d_func()->getUniqueId();
+    if(ctxt)
+        ctxt->d_func()->childExpressions.insert(this);
     d->me = scope;
 }
 
@@ -835,6 +847,8 @@ QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expression,
 */
 QmlExpression::~QmlExpression()
 {
+    if (d->ctxt)
+        d->ctxt->d_func()->childExpressions.remove(this);
     delete d; d = 0;
 }
 
@@ -844,7 +858,7 @@ QmlExpression::~QmlExpression()
 */
 QmlEngine *QmlExpression::engine() const
 {
-    return d->ctxt->engine();
+    return d->ctxt?d->ctxt->engine():0;
 }
 
 /*!
@@ -921,7 +935,7 @@ void BindExpressionProxy::changed()
 QVariant QmlExpression::value()
 {
     QVariant rv;
-    if (!d->ctxt || (!d->sse.isValid() && d->expression.isEmpty()))
+    if (!d->ctxt || !engine() || (!d->sse.isValid() && d->expression.isEmpty()))
         return rv;
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
