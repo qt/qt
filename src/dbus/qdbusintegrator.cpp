@@ -1125,12 +1125,7 @@ void QDBusConnectionPrivate::objectDestroyed(QObject *obj)
 void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, int signalId,
                                          const QVariantList &args)
 {
-    int mciid = mo->indexOfClassInfo(QCLASSINFO_DBUS_INTERFACE);
-    Q_ASSERT(mciid != -1);
-
-    QMetaClassInfo mci = mo->classInfo(mciid);
-    Q_ASSERT(mci.value());
-    const char *interface = mci.value();
+    QString interface = qDBusInterfaceFromMetaObject(mo);
 
     QMetaMethod mm = mo->method(signalId);
     QByteArray memberName = mm.signature();
@@ -1146,12 +1141,12 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
         }
 
     QDBusReadLocker locker(RelaySignalAction, this);
-    QDBusMessage message = QDBusMessage::createSignal(QLatin1String("/"), QLatin1String(interface),
+    QDBusMessage message = QDBusMessage::createSignal(QLatin1String("/"), interface,
                                                       QLatin1String(memberName));
     message.setArguments(args);
     DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message);
     if (!msg) {
-        qWarning("QDBusConnection: Could not emit signal %s.%s", interface, memberName.constData());
+        qWarning("QDBusConnection: Could not emit signal %s.%s", qPrintable(interface), memberName.constData());
         return;
     }
 
