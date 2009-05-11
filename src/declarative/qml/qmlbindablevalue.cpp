@@ -43,16 +43,17 @@
 #include "qmlbindablevalue.h"
 #include "qmlbindablevalue_p.h"
 #include <qmlcontext.h>
+#include <qmlinfo.h>
 #include <QVariant>
 #include <qfxperf.h>
 #include <QtCore/qdebug.h>
 
-
 QT_BEGIN_NAMESPACE
+
 DEFINE_BOOL_CONFIG_OPTION(scriptWarnings, QML_SCRIPT_WARNINGS);
 
 QmlBindableValuePrivate::QmlBindableValuePrivate()
-: inited(false), mePtr(0)
+: inited(false), updating(false), mePtr(0)
 {
 }
 
@@ -121,102 +122,110 @@ void QmlBindableValue::update()
     if (!d->inited)
         return;
 
-    if (d->property.propertyCategory() == QmlMetaProperty::List) {
-        QVariant value = this->value();
-        int listType = QmlMetaType::listType(d->property.propertyType());
+    if (!d->updating) {
+        d->updating = true;
 
-        if (value.userType() == qMetaTypeId<QList<QObject *> >()) {
-            const QList<QObject *> &list = 
-                qvariant_cast<QList<QObject *> >(value);
-            QVariant listVar = d->property.read();
-            QmlMetaType::clear(listVar);
-            for (int ii = 0; ii < list.count(); ++ii) {
-                QVariant v = QmlMetaType::fromObject(list.at(ii), listType);
-                QmlMetaType::append(listVar, v);
+        if (d->property.propertyCategory() == QmlMetaProperty::List) {
+            QVariant value = this->value();
+            int listType = QmlMetaType::listType(d->property.propertyType());
+
+            if (value.userType() == qMetaTypeId<QList<QObject *> >()) {
+                const QList<QObject *> &list =
+                    qvariant_cast<QList<QObject *> >(value);
+                QVariant listVar = d->property.read();
+                QmlMetaType::clear(listVar);
+                for (int ii = 0; ii < list.count(); ++ii) {
+                    QVariant v = QmlMetaType::fromObject(list.at(ii), listType);
+                    QmlMetaType::append(listVar, v);
+                }
+
+            } else if (value.type() == uint(listType) ||
+                      value.userType() == listType) {
+                QVariant listVar = d->property.read();
+                QmlMetaType::clear(listVar);
+                QmlMetaType::append(listVar, value);
             }
+        } else if (d->property.propertyCategory() == QmlMetaProperty::QmlList) {
+            // XXX - optimize!
+            QVariant value = this->value();
+            QVariant list = d->property.read();
+            QmlPrivate::ListInterface *li =
+                *(QmlPrivate::ListInterface **)list.constData();
 
-        } else if (value.type() == uint(listType) ||
-                  value.userType() == listType) {
-            QVariant listVar = d->property.read();
-            QmlMetaType::clear(listVar);
-            QmlMetaType::append(listVar, value);
-        }
-    } else if (d->property.propertyCategory() == QmlMetaProperty::QmlList) {
-        // XXX - optimize!
-        QVariant value = this->value();
-        QVariant list = d->property.read();
-        QmlPrivate::ListInterface *li =
-            *(QmlPrivate::ListInterface **)list.constData();
+            int type = li->type();
 
-        int type = li->type();
+            if (QObject *obj = QmlMetaType::toQObject(value)) {
+                const QMetaObject *mo =
+                    QmlMetaType::rawMetaObjectForType(type);
 
-        if (QObject *obj = QmlMetaType::toQObject(value)) {
-            const QMetaObject *mo =
-                QmlMetaType::rawMetaObjectForType(type);
+                const QMetaObject *objMo = obj->metaObject();
+                bool found = false;
+                while(!found && objMo) {
+                    if (objMo == mo)
+                        found = true;
+                    else
+                        objMo = objMo->superClass();
+                }
 
-            const QMetaObject *objMo = obj->metaObject();
-            bool found = false;
-            while(!found && objMo) {
-                if (objMo == mo)
-                    found = true;
-                else
-                    objMo = objMo->superClass();
+                if (!found) {
+                    qWarning() << "Unable to assign object to list";
+                    return;
+                }
+
+                // NOTE: This assumes a cast to QObject does not alter
+                // the object pointer
+                void *d = (void *)&obj;
+                li->append(d);
             }
+        } else if (d->property.propertyCategory() == QmlMetaProperty::Bindable) {
 
-            if (!found) {
-                qWarning() << "Unable to assign object to list";
+            // NOTE: We assume that only core properties can have
+            // propertyType == Bindable
+            int idx = d->property.coreIndex();
+            Q_ASSERT(idx != -1);
+
+            void *a[1];
+            QmlBindableValue *t = this;
+            a[0] = (void *)&t;
+            d->property.object()->qt_metacall(QMetaObject::WriteProperty,
+                                              idx, a);
+
+        } else if (d->property.propertyCategory() == QmlMetaProperty::Object) {
+
+            QVariant value = this->value();
+            if ((int)value.type() != qMetaTypeId<QObject *>()) {
+                if (scriptWarnings()) {
+                    if (!value.isValid()) {
+                        qWarning() << "QmlBindableValue: Unable to assign invalid value to object property";
+                    } else {
+                        qWarning() << "QmlBindableValue: Unable to assign non-object to object property";
+                    }
+                }
                 return;
             }
 
-            // NOTE: This assumes a cast to QObject does not alter
-            // the object pointer
-            void *d = (void *)&obj;
-            li->append(d);
-        }
-    } else if (d->property.propertyCategory() == QmlMetaProperty::Bindable) {
+            // NOTE: This assumes a cast to QObject does not alter the
+            // object pointer
+            QObject *obj = *(QObject **)value.data();
 
-        // NOTE: We assume that only core properties can have 
-        // propertyType == Bindable
-        int idx = d->property.coreIndex();
-        Q_ASSERT(idx != -1);
+            // NOTE: We assume that only core properties can have
+            // propertyType == Object
+            int idx = d->property.coreIndex();
+            Q_ASSERT(idx != -1);
 
-        void *a[1];
-        QmlBindableValue *t = this;
-        a[0] = (void *)&t;
-        d->property.object()->qt_metacall(QMetaObject::WriteProperty,
-                                          idx, a);
+            void *a[1];
+            a[0] = (void *)&obj;
+            d->property.object()->qt_metacall(QMetaObject::WriteProperty,
+                                            idx, a);
 
-    } else if (d->property.propertyCategory() == QmlMetaProperty::Object) {
-
-        QVariant value = this->value();
-        if ((int)value.type() != qMetaTypeId<QObject *>()) {
-            if (scriptWarnings()) {
-                if (!value.isValid()) {
-                    qWarning() << "QmlBindableValue: Unable to assign invalid value to object property";
-                } else {
-                    qWarning() << "QmlBindableValue: Unable to assign non-object to object property";
-                }
-            }
-            return;
+        } else if (d->property.propertyCategory() == QmlMetaProperty::Normal) {
+            QVariant value = this->value();
+            d->property.write(value);
         }
 
-        // NOTE: This assumes a cast to QObject does not alter the 
-        // object pointer
-        QObject *obj = *(QObject **)value.data();
-
-        // NOTE: We assume that only core properties can have 
-        // propertyType == Object
-        int idx = d->property.coreIndex();
-        Q_ASSERT(idx != -1);
-
-        void *a[1];
-        a[0] = (void *)&obj;
-        d->property.object()->qt_metacall(QMetaObject::WriteProperty,
-                                        idx, a);
-
-    } else if (d->property.propertyCategory() == QmlMetaProperty::Normal) {
-        QVariant value = this->value();
-        d->property.write(value);
+        d->updating = false;
+    } else {
+        qmlInfo(d->property.object()) << "Binding loop detected for property" << d->property.name();
     }
 }
 

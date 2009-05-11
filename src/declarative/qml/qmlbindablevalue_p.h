@@ -55,6 +55,7 @@ public:
     QmlBindableValuePrivate();
 
     bool inited;
+    bool updating;
     QmlMetaProperty property;
 
     QmlBindableValue **mePtr;
