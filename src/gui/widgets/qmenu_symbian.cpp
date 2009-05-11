@@ -53,7 +53,7 @@ bool menuExists()
 {
     QWidget *w = qApp->activeWindow();
     QMenuBarPrivate *mb = menubars()->value(w);
-    if (!mb)
+    if ((!mb) && !menubars()->count()) 
         return false;
     return true;
 }
