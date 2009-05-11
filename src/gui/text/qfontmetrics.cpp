@@ -859,8 +859,21 @@ QRect QFontMetrics::tightBoundingRect(const QString &text) const
     language.
 
 */
-QString QFontMetrics::elidedText(const QString &text, Qt::TextElideMode mode, int width, int flags) const
+QString QFontMetrics::elidedText(const QString &_text, Qt::TextElideMode mode, int width, int flags) const
 {
+    QString text = _text;
+    if (!(flags & Qt::TextLongestVariant)) {
+        int posA = 0;
+        int posB = text.indexOf(QLatin1Char('\x9c'));
+        while (posB >= 0) {
+            QString portion = text.mid(posA, posB - posA);
+            if (size(flags, portion).width() <= width)
+                return portion;
+            posA = posB + 1;
+            posB = text.indexOf(QLatin1Char('\x9c'), posA);
+        }
+        text = text.mid(posA);
+    }
     QStackTextEngine engine(text, QFont(d));
     return engine.elidedText(mode, width, flags);
 }
