@@ -150,6 +150,7 @@ public:
     void unregisterEventTransition(QEventTransition *transition);
 #endif
     void unregisterTransition(QAbstractTransition *transition);
+    void unregisterAllTransitions();
     void handleTransitionSignal(const QObject *sender, int signalIndex,
                                 void **args);    
     void scheduleProcess();

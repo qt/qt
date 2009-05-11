@@ -1011,6 +1011,8 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
     }
 
     Q_ASSERT(currentErrorState != 0);
+    Q_ASSERT(currentErrorState != rootState);
+    
     QState *lca = findLCA(QList<QAbstractState*>() << currentErrorState << currentContext);
     addStatesToEnter(currentErrorState, lca, pendingErrorStates, pendingErrorStatesForDefaultEntry);
 }
@@ -1222,10 +1224,12 @@ void QStateMachinePrivate::_q_process()
         break;
     case Finished:
         state = NotRunning;
+        unregisterAllTransitions();
         emit q->finished();
         break;
     case Stopped:
         state = NotRunning;
+        unregisterAllTransitions();
         emit q->stopped();
         break;
     }
@@ -1354,6 +1358,20 @@ void QStateMachinePrivate::unregisterSignalTransition(QSignalTransition *transit
         QSignalTransitionPrivate::get(transition)->signalIndex = -1;
     }
 #endif
+}
+
+void QStateMachinePrivate::unregisterAllTransitions()
+{
+    {
+        QList<QSignalTransition*> transitions = qFindChildren<QSignalTransition*>(rootState);
+        for (int i = 0; i < transitions.size(); ++i)
+            unregisterSignalTransition(transitions.at(i));
+    }
+    {
+        QList<QEventTransition*> transitions = qFindChildren<QEventTransition*>(rootState);
+        for (int i = 0; i < transitions.size(); ++i)
+            unregisterEventTransition(transitions.at(i));
+    }
 }
 
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
