@@ -192,16 +192,6 @@ bool QmlCompiler::isValidId(const QString &val)
     return true;
 }
 
-/*! 
-    Returns true if \a str is a valid binding string, false otherwise.
-
-    Valid binding strings are those enclosed in braces ({}).
-*/
-bool QmlCompiler::isBinding(const QString &str)
-{
-    return str.startsWith(QLatin1Char('{')) && str.endsWith(QLatin1Char('}'));
-}
-
 /*!
     Returns true if property name \a name refers to an attached property, false
     otherwise.
@@ -671,7 +661,7 @@ bool QmlCompiler::compileComponent(Object *obj, int ctxt)
     COMPILE_CHECK(compileComponentFromRoot(root, ctxt));
 
     if (idProp && idProp->values.count()) {
-        QString val = idProp->values.at(0)->primitive;
+        QString val = idProp->values.at(0)->primitive();
         if (!isValidId(val))
             COMPILE_EXCEPTION("Invalid id property value");
 
@@ -766,12 +756,9 @@ bool QmlCompiler::compileSignal(Property *prop, Object *obj)
         return rv;
 
     } else {
-        QString script = prop->values.at(0)->primitive.trimmed();
+        QString script = prop->values.at(0)->value.asScript().trimmed();
         if (script.isEmpty())
             return true;
-
-        if (isBinding(script))
-            COMPILE_EXCEPTION("Cannot assign binding to signal property");
 
         int idx = output->indexForString(script); 
         int pr = output->indexForByteArray(prop->name);
@@ -887,7 +874,7 @@ bool QmlCompiler::compileIdProperty(QmlParser::Property *prop,
     if (prop->values.count() == 1) {
         if (prop->values.at(0)->object)
             COMPILE_EXCEPTION("Cannot assign an object as an id");
-        QString val = prop->values.at(0)->primitive;
+        QString val = prop->values.at(0)->primitive();
         if (!isValidId(val))
             COMPILE_EXCEPTION(val << "is not a valid id");
         if (ids.contains(val))
@@ -1031,11 +1018,12 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
                 assign.assignObject.property = output->indexForByteArray(prop->name);
                 assign.assignObject.castValue = 0;
                 output->bytecode << assign;
-            } else if (isBinding(v->primitive)) {
+            } else if (v->value.isScript()) {
                 if (assignedBinding)
                     COMPILE_EXCEPTION("Can only assign one binding to lists");
 
-                compileBinding(v->primitive, prop, ctxt, obj->metaObject(), v->location.start.line);
+                compileBinding(v->value.asScript(), prop, ctxt, 
+                               obj->metaObject(), v->location.start.line);
                 v->type = Value::PropertyBinding;
             } else {
                 COMPILE_EXCEPTION("Cannot assign primitives to lists");
@@ -1186,9 +1174,10 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
                                                    QmlParser::Value *v,
                                                    int ctxt)
 {
-    if (isBinding(v->primitive)) {
+    if (v->value.isScript()) {
 
-        compileBinding(v->primitive, prop, ctxt, obj->metaObject(), v->location.start.line);
+        compileBinding(v->value.asScript(), prop, ctxt, obj->metaObject(), 
+                       v->location.start.line);
 
         v->type = Value::PropertyBinding;
 
@@ -1199,8 +1188,9 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
 
         bool doassign = true;
         if (prop->index != -1) {
+            QString value = v->primitive();
             StoreInstructionResult r = 
-                generateStoreInstruction(*output, assign, obj->metaObject()->property(prop->index), prop->index, -1, &v->primitive);
+                generateStoreInstruction(*output, assign, obj->metaObject()->property(prop->index), prop->index, -1, &value);
 
             if (r == Ok) {
                 doassign = false;
@@ -1208,10 +1198,10 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
                 //### we are restricted to a rather generic message here. If we can find a way to move
                 //    the exception into generateStoreInstruction we could potentially have better messages.
                 //    (the problem is that both compile and run exceptions can be generated, though)
-                COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive << "to property" << obj->metaObject()->property(prop->index).name());
+                COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive() << "to property" << obj->metaObject()->property(prop->index).name());
                 doassign = false;
             } else if (r == ReadOnly) {
-                COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive << "to the read-only property" << obj->metaObject()->property(prop->index).name());
+                COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive() << "to the read-only property" << obj->metaObject()->property(prop->index).name());
             } else {
                 doassign = true;
             }
@@ -1226,7 +1216,7 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
                     output->indexForByteArray(prop->name);
             }
             assign.assignConstant.constant = 
-                output->indexForString(v->primitive);
+                output->indexForString(v->primitive());
         }
 
         output->bytecode << assign;
@@ -1335,12 +1325,9 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
     return true;
 }
 
-void QmlCompiler::compileBinding(const QString &str, QmlParser::Property *prop,
+void QmlCompiler::compileBinding(const QString &bind, QmlParser::Property *prop,
                                  int ctxt, const QMetaObject *mo, qint64 line)
 {
-    Q_ASSERT(isBinding(str));
-
-    QString bind = str.mid(1, str.length() - 2).trimmed();
     QmlBasicScript bs;
     bs.compile(bind.toLatin1());
 

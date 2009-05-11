@@ -118,7 +118,6 @@ public:
     QList<QmlError> errors() const;
 
     static bool isValidId(const QString &);
-    static bool isBinding(const QString &);
     static bool isAttachedProperty(const QByteArray &);
 
     enum StoreInstructionResult { Ok, UnknownType, InvalidData, ReadOnly };

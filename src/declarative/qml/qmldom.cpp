@@ -809,7 +809,7 @@ Rect { x: 10 }
 */
 QString QmlDomValueLiteral::literal() const
 {
-    if (d->value) return d->value->primitive;
+    if (d->value) return d->value->primitive();
     else return QString();
 }
 
@@ -878,7 +878,7 @@ Rect { x: Other.x }
 QString QmlDomValueBinding::binding() const
 {
     if (d->value) 
-        return d->value->primitive.mid(1, d->value->primitive.length() - 2);
+        return d->value->value.asScript();
     else 
         return QString();
 }
