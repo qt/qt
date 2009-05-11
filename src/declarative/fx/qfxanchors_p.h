@@ -64,7 +64,8 @@ class QFxAnchorsPrivate : public QObjectPrivate
 public:
     QFxAnchorsPrivate()
       : item(0), usedAnchors(0), fill(0), centeredIn(0), leftMargin(0), rightMargin(0),
-        topMargin(0), bottomMargin(0), vCenterOffset(0), hCenterOffset(0)
+        topMargin(0), bottomMargin(0), vCenterOffset(0), hCenterOffset(0),
+        updatingHorizontalAnchor(false), updatingVerticalAnchor(false)
     {
     }
 
@@ -99,6 +100,9 @@ public:
     int bottomMargin;
     int vCenterOffset;
     int hCenterOffset;
+
+    bool updatingHorizontalAnchor;
+    bool updatingVerticalAnchor;
 };
 
 QT_END_NAMESPACE
