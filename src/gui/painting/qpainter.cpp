@@ -7642,7 +7642,8 @@ start_lenghtVariant:
         }
     }
     QRectF bounds = QRectF(r.x() + xoff, r.y() + yoff, width, height);
-    if (hasMoreLenghtVariants && !r.contains(bounds)) {
+
+    if (hasMoreLenghtVariants && !(tf & Qt::TextLongestVariant) && !r.contains(bounds)) {
         offset = end - text.data() + 1;
         goto start_lenghtVariant;
     }

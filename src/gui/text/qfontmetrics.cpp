@@ -798,7 +798,7 @@ QRect QFontMetrics::boundingRect(const QRect &rect, int flags, const QString &te
 */
 QSize QFontMetrics::size(int flags, const QString &text, int tabStops, int *tabArray) const
 {
-    return boundingRect(QRect(0,0,0,0), flags, text, tabStops, tabArray).size();
+    return boundingRect(QRect(0,0,0,0), flags | Qt::TextLongestVariant, text, tabStops, tabArray).size();
 }
 
 /*!
