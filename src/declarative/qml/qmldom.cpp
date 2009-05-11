@@ -398,6 +398,30 @@ void QmlDomProperty::setValue(const QmlDomValue &value)
     qWarning("QmlDomProperty::setValue(const QmlDomValue &): Not Implemented");
 }
 
+/*!
+    Returns the position in the input data where the property ID startd, or 0 if
+ the property is invalid.
+*/
+int QmlDomProperty::position() const
+{
+    if (d && d->property) {
+        return d->property->location.range.offset;
+    } else
+        return 0;
+}
+
+/*!
+    Returns the length in the input data from where the property ID started upto
+ the end of it, or 0 if the property is invalid.
+*/
+int QmlDomProperty::length() const
+{
+    if (d && d->property)
+        return d->property->location.range.length;
+    else
+        return 0;
+}
+
 QmlDomObjectPrivate::QmlDomObjectPrivate()
 : object(0), isVirtualComponent(false)
 {
@@ -730,6 +754,30 @@ QmlDomComponent QmlDomObject::toComponent() const
     if (isComponent())
         rv.d = d;
     return rv;
+}
+
+/*!
+    Returns the position in the input data where the property assignment started
+, or 0 if the property is invalid.
+*/
+int QmlDomObject::position() const
+{
+    if (d && d->object)
+        return d->object->location.range.offset;
+    else
+        return 0;
+}
+
+/*!
+    Returns the length in the input data from where the property assignment star
+ted upto the end of it, or 0 if the property is invalid.
+*/
+int QmlDomObject::length() const
+{
+    if (d && d->object)
+        return d->object->location.range.length;
+    else
+        return 0;
 }
 
 QmlDomBasicValuePrivate::QmlDomBasicValuePrivate()
@@ -1251,6 +1299,30 @@ QmlDomList QmlDomValue::toList() const
         rv.d = d;
     }
     return rv;
+}
+
+/*!
+    Returns the position in the input data where the property value startd, or 0
+ if the value is invalid.
+*/
+int QmlDomValue::position() const
+{
+    if (type() == Invalid)
+        return 0;
+    else
+        return d->value->location.range.offset;
+}
+
+/*!
+    Returns the length in the input data from where the property value started u
+pto the end of it, or 0 if the value is invalid.
+*/
+int QmlDomValue::length() const
+{
+    if (type() == Invalid)
+        return 0;
+    else
+        return d->value->location.range.length;
 }
 
 /*!
