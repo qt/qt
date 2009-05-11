@@ -672,18 +672,21 @@ case $rule_number: {
 }   break;
 ./
 
-UiObjectMember: T_PROPERTY UiPropertyType T_IDENTIFIER ;
+UiObjectMember: T_PROPERTY UiPropertyType T_IDENTIFIER T_AUTOMATIC_SEMICOLON ;
+UiObjectMember: T_PROPERTY UiPropertyType T_IDENTIFIER T_SEMICOLON ;
 /.
 case $rule_number: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(2).sval, sym(3).sval);
     node->propertyToken = loc(1);
     node->typeToken = loc(2);
     node->identifierToken = loc(3);
+    node->semicolonToken = loc(4);
     sym(1).Node = node;
 }   break;
 ./
 
-UiObjectMember: T_DEFAULT T_PROPERTY UiPropertyType T_IDENTIFIER ;
+UiObjectMember: T_DEFAULT T_PROPERTY UiPropertyType T_IDENTIFIER T_AUTOMATIC_SEMICOLON ;
+UiObjectMember: T_DEFAULT T_PROPERTY UiPropertyType T_IDENTIFIER T_SEMICOLON ;
 /.
 case $rule_number: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(3).sval, sym(4).sval);
@@ -692,11 +695,13 @@ case $rule_number: {
     node->propertyToken = loc(2);
     node->typeToken = loc(3);
     node->identifierToken = loc(4);
+    node->semicolonToken = loc(5);
     sym(1).Node = node;
 }   break;
 ./
 
-UiObjectMember: T_PROPERTY UiPropertyType T_IDENTIFIER T_COLON Expression ;
+UiObjectMember: T_PROPERTY UiPropertyType T_IDENTIFIER T_COLON Expression T_AUTOMATIC_SEMICOLON ;
+UiObjectMember: T_PROPERTY UiPropertyType T_IDENTIFIER T_COLON Expression T_SEMICOLON ;
 /.
 case $rule_number: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(2).sval, sym(3).sval,
@@ -705,11 +710,13 @@ case $rule_number: {
     node->typeToken = loc(2);
     node->identifierToken = loc(3);
     node->colonToken = loc(4);
+    node->semicolonToken = loc(6);
     sym(1).Node = node;
 }   break;
 ./
 
-UiObjectMember: T_DEFAULT T_PROPERTY UiPropertyType T_IDENTIFIER T_COLON Expression ;
+UiObjectMember: T_DEFAULT T_PROPERTY UiPropertyType T_IDENTIFIER T_COLON Expression T_AUTOMATIC_SEMICOLON ;
+UiObjectMember: T_DEFAULT T_PROPERTY UiPropertyType T_IDENTIFIER T_COLON Expression T_SEMICOLON ;
 /.
 case $rule_number: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(3).sval, sym(4).sval,
@@ -720,6 +727,7 @@ case $rule_number: {
     node->typeToken = loc(3);
     node->identifierToken = loc(4);
     node->colonToken = loc(5);
+    node->semicolonToken = loc(7);
     sym(1).Node = node;
 }   break;
 ./
