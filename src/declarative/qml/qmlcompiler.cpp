@@ -61,6 +61,7 @@
 #include <QtCore/qdebug.h>
 #include "private/qmlcustomparser_p_p.h"
 #include <private/qmlcontext_p.h>
+#include <private/qmlcomponent_p.h>
 
 #include "qmlscriptparser_p.h"
 
@@ -431,10 +432,10 @@ void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
     cc->customTypeData.clear();
     cc->datas.clear();
     if (deleteMemory) {
-        for (int ii = 0; ii < cc->mos.count(); ++ii)
-            qFree(cc->mos.at(ii));
+        for (int ii = 0; ii < cc->synthesizedMetaObjects.count(); ++ii)
+            qFree(cc->synthesizedMetaObjects.at(ii));
     }
-    cc->mos.clear();
+    cc->synthesizedMetaObjects.clear();
     cc->bytecode.clear();
 }
 
@@ -523,6 +524,11 @@ void QmlCompiler::compileTree(Object *tree)
     if (!compileObject(tree, 0)) // Compile failed
         return;
 
+    if (tree->metatype)
+        static_cast<QMetaObject &>(output->root) = *tree->metaObject();
+    else
+        static_cast<QMetaObject &>(output->root) = *output->types.at(tree->type).metaObject();
+
     QmlInstruction def;
     init.line = 0;
     def.type = QmlInstruction::SetDefault;
@@ -533,10 +539,8 @@ void QmlCompiler::compileTree(Object *tree)
 
 bool QmlCompiler::compileObject(Object *obj, int ctxt)
 {    
-    if (obj->type != -1) {
-        obj->metatype = 
-            QmlMetaType::metaObjectForType(output->types.at(obj->type).className);
-    }
+    if (obj->type != -1) 
+        obj->metatype = output->types.at(obj->type).metaObject();
 
     if (output->types.at(obj->type).className == "Component") {
         COMPILE_CHECK(compileComponent(obj, ctxt));
@@ -1064,7 +1068,7 @@ bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
                                                   int ctxt)
 {
     if (v->object->type != -1) 
-        v->object->metatype = QmlMetaType::metaObjectForType(output->types.at(v->object->type).className);
+        v->object->metatype = output->types.at(v->object->type).metaObject();
 
     if (v->object->metaObject()) {
 
@@ -1293,10 +1297,10 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
     obj->extObjectData = builder.toMetaObject();
     static_cast<QMetaObject &>(obj->extObject) = *obj->extObjectData;
 
-    output->mos << obj->extObjectData;
+    output->synthesizedMetaObjects << obj->extObjectData;
     QmlInstruction store;
     store.type = QmlInstruction::StoreMetaObject;
-    store.storeMeta.data = output->mos.count() - 1;
+    store.storeMeta.data = output->synthesizedMetaObjects.count() - 1;
     store.storeMeta.slotData = slotStart;
     store.line = obj->location.start.line;
     output->bytecode << store;
@@ -1474,12 +1478,13 @@ QmlCompiledData::~QmlCompiledData()
 QmlCompiledData &QmlCompiledData::operator=(const QmlCompiledData &other)
 {
     types = other.types;
+    root = other.root;
     primitives = other.primitives;
     floatData = other.floatData;
     intData = other.intData;
     customTypeData = other.customTypeData;
     datas = other.datas;
-    mos = other.mos;
+    synthesizedMetaObjects = other.synthesizedMetaObjects;
     bytecode = other.bytecode;
     return *this;
 }
@@ -1503,5 +1508,14 @@ QObject *QmlCompiledData::TypeReference::createInstance(QmlContext *ctxt) const
     }
 }
 
+const QMetaObject *QmlCompiledData::TypeReference::metaObject() const
+{
+    if (type)
+        return type->metaObject();
+    else if (component)
+        return &static_cast<QmlComponentPrivate *>(QObjectPrivate::get(component))->cc->root;
+    else
+        return 0;
+}
 
 QT_END_NAMESPACE

@@ -215,7 +215,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
     const QList<QmlCompiledComponent::TypeReference> &types = comp->types;
     const QList<QString> &primitives = comp->primitives;
     const QList<QByteArray> &datas = comp->datas;
-    const QList<QMetaObject *> &mos = comp->mos;
+    const QList<QMetaObject *> &synthesizedMetaObjects = comp->synthesizedMetaObjects;;
     const QList<QmlCompiledData::CustomTypeData> &customTypeData = comp->customTypeData;
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
@@ -334,7 +334,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QFxCompilerTimer<QFxCompiler::InstrStoreMetaObject> cc;
 #endif
                 QObject *target = stack.top();
-                new QmlVMEMetaObject(target, mos.at(instr.storeMeta.data), &comp->primitives, instr.storeMeta.slotData, comp);
+                new QmlVMEMetaObject(target, synthesizedMetaObjects.at(instr.storeMeta.data), &comp->primitives, instr.storeMeta.slotData, comp);
             }
             break;
 

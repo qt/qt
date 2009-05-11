@@ -81,6 +81,7 @@ public:
 
         QmlRefCount *ref;
         QObject *createInstance(QmlContext *) const;
+        const QMetaObject *metaObject() const;
     };
     QList<TypeReference> types;
     struct CustomTypeData
@@ -88,12 +89,13 @@ public:
         int index;
         int type;
     };
+    QAbstractDynamicMetaObject root;
     QList<QString> primitives;
     QList<float> floatData;
     QList<int> intData;
     QList<CustomTypeData> customTypeData;
     QList<QByteArray> datas;
-    QList<QMetaObject *> mos;
+    QList<QMetaObject *> synthesizedMetaObjects;
     QList<QmlParser::Location> locations;
     QList<QmlInstruction> bytecode;
 
