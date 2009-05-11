@@ -107,8 +107,35 @@ public:
 
     QScriptEngine scriptEngine;
 
-    QList<QmlBindableValue *> currentBindValues;
-    QList<QmlParserStatus *> currentParserStatus;
+    template<class T>
+    struct SimpleList {
+        SimpleList()
+            : count(0), values(0) {}
+        SimpleList(int r)
+            : count(0), values(new T*[r]) {}
+
+        int count;
+        T **values;
+
+        void append(T *v) {
+            values[count++] = v;
+        }
+
+        T *at(int idx) const {
+            return values[idx];
+        }
+
+        void clear() {
+            delete [] values;
+        }
+    };
+
+    static void clear(SimpleList<QmlBindableValue> &);
+    static void clear(SimpleList<QmlParserStatus> &);
+
+    QList<SimpleList<QmlBindableValue> > bindValues;
+    QList<SimpleList<QmlParserStatus> > parserStatus;
+
     QmlComponent *rootComponent;
     mutable QNetworkAccessManager *networkAccessManager;
 

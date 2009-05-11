@@ -70,6 +70,7 @@
 #include <QtCore/qdir.h>
 #include <qmlcomponent.h>
 #include "private/qmlmetaproperty_p.h"
+#include <private/qmlbindablevalue_p.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -160,6 +161,34 @@ QmlEnginePrivate::~QmlEnginePrivate()
     objectClass = 0;
     delete networkAccessManager;
     networkAccessManager = 0;
+
+    for(int ii = 0; ii < bindValues.count(); ++ii) 
+        clear(bindValues[ii]);
+    for(int ii = 0; ii < parserStatus.count(); ++ii)
+        clear(parserStatus[ii]);
+}
+
+void QmlEnginePrivate::clear(SimpleList<QmlBindableValue> &bvs)
+{
+    for (int ii = 0; ii < bvs.count; ++ii) {
+        QmlBindableValue *bv = bvs.at(ii);
+        if(bv) {
+            QmlBindableValuePrivate *p = 
+                static_cast<QmlBindableValuePrivate *>(QObjectPrivate::get(bv));
+            p->mePtr = 0;
+        }
+    }
+    bvs.clear();
+}
+
+void QmlEnginePrivate::clear(SimpleList<QmlParserStatus> &pss)
+{
+    for (int ii = 0; ii < pss.count; ++ii) {
+        QmlParserStatus *ps = pss.at(ii);
+        if(ps) 
+            ps->d = 0;
+    }
+    pss.clear();
 }
 
 void QmlEnginePrivate::init()

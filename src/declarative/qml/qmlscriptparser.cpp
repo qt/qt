@@ -226,9 +226,9 @@ ProcessAST::defineObjectBinding_helper(int line,
             return 0;
         }
 
-        SourceLocation loc = typeLocation;
+        LocationSpan loc = ProcessAST::location(typeLocation, typeLocation);
         if (propertyName)
-            loc = location(propertyName);
+            loc = ProcessAST::location(propertyName);
 
         _stateStack.pushProperty(objectType, loc);
        accept(initializer);

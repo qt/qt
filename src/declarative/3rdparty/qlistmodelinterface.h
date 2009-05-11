@@ -60,30 +60,13 @@ class Q_DECLARATIVE_EXPORT QListModelInterface : public QObject
     QListModelInterface(QObject *parent = 0) : QObject(parent) {}
     virtual ~QListModelInterface() {}
 
-    // ### move these into the Qt namespace
-    enum Roles {
-        TextRole = Qt::DisplayRole,
-        IconRole = Qt::DecorationRole
-    };
-
     virtual int count() const = 0;
-
     virtual QHash<int,QVariant> data(int index, const QList<int> &roles = (QList<int>())) const = 0;
-
     virtual bool setData(int index, const QHash<int,QVariant> &values)
     { Q_UNUSED(index); Q_UNUSED(values); return false; }
 
-    inline bool setData(int index, const QVariant &value, int role)
-    {
-        QHash<int,QVariant> values;
-        values.insert(role, value);
-        return setData(index, values);
-    }
-
     virtual QList<int> roles() const = 0;
     virtual QString toString(int role) const = 0;
-
-    //void bind(int index, int role, QObject *object, const char *propertyName, bool readOnly = true);
 
  Q_SIGNALS:
     void itemsInserted(int index, int count);
