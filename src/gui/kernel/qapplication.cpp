@@ -135,8 +135,8 @@ bool QApplicationPrivate::quitOnLastWindowClosed = true;
 
 #ifdef Q_OS_WINCE
 int QApplicationPrivate::autoMaximizeThreshold = -1;
-bool QApplicationPrivate::autoSipEnabled = false;
 #endif
+bool QApplicationPrivate::autoSipEnabled = false;
 
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::Type type)
     : QCoreApplicationPrivate(argc, argv)
@@ -1234,11 +1234,13 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     \since 4.5
     \brief toggles automatic SIP (software input panel) visibility
 
-    The auto SIP property is only available as part of Qt for Windows CE.
-
     Set this property to true to automatically display the SIP when entering
     widgets that accept keyboard input. This property only affects widgets with
-    the WA_InputMethodEnabled attribute set.
+    the WA_InputMethodEnabled attribute set, and is typically used to launch
+    a virtual keyboard on devices which have very few or no keys.
+
+    The property only has an effect on platforms which use software input
+    panels, such as Windows CE and Symbian.
 */
 
 #ifdef Q_OS_WINCE
@@ -1251,6 +1253,7 @@ int QApplication::autoMaximizeThreshold() const
 {
     return QApplicationPrivate::autoMaximizeThreshold;
 }
+#endif
 
 void QApplication::setAutoSipEnabled(const bool enabled)
 {
@@ -1261,7 +1264,6 @@ bool QApplication::autoSipEnabled() const
 {
     return QApplicationPrivate::autoSipEnabled;
 }
-#endif
 
 #ifndef QT_NO_STYLE_STYLESHEET
 
