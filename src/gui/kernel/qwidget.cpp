@@ -6282,7 +6282,7 @@ QByteArray QWidget::saveGeometry() const
     returns false.
 
     If the restored geometry is off-screen, it will be modified to be
-    inside the the available screen geometry.
+    inside the available screen geometry.
 
     To restore geometry saved using QSettings, you can use code like
     this:

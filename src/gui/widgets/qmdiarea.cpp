@@ -81,7 +81,7 @@
     subwindows. This information could be used in a popup menu
     containing a list of windows, for example.
 
-    The subwindows are sorted by the the current
+    The subwindows are sorted by the current
     \l{QMdiArea::}{WindowOrder}. This is used for the subWindowList()
     and for activateNextSubWindow() and acivatePreviousSubWindow().
     Also, it is used when cascading or tiling the windows with

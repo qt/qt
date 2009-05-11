@@ -922,7 +922,7 @@ QList<QSize> QIcon::availableSizes(Mode mode, State state) const
     \relates QIcon
     \since 4.2
 
-    Writes the given \a icon to the the given \a stream as a PNG
+    Writes the given \a icon to the given \a stream as a PNG
     image. If the icon contains more than one image, all images will
     be written to the stream. Note that writing the stream to a file
     will not produce a valid image file.

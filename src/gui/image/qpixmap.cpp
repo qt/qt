@@ -1232,7 +1232,7 @@ bool QPixmap::convertFromImage(const QImage &image, ColorMode mode)
 /*!
     \relates QPixmap
 
-    Writes the given \a pixmap to the the given \a stream as a PNG
+    Writes the given \a pixmap to the given \a stream as a PNG
     image. Note that writing the stream to a file will not produce a
     valid image file.
 
