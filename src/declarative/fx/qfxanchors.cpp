@@ -424,23 +424,31 @@ void QFxAnchors::updateTopAnchor()
 {
     Q_D(QFxAnchors);
     if (d->usedAnchors & HasTopAnchor) {
-        //Handle stretching
-        bool invalid = true;
-        int height = 0;
-        if (d->usedAnchors & HasBottomAnchor) {
-            invalid = d->calcStretch(d->top, d->bottom, d->topMargin, -d->bottomMargin, QFxAnchorLine::Top, height);
-        } else if (d->usedAnchors & HasVCenterAnchor) {
-            invalid = d->calcStretch(d->top, d->vCenter, d->topMargin, d->vCenterOffset, QFxAnchorLine::Top, height);
-            height *= 2;
-        }
-        if (!invalid)
-            d->item->setHeight(height);
+        if (!d->updatingVerticalAnchor) {
+            d->updatingVerticalAnchor = true;
 
-        //Handle top
-        if (d->top.item == d->item->itemParent()) {
-            d->item->setY(adjustedPosition(d->top.item, d->top.anchorLine) + d->topMargin);
-        } else if (d->top.item->itemParent() == d->item->itemParent()) {
-            d->item->setY(position(d->top.item, d->top.anchorLine) + d->topMargin);
+            //Handle stretching
+            bool invalid = true;
+            int height = 0;
+            if (d->usedAnchors & HasBottomAnchor) {
+                invalid = d->calcStretch(d->top, d->bottom, d->topMargin, -d->bottomMargin, QFxAnchorLine::Top, height);
+            } else if (d->usedAnchors & HasVCenterAnchor) {
+                invalid = d->calcStretch(d->top, d->vCenter, d->topMargin, d->vCenterOffset, QFxAnchorLine::Top, height);
+                height *= 2;
+            }
+            if (!invalid)
+                d->item->setHeight(height);
+
+            //Handle top
+            if (d->top.item == d->item->itemParent()) {
+                d->item->setY(adjustedPosition(d->top.item, d->top.anchorLine) + d->topMargin);
+            } else if (d->top.item->itemParent() == d->item->itemParent()) {
+                d->item->setY(position(d->top.item, d->top.anchorLine) + d->topMargin);
+            }
+
+            d->updatingVerticalAnchor = false;
+        } else {
+            qmlInfo(d->item) << "Anchor loop detected on vertical anchor.";
         }
     }
 }
@@ -449,20 +457,28 @@ void QFxAnchors::updateBottomAnchor()
 {
     Q_D(QFxAnchors);
     if (d->usedAnchors & HasBottomAnchor) {
-        //Handle stretching (top + bottom case is handled in updateLeftAnchor)
-        if (d->usedAnchors & HasVCenterAnchor) {
-            int height = 0;
-            bool invalid = d->calcStretch(d->vCenter, d->bottom, d->vCenterOffset, -d->bottomMargin,
-                                          QFxAnchorLine::Top, height);
-            if (!invalid)
-                d->item->setHeight(height*2);
-        }
+        if (!d->updatingVerticalAnchor) {
+            d->updatingVerticalAnchor = true;
 
-        //Handle bottom
-        if (d->bottom.item == d->item->itemParent()) {
-            d->item->setY(adjustedPosition(d->bottom.item, d->bottom.anchorLine) - d->item->height() - d->bottomMargin);
-        } else if (d->bottom.item->itemParent() == d->item->itemParent()) {
-            d->item->setY(position(d->bottom.item, d->bottom.anchorLine) - d->item->height() - d->bottomMargin);
+            //Handle stretching (top + bottom case is handled in updateLeftAnchor)
+            if (d->usedAnchors & HasVCenterAnchor) {
+                int height = 0;
+                bool invalid = d->calcStretch(d->vCenter, d->bottom, d->vCenterOffset, -d->bottomMargin,
+                                              QFxAnchorLine::Top, height);
+                if (!invalid)
+                    d->item->setHeight(height*2);
+            }
+
+            //Handle bottom
+            if (d->bottom.item == d->item->itemParent()) {
+                d->item->setY(adjustedPosition(d->bottom.item, d->bottom.anchorLine) - d->item->height() - d->bottomMargin);
+            } else if (d->bottom.item->itemParent() == d->item->itemParent()) {
+                d->item->setY(position(d->bottom.item, d->bottom.anchorLine) - d->item->height() - d->bottomMargin);
+            }
+
+            d->updatingVerticalAnchor = false;
+        } else {
+            qmlInfo(d->item) << "Anchor loop detected on vertical anchor.";
         }
     }
 }
@@ -471,14 +487,22 @@ void QFxAnchors::updateVCenterAnchor()
 {
     Q_D(QFxAnchors);
     if (d->usedAnchors & HasVCenterAnchor) {
-        //(stetching handled in other update functions)
+        if (!d->updatingVerticalAnchor) {
+            d->updatingVerticalAnchor = true;
 
-        //Handle vCenter
-        if (d->vCenter.item == d->item->itemParent()) {
-            d->item->setY(adjustedPosition(d->vCenter.item, d->vCenter.anchorLine) 
-                          - d->item->height()/2 + d->vCenterOffset);
-        } else if (d->vCenter.item->itemParent() == d->item->itemParent()) {
-            d->item->setY(position(d->vCenter.item, d->vCenter.anchorLine) - d->item->height()/2 + d->vCenterOffset);
+            //(stetching handled in other update functions)
+
+            //Handle vCenter
+            if (d->vCenter.item == d->item->itemParent()) {
+                d->item->setY(adjustedPosition(d->vCenter.item, d->vCenter.anchorLine)
+                              - d->item->height()/2 + d->vCenterOffset);
+            } else if (d->vCenter.item->itemParent() == d->item->itemParent()) {
+                d->item->setY(position(d->vCenter.item, d->vCenter.anchorLine) - d->item->height()/2 + d->vCenterOffset);
+            }
+
+            d->updatingVerticalAnchor = false;
+        } else {
+            qmlInfo(d->item) << "Anchor loop detected on vertical anchor.";
         }
     }
 }
@@ -487,23 +511,31 @@ void QFxAnchors::updateLeftAnchor()
 {
     Q_D(QFxAnchors);
     if (d->usedAnchors & HasLeftAnchor) {
-        //Handle stretching
-        bool invalid = true;
-        int width = 0;
-        if (d->usedAnchors & HasRightAnchor) {
-            invalid = d->calcStretch(d->left, d->right, d->leftMargin, -d->rightMargin, QFxAnchorLine::Left, width);
-        } else if (d->usedAnchors & HasHCenterAnchor) {
-            invalid = d->calcStretch(d->left, d->hCenter, d->leftMargin, d->hCenterOffset, QFxAnchorLine::Left, width);
-            width *= 2;
-        }
-        if (!invalid)
-            d->item->setWidth(width);
+        if (!d->updatingHorizontalAnchor) {
+            d->updatingHorizontalAnchor = true;
 
-        //Handle left
-        if (d->left.item == d->item->itemParent()) {
-            d->item->setX(adjustedPosition(d->left.item, d->left.anchorLine) + d->leftMargin);
-        } else if (d->left.item->itemParent() == d->item->itemParent()) {
-            d->item->setX(position(d->left.item, d->left.anchorLine) + d->leftMargin);
+            //Handle stretching
+            bool invalid = true;
+            int width = 0;
+            if (d->usedAnchors & HasRightAnchor) {
+                invalid = d->calcStretch(d->left, d->right, d->leftMargin, -d->rightMargin, QFxAnchorLine::Left, width);
+            } else if (d->usedAnchors & HasHCenterAnchor) {
+                invalid = d->calcStretch(d->left, d->hCenter, d->leftMargin, d->hCenterOffset, QFxAnchorLine::Left, width);
+                width *= 2;
+            }
+            if (!invalid)
+                d->item->setWidth(width);
+
+            //Handle left
+            if (d->left.item == d->item->itemParent()) {
+                d->item->setX(adjustedPosition(d->left.item, d->left.anchorLine) + d->leftMargin);
+            } else if (d->left.item->itemParent() == d->item->itemParent()) {
+                d->item->setX(position(d->left.item, d->left.anchorLine) + d->leftMargin);
+            }
+
+            d->updatingHorizontalAnchor = false;
+        } else {
+            qmlInfo(d->item) << "Anchor loop detected on horizontal anchor.";
         }
     }
 }
@@ -512,20 +544,28 @@ void QFxAnchors::updateRightAnchor()
 {
     Q_D(QFxAnchors);
     if (d->usedAnchors & HasRightAnchor) {
-        //Handle stretching (left + right case is handled in updateLeftAnchor)
-        if (d->usedAnchors & HasHCenterAnchor) {
-            int width = 0;
-            bool invalid = d->calcStretch(d->hCenter, d->right, d->hCenterOffset, -d->rightMargin,
-                                          QFxAnchorLine::Left, width);
-            if (!invalid)
-                d->item->setWidth(width*2);
-        }
+        if (!d->updatingHorizontalAnchor) {
+            d->updatingHorizontalAnchor = true;
 
-        //Handle right
-        if (d->right.item == d->item->itemParent()) {
-            d->item->setX(adjustedPosition(d->right.item, d->right.anchorLine) - d->item->width() - d->rightMargin);
-        } else if (d->right.item->itemParent() == d->item->itemParent()) {
-            d->item->setX(position(d->right.item, d->right.anchorLine) - d->item->width() - d->rightMargin);
+            //Handle stretching (left + right case is handled in updateLeftAnchor)
+            if (d->usedAnchors & HasHCenterAnchor) {
+                int width = 0;
+                bool invalid = d->calcStretch(d->hCenter, d->right, d->hCenterOffset, -d->rightMargin,
+                                              QFxAnchorLine::Left, width);
+                if (!invalid)
+                    d->item->setWidth(width*2);
+            }
+
+            //Handle right
+            if (d->right.item == d->item->itemParent()) {
+                d->item->setX(adjustedPosition(d->right.item, d->right.anchorLine) - d->item->width() - d->rightMargin);
+            } else if (d->right.item->itemParent() == d->item->itemParent()) {
+                d->item->setX(position(d->right.item, d->right.anchorLine) - d->item->width() - d->rightMargin);
+            }
+
+            d->updatingHorizontalAnchor = false;
+        } else {
+            qmlInfo(d->item) << "Anchor loop detected on horizontal anchor.";
         }
     }
 }
@@ -534,11 +574,19 @@ void QFxAnchors::updateHCenterAnchor()
 {
     Q_D(QFxAnchors);
     if (d->usedAnchors & HasHCenterAnchor) {
-        //Handle hCenter
-        if (d->hCenter.item == d->item->itemParent()) {
-            d->item->setX(adjustedPosition(d->hCenter.item, d->hCenter.anchorLine) - d->item->width()/2 + d->hCenterOffset);
-        } else if (d->hCenter.item->itemParent() == d->item->itemParent()) {
-            d->item->setX(position(d->hCenter.item, d->hCenter.anchorLine) - d->item->width()/2 + d->hCenterOffset);
+        if (!d->updatingHorizontalAnchor) {
+            d->updatingHorizontalAnchor = true;
+
+            //Handle hCenter
+            if (d->hCenter.item == d->item->itemParent()) {
+                d->item->setX(adjustedPosition(d->hCenter.item, d->hCenter.anchorLine) - d->item->width()/2 + d->hCenterOffset);
+            } else if (d->hCenter.item->itemParent() == d->item->itemParent()) {
+                d->item->setX(position(d->hCenter.item, d->hCenter.anchorLine) - d->item->width()/2 + d->hCenterOffset);
+            }
+
+            d->updatingHorizontalAnchor = false;
+        } else {
+            qmlInfo(d->item) << "Anchor loop detected on horizontal anchor.";
         }
     }
 }

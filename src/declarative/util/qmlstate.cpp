@@ -247,17 +247,20 @@ static void dump(const QmlStateOperation::ActionList &list)
 }
 #endif
 
-void QmlStatePrivate::complete()
+void QmlStatePrivate::applyBindings()
 {
-    Q_Q(QmlState);
-    //apply bindings (now that all transitions are complete)
-    //////////////////////////////////////////////////////////
     foreach(const Action &action, bindingsList) {
         if (action.bv && !action.toBinding.isEmpty()) {
             action.bv->setExpression(action.toBinding);
         }
     }
-    //////////////////////////////////////////////////////////
+}
+
+void QmlStatePrivate::complete()
+{
+    Q_Q(QmlState);
+    //apply bindings (now that all transitions are complete)
+    applyBindings();
 
     for (int ii = 0; ii < reverting.count(); ++ii) {
         for (int jj = 0; jj < revertList.count(); ++jj) {
@@ -369,7 +372,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
             a.toValue = d->revertList.at(ii).value;
             a.toBinding = d->revertList.at(ii).binding;
             if (!a.toBinding.isEmpty()) {
-                a.fromBinding = d->revertList.at(ii).bv->expression(); //### relies on clearExpression not clearing string
+                a.fromBinding = d->revertList.at(ii).bv->expression();
                 a.bv = d->revertList.at(ii).bv;
             }
             applyList << a;
@@ -456,6 +459,8 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
         else
             action.property.write(action.toValue);
     }
+    if (!trans)
+        d->applyBindings(); //### merge into above foreach?
 }
 
 QML_DEFINE_TYPE(QmlStateOperation,StateOperation);
