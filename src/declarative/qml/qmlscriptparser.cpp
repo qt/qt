@@ -480,8 +480,6 @@ bool ProcessAST::visit(AST::UiObjectBinding *node)
 QmlParser::Variant ProcessAST::getVariant(AST::ExpressionNode *expr)
 {
     if (AST::StringLiteral *lit = AST::cast<AST::StringLiteral *>(expr)) {
-        // hack: emulate weird XML feature that string literals are not quoted.
-        //This needs to be fixed in the qmlcompiler once xml goes away.
         return QmlParser::Variant(lit->value->asString());
     } else if (expr->kind == AST::Node::Kind_TrueLiteral) {
         return QmlParser::Variant(true);
