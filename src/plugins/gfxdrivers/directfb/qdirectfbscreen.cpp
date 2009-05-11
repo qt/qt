@@ -205,6 +205,7 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QSize &size,
                                                     SurfaceCreationOptions options)
 {
     DFBSurfaceDescription desc;
+    memset(&desc, 0, sizeof(DFBSurfaceDescription));
     desc.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH|DSDESC_HEIGHT);
     if (!QDirectFBScreen::initSurfaceDescriptionPixelFormat(&desc, format))
         return 0;
@@ -212,7 +213,6 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QSize &size,
     desc.height = size.height();
     return createDFBSurface(desc, options);
 }
-
 
 IDirectFBSurface *QDirectFBScreen::createDFBSurface(DFBSurfaceDescription desc, SurfaceCreationOptions options)
 {
@@ -247,6 +247,7 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(DFBSurfaceDescription desc, 
         }
         desc.caps = DFBSurfaceCapabilities(desc.caps & ~DSCAPS_VIDEOONLY);
     }
+
     if (d_ptr->directFBFlags & SystemOnly)
         desc.caps = DFBSurfaceCapabilities(desc.caps | DSCAPS_SYSTEMONLY);
 
@@ -445,6 +446,7 @@ QImage::Format QDirectFBScreen::getImageFormat(IDirectFBSurface *surface)
 DFBSurfaceDescription QDirectFBScreen::getSurfaceDescription(const QImage &image)
 {
     DFBSurfaceDescription description;
+    memset(&description, 0, sizeof(DFBSurfaceDescription));
 
     const DFBSurfacePixelFormat format = getSurfacePixelFormat(image.format());
 
@@ -479,6 +481,7 @@ DFBSurfaceDescription QDirectFBScreen::getSurfaceDescription(const uint *buffer,
                                                              int length)
 {
     DFBSurfaceDescription description;
+    memset(&description, 0, sizeof(DFBSurfaceDescription));
 
     description.flags = DFBSurfaceDescriptionFlags(DSDESC_CAPS
                                                    | DSDESC_WIDTH
@@ -917,6 +920,8 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
         d_ptr->dfb->SetCooperativeLevel(d_ptr->dfb, DFSCL_FULLSCREEN);
 
     DFBSurfaceDescription description;
+    memset(&description, 0, sizeof(DFBSurfaceDescription));
+
     description.flags = DFBSurfaceDescriptionFlags(DSDESC_CAPS);
     if (::setIntOption(displayArgs, QLatin1String("width"), &description.width))
         description.flags = DFBSurfaceDescriptionFlags(description.flags | DSDESC_WIDTH);
