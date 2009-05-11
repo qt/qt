@@ -294,6 +294,7 @@ private slots:
     void render_systemClip2();
     void render_systemClip3_data();
     void render_systemClip3();
+    void render_task252837();
 
     void setContentsMargins();
 
@@ -7162,6 +7163,16 @@ void tst_QWidget::render_systemClip3()
     }
 }
 
+void tst_QWidget::render_task252837()
+{
+    QWidget widget;
+    widget.resize(200, 200);
+
+    QPixmap pixmap(widget.size());
+    QPainter painter(&pixmap);
+    // Please do not crash.
+    widget.render(&painter);
+}
 void tst_QWidget::setContentsMargins()
 {
     QLabel label("why does it always rain on me?");

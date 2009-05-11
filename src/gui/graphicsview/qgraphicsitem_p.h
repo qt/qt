@@ -165,11 +165,10 @@ public:
     void setPosHelper(const QPointF &pos);
     void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
-    bool discardUpdateRequest(bool ignoreClipping = false,
-                              bool ignoreVisibleBit = false,
-                              bool ignoreDirtyBit = false) const;
+    bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
+                              bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
     void updateHelper(const QRectF &rect = QRectF(), bool force = false, bool maybeDirtyClipPath = false);
-    void fullUpdateHelper(bool childrenOnly = false, bool maybeDirtyClipPath = false);
+    void fullUpdateHelper(bool childrenOnly = false, bool maybeDirtyClipPath = false, bool ignoreOpacity = false);
     void updateEffectiveOpacity();
     void resolveEffectiveOpacity(qreal effectiveParentOpacity);
     void resolveDepth(int parentDepth);

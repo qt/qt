@@ -1071,8 +1071,12 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
         QList<QGraphicsItem *> itemList(scene->items());
         int i = 0;
         while (i < itemList.size()) {
+            const QGraphicsItem *item = itemList.at(i);
             // But we only want to include items that are visible
-            if (!itemList.at(i)->isVisible())
+            // The following check is basically the same as item->d_ptr->isInvisible(), except
+            // that we don't check whether the item clips children to shape or propagates its
+            // opacity (we loop through all items, so those checks are wrong in this context).
+            if (!item->isVisible() || item->d_ptr->isClippedAway() || item->d_ptr->isFullyTransparent())
                 itemList.removeAt(i);
             else
                 ++i;

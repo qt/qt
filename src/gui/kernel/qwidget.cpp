@@ -4823,7 +4823,7 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     Q_ASSERT(engine);
     QPaintEnginePrivate *enginePriv = engine->d_func();
     Q_ASSERT(enginePriv);
-    QPaintDevice *target = painter->worldMatrixEnabled() ? engine->paintDevice() : painter->device();
+    QPaintDevice *target = engine->paintDevice();
     Q_ASSERT(target);
 
     // Render via a pixmap when dealing with non-opaque painters or printers.
@@ -11490,3 +11490,17 @@ void QWidget::clearMask()
     setMask(QRegion());
 }
 
+/*! \fn const QX11Info &QWidget::x11Info() const
+    Returns information about the configuration of the X display used to display
+    the widget.
+
+    \warning This function is only available on X11.
+*/
+
+/*! \fn Qt::HANDLE QWidget::x11PictureHandle() const
+    Returns the X11 Picture handle of the widget for XRender
+    support. Use of this function is not portable. This function will
+    return 0 if XRender support is not compiled into Qt, if the
+    XRender extension is not supported on the X11 display, or if the
+    handle could not be created.
+*/
