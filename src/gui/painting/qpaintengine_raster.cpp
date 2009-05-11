@@ -485,12 +485,12 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
     d->rasterizer->setClipRect(d->deviceRect);
 
     s->penData.init(d->rasterBuffer, this);
-    s->penData.setup(s->pen.brush(), s->intOpacity, s);
+    s->penData.setup(s->pen.brush(), s->intOpacity, s->composition_mode);
     s->stroker = &d->basicStroker;
     d->basicStroker.setClipRect(d->deviceRect);
 
     s->brushData.init(d->rasterBuffer, this);
-    s->brushData.setup(s->brush, s->intOpacity, s);
+    s->brushData.setup(s->brush, s->intOpacity, s->composition_mode);
 
     d->rasterBuffer->compositionMode = QPainter::CompositionMode_SourceOver;
 
@@ -770,7 +770,7 @@ void QRasterPaintEngine::updatePen(const QPen &pen)
     s->strokeFlags = 0;
 
     s->penData.clip = d->clip();
-    s->penData.setup(pen_style == Qt::NoPen ? QBrush() : pen.brush(), s->intOpacity, s);
+    s->penData.setup(pen_style == Qt::NoPen ? QBrush() : pen.brush(), s->intOpacity, s->composition_mode);
 
     if (s->strokeFlags & QRasterPaintEngine::DirtyTransform
         || pen.brush().transform().type() >= QTransform::TxNone) {
@@ -870,7 +870,7 @@ void QRasterPaintEngine::updateBrush(const QBrush &brush)
     QRasterPaintEngineState *s = state();
     // must set clip prior to setup, as setup uses it...
     s->brushData.clip = d->clip();
-    s->brushData.setup(brush, s->intOpacity, s);
+    s->brushData.setup(brush, s->intOpacity, s->composition_mode);
     if (s->fillFlags & DirtyTransform
         || brush.transform().type() >= QTransform::TxNone)
         d_func()->updateMatrixData(&s->brushData, brush, d->brushMatrix());
@@ -5029,7 +5029,7 @@ void QSpanData::init(QRasterBuffer *rb, const QRasterPaintEngine *pe)
 
 extern QImage qt_imageForBrush(int brushStyle, bool invert);
 
-void QSpanData::setup(const QBrush &brush, int alpha, const QRasterPaintEngineState *s)
+void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode compositionMode)
 {
     Qt::BrushStyle brushStyle = qbrush_style(brush);
     switch (brushStyle) {
@@ -5038,7 +5038,7 @@ void QSpanData::setup(const QBrush &brush, int alpha, const QRasterPaintEngineSt
         QColor c = qbrush_color(brush);
         solid.color = PREMUL(ARGB_COMBINE_ALPHA(c.rgba(), alpha));
         if ((solid.color & 0xff000000) == 0
-            && s->composition_mode == QPainter::CompositionMode_SourceOver) {
+            && compositionMode == QPainter::CompositionMode_SourceOver) {
             type = None;
         }
         break;
