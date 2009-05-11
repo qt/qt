@@ -119,8 +119,10 @@ Item {
 
     Item {
         id: Background
+    
+        anchors.fill: parent
 
-        Image { source: "content/pics/background.png"; opaque: true }
+        Image { source: "content/pics/background.png"; opaque: true; anchors.fill: parent }
 
         GridView {
             id: PhotoGridView; model: FeedModel; delegate: PhotoDelegate; cacheBuffer: 100
@@ -202,5 +204,26 @@ Item {
         text: "Flickr - " +
             (FeedModel.tags=="" ? "Uploads from everyone" : "Recent Uploads tagged " + FeedModel.tags)
         font.size: 16; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
+    }
+
+    Image {
+        source: "content/pics/fingerpoint.png"
+        opacity: finger.pressed ? 0 : 1
+        x: finger.mouseX-16
+        y: finger.mouseY-16
+    }
+
+    Image {
+        source: "content/pics/fingerpoint-pressed.png"
+        opacity: finger.pressed ? 1.0 : 0.0
+        x: finger.mouseX-16
+        y: finger.mouseY-16
+    }
+
+    MouseRegion {
+        // this region is just to show where the finger is (good for videos)
+        id: finger
+        absorb: false
+        anchors.fill: parent
     }
 }
