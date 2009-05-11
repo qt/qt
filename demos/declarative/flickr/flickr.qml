@@ -153,7 +153,7 @@ Item {
                 }
 
                 PathAttribute { name: "scale"; value: 1 }
-                PathAttribute { name: "angle"; value: -45 }
+                PathAttribute { name: "angle"; value: 45 }
             }
 
         }

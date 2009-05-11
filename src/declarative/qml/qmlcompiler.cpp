@@ -526,6 +526,8 @@ void QmlCompiler::compileTree(Object *tree)
     init.type = QmlInstruction::Init;
     init.line = 0;
     init.init.dataSize = 0;
+    init.init.bindingsSize = 0;
+    init.init.parserStatusSize = 0;
     output->bytecode << init;
 
     if (!compileObject(tree, 0)) // Compile failed
@@ -698,6 +700,8 @@ bool QmlCompiler::compileComponentFromRoot(Object *obj, int ctxt)
     QmlInstruction init;
     init.type = QmlInstruction::Init;
     init.init.dataSize = 0;
+    init.init.bindingsSize = 0;
+    init.init.parserStatusSize = 0;
     init.line = obj->location.start.line;
     output->bytecode << init;
 
@@ -1378,6 +1382,8 @@ int QmlCompiler::optimizeExpressions(int start, int end, int patch)
     QHash<QString, int> ids;
     int saveCount = 0;
     int newInstrs = 0;
+    int bindingsCount = 0;
+    int parserStatusCount = 0;
 
     for (int ii = start; ii <= end; ++ii) {
         const QmlInstruction &instr = output->bytecode.at(ii);
@@ -1400,6 +1406,17 @@ int QmlCompiler::optimizeExpressions(int start, int end, int patch)
             ii += instr.createComponent.count - 1;
             continue;
         }
+        
+        if (instr.type == QmlInstruction::AssignBinding ||
+            instr.type == QmlInstruction::AssignCompiledBinding ||
+            instr.type == QmlInstruction::StoreBinding ||
+            instr.type == QmlInstruction::StoreCompiledBinding) {
+            ++bindingsCount;
+        } else if (instr.type == QmlInstruction::TryBeginObject ||
+                   instr.type == QmlInstruction::BeginObject) {
+            ++parserStatusCount;
+        }
+
 
         if (instr.type == QmlInstruction::StoreCompiledBinding) {
             QmlBasicScript s(output->datas.at(instr.assignBinding.value).constData());
@@ -1437,12 +1454,12 @@ int QmlCompiler::optimizeExpressions(int start, int end, int patch)
                     ++newInstrs;
                 }
             }
-        }
-
+        } 
     }
 
-    if (saveCount) 
-        output->bytecode[patch].init.dataSize = saveCount;
+    output->bytecode[patch].init.dataSize = saveCount;
+    output->bytecode[patch].init.bindingsSize = bindingsCount;
+    output->bytecode[patch].init.parserStatusSize = parserStatusCount;;
 
     return newInstrs;
 }

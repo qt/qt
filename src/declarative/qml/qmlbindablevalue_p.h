@@ -56,6 +56,8 @@ public:
 
     bool inited;
     QmlMetaProperty property;
+
+    QmlBindableValue **mePtr;
 };
 
 QT_END_NAMESPACE

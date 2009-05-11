@@ -70,6 +70,7 @@
 #include <QtCore/qdir.h>
 #include <qmlcomponent.h>
 #include "private/qmlmetaproperty_p.h"
+#include <private/qmlbindablevalue_p.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -160,6 +161,34 @@ QmlEnginePrivate::~QmlEnginePrivate()
     objectClass = 0;
     delete networkAccessManager;
     networkAccessManager = 0;
+
+    for(int ii = 0; ii < bindValues.count(); ++ii) 
+        clear(bindValues[ii]);
+    for(int ii = 0; ii < parserStatus.count(); ++ii)
+        clear(parserStatus[ii]);
+}
+
+void QmlEnginePrivate::clear(SimpleList<QmlBindableValue> &bvs)
+{
+    for (int ii = 0; ii < bvs.count; ++ii) {
+        QmlBindableValue *bv = bvs.at(ii);
+        if(bv) {
+            QmlBindableValuePrivate *p = 
+                static_cast<QmlBindableValuePrivate *>(QObjectPrivate::get(bv));
+            p->mePtr = 0;
+        }
+    }
+    bvs.clear();
+}
+
+void QmlEnginePrivate::clear(SimpleList<QmlParserStatus> &pss)
+{
+    for (int ii = 0; ii < pss.count; ++ii) {
+        QmlParserStatus *ps = pss.at(ii);
+        if(ps) 
+            ps->d = 0;
+    }
+    pss.clear();
 }
 
 void QmlEnginePrivate::init()
@@ -630,11 +659,10 @@ void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
     if (!data) {
         priv->declarativeData = &context->d_func()->contextData;
     } else {
-        // ### - Don't have to use extended data here
-        QmlExtendedDeclarativeData *data = new QmlExtendedDeclarativeData;
         data->context = context;
-        priv->declarativeData = data;
     }
+
+    context->d_func()->contextObjects.append(object);
 }
 
 QmlContext *qmlContext(const QObject *obj)
@@ -684,8 +712,15 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object)
     return rv;
 }
 
-void QmlExtendedDeclarativeData::destroyed(QObject *)
+void QmlSimpleDeclarativeData::destroyed(QObject *object)
 {
+    if (context) 
+        context->d_func()->contextObjects.removeAll(object);
+}
+
+void QmlExtendedDeclarativeData::destroyed(QObject *object)
+{
+    QmlSimpleDeclarativeData::destroyed(object);
     delete this;
 }
 
@@ -770,6 +805,8 @@ QmlExpression::QmlExpression(QmlContext *ctxt, void *expr,
     d->ctxt = ctxt;
     if(ctxt && ctxt->engine())
         d->id = ctxt->engine()->d_func()->getUniqueId();
+    if(ctxt)
+        ctxt->d_func()->childExpressions.insert(this);
     d->me = me;
 }
 
@@ -781,6 +818,8 @@ QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expr,
     d->ctxt = ctxt;
     if(ctxt && ctxt->engine())
         d->id = ctxt->engine()->d_func()->getUniqueId();
+    if(ctxt)
+        ctxt->d_func()->childExpressions.insert(this);
     d->me = me;
 }
 
@@ -798,6 +837,8 @@ QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expression,
     d->ctxt = ctxt;
     if(ctxt && ctxt->engine())
         d->id = ctxt->engine()->d_func()->getUniqueId();
+    if(ctxt)
+        ctxt->d_func()->childExpressions.insert(this);
     d->me = scope;
 }
 
@@ -806,6 +847,8 @@ QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expression,
 */
 QmlExpression::~QmlExpression()
 {
+    if (d->ctxt)
+        d->ctxt->d_func()->childExpressions.remove(this);
     delete d; d = 0;
 }
 
@@ -815,7 +858,7 @@ QmlExpression::~QmlExpression()
 */
 QmlEngine *QmlExpression::engine() const
 {
-    return d->ctxt->engine();
+    return d->ctxt?d->ctxt->engine():0;
 }
 
 /*!
@@ -892,7 +935,7 @@ void BindExpressionProxy::changed()
 QVariant QmlExpression::value()
 {
     QVariant rv;
-    if (!d->ctxt || (!d->sse.isValid() && d->expression.isEmpty()))
+    if (!d->ctxt || !engine() || (!d->sse.isValid() && d->expression.isEmpty()))
         return rv;
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
