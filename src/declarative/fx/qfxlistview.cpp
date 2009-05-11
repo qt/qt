@@ -293,6 +293,29 @@ public:
         }
         return -1; // Not in visibleList
     }
+    
+    bool mapRangeFromModel(int &index, int &count) const {
+        if (index + count < visibleIndex)
+            return false;
+
+        int lastIndex = -1;
+        for (int i = visibleItems.count()-1; i >= 0; --i) {
+            FxListItem *listItem = visibleItems.at(i);
+            if (listItem->index != -1) {
+                lastIndex = listItem->index;
+                break;
+            }
+        }
+
+        if (index > lastIndex)
+            return false;
+
+        int last = qMin(index + count - 1, lastIndex);
+        index = qMax(index, visibleIndex);
+        count = last - index + 1;
+
+        return true;
+    }
 
     // for debugging only
     void checkVisible() const {
@@ -468,7 +491,7 @@ void QFxListViewPrivate::refill(qreal from, qreal to)
         ++modelIndex;
         changed = true;
     }
-    while (visibleIndex > 0 && visiblePos > from) {
+    while (visibleIndex > 0 && visibleIndex <= model->count() && visiblePos > from) {
         //qDebug() << "refill: prepend item" << visibleIndex-1 << "current top pos" << visiblePos;
         item = getItem(visibleIndex-1);
         --visibleIndex;
@@ -1388,20 +1411,19 @@ void QFxListView::itemsInserted(int modelIndex, int count)
 {
     Q_D(QFxListView);
     if (!d->visibleItems.count() || d->model->count() <= 1) {
-        refill();
+        d->layout();
         d->updateCurrent(qMax(0, qMin(d->currentIndex, d->model->count()-1)));
         emit countChanged();
         return;
     }
 
-    int index = d->mapFromModel(modelIndex);
-    if (index == -1) {
+    if (!d->mapRangeFromModel(modelIndex, count)) {
         int i = d->visibleItems.count() - 1;
         while (i > 0 && d->visibleItems.at(i)->index == -1)
             --i;
         if (d->visibleItems.at(i)->index + 1 == modelIndex) {
             // Special case of appending an item to the model.
-            index = d->visibleIndex + d->visibleItems.count();
+            modelIndex = d->visibleIndex + d->visibleItems.count();
         } else {
             if (modelIndex + count - 1 < d->visibleIndex) {
                 // Insert before visible items
@@ -1418,27 +1440,22 @@ void QFxListView::itemsInserted(int modelIndex, int count)
                 if (d->currentItem)
                     d->currentItem->index = d->currentIndex;
             }
+            d->layout();
             emit countChanged();
             return;
         }
     }
 
     // At least some of the added items will be visible
-    int insertCount = count;
-    if (index < d->visibleIndex) {
-        insertCount -= d->visibleIndex - index;
-        index = d->visibleIndex;
-        modelIndex = d->visibleIndex;
-    }
 
-    index -= d->visibleIndex;
+    int index = modelIndex - d->visibleIndex;
     int to = d->buffer+d->position()+d->size()-1;
     // index can be the next item past the end of the visible items list (i.e. appended)
     int pos = index < d->visibleItems.count() ? d->visibleItems.at(index)->position()
                                                 : d->visibleItems.at(index-1)->endPosition()+1;
     int initialPos = pos;
     QList<FxListItem*> added;
-    for (int i = 0; i < insertCount && pos <= to; ++i) {
+    for (int i = 0; i < count && pos <= to; ++i) {
         FxListItem *item = d->createItem(modelIndex + i);
         d->visibleItems.insert(index, item);
         item->setPosition(pos);
@@ -1479,8 +1496,7 @@ void QFxListView::itemsInserted(int modelIndex, int count)
 void QFxListView::itemsRemoved(int modelIndex, int count)
 {
     Q_D(QFxListView);
-    int index = d->mapFromModel(modelIndex);
-    if (index == -1) {
+    if (!d->mapRangeFromModel(modelIndex, count)) {
         if (modelIndex + count - 1 < d->visibleIndex) {
             // Items removed before our visible items.
             d->visibleIndex -= count;
@@ -1504,6 +1520,7 @@ void QFxListView::itemsRemoved(int modelIndex, int count)
             d->currentIndex = -1;
             d->updateCurrent(qMin(modelIndex, d->model->count()-1));
         }
+        d->layout();
         emit countChanged();
         return;
     }
@@ -1561,6 +1578,8 @@ void QFxListView::itemsRemoved(int modelIndex, int count)
 
     if (d->visibleItems.isEmpty()) {
         d->visibleIndex = 0;
+        d->visiblePos = 0;
+        d->_tl.clear();
         d->setPosition(0);
         if (d->model->count() == 0)
             update();

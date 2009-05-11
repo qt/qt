@@ -129,10 +129,12 @@ void QFxFlickablePrivate::fixupX()
     vTime = _tl.time();
 
     if (_moveX.value() > q->minXExtent() || q->maxXExtent() > 0) {
+        _tl.clear();
         _tl.move(_moveX, q->minXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         flicked = false;
         //emit flickingChanged();
     } else if (_moveX.value() < q->maxXExtent()) {
+        _tl.clear();
         _tl.move(_moveX,  q->maxXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         flicked = false;
         //emit flickingChanged();
@@ -148,9 +150,11 @@ void QFxFlickablePrivate::fixupY()
     vTime = _tl.time();
 
     if (_moveY.value() > q->minYExtent() || (q->maxYExtent() > q->minYExtent())) {
+        _tl.clear();
         _tl.move(_moveY, q->minYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else if (_moveY.value() < q->maxYExtent()) {
+        _tl.clear();
         _tl.move(_moveY,  q->maxYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else {
