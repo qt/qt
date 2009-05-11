@@ -3463,6 +3463,8 @@ Qt::LayoutDirection QApplication::layoutDirection()
 
 /*!
     \property autoSipOnMouseFocus
+    \since 4.6
+    \brief toggles SIP (software input panel) launch policy
 
     This property holds whether widgets should request a software input
     panel when it is focused with the mouse. This is typically used to
