@@ -231,6 +231,18 @@ QmlContext::QmlContext(QmlContext *parentContext, QObject *parent)
  */
 QmlContext::~QmlContext()
 {
+    Q_D(QmlContext);
+    for(int ii = 0; ii < d->contextObjects.count(); ++ii) {
+        QObjectPrivate *p = QObjectPrivate::get(d->contextObjects.at(ii));
+        QmlSimpleDeclarativeData *data = 
+            static_cast<QmlSimpleDeclarativeData *>(p->declarativeData);
+        if(data && (data->flags & QmlSimpleDeclarativeData::Extended)) {
+            data->context = 0;
+        } else {
+            p->declarativeData = 0;
+        }
+    }
+    d->contextObjects.clear();
 }
 
 

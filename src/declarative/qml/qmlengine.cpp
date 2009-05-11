@@ -659,11 +659,10 @@ void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
     if (!data) {
         priv->declarativeData = &context->d_func()->contextData;
     } else {
-        // ### - Don't have to use extended data here
-        QmlExtendedDeclarativeData *data = new QmlExtendedDeclarativeData;
         data->context = context;
-        priv->declarativeData = data;
     }
+
+    context->d_func()->contextObjects.append(object);
 }
 
 QmlContext *qmlContext(const QObject *obj)
@@ -713,8 +712,15 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object)
     return rv;
 }
 
-void QmlExtendedDeclarativeData::destroyed(QObject *)
+void QmlSimpleDeclarativeData::destroyed(QObject *object)
 {
+    if (context) 
+        context->d_func()->contextObjects.removeAll(object);
+}
+
+void QmlExtendedDeclarativeData::destroyed(QObject *object)
+{
+    QmlSimpleDeclarativeData::destroyed(object);
     delete this;
 }
 

@@ -88,6 +88,7 @@ public:
     void addDefaultObject(QObject *, Priority);
 
     QmlSimpleDeclarativeData contextData;
+    QObjectList contextObjects;
 };
 QT_END_NAMESPACE
 
