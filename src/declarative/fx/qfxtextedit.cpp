@@ -851,7 +851,6 @@ void QFxTextEditPrivate::updateDefaultTextOption()
     
     QTextOption::WrapMode oldWrapMode = opt.wrapMode();
 
-qDebug() << "wrap mode is" << opt.wrapMode();
     if (wrap)
         opt.setWrapMode(QTextOption::WordWrap);
     else
@@ -859,7 +858,6 @@ qDebug() << "wrap mode is" << opt.wrapMode();
 
     if (oldWrapMode == opt.wrapMode() && oldAlignment == opt.alignment())
         return;
-qDebug() << "wrap mode set to" << opt.wrapMode();
     document->setDefaultTextOption(opt);
 }
 

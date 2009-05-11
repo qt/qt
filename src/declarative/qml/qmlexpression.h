@@ -87,6 +87,7 @@ protected:
 private:
     friend class BindExpressionProxy;
     friend class QmlDebugger;
+    friend class QmlContext;
     QmlExpressionPrivate *d;
 };
 

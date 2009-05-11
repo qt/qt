@@ -1,13 +1,15 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlengine.h>
+#include <QtDeclarative/qmlexpression.h>
+#include <QtDeclarative/qmlcontext.h>
 
 class MyQmlObject : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool trueProperty READ trueProperty)
     Q_PROPERTY(bool falseProperty READ falseProperty)
-    Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty)
+    Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty NOTIFY stringChanged)
 public:
     MyQmlObject(): m_methodCalled(false), m_methodIntCalled(false) {}
 
@@ -15,7 +17,13 @@ public:
     bool falseProperty() const { return false; }
 
     QString stringProperty() const { return m_string; }
-    void setStringProperty(const QString &s) { m_string = s; }
+    void setStringProperty(const QString &s)
+    {
+        if (s == m_string)
+            return;
+        m_string = s;
+        emit stringChanged();
+    }
 
     bool methodCalled() const { return m_methodCalled; }
     bool methodIntCalled() const { return m_methodIntCalled; }
@@ -24,6 +32,7 @@ public:
 signals:
     void basicSignal();
     void argumentSignal(int a, QString b, qreal c);
+    void stringChanged();
 
 public slots:
     void method() { m_methodCalled = true; }
@@ -41,6 +50,22 @@ private:
 QML_DECLARE_TYPE(MyQmlObject);
 QML_DEFINE_TYPE(MyQmlObject,MyQmlObject);
 
+class MyQmlContainer : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QList<MyQmlContainer*>* children READ children)
+public:
+    MyQmlContainer() {}
+
+    QList<MyQmlContainer*> *children() { return &m_children; }
+
+private:
+    QList<MyQmlContainer*> m_children;
+};
+
+QML_DECLARE_TYPE(MyQmlContainer);
+QML_DEFINE_TYPE(MyQmlContainer,MyQmlContainer);
+
 class tst_qmlbindengine : public QObject
 {
     Q_OBJECT
@@ -51,6 +76,8 @@ private slots:
     void boolPropertiesEvaluateAsBool();
     void methods();
     void signalAssignment();
+    void bindingLoop();
+    void contextPropertiesTriggerReeval();
 
 private:
     QmlEngine engine;
@@ -116,6 +143,42 @@ void tst_qmlbindengine::methods()
         QCOMPARE(object->methodCalled(), false);
         QCOMPARE(object->methodIntCalled(), true);
     }
+}
+
+void tst_qmlbindengine::bindingLoop()
+{
+    QmlComponent component(&engine, "MyQmlContainer { children : [ "\
+                                    "MyQmlObject { id: Object1; stringProperty: \"hello\" + Object2.stringProperty }, "\
+                                    "MyQmlObject { id: Object2; stringProperty: \"hello\" + Object1.stringProperty } ] }");
+    //### ignoreMessage doesn't seem to work here
+    //QTest::ignoreMessage(QtWarningMsg, "QML MyQmlObject (unknown location): Binding loop detected for property \"stringProperty\"");
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+}
+
+class MyExpression : public QmlExpression
+{
+public:
+    MyExpression(QmlContext *ctxt, const QString &expr)
+        : QmlExpression(ctxt, expr, 0), changed(false)
+    {
+    }
+
+    bool changed;
+};
+
+void tst_qmlbindengine::contextPropertiesTriggerReeval()
+{
+    QmlContext context(engine.rootContext());
+    context.setContextProperty("testProp", QVariant(1));
+
+    MyExpression expr(&context, "testProp + 1");
+    QCOMPARE(expr.changed, false);
+    QCOMPARE(expr.value(), QVariant(2));
+
+    context.setContextProperty("testProp", QVariant(2));
+    QCOMPARE(expr.changed, true);
+    QCOMPARE(expr.value(), QVariant(3));
 }
 
 QTEST_MAIN(tst_qmlbindengine)

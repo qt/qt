@@ -86,6 +86,10 @@ void QmlContextPrivate::destroyed(QObject *obj)
 void QmlContextPrivate::init()
 {
     Q_Q(QmlContext);
+
+    if (parent) 
+        parent->d_func()->childContexts.insert(q);
+
     //set scope chain
     QScriptEngine *scriptEngine = engine->scriptEngine();
     QScriptValue scopeObj =
@@ -231,8 +235,48 @@ QmlContext::QmlContext(QmlContext *parentContext, QObject *parent)
  */
 QmlContext::~QmlContext()
 {
+    Q_D(QmlContext);
+    if (d->parent) 
+        d->parent->d_func()->childContexts.remove(this);
+
+    for (QSet<QmlContext *>::ConstIterator iter = d->childContexts.begin();
+            iter != d->childContexts.end();
+            ++iter) {
+        (*iter)->d_func()->invalidateEngines();
+        (*iter)->d_func()->parent = 0;
+    }
+
+    for (QSet<QmlExpression *>::ConstIterator iter = 
+            d->childExpressions.begin();
+            iter != d->childExpressions.end();
+            ++iter) {
+        (*iter)->d->ctxt = 0;
+    }
+
+    for (int ii = 0; ii < d->contextObjects.count(); ++ii) {
+        QObjectPrivate *p = QObjectPrivate::get(d->contextObjects.at(ii));
+        QmlSimpleDeclarativeData *data = 
+            static_cast<QmlSimpleDeclarativeData *>(p->declarativeData);
+        if(data && (data->flags & QmlSimpleDeclarativeData::Extended)) {
+            data->context = 0;
+        } else {
+            p->declarativeData = 0;
+        }
+    }
+    d->contextObjects.clear();
 }
 
+void QmlContextPrivate::invalidateEngines()
+{
+    if (!engine)
+        return;
+    engine = 0;
+    for (QSet<QmlContext *>::ConstIterator iter = childContexts.begin();
+            iter != childContexts.end();
+            ++iter) {
+        (*iter)->d_func()->invalidateEngines();
+    }
+}
 
 /*!
     Return the context's QmlEngine, or 0 if the context has no QmlEngine or the

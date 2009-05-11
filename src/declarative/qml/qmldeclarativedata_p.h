@@ -51,6 +51,7 @@ class QmlSimpleDeclarativeData : public QDeclarativeData
 public:
     QmlSimpleDeclarativeData() : flags(0), context(0) {}
 
+    virtual void destroyed(QObject *);
     enum Flag { Extended = 0x00000001 };
     quint32 flags;
     QmlContext *context;

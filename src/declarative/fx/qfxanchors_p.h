@@ -64,7 +64,8 @@ class QFxAnchorsPrivate : public QObjectPrivate
 public:
     QFxAnchorsPrivate()
       : item(0), usedAnchors(0), fill(0), centeredIn(0), leftMargin(0), rightMargin(0),
-        topMargin(0), bottomMargin(0), vCenterOffset(0), hCenterOffset(0)
+        topMargin(0), bottomMargin(0), vCenterOffset(0), hCenterOffset(0),
+        updatingHorizontalAnchor(false), updatingVerticalAnchor(false)
     {
     }
 
@@ -76,8 +77,8 @@ public:
     bool checkVValid() const;
     bool checkHAnchorValid(QFxAnchorLine anchor) const;
     bool checkVAnchorValid(QFxAnchorLine anchor) const;
-    void connectHHelper(const QFxAnchorLine &anchorLine, const char *slotString);
-    void connectVHelper(const QFxAnchorLine &anchorLine, const char *slotString);
+    void connectHHelper(const QFxAnchorLine &anchorLine);
+    void connectVHelper(const QFxAnchorLine &anchorLine);
     bool calcStretch(const QFxAnchorLine &edge1, const QFxAnchorLine &edge2, int offset1, int offset2, QFxAnchorLine::AnchorLine line, int &stretch);
 
     QFxItem *item;
@@ -99,6 +100,9 @@ public:
     int bottomMargin;
     int vCenterOffset;
     int hCenterOffset;
+
+    bool updatingHorizontalAnchor;
+    bool updatingVerticalAnchor;
 };
 
 QT_END_NAMESPACE

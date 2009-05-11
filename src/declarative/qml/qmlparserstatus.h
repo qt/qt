@@ -53,11 +53,18 @@ QT_MODULE(Declarative)
 class Q_DECLARATIVE_EXPORT QmlParserStatus
 {
 public:
+    QmlParserStatus();
     virtual ~QmlParserStatus();
 
     virtual void classBegin();
     virtual void classComplete();
     virtual void componentComplete();
+
+private:
+    friend class QmlVME;
+    friend class QmlComponent;
+    friend class QmlEnginePrivate;
+    QmlParserStatus **d;
 };
 Q_DECLARE_INTERFACE(QmlParserStatus, "com.trolltech.qml.QmlParserStatus");
 
