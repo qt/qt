@@ -38,6 +38,8 @@ class SpinAiWithError: public QObject, public Plugin
     Q_OBJECT
     Q_INTERFACES(Plugin)
 public:
+    SpinAiWithError() { setObjectName("Spin and destroy with runtime error in state machine"); }
+
     virtual QState *create(QState *parentState, QObject *tank);
 };
 

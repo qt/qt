@@ -196,6 +196,8 @@ class SeekAi: public QObject, public Plugin
     Q_OBJECT
     Q_INTERFACES(Plugin)
 public:
+    SeekAi() { setObjectName("Seek and destroy"); }
+
     virtual QState *create(QState *parentState, QObject *tank);
 };
 

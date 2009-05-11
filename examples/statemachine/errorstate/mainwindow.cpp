@@ -12,6 +12,9 @@
 #include <QTimer>
 #include <QFileDialog>
 #include <QPluginLoader>
+#include <QApplication>
+#include <QInputDialog>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), m_scene(0), m_machine(0), m_runningState(0), m_started(false)
@@ -193,25 +196,62 @@ void MainWindow::addTank()
 {
     Q_ASSERT(!m_spawns.isEmpty());
 
-    QString fileName = QFileDialog::getOpenFileName(this, "Select plugin file", "plugins/", "*.dll");
-    QPluginLoader loader(fileName);
-    
-    Plugin *plugin = qobject_cast<Plugin *>(loader.instance());
-    if (plugin != 0) {
-        TankItem *tankItem = m_spawns.takeLast();
-        m_scene->addItem(tankItem);
-        connect(tankItem, SIGNAL(cannonFired()), this, SLOT(addRocket()));
-        if (m_spawns.isEmpty())
-            emit mapFull();
-        
-        QState *region = new QState(m_runningState);
-        QState *pluginState = plugin->create(region, tankItem);
-        region->setInitialState(pluginState);
+    QDir pluginsDir(qApp->applicationDirPath());
+#if defined(Q_OS_WIN)
+    if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
+        pluginsDir.cdUp();
+#elif defined(Q_OS_MAC)
+    if (pluginsDir.dirName() == "MacOS") {
+        pluginsDir.cdUp();
+        pluginsDir.cdUp();
+        pluginsDir.cdUp();
+    }
+#endif
 
-        // If the plugin has an error it is disabled
-        QState *errorState = new QState(region);
-        errorState->assignProperty(tankItem, "enabled", false);
-        pluginState->setErrorState(errorState);
+    pluginsDir.cd("plugins");
+
+    QStringList itemNames;
+    QList<Plugin *> items;
+    foreach (QString fileName, pluginsDir.entryList(QDir::Files)) {
+        QPluginLoader loader(pluginsDir.absoluteFilePath(fileName));
+        QObject *possiblePlugin = loader.instance();
+        if (Plugin *plugin = qobject_cast<Plugin *>(possiblePlugin)) {
+            QString objectName = possiblePlugin->objectName();
+            if (objectName.isEmpty())
+                objectName = fileName;
+
+            itemNames.append(objectName);
+            items.append(plugin);
+        }
+    }
+
+    if (items.isEmpty()) {
+        QMessageBox::information(this, "No tank types found", "Please build the errorstateplugins directory");
+        return;
+    }
+
+    bool ok;
+    QString selectedName = QInputDialog::getItem(this, "Select a tank type", "Tank types", 
+        itemNames, 0, false, &ok);
+    
+    if (ok && !selectedName.isEmpty()) {
+        int idx = itemNames.indexOf(selectedName);
+        if (Plugin *plugin = idx >= 0 ? items.at(idx) : 0) {
+            TankItem *tankItem = m_spawns.takeLast();
+            m_scene->addItem(tankItem);
+            connect(tankItem, SIGNAL(cannonFired()), this, SLOT(addRocket()));
+            if (m_spawns.isEmpty())
+                emit mapFull();
+            
+            QState *region = new QState(m_runningState);
+            QState *pluginState = plugin->create(region, tankItem);
+            region->setInitialState(pluginState);
+
+            // If the plugin has an error it is disabled
+            QState *errorState = new QState(region);
+            errorState->assignProperty(tankItem, "enabled", false);
+            pluginState->setErrorState(errorState);
+        }
     }
 }
 

@@ -38,6 +38,8 @@ class SpinAi: public QObject, public Plugin
     Q_OBJECT
     Q_INTERFACES(Plugin)
 public:
+    SpinAi() { setObjectName("Spin and destroy"); }
+
     virtual QState *create(QState *parentState, QObject *tank);
 };
 

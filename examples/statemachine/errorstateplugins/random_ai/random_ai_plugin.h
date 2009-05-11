@@ -56,6 +56,8 @@ class RandomAiPlugin: public QObject, public Plugin
     Q_OBJECT
     Q_INTERFACES(Plugin)
 public:
+    RandomAiPlugin() { setObjectName("Random"); }
+
     virtual QState *create(QState *parentState, QObject *tank);
 };
 
