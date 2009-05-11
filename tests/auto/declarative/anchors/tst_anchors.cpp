@@ -37,7 +37,7 @@ void tst_anchors::loops()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/loop2.qml"));
 
-        //### ignoreMessage doesn't seem to work
+        //### ignoreMessage doesn't seem to work here
         //QTest::ignoreMessage(QtWarningMsg, "QML QFxImage (unknown location): Anchor loop detected on horizontal anchor.");
         //QTest::ignoreMessage(QtWarningMsg, "QML QFxImage (unknown location): Anchor loop detected on horizontal anchor.");
         view->execute();

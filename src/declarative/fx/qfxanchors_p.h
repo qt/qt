@@ -77,8 +77,8 @@ public:
     bool checkVValid() const;
     bool checkHAnchorValid(QFxAnchorLine anchor) const;
     bool checkVAnchorValid(QFxAnchorLine anchor) const;
-    void connectHHelper(const QFxAnchorLine &anchorLine, const char *slotString);
-    void connectVHelper(const QFxAnchorLine &anchorLine, const char *slotString);
+    void connectHHelper(const QFxAnchorLine &anchorLine);
+    void connectVHelper(const QFxAnchorLine &anchorLine);
     bool calcStretch(const QFxAnchorLine &edge1, const QFxAnchorLine &edge2, int offset1, int offset2, QFxAnchorLine::AnchorLine line, int &stretch);
 
     QFxItem *item;

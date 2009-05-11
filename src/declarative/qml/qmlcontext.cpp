@@ -44,6 +44,7 @@
 #include <private/qmlengine_p.h>
 #include <qmlengine.h>
 #include <qscriptengine.h>
+#include <QtCore/qvarlengtharray.h>
 
 #include <qdebug.h>
 
@@ -53,7 +54,8 @@
 QT_BEGIN_NAMESPACE
 
 QmlContextPrivate::QmlContextPrivate()
-    : parent(0), engine(0), highPriorityCount(0), startLine(-1), endLine(-1)
+: parent(0), engine(0), notifyIndex(-1), highPriorityCount(0), 
+  startLine(-1), endLine(-1)
 {
 }
 
@@ -65,21 +67,26 @@ void QmlContextPrivate::dump()
 void QmlContextPrivate::dump(int depth)
 {
     QByteArray ba(depth * 4, ' ');
-    qWarning() << ba << properties.keys();
-    qWarning() << ba << variantProperties.keys();
     if (parent)
         parent->d_func()->dump(depth + 1);
 }
 
 void QmlContextPrivate::destroyed(QObject *obj)
 {
+    Q_Q(QmlContext);
+
     defaultObjects.removeAll(obj);
-    for (QHash<QString, QObject *>::Iterator iter = properties.begin();
-            iter != properties.end(); ) {
-        if (*iter == obj)
-            iter = properties.erase(iter);
-        else
-            ++iter;
+
+    QVariant variantObject = QVariant::fromValue(obj);
+    QVarLengthArray<int> notifies;
+    for (int ii = 0; ii < propertyValues.count(); ++ii) {
+        if (propertyValues.at(ii) == variantObject) {
+            propertyValues[ii] = QVariant();
+            notifies.append(ii);
+        }
+    }
+    for (int ii = 0; ii < notifies.count(); ++ii) {
+        QMetaObject::activate(q, notifies[ii] + notifyIndex, 0);
     }
 }
 
@@ -314,7 +321,22 @@ void QmlContext::addDefaultObject(QObject *object)
 void QmlContext::setContextProperty(const QString &name, const QVariant &value)
 {
     Q_D(QmlContext);
-    d->variantProperties.insert(name, value);
+    if (d->notifyIndex == -1)
+        d->notifyIndex = this->metaObject()->methodCount();
+
+    if (QmlMetaType::isObject(value.userType())) {
+        QObject *o = QmlMetaType::toQObject(value);
+        setContextProperty(name, o);
+    } else {
+        QHash<QString, int>::ConstIterator iter = d->propertyNames.find(name);
+        if(iter == d->propertyNames.end()) {
+            d->propertyNames.insert(name, d->propertyValues.count());
+            d->propertyValues.append(value);
+        } else {
+            d->propertyValues[*iter] = value;
+            QMetaObject::activate(this, *iter + d->notifyIndex, 0);
+        }
+    }
 }
 
 /*!
@@ -325,8 +347,26 @@ void QmlContext::setContextProperty(const QString &name, const QVariant &value)
 void QmlContext::setContextProperty(const QString &name, QObject *value)
 {
     Q_D(QmlContext);
-    d->properties.insert(name, value);
-    QObject::connect(value, SIGNAL(destroyed(QObject*)), this, SLOT(objectDestroyed(QObject*)));
+    if (d->notifyIndex == -1)
+        d->notifyIndex = this->metaObject()->methodCount();
+
+    QObject::connect(value, SIGNAL(destroyed(QObject*)), 
+                     this, SLOT(objectDestroyed(QObject*)));
+
+    QHash<QString, int>::ConstIterator iter = d->propertyNames.find(name);
+    if(iter == d->propertyNames.end()) {
+        d->propertyNames.insert(name, d->propertyValues.count());
+        d->propertyValues.append(QVariant::fromValue(value));
+    } else {
+        int idx = *iter;
+        if (QmlMetaType::isObject(d->propertyValues.at(idx).userType())) {
+            QObject *old = QmlMetaType::toQObject(d->propertyValues.at(idx));
+            QObject::disconnect(old, SIGNAL(destroyed(QObject*)), 
+                             this, SLOT(objectDestroyed(QObject*)));
+        }
+        d->propertyValues[*iter] = QVariant::fromValue(value);
+        QMetaObject::activate(this, *iter + d->notifyIndex, 0);
+    }
 }
 
 /*!

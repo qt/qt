@@ -99,6 +99,9 @@ public:
     QmlDomValue value() const;
     void setValue(const QmlDomValue &);
 
+    int position() const;
+    int length() const;
+
 private:
     friend class QmlDomObject;
     QSharedDataPointer<QmlDomPropertyPrivate> d;
@@ -133,6 +136,9 @@ public:
 
     bool isComponent() const;
     QmlDomComponent toComponent() const;
+
+    int position() const;
+    int length() const;
 
 private:
     friend class QmlDomDocument;
@@ -235,6 +241,9 @@ public:
     QmlDomValueValueSource toValueSource() const;
     QmlDomObject toObject() const;
     QmlDomList toList() const;
+
+    int position() const;
+    int length() const;
 
 private:
     friend class QmlDomProperty;

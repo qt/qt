@@ -339,6 +339,8 @@ LocationSpan ProcessAST::location(AST::SourceLocation start, AST::SourceLocation
     rv.start.column = start.startColumn;
     rv.end.line = end.startLine;
     rv.end.column = end.startColumn + end.length - 1;
+    rv.range.offset = start.offset;
+    rv.range.length = end.offset + end.length - start.offset;
     return rv;
 }
 

@@ -64,8 +64,10 @@ public:
 
     QmlContext *parent;
     QmlEngine *engine;
-    QHash<QString, QObject *> properties;
-    QHash<QString, QVariant> variantProperties;
+
+    QHash<QString, int> propertyNames;
+    QList<QVariant> propertyValues;
+    int notifyIndex;
 
     QObjectList defaultObjects;
     int highPriorityCount;
