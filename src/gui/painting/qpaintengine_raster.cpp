@@ -2575,7 +2575,12 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
     QRasterPaintEngineState *s = state();
     const bool aa = s->flags.antialiased || s->flags.bilinear;
     if (!aa && sr.size() == QSize(1, 1)) {
+        // as fillRect will apply the aliased coordinate delta we need to
+        // subtract it here as we don't use it for image drawing
+        QTransform old = s->matrix;
+        s->matrix = s->matrix * QTransform::fromTranslate(-aliasedCoordinateDelta, -aliasedCoordinateDelta);
         fillRect(r, QColor::fromRgba(img.pixel(sr.x(), sr.y())));
+        s->matrix = old;
         return;
     }
 
@@ -2608,6 +2613,18 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         if (!d->image_filler_xform.blend)
             return;
         d->image_filler_xform.setupMatrix(copy, s->flags.bilinear);
+
+        if (!aa && s->matrix.type() == QTransform::TxScale) {
+            QRectF rr = s->matrix.mapRect(r);
+
+            const int x1 = qRound(rr.x());
+            const int y1 = qRound(rr.y());
+            const int x2 = qRound(rr.right());
+            const int y2 = qRound(rr.bottom());
+
+            fillRect_normalized(QRect(x1, y1, x2-x1, y2-y1), &d->image_filler_xform, d);
+            return;
+        }
 
 #ifdef QT_FAST_SPANS
         ensureState();

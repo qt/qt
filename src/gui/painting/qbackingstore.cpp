@@ -492,7 +492,8 @@ static inline void sendUpdateRequest(QWidget *widget, bool updateImmediately)
         return;
 
 #if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
-    if (QApplicationPrivate::inSizeMove && widget->internalWinId() && !updateImmediately) {
+    if (QApplicationPrivate::inSizeMove && widget->internalWinId() && !updateImmediately
+        && !widget->testAttribute(Qt::WA_DontShowOnScreen)) {
         // Tell Windows to send us a paint event if we're in WM_SIZE/WM_MOVE; posted events
         // are blocked until the mouse button is released. See task 146849.
         const QRegion rgn(qt_dirtyRegion(widget));

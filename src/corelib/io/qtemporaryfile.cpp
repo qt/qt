@@ -294,6 +294,8 @@ public:
     QTemporaryFileEngine(const QString &file) : QFSFileEngine(file) { }
     ~QTemporaryFileEngine();
 
+    void setFileName(const QString &file);
+
     bool open(QIODevice::OpenMode flags);
     bool remove();
     bool close();
@@ -302,6 +304,13 @@ public:
 QTemporaryFileEngine::~QTemporaryFileEngine()
 {
     QFSFileEngine::close();
+}
+
+void QTemporaryFileEngine::setFileName(const QString &file)
+{
+    // Really close the file, so we don't leak
+    QFSFileEngine::close();
+    QFSFileEngine::setFileName(file);
 }
 
 bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)

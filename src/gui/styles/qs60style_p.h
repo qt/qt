@@ -87,6 +87,11 @@ public:
         SP_QgnGrafTabPassiveR,
         SP_QgnIndiCheckboxOff,
         SP_QgnIndiCheckboxOn,
+        SP_QgnIndiHlColSuper,     // Available in S60 release 3.2 and later.
+        SP_QgnIndiHlExpSuper,     // Available in S60 release 3.2 and later.
+        SP_QgnIndiHlLineBranch,   // Available in S60 release 3.2 and later.
+        SP_QgnIndiHlLineEnd,      // Available in S60 release 3.2 and later.
+        SP_QgnIndiHlLineStraight, // Available in S60 release 3.2 and later.
         SP_QgnIndiMarkedAdd,
         SP_QgnIndiNaviArrowLeft,
         SP_QgnIndiNaviArrowRight,
@@ -276,7 +281,8 @@ public:
         SE_ToolTip, //own graphic available on 3.2+ releases,
         SE_ToolBar,
         SE_ToolBarButton,
-        SE_ToolBarButtonPressed
+        SE_ToolBarButtonPressed,
+        SE_PanelBackground
     };
 
     enum SkinFrameElements {
@@ -291,7 +297,8 @@ public:
         SF_ToolTip,
         SF_ToolBar,
         SF_ToolBarButton,
-        SF_ToolBarButtonPressed
+        SF_ToolBarButtonPressed,
+        SF_PanelBackground
     };
 
     enum SkinElementFlag {

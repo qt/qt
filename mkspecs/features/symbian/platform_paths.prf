@@ -223,7 +223,27 @@ exists($${EPOCROOT}epoc32/include/platform_paths.prf) {
 
         OS_LAYER_LIBUTILITY_SYSTEMINCLUDE = $$OS_LAYER_PLATFORM_EXPORT_PATH(stdapis/utility)
 
-
+        # ---------------------------------------
+        # Definitions to export IBY files to different folders where they will be taken 
+        # to ROM image
+        # ---------------------------------------
+              
+        defineReplace(CORE_APP_LAYER_IBY_EXPORT_PATH) {
+            return(/epoc32/rom/include/core/app/$$1)
+        }
+        defineReplace(CORE_MW_LAYER_IBY_EXPORT_PATH) {
+            return(/epoc32/rom/include/core/mw/$$1)
+        }
+        defineReplace(CORE_OSEXT_LAYER_IBY_EXPORT_PATH) {
+            return(/epoc32/rom/include/core/os/$$1)
+        }
+        defineReplace(CORE_OS_LAYER_IBY_EXPORT_PATH) {
+            return(/epoc32/rom/include/core/os/$$1)
+        }
+        defineReplace(CORE_ADAPT_LAYER_IBY_EXPORT_PATH) {
+            return(/epoc32/rom/include/$$1)
+        }
+        
         # You need to define the following in pro-file, if you are using the stllib:
         # QMAKE_CXXFLAGS.CW *= $$STLLIB_USAGE_CW_FLAGS
         # DEFINES *= $$STLLIB_USAGE_DEFINES
@@ -402,7 +422,27 @@ exists($${EPOCROOT}epoc32/include/platform_paths.prf) {
 
         OS_LAYER_LIBUTILITY_SYSTEMINCLUDE = $$OS_LAYER_PLATFORM_EXPORT_PATH(stdapis/utility)
 
-
+        # ---------------------------------------
+        # Definitions to export IBY files to different folders where they will be taken 
+        # to ROM image
+        # ---------------------------------------
+              
+        defineReplace(CORE_APP_LAYER_IBY_EXPORT_PATH) {
+            return(/epoc32/rom/include/core/app/$$1)
+        }
+        defineReplace(CORE_MW_LAYER_IBY_EXPORT_PATH) {
+            return(/epoc32/rom/include/core/mw/$$1)
+        }
+        defineReplace(CORE_OSEXT_LAYER_IBY_EXPORT_PATH) {
+            return(/epoc32/rom/include/core/osext/$$1)
+        }
+        defineReplace(CORE_OS_LAYER_IBY_EXPORT_PATH) {
+            return(/epoc32/rom/include/core/osext/$$1)
+        }
+        defineReplace(CORE_ADAPT_LAYER_IBY_EXPORT_PATH) {
+            return(/epoc32/rom/include/$$1)
+        }
+        
         # You need to define the following in pro-file, if you are using the stllib:
         # QMAKE_CXXFLAGS.CW *= $$STLLIB_USAGE_CW_FLAGS
         # DEFINES *= $$STLLIB_USAGE_DEFINES
