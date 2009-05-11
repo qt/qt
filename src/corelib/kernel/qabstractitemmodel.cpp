@@ -471,12 +471,12 @@ const QHash<int,QByteArray> &QAbstractItemModelPrivate::defaultRoleNames()
 {
     static QHash<int,QByteArray> roleNames;
     if (roleNames.isEmpty()) {
-        roleNames[Qt::DisplayRole] = "Display";
-        roleNames[Qt::DecorationRole] = "Decoration";
-        roleNames[Qt::EditRole] = "Edit";
-        roleNames[Qt::ToolTipRole] = "ToolTip";
-        roleNames[Qt::StatusTipRole] = "StatusTip";
-        roleNames[Qt::WhatsThisRole] = "WhatsThis";
+        roleNames[Qt::DisplayRole] = "display";
+        roleNames[Qt::DecorationRole] = "decoration";
+        roleNames[Qt::EditRole] = "edit";
+        roleNames[Qt::ToolTipRole] = "toolTip";
+        roleNames[Qt::StatusTipRole] = "statusTip";
+        roleNames[Qt::WhatsThisRole] = "whatsThis";
     }
 
     return roleNames;
@@ -1859,6 +1859,7 @@ void QAbstractItemModel::setRoleNames(const QHash<int,QByteArray> &roleNames)
 const QHash<int,QByteArray> &QAbstractItemModel::roleNames() const
 {
     Q_D(const QAbstractItemModel);
+    qDebug() << "roles" << d->roleNames;
     return d->roleNames;
 }
 
