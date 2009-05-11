@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 class QmlContext;
 class QmlExpression;
 class QmlEngine;
+class QmlExpression;
 class QmlCompiledComponent;
 
 class QmlContextPrivate : public QObjectPrivate

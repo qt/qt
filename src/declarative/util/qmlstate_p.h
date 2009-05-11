@@ -69,6 +69,7 @@ public:
     QmlStateGroup *group;
 
     QmlStateOperation::ActionList generateActionList(QmlStateGroup *) const;
+    void applyBindings();
     void complete();
 };
 

@@ -47,6 +47,7 @@
 #include "qhash.h"
 #include "qlist.h"
 #include "private/qobject_p.h"
+#include "private/qmetaobjectbuilder_p.h"
 #include "qmlopenmetaobject.h"
 #include "qmllistaccessor.h"
 #include "qfxvisualitemmodel.h"

@@ -665,6 +665,9 @@ bool QmlCompiler::compileComponent(Object *obj, int ctxt)
     if (obj->defaultProperty && obj->defaultProperty->values.count()) 
         root = obj->defaultProperty->values.first()->object;
     
+    if (!root)
+        COMPILE_EXCEPTION("Cannot create empty component specification");
+
     COMPILE_CHECK(compileComponentFromRoot(root, ctxt));
 
     if (idProp && idProp->values.count()) {
