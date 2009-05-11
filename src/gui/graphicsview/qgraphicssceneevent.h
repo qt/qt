@@ -329,6 +329,15 @@ public:
     QSet<QString> cancelledGestures() const;
     void setCancelledGestures(const QSet<QString> &cancelledGestures);
 
+    void acceptAll();
+#ifndef Q_NO_USING_KEYWORD
+    using QEvent::accept;
+#else
+    inline void accept() { QEvent::accept(); }
+#endif
+    void accept(Qt::GestureType type);
+    void accept(const QString &type);
+
     QPointF mapToScene(const QPoint &point) const;
     QPolygonF mapToScene(const QRect &rect) const;
     QPointF mapToItem(const QPoint &point, QGraphicsItem *item) const;
