@@ -201,9 +201,6 @@ public:
     static void setKeyboardInputInterval(int);
     static int keyboardInputInterval();
 
-    static void setAutoSipOnMouseFocus(bool);
-    static bool autoSipOnMouseFocus();
-
 #ifndef QT_NO_WHEELEVENT
     static void setWheelScrollLines(int);
     static int wheelScrollLines();
@@ -301,6 +298,8 @@ public Q_SLOTS:
 #endif
     void setAutoSipEnabled(const bool enabled);
     bool autoSipEnabled() const;
+    void setAutoSipOnMouseFocus(bool);
+    bool autoSipOnMouseFocus();
     static void closeAllWindows();
     static void aboutQt();
 
