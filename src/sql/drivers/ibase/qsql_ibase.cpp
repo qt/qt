@@ -871,7 +871,7 @@ QIBaseResult::~QIBaseResult()
 
 bool QIBaseResult::prepare(const QString& query)
 {
-    //qDebug("prepare: %s\n", qPrintable(query));
+//     qDebug("prepare: %s", qPrintable(query));
     if (!driver() || !driver()->isOpen() || driver()->isOpenError())
         return false;
     d->cleanup();
@@ -1025,7 +1025,7 @@ bool QIBaseResult::exec()
     }
 
     if (ok) {
-        if (colCount()) {
+        if (colCount() && d->queryType != isc_info_sql_stmt_exec_procedure) {
             isc_dsql_free_statement(d->status, &d->stmt, DSQL_close);
             if (d->isError(QT_TRANSLATE_NOOP("QIBaseResult", "Unable to close statement")))
                 return false;
@@ -1039,7 +1039,7 @@ bool QIBaseResult::exec()
             return false;
 
         // Not all stored procedures necessarily return values.
-        if (d->queryType == isc_info_sql_stmt_exec_procedure && d->sqlda->sqld == 0)
+        if (d->queryType == isc_info_sql_stmt_exec_procedure && d->sqlda && d->sqlda->sqld == 0)
             delDA(d->sqlda);
 
         if (d->sqlda)
