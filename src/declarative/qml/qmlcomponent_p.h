@@ -46,6 +46,7 @@
 #include <QStringList>
 #include <QList>
 #include "private/qobject_p.h"
+#include "private/qmlengine_p.h"
 #include "private/qmlcompositetypemanager_p.h"
 #include <qmlerror.h>
 #include "qmlcomponent.h"
@@ -75,8 +76,10 @@ public:
     int start;
     int count;
     QmlCompiledComponent *cc;
-    QList<QmlBindableValue *> bindValues;
-    QList<QmlParserStatus *> parserStatus;
+
+    QList<QmlEnginePrivate::SimpleList<QmlBindableValue> > bindValues;
+    QList<QmlEnginePrivate::SimpleList<QmlParserStatus> > parserStatus;
+
     bool completePending;
 
     QmlEngine *engine;

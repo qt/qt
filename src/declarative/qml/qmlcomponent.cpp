@@ -171,6 +171,11 @@ QmlComponent::~QmlComponent()
     }
     if (d->cc)
         d->cc->release();
+
+    for(int ii = 0; ii < d->bindValues.count(); ++ii)
+        QmlEnginePrivate::clear(d->bindValues[ii]);
+    for(int ii = 0; ii < d->parserStatus.count(); ++ii)
+        QmlEnginePrivate::clear(d->parserStatus[ii]);
 }
 
 /*!
@@ -483,10 +488,10 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
         if (ep->rootComponent == this) {
             ep->rootComponent = 0;
 
-            d->bindValues = ep->currentBindValues;
-            d->parserStatus = ep->currentParserStatus;
-            ep->currentBindValues.clear();
-            ep->currentParserStatus.clear();
+            d->bindValues = ep->bindValues;
+            d->parserStatus = ep->parserStatus;
+            ep->bindValues.clear();
+            ep->parserStatus.clear();
             d->completePending = true;
         }
     } else {
@@ -511,16 +516,29 @@ void QmlComponent::completeCreate()
 #ifdef Q_ENABLE_PERFORMANCE_LOG
             QFxPerfTimer<QFxPerf::BindInit> bi;
 #endif
-            for (int ii = 0; ii < d->bindValues.count(); ++ii)
-                d->bindValues.at(ii)->init();
-        }
-        QSet<QmlParserStatus *> done;
-        for (int ii = 0; ii < d->parserStatus.count(); ++ii) {
-            QmlParserStatus *ps = d->parserStatus.at(ii);
-            if (!done.contains(ps)) {
-                done.insert(ps);
-                ps->componentComplete();
+            for (int ii = 0; ii < d->bindValues.count(); ++ii) {
+                QmlEnginePrivate::SimpleList<QmlBindableValue> bv = 
+                    d->bindValues.at(ii);
+                for (int jj = 0; jj < bv.count; ++jj) {
+                    if(bv.at(jj)) 
+                        bv.at(jj)->init();
+                }
+                QmlEnginePrivate::clear(bv);
             }
+        }
+
+        for (int ii = 0; ii < d->parserStatus.count(); ++ii) {
+            QmlEnginePrivate::SimpleList<QmlParserStatus> ps = 
+                d->parserStatus.at(ii);
+
+            for (int jj = 0; jj < ps.count; ++jj) {
+                QmlParserStatus *status = ps.at(jj);
+                if (status && status->d) {
+                    status->d = 0;
+                    status->componentComplete();
+                }
+            }
+            QmlEnginePrivate::clear(ps);
         }
 
         d->bindValues.clear();

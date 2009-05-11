@@ -48,11 +48,17 @@ QT_BEGIN_NAMESPACE
     \brief The QmlParserStatus class provides updates on the parser state.
 */
 
-/*!
-    Destroys the parser status instance.
-*/
+/*! \internal */
+QmlParserStatus::QmlParserStatus()
+: d(0)
+{
+}
+
+/*! \internal */
 QmlParserStatus::~QmlParserStatus()
 {
+    if(d)
+        (*d) = 0;
 }
 
 /*!

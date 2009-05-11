@@ -173,6 +173,8 @@ public:
     union {
         struct {
             int dataSize;
+            int bindingsSize;
+            int parserStatusSize;
         } init;
         struct {
             int type;

@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 DEFINE_BOOL_CONFIG_OPTION(scriptWarnings, QML_SCRIPT_WARNINGS);
 
 QmlBindableValuePrivate::QmlBindableValuePrivate()
-: inited(false)
+: inited(false), mePtr(0)
 {
 }
 
@@ -75,6 +75,9 @@ QmlBindableValue::QmlBindableValue(const QString &str, QObject *obj, bool sse, Q
 
 QmlBindableValue::~QmlBindableValue()
 {
+    Q_D(QmlBindableValue);
+    if(d->mePtr)
+        *(d->mePtr) = 0;
 }
 
 void QmlBindableValue::setTarget(const QmlMetaProperty &prop)
