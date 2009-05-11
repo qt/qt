@@ -47,6 +47,7 @@
 #include <private/qmldeclarativedata_p.h>
 #include <qhash.h>
 #include <qscriptvalue.h>
+#include <QtCore/qset.h>
 
 QT_BEGIN_NAMESPACE
 class QmlContext;
@@ -86,6 +87,10 @@ public:
         NormalPriority
     };
     void addDefaultObject(QObject *, Priority);
+
+    void invalidateEngines();
+    QSet<QmlContext *> childContexts;
+    QSet<QmlExpression *> childExpressions;
 
     QmlSimpleDeclarativeData contextData;
     QObjectList contextObjects;

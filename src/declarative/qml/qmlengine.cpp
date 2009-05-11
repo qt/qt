@@ -805,6 +805,8 @@ QmlExpression::QmlExpression(QmlContext *ctxt, void *expr,
     d->ctxt = ctxt;
     if(ctxt && ctxt->engine())
         d->id = ctxt->engine()->d_func()->getUniqueId();
+    if(ctxt)
+        ctxt->d_func()->childExpressions.insert(this);
     d->me = me;
 }
 
@@ -816,6 +818,8 @@ QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expr,
     d->ctxt = ctxt;
     if(ctxt && ctxt->engine())
         d->id = ctxt->engine()->d_func()->getUniqueId();
+    if(ctxt)
+        ctxt->d_func()->childExpressions.insert(this);
     d->me = me;
 }
 
@@ -833,6 +837,8 @@ QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expression,
     d->ctxt = ctxt;
     if(ctxt && ctxt->engine())
         d->id = ctxt->engine()->d_func()->getUniqueId();
+    if(ctxt)
+        ctxt->d_func()->childExpressions.insert(this);
     d->me = scope;
 }
 
@@ -841,6 +847,8 @@ QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expression,
 */
 QmlExpression::~QmlExpression()
 {
+    if (d->ctxt)
+        d->ctxt->d_func()->childExpressions.remove(this);
     delete d; d = 0;
 }
 
@@ -850,7 +858,7 @@ QmlExpression::~QmlExpression()
 */
 QmlEngine *QmlExpression::engine() const
 {
-    return d->ctxt->engine();
+    return d->ctxt?d->ctxt->engine():0;
 }
 
 /*!
@@ -927,7 +935,7 @@ void BindExpressionProxy::changed()
 QVariant QmlExpression::value()
 {
     QVariant rv;
-    if (!d->ctxt || (!d->sse.isValid() && d->expression.isEmpty()))
+    if (!d->ctxt || !engine() || (!d->sse.isValid() && d->expression.isEmpty()))
         return rv;
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
