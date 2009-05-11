@@ -29,19 +29,19 @@ public:
            Attached, 
            Signal,
            SignalProperty, 
-           Explicit, 
-           Variant, 
-           ScriptValue } type;
+           Variant
+    } type;
     union {
         int core;
         QObject *attached;
         QmlContextPrivate *context;
     };
     int coreType;
+    int contextIndex;
 
     bool isValid() const { return type != Invalid; }
     bool isCore() const { return type == Core; }
-    bool isExplicit() const { return type == Explicit; }
+    bool isVariant() const { return type == Variant; }
     void clear();
     QVariant value(const char *) const;
 };

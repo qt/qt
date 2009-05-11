@@ -69,13 +69,13 @@ QT_BEGIN_NAMESPACE
   Returns the number of data entries in the model.
 */
 
-/*! \fn QHash_int QListModelInterface::data(int index, const QList<int> &roles) const
+/*! \fn QHash<int,QVariant> QListModelInterface::data(int index, const QList<int>& roles) const
   Returns the data at the given \a index for the specifed \a roles.
 */
 
-/*! \fn bool QListModelInterface::setData(int index, const QHash<int> &values)
+/*! \fn bool QListModelInterface::setData(int index, const QHash<int,QVariant>& values)
   Sets the data at the given \a index. \a values is a mapping of
-  QVariant values to roles.
+  QVariant values to roles. Returns false.
 */
 
 /*! \fn QList<int> QListModelInterface::roles() const
@@ -87,13 +87,22 @@ QT_BEGIN_NAMESPACE
   Returns a string description of the specified \a role.
 */
 
-/*! \enum QListModelInterface::Roles
+/*! \fn void QListModelInterface::itemsInserted(int index, int count)
+  Emit this signal when \a count items are inserted at \a index.
+ */
 
-  Values for representing roles.
+/*! \fn void QListModelInterface::itemsRemoved(int index, int count)
+  Emit this signal when \a count items are removed at \a index.
+ */
 
-  \value TextRole
+/*! \fn void QListModelInterface::itemsMoved(int from, int to, int count)
+  Emit this signal when \a count items are moved from index \a from
+  to index \a to.
+ */
 
-  \value IconRole
-*/ 
+/*! \fn void QListModelInterface::itemsChanged(int index, int count, const QList<int> &roles)
+  Emit this signal when \a count items at \a index have had their
+  \a roles changed.
+ */
 
 QT_END_NAMESPACE

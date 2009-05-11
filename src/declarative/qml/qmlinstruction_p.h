@@ -281,6 +281,7 @@ public:
         struct {
             int count;
             int endLine;
+            int metaObject;
         } createComponent;
         struct {
             int id;

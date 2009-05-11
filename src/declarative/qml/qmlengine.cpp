@@ -211,6 +211,30 @@ QmlContext *QmlEnginePrivate::setCurrentBindContext(QmlContext *c)
     return old;
 }
 
+QmlEnginePrivate::CapturedProperty::CapturedProperty(QObject *obj, int n)
+: object(obj), notifyIndex(n)
+{
+}
+
+QmlEnginePrivate::CapturedProperty::CapturedProperty(const QmlMetaProperty &p)
+: object(p.object()), name(p.name()), notifyIndex(p.property().notifySignalIndex())
+{
+}
+
+QmlEnginePrivate::CapturedProperty::CapturedProperty(const CapturedProperty &o)
+: object(o.object), name(o.name), notifyIndex(o.notifyIndex)
+{
+}
+
+QmlEnginePrivate::CapturedProperty &
+QmlEnginePrivate::CapturedProperty::operator=(const CapturedProperty &o)
+{
+    object = o.object;
+    name = o.name;
+    notifyIndex = o.notifyIndex;
+    return *this;
+}
+
 ////////////////////////////////////////////////////////////////////
 typedef QHash<QPair<const QMetaObject *, QString>, bool> FunctionCache;
 Q_GLOBAL_STATIC(FunctionCache, functionCache);
@@ -268,7 +292,8 @@ QScriptValue QmlEnginePrivate::propertyObject(const QScriptString &propName,
             return scriptEngine.newVariant(qVariantFromValue(prop));
         } else {
             QVariant var = prop.read();
-            capturedProperties << prop;
+            if (prop.needsChangedNotifier())
+                capturedProperties << CapturedProperty(prop);
             QObject *varobj = QmlMetaType::toQObject(var);
             if (!varobj)
                 varobj = qvariant_cast<QObject *>(var);
@@ -318,7 +343,8 @@ bool QmlEnginePrivate::fetchCache(QmlBasicScriptNodeCache &cache, const QString 
     if (!prop.isValid())
         return false;
 
-    capturedProperties << prop;
+    if (prop.needsChangedNotifier())
+        capturedProperties << CapturedProperty(prop);
 
     if (prop.type() & QmlMetaProperty::Attached) {
 
@@ -357,16 +383,15 @@ bool QmlEnginePrivate::fetchCache(QmlBasicScriptNodeCache &cache, const QString 
 bool QmlEnginePrivate::loadCache(QmlBasicScriptNodeCache &cache, const QString &propName, QmlContextPrivate *context)
 {
     while(context) {
-        if (context->variantProperties.contains(propName)) {
+
+        QHash<QString, int>::ConstIterator iter = 
+            context->propertyNames.find(propName);
+        if (iter != context->propertyNames.end()) {
             cache.object = 0;
             cache.type = QmlBasicScriptNodeCache::Variant;
             cache.context = context;
-            return true;
-        }
-
-        if (context->properties.contains(propName)) {
-            cache.object = context->properties[propName];
-            cache.type = QmlBasicScriptNodeCache::Explicit;
+            cache.contextIndex = *iter;
+            capturedProperties << CapturedProperty(context->q_ptr, *iter + context->notifyIndex);
             return true;
         }
 
@@ -621,9 +646,7 @@ QNetworkAccessManager *QmlEngine::networkAccessManager() const
   Returns the QmlContext for the \a object, or 0 if no context has been set.
 
   When the QmlEngine instantiates a QObject, the context is set automatically.
-  
-  \sa qmlContext()
- */
+  */
 QmlContext *QmlEngine::contextForObject(const QObject *object)
 {
     if(!object)
@@ -1045,13 +1068,14 @@ QVariant QmlExpression::value()
                 log.setResult(rv);
 
                 for (int ii = 0; ii < ep->capturedProperties.count(); ++ii) {
-                    const QmlMetaProperty &prop = 
+                    const QmlEnginePrivate::CapturedProperty &prop =
                         ep->capturedProperties.at(ii);
 
-                    if (prop.hasChangedNotifier()) {
-                        prop.connectNotifier(d->proxy, changedIndex);
-                    } else if (prop.needsChangedNotifier()) {
-                        QString warn = QLatin1String("Expression depends on property without a NOTIFY signal: [") + QLatin1String(prop.object()->metaObject()->className()) + QLatin1String("].") + prop.name();
+                    if (prop.notifyIndex != -1) {
+                        QMetaObject::connect(prop.object, prop.notifyIndex,
+                                             d->proxy, changedIndex);
+                    } else {
+                        QString warn = QLatin1String("Expression depends on property without a NOTIFY signal: [") + QLatin1String(prop.object->metaObject()->className()) + QLatin1String("].") + prop.name;
                         log.addWarning(warn);
                     }
                 }
@@ -1059,11 +1083,12 @@ QVariant QmlExpression::value()
 
             } else {
                 for (int ii = 0; ii < ep->capturedProperties.count(); ++ii) {
-                    const QmlMetaProperty &prop = 
+                    const QmlEnginePrivate::CapturedProperty &prop =
                         ep->capturedProperties.at(ii);
 
-                    if (prop.hasChangedNotifier()) 
-                        prop.connectNotifier(d->proxy, changedIndex);
+                    if (prop.notifyIndex != -1) 
+                        QMetaObject::connect(prop.object, prop.notifyIndex,
+                                             d->proxy, changedIndex);
                 }
             }
         } else {
@@ -1254,13 +1279,10 @@ QmlContextScriptClass::queryProperty(const QScriptValue &object,
 #endif
 
     *id = InvalidId;
-    if (bindContext->d_func()->variantProperties.contains(propName)) {
+    if (bindContext->d_func()->propertyNames.contains(propName)) {
         rv |= HandlesReadAccess;
         *id = VariantPropertyId;
-    } else if (bindContext->d_func()->properties.contains(propName)) {
-        rv |= HandlesReadAccess;
-        *id = ObjectListPropertyId;
-    }
+    } 
 
     for (int ii = 0; !rv && ii < bindContext->d_func()->defaultObjects.count(); ++ii) {
         rv = engine->d_func()->queryObject(propName, id,
@@ -1295,22 +1317,19 @@ QScriptValue QmlContextScriptClass::property(const QScriptValue &object,
     case VariantPropertyId:
     {
         QString propName = name.toString();
-        QScriptValue rv = scriptEngine->newVariant(bindContext->d_func()->variantProperties[propName]);
+        int index = bindContext->d_func()->propertyNames.value(propName);
+        QVariant value = bindContext->d_func()->propertyValues.at(index);
 #ifdef PROPERTY_DEBUG
         qWarning() << "Context Property: Resolved property" << propName
                    << "to context variant property list" << bindContext <<".  Value:" << rv.toVariant();
 #endif
-        return rv;
-    }
-    case ObjectListPropertyId:
-    {
-        QString propName = name.toString();
-        QObject *o = bindContext->d_func()->properties[propName];
-        QScriptValue rv = scriptEngine->newObject(engine->d_func()->objectClass, scriptEngine->newVariant(QVariant::fromValue(o)));
-#ifdef PROPERTY_DEBUG
-        qWarning() << "Context Property: Resolved property" << propName
-                   << "to context object property list" << bindContext <<".  Value:" << rv.toVariant();
-#endif
+        QScriptValue rv;
+        if (QmlMetaType::isObject(value.userType())) {
+            rv = scriptEngine->newObject(engine->d_func()->objectClass, scriptEngine->newVariant(value));
+        } else {
+            rv = scriptEngine->newVariant(value);
+        }
+        engine->d_func()->capturedProperties << QmlEnginePrivate::CapturedProperty(bindContext, index + bindContext->d_func()->notifyIndex);
         return rv;
     }
     default:
