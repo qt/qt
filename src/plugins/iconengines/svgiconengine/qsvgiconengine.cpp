@@ -122,16 +122,10 @@ QSize QSvgIconEngine::actualSize(const QSize &size, QIcon::Mode mode,
             return size;
     }
 
-    QSvgRenderer renderer;
-    d->loadDataForModeAndState(&renderer, mode, state);
-    if (renderer.isValid()) {
-        QSize defaultSize = renderer.defaultSize();
-        if (!defaultSize.isNull())
-            defaultSize.scale(size, Qt::KeepAspectRatio);
-        return defaultSize;
-    } else {
+    QPixmap pm = pixmap(size, mode, state);
+    if (pm.isNull())
         return QSize();
-    }
+    return pm.size();
 }
 
 void QSvgIconEnginePrivate::loadDataForModeAndState(QSvgRenderer *renderer, QIcon::Mode mode, QIcon::State state)
