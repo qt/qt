@@ -86,7 +86,6 @@
 
     C++ Reference:
     \list
-    \o \l {qtprogrammers}{QML for Qt programmers}
     \o \l {qtbinding}{C++ Data Binding}
     \o \l {cppitem}{C++ Components}
     \endlist
