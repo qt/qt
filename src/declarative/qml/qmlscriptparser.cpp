@@ -479,23 +479,26 @@ bool ProcessAST::visit(AST::UiObjectBinding *node)
 
 QmlParser::Variant ProcessAST::getVariant(AST::ExpressionNode *expr)
 {
-    QmlParser::Variant rv;
-
     if (AST::StringLiteral *lit = AST::cast<AST::StringLiteral *>(expr)) {
         // hack: emulate weird XML feature that string literals are not quoted.
         //This needs to be fixed in the qmlcompiler once xml goes away.
-        rv = QmlParser::Variant(lit->value->asString());
+        return QmlParser::Variant(lit->value->asString());
     } else if (expr->kind == AST::Node::Kind_TrueLiteral) {
-        rv = QmlParser::Variant(true);
+        return QmlParser::Variant(true);
     } else if (expr->kind == AST::Node::Kind_FalseLiteral) {
-        rv = QmlParser::Variant(false);
-    } else if(AST::NumericLiteral *lit = AST::cast<AST::NumericLiteral *>(expr)) {
-        rv = QmlParser::Variant(lit->value);
+        return QmlParser::Variant(false);
+    } else if (AST::NumericLiteral *lit = AST::cast<AST::NumericLiteral *>(expr)) {
+        return QmlParser::Variant(lit->value);
     } else {
-        rv = QmlParser::Variant(asString(expr), QmlParser::Variant::Script);
-    }
 
-    return rv;
+        if (AST::UnaryMinusExpression *unaryMinus = AST::cast<AST::UnaryMinusExpression *>(expr)) {
+           if (AST::NumericLiteral *lit = AST::cast<AST::NumericLiteral *>(unaryMinus->expression)) {
+               return QmlParser::Variant(-lit->value);
+           }
+        }
+
+        return QmlParser::Variant(asString(expr), QmlParser::Variant::Script);
+    }
 }
 
 
