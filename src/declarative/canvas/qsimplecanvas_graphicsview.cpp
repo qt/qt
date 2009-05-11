@@ -110,6 +110,7 @@ void QSimpleGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         p = p->parent();
     }
     owner->mouseReleaseEvent(event);
+    ungrabMouse();
 }
 
 void QSimpleGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)

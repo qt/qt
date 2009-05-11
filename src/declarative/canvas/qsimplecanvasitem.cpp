@@ -104,48 +104,58 @@ bool QSimpleCanvasItem::mouseFilter(QGraphicsSceneMouseEvent *)
     return false;
 }
 
-void QSimpleCanvasItem::mousePressEvent(QGraphicsSceneMouseEvent *)
+void QSimpleCanvasItem::mousePressEvent(QGraphicsSceneMouseEvent *e)
 {
+    e->ignore();
 }
 
-void QSimpleCanvasItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+void QSimpleCanvasItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *e)
 {
+    e->ignore();
 }
 
-void QSimpleCanvasItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *)
+void QSimpleCanvasItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *e)
 {
+    e->ignore();
 }
 
-void QSimpleCanvasItem::mouseMoveEvent(QGraphicsSceneMouseEvent *)
+void QSimpleCanvasItem::mouseMoveEvent(QGraphicsSceneMouseEvent *e)
 {
+    e->ignore();
 }
 
-void QSimpleCanvasItem::hoverEnterEvent(QGraphicsSceneHoverEvent *)
+void QSimpleCanvasItem::hoverEnterEvent(QGraphicsSceneHoverEvent *e)
 {
+    e->ignore();
 }
 
-void QSimpleCanvasItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
+void QSimpleCanvasItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *e)
 {
+    e->ignore();
 }
 
 void QSimpleCanvasItem::mouseUngrabEvent()
 {
 }
 
-void QSimpleCanvasItem::keyPressEvent(QKeyEvent *)
+void QSimpleCanvasItem::keyPressEvent(QKeyEvent *e)
 {
+    e->ignore();
 }
 
-void QSimpleCanvasItem::keyReleaseEvent(QKeyEvent *)
+void QSimpleCanvasItem::keyReleaseEvent(QKeyEvent *e)
 {
+    e->ignore();
 }
 
-void QSimpleCanvasItem::focusOutEvent(QFocusEvent *)
+void QSimpleCanvasItem::focusOutEvent(QFocusEvent *e)
 {
+    e->ignore();
 }
 
-void QSimpleCanvasItem::focusInEvent(QFocusEvent *)
+void QSimpleCanvasItem::focusInEvent(QFocusEvent *e)
 {
+    e->ignore();
 }
 
 void QSimpleCanvasItem::activePanelInEvent()
@@ -156,8 +166,9 @@ void QSimpleCanvasItem::activePanelOutEvent()
 {
 }
 
-void QSimpleCanvasItem::inputMethodEvent(QInputMethodEvent *)
+void QSimpleCanvasItem::inputMethodEvent(QInputMethodEvent *e)
 {
+    e->ignore();
 }
 
 QVariant QSimpleCanvasItem::inputMethodQuery(Qt::InputMethodQuery) const
