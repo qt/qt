@@ -3352,16 +3352,16 @@ void QObject::dumpObjectInfo()
             // receivers
             const QObjectPrivate::ConnectionList &connectionList = d->connectionLists->at(signal_index);
             for (int i = 0; i < connectionList.count(); ++i) {
-                const QObjectPrivate::Connection &c = connectionList.at(i);
-                if (!c.receiver) {
+                const QObjectPrivate::Connection *c = connectionList.at(i);
+                if (!c->receiver) {
                     qDebug("          <Disconnected receiver>");
                     continue;
                 }
-                const QMetaObject *receiverMetaObject = c.receiver->metaObject();
-                const QMetaMethod method = receiverMetaObject->method(c.method);
+                const QMetaObject *receiverMetaObject = c->receiver->metaObject();
+                const QMetaMethod method = receiverMetaObject->method(c->method);
                 qDebug("          --> %s::%s %s",
                        receiverMetaObject->className(),
-                       c.receiver->objectName().isEmpty() ? "unnamed" : qPrintable(c.receiver->objectName()),
+                       c->receiver->objectName().isEmpty() ? "unnamed" : qPrintable(c->receiver->objectName()),
                        method.signature());
             }
         }
@@ -3374,13 +3374,12 @@ void QObject::dumpObjectInfo()
 
     if (!d->senders.isEmpty()) {
         for (int i = 0; i < d->senders.count(); ++i) {
-            const QObjectPrivate::Sender &s = d->senders.at(i);
-            const QMetaObject *senderMetaObject = s.sender->metaObject();
-            const QMetaMethod signal = senderMetaObject->method(s.signal);
-            qDebug("          <-- %s::%s %s",
-                   senderMetaObject->className(),
-                   s.sender->objectName().isEmpty() ? "unnamed" : qPrintable(s.sender->objectName()),
-                   signal.signature());
+            const QObjectPrivate::Connection *s = d->senders.at(i);
+            const QMetaMethod slot = metaObject()->method(s->method);
+            qDebug("          <-- %s::%s  %s",
+                   s->sender->metaObject()->className(),
+                   s->sender->objectName().isEmpty() ? "unnamed" : qPrintable(s->sender->objectName()),
+                   slot.signature());
         }
     } else {
 	qDebug("        <None>");
