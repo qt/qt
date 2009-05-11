@@ -205,7 +205,7 @@ private:
     QSemaphore *semaphore_;
 };
 
-class Q_CORE_EXPORT QBoolBlocker
+class QBoolBlocker
 {
 public:
     inline QBoolBlocker(bool &b, bool value=true):block(b), reset(b){block = value;}

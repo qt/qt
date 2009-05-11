@@ -58,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_CORE_EXPORT QRingBuffer
+class QRingBuffer
 {
 public:
     inline QRingBuffer(int growth = 4096) : basicBlockSize(growth) {

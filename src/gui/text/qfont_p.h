@@ -153,7 +153,7 @@ public:
 };
 
 
-class Q_GUI_EXPORT QFontPrivate
+class QFontPrivate
 {
 public:
 #ifdef Q_WS_X11
