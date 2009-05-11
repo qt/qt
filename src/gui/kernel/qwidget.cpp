@@ -11024,6 +11024,8 @@ QWindowSurface *QWidget::windowSurface() const
 }
 
 /*!
+    \since 4.6
+
     Subscribes the widget to the specified \a gesture type.
 
     Returns the id of the gesture.
@@ -11057,6 +11059,8 @@ bool QWidgetPrivate::releaseGesture(int gestureId)
 }
 
 /*!
+    \since 4.6
+
     Subscribes the widget to the specified \a gesture type.
 
     Returns the id of the gesture.
@@ -11069,6 +11073,8 @@ int QWidget::grabGesture(Qt::GestureType gesture)
 }
 
 /*!
+    \since 4.6
+
     Unsubscribes the widget from a gesture, which is specified by the
     \a gestureId.
 
@@ -11082,6 +11088,8 @@ void QWidget::releaseGesture(int gestureId)
 }
 
 /*!
+    \since 4.6
+
     If \a enable is true, the gesture with the given \a gestureId is
     enabled; otherwise the gesture is disabled.
 

@@ -48,6 +48,7 @@ QString qt_getStandardGestureTypeName(Qt::GestureType type);
 
 /*!
     \class QGesture
+    \since 4.6
 
     \brief The QGesture class represents a gesture, containing all
     properties that describe a gesture.
@@ -242,6 +243,7 @@ QPoint QGesture::pos() const
 
 /*!
     \class QPanningGesture
+    \since 4.6
 
     \brief The QPanningGesture class represents a Pan gesture,
     providing additional information related to panning.

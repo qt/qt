@@ -5792,6 +5792,8 @@ QVariant QGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
 }
 
 /*!
+    \since 4.6
+
     Subscribes the graphics item to the specified \a gesture type.
 
     Returns the id of the gesture.
@@ -5804,6 +5806,8 @@ int QGraphicsItem::grabGesture(Qt::GestureType gesture)
 }
 
 /*!
+    \since 4.6
+
     Subscribes the graphics item to the specified \a gesture type.
 
     Returns the id of the gesture.
@@ -5820,6 +5824,8 @@ int QGraphicsItem::grabGesture(const QString &gesture)
 }
 
 /*!
+    \since 4.6
+
     Unsubscribes the graphics item from a gesture, which is specified
     by the \a gestureId.
 
@@ -5834,6 +5840,8 @@ void QGraphicsItem::releaseGesture(int gestureId)
 }
 
 /*!
+    \since 4.6
+
     If \a enable is true, the gesture with the given \a gestureId is
     enabled; otherwise the gesture is disabled.
 

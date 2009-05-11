@@ -51,6 +51,7 @@ QString qt_getStandardGestureTypeName(Qt::GestureType gestureType);
 
 /*!
     \class QGestureRecognizer
+    \since 4.6
 
     \brief The QGestureRecognizer class is the base class for
     implementing custom gestures.
@@ -68,6 +69,7 @@ QString qt_getStandardGestureTypeName(Qt::GestureType gestureType);
 
 /*!
     \enum QGestureRecognizer::Result
+    \since 4.6
 
     This enum type defines the state of the gesture recognizer.
 

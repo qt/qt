@@ -1711,8 +1711,9 @@ void QGraphicsSceneMoveEvent::setNewPos(const QPointF &pos)
 /*!
     \class QGraphicsSceneGestureEvent
     \brief The QGraphicsSceneGestureEvent class provides gesture events for
-           the graphics view framework. 
+           the graphics view framework.
     \since 4.6
+    \ingroup multimedia
     \ingroup graphicsview-api
 
     QGraphicsSceneGestureEvent extends information provided by
@@ -1725,6 +1726,8 @@ void QGraphicsSceneMoveEvent::setNewPos(const QPointF &pos)
     The scene sends the event to the first QGraphicsItem under the
     mouse cursor that accepts gestures; a graphics item is set to accept
     gestures with \l{QGraphicsItem::}{grabGesture()}.
+
+    \sa QGestureEvent
 */
 
 /*!

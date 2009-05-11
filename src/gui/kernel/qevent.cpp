@@ -3513,6 +3513,7 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
 
 /*!
     \class QGestureEvent
+    \since 4.6
     \ingroup events
 
     \brief The QGestureEvent class provides the parameters used for

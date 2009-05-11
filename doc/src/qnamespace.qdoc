@@ -2677,6 +2677,7 @@
 */
 
 /*! \enum Qt::GestureType
+    \since 4.6
 
     This enum lists standard gestures.
 
@@ -2691,6 +2692,7 @@
 
 /*!
     \enum Qt::GestureState
+    \since 4.6
 
     This enum type describes the state of a gesture.
 
@@ -2704,6 +2706,7 @@
 
 /*!
     \enum Qt::DirectionType
+    \since 4.6
 
     This enum type describes directions. This could be used by the
     gesture recognizers.

@@ -5058,6 +5058,8 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
 }
 
 /*!
+    \since 4.6
+
     Adds custom gesture \a recognizer object.
 
     Qt takes ownership of the provided \a recognizer.
@@ -5070,6 +5072,8 @@ void QApplication::addGestureRecognizer(QGestureRecognizer *recognizer)
 }
 
 /*!
+    \since 4.6
+
     Removes custom gesture \a recognizer object.
 
     \sa Qt::AA_EnableGestures, QGestureEvent
@@ -5084,6 +5088,7 @@ void QApplication::removeGestureRecognizer(QGestureRecognizer *recognizer)
 
 /*!
     \property QApplication::eventDeliveryDelayForGestures
+    \since 4.6
 
     Specifies the \a delay before input events are delivered to the
     gesture enabled widgets.
