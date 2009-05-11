@@ -2233,7 +2233,7 @@ void QOpenGLPaintEnginePrivate::fillVertexArray(Qt::FillRule fillRule)
 
     // Enable color writes.
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glStencilMask(0);
+    glStencilMask(stencilMask);
 
     setGradientOps(cbrush, QRectF(QPointF(min_x, min_y), QSizeF(max_x - min_x, max_y - min_y)));
 
@@ -2245,12 +2245,14 @@ void QOpenGLPaintEnginePrivate::fillVertexArray(Qt::FillRule fillRule)
 
         // Enable stencil func.
         glStencilFunc(GL_NOTEQUAL, 0, stencilMask);
+        glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
         composite(rect);
     } else {
         DEBUG_ONCE qDebug() << "QOpenGLPaintEnginePrivate: Drawing polygon using stencil method (no fragment programs)";
 
         // Enable stencil func.
         glStencilFunc(GL_NOTEQUAL, 0, stencilMask);
+        glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 #ifndef QT_OPENGL_ES
         glBegin(GL_QUADS);
         glVertex2f(min_x, min_y);
@@ -2260,24 +2262,6 @@ void QOpenGLPaintEnginePrivate::fillVertexArray(Qt::FillRule fillRule)
         glEnd();
 #endif
     }
-
-    glStencilMask(~0);
-    glStencilFunc(GL_ALWAYS, 0, 0);
-    glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
-
-    // clear all stencil values to 0
-    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-
-#ifndef QT_OPENGL_ES
-    glBegin(GL_QUADS);
-    glVertex2f(min_x, min_y);
-    glVertex2f(max_x, min_y);
-    glVertex2f(max_x, max_y);
-    glVertex2f(min_x, max_y);
-    glEnd();
-#endif
-
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
     // Disable stencil writes.
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
