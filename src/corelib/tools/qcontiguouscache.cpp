@@ -59,14 +59,14 @@ void QContiguousCacheData::dump() const
     \reentrant
 
     The QContiguousCache class provides an efficient way of caching items for
-    display in a user interface view.  Unlike QCache though it adds a restriction
-    that elements within the cache are contiguous.  This has the advantage that
+    display in a user interface view.  Unlike QCache, it adds a restriction
+    that elements within the cache are contiguous.  This has the advantage
     of matching how user interface views most commonly request data, as
     a set of rows localized around the current scrolled position.  It also
-    allows the cache to use less overhead than QCache both in terms of
-    performance and memory.
+    allows the cache to consume less memory and processor cycles than QCache
+    for this use-case.
 
-    The simplest way of using an contiguous cache is to use the append()
+    The simplest way of using a contiguous cache is to use the append()
     and prepend().
 
 \code
@@ -82,18 +82,18 @@ MyRecord record(int row) const
     return cache.at(row);
 }
 \endcode
-    
-    If the cache is full then the item with the furthest index from where
-    the new item is appended or prepended is removed.
+
+    If the cache is full then the item at the opposite end of the cache from where
+    the new item is appended or prepended will be removed.
 
     This usage can be further optimized by using the insert() function
-    in the case where the requested row is a long way from  the currently cached
-    items. If there is a is a gap between where the new item is inserted and the currently
+    in the case where the requested row is a long way from the currently cached
+    items. If there is a gap between where the new item is inserted and the currently
     cached items then the existing cached items are first removed to retain
     the contiguous nature of the cache.  Hence it is important to take some care then
-    when using insert() in order to avoid  to unwanted clearing of the cache.
+    when using insert() in order to avoid unwanted clearing of the cache.
 
-    See the The \l{Contiguous Cache Example}{Contiguous Cache} example.
+    See the \l{Contiguous Cache Example}{Contiguous Cache} example.
 */
 
 /*! \fn QContiguousCache::QContiguousCache(int capacity)
@@ -116,6 +116,7 @@ MyRecord record(int row) const
 */
 
 /*! \fn QContiguousCache::~QContiguousCache()
+
     Destroys the cache.
 */
 
@@ -134,7 +135,6 @@ MyRecord record(int row) const
     \internal
 */
 
-
 /*! \fn QContiguousCache<T> &QContiguousCache::operator=(const QContiguousCache<T> &other)
 
     Assigns \a other to this cache and returns a reference to this cache.
@@ -144,7 +144,7 @@ MyRecord record(int row) const
 
     Returns true if \a other is equal to this cache; otherwise returns false.
 
-    Two cache are considered equal if they contain the same values at the same
+    Two caches are considered equal if they contain the same values at the same
     indexes.  This function requires the value type to implement the \c operator==().
 
     \sa operator!=()
@@ -155,17 +155,17 @@ MyRecord record(int row) const
     Returns true if \a other is not equal to this cache; otherwise
     returns false.
 
-    Two cache are considered equal if they contain the same values at the same
+    Two caches are considered equal if they contain the same values at the same
     indexes.  This function requires the value type to implement the \c operator==().
 
     \sa operator==()
 */
 
 /*! \fn int QContiguousCache::capacity() const
-    
+
     Returns the number of items the cache can store before it is full.
     When a cache contains a number of items equal to its capacity, adding new
-    items will cause items furthest from the added item to be removed.
+    items will cause items farthest from the added item to be removed.
 
     \sa setCapacity(), size()
 */
@@ -215,7 +215,7 @@ MyRecord record(int row) const
 
     Sets the capacity of the cache to the given \a size.  A cache can hold a
     number of items equal to its capacity.  When inserting, appending or prepending
-    items to the cache, if the cache is already full then the item furthest from
+    items to the cache, if the cache is already full then the item farthest from
     the added item will be removed.
 
     If the given \a size is smaller than the current count of items in the cache
@@ -229,10 +229,10 @@ MyRecord record(int row) const
     Returns the item at index position \a i in the cache.  \a i must
     be a valid index position in the cache (i.e, firstIndex() <= \a i <= lastIndex()).
 
-    The indexes in the cache refer to number of positions the item is from the
+    The indexes in the cache refer to the number of positions the item is from the
     first item appended into the cache.  That is to say a cache with a capacity of
     100, that has had 150 items appended will have a valid index range of
-    50 to 149.  This allows inserting an retrieving items into the cache based
+    50 to 149.  This allows inserting and retrieving items into the cache based
     on a theoretical infinite list
 
     \sa firstIndex(), lastIndex(), insert(), operator[]()
@@ -283,10 +283,10 @@ MyRecord record(int row) const
     or a prepend().
 
     If the given index \a i is not within the current range of the cache nor adjacent
-    to the bounds of the cache's index range the cache is first cleared before
-    inserting the item.  At this point the cache will have a size of 1.  It is worth
-    while then taking effort to insert items in an order that starts adjacent to the
-    current index range for the cache.
+    to the bounds of the cache's index range, the cache is first cleared before
+    inserting the item.  At this point the cache will have a size of 1.  It is
+    worthwhile taking effort to insert items in an order that starts adjacent
+    to the current index range for the cache.
 
     \sa prepend(), append(), isFull(), firstIndex(), lastIndex()
 */
@@ -299,6 +299,7 @@ MyRecord record(int row) const
 */
 
 /*! \fn int QContiguousCache::firstIndex() const
+
     Returns the first valid index in the cache.  The index will be invalid if the
     cache is empty.  However the following code is valid even when the cache is empty:
 
@@ -350,7 +351,7 @@ MyRecord record(int row) const
 */
 
 /*! \fn void QContiguousCache::removeFirst()
-    
+
     Removes the first item from the cache.  This function assumes that
     the cache isn't empty.
 
@@ -358,7 +359,7 @@ MyRecord record(int row) const
 */
 
 /*! \fn void QContiguousCache::removeLast()
-    
+
     Removes the last item from the cache.  This function assumes that
     the cache isn't empty.
 
@@ -366,19 +367,21 @@ MyRecord record(int row) const
 */
 
 /*! \fn T QContiguousCache::takeFirst()
-    
-    Removes the first item in the cache and returns it.
 
-    If you don't sue the return value, removeFirst() is more efficient.
+    Removes the first item in the cache and returns it.  This function
+    assumes that the cache isn't empty.
+
+    If you don't use the return value, removeFirst() is more efficient.
 
     \sa takeLast(), removeFirst()
 */
 
 /*! \fn T QContiguousCache::takeLast()
-    
-    Removes the last item in the cache and returns it.
 
-    If you don't sue the return value, removeLast() is more efficient.
+    Removes the last item in the cache and returns it. This function
+    assumes that the cache isn't empty.
+
+    If you don't use the return value, removeLast() is more efficient.
 
     \sa takeFirst(), removeLast()
 */
