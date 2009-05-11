@@ -281,7 +281,8 @@ public:
         SE_ToolTip, //own graphic available on 3.2+ releases,
         SE_ToolBar,
         SE_ToolBarButton,
-        SE_ToolBarButtonPressed
+        SE_ToolBarButtonPressed,
+        SE_PanelBackground
     };
 
     enum SkinFrameElements {
@@ -296,7 +297,8 @@ public:
         SF_ToolTip,
         SF_ToolBar,
         SF_ToolBarButton,
-        SF_ToolBarButtonPressed
+        SF_ToolBarButtonPressed,
+        SF_PanelBackground
     };
 
     enum SkinElementFlag {

@@ -88,6 +88,7 @@ private:
     static QPixmap colorSkinnedGraphicsL(const QS60StyleEnums::SkinParts &stylepart,
         const QSize &size, QS60StylePrivate::SkinElementFlags flags);
     static void frameIdAndCenterId(QS60StylePrivate::SkinFrameElements frameElement, TAknsItemID &frameId, TAknsItemID &centerId);
+    static TRect innerRectFromElement(QS60StylePrivate::SkinFrameElements frameElement, const TRect &outerRect);
     static void checkAndUnCompressBitmapL(CFbsBitmap*& aOriginalBitmap);
     static void checkAndUnCompressBitmap(CFbsBitmap*& aOriginalBitmap);
     static void unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap* aTrgBitmap, CFbsBitmap* aSrcBitmap);
@@ -629,11 +630,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsL(QS60StylePrivate::SkinFra
     frame->UnlockHeap();
 
     const TRect outerRect(TPoint(0, 0), targetSize);
-    TRect innerRect = outerRect;
-    innerRect.Shrink(
-        QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth),
-        QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerHeight)
-    );
+    const TRect innerRect = innerRectFromElement(frameElement, outerRect);
 
     TAknsItemID frameSkinID, centerSkinID;
     frameSkinID = centerSkinID = checkAndUpdateReleaseSpecificGraphics(QS60StylePrivate::m_frameElementsData[frameElement].center);
@@ -711,11 +708,36 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
                 frameId.Set(KAknsIIDQsnFrPopupSub);
             }
             break;
+        case QS60StylePrivate::SF_PanelBackground:
+            // remove center piece for panel graphics, so that only border is drawn
+            centerId.Set(KAknsIIDNone);
+            frameId.Set(KAknsIIDQsnFrSetOpt);
+            break;
         default:
             // center should be correct here
             frameId.iMinor = centerId.iMinor - 9;
             break;
     }
+}
+
+TRect QS60StyleModeSpecifics::innerRectFromElement(QS60StylePrivate::SkinFrameElements frameElement, const TRect &outerRect)
+{
+    TInt widthShrink = 0;
+    TInt heightShrink = 0;
+    switch(frameElement) {
+        case QS60StylePrivate::SF_PanelBackground:
+            // panel should have slightly slimmer border to enable thin line of background graphics between closest component
+            widthShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth)-2;
+            heightShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerHeight)-2;
+            break;
+        default:
+            widthShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth);
+            heightShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerHeight);
+            break;
+    }
+    TRect innerRect(outerRect);
+    innerRect.Shrink(widthShrink, heightShrink);
+    return innerRect;
 }
 
 bool QS60StyleModeSpecifics::checkSupport(const int supportedRelease)

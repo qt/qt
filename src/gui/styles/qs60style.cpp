@@ -104,6 +104,7 @@ const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameEleme
     {SE_ToolBar,              QS60StyleEnums::SP_QsnFrPopupSubCenter},
     {SE_ToolBarButton,        QS60StyleEnums::SP_QsnFrSctrlButtonCenter},
     {SE_ToolBarButtonPressed, QS60StyleEnums::SP_QsnFrSctrlButtonCenterPressed},
+    {SE_PanelBackground,      QS60StyleEnums::SP_QsnFrSetOptCenter},
 };
 static const int frameElementsCount =
     int(sizeof(QS60StylePrivate::m_frameElementsData)/sizeof(QS60StylePrivate::m_frameElementsData[0]));
@@ -319,7 +320,9 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
     case SE_ToolBarButtonPressed:
         drawFrame(SF_ToolBarButtonPressed, painter, rect, flags | SF_PointNorth);
         break;
-
+    case SE_PanelBackground:
+        drawFrame(SF_PanelBackground, painter, rect, flags | SF_PointNorth);
+        break;
     default:
         break;
     }
@@ -1097,7 +1100,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             }
         }
         break;
-
 #endif //QT_NO_GROUPBOX
 
         //todo: remove non-used complex widgets in final version
@@ -1124,37 +1126,37 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     Q_D(const QS60Style);
     const QS60StylePrivate::SkinElementFlags flags = (option->state & State_Enabled) ?  QS60StylePrivate::SF_StateEnabled : QS60StylePrivate::SF_StateDisabled;
     switch (element) {
-        case CE_PushButton:
-            if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
+    case CE_PushButton:
+        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
 
-                drawControl(CE_PushButtonBevel, btn, painter, widget);
-                QStyleOptionButton subopt = *btn;
-                subopt.rect = subElementRect(SE_PushButtonContents, btn, widget);
+            drawControl(CE_PushButtonBevel, btn, painter, widget);
+            QStyleOptionButton subopt = *btn;
+            subopt.rect = subElementRect(SE_PushButtonContents, btn, widget);
 
-                if (const QAbstractButton *buttonWidget = (qobject_cast<const QAbstractButton *>(widget))) {
-                    if (buttonWidget->isCheckable()) {
-                        QStyleOptionButton checkopt = subopt;
+            if (const QAbstractButton *buttonWidget = (qobject_cast<const QAbstractButton *>(widget))) {
+                if (buttonWidget->isCheckable()) {
+                    QStyleOptionButton checkopt = subopt;
 
-                        const int indicatorHeight(pixelMetric(PM_IndicatorHeight));
-                        const int verticalAdjust = (option->rect.height() - indicatorHeight) >> 1;
+                    const int indicatorHeight(pixelMetric(PM_IndicatorHeight));
+                    const int verticalAdjust = (option->rect.height() - indicatorHeight) >> 1;
 
-                        checkopt.rect.adjust(pixelMetric(PM_ButtonMargin), verticalAdjust, 0, 0);
-                        checkopt.rect.setWidth(pixelMetric(PM_IndicatorWidth));
-                        checkopt.rect.setHeight(indicatorHeight);
+                    checkopt.rect.adjust(pixelMetric(PM_ButtonMargin), verticalAdjust, 0, 0);
+                    checkopt.rect.setWidth(pixelMetric(PM_IndicatorWidth));
+                    checkopt.rect.setHeight(indicatorHeight);
 
-                        drawPrimitive(PE_IndicatorCheckBox, &checkopt, painter, widget);
-                    }
-                }
-
-                drawControl(CE_PushButtonLabel, &subopt, painter, widget);
-                if (btn->state & State_HasFocus) {
-                    QStyleOptionFocusRect fropt;
-                    fropt.QStyleOption::operator=(*btn);
-                    fropt.rect = subElementRect(SE_PushButtonFocusRect, btn, widget);
-                    drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
+                    drawPrimitive(PE_IndicatorCheckBox, &checkopt, painter, widget);
                 }
             }
-            break;
+
+            drawControl(CE_PushButtonLabel, &subopt, painter, widget);
+            if (btn->state & State_HasFocus) {
+                QStyleOptionFocusRect fropt;
+                fropt.QStyleOption::operator=(*btn);
+                fropt.rect = subElementRect(SE_PushButtonFocusRect, btn, widget);
+                drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
+            }
+        }
+        break;
     case CE_PushButtonBevel:
         if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
             const bool isPressed = option->state & QStyle::State_Sunken;
@@ -1709,7 +1711,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             painter->restore();
         }
         break;
-
     case CE_HeaderEmptyArea:
         {
             QS60StylePrivate::SkinElementFlags adjFlags = flags;
@@ -1748,7 +1749,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             QCommonStyle::drawControl(element, header, painter, widget);
         }
         break;
-
 #ifndef QT_NO_TOOLBAR
     case CE_ToolBar:
         if (const QStyleOptionToolBar *toolBar = qstyleoption_cast<const QStyleOptionToolBar *>(option)) {
@@ -2036,7 +2036,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             }
         }
         break;
-
     case PE_Widget:
         if (QS60StylePrivate::isSkinnableDialog(widget) ||
             qobject_cast<const QComboBoxListView *>(widget) ||
@@ -2047,19 +2046,11 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         break;
     case PE_FrameWindow:
     case PE_FrameTabWidget:
-        {
         if (const QStyleOptionTabWidgetFrame *tabFrame = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(option)) {
             QStyleOptionTabWidgetFrame optionTabFrame = *tabFrame;
-
-            const QColor baseColor(QS60StylePrivate::lighterColor(
-                QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 3, option)));
-            const QPalette tabPalette(baseColor);
-            optionTabFrame.palette = tabPalette;
-            QCommonStyle::drawPrimitive(element, &optionTabFrame, painter, widget);
-        }
+            QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_PanelBackground, painter, optionTabFrame.rect, flags);
         }
         break;
-
     case PE_IndicatorHeaderArrow:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             if (header->sortIndicator & QStyleOptionHeader::SortUp)
@@ -2068,7 +2059,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 drawPrimitive(PE_IndicatorArrowDown, header, painter, widget);
         } // QStyleOptionHeader::None is not drawn => not needed
         break;
-
 #ifndef QT_NO_GROUPBOX
     case PE_FrameGroupBox:
         if (const QStyleOptionFrameV2 *frame = qstyleoption_cast<const QStyleOptionFrameV2 *>(option))
@@ -2084,12 +2074,10 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_Q3Separator:
         Q_ASSERT(false);
         break;
-
     case PE_Frame:
         if (const QStyleOptionFrameV3 *frame = qstyleoption_cast<const QStyleOptionFrameV3 *>(option))
             drawPrimitive(PE_FrameFocusRect, frame, painter, widget);
         break;
-
 #ifndef QT_NO_ITEMVIEWS
     case PE_PanelItemViewItem:
     case PE_PanelItemViewRow: // ### Qt 5: remove
@@ -2106,7 +2094,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             drawPrimitive(PE_IndicatorCheckBox, &optionCheckBox, painter, widget);
         }
         break;
-
 #ifndef QT_NO_TOOLBAR
     case PE_IndicatorToolBarHandle:
         // no toolbar handles in S60/AVKON UI
