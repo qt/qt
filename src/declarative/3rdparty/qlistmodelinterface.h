@@ -61,8 +61,8 @@ class Q_DECLARATIVE_EXPORT QListModelInterface : public QObject
     virtual ~QListModelInterface() {}
 
     virtual int count() const = 0;
-    virtual QHash<int,QVariant> data(int index, const QList<int> &roles = (QList<int>())) const = 0;
-    virtual bool setData(int index, const QHash<int,QVariant> &values)
+    virtual QHash<int,QVariant> data(int index, const QList<int>& roles = QList<int>()) const = 0;
+    virtual bool setData(int index, const QHash<int,QVariant>& values)
     { Q_UNUSED(index); Q_UNUSED(values); return false; }
 
     virtual QList<int> roles() const = 0;

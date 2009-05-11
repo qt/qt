@@ -621,9 +621,7 @@ QNetworkAccessManager *QmlEngine::networkAccessManager() const
   Returns the QmlContext for the \a object, or 0 if no context has been set.
 
   When the QmlEngine instantiates a QObject, the context is set automatically.
-  
-  \sa qmlContext()
- */
+  */
 QmlContext *QmlEngine::contextForObject(const QObject *object)
 {
     if(!object)
