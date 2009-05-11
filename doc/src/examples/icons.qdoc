@@ -479,7 +479,7 @@
     QTableWidget::openPersistentEditor() function to create
     comboboxes for the mode and state columns of the items.
 
-    Due to the the connection between the table widget's \l
+    Due to the connection between the table widget's \l
     {QTableWidget::itemChanged()}{itemChanged()} signal and the \c
     changeIcon() slot, the new image is automatically converted into a
     pixmap and made part of the set of pixmaps available to the icon

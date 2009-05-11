@@ -45,7 +45,7 @@
     \ingroup licensing
     \brief Information about other licenses used for Qt components and third-party code.
 
-    Qt contains some code that is not provided under the the
+    Qt contains some code that is not provided under the
     \l{GNU General Public License (GPL)},
     \l{GNU Lesser General Public License (LGPL)} or the
     \l{Qt Commercial Editions}{Qt Commercial License Agreement}, but rather under
