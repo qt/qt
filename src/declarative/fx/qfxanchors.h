@@ -84,12 +84,12 @@ class Q_DECLARATIVE_EXPORT QFxAnchors : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QFxAnchorLine left READ left WRITE setLeft);
-    Q_PROPERTY(QFxAnchorLine right READ right WRITE setRight);
-    Q_PROPERTY(QFxAnchorLine horizontalCenter READ horizontalCenter WRITE setHorizontalCenter);
-    Q_PROPERTY(QFxAnchorLine top READ top WRITE setTop);
-    Q_PROPERTY(QFxAnchorLine bottom READ bottom WRITE setBottom);
-    Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter);
+    Q_PROPERTY(QFxAnchorLine left READ left WRITE setLeft RESET resetLeft);
+    Q_PROPERTY(QFxAnchorLine right READ right WRITE setRight RESET resetRight);
+    Q_PROPERTY(QFxAnchorLine horizontalCenter READ horizontalCenter WRITE setHorizontalCenter RESET resetHorizontalCenter);
+    Q_PROPERTY(QFxAnchorLine top READ top WRITE setTop RESET resetTop);
+    Q_PROPERTY(QFxAnchorLine bottom READ bottom WRITE setBottom RESET resetBottom);
+    Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter RESET resetVerticalCenter);
     Q_PROPERTY(int leftMargin READ leftMargin WRITE setLeftMargin NOTIFY leftMarginChanged);
     Q_PROPERTY(int rightMargin READ rightMargin WRITE setRightMargin NOTIFY rightMarginChanged);
     Q_PROPERTY(int horizontalCenterOffset READ horizontalCenterOffset WRITE setHorizontalCenterOffset NOTIFY horizontalCenterOffsetChanged());
@@ -109,27 +109,35 @@ public:
         HasBottomAnchor = 0x08,
         HasHCenterAnchor = 0x10,
         HasVCenterAnchor = 0x20,
-        HasBaselineAnchor = 0x40
+        HasBaselineAnchor = 0x40,
+        Horizontal_Mask = HasLeftAnchor | HasRightAnchor | HasHCenterAnchor,
+        Vertical_Mask = HasTopAnchor | HasBottomAnchor | HasVCenterAnchor | HasBaselineAnchor
     };
     Q_DECLARE_FLAGS(UsedAnchors, UsedAnchor);
 
     QFxAnchorLine left() const;
     void setLeft(const QFxAnchorLine &edge);
+    Q_INVOKABLE void resetLeft();   //### temporarily invokable for testing
 
     QFxAnchorLine right() const;
     void setRight(const QFxAnchorLine &edge);
+    void resetRight();
 
     QFxAnchorLine horizontalCenter() const;
     void setHorizontalCenter(const QFxAnchorLine &edge);
+    void resetHorizontalCenter();
 
     QFxAnchorLine top() const;
     void setTop(const QFxAnchorLine &edge);
+    void resetTop();
 
     QFxAnchorLine bottom() const;
     void setBottom(const QFxAnchorLine &edge);
+    void resetBottom();
 
     QFxAnchorLine verticalCenter() const;
     void setVerticalCenter(const QFxAnchorLine &edge);
+    void resetVerticalCenter();
 
     int leftMargin() const;
     void setLeftMargin(int);
@@ -172,12 +180,8 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void fillChanged();
-    void updateLeftAnchor();
-    void updateRightAnchor();
-    void updateHCenterAnchor();
-    void updateTopAnchor();
-    void updateBottomAnchor();
-    void updateVCenterAnchor();
+    void updateHorizontalAnchors();
+    void updateVerticalAnchors();
 
 private:
     //### should item be a friend? (and make some of the public methods private or protected)
