@@ -1039,7 +1039,7 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
 #endif
 
 /*!
-    \struct QMargins
+    \class QMargins
     \since 4.6
 
     Holds the borders used to split a pixmap into nine segments in order to
@@ -1050,7 +1050,7 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
 */
 
 /*!
-    \struct QTileRules
+    \class QTileRules
     \since 4.6
 
     Holds the rules used to draw a pixmap or image split into nine segments,

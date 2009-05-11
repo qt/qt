@@ -689,10 +689,10 @@ QFxGridView::~QFxGridView()
   \qmlproperty model GridView::model
   This property holds the model providing data for the grid.
 
-  The model provides a set of data that is used to create the items for the view.
-  For large or dynamic datasets the model is usually provided by a C++ model object.
-  The C++ model object must be a \l QAbstractItemModel subclass, a \l VisualModel,
-  or a simple list.
+  The model provides a set of data that is used to create the items
+  for the view.  For large or dynamic datasets the model is usually
+  provided by a C++ model object.  The C++ model object must be a \l
+  {QAbstractItemModel} subclass, a VisualModel, or a simple list.
 */
 QVariant QFxGridView::model() const
 {

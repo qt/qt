@@ -74,10 +74,18 @@ namespace QmlParser
         int column;
     };
 
+    struct LocationRange
+    {
+        LocationRange() : offset(0), length(0) {}
+        quint32 offset;
+        quint32 length;
+    };
+
     struct LocationSpan
     {
         Location start;
         Location end;
+        LocationRange range;
     };
 
     class Property;
