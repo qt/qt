@@ -32,8 +32,10 @@
 QT_BEGIN_NAMESPACE
 
 // ### FIX/Document this, we need some safe range of menu id's for Qt that don't clash with AIW ones
+typedef QHash<QWidget *, QMenuBarPrivate *> MenuBarHash;
+Q_GLOBAL_STATIC(MenuBarHash, menubars)
+
 #define QT_FIRST_MENU_ITEM 32000
-static QList<QMenuBarPrivate *> s60_menubars;
 
 struct SymbianMenuItem
 {
@@ -46,6 +48,15 @@ struct SymbianMenuItem
 static QList<SymbianMenuItem*> symbianMenus;
 static QList<QMenuBar*> nativeMenuBars;
 static uint qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
+
+bool menuExists()
+{
+    QWidget *w = qApp->activeWindow();
+    QMenuBarPrivate *mb = menubars()->value(w);
+    if (!mb)
+        return false;
+    return true;
+}
 
 // ### FIX THIS, copy/paste of original (faulty) stripped text implementation.
 // Implementation should be removed from QAction implementation to some generic place
@@ -167,7 +178,7 @@ static void setSoftkeys()
 {
     CEikButtonGroupContainer* cba = CEikonEnv::Static()->AppUiFactory()->Cba();
     if (cba){
-    if (s60_menubars.count()>0)
+    if (menuExists())
         cba->SetCommandSetL(R_AVKON_SOFTKEYS_OPTIONS_EXIT);
     else
         cba->SetCommandSetL(R_AVKON_SOFTKEYS_EXIT);
@@ -176,24 +187,23 @@ static void setSoftkeys()
 
 static void rebuildMenu()
 {
-    qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
-    deleteAll( &symbianMenus );
-    if (s60_menubars.count()==0)
-        return;
-    for (int i = 0; i < s60_menubars.last()->actions.size(); ++i) {
-        QSymbianMenuAction *symbianActionTopLevel = new QSymbianMenuAction;
-        symbianActionTopLevel->action = s60_menubars.last()->actions.at(i);
-        symbianActionTopLevel->parent = 0;
-        symbianActionTopLevel->command = qt_symbian_menu_static_cmd_id++;
-        qt_symbian_insert_action(symbianActionTopLevel, &symbianMenus);
+    QMenuBarPrivate *mb = 0;
+    setSoftkeys();
+    QWidget *w = qApp->activeWindow();
+    if (w)
+    {
+        mb = menubars()->value(w);
+        qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
+        deleteAll( &symbianMenus );
+        if (!mb)
+            return;
+        mb->symbian_menubar->rebuild();
     }
-
-    return;
  }
 
 Q_GUI_EXPORT void qt_symbian_show_toplevel( CEikMenuPane* menuPane)
 {
-    if (s60_menubars.count()==0)
+    if (!menuExists())
         return;
     rebuildMenu();
     for (int i = 0; i < symbianMenus.count(); ++i)
@@ -251,6 +261,7 @@ void QMenuBarPrivate::symbianCreateMenuBar(QWidget *parent)
 {
     Q_Q(QMenuBar);
     if (parent && parent->isWindow()){
+        menubars()->insert(q->window(), this);
         symbian_menubar = new QSymbianMenuBarPrivate(this);
         nativeMenuBars.append(q);
     }
@@ -261,7 +272,7 @@ void QMenuBarPrivate::symbianDestroyMenuBar()
     Q_Q(QMenuBar);
     int index = nativeMenuBars.indexOf(q);
     nativeMenuBars.removeAt(index);
-    s60_menubars.removeLast();
+    menubars()->remove(q->window());
     rebuildMenu();
     if (symbian_menubar)
         delete symbian_menubar;
@@ -271,7 +282,6 @@ void QMenuBarPrivate::symbianDestroyMenuBar()
 QMenuBarPrivate::QSymbianMenuBarPrivate::QSymbianMenuBarPrivate(QMenuBarPrivate *menubar)
 {
     d = menubar;
-    s60_menubars.append(menubar);
 }
 
 QMenuBarPrivate::QSymbianMenuBarPrivate::~QSymbianMenuBarPrivate()
@@ -364,11 +374,18 @@ void QMenuBarPrivate::QSymbianMenuBarPrivate::removeAction(QSymbianMenuAction *a
 void QMenuBarPrivate::QSymbianMenuBarPrivate::rebuild()
 {
     setSoftkeys();
-    if (s60_menubars.count()==0)
+    qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
+    deleteAll( &symbianMenus );
+    if (!d)
         return;
-
-    rebuildMenu();
- }
+    for (int i = 0; i < d->actions.size(); ++i) {
+        QSymbianMenuAction *symbianActionTopLevel = new QSymbianMenuAction;
+        symbianActionTopLevel->action = d->actions.at(i);
+        symbianActionTopLevel->parent = 0;
+        symbianActionTopLevel->command = qt_symbian_menu_static_cmd_id++;
+        qt_symbian_insert_action(symbianActionTopLevel, &symbianMenus);
+    }
+}
 
 QT_END_NAMESPACE
 
