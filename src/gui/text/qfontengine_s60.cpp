@@ -22,6 +22,8 @@
 #include <EIKENV.H>
 #include <GDI.H>
 
+QT_BEGIN_NAMESPACE
+
 static const int maxFontSizeInPixels = 60;
 
 QFontEngineS60Extensions::QFontEngineS60Extensions(COpenFont *font)

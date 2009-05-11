@@ -973,3 +973,5 @@ void QWidget::activateWindow()
         rw->SetOrdinalPosition(0);
     }
 }
+
+QT_END_NAMESPACE

@@ -26,10 +26,11 @@
 #include <qglobal.h>
 #include "private/qwindowsurface_p.h"
 
+class CFbsBitmap;
+
 QT_BEGIN_NAMESPACE
 
 struct QS60WindowSurfacePrivate;
-class CFbsBitmap;
 
 class QS60WindowSurface : public QWindowSurface
 {

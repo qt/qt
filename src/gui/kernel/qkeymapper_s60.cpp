@@ -14,9 +14,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QT_USE_NAMESPACE
-
-
 QKeyMapperPrivate::QKeyMapperPrivate()
 {
     fillKeyMap();
