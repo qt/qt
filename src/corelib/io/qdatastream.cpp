@@ -514,7 +514,7 @@ void QDataStream::setByteOrder(ByteOrder bo)
     \value Qt_4_2 Version 8 (Qt 4.2)
     \value Qt_4_3 Version 9 (Qt 4.3)
     \value Qt_4_4 Version 10 (Qt 4.4)
-    \value Qt_4_5 Version 10 (Qt 4.5)
+    \value Qt_4_5 Version 11 (Qt 4.5)
     \omitvalue Qt_4_6
 
     \sa setVersion(), version()

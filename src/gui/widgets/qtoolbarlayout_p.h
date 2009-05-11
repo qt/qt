@@ -65,7 +65,7 @@ class QAction;
 class QToolBarExtension;
 class QMenu;
 
-class Q_GUI_EXPORT QToolBarItem : public QWidgetItem
+class QToolBarItem : public QWidgetItem
 {
 public:
     QToolBarItem(QWidget *widget);
