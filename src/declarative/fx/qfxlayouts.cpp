@@ -378,11 +378,11 @@ void QFxBaseLayout::preLayout()
 
     if (d->aut & Horizontal)
         setWidth(int(width));
-    else
+    else if (itemParent())
         setImplicitWidth(itemParent()->width());
     if (d->aut & Vertical)
         setHeight(int(height));
-    else
+    else if (itemParent())
         setImplicitHeight(itemParent()->height());
     setLayoutItem(0);
 }
