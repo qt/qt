@@ -199,6 +199,7 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
     { "link", Value_Link },
     { "link-visited", Value_LinkVisited },
     { "lower-alpha", Value_LowerAlpha },
+    { "lower-roman", Value_LowerRoman },
     { "lowercase", Value_Lowercase },
     { "medium", Value_Medium },
     { "mid", Value_Mid },
@@ -230,6 +231,7 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
     { "transparent", Value_Transparent },
     { "underline", Value_Underline },
     { "upper-alpha", Value_UpperAlpha },
+    { "upper-roman", Value_UpperRoman },
     { "uppercase", Value_Uppercase },
     { "wave", Value_Wave },
     { "window", Value_Window },
@@ -239,10 +241,10 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
 };
 
 //Map id to strings as they appears in the 'values' array above
-static const short indexOfId[NumKnownValues] = { 0, 40, 47, 41, 48, 53, 34, 26, 68, 69, 25, 42, 5, 62, 46,
-    29, 57, 58, 27, 50, 60, 6, 10, 38, 55, 19, 13, 17, 18, 20, 21, 49, 24, 45, 65, 36, 3, 2, 39, 61, 16,
-    11, 56, 14, 32, 63, 54, 64, 33, 67, 8, 28, 37, 12, 35, 59, 7, 9, 4, 66, 52, 22, 23, 30, 31, 1, 15, 0,
-    51, 44, 43 };
+static const short indexOfId[NumKnownValues] = { 0, 41, 48, 42, 49, 54, 35, 26, 70, 71, 25, 43, 5, 63, 47,
+    29, 58, 59, 27, 51, 61, 6, 10, 39, 56, 19, 13, 17, 18, 20, 21, 50, 24, 46, 67, 37, 3, 2, 40, 62, 16,
+    11, 57, 14, 32, 64, 33, 65, 55, 66, 34, 69, 8, 28, 38, 12, 36, 60, 7, 9, 4, 68, 53, 22, 23, 30, 31,
+    1, 15, 0, 52, 45, 44 };
 
 QString Value::toString() const
 {

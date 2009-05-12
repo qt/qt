@@ -67,6 +67,8 @@ private slots:
     void item();
     void autoNumbering();
     void autoNumberingRTL();
+    void romanNumbering();
+    void romanNumberingLimit();
     void formatChange();
     void cursorNavigation();
     void partialRemoval();
@@ -140,6 +142,40 @@ void tst_QTextList::autoNumberingRTL()
     QVERIFY(list->count() == 2);
 
     QVERIFY(cursor.currentList()->itemText(cursor.block()) == ".B");
+}
+
+void tst_QTextList::romanNumbering()
+{
+    QTextListFormat fmt;
+    fmt.setStyle(QTextListFormat::ListUpperRoman);
+    QTextList *list = cursor.createList(fmt);
+    QVERIFY(list);
+
+    for (int i = 0; i < 4998; ++i)
+      cursor.insertBlock();
+
+    QVERIFY(list->count() == 4999);
+
+    QVERIFY(cursor.currentList());
+    QVERIFY(cursor.currentList()->itemNumber(cursor.block()) == 4998);
+    QVERIFY(cursor.currentList()->itemText(cursor.block()) == "MMMMCMXCIX.");
+}
+
+void tst_QTextList::romanNumberingLimit()
+{
+    QTextListFormat fmt;
+    fmt.setStyle(QTextListFormat::ListLowerRoman);
+    QTextList *list = cursor.createList(fmt);
+    QVERIFY(list);
+
+    for (int i = 0; i < 4999; ++i)
+      cursor.insertBlock();
+
+    QVERIFY(list->count() == 5000);
+
+    QVERIFY(cursor.currentList());
+    QVERIFY(cursor.currentList()->itemNumber(cursor.block()) == 4999);
+    QVERIFY(cursor.currentList()->itemText(cursor.block()) == "?.");
 }
 
 void tst_QTextList::formatChange()
