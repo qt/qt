@@ -28,12 +28,12 @@
 #include "qsize.h"
 #include <OPENFONT.H>
 
-QT_BEGIN_NAMESPACE
-
 class CFbsBitmap;
 class CFbsBitmapDevice;
 class CFbsBitGc;
 class CFont;
+
+QT_BEGIN_NAMESPACE
 
 // ..gives us access to truetype tables, UTF-16<->GlyphID mapping, and glyph outlines
 class QFontEngineS60Extensions

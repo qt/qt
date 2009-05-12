@@ -6,12 +6,7 @@ symbian: {
 
     SUBDIRS=
     TARGET = "QtLibs pre-release"
-    contains(QT_EDITION, OpenSource) {
-        # Can't use UID in protected range for self signed packages.
-        TARGET.UID3 = 0xE001E61C
-    } else {
-        TARGET.UID3 = 0x2001E61C
-    }
+    TARGET.UID3 = 0x2001E61C
     VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 
     qtresources.sources = $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/s60main.rsc 
@@ -74,4 +69,7 @@ symbian: {
     	qtlibraries.sources += QtPhonon.dll
     }    
 
+    BLD_INF_RULES.prj_exports += "qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"
+    BLD_INF_RULES.prj_exports += "qtvggraphicssystem.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qtvggraphicssystem.iby)"
+    BLD_INF_RULES.prj_exports += "qtdemoapps.iby $$CORE_APP_LAYER_IBY_EXPORT_PATH(qtdemoapps.iby)"
 }

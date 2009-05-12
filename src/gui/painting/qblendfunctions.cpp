@@ -44,8 +44,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
-
 struct SourceOnlyAlpha
 {
     inline uchar alpha(uchar src) const { return src; }
@@ -140,14 +138,11 @@ struct Blend_ARGB32_on_RGB16_SourceAndConstAlpha {
 template <typename SRC, typename T>
 void qt_scale_image_16bit(uchar *destPixels, int dbpl,
                           const uchar *srcPixels, int sbpl,
-                          const QRectF &target,
+                          const QRectF &targetRect,
                           const QRectF &srcRect,
                           const QRect &clip,
                           T blender)
 {
-    const QRectF targetRect = target.translated(aliasedCoordinateDelta,
-                                                aliasedCoordinateDelta);
-
     qreal sx = targetRect.width() / (qreal) srcRect.width();
     qreal sy = targetRect.height() / (qreal) srcRect.height();
 
@@ -618,14 +613,11 @@ struct Blend_ARGB32_on_ARGB32_SourceAndConstAlpha {
 
 template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
                                                 const uchar *srcPixels, int sbpl,
-                                                const QRectF &target,
+                                                const QRectF &targetRect,
                                                 const QRectF &srcRect,
                                                 const QRect &clip,
                                                 T blender)
 {
-    const QRectF targetRect = target.translated(aliasedCoordinateDelta,
-                                                aliasedCoordinateDelta);
-
     qreal sx = targetRect.width() / (qreal) srcRect.width();
     qreal sy = targetRect.height() / (qreal) srcRect.height();
 

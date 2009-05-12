@@ -20,7 +20,6 @@
 #include "qts60mainappui.h"
 #include <QtGui/qapplication.h>
 #include <QtGui/qmenu.h>
-#include <QtGui/qmenubar.h>
 #include <QtGui/private/qt_s60_p.h>
 
 // ============================ MEMBER FUNCTIONS ===============================
@@ -73,18 +72,8 @@ CQtS60MainAppUi::~CQtS60MainAppUi()
 //
 void CQtS60MainAppUi::HandleCommandL( TInt aCommand )
 {
-    switch (aCommand) {
-    case EEikCmdExit:
-    case EAknSoftkeyBack:
-    case EAknSoftkeyExit:
-        if (qApp)
-            qApp->exit();
-        break;
-    default:
-        // For now assume all unknown menu items are Qt menu items
-        QMenuBar::symbianCommands(aCommand);
-        break;
-    }
+    if (qApp)
+        qApp->s60HandleCommandL(aCommand);
 }
 
 void CQtS60MainAppUi::HandleWsEventL(const TWsEvent& aEvent, CCoeControl *control)

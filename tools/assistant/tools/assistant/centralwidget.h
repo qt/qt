@@ -118,7 +118,7 @@ public:
     void activateTab(bool onlyHelpViewer = false);
 
     void createSearchWidget(QHelpSearchEngine *searchEngine);
-    void activateSearchWidget();
+    void activateSearchWidget(bool updateLastTabPage = false);
     void removeSearchWidget();
 
     int availableHelpViewer() const;

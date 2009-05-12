@@ -27,6 +27,7 @@
 #endif
 #include "private/qwindowsurface_s60_p.h"
 #include "qpaintengine.h"
+#include "qmenubar.h"
 
 #include "apgwgnam.h" // For CApaWindowGroupName
 #include <MdaAudioTonePlayer.h>     // For CMdaAudioToneUtility
@@ -692,27 +693,8 @@ void qt_init(QApplicationPrivate *priv, int)
     S60->updateScreenSize();
 
 
-    TDisplayMode mode = S60->screenDevice()->DisplayMode(); ;
-    switch(mode) {
-    case EColor256:
-        S60->screenDepth = 8;
-        break;
-    case EColor4K:
-        S60->screenDepth = 12;
-        break;
-    case EColor64K:
-        S60->screenDepth = 16;
-        break;
-    case EColor16M:
-    case EColor16MU:
-    case EColor16MA:
-        S60->screenDepth = 32;
-        break;
-    default:
-        qFatal("Unsupported screen depth");
-        break;
-    }
-
+    TDisplayMode mode = S60->screenDevice()->DisplayMode();
+    S60->screenDepth = TDisplayModeUtils::NumDisplayModeBitsPerPixel(mode);
 
     RProcess me;
     TSecureId securId = me.SecureId();
@@ -1026,6 +1008,21 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
 bool QApplication::s60EventFilter(TWsEvent *aEvent)
 {
     return false;
+}
+
+void QApplication::s60HandleCommandL(int command)
+{
+    switch (command) {
+    case EEikCmdExit:
+    case EAknSoftkeyBack:
+    case EAknSoftkeyExit:
+        qApp->exit();
+        break;
+    default:
+        // For now assume all unknown menu items are Qt menu items
+        QMenuBar::symbianCommands(command);
+        break;
+    }
 }
 
 #ifndef QT_NO_WHEELEVENT

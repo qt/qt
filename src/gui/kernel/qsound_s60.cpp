@@ -25,8 +25,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QT_USE_NAMESPACE
-
 class QAuServerS60;
 
 class QAuBucketS60 : public QAuBucket, public MMdaAudioPlayerCallback

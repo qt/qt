@@ -137,35 +137,51 @@ public:
             return serverIp.data();
         }
 #endif
-        //return "10.10.0.147";
         return "10.10.14.172";
-        //return "10.3.7.2";
-        //return "10.3.3.69";
     }
     
     static QByteArray expectedReplyIMAP()
     {
-        //QByteArray expected( "* OK esparsett Cyrus IMAP4 v2.2.8 server ready\r\n" );
-        
-        
-    	QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] " );
-  	    expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
-        expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+#ifdef Q_OS_SYMBIAN
+        loadTestSettings();
 
-        /*
+        if(QtNetworkSettings::entries.contains("imap.expectedreply")) {
+            QtNetworkSettingsRecord* entry = entries["imap.expectedreply"];
+            if(imapExpectedReply.isNull()) {
+                imapExpectedReply = entry->recordValue().toAscii();
+                imapExpectedReply.append('\r').append('\n');
+            }
+            return imapExpectedReply.data();
+        }
+#endif
+        /*QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] " );
+        expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
+        expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");*/
+
         QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4REV1] " );
         expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
         expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
-        */
+        
         return expected;
     }
 
     static QByteArray expectedReplySSL()
     {
-        QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID AUTH=PLAIN SASL-IR] " );
-        expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
-        expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
-        return expected;
+        loadTestSettings();
+
+        if(QtNetworkSettings::entries.contains("imap.expectedreplyssl")) {
+            QtNetworkSettingsRecord* entry = entries["imap.expectedreplyssl"];
+            if(imapExpectedReplySsl.isNull()) {
+                imapExpectedReplySsl = entry->recordValue().toAscii();
+                imapExpectedReplySsl.append('\r').append('\n');
+            }
+            return imapExpectedReplySsl.data();
+        } else {
+            QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID AUTH=PLAIN SASL-IR] " );
+            expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
+            expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+            return expected;
+        }
     }
     
     static QByteArray expectedReplyFtp()
@@ -205,6 +221,8 @@ private:
     static bool bTestSettingsLoaded;
     static QString iapFileFullPath;
     static QByteArray serverIp;
+    static QByteArray imapExpectedReply;
+    static QByteArray imapExpectedReplySsl;
 
     static bool loadDefaultIap() {
         if(bDefaultIapLoaded)
@@ -296,6 +314,8 @@ bool QtNetworkSettings::bDefaultIapLoaded = false;
 bool QtNetworkSettings::bTestSettingsLoaded = false;
 QString QtNetworkSettings::iapFileFullPath = QString("C:\\Data\\iap.txt");
 QByteArray QtNetworkSettings::serverIp;
+QByteArray QtNetworkSettings::imapExpectedReply;
+QByteArray QtNetworkSettings::imapExpectedReplySsl;
 #endif
 
 #ifdef Q_OS_SYMBIAN

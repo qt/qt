@@ -198,6 +198,7 @@ extern "C" {
     }
     composing = false;
     sendKeyEvents = true;
+    currentCustomTypes = 0;
     [self setHidden:YES];
     return self;
 }
@@ -212,10 +213,16 @@ extern "C" {
                                                object:self];
 }
 
--(void)registerDragTypes:(bool)accept
+-(void)registerDragTypes
 {
     QMacCocoaAutoReleasePool pool;
-    if (accept) {
+    // Calling registerForDraggedTypes is slow, so only do it once for each widget
+    // or when the custom types change.
+    const QStringList& customTypes = qEnabledDraggedTypes();
+    if (currentCustomTypes == 0 || *currentCustomTypes != customTypes) {
+        if (currentCustomTypes == 0)
+            currentCustomTypes = new QStringList();
+        *currentCustomTypes = customTypes;
         const NSString* mimeTypeGeneric = @"com.trolltech.qt.MimeTypeName";
 	NSMutableArray *supportedTypes = [NSMutableArray arrayWithObjects:NSColorPboardType, 
                                    NSFilenamesPboardType, NSStringPboardType, 
@@ -227,13 +234,10 @@ extern "C" {
                                    NSFilesPromisePboardType, NSInkTextPboardType, 
                                    NSMultipleTextSelectionPboardType, mimeTypeGeneric, nil];
         // Add custom types supported by the application.
-        const QStringList& customTypes = qEnabledDraggedTypes();
         for (int i = 0; i < customTypes.size(); i++) {
            [supportedTypes addObject:reinterpret_cast<const NSString *>(QCFString::toCFStringRef(customTypes[i]))];
         }
         [self registerForDraggedTypes:supportedTypes];
-    } else {
-        [self unregisterDraggedTypes];
     }
 }
 
@@ -282,6 +286,8 @@ extern "C" {
 
 - (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender 
 { 
+    if (qwidget->testAttribute(Qt::WA_DropSiteRegistered) == false)
+        return NSDragOperationNone;
     [self addDropData:sender];
     QMimeData *mimeData = dropData;
     if (QDragManager::self()->source())
@@ -414,6 +420,8 @@ extern "C" {
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+    delete currentCustomTypes;
+    [self unregisterDraggedTypes];
     [super dealloc];
 }
 

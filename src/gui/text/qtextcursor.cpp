@@ -1074,7 +1074,10 @@ QTextCursor::QTextCursor(const QTextCursor &cursor)
 }
 
 /*!
-    Makes a copy of \a cursor and assigns it to this QTextCursor.
+    Makes a copy of \a cursor and assigns it to this QTextCursor. Note
+    that QTextCursor is an \l{Implicitly Shared Classes}{implicitly
+    shared} class.
+
  */
 QTextCursor &QTextCursor::operator=(const QTextCursor &cursor)
 {

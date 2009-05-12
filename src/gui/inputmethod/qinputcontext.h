@@ -67,6 +67,10 @@
 
 QT_BEGIN_HEADER
 
+#ifdef Q_WS_S60
+class TWsEvent;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
@@ -75,11 +79,6 @@ class QWidget;
 class QFont;
 class QPopupMenu;
 class QInputContextPrivate;
-
-#ifdef Q_WS_S60
-class TWsEvent;
-#endif
-
 
 class Q_GUI_EXPORT QInputContext : public QObject
 {

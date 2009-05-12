@@ -135,8 +135,8 @@ bool QApplicationPrivate::quitOnLastWindowClosed = true;
 
 #ifdef Q_OS_WINCE
 int QApplicationPrivate::autoMaximizeThreshold = -1;
-bool QApplicationPrivate::autoSipEnabled = false;
 #endif
+bool QApplicationPrivate::autoSipEnabled = false;
 
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::Type type)
     : QCoreApplicationPrivate(argc, argv)
@@ -449,6 +449,7 @@ bool QApplicationPrivate::animate_tooltip = false;
 bool QApplicationPrivate::fade_tooltip = false;
 bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
+bool QApplicationPrivate::auto_sip_on_mouse_focus = false;
 QString* QApplicationPrivate::styleOverride = 0;
 #if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
 bool QApplicationPrivate::inSizeMove = false;
@@ -1080,6 +1081,7 @@ QApplication::~QApplication()
     QApplicationPrivate::animate_tooltip = false;
     QApplicationPrivate::fade_tooltip = false;
     QApplicationPrivate::widgetCount = false;
+    QApplicationPrivate::auto_sip_on_mouse_focus = false;
 
     // trigger unregistering of QVariant's GUI types
     extern int qUnregisterGuiVariant();
@@ -1232,11 +1234,13 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     \since 4.5
     \brief toggles automatic SIP (software input panel) visibility
 
-    The auto SIP property is only available as part of Qt for Windows CE.
-
     Set this property to true to automatically display the SIP when entering
     widgets that accept keyboard input. This property only affects widgets with
-    the WA_InputMethodEnabled attribute set.
+    the WA_InputMethodEnabled attribute set, and is typically used to launch
+    a virtual keyboard on devices which have very few or no keys.
+
+    The property only has an effect on platforms which use software input
+    panels, such as Windows CE and Symbian.
 */
 
 #ifdef Q_OS_WINCE
@@ -1249,6 +1253,7 @@ int QApplication::autoMaximizeThreshold() const
 {
     return QApplicationPrivate::autoMaximizeThreshold;
 }
+#endif
 
 void QApplication::setAutoSipEnabled(const bool enabled)
 {
@@ -1259,7 +1264,6 @@ bool QApplication::autoSipEnabled() const
 {
     return QApplicationPrivate::autoSipEnabled;
 }
-#endif
 
 #ifndef QT_NO_STYLE_STYLESHEET
 
@@ -2094,6 +2098,16 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                 if (QApplication::keypadNavigationEnabled()) {
                     if (prev->hasEditFocus() && reason != Qt::PopupFocusReason)
                         prev->setEditFocus(false);
+                }
+#endif
+#ifndef QT_NO_IM
+                if (focus) {
+                    QInputContext *prevIc;
+                    prevIc = prev->inputContext();
+                    if (prevIc && prevIc != focus->inputContext()) {
+                        QEvent closeSIPEvent(QEvent::CloseSoftwareInputPanel);
+                        QApplication::sendEvent(prev, &closeSIPEvent);
+                    }
                 }
 #endif
                 QFocusEvent out(QEvent::FocusOut, reason);
@@ -3447,6 +3461,39 @@ Qt::LayoutDirection QApplication::layoutDirection()
     return layout_direction;
 }
 
+/*!
+    \property autoSipOnMouseFocus
+    \since 4.6
+    \brief toggles SIP (software input panel) launch policy
+
+    This property holds whether widgets should request a software input
+    panel when it is focused with the mouse. This is typically used to
+    launch a virtual keyboard on devices which have very few or no keys.
+
+    If the property is set to true, the widget asks for an input panel
+    on the mouse click which causes the widget to be focused. If the
+    property is set to false, the user must click a second time before
+    the widget asks for an input panel.
+
+    \note If the widget is focused by other means than a mouse click,
+          the next click is will trigger an input panel request,
+          regardless of the value of this property.
+
+    The default is platform dependent.
+
+    \sa QEvent::RequestSoftwareInputPanel, QInputContext
+*/
+
+void QApplication::setAutoSipOnMouseFocus(bool enable)
+{
+    QApplicationPrivate::auto_sip_on_mouse_focus = enable;
+}
+
+bool QApplication::autoSipOnMouseFocus()
+{
+    return QApplicationPrivate::auto_sip_on_mouse_focus;
+}
+
 
 /*!
     \obsolete
@@ -4039,6 +4086,20 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         }
         break;
 #endif
+
+    case QEvent::RequestSoftwareInputPanel:
+    case QEvent::CloseSoftwareInputPanel:
+#ifndef QT_NO_IM
+        if (receiver->isWidgetType()) {
+            QWidget *w = static_cast<QWidget *>(receiver);
+            QInputContext *ic = w->inputContext();
+            if (ic && ic->filterEvent(e)) {
+                break;
+            }
+        }
+#endif
+        res = d->notify_helper(receiver, e);
+        break;
 
     default:
         res = d->notify_helper(receiver, e);
@@ -5023,6 +5084,137 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
         return false;
     return true;
 }
+
+/*! \fn QDecoration &QApplication::qwsDecoration()
+    Return the QWSDecoration used for decorating windows.
+
+    \warning This method is non-portable. It is only available in
+    Qt for Embedded Linux.
+
+    \sa QDecoration
+*/
+
+/*!
+    \fn void QApplication::qwsSetDecoration(QDecoration *decoration)
+
+    Sets the QDecoration derived class to use for decorating the
+    windows used by Qt for Embedded Linux to the \a decoration
+    specified.
+
+    This method is non-portable. It is only available in Qt for Embedded Linux.
+
+    \sa QDecoration
+*/
+
+/*! \fn QDecoration* QApplication::qwsSetDecoration(const QString &decoration)
+  \overload
+
+  Requests a QDecoration object for \a decoration from the QDecorationFactory.
+
+  The string must be one of the QDecorationFactory::keys(). Keys are
+  case insensitive.
+
+  A later call to the QApplication constructor will override the
+  requested style when a "-style" option is passed in as a commandline
+  parameter.
+
+  Returns 0 if an unknown \a decoration is passed, otherwise the QStyle object
+  returned is set as the application's GUI style.
+*/
+
+/*!
+    \fn bool QApplication::qwsEventFilter(QWSEvent *event)
+
+    This virtual function is only implemented under Qt for Embedded Linux.
+
+    If you create an application that inherits QApplication and
+    reimplement this function, you get direct access to all QWS (Q
+    Window System) events that the are received from the QWS master
+    process. The events are passed in the \a event parameter.
+
+    Return true if you want to stop the event from being processed.
+    Return false for normal event dispatching. The default
+    implementation returns false.
+*/
+
+/*! \fn void QApplication::qwsSetCustomColors(QRgb *colorTable, int start, int numColors)
+    Set Qt for Embedded Linux custom color table.
+
+    Qt for Embedded Linux on 8-bpp displays allocates a standard 216 color cube.
+    The remaining 40 colors may be used by setting a custom color
+    table in the QWS master process before any clients connect.
+
+    \a colorTable is an array of up to 40 custom colors. \a start is
+    the starting index (0-39) and \a numColors is the number of colors
+    to be set (1-40).
+
+    This method is non-portable. It is available \e only in
+    Qt for Embedded Linux.
+
+    \note The custom colors will not be used by the default screen
+    driver. To make use of the new colors, implement a custom screen
+    driver, or use QDirectPainter.
+*/
+
+/*! \fn int QApplication::qwsProcessEvent(QWSEvent* event)
+    \internal
+*/
+
+/*! \fn int QApplication::x11ClientMessage(QWidget* w, XEvent* event, bool passive_only)
+    \internal
+*/
+
+/*! \fn int QApplication::x11ProcessEvent(XEvent* event)
+    This function does the core processing of individual X
+    \a{event}s, normally by dispatching Qt events to the right
+    destination.
+
+    It returns 1 if the event was consumed by special handling, 0 if
+    the \a event was consumed by normal handling, and -1 if the \a
+    event was for an unrecognized widget.
+
+    \sa x11EventFilter()
+*/
+
+/*!
+    \fn bool QApplication::x11EventFilter(XEvent *event)
+
+    \warning This virtual function is only implemented under X11.
+
+    If you create an application that inherits QApplication and
+    reimplement this function, you get direct access to all X events
+    that the are received from the X server. The events are passed in
+    the \a event parameter.
+
+    Return true if you want to stop the event from being processed.
+    Return false for normal event dispatching. The default
+    implementation returns false.
+
+    It is only the directly addressed messages that are filtered.
+    You must install an event filter directly on the event
+    dispatcher, which is returned by
+    QAbstractEventDispatcher::instance(), to handle system wide
+    messages.
+
+    \sa x11ProcessEvent()
+*/
+
+/*! \fn void QApplication::winFocus(QWidget *widget, bool gotFocus)
+    \internal
+    \since 4.1
+
+    If \a gotFocus is true, \a widget will become the active window.
+    Otherwise the active window is reset to 0.
+*/
+
+/*! \fn void QApplication::winMouseButtonUp()
+  \internal
+ */
+
+/*! \fn void QApplication::syncX()
+  Synchronizes with the X server in the X11 implementation.
+  This normally takes some time. Does nothing on other platforms.
+*/
 
 QT_END_NAMESPACE
 

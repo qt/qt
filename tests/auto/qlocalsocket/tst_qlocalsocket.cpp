@@ -493,8 +493,10 @@ void tst_QLocalSocket::sendData()
     socket.connectToServer(name);
     bool timedOut = true;
     QCOMPARE(server.waitForNewConnection(3000, &timedOut), canListen);
-#if defined(QT_LOCALSOCKET_TCP) || defined (Q_OS_SYMBIAN) 
+#if defined(QT_LOCALSOCKET_TCP) 
     QTest::qWait(250);
+#elif defined(Q_OS_SYMBIAN) 
+    QTest::qWait(10000);
 #endif
     QVERIFY(!timedOut);
     QCOMPARE(spyConnected.count(), canListen ? 1 : 0);
@@ -645,7 +647,7 @@ public:
                   || socket.error() == QLocalSocket::ConnectionRefusedError)
 		 && tries < 1000);
         if (tries == 0 && socket.state() != QLocalSocket::ConnectedState) {
-            QVERIFY(socket.waitForConnected(3000));
+            QVERIFY(socket.waitForConnected(30000));
             QVERIFY(socket.state() == QLocalSocket::ConnectedState);
         }
 
@@ -675,7 +677,7 @@ public:
         int done = clients;
         while (done > 0) {
             bool timedOut = true;
-            QVERIFY(server.waitForNewConnection(3000, &timedOut));
+            QVERIFY(server.waitForNewConnection(30000, &timedOut));
             QVERIFY(!timedOut);
             QLocalSocket *serverSocket = server.nextPendingConnection();
             QVERIFY(serverSocket);
@@ -733,7 +735,7 @@ void tst_QLocalSocket::threadedConnection()
 
     server.wait();
     while (!clients.isEmpty()) {
-        QVERIFY(clients.first()->wait(30000));
+        QVERIFY(clients.first()->wait(300000));
         Client *client =clients.takeFirst();
 	client->terminate();
 	delete client;

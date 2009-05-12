@@ -221,8 +221,8 @@ public:
     static void emitLastWindowClosed();
 #ifdef Q_OS_WINCE
     static int autoMaximizeThreshold;
-    static bool autoSipEnabled;
 #endif
+    static bool autoSipEnabled;
 
     static QGraphicsSystem *graphicsSystem()
 #if !defined(Q_WS_QWS)
@@ -354,6 +354,7 @@ public:
     static bool fade_tooltip;
     static bool animate_toolbox;
     static bool widgetCount; // Coupled with -widgetcount switch
+    static bool auto_sip_on_mouse_focus;
 #ifdef Q_WS_MAC
     static bool native_modal_dialog_active;
 #endif

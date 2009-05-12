@@ -78,8 +78,7 @@ Q_DECLARE_METATYPE(QRectF)
 class EventTester : public QGraphicsItem
 {
 public:
-    EventTester()
-        : repaints(0)
+    EventTester(QGraphicsItem *parent = 0) : QGraphicsItem(parent), repaints(0)
     { br = QRectF(-10, -10, 20, 20); }
 
     void setGeometry(const QRectF &rect)
@@ -207,6 +206,7 @@ private slots:
     void itemTransform_unrelated();
     void opacity_data();
     void opacity();
+    void opacity2();
     void itemStacksBehindParent();
     void nestedClipping();
     void nestedClippingTransforms();
@@ -5568,6 +5568,91 @@ void tst_QGraphicsItem::opacity()
     QCOMPARE(c1->effectiveOpacity(), c1_effectiveOpacity);
     QCOMPARE(c2->effectiveOpacity(), c2_effectiveOpacity);
     QCOMPARE(c3->effectiveOpacity(), c3_effectiveOpacity);
+}
+
+void tst_QGraphicsItem::opacity2()
+{
+    EventTester *parent = new EventTester;
+    EventTester *child = new EventTester(parent);
+    EventTester *grandChild = new EventTester(child);
+
+    QGraphicsScene scene;
+    scene.addItem(parent);
+
+    class MyGraphicsView : public QGraphicsView
+    { public:
+        int repaints;
+        MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
+        void paintEvent(QPaintEvent *e) { ++repaints; QGraphicsView::paintEvent(e); }
+    };
+
+    MyGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(250);
+
+#define RESET_REPAINT_COUNTERS \
+    parent->repaints = 0; \
+    child->repaints = 0; \
+    grandChild->repaints = 0; \
+    view.repaints = 0;
+
+    RESET_REPAINT_COUNTERS
+
+    child->setOpacity(0.0);
+    QTest::qWait(100);
+    QCOMPARE(view.repaints, 1);
+    QCOMPARE(parent->repaints, 1);
+    QCOMPARE(child->repaints, 0);
+    QCOMPARE(grandChild->repaints, 0);
+
+    RESET_REPAINT_COUNTERS
+
+    child->setOpacity(1.0);
+    QTest::qWait(100);
+    QCOMPARE(view.repaints, 1);
+    QCOMPARE(parent->repaints, 1);
+    QCOMPARE(child->repaints, 1);
+    QCOMPARE(grandChild->repaints, 1);
+
+    RESET_REPAINT_COUNTERS
+
+    parent->setOpacity(0.0);
+    QTest::qWait(100);
+    QCOMPARE(view.repaints, 1);
+    QCOMPARE(parent->repaints, 0);
+    QCOMPARE(child->repaints, 0);
+    QCOMPARE(grandChild->repaints, 0);
+
+    RESET_REPAINT_COUNTERS
+
+    parent->setOpacity(1.0);
+    QTest::qWait(100);
+    QCOMPARE(view.repaints, 1);
+    QCOMPARE(parent->repaints, 1);
+    QCOMPARE(child->repaints, 1);
+    QCOMPARE(grandChild->repaints, 1);
+
+    grandChild->setFlag(QGraphicsItem::ItemIgnoresParentOpacity);
+    RESET_REPAINT_COUNTERS
+
+    child->setOpacity(0.0);
+    QTest::qWait(100);
+    QCOMPARE(view.repaints, 1);
+    QCOMPARE(parent->repaints, 1);
+    QCOMPARE(child->repaints, 0);
+    QCOMPARE(grandChild->repaints, 1);
+
+    RESET_REPAINT_COUNTERS
+
+    child->setOpacity(0.0); // Already 0.0; no change.
+    QTest::qWait(100);
+    QCOMPARE(view.repaints, 0);
+    QCOMPARE(parent->repaints, 0);
+    QCOMPARE(child->repaints, 0);
+    QCOMPARE(grandChild->repaints, 0);
 }
 
 void tst_QGraphicsItem::itemStacksBehindParent()

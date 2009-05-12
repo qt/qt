@@ -209,7 +209,19 @@ void QInputContext::setFocusWidget(QWidget *widget)
     way. Although the input events have accept() and ignore()
     methods, leave it untouched.
 
-    \a event is currently restricted to QKeyEvent and QMouseEvent.
+    \a event is currently restricted to events of these types:
+
+    \list
+        \i CloseSoftwareInputPanel
+        \i KeyPress
+        \i KeyRelease
+        \i MouseButtonDblClick
+        \i MouseButtonPress
+        \i MouseButtonRelease
+        \i MouseMove
+        \i RequestSoftwareInputPanel
+    \endlist
+
     But some input method related events such as QWheelEvent or
     QTabletEvent may be added in future.
 
@@ -464,7 +476,7 @@ bool QInputContext::x11FilterEvent(QWidget * /*keywidget*/, XEvent * /*event*/)
     This function may be overridden only if input method is depending
     on Symbian and you need raw TWsEvent. Otherwise, this function must not.
 
-    This function is designed to filter raw key events for XIM, but
+    This function is designed to filter raw key events on S60, but
     other input methods may use this to implement some special
     features.
 

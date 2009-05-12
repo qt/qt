@@ -79,6 +79,13 @@
 #include "QtGui/qscreen_qws.h"
 #endif
 
+#if defined(Q_WS_S60)
+class RDrawableWindow;
+class CCoeControl;
+class CAknTitlePane;
+class CAknContextPane;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // Extra QWidget data
@@ -89,12 +96,6 @@ class QWSManager;
 #endif
 #if defined(Q_WS_MAC)
 class QCoreGraphicsPaintEnginePrivate;
-#endif
-#if defined(Q_WS_S60)
-class RDrawableWindow;
-class CCoeControl;
-class CAknTitlePane;
-class CAknContextPane;
 #endif
 class QPaintEngine;
 class QPixmap;
@@ -267,7 +268,8 @@ public:
     void macUpdateIsOpaque();
     void setEnabled_helper_sys(bool enable);
     bool isRealWindow() const;
-    void applyMaxAndMinSizeConstraints(int &w, int &h);
+    void adjustWithinMaxAndMinSize(int &w, int &h);
+    void applyMaxAndMinSizeOnWindow();
 #endif
 
 #ifdef Q_WS_S60
@@ -608,6 +610,8 @@ public:
     uint needWindowChange : 1;
     uint isGLWidget : 1;
 #endif
+
+    Qt::InputMethodHints imHints;
 
 #if defined(Q_WS_X11) || defined (Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_WS_S60)
 #ifdef Q_WS_MAC

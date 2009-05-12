@@ -262,8 +262,9 @@ CentralWidget::~CentralWidget()
     QString zoomCount;
     QString currentPages;
     QLatin1Char separator('|');
-    int i = m_searchWidget->isAttached() ? 1 : 0;
+    bool searchAttached = m_searchWidget->isAttached();
 
+    int i = searchAttached ? 1 : 0;
     for (; i < tabWidget->count(); ++i) {
         HelpViewer *viewer = qobject_cast<HelpViewer*>(tabWidget->widget(i));
         if (viewer && viewer->source().isValid()) {
@@ -274,6 +275,7 @@ CentralWidget::~CentralWidget()
 
     engine.setCustomValue(QLatin1String("LastTabPage"), lastTabPage);
     engine.setCustomValue(QLatin1String("LastShownPages"), currentPages);
+    engine.setCustomValue(QLatin1String("SearchWasAttached"), searchAttached);
 #if !defined(QT_NO_WEBKIT)
     engine.setCustomValue(QLatin1String("LastPagesZoomWebView"), zoomCount);
 #else
@@ -418,7 +420,18 @@ void CentralWidget::setLastShownPages()
         setSourceInNewTab((*it), (*zIt).toFloat());
 
     const QLatin1String lastTab("LastTabPage");
-    tabWidget->setCurrentIndex(helpEngine->customValue(lastTab, 1).toInt());
+    int tab = helpEngine->customValue(lastTab, 1).toInt();
+
+    const QLatin1String searchKey("SearchWasAttached");
+    const bool searchIsAttached = m_searchWidget->isAttached();
+    const bool searchWasAttached = helpEngine->customValue(searchKey).toBool();
+
+    if (searchWasAttached && !searchIsAttached)
+        tabWidget->setCurrentIndex(--tab);
+    else if (!searchWasAttached && searchIsAttached)
+        tabWidget->setCurrentIndex(++tab);
+    else
+        tabWidget->setCurrentIndex(tab);
 }
 
 bool CentralWidget::hasSelection() const
@@ -797,7 +810,7 @@ bool CentralWidget::eventFilter(QObject *object, QEvent *e)
         }
     }
 
-    if (QTabBar *tabBar = qobject_cast<QTabBar*>(object)) {
+    if (qobject_cast<QTabBar*>(object)) {
         const bool dblClick = e->type() == QEvent::MouseButtonDblClick;
         if ((e->type() == QEvent::MouseButtonRelease) || dblClick) {
             QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(e);
@@ -978,21 +991,28 @@ void CentralWidget::updateBrowserFont()
 
 void CentralWidget::createSearchWidget(QHelpSearchEngine *searchEngine)
 {
-    if (!m_searchWidget) {
-        m_searchWidget = new SearchWidget(searchEngine, this);
-        connect(m_searchWidget, SIGNAL(requestShowLink(QUrl)), this,
-            SLOT(setSourceFromSearch(QUrl)));
-        connect(m_searchWidget, SIGNAL(requestShowLinkInNewTab(QUrl)), this,
-            SLOT(setSourceFromSearchInNewTab(QUrl)));
-    }
-    tabWidget->insertTab(0, m_searchWidget, tr("Search"));
-    m_searchWidget->setAttached(true);
+    if (m_searchWidget)
+        return;
+
+    m_searchWidget = new SearchWidget(searchEngine, this);
+    connect(m_searchWidget, SIGNAL(requestShowLink(QUrl)), this,
+        SLOT(setSourceFromSearch(QUrl)));
+    connect(m_searchWidget, SIGNAL(requestShowLinkInNewTab(QUrl)), this,
+        SLOT(setSourceFromSearchInNewTab(QUrl)));
 }
 
-void CentralWidget::activateSearchWidget()
+void CentralWidget::activateSearchWidget(bool updateLastTabPage)
 {
-    if (!m_searchWidget->isAttached())
+    if (!m_searchWidget)
         createSearchWidget(helpEngine->searchEngine());
+
+    if (!m_searchWidget->isAttached()) {
+        tabWidget->insertTab(0, m_searchWidget, tr("Search"));
+        m_searchWidget->setAttached(true);
+
+        if (updateLastTabPage)
+            lastTabPage++;
+    }
 
     tabWidget->setCurrentWidget(m_searchWidget);
     m_searchWidget->setFocus();

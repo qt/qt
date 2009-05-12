@@ -2675,9 +2675,6 @@ void QApplication::alert(QWidget *, int)
 {
 }
 
-/*!
-    \internal
-*/
 int QApplication::qwsProcessEvent(QWSEvent* event)
 {
     Q_D(QApplication);
@@ -3056,43 +3053,11 @@ int QApplication::qwsProcessEvent(QWSEvent* event)
     return 0;
 }
 
-/*!
-    \fn bool QApplication::qwsEventFilter(QWSEvent *event)
-
-    This virtual function is only implemented under Qt for Embedded Linux.
-
-    If you create an application that inherits QApplication and
-    reimplement this function, you get direct access to all QWS (Q
-    Window System) events that the are received from the QWS master
-    process. The events are passed in the \a event parameter.
-
-    Return true if you want to stop the event from being processed.
-    Return false for normal event dispatching. The default
-    implementation returns false.
-*/
 bool QApplication::qwsEventFilter(QWSEvent *)
 {
     return false;
 }
 
-/*!
-    Set Qt for Embedded Linux custom color table.
-
-    Qt for Embedded Linux on 8-bpp displays allocates a standard 216 color cube.
-    The remaining 40 colors may be used by setting a custom color
-    table in the QWS master process before any clients connect.
-
-    \a colorTable is an array of up to 40 custom colors. \a start is
-    the starting index (0-39) and \a numColors is the number of colors
-    to be set (1-40).
-
-    This method is non-portable. It is available \e only in
-    Qt for Embedded Linux.
-
-    \note The custom colors will not be used by the default screen
-    driver. To make use of the new colors, implement a custom screen
-    driver, or use QDirectPainter.
-*/
 void QApplication::qwsSetCustomColors(QRgb *colorTable, int start, int numColors)
 {
     if (start < 0 || start > 39) {
@@ -3111,30 +3076,11 @@ void QApplication::qwsSetCustomColors(QRgb *colorTable, int start, int numColors
 }
 
 #ifndef QT_NO_QWS_MANAGER
-/*!
-    Return the QWSDecoration used for decorating windows.
-
-    \warning This method is non-portable. It is only available in
-    Qt for Embedded Linux.
-
-    \sa QDecoration
-*/
 QDecoration &QApplication::qwsDecoration()
 {
     return *qws_decoration;
 }
 
-/*!
-    \fn void QApplication::qwsSetDecoration(QDecoration *decoration)
-
-    Sets the QDecoration derived class to use for decorating the
-    windows used by Qt for Embedded Linux to the \a decoration
-    specified.
-
-    This method is non-portable. It is only available in Qt for Embedded Linux.
-
-    \sa QDecoration
-*/
 void QApplication::qwsSetDecoration(QDecoration *dec)
 {
     if (dec) {
@@ -3153,21 +3099,6 @@ void QApplication::qwsSetDecoration(QDecoration *dec)
     }
 }
 
-/*!
-  \overload
-
-  Requests a QDecoration object for \a decoration from the QDecorationFactory.
-
-  The string must be one of the QDecorationFactory::keys(). Keys are
-  case insensitive.
-
-  A later call to the QApplication constructor will override the
-  requested style when a "-style" option is passed in as a commandline
-  parameter.
-
-  Returns 0 if an unknown \a decoration is passed, otherwise the QStyle object
-  returned is set as the application's GUI style.
-*/
 QDecoration* QApplication::qwsSetDecoration(const QString &decoration)
 {
     QDecoration *decore = QDecorationFactory::create(decoration);
