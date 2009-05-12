@@ -61,6 +61,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qset.h>
+#include <QtCore/qvector.h>
 
 #include "qstate.h"
 #include "qstate_p.h"
@@ -202,7 +203,7 @@ public:
 #ifndef QT_STATEMACHINE_SOLUTION
     QSignalEventGenerator *signalEventGenerator;
 #endif
-    QHash<const QObject*, QList<int> > connections;
+    QHash<const QObject*, QVector<int> > connections;
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
     QHash<QObject*, QSet<QEvent::Type> > qobjectEvents;
 #endif

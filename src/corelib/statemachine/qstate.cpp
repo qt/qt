@@ -327,6 +327,8 @@ QAbstractTransition *QState::addTransition(QAbstractTransition *transition)
         }
     }
     transition->setParent(this);
+    if (machine() != 0 && machine()->configuration().contains(this))
+        QStateMachinePrivate::get(machine())->registerTransitions(this);
     return transition;
 }
 
