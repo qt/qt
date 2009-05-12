@@ -51,6 +51,13 @@
 #if defined(Q_OS_WIN)
 # include <windows.h>
 #endif
+#if defined(Q_OS_UNIX)
+# include <sys/types.h>
+# include <sys/stat.h>
+# include <errno.h>
+# include <fcntl.h>             // open(2)
+# include <unistd.h>            // close(2)
+#endif
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -78,6 +85,7 @@ private slots:
     void openOnRootDrives();
     void stressTest();
     void rename();
+    void renameFdLeak();
 public:
 };
 
@@ -354,6 +362,43 @@ void tst_QTemporaryFile::rename()
 
     QVERIFY(!dir.exists(tempname));
     QVERIFY(!dir.exists("temporary-file.txt"));
+}
+
+void tst_QTemporaryFile::renameFdLeak()
+{
+#ifdef Q_OS_UNIX
+    // Test this on Unix only
+
+    // Open a bunch of files to force the fd count to go up
+    static const int count = 10;
+    int bunch_of_files[count];
+    for (int i = 0; i < count; ++i) {
+        bunch_of_files[i] = ::open(SRCDIR "tst_qtemporaryfile.cpp", O_RDONLY);
+        QVERIFY(bunch_of_files[i] != -1);
+    }
+
+    int fd;
+    {
+        QTemporaryFile file;
+        file.setAutoRemove(false);
+        QVERIFY(file.open());
+
+        // close the bunch of files
+        for (int i = 0; i < count; ++i)
+            ::close(bunch_of_files[i]);
+
+        // save the file descriptor for later
+        fd = file.handle();
+
+        // rename the file to something
+        QString newPath = QDir::tempPath() + "/tst_qtemporaryfile-renameFdLeak-" + QString::number(getpid());
+        file.rename(newPath);
+        QFile::remove(newPath);
+    }
+
+    // check if QTemporaryFile closed the file
+    QVERIFY(::close(fd) == -1 && errno == EBADF);
+#endif
 }
 
 QTEST_MAIN(tst_QTemporaryFile)

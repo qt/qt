@@ -1578,10 +1578,11 @@ void QColorDialog::setCurrentColor(const QColor &color)
 {
     Q_D(QColorDialog);
     d->setCurrentColor(color.rgb());
-    d->selectColor(color.rgb());
+    d->selectColor(color);
     d->setCurrentAlpha(color.alpha());
 
 #ifdef Q_WS_MAC
+    d->setCurrentQColor(color);
     if (d->delegate)
         QColorDialogPrivate::setColor(d->delegate, color);
 #endif

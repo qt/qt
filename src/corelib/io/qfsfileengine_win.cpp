@@ -1392,8 +1392,6 @@ bool QFSFileEnginePrivate::doStat() const
             if (tmpAttributes != -1) {
                 fileAttrib = tmpAttributes;
                 could_stat = true;
-            } else {
-                return false;
             }
 #endif
         } else {

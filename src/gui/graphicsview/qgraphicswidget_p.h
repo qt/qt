@@ -68,7 +68,7 @@ class QStyleOptionTitleBar;
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
-class Q_GUI_EXPORT QGraphicsWidgetPrivate : public QGraphicsItemPrivate
+class QGraphicsWidgetPrivate : public QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsWidget)
 public:

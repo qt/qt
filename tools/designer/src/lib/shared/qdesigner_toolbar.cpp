@@ -443,12 +443,17 @@ QAction *ToolBarEventFilter::actionAt(const QToolBar *tb, const QPoint &pos)
 QRect ToolBarEventFilter::handleArea(const QToolBar *tb)
 {
     //that's a trick to get acces to the initStyleOption which is a protected member
-    class ToolBar : public QToolBar
+    class FriendlyToolBar : public QToolBar
     {
-        friend class ToolBarEventFilter;
+    public:
+#ifdef Q_NO_USING_KEYWORD
+        void initStyleOption(QStyleOptionToolBar *option) { QToolBar::initStyleOption(option); }
+#else
+        using QToolBar::initStyleOption;
+#endif
     };
     QStyleOptionToolBar opt;
-    static_cast<const ToolBar*>(tb)->initStyleOption(&opt);
+    static_cast<const FriendlyToolBar*>(tb)->initStyleOption(&opt);
     return tb->style()->subElementRect(QStyle::SE_ToolBarHandle, &opt, tb);
 }
 

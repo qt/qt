@@ -2747,12 +2747,6 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal opacity)
                     32, PropModeReplace, (uchar*)&value, 1);
 }
 
-/*!
-    Returns information about the configuration of the X display used to display
-    the widget.
-
-    \warning This function is only available on X11.
-*/
 const QX11Info &QWidget::x11Info() const
 {
     Q_D(const QWidget);
@@ -2789,13 +2783,6 @@ QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
     return new QX11WindowSurface(q_func());
 }
 
-/*!
-    Returns the X11 Picture handle of the widget for XRender
-    support. Use of this function is not portable. This function will
-    return 0 if XRender support is not compiled into Qt, if the
-    XRender extension is not supported on the X11 display, or if the
-    handle could not be created.
-*/
 Qt::HANDLE QWidget::x11PictureHandle() const
 {
 #ifndef QT_NO_XRENDER

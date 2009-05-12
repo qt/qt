@@ -315,7 +315,7 @@ void QVector<T>::detach_helper()
 { realloc(d->size, d->alloc); }
 template <typename T>
 void QVector<T>::reserve(int asize)
-{ if (asize > d->alloc) realloc(d->size, asize); d->capacity = 1; }
+{ if (asize > d->alloc || d->ref != 1) realloc(d->size, asize); d->capacity = 1; }
 template <typename T>
 void QVector<T>::resize(int asize)
 { realloc(asize, (asize > d->alloc || (!d->capacity && asize < d->size && asize < (d->alloc >> 1))) ?
