@@ -1,0 +1,4 @@
+MyTypeObject {
+    realProperty: "Hello"
+}
+

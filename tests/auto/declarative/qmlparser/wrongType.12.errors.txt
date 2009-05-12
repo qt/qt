@@ -1,0 +1,1 @@
+2:19:Cannot assign value "red" to property sizeProperty

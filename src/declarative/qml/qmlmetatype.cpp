@@ -87,8 +87,6 @@ struct QmlMetaTypeData
     Names nameToType;
     typedef QHash<const QMetaObject *, QmlType *> MetaObjects;
     MetaObjects metaObjectToType;
-    typedef QHash<QByteArray, QmlCustomParser *> CustomParsers;
-    CustomParsers customParsers;
     typedef QHash<int, QmlMetaType::StringConverter> StringConverters;
     StringConverters stringConverters;
 
@@ -447,30 +445,6 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
 
     return index;
 }
-
-void QmlMetaType::registerCustomParser(const char *qmlName, 
-                                        QmlCustomParser *parser)
-{
-    QWriteLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-
-    Q_ASSERT(parser);
-    if (data->customParsers.contains(qmlName)) {
-        delete parser;
-        return;
-    }
-        
-    data->customParsers.insert(qmlName, parser);
-}
-
-QmlCustomParser *QmlMetaType::customParser(const QByteArray &name)
-{
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-
-    return data->customParsers.value(name);
-}
-
 
 int QmlMetaType::qmlParserStatusCast(int userType)
 {
@@ -1165,11 +1139,6 @@ bool QmlMetaType::copy(int type, void *data, const void *copy)
     }
 
     return false;
-}
-
-void qmlRegisterCustomParser(const char *qmlName, QmlCustomParser *parser)
-{
-    QmlMetaType::registerCustomParser(qmlName, parser);
 }
 
 QT_END_NAMESPACE

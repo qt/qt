@@ -1,0 +1,1 @@
+2:20:Cannot assign value "12" to property colorProperty

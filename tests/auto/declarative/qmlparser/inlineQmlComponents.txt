@@ -1,0 +1,8 @@
+MyContainer {
+    Component {
+        id: MyComponent
+        MyQmlObject {
+            value: 11
+        }
+    }
+}

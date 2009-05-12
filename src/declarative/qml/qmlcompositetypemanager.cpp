@@ -123,7 +123,7 @@ QmlCompositeTypeData::toCompiledComponent(QmlEngine *engine)
 }
 
 QmlCompositeTypeData::TypeReference::TypeReference()
-: type(0), unit(0), parser(0) 
+: type(0), unit(0)
 {
 }
 
@@ -309,18 +309,8 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
             continue;
         }
 
-        QmlCustomParser *parser = 
-            QmlMetaType::customParser(type);
-
-        if (parser) {
-            ref.parser = parser;
-            unit->types << ref;
-            continue;
-        }
-
         ref.type = QmlMetaType::qmlType(type);
         if (ref.type) {
-            ref.parser = parser;
             unit->types << ref;
             continue;
         }

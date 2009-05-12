@@ -1,0 +1,4 @@
+ListModel {
+    ListElement { a: 10 }
+    ListElement { a: 12 }
+}
