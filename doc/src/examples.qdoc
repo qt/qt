@@ -311,9 +311,10 @@
     \section1 State Machine
 
     \list
-    \o \l{statemachine/twowaybutton}{Two-way Button}\raisedaster
-    \o \l{statemachine/trafficlight}{Traffic Light}\raisedaster
+    \o \l{statemachine/eventtransitions}{Event Transitions}\raisedaster
     \o \l{statemachine/pingpong}{Ping Pong States}\raisedaster
+    \o \l{statemachine/trafficlight}{Traffic Light}\raisedaster
+    \o \l{statemachine/twowaybutton}{Two-way Button}\raisedaster
     \endlist
 
     \section1 Threads
