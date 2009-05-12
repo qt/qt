@@ -598,13 +598,6 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
     QApplication::sendEvent(this, &e);
 }
 
-
-void QWidgetPrivate::createSysExtra() {
-#ifndef QT_NO_DRAGANDDROP
-    extra->dropTarget = 0;
-#endif
-}
-
 void QWidgetPrivate::deleteSysExtra()
 {
     Q_Q(QWidget);

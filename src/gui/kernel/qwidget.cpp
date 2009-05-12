@@ -167,39 +167,48 @@ static inline bool bypassGraphicsProxyWidget(QWidget *p)
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); // qapplication.cpp
 extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
-QWidgetPrivate::QWidgetPrivate(int version) :
-        QObjectPrivate(version), extra(0), focus_child(0)
-        ,layout(0), widgetItem(0)
-        ,leftmargin(0), topmargin(0), rightmargin(0), bottommargin(0)
-        ,leftLayoutItemMargin(0), topLayoutItemMargin(0), rightLayoutItemMargin(0)
-        ,bottomLayoutItemMargin(0)
-        ,fg_role(QPalette::NoRole)
-        ,bg_role(QPalette::NoRole)
-        ,hd(0)
-        ,dirty(0)
-        ,needsFlush(0)
-        ,dirtyOpaqueChildren(1)
-        ,isOpaque(0)
-        ,inDirtyList(0)
-        ,isScrolled(0)
-        ,isMoved(0)
-        ,usesDoubleBufferedGLContext(0)
-#ifdef Q_WS_WIN
-        ,noPaintOnScreen(0)
-#endif
-        ,inheritedFontResolveMask(0)
-        ,inheritedPaletteResolveMask(0)
+QWidgetPrivate::QWidgetPrivate(int version)
+    : QObjectPrivate(version)
+      , extra(0)
+      , focus_next(0)
+      , focus_prev(0)
+      , focus_child(0)
+      , layout(0)
+      , needsFlush(0)
+      , redirectDev(0)
+      , widgetItem(0)
+      , extraPaintEngine(0)
+      , polished(0)
+      , inheritedFontResolveMask(0)
+      , inheritedPaletteResolveMask(0)
+      , leftmargin(0)
+      , topmargin(0)
+      , rightmargin(0)
+      , bottommargin(0)
+      , leftLayoutItemMargin(0)
+      , topLayoutItemMargin(0)
+      , rightLayoutItemMargin(0)
+      , bottomLayoutItemMargin(0)
+      , hd(0)
+      , size_policy(QSizePolicy::Preferred, QSizePolicy::Preferred)
+      , fg_role(QPalette::NoRole)
+      , bg_role(QPalette::NoRole)
+      , dirtyOpaqueChildren(1)
+      , isOpaque(0)
+      , inDirtyList(0)
+      , isScrolled(0)
+      , isMoved(0)
+      , usesDoubleBufferedGLContext(0)
 #if defined(Q_WS_X11)
-        ,picture(0)
+      , picture(0)
+#elif defined(Q_WS_WIN)
+      , noPaintOnScreen(0)
+#elif defined(Q_WS_MAC)
+      , needWindowChange(0)
+      , isGLWidget(0)
+      , window_event(0)
+      , qd_hd(0)
 #endif
-#ifdef Q_WS_MAC
-        ,needWindowChange(0)
-        ,isGLWidget(0)
-#endif
-        ,polished(0)
-
-        , size_policy(QSizePolicy::Preferred, QSizePolicy::Preferred)
-        , redirectDev(0)
 {
     if (!qApp) {
         qFatal("QWidget: Must construct a QApplication before a QPaintDevice");
@@ -1412,36 +1421,26 @@ void QWidgetPrivate::createTLExtra()
         createExtra();
     if (!extra->topextra) {
         QTLWExtra* x = extra->topextra = new QTLWExtra;
+        x->icon = 0;
+        x->iconPixmap = 0;
+        x->backingStore = 0;
         x->windowSurface = 0;
+        x->sharedPainter = 0;
+        x->incw = x->inch = 0;
+        x->basew = x->baseh = 0;
+        x->frameStrut.setCoords(0, 0, 0, 0);
+        x->normalGeometry = QRect(0,0,-1,-1);
+        x->savedFlags = 0;
         x->opacity = 255;
         x->posFromMove = false;
         x->sizeAdjusted = false;
         x->inTopLevelResize = false;
         x->inRepaint = false;
-        x->backingStore = 0;
-        x->icon = 0;
-        x->iconPixmap = 0;
-        x->frameStrut.setCoords(0, 0, 0, 0);
-        x->incw = x->inch = 0;
-        x->basew = x->baseh = 0;
-        x->normalGeometry = QRect(0,0,-1,-1);
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_MAC)
         x->embedded = 0;
-#endif
-#if defined(Q_WS_X11)
-        x->parentWinId = 0;
-        x->spont_unmapped = 0;
-        x->dnd = 0;
-#endif
-        x->savedFlags = 0;
-#if defined(Q_WS_QWS) && !defined(QT_NO_QWS_MANAGER)
-        x->qwsManager = 0;
-#endif
-        x->sharedPainter = 0;
         createTLSysExtra();
 #ifdef QWIDGET_EXTRA_DEBUG
-    static int count = 0;
-    qDebug() << "tlextra" << ++count;
+        static int count = 0;
+        qDebug() << "tlextra" << ++count;
 #endif
     }
 }
@@ -1455,27 +1454,28 @@ void QWidgetPrivate::createExtra()
 {
     if (!extra) {                                // if not exists
         extra = new QWExtra;
-        extra->minw = extra->minh = 0;
-        extra->maxw = extra->maxh = QWIDGETSIZE_MAX;
+        extra->glContext = 0;
+        extra->topextra = 0;
+        extra->proxyWidget = 0;
+#ifndef QT_NO_CURSOR
+        extra->curs = 0;
+#endif
+        extra->minw = 0;
+        extra->minh = 0;
+        extra->maxw = QWIDGETSIZE_MAX;
+        extra->maxh = QWIDGETSIZE_MAX;
+        extra->customDpiX = 0;
+        extra->customDpiY = 0;
         extra->explicitMinSize = 0;
         extra->explicitMaxSize = 0;
         extra->autoFillBackground = 0;
         extra->nativeChildrenForced = 0;
         extra->inRenderWithPainter = 0;
         extra->hasMask = 0;
-#ifndef QT_NO_CURSOR
-        extra->curs = 0;
-#endif
-        extra->style = 0;
-        extra->topextra = 0;
-        extra->proxyWidget = 0;
-        extra->glContext = 0;
-        extra->customDpiX = 0;
-        extra->customDpiY = 0;
         createSysExtra();
 #ifdef QWIDGET_EXTRA_DEBUG
-    static int count = 0;
-    qDebug() << "extra" << ++count;
+        static int count = 0;
+        qDebug() << "extra" << ++count;
 #endif
     }
 }

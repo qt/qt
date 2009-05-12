@@ -4438,11 +4438,13 @@ void QWidgetPrivate::deleteSysExtra()
 
 void QWidgetPrivate::createTLSysExtra()
 {
+    extra->topextra->resizer = 0;
+    extra->topextra->isSetGeometry = 0;
+    extra->topextra->isMove = 0;
+    extra->topextra->wattr = 0;
     extra->topextra->wclass = 0;
     extra->topextra->group = 0;
     extra->topextra->windowIcon = 0;
-    extra->topextra->resizer = 0;
-    extra->topextra->isSetGeometry = 0;
     extra->topextra->savedWindowAttributesFromMaximized = 0;
 }
 

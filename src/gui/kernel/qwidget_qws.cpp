@@ -1037,6 +1037,9 @@ void QWidgetPrivate::deleteSysExtra()
 
 void QWidgetPrivate::createTLSysExtra()
 {
+#ifndef QT_NO_QWS_MANAGER
+    extra->topextra->qwsManager = 0;
+#endif
 }
 
 void QWidgetPrivate::deleteTLSysExtra()

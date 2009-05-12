@@ -2152,7 +2152,7 @@ static void do_size_hints(QWidget* widget, QWExtra *x)
   parentWRect is the geometry of the parent's X rect, measured in
   parent's coord sys
  */
-void QWidgetPrivate::setWSGeometry(bool dontShow)
+void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
 {
     Q_Q(QWidget);
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
@@ -2610,8 +2610,8 @@ int QWidget::metric(PaintDeviceMetric m) const
 
 void QWidgetPrivate::createSysExtra()
 {
-    extra->xDndProxy = 0;
     extra->compress_events = true;
+    extra->xDndProxy = 0;
 }
 
 void QWidgetPrivate::deleteSysExtra()
@@ -2620,8 +2620,11 @@ void QWidgetPrivate::deleteSysExtra()
 
 void QWidgetPrivate::createTLSysExtra()
 {
+    extra->topextra->spont_unmapped = 0;
+    extra->topextra->dnd = 0;
     extra->topextra->validWMState = 0;
     extra->topextra->waitingForMapNotify = 0;
+    extra->topextra->parentWinId = 0;
     extra->topextra->userTimeWindow = 0;
 }
 
