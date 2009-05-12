@@ -32,6 +32,7 @@ void usage()
     qWarning("                                              - 'ffmpeg' for other formats");
     qWarning("  -recorddither ordered|threshold|floyd .... set GIF dither recording mode");
     qWarning("  -recordperiod <milliseconds> ............. set time between recording frames");
+    qWarning("  -record arg .............................. add a recording process argument");
     qWarning("  -autorecord [from-]<tomilliseconds> ...... set recording to start and stop");
     qWarning("  -devicekeys .............................. use numeric keys (see F1)");
     qWarning("  -cache ................................... disk cache remote content");
@@ -76,6 +77,7 @@ int main(int argc, char ** argv)
     int autorecord_to = 0;
     QString dither = "none";
     QString recordfile;
+    QStringList recordargs;
     QString skin;
     bool devkeys = false;
     bool cache = false;
@@ -94,6 +96,8 @@ int main(int argc, char ** argv)
             period = QString(argv[++i]).toInt();
         } else if (arg == "-recordfile") {
             recordfile = QString(argv[++i]);
+        } else if (arg == "-record") {
+            recordargs << QString(argv[++i]);
         } else if (arg == "-recorddither") {
             dither = QString(argv[++i]);
         } else if (arg == "-autorecord") {
@@ -142,6 +146,7 @@ int main(int argc, char ** argv)
     if (devkeys)
         viewer.setDeviceKeys(true);
     viewer.setRecordDither(dither);
+    viewer.setRecordArgs(recordargs);
     viewer.show();
 
     return app.exec();
