@@ -162,5 +162,14 @@ wince*: {
 }
 
 symbian*: {
-    SOURCES += widgets/qmenu_symbian.cpp
+    HEADERS += \
+        widgets/qsoftkeyaction.h \
+        widgets/qsoftkeystack.h \
+        widgets/qsoftkeystack_p.h
+
+    SOURCES += \
+        widgets/qmenu_symbian.cpp \
+        widgets/qsoftkeyaction.cpp \
+        widgets/qsoftkeystack.cpp \
+        widgets/qsoftkeystack_s60.cpp
 }
