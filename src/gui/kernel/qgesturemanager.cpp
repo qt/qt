@@ -519,7 +519,7 @@ bool QGestureManager::sendGestureEvent(QWidget *receiver, const QSet<QGesture*> 
         it != e; ++it) {
         QGesture *g = *it;
         QGesturePrivate *gd = g->d_func();
-        if (!gd->widget && (g->state() == Qt::GestureStarted || g->state() == Qt::GestureFinished)) {
+        if (!gd->widget && (g->state() == Qt::GestureStarted || gd->singleshot)) {
             startedGestures.insert(g);
             // find the target widget
             QWidget *w = receiver;
@@ -575,7 +575,7 @@ bool QGestureManager::sendGestureEvent(QWidget *receiver, const QSet<QGesture*> 
                 QWidget *w = gd->widget;
                 gd->widget = 0;
 
-                if (!w->isWindow()) {
+                if (w && !w->isWindow()) {
                     g->translate(w->pos());
                     w = w->parentWidget();
                     QPoint offset;
