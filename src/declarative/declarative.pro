@@ -11,7 +11,7 @@ LIBS += -lgcov
 
 unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui QtXml
 
-QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage
+# QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage
 
 include(../qbase.pri)
 
