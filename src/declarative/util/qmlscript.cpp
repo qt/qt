@@ -152,11 +152,22 @@ void QmlScript::setSource(const QString &source)
         return;
     d->source = source;
     d->url = qmlContext(this)->resolvedUrl(source);
-    QNetworkRequest req(d->url);
-    req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
-    d->reply = qmlEngine(this)->networkAccessManager()->get(req);
-    QObject::connect(d->reply, SIGNAL(finished()),
-                     this, SLOT(replyFinished()));
+
+#ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
+    if (d->url.scheme() == QLatin1String("file")) {
+        QFile file(d->url.toLocalFile());
+        file.open(QIODevice::ReadOnly);
+        QByteArray ba = file.readAll();
+        d->addScriptToEngine(QString::fromUtf8(ba), d->source);
+    } else
+#endif
+    {
+        QNetworkRequest req(d->url);
+        req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
+        d->reply = qmlEngine(this)->networkAccessManager()->get(req);
+        QObject::connect(d->reply, SIGNAL(finished()),
+                         this, SLOT(replyFinished()));
+    }
 }
 
 void QmlScript::replyFinished()

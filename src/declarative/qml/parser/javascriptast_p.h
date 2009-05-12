@@ -2345,15 +2345,7 @@ public:
 
     virtual SourceLocation lastSourceLocation() const
     {
-      if (expression)
-	return expression->lastSourceLocation();
-      else if (colonToken.isValid())
-	return colonToken;
-      else if (identifierToken.isValid())
-	return identifierToken;
-      else if (typeToken.isValid())
-	return typeToken;
-      return propertyToken;
+      return semicolonToken;
     }
 
     virtual void accept0(Visitor *visitor);
@@ -2369,6 +2361,7 @@ public:
     SourceLocation typeToken;
     SourceLocation identifierToken;
     SourceLocation colonToken;
+    SourceLocation semicolonToken;
 };
 
 class UiObjectDefinition: public UiObjectMember

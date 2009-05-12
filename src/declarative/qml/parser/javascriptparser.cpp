@@ -231,8 +231,8 @@ case 14: {
     node->rbraceToken = loc(3);
     sym(1).Node = node;
 }   break;
- case 15: 
-case 16: {
+
+case 15: {
     AST::UiObjectBinding *node = makeAstNode<AST::UiObjectBinding> (driver->nodePool(), sym(1).UiQualifiedId->finish(),
         sym(3).sval, sym(4).UiObjectInitializer);
     node->colonToken = loc(2);
@@ -240,14 +240,14 @@ case 16: {
     sym(1).Node = node;
 }   break;
 
-case 17: {
+case 16: {
     AST::UiObjectDefinition *node = makeAstNode<AST::UiObjectDefinition> (driver->nodePool(), sym(1).sval,
         sym(2).UiObjectInitializer);
     node->identifierToken = loc(1);
     sym(1).Node = node;
 }   break;
- case 20: 
-case 21: {
+
+case 18: {
     AST::UiArrayBinding *node = makeAstNode<AST::UiArrayBinding> (driver->nodePool(), sym(1).UiQualifiedId->finish(),
         sym(4).UiObjectMemberList->finish());
     node->colonToken = loc(2);
@@ -256,33 +256,33 @@ case 21: {
     sym(1).Node = node;
 }   break;
 
-case 22: {
+case 19: {
   AST::StringLiteral *node = makeAstNode<AST::StringLiteral> (driver->nodePool(), sym(1).sval);
   node->literalToken = loc(1);
   sym(1).Node = node;
 } break;
 
-case 24: {
+case 21: {
   AST::ExpressionStatement *node = makeAstNode<AST::ExpressionStatement> (driver->nodePool(), sym(1).Expression);
   node->semicolonToken = loc(2);
   sym(1).Node = node;
 } break;
-  case 25:  case 26: 
-case 27: {
+  case 22: 
+case 23: {
     AST::UiScriptBinding *node = makeAstNode<AST::UiScriptBinding> (driver->nodePool(), sym(1).UiQualifiedId->finish(),
         sym(3).Statement);
     node->colonToken = loc(2);
     sym(1).Node = node;
 }   break;
 
-case 28: 
+case 24: 
 
-case 29: {
+case 25: {
     sym(1).sval = driver->intern(lexer->characterBuffer(), lexer->characterCount());
     break;
 }
 
-case 31: {
+case 27: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), (JavaScriptNameIdImpl *)0, sym(2).sval);
     node->type = AST::UiPublicMember::Signal;
     node->propertyToken = loc(1);
@@ -291,31 +291,34 @@ case 31: {
     sym(1).Node = node;
 }   break;
 
-case 32: {
+case 29: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(2).sval, sym(3).sval);
     node->propertyToken = loc(1);
     node->typeToken = loc(2);
     node->identifierToken = loc(3);
+    node->semicolonToken = loc(4);
     sym(1).Node = node;
 }   break;
 
-case 33: {
+case 31: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(3).sval, sym(4).sval);
     node->isDefaultMember = true;
     node->defaultToken = loc(1);
     node->propertyToken = loc(2);
     node->typeToken = loc(3);
     node->identifierToken = loc(4);
+    node->semicolonToken = loc(5);
     sym(1).Node = node;
 }   break;
 
-case 34: {
+case 33: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(2).sval, sym(3).sval,
         sym(5).Expression);
     node->propertyToken = loc(1);
     node->typeToken = loc(2);
     node->identifierToken = loc(3);
     node->colonToken = loc(4);
+    node->semicolonToken = loc(6);
     sym(1).Node = node;
 }   break;
 
@@ -328,6 +331,7 @@ case 35: {
     node->typeToken = loc(3);
     node->identifierToken = loc(4);
     node->colonToken = loc(5);
+    node->semicolonToken = loc(7);
     sym(1).Node = node;
 }   break;
 
@@ -1580,7 +1584,6 @@ case 314: {
 
         if (t_action(errorState, yytoken)) {
             const QString msg = QString::fromUtf8("Unexpected token `%1'").arg(QLatin1String(spell[token_buffer[0].token]));
-
             diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, token_buffer[0].loc, msg));
 
             action = errorState;
@@ -1609,7 +1612,6 @@ case 314: {
             int a = t_action(errorState, *tk);
             if (a > 0 && t_action(a, yytoken)) {
                 const QString msg = QString::fromUtf8("Expected token `%1'").arg(QLatin1String(spell[*tk]));
-
                 diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, token_buffer[0].loc, msg));
 
                 yytoken = *tk;

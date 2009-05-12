@@ -49,27 +49,34 @@ QmlViewer::QmlViewer(QFxTestEngine::TestMode testMode, const QString &testDir, Q
     record_autotime = 0;
     record_period = 20;
 
-    int width = 240;
-    int height = 320;
-
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_NoSystemBackground);
     if (!(flags & Qt::FramelessWindowHint))
-        createMenuBar();
+        createMenu(menuBar(),0);
 
     canvas = new QFxView(this);
     if(testMode != QFxTestEngine::NoTest)
         testEngine = new QFxTestEngine(testMode, testDir, canvas, this);
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
-    canvas->setFixedSize(width, height);
-    resize(width, height);
+
     setCentralWidget(canvas);
 }
 
-void QmlViewer::createMenuBar()
+QSize QmlViewer::sizeHint() const
 {
-    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+    if (skin)
+        return QMainWindow::sizeHint();
+    else {
+        QSize sh = canvas->sizeHint();
+        sh.setHeight(sh.height()+menuBar()->sizeHint().height());
+        return sh;
+    }
+}
+
+void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
+{
+    QMenu *fileMenu = flatmenu ? flatmenu : menu->addMenu(tr("&File"));
 
     QAction *openAction = new QAction(tr("&Open..."), this);
     openAction->setShortcut(QKeySequence("Ctrl+O"));
@@ -81,13 +88,9 @@ void QmlViewer::createMenuBar()
     connect(reloadAction, SIGNAL(triggered()), this, SLOT(reload()));
     fileMenu->addAction(reloadAction);
 
-    QAction *quitAction = new QAction(tr("&Quit"), this);
-    quitAction->setShortcut(QKeySequence("Ctrl+Q"));
-    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    fileMenu->addSeparator();
-    fileMenu->addAction(quitAction);
+    if (flatmenu) flatmenu->addSeparator();
 
-    QMenu *recordMenu = menuBar()->addMenu(tr("&Recording"));
+    QMenu *recordMenu = flatmenu ? flatmenu : menu->addMenu(tr("&Recording"));
 
     QAction *snapshotAction = new QAction(tr("&Take Snapsot\tF3"), this);
     connect(snapshotAction, SIGNAL(triggered()), this, SLOT(takeSnapShot()));
@@ -97,10 +100,19 @@ void QmlViewer::createMenuBar()
     connect(recordAction, SIGNAL(triggered()), this, SLOT(toggleRecordingWithSelection()));
     recordMenu->addAction(recordAction);
 
-    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
+    if (flatmenu) flatmenu->addSeparator();
+
+    QMenu *helpMenu = flatmenu ? flatmenu : menu->addMenu(tr("&Help"));
     QAction *aboutAction = new QAction(tr("&About Qt..."), this);
     connect(aboutAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
     helpMenu->addAction(aboutAction);
+
+    QAction *quitAction = new QAction(tr("&Quit"), this);
+    quitAction->setShortcut(QKeySequence("Ctrl+Q"));
+    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    fileMenu->addSeparator();
+    fileMenu->addAction(quitAction);
+
 }
 
 void QmlViewer::takeSnapShot()
@@ -216,13 +228,14 @@ public:
         setTransform(fit);
     }
 
+    QMenu* menu;
+
 private slots:
     void slotSkinKeyPressEvent(int code, const QString& text, bool autorep);
     void slotSkinKeyReleaseEvent(int code, const QString& text, bool autorep);
     void slotPopupMenu();
 
 private:
-    void populateContextMenu(QMenu *menu);
     const QSize m_screenSize;
 };
 
@@ -231,6 +244,7 @@ PreviewDeviceSkin::PreviewDeviceSkin(const DeviceSkinParameters &parameters, QWi
     DeviceSkin(parameters, parent),
     m_screenSize(parameters.screenSize())
 {
+    menu = new QMenu(this);
     connect(this, SIGNAL(skinKeyPressEvent(int,QString,bool)),
             this, SLOT(slotSkinKeyPressEvent(int,QString,bool)));
     connect(this, SIGNAL(skinKeyReleaseEvent(int,QString,bool)),
@@ -265,14 +279,7 @@ void PreviewDeviceSkin::slotSkinKeyReleaseEvent(int code, const QString& text, b
 
 void PreviewDeviceSkin::slotPopupMenu()
 {
-    QMenu menu(this);
-    populateContextMenu(&menu);
-    menu.exec(QCursor::pos());
-}
-
-void PreviewDeviceSkin::populateContextMenu(QMenu *menu)
-{
-     connect(menu->addAction(tr("&Close")), SIGNAL(triggered()), parentWidget(), SLOT(close()));
+    menu->exec(QCursor::pos());
 }
 
 void QmlViewer::setSkin(const QString& skinDirectory)
@@ -283,12 +290,13 @@ void QmlViewer::setSkin(const QString& skinDirectory)
         delete skin;
         if (!err.isEmpty())
             qWarning() << err;
+        delete menuBar();
         skin = new PreviewDeviceSkin(parameters,this);
-        skin->setScreenSize(canvas->size());
+        skin->setScreenSize(canvas->sizeHint());
         canvas->setParent(skin, Qt::SubWindow);
         canvas->setAutoFillBackground(true);
         skin->setView(canvas);
-        delete layout();
+        createMenu(0,skin->menu);
 
         canvas->show();
     }
@@ -318,19 +326,9 @@ void QmlViewer::setRecordPeriod(int ms)
 void QmlViewer::sceneResized(QSize size)
 {
     if (size.width() > 0 && size.height() > 0) {
-        canvas->setFixedSize(size.width(), size.height());
         if (skin)
             skin->setScreenSize(size);
-        else
-            resize(size);
     }
-}
-
-void QmlViewer::resizeEvent(QResizeEvent *e)
-{
-    QMainWindow::resizeEvent(e);
-    //if (!skin)
-        //canvas->setFixedSize(width(),height());
 }
 
 void QmlViewer::keyPressEvent(QKeyEvent *event)

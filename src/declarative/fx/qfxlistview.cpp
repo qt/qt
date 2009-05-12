@@ -858,12 +858,12 @@ QFxListView::~QFxListView()
     \qmlproperty model ListView::model
     This property holds the model providing data for the list.
 
-    The model provides a set of data that is used to create the items for the view.
-    For large or dynamic datasets the model is usually provided by a C++ model object.
-    The C++ model object must be a \l QAbstractItemModel subclass, a \l VisualModel,
-    or a simple list.
+    The model provides a set of data that is used to create the items
+    for the view.  For large or dynamic datasets the model is usually
+    provided by a C++ model object.  The C++ model object must be a \l
+    {QAbstractItemModel} subclass, a VisualModel, or a simple list.
 
-    Models can also be created directly in QML, using a \l ListModel.
+    Models can also be created directly in QML, using a \l{ListModel}.
 */
 QVariant QFxListView::model() const
 {

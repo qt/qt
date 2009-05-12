@@ -58,7 +58,7 @@ QML_DEFINE_TYPE(QFxComponentInstance,ComponentInstance);
 
 /*!
     \qmlclass ComponentInstance QFxComponentInstance
-    \brief The ComponentInstance item allows you to instantiate a \l{qml-component.html} {Component}.
+    \brief The ComponentInstance item allows you to instantiate a \l{Component}.
 
     \qml
     Item {

@@ -138,7 +138,7 @@ QmlCustomParserNodePrivate::fromProperty(QmlParser::Property *p)
             QmlCustomParserNode node = fromObject(v->object);
             prop.d->values << QVariant::fromValue(node);
         } else {
-            prop.d->values << QVariant::fromValue(v->primitive);
+            prop.d->values << QVariant::fromValue(v->primitive());
         }
 
     }

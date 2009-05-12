@@ -31,7 +31,6 @@ Q_OBJECT
 public:
     QmlViewer(QFxTestEngine::TestMode = QFxTestEngine::NoTest, const QString &testDir = QString(), QWidget *parent=0, Qt::WindowFlags flags=0);
 
-    void createMenuBar();
     void setRecordDither(const QString& s) { record_dither = s; }
     void setRecordPeriod(int ms);
     void setRecordFile(const QString&);
@@ -42,6 +41,8 @@ public:
     void setSkin(const QString& skinDirectory);
     void setDeviceKeys(bool);
     void setCacheEnabled(bool);
+
+    QSize sizeHint() const;
 
 public slots:
     void sceneResized(QSize size);
@@ -55,7 +56,8 @@ public slots:
 protected:
     virtual void keyPressEvent(QKeyEvent *);
     virtual void timerEvent(QTimerEvent *);
-    virtual void resizeEvent(QResizeEvent *);
+
+    void createMenu(QMenuBar *menu, QMenu *flatmenu);
 
 private:
     QString currentFileName;
