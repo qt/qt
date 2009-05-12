@@ -1980,7 +1980,9 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                                                           : QIcon::Disabled);
                 QPixmap tabIcon = tabV2.icon.pixmap(iconSize,
                                                     (tabV2.state & State_Enabled) ? QIcon::Normal
-                                                                                  : QIcon::Disabled);
+                                                                                  : QIcon::Disabled,
+                                                    (tabV2.state & State_Selected) ? QIcon::On
+                                                                                   : QIcon::Off);
 
                 int offset = 4;
                 int left = opt->rect.left();
@@ -2850,9 +2852,11 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 tr.setRect(0, 0, tr.height(), tr.width());
             int verticalShift = pixelMetric(QStyle::PM_TabBarTabShiftVertical, tab, widget);
             int horizontalShift = pixelMetric(QStyle::PM_TabBarTabShiftHorizontal, tab, widget);
+            int hpadding = pixelMetric(QStyle::PM_TabBarTabHSpace, opt, widget) / 2;
+            int vpadding = pixelMetric(QStyle::PM_TabBarTabVSpace, opt, widget) / 2;
             if (tabV2.shape == QTabBar::RoundedSouth || tabV2.shape == QTabBar::TriangularSouth)
                 verticalShift = -verticalShift;
-            tr.adjust(0, 0, horizontalShift, verticalShift);
+            tr.adjust(hpadding, vpadding, horizontalShift - hpadding, verticalShift - vpadding);
             bool selected = tabV2.state & State_Selected;
             if (selected) {
                 tr.setBottom(tr.bottom() - verticalShift);
@@ -3183,6 +3187,25 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                                }
         break;
 #endif //QT_NO_ITEMVIEWS
+#ifndef QT_NO_TOOLBAR
+    case SE_ToolBarHandle:
+        if (const QStyleOptionToolBar *tbopt = qstyleoption_cast<const QStyleOptionToolBar *>(opt)) {
+            if (tbopt->features & QStyleOptionToolBar::Movable) {
+                ///we need to access the widget here because the style option doesn't 
+                //have all the information we need (ie. the layout's margin)
+                const QToolBar *tb = qobject_cast<const QToolBar*>(widget);
+                const int margin = tb && tb->layout() ? tb->layout()->margin() : 2;
+                const int handleExtent = pixelMetric(QStyle::PM_ToolBarExtensionExtent, opt, tb);
+                if (tbopt->state & QStyle::State_Horizontal) {
+                    r = QRect(margin, margin, handleExtent, tbopt->rect.height() - 2*margin);
+                    r = QStyle::visualRect(tbopt->direction, tbopt->rect, r);
+                } else {
+                    r = QRect(margin, margin, tbopt->rect.width() - 2*margin, handleExtent);
+                }
+            }
+        }
+        break;
+#endif //QT_NO_TOOLBAR
     default:
         break;
     }

@@ -89,7 +89,7 @@
 
 #include "qapplication.h"
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 #include "qdatetime.h"
 #include "qguifunctions_wince.h"
 extern bool qt_wince_is_smartphone(); //qguifunctions_wince.cpp
@@ -101,15 +101,12 @@ extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 
 static void initResources()
 {
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     Q_INIT_RESOURCE(qstyle_wince);
 #else
     Q_INIT_RESOURCE(qstyle);
 #endif
 
-#if !defined(QT_NO_DIRECT3D) && defined(Q_WS_WIN)
-    Q_INIT_RESOURCE(qpaintengine_d3d);
-#endif
     Q_INIT_RESOURCE(qmessagebox);
 #if !defined(QT_NO_PRINTDIALOG)
     Q_INIT_RESOURCE(qprintdialog);
@@ -130,7 +127,7 @@ QInputContext *QApplicationPrivate::inputContext;
 
 bool QApplicationPrivate::quitOnLastWindowClosed = true;
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 int QApplicationPrivate::autoMaximizeThreshold = -1;
 bool QApplicationPrivate::autoSipEnabled = false;
 #endif
@@ -442,7 +439,7 @@ bool QApplicationPrivate::fade_tooltip = false;
 bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
 QString* QApplicationPrivate::styleOverride = 0;
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
 bool QApplicationPrivate::inSizeMove = false;
 #endif
 #ifdef QT_KEYPAD_NAVIGATION
@@ -618,13 +615,6 @@ void QApplicationPrivate::process_cmdline()
             Qt::RightToLeft
         \o  -graphicssystem, sets the backend to be used for on-screen widgets
             and QPixmaps. Available options are \c{raster} and \c{opengl}.
-    \endlist
-
-    The Windows version of Qt supports an additional command line  option, if
-    Direct3D support has been compiled into Qt:
-    \list
-        \o  -direct3d will make the Direct3D paint engine the default widget
-            paint engine in Qt. \bold {This functionality is experimental.}
     \endlist
 
     The X11 version of Qt supports some traditional X11 command line options:
@@ -832,12 +822,13 @@ QApplication::QApplication(Display *dpy, int &argc, char **argv,
 
 #endif // Q_WS_X11
 
-
-/*!
-  Initializes the QApplication object, called from the constructors.
-*/
 extern void qInitDrawhelperAsm();
 
+/*!
+  \fn void QApplicationPrivate::initialize()
+
+  Initializes the QApplication object, called from the constructors.
+*/
 void QApplicationPrivate::initialize()
 {
     QWidgetPrivate::mapper = new QWidgetMapper;
@@ -865,7 +856,7 @@ void QApplicationPrivate::initialize()
         q->setAttribute(Qt::AA_NativeWindows);
 #endif
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 #ifdef QT_AUTO_MAXIMIZE_THRESHOLD
     autoMaximizeThreshold = QT_AUTO_MAXIMIZE_THRESHOLD;
 #else
@@ -874,7 +865,7 @@ void QApplicationPrivate::initialize()
     else
         autoMaximizeThreshold = -1;
 #endif //QT_AUTO_MAXIMIZE_THRESHOLD
-#endif //Q_OS_WINCE
+#endif //Q_WS_WINCE
 
     // Set up which span functions should be used in raster engine...
     qInitDrawhelperAsm();
@@ -1226,7 +1217,7 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     the WA_InputMethodEnabled attribute set.
 */
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 void QApplication::setAutoMaximizeThreshold(const int threshold)
 {
     QApplicationPrivate::autoMaximizeThreshold = threshold;
@@ -1301,7 +1292,7 @@ QStyle *QApplication::style()
             delete QApplicationPrivate::styleOverride;
             QApplicationPrivate::styleOverride = 0;
         } else {
-#if defined(Q_WS_WIN) && defined(Q_OS_WINCE)
+#if defined(Q_WS_WIN) && defined(Q_WS_WINCE)
     if (qt_wince_is_smartphone() || qt_wince_is_pocket_pc())
         style = QLatin1String("WindowsMobile");
      else
@@ -2100,8 +2091,8 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                 if (that)
                     QApplication::sendEvent(that->style(), &in);
             }
+            emit qApp->focusChanged(prev, focus_widget);
         }
-        emit qApp->focusChanged(prev, focus_widget);
     }
 }
 
@@ -3498,7 +3489,7 @@ void QApplication::changeOverrideCursor(const QCursor &cursor)
     It is necessary to call this function to start event handling. The main
     event loop receives events from the window system and dispatches these to
     the application widgets.
- 
+
     Generally, no user interaction can take place before calling exec(). As a
     special case, modal widgets like QMessageBox can be used before calling
     exec(), because modal widgets call exec() to start a local event loop.
@@ -4036,7 +4027,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
     if (receiver->isWidgetType()) {
         QWidget *widget = static_cast<QWidget *>(receiver);
 
-#if !defined(Q_OS_WINCE) || (defined(GWES_ICONCURS) && !defined(QT_NO_CURSOR))
+#if !defined(Q_WS_WINCE) || (defined(GWES_ICONCURS) && !defined(QT_NO_CURSOR))
         // toggle HasMouse widget state on enter and leave
         if ((e->type() == QEvent::Enter || e->type() == QEvent::DragEnter) &&
             (!qApp->activePopupWidget() || qApp->activePopupWidget() == widget->window()))
@@ -4997,6 +4988,137 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
         return false;
     return true;
 }
+
+/*! \fn QDecoration &QApplication::qwsDecoration()
+    Return the QWSDecoration used for decorating windows.
+
+    \warning This method is non-portable. It is only available in
+    Qt for Embedded Linux.
+
+    \sa QDecoration
+*/
+
+/*!
+    \fn void QApplication::qwsSetDecoration(QDecoration *decoration)
+
+    Sets the QDecoration derived class to use for decorating the
+    windows used by Qt for Embedded Linux to the \a decoration
+    specified.
+
+    This method is non-portable. It is only available in Qt for Embedded Linux.
+
+    \sa QDecoration
+*/
+
+/*! \fn QDecoration* QApplication::qwsSetDecoration(const QString &decoration)
+  \overload
+
+  Requests a QDecoration object for \a decoration from the QDecorationFactory.
+
+  The string must be one of the QDecorationFactory::keys(). Keys are
+  case insensitive.
+
+  A later call to the QApplication constructor will override the
+  requested style when a "-style" option is passed in as a commandline
+  parameter.
+
+  Returns 0 if an unknown \a decoration is passed, otherwise the QStyle object
+  returned is set as the application's GUI style.
+*/
+
+/*!
+    \fn bool QApplication::qwsEventFilter(QWSEvent *event)
+
+    This virtual function is only implemented under Qt for Embedded Linux.
+
+    If you create an application that inherits QApplication and
+    reimplement this function, you get direct access to all QWS (Q
+    Window System) events that the are received from the QWS master
+    process. The events are passed in the \a event parameter.
+
+    Return true if you want to stop the event from being processed.
+    Return false for normal event dispatching. The default
+    implementation returns false.
+*/
+
+/*! \fn void QApplication::qwsSetCustomColors(QRgb *colorTable, int start, int numColors)
+    Set Qt for Embedded Linux custom color table.
+
+    Qt for Embedded Linux on 8-bpp displays allocates a standard 216 color cube.
+    The remaining 40 colors may be used by setting a custom color
+    table in the QWS master process before any clients connect.
+
+    \a colorTable is an array of up to 40 custom colors. \a start is
+    the starting index (0-39) and \a numColors is the number of colors
+    to be set (1-40).
+
+    This method is non-portable. It is available \e only in
+    Qt for Embedded Linux.
+
+    \note The custom colors will not be used by the default screen
+    driver. To make use of the new colors, implement a custom screen
+    driver, or use QDirectPainter.
+*/
+
+/*! \fn int QApplication::qwsProcessEvent(QWSEvent* event)
+    \internal
+*/
+
+/*! \fn int QApplication::x11ClientMessage(QWidget* w, XEvent* event, bool passive_only)
+    \internal
+*/
+
+/*! \fn int QApplication::x11ProcessEvent(XEvent* event)
+    This function does the core processing of individual X
+    \a{event}s, normally by dispatching Qt events to the right
+    destination.
+
+    It returns 1 if the event was consumed by special handling, 0 if
+    the \a event was consumed by normal handling, and -1 if the \a
+    event was for an unrecognized widget.
+
+    \sa x11EventFilter()
+*/
+
+/*!
+    \fn bool QApplication::x11EventFilter(XEvent *event)
+
+    \warning This virtual function is only implemented under X11.
+
+    If you create an application that inherits QApplication and
+    reimplement this function, you get direct access to all X events
+    that the are received from the X server. The events are passed in
+    the \a event parameter.
+
+    Return true if you want to stop the event from being processed.
+    Return false for normal event dispatching. The default
+    implementation returns false.
+
+    It is only the directly addressed messages that are filtered.
+    You must install an event filter directly on the event
+    dispatcher, which is returned by
+    QAbstractEventDispatcher::instance(), to handle system wide
+    messages.
+
+    \sa x11ProcessEvent()
+*/
+
+/*! \fn void QApplication::winFocus(QWidget *widget, bool gotFocus)
+    \internal
+    \since 4.1
+
+    If \a gotFocus is true, \a widget will become the active window.
+    Otherwise the active window is reset to 0.
+*/
+
+/*! \fn void QApplication::winMouseButtonUp()
+  \internal
+ */
+
+/*! \fn void QApplication::syncX()
+  Synchronizes with the X server in the X11 implementation.
+  This normally takes some time. Does nothing on other platforms.
+*/
 
 QT_END_NAMESPACE
 

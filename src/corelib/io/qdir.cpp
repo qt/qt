@@ -50,9 +50,12 @@
 #include "qstring.h"
 #include "qregexp.h"
 #include "qvector.h"
+#include "qalgorithms.h"
 #ifdef QT_BUILD_CORE_LIB
 # include "qresource.h"
 #endif
+
+#include "qvarlengtharray.h"
 
 #include "../kernel/qcoreglobaldata_p.h"
 #include <stdlib.h>
@@ -190,32 +193,28 @@ QDirPrivate::~QDirPrivate()
 
 /* For sorting */
 struct QDirSortItem {
-    QString filename_cache;
-    QString suffix_cache;
+    mutable QString filename_cache;
+    mutable QString suffix_cache;
     QFileInfo item;
 };
-static int qt_cmp_si_sort_flags;
 
-#if defined(Q_C_CALLBACKS)
-extern "C" {
-#endif
 
-#ifdef Q_OS_WINCE
-static int __cdecl qt_cmp_si(const void *n1, const void *n2)
-#else
-static int qt_cmp_si(const void *n1, const void *n2)
-#endif
+class QDirSortItemComparator {
+    int qt_cmp_si_sort_flags;
+public:
+    QDirSortItemComparator(int flags) : qt_cmp_si_sort_flags(flags) {}
+    bool operator()(const QDirSortItem &, const QDirSortItem &);
+};
+
+bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortItem &n2)
 {
-    if (!n1 || !n2)
-        return 0;
-
-    QDirSortItem* f1 = (QDirSortItem*)n1;
-    QDirSortItem* f2 = (QDirSortItem*)n2;
+    const QDirSortItem* f1 = &n1;
+    const QDirSortItem* f2 = &n2;
 
     if ((qt_cmp_si_sort_flags & QDir::DirsFirst) && (f1->item.isDir() != f2->item.isDir()))
-        return f1->item.isDir() ? -1 : 1;
+        return f1->item.isDir();
     if ((qt_cmp_si_sort_flags & QDir::DirsLast) && (f1->item.isDir() != f2->item.isDir()))
-        return f1->item.isDir() ? 1 : -1;
+        return !f1->item.isDir();
 
     int r = 0;
     int sortBy = (qt_cmp_si_sort_flags & QDir::SortByMask)
@@ -264,17 +263,10 @@ static int qt_cmp_si(const void *n1, const void *n2)
             : f1->filename_cache.compare(f2->filename_cache);
     }
 
-    if (r == 0) // Enforce an order - the order the items appear in the array
-        r = (char*)n1 - (char*)n2;
-
     if (qt_cmp_si_sort_flags & QDir::Reversed)
-        return -r;
-    return r;
+        return r > 0;
+    return r < 0;
 }
-
-#if defined(Q_C_CALLBACKS)
-}
-#endif
 
 inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QStringList &l,
                                       QStringList *names, QFileInfoList *infos) const
@@ -292,9 +284,8 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QStringList &l,
                 path += QLatin1Char('/');
             si[i].item = QFileInfo(path + l.at(i));
         }
-        qt_cmp_si_sort_flags = sort;
         if ((sort & QDir::SortByMask) != QDir::Unsorted)
-            qsort(si, i, sizeof(si[0]), qt_cmp_si);
+            qStableSort(si, si+i, QDirSortItemComparator(sort));
         // put them back in the list(s)
         for (int j = 0; j<i; j++) {
             if(infos)
@@ -2065,11 +2056,13 @@ QString QDir::cleanPath(const QString &path)
     QString name = path;
     QChar dir_separator = separator();
     if(dir_separator != QLatin1Char('/'))
-	name.replace(dir_separator, QLatin1Char('/'));
+ 	name.replace(dir_separator, QLatin1Char('/'));
 
     int used = 0, levels = 0;
     const int len = name.length();
-    QVector<QChar> out(len);
+    QVarLengthArray<QChar> outVector(len);
+    QChar *out = outVector.data();
+
     const QChar *p = name.unicode();
     for(int i = 0, last = -1, iwrite = 0; i < len; i++) {
         if(p[i] == QLatin1Char('/')) {
@@ -2169,7 +2162,7 @@ QString QDir::cleanPath(const QString &path)
     if(used == len)
         ret = name;
     else
-	ret = QString(out.data(), used);
+	ret = QString(out, used);
 
     // Strip away last slash except for root directories
     if (ret.endsWith(QLatin1Char('/'))
@@ -2232,7 +2225,7 @@ QStringList QDir::nameFiltersFromString(const QString &nameFilter)
 
     \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 13
 
-    If the file name contains characters that cannot be part of a valid C++ function name 
+    If the file name contains characters that cannot be part of a valid C++ function name
     (such as '-'), they have to be replaced by the underscore character ('_').
 
     Note: This macro cannot be used in a namespace. It should be called from

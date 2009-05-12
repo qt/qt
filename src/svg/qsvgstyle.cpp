@@ -257,7 +257,7 @@ void QSvgGradientStyle::apply(QPainter *p, const QRectF &/*rect*/, QSvgNode *, Q
 
     // If the gradient is marked as empty, insert transparent black
     if (!m_gradientStopsSet) {
-        m_gradient->setColorAt(0.0, QColor(0, 0, 0, 0));
+        m_gradient->setStops(QGradientStops() << QGradientStop(0.0, QColor(0, 0, 0, 0)));
         m_gradientStopsSet = true;
     }
 
@@ -808,6 +808,7 @@ void QSvgGradientStyle::resolveStops()
                     static_cast<QSvgGradientStyle*>(prop);
                 st->resolveStops();
                 m_gradient->setStops(st->qgradient()->stops());
+                m_gradientStopsSet = st->gradientStopsSet();
             }
         }
         m_link = QString();

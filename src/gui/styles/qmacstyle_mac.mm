@@ -564,7 +564,6 @@ extern QPaintDevice *qt_mac_safe_pdev; //qapplication_mac.cpp
   QMacCGStyle globals
  *****************************************************************************/
 const int qt_mac_hitheme_version = 0; //the HITheme version we speak
-const int macSpinBoxSep        = 5;    // distance between spinwidget and the lineedit
 const int macItemFrame         = 2;    // menu item frame width
 const int macItemHMargin       = 3;    // menu item hor text margin
 const int macItemVMargin       = 2;    // menu item ver text margin
@@ -2161,8 +2160,11 @@ void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QPoint 
 /*! \reimp */
 void QMacStyle::polish(QPalette &pal)
 {
-    if (qt_mac_backgroundPattern == 0)
+    if (!qt_mac_backgroundPattern) {
+        if (!qApp)
+            return;
         qt_mac_backgroundPattern = new QPixmap(d->generateBackgroundPattern());
+    }
 
     QColor pc(Qt::black);
     pc = qcolorForTheme(kThemeBrushDialogBackgroundActive);
@@ -2388,7 +2390,14 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         break;
     case PM_SpinBoxFrameWidth:
         GetThemeMetric(kThemeMetricEditTextFrameOutset, &ret);
-        ret += 2;
+        switch (d->aquaSizeConstrain(opt, widget)) {
+        default:
+            ret += 2;
+            break;
+        case QAquaSizeMini:
+            ret += 1;
+            break;
+        }
         break;
     case PM_ButtonShiftHorizontal:
     case PM_ButtonShiftVertical:
@@ -2647,6 +2656,9 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         }
         break;
     case PM_MenuHMargin:
+        ret = 0;
+        break;
+    case PM_ToolBarFrameWidth:
         ret = 0;
         break;
     default:
@@ -3679,8 +3691,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         if (tb->toolButtonStyle != Qt::ToolButtonIconOnly) {
                             needText = true;
                             if (tb->toolButtonStyle == Qt::ToolButtonTextUnderIcon) {
-                                pr.setHeight(pixmap.size().height() + 6);
-                                cr.adjust(0, pr.bottom(), 0, -3);
+                                pr.setHeight(pixmap.size().height());
+                                cr.adjust(0, pr.bottom() + 1, 0, 1);
                                 alignment |= Qt::AlignCenter;
                             } else {
                                 pr.setWidth(pixmap.width() + 8);
@@ -3688,7 +3700,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                                 alignment |= Qt::AlignLeft | Qt::AlignVCenter;
                             }
                         }
-                        if (down) {
+                        if (opt->state & State_Sunken) {
                             pr.translate(shiftX, shiftY);
                             pixmap = darkenPixmap(pixmap);
                         }
@@ -3718,7 +3730,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         }
                         drawItemText(p, cr, alignment, pal,
                                      tb->state & State_Enabled, tb->text, role);
-                        if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_5 && down) {
+                        if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_5 &&
+                            (tb->state & State_Sunken)) {
                             // Draw a "drop shadow" in earlier versions.
                             drawItemText(p, cr.adjusted(0, 1, 0, 1), alignment,
                                          tb->palette, tb->state & State_Enabled, tb->text);
@@ -4544,9 +4557,10 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     case CE_ToolBar: {
         // For unified tool bars, draw nothing.
         if (w) {
-            if (QMainWindow * mainWindow = qobject_cast<QMainWindow *>(w->window()))
+            if (QMainWindow * mainWindow = qobject_cast<QMainWindow *>(w->window())) {
                 if (mainWindow->unifiedTitleAndToolBarOnMac())
                     break;
+                }
         }
 
         // draw background gradient
@@ -5056,11 +5070,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         bdi.kind = kThemeIncDecButton;
                         break;
                     case QAquaSizeMini:
+                        bdi.kind = kThemeIncDecButtonMini;
+                        break;
                     case QAquaSizeSmall:
-                        if (aquaSize == QAquaSizeMini)
-                            bdi.kind = kThemeIncDecButtonMini;
-                        else
-                            bdi.kind = kThemeIncDecButtonSmall;
+                        bdi.kind = kThemeIncDecButtonSmall;
                         break;
                 }
                 if (!(sb->stepEnabled & (QAbstractSpinBox::StepUpEnabled
@@ -5080,8 +5093,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 bdi.value = kThemeButtonOff;
                 bdi.adornment = kThemeAdornmentNone;
 
-                QRect updown = subControlRect(CC_SpinBox, sb, SC_SpinBoxUp,
-                                                 widget);
+                QRect updown = subControlRect(CC_SpinBox, sb, SC_SpinBoxUp, widget);
+
                 updown |= subControlRect(CC_SpinBox, sb, SC_SpinBoxDown, widget);
                 HIRect newRect = qt_hirectForQRect(updown);
                 QRect off_rct;
@@ -5091,15 +5104,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                                 int(newRect.origin.y - outRect.origin.y),
                                 int(outRect.size.width - newRect.size.width),
                                 int(outRect.size.height - newRect.size.height));
-
-                // HIThemeGetButtonBackgroundBounds offsets non-focused normal sized
-                // buttons by one in de y direction, account for that here.
-                if (bdi.adornment == kThemeAdornmentNone && bdi.kind == kThemeIncDecButton)
-                    off_rct.adjust(0, 1, 0, 0);
-
-                // Adjust the rect for small buttos also.
-                if (bdi.adornment == kThemeAdornmentFocus && bdi.kind == kThemeIncDecButtonSmall)
-                    off_rct.adjust(0, 0, 0, -1);
 
                 newRect = qt_hirectForQRect(updown, off_rct);
                 HIThemeDrawButton(&newRect, &bdi, cg, kHIThemeOrientationNormal, 0);
@@ -5282,16 +5286,22 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     drawToolbarButtonArrow(tb->rect, tds, cg);
                 }
                 if (tb->state & State_On) {
-                    QPen oldPen = p->pen();
-                    p->setPen(QColor(0, 0, 0, 0x3a));
-                    p->fillRect(tb->rect.adjusted(1, 1, -1, -1), QColor(0, 0, 0, 0x12));
-                    p->drawLine(tb->rect.left() + 1, tb->rect.top(),
-                                tb->rect.right() - 1, tb->rect.top());
-                    p->drawLine(tb->rect.left() + 1, tb->rect.bottom(),
-                                tb->rect.right() - 1, tb->rect.bottom());
-                    p->drawLine(tb->rect.topLeft(), tb->rect.bottomLeft());
-                    p->drawLine(tb->rect.topRight(), tb->rect.bottomRight());
-                    p->setPen(oldPen);
+                    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
+                        static QPixmap pm(QLatin1String(":/trolltech/mac/style/images/leopard-unified-toolbar-on.png"));
+                        p->setRenderHint(QPainter::SmoothPixmapTransform);
+                        QStyleHelper::drawBorderPixmap(pm, p, tb->rect, 2, 2, 2, 2);
+                    } else {
+                        QPen oldPen = p->pen();
+                        p->setPen(QColor(0, 0, 0, 0x3a));
+                        p->fillRect(tb->rect.adjusted(1, 1, -1, -1), QColor(0, 0, 0, 0x12));
+                        p->drawLine(tb->rect.left() + 1, tb->rect.top(),
+                                    tb->rect.right() - 1, tb->rect.top());
+                        p->drawLine(tb->rect.left() + 1, tb->rect.bottom(),
+                                    tb->rect.right() - 1, tb->rect.bottom());
+                        p->drawLine(tb->rect.topLeft(), tb->rect.bottomLeft());
+                        p->drawLine(tb->rect.topRight(), tb->rect.bottomRight());
+                        p->setPen(oldPen);
+                    }
                 }
                 drawControl(CE_ToolButtonLabel, opt, p, widget);
             } else {
@@ -5769,39 +5779,61 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
         break;
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spin = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
-            const int spinner_w = 14,
-                      fw = pixelMetric(PM_SpinBoxFrameWidth, spin, widget);
+            QAquaWidgetSize aquaSize = d->aquaSizeConstrain(spin, widget);
+            int spinner_w;
+            int spinBoxSep;
+            int fw = pixelMetric(PM_SpinBoxFrameWidth, spin, widget);
+            switch (aquaSize) {
+            default:
+            case QAquaSizeUnknown:
+            case QAquaSizeLarge:
+                spinner_w = 14;
+                spinBoxSep = 2;
+                break;
+            case QAquaSizeSmall:
+                spinner_w = 12;
+                spinBoxSep = 2;
+                break;
+            case QAquaSizeMini:
+                spinner_w = 10;
+                spinBoxSep = 1;
+                break;
+            }
+
             switch (sc) {
             case SC_SpinBoxUp:
             case SC_SpinBoxDown: {
                 if (spin->buttonSymbols == QAbstractSpinBox::NoButtons)
                     break;
-                const int frameWidth = pixelMetric(PM_SpinBoxFrameWidth, spin, widget);
-                const int spinner_w = 18;
-                const int y = frameWidth;
-                const int x = spin->rect.width() - spinner_w + frameWidth;
+
+                const int y = fw;
+                const int x = spin->rect.width() - spinner_w;
                 ret.setRect(x + spin->rect.x(), y + spin->rect.y(), spinner_w, spin->rect.height() - y * 2);
                 HIThemeButtonDrawInfo bdi;
                 bdi.version = qt_mac_hitheme_version;
                 bdi.kind = kThemeIncDecButton;
-                QAquaWidgetSize aquaSize = d->aquaSizeConstrain(opt, widget);
+                int hackTranslateX;
                 switch (aquaSize) {
-                    case QAquaSizeUnknown:
-                    case QAquaSizeLarge:
-                        bdi.kind = kThemeIncDecButton;
-                        break;
-                    case QAquaSizeMini:
-                    case QAquaSizeSmall:
-                        if (aquaSize == QAquaSizeMini)
-                            bdi.kind = kThemeIncDecButtonMini;
-                        else
-                            bdi.kind = kThemeIncDecButtonSmall;
-                        break;
+                default:
+                case QAquaSizeUnknown:
+                case QAquaSizeLarge:
+                    bdi.kind = kThemeIncDecButton;
+                    hackTranslateX = 0;
+                    break;
+                case QAquaSizeSmall:
+                    bdi.kind = kThemeIncDecButtonSmall;
+                    hackTranslateX = -2;
+                    break;
+                case QAquaSizeMini:
+                    bdi.kind = kThemeIncDecButtonMini;
+                    hackTranslateX = -1;
+                    break;
                 }
                 bdi.state = kThemeStateActive;
                 bdi.value = kThemeButtonOff;
                 bdi.adornment = kThemeAdornmentNone;
                 HIRect hirect = qt_hirectForQRect(ret);
+
                 HIRect outRect;
                 HIThemeGetButtonBackgroundBounds(&hirect, &bdi, &outRect);
                 ret = qt_qrectForHIRect(outRect);
@@ -5816,13 +5848,13 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                     Q_ASSERT(0);
                     break;
                 }
-                ret.translate(-1, -2); // hack: position the buttons correctly (weird that we need this)
+                ret.translate(hackTranslateX, 0); // hack: position the buttons correctly (weird that we need this)
                 ret = visualRect(spin->direction, spin->rect, ret);
                 break;
             }
             case SC_SpinBoxEditField:
                 ret.setRect(fw, fw,
-                            spin->rect.width() - spinner_w - fw * 2 - macSpinBoxSep + 1,
+                            spin->rect.width() - spinner_w - fw * 2 - spinBoxSep,
                             spin->rect.height() - fw * 2);
                 ret = visualRect(spin->direction, spin->rect, ret);
                 break;
@@ -5854,8 +5886,8 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 
     switch (ct) {
     case QStyle::CT_SpinBox:
-        sz.setWidth(sz.width() + macSpinBoxSep);
-        sz.setHeight(sz.height() - 3); // hack to work around horrible sizeHint() code in QAbstractSpinBox
+         // hack to work around horrible sizeHint() code in QAbstractSpinBox
+        sz.setHeight(sz.height() - 3);
         break;
     case QStyle::CT_TabBarTab:
         if (const QStyleOptionTabV3 *tab = qstyleoption_cast<const QStyleOptionTabV3 *>(opt)) {
@@ -6009,6 +6041,14 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         }
         break;
     case CT_ToolButton:
+        if (widget && qobject_cast<const QToolBar *>(widget->parentWidget())) {
+            sz.rwidth() += 4;
+            if (sz.height() <= 32) {
+                // Workaround strange HIToolBar bug when getting constraints.
+                sz.rheight() += 1;
+            }
+            return sz;
+        }
         sz.rwidth() += 10;
         sz.rheight() += 10;
         return sz;

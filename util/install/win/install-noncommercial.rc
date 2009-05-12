@@ -1,4 +1,0 @@
-IDI_ICON1               ICON    DISCARDABLE     "install.ico"
-LICENSE			RCDATA	"../../../dist/noncommercial/LICENSE"
-LICENSE-US		RCDATA	"../../../dist/noncommercial/LICENSE-US"
-QT_ARQ			RCDATA	"qt.arq"

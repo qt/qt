@@ -459,7 +459,18 @@ Q_GUI_EXPORT OSWindowRef qt_mac_window_for(const QWidget *w)
     if (hiview){
         OSWindowRef window = qt_mac_window_for(hiview);
         if (!window && qt_isGenuineQWidget(hiview)) {
-            w->window()->d_func()->createWindow_sys();
+            QWidget *myWindow = w->window();
+            // This is a workaround for NSToolbar. When a widget is hidden
+            // by clicking the toolbar button, Cocoa reparents the widgets
+            // to another window (but Qt doesn't know about it).
+            // When we start showing them, it reparents back,
+            // but at this point it's window is nil, but the window it's being brought
+            // into (the Qt one) is for sure created.
+            // This stops the hierarchy moving under our feet.
+            if (myWindow != w && qt_mac_window_for(qt_mac_nativeview_for(myWindow)))
+                return qt_mac_window_for(qt_mac_nativeview_for(myWindow));
+
+            myWindow->d_func()->createWindow_sys();
             // Reget the hiview since the "create window could potentially move the view (I guess).
             hiview = qt_mac_nativeview_for(w);
             window = qt_mac_window_for(hiview);
@@ -2145,6 +2156,7 @@ void QWidgetPrivate::finishCreateWindow_sys_Carbon(OSWindowRef windowRef)
     setWindowModified_sys(q->isWindowModified());
     updateFrameStrut();
     qt_mac_update_sizer(q);
+    applyMaxAndMinSizeOnWindow();
 }
 #else  // QT_MAC_USE_COCOA
 void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWindowRef)
@@ -2166,7 +2178,10 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
     if ((popup || type == Qt::Tool || type == Qt::ToolTip) && !q->isModal()) {
         [windowRef setHidesOnDeactivate:YES];
         [windowRef setHasShadow:YES];
+    } else {
+        [windowRef setHidesOnDeactivate:NO];
     }
+
     Q_UNUSED(parentWidget);
     Q_UNUSED(dialog);
 
@@ -2227,6 +2242,7 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
     syncCocoaMask();
     macUpdateIsOpaque();
     qt_mac_update_sizer(q);
+    applyMaxAndMinSizeOnWindow();
 }
 
 #endif // QT_MAC_USE_COCOA
@@ -2838,12 +2854,26 @@ void QWidgetPrivate::updateSystemBackground()
 
 void QWidgetPrivate::setCursor_sys(const QCursor &)
 {
+#ifndef QT_MAC_USE_COCOA
     qt_mac_update_cursor();
+#else
+     Q_Q(QWidget);
+    if (q->testAttribute(Qt::WA_WState_Created)) {
+        [qt_mac_window_for(q) invalidateCursorRectsForView:qt_mac_nativeview_for(q)];
+    }
+#endif
 }
 
 void QWidgetPrivate::unsetCursor_sys()
 {
+#ifndef QT_MAC_USE_COCOA
     qt_mac_update_cursor();
+#else
+     Q_Q(QWidget);
+    if (q->testAttribute(Qt::WA_WState_Created)) {
+        [qt_mac_window_for(q) invalidateCursorRectsForView:qt_mac_nativeview_for(q)];
+    }
+#endif
 }
 
 void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
@@ -3267,6 +3297,20 @@ void QWidgetPrivate::show_sys()
 
     qt_event_request_window_change(q);
 }
+
+
+QPoint qt_mac_nativeMapFromParent(const QWidget *child, const QPoint &pt)
+{
+#ifndef QT_MAC_USE_COCOA
+    CGPoint nativePoint = CGPointMake(pt.x(), pt.y());
+    HIViewConvertPoint(&nativePoint, qt_mac_nativeview_for(child->parentWidget()),
+                       qt_mac_nativeview_for(child));
+#else
+    NSPoint nativePoint = [qt_mac_nativeview_for(child) convertPoint:NSMakePoint(pt.x(), pt.y()) fromView:qt_mac_nativeview_for(child->parentWidget())];
+#endif
+    return QPoint(nativePoint.x, nativePoint.y);
+}
+
 
 void QWidgetPrivate::hide_sys()
 {
@@ -3953,65 +3997,16 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
     }
 }
 
-void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
+void QWidgetPrivate::adjustWithinMaxAndMinSize(int &w, int &h)
 {
-    Q_Q(QWidget);
-    Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-
-    if(q->windowType() == Qt::Desktop)
-        return;
-
-    QMacCocoaAutoReleasePool pool;
-    bool realWindow = isRealWindow();
-    if (realWindow && !(w == 0 && h == 0) && !q->testAttribute(Qt::WA_DontShowOnScreen)) {
-        topData()->isSetGeometry = 1;
-        topData()->isMove = isMove;
-#ifndef QT_MAC_USE_COCOA
-        Rect r; SetRect(&r, x, y, x + w, y + h);
-        SetWindowBounds(qt_mac_window_for(q), kWindowContentRgn, &r);
-#else
-        NSWindow *window = qt_mac_window_for(q);
-        const QRect &fStrut = frameStrut();
-        const QRect frameRect(QPoint(x - fStrut.left(), y - fStrut.top()),
-                              QSize(fStrut.left() + fStrut.right() + w,
-                                    fStrut.top() + fStrut.bottom() + h));
-        NSRect cocoaFrameRect = NSMakeRect(frameRect.x(), flipYCoordinate(frameRect.bottom() + 1),
-                                           frameRect.width(), frameRect.height());
-        [window setFrame:cocoaFrameRect display:NO];
-#endif
-        topData()->isSetGeometry = 0;
-    } else {
-        setGeometry_sys_helper(x, y, w, h, isMove);
-    }
-}
-
-void QWidgetPrivate::setGeometry_sys_helper(int x, int y, int w, int h, bool isMove)
-{
-    Q_Q(QWidget);
-    bool realWindow = isRealWindow();
-    if(QWExtra *extra = extraData()) {        // any size restrictions?
-        if(realWindow) {
-            qt_mac_update_sizer(q);
-            if(q->windowFlags() & Qt::WindowMaximizeButtonHint) {
-#ifndef QT_MAC_USE_COCOA
-                OSWindowRef window = qt_mac_window_for(q);
-                if(extra->maxw && extra->maxh && extra->maxw == extra->minw
-                        && extra->maxh == extra->minh) {
-                    ChangeWindowAttributes(window, kWindowNoAttributes, kWindowFullZoomAttribute);
-                } else {
-                    ChangeWindowAttributes(window, kWindowFullZoomAttribute, kWindowNoAttributes);
-                }
-#endif
-            }
-        }
-
-        w = qMin(w,extra->maxw);
-        h = qMin(h,extra->maxh);
-        w = qMax(w,extra->minw);
-        h = qMax(h,extra->minh);
+    if (QWExtra *extra = extraData()) {
+        w = qMin(w, extra->maxw);
+        h = qMin(h, extra->maxh);
+        w = qMax(w, extra->minw);
+        h = qMax(h, extra->minh);
 
         // Deal with size increment
-        if(QTLWExtra *top = topData()) {
+        if (QTLWExtra *top = topData()) {
             if(top->incw) {
                 w = w/top->incw;
                 w *= top->incw;
@@ -4023,40 +4018,119 @@ void QWidgetPrivate::setGeometry_sys_helper(int x, int y, int w, int h, bool isM
         }
     }
 
-    if (realWindow) {
+    if (isRealWindow()) {
         w = qMax(0, w);
         h = qMax(0, h);
     }
+}
+
+void QWidgetPrivate::applyMaxAndMinSizeOnWindow()
+{
+    Q_Q(QWidget);
+    const float max_f(20000);
+#ifndef QT_MAC_USE_COCOA
+#define SF(x) ((x > max_f) ? max_f : x)
+    HISize max = CGSizeMake(SF(extra->maxw), SF(extra->maxh));
+    HISize min = CGSizeMake(SF(extra->minw), SF(extra->minh));
+#undef SF
+    SetWindowResizeLimits(qt_mac_window_for(q), &min, &max);
+#else
+#define SF(x) ((x > max_f) ? max_f : x)
+    NSSize max = NSMakeSize(SF(extra->maxw), SF(extra->maxh));
+    NSSize min = NSMakeSize(SF(extra->minw), SF(extra->minh));
+#undef SF
+    [qt_mac_window_for(q) setMinSize:min];
+    [qt_mac_window_for(q) setMaxSize:max];
+#endif
+}
+
+void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
+{
+    Q_Q(QWidget);
+    Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
+
+    if(q->windowType() == Qt::Desktop)
+        return;
+
+    QMacCocoaAutoReleasePool pool;
+    bool realWindow = isRealWindow();
+
+    if (realWindow && !q->testAttribute(Qt::WA_DontShowOnScreen)){
+        adjustWithinMaxAndMinSize(w, h);
+#ifndef QT_MAC_USE_COCOA
+        if (w != 0 && h != 0) {
+            topData()->isSetGeometry = 1;
+            topData()->isMove = isMove;
+            Rect r; SetRect(&r, x, y, x + w, y + h);
+            SetWindowBounds(qt_mac_window_for(q), kWindowContentRgn, &r);
+            topData()->isSetGeometry = 0;
+        } else {
+            setGeometry_sys_helper(x, y, w, h, isMove);
+        }
+#else
+        NSWindow *window = qt_mac_window_for(q);
+        const QRect &fStrut = frameStrut();
+        const QRect frameRect(QPoint(x - fStrut.left(), y - fStrut.top()),
+                              QSize(fStrut.left() + fStrut.right() + w,
+                                    fStrut.top() + fStrut.bottom() + h));
+        NSRect cocoaFrameRect = NSMakeRect(frameRect.x(), flipYCoordinate(frameRect.bottom() + 1),
+                                           frameRect.width(), frameRect.height());
+
+        QPoint currTopLeft = data.crect.topLeft();
+        if (currTopLeft.x() == x && currTopLeft.y() == y
+                && cocoaFrameRect.size.width != 0
+                && cocoaFrameRect.size.height != 0) {
+            [window setFrame:cocoaFrameRect display:NO];
+        } else {
+            // The window is moved and resized (or resized to zero).
+            // Since Cocoa usually only sends us a resize callback after
+            // setting a window frame, we issue an explicit move as
+            // well. To stop Cocoa from optimize away the move (since the move
+            // would have the same origin as the setFrame call) we shift the
+            // window back and forth inbetween.
+            cocoaFrameRect.origin.y += 1;
+            [window setFrame:cocoaFrameRect display:NO];
+            cocoaFrameRect.origin.y -= 1;
+            [window setFrameOrigin:cocoaFrameRect.origin];
+        }
+#endif
+    } else {
+        setGeometry_sys_helper(x, y, w, h, isMove);
+    }
+}
+
+void QWidgetPrivate::setGeometry_sys_helper(int x, int y, int w, int h, bool isMove)
+{
+    Q_Q(QWidget);
+    bool realWindow = isRealWindow();
 
     QPoint oldp = q->pos();
     QSize  olds = q->size();
     const bool isResize = (olds != QSize(w, h));
-    if(!realWindow && !isResize && QPoint(x, y) == oldp)
+
+    if (!realWindow && !isResize && QPoint(x, y) == oldp)
         return;
-    if(isResize && q->isMaximized())
+
+    if (isResize)
         data.window_state = data.window_state & ~Qt::WindowMaximized;
+
     const bool visible = q->isVisible();
     data.crect = QRect(x, y, w, h);
 
-    if(realWindow) {
-        if(QWExtra *extra = extraData()) { //set constraints
-            const float max_f(20000);
+    if (realWindow) {
+        adjustWithinMaxAndMinSize(w, h);
+        qt_mac_update_sizer(q);
+
 #ifndef QT_MAC_USE_COCOA
-#define SF(x) ((x > max_f) ? max_f : x)
-            HISize max = CGSizeMake(SF(extra->maxw), SF(extra->maxh));
-            HISize min = CGSizeMake(SF(extra->minw), SF(extra->minh));
-#undef SF
-            SetWindowResizeLimits(qt_mac_window_for(q), &min, &max);
-#else
-#define SF(x) ((x > max_f) ? max_f : x)
-            NSSize max = NSMakeSize(SF(extra->maxw), SF(extra->maxh));
-            NSSize min = NSMakeSize(SF(extra->minw), SF(extra->minh));
-#undef SF
-            [qt_mac_window_for(q) setMinSize:min];
-            [qt_mac_window_for(q) setMaxSize:max];
-#endif
+        if (q->windowFlags() & Qt::WindowMaximizeButtonHint) {
+            OSWindowRef window = qt_mac_window_for(q);
+            if (extra->maxw && extra->maxh && extra->maxw == extra->minw
+                    && extra->maxh == extra->minh) {
+                ChangeWindowAttributes(window, kWindowNoAttributes, kWindowFullZoomAttribute);
+            } else {
+                ChangeWindowAttributes(window, kWindowFullZoomAttribute, kWindowNoAttributes);
+            }
         }
-#ifndef QT_MAC_USE_COCOA
         HIRect bounds = CGRectMake(0, 0, w, h);
         HIViewSetFrame(qt_mac_nativeview_for(q), &bounds);
 #else
@@ -4102,6 +4176,7 @@ void QWidgetPrivate::setGeometry_sys_helper(int x, int y, int w, int h, bool isM
 void QWidgetPrivate::setConstraints_sys()
 {
     updateMaximizeButton_sys();
+    applyMaxAndMinSizeOnWindow();
 }
 
 void QWidgetPrivate::updateMaximizeButton_sys()
@@ -4416,8 +4491,8 @@ void QWidgetPrivate::registerDropSite(bool on)
     SetControlDragTrackingEnabled(qt_mac_nativeview_for(q), on);
 #else
     NSView *view = qt_mac_nativeview_for(q);
-    if ([view isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaView) class]]) {
-        [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(view) registerDragTypes:on];
+    if (on && [view isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaView) class]]) {
+        [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(view) registerDragTypes];
     }
 #endif
 }
@@ -4570,8 +4645,11 @@ void QWidgetPrivate::setModal_sys()
 
     if (windowParent && q->windowModality() == Qt::WindowModal){
         // Window should be window-modal, which implies a sheet.
-        if (!alreadySheet)
+        if (!alreadySheet) {
+            // NB: the following call will call setModal_sys recursivly:
             recreateMacWindow();
+            windowRef = qt_mac_window_for(q);
+        }
         if ([windowRef isKindOfClass:[NSPanel class]]){
             // If the primary window of the sheet parent is a child of a modal dialog,
             // the sheet parent should not be modally shaddowed.

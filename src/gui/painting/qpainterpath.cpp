@@ -1299,10 +1299,10 @@ static QRectF qt_painterpath_bezier_extrema(const QBezier &b)
         qreal bx = QT_BEZIER_B(b, x);
         qreal cx = QT_BEZIER_C(b, x);
         // specialcase quadratic curves to avoid div by zero
-        if (qFuzzyCompare(ax + 1, 1)) {
+        if (qFuzzyIsNull(ax)) {
 
             // linear curves are covered by initialization.
-            if (!qFuzzyCompare(bx + 1, 1)) {
+            if (!qFuzzyIsNull(bx)) {
                 qreal t = -cx / bx;
                 QT_BEZIER_CHECK_T(b, t);
             }
@@ -1329,10 +1329,10 @@ static QRectF qt_painterpath_bezier_extrema(const QBezier &b)
         qreal cy = QT_BEZIER_C(b, y);
 
         // specialcase quadratic curves to avoid div by zero
-        if (qFuzzyCompare(ay + 1, 1)) {
+        if (qFuzzyIsNull(ay)) {
 
             // linear curves are covered by initialization.
-            if (!qFuzzyCompare(by + 1, 1)) {
+            if (!qFuzzyIsNull(by)) {
                 qreal t = -cy / by;
                 QT_BEZIER_CHECK_T(b, t);
             }
@@ -1725,7 +1725,7 @@ static void qt_painterpath_isect_curve(const QBezier &bezier, const QPointF &pt,
 */
 bool QPainterPath::contains(const QPointF &pt) const
 {
-    if (isEmpty())
+    if (isEmpty() || !controlPointRect().contains(pt))
         return false;
 
     QPainterPathData *d = d_func();
@@ -2923,7 +2923,7 @@ qreal QPainterPath::angleAtPercent(qreal t) const
     return QLineF(0, 0, m1, m2).angle();
 }
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
 #pragma warning( disable : 4056 4756 )
 #endif
 

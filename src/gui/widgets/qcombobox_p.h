@@ -370,6 +370,7 @@ public:
     void updateDelegate();
     void keyboardSearchString(const QString &text);
     void modelChanged();
+    void updateViewContainerPaletteAndOpacity();
 
     QAbstractItemModel *model;
     QLineEdit *lineEdit;

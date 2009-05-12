@@ -215,11 +215,8 @@ void QButtonGroup::setExclusive(bool exclusive)
     d->exclusive = exclusive;
 }
 
-/*!
-    Adds the given \a button to the end of the group's internal list of buttons.
 
-    \sa removeButton()
-*/
+// TODO: Qt 5: Merge with addButton(QAbstractButton *button, int id)
 void QButtonGroup::addButton(QAbstractButton *button)
 {
     addButton(button, -1);
@@ -232,8 +229,18 @@ void QButtonGroup::addButton(QAbstractButton *button, int id)
         previous->removeButton(button);
     button->d_func()->group = this;
     d->buttonList.append(button);
-    if (id != -1)
+    if (id == -1) {
+        QList<int> ids = d->mapping.values();
+        if (ids.isEmpty())
+           d->mapping[button] = -2;
+        else {
+            qSort(ids);
+            d->mapping[button] = ids.first()-1;
+        }
+    } else {
         d->mapping[button] = id;
+    }
+
     if (d->exclusive && button->isChecked())
         button->d_func()->notifyChecked();
 }
@@ -1249,15 +1256,6 @@ void QAbstractButton::timerEvent(QTimerEvent *e)
         d->click();
     }
 }
-
-#if defined(Q_OS_WINCE) && !defined(QT_NO_CONTEXTMENU)
-/*! \reimp */
-void QAbstractButton::contextMenuEvent(QContextMenuEvent *e)
-{
-    e->ignore();
-    setDown(false);
-}
-#endif
 
 /*! \reimp */
 void QAbstractButton::focusInEvent(QFocusEvent *e)

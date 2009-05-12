@@ -95,10 +95,13 @@ private slots:
 
     void longPath();
     void waitForDisconnect();
+    void waitForDisconnectByServer();
 
     void removeServer();
 
     void recycleServer();
+
+    void multiConnect();
 
     void debug();
 
@@ -112,6 +115,8 @@ tst_QLocalSocket::tst_QLocalSocket()
 #endif
                 ))
         qWarning() << "lackey executable doesn't exists!";
+
+    QLocalServer::removeServer("tst_localsocket");
 }
 
 tst_QLocalSocket::~tst_QLocalSocket()
@@ -783,6 +788,25 @@ void tst_QLocalSocket::waitForDisconnect()
     QVERIFY(timer.elapsed() < 2000);
 }
 
+void tst_QLocalSocket::waitForDisconnectByServer()
+{
+    QString name = "tst_localsocket";
+    LocalServer server;
+    QVERIFY(server.listen(name));
+    LocalSocket socket;
+    QSignalSpy spy(&socket, SIGNAL(disconnected()));
+    QVERIFY(spy.isValid());
+    socket.connectToServer(name);
+    QVERIFY(socket.waitForConnected(3000));
+    QVERIFY(server.waitForNewConnection(3000));
+    QLocalSocket *serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
+    serverSocket->close();
+    QVERIFY(serverSocket->state() == QLocalSocket::UnconnectedState);
+    QVERIFY(socket.waitForDisconnected(3000));
+    QCOMPARE(spy.count(), 1);
+}
+
 void tst_QLocalSocket::removeServer()
 {
     // this is a hostile takeover, but recovering from a crash results in the same
@@ -817,6 +841,31 @@ void tst_QLocalSocket::recycleServer()
     client.connectToServer("recycletest2");
     QVERIFY(client.waitForConnected(202));
     QVERIFY(server.waitForNewConnection(202));
+    QVERIFY(server.nextPendingConnection() != 0);
+}
+
+void tst_QLocalSocket::multiConnect()
+{
+    QLocalServer server;
+    QLocalSocket client1;
+    QLocalSocket client2;
+    QLocalSocket client3;
+
+    QVERIFY(server.listen("multiconnect"));
+
+    client1.connectToServer("multiconnect");
+    client2.connectToServer("multiconnect");
+    client3.connectToServer("multiconnect");
+
+    QVERIFY(client1.waitForConnected(201));
+    QVERIFY(client2.waitForConnected(202));
+    QVERIFY(client3.waitForConnected(203));
+
+    QVERIFY(server.waitForNewConnection(201));
+    QVERIFY(server.nextPendingConnection() != 0);
+    QVERIFY(server.waitForNewConnection(202));
+    QVERIFY(server.nextPendingConnection() != 0);
+    QVERIFY(server.waitForNewConnection(203));
     QVERIFY(server.nextPendingConnection() != 0);
 }
 

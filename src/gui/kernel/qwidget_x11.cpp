@@ -1750,8 +1750,8 @@ void QWidgetPrivate::show_sys()
                 mwmhints.functions &= ~MWM_FUNC_RESIZE;
             }
 
-            mwmhints.flags |= MWM_HINTS_DECORATIONS;
             if (mwmhints.decorations == MWM_DECOR_ALL) {
+                mwmhints.flags |= MWM_HINTS_DECORATIONS;
                 mwmhints.decorations = (MWM_DECOR_BORDER
                                         | MWM_DECOR_TITLE
                                         | MWM_DECOR_MENU);
@@ -1760,10 +1760,12 @@ void QWidgetPrivate::show_sys()
             }
 
             if (q->windowFlags() & Qt::WindowMinimizeButtonHint) {
+                mwmhints.flags |= MWM_HINTS_DECORATIONS;
                 mwmhints.decorations |= MWM_DECOR_MINIMIZE;
                 mwmhints.functions |= MWM_FUNC_MINIMIZE;
             }
             if (q->windowFlags() & Qt::WindowMaximizeButtonHint) {
+                mwmhints.flags |= MWM_HINTS_DECORATIONS;
                 mwmhints.decorations |= MWM_DECOR_MAXIMIZE;
                 mwmhints.functions |= MWM_FUNC_MAXIMIZE;
             }
@@ -2745,12 +2747,6 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal opacity)
                     32, PropModeReplace, (uchar*)&value, 1);
 }
 
-/*!
-    Returns information about the configuration of the X display used to display
-    the widget.
-
-    \warning This function is only available on X11.
-*/
 const QX11Info &QWidget::x11Info() const
 {
     Q_D(const QWidget);
@@ -2787,13 +2783,6 @@ QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
     return new QX11WindowSurface(q_func());
 }
 
-/*!
-    Returns the X11 Picture handle of the widget for XRender
-    support. Use of this function is not portable. This function will
-    return 0 if XRender support is not compiled into Qt, if the
-    XRender extension is not supported on the X11 display, or if the
-    handle could not be created.
-*/
 Qt::HANDLE QWidget::x11PictureHandle() const
 {
 #ifndef QT_NO_XRENDER

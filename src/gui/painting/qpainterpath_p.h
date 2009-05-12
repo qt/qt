@@ -124,7 +124,7 @@ private:
     Q_DISABLE_COPY(QVectorPathConverter)
 };
 
-class Q_GUI_EXPORT QPainterPathData : public QPainterPathPrivate
+class QPainterPathData : public QPainterPathPrivate
 {
 public:
     QPainterPathData() :

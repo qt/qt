@@ -60,7 +60,7 @@
 
 #include <shlobj.h>
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 #include <commdlg.h>
 #  ifndef BFFM_SETSELECTION
 #    define BFFM_SETSELECTION (WM_USER + 102)
@@ -112,7 +112,7 @@ static void qt_win_resolve_libs()
 
         triedResolve = true;
         if (!(QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based)) {
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
             QLibrary lib(QLatin1String("shell32"));
             ptrSHBrowseForFolder = (PtrSHBrowseForFolder) lib.resolve("SHBrowseForFolderW");
             ptrSHGetPathFromIDList = (PtrSHGetPathFromIDList) lib.resolve("SHGetPathFromIDListW");
@@ -186,7 +186,7 @@ static QString qt_win_selected_filter(const QString &filter, DWORD idx)
     return qt_win_make_filters_list(filter).at((int)idx - 1);
 }
 
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
 // Static vars for OFNA funcs:
 static QByteArray aInitDir;
 static QByteArray aInitSel;
@@ -505,7 +505,7 @@ QString qt_win_get_save_file_name(const QFileDialogArgs &args,
         }
         qt_win_clean_up_OFNA(&ofn);
     });
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
     int semIndex = result.indexOf(QLatin1Char(';'));
     if (semIndex >= 0)
         result = result.left(semIndex);
@@ -700,7 +700,7 @@ QString qt_win_get_existing_directory(const QFileDialogArgs &args)
     modal_widget.setAttribute(Qt::WA_NoChildEventsForParent, true);
     modal_widget.setParent(parent, Qt::Window);
     QApplicationPrivate::enterModal(&modal_widget);
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_WS_WINCE)
     QT_WA({
         qt_win_resolve_libs();
         QString initDir = QDir::toNativeSeparators(args.directory);

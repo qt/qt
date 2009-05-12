@@ -131,7 +131,7 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
         option->state &= ~QStyle::State_Enabled;
     if (isActiveWindow())
         option->state |= QStyle::State_Active;
-    if (option->rect == d->hoverRect)
+    if (!d->dragInProgress && option->rect == d->hoverRect)
         option->state |= QStyle::State_MouseOver;
     option->shape = d->shape;
     option->text = tab.text;
@@ -176,12 +176,11 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
         if (tw->cornerWidget(Qt::TopRightCorner) || tw->cornerWidget(Qt::BottomRightCorner))
             option->cornerWidgets |= QStyleOptionTab::RightCornerWidget;
     }
+#endif
 
     QRect textRect = style()->subElementRect(QStyle::SE_TabBarTabText, option, this);
-
     option->text = fontMetrics().elidedText(option->text, d->elideMode, textRect.width(),
                         Qt::TextShowMnemonic);
-#endif
 }
 
 /*!
@@ -453,9 +452,6 @@ void QTabBarPrivate::layoutTabs()
         available = size.height();
         maxExtent = maxWidth;
     }
-
-    if (pressedIndex != -1 && movable)
-        grabCache(0, tabList.count(), true);
 
     Q_ASSERT(tabChainIndex == tabChain.count() - 1); // add an assert just to make sure.
     // Mirror our front item.
@@ -1088,7 +1084,7 @@ void QTabBar::setTabData(int index, const QVariant & data)
 }
 
 /*!
-    Returns the datad of the tab at position \a index, or a null
+    Returns the data of the tab at position \a index, or a null
     variant if \a index is out of range.
 */
 QVariant QTabBar::tabData(int index) const
@@ -1170,13 +1166,13 @@ void QTabBar::setCurrentIndex(int index)
         d->currentIndex = index;
         update();
         d->makeVisible(index);
+        d->tabList[index].lastTab = oldIndex;
+        d->layoutWidgets(oldIndex);
+        d->layoutWidgets(index);
 #ifdef QT3_SUPPORT
         emit selected(index);
 #endif
         emit currentChanged(index);
-        d->tabList[index].lastTab = oldIndex;
-        d->layoutWidgets(oldIndex);
-        d->layoutWidgets(index);
     }
 }
 
@@ -1484,6 +1480,8 @@ void QTabBar::paintEvent(QPaintEvent *)
     bool vertical = verticalTabs(d->shape);
     QStyleOptionTab cutTab;
     selected = d->currentIndex;
+    if (d->dragInProgress)
+        selected = d->pressedIndex;
 
     for (int i = 0; i < d->tabList.count(); ++i)
          optTabBase.tabBarRect |= tabRect(i);
@@ -1522,11 +1520,7 @@ void QTabBar::paintEvent(QPaintEvent *)
         if (i == selected)
             continue;
 
-        if (!d->tabList[i].animatingCache.isNull() && d->paintWithOffsets) {
-            p.drawPixmap(tab.rect, d->tabList[i].animatingCache);
-        } else {
-            p.drawControl(QStyle::CE_TabBarTab, tab);
-        }
+        p.drawControl(QStyle::CE_TabBarTab, tab);
     }
 
     // Draw the selected tab last to get it "on top"
@@ -1539,7 +1533,11 @@ void QTabBar::paintEvent(QPaintEvent *)
             else
                 tab.rect.moveLeft(tab.rect.x() + d->tabList[selected].dragOffset);
         }
-        p.drawControl(QStyle::CE_TabBarTab, tab);
+        if (!d->dragInProgress)
+            p.drawControl(QStyle::CE_TabBarTab, tab);
+        else
+            d->movingTab->setGeometry(tab.rect);
+
     }
 
     // Only draw the tear indicator if necessary. Most of the time we don't need too.
@@ -1680,6 +1678,7 @@ void QTabBarPrivate::_q_moveTab(int offset)
         if (!validIndex(index))
             return;
         tabList[index].dragOffset = offset;
+        layoutTab(index); // Make buttons follow tab
         q->update();
     }
 }
@@ -1727,8 +1726,7 @@ void QTabBar::mouseMoveEvent(QMouseEvent *event)
         if (!d->dragInProgress && d->pressedIndex != -1) {
             if ((event->pos() - d->dragStartPosition).manhattanLength() > QApplication::startDragDistance()) {
                 d->dragInProgress = true;
-                if (d->animations.isEmpty())
-                    d->grabCache(0, d->tabList.count(), false);
+                d->setupMovableTab();
             }
         }
 
@@ -1773,7 +1771,6 @@ void QTabBar::mouseMoveEvent(QMouseEvent *event)
                     if (dragDistance > needsToBeOver)
                         d->slide(i + offset, d->pressedIndex);
                 }
-
             }
             // Buttons needs to follow the dragged tab
             d->layoutTab(d->pressedIndex);
@@ -1801,32 +1798,41 @@ void QTabBarPrivate::_q_moveTabFinished()
     }
 }
 
-void QTabBarPrivate::grabCache(int start, int end, bool unhide)
+void QTabBarPrivate::setupMovableTab()
 {
     Q_Q(QTabBar);
-    paintWithOffsets = false;
-    bool showButtonsAgain = rightB->isVisible();
-    rightB->hide();
-    leftB->hide();
+    if (!movingTab)
+        movingTab = new QWidget(q);
 
-    QWidget *topLevel = q->window();
-    QPoint topLevelOffset(q->mapTo(topLevel, QPoint()));
-    for (int i = start; i < end; ++i) {
-        QRect tabRect = q->tabRect(i);
-        tabRect.translate(topLevelOffset);
-        if (unhide) {
-            tabList[i].unHideWidgets();
-            layoutWidgets(i);
-        }
-        tabList[i].animatingCache = QPixmap::grabWidget(topLevel, tabRect);
-        if (i != pressedIndex)
-            tabList[i].hideWidgets();
-    }
-    if (showButtonsAgain) {
-        rightB->show();
-        leftB->show();
-    }
-    paintWithOffsets = true;
+    QRect grabRect = q->tabRect(pressedIndex);
+
+    QPixmap grabImage(grabRect.size());
+    grabImage.fill(Qt::transparent);
+    QStylePainter p(&grabImage, q);
+
+    QStyleOptionTabV3 tab;
+    q->initStyleOption(&tab, pressedIndex);
+    tab.rect.moveTopLeft(QPoint(0, 0));
+    p.drawControl(QStyle::CE_TabBarTab, tab);
+    p.end();
+
+    QPalette pal;
+    pal.setBrush(QPalette::All, QPalette::Window, grabImage);
+    movingTab->setPalette(pal);
+    movingTab->setGeometry(grabRect);
+    movingTab->setAutoFillBackground(true);
+    movingTab->raise();
+
+    // Re-arrange widget order to avoid overlaps
+    if (tabList[pressedIndex].leftWidget)
+        tabList[pressedIndex].leftWidget->raise();
+    if (tabList[pressedIndex].rightWidget)
+        tabList[pressedIndex].rightWidget->raise();
+    if (leftB)
+        leftB->raise();
+    if (rightB)
+        rightB->raise();
+    movingTab->setVisible(true);
 }
 
 void QTabBarPrivate::_q_moveTabFinished(int index)
@@ -1834,10 +1840,9 @@ void QTabBarPrivate::_q_moveTabFinished(int index)
     Q_Q(QTabBar);
     bool cleanup = (pressedIndex == index) || (pressedIndex == -1) || !validIndex(index);
     if (animations.isEmpty() && cleanup) {
+        movingTab->setVisible(false); // We might not get a mouse release
         for (int i = 0; i < tabList.count(); ++i) {
             tabList[i].dragOffset = 0;
-            tabList[i].unHideWidgets();
-            tabList[i].animatingCache = QPixmap();
         }
         if (pressedIndex != -1 && movable) {
             pressedIndex = -1;
@@ -1881,6 +1886,7 @@ void QTabBar::mouseReleaseEvent(QMouseEvent *event)
             d->_q_moveTabFinished(d->pressedIndex);
         }
         d->dragInProgress = false;
+        d->movingTab->setVisible(false);
         d->dragStartPosition = QPoint();
     }
 
@@ -1934,8 +1940,10 @@ void QTabBar::changeEvent(QEvent *event)
     if (event->type() == QEvent::StyleChange) {
         d->elideMode = Qt::TextElideMode(style()->styleHint(QStyle::SH_TabBar_ElideMode, 0, this));
         d->useScrollButtons = !style()->styleHint(QStyle::SH_TabBar_PreferNoArrows, 0, this);
+        d->refresh();
+    } else if (event->type() == QEvent::FontChange) {
+        d->refresh();
     }
-    d->refresh();
     QWidget::changeEvent(event);
 }
 
@@ -2203,21 +2211,19 @@ void QTabBar::setTabButton(int index, ButtonPosition position, QWidget *widget)
         widget->setParent(this);
         // make sure our left and right widgets stay on top
         widget->lower();
+        widget->show();
     }
     if (position == LeftSide) {
         if (d->tabList[index].leftWidget)
             d->tabList[index].leftWidget->hide();
         d->tabList[index].leftWidget = widget;
-        if(!d->tabList[index].hidLeft && widget)
-            widget->show();
     } else {
         if (d->tabList[index].rightWidget)
             d->tabList[index].rightWidget->hide();
         d->tabList[index].rightWidget = widget;
-        if(!d->tabList[index].hidRight && widget)
-            widget->show();
     }
     d->layoutTabs();
+    d->refresh();
     update();
 }
 

@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ja">
+<!DOCTYPE TS>
+<TS version="2.0" language="ja">
 <context>
     <name>AssistantServer</name>
     <message>
-        <location filename="../tools/assistant/compat/main.cpp" line="+195"/>
+        <location filename="../tools/assistant/compat/main.cpp" line="+225"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
     </message>
@@ -16,7 +17,7 @@
 <context>
     <name>FontPanel</name>
     <message>
-        <location filename="../tools/shared/fontpanel/fontpanel.cpp" line="+33"/>
+        <location filename="../tools/shared/fontpanel/fontpanel.cpp" line="+63"/>
         <source>Font</source>
         <translation type="unfinished"></translation>
     </message>
@@ -44,7 +45,7 @@
 <context>
     <name>FontSettingsDialog</name>
     <message>
-        <location filename="../tools/assistant/compat/fontsettingsdialog.cpp" line="+33"/>
+        <location filename="../tools/assistant/compat/fontsettingsdialog.cpp" line="+63"/>
         <source>Font Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -72,7 +73,7 @@
 <context>
     <name>HelpDialog</name>
     <message>
-        <location filename="../tools/assistant/compat/helpdialog.cpp" line="+248"/>
+        <location filename="../tools/assistant/compat/helpdialog.cpp" line="+279"/>
         <source>Open Link in Current Tab</source>
         <translation>リンクを現在のタブに開く</translation>
     </message>
@@ -95,12 +96,12 @@
     <message>
         <location line="-64"/>
         <location line="+16"/>
-        <location line="+659"/>
+        <location line="+661"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location line="-675"/>
+        <location line="-677"/>
         <source>Failed to load keyword index file
 Assistant will not work!</source>
         <translation>キーワードインデックスファイルのロードに失敗しました
@@ -140,7 +141,7 @@ Skipping file.</source>
 スキップします。</translation>
     </message>
     <message numerus="yes">
-        <location line="+575"/>
+        <location line="+577"/>
         <source>%n document(s) found.</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -163,8 +164,8 @@ Skipping file.</source>
         <translation type="obsolete">検索</translation>
     </message>
     <message>
-        <location line="-527"/>
-        <location line="+467"/>
+        <location line="-529"/>
+        <location line="+469"/>
         <source>Done</source>
         <translation>完了</translation>
     </message>
@@ -360,7 +361,7 @@ Assistant は動きません!</translation>
 <context>
     <name>HelpWindow</name>
     <message>
-        <location filename="../tools/assistant/compat/helpwindow.cpp" line="+67"/>
+        <location filename="../tools/assistant/compat/helpwindow.cpp" line="+97"/>
         <source>Help</source>
         <translation>ヘルプ</translation>
     </message>
@@ -414,7 +415,7 @@ Assistant は動きません!</translation>
 <context>
     <name>Index</name>
     <message>
-        <location filename="../tools/assistant/compat/index.cpp" line="+355"/>
+        <location filename="../tools/assistant/compat/index.cpp" line="+385"/>
         <source>Untitled</source>
         <translation>タイトルなし</translation>
     </message>
@@ -422,7 +423,7 @@ Assistant は動きません!</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+73"/>
+        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+103"/>
         <source>Sidebar</source>
         <translation>サイドバー</translation>
     </message>
@@ -482,17 +483,7 @@ Assistant は動きません!</translation>
         <translation>指定されたドキュメントセットのメインページを表示します。</translation>
     </message>
     <message>
-        <location line="+40"/>
-        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qtsoftware.com/company/model&quot;&gt;qtsoftware.com/company/model&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>This program is licensed to you under the terms of the Qt %1 License Agreement. For details, see the license file that came with this software distribution.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+21"/>
+        <location line="+49"/>
         <location line="+1"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
@@ -853,7 +844,7 @@ Assistant は動きません!</translation>
         <translation>名前をつけてページを保存...</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="-691"/>
+        <location filename="../tools/assistant/compat/mainwindow.cpp" line="-673"/>
         <source>&amp;Window</source>
         <translation>ウィンドウ(&amp;W)</translation>
     </message>
@@ -868,23 +859,20 @@ Assistant は動きません!</translation>
         <translation>Ctrl+M</translation>
     </message>
     <message>
-        <location line="+191"/>
         <source>Open Source Edition</source>
-        <translation>オープンソース版</translation>
+        <translation type="obsolete">オープンソース版</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>This version of Qt Assistant is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.</source>
-        <translation>この Qt Assistant は Qt オープンソース版の一部であり、オープンソースのアプリケーションの開発を目的としたものです。Qt は、複数のプラットフォームに対応するアプリケーションを開発するための C++ のわかりやすいフレームワークです。</translation>
+        <translation type="obsolete">この Qt Assistant は Qt オープンソース版の一部であり、オープンソースのアプリケーションの開発を目的としたものです。Qt は、複数のプラットフォームに対応するアプリケーションを開発するための C++ のわかりやすいフレームワークです。</translation>
     </message>
     <message>
         <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qtsoftware.com/company/model.html&quot;&gt;qtsoftware.com/company/model.html&lt;/a&gt; for an overview of Qt licensing.</source>
         <translation type="obsolete">著作権のある（ソースを公開しない）アプリケーションを開発するには、Qt の商用ライセンスが必要です。Qt のライセンスの概要については &lt;a href=&quot;http://qtsoftware.com/company/model.html&quot;&gt;qtsoftware.com/company/model.html&lt;/a&gt; をご覧ください。</translation>
     </message>
     <message>
-        <location line="+16"/>
         <source>This program is licensed to you under the terms of the Qt Commercial License Agreement. For details, see the file LICENSE that came with this software distribution.</source>
-        <translation>このプログラムは Qt 商用版ライセンス規約の定める条件の下で、あなたにライセンスされています。詳細はこのソフトウェアとともに配布される LICENSE ファイルをご覧ください。</translation>
+        <translation type="obsolete">このプログラムは Qt 商用版ライセンス規約の定める条件の下で、あなたにライセンスされています。詳細はこのソフトウェアとともに配布される LICENSE ファイルをご覧ください。</translation>
     </message>
     <message>
         <location filename="../tools/assistant/compat/mainwindow.ui"/>
@@ -935,7 +923,7 @@ Assistant は動きません!</translation>
         <translation type="obsolete">Trolltech の Qt Assistant</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/config.cpp" line="+320"/>
+        <location filename="../tools/assistant/compat/config.cpp" line="+350"/>
         <source>Qt Assistant by Nokia</source>
         <translation type="unfinished"></translation>
     </message>
@@ -943,7 +931,7 @@ Assistant は動きません!</translation>
 <context>
     <name>TabbedBrowser</name>
     <message>
-        <location filename="../tools/assistant/compat/tabbedbrowser.cpp" line="+119"/>
+        <location filename="../tools/assistant/compat/tabbedbrowser.cpp" line="+149"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -1011,7 +999,7 @@ Assistant は動きません!</translation>
 <context>
     <name>TopicChooser</name>
     <message>
-        <location filename="../tools/assistant/compat/topicchooser.cpp" line="+26"/>
+        <location filename="../tools/assistant/compat/topicchooser.cpp" line="+56"/>
         <source>Choose a topic for &lt;b&gt;%1&lt;/b&gt;</source>
         <translation>&lt;b&gt;%1&lt;/b&gt; のトピックを選択</translation>
     </message>

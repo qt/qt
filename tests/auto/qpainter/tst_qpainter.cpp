@@ -225,6 +225,8 @@ private slots:
 
     void extendedBlendModes();
 
+    void zeroOpacity();
+
 private:
     void fillData();
     QColor baseColor( int k, int intensity=255 );
@@ -2573,23 +2575,6 @@ void tst_QPainter::setOpacity()
     p.fillRect(imageRect, QColor(127, 127, 127));
     p.end();
 
-#if defined(Q_WS_QWS) && (QT_VERSION < 0x040500)
-    // embedded has an optimized implementation in 4.4
-    if ((dest.format() == QImage::Format_ARGB8555_Premultiplied ||
-         dest.format() == QImage::Format_RGB555 ||
-         dest.format() == QImage::Format_RGB666 ||
-         dest.format() == QImage::Format_RGB888 ||
-         dest.format() == QImage::Format_ARGB8565_Premultiplied) &&
-        src.format() != QImage::Format_RGB32)
-    {
-        QColor c1 = expected.pixel(1, 1);
-        QColor c2 = dest.pixel(1, 1);
-        QVERIFY(qAbs(c1.red() - c2.red()) < 2);
-        QVERIFY(qAbs(c1.green() - c2.green()) < 2);
-        QVERIFY(qAbs(c1.blue() - c2.blue()) < 2);
-        QVERIFY(qAbs(c1.alpha() - c2.alpha()) < 2);
-    } else
-#endif
     QCOMPARE(dest, expected);
 }
 
@@ -3629,7 +3614,7 @@ void tst_QPainter::drawImage_data()
                         QString("srcFormat %1, dstFormat %2, odd x: %3, odd width: %4")
                             .arg(srcFormat).arg(dstFormat).arg(odd_x).arg(odd_width);
 
-                    QTest::newRow(description) << (10 + odd_x) << 10 << (20 + odd_width) << 20
+                    QTest::newRow(qPrintable(description)) << (10 + odd_x) << 10 << (20 + odd_width) << 20
                         << QImage::Format(srcFormat)
                         << QImage::Format(dstFormat);
                 }
@@ -3809,8 +3794,11 @@ void tst_QPainter::imageBlending()
 
 void tst_QPainter::paintOnNullPixmap()
 {
+    QPixmap pix(16, 16);
+
     QPixmap textPixmap;
     QPainter p(&textPixmap);
+    p.drawPixmap(10, 10, pix);
     p.end();
 
     QPixmap textPixmap2(16,16);
@@ -4162,6 +4150,22 @@ void tst_QPainter::extendedBlendModes()
     QVERIFY(testCompositionMode( 63, 127, 127, QPainter::CompositionMode_Exclusion));
     QVERIFY(testCompositionMode( 63,  63,  95, QPainter::CompositionMode_Exclusion));
     QVERIFY(testCompositionMode(191, 191,  96, QPainter::CompositionMode_Exclusion));
+}
+
+void tst_QPainter::zeroOpacity()
+{
+    QImage source(1, 1, QImage::Format_ARGB32_Premultiplied);
+    source.fill(0xffffffff);
+
+    QImage target(1, 1, QImage::Format_RGB32);
+    target.fill(0xff000000);
+
+    QPainter p(&target);
+    p.setOpacity(0.0);
+    p.drawImage(0, 0, source);
+    p.end();
+
+    QCOMPARE(target.pixel(0, 0), 0xff000000);
 }
 
 QTEST_MAIN(tst_QPainter)

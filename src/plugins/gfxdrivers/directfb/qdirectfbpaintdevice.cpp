@@ -56,23 +56,21 @@ IDirectFBSurface *QDirectFBPaintDevice::directFBSurface() const
 }
 
 
-// Locks the dfb surface and creates a QImage (lockedImage) from the pointer
-void QDirectFBPaintDevice::lockDirectFB() {
-
-    if (lockedImage)
-        return; // Already locked
-
-    void *mem;
-    int w, h;
-    DFBResult result = dfbSurface->Lock(dfbSurface, DSLF_WRITE, &mem, &bpl);
-    if (result != DFB_OK || !mem) {
-        DirectFBError("QDirectFBPixmapData::buffer()", result);
-        return;
+void QDirectFBPaintDevice::lockDirectFB(uint flags)
+{
+    if (!(lock & flags)) {
+        if (lock)
+            unlockDirectFB();
+        if ((mem = QDirectFBScreen::lockSurface(dfbSurface, flags, &bpl))) {
+            const QSize s = size();
+            lockedImage = new QImage(mem, s.width(), s.height(), bpl,
+                                     QDirectFBScreen::getImageFormat(dfbSurface));
+            lock = flags;
+            Q_ASSERT(mem);
+        } else {
+            lock = 0;
+        }
     }
-
-    dfbSurface->GetSize(dfbSurface, &w, &h);
-    lockedImage = new QImage(static_cast<uchar*>(mem), w, h, bpl,
-                             QDirectFBScreen::getImageFormat(dfbSurface));
 }
 
 
@@ -84,15 +82,19 @@ void QDirectFBPaintDevice::unlockDirectFB()
     dfbSurface->Unlock(dfbSurface);
     delete lockedImage;
     lockedImage = 0;
+    mem = 0;
+    lock = 0;
 }
 
 
-void* QDirectFBPaintDevice::memory() const
+void *QDirectFBPaintDevice::memory() const
 {
-    QDirectFBPaintDevice* that = const_cast<QDirectFBPaintDevice*>(this);
-    that->lockDirectFB();
-    Q_ASSERT(that->lockedImage);
-    return that->lockedImage->bits();
+    if (lock != (DSLF_READ|DSLF_WRITE)) {
+        QDirectFBPaintDevice *that = const_cast<QDirectFBPaintDevice*>(this);
+        that->lockDirectFB(DSLF_READ|DSLF_WRITE);
+        Q_ASSERT(that->lockedImage);
+    }
+    return mem;
 }
 
 
@@ -108,9 +110,8 @@ int QDirectFBPaintDevice::bytesPerLine() const
         // Can only get the stride when we lock the surface
         Q_ASSERT(!lockedImage);
         QDirectFBPaintDevice* that = const_cast<QDirectFBPaintDevice*>(this);
-        that->lockDirectFB();
+        that->lockDirectFB(DSLF_READ);
         Q_ASSERT(bpl != -1);
-        that->unlockDirectFB();
     }
     return bpl;
 }

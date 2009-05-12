@@ -509,16 +509,20 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
 
     if (d->mono_surface)
         d->glyphCacheType = QFontEngineGlyphCache::Raster_Mono;
-#ifdef Q_WS_WIN
-    else if (qt_cleartype_enabled) {
+#if defined(Q_WS_WIN)
+    else if (qt_cleartype_enabled)
+#elif defined (Q_WS_MAC)
+    else if (true)
+#else
+    else if (false)
+#endif
+    {
         QImage::Format format = static_cast<QImage *>(d->device)->format();
         if (format == QImage::Format_ARGB32_Premultiplied || format == QImage::Format_RGB32)
             d->glyphCacheType = QFontEngineGlyphCache::Raster_RGBMask;
         else
             d->glyphCacheType = QFontEngineGlyphCache::Raster_A8;
-    }
-#endif
-    else
+    } else
         d->glyphCacheType = QFontEngineGlyphCache::Raster_A8;
 
     setActive(true);
@@ -618,22 +622,22 @@ void QRasterPaintEngine::updateMatrix(const QTransform &matrix)
     d->isPlain45DegreeRotation = false;
     if (txop >= QTransform::TxRotate) {
         d->isPlain45DegreeRotation =
-            (qFuzzyCompare(matrix.m11() + 1, qreal(1))
-             && qFuzzyCompare(matrix.m12(), qreal(1))
-             && qFuzzyCompare(matrix.m21(), qreal(-1))
-             && qFuzzyCompare(matrix.m22() + 1, qreal(1))
+            (qFuzzyIsNull(matrix.m11())
+             && qFuzzyIsNull(matrix.m12() - qreal(1))
+             && qFuzzyIsNull(matrix.m21() + qreal(1))
+             && qFuzzyIsNull(matrix.m22())
                 )
             ||
-            (qFuzzyCompare(matrix.m11(), qreal(-1))
-             && qFuzzyCompare(matrix.m12() + 1, qreal(1))
-             && qFuzzyCompare(matrix.m21() + 1, qreal(1))
-             && qFuzzyCompare(matrix.m22(), qreal(-1))
+            (qFuzzyIsNull(matrix.m11() + qreal(1))
+             && qFuzzyIsNull(matrix.m12())
+             && qFuzzyIsNull(matrix.m21())
+             && qFuzzyIsNull(matrix.m22() + qreal(1))
                 )
             ||
-            (qFuzzyCompare(matrix.m11() + 1, qreal(1))
-             && qFuzzyCompare(matrix.m12(), qreal(-1))
-             && qFuzzyCompare(matrix.m21(), qreal(1))
-             && qFuzzyCompare(matrix.m22() + 1, qreal(1))
+            (qFuzzyIsNull(matrix.m11())
+             && qFuzzyIsNull(matrix.m12() + qreal(1))
+             && qFuzzyIsNull(matrix.m21() - qreal(1))
+             && qFuzzyIsNull(matrix.m22())
                 )
             ;
     }
@@ -1022,7 +1026,7 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
                                           int alpha,
                                           const QRect &sr)
 {
-    if (!clip.isValid())
+    if (alpha == 0 || !clip.isValid())
         return;
     Q_ASSERT(img.depth() >= 8);
 
@@ -1140,6 +1144,33 @@ void QRasterPaintEnginePrivate::updateMatrixData(QSpanData *spanData, const QBru
     }
 }
 
+// #define QT_CLIPPING_RATIOS
+
+#ifdef QT_CLIPPING_RATIOS
+int rectClips;
+int regionClips;
+int totalClips;
+
+static void checkClipRatios(QRasterPaintEnginePrivate *d)
+{
+    if (d->clip()->hasRectClip)
+        rectClips++;
+    if (d->clip()->hasRegionClip)
+        regionClips++;
+    totalClips++;
+
+    if ((totalClips % 5000) == 0) {
+        printf("Clipping ratio: rectangular=%f%%, region=%f%%, complex=%f%%\n",
+               rectClips * 100.0 / (qreal) totalClips,
+               regionClips * 100.0 / (qreal) totalClips,
+               (totalClips - rectClips - regionClips) * 100.0 / (qreal) totalClips);
+        totalClips = 0;
+        rectClips = 0;
+        regionClips = 0;
+    }
+
+}
+#endif
 
 /*!
     \internal
@@ -1241,6 +1272,10 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 
     d->solid_color_filler.clip = d->clip();
     d->solid_color_filler.adjustSpanMethods();
+
+#ifdef QT_CLIPPING_RATIOS
+    checkClipRatios(d);
+#endif
 }
 
 
@@ -1315,6 +1350,11 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
 
     d->solid_color_filler.clip = d->clip();
     d->solid_color_filler.adjustSpanMethods();
+
+
+#ifdef QT_CLIPPING_RATIOS
+    checkClipRatios(d);
+#endif
 }
 
 /*!
@@ -2355,11 +2395,6 @@ void QRasterPaintEngine::strokePolygonCosmetic(const QPoint *points, int pointCo
     }
 }
 
-#define IMAGE_FROM_PIXMAP(pixmap) \
-    pixmap.data->classId() == QPixmapData::RasterClass        \
-        ? ((QRasterPixmapData *) pixmap.data)->image          \
-        : pixmap.toImage()
-
 /*!
     \internal
 */
@@ -2368,16 +2403,33 @@ void QRasterPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pixmap)
 #ifdef QT_DEBUG_DRAW
     qDebug() << " - QRasterPaintEngine::drawPixmap(), pos=" << pos << " pixmap=" << pixmap.size() << "depth=" << pixmap.depth();
 #endif
-    if (pixmap.depth() == 1) {
-        Q_D(QRasterPaintEngine);
-        QRasterPaintEngineState *s = state();
-        if (s->matrix.type() <= QTransform::TxTranslate) {
-            drawBitmap(pos + QPointF(s->matrix.dx(), s->matrix.dy()), pixmap, &s->penData);
+
+    if (pixmap.data->classId() == QPixmapData::RasterClass) {
+        const QImage &image = ((QRasterPixmapData *) pixmap.data)->image;
+        if (image.depth() == 1) {
+            Q_D(QRasterPaintEngine);
+            QRasterPaintEngineState *s = state();
+            if (s->matrix.type() <= QTransform::TxTranslate) {
+                drawBitmap(pos + QPointF(s->matrix.dx(), s->matrix.dy()), image, &s->penData);
+            } else {
+                drawImage(pos, d->rasterBuffer->colorizeBitmap(image, s->pen.color()));
+            }
         } else {
-            drawImage(pos, d->rasterBuffer->colorizeBitmap(IMAGE_FROM_PIXMAP(pixmap), s->pen.color()));
+            QRasterPaintEngine::drawImage(pos, image);
         }
     } else {
-        QRasterPaintEngine::drawImage(pos, IMAGE_FROM_PIXMAP(pixmap));
+        const QImage image = pixmap.toImage();
+        if (pixmap.depth() == 1) {
+            Q_D(QRasterPaintEngine);
+            QRasterPaintEngineState *s = state();
+            if (s->matrix.type() <= QTransform::TxTranslate) {
+                drawBitmap(pos + QPointF(s->matrix.dx(), s->matrix.dy()), image, &s->penData);
+            } else {
+                drawImage(pos, d->rasterBuffer->colorizeBitmap(image, s->pen.color()));
+            }
+        } else {
+            QRasterPaintEngine::drawImage(pos, image);
+        }
     }
 }
 
@@ -2390,22 +2442,40 @@ void QRasterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap, cons
     qDebug() << " - QRasterPaintEngine::drawPixmap(), r=" << r << " sr=" << sr << " pixmap=" << pixmap.size() << "depth=" << pixmap.depth();
 #endif
 
-    Q_D(QRasterPaintEngine);
-    QRasterPaintEngineState *s = state();
-
-    if (pixmap.depth() == 1) {
-        if (s->matrix.type() <= QTransform::TxTranslate
-            && r.size() == sr.size()
-            && r.size() == pixmap.size()) {
-            ensurePen();
-            drawBitmap(r.topLeft() + QPointF(s->matrix.dx(), s->matrix.dy()), pixmap, &s->penData);
-            return;
+    if (pixmap.data->classId() == QPixmapData::RasterClass) {
+        const QImage &image = ((QRasterPixmapData *) pixmap.data)->image;
+        if (image.depth() == 1) {
+            Q_D(QRasterPaintEngine);
+            QRasterPaintEngineState *s = state();
+            if (s->matrix.type() <= QTransform::TxTranslate
+                && r.size() == sr.size()
+                && r.size() == pixmap.size()) {
+                ensurePen();
+                drawBitmap(r.topLeft() + QPointF(s->matrix.dx(), s->matrix.dy()), image, &s->penData);
+                return;
+            } else {
+                drawImage(r, d->rasterBuffer->colorizeBitmap(image, s->pen.color()), sr);
+            }
         } else {
-            drawImage(r, d->rasterBuffer->colorizeBitmap(IMAGE_FROM_PIXMAP(pixmap),
-                                                         s->pen.color()), sr);
+            drawImage(r, image, sr);
         }
     } else {
-        drawImage(r, IMAGE_FROM_PIXMAP(pixmap), sr);
+        const QImage image = pixmap.toImage();
+        if (image.depth() == 1) {
+            Q_D(QRasterPaintEngine);
+            QRasterPaintEngineState *s = state();
+            if (s->matrix.type() <= QTransform::TxTranslate
+                && r.size() == sr.size()
+                && r.size() == pixmap.size()) {
+                ensurePen();
+                drawBitmap(r.topLeft() + QPointF(s->matrix.dx(), s->matrix.dy()), image, &s->penData);
+                return;
+            } else {
+                drawImage(r, d->rasterBuffer->colorizeBitmap(image, s->pen.color()), sr);
+            }
+        } else {
+            drawImage(r, image, sr);
+        }
     }
 }
 
@@ -2507,7 +2577,12 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
     QRasterPaintEngineState *s = state();
     const bool aa = s->flags.antialiased || s->flags.bilinear;
     if (!aa && sr.size() == QSize(1, 1)) {
+        // as fillRect will apply the aliased coordinate delta we need to
+        // subtract it here as we don't use it for image drawing
+        QTransform old = s->matrix;
+        s->matrix = s->matrix * QTransform::fromTranslate(-aliasedCoordinateDelta, -aliasedCoordinateDelta);
         fillRect(r, QColor::fromRgba(img.pixel(sr.x(), sr.y())));
+        s->matrix = old;
         return;
     }
 
@@ -2540,6 +2615,18 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         if (!d->image_filler_xform.blend)
             return;
         d->image_filler_xform.setupMatrix(copy, s->flags.bilinear);
+
+        if (!aa && s->matrix.type() == QTransform::TxScale) {
+            QRectF rr = s->matrix.mapRect(r);
+
+            const int x1 = qRound(rr.x());
+            const int y1 = qRound(rr.y());
+            const int x2 = qRound(rr.right());
+            const int y2 = qRound(rr.bottom());
+
+            fillRect_normalized(QRect(x1, y1, x2-x1, y2-y1), &d->image_filler_xform, d);
+            return;
+        }
 
 #ifdef QT_FAST_SPANS
         ensureState();
@@ -2598,7 +2685,13 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
 
         QRectF rr = r;
         rr.translate(s->matrix.dx(), s->matrix.dy());
-        fillRect_normalized(toRect_normalized(rr), &d->image_filler, d);
+
+        const int x1 = qRound(rr.x());
+        const int y1 = qRound(rr.y());
+        const int x2 = qRound(rr.right());
+        const int y2 = qRound(rr.bottom());
+
+        fillRect_normalized(QRect(x1, y1, x2-x1, y2-y1), &d->image_filler, d);
     }
 }
 
@@ -2614,10 +2707,15 @@ void QRasterPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap,
     QRasterPaintEngineState *s = state();
 
     QImage image;
-    if (pixmap.depth() == 1)
-        image = d->rasterBuffer->colorizeBitmap(IMAGE_FROM_PIXMAP(pixmap), s->pen.color());
-    else
-        image = IMAGE_FROM_PIXMAP(pixmap);
+
+    if (pixmap.data->classId() == QPixmapData::RasterClass) {
+        image = ((QRasterPixmapData *) pixmap.data)->image;
+    } else {
+        image = pixmap.toImage();
+    }
+
+    if (image.depth() == 1)
+        image = d->rasterBuffer->colorizeBitmap(image, s->pen.color());
 
     if (s->matrix.type() > QTransform::TxTranslate) {
         QTransform copy = s->matrix;
@@ -3107,7 +3205,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     // ### cases we should delegate painting to the font engine
     // ### directly...
 
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
     QFontEngine::Type fontEngineType = ti.fontEngine->type();
     // qDebug() << "type" << fontEngineType << s->matrix.type();
     if ((fontEngineType == QFontEngine::Win && !((QFontEngineWin *) ti.fontEngine)->ttf && s->matrix.type() > QTransform::TxTranslate)
@@ -3650,14 +3748,13 @@ void QRasterPaintEngine::drawBufferSpan(const uint *buffer, int bufsize,
 }
 #endif // Q_WS_QWS
 
-void QRasterPaintEngine::drawBitmap(const QPointF &pos, const QPixmap &pm, QSpanData *fg)
+void QRasterPaintEngine::drawBitmap(const QPointF &pos, const QImage &image, QSpanData *fg)
 {
     Q_ASSERT(fg);
     if (!fg->blend)
         return;
     Q_D(QRasterPaintEngine);
 
-    const QImage image = IMAGE_FROM_PIXMAP(pm);
     Q_ASSERT(image.depth() == 1);
 
     const int spanCount = 256;
@@ -3665,8 +3762,8 @@ void QRasterPaintEngine::drawBitmap(const QPointF &pos, const QPixmap &pm, QSpan
     int n = 0;
 
     // Boundaries
-    int w = pm.width();
-    int h = pm.height();
+    int w = image.width();
+    int h = image.height();
     int ymax = qMin(qRound(pos.y() + h), d->rasterBuffer->height());
     int ymin = qMax(qRound(pos.y()), 0);
     int xmax = qMin(qRound(pos.x() + w), d->rasterBuffer->width());
@@ -4335,6 +4432,9 @@ void QClipData::fixup()
  */
 void QClipData::setClipRect(const QRect &rect)
 {
+    if (rect == clipRect)
+        return;
+
 //    qDebug() << "setClipRect" << clipSpanHeight << count << allocated << rect;
     hasRectClip = true;
     clipRect = rect;
@@ -4343,6 +4443,11 @@ void QClipData::setClipRect(const QRect &rect)
     xmax = rect.x() + rect.width();
     ymin = qMin(rect.y(), clipSpanHeight);
     ymax = qMin(rect.y() + rect.height(), clipSpanHeight);
+
+    if (m_spans) {
+        delete m_spans;
+        m_spans = 0;
+    }
 
 //    qDebug() << xmin << xmax << ymin << ymax;
 }
@@ -4367,6 +4472,12 @@ void QClipData::setClipRegion(const QRegion &region)
         ymin = rect.y();
         ymax = rect.y() + rect.height();
     }
+
+    if (m_spans) {
+        delete m_spans;
+        m_spans = 0;
+    }
+
 }
 
 /*!
@@ -5063,7 +5174,11 @@ void QSpanData::adjustSpanMethods()
 
 void QSpanData::setupMatrix(const QTransform &matrix, int bilin)
 {
-    QTransform inv = matrix.inverted();
+    QTransform delta;
+    // make sure we round off correctly in qdrawhelper.cpp
+    delta.translate(1.0 / 65536, 1.0 / 65536);
+
+    QTransform inv = (delta * matrix).inverted();
     m11 = inv.m11();
     m12 = inv.m12();
     m13 = inv.m13();

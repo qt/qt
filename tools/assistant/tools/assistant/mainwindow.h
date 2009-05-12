@@ -62,8 +62,6 @@ class BookmarkWidget;
 class CmdLineParser;
 class QtDocInstaller;
 
-class SearchWidget;
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -94,6 +92,7 @@ public slots:
     void showIndex();
     void showBookmarks();
     void showSearch();
+    void showSearchWidget();
     void syncContents();
     void activateCurrentCentralWidgetTab();
 
@@ -106,6 +105,7 @@ private slots:
     void showAboutDialog();
     void copyAvailable(bool yes);
     void updateNavigationItems();
+    void updateTabCloseAction();
     void showNewAddress(const QUrl &url);
     void addNewBookmark(const QString &title, const QString &url);
     void showTopicChooser(const QMap<QString, QUrl> &links, const QString &keyword);
@@ -159,7 +159,6 @@ private:
     QMenu *m_toolBarMenu;
 
     CmdLineParser *m_cmdLine;
-    SearchWidget *m_searchWidget;
 
     QWidget *m_progressWidget;
     QtDocInstaller *m_qtDocInstaller;

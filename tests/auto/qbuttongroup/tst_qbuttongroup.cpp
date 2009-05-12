@@ -92,14 +92,15 @@ private slots:
     void exclusive();
     void exclusiveWithActions();
     void testSignals();
-
     void checkedButton();
 
-    // fixed for Qt 4.2.0
-#if QT_VERSION >= 0x040200
     void task106609();
-#endif
 
+    // fixed for Qt 4.6.0
+#if QT_VERSION >= 0x040600
+    void autoIncrementId();
+#endif
+    
     void task209485_removeFromGroupInEventHandler_data();
     void task209485_removeFromGroupInEventHandler();
 };
@@ -211,7 +212,6 @@ void tst_QButtonGroup::arrowKeyNavigation()
 
 void tst_QButtonGroup::exclusiveWithActions()
 {
-#if QT_VERSION > 0x040100
     QDialog dlg(0);
     QHBoxLayout layout(&dlg);
     QAction *action1 = new QAction("Action 1", &dlg);
@@ -235,7 +235,7 @@ void tst_QButtonGroup::exclusiveWithActions()
     buttonGroup->addButton(toolButton2, 2);
     buttonGroup->addButton(toolButton3, 3);
     dlg.show();
-    
+
     QTest::mouseClick(toolButton1, Qt::LeftButton);
     QVERIFY(toolButton1->isChecked());
     QVERIFY(action1->isChecked());
@@ -251,7 +251,7 @@ void tst_QButtonGroup::exclusiveWithActions()
     QVERIFY(!toolButton3->isChecked());
     QVERIFY(!action1->isChecked());
     QVERIFY(!action3->isChecked());
-    
+
     QTest::mouseClick(toolButton3, Qt::LeftButton);
     QVERIFY(toolButton3->isChecked());
     QVERIFY(action3->isChecked());
@@ -259,7 +259,7 @@ void tst_QButtonGroup::exclusiveWithActions()
     QVERIFY(!toolButton2->isChecked());
     QVERIFY(!action1->isChecked());
     QVERIFY(!action2->isChecked());
-    
+
     QTest::mouseClick(toolButton2, Qt::LeftButton);
     QVERIFY(toolButton2->isChecked());
     QVERIFY(action2->isChecked());
@@ -267,7 +267,6 @@ void tst_QButtonGroup::exclusiveWithActions()
     QVERIFY(!toolButton3->isChecked());
     QVERIFY(!action1->isChecked());
     QVERIFY(!action3->isChecked());
-#endif
 }
 
 void tst_QButtonGroup::exclusive()
@@ -289,7 +288,7 @@ void tst_QButtonGroup::exclusive()
     buttonGroup->addButton(pushButton2, 2);
     buttonGroup->addButton(pushButton3, 3);
     dlg.show();
-    
+
     QTest::mouseClick(pushButton1, Qt::LeftButton);
     QVERIFY(pushButton1->isChecked());
     QVERIFY(!pushButton2->isChecked());
@@ -299,12 +298,12 @@ void tst_QButtonGroup::exclusive()
     QVERIFY(pushButton2->isChecked());
     QVERIFY(!pushButton1->isChecked());
     QVERIFY(!pushButton3->isChecked());
-    
+
     QTest::mouseClick(pushButton3, Qt::LeftButton);
     QVERIFY(pushButton3->isChecked());
     QVERIFY(!pushButton1->isChecked());
     QVERIFY(!pushButton2->isChecked());
-    
+
     QTest::mouseClick(pushButton2, Qt::LeftButton);
     QVERIFY(pushButton2->isChecked());
     QVERIFY(!pushButton1->isChecked());
@@ -334,13 +333,19 @@ void tst_QButtonGroup::testSignals()
 
     QCOMPARE(clickedSpy.count(), 1);
     QCOMPARE(clickedIdSpy.count(), 1);
-    QVERIFY(clickedIdSpy.takeFirst().at(0).toInt() == -1);
+    
+    int expectedId = -1;    
+#if QT_VERSION >= 0x040600
+    expectedId = -2;
+#endif
+    
+    QVERIFY(clickedIdSpy.takeFirst().at(0).toInt() == expectedId);
     QCOMPARE(pressedSpy.count(), 1);
     QCOMPARE(pressedIdSpy.count(), 1);
-    QVERIFY(pressedIdSpy.takeFirst().at(0).toInt() == -1);
+    QVERIFY(pressedIdSpy.takeFirst().at(0).toInt() == expectedId);
     QCOMPARE(releasedSpy.count(), 1);
     QCOMPARE(releasedIdSpy.count(), 1);
-    QVERIFY(releasedIdSpy.takeFirst().at(0).toInt() == -1);
+    QVERIFY(releasedIdSpy.takeFirst().at(0).toInt() == expectedId);
 
     clickedSpy.clear();
     clickedIdSpy.clear();
@@ -363,7 +368,6 @@ void tst_QButtonGroup::testSignals()
     QVERIFY(releasedIdSpy.takeFirst().at(0).toInt() == 23);
 }
 
-#if QT_VERSION >= 0x040200
 void tst_QButtonGroup::task106609()
 {
     // task is:
@@ -403,7 +407,6 @@ void tst_QButtonGroup::task106609()
     QCOMPARE(spy2.count(), 2);
     QCOMPARE(spy1.count(), 2);
 }
-#endif
 
 void tst_QButtonGroup::checkedButton()
 {
@@ -489,6 +492,37 @@ void tst_QButtonGroup::task209485_removeFromGroupInEventHandler()
 
     QCOMPARE(spy1.count() + spy2.count(), signalCount);
 }
+
+#if QT_VERSION >= 0x040600
+void tst_QButtonGroup::autoIncrementId()
+{
+    QDialog dlg(0);
+    QButtonGroup *buttons = new QButtonGroup(&dlg);
+    QVBoxLayout *vbox = new QVBoxLayout(&dlg);
+
+    QRadioButton *radio1 = new QRadioButton(&dlg);
+    radio1->setText("radio1");
+    QRadioButton *radio2 = new QRadioButton(&dlg);
+    radio2->setText("radio2");
+    QRadioButton *radio3 = new QRadioButton(&dlg);
+    radio3->setText("radio3");
+
+    buttons->addButton(radio1);
+    vbox->addWidget(radio1);
+    buttons->addButton(radio2);
+    vbox->addWidget(radio2);
+    buttons->addButton(radio3);
+    vbox->addWidget(radio3);
+
+    radio1->setChecked(true);
+
+    QVERIFY(buttons->id(radio1) == -2);
+    QVERIFY(buttons->id(radio2) == -3);
+    QVERIFY(buttons->id(radio3) == -4);
+
+    dlg.show();
+}
+#endif
 
 QTEST_MAIN(tst_QButtonGroup)
 #include "tst_qbuttongroup.moc"

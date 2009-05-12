@@ -131,9 +131,16 @@ QString Q_GUI_EXPORT qt_accHotKey(const QString &text)
     int fa = 0;
     QChar ac;
     while ((fa = text.indexOf(QLatin1Char('&'), fa)) != -1) {
-        if (fa == text.length() - 1 || text.at(fa+1) != QLatin1Char('&')) {
-            ac = text.at(fa+1);
-            break;
+        ++fa;
+        if (fa < text.length()) {
+            // ignore "&&"
+            if (text.at(fa) == QLatin1Char('&')) {
+                ++fa;
+                continue;
+            } else {
+                ac = text.at(fa);
+                break;
+            }
         }
     }
     if (ac.isNull())

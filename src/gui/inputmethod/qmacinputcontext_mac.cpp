@@ -45,6 +45,7 @@
 #include "qtextformat.h"
 #include <qdebug.h>
 #include <private/qapplication_p.h>
+#include <private/qkeymapper_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -63,7 +64,8 @@ static QTextFormat qt_mac_compose_format()
 }
 
 QMacInputContext::QMacInputContext(QObject *parent)
-    : QInputContext(parent), composing(false), recursionGuard(false), textDocument(0)
+    : QInputContext(parent), composing(false), recursionGuard(false), textDocument(0),
+      keydownEvent(0)
 {
 //    createTextDocument();
 }
@@ -181,6 +183,16 @@ QMacInputContext::cleanup()
         input_proc_handlerUPP = 0;
     }
 #endif
+}
+
+void QMacInputContext::setLastKeydownEvent(EventRef event)
+{
+    EventRef tmpEvent = keydownEvent;
+    keydownEvent = event;
+    if (keydownEvent)
+        RetainEvent(keydownEvent);
+    if (tmpEvent)
+        ReleaseEvent(tmpEvent);
 }
 
 OSStatus
@@ -335,6 +347,12 @@ QMacInputContext::globalEventProcessor(EventHandlerCallRef, EventRef event, void
             GetEventParameter(key_ev, kEventParamKeyMacCharCodes, typeChar, 0, sizeof(chr), 0, &chr);
             if(!chr || chr >= 128 || (text.length() > 0 && (text.length() > 1 || text.at(0) != QLatin1Char(chr))))
                 handled_event = !widget->testAttribute(Qt::WA_InputMethodEnabled);
+            QMacInputContext *context = qobject_cast<QMacInputContext*>(qApp->inputContext());
+            if (context && context->lastKeydownEvent()) {
+                qt_keymapper_private()->translateKeyEvent(widget, 0, context->lastKeydownEvent(),
+                                                          0, false);
+                context->setLastKeydownEvent(0);
+            }
         }
         break; }
     default:

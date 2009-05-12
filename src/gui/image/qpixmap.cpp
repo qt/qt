@@ -724,7 +724,7 @@ void QPixmap::resize_helper(const QSize &s)
     pixels black. The effect of this function is undefined when the pixmap is
     being painted on.
 
-    This is potentially an expensive operation.
+    \warning This is potentially an expensive operation.
 
     \sa mask(), {QPixmap#Pixmap Transformations}{Pixmap Transformations},
     QBitmap
@@ -1359,14 +1359,6 @@ bool QPixmap::isDetached() const
 void QPixmap::deref()
 {
     if (data && !data->ref.deref()) { // Destroy image if last ref
-#if !defined(QT_NO_DIRECT3D) && defined(Q_WS_WIN)
-        if (data->classId() == QPixmapData::RasterClass) {
-            QRasterPixmapData *rData = static_cast<QRasterPixmapData*>(data);
-            if (rData->texture)
-                rData->texture->Release();
-            rData->texture = 0;
-        }
-#endif
         if (data->is_cached && qt_pixmap_cleanup_hook_64)
             qt_pixmap_cleanup_hook_64(cacheKey());
         delete data;
@@ -1429,6 +1421,12 @@ void QPixmap::deref()
 
     If the given \a size is empty, this function returns a null
     pixmap.
+
+
+    In some cases it can be more beneficial to draw the pixmap to a
+    painter with a scale set rather than scaling the pixmap. This is
+    the case when the painter is for instance based on OpenGL or when
+    the scale factor changes rapidly.
 
     \sa isNull(), {QPixmap#Pixmap Transformations}{Pixmap
     Transformations}
@@ -1801,6 +1799,10 @@ int QPixmap::metric(PaintDeviceMetric metric) const
     The effect of this function is undefined when the pixmap is being
     painted on.
 
+    \warning This is potentially an expensive operation. Most usecases
+    for this function are covered by QPainter and compositionModes
+    which will normally execute faster.
+
     \sa alphaChannel(), {QPixmap#Pixmap Transformations}{Pixmap
     Transformations}
  */
@@ -1843,6 +1845,9 @@ void QPixmap::setAlphaChannel(const QPixmap &alphaChannel)
 
     \image alphachannelimage.png The pixmap and channelImage QPixmaps
 
+    \warning This is an expensive operation. The alpha channel of the
+    pixmap is extracted dynamically from the pixeldata.
+
     \sa setAlphaChannel(), {QPixmap#Pixmap Information}{Pixmap
     Information}
 */
@@ -1864,7 +1869,8 @@ QPaintEngine *QPixmap::paintEngine() const
 
     Extracts a bitmap mask from the pixmap's alphachannel.
 
-    This is potentially an expensive operation.
+    \warning This is potentially an expensive operation. The mask of
+    the pixmap is extracted dynamically from the pixeldata.
 
     \sa setMask(), {QPixmap#Pixmap Information}{Pixmap Information}
 */
@@ -1889,7 +1895,7 @@ int QPixmap::defaultDepth()
     return QScreen::instance()->depth();
 #elif defined(Q_WS_X11)
     return QX11Info::appDepth();
-#elif defined(Q_OS_WINCE)
+#elif defined(Q_WS_WINCE)
     return QColormap::instance().depth();
 #elif defined(Q_WS_WIN)
     return 32; // XXX
@@ -1924,12 +1930,6 @@ void QPixmap::detach()
     if (id == QPixmapData::RasterClass) {
         QRasterPixmapData *rasterData = static_cast<QRasterPixmapData*>(data);
         rasterData->image.detach();
-#if defined(Q_WS_WIN) && !defined(QT_NO_DIRECT3D)
-        if (rasterData->texture) {
-            rasterData->texture->Release();
-            rasterData->texture = 0;
-        }
-#endif
     }
 
     if (data->is_cached && qt_pixmap_cleanup_hook_64 && data->ref == 1)

@@ -1,3 +1,44 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the QtTest module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
 #include "qtestlogger_p.h"
 #include "qtestelement.h"
 #include "qtestxunitstreamer.h"
@@ -14,7 +55,7 @@
 QT_BEGIN_NAMESPACE
 
 QTestLogger::QTestLogger(int fm)
-    :listOfTestcases(0), currentLogElement(0),
+    :listOfTestcases(0), currentLogElement(0), errorLogElement(0),
     logFormatter(0), format( (TestLoggerFormat)fm ), filelogger(new QTestFileLogger),
     testCounter(0), passCounter(0),
     failureCounter(0), errorCounter(0),
@@ -49,6 +90,8 @@ void QTestLogger::startLogging()
         break;
     }case TLF_XunitXml:{
         logFormatter = new QTestXunitStreamer;
+        delete errorLogElement;
+        errorLogElement = new QTestElement(QTest::LET_SystemError);
         filelogger->init();
         break;
     }
@@ -100,6 +143,8 @@ void QTestLogger::stopLogging()
             testcase->setParent(currentLogElement);
             testcase = testcase->nextElement();
         }
+
+        currentLogElement->addLogElement(errorLogElement);
 
         QTestElement *it = currentLogElement;
         logFormatter->output(it);
@@ -158,7 +203,10 @@ void QTestLogger::addIncident(IncidentTypes type, const char *description,
     if (type == QAbstractTestLogger::Fail || type == QAbstractTestLogger::XFail) {
         QTestElement *failureElement = new QTestElement(QTest::LET_Failure);
         failureElement->addAttribute(QTest::AI_Result, typeBuf);
-        failureElement->addAttribute(QTest::AI_File, file);
+        if(file)
+            failureElement->addAttribute(QTest::AI_File, file);
+        else
+            failureElement->addAttribute(QTest::AI_File, "");
         QTest::qt_snprintf(buf, sizeof(buf), "%i", line);
         failureElement->addAttribute(QTest::AI_Line, buf);
         failureElement->addAttribute(QTest::AI_Description, description);
@@ -273,6 +321,13 @@ void QTestLogger::addMessage(MessageTypes type, const char *message, const char 
 
     currentLogElement->addLogElement(errorElement);
     ++errorCounter;
+
+    // Also add the message to the system error log (i.e. stderr), if one exists
+    if (errorLogElement) {
+        QTestElement *systemErrorElement = new QTestElement(QTest::LET_Error);
+        systemErrorElement->addAttribute(QTest::AI_Description, message);
+        errorLogElement->addLogElement(systemErrorElement);
+    }
 }
 
 void QTestLogger::setLogFormat(TestLoggerFormat fm)

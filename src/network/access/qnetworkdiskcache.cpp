@@ -193,7 +193,11 @@ QIODevice *QNetworkDiskCache::prepare(const QNetworkCacheMetaData &metaData)
     } else {
         QString templateName = d->tmpCacheFileName();
         cacheItem->file = new QTemporaryFile(templateName, &cacheItem->data);
-        cacheItem->file->open();
+        if (!cacheItem->file->open()) {
+            qWarning() << "QNetworkDiskCache::prepare() unable to open temporary file";
+            delete cacheItem;
+            return 0;
+        }
         cacheItem->writeHeader(cacheItem->file);
         device = cacheItem->file;
     }
@@ -231,7 +235,7 @@ void QNetworkDiskCachePrivate::storeItem(QCacheItem *cacheItem)
 
     if (QFile::exists(fileName)) {
         if (!QFile::remove(fileName)) {
-            qWarning() << "QNetworkDiskCache: could't remove the cache file " << fileName;
+            qWarning() << "QNetworkDiskCache: couldn't remove the cache file " << fileName;
             return;
         }
     }
@@ -255,7 +259,8 @@ void QNetworkDiskCachePrivate::storeItem(QCacheItem *cacheItem)
         // ### use atomic rename rather then remove & rename
         if (cacheItem->file->rename(fileName))
             currentCacheSize += cacheItem->file->size();
-        cacheItem->file->setAutoRemove(true);
+        else
+            cacheItem->file->setAutoRemove(true);
     }
     if (cacheItem->metaData.url() == lastItem.metaData.url())
         lastItem.reset();

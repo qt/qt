@@ -175,6 +175,9 @@ private slots:
     void bypassGraphicsProxyWidget_data();
     void bypassGraphicsProxyWidget();
     void dragDrop();
+    void windowFlags_data();
+    void windowFlags();
+    void comboboxWindowFlags();
 };
 
 // Subclass that exposes the protected functions.
@@ -1475,7 +1478,7 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
     view.paintEventRegion = QRegion();
     view.npaints = 0;
     QTimer::singleShot(0, widget, SLOT(updateScroll()));
-    QTest::qWait(500); 
+    QTest::qWait(500);
     QCOMPARE(view.npaints, 2);
     // QRect(0, 0, 200, 12) is the first update, expanded (-2, -2, 2, 2)
     // QRect(0, 12, 102, 10) is the scroll update, expanded (-2, -2, 2, 2),
@@ -2582,7 +2585,7 @@ void tst_QGraphicsProxyWidget::childPos()
 {
 #ifdef Q_OS_IRIX
     QSKIP("This test is not reliable on IRIX.", SkipAll);
-#endif    
+#endif
     QFETCH(bool, moveCombo);
     QFETCH(QPoint, comboPos);
     QFETCH(QPointF, proxyPos);
@@ -2797,6 +2800,7 @@ void tst_QGraphicsProxyWidget::palettePropagation()
 void tst_QGraphicsProxyWidget::fontPropagation()
 {
     // Construct a font with an unlikely setup
+    QGraphicsScene scene;
     QFont lineEditFont = QApplication::font("QLineEdit");
     QFont font = lineEditFont;
     font.setPointSize(43);
@@ -2805,6 +2809,7 @@ void tst_QGraphicsProxyWidget::fontPropagation()
     QGraphicsProxyWidget proxy;
     proxy.setWidget(edit);
 
+    scene.addItem(&proxy);
     EventSpy editSpy(edit);
     EventSpy proxySpy(&proxy);
 
@@ -2825,6 +2830,7 @@ void tst_QGraphicsProxyWidget::fontPropagation()
 
     // Proxy to widget
     proxy.setFont(font);
+    QApplication::processEvents();  // wait for QEvent::Polish
     QVERIFY(proxy.testAttribute(Qt::WA_SetFont));
     QCOMPARE(editSpy.counts[QEvent::FontChange], 3);
     QCOMPARE(proxySpy.counts[QEvent::FontChange], 1);
@@ -2893,7 +2899,7 @@ void tst_QGraphicsProxyWidget::createProxyForChildWidget()
     edit2->setText("QLineEdit 2");
     QCheckBox *checkbox = new QCheckBox("QCheckBox");
     QVBoxLayout *vlayout = new QVBoxLayout;
-    
+
     vlayout->addWidget(edit1);
     vlayout->addWidget(edit2);
     vlayout->addWidget(checkbox);
@@ -2916,7 +2922,7 @@ void tst_QGraphicsProxyWidget::createProxyForChildWidget()
 
     QVERIFY(window.graphicsProxyWidget() == 0);
     QVERIFY(checkbox->graphicsProxyWidget() == 0);
-    
+
     QGraphicsProxyWidget *windowProxy = scene.addWidget(&window);
     QGraphicsView view(&scene);
     view.show();
@@ -2946,10 +2952,10 @@ void tst_QGraphicsProxyWidget::createProxyForChildWidget()
     QVERIFY(boxProxy->size() == box->size());
 
     QTest::qWait(10);
-    
+
 
     QSignalSpy spy(checkbox, SIGNAL(clicked()));
-    
+
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0,
                       view.mapFromScene(checkboxProxy->mapToScene(QPointF(8,8))));
     QTRY_COMPARE(spy.count(), 0);
@@ -2958,7 +2964,7 @@ void tst_QGraphicsProxyWidget::createProxyForChildWidget()
     QTRY_COMPARE(spy.count(), 1);
 
 
-    
+
     boxProxy->setWidget(0);
 
     QVERIFY(checkbox->graphicsProxyWidget() == 0);
@@ -3006,10 +3012,10 @@ void tst_QGraphicsProxyWidget::actionsContextMenu()
     widget->addAction(new QAction("item 2", widget));
     widget->addAction(new QAction("item 3", widget));
     widget->setContextMenuPolicy(Qt::ActionsContextMenu);
-    
+
     QGraphicsScene scene;
     scene.addWidget(widget);
-    
+
     QGraphicsView view(&scene);
     view.show();
 #ifdef Q_WS_X11
@@ -3148,6 +3154,67 @@ void tst_QGraphicsProxyWidget::dragDrop()
         QVERIFY(event.isAccepted());
     }
     QCOMPARE(edit->text(), QString("hei"));
+}
+
+void tst_QGraphicsProxyWidget::windowFlags_data()
+{
+    QTest::addColumn<int>("proxyFlags");
+    QTest::addColumn<int>("widgetFlags");
+    QTest::addColumn<int>("resultingProxyFlags");
+    QTest::addColumn<int>("resultingWidgetFlags");
+
+    QTest::newRow("proxy(0) widget(0)") << 0 << 0 << 0 << int(Qt::Window);
+    QTest::newRow("proxy(window)") << int(Qt::Window) << 0 << int(Qt::Window) << int(Qt::Window);
+    QTest::newRow("proxy(window) widget(window)") << int(Qt::Window) << int(Qt::Window) << int(Qt::Window) << int(Qt::Window);
+    QTest::newRow("proxy(0) widget(window)") << int(0) << int(Qt::Window) << int(0) << int(Qt::Window);
+}
+
+void tst_QGraphicsProxyWidget::windowFlags()
+{
+    QFETCH(int, proxyFlags);
+    QFETCH(int, widgetFlags);
+    QFETCH(int, resultingProxyFlags);
+    QFETCH(int, resultingWidgetFlags);
+    Qt::WindowFlags proxyWFlags = Qt::WindowFlags(proxyFlags);
+    Qt::WindowFlags widgetWFlags = Qt::WindowFlags(widgetFlags);
+    Qt::WindowFlags resultingProxyWFlags = Qt::WindowFlags(resultingProxyFlags);
+    Qt::WindowFlags resultingWidgetWFlags = Qt::WindowFlags(resultingWidgetFlags);
+
+    QGraphicsProxyWidget proxy(0, proxyWFlags);
+    QVERIFY((proxy.windowFlags() & proxyWFlags) == proxyWFlags);
+
+    QWidget *widget = new QWidget(0, widgetWFlags);
+    QVERIFY((widget->windowFlags() & widgetWFlags) == widgetWFlags);
+
+    proxy.setWidget(widget);
+ 
+    if (resultingProxyFlags == 0)
+        QVERIFY(!proxy.windowFlags());
+    else
+        QVERIFY((proxy.windowFlags() & resultingProxyWFlags) == resultingProxyWFlags);
+    QVERIFY((widget->windowFlags() & resultingWidgetWFlags) == resultingWidgetWFlags);
+}
+
+void tst_QGraphicsProxyWidget::comboboxWindowFlags()
+{
+    QComboBox *comboBox = new QComboBox;
+    comboBox->addItem("Item 1");
+    comboBox->addItem("Item 2");
+    comboBox->addItem("Item 3");
+    QWidget *embedWidget = comboBox;
+
+    QGraphicsScene scene;
+    QGraphicsProxyWidget *proxy = scene.addWidget(embedWidget);
+    proxy->setWindowFlags(Qt::Window);
+    QVERIFY(embedWidget->isWindow());
+    QVERIFY(proxy->isWindow());
+
+    comboBox->showPopup();
+
+    QCOMPARE(proxy->childItems().size(), 1);
+    QGraphicsItem *popupProxy = proxy->childItems().first();
+    QVERIFY(popupProxy->isWindow());
+    QVERIFY((static_cast<QGraphicsWidget *>(popupProxy)->windowFlags() & Qt::Popup) == Qt::Popup);
 }
 
 QTEST_MAIN(tst_QGraphicsProxyWidget)

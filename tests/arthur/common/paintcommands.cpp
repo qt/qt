@@ -1886,7 +1886,6 @@ void PaintCommands::command_setBrushOrigin(QRegExp re)
 /***************************************************************************************************/
 void PaintCommands::command_brushTranslate(QRegExp re)
 {
-#if QT_VERSION > 0x040200
     QStringList caps = re.capturedTexts();
     double dx = convertToDouble(caps.at(1));
     double dy = convertToDouble(caps.at(2));
@@ -1899,13 +1898,11 @@ void PaintCommands::command_brushTranslate(QRegExp re)
     brush_matrix.translate(dx, dy);
     new_brush.setTransform(brush_matrix);
     m_painter->setBrush(new_brush);
-#endif
 }
 
 /***************************************************************************************************/
 void PaintCommands::command_brushScale(QRegExp re)
 {
-#if QT_VERSION > 0x040200
     QStringList caps = re.capturedTexts();
     double sx = convertToDouble(caps.at(1));
     double sy = convertToDouble(caps.at(2));
@@ -1918,13 +1915,11 @@ void PaintCommands::command_brushScale(QRegExp re)
     brush_matrix.scale(sx, sy);
     new_brush.setTransform(brush_matrix);
     m_painter->setBrush(new_brush);
-#endif
 }
 
 /***************************************************************************************************/
 void PaintCommands::command_brushRotate(QRegExp re)
 {
-#if QT_VERSION > 0x040200
     QStringList caps = re.capturedTexts();
     double rot = convertToDouble(caps.at(1));
 
@@ -1936,13 +1931,11 @@ void PaintCommands::command_brushRotate(QRegExp re)
     brush_matrix.rotate(rot);
     new_brush.setTransform(brush_matrix);
     m_painter->setBrush(new_brush);
-#endif
 }
 
 /***************************************************************************************************/
 void PaintCommands::command_brushShear(QRegExp re)
 {
-#if QT_VERSION > 0x040200
     QStringList caps = re.capturedTexts();
     double sx = convertToDouble(caps.at(1));
     double sy = convertToDouble(caps.at(2));
@@ -1955,7 +1948,6 @@ void PaintCommands::command_brushShear(QRegExp re)
     brush_matrix.shear(sx, sy);
     new_brush.setTransform(brush_matrix);
     m_painter->setBrush(new_brush);
-#endif
 }
 
 /***************************************************************************************************/
@@ -2326,10 +2318,8 @@ void PaintCommands::command_gradient_setLinear(QRegExp re)
     lg.setSpread(m_gradientSpread);
     lg.setCoordinateMode(m_gradientCoordinate);
     QBrush brush(lg);
-#if QT_VERSION > 0x040200
     QTransform brush_matrix = m_painter->brush().transform();
     brush.setTransform(brush_matrix);
-#endif
     m_painter->setBrush(brush);
 }
 
@@ -2375,10 +2365,8 @@ void PaintCommands::command_gradient_setRadial(QRegExp re)
     rg.setSpread(m_gradientSpread);
     rg.setCoordinateMode(m_gradientCoordinate);
     QBrush brush(rg);
-#if QT_VERSION > 0x040200
     QTransform brush_matrix = m_painter->brush().transform();
     brush.setTransform(brush_matrix);
-#endif
     m_painter->setBrush(brush);
 }
 
@@ -2400,10 +2388,8 @@ void PaintCommands::command_gradient_setConical(QRegExp re)
     cg.setSpread(m_gradientSpread);
     cg.setCoordinateMode(m_gradientCoordinate);
     QBrush brush(cg);
-#if QT_VERSION > 0x040200
     QTransform brush_matrix = m_painter->brush().transform();
     brush.setTransform(brush_matrix);
-#endif
     m_painter->setBrush(brush);
 }
 
@@ -2448,7 +2434,6 @@ void PaintCommands::command_surface_begin(QRegExp re)
 
     m_surface_painter = m_painter;
 
-#if QT_VERSION > 0x040200
     if (m_type == OpenGLType || m_type == OpenGLPBufferType) {
 #ifndef QT_NO_OPENGL
         m_surface_pbuffer = new QGLPixelBuffer(qRound(w), qRound(h));
@@ -2461,9 +2446,7 @@ void PaintCommands::command_surface_begin(QRegExp re)
         m_surface_pixmap.fill(Qt::transparent);
         m_painter = new QPainter(&m_surface_pixmap);
 #endif
-    } else
-#endif
-        {
+    } else {
         m_surface_image = QImage(qRound(w), qRound(h), QImage::Format_ARGB32_Premultiplied);
         m_surface_image.fill(0);
         m_painter = new QPainter(&m_surface_image);

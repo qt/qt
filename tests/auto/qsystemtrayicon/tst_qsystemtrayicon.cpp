@@ -42,10 +42,6 @@
 
 #include <QtTest/QtTest>
 
-#if QT_VERSION < 0x040200
-QTEST_NOOP_MAIN
-#else
-
 #include <qcoreapplication.h>
 #include <qdebug.h>
 #include <qsystemtrayicon.h>
@@ -150,4 +146,3 @@ void tst_QSystemTrayIcon::lastWindowClosed()
 
 QTEST_MAIN(tst_QSystemTrayIcon)
 #include "tst_qsystemtrayicon.moc"
-#endif

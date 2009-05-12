@@ -129,6 +129,9 @@
     on Mac OS X or be part of the main window. This feature is on by
     default.
 
+    In Qt 4.6, this is equivalent to
+    \c { QApplication::instance()->setAttribute(Qt::AA_DontUseNativeMenuBar); }.
+
     \section1 void qt_mac_set_press_and_hold_context(bool \e{enable})
 
     Turns emulation of the right mouse button by clicking and holding

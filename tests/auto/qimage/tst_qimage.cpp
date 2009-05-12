@@ -95,9 +95,8 @@ private slots:
     void rotate_data();
     void rotate();
 
-#if QT_VERSION >= 0x040102
     void copy();
-#endif
+
     void setPixel_data();
     void setPixel();
 
@@ -974,7 +973,6 @@ void tst_QImage::rotate()
     QCOMPARE(original, dest);
 }
 
-#if QT_VERSION >= 0x040102
 void tst_QImage::copy()
 {
     // Task 99250
@@ -983,7 +981,6 @@ void tst_QImage::copy()
         img.copy(QRect(1000,1,1,1));
     }
 }
-#endif
 
 void tst_QImage::setPixel_data()
 {

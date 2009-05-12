@@ -346,14 +346,11 @@ void tst_QAbstractItemModel::match()
     QCOMPARE(res.count(), 2);
     res = model.match(start, Qt::DisplayRole, QVariant(".*O.*"), -1, Qt::MatchRegExp | Qt::MatchCaseSensitive);
     QCOMPARE(res.count(), 0);
-    // MatchFixedString seems new in 4.2
-#if QT_VERSION >= 0x040200
     res = model.match(start, Qt::DisplayRole, QVariant("BOAR"), -1, Qt::MatchFixedString);
     QCOMPARE(res.count(), 1);
     res = model.match(start, Qt::DisplayRole, QVariant("bat"), -1,
                       Qt::MatchFixedString | Qt::MatchCaseSensitive);
     QCOMPARE(res.count(), 1);
-#endif
 }
 
 typedef QPair<int, int> Position;
@@ -582,7 +579,6 @@ void tst_QAbstractItemModel::dropMimeData_data()
                 << (qStringTableRow("" , "" , "A"))
                 << (qStringTableRow("" , "" , "B")));
     }
-#if QT_VERSION >= 0x040200
     {
         QTest::newRow("2x 1x2 dropped at [3, 2] (different rows)")
             << (STRINGTABLE // source table
@@ -624,7 +620,6 @@ void tst_QAbstractItemModel::dropMimeData_data()
                 << (qStringTableRow("" , "" , "B"))
                 << (qStringTableRow("" , "" , "H")));
     }
-#endif
 }
 
 void tst_QAbstractItemModel::dropMimeData()

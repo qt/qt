@@ -366,32 +366,33 @@ void QGraphicsWidget::resize(const QSizeF &size)
 void QGraphicsWidget::setGeometry(const QRectF &rect)
 {
     QGraphicsWidgetPrivate *wd = QGraphicsWidget::d_func();
-    const QGraphicsLayoutItemPrivate *d = QGraphicsLayoutItem::d_ptr;
-    setAttribute(Qt::WA_Resized);
-    QRectF newGeom = rect;
-    newGeom.setSize(rect.size().expandedTo(effectiveSizeHint(Qt::MinimumSize))
-                               .boundedTo(effectiveSizeHint(Qt::MaximumSize)));
-    if (newGeom == d->geom)
-        return;
-
-    // Update and prepare to change the geometry (remove from index).
-    if (wd->scene) {
-        if (rect.topLeft() != d->geom.topLeft())
-            wd->fullUpdateHelper(true);
-        else
-            update();
-    }
-    prepareGeometryChange();
-
-    // setPos triggers ItemPositionChange, which can adjust position
+    QGraphicsLayoutItemPrivate *d = QGraphicsLayoutItem::d_ptr;
+    QRectF newGeom;
     QPointF oldPos = d->geom.topLeft();
-    wd->inSetGeometry = 1;
-    wd->setPosHelper(newGeom.topLeft(), /* update = */ false);
-    wd->inSetGeometry = 0;
-    newGeom.moveTopLeft(pos());
+    if (!wd->inSetPos) {
+        setAttribute(Qt::WA_Resized);
+        newGeom = rect;
+        newGeom.setSize(rect.size().expandedTo(effectiveSizeHint(Qt::MinimumSize))
+                                   .boundedTo(effectiveSizeHint(Qt::MaximumSize)));
+        if (newGeom == d->geom)
+            return;
 
-    if (newGeom == d->geom)
-        return;
+        // setPos triggers ItemPositionChange, which can adjust position
+        wd->inSetGeometry = 1;
+        wd->setPosHelper(newGeom.topLeft());
+        wd->inSetGeometry = 0;
+        newGeom.moveTopLeft(pos());
+
+        if (newGeom == d->geom)
+           return;
+
+         // Update and prepare to change the geometry (remove from index) if the size has changed.
+        if (wd->scene) {
+            if (rect.topLeft() == d->geom.topLeft()) {
+                prepareGeometryChange();
+            }
+        }
+    }
 
     // Update the layout item geometry
     bool moved = oldPos != pos();
@@ -401,6 +402,11 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
         event.setOldPos(oldPos);
         event.setNewPos(pos());
         QApplication::sendEvent(this, &event);
+        if (wd->inSetPos) {
+            //set the new pos
+            d->geom.moveTopLeft(pos());
+            return;
+        }
     }
     QSizeF oldSize = size();
     QGraphicsLayoutItem::setGeometry(newGeom);
@@ -453,17 +459,19 @@ void QGraphicsWidget::setContentsMargins(qreal left, qreal top, qreal right, qre
 {
     Q_D(QGraphicsWidget);
 
-    if (left == d->leftMargin
-        && top == d->topMargin
-        && right == d->rightMargin
-        && bottom == d->bottomMargin) {
+    if (!d->margins && left == 0 && top == 0 && right == 0 && bottom == 0)
         return;
-    }
+    d->ensureMargins();
+    if (left == d->margins[d->Left]
+        && top == d->margins[d->Top]
+        && right == d->margins[d->Right]
+        && bottom == d->margins[d->Bottom])
+        return;
 
-    d->leftMargin = left;
-    d->topMargin = top;
-    d->rightMargin = right;
-    d->bottomMargin = bottom;
+    d->margins[d->Left] = left;
+    d->margins[d->Top] = top;
+    d->margins[d->Right] = right;
+    d->margins[d->Bottom] = bottom;
 
     if (QGraphicsLayout *l = d->layout)
         l->invalidate();
@@ -484,14 +492,16 @@ void QGraphicsWidget::setContentsMargins(qreal left, qreal top, qreal right, qre
 void QGraphicsWidget::getContentsMargins(qreal *left, qreal *top, qreal *right, qreal *bottom) const
 {
     Q_D(const QGraphicsWidget);
+    if (left || top || right || bottom)
+        d->ensureMargins();
     if (left)
-        *left = d->leftMargin;
+        *left = d->margins[d->Left];
     if (top)
-        *top = d->topMargin;
+        *top = d->margins[d->Top];
     if (right)
-        *right = d->rightMargin;
+        *right = d->margins[d->Right];
     if (bottom)
-        *bottom = d->bottomMargin;
+        *bottom = d->margins[d->Bottom];
 }
 
 /*!
@@ -507,16 +517,23 @@ void QGraphicsWidget::getContentsMargins(qreal *left, qreal *top, qreal *right, 
 void QGraphicsWidget::setWindowFrameMargins(qreal left, qreal top, qreal right, qreal bottom)
 {
     Q_D(QGraphicsWidget);
-    bool unchanged = left == d->leftWindowFrameMargin && top == d->topWindowFrameMargin
-                     && right == d->rightWindowFrameMargin && bottom == d->bottomWindowFrameMargin;
+
+    if (!d->windowFrameMargins && left == 0 && top == 0 && right == 0 && bottom == 0)
+        return;
+    d->ensureWindowFrameMargins();
+    bool unchanged =
+        d->windowFrameMargins[d->Left] == left
+        && d->windowFrameMargins[d->Top] == top
+        && d->windowFrameMargins[d->Right] == right
+        && d->windowFrameMargins[d->Bottom] == bottom;
     if (d->setWindowFrameMargins && unchanged)
         return;
     if (!unchanged)
         prepareGeometryChange();
-    d->leftWindowFrameMargin = left;
-    d->topWindowFrameMargin = top;
-    d->rightWindowFrameMargin = right;
-    d->bottomWindowFrameMargin = bottom;
+    d->windowFrameMargins[d->Left] = left;
+    d->windowFrameMargins[d->Top] = top;
+    d->windowFrameMargins[d->Right] = right;
+    d->windowFrameMargins[d->Bottom] = bottom;
     d->setWindowFrameMargins = true;
 }
 
@@ -530,14 +547,16 @@ void QGraphicsWidget::setWindowFrameMargins(qreal left, qreal top, qreal right, 
 void QGraphicsWidget::getWindowFrameMargins(qreal *left, qreal *top, qreal *right, qreal *bottom) const
 {
     Q_D(const QGraphicsWidget);
+    if (left || top || right || bottom)
+        d->ensureWindowFrameMargins();
     if (left)
-        *left = d->leftWindowFrameMargin;
+        *left = d->windowFrameMargins[d->Left];
     if (top)
-        *top = d->topWindowFrameMargin;
+        *top = d->windowFrameMargins[d->Top];
     if (right)
-        *right = d->rightWindowFrameMargin;
+        *right = d->windowFrameMargins[d->Right];
     if (bottom)
-        *bottom = d->bottomWindowFrameMargin;
+        *bottom = d->windowFrameMargins[d->Bottom];
 }
 
 /*!
@@ -571,8 +590,10 @@ void QGraphicsWidget::unsetWindowFrameMargins()
 QRectF QGraphicsWidget::windowFrameGeometry() const
 {
     Q_D(const QGraphicsWidget);
-    return geometry().adjusted(-d->leftWindowFrameMargin, -d->topWindowFrameMargin,
-                               d->rightWindowFrameMargin, d->bottomWindowFrameMargin);
+    return d->windowFrameMargins
+        ? geometry().adjusted(-d->windowFrameMargins[d->Left], -d->windowFrameMargins[d->Top],
+                              d->windowFrameMargins[d->Right], d->windowFrameMargins[d->Bottom])
+        : geometry();
 }
 
 /*!
@@ -583,8 +604,10 @@ QRectF QGraphicsWidget::windowFrameGeometry() const
 QRectF QGraphicsWidget::windowFrameRect() const
 {
     Q_D(const QGraphicsWidget);
-    return rect().adjusted(-d->leftWindowFrameMargin, -d->topWindowFrameMargin,
-                           d->rightWindowFrameMargin, d->bottomWindowFrameMargin);
+    return d->windowFrameMargins
+        ? rect().adjusted(-d->windowFrameMargins[d->Left], -d->windowFrameMargins[d->Top],
+                          d->windowFrameMargins[d->Right], d->windowFrameMargins[d->Bottom])
+        : rect();
 }
 
 /*!
@@ -693,7 +716,10 @@ QSizeF QGraphicsWidget::sizeHint(Qt::SizeHint which, const QSizeF &constraint) c
     QSizeF sh;
     if (d->layout) {
         sh = d->layout->effectiveSizeHint(which, constraint);
-        sh += QSizeF(d->leftMargin + d->rightMargin, d->topMargin + d->bottomMargin);
+        if (d->margins) {
+            sh += QSizeF(d->margins[d->Left] + d->margins[d->Right],
+                         d->margins[d->Top] + d->margins[d->Bottom]);
+        }
     } else {
         switch (which) {
             case Qt::MinimumSize:
@@ -1016,9 +1042,11 @@ QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &
         break;
     case ItemPositionHasChanged:
         if (!d->inSetGeometry) {
+            d->inSetPos = 1;
             // Ensure setGeometry is called (avoid recursion when setPos is
             // called from within setGeometry).
             setGeometry(QRectF(pos(), size()));
+            d->inSetPos = 0 ;
         }
         break;
     case ItemParentChange: {
@@ -1031,10 +1059,6 @@ QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &
         break;
     }
     case ItemParentHasChanged: {
-        // reset window type on parent change in order to automagically remove decorations etc.
-        Qt::WindowFlags wflags = d->windowFlags & ~Qt::WindowType_Mask;
-        d->adjustWindowFlags(&wflags);
-        setWindowFlags(wflags);
         // Deliver ParentChange.
         QEvent event(QEvent::ParentChange);
         QApplication::sendEvent(this, &event);
@@ -1123,7 +1147,8 @@ bool QGraphicsWidget::windowFrameEvent(QEvent *event)
         d->windowFrameMousePressEvent(static_cast<QGraphicsSceneMouseEvent *>(event));
         break;
     case QEvent::GraphicsSceneMouseMove:
-        if (d->grabbedSection != Qt::NoSection) {
+        d->ensureWindowData();
+        if (d->windowData->grabbedSection != Qt::NoSection) {
             d->windowFrameMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent *>(event));
             event->accept();
         }
@@ -1178,7 +1203,8 @@ Qt::WindowFrameSection QGraphicsWidget::windowFrameSectionAt(const QPointF &pos)
 
     const qreal cornerMargin = 20;
     //### Not sure of this one, it should be the same value for all edges.
-    const qreal windowFrameWidth = d->leftWindowFrameMargin;
+    const qreal windowFrameWidth = d->windowFrameMargins
+        ? d->windowFrameMargins[d->Left] : 0;
 
     Qt::WindowFrameSection s = Qt::NoSection;
     if (x <= left + cornerMargin) {
@@ -1204,7 +1230,8 @@ Qt::WindowFrameSection QGraphicsWidget::windowFrameSectionAt(const QPointF &pos)
     }
     if (s == Qt::NoSection) {
         QRectF r1 = r;
-        r1.setHeight(d->topWindowFrameMargin);
+        r1.setHeight(d->windowFrameMargins
+                     ? d->windowFrameMargins[d->Top] : 0);
         if (r1.contains(pos))
             s = Qt::TitleBarArea;
     }
@@ -1312,7 +1339,8 @@ bool QGraphicsWidget::event(QEvent *event)
     case QEvent::GraphicsSceneMouseMove:
     case QEvent::GraphicsSceneMouseRelease:
     case QEvent::GraphicsSceneMouseDoubleClick:
-        if (d->hasDecoration() && d->grabbedSection != Qt::NoSection)
+        d->ensureWindowData();
+        if (d->hasDecoration() && d->windowData->grabbedSection != Qt::NoSection)
             return windowFrameEvent(event);
         break;
     case QEvent::GraphicsSceneHoverEnter:
@@ -1615,6 +1643,7 @@ void QGraphicsWidget::setWindowFlags(Qt::WindowFlags wFlags)
         return;
     bool wasPopup = (d->windowFlags & Qt::WindowType_Mask) == Qt::Popup;
 
+    d->adjustWindowFlags(&wFlags);
     d->windowFlags = wFlags;
     if (!d->setWindowFrameMargins)
         unsetWindowFrameMargins();
@@ -1626,6 +1655,11 @@ void QGraphicsWidget::setWindowFlags(Qt::WindowFlags wFlags)
             d->scene->d_func()->removePopup(this);
         else
             d->scene->d_func()->addPopup(this);
+    }
+
+    if (d->scene && d->scene->d_func()->allItemsIgnoreHoverEvents && d->hasDecoration()) {
+        d->scene->d_func()->allItemsIgnoreHoverEvents = false;
+        d->scene->d_func()->enableMouseTrackingOnViews();
     }
 }
 
@@ -1659,12 +1693,13 @@ bool QGraphicsWidget::isActiveWindow() const
 void QGraphicsWidget::setWindowTitle(const QString &title)
 {
     Q_D(QGraphicsWidget);
-    d->windowTitle = title;
+    d->ensureWindowData();
+    d->windowData->windowTitle = title;
 }
 QString QGraphicsWidget::windowTitle() const
 {
     Q_D(const QGraphicsWidget);
-    return d->windowTitle;
+    return d->windowData ? d->windowData->windowTitle : QString();
 }
 
 /*!
@@ -2100,11 +2135,12 @@ void QGraphicsWidget::paintWindowFrame(QPainter *painter, const QStyleOptionGrap
     QStyleOptionTitleBar bar;
     bar.QStyleOption::operator=(*option);
     d->initStyleOptionTitleBar(&bar);   // this clear flags in bar.state
-    if (d->buttonMouseOver)
+    d->ensureWindowData();
+    if (d->windowData->buttonMouseOver)
         bar.state |= QStyle::State_MouseOver;
     else
         bar.state &= ~QStyle::State_MouseOver;
-    if (d->buttonSunken)
+    if (d->windowData->buttonSunken)
         bar.state |= QStyle::State_Sunken;
     else
         bar.state &= ~QStyle::State_Sunken;

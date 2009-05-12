@@ -777,6 +777,7 @@ void tst_QItemDelegate::dateTimeEditor()
     QCOMPARE(timeEditor->time(), time);
 
     widget.clearFocus();
+    qApp->setActiveWindow(&widget);
     widget.setFocus();
     widget.editItem(item2);
 

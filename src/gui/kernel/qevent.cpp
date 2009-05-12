@@ -860,6 +860,17 @@ bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
     uint searchkey = (modifiers() | key()) & ~(Qt::KeypadModifier); //The keypad modifier should not make a difference
     uint platform = QApplicationPrivate::currentPlatform();
 
+#ifdef Q_WS_MAC
+    if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
+        uint oldSearchKey = searchkey;
+        searchkey &= ~(Qt::ControlModifier | Qt::MetaModifier);
+        if (oldSearchKey & Qt::ControlModifier)
+            searchkey |= Qt::MetaModifier;
+        if (oldSearchKey & Qt::MetaModifier)
+            searchkey |= Qt::ControlModifier;
+    }
+#endif
+
     uint N = QKeySequencePrivate::numberOfKeyBindings;
     int first = 0;
     int last = N - 1;

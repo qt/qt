@@ -65,7 +65,7 @@ class QAction;
 class QToolBarExtension;
 class QMenu;
 
-class Q_GUI_EXPORT QToolBarItem : public QWidgetItem
+class QToolBarItem : public QWidgetItem
 {
 public:
     QToolBarItem(QWidget *widget);
@@ -75,7 +75,7 @@ public:
     bool customWidget;
 };
 
-class Q_GUI_EXPORT QToolBarLayout : public QLayout
+class QToolBarLayout : public QLayout
 {
     Q_OBJECT
 
@@ -99,8 +99,6 @@ public:
     void insertAction(int index, QAction *action);
     int indexOf(QAction *action) const;
     int indexOf(QWidget *widget) const { return QLayout::indexOf(widget); }
-
-    QRect handleRect() const;
 
     bool layoutActions(const QSize &size);
     QSize expandedSize(const QSize &size) const;

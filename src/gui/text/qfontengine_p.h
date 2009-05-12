@@ -178,7 +178,7 @@ public:
      * Create a qimage with the alpha values for the glyph.
      * Returns an image indexed_8 with index values ranging from 0=fully transparant to 255=opaque
      */
-    virtual QImage alphaMapForGlyph(glyph_t) = 0;
+    virtual QImage alphaMapForGlyph(glyph_t);
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &t);
     virtual QImage alphaRGBMapForGlyph(glyph_t, int margin, const QTransform &t);
 
@@ -525,8 +525,11 @@ public:
     virtual Properties properties() const;
     virtual void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics);
     virtual QImage alphaMapForGlyph(glyph_t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, int margin, const QTransform &t);
 
 private:
+    QImage imageForGlyph(glyph_t glyph, int margin, bool colorful);
+
     ATSUFontID fontID;
     QCFType<CGFontRef> cgFont;
     ATSUStyle style;

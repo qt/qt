@@ -1924,15 +1924,15 @@ static void drawTrapezoid(const QGLTrapezoid &trap, const qreal offscreenHeight,
     qreal leftB = trap.bottomLeftX + (trap.topLeftX - trap.bottomLeftX) * reciprocal;
     qreal rightB = trap.bottomRightX + (trap.topRightX - trap.bottomRightX) * reciprocal;
 
-    const bool topZero = qFuzzyCompare(topDist + 1, 1);
+    const bool topZero = qFuzzyIsNull(topDist);
 
     reciprocal = topZero ? 1.0 / bottomDist : 1.0 / topDist;
 
     qreal leftA = topZero ? (trap.bottomLeftX - leftB) * reciprocal : (trap.topLeftX - leftB) * reciprocal;
     qreal rightA = topZero ? (trap.bottomRightX - rightB) * reciprocal : (trap.topRightX - rightB) * reciprocal;
 
-    qreal invLeftA = qFuzzyCompare(leftA + 1, 1) ? 0.0 : 1.0 / leftA;
-    qreal invRightA = qFuzzyCompare(rightA + 1, 1) ? 0.0 : 1.0 / rightA;
+    qreal invLeftA = qFuzzyIsNull(leftA) ? 0.0 : 1.0 / leftA;
+    qreal invRightA = qFuzzyIsNull(rightA) ? 0.0 : 1.0 / rightA;
 
     // fragment program needs the negative of invRightA as it mirrors the line
     glTexCoord4f(topDist, bottomDist, invLeftA, -invRightA);
@@ -1983,7 +1983,7 @@ public:
 void QOpenGLTrapezoidToArrayTessellator::addTrap(const Trapezoid &trap)
 {
     // On OpenGL ES we convert the trap to 2 triangles
-#ifndef QT_OPENGL_ES_1
+#ifndef QT_OPENGL_ES
     if (size > allocated - 8) {
 #else
     if (size > allocated - 12) {
@@ -1994,31 +1994,31 @@ void QOpenGLTrapezoidToArrayTessellator::addTrap(const Trapezoid &trap)
 
     QGLTrapezoid t = toGLTrapezoid(trap);
 
-#ifndef QT_OPENGL_ES_1
-    vertices[size++] = t.topLeftX;
-    vertices[size++] = t.top;
-    vertices[size++] = t.topRightX;
-    vertices[size++] = t.top;
-    vertices[size++] = t.bottomRightX;
-    vertices[size++] = t.bottom;
-    vertices[size++] = t.bottomLeftX;
-    vertices[size++] = t.bottom;
+#ifndef QT_OPENGL_ES
+    vertices[size++] = f2vt(t.topLeftX);
+    vertices[size++] = f2vt(t.top);
+    vertices[size++] = f2vt(t.topRightX);
+    vertices[size++] = f2vt(t.top);
+    vertices[size++] = f2vt(t.bottomRightX);
+    vertices[size++] = f2vt(t.bottom);
+    vertices[size++] = f2vt(t.bottomLeftX);
+    vertices[size++] = f2vt(t.bottom);
 #else
     // First triangle
-    vertices[size++] = t.topLeftX;
-    vertices[size++] = t.top;
-    vertices[size++] = t.topRightX;
-    vertices[size++] = t.top;
-    vertices[size++] = t.bottomRightX;
-    vertices[size++] = t.bottom;
+    vertices[size++] = f2vt(t.topLeftX);
+    vertices[size++] = f2vt(t.top);
+    vertices[size++] = f2vt(t.topRightX);
+    vertices[size++] = f2vt(t.top);
+    vertices[size++] = f2vt(t.bottomRightX);
+    vertices[size++] = f2vt(t.bottom);
 
     // Second triangle
-    vertices[size++] = t.bottomLeftX;
-    vertices[size++] = t.bottom;
-    vertices[size++] = t.topLeftX;
-    vertices[size++] = t.top;
-    vertices[size++] = t.bottomRightX;
-    vertices[size++] = t.bottom;
+    vertices[size++] = f2vt(t.bottomLeftX);
+    vertices[size++] = f2vt(t.bottom);
+    vertices[size++] = f2vt(t.topLeftX);
+    vertices[size++] = f2vt(t.top);
+    vertices[size++] = f2vt(t.bottomRightX);
+    vertices[size++] = f2vt(t.bottom);
 #endif
 }
 
@@ -3445,8 +3445,7 @@ QVector<QGLTrapezoid> QGLRectMaskGenerator::generateTrapezoids()
         // manhattan distance (no rotation)
         qreal width = qAbs(delta.x()) + qAbs(delta.y());
 
-        Q_ASSERT(qFuzzyCompare(delta.x() + 1, static_cast<qreal>(1))
-                 || qFuzzyCompare(delta.y() + 1, static_cast<qreal>(1)));
+        Q_ASSERT(qFuzzyIsNull(delta.x()) || qFuzzyIsNull(delta.y()));
 
         tessellator.tessellateRect(first, last, width);
     } else {
@@ -3716,8 +3715,14 @@ void QOpenGLPaintEngine::drawRects(const QRectF *rects, int rectCount)
                 d->disableClipping();
                 GLuint program = qt_gl_program_cache()->getProgram(d->drawable.context(),
                                                                    FRAGMENT_PROGRAM_MASK_TRAPEZOID_AA, 0, true);
-                QGLRectMaskGenerator maskGenerator(path, d->matrix, d->offscreen, program);
-                d->addItem(qt_mask_texture_cache()->getMask(maskGenerator, d));
+
+                if (d->matrix.type() >= QTransform::TxProject) {
+                    QGLPathMaskGenerator maskGenerator(path, d->matrix, d->offscreen, program);
+                    d->addItem(qt_mask_texture_cache()->getMask(maskGenerator, d));
+                } else {
+                    QGLRectMaskGenerator maskGenerator(path, d->matrix, d->offscreen, program);
+                    d->addItem(qt_mask_texture_cache()->getMask(maskGenerator, d));
+                }
 
                 d->enableClipping();
             }
@@ -5062,9 +5067,8 @@ void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
 
     // fall back to drawing a polygon if the scale factor is large, or
     // we use a gradient pen
-    if (ti.fontEngine->fontDef.pixelSize >= 64
-        || (d->matrix.det() > 1) || (d->pen_brush_style >= Qt::LinearGradientPattern
-                                     && d->pen_brush_style <= Qt::ConicalGradientPattern)) {
+    if ((d->matrix.det() > 1) || (d->pen_brush_style >= Qt::LinearGradientPattern
+                                  && d->pen_brush_style <= Qt::ConicalGradientPattern)) {
         QPaintEngine::drawTextItem(p, textItem);
         return;
     }

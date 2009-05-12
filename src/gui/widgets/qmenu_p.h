@@ -112,7 +112,7 @@ struct QMenuMergeItem
 typedef QList<QMenuMergeItem> QMenuMergeList;
 #endif
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 struct QWceMenuAction {
     uint command;    
     QPointer<QAction> action;
@@ -132,7 +132,7 @@ public:
 #ifdef Q_WS_MAC
                       ,mac_menu(0)
 #endif
-#if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)
+#if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
                       ,wce_menu(0)
 #endif
 #ifdef QT3_SUPPORT
@@ -145,7 +145,7 @@ public:
 #ifdef Q_WS_MAC
         delete mac_menu;
 #endif
-#if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)
+#if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
         delete wce_menu;
 #endif
     }
@@ -293,7 +293,7 @@ public:
     bool emitHighlighted;
 #endif
 
-#if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)
+#if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
     struct QWceMenuPrivate {
         QList<QWceMenuAction*> actionItems;
         HMENU menuHandle;

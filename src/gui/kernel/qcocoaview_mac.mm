@@ -181,6 +181,7 @@ QT_FORWARD_DECLARE_CLASS(QAbstractScrollAreaPrivate)
 QT_FORWARD_DECLARE_CLASS(QPaintEvent)
 QT_FORWARD_DECLARE_CLASS(QPainter)
 QT_FORWARD_DECLARE_CLASS(QHoverEvent)
+QT_FORWARD_DECLARE_CLASS(QCursor)
 QT_USE_NAMESPACE
 extern "C" {
     extern NSString *NSTextInputReplacementRangeAttributeName;
@@ -195,8 +196,10 @@ extern "C" {
     if (self) {
         [self finishInitWithQWidget:widget widgetPrivate:widgetprivate];
     }
+    composingText = new QString();
     composing = false;
     sendKeyEvents = true;
+    currentCustomTypes = 0;
     [self setHidden:YES];
     return self;
 }
@@ -211,10 +214,16 @@ extern "C" {
                                                object:self];
 }
 
--(void)registerDragTypes:(bool)accept
+-(void)registerDragTypes
 {
     QMacCocoaAutoReleasePool pool;
-    if (accept) {
+    // Calling registerForDraggedTypes is slow, so only do it once for each widget
+    // or when the custom types change.
+    const QStringList& customTypes = qEnabledDraggedTypes();
+    if (currentCustomTypes == 0 || *currentCustomTypes != customTypes) {
+        if (currentCustomTypes == 0)
+            currentCustomTypes = new QStringList();
+        *currentCustomTypes = customTypes;
         const NSString* mimeTypeGeneric = @"com.trolltech.qt.MimeTypeName";
 	NSMutableArray *supportedTypes = [NSMutableArray arrayWithObjects:NSColorPboardType, 
                                    NSFilenamesPboardType, NSStringPboardType, 
@@ -226,13 +235,38 @@ extern "C" {
                                    NSFilesPromisePboardType, NSInkTextPboardType, 
                                    NSMultipleTextSelectionPboardType, mimeTypeGeneric, nil];
         // Add custom types supported by the application.
-        const QStringList& customTypes = qEnabledDraggedTypes();
         for (int i = 0; i < customTypes.size(); i++) {
            [supportedTypes addObject:reinterpret_cast<const NSString *>(QCFString::toCFStringRef(customTypes[i]))];
         }
         [self registerForDraggedTypes:supportedTypes];
+    }
+}
+
+- (void)resetCursorRects
+{
+    QWidget *cursorWidget = qwidget;
+
+    if (cursorWidget->testAttribute(Qt::WA_TransparentForMouseEvents))
+        cursorWidget = QApplication::widgetAt(qwidget->mapToGlobal(qwidget->rect().center()));
+
+    if (cursorWidget == 0)
+        return;
+
+    if (!cursorWidget->testAttribute(Qt::WA_SetCursor)) {
+        [super resetCursorRects];
+        return;
+    }
+
+    QRegion mask = qt_widget_private(cursorWidget)->extra->mask;
+    NSCursor *nscursor = static_cast<NSCursor *>(nsCursorForQCursor(cursorWidget->cursor()));
+    if (mask.isEmpty()) {
+        [self addCursorRect:[qt_mac_nativeview_for(cursorWidget) visibleRect] cursor:nscursor];
     } else {
-        [self unregisterDraggedTypes];
+        const QVector<QRect> &rects = mask.rects();
+        for (int i = 0; i < rects.size(); ++i) {
+            const QRect &rect = rects.at(i);
+            [self addCursorRect:NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height()) cursor:nscursor];
+        }
     }
 }
 
@@ -253,6 +287,8 @@ extern "C" {
 
 - (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender 
 { 
+    if (qwidget->testAttribute(Qt::WA_DropSiteRegistered) == false)
+        return NSDragOperationNone;
     [self addDropData:sender];
     QMimeData *mimeData = dropData;
     if (QDragManager::self()->source())
@@ -263,9 +299,18 @@ extern "C" {
     QPoint posDrag(localPoint.x, localPoint.y);
     NSDragOperation nsActions = [sender draggingSourceOperationMask]; 
     Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations(nsActions);
+    QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) = nsActions;
+    Qt::KeyboardModifiers modifiers  = Qt::NoModifier;
+    if ([sender draggingSource] != nil) {
+        // modifier flags might have changed, update it here since we don't send any input events.
+        QApplicationPrivate::modifier_buttons = qt_cocoaModifiers2QtModifiers([[NSApp currentEvent] modifierFlags]);
+        modifiers = QApplication::keyboardModifiers();
+    } else {
+        // when the source is from another application the above technique will not work.
+        modifiers = qt_cocoaDragOperation2QtModifiers(nsActions);
+    }
     // send the drag enter event to the widget.
-    QDragEnterEvent qDEEvent(posDrag, qtAllowed, mimeData,
-            QApplication::mouseButtons(), QApplication::keyboardModifiers());
+    QDragEnterEvent qDEEvent(posDrag, qtAllowed, mimeData, QApplication::mouseButtons(), modifiers);
     QApplication::sendEvent(qwidget, &qDEEvent);
     if (!qDEEvent.isAccepted()) {
         // widget is not interested in this drag, so ignore this drop data.
@@ -273,24 +318,23 @@ extern "C" {
         return NSDragOperationNone;
     } else {
         // send a drag move event immediately after a drag enter event (as per documentation).
-        QDragMoveEvent qDMEvent(posDrag, qtAllowed, mimeData,
-                QApplication::mouseButtons(), QApplication::keyboardModifiers());
+        QDragMoveEvent qDMEvent(posDrag, qtAllowed, mimeData, QApplication::mouseButtons(), modifiers);
         qDMEvent.setDropAction(qDEEvent.dropAction());
         qDMEvent.accept(); // accept by default, since enter event was accepted.
         QApplication::sendEvent(qwidget, &qDMEvent);
         if (!qDMEvent.isAccepted() || qDMEvent.dropAction() == Qt::IgnoreAction) {
             // since we accepted the drag enter event, the widget expects 
             // future drage move events.  
-	    // ### check if we need to treat this like the drag enter event.
+            // ### check if we need to treat this like the drag enter event.
             nsActions = QT_PREPEND_NAMESPACE(qt_mac_mapDropAction)(qDEEvent.dropAction());
         } else {
             nsActions = QT_PREPEND_NAMESPACE(qt_mac_mapDropAction)(qDMEvent.dropAction());
-	}
+        }
         QT_PREPEND_NAMESPACE(qt_mac_copy_answer_rect)(qDMEvent);
-	return nsActions;
+        return nsActions;
     } 
  }
- 
+
 - (NSDragOperation)draggingUpdated:(id < NSDraggingInfo >)sender
 {
     // drag enter event was rejected, so ignore the move event. 
@@ -300,17 +344,27 @@ extern "C" {
     NSPoint windowPoint = [sender draggingLocation];
     NSPoint globalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
+    NSDragOperation nsActions = [sender draggingSourceOperationMask];
     QPoint posDrag(localPoint.x, localPoint.y);
-    if (qt_mac_mouse_inside_answer_rect(posDrag))
+    if (qt_mac_mouse_inside_answer_rect(posDrag)
+        && QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) == nsActions)
         return QT_PREPEND_NAMESPACE(qt_mac_mapDropActions)(QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastAction));
     // send drag move event to the widget    
-    NSDragOperation nsActions = [sender draggingSourceOperationMask]; 
+    QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) = nsActions;
     Qt::DropActions qtAllowed = QT_PREPEND_NAMESPACE(qt_mac_mapNSDragOperations)(nsActions);
+    Qt::KeyboardModifiers modifiers  = Qt::NoModifier;
+    if ([sender draggingSource] != nil) {
+        // modifier flags might have changed, update it here since we don't send any input events.
+        QApplicationPrivate::modifier_buttons = qt_cocoaModifiers2QtModifiers([[NSApp currentEvent] modifierFlags]);
+        modifiers = QApplication::keyboardModifiers();
+    } else {
+        // when the source is from another application the above technique will not work.
+        modifiers = qt_cocoaDragOperation2QtModifiers(nsActions);
+    }
     QMimeData *mimeData = dropData;
     if (QDragManager::self()->source())
         mimeData = QDragManager::self()->dragPrivate()->data;
-    QDragMoveEvent qDMEvent(posDrag, qtAllowed, mimeData,
-            QApplication::mouseButtons(), QApplication::keyboardModifiers());
+    QDragMoveEvent qDMEvent(posDrag, qtAllowed, mimeData, QApplication::mouseButtons(), modifiers);
     qDMEvent.setDropAction(QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec).lastAction);
     qDMEvent.accept();
     QApplication::sendEvent(qwidget, &qDMEvent);
@@ -339,12 +393,12 @@ extern "C" {
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
 {
     [self addDropData:sender];
-    
+
     NSPoint windowPoint = [sender draggingLocation];
     NSPoint globalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
     QPoint posDrop(localPoint.x, localPoint.y);
-    
+
     NSDragOperation nsActions = [sender draggingSourceOperationMask]; 
     Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations(nsActions);
     QMimeData *mimeData = dropData;
@@ -356,6 +410,8 @@ extern "C" {
     if (QDragManager::self()->object)
         QDragManager::self()->dragPrivate()->target = qwidget;
     QApplication::sendEvent(qwidget, &de);
+    if (QDragManager::self()->object)
+        QDragManager::self()->dragPrivate()->executed_action = de.dropAction();
     if (!de.isAccepted())
         return NO;
     else
@@ -364,7 +420,10 @@ extern "C" {
 
 - (void)dealloc
 {
+    delete composingText;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+    delete currentCustomTypes;
+    [self unregisterDraggedTypes];
     [super dealloc];
 }
 
@@ -386,10 +445,9 @@ extern "C" {
 - (void) setFrameSize:(NSSize)newSize
 {
     [super setFrameSize:newSize];
- 
+
     // A change in size has required the view to be invalidated.
-    if ([self inLiveResize])
-    {
+    if ([self inLiveResize]) {
         NSRect rects[4];
         NSInteger count;
         [self getRectsExposedDuringLiveResize:rects count:&count];
@@ -397,9 +455,7 @@ extern "C" {
         {
             [self setNeedsDisplayInRect:rects[count]];
         }
-    }
-    else
-    {
+    } else {
         [self setNeedsDisplay:YES];
     }
 }
@@ -534,7 +590,7 @@ extern "C" {
     if (!qAppInstance()->activeModalWidget() || QApplicationPrivate::tryModalHelper(qwidget, 0)) {
         QApplication::sendEvent(qwidget, &enterEvent);
         qt_mouseover = qwidget;
-        
+
         // Update cursor and dispatch hover events.
         qt_mac_update_cursor_at_global_pos(flipPoint(globalPoint).toPoint());
         if (qwidget->testAttribute(Qt::WA_Hover) &&
@@ -589,7 +645,7 @@ extern "C" {
         [viewsToLookAt addObject:qt_mac_nativeview_for(parentWidget)];
         parentWidget = parentWidget->parentWidget();
     }
-    
+
     // Now walk through the subviews of each view and determine which subview should
     // get the event. We look through all the subviews at a given level with
     // the assumption that the last item to be found the candidate has a higher z-order.
@@ -599,7 +655,7 @@ extern "C" {
     for (NSView *lookView in viewsToLookAt) {
         NSPoint tmpPoint = [lookView convertPoint:windowPoint fromView:nil];
         for (NSView *view in [lookView subviews]) {
-            if (view == mouseView)
+            if (view == mouseView || [view isHidden])
                 continue;
             NSRect frameRect = [view frame];
             if (NSMouseInRect(tmpPoint, [view frame], [view isFlipped]))
@@ -618,7 +674,7 @@ extern "C" {
             NSPoint tmpPoint = [viewForDescent convertPoint:windowPoint fromView:nil];                
             // Apply same rule as above wrt z-order.
             for (NSView *view in [viewForDescent subviews]) {
-                if (NSMouseInRect(tmpPoint, [view frame], [view isFlipped]))
+                if (![view isHidden] && NSMouseInRect(tmpPoint, [view frame], [view isFlipped]))
                     lowerView = view;
             }
             if (!lowerView) // Low as we can be at this point.
@@ -725,7 +781,7 @@ extern "C" {
     if (currentIManager && [currentIManager wantsToHandleMouseEvents]) {
         [currentIManager handleMouseEvent:theEvent];
     }
-    
+
     NSPoint windowPoint = [theEvent locationInWindow];
     NSPoint globalPoint = [[theEvent window] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
@@ -734,7 +790,7 @@ extern "C" {
     Qt::MouseButton buttons = cocoaButton2QtButton([theEvent buttonNumber]);
     bool wheelOK = false;
     Qt::KeyboardModifiers keyMods = qt_cocoaModifiers2QtModifiers([theEvent modifierFlags]);
-    
+
     // Mouse wheel deltas seem to tick in at increments of 0.1. Qt widgets
     // expect the delta to be a multiple of 120. 
     const int ScrollFactor = 10 * 120;
@@ -756,20 +812,20 @@ extern "C" {
             wheelOK = qwe2.isAccepted();
         }
     }
-    
+
     if (deltaY) {
         QWheelEvent qwe(qlocal, qglobal, deltaY, buttons, keyMods, Qt::Vertical);
         qt_sendSpontaneousEvent(qwidget, &qwe);
         wheelOK = qwe.isAccepted();
-        if (wheelOK && QApplicationPrivate::focus_widget
+        if (!wheelOK && QApplicationPrivate::focus_widget
             && QApplicationPrivate::focus_widget != qwidget) {
             QWheelEvent qwe2(QApplicationPrivate::focus_widget->mapFromGlobal(qglobal), qglobal,
-                             deltaZ, buttons, keyMods, Qt::Vertical);
+                             deltaY, buttons, keyMods, Qt::Vertical);
             qt_sendSpontaneousEvent(QApplicationPrivate::focus_widget, &qwe2);
             wheelOK = qwe2.isAccepted();
         }
     }
-    
+
     if (deltaZ) {
         // Qt doesn't explicitly support wheels with a Z component. In a misguided attempt to
         // try to be ahead of the pack, I'm adding this extra value.
@@ -858,6 +914,11 @@ extern "C" {
     Q_UNUSED(anImage);
     Q_UNUSED(aPoint);
     qMacDnDParams()->performedAction = operation;
+    if (QDragManager::self()->object
+        && QDragManager::self()->dragPrivate()->executed_action != Qt::ActionMask) {
+        qMacDnDParams()->performedAction =
+                qt_mac_mapDropAction(QDragManager::self()->dragPrivate()->executed_action);
+    }
 }
 
 - (QWidget *)qt_qwidget
@@ -913,11 +974,32 @@ extern "C" {
     }
 }
 
+- (void)viewWillMoveToWindow:(NSWindow *)window
+{
+    if (qwidget->windowFlags() & Qt::MSWindowsOwnDC
+          && (window != [self window])) { // OpenGL Widget
+        // Create a stupid ClearDrawable Event
+        QEvent event(QEvent::MacGLClearDrawable);
+        qApp->sendEvent(qwidget, &event);
+    }
+}
+
+- (void)viewDidMoveToWindow
+{
+    if (qwidget->windowFlags() & Qt::MSWindowsOwnDC && [self window]) {
+        // call update paint event
+        qwidgetprivate->needWindowChange = true;
+        QEvent event(QEvent::MacGLWindowChange);
+        qApp->sendEvent(qwidget, &event);
+    }
+}
+
+
 // NSTextInput Protocol implementation
 
 - (void) insertText:(id)aString
 {
-    if (composing) {
+    if ([aString length]) {
         // Send the commit string to the widget.
         QString commitText;
         if ([aString isKindOfClass:[NSAttributedString class]]) {
@@ -931,6 +1013,7 @@ extern "C" {
         e.setCommitString(commitText);
         qt_sendSpontaneousEvent(qwidget, &e);
     }
+    composingText->clear();
 }
 
 - (void) setMarkedText:(id)aString selectedRange:(NSRange)selRange
@@ -984,12 +1067,21 @@ extern "C" {
         attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat,
                                             0, composingLength, format);
     }
+    *composingText = qtText;
     QInputMethodEvent e(qtText, attrs);
     qt_sendSpontaneousEvent(qwidget, &e);
+    if (!composingLength)
+        composing = false;
 }
 
 - (void) unmarkText
 {
+    if (composing) {
+        QInputMethodEvent e;
+        e.setCommitString(*composingText);
+        qt_sendSpontaneousEvent(qwidget, &e);
+    }
+    composingText->clear();
     composing = false;
 }
 
@@ -1150,13 +1242,13 @@ Qt::DropAction QDragManager::drag(QDrag *o)
      so we just bail early to prevent it */
     if(!(GetCurrentEventButtonState() & kEventMouseButtonPrimary))
         return Qt::IgnoreAction;
-    
+
     if(object) {
         dragPrivate()->source->removeEventFilter(this);
         cancel();
         beingCancelled = false;
     }
-    
+
     object = o;
     dragPrivate()->target = 0;
 
@@ -1168,7 +1260,7 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     QMacPasteboard dragBoard((CFStringRef) NSDragPboard, QMacPasteboardMime::MIME_DND);
     dragPrivate()->data->setData(QLatin1String("application/x-qt-mime-type-name"), QByteArray());
     dragBoard.setMimeData(dragPrivate()->data);
-    
+
     // create the image
     QPoint hotspot;
     QPixmap pix = dragPrivate()->pixmap;
@@ -1214,6 +1306,7 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     NSSize mouseOffset = {0.0, 0.0};
     NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
     NSPoint windowPoint = [dndParams->theEvent locationInWindow];
+    dragPrivate()->executed_action = Qt::ActionMask;
     // do the drag
     [dndParams->view retain];
     [dndParams->view dragImage:image
@@ -1225,6 +1318,7 @@ Qt::DropAction QDragManager::drag(QDrag *o)
                      slideBack:YES];
     [dndParams->view release];
     [image release];
+    dragPrivate()->executed_action = Qt::IgnoreAction;
     object = 0;
     Qt::DropAction performedAction(qt_mac_mapNSDragOperation(dndParams->performedAction));
     // do post drag processing, if required.

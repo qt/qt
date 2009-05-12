@@ -65,8 +65,11 @@ QT_BEGIN_NAMESPACE
 class QPixmap;
 
 class QDesignerFormEditorInterface;
+class QDesignerPropertySheetExtension;
 
 namespace qdesigner_internal {
+
+class PropertySheetKeySequenceValue;
 
 // Shared model of actions, to be used for several views (detailed/icon view).
 class QDESIGNER_SHARED_EXPORT ActionModel: public QStandardItemModel
@@ -98,6 +101,10 @@ public:
 
     // Find the associated menus and toolbars, ignore toolbuttons
     static QWidgetList associatedWidgets(const QAction *action);
+
+    // Retrieve shortcut via property sheet as it is a fake property
+    static PropertySheetKeySequenceValue actionShortCut(QDesignerFormEditorInterface *core, QAction *action);
+    static PropertySheetKeySequenceValue actionShortCut(const QDesignerPropertySheetExtension *ps);
 
 signals:
     void resourceImageDropped(const QString &path, QAction *action);

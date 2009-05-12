@@ -1,3 +1,206 @@
+2009-03-13  Adam Bergkvist <adam.bergkvist@ericsson.com>
+
+        Reviewed by Alexey Proskuryakov.
+
+        https://bugs.webkit.org/show_bug.cgi?id=24349
+        [QT] HTTP status text is never set
+
+        Set HTTP status text to the reason phrase attribute of QNetworkReply.
+
+        * platform/network/qt/QNetworkReplyHandler.cpp:
+        (WebCore::QNetworkReplyHandler::sendResponseIfNeeded):
+
+2009-03-02  Dirk Schulze  <krit@webkit.org>
+
+        Reviewed by Holger Freyther.
+
+        Added putImageData to Qt. Discussed with Ariya Hidayat.
+
+        [Qt] lacks putImageData support in Canvas
+        https://bugs.webkit.org/show_bug.cgi?id=22186
+
+        * platform/graphics/qt/ImageBufferQt.cpp:
+        (WebCore::ImageBuffer::putImageData):
+
+2009-03-01  Larry Ewing  <lewing@novell.com>
+
+        Reviewed by Alexey Proskuryakov.
+
+        https://bugs.webkit.org/show_bug.cgi?id=24080
+        NPN_GetValue casting to the wrong type and writing outside bounds
+
+        Make sure to cast the value to the correct type so that only
+        memory owned by the value is written to.
+
+        * plugins/gtk/PluginViewGtk.cpp (PluginView::getValueStatic): 
+        * plugins/qt/PluginViewQt.cpp (PluginView::getValueStatic):
+        * plugins/mac/PluginViewMac.cpp (PluginView::getValueStatic): 
+        (PluginView::getValue):
+
+2009-02-27  Adam Treat  <adam.treat@torchmobile.com>
+
+        Reviewed by Eric Seidel.
+
+        https://bugs.webkit.org/show_bug.cgi?id=24229
+        If an image has no alpha channel there is no reason to use SourceOver.
+
+        * platform/graphics/qt/ImageQt.cpp:
+        (WebCore::Image::drawPattern):
+        (WebCore::BitmapImage::draw):
+
+2009-02-27  Zack Rusin  <zack@kde.org>
+
+        Reviewed by Nikolas Zimmermann.
+
+        Qt: be more reasonable about scrolled lines
+
+        cMouseWheelPixelsPerLineStep is currently a constant set to 13.3. it doesn't
+        match our metrics meaning that Qt scrolls by ~2 lines by default which is quite
+        irritating. so lets scroll vertically by the Qt set number of lines * Qt default
+        single step scroll
+
+        * platform/qt/WheelEventQt.cpp:
+
+2009-02-25  Dirk Schulze  <krit@webkit.org>
+
+        Reviewed by Oliver Hunt.
+
+        Ported arcTo to Qt. Qt has no native support for arcTo. This changes
+        calculate the behavior of arcTo and draws it with lineTo and arc.
+
+        [QT] implement Canvas arcTo
+        https://bugs.webkit.org/show_bug.cgi?id=23873
+
+        * platform/graphics/qt/PathQt.cpp:
+        (WebCore::Path::addArcTo):
+
+2009-03-12  Adam Treat  <adam.treat@torchmobile.com>
+
+        Reviewed by Oliver Hunt.
+
+        https://bugs.webkit.org/show_bug.cgi?id=24498
+        Fix the Qt port to use the same algorithm for drawing dashed and dotted
+        borders as the other ports.  This makes the Qt port pixel-for-pixel perfect
+        compared to border drawing with Apple's canonical mac port and much closer
+        to konqueror and firefox behavior.
+
+        * platform/graphics/qt/GraphicsContextQt.cpp:
+        (WebCore::GraphicsContext::drawLine):
+
+2009-03-09  Adam Treat  <adam.treat@torchmobile.com>
+
+        Reviewed by George Staikos.
+
+        https://bugs.webkit.org/show_bug.cgi?id=24463
+        WebCore::qstring is detaching and copying twice for every single
+        WebCore::TextRun that is processed and drawn.  This elevates this method
+        to one of the top-ten most expensive methods in all of QtWebKit according
+        to profiling.  This changes the method so that QString only detaches
+        when absolutely necessary.
+
+        * platform/graphics/qt/FontQt.cpp:
+        (WebCore::qstring):
+        (WebCore::fixSpacing):
+        (WebCore::Font::drawComplexText):
+        (WebCore::Font::floatWidthForComplexText):
+        (WebCore::Font::offsetForPositionForComplexText):
+        (WebCore::Font::selectionRectForComplexText):
+
+2009-02-04  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Unreviewed Qt build fix.
+
+        Changed ASSERT(image) to ASSERT(!image.isNull()).
+
+        * platform/graphics/qt/ImageBufferQt.cpp:
+        (WebCore::ImageBuffer::getImageData):
+
+2009-02-03  Dirk Schulze  <krit@webkit.org>
+
+        Reviewed by Sam Weinig.
+
+        This is a follow up of r40546. Call toImage() once speeds up ImageBuffer::getImageData()
+
+        * platform/graphics/qt/ImageBufferQt.cpp:
+        (WebCore::ImageBuffer::getImageData):
+
+2009-02-03  Dirk Schulze  <krit@webkit.org>
+
+        Reviewed by Sam Weinig and Oliver Hunt.
+
+        Added getImageData() support for QtWebKit.
+
+        [QT] lacks getImageData / putImageData support in Canvas
+        https://bugs.webkit.org/show_bug.cgi?id=22186
+
+        * platform/graphics/qt/ImageBufferQt.cpp:
+        (WebCore::ImageBuffer::getImageData):
+
+2009-04-14  Benjamin C Meyer  <benjamin.meyer@torchmobile.com>
+
+        Reviewed by George Staikos.
+
+        https://bugs.webkit.org/show_bug.cgi?id=25099
+
+        When creating a QNetworkRequest make sure to populate the
+        CacheLoadControlAttribute with the value set by the ResourceRequest::cachePolicy() so that the cache will be used as WebKit expects.
+
+        * WebKit/qt/tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::requestCache):
+
+        * platform/network/qt/ResourceRequestQt.cpp:
+        (WebCore::ResourceRequest::toNetworkRequest):
+
+2009-04-07  Brady Eidson  <beidson@apple.com>
+
+        Reviewed by Darin Adler
+
+        While working on <rdar://problem/5968249>, noticed some glaring problems with LocalStorage.
+
+        * page/DOMWindow.cpp:
+        (WebCore::DOMWindow::localStorage): Return the cached m_localStorage object if it exists to 
+          avoid creating multiple representations for the same underlying StorageArea.
+        * page/DOMWindow.h:
+        (WebCore::DOMWindow::optionalLocalStorage): Return m_localStorage, not m_sessionStorage.
+
+2009-04-06  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Don't show and hide the platformPluginWidget, as it's our QWebView
+
+        * plugins/mac/PluginViewMac.cpp:
+        (WebCore::PluginView::show):
+        (WebCore::PluginView::hide):
+        (WebCore::PluginView::setParentVisible):
+
+2009-04-06  Mike Belshe <mike@belshe.com>
+
+        Reviewed by Eric Seidel.
+
+        HTMLCanvasElement crash when ImageBuffer creation fails.
+        https://bugs.webkit.org/show_bug.cgi?id=23212
+
+        Check for NULL before using the ImageBuffer as we might
+        be low on memory and creation may have failed.
+
+        Test case creation blocked by:
+        https://bugs.webkit.org/show_bug.cgi?id=25055
+
+        * html/HTMLCanvasElement.cpp:
+        (WebCore::HTMLCanvasElement::createImageBuffer):
+
+2009-04-05  Erik L. Bunce  <elbunce@xendom.com>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=25050
+
+        Fix an assert failure when dropping an 'empty' text/uri-list on a QWebView. 
+
+        * platform/qt/DragDataQt.cpp:
+        (WebCore::DragData::asURL):
+
 2009-03-27  Zack Rusin <zack@kde.org>
 
         Reviewed by Simon Hausmann.

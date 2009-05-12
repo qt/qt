@@ -99,7 +99,7 @@ public:
     QVariant data(const QModelIndex &, int) const { return QVariant(); }
 };
 
-class Q_GUI_EXPORT QAbstractItemViewPrivate : public QAbstractScrollAreaPrivate
+class QAbstractItemViewPrivate : public QAbstractScrollAreaPrivate
 {
     Q_DECLARE_PUBLIC(QAbstractItemView)
 
@@ -359,6 +359,7 @@ public:
     QBasicTimer autoScrollTimer;
     int autoScrollMargin;
     int autoScrollCount;
+    bool shouldScrollToCurrentOnShow; //used to know if we should scroll to current on show event
 
     bool alternatingColors;
 

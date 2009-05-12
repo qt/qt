@@ -67,9 +67,7 @@ private slots:
     void constructing_QFile();
     void read_QByteArray();
     void unget();
-#if QT_VERSION >= 0x040100
     void peek();
-#endif // QT_VERSION
     void getch();
     void putch();
 
@@ -310,7 +308,6 @@ void tst_QIODevice::unget()
 }
 
 //--------------------------------------------------------------------
-#if QT_VERSION >= 0x040100
 void tst_QIODevice::peek()
 {
     QBuffer buffer;
@@ -348,7 +345,6 @@ void tst_QIODevice::peek()
     }
     QFile::remove("peektestfile");
 }
-#endif // QT_VERSION
 
 void tst_QIODevice::getch()
 {
@@ -441,7 +437,6 @@ void tst_QIODevice::readLine()
     result = buffer.readLine(line.data(), linelen + 1);
     QCOMPARE(result, linelen);
 
-#if QT_VERSION >= 0x0402000
     // try with a line length limit
     QVERIFY(buffer.seek(0));
     line = buffer.readLine(linelen + 100);
@@ -451,7 +446,6 @@ void tst_QIODevice::readLine()
     QVERIFY(buffer.seek(0));
     line = buffer.readLine();
     QCOMPARE(line.size(), linelen);
-#endif
 }
 
 QTEST_MAIN(tst_QIODevice)

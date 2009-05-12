@@ -177,6 +177,10 @@ QT_BEGIN_NAMESPACE
     while the widget is embedded. In this state, the widget may differ slightly
     in behavior from when it is not embedded.
 
+    \warning This class is provided for convenience when bridging
+    QWidgets and QGraphicsItems, it should not be used for
+    high-performance scenarios.
+
     \sa QGraphicsScene::addWidget(), QGraphicsWidget
 */
 
@@ -456,7 +460,7 @@ void QGraphicsProxyWidgetPrivate::embedSubWindow(QWidget *subWin)
 {
     QWExtra *extra;
     if (!((extra = subWin->d_func()->extra) && extra->proxyWidget)) {
-        QGraphicsProxyWidget *subProxy = new QGraphicsProxyWidget(q_func());
+        QGraphicsProxyWidget *subProxy = new QGraphicsProxyWidget(q_func(), subWin->windowFlags());
         subProxy->d_func()->setWidget_helper(subWin, false);
     }
 }
@@ -539,6 +543,9 @@ QGraphicsProxyWidget::~QGraphicsProxyWidget()
     explicitly hidden or disabled, the proxy widget will become explicitly
     hidden or disabled after embedding is complete. The class documentation
     has a full overview over the shared state.
+
+    QGraphicsProxyWidget's window flags determine whether the widget, after
+    embedding, will be given window decorations or not.
 
     After this function returns, QGraphicsProxyWidget will keep its state
     synchronized with that of \a widget whenever possible.
@@ -657,10 +664,6 @@ void QGraphicsProxyWidgetPrivate::setWidget_helper(QWidget *newWidget, bool auto
     if (newWidget->testAttribute(Qt::WA_SetCursor))
         q->setCursor(widget->cursor());
 #endif
-    Qt::WFlags flags = newWidget->windowFlags();
-    if (newWidget->windowType() == Qt::Window)
-        flags &= ~Qt::Window;
-    q->setWindowFlags(flags);
     q->setEnabled(newWidget->isEnabled());
     q->setVisible(newWidget->isVisible());
     q->setLayoutDirection(newWidget->layoutDirection());
@@ -1033,7 +1036,7 @@ void QGraphicsProxyWidget::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
         if (receiver != d->dragDropWidget) {
             // Try to enter before we leave
             QDragEnterEvent dragEnter(receiverPos, event->possibleActions(), event->mimeData(), event->buttons(), event->modifiers());
-            dragEnter.setDropAction(event->proposedAction());            
+            dragEnter.setDropAction(event->proposedAction());
             QApplication::sendEvent(receiver, &dragEnter);
             event->setAccepted(dragEnter.isAccepted());
             event->setDropAction(dragEnter.dropAction());
@@ -1431,7 +1434,7 @@ int QGraphicsProxyWidget::type() const
 
   Creates a proxy widget for the given \a child of the widget
   contained in this proxy.
-  
+
   This function makes it possible to aquire proxies for
   non top-level widgets. For instance, you can embed a dialog,
   and then transform only one of its widgets.

@@ -58,7 +58,7 @@ public:
 
     IDirectFBSurface *directFBSurface() const;
 
-    void lockDirectFB();
+    void lockDirectFB(uint flags);
     void unlockDirectFB();
 
     inline bool forceRasterPrimitives() const { return forceRaster; }
@@ -69,6 +69,7 @@ public:
     int bytesPerLine() const;
     QSize size() const;
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
+    uint lockFlags() const { return lock; }
 protected:
     // Shouldn't create QDirectFBPaintDevice by itself but only sub-class it:
     QDirectFBPaintDevice(QDirectFBScreen *scr = QDirectFBScreen::instance())
@@ -76,7 +77,10 @@ protected:
           dfbSurface(0),
           lockedImage(0),
           screen(scr),
-          forceRaster(false) {}
+          forceRaster(false),
+          lock(0),
+          mem(0)
+    {}
 
     inline int dotsPerMeterX() const
     {
@@ -92,6 +96,8 @@ protected:
     QDirectFBScreen *screen;
     int bpl;
     bool forceRaster;
+    uint lock;
+    uchar *mem;
 private:
     Q_DISABLE_COPY(QDirectFBPaintDevice)
 };

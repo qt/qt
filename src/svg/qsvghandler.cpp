@@ -2541,6 +2541,9 @@ static QSvgNode *createImageNode(QSvgNode *parent,
         return 0;
     }
 
+    if (image.format() == QImage::Format_ARGB32)
+        image = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+
     QSvgNode *img = new QSvgImage(parent,
                                   image,
                                   QRect(int(nx),
@@ -2587,10 +2590,12 @@ static void parseBaseGradient(QSvgNode *node,
         if (prop && prop->type() == QSvgStyleProperty::GRADIENT) {
             QSvgGradientStyle *inherited =
                 static_cast<QSvgGradientStyle*>(prop);
-            if (!inherited->stopLink().isEmpty())
+            if (!inherited->stopLink().isEmpty()) {
                 gradProp->setStopLink(inherited->stopLink(), handler->document());
-            else
+            } else {
                 grad->setStops(inherited->qgradient()->stops());
+                gradProp->setGradientStopsSet(inherited->gradientStopsSet());
+            }
 
             matrix = inherited->qmatrix();
         } else {

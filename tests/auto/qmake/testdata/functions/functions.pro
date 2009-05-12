@@ -51,15 +51,11 @@ include( infiletest.pro )
    message( "FAILED: include function: $$DEFINES" )
 }
 
-lessThan(QT_VERSION, 40200) {
-    message( "SKIPPED: replace function only in 4.2" )
-} else {
-    #replace
-    VERSION=1.0.0
-    VERSION_replaced=$$replace(VERSION,\.,_)
-    !isEqual(VERSION_replaced, 1_0_0) {
-       message( "FAILED: replace function: $$VERSION_replaced" )
-    }
+#replace
+VERSION=1.0.0
+VERSION_replaced=$$replace(VERSION,\.,_)
+!isEqual(VERSION_replaced, 1_0_0) {
+   message( "FAILED: replace function: $$VERSION_replaced" )
 }
 
 #test functions
