@@ -82,6 +82,8 @@ public:
 
     virtual QFxItem *root() const;
 
+    QSize sizeHint() const;
+
     void dumpRoot();
 
     static void printErrorLine(const QmlError &);

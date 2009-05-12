@@ -119,8 +119,10 @@ Item {
 
     Item {
         id: Background
+    
+        anchors.fill: parent
 
-        Image { source: "content/pics/background.png"; opaque: true }
+        Image { source: "content/pics/background.png"; opaque: true; anchors.fill: parent }
 
         GridView {
             id: PhotoGridView; model: FeedModel; delegate: PhotoDelegate; cacheBuffer: 100

@@ -68,7 +68,9 @@ class QFxTextEditPrivate : public QFxPaintedItemPrivate
 
 public:
     QFxTextEditPrivate()
-      : font(0), color("black"), imgDirty(true), hAlign(QFxTextEdit::AlignLeft), vAlign(QFxTextEdit::AlignTop), dirty(false), wrap(false), richText(false), cursorVisible(false), format(QFxTextEdit::AutoText), document(0)
+      : font(0), color("black"), imgDirty(true), hAlign(QFxTextEdit::AlignLeft), vAlign(QFxTextEdit::AlignTop),
+      dirty(false), wrap(false), richText(false), cursorVisible(false), focusOnPress(false),
+      format(QFxTextEdit::AutoText), document(0)
     {
     }
 
@@ -95,6 +97,7 @@ public:
     bool wrap;
     bool richText;
     bool cursorVisible;
+    bool focusOnPress;
     QFxTextEdit::TextFormat format;
     QTextDocument *document;
     QTextControl *control;
