@@ -9,11 +9,7 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
-#include <QMainWindow>
-#include <QMenuBar>
-
-#include "qsoftkeystack.h"
+#include <QtGui>
 
 class MainWindow : public QMainWindow
 {
