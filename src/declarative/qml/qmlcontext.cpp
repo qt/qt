@@ -85,9 +85,11 @@ void QmlContextPrivate::destroyed(QObject *obj)
             notifies.append(ii);
         }
     }
-    for (int ii = 0; ii < notifies.count(); ++ii) {
-        QMetaObject::activate(q, notifies[ii] + notifyIndex, 0);
-    }
+
+    // ### Work around bug in shutdown
+    // for (int ii = 0; ii < notifies.count(); ++ii) {
+    //    QMetaObject::activate(q, notifies[ii] + notifyIndex, 0);
+    // }
 }
 
 void QmlContextPrivate::init()
