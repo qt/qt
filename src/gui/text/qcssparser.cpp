@@ -278,19 +278,15 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
     { "xx-large", Value_XXLarge }
 };
 
+//Map id to strings as they appears in the 'values' array above
+static const int indexOfId[NumKnownValues] = { 0, 40, 47, 41, 48, 53, 34, 26, 68, 69, 25, 42, 5, 62, 46,
+    29, 57, 58, 27, 50, 60, 6, 10, 38, 55, 19, 13, 17, 18, 20, 21, 49, 24, 45, 65, 36, 3, 2, 39, 61, 16,
+    11, 56, 14, 32, 63, 54, 64, 33, 67, 8, 28, 37, 12, 35, 59, 7, 9, 4, 66, 52, 22, 23, 30, 31, 1, 15, 0,
+    51, 44, 43 };
+
 QString Value::toString() const
 {
-    static int indexOfId[NumKnownValues - 1];
-    static bool hasCachedIndexes = false;
-
     if (type == KnownIdentifier) {
-        if (!hasCachedIndexes) {
-            for (int i = 0; i < NumKnownValues - 1; ++i)
-                indexOfId[values[i].id] = i;
-
-            hasCachedIndexes = true;
-        }
-
         return QLatin1String(values[indexOfId[variant.toInt()]].name);
     } else {
         return variant.toString();

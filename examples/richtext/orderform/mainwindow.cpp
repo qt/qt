@@ -49,12 +49,12 @@ MainWindow::MainWindow()
 {
     QMenu *fileMenu = new QMenu(tr("&File"), this);
     QAction *newAction = fileMenu->addAction(tr("&New..."));
-    newAction->setShortcut(tr("Ctrl+N"));
+    newAction->setShortcuts(QKeySequence::New);
     printAction = fileMenu->addAction(tr("&Print..."), this, SLOT(printFile()));
-    printAction->setShortcut(tr("Ctrl+P"));
+    printAction->setShortcuts(QKeySequence::Print);
     printAction->setEnabled(false);
     QAction *quitAction = fileMenu->addAction(tr("E&xit"));
-    quitAction->setShortcut(tr("Ctrl+Q"));
+    quitAction->setShortcuts(QKeySequence::Quit);
     menuBar()->addMenu(fileMenu);
 
     letters = new QTabWidget;

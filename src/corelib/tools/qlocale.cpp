@@ -5367,6 +5367,14 @@ static Bigint *mult(Bigint *a, Bigint *b)
 
 static Bigint *p5s;
 
+struct p5s_deleter
+{
+    ~p5s_deleter()
+    {
+        Bfree(p5s);
+    }
+};
+
 static Bigint *pow5mult(Bigint *b, int k)
 {
     Bigint *b1, *p5, *p51;
@@ -5388,6 +5396,7 @@ static Bigint *pow5mult(Bigint *b, int k)
         return b;
     if (!(p5 = p5s)) {
         /* first time */
+        static p5s_deleter deleter;
         p5 = p5s = i2b(625);
         p5->next = 0;
     }

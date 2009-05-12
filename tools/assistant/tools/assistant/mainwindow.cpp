@@ -412,7 +412,7 @@ void MainWindow::setupActions()
     m_closeTabAction->setShortcuts(QKeySequence::Close);
 
     QAction *tmp = menu->addAction(tr("&Quit"), this, SLOT(close()));
-    tmp->setShortcut(tr("CTRL+Q"));
+    tmp->setShortcut(QKeySequence::Quit);
     tmp->setMenuRole(QAction::QuitRole);
 
     menu = menuBar()->addMenu(tr("&Edit"));

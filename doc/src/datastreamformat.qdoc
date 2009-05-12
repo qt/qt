@@ -301,12 +301,10 @@
          \o \list
             \o Milliseconds since midnight (quint32)
             \endlist
-
     \row \o QUrl
          \o \list
             \o Holds an URL (QString)
             \endlist
-
     \row \o QVariant
          \o \list
             \o The type of the data (quint32)

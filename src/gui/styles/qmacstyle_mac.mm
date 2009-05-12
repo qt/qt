@@ -5274,7 +5274,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
         if (const QStyleOptionToolButton *tb
                 = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             if (widget && qobject_cast<QToolBar *>(widget->parentWidget())) {
-//                p->fillRect(tb->rect, QColor(155, 0, 155, 155));
                 if (tb->subControls & SC_ToolButtonMenu) {
                     QStyleOption arrowOpt(0);
                     arrowOpt.rect = subControlRect(cc, tb, SC_ToolButtonMenu, widget);
