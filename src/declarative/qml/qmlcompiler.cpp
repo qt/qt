@@ -445,6 +445,7 @@ void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
         exceptionColumn = token->location.start.column;  \
         QDebug d(&exceptionDescription); \
         d << desc;  \
+        exceptionDescription = exceptionDescription.trimmed(); \
         return false; \
     } 
 
@@ -454,6 +455,7 @@ void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
         exceptionColumn = obj->location.start.column;  \
         QDebug d(&exceptionDescription); \
         d << desc;  \
+        exceptionDescription = exceptionDescription.trimmed(); \
         return false; \
     } 
 

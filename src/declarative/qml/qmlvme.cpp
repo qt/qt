@@ -181,6 +181,7 @@ QmlVME::QmlVME()
         QString str; \
         QDebug d(&str); \
         d << desc; \
+        str = str.trimmed(); \
         QmlError error; \
         error.setDescription(str); \
         error.setLine(instr.line); \
@@ -860,7 +861,11 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
 
                 } else {
-                    VME_EXCEPTION("Cannot assign to non-existant property" << property);
+                    if (instr.assignObject.property == -1) {
+                        VME_EXCEPTION("Cannot assign to default property");
+                    } else {
+                        VME_EXCEPTION("Cannot assign to non-existant property" << property);
+                    }
                 }
 
             }

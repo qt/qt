@@ -1,0 +1,3 @@
+MyDotPropertyObject {
+    obj.value: 1
+}
