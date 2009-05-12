@@ -39,8 +39,19 @@
 **
 ****************************************************************************/
 
-#ifndef QSOFTKEYSTACK_H
-#define QSOFTKEYSTACK_H
+#ifndef QSOFTKEYSTACK_P_H
+#define QSOFTKEYSTACK_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
 #include "QtGui/qwidget.h"
 #include "QtGui/qaction.h"
@@ -52,23 +63,24 @@ QT_BEGIN_NAMESPACE
 
 #define QSoftkeySet QList <QSoftKeyAction*>
 
-class QSoftKeyStackPrivate;
-
-class QSoftKeyStack : public QObject
+class QSoftKeyStackPrivate : public QObject
 {
 public:
-    QSoftKeyStack(QWidget *parent);
-    ~QSoftKeyStack();
+    QSoftKeyStackPrivate();
+    ~QSoftKeyStackPrivate();
 
-public:
     void push(QSoftKeyAction *softKey);
-    void push(const QList<QSoftKeyAction*> &softkeys);
+    void push(const QList<QSoftKeyAction*> &softKeys);
     void pop();
-
+    
 private:
-    QSoftKeyStackPrivate *d;
+    void mapSoftKeys(const QSoftkeySet &top);
+    void setNativeSoftKeys();
+    
+private:
+    QStack <QSoftkeySet> softKeyStack;
 };
 
 QT_END_NAMESPACE
 
-#endif // QSOFTKEYSTACK_H
+#endif // QSOFTKEYSTACK_P_H
