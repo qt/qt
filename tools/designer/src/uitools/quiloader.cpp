@@ -862,7 +862,7 @@ void QUiLoader::setScriptingEnabled(bool enabled)
 /*!
     \internal
     \since 4.3
-    
+
     Returns true if execution of scripts is enabled; returns false otherwise.
 
     \sa setScriptingEnabled()
@@ -908,7 +908,7 @@ bool QUiLoader::isLanguageChangeEnabled() const
 /*!
     \internal
     \since 4.5
-    
+
     If \a enabled is true, user interfaces loaded by this loader will be
     translated. Otherwise, the user interfaces will not be translated.
 
