@@ -4048,8 +4048,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     touchPoint->d->widget = widget;
                 }
                 if (origin != widget)
-                    origin->d_func()->currentTouchPoints.clear();
-                widget->d_func()->currentTouchPoints = touchEvent->_touchPoints;
+                    d->widgetCurrentTouchPoints.remove(origin);
+                d->widgetCurrentTouchPoints[widget] = touchEvent->_touchPoints;
                 break;
             } else if (widget->isWindow() || widget->testAttribute(Qt::WA_NoMousePropagation)) {
                 break;

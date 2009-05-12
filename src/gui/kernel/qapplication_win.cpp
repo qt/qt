@@ -4008,8 +4008,10 @@ void QApplicationPrivate::initializeMultitouch()
     GetTouchInputInfo = static_cast<qt_GetTouchInputInfoPtr>(library.resolve("GetTouchInputInfo"));
     CloseTouchInputHandle = static_cast<qt_CloseTouchInputHandlePtr>(library.resolve("CloseTouchInputHandle"));
 
+    widgetCurrentTouchPoints.clear();
     touchInputIDToTouchPointID.clear();
     appAllTouchPoints.clear();
+    appCurrentTouchPoints.clear();
 }
 
 QTouchEvent::TouchPoint *QApplicationPrivate::findClosestTouchPoint(const QList<QTouchEvent::TouchPoint *> &appActiveTouchPoints,
@@ -4028,10 +4030,10 @@ QTouchEvent::TouchPoint *QApplicationPrivate::findClosestTouchPoint(const QList<
     return closestTouchPoint;
 }
 
-QEvent::Type QApplicationPrivate::appendTouchPoint(QTouchEvent::TouchPoint *touchPoint)
+QEvent::Type QApplicationPrivate::appendTouchPoint(QTouchEvent::TouchPoint *touchPoint,
+                                                   QList<QTouchEvent::TouchPoint *> *currentTouchPoints)
 {
-    QWidget *widget = touchPoint->d->widget;
-    QEvent::Type eventType = widget->d_func()->currentTouchPoints.isEmpty()
+    QEvent::Type eventType = currentTouchPoints->isEmpty()
                              ? QEvent::TouchBegin
                              : QEvent::TouchUpdate;
 
@@ -4043,11 +4045,11 @@ QEvent::Type QApplicationPrivate::appendTouchPoint(QTouchEvent::TouchPoint *touc
     }
     appCurrentTouchPoints.insert(at, touchPoint);
     // again, for the widget's currentTouchPoints
-    for (at = 0; at < widget->d_func()->currentTouchPoints.count(); ++at) {
-        if (widget->d_func()->currentTouchPoints.at(at)->id() > touchPoint->id())
+    for (at = 0; at < currentTouchPoints->count(); ++at) {
+        if (currentTouchPoints->at(at)->id() > touchPoint->id())
             break;
     }
-    widget->d_func()->currentTouchPoints.insert(at, touchPoint);
+    currentTouchPoints->insert(at, touchPoint);
 
     if (appCurrentTouchPoints.count() > appAllTouchPoints.count()) {
         qFatal("Qt: INTERNAL ERROR: appCurrentTouchPoints.count() (%d) > appAllTouchPoints.count() (%d)",
@@ -4058,10 +4060,9 @@ QEvent::Type QApplicationPrivate::appendTouchPoint(QTouchEvent::TouchPoint *touc
     return eventType;
 }
 
-QEvent::Type QApplicationPrivate::removeTouchPoint(QTouchEvent::TouchPoint *touchPoint)
+QEvent::Type QApplicationPrivate::removeTouchPoint(QTouchEvent::TouchPoint *touchPoint,
+                                                   QList<QTouchEvent::TouchPoint *> *currentTouchPoints)
 {
-    QWidget *widget = touchPoint->d->widget;
-
     // remove touch point from all known touch points
     for (int i = qMin(appCurrentTouchPoints.count() - 1, touchPoint->id()); i >= 0; --i) {
         if (appCurrentTouchPoints.at(i) == touchPoint) {
@@ -4070,14 +4071,14 @@ QEvent::Type QApplicationPrivate::removeTouchPoint(QTouchEvent::TouchPoint *touc
         }
     }
     // again, for the widget's currentTouchPoints
-    for (int i = qMin(widget->d_func()->currentTouchPoints.count() - 1, touchPoint->id()); i >= 0; --i) {
-        if (widget->d_func()->currentTouchPoints.at(i) == touchPoint) {
-            widget->d_func()->currentTouchPoints.removeAt(i);
+    for (int i = qMin(currentTouchPoints->count() - 1, touchPoint->id()); i >= 0; --i) {
+        if (currentTouchPoints->at(i) == touchPoint) {
+            currentTouchPoints->removeAt(i);
             break;
         }
     }
 
-    return widget->d_func()->currentTouchPoints.isEmpty() ? QEvent::TouchEnd : QEvent::TouchUpdate;
+    return currentTouchPoints->isEmpty() ? QEvent::TouchEnd : QEvent::TouchUpdate;
 }
 
 bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
@@ -4114,6 +4115,7 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
         bool down = touchPoint->d->state != Qt::TouchPointReleased;
         QPointF globalPos(qreal(touchInput.x) / qreal(100.), qreal(touchInput.y) / qreal(100.));
         QEvent::Type eventType = QEvent::None;
+
         QList<QTouchEvent::TouchPoint *> activeTouchPoints;
         if (!down && (touchInput.dwFlags & TOUCHEVENTF_DOWN)) {
             // determine which widget this event will go to
@@ -4129,10 +4131,11 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
             }
             touchPoint->d->widget = w;
 
-            eventType = appendTouchPoint(touchPoint);
+            QList<QTouchEvent::TouchPoint *> &currentTouchPoints = widgetCurrentTouchPoints[w];
+            eventType = appendTouchPoint(touchPoint, &currentTouchPoints);
             // make sure new points are added to activeTouchPoints as well
             appActiveTouchPoints = appCurrentTouchPoints;
-            activeTouchPoints = w->d_func()->currentTouchPoints;
+            activeTouchPoints = currentTouchPoints;
 
             touchPoint->d->state = Qt::TouchPointPressed;
             touchPoint->d->globalPos
@@ -4142,9 +4145,10 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
             touchPoint->d->pressure = qreal(1.);
         } else if (down && (touchInput.dwFlags & TOUCHEVENTF_UP)) {
             QWidget *w = touchPoint->d->widget;
+            QList<QTouchEvent::TouchPoint *> &currentTouchPoints = widgetCurrentTouchPoints[w];
             appActiveTouchPoints = appCurrentTouchPoints;
-            activeTouchPoints = w->d_func()->currentTouchPoints;
-            eventType = removeTouchPoint(touchPoint);
+            activeTouchPoints = currentTouchPoints;
+            eventType = removeTouchPoint(touchPoint, &currentTouchPoints);
 
             touchPoint->d->state = Qt::TouchPointReleased;
             touchPoint->d->lastGlobalPos = touchPoint->d->globalPos;
@@ -4153,7 +4157,7 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
         } else if (down) {
             QWidget *w = touchPoint->d->widget;
             appActiveTouchPoints = appCurrentTouchPoints;
-            activeTouchPoints = w->d_func()->currentTouchPoints;
+            activeTouchPoints = widgetCurrentTouchPoints.value(w);
             eventType = QEvent::TouchUpdate;
             touchPoint->d->state = globalPos == touchPoint->d->globalPos
                                    ? Qt::TouchPointStationary
@@ -4199,10 +4203,13 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
             break;
         }
         case QEvent::TouchEnd:
-            if (!widget->d_func()->currentTouchPoints.isEmpty()) {
+        {
+            QList<QTouchEvent::TouchPoint *> currentTouchPoints = widgetCurrentTouchPoints.take(widget);
+            if (!currentTouchPoints.isEmpty()) {
                 qFatal("Qt: INTERNAL ERROR, the widget's currentTouchPoints should be empty!");
             }
             // fall-through intended
+        }
         default:
             if (widget->testAttribute(Qt::WA_AcceptedTouchBeginEvent)) {
                 (void) QApplication::sendSpontaneousEvent(widget, &touchEvent);
