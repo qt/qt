@@ -430,6 +430,26 @@ void QFxTextEdit::setCursorVisible(bool on)
     d->control->processEvent(&focusEvent, QPointF(0, 0));
 }
 
+/*!
+    \qmlproperty bool TextEdit::focusOnPress
+
+    Whether the TextEdit should gain focus on a mouse press. By default this is
+    set to false;
+*/
+bool QFxTextEdit::focusOnPress() const
+{
+    Q_D(const QFxTextEdit);
+    return d->focusOnPress;
+}
+
+void QFxTextEdit::setFocusOnPress(bool on)
+{
+    Q_D(QFxTextEdit);
+    if (d->focusOnPress == on)
+        return;
+    d->focusOnPress = on;
+}
+
 void QFxTextEdit::geometryChanged(const QRectF &newGeometry, 
                                   const QRectF &oldGeometry)
 {
@@ -643,6 +663,7 @@ void QFxTextEdit::keyReleaseEvent(QKeyEvent *event)
 void QFxTextEdit::focusChanged(bool hasFocus)
 {
     Q_D(QFxTextEdit);
+    setCursorVisible(hasFocus);
 }
 
 /*!
@@ -684,6 +705,8 @@ Handles the given mouse \a event.
 void QFxTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxTextEdit);
+    if (d->focusOnPress)
+        setFocus(true);
     QMouseEvent *me = sceneMouseEventToMouseEvent(event);
     d->control->processEvent(me, QPointF(0, 0));
     event->setAccepted(me->isAccepted());
