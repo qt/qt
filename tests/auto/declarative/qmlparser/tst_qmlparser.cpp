@@ -397,6 +397,7 @@ private slots:
     void autoComponentCreation();
     void propertyValueSource();
     void attachedProperties();
+    void dynamicObjects();
 
     // regression tests for crashes
     void crash1();
@@ -479,6 +480,8 @@ void tst_qmlparser::errors_data()
     QTest::newRow("unregisteredObject") << "unregisteredObject.txt" << "unregisteredObject.errors.txt" << false;
     QTest::newRow("empty") << "empty.txt" << "empty.errors.txt" << false;
     QTest::newRow("missingObject") << "missingObject.txt" << "missingObject.errors.txt" << false;
+    QTest::newRow("failingComponent") << "failingComponent.txt" << "failingComponent.errors.txt" << true;
+    QTest::newRow("missingSignal") << "missingSignal.txt" << "missingSignal.errors.txt" << true;
 }
 
 void tst_qmlparser::errors()
@@ -727,6 +730,14 @@ void tst_qmlparser::attachedProperties()
     QObject *attached = qmlAttachedPropertiesObject<MyQmlObject>(object);
     QVERIFY(attached != 0);
     QCOMPARE(attached->property("value"), QVariant(10));
+}
+
+// Tests non-static object properties
+void tst_qmlparser::dynamicObjects()
+{
+    QmlComponent component(&engine, TEST_FILE("dynamicObject.1.txt"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
 }
 
 void tst_qmlparser::crash1()
