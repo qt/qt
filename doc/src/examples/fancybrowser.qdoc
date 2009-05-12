@@ -98,7 +98,7 @@
     When the page is loaded, \c adjustLocation() updates the address
     bar; \c adjustLocation() is triggered by the \c loadFinished()
     signal in QWebView. In \c changeLocation() we create a QUrl
-    objecti, and then use it to load the page into the QWebView. When
+    object, and then use it to load the page into the QWebView. When
     the new web page has finished loading, \c adjustLocation() will be
     run once more to update the address bar.
 
@@ -142,7 +142,7 @@
     a \i {gif} file as its source is removed. \c removeInlineFrames() removes all 
     \i {iframe} or inline elements. \c removeObjectElements() removes all 
     \i {object} elements, and \c removeEmbeddedElements() removes any elements 
-    such as plugins embedded on the page using the \i {embed} element.
+    such as plugins embedded on the page using the \i {embed} tag.
 
 */
 
