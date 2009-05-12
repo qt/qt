@@ -93,7 +93,7 @@ int QmlCompiledData::indexForFloat(float *data, int count)
 {
     Q_ASSERT(count > 0);
 
-    for (int ii = 0; ii < floatData.count() - count; ++ii) {
+    for (int ii = 0; ii <= floatData.count() - count; ++ii) {
         bool found = true;
         for (int jj = 0; jj < count; ++jj) {
             if (floatData.at(ii + jj) != data[jj]) {
@@ -117,7 +117,7 @@ int QmlCompiledData::indexForInt(int *data, int count)
 {
     Q_ASSERT(count > 0);
 
-    for (int ii = 0; ii < floatData.count() - count; ++ii) {
+    for (int ii = 0; ii <= intData.count() - count; ++ii) {
         bool found = true;
         for (int jj = 0; jj < count; ++jj) {
             if (intData.at(ii + jj) != data[jj]) {
@@ -240,13 +240,8 @@ QmlCompiler::generateStoreInstruction(QmlCompiledData &cdata,
             {
             instr.type = QmlInstruction::StoreString;
             instr.storeString.propertyIndex = coreIdx;
-            if (string->startsWith(QLatin1Char('\'')) && string->endsWith(QLatin1Char('\''))) {
-                QString unquotedString = string->mid(1, string->length() - 2);
-                primitive = cdata.indexForString(unquotedString);
-            } else {
-                if (primitive == -1)
-                    primitive = cdata.indexForString(*string);
-            }
+            if (primitive == -1)
+                primitive = cdata.indexForString(*string);
             instr.storeString.value = primitive;
             }
             break;
@@ -488,18 +483,13 @@ bool QmlCompiler::compile(QmlEngine *engine,
             ref.component = tref.unit->toComponent(engine);
             ref.ref = tref.unit;
             ref.ref->addref();
-        } else if (tref.parser)
-            ref.parser = tref.parser;
+        } 
         ref.className = unit->data.types().at(ii).toLatin1();
         out->types << ref;
     }
 
     Object *root = unit->data.tree();
-    if (!root) {
-        exceptionDescription = QLatin1String("Can't compile because of earlier errors");
-        output = 0;
-        return false;
-    }
+    Q_ASSERT(root);
 
     compileTree(root);
 
@@ -1498,26 +1488,25 @@ QObject *QmlCompiledData::TypeReference::createInstance(QmlContext *ctxt) const
         if (rv)
             QmlEngine::setContextForObject(rv, ctxt);
         return rv;
-    } else if (component) {
+    } else {
+        Q_ASSERT(component);
         QObject *rv = component->create(ctxt);
         QmlContext *ctxt = qmlContext(rv);
         if(ctxt) {
             static_cast<QmlContextPrivate *>(QObjectPrivate::get(ctxt))->typeName = className;
         }
         return rv;
-    } else {
-        return 0;
-    }
+    } 
 }
 
 const QMetaObject *QmlCompiledData::TypeReference::metaObject() const
 {
-    if (type)
+    if (type) {
         return type->metaObject();
-    else if (component)
+    } else {
+        Q_ASSERT(component);
         return &static_cast<QmlComponentPrivate *>(QObjectPrivate::get(component))->cc->root;
-    else
-        return 0;
+    }
 }
 
 QT_END_NAMESPACE

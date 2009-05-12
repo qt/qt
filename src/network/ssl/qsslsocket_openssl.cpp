@@ -523,7 +523,7 @@ void QSslSocketBackendPrivate::startClientEncryption()
 
     // Start connecting. This will place outgoing data in the BIO, so we
     // follow up with calling transmit().
-    testConnection();
+    startHandshake();
     transmit();
 }
 
@@ -536,7 +536,7 @@ void QSslSocketBackendPrivate::startServerEncryption()
 
     // Start connecting. This will place outgoing data in the BIO, so we
     // follow up with calling transmit().
-    testConnection();
+    startHandshake();
     transmit();
 }
 
@@ -624,7 +624,7 @@ void QSslSocketBackendPrivate::transmit()
 #ifdef QSSLSOCKET_DEBUG
             qDebug() << "QSslSocketBackendPrivate::transmit: testing encryption";
 #endif
-            if (testConnection()) {
+            if (startHandshake()) {
 #ifdef QSSLSOCKET_DEBUG
                 qDebug() << "QSslSocketBackendPrivate::transmit: encryption established";
 #endif
@@ -643,7 +643,7 @@ void QSslSocketBackendPrivate::transmit()
         }
 
         // If the request is small and the remote host closes the transmission
-        // after sending, there's a chance that testConnection() will already
+        // after sending, there's a chance that startHandshake() will already
         // have triggered a shutdown.
         if (!ssl)
             continue;
@@ -743,7 +743,7 @@ static QSslError _q_OpenSSL_to_QSslError(int errorCode, const QSslCertificate &c
     return error;
 }
 
-bool QSslSocketBackendPrivate::testConnection()
+bool QSslSocketBackendPrivate::startHandshake()
 {
     Q_Q(QSslSocket);
 
@@ -784,7 +784,7 @@ bool QSslSocketBackendPrivate::testConnection()
             q->setErrorString(QSslSocket::tr("Error during SSL handshake: %1").arg(SSL_ERRORSTR()));
             q->setSocketError(QAbstractSocket::SslHandshakeFailedError);
 #ifdef QSSLSOCKET_DEBUG
-            qDebug() << "QSslSocketBackendPrivate::testConnection: error!" << q->errorString();
+            qDebug() << "QSslSocketBackendPrivate::startHandshake: error!" << q->errorString();
 #endif
             emit q->error(QAbstractSocket::SslHandshakeFailedError);
             q->abort();

@@ -1,0 +1,3 @@
+MyContainer {
+    MyComponent { x: 10; y: 11; }
+}

@@ -571,7 +571,6 @@ void QFileInfo::setFile(const QFile &file)
 
 void QFileInfo::setFile(const QDir &dir, const QString &file)
 {
-    Q_D(QFileInfo);
     *this = QFileInfo(dir.filePath(file));
 }
 

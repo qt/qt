@@ -373,6 +373,8 @@ public:
 
         SE_ShapedFrameContents,
 
+        SE_ToolBarHandle,
+
         // do not add any values below/greater than this
         SE_CustomBase = 0xf0000000
     };

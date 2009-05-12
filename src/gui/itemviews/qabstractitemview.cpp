@@ -2845,9 +2845,9 @@ void QAbstractItemView::setIndexWidget(const QModelIndex &index, QWidget *widget
         d->persistent.insert(widget);
         d->addEditor(index, widget, true);
         widget->show();
+        dataChanged(index, index); // update the geometry
         if (!d->delayedPendingLayout)
             widget->setGeometry(visualRect(index));
-        dataChanged(index, index); // update the geometry
     }
 }
 

@@ -62,6 +62,193 @@ private:
 QML_DECLARE_TYPE(MyQmlObject);
 QML_DEFINE_TYPE(MyQmlObject,MyQmlObject);
 
+class MyTypeObject : public QObject
+{
+    Q_OBJECT
+    Q_ENUMS(MyEnum)
+    Q_FLAGS(MyFlags)
+
+    Q_PROPERTY(MyFlags flagProperty READ flagProperty WRITE setFlagProperty);
+    Q_PROPERTY(MyEnum enumProperty READ enumProperty WRITE setEnumProperty);
+    Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty);
+    Q_PROPERTY(uint uintProperty READ uintProperty WRITE setUintProperty);
+    Q_PROPERTY(int intProperty READ intProperty WRITE setIntProperty);
+    Q_PROPERTY(qreal realProperty READ realProperty WRITE setRealProperty);
+    Q_PROPERTY(double doubleProperty READ doubleProperty WRITE setDoubleProperty);
+    Q_PROPERTY(QColor colorProperty READ colorProperty WRITE setColorProperty);
+    Q_PROPERTY(QDate dateProperty READ dateProperty WRITE setDateProperty);
+    Q_PROPERTY(QTime timeProperty READ timeProperty WRITE setTimeProperty);
+    Q_PROPERTY(QDateTime dateTimeProperty READ dateTimeProperty WRITE setDateTimeProperty);
+    Q_PROPERTY(QPoint pointProperty READ pointProperty WRITE setPointProperty);
+    Q_PROPERTY(QPointF pointFProperty READ pointFProperty WRITE setPointFProperty);
+    Q_PROPERTY(QSize sizeProperty READ sizeProperty WRITE setSizeProperty);
+    Q_PROPERTY(QSizeF sizeFProperty READ sizeFProperty WRITE setSizeFProperty);
+    Q_PROPERTY(QRect rectProperty READ rectProperty WRITE setRectProperty);
+    Q_PROPERTY(QRectF rectFProperty READ rectFProperty WRITE setRectFProperty);
+    Q_PROPERTY(bool boolProperty READ boolProperty WRITE setBoolProperty);
+    Q_PROPERTY(QVariant variantProperty READ variantProperty WRITE setVariantProperty);
+
+public:
+    enum MyFlag { FlagVal1 = 0x01, FlagVal2 = 0x02, FlagVal3 = 0x04 };
+    Q_DECLARE_FLAGS(MyFlags, MyFlag)
+    MyFlags flagPropertyValue;
+    MyFlags flagProperty() const {
+        return flagPropertyValue;
+    }
+    void setFlagProperty(MyFlags v) {
+        flagPropertyValue = v;
+    }
+
+    enum MyEnum { EnumVal1, EnumVal2 };
+    MyEnum enumPropertyValue;
+    MyEnum enumProperty() const {
+        return enumPropertyValue;
+    }
+    void setEnumProperty(MyEnum v) {
+        enumPropertyValue = v;
+    }
+
+    QString stringPropertyValue;
+    QString stringProperty() const {
+       return stringPropertyValue;
+    }
+    void setStringProperty(const QString &v) {
+        stringPropertyValue = v;
+    }
+
+    uint uintPropertyValue;
+    uint uintProperty() const {
+       return uintPropertyValue;
+    }
+    void setUintProperty(const uint &v) {
+        uintPropertyValue = v;
+    }
+
+    int intPropertyValue;
+    int intProperty() const {
+       return intPropertyValue;
+    }
+    void setIntProperty(const int &v) {
+        intPropertyValue = v;
+    }
+
+    qreal realPropertyValue;
+    qreal realProperty() const {
+       return realPropertyValue;
+    }
+    void setRealProperty(const qreal &v) {
+        realPropertyValue = v;
+    }
+
+    double doublePropertyValue;
+    double doubleProperty() const {
+       return doublePropertyValue;
+    }
+    void setDoubleProperty(const double &v) {
+        doublePropertyValue = v;
+    }
+
+    QColor colorPropertyValue;
+    QColor colorProperty() const {
+       return colorPropertyValue;
+    }
+    void setColorProperty(const QColor &v) {
+        colorPropertyValue = v;
+    }
+
+    QDate datePropertyValue;
+    QDate dateProperty() const {
+       return datePropertyValue;
+    }
+    void setDateProperty(const QDate &v) {
+        datePropertyValue = v;
+    }
+
+    QTime timePropertyValue;
+    QTime timeProperty() const {
+       return timePropertyValue;
+    }
+    void setTimeProperty(const QTime &v) {
+        timePropertyValue = v;
+    }
+
+    QDateTime dateTimePropertyValue;
+    QDateTime dateTimeProperty() const {
+       return dateTimePropertyValue;
+    }
+    void setDateTimeProperty(const QDateTime &v) {
+        dateTimePropertyValue = v;
+    }
+
+    QPoint pointPropertyValue;
+    QPoint pointProperty() const {
+       return pointPropertyValue;
+    }
+    void setPointProperty(const QPoint &v) {
+        pointPropertyValue = v;
+    }
+
+    QPointF pointFPropertyValue;
+    QPointF pointFProperty() const {
+       return pointFPropertyValue;
+    }
+    void setPointFProperty(const QPointF &v) {
+        pointFPropertyValue = v;
+    }
+
+    QSize sizePropertyValue;
+    QSize sizeProperty() const {
+       return sizePropertyValue;
+    }
+    void setSizeProperty(const QSize &v) {
+        sizePropertyValue = v;
+    }
+
+    QSizeF sizeFPropertyValue;
+    QSizeF sizeFProperty() const {
+       return sizeFPropertyValue;
+    }
+    void setSizeFProperty(const QSizeF &v) {
+        sizeFPropertyValue = v;
+    }
+
+    QRect rectPropertyValue;
+    QRect rectProperty() const {
+       return rectPropertyValue;
+    }
+    void setRectProperty(const QRect &v) {
+        rectPropertyValue = v;
+    }
+
+    QRectF rectFPropertyValue;
+    QRectF rectFProperty() const {
+       return rectFPropertyValue;
+    }
+    void setRectFProperty(const QRectF &v) {
+        rectFPropertyValue = v;
+    }
+
+    bool boolPropertyValue;
+    bool boolProperty() const {
+       return boolPropertyValue;
+    }
+    void setBoolProperty(const bool &v) {
+        boolPropertyValue = v;
+    }
+
+    QVariant variantPropertyValue;
+    QVariant variantProperty() const {
+       return variantPropertyValue;
+    }
+    void setVariantProperty(const QVariant &v) {
+        variantPropertyValue = v;
+    }
+};
+Q_DECLARE_OPERATORS_FOR_FLAGS(MyTypeObject::MyFlags)
+
+QML_DECLARE_TYPE(MyTypeObject);
+QML_DEFINE_TYPE(MyTypeObject,MyTypeObject);
+
 class MyContainer : public QObject
 {
     Q_OBJECT
@@ -144,8 +331,12 @@ private slots:
     void interfaceProperty();
     void interfaceQmlList();
     void interfaceQList();
-
     void assignObjectToSignal();
+    void assignQmlComponent();
+    void assignBasicTypes();
+    void customParserTypes();
+    void rootAsQmlComponent();
+    void inlineQmlComponents();
 
     // regression tests for crashes
     void crash1();
@@ -199,6 +390,16 @@ void tst_qmlparser::errors_data()
     QTest::newRow("wrongType (int for bool)") << "wrongType.2.txt" << "wrongType.2.errors.txt" << false;
     QTest::newRow("wrongType (bad rect)") << "wrongType.3.txt" << "wrongType.3.errors.txt" << false;
 
+    QTest::newRow("wrongType (invalid enum)") << "wrongType.4.txt" << "wrongType.4.errors.txt" << false;
+    QTest::newRow("wrongType (int for uint)") << "wrongType.5.txt" << "wrongType.5.errors.txt" << false;
+    QTest::newRow("wrongType (string for real)") << "wrongType.6.txt" << "wrongType.6.errors.txt" << false;
+    QTest::newRow("wrongType (int for color)") << "wrongType.7.txt" << "wrongType.7.errors.txt" << false;
+    QTest::newRow("wrongType (int for date)") << "wrongType.8.txt" << "wrongType.8.errors.txt" << false;
+    QTest::newRow("wrongType (int for time)") << "wrongType.9.txt" << "wrongType.9.errors.txt" << false;
+    QTest::newRow("wrongType (int for datetime)") << "wrongType.10.txt" << "wrongType.10.errors.txt" << false;
+    QTest::newRow("wrongType (string for point)") << "wrongType.11.txt" << "wrongType.11.errors.txt" << false;
+    QTest::newRow("wrongType (color for size)") << "wrongType.12.txt" << "wrongType.12.errors.txt" << false;
+
 
     QTest::newRow("nonExistantProperty.1") << "readOnly.1.txt" << "readOnly.1.errors.txt" << false;
     QTest::newRow("nonExistantProperty.2") << "readOnly.2.txt" << "readOnly.2.errors.txt" << true;
@@ -208,7 +409,8 @@ void tst_qmlparser::errors_data()
     QTest::newRow("nullDotProperty") << "nullDotProperty.txt" << "nullDotProperty.errors.txt" << true;
     QTest::newRow("fakeDotProperty") << "fakeDotProperty.txt" << "fakeDotProperty.errors.txt" << true;
     QTest::newRow("duplicateIDs") << "duplicateIDs.txt" << "duplicateIDs.errors.txt" << false;
-    QTest::newRow("invalidID") << "invalidID.txt" << "invalidID.errors.txt" << false;
+    QTest::newRow("invalidID.1") << "invalidID.txt" << "invalidID.errors.txt" << false;
+    QTest::newRow("invalidID.2") << "invalidID.2.txt" << "invalidID.2.errors.txt" << false;
     QTest::newRow("unregisteredObject") << "unregisteredObject.txt" << "unregisteredObject.errors.txt" << false;
     QTest::newRow("empty") << "empty.txt" << "empty.errors.txt" << false;
     QTest::newRow("missingObject") << "missingObject.txt" << "missingObject.errors.txt" << false;
@@ -282,6 +484,79 @@ void tst_qmlparser::assignObjectToSignal()
     QVERIFY(object != 0);
     QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlot");
     emit object->basicSignal();
+}
+
+
+// Test is an external component can be loaded and assigned (to a qlist)
+void tst_qmlparser::assignQmlComponent()
+{
+    QmlComponent component(&engine, TEST_FILE("assignQmlComponent.txt"));
+    MyContainer *object = qobject_cast<MyContainer *>(component.create());
+    QVERIFY(object != 0);
+    QVERIFY(object->children()->count() == 1);
+    QObject *child = object->children()->at(0);
+    QCOMPARE(child->property("x"), QVariant(10));
+    QCOMPARE(child->property("y"), QVariant(11));
+}
+
+// Test literal assignment to all the basic types 
+void tst_qmlparser::assignBasicTypes()
+{
+    QmlComponent component(&engine, TEST_FILE("assignBasicTypes.txt"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->flagProperty(), MyTypeObject::FlagVal1 | MyTypeObject::FlagVal3);
+    QCOMPARE(object->enumProperty(), MyTypeObject::EnumVal2);
+    QCOMPARE(object->stringProperty(), QString("Hello World!"));
+    QCOMPARE(object->uintProperty(), uint(10));
+    QCOMPARE(object->intProperty(), -19);
+    QCOMPARE((float)object->realProperty(), float(23.2));
+    QCOMPARE((float)object->doubleProperty(), float(-19.7));
+    QCOMPARE(object->colorProperty(), QColor("red"));
+    QCOMPARE(object->dateProperty(), QDate(1982, 11, 25));
+    QCOMPARE(object->timeProperty(), QTime(11, 11, 32));
+    QCOMPARE(object->dateTimeProperty(), QDateTime(QDate(2009, 5, 12), QTime(13, 22, 1)));
+    QCOMPARE(object->pointProperty(), QPoint(99,13));
+    QCOMPARE(object->pointFProperty(), QPointF((float)-10.1, (float)12.3));
+    QCOMPARE(object->sizeProperty(), QSize(99, 13));
+    QCOMPARE(object->sizeFProperty(), QSizeF((float)0.1, (float)0.2));
+    QCOMPARE(object->rectProperty(), QRect(9, 7, 100, 200));
+    QCOMPARE(object->rectFProperty(), QRectF((float)1000.1, (float)-10.9, (float)400, (float)90.99));
+    QCOMPARE(object->boolProperty(), true);
+    QCOMPARE(object->variantProperty(), QVariant("Hello World!"));
+}
+
+// Tests that custom parser tyeps can be instantiated
+void tst_qmlparser::customParserTypes()
+{
+    QmlComponent component(&engine, TEST_FILE("customParserTypes.txt"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("count") == QVariant(2));
+}
+
+// Tests that the root item can be a custom component
+void tst_qmlparser::rootAsQmlComponent()
+{
+    QmlComponent component(&engine, TEST_FILE("rootAsQmlComponent.txt"));
+    MyContainer *object = qobject_cast<MyContainer *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("x"), QVariant(11));
+    QCOMPARE(object->children()->count(), 2);
+}
+
+// Tests that components can be specified inline
+void tst_qmlparser::inlineQmlComponents()
+{
+    QmlComponent component(&engine, TEST_FILE("inlineQmlComponents.txt"));
+    MyContainer *object = qobject_cast<MyContainer *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->children()->count(), 1);
+    QmlComponent *comp = qobject_cast<QmlComponent *>(object->children()->at(0));
+    QVERIFY(comp != 0);
+    MyQmlObject *compObject = qobject_cast<MyQmlObject *>(comp->create());
+    QVERIFY(compObject != 0);
+    QCOMPARE(compObject->value(), 11);
 }
 
 void tst_qmlparser::crash1()

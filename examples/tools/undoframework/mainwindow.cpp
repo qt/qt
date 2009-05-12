@@ -101,16 +101,14 @@ void MainWindow::createActions()
 
 //! [5]
     undoAction = undoStack->createUndoAction(this, tr("&Undo"));
-    undoAction->setShortcut(tr("Ctrl+Z"));
+    undoAction->setShortcuts(QKeySequence::Undo);
 
     redoAction = undoStack->createRedoAction(this, tr("&Redo"));
-    QList<QKeySequence> redoShortcuts;
-    redoShortcuts << tr("Ctrl+Y") << tr("Shift+Ctrl+Z");
-    redoAction->setShortcuts(redoShortcuts);
+    redoAction->setShortcuts(QKeySequence::Redo);
 //! [5]
 
     exitAction = new QAction(tr("E&xit"), this);
-    exitAction->setShortcut(tr("Ctrl+Q"));
+    exitAction->setShortcuts(QKeySequence::Quit);
     connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
 
     aboutAction = new QAction(tr("&About"), this);
