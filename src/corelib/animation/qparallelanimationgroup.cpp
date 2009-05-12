@@ -46,8 +46,27 @@
     \ingroup animation
     \preliminary
 
-    The animations are all started at the same time, and run in parallel. The animation group
-    finishes when the longest lasting animation has finished.
+    QParallelAnimationGroup--a \l{QAnimationGroup}{container for
+    animations}--starts all its animations when it is
+    \l{QAbstractAnimation::start()}{started} itself, i.e., runs all
+    animations in parallel. The animation group finishes when the
+    longest lasting animation has finished.
+
+    You can treat QParallelAnimation as any other QAbstractAnimation,
+    e.g., pause, resume, or add it to other animation groups.
+
+    \code
+        QParallelAnimationGroup *group = new QParallelAnimationGroup;
+        group->addAnimation(anim1);
+        group->addAnimation(anim2);
+
+        group->start();
+    \endcode
+    
+    In this example, \c anim1 and \c anim2 are two
+    \l{QPropertyAnimation}s that have already been set up.
+
+    \sa QAnimationGroup, QPropertyAnimation, {The Animation Framework}
 */
 
 #ifndef QT_NO_ANIMATION

@@ -13,6 +13,7 @@
   \page statemachine-api.html
   \title The State Machine Framework
   \brief An overview of the State Machine framework for constructing and executing state graphs.
+  \ingroup architecture
 
   \tableofcontents
 

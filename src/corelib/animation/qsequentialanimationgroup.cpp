@@ -46,13 +46,36 @@
     \ingroup animation
     \preliminary
 
-    The first animation in the group is started first, and when it finishes, the next animation
-    is started, and so on. The animation group finishes when the last animation has finished.
+    QSequentialAnimationGroup is a QAnimationGroup that runs its
+    animations in sequence, i.e., it starts one animation after
+    another has finished playing. The animations are played in the
+    order they are added to the group (using
+    \l{QAnimationGroup::}{addAnimation()} or
+    \l{QAnimationGroup::}{insertAnimationAt()}). The animation group
+    finishes when its last animation has finished.
 
-    At each moment there is at most one animation that is active in the group, called currentAnimation.
-    An empty group has no current animation.
+    At each moment there is at most one animation that is active in
+    the group; it is returned by currentAnimation(). An empty group
+    has no current animation.
 
-    You can call addPause() or insertPause() to add a pause to a sequential animation group.
+    A sequential animation group can be treated as any other
+    animation, i.e., it can be started, stopped, and added to other
+    groups. You can also call addPause() or insertPauseAt() to add a
+    pause to a sequential animation group.
+
+    \code
+        QSequentialAnimationGroup group;
+
+        group.addAnimation(anim1);
+        group.addAnimation(anim2);
+
+        group.start();
+    \endcode
+
+    In this example, \c anim1 and \c anim2 are two already set up
+    \l{QPropertyAnimation}s.
+
+    \sa QAnimationGroup, QAbstractAnimation, {The Animation Framework}
 */
 
 #ifndef QT_NO_ANIMATION
