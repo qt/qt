@@ -1253,6 +1253,8 @@ void tst_QStateMachine::assignPropertyWithAnimation()
     {
         QStateMachine machine;
         QObject obj;
+        obj.setProperty("foo", 321);
+        obj.setProperty("bar", 654);
         QState *s1 = new QState(machine.rootState());
         s1->assignProperty(&obj, "foo", 123);
         QState *s2 = new QState(machine.rootState());
@@ -1276,6 +1278,8 @@ void tst_QStateMachine::assignPropertyWithAnimation()
     {
         QStateMachine machine;
         QObject obj;
+        obj.setProperty("foo", 321);
+        obj.setProperty("bar", 654);
         QState *s1 = new QState(machine.rootState());
         s1->assignProperty(&obj, "foo", 123);
         QState *s2 = new QState(machine.rootState());
@@ -1302,6 +1306,8 @@ void tst_QStateMachine::assignPropertyWithAnimation()
     {
         QStateMachine machine;
         QObject obj;
+        obj.setProperty("foo", 321);
+        obj.setProperty("bar", 654);
         QState *s1 = new QState(machine.rootState());
         s1->assignProperty(&obj, "foo", 123);
         s1->assignProperty(&obj, "bar", 321);
@@ -1329,6 +1335,8 @@ void tst_QStateMachine::assignPropertyWithAnimation()
     {
         QStateMachine machine;
         QObject obj;
+        obj.setProperty("foo", 321);
+        obj.setProperty("bar", 654);
         QState *s1 = new QState(machine.rootState());
         QCOMPARE(s1->childMode(), QState::ExclusiveStates);
         QCOMPARE(s1->initialState(), (QAbstractState*)0);
