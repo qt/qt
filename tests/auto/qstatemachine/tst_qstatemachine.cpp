@@ -2715,9 +2715,12 @@ void tst_QStateMachine::removeDefaultAnimation()
 {
     QStateMachine machine;
 
+    QObject propertyHolder;
+    propertyHolder.setProperty("foo", 0);
+
     QCOMPARE(machine.defaultAnimations().size(), 0);
 
-    QPropertyAnimation *anim = new QPropertyAnimation(this, "foo");
+    QPropertyAnimation *anim = new QPropertyAnimation(&propertyHolder, "foo");
 
     machine.addDefaultAnimation(anim);
 
@@ -2730,7 +2733,7 @@ void tst_QStateMachine::removeDefaultAnimation()
 
     machine.addDefaultAnimation(anim);
     
-    QPropertyAnimation *anim2 = new QPropertyAnimation(this, "foo");
+    QPropertyAnimation *anim2 = new QPropertyAnimation(&propertyHolder, "foo");
     machine.addDefaultAnimation(anim2);
 
     QCOMPARE(machine.defaultAnimations().size(), 2);
