@@ -173,21 +173,9 @@ void deleteAll(QList<SymbianMenuItem*> *items)
     }
 }
 
-static void setSoftkeys()
-{
-    CEikButtonGroupContainer* cba = CEikonEnv::Static()->AppUiFactory()->Cba();
-    if (cba){
-    if (menuExists())
-        cba->SetCommandSetL(R_AVKON_SOFTKEYS_OPTIONS_EXIT);
-    else
-        cba->SetCommandSetL(R_AVKON_SOFTKEYS_EXIT);
-    }
-}
-
 static void rebuildMenu()
 {
     QMenuBarPrivate *mb = 0;
-    setSoftkeys();
     QWidget *w = qApp->activeWindow();
     if (w)
     {
@@ -372,7 +360,6 @@ void QMenuBarPrivate::QSymbianMenuBarPrivate::removeAction(QSymbianMenuAction *a
 
 void QMenuBarPrivate::QSymbianMenuBarPrivate::rebuild()
 {
-    setSoftkeys();
     qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
     deleteAll( &symbianMenus );
     if (!d)
