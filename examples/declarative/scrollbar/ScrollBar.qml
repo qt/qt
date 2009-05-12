@@ -13,8 +13,7 @@ Item {
     Rect {
         id: Background
         radius: orientation == 'Vertical' ? (width/2) : (height/2)
-        color: "white"
-        opacity: 0.3
+        color: "white"; opacity: 0.3
         anchors.fill: parent
     }
     // Size the bar to the required size, depending upon the orientation.

@@ -1,0 +1,3 @@
+MyQmlObject {
+    rect: "5,5x10"
+}
