@@ -1522,6 +1522,11 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
     if (visible == quint32(newVisible))
         return;
 
+    QGraphicsItem *parent(q_ptr->parentItem());
+    if (parent && newVisible && !parent->d_ptr->visible) {
+        return;
+    }
+
     // Modify the property.
     const QVariant newVisibleVariant(q_ptr->itemChange(QGraphicsItem::ItemVisibleChange,
                                                        quint32(newVisible)));
