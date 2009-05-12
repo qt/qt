@@ -66,6 +66,12 @@ struct QmlCompositeTypeData : public QmlRefCount
         Waiting
     };
     Status status;
+    enum ErrorType {
+        NoError,
+        AccessError,
+        GeneralError
+    };
+    ErrorType errorType;
 
     QList<QmlError> errors;
 

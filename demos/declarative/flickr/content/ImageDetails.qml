@@ -2,8 +2,6 @@ Flipable {
     id: Container
 
     property var frontContainer: ContainerFront
-    property var flickableArea: Flickable
-    property var slider: Slider
     property string photoTitle: ""
     property string photoDescription: ""
     property string photoTags: ""
@@ -77,13 +75,28 @@ Flipable {
         Progress { anchors.centeredIn: parent; width: 200; height: 18; progress: BigImage.progress; visible: BigImage.status }
         Flickable {
             id: Flick; width: Container.width - 10; height: Container.height - 10
-            x: 5; y: 5; clip: true; viewportWidth: (BigImage.width * BigImage.scale) + BigImage.x;
-            viewportHeight: BigImage.height * BigImage.scale
+            x: 5; y: 5; clip: true;
+            viewportWidth: ImageContainer.width; viewportHeight: ImageContainer.height
 
-            Image {
-                id: BigImage; source: Container.photoUrl; scale: Slider.value
-                x:Math.max(0, ((Flick.width/2)-(width * scale / 2)));
-                y:Math.max(0, (Flick.height/2)-(height * scale / 2));
+            Item {
+                id: ImageContainer
+                width: Math.max(BigImage.width * BigImage.scale, Flick.width);
+                height: Math.max(BigImage.height * BigImage.scale, Flick.height);
+
+                Image {
+                    id: BigImage; source: Container.photoUrl; scale: Slider.value
+                    // Center image if it is smaller than the flickable area.
+                    x: ImageContainer.width > width*scale ? (ImageContainer.width - width*scale) / 2 : 0
+                    y: ImageContainer.height > height*scale ? (ImageContainer.height - height*scale) / 2 : 0
+                    anchors.centeredIn: parent
+                    onStatusChanged : {
+                        // Default scale shows the entire image.
+                        if (status == 0 && width != 0) {
+                            Slider.minimum = Math.min(Flick.width / width, Flick.height / height);
+                            Slider.value = Math.min(Slider.minimum, 1);
+                        }
+                    }
+                }
             }
         }
 
@@ -96,7 +109,7 @@ Flipable {
             anchors.centeredIn: parent; color: "white"; font.bold: true
         }
 
-        Slider { id: Slider; x: 25; y: 374; visible: BigImage.status == 0; imageWidth: Container.photoWidth; imageHeight: Container.photoHeight }
+        Slider { id: Slider; x: 25; y: 374; visible: { BigImage.status == 0 && maximum > minimum } }
     }
 
     states: [

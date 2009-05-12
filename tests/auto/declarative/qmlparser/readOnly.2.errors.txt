@@ -1,0 +1,1 @@
+2:-1:Cannot assign a binding to read-only property "readOnlyString"

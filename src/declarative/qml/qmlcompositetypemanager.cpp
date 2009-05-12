@@ -51,7 +51,7 @@
 #include <private/qmlcomponent_p.h>
 
 QmlCompositeTypeData::QmlCompositeTypeData()
-: status(Invalid), component(0), compiledComponent(0)
+: status(Invalid), errorType(NoError), component(0), compiledComponent(0)
 {
 }
 
@@ -190,6 +190,7 @@ void QmlCompositeTypeManager::replyFinished()
         // ### FIXME
         QmlError error;
         error.setDescription(errorDescription);
+        unit->errorType = QmlCompositeTypeData::AccessError;
         unit->errors << error;
         doComplete(unit);
 
@@ -220,6 +221,7 @@ void QmlCompositeTypeManager::loadSource(QmlCompositeTypeData *unit)
             // ### FIXME
             QmlError error;
             error.setDescription(errorDescription);
+            unit->errorType = QmlCompositeTypeData::AccessError;
             unit->errors << error;
             doComplete(unit);
         }
@@ -239,6 +241,7 @@ void QmlCompositeTypeManager::setData(QmlCompositeTypeData *unit,
     if (!unit->data.parse(data, url)) {
 
         unit->status = QmlCompositeTypeData::Error;
+        unit->errorType = QmlCompositeTypeData::GeneralError;
         unit->errors << unit->data.errors();
         doComplete(unit);
 
@@ -339,7 +342,14 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
         case QmlCompositeTypeData::Invalid:
         case QmlCompositeTypeData::Error:
             unit->status = QmlCompositeTypeData::Error;
-            unit->errors = urlUnit->errors;
+            {
+                QmlError error;
+                error.setUrl(unit->url);
+                error.setDescription("Type " + type + " unavailable");
+                unit->errors << error;
+            }
+            if (urlUnit->errorType != QmlCompositeTypeData::AccessError) 
+                unit->errors << urlUnit->errors;
             doComplete(unit);
             return;
 
