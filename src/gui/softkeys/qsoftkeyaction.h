@@ -36,6 +36,7 @@ public:
         RevertEdit,
         Deselect,
         Finish,
+        Menu,
         Custom
     };
 
