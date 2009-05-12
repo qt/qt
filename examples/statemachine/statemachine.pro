@@ -1,11 +1,7 @@
 TEMPLATE      = subdirs
 SUBDIRS       = \
-                clockticking \
-                composition \
                 eventtransitions \
                 factorial \
-                helloworld \
-                pauseandresume \
                 pingpong \
                 trafficlight \
                 twowaybutton
