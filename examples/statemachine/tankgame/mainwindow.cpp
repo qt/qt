@@ -140,7 +140,9 @@ void MainWindow::init()
 
     stoppedState->setInitialState(hs);
 
+//! [0]
     m_runningState = new QState(QState::ParallelStates, m_machine->rootState());
+//! [0]
     m_runningState->setObjectName("runningState");
     m_runningState->assignProperty(addTankAction, "enabled", false);
     m_runningState->assignProperty(runGameAction, "enabled", false);
@@ -231,8 +233,10 @@ void MainWindow::addTank()
     }
 
     bool ok;
+//! [1]
     QString selectedName = QInputDialog::getItem(this, "Select a tank type", "Tank types", 
         itemNames, 0, false, &ok);
+//! [1]
     
     if (ok && !selectedName.isEmpty()) {
         int idx = itemNames.indexOf(selectedName);
@@ -244,8 +248,11 @@ void MainWindow::addTank()
                 emit mapFull();
             
             QState *region = new QState(m_runningState);
+//! [2]
             QState *pluginState = plugin->create(region, tankItem);
+//! [2]
             region->setInitialState(pluginState);
+
 
             // If the plugin has an error it is disabled
             QState *errorState = new QState(region);

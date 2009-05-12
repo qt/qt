@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QState>
 
-#include <errorstate/plugin.h>
+#include <tankgame/plugin.h>
 
 class SelectActionState: public QState
 {

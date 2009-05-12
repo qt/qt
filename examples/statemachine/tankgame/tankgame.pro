@@ -5,7 +5,7 @@
 TEMPLATE = app
 TARGET = 
 DEPENDPATH += .
-INCLUDEPATH += C:/dev/kinetic/examples/statemachine/errorstate/. .
+INCLUDEPATH += C:/dev/kinetic/examples/statemachine/tankgame/. .
 
 # Input
 HEADERS += mainwindow.h plugin.h tankitem.h rocketitem.h gameitem.h
