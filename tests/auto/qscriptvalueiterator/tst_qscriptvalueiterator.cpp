@@ -68,6 +68,7 @@ private slots:
     void iterateString();
     void iterateGetterSetter();
     void iterateArgumentsObject();
+    void assignObjectToIterator();
     void undefinedBehavior();
 };
 
@@ -560,6 +561,38 @@ void tst_QScriptValueIterator::undefinedBehavior()
     it.next();
     QCOMPARE(it.name(), QString::fromLatin1("bar"));
     QVERIFY(it.value().isNumber());
+}
+
+void tst_QScriptValueIterator::assignObjectToIterator()
+{
+    QScriptEngine eng;
+    QScriptValue obj1 = eng.newObject();
+    obj1.setProperty("foo", 123);
+    QScriptValue obj2 = eng.newObject();
+    obj2.setProperty("bar", 456);
+
+    QScriptValueIterator it(obj1);
+    QVERIFY(it.hasNext());
+    it.next();
+    it = obj2;
+    QVERIFY(it.hasNext());
+    it.next();
+    QCOMPARE(it.name(), QString::fromLatin1("bar"));
+
+    it = obj1;
+    QVERIFY(it.hasNext());
+    it.next();
+    QCOMPARE(it.name(), QString::fromLatin1("foo"));
+
+    it = obj2;
+    QVERIFY(it.hasNext());
+    it.next();
+    QCOMPARE(it.name(), QString::fromLatin1("bar"));
+
+    it = obj2;
+    QVERIFY(it.hasNext());
+    it.next();
+    QCOMPARE(it.name(), QString::fromLatin1("bar"));
 }
 
 QTEST_MAIN(tst_QScriptValueIterator)

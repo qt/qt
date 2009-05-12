@@ -537,9 +537,6 @@ void tst_QFont::insertAndRemoveSubstitutions()
     QStringList moreFonts;
     moreFonts << "Bar" << "Baz";
     QFont::insertSubstitutions("BogusFontFamily", moreFonts);
-#if (QT_VERSION <= 0x040102)
-    QEXPECT_FAIL("", "Uppercase/Lowercase issues fixed in 4.1.3 and beyond", Abort);
-#endif
     QCOMPARE(QFont::substitutes("BogusFontFamily").count(), 3);
     QCOMPARE(QFont::substitutes("bogusfontfamily").count(), 3);
 

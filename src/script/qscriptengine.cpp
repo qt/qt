@@ -1169,7 +1169,8 @@ bool QScriptEngine::convert(const QScriptValue &value, int type, void *ptr)
 bool QScriptEngine::convertV2(const QScriptValue &value, int type, void *ptr)
 {
     QScriptValueImpl impl = QScriptValuePrivate::valueOf(value);
-    return QScriptEnginePrivate::convert(impl, type, ptr, /*engine=*/0);
+    QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(value.engine());
+    return QScriptEnginePrivate::convert(impl, type, ptr, eng_p);
 }
 
 /*!

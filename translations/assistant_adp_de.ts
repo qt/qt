@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="de">
-<defaultcodec></defaultcodec>
+<!DOCTYPE TS>
+<TS version="2.0" language="de">
 <context>
     <name>Assistant</name>
     <message>
@@ -15,7 +15,7 @@
 <context>
     <name>AssistantServer</name>
     <message>
-        <location filename="../tools/assistant/compat/main.cpp" line="+195"/>
+        <location filename="../tools/assistant/compat/main.cpp" line="+225"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
     </message>
@@ -103,7 +103,7 @@
 <context>
     <name>FontPanel</name>
     <message>
-        <location filename="../tools/shared/fontpanel/fontpanel.cpp" line="+33"/>
+        <location filename="../tools/shared/fontpanel/fontpanel.cpp" line="+63"/>
         <source>Font</source>
         <translation>Schrift</translation>
     </message>
@@ -131,7 +131,7 @@
 <context>
     <name>FontSettingsDialog</name>
     <message>
-        <location filename="../tools/assistant/compat/fontsettingsdialog.cpp" line="+33"/>
+        <location filename="../tools/assistant/compat/fontsettingsdialog.cpp" line="+63"/>
         <source>Font Settings</source>
         <translation>Schriftart</translation>
     </message>
@@ -188,9 +188,9 @@
         <translation type="obsolete">Qt Assistant Handbuch</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/helpdialog.cpp" line="+345"/>
+        <location filename="../tools/assistant/compat/helpdialog.cpp" line="+376"/>
         <location line="+16"/>
-        <location line="+659"/>
+        <location line="+661"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
     </message>
@@ -199,7 +199,7 @@
         <translation type="obsolete">Öffne Link im aktuellen Fenster</translation>
     </message>
     <message>
-        <location line="-769"/>
+        <location line="-771"/>
         <source>Open Link in New Window</source>
         <translation>Öffne Link in neuem Fenster</translation>
     </message>
@@ -245,7 +245,7 @@ Skipping file.</source>
     </message>
     <message>
         <location line="+35"/>
-        <location line="+467"/>
+        <location line="+469"/>
         <source>Done</source>
         <translation>Fertig</translation>
     </message>
@@ -284,7 +284,7 @@ Skipping file.</source>
         </translation>
     </message>
     <message>
-        <location line="-880"/>
+        <location line="-882"/>
         <source>Open Link in Current Tab</source>
         <translation>Link im Aktuellen Tab öffnen</translation>
     </message>
@@ -307,7 +307,7 @@ Skipping file.</source>
         <translation>Dokumentation %1 ist nicht kompatibel! Datei wird übersprungen.</translation>
     </message>
     <message>
-        <location line="+468"/>
+        <location line="+470"/>
         <source>Failed to save fulltext search index
 Assistant will not work!</source>
         <translation>Der Index für die Volltextsuche konnte nicht gespeichert werden.
@@ -630,7 +630,7 @@ Assistent ist nicht einsatzbereit!</translation>
         <translation type="obsolete">Qt Assistant von Trolltech - %1</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/helpwindow.cpp" line="+67"/>
+        <location filename="../tools/assistant/compat/helpwindow.cpp" line="+97"/>
         <source>Help</source>
         <translation>Hilfe</translation>
     </message>
@@ -717,7 +717,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
 <context>
     <name>Index</name>
     <message>
-        <location filename="../tools/assistant/compat/index.cpp" line="+355"/>
+        <location filename="../tools/assistant/compat/index.cpp" line="+385"/>
         <source>Untitled</source>
         <translation>Unbenannt</translation>
     </message>
@@ -853,7 +853,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation type="obsolete">A&amp;nsicht</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+158"/>
+        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+188"/>
         <source>Ctrl+T</source>
         <translation>Strg+T
 </translation>
@@ -869,17 +869,15 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation>Strg+E</translation>
     </message>
     <message>
-        <location line="+130"/>
         <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qtsoftware.com/company/model&quot;&gt;qtsoftware.com/company/model&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation>Sie benötigen eine kommerzielle Qt Lizenz für die Entwicklung von proprietären (geschlossenen) Anwendungen. Besuchen Sie &lt;a href=&quot;http://qtsoftware.com/company/about/businessmodel&quot;&gt;http://qtsoftware.com/company/about/businessmodel&lt;/a&gt; um sich einen Überblick über die Qt Lizenzvergabe zu verschaffen.</translation>
+        <translation type="obsolete">Sie benötigen eine kommerzielle Qt Lizenz für die Entwicklung von proprietären (geschlossenen) Anwendungen. Besuchen Sie &lt;a href=&quot;http://qtsoftware.com/company/about/businessmodel&quot;&gt;http://qtsoftware.com/company/about/businessmodel&lt;/a&gt; um sich einen Überblick über die Qt Lizenzvergabe zu verschaffen.</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>This program is licensed to you under the terms of the Qt %1 License Agreement. For details, see the license file that came with this software distribution.</source>
-        <translation>Dieses Programm ist für Sie lizenziert gemäß den Bedingungen des Qt %1 Lizenzvertrages. Einzelheiten können sie der mitgelieferten Lizenz-Datei entnehmen.</translation>
+        <translation type="obsolete">Dieses Programm ist für Sie lizenziert gemäß den Bedingungen des Qt %1 Lizenzvertrages. Einzelheiten können sie der mitgelieferten Lizenz-Datei entnehmen.</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+139"/>
         <location line="+1"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
@@ -1082,7 +1080,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation>Umschalt+F1</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="-157"/>
+        <location filename="../tools/assistant/compat/mainwindow.cpp" line="-139"/>
         <source>Ctrl+S</source>
         <translation>Strg+S</translation>
     </message>
@@ -1170,7 +1168,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation></translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+209"/>
+        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+191"/>
         <source>Failed to open about application contents in file: &apos;%1&apos;</source>
         <translation>Fehler beim öffnen des Inhalts in Datei: &apos;%1&apos;</translation>
     </message>
@@ -1179,7 +1177,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation type="obsolete">Fehler ...</translation>
     </message>
     <message>
-        <location line="-264"/>
+        <location line="-246"/>
         <source>Sidebar</source>
         <translation>Sidebar</translation>
     </message>
@@ -1229,22 +1227,19 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation>Zeigt die Hauptseite eines Dokumentensets an.</translation>
     </message>
     <message>
-        <location line="+35"/>
         <source>Open Source Edition</source>
-        <translation>Open Source Edition</translation>
+        <translation type="obsolete">Open Source Edition</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>This version of Qt Assistant is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.</source>
-        <translation>Diese Version von Qt Assistant ist Teil der Qt Open Source Edition und darf für die Entwicklung von Open Source Anwendungen genutzt werden.  Qt ist ein umfangreiches C++ Framework für die Entwicklung von Cross-Platform-Anwendungen.</translation>
+        <translation type="obsolete">Diese Version von Qt Assistant ist Teil der Qt Open Source Edition und darf für die Entwicklung von Open Source Anwendungen genutzt werden.  Qt ist ein umfangreiches C++ Framework für die Entwicklung von Cross-Platform-Anwendungen.</translation>
     </message>
     <message>
-        <location line="+16"/>
         <source>This program is licensed to you under the terms of the Qt Commercial License Agreement. For details, see the file LICENSE that came with this software distribution.</source>
-        <translation>Dieses Programm ist für Sie lizenziert gemäß den Bedingungen des kommerziellen Qt Lizenzvertrages. Einzelheiten können Sie der mitgelieferten LICENSE-Datei entnehmen.</translation>
+        <translation type="obsolete">Dieses Programm ist für Sie lizenziert gemäß den Bedingungen des kommerziellen Qt Lizenzvertrages. Einzelheiten können Sie der mitgelieferten LICENSE-Datei entnehmen.</translation>
     </message>
     <message>
-        <location line="+236"/>
+        <location line="+270"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -1292,7 +1287,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation type="obsolete">Qt Assistant von Trolltech</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/config.cpp" line="+320"/>
+        <location filename="../tools/assistant/compat/config.cpp" line="+350"/>
         <source>Qt Assistant by Nokia</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1470,7 +1465,7 @@ Es müssen zuerst alle Inhalte gelöscht werden.</translation>
         <translation>Unbenannt</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/tabbedbrowser.cpp" line="+205"/>
+        <location filename="../tools/assistant/compat/tabbedbrowser.cpp" line="+235"/>
         <source>Add page</source>
         <translation>Seite einfügen</translation>
     </message>
@@ -1528,7 +1523,7 @@ Es müssen zuerst alle Inhalte gelöscht werden.</translation>
 <context>
     <name>TopicChooser</name>
     <message>
-        <location filename="../tools/assistant/compat/topicchooser.cpp" line="+26"/>
+        <location filename="../tools/assistant/compat/topicchooser.cpp" line="+56"/>
         <source>Choose a topic for &lt;b&gt;%1&lt;/b&gt;</source>
         <translation>Wählen Sie ein Thema für &lt;b&gt;%1&lt;/b&gt;</translation>
     </message>

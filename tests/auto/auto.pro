@@ -273,7 +273,6 @@ SUBDIRS += bic \
            qspinbox \
            qsplitter \
            qsql \
-           qsqlbatch \
            qsqldatabase \
            qsqlerror \
            qsqlfield \
@@ -414,8 +413,7 @@ SUBDIRS += checkxmlfiles                \
            xmlpatternsdiagnosticsts     \
            xmlpatternsview              \
            xmlpatternsxqts              \
-           xmlpatternsxslts             \
-           xmlpatterns
+           xmlpatternsxslts
 
 xmlpatternsdiagnosticsts.depends = xmlpatternsxqts
 xmlpatternsview.depends = xmlpatternsxqts

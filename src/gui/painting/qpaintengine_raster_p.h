@@ -256,7 +256,7 @@ private:
     void init();
 
     void fillRect(const QRectF &rect, QSpanData *data);
-    void drawBitmap(const QPointF &pos, const QPixmap &image, QSpanData *fill);
+    void drawBitmap(const QPointF &pos, const QImage &image, QSpanData *fill);
 
     void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
 

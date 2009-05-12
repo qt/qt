@@ -42,6 +42,7 @@
 #ifndef QHOSTADDRESS_H
 #define QHOSTADDRESS_H
 
+#include <QtCore/qpair.h>
 #include <QtCore/qstring.h>
 #include <QtNetwork/qabstractsocket.h>
 

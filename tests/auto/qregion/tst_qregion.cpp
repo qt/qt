@@ -145,12 +145,7 @@ void tst_QRegion::rects()
     {
 	QRect rect( 10, -20, 30, 40 );
 	QRegion region( rect );
-#if QT_VERSION < 0x040000
-	QCOMPARE( region.rects().count(), (uint)1 );
-#else
 	QCOMPARE( region.rects().count(), 1 );
-#endif
-
 	QCOMPARE( region.rects()[0], rect );
     }
     {
@@ -200,11 +195,7 @@ void tst_QRegion::setRects()
 	QRegion region;
 	QRect rect( 10, -20, 30, 40 );
 	region.setRects( &rect, 1 );
-#if QT_VERSION < 0x040000
-	QCOMPARE( region.rects().count(), (uint)1 );
-#else
 	QCOMPARE( region.rects().count(), 1 );
-#endif
 	QCOMPARE( region.rects()[0], rect );
     }
 }
@@ -374,9 +365,7 @@ void tst_QRegion::bitmapRegion()
 
 	QVERIFY( region.contains( QPoint( 0, 10 ) ) );  // Mid-left
 	QVERIFY( region.contains( QPoint( 10, 0 ) ) );  // Mid-top
-#if ( QT_VERSION >= 0x030100 )
 	QVERIFY( region.contains( QPoint( 19, 10 ) ) ); // Mid-right
-#endif
 	QVERIFY( region.contains( QPoint( 10, 19 ) ) ); // Mid-bottom
     }
 }
@@ -627,11 +616,9 @@ void tst_QRegion::operator_minus_data()
     QTest::addColumn<QRegion>("subtract");
     QTest::addColumn<QRegion>("expected");
 
-#if !defined(Q_WS_X11) || QT_VERSION >= 0x040300
     QTest::newRow("empty 0") << QRegion() << QRegion() << QRegion();
     QTest::newRow("empty 1") << QRegion() << QRegion(QRect(10, 10, 10, 10))
                              << QRegion();
-#endif
     QTest::newRow("empty 2") << QRegion(QRect(10, 10, 10, 10)) << QRegion()
                              << QRegion(QRect(10, 10, 10, 10));
 

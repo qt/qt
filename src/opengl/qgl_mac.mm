@@ -87,29 +87,6 @@ QT_FORWARD_DECLARE_CLASS(QWidget)
 QT_FORWARD_DECLARE_CLASS(QWidgetPrivate)
 QT_FORWARD_DECLARE_CLASS(QGLWidgetPrivate)
 
-@interface QT_MANGLE_NAMESPACE(QCocoaOpenGLView) : QT_MANGLE_NAMESPACE(QCocoaView)
-{
-}
-- (id)initWithQWidget:(QWidget *)widget widgetPrivate:(QWidgetPrivate *)widgetprivate;
-@end
-
-@implementation QT_MANGLE_NAMESPACE(QCocoaOpenGLView)
-- (id)initWithQWidget:(QWidget *)widget widgetPrivate:(QWidgetPrivate *)widgetprivate
-{
-    self = [super initWithQWidget:widget widgetPrivate:widgetprivate];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                   selector:@selector(_surfaceNeedsUpdate:)
-                                   name:NSViewGlobalFrameDidChangeNotification
-                                   object:self];
-    return self;
-}
-
-- (void) _surfaceNeedsUpdate:(NSNotification*)notification
-{
-    Q_UNUSED(notification);
-    static_cast<QGLWidgetPrivate *>(qwidgetprivate)->glcx->updatePaintDevice();
-}
-@end
 QT_BEGIN_NAMESPACE
 
 void *qt_current_nsopengl_context()
@@ -435,6 +412,11 @@ void *QGLContextPrivate::tryFormat(const QGLFormat &format)
 #endif
 }
 
+void QGLContextPrivate::clearDrawable()
+{
+    [static_cast<NSOpenGLContext *>(cx) clearDrawable];
+}
+
 /*!
     \bold{Mac OS X only:} This virtual function tries to find a visual that
     matches the format, reducing the demands if the original request
@@ -647,7 +629,7 @@ void QGLContext::updatePaintDevice()
         // ideally we would use QWidget::isVisible(), but we get "invalid drawable" errors
         if (![(NSWindow *)qt_mac_window_for(w) isVisible])
             return;
-        if ([static_cast<NSOpenGLContext *>(d->cx) view] != view)
+        if ([static_cast<NSOpenGLContext *>(d->cx) view] != view && ![view isHidden])
             [static_cast<NSOpenGLContext *>(d->cx) setView:view];
     } else if (d->paintDevice->devType() == QInternal::Pixmap) {
         const QPixmap *pm = static_cast<const QPixmap *>(d->paintDevice);

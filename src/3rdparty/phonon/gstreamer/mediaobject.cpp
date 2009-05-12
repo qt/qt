@@ -14,7 +14,6 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this library.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include <cmath>
 #include <gst/interfaces/propertyprobe.h>
 #include "common.h"
@@ -24,7 +23,6 @@
 #include "backend.h"
 #include "streamreader.h"
 #include "phononsrc.h"
-
 #include <QtCore>
 #include <QtCore/QTimer>
 #include <QtCore/QVector>
@@ -78,6 +76,9 @@ MediaObject::MediaObject(Backend *backend, QObject *parent)
         , m_videoGraph(0)
         , m_previousTickTime(-1)
         , m_resetNeeded(false)
+        , m_autoplayTitles(true)
+        , m_availableTitles(0)
+        , m_currentTitle(1)
 {
     qRegisterMetaType<GstCaps*>("GstCaps*");
     qRegisterMetaType<State>("State");
@@ -902,8 +903,13 @@ void MediaObject::setSource(const MediaSource &source)
         break;
 
     case MediaSource::Disc: // CD tracks can be specified by setting the url in the following way uri=cdda:4
-        m_backend->logMessage("Source type Disc not currently supported", Backend::Warning, this);
-        setError(tr("Could not open media source."), Phonon::NormalError);
+        {
+            QUrl cdurl(QLatin1String("cdda://"));
+            if (createPipefromURL(cdurl))
+                m_loading = true;
+            else
+                setError(tr("Could not open media source."));
+        }
         break;
 
     default:
@@ -954,6 +960,19 @@ void MediaObject::getStreamInfo()
         m_hasVideo = m_videoStreamFound;
         emit hasVideoChanged(m_hasVideo);
     }
+
+    m_availableTitles = 1;
+    gint64 titleCount;
+    GstFormat format = gst_format_get_by_nick("track");
+    if (gst_element_query_duration (m_pipeline, &format, &titleCount)) {
+        int oldAvailableTitles = m_availableTitles;
+        m_availableTitles = (int)titleCount;
+        if (m_availableTitles != oldAvailableTitles) {
+            emit availableTitlesChanged(m_availableTitles);
+            m_backend->logMessage(QString("Available titles changed: %0").arg(m_availableTitles), Backend::Info, this);
+        }
+    }
+
 }
 
 void MediaObject::setPrefinishMark(qint32 newPrefinishMark)
@@ -1351,6 +1370,13 @@ void MediaObject::handleEndOfStream()
     if (!m_seekable)
         m_atEndOfStream = true;
 
+    if (m_autoplayTitles &&
+        m_availableTitles > 1 &&
+        m_currentTitle < m_availableTitles) {
+        _iface_setCurrentTitle(m_currentTitle + 1);
+        return;
+    }
+
     if (m_nextSource.type() != MediaSource::Invalid
         && m_nextSource.type() != MediaSource::Empty) {  // We only emit finish when the queue is actually empty
         QTimer::singleShot (qMax(0, transitionTime()), this, SLOT(beginPlay()));
@@ -1377,6 +1403,72 @@ void MediaObject::notifyStateChange(Phonon::State newstate, Phonon::State oldsta
     Q_UNUSED(oldstate);
     MediaNodeEvent event(MediaNodeEvent::StateChanged, &newstate);
     notify(&event);
+}
+
+#ifndef QT_NO_PHONON_MEDIACONTROLLER
+//interface management
+bool MediaObject::hasInterface(Interface iface) const
+{
+    return iface == AddonInterface::TitleInterface;
+}
+
+QVariant MediaObject::interfaceCall(Interface iface, int command, const QList<QVariant> &params)
+{
+    if (hasInterface(iface)) {
+
+        switch (iface)
+        {
+        case TitleInterface:
+            switch (command)
+            {
+            case availableTitles:
+                return _iface_availableTitles();
+            case title:
+                return _iface_currentTitle();
+            case setTitle:
+                _iface_setCurrentTitle(params.first().toInt());
+                break;
+            case autoplayTitles:
+                return m_autoplayTitles;
+            case setAutoplayTitles:
+                m_autoplayTitles = params.first().toBool();
+                break;
+            }
+            break;
+                default:
+            break;
+        }
+    }
+    return QVariant();
+}
+#endif
+
+int MediaObject::_iface_availableTitles() const
+{
+    return m_availableTitles;
+}
+
+int MediaObject::_iface_currentTitle() const
+{
+    return m_currentTitle;
+}
+
+void MediaObject::_iface_setCurrentTitle(int title)
+{
+    GstFormat trackFormat = gst_format_get_by_nick("track");
+    m_backend->logMessage(QString("setCurrentTitle %0").arg(title), Backend::Info, this);
+    if ((title == m_currentTitle) || (title < 1) || (title > m_availableTitles))
+        return;
+
+    m_currentTitle = title;
+
+    //let's seek to the beginning of the song
+    if (gst_element_seek_simple(m_pipeline, trackFormat, GST_SEEK_FLAG_FLUSH, m_currentTitle - 1)) {
+        updateTotalTime();
+        m_atEndOfStream = false;
+        emit titleChanged(title);
+        emit totalTimeChanged(totalTime());
+    }
 }
 
 } // ns Gstreamer

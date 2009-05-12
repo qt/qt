@@ -137,6 +137,7 @@ static dbus_bool_t qDBusAddTimeout(DBusTimeout *timeout, void *data)
     if (!q_dbus_timeout_get_enabled(timeout))
         return true;
 
+    QDBusWatchAndTimeoutLocker locker(AddTimeoutAction, d);
     if (QCoreApplication::instance() && QThread::currentThread() == d->thread()) {
         // correct thread
         return qDBusRealAddTimeout(d, timeout, q_dbus_timeout_get_interval(timeout));
@@ -152,7 +153,6 @@ static dbus_bool_t qDBusAddTimeout(DBusTimeout *timeout, void *data)
 
 static bool qDBusRealAddTimeout(QDBusConnectionPrivate *d, DBusTimeout *timeout, int ms)
 {
-    QDBusWatchAndTimeoutLocker locker(AddTimeoutAction, d);
     Q_ASSERT(d->timeouts.keys(timeout).isEmpty());
 
     int timerId = d->startTimer(ms);
@@ -921,10 +921,9 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
       rootNode(QString(QLatin1Char('/')))
 {
     static const bool threads = qDBusInitThreads();
-    static const int debugging = qgetenv("QDBUS_DEBUG").toInt();
+    static const int debugging = ::isDebugging = qgetenv("QDBUS_DEBUG").toInt();
     Q_UNUSED(threads)
 
-    ::isDebugging = debugging;
 #ifdef QDBUS_THREAD_DEBUG
     if (debugging > 1)
         qdbusThreadDebug = qdbusDefaultThreadDebug;
@@ -1036,15 +1035,16 @@ void QDBusConnectionPrivate::customEvent(QEvent *e)
                                         QDBusLockerBase::BeforeDeliver, this);
     switch (ev->subtype)
     {
-    case QDBusConnectionCallbackEvent::AddTimeout:
+    case QDBusConnectionCallbackEvent::AddTimeout: {
+        QDBusWatchAndTimeoutLocker locker(RealAddTimeoutAction, this);
         while (!timeoutsPendingAdd.isEmpty()) {
             QPair<DBusTimeout *, int> entry = timeoutsPendingAdd.takeFirst();
             qDBusRealAddTimeout(this, entry.first, entry.second);
         }
         break;
+    }
 
     case QDBusConnectionCallbackEvent::KillTimer:
-        qDebug() << QThread::currentThread() << "RemoveTimeout: killing timer" << (ev->timerId & 0xffffff);
         killTimer(ev->timerId);
         break;
 
@@ -1102,7 +1102,7 @@ void QDBusConnectionPrivate::socketWrite(int fd)
     }
 
     for (int i = 0; i < pendingWatches.size(); ++i)
-        if (!q_dbus_watch_handle(pendingWatches[i], DBUS_WATCH_READABLE))
+        if (!q_dbus_watch_handle(pendingWatches[i], DBUS_WATCH_WRITABLE))
             qDebug("OUT OF MEM");
 }
 
@@ -1125,12 +1125,7 @@ void QDBusConnectionPrivate::objectDestroyed(QObject *obj)
 void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, int signalId,
                                          const QVariantList &args)
 {
-    int mciid = mo->indexOfClassInfo(QCLASSINFO_DBUS_INTERFACE);
-    Q_ASSERT(mciid != -1);
-
-    QMetaClassInfo mci = mo->classInfo(mciid);
-    Q_ASSERT(mci.value());
-    const char *interface = mci.value();
+    QString interface = qDBusInterfaceFromMetaObject(mo);
 
     QMetaMethod mm = mo->method(signalId);
     QByteArray memberName = mm.signature();
@@ -1146,12 +1141,12 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
         }
 
     QDBusReadLocker locker(RelaySignalAction, this);
-    QDBusMessage message = QDBusMessage::createSignal(QLatin1String("/"), QLatin1String(interface),
+    QDBusMessage message = QDBusMessage::createSignal(QLatin1String("/"), interface,
                                                       QLatin1String(memberName));
     message.setArguments(args);
     DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message);
     if (!msg) {
-        qWarning("QDBusConnection: Could not emit signal %s.%s", interface, memberName.constData());
+        qWarning("QDBusConnection: Could not emit signal %s.%s", qPrintable(interface), memberName.constData());
         return;
     }
 

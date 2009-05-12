@@ -451,60 +451,35 @@ void QWebPagePrivate::updateAction(QWebPage::WebAction action)
         case QWebPage::Reload:
             enabled = !loader->isLoading();
             break;
-        case QWebPage::Cut:
-            enabled = editor->canCut();
-            break;
-        case QWebPage::Copy:
-            enabled = editor->canCopy();
-            break;
-        case QWebPage::Paste:
-            enabled = editor->canPaste();
-            break;
 #ifndef QT_NO_UNDOSTACK
         case QWebPage::Undo:
         case QWebPage::Redo:
             // those two are handled by QUndoStack
             break;
 #endif // QT_NO_UNDOSTACK
-        case QWebPage::MoveToNextChar:
-        case QWebPage::MoveToPreviousChar:
-        case QWebPage::MoveToNextWord:
-        case QWebPage::MoveToPreviousWord:
-        case QWebPage::MoveToNextLine:
-        case QWebPage::MoveToPreviousLine:
-        case QWebPage::MoveToStartOfLine:
-        case QWebPage::MoveToEndOfLine:
-        case QWebPage::MoveToStartOfBlock:
-        case QWebPage::MoveToEndOfBlock:
-        case QWebPage::MoveToStartOfDocument:
-        case QWebPage::MoveToEndOfDocument:
-        case QWebPage::SelectNextChar:
-        case QWebPage::SelectPreviousChar:
-        case QWebPage::SelectNextWord:
-        case QWebPage::SelectPreviousWord:
-        case QWebPage::SelectNextLine:
-        case QWebPage::SelectPreviousLine:
-        case QWebPage::SelectStartOfLine:
-        case QWebPage::SelectEndOfLine:
-        case QWebPage::SelectStartOfBlock:
-        case QWebPage::SelectEndOfBlock:
-        case QWebPage::SelectStartOfDocument:
-        case QWebPage::SelectEndOfDocument:
-        case QWebPage::DeleteStartOfWord:
-        case QWebPage::DeleteEndOfWord:
+        case QWebPage::SelectAll: // editor command is always enabled
+            break;
         case QWebPage::SetTextDirectionDefault:
         case QWebPage::SetTextDirectionLeftToRight:
         case QWebPage::SetTextDirectionRightToLeft:
-        case QWebPage::ToggleBold:
-        case QWebPage::ToggleItalic:
-        case QWebPage::ToggleUnderline:
-            enabled = editor->canEditRichly();
-            if (enabled)
-                checked = editor->command(editorCommandForWebActions(action)).state() != FalseTriState;
-            else
-                checked = false;
+            enabled = editor->canEdit();
+            checked = false;
             break;
-        default: break;
+        default: {
+            // see if it's an editor command
+            const char* commandName = editorCommandForWebActions(action);
+
+            // if it's an editor command, let it's logic determine state
+            if (commandName) {
+                Editor::Command command = editor->command(commandName);
+                enabled = command.isEnabled();
+                if (enabled)
+                    checked = command.state() != FalseTriState;
+                else
+                    checked = false;
+            }
+            break;
+        }
     }
 
     a->setEnabled(enabled);
@@ -558,6 +533,8 @@ void QWebPagePrivate::updateEditorActions()
     updateAction(QWebPage::ToggleBold);
     updateAction(QWebPage::ToggleItalic);
     updateAction(QWebPage::ToggleUnderline);
+    updateAction(QWebPage::InsertParagraphSeparator);
+    updateAction(QWebPage::InsertLineSeparator);
 }
 
 void QWebPagePrivate::timerEvent(QTimerEvent *ev)
@@ -919,14 +896,14 @@ void QWebPagePrivate::inputMethodEvent(QInputMethodEvent *ev)
         return;
     }
 
-    if (!ev->preeditString().isEmpty()) {
+    if (!ev->commitString().isEmpty())
+        editor->confirmComposition(ev->commitString());
+    else {
         QString preedit = ev->preeditString();
         // ### FIXME: use the provided QTextCharFormat (use color at least)
         Vector<CompositionUnderline> underlines;
         underlines.append(CompositionUnderline(0, preedit.length(), Color(0,0,0), false));
         editor->setComposition(preedit, underlines, preedit.length(), 0);
-    } else if (!ev->commitString().isEmpty()) {
-        editor->confirmComposition(ev->commitString());
     }
     ev->accept();
 }
@@ -1116,8 +1093,13 @@ QVariant QWebPage::inputMethodQuery(Qt::InputMethodQuery property) const
     \enum QWebPage::WebAction
 
     This enum describes the types of action which can be performed on the web page.
-    Actions which are related to text editing, cursor movement, and text selection
-    only have an effect if \l contentEditable is true.
+
+    Actions only have an effect when they are applicable. The availability of
+    actions can be be determined by checking \l{QAction::}{isEnabled()} on the
+    action returned by \l{QWebPage::}{action()}.
+
+    One method of enabling the text editing, cursor movement, and text selection actions
+    is by setting \l contentEditable to true.
 
     \value NoWebAction No action is triggered.
     \value OpenLink Open the current link.
@@ -1216,18 +1198,18 @@ QVariant QWebPage::inputMethodQuery(Qt::InputMethodQuery property) const
 
     Suppose we have a \c Thumbnail class as follows:
 
-    \snippet doc/src/snippets/webkit/webpage/main.cpp 0
+    \snippet webkitsnippets/webpage/main.cpp 0
 
     The \c Thumbnail's constructor takes in a \a url. We connect our QWebPage
     object's \l{QWebPage::}{loadFinished()} signal to our private slot,
     \c render().
 
-    \snippet doc/src/snippets/webkit/webpage/main.cpp 1
+    \snippet webkitsnippets/webpage/main.cpp 1
 
     The \c render() function shows how we can paint a thumbnail using a
     QWebPage object.
 
-    \snippet doc/src/snippets/webkit/webpage/main.cpp 2
+    \snippet webkitsnippets/webpage/main.cpp 2
 
     We begin by setting the \l{QWebPage::viewportSize()}{viewportSize} and
     then we instantiate a QImage object, \c image, with the same size as our
@@ -1468,9 +1450,16 @@ void QWebPage::triggerAction(WebAction action, bool checked)
             openNewWindow(url, frame);
             break;
         }
-        case CopyLinkToClipboard:
+        case CopyLinkToClipboard: {
+#if defined(Q_WS_X11)
+            bool oldSelectionMode = Pasteboard::generalPasteboard()->isSelectionMode();
+            Pasteboard::generalPasteboard()->setSelectionMode(true);
+            editor->copyURL(d->hitTestResult.linkUrl(), d->hitTestResult.linkText());
+            Pasteboard::generalPasteboard()->setSelectionMode(oldSelectionMode);
+#endif
             editor->copyURL(d->hitTestResult.linkUrl(), d->hitTestResult.linkText());
             break;
+        }
         case OpenImageInNewWindow:
             openNewWindow(d->hitTestResult.imageUrl(), frame);
             break;
@@ -1737,6 +1726,9 @@ QAction *QWebPage::action(WebAction action) const
         case MoveToEndOfDocument:
             text = tr("Move the cursor to the end of the document");
             break;
+        case SelectAll:
+            text = tr("Select all");
+            break;
         case SelectNextChar:
             text = tr("Select to the next character");
             break;
@@ -1807,6 +1799,13 @@ QAction *QWebPage::action(WebAction action) const
 
         case InspectElement:
             text = contextMenuItemTagInspectElement();
+            break;
+
+        case InsertParagraphSeparator:
+            text = tr("Insert a new paragraph");
+            break;
+        case InsertLineSeparator:
+            text = tr("Insert a new line");
             break;
 
         case NoWebAction:
@@ -2336,7 +2335,8 @@ QWebPluginFactory *QWebPage::pluginFactory() const
     \list
     \o %Platform% and %Subplatform% are expanded to the windowing system and the operation system.
     \o %Security% expands to U if SSL is enabled, otherwise N. SSL is enabled if QSslSocket::supportsSsl() returns true.
-    \o %Locale% is replaced with QLocale::name().
+    \o %Locale% is replaced with QLocale::name(). The locale is determined from the view of the QWebPage. If no view is set on the QWebPage,
+    then a default constructed QLocale is used instead.
     \o %WebKitVersion% currently expands to 527+
     \o %AppVersion% expands to QCoreApplication::applicationName()/QCoreApplication::applicationVersion() if they're set; otherwise defaulting to Qt and the current Qt version.
     \endlist
@@ -2524,7 +2524,7 @@ void QWebPagePrivate::_q_onLoadProgressChanged(int) {
     \sa bytesReceived()
 */
 quint64 QWebPage::totalBytes() const {
-    return d->m_bytesReceived;
+    return d->m_totalBytes;
 }
 
 
@@ -2534,7 +2534,7 @@ quint64 QWebPage::totalBytes() const {
     \sa totalBytes()
 */
 quint64 QWebPage::bytesReceived() const {
-    return d->m_totalBytes;
+    return d->m_bytesReceived;
 }
 
 /*!

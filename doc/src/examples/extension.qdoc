@@ -80,9 +80,9 @@
     user type a word to search for, we need several  \l
     {QCheckBox}{QCheckBox}es to facilitate the search options, and we
     need three \l {QPushButton}{QPushButton}s: the \gui Find button to
-    start a search, the \gui More button to enable an advanced search,
-    and the \gui Close button to exit the application. Finally, we
-    need a QWidget representing the application's extension part.
+    start a search and the \gui More button to enable an advanced search.
+    Finally, we need a QWidget representing the application's extension
+    part.
 
     \section1 FindDialog Class Implementation
 
@@ -128,8 +128,7 @@
     the connection makes sure that the extension widget is shown
     depending on the state of \gui More button.
 
-    We also connect the \gui Close button to the QWidget::close()
-    slot, and we put the checkboxes associated with the advanced
+    We also put the check boxes associated with the advanced
     search options into a layout we install on the extension widget.
 
     \snippet examples/dialogs/extension/finddialog.cpp 4
@@ -137,7 +136,7 @@
     Before we create the main layout, we create several child layouts
     for the widgets: First we allign the QLabel ans its buddy, the
     QLineEdit, using a QHBoxLayout. Then we vertically allign the
-    QLabel and QLineEdit with the checkboxes associated with the
+    QLabel and QLineEdit with the check boxes associated with the
     simple search, using a QVBoxLayout. We also create a QVBoxLayout
     for the buttons. In the end we lay out the two latter layouts and
     the extension widget using a QGridLayout.

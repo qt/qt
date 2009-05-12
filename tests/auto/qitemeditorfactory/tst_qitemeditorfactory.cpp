@@ -61,9 +61,6 @@ void tst_QItemEditorFactory::createEditor()
 
 void tst_QItemEditorFactory::createCustomEditor()
 {
-#if QT_VERSION < 0x040200
-    QSKIP("Needs Qt >= 4.2", SkipAll);
-#else
     QItemEditorFactory editorFactory;
 
     QItemEditorCreatorBase *creator = new QStandardItemEditorCreator<QDoubleSpinBox>();
@@ -76,7 +73,6 @@ void tst_QItemEditorFactory::createCustomEditor()
     QCOMPARE(w->metaObject()->userProperty().type(), QVariant::Double);
 
     delete creator;
-#endif
 }
 
 QTEST_MAIN(tst_QItemEditorFactory)

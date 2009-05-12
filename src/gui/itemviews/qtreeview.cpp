@@ -1239,16 +1239,23 @@ bool QTreeView::viewportEvent(QEvent *event)
         int oldBranch = d->hoverBranch;
         d->hoverBranch = d->itemDecorationAt(he->pos());
         if (oldBranch != d->hoverBranch) {
-            QRect oldRect = visualRect(d->modelIndex(oldBranch));
-            QRect newRect = visualRect(d->modelIndex(d->hoverBranch));
-            viewport()->update(oldRect.left() - d->indent, oldRect.top(), d->indent, oldRect.height());
-            viewport()->update(newRect.left() - d->indent, newRect.top(), d->indent, newRect.height());
+            QModelIndex oldIndex = d->modelIndex(oldBranch),
+                newIndex = d->modelIndex(d->hoverBranch);
+            if (oldIndex != newIndex) {
+                QRect oldRect = visualRect(oldIndex);
+                QRect newRect = visualRect(newIndex);
+                viewport()->update(oldRect.left() - d->indent, oldRect.top(), d->indent, oldRect.height());
+                viewport()->update(newRect.left() - d->indent, newRect.top(), d->indent, newRect.height());
+            }
         }
         if (selectionBehavior() == QAbstractItemView::SelectRows) {
-            QRect oldHoverRect = visualRect(d->hover);
-            QRect newHoverRect = visualRect(indexAt(he->pos()));
-            viewport()->update(QRect(0, newHoverRect.y(), viewport()->width(), newHoverRect.height()));
-            viewport()->update(QRect(0, oldHoverRect.y(), viewport()->width(), oldHoverRect.height()));
+            QModelIndex newHoverIndex = indexAt(he->pos());
+            if (d->hover != newHoverIndex) {
+                QRect oldHoverRect = visualRect(d->hover);
+                QRect newHoverRect = visualRect(newHoverIndex);
+                viewport()->update(QRect(0, newHoverRect.y(), viewport()->width(), newHoverRect.height()));
+                viewport()->update(QRect(0, oldHoverRect.y(), viewport()->width(), oldHoverRect.height()));
+            }
         }
         break; }
     default:
@@ -1377,7 +1384,7 @@ void QTreeView::drawTree(QPainter *painter, const QRegion &region) const
         // start at the top of the viewport  and iterate down to the update area
         for (; i < viewItems.count(); ++i) {
             const int itemHeight = d->itemHeight(i);
-            if (y + itemHeight >= area.top())
+            if (y + itemHeight > area.top())
                 break;
             y += itemHeight;
         }
@@ -2012,6 +2019,7 @@ int QTreeView::verticalOffset() const
         // If we are scrolling per item and have non-uniform row heights,
         // finding the vertical offset in pixels is going to be relatively slow.
         // ### find a faster way to do this
+        d->executePostedLayout();
         int offset = 0;
         for (int i = 0; i < d->viewItems.count(); ++i) {
             if (i == verticalScrollBar()->value())
@@ -2307,11 +2315,12 @@ void QTreeView::scrollContentsBy(int dx, int dy)
         }
     }
 
-    if (d->viewItems.isEmpty() || d->defaultItemHeight == 0)
+    const int itemHeight = d->defaultItemHeight <= 0 ? sizeHintForRow(0) : d->defaultItemHeight;
+    if (d->viewItems.isEmpty() || itemHeight == 0)
         return;
 
     // guestimate the number of items in the viewport
-    int viewCount = d->viewport->height() / d->defaultItemHeight;
+    int viewCount = d->viewport->height() / itemHeight;
     int maxDeltaY = qMin(d->viewItems.count(), viewCount);
     // no need to do a lot of work if we are going to redraw the whole thing anyway
     if (qAbs(dy) > qAbs(maxDeltaY) && d->editors.isEmpty()) {
@@ -2558,8 +2567,11 @@ void QTreeView::sortByColumn(int column, Qt::SortOrder order)
 {
     Q_D(QTreeView);
 
-    //will emit a signal connected to _q_sortIndicatorChanged, which then actually sorts
+    //If sorting is enabled  will emit a signal connected to _q_sortIndicatorChanged, which then actually sorts
     d->header->setSortIndicator(column, order);
+    //If sorting is not enabled, force to sort now.
+    if (!d->sortingEnabled)
+        d->model->sort(column, order);
 }
 
 /*!
@@ -3496,6 +3508,7 @@ void QTreeViewPrivate::updateScrollBars()
 
 int QTreeViewPrivate::itemDecorationAt(const QPoint &pos) const
 {
+    const_cast<QTreeView *>(q_func())->executeDelayedItemsLayout();
     int x = pos.x();
     int column = header->logicalIndexAt(x);
     if (column != 0)

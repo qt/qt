@@ -1997,12 +1997,13 @@ bool QListViewPrivate::doItemsLayout(int delta)
     int first = batchStartRow();
     int last = qMin(first + delta - 1, max);
 
-    if (max < 0 || last < first)
-        return true; // nothing to do
-
     if (first == 0) {
         layoutChildren(); // make sure the viewport has the right size
         prepareItemsLayout();
+    }
+
+    if (max < 0 || last < first) {
+        return true; // nothing to do
     }
 
     QListViewLayoutInfo info;
@@ -2854,7 +2855,7 @@ void QDynamicListViewBase::addLeaf(QVector<int> &leaf, const QRect &area,
             continue;
         vi = &_this->dynamicListView->items[idx];
         Q_ASSERT(vi);
-        if (vi->rect().intersects(area) && vi->visited != visited) {
+        if (vi->isValid() && vi->rect().intersects(area) && vi->visited != visited) {
             QModelIndex index = _this->listViewItemToIndex(*vi);
             Q_ASSERT(index.isValid());
             _this->intersectVector.append(index);

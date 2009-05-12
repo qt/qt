@@ -22,6 +22,7 @@
 #include <AudioUnit/AudioUnit.h>
 #include <CoreServices/CoreServices.h>
 
+#include <QtGui/qmacdefines_mac.h>
 #import <QTKit/QTMovie.h>
 
 #ifdef QUICKTIME_C_API_AVAILABLE

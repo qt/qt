@@ -292,8 +292,11 @@ QSize QDockWidgetLayout::sizeFromContent(const QSize &content, bool floating) co
     if (content.height() < 0)
         result.setHeight(-1);
 
-    QSize min = w->minimumSize();
-    QSize max = w->maximumSize();
+    int left, top, right, bottom;
+    w->getContentsMargins(&left, &top, &right, &bottom);
+    //we need to substract the contents margin (it will be added by the caller)
+    QSize min = w->minimumSize() - QSize(left + right, top + bottom);
+    QSize max = w->maximumSize() - QSize(left + right, top + bottom);
 
     /* A floating dockwidget will automatically get its minimumSize set to the layout's
        minimum size + deco. We're *not* interested in this, we only take minimumSize()
@@ -403,10 +406,14 @@ int QDockWidgetLayout::minimumTitleWidth() const
 
     QSize closeSize(0, 0);
     QSize floatSize(0, 0);
-    if (QLayoutItem *item = item_list[CloseButton])
-        closeSize = item->sizeHint();
-    if (QLayoutItem *item = item_list[FloatButton])
-        floatSize = item->sizeHint();
+    if (hasFeature(q, QDockWidget::DockWidgetClosable)) {
+        if (QLayoutItem *item = item_list[CloseButton])
+            closeSize = item->widget()->sizeHint();
+    }
+    if (hasFeature(q, QDockWidget::DockWidgetFloatable)) {
+        if (QLayoutItem *item = item_list[FloatButton])
+            floatSize = item->widget()->sizeHint();
+    }
 
     int titleHeight = this->titleHeight();
 

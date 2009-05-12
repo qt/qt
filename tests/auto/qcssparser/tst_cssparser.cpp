@@ -44,7 +44,6 @@
 //TESTED_CLASS=QCss
 //TESTED_FILES=gui/text/qcssparser.cpp gui/text/qcssparser_p.h
 
-#if QT_VERSION >= 0x040200
 #include "private/qcssparser_p.h"
 
 class tst_CssParser : public QObject
@@ -272,7 +271,7 @@ void tst_CssParser::term_data()
     val.variant = QVariant(QColor("#ffbb00"));
     QTest::newRow("hexcolor2") << true << "#fb0" << val;
 
-    QTest::ignoreMessage(QtWarningMsg, "QColor::setNamedColor: Could not parse color '#cafebabe'");
+    QTest::ignoreMessage(QtWarningMsg, "QCssParser::parseHexColor: Unknown color name '#cafebabe'");
     QTest::newRow("hexcolor_failure") << false << "#cafebabe" << val;
 
     val.type = QCss::Value::Uri;
@@ -1592,13 +1591,13 @@ void tst_CssParser::quotedAndUnquotedIdentifiers()
     QCss::Parser parser("foo { font-style: \"italic\"; font-weight: bold }");
     QCss::StyleSheet sheet;
     QVERIFY(parser.parse(&sheet));
-    
+
     QCOMPARE(sheet.styleRules.count() + sheet.nameIndex.count(), 1);
     QCss::StyleRule rule = (!sheet.styleRules.isEmpty()) ?
            sheet.styleRules.at(0) : *sheet.nameIndex.begin();
     const QVector<QCss::Declaration> decls = rule.declarations;
     QCOMPARE(decls.size(), 2);
-    
+
     QCOMPARE(decls.at(0).d->values.first().type, QCss::Value::String);
     QCOMPARE(decls.at(0).d->property, QLatin1String("font-style"));
     QCOMPARE(decls.at(0).d->values.first().toString(), QLatin1String("italic"));
@@ -1610,6 +1609,3 @@ void tst_CssParser::quotedAndUnquotedIdentifiers()
 
 QTEST_MAIN(tst_CssParser)
 #include "tst_cssparser.moc"
-#else
-QTEST_NOOP_MAIN
-#endif

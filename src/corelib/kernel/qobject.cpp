@@ -1121,13 +1121,13 @@ bool QObject::event(QEvent *e)
         QThreadData *threadData = d->threadData;
         QAbstractEventDispatcher *eventDispatcher = threadData->eventDispatcher;
         if (eventDispatcher) {
-            // set inThreadChangeEvent to true to tell the dispatcher not to release out timer ids
-            // back to the pool (since the timer ids are moving to a new thread).
-            d->inThreadChangeEvent = true;
             QList<QPair<int, int> > timers = eventDispatcher->registeredTimers(this);
-            d->inThreadChangeEvent = false;
             if (!timers.isEmpty()) {
+                // set inThreadChangeEvent to true to tell the dispatcher not to release out timer ids
+                // back to the pool (since the timer ids are moving to a new thread).
+                d->inThreadChangeEvent = true;
                 eventDispatcher->unregisterTimers(this);
+                d->inThreadChangeEvent = false;
                 QMetaObject::invokeMethod(this, "_q_reregisterTimers", Qt::QueuedConnection,
                                           Q_ARG(void*, (new QList<QPair<int, int> >(timers))));
             }

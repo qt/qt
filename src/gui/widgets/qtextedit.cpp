@@ -1478,7 +1478,13 @@ void QTextEditPrivate::paint(QPainter *p, QPaintEvent *e)
         layout->setViewport(QRect());
 }
 
-/*! \reimp
+/*! \fn void QTextEdit::paintEvent(QPaintEvent *event)
+
+This event handler can be reimplemented in a subclass to receive paint events passed in \a event.
+It is usually unnecessary to reimplement this function in a subclass of QTextEdit.
+
+\warning The underlying text document must not be modified from within a reimplementation
+of this function.
 */
 void QTextEdit::paintEvent(QPaintEvent *e)
 {

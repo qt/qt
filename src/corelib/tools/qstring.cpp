@@ -579,7 +579,7 @@ const QString::Null QString::null = { };
     '\\0' character for a null string (\e not a null pointer), and
     QString() compares equal to QString(""). We recommend that you
     always use the isEmpty() function and avoid isNull().
-    
+
     \section1 Argument Formats
 
     In member functions where an argument \e format can be specified
@@ -743,7 +743,9 @@ int QString::grow(int size)
 /*!
     \since 4.2
 
-    Returns a copy of the \a string string encoded in ucs4.
+    Returns a copy of the \a string, where the encoding of \a string depends on 
+    the size of wchar. If wchar is 4 bytes, the \a string is interpreted as ucs-4,
+    if wchar is 2 bytes it is interpreted as ucs-2.
 
     If \a size is -1 (default), the \a string has to be 0 terminated.
 
@@ -1433,7 +1435,7 @@ QString &QString::append(QChar ch)
   truncated at the specified \a position.
 
   \snippet doc/src/snippets/qstring/main.cpp 37
-  
+
   \sa insert(), replace()
 */
 QString &QString::remove(int pos, int len)
@@ -1552,7 +1554,7 @@ QString &QString::replace(int pos, int len, const QChar *unicode, int size)
         return *this;
     if (pos + len > d->size)
         len = d->size - pos;
-    
+
     uint index = pos;
     replace_helper(&index, 1, len, unicode, size);
     return *this;
@@ -1561,15 +1563,13 @@ QString &QString::replace(int pos, int len, const QChar *unicode, int size)
 /*!
   \fn QString &QString::replace(int position, int n, QChar after)
   \overload replace()
-  
+
   Replaces \a n characters beginning at index \a position with the
   character \a after and returns a reference to this string.
 */
 QString &QString::replace(int pos, int len, QChar after)
 {
-    uint index = pos;
-    replace_helper(&index, 1, len, &after, 1);
-    return *this;
+    return replace(pos, len, &after, 1);
 }
 
 /*!
@@ -1602,7 +1602,7 @@ void QString::replace_helper(uint *indices, int nIndices, int blen, const QChar 
 {
     if (blen == alen) {
         detach();
-        for (int i = 0; i < nIndices; ++i) 
+        for (int i = 0; i < nIndices; ++i)
             memcpy(d->data + indices[i], after, alen * sizeof(QChar));
     } else if (alen < blen) {
         detach();
@@ -1633,7 +1633,7 @@ void QString::replace_helper(uint *indices, int nIndices, int blen, const QChar 
         int newLen = d->size + adjust;
         int moveend = d->size;
         resize(newLen);
-        
+
         while (nIndices) {
             --nIndices;
             int movestart = indices[nIndices] + blen;
@@ -1685,7 +1685,7 @@ QString &QString::replace(const QChar *before, int blen,
         memcpy(copy, before, blen*sizeof(QChar));
         b = copy;
     }
-    
+
     QStringMatcher matcher(b, blen, cs);
 
     int index = 0;
@@ -1712,7 +1712,7 @@ QString &QString::replace(const QChar *before, int blen,
         // index has to be adjusted in case we get back into the loop above.
         index += pos*(alen-blen);
     }
-    
+
     if (a != after)
         ::free((QChar *)a);
     if (b != before)
@@ -2250,7 +2250,7 @@ int QString::indexOf(const QLatin1String &str, int from, Qt::CaseSensitivity cs)
     QVarLengthArray<ushort> s(len);
     for (int i = 0; i < len; ++i)
         s[i] = str.latin1()[i];
-    
+
     return qFindString(unicode(), length(), from, (const QChar *)s.data(), len, cs);
 }
 
@@ -2346,7 +2346,7 @@ static int lastIndexOfHelper(const ushort *haystack, int from, const ushort *nee
     /*
         See indexOf() for explanations.
     */
-    
+
     const ushort *end = haystack;
     haystack += from;
     const int sl_minus_1 = sl-1;
@@ -2408,7 +2408,7 @@ int QString::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs) c
     const int sl = str.d->size;
     if (sl == 1)
         return lastIndexOf(QChar(str.d->data[0]), from, cs);
-    
+
     const int l = d->size;
     if (from < 0)
         from += l;
@@ -2446,7 +2446,7 @@ int QString::lastIndexOf(const QLatin1String &str, int from, Qt::CaseSensitivity
     const int sl = qstrlen(str.latin1());
     if (sl == 1)
         return lastIndexOf(QLatin1Char(str.latin1()[0]), from, cs);
-    
+
     const int l = d->size;
     if (from < 0)
         from += l;
@@ -4864,7 +4864,8 @@ QString QString::toUpper() const
     a pointer to a zero-terminated array of unicode characters of type
     ushort (as returned by QString::utf16()).
 
-    \note This function expects a UTF-8 string for %s.
+    \note This function expects a UTF-8 string for %s and Latin-1 for
+    the format string.
 
     The format string supports most of the conversion specifiers
     provided by printf() in the standard C++ library. It doesn't
@@ -5994,7 +5995,7 @@ QString QString::normalized(QString::NormalizationForm mode, QChar::UnicodeVersi
     }
     if (simple)
         return *this;
-    
+
     QString s = *this;
     if (version != CURRENT_VERSION) {
         for (int i = 0; i < NumNormalizationCorrections; ++i) {
@@ -6206,7 +6207,7 @@ static QString replaceArgEscapes(const QString &s, const ArgEscapeData &d, int f
 /*!
   Returns a copy of this string with the lowest numbered place marker
   replaced by string \a a, i.e., \c %1, \c %2, ..., \c %99.
-  
+
   \a fieldWidth specifies the minimum amount of space that argument \a
   a shall occupy. If \a a requires less space than \a fieldWidth, it
   is padded to \a fieldWidth with character \a fillChar.  A positive
@@ -6818,7 +6819,7 @@ void QString::updateProperties() const
     Appends the given \a ch character onto the end of this string.
 */
 
-/*! 
+/*!
     \fn std::string QString::toStdString() const
 
     Returns a std::string object with the data contained in this

@@ -287,13 +287,9 @@ QScriptDebuggerResponse QScriptDebuggerCommandExecutor::execute(
         QScriptContext *ctx = backend->context(command.contextIndex());
         if (ctx) {
             QScriptDebuggerValueList dest;
-#if QT_VERSION >= 0x040500
             QScriptValueList src = ctx->scopeChain();
             for (int i = 0; i < src.size(); ++i)
                 dest.append(src.at(i));
-#else
-            dest.append(ctx->activationObject());
-#endif
             response.setResult(dest);
         } else {
             response.setError(QScriptDebuggerResponse::InvalidContextIndex);

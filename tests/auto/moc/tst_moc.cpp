@@ -151,7 +151,6 @@ public slots:
 Q_DECLARE_METATYPE(MyStruct)
 Q_DECLARE_METATYPE(MyStruct*)
 
-#if QT_VERSION >= 0x040200
 namespace myNS {
     struct Points
     {
@@ -161,7 +160,6 @@ namespace myNS {
 }
 
 Q_DECLARE_METATYPE(myNS::Points)
-#endif
 
 class TestClassinfoWithEscapes: public QObject
 {
@@ -195,10 +193,7 @@ class TestClass : public MyNamespace::TestSuperClass, public DONT_CONFUSE_MOC(My
                   public DONT_CONFUSE_MOC_EVEN_MORE(MyStruct2, dummy, ignored)
 {
     Q_OBJECT
-#if QT_VERSION >= 0x040101
     Q_CLASSINFO("help", QT_TR_NOOP("Opening this will let you configure something"))
-#endif
-#if QT_VERSION >= 0x040102
     Q_PROPERTY(short int shortIntProperty READ shortIntProperty)
     Q_PROPERTY(unsigned short int unsignedShortIntProperty READ unsignedShortIntProperty)
     Q_PROPERTY(signed short int signedShortIntProperty READ signedShortIntProperty)
@@ -206,10 +201,7 @@ class TestClass : public MyNamespace::TestSuperClass, public DONT_CONFUSE_MOC(My
     Q_PROPERTY(unsigned long int unsignedLongIntProperty READ unsignedLongIntProperty)
     Q_PROPERTY(signed long int signedLongIntProperty READ signedLongIntProperty)
     Q_PROPERTY(long double longDoubleProperty READ longDoubleProperty)
-#endif
-#if QT_VERSION >= 0x040200
     Q_PROPERTY(myNS::Points points READ points WRITE setPoints)
-#endif
 
     Q_CLASSINFO("Multi"
                 "line",
@@ -294,9 +286,7 @@ private slots:
 
 #ifndef NOLONGLONG
     void slotWithULongLong(unsigned long long) {}
-#if QT_VERSION >= 0x040101
     void slotWithULongLongP(unsigned long long*) {}
-#endif
     void slotWithULong(unsigned long) {}
     void slotWithLongLong(long long) {}
     void slotWithLong(long) {}
@@ -304,9 +294,7 @@ private slots:
 
     void slotWithColonColonType(::Int::Type) {}
 
-#if QT_VERSION >= 0x040101
     TestClass &slotWithReferenceReturnType() { return *this; }
-#endif
 
 #if (0 && 1) || 1
     void expressionEvaluationShortcut1() {}
@@ -321,7 +309,6 @@ public slots:
     void slotWithNamedArray(const double namedArray[3]) {}
     void slotWithMultiArray(const double[3][4]) {}
 
-#if QT_VERSION >= 0x040102
     short int shortIntProperty() { return 0; }
     unsigned short int unsignedShortIntProperty() { return 0; }
     signed short int signedShortIntProperty() { return 0; }
@@ -329,12 +316,9 @@ public slots:
     unsigned long int unsignedLongIntProperty() { return 0; }
     signed long int signedLongIntProperty() { return 0; }
     long double longDoubleProperty() { return 0.0; }
-#endif
 
-#if QT_VERSION >= 0x040200
     myNS::Points points() { return m_points; }
     void setPoints(myNS::Points points) { m_points = points; }
-#endif
 
 signals:
     void signalWithArray(const double[3]);
@@ -384,10 +368,8 @@ public:
 public slots:
     void slotWithVoidStar(void *) {}
 
-#if QT_VERSION >= 0x040200
 private:
      myNS::Points m_points;
-#endif
 
 private slots:
      inline virtual void blub1() {}
@@ -466,6 +448,8 @@ public:
     inline tst_Moc() {}
 
 private slots:
+    void initTestCase();
+
     void slotWithException() throw(MyStruct);
     void dontStripNamespaces();
     void oldStyleCasts();
@@ -519,7 +503,27 @@ private:
     bool user2() { return false; };
     bool user3() { return false; };
     bool userFunction(){ return false; };
+
+private:
+    QString qtIncludePath;
 };
+
+void tst_Moc::initTestCase()
+{
+#if defined(Q_OS_UNIX)
+    QProcess proc;
+    proc.start("qmake", QStringList() << "-query" << "QT_INSTALL_HEADERS");
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 0);
+    QByteArray output = proc.readAllStandardOutput();
+    QVERIFY(!output.isEmpty());
+    QCOMPARE(proc.readAllStandardError(), QByteArray());
+    qtIncludePath = QString::fromLocal8Bit(output).trimmed();
+    QFileInfo fi(qtIncludePath);
+    QVERIFY(fi.exists());
+    QVERIFY(fi.isDir());
+#endif
+}
 
 void tst_Moc::slotWithException() throw(MyStruct)
 {
@@ -552,8 +556,6 @@ void tst_Moc::oldStyleCasts()
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QProcess proc;
     proc.start("moc", QStringList(srcify("/oldstyle-casts.h")));
     QVERIFY(proc.waitForFinished());
@@ -564,7 +566,7 @@ void tst_Moc::oldStyleCasts()
 
     QStringList args;
     args << "-c" << "-x" << "c++" << "-Wold-style-cast" << "-I" << "."
-         << "-I" << qgetenv("QTDIR") + "/include" << "-o" << "/dev/null" << "-";
+         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-";
     proc.start("gcc", args);
     QVERIFY(proc.waitForStarted());
     proc.write(mocOut);
@@ -584,8 +586,6 @@ void tst_Moc::warnOnExtraSignalSlotQualifiaction()
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QProcess proc;
     proc.start("moc", QStringList(srcify("extraqualification.h")));
     QVERIFY(proc.waitForFinished());
@@ -610,10 +610,8 @@ void tst_Moc::uLongLong()
     QVERIFY(idx != -1);
     idx = mobj->indexOfSlot("slotWithULongLong(unsigned long long)");
     QVERIFY(idx != -1);
-#if QT_VERSION >= 0x040101
     idx = mobj->indexOfSlot("slotWithULongLongP(unsigned long long*)");
     QVERIFY(idx != -1);
-#endif
 
     idx = mobj->indexOfSlot("slotWithLong(long)");
     QVERIFY(idx != -1);
@@ -630,8 +628,6 @@ void tst_Moc::inputFileNameWithDotsButNoExtension()
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QProcess proc;
     proc.setWorkingDirectory(QString(SRCDIR) + "/task71021");
     proc.start("moc", QStringList("../Header"));
@@ -643,7 +639,7 @@ void tst_Moc::inputFileNameWithDotsButNoExtension()
 
     QStringList args;
     args << "-c" << "-x" << "c++" << "-I" << ".."
-         << "-I" << qgetenv("QTDIR") + "/include" << "-o" << "/dev/null" << "-";
+         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-";
     proc.start("gcc", args);
     QVERIFY(proc.waitForStarted());
     proc.write(mocOut);
@@ -691,22 +687,14 @@ void tst_Moc::supportConstSignals()
 
 void tst_Moc::task87883()
 {
-#if QT_VERSION >= 0x040101
     QVERIFY(Task87883::staticMetaObject.className());
-#else
-    QSKIP("Fixed in >= 4.1.1", SkipAll);
-#endif
 }
 
 #include "c-comments.h"
 
 void tst_Moc::multilineComments()
 {
-#if QT_VERSION >= 0x040101
     QVERIFY(IfdefedClass::staticMetaObject.className());
-#else
-    QSKIP("Fixed in >= 4.1.1", SkipAll);
-#endif
 }
 
 void tst_Moc::classinfoWithEscapes()
@@ -848,10 +836,11 @@ void tst_Moc::warnOnMultipleInheritance()
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QProcess proc;
-    proc.start("moc", QStringList(srcify("warn-on-multiple-qobject-subclasses.h")));
+    QStringList args;
+    args << "-I" << qtIncludePath + "/QtGui"
+         << srcify("warn-on-multiple-qobject-subclasses.h");
+    proc.start("moc", args);
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
@@ -870,17 +859,18 @@ void tst_Moc::forgottenQInterface()
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QProcess proc;
-    proc.start("moc", QStringList(srcify("forgotten-qinterface.h")));
+    QStringList args;
+    args << "-I" << qtIncludePath + "/QtCore"
+         << srcify("forgotten-qinterface.h");
+    proc.start("moc", args);
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, QString(SRCDIR) +
-                QString("/forgotten-qinterface.h:53: Warning: Class Test implements the interface MyInterface but does not list it in Q_INTERFACES. qobject_cast to MyInterface will not work!\n"));
+                QString("/forgotten-qinterface.h:55: Warning: Class Test implements the interface MyInterface but does not list it in Q_INTERFACES. qobject_cast to MyInterface will not work!\n"));
 #else
     QSKIP("Only tested on linux/gcc", SkipAll);
 #endif
@@ -951,8 +941,6 @@ void tst_Moc::frameworkSearchPath()
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
 #if defined(Q_OS_UNIX)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QStringList args;
     args << "-F" << srcify(".")
          << srcify("interface-from-framework.h")
@@ -991,8 +979,6 @@ void tst_Moc::templateGtGt()
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QProcess proc;
     proc.start("moc", QStringList(srcify("template-gtgt.h")));
     QVERIFY(proc.waitForFinished());
@@ -1009,8 +995,6 @@ void tst_Moc::templateGtGt()
 void tst_Moc::defineMacroViaCmdline()
 {
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QProcess proc;
 
     QStringList args;
@@ -1099,8 +1083,6 @@ void tst_Moc::warnOnPropertyWithoutREAD()
     QSKIP("Not tested when cross-compiled", SkipAll);
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU)
-    QVERIFY(!qgetenv("QTDIR").isNull());
-
     QProcess proc;
     proc.start("moc", QStringList(srcify("warn-on-property-without-read.h")));
     QVERIFY(proc.waitForFinished());

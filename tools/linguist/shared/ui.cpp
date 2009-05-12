@@ -60,7 +60,8 @@ class UiReader : public QXmlDefaultHandler
 {
 public:
     UiReader(Translator &translator, ConversionData &cd)
-      : m_translator(translator), m_cd(cd), m_lineNumber(-1)
+      : m_translator(translator), m_cd(cd), m_lineNumber(-1), m_isTrString(false),
+        m_needUtf8(translator.codecName() != "UTF-8")
     {}
 
     bool startElement(const QString &namespaceURI, const QString &localName,
@@ -80,11 +81,13 @@ private:
     QString m_context;
     QString m_source;
     QString m_comment;
+    QString m_extracomment;
     QXmlLocator *m_locator;
 
     QString m_accum;
     int m_lineNumber;
     bool m_isTrString;
+    bool m_needUtf8;
 };
 
 bool UiReader::startElement(const QString &namespaceURI,
@@ -93,22 +96,27 @@ bool UiReader::startElement(const QString &namespaceURI,
     Q_UNUSED(namespaceURI);
     Q_UNUSED(localName);
 
-    if (qName == QLatin1String("item")) {
+    if (qName == QLatin1String("item")) { // UI3 menu entries
         flush();
-        if (!atts.value(QLatin1String("text")).isEmpty())
+        if (!atts.value(QLatin1String("text")).isEmpty()) {
             m_source = atts.value(QLatin1String("text"));
+            m_isTrString = true;
+            if (!m_cd.m_noUiLines)
+                m_lineNumber = m_locator->lineNumber();
+        }
     } else if (qName == QLatin1String("string")) {
         flush();
         if (atts.value(QLatin1String("notr")).isEmpty() ||
             atts.value(QLatin1String("notr")) != QLatin1String("true")) {
             m_isTrString = true;
             m_comment = atts.value(QLatin1String("comment"));
+            m_extracomment = atts.value(QLatin1String("extracomment"));
+            if (!m_cd.m_noUiLines)
+                m_lineNumber = m_locator->lineNumber();
         } else {
             m_isTrString = false;
         }
     }
-    if (m_isTrString && !m_cd.m_noUiLines)
-        m_lineNumber = m_locator->lineNumber();
     m_accum.clear();
     return true;
 }
@@ -121,15 +129,15 @@ bool UiReader::endElement(const QString &namespaceURI,
 
     m_accum.replace(QLatin1String("\r\n"), QLatin1String("\n"));
 
-    if (qName == QLatin1String("class")) {
+    if (qName == QLatin1String("class")) { // UI "header"
         if (m_context.isEmpty())
             m_context = m_accum;
     } else if (qName == QLatin1String("string") && m_isTrString) {
         m_source = m_accum;
-    } else if (qName == QLatin1String("comment")) {
+    } else if (qName == QLatin1String("comment")) { // FIXME: what's that?
         m_comment = m_accum;
         flush();
-    } else if (qName == QLatin1String("function")) {
+    } else if (qName == QLatin1String("function")) { // UI3 embedded code
         fetchtrInlinedCpp(m_accum, m_translator, m_context);
     } else {
         flush();
@@ -149,7 +157,7 @@ bool UiReader::fatalError(const QXmlParseException &exception)
     msg.sprintf("XML error: Parse error at line %d, column %d (%s).",
                  exception.lineNumber(), exception.columnNumber(),
                  exception.message().toLatin1().data());
-    m_cd.appendError(msg); 
+    m_cd.appendError(msg);
     return false;
 }
 
@@ -159,10 +167,14 @@ void UiReader::flush()
         TranslatorMessage msg(m_context, m_source,
            m_comment, QString(), m_cd.m_sourceFileName,
            m_lineNumber, QStringList());
+        msg.setExtraComment(m_extracomment);
+        if (m_needUtf8 && msg.needs8Bit())
+            msg.setUtf8(true);
         m_translator.extend(msg);
     }
     m_source.clear();
     m_comment.clear();
+    m_extracomment.clear();
 }
 
 bool loadUI(Translator &translator, QIODevice &dev, ConversionData &cd)
@@ -184,7 +196,7 @@ bool loadUI(Translator &translator, QIODevice &dev, ConversionData &cd)
     return result;
 }
 
-bool saveUI(const Translator &translator, QIODevice &dev, ConversionData &cd) 
+bool saveUI(const Translator &translator, QIODevice &dev, ConversionData &cd)
 {
     Q_UNUSED(dev);
     Q_UNUSED(translator);

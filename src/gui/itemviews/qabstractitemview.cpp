@@ -88,6 +88,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         autoScroll(true),
         autoScrollMargin(16),
         autoScrollCount(0),
+        shouldScrollToCurrentOnShow(false),
         alternatingColors(false),
         textElideMode(Qt::ElideRight),
         verticalScrollMode(QAbstractItemView::ScrollPerItem),
@@ -1374,9 +1375,15 @@ bool QAbstractItemView::event(QEvent *event)
 {
     Q_D(QAbstractItemView);
     switch (event->type()) {
+    case QEvent::Paint:
+        //we call this here because the scrollbars' visibility might be altered
+        //so this can't be done in the paintEvent method
+        d->executePostedLayout(); //make sure we set the layout properly
+        break;
     case QEvent::Show:
-        {
-            d->executePostedLayout(); //make sure we set the layout properly
+        d->executePostedLayout(); //make sure we set the layout properly
+        if (d->shouldScrollToCurrentOnShow) {
+            d->shouldScrollToCurrentOnShow = false;
             const QModelIndex current = currentIndex();
             if (current.isValid() && (d->state == QAbstractItemView::EditingState || d->autoScroll))
                 scrollTo(current);
@@ -1394,6 +1401,9 @@ bool QAbstractItemView::event(QEvent *event)
         break;
     case QEvent::FocusOut:
         d->checkPersistentEditorFocus();
+        break;
+    case QEvent::FontChange:
+        d->doDelayedItemsLayout(); // the size of the items will change
         break;
     default:
         break;
@@ -1501,12 +1511,7 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
         // when the user is interacting with it (ie. clicking on it)
         bool autoScroll = d->autoScroll;
         d->autoScroll = false;
-        // setSelection will update the current item too
-        // and it seems that the two updates are not merged
-        bool updates = d->viewport->updatesEnabled();
-        d->viewport->setUpdatesEnabled(command == QItemSelectionModel::NoUpdate);
         d->selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
-        d->viewport->setUpdatesEnabled(updates);
         d->autoScroll = autoScroll;
         QRect rect(d->pressedPosition - offset, pos);
         setSelection(rect, command);
@@ -3160,14 +3165,18 @@ void QAbstractItemView::currentChanged(const QModelIndex &current, const QModelI
             d->updateDirtyRegion();
         }
     }
-    if (isVisible() && current.isValid() && !d->autoScrollTimer.isActive()) {
-        if (d->autoScroll)
-            scrollTo(current);
-        d->setDirtyRegion(visualRect(current));
-        d->updateDirtyRegion();
-        edit(current, CurrentChanged, 0);
-        if (current.row() == (d->model->rowCount(d->root) - 1))
-            d->_q_fetchMore();
+    if (current.isValid() && !d->autoScrollTimer.isActive()) {
+        if (isVisible()) {
+            if (d->autoScroll)
+                scrollTo(current);
+            d->setDirtyRegion(visualRect(current));
+            d->updateDirtyRegion();
+            edit(current, CurrentChanged, 0);
+            if (current.row() == (d->model->rowCount(d->root) - 1))
+                d->_q_fetchMore();
+        } else {
+            d->shouldScrollToCurrentOnShow = d->autoScroll;
+        }
     }
 }
 

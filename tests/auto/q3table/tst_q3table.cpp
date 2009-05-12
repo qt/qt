@@ -387,7 +387,6 @@ public:
 
 void tst_Q3Table::selectComboTableItem()
 {
-// #if QT_VERSION >= 0x030100
 #if 0
     MyTable table(4,4,0,"subclassTestWidget");
     // Test for task #25026

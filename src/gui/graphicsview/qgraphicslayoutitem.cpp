@@ -117,7 +117,7 @@ QGraphicsLayoutItemPrivate::QGraphicsLayoutItemPrivate(QGraphicsLayoutItem *par,
 */
 void QGraphicsLayoutItemPrivate::init()
 {
-    sizeHintCacheDirty = true; 
+    sizeHintCacheDirty = true;
     sizePolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 }
 
@@ -175,12 +175,12 @@ QSizeF *QGraphicsLayoutItemPrivate::effectiveSizeHints(const QSizeF &constraint)
 
     Returns the parent item of this layout, or 0 if this layout is
     not installed on any widget.
-    
+
     If this is the item that the layout is installed on, it will return "itself".
 
     If the layout is a sub-layout, this function returns the parent
     widget of the parent layout.
-    
+
     Note that it will traverse up the layout item hierarchy instead of just calling
     QGraphicsItem::parentItem(). This is on purpose.
 
@@ -233,7 +233,7 @@ QGraphicsItem *QGraphicsLayoutItemPrivate::parentItem() const
     position. Calling setGeometry() will always resize and reposition the item
     immediately. Normally, this function is called by QGraphicsLayout after
     the layout has been activated, but it can also be called by the item's user
-    at any time. 
+    at any time.
 
     The sizeHint() function returns the item' minimum, preferred and maximum
     size hints. You can override these properties by calling setMinimumSize(),
@@ -360,7 +360,7 @@ void QGraphicsLayoutItem::setSizePolicy(QSizePolicy::Policy hPolicy,
 }
 
 /*!
-    Returns the current size policy. 
+    Returns the current size policy.
 
     \sa setSizePolicy(), QWidget::sizePolicy()
 */
@@ -626,14 +626,15 @@ void QGraphicsLayoutItem::setMaximumHeight(qreal height)
 */
 
 /*!
-    \fn virtual void QGraphicsLayoutItem::setGeometry(const QRectF &rect) = 0
+    \fn virtual void QGraphicsLayoutItem::setGeometry(const QRectF &rect)
 
-    This pure virtual function sets the geometry of the QGraphicsLayoutItem to
+    This virtual function sets the geometry of the QGraphicsLayoutItem to
     \a rect, which is in parent coordinates (e.g., the top-left corner of \a rect
     is equivalent to the item's position in parent coordinates).
 
-    Reimplement this function in a subclass of QGraphicsLayoutItem to enable
-    your item to receive geometry updates.
+    You must reimplement this function in a subclass of QGraphicsLayoutItem to
+    receive geometry updates. The layout will call this function when it does a 
+    rearrangement.
 
     If \a rect is outside of the bounds of minimumSize and maximumSize, it
     will be adjusted to its closest size so that it is within the legal
@@ -744,7 +745,7 @@ QSizeF QGraphicsLayoutItem::effectiveSizeHint(Qt::SizeHint which, const QSizeF &
     \sa effectiveSizeHint()
 */
 void QGraphicsLayoutItem::updateGeometry()
-{ 
+{
     Q_D(QGraphicsLayoutItem);
     d->sizeHintCacheDirty = true;
 }
@@ -768,7 +769,7 @@ QGraphicsLayoutItem *QGraphicsLayoutItem::parentLayoutItem() const
     \sa parentLayoutItem()
 */
 void QGraphicsLayoutItem::setParentLayoutItem(QGraphicsLayoutItem *parent)
-{ 
+{
     d_func()->parent = parent;
 }
 
@@ -789,12 +790,12 @@ bool QGraphicsLayoutItem::isLayout() const
     If its true, then the layout will delete it. If its false, then it is
     assumed that another object has the ownership of it, and the layout won't
     delete this item.
-    
-    If the item inherits both QGraphicsItem and QGraphicsLayoutItem (such 
-    as QGraphicsWidget does) the item is really part of two ownership 
+
+    If the item inherits both QGraphicsItem and QGraphicsLayoutItem (such
+    as QGraphicsWidget does) the item is really part of two ownership
     hierarchies. This property informs what the layout should do with its
     child items when it is destructed. In the case of QGraphicsWidget, it
-    is preferred that when the layout is deleted it won't delete its children 
+    is preferred that when the layout is deleted it won't delete its children
     (since they are also part of the graphics item hierarchy).
 
     By default this value is initialized to false in QGraphicsLayoutItem,
@@ -822,9 +823,9 @@ void QGraphicsLayoutItem::setOwnedByLayout(bool ownership)
 
 /*!
  * Returns the QGraphicsItem that this layout item represents.
- * For QGraphicsWidget it will return itself. For custom items it can return an 
- * aggregated value. 
- * 
+ * For QGraphicsWidget it will return itself. For custom items it can return an
+ * aggregated value.
+ *
  * \sa setGraphicsItem()
  */
 QGraphicsItem *QGraphicsLayoutItem::graphicsItem() const
@@ -836,10 +837,10 @@ QGraphicsItem *QGraphicsLayoutItem::graphicsItem() const
  * If the QGraphicsLayoutItem represents a QGraphicsItem, and it wants to take
  * advantage of the automatic reparenting capabilities of QGraphicsLayout it
  * should set this value.
- * Note that if you delete \a item and not delete the layout item, you are 
- * responsible of calling setGraphicsItem(0) in order to avoid having a 
+ * Note that if you delete \a item and not delete the layout item, you are
+ * responsible of calling setGraphicsItem(0) in order to avoid having a
  * dangling pointer.
- * 
+ *
  * \sa graphicsItem()
  */
 void QGraphicsLayoutItem::setGraphicsItem(QGraphicsItem *item)
@@ -848,5 +849,5 @@ void QGraphicsLayoutItem::setGraphicsItem(QGraphicsItem *item)
 }
 
 QT_END_NAMESPACE
-        
+
 #endif //QT_NO_GRAPHICSVIEW

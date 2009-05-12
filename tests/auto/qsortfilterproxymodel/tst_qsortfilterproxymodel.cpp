@@ -129,6 +129,11 @@ private slots:
 
     void task236755_hiddenColumns();
     void task247867_insertRowsSort();
+    void task248868_staticSorting();
+    void task248868_dynamicSorting();
+    void task250023_fetchMore();
+    void task251296_hiddenChildren();
+    void task252507_mapFromToSource();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
@@ -1505,9 +1510,6 @@ void tst_QSortFilterProxyModel::insertAfterSelect()
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, p);
     QVERIFY(view.selectionModel()->selectedIndexes().size() > 0);
     model.insertRows(5, 1, QModelIndex());
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Selections are not kept in versions < 4.2", Abort);
-#endif
     QVERIFY(view.selectionModel()->selectedIndexes().size() > 0); // Should still have a selection
 }
 
@@ -1529,9 +1531,6 @@ void tst_QSortFilterProxyModel::removeAfterSelect()
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, p);
     QVERIFY(view.selectionModel()->selectedIndexes().size() > 0);
     model.removeRows(5, 1, QModelIndex());
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Selections are not kept in versions < 4.2", Abort);
-#endif
     QVERIFY(view.selectionModel()->selectedIndexes().size() > 0); // Should still have a selection
 }
 
@@ -2477,6 +2476,264 @@ void tst_QSortFilterProxyModel::task247867_insertRowsSort()
 
     model.removeColumns(0, 3, model.index(0,0));
     QCOMPARE(proxyModel.sortColumn(), 0);
+}
+
+void tst_QSortFilterProxyModel::task248868_staticSorting()
+{
+    QStandardItemModel model(0, 1);
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+    proxy.setDynamicSortFilter(false);
+    QStringList initial = QString("bateau avion dragon hirondelle flamme camion elephant").split(" ");
+
+    // prepare model
+    QStandardItem *root = model.invisibleRootItem ();
+    QList<QStandardItem *> items;
+    for (int i = 0; i < initial.count(); ++i) {
+        items.append(new QStandardItem(initial.at(i)));
+    }
+    root->insertRows(0, items);
+    QCOMPARE(model.rowCount(QModelIndex()), initial.count());
+    QCOMPARE(model.columnCount(QModelIndex()), 1);
+
+    // make sure the proxy is unsorted
+    QCOMPARE(proxy.columnCount(QModelIndex()), 1);
+    QCOMPARE(proxy.rowCount(QModelIndex()), initial.count());
+    for (int row = 0; row < proxy.rowCount(QModelIndex()); ++row) {
+        QModelIndex index = proxy.index(row, 0, QModelIndex());
+        QCOMPARE(proxy.data(index, Qt::DisplayRole).toString(), initial.at(row));
+    }
+
+    // sort
+    proxy.sort(0);
+
+    QStringList expected = initial;
+    expected.sort();
+    // make sure the proxy is sorted
+    for (int row = 0; row < proxy.rowCount(QModelIndex()); ++row) {
+        QModelIndex index = proxy.index(row, 0, QModelIndex());
+        QCOMPARE(proxy.data(index, Qt::DisplayRole).toString(), expected.at(row));
+    }
+
+    //update one item.
+    model.setItem(0, 0, new QStandardItem("girafe"));
+
+    // make sure the proxy is updated but not sorted
+    expected.replaceInStrings("bateau", "girafe");
+    for (int row = 0; row < proxy.rowCount(QModelIndex()); ++row) {
+        QModelIndex index = proxy.index(row, 0, QModelIndex());
+        QCOMPARE(proxy.data(index, Qt::DisplayRole).toString(), expected.at(row));
+    }
+
+    // sort again
+    proxy.sort(0);
+    expected.sort();
+
+    // make sure the proxy is sorted
+    for (int row = 0; row < proxy.rowCount(QModelIndex()); ++row) {
+        QModelIndex index = proxy.index(row, 0, QModelIndex());
+        QCOMPARE(proxy.data(index, Qt::DisplayRole).toString(), expected.at(row));
+    }
+
+}
+
+void tst_QSortFilterProxyModel::task248868_dynamicSorting()
+{
+    QStringListModel model1;
+    const QStringList initial = QString("bateau avion dragon hirondelle flamme camion elephant").split(" ");
+    model1.setStringList(initial);
+    QSortFilterProxyModel proxy1;
+    proxy1.sort(0);
+    proxy1.setSourceModel(&model1);
+
+    QCOMPARE(proxy1.columnCount(QModelIndex()), 1);
+    //the model should not be sorted because sorting has not been set to dynamic yet.
+    QCOMPARE(proxy1.rowCount(QModelIndex()), initial.count());
+    for (int row = 0; row < proxy1.rowCount(QModelIndex()); ++row) {
+        QModelIndex index = proxy1.index(row, 0, QModelIndex());
+        QCOMPARE(proxy1.data(index, Qt::DisplayRole).toString(), initial.at(row));
+    }
+
+    proxy1.setDynamicSortFilter(true);
+
+    //now the model should be sorted.
+    QStringList expected = initial;
+    expected.sort();
+    for (int row = 0; row < proxy1.rowCount(QModelIndex()); ++row) {
+        QModelIndex index = proxy1.index(row, 0, QModelIndex());
+        QCOMPARE(proxy1.data(index, Qt::DisplayRole).toString(), expected.at(row));
+    }
+
+    QStringList initial2 = initial;
+    initial2.replaceInStrings("bateau", "girafe");
+    model1.setStringList(initial2); //this will cause a reset
+    
+    QStringList expected2 = initial2;
+    expected2.sort();
+
+    //now the model should still be sorted.
+    for (int row = 0; row < proxy1.rowCount(QModelIndex()); ++row) {
+        QModelIndex index = proxy1.index(row, 0, QModelIndex());
+        QCOMPARE(proxy1.data(index, Qt::DisplayRole).toString(), expected2.at(row));
+    }
+
+    QStringListModel model2(initial);
+    proxy1.setSourceModel(&model2);
+
+    //the model should again be sorted
+    for (int row = 0; row < proxy1.rowCount(QModelIndex()); ++row) {
+        QModelIndex index = proxy1.index(row, 0, QModelIndex());
+        QCOMPARE(proxy1.data(index, Qt::DisplayRole).toString(), expected.at(row));
+    }
+}
+
+class QtTestModel: public QAbstractItemModel
+{
+    public:
+        QtTestModel(int _rows, int _cols, QObject *parent = 0): QAbstractItemModel(parent),
+        rows(_rows), cols(_cols), wrongIndex(false) {  }
+
+        bool canFetchMore(const QModelIndex &idx) const {
+            return !fetched.contains(idx);
+        }
+
+        void fetchMore(const QModelIndex &idx) {
+            if (fetched.contains(idx))
+                return;
+            beginInsertRows(idx, 0, rows-1);
+            fetched.insert(idx);
+            endInsertRows();
+        }
+
+        bool hasChildren(const QModelIndex & = QModelIndex()) const {
+            return true;
+        }
+
+        int rowCount(const QModelIndex& parent = QModelIndex()) const {
+            return fetched.contains(parent) ? rows : 0;
+        }
+        int columnCount(const QModelIndex& parent = QModelIndex()) const {
+            Q_UNUSED(parent);
+            return cols;
+        }
+
+        QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const
+        {
+            if (row < 0 || column < 0 || column >= cols || row >= rows) {
+                return QModelIndex();
+            }
+            QModelIndex i = createIndex(row, column, int(parent.internalId() + 1));
+            parentHash[i] = parent;
+            return i;
+        }
+
+        QModelIndex parent(const QModelIndex &index) const
+        {
+            if (!parentHash.contains(index))
+                return QModelIndex();
+            return parentHash[index];
+        }
+
+        QVariant data(const QModelIndex &idx, int role) const
+        {
+            if (!idx.isValid())
+                return QVariant();
+            
+            if (role == Qt::DisplayRole) {
+                if (idx.row() < 0 || idx.column() < 0 || idx.column() >= cols || idx.row() >= rows) {
+                    wrongIndex = true;
+                    qWarning("Invalid modelIndex [%d,%d,%p]", idx.row(), idx.column(),
+                    idx.internalPointer());
+                }
+                return QString("[%1,%2]").arg(idx.row()).arg(idx.column());
+            }
+            return QVariant();
+        }
+
+        QSet<QModelIndex> fetched;
+        int rows, cols;
+        mutable bool wrongIndex;
+        mutable QMap<QModelIndex,QModelIndex> parentHash;
+};
+
+void tst_QSortFilterProxyModel::task250023_fetchMore()
+{
+    QtTestModel model(10,10);
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+    QVERIFY(proxy.canFetchMore(QModelIndex()));
+    QVERIFY(proxy.hasChildren());
+    while (proxy.canFetchMore(QModelIndex()))
+        proxy.fetchMore(QModelIndex());
+    QCOMPARE(proxy.rowCount(), 10);
+    QCOMPARE(proxy.columnCount(), 10);
+
+    QModelIndex idx = proxy.index(1,1);
+    QVERIFY(idx.isValid());
+    QVERIFY(proxy.canFetchMore(idx));
+    QVERIFY(proxy.hasChildren(idx));
+    while (proxy.canFetchMore(idx))
+        proxy.fetchMore(idx);
+    QCOMPARE(proxy.rowCount(idx), 10);
+    QCOMPARE(proxy.columnCount(idx), 10);
+}
+
+void tst_QSortFilterProxyModel::task251296_hiddenChildren()
+{
+    QStandardItemModel model;
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+    proxy.setDynamicSortFilter(true);
+
+    QStandardItem *itemA = new QStandardItem("A VISIBLE");
+    model.appendRow(itemA);
+    QStandardItem *itemB = new QStandardItem("B VISIBLE");
+    itemA->appendRow(itemB);
+    QStandardItem *itemC = new QStandardItem("C");
+    itemA->appendRow(itemC);
+    proxy.setFilterRegExp("VISIBLE");
+
+    QCOMPARE(proxy.rowCount(QModelIndex()) , 1);
+    QPersistentModelIndex indexA = proxy.index(0,0);
+    QCOMPARE(proxy.data(indexA).toString(), QString::fromLatin1("A VISIBLE"));
+
+    QCOMPARE(proxy.rowCount(indexA) , 1);
+    QPersistentModelIndex indexB = proxy.index(0, 0, indexA);
+    QCOMPARE(proxy.data(indexB).toString(), QString::fromLatin1("B VISIBLE"));
+
+    itemA->setText("A");
+    QCOMPARE(proxy.rowCount(QModelIndex()), 0);
+    QVERIFY(!indexA.isValid());
+    QVERIFY(!indexB.isValid());
+
+    itemB->setText("B");
+    itemA->setText("A VISIBLE");
+    itemC->setText("C VISIBLE");
+
+    QCOMPARE(proxy.rowCount(QModelIndex()), 1);
+    indexA = proxy.index(0,0);
+    QCOMPARE(proxy.data(indexA).toString(), QString::fromLatin1("A VISIBLE"));
+
+    QCOMPARE(proxy.rowCount(indexA) , 1);
+    QModelIndex indexC = proxy.index(0, 0, indexA);
+    QCOMPARE(proxy.data(indexC).toString(), QString::fromLatin1("C VISIBLE"));
+}
+
+void tst_QSortFilterProxyModel::task252507_mapFromToSource()
+{
+    QtTestModel source(10,10);
+    source.fetchMore(QModelIndex());
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&source);
+    QCOMPARE(proxy.mapFromSource(source.index(5, 4)), proxy.index(5, 4));
+    QCOMPARE(proxy.mapToSource(proxy.index(3, 2)), source.index(3, 2));
+    QCOMPARE(proxy.mapFromSource(QModelIndex()), QModelIndex());
+    QCOMPARE(proxy.mapToSource(QModelIndex()), QModelIndex());
+
+    QTest::ignoreMessage(QtWarningMsg, "QSortFilterProxyModel: index from wrong model passed to mapToSource ");
+    QCOMPARE(proxy.mapToSource(source.index(2, 3)), QModelIndex());
+    QTest::ignoreMessage(QtWarningMsg, "QSortFilterProxyModel: index from wrong model passed to mapFromSource ");
+    QCOMPARE(proxy.mapFromSource(proxy.index(6, 2)), QModelIndex());
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)

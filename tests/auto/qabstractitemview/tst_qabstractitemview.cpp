@@ -53,6 +53,8 @@
 #include <qspinbox.h>
 #include <qitemdelegate.h>
 #include <qpushbutton.h>
+#include <qscrollbar.h>
+#include <qboxlayout.h>
 #include "../../shared/util.h"
 
 //TESTED_CLASS=
@@ -209,6 +211,7 @@ private slots:
     void setCurrentIndex();
     
     void task221955_selectedEditor();
+    void task250754_fontChange();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -231,11 +234,8 @@ void tst_QAbstractItemView::getSetCheck()
     MyAbstractItemDelegate *var1 = new MyAbstractItemDelegate;
     obj1->setItemDelegate(var1);
     QCOMPARE((QAbstractItemDelegate*)var1, obj1->itemDelegate());
-#if QT_VERSION >= 0x040200
-    // Itemviews in Qt < 4.2 have asserts for this. Qt >= 4.2 should handle this gracefully
     obj1->setItemDelegate((QAbstractItemDelegate *)0);
     QCOMPARE((QAbstractItemDelegate *)0, obj1->itemDelegate());
-#endif
     delete var1;
 
     // EditTriggers QAbstractItemView::editTriggers()
@@ -276,26 +276,6 @@ void tst_QAbstractItemView::getSetCheck()
     obj1->setAlternatingRowColors(true);
     QCOMPARE(true, obj1->alternatingRowColors());
 
-#if QT_VERSION < 0x040200
-    // int QAbstractItemView::horizontalStepsPerItem()
-    // void QAbstractItemView::setHorizontalStepsPerItem(int)
-    obj1->tst_setHorizontalStepsPerItem(0);
-    QCOMPARE(0, obj1->tst_horizontalStepsPerItem());
-    obj1->tst_setHorizontalStepsPerItem(INT_MIN);
-    QCOMPARE(INT_MIN, obj1->tst_horizontalStepsPerItem());
-    obj1->tst_setHorizontalStepsPerItem(INT_MAX);
-    QCOMPARE(INT_MAX, obj1->tst_horizontalStepsPerItem());
-
-    // int QAbstractItemView::verticalStepsPerItem()
-    // void QAbstractItemView::setVerticalStepsPerItem(int)
-    obj1->tst_setVerticalStepsPerItem(0);
-    QCOMPARE(0, obj1->tst_verticalStepsPerItem());
-    obj1->tst_setVerticalStepsPerItem(INT_MIN);
-    QCOMPARE(INT_MIN, obj1->tst_verticalStepsPerItem());
-    obj1->tst_setVerticalStepsPerItem(INT_MAX);
-    QCOMPARE(INT_MAX, obj1->tst_verticalStepsPerItem());
-#endif
-
     // State QAbstractItemView::state()
     // void QAbstractItemView::setState(State)
     obj1->tst_setState(TestView::tst_State(TestView::NoState));
@@ -311,13 +291,11 @@ void tst_QAbstractItemView::getSetCheck()
     obj1->tst_setState(TestView::tst_State(TestView::CollapsingState));
     QCOMPARE(TestView::tst_State(TestView::CollapsingState), obj1->tst_state());
 
-#if QT_VERSION >= 0x040200
     // QWidget QAbstractScrollArea::viewport()
     // void setViewport(QWidget*)
     QWidget *vp = new QWidget;
     obj1->setViewport(vp);
     QCOMPARE(vp, obj1->viewport());
-#endif
 
     QCOMPARE(16, obj1->autoScrollMargin());
     obj1->setAutoScrollMargin(20);
@@ -1179,8 +1157,46 @@ void tst_QAbstractItemView::task221955_selectedEditor()
     button->setFocus();    
     QTest::qWait(50);
     QVERIFY(tree.selectionModel()->selectedIndexes().isEmpty());
+}
+
+void tst_QAbstractItemView::task250754_fontChange()
+{
+    QString app_css = qApp->styleSheet();
+    qApp->setStyleSheet("/*  */");
+
+    QWidget w;
+    QTreeView tree(&w);
+    QVBoxLayout *vLayout = new QVBoxLayout(&w);
+    vLayout->addWidget(&tree);
+
+    QStandardItemModel *m = new QStandardItemModel(this);
+    for (int i=0; i<5; ++i) {
+        QStandardItem *item = new QStandardItem(QString("Item number %1").arg(i));
+        for (int j=0; j<5; ++j) {
+            QStandardItem *child = new QStandardItem(QString("Child Item number %1").arg(j));
+            item->setChild(j, 0, child);
+        }
+        m->setItem(i, 0, item);
+    }
+    tree.setModel(m);
+
+    w.show();
+    w.resize(150,150);
+    QTest::qWait(30);
+    QFont font = tree.font();
+    font.setPointSize(5);
+    tree.setFont(font);
+    QTest::qWait(30);
+
+    QVERIFY(!tree.verticalScrollBar()->isVisible());
+
+    font.setPointSize(45);
+    tree.setFont(font);
+    QTest::qWait(30);
+    //now with the huge items, the scrollbar must be visible
+    QVERIFY(tree.verticalScrollBar()->isVisible());
     
-    
+    qApp->setStyleSheet(app_css);
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

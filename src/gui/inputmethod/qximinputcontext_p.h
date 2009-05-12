@@ -98,6 +98,7 @@ public:
         QString text;
         QBitArray selectedChars;
         bool composing;
+        bool preeditEmpty;
         void clear();
     };
 

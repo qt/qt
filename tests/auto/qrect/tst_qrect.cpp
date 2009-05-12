@@ -432,14 +432,12 @@ void tst_QRect::normalized_data()
     QTest::newRow( "NegativePointQRect" ) << getQRectCase( NegativePointQRect ) << QRect( -10, -10, 5, 5 );
     QTest::newRow( "NullQRect" ) << getQRectCase( NullQRect ) << getQRectCase( NullQRect );
     QTest::newRow( "EmptyQRect" ) << getQRectCase( EmptyQRect ) << getQRectCase( EmptyQRect );
-#if QT_VERSION > 0x040001
     QTest::newRow( "Task80908") << QRect(100, 200, 100, 0) << QRect(100, 200, 100, 0);
     // Since "NegativeSizeQRect passes, I expect both of these to pass too.
     // This passes, since height() returns -1 before normalization
     QTest::newRow( "Task85023") << QRect(QPoint(100,201), QPoint(199,199)) << QRect(QPoint(100,199), QPoint(199,201));
     // This, on the other hand height() returns 0 before normalization.
     QTest::newRow( "Task85023.1") << QRect(QPoint(100,200), QPoint(199,199)) << QRect(QPoint(100,199), QPoint(199,200));
-#endif
     QTest::newRow( "Task188109" ) << QRect(QPoint(263, 113), QPoint(136, 112)) << QRect(QPoint(136, 113), QPoint(263, 112));
 }
 
@@ -1733,14 +1731,12 @@ void tst_QRect::newSetTopLeft_data()
 
 void tst_QRect::newSetTopLeft()
 {
-#if QT_VERSION >= 0x030100
     QFETCH( QRect, r );
     QFETCH( QPoint, topLeft );
     QFETCH( QRect, nr );
 
     r.setTopLeft( topLeft );
     QCOMPARE( r, nr );
-#endif
 }
 
 void tst_QRect::newSetBottomRight_data()
@@ -1961,7 +1957,6 @@ void tst_QRect::newSetBottomRight_data()
 
 void tst_QRect::newSetBottomRight()
 {
-#if QT_VERSION >= 0x030100
     QFETCH( QRect, r );
     QFETCH( QPoint, bottomRight );
     QFETCH( QRect, nr );
@@ -1969,7 +1964,6 @@ void tst_QRect::newSetBottomRight()
     r.setBottomRight( bottomRight );
 
     QCOMPARE( r, nr );
-#endif
 }
 
 void tst_QRect::newSetTopRight_data()
@@ -2190,7 +2184,6 @@ void tst_QRect::newSetTopRight_data()
 
 void tst_QRect::newSetTopRight()
 {
-#if QT_VERSION >= 0x030100
     QFETCH( QRect, r );
     QFETCH( QPoint, topRight );
     QFETCH( QRect, nr );
@@ -2198,7 +2191,6 @@ void tst_QRect::newSetTopRight()
     r.setTopRight( topRight );
 
     QCOMPARE( r, nr );
-#endif
 }
 
 void tst_QRect::newSetBottomLeft_data()
@@ -2419,7 +2411,6 @@ void tst_QRect::newSetBottomLeft_data()
 
 void tst_QRect::newSetBottomLeft()
 {
-#if QT_VERSION >= 0x030100
     QFETCH( QRect, r );
     QFETCH( QPoint, bottomLeft );
     QFETCH( QRect, nr );
@@ -2427,7 +2418,6 @@ void tst_QRect::newSetBottomLeft()
     r.setBottomLeft( bottomLeft );
 
     QCOMPARE( r, nr );
-#endif
 }
 
 void tst_QRect::topLeft_data()
@@ -2787,7 +2777,6 @@ void tst_QRect::newMoveLeft_data()
 
 void tst_QRect::newMoveLeft()
 {
-#if QT_VERSION >= 0x030100
     QFETCH( QRect, r );
     QFETCH( int, left );
     QFETCH( QRect, nr );
@@ -2795,7 +2784,6 @@ void tst_QRect::newMoveLeft()
     r.moveLeft( left );
 
     QCOMPARE( r, nr );
-#endif
 }
 
 void tst_QRect::newMoveTop_data()
@@ -2958,7 +2946,6 @@ void tst_QRect::newMoveTop_data()
 
 void tst_QRect::newMoveTop()
 {
-#if QT_VERSION >= 0x030100
     QFETCH( QRect, r );
     QFETCH( int, top );
     QFETCH( QRect, nr );
@@ -2966,7 +2953,6 @@ void tst_QRect::newMoveTop()
     r.moveTop( top );
 
     QCOMPARE( r, nr );
-#endif
 }
 
 void tst_QRect::newMoveRight_data()
@@ -3114,7 +3100,6 @@ void tst_QRect::newMoveRight_data()
 
 void tst_QRect::newMoveRight()
 {
-#if QT_VERSION >= 0x030100
     QFETCH( QRect, r );
     QFETCH( int, right );
     QFETCH( QRect, nr );
@@ -3122,7 +3107,6 @@ void tst_QRect::newMoveRight()
     r.moveRight( right );
 
     QCOMPARE( r, nr );
-#endif
 }
 
 void tst_QRect::newMoveBottom_data()
@@ -3270,7 +3254,6 @@ void tst_QRect::newMoveBottom_data()
 
 void tst_QRect::newMoveBottom()
 {
-#if QT_VERSION >= 0x030100
     QFETCH( QRect, r );
     QFETCH( int, bottom );
     QFETCH( QRect, nr );
@@ -3278,7 +3261,6 @@ void tst_QRect::newMoveBottom()
     r.moveBottom( bottom );
 
     QCOMPARE( r, nr );
-#endif
 }
 
 void tst_QRect::newMoveTopLeft_data()
@@ -3468,7 +3450,6 @@ void tst_QRect::newMoveTopLeft_data()
 
 void tst_QRect::newMoveTopLeft()
 {
-#if QT_VERSION >= 0x030100
     QFETCH(QRect,r);
     QFETCH(QPoint,topLeft);
     QFETCH(QRect,nr);
@@ -3476,7 +3457,6 @@ void tst_QRect::newMoveTopLeft()
     r.moveTopLeft(topLeft);
 
     QCOMPARE(r,nr);
-#endif
 }
 
 void tst_QRect::newMoveBottomRight_data()
@@ -3666,7 +3646,6 @@ void tst_QRect::newMoveBottomRight_data()
 
 void tst_QRect::newMoveBottomRight()
 {
-#if QT_VERSION >= 0x030100
     QFETCH(QRect,r);
     QFETCH(QPoint,bottomRight);
     QFETCH(QRect,nr);
@@ -3674,9 +3653,7 @@ void tst_QRect::newMoveBottomRight()
     r.moveBottomRight(bottomRight);
 
     QCOMPARE(r,nr);
-#endif
 }
-
 
 
 void tst_QRect::translate_data()
@@ -3720,10 +3697,8 @@ void tst_QRect::translate()
 }
 
 
-
 void tst_QRect::moveTop()
 {
-#if QT_VERSION >= 0x030100
     {
         QRect r( 10, 10, 100, 100 );
         r.moveTop( 3 );
@@ -3742,12 +3717,10 @@ void tst_QRect::moveTop()
         r.moveTop( -22 );
         QCOMPARE( r, QRectF(10, -22, 100, 100) );
     }
-#endif
 }
 
 void tst_QRect::moveBottom()
 {
-#if QT_VERSION >= 0x030100
     {
         QRect r( 10, -22, 100, 100 );
         r.moveBottom( 104 );
@@ -3758,12 +3731,10 @@ void tst_QRect::moveBottom()
         r.moveBottom( 104 );
         QCOMPARE( r, QRectF(10, 4, 100, 100) );
     }
-#endif
 }
 
 void tst_QRect::moveLeft()
 {
-#if QT_VERSION >= 0x030100
     {
         QRect r( 10, 5, 100, 100 );
         r.moveLeft( 11 );
@@ -3774,12 +3745,10 @@ void tst_QRect::moveLeft()
         r.moveLeft( 11 );
         QCOMPARE( r, QRectF(11, 5, 100, 100) );
     }
-#endif
 }
 
 void tst_QRect::moveRight()
 {
-#if QT_VERSION >= 0x030100
     {
         QRect r( 11, 5, 100, 100 );
         r.moveRight( 106 );
@@ -3790,7 +3759,6 @@ void tst_QRect::moveRight()
         r.moveRight( 106 );
         QCOMPARE( r, QRectF(6, 5, 100, 100) );
     }
-#endif
 }
 
 void tst_QRect::moveTopLeft()
@@ -3851,7 +3819,6 @@ void tst_QRect::moveBottomRight()
 
 void tst_QRect::setTopLeft()
 {
-#if QT_VERSION >= 0x030100
     {
         QRect r( 20, 10, 200, 100 );
         r.setTopLeft( QPoint(5, 7) );
@@ -3862,12 +3829,10 @@ void tst_QRect::setTopLeft()
         r.setTopLeft( QPoint(5, 7) );
         QCOMPARE( r, QRectF(5, 7, 215, 103) );
     }
-#endif
 }
 
 void tst_QRect::setTopRight()
 {
-#if QT_VERSION >= 0x030100
     {
         QRect r( 20, 10, 200, 100 );
         r.setTopRight( QPoint(225, 7) );
@@ -3878,12 +3843,10 @@ void tst_QRect::setTopRight()
         r.setTopRight( QPoint(225, 7) );
         QCOMPARE( r, QRectF(20, 7, 205, 103) );
     }
-#endif
 }
 
 void tst_QRect::setBottomLeft()
 {
-#if QT_VERSION >= 0x030100
     {
         QRect r( 20, 10, 200, 100 );
         r.setBottomLeft( QPoint(5, 117) );
@@ -3894,12 +3857,10 @@ void tst_QRect::setBottomLeft()
         r.setBottomLeft( QPoint(5, 117) );
         QCOMPARE( r, QRectF(5, 10, 215, 107) );
     }
-#endif
 }
 
 void tst_QRect::setBottomRight()
 {
-#if QT_VERSION >= 0x030100
     {
     QRect r( 20, 10, 200, 100 );
     r.setBottomRight( QPoint(225, 117) );
@@ -3910,7 +3871,6 @@ void tst_QRect::setBottomRight()
     r.setBottomRight( QPoint(225, 117) );
     QCOMPARE( r, QRectF(20, 10, 205, 107) );
     }
-#endif
 }
 
 void tst_QRect::operator_amp()

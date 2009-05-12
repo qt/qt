@@ -752,7 +752,8 @@ QDialogButtonBox::~QDialogButtonBox()
     \value KdeLayout Use a policy appropriate for applications on KDE.
     \value GnomeLayout Use a policy appropriate for applications on GNOME.
 
-    The button layout is specified by the \l{style()}{current style}.
+    The button layout is specified by the \l{style()}{current style}. However,
+    on the X11 platform, it may be influenced by the desktop environment.
 */
 
 /*!

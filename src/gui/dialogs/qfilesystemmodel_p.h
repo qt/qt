@@ -163,7 +163,11 @@ public:
                 info->icon = iconProvider->icon(QFileInfo(path));
             QHash<QString, QFileSystemNode *>::const_iterator iterator;
             for(iterator = children.constBegin() ; iterator != children.constEnd() ; ++iterator) {
-                iterator.value()->updateIcon(iconProvider, path + QLatin1Char('/') + iterator.value()->fileName);
+                //On windows the root (My computer) has no path so we don't want to add a / for nothing (e.g. /C:/)
+                if (!path.isEmpty())
+                    iterator.value()->updateIcon(iconProvider, path + QLatin1Char('/') + iterator.value()->fileName);
+                else
+                    iterator.value()->updateIcon(iconProvider, iterator.value()->fileName);
             }
         }
 
@@ -172,7 +176,11 @@ public:
                 info->displayType = iconProvider->type(QFileInfo(path));
             QHash<QString, QFileSystemNode *>::const_iterator iterator;
             for(iterator = children.constBegin() ; iterator != children.constEnd() ; ++iterator) {
-                 iterator.value()->retranslateStrings(iconProvider, path + QLatin1Char('/') + iterator.value()->fileName);
+                //On windows the root (My computer) has no path so we don't want to add a / for nothing (e.g. /C:/)
+                if (!path.isEmpty())
+                    iterator.value()->retranslateStrings(iconProvider, path + QLatin1Char('/') + iterator.value()->fileName);
+                else
+                    iterator.value()->retranslateStrings(iconProvider, iterator.value()->fileName);
             }
         }
 
@@ -182,7 +190,7 @@ public:
         QList<QString> visibleChildren;
         QFileSystemNode *parent;
 
-    private:
+
         QExtendedInformation *info;
 
     };
@@ -216,10 +224,10 @@ public:
     bool filtersAcceptsNode(const QFileSystemNode *node) const;
     bool passNameFilters(const QFileSystemNode *node) const;
     void removeNode(QFileSystemNode *parentNode, const QString &name);
-    QFileSystemNode* addNode(QFileSystemNode *parentNode, const QString &fileName);
+    QFileSystemNode* addNode(QFileSystemNode *parentNode, const QString &fileName, const QFileInfo &info);
     void addVisibleFiles(QFileSystemNode *parentNode, const QStringList &newFiles);
     void removeVisibleFile(QFileSystemNode *parentNode, int visibleLocation);
-    void sortChildren(int column, Qt::SortOrder order, const QModelIndex &parent);
+    void sortChildren(int column, const QModelIndex &parent);
 
     inline int translateVisibleLocation(QFileSystemNode *parent, int row) const {
         return (sortOrder == Qt::AscendingOrder) ? row : parent->visibleChildren.count() - row - 1;

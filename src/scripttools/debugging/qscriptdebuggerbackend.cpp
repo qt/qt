@@ -615,13 +615,11 @@ void QScriptDebuggerBackend::doPendingEvaluate(bool postEvent)
     // push a new context and initialize its scope chain etc.
     {
         QScriptContext *evalContext = engine()->pushContext();
-#if QT_VERSION >= 0x040500
         QScriptValueList scopeChain = ctx->scopeChain();
         if (scopeChain.isEmpty())
             scopeChain.append(engine()->globalObject());
         while (!scopeChain.isEmpty())
             evalContext->pushScope(scopeChain.takeLast());
-#endif
         evalContext->setActivationObject(ctx->activationObject());
         evalContext->setThisObject(ctx->thisObject());
     }

@@ -42,6 +42,7 @@
 #include "qeventdispatcher_glib_p.h"
 #include "qeventdispatcher_unix_p.h"
 
+#include <private/qmutexpool_p.h>
 #include <private/qthread_p.h>
 
 #include "qcoreapplication.h"
@@ -224,6 +225,8 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
     : mainContext(context)
 {
     if (qgetenv("QT_NO_THREADED_GLIB").isEmpty()) {
+        static int dummyValue = 0; // only used for its address
+        QMutexLocker locker(QMutexPool::instance()->get(&dummyValue));
         if (!g_thread_supported())
             g_thread_init(NULL);
     }
@@ -242,6 +245,7 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
 
     postEventSource = reinterpret_cast<GPostEventSource *>(g_source_new(&postEventSourceFuncs,
                                                                         sizeof(GPostEventSource)));
+    postEventSource->serialNumber = 1;
     g_source_set_can_recurse(&postEventSource->source, true);
     g_source_attach(&postEventSource->source, mainContext);
 

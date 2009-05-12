@@ -50,6 +50,7 @@
 #include <qcleanlooksstyle.h>
 #include <qlineedit.h>
 #include <qboxlayout.h>
+#include <qaction.h>
 #include "../../shared/util.h"
 
 
@@ -150,6 +151,7 @@ private slots:
     // Task fixes
     void task236127_bspTreeIndexFails();
     void task243004_setStyleCrash();
+    void task250119_shortcutContext();
 };
 
 
@@ -259,6 +261,35 @@ void tst_QGraphicsWidget::cleanup()
 {
 }
 
+class SizeHinter : public QGraphicsWidget
+{
+public:
+    SizeHinter(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0,
+                const QSizeF &min = QSizeF(5,5), 
+                const QSizeF &pref = QSizeF(50, 50), 
+                const QSizeF &max = QSizeF(500, 500)) 
+        : QGraphicsWidget(parent, wFlags) 
+    {
+        m_sizes[Qt::MinimumSize] = min;
+        m_sizes[Qt::PreferredSize] = pref;
+        m_sizes[Qt::MaximumSize] = max;
+        
+    }
+    void setSizeHint(Qt::SizeHint which, const QSizeF &newSizeHint)
+    {
+        m_sizes[which] = newSizeHint;
+    }
+
+protected:
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const
+    {
+        Q_UNUSED(constraint);
+        return m_sizes[which];
+    }
+private:
+    QSizeF m_sizes[4];
+};
+
 void tst_QGraphicsWidget::qgraphicswidget()
 {
     SubQGraphicsWidget widget;
@@ -282,6 +313,12 @@ void tst_QGraphicsWidget::qgraphicswidget()
     QCOMPARE(widget.type(), (int)QGraphicsWidget::Type);
     QCOMPARE(widget.call_propertyChange(QString(), QVariant()), QVariant());
     widget.call_sizeHint(Qt::PreferredSize, QSizeF());
+    
+    QGraphicsScene scene;
+    QGraphicsWidget *parent = new QGraphicsWidget;
+    SizeHinter *child = new SizeHinter(parent);
+    
+    QCOMPARE(child->minimumSize(), QSizeF(5, 5));
 }
 
 void tst_QGraphicsWidget::activation()
@@ -1516,35 +1553,6 @@ enum WhichSize {
     None,
 };
 
-class SizeHinter : public QGraphicsWidget
-{
-public:
-    SizeHinter(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0,
-                const QSizeF &min = QSizeF(5,5), 
-                const QSizeF &pref = QSizeF(50, 50), 
-                const QSizeF &max = QSizeF(500, 500)) 
-        : QGraphicsWidget(parent, wFlags) 
-    {
-        m_sizes[Qt::MinimumSize] = min;
-        m_sizes[Qt::PreferredSize] = pref;
-        m_sizes[Qt::MaximumSize] = max;
-        
-    }
-    void setSizeHint(Qt::SizeHint which, const QSizeF &newSizeHint)
-    {
-        m_sizes[which] = newSizeHint;
-    }
-
-protected:
-    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const
-    {
-        Q_UNUSED(constraint);
-        return m_sizes[which];
-    }
-private:
-    QSizeF m_sizes[4];
-};
-
 typedef QPair<int, QVariant> Inst;
 
 Q_DECLARE_METATYPE(Inst)
@@ -1819,6 +1827,89 @@ void tst_QGraphicsWidget::task243004_setStyleCrash()
 
     QGraphicsItem *item2 = new StyledGraphicsWidget(false);
     delete item2;
+}
+
+class GraphicsWidget_task250119 : public QGraphicsWidget
+{
+public:
+    GraphicsWidget_task250119()
+        : shortcutEvents(0)
+    {
+        setFocusPolicy(Qt::StrongFocus);
+        resize(100, 100);
+    }
+
+    int shortcutEvents;
+
+private:
+    bool event(QEvent *event)
+    {
+        if (event->type() == QEvent::Shortcut)
+            shortcutEvents++;
+        return QGraphicsWidget::event(event);
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+    {
+        if (hasFocus()) {
+            painter->setPen(QPen(Qt::black, 0, Qt::DashLine));
+            painter->drawRect(rect());
+        }
+        painter->setPen(QPen(Qt::black, 0, Qt::SolidLine));
+        painter->fillRect(rect().adjusted(2, 2, -2, -2), Qt::yellow);
+        painter->drawRect(rect().adjusted(2, 2, -2, -2));
+    }
+};
+
+void tst_QGraphicsWidget::task250119_shortcutContext()
+{
+    QGraphicsScene scene;
+    QGraphicsView view;
+    view.setScene(&scene);
+    view.show();
+    QTest::qWait(100);
+
+
+    // *** Event: ***
+
+    GraphicsWidget_task250119 w_event;
+    scene.addItem(&w_event);
+
+    const int id = w_event.grabShortcut(Qt::Key_A, Qt::WidgetWithChildrenShortcut);
+    w_event.setShortcutEnabled(id, true);
+
+    w_event.setFocus();
+    QTest::keyPress(&view, Qt::Key_A);
+    QCOMPARE(w_event.shortcutEvents, 1);
+
+    w_event.clearFocus();
+    QTest::keyPress(&view, Qt::Key_A);
+    QCOMPARE(w_event.shortcutEvents, 1);
+
+    scene.removeItem(&w_event);
+
+
+    // *** Signal: ***
+
+    GraphicsWidget_task250119 w_signal;
+    scene.addItem(&w_signal);
+
+    QAction action(0);
+    action.setShortcut(Qt::Key_B);
+    action.setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    QSignalSpy spy(&action, SIGNAL(triggered()));
+
+    w_signal.addAction(&action);
+
+    w_signal.setFocus();
+    QTest::keyPress(&view, Qt::Key_B);
+    QCOMPARE(spy.count(), 1);
+
+    w_signal.clearFocus();
+    QTest::keyPress(&view, Qt::Key_B);
+    QCOMPARE(spy.count(), 1);
+
+    scene.removeItem(&w_signal);
 }
 
 QTEST_MAIN(tst_QGraphicsWidget)

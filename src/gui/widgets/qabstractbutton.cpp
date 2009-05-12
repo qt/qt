@@ -1248,15 +1248,6 @@ void QAbstractButton::timerEvent(QTimerEvent *e)
     }
 }
 
-#if defined(Q_OS_WINCE) && !defined(QT_NO_CONTEXTMENU)
-/*! \reimp */
-void QAbstractButton::contextMenuEvent(QContextMenuEvent *e)
-{
-    e->ignore();
-    setDown(false);
-}
-#endif
-
 /*! \reimp */
 void QAbstractButton::focusInEvent(QFocusEvent *e)
 {

@@ -182,9 +182,6 @@ void tst_QTextLayout::init()
     testFont.setFamily("__Qt__Box__Engine__");
     testFont.setPixelSize(TESTFONT_SIZE);
     testFont.setWeight(QFont::Normal);
-#if defined(Q_WS_MAC) && QT_VERSION < 0x040200
-    QSKIP("QTestFontEngine is not supported on the mac right now", SkipAll);
-#endif
     QCOMPARE(QFontMetrics(testFont).width('a'), testFont.pixelSize());
 }
 

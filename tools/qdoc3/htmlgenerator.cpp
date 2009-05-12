@@ -319,7 +319,8 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         out() << formattingLeftMap()[ATOM_FORMATTING_TELETYPE];
         if (inLink) {
             out() << protect(plainCode(atom->string()));
-        } else {
+        }
+        else {
             out() << highlightedCode(atom->string(), marker, relative);
         }
         out() << formattingRightMap()[ATOM_FORMATTING_TELETYPE];
@@ -382,22 +383,26 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::FormattingRight:
         if (atom->string() == ATOM_FORMATTING_LINK) {
             endLink();
-        } else {
+        }
+        else {
             out() << formattingRightMap()[atom->string()];
         }
         break;
     case Atom::GeneratedList:
         if (atom->string() == "annotatedclasses") {
             generateAnnotatedList(relative, marker, nonCompatClasses);
-        } else if (atom->string() == "classes") {
+        }
+        else if (atom->string() == "classes") {
             generateCompactList(relative, marker, nonCompatClasses);
-        } else if (atom->string().contains("classesbymodule")) {
+        }
+        else if (atom->string().contains("classesbymodule")) {
             QString arg = atom->string().trimmed();
             QString moduleName = atom->string().mid(atom->string().indexOf(
                 "classesbymodule") + 15).trimmed();
             if (moduleClassMap.contains(moduleName))
                 generateAnnotatedList(relative, marker, moduleClassMap[moduleName]);
-        } else if (atom->string().contains("classesbyedition")) {
+        }
+        else if (atom->string().contains("classesbyedition")) {
 
             QString arg = atom->string().trimmed();
             QString editionName = atom->string().mid(atom->string().indexOf(
@@ -422,7 +427,8 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                         groupClasses = groups.values(groupName.mid(1));
                         foreach (const Node *node, groupClasses)
                             editionClasses.remove(node->name());
-                    } else {
+                    }
+                    else {
                         groupClasses = groups.values(groupName);
                         foreach (const Node *node, groupClasses)
                             editionClasses.insert(node->name(), node);
@@ -430,23 +436,32 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                 }
                 generateAnnotatedList(relative, marker, editionClasses);
             }
-        } else if (atom->string() == "classhierarchy") {
+        }
+        else if (atom->string() == "classhierarchy") {
             generateClassHierarchy(relative, marker, nonCompatClasses);
-        } else if (atom->string() == "compatclasses") {
+        }
+        else if (atom->string() == "compatclasses") {
             generateCompactList(relative, marker, compatClasses);
-        } else if (atom->string() == "functionindex") {
+        }
+        else if (atom->string() == "functionindex") {
             generateFunctionIndex(relative, marker);
-        } else if (atom->string() == "legalese") {
+        }
+        else if (atom->string() == "legalese") {
             generateLegaleseList(relative, marker);
-        } else if (atom->string() == "mainclasses") {
+        }
+        else if (atom->string() == "mainclasses") {
             generateCompactList(relative, marker, mainClasses);
-        } else if (atom->string() == "services") {
+        }
+        else if (atom->string() == "services") {
             generateCompactList(relative, marker, serviceClasses);
-        } else if (atom->string() == "overviews") {
+        }
+        else if (atom->string() == "overviews") {
             generateOverviewList(relative, marker);
-        } else if (atom->string() == "namespaces") {
+        }
+        else if (atom->string() == "namespaces") {
             generateAnnotatedList(relative, marker, namespaceIndex);
-        } else if (atom->string() == "related") {
+        }
+        else if (atom->string() == "related") {
             const FakeNode *fake = static_cast<const FakeNode *>(relative);
             if (fake && !fake->groupMembers().isEmpty()) {
                 QMap<QString, const Node *> groupMembersMap;
@@ -456,7 +471,8 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                 }
                 generateAnnotatedList(fake, marker, groupMembersMap);
             }
-        } else if (atom->string() == "relatedinline") {
+        }
+        else if (atom->string() == "relatedinline") {
             const FakeNode *fake = static_cast<const FakeNode *>(relative);
             if (fake && !fake->groupMembers().isEmpty()) {
                 // Reverse the list into the original scan order.
@@ -482,7 +498,8 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             if (fileName.isEmpty()) {
                 out() << "<font color=\"red\">[Missing image "
                       << protect(atom->string()) << "]</font>";
-            } else {
+            }
+            else {
                 out() << "<img src=\"" << protect(fileName) << "\"";
                 if (!text.isEmpty())
                     out() << " alt=\"" << protect(text) << "\"";
@@ -530,29 +547,37 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         if (atom->string() == ATOM_LIST_BULLET) {
             out() << "<ul>\n";
-        } else if (atom->string() == ATOM_LIST_TAG) {
+        }
+        else if (atom->string() == ATOM_LIST_TAG) {
             out() << "<dl>\n";
-        } else if (atom->string() == ATOM_LIST_VALUE) {
+        }
+        else if (atom->string() == ATOM_LIST_VALUE) {
             threeColumnEnumValueTable = isThreeColumnEnumValueTable(atom);
             if (threeColumnEnumValueTable) {
                 out() << "<p><table border=\"1\" cellpadding=\"2\" cellspacing=\"1\" width=\"100%\">\n"
                          "<tr><th width=\"25%\">Constant</th><th width=\"15%\">Value</th>"
                          "<th width=\"60%\">Description</th></tr>\n";
-            } else {
+            }
+            else {
                 out() << "<p><table border=\"1\" cellpadding=\"2\" cellspacing=\"1\" width=\"40%\">\n"
                       << "<tr><th width=\"60%\">Constant</th><th width=\"40%\">Value</th></tr>\n";
             }
-        } else {
+        }
+        else {
             out() << "<ol type=";
             if (atom->string() == ATOM_LIST_UPPERALPHA) {
                 out() << "\"A\"";
-            } else if (atom->string() == ATOM_LIST_LOWERALPHA) {
+            }
+            else if (atom->string() == ATOM_LIST_LOWERALPHA) {
                 out() << "\"a\"";
-            } else if (atom->string() == ATOM_LIST_UPPERROMAN) {
+            }
+            else if (atom->string() == ATOM_LIST_UPPERROMAN) {
                 out() << "\"I\"";
-            } else if (atom->string() == ATOM_LIST_LOWERROMAN) {
+            }
+            else if (atom->string() == ATOM_LIST_LOWERROMAN) {
                 out() << "\"i\"";
-            } else { // (atom->string() == ATOM_LIST_NUMERIC)
+            }
+            else { // (atom->string() == ATOM_LIST_NUMERIC)
                 out() << "\"1\"";
             }
             if (atom->next() != 0 && atom->next()->string().toInt() != 1)
@@ -565,7 +590,8 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::ListTagLeft:
         if (atom->string() == ATOM_LIST_TAG) {
             out() << "<dt>";
-        } else { // (atom->string() == ATOM_LIST_VALUE)
+        }
+        else { // (atom->string() == ATOM_LIST_VALUE)
             // ### Trenton
 
             out() << "<tr><td valign=\"top\"><tt>"
@@ -594,13 +620,15 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::ListItemLeft:
         if (atom->string() == ATOM_LIST_TAG) {
             out() << "<dd>";
-        } else if (atom->string() == ATOM_LIST_VALUE) {
+        }
+        else if (atom->string() == ATOM_LIST_VALUE) {
             if (threeColumnEnumValueTable) {
                 out() << "</td><td valign=\"top\">";
                 if (matchAhead(atom, Atom::ListItemRight))
                     out() << "&nbsp;";
             }
-        } else {
+        }
+        else {
             out() << "<li>";
         }
         if (matchAhead(atom, Atom::ParaLeft))
@@ -609,20 +637,25 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::ListItemRight:
         if (atom->string() == ATOM_LIST_TAG) {
             out() << "</dd>\n";
-        } else if (atom->string() == ATOM_LIST_VALUE) {
+        }
+        else if (atom->string() == ATOM_LIST_VALUE) {
             out() << "</td></tr>\n";
-        } else {
+        }
+        else {
             out() << "</li>\n";
         }
         break;
     case Atom::ListRight:
         if (atom->string() == ATOM_LIST_BULLET) {
             out() << "</ul>\n";
-        } else if (atom->string() == ATOM_LIST_TAG) {
+        }
+        else if (atom->string() == ATOM_LIST_TAG) {
             out() << "</dl>\n";
-        } else if (atom->string() == ATOM_LIST_VALUE) {
+        }
+        else if (atom->string() == ATOM_LIST_VALUE) {
             out() << "</table></p>\n";
-        } else {
+        }
+        else {
             out() << "</ol>\n";
         }
         break;
@@ -658,7 +691,8 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                 do {
                     sectionNumber.append("1");
                 } while (sectionNumber.size() < nextLevel);
-            } else {
+            }
+            else {
                 while (sectionNumber.size() > nextLevel) {
                     sectionNumber.removeLast();
                 }
@@ -688,7 +722,8 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::String:
         if (inLink && !inContents && !inSectionHeading) {
             generateLink(atom, relative, marker);
-        } else {
+        }
+        else {
             out() << protect(atom->string());
         }
         break;
@@ -704,7 +739,8 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                       << "cellspacing=\"1\" border=\"0\">\n";
             else
                 out() << "<p><table align=\"center\" cellpadding=\"2\" cellspacing=\"1\" border=\"0\">\n";
-        } else {
+        }
+        else {
             out() << "<p><table align=\"center\" cellpadding=\"2\" cellspacing=\"1\" border=\"0\">\n";
         }
         numTableRows = 0;
@@ -721,7 +757,8 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         if (matchAhead(atom, Atom::TableHeaderLeft)) {
             skipAhead = 1;
             out() << "\n<tr valign=\"top\" class=\"qt-style\">";
-        } else {
+        }
+        else {
             out() << "</thead>\n";
             inTableHeader = false;
         }
@@ -798,6 +835,12 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         out() << "<font color=\"red\"><b><code>\\" << protect(atom->string())
               << "</code></b></font>";
         break;
+#ifdef QDOC_QML
+    case Atom::QmlText:
+    case Atom::EndQmlText:
+        // don't do anything with these. They are just tags.
+        break;
+#endif        
     default:
         unknownAtom(atom);
     }
@@ -821,7 +864,8 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
         rawTitle = marker->plainName(inner);
         fullTitle = marker->plainFullName(inner);
         title = rawTitle + " Namespace Reference";
-    } else if (inner->type() == Node::Class) {
+    }
+    else if (inner->type() == Node::Class) {
         classe = static_cast<const ClassNode *>(inner);
         rawTitle = marker->plainName(inner);
         fullTitle = marker->plainFullName(inner);
@@ -1101,12 +1145,12 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     generateBody(fake, marker);
 #ifdef QDOC_QML    
     if (fake->subType() == FakeNode::QmlClass) {
-        qDebug() << "generateFakeNode(): QML CLASS" << fake->name();
+        //qDebug() << "generateFakeNode(): QML CLASS" << fake->name();
         const QmlNode* qmlNode = static_cast<const QmlNode*>(fake);
         const ClassNode* cn = qmlNode->classNode();
         if (cn) {
-            qDebug() << "  CPP CLASS" << cn->name();
-            generateBody(cn, marker);
+            //qDebug() << "  CPP CLASS" << cn->name();
+            generateQmlText(cn->doc().body(), cn, marker);
         }
     }
 #endif    
@@ -1142,18 +1186,23 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
 
     if (fake->subType() == FakeNode::Example) {
         appendDcfSubSection(&dcfExamplesRoot, fakeSection);
-    } else if (fake->subType() != FakeNode::File) {
+    }
+    else if (fake->subType() != FakeNode::File) {
         QString contentsPage = fake->links().value(Node::ContentsLink).first;
 
         if (contentsPage == "Qt Designer Manual") {
             appendDcfSubSection(&dcfDesignerRoot, fakeSection);
-        } else if (contentsPage == "Qt Linguist Manual") {
+        }
+        else if (contentsPage == "Qt Linguist Manual") {
             appendDcfSubSection(&dcfLinguistRoot, fakeSection);
-        } else if (contentsPage == "Qt Assistant Manual") {
+        }
+        else if (contentsPage == "Qt Assistant Manual") {
             appendDcfSubSection(&dcfAssistantRoot, fakeSection);
-        } else if (contentsPage == "qmake Manual") {
+        }
+        else if (contentsPage == "qmake Manual") {
             appendDcfSubSection(&dcfQmakeRoot, fakeSection);
-        } else {
+        }
+        else {
             appendDcfSubSection(&dcfOverviewsRoot, fakeSection);
         }
     }
@@ -2865,10 +2914,10 @@ void HtmlGenerator::findAllQmlClasses(const InnerNode *node)
             const FakeNode* fakeNode = static_cast<const FakeNode *>(*c);
             if (fakeNode->subType() == FakeNode::QmlClass) {
                 const QmlNode* qmlNode = static_cast<const QmlNode*>(fakeNode);
-                qDebug() << "HtmlGenerator: QML CLASS" << qmlNode->name();
+                //qDebug() << "HtmlGenerator: QML CLASS" << qmlNode->name();
                 const Node* n = qmlNode->classNode();
                 if (n)
-                    qDebug() << "  FOUND IT!" << n->name();
+                    //qDebug() << "  FOUND IT!" << n->name();
             }
             qmlClasses.insert(fakeNode->name(),*c);
         }
@@ -2922,9 +2971,11 @@ const Node *HtmlGenerator::findNodeForTarget(const QString &target,
 
     if (target.isEmpty()) {
         node = relative;
-    } else if (target.endsWith(".html")) {
+    }
+    else if (target.endsWith(".html")) {
         node = tre->root()->findNode(target, Node::Fake);
-    } else if (marker) {
+    }
+    else if (marker) {
         node = marker->resolveTarget(target, tre, relative);
         if (!node)
             node = tre->findFakeNodeByTitle(target);
@@ -2969,11 +3020,13 @@ QString HtmlGenerator::getLink(const Atom *atom,
              || atom->string().startsWith("mailto:"))) {
 
         link = atom->string();
-    } else {
+    }
+    else {
         QStringList path;
         if (atom->string().contains('#')) {
             path = atom->string().split('#');
-        } else {
+        }
+        else {
             path.append(atom->string());
         }
 
@@ -2982,9 +3035,11 @@ QString HtmlGenerator::getLink(const Atom *atom,
         QString first = path.first().trimmed();
         if (first.isEmpty()) {
             node = relative;
-        } else if (first.endsWith(".html")) {
+        }
+        else if (first.endsWith(".html")) {
             node = tre->root()->findNode(first, Node::Fake);
-        } else {
+        }
+        else {
             node = marker->resolveTarget(first, tre, relative);
             if (!node)
                 node = tre->findFakeNodeByTitle(first);
@@ -2997,7 +3052,8 @@ QString HtmlGenerator::getLink(const Atom *atom,
                 return node->url();
             else
                 path.removeFirst();
-        } else {
+        }
+        else {
             node = relative;
         }
 

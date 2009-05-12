@@ -71,7 +71,7 @@ for(int i = metaObject->methodOffset(); i < metaObject->methodCount(); ++i)
 //! [methodCount]
 
 //! [6]
-int methodIndex = pushButton->metaObject()->indexForMethod("animateClick");
+int methodIndex = pushButton->metaObject()->indexOfMethod("animateClick()");
 QMetaMethod method = metaObject->method(methodIndex);
 method.invoke(pushButton, Qt::QueuedConnection);
 //! [6]
@@ -82,7 +82,8 @@ QMetaMethod::invoke: Unable to handle unregistered datatype 'MyType'
 
 //! [8]
 QString retVal;
-int methodIndex = obj->metaObject()->indexForMethod("compute");
+QByteArray normalizedSignature = QMetaObject::normalizedSignature("compute(QString, int, double)");
+int methodIndex = obj->metaObject()->indexOfMethod(normalizedSignature);
 QMetaMethod method = metaObject->method(methodIndex);
 method.invoke(obj,
               Qt::DirectConnection,

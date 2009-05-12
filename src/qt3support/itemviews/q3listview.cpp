@@ -3126,7 +3126,8 @@ void Q3ListView::clear()
     if (wasUpdatesEnabled)
         viewport()->setUpdatesEnabled(false);
     setContentsPos(0, 0);
-    viewport()->setUpdatesEnabled(wasUpdatesEnabled);	
+    if (wasUpdatesEnabled)
+        viewport()->setUpdatesEnabled(true);
 
     bool block = signalsBlocked();
     blockSignals(true);

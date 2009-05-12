@@ -1,4 +1,4 @@
-Qt usese the Phonon cross-platform multimedia framework to play common
+Qt uses the Phonon cross-platform multimedia framework to play common
 multimedia formats.
 
 Applications can be written to take advantage of the native multimedia

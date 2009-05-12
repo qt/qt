@@ -180,8 +180,7 @@ QByteArray QTsciiCodec::name() const
 */
 int QTsciiCodec::mibEnum() const
 {
-  /* There is no MIBEnum for TSCII now */
-  return -3197;
+  return 2107;
 }
 
 static const int UnToTsLast = 124; // 125 items -- so the last will be 124

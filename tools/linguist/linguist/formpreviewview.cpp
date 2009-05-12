@@ -473,7 +473,7 @@ void FormPreviewView::setSourceContext(int model, MessageItem *messageItem)
     }
 
     QDir dir = QFileInfo(m_dataModel->srcFileName(model)).dir();
-    QString fileName = dir.absoluteFilePath(messageItem->fileName());
+    QString fileName = QDir::cleanPath(dir.absoluteFilePath(messageItem->fileName()));
     if (m_lastFormName != fileName) {
         delete m_form;
         m_form = 0;

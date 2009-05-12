@@ -1525,6 +1525,8 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                     node->charFormat.setFontFamily(value);
                 } else if (key == QLatin1String("color")) {
                     QColor c; c.setNamedColor(value);
+                    if (!c.isValid())
+                        qWarning("QTextHtmlParser::applyAttributes: Unknown color name '%s'",value.toLatin1().constData());
                     node->charFormat.setForeground(c);
                 }
                 break;
@@ -1570,6 +1572,8 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
             case Html_body:
                 if (key == QLatin1String("bgcolor")) {
                     QColor c; c.setNamedColor(value);
+                    if (!c.isValid())
+                        qWarning("QTextHtmlParser::applyAttributes: Unknown color name '%s'",value.toLatin1().constData());
                     node->charFormat.setBackground(c);
                 } else if (key == QLatin1String("background")) {
                     node->applyBackgroundImage(value, resourceProvider);
@@ -1581,6 +1585,8 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                     setWidthAttribute(&node->width, value);
                 } else if (key == QLatin1String("bgcolor")) {
                     QColor c; c.setNamedColor(value);
+                    if (!c.isValid())
+                        qWarning("QTextHtmlParser::applyAttributes: Unknown color name '%s'",value.toLatin1().constData());
                     node->charFormat.setBackground(c);
                 } else if (key == QLatin1String("background")) {
                     node->applyBackgroundImage(value, resourceProvider);
@@ -1597,6 +1603,8 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                     setFloatAttribute(&node->tableBorder, value);
                 } else if (key == QLatin1String("bgcolor")) {
                     QColor c; c.setNamedColor(value);
+                    if (!c.isValid())
+                        qWarning("QTextHtmlParser::applyAttributes: Unknown color name '%s'",value.toLatin1().constData());
                     node->charFormat.setBackground(c);
                 } else if (key == QLatin1String("background")) {
                     node->applyBackgroundImage(value, resourceProvider);

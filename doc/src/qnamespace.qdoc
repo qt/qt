@@ -142,7 +142,7 @@
            QAction::iconVisibleInMenu property.
 
            Menus that are currently open or menus already created in the native
-           Mac OS X menubar MAY NOT pick up a change in this attribute. Changes
+           Mac OS X menubar \e{may not} pick up a change in this attribute. Changes
            in the QAction::iconVisibleInMenu property will always be picked up.
 
     \value AA_NativeWindows Ensures that widgets have native windows.
@@ -508,11 +508,11 @@
     \value DirectConnection  When emitted, the signal is immediately delivered to the slot.
     \value QueuedConnection  When emitted, the signal is queued until the event loop is
                              able to deliver it to the slot.
-    \value
-    BlockingQueuedConnection Same as QueuedConnection, except that the current thread blocks
+    \value BlockingQueuedConnection
+                             Same as QueuedConnection, except that the current thread blocks
                              until the slot has been delivered. This connection type should
                              only be used for receivers in a different thread. Note that misuse
-                             of this type can lead to dead locks in your application.
+                             of this type can lead to deadlocks in your application.
     \value AutoConnection    If the signal is emitted from the thread
                              in which the receiving object lives, the
                              slot is invoked directly, as with

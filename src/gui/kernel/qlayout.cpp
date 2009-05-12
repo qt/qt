@@ -1028,8 +1028,13 @@ void QLayout::freeze(int w, int h)
 void QLayout::setMenuBar(QWidget *widget)
 {
     Q_D(QLayout);
-    if (widget)
-        addChildWidget(widget);
+
+#ifdef Q_OS_WINCE_WM
+    if (widget && widget->size().height() > 0)
+#else
+        if (widget)
+#endif
+            addChildWidget(widget);
     d->menubar = widget;
 }
 
@@ -1239,7 +1244,7 @@ bool QLayout::activate()
     Must be implemented in subclasses to remove the layout item at \a
     index from the layout, and return the item. If there is no such
     item, the function must do nothing and return 0.  Items are numbered
-    consecutively from 0. If an item is deleted, other items will be
+    consecutively from 0. If an item is removed, other items will be
     renumbered.
 
     The following code fragment shows a safe way to remove all items

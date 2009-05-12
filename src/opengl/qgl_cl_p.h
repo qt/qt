@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 
 inline void glTexParameterf (GLenum target, GLenum pname, GLfloat param)
 {
-    glTexParameterx(target, pname, param);
+    glTexParameterx(target, pname, FLOAT2X(param));
 }
 inline void glClearColor (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
 {

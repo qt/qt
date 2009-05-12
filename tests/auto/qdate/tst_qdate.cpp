@@ -143,10 +143,8 @@ void tst_QDate::isValid_data()
     QTest::newRow("century leap") << 2100 << 2 << 29 << 0U << false;
     QTest::newRow("400-years leap") << 2000 << 2 << 29 << 2451604U << true;
     QTest::newRow("400-years leap 2") << 2400 << 2 << 29 << 2597701U << true;
-#if QT_VERSION >= 0x040200
     QTest::newRow("400-years leap 3") << 1600 << 2 << 29 << 2305507U << true;
     QTest::newRow("year 0") << 0 << 2 << 27 << 0U << false;
-#endif
 
     // test the number of days in months:
     QTest::newRow("jan") << 2000 << 1 << 31 << 2451575U << true;
@@ -177,7 +175,6 @@ void tst_QDate::isValid_data()
     QTest::newRow("idec") << 2000 << 12 << 32 << 0U << false;
 
     // the beginning of the Julian Day calendar:
-#if QT_VERSION >= 0x040200
     QTest::newRow("jd negative1") << -4714 << 1 << 1 << 0U << false;
     QTest::newRow("jd negative2") << -4713 << 1 << 1 << 0U << false;
     QTest::newRow("jd negative3") << -4713 << 1 << 2 << 1U << true;
@@ -185,7 +182,6 @@ void tst_QDate::isValid_data()
     QTest::newRow("jd 0") << -4713 << 1 << 1 << 0U << false;
     QTest::newRow("jd 1") << -4713 << 1 << 2 << 1U << true;
     QTest::newRow("imminent overflow") << 11754508 << 12 << 13 << 4294967295U << true;
-#endif
 }
 
 void tst_QDate::isValid()
@@ -243,17 +239,12 @@ void tst_QDate::weekNumber_data()
     QTest::newRow( "data4" )  << 1 << 2001 << 2001 << 1 << 1;
     QTest::newRow( "data5" )  << 53 << 1998 << 1998 << 12 << 31;
     QTest::newRow( "data6" )  << 1 << 1985 << 1984 << 12 << 31;
-#if QT_VERSION >= 0x030300
-    // This is a bug that was fixed for 3.3
     QTest::newRow( "data7" )  << 52 << 2006 << 2006 << 12 << 31;
-#endif
 }
 
 void tst_QDate::weekNumber()
 {
-#if QT_VERSION >= 0x030100
     int yearNumber;
-//    int weekNumber;
     QFETCH( int, year );
     QFETCH( int, month );
     QFETCH( int, day );
@@ -262,9 +253,6 @@ void tst_QDate::weekNumber()
     QDate dt1( year, month, day );
     QCOMPARE( dt1.weekNumber( &yearNumber ), expectedWeekNum );
     QCOMPARE( yearNumber, expectedYearNum );
-#else
-    QSKIP( "Not tested with Qt versions < 3.1", SkipAll);
-#endif
 }
 
 void tst_QDate::weekNumber_invalid_data()
@@ -281,14 +269,9 @@ void tst_QDate::weekNumber_invalid_data()
 
 void tst_QDate::weekNumber_invalid()
 {
-#if QT_VERSION >= 0x030100
     QDate dt;
     int yearNumber;
-//    int weekNumber;
     QCOMPARE( dt.weekNumber( &yearNumber ), 0 );
-#else
-    QSKIP( "Not tested with Qt versions < 3.1", SkipAll);
-#endif
 }
 
 void tst_QDate::addDays()
@@ -616,14 +599,12 @@ void tst_QDate::fromString_data()
     QDate d( 1999, 11, 14 );
     QTest::newRow( "data2" ) << d.toString( Qt::TextDate ) << d.toString( Qt::ISODate ) << d;
 
-#if QT_VERSION >= 0x040200
     QTest::newRow( "data3" ) << QString("xxx Jan 1 0999") << QString("0999-01-01") << QDate(999, 1, 1);
     QTest::newRow( "data3b" ) << QString("xxx Jan 1 999") << QString("0999-01-01") << QDate(999, 1, 1);
     QTest::newRow( "data4" ) << QString("xxx Jan 1 12345") << QString() << QDate(12345, 1, 1);
     QTest::newRow( "data5" ) << QString("xxx Jan 1 -0001") << QString() << QDate(-1, 1, 1);
     QTest::newRow( "data6" ) << QString("xxx Jan 1 -4712") << QString() << QDate(-4712, 1, 1);
     QTest::newRow( "data7" ) << QString("xxx Nov 25 -4713") << QString() << QDate(-4713, 11, 25);
-#endif
 }
 
 void tst_QDate::fromString()
@@ -647,9 +628,7 @@ void tst_QDate::toString_format_data()
     QTest::newRow( "data1" ) << QDate(2002,12,17) << QString("dd-MM-yyyy") << QString("17-12-2002");
     QTest::newRow( "data2" ) << QDate(1995,5,20) << QString("M-yy") << QString("5-95");
     QTest::newRow( "data3" ) << QDate(2002,12,17) << QString("dd") << QString("17");
-#if (QT_VERSION-0 >= 0x030200)
     QTest::newRow( "data4" ) << QDate() << QString("dd-mm-yyyy") << QString();
-#endif
 }
 
 void tst_QDate::toString_format()

@@ -719,6 +719,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 for(QStringList::ConstIterator incit = incs.begin(); incit != incs.end(); ++incit)
                     mkt << " " << "-I" << escapeFilePath((*incit));
             }
+            if(!project->isEmpty("QMAKE_FRAMEWORKPATH_FLAGS"))
+               mkt << " " << var("QMAKE_FRAMEWORKPATH_FLAGS");
             mkt << endl;
             mkt << "DEL_FILE  = " << var("QMAKE_DEL_FILE") << endl;
             mkt << "MOVE      = " << var("QMAKE_MOVE") << endl << endl;

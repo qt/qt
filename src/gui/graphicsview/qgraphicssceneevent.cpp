@@ -133,7 +133,7 @@
 
     A QContextMenuEvent received by a QGraphicsView is translated
     into a QGraphicsSceneContextMenuEvent. The
-    QWheelEvent::globalPos() is translated into item, scene, and
+    QContextMenuEvent::globalPos() is translated into item, scene, and
     screen coordinates (pos(), scenePos(), and screenPos()).
 
     \sa QGraphicsSceneMouseEvent, QGraphicsSceneWheelEvent,

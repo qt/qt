@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
 // Allow translators to provide localized names for QLocale::languageToString
 // At least the own language should be translated ... This is a "hack" until
 // functionality is provided within Qt (see task 196275).
-static const char * language_strings[] = 
+static const char * language_strings[] =
 {
     QT_TRANSLATE_NOOP("MessageEditor", "German"),
     QT_TRANSLATE_NOOP("MessageEditor", "Japanese"),
@@ -133,19 +133,12 @@ void MessageEditor::setupEditorPage()
     QFrame *editorPage = new QFrame;
     editorPage->setObjectName(QLatin1String("editorPage"));
 
-    // Due to CSS being rather broken on the Mac style at the moment, only
-    // use the border-image on non-Mac systems.
     editorPage->setStyleSheet(QLatin1String(
-#ifndef Q_WS_MAC
             "QFrame#editorPage { border-image: url(:/images/transbox.png) 12 16 16 12 repeat;"
             "                    border-width: 12px 16px 16px 12px; }"
-#endif
             "QFrame#editorPage { background-color: white; }"
             "QLabel { font-weight: bold; }"
             ));
-#ifdef Q_WS_MAC
-    editorPage->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
-#endif
     editorPage->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
 
     m_source = new FormWidget(tr("Source text"), false);
@@ -786,6 +779,7 @@ void MessageEditor::selectAll()
 
 void MessageEditor::emitTranslationChanged()
 {
+    static_cast<FormWidget *>(sender())->getEditor()->setFocus(); // DND proofness
     updateBeginFromSource();
     updateUndoRedo();
     emit translationChanged(translations(m_currentModel));
@@ -793,6 +787,7 @@ void MessageEditor::emitTranslationChanged()
 
 void MessageEditor::emitTranslatorCommentChanged()
 {
+    static_cast<FormWidget *>(sender())->getEditor()->setFocus(); // DND proofness
     updateUndoRedo();
     emit translatorCommentChanged(m_editors[m_currentModel].transCommentText->getTranslation());
 }

@@ -2866,9 +2866,10 @@ void QDirect3DPaintEnginePrivate::updateClipPath(const QPainterPath &path, Qt::C
     m_draw_helper->setClipPath(m_clip_path, aaitem); */
 }
 
+extern QPainterPath qt_regionToPath(const QRegion &region);
+
 void QDirect3DPaintEnginePrivate::updateClipRegion(const QRegion &clipregion, Qt::ClipOperation op)
 {
-    extern QPainterPath qt_regionToPath(const QRegion &region);
     if (m_draw_helper->needsFlushing())
         flushBatch();
     if (m_has_complex_clipping) {

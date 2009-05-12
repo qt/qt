@@ -63,7 +63,7 @@ int main(int argc, char **argv)
         qDebug() << "framework. The accessibilty, image formats, and text codec";
         qDebug() << "plugins are always copied, unless \"-no-plugins\" is specified.";
         qDebug() << "";
-        qDebug() << "See the \"Deploying an Application on Qt/Mac\" typic in the";
+        qDebug() << "See the \"Deploying an Application on Qt/Mac\" topic in the";
         qDebug() << "documentation for more information about deployment on Mac OS X.";
 
         return 0;
@@ -76,22 +76,26 @@ int main(int argc, char **argv)
         qDebug() << "Error: Could not find app bundle" << appBundlePath;
         return 0;
     }
-    
-    DeploymentInfo deploymentInfo  = deployQtFrameworks(appBundlePath);
-    
+
     bool plugins = true;
     bool dmg = false;
     extern bool runStripEnabled;
-        
+
     for (int i = 2; i < argc; ++i) {
         QByteArray argument = QByteArray(argv[i]);
-        if (argument == QByteArray("-no-plugins"))
+        if (argument == QByteArray("-no-plugins")) {
             plugins = false;
-        if (argument == QByteArray("-dmg"))
+        } else if (argument == QByteArray("-dmg")) {
             dmg = true;
-        if (argument == QByteArray("-no-strip"))
+        } else if (argument == QByteArray("-no-strip")) {
             runStripEnabled = false;
-    }
+        } else if (argument.startsWith("-")) {
+            qDebug() << "Error: Unknown option" << argument << "\n";
+            return 0;
+        }
+     }
+
+    DeploymentInfo deploymentInfo  = deployQtFrameworks(appBundlePath);
 
     if (plugins) {
         if (deploymentInfo.qtPath.isEmpty())

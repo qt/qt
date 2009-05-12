@@ -1476,11 +1476,15 @@ QByteArray QProcess::readAllStandardError()
 }
 
 /*!
-    Starts the program \a program in a new process, passing the
-    command line arguments in \a arguments. The OpenMode is set to \a
-    mode. QProcess will immediately enter the Starting state. If the
-    process starts successfully, QProcess will emit started();
-    otherwise, error() will be emitted.
+    Starts the program \a program in a new process, if one is not already
+    running, passing the command line arguments in \a arguments. The OpenMode
+    is set to \a mode.
+
+    The QProcess object will immediately enter the Starting state. If the
+    process starts successfully, QProcess will emit started(); otherwise,
+    error() will be emitted. If the QProcess object is already running a
+    process, a warning may be printed at the console, and the existing
+    process will continue running.
 
     Note that arguments that contain spaces are not passed to the
     process as separate arguments.
@@ -1577,10 +1581,10 @@ static QStringList parseCombinedArgString(const QString &program)
 /*!
     \overload
 
-    Starts the program \a program in a new process. \a program is a
-    single string of text containing both the program name and its
-    arguments. The arguments are separated by one or more
-    spaces. For example:
+    Starts the program \a program in a new process, if one is not already
+    running. \a program is a single string of text containing both the
+    program name and its arguments. The arguments are separated by one or
+    more spaces. For example:
 
     \snippet doc/src/snippets/code/src_corelib_io_qprocess.cpp 5
 
@@ -1588,6 +1592,9 @@ static QStringList parseCombinedArgString(const QString &program)
     containing spaces are correctly supplied to the new process. For example:
 
     \snippet doc/src/snippets/code/src_corelib_io_qprocess.cpp 6
+
+    If the QProcess object is already running a process, a warning may be
+    printed at the console, and the existing process will continue running.
 
     Note that, on Windows, quotes need to be both escaped and quoted.
     For example, the above code would be specified in the following
@@ -1601,6 +1608,13 @@ static QStringList parseCombinedArgString(const QString &program)
 void QProcess::start(const QString &program, OpenMode mode)
 {
     QStringList args = parseCombinedArgString(program);
+    if (args.isEmpty()) {
+        Q_D(QProcess);
+        d->processError = QProcess::FailedToStart;
+        setErrorString(tr("No program defined"));
+        emit error(d->processError);
+        return;
+    }
 
     QString prog = args.first();
     args.removeFirst();
@@ -1769,6 +1783,8 @@ bool QProcess::startDetached(const QString &program,
 bool QProcess::startDetached(const QString &program)
 {
     QStringList args = parseCombinedArgString(program);
+    if (args.isEmpty())
+        return false;
 
     QString prog = args.first();
     args.removeFirst();

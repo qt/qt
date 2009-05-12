@@ -209,19 +209,19 @@ bool DataModel::load(const QString &fileName, bool *langGuessed, QWidget *parent
         return false;
     }
 
-    QList<TranslatorMessage> dupes = tor.findDuplicates();
+    QSet<TranslatorMessagePtr> dupes = tor.resolveDuplicates();
     if (!dupes.isEmpty()) {
         QString err = tr("<qt>Duplicate messages found in '%1':").arg(Qt::escape(fileName));
         int numdups = 0;
-        foreach (const TranslatorMessage &msg, dupes) {
+        foreach (const TranslatorMessagePtr &msg, dupes) {
             if (++numdups >= 5) {
                 err += tr("<p>[more duplicates omitted]");
                 break;
             }
             err += tr("<p>* Context: %1<br>* Source: %2")
-                    .arg(Qt::escape(msg.context()), Qt::escape(msg.sourceText()));
-            if (!msg.comment().isEmpty())
-                err += tr("<br>* Comment: %3").arg(Qt::escape(msg.comment()));
+                    .arg(Qt::escape(msg->context()), Qt::escape(msg->sourceText()));
+            if (!msg->comment().isEmpty())
+                err += tr("<br>* Comment: %3").arg(Qt::escape(msg->comment()));
         }
         QMessageBox::warning(parent, QObject::tr("Qt Linguist"), err);
     }
@@ -289,7 +289,11 @@ bool DataModel::load(const QString &fileName, bool *langGuessed, QWidget *parent
         c = sys.country();
         *langGuessed = true;
     }
-    setLanguageAndCountry(l, c);
+    if (!setLanguageAndCountry(l, c))
+        QMessageBox::warning(parent, QObject::tr("Qt Linguist"),
+                             tr("Linguist does not know the plural rules for '%1'.\n"
+                                "Will assume a single universal form.")
+                             .arg(m_localizedLanguage));
     // Try to detect the correct source language in the following order
     // 1. Look for the language attribute in the ts
     //   if that fails
@@ -379,17 +383,17 @@ void DataModel::doCharCounting(const QString &text, int &trW, int &trC, int &trC
     }
 }
 
-void DataModel::setLanguageAndCountry(QLocale::Language lang, QLocale::Country country)
+bool DataModel::setLanguageAndCountry(QLocale::Language lang, QLocale::Country country)
 {
     if (m_language == lang && m_country == country)
-        return;
+        return true;
     m_language = lang;
     m_country = country;
 
     if (lang == QLocale::C || uint(lang) > uint(QLocale::LastLanguage)) // XXX does this make any sense?
         lang = QLocale::English;
     QByteArray rules;
-    getNumerusInfo(lang, country, &rules, &m_numerusForms);
+    bool ok = getNumerusInfo(lang, country, &rules, &m_numerusForms);
     m_localizedLanguage = QCoreApplication::translate("MessageEditor", QLocale::languageToString(lang).toAscii());
     m_countRefNeeds.clear();
     for (int i = 0; i < rules.size(); ++i) {
@@ -397,8 +401,13 @@ void DataModel::setLanguageAndCountry(QLocale::Language lang, QLocale::Country c
         while (++i < rules.size() && rules.at(i) != (char)Q_NEWRULE) {}
     }
     m_countRefNeeds.append(true);
+    if (!ok) {
+        m_numerusForms.clear();
+        m_numerusForms << tr("Universal Form");
+    }
     emit languageChanged();
     setModified(true);
+    return ok;
 }
 
 void DataModel::setSourceLanguageAndCountry(QLocale::Language lang, QLocale::Country country)
@@ -451,7 +460,7 @@ QString DataModel::prettifyFileName(const QString &fn)
 
 /******************************************************************************
  *
- * DataModelIterator 
+ * DataModelIterator
  *
  *****************************************************************************/
 
@@ -1100,7 +1109,7 @@ void MultiDataModel::updateCountsOnRemove(int model, bool writable)
 
 /******************************************************************************
  *
- * MultiDataModelIterator 
+ * MultiDataModelIterator
  *
  *****************************************************************************/
 
@@ -1205,17 +1214,17 @@ int MessageModel::columnCount(const QModelIndex &) const
 
 QVariant MessageModel::data(const QModelIndex &index, int role) const
 {
-    static QVariant pxOn  = 
+    static QVariant pxOn  =
         qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_on.png")));
-    static QVariant pxOff = 
+    static QVariant pxOff =
         qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_off.png")));
-    static QVariant pxObsolete =    
+    static QVariant pxObsolete =
         qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_obsolete.png")));
     static QVariant pxDanger =
         qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_danger.png")));
     static QVariant pxWarning =
         qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_warning.png")));
-    static QVariant pxEmpty = 
+    static QVariant pxEmpty =
         qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_empty.png")));
 
     int row = index.row();

@@ -633,6 +633,8 @@ QPolygonF QMatrix::map(const QPolygonF &a) const
     \sa QMatrix::map()
 */
 
+extern QPainterPath qt_regionToPath(const QRegion &region);
+
 /*!
     \fn QRegion QMatrix::map(const QRegion &region) const
     \overload
@@ -653,7 +655,6 @@ QRegion QMatrix::map(const QRegion &r) const
         return copy;
     }
 
-    extern QPainterPath qt_regionToPath(const QRegion &region);
     QPainterPath p = map(qt_regionToPath(r));
     return p.toFillPolygon().toPolygon();
 }

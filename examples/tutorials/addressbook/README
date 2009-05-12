@@ -4,7 +4,7 @@ Qt documentation, which can be viewed using Qt Assistant or a Web browser.
 
 The tutorial is also available online at
 
-http://doc.trolltech.com/4.4/tutorial.html
+http://doc.trolltech.com/tutorial.html
 
 All programs corresponding to the chapters in the tutorial should
 automatically be built when Qt is compiled, or will be provided as

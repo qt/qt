@@ -64,18 +64,23 @@ public:
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
     void copy(const QPixmapData *data, const QRect &rect);
     void fill(const QColor &color);
-    bool hasAlphaChannel() const;
+    inline bool hasAlphaChannel() const { return alpha; }
     QPixmap transformed(const QTransform &matrix,
                         Qt::TransformationMode mode) const;
     QImage toImage() const;
     QPaintEngine* paintEngine() const;
-    QImage *buffer();
+    virtual QImage *buffer();
+    QImage *buffer(uint lockFlags);
 
     // Pure virtual in QPixmapData, so re-implement here and delegate to QDirectFBPaintDevice
     int metric(QPaintDevice::PaintDeviceMetric m) const {return QDirectFBPaintDevice::metric(m);}
-
+    inline QImage::Format pixelFormat() const { return format; }
+    static bool hasAlphaChannel(const QImage &img);
 private:
+    void invalidate();
     QDirectFBPaintEngine *engine;
+    QImage::Format format;
+    bool alpha;
 };
 
 QT_END_HEADER

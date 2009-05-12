@@ -8,6 +8,6 @@ outputdir = $QTDIR/../qteclipsetools/main/doc/html
 
 project               = Qt Eclipse Integration
 description           = "Qt Eclipse Integration"
-url                   = http://doc.trolltech.com/eclipse-integration-4.4
+url                   = http://doc.qtsoftware.com/qt-eclipse-1.5
 
 HTML.{postheader,address} = ""

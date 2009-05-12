@@ -233,6 +233,7 @@ extern QPaintDevice *qt_mac_safe_pdev; //qapplication_mac.cpp
 
 extern OSWindowRef qt_mac_window_for(const QWidget*); //qwidget_mac.mm
 extern OSViewRef qt_mac_nativeview_for(const QWidget *); //qwidget_mac.mm
+extern QPoint qt_mac_nativeMapFromParent(const QWidget *child, const QPoint &pt); //qwidget_mac.mm
 
 #ifdef check
 # undef check
@@ -249,11 +250,13 @@ struct QMacDndAnswerRecord {
     Qt::KeyboardModifiers modifiers;
     Qt::MouseButtons buttons;
     Qt::DropAction lastAction;
+    unsigned int lastOperation;
     void clear() {
         rect = QRect();
         modifiers = Qt::NoModifier;
         buttons = Qt::NoButton;
         lastAction = Qt::IgnoreAction;
+        lastOperation = 0;
     }
 };
 extern QMacDndAnswerRecord qt_mac_dnd_answer_rec;
