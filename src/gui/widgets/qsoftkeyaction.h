@@ -42,14 +42,19 @@
 #ifndef QSOFTKEYACTION_H
 #define QSOFTKEYACTION_H
 
-#include "QtGui/qaction.h"
+#include <QtGui/qaction.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+QT_MODULE(Gui)
+
 class QSoftKeyActionPrivate;
 
-class QSoftKeyAction : public QAction
+class Q_GUI_EXPORT QSoftKeyAction : public QAction
 {
+    Q_DECLARE_PRIVATE(QSoftKeyAction)
 public:
     enum StandardRole {
         Options,
@@ -72,25 +77,25 @@ public:
 
     QSoftKeyAction(QObject *parent);
     QSoftKeyAction(StandardRole role, QObject *parent);
-    QSoftKeyAction(const QString &text, QObject* parent);
-    QSoftKeyAction(StandardRole role, const QString &text, QObject* parent);
-    QSoftKeyAction(const QIcon &icon, const QString &text, QObject* parent);
-    QSoftKeyAction(StandardRole role, const QIcon &icon, const QString &text, QObject* parent);
+    QSoftKeyAction(const QString &text, QObject *parent);
+    QSoftKeyAction(StandardRole role, const QString &text, QObject *parent);
+    QSoftKeyAction(const QIcon &icon, const QString &text, QObject *parent);
+    QSoftKeyAction(StandardRole role, const QIcon &icon, const QString &text, QObject *parent);
     ~QSoftKeyAction();
 
     StandardRole role() const;
     QString roleName() const;
 
     void setRole(StandardRole role);
-    void setRole(const QString& role);
+    void setRole(const QString &role);
     int nativePosition() const;
     void setNativePosition(int position);
     int qtContextKey() const;
     void setQtContextKey(int position);
-
-    QSoftKeyActionPrivate *d;
 };
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // QSOFTKEYACTION_H

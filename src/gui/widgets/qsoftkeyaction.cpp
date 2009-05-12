@@ -84,42 +84,41 @@ public:
 QSoftKeyAction::QSoftKeyAction(QObject *parent)
     : QAction(parent)
 {
-    d = new QSoftKeyActionPrivate();
 }
 
 QSoftKeyAction::QSoftKeyAction(StandardRole role, QObject *parent)
     : QAction(parent)
 {
-    d = new QSoftKeyActionPrivate(role);
+    Q_D(QSoftKeyAction);
+    d->role = role;
 }
 
 QSoftKeyAction::QSoftKeyAction(const QString &text, QObject* parent)
     : QAction(text, parent)
 {
-    d = new QSoftKeyActionPrivate();
 }
 
 QSoftKeyAction::QSoftKeyAction(StandardRole role, const QString &text, QObject* parent)
     : QAction(text, parent)
 {
-    d = new QSoftKeyActionPrivate(role);
+    Q_D(QSoftKeyAction);
+    d->role = role;
 }
 
 QSoftKeyAction::QSoftKeyAction(const QIcon &icon, const QString &text, QObject* parent)
     : QAction(icon, text, parent)
 {
-    d = new QSoftKeyActionPrivate();
 }
 
 QSoftKeyAction::QSoftKeyAction(StandardRole role, const QIcon &icon, const QString &text, QObject* parent)
     : QAction(icon, text, parent)
 {
-    d = new QSoftKeyActionPrivate(role);
+    Q_D(QSoftKeyAction);
+    d->role = role;
 }
 
 QSoftKeyAction::~QSoftKeyAction()
 {
-    delete d;
 }
 
 /*!
@@ -130,6 +129,7 @@ QSoftKeyAction::~QSoftKeyAction()
 */
 QSoftKeyAction::StandardRole QSoftKeyAction::role() const
 {
+    Q_D(const QSoftKeyAction);
     return d->role;
 }
 
@@ -141,6 +141,7 @@ QSoftKeyAction::StandardRole QSoftKeyAction::role() const
 */
 QString QSoftKeyAction::roleName() const
 {
+    Q_D(const QSoftKeyAction);
     return d->roleName;
 }
 
@@ -152,6 +153,7 @@ QString QSoftKeyAction::roleName() const
 */
 void QSoftKeyAction::setRole(StandardRole role)
 {
+    Q_D(QSoftKeyAction);
     d->role = role;
     d->roleName = QString();
     emit changed();
@@ -165,27 +167,32 @@ void QSoftKeyAction::setRole(StandardRole role)
 */
 void QSoftKeyAction::setRole(const QString& role)
 {
-    d->role = QSoftKeyAction::Custom;
+    Q_D(QSoftKeyAction);
+    d->role = Custom;
     d->roleName = role;
     emit changed();
 }
 
 int QSoftKeyAction::nativePosition() const
 {
+    Q_D(const QSoftKeyAction);
     return d->nativePosition;
 }
 
 void QSoftKeyAction::setNativePosition(int position)
 {
+    Q_D(QSoftKeyAction);
     d->nativePosition = position;
 }
 
 int QSoftKeyAction::qtContextKey() const
 {
+    Q_D(const QSoftKeyAction);
     return d->qtContextKey;
 }
 
 void QSoftKeyAction::setQtContextKey(int key)
 {
+    Q_D(QSoftKeyAction);
     d->qtContextKey = key;
 }

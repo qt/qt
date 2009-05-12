@@ -39,48 +39,64 @@
 **
 ****************************************************************************/
 
-#ifndef QSOFTKEYSTACK_P_H
-#define QSOFTKEYSTACK_P_H
+#include "qsoftkeystack.h"
+#include "qsoftkeystack_p.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "QtGui/qwidget.h"
-#include "QtGui/qaction.h"
-#include "qstack.h"
-
-#include "qsoftkeyaction.h"
-
-QT_BEGIN_NAMESPACE
-
-#define QSoftkeySet QList <QSoftKeyAction*>
-
-class QSoftKeyStackPrivate : public QObject
+QSoftKeyStackPrivate::QSoftKeyStackPrivate()
 {
-public:
-    QSoftKeyStackPrivate();
-    ~QSoftKeyStackPrivate();
 
-    void push(QSoftKeyAction *softKey);
-    void push(const QList<QSoftKeyAction*> &softKeys);
-    void pop();
-    
-private:
-    void mapSoftKeys(const QSoftkeySet &top);
-    void setNativeSoftKeys();
-    
-private:
-    QStack <QSoftkeySet> softKeyStack;
-};
+}
 
-QT_END_NAMESPACE
+QSoftKeyStackPrivate::~QSoftKeyStackPrivate()
+{
 
-#endif // QSOFTKEYSTACK_P_H
+}
+
+void QSoftKeyStackPrivate::push(QSoftKeyAction *softKey)
+{
+    QSoftkeySet softKeySet;
+    softKeySet.append(softKey);
+    softKeyStack.push(softKeySet);
+    setNativeSoftKeys();
+
+}
+void QSoftKeyStackPrivate::push(const QList<QSoftKeyAction*> &softkeys)
+{
+    QSoftkeySet softKeySet(softkeys);
+    softKeyStack.push(softKeySet);
+    setNativeSoftKeys();
+}
+
+void QSoftKeyStackPrivate::pop()
+{
+    softKeyStack.pop();
+    setNativeSoftKeys();
+}
+
+QSoftKeyStack::QSoftKeyStack(QWidget *parent)
+    : QObject(parent)
+{
+}
+
+QSoftKeyStack::~QSoftKeyStack()
+{
+}
+
+void QSoftKeyStack::push(QSoftKeyAction *softKey)
+{
+    Q_D(QSoftKeyStack);
+    d->push(softKey);
+}
+
+void QSoftKeyStack::push(const QList<QSoftKeyAction*> &softKeys)
+{
+    Q_D(QSoftKeyStack);
+    d->push(softKeys);
+}
+
+void QSoftKeyStack::pop()
+{
+    Q_D(QSoftKeyStack);
+    d->pop();
+}
+

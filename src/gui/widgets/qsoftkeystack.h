@@ -39,62 +39,37 @@
 **
 ****************************************************************************/
 
-#include "qsoftkeystack.h"
-#include "qsoftkeystack_p.h"
+#ifndef QSOFTKEYSTACK_H
+#define QSOFTKEYSTACK_H
 
-QSoftKeyStackPrivate::QSoftKeyStackPrivate()
+#include <QtGui/qwidget.h>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
+
+#define QSoftkeySet QList <QSoftKeyAction*>
+
+class QSoftKeyStackPrivate;
+class QSoftKeyAction;
+
+class Q_GUI_EXPORT QSoftKeyStack : public QObject
 {
+    Q_DECLARE_PRIVATE(QSoftKeyStack)
+public:
+    QSoftKeyStack(QWidget *parent);
+    ~QSoftKeyStack();
 
-}
+public:
+    void push(QSoftKeyAction *softKey);
+    void push(const QList<QSoftKeyAction*> &softkeys);
+    void pop();
+};
 
-QSoftKeyStackPrivate::~QSoftKeyStackPrivate()
-{
+QT_END_NAMESPACE
 
-}
+QT_END_HEADER
 
-void QSoftKeyStackPrivate::push(QSoftKeyAction *softKey)
-{
-    QSoftkeySet softKeySet;
-    softKeySet.append(softKey);
-    softKeyStack.push(softKeySet);
-    setNativeSoftKeys();
-
-}
-void QSoftKeyStackPrivate::push(const QList<QSoftKeyAction*> &softkeys)
-{
-    QSoftkeySet softKeySet(softkeys);
-    softKeyStack.push(softKeySet);
-    setNativeSoftKeys();
-}
-
-void QSoftKeyStackPrivate::pop()
-{
-    softKeyStack.pop();
-    setNativeSoftKeys();
-}
-
-QSoftKeyStack::QSoftKeyStack(QWidget *parent)
-{
-    d = new QSoftKeyStackPrivate();
-}
-
-QSoftKeyStack::~QSoftKeyStack()
-{
-    delete d;
-}
-
-void QSoftKeyStack::push(QSoftKeyAction *softKey)
-{
-    d->push(softKey);
-}
-
-void QSoftKeyStack::push(const QList<QSoftKeyAction*> &softKeys)
-{
-    d->push(softKeys);
-}
-
-void QSoftKeyStack::pop()
-{
-    d->pop();
-}
-
+#endif // QSOFTKEYSTACK_H
