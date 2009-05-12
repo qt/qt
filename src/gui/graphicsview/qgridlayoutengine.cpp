@@ -1150,8 +1150,8 @@ void QGridLayoutEngine::dump(int indent) const
     q_rowData.dump(indent + 2);
 
     qDebug("%*s Geometries output", indent, "");
+    QVector<qreal> *cellPos = &q_yy;
     for (int pass = 0; pass < 2; ++pass) {
-        QVector<qreal> *cellPos = &q_yy;
         QString message;
         for (i = 0; i < cellPos->count(); ++i) {
             message += QLatin1String((message.isEmpty() ? "[" : ", "));
