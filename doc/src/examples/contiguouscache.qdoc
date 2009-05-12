@@ -61,10 +61,10 @@
     simply have the following code instead.
 
     \code
-    while (row > m_words.lastIndex())
-        m_words.append(fetchWord(m_words.lastIndex()+1);
-    while (row < m_words.firstIndex())
-        m_words.prepend(fetchWord(m_words.firstIndex()-1);
+    while (row > m_rows.lastIndex())
+        m_rows.append(fetchWord(m_rows.lastIndex()+1);
+    while (row < m_rows.firstIndex())
+        m_rows.prepend(fetchWord(m_rows.firstIndex()-1);
     \endcode
 
     However a list will often jump rows if the scroll bar is used directly, resulting in

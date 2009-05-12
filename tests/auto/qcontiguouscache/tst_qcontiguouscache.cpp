@@ -41,8 +41,6 @@
 
 #include <QObject>
 #include <QTest>
-#include <QList>
-#include <QString>
 #include <QCache>
 #include <QContiguousCache>
 
@@ -57,8 +55,13 @@ public:
     virtual ~tst_QContiguousCache() {}
 private slots:
     void empty();
-    void forwardBuffer();
-    void scrollingList();
+    void append_data();
+    void append();
+
+    void prepend_data();
+    void prepend();
+
+    void asScrollingList();
 
     void complexType();
 
@@ -79,12 +82,14 @@ void tst_QContiguousCache::empty()
     QCOMPARE(c.count(), 0);
     QVERIFY(c.isEmpty());
     c.append(1);
+    QCOMPARE(c.count(), 1);
     QVERIFY(!c.isEmpty());
     c.clear();
     QCOMPARE(c.capacity(), 10);
     QCOMPARE(c.count(), 0);
     QVERIFY(c.isEmpty());
     c.prepend(1);
+    QCOMPARE(c.count(), 1);
     QVERIFY(!c.isEmpty());
     c.clear();
     QCOMPARE(c.count(), 0);
@@ -92,28 +97,111 @@ void tst_QContiguousCache::empty()
     QCOMPARE(c.capacity(), 10);
 }
 
-void tst_QContiguousCache::forwardBuffer()
+void tst_QContiguousCache::append_data()
 {
-    int i;
-    QContiguousCache<int> c(10);
-    for(i = 1; i < 30; ++i) {
+    QTest::addColumn<int>("start");
+    QTest::addColumn<int>("count");
+    QTest::addColumn<int>("cacheSize");
+    QTest::addColumn<bool>("invalidIndexes");
+
+    QTest::newRow("0+30[10]") << 0 << 30 << 10 << false;
+    QTest::newRow("300+30[10]") << 300 << 30 << 10 << false;
+    QTest::newRow("MAX-10+30[10]") << INT_MAX-10 << 30 << 10 << true;
+}
+
+void tst_QContiguousCache::append()
+{
+    QFETCH(int, start);
+    QFETCH(int, count);
+    QFETCH(int, cacheSize);
+    QFETCH(bool, invalidIndexes);
+
+    int i, j;
+    QContiguousCache<int> c(cacheSize);
+
+    i = 1;
+    QCOMPARE(c.available(), cacheSize);
+    if (start == 0)
+        c.append(i++);
+    else
+        c.insert(start, i++);
+    while (i < count) {
         c.append(i);
-        QCOMPARE(c.first(), qMax(1, i-9));
+        QCOMPARE(c.available(), qMax(0, cacheSize - i));
+        QCOMPARE(c.first(), qMax(1, i-cacheSize+1));
         QCOMPARE(c.last(), i);
-        QCOMPARE(c.count(), qMin(i, 10));
+        QCOMPARE(c.count(), qMin(i, cacheSize));
+        QCOMPARE(c.isFull(), i >= cacheSize);
+        i++;
     }
 
-    c.clear();
+    QCOMPARE(c.areIndexesValid(), !invalidIndexes);
+    if (invalidIndexes)
+        c.normalizeIndexes();
+    QVERIFY(c.areIndexesValid());
 
-    for(i = 1; i < 30; ++i) {
+    // test taking from end until empty.
+    for (j = 0; j < cacheSize; j++, i--) {
+        QCOMPARE(c.takeLast(), i-1);
+        QCOMPARE(c.count(), cacheSize-j-1);
+        QCOMPARE(c.available(), j+1);
+        QVERIFY(!c.isFull());
+        QCOMPARE(c.isEmpty(), j==cacheSize-1);
+    }
+
+}
+
+void tst_QContiguousCache::prepend_data()
+{
+    QTest::addColumn<int>("start");
+    QTest::addColumn<int>("count");
+    QTest::addColumn<int>("cacheSize");
+    QTest::addColumn<bool>("invalidIndexes");
+
+    QTest::newRow("30-30[10]") << 30 << 30 << 10 << false;
+    QTest::newRow("300-30[10]") << 300 << 30 << 10 << false;
+    QTest::newRow("10-30[10]") << 10 << 30 << 10 << true;
+}
+
+void tst_QContiguousCache::prepend()
+{
+    QFETCH(int, start);
+    QFETCH(int, count);
+    QFETCH(int, cacheSize);
+    QFETCH(bool, invalidIndexes);
+
+    int i, j;
+    QContiguousCache<int> c(cacheSize);
+
+    i = 1;
+    QCOMPARE(c.available(), cacheSize);
+    c.insert(start, i++);
+    while(i < count) {
         c.prepend(i);
-        QCOMPARE(c.last(), qMax(1, i-9));
+        QCOMPARE(c.available(), qMax(0, cacheSize - i));
+        QCOMPARE(c.last(), qMax(1, i-cacheSize+1));
         QCOMPARE(c.first(), i);
-        QCOMPARE(c.count(), qMin(i, 10));
+        QCOMPARE(c.count(), qMin(i, cacheSize));
+        QCOMPARE(c.isFull(), i >= cacheSize);
+        i++;
+    }
+
+    QCOMPARE(c.areIndexesValid(), !invalidIndexes);
+    if (invalidIndexes)
+        c.normalizeIndexes();
+    QVERIFY(c.areIndexesValid());
+
+    // test taking from start until empty.
+    for (j = 0; j < cacheSize; j++, i--) {
+        QCOMPARE(c.takeFirst(), i-1);
+        QCOMPARE(c.count(), cacheSize-j-1);
+        QCOMPARE(c.available(), j+1);
+        QVERIFY(!c.isFull());
+        QCOMPARE(c.isEmpty(), j==cacheSize-1);
     }
 }
 
-void tst_QContiguousCache::scrollingList()
+void tst_QContiguousCache::asScrollingList()
 {
     int i;
     QContiguousCache<int> c(10);
@@ -123,55 +211,78 @@ void tst_QContiguousCache::scrollingList()
     // complex data types.
     QBENCHMARK {
         // simulate scrolling in a list of items;
-        for(i = 0; i < 10; ++i)
+        for(i = 0; i < 10; ++i) {
+            QCOMPARE(c.available(), 10-i);
             c.append(i);
+        }
 
         QCOMPARE(c.firstIndex(), 0);
         QCOMPARE(c.lastIndex(), 9);
-        QVERIFY(c.containsIndex(0));
-        QVERIFY(c.containsIndex(9));
+        QCOMPARE(c.first(), 0);
+        QCOMPARE(c.last(), 9);
+        QVERIFY(!c.containsIndex(-1));
         QVERIFY(!c.containsIndex(10));
+        QCOMPARE(c.available(), 0);
 
-        for (i = 0; i < 10; ++i)
+        for (i = 0; i < 10; ++i) {
+            QVERIFY(c.containsIndex(i));
             QCOMPARE(c.at(i), i);
+            QCOMPARE(c[i], i);
+            QCOMPARE(((const QContiguousCache<int>)c)[i], i);
+        }
 
         for (i = 10; i < 30; ++i)
             c.append(i);
 
         QCOMPARE(c.firstIndex(), 20);
         QCOMPARE(c.lastIndex(), 29);
-        QVERIFY(c.containsIndex(20));
-        QVERIFY(c.containsIndex(29));
+        QCOMPARE(c.first(), 20);
+        QCOMPARE(c.last(), 29);
+        QVERIFY(!c.containsIndex(19));
         QVERIFY(!c.containsIndex(30));
+        QCOMPARE(c.available(), 0);
 
-        for (i = 20; i < 30; ++i)
+        for (i = 20; i < 30; ++i) {
+            QVERIFY(c.containsIndex(i));
             QCOMPARE(c.at(i), i);
+            QCOMPARE(c[i], i);
+            QCOMPARE(((const QContiguousCache<int> )c)[i], i);
+        }
 
         for (i = 19; i >= 10; --i)
             c.prepend(i);
 
         QCOMPARE(c.firstIndex(), 10);
         QCOMPARE(c.lastIndex(), 19);
-        QVERIFY(c.containsIndex(10));
-        QVERIFY(c.containsIndex(19));
+        QCOMPARE(c.first(), 10);
+        QCOMPARE(c.last(), 19);
+        QVERIFY(!c.containsIndex(9));
         QVERIFY(!c.containsIndex(20));
+        QCOMPARE(c.available(), 0);
 
-        for (i = 10; i < 20; ++i)
+        for (i = 10; i < 20; ++i) {
+            QVERIFY(c.containsIndex(i));
             QCOMPARE(c.at(i), i);
+            QCOMPARE(c[i], i);
+            QCOMPARE(((const QContiguousCache<int> )c)[i], i);
+        }
 
         for (i = 200; i < 220; ++i)
             c.insert(i, i);
 
         QCOMPARE(c.firstIndex(), 210);
         QCOMPARE(c.lastIndex(), 219);
-        QVERIFY(c.containsIndex(210));
-        QVERIFY(c.containsIndex(219));
-        QVERIFY(!c.containsIndex(300));
+        QCOMPARE(c.first(), 210);
+        QCOMPARE(c.last(), 219);
         QVERIFY(!c.containsIndex(209));
+        QVERIFY(!c.containsIndex(300));
+        QCOMPARE(c.available(), 0);
 
-        for (i = 220; i < 220; ++i) {
+        for (i = 210; i < 220; ++i) {
             QVERIFY(c.containsIndex(i));
             QCOMPARE(c.at(i), i);
+            QCOMPARE(c[i], i);
+            QCOMPARE(((const QContiguousCache<int> )c)[i], i);
         }
         c.clear(); // needed to reset benchmark
     }

@@ -235,7 +235,7 @@ inline QDebug operator<<(QDebug debug, const QSet<T> &set)
 
 #if defined(FORCE_UREF)
 template <class T>
-inline QDebug &operator<<(QDebug debug, const QContiguousCache<T> &contiguousCache)
+inline QDebug &operator<<(QDebug debug, const QContiguousCache<T> &cache)
 #else
 template <class T>
 inline QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)

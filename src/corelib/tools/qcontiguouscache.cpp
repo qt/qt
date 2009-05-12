@@ -62,9 +62,10 @@ void QContiguousCacheData::dump() const
     display in a user interface view.  Unlike QCache, it adds a restriction
     that elements within the cache are contiguous.  This has the advantage
     of matching how user interface views most commonly request data, as
-    a set of rows localized around the current scrolled position.  It also
-    allows the cache to consume less memory and processor cycles than QCache
-    for this use-case.
+    a set of rows localized around the current scrolled position.  This
+    restriction allows the cache to consume less memory and processor
+    cycles than QCache.  The QContiguousCache class also can provide
+    an upper bound on memory usage via setCapacity().
 
     The simplest way of using a contiguous cache is to use the append()
     and prepend().
@@ -83,8 +84,8 @@ MyRecord record(int row) const
 }
 \endcode
 
-    If the cache is full then the item at the opposite end of the cache from where
-    the new item is appended or prepended will be removed.
+    If the cache is full then the item at the opposite end of the cache from
+    where the new item is appended or prepended will be removed.
 
     This usage can be further optimized by using the insert() function
     in the case where the requested row is a long way from the currently cached
@@ -92,6 +93,19 @@ MyRecord record(int row) const
     cached items then the existing cached items are first removed to retain
     the contiguous nature of the cache.  Hence it is important to take some care then
     when using insert() in order to avoid unwanted clearing of the cache.
+
+    The range of valid indexes for the QContiguousCache class are from
+    0 to INT_MAX.  Calling prepend() such that the first index would become less
+    than 0 or append() such that the last index would become greater
+    than INT_MAX can result in the indexes of the cache being invalid.
+    When the cache indexes are invalid it is important to call
+    normalizeIndexes() before calling any of containsIndex(), firstIndex(),
+    lastIndex(), at() or the [] operator.  Calling these
+    functions when the cache has invalid indexes will result in undefined
+    behavior.  The indexes can be checked by using areIndexesValid()
+
+    In most cases the indexes will not exceed 0 to INT_MAX, and
+    normalizeIndexes() will not need to be be used.
 
     See the \l{Contiguous Cache Example}{Contiguous Cache} example.
 */
@@ -288,6 +302,10 @@ MyRecord record(int row) const
     worthwhile taking effort to insert items in an order that starts adjacent
     to the current index range for the cache.
 
+    The range of valid indexes for the QContiguousCache class are from
+    0 to INT_MAX. Inserting outside of this range has undefined behavior.
+
+
     \sa prepend(), append(), isFull(), firstIndex(), lastIndex()
 */
 
@@ -301,24 +319,14 @@ MyRecord record(int row) const
 /*! \fn int QContiguousCache::firstIndex() const
 
     Returns the first valid index in the cache.  The index will be invalid if the
-    cache is empty.  However the following code is valid even when the cache is empty:
-
-    \code
-    for (int i = cache.firstIndex(); i <= cache.lastIndex(); ++i)
-        qDebug() << "Item" << i << "of the cache is" << cache.at(i);
-    \endcode
+    cache is empty.
 
     \sa capacity(), size(), lastIndex()
 */
 
 /*! \fn int QContiguousCache::lastIndex() const
 
-    Returns the last valid index in the cache.  If the cache is empty will return -1.
-
-    \code
-    for (int i = cache.firstIndex(); i <= cache.lastIndex(); ++i)
-        qDebug() << "Item" << i << "of the cache is" << cache.at(i);
-    \endcode
+    Returns the last valid index in the cache.  The index will be invalid if the cache is empty.
 
     \sa capacity(), size(), firstIndex()
 */
@@ -384,6 +392,37 @@ MyRecord record(int row) const
     If you don't use the return value, removeLast() is more efficient.
 
     \sa takeFirst(), removeLast()
+*/
+
+/*! \fn void QContiguousCache::normalizeIndexes()
+
+    Moves the first index and last index of the cache
+    such that they point to valid indexes.  The function does not modify
+    the contents of the cache or the ordering of elements within the cache.
+
+    It is provided so that index overflows can be corrected when using the
+    cache as a circular buffer.
+
+    \code
+    QContiguousCache<int> cache(10);
+    cache.insert(INT_MAX, 1); // cache contains one value and has valid indexes, INT_MAX to INT_MAX
+    cache.append(2); // cache contains two values but does not have valid indexes.
+    cache.normalizeIndexes(); // cache has two values, 1 and 2.  New first index will be in the range of 0 to capacity().
+    \endcode
+
+    \sa areIndexesValid(), append(), prepend()
+*/
+
+/*! \fn bool QContiguousCache::areIndexesValid() const
+
+    Returns whether the indexes for items stored in the cache are valid.
+    Indexes can become invalid if items are appended after the index position
+    INT_MAX or prepended before the index position 0.  This is only expected
+    to occur in very long lived circular buffer style usage of the
+    contiguous cache.  Indexes can be made valid again by calling
+    normalizeIndexs().
+
+    \sa normalizeIndexes(), append(), prepend()
 */
 
 /*! \fn void QContiguousCache::dump() const

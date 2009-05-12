@@ -43,6 +43,7 @@
 #define QCONTIGUOUSCACHE_H
 
 #include <QtCore/qatomic.h>
+#include <limits.h>
 
 QT_BEGIN_HEADER
 
@@ -50,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
-struct QContiguousCacheData
+struct Q_CORE_EXPORT QContiguousCacheData
 {
     QBasicAtomicInt ref;
     int alloc;
@@ -74,8 +75,6 @@ struct QContiguousCacheTypedData
 
     T array[1];
 };
-
-class QContiguousCacheDevice;
 
 template<typename T>
 class QContiguousCache {
@@ -128,13 +127,17 @@ public:
     void removeLast();
     T takeLast();
 
+    inline bool areIndexesValid() const
+    { return d->offset >= 0 && d->offset < INT_MAX - d->count && (d->offset % d->alloc) == d->start; }
+
+    inline void normalizeIndexes() { d->offset = d->start; }
     // debug
     void dump() const { p->dump(); }
 private:
     void detach_helper();
 
-    QContiguousCacheData *malloc(int alloc);
-    void free(Data *d);
+    QContiguousCacheData *malloc(int aalloc);
+    void free(Data *x);
     int sizeOfTypedData() {
         // this is more or less the same as sizeof(Data), except that it doesn't
         // count the padding at the end
@@ -189,10 +192,6 @@ void QContiguousCache<T>::setCapacity(int asize)
     x.d->count = qMin(d->count, asize);
     x.d->offset = d->offset + d->count - x.d->count;
     x.d->start = x.d->offset % x.d->alloc;
-    /*  deep copy -
-        slow way now, get unit test working, then
-        improve performance if need be. (e.g. memcpy)
-    */
     T *dest = x.d->array + (x.d->start + x.d->count-1) % x.d->alloc;
     T *src = d->array + (d->start + d->count-1) % d->alloc;
     int count = x.d->count;
@@ -249,11 +248,11 @@ inline QContiguousCacheData *QContiguousCache<T>::malloc(int aalloc)
 }
 
 template <typename T>
-QContiguousCache<T>::QContiguousCache(int asize)
+QContiguousCache<T>::QContiguousCache(int capacity)
 {
-    p = malloc(asize);
+    p = malloc(capacity);
     d->ref = 1;
-    d->alloc = asize;
+    d->alloc = capacity;
     d->count = d->start = d->offset = 0;
     d->sharable = true;
 }
@@ -302,7 +301,6 @@ void QContiguousCache<T>::free(Data *x)
     }
     qFree(x);
 }
-
 template <typename T>
 void QContiguousCache<T>::append(const T &value)
 {
@@ -349,6 +347,7 @@ void QContiguousCache<T>::prepend(const T &value)
 template<typename T>
 void QContiguousCache<T>::insert(int pos, const T &value)
 {
+    Q_ASSERT_X(pos >= 0 && pos < INT_MAX, "QContiguousCache<T>::insert", "index out of range");
     detach();
     if (containsIndex(pos)) {
         if(QTypeInfo<T>::isComplex)
@@ -362,8 +361,8 @@ void QContiguousCache<T>::insert(int pos, const T &value)
     else {
         // we don't leave gaps.
         clear();
-        d->offset = d->start = pos;
-        d->start %= d->alloc;
+        d->offset = pos;
+        d->start = pos % d->alloc;
         d->count = 1;
         if (QTypeInfo<T>::isComplex)
             new (d->array + d->start) T(value);
@@ -378,9 +377,8 @@ inline const T &QContiguousCache<T>::at(int pos) const
 template <typename T>
 inline const T &QContiguousCache<T>::operator[](int pos) const
 { Q_ASSERT_X(pos >= d->offset && pos - d->offset < d->count, "QContiguousCache<T>::at", "index out of range"); return d->array[pos % d->alloc]; }
-template <typename T>
 
-// can use the non-inline one to modify the index range.
+template <typename T>
 inline T &QContiguousCache<T>::operator[](int pos)
 {
     detach();
