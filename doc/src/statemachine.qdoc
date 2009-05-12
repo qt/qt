@@ -33,10 +33,10 @@
 
   The State Machine framework provides an API and execution model that can be
   used to effectively embed the elements and semantics of statecharts in Qt
-  applications. The framework integrates tightly with Qt's existing event
-  system and meta-object system; for example, transitions between states can
-  be triggered by signals, and states can be configured to set properties and
-  invoke methods on QObjects.
+  applications. The framework integrates tightly with Qt's meta-object system;
+  for example, transitions between states can be triggered by signals, and
+  states can be configured to set properties and invoke methods on QObjects.
+  Qt's event system is used to drive the state machines.
 
   \section1 A Simple State Machine
 
@@ -52,34 +52,49 @@
     \endomit
 
   The following snippet shows the code needed to create such a state machine.
+  First, we create the state machine and states:
 
   \code
     QStateMachine machine;
     QState *s1 = new QState();
     QState *s2 = new QState();
     QState *s3 = new QState();
+  \endcode
 
+  Then, we create the transitions by using the QState::addTransition()
+  function:
+
+  \code
     s1->addTransition(button, SIGNAL(clicked()), s2);
     s2->addTransition(button, SIGNAL(clicked()), s3);
     s3->addTransition(button, SIGNAL(clicked()), s1);
+  \endcode
 
+  Next, we add the states to the machine and set the machine's initial state:
+
+  \code
     machine.addState(s1);
     machine.addState(s2);
     machine.addState(s3);
     machine.setInitialState(s1);
+  \endcode
 
+  Finally, we start the state machine:
+
+  \code
     machine.start();
   \endcode
 
-  Once the state machine has been set up, you need to start it by calling
-  QStateMachine::start(). The state machine executes asynchronously, i.e. it
-  becomes part of your application's event loop.
+  The state machine executes asynchronously, i.e. it becomes part of your
+  application's event loop.
 
-  The above state machine is perfectly fine, but it doesn't \e do anything; it
-  merely transitions from one state to another. The QState::assignProperty()
-  function can be used to have a state set a property of a QObject when the
-  state is entered. In the following snippet, the value that should be
-  assigned to a QLabel's text property is specified for each state:
+  \section1 Doing Useful Work on State Entry and Exit
+
+  The above state machine merely transitions from one state to another, it
+  doesn't perform any operations. The QState::assignProperty() function can be
+  used to have a state set a property of a QObject when the state is
+  entered. In the following snippet, the value that should be assigned to a
+  QLabel's text property is specified for each state:
 
   \code
     s1->assignProperty(label, "text", "In state s1");
@@ -90,20 +105,26 @@
   When any of the states is entered, the label's text will be changed
   accordingly.
 
-  The QActionState::entered() signal is emitted when the state is entered. In the
+  The QState::entered() signal is emitted when the state is entered, and the
+  QState::exited() signal is emitted when the state is exited. In the
   following snippet, the button's showMaximized() slot will be called when
-  state \c s3 is entered:
+  state \c s3 is entered, and the button's showMinimized() slot will be called
+  when \c s3 is exited:
 
   \code
     QObject::connect(s3, SIGNAL(entered()), button, SLOT(showMaximized()));
+    QObject::connect(s3, SIGNAL(exited()), button, SLOT(showMinimized()));
   \endcode
 
-  \section1 Sharing Transitions By Grouping States
+  \section1 State Machines That Finish
 
   The state machine defined in the previous section never finishes. In order
   for a state machine to be able to finish, it needs to have a top-level \e
-  final state. When the state machine enters a top-level final state, the
-  machine will emit the finished() signal and halt.
+  final state (QFinalState object). When the state machine enters a top-level
+  final state, the machine will emit the QStateMachine::finished() signal and
+  halt.
+
+  \section1 Sharing Transitions By Grouping States
 
   Assume we wanted the user to be able to quit the application at any time by
   clicking a Quit button. In order to achieve this, we need to create a final
@@ -164,6 +185,9 @@
   \code
     s12>addTransition(quitButton, SIGNAL(clicked()), s12);
   \endcode
+
+  A transition can have any state as its target, i.e. the target state does
+  not have to be on the same level in the state hierarchy as the source state.
 
   \section1 Using History States to Save and Restore the Current State
 
@@ -251,10 +275,16 @@
     QState *s12 = new QState(s1);
   \endcode
 
+  When a parallel state group is entered, all its child states will be
+  simultaneously entered. Transitions within the individual child states
+  operate normally. However, any of the child states may take a transition
+  outside the parent state. When this happens, the parent state and all of its
+  child states are exited.
+
   \section1 Detecting that a Composite State has Finished
 
-  A child state can be final; when a final child state is entered, the parent
-  state emits the QState::finished() signal.
+  A child state can be final (a QFinalState object); when a final child state
+  is entered, the parent state emits the QState::finished() signal.
 
     \img statemachine-finished.png
     \omit
@@ -263,7 +293,105 @@
 
   This is useful when you want to hide the internal details of a state;
   i.e. the only thing the outside world should be able to do is enter the
-  state, and get a notification when the state has finished (i.e. when a final
-  child state has been entered).
+  state, and get a notification when the state has completed its work.
 
-  */
+  For parallel state groups, the QState::finished() signal is emitted when \e
+  all the child states have entered final states.
+
+  \section1 Events, Transitions and Guards
+
+  A QStateMachine runs its own event loop. For signal transitions
+  (QSignalTransition objects), QStateMachine automatically posts a
+  QSignalEvent to itself when it intercepts the corresponding signal;
+  similarly, for QObject event transitions (QEventTransition objects) a
+  QWrappedEvent is posted.
+
+  You can post your own events to the state machine using
+  QStateMachine::postEvent().
+
+  When posting a custom event to the state machine, you typically also have
+  one or more custom transitions that can be triggered from events of that
+  type. To create such a transition, you subclass QAbstractTransition and
+  reimplement QAbstractTransition::eventTest(), where you check if an event
+  matches your event type (and optionally other criteria, e.g. attributes of
+  the event object).
+
+  Here we define our own custom event type, \c StringEvent, for posting
+  strings to the state machine:
+
+  \code
+    struct StringEvent : public QEvent
+    {
+        StringEvent(const QString &val)
+        : QEvent(QEvent::Type(QEvent::User+1)),
+          value(val) {}
+
+        QString value;
+    };
+  \endcode
+
+  Next, we define a transition that only triggers when the event's string
+  matches a particular string (a \e guarded transition):
+
+  \code
+    class StringTransition : public QAbstractTransition
+    {
+    public:
+        StringTransition(const QString &value)
+            : m_value(value) {}
+
+    protected:
+        virtual bool eventTest(QEvent *e) const
+        {
+            if (e->type() != QEvent::Type(QEvent::User+1)) // StringEvent
+                return false;
+            StringEvent *se = static_cast<StringEvent*>(e);
+            return (m_value == se->value);
+        }
+    
+        virtual void onTransition(QEvent *) {}
+
+    private:
+        QString m_value;
+    };
+  \endcode
+
+  In the eventTest() reimplementation, we first check if the event type is the
+  desired one; if so, we cast the event to a StringEvent and perform the
+  string comparison.
+
+  The following is a statechart that uses the custom event and transition:
+
+    \img statemachine-customevents.png
+    \omit
+    \caption This is a caption
+    \endomit
+
+  Here's what the implementation of the statechart looks like:
+
+  \code
+    QStateMachine machine;
+    QState *s1 = new QState();
+    QState *s2 = new QState();
+    QFinalState *done = new QFinalState();
+
+    StringTransition *t1 = new StringTransition("Hello");
+    t1->setTargetState(s2);
+    s1->addTransition(t1);
+    StringTransition *t2 = new StringTransition("world");
+    t2->setTargetState(done);
+    s2->addTransition(t2);
+
+    machine.addState(s1);
+    machine.addState(s2);
+    machine.addState(done);
+    machine.setInitialState(s1);
+  \endcode
+
+  Once the machine is started, we can post events to it.
+
+  \code
+  machine.postEvent(new StringEvent("Hello"));
+  machine.postEvent(new StringEvent("world"));
+  \endcode
+*/
