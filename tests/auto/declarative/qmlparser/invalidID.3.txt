@@ -1,0 +1,4 @@
+MyQmlObject {
+    id.other: 10
+}
+

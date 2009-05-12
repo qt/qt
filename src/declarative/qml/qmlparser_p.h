@@ -133,7 +133,6 @@ namespace QmlParser
             bool isDefaultProperty;
             Type type;
             QByteArray name;
-            QString onValueChanged;
             QmlParser::Property *defaultValue;
         };
         struct DynamicSignal {

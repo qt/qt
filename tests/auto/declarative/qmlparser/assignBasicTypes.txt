@@ -20,4 +20,6 @@ MyTypeObject {
     rectFProperty: "1000.1,-10.9,400x90.99"
     boolProperty: true
     variantProperty: "Hello World!"
+
+    objectProperty: MyTypeObject { intProperty: 8 }
 }

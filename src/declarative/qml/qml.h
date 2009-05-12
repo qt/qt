@@ -106,7 +106,7 @@ QObject *qmlAttachedPropertiesObject(const QObject *obj)
     if (idx == -1 || !obj)
         return 0;
 
-    return qmlAttachedPropertiesObjectById(obj, idx);
+    return qmlAttachedPropertiesObjectById(idx, obj);
 }
 
 QML_DECLARE_TYPE(QObject);
