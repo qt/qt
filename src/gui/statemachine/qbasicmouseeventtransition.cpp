@@ -176,7 +176,7 @@ bool QBasicMouseEventTransition::eventTest(QEvent *event) const
 /*!
   \reimp
 */
-void QBasicMouseEventTransition::onTransition()
+void QBasicMouseEventTransition::onTransition(QEvent *)
 {
 }
 

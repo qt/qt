@@ -270,8 +270,9 @@ bool QEventTransition::eventTest(QEvent *event) const
 /*!
   \reimp
 */
-void QEventTransition::onTransition()
+void QEventTransition::onTransition(QEvent *event)
 {
+    Q_UNUSED(event);
 }
 
 /*!

@@ -45,7 +45,7 @@ public:
     void setModifiersMask(Qt::KeyboardModifiers modifiers);
 
 protected:
-    void onTransition();
+    void onTransition(QEvent *event);
     bool eventTest(QEvent *event) const;
 
 private:

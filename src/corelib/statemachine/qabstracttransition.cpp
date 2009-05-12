@@ -131,10 +131,10 @@ bool QAbstractTransitionPrivate::callEventTest(QEvent *e) const
     return q->eventTest(e);
 }
 
-void QAbstractTransitionPrivate::callOnTransition()
+void QAbstractTransitionPrivate::callOnTransition(QEvent *e)
 {
     Q_Q(QAbstractTransition);
-    q->onTransition();
+    q->onTransition(e);
 }
 
 QState *QAbstractTransitionPrivate::sourceState() const
@@ -179,8 +179,7 @@ QAbstractTransition::QAbstractTransition(const QList<QAbstractState*> &targets,
 #ifdef QT_STATEMACHINE_SOLUTION
     d_ptr->q_ptr = this;
 #endif
-    Q_D(QAbstractTransition);
-    d->targetStates = targets;
+    setTargetStates(targets);
 }
 
 /*!
@@ -220,8 +219,7 @@ QAbstractTransition::QAbstractTransition(QAbstractTransitionPrivate &dd,
 #ifdef QT_STATEMACHINE_SOLUTION
     d_ptr->q_ptr = this;
 #endif
-    Q_D(QAbstractTransition);
-    d->targetStates = targets;
+    setTargetStates(targets);
 }
 
 /*!
@@ -265,7 +263,7 @@ void QAbstractTransition::setTargetState(QAbstractState* target)
     if (!target)
         d->targetStates.clear();
     else
-        d->targetStates = QList<QAbstractState*>() << target;
+        setTargetStates(QList<QAbstractState*>() << target);
 }
 
 /*!
@@ -275,7 +273,13 @@ void QAbstractTransition::setTargetState(QAbstractState* target)
 QList<QAbstractState*> QAbstractTransition::targetStates() const
 {
     Q_D(const QAbstractTransition);
-    return d->targetStates;
+    QList<QAbstractState*> result;
+    for (int i = 0; i < d->targetStates.size(); ++i) {
+        QAbstractState *target = d->targetStates.at(i);
+        if (target)
+            result.append(target);
+    }
+    return result;
 }
 
 /*!
@@ -284,7 +288,22 @@ QList<QAbstractState*> QAbstractTransition::targetStates() const
 void QAbstractTransition::setTargetStates(const QList<QAbstractState*> &targets)
 {
     Q_D(QAbstractTransition);
-    d->targetStates = targets;
+
+    for (int i=0; i<targets.size(); ++i) {
+        QAbstractState *target = targets.at(i);
+        if (!target) {
+            qWarning("QAbstractTransition::setTargetStates: target state(s) cannot be null");
+            return;
+        }
+        if (target->machine() != 0 && target->machine()->rootState() == target) {
+            qWarning("QAbstractTransition::setTargetStates: root state cannot be target of transition");
+            return;
+        }
+    }
+
+    d->targetStates.clear();
+    for (int i = 0; i < targets.size(); ++i)
+        d->targetStates.append(targets.at(i));
 }
 
 /*!
@@ -353,10 +372,11 @@ QList<QAbstractAnimation*> QAbstractTransition::animations() const
 */
 
 /*!
-  \fn QAbstractTransition::onTransition()
+  \fn QAbstractTransition::onTransition(QEvent *event)
 
-  This function is called when the transition is triggered.  Reimplement this
-  function to perform custom processing when the transition is triggered.
+  This function is called when the transition is triggered. The given \a event
+  is what caused the transition to trigger. Reimplement this function to
+  perform custom processing when the transition is triggered.
 */
 
 /*!

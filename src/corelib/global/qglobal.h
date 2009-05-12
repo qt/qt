@@ -44,11 +44,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "4.5.1"
+#define QT_VERSION_STR   "4.5.2"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x040501
+#define QT_VERSION 0x040502
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -2281,9 +2281,9 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
                                  | QT_MODULE_GRAPHICSVIEW \
                                  | QT_MODULE_HELP \
                                  | QT_MODULE_TEST \
-                                 | QT_MODULE_DBUS)
-#define QT_EDITION_DESKTOP      (QT_EDITION_OPENSOURCE \
+                                 | QT_MODULE_DBUS \
                                  | QT_MODULE_ACTIVEQT)
+#define QT_EDITION_DESKTOP      (QT_EDITION_OPENSOURCE)
 #define QT_EDITION_UNIVERSAL    QT_EDITION_DESKTOP
 #define QT_EDITION_ACADEMIC     QT_EDITION_DESKTOP
 #define QT_EDITION_EDUCATIONAL  QT_EDITION_DESKTOP

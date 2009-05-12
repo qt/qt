@@ -4,7 +4,7 @@
 <context>
     <name>AnimationSaveWidget</name>
     <message>
-        <location filename="../tools/qvfb/qvfb.cpp" line="+824"/>
+        <location filename="../tools/qvfb/qvfb.cpp" line="+850"/>
         <location line="+204"/>
         <source>Record</source>
         <translation>录像</translation>
@@ -249,7 +249,7 @@
 <context>
     <name>DeviceSkin</name>
     <message>
-        <location filename="../tools/shared/deviceskin/deviceskin.cpp" line="+49"/>
+        <location filename="../tools/shared/deviceskin/deviceskin.cpp" line="+79"/>
         <source>The image file &apos;%1&apos; could not be loaded.</source>
         <translation>图像文件“%1”不能被加载。</translation>
     </message>

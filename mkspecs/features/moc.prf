@@ -47,7 +47,12 @@ win32:count($$list($$INCPATH), 40, >) {
 
 defineReplace(mocCmd) {
     !isEmpty(WIN_INCLUDETEMP) {
-        return($$QMAKE_MOC $(DEFINES) @$$WIN_INCLUDETEMP $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$1 -o $$2)
+        RET =
+        if(contains(TEMPLATE, "vc.*")|contains(TEMPLATE_PREFIX, "vc")) {
+            RET += $$mocinclude.commands
+        }
+        RET += $$QMAKE_MOC $(DEFINES) @$$WIN_INCLUDETEMP $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$1 -o $$2
+        return($$RET)
     }
     return($$QMAKE_MOC $(DEFINES) $(INCPATH) $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$1 -o $$2)
 }

@@ -77,8 +77,8 @@ public:
 
     QStateMachine *machine() const;
 
-    void callOnEntry();
-    void callOnExit();
+    void callOnEntry(QEvent *e);
+    void callOnExit(QEvent *e);
 
     void emitEntered();
     void emitExited();

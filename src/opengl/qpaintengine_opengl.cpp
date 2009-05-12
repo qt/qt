@@ -3716,8 +3716,14 @@ void QOpenGLPaintEngine::drawRects(const QRectF *rects, int rectCount)
                 d->disableClipping();
                 GLuint program = qt_gl_program_cache()->getProgram(d->drawable.context(),
                                                                    FRAGMENT_PROGRAM_MASK_TRAPEZOID_AA, 0, true);
-                QGLRectMaskGenerator maskGenerator(path, d->matrix, d->offscreen, program);
-                d->addItem(qt_mask_texture_cache()->getMask(maskGenerator, d));
+
+                if (d->matrix.type() >= QTransform::TxProject) {
+                    QGLPathMaskGenerator maskGenerator(path, d->matrix, d->offscreen, program);
+                    d->addItem(qt_mask_texture_cache()->getMask(maskGenerator, d));
+                } else {
+                    QGLRectMaskGenerator maskGenerator(path, d->matrix, d->offscreen, program);
+                    d->addItem(qt_mask_texture_cache()->getMask(maskGenerator, d));
+                }
 
                 d->enableClipping();
             }
@@ -5062,9 +5068,8 @@ void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
 
     // fall back to drawing a polygon if the scale factor is large, or
     // we use a gradient pen
-    if (ti.fontEngine->fontDef.pixelSize >= 64
-        || (d->matrix.det() > 1) || (d->pen_brush_style >= Qt::LinearGradientPattern
-                                     && d->pen_brush_style <= Qt::ConicalGradientPattern)) {
+    if ((d->matrix.det() > 1) || (d->pen_brush_style >= Qt::LinearGradientPattern
+                                  && d->pen_brush_style <= Qt::ConicalGradientPattern)) {
         QPaintEngine::drawTextItem(p, textItem);
         return;
     }

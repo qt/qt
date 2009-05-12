@@ -153,9 +153,9 @@ bool QKeyEventTransition::eventTest(QEvent *event) const
 /*!
   \reimp
 */
-void QKeyEventTransition::onTransition()
+void QKeyEventTransition::onTransition(QEvent *event)
 {
-    QEventTransition::onTransition();
+    QEventTransition::onTransition(event);
 }
 
 QT_END_NAMESPACE

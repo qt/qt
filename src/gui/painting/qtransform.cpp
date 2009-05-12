@@ -1317,11 +1317,15 @@ QRegion QTransform::map(const QRegion &r) const
     TransformationType t = type();
     if (t == TxNone)
         return r;
+
     if (t == TxTranslate) {
         QRegion copy(r);
         copy.translate(qRound(affine._dx), qRound(affine._dy));
         return copy;
     }
+
+    if (t == TxScale && r.numRects() == 1)
+        return QRegion(mapRect(r.boundingRect()));
 
     QPainterPath p = map(qt_regionToPath(r));
     return p.toFillPolygon(QTransform()).toPolygon();
@@ -1880,7 +1884,7 @@ const QMatrix &QTransform::toAffine() const
 QTransform::TransformationType QTransform::type() const
 {
     if (m_dirty >= m_type) {
-        if (m_dirty > TxShear && (!qFuzzyCompare(m_13 + 1, 1) || !qFuzzyCompare(m_23 + 1, 1)))
+        if (m_dirty > TxShear && (!qFuzzyCompare(m_13 + 1, 1) || !qFuzzyCompare(m_23 + 1, 1) || !qFuzzyCompare(m_33, 1)))
              m_type = TxProject;
         else if (m_dirty > TxScale && (!qFuzzyCompare(affine._m12 + 1, 1) || !qFuzzyCompare(affine._m21 + 1, 1))) {
             const qreal dot = affine._m11 * affine._m12 + affine._m21 * affine._m22;
@@ -1888,7 +1892,7 @@ QTransform::TransformationType QTransform::type() const
                 m_type = TxRotate;
             else
                 m_type = TxShear;
-        } else if (m_dirty > TxTranslate && (!qFuzzyCompare(affine._m11, 1) || !qFuzzyCompare(affine._m22, 1) || !qFuzzyCompare(m_33, 1)))
+        } else if (m_dirty > TxTranslate && (!qFuzzyCompare(affine._m11, 1) || !qFuzzyCompare(affine._m22, 1)))
             m_type = TxScale;
         else if (m_dirty > TxNone && (!qFuzzyCompare(affine._dx + 1, 1) || !qFuzzyCompare(affine._dy + 1, 1)))
             m_type = TxTranslate;

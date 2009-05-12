@@ -217,7 +217,7 @@ public:
 //         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.nokia.troll.no", 3309, "CLIENT_COMPRESS=1;CLIENT_SSL=1" ); // MySQL 5.0.18 Linux
 //         addDb( "QMYSQL3", "testdb", "troll", "trond", "iceblink.nokia.troll.no" ); // MySQL 5.0.13 Windows
 //         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "mysql4-nokia.trolltech.com.au" ); // MySQL 4.1.22-2.el4  linux
-//        addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "mysql5-nokia.trolltech.com.au" ); // MySQL 5.0.45-7.el5 linux
+//         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "mysql5-nokia.trolltech.com.au" ); // MySQL 5.0.45-7.el5 linux
 
 //         addDb( "QPSQL7", "testdb", "troll", "trond", "horsehead.nokia.troll.no" ); // V7.2 NOT SUPPORTED!
 //         addDb( "QPSQL7", "testdb", "troll", "trond", "horsehead.nokia.troll.no", 5434 ); // V7.2 NOT SUPPORTED! Multi-byte
@@ -238,14 +238,15 @@ public:
 //         addDb( "QIBASE", "/opt/firebird/databases/testdb.fdb", "testuser", "Ee4Gabf6_", "firebird2-nokia.trolltech.com.au" ); // Firebird 2.1.1
 
 //      use in-memory database to prevent local files
-        addDb("QSQLITE", ":memory:");
-//        addDb( "QSQLITE", QDir::toNativeSeparators(QDir::tempPath()+"/foo.db") );
+//         addDb("QSQLITE", ":memory:");
+        addDb( "QSQLITE", QDir::toNativeSeparators(QDir::tempPath()+"/foo.db") );
 //         addDb( "QSQLITE2", QDir::toNativeSeparators(QDir::tempPath()+"/foo2.db") );
 //         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=iceblink.nokia.troll.no\\ICEBLINK", "troll", "trond", "" );
 //         addDb( "QODBC3", "DRIVER={SQL Native Client};SERVER=silence.nokia.troll.no\\SQLEXPRESS", "troll", "trond", "" );
 
-//      addDb( "QODBC", "DRIVER={MySQL ODBC 3.51 Driver};SERVER=mysql5-nokia.trolltech.com.au;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
-//      addDb( "QODBC", "DRIVER={FreeTDS};SERVER=horsehead.nokia.troll.no;DATABASE=testdb;PORT=4101;UID=troll;PWD=trondk", "troll", "trondk", "" );
+//         addDb( "QODBC", "DRIVER={MySQL ODBC 3.51 Driver};SERVER=mysql5-nokia.trolltech.com.au;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
+//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=horsehead.nokia.troll.no;DATABASE=testdb;PORT=4101;UID=troll;PWD=trondk", "troll", "trondk", "" );
+//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=silence.nokia.troll.no;DATABASE=testdb;PORT=2392;UID=troll;PWD=trond", "troll", "trond", "" );
 
     }
 
@@ -312,17 +313,21 @@ public:
         QSqlQuery q( db );
         QStringList dbtables=db.tables();
 
-        foreach(QString tableName, tableNames)
+        foreach(const QString &tableName, tableNames)
         {
             wasDropped = true;
             QString table=tableName;
             if ( db.driver()->isIdentifierEscaped(table, QSqlDriver::TableName))
                 table = db.driver()->stripDelimiters(table, QSqlDriver::TableName);
 
-            if ( dbtables.contains( table, Qt::CaseSensitive ) )
-                wasDropped = q.exec( "drop table " + tableName);
-            else if ( dbtables.contains( table, Qt::CaseInsensitive ) )
-                wasDropped = q.exec( "drop table " + tableName);
+            foreach(const QString dbtablesName, dbtables) {
+                if(dbtablesName.toUpper() == table.toUpper()) {
+                    dbtables.removeAll(dbtablesName);
+                    wasDropped = q.exec("drop table " + db.driver()->escapeIdentifier( dbtablesName, QSqlDriver::TableName ));
+                    if(!wasDropped)
+                        wasDropped = q.exec("drop table " + dbtablesName);
+                }
+            }
 
             if ( !wasDropped )
                 qWarning() << dbToString(db) << "unable to drop table" << tableName << ':' << q.lastError().text() << "tables:" << dbtables;
@@ -396,12 +401,26 @@ public:
 
     static QByteArray printError( const QSqlError& err )
     {
-        return QString( "'" + err.driverText() + "' || '" + err.databaseText() + "'" ).toLocal8Bit();
+        QString result;
+        if(err.number() > 0)
+            result += '(' + QString::number(err.number()) + ") ";
+        result += '\'';
+        if(!err.driverText().isEmpty())
+            result += err.driverText() + "' || '";
+        result += err.databaseText() + "'";
+        return result.toLocal8Bit();
     }
 
     static QByteArray printError( const QSqlError& err, const QSqlDatabase& db )
     {
-        return QString( dbToString(db) + ": '" + err.driverText() + "' || '" + err.databaseText() + "'" ).toLocal8Bit();
+        QString result(dbToString(db) + ": ");
+        if(err.number() > 0)
+            result += '(' + QString::number(err.number()) + ") ";
+        result += '\'';
+        if(!err.driverText().isEmpty())
+            result += err.driverText() + "' || '";
+        result += err.databaseText() + "'";
+        return result.toLocal8Bit();
     }
 
     static bool isSqlServer( QSqlDatabase db )

@@ -74,6 +74,7 @@ private slots:
     void incrementalResults();
     void noDetatch();
     void stlContainers();
+    void qFutureAssignmentLeak();
     void stressTest();
 public slots:
     void throttling();
@@ -2323,6 +2324,36 @@ void tst_map::stlContainers()
 #endif
 }
 
+InstanceCounter ic_fn(const InstanceCounter & ic)
+{
+    return InstanceCounter(ic);
+};
+
+// Verify that held results are deleted when a future is
+// assigned over with operator ==
+void tst_map::qFutureAssignmentLeak()
+{
+    currentInstanceCount = 0;
+    peakInstanceCount = 0;
+    QFuture<InstanceCounter> future;
+    {
+        QList<InstanceCounter> list;
+        for (int i=0;i<1000;++i)
+            list += InstanceCounter();
+        future = QtConcurrent::mapped(list, ic_fn);
+        future.waitForFinished();
+
+        future = QtConcurrent::mapped(list, ic_fn);
+        future.waitForFinished();
+
+        future = QtConcurrent::mapped(list, ic_fn);
+        future.waitForFinished();
+    }
+
+    QCOMPARE(int(currentInstanceCount), 1000);
+    future = QFuture<InstanceCounter>();
+    QCOMPARE(int(currentInstanceCount), 0);
+}
 
 inline void increment(int &num)
 {

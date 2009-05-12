@@ -188,8 +188,9 @@ int QEventLoop::exec(ProcessEventsFlags flags)
     d->threadData->eventLoops.push(this);
 
     // remove posted quit events when entering a new event loop
-    if (qApp->thread() == thread())
-        QCoreApplication::removePostedEvents(qApp, QEvent::Quit);
+    QCoreApplication *app = QCoreApplication::instance();
+    if (app && app->thread() == thread())
+        QCoreApplication::removePostedEvents(app, QEvent::Quit);
 
 #if defined(QT_NO_EXCEPTIONS)
     while (!d->exit)

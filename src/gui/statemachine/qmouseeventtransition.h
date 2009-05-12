@@ -51,7 +51,7 @@ public:
     void setPath(const QPainterPath &path);
 
 protected:
-    void onTransition();
+    void onTransition(QEvent *event);
     bool eventTest(QEvent *event) const;
 
 private:

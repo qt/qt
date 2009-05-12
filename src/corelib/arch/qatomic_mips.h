@@ -103,16 +103,25 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddWaitFree()
 
 #if defined(Q_CC_GNU) && !defined(Q_OS_IRIX)
 
+#if _MIPS_SIM == _ABIO32
+#define SET_MIPS2 ".set mips2\n\t"
+#else
+#define SET_MIPS2
+#endif
+
 inline bool QBasicAtomicInt::ref()
 {
     register int originalValue;
     register int newValue;
-    asm volatile("0:\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "0:\n"
                  "ll %[originalValue], %[_q_value]\n"
                  "addiu %[newValue], %[originalValue], %[one]\n"
                  "sc %[newValue], %[_q_value]\n"
                  "beqz %[newValue], 0b\n"
                  "nop\n"
+                 ".set pop\n"
                  : [originalValue] "=&r" (originalValue),
                    [_q_value] "+m" (_q_value),
                    [newValue] "=&r" (newValue)
@@ -125,12 +134,15 @@ inline bool QBasicAtomicInt::deref()
 {
     register int originalValue;
     register int newValue;
-    asm volatile("0:\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "0:\n"
                  "ll %[originalValue], %[_q_value]\n"
                  "addiu %[newValue], %[originalValue], %[minusOne]\n"
                  "sc %[newValue], %[_q_value]\n"
                  "beqz %[newValue], 0b\n"
                  "nop\n"
+                 ".set pop\n"
                  : [originalValue] "=&r" (originalValue),
                    [_q_value] "+m" (_q_value),
                    [newValue] "=&r" (newValue)
@@ -143,7 +155,9 @@ inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
 {
     register int result;
     register int tempValue;
-    asm volatile("0:\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "0:\n"
                  "ll %[result], %[_q_value]\n"
                  "xor %[result], %[result], %[expectedValue]\n"
                  "bnez %[result], 0f\n"
@@ -153,6 +167,7 @@ inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
                  "beqz %[tempValue], 0b\n"
                  "nop\n"
                  "0:\n"
+                 ".set pop\n"
                  : [result] "=&r" (result),
                    [tempValue] "=&r" (tempValue),
                    [_q_value] "+m" (_q_value)
@@ -166,7 +181,9 @@ inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
 {
     register int result;
     register int tempValue;
-    asm volatile("0:\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "0:\n"
                  "ll %[result], %[_q_value]\n"
                  "xor %[result], %[result], %[expectedValue]\n"
                  "bnez %[result], 0f\n"
@@ -177,6 +194,7 @@ inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
                  "nop\n"
                  "sync\n"
                  "0:\n"
+                 ".set pop\n"
                  : [result] "=&r" (result),
                    [tempValue] "=&r" (tempValue),
                    [_q_value] "+m" (_q_value)
@@ -190,7 +208,9 @@ inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
 {
     register int result;
     register int tempValue;
-    asm volatile("sync\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "sync\n"
                  "0:\n"
                  "ll %[result], %[_q_value]\n"
                  "xor %[result], %[result], %[expectedValue]\n"
@@ -201,6 +221,7 @@ inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
                  "beqz %[tempValue], 0b\n"
                  "nop\n"
                  "0:\n"
+                 ".set pop\n"
                  : [result] "=&r" (result),
                    [tempValue] "=&r" (tempValue),
                    [_q_value] "+m" (_q_value)
@@ -219,12 +240,15 @@ inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
 {
     register int originalValue;
     register int tempValue;
-    asm volatile("0:\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "0:\n"
                  "ll %[originalValue], %[_q_value]\n"
                  "move %[tempValue], %[newValue]\n"
                  "sc %[tempValue], %[_q_value]\n"
                  "beqz %[tempValue], 0b\n"
                  "nop\n"
+                 ".set pop\n"
                  : [originalValue] "=&r" (originalValue),
                    [tempValue] "=&r" (tempValue),
                    [_q_value] "+m" (_q_value)
@@ -237,13 +261,16 @@ inline int QBasicAtomicInt::fetchAndStoreAcquire(int newValue)
 {
     register int originalValue;
     register int tempValue;
-    asm volatile("0:\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "0:\n"
                  "ll %[originalValue], %[_q_value]\n"
                  "move %[tempValue], %[newValue]\n"
                  "sc %[tempValue], %[_q_value]\n"
                  "beqz %[tempValue], 0b\n"
                  "nop\n"
                  "sync\n"
+                 ".set pop\n"
                  : [originalValue] "=&r" (originalValue),
                    [tempValue] "=&r" (tempValue),
                    [_q_value] "+m" (_q_value)
@@ -256,13 +283,16 @@ inline int QBasicAtomicInt::fetchAndStoreRelease(int newValue)
 {
     register int originalValue;
     register int tempValue;
-    asm volatile("sync\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "sync\n"
                  "0:\n"
                  "ll %[originalValue], %[_q_value]\n"
                  "move %[tempValue], %[newValue]\n"
                  "sc %[tempValue], %[_q_value]\n"
                  "beqz %[tempValue], 0b\n"
                  "nop\n"
+                 ".set pop\n"
                  : [originalValue] "=&r" (originalValue),
                    [tempValue] "=&r" (tempValue),
                    [_q_value] "+m" (_q_value)
@@ -280,12 +310,15 @@ inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
 {
     register int originalValue;
     register int newValue;
-    asm volatile("0:\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "0:\n"
                  "ll %[originalValue], %[_q_value]\n"
                  "addu %[newValue], %[originalValue], %[valueToAdd]\n"
                  "sc %[newValue], %[_q_value]\n"
                  "beqz %[newValue], 0b\n"
                  "nop\n"
+                 ".set pop\n"
                  : [originalValue] "=&r" (originalValue),
                    [_q_value] "+m" (_q_value),
                    [newValue] "=&r" (newValue)
@@ -298,13 +331,16 @@ inline int QBasicAtomicInt::fetchAndAddAcquire(int valueToAdd)
 {
     register int originalValue;
     register int newValue;
-    asm volatile("0:\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "0:\n"
                  "ll %[originalValue], %[_q_value]\n"
                  "addu %[newValue], %[originalValue], %[valueToAdd]\n"
                  "sc %[newValue], %[_q_value]\n"
                  "beqz %[newValue], 0b\n"
                  "nop\n"
                  "sync\n"
+                 ".set pop\n"
                  : [originalValue] "=&r" (originalValue),
                    [_q_value] "+m" (_q_value),
                    [newValue] "=&r" (newValue)
@@ -317,13 +353,16 @@ inline int QBasicAtomicInt::fetchAndAddRelease(int valueToAdd)
 {
     register int originalValue;
     register int newValue;
-    asm volatile("sync\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "sync\n"
                  "0:\n"
                  "ll %[originalValue], %[_q_value]\n"
                  "addu %[newValue], %[originalValue], %[valueToAdd]\n"
                  "sc %[newValue], %[_q_value]\n"
                  "beqz %[newValue], 0b\n"
                  "nop\n"
+                 ".set pop\n"
                  : [originalValue] "=&r" (originalValue),
                    [_q_value] "+m" (_q_value),
                    [newValue] "=&r" (newValue)
@@ -350,7 +389,9 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValu
 {
     register T *result;
     register T *tempValue;
-    asm volatile("0:\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "0:\n"
                  LLP" %[result], %[_q_value]\n"
                  "xor %[result], %[result], %[expectedValue]\n"
                  "bnez %[result], 0f\n"
@@ -360,6 +401,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValu
                  "beqz %[tempValue], 0b\n"
                  "nop\n"
                  "0:\n"
+                 ".set pop\n"
                  : [result] "=&r" (result),
                    [tempValue] "=&r" (tempValue),
                    [_q_value] "+m" (_q_value)
@@ -374,7 +416,9 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValu
 {
     register T *result;
     register T *tempValue;
-    asm volatile("0:\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "0:\n"
                  LLP" %[result], %[_q_value]\n"
                  "xor %[result], %[result], %[expectedValue]\n"
                  "bnez %[result], 0f\n"
@@ -385,6 +429,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValu
                  "nop\n"
                  "sync\n"
                  "0:\n"
+                 ".set pop\n"
                  : [result] "=&r" (result),
                    [tempValue] "=&r" (tempValue),
                    [_q_value] "+m" (_q_value)
@@ -399,7 +444,9 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelease(T *expectedValu
 {
     register T *result;
     register T *tempValue;
-    asm volatile("sync\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "sync\n"
                  "0:\n"
                  LLP" %[result], %[_q_value]\n"
                  "xor %[result], %[result], %[expectedValue]\n"
@@ -410,6 +457,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelease(T *expectedValu
                  "beqz %[tempValue], 0b\n"
                  "nop\n"
                  "0:\n"
+                 ".set pop\n"
                  : [result] "=&r" (result),
                    [tempValue] "=&r" (tempValue),
                    [_q_value] "+m" (_q_value)
@@ -430,12 +478,15 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
 {
     register T *originalValue;
     register T *tempValue;
-    asm volatile("0:\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "0:\n"
                  LLP" %[originalValue], %[_q_value]\n"
                  "move %[tempValue], %[newValue]\n"
                  SCP" %[tempValue], %[_q_value]\n"
                  "beqz %[tempValue], 0b\n"
                  "nop\n"
+                 ".set pop\n"
                  : [originalValue] "=&r" (originalValue),
                    [tempValue] "=&r" (tempValue),
                    [_q_value] "+m" (_q_value)
@@ -449,13 +500,16 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
 {
     register T *originalValue;
     register T *tempValue;
-    asm volatile("0:\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "0:\n"
                  LLP" %[originalValue], %[_q_value]\n"
                  "move %[tempValue], %[newValue]\n"
                  SCP" %[tempValue], %[_q_value]\n"
                  "beqz %[tempValue], 0b\n"
                  "nop\n"
                  "sync\n"
+                 ".set pop\n"
                  : [originalValue] "=&r" (originalValue),
                    [tempValue] "=&r" (tempValue),
                    [_q_value] "+m" (_q_value)
@@ -469,13 +523,16 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelease(T *newValue)
 {
     register T *originalValue;
     register T *tempValue;
-    asm volatile("sync\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "sync\n"
                  "0:\n"
                  LLP" %[originalValue], %[_q_value]\n"
                  "move %[tempValue], %[newValue]\n"
                  SCP" %[tempValue], %[_q_value]\n"
                  "beqz %[tempValue], 0b\n"
                  "nop\n"
+                 ".set pop\n"
                  : [originalValue] "=&r" (originalValue),
                    [tempValue] "=&r" (tempValue),
                    [_q_value] "+m" (_q_value)
@@ -495,12 +552,15 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueTo
 {
     register T *originalValue;
     register T *newValue;
-    asm volatile("0:\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "0:\n"
                  LLP" %[originalValue], %[_q_value]\n"
                  "addu %[newValue], %[originalValue], %[valueToAdd]\n"
                  SCP" %[newValue], %[_q_value]\n"
                  "beqz %[newValue], 0b\n"
                  "nop\n"
+                 ".set pop\n"
                  : [originalValue] "=&r" (originalValue),
                    [_q_value] "+m" (_q_value),
                    [newValue] "=&r" (newValue)
@@ -514,13 +574,16 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddAcquire(qptrdiff valueTo
 {
     register T *originalValue;
     register T *newValue;
-    asm volatile("0:\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "0:\n"
                  LLP" %[originalValue], %[_q_value]\n"
                  "addu %[newValue], %[originalValue], %[valueToAdd]\n"
                  SCP" %[newValue], %[_q_value]\n"
                  "beqz %[newValue], 0b\n"
                  "nop\n"
                  "sync\n"
+                 ".set pop\n"
                  : [originalValue] "=&r" (originalValue),
                    [_q_value] "+m" (_q_value),
                    [newValue] "=&r" (newValue)
@@ -534,13 +597,16 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueTo
 {
     register T *originalValue;
     register T *newValue;
-    asm volatile("sync\n"
+    asm volatile(".set push\n"
+                 SET_MIPS2
+                 "sync\n"
                  "0:\n"
                  LLP" %[originalValue], %[_q_value]\n"
                  "addu %[newValue], %[originalValue], %[valueToAdd]\n"
                  SCP" %[newValue], %[_q_value]\n"
                  "beqz %[newValue], 0b\n"
                  "nop\n"
+                 ".set pop\n"
                  : [originalValue] "=&r" (originalValue),
                    [_q_value] "+m" (_q_value),
                    [newValue] "=&r" (newValue)

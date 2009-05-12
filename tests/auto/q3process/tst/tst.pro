@@ -11,6 +11,7 @@ win32 {
   }
 }
 
-contains(QT_CONFIG, qt3support): QT += qt3support
+QT += qt3support
+requires(contains(QT_CONFIG,qt3support))
 
 

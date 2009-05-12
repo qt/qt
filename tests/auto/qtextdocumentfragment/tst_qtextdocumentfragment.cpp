@@ -2309,7 +2309,7 @@ void tst_QTextDocumentFragment::html_tbody()
     QVERIFY(table);
     QCOMPARE(table->columns(), 1);
     QCOMPARE(table->rows(), 2);
-    QVERIFY(table->format().headerRowCount(), 1);
+    QCOMPARE(table->format().headerRowCount(), 1);
     QCOMPARE(table->cellAt(0, 0).firstCursorPosition().block().text(), QString("First Cell"));
     QCOMPARE(table->cellAt(1, 0).firstCursorPosition().block().text(), QString("Second Cell"));
 }

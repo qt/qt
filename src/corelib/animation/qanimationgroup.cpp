@@ -46,18 +46,46 @@
     \ingroup animation
     \preliminary
 
-    QAnimationGroup represents a group of animations, such as parallel or sequential,
-    and lets you combine different animations into one. The group manages any animation
-    that inherits QAbstractAnimation. By combining groups, you can easily construct
-    complex animation graphs.
+    An animation group is a container for animations (subclasses of
+    QAbstractAnimation). A group is usually responsible for managing
+    the \l{QAbstractAnimation::State}{state} of its animations, i.e.,
+    it decides when to start, stop, resume, and pause them. Currently,
+    Qt provides two such groups: QParallelAnimationGroup and
+    QSequentialAnimationGroup. Look up their class descriptions for
+    details.
 
-    The QAnimationGroup base class provides methods for adding and retrieving animations.
-    Besides that, you can remove animations by calling remove(), and clear the animation
-    group by calling clearAnimations(). You may keep track of changes in the group's animations by
-    listening to QEvent::ChildAdded and QEvent::ChildRemoved events.
+    Since QAnimationGroup inherits from QAbstractAnimation, you can
+    combine groups, and easily construct complex animation graphs.
+    You can query QAbstractAnimation for the group it belongs to
+    (using the \l{QAbstractAnimation::}{group()} function).
 
-    QAnimationGroup takes ownership of the animations it manages, and ensures that they are
-    deleted when the animation group is deleted.
+    To start a top-level animation group, you simply use the
+    \l{QAbstractAnimation::}{start()} function from
+    QAbstractAnimation. By a top-level animation group, we think of a
+    group that itself is not contained within another group. Starting
+    sub groups directly is not supported, and may lead to unexpected
+    behavior.
+
+    \omit OK, we'll put in a snippet on this here \endomit
+
+    QAnimationGroup provides methods for adding and retrieving
+    animations. Besides that, you can remove animations by calling
+    remove(), and clear the animation group by calling
+    clearAnimations(). You may keep track of changes in the group's
+    animations by listening to QEvent::ChildAdded and
+    QEvent::ChildRemoved events.
+
+    \omit OK, let's find a snippet here as well. \endomit
+
+    QAnimationGroup takes ownership of the animations it manages, and
+    ensures that they are deleted when the animation group is deleted.
+
+    You can also use a \l{The State Machine Framework}{state machine}
+    to create complex animations. The framework provides a special
+    state, QAnimationState, that plays an animation upon entry and
+    transitions to a new state when the animation has finished
+    playing. This technique can also be combined with using animation
+    groups.
 
     \sa QAbstractAnimation, QVariantAnimation, {The Animation Framework}
 */

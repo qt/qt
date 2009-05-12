@@ -1484,7 +1484,9 @@ void QPainter::initFrom(const QWidget *widget)
     d->state->bgBrush = pal.brush(widget->backgroundRole());
     d->state->deviceFont = QFont(widget->font(), const_cast<QWidget*> (widget));
     d->state->font = d->state->deviceFont;
-    if (d->engine) {
+    if (d->extended) {
+        d->extended->penChanged();
+    } else if (d->engine) {
         d->engine->setDirty(QPaintEngine::DirtyPen);
         d->engine->setDirty(QPaintEngine::DirtyBrush);
         d->engine->setDirty(QPaintEngine::DirtyFont);
@@ -2396,7 +2398,6 @@ QRegion QPainter::clipRegion() const
     // ### Falcon: Use QPainterPath
     for (int i=0; i<d->state->clipInfo.size(); ++i) {
         const QPainterClipInfo &info = d->state->clipInfo.at(i);
-        QRegion other;
         switch (info.clipType) {
 
         case QPainterClipInfo::RegionClip: {
@@ -2449,15 +2450,20 @@ QRegion QPainter::clipRegion() const
                 lastWasNothing = false;
                 continue;
             }
-            if (info.operation == Qt::IntersectClip)
-                region &= QRegion(info.rect) * matrix;
-            else if (info.operation == Qt::UniteClip)
+            if (info.operation == Qt::IntersectClip) {
+                // Use rect intersection if possible.
+                if (matrix.type() <= QTransform::TxScale)
+                    region &= matrix.mapRect(info.rect);
+                else
+                    region &= matrix.map(QRegion(info.rect));
+            } else if (info.operation == Qt::UniteClip) {
                 region |= QRegion(info.rect) * matrix;
-            else if (info.operation == Qt::NoClip) {
+            } else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
                 region = QRegion();
-            } else
+            } else {
                 region = QRegion(info.rect) * matrix;
+            }
             break;
         }
 
@@ -2468,15 +2474,20 @@ QRegion QPainter::clipRegion() const
                 lastWasNothing = false;
                 continue;
             }
-            if (info.operation == Qt::IntersectClip)
-                region &= QRegion(info.rectf.toRect()) * matrix;
-            else if (info.operation == Qt::UniteClip)
+            if (info.operation == Qt::IntersectClip) {
+                // Use rect intersection if possible.
+                if (matrix.type() <= QTransform::TxScale)
+                    region &= matrix.mapRect(info.rectf.toRect());
+                else
+                    region &= matrix.map(QRegion(info.rectf.toRect()));
+            } else if (info.operation == Qt::UniteClip) {
                 region |= QRegion(info.rectf.toRect()) * matrix;
-            else if (info.operation == Qt::NoClip) {
+            } else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
                 region = QRegion();
-            } else
+            } else {
                 region = QRegion(info.rectf.toRect()) * matrix;
+            }
             break;
         }
         }
@@ -5131,6 +5142,11 @@ void QPainter::drawConvexPolygon(const QPointF *points, int pointCount)
     d->engine->drawPolygon(points, pointCount, QPaintEngine::ConvexMode);
 }
 
+static inline QPointF roundInDeviceCoordinates(const QPointF &p, const QTransform &m)
+{
+    return m.inverted().map(QPointF(m.map(p).toPoint()));
+}
+
 /*!
     \fn void QPainter::drawPixmap(const QRectF &target, const QPixmap &pixmap, const QRectF &source)
 
@@ -5165,6 +5181,9 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
 
     Q_D(QPainter);
 
+    if (!d->engine)
+        return;
+
 #ifndef QT_NO_DEBUG
     qt_painter_thread_test(d->device->devType(), "drawPixmap()");
 #endif
@@ -5173,9 +5192,6 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
         d->extended->drawPixmap(p, pm);
         return;
     }
-
-    if (!d->engine)
-        return;
 
     qreal x = p.x();
     qreal y = p.y();
@@ -5199,11 +5215,12 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
         || (d->state->opacity != 1.0 && !d->engine->hasFeature(QPaintEngine::ConstantOpacity)))
     {
         save();
-        // If there is no scaling or transformation involved we have to make sure we use the
+        // If there is no rotation involved we have to make sure we use the
         // antialiased and not the aliased coordinate system by rounding the coordinates.
-        if (d->state->matrix.type() <= QTransform::TxTranslate) {
-            x = qRound(x + d->state->matrix.dx()) - d->state->matrix.dx();
-            y = qRound(y + d->state->matrix.dy()) - d->state->matrix.dy();
+        if (d->state->matrix.type() <= QTransform::TxScale) {
+            const QPointF p = roundInDeviceCoordinates(QPointF(x, y), d->state->matrix);
+            x = p.x();
+            y = p.y();
         }
         translate(x, y);
         setBackgroundMode(Qt::TransparentMode);
@@ -5313,16 +5330,21 @@ void QPainter::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
         || ((sw != w || sh != h) && !d->engine->hasFeature(QPaintEngine::PixmapTransform)))
     {
         save();
-        // If there is no scaling or transformation involved we have to make sure we use the
+        // If there is no rotation involved we have to make sure we use the
         // antialiased and not the aliased coordinate system by rounding the coordinates.
+        if (d->state->matrix.type() <= QTransform::TxScale) {
+            const QPointF p = roundInDeviceCoordinates(QPointF(x, y), d->state->matrix);
+            x = p.x();
+            y = p.y();
+        }
+
         if (d->state->matrix.type() <= QTransform::TxTranslate && sw == w && sh == h) {
-            x = qRound(x + d->state->matrix.dx()) - d->state->matrix.dx();
-            y = qRound(y + d->state->matrix.dy()) - d->state->matrix.dy();
             sx = qRound(sx);
             sy = qRound(sy);
             sw = qRound(sw);
             sh = qRound(sh);
         }
+
         translate(x, y);
         scale(w / sw, h / sh);
         setBackgroundMode(Qt::TransparentMode);
@@ -5472,11 +5494,12 @@ void QPainter::drawImage(const QPointF &p, const QImage &image)
         || (d->state->opacity != 1.0 && !d->engine->hasFeature(QPaintEngine::ConstantOpacity)))
     {
         save();
-        // If there is no scaling or transformation involved we have to make sure we use the
+        // If there is no rotation involved we have to make sure we use the
         // antialiased and not the aliased coordinate system by rounding the coordinates.
-        if (d->state->matrix.type() <= QTransform::TxTranslate) {
-            x = qRound(x + d->state->matrix.dx()) - d->state->matrix.dx();
-            y = qRound(y + d->state->matrix.dy()) - d->state->matrix.dy();
+        if (d->state->matrix.type() <= QTransform::TxScale) {
+            const QPointF p = roundInDeviceCoordinates(QPointF(x, y), d->state->matrix);
+            x = p.x();
+            y = p.y();
         }
         translate(x, y);
         setBackgroundMode(Qt::TransparentMode);
@@ -5575,11 +5598,15 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
         || (d->state->opacity != 1.0 && !d->engine->hasFeature(QPaintEngine::ConstantOpacity)))
     {
         save();
-        // If there is no scaling or transformation involved we have to make sure we use the
+        // If there is no rotation involved we have to make sure we use the
         // antialiased and not the aliased coordinate system by rounding the coordinates.
+        if (d->state->matrix.type() <= QTransform::TxScale) {
+            const QPointF p = roundInDeviceCoordinates(QPointF(x, y), d->state->matrix);
+            x = p.x();
+            y = p.y();
+        }
+
         if (d->state->matrix.type() <= QTransform::TxTranslate && sw == w && sh == h) {
-            x = qRound(x + d->state->matrix.dx()) - d->state->matrix.dx();
-            y = qRound(y + d->state->matrix.dy()) - d->state->matrix.dy();
             sx = qRound(sx);
             sy = qRound(sy);
             sw = qRound(sw);
@@ -6322,17 +6349,18 @@ void QPainter::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPo
         setBrush(QBrush(d->state->pen.color(), pixmap));
         setPen(Qt::NoPen);
 
-        // If there is no scaling or transformation involved we have to make sure we use the
+        // If there is no rotation involved we have to make sure we use the
         // antialiased and not the aliased coordinate system by rounding the coordinates.
-        if (d->state->matrix.type() <= QTransform::TxTranslate) {
-            qreal x = qRound(r.x() + d->state->matrix.dx()) - d->state->matrix.dx();
-            qreal y = qRound(r.y() + d->state->matrix.dy()) - d->state->matrix.dy();
-            qreal w = qRound(r.width());
-            qreal h = qRound(r.height());
-            sx = qRound(sx);
-            sy = qRound(sy);
+        if (d->state->matrix.type() <= QTransform::TxScale) {
+            const QPointF p = roundInDeviceCoordinates(r.topLeft(), d->state->matrix);
+
+            if (d->state->matrix.type() <= QTransform::TxTranslate) {
+                sx = qRound(sx);
+                sy = qRound(sy);
+            }
+
             setBrushOrigin(QPointF(r.x()-sx, r.y()-sy));
-            drawRect(QRectF(x, y, w, h));
+            drawRect(QRectF(p, r.size()));
         } else {
             setBrushOrigin(QPointF(r.x()-sx, r.y()-sy));
             drawRect(r);
@@ -7131,14 +7159,14 @@ QPoint QPainter::xFormDev(const QPoint &p) const
     \fn QRect QPainter::xFormDev(const QRect &rectangle) const
     \overload
 
-    Use  combineMatrix() combined with QMatrix::inverted() instead.
+    Use mapRect() combined with QMatrix::inverted() instead.
 
     \oldcode
         QPainter painter(this);
         QRect transformed = painter.xFormDev(rectangle);
     \newcode
         QPainter painter(this);
-        QRect transformed = rectangle * painter.combinedMatrix().inverted();
+        QRect transformed = painter.combinedMatrix().inverted(rectangle);
     \endcode
 */
 
@@ -8542,5 +8570,253 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
 {
     p->draw_helper(path, operation);
 }
+
+/*! \fn Display *QPaintDevice::x11Display() const
+    Use QX11Info::display() instead.
+
+    \oldcode
+        Display *display = widget->x11Display();
+    \newcode
+        Display *display = QX11Info::display();
+    \endcode
+
+    \sa QWidget::x11Info(), QX11Info::display()
+*/
+
+/*! \fn int QPaintDevice::x11Screen() const
+    Use QX11Info::screen() instead.
+
+    \oldcode
+        int screen = widget->x11Screen();
+    \newcode
+        int screen = widget->x11Info().screen();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn void *QPaintDevice::x11Visual() const
+    Use QX11Info::visual() instead.
+
+    \oldcode
+        void *visual = widget->x11Visual();
+    \newcode
+        void *visual = widget->x11Info().visual();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn int QPaintDevice::x11Depth() const
+    Use QX11Info::depth() instead.
+
+    \oldcode
+        int depth = widget->x11Depth();
+    \newcode
+        int depth = widget->x11Info().depth();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn int QPaintDevice::x11Cells() const
+    Use QX11Info::cells() instead.
+
+    \oldcode
+        int cells = widget->x11Cells();
+    \newcode
+        int cells = widget->x11Info().cells();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn Qt::HANDLE QPaintDevice::x11Colormap() const
+    Use QX11Info::colormap() instead.
+
+    \oldcode
+        unsigned long screen = widget->x11Colormap();
+    \newcode
+        unsigned long screen = widget->x11Info().colormap();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn bool QPaintDevice::x11DefaultColormap() const
+    Use QX11Info::defaultColormap() instead.
+
+    \oldcode
+        bool isDefault = widget->x11DefaultColormap();
+    \newcode
+        bool isDefault = widget->x11Info().defaultColormap();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn bool QPaintDevice::x11DefaultVisual() const
+    Use QX11Info::defaultVisual() instead.
+
+    \oldcode
+        bool isDefault = widget->x11DefaultVisual();
+    \newcode
+        bool isDefault = widget->x11Info().defaultVisual();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn void *QPaintDevice::x11AppVisual(int screen)
+    Use QX11Info::visual() instead.
+
+    \oldcode
+        void *visual = QPaintDevice::x11AppVisual(screen);
+    \newcode
+        void *visual = qApp->x11Info(screen).visual();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn Qt::HANDLE QPaintDevice::x11AppColormap(int screen)
+    Use QX11Info::colormap() instead.
+
+    \oldcode
+        unsigned long colormap = QPaintDevice::x11AppColormap(screen);
+    \newcode
+        unsigned long colormap = qApp->x11Info(screen).colormap();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn Display *QPaintDevice::x11AppDisplay()
+    Use QX11Info::display() instead.
+
+    \oldcode
+        Display *display = QPaintDevice::x11AppDisplay();
+    \newcode
+        Display *display = qApp->x11Info().display();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn int QPaintDevice::x11AppScreen()
+    Use QX11Info::screen() instead.
+
+    \oldcode
+        int screen = QPaintDevice::x11AppScreen();
+    \newcode
+        int screen = qApp->x11Info().screen();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn int QPaintDevice::x11AppDepth(int screen)
+    Use QX11Info::depth() instead.
+
+    \oldcode
+        int depth = QPaintDevice::x11AppDepth(screen);
+    \newcode
+        int depth = qApp->x11Info(screen).depth();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn int QPaintDevice::x11AppCells(int screen)
+    Use QX11Info::cells() instead.
+
+    \oldcode
+        int cells = QPaintDevice::x11AppCells(screen);
+    \newcode
+        int cells = qApp->x11Info(screen).cells();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn Qt::HANDLE QPaintDevice::x11AppRootWindow(int screen)
+    Use QX11Info::appRootWindow() instead.
+
+    \oldcode
+        unsigned long window = QPaintDevice::x11AppRootWindow(screen);
+    \newcode
+        unsigned long window = qApp->x11Info(screen).appRootWindow();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn bool QPaintDevice::x11AppDefaultColormap(int screen)
+    Use QX11Info::defaultColormap() instead.
+
+    \oldcode
+        bool isDefault = QPaintDevice::x11AppDefaultColormap(screen);
+    \newcode
+        bool isDefault = qApp->x11Info(screen).defaultColormap();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn bool QPaintDevice::x11AppDefaultVisual(int screen)
+    Use QX11Info::defaultVisual() instead.
+
+    \oldcode
+        bool isDefault = QPaintDevice::x11AppDefaultVisual(screen);
+    \newcode
+        bool isDefault = qApp->x11Info(screen).defaultVisual();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn void QPaintDevice::x11SetAppDpiX(int dpi, int screen)
+    Use QX11Info::setAppDpiX() instead.
+*/
+
+/*! \fn void QPaintDevice::x11SetAppDpiY(int dpi, int screen)
+    Use QX11Info::setAppDpiY() instead.
+*/
+
+/*! \fn int QPaintDevice::x11AppDpiX(int screen)
+    Use QX11Info::appDpiX() instead.
+
+    \oldcode
+        bool isDefault = QPaintDevice::x11AppDpiX(screen);
+    \newcode
+        bool isDefault = qApp->x11Info(screen).appDpiX();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn int QPaintDevice::x11AppDpiY(int screen)
+    Use QX11Info::appDpiY() instead.
+
+    \oldcode
+        bool isDefault = QPaintDevice::x11AppDpiY(screen);
+    \newcode
+        bool isDefault = qApp->x11Info(screen).appDpiY();
+    \endcode
+
+    \sa QWidget::x11Info(), QPixmap::x11Info()
+*/
+
+/*! \fn HDC QPaintDevice::getDC() const
+  \internal
+*/
+
+/*! \fn void QPaintDevice::releaseDC(HDC) const
+  \internal
+*/
+
+/*! \fn QWSDisplay *QPaintDevice::qwsDisplay()
+    \internal
+*/
 
 QT_END_NAMESPACE

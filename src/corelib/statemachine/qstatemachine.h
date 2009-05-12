@@ -86,7 +86,8 @@ public:
     enum Error {
         NoError, 
         NoInitialStateError,
-        NoDefaultStateInHistoryState,
+        NoDefaultStateInHistoryStateError,
+        NoCommonAncestorForTransitionError
     };
 
     QStateMachine(QObject *parent = 0);
@@ -106,6 +107,8 @@ public:
     Error error() const;
     QString errorString() const;
     void clearError();
+
+    bool isRunning() const;
 
 #ifndef QT_NO_ANIMATION
     bool animationsEnabled() const;

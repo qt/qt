@@ -1085,7 +1085,7 @@ void QTabBar::setTabData(int index, const QVariant & data)
 }
 
 /*!
-    Returns the datad of the tab at position \a index, or a null
+    Returns the data of the tab at position \a index, or a null
     variant if \a index is out of range.
 */
 QVariant QTabBar::tabData(int index) const
@@ -1167,13 +1167,13 @@ void QTabBar::setCurrentIndex(int index)
         d->currentIndex = index;
         update();
         d->makeVisible(index);
+        d->tabList[index].lastTab = oldIndex;
+        d->layoutWidgets(oldIndex);
+        d->layoutWidgets(index);
 #ifdef QT3_SUPPORT
         emit selected(index);
 #endif
         emit currentChanged(index);
-        d->tabList[index].lastTab = oldIndex;
-        d->layoutWidgets(oldIndex);
-        d->layoutWidgets(index);
     }
 }
 
@@ -2222,6 +2222,7 @@ void QTabBar::setTabButton(int index, ButtonPosition position, QWidget *widget)
         d->tabList[index].rightWidget = widget;
     }
     d->layoutTabs();
+    d->refresh();
     update();
 }
 

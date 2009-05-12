@@ -55,9 +55,9 @@ QT_BEGIN_NAMESPACE
   A final state is used to communicate that (part of) a QStateMachine has
   finished its work. When a final top-level state is entered, the state
   machine's \l{QStateMachine::finished()}{finished}() signal is emitted. In
-  general, when a final substate (a child of a QState) is entered, a
-  QStateFinishedEvent is generated for the final state's parent
-  state. QFinalState is part of \l{The State Machine Framework}.
+  general, when a final substate (a child of a QState) is entered, the parent
+  state's \l{QState::finished()}{finished}() signal is emitted.  QFinalState
+  is part of \l{The State Machine Framework}.
 
   To use a final state, you create a QFinalState object and add a transition
   to it from another state. Example:
@@ -76,6 +76,8 @@ QT_BEGIN_NAMESPACE
   machine.setInitialState(s1);
   machine.start();
   \endcode
+
+  \sa QStateMachine::finished(), QState::finished()
 */
 
 class QFinalStatePrivate : public QAbstractStatePrivate
@@ -108,15 +110,17 @@ QFinalState::~QFinalState()
 /*!
   \reimp
 */
-void QFinalState::onEntry()
+void QFinalState::onEntry(QEvent *event)
 {
+    Q_UNUSED(event);
 }
 
 /*!
   \reimp
 */
-void QFinalState::onExit()
+void QFinalState::onExit(QEvent *event)
 {
+    Q_UNUSED(event);
 }
 
 /*!

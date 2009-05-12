@@ -24,20 +24,16 @@ win32-borland:DEFINES += QT_NEEDS_QMAIN
 LIBS    += -luser32 -lole32 -loleaut32 -lgdi32
 win32-g++:LIBS += -luuid
 
-contains(QT_EDITION, OpenSource|Console) {
-    message( "You are not licensed to use ActiveQt." )
-} else {
-    HEADERS     = qaxaggregated.h \
-                  qaxbindable.h \
-		  qaxfactory.h \
-		  ../shared/qaxtypes.h
+HEADERS =   qaxaggregated.h \
+            qaxbindable.h \
+            qaxfactory.h \
+            ../shared/qaxtypes.h
 
-    SOURCES     = qaxserver.cpp \
-		  qaxserverbase.cpp \
-		  qaxbindable.cpp \
-		  qaxfactory.cpp \
-		  qaxservermain.cpp \
-		  qaxserverdll.cpp \
-		  qaxmain.cpp \
-		  ../shared/qaxtypes.cpp
-}
+SOURCES =   qaxserver.cpp \
+            qaxserverbase.cpp \
+            qaxbindable.cpp \
+            qaxfactory.cpp \
+            qaxservermain.cpp \
+            qaxserverdll.cpp \
+            qaxmain.cpp \
+            ../shared/qaxtypes.cpp

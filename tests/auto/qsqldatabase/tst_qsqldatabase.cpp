@@ -517,6 +517,8 @@ void tst_QSqlDatabase::tables()
             // MySQL doesn't give back anything when calling QSqlDatabase::tables() with QSql::Views
             // May be fixable by doing a select on informational_schema.views instead of using the client library api
             QEXPECT_FAIL("", "MySQL driver thinks that views are tables", Continue);
+        if(!tables.contains(qTableName("qtest_view"), Qt::CaseInsensitive))
+            qDebug() << "failed to find" << qTableName("qtest_view") << "in" << tables;
         QVERIFY(tables.contains(qTableName("qtest_view"), Qt::CaseInsensitive));
     }
     if (tempTables)
@@ -1880,17 +1882,26 @@ void tst_QSqlDatabase::ibase_procWithReturnValues()
                         "\nRESULT INTEGER)"
                         "\nAS"
                         "\nbegin"
-                        "\nRESULT = 10;"
+                        "\nRESULT = 10 * ABC;"
                         "\nsuspend;"
                         "\nend"));
 
     // Interbase procedures can be executed in two ways: EXECUTE PROCEDURE or SELECT
     QVERIFY_SQL(q, exec(QString("execute procedure %1(123)").arg(procName)));
     QVERIFY_SQL(q, next());
-    QCOMPARE(q.value(0).toInt(), 10);
+    QCOMPARE(q.value(0).toInt(), 1230);
     QVERIFY_SQL(q, exec(QString("select result from %1(456)").arg(procName)));
     QVERIFY_SQL(q, next());
-    QCOMPARE(q.value(0).toInt(), 10);
+    QCOMPARE(q.value(0).toInt(), 4560);
+    QVERIFY_SQL(q, prepare(QLatin1String("execute procedure ")+procName+QLatin1String("(?)")));
+    q.bindValue(0, 123);
+    QVERIFY_SQL(q, exec());
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 1230);
+    q.bindValue(0, 456);
+    QVERIFY_SQL(q, exec());
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 4560);
 
     q.exec(QString("drop procedure %1").arg(procName));
 }
@@ -2276,7 +2287,7 @@ void tst_QSqlDatabase::db2_valueCacheUpdate()
 
 void tst_QSqlDatabase::sqlStatementUseIsNull_189093()
 {
-    // NULL = NULL is unknow, the sqlStatment must use IS NULL
+    // NULL = NULL is unknown, the sqlStatment must use IS NULL
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);

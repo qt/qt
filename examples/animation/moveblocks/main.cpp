@@ -101,7 +101,7 @@ protected:
             && (static_cast<StateSwitchEvent *>(event)->rand() == m_rand);
     }
 
-    virtual void onTransition() {}
+    virtual void onTransition(QEvent *) {}
 
 private:
     int m_rand;
@@ -116,7 +116,7 @@ public:
           m_stateCount(0), m_lastIndex(0)
     { }
 
-    virtual void onEntry()
+    virtual void onEntry(QEvent *)
     {
         int n;
         while ((n = (qrand() % m_stateCount + 1)) == m_lastIndex)
@@ -124,7 +124,7 @@ public:
         m_lastIndex = n;
         m_machine->postEvent(new StateSwitchEvent(n));
     }
-    virtual void onExit() {}
+    virtual void onExit(QEvent *) {}
 
     void addState(QState *state, QAbstractAnimation *animation) {
         StateSwitchTransition *trans = new StateSwitchTransition(++m_stateCount);
