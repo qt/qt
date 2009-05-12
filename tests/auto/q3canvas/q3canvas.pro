@@ -3,5 +3,6 @@ SOURCES  += tst_q3canvas.cpp
 
 
 QT += qt3support
+requires(contains(QT_CONFIG,qt3support))
 
 

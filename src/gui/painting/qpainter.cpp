@@ -7159,14 +7159,14 @@ QPoint QPainter::xFormDev(const QPoint &p) const
     \fn QRect QPainter::xFormDev(const QRect &rectangle) const
     \overload
 
-    Use  combineMatrix() combined with QMatrix::inverted() instead.
+    Use mapRect() combined with QMatrix::inverted() instead.
 
     \oldcode
         QPainter painter(this);
         QRect transformed = painter.xFormDev(rectangle);
     \newcode
         QPainter painter(this);
-        QRect transformed = rectangle * painter.combinedMatrix().inverted();
+        QRect transformed = painter.combinedMatrix().inverted(rectangle);
     \endcode
 */
 

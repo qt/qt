@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 //
 
 // ### Qt 5: remove
-class Q_GUI_EXPORT QKeyEventEx : public QKeyEvent
+class QKeyEventEx : public QKeyEvent
 {
 public:
     QKeyEventEx(Type type, int key, Qt::KeyboardModifiers modifiers,
@@ -77,7 +77,7 @@ protected:
 };
 
 // ### Qt 5: remove
-class Q_GUI_EXPORT QMouseEventEx : public QMouseEvent
+class QMouseEventEx : public QMouseEvent
 {
 public:
     QMouseEventEx(Type type, const QPointF &pos, const QPoint &globalPos,

@@ -146,7 +146,7 @@ inline QString QSettingsGroup::toString() const
     return result;
 }
 
-class Q_CORE_EXPORT QConfFile
+class QConfFile
 {
 public:
     ParsedSettingsMap mergedKeyMap() const;

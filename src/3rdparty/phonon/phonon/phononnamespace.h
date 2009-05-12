@@ -25,6 +25,11 @@
 
 #include "phonon_export.h"
 
+#ifdef __QT_SYNCQT__
+// Tell syncqt to create a "Global" header here
+#pragma qt_class(Phonon::Global)
+#endif
+
 /**
  * Helper macro that can be used like
  * \code
