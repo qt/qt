@@ -74,8 +74,8 @@ protected:
                              AST::SourceLocation typeLocation,
                              LocationSpan location,
                              AST::UiObjectInitializer *initializer = 0);
-    QString getPrimitive(const QByteArray &propertyName, AST::ExpressionNode *expr);
-    void defineProperty(const QString &propertyName, const LocationSpan &location, const QString &primitive);
+
+    QmlParser::Variant getVariant(AST::ExpressionNode *expr);
 
     LocationSpan location(AST::SourceLocation start, AST::SourceLocation end);
     LocationSpan location(AST::UiQualifiedId *);
@@ -226,9 +226,12 @@ ProcessAST::defineObjectBinding_helper(int line,
             return 0;
         }
 
-        _stateStack.pushProperty(objectType, 
-                                 this->location(propertyName));
-        accept(initializer);
+        LocationSpan loc = ProcessAST::location(typeLocation, typeLocation);
+        if (propertyName)
+            loc = ProcessAST::location(propertyName);
+
+        _stateStack.pushProperty(objectType, loc);
+       accept(initializer);
         _stateStack.pop();
 
         return 0;
@@ -302,15 +305,22 @@ Object *ProcessAST::defineObjectBinding(int line,
             QString propertyName = asString(scriptBinding->qualifiedId);
             if (propertyName == QLatin1String("script")) {
                 QString script;
+
                 if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(scriptBinding->statement)) {
-                    script = getPrimitive("script", stmt->expression);
+                    script = getVariant(stmt->expression).asScript();
                 } else {
                     script = asString(scriptBinding->statement);
                 }
 
                 LocationSpan l = this->location(scriptBinding->statement->firstSourceLocation(), 
                                                 scriptBinding->statement->lastSourceLocation());
-                defineProperty(QLatin1String("script"), l, script);
+
+                _stateStack.pushProperty(QLatin1String("script"), l);
+                Value *value = new Value;
+                value->value = QmlParser::Variant(script);
+                value->location = l;
+                currentProperty()->addValue(value);
+                _stateStack.pop();
             } else {
                 accept(it->member);
             }
@@ -336,17 +346,9 @@ LocationSpan ProcessAST::location(AST::SourceLocation start, AST::SourceLocation
     rv.start.column = start.startColumn;
     rv.end.line = end.startLine;
     rv.end.column = end.startColumn + end.length - 1;
+    rv.range.offset = start.offset;
+    rv.range.length = end.offset + end.length - start.offset;
     return rv;
-}
-
-void ProcessAST::defineProperty(const QString &propertyName, const LocationSpan &location, const QString &primitive)
-{
-    _stateStack.pushProperty(propertyName, location);
-    Value *value = new Value;
-    value->primitive = primitive;
-    value->location = location;
-    currentProperty()->addValue(value);
-    _stateStack.pop();
 }
 
 // UiProgram: UiImportListOpt UiObjectMemberList ;
@@ -362,6 +364,16 @@ bool ProcessAST::visit(AST::UiImport *node)
 {
     QString fileName = node->fileName->asString();
     _parser->addNamespacePath(fileName);
+
+    AST::SourceLocation startLoc = node->importToken;
+    AST::SourceLocation endLoc = node->semicolonToken;
+
+    QmlScriptParser::Import import;
+    import.location = location(startLoc, endLoc);
+    import.uri = fileName;
+
+    _parser->_imports << import;
+
     return false;
 }
 
@@ -423,7 +435,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
             Value *value = new Value;
             value->location = location(node->expression->firstSourceLocation(),
                                        node->expression->lastSourceLocation());
-            value->primitive = getPrimitive("value", node->expression);
+            value->value = getVariant(node->expression);
             property.defaultValue->values << value;
         }
 
@@ -467,30 +479,26 @@ bool ProcessAST::visit(AST::UiObjectBinding *node)
     return false;
 }
 
-QString ProcessAST::getPrimitive(const QByteArray &propertyName, AST::ExpressionNode *expr)
+QmlParser::Variant ProcessAST::getVariant(AST::ExpressionNode *expr)
 {
-    QString primitive;
-
-    if (isSignalProperty(propertyName)) {
-        primitive = asString(expr);
-    } else if (propertyName == "id" && expr && expr->kind == AST::Node::Kind_IdentifierExpression) {
-        primitive = asString(expr);
-    } else if (AST::StringLiteral *lit = AST::cast<AST::StringLiteral *>(expr)) {
-        // hack: emulate weird XML feature that string literals are not quoted.
-        //This needs to be fixed in the qmlcompiler once xml goes away.
-        primitive = lit->value->asString();
-    } else if (expr->kind == AST::Node::Kind_TrueLiteral
-               || expr->kind == AST::Node::Kind_FalseLiteral
-               || expr->kind == AST::Node::Kind_NumericLiteral
-               ) {
-        primitive = asString(expr);
+    if (AST::StringLiteral *lit = AST::cast<AST::StringLiteral *>(expr)) {
+        return QmlParser::Variant(lit->value->asString());
+    } else if (expr->kind == AST::Node::Kind_TrueLiteral) {
+        return QmlParser::Variant(true);
+    } else if (expr->kind == AST::Node::Kind_FalseLiteral) {
+        return QmlParser::Variant(false);
+    } else if (AST::NumericLiteral *lit = AST::cast<AST::NumericLiteral *>(expr)) {
+        return QmlParser::Variant(lit->value);
     } else {
-        // create a binding
-        primitive += QLatin1Char('{');
-        primitive += asString(expr);
-        primitive += QLatin1Char('}');
+
+        if (AST::UnaryMinusExpression *unaryMinus = AST::cast<AST::UnaryMinusExpression *>(expr)) {
+           if (AST::NumericLiteral *lit = AST::cast<AST::NumericLiteral *>(unaryMinus->expression)) {
+               return QmlParser::Variant(-lit->value);
+           }
+        }
+
+        return QmlParser::Variant(asString(expr), QmlParser::Variant::Script);
     }
-    return primitive;
 }
 
 
@@ -506,25 +514,18 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
     }
 
     Property *prop = currentProperty();
-    QString primitive;
+
+    QmlParser::Variant primitive;
 
     if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(node->statement)) {
-        primitive = getPrimitive(prop->name, stmt->expression);
-    } else if (isSignalProperty(prop->name)) {
-        if (AST::Block *block = AST::cast<AST::Block *>(node->statement)) {
-            const int start = block->lbraceToken.offset + block->rbraceToken.length;
-            primitive += _contents.mid(start, block->rbraceToken.offset - start);
-        } else {
-            primitive += asString(node->statement);
-        }
+        primitive = getVariant(stmt->expression);
     } else { // do binding
-        primitive += QLatin1Char('{');
-        primitive += asString(node->statement);
-        primitive += QLatin1Char('}');
+        primitive = QmlParser::Variant(asString(node->statement), 
+                                       QmlParser::Variant::Script);
     }
 
     Value *v = new Value;
-    v->primitive = primitive;
+    v->value = primitive;
     v->location = location(node->statement->firstSourceLocation(),
                            node->statement->lastSourceLocation());
 
@@ -603,7 +604,7 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
         Value *value = new Value;
         value->location = location(node->firstSourceLocation(), 
                                    node->lastSourceLocation());
-        value->primitive = source;
+        value->value = QmlParser::Variant(source);
 
         obj->getDefaultProperty()->addValue(value);
     }
@@ -684,6 +685,11 @@ QStringList QmlScriptParser::types() const
 Object *QmlScriptParser::tree() const
 {
     return root;
+}
+
+QList<QmlScriptParser::Import> QmlScriptParser::imports() const
+{
+    return _imports;
 }
 
 QList<QmlError> QmlScriptParser::errors() const

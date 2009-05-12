@@ -233,14 +233,102 @@ void QmlParser::Value::dump(int indent) const
     case Value::Id:
         type = "Id";
         break;
-    };
+    }
+
+    QByteArray primType;
+    switch(this->value.type()) {
+    default:
+    case Variant::Invalid:
+        primType = "Invalid";
+        break;
+    case Variant::Boolean:
+        primType = "Boolean";
+        break;
+    case Variant::Number:
+        primType = "Number";
+        break;
+    case Variant::String:
+        primType = "String";
+        break;
+    case Variant::Script:
+        primType = "Script";
+        break;
+    }
 
     QByteArray ba(indent * 4, ' ');
     if (object) {
         qWarning() << ba.constData() << "Value (" << type << "):";
         object->dump(indent + 1);
     } else {
-        qWarning() << ba.constData() << "Value (" << type << "):" << primitive;
+        qWarning() << ba.constData() << "Value (" << type << "):" << primType.constData() << primitive();
+    }
+}
+
+QmlParser::Variant::Variant()
+: t(Invalid) {}
+
+QmlParser::Variant::Variant(const Variant &o)
+: t(o.t), d(o.d), s(o.s)
+{
+}
+
+QmlParser::Variant::Variant(bool v)
+: t(Boolean), b(v)
+{
+}
+
+QmlParser::Variant::Variant(double v)
+: t(Number), d(v)
+{
+}
+
+QmlParser::Variant::Variant(const QString &v, Type type)
+: t(type), s(v)
+{
+    Q_ASSERT(type == String || type == Script);
+}
+
+QmlParser::Variant &QmlParser::Variant::operator=(const Variant &o)
+{
+    t = o.t;
+    d = o.d;
+    s = o.s;
+    return *this;
+}
+
+QmlParser::Variant::Type QmlParser::Variant::type() const
+{
+    return t;
+}
+
+bool QmlParser::Variant::asBoolean() const
+{
+    return b;
+}
+
+QString QmlParser::Variant::asString() const
+{
+    return s;
+}
+
+double QmlParser::Variant::asNumber() const
+{
+    return d;
+}
+
+QString QmlParser::Variant::asScript() const
+{
+    switch(type()) { 
+    default:
+    case Invalid:
+        return QString();
+    case Boolean:
+        return b?QLatin1String("true"):QLatin1String("false");
+    case Number:
+        return QString::number(d);
+    case String:
+    case Script:
+        return s;
     }
 }
 

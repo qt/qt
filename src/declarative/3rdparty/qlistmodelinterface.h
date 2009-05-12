@@ -53,66 +53,30 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-/*!
-  \class QListModelInterface
-  \brief The QListModelInterface class can be subclassed to provide C++ models to QFx Views
-
-  This class is comprised primarily of pure virtual functions which you need to implement in a subclass. You can then use the subclass as a model for a QFx view, such as a QFxListView.
-*/
 class Q_DECLARATIVE_EXPORT QListModelInterface : public QObject
 {
     Q_OBJECT
-public:
+ public:
     QListModelInterface(QObject *parent = 0) : QObject(parent) {}
     virtual ~QListModelInterface() {}
 
-    // ### move these into the Qt namespace
-    enum Roles {
-        TextRole = Qt::DisplayRole,
-        IconRole = Qt::DecorationRole
-    };
-
-    /*!
-      Returns the number of data entries in the model.
-      */
     virtual int count() const = 0;
-    /*!
-      Returns the data at the given \a index for the specifed \a roles.
-      */
-    virtual QHash<int,QVariant> data(int index, const QList<int> &roles = (QList<int>())) const = 0;
-    /*!
-      Sets the data at the given \a index.\a values is a mapping of QVariant values to roles.
-      */
-    virtual bool setData(int index, const QHash<int,QVariant> &values) { Q_UNUSED(index); Q_UNUSED(values); return false; }
-    /*!
-      This convinience function can be used to set the data for one specific role. It internally uses the other setData and does not need to be reimplemented.
-      */
-    inline bool setData(int index, const QVariant &value, int role)
-    {
-        QHash<int,QVariant> values;
-        values.insert(role, value);
-        return setData(index, values);
-    }
+    virtual QHash<int,QVariant> data(int index, const QList<int>& roles = QList<int>()) const = 0;
+    virtual bool setData(int index, const QHash<int,QVariant>& values)
+    { Q_UNUSED(index); Q_UNUSED(values); return false; }
 
-    /*!
-      Returns which roles the list provides data for.
-      */
     virtual QList<int> roles() const = 0;
-    /*!
-      Returns a string description of the specified \a role.
-      */
     virtual QString toString(int role) const = 0;
 
-    //void bind(int index, int role, QObject *object, const char *propertyName, bool readOnly = true);
-
-Q_SIGNALS:
+ Q_SIGNALS:
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
     void itemsMoved(int from, int to, int count);
     void itemsChanged(int index, int count, const QList<int> &roles);
 
-protected:
-    QListModelInterface(QObjectPrivate &dd, QObject *parent) : QObject(dd, parent) {}
+ protected:
+    QListModelInterface(QObjectPrivate &dd, QObject *parent) 
+        : QObject(dd, parent) {}
 };
 
 

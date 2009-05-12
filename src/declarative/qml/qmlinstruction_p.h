@@ -173,6 +173,8 @@ public:
     union {
         struct {
             int dataSize;
+            int bindingsSize;
+            int parserStatusSize;
         } init;
         struct {
             int type;
@@ -279,6 +281,7 @@ public:
         struct {
             int count;
             int endLine;
+            int metaObject;
         } createComponent;
         struct {
             int id;

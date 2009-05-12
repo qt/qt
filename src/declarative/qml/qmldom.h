@@ -71,7 +71,8 @@ public:
     QmlDomDocument &operator=(const QmlDomDocument &);
 
     int version() const;
-    
+    QList<QUrl> imports() const;
+
     QList<QmlError> errors() const;
     bool load(QmlEngine *, const QByteArray &, const QUrl & = QUrl());
     QByteArray save() const;
@@ -97,6 +98,9 @@ public:
 
     QmlDomValue value() const;
     void setValue(const QmlDomValue &);
+
+    int position() const;
+    int length() const;
 
 private:
     friend class QmlDomObject;
@@ -132,6 +136,9 @@ public:
 
     bool isComponent() const;
     QmlDomComponent toComponent() const;
+
+    int position() const;
+    int length() const;
 
 private:
     friend class QmlDomDocument;
@@ -234,6 +241,9 @@ public:
     QmlDomValueValueSource toValueSource() const;
     QmlDomObject toObject() const;
     QmlDomList toList() const;
+
+    int position() const;
+    int length() const;
 
 private:
     friend class QmlDomProperty;

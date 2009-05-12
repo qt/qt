@@ -66,6 +66,11 @@ public:
     {
     }
 
+    ~QFxPathViewAttached()
+    {
+        QFxPathView::attachedProperties.remove(parent());
+    }
+
     QVariant value(const QByteArray &name) const 
     { 
         return mo->value(name); 
@@ -583,7 +588,7 @@ void QFxPathViewPrivate::regenerate()
 
 void QFxPathViewPrivate::updateItem(QFxItem *item, qreal percent)
 {
-    if (QObject *obj = QFxPathView::attachedProperties.value(item)) {
+    if (QObject *obj = QFxPathView::qmlAttachedProperties(item)) {
         foreach(const QString &attr, path->attributes())
             static_cast<QFxPathViewAttached *>(obj)->setValue(attr.toLatin1(), path->attributeAt(attr, percent));
     }

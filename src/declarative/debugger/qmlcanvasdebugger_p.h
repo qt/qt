@@ -39,38 +39,51 @@
 **
 ****************************************************************************/
 
-#ifndef QMLPARSERSTATUS_H
-#define QMLPARSERSTATUS_H
+#ifndef QMLCANVASDEBUGGER_P_H
+#define QMLCANVASDEBUGGER_P_H
 
-#include <QtCore/qobject.h>
-
-QT_BEGIN_HEADER
+#include <QtGui/qwidget.h>
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class Q_DECLARATIVE_EXPORT QmlParserStatus
+class QSimpleCanvas;
+class QSimpleCanvasItem;
+class QTreeWidget;
+class QTreeWidgetItem;
+class QmlWatches;
+class QmlCanvasDebugger : public QWidget
 {
+    Q_OBJECT
 public:
-    QmlParserStatus();
-    virtual ~QmlParserStatus();
+    QmlCanvasDebugger(QmlWatches *, QWidget *parent = 0);
 
-    virtual void classBegin();
-    virtual void classComplete();
-    virtual void componentComplete();
+    void setCanvas(QSimpleCanvas *);
+
+signals:
+    void objectClicked(quint32);
+
+private slots:
+    void refresh();
+    void itemClicked(QTreeWidgetItem *);
+    void itemExpanded(QTreeWidgetItem *);
+    void itemCollapsed(QTreeWidgetItem *);
+    void setX(int);
+    void setY(int);
 
 private:
-    friend class QmlVME;
-    friend class QmlComponent;
-    friend class QmlEnginePrivate;
-    QmlParserStatus **d;
-};
-Q_DECLARE_INTERFACE(QmlParserStatus, "com.trolltech.qml.QmlParserStatus");
+    void setOpacityRecur(QTreeWidgetItem *, qreal);
+    void clone(QTreeWidgetItem *, QSimpleCanvasItem *me, QSimpleCanvasItem *them);
 
+    QmlWatches *m_watches;
+    QTreeWidget *m_tree;
+    QSimpleCanvas *m_canvas;
+    QSimpleCanvasItem *m_canvasRoot;
+    QPointer<QSimpleCanvas> m_debugCanvas;
+    QTreeWidgetItem *m_selected;
+};
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
+#endif // QMLCANVASDEBUGGER_P_H
 
-#endif // QMLPARSERSTATUS_H

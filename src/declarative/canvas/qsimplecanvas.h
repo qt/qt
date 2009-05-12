@@ -48,12 +48,12 @@
 #include <QtGui/qmatrix4x4.h>
 #endif
 
-#include <QTransform>
-#include <QPainter>
-#include <QDebug>
-#include <QWidget>
-#include <QImage>
-#include <QKeyEvent>
+#include <QtGui/QTransform>
+#include <QtGui/QPainter>
+#include <QtCore/QDebug>
+#include <QtGui/QWidget>
+#include <QtGui/QImage>
+#include <QtGui/QKeyEvent>
 
 
 QT_BEGIN_HEADER

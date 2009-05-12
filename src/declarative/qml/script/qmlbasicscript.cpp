@@ -72,14 +72,8 @@ QDebug operator<<(QDebug lhs, const QmlBasicScriptNodeCache &rhs)
     case QmlBasicScriptNodeCache::SignalProperty: 
         lhs << "SignalProperty" << rhs.object << rhs.core;
         break;
-    case QmlBasicScriptNodeCache::Explicit: 
-        lhs << "Explicit" << rhs.object;
-        break;
     case QmlBasicScriptNodeCache::Variant: 
         lhs << "Variant" << rhs.context;
-        break;
-    case QmlBasicScriptNodeCache::ScriptValue:
-        lhs << "ScriptValue" << rhs.context;
         break;
     }
 
@@ -210,15 +204,8 @@ QVariant QmlBasicScriptNodeCache::value(const char *name) const
         break;
     case SignalProperty:
         break;
-    case Explicit:
-        return qVariantFromValue(object);
-        break;
     case Variant:
-        return toObjectOrVariant(context->variantProperties[QLatin1String(name)]);
-        break;
-    case ScriptValue:
-        return qVariantFromValue(context->properties[QLatin1String(name)]);
-        break;
+        return context->propertyValues[contextIndex];
     };
     return QVariant();
 }
@@ -705,7 +692,7 @@ void QmlBasicScript::clearCache(void *voidCache)
         reinterpret_cast<QmlBasicScriptNodeCache *>(voidCache);
 
     for (int ii = 0; ii < d->stateSize; ++ii) {
-        if (!dataCache[ii].isCore() && !dataCache[ii].isExplicit() && 
+        if (!dataCache[ii].isCore() && !dataCache[ii].isVariant() && 
             dataCache[ii].object) {
             QMetaObject::removeGuard(&dataCache[ii].object);
             dataCache[ii].object = 0;
@@ -717,7 +704,7 @@ void QmlBasicScript::clearCache(void *voidCache)
 void QmlBasicScript::guard(QmlBasicScriptNodeCache &n)
 {
     if (n.object) {
-        if (n.isExplicit()) {
+        if (n.isVariant()) {
         } else if (n.isCore()) {
             n.metaObject = 
                 n.object->metaObject();

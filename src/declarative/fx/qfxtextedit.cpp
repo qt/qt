@@ -292,6 +292,36 @@ void QFxTextEdit::setColor(const QColor &color)
 }
 
 /*!
+    \qmlproperty color TextEdit::highlightColor
+
+    The text highlight color, used behind selections.
+*/
+
+/*!
+    \property QFxTextEdit::highlightColor
+    \brief the text edit's default text highlight color
+*/
+QColor QFxTextEdit::highlightColor() const
+{
+    Q_D(const QFxTextEdit);
+    return d->highlightColor;
+}
+
+void QFxTextEdit::setHighlightColor(const QColor &color)
+{
+    Q_D(QFxTextEdit);
+    if (d->highlightColor == color)
+        return;
+
+    clearCache();
+    d->highlightColor = color;
+    QPalette pal = d->control->palette();
+    pal.setColor(QPalette::Highlight, color);
+    d->control->setPalette(pal);
+    update();
+}
+
+/*!
     \qmlproperty enumeration TextEdit::hAlign
     \qmlproperty enumeration TextEdit::vAlign
 
@@ -821,7 +851,6 @@ void QFxTextEditPrivate::updateDefaultTextOption()
     
     QTextOption::WrapMode oldWrapMode = opt.wrapMode();
 
-qDebug() << "wrap mode is" << opt.wrapMode();
     if (wrap)
         opt.setWrapMode(QTextOption::WordWrap);
     else
@@ -829,7 +858,6 @@ qDebug() << "wrap mode is" << opt.wrapMode();
 
     if (oldWrapMode == opt.wrapMode() && oldAlignment == opt.alignment())
         return;
-qDebug() << "wrap mode set to" << opt.wrapMode();
     document->setDefaultTextOption(opt);
 }
 

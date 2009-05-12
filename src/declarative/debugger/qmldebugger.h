@@ -61,6 +61,8 @@ class QmlPropertyView;
 class QmlWatches;
 class QmlObjectTree;
 class QmlContext;
+class QmlCanvasDebugger;
+class QSimpleCanvas;
 class QmlDebugger : public QWidget
 {
 Q_OBJECT
@@ -68,6 +70,7 @@ public:
     QmlDebugger(QWidget *parent = 0);
 
     void setDebugObject(QObject *);
+    void setCanvas(QSimpleCanvas *);
 
 public slots:
     void refresh();
@@ -85,6 +88,7 @@ private:
     QTreeWidget *m_warnings;
     QTableView *m_watchTable;
     QmlWatches *m_watches;
+    QmlCanvasDebugger *m_canvas;
     QmlPropertyView *m_properties;
     QPlainTextEdit *m_text;
     QPointer<QObject> m_object;

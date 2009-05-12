@@ -143,7 +143,15 @@ int QmlDomDocument::version() const
 }
 
 /*!
-    Loads a QmlDomDocument from \a data.  \a data should be valid QML XML
+    Return the URIs listed by "import <dir>" in the qml.
+*/
+QList<QUrl> QmlDomDocument::imports() const
+{
+    return d->imports;
+}
+
+/*!
+    Loads a QmlDomDocument from \a data.  \a data should be valid QML
     data.  On success, true is returned.  If the \a data is malformed, false
     is returned and QmlDomDocument::loadError() contains an error description.
 
@@ -153,11 +161,12 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
 {
     Q_UNUSED(engine);
     d->errors.clear();
+    d->imports.clear();
 
     QmlCompiledComponent component;
     QmlCompiler compiler;
 
-    QmlCompositeTypeData *td = ((QmlEnginePrivate *)QmlEnginePrivate::get(engine))->typeManager.getImmediate(data, url);;
+    QmlCompositeTypeData *td = ((QmlEnginePrivate *)QmlEnginePrivate::get(engine))->typeManager.getImmediate(data, url);
 
     if(td->status == QmlCompositeTypeData::Error) {
         d->errors = td->errors;
@@ -177,6 +186,10 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
         d->errors = compiler.errors();
         td->release();
         return false;
+    }
+
+    for (int i = 0; i < td->data.imports().size(); ++i) {
+        d->imports += QUrl(td->data.imports().at(i).uri);
     }
 
     if (td->data.tree()) {
@@ -383,6 +396,30 @@ void QmlDomProperty::setValue(const QmlDomValue &value)
 {
     Q_UNUSED(value);
     qWarning("QmlDomProperty::setValue(const QmlDomValue &): Not Implemented");
+}
+
+/*!
+    Returns the position in the input data where the property ID startd, or 0 if
+ the property is invalid.
+*/
+int QmlDomProperty::position() const
+{
+    if (d && d->property) {
+        return d->property->location.range.offset;
+    } else
+        return 0;
+}
+
+/*!
+    Returns the length in the input data from where the property ID started upto
+ the end of it, or 0 if the property is invalid.
+*/
+int QmlDomProperty::length() const
+{
+    if (d && d->property)
+        return d->property->location.range.length;
+    else
+        return 0;
 }
 
 QmlDomObjectPrivate::QmlDomObjectPrivate()
@@ -719,6 +756,30 @@ QmlDomComponent QmlDomObject::toComponent() const
     return rv;
 }
 
+/*!
+    Returns the position in the input data where the property assignment started
+, or 0 if the property is invalid.
+*/
+int QmlDomObject::position() const
+{
+    if (d && d->object)
+        return d->object->location.range.offset;
+    else
+        return 0;
+}
+
+/*!
+    Returns the length in the input data from where the property assignment star
+ted upto the end of it, or 0 if the property is invalid.
+*/
+int QmlDomObject::length() const
+{
+    if (d && d->object)
+        return d->object->location.range.length;
+    else
+        return 0;
+}
+
 QmlDomBasicValuePrivate::QmlDomBasicValuePrivate()
 : value(0)
 {
@@ -796,7 +857,7 @@ Rect { x: 10 }
 */
 QString QmlDomValueLiteral::literal() const
 {
-    if (d->value) return d->value->primitive;
+    if (d->value) return d->value->primitive();
     else return QString();
 }
 
@@ -865,7 +926,7 @@ Rect { x: Other.x }
 QString QmlDomValueBinding::binding() const
 {
     if (d->value) 
-        return d->value->primitive.mid(1, d->value->primitive.length() - 2);
+        return d->value->value.asScript();
     else 
         return QString();
 }
@@ -1238,6 +1299,30 @@ QmlDomList QmlDomValue::toList() const
         rv.d = d;
     }
     return rv;
+}
+
+/*!
+    Returns the position in the input data where the property value startd, or 0
+ if the value is invalid.
+*/
+int QmlDomValue::position() const
+{
+    if (type() == Invalid)
+        return 0;
+    else
+        return d->value->location.range.offset;
+}
+
+/*!
+    Returns the length in the input data from where the property value started u
+pto the end of it, or 0 if the value is invalid.
+*/
+int QmlDomValue::length() const
+{
+    if (type() == Invalid)
+        return 0;
+    else
+        return d->value->location.range.length;
 }
 
 /*!

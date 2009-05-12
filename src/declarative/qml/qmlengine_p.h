@@ -89,7 +89,17 @@ public:
     QScriptClass::QueryFlags queryObject(const QString &name, uint *id, QObject *);
     QScriptValue propertyObject(const QScriptString &propName, QObject *, uint id = 0);
 
-    QList<QmlMetaProperty> capturedProperties;
+    struct CapturedProperty {
+        CapturedProperty(QObject *, int);
+        CapturedProperty(const QmlMetaProperty &);
+        CapturedProperty(const CapturedProperty &);
+        CapturedProperty &operator=(const CapturedProperty &);
+
+        QObject *object;
+        QString name;
+        int notifyIndex;
+    };
+    QList<CapturedProperty> capturedProperties;
 
     QmlContext *rootContext;
     QmlContext *currentBindContext;
@@ -107,8 +117,35 @@ public:
 
     QScriptEngine scriptEngine;
 
-    QList<QmlBindableValue *> currentBindValues;
-    QList<QmlParserStatus *> currentParserStatus;
+    template<class T>
+    struct SimpleList {
+        SimpleList()
+            : count(0), values(0) {}
+        SimpleList(int r)
+            : count(0), values(new T*[r]) {}
+
+        int count;
+        T **values;
+
+        void append(T *v) {
+            values[count++] = v;
+        }
+
+        T *at(int idx) const {
+            return values[idx];
+        }
+
+        void clear() {
+            delete [] values;
+        }
+    };
+
+    static void clear(SimpleList<QmlBindableValue> &);
+    static void clear(SimpleList<QmlParserStatus> &);
+
+    QList<SimpleList<QmlBindableValue> > bindValues;
+    QList<SimpleList<QmlParserStatus> > parserStatus;
+
     QmlComponent *rootComponent;
     mutable QNetworkAccessManager *networkAccessManager;
 
@@ -145,7 +182,6 @@ public:
     {
         InvalidId = -1,
 
-        ObjectListPropertyId = 0xC0000000,
         FunctionId           = 0x80000000,
         VariantPropertyId    = 0x40000000,
         PropertyId           = 0x00000000,

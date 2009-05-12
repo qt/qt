@@ -4,22 +4,28 @@
 #include <QtCore/QList>
 #include <QtCore/QUrl>
 #include <QtDeclarative/qmlerror.h>
-#include <qml.h>
+#include "qmlparser_p.h"
+
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-namespace QmlParser {
-    class Object;
-}
-
 class QByteArray;
 
 class QmlScriptParser
 {
 public:
+    class Import
+    {
+    public:
+        Import() {}
+
+        QString uri;
+        QmlParser::LocationSpan location;
+    };
+
     QmlScriptParser();
     ~QmlScriptParser();
 
@@ -29,6 +35,7 @@ public:
     QStringList types() const;
 
     QmlParser::Object *tree() const;
+    QList<Import> imports() const;
 
     void clear();
 
@@ -48,6 +55,7 @@ public:
 
     QMap<QString,QString> _nameSpacePaths;
     QmlParser::Object *root;
+    QList<Import> _imports;
     QStringList _typeNames;
     QString _scriptFile;
 };

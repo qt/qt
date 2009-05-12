@@ -74,10 +74,18 @@ namespace QmlParser
         int column;
     };
 
+    struct LocationRange
+    {
+        LocationRange() : offset(0), length(0) {}
+        quint32 offset;
+        quint32 length;
+    };
+
     struct LocationSpan
     {
         Location start;
         Location end;
+        LocationRange range;
     };
 
     class Property;
@@ -152,6 +160,45 @@ namespace QmlParser
         void dump(int = 0) const;
     };
 
+    class Variant 
+    {
+    public:
+        enum Type {
+            Invalid,
+            Boolean,
+            Number,
+            String,
+            Script
+        };
+
+        Variant();
+        Variant(const Variant &);
+        Variant(bool);
+        Variant(double);
+        Variant(const QString &, Type = String);
+        Variant &operator=(const Variant &);
+
+        Type type() const;
+
+        bool isBoolean() const { return type() == Boolean; }
+        bool isNumber() const { return type() == Number; }
+        bool isString() const { return type() == String; }
+        bool isScript() const { return type() == Script; }
+
+        bool asBoolean() const;
+        QString asString() const;
+        double asNumber() const;
+        QString asScript() const;
+
+    private:
+        Type t;
+        union {
+            bool b;
+            double d;
+        };
+        QString s;
+    };
+
     class Value : public QmlRefCount
     {
     public:
@@ -180,8 +227,11 @@ namespace QmlParser
         };
         Type type;
 
+        // ### Temporary
+        QString primitive() const { return value.asScript(); }
+
         // Primitive value
-        QString primitive;
+        Variant value;
         // Object value
         Object *object;
 

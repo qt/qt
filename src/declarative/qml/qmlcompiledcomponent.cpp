@@ -56,8 +56,8 @@ QmlCompiledComponent::QmlCompiledComponent()
 
 QmlCompiledComponent::~QmlCompiledComponent()
 {
-    for (int ii = 0; ii < mos.count(); ++ii)
-        qFree(mos.at(ii));
+    for (int ii = 0; ii < synthesizedMetaObjects.count(); ++ii)
+        qFree(synthesizedMetaObjects.at(ii));
 }
 
 

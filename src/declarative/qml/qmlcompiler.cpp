@@ -61,6 +61,7 @@
 #include <QtCore/qdebug.h>
 #include "private/qmlcustomparser_p_p.h"
 #include <private/qmlcontext_p.h>
+#include <private/qmlcomponent_p.h>
 
 #include "qmlscriptparser_p.h"
 
@@ -190,16 +191,6 @@ bool QmlCompiler::isValidId(const QString &val)
             return false;
 
     return true;
-}
-
-/*! 
-    Returns true if \a str is a valid binding string, false otherwise.
-
-    Valid binding strings are those enclosed in braces ({}).
-*/
-bool QmlCompiler::isBinding(const QString &str)
-{
-    return str.startsWith(QLatin1Char('{')) && str.endsWith(QLatin1Char('}'));
 }
 
 /*!
@@ -441,10 +432,10 @@ void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
     cc->customTypeData.clear();
     cc->datas.clear();
     if (deleteMemory) {
-        for (int ii = 0; ii < cc->mos.count(); ++ii)
-            qFree(cc->mos.at(ii));
+        for (int ii = 0; ii < cc->synthesizedMetaObjects.count(); ++ii)
+            qFree(cc->synthesizedMetaObjects.at(ii));
     }
-    cc->mos.clear();
+    cc->synthesizedMetaObjects.clear();
     cc->bytecode.clear();
 }
 
@@ -526,10 +517,17 @@ void QmlCompiler::compileTree(Object *tree)
     init.type = QmlInstruction::Init;
     init.line = 0;
     init.init.dataSize = 0;
+    init.init.bindingsSize = 0;
+    init.init.parserStatusSize = 0;
     output->bytecode << init;
 
     if (!compileObject(tree, 0)) // Compile failed
         return;
+
+    if (tree->metatype)
+        static_cast<QMetaObject &>(output->root) = *tree->metaObject();
+    else
+        static_cast<QMetaObject &>(output->root) = *output->types.at(tree->type).metaObject();
 
     QmlInstruction def;
     init.line = 0;
@@ -541,10 +539,8 @@ void QmlCompiler::compileTree(Object *tree)
 
 bool QmlCompiler::compileObject(Object *obj, int ctxt)
 {    
-    if (obj->type != -1) {
-        obj->metatype = 
-            QmlMetaType::metaObjectForType(output->types.at(obj->type).className);
-    }
+    if (obj->type != -1) 
+        obj->metatype = output->types.at(obj->type).metaObject();
 
     if (output->types.at(obj->type).className == "Component") {
         COMPILE_CHECK(compileComponent(obj, ctxt));
@@ -663,10 +659,13 @@ bool QmlCompiler::compileComponent(Object *obj, int ctxt)
     if (obj->defaultProperty && obj->defaultProperty->values.count()) 
         root = obj->defaultProperty->values.first()->object;
     
+    if (!root)
+        COMPILE_EXCEPTION("Cannot create empty component specification");
+
     COMPILE_CHECK(compileComponentFromRoot(root, ctxt));
 
     if (idProp && idProp->values.count()) {
-        QString val = idProp->values.at(0)->primitive;
+        QString val = idProp->values.at(0)->primitive();
         if (!isValidId(val))
             COMPILE_EXCEPTION("Invalid id property value");
 
@@ -698,6 +697,8 @@ bool QmlCompiler::compileComponentFromRoot(Object *obj, int ctxt)
     QmlInstruction init;
     init.type = QmlInstruction::Init;
     init.init.dataSize = 0;
+    init.init.bindingsSize = 0;
+    init.init.parserStatusSize = 0;
     init.line = obj->location.start.line;
     output->bytecode << init;
 
@@ -759,12 +760,9 @@ bool QmlCompiler::compileSignal(Property *prop, Object *obj)
         return rv;
 
     } else {
-        QString script = prop->values.at(0)->primitive.trimmed();
+        QString script = prop->values.at(0)->value.asScript().trimmed();
         if (script.isEmpty())
             return true;
-
-        if (isBinding(script))
-            COMPILE_EXCEPTION("Cannot assign binding to signal property");
 
         int idx = output->indexForString(script); 
         int pr = output->indexForByteArray(prop->name);
@@ -880,7 +878,7 @@ bool QmlCompiler::compileIdProperty(QmlParser::Property *prop,
     if (prop->values.count() == 1) {
         if (prop->values.at(0)->object)
             COMPILE_EXCEPTION("Cannot assign an object as an id");
-        QString val = prop->values.at(0)->primitive;
+        QString val = prop->values.at(0)->primitive();
         if (!isValidId(val))
             COMPILE_EXCEPTION(val << "is not a valid id");
         if (ids.contains(val))
@@ -1024,11 +1022,12 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
                 assign.assignObject.property = output->indexForByteArray(prop->name);
                 assign.assignObject.castValue = 0;
                 output->bytecode << assign;
-            } else if (isBinding(v->primitive)) {
+            } else if (v->value.isScript()) {
                 if (assignedBinding)
                     COMPILE_EXCEPTION("Can only assign one binding to lists");
 
-                compileBinding(v->primitive, prop, ctxt, obj->metaObject(), v->location.start.line);
+                compileBinding(v->value.asScript(), prop, ctxt, 
+                               obj->metaObject(), v->location.start.line);
                 v->type = Value::PropertyBinding;
             } else {
                 COMPILE_EXCEPTION("Cannot assign primitives to lists");
@@ -1069,7 +1068,7 @@ bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
                                                   int ctxt)
 {
     if (v->object->type != -1) 
-        v->object->metatype = QmlMetaType::metaObjectForType(output->types.at(v->object->type).className);
+        v->object->metatype = output->types.at(v->object->type).metaObject();
 
     if (v->object->metaObject()) {
 
@@ -1179,9 +1178,10 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
                                                    QmlParser::Value *v,
                                                    int ctxt)
 {
-    if (isBinding(v->primitive)) {
+    if (v->value.isScript()) {
 
-        compileBinding(v->primitive, prop, ctxt, obj->metaObject(), v->location.start.line);
+        compileBinding(v->value.asScript(), prop, ctxt, obj->metaObject(), 
+                       v->location.start.line);
 
         v->type = Value::PropertyBinding;
 
@@ -1192,8 +1192,9 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
 
         bool doassign = true;
         if (prop->index != -1) {
+            QString value = v->primitive();
             StoreInstructionResult r = 
-                generateStoreInstruction(*output, assign, obj->metaObject()->property(prop->index), prop->index, -1, &v->primitive);
+                generateStoreInstruction(*output, assign, obj->metaObject()->property(prop->index), prop->index, -1, &value);
 
             if (r == Ok) {
                 doassign = false;
@@ -1201,10 +1202,10 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
                 //### we are restricted to a rather generic message here. If we can find a way to move
                 //    the exception into generateStoreInstruction we could potentially have better messages.
                 //    (the problem is that both compile and run exceptions can be generated, though)
-                COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive << "to property" << obj->metaObject()->property(prop->index).name());
+                COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive() << "to property" << obj->metaObject()->property(prop->index).name());
                 doassign = false;
             } else if (r == ReadOnly) {
-                COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive << "to the read-only property" << obj->metaObject()->property(prop->index).name());
+                COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive() << "to the read-only property" << obj->metaObject()->property(prop->index).name());
             } else {
                 doassign = true;
             }
@@ -1219,7 +1220,7 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
                     output->indexForByteArray(prop->name);
             }
             assign.assignConstant.constant = 
-                output->indexForString(v->primitive);
+                output->indexForString(v->primitive());
         }
 
         output->bytecode << assign;
@@ -1296,10 +1297,10 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
     obj->extObjectData = builder.toMetaObject();
     static_cast<QMetaObject &>(obj->extObject) = *obj->extObjectData;
 
-    output->mos << obj->extObjectData;
+    output->synthesizedMetaObjects << obj->extObjectData;
     QmlInstruction store;
     store.type = QmlInstruction::StoreMetaObject;
-    store.storeMeta.data = output->mos.count() - 1;
+    store.storeMeta.data = output->synthesizedMetaObjects.count() - 1;
     store.storeMeta.slotData = slotStart;
     store.line = obj->location.start.line;
     output->bytecode << store;
@@ -1328,12 +1329,9 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
     return true;
 }
 
-void QmlCompiler::compileBinding(const QString &str, QmlParser::Property *prop,
+void QmlCompiler::compileBinding(const QString &bind, QmlParser::Property *prop,
                                  int ctxt, const QMetaObject *mo, qint64 line)
 {
-    Q_ASSERT(isBinding(str));
-
-    QString bind = str.mid(1, str.length() - 2).trimmed();
     QmlBasicScript bs;
     bs.compile(bind.toLatin1());
 
@@ -1378,6 +1376,8 @@ int QmlCompiler::optimizeExpressions(int start, int end, int patch)
     QHash<QString, int> ids;
     int saveCount = 0;
     int newInstrs = 0;
+    int bindingsCount = 0;
+    int parserStatusCount = 0;
 
     for (int ii = start; ii <= end; ++ii) {
         const QmlInstruction &instr = output->bytecode.at(ii);
@@ -1400,6 +1400,17 @@ int QmlCompiler::optimizeExpressions(int start, int end, int patch)
             ii += instr.createComponent.count - 1;
             continue;
         }
+        
+        if (instr.type == QmlInstruction::AssignBinding ||
+            instr.type == QmlInstruction::AssignCompiledBinding ||
+            instr.type == QmlInstruction::StoreBinding ||
+            instr.type == QmlInstruction::StoreCompiledBinding) {
+            ++bindingsCount;
+        } else if (instr.type == QmlInstruction::TryBeginObject ||
+                   instr.type == QmlInstruction::BeginObject) {
+            ++parserStatusCount;
+        }
+
 
         if (instr.type == QmlInstruction::StoreCompiledBinding) {
             QmlBasicScript s(output->datas.at(instr.assignBinding.value).constData());
@@ -1437,12 +1448,12 @@ int QmlCompiler::optimizeExpressions(int start, int end, int patch)
                     ++newInstrs;
                 }
             }
-        }
-
+        } 
     }
 
-    if (saveCount) 
-        output->bytecode[patch].init.dataSize = saveCount;
+    output->bytecode[patch].init.dataSize = saveCount;
+    output->bytecode[patch].init.bindingsSize = bindingsCount;
+    output->bytecode[patch].init.parserStatusSize = parserStatusCount;;
 
     return newInstrs;
 }
@@ -1467,12 +1478,13 @@ QmlCompiledData::~QmlCompiledData()
 QmlCompiledData &QmlCompiledData::operator=(const QmlCompiledData &other)
 {
     types = other.types;
+    root = other.root;
     primitives = other.primitives;
     floatData = other.floatData;
     intData = other.intData;
     customTypeData = other.customTypeData;
     datas = other.datas;
-    mos = other.mos;
+    synthesizedMetaObjects = other.synthesizedMetaObjects;
     bytecode = other.bytecode;
     return *this;
 }
@@ -1496,5 +1508,14 @@ QObject *QmlCompiledData::TypeReference::createInstance(QmlContext *ctxt) const
     }
 }
 
+const QMetaObject *QmlCompiledData::TypeReference::metaObject() const
+{
+    if (type)
+        return type->metaObject();
+    else if (component)
+        return &static_cast<QmlComponentPrivate *>(QObjectPrivate::get(component))->cc->root;
+    else
+        return 0;
+}
 
 QT_END_NAMESPACE

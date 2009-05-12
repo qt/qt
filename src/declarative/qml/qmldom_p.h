@@ -42,6 +42,8 @@
 #ifndef QMLDOM_P_H
 #define QMLDOM_P_H
 
+#include <QtCore/QtGlobal>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -58,6 +60,7 @@ public:
     ~QmlDomDocumentPrivate();
 
     QList<QmlError> errors;
+    QList<QUrl> imports;
     QmlParser::Object *root;
 };
 

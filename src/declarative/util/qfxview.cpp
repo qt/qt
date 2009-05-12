@@ -105,6 +105,8 @@ public:
     QmlComponent *component;
     QBasicTimer resizetimer;
 
+    QSize initialSize;
+
     void init();
 };
 
@@ -137,6 +139,7 @@ public:
 QFxView::QFxView(QWidget *parent)
 : QSimpleCanvas(parent), d(new QFxViewPrivate(this))
 {
+    setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
     d->init();
 }
 
@@ -150,6 +153,7 @@ QFxView::QFxView(QWidget *parent)
 QFxView::QFxView(QSimpleCanvas::CanvasMode mode, QWidget *parent)
 : QSimpleCanvas(mode, parent), d(new QFxViewPrivate(this))
 {
+    setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
     d->init();
 }
 
@@ -329,6 +333,7 @@ void QFxView::continueExecute()
             if(qmlDebugger()) {
                 QmlDebugger *debugger = new QmlDebugger;
                 debugger->setDebugObject(item);
+                debugger->setCanvas(this);
                 debugger->show();
                 raise();
                 debugger->raise();
@@ -380,7 +385,20 @@ void QFxView::timerEvent(QTimerEvent* e)
         if (d->root)
             emit sceneResized(QSize(d->root->width(),d->root->height()));
         d->resizetimer.stop();
+        updateGeometry();
     }
+}
+
+/*!
+    The size hint is the size of the root item.
+*/
+QSize QFxView::sizeHint() const
+{
+    if (d->initialSize.width() <= 0)
+        d->initialSize.setWidth(d->root->width());
+    if (d->initialSize.height() <= 0)
+        d->initialSize.setHeight(d->root->height());
+    return d->initialSize;
 }
 
 /*!

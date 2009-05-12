@@ -81,6 +81,7 @@ public:
 
         QmlRefCount *ref;
         QObject *createInstance(QmlContext *) const;
+        const QMetaObject *metaObject() const;
     };
     QList<TypeReference> types;
     struct CustomTypeData
@@ -88,12 +89,13 @@ public:
         int index;
         int type;
     };
+    QAbstractDynamicMetaObject root;
     QList<QString> primitives;
     QList<float> floatData;
     QList<int> intData;
     QList<CustomTypeData> customTypeData;
     QList<QByteArray> datas;
-    QList<QMetaObject *> mos;
+    QList<QMetaObject *> synthesizedMetaObjects;
     QList<QmlParser::Location> locations;
     QList<QmlInstruction> bytecode;
 
@@ -118,7 +120,6 @@ public:
     QList<QmlError> errors() const;
 
     static bool isValidId(const QString &);
-    static bool isBinding(const QString &);
     static bool isAttachedProperty(const QByteArray &);
 
     enum StoreInstructionResult { Ok, UnknownType, InvalidData, ReadOnly };

@@ -62,6 +62,8 @@
 #include <private/qmlcomponent_p.h>
 #include "private/qmlvmemetaobject_p.h"
 #include <QtCore/qdebug.h>
+#include <QtCore/qvarlengtharray.h>
+#include <private/qmlbindablevalue_p.h>
 
 QT_BEGIN_NAMESPACE
 Q_DECLARE_PERFORMANCE_LOG(QFxCompiler) {
@@ -213,15 +215,14 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
     const QList<QmlCompiledComponent::TypeReference> &types = comp->types;
     const QList<QString> &primitives = comp->primitives;
     const QList<QByteArray> &datas = comp->datas;
-    const QList<QMetaObject *> &mos = comp->mos;
+    const QList<QMetaObject *> &synthesizedMetaObjects = comp->synthesizedMetaObjects;;
     const QList<QmlCompiledData::CustomTypeData> &customTypeData = comp->customTypeData;
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::CompileRun> cr;
 #endif
-
-    QList<QmlParserStatus *> parserStatuses;
-    QList<QmlBindableValue *> bindableValues;
+    QmlEnginePrivate::SimpleList<QmlBindableValue> bindValues;
+    QmlEnginePrivate::SimpleList<QmlParserStatus> parserStatus;
 
     QStack<QObject *> stack;
     QStack<ListInstance> qliststack;
@@ -252,6 +253,11 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                     ::memset(savedObjects, 0,
                             sizeof(QObject *)*instr.init.dataSize);
                 }
+
+                if (instr.init.bindingsSize) 
+                    bindValues = QmlEnginePrivate::SimpleList<QmlBindableValue>(instr.init.bindingsSize);
+                if (instr.init.parserStatusSize)
+                    parserStatus = QmlEnginePrivate::SimpleList<QmlParserStatus>(instr.init.parserStatusSize);
             }
             break;
 
@@ -328,7 +334,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QFxCompilerTimer<QFxCompiler::InstrStoreMetaObject> cc;
 #endif
                 QObject *target = stack.top();
-                new QmlVMEMetaObject(target, mos.at(instr.storeMeta.data), &comp->primitives, instr.storeMeta.slotData, comp);
+                new QmlVMEMetaObject(target, synthesizedMetaObjects.at(instr.storeMeta.data), &comp->primitives, instr.storeMeta.slotData, comp);
             }
             break;
 
@@ -523,8 +529,10 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 #endif
                 QObject *target = stack.top();
                 QmlParserStatus *status = reinterpret_cast<QmlParserStatus *>(reinterpret_cast<char *>(target) + instr.begin.castValue);
+                parserStatus.append(status);
+                status->d = &parserStatus.values[parserStatus.count - 1];
+
                 status->classBegin();
-                parserStatuses << status;
             }
             break;
 
@@ -634,10 +642,13 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                     VME_EXCEPTION("Cannot assign a binding to read-only property" << mp.name());
 
                 QmlBindableValue *bind = new QmlBindableValue((void *)datas.at(instr.assignBinding.value).constData(), comp, context, 0);
+                bindValues.append(bind);
+                QmlBindableValuePrivate *p = 
+                    static_cast<QmlBindableValuePrivate *>(QObjectPrivate::get(bind));
+                p->mePtr = &bindValues.values[bindValues.count - 1];
                 QFx_setParent_noEvent(bind, target);
 
                 bind->setTarget(mp);
-                bindableValues << bind;
             }
             break;
 
@@ -656,10 +667,13 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                     VME_EXCEPTION("Cannot assign a binding to read-only property" << mp.name());
 
                 QmlBindableValue *bind = new QmlBindableValue(primitives.at(instr.assignBinding.value), context, false);
+                bindValues.append(bind);
+                QmlBindableValuePrivate *p = 
+                    static_cast<QmlBindableValuePrivate *>(QObjectPrivate::get(bind));
+                p->mePtr = &bindValues.values[bindValues.count - 1];
                 QFx_setParent_noEvent(bind, target);
 
                 bind->setTarget(mp);
-                bindableValues << bind;
             }
             break;
 
@@ -1045,12 +1059,17 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
         if (!stack.isEmpty()) {
             delete stack.at(0);
         }
+
+        QmlEnginePrivate::clear(bindValues);
+        QmlEnginePrivate::clear(parserStatus);
         return 0;
     }
 
     QmlEnginePrivate *ep = ctxt->engine()->d_func();
-    ep->currentBindValues << bindableValues;
-    ep->currentParserStatus << parserStatuses;
+    if (bindValues.count)
+        ep->bindValues << bindValues;
+    if (parserStatus.count)
+        ep->parserStatus << parserStatus;
 
     comp->dumpPost();
 

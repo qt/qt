@@ -73,7 +73,7 @@ Item {
 
                     color: "white"
                     styleColor: "black"
-                    style: Raised
+                    style: "Raised"
 
                     font.family: "Helvetica"
                     font.size: 10
@@ -85,7 +85,7 @@ Item {
                     anchors.rightMargin: 4
                     anchors.top: Header.top
                     anchors.topMargin: 4
-                    hAlign: AlignHCenter
+                    hAlign: "AlignHCenter"
                 }
                 Item {
                     width: parent.width
