@@ -48,7 +48,6 @@ Item {
             Script {
                function photoClicked() {
                    ImageDetails.photoTitle = title;
-                   ImageDetails.flickableArea.yPosition = 0;
                    ImageDetails.photoDescription = description;
                    ImageDetails.photoTags = tags;
                    ImageDetails.photoWidth = photoWidth;
@@ -58,7 +57,6 @@ Item {
                    ImageDetails.photoDate = photoDate;
                    ImageDetails.photoUrl = url;
                    ImageDetails.rating = 0;
-                   ImageDetails.slider.handle.x = ImageDetails.slider.xMax;
                    Wrapper.state = "Details";
                }
             }
