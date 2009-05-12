@@ -286,8 +286,6 @@ public:
     void setStyle_helper(QStyle *newStyle, bool propagate, bool metalHack = false);
     void inheritStyle();
 
-    bool isBackgroundInherited() const;
-
     void setUpdatesEnabled_helper(bool );
 
     void paintBackground(QPainter *, const QRegion &, const QPoint & = QPoint(), int flags = DrawAsRoot) const;
@@ -323,7 +321,6 @@ public:
     void updateIsOpaque();
     void setOpaque(bool opaque);
     void updateIsTranslucent();
-    bool hasBackground() const;
     bool paintOnScreen() const;
 
     QRegion getOpaqueRegion() const;
@@ -332,7 +329,6 @@ public:
 
     bool close_helper(CloseMode mode);
 
-    bool compositeEvent(QEvent *e);
     void setWindowIcon_helper();
     void setWindowIcon_sys(bool forceReset = false);
     void setWindowOpacity_sys(qreal opacity);
@@ -352,7 +348,6 @@ public:
     void reparentFocusWidgets(QWidget *oldtlw);
 
     static int pointToRect(const QPoint &p, const QRect &r);
-    QRect fromOrToLayoutItemRect(const QRect &rect, int sign) const;
 
     void setWinId(WId);
     void showChildren(bool spontaneous);
@@ -543,6 +538,7 @@ public:
     void sendStartupMessage(const char *message) const;
     void setNetWmWindowTypes();
     void x11UpdateIsOpaque();
+    bool isBackgroundInherited() const;
 #elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
     uint noPaintOnScreen : 1; // see qwidget_win.cpp ::paintEngine()
 
@@ -558,13 +554,6 @@ public:
     // This is new stuff
     uint needWindowChange : 1;
     uint isGLWidget : 1;
-
-    enum PaintChildrenOPs {
-        PC_None = 0x00,
-        PC_Now = 0x01,
-        PC_NoPaint = 0x04,
-        PC_Later = 0x10
-    };
 
     // Each wiget keeps a list of all its child and grandchild OpenGL widgets.
     // This list is used to update the gl context whenever a parent and a granparent
@@ -622,19 +611,16 @@ public:
     //mac event functions
     static bool qt_create_root_win();
     static void qt_clean_root_win();
-    static bool qt_recreate_root_win();
     static bool qt_mac_update_sizer(QWidget *, int up = 0);
     static OSStatus qt_window_event(EventHandlerCallRef er, EventRef event, void *);
     static OSStatus qt_widget_event(EventHandlerCallRef er, EventRef event, void *);
     static bool qt_widget_rgn(QWidget *, short, RgnHandle, bool);
-    static bool qt_widget_shape(QWidget *, short, HIMutableShapeRef, bool);
 #elif defined(Q_WS_QWS) // <--------------------------------------------------------- QWS
     void setMaxWindowState_helper();
     void setFullScreenSize_helper();
     void moveSurface(QWindowSurface *surface, const QPoint &offset);
     QRegion localRequestedRegion() const;
     QRegion localAllocatedRegion() const;
-    void blitToScreen(const QRegion &globalrgn);
 
     friend class QWSManager;
     friend class QWSManagerPrivate;

@@ -906,6 +906,44 @@ void QWidgetPrivate::x11UpdateIsOpaque()
 #endif
 }
 
+/*
+  Returns true if the background is inherited; otherwise returns
+  false.
+
+  Mainly used in the paintOnScreen case.
+*/
+bool QWidgetPrivate::isBackgroundInherited() const
+{
+    Q_Q(const QWidget);
+
+    // windows do not inherit their background
+    if (q->isWindow() || q->windowType() == Qt::SubWindow)
+        return false;
+
+    if (q->testAttribute(Qt::WA_NoSystemBackground) || q->testAttribute(Qt::WA_OpaquePaintEvent))
+        return false;
+
+    const QPalette &pal = q->palette();
+    QPalette::ColorRole bg = q->backgroundRole();
+    QBrush brush = pal.brush(bg);
+
+    // non opaque brushes leaves us no choice, we must inherit
+    if (!q->autoFillBackground() || !brush.isOpaque())
+        return true;
+
+    if (brush.style() == Qt::SolidPattern) {
+        // the background is just a solid color. If there is no
+        // propagated contents, then we claim as performance
+        // optimization that it was not inheritet. This is the normal
+        // case in standard Windows or Motif style.
+        const QWidget *w = q->parentWidget();
+        if (!w->d_func()->isBackgroundInherited())
+            return false;
+    }
+
+    return true;
+}
+
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);

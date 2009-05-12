@@ -1516,45 +1516,6 @@ void QWidgetPrivate::deleteExtra()
 }
 
 /*
-  Returns true if the background is inherited; otherwise returns
-  false.
-
-  Mainly used in the paintOnScreen case.
-*/
-
-bool QWidgetPrivate::isBackgroundInherited() const
-{
-    Q_Q(const QWidget);
-
-    // windows do not inherit their background
-    if (q->isWindow() || q->windowType() == Qt::SubWindow)
-        return false;
-
-    if (q->testAttribute(Qt::WA_NoSystemBackground) || q->testAttribute(Qt::WA_OpaquePaintEvent))
-        return false;
-
-    const QPalette &pal = q->palette();
-    QPalette::ColorRole bg = q->backgroundRole();
-    QBrush brush = pal.brush(bg);
-
-    // non opaque brushes leaves us no choice, we must inherit
-    if (!q->autoFillBackground() || !brush.isOpaque())
-        return true;
-
-    if (brush.style() == Qt::SolidPattern) {
-        // the background is just a solid color. If there is no
-        // propagated contents, then we claim as performance
-        // optimization that it was not inheritet. This is the normal
-        // case in standard Windows or Motif style.
-        const QWidget *w = q->parentWidget();
-        if (!w->d_func()->isBackgroundInherited())
-            return false;
-    }
-
-    return true;
-}
-
-/*
   Returns true if there are widgets above this which overlap with
   \a rect, which is in parent's coordinate system (same as crect).
 */
@@ -1898,24 +1859,6 @@ void QWidgetPrivate::clipToEffectiveMask(QRegion &region) const
         offset -= wd->data.crect.topLeft();
         w = w->parentWidget();
     }
-}
-
-bool QWidgetPrivate::hasBackground() const
-{
-    Q_Q(const QWidget);
-    if (!q->isWindow() && q->parentWidget() && q->parentWidget()->testAttribute(Qt::WA_PaintOnScreen))
-        return true;
-    if (q->testAttribute(Qt::WA_PaintOnScreen))
-        return true;
-    if (!q->testAttribute(Qt::WA_OpaquePaintEvent) && !q->testAttribute(Qt::WA_NoSystemBackground)) {
-        const QPalette &pal = q->palette();
-        QPalette::ColorRole bg = q->backgroundRole();
-        QBrush bgBrush = pal.brush(bg);
-        return (bgBrush.style() != Qt::NoBrush &&
-                ((q->isWindow() || q->windowType() == Qt::SubWindow)
-                 || (QPalette::ColorRole(bg_role) != QPalette::NoRole || (pal.resolve() & (1<<bg)))));
-    }
-    return false;
 }
 
 bool QWidgetPrivate::paintOnScreen() const
@@ -6155,14 +6098,6 @@ int QWidgetPrivate::pointToRect(const QPoint &p, const QRect &r)
     else if (p.y() > r.bottom())
         dy = p.y() - r.bottom();
     return dx + dy;
-}
-
-QRect QWidgetPrivate::fromOrToLayoutItemRect(const QRect &rect, int sign) const
-{
-    QRect r = rect;
-    r.adjust(-sign * leftLayoutItemMargin, -sign * topLayoutItemMargin,
-             +sign * rightLayoutItemMargin, +sign * bottomLayoutItemMargin);
-    return r;
 }
 
 /*!

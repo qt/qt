@@ -1599,24 +1599,6 @@ bool QWidgetPrivate::qt_create_root_win()
     return true;
 }
 
-bool QWidgetPrivate::qt_recreate_root_win()
-{
-    if(!qt_root_win) //sanity check
-        return false;
-    //store old
-    OSWindowRef old_root_win = qt_root_win;
-    //recreate
-    qt_root_win = 0;
-    qt_create_root_win();
-    //cleanup old window
-#ifdef QT_MAC_USE_COCOA
-    [old_root_win release];
-#else
-    CFRelease(old_root_win);
-#endif
-    return true;
-}
-
 bool QWidgetPrivate::qt_widget_rgn(QWidget *widget, short wcode, RgnHandle rgn, bool force = false)
 {
     bool ret = false;
