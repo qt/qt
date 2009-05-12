@@ -63,7 +63,7 @@ int main(int argc, char **argv)
       s1_timer->setObjectName("s1_timer");
       QTimer t1;
       t1.setInterval(2000);
-      s1_timer->invokeMethodOnEntry(&t1, "start");
+      QObject::connect(s1_timer, SIGNAL(entered()), &t1, SLOT(start()));
       QFinalState *s1_done = new QFinalState(s1);
       s1_done->setObjectName("s1_done");
       s1_timer->addTransition(&t1, SIGNAL(timeout()), s1_done);
@@ -80,17 +80,17 @@ int main(int argc, char **argv)
       s2_timer->setObjectName("s2_timer");
       QTimer t2;
       t2.setInterval(2000);
-      s2_timer->invokeMethodOnEntry(&t2, "start");
+      QObject::connect(s2_timer, SIGNAL(entered()), &t2, SLOT(start()));
       QFinalState *s2_done = new QFinalState(s2);
       s2_done->setObjectName("s2_done");
       s2_timer->addTransition(&t2, SIGNAL(timeout()), s2_done);
       s2->setInitialState(s2_timer);
 
-    s1->addFinishedTransition(s2);
+    s1->addTransition(s1, SIGNAL(finished()), s2);
 
     QFinalState *s3 = new QFinalState();
     s3->setObjectName("s3");
-    s2->addFinishedTransition(s3);
+    s2->addTransition(s2, SIGNAL(finished()), s3);
 
     machine.addState(s1);
     machine.addState(s2);

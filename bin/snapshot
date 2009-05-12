@@ -14,6 +14,40 @@ use strict;
 my $targetPath = "";
 my $qtdir = $ENV{"QTDIR"};
 
+my @class_renames = (
+    "QAbstractAnimation",
+    "QAnimationGroup",
+    "QParallelAnimationGroup",
+    "QSequentialAnimationGroup",
+    "QEasingCurve",
+    "QVariantAnimation",
+    "QPropertyAnimation",
+    "QItemAnimation",
+    "QPauseAnimation",
+    "QAbstractState",
+    "QAbstractStateGroup",
+    "QAbstractTransition",
+    "QActionState",
+    "QEventTransition",
+    "QFinalState",
+    "QHistoryState",
+    "QParallelStateGroup",
+    "QSignalEvent",
+    "QSignalTransition",
+    "QState",
+    "QStateAction",
+    "QStateInvokeMethodAction",
+    "QStateFinishedEvent",
+    "QStateFinishedTransition",
+    "QStateMachine",
+    "QTransition",
+    "QMouseEventTransition",
+    "QBasicMouseEventTransition",
+    "QKeyEventTransition",
+    "QBasicKeyEventTransition",
+    "QGraphicsWidget",
+    "QBoundEvent");
+
 my @files = (
             "3rdparty/easing/easing.cpp",
             "corelib/tools/qeasingcurve.h",
@@ -39,6 +73,9 @@ my @files = (
             "corelib/animation/qsequentialanimationgroup.cpp",
             "corelib/animation/qsequentialanimationgroup.h",
             "corelib/animation/qsequentialanimationgroup_p.h",
+            "gui/animation/qguivariantanimation.cpp",
+            "gui/animation/animation.pri",
+
             "corelib/statemachine/statemachine.pri",
             "corelib/statemachine/qabstractstate.cpp",
             "corelib/statemachine/qabstractstate.h",
@@ -75,9 +112,9 @@ my @files = (
             "corelib/statemachine/qstatemachine.h",
             "corelib/statemachine/qstatemachine_p.h",
             "corelib/statemachine/qstate_p.h",
-            "corelib/statemachine/qtransition.cpp",
-            "corelib/statemachine/qtransition.h",
-            "corelib/statemachine/qtransition_p.h",
+            "corelib/statemachine/qactiontransition.cpp",
+            "corelib/statemachine/qactiontransition.h",
+            "corelib/statemachine/qactiontransition_p.h",
             "gui/statemachine/qkeyeventtransition.h",
             "gui/statemachine/qkeyeventtransition.cpp",
             "gui/statemachine/qbasickeyeventtransition.cpp",
@@ -109,13 +146,13 @@ open(OXML, "> " . $projectXML) || die "Could not open $projectXML for writing (n
 
 print "COPYING SOURCES...\n";
 foreach my $files(@files) {
-    copyFile("$qtdir/src/$files","$targetPath/src");
+    copyFile("$qtdir/src/$files","$targetPath/src", 1);
 }
-copyFile("$qtdir/doc/src/animation.qdoc","$targetPath/doc");
-copyFile("$qtdir/doc/src/statemachine.qdoc","$targetPath/doc");
-copyFile("$qtdir/src/3rdparty/easing/legal.qdoc","$targetPath/doc");
+copyFile("$qtdir/doc/src/animation.qdoc","$targetPath/doc", 0);
+copyFile("$qtdir/doc/src/statemachine.qdoc","$targetPath/doc", 0);
+copyFile("$qtdir/src/3rdparty/easing/legal.qdoc","$targetPath/doc", 0);
 
-copyFile("$qtdir/doc/src/snippets/code/src_corelib_tools_qeasingcurve.cpp","$targetPath/doc/src/snippets/code");
+copyFile("$qtdir/doc/src/snippets/code/src_corelib_tools_qeasingcurve.cpp","$targetPath/doc/src/snippets/code", 0);
 
 
 my %animation_examples = (
@@ -142,7 +179,6 @@ my %animation_examples = (
                     "bomb.cpp",
                     "bomb.h",
                     "custompropertyanimation.h",
-                    "custompropertyanimation_p.h",
                     "custompropertyanimation.cpp",
                     "graphicsscene.cpp",
                     "graphicsscene.h",
@@ -150,7 +186,9 @@ my %animation_examples = (
                     "mainwindow.cpp",
                     "mainwindow.h",
                     "pics/scalable/*",
-                    "pics/big/*",
+                    "pics/big/*.png",
+                    "pics/big/explosion/boat/*",
+                    "pics/big/explosion/submarine/*",
                     "pics/small/*",
                     "pics/welcome/*",
                     "pixmapitem.cpp",
@@ -161,8 +199,11 @@ my %animation_examples = (
                     "submarine_p.h",
                     "states.cpp",
                     "states.h",
+                    "qanimationstate.cpp",
+                    "qanimationstate.h",
                     "torpedo.cpp",
-                    "torpedo.h"],
+                    "torpedo.h",
+                    "data.xml"],
     "stickman" => ["stickman.pro",
                     "main.cpp",
                     "animation.cpp",
@@ -175,6 +216,7 @@ my %animation_examples = (
                     "node.h",
                     "stickman.cpp",
                     "stickman.h",
+                    "editor/*",
                     "animations/chilling",
                     "animations/dancing",
                     "animations/dead",
@@ -193,7 +235,7 @@ for $exDir ( keys %animation_examples ) {
         my $glob = 0;
         if (index($ex_file,"/") > 0) {
             my($basefile, $fullPath) = fileparse("$targetPath/examples/$exDir/$ex_file");
-            if ($basefile eq "*") {
+            if (index($basefile, "*") >= 0) {
                 $glob = 1;
             }
             mkpath "$fullPath",  0777 unless(-e "$fullPath");
@@ -209,20 +251,25 @@ for $exDir ( keys %animation_examples ) {
         if ($glob eq 1) {
             my @globFiles = < $qtdir/examples/animation/$exDir/$ex_file >;
             foreach my $globFile(@globFiles) {
-                copyFile("$globFile", "$copyTargetPath");
+                copyFile("$globFile", "$copyTargetPath", 0);
             }
         } else {
-            copyFile("$qtdir/examples/animation/$exDir/$ex_file", "$copyTargetPath");
+            copyFile("$qtdir/examples/animation/$exDir/$ex_file", "$copyTargetPath", 0);
         }
     }
 }
 
 close OXML;
 print("Finished!");
+
+
 ######################################################################
 # Syntax:  copyFile(gitfile, destinationPath)
 # Params:  gitfile, string, filename to create duplicate for
 #          destinationPath, string, destination name of duplicate
+#          autoRename, int, 0: Don't rename
+#                           1: The file should be renamed to have the "qt" prefix
+#
 #
 # Purpose: Copies to the solutions area.
 # Returns: --
@@ -230,7 +277,7 @@ print("Finished!");
 ######################################################################
 sub copyFile
 {
-    my ($gitfile, $destinationPath) = @_;
+    my ($gitfile, $destinationPath, $autoRename) = @_;
     # Bi-directional synchronization
     open( I, "< " . $gitfile ) || die "Could not open $gitfile for reading";
     local $/;
@@ -239,43 +286,19 @@ sub copyFile
     my ($baseFileName, $path, $ext) = fileparse($gitfile, qr/\.[^.]*/);
     if ($ext eq ".h"  or $ext eq ".cpp" or $ext eq ".qdoc") {
         # both public and private classes
-        $filecontents =~s/QAbstractAnimation/QtAbstractAnimation/g;
-        $filecontents =~s/QAnimationGroup/QtAnimationGroup/g;
-        $filecontents =~s/QParallelAnimationGroup/QtParallelAnimationGroup/g;
-        $filecontents =~s/QSequentialAnimationGroup/QtSequentialAnimationGroup/g;
-        $filecontents =~s/QEasingCurve/QtEasingCurve/g;
-        $filecontents =~s/QVariantAnimation/QtVariantAnimation/g;
-        $filecontents =~s/QPropertyAnimation/QtPropertyAnimation/g;
-        $filecontents =~s/QItemAnimation/QtItemAnimation/g;
-        $filecontents =~s/QPauseAnimation/QtPauseAnimation/g;
-        $filecontents =~s/QAbstractState/QtAbstractState/g;
-        $filecontents =~s/QAbstractStateGroup/QtAbstractStateGroup/g;
-        $filecontents =~s/QAbstractTransition/QtAbstractTransition/g;
-        $filecontents =~s/QActionState/QtActionState/g;
-        $filecontents =~s/QEventTransition/QtEventTransition/g;
-        $filecontents =~s/QFinalState/QtFinalState/g;
-        $filecontents =~s/QHistoryState/QtHistoryState/g;
-        $filecontents =~s/QParallelStateGroup/QtParallelStateGroup/g;
-        $filecontents =~s/QSignalEvent/QtSignalEvent/g;
-        $filecontents =~s/QSignalTransition/QtSignalTransition/g;
-        $filecontents =~s/QState/QtState/g;
-        $filecontents =~s/QStateAction/QtStateAction/g;
-        $filecontents =~s/QStateInvokeMethodAction/QtStateInvokeMethodAction/g;
-        $filecontents =~s/QStateFinishedEvent/QtStateFinishedEvent/g;
-        $filecontents =~s/QStateFinishedTransition/QtStateFinishedTransition/g;
-        $filecontents =~s/QStateMachine/QtStateMachine/g;
-        $filecontents =~s/QTransition/QtTransition/g;
-        $filecontents =~s/QMouseEventTransition/QtMouseEventTransition/g;
-        $filecontents =~s/QKeyEventTransition/QtKeyEventTransition/g;
-        $filecontents =~s/QGraphicsWidget/QtGraphicsWidget/g;
+        foreach my $qtClass(@class_renames) {
+            my $solutionClass = $qtClass;
+            $solutionClass =~s/^Q/Qt/g;
+            $filecontents =~s/$qtClass/$solutionClass/g;
+            my $qtFilename = lc($qtClass);
+            my $solutionFilename = lc($solutionClass);
+            $filecontents =~s/(#\s*include\s+["])$qtFilename/${1}$solutionFilename/g;
+        }
+
         $filecontents =~s/Q_CORE_EXPORT/Q_ANIMATION_EXPORT/g;
         $filecontents =~s/Q_GUI_EXPORT/Q_ANIMATION_EXPORT/g;
-        $filecontents =~s/QBoundEvent/QtBoundEvent/g;
-
         $filecontents =~s/class Q_GUI_EXPORT/class/g;
         $filecontents =~s/class Q_AUTOTEST_EXPORT/class/g;
-
-        $filecontents =~s/(#\s*include\s+["])q/${1}qt/g;
 
         # moc stuff
         $filecontents =~s/(#\s*include\s+["])moc_q/${1}moc_qt/g;
@@ -300,7 +323,14 @@ sub copyFile
             if (index($gitfile, "gui/statemachine") >= 0) {
                 $baseFileName = "gui_statemachine";
             }
-
+        }
+        if ($baseFileName eq "animation") {
+            if (index($gitfile, "corelib/animation") >= 0) {
+                $baseFileName = "corelib_animation";
+            }
+            if (index($gitfile, "gui/animation") >= 0) {
+                $baseFileName = "gui_animation";
+            }
         }
 
     }
@@ -312,7 +342,7 @@ sub copyFile
 
     mkpath $destinationPath, 0777 unless(-e "$destinationPath");
 
-    if ($ext eq ".h"  or $ext eq ".cpp" or $ext eq ".qdoc") {
+    if ($autoRename eq 1 and ($ext eq ".h"  or $ext eq ".cpp" or $ext eq ".qdoc")) {
         $baseFileName =~s/^q/qt/g;
     }
     my $targetFile = "$destinationPath/$baseFileName$ext";

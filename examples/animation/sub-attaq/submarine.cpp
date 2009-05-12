@@ -50,15 +50,16 @@
 #include "qanimationstate.h"
 
 #if defined(QT_EXPERIMENTAL_SOLUTION)
-#include "qpropertyanimation.h"
-#include "qstatemachine.h"
-#include "qfinalstate.h"
-#include "qsequentialanimationgroup.h"
+# include "qpropertyanimation.h"
+# include "qstatemachine.h"
+# include "qfinalstate.h"
+# include "qsequentialanimationgroup.h"
+# include "qpauseanimation.h"
 #else
-#include <QPropertyAnimation>
-#include <QStateMachine>
-#include <QFinalState>
-#include <QSequentialAnimationGroup>
+#include <QtCore/QPropertyAnimation>
+#include <QtCore/QStateMachine>
+#include <QtCore/QFinalState>
+#include <QtCore/QSequentialAnimationGroup>
 #endif
 
 static QAbstractAnimation *setupDestroyAnimation(SubMarine *sub)
@@ -125,15 +126,15 @@ SubMarine::SubMarine(int type, const QString &name, int points, QGraphicsItem * 
     QState *moving = new QState(machine->rootState());
 
     //This state is when the boat is moving from left to right
-    MovementState *movement = new MovementState(this,moving);
+    MovementState *movement = new MovementState(this, moving);
 
     //This state is when the boat is moving from left to right
-    ReturnState *rotation = new ReturnState(this,moving);
+    ReturnState *rotation = new ReturnState(this, moving);
 
     //This is the initial state of the moving root state
     moving->setInitialState(movement);
 
-    movement->addTransition(this, SIGNAL(subMarineStateChanged()),moving);
+    movement->addTransition(this, SIGNAL(subMarineStateChanged()), moving);
 
     //This is the initial state of the machine
     machine->setInitialState(moving);
@@ -152,7 +153,7 @@ SubMarine::SubMarine(int type, const QString &name, int points, QGraphicsItem * 
     destroyedState->setAnimation(setupDestroyAnimation(this));
 
     //Play a nice animation when the submarine is destroyed
-    moving->addTransition(this, SIGNAL(subMarineDestroyed()),destroyedState);
+    moving->addTransition(this, SIGNAL(subMarineDestroyed()), destroyedState);
 
     //Transition to final state when the destroyed animation is finished
     destroyedState->addTransition(destroyedState, SIGNAL(animationFinished()), final);

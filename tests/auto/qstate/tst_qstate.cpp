@@ -9,9 +9,7 @@
 
 #include "qstate.h"
 #include "qstatemachine.h"
-#include "qtransition.h"
 #include "qsignaltransition.h"
-#include "qstateaction.h"
 
 // Will try to wait for the condition while allowing event processing
 #define QTRY_COMPARE(__expr, __expected) \
@@ -42,15 +40,15 @@ private slots:
 #if 0
     void test();
 #endif
-    void setPropertyOnEntry();
-    void setPropertyOnEntryTwice();
-    void setPropertyOnExit();
-    void setPropertyOnExitTwice();
+    void assignProperty();
+    void assignPropertyTwice();
     void historyInitialState();
-    void addEntryAction();
+
+private:
+    bool functionCalled;
 };
 
-tst_QState::tst_QState()
+tst_QState::tst_QState() : functionCalled(false)
 {
 }
 
@@ -200,20 +198,20 @@ void tst_QState::test()
 }
 #endif
 
-void tst_QState::addEntryAction()
+class TestClass: public QObject
 {
-    QStateMachine sm;
-    QState *s0 = new QState(sm.rootState());
-    s0->addEntryAction(new QStateSetPropertyAction(this, "objectName", "commandTest"));
-    sm.setInitialState(s0);
+    Q_OBJECT
+public:
+    TestClass() : called(false) {}
+    bool called;
 
-    sm.start();
-    QCoreApplication::processEvents();
+public slots:
+    void slot() { called = true; }
+
     
-    QCOMPARE(this->objectName(), QString::fromLatin1("commandTest"));
-}
+};
 
-void tst_QState::setPropertyOnEntry()
+void tst_QState::assignProperty()
 {
     QStateMachine machine;
 
@@ -221,7 +219,7 @@ void tst_QState::setPropertyOnEntry()
     object->setProperty("fooBar", 10);
 
     QState *s1 = new QState(machine.rootState());
-    s1->setPropertyOnEntry(object, "fooBar", 20);
+    s1->assignProperty(object, "fooBar", 20);
     
     machine.setInitialState(s1);
     machine.start();
@@ -230,7 +228,7 @@ void tst_QState::setPropertyOnEntry()
     QCOMPARE(object->property("fooBar").toInt(), 20);
 }
 
-void tst_QState::setPropertyOnEntryTwice()
+void tst_QState::assignPropertyTwice()
 {
     QStateMachine machine;
 
@@ -238,8 +236,8 @@ void tst_QState::setPropertyOnEntryTwice()
     object->setProperty("fooBar", 10);
 
     QState *s1 = new QState(machine.rootState());
-    s1->setPropertyOnEntry(object, "fooBar", 20);
-    s1->setPropertyOnEntry(object, "fooBar", 30);
+    s1->assignProperty(object, "fooBar", 20);
+    s1->assignProperty(object, "fooBar", 30);
     
     machine.setInitialState(s1);
     machine.start();
@@ -248,56 +246,26 @@ void tst_QState::setPropertyOnEntryTwice()
     QCOMPARE(object->property("fooBar").toInt(), 30);
 }
 
-void tst_QState::setPropertyOnExit()
+class EventTestTransition: public QAbstractTransition
 {
-    QStateMachine machine;
+public:
+    EventTestTransition(QEvent::Type type, QState *targetState) 
+        : QAbstractTransition(QList<QAbstractState*>() << targetState), m_type(type)
+    {        
+    }
 
-    QObject *object = new QObject();
-    object->setProperty("fooBar", 10);
+protected:
+    bool eventTest(QEvent *e) const
+    {
+        return e->type() == m_type;
+    }
 
-    QState *s1 = new QState(machine.rootState());
-    s1->setPropertyOnExit(object, "fooBar", 20);
+    void onTransition(QEvent *) {}
 
-    QState *s2 = new QState(machine.rootState());
-    s1->addTransition(new QTransition(QEvent::User), s2);
+private:
+    QEvent::Type m_type;
     
-    machine.setInitialState(s1);
-    machine.start();
-    QCoreApplication::processEvents();
-
-    QCOMPARE(object->property("fooBar").toInt(), 10);
-
-    machine.postEvent(new QEvent(QEvent::User));
-    QCoreApplication::processEvents();
-
-    QCOMPARE(object->property("fooBar").toInt(), 20);
-}
-
-void tst_QState::setPropertyOnExitTwice()
-{
-    QStateMachine machine;
-
-    QObject *object = new QObject();
-    object->setProperty("fooBar", 10);
-
-    QState *s1 = new QState(machine.rootState());
-    s1->setPropertyOnExit(object, "fooBar", 20);
-    s1->setPropertyOnExit(object, "fooBar", 30);
-
-    QState *s2 = new QState(machine.rootState());
-    s1->addTransition(new QTransition(QEvent::User), s2);
-    
-    machine.setInitialState(s1);
-    machine.start();
-    QCoreApplication::processEvents();
-
-    QCOMPARE(object->property("fooBar").toInt(), 10);
-
-    machine.postEvent(new QEvent(QEvent::User));
-    QCoreApplication::processEvents();
-
-    QCOMPARE(object->property("fooBar").toInt(), 30);
-}
+};
 
 void tst_QState::historyInitialState() 
 {
@@ -306,7 +274,7 @@ void tst_QState::historyInitialState()
     QState *s1 = new QState(machine.rootState());
     
     QState *s2 = new QState(machine.rootState());
-    QHistoryState *h1 = s2->addHistoryState();
+    QHistoryState *h1 = new QHistoryState(s2);
     
     s2->setInitialState(h1);
 
@@ -315,9 +283,9 @@ void tst_QState::historyInitialState()
 
     QState *s4 = new QState(s2);
 
-    s1->addTransition(new QTransition(QEvent::User), s2);
-    s2->addTransition(new QTransition(QEvent::User), s1);
-    s3->addTransition(new QTransition(QEvent::Type(QEvent::User+1)), s4);
+    s1->addTransition(new EventTestTransition(QEvent::User, s2));
+    s2->addTransition(new EventTestTransition(QEvent::User, s1));
+    s3->addTransition(new EventTestTransition(QEvent::Type(QEvent::User+1), s4));
 
     machine.setInitialState(s1);
     machine.start();

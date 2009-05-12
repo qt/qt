@@ -87,27 +87,6 @@ private:
 //! [0]
 
 //! [1]
-class LightState : public QState
-{
-public:
-    LightState(LightWidget *light, int duration, QState *parent = 0)
-        : QState(parent)
-    {
-        QTimer *timer = new QTimer(this);
-        timer->setInterval(duration);
-        timer->setSingleShot(true);
-        QState *timing = new QState(this);
-        timing->invokeMethodOnEntry(light, "turnOn");
-        timing->invokeMethodOnEntry(timer, "start");
-        timing->invokeMethodOnExit(light, "turnOff");
-        QFinalState *done = new QFinalState(this);
-        timing->addTransition(timer, SIGNAL(timeout()), done);
-        setInitialState(timing);
-    }
-};
-//! [1]
-
-//! [2]
 class TrafficLightWidget : public QWidget
 {
 public:
@@ -139,6 +118,24 @@ private:
     LightWidget *m_yellow;
     LightWidget *m_green;
 };
+//! [1]
+
+//! [2]
+QState *createLightState(LightWidget *light, int duration, QState *parent = 0)
+{
+    QState *lightState = new QState(parent);
+    QTimer *timer = new QTimer(lightState);
+    timer->setInterval(duration);
+    timer->setSingleShot(true);
+    QState *timing = new QState(lightState);
+    QObject::connect(timing, SIGNAL(entered()), light, SLOT(turnOn()));
+    QObject::connect(timing, SIGNAL(entered()), timer, SLOT(start()));
+    QObject::connect(timing, SIGNAL(exited()), light, SLOT(turnOff()));
+    QFinalState *done = new QFinalState(lightState);
+    timing->addTransition(timer, SIGNAL(timeout()), done);
+    lightState->setInitialState(timing);
+    return lightState;
+}
 //! [2]
 
 //! [3]
@@ -151,20 +148,21 @@ public:
         QVBoxLayout *vbox = new QVBoxLayout(this);
         TrafficLightWidget *widget = new TrafficLightWidget();
         vbox->addWidget(widget);
+        vbox->setMargin(0);
 
         QStateMachine *machine = new QStateMachine(this);
-        LightState *redGoingYellow = new LightState(widget->redLight(), 3000);
+        QState *redGoingYellow = createLightState(widget->redLight(), 3000);
         redGoingYellow->setObjectName("redGoingYellow");
-        LightState *yellowGoingGreen = new LightState(widget->yellowLight(), 1000);
+        QState *yellowGoingGreen = createLightState(widget->yellowLight(), 1000);
         yellowGoingGreen->setObjectName("yellowGoingGreen");
-        redGoingYellow->addFinishedTransition(yellowGoingGreen);
-        LightState *greenGoingYellow = new LightState(widget->greenLight(), 3000);
+        redGoingYellow->addTransition(redGoingYellow, SIGNAL(finished()), yellowGoingGreen);
+        QState *greenGoingYellow = createLightState(widget->greenLight(), 3000);
         greenGoingYellow->setObjectName("greenGoingYellow");
-        yellowGoingGreen->addFinishedTransition(greenGoingYellow);
-        LightState *yellowGoingRed = new LightState(widget->yellowLight(), 1000);
+        yellowGoingGreen->addTransition(yellowGoingGreen, SIGNAL(finished()), greenGoingYellow);
+        QState *yellowGoingRed = createLightState(widget->yellowLight(), 1000);
         yellowGoingRed->setObjectName("yellowGoingRed");
-        greenGoingYellow->addFinishedTransition(yellowGoingRed);
-        yellowGoingRed->addFinishedTransition(redGoingYellow);
+        greenGoingYellow->addTransition(greenGoingYellow, SIGNAL(finished()), yellowGoingRed);
+        yellowGoingRed->addTransition(yellowGoingRed, SIGNAL(finished()), redGoingYellow);
 
         machine->addState(redGoingYellow);
         machine->addState(yellowGoingGreen);
@@ -182,7 +180,7 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
 
     TrafficLight widget;
-    widget.resize(120, 300);
+    widget.resize(110, 300);
     widget.show();
 
     return app.exec();

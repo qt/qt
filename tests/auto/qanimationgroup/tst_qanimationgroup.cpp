@@ -68,6 +68,8 @@ private slots:
     void statesAndSignals();
     void setParentAutoAdd();
     void beginNestedGroup();
+    void addChildTwice();
+    void loopWithoutStartValue();
 };
 
 tst_QAnimationGroup::tst_QAnimationGroup()
@@ -207,7 +209,7 @@ void tst_QAnimationGroup::setCurrentTime()
     QVariantAnimation *a1_s_o1 = new QPropertyAnimation(&s_o1, "value");
     QVariantAnimation *a2_s_o1 = new QPropertyAnimation(&s_o1, "value");
     QVariantAnimation *a3_s_o1 = new QPropertyAnimation(&s_o1, "value");
-    a2_s_o1->setIterationCount(3);
+    a2_s_o1->setLoopCount(3);
     sequence->addAnimation(a1_s_o1);
     sequence->addAnimation(a2_s_o1);
     sequence->addAnimation(a3_s_o1);
@@ -224,7 +226,7 @@ void tst_QAnimationGroup::setCurrentTime()
     QVariantAnimation *a1_p_o1 = new QPropertyAnimation(&p_o1, "value");
     QVariantAnimation *a1_p_o2 = new QPropertyAnimation(&p_o2, "value");
     QVariantAnimation *a1_p_o3 = new QPropertyAnimation(&p_o3, "value");
-    a1_p_o2->setIterationCount(3);
+    a1_p_o2->setLoopCount(3);
     parallel->addAnimation(a1_p_o1);
     parallel->addAnimation(a1_p_o2);
     parallel->addAnimation(a1_p_o3);
@@ -233,7 +235,7 @@ void tst_QAnimationGroup::setCurrentTime()
     QCOMPARE(notTimeDriven->totalDuration(), -1);
 
     QVariantAnimation *loopsForever = new QPropertyAnimation(&t_o2, "value");
-    loopsForever->setIterationCount(-1);
+    loopsForever->setLoopCount(-1);
     QCOMPARE(loopsForever->totalDuration(), -1);
 
     QParallelAnimationGroup group;
@@ -281,11 +283,11 @@ void tst_QAnimationGroup::setCurrentTime()
     QCOMPARE(a1_s_o3->currentTime(), 0);
     QCOMPARE(a1_p_o1->currentTime(), 250);
     QCOMPARE(a1_p_o2->currentTime(), 0);
-    QCOMPARE(a1_p_o2->currentIteration(), 1);
+    QCOMPARE(a1_p_o2->currentLoop(), 1);
     QCOMPARE(a1_p_o3->currentTime(), 250);
     QCOMPARE(notTimeDriven->currentTime(), 250);
     QCOMPARE(loopsForever->currentTime(), 0);
-    QCOMPARE(loopsForever->currentIteration(), 1);
+    QCOMPARE(loopsForever->currentLoop(), 1);
     QCOMPARE(sequence->currentAnimation(), a2_s_o1);
 
     // Current time = 251
@@ -294,14 +296,14 @@ void tst_QAnimationGroup::setCurrentTime()
     QCOMPARE(sequence->currentTime(), 251);
     QCOMPARE(a1_s_o1->currentTime(), 250);
     QCOMPARE(a2_s_o1->currentTime(), 1);
-    QCOMPARE(a2_s_o1->currentIteration(), 0);
+    QCOMPARE(a2_s_o1->currentLoop(), 0);
     QCOMPARE(a3_s_o1->currentTime(), 0);
     QCOMPARE(sequence2->currentTime(), 251);
     QCOMPARE(a1_s_o2->currentTime(), 250);
     QCOMPARE(a1_s_o3->currentTime(), 1);
     QCOMPARE(a1_p_o1->currentTime(), 250);
     QCOMPARE(a1_p_o2->currentTime(), 1);
-    QCOMPARE(a1_p_o2->currentIteration(), 1);
+    QCOMPARE(a1_p_o2->currentLoop(), 1);
     QCOMPARE(a1_p_o3->currentTime(), 250);
     QCOMPARE(notTimeDriven->currentTime(), 251);
     QCOMPARE(loopsForever->currentTime(), 1);
@@ -341,6 +343,70 @@ void tst_QAnimationGroup::beginNestedGroup()
 
         parent = child;
     }
+}
+
+void tst_QAnimationGroup::addChildTwice()
+{
+    QPropertyAnimation *subGroup;
+    QPropertyAnimation *subGroup2;
+    QAnimationGroup *parent = new QSequentialAnimationGroup();
+
+    subGroup = new QPropertyAnimation();
+    subGroup->setParent(parent);
+    parent->addAnimation(subGroup);
+    QCOMPARE(parent->animationCount(), 1);
+
+    parent->clearAnimations();
+
+    QCOMPARE(parent->animationCount(), 0);
+
+    // adding the same item twice to a group will remove the item from its current position
+    // and append it to the end
+    subGroup = new QPropertyAnimation(parent);
+    subGroup2 = new QPropertyAnimation(parent);
+
+    QCOMPARE(parent->animationCount(), 2);
+    QCOMPARE(parent->animationAt(0), subGroup);
+    QCOMPARE(parent->animationAt(1), subGroup2);
+
+    parent->addAnimation(subGroup);
+
+    QCOMPARE(parent->animationCount(), 2);
+    QCOMPARE(parent->animationAt(0), subGroup2);
+    QCOMPARE(parent->animationAt(1), subGroup);
+
+    delete parent;
+}
+
+void tst_QAnimationGroup::loopWithoutStartValue()
+{
+    QAnimationGroup *parent = new QSequentialAnimationGroup();
+    QObject o;
+    o.setProperty("ole", 0);
+    QCOMPARE(o.property("ole").toInt(), 0);
+
+    QPropertyAnimation anim1(&o, "ole");
+    anim1.setEndValue(-50);
+    anim1.setDuration(100);
+
+    QPropertyAnimation anim2(&o, "ole");
+    anim2.setEndValue(50);
+    anim2.setDuration(100);
+
+    parent->addAnimation(&anim1);
+    parent->addAnimation(&anim2);
+
+    parent->setLoopCount(-1);
+    parent->start();
+
+    QVERIFY(anim1.startValue().isNull());
+    QCOMPARE(anim1.currentValue().toInt(), 0);
+    QCOMPARE(parent->currentLoop(), 0);
+
+    parent->setCurrentTime(200);
+    QCOMPARE(parent->currentLoop(), 1);
+    QCOMPARE(anim1.currentValue().toInt(), 50);
+    parent->stop();
 }
 
 QTEST_MAIN(tst_QAnimationGroup)

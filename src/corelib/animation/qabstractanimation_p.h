@@ -77,8 +77,8 @@ public:
           deleteWhenStopped(false),
           totalCurrentTime(0),
           currentTime(0),
-          iterationCount(1),
-          currentIteration(0),
+          loopCount(1),
+          currentLoop(0),
           group(0)
     {
     }
@@ -97,8 +97,8 @@ public:
 
     int totalCurrentTime;
     int currentTime;
-    int iterationCount;
-    int currentIteration;
+    int loopCount;
+    int currentLoop;
 
     QAnimationGroup *group;
 #ifdef QT_EXPERIMENTAL_SOLUTION
@@ -110,7 +110,7 @@ private:
 };
 
 
-class QUnifiedTimer : public QObject
+class Q_CORE_EXPORT QUnifiedTimer : public QObject
 {
 private:
     QUnifiedTimer();
@@ -118,11 +118,17 @@ private:
 public:
     static QUnifiedTimer *instance();
 
-    void timerEvent(QTimerEvent *);
-    void updateTimer();
     void registerAnimation(QAbstractAnimation *animation);
     void unregisterAnimation(QAbstractAnimation *animation);
 
+    void setTimingInterval(int interval);
+    void setConsistentTiming(bool consistent);
+
+    int elapsedTime() const;
+
+protected:
+    void timerEvent(QTimerEvent *);
+    void updateTimer();
 
 private:
     void updateRecentlyStartedAnimations();
@@ -130,6 +136,8 @@ private:
     QBasicTimer animationTimer, startStopAnimationTimer;
     QTime time;
     int lastTick;
+    int timingInterval;
+    bool consistentTiming;
     QList<QAbstractAnimation*> animations, animationsToStart;
 };
 

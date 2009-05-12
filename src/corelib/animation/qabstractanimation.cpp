@@ -42,51 +42,58 @@
 /*!
     \class QAbstractAnimation
     \ingroup animation
-    \brief The QAbstractAnimation class provides an abstract base class for animations.
+    \brief The QAbstractAnimation class is the base of all animations.
     \since 4.5
     \preliminary
 
-    This class is part of \l{The Animation Framework}. It serves as a base class
-    for standard animations and groups, with functions for shared
-    functionality, and it also makes it easy for you to define custom
+    The class defines the functions for the functionality shared by
+    all animations. By inheriting this class, you can create custom
     animations that plug into the rest of the animation framework.
 
-    If you want to create an animation, you should look at the two subclasses,
-    QVariantAnimation and QAnimationGroup, instead.
+    The progress of an animation is given by its current time
+    (currentTime()), which is measured in milliseconds from the start
+    of the animation (0) to its end (duration()). The value is updated
+    automatically while the animation is running. It can also be set
+    directly with setCurrentTime().
 
-    QAbstractAnimation provides an interface for the current time and
-    duration, the iteration count, and the state of an animation. These properties
-    define the base functionality common to all animations in Qt. The virtual
-    duration() function returns the local duration of the animation; i.e., for
-    how long the animation should update the current time before
-    looping. Subclasses can implement this function differently; for example,
-    QVariantAnimation returns the duration of a simple animated property, whereas
-    QAnimationGroup returns the duration of a set or sequence of
-    animations. You can also set a loop count by calling setIterationCount(); a
-    iteration count of 2 will let the animation run twice (the default value is
-    1).
+    At any point an animation is in one of three states:
+    \l{QAbstractAnimation::}{Running},
+    \l{QAbstractAnimation::}{Stopped}, or
+    \l{QAbstractAnimation::}{Paused}--as defined by the
+    \l{QAbstractAnimation::}{State} enum. The current state can be
+    changed by calling start(), stop(), pause(), or resume(). An
+    animation will always reset its \l{currentTime()}{current time}
+    when it is started. If paused, it will continue with the same
+    current time when resumed. When an animation is stopped, it cannot
+    be resumed, but will keep its current time (until started again).
+    QAbstractAnimation will emit stateChanged() whenever its state
+    changes.
 
-    Like QTimeLine, QAbstractAnimation also provides an interface for starting
-    and stopping an animation, and for tracking its progress. You can call the
-    start() slot to start the animation. When the animation starts, the
-    stateChanged() signal is emitted, and state() returns Running. If you call the
-    stop() slot, the stateChanged() signal is emitted, and state() returns
-    Stopped. If you call the pause() slot, the stateChanged() signal is emitted
-    and state() returns Paused. If the animation reaches the end, the finished()
-    signal is emitted. You can check the current state by calling state().
+    An animation can loop any number of times by setting the loopCount
+    property. When an animation's current time reaches its duration(),
+    it will reset the current time and keep running. A loop count of 1
+    (the default value) means that the animation will run one time.
+    Note that a duration of -1 means that the animation will run until
+    stopped; the current time will increase indefinitely. When the
+    current time equals duration() and the animation is in its
+    final loop, the \l{QAbstractAnimation::}{Stopped} state is
+    entered, and the finished() signal is emitted.
 
-    QAbstractAnimation provides two functions that are pure virtual, and must
-    be reimplemented in a subclass: duration(), and updateCurrentTime(). The
-    duration() function lets you report a duration for the animation (a return
-    value of -1 signals that the animation runs forever until explicitly
-    stopped). The current time is delivered by the framework through calls to
-    updateCurrentTime(). By reimplementing this function, you can track the
-    animation progress and update your target objects accordingly. By
-    reimplementing updateState(), you can track the animation's state
-    changes, which is particularily useful for animations that are not driven
-    by time.
+    QAbstractAnimation provides pure virtual functions used by
+    subclasses to track the progress of the animation: duration() and
+    updateCurrentTime(). The duration() function lets you report a
+    duration for the animation (as discussed above). The current time
+    is delivered by the animation framework through calls to
+    updateCurrentTime(). By reimplementing this function, you can
+    track the animation progress. Note that neither the interval
+    between calls nor the number of calls to this function are
+    defined; though, it will normally be 60 updates per second.
 
-    \sa QVariantAnimation, QAnimationGroup, {The Animation Framework}
+    By reimplementing updateState(), you can track the animation's
+    state changes, which is particularly useful for animations that
+    are not driven by time.
+
+    \sa QVariantAnimation, QPropertyAnimation, QAnimationGroup, {The Animation Framework}
 */
 
 /*!
@@ -119,12 +126,12 @@
 */
 
 /*!
-    \fn QAbstractAnimation::currentIterationChanged(int currentIteration)
+    \fn QAbstractAnimation::currentLoopChanged(int currentLoop)
 
-    QAbstractAnimation emits this signal whenever the current iteration
-    changes. \a currentIteration is the current iteration.
+    QAbstractAnimation emits this signal whenever the current loop
+    changes. \a currentLoop is the current loop.
 
-    \sa currentIteration(), iterationCount()
+    \sa currentLoop(), loopCount()
 */
 
 /*!
@@ -149,13 +156,13 @@
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qpointer.h>
 
-#define TIMER_INTERVAL 16
+#define DEFAULT_TIMER_INTERVAL 16
 
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer);
 
-QUnifiedTimer::QUnifiedTimer() : QObject(), lastTick(0)
+QUnifiedTimer::QUnifiedTimer() : QObject(), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL), consistentTiming(false)
 {
 }
 
@@ -182,12 +189,38 @@ void QUnifiedTimer::updateRecentlyStartedAnimations()
     animationsToStart.clear();
 }
 
+/*
+  defines the timing interval. Default is DEFAULT_TIMER_INTERVAL
+*/
+void QUnifiedTimer::setTimingInterval(int interval)
+{
+    timingInterval = interval;
+    if (animationTimer.isActive()) {
+        //we changed the timing interval
+        animationTimer.start(timingInterval, this);
+    }
+}
+
+/*
+   this allows to have a consistent timer interval at each tick from the timer
+   not taking the real time that passed into account.
+*/
+void QUnifiedTimer::setConsistentTiming(bool b)
+{
+    consistentTiming = b;
+}
+
+int QUnifiedTimer::elapsedTime() const
+{
+    return lastTick;
+}
+
 void QUnifiedTimer::timerEvent(QTimerEvent *event)
 {
     //this is simply the time we last received a tick
-    int oldLastTick = lastTick;
+    const int oldLastTick = lastTick;
     if (time.isValid())
-        lastTick = time.elapsed();
+        lastTick = consistentTiming ? oldLastTick + timingInterval : time.elapsed();
 
     //we transfer the waiting animations into the "really running" state
     updateRecentlyStartedAnimations();
@@ -198,7 +231,7 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
             animationTimer.stop();
             time = QTime();
         } else {
-            animationTimer.start(TIMER_INTERVAL, this);
+            animationTimer.start(timingInterval, this);
             lastTick = 0;
             time.start();
         }
@@ -245,7 +278,7 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
 
     QAbstractAnimation::State oldState = state;
     int oldCurrentTime = currentTime;
-    int oldCurrentIteration = currentIteration;
+    int oldCurrentLoop = currentLoop;
     QAbstractAnimation::Direction oldDirection = direction;
 
     state = newState;
@@ -274,7 +307,7 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
                     if (direction == QAbstractAnimation::Forward)
                         q->setCurrentTime(0);
                     else
-                        q->setCurrentTime(iterationCount == -1 ? q->duration() : q->totalDuration());
+                        q->setCurrentTime(loopCount == -1 ? q->duration() : q->totalDuration());
                 }
 
                 // Check if the setCurrentTime() function called stop().
@@ -302,8 +335,8 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
 
         QUnifiedTimer::instance()->unregisterAnimation(q);
 
-        if (dura == -1 || iterationCount < 0
-            || (oldDirection == QAbstractAnimation::Forward && (oldCurrentTime * (oldCurrentIteration + 1)) == (dura * iterationCount))
+        if (dura == -1 || loopCount < 0
+            || (oldDirection == QAbstractAnimation::Forward && (oldCurrentTime * (oldCurrentLoop + 1)) == (dura * loopCount))
             || (oldDirection == QAbstractAnimation::Backward && oldCurrentTime == 0)) {
                 if (guard)
                     emit q->finished();
@@ -459,10 +492,10 @@ void QAbstractAnimation::setDirection(Direction direction)
     if (state() == Stopped) {
         if (direction == Backward) {
             d->currentTime = duration();
-            d->currentIteration = d->iterationCount - 1;
+            d->currentLoop = d->loopCount - 1;
         } else {
             d->currentTime = 0;
-            d->currentIteration = 0;
+            d->currentLoop = 0;
         }
     }
     updateDirection(direction);
@@ -474,14 +507,14 @@ void QAbstractAnimation::setDirection(Direction direction)
     \brief the duration of the animation.
 
     If the duration is -1, it means that the duration is undefined.
-    In this case, iterationCount is ignored.
+    In this case, loopCount is ignored.
 */
 
 /*!
-    \property QAbstractAnimation::iterationCount
-    \brief the iteration count of the animation
+    \property QAbstractAnimation::loopCount
+    \brief the loop count of the animation
 
-    This property describes the iteration count of the animation as an integer.
+    This property describes the loop count of the animation as an integer.
     By default this value is 1, indicating that the animation
     should run once only, and then stop. By changing it you can let the
     animation loop several times. With a value of 0, the animation will not
@@ -490,34 +523,34 @@ void QAbstractAnimation::setDirection(Direction direction)
     It is not supported to have loop on an animation that has an undefined
     duration. It will only run once.
 */
-int QAbstractAnimation::iterationCount() const
+int QAbstractAnimation::loopCount() const
 {
     Q_D(const QAbstractAnimation);
-    return d->iterationCount;
+    return d->loopCount;
 }
-void QAbstractAnimation::setIterationCount(int iterationCount)
+void QAbstractAnimation::setLoopCount(int loopCount)
 {
     Q_D(QAbstractAnimation);
-    d->iterationCount = iterationCount;
+    d->loopCount = loopCount;
 }
 
 /*!
-    \property QAbstractAnimation::currentIteration
-    \brief the current iteration of the animation
+    \property QAbstractAnimation::currentLoop
+    \brief the current loop of the animation
 
-    This property describes the current iteration of the animation. By default,
-    the animation's iteration count is 1, and so the current iteration will
-    always be 0. If the iteration count is 2 and the animation runs past its
+    This property describes the current loop of the animation. By default,
+    the animation's loop count is 1, and so the current loop will
+    always be 0. If the loop count is 2 and the animation runs past its
     duration, it will automatically rewind and restart at current time 0, and
-    current iteration 1, and so on.
+    current loop 1, and so on.
 
-    When the current iteration changes, QAbstractAnimation emits the
-    currentIterationChanged() signal.
+    When the current loop changes, QAbstractAnimation emits the
+    currentLoopChanged() signal.
 */
-int QAbstractAnimation::currentIteration() const
+int QAbstractAnimation::currentLoop() const
 {
     Q_D(const QAbstractAnimation);
-    return d->currentIteration;
+    return d->currentLoop;
 }
 
 /*!
@@ -525,7 +558,7 @@ int QAbstractAnimation::currentIteration() const
 
     This pure virtual function returns the duration of the animation, and
     defines for how long QAbstractAnimation should update the current
-    time. This duration is local, and does not include the iteration count.
+    time. This duration is local, and does not include the loop count.
 
     A return value of -1 indicates that the animation has no defined duration;
     the animation should run forever until stopped. This is useful for
@@ -535,24 +568,24 @@ int QAbstractAnimation::currentIteration() const
     If the animation is a parallel QAnimationGroup, the duration will be the longest
     duration of all its animations. If the animation is a sequential QAnimationGroup,
     the duration will be the sum of the duration of all its animations.
-    \sa iterationCount
+    \sa loopCount
 */
 
 /*!
     Returns the total and effective duration of the animation, including the
-    iteration count.
+    loop count.
 
     \sa duration(), currentTime
 */
 int QAbstractAnimation::totalDuration() const
 {
     Q_D(const QAbstractAnimation);
-    if (d->iterationCount < 0)
+    if (d->loopCount < 0)
         return -1;
     int dura = duration();
     if (dura == -1)
         return -1;
-    return dura * d->iterationCount;
+    return dura * d->loopCount;
 }
 
 /*!
@@ -565,11 +598,11 @@ int QAbstractAnimation::totalDuration() const
     progresses.
 
     The animation's current time starts at 0, and ends at duration(). If the
-    animation's iterationCount is larger than 1, the current time will rewind and
+    animation's loopCount is larger than 1, the current time will rewind and
     start at 0 again for the consecutive loops. If the animation has a pause.
     currentTime will also include the duration of the pause.
 
-    \sa iterationCount
+    \sa loopCount
  */
 int QAbstractAnimation::currentTime() const
 {
@@ -583,31 +616,31 @@ void QAbstractAnimation::setCurrentTime(int msecs)
 
     // Calculate new time and loop.
     int dura = duration();
-    int totalDura = (d->iterationCount < 0 || dura == -1) ? -1 : dura * d->iterationCount;
+    int totalDura = (d->loopCount < 0 || dura == -1) ? -1 : dura * d->loopCount;
     if (totalDura != -1)
         msecs = qMin(totalDura, msecs);
     d->totalCurrentTime = msecs;
 
     // Update new values.
-    int oldLoop = d->currentIteration;
-    d->currentIteration = ((dura <= 0) ? 0 : (msecs / dura));
-    if (d->currentIteration == d->iterationCount) {
+    int oldLoop = d->currentLoop;
+    d->currentLoop = ((dura <= 0) ? 0 : (msecs / dura));
+    if (d->currentLoop == d->loopCount) {
         //we're at the end
         d->currentTime = qMax(0, dura);
-        d->currentIteration = qMax(0, d->iterationCount - 1);
+        d->currentLoop = qMax(0, d->loopCount - 1);
     } else {
         if (d->direction == Forward) {
             d->currentTime = (dura <= 0) ? msecs : (msecs % dura);
         } else {
             d->currentTime = (dura <= 0) ? msecs : ((msecs - 1) % dura) + 1;
             if (d->currentTime == dura)
-                --d->currentIteration;
+                --d->currentLoop;
         }
     }
 
     updateCurrentTime(msecs);
-    if (d->currentIteration != oldLoop)
-        emit currentIterationChanged(d->currentIteration);
+    if (d->currentLoop != oldLoop)
+        emit currentLoopChanged(d->currentLoop);
 
     // All animations are responsible for stopping the animation when their
     // own end state is reached; in this case the animation is time driven,
@@ -648,7 +681,7 @@ void QAbstractAnimation::start(DeletionPolicy policy)
     signal, and state() returns Stopped. The current time is not changed.
 
     If the animation stops by itself after reaching the end (i.e.,
-    currentTime() == duration() and currentIteration() > iterationCount() - 1), the
+    currentTime() == duration() and currentLoop() > loopCount() - 1), the
     finished() signal is emitted.
 
     \sa start(), state()

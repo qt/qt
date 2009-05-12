@@ -1,3 +1,44 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the QtCore module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
 #include "lifecycle.h"
 #include "stickman.h"
 #include "node.h"
@@ -70,14 +111,12 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
 
     // Set up intial state graph
     m_machine = new QStateMachine();
-    m_machine->setGlobalRestorePolicy(QState::RestoreProperties);
 
     m_alive = new QState(m_machine->rootState());
     m_alive->setObjectName("alive");
     
     // Make it blink when lightning strikes before entering dead animation
     QState *lightningBlink = new QState(m_machine->rootState());    
-    lightningBlink->setRestorePolicy(QState::DoNotRestoreProperties);
     lightningBlink->assignProperty(m_stickMan->scene(), "backgroundBrush", Qt::white);
     lightningBlink->assignProperty(m_stickMan, "penColor", Qt::black);
     lightningBlink->assignProperty(m_stickMan, "fillColor", Qt::white);
@@ -86,11 +125,10 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
     QTimer *timer = new QTimer(lightningBlink);
     timer->setSingleShot(true);
     timer->setInterval(100);
-    lightningBlink->invokeMethodOnEntry(timer, "start");
-    lightningBlink->invokeMethodOnExit(timer, "stop");
+    QObject::connect(lightningBlink, SIGNAL(entered()), timer, SLOT(start()));
+    QObject::connect(lightningBlink, SIGNAL(exited()), timer, SLOT(stop()));
   
     m_dead = new QState(m_machine->rootState());
-    m_dead->setRestorePolicy(QState::DoNotRestoreProperties);
     m_dead->assignProperty(m_stickMan->scene(), "backgroundBrush", Qt::black);
     m_dead->assignProperty(m_stickMan, "penColor", Qt::white);
     m_dead->assignProperty(m_stickMan, "fillColor", Qt::black);
@@ -108,15 +146,6 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
     connectByAnimation(lightningBlink, m_dead, new QSignalTransition(timer, SIGNAL(timeout())));
 
     m_machine->setInitialState(m_alive);
-}
-
-void LifeCycle::setResetKey(Qt::Key resetKey)
-{
-    // When resetKey is pressed, enter the idle state and do a restoration animation
-    // (requires no animation pointer, since no property is being set in the idle state)
-    KeyPressTransition *trans = new KeyPressTransition(m_keyReceiver, resetKey, m_idle);
-    trans->addAnimation(m_animationGroup);
-    m_alive->addTransition(trans);
 }
 
 void LifeCycle::setDeathAnimation(const QString &fileName)
@@ -174,14 +203,14 @@ QState *LifeCycle::makeState(QState *parentState, const QString &animationFileNa
             topLevel->setInitialState(frameState);
         } else {
             connectByAnimation(previousState, frameState, 
-                new QSignalTransition(m_machine, SIGNAL(animationsFinished())));
+                new QSignalTransition(previousState, SIGNAL(polished())));
         }
         previousState = frameState;
     }
 
     // Loop
     connectByAnimation(previousState, topLevel->initialState(), 
-        new QSignalTransition(m_machine, SIGNAL(animationsFinished())));
+        new QSignalTransition(previousState, SIGNAL(polished())));
 
     return topLevel;
 

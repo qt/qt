@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QSignalTransition class provides a transition based on a Qt signal.
 
+  \since 4.6
   \ingroup statemachine
 
   Typically you would use the overload of QState::addTransition() that takes a
@@ -95,7 +96,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \property QSignalTransition::object
+    \property QSignalTransition::senderObject
 
     \brief the sender object that this signal transition is associated with
 */
@@ -136,7 +137,7 @@ void QSignalTransitionPrivate::invalidate()
   Constructs a new signal transition with the given \a sourceState.
 */
 QSignalTransition::QSignalTransition(QState *sourceState)
-    : QTransition(*new QSignalTransitionPrivate, sourceState)
+    : QAbstractTransition(*new QSignalTransitionPrivate, sourceState)
 {
 }
 
@@ -146,7 +147,7 @@ QSignalTransition::QSignalTransition(QState *sourceState)
 */
 QSignalTransition::QSignalTransition(QObject *sender, const char *signal,
                                      QState *sourceState)
-    : QTransition(*new QSignalTransitionPrivate, sourceState)
+    : QAbstractTransition(*new QSignalTransitionPrivate, sourceState)
 {
     Q_D(QSignalTransition);
     d->sender = sender;
@@ -161,7 +162,7 @@ QSignalTransition::QSignalTransition(QObject *sender, const char *signal,
 QSignalTransition::QSignalTransition(QObject *sender, const char *signal,
                                      const QList<QAbstractState*> &targets,
                                      QState *sourceState)
-    : QTransition(*new QSignalTransitionPrivate, targets, sourceState)
+    : QAbstractTransition(*new QSignalTransitionPrivate, targets, sourceState)
 {
     Q_D(QSignalTransition);
     d->sender = sender;
@@ -232,8 +233,9 @@ bool QSignalTransition::eventTest(QEvent *event) const
 #else
     if (event->type() == QEvent::Type(QEvent::User-1)) {
 #endif
+        if (d->signalIndex == -1)
+            return false;
         QSignalEvent *se = static_cast<QSignalEvent*>(event);
-        Q_ASSERT(d->signalIndex != -1);
         return (se->sender() == d->sender)
             && (se->signalIndex() == d->signalIndex);
     }
@@ -243,9 +245,17 @@ bool QSignalTransition::eventTest(QEvent *event) const
 /*!
   \reimp
 */
+void QSignalTransition::onTransition(QEvent *event)
+{
+    Q_UNUSED(event);
+}
+
+/*!
+  \reimp
+*/
 bool QSignalTransition::event(QEvent *e)
 {
-    return QTransition::event(e);
+    return QAbstractTransition::event(e);
 }
 
 QT_END_NAMESPACE

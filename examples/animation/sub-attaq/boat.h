@@ -43,13 +43,11 @@
 #define __BOAT__H__
 
 //Qt
-#include <QObject>
-#include <QKeyEvent>
-
-#include <QDebug>
+#include <QtCore/QObject>
+#include <QtGui/QKeyEvent>
 
 #if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qgraphicswidget.h"
+# include "qtgraphicswidget.h"
 #else
 # include <QtGui/QGraphicsWidget>
 #endif
@@ -57,6 +55,8 @@
 class PixmapItem;
 class Bomb;
 class QVariantAnimation;
+class QAbstractAnimation;
+class QStateMachine;
 
 class Boat : public QGraphicsWidget
 {
@@ -71,6 +71,8 @@ public:
     enum { Type = UserType + 2 };
     Boat(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
     void destroy();
+    void run();
+    void stop();
 
     int bombsLaunched() const;
     void setBombsLaunched(int number);
@@ -94,6 +96,8 @@ private:
     int bombsAlreadyLaunched;
     Movement direction;
     QVariantAnimation *movementAnimation;
+    QAbstractAnimation *destroyAnimation;
+    QStateMachine *machine;
     PixmapItem *pixmapItem;
 };
 

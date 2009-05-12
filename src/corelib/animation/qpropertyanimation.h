@@ -47,7 +47,6 @@
 #else
 # include <QtCore/qvariantanimation.h>
 #endif
-#include <QtCore/qvariant.h>
 
 QT_BEGIN_HEADER
 

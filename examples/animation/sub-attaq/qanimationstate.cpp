@@ -43,11 +43,12 @@
 
 #if defined(QT_EXPERIMENTAL_SOLUTION)
 # include "qstate.h"
+# include "qstate_p.h"
 #else
 # include <QtCore/qstate.h>
+# include <private/qstate_p.h>
 #endif
 
-#include <private/qstate_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -145,7 +146,7 @@ QAbstractAnimation* QAnimationState::animation() const
 /*!
   \reimp
 */
-void QAnimationState::onEntry()
+void QAnimationState::onEntry(QEvent *)
 {
     Q_D(QAnimationState);
     if (d->animation)
@@ -155,7 +156,7 @@ void QAnimationState::onEntry()
 /*!
   \reimp
 */
-void QAnimationState::onExit()
+void QAnimationState::onExit(QEvent *)
 {
     Q_D(QAnimationState);
     if (d->animation)

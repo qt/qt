@@ -42,7 +42,11 @@
 #ifndef QEVENTTRANSITION_H
 #define QEVENTTRANSITION_H
 
-#include "qtransition.h"
+#ifndef QT_STATEMACHINE_SOLUTION
+#include <QtCore/qabstracttransition.h>
+#else
+#include "qabstracttransition.h"
+#endif
 #include <QtCore/qcoreevent.h>
 
 QT_BEGIN_HEADER
@@ -52,10 +56,10 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Core)
 
 class QEventTransitionPrivate;
-class Q_CORE_EXPORT QEventTransition : public QTransition
+class Q_CORE_EXPORT QEventTransition : public QAbstractTransition
 {
     Q_OBJECT
-    Q_PROPERTY(QObject* object READ eventSource WRITE setEventSource)
+    Q_PROPERTY(QObject* eventObject READ eventObject WRITE setEventObject)
 #ifndef QT_STATEMACHINE_SOLUTION
     Q_PROPERTY(QEvent::Type eventType READ eventType WRITE setEventType)
 #endif
@@ -66,16 +70,15 @@ public:
                      const QList<QAbstractState*> &targets, QState *sourceState = 0);
     ~QEventTransition();
 
-    QObject *eventSource() const;
-    void setEventSource(QObject *object);
+    QObject *eventObject() const;
+    void setEventObject(QObject *object);
 
     QEvent::Type eventType() const;
     void setEventType(QEvent::Type type);
 
 protected:
-    virtual bool testEventCondition(QEvent *event) const; // ### name
-
     bool eventTest(QEvent *event) const;
+    void onTransition(QEvent *event);
 
     bool event(QEvent *e);
 

@@ -43,9 +43,9 @@
 #define QSIGNALTRANSITION_H
 
 #ifndef QT_STATEMACHINE_SOLUTION
-#include <QtCore/qtransition.h>
+#include <QtCore/qabstracttransition.h>
 #else
-#include "qtransition.h"
+#include "qabstracttransition.h"
 #endif
 
 QT_BEGIN_HEADER
@@ -55,10 +55,10 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Core)
 
 class QSignalTransitionPrivate;
-class Q_CORE_EXPORT QSignalTransition : public QTransition
+class Q_CORE_EXPORT QSignalTransition : public QAbstractTransition
 {
     Q_OBJECT
-    Q_PROPERTY(QObject* object READ senderObject WRITE setSenderObject)
+    Q_PROPERTY(QObject* senderObject READ senderObject WRITE setSenderObject)
     Q_PROPERTY(QByteArray signal READ signal WRITE setSignal)
 public:
     QSignalTransition(QState *sourceState = 0);
@@ -77,6 +77,7 @@ public:
 
 protected:
     bool eventTest(QEvent *event) const;
+    void onTransition(QEvent *event);
 
     bool event(QEvent *e);
 

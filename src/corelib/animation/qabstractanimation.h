@@ -60,9 +60,9 @@ class Q_CORE_EXPORT QAbstractAnimation : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(State state READ state NOTIFY stateChanged)
-    Q_PROPERTY(int iterationCount READ iterationCount WRITE setIterationCount)
+    Q_PROPERTY(int loopCount READ loopCount WRITE setLoopCount)
     Q_PROPERTY(int currentTime READ currentTime WRITE setCurrentTime)
-    Q_PROPERTY(int currentIteration READ currentIteration NOTIFY currentIterationChanged)
+    Q_PROPERTY(int currentLoop READ currentLoop NOTIFY currentLoopChanged)
     Q_PROPERTY(Direction direction READ direction WRITE setDirection NOTIFY directionChanged)
     Q_PROPERTY(int duration READ duration)
 
@@ -93,9 +93,9 @@ public:
     Direction direction() const;
     void setDirection(Direction direction);
 
-    int iterationCount() const;
-    void setIterationCount(int iterationCount);
-    int currentIteration() const;
+    int loopCount() const;
+    void setLoopCount(int loopCount);
+    int currentLoop() const;
 
     virtual int duration() const = 0;
     int totalDuration() const;
@@ -105,7 +105,7 @@ public:
 Q_SIGNALS:
     void finished();
     void stateChanged(QAbstractAnimation::State oldState, QAbstractAnimation::State newState);
-    void currentIterationChanged(int currentIteration);
+    void currentLoopChanged(int currentLoop);
     void directionChanged(QAbstractAnimation::Direction);
 
 public Q_SLOTS:

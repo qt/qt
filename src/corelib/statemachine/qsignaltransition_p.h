@@ -53,12 +53,12 @@
 // We mean it.
 //
 
-#include "qtransition_p.h"
+#include "qabstracttransition_p.h"
 
 QT_BEGIN_NAMESPACE
 
 class QSignalTransition;
-class QSignalTransitionPrivate : public QTransitionPrivate
+class QSignalTransitionPrivate : public QAbstractTransitionPrivate
 {
     Q_DECLARE_PUBLIC(QSignalTransition)
 public:

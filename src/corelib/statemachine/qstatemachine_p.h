@@ -62,7 +62,8 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qset.h>
 
-#include "qabstractstate_p.h"
+#include "qstate.h"
+#include "qstate_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -119,17 +120,18 @@ public:
     void _q_animationFinished();
 #endif
 
-    void microstep(const QList<QAbstractTransition*> &transitionList);
+    void microstep(QEvent *event, const QList<QAbstractTransition*> &transitionList);
     bool isPreempted(const QAbstractState *s, const QSet<QAbstractTransition*> &transitions) const;
     QSet<QAbstractTransition*> selectTransitions(QEvent *event) const;
-    QList<QAbstractState*> exitStates(const QList<QAbstractTransition*> &transitionList);
-    void executeTransitionContent(const QList<QAbstractTransition*> &transitionList);
-    QList<QAbstractState*> enterStates(const QList<QAbstractTransition*> &enabledTransitions);
+    QList<QAbstractState*> exitStates(QEvent *event, const QList<QAbstractTransition*> &transitionList);
+    void executeTransitionContent(QEvent *event, const QList<QAbstractTransition*> &transitionList);
+    QList<QAbstractState*> enterStates(QEvent *event, const QList<QAbstractTransition*> &enabledTransitions);
     void addStatesToEnter(QAbstractState *s, QState *root,
                           QSet<QAbstractState*> &statesToEnter,
                           QSet<QAbstractState*> &statesForDefaultEntry);
 
     void applyProperties(const QList<QAbstractTransition*> &transitionList,
+                         const QList<QAbstractState*> &exitedStates,
                          const QList<QAbstractState*> &enteredStates);
 
     bool isInFinalState(QAbstractState *s) const;
@@ -148,6 +150,7 @@ public:
     void unregisterEventTransition(QEventTransition *transition);
 #endif
     void unregisterTransition(QAbstractTransition *transition);
+    void unregisterAllTransitions();
     void handleTransitionSignal(const QObject *sender, int signalIndex,
                                 void **args);    
     void scheduleProcess();
@@ -169,9 +172,9 @@ public:
     QSet<QAbstractState*> configuration;
     QList<QEvent*> internalEventQueue;
     QList<QEvent*> externalEventQueue;
-    
+
     QStateMachine::Error error;
-    QActionState::RestorePolicy globalRestorePolicy;
+    QStateMachine::RestorePolicy globalRestorePolicy;
 
     QString errorString;
     QSet<QAbstractState *> pendingErrorStates;
@@ -179,14 +182,22 @@ public:
     QAbstractState *initialErrorStateForRoot;
 
 #ifndef QT_NO_ANIMATION
+    bool animationsEnabled;
+
     QPair<QList<QAbstractAnimation*>, QList<QAbstractAnimation*> >
         initializeAnimation(QAbstractAnimation *abstractAnimation, 
                             const QPropertyAssignment &prop);
 
-    QList<QPair<QAbstractAnimation*, QPropertyAssignment> > propertiesForAnimations;
-    QList<QAbstractAnimation*> playingAnimations;
-    QList<QAbstractAnimation*> resetEndValues;
-#endif
+    QHash<QAbstractState*, QList<QAbstractAnimation*> > animationsForState;
+    QHash<QAbstractAnimation*, QPropertyAssignment> propertyForAnimation;
+    QHash<QAbstractAnimation*, QAbstractState*> stateForAnimation;
+    QSet<QAbstractAnimation*> resetAnimationEndValues;
+
+    QList<QAbstractAnimation *> defaultAnimations;
+    QMultiHash<QAbstractState *, QAbstractAnimation *> defaultAnimationsForSource;
+    QMultiHash<QAbstractState *, QAbstractAnimation *> defaultAnimationsForTarget;
+
+#endif // QT_NO_ANIMATION
 
 #ifndef QT_STATEMACHINE_SOLUTION
     QSignalEventGenerator *signalEventGenerator;

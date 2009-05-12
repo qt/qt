@@ -21,10 +21,10 @@ public:
     virtual void updateState(QAbstractAnimation::State state);
 
 private:
-    DummyObject *object;
-    QEasingCurve easing;
-    QRect start, end, current;
-    int dura;
+    DummyObject *m_object;
+    QEasingCurve m_easing;
+    QRect m_start, m_end, m_current;
+    int m_dura;
 };
 
 #endif

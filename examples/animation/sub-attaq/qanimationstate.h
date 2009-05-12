@@ -60,7 +60,7 @@ QT_MODULE(Gui)
 
 class QAnimationStatePrivate;
 
-class Q_GUI_EXPORT QAnimationState : public QState
+class QAnimationState : public QState
 {
     Q_OBJECT
 public:
@@ -74,8 +74,8 @@ Q_SIGNALS:
     void animationFinished();
 
 protected:
-    void onEntry();
-    void onExit();
+    void onEntry(QEvent *);
+    void onExit(QEvent *);
     bool event(QEvent *e);
 
 private:

@@ -11,6 +11,7 @@
 
 #include "qmouseeventtransition.h"
 #include "qbasicmouseeventtransition_p.h"
+#include <QtCore/qwrappedevent.h>
 #include <QtGui/qpainterpath.h>
 
 #if defined(QT_EXPERIMENTAL_SOLUTION)
@@ -26,11 +27,24 @@ QT_BEGIN_NAMESPACE
 
   \brief The QMouseEventTransition class provides a transition for mouse events.
 
+  \since 4.6
   \ingroup statemachine
 
   QMouseEventTransition is part of \l{The State Machine Framework}.
 
   \sa QState::addTransition()
+*/
+
+/*!
+    \property QMouseEventTransition::button
+
+    \brief the button that this mouse event transition is associated with
+*/
+
+/*!
+    \property QMouseEventTransition::modifiersMask
+
+    \brief the keyboard modifiers mask that this mouse event transition checks for
 */
 
 class QMouseEventTransitionPrivate : public QEventTransitionPrivate
@@ -103,12 +117,32 @@ Qt::MouseButton QMouseEventTransition::button() const
 }
 
 /*!
-  Sets the button that this mouse event transition will check for.
+  Sets the \a button that this mouse event transition will check for.
 */
 void QMouseEventTransition::setButton(Qt::MouseButton button)
 {
     Q_D(QMouseEventTransition);
     d->transition->setButton(button);
+}
+
+/*!
+  Returns the keyboard modifiers mask that this mouse event transition checks
+  for.
+*/
+Qt::KeyboardModifiers QMouseEventTransition::modifiersMask() const
+{
+    Q_D(const QMouseEventTransition);
+    return d->transition->modifiersMask();
+}
+
+/*!
+  Sets the keyboard \a modifiers mask that this mouse event transition will
+  check for.
+*/
+void QMouseEventTransition::setModifiersMask(Qt::KeyboardModifiers modifiersMask)
+{
+    Q_D(QMouseEventTransition);
+    d->transition->setModifiersMask(modifiersMask);
 }
 
 /*!
@@ -136,27 +170,22 @@ void QMouseEventTransition::setPath(const QPainterPath &path)
 /*!
   \reimp
 */
-bool QMouseEventTransition::testEventCondition(QEvent *event) const
-{
-    Q_D(const QMouseEventTransition);
-    d->transition->setEventType(event->type());
-    return QAbstractTransitionPrivate::get(d->transition)->callEventTest(event);
-}
-
-/*!
-  \reimp
-*/
 bool QMouseEventTransition::eventTest(QEvent *event) const
 {
-    return QEventTransition::eventTest(event);
+    Q_D(const QMouseEventTransition);
+    if (!QEventTransition::eventTest(event))
+        return false;
+    QWrappedEvent *we = static_cast<QWrappedEvent*>(event);
+    d->transition->setEventType(we->event()->type());
+    return QAbstractTransitionPrivate::get(d->transition)->callEventTest(we->event());
 }
 
 /*!
   \reimp
 */
-void QMouseEventTransition::onTransition()
+void QMouseEventTransition::onTransition(QEvent *event)
 {
-    QEventTransition::onTransition();
+    QEventTransition::onTransition(event);
 }
 
 QT_END_NAMESPACE

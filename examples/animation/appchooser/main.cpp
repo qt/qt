@@ -1,11 +1,41 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -60,13 +90,14 @@ void createStates(const QObjectList &objects,
     for (int i = 0; i < objects.size(); ++i) {
         QState *state = new QState(parent);
         state->assignProperty(objects.at(i), "geometry", selectedRect);
-        QAbstractTransition *trans = parent->addTransition(objects.at(i), SIGNAL(clicked()), state);
-        for (int j = 0; j < objects.size(); ++j) {
-            QPropertyAnimation *animation = new QPropertyAnimation(objects.at(j), "geometry");
-            animation->setDuration(2000);
-            trans->addAnimation(animation);
-        }
+        parent->addTransition(objects.at(i), SIGNAL(clicked()), state);
     }
+}
+
+void createAnimations(const QObjectList &objects, QStateMachine *machine)
+{
+    for (int i=0; i<objects.size(); ++i)
+        machine->addDefaultAnimation(new QPropertyAnimation(objects.at(i), "geometry"));    
 }
 
 int main(int argc, char **argv)
@@ -104,7 +135,7 @@ int main(int argc, char **argv)
     window.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QState::RestoreProperties);
+    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
 
     QState *group = new QState(machine.rootState());
     group->setObjectName("group");
@@ -113,7 +144,10 @@ int main(int argc, char **argv)
     QState *idleState = new QState(group);
     group->setInitialState(idleState);
 
-    createStates(QObjectList() << p1 << p2 << p3 << p4, selectedRect, group);
+    QObjectList objects; 
+    objects << p1 << p2 << p3 << p4;
+    createStates(objects, selectedRect, group);
+    createAnimations(objects, &machine);
 
     machine.setInitialState(group);
     machine.start();
