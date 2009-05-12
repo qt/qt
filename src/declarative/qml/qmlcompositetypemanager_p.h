@@ -92,7 +92,6 @@ struct QmlCompositeTypeData : public QmlRefCount
 
         QmlType *type;
         QmlCompositeTypeData *unit;
-        QmlCustomParser *parser;
     };
 
     QList<TypeReference> types;

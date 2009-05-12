@@ -1,0 +1,4 @@
+MyTypeObject {
+    uintProperty: -13
+}
+

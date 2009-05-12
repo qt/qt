@@ -1,0 +1,4 @@
+MyTypeObject {
+    colorProperty: 12
+}
+

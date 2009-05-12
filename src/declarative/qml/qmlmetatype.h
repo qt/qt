@@ -61,9 +61,6 @@ class Q_DECLARATIVE_EXPORT QmlMetaType
 public:
     static int registerType(const QmlPrivate::MetaTypeIds &, QmlPrivate::Func, const char *, const QMetaObject *, QmlAttachedPropertiesFunc, int pStatus, int object, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *);
     static int registerInterface(const QmlPrivate::MetaTypeIds &, QmlPrivate::Func, const char *);
-    static void registerCustomParser(const char *, QmlCustomParser *);
-
-    static QmlCustomParser *customParser(const QByteArray &);
 
     static bool copy(int type, void *data, const void *copy = 0);
 
@@ -268,8 +265,6 @@ int qmlRegisterCustomType(const char *qmlName, const char *typeName, QmlCustomPa
             QmlPrivate::StaticCastSelector<T,QObject>::cast(), 
             0, 0, parser);
 }
-
-void qmlRegisterCustomParser(const char *qmlName, QmlCustomParser *);
 
 QT_END_NAMESPACE
 

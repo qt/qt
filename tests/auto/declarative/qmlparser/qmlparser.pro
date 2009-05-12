@@ -2,3 +2,6 @@ load(qttest_p4)
 contains(QT_CONFIG,declarative): QT += declarative
 SOURCES += tst_qmlparser.cpp
 macx:CONFIG -= app_bundle
+
+QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage
+LIBS += -lgcov

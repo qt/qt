@@ -13,12 +13,12 @@ Here is the QML code for \c Cell.qml:
 
 \code
 Item {
+    property var color
+
     id: CellContainer
     width: 40
     height: 25
-    properties: Property {
-        name: "color"
-    }
+
     Rect {
         anchors.fill: parent
         color: CellContainer.color
@@ -77,9 +77,7 @@ Item {
 The root element of our component is an \c Item. It is the most basic 'Fx' element in Qml and is often used as a container for other elements.
 
 \code
-properties: Property {
-    name: "color"
-}
+property var color
 \endcode
 
 We declare a \c color property. This property is accessible from  \e outside our component, this allows us to instantiate the cells with different colors.

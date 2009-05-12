@@ -72,12 +72,11 @@ public:
     struct TypeReference 
     {
         TypeReference()
-        : type(0), component(0), parser(0), ref(0) {}
+        : type(0), component(0), ref(0) {}
 
         QByteArray className;
         QmlType *type;
         QmlComponent *component;
-        QmlCustomParser *parser;
 
         QmlRefCount *ref;
         QObject *createInstance(QmlContext *) const;

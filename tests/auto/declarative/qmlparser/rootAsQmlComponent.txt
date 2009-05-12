@@ -1,0 +1,5 @@
+MyContainerComponent {
+    x: 11
+    MyQmlObject {}
+    MyQmlObject {}
+}
