@@ -399,7 +399,8 @@ void tst_qmlparser::errors_data()
     QTest::newRow("wrongType (int for datetime)") << "wrongType.10.txt" << "wrongType.10.errors.txt" << false;
     QTest::newRow("wrongType (string for point)") << "wrongType.11.txt" << "wrongType.11.errors.txt" << false;
     QTest::newRow("wrongType (color for size)") << "wrongType.12.txt" << "wrongType.12.errors.txt" << false;
-
+    QTest::newRow("wrongType (number string for int)") << "wrongType.13.txt" << "wrongType.13.errors.txt" << false;
+    QTest::newRow("wrongType (int for string)") << "wrongType.14.txt" << "wrongType.14.errors.txt" << false;
 
     QTest::newRow("nonExistantProperty.1") << "readOnly.1.txt" << "readOnly.1.errors.txt" << false;
     QTest::newRow("nonExistantProperty.2") << "readOnly.2.txt" << "readOnly.2.errors.txt" << true;
