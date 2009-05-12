@@ -1345,7 +1345,7 @@ QWidget::~QWidget()
     d->setDirtyOpaqueRegion();
 
     if (isWindow() && isVisible() && internalWinId())
-        hide();
+        d->close_helper(QWidgetPrivate::CloseNoEvent);
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
     else if (!internalWinId() && isVisible())
         qApp->d_func()->sendSyntheticEnterLeave(this);
