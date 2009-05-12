@@ -65,6 +65,7 @@ private:
     void commitCurrentString();
     void updateHints();
     void applyHints(Qt::InputMethodHints hints);
+    void applyFormat(QList<QInputMethodEvent::Attribute> *attributes);
 
     // From MCoeFepAwareTextEditor
 public:
