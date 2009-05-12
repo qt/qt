@@ -282,11 +282,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 }
                 if (!stack.isEmpty()) {
                     QObject *parent = stack.top();
-                    if (o->isWidgetType()) {
-                        qobject_cast<QWidget*>(o)->setParent(qobject_cast<QWidget*>(parent));
-                    } else {
-                        o->setParent(parent);
-                    }
+                    o->setParent(parent);
                 }
                 stack.push(o);
             }
