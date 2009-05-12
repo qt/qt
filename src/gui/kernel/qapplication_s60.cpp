@@ -693,27 +693,8 @@ void qt_init(QApplicationPrivate *priv, int)
     S60->updateScreenSize();
 
 
-    TDisplayMode mode = S60->screenDevice()->DisplayMode(); ;
-    switch(mode) {
-    case EColor256:
-        S60->screenDepth = 8;
-        break;
-    case EColor4K:
-        S60->screenDepth = 12;
-        break;
-    case EColor64K:
-        S60->screenDepth = 16;
-        break;
-    case EColor16M:
-    case EColor16MU:
-    case EColor16MA:
-        S60->screenDepth = 32;
-        break;
-    default:
-        qFatal("Unsupported screen depth");
-        break;
-    }
-
+    TDisplayMode mode = S60->screenDevice()->DisplayMode();
+    S60->screenDepth = TDisplayModeUtils::NumDisplayModeBitsPerPixel(mode);
 
     RProcess me;
     TSecureId securId = me.SecureId();

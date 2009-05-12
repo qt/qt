@@ -31,8 +31,7 @@
 
 QT_BEGIN_NAMESPACE
 
-// ### FIX/Document this, we need some safe range of menu id's for Qt that don't clash with AIW ones
-typedef QHash<QWidget *, QMenuBarPrivate *> MenuBarHash;
+typedef QMultiHash<QWidget *, QMenuBarPrivate *> MenuBarHash;
 Q_GLOBAL_STATIC(MenuBarHash, menubars)
 
 #define QT_FIRST_MENU_ITEM 32000
@@ -53,7 +52,7 @@ bool menuExists()
 {
     QWidget *w = qApp->activeWindow();
     QMenuBarPrivate *mb = menubars()->value(w);
-    if (!mb)
+    if ((!mb) && !menubars()->count()) 
         return false;
     return true;
 }
@@ -272,7 +271,7 @@ void QMenuBarPrivate::symbianDestroyMenuBar()
     Q_Q(QMenuBar);
     int index = nativeMenuBars.indexOf(q);
     nativeMenuBars.removeAt(index);
-    menubars()->remove(q->window());
+    menubars()->remove(q->window(), this);
     rebuildMenu();
     if (symbian_menubar)
         delete symbian_menubar;
@@ -386,5 +385,7 @@ void QMenuBarPrivate::QSymbianMenuBarPrivate::rebuild()
         qt_symbian_insert_action(symbianActionTopLevel, &symbianMenus);
     }
 }
+
+QT_END_NAMESPACE
 
 #endif //QT_NO_MENUBAR

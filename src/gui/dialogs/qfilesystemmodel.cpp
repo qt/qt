@@ -1938,8 +1938,8 @@ bool QFileSystemModelPrivate::passNameFilters(const QFileSystemNode *node) const
     return true;
 }
 
+QT_END_NAMESPACE
+
 #include "moc_qfilesystemmodel.cpp"
 
 #endif // QT_NO_FILESYSTEMMODEL
-
-QT_END_NAMESPACE

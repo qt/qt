@@ -61,14 +61,17 @@
 #include "qguifunctions_wince.h"
 #endif
 
-QT_BEGIN_NAMESPACE
-
 #ifndef QT_NO_MENUBAR
-class QMenuBarExtension;
 #ifdef Q_OS_SYMBIAN
 class CCoeControl;
 class CEikMenuBar;
 #endif
+#endif
+
+QT_BEGIN_NAMESPACE
+
+#ifndef QT_NO_MENUBAR
+class QMenuBarExtension;
 class QMenuBarPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QMenuBar)
