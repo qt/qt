@@ -10,7 +10,6 @@ HEADERS +=  \
         io/qdiriterator.h \
         io/qfile.h \
         io/qfileinfo.h \
-        io/qfileinfo_p.h \
         io/qiodevice.h \
         io/qiodevice_p.h \
         io/qprocess.h \
