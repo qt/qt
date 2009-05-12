@@ -266,15 +266,15 @@ public:
         CocoaRequestModal = 190,                // Internal for requesting an application modal Cocoa Window
         MacGLClearDrawable = 191,               // Internal Cocoa, the window has changed, so we must clear
 
-        TouchBegin = 193,
-        TouchUpdate = 194,
-        TouchEnd = 195,
-        GraphicsSceneTouchBegin = 196,
-        GraphicsSceneTouchUpdate = 197,
-        GraphicsSceneTouchEnd = 198,
+        TouchBegin = 192,
+        TouchUpdate = 193,
+        TouchEnd = 194,
+        GraphicsSceneTouchBegin = 195,
+        GraphicsSceneTouchUpdate = 196,
+        GraphicsSceneTouchEnd = 197,
 
-        Gesture = 199,
-        GraphicsSceneGesture = 200,
+        Gesture = 198,
+        GraphicsSceneGesture = 199,
 
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
