@@ -312,6 +312,7 @@
 
     \list
     \o \l{statemachine/trafficlight}{Traffic Light}\raisedaster
+    \o \l{statemachine/pingpong}{Ping Pong States}\raisedaster
     \endlist
 
     \section1 Threads
