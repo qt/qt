@@ -617,6 +617,11 @@ void QS60Style::polish(QWidget *widget)
         const QFont suggestedFont = d->s60Font(
                 QS60StyleEnums::FC_Title, widget->font().pointSizeF());
         widget->setFont(suggestedFont);
+    } else if (qobject_cast<QLineEdit *>(widget)) {
+        widgetPalette.setColor(QPalette::All, QPalette::HighlightedText, 
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
+        QApplication::setPalette(widgetPalette, "QLineEdit");
+                
     }
 }
 
