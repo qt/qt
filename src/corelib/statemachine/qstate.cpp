@@ -285,7 +285,7 @@ void QState::setErrorState(QAbstractState *state)
                  "to a different state machine");
         return;
     }
-    if (state->machine() != 0 && state->machine()->rootState() == state) {
+    if (state != 0 && state->machine() != 0 && state->machine()->rootState() == state) {
         qWarning("QStateMachine::setErrorState: root state cannot be error state");
         return;
     }
