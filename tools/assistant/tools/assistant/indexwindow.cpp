@@ -197,6 +197,8 @@ void IndexWindow::open(QHelpIndexWidget* indexWidget, const QModelIndex &index)
                 url = tc.link();
         } else if (links.count() == 1) {
             url = links.constBegin().value();
+        } else {
+            return;
         }
 
         if (url.path().endsWith(QLatin1String(".pdf"), Qt::CaseInsensitive))

@@ -37,19 +37,26 @@
 #if QT_VERSION >= 0x040400
 namespace WebCore {
 
-static QString qstring(const TextRun& run)
+static const QString qstring(const TextRun& run)
 {
-    QString string((QChar *)run.characters(), run.length());
-    QChar *uc = string.data();
-    for (int i = 0; i < string.length(); ++i) {
-        if (Font::treatAsSpace(uc[i].unicode()))
-            uc[i] = 0x20;
-        else if (Font::treatAsZeroWidthSpace(uc[i].unicode()))
-            uc[i] = 0x200c;
-    }
-    return string;
+    //We don't detach
+    return QString::fromRawData((const QChar *)run.characters(), run.length());
 }
 
+static const QString fixSpacing(const QString &string)
+{
+    //Only detach if we're actually changing something
+    QString possiblyDetached = string;
+    for (int i = 0; i < string.length(); ++i) {
+        const QChar c = string.at(i);
+        if (c.unicode() != 0x20 && Font::treatAsSpace(c.unicode())) {
+            possiblyDetached[i] = 0x20; //detach
+        } else if (c.unicode() != 0x200c && Font::treatAsZeroWidthSpace(c.unicode())) {
+            possiblyDetached[i] = 0x200c; //detach
+        }
+    }
+    return possiblyDetached;
+}
 
 static QTextLine setupLayout(QTextLayout* layout, const TextRun& style)
 {
@@ -75,7 +82,7 @@ void Font::drawComplexText(GraphicsContext* ctx, const TextRun& run, const Float
     Color color = ctx->fillColor();
     p->setPen(QColor(color));
 
-    QString string = qstring(run);
+    const QString string = fixSpacing(qstring(run));
 
     // text shadow
     IntSize shadowSize;
@@ -144,7 +151,7 @@ float Font::floatWidthForComplexText(const TextRun& run) const
 {
     if (!run.length())
         return 0;
-    QString string = qstring(run);
+    const QString string = fixSpacing(qstring(run));
     QTextLayout layout(string, font());
     QTextLine line = setupLayout(&layout, run);
     int w = int(line.naturalTextWidth());
@@ -157,7 +164,7 @@ float Font::floatWidthForComplexText(const TextRun& run) const
 
 int Font::offsetForPositionForComplexText(const TextRun& run, int position, bool includePartialGlyphs) const
 {
-    QString string = qstring(run);
+    const QString string = fixSpacing(qstring(run));
     QTextLayout layout(string, font());
     QTextLine line = setupLayout(&layout, run);
     return line.xToCursor(position);
@@ -165,7 +172,7 @@ int Font::offsetForPositionForComplexText(const TextRun& run, int position, bool
 
 FloatRect Font::selectionRectForComplexText(const TextRun& run, const IntPoint& pt, int h, int from, int to) const
 {
-    QString string = qstring(run);
+    const QString string = fixSpacing(qstring(run));
     QTextLayout layout(string, font());
     QTextLine line = setupLayout(&layout, run);
 

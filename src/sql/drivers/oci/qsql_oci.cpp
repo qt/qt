@@ -2208,7 +2208,7 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
             user = user.toUpper();
 
         while (t.next()) {
-            if (t.value(0).toString() != user)
+            if (t.value(0).toString().toUpper() != user.toUpper())
                 tl.append(t.value(0).toString() + QLatin1String(".") + t.value(1).toString());
             else
                 tl.append(t.value(1).toString());
@@ -2224,7 +2224,7 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
                 "and owner != 'CTXSYS'"
                 "and owner != 'WMSYS'"));
         while (t.next()) {
-            if (t.value(0).toString() != d->user)
+            if (t.value(0).toString().toUpper() != d->user.toUpper())
                 tl.append(t.value(0).toString() + QLatin1String(".") + t.value(1).toString());
             else
                 tl.append(t.value(1).toString());

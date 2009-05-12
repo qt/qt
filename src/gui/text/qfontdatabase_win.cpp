@@ -699,6 +699,7 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
     }
 
     bool stockFont = false;
+    bool preferClearTypeAA = false;
 
     HFONT hfont = 0;
 
@@ -799,10 +800,12 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
 #endif
 
         if (request.styleStrategy & QFont::PreferAntialias) {
-            if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP)
+            if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP) {
                 qual = 5; // == CLEARTYPE_QUALITY;
-            else
+                preferClearTypeAA = true;
+            } else {
                 qual = ANTIALIASED_QUALITY;
+            }
         } else if (request.styleStrategy & QFont::NoAntialias) {
             qual = NONANTIALIASED_QUALITY;
         }
@@ -883,6 +886,9 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
 
     }
     QFontEngineWin *few = new QFontEngineWin(font_name, hfont, stockFont, lf);
+
+    if (preferClearTypeAA)
+        few->glyphFormat = QFontEngineGlyphCache::Raster_RGBMask;
 
     // Also check for OpenType tables when using complex scripts
     // ### TODO: This only works for scripts that require OpenType. More generally
@@ -1134,7 +1140,7 @@ static void getFamiliesAndSignatures(const QByteArray &fontData, QFontDatabasePr
             signature.fsUsb[1] = qFromBigEndian<quint32>(table + 46);
             signature.fsUsb[2] = qFromBigEndian<quint32>(table + 50);
             signature.fsUsb[3] = qFromBigEndian<quint32>(table + 54);
-    
+
             signature.fsCsb[0] = qFromBigEndian<quint32>(table + 78);
             signature.fsCsb[1] = qFromBigEndian<quint32>(table + 82);
         }

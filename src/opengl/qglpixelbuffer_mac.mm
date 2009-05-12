@@ -299,9 +299,8 @@ void QGLPixelBuffer::releaseFromDynamicTexture()
 
 GLuint QGLPixelBuffer::generateDynamicTexture() const
 {
-    Q_D(const QGLPixelBuffer);
-
 #ifdef QT_MAC_USE_COCOA
+    Q_D(const QGLPixelBuffer);
     NSOpenGLContext *oldContext = [NSOpenGLContext currentContext];
     if (d->share_ctx != oldContext)
         [static_cast<NSOpenGLContext *>(d->share_ctx) makeCurrentContext];

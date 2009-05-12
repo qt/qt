@@ -20,11 +20,13 @@ HEADERS += bubble.h
 RESOURCES += texture.qrc
 QT += opengl
 
-contains(QT_CONFIG,opengles1) {
-        QMAKE_LIBS += "libGLES_CM.lib"
-}
-contains(QT_CONFIG,opengles1cl) {
-        QMAKE_LIBS += "libGLES_CL.lib"
+wince*:{
+    contains(QT_CONFIG,opengles1) {
+            QMAKE_LIBS += "libGLES_CM.lib"
+    }
+    contains(QT_CONFIG,opengles1cl) {
+            QMAKE_LIBS += "libGLES_CL.lib"
+    }
 }
 
 # install

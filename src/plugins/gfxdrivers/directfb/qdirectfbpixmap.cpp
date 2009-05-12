@@ -157,13 +157,26 @@ static bool checkForAlphaPixels(const QImage &img)
     return false;
 }
 
-void QDirectFBPixmapData::fromImage(const QImage &img,
+bool QDirectFBPixmapData::hasAlphaChannel(const QImage &img)
+{
+#ifndef QT_NO_DIRECTFB_OPAQUE_DETECTION
+    return ::checkForAlphaPixels(img);
+#else
+    return img.hasAlphaChannel();
+#endif
+}
+
+
+void QDirectFBPixmapData::fromImage(const QImage &i,
                                     Qt::ImageConversionFlags flags)
 {
-    Q_ASSERT(img.depth() != 1); // these should be handled by QRasterPixmapData
+#ifdef QT_NO_DIRECTFB_OPAQUE_DETECTION
+    Q_UNUSED(flags);
+#endif
+    const QImage img = (i.depth() == 1 ? i.convertToFormat(screen->alphaPixmapFormat()) : i);
     if (img.hasAlphaChannel()
 #ifndef QT_NO_DIRECTFB_OPAQUE_DETECTION
-        && (flags & Qt::NoOpaqueDetection || ::checkForAlphaPixels(img))
+        && (flags & Qt::NoOpaqueDetection || QDirectFBPixmapData::hasAlphaChannel(img))
 #endif
         ) {
         alpha = true;
@@ -258,7 +271,7 @@ void QDirectFBPixmapData::fill(const QColor &color)
         forceRaster = false;
         setSerialNumber(++global_ser_no);
         if (!dfbSurface) {
-            qWarning("QDirecttFBPixmapData::fill()");
+            qWarning("QDirectFBPixmapData::fill()");
             invalidate();
             return;
         }
@@ -267,16 +280,17 @@ void QDirectFBPixmapData::fill(const QColor &color)
     if (forceRaster) {
         // in DSPF_RGB32 all dfb drawing causes the Alpha byte to be
         // set to 0. This causes issues for the raster engine.
-        char *mem;
-        int bpl;
-        const int h = QPixmapData::height();
-        dfbSurface->Lock(dfbSurface, DSLF_WRITE, (void**)&mem, &bpl);
-        const int c = color.rgba();
-        for (int i = 0; i < h; ++i) {
-            memset(mem, c, bpl);
-            mem += bpl;
+        uchar *mem = QDirectFBScreen::lockSurface(dfbSurface, DSLF_WRITE, &bpl);
+        if (mem) {
+            const int h = QPixmapData::height();
+            const int w = QPixmapData::width() * 4; // 4 bytes per 32 bit pixel
+            const int c = color.rgba();
+            for (int i = 0; i < h; ++i) {
+                memset(mem, c, w);
+                mem += bpl;
+            }
+            dfbSurface->Unlock(dfbSurface);
         }
-        dfbSurface->Unlock(dfbSurface);
     } else {
         dfbSurface->Clear(dfbSurface, color.red(), color.green(), color.blue(),
                           color.alpha());
@@ -353,7 +367,7 @@ QImage QDirectFBPixmapData::toImage() const
     return img->copy();
 }
 
-QPaintEngine* QDirectFBPixmapData::paintEngine() const
+QPaintEngine *QDirectFBPixmapData::paintEngine() const
 {
     if (!engine) {
         // QDirectFBPixmapData is also a QCustomRasterPaintDevice, so pass
@@ -364,10 +378,15 @@ QPaintEngine* QDirectFBPixmapData::paintEngine() const
     return engine;
 }
 
-
-QImage* QDirectFBPixmapData::buffer()
+QImage *QDirectFBPixmapData::buffer()
 {
-    lockDirectFB();
+    lockDirectFB(DSLF_READ|DSLF_WRITE);
+    return lockedImage;
+}
+
+QImage * QDirectFBPixmapData::buffer(uint lockFlags)
+{
+    lockDirectFB(lockFlags);
     return lockedImage;
 }
 
@@ -377,3 +396,4 @@ void QDirectFBPixmapData::invalidate()
     alpha = false;
     format = QImage::Format_Invalid;
 }
+

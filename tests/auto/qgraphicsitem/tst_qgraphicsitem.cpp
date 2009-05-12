@@ -78,8 +78,7 @@ Q_DECLARE_METATYPE(QRectF)
 class EventTester : public QGraphicsItem
 {
 public:
-    EventTester()
-        : repaints(0)
+    EventTester(QGraphicsItem *parent = 0) : QGraphicsItem(parent), repaints(0)
     { br = QRectF(-10, -10, 20, 20); }
 
     void setGeometry(const QRectF &rect)
@@ -207,6 +206,7 @@ private slots:
     void itemTransform_unrelated();
     void opacity_data();
     void opacity();
+    void opacity2();
     void itemStacksBehindParent();
     void nestedClipping();
     void nestedClippingTransforms();
@@ -214,6 +214,7 @@ private slots:
     void tabChangesFocus();
     void tabChangesFocus_data();
     void cacheMode();
+    void updateCachedItemAfterMove();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -3654,6 +3655,8 @@ void tst_QGraphicsItem::defaultItemTest_QGraphicsEllipseItem()
 class ItemChangeTester : public QGraphicsRectItem
 {
 public:
+    ItemChangeTester(){}
+    ItemChangeTester(QGraphicsItem *parent) : QGraphicsRectItem(parent) {}
     QVariant itemChangeReturnValue;
     QGraphicsScene *itemSceneChangeTargetScene;
 
@@ -3928,6 +3931,39 @@ void tst_QGraphicsItem::itemChange()
         QCOMPARE(tester.changes.size(), ++changeCount);
         QCOMPARE(tester.changes.last(), QGraphicsItem::ItemChildRemovedChange);
         QCOMPARE(qVariantValue<QGraphicsItem *>(tester.values.last()), (QGraphicsItem *)&testerHelper);
+
+        // ItemChildRemovedChange 1
+        ItemChangeTester *test = new ItemChangeTester;
+        test->itemSceneChangeTargetScene = 0;
+        int count = 0;
+        QGraphicsScene *scene = new QGraphicsScene;
+        scene->addItem(test);
+        count = test->changes.size();
+        //We test here the fact that when a child is deleted the parent receive only one ItemChildRemovedChange
+        QGraphicsRectItem *child = new QGraphicsRectItem(test);
+        //We received ItemChildAddedChange
+        QCOMPARE(test->changes.size(), ++count);
+        QCOMPARE(test->changes.last(), QGraphicsItem::ItemChildAddedChange);
+        delete child;
+        child = 0;
+        QCOMPARE(test->changes.size(), ++count);
+        QCOMPARE(test->changes.last(), QGraphicsItem::ItemChildRemovedChange);
+
+        ItemChangeTester *childTester = new ItemChangeTester(test);
+        //Changes contains all sceneHasChanged and so on, we don't want to test that
+        int childCount = childTester->changes.size();
+        //We received ItemChildAddedChange
+        QCOMPARE(test->changes.size(), ++count);
+        child = new QGraphicsRectItem(childTester);
+        //We received ItemChildAddedChange
+        QCOMPARE(childTester->changes.size(), ++childCount);
+        QCOMPARE(childTester->changes.last(), QGraphicsItem::ItemChildAddedChange);
+        //Delete the child of the top level with all its children
+        delete childTester;
+        //Only one removal
+        QCOMPARE(test->changes.size(), ++count);
+        QCOMPARE(test->changes.last(), QGraphicsItem::ItemChildRemovedChange);
+        delete scene;
     }
     {
         // ItemChildRemovedChange 2
@@ -5534,6 +5570,91 @@ void tst_QGraphicsItem::opacity()
     QCOMPARE(c3->effectiveOpacity(), c3_effectiveOpacity);
 }
 
+void tst_QGraphicsItem::opacity2()
+{
+    EventTester *parent = new EventTester;
+    EventTester *child = new EventTester(parent);
+    EventTester *grandChild = new EventTester(child);
+
+    QGraphicsScene scene;
+    scene.addItem(parent);
+
+    class MyGraphicsView : public QGraphicsView
+    { public:
+        int repaints;
+        MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
+        void paintEvent(QPaintEvent *e) { ++repaints; QGraphicsView::paintEvent(e); }
+    };
+
+    MyGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(250);
+
+#define RESET_REPAINT_COUNTERS \
+    parent->repaints = 0; \
+    child->repaints = 0; \
+    grandChild->repaints = 0; \
+    view.repaints = 0;
+
+    RESET_REPAINT_COUNTERS
+
+    child->setOpacity(0.0);
+    QTest::qWait(100);
+    QCOMPARE(view.repaints, 1);
+    QCOMPARE(parent->repaints, 1);
+    QCOMPARE(child->repaints, 0);
+    QCOMPARE(grandChild->repaints, 0);
+
+    RESET_REPAINT_COUNTERS
+
+    child->setOpacity(1.0);
+    QTest::qWait(100);
+    QCOMPARE(view.repaints, 1);
+    QCOMPARE(parent->repaints, 1);
+    QCOMPARE(child->repaints, 1);
+    QCOMPARE(grandChild->repaints, 1);
+
+    RESET_REPAINT_COUNTERS
+
+    parent->setOpacity(0.0);
+    QTest::qWait(100);
+    QCOMPARE(view.repaints, 1);
+    QCOMPARE(parent->repaints, 0);
+    QCOMPARE(child->repaints, 0);
+    QCOMPARE(grandChild->repaints, 0);
+
+    RESET_REPAINT_COUNTERS
+
+    parent->setOpacity(1.0);
+    QTest::qWait(100);
+    QCOMPARE(view.repaints, 1);
+    QCOMPARE(parent->repaints, 1);
+    QCOMPARE(child->repaints, 1);
+    QCOMPARE(grandChild->repaints, 1);
+
+    grandChild->setFlag(QGraphicsItem::ItemIgnoresParentOpacity);
+    RESET_REPAINT_COUNTERS
+
+    child->setOpacity(0.0);
+    QTest::qWait(100);
+    QCOMPARE(view.repaints, 1);
+    QCOMPARE(parent->repaints, 1);
+    QCOMPARE(child->repaints, 0);
+    QCOMPARE(grandChild->repaints, 1);
+
+    RESET_REPAINT_COUNTERS
+
+    child->setOpacity(0.0); // Already 0.0; no change.
+    QTest::qWait(100);
+    QCOMPARE(view.repaints, 0);
+    QCOMPARE(parent->repaints, 0);
+    QCOMPARE(child->repaints, 0);
+    QCOMPARE(grandChild->repaints, 0);
+}
+
 void tst_QGraphicsItem::itemStacksBehindParent()
 {
     QGraphicsRectItem *parent1 = new QGraphicsRectItem(QRectF(0, 0, 100, 50));
@@ -6036,6 +6157,47 @@ void tst_QGraphicsItem::cacheMode()
     QCOMPARE(tester->repaints, 13);
     QCOMPARE(testerChild->repaints, 11);
     QCOMPARE(testerChild2->repaints, 6);
+}
+
+void tst_QGraphicsItem::updateCachedItemAfterMove()
+{
+    // A simple item that uses ItemCoordinateCache
+    EventTester *tester = new EventTester;
+    tester->setCacheMode(QGraphicsItem::ItemCoordinateCache);
+
+    // Add to a scene, show in a view, ensure it's painted and reset its
+    // repaint counter.
+    QGraphicsScene scene;
+    scene.addItem(tester);
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(125);
+    tester->repaints = 0;
+
+    // Move the item, should not cause repaints
+    tester->setPos(10, 0);
+    QTest::qWait(125);
+    QCOMPARE(tester->repaints, 0);
+
+    // Move then update, should cause one repaint
+    tester->setPos(20, 0);
+    tester->update();
+    QTest::qWait(125);
+    QCOMPARE(tester->repaints, 1);
+
+    // Hiding the item doesn't cause a repaint
+    tester->hide();
+    QTest::qWait(125);
+    QCOMPARE(tester->repaints, 1);
+
+    // Moving a hidden item doesn't cause a repaint
+    tester->setPos(30, 0);
+    tester->update();
+    QTest::qWait(125);
+    QCOMPARE(tester->repaints, 1);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

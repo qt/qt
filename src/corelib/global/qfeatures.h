@@ -120,6 +120,9 @@
 // QMovie
 //#define QT_NO_MOVIE
 
+// QNetworkInterface
+//#define QT_NO_NETWORKINTERFACE
+
 // QNetworkProxy
 //#define QT_NO_NETWORKPROXY
 
@@ -198,11 +201,11 @@
 // Qt Prerendered Font Format
 //#define QT_NO_QWS_QPF
 
-// Raster Paint Engine callback functions
-//#define QT_NO_RASTERCALLBACKS
-
 // Qt Prerendered Font Format 2
 //#define QT_NO_QWS_QPF2
+
+// Raster Paint Engine callback functions
+//#define QT_NO_RASTERCALLBACKS
 
 // Resize Handler
 //#define QT_NO_RESIZEHANDLER
@@ -273,9 +276,6 @@
 // HtmlParser
 //#define QT_NO_TEXTHTMLPARSER
 
-// OdfWriter
-//#define QT_NO_TEXTODFWRITER
-
 // QTextStream
 //#define QT_NO_TEXTSTREAM
 
@@ -314,6 +314,11 @@
 // QButtonGroup
 #if !defined(QT_NO_BUTTONGROUP) && (defined(QT_NO_GROUPBOX))
 #define QT_NO_BUTTONGROUP
+#endif
+
+// QClipboard
+#if !defined(QT_NO_CLIPBOARD) && (defined(QT_NO_QWS_PROPERTIES))
+#define QT_NO_CLIPBOARD
 #endif
 
 // Codecs
@@ -374,11 +379,6 @@
 // Phonon::VolumeSlider
 #if !defined(QT_NO_PHONON_VOLUMESLIDER) && (defined(QT_NO_SLIDER))
 #define QT_NO_PHONON_VOLUMESLIDER
-#endif
-
-// QPrinter
-#if !defined(QT_NO_PRINTER) && (defined(QT_NO_TEXTSTREAM))
-#define QT_NO_PRINTER
 #endif
 
 // QProcess
@@ -481,11 +481,6 @@
 #define QT_NO_XMLSTREAMWRITER
 #endif
 
-// Odf Writer 
-#if !defined(QT_NO_TEXTODFWRITER) && (defined(QT_NO_XMLSTREAMWRITER)) 
-#define QT_NO_TEXTODFWRITER 
-#endif 
-
 // Context menu
 #if !defined(QT_NO_CONTEXTMENU) && (defined(QT_NO_MENU))
 #define QT_NO_CONTEXTMENU
@@ -511,9 +506,19 @@
 #define QT_NO_LIBRARY
 #endif
 
+// QPrinter
+#if !defined(QT_NO_PRINTER) && (defined(QT_NO_TEXTSTREAM) || defined(QT_NO_PICTURE))
+#define QT_NO_PRINTER
+#endif
+
 // QScrollArea
 #if !defined(QT_NO_SCROLLAREA) && (defined(QT_NO_SCROLLBAR))
 #define QT_NO_SCROLLAREA
+#endif
+
+// OdfWriter
+#if !defined(QT_NO_TEXTODFWRITER) && (defined(QT_NO_XMLSTREAMWRITER))
+#define QT_NO_TEXTODFWRITER
 #endif
 
 // QToolButton
@@ -636,16 +641,6 @@
 #define QT_NO_WHATSTHIS
 #endif
 
-// QClipboard
-#if !defined(QT_NO_CLIPBOARD) && (defined(QT_NO_QWS_PROPERTIES))
-#define QT_NO_CLIPBOARD
-#endif
-
-// Common UNIX Printing System
-#if !defined(QT_NO_CUPS) && (defined(QT_NO_PRINTER) || defined(QT_NO_LIBRARY))
-#define QT_NO_CUPS
-#endif
-
 // QDirModel
 #if !defined(QT_NO_DIRMODEL) && (defined(QT_NO_ITEMVIEWS))
 #define QT_NO_DIRMODEL
@@ -726,6 +721,11 @@
 #define QT_NO_COMPLETER
 #endif
 
+// Common UNIX Printing System
+#if !defined(QT_NO_CUPS) && (defined(QT_NO_PRINTER) || defined(QT_NO_LIBRARY))
+#define QT_NO_CUPS
+#endif
+
 // QDataWidgetMapper
 #if !defined(QT_NO_DATAWIDGETMAPPER) && (defined(QT_NO_ITEMVIEWS) || defined(QT_NO_PROPERTIES))
 #define QT_NO_DATAWIDGETMAPPER
@@ -757,7 +757,7 @@
 #endif
 
 // QPrintPreviewWidget
-#if !defined(QT_NO_PRINTPREVIEWWIDGET) && (defined(QT_NO_GRAPHICSVIEW) || defined(QT_NO_PRINTER) || defined(QT_NO_PICTURE))
+#if !defined(QT_NO_PRINTPREVIEWWIDGET) && (defined(QT_NO_GRAPHICSVIEW) || defined(QT_NO_PRINTER))
 #define QT_NO_PRINTPREVIEWWIDGET
 #endif
 

@@ -131,7 +131,7 @@ QColor qcolorForTheme(ThemeBrush brush)
 
 QColor qcolorForThemeTextColor(ThemeTextColor themeColor)
 {
-#ifdef QT_OS_MAC32
+#ifdef Q_OS_MAC32
     RGBColor c;
     GetThemeTextColor(themeColor, 32, true, &c);
     QColor color = QColor(c.red / 265, c.green / 256, c.blue / 256);

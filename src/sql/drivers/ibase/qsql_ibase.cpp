@@ -871,7 +871,7 @@ QIBaseResult::~QIBaseResult()
 
 bool QIBaseResult::prepare(const QString& query)
 {
-    //qDebug("prepare: %s\n", qPrintable(query));
+//     qDebug("prepare: %s", qPrintable(query));
     if (!driver() || !driver()->isOpen() || driver()->isOpenError())
         return false;
     d->cleanup();
@@ -1025,7 +1025,7 @@ bool QIBaseResult::exec()
     }
 
     if (ok) {
-        if (colCount()) {
+        if (colCount() && d->queryType != isc_info_sql_stmt_exec_procedure) {
             isc_dsql_free_statement(d->status, &d->stmt, DSQL_close);
             if (d->isError(QT_TRANSLATE_NOOP("QIBaseResult", "Unable to close statement")))
                 return false;
@@ -1039,7 +1039,7 @@ bool QIBaseResult::exec()
             return false;
 
         // Not all stored procedures necessarily return values.
-        if (d->queryType == isc_info_sql_stmt_exec_procedure && d->sqlda->sqld == 0)
+        if (d->queryType == isc_info_sql_stmt_exec_procedure && d->sqlda && d->sqlda->sqld == 0)
             delDA(d->sqlda);
 
         if (d->sqlda)
@@ -1270,27 +1270,27 @@ QSqlRecord QIBaseResult::record() const
         v = d->sqlda->sqlvar[i];
         QSqlField f(QString::fromLatin1(v.aliasname, v.aliasname_length).simplified(),
                     qIBaseTypeName2(v.sqltype, v.sqlscale < 0));
-        QSqlQuery q(new QIBaseResult(d->db));
-        q.setForwardOnly(true);
-        q.exec(QLatin1String("select b.RDB$FIELD_PRECISION, b.RDB$FIELD_SCALE, b.RDB$FIELD_LENGTH, a.RDB$NULL_FLAG "
-                "FROM RDB$RELATION_FIELDS a, RDB$FIELDS b "
-                "WHERE b.RDB$FIELD_NAME = a.RDB$FIELD_SOURCE "
-                "AND a.RDB$RELATION_NAME = '") + QString::fromAscii(v.relname, v.relname_length).toUpper() + QLatin1String("' "
-                "AND a.RDB$FIELD_NAME = '") + QString::fromAscii(v.sqlname, v.sqlname_length).toUpper() + QLatin1String("' "));
-        if(q.first()) {
-            if(v.sqlscale < 0) {
-                f.setLength(q.value(0).toInt());
-                f.setPrecision(qAbs(q.value(1).toInt()));
-            } else {
-                f.setLength(q.value(2).toInt());
-                f.setPrecision(0);
+        f.setLength(v.sqllen);
+        f.setPrecision(qAbs(v.sqlscale));
+        f.setRequiredStatus((v.sqltype & 1) == 0 ? QSqlField::Required : QSqlField::Optional);
+        if(v.sqlscale < 0) {
+            QSqlQuery q(new QIBaseResult(d->db));
+            q.setForwardOnly(true);
+            q.exec(QLatin1String("select b.RDB$FIELD_PRECISION, b.RDB$FIELD_SCALE, b.RDB$FIELD_LENGTH, a.RDB$NULL_FLAG "
+                    "FROM RDB$RELATION_FIELDS a, RDB$FIELDS b "
+                    "WHERE b.RDB$FIELD_NAME = a.RDB$FIELD_SOURCE "
+                    "AND a.RDB$RELATION_NAME = '") + QString::fromAscii(v.relname, v.relname_length).toUpper() + QLatin1String("' "
+                    "AND a.RDB$FIELD_NAME = '") + QString::fromAscii(v.sqlname, v.sqlname_length).toUpper() + QLatin1String("' "));
+            if(q.first()) {
+                if(v.sqlscale < 0) {
+                    f.setLength(q.value(0).toInt());
+                    f.setPrecision(qAbs(q.value(1).toInt()));
+                } else {
+                    f.setLength(q.value(2).toInt());
+                    f.setPrecision(0);
+                }
+                f.setRequiredStatus(q.value(3).toBool() ? QSqlField::Required : QSqlField::Optional);
             }
-            f.setRequiredStatus(q.value(3).toBool() ? QSqlField::Required : QSqlField::Optional);
-        }
-        else {
-            f.setLength(0);
-            f.setPrecision(0);
-            f.setRequiredStatus(QSqlField::Unknown);
         }
         f.setSqlType(v.sqltype);
         rec.append(f);

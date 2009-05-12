@@ -105,6 +105,7 @@ private slots:
     void task203585_selectAll();
     void task228566_infiniteRelayout();
     void task248430_crashWith0SizedItem();
+    void task250446_scrollChanged();
 };
 
 // Testing get/set functions
@@ -1527,6 +1528,33 @@ void tst_QListView::task248430_crashWith0SizedItem()
     view.show();
     QTest::qWait(100);
 }
+
+void tst_QListView::task250446_scrollChanged()
+{
+    QStandardItemModel model(200, 1);
+    QListView view;
+    view.setModel(&model);
+    QModelIndex index = model.index(0, 0);
+    QVERIFY(index.isValid());
+    view.setCurrentIndex(index);
+    view.show();
+    QTest::qWait(100);
+    const int scrollValue = view.verticalScrollBar()->maximum();
+    view.verticalScrollBar()->setValue(scrollValue);
+    QCOMPARE(view.verticalScrollBar()->value(), scrollValue);
+    QCOMPARE(view.currentIndex(), index);
+
+    view.showMinimized();
+    QTest::qWait(100);
+    QCOMPARE(view.verticalScrollBar()->value(), scrollValue);
+    QCOMPARE(view.currentIndex(), index);
+
+    view.showNormal();
+    QTest::qWait(100);
+    QCOMPARE(view.verticalScrollBar()->value(), scrollValue);
+    QCOMPARE(view.currentIndex(), index);
+}
+
 
 QTEST_MAIN(tst_QListView)
 #include "tst_qlistview.moc"

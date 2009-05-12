@@ -183,6 +183,7 @@ QWidgetPrivate::QWidgetPrivate(int version) :
         ,inDirtyList(0)
         ,isScrolled(0)
         ,isMoved(0)
+        ,usesDoubleBufferedGLContext(0)
 #ifdef Q_WS_WIN
         ,noPaintOnScreen(0)
 #endif
@@ -2132,6 +2133,10 @@ QWidget *QWidget::find(WId id)
     If a widget is non-native (alien) and winId() is invoked on it, that widget
     will be provided a native handle.
 
+    On Mac OS X, the type returned depends on which framework Qt was linked
+    against. If Qt is using Carbon, the {WId} is actually an HIViewRef. If Qt
+    is using Cocoa, {WId} is a pointer to an NSView.
+
     \note We recommend that you do not store this value as it is likely to
     change at run-time.
 
@@ -2234,9 +2239,10 @@ WId QWidget::effectiveWinId() const
     The style sheet contains a textual description of customizations to the
     widget's style, as described in the \l{Qt Style Sheets} document.
 
-    \note Qt style sheets are currently not supported for QMacStyle
-    (the default style on Mac OS X). We plan to address this in some future
-    release.
+    Since Qt 4.5, Qt style sheets fully supports Mac OS X.
+
+    \warning Qt style sheets are currently not supported for custom QStyle
+    subclasses. We plan to address this in some future release.
 
     \sa setStyle(), QApplication::styleSheet, {Qt Style Sheets}
 */
@@ -4708,10 +4714,13 @@ void QWidget::render(QPaintDevice *target, const QPoint &targetOffset,
     if (redirected) {
         target = redirected;
         offset -= redirectionOffset;
-        if (!inRenderWithPainter) { // Clip handled by shared painter (in qpainter.cpp).
-            const QRegion redirectedSystemClip = redirected->paintEngine()->systemClip();
-            if (!redirectedSystemClip.isEmpty())
-                paintRegion &= redirectedSystemClip.translated(-offset);
+    }
+
+    if (!inRenderWithPainter) { // Clip handled by shared painter (in qpainter.cpp).
+        if (QPaintEngine *targetEngine = target->paintEngine()) {
+            const QRegion targetSystemClip = targetEngine->systemClip();
+            if (!targetSystemClip.isEmpty())
+                paintRegion &= targetSystemClip.translated(-offset);
         }
     }
 
@@ -4796,7 +4805,7 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     Q_ASSERT(engine);
     QPaintEnginePrivate *enginePriv = engine->d_func();
     Q_ASSERT(enginePriv);
-    QPaintDevice *target = painter->worldMatrixEnabled() ? engine->paintDevice() : painter->device();
+    QPaintDevice *target = engine->paintDevice();
     Q_ASSERT(target);
 
     // Render via a pixmap when dealing with non-opaque painters or printers.
@@ -4815,8 +4824,13 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     const QRegion oldSystemClip = enginePriv->systemClip;
     const QRegion oldSystemViewport = enginePriv->systemViewport;
 
-    // This ensures that transformed system clips are inside the current system clip.
-    enginePriv->setSystemViewport(oldSystemClip);
+    // This ensures that all painting triggered by render() is clipped to the current engine clip.
+    if (painter->hasClipping()) {
+        const QRegion painterClip = painter->deviceTransform().map(painter->clipRegion());
+        enginePriv->setSystemViewport(oldSystemClip.isEmpty() ? painterClip : oldSystemClip & painterClip);
+    } else {
+        enginePriv->setSystemViewport(oldSystemClip);
+    }
 
     render(target, targetOffset, toBePainted, renderFlags);
 
@@ -11418,3 +11432,17 @@ void QWidget::clearMask()
     setMask(QRegion());
 }
 
+/*! \fn const QX11Info &QWidget::x11Info() const
+    Returns information about the configuration of the X display used to display
+    the widget.
+
+    \warning This function is only available on X11.
+*/
+
+/*! \fn Qt::HANDLE QWidget::x11PictureHandle() const
+    Returns the X11 Picture handle of the widget for XRender
+    support. Use of this function is not portable. This function will
+    return 0 if XRender support is not compiled into Qt, if the
+    XRender extension is not supported on the X11 display, or if the
+    handle could not be created.
+*/

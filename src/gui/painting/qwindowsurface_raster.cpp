@@ -142,8 +142,7 @@ void QRasterWindowSurface::beginPaint(const QRegion &rgn)
             p.fillRect(*it, blank);
         }
     }
-#endif
-#if defined(Q_OS_WINCE)
+#else
     Q_UNUSED(rgn);
 #endif
 }
@@ -250,6 +249,7 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
 
 //     d->image->image.save("flush.png");
 
+    Q_UNUSED(offset);
     // Get a context for the widget.
 #ifndef QT_MAC_USE_COCOA
     CGContextRef context;

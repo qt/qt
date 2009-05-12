@@ -257,6 +257,8 @@ public:
     void macUpdateIsOpaque();
     void setEnabled_helper_sys(bool enable);
     bool isRealWindow() const;
+    void adjustWithinMaxAndMinSize(int &w, int &h);
+    void applyMaxAndMinSizeOnWindow();
 #endif
 
     void raise_sys();
@@ -535,6 +537,7 @@ public:
     uint inDirtyList : 1;
     uint isScrolled : 1;
     uint isMoved : 1;
+    uint usesDoubleBufferedGLContext : 1;
 
 #ifdef Q_WS_WIN
     uint noPaintOnScreen : 1; // see qwidget_win.cpp ::paintEngine()

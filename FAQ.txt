@@ -8,7 +8,7 @@ to Unix style line endings (LF). To avoid this problem, uncompress the file
 again and give the option "-a" to unzip, which will then add the correct line
 endings.
 
-Q: I'm running Windows XP and I downloaded the qt-win-eval-4.5.0-vs2008.exe
+Q: I'm running Windows XP and I downloaded the qt-win-eval-%VERSION%-vs2008.exe
 version of Qt. However, when I try to run the examples I get an error saying:
 "The application failed to start because the application configuration is
 incorrect. Reinstalling the application may fix this problem.". I reinstalled

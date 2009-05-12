@@ -71,16 +71,11 @@ int QPaintDevice::metric(PaintDeviceMetric) const
     return 0;
 }
 
-
-/*! \internal
-*/
 HDC QPaintDevice::getDC() const
 {
     return 0;
 }
 
-/*! \internal
-*/
 void QPaintDevice::releaseDC(HDC) const
 {
 }
