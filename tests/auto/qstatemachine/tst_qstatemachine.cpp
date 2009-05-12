@@ -2529,6 +2529,7 @@ void tst_QStateMachine::nestedTargetStateForAnimation()
     QAbstractTransition *at = s2Child->addTransition(new EventTransition(QEvent::User, s2Child2));
     
     QPropertyAnimation *animation = new QPropertyAnimation(object, "bar", s2);
+    animation->setDuration(2000);
     connect(animation, SIGNAL(finished()), &counter, SLOT(slot()));
     at->addAnimation(animation);
     
@@ -2541,10 +2542,11 @@ void tst_QStateMachine::nestedTargetStateForAnimation()
     animation = new QPropertyAnimation(object, "bar", s2);
     connect(animation, SIGNAL(finished()), &counter, SLOT(slot()));
     at->addAnimation(animation);
-
+    
     QState *s3 = new QState(machine.rootState());
+    s2->addTransition(s2Child, SIGNAL(polished()), s3);
+
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
-    s2->addTransition(s2, SIGNAL(polished()), s3);
 
     machine.setInitialState(s1);
     machine.start();
