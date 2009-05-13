@@ -394,7 +394,7 @@ void QFxView::timerEvent(QTimerEvent* e)
 */
 QSize QFxView::sizeHint() const
 {
-    if (!d->root) {
+    if (d->root) {
         if (d->initialSize.width() <= 0)
             d->initialSize.setWidth(d->root->width());
         if (d->initialSize.height() <= 0)
