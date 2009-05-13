@@ -3147,7 +3147,7 @@ void QGraphicsItem::setXRotation(qreal angle)
 }
 
 /*!
-  Returns y rotation angle.
+  Returns the y rotation angle.
  */
 qreal QGraphicsItem::yRotation() const
 {

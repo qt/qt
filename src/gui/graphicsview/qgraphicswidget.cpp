@@ -170,14 +170,54 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \property QGraphicsWidget::enabled
-    \brief whether the item is enabled or not
+  \property QGraphicsWidget::xScale
+  \brief the x scale factor
 
-    This property is declared in QGraphicsItem.
+  This property is declared in QGraphicsItem.
+  \sa QGraphicsItem::xScale(), QGraphicsItem::setXScale()
+ */
 
-    By default, this property is true.
+/*!
+  \property QGraphicsWidget::yScale
+  \brief the y scale factor
 
-    \sa QGraphicsItem::isEnabled(), QGraphicsItem::setEnabled()
+  This property is declared in QGraphicsItem.
+  \sa QGraphicsItem::yScale(), QGraphicsItem::setYScale()
+*/
+
+/*!
+  \property QGraphicsWidget::zRotation
+  \brief the z rotation angle
+
+  This property is declared in QGraphicsItem.
+  \sa QGraphicsItem::zRotation(), QGraphicsItem::setZRotation()
+*/
+
+/*!
+  \property QGraphicsWidget::xRotation
+  \brief the x rotation angle
+
+  This property is declared in QGraphicsItem.
+  \sa QGraphicsItem::xRotation(), QGraphicsItem::setXRotation()
+*/
+
+/*!
+  \property QGraphicsWidget::yRotation
+  \brief the y rotation angle.
+
+  This property is declared in QGraphicsItem.
+  \sa QGraphicsItem::yRotation(), QGraphicsItem::setYRotation()
+*/
+
+/*!
+  \property QGraphicsWidget::enabled
+  \brief whether the item is enabled or not
+
+  This property is declared in QGraphicsItem.
+
+  By default, this property is true.
+
+  \sa QGraphicsItem::isEnabled(), QGraphicsItem::setEnabled()
 */
 
 /*!
