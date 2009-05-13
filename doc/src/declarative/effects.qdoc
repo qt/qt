@@ -18,7 +18,7 @@ These effects are currently only supported by the OpenGL canvas backend. Support
 backends may be added if the performance can be made acceptable.
 
 \list
-\o Perspective Transforms (\l Perspective, Translation3D)
+\o Perspective Transforms (\l{Perspective}, Translation3D)
 \o \l Shadow
 \o \l Blur
 \o \l Reflection

@@ -5900,7 +5900,7 @@ QWidget *QWidget::focusWidget() const
 /*!
     Returns the next widget in this widget's focus chain.
 
-    \sa previousInFocusChain
+    \sa previousInFocusChain()
 */
 QWidget *QWidget::nextInFocusChain() const
 {
@@ -5910,7 +5910,7 @@ QWidget *QWidget::nextInFocusChain() const
 /*!
     Returns the previous widget in this widget's focus chain.
 
-    \sa nextInFocusChain
+    \sa nextInFocusChain()
 
     \since 4.6
 */
