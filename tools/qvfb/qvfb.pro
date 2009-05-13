@@ -60,15 +60,4 @@ unix:x11 {
     LIBS += -lXtst
 }
 
-RESOURCES	+= qvfb.qrc \
-                   ClamshellPhone.qrc \
-                   PDAPhone.qrc \
-                   SmartPhone2.qrc \
-                   SmartPhone.qrc \
-                   SmartPhoneWithButtons.qrc \
-                   TouchscreenPhone.qrc \
-                   Trolltech-Keypad.qrc \
-                   Trolltech-Touchscreen.qrc \
-                   PortableMedia.qrc \
-                   S60-QVGA-Candybar.qrc \
-                   S60-nHD-Touchscreen.qrc
+RESOURCES	+= qvfb.qrc
