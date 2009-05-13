@@ -56,6 +56,7 @@
 #include "QtCore/qprocess.h"
 #include "QtCore/qstringlist.h"
 #include "QtCore/qhash.h"
+#include "QtCore/qshareddata.h"
 #include "private/qringbuffer_p.h"
 #include "private/qiodevice_p.h"
 

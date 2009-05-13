@@ -101,6 +101,44 @@ QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \class QProcessEnvironment
+
+    \brief The QProcessEnvironment class holds the environment variables that
+    can be passed to a program.
+
+    \ingroup io
+    \ingroup misc
+    \mainclass
+    \reentrant
+    \since 4.6
+
+    A process's environment is composed of a set of key=value pairs known as
+    environment variables. The QProcessEnvironment class wraps that concept
+    and allows easy manipulation of those variables. It's meant to be used
+    along with QProcess, to set the environment for child processes. It
+    cannot be used to change the current process's environment.
+
+    The environment of the calling process can be obtained using
+    QProcessEnvironment::systemEnvironment().
+
+    On Unix systems, the variable names are case-sensitive. For that reason,
+    this class will not touch the names of the variables. Note as well that
+    Unix environment allows both variable names and contents to contain arbitrary
+    binary data (except for the NUL character), but this is not supported by
+    QProcessEnvironment. This class only supports names and values that are
+    encodable by the current locale settings (see QTextCodec::codecForLocale).
+
+    On Windows, the variable names are case-insensitive. Therefore,
+    QProcessEnvironment will always uppercase the names and do case-insensitive
+    comparisons.
+
+    On Windows CE, the concept of environment does not exist. This class will
+    keep the values set for compatibility with other platforms, but the values
+    set will have no effect on the processes being created.
+
+    \sa QProcess, QProcess::systemEnvironment(), QProcess::setProcessEnvironment()
+*/
 #ifdef Q_OS_WIN
 static inline QProcessEnvironmentPrivate::Unit prepareName(const QString &name)
 { return name.toUpper(); }
@@ -179,56 +217,148 @@ QProcessEnvironment QProcessEnvironmentPrivate::fromList(const QStringList &list
     return env;
 }
 
+/*!
+    Creates a new QProcessEnvironment object. This constructor creates an
+    empty environment. If set on a QProcess, this will cause the current
+    environment variables to be removed.
+*/
 QProcessEnvironment::QProcessEnvironment()
     : d(0)
 {
 }
 
+/*!
+    Frees the resources associated with this QProcessEnvironment object.
+*/
 QProcessEnvironment::~QProcessEnvironment()
 {
 }
 
+/*!
+    Creates a QProcessEnvironment object that is a copy of \a other.
+*/
 QProcessEnvironment::QProcessEnvironment(const QProcessEnvironment &other)
     : d(other.d)
 {
 }
 
+/*!
+    Copies the contents of the \a other QProcessEnvironment object into this
+    one.
+*/
 QProcessEnvironment &QProcessEnvironment::operator=(const QProcessEnvironment &other)
 {
     d = other.d;
     return *this;
 }
 
+/*!
+    \fn bool QProcessEnvironment::operator !=(const QProcessEnvironment &other) const
+
+    Returns true if this and the \a other QProcessEnvironment objects are different.
+
+    \sa operator==()
+*/
+
+/*!
+    Returns true if this and the \a other QProcessEnvironment objects are equal.
+
+    Two QProcessEnvironment objects are considered equal if they have the same
+    set of key=value pairs. The comparison of keys is done case-sensitive on
+    platforms where the environment is case-sensitive.
+
+    \sa operator!=(), contains()
+*/
 bool QProcessEnvironment::operator==(const QProcessEnvironment &other) const
 {
     return d->hash == other.d->hash;
 }
 
+/*!
+    Returns true if this QProcessEnvironment object is empty: that is
+    there are no key=value pairs set.
+
+    \sa clear(), systemEnvironment(), insert()
+*/
 bool QProcessEnvironment::isEmpty() const
 {
     return d ? d->hash.isEmpty() : true;
 }
 
+/*!
+    Removes all key=value pairs from this QProcessEnvironment object, making
+    it empty.
+
+    \sa isEmpty(), systemEnvironment()
+*/
 void QProcessEnvironment::clear()
 {
     d->hash.clear();
 }
 
+/*!
+    Returns true if the environment variable of name \a name is found in
+    this QProcessEnvironment object.
+
+    On Windows, variable names are case-insensitive, so the key is converted
+    to uppercase before searching. On other systems, names are case-sensitive
+    so no trasformation is applied.
+
+    \sa insert(), value()
+*/
 bool QProcessEnvironment::contains(const QString &name) const
 {
     return d ? d->hash.contains(prepareName(name)) : false;
 }
 
+/*!
+    Inserts the environment variable of name \a name and contents \a value
+    into this QProcessEnvironment object. If that variable already existed,
+    it is replaced by the new value.
+
+    On Windows, variable names are case-insensitive, so this function always
+    uppercases the variable name before inserting. On other systems, names
+    are case-sensitive, so no transformation is applied.
+
+    On most systems, inserting a variable with no contents will have the
+    same effect for applications as if the variable had not been set at all.
+    However, to guarantee that there are no incompatibilities, to remove a
+    variable, please use the remove() function.
+
+    \sa contains(), remove(), value()
+*/
 void QProcessEnvironment::insert(const QString &name, const QString &value)
 {
     d->hash.insert(prepareName(name), prepareValue(value));
 }
 
+/*!
+    Removes the environment variable identified by \a name from this
+    QProcessEnvironment object. If that variable did not exist before,
+    nothing happens.
+
+    On Windows, variable names are case-insensitive, so the key is converted
+    to uppercase before searching. On other systems, names are case-sensitive
+    so no trasformation is applied.
+
+    \sa contains(), insert(), value()
+*/
 void QProcessEnvironment::remove(const QString &name)
 {
     d->hash.remove(prepareName(name));
 }
 
+/*!
+    Searches this QProcessEnvironment object for a variable identified by
+    \a name and returns its value. If the variable is not found in this object,
+    then \a defaultValue is returned instead.
+
+    On Windows, variable names are case-insensitive, so the key is converted
+    to uppercase before searching. On other systems, names are case-sensitive
+    so no trasformation is applied.
+
+    \sa contains(), insert(), remove()
+*/
 QString QProcessEnvironment::value(const QString &name, const QString &defaultValue) const
 {
     if (!d)
@@ -238,6 +368,19 @@ QString QProcessEnvironment::value(const QString &name, const QString &defaultVa
     return valueToString(result);
 }
 
+/*!
+    Converts this QProcessEnvironment object into a list of strings, one for
+    each environment variable that is set. The environment variable's name
+    and its value are separated by an equal character ('=').
+
+    The QStringList contents returned by this function are suitable for use
+    with the QProcess::setEnvironment function. However, it is recommended
+    to use QProcess::setProcessEnvironment instead since that will avoid
+    unnecessary copying of the data.
+
+    \sa systemEnvironment(), QProcess::systemEnvironment(), QProcess::environment(),
+        QProcess::setEnvironment()
+*/
 QStringList QProcessEnvironment::toStringList() const
 {
     return d ? d->toList() : QStringList();
@@ -1341,6 +1484,9 @@ QProcess::ProcessState QProcess::state() const
 
     \snippet doc/src/snippets/qprocess-environment/main.cpp 0
 
+    \note This function is less efficient than the setProcessEnvironment()
+    function.
+
     \sa environment(), setProcessEnvironment(), systemEnvironment()
 */
 void QProcess::setEnvironment(const QStringList &environment)
@@ -1367,7 +1513,7 @@ QStringList QProcess::environment() const
 }
 
 /*!
-    \since 4.5
+    \since 4.6
     Sets the environment that QProcess will use when starting a process to the
     \a environment object.
 
@@ -1387,7 +1533,7 @@ void QProcess::setProcessEnvironment(const QProcessEnvironment &environment)
 }
 
 /*!
-    \since 4.5
+    \since 4.6
     Returns the environment that QProcess will use when starting a
     process, or an empty object if no environment has been set using
     setEnvironment() or setProcessEnvironment(). If no environment has
@@ -2000,6 +2146,15 @@ QT_END_INCLUDE_NAMESPACE
 
     \snippet doc/src/snippets/code/src_corelib_io_qprocess.cpp 8
 
+    This function does not cache the system environment. Therefore, it's
+    possible to obtain an updated version of the environment if low-level C
+    library functions like \tt setenv ot \tt putenv have been called.
+
+    However, note that repeated calls to this function will recreate the
+    list of environment variables, which is a non-trivial operation.
+
+    \note For new code, it is recommended to use QProcessEvironment::systemEnvironment()
+
     \sa QProcessEnvironment::systemEnvironment(), environment(), setEnvironment()
 */
 QStringList QProcess::systemEnvironment()
@@ -2013,9 +2168,16 @@ QStringList QProcess::systemEnvironment()
 }
 
 /*!
-    \since 4.5
+    \since 4.6
 
     Returns the environment of the calling process as a QProcessEnvironment.
+
+    This function does not cache the system environment. Therefore, it's
+    possible to obtain an updated version of the environment if low-level C
+    library functions like \tt setenv ot \tt putenv have been called.
+
+    However, note that repeated calls to this function will recreate the
+    QProcessEnvironment object, which is a non-trivial operation.
 
     \sa QProcess::systemEnvironment()
 */
