@@ -2876,7 +2876,8 @@ QWidget *QApplicationPrivate::pickMouseReceiver(QWidget *candidate, const QPoint
 */
 bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
                                          QWidget *alienWidget, QWidget *nativeWidget,
-                                         QWidget **buttonDown, QPointer<QWidget> &lastMouseReceiver)
+                                         QWidget **buttonDown, QPointer<QWidget> &lastMouseReceiver,
+                                         bool spontaneous)
 {
     Q_ASSERT(receiver);
     Q_ASSERT(event);
@@ -2929,7 +2930,11 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
     // We need this quard in case someone opens a modal dialog / popup. If that's the case
     // leaveAfterRelease is set to null, but we shall not update lastMouseReceiver.
     const bool wasLeaveAfterRelease = leaveAfterRelease != 0;
-    bool result = QApplication::sendSpontaneousEvent(receiver, event);
+    bool result;
+    if (spontaneous)
+        result = QApplication::sendSpontaneousEvent(receiver, event);
+    else
+        result = QApplication::sendEvent(receiver, event);
 
     if (!graphicsWidget && leaveAfterRelease && event->type() == QEvent::MouseButtonRelease
         && !event->buttons() && QWidget::mouseGrabber() != leaveAfterRelease) {
