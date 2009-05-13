@@ -914,6 +914,7 @@ QFile::copy(const QString &newName)
                         out.setAutoRemove(false);
 #endif
                 }
+                close();
             }
             if(!error) {
                 QFile::setPermissions(newName, permissions());
