@@ -238,29 +238,6 @@ QString QProcessEnvironment::value(const QString &name, const QString &defaultVa
     return valueToString(result);
 }
 
-bool QProcessEnvironment::containsRaw(const QByteArray &name) const
-{
-    return d ? d->hash.contains(prepareName(name)) : false;
-}
-
-void QProcessEnvironment::insertRaw(const QByteArray &name, const QByteArray &value)
-{
-    d->hash.insert(prepareName(name), prepareValue(value));
-}
-
-void QProcessEnvironment::removeRaw(const QByteArray &name)
-{
-    d->hash.remove(prepareName(name));
-}
-
-QByteArray QProcessEnvironment::valueRaw(const QByteArray &name, const QByteArray &defaultValue) const
-{
-    if (!d)
-        return defaultValue;
-    QProcessEnvironmentPrivate::Unit result = d->hash.value(prepareName(name), prepareValue(defaultValue));
-    return valueToByteArray(result);
-}
-
 QStringList QProcessEnvironment::toStringList() const
 {
     return d ? d->toList() : QStringList();
@@ -2038,7 +2015,7 @@ QStringList QProcess::systemEnvironment()
 /*!
     \since 4.5
 
-    Returns the environment of the calling process as a QHash.
+    Returns the environment of the calling process as a QProcessEnvironment.
 
     \sa QProcess::systemEnvironment()
 */
@@ -2053,7 +2030,7 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
 
         QByteArray name(entry, equal - entry);
         QByteArray value(equal + 1);
-        env.insertRaw(name, value);
+        env.insert(QString::fromLocal8Bit(name), QString::fromLocal8Bit(value));
     }
     return env;
 }

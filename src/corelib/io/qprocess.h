@@ -85,11 +85,6 @@ public:
     void remove(const QString &name);
     QString value(const QString &name, const QString &defaultValue = QString()) const;
 
-    bool containsRaw(const QByteArray &name) const;
-    void insertRaw(const QByteArray &name, const QByteArray &value);
-    void removeRaw(const QByteArray &name);
-    QByteArray valueRaw(const QByteArray &name, const QByteArray &defaultValue = QByteArray()) const;
-
     QStringList toStringList() const;
 
     static QProcessEnvironment systemEnvironment();
