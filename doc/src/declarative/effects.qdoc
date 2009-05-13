@@ -14,11 +14,11 @@
 
 \section1 Advanced Effects
 
-These effects are currently only supported by the OpenGL canvas backend. Support for other
-backends may be added if the performance can be made acceptable.
+These effects are currently only supported by the OpenGL canvas
+backend. Support for other backends may be added if the performance
+can be made acceptable.
 
 \list
-\o Perspective Transforms (\l{Perspective}, Translation3D)
 \o \l Shadow
 \o \l Blur
 \o \l Reflection
