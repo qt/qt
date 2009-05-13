@@ -1407,7 +1407,7 @@ void QStateMachinePrivate::registerEventTransition(QEventTransition *transition)
     QObjectPrivate *od = QObjectPrivate::get(object);
     if (!od->eventFilters.contains(q))
         object->installEventFilter(q);
-    qobjectEvents[object].insert(transition->eventType());
+    ++qobjectEvents[object][transition->eventType()];
     QEventTransitionPrivate::get(transition)->registered = true;
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": added event transition from" << transition->sourceState()
@@ -1422,11 +1422,18 @@ void QStateMachinePrivate::unregisterEventTransition(QEventTransition *transitio
     if (!QEventTransitionPrivate::get(transition)->registered)
         return;
     QObject *object = QEventTransitionPrivate::get(transition)->object;
-    QSet<QEvent::Type> &events = qobjectEvents[object];
-    events.remove(transition->eventType());
-    if (events.isEmpty()) {
-        qobjectEvents.remove(object);
-        object->removeEventFilter(q);
+    QHash<QEvent::Type, int> &events = qobjectEvents[object];
+    Q_ASSERT(events.value(transition->eventType()) > 0);
+    if (--events[transition->eventType()] == 0) {
+        events.remove(transition->eventType());
+        int sum = 0;
+        QHash<QEvent::Type, int>::const_iterator it;
+        for (it = events.constBegin(); it != events.constEnd(); ++it)
+            sum += it.value();
+        if (sum == 0) {
+            qobjectEvents.remove(object);
+            object->removeEventFilter(q);
+        }
     }
     QEventTransitionPrivate::get(transition)->registered = false;
 }

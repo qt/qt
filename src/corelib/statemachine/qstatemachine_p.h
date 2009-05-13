@@ -200,7 +200,7 @@ public:
 
     QHash<const QObject*, QVector<int> > connections;
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
-    QHash<QObject*, QSet<QEvent::Type> > qobjectEvents;
+    QHash<QObject*, QHash<QEvent::Type, int> > qobjectEvents;
 #endif
     QHash<int, QEvent*> delayedEvents;
   
