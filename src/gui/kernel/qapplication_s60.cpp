@@ -1017,9 +1017,8 @@ void QApplication::s60HandleCommandL(int command)
 {
     switch (command) {
     case EEikCmdExit:
-    case EAknSoftkeyBack:
     case EAknSoftkeyExit:
-        qApp->exit();
+        exit();
         break;
     default:
         if (command >= SOFTKEYSTART && command <= SOFTKEYEND) {
