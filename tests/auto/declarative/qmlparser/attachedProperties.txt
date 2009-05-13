@@ -1,0 +1,3 @@
+Object {
+    MyQmlObject.value: 10
+}
