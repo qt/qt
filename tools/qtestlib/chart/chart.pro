@@ -4,7 +4,7 @@ SOURCES += main.cpp
 RESOURCES = $$PWD/chart.qrc
 
 QT += sql xml
-CONFIG += console release 
+CONFIG += console
 CONFIG -= app_bundle
 
 
