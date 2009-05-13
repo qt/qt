@@ -1900,6 +1900,9 @@ void tst_QNetworkReply::ioGetFromHttpBrokenServer_data()
     QTest::newRow("with-newlines") << QByteArray("Long first line\r\nLong second line") << false;
     QTest::newRow("with-newlines2") << QByteArray("\r\nSecond line") << false;
     QTest::newRow("with-newlines3") << QByteArray("ICY\r\nSecond line") << false;
+    QTest::newRow("invalid-version") << QByteArray("HTTP/123 200 \r\n") << false;
+    QTest::newRow("invalid-version2") << QByteArray("HTTP/a.\033 200 \r\n") << false;
+    QTest::newRow("invalid-reply-code") << QByteArray("HTTP/1.0 fuu \r\n") << false;
 
     QTest::newRow("empty+disconnect") << QByteArray() << true;
 
@@ -1909,6 +1912,10 @@ void tst_QNetworkReply::ioGetFromHttpBrokenServer_data()
     QTest::newRow("with-newlines+disconnect") << QByteArray("Long first line\r\nLong second line") << true;
     QTest::newRow("with-newlines2+disconnect") << QByteArray("\r\nSecond line") << true;
     QTest::newRow("with-newlines3+disconnect") << QByteArray("ICY\r\nSecond line") << true;
+
+    QTest::newRow("invalid-version+disconnect") << QByteArray("HTTP/123 200 ") << true;
+    QTest::newRow("invalid-version2+disconnect") << QByteArray("HTTP/a.\033 200 ") << true;
+    QTest::newRow("invalid-reply-code+disconnect") << QByteArray("HTTP/1.0 fuu ") << true;
 }
 
 void tst_QNetworkReply::ioGetFromHttpBrokenServer()
