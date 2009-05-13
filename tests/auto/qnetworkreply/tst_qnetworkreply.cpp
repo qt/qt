@@ -183,6 +183,8 @@ private Q_SLOTS:
     void ioGetFromHttpsWithIgnoreSslErrors();
     void ioGetFromHttpsWithSslHandshakeError();
 #endif
+    void ioGetFromHttpBrokenServer_data();
+    void ioGetFromHttpBrokenServer();
 
     void ioGetWithManyProxies_data();
     void ioGetWithManyProxies();
@@ -2040,6 +2042,53 @@ void tst_QNetworkReply::ioGetFromHttpsWithSslHandshakeError()
     QCOMPARE(sslspy.count(), 0);
 }
 #endif
+
+void tst_QNetworkReply::ioGetFromHttpBrokenServer_data()
+{
+    QTest::addColumn<QByteArray>("dataToSend");
+    QTest::addColumn<bool>("doDisconnect");
+
+    QTest::newRow("no-newline") << QByteArray("Hello World") << false;
+    QTest::newRow("just-newline") << QByteArray("\r\n") << false;
+    QTest::newRow("just-2newline") << QByteArray("\r\n\r\n") << false;
+    QTest::newRow("with-newlines") << QByteArray("Long first line\r\nLong second line") << false;
+    QTest::newRow("with-newlines2") << QByteArray("\r\nSecond line") << false;
+    QTest::newRow("with-newlines3") << QByteArray("ICY\r\nSecond line") << false;
+    QTest::newRow("invalid-version") << QByteArray("HTTP/123 200 \r\n") << false;
+    QTest::newRow("invalid-version2") << QByteArray("HTTP/a.\033 200 \r\n") << false;
+    QTest::newRow("invalid-reply-code") << QByteArray("HTTP/1.0 fuu \r\n") << false;
+
+    QTest::newRow("empty+disconnect") << QByteArray() << true;
+
+    QTest::newRow("no-newline+disconnect") << QByteArray("Hello World") << true;
+    QTest::newRow("just-newline+disconnect") << QByteArray("\r\n") << true;
+    QTest::newRow("just-2newline+disconnect") << QByteArray("\r\n\r\n") << true;
+    QTest::newRow("with-newlines+disconnect") << QByteArray("Long first line\r\nLong second line") << true;
+    QTest::newRow("with-newlines2+disconnect") << QByteArray("\r\nSecond line") << true;
+    QTest::newRow("with-newlines3+disconnect") << QByteArray("ICY\r\nSecond line") << true;
+
+    QTest::newRow("invalid-version+disconnect") << QByteArray("HTTP/123 200 ") << true;
+    QTest::newRow("invalid-version2+disconnect") << QByteArray("HTTP/a.\033 200 ") << true;
+    QTest::newRow("invalid-reply-code+disconnect") << QByteArray("HTTP/1.0 fuu ") << true;
+}
+
+void tst_QNetworkReply::ioGetFromHttpBrokenServer()
+{
+    QFETCH(QByteArray, dataToSend);
+    QFETCH(bool, doDisconnect);
+    MiniHttpServer server(dataToSend);
+    server.doClose = doDisconnect;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(reply->url(), request.url());
+    QVERIFY(reply->error() != QNetworkReply::NoError);
+}
 
 void tst_QNetworkReply::ioGetWithManyProxies_data()
 {

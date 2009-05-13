@@ -123,7 +123,7 @@
 
     The first jQuery-based function, \c highlightAllLinks(), is designed to  
     highlight all links in the current webpage. The JavaScript code looks 
-    for web elements named \i {a}, which is the tag for a hyperlink. 
+    for web elements named \e {a}, which is the tag for a hyperlink. 
     For each such element, the background color is set to be yellow by
     using CSS. 
 
@@ -131,18 +131,18 @@
     
     The \c rotateImages() function rotates the images on the current
     web page. Webkit supports CSS transforms and this JavaScript code 
-    looks up all \i {img} elements and rotates the images 180 degrees
+    looks up all \e {img} elements and rotates the images 180 degrees
     and then back again. 
 
     \snippet examples/webkit/fancybrowser/mainwindow.cpp 9
 
     The remaining four methods remove different elements from the current web 
     page. \c removeGifImages() removes all Gif images on the page by looking up 
-    the \i {src} attribute of all the elements on the web page. Any element with 
-    a \i {gif} file as its source is removed. \c removeInlineFrames() removes all 
-    \i {iframe} or inline elements. \c removeObjectElements() removes all 
-    \i {object} elements, and \c removeEmbeddedElements() removes any elements 
-    such as plugins embedded on the page using the \i {embed} tag.
+    the \e {src} attribute of all the elements on the web page. Any element with 
+    a \e {gif} file as its source is removed. \c removeInlineFrames() removes all 
+    \e {iframe} or inline elements. \c removeObjectElements() removes all 
+    \e {object} elements, and \c removeEmbeddedElements() removes any elements 
+    such as plugins embedded on the page using the \e {embed} tag.
 
 */
 

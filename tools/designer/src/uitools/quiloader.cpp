@@ -572,9 +572,9 @@ void QUiLoaderPrivate::setupWidgetMap() const
     \class QUiLoader
     \inmodule QtUiTools
 
-    \brief enables standalone applications to dynamically create user
-    interfaces at run-time using the information stored in .ui files or
-    specified in plugin paths.
+    \brief The QUiLoader class enables standalone applications to
+    dynamically create user interfaces at run-time using the
+    information stored in .ui files or specified in plugin paths.
 
     In addition, you can customize or create your own user interface by
     deriving your own loader class.
