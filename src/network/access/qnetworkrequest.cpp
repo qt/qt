@@ -162,6 +162,13 @@ QT_BEGIN_NAMESPACE
         Indicates whether the data was obtained from cache
         or not.
 
+    \value DoNotBufferUploadDataAttribute
+        Requests only, type: QVariant::Bool (default: false)
+        Indicates whether the QNetworkAccessManager code is
+        allowed to buffer the upload data, e.g. when doing a HTTP POST.
+        When using this flag with sequential upload data, the ContentLengthHeader
+        header must be set.
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default
