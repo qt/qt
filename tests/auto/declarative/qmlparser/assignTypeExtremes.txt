@@ -1,0 +1,4 @@
+MyTypeObject {
+    uintProperty: 4000000000
+    intProperty: -2000000000
+}

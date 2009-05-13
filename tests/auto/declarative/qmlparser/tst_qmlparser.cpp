@@ -386,6 +386,7 @@ private slots:
     void assignObjectToSignal();
     void assignQmlComponent();
     void assignBasicTypes();
+    void assignTypeExtremes();
     void customParserTypes();
     void rootAsQmlComponent();
     void inlineQmlComponents();
@@ -596,6 +597,16 @@ void tst_qmlparser::assignBasicTypes()
     MyTypeObject *child = qobject_cast<MyTypeObject *>(object->objectProperty());
     QVERIFY(child != 0);
     QCOMPARE(child->intProperty(), 8);
+}
+
+// Test edge case type assignments
+void tst_qmlparser::assignTypeExtremes()
+{
+    QmlComponent component(&engine, TEST_FILE("assignTypeExtremes.txt"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->uintProperty(), 0xEE6B2800);
+    QCOMPARE(object->intProperty(), -0x77359400);
 }
 
 // Tests that custom parser tyeps can be instantiated
