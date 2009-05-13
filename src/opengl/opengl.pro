@@ -37,24 +37,21 @@ SOURCES	+= qgl.cpp \
            qglpixmapfilter.cpp \
            qglshaderprogram.cpp
 
-#!contains(QT_CONFIG, opengles2) {
-#    HEADERS += qpaintengine_opengl_p.h
-#    SOURCES += qpaintengine_opengl.cpp
-#}
+!contains(QT_CONFIG, opengles2) {
+    HEADERS += qpaintengine_opengl_p.h
+    SOURCES += qpaintengine_opengl.cpp
+}
 
-#contains(QT_CONFIG, opengles2) {
-    SOURCES +=  gl2paintengineex/qglgradientcache.cpp \
-                gl2paintengineex/qglengineshadermanager.cpp \
-                gl2paintengineex/qgl2pexvertexarray.cpp \
-                gl2paintengineex/qpaintengineex_opengl2.cpp
+SOURCES +=  gl2paintengineex/qglgradientcache.cpp \
+            gl2paintengineex/qglengineshadermanager.cpp \
+            gl2paintengineex/qgl2pexvertexarray.cpp \
+            gl2paintengineex/qpaintengineex_opengl2.cpp
 
-    HEADERS +=  gl2paintengineex/qglgradientcache_p.h \
-                gl2paintengineex/qglengineshadermanager_p.h \
-                gl2paintengineex/qgl2pexvertexarray_p.h \
-                gl2paintengineex/qpaintengineex_opengl2_p.h \
-                gl2paintengineex/qglengineshadersource_p.h
-#}
-
+HEADERS +=  gl2paintengineex/qglgradientcache_p.h \
+            gl2paintengineex/qglengineshadermanager_p.h \
+            gl2paintengineex/qgl2pexvertexarray_p.h \
+            gl2paintengineex/qpaintengineex_opengl2_p.h \
+            gl2paintengineex/qglengineshadersource_p.h
 
 x11 {
     contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles1cl)|contains(QT_CONFIG, opengles2) {

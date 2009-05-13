@@ -65,9 +65,9 @@
 #include "qimage.h"
 #include "qgl_p.h"
 
-#if 1 || defined(QT_OPENGL_ES_2)
 #include "gl2paintengineex/qpaintengineex_opengl2_p.h"
-#else
+
+#ifndef QT_OPENGL_ES_2
 #include <private/qpaintengine_opengl_p.h>
 #endif
 
@@ -2125,9 +2125,6 @@ void QGLContext::deleteTexture(QMacCompatGLuint id)
 }
 #endif
 
-// qpaintengine_opengl.cpp
-#if !defined(QT_OPENGL_ES_2)
-//extern void qt_add_rect_to_array(const QRectF &r, q_vertexType *array);
 void qt_add_rect_to_array(const QRectF &r, q_vertexType *array)
 {
     qreal left = r.left();
@@ -2145,9 +2142,17 @@ void qt_add_rect_to_array(const QRectF &r, q_vertexType *array)
     array[7] = f2vt(bottom);
 }
 
-#else
-void qt_add_rect_to_array(const QRectF &r, q_vertexType *array) {};
-#endif
+void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, q_vertexType *array)
+{
+    array[0] = f2vt(x1);
+    array[1] = f2vt(y1);
+    array[2] = f2vt(x2);
+    array[3] = f2vt(y1);
+    array[4] = f2vt(x2);
+    array[5] = f2vt(y2);
+    array[6] = f2vt(x1);
+    array[7] = f2vt(y2);
+}
 
 static void qDrawTextureRect(const QRectF &target, GLint textureWidth, GLint textureHeight, GLenum textureTarget)
 {
@@ -4154,9 +4159,9 @@ void QGLWidget::drawTexture(const QPointF &point, QMacCompatGLuint textureId, QM
 }
 #endif
 
-#if 1 || defined(QT_OPENGL_ES_2)
-Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_engine)
-#else
+Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_2_engine)
+
+#ifndef QT_OPENGL_ES_2
 Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_engine)
 #endif
 
@@ -4179,7 +4184,11 @@ Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine()
 */
 QPaintEngine *QGLWidget::paintEngine() const
 {
-    return qt_gl_engine();
+#ifndef QT_OPENGL_ES_2
+    if (!qt_gl_preferGL2Engine())
+        return qt_gl_engine();
+#endif
+    return qt_gl_2_engine();
 }
 
 #ifdef QT3_SUPPORT

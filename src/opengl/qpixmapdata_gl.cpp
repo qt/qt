@@ -49,11 +49,7 @@
 #include <private/qgl_p.h>
 #include <private/qdrawhelper_p.h>
 
-#if 1 || defined(QT_OPENGL_ES_2)
 #include <private/qpaintengineex_opengl2_p.h>
-#else
-#include <private/qpaintengine_opengl_p.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 

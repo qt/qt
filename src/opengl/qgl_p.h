@@ -419,6 +419,17 @@ extern QOpenGLPaintEngine* qt_qgl_paint_engine();
 extern EGLDisplay qt_qgl_egl_display();
 #endif
 
+inline bool qt_gl_preferGL2Engine()
+{
+#if defined(QT_OPENGL_ES_2)
+    return true;
+#else
+    QGLFormat::OpenGLVersionFlags flags = QGLFormat::openGLVersionFlags();
+    bool hasOpenGL2 = (flags & QGLFormat::OpenGL_Version_2_0);
+    return hasOpenGL2 && qgetenv("QT_GL_NO_OPENGL2ENGINE").isEmpty();
+#endif
+}
+
 inline GLenum qt_gl_preferredTextureFormat()
 {
     return QSysInfo::ByteOrder == QSysInfo::BigEndian ? GL_RGBA : GL_BGRA;
@@ -426,15 +437,15 @@ inline GLenum qt_gl_preferredTextureFormat()
 
 inline GLenum qt_gl_preferredTextureTarget()
 {
-#if 1 || defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_ES_2)
     return GL_TEXTURE_2D;
 #else
     return (QGLExtensions::glExtensions & QGLExtensions::TextureRectangle)
+           && !qt_gl_preferGL2Engine()
            ? GL_TEXTURE_RECTANGLE_NV
            : GL_TEXTURE_2D;
 #endif
 }
-
 
 QT_END_NAMESPACE
 

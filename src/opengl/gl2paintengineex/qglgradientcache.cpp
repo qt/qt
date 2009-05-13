@@ -44,7 +44,7 @@
 
 #include "qglgradientcache_p.h"
 
-void QGLGradientCache::cleanCache() {
+void QGL2GradientCache::cleanCache() {
     QGLGradientColorTableHash::const_iterator it = cache.constBegin();
     for (; it != cache.constEnd(); ++it) {
         const CacheInfo &cache_info = it.value();
@@ -53,7 +53,7 @@ void QGLGradientCache::cleanCache() {
     cache.clear();
 }
 
-GLuint QGLGradientCache::getBuffer(const QGradient &gradient, qreal opacity, const QGLContext *ctx)
+GLuint QGL2GradientCache::getBuffer(const QGradient &gradient, qreal opacity, const QGLContext *ctx)
 {
     if (buffer_ctx && !qgl_share_reg()->checkSharing(buffer_ctx, ctx))
         cleanCache();
@@ -84,7 +84,7 @@ GLuint QGLGradientCache::getBuffer(const QGradient &gradient, qreal opacity, con
 }
 
 
-GLuint QGLGradientCache::addCacheElement(quint64 hash_val, const QGradient &gradient, qreal opacity)
+GLuint QGL2GradientCache::addCacheElement(quint64 hash_val, const QGradient &gradient, qreal opacity)
 {
     if (cache.size() == maxCacheSize()) {
         int elem_to_remove = qrand() % maxCacheSize();
@@ -129,7 +129,7 @@ static inline uint qtToGlColor(uint c)
 }
 
 //TODO: Let GL generate the texture using an FBO
-void QGLGradientCache::generateGradientColorTable(const QGradient& gradient, uint *colorTable, int size, qreal opacity) const
+void QGL2GradientCache::generateGradientColorTable(const QGradient& gradient, uint *colorTable, int size, qreal opacity) const
 {
     int pos = 0;
     QGradientStops s = gradient.stops();

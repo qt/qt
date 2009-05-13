@@ -123,35 +123,6 @@ struct QT_PointF {
     qreal y;
 };
 
-void qt_add_rect_to_array(const QRectF &r, q_vertexType *array)
-{
-    qreal left = r.left();
-    qreal right = r.right();
-    qreal top = r.top();
-    qreal bottom = r.bottom();
-
-    array[0] = f2vt(left);
-    array[1] = f2vt(top);
-    array[2] = f2vt(right);
-    array[3] = f2vt(top);
-    array[4] = f2vt(right);
-    array[5] = f2vt(bottom);
-    array[6] = f2vt(left);
-    array[7] = f2vt(bottom);
-}
-
-void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, q_vertexType *array)
-{
-    array[0] = f2vt(x1);
-    array[1] = f2vt(y1);
-    array[2] = f2vt(x2);
-    array[3] = f2vt(y1);
-    array[4] = f2vt(x2);
-    array[5] = f2vt(y2);
-    array[6] = f2vt(x1);
-    array[7] = f2vt(y2);
-}
-
 struct QGLTrapezoid
 {
     QGLTrapezoid()
@@ -3123,6 +3094,9 @@ QGLTrapezoidMaskGenerator::QGLTrapezoidMaskGenerator(const QPainterPath &path, c
     ,  maskFragmentProgram(program)
 {
 }
+
+extern void qt_add_rect_to_array(const QRectF &r, q_vertexType *array);
+extern void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, q_vertexType *array);
 
 void QGLTrapezoidMaskGenerator::drawMask(const QRect &rect)
 {

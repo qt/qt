@@ -81,15 +81,15 @@
 #include <private/qglpixelbuffer_p.h>
 #include <qimage.h>
 
-#if 1 || defined(QT_OPENGL_ES_2)
 #include <private/qpaintengineex_opengl2_p.h>
-#else
+
+#ifndef QT_OPENGL_ES_2
 #include <private/qpaintengine_opengl_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
 
-#if 0 && !defined(QT_OPENGL_ES_2)
+#if !defined(QT_OPENGL_ES_2)
 extern void qgl_cleanup_glyph_cache(QGLContext *);
 #else
 void qgl_cleanup_glyph_cache(QGLContext *) {}
@@ -365,17 +365,20 @@ bool QGLPixelBuffer::isValid() const
     return !d->invalid;
 }
 
-#if 1 || defined(QT_OPENGL_ES_2)
-Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_buffer_paintengine)
-#else
-Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_buffer_paintengine)
+Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_buffer_2_engine)
+
+#ifndef QT_OPENGL_ES_2
+Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_buffer_engine)
 #endif
 
 /*! \reimp */
 QPaintEngine *QGLPixelBuffer::paintEngine() const
 {
 #if !defined(QT_OPENGL_ES_2)
-    return qt_buffer_paintengine();
+    if (qt_gl_preferGL2Engine())
+        return qt_buffer_2_engine();
+    else
+        return qt_buffer_engine();
 #else
     return 0;
 #endif

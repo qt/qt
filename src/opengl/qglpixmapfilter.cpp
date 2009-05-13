@@ -116,21 +116,8 @@ QPixmapFilter *QGLContextPrivate::createPixmapFilter(int type) const
     return 0;
 }
 
-#if !defined(QT_OPENGL_ES_2)
 extern void qt_add_rect_to_array(const QRectF &r, q_vertexType *array);
-//extern void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, q_vertexType *array);
-void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, q_vertexType *array)
-{
-    array[0] = f2vt(x1);
-    array[1] = f2vt(y1);
-    array[2] = f2vt(x2);
-    array[3] = f2vt(y1);
-    array[4] = f2vt(x2);
-    array[5] = f2vt(y2);
-    array[6] = f2vt(x1);
-    array[7] = f2vt(y2);
-}
-#endif
+extern void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, q_vertexType *array);
 
 static void qgl_drawTexture(const QRectF &rect, int tx_width, int tx_height, const QRectF & src)
 {

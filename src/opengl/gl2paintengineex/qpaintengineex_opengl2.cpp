@@ -240,7 +240,7 @@ void QGL2PaintEngineExPrivate::useSimpleShader()
 }
 
 
-Q_GLOBAL_STATIC(QGLGradientCache, qt_opengl_gradient_cache)
+Q_GLOBAL_STATIC(QGL2GradientCache, qt_opengl_gradient_cache)
 
 void QGL2PaintEngineExPrivate::updateBrushTexture()
 {
@@ -941,7 +941,7 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
     Q_D(QGL2PaintEngineEx);
 
     ensureActive();
-    QOpenGLPaintEngineState *s = state();
+    QOpenGL2PaintEngineState *s = state();
 
     const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
 
@@ -967,7 +967,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
     transferMode(TextDrawingMode);
 
     Q_Q(QGL2PaintEngineEx);
-    QOpenGLPaintEngineState *s = q->state();
+    QOpenGL2PaintEngineState *s = q->state();
 
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
@@ -1364,9 +1364,9 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
 
     Q_D(QGL2PaintEngineEx);
 
-    QOpenGLPaintEngineState *s = static_cast<QOpenGLPaintEngineState *>(new_state);
+    QOpenGL2PaintEngineState *s = static_cast<QOpenGL2PaintEngineState *>(new_state);
 
-    QOpenGLPaintEngineState *old_state = state();
+    QOpenGL2PaintEngineState *old_state = state();
     const bool needsDepthClipUpdate = !old_state
             || s->clipEnabled != old_state->clipEnabled
             || (s->clipEnabled && s->clipRegion != old_state->clipRegion);
@@ -1386,28 +1386,28 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
 
 QPainterState *QGL2PaintEngineEx::createState(QPainterState *orig) const
 {
-    QOpenGLPaintEngineState *s;
+    QOpenGL2PaintEngineState *s;
     if (!orig)
-        s = new QOpenGLPaintEngineState();
+        s = new QOpenGL2PaintEngineState();
     else
-        s = new QOpenGLPaintEngineState(*static_cast<QOpenGLPaintEngineState *>(orig));
+        s = new QOpenGL2PaintEngineState(*static_cast<QOpenGL2PaintEngineState *>(orig));
 
     return s;
 }
 
-QOpenGLPaintEngineState::QOpenGLPaintEngineState(QOpenGLPaintEngineState &other)
+QOpenGL2PaintEngineState::QOpenGL2PaintEngineState(QOpenGL2PaintEngineState &other)
     : QPainterState(other)
 {
     clipRegion = other.clipRegion;
     hasClipping = other.hasClipping;
 }
 
-QOpenGLPaintEngineState::QOpenGLPaintEngineState()
+QOpenGL2PaintEngineState::QOpenGL2PaintEngineState()
 {
     hasClipping = false;
 }
 
-QOpenGLPaintEngineState::~QOpenGLPaintEngineState()
+QOpenGL2PaintEngineState::~QOpenGL2PaintEngineState()
 {
 }
 
