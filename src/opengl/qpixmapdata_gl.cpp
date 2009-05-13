@@ -160,7 +160,7 @@ void QGLPixmapData::ensureCreated() const
     m_ctx = ctx;
 
     const GLenum format = qt_gl_preferredTextureFormat();
-    const GLenum target = qt_gl_preferredTextureTarget();
+    const GLenum target = GL_TEXTURE_2D;
 
     if (!m_textureId) {
         glGenTextures(1, &m_textureId);
@@ -252,7 +252,7 @@ QImage QGLPixmapData::toImage() const
 
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
     extern QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alpha);
-    glBindTexture(qt_gl_preferredTextureTarget(), m_textureId);
+    glBindTexture(GL_TEXTURE_2D, m_textureId);
     return qt_gl_read_texture(QSize(m_width, m_height), true, true);
 }
 
@@ -280,7 +280,7 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
 
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-        qt_gl_preferredTextureTarget(), m_textureId, 0);
+        GL_TEXTURE_2D, m_textureId, 0);
 
     const int x0 = 0;
     const int x1 = m_width;
@@ -398,7 +398,7 @@ GLuint QGLPixmapData::bind(bool copyBack) const
         ensureCreated();
 
     GLuint id = m_textureId;
-    glBindTexture(qt_gl_preferredTextureTarget(), id);
+    glBindTexture(GL_TEXTURE_2D, id);
     return id;
 }
 

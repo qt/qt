@@ -1366,7 +1366,7 @@ QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alp
     int w = size.width();
     int h = size.height();
 #if !defined(QT_OPENGL_ES_2) //### glGetTexImage not in GL ES 2.0, need to do something else here!
-    glGetTexImage(qt_gl_preferredTextureTarget(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
 #endif
     convertFromGLImage(img, w, h, alpha_format, include_alpha);
     return img;
@@ -1971,7 +1971,7 @@ GLuint QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target, GLin
 {
     Q_Q(QGLContext);
     QPixmapData *pd = pixmap.pixmapData();
-    if (target == qt_gl_preferredTextureTarget() && pd->classId() == QPixmapData::OpenGLClass) {
+    if (target == GL_TEXTURE_2D && pd->classId() == QPixmapData::OpenGLClass) {
         const QGLPixmapData *data = static_cast<const QGLPixmapData *>(pd);
 
         if (data->isValidContext(q))

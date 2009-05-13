@@ -424,9 +424,8 @@ inline bool qt_gl_preferGL2Engine()
 #if defined(QT_OPENGL_ES_2)
     return true;
 #else
-    QGLFormat::OpenGLVersionFlags flags = QGLFormat::openGLVersionFlags();
-    bool hasOpenGL2 = (flags & QGLFormat::OpenGL_Version_2_0);
-    return hasOpenGL2 && qgetenv("QT_GL_NO_OPENGL2ENGINE").isEmpty();
+    return (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0)
+           && !qgetenv("QT_GL_USE_OPENGL2ENGINE").isEmpty();
 #endif
 }
 

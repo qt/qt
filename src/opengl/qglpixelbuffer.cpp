@@ -375,7 +375,7 @@ Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_buffer_engine)
 QPaintEngine *QGLPixelBuffer::paintEngine() const
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (qt_gl_preferGL2Engine())
+    if (d_ptr->qctx->d_func()->internal_context || qt_gl_preferGL2Engine())
         return qt_buffer_2_engine();
     else
         return qt_buffer_engine();

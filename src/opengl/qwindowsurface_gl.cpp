@@ -72,10 +72,6 @@
 
 #include <private/qpaintengineex_opengl2_p.h>
 
-#ifndef QT_OPENGL_ES_2
-#include <private/qpaintengine_opengl_p.h>
-#endif
-
 #ifndef GLX_ARB_multisample
 #define GLX_SAMPLE_BUFFERS_ARB  100000
 #define GLX_SAMPLES_ARB         100001
@@ -295,17 +291,9 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
 Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_window_surface_2_engine)
 
-#ifndef QT_OPENGL_ES_2
-Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_window_surface_engine)
-#endif
-
 /*! \reimp */
 QPaintEngine *QGLWindowSurface::paintEngine() const
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (!qt_gl_preferGL2Engine())
-        return qt_gl_window_surface_engine();
-#endif
     return qt_gl_window_surface_2_engine();
 }
 
@@ -361,7 +349,7 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
     QPoint wOffset = qt_qwidget_data(parent)->wrect.topLeft();
     QRect rect = br.translated(-offset - wOffset);
 
-    const GLenum target = qt_gl_preferredTextureTarget();
+    const GLenum target = GL_TEXTURE_2D;
 
     if (context()) {
         context()->makeCurrent();
@@ -502,7 +490,7 @@ void QGLWindowSurface::updateGeometry()
 {
     QRect rect = QWindowSurface::geometry();
 
-    const GLenum target = qt_gl_preferredTextureTarget();
+    const GLenum target = GL_TEXTURE_2D;
 
     if (rect.width() <= 0 || rect.height() <= 0)
         return;
@@ -643,7 +631,7 @@ bool QGLWindowSurface::scroll(const QRegion &area, int dx, int dy)
     return true;
 #endif
 
-    const GLenum target = qt_gl_preferredTextureTarget();
+    const GLenum target = GL_TEXTURE_2D;
 
     glBindTexture(target, d_ptr->tex_id);
     glCopyTexImage2D(target, 0, GL_RGBA, br.x(), d_ptr->pb->height() - (br.y() + br.height()), br.width(), br.height(), 0);
@@ -656,7 +644,7 @@ bool QGLWindowSurface::scroll(const QRegion &area, int dx, int dy)
 
 static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize, const QRectF &br)
 {
-    const GLenum target = qt_gl_preferredTextureTarget();
+    const GLenum target = GL_TEXTURE_2D;
     QRectF src = br.isEmpty()
         ? QRectF(QPointF(), texSize)
         : QRectF(QPointF(br.x(), texSize.height() - br.bottom()), br.size());
