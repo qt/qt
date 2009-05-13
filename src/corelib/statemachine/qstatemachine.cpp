@@ -83,68 +83,98 @@ QT_BEGIN_NAMESPACE
   \since 4.6
   \ingroup statemachine
 
-  The QStateMachine class provides a hierarchical finite state machine based
-  on \l{Statecharts: A visual formalism for complex systems}{Statecharts}
-  concepts and notation. QStateMachine is part of \l{The State Machine
-  Framework}.
+    QStateMachine is based on the concepts and notation of
+    \l{Statecharts: A visual formalism for complex
+    systems}{Statecharts}. QStateMachine is part of \l{The State
+    Machine Framework}.
 
-  A state machine manages a set of states (QAbstractState objects) and
-  transitions (QAbstractTransition objects) between those states; the states
-  and the transitions collectively define a state graph. Once a state graph
-  has been defined, the state machine can execute it. QStateMachine's
-  execution algorithm is based on the \l{State Chart XML: State Machine
-  Notation for Control Abstraction}{State Chart XML (SCXML)} algorithm.
+    A state machine manages a set of states (classes that inherit from
+    QAbstractState) and transitions (descendants of
+    QAbstractTransition) between those states; these states and
+    transitions define a state graph. Once a state graph has been
+    built, the state machine can execute it. \l{QStateMachine}'s
+    execution algorithm is based on the \l{State Chart XML: State
+    Machine Notation for Control Abstraction}{State Chart XML (SCXML)}
+    algorithm. The framework's \l{The State Machine
+    Framework}{overview} gives several state graphs and the code to
+    build them.
 
-  The QState class provides a state that you can use to set properties and
-  invoke methods on QObjects when the state is entered or exited. This is
+    The rootState() is the parent of all top-level states in the
+    machine; it is used, for instance, when the state graph is
+    deleted. It is created by the machine.
+
+    Use the addState() function to add a state to the state machine.
+    All top-level states are added to the root state. States are
+    removed with the removeState() function. Removing states while the
+    machine is running is discouraged.
+
+    Before the machine can be started, the \l{initialState}{initial
+    state} must be set. The initial state is the state that the
+    machine enters when started. You can then start() the state
+    machine. The started() signal is emitted when the initial state is
+    entered.
+
+    The machine is event driven and keeps its own event loop. Events
+    are posted to the machine through postEvent(). Note that this
+    means that it executes asynchronously, and that it will not
+    progress without a running event loop. You will normally not have
+    to post events to the machine directly as Qt's transitions, e.g.,
+    QEventTransition and its subclasses, handle this. But for custom
+    transitions triggered by events, postEvent() is useful.
+
+    The state machine processes events and takes transitions until a
+    top-level final state is entered; the state machine then emits the
+    finished() signal. You can also stop() the state machine
+    explicitly. The stopped() signal is emitted in this case.
+
+    The following snippet shows a state machine that will finish when a button
+    is clicked:
+
+    \code
+    QPushButton button;
+
+    QStateMachine machine;
+    QState *s1 = new QState();
+    s1->assignProperty(&button, "text", "Click me");
+
+    QFinalState *s2 = new QFinalState();
+    s1->addTransition(&button, SIGNAL(clicked()), s2);
+
+    machine.addState(s1);
+    machine.addState(s2);
+    machine.setInitialState(s1);
+    machine.start();
+    \endcode
+
+    This code example uses QState, which inherits QAbstractState. The
+    QState class provides a state that you can use to set properties
+    and invoke methods on \l{QObject}s when the state is entered or
+    exited. It also contains convenience functions for adding
+    transitions, e.g., \l{QSignalTransition}s as in this example. See
+    the QState class description for further details.
+
+    If an error is encountered, the machine will enter the
+    \l{errorState}{error state}, which is a special state created by
+    the machine. The types of errors possible are described by the
+    \l{QStateMachine::}{Error} enum. After the error state is entered,
+    the type of the error can be retrieved with error(). The execution
+    of the state graph will not stop when the error state is entered.
+    So it is possible to handle the error, for instance, by connecting
+    to the \l{QAbstractState::}{entered()} signal of the error state.
+    It is also possible to set a custom error state with
+    setErrorState().
+
+    \omit This stuff will be moved elsewhere
+This is
   typically used in conjunction with \l{Signals and Slots}{signals}; the
   signals determine the flow of the state graph, whereas the states' property
   assignments and method invocations are the actions.
 
-  Use the addState() function to add a state to the state machine;
-  alternatively, pass the machine's rootState() to the state constructor.  Use
-  the removeState() function to remove a state from the state machine.
-
-  The following snippet shows a state machine that will finish when a button
-  is clicked:
-
-  \code
-  QPushButton button;
-
-  QStateMachine machine;
-  QState *s1 = new QState();
-  s1->assignProperty(&button, "text", "Click me");
-
-  QFinalState *s2 = new QFinalState();
-  s1->addTransition(&button, SIGNAL(clicked()), s2);
-
-  machine.addState(s1);
-  machine.addState(s2);
-  machine.setInitialState(s1);
-  machine.start();
-  \endcode
-
-  The setInitialState() function sets the state machine's initial state; this
-  state is entered when the state machine is started.
-
-  The start() function starts the state machine. The state machine executes
-  asynchronously, i.e. you need to run an event loop in order for it to make
-  progress. The started() signal is emitted when the state machine has entered
-  the initial state.
-
-  The state machine processes events and takes transitions until a top-level
-  final state is entered; the state machine then emits the finished() signal.
-
-  The stop() function stops the state machine. The stopped() signal is emitted
-  when the state machine has stopped.
-
   The postEvent() function posts an event to the state machine. This is useful
   when you are using custom events to trigger transitions.
+    \endomit
 
-  The rootState() function returns the state machine's root state. All
-  top-level states have the root state as their parent.
-
-  \sa QAbstractState, QAbstractTransition
+  \sa QAbstractState, QAbstractTransition, QState, {The State Machine Framework}
 */
 
 /*!
