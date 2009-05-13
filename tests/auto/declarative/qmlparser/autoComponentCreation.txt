@@ -1,0 +1,3 @@
+MyTypeObject {
+    componentProperty : MyTypeObject { realProperty: 9 }
+}

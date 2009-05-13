@@ -1,0 +1,6 @@
+SetProperties {
+    propa: a + 10
+    propb: Math.min(a, 10)
+    propc: MyPropertyValueSource {}
+    onPropA: a
+}

@@ -863,9 +863,9 @@ bool QmlCompiler::compileIdProperty(QmlParser::Property *prop,
                                     QmlParser::Object *obj)
 {
     if (prop->value)
-        COMPILE_EXCEPTION("The 'id' property cannot be fetched");
+        COMPILE_EXCEPTION2(prop,"The id property cannot be fetched");
     if (prop->values.count() > 1)
-        COMPILE_EXCEPTION("The 'id' property cannot be multiset");
+        COMPILE_EXCEPTION2(prop, "The object id may only be set once");
 
     if (prop->values.count() == 1) {
         if (prop->values.at(0)->object)
@@ -1018,6 +1018,7 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
                 if (assignedBinding)
                     COMPILE_EXCEPTION("Can only assign one binding to lists");
 
+                assignedBinding = true;
                 compileBinding(v->value.asScript(), prop, ctxt, 
                                obj->metaObject(), v->location.start.line);
                 v->type = Value::PropertyBinding;
@@ -1304,17 +1305,6 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
             p.defaultValue->name = p.name;
             p.defaultValue->isDefault = false;
             COMPILE_CHECK(compileProperty(p.defaultValue, obj, 0));
-        }
-
-        if (!p.onValueChanged.isEmpty()) {
-            QmlInstruction assign;
-            assign.type = QmlInstruction::AssignSignal;
-            assign.line = obj->location.start.line;
-            assign.assignSignal.signal = 
-                output->indexForByteArray(p.name + "Changed()");
-            assign.assignSignal.value = 
-                output->indexForString(p.onValueChanged);
-            output->bytecode << assign;
         }
     }
 
