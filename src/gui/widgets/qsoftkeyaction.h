@@ -71,6 +71,7 @@ public:
         Deselect,
         Finish,
         Menu,
+        ContextMenu,
         Custom
     };
 

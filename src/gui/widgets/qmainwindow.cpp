@@ -66,6 +66,10 @@ extern OSWindowRef qt_mac_window_for(const QWidget *); // qwidget_mac.cpp
 QT_END_NAMESPACE
 #endif
 
+#ifndef QT_NO_SOFTKEYSTACK
+#include <QSoftKeyStack.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QMainWindowPrivate : public QWidgetPrivate
@@ -79,6 +83,9 @@ public:
 #endif
 #if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
             , hasOldCursor(false) , cursorAdjusted(false)
+#endif
+#ifndef QT_NO_SOFTKEYSTACK
+            , softKeyStack(0)            
 #endif
     { }
     QMainWindowLayout *layout;
@@ -98,6 +105,10 @@ public:
     QCursor oldCursor;
     uint hasOldCursor : 1;
     uint cursorAdjusted : 1;
+#endif
+
+#ifndef QT_NO_SOFTKEYSTACK
+   QSoftKeyStack* softKeyStack;
 #endif
 };
 
@@ -513,6 +524,42 @@ void QMainWindow::setMenuWidget(QWidget *menuBar)
     d->layout->setMenuBar(menuBar);
 }
 #endif // QT_NO_MENUBAR
+
+#ifndef QT_NO_SOFTKEYSTACK
+/*!
+    Returns the softkey stack for the main window. This function creates
+    and returns an empty soft key stack if the stack does not exist.
+
+    \sa softKeyStack()
+*/
+QSoftKeyStack *QMainWindow::softKeyStack() const
+{
+    if (!d_func()->softKeyStack) {
+        QMainWindow *self = const_cast<QMainWindow *>(this);
+        QSoftKeyStack* softKeyStack = new QSoftKeyStack(self);
+        self->setSoftKeyStack(softKeyStack);
+    }
+    return d_func()->softKeyStack;
+}
+
+/*!
+    Sets the softkey stackfor the main window to \a softKeyStack.
+
+    Note: QMainWindow takes ownership of the \a softKeyStack pointer and
+    deletes it at the appropriate time.
+
+    \sa softKeyStack()
+*/
+void QMainWindow::setSoftKeyStack(QSoftKeyStack *softKeyStack)
+{
+    Q_D(QMainWindow);
+    if (d->softKeyStack && d->softKeyStack != softKeyStack) {
+        QSoftKeyStack *oldSoftKeyStack = d->softKeyStack;
+        delete oldSoftKeyStack;
+    }
+    d->softKeyStack = softKeyStack;
+}
+#endif // QT_NO_SOFTKEYSTACK
 
 #ifndef QT_NO_STATUSBAR
 /*!

@@ -30,6 +30,8 @@ MainWindow::MainWindow(QWidget *parent)
     this->setMenuBar(menuBar);
 
     QSoftKeyStack *stack = new QSoftKeyStack(central);
+    setSoftKeyStack(stack);
+
     QSoftKeyAction action1(central);
     action1.setText(QString("Ok"));
     action1.setRole(QSoftKeyAction::Ok);
@@ -43,6 +45,11 @@ MainWindow::MainWindow(QWidget *parent)
     action4.setText(QString("Menu"));
     action4.setRole(QSoftKeyAction::Menu);
 
+    QSoftKeyAction action5(central);
+    action5.setText(QString("ContextMenu"));
+    action5.setRole(QSoftKeyAction::ContextMenu);
+    
+    
     QList<QSoftKeyAction*> myActionList;
     myActionList.append(&action1);
     myActionList.append(&action2);
@@ -55,6 +62,7 @@ MainWindow::MainWindow(QWidget *parent)
     QList<QSoftKeyAction*> myActionList2;
     myActionList2.append(&action4);
     myActionList2.append(&action1);
+    myActionList2.append(&action5);
     stack->push(myActionList2);
     
     

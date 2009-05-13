@@ -86,14 +86,17 @@ void QSoftKeyStackPrivate::setNativeSoftKeys()
 
     for (int index = 0; index < top.count(); index++) {
         const QSoftKeyAction* softKeyAction = top.at(index);
-        HBufC* text = qt_QString2HBufCNewL(softKeyAction->text());
-        CleanupStack::PushL(text);
-        if (softKeyAction->role() == QSoftKeyAction::Menu) {
-            nativeContainer->SetCommandL(softKeyAction->nativePosition(), EAknSoftkeyOptions, *text);
-        } else {
-            nativeContainer->SetCommandL(softKeyAction->nativePosition(), SOFTKEYSTART + softKeyAction->qtContextKey(), *text);
+        if (softKeyAction->role() != QSoftKeyAction::ContextMenu) {
+
+            HBufC* text = qt_QString2HBufCNewL(softKeyAction->text());
+            CleanupStack::PushL(text);
+            if (softKeyAction->role() == QSoftKeyAction::Menu) {
+                nativeContainer->SetCommandL(softKeyAction->nativePosition(), EAknSoftkeyOptions, *text);
+            } else {
+                nativeContainer->SetCommandL(softKeyAction->nativePosition(), SOFTKEYSTART + softKeyAction->qtContextKey(), *text);
+            }
+            CleanupStack::PopAndDestroy();
         }
-        CleanupStack::PopAndDestroy();
     }
 }
 
