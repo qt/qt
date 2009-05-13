@@ -193,9 +193,6 @@ QList<QAbstractState*> QStatePrivate::childStates() const
 {
     QList<QAbstractState*> result;
     QList<QObject*>::const_iterator it;
-#ifdef QT_STATEMACHINE_SOLUTION
-    const QObjectList &children = q_func()->children();
-#endif
     for (it = children.constBegin(); it != children.constEnd(); ++it) {
         QAbstractState *s = qobject_cast<QAbstractState*>(*it);
         if (!s || qobject_cast<QHistoryState*>(s))
@@ -209,9 +206,6 @@ QList<QHistoryState*> QStatePrivate::historyStates() const
 {
     QList<QHistoryState*> result;
     QList<QObject*>::const_iterator it;
-#ifdef QT_STATEMACHINE_SOLUTION
-    const QObjectList &children = q_func()->children();
-#endif
     for (it = children.constBegin(); it != children.constEnd(); ++it) {
         QHistoryState *h = qobject_cast<QHistoryState*>(*it);
         if (h)
@@ -224,9 +218,6 @@ QList<QAbstractTransition*> QStatePrivate::transitions() const
 {
     QList<QAbstractTransition*> result;
     QList<QObject*>::const_iterator it;
-#ifdef QT_STATEMACHINE_SOLUTION
-    const QObjectList &children = q_func()->children();
-#endif
     for (it = children.constBegin(); it != children.constEnd(); ++it) {
         QAbstractTransition *t = qobject_cast<QAbstractTransition*>(*it);
         if (t)

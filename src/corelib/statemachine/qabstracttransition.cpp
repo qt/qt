@@ -147,18 +147,8 @@ QState *QAbstractTransitionPrivate::sourceState() const
   Constructs a new QAbstractTransition object with the given \a sourceState.
 */
 QAbstractTransition::QAbstractTransition(QState *sourceState)
-    : QObject(
-#ifndef QT_STATEMACHINE_SOLUTION
-        *new QAbstractTransitionPrivate,
-#endif
-        sourceState)
-#ifdef QT_STATEMACHINE_SOLUTION
-    , d_ptr(new QAbstractTransitionPrivate)
-#endif
+    : QObject(*new QAbstractTransitionPrivate, sourceState)
 {
-#ifdef QT_STATEMACHINE_SOLUTION
-    d_ptr->q_ptr = this;
-#endif
 }
 
 /*!
@@ -167,18 +157,8 @@ QAbstractTransition::QAbstractTransition(QState *sourceState)
 */
 QAbstractTransition::QAbstractTransition(const QList<QAbstractState*> &targets,
                                          QState *sourceState)
-    : QObject(
-#ifndef QT_STATEMACHINE_SOLUTION
-        *new QAbstractTransitionPrivate,
-#endif
-        sourceState)
-#ifdef QT_STATEMACHINE_SOLUTION
-    , d_ptr(new QAbstractTransitionPrivate)
-#endif
+    : QObject(*new QAbstractTransitionPrivate, sourceState)
 {
-#ifdef QT_STATEMACHINE_SOLUTION
-    d_ptr->q_ptr = this;
-#endif
     setTargetStates(targets);
 }
 
@@ -187,18 +167,8 @@ QAbstractTransition::QAbstractTransition(const QList<QAbstractState*> &targets,
 */
 QAbstractTransition::QAbstractTransition(QAbstractTransitionPrivate &dd,
                                          QState *parent)
-    : QObject(
-#ifndef QT_STATEMACHINE_SOLUTION
-        dd,
-#endif
-        parent)
-#ifdef QT_STATEMACHINE_SOLUTION
-    , d_ptr(&dd)
-#endif
+    : QObject(dd, parent)
 {
-#ifdef QT_STATEMACHINE_SOLUTION
-    d_ptr->q_ptr = this;
-#endif
 }
 
 /*!
@@ -207,18 +177,8 @@ QAbstractTransition::QAbstractTransition(QAbstractTransitionPrivate &dd,
 QAbstractTransition::QAbstractTransition(QAbstractTransitionPrivate &dd,
                                          const QList<QAbstractState*> &targets,
                                          QState *parent)
-    : QObject(
-#ifndef QT_STATEMACHINE_SOLUTION
-        dd,
-#endif
-        parent)
-#ifdef QT_STATEMACHINE_SOLUTION
-    , d_ptr(&dd)
-#endif
+    : QObject(dd, parent)
 {
-#ifdef QT_STATEMACHINE_SOLUTION
-    d_ptr->q_ptr = this;
-#endif
     setTargetStates(targets);
 }
 
@@ -227,9 +187,6 @@ QAbstractTransition::QAbstractTransition(QAbstractTransitionPrivate &dd,
 */
 QAbstractTransition::~QAbstractTransition()
 {
-#ifdef QT_STATEMACHINE_SOLUTION
-    delete d_ptr;
-#endif
 }
 
 /*!

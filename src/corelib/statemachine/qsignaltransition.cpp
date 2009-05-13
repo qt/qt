@@ -228,11 +228,7 @@ void QSignalTransition::setSignal(const QByteArray &signal)
 bool QSignalTransition::eventTest(QEvent *event) const
 {
     Q_D(const QSignalTransition);
-#ifndef QT_STATEMACHINE_SOLUTION
     if (event->type() == QEvent::Signal) {
-#else
-    if (event->type() == QEvent::Type(QEvent::User-1)) {
-#endif
         if (d->signalIndex == -1)
             return false;
         QSignalEvent *se = static_cast<QSignalEvent*>(event);

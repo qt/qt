@@ -95,9 +95,6 @@ protected:
     bool event(QEvent *e);
 
 protected:
-#ifdef QT_STATEMACHINE_SOLUTION
-    QAbstractTransitionPrivate *d_ptr;
-#endif
     QAbstractTransition(QAbstractTransitionPrivate &dd, QState *parent);
     QAbstractTransition(QAbstractTransitionPrivate &dd,
                         const QList<QAbstractState*> &targets, QState *parent);

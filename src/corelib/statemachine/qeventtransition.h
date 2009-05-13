@@ -42,11 +42,7 @@
 #ifndef QEVENTTRANSITION_H
 #define QEVENTTRANSITION_H
 
-#ifndef QT_STATEMACHINE_SOLUTION
 #include <QtCore/qabstracttransition.h>
-#else
-#include "qabstracttransition.h"
-#endif
 #include <QtCore/qcoreevent.h>
 
 QT_BEGIN_HEADER
@@ -60,9 +56,7 @@ class Q_CORE_EXPORT QEventTransition : public QAbstractTransition
 {
     Q_OBJECT
     Q_PROPERTY(QObject* eventObject READ eventObject WRITE setEventObject)
-#ifndef QT_STATEMACHINE_SOLUTION
     Q_PROPERTY(QEvent::Type eventType READ eventType WRITE setEventType)
-#endif
 public:
     QEventTransition(QState *sourceState = 0);
     QEventTransition(QObject *object, QEvent::Type type, QState *sourceState = 0);

@@ -53,9 +53,7 @@
 // We mean it.
 //
 
-#ifndef QT_STATEMACHINE_SOLUTION
 #include <private/qobject_p.h>
-#endif
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qlist.h>
@@ -84,9 +82,7 @@ class QAbstractAnimation;
 
 class QStateMachine;
 class Q_CORE_EXPORT QStateMachinePrivate
-#ifndef QT_STATEMACHINE_SOLUTION
     : public QObjectPrivate
-#endif
 {
     Q_DECLARE_PUBLIC(QStateMachine)
 public:
@@ -200,12 +196,11 @@ public:
 
 #endif // QT_NO_ANIMATION
 
-#ifndef QT_STATEMACHINE_SOLUTION
     QSignalEventGenerator *signalEventGenerator;
-#endif
+
     QHash<const QObject*, QVector<int> > connections;
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
-    QHash<QObject*, QSet<QEvent::Type> > qobjectEvents;
+    QHash<QObject*, QHash<QEvent::Type, int> > qobjectEvents;
 #endif
     QHash<int, QEvent*> delayedEvents;
   
@@ -215,10 +210,6 @@ public:
     };
 
     static const Handler *handler;
-
-#ifdef QT_STATEMACHINE_SOLUTION
-    QStateMachine *q_ptr;
-#endif
 };
 
 QT_END_NAMESPACE

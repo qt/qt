@@ -135,8 +135,10 @@ void MainWindow::init()
 
     spawnsAvailable->addTransition(this, SIGNAL(mapFull()), noSpawnsAvailable);
 
+//! [3]
     QHistoryState *hs = new QHistoryState(stoppedState);
     hs->setDefaultState(spawnsAvailable);
+//! [3]
 
     stoppedState->setInitialState(hs);
 
@@ -255,9 +257,11 @@ void MainWindow::addTank()
 
 
             // If the plugin has an error it is disabled
+//! [4]
             QState *errorState = new QState(region);
             errorState->assignProperty(tankItem, "enabled", false);
             pluginState->setErrorState(errorState);
+//! [4]
         }
     }
 }

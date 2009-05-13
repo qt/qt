@@ -54,10 +54,8 @@
 #include "qfinalstate.h"
 #include "qhistorystate.h"
 #include "qhistorystate_p.h"
-#ifndef QT_STATEMACHINE_SOLUTION
 #include "private/qobject_p.h"
 #include "private/qthread_p.h"
-#endif
 
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
 #include "qeventtransition.h"
@@ -68,11 +66,7 @@
 #ifndef QT_NO_ANIMATION
 #include "qpropertyanimation.h"
 #include "qanimationgroup.h"
-# ifndef QT_STATEMACHINE_SOLUTION
-# include <private/qvariantanimation_p.h>
-# else
-# include "qvariantanimation_p.h"
-# endif
+#include <private/qvariantanimation_p.h>
 #endif
 
 #include <QtCore/qmetaobject.h>
@@ -89,68 +83,98 @@ QT_BEGIN_NAMESPACE
   \since 4.6
   \ingroup statemachine
 
-  The QStateMachine class provides a hierarchical finite state machine based
-  on \l{Statecharts: A visual formalism for complex systems}{Statecharts}
-  concepts and notation. QStateMachine is part of \l{The State Machine
-  Framework}.
+    QStateMachine is based on the concepts and notation of
+    \l{Statecharts: A visual formalism for complex
+    systems}{Statecharts}. QStateMachine is part of \l{The State
+    Machine Framework}.
 
-  A state machine manages a set of states (QAbstractState objects) and
-  transitions (QAbstractTransition objects) between those states; the states
-  and the transitions collectively define a state graph. Once a state graph
-  has been defined, the state machine can execute it. QStateMachine's
-  execution algorithm is based on the \l{State Chart XML: State Machine
-  Notation for Control Abstraction}{State Chart XML (SCXML)} algorithm.
+    A state machine manages a set of states (classes that inherit from
+    QAbstractState) and transitions (descendants of
+    QAbstractTransition) between those states; these states and
+    transitions define a state graph. Once a state graph has been
+    built, the state machine can execute it. \l{QStateMachine}'s
+    execution algorithm is based on the \l{State Chart XML: State
+    Machine Notation for Control Abstraction}{State Chart XML (SCXML)}
+    algorithm. The framework's \l{The State Machine
+    Framework}{overview} gives several state graphs and the code to
+    build them.
 
-  The QState class provides a state that you can use to set properties and
-  invoke methods on QObjects when the state is entered or exited. This is
+    The rootState() is the parent of all top-level states in the
+    machine; it is used, for instance, when the state graph is
+    deleted. It is created by the machine.
+
+    Use the addState() function to add a state to the state machine.
+    All top-level states are added to the root state. States are
+    removed with the removeState() function. Removing states while the
+    machine is running is discouraged.
+
+    Before the machine can be started, the \l{initialState}{initial
+    state} must be set. The initial state is the state that the
+    machine enters when started. You can then start() the state
+    machine. The started() signal is emitted when the initial state is
+    entered.
+
+    The machine is event driven and keeps its own event loop. Events
+    are posted to the machine through postEvent(). Note that this
+    means that it executes asynchronously, and that it will not
+    progress without a running event loop. You will normally not have
+    to post events to the machine directly as Qt's transitions, e.g.,
+    QEventTransition and its subclasses, handle this. But for custom
+    transitions triggered by events, postEvent() is useful.
+
+    The state machine processes events and takes transitions until a
+    top-level final state is entered; the state machine then emits the
+    finished() signal. You can also stop() the state machine
+    explicitly. The stopped() signal is emitted in this case.
+
+    The following snippet shows a state machine that will finish when a button
+    is clicked:
+
+    \code
+    QPushButton button;
+
+    QStateMachine machine;
+    QState *s1 = new QState();
+    s1->assignProperty(&button, "text", "Click me");
+
+    QFinalState *s2 = new QFinalState();
+    s1->addTransition(&button, SIGNAL(clicked()), s2);
+
+    machine.addState(s1);
+    machine.addState(s2);
+    machine.setInitialState(s1);
+    machine.start();
+    \endcode
+
+    This code example uses QState, which inherits QAbstractState. The
+    QState class provides a state that you can use to set properties
+    and invoke methods on \l{QObject}s when the state is entered or
+    exited. It also contains convenience functions for adding
+    transitions, e.g., \l{QSignalTransition}s as in this example. See
+    the QState class description for further details.
+
+    If an error is encountered, the machine will enter the
+    \l{errorState}{error state}, which is a special state created by
+    the machine. The types of errors possible are described by the
+    \l{QStateMachine::}{Error} enum. After the error state is entered,
+    the type of the error can be retrieved with error(). The execution
+    of the state graph will not stop when the error state is entered.
+    So it is possible to handle the error, for instance, by connecting
+    to the \l{QAbstractState::}{entered()} signal of the error state.
+    It is also possible to set a custom error state with
+    setErrorState().
+
+    \omit This stuff will be moved elsewhere
+This is
   typically used in conjunction with \l{Signals and Slots}{signals}; the
   signals determine the flow of the state graph, whereas the states' property
   assignments and method invocations are the actions.
 
-  Use the addState() function to add a state to the state machine;
-  alternatively, pass the machine's rootState() to the state constructor.  Use
-  the removeState() function to remove a state from the state machine.
-
-  The following snippet shows a state machine that will finish when a button
-  is clicked:
-
-  \code
-  QPushButton button;
-
-  QStateMachine machine;
-  QState *s1 = new QState();
-  s1->assignProperty(&button, "text", "Click me");
-
-  QFinalState *s2 = new QFinalState();
-  s1->addTransition(&button, SIGNAL(clicked()), s2);
-
-  machine.addState(s1);
-  machine.addState(s2);
-  machine.setInitialState(s1);
-  machine.start();
-  \endcode
-
-  The setInitialState() function sets the state machine's initial state; this
-  state is entered when the state machine is started.
-
-  The start() function starts the state machine. The state machine executes
-  asynchronously, i.e. you need to run an event loop in order for it to make
-  progress. The started() signal is emitted when the state machine has entered
-  the initial state.
-
-  The state machine processes events and takes transitions until a top-level
-  final state is entered; the state machine then emits the finished() signal.
-
-  The stop() function stops the state machine. The stopped() signal is emitted
-  when the state machine has stopped.
-
   The postEvent() function posts an event to the state machine. This is useful
   when you are using custom events to trigger transitions.
+    \endomit
 
-  The rootState() function returns the state machine's root state. All
-  top-level states have the root state as their parent.
-
-  \sa QAbstractState, QAbstractTransition
+  \sa QAbstractState, QAbstractTransition, QState, {The State Machine Framework}
 */
 
 /*!
@@ -212,9 +236,7 @@ QStateMachinePrivate::QStateMachinePrivate()
     globalRestorePolicy = QStateMachine::DoNotRestoreProperties;
     rootState = 0;
     initialErrorStateForRoot = 0;
-#ifndef QT_STATEMACHINE_SOLUTION
     signalEventGenerator = 0;
-#endif
 #ifndef QT_NO_ANIMATION
     animationsEnabled = true;
 #endif
@@ -1274,8 +1296,6 @@ void QStateMachinePrivate::unregisterTransition(QAbstractTransition *transition)
 #endif
 }
 
-#ifndef QT_STATEMACHINE_SOLUTION
-
 static int senderSignalIndex(const QObject *sender)
 {
     QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject*>(sender));
@@ -1291,8 +1311,6 @@ static int senderSignalIndex(const QObject *sender)
         return -1;
     return d->currentSender->signal;
 }
-
-#endif
 
 void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transition)
 {
@@ -1315,12 +1333,8 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
     if (connectedSignalIndexes.size() <= signalIndex)
         connectedSignalIndexes.resize(signalIndex+1);
     if (connectedSignalIndexes.at(signalIndex) == 0) {
-#ifndef QT_STATEMACHINE_SOLUTION
         if (!signalEventGenerator)
             signalEventGenerator = new QSignalEventGenerator(q);
-#else
-        QSignalEventGenerator *signalEventGenerator = new QSignalEventGenerator(signalIndex, q);
-#endif
         bool ok = QMetaObject::connect(sender, signalIndex, signalEventGenerator,
                                        signalEventGenerator->metaObject()->methodOffset());
         if (!ok) {
@@ -1346,7 +1360,6 @@ void QStateMachinePrivate::unregisterSignalTransition(QSignalTransition *transit
     int signalIndex = QSignalTransitionPrivate::get(transition)->signalIndex;
     if (signalIndex == -1)
         return; // not registered
-#ifndef QT_STATEMACHINE_SOLUTION
     QSignalTransitionPrivate::get(transition)->signalIndex = -1;
     const QObject *sender = QSignalTransitionPrivate::get(transition)->sender;
     QVector<int> &connectedSignalIndexes = connections[sender];
@@ -1362,7 +1375,6 @@ void QStateMachinePrivate::unregisterSignalTransition(QSignalTransition *transit
         if (sum == 0)
             connections.remove(sender);
     }
-#endif
 }
 
 void QStateMachinePrivate::unregisterAllTransitions()
@@ -1392,12 +1404,10 @@ void QStateMachinePrivate::registerEventTransition(QEventTransition *transition)
     QObject *object = QEventTransitionPrivate::get(transition)->object;
     if (!object)
         return;
-#ifndef QT_STATEMACHINE_SOLUTION
     QObjectPrivate *od = QObjectPrivate::get(object);
     if (!od->eventFilters.contains(q))
-#endif
         object->installEventFilter(q);
-    qobjectEvents[object].insert(transition->eventType());
+    ++qobjectEvents[object][transition->eventType()];
     QEventTransitionPrivate::get(transition)->registered = true;
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": added event transition from" << transition->sourceState()
@@ -1412,11 +1422,18 @@ void QStateMachinePrivate::unregisterEventTransition(QEventTransition *transitio
     if (!QEventTransitionPrivate::get(transition)->registered)
         return;
     QObject *object = QEventTransitionPrivate::get(transition)->object;
-    QSet<QEvent::Type> &events = qobjectEvents[object];
-    events.remove(transition->eventType());
-    if (events.isEmpty()) {
-        qobjectEvents.remove(object);
-        object->removeEventFilter(q);
+    QHash<QEvent::Type, int> &events = qobjectEvents[object];
+    Q_ASSERT(events.value(transition->eventType()) > 0);
+    if (--events[transition->eventType()] == 0) {
+        events.remove(transition->eventType());
+        int sum = 0;
+        QHash<QEvent::Type, int>::const_iterator it;
+        for (it = events.constBegin(); it != events.constEnd(); ++it)
+            sum += it.value();
+        if (sum == 0) {
+            qobjectEvents.remove(object);
+            object->removeEventFilter(q);
+        }
     }
     QEventTransitionPrivate::get(transition)->registered = false;
 }
@@ -1449,36 +1466,16 @@ void QStateMachinePrivate::handleTransitionSignal(const QObject *sender, int sig
   Constructs a new state machine with the given \a parent.
 */
 QStateMachine::QStateMachine(QObject *parent)
-    : QObject(
-#ifndef QT_STATEMACHINE_SOLUTION
-        *new QStateMachinePrivate,
-#endif
-        parent)
-#ifdef QT_STATEMACHINE_SOLUTION
-    , d_ptr(new QStateMachinePrivate)
-#endif
+    : QObject(*new QStateMachinePrivate, parent)
 {
-#ifdef QT_STATEMACHINE_SOLUTION
-    d_ptr->q_ptr = this;
-#endif
 }
 
 /*!
   \internal
 */
 QStateMachine::QStateMachine(QStateMachinePrivate &dd, QObject *parent)
-    : QObject(
-#ifndef QT_STATEMACHINE_SOLUTION
-        dd,
-#endif
-        parent)
-#ifdef QT_STATEMACHINE_SOLUTION
-    , d_ptr(&dd)
-#endif
+    : QObject(dd, parent)
 {
-#ifdef QT_STATEMACHINE_SOLUTION
-    d_ptr->q_ptr = this;
-#endif
 }
 
 /*!
@@ -1486,9 +1483,6 @@ QStateMachine::QStateMachine(QStateMachinePrivate &dd, QObject *parent)
 */
 QStateMachine::~QStateMachine()
 {
-#ifdef QT_STATEMACHINE_SOLUTION
-    delete d_ptr;
-#endif
 }
 
 namespace {
@@ -2088,11 +2082,9 @@ int QSignalEventGenerator::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
         case 0: {
-#ifndef QT_STATEMACHINE_SOLUTION
 // ### in Qt 4.6 we can use QObject::senderSignalIndex()
             int signalIndex = senderSignalIndex(this);
             Q_ASSERT(signalIndex != -1);
-#endif
             QStateMachine *machine = qobject_cast<QStateMachine*>(parent());
             QStateMachinePrivate::get(machine)->handleTransitionSignal(sender(), signalIndex, _a);
             break;
@@ -2104,15 +2096,8 @@ int QSignalEventGenerator::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     return _id;
 }
 
-QSignalEventGenerator::QSignalEventGenerator(
-#ifdef QT_STATEMACHINE_SOLUTION
-    int sigIdx,
-#endif
-    QStateMachine *parent)
+QSignalEventGenerator::QSignalEventGenerator(QStateMachine *parent)
     : QObject(parent)
-#ifdef QT_STATEMACHINE_SOLUTION
-    , signalIndex(sigIdx)
-#endif
 {
 }
 
@@ -2143,13 +2128,8 @@ QSignalEventGenerator::QSignalEventGenerator(
 */
 QSignalEvent::QSignalEvent(const QObject *sender, int signalIndex,
                            const QList<QVariant> &arguments)
-    :
-#ifndef QT_STATEMACHINE_SOLUTION
-    QEvent(QEvent::Signal)
-#else
-    QEvent(QEvent::Type(QEvent::User-1))
-#endif
-    , m_sender(sender), m_signalIndex(signalIndex), m_arguments(arguments)
+    : QEvent(QEvent::Signal), m_sender(sender),
+      m_signalIndex(signalIndex), m_arguments(arguments)
 {
 }
 
@@ -2208,12 +2188,7 @@ QSignalEvent::~QSignalEvent()
   and \a event.
 */
 QWrappedEvent::QWrappedEvent(QObject *object, QEvent *event)
-#ifdef QT_STATEMACHINE_SOLUTION
-      : QEvent(QEvent::Type(QEvent::User-3))
-#else
-      : QEvent(QEvent::Wrapped)
-#endif
-      , m_object(object), m_event(event)
+    : QEvent(QEvent::Wrapped), m_object(object), m_event(event)
 {
 }
 

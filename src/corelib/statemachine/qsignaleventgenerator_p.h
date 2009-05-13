@@ -62,11 +62,7 @@ class QStateMachine;
 class QSignalEventGenerator : public QObject
 {
 public:
-    QSignalEventGenerator(
-#ifdef QT_STATEMACHINE_SOLUTION
-        int signalIndex,
-#endif
-        QStateMachine *parent);
+    QSignalEventGenerator(QStateMachine *parent);
 
     static const QMetaObject staticMetaObject;
     virtual const QMetaObject *metaObject() const;
@@ -74,9 +70,6 @@ public:
     virtual int qt_metacall(QMetaObject::Call, int, void **argv);
 
 private:
-#ifdef QT_STATEMACHINE_SOLUTION
-    int signalIndex;
-#endif
     Q_DISABLE_COPY(QSignalEventGenerator)
 };
 

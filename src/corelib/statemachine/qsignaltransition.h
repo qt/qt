@@ -42,11 +42,7 @@
 #ifndef QSIGNALTRANSITION_H
 #define QSIGNALTRANSITION_H
 
-#ifndef QT_STATEMACHINE_SOLUTION
 #include <QtCore/qabstracttransition.h>
-#else
-#include "qabstracttransition.h"
-#endif
 
 QT_BEGIN_HEADER
 

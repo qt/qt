@@ -42,11 +42,7 @@
 #ifndef QFINALSTATE_H
 #define QFINALSTATE_H
 
-#ifndef QT_STATEMACHINE_SOLUTION
 #include <QtCore/qabstractstate.h>
-#else
-#include "qabstractstate.h"
-#endif
 
 QT_BEGIN_HEADER
 

@@ -147,6 +147,9 @@
     QObject::connect(s3, SIGNAL(exited()), button, SLOT(showMinimized()));
   \endcode
 
+  Custom states can reimplement QAbstractState::onEntry() and
+  QAbstractState::onExit().
+
   \section1 State Machines That Finish
 
   The state machine defined in the previous section never finishes. In order
@@ -154,6 +157,9 @@
   final state (QFinalState object). When the state machine enters a top-level
   final state, the machine will emit the QStateMachine::finished() signal and
   halt.
+
+  All you need to do to introduce a final state in the graph is create a
+  QFinalState object and use it as the target of one or more transitions.
 
   \section1 Sharing Transitions By Grouping States
 
@@ -315,16 +321,32 @@
   \section1 Detecting that a Composite State has Finished
 
   A child state can be final (a QFinalState object); when a final child state
-  is entered, the parent state emits the QState::finished() signal.
+  is entered, the parent state emits the QState::finished() signal. The
+  following diagram shows a composite state \c s1 which does some processing
+  before entering a final state:
 
     \img statemachine-finished.png
     \omit
     \caption This is a caption
     \endomit
 
-  This is useful when you want to hide the internal details of a state;
-  i.e. the only thing the outside world should be able to do is enter the
-  state, and get a notification when the state has completed its work.
+  When \c s1 's final state is entered, \c s1 will automatically emit
+  finished(). We use a signal transition to cause this event to trigger a
+  state change:
+
+  \code
+  s1->addTransition(s1, SIGNAL(finished()), s2);
+  \endcode
+
+  Using final states in composite states is useful when you want to hide the
+  internal details of a composite state; i.e. the only thing the outside world
+  should be able to do is enter the state, and get a notification when the
+  state has completed its work. This is a very powerful abstraction and
+  encapsulation mechanism when building complex (deeply nested) state
+  machines. (In the above example, you could of course create a transition
+  directly from \c s1 's \c done state rather than relying on \c s1 's
+  finished() signal, but with the consequence that implementation details of
+  \c s1 are exposed and depended on).
 
   For parallel state groups, the QState::finished() signal is emitted when \e
   all the child states have entered final states.
@@ -425,7 +447,20 @@
   machine.postEvent(new StringEvent("Hello"));
   machine.postEvent(new StringEvent("world"));
   \endcode
-  
+
+  An event that is not handled by any relevant transition will be silently
+  consumed by the state machine. It can be useful to group states and provide
+  a default handling of such events; for example, as illustrated in the
+  following statechart:
+
+    \img statemachine-customevents2.png
+    \omit
+    \caption This is a caption
+    \endomit
+
+  For deeply nested statecharts, you can add such "fallback" transitions at
+  the level of granularity that's most appropriate.
+
   \section1 Using Restore Policy To Automatically Restore Properties
   
   In some state machines it can be useful to focus the attention on assigning properties in states,
