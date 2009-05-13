@@ -1711,6 +1711,51 @@ void tst_QStateMachine::signalTransitions()
 
         QTRY_COMPARE(finishedSpy.count(), 1);
     }
+    // Multiple transitions for same (object,signal)
+    {
+        QStateMachine machine;
+        SignalEmitter emitter;
+        QState *s0 = new QState(machine.rootState());
+        QState *s1 = new QState(machine.rootState());
+        QSignalTransition *t0 = s0->addTransition(&emitter, SIGNAL(signalWithNoArg()), s1);
+        QSignalTransition *t1 = s1->addTransition(&emitter, SIGNAL(signalWithNoArg()), s0);
+
+        QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        machine.setInitialState(s0);
+        machine.start();
+        QCoreApplication::processEvents();
+        QCOMPARE(machine.configuration().size(), 1);
+        QVERIFY(machine.configuration().contains(s0));
+
+        emitter.emitSignalWithNoArg();
+        QCoreApplication::processEvents();
+        QCOMPARE(machine.configuration().size(), 1);
+        QVERIFY(machine.configuration().contains(s1));
+
+        s0->removeTransition(t0);
+        emitter.emitSignalWithNoArg();
+        QCoreApplication::processEvents();
+        QCOMPARE(machine.configuration().size(), 1);
+        QVERIFY(machine.configuration().contains(s0));
+
+        emitter.emitSignalWithNoArg();
+        QCoreApplication::processEvents();
+        QCOMPARE(machine.configuration().size(), 1);
+        QVERIFY(machine.configuration().contains(s0));
+
+        s1->removeTransition(t1);
+        emitter.emitSignalWithNoArg();
+        QCoreApplication::processEvents();
+        QCOMPARE(machine.configuration().size(), 1);
+        QVERIFY(machine.configuration().contains(s0));
+
+        s0->addTransition(t0);
+        s1->addTransition(t1);
+        emitter.emitSignalWithNoArg();
+        QCoreApplication::processEvents();
+        QCOMPARE(machine.configuration().size(), 1);
+        QVERIFY(machine.configuration().contains(s1));
+    }
 }
 
 void tst_QStateMachine::eventTransitions()

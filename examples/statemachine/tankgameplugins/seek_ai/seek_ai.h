@@ -1,7 +1,7 @@
 #ifndef SEEK_AI_H
 #define SEEK_AI_H
 
-#include <errorstate/plugin.h>
+#include <tankgame/plugin.h>
 
 #include <QState>
 #include <QFinalState>

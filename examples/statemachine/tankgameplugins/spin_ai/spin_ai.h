@@ -1,7 +1,7 @@
-#ifndef SPIN_AI_WITH_ERROR_H
-#define SPIN_AI_WITH_ERROR_H
+#ifndef SPIN_AI_H
+#define SPIN_AI_H
 
-#include <errorstate/plugin.h>
+#include <tankgame/plugin.h>
 
 #include <QObject>
 #include <QState>
@@ -33,12 +33,12 @@ private:
 
 };
 
-class SpinAiWithError: public QObject, public Plugin
+class SpinAi: public QObject, public Plugin
 {
     Q_OBJECT
     Q_INTERFACES(Plugin)
 public:
-    SpinAiWithError() { setObjectName("Spin and destroy with runtime error in state machine"); }
+    SpinAi() { setObjectName("Spin and destroy"); }
 
     virtual QState *create(QState *parentState, QObject *tank);
 };

@@ -35,6 +35,7 @@ public:
     qreal distanceToObstacle() const;
     qreal distanceToObstacle(QGraphicsItem **item) const;
 
+//! [0]
 signals:
     void tankSpotted(qreal direction, qreal distance);
     void collision(const QLineF &collidedLine);
@@ -48,6 +49,7 @@ public slots:
     void turnTo(qreal degrees = 0.0);
     void stop();
     void fireCannon();
+//! [0]
 
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);    

@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,40 +39,48 @@
 **
 ****************************************************************************/
 
-#include <QtCore>
-#ifdef QT_STATEMACHINE_SOLUTION
-#include <qstatemachine.h>
-#include <qstate.h>
-#include <qfinalstate.h>
-#endif
+/*!
+    \example statemachine/eventtransitions
+    \title Event Transitions Example
 
-class S0 : public QState
-{
-public:
-    S0(QState *parent = 0)
-        : QState(parent) {}
+    The Event Transitions example shows how to use event transitions, a
+    feature of \l{The State Machine Framework}.
 
-    virtual void onEntry(QEvent *)
-    {
-        fprintf(stdout, "Hello world!\n");
-    }
-};
+    \snippet examples/statemachine/eventtransitions/main.cpp 0
 
-int main(int argc, char **argv)
-{
-    QCoreApplication app(argc, argv);
+    The \c Window class's constructors begins by creating a button.
 
-    QStateMachine machine;
-    QState *s0 = new S0();
-    QFinalState *s1 = new QFinalState();
-    s0->addTransition(s1);
+    \snippet examples/statemachine/eventtransitions/main.cpp 1
 
-    machine.addState(s0);
-    machine.addState(s1);
-    machine.setInitialState(s0);
+    Two states, \c s1 and \c s2, are created; upon entry they will assign
+    "Outside" and "Inside" to the button's text, respectively.
 
-    QObject::connect(&machine, SIGNAL(finished()), QCoreApplication::instance(), SLOT(quit()));
-    machine.start();
+    \snippet examples/statemachine/eventtransitions/main.cpp 2
 
-    return app.exec();
-}
+    When the button receives an event of type QEvent::Enter and the state
+    machine is in state \c s1, the machine will transition to state \c s2.
+
+    \snippet examples/statemachine/eventtransitions/main.cpp 3
+
+    When the button receives an event of type QEvent::Leave and the state
+    machine is in state \c s2, the machine will transition back to state \c
+    s1.
+
+    \snippet examples/statemachine/eventtransitions/main.cpp 4
+
+    Next, the state \c s3 is created. \c s3 will be entered when the button
+    receives an event of type QEvent::MouseButtonPress and the state machine
+    is in state \c s2. When the button receives an event of type
+    QEvent::MouseButtonRelease and the state machine is in state \c s3, the
+    machine will transition back to state \c s2.
+
+    \snippet examples/statemachine/eventtransitions/main.cpp 5
+
+    Finally, the states are added to the machine as top-level states, the
+    initial state is set to be \c s1 ("Outside"), and the machine is started.
+
+    \snippet examples/statemachine/eventtransitions/main.cpp 6
+
+    The main() function constructs a Window object and shows it.
+
+*/

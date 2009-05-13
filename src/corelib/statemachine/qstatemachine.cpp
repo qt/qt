@@ -1341,8 +1341,10 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
                  sender->metaObject()->className(), signal.constData());
         return;
     }
-    QList<int> &connectedSignalIndexes = connections[sender];
-    if (!connectedSignalIndexes.contains(signalIndex)) {
+    QVector<int> &connectedSignalIndexes = connections[sender];
+    if (connectedSignalIndexes.size() <= signalIndex)
+        connectedSignalIndexes.resize(signalIndex+1);
+    if (connectedSignalIndexes.at(signalIndex) == 0) {
 #ifndef QT_STATEMACHINE_SOLUTION
         if (!signalEventGenerator)
             signalEventGenerator = new QSignalEventGenerator(q);
@@ -1359,8 +1361,8 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
 #endif
             return;
         }
-        connectedSignalIndexes.append(signalIndex);
     }
+    ++connectedSignalIndexes[signalIndex];
     QSignalTransitionPrivate::get(transition)->signalIndex = signalIndex;
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": added signal transition from" << transition->sourceState()
@@ -1375,17 +1377,20 @@ void QStateMachinePrivate::unregisterSignalTransition(QSignalTransition *transit
     if (signalIndex == -1)
         return; // not registered
 #ifndef QT_STATEMACHINE_SOLUTION
+    QSignalTransitionPrivate::get(transition)->signalIndex = -1;
     const QObject *sender = QSignalTransitionPrivate::get(transition)->sender;
-    QList<int> &connectedSignalIndexes = connections[sender];
-    Q_ASSERT(connectedSignalIndexes.contains(signalIndex));
-    Q_ASSERT(signalEventGenerator != 0);
-    bool ok = QMetaObject::disconnect(sender, signalIndex, signalEventGenerator,
-                                      signalEventGenerator->metaObject()->methodOffset());
-    if (ok) {
-        connectedSignalIndexes.removeOne(signalIndex);
-        if (connectedSignalIndexes.isEmpty())
+    QVector<int> &connectedSignalIndexes = connections[sender];
+    Q_ASSERT(connectedSignalIndexes.size() > signalIndex);
+    Q_ASSERT(connectedSignalIndexes.at(signalIndex) != 0);
+    if (--connectedSignalIndexes[signalIndex] == 0) {
+        Q_ASSERT(signalEventGenerator != 0);
+        QMetaObject::disconnect(sender, signalIndex, signalEventGenerator,
+                                signalEventGenerator->metaObject()->methodOffset());
+        int sum = 0;
+        for (int i = 0; i < connectedSignalIndexes.size(); ++i)
+            sum += connectedSignalIndexes.at(i);
+        if (sum == 0)
             connections.remove(sender);
-        QSignalTransitionPrivate::get(transition)->signalIndex = -1;
     }
 #endif
 }
@@ -1450,8 +1455,8 @@ void QStateMachinePrivate::unregisterEventTransition(QEventTransition *transitio
 void QStateMachinePrivate::handleTransitionSignal(const QObject *sender, int signalIndex,
                                                   void **argv)
 {
-    const QList<int> &connectedSignalIndexes = connections[sender];
-    Q_ASSERT(connectedSignalIndexes.contains(signalIndex));
+    const QVector<int> &connectedSignalIndexes = connections[sender];
+    Q_ASSERT(connectedSignalIndexes.at(signalIndex) != 0);
     const QMetaObject *meta = sender->metaObject();
     QMetaMethod method = meta->method(signalIndex);
     QList<QByteArray> parameterTypes = method.parameterTypes();
