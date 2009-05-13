@@ -48,6 +48,7 @@
 #include <qfinalstate.h>
 #endif
 
+//! [0]
 class Factorial : public QObject
 {
     Q_OBJECT
@@ -55,10 +56,8 @@ class Factorial : public QObject
     Q_PROPERTY(int fac READ fac WRITE setFac)
 public:
     Factorial(QObject *parent = 0)
-        : QObject(parent)
+        : QObject(parent), m_x(-1), m_fac(1)
     {
-        m_fac = 1;
-        m_x = -1;
     }
 
     int x() const
@@ -71,7 +70,7 @@ public:
         if (x == m_x)
             return;
         m_x = x;
-        emit xChanged();
+        emit xChanged(x);
     }
 
     int fac() const
@@ -85,28 +84,34 @@ public:
     }
 
 Q_SIGNALS:
-    void xChanged();
+    void xChanged(int value);
     
 private:
     int m_x;
     int m_fac;
 };
+//! [0]
 
+//! [1]
 class FactorialLoopTransition : public QSignalTransition
 {
 public:
     FactorialLoopTransition(Factorial *fact)
-        : QSignalTransition(fact, SIGNAL(xChanged())), m_fact(fact)
+        : QSignalTransition(fact, SIGNAL(xChanged(int))), m_fact(fact)
     {}
 
-    virtual bool eventTest(QEvent *) const
+    virtual bool eventTest(QEvent *e) const
     {
-        return m_fact->property("x").toInt() > 1;
+        if (!QSignalTransition::eventTest(e))
+            return false;
+        QSignalEvent *se = static_cast<QSignalEvent*>(e);
+        return se->arguments().at(0).toInt() > 1;
     }
 
-    virtual void onTransition(QEvent *)
+    virtual void onTransition(QEvent *e)
     {
-        int x = m_fact->property("x").toInt();
+        QSignalEvent *se = static_cast<QSignalEvent*>(e);
+        int x = se->arguments().at(0).toInt();
         int fac = m_fact->property("fac").toInt();
         m_fact->setProperty("fac",  x * fac);
         m_fact->setProperty("x",  x - 1);
@@ -115,17 +120,22 @@ public:
 private:
     Factorial *m_fact;
 };
+//! [1]
 
+//! [2]
 class FactorialDoneTransition : public QSignalTransition
 {
 public:
     FactorialDoneTransition(Factorial *fact)
-        : QSignalTransition(fact, SIGNAL(xChanged())), m_fact(fact)
+        : QSignalTransition(fact, SIGNAL(xChanged(int))), m_fact(fact)
     {}
 
-    virtual bool eventTest(QEvent *) const
+    virtual bool eventTest(QEvent *e) const
     {
-        return m_fact->property("x").toInt() <= 1;
+        if (!QSignalTransition::eventTest(e))
+            return false;
+        QSignalEvent *se = static_cast<QSignalEvent*>(e);
+        return se->arguments().at(0).toInt() <= 1;
     }
 
     virtual void onTransition(QEvent *)
@@ -136,35 +146,37 @@ public:
 private:
     Factorial *m_fact;
 };
+//! [2]
 
+//! [3]
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
-
     Factorial factorial;
-
     QStateMachine machine;
+//! [3]
 
-    QState *computing = new QState(machine.rootState());
-    computing->addTransition(new FactorialLoopTransition(&factorial));
+//! [4]
+    QState *compute = new QState(machine.rootState());
+    compute->assignProperty(&factorial, "fac", 1);
+    compute->assignProperty(&factorial, "x", 6);
+    compute->addTransition(new FactorialLoopTransition(&factorial));
+//! [4]
 
+//! [5]
     QFinalState *done = new QFinalState(machine.rootState());
     FactorialDoneTransition *doneTransition = new FactorialDoneTransition(&factorial);
     doneTransition->setTargetState(done);
-    computing->addTransition(doneTransition);
+    compute->addTransition(doneTransition);
+//! [5]
 
-    QState *initialize = new QState(machine.rootState());
-    initialize->assignProperty(&factorial, "x", 6);
-    FactorialLoopTransition *enterLoopTransition = new FactorialLoopTransition(&factorial);
-    enterLoopTransition->setTargetState(computing);
-    initialize->addTransition(enterLoopTransition);
-
+//! [6]
+    machine.setInitialState(compute);
     QObject::connect(&machine, SIGNAL(finished()), &app, SLOT(quit()));
-
-    machine.setInitialState(initialize);
     machine.start();
 
     return app.exec();
 }
+//! [6]
 
 #include "main.moc"

@@ -312,6 +312,7 @@
 
     \list
     \o \l{statemachine/eventtransitions}{Event Transitions}\raisedaster
+    \o \l{statemachine/factorial}{Factorial States}\raisedaster
     \o \l{statemachine/pingpong}{Ping Pong States}\raisedaster
     \o \l{statemachine/trafficlight}{Traffic Light}\raisedaster
     \o \l{statemachine/twowaybutton}{Two-way Button}\raisedaster
