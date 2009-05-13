@@ -145,7 +145,6 @@ void QTextCursorPrivate::remove()
 {
     if (anchor == position)
         return;
-    priv->beginEditBlock();
     currentCharFormat = -1;
     int pos1 = position;
     int pos2 = adjusted_anchor;
@@ -159,15 +158,18 @@ void QTextCursorPrivate::remove()
     // deleting inside table? -> delete only content
     QTextTable *table = complexSelectionTable();
     if (table) {
+        priv->beginEditBlock();
         int startRow, startCol, numRows, numCols;
         selectedTableCells(&startRow, &numRows, &startCol, &numCols);
         clearCells(table, startRow, startCol, numRows, numCols, op);
+        adjusted_anchor = anchor = position;
+        priv->endEditBlock();
     } else {
         priv->remove(pos1, pos2-pos1, op);
+        adjusted_anchor = anchor = position;
+        priv->finishEdit();
     }
 
-    adjusted_anchor = anchor = position;
-    priv->endEditBlock();
 }
 
 void QTextCursorPrivate::clearCells(QTextTable *table, int startRow, int startCol, int numRows, int numCols, QTextUndoCommand::Operation op)
@@ -1074,7 +1076,10 @@ QTextCursor::QTextCursor(const QTextCursor &cursor)
 }
 
 /*!
-    Makes a copy of \a cursor and assigns it to this QTextCursor.
+    Makes a copy of \a cursor and assigns it to this QTextCursor. Note
+    that QTextCursor is an \l{Implicitly Shared Classes}{implicitly
+    shared} class.
+
  */
 QTextCursor &QTextCursor::operator=(const QTextCursor &cursor)
 {
@@ -1288,9 +1293,14 @@ void QTextCursor::insertText(const QString &text, const QTextCharFormat &_format
     QTextCharFormat format = _format;
     format.clearProperty(QTextFormat::ObjectIndex);
 
-    d->priv->beginEditBlock();
+    bool hasEditBlock = false;
 
-    d->remove();
+    if (d->anchor != d->position) {
+        hasEditBlock = true;
+        d->priv->beginEditBlock();
+        d->remove();
+    }
+
     if (!text.isEmpty()) {
         QTextFormatCollection *formats = d->priv->formatCollection();
         int formatIdx = formats->indexForFormat(format);
@@ -1320,6 +1330,11 @@ void QTextCursor::insertText(const QString &text, const QTextCharFormat &_format
                 || ch == QChar::ParagraphSeparator
                 || ch == QLatin1Char('\r')) {
 
+                if (!hasEditBlock) {
+                    hasEditBlock = true;
+                    d->priv->beginEditBlock();
+                }
+
                 if (blockEnd > blockStart)
                     d->priv->insert(d->position, textStart + blockStart, blockEnd - blockStart, formatIdx);
 
@@ -1330,7 +1345,8 @@ void QTextCursor::insertText(const QString &text, const QTextCharFormat &_format
         if (textStart + blockStart < textEnd)
             d->priv->insert(d->position, textStart + blockStart, textEnd - textStart - blockStart, formatIdx);
     }
-    d->priv->endEditBlock();
+    if (hasEditBlock)
+        d->priv->endEditBlock();
     d->setX();
 }
 

@@ -587,10 +587,6 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
         return;
     if (!scene)
         return;
-    if (scene->d_func()->allItemsIgnoreHoverEvents && scene->d_func()->allItemsUseDefaultCursor
-        && !event->buttons()) { // forward event to the scene if something is pressed.
-        return; // No need to process this event further.
-    }
 
     QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
     mouseEvent.setWidget(q->viewport());
@@ -1085,8 +1081,12 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
         QList<QGraphicsItem *> itemList(scene->items());
         int i = 0;
         while (i < itemList.size()) {
+            const QGraphicsItem *item = itemList.at(i);
             // But we only want to include items that are visible
-            if (!itemList.at(i)->isVisible())
+            // The following check is basically the same as item->d_ptr->isInvisible(), except
+            // that we don't check whether the item clips children to shape or propagates its
+            // opacity (we loop through all items, so those checks are wrong in this context).
+            if (!item->isVisible() || item->d_ptr->isClippedAway() || item->d_ptr->isFullyTransparent())
                 itemList.removeAt(i);
             else
                 ++i;
@@ -1691,6 +1691,7 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
         disconnect(d->scene, SIGNAL(sceneRectChanged(QRectF)),
                    this, SLOT(updateSceneRect(QRectF)));
         d->scene->d_func()->views.removeAll(this);
+        d->connectedToScene = false;
     }
 
     // Assign the new scene and update the contents (scrollbars, etc.)).

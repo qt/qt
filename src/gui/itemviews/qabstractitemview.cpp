@@ -88,6 +88,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         autoScroll(true),
         autoScrollMargin(16),
         autoScrollCount(0),
+        shouldScrollToCurrentOnShow(false),
         alternatingColors(false),
         textElideMode(Qt::ElideRight),
         verticalScrollMode(QAbstractItemView::ScrollPerItem),
@@ -1380,8 +1381,9 @@ bool QAbstractItemView::event(QEvent *event)
         d->executePostedLayout(); //make sure we set the layout properly
         break;
     case QEvent::Show:
-        if (d->delayedPendingLayout) {
-            d->executePostedLayout(); //make sure we set the layout properly
+        d->executePostedLayout(); //make sure we set the layout properly
+        if (d->shouldScrollToCurrentOnShow) {
+            d->shouldScrollToCurrentOnShow = false;
             const QModelIndex current = currentIndex();
             if (current.isValid() && (d->state == QAbstractItemView::EditingState || d->autoScroll))
                 scrollTo(current);
@@ -2163,11 +2165,12 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         }
 #endif
         bool modified = (event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier));
-        if (!event->text().isEmpty() && !modified) {
-            if (!edit(currentIndex(), AnyKeyPressed, event))
-                keyboardSearch(event->text());
+        if (!event->text().isEmpty() && !modified && !edit(currentIndex(), AnyKeyPressed, event)) {
+            keyboardSearch(event->text());
+            event->accept();
+        } else {
+            event->ignore();
         }
-        event->ignore();
         break; }
     }
 }
@@ -2842,9 +2845,9 @@ void QAbstractItemView::setIndexWidget(const QModelIndex &index, QWidget *widget
         d->persistent.insert(widget);
         d->addEditor(index, widget, true);
         widget->show();
+        dataChanged(index, index); // update the geometry
         if (!d->delayedPendingLayout)
             widget->setGeometry(visualRect(index));
-        dataChanged(index, index); // update the geometry
     }
 }
 
@@ -3160,13 +3163,18 @@ void QAbstractItemView::currentChanged(const QModelIndex &current, const QModelI
             update(previous);
         }
     }
-    if (isVisible() && current.isValid() && !d->autoScrollTimer.isActive()) {
-        if (d->autoScroll)
-            scrollTo(current);
-        update(current);
-        edit(current, CurrentChanged, 0);
-        if (current.row() == (d->model->rowCount(d->root) - 1))
-            d->_q_fetchMore();
+
+    if (current.isValid() && !d->autoScrollTimer.isActive()) {
+        if (isVisible()) {
+            if (d->autoScroll)
+                scrollTo(current);
+            update(current);
+            edit(current, CurrentChanged, 0);
+            if (current.row() == (d->model->rowCount(d->root) - 1))
+                d->_q_fetchMore();
+        } else {
+            d->shouldScrollToCurrentOnShow = d->autoScroll;
+        }
     }
 }
 

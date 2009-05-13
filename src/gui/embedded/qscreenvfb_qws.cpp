@@ -310,6 +310,9 @@ bool QVFbScreen::connect(const QString &displaySpec)
 
     connected = this;
 
+    if (qgetenv("QT_QVFB_BGR").toInt())
+        pixeltype = BGRPixel;
+
     return true;
 }
 

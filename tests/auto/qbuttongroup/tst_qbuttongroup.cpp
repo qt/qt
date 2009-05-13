@@ -92,11 +92,15 @@ private slots:
     void exclusive();
     void exclusiveWithActions();
     void testSignals();
-
     void checkedButton();
 
     void task106609();
 
+    // fixed for Qt 4.6.0
+#if QT_VERSION >= 0x040600
+    void autoIncrementId();
+#endif
+    
     void task209485_removeFromGroupInEventHandler_data();
     void task209485_removeFromGroupInEventHandler();
 };
@@ -329,13 +333,19 @@ void tst_QButtonGroup::testSignals()
 
     QCOMPARE(clickedSpy.count(), 1);
     QCOMPARE(clickedIdSpy.count(), 1);
-    QVERIFY(clickedIdSpy.takeFirst().at(0).toInt() == -1);
+    
+    int expectedId = -1;    
+#if QT_VERSION >= 0x040600
+    expectedId = -2;
+#endif
+    
+    QVERIFY(clickedIdSpy.takeFirst().at(0).toInt() == expectedId);
     QCOMPARE(pressedSpy.count(), 1);
     QCOMPARE(pressedIdSpy.count(), 1);
-    QVERIFY(pressedIdSpy.takeFirst().at(0).toInt() == -1);
+    QVERIFY(pressedIdSpy.takeFirst().at(0).toInt() == expectedId);
     QCOMPARE(releasedSpy.count(), 1);
     QCOMPARE(releasedIdSpy.count(), 1);
-    QVERIFY(releasedIdSpy.takeFirst().at(0).toInt() == -1);
+    QVERIFY(releasedIdSpy.takeFirst().at(0).toInt() == expectedId);
 
     clickedSpy.clear();
     clickedIdSpy.clear();
@@ -482,6 +492,37 @@ void tst_QButtonGroup::task209485_removeFromGroupInEventHandler()
 
     QCOMPARE(spy1.count() + spy2.count(), signalCount);
 }
+
+#if QT_VERSION >= 0x040600
+void tst_QButtonGroup::autoIncrementId()
+{
+    QDialog dlg(0);
+    QButtonGroup *buttons = new QButtonGroup(&dlg);
+    QVBoxLayout *vbox = new QVBoxLayout(&dlg);
+
+    QRadioButton *radio1 = new QRadioButton(&dlg);
+    radio1->setText("radio1");
+    QRadioButton *radio2 = new QRadioButton(&dlg);
+    radio2->setText("radio2");
+    QRadioButton *radio3 = new QRadioButton(&dlg);
+    radio3->setText("radio3");
+
+    buttons->addButton(radio1);
+    vbox->addWidget(radio1);
+    buttons->addButton(radio2);
+    vbox->addWidget(radio2);
+    buttons->addButton(radio3);
+    vbox->addWidget(radio3);
+
+    radio1->setChecked(true);
+
+    QVERIFY(buttons->id(radio1) == -2);
+    QVERIFY(buttons->id(radio2) == -3);
+    QVERIFY(buttons->id(radio3) == -4);
+
+    dlg.show();
+}
+#endif
 
 QTEST_MAIN(tst_QButtonGroup)
 #include "tst_qbuttongroup.moc"

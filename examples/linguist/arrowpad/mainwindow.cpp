@@ -53,7 +53,7 @@ MainWindow::MainWindow()
 
 //! [1]
     exitAct = new QAction(tr("E&xit"), this);
-    exitAct->setShortcut(tr("Ctrl+Q"));
+    exitAct->setShortcuts(QKeySequence::Quit);
     connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 //! [1]
 

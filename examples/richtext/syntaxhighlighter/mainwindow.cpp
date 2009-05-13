@@ -110,14 +110,13 @@ void MainWindow::setupFileMenu()
     menuBar()->addMenu(fileMenu);
 
     fileMenu->addAction(tr("&New"), this, SLOT(newFile()),
-                        QKeySequence(tr("Ctrl+N",
-                                        "File|New")));
+                        QKeySequence::New);
+
     fileMenu->addAction(tr("&Open..."), this, SLOT(openFile()),
-                        QKeySequence(tr("Ctrl+O",
-                                        "File|Open")));
+                        QKeySequence::Open);
+                        
     fileMenu->addAction(tr("E&xit"), qApp, SLOT(quit()),
-                        QKeySequence(tr("Ctrl+Q",
-                                        "File|Exit")));
+                        QKeySequence::Quit);
 }
 
 void MainWindow::setupHelpMenu()

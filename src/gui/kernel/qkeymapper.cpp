@@ -116,6 +116,4 @@ QKeyMapperPrivate *qt_keymapper_private()
     return QKeyMapper::instance()->d_func();
 }
 
-Q_GUI_EXPORT QList<int> qt_keymapper_possibleKeys(QKeyEvent *e) { return QKeyMapper::instance()->possibleKeys(e); }
-
 QT_END_NAMESPACE

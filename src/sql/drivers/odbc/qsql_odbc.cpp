@@ -70,13 +70,12 @@ QT_BEGIN_NAMESPACE
 #endif
 
 // newer platform SDKs use SQLLEN instead of SQLINTEGER
-//#if defined(SQLLEN) || defined(Q_OS_WIN64)
-#if ODBCVER >= 0x0270
-# define QSQLLEN SQLLEN
-# define QSQLULEN SQLULEN
-#else
+#if defined(WIN32) && (_MSC_VER < 1300)
 # define QSQLLEN SQLINTEGER
 # define QSQLULEN SQLUINTEGER
+#else
+# define QSQLLEN SQLLEN
+# define QSQLULEN SQLULEN
 #endif
 
 
@@ -564,7 +563,6 @@ QChar QODBCDriverPrivate::quoteChar() const
     static QChar quote = QChar::fromLatin1('"');
     if (!isQuoteInitialized) {
         char driverResponse[4];
-        SQLUSMALLINT casing;
         SQLSMALLINT length;
         int r = SQLGetInfo(hDbc,
                 SQL_IDENTIFIER_QUOTE_CHAR,

@@ -1028,8 +1028,13 @@ void QLayout::freeze(int w, int h)
 void QLayout::setMenuBar(QWidget *widget)
 {
     Q_D(QLayout);
-    if (widget)
-        addChildWidget(widget);
+
+#ifdef Q_OS_WINCE_WM
+    if (widget && widget->size().height() > 0)
+#else
+        if (widget)
+#endif
+            addChildWidget(widget);
     d->menubar = widget;
 }
 

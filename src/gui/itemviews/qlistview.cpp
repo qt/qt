@@ -1608,6 +1608,10 @@ QRegion QListView::visualRegionForSelection(const QItemSelection &selection) con
         if (!selection.at(i).isValid())
             continue;
         QModelIndex parent = selection.at(i).topLeft().parent();
+        //we only display the children of the root in a listview
+        //we're not interested in the other model indexes
+        if (parent != d->root)
+            continue;
         int t = selection.at(i).topLeft().row();
         int b = selection.at(i).bottomRight().row();
         if (d->viewMode == IconMode || d->isWrapping()) { // in non-static mode, we have to go through all selected items
@@ -1616,8 +1620,8 @@ QRegion QListView::visualRegionForSelection(const QItemSelection &selection) con
         } else { // in static mode, we can optimize a bit
             while (t <= b && d->isHidden(t)) ++t;
             while (b >= t && d->isHidden(b)) --b;
-            const QModelIndex top = d->model->index(t, c, d->root);
-            const QModelIndex bottom = d->model->index(b, c, d->root);
+            const QModelIndex top = d->model->index(t, c, parent);
+            const QModelIndex bottom = d->model->index(b, c, parent);
             QRect rect(visualRect(top).topLeft(),
                        visualRect(bottom).bottomRight());
             selectionRegion += QRegion(rect);
@@ -1997,12 +2001,13 @@ bool QListViewPrivate::doItemsLayout(int delta)
     int first = batchStartRow();
     int last = qMin(first + delta - 1, max);
 
-    if (max < 0 || last < first)
-        return true; // nothing to do
-
     if (first == 0) {
         layoutChildren(); // make sure the viewport has the right size
         prepareItemsLayout();
+    }
+
+    if (max < 0 || last < first) {
+        return true; // nothing to do
     }
 
     QListViewLayoutInfo info;

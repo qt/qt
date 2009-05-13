@@ -4758,7 +4758,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
     case CT_LineEdit:
 #ifndef QT_NO_SPINBOX
         // ### hopelessly broken QAbstractSpinBox (part 2)
-        if (QAbstractSpinBox *spinBox = qobject_cast<QAbstractSpinBox *>(w->parentWidget())) {
+        if (QAbstractSpinBox *spinBox = qobject_cast<QAbstractSpinBox *>(w ? w->parentWidget() : 0)) {
             QRenderRule rule = renderRule(spinBox, opt);
             if (rule.hasBox() || !rule.hasNativeBorder())
                 return csz;
@@ -5674,7 +5674,7 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
 
 bool QStyleSheetStyle::event(QEvent *e)
 {
-    return baseStyle()->event(e) || ParentStyle::event(e);
+    return (baseStyle()->event(e) && e->isAccepted()) || ParentStyle::event(e);
 }
 
 void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
