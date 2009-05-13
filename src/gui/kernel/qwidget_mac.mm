@@ -728,6 +728,7 @@ static OSWindowRef qt_mac_create_window(QWidget *, WindowClass wclass, WindowAtt
 static EventTypeSpec window_events[] = {
     { kEventClassWindow, kEventWindowClose },
     { kEventClassWindow, kEventWindowExpanded },
+    { kEventClassWindow, kEventWindowHidden },
     { kEventClassWindow, kEventWindowZoomed },
     { kEventClassWindow, kEventWindowCollapsed },
     { kEventClassWindow, kEventWindowToolbarSwitchMode },
@@ -995,6 +996,19 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
                             qt_event_request_window_change(widget);
                         }
                     }
+                }
+            }
+        } else if (ekind == kEventWindowHidden) {
+            // Make sure that we also hide any visible sheets on our window.
+            // Cocoa does the right thing for us.
+            const QObjectList children = widget->children();
+            const int childCount = children.count();
+            for (int i = 0; i < childCount; ++i) {
+                QObject *obj = children.at(i);
+                if (obj->isWidgetType()) {
+                    QWidget *widget = static_cast<QWidget *>(obj);
+                    if (qt_mac_is_macsheet(widget) && widget->isVisible())
+                        widget->hide();
                 }
             }
         } else {
