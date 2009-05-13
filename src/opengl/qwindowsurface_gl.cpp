@@ -303,13 +303,10 @@ Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_window_surface_engine)
 QPaintEngine *QGLWindowSurface::paintEngine() const
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (qt_gl_preferGL2Engine())
-        return qt_gl_window_surface_2_engine();
-    else
+    if (!qt_gl_preferGL2Engine())
         return qt_gl_window_surface_engine();
-#else
-    return 0;
 #endif
+    return qt_gl_window_surface_2_engine();
 }
 
 int QGLWindowSurface::metric(PaintDeviceMetric m) const
@@ -370,6 +367,7 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         context()->makeCurrent();
 
         if (context()->format().doubleBuffer()) {
+#if !defined(QT_OPENGL_ES_2)
             glBindTexture(target, d_ptr->tex_id);
 
             QVector<QRect> rects = d_ptr->paintedRegion.rects();
@@ -386,7 +384,6 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 
             QRegion dirtyRegion = QRegion(window()->rect()) - d_ptr->paintedRegion;
 
-#if !defined(QT_OPENGL_ES_2)
             if (!dirtyRegion.isEmpty()) {
                 context()->makeCurrent();
 
@@ -522,7 +519,12 @@ void QGLWindowSurface::updateGeometry()
         return;
     }
 
-    if ((QGLExtensions::glExtensions & QGLExtensions::FramebufferObject) && (d_ptr->fbo || !d_ptr->tried_fbo)) {
+    if ((QGLExtensions::glExtensions & QGLExtensions::FramebufferObject)
+#ifdef QT_OPENGL_ES_2
+        && (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)
+#endif
+        && (d_ptr->fbo || !d_ptr->tried_fbo))
+    {
         d_ptr->tried_fbo = true;
         hijackWindow(window());
         QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
@@ -551,6 +553,7 @@ void QGLWindowSurface::updateGeometry()
         }
     }
 
+#if !defined(QT_OPENGL_ES_2)
     if (d_ptr->pb || !d_ptr->tried_pb) {
         d_ptr->tried_pb = true;
 
@@ -577,7 +580,6 @@ void QGLWindowSurface::updateGeometry()
             glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glBindTexture(target, 0);
 
-#if !defined(QT_OPENGL_ES_2)
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
 #ifndef QT_OPENGL_ES
@@ -585,7 +587,6 @@ void QGLWindowSurface::updateGeometry()
 #else
             glOrthof(0, d_ptr->pb->width(), d_ptr->pb->height(), 0, -999999, 999999);
 #endif
-#endif // !defined(QT_OPENGL_ES_2)
 
             d_ptr->pb->d_ptr->qctx->d_func()->internal_context = true;
             return;
@@ -595,7 +596,7 @@ void QGLWindowSurface::updateGeometry()
             d_ptr->pb = 0;
         }
     }
-
+#endif // !defined(QT_OPENGL_ES_2)
 
     hijackWindow(window());
     QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
