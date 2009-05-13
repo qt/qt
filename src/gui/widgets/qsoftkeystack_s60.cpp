@@ -49,9 +49,6 @@
 
 #include "qsoftkeystack_p.h"
 
-#define SOFTKEYSTART 5000
-#define SOFTKEYEND (5000 + Qt::Key_Context4)
-
 void QSoftKeyStackPrivate::mapSoftKeys(const QSoftkeySet &top)
 {
     if (top.count() == 1) {
@@ -100,4 +97,8 @@ void QSoftKeyStackPrivate::setNativeSoftKeys()
     }
 }
 
-
+void QSoftKeyStack::handleSoftKeyPress(int command)
+{
+    // Do the magic, here.
+    // Map the command back to actual softkey on the top of the stack and handle it
+}

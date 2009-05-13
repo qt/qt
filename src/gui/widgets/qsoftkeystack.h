@@ -65,6 +65,8 @@ public:
     void push(const QList<QSoftKeyAction*> &softkeys);
     void pop();
 
+    void handleSoftKeyPress(int command);
+
 private:
     Q_DECLARE_PRIVATE(QSoftKeyStack)
     Q_DISABLE_COPY(QSoftKeyStack)
