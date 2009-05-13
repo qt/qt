@@ -209,6 +209,9 @@ void QmlViewer::openQml(const QString& fileName)
     t.start();
     canvas->execute();
     qWarning() << "Wall startup time:" << t.elapsed();
+
+    resize(sizeHint());
+
 #ifdef QTOPIA
     show();
 #endif

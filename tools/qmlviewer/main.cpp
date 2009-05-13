@@ -130,12 +130,8 @@ int main(int argc, char ** argv)
         }
     }
 
-    if (fileName.isEmpty())
-        usage();
-
     QmlViewer viewer(testMode, testDir, 0, frameless ? Qt::FramelessWindowHint : Qt::Widget);
     viewer.setCacheEnabled(cache);
-    viewer.openQml(fileName);
     viewer.setRecordFile(recordfile);
     if (period>0)
         viewer.setRecordPeriod(period);
@@ -147,6 +143,10 @@ int main(int argc, char ** argv)
         viewer.setDeviceKeys(true);
     viewer.setRecordDither(dither);
     viewer.setRecordArgs(recordargs);
+    if (!fileName.isEmpty())
+        viewer.openQml(fileName);
+    else
+        viewer.open();
     viewer.show();
 
     return app.exec();

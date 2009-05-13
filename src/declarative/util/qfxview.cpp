@@ -453,6 +453,7 @@ void QFxView::reset()
 {
     clearItems();
     d->engine.clearComponentCache();
+    d->initialSize = QSize();
 }
 
 /*!
