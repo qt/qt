@@ -465,6 +465,37 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     CCoeEnv::Static()->InputCapabilitiesChanged();
 }
 
+void QCoeFepInputContext::applyFormat(QList<QInputMethodEvent::Attribute> *attributes)
+{
+    TCharFormat cFormat;
+    TInt numChars = 0;
+    TInt charPos = 0;
+    int oldSize = attributes->size();
+    while (m_formatRetriever) {
+        m_formatRetriever->GetFormatOfFepInlineText(cFormat, numChars, charPos);
+        if (numChars <= 0) {
+            // This shouldn't happen according to S60 docs, but apparently does sometimes.
+            break;
+        }
+        attributes->append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat,
+                                                        charPos,
+                                                        numChars,
+                                                        QVariant(qt_TCharFormat2QTextCharFormat(cFormat))));
+        charPos += numChars;
+        if (charPos >= m_preeditString.size()) {
+            break;
+        }
+    }
+
+    if (attributes->size() == oldSize) {
+        // S60 didn't provide any format, so let's give our own instead.
+        attributes->append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat,
+                                                        0,
+                                                        m_preeditString.size(),
+                                                        standardFormat(PreeditFormat)));
+    }
+}
+
 void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
         TInt aPositionOfInsertionPointInInlineText, TBool aCursorVisibility, const MFormCustomDraw* /*aCustomDraw*/,
         MFepInlineTextFormatRetriever& aInlineTextFormatRetriever,
@@ -485,24 +516,7 @@ void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
     m_formatRetriever = &aInlineTextFormatRetriever;
     m_pointerHandler = &aPointerEventHandlerDuringInlineEdit;
 
-    TCharFormat cFormat;
-    TInt numChars = 0;
-    TInt charPos = 0;
-    while (m_formatRetriever) {
-        m_formatRetriever->GetFormatOfFepInlineText(cFormat, numChars, charPos);
-        if (numChars <= 0) {
-            // This shouldn't happen according to S60 docs, but apparently does sometimes.
-            break;
-        }
-        attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat,
-                                                       charPos,
-                                                       numChars,
-                                                       QVariant(qt_TCharFormat2QTextCharFormat(cFormat))));
-        charPos += numChars;
-        if (charPos >= m_preeditString.size()) {
-            break;
-        }
-    }
+    applyFormat(&attributes);
 
     attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Cursor,
                                                    m_inlinePosition,
@@ -522,6 +536,7 @@ void QCoeFepInputContext::UpdateFepInlineTextL(const TDesC& aNewInlineText,
     m_inlinePosition = aPositionOfInsertionPointInInlineText;
 
     QList<QInputMethodEvent::Attribute> attributes;
+    applyFormat(&attributes);
     attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Cursor,
                                                    m_inlinePosition,
                                                    m_cursorVisibility,

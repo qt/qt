@@ -135,8 +135,10 @@ bool QApplicationPrivate::quitOnLastWindowClosed = true;
 
 #ifdef Q_OS_WINCE
 int QApplicationPrivate::autoMaximizeThreshold = -1;
-#endif
 bool QApplicationPrivate::autoSipEnabled = false;
+#else
+bool QApplicationPrivate::autoSipEnabled = true;
+#endif
 
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::Type type)
     : QCoreApplicationPrivate(argc, argv)
@@ -1241,6 +1243,8 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
 
     The property only has an effect on platforms which use software input
     panels, such as Windows CE and Symbian.
+
+    The default is platform dependent.
 */
 
 #ifdef Q_OS_WINCE
