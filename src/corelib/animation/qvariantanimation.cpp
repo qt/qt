@@ -64,20 +64,18 @@ QT_BEGIN_NAMESPACE
     shared functionality.
 
     QVariantAnimation cannot be used directly as it is an abstract
-    class; it does not implement
-    \l{QAbstractAnimation::}{updateCurrentValue()} from
-    QAbstractAnimation. The class performs interpolation over
-    \l{QVariant}s, but leaves using the interpolated values to its
-    subclasses. Currently, Qt provides QPropertyAnimation, which
-    animates Qt \l{Qt's Property System}{properties}. See the
-    QPropertyAnimation class description if you wish to animate such
-    properties.
+    class; it does not implement \l{updateCurrentValue()}. The class
+    performs interpolation over \l{QVariant}s, but leaves using the
+    interpolated values to its subclasses. Currently, Qt provides
+    QPropertyAnimation, which animates Qt \l{Qt's Property System}
+    {properties}. See the QPropertyAnimation class description if you
+    wish to animate such properties.
     
     You can then set start and end values for the property by calling
     setStartValue() and setEndValue(), and finally call start() to
     start the animation. QVariantAnimation will interpolate the
     property of the target object and emit valueChanged(). To react to
-    a change in the current value you have to reimplement the
+    a change in the current value you have to implement the
     updateCurrentValue() virtual function.
 
     It is also possible to set values at specified steps situated

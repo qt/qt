@@ -2676,5 +2676,5 @@
   \value Repeat    Tile the image until there is no more space. May crop the last image.
   \value Round     Like Repeat, but scales the images down to ensure that the last image is not cropped.
 
-  \sa QPixmapBorders, qDrawBorderPixmap()
+  \sa qDrawBorderPixmap()
 */
