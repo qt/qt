@@ -54,7 +54,6 @@ class QSoftKeyActionPrivate;
 
 class Q_GUI_EXPORT QSoftKeyAction : public QAction
 {
-    Q_DECLARE_PRIVATE(QSoftKeyAction)
 public:
     enum StandardRole {
         Options,
@@ -92,6 +91,10 @@ public:
     void setNativePosition(int position);
     int qtContextKey() const;
     void setQtContextKey(int position);
+
+private:
+    Q_DECLARE_PRIVATE(QSoftKeyAction)
+    Q_DISABLE_COPY(QSoftKeyAction)
 };
 
 QT_END_NAMESPACE

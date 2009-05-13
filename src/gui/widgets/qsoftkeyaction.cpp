@@ -40,13 +40,14 @@
 ****************************************************************************/
 
 #include "qsoftkeyaction.h"
+#include <QtGui/private/qaction_p.h>
 
 /*!
     \class QSoftKeyAction
     \brief The QSoftKeyAction class defines a special kind of QAction that may also be displayed in a QSoftKeyBar.
 */
 
-class QSoftKeyActionPrivate
+class QSoftKeyActionPrivate : public QActionPrivate
 {
 public:
     QSoftKeyActionPrivate(QSoftKeyAction::StandardRole role = QSoftKeyAction::Custom)
@@ -82,37 +83,43 @@ public:
 */
 
 QSoftKeyAction::QSoftKeyAction(QObject *parent)
-    : QAction(parent)
+    : QAction(*new QSoftKeyActionPrivate(), parent)
 {
 }
 
 QSoftKeyAction::QSoftKeyAction(StandardRole role, QObject *parent)
-    : QAction(parent)
+    : QAction(*new QSoftKeyActionPrivate(), parent)
 {
     Q_D(QSoftKeyAction);
     d->role = role;
 }
 
 QSoftKeyAction::QSoftKeyAction(const QString &text, QObject* parent)
-    : QAction(text, parent)
+    : QAction(*new QSoftKeyActionPrivate(), parent)
 {
+    setText(text);
 }
 
 QSoftKeyAction::QSoftKeyAction(StandardRole role, const QString &text, QObject* parent)
-    : QAction(text, parent)
+    : QAction(*new QSoftKeyActionPrivate(), parent)
 {
+    setText(text);
     Q_D(QSoftKeyAction);
     d->role = role;
 }
 
 QSoftKeyAction::QSoftKeyAction(const QIcon &icon, const QString &text, QObject* parent)
-    : QAction(icon, text, parent)
+    : QAction(*new QSoftKeyActionPrivate(), parent)
 {
+    setIcon(icon);
+    setText(text);
 }
 
 QSoftKeyAction::QSoftKeyAction(StandardRole role, const QIcon &icon, const QString &text, QObject* parent)
-    : QAction(icon, text, parent)
+    : QAction(*new QSoftKeyActionPrivate(), parent)
 {
+    setIcon(icon);
+    setText(text);
     Q_D(QSoftKeyAction);
     d->role = role;
 }

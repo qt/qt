@@ -57,15 +57,17 @@ class QSoftKeyAction;
 
 class Q_GUI_EXPORT QSoftKeyStack : public QObject
 {
-    Q_DECLARE_PRIVATE(QSoftKeyStack)
 public:
     QSoftKeyStack(QWidget *parent);
     ~QSoftKeyStack();
 
-public:
     void push(QSoftKeyAction *softKey);
     void push(const QList<QSoftKeyAction*> &softkeys);
     void pop();
+
+private:
+    Q_DECLARE_PRIVATE(QSoftKeyStack)
+    Q_DISABLE_COPY(QSoftKeyStack)
 };
 
 QT_END_NAMESPACE

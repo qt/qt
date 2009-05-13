@@ -53,9 +53,9 @@
 // We mean it.
 //
 
-#include "QtGui/qwidget.h"
-#include "QtGui/qaction.h"
+
 #include "qstack.h"
+#include <QtCore/private/qobject_p.h>
 
 #include "qsoftkeyaction.h"
 
@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 
 #define QSoftkeySet QList <QSoftKeyAction*>
 
-class QSoftKeyStackPrivate : public QObject
+class QSoftKeyStackPrivate : public QObjectPrivate
 {
 public:
     QSoftKeyStackPrivate();

@@ -74,7 +74,7 @@ void QSoftKeyStackPrivate::pop()
 }
 
 QSoftKeyStack::QSoftKeyStack(QWidget *parent)
-    : QObject(parent)
+    : QObject(*new QSoftKeyStackPrivate, parent)
 {
 }
 
