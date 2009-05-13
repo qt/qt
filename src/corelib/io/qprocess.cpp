@@ -293,7 +293,8 @@ bool QProcessEnvironment::isEmpty() const
 */
 void QProcessEnvironment::clear()
 {
-    d->hash.clear();
+    if (d)
+        d->hash.clear();
 }
 
 /*!
@@ -345,7 +346,8 @@ void QProcessEnvironment::insert(const QString &name, const QString &value)
 */
 void QProcessEnvironment::remove(const QString &name)
 {
-    d->hash.remove(prepareName(name));
+    if (d)
+        d->hash.remove(prepareName(name));
 }
 
 /*!
@@ -364,8 +366,11 @@ QString QProcessEnvironment::value(const QString &name, const QString &defaultVa
     if (!d)
         return defaultValue;
 
-    QProcessEnvironmentPrivate::Unit result = d->hash.value(prepareName(name), prepareValue(defaultValue));
-    return valueToString(result);
+    QProcessEnvironmentPrivate::Hash::ConstIterator it = d->hash.constFind(prepareName(name));
+    if (it == d->hash.constEnd())
+        return defaultValue;
+
+    return valueToString(it.value());
 }
 
 /*!

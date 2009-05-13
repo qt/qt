@@ -86,7 +86,8 @@ public:
 #else
     typedef QByteArray Unit;
 #endif
-    QHash<Unit, Unit> hash;
+    typedef QHash<Unit, Unit> Hash;
+    Hash hash;
 
     static QProcessEnvironment fromList(const QStringList &list);
     QStringList toList() const;
