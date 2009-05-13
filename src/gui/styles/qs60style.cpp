@@ -617,6 +617,11 @@ void QS60Style::polish(QWidget *widget)
         const QFont suggestedFont = d->s60Font(
                 QS60StyleEnums::FC_Title, widget->font().pointSizeF());
         widget->setFont(suggestedFont);
+    } else if (qobject_cast<QLineEdit *>(widget)) {
+        widgetPalette.setColor(QPalette::All, QPalette::HighlightedText, 
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
+        QApplication::setPalette(widgetPalette, "QLineEdit");
+                
     }
 }
 
@@ -2115,17 +2120,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #endif
             QCommonStyle::drawPrimitive(element, option, painter, widget);
         } else {
-            if (option->state & State_Children) {
-                QS60StyleEnums::SkinParts skinPart =
-                        (option->state & State_Open) ? QS60StyleEnums::SP_QgnIndiHlColSuper : QS60StyleEnums::SP_QgnIndiHlExpSuper;
-                int minDimension = qMin(option->rect.width(), option->rect.height());
-                const int resizeValue = minDimension >> 1;
-                minDimension += resizeValue; // Adjust the icon bigger because of empty space in svg icon.
-                QRect iconRect(option->rect.topLeft(), QSize(minDimension, minDimension));
-                iconRect.translate(3, 2 - resizeValue);
-                QS60StylePrivate::drawSkinPart(skinPart, painter, iconRect, flags);
-            }
-
             const bool rightLine = option->state & State_Item;
             const bool downLine = option->state & State_Sibling;
             const bool upLine = option->state & (State_Open | State_Children | State_Item | State_Sibling);
@@ -2147,10 +2141,26 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect,
                         (flags | QS60StylePrivate::SF_ColorSkinned));
             }
+            
+            if (option->state & State_Children) {
+                QS60StyleEnums::SkinParts skinPart = 
+                        (option->state & State_Open) ? QS60StyleEnums::SP_QgnIndiHlColSuper : QS60StyleEnums::SP_QgnIndiHlExpSuper;                
+                int minDimension = qMin(option->rect.width(), option->rect.height());
+                const int resizeValue = minDimension >> 1;
+                minDimension += resizeValue; // Adjust the icon bigger because of empty space in svg icon.
+                QRect iconRect(option->rect.topLeft(), QSize(minDimension, minDimension));
+                int verticalMagic(0);
+                // magic values for positioning svg icon.
+                if (option->rect.width() <= option->rect.height()) 
+                    verticalMagic = 3;                
+                iconRect.translate(3, verticalMagic - resizeValue);
+                iconRect.adjust(-3,5,0,0);
+                QS60StylePrivate::drawSkinPart(skinPart, painter, iconRect, flags);            
+            }            
         }
-        }
-        break;
-
+        }        
+        break;         
+        
         // todo: items are below with #ifdefs "just in case". in final version, remove all non-required cases
     case PE_FrameLineEdit:
     case PE_IndicatorButtonDropDown:
