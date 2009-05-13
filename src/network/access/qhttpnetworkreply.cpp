@@ -409,6 +409,9 @@ qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
             if (fragment.endsWith('\r')) {
                 fragment.truncate(fragment.length()-1);
             }
+            if (!fragment.startsWith("HTTP/"))
+                return -1;
+
             parseStatus(fragment);
             state = ReadingHeaderState;
             fragment.clear(); // next fragment
@@ -418,7 +421,13 @@ qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
             bytes += socket->read(&c, 1);
             fragment.append(c);
         }
+
+        // is this a valid reply?
+        if (fragment.length() >= 5 && !fragment.startsWith("HTTP/"))
+            return -1;
+
     }
+
     return bytes;
 }
 
