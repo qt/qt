@@ -50,12 +50,12 @@ Knob::Knob()
     setAcceptTouchEvents(true);
     setBrush(Qt::lightGray);
 
-    QGraphicsEllipseItem *leftItem = new QGraphicsEllipseItem(0, 0, 10, 10, this);
-    leftItem->setPos(-45, -5);
+    QGraphicsEllipseItem *leftItem = new QGraphicsEllipseItem(0, 0, 20, 20, this);
+    leftItem->setPos(-40, -10);
     leftItem->setBrush(Qt::darkGreen);
 
-    QGraphicsEllipseItem *rightItem = new QGraphicsEllipseItem(0, 0, 10, 10, this);
-    rightItem->setPos(35, -5);
+    QGraphicsEllipseItem *rightItem = new QGraphicsEllipseItem(0, 0, 20, 20, this);
+    rightItem->setPos(20, -10);
     rightItem->setBrush(Qt::darkRed);
 }
 
