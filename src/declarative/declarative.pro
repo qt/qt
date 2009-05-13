@@ -7,8 +7,6 @@ DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x66000000
 solaris-cc*:QMAKE_CXXFLAGS_RELEASE -= -O2
 
-LIBS += -lgcov
-
 unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui QtXml
 
 # QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage
