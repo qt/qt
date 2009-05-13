@@ -1,1 +1,1 @@
-2:-1:Cannot assign a signal to property "onClicked"
+2:-1:Unknown property "onClicked"

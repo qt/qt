@@ -127,9 +127,6 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::AssignConstant:
         qWarning() << idx << "\t" << line << "\t" << "ASSIGN_CONSTANT\t" << instr->assignConstant.property << "\t" << instr->assignConstant.constant << "\t\t" << datas.at(instr->assignConstant.property) << primitives.at(instr->assignConstant.constant);
         break;
-    case QmlInstruction::AssignSignal:
-        qWarning() << idx << "\t" << line << "\t" << "ASSIGN_SIGNAL\t\t" << instr->assignSignal.signal << "\t" << instr->assignSignal.value << "\t\t" << datas.at(instr->assignSignal.signal) << primitives.at(instr->assignSignal.value);
-        break;
     case QmlInstruction::AssignSignalObject:
         qWarning() << idx << "\t" << line << "\t" << "ASSIGN_SIGNAL_OBJECT\t" << instr->assignSignalObject.signal << "\t\t\t" << datas.at(instr->assignSignalObject.signal);
         break;
