@@ -379,9 +379,10 @@ void QHashData::checkSanity()
 #endif
 
 /*!
-    \
+    \fn uint qHash(const QPair<T1, T2> &key)
     \since 4.3
-
+    \relates QHash
+    
     Returns the hash value for the \a key.
 
     Types \c T1 and \c T2 must be supported by qHash().
