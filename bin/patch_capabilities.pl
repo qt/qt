@@ -14,7 +14,7 @@ if (@ARGV)
 {
     # Parse the first given script argument as a ".pkg" file name.
     my $pkgFileName = shift(@ARGV);
-    
+
     # If the specified ".pkg" file exists (and can be read),
     if (($pkgFileName =~ m|\.pkg$|i) && -r($pkgFileName))
     {
@@ -27,44 +27,44 @@ if (@ARGV)
                 push (@capabilitiesToSet, pop(@ARGV));
             }
         }
-        
+
         # Start with no binaries listed.
         my @binaries = ();
-                          
+
         # Open the ".pkg" file.
-        open (PKG, "<".$pkgFileName);                      
-        
+        open (PKG, "<".$pkgFileName);
+
         # Parse each line.
         while (<PKG>)
         {
             my $line = $_;
-            chomp ($line);                                          
-            
+            chomp ($line);
+
             # If the line specifies a file, parse the source and destination locations.
             if ($line =~ m|\"([^\"]+)\"\s*\-\s*\"([^\"]+)\"|)
             {
                 my $sourcePath = $1;
                 my $destinationPath = $2;
-                
+
                 # If the given file is a binary, check the target and binary type (+ the actual filename) from its path.
-                if ($sourcePath =~ m:\\epoc32\\release\\([^\\]+)\\(udeb|urel)\\(\w+(\.dll|\.exe)):i)
+                if ($sourcePath =~ m:/epoc32/release/([^/]+)/(udeb|urel)/(\w+(\.dll|\.exe)):i)
                 {
                     push (@binaries, $sourcePath);
                 }
             }
         }
-        
+
         # Close the ".pkg" file.
         close (PKG);
-        
+
         print ("\n");
-        
-        my $baseCommandToExecute = "elftran -capability \"";                                    
+
+        my $baseCommandToExecute = "elftran -capability \"";
         if (@capabilitiesToSet)
-        {                
+        {
             $baseCommandToExecute .= join(" ", @capabilitiesToSet);
-        }            
-        $baseCommandToExecute .= "\" ";            
+        }
+        $baseCommandToExecute .= "\" ";
 
         # Actually set the capabilities of the listed binaries.
         foreach my $binaryPath(@binaries)
@@ -72,19 +72,19 @@ if (@ARGV)
             # Create the command line for setting the capabilities.
             my $commandToExecute = $baseCommandToExecute;
             $commandToExecute .= $binaryPath;
-            
+
             # Actually execute the elftran command to set the capabilities.
             system ($commandToExecute." > NUL");
             print ("Executed ".$commandToExecute."\n");
-            
+
             ## Create another command line to check that the set capabilities are correct.
-            #$commandToExecute = "elftran -dump s ".$binaryPath;            
-        }                
-      
+            #$commandToExecute = "elftran -dump s ".$binaryPath;
+        }
+
         print ("\n");
     }
-} 
-else 
+}
+else
 {
     print("This script can be used to set capabilities of all binaries\n");
     print("specified for deployment in a .pkg file.\n");
