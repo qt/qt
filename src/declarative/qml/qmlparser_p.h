@@ -44,6 +44,7 @@
 
 #include <QByteArray>
 #include <QList>
+#include <QtCore/qstring.h>
 #include <qml.h>
 #include <private/qmlrefcount_p.h>
 #include <private/qobject_p.h>
@@ -173,7 +174,7 @@ namespace QmlParser
         Variant();
         Variant(const Variant &);
         Variant(bool);
-        Variant(double);
+        Variant(double, const QString &asWritten=QString());
         Variant(const QString &, Type = String);
         Variant &operator=(const Variant &);
 

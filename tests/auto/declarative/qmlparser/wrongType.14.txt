@@ -1,0 +1,4 @@
+MyTypeObject {
+    stringProperty: 10
+}
+

@@ -1063,7 +1063,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
         QmlEnginePrivate::clear(bindValues);
         QmlEnginePrivate::clear(parserStatus);
-        qWarning() << errors().at(0);
         return 0;
     }
 

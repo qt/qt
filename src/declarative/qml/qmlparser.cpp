@@ -276,8 +276,8 @@ QmlParser::Variant::Variant(bool v)
 {
 }
 
-QmlParser::Variant::Variant(double v)
-: t(Number), d(v)
+QmlParser::Variant::Variant(double v, const QString &asWritten)
+: t(Number), d(v), s(asWritten)
 {
 }
 
@@ -324,7 +324,10 @@ QString QmlParser::Variant::asScript() const
     case Boolean:
         return b?QLatin1String("true"):QLatin1String("false");
     case Number:
-        return QString::number(d);
+        if (s.isEmpty())
+            return QString::number(d);
+        else
+            return s;
     case String:
     case Script:
         return s;
