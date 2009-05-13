@@ -1881,6 +1881,54 @@ void tst_QStateMachine::eventTransitions()
 
         QTRY_COMPARE(finishedSpy.count(), 1);
     }
+    // Multiple transitions for same (object,event)
+    {
+        QStateMachine machine;
+        QState *s0 = new QState(machine.rootState());
+        QState *s1 = new QState(machine.rootState());
+        QEventTransition *t0 = new QEventTransition(&button, QEvent::MouseButtonPress);
+        t0->setTargetState(s1);
+        s0->addTransition(t0);
+        QEventTransition *t1 = new QEventTransition(&button, QEvent::MouseButtonPress);
+        t1->setTargetState(s0);
+        s1->addTransition(t1);
+
+        QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        machine.setInitialState(s0);
+        machine.start();
+        QCoreApplication::processEvents();
+        QCOMPARE(machine.configuration().size(), 1);
+        QVERIFY(machine.configuration().contains(s0));
+
+        QTest::mousePress(&button, Qt::LeftButton);
+        QCoreApplication::processEvents();
+        QCOMPARE(machine.configuration().size(), 1);
+        QVERIFY(machine.configuration().contains(s1));
+
+        s0->removeTransition(t0);
+        QTest::mousePress(&button, Qt::LeftButton);
+        QCoreApplication::processEvents();
+        QCOMPARE(machine.configuration().size(), 1);
+        QVERIFY(machine.configuration().contains(s0));
+
+        QTest::mousePress(&button, Qt::LeftButton);
+        QCoreApplication::processEvents();
+        QCOMPARE(machine.configuration().size(), 1);
+        QVERIFY(machine.configuration().contains(s0));
+
+        s1->removeTransition(t1);
+        QTest::mousePress(&button, Qt::LeftButton);
+        QCoreApplication::processEvents();
+        QCOMPARE(machine.configuration().size(), 1);
+        QVERIFY(machine.configuration().contains(s0));
+
+        s0->addTransition(t0);
+        s1->addTransition(t1);
+        QTest::mousePress(&button, Qt::LeftButton);
+        QCoreApplication::processEvents();
+        QCOMPARE(machine.configuration().size(), 1);
+        QVERIFY(machine.configuration().contains(s1));
+    }
 }
 
 void tst_QStateMachine::historyStates()
