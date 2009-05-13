@@ -28,6 +28,9 @@
 #include "private/qwindowsurface_s60_p.h"
 #include "qpaintengine.h"
 #include "qmenubar.h"
+#include "qmainwindow.h"
+#include "qsoftkeystack.h"
+#include "private/qsoftkeystack_p.h"
 
 #include "apgwgnam.h" // For CApaWindowGroupName
 #include <MdaAudioTonePlayer.h>     // For CMdaAudioToneUtility
@@ -1019,8 +1022,14 @@ void QApplication::s60HandleCommandL(int command)
         qApp->exit();
         break;
     default:
-        // For now assume all unknown menu items are Qt menu items
-        QMenuBar::symbianCommands(command);
+        if (command >= SOFTKEYSTART && command <= SOFTKEYEND) {
+            const QMainWindow *activeMainWindow =
+                qobject_cast<const QMainWindow*>(QApplication::activeWindow());
+            if (activeMainWindow)
+                activeMainWindow->softKeyStack()->handleSoftKeyPress(command);
+        } else {
+            QMenuBar::symbianCommands(command);
+        }
         break;
     }
 }
