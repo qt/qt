@@ -73,6 +73,15 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
   authentication information to the socket when accessing services that
   require authentication.
 
+  QAuthenticator supports the following authentication methods:
+  \list
+    \o Basic
+    \o NTLM version 1
+    \o Digest-MD5
+  \endlist
+
+  Note that, in particular, NTLM version 2 is not supported.
+
   \sa QSslSocket
 */
 

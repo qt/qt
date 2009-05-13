@@ -43,6 +43,13 @@
     \value AllPrimaryMembers Add everything except the class name, super class, and static metacall function.
 */
 
+/*!
+  \enum QMetaObjectBuilder::MetaObjectFlag
+  This enum defines flags for the class being constructed.
+  
+  \value DynamicMetaObject
+ */
+
 // copied from moc's generator.cpp
 uint qvariant_nameToType(const char* name)
 {
@@ -354,7 +361,8 @@ int QMetaObjectBuilder::methodCount() const
 /*!
     Returns the number of constructors in this class.
 
-    \sa addConstructor(), constructor(), removeConstructor(), indexOfConstructor()
+    \sa addConstructor(), constructor(), removeConstructor()
+    \sa indexOfConstructor()
 */
 int QMetaObjectBuilder::constructorCount() const
 {
@@ -388,8 +396,8 @@ int QMetaObjectBuilder::enumeratorCount() const
     Returns the number of items of class information in this class,
     exclusing the number of items of class information in the base class.
 
-    \sa addClassInfo(), classInfoName(), classInfoValue(), removeClassInfo()
-    \sa indexOfClassInfo()
+    \sa addClassInfo(), classInfoName(), classInfoValue()
+    \sa removeClassInfo(), indexOfClassInfo()
 */
 int QMetaObjectBuilder::classInfoCount() const
 {
@@ -547,10 +555,11 @@ QMetaMethodBuilder QMetaObjectBuilder::addConstructor(const QMetaMethod& prototy
 }
 
 /*!
-    Adds a new readable/writable property to this class with the specified
-    \a name and \a type.  Returns an object that can be used to adjust
-    the other attributes of the property.  The \a type will be
-    normalized before it is added to the class.
+    Adds a new readable/writable property to this class with the
+    specified \a name and \a type.  Returns an object that can be used
+    to adjust the other attributes of the property.  The \a type will
+    be normalized before it is added to the class. \a notifierId will
+    be registered as the property's \e notify signal.
 
     \sa property(), propertyCount(), removeProperty(), indexOfProperty()
 */
@@ -600,7 +609,7 @@ QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QMetaProperty& protot
     \a name.  Returns an object that can be used to adjust
     the other attributes of the enumerator.
 
-    \sa enumerator(), enumeratorCount(), removeEnumerator(),
+    \sa enumerator(), enumeratorCount(), removeEnumerator()
     \sa indexOfEnumerator()
 */
 QMetaEnumBuilder QMetaObjectBuilder::addEnumerator(const QByteArray& name)
@@ -616,7 +625,7 @@ QMetaEnumBuilder QMetaObjectBuilder::addEnumerator(const QByteArray& name)
     QMetaObject.  Returns an object that can be used to adjust the
     attributes of the enumerator.
 
-    \sa enumerator(), enumeratorCount(), removeEnumerator(),
+    \sa enumerator(), enumeratorCount(), removeEnumerator()
     \sa indexOfEnumerator()
 */
 QMetaEnumBuilder QMetaObjectBuilder::addEnumerator(const QMetaEnum& prototype)
@@ -633,8 +642,8 @@ QMetaEnumBuilder QMetaObjectBuilder::addEnumerator(const QMetaEnum& prototype)
     Adds \a name and \a value as an item of class information to this class.
     Returns the index of the new item of class information.
 
-    \sa classInfoCount(), classInfoName(), classInfoValue(), removeClassInfo()
-    \sa indexOfClassInfo()
+    \sa classInfoCount(), classInfoName(), classInfoValue()
+    \sa removeClassInfo(), indexOfClassInfo()
 */
 int QMetaObjectBuilder::addClassInfo(const QByteArray& name, const QByteArray& value)
 {
@@ -831,8 +840,8 @@ const QMetaObject *QMetaObjectBuilder::relatedMetaObject(int index) const
     Returns the name of the item of class information at \a index
     in this class.
 
-    \sa classInfoCount(), addClassInfo(), classInfoValue(), removeClassInfo()
-    \sa indexOfClassInfo()
+    \sa classInfoCount(), addClassInfo(), classInfoValue()
+    \sa removeClassInfo(), indexOfClassInfo()
 */
 QByteArray QMetaObjectBuilder::classInfoName(int index) const
 {
@@ -846,8 +855,8 @@ QByteArray QMetaObjectBuilder::classInfoName(int index) const
     Returns the value of the item of class information at \a index
     in this class.
 
-    \sa classInfoCount(), addClassInfo(), classInfoName(), removeClassInfo()
-    \sa indexOfClassInfo()
+    \sa classInfoCount(), addClassInfo(), classInfoName()
+    \sa removeClassInfo(), indexOfClassInfo()
 */
 QByteArray QMetaObjectBuilder::classInfoValue(int index) const
 {
@@ -908,7 +917,7 @@ void QMetaObjectBuilder::removeProperty(int index)
     Removes the enumerator at \a index from this class.  The indices of
     all following enumerators will be adjusted downwards by 1.
 
-    \sa enumertorCount(), addEnumerator(), enumerator()
+    \sa enumeratorCount(), addEnumerator(), enumerator()
     \sa indexOfEnumerator()
 */
 void QMetaObjectBuilder::removeEnumerator(int index)
@@ -921,8 +930,8 @@ void QMetaObjectBuilder::removeEnumerator(int index)
     Removes the item of class information at \a index from this class.
     The indices of all following items will be adjusted downwards by 1.
 
-    \sa classInfoCount(), addClassInfo(), classInfoName(), classInfoValue()
-    \sa indexOfClassInfo()
+    \sa classInfoCount(), addClassInfo(), classInfoName()
+    \sa classInfoValue() indexOfClassInfo()
 */
 void QMetaObjectBuilder::removeClassInfo(int index)
 {
@@ -1001,10 +1010,12 @@ int QMetaObjectBuilder::indexOfSlot(const QByteArray& signature)
 }
 
 /*!
-    Finds a constructor with the specified \a signature and returns its index;
-    otherwise returns -1.  The \a signature will be normalized by this method.
+  Finds a constructor with the specified \a signature and returns its
+  index; otherwise returns -1.  The \a signature will be normalized by
+  this method.
 
-    \sa constructor(), constructorCount(), addConstructor(), removeConstructor()
+  \sa constructor(), constructorCount(), addConstructor()
+  \sa removeConstructor()
 */
 int QMetaObjectBuilder::indexOfConstructor(const QByteArray& signature)
 {
@@ -1035,7 +1046,8 @@ int QMetaObjectBuilder::indexOfProperty(const QByteArray& name)
     Finds an enumerator with the specified \a name and returns its index;
     otherwise returns -1.
 
-    \sa enumertor(), enumeratorCount(), addEnumerator(), removeEnumerator()
+    \sa enumerator(), enumeratorCount(), addEnumerator()
+    \sa removeEnumerator()
 */
 int QMetaObjectBuilder::indexOfEnumerator(const QByteArray& name)
 {
@@ -1812,7 +1824,7 @@ QByteArray QMetaMethodBuilder::tag() const
 /*!
     Sets the tag associated with this method to \a value.
 
-    \sa setTag()
+    \sa tag()
 */
 void QMetaMethodBuilder::setTag(const QByteArray& value)
 {

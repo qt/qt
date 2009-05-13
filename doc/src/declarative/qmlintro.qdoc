@@ -125,7 +125,7 @@ line opacity: 0.5 has been turned into a comment.
 
 \section2 Property naming
 
-Properties begin with a lowercase letter (with the exception of Attached properties).
+Properties begin with a lowercase letter (with the exception of \l{Attached Properties}).
 
 \section2 Property types
 
@@ -216,9 +216,10 @@ State {
 }
 \endcode
 
-\section2 Dot properties
+\section2 Dot Properties
 
-\section2 Attached properties
+\section2 Attached Properties
+\target attached-properties
 
 \section2 Signal Handlers
 

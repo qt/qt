@@ -102,12 +102,12 @@ void MainWindow::open()
 void MainWindow::createActions()
 {
     assistantAct = new QAction(tr("Help Contents"), this);
-    assistantAct->setShortcut(tr("F1"));
+    assistantAct->setShortcut(QKeySequence::HelpContents);
     connect(assistantAct, SIGNAL(triggered()), this, SLOT(showDocumentation()));
 //! [4]
 
     openAct = new QAction(tr("&Open..."), this);
-    openAct->setShortcut(tr("Ctrl+O"));
+    openAct->setShortcut(QKeySequence::Open);
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
     clearAct = new QAction(tr("&Clear"), this);
@@ -115,7 +115,7 @@ void MainWindow::createActions()
     connect(clearAct, SIGNAL(triggered()), textViewer, SLOT(clear()));
 
     exitAct = new QAction(tr("E&xit"), this);
-    exitAct->setShortcut(tr("Ctrl+Q"));
+    exitAct->setShortcuts(QKeySequence::Quit);
     connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
     aboutAct = new QAction(tr("&About"), this);

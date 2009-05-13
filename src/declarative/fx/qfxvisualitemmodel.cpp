@@ -512,12 +512,17 @@ QFxItem *QFxVisualItemModel::item(int index, const QByteArray &viewId, bool comp
         nobj = d->m_delegate->beginCreate(ctxt);
         if (complete)
             d->m_delegate->completeCreate();
-        ctxt->setParent(nobj);
-        data->setParent(nobj);
+        if (nobj) {
+            ctxt->setParent(nobj);
+            data->setParent(nobj);
 
-        d->m_cache.insert(index, nobj);
+            d->m_cache.insert(index, nobj);
+        } else {
+            delete data;
+            delete ctxt;
+            qWarning() << d->m_delegate->errors();
+        }
     }
-
     QFxItem *item = qobject_cast<QFxItem *>(nobj);
     if (!item) {
         QmlPackage *package = qobject_cast<QmlPackage *>(nobj);

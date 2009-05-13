@@ -41,7 +41,7 @@
 
 /*!
     \class QAbstractAnimation
-    \ingroup animation
+    \ingroup group_animation
     \brief The QAbstractAnimation class is the base of all animations.
     \since 4.5
     \preliminary
