@@ -1,5 +1,5 @@
 ListModel {
-    id: Recipies
+    id: Recipes
     ListElement {
         title: "Pancakes"
         picture: "content/pics/pancakes.jpg"
