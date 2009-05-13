@@ -1046,8 +1046,23 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
     draw it, similar to \l{http://www.w3.org/TR/css3-background/}
     {CSS3 border-images}.
 
-    \sa qDrawBorderPixmap, Qt::TileRule, QTileRules
+    \sa qDrawBorderPixmap(), Qt::TileRule, QTileRules
 */
+
+/*!
+  \fn QMargins::QMargins(int margin)
+  
+  Constructs an instance of QMargins setting all four
+  margins to \a margin.
+ */
+
+/*!
+  \fn QMargins::QMargins(int topMargin, int leftMargin, int bottomMargin, int rightMargin)
+  
+  Constructs an instance of QMargins setting the four
+  margins to \a topMargin, \a leftMargin, \a bottomMargin,
+  and \a rightMargin.
+ */
 
 /*!
     \class QTileRules
@@ -1056,11 +1071,26 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
     Holds the rules used to draw a pixmap or image split into nine segments,
     similar to \l{http://www.w3.org/TR/css3-background/}{CSS3 border-images}.
 
-    \sa qDrawBorderPixmap, Qt::TileRule, QMargins
+    \sa qDrawBorderPixmap(), Qt::TileRule, QMargins
+*/
+
+/*!
+  \fn QTileRules::QTileRules(Qt::TileRule horizontalRule, Qt::TileRule verticalRule)
+
+  Constructs an instance of QTileRules from the \a horizontalRule
+  and the \a verticalRule.
+*/
+
+/*!
+  \fn QTileRules::QTileRules(Qt::TileRule rule)
+
+  Constructs an instance of QTileRules setting both the
+  horizontal and vertical rules to \a rule.
 */
 
 /*!
     \fn qDrawBorderPixmap(QPainter *painter, const QRect &target, const QMargins &margins, const QPixmap &pixmap)
+    \relates QMargins
     \since 4.6
 
     Draws the given \a pixmap into the given \a target rectangle, using the
@@ -1150,6 +1180,7 @@ static inline void qDrawHorizontallyRoundedPixmap(QPainter *painter, const QRect
 
 /*!
     \since 4.6
+    \relates QMargins
 
     Draws the indicated \a sourceRect rectangle from the given \a pixmap into
     the given \a targetRect rectangle, using the given \a painter. The pixmap
