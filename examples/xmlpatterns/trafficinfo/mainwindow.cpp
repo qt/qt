@@ -55,7 +55,7 @@ MainWindow::MainWindow()
     : QWidget(0, Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint)
 {
     QAction *quitAction = new QAction(tr("E&xit"), this);
-    quitAction->setShortcut(tr("Ctrl+Q"));
+    quitAction->setShortcuts(QKeySequence::Quit);
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
 
     QAction *configAction = new QAction(tr("&Select station..."), this);

@@ -238,6 +238,7 @@ SUBDIRS += bic \
            qregexpvalidator \
            qregion \
            qresourceengine \
+           qringbuffer \
            qscriptable \
            qscriptclass \
            qscriptcontext \

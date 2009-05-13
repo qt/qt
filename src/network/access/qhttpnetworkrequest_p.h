@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QNonContiguousByteDevice;
+
 class QHttpNetworkRequestPrivate;
 class Q_AUTOTEST_EXPORT QHttpNetworkRequest: public QHttpNetworkHeader
 {
@@ -104,15 +106,14 @@ public:
     Priority priority() const;
     void setPriority(Priority priority);
 
-    QIODevice *data() const;
-    void setData(QIODevice *data);
+    void setUploadByteDevice(QNonContiguousByteDevice *bd);
+    QNonContiguousByteDevice* uploadByteDevice() const;
 
 private:
     QSharedDataPointer<QHttpNetworkRequestPrivate> d;
     friend class QHttpNetworkRequestPrivate;
     friend class QHttpNetworkConnectionPrivate;
 };
-
 
 class QHttpNetworkRequestPrivate : public QHttpNetworkHeaderPrivate
 {
@@ -129,7 +130,7 @@ public:
 
     QHttpNetworkRequest::Operation operation;
     QHttpNetworkRequest::Priority priority;
-    mutable QIODevice *data;
+    mutable QNonContiguousByteDevice* uploadByteDevice;
     bool autoDecompress;
 };
 

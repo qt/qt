@@ -61,7 +61,7 @@ MainWindow::MainWindow()
 void MainWindow::createActions()
 {
     openAct = new QAction(tr("&Open..."), this);
-    openAct->setShortcut(tr("Ctrl+O"));
+    openAct->setShortcuts(QKeySequence::Open);
     openAct->setStatusTip(tr("Open an existing HTML file"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
@@ -72,13 +72,13 @@ void MainWindow::createActions()
 //! [1]
 
     saveAct = new QAction(tr("&Save"), this);
-    saveAct->setShortcut(tr("Ctrl+S"));
+    saveAct->setShortcuts(QKeySequence::Save);
     saveAct->setStatusTip(tr("Save the HTML file to disk"));
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setStatusTip(tr("Exit the application"));
-    exitAct->setShortcut(tr("Ctrl+Q"));
+    exitAct->setShortcuts(QKeySequence::Quit);
     connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
     aboutAct = new QAction(tr("&About"), this);
