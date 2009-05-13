@@ -57,6 +57,7 @@
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
+#include "qgraphicssceneevent.h"
 #include "qgraphicsscene_bsp_p.h"
 #include "qgraphicsitem_p.h"
 
@@ -73,7 +74,6 @@ QT_BEGIN_NAMESPACE
 
 class QGraphicsView;
 class QGraphicsWidget;
-class QGraphicsSceneTouchEvent;
 
 class QGraphicsScenePrivate : public QObjectPrivate
 {
@@ -276,10 +276,17 @@ public:
     mutable QBitArray validTransforms;
     mutable QVector<int> freeSceneTransformSlots;
 
-    void sendTouchEvent(QGraphicsSceneTouchEvent *touchEvent);
-    void touchBeginEvent(QGraphicsSceneTouchEvent *touchEvent);
-    void touchUpdateEvent(QGraphicsSceneTouchEvent *touchEvent);
-    void touchEndEvent(QGraphicsSceneTouchEvent *touchEvent);
+    QList<QGraphicsSceneTouchEvent::TouchPoint *> sceneCurrentTouchPoints;
+    QHash<QGraphicsItem *, QList<QGraphicsSceneTouchEvent::TouchPoint *> > itemCurrentTouchPoints;
+    QHash<int, QGraphicsItem *> itemForTouchPointId;
+    static void updateTouchPointsForItem(QGraphicsItem *item, QGraphicsSceneTouchEvent *touchEvent);
+    static QGraphicsSceneTouchEvent::TouchPoint *findClosestTouchPoint(const QList<QGraphicsSceneTouchEvent::TouchPoint *> &activeTouchPoints,
+                                                                       const QPointF &scenePos);
+    QEvent::Type appendTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint,
+                                  QList<QGraphicsSceneTouchEvent::TouchPoint *> *currentTouchPoints);
+    QEvent::Type removeTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint,
+                                  QList<QGraphicsSceneTouchEvent::TouchPoint *> *currentTouchPoints);
+    void touchEventHandler(QGraphicsSceneTouchEvent *touchEvent);
 };
 
 QT_END_NAMESPACE

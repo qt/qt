@@ -3726,11 +3726,17 @@ void QGestureEvent::accept(const QString &type)
 */
 QTouchEvent::QTouchEvent(QEvent::Type type,
                          Qt::KeyboardModifiers modifiers,
-                         const QList<TouchPoint *> &touchPoints)
+                         const QList<QTouchEvent::TouchPoint *> &touchPoints)
     : QInputEvent(type, modifiers), _touchPoints(touchPoints)
 { }
 
-/*! \fn const QList<QTouchEvent::TouchPoint *> &QTouchEvent::touchPoints() const
+/*!
+    Destroys the QTouchEvent.
+*/
+QTouchEvent::~QTouchEvent()
+{ }
+
+/*! \fn const QList<QTouchEvent::TouchPoint *> &QTouchEvent::TouchPoints() const
 
     Returns the list of touch points contained in the touch event.
 */
@@ -3762,6 +3768,12 @@ int QTouchEvent::TouchPoint::id() const
     return d->id;
 }
 
+/*! \internal */
+void QTouchEvent::TouchPoint::setId(int id)
+{
+    d->id = id;
+}
+
 /*!
     Returns the current state of this touch point.
 */
@@ -3770,56 +3782,98 @@ Qt::TouchPointState QTouchEvent::TouchPoint::state() const
     return d->state;
 }
 
+/*! \internal */
+void QTouchEvent::TouchPoint::setState(Qt::TouchPointState state)
+{
+    d->state = state;
+}
+
 /*!
     Returns the position of this touch point, relative to the widget
-    that received the event.
+    or item that received the event.
 */
-const QPointF &QTouchEvent::TouchPoint::pos() const
+QPointF QTouchEvent::TouchPoint::pos() const
 {
     return d->pos;
+}
+
+/*! \internal */
+void QTouchEvent::TouchPoint::setPos(const QPointF &pos)
+{
+    d->pos = pos;
 }
 
 /*!
     Returns the starting position of this touch point, relative to the
     widget that received the event.
 */
-const QPointF &QTouchEvent::TouchPoint::startPos() const
+QPointF QTouchEvent::TouchPoint::startPos() const
 {
     return d->startPos;
+}
+
+/*! \internal */
+void QTouchEvent::TouchPoint::setStartPos(const QPointF &startPos)
+{
+    d->startPos = startPos;
 }
 
 /*!
     Returns the position of this touch point from the previous touch
     event, relative to the widget that received the event.
 */
-const QPointF &QTouchEvent::TouchPoint::lastPos() const
+QPointF QTouchEvent::TouchPoint::lastPos() const
 {
     return d->lastPos;
 }
 
-/*!
-    Returns the global position of this touch point.
-*/
-const QPointF &QTouchEvent::TouchPoint::globalPos() const
+/*! \internal */
+void QTouchEvent::TouchPoint::setLastPos(const QPointF &lastPos)
 {
-    return d->globalPos;
+    d->lastPos = lastPos;
 }
 
 /*!
-    Returns the global starting position of this touch point.
+    Returns the screen position of this touch point.
 */
-const QPointF &QTouchEvent::TouchPoint::startGlobalPos() const
+QPointF QTouchEvent::TouchPoint::screenPos() const
 {
-    return d->startGlobalPos;
+    return d->screenPos;
+}
+
+/*! \internal */
+void QTouchEvent::TouchPoint::setScreenPos(const QPointF &screenPos)
+{
+    d->screenPos = screenPos;
 }
 
 /*!
-    Returns the global position of this touch point from the previous
+    Returns the starting screen position of this touch point.
+*/
+QPointF QTouchEvent::TouchPoint::startScreenPos() const
+{
+    return d->startScreenPos;
+}
+
+/*! \internal */
+void QTouchEvent::TouchPoint::setStartScreenPos(const QPointF &startScreenPos)
+{
+    d->startScreenPos = startScreenPos;
+}
+
+/*!
+    Returns the screen position of this touch point from the previous
     touch event.
 */
-const QPointF &QTouchEvent::TouchPoint::lastGlobalPos() const
+QPointF QTouchEvent::TouchPoint::lastScreenPos() const
 {
-    return d->lastGlobalPos;
+    return d->lastScreenPos;
+}
+
+/*! \internal */
+void QTouchEvent::TouchPoint::setLastScreenPos(const QPointF &lastScreenPos)
+{
+    d->lastScreenPos = lastScreenPos;
 }
 
 /*!
@@ -3829,6 +3883,12 @@ const QPointF &QTouchEvent::TouchPoint::lastGlobalPos() const
 qreal QTouchEvent::TouchPoint::pressure() const
 {
     return d->pressure;
+}
+
+/*! \internal */
+void QTouchEvent::TouchPoint::setPressure(qreal pressure)
+{
+    d->pressure = pressure;
 }
 
 QT_END_NAMESPACE

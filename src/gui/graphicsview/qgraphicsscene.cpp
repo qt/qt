@@ -3798,9 +3798,6 @@ bool QGraphicsScene::event(QEvent *event)
     case QEvent::GraphicsSceneHoverEnter:
     case QEvent::GraphicsSceneHoverLeave:
     case QEvent::GraphicsSceneHoverMove:
-    case QEvent::GraphicsSceneTouchBegin:
-    case QEvent::GraphicsSceneTouchUpdate:
-    case QEvent::GraphicsSceneTouchEnd:
         // Reset the under-mouse list to ensure that this event gets fresh
         // item-under-mouse data. Be careful about this list; if people delete
         // items from inside event handlers, this list can quickly end up
@@ -3990,13 +3987,9 @@ bool QGraphicsScene::event(QEvent *event)
     }
         break;
     case QEvent::GraphicsSceneTouchBegin:
-        d->touchBeginEvent(static_cast<QGraphicsSceneTouchEvent *>(event));
-        break;
     case QEvent::GraphicsSceneTouchUpdate:
-        d->touchUpdateEvent(static_cast<QGraphicsSceneTouchEvent *>(event));
-        break;
     case QEvent::GraphicsSceneTouchEnd:
-        d->touchEndEvent(static_cast<QGraphicsSceneTouchEvent *>(event));
+        d->touchEventHandler(static_cast<QGraphicsSceneTouchEvent *>(event));
         break;
     case QEvent::Timer:
         if (d->indexTimerId && static_cast<QTimerEvent *>(event)->timerId() == d->indexTimerId) {
@@ -5654,18 +5647,9 @@ void QGraphicsScenePrivate::releaseGesture(QGraphicsItem *item, int gestureId)
     //###
 }
 
-// ### FIXME: the code for touch event support is mosly copied from
-// ### QGraphicsScenePrivate::mousePressEventHandler() and friends, need to
-// ### refactor to reduce code duplication
-
-void QGraphicsScenePrivate::sendTouchEvent(QGraphicsSceneTouchEvent *touchEvent)
+void QGraphicsScenePrivate::updateTouchPointsForItem(QGraphicsItem *item,
+                                                     QGraphicsSceneTouchEvent *touchEvent)
 {
-    if (touchEvent->type() == QEvent::GraphicsSceneTouchEnd && lastMouseGrabberItemHasImplicitMouseGrab) {
-        clearMouseGrabber();
-        return;
-    }
-
-    QGraphicsItem *item = mouseGrabberItems.last();
     QList<QGraphicsSceneTouchEvent::TouchPoint *> touchPoints = touchEvent->touchPoints();
     for (int i = 0; i < touchPoints.count(); ++i) {
         QGraphicsSceneTouchEvent::TouchPoint *touchPoint = touchPoints.at(i);
@@ -5673,139 +5657,181 @@ void QGraphicsScenePrivate::sendTouchEvent(QGraphicsSceneTouchEvent *touchEvent)
         touchPoint->setStartPos(item->d_ptr->genericMapFromScene(touchPoint->startScenePos(), touchEvent->widget()));
         touchPoint->setLastPos(item->d_ptr->genericMapFromScene(touchPoint->lastScenePos(), touchEvent->widget()));
     }
-    sendEvent(item, touchEvent);
 }
 
-void QGraphicsScenePrivate::touchBeginEvent(QGraphicsSceneTouchEvent *touchEvent)
+QGraphicsSceneTouchEvent::TouchPoint *QGraphicsScenePrivate::findClosestTouchPoint(const QList<QGraphicsSceneTouchEvent::TouchPoint *> &sceneActiveTouchPoints,
+                                                                       const QPointF &scenePos)
+{
+    QGraphicsSceneTouchEvent::TouchPoint *closestTouchPoint = 0;
+    qreal closestDistance;
+    for (int i = 0; i < sceneActiveTouchPoints.count(); ++i) {
+        QGraphicsSceneTouchEvent::TouchPoint *touchPoint = sceneActiveTouchPoints.at(i);
+        qreal distance = QLineF(scenePos, touchPoint->scenePos()).length();
+        if (!closestTouchPoint || distance < closestDistance) {
+            closestTouchPoint = touchPoint;
+            closestDistance = distance;
+        }
+    }
+    return closestTouchPoint;
+}
+
+QEvent::Type QGraphicsScenePrivate::appendTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint,
+                                                     QList<QGraphicsSceneTouchEvent::TouchPoint *> *currentTouchPoints)
+{
+    QEvent::Type eventType = currentTouchPoints->isEmpty()
+                             ? QEvent::GraphicsSceneTouchBegin
+                             : QEvent::GraphicsSceneTouchUpdate;
+
+    // insort touch point (for the app)
+    int at = 0;
+    for (; at < sceneCurrentTouchPoints.count(); ++at) {
+        if (sceneCurrentTouchPoints.at(at)->id() > touchPoint->id())
+            break;
+    }
+    sceneCurrentTouchPoints.insert(at, touchPoint);
+    // again, for the items's currentTouchPoints
+    for (at = 0; at < currentTouchPoints->count(); ++at) {
+        if (currentTouchPoints->at(at)->id() > touchPoint->id())
+            break;
+    }
+    currentTouchPoints->insert(at, touchPoint);
+
+    return eventType;
+}
+
+QEvent::Type QGraphicsScenePrivate::removeTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint,
+                                                     QList<QGraphicsSceneTouchEvent::TouchPoint *> *currentTouchPoints)
+{
+    // remove touch point from all known touch points
+    for (int i = qMin(sceneCurrentTouchPoints.count() - 1, touchPoint->id()); i >= 0; --i) {
+        if (sceneCurrentTouchPoints.at(i) == touchPoint) {
+            sceneCurrentTouchPoints.removeAt(i);
+            break;
+        }
+    }
+    // again, for the items's currentTouchPoints
+    for (int i = qMin(currentTouchPoints->count() - 1, touchPoint->id()); i >= 0; --i) {
+        if (currentTouchPoints->at(i) == touchPoint) {
+            currentTouchPoints->removeAt(i);
+            break;
+        }
+    }
+
+    return currentTouchPoints->isEmpty() ? QEvent::GraphicsSceneTouchEnd : QEvent::GraphicsSceneTouchUpdate;
+}
+
+void QGraphicsScenePrivate::touchEventHandler(QGraphicsSceneTouchEvent *sceneTouchEvent)
 {
     Q_Q(QGraphicsScene);
 
-    // Ignore by default, unless we find a mouse grabber that accepts it.
-    touchEvent->ignore();
+    QList<QGraphicsSceneTouchEvent::TouchPoint *> sceneActiveTouchPoints = sceneCurrentTouchPoints;
 
-    // Deliver to any existing mouse grabber.
-    if (!mouseGrabberItems.isEmpty()) {
-        // The event is ignored by default, but we disregard the event's
-        // accepted state after delivery; the mouse is grabbed, after all.
-        sendTouchEvent(touchEvent);
-        return;
-    }
+    QHash<QGraphicsItem *, QGraphicsSceneTouchEvent *> itemsNeedingEvents;
+    for (int i = 0; i < sceneTouchEvent->touchPoints().count(); ++i) {
+        QGraphicsSceneTouchEvent::TouchPoint *touchPoint = sceneTouchEvent->touchPoints().at(i);
 
-    // Start by determining the number of items at the current position.
-    // Reuse value from earlier calculations if possible.
-    if (cachedItemsUnderMouse.isEmpty()) {
-        QGraphicsSceneTouchEvent::TouchPoint *touchPoint = touchEvent->touchPoints().first();
-        // ### FIXME: should the itemsAtPosition() function support sub-pixel screenPos?
-        cachedItemsUnderMouse = itemsAtPosition(touchPoint->screenPos().toPoint(),
-                                                touchPoint->scenePos(),
-                                                touchEvent->widget());
-    }
-
-    // Update window activation.
-    QGraphicsWidget *newActiveWindow = windowForItem(cachedItemsUnderMouse.value(0));
-    if (newActiveWindow != activeWindow)
-        q->setActiveWindow(newActiveWindow);
-
-    // Set focus on the topmost enabled item that can take focus.
-    bool setFocus = false;
-    foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
-        if (item->isEnabled() && (item->flags() & QGraphicsItem::ItemIsFocusable)) {
-            if (!item->isWidget() || ((QGraphicsWidget *)item)->focusPolicy() & Qt::ClickFocus) {
-                setFocus = true;
-                if (item != q->focusItem())
-                    q->setFocusItem(item, Qt::MouseFocusReason);
-                break;
+        // update state
+        QGraphicsItem *item = 0;
+        QEvent::Type eventType = QEvent::None;
+        QList<QGraphicsSceneTouchEvent::TouchPoint *> activeTouchPoints;
+        if (touchPoint->state() == Qt::TouchPointPressed) {
+            // determine which widget this event will go to
+            item = q->itemAt(touchPoint->scenePos());
+            QGraphicsSceneTouchEvent::TouchPoint *closestTouchPoint = findClosestTouchPoint(sceneActiveTouchPoints, touchPoint->scenePos());
+            if (closestTouchPoint) {
+                QGraphicsItem *closestItem = itemForTouchPointId.value(closestTouchPoint->id());
+                if (!item
+                    || (closestItem
+                        && (item->isAncestorOf(closestItem)
+                            || closestItem->isAncestorOf(item)))) {
+                    item = closestItem;
+                }
             }
+            if (!item)
+                continue;
+
+            itemForTouchPointId.insert(touchPoint->id(), item);
+
+            QList<QGraphicsSceneTouchEvent::TouchPoint *> &currentTouchPoints = itemCurrentTouchPoints[item];
+            eventType = appendTouchPoint(touchPoint, &currentTouchPoints);
+            // make sure new points are added to activeTouchPoints as well
+            sceneActiveTouchPoints = sceneCurrentTouchPoints;
+            activeTouchPoints = currentTouchPoints;
+        } else if (touchPoint->state() == Qt::TouchPointReleased) {
+            item = itemForTouchPointId.take(touchPoint->id());
+            if (!item)
+                continue;
+
+            QList<QGraphicsSceneTouchEvent::TouchPoint *> &currentTouchPoints = itemCurrentTouchPoints[item];
+            sceneActiveTouchPoints = sceneCurrentTouchPoints;
+            activeTouchPoints = currentTouchPoints;
+            eventType = removeTouchPoint(touchPoint, &currentTouchPoints);
+        } else {
+            item = itemForTouchPointId.value(touchPoint->id());
+            if (!item)
+                continue;
+
+            sceneActiveTouchPoints = sceneCurrentTouchPoints;
+            activeTouchPoints = itemCurrentTouchPoints.value(item);
+            eventType = QEvent::GraphicsSceneTouchUpdate;
+        }
+        Q_ASSERT(eventType != QEvent::None);
+
+        if (touchPoint->state() != Qt::TouchPointStationary) {
+            QGraphicsSceneTouchEvent *&touchEvent = itemsNeedingEvents[item];
+            if (!touchEvent) {
+                touchEvent = new QGraphicsSceneTouchEvent(eventType);
+                touchEvent->setModifiers(sceneTouchEvent->modifiers());
+            }
+            Q_ASSERT(touchEvent->type() == eventType);
+            touchEvent->setTouchPoints(activeTouchPoints);
         }
     }
 
-    // If nobody could take focus, clear it.
-    if (!stickyFocus && !setFocus)
-        q->setFocusItem(0, Qt::MouseFocusReason);
-
-    // Find a mouse grabber by sending touch events to all mouse grabber
-    // candidates one at a time, until the event is accepted. It's accepted by
-    // default, so the receiver has to explicitly ignore it for it to pass
-    // through.
-    foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
-        if (!item->acceptTouchEvents()) {
-            // Skip items that don't accept the touch events
-            continue;
-        }
-
-        grabMouse(item, /* implicit = */ true);
-        touchEvent->accept();
-
-        // check if the item we are sending to are disabled (before we send the event)
-        bool disabled = !item->isEnabled();
-        bool isWindow = item->isWindow();
-        sendTouchEvent(touchEvent);
-
-        bool dontSendUngrabEvents = mouseGrabberItems.isEmpty() || mouseGrabberItems.last() != item;
-        if (disabled) {
-            ungrabMouse(item, /* itemIsDying = */ dontSendUngrabEvents);
-            break;
-        }
-        if (touchEvent->isAccepted()) {
-            lastMouseGrabberItem = item;
-            return;
-        }
-        ungrabMouse(item, /* itemIsDying = */ dontSendUngrabEvents);
-
-        // Don't propagate through windows.
-        if (isWindow)
-            break;
-    }
-
-    // Is the event still ignored? Then the mouse press goes to the scene.
-    // Reset the mouse grabber, clear the selection, clear focus, and leave
-    // the event ignored so that it can propagate through the originating
-    // view.
-    if (!touchEvent->isAccepted()) {
-        clearMouseGrabber();
-
-        QGraphicsView *view = touchEvent->widget() ? qobject_cast<QGraphicsView *>(touchEvent->widget()->parentWidget()) : 0;
-        bool dontClearSelection = view && view->dragMode() == QGraphicsView::ScrollHandDrag;
-        if (!dontClearSelection) {
-            // Clear the selection if the originating view isn't in scroll
-            // hand drag mode. The view will clear the selection if no drag
-            // happened.
-            q->clearSelection();
-        }
-    }
-}
-
-void QGraphicsScenePrivate::touchUpdateEvent(QGraphicsSceneTouchEvent *touchEvent)
-{
-    if (mouseGrabberItems.isEmpty()) {
-        touchEvent->ignore();
+    if (itemsNeedingEvents.isEmpty()) {
+        sceneTouchEvent->ignore();
         return;
     }
 
-    // Forward the event to the mouse grabber
-    sendTouchEvent(touchEvent);
-    touchEvent->accept();
-}
+    bool acceptSceneTouchEvent = false;
+    QHash<QGraphicsItem *, QGraphicsSceneTouchEvent *>::ConstIterator it = itemsNeedingEvents.constBegin();
+    const QHash<QGraphicsItem *, QGraphicsSceneTouchEvent *>::ConstIterator end = itemsNeedingEvents.constEnd();
+    for (; it != end; ++it) {
+        QGraphicsItem *item = it.key();
 
-void QGraphicsScenePrivate::touchEndEvent(QGraphicsSceneTouchEvent *touchEvent)
-{
-    if (mouseGrabberItems.isEmpty()) {
-        touchEvent->ignore();
-        return;
+        QGraphicsSceneTouchEvent *touchEvent = it.value();
+        updateTouchPointsForItem(item, touchEvent);
+
+        switch (touchEvent->type()) {
+        case QEvent::GraphicsSceneTouchBegin:
+        {
+            // if the TouchBegin handler recurses, we assume that means the event
+            // has been implicitly accepted and continue to send touch events
+            item->d_ptr->acceptedTouchBeginEvent = true;
+            bool res = sendEvent(item, touchEvent)
+                       && touchEvent->isAccepted();
+            acceptSceneTouchEvent = acceptSceneTouchEvent || res;
+            break;
+        }
+        case QEvent::GraphicsSceneTouchEnd:
+        {
+            QList<QGraphicsSceneTouchEvent::TouchPoint *> currentTouchPoints = itemCurrentTouchPoints.take(item);
+            if (!currentTouchPoints.isEmpty()) {
+                qFatal("Qt: INTERNAL ERROR, the widget's currentTouchPoints should be empty!");
+            }
+            // fall-through intended
+        }
+        default:
+            if (item->d_ptr->acceptedTouchBeginEvent) {
+                (void) sendEvent(item, touchEvent);
+                acceptSceneTouchEvent = true;
+            }
+            break;
+        }
+
+        delete touchEvent;
     }
-
-    // Forward the event to the mouse grabber
-    sendTouchEvent(touchEvent);
-    touchEvent->accept();
-
-    // Reset the mouse grabber
-    if (!mouseGrabberItems.isEmpty()) {
-        lastMouseGrabberItem = mouseGrabberItems.last();
-        if (lastMouseGrabberItemHasImplicitMouseGrab)
-            mouseGrabberItems.last()->ungrabMouse();
-    } else {
-        lastMouseGrabberItem = 0;
-    }
+    sceneTouchEvent->setAccepted(acceptSceneTouchEvent);
 }
 
 QT_END_NAMESPACE

@@ -301,6 +301,7 @@
 #include <QtCore/qstring.h>
 #include "qgraphicsview.h"
 #include "qgraphicsitem.h"
+#include <private/qevent_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1966,10 +1967,7 @@ QGraphicsSceneTouchEvent::QGraphicsSceneTouchEvent(Type type)
     Destroys the QGraphicsSceneTouchEvent.
 */
 QGraphicsSceneTouchEvent::~QGraphicsSceneTouchEvent()
-{
-    Q_D(QGraphicsSceneTouchEvent);
-    qDeleteAll(d->touchPoints);
-}
+{ }
 
 /*!
     Returns the list of touch points for this event.
@@ -2004,116 +2002,6 @@ void QGraphicsSceneTouchEvent::setModifiers(Qt::KeyboardModifiers modifiers)
 {
     Q_D(QGraphicsSceneTouchEvent);
     d->modifiers = modifiers;
-}
-
-class QGraphicsSceneTouchEventTouchPointPrivate
-{
-public:
-    inline QGraphicsSceneTouchEventTouchPointPrivate()
-        : id(-1), state(Qt::TouchPointReleased), pressure(qreal(0.))
-    { }
-
-    int id;
-    Qt::TouchPointState state;
-    QPointF pos, startPos, lastPos;
-    QPointF scenePos, startScenePos, lastScenePos;
-    QPointF screenPos, startScreenPos, lastScreenPos;
-    qreal pressure;
-};
-
-/*! \internal
-
-    Constructs a new touch point for use in a QGraphicsSceneTouchEvent.
-*/
-QGraphicsSceneTouchEvent::TouchPoint::TouchPoint()
-    : d(new QGraphicsSceneTouchEventTouchPointPrivate)
-{
-}
-
-/*! \internal
-
-    Destroys the QGraphicsSceneTouchEvent::TouchPoint.
-*/
-QGraphicsSceneTouchEvent::TouchPoint::~TouchPoint()
-{
-    delete d;
-}
-
-/*!
-    Returns the identifier for this touch point.
-*/
-int QGraphicsSceneTouchEvent::TouchPoint::id() const
-{
-    return d->id;
-}
-
-/*! \internal */
-void QGraphicsSceneTouchEvent::TouchPoint::setId(int id)
-{
-    d->id = id;
-}
-
-/*!
-    Returns the state of this touch point at the time the
-    QGraphicsSceneTouchEvent occurred.
-*/
-Qt::TouchPointState QGraphicsSceneTouchEvent::TouchPoint::state() const
-{
-    return d->state;
-}
-
-/*! \internal */
-void QGraphicsSceneTouchEvent::TouchPoint::setState(Qt::TouchPointState state)
-{
-    d->state = state;
-}
-
-/*!
-    Returns the current position of this touch point in item coordinates.
-
-    \sa scenePos(), screenPos()
-*/
-QPointF QGraphicsSceneTouchEvent::TouchPoint::pos() const
-{
-    return d->pos;
-}
-
-/*! \internal */
-void QGraphicsSceneTouchEvent::TouchPoint::setPos(const QPointF &pos)
-{
-    d->pos = pos;
-}
-
-/*!
-    Returns the starting position of this touch point in item coordinates.
-
-    \sa startScenePos(), startScreenPos()
-*/
-QPointF QGraphicsSceneTouchEvent::TouchPoint::startPos() const
-{
-    return d->startPos;
-}
-
-/*! \internal */
-void QGraphicsSceneTouchEvent::TouchPoint::setStartPos(const QPointF &startPos)
-{
-    d->startPos = startPos;
-}
-
-/*!
-    Returns the previous position of this touch point in item coordinates.
-
-    \sa lastScenePos(), lastScreenPos()
-*/
-QPointF QGraphicsSceneTouchEvent::TouchPoint::lastPos() const
-{
-    return d->lastPos;
-}
-
-/*! \internal */
-void QGraphicsSceneTouchEvent::TouchPoint::setLastPos(const QPointF &lastPos)
-{
-    d->lastPos = lastPos;
 }
 
 /*!
@@ -2162,68 +2050,6 @@ QPointF QGraphicsSceneTouchEvent::TouchPoint::lastScenePos() const
 void QGraphicsSceneTouchEvent::TouchPoint::setLastScenePos(const QPointF &lastScenePos)
 {
     d->lastScenePos = lastScenePos;
-}
-
-/*!
-    Returns the current position of this touch point in screen coordinates.
-
-    \sa pos(), scenePos()
-*/
-QPointF QGraphicsSceneTouchEvent::TouchPoint::screenPos() const
-{
-    return d->screenPos;
-}
-
-/*! \internal */
-void QGraphicsSceneTouchEvent::TouchPoint::setScreenPos(const QPointF &screenPos)
-{
-    d->screenPos = screenPos;
-}
-
-/*!
-    Returns the starting position of this touch point in screen coordinates.
-
-    \sa startPos(), startScenePos()
-*/
-QPointF QGraphicsSceneTouchEvent::TouchPoint::startScreenPos() const
-{
-    return d->startScreenPos;
-}
-
-/*! \internal */
-void QGraphicsSceneTouchEvent::TouchPoint::setStartScreenPos(const QPointF &startScreenPos)
-{
-    d->startScreenPos = startScreenPos;
-}
-
-/*!
-    Returns the previous position of this touch point in screen coordinates.
-
-    \sa lastPos(), lastScenePos()
-*/
-QPointF QGraphicsSceneTouchEvent::TouchPoint::lastScreenPos() const
-{
-    return d->lastScreenPos;
-}
-
-/*! \internal */
-void QGraphicsSceneTouchEvent::TouchPoint::setLastScreenPos(const QPointF &lastScreenPos)
-{
-    d->lastScreenPos = lastScreenPos;
-}
-
-/*!
-    Returns the pressure of this touch point.
-*/
-qreal QGraphicsSceneTouchEvent::TouchPoint::pressure() const
-{
-    return d->pressure;
-}
-
-/*! \internal */
-void QGraphicsSceneTouchEvent::TouchPoint::setPressure(qreal pressure)
-{
-    d->pressure = pressure;
 }
 
 QT_END_NAMESPACE

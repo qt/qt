@@ -433,6 +433,7 @@ public:
     // map<gesture name -> number of widget subscribed to it>
     QMap<QString, int> grabbedGestures;
 
+    QHash<int, QWidget *> widgetForTouchPointId;
     QMap<QWidget *, QList<QTouchEvent::TouchPoint *> > widgetCurrentTouchPoints;
     static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
 
@@ -441,13 +442,13 @@ public:
     static qt_GetTouchInputInfoPtr GetTouchInputInfo;
     static qt_CloseTouchInputHandlePtr CloseTouchInputHandle;
 
-    QMap<DWORD, int> touchInputIDToTouchPointID;
+    QHash<DWORD, int> touchInputIDToTouchPointID;
     QVector<QTouchEvent::TouchPoint *> appAllTouchPoints;
     QList<QTouchEvent::TouchPoint *> appCurrentTouchPoints;
 
     void initializeMultitouch();
     static QTouchEvent::TouchPoint *findClosestTouchPoint(const QList<QTouchEvent::TouchPoint *> &activeTouchPoints,
-                                                          const QPointF &pos);
+                                                          const QPointF &screenPos);
     QEvent::Type appendTouchPoint(QTouchEvent::TouchPoint *touchPoint,
                                   QList<QTouchEvent::TouchPoint *> *currentTouchPoints);
     QEvent::Type removeTouchPoint(QTouchEvent::TouchPoint *touchPoint,

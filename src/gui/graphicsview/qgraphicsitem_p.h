@@ -331,6 +331,7 @@ public:
     quint32 inSetPosHelper : 1;
     quint32 allChildrenCombineOpacity : 1;
     quint32 acceptTouchEvents : 1;
+    quint32 acceptedTouchBeginEvent : 1;
 
     // Optional stacking order
     int globalStackingOrder;

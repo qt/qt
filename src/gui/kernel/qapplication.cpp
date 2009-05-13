@@ -4045,7 +4045,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 // the first widget to accept the TouchBegin gets an implicit grab.
                 for (int i = 0; i < touchEvent->_touchPoints.count(); ++i) {
                     QTouchEvent::TouchPoint *touchPoint = touchEvent->_touchPoints.at(i);
-                    touchPoint->d->widget = widget;
+                    d->widgetForTouchPointId[touchPoint->d->id] = widget;
                 }
                 if (origin != widget)
                     d->widgetCurrentTouchPoints.remove(origin);
@@ -5245,10 +5245,10 @@ void QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEven
         QTouchEvent::TouchPoint *touchPoint = touchEvent->_touchPoints.at(i);
 
         // preserve the sub-pixel resolution
-        const QPointF delta = touchPoint->d->globalPos - touchPoint->d->globalPos.toPoint();
-        touchPoint->d->pos = widget->mapFromGlobal(touchPoint->d->globalPos.toPoint()) + delta;
-        touchPoint->d->startPos = widget->mapFromGlobal(touchPoint->d->startGlobalPos.toPoint()) + delta;
-        touchPoint->d->lastPos = widget->mapFromGlobal(touchPoint->d->lastGlobalPos.toPoint()) + delta;
+        const QPointF delta = touchPoint->d->screenPos - touchPoint->d->screenPos.toPoint();
+        touchPoint->d->pos = widget->mapFromGlobal(touchPoint->d->screenPos.toPoint()) + delta;
+        touchPoint->d->startPos = widget->mapFromGlobal(touchPoint->d->startScreenPos.toPoint()) + delta;
+        touchPoint->d->lastPos = widget->mapFromGlobal(touchPoint->d->lastScreenPos.toPoint()) + delta;
     }
 }
 

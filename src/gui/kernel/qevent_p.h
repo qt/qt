@@ -98,11 +98,11 @@ public:
           pressure(qreal(-1.))
     { }
 
-    QPointer<QWidget> widget;
     int id;
     Qt::TouchPointState state;
     QPointF pos, startPos, lastPos;
-    QPointF globalPos, startGlobalPos, lastGlobalPos;
+    QPointF scenePos, startScenePos, lastScenePos;
+    QPointF screenPos, startScreenPos, lastScreenPos;
     qreal pressure;
 };
 
