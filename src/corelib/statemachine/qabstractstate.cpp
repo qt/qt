@@ -129,36 +129,16 @@ void QAbstractStatePrivate::emitExited()
   Constructs a new state with the given \a parent state.
 */
 QAbstractState::QAbstractState(QState *parent)
-    : QObject(
-#ifndef QT_STATEMACHINE_SOLUTION
-        *new QAbstractStatePrivate,
-#endif
-        parent)
-#ifdef QT_STATEMACHINE_SOLUTION
-    , d_ptr(new QAbstractStatePrivate)
-#endif
+    : QObject(*new QAbstractStatePrivate, parent)
 {
-#ifdef QT_STATEMACHINE_SOLUTION
-    d_ptr->q_ptr = this;
-#endif
 }
 
 /*!
   \internal
 */
 QAbstractState::QAbstractState(QAbstractStatePrivate &dd, QState *parent)
-    : QObject(
-#ifndef QT_STATEMACHINE_SOLUTION
-        dd,
-#endif
-        parent)
-#ifdef QT_STATEMACHINE_SOLUTION
-    , d_ptr(&dd)
-#endif
+    : QObject(dd, parent)
 {
-#ifdef QT_STATEMACHINE_SOLUTION
-    d_ptr->q_ptr = this;
-#endif
 }
 
 /*!
@@ -166,9 +146,6 @@ QAbstractState::QAbstractState(QAbstractStatePrivate &dd, QState *parent)
 */
 QAbstractState::~QAbstractState()
 {
-#ifdef QT_STATEMACHINE_SOLUTION
-    delete d_ptr;
-#endif
 }
 
 /*!

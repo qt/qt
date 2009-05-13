@@ -76,9 +76,6 @@ protected:
     bool event(QEvent *e);
 
 protected:
-#ifdef QT_STATEMACHINE_SOLUTION
-     QAbstractStatePrivate *d_ptr;
-#endif
     QAbstractState(QAbstractStatePrivate &dd, QState *parent);
 
 private:

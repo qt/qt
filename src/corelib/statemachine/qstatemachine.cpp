@@ -54,10 +54,8 @@
 #include "qfinalstate.h"
 #include "qhistorystate.h"
 #include "qhistorystate_p.h"
-#ifndef QT_STATEMACHINE_SOLUTION
 #include "private/qobject_p.h"
 #include "private/qthread_p.h"
-#endif
 
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
 #include "qeventtransition.h"
@@ -68,11 +66,7 @@
 #ifndef QT_NO_ANIMATION
 #include "qpropertyanimation.h"
 #include "qanimationgroup.h"
-# ifndef QT_STATEMACHINE_SOLUTION
-# include <private/qvariantanimation_p.h>
-# else
-# include "qvariantanimation_p.h"
-# endif
+#include <private/qvariantanimation_p.h>
 #endif
 
 #include <QtCore/qmetaobject.h>
@@ -212,9 +206,7 @@ QStateMachinePrivate::QStateMachinePrivate()
     globalRestorePolicy = QStateMachine::DoNotRestoreProperties;
     rootState = 0;
     initialErrorStateForRoot = 0;
-#ifndef QT_STATEMACHINE_SOLUTION
     signalEventGenerator = 0;
-#endif
 #ifndef QT_NO_ANIMATION
     animationsEnabled = true;
 #endif
@@ -1274,8 +1266,6 @@ void QStateMachinePrivate::unregisterTransition(QAbstractTransition *transition)
 #endif
 }
 
-#ifndef QT_STATEMACHINE_SOLUTION
-
 static int senderSignalIndex(const QObject *sender)
 {
     QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject*>(sender));
@@ -1291,8 +1281,6 @@ static int senderSignalIndex(const QObject *sender)
         return -1;
     return d->currentSender->signal;
 }
-
-#endif
 
 void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transition)
 {
@@ -1315,12 +1303,8 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
     if (connectedSignalIndexes.size() <= signalIndex)
         connectedSignalIndexes.resize(signalIndex+1);
     if (connectedSignalIndexes.at(signalIndex) == 0) {
-#ifndef QT_STATEMACHINE_SOLUTION
         if (!signalEventGenerator)
             signalEventGenerator = new QSignalEventGenerator(q);
-#else
-        QSignalEventGenerator *signalEventGenerator = new QSignalEventGenerator(signalIndex, q);
-#endif
         bool ok = QMetaObject::connect(sender, signalIndex, signalEventGenerator,
                                        signalEventGenerator->metaObject()->methodOffset());
         if (!ok) {
@@ -1346,7 +1330,6 @@ void QStateMachinePrivate::unregisterSignalTransition(QSignalTransition *transit
     int signalIndex = QSignalTransitionPrivate::get(transition)->signalIndex;
     if (signalIndex == -1)
         return; // not registered
-#ifndef QT_STATEMACHINE_SOLUTION
     QSignalTransitionPrivate::get(transition)->signalIndex = -1;
     const QObject *sender = QSignalTransitionPrivate::get(transition)->sender;
     QVector<int> &connectedSignalIndexes = connections[sender];
@@ -1362,7 +1345,6 @@ void QStateMachinePrivate::unregisterSignalTransition(QSignalTransition *transit
         if (sum == 0)
             connections.remove(sender);
     }
-#endif
 }
 
 void QStateMachinePrivate::unregisterAllTransitions()
@@ -1392,10 +1374,8 @@ void QStateMachinePrivate::registerEventTransition(QEventTransition *transition)
     QObject *object = QEventTransitionPrivate::get(transition)->object;
     if (!object)
         return;
-#ifndef QT_STATEMACHINE_SOLUTION
     QObjectPrivate *od = QObjectPrivate::get(object);
     if (!od->eventFilters.contains(q))
-#endif
         object->installEventFilter(q);
     qobjectEvents[object].insert(transition->eventType());
     QEventTransitionPrivate::get(transition)->registered = true;
@@ -1449,36 +1429,16 @@ void QStateMachinePrivate::handleTransitionSignal(const QObject *sender, int sig
   Constructs a new state machine with the given \a parent.
 */
 QStateMachine::QStateMachine(QObject *parent)
-    : QObject(
-#ifndef QT_STATEMACHINE_SOLUTION
-        *new QStateMachinePrivate,
-#endif
-        parent)
-#ifdef QT_STATEMACHINE_SOLUTION
-    , d_ptr(new QStateMachinePrivate)
-#endif
+    : QObject(*new QStateMachinePrivate, parent)
 {
-#ifdef QT_STATEMACHINE_SOLUTION
-    d_ptr->q_ptr = this;
-#endif
 }
 
 /*!
   \internal
 */
 QStateMachine::QStateMachine(QStateMachinePrivate &dd, QObject *parent)
-    : QObject(
-#ifndef QT_STATEMACHINE_SOLUTION
-        dd,
-#endif
-        parent)
-#ifdef QT_STATEMACHINE_SOLUTION
-    , d_ptr(&dd)
-#endif
+    : QObject(dd, parent)
 {
-#ifdef QT_STATEMACHINE_SOLUTION
-    d_ptr->q_ptr = this;
-#endif
 }
 
 /*!
@@ -1486,9 +1446,6 @@ QStateMachine::QStateMachine(QStateMachinePrivate &dd, QObject *parent)
 */
 QStateMachine::~QStateMachine()
 {
-#ifdef QT_STATEMACHINE_SOLUTION
-    delete d_ptr;
-#endif
 }
 
 namespace {
@@ -2088,11 +2045,9 @@ int QSignalEventGenerator::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
         case 0: {
-#ifndef QT_STATEMACHINE_SOLUTION
 // ### in Qt 4.6 we can use QObject::senderSignalIndex()
             int signalIndex = senderSignalIndex(this);
             Q_ASSERT(signalIndex != -1);
-#endif
             QStateMachine *machine = qobject_cast<QStateMachine*>(parent());
             QStateMachinePrivate::get(machine)->handleTransitionSignal(sender(), signalIndex, _a);
             break;
@@ -2104,15 +2059,8 @@ int QSignalEventGenerator::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     return _id;
 }
 
-QSignalEventGenerator::QSignalEventGenerator(
-#ifdef QT_STATEMACHINE_SOLUTION
-    int sigIdx,
-#endif
-    QStateMachine *parent)
+QSignalEventGenerator::QSignalEventGenerator(QStateMachine *parent)
     : QObject(parent)
-#ifdef QT_STATEMACHINE_SOLUTION
-    , signalIndex(sigIdx)
-#endif
 {
 }
 
@@ -2143,13 +2091,8 @@ QSignalEventGenerator::QSignalEventGenerator(
 */
 QSignalEvent::QSignalEvent(const QObject *sender, int signalIndex,
                            const QList<QVariant> &arguments)
-    :
-#ifndef QT_STATEMACHINE_SOLUTION
-    QEvent(QEvent::Signal)
-#else
-    QEvent(QEvent::Type(QEvent::User-1))
-#endif
-    , m_sender(sender), m_signalIndex(signalIndex), m_arguments(arguments)
+    : QEvent(QEvent::Signal), m_sender(sender),
+      m_signalIndex(signalIndex), m_arguments(arguments)
 {
 }
 
@@ -2208,12 +2151,7 @@ QSignalEvent::~QSignalEvent()
   and \a event.
 */
 QWrappedEvent::QWrappedEvent(QObject *object, QEvent *event)
-#ifdef QT_STATEMACHINE_SOLUTION
-      : QEvent(QEvent::Type(QEvent::User-3))
-#else
-      : QEvent(QEvent::Wrapped)
-#endif
-      , m_object(object), m_event(event)
+    : QEvent(QEvent::Wrapped), m_object(object), m_event(event)
 {
 }
 

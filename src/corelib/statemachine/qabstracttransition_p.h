@@ -53,9 +53,7 @@
 // We mean it.
 //
 
-#ifndef QT_STATEMACHINE_SOLUTION
 #include <private/qobject_p.h>
-#endif
 
 #include <QtCore/qlist.h>
 #include <QtCore/qpointer.h>
@@ -68,9 +66,7 @@ class QStateMachine;
 
 class QAbstractTransition;
 class Q_CORE_EXPORT QAbstractTransitionPrivate
-#ifndef QT_STATEMACHINE_SOLUTION
     : public QObjectPrivate
-#endif
 {
     Q_DECLARE_PUBLIC(QAbstractTransition)
 public:
@@ -88,10 +84,6 @@ public:
 
 #ifndef QT_NO_ANIMATION
     QList<QAbstractAnimation*> animations;
-#endif
-
-#ifdef QT_STATEMACHINE_SOLUTION
-    QAbstractTransition *q_ptr;
 #endif
 };
 
