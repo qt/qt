@@ -225,7 +225,9 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
     valueForTime() and emitting valueChanged(). By default, valueForTime()
     applies an interpolation algorithm to generate these value. You can choose
     from a set of predefined timeline algorithms by calling
-    setCurveShape(). By default, QTimeLine uses the EaseInOut curve shape,
+    setCurveShape().
+   
+    Note that by default, QTimeLine uses the EaseInOut curve shape,
     which provides a value that grows slowly, then grows steadily, and
     finally grows slowly. For a custom timeline, you can reimplement
     valueForTime(), in which case QTimeLine's curveShape property is ignored.
