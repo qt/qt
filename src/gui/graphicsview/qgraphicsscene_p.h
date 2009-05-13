@@ -287,6 +287,7 @@ public:
     QEvent::Type removeTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint,
                                   QList<QGraphicsSceneTouchEvent::TouchPoint *> *currentTouchPoints);
     void touchEventHandler(QGraphicsSceneTouchEvent *touchEvent);
+    bool sendTouchBeginEvent(QGraphicsItem *item, QGraphicsSceneTouchEvent *touchEvent);
 };
 
 QT_END_NAMESPACE
