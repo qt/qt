@@ -98,7 +98,7 @@
     This is done by setting the error state of the plugin's top-most state to a special error state
     defined specifically for the plugin in question.
     
-    \snippet examples/statemachine/tankgame/mainwindow.cpp 3
+    \snippet examples/statemachine/tankgame/mainwindow.cpp 4
     
     If a run-time error occurs in \c pluginState or any of its descendants, the state machine will
     search the hierarchy of ancestors until it finds a state whose error state is different from
