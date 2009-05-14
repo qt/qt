@@ -2851,7 +2851,7 @@ void HtmlGenerator::findAllFunctions(const InnerNode *node)
                 const FunctionNode *func = static_cast<const FunctionNode *>(*c);
                 if (func->status() > Node::Obsolete && func->metaness() != FunctionNode::Ctor
                         && func->metaness() != FunctionNode::Dtor) {
-                    funcIndex[(*c)->name()].insert((*c)->parent()->name(), *c);
+                    funcIndex[(*c)->name()].insert(tre->fullDocumentName((*c)->parent()), *c);
                 }
             }
         }
