@@ -187,12 +187,14 @@ void tst_qmlbindengine::contextPropertiesTriggerReeval()
     QmlContext context(engine.rootContext());
     MyQmlObject object1;
     MyQmlObject object2;
+    MyQmlObject *object3 = new MyQmlObject;
 
     object1.setStringProperty("Hello");
     object2.setStringProperty("World");
 
     context.setContextProperty("testProp", QVariant(1));
     context.setContextProperty("testObj", &object1);
+    context.setContextProperty("testObj2", object3);
 
     { 
         MyExpression expr(&context, "testProp + 1");
@@ -233,6 +235,18 @@ void tst_qmlbindengine::contextPropertiesTriggerReeval()
         QCOMPARE(expr.changed, true);
         QCOMPARE(expr.value(), QVariant("Hello"));
     }
+
+    { 
+        MyExpression expr(&context, "testObj2");
+        QCOMPARE(expr.changed, false);
+        QCOMPARE(expr.value(), QVariant::fromValue((QObject *)object3));
+
+        delete object3;
+
+        QCOMPARE(expr.changed, true);
+        QCOMPARE(expr.value(), QVariant());
+    }
+
 }
 
 QTEST_MAIN(tst_qmlbindengine)
