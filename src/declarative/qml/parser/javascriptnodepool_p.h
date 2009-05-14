@@ -60,8 +60,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class JavaScriptEnginePrivate;
-
 namespace JavaScript {
 
 namespace AST {
@@ -70,6 +68,7 @@ class Node;
 
 class Code;
 class CompilationUnit;
+class JavaScriptEnginePrivate;
 
 template <typename NodeType>
 inline NodeType *makeAstNode(MemoryPool *storage)

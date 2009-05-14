@@ -212,52 +212,55 @@
 QT_BEGIN_NAMESPACE
 
 class QString;
-class JavaScriptEnginePrivate;
-class JavaScriptNameIdImpl;
 
-class JavaScriptParser: protected $table
+namespace JavaScript {
+
+class JavaScriptEnginePrivate;
+class NameId;
+
+class Parser: protected $table
 {
 public:
     union Value {
       int ival;
       double dval;
-      JavaScriptNameIdImpl *sval;
-      JavaScript::AST::ArgumentList *ArgumentList;
-      JavaScript::AST::CaseBlock *CaseBlock;
-      JavaScript::AST::CaseClause *CaseClause;
-      JavaScript::AST::CaseClauses *CaseClauses;
-      JavaScript::AST::Catch *Catch;
-      JavaScript::AST::DefaultClause *DefaultClause;
-      JavaScript::AST::ElementList *ElementList;
-      JavaScript::AST::Elision *Elision;
-      JavaScript::AST::ExpressionNode *Expression;
-      JavaScript::AST::Finally *Finally;
-      JavaScript::AST::FormalParameterList *FormalParameterList;
-      JavaScript::AST::FunctionBody *FunctionBody;
-      JavaScript::AST::FunctionDeclaration *FunctionDeclaration;
-      JavaScript::AST::Node *Node;
-      JavaScript::AST::PropertyName *PropertyName;
-      JavaScript::AST::PropertyNameAndValueList *PropertyNameAndValueList;
-      JavaScript::AST::SourceElement *SourceElement;
-      JavaScript::AST::SourceElements *SourceElements;
-      JavaScript::AST::Statement *Statement;
-      JavaScript::AST::StatementList *StatementList;
-      JavaScript::AST::Block *Block;
-      JavaScript::AST::VariableDeclaration *VariableDeclaration;
-      JavaScript::AST::VariableDeclarationList *VariableDeclarationList;
+      NameId *sval;
+      AST::ArgumentList *ArgumentList;
+      AST::CaseBlock *CaseBlock;
+      AST::CaseClause *CaseClause;
+      AST::CaseClauses *CaseClauses;
+      AST::Catch *Catch;
+      AST::DefaultClause *DefaultClause;
+      AST::ElementList *ElementList;
+      AST::Elision *Elision;
+      AST::ExpressionNode *Expression;
+      AST::Finally *Finally;
+      AST::FormalParameterList *FormalParameterList;
+      AST::FunctionBody *FunctionBody;
+      AST::FunctionDeclaration *FunctionDeclaration;
+      AST::Node *Node;
+      AST::PropertyName *PropertyName;
+      AST::PropertyNameAndValueList *PropertyNameAndValueList;
+      AST::SourceElement *SourceElement;
+      AST::SourceElements *SourceElements;
+      AST::Statement *Statement;
+      AST::StatementList *StatementList;
+      AST::Block *Block;
+      AST::VariableDeclaration *VariableDeclaration;
+      AST::VariableDeclarationList *VariableDeclarationList;
 
-      JavaScript::AST::UiProgram *UiProgram;
-      JavaScript::AST::UiImportList *UiImportList;
-      JavaScript::AST::UiImport *UiImport;
-      JavaScript::AST::UiPublicMember *UiPublicMember;
-      JavaScript::AST::UiObjectDefinition *UiObjectDefinition;
-      JavaScript::AST::UiObjectInitializer *UiObjectInitializer;
-      JavaScript::AST::UiObjectBinding *UiObjectBinding;
-      JavaScript::AST::UiScriptBinding *UiScriptBinding;
-      JavaScript::AST::UiArrayBinding *UiArrayBinding;
-      JavaScript::AST::UiObjectMember *UiObjectMember;
-      JavaScript::AST::UiObjectMemberList *UiObjectMemberList;
-      JavaScript::AST::UiQualifiedId *UiQualifiedId;
+      AST::UiProgram *UiProgram;
+      AST::UiImportList *UiImportList;
+      AST::UiImport *UiImport;
+      AST::UiPublicMember *UiPublicMember;
+      AST::UiObjectDefinition *UiObjectDefinition;
+      AST::UiObjectInitializer *UiObjectInitializer;
+      AST::UiObjectBinding *UiObjectBinding;
+      AST::UiScriptBinding *UiScriptBinding;
+      AST::UiArrayBinding *UiArrayBinding;
+      AST::UiObjectMember *UiObjectMember;
+      AST::UiObjectMemberList *UiObjectMemberList;
+      AST::UiQualifiedId *UiQualifiedId;
     };
 
     struct DiagnosticMessage {
@@ -266,7 +269,7 @@ public:
         DiagnosticMessage()
             : kind(Error) {}
 
-        DiagnosticMessage(Kind kind, const JavaScript::AST::SourceLocation &loc, const QString &message)
+        DiagnosticMessage(Kind kind, const AST::SourceLocation &loc, const QString &message)
             : kind(kind), loc(loc), message(message) {}
 
         bool isWarning() const
@@ -276,17 +279,17 @@ public:
         { return kind == Error; }
 
         Kind kind;
-        JavaScript::AST::SourceLocation loc;
+        AST::SourceLocation loc;
         QString message;
     };
 
 public:
-    JavaScriptParser();
-    ~JavaScriptParser();
+    Parser();
+    ~Parser();
 
     bool parse(JavaScriptEnginePrivate *driver);
 
-    JavaScript::AST::UiProgram *ast()
+    AST::UiProgram *ast()
     { return program; }
 
     QList<DiagnosticMessage> diagnosticMessages() const
@@ -317,7 +320,7 @@ protected:
     inline Value &sym(int index)
     { return sym_stack [tos + index - 1]; }
 
-    inline JavaScript::AST::SourceLocation &loc(int index)
+    inline AST::SourceLocation &loc(int index)
     { return location_stack [tos + index - 1]; }
 
 protected:
@@ -325,9 +328,9 @@ protected:
     int stack_size;
     Value *sym_stack;
     int *state_stack;
-    JavaScript::AST::SourceLocation *location_stack;
+    AST::SourceLocation *location_stack;
 
-    JavaScript::AST::UiProgram *program;
+    AST::UiProgram *program;
 
     // error recovery
     enum { TOKEN_BUFFER_SIZE = 3 };
@@ -335,12 +338,12 @@ protected:
     struct SavedToken {
        int token;
        double dval;
-       JavaScript::AST::SourceLocation loc;
+       AST::SourceLocation loc;
     };
 
     double yylval;
-    JavaScript::AST::SourceLocation yylloc;
-    JavaScript::AST::SourceLocation yyprevlloc;
+    AST::SourceLocation yylloc;
+    AST::SourceLocation yyprevlloc;
 
     SavedToken token_buffer[TOKEN_BUFFER_SIZE];
     SavedToken *first_token;
@@ -348,6 +351,9 @@ protected:
 
     QList<DiagnosticMessage> diagnostic_messages;
 };
+
+} // end of namespace JavaScript
+
 
 :/
 
@@ -365,7 +371,7 @@ using namespace JavaScript;
 
 QT_BEGIN_NAMESPACE
 
-void JavaScriptParser::reallocateStack()
+void Parser::reallocateStack()
 {
     if (! stack_size)
         stack_size = 128;
@@ -385,7 +391,7 @@ inline static bool automatic(JavaScriptEnginePrivate *driver, int token)
 }
 
 
-JavaScriptParser::JavaScriptParser():
+Parser::Parser():
     tos(0),
     stack_size(0),
     sym_stack(0),
@@ -396,7 +402,7 @@ JavaScriptParser::JavaScriptParser():
 {
 }
 
-JavaScriptParser::~JavaScriptParser()
+Parser::~Parser()
 {
     if (stack_size) {
         qFree(sym_stack);
@@ -415,7 +421,7 @@ static inline AST::SourceLocation location(Lexer *lexer)
     return loc;
 }
 
-bool JavaScriptParser::parse(JavaScriptEnginePrivate *driver)
+bool Parser::parse(JavaScriptEnginePrivate *driver)
 {
     Lexer *lexer = driver->lexer();
     bool hadErrors = false;
@@ -475,7 +481,7 @@ UiProgram: UiImportListOpt UiRootMember ;
 case $rule_number: {
   program = makeAstNode<AST::UiProgram> (driver->nodePool(), sym(1).UiImportList,
         sym(2).UiObjectMemberList->finish());
-  sym(1).UiProgram = program;    
+  sym(1).UiProgram = program;
 } break;
 ./
 
@@ -648,7 +654,7 @@ case $rule_number: {
 
 UiPropertyType: T_VAR ;
 /.
-case $rule_number: 
+case $rule_number:
 ./
 UiPropertyType: T_RESERVED_WORD ;
 /.
@@ -663,7 +669,7 @@ UiPropertyType: T_IDENTIFIER ;
 UiObjectMember: T_SIGNAL T_IDENTIFIER ;
 /.
 case $rule_number: {
-    AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), (JavaScriptNameIdImpl *)0, sym(2).sval);
+    AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), (NameId *)0, sym(2).sval);
     node->type = AST::UiPublicMember::Signal;
     node->propertyToken = loc(1);
     node->typeToken = loc(2);
@@ -1038,7 +1044,7 @@ case $rule_number: {
       sym(1).PropertyNameAndValueList, sym(3).PropertyName, sym(5).Expression);
   node->commaToken = loc(2);
   node->colonToken = loc(4);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1047,7 +1053,7 @@ PropertyName: T_IDENTIFIER %prec REDUCE_HERE ;
 case $rule_number: {
   AST::IdentifierPropertyName *node = makeAstNode<AST::IdentifierPropertyName> (driver->nodePool(), sym(1).sval);
   node->propertyNameToken = loc(1);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1059,7 +1065,7 @@ PropertyName: T_PROPERTY ;
 case $rule_number: {
   AST::IdentifierPropertyName *node = makeAstNode<AST::IdentifierPropertyName> (driver->nodePool(), driver->intern(lexer->characterBuffer(), lexer->characterCount()));
   node->propertyNameToken = loc(1);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1068,7 +1074,7 @@ PropertyName: T_STRING_LITERAL ;
 case $rule_number: {
   AST::StringLiteralPropertyName *node = makeAstNode<AST::StringLiteralPropertyName> (driver->nodePool(), sym(1).sval);
   node->propertyNameToken = loc(1);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1077,7 +1083,7 @@ PropertyName: T_NUMERIC_LITERAL ;
 case $rule_number: {
   AST::NumericLiteralPropertyName *node = makeAstNode<AST::NumericLiteralPropertyName> (driver->nodePool(), sym(1).dval);
   node->propertyNameToken = loc(1);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1086,7 +1092,7 @@ PropertyName: ReservedIdentifier ;
 case $rule_number: {
   AST::IdentifierPropertyName *node = makeAstNode<AST::IdentifierPropertyName> (driver->nodePool(), sym(1).sval);
   node->propertyNameToken = loc(1);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 ./
 

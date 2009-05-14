@@ -67,52 +67,55 @@
 QT_BEGIN_NAMESPACE
 
 class QString;
-class JavaScriptEnginePrivate;
-class JavaScriptNameIdImpl;
 
-class JavaScriptParser: protected JavaScriptGrammar
+namespace JavaScript {
+
+class JavaScriptEnginePrivate;
+class NameId;
+
+class Parser: protected JavaScriptGrammar
 {
 public:
     union Value {
       int ival;
       double dval;
-      JavaScriptNameIdImpl *sval;
-      JavaScript::AST::ArgumentList *ArgumentList;
-      JavaScript::AST::CaseBlock *CaseBlock;
-      JavaScript::AST::CaseClause *CaseClause;
-      JavaScript::AST::CaseClauses *CaseClauses;
-      JavaScript::AST::Catch *Catch;
-      JavaScript::AST::DefaultClause *DefaultClause;
-      JavaScript::AST::ElementList *ElementList;
-      JavaScript::AST::Elision *Elision;
-      JavaScript::AST::ExpressionNode *Expression;
-      JavaScript::AST::Finally *Finally;
-      JavaScript::AST::FormalParameterList *FormalParameterList;
-      JavaScript::AST::FunctionBody *FunctionBody;
-      JavaScript::AST::FunctionDeclaration *FunctionDeclaration;
-      JavaScript::AST::Node *Node;
-      JavaScript::AST::PropertyName *PropertyName;
-      JavaScript::AST::PropertyNameAndValueList *PropertyNameAndValueList;
-      JavaScript::AST::SourceElement *SourceElement;
-      JavaScript::AST::SourceElements *SourceElements;
-      JavaScript::AST::Statement *Statement;
-      JavaScript::AST::StatementList *StatementList;
-      JavaScript::AST::Block *Block;
-      JavaScript::AST::VariableDeclaration *VariableDeclaration;
-      JavaScript::AST::VariableDeclarationList *VariableDeclarationList;
+      NameId *sval;
+      AST::ArgumentList *ArgumentList;
+      AST::CaseBlock *CaseBlock;
+      AST::CaseClause *CaseClause;
+      AST::CaseClauses *CaseClauses;
+      AST::Catch *Catch;
+      AST::DefaultClause *DefaultClause;
+      AST::ElementList *ElementList;
+      AST::Elision *Elision;
+      AST::ExpressionNode *Expression;
+      AST::Finally *Finally;
+      AST::FormalParameterList *FormalParameterList;
+      AST::FunctionBody *FunctionBody;
+      AST::FunctionDeclaration *FunctionDeclaration;
+      AST::Node *Node;
+      AST::PropertyName *PropertyName;
+      AST::PropertyNameAndValueList *PropertyNameAndValueList;
+      AST::SourceElement *SourceElement;
+      AST::SourceElements *SourceElements;
+      AST::Statement *Statement;
+      AST::StatementList *StatementList;
+      AST::Block *Block;
+      AST::VariableDeclaration *VariableDeclaration;
+      AST::VariableDeclarationList *VariableDeclarationList;
 
-      JavaScript::AST::UiProgram *UiProgram;
-      JavaScript::AST::UiImportList *UiImportList;
-      JavaScript::AST::UiImport *UiImport;
-      JavaScript::AST::UiPublicMember *UiPublicMember;
-      JavaScript::AST::UiObjectDefinition *UiObjectDefinition;
-      JavaScript::AST::UiObjectInitializer *UiObjectInitializer;
-      JavaScript::AST::UiObjectBinding *UiObjectBinding;
-      JavaScript::AST::UiScriptBinding *UiScriptBinding;
-      JavaScript::AST::UiArrayBinding *UiArrayBinding;
-      JavaScript::AST::UiObjectMember *UiObjectMember;
-      JavaScript::AST::UiObjectMemberList *UiObjectMemberList;
-      JavaScript::AST::UiQualifiedId *UiQualifiedId;
+      AST::UiProgram *UiProgram;
+      AST::UiImportList *UiImportList;
+      AST::UiImport *UiImport;
+      AST::UiPublicMember *UiPublicMember;
+      AST::UiObjectDefinition *UiObjectDefinition;
+      AST::UiObjectInitializer *UiObjectInitializer;
+      AST::UiObjectBinding *UiObjectBinding;
+      AST::UiScriptBinding *UiScriptBinding;
+      AST::UiArrayBinding *UiArrayBinding;
+      AST::UiObjectMember *UiObjectMember;
+      AST::UiObjectMemberList *UiObjectMemberList;
+      AST::UiQualifiedId *UiQualifiedId;
     };
 
     struct DiagnosticMessage {
@@ -121,7 +124,7 @@ public:
         DiagnosticMessage()
             : kind(Error) {}
 
-        DiagnosticMessage(Kind kind, const JavaScript::AST::SourceLocation &loc, const QString &message)
+        DiagnosticMessage(Kind kind, const AST::SourceLocation &loc, const QString &message)
             : kind(kind), loc(loc), message(message) {}
 
         bool isWarning() const
@@ -131,17 +134,17 @@ public:
         { return kind == Error; }
 
         Kind kind;
-        JavaScript::AST::SourceLocation loc;
+        AST::SourceLocation loc;
         QString message;
     };
 
 public:
-    JavaScriptParser();
-    ~JavaScriptParser();
+    Parser();
+    ~Parser();
 
     bool parse(JavaScriptEnginePrivate *driver);
 
-    JavaScript::AST::UiProgram *ast()
+    AST::UiProgram *ast()
     { return program; }
 
     QList<DiagnosticMessage> diagnosticMessages() const
@@ -172,7 +175,7 @@ protected:
     inline Value &sym(int index)
     { return sym_stack [tos + index - 1]; }
 
-    inline JavaScript::AST::SourceLocation &loc(int index)
+    inline AST::SourceLocation &loc(int index)
     { return location_stack [tos + index - 1]; }
 
 protected:
@@ -180,9 +183,9 @@ protected:
     int stack_size;
     Value *sym_stack;
     int *state_stack;
-    JavaScript::AST::SourceLocation *location_stack;
+    AST::SourceLocation *location_stack;
 
-    JavaScript::AST::UiProgram *program;
+    AST::UiProgram *program;
 
     // error recovery
     enum { TOKEN_BUFFER_SIZE = 3 };
@@ -190,12 +193,12 @@ protected:
     struct SavedToken {
        int token;
        double dval;
-       JavaScript::AST::SourceLocation loc;
+       AST::SourceLocation loc;
     };
 
     double yylval;
-    JavaScript::AST::SourceLocation yylloc;
-    JavaScript::AST::SourceLocation yyprevlloc;
+    AST::SourceLocation yylloc;
+    AST::SourceLocation yyprevlloc;
 
     SavedToken token_buffer[TOKEN_BUFFER_SIZE];
     SavedToken *first_token;
@@ -203,6 +206,9 @@ protected:
 
     QList<DiagnosticMessage> diagnostic_messages;
 };
+
+} // end of namespace JavaScript
+
 
 
 #define J_SCRIPT_REGEXPLITERAL_RULE1 52

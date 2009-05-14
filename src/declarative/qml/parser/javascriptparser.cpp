@@ -63,7 +63,7 @@ using namespace JavaScript;
 
 QT_BEGIN_NAMESPACE
 
-void JavaScriptParser::reallocateStack()
+void Parser::reallocateStack()
 {
     if (! stack_size)
         stack_size = 128;
@@ -83,7 +83,7 @@ inline static bool automatic(JavaScriptEnginePrivate *driver, int token)
 }
 
 
-JavaScriptParser::JavaScriptParser():
+Parser::Parser():
     tos(0),
     stack_size(0),
     sym_stack(0),
@@ -94,7 +94,7 @@ JavaScriptParser::JavaScriptParser():
 {
 }
 
-JavaScriptParser::~JavaScriptParser()
+Parser::~Parser()
 {
     if (stack_size) {
         qFree(sym_stack);
@@ -113,7 +113,7 @@ static inline AST::SourceLocation location(Lexer *lexer)
     return loc;
 }
 
-bool JavaScriptParser::parse(JavaScriptEnginePrivate *driver)
+bool Parser::parse(JavaScriptEnginePrivate *driver)
 {
     Lexer *lexer = driver->lexer();
     bool hadErrors = false;
@@ -166,7 +166,7 @@ bool JavaScriptParser::parse(JavaScriptEnginePrivate *driver)
 case 0: {
   program = makeAstNode<AST::UiProgram> (driver->nodePool(), sym(1).UiImportList,
         sym(2).UiObjectMemberList->finish());
-  sym(1).UiProgram = program;    
+  sym(1).UiProgram = program;
 } break;
 
 case 2: {
@@ -275,7 +275,7 @@ case 23: {
     sym(1).Node = node;
 }   break;
 
-case 24: 
+case 24:
 
 case 25: {
     sym(1).sval = driver->intern(lexer->characterBuffer(), lexer->characterCount());
@@ -283,7 +283,7 @@ case 25: {
 }
 
 case 27: {
-    AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), (JavaScriptNameIdImpl *)0, sym(2).sval);
+    AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), (NameId *)0, sym(2).sval);
     node->type = AST::UiPublicMember::Signal;
     node->propertyToken = loc(1);
     node->typeToken = loc(2);
@@ -529,37 +529,37 @@ case 67: {
       sym(1).PropertyNameAndValueList, sym(3).PropertyName, sym(5).Expression);
   node->commaToken = loc(2);
   node->colonToken = loc(4);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 
 case 68: {
   AST::IdentifierPropertyName *node = makeAstNode<AST::IdentifierPropertyName> (driver->nodePool(), sym(1).sval);
   node->propertyNameToken = loc(1);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 case 69:
 case 70: {
   AST::IdentifierPropertyName *node = makeAstNode<AST::IdentifierPropertyName> (driver->nodePool(), driver->intern(lexer->characterBuffer(), lexer->characterCount()));
   node->propertyNameToken = loc(1);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 
 case 71: {
   AST::StringLiteralPropertyName *node = makeAstNode<AST::StringLiteralPropertyName> (driver->nodePool(), sym(1).sval);
   node->propertyNameToken = loc(1);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 
 case 72: {
   AST::NumericLiteralPropertyName *node = makeAstNode<AST::NumericLiteralPropertyName> (driver->nodePool(), sym(1).dval);
   node->propertyNameToken = loc(1);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 
 case 73: {
   AST::IdentifierPropertyName *node = makeAstNode<AST::IdentifierPropertyName> (driver->nodePool(), sym(1).sval);
   node->propertyNameToken = loc(1);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 
 case 74:

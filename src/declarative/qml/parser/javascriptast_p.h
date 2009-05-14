@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 #define JAVASCRIPT_DECLARE_AST_NODE(name) \
   enum { K = Kind_##name };
 
-class JavaScriptNameIdImpl;
+class NameId;
 
 namespace QSOperator // ### rename
 {
@@ -339,7 +339,7 @@ class IdentifierExpression: public ExpressionNode
 public:
     JAVASCRIPT_DECLARE_AST_NODE(IdentifierExpression)
 
-    IdentifierExpression(JavaScriptNameIdImpl *n):
+    IdentifierExpression(NameId *n):
         name (n) { kind = K; }
 
     virtual ~IdentifierExpression() {}
@@ -353,7 +353,7 @@ public:
     { return identifierToken; }
 
 // attributes
-    JavaScriptNameIdImpl *name;
+    NameId *name;
     SourceLocation identifierToken;
 };
 
@@ -444,7 +444,7 @@ class StringLiteral: public ExpressionNode
 public:
     JAVASCRIPT_DECLARE_AST_NODE(StringLiteral)
 
-    StringLiteral(JavaScriptNameIdImpl *v):
+    StringLiteral(NameId *v):
         value (v) { kind = K; }
 
     virtual ~StringLiteral() {}
@@ -458,7 +458,7 @@ public:
     { return literalToken; }
 
 // attributes:
-    JavaScriptNameIdImpl *value;
+    NameId *value;
     SourceLocation literalToken;
 };
 
@@ -467,7 +467,7 @@ class RegExpLiteral: public ExpressionNode
 public:
     JAVASCRIPT_DECLARE_AST_NODE(RegExpLiteral)
 
-    RegExpLiteral(JavaScriptNameIdImpl *p, int f):
+    RegExpLiteral(NameId *p, int f):
         pattern (p), flags (f) { kind = K; }
 
     virtual ~RegExpLiteral() {}
@@ -481,7 +481,7 @@ public:
     { return literalToken; }
 
 // attributes:
-    JavaScriptNameIdImpl *pattern;
+    NameId *pattern;
     int flags;
     SourceLocation literalToken;
 };
@@ -667,7 +667,7 @@ class IdentifierPropertyName: public PropertyName
 public:
     JAVASCRIPT_DECLARE_AST_NODE(IdentifierPropertyName)
 
-    IdentifierPropertyName(JavaScriptNameIdImpl *n):
+    IdentifierPropertyName(NameId *n):
         id (n) { kind = K; }
 
     virtual ~IdentifierPropertyName() {}
@@ -675,7 +675,7 @@ public:
     virtual void accept0(Visitor *visitor);
 
 // attributes
-    JavaScriptNameIdImpl *id;
+    NameId *id;
 };
 
 class StringLiteralPropertyName: public PropertyName
@@ -683,14 +683,14 @@ class StringLiteralPropertyName: public PropertyName
 public:
     JAVASCRIPT_DECLARE_AST_NODE(StringLiteralPropertyName)
 
-    StringLiteralPropertyName(JavaScriptNameIdImpl *n):
+    StringLiteralPropertyName(NameId *n):
         id (n) { kind = K; }
     virtual ~StringLiteralPropertyName() {}
 
     virtual void accept0(Visitor *visitor);
 
 // attributes
-    JavaScriptNameIdImpl *id;
+    NameId *id;
 };
 
 class NumericLiteralPropertyName: public PropertyName
@@ -739,7 +739,7 @@ class FieldMemberExpression: public ExpressionNode
 public:
     JAVASCRIPT_DECLARE_AST_NODE(FieldMemberExpression)
 
-    FieldMemberExpression(ExpressionNode *b, JavaScriptNameIdImpl *n):
+    FieldMemberExpression(ExpressionNode *b, NameId *n):
         base (b), name (n)
         { kind = K; }
 
@@ -755,7 +755,7 @@ public:
 
     // attributes
     ExpressionNode *base;
-    JavaScriptNameIdImpl *name;
+    NameId *name;
     SourceLocation dotToken;
     SourceLocation identifierToken;
 };
@@ -1288,7 +1288,7 @@ class VariableDeclaration: public Node
 public:
     JAVASCRIPT_DECLARE_AST_NODE(VariableDeclaration)
 
-    VariableDeclaration(JavaScriptNameIdImpl *n, ExpressionNode *e):
+    VariableDeclaration(NameId *n, ExpressionNode *e):
         name (n), expression (e), readOnly(false)
         { kind = K; }
 
@@ -1297,7 +1297,7 @@ public:
     virtual void accept0(Visitor *visitor);
 
 // attributes
-    JavaScriptNameIdImpl *name;
+    NameId *name;
     ExpressionNode *expression;
     bool readOnly;
     SourceLocation identifierToken;
@@ -1602,7 +1602,7 @@ class ContinueStatement: public Statement
 public:
     JAVASCRIPT_DECLARE_AST_NODE(ContinueStatement)
 
-    ContinueStatement(JavaScriptNameIdImpl *l = 0):
+    ContinueStatement(NameId *l = 0):
         label (l) { kind = K; }
 
     virtual ~ContinueStatement() {}
@@ -1616,7 +1616,7 @@ public:
     { return semicolonToken; }
 
 // attributes
-    JavaScriptNameIdImpl *label;
+    NameId *label;
     SourceLocation continueToken;
     SourceLocation identifierToken;
     SourceLocation semicolonToken;
@@ -1627,7 +1627,7 @@ class BreakStatement: public Statement
 public:
     JAVASCRIPT_DECLARE_AST_NODE(BreakStatement)
 
-    BreakStatement(JavaScriptNameIdImpl *l = 0):
+    BreakStatement(NameId *l = 0):
         label (l) { kind = K; }
 
     virtual ~BreakStatement() {}
@@ -1641,7 +1641,7 @@ public:
     { return semicolonToken; }
 
     // attributes
-    JavaScriptNameIdImpl *label;
+    NameId *label;
     SourceLocation breakToken;
     SourceLocation identifierToken;
     SourceLocation semicolonToken;
@@ -1823,7 +1823,7 @@ class LabelledStatement: public Statement
 public:
     JAVASCRIPT_DECLARE_AST_NODE(LabelledStatement)
 
-    LabelledStatement(JavaScriptNameIdImpl *l, Statement *stmt):
+    LabelledStatement(NameId *l, Statement *stmt):
         label (l), statement (stmt)
         { kind = K; }
 
@@ -1838,7 +1838,7 @@ public:
     { return statement->lastSourceLocation(); }
 
 // attributes
-    JavaScriptNameIdImpl *label;
+    NameId *label;
     Statement *statement;
     SourceLocation identifierToken;
     SourceLocation colonToken;
@@ -1873,7 +1873,7 @@ class Catch: public Node
 public:
     JAVASCRIPT_DECLARE_AST_NODE(Catch)
 
-    Catch(JavaScriptNameIdImpl *n, Block *stmt):
+    Catch(NameId *n, Block *stmt):
         name (n), statement (stmt)
         { kind = K; }
 
@@ -1882,7 +1882,7 @@ public:
     virtual void accept0(Visitor *visitor);
 
 // attributes
-    JavaScriptNameIdImpl *name;
+    NameId *name;
     Block *statement;
     SourceLocation catchToken;
     SourceLocation lparenToken;
@@ -1954,7 +1954,7 @@ class FunctionExpression: public ExpressionNode
 public:
     JAVASCRIPT_DECLARE_AST_NODE(FunctionExpression)
 
-    FunctionExpression(JavaScriptNameIdImpl *n, FormalParameterList *f, FunctionBody *b):
+    FunctionExpression(NameId *n, FormalParameterList *f, FunctionBody *b):
         name (n), formals (f), body (b)
         { kind = K; }
 
@@ -1969,7 +1969,7 @@ public:
     { return rbraceToken; }
 
 // attributes
-    JavaScriptNameIdImpl *name;
+    NameId *name;
     FormalParameterList *formals;
     FunctionBody *body;
     SourceLocation functionToken;
@@ -1985,7 +1985,7 @@ class FunctionDeclaration: public FunctionExpression
 public:
     JAVASCRIPT_DECLARE_AST_NODE(FunctionDeclaration)
 
-    FunctionDeclaration(JavaScriptNameIdImpl *n, FormalParameterList *f, FunctionBody *b):
+    FunctionDeclaration(NameId *n, FormalParameterList *f, FunctionBody *b):
         FunctionExpression(n, f, b)
         { kind = K; }
 
@@ -1999,11 +1999,11 @@ class FormalParameterList: public Node
 public:
     JAVASCRIPT_DECLARE_AST_NODE(FormalParameterList)
 
-    FormalParameterList(JavaScriptNameIdImpl *n):
+    FormalParameterList(NameId *n):
         name (n), next (this)
         { kind = K; }
 
-    FormalParameterList(FormalParameterList *previous, JavaScriptNameIdImpl *n):
+    FormalParameterList(FormalParameterList *previous, NameId *n):
         name (n)
     {
         kind = K;
@@ -2023,7 +2023,7 @@ public:
     }
 
 // attributes
-    JavaScriptNameIdImpl *name;
+    NameId *name;
     FormalParameterList *next;
     SourceLocation commaToken;
     SourceLocation identifierToken;
@@ -2185,11 +2185,11 @@ class UiQualifiedId: public Node
 public:
     JAVASCRIPT_DECLARE_AST_NODE(UiQualifiedId)
 
-    UiQualifiedId(JavaScriptNameIdImpl *name)
+    UiQualifiedId(NameId *name)
         : next(this), name(name)
     { kind = K; }
 
-    UiQualifiedId(UiQualifiedId *previous, JavaScriptNameIdImpl *name)
+    UiQualifiedId(UiQualifiedId *previous, NameId *name)
         : name(name)
     {
         kind = K;
@@ -2210,7 +2210,7 @@ public:
 
 // attributes
     UiQualifiedId *next;
-    JavaScriptNameIdImpl *name;
+    NameId *name;
     SourceLocation identifierToken;
 };
 
@@ -2219,14 +2219,14 @@ class UiImport: public Node
 public:
     JAVASCRIPT_DECLARE_AST_NODE(UiImport)
 
-    UiImport(JavaScriptNameIdImpl *fileName)
+    UiImport(NameId *fileName)
         : fileName(fileName)
     { kind = K; }
 
     virtual void accept0(Visitor *visitor);
 
 // attributes
-    JavaScriptNameIdImpl *fileName;
+    NameId *fileName;
     SourceLocation importToken;
     SourceLocation fileNameToken;
     SourceLocation semicolonToken;
@@ -2324,13 +2324,13 @@ class UiPublicMember: public UiObjectMember
 public:
     JAVASCRIPT_DECLARE_AST_NODE(UiPublicMember)
 
-    UiPublicMember(JavaScriptNameIdImpl *memberType,
-                   JavaScriptNameIdImpl *name)
+    UiPublicMember(NameId *memberType,
+                   NameId *name)
         : type(Property), memberType(memberType), name(name), expression(0), isDefaultMember(false)
     { kind = K; }
 
-    UiPublicMember(JavaScriptNameIdImpl *memberType,
-                   JavaScriptNameIdImpl *name,
+    UiPublicMember(NameId *memberType,
+                   NameId *name,
                    ExpressionNode *expression)
         : type(Property), memberType(memberType), name(name), expression(expression), isDefaultMember(false)
     { kind = K; }
@@ -2352,8 +2352,8 @@ public:
 
 // attributes
     enum { Signal, Property } type;
-    JavaScriptNameIdImpl *memberType;
-    JavaScriptNameIdImpl *name;
+    NameId *memberType;
+    NameId *name;
     ExpressionNode *expression;
     bool isDefaultMember;
     SourceLocation defaultToken;
@@ -2369,7 +2369,7 @@ class UiObjectDefinition: public UiObjectMember
 public:
     JAVASCRIPT_DECLARE_AST_NODE(UiObjectDefinition)
 
-    UiObjectDefinition(JavaScriptNameIdImpl *name,
+    UiObjectDefinition(NameId *name,
                        UiObjectInitializer *initializer)
         : name(name), initializer(initializer)
     { kind = K; }
@@ -2388,7 +2388,7 @@ public:
     virtual void accept0(Visitor *visitor);
 
 // attributes
-    JavaScriptNameIdImpl *name;
+    NameId *name;
     UiObjectInitializer *initializer;
     SourceLocation identifierToken;
 };
@@ -2435,7 +2435,7 @@ public:
     JAVASCRIPT_DECLARE_AST_NODE(UiObjectBinding)
 
     UiObjectBinding(UiQualifiedId *qualifiedId,
-                    JavaScriptNameIdImpl *name,
+                    NameId *name,
                     UiObjectInitializer *initializer)
         : qualifiedId(qualifiedId),
           name(name),
@@ -2452,7 +2452,7 @@ public:
 
 // attributes
     UiQualifiedId *qualifiedId;
-    JavaScriptNameIdImpl *name;
+    NameId *name;
     UiObjectInitializer *initializer;
     SourceLocation colonToken;
     SourceLocation identifierToken;

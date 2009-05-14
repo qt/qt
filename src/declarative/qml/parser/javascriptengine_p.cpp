@@ -34,6 +34,9 @@
 
 QT_BEGIN_NAMESPACE
 
+uint qHash(const JavaScript::NameId &id)
+{ return qHash(id.asString()); }
+
 namespace JavaScript {
 
 QString numberToString(double value)

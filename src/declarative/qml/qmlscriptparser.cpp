@@ -632,7 +632,7 @@ bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
     QTextStream stream(data, QIODevice::ReadOnly);
     const QString code = stream.readAll();
 
-    JavaScriptParser parser;
+    Parser parser;
     JavaScriptEnginePrivate driver;
 
     NodePool nodePool(fileName, &driver);
@@ -645,7 +645,7 @@ bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
     if (! parser.parse(&driver) || !_errors.isEmpty()) {
 
         // Extract errors from the parser
-        foreach (const JavaScriptParser::DiagnosticMessage &m, parser.diagnosticMessages()) {
+        foreach (const Parser::DiagnosticMessage &m, parser.diagnosticMessages()) {
 
             if (m.isWarning())
                 continue;
