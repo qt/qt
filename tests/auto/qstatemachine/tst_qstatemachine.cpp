@@ -204,7 +204,7 @@ public:
         : QAbstractTransition(QList<QAbstractState*>() << target) {}
     QList<int> triggers;
 protected:
-    virtual bool eventTest(QEvent *) const {
+    virtual bool eventTest(QEvent *) {
         return true;
     }
     virtual void onTransition(QEvent *) {
@@ -246,7 +246,7 @@ public:
     EventTransition(QEvent::Type type, QAbstractState *target, QState *parent = 0)
         : QAbstractTransition(QList<QAbstractState*>() << target, parent), m_type(type) {}
 protected:
-    virtual bool eventTest(QEvent *e) const {
+    virtual bool eventTest(QEvent *e) {
         return (e->type() == m_type);
     }
     virtual void onTransition(QEvent *) {}
@@ -1394,7 +1394,7 @@ public:
         : QAbstractTransition(QList<QAbstractState*>() << target), m_value(value) {}
 
 protected:
-    virtual bool eventTest(QEvent *e) const
+    virtual bool eventTest(QEvent *e) 
     {
         if (e->type() != QEvent::Type(QEvent::User+2))
             return false;
@@ -1596,7 +1596,7 @@ public:
         return m_args;
     }
 protected:
-    bool eventTest(QEvent *e) const {
+    bool eventTest(QEvent *e) {
         if (!QSignalTransition::eventTest(e))
             return false;
         QSignalEvent *se = static_cast<QSignalEvent*>(e);

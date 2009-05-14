@@ -156,7 +156,7 @@ void QBasicKeyEventTransition::setModifiersMask(Qt::KeyboardModifiers modifiersM
 /*!
   \reimp
 */
-bool QBasicKeyEventTransition::eventTest(QEvent *event) const
+bool QBasicKeyEventTransition::eventTest(QEvent *event)
 {
     Q_D(const QBasicKeyEventTransition);
     if (event->type() == d->eventType) {

@@ -22,7 +22,7 @@ void GameOverTransition::addTankItem(TankItem *tankItem)
     connect(tankItem, SIGNAL(aboutToBeDestroyed()), mapper, SLOT(map()));
 }
 
-bool GameOverTransition::eventTest(QEvent *e) const
+bool GameOverTransition::eventTest(QEvent *e)
 {
     bool ret = QSignalTransition::eventTest(e);
 

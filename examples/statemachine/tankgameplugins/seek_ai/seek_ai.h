@@ -81,7 +81,7 @@ public:
     }
 
 protected:
-    bool eventTest(QEvent *event) const
+    bool eventTest(QEvent *event)
     {
         bool b = QSignalTransition::eventTest(event);
         if (b) {
@@ -105,7 +105,7 @@ protected:
     }
 
 private:
-    mutable QLineF m_lastLine;
+    QLineF m_lastLine;
     QObject *m_tank;
     QState *m_turnTo;
 };
@@ -180,7 +180,7 @@ public:
     }
 
 protected:
-    bool eventTest(QEvent *event) const
+    bool eventTest(QEvent *event)
     {
         bool b = QSignalTransition::eventTest(event);
         if (b) {

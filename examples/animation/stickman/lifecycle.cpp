@@ -69,7 +69,7 @@ public:
     {
     }
 
-    virtual bool eventTest(QEvent *e) const
+    virtual bool eventTest(QEvent *e)
     {
         if (QSignalTransition::eventTest(e)) {
             QVariant key = static_cast<QSignalEvent*>(e)->arguments().at(0);
@@ -92,7 +92,7 @@ public:
         startTimer(1000);
     }
 
-    virtual bool eventTest(QEvent *e) const
+    virtual bool eventTest(QEvent *e)
     {
         return QEventTransition::eventTest(e) && ((qrand() % 50) == 0);
     }

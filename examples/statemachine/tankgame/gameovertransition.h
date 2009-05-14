@@ -13,10 +13,10 @@ public:
     void addTankItem(TankItem *tankItem);
 
 protected:
-    bool eventTest(QEvent *event) const;
+    bool eventTest(QEvent *event);
 
 private:
-    mutable QList<TankItem *> m_tankItems;
+    QList<TankItem *> m_tankItems;
 };
 
 #endif

@@ -100,7 +100,7 @@ public:
         : QSignalTransition(fact, SIGNAL(xChanged(int))), m_fact(fact)
     {}
 
-    virtual bool eventTest(QEvent *e) const
+    virtual bool eventTest(QEvent *e)
     {
         if (!QSignalTransition::eventTest(e))
             return false;
@@ -130,7 +130,7 @@ public:
         : QSignalTransition(fact, SIGNAL(xChanged(int))), m_fact(fact)
     {}
 
-    virtual bool eventTest(QEvent *e) const
+    virtual bool eventTest(QEvent *e)
     {
         if (!QSignalTransition::eventTest(e))
             return false;

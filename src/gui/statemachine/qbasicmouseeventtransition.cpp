@@ -159,7 +159,7 @@ void QBasicMouseEventTransition::setPath(const QPainterPath &path)
 /*!
   \reimp
 */
-bool QBasicMouseEventTransition::eventTest(QEvent *event) const
+bool QBasicMouseEventTransition::eventTest(QEvent *event)
 {
     Q_D(const QBasicMouseEventTransition);
     if (event->type() == d->eventType) {

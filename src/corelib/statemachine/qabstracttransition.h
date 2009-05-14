@@ -88,7 +88,7 @@ public:
 #endif
 
 protected:
-    virtual bool eventTest(QEvent *event) const = 0;
+    virtual bool eventTest(QEvent *event) = 0;
 
     virtual void onTransition(QEvent *event) = 0;
 
