@@ -115,12 +115,11 @@ class Engine
 {
     Lexer *_lexer;
     NodePool *_nodePool;
-    AST::Node *_ast;
     QSet<NameId> _literals;
 
 public:
     Engine()
-        : _lexer(0), _nodePool(0), _ast(0)
+        : _lexer(0), _nodePool(0)
     { }
 
     QSet<NameId> literals() const
@@ -143,16 +142,6 @@ public:
 
     void setNodePool(NodePool *nodePool)
     { _nodePool = nodePool; }
-
-    AST::Node *ast() const
-    { return _ast; }
-
-    AST::Node *changeAbstractSyntaxTree(AST::Node *node)
-    {
-        AST::Node *previousAST = _ast;
-        _ast = node;
-        return previousAST;
-    }
 };
 
 } // end of namespace JavaScript
