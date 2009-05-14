@@ -1696,7 +1696,7 @@ QString QCoreApplication::applicationDirPath()
     }
 
     QCoreApplicationPrivate *d = self->d_func();
-    if (d->cachedApplicationDirPath == QString())
+    if (d->cachedApplicationDirPath.isNull())
         d->cachedApplicationDirPath = QFileInfo(applicationFilePath()).path();
     return d->cachedApplicationDirPath;
 }
@@ -1724,7 +1724,7 @@ QString QCoreApplication::applicationFilePath()
     }
 
     QCoreApplicationPrivate *d = self->d_func();
-    if (d->cachedApplicationFilePath != QString())
+    if (!d->cachedApplicationFilePath.isNull())
         return d->cachedApplicationFilePath;
 
 #if defined( Q_WS_WIN )
