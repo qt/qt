@@ -64,7 +64,7 @@
 QT_BEGIN_NAMESPACE
 
 class QWidget;
-class Q_GUI_EXPORT QGestureManager : public QObject
+class Q_AUTOTEST_EXPORT QGestureManager : public QObject
 {
     Q_OBJECT
 public:
