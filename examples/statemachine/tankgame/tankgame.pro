@@ -8,6 +8,6 @@ DEPENDPATH += .
 INCLUDEPATH += C:/dev/kinetic/examples/statemachine/tankgame/. .
 
 # Input
-HEADERS += mainwindow.h plugin.h tankitem.h rocketitem.h gameitem.h
-SOURCES += main.cpp mainwindow.cpp tankitem.cpp rocketitem.cpp gameitem.cpp
+HEADERS += mainwindow.h plugin.h tankitem.h rocketitem.h gameitem.h gameovertransition.h
+SOURCES += main.cpp mainwindow.cpp tankitem.cpp rocketitem.cpp gameitem.cpp gameovertransition.cpp
 CONFIG += console

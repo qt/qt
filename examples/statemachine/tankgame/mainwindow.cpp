@@ -2,6 +2,7 @@
 #include "tankitem.h"
 #include "rocketitem.h"
 #include "plugin.h"
+#include "gameovertransition.h"
 
 #include <QStateMachine>
 #include <QGraphicsView>
@@ -53,7 +54,7 @@ void MainWindow::init()
     {
         TankItem *item = new TankItem(this);
 
-        item->setPos(m_scene->sceneRect().topLeft() + QPointF(15.0, 15.0));
+        item->setPos(m_scene->sceneRect().topLeft() + QPointF(30.0, 30.0));
         item->setDirection(45.0);
         item->setColor(Qt::red);
 
@@ -63,7 +64,7 @@ void MainWindow::init()
     {
         TankItem *item = new TankItem(this);
 
-        item->setPos(m_scene->sceneRect().topRight() + QPointF(-15.0, 15.0));
+        item->setPos(m_scene->sceneRect().topRight() + QPointF(-30.0, 30.0));
         item->setDirection(135.0);
         item->setColor(Qt::green);
 
@@ -73,7 +74,7 @@ void MainWindow::init()
     {
         TankItem *item = new TankItem(this);
 
-        item->setPos(m_scene->sceneRect().bottomRight() + QPointF(-15.0, -15.0));
+        item->setPos(m_scene->sceneRect().bottomRight() + QPointF(-30.0, -30.0));
         item->setDirection(225.0);
         item->setColor(Qt::blue);
 
@@ -83,7 +84,7 @@ void MainWindow::init()
     {
         TankItem *item = new TankItem(this);
 
-        item->setPos(m_scene->sceneRect().bottomLeft() + QPointF(15.0, -15.0));
+        item->setPos(m_scene->sceneRect().bottomLeft() + QPointF(30.0, -30.0));
         item->setDirection(315.0);
         item->setColor(Qt::yellow);
 
@@ -125,20 +126,23 @@ void MainWindow::init()
     stoppedState->assignProperty(this, "started", false);
     m_machine->setInitialState(stoppedState);
 
-    QState *spawnsAvailable = new QState(stoppedState);
-    spawnsAvailable->setObjectName("spawnsAvailable");
+//! [5]
+    QState *spawnsAvailable = new QState(stoppedState);    
     spawnsAvailable->assignProperty(addTankAction, "enabled", true);
 
-    QState *noSpawnsAvailable = new QState(stoppedState);
-    noSpawnsAvailable->setObjectName("noSpawnsAvailable");
+    QState *noSpawnsAvailable = new QState(stoppedState);    
     noSpawnsAvailable->assignProperty(addTankAction, "enabled", false);
+//! [5]    
+    spawnsAvailable->setObjectName("spawnsAvailable");
+    noSpawnsAvailable->setObjectName("noSpawnsAvailable");
 
     spawnsAvailable->addTransition(this, SIGNAL(mapFull()), noSpawnsAvailable);
 
 //! [3]
-    QHistoryState *hs = new QHistoryState(stoppedState);
+    QHistoryState *hs = new QHistoryState(stoppedState);    
     hs->setDefaultState(spawnsAvailable);
 //! [3]
+    hs->setObjectName("hs");
 
     stoppedState->setInitialState(hs);
 
@@ -149,9 +153,17 @@ void MainWindow::init()
     m_runningState->assignProperty(addTankAction, "enabled", false);
     m_runningState->assignProperty(runGameAction, "enabled", false);
     m_runningState->assignProperty(stopGameAction, "enabled", true);
+
+    QState *gameOverState = new QState(m_machine->rootState());
+    gameOverState->setObjectName("gameOverState");
+    gameOverState->assignProperty(stopGameAction, "enabled", false);
+    connect(gameOverState, SIGNAL(entered()), this, SLOT(gameOver()));
         
     stoppedState->addTransition(runGameAction, SIGNAL(triggered()), m_runningState);
     m_runningState->addTransition(stopGameAction, SIGNAL(triggered()), stoppedState);
+
+    m_gameOverTransition = new GameOverTransition(gameOverState);
+    m_runningState->addTransition(m_gameOverTransition);
 
     QTimer *timer = new QTimer(this);
     timer->setInterval(100);
@@ -180,6 +192,22 @@ void MainWindow::runStep()
             }
         }
     }
+}
+
+void MainWindow::gameOver()
+{
+    QList<QGraphicsItem *> items = m_scene->items();
+
+    TankItem *lastTankStanding = 0;
+    foreach (QGraphicsItem *item, items) {
+        if (GameItem *gameItem = qgraphicsitem_cast<GameItem *>(item)) {
+            if (lastTankStanding = qobject_cast<TankItem *>(gameItem))
+                break;
+        }
+    }
+
+    QMessageBox::information(this, "Game over!", 
+        QString::fromLatin1("The tank played by '%1' has won!").arg(lastTankStanding->objectName()));
 }
 
 void MainWindow::addRocket()
@@ -244,21 +272,26 @@ void MainWindow::addTank()
         int idx = itemNames.indexOf(selectedName);
         if (Plugin *plugin = idx >= 0 ? items.at(idx) : 0) {
             TankItem *tankItem = m_spawns.takeLast();
+            tankItem->setObjectName(selectedName);
+            tankItem->setToolTip(selectedName);
             m_scene->addItem(tankItem);
             connect(tankItem, SIGNAL(cannonFired()), this, SLOT(addRocket()));
             if (m_spawns.isEmpty())
                 emit mapFull();
+
+            m_gameOverTransition->addTankItem(tankItem);
             
             QState *region = new QState(m_runningState);
+            region->setObjectName(QString::fromLatin1("region%1").arg(m_spawns.size()));
 //! [2]
             QState *pluginState = plugin->create(region, tankItem);
 //! [2]
             region->setInitialState(pluginState);
 
-
             // If the plugin has an error it is disabled
 //! [4]
             QState *errorState = new QState(region);
+            errorState->setObjectName(QString::fromLatin1("errorState%1").arg(m_spawns.size()));
             errorState->assignProperty(tankItem, "enabled", false);
             pluginState->setErrorState(errorState);
 //! [4]

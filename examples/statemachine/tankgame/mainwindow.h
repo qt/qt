@@ -7,6 +7,7 @@
 class QGraphicsScene;
 class QStateMachine;
 class QState;
+class GameOverTransition;
 class TankItem;
 class MainWindow: public QMainWindow
 {
@@ -23,6 +24,7 @@ public slots:
     void addTank();
     void addRocket();
     void runStep();
+    void gameOver();
 
 signals:
     void mapFull();
@@ -35,6 +37,7 @@ private:
     
     QStateMachine *m_machine;
     QState *m_runningState;
+    GameOverTransition *m_gameOverTransition;
 
     QList<TankItem *> m_spawns;
     QTime m_time;

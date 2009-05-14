@@ -113,6 +113,7 @@ void TankItem::idle(qreal elapsed)
 
 void TankItem::hitByRocket()
 {
+    emit aboutToBeDestroyed();
     deleteLater();
 }
 
