@@ -19,6 +19,20 @@ public:
 Q_DECLARE_INTERFACE(MyInterface, "com.trolltech.Qt.Test.MyInterface");
 QML_DECLARE_INTERFACE(MyInterface);
 
+struct MyCustomVariantType
+{
+    MyCustomVariantType() : a(0) {}
+    int a;
+};
+Q_DECLARE_METATYPE(MyCustomVariantType);
+
+static QVariant myCustomVariantTypeConverter(const QString &data)
+{
+    MyCustomVariantType rv;
+    rv.a = data.toInt();
+    return QVariant::fromValue(rv);
+}
+
 class MyQmlObject : public QObject, public MyInterface, public QmlParserStatus
 {
     Q_OBJECT
@@ -29,9 +43,10 @@ class MyQmlObject : public QObject, public MyInterface, public QmlParserStatus
     Q_PROPERTY(QMatrix matrix READ matrix WRITE setMatrix)  //assumed to be unsupported by QML
     Q_PROPERTY(MyInterface *interface READ interface WRITE setInterface)
     Q_PROPERTY(int onLiteralSignal READ onLiteralSignal WRITE setOnLiteralSignal);
+    Q_PROPERTY(MyCustomVariantType customType READ customType WRITE setCustomType);
     Q_INTERFACES(MyInterface QmlParserStatus)
 public:
-    MyQmlObject() : m_value(-1), m_interface(0) {}
+    MyQmlObject() : m_value(-1), m_interface(0) { qRegisterMetaType<MyCustomVariantType>("MyCustomVariantType"); }
 
     int value() const { return m_value; }
     void setValue(int v) { m_value = v; }
@@ -60,6 +75,8 @@ public:
     int onLiteralSignal() const { return m_value; }
     void setOnLiteralSignal(int v) { m_value = v; }
 
+    MyCustomVariantType customType() const { return m_custom; }
+    void setCustomType(const MyCustomVariantType &v)  { m_custom = v; }
 public slots:
     void basicSlot() { qWarning("MyQmlObject::basicSlot"); }
 
@@ -70,6 +87,7 @@ private:
     friend class tst_qmlparser;
     int m_value;
     MyInterface *m_interface;
+    MyCustomVariantType m_custom;
 };
 QML_DECLARE_TYPE(MyQmlObject);
 

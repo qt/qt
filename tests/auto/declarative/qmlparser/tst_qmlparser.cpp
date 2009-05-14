@@ -9,7 +9,9 @@ class tst_qmlparser : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlparser() {}
+    tst_qmlparser() {
+        QmlMetaType::registerCustomStringConverter(qMetaTypeId<MyCustomVariantType>(), myCustomVariantTypeConverter);
+    }
 
 private slots:
 
@@ -38,6 +40,7 @@ private slots:
     void propertyValueSource();
     void attachedProperties();
     void dynamicObjects();
+    void customVariantTypes();
 
     // regression tests for crashes
     void crash1();
@@ -396,6 +399,15 @@ void tst_qmlparser::dynamicObjects()
     QmlComponent component(&engine, TEST_FILE("dynamicObject.1.txt"));
     QObject *object = component.create();
     QVERIFY(object != 0);
+}
+
+// Tests the registration of custom variant string converters
+void tst_qmlparser::customVariantTypes()
+{
+    QmlComponent component(&engine, TEST_FILE("customVariantTypes.txt"));
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->customType().a, 10);
 }
 
 void tst_qmlparser::crash1()
