@@ -39,9 +39,10 @@
 **
 ****************************************************************************/
 
-#include "translator.h"
-#include "translatortools.h"
-#include "profileevaluator.h"
+#include "lupdate.h"
+
+#include <translator.h>
+#include <profileevaluator.h>
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
@@ -83,12 +84,12 @@ static void printUsage()
 {
     printOut(QObject::tr(
         "Usage:\n"
-        "    lupdate [options] [project-file]\n"
+        "    lupdate [options] [project-file]...\n"
         "    lupdate [options] [source-file|path]... -ts ts-files\n\n"
-        "lupdate is part of Qt's Linguist tool chain. It can be used as a\n"
-        "stand-alone tool to create XML based translations files in the .ts\n"
-        "format from translatable messages in C++ and Java source code.\n\n"
-        "lupdate can also merge such messages into existing .ts files.\n\n"
+        "lupdate is part of Qt's Linguist tool chain. It extracts translatable\n"
+        "messages from Qt UI files, C++, Java and JavaScript/QtScript source code.\n"
+        "Extracted messages are stored in textual translation source files (typically\n"
+        "Qt TS XML). New and modified messages can be merged into existing TS files.\n\n"
         "Options:\n"
         "    -help  Display this information and exit.\n"
         "    -no-obsolete\n"
@@ -106,7 +107,10 @@ static void printUsage()
         "    -no-recursive\n"
         "           Do not recursively scan the following directories.\n"
         "    -recursive\n"
-        "           Recursively scan the following directories.\n"
+        "           Recursively scan the following directories (default).\n"
+        "    -I <includepath> or -I<includepath>\n"
+        "           Additional location to look for include files.\n"
+        "           May be specified multiple times.\n"
         "    -locations {absolute|relative|none}\n"
         "           Specify/override how source code references are saved in ts files.\n"
         "           Default is absolute.\n"
@@ -216,7 +220,10 @@ int main(int argc, char **argv)
     QByteArray codecForSource;
     QStringList tsFileNames;
     QStringList proFiles;
+    QMultiHash<QString, QString> allCSources;
+    QSet<QString> projectRoots;
     QStringList sourceFiles;
+    QStringList includePath;
     QString targetLanguage;
     QString sourceLanguage;
 
@@ -343,6 +350,18 @@ int main(int argc, char **argv)
             proFiles += args[i];
             numFiles++;
             continue;
+        } else if (arg.startsWith(QLatin1String("-I"))) {
+            if (arg.length() == 2) {
+                ++i;
+                if (i == argc) {
+                    qWarning("The -I option should be followed by a path.");
+                    return 1;
+                }
+                includePath += args[i];
+            } else {
+                includePath += args[i].mid(2);
+            }
+            continue;
         } else if (arg.startsWith(QLatin1String("-")) && arg != QLatin1String("-")) {
             qWarning("Unrecognized option '%s'", qPrintable(arg));
             return 1;
@@ -387,33 +406,46 @@ int main(int argc, char **argv)
                 if (options & Verbose)
                     printOut(QObject::tr("Scanning directory '%1'...").arg(arg));
                 QDir dir = QDir(fi.filePath());
+                projectRoots.insert(dir.absolutePath() + QLatin1Char('/'));
                 if (extensionsNameFilters.isEmpty()) {
-                    extensions = extensions.trimmed();
-                    // Remove the potential dot in front of each extension
-                    if (extensions.startsWith(QLatin1Char('.')))
-                        extensions.remove(0,1);
-                    extensions.replace(QLatin1String(",."), QLatin1String(","));
-
-                    extensions.insert(0, QLatin1String("*."));
-                    extensions.replace(QLatin1Char(','), QLatin1String(",*."));
-                    extensionsNameFilters = extensions.split(QLatin1Char(','));
+                    foreach (QString ext, extensions.split(QLatin1Char(','))) {
+                        ext = ext.trimmed();
+                        if (ext.startsWith(QLatin1Char('.')))
+                            ext.remove(0,1);
+                        ext.insert(0, QLatin1String("*."));
+                        extensionsNameFilters << ext;
+                    }
                 }
                 QDir::Filters filters = QDir::Files | QDir::NoSymLinks;
                 QFileInfoList fileinfolist;
                 recursiveFileInfoList(dir, extensionsNameFilters, filters,
                     recursiveScan, &fileinfolist);
-                QFileInfoList::iterator ii;
-                QString fn;
-                for (ii = fileinfolist.begin(); ii != fileinfolist.end(); ++ii) {
-                    // Make sure the path separator is stored with '/' in the ts file
-                    sourceFiles << ii->canonicalFilePath().replace(QLatin1Char('\\'), QLatin1Char('/'));
+                int scanRootLen = dir.absolutePath().length();
+                foreach (const QFileInfo &fi, fileinfolist) {
+                    QString fn = QDir::cleanPath(fi.absoluteFilePath());
+                    sourceFiles << fn;
+
+                    if (!fn.endsWith(QLatin1String(".java"))
+                        && !fn.endsWith(QLatin1String(".ui"))
+                        && !fn.endsWith(QLatin1String(".js"))
+                        && !fn.endsWith(QLatin1String(".qs"))) {
+                        int offset = 0;
+                        int depth = 0;
+                        do {
+                            offset = fn.lastIndexOf(QLatin1Char('/'), offset - 1);
+                            QString ffn = fn.mid(offset + 1);
+                            allCSources.insert(ffn, fn);
+                        } while (++depth < 3 && offset > scanRootLen);
+                    }
                 }
             } else {
-                sourceFiles << fi.canonicalFilePath().replace(QLatin1Char('\\'), QLatin1Char('/'));
+                sourceFiles << QDir::cleanPath(fi.absoluteFilePath());;
             }
         }
     } // for args
 
+    foreach (const QString &proFile, proFiles)
+        projectRoots.insert(QDir::cleanPath(QFileInfo(proFile).absolutePath()) + QLatin1Char('/'));
 
     bool firstPass = true;
     bool fail = false;
@@ -421,6 +453,9 @@ int main(int argc, char **argv)
         ConversionData cd;
         cd.m_defaultContext = defaultContext;
         cd.m_noUiLines = options & NoUiLines;
+        cd.m_projectRoots = projectRoots;
+        cd.m_includePath = includePath;
+        cd.m_allCSources = allCSources;
 
         QStringList tsFiles = tsFileNames;
         if (proFiles.count() > 0) {
@@ -450,6 +485,8 @@ int main(int argc, char **argv)
                 continue;
             }
 
+            cd.m_includePath += visitor.values(QLatin1String("INCLUDEPATH"));
+
             evaluateProFile(visitor, &variables);
 
             sourceFiles = variables.value("SOURCES");
@@ -472,27 +509,19 @@ int main(int argc, char **argv)
             tsFiles += variables.value("TRANSLATIONS");
         }
 
+        QStringList sourceFilesCpp;
         for (QStringList::iterator it = sourceFiles.begin(); it != sourceFiles.end(); ++it) {
-            if (it->endsWith(QLatin1String(".java"), Qt::CaseInsensitive)) {
-                cd.m_sourceFileName = *it;
-                fetchedTor.load(*it, cd, QLatin1String("java"));
-                //fetchtr_java(*it, &fetchedTor, defaultContext, true, codecForSource);
-            }
-            else if (it->endsWith(QLatin1String(".ui"), Qt::CaseInsensitive)) {
-                fetchedTor.load(*it, cd, QLatin1String("ui"));
-                //fetchedTor.load(*it + QLatin1String(".h"), cd, QLatin1String("cpp"));
-                //fetchtr_ui(*it, &fetchedTor, defaultContext, true);
-                //fetchtr_cpp(*it + QLatin1String(".h"), &fetchedTor,
-                //             defaultContext, false, codecForSource);
-            }
+            if (it->endsWith(QLatin1String(".java"), Qt::CaseInsensitive))
+                loadJava(fetchedTor, *it, cd);
+            else if (it->endsWith(QLatin1String(".ui"), Qt::CaseInsensitive))
+                loadUI(fetchedTor, *it, cd);
             else if (it->endsWith(QLatin1String(".js"), Qt::CaseInsensitive)
-                || it->endsWith(QLatin1String(".qs"), Qt::CaseInsensitive)) {
-                fetchedTor.load(*it, cd, QLatin1String("js"));
-            } else {
-                fetchedTor.load(*it, cd, QLatin1String("cpp"));
-                //fetchtr_cpp(*it, &fetchedTor, defaultContext, true, codecForSource);
-            }
+                     || it->endsWith(QLatin1String(".qs"), Qt::CaseInsensitive))
+                loadQScript(fetchedTor, *it, cd);
+            else
+                sourceFilesCpp << *it;
         }
+        loadCPP(fetchedTor, sourceFilesCpp, cd);
         if (!cd.error().isEmpty())
             printOut(cd.error());
 

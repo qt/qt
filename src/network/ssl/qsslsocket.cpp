@@ -113,8 +113,8 @@
     readLine(), or getChar() to read decrypted data from QSslSocket's
     internal buffer, and you can call write() or putChar() to write
     data back to the peer. QSslSocket will automatically encrypt the
-    written data for you, and emit bytesWritten() once the data has
-    been written to the peer.
+    written data for you, and emit encryptedBytesWritten() once
+    the data has been written to the peer.
 
     As a convenience, QSslSocket supports QTcpSocket's blocking
     functions waitForConnected(), waitForReadyRead(),
@@ -390,6 +390,36 @@ void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port, O
     d->init();
     d->autoStartHandshake = true;
     d->initialized = true;
+
+    // Note: When connecting to localhost, some platforms (e.g., HP-UX and some BSDs)
+    // establish the connection immediately (i.e., first attempt).
+    connectToHost(hostName, port, mode);
+}
+
+/*!
+    \since 4.6
+    \overload
+
+    In addition to the original behaviour of connectToHostEncrypted,
+    this overloaded method enables the usage of a different hostname 
+    (\a sslPeerName) for the certificate validation instead of
+    the one used for the TCP connection (\a hostName).
+
+    \sa connectToHostEncrypted()
+*/
+void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port,
+                                        const QString &sslPeerName, OpenMode mode)
+{
+    Q_D(QSslSocket);
+    if (d->state == ConnectedState || d->state == ConnectingState) {
+        qWarning("QSslSocket::connectToHostEncrypted() called when already connecting/connected");
+        return;
+    }
+
+    d->init();
+    d->autoStartHandshake = true;
+    d->initialized = true;
+    d->verificationPeerName = sslPeerName;
 
     // Note: When connecting to localhost, some platforms (e.g., HP-UX and some BSDs)
     // establish the connection immediately (i.e., first attempt).

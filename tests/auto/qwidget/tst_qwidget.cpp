@@ -1549,6 +1549,10 @@ void tst_QWidget::focusChainOnReparent()
         QCOMPARE(w, expectedOriginalChain[i]);
         w = w->nextInFocusChain();
     }
+    for (int i = 7; i >= 0; --i) {
+        w = w->previousInFocusChain();
+        QCOMPARE(w, expectedOriginalChain[i]);
+    }
 
     QWidget window2;
     child2->setParent(&window2);
@@ -1559,12 +1563,20 @@ void tst_QWidget::focusChainOnReparent()
         QCOMPARE(w, expectedNewChain[i]);
         w = w->nextInFocusChain();
     }
+    for (int i = 4; i >= 0; --i) {
+        w = w->previousInFocusChain();
+        QCOMPARE(w, expectedNewChain[i]);
+    }
 
     QWidget *expectedOldChain[5] = {&window, child1,  child3, child4, &window};
     w = &window;
     for (int i = 0; i <5; ++i) {
         QCOMPARE(w, expectedOldChain[i]);
         w = w->nextInFocusChain();
+    }
+    for (int i = 4; i >= 0; --i) {
+        w = w->previousInFocusChain();
+        QCOMPARE(w, expectedOldChain[i]);
     }
 }
 
@@ -5780,6 +5792,35 @@ void tst_QWidget::setToolTip()
     widget.setToolTip(QString());
     QCOMPARE(widget.toolTip(), QString());
     QCOMPARE(spy.count(), 2);
+
+
+
+    for (int pass = 0; pass < 2; ++pass) {
+        QWidget *popup = new QWidget(0, Qt::Popup);
+        popup->resize(150, 50);
+        QFrame *frame = new QFrame(popup);
+        frame->setGeometry(0, 0, 50, 50);
+        frame->setFrameStyle(QFrame::Box | QFrame::Plain);
+        EventSpy spy1(frame, QEvent::ToolTip);
+        EventSpy spy2(popup, QEvent::ToolTip);
+        frame->setMouseTracking(pass == 0 ? false : true);
+        frame->setToolTip(QLatin1String("TOOLTIP FRAME"));
+        popup->setToolTip(QLatin1String("TOOLTIP POPUP"));
+        popup->show();
+#ifdef Q_WS_X11
+        qt_x11_wait_for_window_manager(popup);
+#endif
+        QTest::qWait(100);
+        QTest::mouseMove(frame);
+        QTest::qWait(900);          // delay is 700
+
+        QCOMPARE(spy1.count(), 1);
+        QCOMPARE(spy2.count(), 0);
+        if (pass == 0)
+            QTest::qWait(2200);     // delay is 2000
+        QTest::mouseMove(popup);
+        delete popup;
+    }
 }
 
 void tst_QWidget::testWindowIconChangeEventPropagation()

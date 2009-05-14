@@ -54,6 +54,7 @@
 #include <qstring.h>
 #include <qwindowsystem_qws.h>
 #include <qsocketnotifier.h>
+#include "qplatformdefs.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -81,13 +82,13 @@ QWSUmKeyboardHandlerPrivate::QWSUmKeyboardHandlerPrivate(const QString &device)
 {
     kbdBuffer = new unsigned char [kbdBufferLen];
 
-    if ((kbdFD = open((const char *)device.toLocal8Bit(), O_RDONLY | O_NDELAY)) < 0) {
+    if ((kbdFD = QT_OPEN((const char *)device.toLocal8Bit(), O_RDONLY | O_NDELAY, 0)) < 0) {
         qDebug("Cannot open %s (%s)", (const char *)device.toLocal8Bit(),
         strerror(errno));
     } else {
         // Clear pending input
         char buf[2];
-        while (read(kbdFD, buf, 1) > 0) { }
+        while (QT_READ(kbdFD, buf, 1) > 0) { }
 
         notifier = new QSocketNotifier(kbdFD, QSocketNotifier::Read, this);
         connect(notifier, SIGNAL(activated(int)),this, SLOT(readKeyboardData()));
@@ -97,7 +98,7 @@ QWSUmKeyboardHandlerPrivate::QWSUmKeyboardHandlerPrivate(const QString &device)
 QWSUmKeyboardHandlerPrivate::~QWSUmKeyboardHandlerPrivate()
 {
     if (kbdFD >= 0)
-        close(kbdFD);
+        QT_CLOSE(kbdFD);
     delete [] kbdBuffer;
 }
 
@@ -106,7 +107,7 @@ void QWSUmKeyboardHandlerPrivate::readKeyboardData()
 {
     int n;
     do {
-        n  = read(kbdFD, kbdBuffer+kbdIdx, kbdBufferLen - kbdIdx);
+        n  = QT_READ(kbdFD, kbdBuffer+kbdIdx, kbdBufferLen - kbdIdx);
         if (n > 0)
             kbdIdx += n;
     } while (n > 0);

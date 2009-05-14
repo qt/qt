@@ -1,0 +1,169 @@
+/*! 
+\page qmlanimation.html
+\target qmlanimation
+\title QML Animation
+
+QML supports three different forms of animation - basic property animation, 
+states and transitions and property behaviors.  
+
+\section1 Property Animation
+
+Animation in QML is done by animating properties of objects.
+
+Any property of a recognizable type can be animated. Currently those types include:
+\list
+\o qreal
+\o int
+\o Most of QVariant's built-in types
+\endlist
+
+Animations can also involve numerous properties on numerous objects.
+
+Other Features:
+\list
+\o Support for a large set of parameterized easing curves. (based on the Penner easing equations)
+\o Animation synchronization
+\endlist
+
+The simplest form of animation is using \l NumericAnimation
+
+The following example creates a bouncing effect:
+\code
+Rect {
+    id: rect
+    width: 120; height: 200; color: "white"
+    Image {
+        id: img
+        source: "qt-logo.png"
+        x: 60-img.width/2
+        y: 0
+        y: SequentialAnimation {
+            running: true
+            repeat: true
+            NumericAnimation { to: 200-img.height; easing: "easeOutBounce"; duration: 2000 }
+            PauseAnimation { duration: 1000 }
+            NumericAnimation { to: 0; easing: "easeOutQuad"; duration: 1000 }
+        }
+    }
+}
+\endcode
+
+\image propanim.gif
+
+\target states-transitions
+\section1 States and Transitions
+
+\section2 States
+
+QML states describe user interface configurations, including:
+\list
+\o What UI elements are present
+\o The properties of those elements (including how they behave)
+\o What actions are available
+\endlist
+
+A state can also be thought of as a set of batched changes from a default configuration.
+
+Examples of states in modern UI:
+\list
+\o A Contacts application has a 'View Contact' state and an 'Edit Contact' State. In the first state the information presented is static (using labels), and in the second it is editable (using editors).
+\o A button has a pressed and unpressed state. When pressed the text moves down and to the right, and the button has a slightly darker appearance.
+\endlist
+
+In QML:
+\list
+\o Any object can use states.
+\o There is a default state. The default state can be explicitly set.
+\o A state can affect other the properties of other objects, not just the object owning the state (and not just that object's children).
+\endlist
+
+The following example shows a simple use of states. In the default state \c myrect is positioned at 0,0. In the 'moved' state it is positioned at 50,50.
+
+\code
+Item {
+    Rect {
+        id: myrect
+        width: 100
+        height: 100
+    }
+    states: [
+        State {
+            name: "moved"
+            SetProperty {
+                target: myrect
+                property: "x"
+                value: 50
+            }
+            SetProperty {
+                target: myrect
+                property: "y"
+                value: 50
+            }
+        }
+    ]
+}
+\endcode
+
+\section2 Transitions
+
+QML transitions describe animations to perform when state changes occur.
+
+For the previous example, a transition could describe how \c myrect moved from its initial position to its new position:
+
+\code
+transitions: [
+    Transition {
+        NumericAnimation {
+            properties: "x,y"
+            easing: "easeOutBounce"
+            duration: 200
+        }
+    }
+]
+\endcode
+
+QML transitions can use selectors to determine which state changes a transition should apply to:
+
+\code
+Transition {
+    fromState: "*"
+    toState: "Details"
+    ...
+}
+\endcode
+
+Transitions can happen in parallel, in sequence, or in any combination of the two:;
+
+\code
+Transition {
+    fromState: "*"
+    toState: "MyState"
+    reversible: true
+    SequentialAnimation {
+        ColorAnimation {
+            duration: 1000
+        }
+        PauseAnimation {
+            duration: 1000
+        }
+        ParallelAnimation {
+            NumericAnimation {
+                duration: 1000
+                easing: "easeOutBounce"
+                target: box1
+                properties: "x,y"
+            }
+            NumericAnimation {
+                duration: 1000
+                target: box2
+                properties: "x,y"
+            }
+        }
+    }
+}
+\endcode
+
+\section1 Property Behaviors
+
+\note Property behaviors are currently experimental.
+*/

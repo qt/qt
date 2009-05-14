@@ -1027,7 +1027,7 @@ void QWidgetPrivate::adjustFlags(Qt::WindowFlags &flags, QWidget *w)
     if (customize)
         ; // don't modify window flags if the user explicitely set them.
     else if (type == Qt::Dialog || type == Qt::Sheet)
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint;
 #else
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
@@ -1094,7 +1094,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (f & Qt::MSWindowsOwnDC)
         q->setAttribute(Qt::WA_NativeWindow);
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     data.window_state_internal = 0;
 #endif
 
@@ -2956,10 +2956,15 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 #if defined(Q_WS_MAC)
     setEnabled_helper_sys(enable);
 #endif
-#if defined (Q_WS_WIN)
-    if (q->hasFocus())
-        QInputContextPrivate::updateImeStatus(q, true);
-#endif
+    if (q->testAttribute(Qt::WA_InputMethodEnabled) && q->hasFocus()) {
+        QInputContext *qic = inputContext();
+        if (enable) {
+            qic->setFocusWidget(q);
+        } else {
+            qic->reset();
+            qic->setFocusWidget(0);
+        }
+    }
     QEvent e(QEvent::EnabledChange);
     QApplication::sendEvent(q, &e);
 #ifdef QT3_SUPPORT
@@ -4196,7 +4201,7 @@ const QPalette &QWidget::palette() const
     if (!isEnabled()) {
         data->pal.setCurrentColorGroup(QPalette::Disabled);
     } else if ((!isVisible() || isActiveWindow())
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_WS_WINCE)
         && !QApplicationPrivate::isBlockedByModal(const_cast<QWidget *>(this))
 #endif
         ) {
@@ -4784,7 +4789,7 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     }
 
     const qreal opacity = painter->opacity();
-    if (qFuzzyCompare(opacity + 1, qreal(1.0)))
+    if (qFuzzyIsNull(opacity))
         return; // Fully transparent.
 
     Q_D(QWidget);
@@ -5894,10 +5899,24 @@ QWidget *QWidget::focusWidget() const
 
 /*!
     Returns the next widget in this widget's focus chain.
+
+    \sa previousInFocusChain()
 */
 QWidget *QWidget::nextInFocusChain() const
 {
     return const_cast<QWidget *>(d_func()->focus_next);
+}
+
+/*!
+    Returns the previous widget in this widget's focus chain.
+
+    \sa nextInFocusChain()
+
+    \since 4.6
+*/
+QWidget *QWidget::previousInFocusChain() const
+{
+    return const_cast<QWidget *>(d_func()->focus_prev);
 }
 
 /*!
@@ -7319,7 +7338,7 @@ QSize QWidgetPrivate::adjustedSize() const
 #else // all others
         QRect screen = QApplication::desktop()->screenGeometry(q->pos());
 #endif
-#if defined (Q_OS_WINCE)
+#if defined (Q_WS_WINCE)
         s.setWidth(qMin(s.width(), screen.width()));
         s.setHeight(qMin(s.height(), screen.height()));
 #else
@@ -7627,16 +7646,10 @@ bool QWidget::event(QEvent *event)
         }
         break;
     case QEvent::FocusIn:
-#if defined(Q_WS_WIN)
-        QInputContextPrivate::updateImeStatus(this, true);
-#endif
         focusInEvent((QFocusEvent*)event);
         break;
 
     case QEvent::FocusOut:
-#if defined(Q_WS_WIN)
-        QInputContextPrivate::updateImeStatus(this, false);
-#endif
         focusOutEvent((QFocusEvent*)event);
         break;
 
@@ -9792,27 +9805,6 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         QEvent e(QEvent::MouseTrackingChange);
         QApplication::sendEvent(this, &e);
         break; }
-#if !defined(QT_NO_DIRECT3D) && defined(Q_WS_WIN)
-    case Qt::WA_MSWindowsUseDirect3D:
-        if (!qApp->testAttribute(Qt::AA_MSWindowsUseDirect3DByDefault)) {
-            if (on) {
-                if (!d->extra)
-                    d->createExtra();
-                d->extra->had_auto_fill_bg = d->extra->autoFillBackground;
-                d->extra->had_no_system_bg = testAttribute(Qt::WA_NoSystemBackground);
-                d->extra->had_paint_on_screen = testAttribute(Qt::WA_PaintOnScreen);
-                // enforce the opaque widget state D3D needs
-                d->extra->autoFillBackground = true;
-                setAttribute(Qt::WA_PaintOnScreen);
-                setAttribute(Qt::WA_NoSystemBackground);
-            } else if (d->extra) {
-                d->extra->autoFillBackground = d->extra->had_auto_fill_bg;
-                setAttribute(Qt::WA_PaintOnScreen, d->extra->had_paint_on_screen);
-                setAttribute(Qt::WA_NoSystemBackground, d->extra->had_no_system_bg);
-            }
-        }
-        break;
-#endif
     case Qt::WA_NativeWindow: {
         QInputContext *ic = 0;
         if (on && !internalWinId() && testAttribute(Qt::WA_InputMethodEnabled) && hasFocus()) {
@@ -9824,7 +9816,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             parentWidget()->d_func()->enforceNativeChildren();
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
-        if (ic)
+        if (ic && isEnabled())
             ic->setFocusWidget(this);
         break;
     }
@@ -9855,10 +9847,6 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 #endif
         break;
     case Qt::WA_InputMethodEnabled: {
-#if defined(Q_WS_WIN) || (defined(Q_WS_QWS) && !defined(QT_NO_QWS_INPUTMETHODS))
-        if (hasFocus())
-            QInputContextPrivate::updateImeStatus(this, true);
-#endif
         QInputContext *ic = d->ic;
         if (!ic) {
             // implicitly create input context only if we have a focus
@@ -9866,7 +9854,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
                 ic = d->inputContext();
         }
         if (ic) {
-            if (on && hasFocus() && ic->focusWidget() != this) {
+            if (on && hasFocus() && ic->focusWidget() != this && isEnabled()) {
                 ic->setFocusWidget(this);
             } else if (!on && ic->focusWidget() == this) {
                 ic->reset();

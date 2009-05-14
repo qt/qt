@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::StyleSheetEditorDialog
-*/
-
 #include "csshighlighter_p.h"
 
 QT_BEGIN_NAMESPACE

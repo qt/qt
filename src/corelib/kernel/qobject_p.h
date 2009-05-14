@@ -85,6 +85,13 @@ inline QObjectData::~QObjectData() {}
 
 enum { QObjectPrivateVersion = QT_VERSION };
 
+class Q_CORE_EXPORT QDeclarativeData 
+{
+public:
+    virtual ~QDeclarativeData() {}
+    virtual void destroyed(QObject *) {}
+};
+
 class Q_CORE_EXPORT QObjectPrivate : public QObjectData
 {
     Q_DECLARE_PUBLIC(QObject)
@@ -114,11 +121,13 @@ public:
         int signal;
         int ref;
     };
-
     // object currently activating the object
     Sender *currentSender;
 
-    QObject *currentChildBeingDeleted;
+    union {
+        QObject *currentChildBeingDeleted;
+        QDeclarativeData *declarativeData;
+    };
 
     bool isSender(const QObject *receiver, const char *signal) const;
     QObjectList receiverList(const char *signal) const;
@@ -148,22 +157,20 @@ public:
     // Note: you must hold the signalSlotLock() before accessing the lists below or calling the functions
     struct Connection
     {
+        QObject *sender;
         QObject *receiver;
         int method;
         uint connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
         QBasicAtomicPointer<int> argumentTypes;
+        ~Connection();
     };
-    typedef QList<Connection> ConnectionList;
+    typedef QList<Connection *> ConnectionList;
 
     QObjectConnectionListVector *connectionLists;
     void addConnection(int signal, Connection *c);
-    void removeReceiver(int signal, QObject *receiver);
     void cleanConnectionLists();
 
-    QList<Sender> senders;
-    void refSender(QObject *sender, int signal);
-    void derefSender(QObject *sender, int signal);
-    void removeSender(QObject *sender, int signal);
+    ConnectionList senders;
 
     static Sender *setCurrentSender(QObject *receiver,
                                     Sender *sender);
@@ -208,7 +215,7 @@ private:
     QSemaphore *semaphore_;
 };
 
-class Q_CORE_EXPORT QBoolBlocker
+class QBoolBlocker
 {
 public:
     inline QBoolBlocker(bool &b, bool value=true):block(b), reset(b){block = value;}
@@ -219,6 +226,14 @@ private:
 };
 
 void Q_CORE_EXPORT qDeleteInEventHandler(QObject *o);
+
+
+struct Q_CORE_EXPORT QAbstractDynamicMetaObject : public QMetaObject
+{
+    virtual ~QAbstractDynamicMetaObject() {}
+    virtual int metaCall(QMetaObject::Call, int _id, void **) { return _id; }
+    virtual int createProperty(const char *, const char *) { return -1; }
+};
 
 QT_END_NAMESPACE
 

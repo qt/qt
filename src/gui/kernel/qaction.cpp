@@ -1151,6 +1151,8 @@ void QAction::activate(ActionEvent event)
             // the checked action of an exclusive group cannot be  unchecked
             if (d->checked && (d->group && d->group->isExclusive()
                                && d->group->checkedAction() == this)) {
+                if (guard)
+                    emit triggered(true);
                 QMetaObject::removeGuard(&guard);
                 return;
             }
@@ -1368,7 +1370,7 @@ QAction::MenuRole QAction::menuRole() const
 void QAction::setIconVisibleInMenu(bool visible)
 {
     Q_D(QAction);
-    if (visible != (bool)d->iconVisibleInMenu) {
+    if (d->iconVisibleInMenu == -1 || visible != bool(d->iconVisibleInMenu)) {
         int oldValue = d->iconVisibleInMenu;
         d->iconVisibleInMenu = visible;
         // Only send data changed if we really need to.

@@ -143,6 +143,7 @@
                         <xs:element name="script" type="Script" minOccurs="0" />
                         <xs:element name="properties" type="Properties" minOccurs="0" />
                         <xs:element name="slots" type="Slots" minOccurs="0" />
+                        <xs:element name="propertyspecifications" type="PropertySpecifications" minOccurs="0" />
                 </xs:all>
         </xs:complexType>
 
@@ -569,6 +570,18 @@
                 <xs:element name="signal" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
                 <xs:element name="slot" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
             </xs:sequence>
+        </xs:complexType>
+
+         <xs:complexType name="PropertySpecifications">
+            <xs:sequence maxOccurs="unbounded">
+                <xs:element name="stringpropertyspecification" type="StringPropertySpecification" minOccurs="0" maxOccurs="unbounded" />
+            </xs:sequence>
+        </xs:complexType>
+
+         <xs:complexType name="StringPropertySpecification">
+                <xs:attribute name="name" type="xs:string" use="required" />
+                <xs:attribute name="type" type="xs:string" use="required" />
+                <xs:attribute name="notr" type="xs:string"/>
         </xs:complexType>
 
 </xs:schema>

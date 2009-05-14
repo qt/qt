@@ -81,30 +81,50 @@ QString PageGenerator::fileBase(const Node *node)
 {
     if (node->relates())
 	node = node->relates();
-    else if (!node->isInnerNode())
+    else if (!node->isInnerNode()) {
 	node = node->parent();
+#ifdef QDOC_QML
+        if (node->subType() == Node::QmlPropertyGroup) {
+            node = node->parent();
+        }
+#endif        
+    }
 
     QString base = node->doc().baseName();
     if (!base.isEmpty())
         return base;
 
-	const Node *p = node;
+    const Node *p = node;
 
-        forever {
-            base.prepend(p->name());
+    forever {
+        base.prepend(p->name());
+#ifdef QDOC_QML
+        /*
+          To avoid file name conflicts in the html directory,
+          we prepend "qml-" to the file name of QML element doc
+          files.
+         */
+        if ((p->subType() == Node::QmlClass) ||
+            (p->subType() == Node::QmlPropertyGroup))
+            base.prepend("qml-");
+        else if ((p->type() == Node::QmlProperty) ||
+                 (p->type() == Node::QmlSignal) ||
+                 (p->type() == Node::QmlMethod))
+            base.prepend("qml-");
+#endif        
         const Node *pp = p->parent();
         if (!pp || pp->name().isEmpty() || pp->type() == Node::Fake)
-                break;
+            break;
         base.prepend(QLatin1Char('-'));
         p = pp;
-        }
-
-        if (node->type() == Node::Fake) {
+    }
+    
+    if (node->type() == Node::Fake) {
 #ifdef QDOC2_COMPAT
-            if (base.endsWith(".html"))
-	        base.truncate(base.length() - 5);
+        if (base.endsWith(".html"))
+            base.truncate(base.length() - 5);
 #endif
-        }
+    }
 
     // the code below is effectively equivalent to:
     //   base.replace(QRegExp("[^A-Za-z0-9]+"), " ");
@@ -126,7 +146,8 @@ QString PageGenerator::fileBase(const Node *node)
         if ((u >= 'a' &&  u <= 'z') || (u >= '0' && u <= '9')) {
             res += QLatin1Char(u);
             begun = true;
-        } else if (begun) {
+        }
+        else if (begun) {
             res += QLatin1Char('-');
             begun = false;
         }
@@ -187,8 +208,12 @@ void PageGenerator::generateInnerNode(const InnerNode *node,
 
     if (node->type() == Node::Fake) {
         const FakeNode *fakeNode = static_cast<const FakeNode *>(node);
-        if (fakeNode->subType() == FakeNode::ExternalPage)
+        if (fakeNode->subType() == Node::ExternalPage)
             return;
+#ifdef QDOC_QML            
+        if (fakeNode->subType() == Node::QmlPropertyGroup)
+            return;
+#endif            
     }
 
     if (node->parent() != 0) {
@@ -197,12 +222,6 @@ void PageGenerator::generateInnerNode(const InnerNode *node,
 	    generateClassLikeNode(node, marker);
 	}
         else if (node->type() == Node::Fake) {
-            const FakeNode* fakeNode = static_cast<const FakeNode *>(node);
-#ifdef QDOC_QML            
-            if (fakeNode->subType() == FakeNode::QmlClass) {
-                //qDebug() << "FILENAME:" << fileName(node);
-            }
-#endif            
 	    generateFakeNode(static_cast<const FakeNode *>(node), marker);
 	}
 	endSubPage();

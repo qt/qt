@@ -106,6 +106,7 @@ private slots:
     void task228566_infiniteRelayout();
     void task248430_crashWith0SizedItem();
     void task250446_scrollChanged();
+    void keyboardSearch();
 };
 
 // Testing get/set functions
@@ -1555,6 +1556,30 @@ void tst_QListView::task250446_scrollChanged()
     QCOMPARE(view.currentIndex(), index);
 }
 
+void tst_QListView::keyboardSearch()
+{
+    QStringList items;
+    items << "AB" << "AC" << "BA" << "BB" << "BD" << "KAFEINE" << "KONQUEROR" << "KOPETE" << "KOOKA" << "OKULAR";
+    QStringListModel model(items);
+
+    QListView view;
+    view.setModel(&model);
+    view.show();
+    QTest::qWait(30);
+//    QCOMPARE(view.currentIndex() , model.index(0,0));
+
+    QTest::keyClick(&view, Qt::Key_K);
+    QTest::qWait(10);
+    QCOMPARE(view.currentIndex() , model.index(5,0)); //KAFEINE
+
+    QTest::keyClick(&view, Qt::Key_O);
+    QTest::qWait(10);
+    QCOMPARE(view.currentIndex() , model.index(6,0)); //KONQUEROR
+
+    QTest::keyClick(&view, Qt::Key_N);
+    QTest::qWait(10);
+    QCOMPARE(view.currentIndex() , model.index(6,0)); //KONQUEROR
+}
 
 QTEST_MAIN(tst_QListView)
 #include "tst_qlistview.moc"

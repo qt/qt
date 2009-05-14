@@ -1,0 +1,2 @@
+2:-1:Unknown property "a"
+2:-1:Unable to create object of type "FailingComponent"

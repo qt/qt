@@ -58,7 +58,7 @@
 #include <qdebug.h>
 #include <qapplication.h>
 #include <qstylepainter.h>
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
 #include "ui_qfiledialog.h"
 #else
 #include "ui_qfiledialog_wince.h"
@@ -1861,7 +1861,7 @@ QString QFileDialog::getExistingDirectory(QWidget *parent,
 
 #if defined(Q_WS_WIN)
     if (qt_use_native_dialogs && !(args.options & DontUseNativeDialog) && (options & ShowDirsOnly)
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
         && qt_priv_ptr_valid
 #endif
         ) {
@@ -2075,7 +2075,7 @@ void QFileDialogPrivate::init(const QString &directory, const QString &nameFilte
     q->restoreState(settings.value(QLatin1String("filedialog")).toByteArray());
 #endif
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     qFileDialogUi->lookInLabel->setVisible(false);
     qFileDialogUi->fileNameLabel->setVisible(false);
     qFileDialogUi->fileTypeLabel->setVisible(false);

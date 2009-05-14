@@ -1,0 +1,22 @@
+/*! 
+\page qmlmodules.html
+\target qmlmodules
+\title Modules of Components
+
+A \bold module is a collection of \l Components.
+
+To use a module, include the following statement at the begining
+of your QML:
+
+\code
+import "path"
+\endcode
+
+This allows all components defined in the directory \c path to be used in
+the component where this statement appears.
+
+Currently, \c path may only be a directory relative to the directory containing
+the component issuing the import.
+
+The import statement cannot be used by remote content.
+*/

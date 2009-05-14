@@ -188,6 +188,7 @@
         <li><a href="qtxmlpatterns.html">XML Patterns: XQuery &amp; XPath</a></li>
         <li><a href="phonon-module.html">Phonon Multimedia Framework</a></li>
         <li><a href="qtscripttools.html">Script Tools Module</a></li>
+        <li><a href="qtdeclarative.html">Declarative Module</a></li>
         <li><a href="activeqt.html">ActiveQt Framework</a></li>
         </ul>
         </td>

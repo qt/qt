@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::QDesignerTaskMenu
-*/
-
 #include "qdesigner_taskmenu_p.h"
 #include "qdesigner_command_p.h"
 #include "richtexteditor_p.h"

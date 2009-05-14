@@ -58,6 +58,7 @@
 #include "qabstractfontengine_qws.h"
 #include "qabstractfontengine_p.h"
 #include <qdatetime.h>
+#include "qplatformdefs.h"
 
 // for mmap
 #include <stdlib.h>
@@ -127,7 +128,7 @@ void QFontDatabasePrivate::addQPF2File(const QByteArray &file)
     struct stat st;
     if (stat(file.constData(), &st))
         return;
-    int f = ::open(file, O_RDONLY);
+    int f = ::open(file, O_RDONLY, 0);
     if (f < 0)
         return;
     const uchar *data = (const uchar *)mmap(0, st.st_size, PROT_READ, MAP_SHARED, f, 0);
@@ -675,7 +676,7 @@ QFontEngine *loadSingleEngine(int script, const QFontPrivate *fp,
             qDebug() << "Resource not valid" << size->fileName;
         }
 #else
-        int f = ::open(size->fileName, O_RDONLY);
+        int f = ::open(size->fileName, O_RDONLY, 0);
         if (f >= 0) {
             QFontEngineQPF *fe = new QFontEngineQPF(request, f);
             if (fe->isValid())

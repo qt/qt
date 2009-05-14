@@ -467,6 +467,21 @@ QAbstractItemModel *QAbstractItemModelPrivate::staticEmptyModel()
     return qEmptyModel();
 }
 
+const QHash<int,QByteArray> &QAbstractItemModelPrivate::defaultRoleNames()
+{
+    static QHash<int,QByteArray> roleNames;
+    if (roleNames.isEmpty()) {
+        roleNames[Qt::DisplayRole] = "display";
+        roleNames[Qt::DecorationRole] = "decoration";
+        roleNames[Qt::EditRole] = "edit";
+        roleNames[Qt::ToolTipRole] = "toolTip";
+        roleNames[Qt::StatusTipRole] = "statusTip";
+        roleNames[Qt::WhatsThisRole] = "whatsThis";
+    }
+
+    return roleNames;
+}
+
 void QAbstractItemModelPrivate::removePersistentIndexData(QPersistentModelIndexData *data)
 {
     if (data->index.isValid()) {
@@ -1829,6 +1844,25 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
 QSize QAbstractItemModel::span(const QModelIndex &) const
 {
     return QSize(1, 1);
+}
+
+/*!
+  Sets the model's role names to \a roleNames.
+*/
+void QAbstractItemModel::setRoleNames(const QHash<int,QByteArray> &roleNames)
+{
+    Q_D(QAbstractItemModel);
+    d->roleNames = roleNames;
+}
+
+/*!
+  Returns the model's role names.
+*/
+const QHash<int,QByteArray> &QAbstractItemModel::roleNames() const
+{
+    Q_D(const QAbstractItemModel);
+    qDebug() << "roles" << d->roleNames;
+    return d->roleNames;
 }
 
 /*!

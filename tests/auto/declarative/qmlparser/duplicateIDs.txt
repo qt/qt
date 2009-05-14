@@ -1,0 +1,5 @@
+MyContainer {
+    MyQmlObject { id: MyID }
+    MyQmlObject { id: MyID }
+}
+

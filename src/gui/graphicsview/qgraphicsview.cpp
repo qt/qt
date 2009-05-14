@@ -614,6 +614,16 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
     }
 
 #ifndef QT_NO_CURSOR
+    // If all the items ignore hover events, we don't look-up any items
+    // in QGraphicsScenePrivate::dispatchHoverEvent, hence the
+    // cachedItemsUnderMouse list will be empty. We therefore do the look-up
+    // for cursor items here if not all items use the default cursor.
+    if (scene->d_func()->allItemsIgnoreHoverEvents && !scene->d_func()->allItemsUseDefaultCursor
+        && scene->d_func()->cachedItemsUnderMouse.isEmpty()) {
+        scene->d_func()->cachedItemsUnderMouse = scene->d_func()->itemsAtPosition(mouseEvent.screenPos(),
+                                                                                  mouseEvent.scenePos(),
+                                                                                  mouseEvent.widget());
+    }
     // Find the topmost item under the mouse with a cursor.
     foreach (QGraphicsItem *item, scene->d_func()->cachedItemsUnderMouse) {
         if (item->hasCursor()) {
@@ -1061,7 +1071,7 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
 
     // Step 1) If all items are contained within the expose region, then
     // return a list of all visible items.
-    const QRectF exposedRegionSceneBounds = q->mapToScene(exposedRegion.boundingRect().adjusted(-1, -1, 2, 2))
+    const QRectF exposedRegionSceneBounds = q->mapToScene(exposedRegion.boundingRect().adjusted(-1, -1, 1, 1))
                                             .boundingRect();
     if (exposedRegionSceneBounds.contains(scene->d_func()->growingItemsBoundingRect)) {
         Q_ASSERT(allItems);
@@ -1692,6 +1702,12 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
         d->recalculateContentSize();
         d->lastCenterPoint = sceneRect().center();
         d->keepLastCenterPoint = true;
+        // We are only interested in mouse tracking if items accept
+        // hover events or use non-default cursors.
+        if (!d->scene->d_func()->allItemsIgnoreHoverEvents
+            || !d->scene->d_func()->allItemsUseDefaultCursor) {
+            d->viewport->setMouseTracking(true);
+        }
     } else {
         d->recalculateContentSize();
     }
@@ -2297,7 +2313,7 @@ QList<QGraphicsItem *> QGraphicsView::items(const QPoint &pos) const
             QTransform xinv = viewportTransform().inverted();
             return d->scene->items(xinv.mapRect(QRectF(pos.x(), pos.y(), 1, 1)));
         }
-        return d->scene->items(mapToScene(pos.x(), pos.y(), 2, 2));
+        return d->scene->items(mapToScene(pos.x(), pos.y(), 1, 1));
     }
 
     QPainterPath path;
@@ -2459,10 +2475,11 @@ QPolygonF QGraphicsView::mapToScene(const QRect &rect) const
         return QPolygonF();
 
     QPointF scrollOffset(d->horizontalScroll(), d->verticalScroll());
-    QPointF tl = scrollOffset + rect.topLeft();
-    QPointF tr = scrollOffset + rect.topRight();
-    QPointF br = scrollOffset + rect.bottomRight();
-    QPointF bl = scrollOffset + rect.bottomLeft();
+    QRect r = rect.adjusted(0, 0, 1, 1);
+    QPointF tl = scrollOffset + r.topLeft();
+    QPointF tr = scrollOffset + r.topRight();
+    QPointF br = scrollOffset + r.bottomRight();
+    QPointF bl = scrollOffset + r.bottomLeft();
 
     QPolygonF poly;
     poly.resize(4);
@@ -2792,9 +2809,7 @@ void QGraphicsView::setupViewport(QWidget *widget)
 
     const bool isGLWidget = widget->inherits("QGLWidget");
 
-    d->accelerateScrolling = !(isGLWidget
-                               || widget->testAttribute(Qt::WA_MSWindowsUseDirect3D)
-                               || qApp->testAttribute(Qt::AA_MSWindowsUseDirect3DByDefault));
+    d->accelerateScrolling = !(isGLWidget);
 
     widget->setFocusPolicy(Qt::StrongFocus);
 
@@ -2803,7 +2818,12 @@ void QGraphicsView::setupViewport(QWidget *widget)
         widget->setAutoFillBackground(true);
     }
 
-    widget->setMouseTracking(true);
+    // We are only interested in mouse tracking if items
+    // accept hover events or use non-default cursors.
+    if (d->scene && (!d->scene->d_func()->allItemsIgnoreHoverEvents
+                     || !d->scene->d_func()->allItemsUseDefaultCursor)) {
+        widget->setMouseTracking(true);
+    }
     widget->setAcceptDrops(acceptDrops());
 }
 
@@ -3450,7 +3470,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
         exposedRegion = viewport()->rect();
     else if (d->viewportUpdateMode == BoundingRectViewportUpdate)
         exposedRegion = event->rect();
-    QRectF exposedSceneRect = mapToScene(exposedRegion.boundingRect().adjusted(0, 0, 1, 1)).boundingRect();
+    QRectF exposedSceneRect = mapToScene(exposedRegion.boundingRect()).boundingRect();
 
     // Set up the painter
     QPainter painter(viewport());
@@ -3504,6 +3524,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
             QPainter backgroundPainter(&d->backgroundPixmap);
             backgroundPainter.setClipRegion(d->backgroundPixmapExposed, Qt::ReplaceClip);
             backgroundPainter.setTransform(viewportTransform());
+            backgroundPainter.setCompositionMode(QPainter::CompositionMode_Source);
             drawBackground(&backgroundPainter, exposedSceneRect);
             d->backgroundPixmapExposed = QRegion();
         }
@@ -3656,31 +3677,14 @@ void QGraphicsView::scrollContentsBy(int dx, int dy)
         && X11->use_xrender
 #endif
         ) {
-        // Invalidate the background pixmap
-        d->backgroundPixmapExposed.translate(dx, 0);
-        if (dx > 0) {
-            d->backgroundPixmapExposed += QRect(0, 0, dx, viewport()->height());
-        } else if (dx < 0) {
-            d->backgroundPixmapExposed += QRect(viewport()->width() + dx, 0,
-                                                -dx, viewport()->height());
-        }
-        d->backgroundPixmapExposed.translate(0, dy);
-        if (dy > 0) {
-            d->backgroundPixmapExposed += QRect(0, 0, viewport()->width(), dy);
-        } else if (dy < 0) {
-            d->backgroundPixmapExposed += QRect(0, viewport()->height() + dy,
-                                                viewport()->width(), -dy);
-        }
-
         // Scroll the background pixmap
-        if (!d->backgroundPixmap.isNull()) {
-            QPixmap tmp = d->backgroundPixmap.copy();
-            QBrush bgBrush = viewport()->palette().brush(viewport()->backgroundRole());
-            if (!bgBrush.isOpaque())
-                d->backgroundPixmap.fill(Qt::transparent);
-            QPainter painter(&d->backgroundPixmap);
-            painter.drawPixmap(dx, dy, tmp);
-        }
+        QRegion exposed;
+        if (!d->backgroundPixmap.isNull())
+            d->backgroundPixmap.scroll(dx, dy, d->backgroundPixmap.rect(), &exposed);
+
+        // Invalidate the background pixmap
+        d->backgroundPixmapExposed.translate(dx, dy);
+        d->backgroundPixmapExposed += exposed;
     }
 
     // Always replay on scroll.

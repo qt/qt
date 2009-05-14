@@ -66,6 +66,7 @@
 #include <private/qapplication_p.h>
 #include <private/qcommonstylepixmaps_p.h>
 #include <private/qmath_p.h>
+#include <private/qstylehelper_p.h>
 #include <qdebug.h>
 #include <qtextformat.h>
 #include <qwizard.h>
@@ -1979,7 +1980,9 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                                                           : QIcon::Disabled);
                 QPixmap tabIcon = tabV2.icon.pixmap(iconSize,
                                                     (tabV2.state & State_Enabled) ? QIcon::Normal
-                                                                                  : QIcon::Disabled);
+                                                                                  : QIcon::Disabled,
+                                                    (tabV2.state & State_Selected) ? QIcon::On
+                                                                                   : QIcon::Off);
 
                 int offset = 4;
                 int left = opt->rect.left();
@@ -2267,7 +2270,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             drawPrimitive(PE_PanelItemViewItem, opt, p, widget);
 
             // draw the check mark
-            if (checkRect.isValid()) {
+            if (vopt->features & QStyleOptionViewItemV2::HasCheckIndicator) {
                 QStyleOptionViewItemV4 option(*vopt);
                 option.rect = checkRect;
                 option.state = option.state & ~QStyle::State_HasFocus;
@@ -2849,9 +2852,11 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 tr.setRect(0, 0, tr.height(), tr.width());
             int verticalShift = pixelMetric(QStyle::PM_TabBarTabShiftVertical, tab, widget);
             int horizontalShift = pixelMetric(QStyle::PM_TabBarTabShiftHorizontal, tab, widget);
+            int hpadding = pixelMetric(QStyle::PM_TabBarTabHSpace, opt, widget) / 2;
+            int vpadding = pixelMetric(QStyle::PM_TabBarTabVSpace, opt, widget) / 2;
             if (tabV2.shape == QTabBar::RoundedSouth || tabV2.shape == QTabBar::TriangularSouth)
                 verticalShift = -verticalShift;
-            tr.adjust(0, 0, horizontalShift, verticalShift);
+            tr.adjust(hpadding, vpadding, horizontalShift - hpadding, verticalShift - vpadding);
             bool selected = tabV2.state & State_Selected;
             if (selected) {
                 tr.setBottom(tr.bottom() - verticalShift);
@@ -3182,6 +3187,25 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                                }
         break;
 #endif //QT_NO_ITEMVIEWS
+#ifndef QT_NO_TOOLBAR
+    case SE_ToolBarHandle:
+        if (const QStyleOptionToolBar *tbopt = qstyleoption_cast<const QStyleOptionToolBar *>(opt)) {
+            if (tbopt->features & QStyleOptionToolBar::Movable) {
+                ///we need to access the widget here because the style option doesn't 
+                //have all the information we need (ie. the layout's margin)
+                const QToolBar *tb = qobject_cast<const QToolBar*>(widget);
+                const int margin = tb && tb->layout() ? tb->layout()->margin() : 2;
+                const int handleExtent = pixelMetric(QStyle::PM_ToolBarExtensionExtent, opt, tb);
+                if (tbopt->state & QStyle::State_Horizontal) {
+                    r = QRect(margin, margin, handleExtent, tbopt->rect.height() - 2*margin);
+                    r = QStyle::visualRect(tbopt->direction, tbopt->rect, r);
+                } else {
+                    r = QRect(margin, margin, tbopt->rect.width() - 2*margin, handleExtent);
+                }
+            }
+        }
+        break;
+#endif //QT_NO_TOOLBAR
     default:
         break;
     }
@@ -3189,47 +3213,6 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 }
 
 #ifndef QT_NO_DIAL
-static qreal angle(const QPointF &p1, const QPointF &p2)
-{
-    static const qreal rad_factor = 180 / Q_PI;
-    qreal _angle = 0;
-
-    if (p1.x() == p2.x()) {
-        if (p1.y() < p2.y())
-            _angle = 270;
-        else
-            _angle = 90;
-    } else  {
-        qreal x1, x2, y1, y2;
-
-        if (p1.x() <= p2.x()) {
-            x1 = p1.x(); y1 = p1.y();
-            x2 = p2.x(); y2 = p2.y();
-        } else {
-            x2 = p1.x(); y2 = p1.y();
-            x1 = p2.x(); y1 = p2.y();
-        }
-
-        qreal m = -(y2 - y1) / (x2 - x1);
-        _angle = atan(m) *  rad_factor;
-
-        if (p1.x() < p2.x())
-            _angle = 180 - _angle;
-        else
-            _angle = -_angle;
-    }
-    return _angle;
-}
-
-static int calcBigLineSize(int radius)
-{
-    int bigLineSize = radius / 6;
-    if (bigLineSize < 4)
-        bigLineSize = 4;
-    if (bigLineSize > radius / 2)
-        bigLineSize = radius / 2;
-    return bigLineSize;
-}
 
 static QPolygonF calcArrow(const QStyleOptionSlider *dial, qreal &a)
 {
@@ -3250,7 +3233,7 @@ static QPolygonF calcArrow(const QStyleOptionSlider *dial, qreal &a)
     int xc = width / 2;
     int yc = height / 2;
 
-    int len = r - calcBigLineSize(r) - 5;
+    int len = r - QStyleHelper::calcBigLineSize(r) - 5;
     if (len < 5)
         len = 5;
     int back = len / 2;
@@ -3265,45 +3248,6 @@ static QPolygonF calcArrow(const QStyleOptionSlider *dial, qreal &a)
     return arrow;
 }
 
-static QPolygonF calcLines(const QStyleOptionSlider *dial, const QWidget *)
-{
-    QPolygonF poly;
-    int width = dial->rect.width();
-    int height = dial->rect.height();
-    qreal r = qMin(width, height) / 2;
-    int bigLineSize = calcBigLineSize(int(r));
-
-    qreal xc = width / 2;
-    qreal yc = height / 2;
-    int ns = dial->tickInterval;
-    int notches = (dial->maximum + ns - 1 - dial->minimum) / ns;
-    if (notches <= 0)
-        return poly;
-    if (dial->maximum < dial->minimum
-        || dial->maximum - dial->minimum > 1000) {
-        int maximum = dial->minimum + 1000;
-        notches = (maximum + ns - 1 - dial->minimum) / ns;
-    }
-
-    poly.resize(2 + 2 * notches);
-    int smallLineSize = bigLineSize / 2;
-    for (int i = 0; i <= notches; ++i) {
-        qreal angle = dial->dialWrapping ? Q_PI * 3 / 2 - i * 2 * Q_PI / notches
-            : (Q_PI * 8 - i * 10 * Q_PI / notches) / 6;
-        qreal s = qSin(angle);
-        qreal c = qCos(angle);
-        if (i == 0 || (((ns * i) % (dial->pageStep ? dial->pageStep : 1)) == 0)) {
-            poly[2 * i] = QPointF(xc + (r - bigLineSize) * c,
-                                  yc - (r - bigLineSize) * s);
-            poly[2 * i + 1] = QPointF(xc + r * c, yc - r * s);
-        } else {
-            poly[2 * i] = QPointF(xc + (r - 1 - smallLineSize) * c,
-                                  yc - (r - 1 - smallLineSize) * s);
-            poly[2 * i + 1] = QPointF(xc + (r - 1) * c, yc -(r - 1) * s);
-        }
-    }
-    return poly;
-}
 #endif // QT_NO_DIAL
 
 /*!
@@ -3794,7 +3738,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             // draw notches
             if (dial->subControls & QStyle::SC_DialTickmarks) {
                 p->setPen(pal.foreground().color());
-                p->drawLines(calcLines(dial, widget)); // ### calcLines could be cached...
+                p->drawLines(QStyleHelper::calcLines(dial));
             }
 
             if (dial->state & State_Enabled) {
@@ -3816,7 +3760,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             p->setBrush(pal.button());
             p->drawPolygon(arrow);
 
-            a = angle(QPointF(width / 2, height / 2), arrow[0]);
+            a = QStyleHelper::angle(QPointF(width / 2, height / 2), arrow[0]);
             p->setBrush(Qt::NoBrush);
 
             if (a <= 0 || a > 200) {

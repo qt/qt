@@ -1,0 +1,113 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the QtDeclarative module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include "qmlproxymetaobject_p.h"
+
+
+QT_BEGIN_NAMESPACE
+QmlProxyMetaObject::QmlProxyMetaObject(QObject *obj, QList<ProxyData> *mList)
+: metaObjects(mList), proxies(0), parent(0), object(obj)
+{
+#ifdef QMLPROXYMETAOBJECT_DEBUG
+    qWarning() << "QmlProxyMetaObject" << obj->metaObject()->className();
+#endif
+
+    *static_cast<QMetaObject *>(this) = *metaObjects->last().metaObject;
+
+    QObjectPrivate *op = QObjectPrivate::get(obj);
+    if (op->metaObject)
+        parent = static_cast<QAbstractDynamicMetaObject*>(op->metaObject);
+
+    op->metaObject = this;
+
+#ifdef QMLPROXYMETAOBJECT_DEBUG
+    const QMetaObject *mo = obj->metaObject();
+    while(mo) {
+        qWarning() << "    " << mo->className();
+        mo = mo->superClass();
+    }
+#endif
+}
+
+QmlProxyMetaObject::~QmlProxyMetaObject()
+{
+    if (parent)
+        delete parent;
+    parent = 0;
+
+    if (proxies)
+        delete [] proxies;
+    proxies = 0;
+}
+
+int QmlProxyMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
+{
+    if ((c == QMetaObject::ReadProperty ||
+        c == QMetaObject::WriteProperty) &&
+            id >= metaObjects->last().propertyOffset) {
+
+        for (int ii = 0; ii < metaObjects->count(); ++ii) {
+            const ProxyData &data = metaObjects->at(ii);
+            if (id >= data.propertyOffset) {
+                if (!proxies) {
+                    proxies = new QObject*[metaObjects->count()];
+                    ::memset(proxies, 0, 
+                             sizeof(QObject *) * metaObjects->count());
+                }
+
+                if (!proxies[ii])
+                    proxies[ii] = data.createFunc(object);
+
+                int proxyOffset = proxies[ii]->metaObject()->propertyOffset();
+                int proxyId = id - data.propertyOffset + proxyOffset;
+
+                return proxies[ii]->qt_metacall(c, proxyId, a);
+            }
+        }
+    }
+
+    if (parent)
+        return parent->metaCall(c, id, a);
+    else
+        return object->qt_metacall(c, id, a);
+}
+
+QT_END_NAMESPACE

@@ -622,7 +622,7 @@ void XMLTokenizer::parseProcessingInstruction()
 
 #if ENABLE(XSLT)
     m_sawXSLTransform = !m_sawFirstElement && pi->isXSL();
-    if (m_sawXSLTransform && !m_doc->transformSourceDocument()))
+    if (m_sawXSLTransform && !m_doc->transformSourceDocument())
         stopParsing();
 #endif
 }

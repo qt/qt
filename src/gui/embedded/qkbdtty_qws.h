@@ -42,7 +42,7 @@
 #ifndef QKBDTTY_QWS_H
 #define QKBDTTY_QWS_H
 
-#include <QtGui/qkbdpc101_qws.h>
+#include <QtGui/qkbd_qws.h>
 
 QT_BEGIN_HEADER
 
@@ -56,15 +56,13 @@ QT_MODULE(Gui)
 
 class QWSTtyKbPrivate;
 
-class QWSTtyKeyboardHandler : public QWSPC101KeyboardHandler
+class QWSTtyKeyboardHandler : public QWSKeyboardHandler
 {
 public:
     explicit QWSTtyKeyboardHandler(const QString&);
     virtual ~QWSTtyKeyboardHandler();
 
-protected:
-    virtual void processKeyEvent(int unicode, int keycode, Qt::KeyboardModifiers modifiers,
-                                bool isPress, bool autoRepeat);
+    virtual bool filterKeycode(char &code);
 
 private:
     QWSTtyKbPrivate *d;

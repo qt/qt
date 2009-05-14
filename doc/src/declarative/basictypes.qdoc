@@ -1,0 +1,265 @@
+/*!
+    \page basicqmltypes.html
+    \title Common QML Types
+
+    QML uses a range of property types, which you will see
+    referenced throughout the element documentation. Almost all of them are
+    exactly what you would expect.
+
+    \target basicqmlint
+    \raw HTML
+    <table>
+    <tr><td><div class="qmltype">int</div></td></tr>
+    </table>
+    \endraw
+
+    ints are whole numbers - things like 0, 10 and -20.  The possible int 
+    values range from around -2000000000 to around 2000000000, although most
+    elements will only accept a reduced range (which they mention in their
+    documentation).
+
+    int's must be specified using the plain old syntax you learned at school -
+    none of that scientific notation nonsense is supported.
+
+    Setting ints looks like this:
+    \code
+    Item { width: 100; height:200 }
+    \endcode
+
+    \target basicqmlbool
+    \raw HTML
+    <br>
+    <table>
+    <tr><td><div class="qmltype">bool</div></td></tr>
+    </table>
+    \endraw
+
+    bools are a binary true/false value, represented by the strings
+    "true" and "false" in QML.
+
+    Setting bools looks like this:
+    \code
+    Item { focusable: true; clip: false }
+    \endcode
+
+    \note Technically bool treats an empty string, "false" and "0" as false and
+    everything else as true.  Seriously, though, use "true" and "false".
+
+    \target basicqmlreal
+    \raw HTML
+    <br>
+    <table>
+    <tr><td><div class="qmltype">real</div></td></tr>
+    </table>
+    \endraw
+
+    reals are numbers - either whole numbers like ints, or fractional numbers
+    like 1.2 and -29.8.  
+
+    Setting reals looks like this:
+    \code
+    Item { x: -10; y: 100.8 }
+    \endcode
+
+    \note In QML all reals are stored in single precision, \l {http://en.wikipedia.org/wiki/IEEE_754}{IEEE floating point} format.
+
+    \target basicqmlstring
+    \raw HTML
+    <br>
+    <table>
+    <tr><td><div class="qmltype">string</div></td></tr>
+    </table>
+    \endraw
+
+    strings are free form text, like "hello world", "QML is cool" and
+    anything else you can think of.
+
+    Setting a string looks like this:
+    \code
+    Text { text: "Hello world!" }
+    \endcode
+
+    \raw HTML
+    \endraw
+
+    \target basicqmlcolor
+    \raw HTML
+    <br>
+    <table>
+    <tr><td><div class="qmltype">color</div></td></tr>
+    </table>
+    \endraw
+
+    Colors are most commonly specified as an \l {http://www.w3.org/TR/SVG/types.html#ColorKeywords}{SVG color name}.  These names include colors like
+    "red", "green" and "lightsteelblue".
+
+    If the color you want isn't part of this list, colors can also be specified
+    in hexidecimal triplets or quads that take the form \c "#RRGGBB" and 
+    \c "#AARRGGBB" respectively.  For example, the color red corresponds to a
+    triplet of \c "#FF0000" and a slightly transparent blue to a quad of 
+    \c "#800000FF".
+
+    Setting a color looks like this:
+    \code
+    Rect { color: "steelblue" }
+    Rect { color: "#FF0000" }
+    Rect { color: "#800000FF" }
+    \endcode
+
+    \target basicqmlpoint
+    \raw HTML
+    <br>
+    <table>
+    <tr><td><div class="qmltype">point</div></td></tr>
+    </table>
+    \endraw
+
+    Points are specified in \c "x,y" format.
+
+    Setting a point looks like this:
+    \code
+    Widget { pos: "50,50" }
+    \endcode
+
+    \target basicqmlsize
+    \raw HTML
+    <br>
+    <table>
+    <tr><td><div class="qmltype">size</div></td></tr>
+    </table>
+    \endraw
+
+    Sizes are specified in \c "widthxheight" format.
+
+    Setting a size looks like this:
+    \code
+    Widget { size: "50x50" }
+    \endcode
+
+    \target basicqmlrectangle
+    \raw HTML
+    <br>
+    <table>
+    <tr><td><div class="qmltype">rectangle</div></td></tr>
+    </table>
+    \endraw
+
+    Rectangles are specified in \c "x,y,widthxheight" format.
+
+    Setting a rectangle looks like this:
+    \code
+    Widget { geometry: "50,50,100x100" }
+    \endcode
+
+    \target basicqmldate
+    \raw HTML
+    <br>
+    <table>
+    <tr><td><div class="qmltype">date</div></td></tr>
+    </table>
+    \endraw
+
+    Dates are specified in \c "YYYY-MM-DD" format.
+
+    Setting a date looks like this:
+    \code
+    DatePicker { minDate: "2000-01-01"; maxDate: "2020-12-31" }
+    \endcode
+
+    \target basicqmltime
+    \raw HTML
+    <br>
+    <table>
+    <tr><td><div class="qmltype">time</div></td></tr>
+    </table>
+    \endraw
+
+    Times are specified in \c "hh:mm:ss" format.
+
+    Setting a time looks like this:
+    \code
+    TimePicker { time: "14:22:15" }
+    \endcode
+
+    \target basicqmlfont
+    \raw HTML
+    <br>
+    <table>
+    <tr><td><div class="qmltype">font</div></td></tr>
+    </table>
+    \endraw
+    
+    The font type has components:
+    \list
+    \o string font.family
+    \o bool font.bold
+    \o bool font.italic
+    \o real font.size
+    \endlist
+
+    Setting a font looks like this:
+    \code
+    Text { font.family: "Helvetica"; font.size: 13; font.bold: true }
+    \endcode
+
+    \target basicqmlaction
+    \raw HTML
+    <br>
+    <table>
+    <tr><td><div class="qmltype">action</div></td></tr>
+    </table>
+    \endraw
+    
+    The action type has all the properties of QAction, in particular:
+    \list
+    \o slot action.trigger - invoke the action
+    \o bool action.enabled - true if the action is enabled
+    \o string action.text - the text associated with the action
+    \endlist
+
+    Actions are used like this:
+
+    \code
+    MouseRegion { onClicked: someitem.someaction.trigger() }
+    State { name: "enabled"; when: someitem.someaction.enabled=='true' }
+    Text { text: someitem.someaction.text }
+    \endcode
+
+    \target basicqmlany
+    \raw HTML
+    <br>
+    <table>
+    <tr><td><div class="qmltype">any</div></td></tr>
+    </table>
+    \endraw
+    
+    The any type can accept any basic type, object or list.  Generally this
+    is only used in very special cases.  The documentation for elements that
+    use the any type will explain the constraints in that particular case.
+
+    \target basicqmllist
+    \raw HTML
+    <br>
+    <table>
+    <tr><td><div class="qmltype">Lists</div></td></tr>
+    </table>
+    \endraw
+    
+    While not technically a basic type, QML also supports lists of object
+    types.  When used from QML, the engine  automatically appends each value to the
+    list.  
+    
+    For example, the \l Item class has a children list property
+    that can be used like this:
+    \code
+    Item {
+        children [
+            Item { id: child1 },
+            Rect { id: child2 },
+            Text { id: child3 }
+        ]
+    }
+    \endcode
+    \c child1, \c child2 and \c child3 will all be added to the children list
+    in the order in which they appear.
+*/

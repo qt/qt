@@ -205,6 +205,14 @@ void QGLPixmapData::fromImage(const QImage &image,
     m_dirty = true;
 }
 
+bool QGLPixmapData::scroll(int dx, int dy, const QRect &rect)
+{
+    Q_UNUSED(dx);
+    Q_UNUSED(dy);
+    Q_UNUSED(rect);
+    return false;
+}
+
 void QGLPixmapData::fill(const QColor &color)
 {
     if (!isValid())

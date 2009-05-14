@@ -49,6 +49,7 @@
 #include "qmime.h"
 #include "qdnd_p.h"
 #include "qevent_p.h"
+#include "qdatetime.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -226,6 +227,17 @@ QMouseEvent *QMouseEvent::createExtendedMouseEvent(Type type, const QPointF &pos
 }
 
 /*!
+    \internal
+*/
+QMouseEvent *QMouseEvent::createExtendedMouseEvent(Type type, const QPointF &pos,
+                                                   const QPoint &globalPos, Qt::MouseButton button,
+                                                   Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, 
+                                                   const QDateTime &eventTime)
+{
+    return new QMouseEventEx(type, pos, globalPos, button, buttons, modifiers, eventTime);
+}
+
+/*!
     \fn bool QMouseEvent::hasExtendedInfo() const
     \internal
 */
@@ -247,13 +259,40 @@ QPointF QMouseEvent::posF() const
     return hasExtendedInfo() ? reinterpret_cast<const QMouseEventEx *>(this)->posF : QPointF(pos());
 }
 
+/*! 
+    \since 4.6
+
+    Returns the time the mouse event occurred.  On many systems and platforms
+    this is equivalent to QDateTime::currentDateTime().
+*/
+QDateTime QMouseEvent::eventDateTime() const
+{
+    if(hasExtendedInfo() && reinterpret_cast<const QMouseEventEx *>(this)->timeSet) {
+        return reinterpret_cast<const QMouseEventEx *>(this)->time;
+    } else { 
+        return QDateTime::currentDateTime();
+    }
+}
+
 /*!
     \internal
 */
 QMouseEventEx::QMouseEventEx(Type type, const QPointF &pos, const QPoint &globalPos,
                              Qt::MouseButton button, Qt::MouseButtons buttons,
                              Qt::KeyboardModifiers modifiers)
-    : QMouseEvent(type, pos.toPoint(), globalPos, button, buttons, modifiers), posF(pos)
+    : QMouseEvent(type, pos.toPoint(), globalPos, button, buttons, modifiers), posF(pos), timeSet(false)
+{
+    d = reinterpret_cast<QEventPrivate *>(this);
+}
+
+/*!
+    \internal
+*/
+QMouseEventEx::QMouseEventEx(Type type, const QPointF &pos, const QPoint &globalPos,
+                             Qt::MouseButton button, Qt::MouseButtons buttons,
+                             Qt::KeyboardModifiers modifiers,
+                             const QDateTime &eventTime)
+    : QMouseEvent(type, pos.toPoint(), globalPos, button, buttons, modifiers), posF(pos), timeSet(true), time(eventTime)
 {
     d = reinterpret_cast<QEventPrivate *>(this);
 }
@@ -860,6 +899,17 @@ bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
 {
     uint searchkey = (modifiers() | key()) & ~(Qt::KeypadModifier); //The keypad modifier should not make a difference
     uint platform = QApplicationPrivate::currentPlatform();
+
+#ifdef Q_WS_MAC
+    if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
+        uint oldSearchKey = searchkey;
+        searchkey &= ~(Qt::ControlModifier | Qt::MetaModifier);
+        if (oldSearchKey & Qt::ControlModifier)
+            searchkey |= Qt::MetaModifier;
+        if (oldSearchKey & Qt::MetaModifier)
+            searchkey |= Qt::ControlModifier;
+    }
+#endif
 
     uint N = QKeySequencePrivate::numberOfKeyBindings;
     int first = 0;

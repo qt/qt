@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::BuddyEditorPlugin
-*/
-
 #include <QtGui/QAction>
 
 #include "buddyeditor_plugin.h"

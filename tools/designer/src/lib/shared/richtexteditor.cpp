@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::RichTextEditorDialog
-*/
-
 #include "richtexteditor_p.h"
 #include "htmlhighlighter_p.h"
 #include "iconselector_p.h"

@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::BuddyEditorTool
-*/
-
 #include "buddyeditor_tool.h"
 #include "buddyeditor.h"
 

@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::BuddyEditor
-*/
-
 #include "buddyeditor.h"
 
 #include <QtDesigner/QDesignerFormWindowInterface>

@@ -1,0 +1,18 @@
+<Rect id="mainrect" currentState="first">
+<states>
+    <State name="first">
+        <SetProperty target="{mainrect}" property="color" value="red"/>
+    </State>
+    <State name="second" >
+        <SetProperty target="{mainrect}" property="color" value="blue"/>
+    </State>
+</states>
+<transitions>
+    <Transition fromState="first" toState="second" reversible="true" >
+        <SerialAnimation>
+            <ColorAnimation duration="2000" target="{mainrect}" property="color" />
+        </SerialAnimation>
+    </Transition>
+</transitions>
+<MouseRegion anchors.fill="{parent}" onClick="mainrect.currentState = 'second'" />
+</Rect>

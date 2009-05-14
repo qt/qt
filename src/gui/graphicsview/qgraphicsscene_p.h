@@ -113,7 +113,10 @@ public:
     QList<QGraphicsItem *> dirtyItems;
     QList<QGraphicsItem *> pendingUpdateItems;
     QList<QGraphicsItem *> unpolishedItems;
+    QList<QGraphicsItem *> topLevelItems;
     QMap<QGraphicsItem *, QPointF> movingItemsInitialPositions;
+    void registerTopLevelItem(QGraphicsItem *item);
+    void unregisterTopLevelItem(QGraphicsItem *item);
     void _q_updateLater();
     void _q_polishItems();
 
@@ -165,6 +168,9 @@ public:
     Qt::DropAction lastDropAction;
     QList<QGraphicsItem *> cachedItemsUnderMouse;
     QList<QGraphicsItem *> hoverItems;
+    bool allItemsIgnoreHoverEvents;
+    bool allItemsUseDefaultCursor;
+    void enableMouseTrackingOnViews();
     QMap<Qt::MouseButton, QPointF> mouseGrabberButtonDownPos;
     QMap<Qt::MouseButton, QPointF> mouseGrabberButtonDownScenePos;
     QMap<Qt::MouseButton, QPoint> mouseGrabberButtonDownScreenPos;

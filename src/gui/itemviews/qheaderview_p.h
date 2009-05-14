@@ -90,6 +90,7 @@ public:
           highlightSelected(false),
           stretchLastSection(false),
           cascadingResizing(false),
+          resizeRecursionBlock(false),
           stretchSections(0),
           contentsSections(0),
           minimumSectionSize(-1),
@@ -169,10 +170,6 @@ public:
         if (!sectionHidden.isEmpty()) sectionHidden.setBit(visual, hidden);
     }
 
-    inline QHeaderView::ResizeMode visualIndexResizeMode(int visual) const {
-        return headerSectionResizeMode(visual);
-    }
-
     inline bool hasAutoResizeSections() const {
         return stretchSections || stretchLastSection || contentsSections;
     }
@@ -210,7 +207,7 @@ public:
     }
 
     inline bool sectionIsCascadable(int visual) const {
-        return visualIndexResizeMode(visual) == QHeaderView::Interactive;
+        return headerSectionResizeMode(visual) == QHeaderView::Interactive;
     }
 
     inline int modelSectionCount() const {
@@ -230,7 +227,6 @@ public:
 
     inline void executePostedResize() const {
         if (delayedResize.isActive() && state == NoState) {
-            delayedResize.stop();
             const_cast<QHeaderView*>(q_func())->resizeSections();
         }
     }
@@ -274,6 +270,7 @@ public:
     bool highlightSelected;
     bool stretchLastSection;
     bool cascadingResizing;
+    bool resizeRecursionBlock;
     int stretchSections;
     int contentsSections;
     int defaultSectionSize;

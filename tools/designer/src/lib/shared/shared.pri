@@ -186,4 +186,17 @@ SOURCES += \
     $$PWD/filterwidget.cpp \
     $$PWD/plugindialog.cpp
 
-RESOURCES += $$PWD/shared.qrc
+RESOURCES += $$PWD/shared.qrc \
+$$QT_SOURCE_TREE/tools/qvfb/ClamshellPhone.qrc \
+$$QT_SOURCE_TREE/tools/qvfb/PDAPhone.qrc \
+$$QT_SOURCE_TREE/tools/qvfb/pda.qrc \
+$$QT_SOURCE_TREE/tools/qvfb/PortableMedia.qrc \
+$$QT_SOURCE_TREE/tools/qvfb/qvfb.qrc \
+$$QT_SOURCE_TREE/tools/qvfb/S60-nHD-Touchscreen.qrc \
+$$QT_SOURCE_TREE/tools/qvfb/S60-QVGA-Candybar.qrc \
+$$QT_SOURCE_TREE/tools/qvfb/SmartPhone2.qrc \
+$$QT_SOURCE_TREE/tools/qvfb/SmartPhone.qrc \
+$$QT_SOURCE_TREE/tools/qvfb/SmartPhoneWithButtons.qrc \
+$$QT_SOURCE_TREE/tools/qvfb/TouchscreenPhone.qrc \
+$$QT_SOURCE_TREE/tools/qvfb/Trolltech-Keypad.qrc \
+$$QT_SOURCE_TREE/tools/qvfb/Trolltech-Touchscreen.qrc

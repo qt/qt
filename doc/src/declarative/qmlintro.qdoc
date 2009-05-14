@@ -1,0 +1,226 @@
+/*!
+\page qmlintroduction.html
+\title Introduction to the Qml language
+
+\tableofcontents
+
+\section1 What is Qml?
+
+Qml is a declarative language designed to describe the user interface of a
+program: both what it looks like and how it behaves. In Qml, a user
+interface is specified as a tree of objects with properties.
+
+\section1 What should I know before starting?
+
+This introduction is meant for those with little or no programming
+experience. JavaScript is used as a scripting language in Qml, so you may want
+to learn a bit more about it (\l{JavaScript: The Definitive Guide}) before diving
+too deep into Qml. It's also helpful to have a basic understanding of other web
+technologies like HTML and CSS, but not required.
+
+\section1 Basic Qml Syntax
+
+Qml looks like this:
+
+\code
+Rect {
+    width: 200
+    height: 200
+    color: "white"
+    Image {
+        source: "pics/logo.png"
+        anchors.centeredIn: parent
+    }
+}
+\endcode
+
+Objects are specified by their type, followed by a pair of braces. Object
+types always begin with a capital letter. In the above example, there are
+two objects, a \l Rect, and an \l Image. Between the braces, we can specify
+information about the object, such as its properties.
+
+Properties are specified as \c {property: value} (much like CSS). In the above
+example, we can see the Image has a property named \e source, which has been
+assigned the value \e "pics/logo.png". The property and its value are
+separated by a colon.
+
+Properties can be specified one-per-line:
+
+\code
+Rect {
+    width: 100
+    height: 100
+}
+\endcode
+
+or you can put multiple properties on a single line:
+
+\code
+Rect { width: 100; height: 100 }
+\endcode
+
+When multiple property/value pairs are specified on a single line, they
+must be separated by a semicolon.
+
+\section1 Expressions
+
+In addition to assigning values to properties, you can also assign
+expressions written in JavaScript.
+
+\code
+Rotation { angle: 360*3 }
+\endcode
+
+These expressions can include references to other objects and properties, in which case
+a \e binding is established: when the value of the expression changes, the property the
+expression has been assigned to is automatically updated to that value.
+
+\code
+Item {
+    Text {
+        id: Text1
+        text: "Hello World"
+    }
+    Text {
+        id: Text2
+        text: Text1.text
+    }
+}
+\endcode
+
+In the example above, the Text2 object will display the same text as Text1. If Text1 is updated,
+Text2 will be updated as well.
+
+Note that to refer to other objects, we use their \e id (more information on the id property can be
+found in a following section).
+
+\section1 Qml Comments
+
+Commenting in Qml is similar to JavaScript.
+\list
+\o Single line comments begin with // and end at the end of the line.
+\o Multiline comments begin with /* and end with *\/
+\endlist
+
+\quotefile doc/src/snippets/declarative/comments.qml
+
+Comments are ignored by the engine. The are useful for explaining what you
+are doing: for referring back to at a later date, or for others reading
+your Qml files.
+
+Comments can also be used to prevent the execution of code, which is
+sometimes useful for tracking down problems.
+
+\code
+Text {
+    text: "Hello world!"
+    //opacity: 0.5
+}
+\endcode
+
+In the above example, the Text object will have normal opacity, since the
+line opacity: 0.5 has been turned into a comment.
+
+\section1 Properties
+
+\section2 Property naming
+
+Properties begin with a lowercase letter (with the exception of \l{Attached Properties}).
+
+\section2 Property types
+
+Qml supports properties of many types (\l{Common QML Types}). The basic types include int,
+real, bool, string, color, and lists.
+
+\code
+Item {
+    x: 10.5             // a 'real' property
+    ...
+    state: "Details"    // a 'string' property
+    focus: true         // a 'bool' property
+}
+\endcode
+
+Qml properties are what is known as \e typesafe. That is, they only allow you to assign a value that
+matches the property type. For example, the scale property of item is a real, and if you try to assign
+a string to it you will get an error.
+
+\badcode
+Item {
+    scale: "hello"  //illegal!
+}
+\endcode
+
+\section3 The 'id' property
+
+The id property is a special property of type \e id. Assigning an id to an object allows you
+to refer to it elsewhere.
+
+\code
+Item {
+    Text {
+        id: MyName
+        text: "..."
+    }
+    Text {
+        text: MyName.text
+    }
+}
+\endcode
+
+ids must begin with a letter. We recommended that you start your ids with a capital letter.
+
+\section2 List properties
+
+List properties look like this:
+
+\code
+Item {
+    children: [
+        Image {},
+        Text {}
+    ]
+}
+\endcode
+
+The list is enclosed in square brackets, with a comma separating the
+list elements. In cases where you are only assigning a single item to a
+list, you can omit the square brackets:
+
+\code
+Image {
+    children: Rect {}
+}
+\endcode
+
+\section2 Default properties
+
+Each object type can specify one of it's list properties as its default property.
+If a list property has been the default property, it means the property tag can emitted:
+
+\code
+State {
+    operations: [
+        SetProperties {},
+        SetProperties {}
+    ]
+}
+\endcode
+
+can be simplified to
+
+\code
+State {
+    SetProperties {}
+    SetProperties {}
+}
+\endcode
+
+\section2 Dot Properties
+
+\section2 Attached Properties
+\target attached-properties
+
+\section2 Signal Handlers
+
+*/

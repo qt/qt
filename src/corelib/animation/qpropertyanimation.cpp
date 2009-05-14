@@ -42,7 +42,7 @@
 /*!
     \class QPropertyAnimation
     \brief The QPropertyAnimation class animates Qt properties
-    \ingroup animation
+    \ingroup group_animation
     \preliminary
 
     QPropertyAnimation interpolates over \l{Qt's Property System}{Qt

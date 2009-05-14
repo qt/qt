@@ -390,21 +390,15 @@ QWidget *qt_mac_find_window(OSWindowRef window)
 
 inline static void qt_mac_set_fullscreen_mode(bool b)
 {
-    extern bool qt_mac_app_fullscreen; //qapplication_mac.cpp
+    extern bool qt_mac_app_fullscreen; //qapplication_mac.mm
     if(qt_mac_app_fullscreen == b)
         return;
     qt_mac_app_fullscreen = b;
-#if QT_MAC_USE_COCOA
-    if(b)
-        SetSystemUIMode(kUIModeAllHidden, kUIOptionAutoShowMenuBar);
-    else
+    if (b) {
+        SetSystemUIMode(kUIModeAllSuppressed, 0);
+    } else {
         SetSystemUIMode(kUIModeNormal, 0);
-#else
-    if(b)
-        HideMenuBar();
-    else
-        ShowMenuBar();
-#endif
+    }
 }
 
 Q_GUI_EXPORT OSViewRef qt_mac_nativeview_for(const QWidget *w)
@@ -4523,14 +4517,6 @@ void QWidgetPrivate::setMask_sys(const QRegion &region)
 #endif
 }
 
-extern "C" {
-    typedef struct CGSConnection *CGSConnectionRef;
-    typedef struct CGSWindow *CGSWindowRef;
-    extern OSStatus CGSSetWindowAlpha(CGSConnectionRef, CGSWindowRef, float);
-    extern CGSWindowRef GetNativeWindowFromWindowRef(WindowRef);
-    extern CGSConnectionRef _CGSDefaultConnection();
-}
-
 void QWidgetPrivate::setWindowOpacity_sys(qreal level)
 {
     Q_Q(QWidget);
@@ -4543,12 +4529,11 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal level)
     if (!q->testAttribute(Qt::WA_WState_Created))
         return;
 
-#if QT_MAC_USE_COCOA
     OSWindowRef oswindow = qt_mac_window_for(q);
+#if QT_MAC_USE_COCOA
     [oswindow setAlphaValue:level];
 #else
-    CGSSetWindowAlpha(_CGSDefaultConnection(),
-                      GetNativeWindowFromWindowRef(qt_mac_window_for(q)), level);
+    SetWindowAlpha(oswindow, level);
 #endif
 }
 

@@ -971,7 +971,7 @@ void QSvgPaintEngine::updateState(const QPaintEngineState &state)
     }
 
     if (flags & QPaintEngine::DirtyOpacity) {
-        if (!qFuzzyCompare(state.opacity(), 1))
+        if (!qFuzzyIsNull(state.opacity() - 1))
             stream() << "opacity=\""<<state.opacity()<<"\" ";
     }
 

@@ -62,7 +62,8 @@ class QBenchmarkResult;
 class QTestLog
 {
 public:
-    enum LogMode { Plain = 0, XML, LightXML };
+    enum LogMode { Plain = 0, XML, LightXML, XunitXML };
+    enum FlushMode { NoFlush = 0, FLushOn };
 
     static void enterTestFunction(const char* function);
     static void leaveTestFunction();
@@ -94,6 +95,8 @@ public:
     static const char *outputFileName();
 
     static void setMaxWarnings(int max);
+
+    static void setFlushMode(FlushMode mode);
 
 private:
     QTestLog();

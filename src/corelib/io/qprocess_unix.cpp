@@ -531,8 +531,12 @@ bool QProcessPrivate::createChannel(Channel &channel)
     }
 }
 
-static char **_q_dupEnvironment(const QStringList &environment, int *envc)
+static char **_q_dupEnvironment(const QHash<QString, QString> *environment, int *envc)
 {
+    *envc = 0;
+    if (!environment)
+        return 0;               // use the default environment
+
     // if LD_LIBRARY_PATH exists in the current environment, but
     // not in the environment list passed by the programmer, then
     // copy it over.
@@ -541,27 +545,29 @@ static char **_q_dupEnvironment(const QStringList &environment, int *envc)
 #else
     static const char libraryPath[] = "LD_LIBRARY_PATH";
 #endif
-    const QString libraryPathString = QLatin1String(libraryPath);
-    QStringList env = environment;
-    QStringList matches = env.filter(
-        QRegExp(QLatin1Char('^') + libraryPathString + QLatin1Char('=')));
-    const QString envLibraryPath = QString::fromLocal8Bit(::getenv(libraryPath));
-    if (matches.isEmpty() && !envLibraryPath.isEmpty()) {
-        QString entry = libraryPathString;
-        entry += QLatin1Char('=');
-        entry += envLibraryPath;
-        env << libraryPathString + QLatin1Char('=') + envLibraryPath;
+    const QByteArray envLibraryPath = qgetenv(libraryPath);
+    bool needToAddLibraryPath = !envLibraryPath.isEmpty() &&
+                                !environment->contains(QLatin1String(libraryPath));
+
+    char **envp = new char *[environment->count() + 2];
+    envp[environment->count()] = 0;
+    envp[environment->count() + 1] = 0;
+
+    QHash<QString, QString>::ConstIterator it = environment->constBegin();
+    const QHash<QString, QString>::ConstIterator end = environment->constEnd();
+    for ( ; it != end; ++it) {
+        QByteArray key = it.key().toLocal8Bit();
+        QByteArray value = it.value().toLocal8Bit();
+        key.reserve(key.length() + 1 + value.length());
+        key.append('=');
+        key.append(value);
+
+        envp[(*envc)++] = ::strdup(key.constData());
     }
 
-    char **envp = new char *[env.count() + 1];
-    envp[env.count()] = 0;
-
-    for (int j = 0; j < env.count(); ++j) {
-        QString item = env.at(j);
-        envp[j] = ::strdup(item.toLocal8Bit().constData());
-    }
-
-    *envc = env.count();
+    if (needToAddLibraryPath)
+        envp[(*envc)++] = ::strdup(QByteArray(libraryPath) + '=' +
+                                 envLibraryPath);
     return envp;
 }
 
@@ -800,7 +806,7 @@ void QProcessPrivate::execChild(const char *workingDir, char **path, char **argv
     q->setupChildProcess();
 
     // execute the process
-    if (environment.isEmpty()) {
+    if (!envp) {
         qt_native_execvp(argv[0], argv);
     } else {
         if (path) {

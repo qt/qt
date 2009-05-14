@@ -5,9 +5,11 @@ TEMPLATE = subdirs
            headers
 
 SUBDIRS += bic \
+           dynamicobject \
            collections \
            compile \
            compilerwarnings \
+           dynamicobject \
            exceptionsafety \
            macgui \
            macplist \
@@ -437,3 +439,6 @@ contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebframe \
            qwebpage
 
+SUBDIRS += math3d
+
+contains(QT_CONFIG, declarative): SUBDIRS += declarative

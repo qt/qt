@@ -1,0 +1,3 @@
+MyContainer {
+    qmllistInterfaces: 1
+}

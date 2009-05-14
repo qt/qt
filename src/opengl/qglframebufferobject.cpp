@@ -70,7 +70,7 @@ extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
 class QGLFramebufferObjectPrivate
 {
 public:
-    QGLFramebufferObjectPrivate() : depth_stencil_buffer(0), valid(false), bound(false), ctx(0) {}
+    QGLFramebufferObjectPrivate() : depth_stencil_buffer(0), valid(false), bound(false), ctx(0), previous_fbo(0) {}
     ~QGLFramebufferObjectPrivate() {}
 
     void init(const QSize& sz, QGLFramebufferObject::Attachment attachment,
@@ -85,6 +85,7 @@ public:
     uint bound : 1;
     QGLFramebufferObject::Attachment fbo_attachment;
     QGLContext *ctx; // for Windows extension ptrs
+    GLuint previous_fbo;
 };
 
 bool QGLFramebufferObjectPrivate::checkFramebufferStatus() const
@@ -473,6 +474,15 @@ bool QGLFramebufferObject::isValid() const
     Switches rendering from the default, windowing system provided
     framebuffer to this framebuffer object.
     Returns true upon success, false otherwise.
+
+    Since 4.6: if another QGLFramebufferObject instance was already bound
+    to the current context, then its handle() will be remembered and
+    automatically restored when release() is called.  This allows multiple
+    framebuffer rendering targets to be stacked up.  It is important that
+    release() is called on the stacked framebuffer objects in the reverse
+    order of the calls to bind().
+
+    \sa release()
 */
 bool QGLFramebufferObject::bind()
 {
@@ -482,6 +492,12 @@ bool QGLFramebufferObject::bind()
     QGL_FUNC_CONTEXT;
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, d->fbo);
     d->bound = d->valid = d->checkFramebufferStatus();
+    const QGLContext *context = QGLContext::currentContext();
+    if (d->valid && context) {
+        // Save the previous setting to automatically restore in release().
+        d->previous_fbo = context->d_ptr->current_fbo;
+        context->d_ptr->current_fbo = d->fbo;
+    }
     return d->valid;
 }
 
@@ -491,6 +507,12 @@ bool QGLFramebufferObject::bind()
     Switches rendering back to the default, windowing system provided
     framebuffer.
     Returns true upon success, false otherwise.
+
+    Since 4.6: if another QGLFramebufferObject instance was already bound
+    to the current context when bind() was called, then this function will
+    automatically re-bind it to the current context.
+
+    \sa bind()
 */
 bool QGLFramebufferObject::release()
 {
@@ -501,6 +523,14 @@ bool QGLFramebufferObject::release()
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
     d->valid = d->checkFramebufferStatus();
     d->bound = false;
+    const QGLContext *context = QGLContext::currentContext();
+    if (d->valid && context) {
+        // Restore the previous setting for stacked framebuffer objects.
+        context->d_ptr->current_fbo = d->previous_fbo;
+        if (d->previous_fbo)
+            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, d->previous_fbo);
+        d->previous_fbo = 0;
+    }
     return d->valid;
 }
 

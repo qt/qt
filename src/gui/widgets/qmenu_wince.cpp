@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 //Native menubars are only supported for Windows Mobile not the standard SDK/generic WinCE
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 #include "qmenu.h"
 #include "qt_windows.h"
 #include "qapplication.h"
@@ -214,10 +214,12 @@ static HWND qt_wce_create_menubar(HWND parentHandle, HINSTANCE resourceHandle, i
         mbi.nToolBarId = toolbarID;
 
         if (ptrCreateMenuBar(&mbi)) {
+#ifdef Q_WS_WINCE_WM
             // Tell the menu bar that we want to override hot key behaviour.
             LPARAM lparam = MAKELPARAM(SHMBOF_NODEFAULT | SHMBOF_NOTIFY,
                                        SHMBOF_NODEFAULT | SHMBOF_NOTIFY);
             SendMessage(mbi.hwndMB, SHCMBM_OVERRIDEKEY, VK_TBACK, lparam);
+#endif
             return mbi.hwndMB;
         }
     }
@@ -619,4 +621,4 @@ void QMenuBarPrivate::QWceMenuBarPrivate::rebuild() {
 QT_END_NAMESPACE
 
 #endif //QT_NO_MENUBAR
-#endif //Q_OS_WINCE
+#endif //Q_WS_WINCE

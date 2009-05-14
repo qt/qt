@@ -122,6 +122,7 @@ public:
         : z(0),
         scene(0),
         parent(0),
+        siblingIndex(-1),
         index(-1),
         depth(0),
         acceptedMouseButtons(0x1f),
@@ -182,6 +183,10 @@ public:
     void resolveEffectiveOpacity(qreal effectiveParentOpacity);
     void resolveDepth(int parentDepth);
     void invalidateSceneTransformCache();
+    void addChild(QGraphicsItem *child);
+    void removeChild(QGraphicsItem *child);
+    void setParentItemHelper(QGraphicsItem *parent, bool deleting);
+    void childrenBoundingRectHelper(QTransform *x, QRectF *rect);
 
     virtual void resolveFont(uint inheritedMask)
     {
@@ -248,6 +253,7 @@ public:
     
     QList<ExtraStruct> extras;
 
+    QGraphicsItemCache *maybeExtraItemCache() const;
     QGraphicsItemCache *extraItemCache() const;
     void removeExtraItemCache();
 
@@ -273,7 +279,7 @@ public:
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
 
     inline bool isFullyTransparent() const
-    { return hasEffectiveOpacity && qFuzzyCompare(q_func()->effectiveOpacity() + 1, qreal(1.0)); }
+    { return hasEffectiveOpacity && qFuzzyIsNull(q_func()->effectiveOpacity()); }
 
     inline bool childrenCombineOpacity() const
     { return allChildrenCombineOpacity || children.isEmpty(); }
@@ -297,6 +303,7 @@ public:
     QGraphicsScene *scene;
     QGraphicsItem *parent;
     QList<QGraphicsItem *> children;
+    int siblingIndex;
     int index;
     int depth;
 

@@ -12,8 +12,11 @@ config.tests/*/*/*
 !config.tests/*/*/*[.]*
 config.tests/*/*/*[.]app
 
+callgrind.out.*
+pcviewer.cfg
 *~
 *.a
+*.la
 *.core
 *.moc
 *.o
@@ -44,6 +47,7 @@ bin/Qt*.dll
 bin/assistant*
 bin/designer*
 bin/dumpcpp*
+bin/duiviewer*
 bin/idc*
 bin/linguist*
 bin/lrelease*

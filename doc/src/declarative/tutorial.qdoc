@@ -1,0 +1,19 @@
+/*! 
+\page tutorial.html
+\title Tutorial
+
+This tutorial gives an introduction to QML and the Fluid UI atoms. It doesn't cover everything; the emphasis is on teaching the key principles, and features are introduced as needed.
+
+Chapter one starts with a minimal "Hello world" program and the following chapters introduce new concepts.
+
+The tutorial's source code is located in the $QTDIR/examples/declarative/tutorials/helloworld directory.
+
+Tutorial chapters:
+
+\list
+\o \l {tutorial1}{Tutorial 1}
+\o \l {tutorial2}{Tutorial 2}
+\o \l {tutorial3}{Tutorial 3}
+\endlist
+
+*/

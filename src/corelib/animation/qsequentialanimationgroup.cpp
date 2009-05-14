@@ -43,7 +43,7 @@
     \class QSequentialAnimationGroup
     \brief The QSequentialAnimationGroup class provides a sequential group of animations.
     \since 4.5
-    \ingroup animation
+    \ingroup group_animation
     \preliminary
 
     QSequentialAnimationGroup is a QAnimationGroup that runs its

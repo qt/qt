@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::ScriptErrorDialog
-*/
-
 #include "scripterrordialog_p.h"
 
 #include <QtGui/QTextEdit>

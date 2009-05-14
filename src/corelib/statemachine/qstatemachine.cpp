@@ -1306,7 +1306,7 @@ static int senderSignalIndex(const QObject *sender)
     // Return -1 if d->currentSender isn't in d->senders
     bool found = false;
     for (int i = 0; !found && i < d->senders.count(); ++i)
-        found = (d->senders.at(i).sender == d->currentSender->sender);
+        found = (d->senders.at(i)->sender == d->currentSender->sender);
     if (!found)
         return -1;
     return d->currentSender->signal;

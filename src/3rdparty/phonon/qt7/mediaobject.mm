@@ -63,15 +63,24 @@ MediaObject::MediaObject(QObject *parent) : MediaNode(AudioSource | VideoSource,
     m_errorType = Phonon::NoError;
 
     m_tickTimer = 0;
-    m_bufferTimer = 0;
+    m_videoTimer = 0;
+    m_audioTimer = 0;
     m_rapidTimer = 0;
+
+#if QT_ALLOW_QUICKTIME
+    m_displayLink = 0;
+    m_pendingDisplayLinkEvent = false;
+#endif
 
     checkForError();
 }
 
 MediaObject::~MediaObject()
-{   
-    // m_mediaObjectAudioNode is owned by super class.    
+{
+    // m_mediaObjectAudioNode is owned by super class.
+#if QT_ALLOW_QUICKTIME
+    stopDisplayLink();
+#endif
     m_audioPlayer->unsetVideoPlayer();
     m_nextAudioPlayer->unsetVideoPlayer();
     delete m_videoPlayer;
@@ -88,7 +97,7 @@ bool MediaObject::setState(Phonon::State state)
         emit stateChanged(m_state, prevState);
         if (m_state != state){
             // End-application did something
-            // upon  receiving the signal. 
+            // upon  receiving the signal.
             return false;
         }
     }
@@ -214,28 +223,28 @@ void MediaObject::setSource(const MediaSource &source)
     IMPLEMENTED;
 	PhononAutoReleasePool pool;
     setState(Phonon::LoadingState);
-    
+
     // Save current state for event/signal handling below:
     bool prevHasVideo = m_videoPlayer->hasVideo();
     qint64 prevTotalTime = totalTime();
     m_waitNextSwap = false;
-        
+
     // Cancel cross-fade if any:
     m_nextVideoPlayer->pause();
     m_nextAudioPlayer->pause();
     m_mediaObjectAudioNode->cancelCrossFade();
-    
+
     // Set new source:
     m_audioPlayer->unsetVideoPlayer();
     m_videoPlayer->setMediaSource(source);
     m_audioPlayer->setVideoPlayer(m_videoPlayer);
-    m_metaData->setVideo(m_videoPlayer);        
+    m_metaData->setVideo(m_videoPlayer);
 
-    m_audioGraph->updateStreamSpecifications();        
+    m_audioGraph->updateStreamSpecifications();
     m_nextAudioPlayer->unsetVideoPlayer();
     m_nextVideoPlayer->unsetVideo();
     m_currentTime = 0;
-        
+
     // Emit/notify information about the new source:
     QRect videoRect = m_videoPlayer->videoRect();
     MediaNodeEvent e1(MediaNodeEvent::VideoFrameSizeChanged, &videoRect);
@@ -296,7 +305,7 @@ void MediaObject::swapCurrentWithNext(qint32 transitionTime)
 
     m_waitNextSwap = false;
     m_currentTime = 0;
-        
+
     // Emit/notify information about the new source:
     QRect videoRect = m_videoPlayer->videoRect();
     MediaNodeEvent e1(MediaNodeEvent::VideoFrameSizeChanged, &videoRect);
@@ -306,7 +315,7 @@ void MediaObject::swapCurrentWithNext(qint32 transitionTime)
     emit metaDataChanged(m_metaData->metaData());
 
     if (prevHasVideo != m_videoPlayer->hasVideo())
-        emit hasVideoChanged(m_videoPlayer->hasVideo());        
+        emit hasVideoChanged(m_videoPlayer->hasVideo());
     if (prevTotalTime != totalTime())
         emit totalTimeChanged(totalTime());
     if (checkForError())
@@ -327,28 +336,107 @@ void MediaObject::swapCurrentWithNext(qint32 transitionTime)
     }
 }
 
-void MediaObject::updateTimer(int &timer, int interval)
+#if QT_ALLOW_QUICKTIME
+static CVReturn displayLinkCallback(CVDisplayLinkRef /*displayLink*/,
+								 const CVTimeStamp */*inNow*/,
+								 const CVTimeStamp */*inOutputTime*/,
+								 CVOptionFlags /*flagsIn*/,
+								 CVOptionFlags */*flagsOut*/,
+                                 void *userData)
 {
-    if (timer)
-        killTimer(timer);
-    timer = 0;
-    if (interval >= 0)    
-        timer = startTimer(interval); 
+    MediaObject *mediaObject = static_cast<MediaObject *>(userData);
+    mediaObject->displayLinkEvent();
+    return kCVReturnSuccess;
+}
+
+void MediaObject::displayLinkEvent()
+{
+    // This function is called from a
+    // thread != gui thread. So we post the event.
+    // But we need to make sure that we don't post faster
+    // than the event loop can eat:
+    m_displayLinkMutex.lock();
+    bool pending = m_pendingDisplayLinkEvent;
+    m_pendingDisplayLinkEvent = true;
+    m_displayLinkMutex.unlock();
+
+    if (!pending)
+        qApp->postEvent(this, new QEvent(QEvent::User), Qt::HighEventPriority);
+}
+
+void MediaObject::startDisplayLink()
+{
+    if (m_displayLink)
+        return;
+    OSStatus err = CVDisplayLinkCreateWithCGDisplay(kCGDirectMainDisplay, &m_displayLink);
+    if (err != noErr)
+        goto fail;
+    err = CVDisplayLinkSetCurrentCGDisplay(m_displayLink, kCGDirectMainDisplay);
+    if (err != noErr)
+        goto fail;
+    err = CVDisplayLinkSetOutputCallback(m_displayLink, displayLinkCallback, this);
+    if (err != noErr)
+        goto fail;
+    err = CVDisplayLinkStart(m_displayLink);
+    if (err != noErr)
+        goto fail;
+    return;
+fail:
+    stopDisplayLink();
+}
+
+void MediaObject::stopDisplayLink()
+{
+    if (!m_displayLink)
+        return;
+    CVDisplayLinkStop(m_displayLink);
+    CFRelease(m_displayLink);
+    m_displayLink = 0;
+}
+#endif
+
+void MediaObject::restartAudioVideoTimers()
+{
+    if (m_videoTimer)
+        killTimer(m_videoTimer);
+    if (m_audioTimer)
+        killTimer(m_audioTimer);
+
+#if QT_ALLOW_QUICKTIME
+    // We prefer to use a display link as timer if available, since
+    // it is more steady, and results in better and smoother frame drawing:
+    startDisplayLink();
+    if (!m_displayLink){
+        float fps = m_videoPlayer->staticFps();
+        long videoUpdateFrequency = fps ? long(1000.0f / fps) : 0.001;
+        m_videoTimer = startTimer(videoUpdateFrequency);
+    }
+#else
+    float fps = m_videoPlayer->staticFps();
+    long videoUpdateFrequency = fps ? long(1000.0f / fps) : 0.001;
+    m_videoTimer = startTimer(videoUpdateFrequency);
+#endif
+
+    long audioUpdateFrequency = m_audioPlayer->regularTaskFrequency();
+    m_audioTimer = startTimer(audioUpdateFrequency);
+    updateVideoFrames();
+    updateAudioBuffers();
 }
 
 void MediaObject::play_internal()
 {
     // Play main audio/video:
     m_videoPlayer->play();
-    m_audioPlayer->play();     
+    m_audioPlayer->play();
     updateLipSynch(0);
     // Play old audio/video to finish cross-fade:
     if (m_nextVideoPlayer->currentTime() > 0){
         m_nextVideoPlayer->play();
         m_nextAudioPlayer->play();
     }
-    bufferAudioVideo();
-    updateTimer(m_rapidTimer, 100);
+    restartAudioVideoTimers();
+    if (!m_rapidTimer)
+        m_rapidTimer = startTimer(100);
 }
 
 void MediaObject::pause_internal()
@@ -358,9 +446,15 @@ void MediaObject::pause_internal()
     m_nextAudioPlayer->pause();
     m_videoPlayer->pause();
     m_nextVideoPlayer->pause();
-    updateTimer(m_rapidTimer, -1);
-    updateTimer(m_bufferTimer, -1);
-
+    killTimer(m_rapidTimer);
+    killTimer(m_videoTimer);
+    killTimer(m_audioTimer);
+    m_rapidTimer = 0;
+    m_videoTimer = 0;
+    m_audioTimer = 0;
+#if QT_ALLOW_QUICKTIME
+    stopDisplayLink();
+#endif
     if (m_waitNextSwap)
         m_swapTimeLeft = m_swapTime.msecsTo(QTime::currentTime());
 }
@@ -382,7 +476,7 @@ void MediaObject::play()
     if (!m_videoPlayer->canPlayMedia())
         return;
     if (!setState(Phonon::PlayingState))
-        return;        
+        return;
     if (m_audioSystem == AS_Graph){
         m_audioGraph->start();
         m_mediaObjectAudioNode->setMute(true);
@@ -435,7 +529,7 @@ void MediaObject::seek(qint64 milliseconds)
     IMPLEMENTED;
     if (m_state == Phonon::ErrorState)
         return;
-        
+
     // Stop cross-fade if any:
     m_nextVideoPlayer->unsetVideo();
     m_nextAudioPlayer->unsetVideoPlayer();
@@ -446,7 +540,7 @@ void MediaObject::seek(qint64 milliseconds)
     m_videoPlayer->seek(milliseconds);
     m_audioPlayer->seek(m_videoPlayer->currentTime());
     m_mediaObjectAudioNode->setMute(false);
-    
+
     // Update time and cancel pending swap:
     if (m_currentTime < m_videoPlayer->duration())
         m_waitNextSwap = false;
@@ -699,7 +793,7 @@ void MediaObject::updateCrossFade()
             m_nextVideoPlayer->unsetVideo();
             m_nextAudioPlayer->unsetVideoPlayer();
         }
-    }        
+    }
 }
 
 void MediaObject::updateBufferStatus()
@@ -728,7 +822,7 @@ void MediaObject::updateVideoFrames()
     // Draw next frame if awailable:
     if (m_videoPlayer->videoFrameChanged()){
         updateLipSynch(50);
-        VideoFrame frame(m_videoPlayer);           
+        VideoFrame frame(m_videoPlayer);
         if (m_nextVideoPlayer->isPlaying()
             && m_nextVideoPlayer->hasVideo()
             && isCrossFading()){
@@ -736,9 +830,9 @@ void MediaObject::updateVideoFrames()
             frame.setBackgroundFrame(bgFrame);
             frame.setBaseOpacity(m_mediaObjectAudioNode->m_volume1);
         }
-        
+
         // Send the frame through the graph:
-        updateVideo(frame);    
+        updateVideo(frame);
         checkForError();
     }
 }
@@ -749,7 +843,7 @@ void MediaObject::updateLipSynch(int allowedOffset)
         return;
     if (m_videoSinkList.isEmpty() || m_audioSinkList.isEmpty())
         return;
-        
+
     if (m_videoPlayer->hasVideo()){
         qint64 diff = m_audioPlayer->currentTime() - m_videoPlayer->currentTime();
         if (-allowedOffset > diff || diff > allowedOffset)
@@ -761,16 +855,6 @@ void MediaObject::updateLipSynch(int allowedOffset)
         if (-(allowedOffset*2) > diff || diff > (allowedOffset*2))
             m_nextAudioPlayer->seek(m_nextVideoPlayer->currentTime());
     }
-}
-
-void MediaObject::bufferAudioVideo()
-{
-    long nextVideoUpdate = m_videoPlayer->hasVideo() ? 30 : INT_MAX;
-    long nextAudioUpdate = m_audioPlayer->regularTaskFrequency();
-    updateAudioBuffers();
-    updateVideoFrames();
-    if (m_state == Phonon::PlayingState)
-        updateTimer(m_bufferTimer, qMin(nextVideoUpdate, nextAudioUpdate));
 }
 
 void MediaObject::updateRapidly()
@@ -797,8 +881,8 @@ void MediaObject::mediaNodeEvent(const MediaNodeEvent *event)
             synchAudioVideo();
             checkForError();
             m_mediaObjectAudioNode->setMute(false);
-             if (m_state == Phonon::PlayingState)
-                bufferAudioVideo();
+            if (m_state == Phonon::PlayingState)
+                restartAudioVideoTimers();
             break;
         case MediaNodeEvent::AudioGraphCannotPlay:
         case MediaNodeEvent::AudioGraphInitialized:
@@ -809,7 +893,7 @@ void MediaObject::mediaNodeEvent(const MediaNodeEvent *event)
                 checkForError();
                 m_mediaObjectAudioNode->setMute(false);
             }
-            break; 
+            break;
         default:
             break;
     }
@@ -818,16 +902,25 @@ void MediaObject::mediaNodeEvent(const MediaNodeEvent *event)
 bool MediaObject::event(QEvent *event)
 {
     switch (event->type()){
-        case QEvent::Timer: {
-            QTimerEvent *timerEvent = static_cast<QTimerEvent *>(event);
-            if (timerEvent->timerId() == m_rapidTimer)
+#if QT_ALLOW_QUICKTIME
+        case QEvent::User:{
+            m_displayLinkMutex.lock();
+            m_pendingDisplayLinkEvent = false;
+            m_displayLinkMutex.unlock();
+            updateVideoFrames();
+            break; }
+#endif
+        case QEvent::Timer:{
+            int timerId = static_cast<QTimerEvent *>(event)->timerId();
+            if (timerId == m_rapidTimer)
                 updateRapidly();
-            else if (timerEvent->timerId() == m_tickTimer)
+            else if (timerId == m_tickTimer)
                 emit tick(currentTime());
-            else if (timerEvent->timerId() == m_bufferTimer)
-                bufferAudioVideo();
-            }
-            break;
+            else if (timerId == m_videoTimer)
+                updateVideoFrames();
+            else if (timerId == m_audioTimer)
+                updateAudioBuffers();
+            break; }
         default:
             break;
     }

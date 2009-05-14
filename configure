@@ -600,6 +600,7 @@ CFG_RELEASE_QMAKE=no
 CFG_PHONON=auto
 CFG_PHONON_BACKEND=yes
 CFG_SVG=yes
+CFG_DECLARATIVE=yes
 CFG_WEBKIT=auto # (yes|no|auto)
 
 CFG_GFX_AVAILABLE="linuxfb transformed qvfb vnc multiscreen"
@@ -607,7 +608,7 @@ CFG_GFX_ON="linuxfb multiscreen"
 CFG_GFX_PLUGIN_AVAILABLE=
 CFG_GFX_PLUGIN=
 CFG_GFX_OFF=
-CFG_KBD_AVAILABLE="tty usb sl5000 yopy vr41xx qvfb"
+CFG_KBD_AVAILABLE="tty linuxinput sl5000 yopy vr41xx qvfb"
 CFG_KBD_ON="tty"    #default, see QMakeVar above
 CFG_MOUSE_AVAILABLE="pc bus linuxtp yopy vr41xx tslib qvfb"
 CFG_MOUSE_ON="pc linuxtp"   #default, see QMakeVar above
@@ -742,7 +743,7 @@ CFG_SQL_AVAILABLE=
 if [ -d "$relpath/src/plugins/sqldrivers" ]; then
   for a in "$relpath/src/plugins/sqldrivers/"*; do
      if [ -d "$a" ]; then
-	 base_a=`basename $a`
+	 base_a=`basename "$a"`
   	 CFG_SQL_AVAILABLE="${CFG_SQL_AVAILABLE} ${base_a}"
 	 eval "CFG_SQL_${base_a}=auto"
      fi
@@ -753,7 +754,7 @@ CFG_DECORATION_PLUGIN_AVAILABLE=
 if [ -d "$relpath/src/plugins/decorations" ]; then
   for a in "$relpath/src/plugins/decorations/"*; do
      if [ -d "$a" ]; then
-	 base_a=`basename $a`
+	 base_a=`basename "$a"`
   	 CFG_DECORATION_PLUGIN_AVAILABLE="${CFG_DECORATION_PLUGIN_AVAILABLE} ${base_a}"
      fi
   done
@@ -763,7 +764,7 @@ CFG_KBD_PLUGIN_AVAILABLE=
 if [ -d "$relpath/src/plugins/kbddrivers" ]; then
   for a in "$relpath/src/plugins/kbddrivers/"*; do
      if [ -d "$a" ]; then
-	 base_a=`basename $a`
+	 base_a=`basename "$a"`
   	 CFG_KBD_PLUGIN_AVAILABLE="${CFG_KBD_PLUGIN_AVAILABLE} ${base_a}"
      fi
   done
@@ -773,7 +774,7 @@ CFG_MOUSE_PLUGIN_AVAILABLE=
 if [ -d "$relpath/src/plugins/mousedrivers" ]; then
   for a in "$relpath/src/plugins/mousedrivers/"*; do
      if [ -d "$a" ]; then
-	 base_a=`basename $a`
+	 base_a=`basename "$a"`
   	 CFG_MOUSE_PLUGIN_AVAILABLE="${CFG_MOUSE_PLUGIN_AVAILABLE} ${base_a}"
      fi
   done
@@ -783,7 +784,7 @@ CFG_GFX_PLUGIN_AVAILABLE=
 if [ -d "$relpath/src/plugins/gfxdrivers" ]; then
   for a in "$relpath/src/plugins/gfxdrivers/"*; do
      if [ -d "$a" ]; then
-	 base_a=`basename $a`
+	 base_a=`basename "$a"`
   	 CFG_GFX_PLUGIN_AVAILABLE="${CFG_GFX_PLUGIN_AVAILABLE} ${base_a}"
      fi
   done
@@ -831,20 +832,21 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-svg|-webkit|-scripttools|-rpath|-force-pkg-config)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-svg|-declarative|-webkit|-scripttools|-rpath|-force-pkg-config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
     #Qt style options that pass an argument
     -qconfig)
-        if [ "$PLATFORM_QWS" = "yes" ]; then
-            CFG_QCONFIG="$VAL"
-            VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
-            shift
-            VAL=$1
-        else
-            UNKNOWN_ARG=yes
+        if [ "$PLATFORM_QWS" != "yes" ]; then
+            echo
+            echo "WARNING: -qconfig is only tested and supported on Qt for Embedded Linux."
+            echo
         fi
+        CFG_QCONFIG="$VAL"
+        VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
+        shift
+        VAL=$1
         ;;
     -prefix|-docdir|-headerdir|-plugindir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-demosdir|-depths|-make|-nomake|-platform|-xplatform|-buildkey|-sdk|-arch|-host-arch|-mysql_config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
@@ -1724,6 +1726,17 @@ while [ "$#" -gt 0 ]; do
                 UNKNOWN_OPT=yes
             fi
         fi
+        ;;
+    declarative)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ]; then
+            CFG_DECLARATIVE="yes"
+        else
+            if [ "$VAL" = "no" ]; then
+                CFG_DECLARATIVE="no"
+            else
+                UNKNOWN_OPT=yes
+            fi
+        fi
 	;;
     webkit)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ]; then
@@ -2131,7 +2144,7 @@ if [ -z "$MAKE" ]; then
     MAKE=
     for mk in gmake make; do
         if "$WHICH" $mk >/dev/null 2>&1; then
-            MAKE=`$WHICH $mk`
+            MAKE=`"$WHICH" $mk`
             break
         fi
     done
@@ -2669,7 +2682,7 @@ if [ -z "$PKG_CONFIG" ]; then
     PKG_CONFIG=`getQMakeConf "$XQMAKESPEC" | sed -n -e 's%PKG_CONFIG[^_].*=%%p' | tr '\n' ' '`
 fi
 if [ -z "$PKG_CONFIG" ]; then
-    PKG_CONFIG=`$WHICH pkg-config 2>/dev/null`
+    PKG_CONFIG=`"$WHICH" pkg-config 2>/dev/null`
 fi
 
 # Work out if we can use pkg-config
@@ -3074,7 +3087,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
         [-no-openssl] [-openssl] [-openssl-linked]
         [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit]
-        [-no-scripttools] [-scripttools]
+        [-no-scripttools] [-scripttools] [-no-declarative] [-declarative]
 
         [additional platform specific options (see below)]
 
@@ -3222,6 +3235,9 @@ fi
 
     -no-scripttools .... Do not build the QtScriptTools module.
  +  -scripttools ....... Build the QtScriptTools module.
+
+    -no-declarative .....Do not build the declarative module.
+ +  -declarative ....... Build the declarative module.
 
     -platform target ... The operating system and compiler you are building
                          on ($PLATFORM).
@@ -4067,9 +4083,9 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         fi
         [ -f "$in_mkfile" ] || continue
 
-        echo "########################################################################" >$mkfile
-        echo "## This file was autogenerated by configure, all changes will be lost ##" >>$mkfile
-        echo "########################################################################" >>$mkfile
+        echo "########################################################################" > "$mkfile"
+        echo "## This file was autogenerated by configure, all changes will be lost ##" >> "$mkfile"
+        echo "########################################################################" >> "$mkfile"
         EXTRA_OBJS=
         EXTRA_SRCS=
         EXTRA_CFLAGS="\$(QMAKE_CFLAGS)"
@@ -4080,8 +4096,8 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 	    EXTRA_LFLAGS="$EXTRA_LFLAGS -lm"
         fi
 
-	[ -n "$CC" ] && echo "CC = $CC" >>$mkfile
-	[ -n "$CXX" ] && echo "CXX = $CXX" >>$mkfile
+	[ -n "$CC" ] && echo "CC = $CC" >> "$mkfile"
+	[ -n "$CXX" ] && echo "CXX = $CXX" >> "$mkfile"
         if [ "$CFG_SILENT" = "yes" ]; then
             [ -z "$CC" ] && setBootstrapVariable QMAKE_CC 's,QMAKE_CC.*=,CC=\@,'
             [ -z "$CXX" ] && setBootstrapVariable QMAKE_CXX 's,QMAKE_CXX.*=,CXX=\@,'
@@ -4117,9 +4133,9 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         fi
         if [ "$PLATFORM_MAC" = "yes" ]; then
             if [ "$PLATFORM" = "macx-icc" ]; then
-                echo "export MACOSX_DEPLOYMENT_TARGET = 10.4" >>"$mkfile"
+                echo "export MACOSX_DEPLOYMENT_TARGET = 10.4" >> "$mkfile"
 	    else
-                echo "export MACOSX_DEPLOYMENT_TARGET = 10.3" >>"$mkfile"
+                echo "export MACOSX_DEPLOYMENT_TARGET = 10.3" >> "$mkfile"
 	    fi
             echo "CARBON_LFLAGS =-framework ApplicationServices" >>"$mkfile"
             echo "CARBON_CFLAGS =-fconstant-cfstrings" >>"$mkfile"
@@ -4163,18 +4179,20 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         echo >>"$mkfile"
 	adjrelpath=`echo "$relpath" | sed 's/ /\\\\\\\\ /g'`
 	adjoutpath=`echo "$outpath" | sed 's/ /\\\\\\\\ /g'`
+	adjqmakespec=`echo "$QMAKESPEC" | sed 's/ /\\\\\\\\ /g'`
         sed -e "s,@SOURCE_PATH@,$adjrelpath,g" -e "s,@BUILD_PATH@,$adjoutpath,g" \
             -e "s,@QMAKE_CFLAGS@,$EXTRA_CFLAGS,g" -e "s,@QMAKE_LFLAGS@,$EXTRA_LFLAGS,g" \
             -e "s,@QMAKE_CXXFLAGS@,$EXTRA_CXXFLAGS,g" \
             -e "s,@QT_INSTALL_BINS@,\$(INSTALL_ROOT)$QMAKE_BIN_DIR,g" \
             -e "s,@QT_INSTALL_DATA@,\$(INSTALL_ROOT)$QMAKE_DATA_DIR,g" \
             -e "s,@QMAKE_QTOBJS@,$EXTRA_OBJS,g" -e "s,@QMAKE_QTSRCS@,$EXTRA_SRCS,g" \
-	    -e "s,@QMAKESPEC@,$QMAKESPEC,g" "$in_mkfile" >>"$mkfile"
+	    -e "s,@QMAKESPEC@,$adjqmakespec,g" "$in_mkfile" >>"$mkfile"
 
         if "$WHICH" makedepend >/dev/null 2>&1 && grep 'depend:' "$mkfile" >/dev/null 2>&1; then
             (cd "$outpath/qmake" && "$MAKE" -f "$mkfile" depend) >/dev/null 2>&1
-	    sed "s,^.*/\([^/]*.o\):,\1:,g" "$mkfile" >"${mkfile}.tmp"
-	    mv "${mkfile}.tmp" "${mkfile}"
+	    sed "s,^.*/\([^/]*.o\):,\1:,g" "$mkfile" >"$mkfile.tmp"
+	    sed "s,$outpath,$adjoutpath,g" "$mkfile.tmp" >"$mkfile"
+	    rm "$mkfile.tmp"
         fi
     done
 
@@ -4343,7 +4361,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
         case $_SQLDR in
         mysql)
             if [ "$CFG_SQL_mysql" != "no" ]; then
-		[ -z "$CFG_MYSQL_CONFIG" ] && CFG_MYSQL_CONFIG=`$WHICH mysql_config`
+		[ -z "$CFG_MYSQL_CONFIG" ] && CFG_MYSQL_CONFIG=`"$WHICH" mysql_config`
                 if [ -x "$CFG_MYSQL_CONFIG" ]; then
                     QT_CFLAGS_MYSQL=`$CFG_MYSQL_CONFIG --include 2>/dev/null`
                     QT_LFLAGS_MYSQL_R=`$CFG_MYSQL_CONFIG --libs_r 2>/dev/null`
@@ -5970,6 +5988,12 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SVG"
 fi
 
+if [ "$CFG_DECLARATIVE" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG declarative"
+else
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DECLARATIVE"
+fi
+
 if [ "$CFG_WEBKIT" = "auto" ]; then
     CFG_WEBKIT="$canBuildWebKit"
 fi
@@ -6856,6 +6880,7 @@ echo "QtXmlPatterns module  $CFG_XMLPATTERNS"
 echo "Phonon module ....... $CFG_PHONON"
 echo "SVG module .......... $CFG_SVG"
 echo "WebKit module ....... $CFG_WEBKIT"
+echo "Declarative module .. $CFG_DECLARATIVE"
 echo "STL support ......... $CFG_STL"
 echo "PCH support ......... $CFG_PRECOMPILE"
 echo "MMX/3DNOW/SSE/SSE2..  ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}"
@@ -7160,7 +7185,7 @@ for file in .projects .projects.3; do
         *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*) SPEC=$QMAKESPEC ;;
         *) SPEC=$XQMAKESPEC ;;
         esac
-        dir=`dirname $a | sed -e "s;$sepath;.;g"`
+        dir=`dirname "$a" | sed -e "s;$sepath;.;g"`
         test -d "$dir" || mkdir -p "$dir"
         OUTDIR="$outpath/$dir"
         if [ -f "${OUTDIR}/Makefile" ] && [ "$OPT_FAST" = "yes" ]; then
@@ -7303,7 +7328,7 @@ if [ -n "$RPATH_MESSAGE" ]; then
     echo "$RPATH_MESSAGE"
 fi
 
-MAKE=`basename $MAKE`
+MAKE=`basename "$MAKE"`
 echo
 echo Qt is now configured for building. Just run \'$MAKE\'.
 if [ "$relpath" = "$QT_INSTALL_PREFIX" ]; then

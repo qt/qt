@@ -1,4 +1,3 @@
-
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
@@ -51,6 +50,8 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qset.h>
 #include "3rdparty/callgrind_p.h"
+
+QT_BEGIN_NAMESPACE
 
 // Returns true iff a sufficiently recent valgrind is available.
 bool QBenchmarkValgrindUtils::haveValgrind()
@@ -271,5 +272,7 @@ QString QBenchmarkCallgrindMeasurer::metricText()
 {
     return QLatin1String("callgrind");
 }
+
+QT_END_NAMESPACE
 
 #endif // QTESTLIB_USE_VALGRIND

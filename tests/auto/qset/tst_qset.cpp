@@ -74,6 +74,7 @@ private slots:
     void clear();
     void remove();
     void contains();
+    void containsSet();
     void begin();
     void end();
     void insert();
@@ -345,6 +346,40 @@ void tst_QSet::contains()
         set1.remove(QString::number(i));
         QVERIFY(!set1.contains(QString::number(i)));
     }
+}
+
+void tst_QSet::containsSet()
+{
+    QSet<QString> set1;
+    QSet<QString> set2;
+
+    // empty set contains the empty set
+    QVERIFY(set1.contains(set2));
+
+    for (int i = 0; i < 500; ++i) {
+        set1.insert(QString::number(i));
+        set2.insert(QString::number(i));
+    }
+    QVERIFY(set1.contains(set2));
+
+    set2.remove(QString::number(19));
+    set2.remove(QString::number(82));
+    set2.remove(QString::number(7));
+    QVERIFY(set1.contains(set2));
+
+    set1.remove(QString::number(23));
+    QVERIFY(!set1.contains(set2));
+
+    // filled set contains the empty set as well
+    QSet<QString> set3;
+    QVERIFY(set1.contains(set3));
+
+    // the empty set doesn't contain a filled set
+    QVERIFY(!set3.contains(set1));
+
+    // verify const signature
+    const QSet<QString> set4;
+    QVERIFY(set3.contains(set4));
 }
 
 void tst_QSet::begin()

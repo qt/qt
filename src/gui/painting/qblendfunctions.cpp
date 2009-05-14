@@ -513,11 +513,10 @@ static void qt_blend_argb32_on_argb32(uchar *destPixels, int dbpl,
         for (int y=0; y<h; ++y) {
             for (int x=0; x<w; ++x) {
                 uint s = src[x];
-                if ((s & 0xff000000) == 0xff000000)
+                if (s >= 0xff000000)
                     dst[x] = s;
-                else {
+                else if (s != 0)
                     dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
-                }
             }
             dst = (quint32 *)(((uchar *) dst) + dbpl);
             src = (const quint32 *)(((const uchar *) src) + sbpl);

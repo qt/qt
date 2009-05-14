@@ -371,8 +371,8 @@ private:
     friend class QMacGLWindowChangeEvent;
     friend QGLContextPrivate *qt_phonon_get_dptr(const QGLContext *);
 #endif
-#ifdef Q_WS_WIN
     friend class QGLFramebufferObject;
+#ifdef Q_WS_WIN
     friend class QGLFramebufferObjectPrivate;
     friend bool qt_resolve_GLSL_functions(QGLContext *ctx);
     friend bool qt_createGLSLProgram(QGLContext *ctx, GLuint &program, const char *shader_src, GLuint &shader);

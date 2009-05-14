@@ -1,0 +1,212 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the QtDeclarative module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include <QtGui/qcolor.h>
+#include <QtCore/qpoint.h>
+#include <QtCore/qrect.h>
+#include <QtCore/qsize.h>
+#include <QtCore/qvariant.h>
+#include "qmlstringconverters_p.h"
+
+QT_BEGIN_NAMESPACE
+
+static uchar fromHex(const uchar c, const uchar c2)
+{
+    uchar rv = 0;
+    if (c >= '0' && c <= '9')
+        rv += (c - '0') * 16;
+    else if (c >= 'A' && c <= 'F')
+        rv += (c - 'A' + 10) * 16;
+    else if (c >= 'a' && c <= 'f')
+        rv += (c - 'a' + 10) * 16;
+
+    if (c2 >= '0' && c2 <= '9')
+        rv += (c2 - '0');
+    else if (c2 >= 'A' && c2 <= 'F')
+        rv += (c2 - 'A' + 10);
+    else if (c2 >= 'a' && c2 <= 'f')
+        rv += (c2 - 'a' + 10);
+
+    return rv;
+}
+
+static uchar fromHex(const QString &s, int idx)
+{
+    uchar c = s.at(idx).toAscii();
+    uchar c2 = s.at(idx + 1).toAscii();
+    return fromHex(c, c2);
+}
+
+QVariant QmlStringConverters::variantFromString(const QString &s)
+{
+    if (s.isEmpty())
+        return QVariant(s);
+    if (s.startsWith(QLatin1Char('\'')) && s.endsWith(QLatin1Char('\''))) {
+        QString data = s.mid(1, s.length() - 2);
+        return QVariant(data);
+    } 
+    bool ok = false;
+    QRectF r = rectFFromString(s, &ok);
+    if (ok) return QVariant(r);
+    QColor c = colorFromString(s, &ok);
+    if (ok) return QVariant(c);
+    QPointF p = pointFFromString(s, &ok);
+    if (ok) return QVariant(p);
+    QSizeF sz = sizeFFromString(s, &ok);
+    if (ok) return QVariant(sz);
+    bool b = boolFromString(s, &ok);
+    if (ok) return QVariant(b);
+
+    return QVariant(s);
+}
+
+QColor QmlStringConverters::colorFromString(const QString &s, bool *ok)
+{
+    if (s.startsWith(QLatin1Char('#')) && s.length() == 9) {
+        uchar a = fromHex(s, 1);
+        uchar r = fromHex(s, 3);
+        uchar g = fromHex(s, 5);
+        uchar b = fromHex(s, 7);
+        if (ok) *ok = true;
+        return QColor(r, g, b, a);
+    } else {
+        QColor rv;
+        if (s.startsWith(QLatin1Char('#')) || QColor::colorNames().contains(s.toLower()))
+            rv = QColor(s);
+        if (ok) *ok = rv.isValid();
+        return rv;
+    }
+}
+
+//expects input of "x,y"
+QPointF QmlStringConverters::pointFFromString(const QString &s, bool *ok)
+{
+    if (s.count(QLatin1Char(',')) != 1) {
+        if (ok)
+            *ok = false;
+        return QPointF();
+    }
+
+    bool xGood, yGood;
+    int index = s.indexOf(QLatin1Char(','));
+    qreal xCoord = s.left(index).toDouble(&xGood);
+    qreal yCoord = s.mid(index+1).toDouble(&yGood);
+    if (!xGood || !yGood) {
+        if (ok)
+            *ok = false;
+        return QPointF();
+    }
+
+    if (ok)
+        *ok = true;
+    return QPointF(xCoord, yCoord);
+}
+
+//expects input of "widthxheight"
+QSizeF QmlStringConverters::sizeFFromString(const QString &s, bool *ok)
+{
+    if (s.count(QLatin1Char('x')) != 1) {
+        if (ok)
+            *ok = false;
+        return QSizeF();
+    }
+
+    bool wGood, hGood;
+    int index = s.indexOf(QLatin1Char('x'));
+    qreal width = s.left(index).toDouble(&wGood);
+    qreal height = s.mid(index+1).toDouble(&hGood);
+    if (!wGood || !hGood) {
+        if (ok)
+            *ok = false;
+        return QSizeF();
+    }
+
+    if (ok)
+        *ok = true;
+    return QSizeF(width, height);
+}
+
+//expects input of "x,y,widthxheight" //### use space instead of second comma?
+QRectF QmlStringConverters::rectFFromString(const QString &s, bool *ok)
+{
+    if (s.count(QLatin1Char(',')) != 2 || s.count(QLatin1Char('x')) != 1) {
+        if (ok)
+            *ok = false;
+        return QRectF();
+    }
+
+    bool xGood, yGood, wGood, hGood;
+    int index = s.indexOf(QLatin1Char(','));
+    qreal x = s.left(index).toDouble(&xGood);
+    int index2 = s.indexOf(QLatin1Char(','), index+1);
+    qreal y = s.mid(index+1, index2-index-1).toDouble(&yGood);
+    index = s.indexOf(QLatin1Char('x'), index2+1);
+    qreal width = s.mid(index2+1, index-index2-1).toDouble(&wGood);
+    qreal height = s.mid(index+1).toDouble(&hGood);
+    if (!xGood || !yGood || !wGood || !hGood) {
+        if (ok)
+            *ok = false;
+        return QRectF();
+    }
+
+    if (ok)
+        *ok = true;
+    return QRectF(x, y, width, height);
+}
+
+bool QmlStringConverters::boolFromString(const QString &str, bool *ok)
+{
+    if (str.isEmpty() || str == QLatin1String("false") || str == QLatin1String("0")) {
+        if (ok)
+            *ok = true;
+        return false;
+    } else if (str == QLatin1String("true") || str == QLatin1String("1")) {
+        if (ok)
+            *ok = true;
+        return true;
+    }
+
+    if (ok)
+        *ok = false;
+    return true;
+}
+
+QT_END_NAMESPACE

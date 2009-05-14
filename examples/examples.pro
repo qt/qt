@@ -20,6 +20,7 @@ SUBDIRS       = \
                 tutorials \
                 widgets \
                 uitools \
+                declarative \
                 xml \
                 script
 

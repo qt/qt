@@ -44,8 +44,10 @@
 #ifndef QT_NO_QWS_SIGNALHANDLER
 
 #include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>
+#ifndef QT_NO_QWS_MULTIPROCESS
+#  include <sys/ipc.h>
+#  include <sys/sem.h>
+#endif
 #include <signal.h>
 
 QT_BEGIN_NAMESPACE

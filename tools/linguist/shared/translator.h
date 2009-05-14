@@ -47,7 +47,9 @@
 #include <QDir>
 #include <QList>
 #include <QLocale>
+#include <QMultiHash>
 #include <QString>
+#include <QSet>
 
 
 QT_BEGIN_NAMESPACE
@@ -85,7 +87,10 @@ public:
     QString m_sourceFileName;
     QString m_targetFileName;
     QDir m_sourceDir;
-    QDir m_targetDir; // FIXME: TS spefic
+    QDir m_targetDir; // FIXME: TS specific
+    QSet<QString> m_projectRoots;
+    QMultiHash<QString, QString> m_allCSources;
+    QStringList m_includePath;
     QStringList m_dropTags;  // tags to be dropped
     QStringList m_errors;
     bool m_verbose;
@@ -178,7 +183,7 @@ public:
         QString description; // human-readable description
         LoadFunction loader;
         SaveFunction saver;
-        enum FileType { SourceCode, TranslationSource, TranslationBinary } fileType;
+        enum FileType { TranslationSource, TranslationBinary } fileType;
         int priority; // 0 = highest, -1 = invisible
     };
     static void registerFileFormat(const FileFormat &format);

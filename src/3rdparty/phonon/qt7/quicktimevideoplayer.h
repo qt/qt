@@ -67,11 +67,13 @@ namespace QT7
             GLuint currentFrameAsGLTexture();
 			void *currentFrameAsCIImage();
             QImage currentFrameAsQImage();
+            void releaseImageCache();
             QRect videoRect() const;
 
             quint64 duration() const;
             quint64 currentTime() const;
             long timeScale() const;
+            float staticFps();
             QString currentTimeString();
 
             void setColors(qreal brightness = 0, qreal contrast = 1, qreal hue = 0, qreal saturation = 1);
@@ -117,6 +119,9 @@ namespace QT7
             State m_state;
             QGLPixelBuffer *m_QImagePixelBuffer;
 
+            CVOpenGLTextureRef m_cachedCVTextureRef;
+            QImage m_cachedQImage;
+
             bool m_playbackRateSat;
             bool m_isDrmProtected;
             bool m_isDrmAuthorized;
@@ -126,8 +131,10 @@ namespace QT7
             float m_masterVolume;
             float m_relativeVolume;
             float m_playbackRate;
+            float m_staticFps;
             quint64 m_currentTime;
             MediaSource m_mediaSource;
+
 			void *m_primaryRenderingCIImage;
 			qreal m_brightness;
 			qreal m_contrast;
@@ -154,6 +161,7 @@ namespace QT7
             void setError(NSError *error);
             bool errorOccured();
             void readProtection();
+            void calculateStaticFps();
             void checkIfVideoAwailable();
             bool movieNotLoaded();
             void waitStatePlayable();

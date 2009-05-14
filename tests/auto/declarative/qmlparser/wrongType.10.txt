@@ -1,0 +1,4 @@
+MyTypeObject {
+    dateTimeProperty: 12
+}
+

@@ -255,6 +255,8 @@ public:
     QGLExtensionFuncs extensionFuncs;
     GLint max_texture_size;
 
+    GLuint current_fbo;
+
 #ifdef Q_WS_WIN
     static inline QGLExtensionFuncs& qt_get_extension_funcs(const QGLContext *ctx) { return ctx->d_ptr->extensionFuncs; }
 #endif
@@ -268,7 +270,7 @@ public:
 };
 
 // ### make QGLContext a QObject in 5.0 and remove the proxy stuff
-class QGLSignalProxy : public QObject
+class Q_OPENGL_EXPORT QGLSignalProxy : public QObject
 {
     Q_OBJECT
 public:

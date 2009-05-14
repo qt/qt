@@ -1,0 +1,162 @@
+/*! 
+\page elements.html
+\target elements
+\title Qml Elements
+
+The following table lists the Qml elements provided by the Qt Declarative module.
+
+\bold {Standard Qt Declarative Elements}
+
+\table 80%
+\header
+\o \bold {States}
+\o \bold {Animation and Transitions}
+\o \bold {Working with Data}
+\o \bold {Utility}
+\row
+
+\o
+\list
+\o \l State
+\o \l SetProperty
+\o \l SetProperties
+\o \l ParentChange
+\o \l RunScript
+\endlist
+
+\o
+\list
+\o \l NumericAnimation
+\o \l ColorAnimation
+\o \l VariantAnimation
+\o \l PauseAnimation
+\o \l SequentialAnimation
+\o \l ParallelAnimation
+\o \l SetPropertyAction
+\o \l ParentChangeAction
+\o \l Transition
+\o \l Behaviour
+\o \l Follow
+\endlist
+
+\o
+\list
+\o \l Bind
+\o \l ListModel
+\o \l XmlListModel
+\o \l SqlQuery, \l SqlConnection, and \l SqlBind
+\o \l DateTimeFormatter
+\o \l NumberFormatter
+\endlist
+
+\o
+\list
+\o \l Script
+\o \l Connection
+\o \l Component
+\endlist
+\endtable
+
+\bold {Fluid UI Primitives}
+
+\table 80%
+\header
+\o \bold {Basic Visual Items}
+\o \bold {Basic Interaction Items}
+\o \bold {Widgets}
+\o \bold {Utility}
+
+\row
+\o
+\list
+\o \l Item
+\o \l Image
+\o \l Text
+\o \l TextEdit
+\o \l Rect
+\o \l AnimatedImage
+\o \l BlendedImage
+\endlist
+
+\o
+\list
+\o \l MouseRegion
+\o \l KeyActions
+\o \l FocusPanel
+\o \l FocusRealm
+\o \l KeyProxy
+\endlist
+
+\o
+\list
+\o \l Flickable
+\o \l Flipable
+\o \l WebView
+\endlist
+
+\o
+\list
+\o \l Repeater
+\o \l ContentWrapper
+    \list
+    \o \l Content
+    \endlist
+\o \l ComponentInstance
+\o \l WidgetContainer
+\endlist
+
+\header
+\o \bold {Views}
+\o \bold {Layouts}
+\o \bold {Transforms}
+\o \bold {Effects}
+
+\row
+\o
+
+\target xmlViews
+\list
+\o \l ListView
+\o \l GridView
+\o \l PathView
+    \list
+    \o \l Path
+        \list
+        \o \l PathLine
+        \o \l PathQuad
+        \o \l PathCubic
+        \o \l PathAttribute
+        \o \l PathPercent
+        \endlist
+    \endlist
+\endlist
+
+\o
+\list
+\o \l VerticalLayout
+\o \l HorizontalLayout
+\o \l GridLayout
+\endlist
+
+\o
+\list
+\o \l Squish
+\o \l Rotation3D
+\endlist
+
+\o
+\list
+\o \l Shadow
+\o \l Reflection
+\o \l Blur
+\o \l Highlight
+\o \l Particles
+    \list
+    \o \l ParticleMotionLinear
+    \o \l ParticleMotionGravity
+    \o \l ParticleMotionWander
+    \endlist
+\endlist
+\endtable
+
+*/

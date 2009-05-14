@@ -88,6 +88,10 @@ public:
     QSslConfigurationPrivate configuration;
     QList<QSslError> sslErrors;
 
+    // if set, this hostname is used for certificate validation instead of the hostname
+    // that was used for connecting to.
+    QString verificationPeerName;
+
     static bool ensureInitialized();
     static void deinitialize();
     static QList<QSslCipher> defaultCiphers();

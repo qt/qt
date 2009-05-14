@@ -274,9 +274,11 @@ void QToolBarPrivate::endDrag()
 
 bool QToolBarPrivate::mousePressEvent(QMouseEvent *event)
 {
-    if (layout->handleRect().contains(event->pos()) == false) {
+    Q_Q(QToolBar);
+    QStyleOptionToolBar opt;
+    q->initStyleOption(&opt);
+    if (q->style()->subElementRect(QStyle::SE_ToolBarHandle, &opt, q).contains(event->pos()) == false) {
 #ifdef Q_WS_MAC
-        Q_Q(QToolBar);
         // When using the unified toolbar on Mac OS X the user can can click and
         // drag between toolbar contents to move the window. Make this work by
         // implementing the standard mouse-dragging code and then call
@@ -1041,7 +1043,7 @@ void QToolBar::paintEvent(QPaintEvent *)
         style->drawControl(QStyle::CE_ToolBar, &opt, &p, this);
     }
 
-    opt.rect = d->layout->handleRect();
+    opt.rect = style->subElementRect(QStyle::SE_ToolBarHandle, &opt, this);
     if (opt.rect.isValid())
         style->drawPrimitive(QStyle::PE_IndicatorToolBarHandle, &opt, &p, this);
 }
@@ -1142,7 +1144,9 @@ bool QToolBar::event(QEvent *event)
     case QEvent::HoverMove: {
 #ifndef QT_NO_CURSOR
         QHoverEvent *e = static_cast<QHoverEvent*>(event);
-        if (d->layout->handleRect().contains(e->pos()))
+        QStyleOptionToolBar opt;
+        initStyleOption(&opt);
+        if (style()->subElementRect(QStyle::SE_ToolBarHandle, &opt, this).contains(e->pos()))
             setCursor(Qt::SizeAllCursor);
         else
             unsetCursor();
@@ -1153,7 +1157,7 @@ bool QToolBar::event(QEvent *event)
         if (d->mouseMoveEvent(static_cast<QMouseEvent*>(event)))
             return true;
         break;
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     case QEvent::ContextMenu:
         {
             QContextMenuEvent* contextMenuEvent = static_cast<QContextMenuEvent*>(event);

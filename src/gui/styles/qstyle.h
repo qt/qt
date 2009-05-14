@@ -373,6 +373,8 @@ public:
 
         SE_ShapedFrameContents,
 
+        SE_ToolBarHandle,
+
         // do not add any values below/greater than this
         SE_CustomBase = 0xf0000000
     };
@@ -453,6 +455,7 @@ public:
         SC_MdiNormalButton  =      0x00000002,
         SC_MdiCloseButton   =      0x00000004,
 
+        SC_CustomBase =            0xf0000000,
         SC_All =                   0xffffffff
     };
     Q_DECLARE_FLAGS(SubControls, SubControl)

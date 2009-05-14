@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::ToolBarTaskMenu
-*/
-
 #include "toolbar_taskmenu.h"
 #include "qdesigner_toolbar_p.h"
 

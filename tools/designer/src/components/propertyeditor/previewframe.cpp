@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::PreviewWorkspace
-*/
-
 #include "previewframe.h"
 #include "previewwidget.h"
 

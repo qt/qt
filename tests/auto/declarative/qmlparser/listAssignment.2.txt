@@ -1,0 +1,3 @@
+MyContainer {
+    children: 2
+}

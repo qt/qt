@@ -69,5 +69,6 @@ RESOURCES	+= qvfb.qrc \
                    TouchscreenPhone.qrc \
                    Trolltech-Keypad.qrc \
                    Trolltech-Touchscreen.qrc \
-                   PortableMedia.qrc
-
+                   PortableMedia.qrc \
+                   S60-QVGA-Candybar.qrc \
+                   S60-nHD-Touchscreen.qrc

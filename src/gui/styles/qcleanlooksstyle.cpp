@@ -44,6 +44,7 @@
 
 #if !defined(QT_NO_STYLE_CLEANLOOKS) || defined(QT_PLUGIN)
 
+#include <private/qstylehelper_p.h>
 #include "qwindowsstyle_p.h"
 #include <qcombobox.h>
 #include <qpushbutton.h>
@@ -72,7 +73,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static const bool UsePixmapCache = true;
+using namespace QStyleHelper;
 
 enum Direction {
     TopDown,
@@ -551,26 +552,6 @@ static void qt_cleanlooks_draw_buttongradient(QPainter *painter, const QRect &re
         }
         painter->fillRect(rect, *gradient);
         delete gradient;
-}
-
-static QString uniqueName(const QString &key, const QStyleOption *option, const QSize &size)
-{
-    QString tmp;
-    const QStyleOptionComplex *complexOption = qstyleoption_cast<const QStyleOptionComplex *>(option);
-    tmp.sprintf("%s-%d-%d-%lld-%dx%d-%d", key.toLatin1().constData(), uint(option->state),
-                complexOption ? uint(complexOption->activeSubControls) : uint(0),
-                option->palette.cacheKey(), size.width(), size.height(), option->direction);
-#ifndef QT_NO_SPINBOX
-    if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
-        tmp.append(QLatin1Char('-'));
-        tmp.append(QString::number(spinBox->buttonSymbols));
-        tmp.append(QLatin1Char('-'));
-        tmp.append(QString::number(spinBox->stepEnabled));
-        tmp.append(QLatin1Char('-'));
-        tmp.append(QLatin1Char(spinBox->frame ? '1' : '0'));
-    }
-#endif // QT_NO_SPINBOX
-    return tmp;
 }
 
 static void qt_cleanlooks_draw_mdibutton(QPainter *painter, const QStyleOptionTitleBar *option, const QRect &tmp, bool hover, bool sunken)
@@ -1664,7 +1645,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
         // Draws the header in tables.
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             QPixmap cache;
-            QString pixmapName = uniqueName(QLatin1String("headersection"), option, option->rect.size());
+            QString pixmapName = QStyleHelper::uniqueName(QLatin1String("headersection"), option, option->rect.size());
             pixmapName += QLatin1String("-") + QString::number(int(header->position));
             pixmapName += QLatin1String("-") + QString::number(int(header->orientation));
             QRect r = option->rect;
@@ -2456,7 +2437,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             QPixmap cache;
-            QString pixmapName = uniqueName(QLatin1String("spinbox"), spinBox, spinBox->rect.size());
+            QString pixmapName = QStyleHelper::uniqueName(QLatin1String("spinbox"), spinBox, spinBox->rect.size());
             if (!UsePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
                 cache = QPixmap(spinBox->rect.size());
                 cache.fill(Qt::transparent);
@@ -3137,7 +3118,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
 
                 // The AddLine (down/right) button
                 if (scrollBar->subControls & SC_ScrollBarAddLine) {
-                    QString addLinePixmapName = uniqueName(QLatin1String("scrollbar_addline"), option, QSize(16, 16));
+                    QString addLinePixmapName = QStyleHelper::uniqueName(QLatin1String("scrollbar_addline"), option, QSize(16, 16));
                     QRect pixmapRect = scrollBarAddLine;
                     if (isEnabled) {
                         QRect fillRect = pixmapRect.adjusted(1, 1, -1, -1);
@@ -3198,7 +3179,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
             bool isEnabled = (comboBox->state & State_Enabled);
             bool focus = isEnabled && (comboBox->state & State_HasFocus);
             QPixmap cache;
-            QString pixmapName = uniqueName(QLatin1String("combobox"), option, comboBox->rect.size());
+            QString pixmapName = QStyleHelper::uniqueName(QLatin1String("combobox"), option, comboBox->rect.size());
             if (sunken)
                 pixmapName += QLatin1String("-sunken");
             if (comboBox->editable)
@@ -3421,7 +3402,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
             highlightAlpha.setAlpha(80);
 
             if ((option->subControls & SC_SliderGroove) && groove.isValid()) {
-                QString groovePixmapName = uniqueName(QLatin1String("slider_groove"), option, groove.size());
+                QString groovePixmapName = QStyleHelper::uniqueName(QLatin1String("slider_groove"), option, groove.size());
                 QRect pixmapRect(0, 0, groove.width(), groove.height());
 
                 // draw background groove
@@ -3501,7 +3482,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
 
             // draw handle
             if ((option->subControls & SC_SliderHandle) ) {
-                QString handlePixmapName = uniqueName(QLatin1String("slider_handle"), option, handle.size());
+                QString handlePixmapName = QStyleHelper::uniqueName(QLatin1String("slider_handle"), option, handle.size());
                 if (!UsePixmapCache || !QPixmapCache::find(handlePixmapName, cache)) {
                     cache = QPixmap(handle.size());
                     cache.fill(Qt::transparent);
@@ -3656,6 +3637,12 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
         }
         break;
 #endif // QT_NO_SLIDER
+#ifndef QT_NO_DIAL
+    case CC_Dial:
+        if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(option))
+            QStyleHelper::drawDial(dial, painter);
+        break;
+#endif // QT_NO_DIAL
         default:
             QWindowsStyle::drawComplexControl(control, option, painter, widget);
         break;
@@ -3781,6 +3768,20 @@ QSize QCleanlooksStyle::sizeFromContents(ContentsType type, const QStyleOption *
         }
         break;
     case CT_GroupBox:
+        // Since we use a bold font we have to recalculate base width
+        if (const QGroupBox *gb = qobject_cast<const QGroupBox*>(widget)) {
+            QFont font = gb->font();
+            font.setBold(true);
+            QFontMetrics metrics(font);
+            int baseWidth = metrics.width(gb->title()) + metrics.width(QLatin1Char(' '));
+            if (gb->isCheckable()) {
+                baseWidth += pixelMetric(QStyle::PM_IndicatorWidth, option, widget);
+                baseWidth += pixelMetric(QStyle::PM_CheckBoxLabelSpacing, option, widget);
+            }
+            newSize.setWidth(qMax(baseWidth, newSize.width()));
+        }
+        newSize += QSize(0, 1);
+        break;
     case CT_RadioButton:
     case CT_CheckBox:
         newSize += QSize(0, 1);

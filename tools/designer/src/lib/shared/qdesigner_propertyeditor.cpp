@@ -40,16 +40,56 @@
 ****************************************************************************/
 
 #include "qdesigner_propertyeditor_p.h"
-#ifdef Q_OS_WIN
-#  include <widgetfactory_p.h>
-#endif
-#include <QAction>
-#include <QLineEdit>
-#include <QAbstractButton>
+#include "pluginmanager_p.h"
+
+#include <QtDesigner/QDesignerFormEditorInterface>
+#include <widgetfactory_p.h>
+#include <QtGui/QAction>
+#include <QtGui/QLineEdit>
+#include <QtGui/QAbstractButton>
 
 QT_BEGIN_NAMESPACE
 
 namespace qdesigner_internal {
+typedef QDesignerPropertyEditor::StringPropertyParameters StringPropertyParameters;
+// A map of property name to type
+typedef QHash<QString, StringPropertyParameters> PropertyNameTypeMap;
+
+// Compile a map of hard-coded string property types
+static const PropertyNameTypeMap &stringPropertyTypes()
+{
+    static PropertyNameTypeMap propertyNameTypeMap;
+    if (propertyNameTypeMap.empty()) {
+        const StringPropertyParameters richtext(ValidationRichText, true);
+        // Accessibility. Both are texts the narrator reads
+        propertyNameTypeMap.insert(QLatin1String("accessibleDescription"), richtext);
+        propertyNameTypeMap.insert(QLatin1String("accessibleName"), richtext);
+        // object names
+        const StringPropertyParameters objectName(ValidationObjectName, false);
+        propertyNameTypeMap.insert(QLatin1String("buddy"), objectName);
+        propertyNameTypeMap.insert(QLatin1String("currentItemName"), objectName);
+        propertyNameTypeMap.insert(QLatin1String("currentPageName"), objectName);
+        propertyNameTypeMap.insert(QLatin1String("currentTabName"), objectName);
+        propertyNameTypeMap.insert(QLatin1String("layoutName"), objectName);
+        propertyNameTypeMap.insert(QLatin1String("spacerName"), objectName);
+        // Style sheet
+        propertyNameTypeMap.insert(QLatin1String("styleSheet"), StringPropertyParameters(ValidationStyleSheet, false));
+        // Buttons/  QCommandLinkButton
+        const StringPropertyParameters multiline(ValidationMultiLine, true);
+        propertyNameTypeMap.insert(QLatin1String("description"), multiline);
+        propertyNameTypeMap.insert(QLatin1String("iconText"), multiline);
+        // Tooltips, etc.
+        propertyNameTypeMap.insert(QLatin1String("toolTip"), richtext);
+        propertyNameTypeMap.insert(QLatin1String("whatsThis"), richtext);
+        propertyNameTypeMap.insert(QLatin1String("windowIconText"), richtext);
+        propertyNameTypeMap.insert(QLatin1String("html"), richtext);
+        //  A QWizard page id
+        propertyNameTypeMap.insert(QLatin1String("pageId"), StringPropertyParameters(ValidationSingleLine, false));
+        // QPlainTextEdit
+        propertyNameTypeMap.insert(QLatin1String("plainText"), StringPropertyParameters(ValidationMultiLine, true));
+    }
+    return propertyNameTypeMap;
+}
 
 QDesignerPropertyEditor::QDesignerPropertyEditor(QWidget *parent, Qt::WindowFlags flags) :
     QDesignerPropertyEditorInterface(parent, flags)
@@ -68,33 +108,19 @@ QDesignerPropertyEditor::StringPropertyParameters QDesignerPropertyEditor::textP
         return StringPropertyParameters(vm, false);
     }
 
-    // Accessibility. Both are texts the narrator reads
-    if (propertyName == QLatin1String("accessibleDescription") || propertyName == QLatin1String("accessibleName"))
-        return StringPropertyParameters(ValidationRichText, true);
+    // Check custom widgets by class.
+    const QString className = WidgetFactory::classNameOf(core, object);
+    const QDesignerCustomWidgetData customData = core->pluginManager()->customWidgetData(className);
+    if (!customData.isNull()) {
+        StringPropertyParameters customType;
+        if (customData.xmlStringPropertyType(propertyName, &customType))
+            return customType;
+    }
 
-    // Names
-    if (propertyName == QLatin1String("buddy")
-          || propertyName == QLatin1String("currentItemName")
-          || propertyName == QLatin1String("currentPageName")
-          || propertyName == QLatin1String("currentTabName")
-          || propertyName == QLatin1String("layoutName")
-          || propertyName == QLatin1String("spacerName"))
-        return StringPropertyParameters(ValidationObjectName, false);
-
-    if (propertyName.endsWith(QLatin1String("Name")))
-        return StringPropertyParameters(ValidationSingleLine, true);
-
-    // Multi line?
-    if (propertyName == QLatin1String("styleSheet"))
-        return StringPropertyParameters(ValidationStyleSheet, false);
-
-    if (propertyName == QLatin1String("description") || propertyName == QLatin1String("iconText")) // QCommandLinkButton
-        return StringPropertyParameters(ValidationMultiLine, true);
-
-    if (propertyName == QLatin1String("toolTip")         || propertyName.endsWith(QLatin1String("ToolTip")) ||
-            propertyName == QLatin1String("whatsThis")       ||
-            propertyName == QLatin1String("windowIconText")  || propertyName == QLatin1String("html"))
-        return StringPropertyParameters(ValidationRichText, true);
+    // Check hardcoded property ames
+   const PropertyNameTypeMap::const_iterator hit = stringPropertyTypes().constFind(propertyName);
+   if (hit != stringPropertyTypes().constEnd())
+       return hit.value();
 
     // text: Check according to widget type.
     if (propertyName == QLatin1String("text")) {
@@ -104,17 +130,17 @@ QDesignerPropertyEditor::StringPropertyParameters QDesignerPropertyEditor::textP
             return StringPropertyParameters(ValidationMultiLine, true);
         return StringPropertyParameters(ValidationRichText, true);
     }
-    if (propertyName == QLatin1String("pageId")) // A QWizard page id
-        return StringPropertyParameters(ValidationSingleLine, false);
 
-    if (propertyName == QLatin1String("plainText")) // QPlainTextEdit
-        return StringPropertyParameters(ValidationMultiLine, true);
+   // Fuzzy matching
+    if (propertyName.endsWith(QLatin1String("Name")))
+        return StringPropertyParameters(ValidationSingleLine, true);
+
+    if (propertyName.endsWith(QLatin1String("ToolTip")))
+        return StringPropertyParameters(ValidationRichText, true);
 
 #ifdef Q_OS_WIN // No translation for the active X "control" property
-    if (propertyName == QLatin1String("control") && WidgetFactory::classNameOf(core, object) == QLatin1String("QAxWidget"))
+    if (propertyName == QLatin1String("control") && className == QLatin1String("QAxWidget"))
         return StringPropertyParameters(ValidationSingleLine, false);
-#else
-    Q_UNUSED(core);
 #endif
 
     // default to single
