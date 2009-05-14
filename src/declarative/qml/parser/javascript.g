@@ -624,9 +624,16 @@ case $rule_number: {
 } break;
 ./
 
-UiObjectMember: UiQualifiedId T_COLON UiMultilineStringStatement ;
-/.  case $rule_number: ./
-UiObjectMember: UiQualifiedId T_COLON Statement ;
+
+UiStatement: Block ;
+UiStatement: EmptyStatement ;
+UiStatement: ExpressionStatement ;
+UiStatement: DebuggerStatement ;
+UiStatement: UiMultilineStringStatement ;
+UiStatement: IfStatement ; --- ### do we really want if statement in a binding?
+
+
+UiObjectMember: UiQualifiedId T_COLON UiStatement ;
 /.
 case $rule_number: {
     AST::UiScriptBinding *node = makeAstNode<AST::UiScriptBinding> (driver->nodePool(), sym(1).UiQualifiedId->finish(),
