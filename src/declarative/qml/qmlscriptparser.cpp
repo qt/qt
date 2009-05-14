@@ -645,7 +645,7 @@ bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
     if (! parser.parse(&engine) || !_errors.isEmpty()) {
 
         // Extract errors from the parser
-        foreach (const Parser::DiagnosticMessage &m, parser.diagnosticMessages()) {
+        foreach (const DiagnosticMessage &m, parser.diagnosticMessages()) {
 
             if (m.isWarning())
                 continue;

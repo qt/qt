@@ -62,6 +62,8 @@
 
 #include "javascriptgrammar_p.h"
 #include "javascriptast_p.h"
+#include "javascriptengine_p.h"
+
 #include <QtCore/QList>
 
 QT_BEGIN_NAMESPACE
@@ -116,26 +118,6 @@ public:
       AST::UiObjectMember *UiObjectMember;
       AST::UiObjectMemberList *UiObjectMemberList;
       AST::UiQualifiedId *UiQualifiedId;
-    };
-
-    struct DiagnosticMessage {
-        enum Kind { Warning, Error };
-
-        DiagnosticMessage()
-            : kind(Error) {}
-
-        DiagnosticMessage(Kind kind, const AST::SourceLocation &loc, const QString &message)
-            : kind(kind), loc(loc), message(message) {}
-
-        bool isWarning() const
-        { return kind == Warning; }
-
-        bool isError() const
-        { return kind == Error; }
-
-        Kind kind;
-        AST::SourceLocation loc;
-        QString message;
     };
 
 public:

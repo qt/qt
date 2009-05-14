@@ -33,6 +33,8 @@
 #include <QString>
 #include <QSet>
 
+#include "javascriptastfwd_p.h"
+
 QT_BEGIN_NAMESPACE
 
 namespace JavaScript {
@@ -43,13 +45,8 @@ uint qHash(const JavaScript::NameId &id);
 
 namespace JavaScript {
 
-class Node;
 class Lexer;
 class NodePool;
-
-namespace AST {
-class Node;
-} // end of namespace AST
 
 namespace Ecma {
 
@@ -90,6 +87,28 @@ public:
 
     bool operator < (const NameId &other) const
     { return _text < other._text; }
+};
+
+class DiagnosticMessage
+{
+public:
+    enum Kind { Warning, Error };
+
+    DiagnosticMessage()
+        : kind(Error) {}
+
+    DiagnosticMessage(Kind kind, const AST::SourceLocation &loc, const QString &message)
+        : kind(kind), loc(loc), message(message) {}
+
+    bool isWarning() const
+    { return kind == Warning; }
+
+    bool isError() const
+    { return kind == Error; }
+
+    Kind kind;
+    AST::SourceLocation loc;
+    QString message;
 };
 
 class Engine
