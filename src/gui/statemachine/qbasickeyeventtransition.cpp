@@ -25,6 +25,8 @@ QT_BEGIN_NAMESPACE
 /*!
   \internal
   \class QBasicKeyEventTransition
+  \since 4.6
+  \ingroup statemachine
 
   \brief The QBasicKeyEventTransition class provides a transition for Qt key events.
 */

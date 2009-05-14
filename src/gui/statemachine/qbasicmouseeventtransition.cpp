@@ -25,6 +25,8 @@ QT_BEGIN_NAMESPACE
 /*!
   \internal
   \class QBasicMouseEventTransition
+  \since 4.6
+  \ingroup statemachine
 
   \brief The QBasicMouseEventTransition class provides a transition for Qt mouse events.
 */

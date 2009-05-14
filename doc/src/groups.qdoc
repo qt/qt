@@ -69,14 +69,14 @@
 */
 
 /*!
-    \group animations
+    \group animation
     \ingroup groups
 
     \title Animation Framework
     \brief Classes for animations, states and transitions.
 
     These classes provide a framework for creating both simple and complex
-    animations. The Animation Framework also provides states and animated
+    animations. \l{The Animation Framework} also provides states and animated
     transitions, making it easy to create animated stateful forms.
 */
 
