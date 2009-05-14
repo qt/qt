@@ -76,7 +76,7 @@ namespace JavaScript {
 extern double integerFromString(const char *buf, int size, int radix);
 }
 
-JavaScript::Lexer::Lexer(JavaScriptEnginePrivate *eng)
+JavaScript::Lexer::Lexer(Engine *eng)
     : driver(eng),
       yylineno(0),
       done(false),

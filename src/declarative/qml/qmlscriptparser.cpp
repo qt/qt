@@ -633,16 +633,16 @@ bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
     const QString code = stream.readAll();
 
     Parser parser;
-    JavaScriptEnginePrivate driver;
+    Engine engine;
 
-    NodePool nodePool(fileName, &driver);
-    driver.setNodePool(&nodePool);
+    NodePool nodePool(fileName, &engine);
+    engine.setNodePool(&nodePool);
 
-    Lexer lexer(&driver);
+    Lexer lexer(&engine);
     lexer.setCode(code, /*line = */ 1);
-    driver.setLexer(&lexer);
+    engine.setLexer(&lexer);
 
-    if (! parser.parse(&driver) || !_errors.isEmpty()) {
+    if (! parser.parse(&engine) || !_errors.isEmpty()) {
 
         // Extract errors from the parser
         foreach (const Parser::DiagnosticMessage &m, parser.diagnosticMessages()) {

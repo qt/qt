@@ -75,7 +75,7 @@ void Parser::reallocateStack()
     location_stack = reinterpret_cast<AST::SourceLocation*> (qRealloc(location_stack, stack_size * sizeof(AST::SourceLocation)));
 }
 
-inline static bool automatic(JavaScriptEnginePrivate *driver, int token)
+inline static bool automatic(Engine *driver, int token)
 {
     return token == JavaScriptGrammar::T_RBRACE
         || token == 0
@@ -113,7 +113,7 @@ static inline AST::SourceLocation location(Lexer *lexer)
     return loc;
 }
 
-bool Parser::parse(JavaScriptEnginePrivate *driver)
+bool Parser::parse(Engine *driver)
 {
     Lexer *lexer = driver->lexer();
     bool hadErrors = false;

@@ -69,7 +69,7 @@ QString Ecma::RegExp::flagsToString(int flags)
     return result;
 }
 
-NodePool::NodePool(const QString &fileName, JavaScriptEnginePrivate *engine)
+NodePool::NodePool(const QString &fileName, Engine *engine)
     : m_fileName(fileName), m_engine(engine)
 {
 }

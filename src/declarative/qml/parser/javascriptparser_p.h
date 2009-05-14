@@ -70,7 +70,7 @@ class QString;
 
 namespace JavaScript {
 
-class JavaScriptEnginePrivate;
+class Engine;
 class NameId;
 
 class Parser: protected JavaScriptGrammar
@@ -142,7 +142,7 @@ public:
     Parser();
     ~Parser();
 
-    bool parse(JavaScriptEnginePrivate *driver);
+    bool parse(Engine *driver);
 
     AST::UiProgram *ast()
     { return program; }

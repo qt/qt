@@ -68,7 +68,7 @@ class Node;
 
 class Code;
 class CompilationUnit;
-class JavaScriptEnginePrivate;
+class Engine;
 
 template <typename NodeType>
 inline NodeType *makeAstNode(MemoryPool *storage)
@@ -108,13 +108,13 @@ inline NodeType *makeAstNode(MemoryPool *storage, Arg1 arg1, Arg2 arg2, Arg3 arg
 class NodePool : public MemoryPool
 {
 public:
-    NodePool(const QString &fileName, JavaScriptEnginePrivate *engine);
+    NodePool(const QString &fileName, Engine *engine);
     virtual ~NodePool();
 
     Code *createCompiledCode(AST::Node *node, CompilationUnit &compilation);
 
     inline QString fileName() const { return m_fileName; }
-    inline JavaScriptEnginePrivate *engine() const { return m_engine; }
+    inline Engine *engine() const { return m_engine; }
 #ifndef J_SCRIPT_NO_EVENT_NOTIFY
     inline qint64 id() const { return m_id; }
 #endif
@@ -122,7 +122,7 @@ public:
 private:
     QHash<AST::Node*, Code*> m_codeCache;
     QString m_fileName;
-    JavaScriptEnginePrivate *m_engine;
+    Engine *m_engine;
 #ifndef J_SCRIPT_NO_EVENT_NOTIFY
     qint64 m_id;
 #endif

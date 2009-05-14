@@ -92,7 +92,7 @@ public:
     { return _text < other._text; }
 };
 
-class JavaScriptEnginePrivate
+class Engine
 {
     Lexer *_lexer;
     NodePool *_nodePool;
@@ -100,7 +100,7 @@ class JavaScriptEnginePrivate
     QSet<NameId> _literals;
 
 public:
-    JavaScriptEnginePrivate()
+    Engine()
         : _lexer(0), _nodePool(0), _ast(0)
     { }
 

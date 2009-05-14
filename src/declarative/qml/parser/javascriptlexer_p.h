@@ -61,13 +61,13 @@ QT_BEGIN_NAMESPACE
 
 namespace JavaScript {
 
-class JavaScriptEnginePrivate;
+class Engine;
 class NameId;
 
 class Lexer
 {
 public:
-    Lexer(JavaScriptEnginePrivate *eng);
+    Lexer(Engine *eng);
     ~Lexer();
 
     void setCode(const QString &c, int lineno);
@@ -155,7 +155,7 @@ public:
         { err = NoError; }
 
 private:
-    JavaScriptEnginePrivate *driver;
+    Engine *driver;
     int yylineno;
     bool done;
     char *buffer8;

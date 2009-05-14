@@ -215,7 +215,7 @@ class QString;
 
 namespace JavaScript {
 
-class JavaScriptEnginePrivate;
+class Engine;
 class NameId;
 
 class Parser: protected $table
@@ -287,7 +287,7 @@ public:
     Parser();
     ~Parser();
 
-    bool parse(JavaScriptEnginePrivate *driver);
+    bool parse(Engine *driver);
 
     AST::UiProgram *ast()
     { return program; }
@@ -383,7 +383,7 @@ void Parser::reallocateStack()
     location_stack = reinterpret_cast<AST::SourceLocation*> (qRealloc(location_stack, stack_size * sizeof(AST::SourceLocation)));
 }
 
-inline static bool automatic(JavaScriptEnginePrivate *driver, int token)
+inline static bool automatic(Engine *driver, int token)
 {
     return token == $table::T_RBRACE
         || token == 0
@@ -421,7 +421,7 @@ static inline AST::SourceLocation location(Lexer *lexer)
     return loc;
 }
 
-bool Parser::parse(JavaScriptEnginePrivate *driver)
+bool Parser::parse(Engine *driver)
 {
     Lexer *lexer = driver->lexer();
     bool hadErrors = false;
