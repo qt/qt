@@ -72,7 +72,7 @@ QT_BEGIN_NAMESPACE
     animates Qt \l{Qt's Property System}{properties}. See the
     QPropertyAnimation class description if you wish to animate such
     properties.
-    
+
     You can then set start and end values for the property by calling
     setStartValue() and setEndValue(), and finally call start() to
     start the animation. QVariantAnimation will interpolate the
@@ -111,12 +111,12 @@ QT_BEGIN_NAMESPACE
         \o \l{QMetaType::}{QSizeF}
         \o \l{QMetaType::}{QRect}
         \o \l{QMetaType::}{QRectF}
-    \endlist 
+    \endlist
 
     If you need to interpolate other variant types, including custom
     types, you have to implement interpolation for these yourself.
     You do this by reimplementing interpolated(), which returns
-    interpolation values for the value being interpolated. 
+    interpolation values for the value being interpolated.
 
     \omit We need some snippets around here. \endomit
 
@@ -152,7 +152,7 @@ template<> Q_INLINE_TEMPLATE QRectF _q_interpolate(const QRectF &f, const QRectF
     f.getRect(&x1, &y1, &w1, &h1);
     qreal x2, y2, w2, h2;
     t.getRect(&x2, &y2, &w2, &h2);
-    return QRectF( _q_interpolate(x1, x2, progress), _q_interpolate(y1, y2, progress),
+    return QRectF(_q_interpolate(x1, x2, progress), _q_interpolate(y1, y2, progress),
                   _q_interpolate(w1, w2, progress), _q_interpolate(h1, h2, progress));
 }
 
@@ -227,10 +227,9 @@ void QVariantAnimationPrivate::updateCurrentValue()
 #endif
     if (currentValue != ret) {
         //the value has changed
-            emit q->valueChanged(currentValue);
+        emit q->valueChanged(currentValue);
     }
 }
-
 
 QVariant QVariantAnimationPrivate::valueAt(qreal step) const
 {
@@ -241,7 +240,6 @@ QVariant QVariantAnimationPrivate::valueAt(qreal step) const
 
     return QVariant();
 }
-
 
 void QVariantAnimationPrivate::setValueAt(qreal step, const QVariant &value)
 {
@@ -587,7 +585,7 @@ bool QVariantAnimation::event(QEvent *event)
     \reimp
 */
 void QVariantAnimation::updateState(QAbstractAnimation::State oldState,
-                             QAbstractAnimation::State newState)
+                                    QAbstractAnimation::State newState)
 {
     Q_UNUSED(oldState);
     Q_UNUSED(newState);

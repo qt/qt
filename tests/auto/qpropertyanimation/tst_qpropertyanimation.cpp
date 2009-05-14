@@ -794,9 +794,9 @@ void tst_QPropertyAnimation::operationsInStates()
  *           | pause()    |start()    |resume()   |stop()
  * ----------+------------+-----------+-----------+-------------------+
  * Stopped   | Stopped    |Running    |Stopped    |Stopped            |
- *          _| qWarning   |           |qWarning   |-                  |
+ *          _| qWarning   |restart    |qWarning   |                   |
  * Paused    | Paused     |Running    |Running    |Stopped            |
- *          _| -          |           |           |                   |
+ *          _|            |           |           |                   |
  * Running   | Paused     |Running    |Running    |Stopped            |
  *           |            |restart    |qWarning   |                   |
  * ----------+------------+-----------+-----------+-------------------+
