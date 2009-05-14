@@ -1179,6 +1179,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value SC_All  Special value that matches all sub-controls.
     \omitvalue SC_Q3ListViewBranch
+    \omitvalue SC_CustomBase
 
     \sa ComplexControl
 */

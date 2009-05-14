@@ -192,7 +192,7 @@ Item {
         transitions: [
             Transition {
                 fromState: "*"; toState: "*"
-                NumericAnimation { properties: "y"; duration: 650; easing: "easeOutBounce(amplitude:0.1)" }
+                NumericAnimation { properties: "y"; duration: 1000; easing: "easeOutBounce(amplitude:0.5)" }
             }
         ]
     }
@@ -201,6 +201,6 @@ Item {
         id: CategoryText;  anchors.horizontalCenter: parent.horizontalCenter; y: 15;
         text: "Flickr - " +
             (FeedModel.tags=="" ? "Uploads from everyone" : "Recent Uploads tagged " + FeedModel.tags)
-        font.size: 16; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
+        font.size: 20; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
     }
 }

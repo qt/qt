@@ -13,12 +13,8 @@
 
 /*!
     \class QMetaObjectBuilder
-    \brief The QMetaObjectBuilder class supports the building of QMetaObject objects at runtime.
+    \brief The QMetaObjectBuilder class supports building QMetaObject objects at runtime.
 
-    See the QDynamicMetaObject class documentation for an example
-    of using this class.
-
-    \sa QDynamicMetaObject, QDynamicObject
 */
 
 /*!

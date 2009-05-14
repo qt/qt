@@ -60,7 +60,7 @@ We add a text element as a child of our root element to display the text 'Hello 
 
 The \c y property is used to position the text vertically at 30 pixels from the top of its parent.
 
-The \c font.size and \c font.bold properties are related to fonts and use the 'dot' notation (see \l {declarative}{Declarative UI} ).
+The \c font.size and \c font.bold properties are related to fonts and use the \e 'dot' notation.
 
 The \c anchors.horizontalCenter property refers to the horizontal center of an element. In this case, we specify that our text element should be horizontally centered in the \e Page element.
 

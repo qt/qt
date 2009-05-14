@@ -127,7 +127,7 @@ Rect {
     // The actual list
     ListView {
         id: List
-        model: Recipies; delegate: recipeDelegate
+        model: Recipes; delegate: recipeDelegate
         anchors.fill: parent; clip: true
     }
 }

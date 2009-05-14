@@ -697,7 +697,7 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
         if (splitQmlArg(doc,arg,element,name)) {
             Node* n = tre->findNode(QStringList(element),Node::Fake);
             if (n && n->subType() == Node::QmlClass) {
-                qmlClass = static_cast<const QmlClassNode*>(n);
+                qmlClass = static_cast<QmlClassNode*>(n);
                 if (command == COMMAND_QMLSIGNAL)
                     return new QmlSignalNode(qmlClass,name);
                 else

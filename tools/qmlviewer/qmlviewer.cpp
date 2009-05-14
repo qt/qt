@@ -68,8 +68,9 @@ QSize QmlViewer::sizeHint() const
     if (skin)
         return QMainWindow::sizeHint();
     else {
+        // Kludge to force QMainWindow to be EXACTLY the right size for the canvas.
         QSize sh = canvas->sizeHint();
-        sh.setHeight(sh.height()+menuBar()->sizeHint().height());
+        sh.setHeight(sh.height()+menuBar()->sizeHint().height()+1);
         return sh;
     }
 }
@@ -208,6 +209,9 @@ void QmlViewer::openQml(const QString& fileName)
     t.start();
     canvas->execute();
     qWarning() << "Wall startup time:" << t.elapsed();
+
+    resize(sizeHint());
+
 #ifdef QTOPIA
     show();
 #endif
@@ -313,6 +317,11 @@ void QmlViewer::setAutoRecord(int from, int to)
     }
 }
 
+void QmlViewer::setRecordArgs(const QStringList& a)
+{
+    record_args = a;
+}
+
 void QmlViewer::setRecordFile(const QString& f)
 {
     record_file = f;
@@ -383,8 +392,10 @@ void QmlViewer::setRecording(bool on)
             // Stream video to ffmpeg
 
             QProcess *proc = new QProcess(this);
+            connect(proc, SIGNAL(finished(int)), this, SLOT(ffmpegFinished(int)));
             frame_stream = proc;
 
+qDebug() << canvas->width() << canvas->height();
             QStringList args;
             args << "-sameq"; // ie. high
             args << "-y";
@@ -393,8 +404,10 @@ void QmlViewer::setRecording(bool on)
             args << "-pix_fmt" << "rgb32";
             args << "-s" << QString("%1x%2").arg(canvas->width()).arg(canvas->height());
             args << "-i" << "-";
+            args += record_args;
             args << record_file;
-            proc->start("ffmpeg",args,QIODevice::WriteOnly);
+            proc->start("ffmpeg",args);
+
         } else {
             // Store frames, save to GIF/PNG
             frame_stream = 0;
@@ -479,6 +492,11 @@ void QmlViewer::setRecording(bool on)
         }
     }
     qDebug() << "Recording: " << (recordTimer.isActive()?"ON":"OFF");
+}
+
+void QmlViewer::ffmpegFinished(int code)
+{
+    qDebug() << "ffmpeg returned" << code << frame_stream->readAllStandardError();
 }
 
 void QmlViewer::timerEvent(QTimerEvent *event)
