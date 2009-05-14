@@ -1329,7 +1329,8 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
         // check if the item we are sending to are disabled (before we send the event)
         bool disabled = !item->isEnabled();
         bool isWindow = item->isWindow();
-        if (mouseEvent->type() == QEvent::GraphicsSceneMouseDoubleClick && item != lastMouseGrabberItem) {
+        if (mouseEvent->type() == QEvent::GraphicsSceneMouseDoubleClick
+            && item != lastMouseGrabberItem && lastMouseGrabberItem) {
             // If this item is different from the item that received the last
             // mouse event, and mouseEvent is a doubleclick event, then the
             // event is converted to a press. Known limitation:
