@@ -11,8 +11,9 @@ class MyQmlObject : public QObject
     Q_PROPERTY(bool trueProperty READ trueProperty)
     Q_PROPERTY(bool falseProperty READ falseProperty)
     Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty NOTIFY stringChanged)
+    Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty NOTIFY objectChanged);
 public:
-    MyQmlObject(): m_methodCalled(false), m_methodIntCalled(false) {}
+    MyQmlObject(): m_methodCalled(false), m_methodIntCalled(false), m_object(0) {}
 
     bool trueProperty() const { return true; }
     bool falseProperty() const { return false; }
@@ -26,6 +27,14 @@ public:
         emit stringChanged();
     }
 
+    QObject *objectProperty() const { return m_object; }
+    void setObjectProperty(QObject *obj) { 
+        if (obj == m_object)
+            return;
+        m_object = obj;
+        emit objectChanged();
+    }
+
     bool methodCalled() const { return m_methodCalled; }
     bool methodIntCalled() const { return m_methodIntCalled; }
 
@@ -34,6 +43,7 @@ signals:
     void basicSignal();
     void argumentSignal(int a, QString b, qreal c);
     void stringChanged();
+    void objectChanged();
 
 public slots:
     void method() { m_methodCalled = true; }
@@ -45,6 +55,7 @@ private:
     bool m_methodCalled;
     bool m_methodIntCalled;
 
+    QObject *m_object;
     QString m_string;
 };
 

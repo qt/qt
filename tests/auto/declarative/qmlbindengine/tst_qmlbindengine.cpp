@@ -23,6 +23,7 @@ private slots:
     void basicExpressions_data();
     void arrayExpressions();
     void contextPropertiesTriggerReeval();
+    void objectPropertiesTriggerReeval();
 
 private:
     QmlEngine engine;
@@ -247,6 +248,60 @@ void tst_qmlbindengine::contextPropertiesTriggerReeval()
         QCOMPARE(expr.value(), QVariant());
     }
 
+}
+
+void tst_qmlbindengine::objectPropertiesTriggerReeval()
+{
+    QmlContext context(engine.rootContext());
+    MyQmlObject object1;
+    MyQmlObject object2;
+    MyQmlObject object3;
+    context.setContextProperty("testObj", &object1);
+
+    object1.setStringProperty(QLatin1String("Hello"));
+    object2.setStringProperty(QLatin1String("Dog"));
+    object3.setStringProperty(QLatin1String("Cat"));
+
+    { 
+        MyExpression expr(&context, "testObj.stringProperty");
+        QCOMPARE(expr.changed, false);
+        QCOMPARE(expr.value(), QVariant("Hello"));
+
+        object1.setStringProperty(QLatin1String("World"));
+        QCOMPARE(expr.changed, true);
+        QCOMPARE(expr.value(), QVariant("World"));
+    }
+
+    { 
+        MyExpression expr(&context, "testObj.objectProperty.stringProperty");
+        QCOMPARE(expr.changed, false);
+        QCOMPARE(expr.value(), QVariant());
+
+        object1.setObjectProperty(&object2);
+        QCOMPARE(expr.changed, true);
+        expr.changed = false;
+        QCOMPARE(expr.value(), QVariant("Dog"));
+
+        object1.setObjectProperty(&object3);
+        QCOMPARE(expr.changed, true);
+        expr.changed = false;
+        QCOMPARE(expr.value(), QVariant("Cat"));
+
+        object1.setObjectProperty(0);
+        QCOMPARE(expr.changed, true);
+        expr.changed = false;
+        QCOMPARE(expr.value(), QVariant());
+
+        object1.setObjectProperty(&object3);
+        QCOMPARE(expr.changed, true);
+        expr.changed = false;
+        QCOMPARE(expr.value(), QVariant("Cat"));
+
+        object3.setStringProperty("Donkey");
+        QCOMPARE(expr.changed, true);
+        expr.changed = false;
+        QCOMPARE(expr.value(), QVariant("Donkey"));
+    }
 }
 
 QTEST_MAIN(tst_qmlbindengine)
