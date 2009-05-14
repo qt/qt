@@ -472,7 +472,7 @@ void QFxGridViewPrivate::refill(qreal from, qreal to)
 void QFxGridViewPrivate::updateGrid()
 {
     Q_Q(QFxGridView);
-    columns = (int)qMax((flow == QFxGridView::LeftToRight ? q->width() : q->height()) / colSize(), 1.);
+    columns = (int)qMax((flow == QFxGridView::LeftToRight ? q->width() : q->height()) / colSize(), qreal(1.));
     if (isValid()) {
         if (flow == QFxGridView::LeftToRight)
             q->setViewportHeight(endPosition() - startPosition());
