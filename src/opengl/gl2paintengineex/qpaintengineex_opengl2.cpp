@@ -1331,10 +1331,10 @@ void QGL2PaintEngineExPrivate::updateDepthClip()
         return;
     }
 
-    glClearDepthf(0x0);
+    glClearDepth(0x0);
     glDepthMask(true);
     glClear(GL_DEPTH_BUFFER_BIT);
-    glClearDepthf(0x1);
+    glClearDepth(0x1);
 
     glEnable(GL_SCISSOR_TEST);
     for (int i = 0; i < rects.size(); ++i) {

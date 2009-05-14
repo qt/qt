@@ -60,7 +60,10 @@
 #include "QtCore/qthreadstorage.h"
 #include "QtCore/qhash.h"
 #include "private/qwidget_p.h"
+
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
 #include "private/qpixmapdata_gl_p.h"
+#endif
 
 #ifndef QT_OPENGL_ES_1_CL
 #define q_vertexType float
@@ -293,7 +296,12 @@ class QGLWindowSurface;
 class QGLDrawable {
 public:
     QGLDrawable() : widget(0), buffer(0), fbo(0)
-                  , wsurf(0), pixmapData(0)
+#if defined(Q_WS_QWS) || (!defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL))
+                  , wsurf(0)
+#endif
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+                  , pixmapData(0)
+#endif
         {}
     void setDevice(QPaintDevice *pdev);
     void swapBuffers();
@@ -307,7 +315,9 @@ public:
     QGLContext *context() const;
     bool autoFillBackground() const;
 
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
     QGLPixmapData *copyOnBegin() const;
+#endif
 
 private:
     bool wasBound;
@@ -316,10 +326,13 @@ private:
     QGLFramebufferObject *fbo;
 #ifdef Q_WS_QWS
     QWSGLWindowSurface *wsurf;
-#else
+#elif !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
     QGLWindowSurface *wsurf;
 #endif
+
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
     QGLPixmapData *pixmapData;
+#endif
 };
 
 // GL extension definitions

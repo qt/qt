@@ -897,7 +897,9 @@ QImage QGLFramebufferObject::toImage() const
     return image;
 }
 
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
 Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_buffer_2_engine)
+#endif
 
 #ifndef QT_OPENGL_ES_2
 Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_buffer_engine)
@@ -906,14 +908,16 @@ Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_buffer_engine)
 /*! \reimp */
 QPaintEngine *QGLFramebufferObject::paintEngine() const
 {
+#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
+    return qt_buffer_engine();
+#elif defined(QT_OPENGL_ES_2)
+    return qt_buffer_2_engine();
+#else
     Q_D(const QGLFramebufferObject);
-#if !defined(QT_OPENGL_ES_2)
     if (d->ctx->d_func()->internal_context || qt_gl_preferGL2Engine())
         return qt_buffer_2_engine();
     else
         return qt_buffer_engine();
-#else
-    return 0;
 #endif
 }
 

@@ -705,7 +705,10 @@ struct QGLExtensionFuncs
 
 #if !defined(QT_OPENGL_ES_2)
 #define glStencilOpSeparate QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glStencilOpSeparate
-#define glClearDepthf(x) glClearDepth(GLdouble(x))
+#endif
+
+#if defined(QT_OPENGL_ES_2)
+#define glClearDepth glClearDepthf
 #endif
 
 extern bool qt_resolve_framebufferobject_extensions(QGLContext *ctx);

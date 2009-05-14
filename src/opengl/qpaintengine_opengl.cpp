@@ -2255,11 +2255,12 @@ void QOpenGLPaintEnginePrivate::updateDepthClip()
         return;
     }
 
-#ifndef QT_OPENGL_ES
-    glClearDepth(0.0f);
-#else
+#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_ES_1_CL)
     glClearDepthf(0.0f);
+#else
+    glClearDepth(0.0f);
 #endif
+
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
     glClear(GL_DEPTH_BUFFER_BIT);
@@ -5580,9 +5581,11 @@ void QOpenGLPaintEnginePrivate::ensureDrawableTexture()
 
 QPixmapFilter *QOpenGLPaintEngine::createPixmapFilter(int type) const
 {
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
     if (QGLContext::currentContext())
         return QGLContext::currentContext()->d_func()->createPixmapFilter(type);
     else
+#endif
         return 0;
 }
 
