@@ -47,6 +47,13 @@ if (@ARGV)
         $epocroot = "\\";
     }
 
+    if ($epocroot =~ m/.*[^\\]$/)
+    {
+        $epocroot = "${epocroot}\\";
+    }
+
+    $epocroot =~ s/.://;
+
     my $releaseDirQt = "${releaseDir}\\qt";
     my $releaseDirEpocroot = "${releaseDir}\\epocroot";
     my $releaseDirSis = "${releaseDir}\\sis";
@@ -128,6 +135,10 @@ if (@ARGV)
             else
             {
                 $destinationPath =~ s/.://;
+                if ($epocroot !~ m/\\/)
+                {
+                    $destinationPath =~ s/($epocroot)//i;
+                }
                 $destinationPath = $releaseDirEpocroot.$destinationPath;
             }
 
