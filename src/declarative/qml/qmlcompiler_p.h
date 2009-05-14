@@ -139,6 +139,7 @@ private:
     bool compileFetchedObject(QmlParser::Object *obj, int);
     bool compileSignal(QmlParser::Property *prop, QmlParser::Object *obj);
     bool testProperty(QmlParser::Property *prop, QmlParser::Object *obj);
+    int signalByName(const QMetaObject *, const QByteArray &name);
     bool compileProperty(QmlParser::Property *prop, QmlParser::Object *obj, int);
     bool compileIdProperty(QmlParser::Property *prop, 
                            QmlParser::Object *obj);

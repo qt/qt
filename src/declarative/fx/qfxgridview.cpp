@@ -409,7 +409,8 @@ void QFxGridViewPrivate::refill(qreal from, qreal to)
     FxGridItem *item = 0;
     while (modelIndex < model->count() && rowPos <= to) {
         //qDebug() << "refill: append item" << modelIndex;
-        item = getItem(modelIndex);
+        if (!(item = getItem(modelIndex)))
+            break;
         item->setPosition(colPos, rowPos);
         visibleItems.append(item);
         colPos += colSize();
@@ -431,7 +432,8 @@ void QFxGridViewPrivate::refill(qreal from, qreal to)
     }
     while (visibleIndex > 0 && rowPos + rowSize() - 1 >= from){
         //qDebug() << "refill: prepend item" << visibleIndex-1 << "top pos" << rowPos << colPos;
-        item = getItem(visibleIndex-1);
+        if (!(item = getItem(visibleIndex-1)))
+            break;
         --visibleIndex;
         item->setPosition(colPos, rowPos);
         visibleItems.prepend(item);
@@ -629,14 +631,17 @@ void QFxGridViewPrivate::updateCurrent(int modelIndex)
     currentItem = visibleItem(modelIndex);
     if (!currentItem) {
         currentItem = getItem(modelIndex);
-        currentItem->setPosition(colPosAt(modelIndex), rowPosAt(modelIndex));
+        if (currentItem)
+            currentItem->setPosition(colPosAt(modelIndex), rowPosAt(modelIndex));
     }
     currentIndex = modelIndex;
     fixCurrentVisibility = true;
-    if (oldCurrentItem && oldCurrentItem->item != currentItem->item)
+    if (oldCurrentItem && (!currentItem || oldCurrentItem->item != currentItem->item))
         oldCurrentItem->attached->setIsCurrentItem(false);
-    currentItem->item->setFocus(true);
-    currentItem->attached->setIsCurrentItem(true);
+    if (currentItem) {
+        currentItem->item->setFocus(true);
+        currentItem->attached->setIsCurrentItem(true);
+    }
     updateHighlight();
     emit q->currentIndexChanged();
     // Release the old current item

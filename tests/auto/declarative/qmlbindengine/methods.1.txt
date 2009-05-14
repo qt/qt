@@ -1,0 +1,4 @@
+MyQmlObject { 
+    id: MyObject
+    onBasicSignal: MyObject.method() 
+}

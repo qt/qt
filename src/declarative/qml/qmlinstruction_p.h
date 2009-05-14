@@ -112,10 +112,7 @@ public:
         //
         //    AssignConstant - Store a value in a property.  Will resolve into
         //                     a Store* instruction.
-        //    AssignSignal - Set a signal handler on the property.  Will resolve
-        //                   into a Store*Signal instruction.
         AssignConstant,           /* assignConstant */
-        AssignSignal,             /* assignSignal */
         AssignSignalObject,       /* assignSignalObject */
         AssignCustomType,          /* assignCustomType */
 
@@ -271,10 +268,6 @@ public:
             int signalIndex;
             int value;
         } storeSignal;
-        struct {
-            int signal;
-            int value;
-        } assignSignal;
         struct {
             int signal;
         } assignSignalObject;

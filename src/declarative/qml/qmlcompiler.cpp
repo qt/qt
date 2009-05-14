@@ -725,51 +725,82 @@ bool QmlCompiler::compileFetchedObject(Object *obj, int ctxt)
     return true;
 }
 
+int QmlCompiler::signalByName(const QMetaObject *mo, const QByteArray &name)
+{
+    int methods = mo->methodCount();
+    for (int ii = methods - 1; ii >= 0; --ii) {
+        QMetaMethod method = mo->method(ii);
+        QByteArray methodName = method.signature();
+        int idx = methodName.indexOf('(');
+        methodName = methodName.left(idx);
+
+        if (methodName == name) 
+            return ii;
+    }
+    return -1;
+}
+
 bool QmlCompiler::compileSignal(Property *prop, Object *obj)
 {
+    Q_ASSERT(obj->metaObject());
+
     if (prop->values.isEmpty() && !prop->value)
         return true;
 
     if (prop->value || prop->values.count() > 1)
         COMPILE_EXCEPTION("Incorrectly specified signal");
 
-    if (prop->values.at(0)->object) {
-        int pr = output->indexForByteArray(prop->name);
+    QByteArray name = prop->name;
+    Q_ASSERT(name.startsWith("on"));
+    name = name.mid(2);
+    if(name[0] >= 'A' && name[0] <= 'Z')
+        name[0] = name[0] - 'A' + 'a';
 
-        bool rv = compileObject(prop->values.at(0)->object, 0);
+    int sigIdx = signalByName(obj->metaObject(), name);
 
-        if (rv) {
-            QmlInstruction assign;
-            assign.type = QmlInstruction::AssignSignalObject;
-            assign.line = prop->values.at(0)->location.start.line;
-            assign.assignSignalObject.signal = pr;
+    if (sigIdx == -1) {
 
-            output->bytecode << assign;
+        COMPILE_CHECK(compileProperty(prop, obj, 0));
 
-            prop->values.at(0)->type = Value::SignalObject;
+    }  else {
+
+        if (prop->values.at(0)->object) {
+            int pr = output->indexForByteArray(prop->name);
+
+            bool rv = compileObject(prop->values.at(0)->object, 0);
+
+            if (rv) {
+                QmlInstruction assign;
+                assign.type = QmlInstruction::AssignSignalObject;
+                assign.line = prop->values.at(0)->location.start.line;
+                assign.assignSignalObject.signal = pr;
+
+                output->bytecode << assign;
+
+                prop->values.at(0)->type = Value::SignalObject;
+            }
+
+            return rv;
+
+        } else {
+            QString script = prop->values.at(0)->value.asScript().trimmed();
+            if (script.isEmpty())
+                return true;
+
+            int idx = output->indexForString(script); 
+
+            QmlInstruction store;
+            store.line = prop->values.at(0)->location.start.line;
+            store.type = QmlInstruction::StoreSignal;
+            store.storeSignal.signalIndex = sigIdx;
+            store.storeSignal.value = idx;
+
+            output->bytecode << store;
+
+            prop->values.at(0)->type = Value::SignalExpression;
         }
-
-        return rv;
-
-    } else {
-        QString script = prop->values.at(0)->value.asScript().trimmed();
-        if (script.isEmpty())
-            return true;
-
-        int idx = output->indexForString(script); 
-        int pr = output->indexForByteArray(prop->name);
-
-        QmlInstruction assign;
-        assign.type = QmlInstruction::AssignSignal;
-        assign.line = prop->values.at(0)->location.start.line;
-        assign.assignSignal.signal = pr;
-        assign.assignSignal.value = idx;
-
-        output->bytecode << assign;
-
-        prop->values.at(0)->type = Value::SignalExpression;
     }
-
+    
     return true;
 }
 
