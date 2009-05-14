@@ -2572,6 +2572,10 @@ QTransform QGraphicsItem::sceneTransform() const
 */
 QTransform QGraphicsItem::deviceTransform(const QTransform &viewportTransform) const
 {
+    // Ensure we return the standard transform if we're not untransformable.
+    if (!d_ptr->itemIsUntransformable())
+        return sceneTransform() * viewportTransform;
+
     // Find the topmost item that ignores view transformations.
     const QGraphicsItem *untransformedAncestor = this;
     QList<const QGraphicsItem *> parents;
