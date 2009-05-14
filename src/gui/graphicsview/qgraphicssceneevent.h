@@ -325,6 +325,7 @@ public:
     const QGesture* gesture(const QString &type) const;
     QList<QGesture*> gestures() const;
     void setGestures(const QList<QGesture*> &gestures);
+    void setGestures(const QSet<QGesture*> &gestures);
 
     QSet<QString> cancelledGestures() const;
     void setCancelledGestures(const QSet<QString> &cancelledGestures);

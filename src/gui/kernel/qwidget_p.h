@@ -521,6 +521,7 @@ public:
     QSet<int> gestures;
     int grabGesture(int gestureId);
     bool releaseGesture(int gestureId);
+    bool hasGesture(const QString &type) const;
 
     // Bit fields.
     uint high_attributes[3]; // the low ones are in QWidget::widget_attributes

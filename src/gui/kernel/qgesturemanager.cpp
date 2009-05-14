@@ -53,7 +53,7 @@
 
 #include "qdebug.h"
 
-// #define GESTURE_DEBUG
+#define GESTURE_DEBUG
 #ifndef GESTURE_DEBUG
 # define DEBUG if (0) qDebug
 #else
@@ -170,6 +170,7 @@ bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
             foreach(QGestureRecognizer *r, finishedGestures) {
                 if (QGesture *gesture = r->getGesture()) {
                     gestures << gesture;
+                    qDebug() << "SINGLESHOT" << gesture;
                     gesture->d_func()->singleshot = true;
                 }
             }
@@ -277,7 +278,9 @@ bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
             foreach(QGestureRecognizer *r, finishedGestures) {
                 if (QGesture *gesture = r->getGesture()) {
                     gestures << gesture;
-                    gesture->d_func()->singleshot = activeGestures.contains(r);
+                    gesture->d_func()->singleshot = !activeGestures.contains(r);
+                    if (gesture->d_func()->singleshot)
+                        qDebug() << "SINGLESHOT:" << gesture;
                 }
             }
             activeGestures -= finishedGestures;
@@ -492,18 +495,6 @@ void QGestureManager::recognizerStateChanged(QGestureRecognizer::Result result)
     }
 }
 
-bool QGestureManager::widgetHasGesture(QWidget *widget, QGesture *gesture) const
-{
-    const QString gestureName = gesture->type();
-    QSet<int>::iterator it = widget->d_func()->gestures.begin(),
-                         e = widget->d_func()->gestures.end();
-    for (; it != e; ++it) {
-        if (gestureNameFromId(*it) == gestureName)
-            return true;
-    }
-    return false;
-}
-
 bool QGestureManager::sendGestureEvent(QWidget *receiver, const QSet<QGesture*> &gestures,
                                        const QSet<QString> &cancelled)
 {
@@ -519,13 +510,16 @@ bool QGestureManager::sendGestureEvent(QWidget *receiver, const QSet<QGesture*> 
         it != e; ++it) {
         QGesture *g = *it;
         QGesturePrivate *gd = g->d_func();
-        if (!gd->widget && (g->state() == Qt::GestureStarted || gd->singleshot)) {
+        qDebug() << "sendGestureEvent:" << g << g->state() << "singleshot = " << gd->singleshot;
+        if (receiver && (g->state() == Qt::GestureStarted || gd->singleshot)) {
             startedGestures.insert(g);
             // find the target widget
             QWidget *w = receiver;
             QPoint offset;
+            const QString gestureType = g->type();
             while (w) {
-                if (widgetHasGesture(w, g))
+                qDebug() << w << w->d_func()->gestures;
+                if (w->d_func()->hasGesture(gestureType))
                     break;
                 if (w->isWindow()) {
                     w = 0;
@@ -536,6 +530,7 @@ bool QGestureManager::sendGestureEvent(QWidget *receiver, const QSet<QGesture*> 
             }
             if (!w) // no widget in the tree that accepts this gesture.
                 continue;
+            qDebug() << "QGestureManager::sendGestureEvent:" << g << "setting widget to " << w;
             gd->widget = w;
             g->translate(offset);
         }
@@ -556,10 +551,14 @@ bool QGestureManager::sendGestureEvent(QWidget *receiver, const QSet<QGesture*> 
         Q_ASSERT(receiver != 0 /*should be taken care above*/);
         // TODO: send cancelled gesture event to the widget that received the original gesture!
         QGestureEvent event(it.value(), cancelled);
+        qDebug() << "QGestureManager::sendGestureEvent: sending now: " << receiver << it.value();
         bool processed = qt_sendSpontaneousEvent(receiver, &event);
         QSet<QGesture*> started = startedGestures.intersect(it.value());
+        if (event.isAccepted())
+            foreach(QGesture *g, started)
+                g->accept();
         if (!started.isEmpty() && !(processed && event.isAccepted())) {
-            // there are started gestures event that weren't
+            // there are started gestures events that weren't
             // accepted, so propagating each gesture independently.
             QSet<QGesture*>::const_iterator it = started.begin(),
                                              e = started.end();
@@ -579,9 +578,10 @@ bool QGestureManager::sendGestureEvent(QWidget *receiver, const QSet<QGesture*> 
                     g->translate(w->pos());
                     w = w->parentWidget();
                     QPoint offset;
+                    const QString gestureType = g->type();
                     while (w) {
-                        if (widgetHasGesture(w, g)) {
-                            DEBUG() << "QGestureManager: sendGestureEvent:" << w << "didn't accept gesture" << g;
+                        if (w->d_func()->hasGesture(gestureType)) {
+                            DEBUG() << "QGestureManager::sendGestureEvent:" << w << "didn't accept gesture" << g;
                             ignoredGestures.insert(g);
                             break;
                         }

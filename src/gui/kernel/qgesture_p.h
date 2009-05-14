@@ -60,13 +60,14 @@
 
 QT_BEGIN_NAMESPACE
 
+class QGraphicsItem;
 class QGesturePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGesture)
 
 public:
     QGesturePrivate()
-    : state(Qt::NoGesture), singleshot(0), duration(0) { }
+        : state(Qt::NoGesture), graphicsItem(0), singleshot(0), duration(0) { }
 
     void init(const QPoint &startPos, const QPoint &lastPos,
               const QPoint &pos, const QRect &rect,
@@ -86,6 +87,7 @@ public:
     Qt::GestureState state;
 
     QPointer<QWidget> widget;
+    QGraphicsItem *graphicsItem;
     uint singleshot:1;
 
     QRect rect;

@@ -86,6 +86,9 @@ public:
     // declared in qapplication.cpp
     static QGestureManager* instance();
 
+    bool sendGestureEvent(QWidget *receiver, const QSet<QGesture*> &gestures,
+                          const QSet<QString> &cancelled = QSet<QString>());
+
 protected:
     void timerEvent(QTimerEvent *event);
 
@@ -93,10 +96,6 @@ private slots:
     void recognizerStateChanged(QGestureRecognizer::Result);
 
 private:
-    bool widgetHasGesture(QWidget *widget, QGesture *gesture) const;
-    bool sendGestureEvent(QWidget *receiver, const QSet<QGesture*> &gestures,
-                          const QSet<QString> &cancelled = QSet<QString>());
-
     QSet<QGestureRecognizer*> activeGestures;
     QMap<QGestureRecognizer*, int> maybeGestures;
     QSet<QGestureRecognizer*> recognizers;

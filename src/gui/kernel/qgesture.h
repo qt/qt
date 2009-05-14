@@ -110,6 +110,8 @@ private:
 
     friend class QGestureManager;
     friend class QApplication;
+    friend class QGraphicsScene;
+    friend class QGraphicsScenePrivate;
     friend class QGestureRecognizerPan;
     friend class QDoubleTapGestureRecognizer;
     friend class QTapAndHoldGestureRecognizer;

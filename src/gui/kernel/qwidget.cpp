@@ -10970,7 +10970,10 @@ QWindowSurface *QWidget::windowSurface() const
 int QWidget::grabGesture(const QString &gesture)
 {
     Q_D(QWidget);
-    return d->grabGesture(QGestureManager::instance()->makeGestureId(gesture));
+    int id = d->grabGesture(QGestureManager::instance()->makeGestureId(gesture));
+    if (d->extra && d->extra->proxyWidget)
+        d->extra->proxyWidget->QGraphicsItem::d_ptr->grabGesture(id);
+    return id;
 }
 
 int QWidgetPrivate::grabGesture(int gestureId)
@@ -10989,6 +10992,18 @@ bool QWidgetPrivate::releaseGesture(int gestureId)
         --qAppPriv->grabbedGestures[name];
         gestures.remove(gestureId);
         return true;
+    }
+    return false;
+}
+
+bool QWidgetPrivate::hasGesture(const QString &name) const
+{
+    QGestureManager *gm = QGestureManager::instance();
+    QSet<int>::const_iterator it = gestures.begin(),
+                               e = gestures.end();
+    for (; it != e; ++it) {
+        if (gm->gestureNameFromId(*it) == name)
+            return true;
     }
     return false;
 }
@@ -11018,8 +11033,11 @@ int QWidget::grabGesture(Qt::GestureType gesture)
 void QWidget::releaseGesture(int gestureId)
 {
     Q_D(QWidget);
-    if (d->releaseGesture(gestureId))
+    if (d->releaseGesture(gestureId)) {
+        if (d->extra && d->extra->proxyWidget)
+            d->extra->proxyWidget->QGraphicsItem::d_ptr->releaseGesture(gestureId);
         QGestureManager::instance()->releaseGestureId(gestureId);
+    }
 }
 
 /*!
