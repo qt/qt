@@ -186,12 +186,20 @@ void QVariantAnimationPrivate::convertValues(int t)
 
 void QVariantAnimationPrivate::updateCurrentValue()
 {
+    // can't interpolate if we have only 1 key value
+    if (keyValues.count() <= 1)
+        return;
+
     Q_Q(QVariantAnimation);
+
     const qreal progress = easing.valueForProgress(((duration == 0) ? qreal(1) : qreal(currentTime) / qreal(duration)));
 
     if (progress < currentInterval.start.first || progress > currentInterval.end.first) {
         //let's update currentInterval
-        QVariantAnimation::KeyValues::const_iterator itStart = qLowerBound(keyValues.constBegin(), keyValues.constEnd(), qMakePair(progress, QVariant()), animationValueLessThan);
+        QVariantAnimation::KeyValues::const_iterator itStart = qLowerBound(keyValues.constBegin(),
+                                                                           keyValues.constEnd(),
+                                                                           qMakePair(progress, QVariant()),
+                                                                           animationValueLessThan);
         QVariantAnimation::KeyValues::const_iterator itEnd = itStart;
 
         // If we are at the end we should continue to use the last keyValues in case of extrapolation (progress > 1.0).
@@ -199,10 +207,8 @@ void QVariantAnimationPrivate::updateCurrentValue()
         if (itStart != keyValues.constEnd()) {
 
             //this can't happen because we always prepend the default start value there
-            if (itStart == keyValues.begin()) {
+            if (itStart == keyValues.constBegin()) {
                 ++itEnd;
-                if (itEnd == keyValues.constEnd())
-                    return; //there is no upper bound
             } else {
                 --itStart;
             }

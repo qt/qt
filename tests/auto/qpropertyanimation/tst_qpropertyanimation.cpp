@@ -95,6 +95,7 @@ private slots:
     void zeroDurationStart();
     void operationsInStates_data();
     void operationsInStates();
+    void oneKeyValue();
 };
 
 tst_QPropertyAnimation::tst_QPropertyAnimation()
@@ -849,6 +850,36 @@ void tst_QPropertyAnimation::operationsInStates()
 #undef Start
 #undef Resume
 #undef Stop
+
+void tst_QPropertyAnimation::oneKeyValue()
+{
+    QObject o;
+    o.setProperty("ole", 42);
+    QCOMPARE(o.property("ole").toInt(), 42);
+
+    QPropertyAnimation animation(&o, "ole");
+    animation.setStartValue(43);
+    animation.setEndValue(44);
+    animation.setDuration(100);
+
+    animation.setCurrentTime(0);
+
+    QVERIFY(animation.currentValue().isValid());
+    QCOMPARE(animation.currentValue().toInt(), 43);
+    QCOMPARE(o.property("ole").toInt(), 42);
+
+    // remove the last key value
+    animation.setKeyValueAt(1.0, QVariant());
+
+    // we will neither interpolate, nor update the current value
+    // since there is only one 1 key value defined
+    animation.setCurrentTime(100);
+
+    // the animation should not have been modified
+    QVERIFY(animation.currentValue().isValid());
+    QCOMPARE(animation.currentValue().toInt(), 43);
+    QCOMPARE(o.property("ole").toInt(), 42);
+}
 
 QTEST_MAIN(tst_QPropertyAnimation)
 #include "tst_qpropertyanimation.moc"
