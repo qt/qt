@@ -18,7 +18,7 @@ public:
 public slots:
     void spin() 
     {
-        m_tank->setProperty("direction", 90.0);
+        m_tank->setProperty("direction", m_tank->property("direction").toDouble() + 90.0);
     }
 
 protected:
@@ -26,6 +26,11 @@ protected:
     {
         connect(m_tank, SIGNAL(actionCompleted()), this, SLOT(spin()));
         spin();        
+    }
+
+    void onExit(QEvent *)
+    {
+        disconnect(m_tank, SIGNAL(actionCompleted()), this, SLOT(spin()));
     }
 
 private:
