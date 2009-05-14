@@ -397,12 +397,12 @@ void QFxRotation3D::update()
 }
 
 /*!
-    \internal
-    \qmlclass Translation3D
-    \brief A Translation3D object provides a way to move an Item along an axis.
+  \internal
+  \qmlclass Translation3D
+  \brief A Translation3D object provides a way to move an Item along an axis.
 
-    The following example translates the image to 10, 3.
-    \qml
+  The following example translates the image to 10, 3.
+  \qml
 Image {
     source: "logo.png"
     transform: [
@@ -415,7 +415,7 @@ Image {
         }
     ]
 }
-    \endqml
+  \endqml
 */
 
 QML_DEFINE_TYPE(QFxTranslation3D,Translation3D);
@@ -431,18 +431,18 @@ QFxTranslation3D::~QFxTranslation3D()
 }
 
 /*!
-    \qmlproperty real Translation3D::axis.startX
-    \qmlproperty real Translation3D::axis.startY
-    \qmlproperty real Translation3D::axis.endX
-    \qmlproperty real Translation3D::axis.endY
-    \qmlproperty real Translation3D::axis.endZ
+  \qmlproperty real Translation3D::axis.startX
+  \qmlproperty real Translation3D::axis.startY
+  \qmlproperty real Translation3D::axis.endX
+  \qmlproperty real Translation3D::axis.endY
+  \qmlproperty real Translation3D::axis.endZ
 
-    A translation axis is specified by 2 points in 3D space: a start point and
-    an end point. The z-position of the start point is assumed to be 0, and cannot
-    be changed. Changing the z-position of the end point is only valid when running
-    under OpenGL.
+  A translation axis is specified by 2 points in 3D space: a start
+  point and an end point. The z-position of the start point is assumed
+  to be 0, and cannot be changed. Changing the z-position of the end
+  point is only valid when running under OpenGL.
 
-    \sa Axis
+  \sa Axis
 */
 QFxAxis *QFxTranslation3D::axis()
 {
@@ -450,15 +450,15 @@ QFxAxis *QFxTranslation3D::axis()
 }
 
 /*!
-    \qmlproperty real Translation3D::distance
+  \qmlproperty real Translation3D::distance
 
-    The distance to translate along the specified axis. distance is a multiplier;
-    in the example below, a distance of 1 would translate to 100, 50, while a distance
-    of 0.5 would translate to 50, 25.
+  The distance to translate along the specified axis. distance is a
+  multiplier; in the example below, a distance of 1 would translate to
+  100, 50, while a distance of 0.5 would translate to 50, 25.
 
-    \qml
-    Translation3D { axis.startX: 0; axis.startY: 0; axis.endX: 100; axis.endY: 50 }
-    \endqml
+  \qml
+  Translation3D { axis.startX: 0; axis.startY: 0; axis.endX: 100; axis.endY: 50 }
+  \endqml
 */
 qreal QFxTranslation3D::distance() const
 {
@@ -530,12 +530,12 @@ void QFxTranslation3D::update()
 }
 
 /*!
-    \internal
-    \qmlclass Perspective
-    \brief A Perspective object specifies a perspective transformation.
+  \internal
+  \qmlclass Perspective
+  \brief A Perspective object specifies a perspective transformation.
 
-    A Perspective transform only affects an item when running under OpenGL; when running under software
-    rasterization it has no effect.
+  A Perspective transform only affects an item when running under
+  OpenGL. When running under software rasterization it has no effect.
 */
 
 QML_DEFINE_TYPE(QFxPerspective,Perspective);

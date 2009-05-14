@@ -1,160 +1,46 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
-
-class MyInterface 
-{
-public:
-    MyInterface() : id(913) {}
-    int id;
-};
-
-Q_DECLARE_INTERFACE(MyInterface, "com.trolltech.Qt.Test.MyInterface");
-QML_DECLARE_INTERFACE(MyInterface);
-QML_DEFINE_INTERFACE(MyInterface);
-
-class MyQmlObject : public QObject, public MyInterface
-{
-    Q_OBJECT
-    Q_PROPERTY(int value READ value WRITE setValue)
-    Q_PROPERTY(QString readOnlyString READ readOnlyString)
-    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
-    Q_PROPERTY(QRect rect READ rect WRITE setRect)
-    Q_PROPERTY(QMatrix matrix READ matrix WRITE setMatrix)  //assumed to be unsupported by QML
-    Q_PROPERTY(MyInterface *interface READ interface WRITE setInterface)
-    Q_INTERFACES(MyInterface)
-public:
-    MyQmlObject() : m_value(-1), m_interface(0) {}
-
-    int value() const { return m_value; }
-    void setValue(int v) { m_value = v; }
-
-    QString readOnlyString() const { return QLatin1String(""); }
-
-    bool enabled() const { return false; }
-    void setEnabled(bool) {}
-
-    QRect rect() const { return QRect(); }
-    void setRect(const QRect&) {}
-
-    QMatrix matrix() const { return QMatrix(); }
-    void setMatrix(const QMatrix&) {}
-
-    MyInterface *interface() const { return m_interface; }
-    void setInterface(MyInterface *iface) { m_interface = iface; }
-
-    Q_CLASSINFO("defaultMethod", "basicSlot()");
-
-public slots:
-    void basicSlot() { qWarning("MyQmlObject::basicSlot"); }
-
-signals:
-    void basicSignal();
-
-private:
-    friend class tst_qmlparser;
-    int m_value;
-    MyInterface *m_interface;
-};
-
-QML_DECLARE_TYPE(MyQmlObject);
-QML_DEFINE_TYPE(MyQmlObject,MyQmlObject);
-
-class MyContainer : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(QList<QObject*>* children READ children)
-    Q_PROPERTY(QList<MyInterface*>* qlistInterfaces READ qlistInterfaces)
-    Q_PROPERTY(QmlList<MyInterface*>* qmllistInterfaces READ qmllistInterfaces)
-    Q_CLASSINFO("DefaultProperty", "children");
-public:
-    MyContainer() {}
-
-    QList<QObject*> *children() { return &m_children; }
-    QList<MyInterface *> *qlistInterfaces() { return &m_interfaces; }
-    QmlList<MyInterface *> *qmllistInterfaces() { return &m_qmlinterfaces; }
-    const QmlConcreteList<MyInterface *> &qmllistAccessor() const { return m_qmlinterfaces; }
-
-private:
-    QList<QObject*> m_children;
-    QList<MyInterface *> m_interfaces;
-    QmlConcreteList<MyInterface *> m_qmlinterfaces;
-};
-
-QML_DECLARE_TYPE(MyContainer);
-QML_DEFINE_TYPE(MyContainer,MyContainer);
-
-class MyDotPropertyObject : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(MyQmlObject *obj READ obj)
-    Q_PROPERTY(MyQmlObject *readWriteObj READ readWriteObj WRITE setReadWriteObj)
-public:
-    MyDotPropertyObject() : m_rwobj(0), m_ownRWObj(false) {}
-    ~MyDotPropertyObject()
-    {
-        if (m_ownRWObj)
-            delete m_rwobj;
-    }
-
-    MyQmlObject *obj() { return 0; }
-
-    MyQmlObject *readWriteObj()
-    {
-        if (!m_rwobj) {
-            m_rwobj = new MyQmlObject;
-            m_ownRWObj = true;
-        }
-        return m_rwobj;
-    }
-
-    void setReadWriteObj(MyQmlObject *obj)
-    {
-        if (m_ownRWObj) {
-            delete m_rwobj;
-            m_ownRWObj = false;
-        }
-
-        m_rwobj = obj;
-    }
-
-private:
-    MyQmlObject *m_rwobj;
-    bool m_ownRWObj;
-};
-
-QML_DECLARE_TYPE(MyDotPropertyObject);
-QML_DEFINE_TYPE(MyDotPropertyObject,MyDotPropertyObject);
+#include <QtCore/qfile.h>
+#include <QtCore/qdebug.h>
+#include "testtypes.h"
 
 class tst_qmlparser : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlparser() {}
+    tst_qmlparser() {
+        QmlMetaType::registerCustomStringConverter(qMetaTypeId<MyCustomVariantType>(), myCustomVariantTypeConverter);
+    }
 
 private slots:
+
+    void errors_data();
+    void errors();
+
     void simpleObject();
     void simpleContainer();
-    void unregisteredObject();
-    void nonexistantProperty();
-    void unsupportedProperty();
-    //void setProperties();
-    void wrongType();
-    void readOnly();
-    //void dotProperties();
-    void nullDotProperty();
-    void fakeDotProperty();
-    //void readWriteDotProperty();
-    void emptyInput();
-    void missingObject();
-    //void invalidXML();
-    void duplicateIDs();
-    void invalidID();
     void interfaceProperty();
     void interfaceQmlList();
     void interfaceQList();
-    //void cannotAssignBindingToSignal();
     void assignObjectToSignal();
+    void assignLiteralSignalProperty();
+    void assignQmlComponent();
+    void assignBasicTypes();
+    void assignTypeExtremes();
+    void customParserTypes();
+    void rootAsQmlComponent();
+    void inlineQmlComponents();
+    void idProperty();
+    void assignSignal();
+    void dynamicProperties();
+    void dynamicSignalsAndSlots();
+    void simpleBindings();
+    void autoComponentCreation();
+    void propertyValueSource();
+    void attachedProperties();
+    void dynamicObjects();
+    void customVariantTypes();
 
     // regression tests for crashes
     void crash1();
@@ -163,242 +49,120 @@ private:
     QmlEngine engine;
 };
 
+#define VERIFY_ERRORS(errorfile) \
+    if (!errorfile) { \
+        QVERIFY(!component.isError()); \
+        QVERIFY(component.errors().isEmpty()); \
+    } else { \
+        QFile file(errorfile); \
+        QVERIFY(file.open(QIODevice::ReadOnly)); \
+        QByteArray data = file.readAll(); \
+        QList<QByteArray> expected = data.split('\n'); \
+        expected.removeAll(QByteArray("")); \
+        QList<QmlError> errors = component.errors(); \
+        QList<QByteArray> actual; \
+        for (int ii = 0; ii < errors.count(); ++ii) { \
+            const QmlError &error = errors.at(ii); \
+            QByteArray errorStr = QByteArray::number(error.line()) + ":" +  \
+                                  QByteArray::number(error.column()) + ":" + \
+                                  error.description().toUtf8(); \
+            actual << errorStr; \
+        } \
+        if (qgetenv("DEBUG") != "") \
+            qWarning() << expected << actual;  \
+        QCOMPARE(expected, actual); \
+    }
+
+#define TEST_FILE(filename) \
+    QUrl::fromLocalFile(QApplication::applicationDirPath() + "/" + filename)
+
+void tst_qmlparser::errors_data()
+{
+    QTest::addColumn<QString>("file");
+    QTest::addColumn<QString>("errorFile");
+    QTest::addColumn<bool>("create");
+
+    QTest::newRow("nonExistantProperty.1") << "nonexistantProperty.1.txt" << "nonexistantProperty.1.errors.txt" << true;
+    QTest::newRow("nonExistantProperty.2") << "nonexistantProperty.2.txt" << "nonexistantProperty.2.errors.txt" << true;
+    QTest::newRow("nonExistantProperty.3") << "nonexistantProperty.3.txt" << "nonexistantProperty.3.errors.txt" << true;
+    QTest::newRow("nonExistantProperty.4") << "nonexistantProperty.4.txt" << "nonexistantProperty.4.errors.txt" << true;
+    QTest::newRow("nonExistantProperty.5") << "nonexistantProperty.5.txt" << "nonexistantProperty.5.errors.txt" << false;
+    QTest::newRow("nonExistantProperty.6") << "nonexistantProperty.6.txt" << "nonexistantProperty.6.errors.txt" << true;
+
+    QTest::newRow("wrongType (string for int)") << "wrongType.1.txt" << "wrongType.1.errors.txt" << false;
+    QTest::newRow("wrongType (int for bool)") << "wrongType.2.txt" << "wrongType.2.errors.txt" << false;
+    QTest::newRow("wrongType (bad rect)") << "wrongType.3.txt" << "wrongType.3.errors.txt" << false;
+
+    QTest::newRow("wrongType (invalid enum)") << "wrongType.4.txt" << "wrongType.4.errors.txt" << false;
+    QTest::newRow("wrongType (int for uint)") << "wrongType.5.txt" << "wrongType.5.errors.txt" << false;
+    QTest::newRow("wrongType (string for real)") << "wrongType.6.txt" << "wrongType.6.errors.txt" << false;
+    QTest::newRow("wrongType (int for color)") << "wrongType.7.txt" << "wrongType.7.errors.txt" << false;
+    QTest::newRow("wrongType (int for date)") << "wrongType.8.txt" << "wrongType.8.errors.txt" << false;
+    QTest::newRow("wrongType (int for time)") << "wrongType.9.txt" << "wrongType.9.errors.txt" << false;
+    QTest::newRow("wrongType (int for datetime)") << "wrongType.10.txt" << "wrongType.10.errors.txt" << false;
+    QTest::newRow("wrongType (string for point)") << "wrongType.11.txt" << "wrongType.11.errors.txt" << false;
+    QTest::newRow("wrongType (color for size)") << "wrongType.12.txt" << "wrongType.12.errors.txt" << false;
+    QTest::newRow("wrongType (number string for int)") << "wrongType.13.txt" << "wrongType.13.errors.txt" << false;
+    QTest::newRow("wrongType (int for string)") << "wrongType.14.txt" << "wrongType.14.errors.txt" << false;
+
+    QTest::newRow("readOnly.1") << "readOnly.1.txt" << "readOnly.1.errors.txt" << false;
+    QTest::newRow("readOnly.2") << "readOnly.2.txt" << "readOnly.2.errors.txt" << true;
+
+    QTest::newRow("listAssignment.1") << "listAssignment.1.txt" << "listAssignment.1.errors.txt" << false;
+    QTest::newRow("listAssignment.2") << "listAssignment.2.txt" << "listAssignment.2.errors.txt" << false;
+    QTest::newRow("listAssignment.3") << "listAssignment.3.txt" << "listAssignment.3.errors.txt" << false;
+
+    QTest::newRow("invalidID.1") << "invalidID.txt" << "invalidID.errors.txt" << false;
+    QTest::newRow("invalidID.2") << "invalidID.2.txt" << "invalidID.2.errors.txt" << false;
+    QTest::newRow("invalidID.3") << "invalidID.3.txt" << "invalidID.3.errors.txt" << false;
+    QTest::newRow("invalidID.4") << "invalidID.4.txt" << "invalidID.4.errors.txt" << false;
+
+    QTest::newRow("unsupportedProperty") << "unsupportedProperty.txt" << "unsupportedProperty.errors.txt" << true;
+    QTest::newRow("nullDotProperty") << "nullDotProperty.txt" << "nullDotProperty.errors.txt" << true;
+    QTest::newRow("fakeDotProperty") << "fakeDotProperty.txt" << "fakeDotProperty.errors.txt" << true;
+    QTest::newRow("duplicateIDs") << "duplicateIDs.txt" << "duplicateIDs.errors.txt" << false;
+    QTest::newRow("unregisteredObject") << "unregisteredObject.txt" << "unregisteredObject.errors.txt" << false;
+    QTest::newRow("empty") << "empty.txt" << "empty.errors.txt" << false;
+    QTest::newRow("missingObject") << "missingObject.txt" << "missingObject.errors.txt" << false;
+    QTest::newRow("failingComponent") << "failingComponent.txt" << "failingComponent.errors.txt" << true;
+    QTest::newRow("missingSignal") << "missingSignal.txt" << "missingSignal.errors.txt" << true;
+}
+
+void tst_qmlparser::errors()
+{
+    QFETCH(QString, file);
+    QFETCH(QString, errorFile);
+    QFETCH(bool, create);
+
+    QmlComponent component(&engine, TEST_FILE(file));
+
+    if(create) {
+        QObject *object = component.create();
+        QVERIFY(object == 0);
+    }
+
+    VERIFY_ERRORS(errorFile.toLatin1().constData());
+}
+
 void tst_qmlparser::simpleObject()
 {
-    QmlComponent component(&engine, "MyQmlObject {}");
+    QmlComponent component(&engine, TEST_FILE("simpleObject.txt"));
+    VERIFY_ERRORS(0);
     QObject *object = component.create();
     QVERIFY(object != 0);
 }
 
 void tst_qmlparser::simpleContainer()
 {
-    QmlComponent component(&engine, "MyContainer {\nMyQmlObject{}\nMyQmlObject{}\n}");
+    QmlComponent component(&engine, TEST_FILE("simpleContainer.txt"));
     MyContainer *container= qobject_cast<MyContainer*>(component.create());
     QVERIFY(container != 0);
     QCOMPARE(container->children()->count(),2);
 }
 
-void tst_qmlparser::unregisteredObject()
-{
-    QmlComponent component(&engine, "UnRegisteredObject {}", QUrl("myprogram.qml"));
-    QTest::ignoreMessage(QtWarningMsg, "Unable to create object of type 'UnRegisteredObject' @myprogram.qml:1");
-    QObject *object = component.create();
-    QVERIFY(object == 0);
-}
-
-void tst_qmlparser::nonexistantProperty()
-{
-    //NOTE: these first 3 should all have the same error message
-    {
-        QmlComponent component(&engine, "MyQmlObject { something: 24 }");
-        QTest::ignoreMessage(QtWarningMsg, "Unknown property 'something' @<unspecified file>:1");
-        QObject *object = component.create();
-        QVERIFY(object == 0);
-    }
-
-    {
-        QmlComponent component(&engine, "MyQmlObject {\n something: 24\n}");
-        QTest::ignoreMessage(QtWarningMsg, "Unknown property 'something' @<unspecified file>:2");
-        QObject *object = component.create();
-        QVERIFY(object == 0);
-    }
-
-    //non-existant using binding
-    {
-        QmlComponent component(&engine, "MyQmlObject { something: 1 + 1 }");
-        QTest::ignoreMessage(QtWarningMsg, "Unknown property 'something' @<unspecified file>:1");
-        QObject *object = component.create();
-        QVERIFY(object == 0);
-    }
-
-    {
-        QmlComponent component(&engine, "MyQmlObject { something: }");
-        QObject *object = component.create();
-        QVERIFY(object != 0);
-    }
-
-    //non-existant value-type default property
-    {
-        QmlComponent component(&engine, "MyQmlObject {\n24\n}");
-        QTest::ignoreMessage(QtWarningMsg, "Unable to resolve default property @<unspecified file>:3");
-        // XXX would 2 be a better line number in this case? Message should also be improved.
-        QObject *object = component.create();
-        QVERIFY(object == 0);
-    }
-
-    //non-existant object-type default property
-    {
-        QmlComponent component(&engine, "MyQmlObject {\nMyQmlObject{}\n}");
-        QTest::ignoreMessage(QtWarningMsg, "Unable to assign to non-existant property  @<unspecified file>:2");
-        // XXX Message needs to be improved (and should be closer to value-type message).
-        QObject *object = component.create();
-        QVERIFY(object == 0);
-    }
-}
-
-void tst_qmlparser::unsupportedProperty()
-{
-    QTest::ignoreMessage(QtWarningMsg, "Property 'matrix' is of an unknown type @<unspecified file>:1");
-    QmlComponent component(&engine, "MyQmlObject { matrix: \"1,0,0,0,1,0,0,0,1\" }");
-    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
-    QVERIFY(object == 0);
-}
-
-void tst_qmlparser::wrongType()
-{
-    //string for int
-    {
-        QTest::ignoreMessage(QtWarningMsg, "Can't assign value 'hello' to property 'value' @<unspecified file>:1");
-        QmlComponent component(&engine, "MyQmlObject { value: \"hello\" }");
-        MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
-        QVERIFY(object == 0);
-    }
-
-    //int for bool
-    {
-        QTest::ignoreMessage(QtWarningMsg, "Can't assign value '5' to property 'enabled' @<unspecified file>:1");
-        QmlComponent component(&engine, "MyQmlObject { enabled: 5 }");
-        MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
-        QVERIFY(object == 0);
-    }
-
-    //bad format for rect
-    {
-        QTest::ignoreMessage(QtWarningMsg, "Can't assign value '5,5x10' to property 'rect' @<unspecified file>:1");
-        QmlComponent component(&engine, "MyQmlObject { rect: \"5,5x10\" }");
-        MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
-        QVERIFY(object == 0);
-    }
-
-    //TODO: more types (including float-to-int, complex types, etc)
-}
-
-void tst_qmlparser::readOnly()
-{
-    {
-        QTest::ignoreMessage(QtWarningMsg, "Can't assign value 'hello' to property 'readOnlyString' because 'readOnlyString' is read-only @<unspecified file>:1");
-        QmlComponent component(&engine, "MyQmlObject { readOnlyString: \"hello\" }");
-        QObject *object = component.create();
-        QVERIFY(object == 0);
-    }
-
-    {
-        QTest::ignoreMessage(QtWarningMsg, "Can't assign a binding to property 'readOnlyString' because 'readOnlyString' is read-only @<unspecified file>:1");
-        QmlComponent component(&engine, "MyQmlObject { readOnlyString: {'hello'} }");
-        QObject *object = component.create();
-        QVERIFY(object == 0);
-    }
-}
-
-void tst_qmlparser::nullDotProperty()
-{
-    QTest::ignoreMessage(QtWarningMsg, "Can't set properties on 'obj' because it is null @<unspecified file>:1");
-    QmlComponent component(&engine, "MyDotPropertyObject { obj.value: 1 }");
-    QObject *object = component.create();
-    QVERIFY(object == 0);
-}
-
-void tst_qmlparser::fakeDotProperty()
-{
-    QTest::ignoreMessage(QtWarningMsg, "Can't set properties on 'value' because it isn't a known object type @<unspecified file>:1");
-    QmlComponent component(&engine, "MyQmlObject { value.something: \"hello\" }");
-    QObject *object = component.create();
-    QVERIFY(object == 0);
-}
-
-//XXX need to define correct behavior first
-/*void tst_qmlparser::readWriteDotProperty()
-{
-    QmlComponent component(&engine, "MyDotPropertyObject { readWriteObj.value: 1 }");
-    MyDotPropertyObject *object = qobject_cast<MyDotPropertyObject*>(component.create());
-    QVERIFY(object != 0);
-    QCOMPARE(object->readWriteObj()->value(),1);
-
-    {
-        QmlComponent component(&engine, "MyContainer { MyQmlObject { id: Obj value: 1 } MyDotPropertyObject { readWriteObj: Obj } }");
-        MyContainer *object = qobject_cast<MyContainer*>(component.create());
-        QVERIFY(object != 0);
-        MyDotPropertyObject *dpo = qobject_cast<MyDotPropertyObject *>(object->children()->at(1));
-        QCOMPARE(dpo->readWriteObj()->value(),1);
-    }
-}*/
-
-void tst_qmlparser::emptyInput()
-{
-    QTest::ignoreMessage(QtCriticalMsg, "No Qml was specified for parsing.");
-    QTest::ignoreMessage(QtWarningMsg, "Can't compile because of earlier errors @<unspecified file>:-1");
-    QmlComponent component(&engine, "");
-    QObject *object = component.create();
-    QVERIFY(object == 0);
-}
-
-void tst_qmlparser::missingObject()
-{
-    QTest::ignoreMessage(QtCriticalMsg, "Can't have a property with no object @<unspecified file>:1");
-    QTest::ignoreMessage(QtWarningMsg, "Can't compile because of earlier errors @<unspecified file>:-1");
-    QmlComponent component(&engine, "something:");
-    QObject *object = component.create();
-    QVERIFY(object == 0);
-}
-
-
-/*void tst_qmlparser::invalidXML()
-{
-    //extra stuff on end
-    {
-        QTest::ignoreMessage(QtCriticalMsg, "Extra content at end of document. @myprogram.qml:1");
-        QTest::ignoreMessage(QtWarningMsg, "Can't compile because of earlier errors @myprogram.qml:-1");
-        QmlComponent component(&engine, "<MyQmlObject/><something/>", QUrl("myprogram.qml"));
-        QObject *object = component.create();
-        QVERIFY(object == 0);
-    }
-
-    //mismatched tags
-    {
-        QTest::ignoreMessage(QtCriticalMsg, "Opening and ending tag mismatch. @myprogram.qml:2");
-        QTest::ignoreMessage(QtWarningMsg, "Can't compile because of earlier errors @myprogram.qml:-1");
-        QmlComponent component(&engine, "<MyQmlObject>\n</MyContainer>", QUrl("myprogram.qml"));
-        QObject *object = component.create();
-        QVERIFY(object == 0);
-    }
-
-    {
-        QTest::ignoreMessage(QtCriticalMsg, "Expected '>' or '/', but got '<'. @myprogram.qml:1");
-        QTest::ignoreMessage(QtWarningMsg, "Can't compile because of earlier errors @myprogram.qml:-1");
-        QmlComponent component(&engine, "<MyQmlObject < />", QUrl("myprogram.qml"));
-        QObject *object = component.create();
-        QVERIFY(object == 0);
-    }
-
-    {
-        QTest::ignoreMessage(QtCriticalMsg, "Premature end of document. @myprogram.qml:1");
-        QTest::ignoreMessage(QtWarningMsg, "Can't compile because of earlier errors @myprogram.qml:-1");
-        QmlComponent component(&engine, "<MyQmlObject something=\" />", QUrl("myprogram.qml"));
-        QObject *object = component.create();
-        QVERIFY(object == 0);
-    }
-
-}*/
-
-void tst_qmlparser::duplicateIDs()
-{
-    QTest::ignoreMessage(QtWarningMsg, "An id (\"MyID\") is not unique within its scope. @<unspecified file>:3");
-    QmlComponent component(&engine, "MyContainer {\nMyQmlObject { id: MyID }\nMyQmlObject { id: MyID }\n}");
-    QObject *object = component.create();
-    QVERIFY(object == 0);
-}
-
-void tst_qmlparser::invalidID()
-{
-    QTest::ignoreMessage(QtWarningMsg, "'1' is not a valid id @<unspecified file>:1");
-    QmlComponent component(&engine, "MyQmlObject { id: 1 }");
-    QObject *object = component.create();
-    QVERIFY(object == 0);
-}
-
 void tst_qmlparser::interfaceProperty()
 {
-    QmlComponent component(&engine, "MyQmlObject { interface: MyQmlObject }");
+    QmlComponent component(&engine, TEST_FILE("interfaceProperty.txt"));
     MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object != 0);
     QVERIFY(object->interface());
@@ -407,7 +171,7 @@ void tst_qmlparser::interfaceProperty()
 
 void tst_qmlparser::interfaceQmlList()
 {
-    QmlComponent component(&engine, "MyContainer { qmllistInterfaces: MyQmlObject {} }");
+    QmlComponent component(&engine, TEST_FILE("interfaceQmlList.txt"));
     MyContainer *container= qobject_cast<MyContainer*>(component.create());
     QVERIFY(container != 0);
     QVERIFY(container->qmllistAccessor().count() == 2);
@@ -417,7 +181,7 @@ void tst_qmlparser::interfaceQmlList()
 
 void tst_qmlparser::interfaceQList()
 {
-    QmlComponent component(&engine, "MyContainer { qlistInterfaces: MyQmlObject {} }");
+    QmlComponent component(&engine, TEST_FILE("interfaceQList.txt"));
     MyContainer *container= qobject_cast<MyContainer*>(component.create());
     QVERIFY(container != 0);
     QVERIFY(container->qlistInterfaces()->count() == 2);
@@ -425,27 +189,230 @@ void tst_qmlparser::interfaceQList()
         QVERIFY(container->qlistInterfaces()->at(ii)->id == 913);
 }
 
-/*void tst_qmlparser::cannotAssignBindingToSignal()
-{
-    QTest::ignoreMessage(QtWarningMsg, "Cannot assign binding to signal property @<unspecified file>:1");
-    QmlComponent component(&engine, "<MyQmlObject onBasicSignal=\"{print(1921)}\" />");
-    MyContainer *container= qobject_cast<MyContainer*>(component.create());
-    QVERIFY(container == 0);
-}*/
-
 void tst_qmlparser::assignObjectToSignal()
 {
-    QmlComponent component(&engine, "MyQmlObject { onBasicSignal: MyQmlObject {} }");
+    QmlComponent component(&engine, TEST_FILE("assignObjectToSignal.txt"));
     MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
     QVERIFY(object != 0);
     QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlot");
     emit object->basicSignal();
 }
 
+void tst_qmlparser::assignLiteralSignalProperty()
+{
+    QmlComponent component(&engine, TEST_FILE("assignLiteralSignalProperty.txt"));
+    MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->onLiteralSignal(), 10);
+}
+
+// Test is an external component can be loaded and assigned (to a qlist)
+void tst_qmlparser::assignQmlComponent()
+{
+    QmlComponent component(&engine, TEST_FILE("assignQmlComponent.txt"));
+    MyContainer *object = qobject_cast<MyContainer *>(component.create());
+    QVERIFY(object != 0);
+    QVERIFY(object->children()->count() == 1);
+    QObject *child = object->children()->at(0);
+    QCOMPARE(child->property("x"), QVariant(10));
+    QCOMPARE(child->property("y"), QVariant(11));
+}
+
+// Test literal assignment to all the basic types 
+void tst_qmlparser::assignBasicTypes()
+{
+    QmlComponent component(&engine, TEST_FILE("assignBasicTypes.txt"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->flagProperty(), MyTypeObject::FlagVal1 | MyTypeObject::FlagVal3);
+    QCOMPARE(object->enumProperty(), MyTypeObject::EnumVal2);
+    QCOMPARE(object->stringProperty(), QString("Hello World!"));
+    QCOMPARE(object->uintProperty(), uint(10));
+    QCOMPARE(object->intProperty(), -19);
+    QCOMPARE((float)object->realProperty(), float(23.2));
+    QCOMPARE((float)object->doubleProperty(), float(-19.7));
+    QCOMPARE(object->colorProperty(), QColor("red"));
+    QCOMPARE(object->dateProperty(), QDate(1982, 11, 25));
+    QCOMPARE(object->timeProperty(), QTime(11, 11, 32));
+    QCOMPARE(object->dateTimeProperty(), QDateTime(QDate(2009, 5, 12), QTime(13, 22, 1)));
+    QCOMPARE(object->pointProperty(), QPoint(99,13));
+    QCOMPARE(object->pointFProperty(), QPointF((float)-10.1, (float)12.3));
+    QCOMPARE(object->sizeProperty(), QSize(99, 13));
+    QCOMPARE(object->sizeFProperty(), QSizeF((float)0.1, (float)0.2));
+    QCOMPARE(object->rectProperty(), QRect(9, 7, 100, 200));
+    QCOMPARE(object->rectFProperty(), QRectF((float)1000.1, (float)-10.9, (float)400, (float)90.99));
+    QCOMPARE(object->boolProperty(), true);
+    QCOMPARE(object->variantProperty(), QVariant("Hello World!"));
+    QVERIFY(object->objectProperty() != 0);
+    MyTypeObject *child = qobject_cast<MyTypeObject *>(object->objectProperty());
+    QVERIFY(child != 0);
+    QCOMPARE(child->intProperty(), 8);
+}
+
+// Test edge case type assignments
+void tst_qmlparser::assignTypeExtremes()
+{
+    QmlComponent component(&engine, TEST_FILE("assignTypeExtremes.txt"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->uintProperty(), 0xEE6B2800);
+    QCOMPARE(object->intProperty(), -0x77359400);
+}
+
+// Tests that custom parser tyeps can be instantiated
+void tst_qmlparser::customParserTypes()
+{
+    QmlComponent component(&engine, TEST_FILE("customParserTypes.txt"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->property("count") == QVariant(2));
+}
+
+// Tests that the root item can be a custom component
+void tst_qmlparser::rootAsQmlComponent()
+{
+    QmlComponent component(&engine, TEST_FILE("rootAsQmlComponent.txt"));
+    MyContainer *object = qobject_cast<MyContainer *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("x"), QVariant(11));
+    QCOMPARE(object->children()->count(), 2);
+}
+
+// Tests that components can be specified inline
+void tst_qmlparser::inlineQmlComponents()
+{
+    QmlComponent component(&engine, TEST_FILE("inlineQmlComponents.txt"));
+    MyContainer *object = qobject_cast<MyContainer *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->children()->count(), 1);
+    QmlComponent *comp = qobject_cast<QmlComponent *>(object->children()->at(0));
+    QVERIFY(comp != 0);
+    MyQmlObject *compObject = qobject_cast<MyQmlObject *>(comp->create());
+    QVERIFY(compObject != 0);
+    QCOMPARE(compObject->value(), 11);
+}
+
+// Tests that types that have an id property have it set
+void tst_qmlparser::idProperty()
+{
+    QmlComponent component(&engine, TEST_FILE("idProperty.txt"));
+    MyContainer *object = qobject_cast<MyContainer *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->children()->count(), 1);
+    MyTypeObject *child = 
+        qobject_cast<MyTypeObject *>(object->children()->at(0));
+    QVERIFY(child != 0);
+    QCOMPARE(child->id(), QString("MyObjectId"));
+    QCOMPARE(object->property("object"), QVariant::fromValue((QObject *)child));
+}
+
+// Tests that signals can be assigned to
+void tst_qmlparser::assignSignal()
+{
+    QmlComponent component(&engine, TEST_FILE("assignSignal.txt"));
+    MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+    QVERIFY(object != 0);
+    QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlot");
+    emit object->basicSignal();
+}
+
+// Tests the creation and assignment of dynamic properties
+void tst_qmlparser::dynamicProperties()
+{
+    QmlComponent component(&engine, TEST_FILE("dynamicProperties.txt"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("intProperty"), QVariant(10));
+    QCOMPARE(object->property("boolProperty"), QVariant(false));
+    QCOMPARE(object->property("doubleProperty"), QVariant((float)-10.1));
+    QCOMPARE(object->property("realProperty"), QVariant((float)-19.9));
+    QCOMPARE(object->property("stringProperty"), QVariant("Hello World!"));
+    QCOMPARE(object->property("colorProperty"), QVariant(QColor("red")));
+    QCOMPARE(object->property("dateProperty"), QVariant(QDate(1945, 9, 2)));
+    QCOMPARE(object->property("varProperty"), QVariant("Hello World!"));
+    QCOMPARE(object->property("variantProperty"), QVariant(12));
+}
+
+// Tests the declaration of dynamic signals and slots
+void tst_qmlparser::dynamicSignalsAndSlots()
+{
+    QmlComponent component(&engine, TEST_FILE("dynamicSignalsAndSlots.txt"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QVERIFY(object->metaObject()->indexOfMethod("signal1()") != -1);
+    QVERIFY(object->metaObject()->indexOfMethod("signal2()") != -1);
+    QVERIFY(object->metaObject()->indexOfMethod("slot1()") != -1);
+    QVERIFY(object->metaObject()->indexOfMethod("slot2()") != -1);
+}
+
+void tst_qmlparser::simpleBindings()
+{
+    QmlComponent component(&engine, TEST_FILE("simpleBindings.txt"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("value1"), QVariant(10));
+    QCOMPARE(object->property("value2"), QVariant(10));
+    QCOMPARE(object->property("value3"), QVariant(21));
+    QCOMPARE(object->property("value4"), QVariant(10));
+    QCOMPARE(object->property("objectProperty"), QVariant::fromValue(object));
+}
+
+void tst_qmlparser::autoComponentCreation()
+{
+    QmlComponent component(&engine, TEST_FILE("autoComponentCreation.txt"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+    QVERIFY(object->componentProperty() != 0);
+    MyTypeObject *child = qobject_cast<MyTypeObject *>(object->componentProperty()->create());
+    QVERIFY(child != 0);
+    QCOMPARE(child->realProperty(), qreal(9));
+}
+
+void tst_qmlparser::propertyValueSource()
+{
+    QmlComponent component(&engine, TEST_FILE("propertyValueSource.txt"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+    QList<QmlPropertyValueSource *> valueSources = 
+        object->findChildren<QmlPropertyValueSource *>();
+    QCOMPARE(valueSources.count(), 1);
+    MyPropertyValueSource *valueSource = 
+        qobject_cast<MyPropertyValueSource *>(valueSources.at(0));
+    QVERIFY(valueSource != 0);
+    QCOMPARE(valueSource->prop.object(), object);
+    QCOMPARE(valueSource->prop.name(), QString(QLatin1String("intProperty")));
+}
+
+void tst_qmlparser::attachedProperties()
+{
+    QmlComponent component(&engine, TEST_FILE("attachedProperties.txt"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QObject *attached = qmlAttachedPropertiesObject<MyQmlObject>(object);
+    QVERIFY(attached != 0);
+    QCOMPARE(attached->property("value"), QVariant(10));
+}
+
+// Tests non-static object properties
+void tst_qmlparser::dynamicObjects()
+{
+    QmlComponent component(&engine, TEST_FILE("dynamicObject.1.txt"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+}
+
+// Tests the registration of custom variant string converters
+void tst_qmlparser::customVariantTypes()
+{
+    QmlComponent component(&engine, TEST_FILE("customVariantTypes.txt"));
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->customType().a, 10);
+}
+
 void tst_qmlparser::crash1()
 {
     QmlComponent component(&engine, "Component {}");
-    MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
 }
 
 QTEST_MAIN(tst_qmlparser)

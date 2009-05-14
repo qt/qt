@@ -113,8 +113,8 @@
     readLine(), or getChar() to read decrypted data from QSslSocket's
     internal buffer, and you can call write() or putChar() to write
     data back to the peer. QSslSocket will automatically encrypt the
-    written data for you, and emit bytesWritten() once the data has
-    been written to the peer.
+    written data for you, and emit encryptedBytesWritten() once
+    the data has been written to the peer.
 
     As a convenience, QSslSocket supports QTcpSocket's blocking
     functions waitForConnected(), waitForReadyRead(),

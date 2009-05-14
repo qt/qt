@@ -72,12 +72,11 @@ public:
     struct TypeReference 
     {
         TypeReference()
-        : type(0), component(0), parser(0), ref(0) {}
+        : type(0), component(0), ref(0) {}
 
         QByteArray className;
         QmlType *type;
         QmlComponent *component;
-        QmlCustomParser *parser;
 
         QmlRefCount *ref;
         QObject *createInstance(QmlContext *) const;
@@ -140,6 +139,7 @@ private:
     bool compileFetchedObject(QmlParser::Object *obj, int);
     bool compileSignal(QmlParser::Property *prop, QmlParser::Object *obj);
     bool testProperty(QmlParser::Property *prop, QmlParser::Object *obj);
+    int signalByName(const QMetaObject *, const QByteArray &name);
     bool compileProperty(QmlParser::Property *prop, QmlParser::Object *obj, int);
     bool compileIdProperty(QmlParser::Property *prop, 
                            QmlParser::Object *obj);

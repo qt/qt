@@ -2994,6 +2994,9 @@ void QGraphicsItem::translate(qreal dx, qreal dy)
     setTransform(QTransform::fromTranslate(dx, dy), true);
 }
 
+/*!
+  Returns the origin point used for all transformations.
+ */
 QPointF QGraphicsItem::transformOrigin() const
 {
     QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
@@ -3005,7 +3008,7 @@ QPointF QGraphicsItem::transformOrigin() const
 }
 
 /*!
-    Set a center for all transformation
+    Set a \a center for all transformations.
 */
 void QGraphicsItem::setTransformOrigin(const QPointF &center)
 {
@@ -3031,6 +3034,9 @@ void QGraphicsItem::setTransformOrigin(const QPointF &center)
 
 }
 
+/*!
+  Returns the x scale factor.
+ */
 qreal QGraphicsItem::xScale() const
 {
     QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
@@ -3041,6 +3047,9 @@ qreal QGraphicsItem::xScale() const
     return transformData->scaleX; 
 }
 
+/*!
+  Sets the x scale factor to \a factor.
+ */
 void QGraphicsItem::setXScale(qreal factor)
 {
     QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
@@ -3063,6 +3072,9 @@ void QGraphicsItem::setXScale(qreal factor)
     d_ptr->invalidateSceneTransformCache();
 }
 
+/*!
+  Returns the y scale factor.
+ */
 qreal QGraphicsItem::yScale() const
 {
     QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
@@ -3073,6 +3085,9 @@ qreal QGraphicsItem::yScale() const
     return transformData->scaleY; 
 }
 
+/*!
+  Sets the y scale factor to \a factor.
+ */
 void QGraphicsItem::setYScale(qreal factor)
 {
     QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
@@ -3095,6 +3110,9 @@ void QGraphicsItem::setYScale(qreal factor)
     d_ptr->invalidateSceneTransformCache();
 }
 
+/*!
+  Returns the x rotation angle.
+ */
 qreal QGraphicsItem::xRotation() const
 {
     QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
@@ -3104,6 +3122,9 @@ qreal QGraphicsItem::xRotation() const
     return transformData->rotationX;
 }
 
+/*!
+  Sets the x rotation angle to \a angle.
+ */
 void QGraphicsItem::setXRotation(qreal angle)
 {
     QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
@@ -3125,6 +3146,9 @@ void QGraphicsItem::setXRotation(qreal angle)
     d_ptr->invalidateSceneTransformCache();
 }
 
+/*!
+  Returns the y rotation angle.
+ */
 qreal QGraphicsItem::yRotation() const
 {
     QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
@@ -3134,6 +3158,9 @@ qreal QGraphicsItem::yRotation() const
     return transformData->rotationY;
 }
 
+/*!
+  Sets the y rotation angle to \a angle.
+ */
 void QGraphicsItem::setYRotation(qreal angle)
 {
     QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
@@ -3155,6 +3182,9 @@ void QGraphicsItem::setYRotation(qreal angle)
     d_ptr->invalidateSceneTransformCache();
 }
 
+/*!
+  Returns the z rotation angle.
+ */
 qreal QGraphicsItem::zRotation() const
 {
     QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(
@@ -3164,6 +3194,9 @@ qreal QGraphicsItem::zRotation() const
     return transformData->rotationZ;
 }
 
+/*!
+  Sets the z rotation angle to \a angle.
+ */
 void QGraphicsItem::setZRotation(qreal angle)
 {
     QGraphicsItemPrivate::TransformData *transformData = static_cast<QGraphicsItemPrivate::TransformData *>(

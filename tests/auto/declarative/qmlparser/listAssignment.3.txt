@@ -1,0 +1,5 @@
+MyContainer {
+    children: childBinding.expression
+    children: childBinding2.expression
+}
+

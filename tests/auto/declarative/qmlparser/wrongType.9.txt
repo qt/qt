@@ -1,0 +1,4 @@
+MyTypeObject {
+    timeProperty: 12
+}
+

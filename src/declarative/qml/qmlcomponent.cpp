@@ -482,18 +482,19 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
 
     ctxt->deactivate();
 
+    QmlEnginePrivate *ep = d->engine->d_func();
+    if (ep->rootComponent == this) {
+        ep->rootComponent = 0;
+
+        d->bindValues = ep->bindValues;
+        d->parserStatus = ep->parserStatus;
+        ep->bindValues.clear();
+        ep->parserStatus.clear();
+        d->completePending = true;
+    }
+
     if (rv) {
         QFx_setParent_noEvent(ctxt, rv);
-        QmlEnginePrivate *ep = d->engine->d_func();
-        if (ep->rootComponent == this) {
-            ep->rootComponent = 0;
-
-            d->bindValues = ep->bindValues;
-            d->parserStatus = ep->parserStatus;
-            ep->bindValues.clear();
-            ep->parserStatus.clear();
-            d->completePending = true;
-        }
     } else {
         delete ctxt;
     }

@@ -478,16 +478,19 @@ void QFxCurve::setY(qreal y)
     \qmlclass PathAttribute
     \brief The PathAttribute allows setting an attribute at a given position in a Path.
 
-    The PathAttribute object allows attibutes consisting of a name and a
-    value to be specified for the endpoints of path segments.  The attributes
-    are exposed to the delegate as \l {Attached Properties}.  The value of
-    an attribute at any particular point is interpolated from the PathAttributes
-    bounding the point.
+    The PathAttribute object allows attibutes consisting of a name and
+    a value to be specified for the endpoints of path segments.  The
+    attributes are exposed to the delegate as
+    \l{qmlintroduction.html#attached-properties} {Attached Properties}.
+    The value of an attribute at any particular point is interpolated
+    from the PathAttributes bounding the point.
 
-    The example below shows a path with the items scaled to 30% with opacity 50%
-     at the top of the path and scaled 100% with opacity 100% at the bottom.
-    Note the use of the PathView.scale and PathView.opacity attached properties
-    to set the scale and opacity of the delegate.
+    The example below shows a path with the items scaled to 30% with
+    opacity 50% at the top of the path and scaled 100% with opacity
+    100% at the bottom.  Note the use of the PathView.scale and
+    PathView.opacity attached properties to set the scale and opacity
+    of the delegate.
+
     \table
     \row
     \o \image declarative-pathattribute.png

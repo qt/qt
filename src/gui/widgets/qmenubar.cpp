@@ -1273,6 +1273,8 @@ void QMenuBar::actionEvent(QActionEvent *e)
 #else
         QMenuBarPrivate::QWceMenuBarPrivate *nativeMenuBar = d->wce_menubar;
 #endif
+        if (!nativeMenuBar)
+            return;
         if(e->type() == QEvent::ActionAdded)
             nativeMenuBar->addAction(e->action(), nativeMenuBar->findAction(e->before()));
         else if(e->type() == QEvent::ActionRemoved)

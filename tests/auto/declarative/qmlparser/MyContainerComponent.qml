@@ -1,0 +1,3 @@
+MyContainer {
+    property int x
+}

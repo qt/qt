@@ -142,6 +142,39 @@ static int qt_mac_CountMenuItems(OSMenuRef menu)
     return 0;
 }
 
+static quint32 constructModifierMask(quint32 accel_key)
+{
+    quint32 ret = 0;
+    const bool dontSwap = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
+#ifndef QT_MAC_USE_COCOA
+    if ((accel_key & Qt::ALT) == Qt::ALT)
+        ret |= kMenuOptionModifier;
+    if ((accel_key & Qt::SHIFT) == Qt::SHIFT)
+        ret |= kMenuShiftModifier;
+    if (dontSwap) {
+        if ((accel_key & Qt::META) != Qt::META)
+            ret |= kMenuNoCommandModifier;
+        if ((accel_key & Qt::CTRL) == Qt::CTRL)
+            ret |= kMenuControlModifier;
+    } else {
+        if ((accel_key & Qt::CTRL) != Qt::CTRL)
+            ret |= kMenuNoCommandModifier;
+        if ((accel_key & Qt::META) == Qt::META)
+            ret |= kMenuControlModifier;
+    }
+#else
+    if ((accel_key & Qt::CTRL) == Qt::CTRL)
+        ret |= (dontSwap ? NSControlKeyMask : NSCommandKeyMask);
+    if ((accel_key & Qt::META) == Qt::META)
+        ret |= (dontSwap ? NSCommandKeyMask : NSControlKeyMask);
+    if ((accel_key & Qt::ALT) == Qt::ALT)
+        ret |= NSAlternateKeyMask;
+    if ((accel_key & Qt::SHIFT) == Qt::SHIFT)
+        ret |= NSShiftKeyMask;
+#endif
+    return ret;
+}
+
 static bool actualMenuItemVisibility(const QMenuBarPrivate::QMacMenuBarPrivate *mbp,
                                      const QMacMenuAction *action)
 {
@@ -525,15 +558,7 @@ static bool qt_mac_auto_apple_menu(MenuCommand cmd)
 
 static void qt_mac_get_accel(quint32 accel_key, quint32 *modif, quint32 *key) {
     if (modif) {
-        *modif = 0;
-        if ((accel_key & Qt::CTRL) != Qt::CTRL)
-            *modif |= kMenuNoCommandModifier;
-        if ((accel_key & Qt::META) == Qt::META)
-            *modif |= kMenuControlModifier;
-        if ((accel_key & Qt::ALT) == Qt::ALT)
-            *modif |= kMenuOptionModifier;
-        if ((accel_key & Qt::SHIFT) == Qt::SHIFT)
-            *modif |= kMenuShiftModifier;
+        *modif = constructModifierMask(accel_key);
     }
 
     accel_key &= ~(Qt::MODIFIER_MASK | Qt::UNICODE_ACCEL);
@@ -928,14 +953,14 @@ static QKeySequence qt_mac_menu_merge_accel(QMacMenuAction *action)
         ret = action->action->shortcut();
 #ifndef QT_MAC_USE_COCOA
     else if (action->command == kHICommandPreferences)
-        ret = QKeySequence(Qt::CTRL+Qt::Key_Comma);
+        ret = QKeySequence(QKeySequence::Preferences);
     else if (action->command == kHICommandQuit)
-        ret = QKeySequence(Qt::CTRL+Qt::Key_Q);
+        ret = QKeySequence(QKeySequence::Quit);
 #else
     else if (action->menuItem == [loader preferencesMenuItem])
-        ret = QKeySequence(Qt::CTRL+Qt::Key_Comma);
+        ret = QKeySequence(QKeySequence::Preferences);
     else if (action->menuItem == [loader quitMenuItem])
-        ret = QKeySequence(Qt::CTRL+Qt::Key_Q);
+        ret = QKeySequence(QKeySequence::Quit);
 #endif
     return ret;
 }
@@ -1220,58 +1245,21 @@ QMenuPrivate::QMacMenuPrivate::addAction(QMacMenuAction *action, QMacMenuAction 
 NSString *keySequenceToKeyEqivalent(const QKeySequence &accel)
 {
     quint32 accel_key = (accel[0] & ~(Qt::MODIFIER_MASK | Qt::UNICODE_ACCEL));
-    unichar keyEquiv[1] = { 0 };
-    if (accel_key == Qt::Key_Return)
-        keyEquiv[0] = kReturnCharCode;
-    else if (accel_key == Qt::Key_Enter)
-        keyEquiv[0] = kEnterCharCode;
-    else if (accel_key == Qt::Key_Tab)
-        keyEquiv[0] = kTabCharCode;
-    else if (accel_key == Qt::Key_Backspace)
-        keyEquiv[0] = kBackspaceCharCode;
-    else if (accel_key == Qt::Key_Delete)
-        keyEquiv[0] = NSDeleteFunctionKey;
-    else if (accel_key == Qt::Key_Escape)
-        keyEquiv[0] = kEscapeCharCode;
-    else if (accel_key == Qt::Key_PageUp)
-        keyEquiv[0] = NSPageUpFunctionKey;
-    else if (accel_key == Qt::Key_PageDown)
-        keyEquiv[0] = NSPageDownFunctionKey;
-    else if (accel_key == Qt::Key_Up)
-        keyEquiv[0] = NSUpArrowFunctionKey;
-    else if (accel_key == Qt::Key_Down)
-        keyEquiv[0] = NSDownArrowFunctionKey;
-    else if (accel_key == Qt::Key_Left)
-        keyEquiv[0] = NSLeftArrowFunctionKey;
-    else if (accel_key == Qt::Key_Right)
-        keyEquiv[0] = NSRightArrowFunctionKey;
-    else if (accel_key == Qt::Key_CapsLock)
-        keyEquiv[0] = kMenuCapsLockGlyph;  // ### Cocoa has no equivalent
-    else if (accel_key >= Qt::Key_F1 && accel_key <= Qt::Key_F15)
-        keyEquiv[0] = (accel_key - Qt::Key_F1) + NSF1FunctionKey;
-    else if (accel_key == Qt::Key_Home)
-        keyEquiv[0] = NSHomeFunctionKey;
-    else if (accel_key == Qt::Key_End)
-        keyEquiv[0] = NSEndFunctionKey;
-    else
-        keyEquiv[0] = unichar(QChar(accel_key).toLower().unicode());
-    return [NSString stringWithCharacters:keyEquiv length:1];
+    extern QChar qt_macSymbolForQtKey(int key); // qkeysequence.cpp
+    QChar keyEquiv = qt_macSymbolForQtKey(accel_key);
+    if (keyEquiv.isNull()) {
+        if (accel_key >= Qt::Key_F1 && accel_key <= Qt::Key_F15)
+            keyEquiv = (accel_key - Qt::Key_F1) + NSF1FunctionKey;
+        else
+            keyEquiv = unichar(QChar(accel_key).toLower().unicode());
+    }
+    return [NSString stringWithCharacters:&keyEquiv.unicode() length:1];
 }
 
 // return the cocoa modifier mask for the QKeySequence (currently only looks at the first one).
 NSUInteger keySequenceModifierMask(const QKeySequence &accel)
 {
-    NSUInteger ret = 0;
-    quint32 accel_key = accel[0];
-    if ((accel_key & Qt::CTRL) == Qt::CTRL)
-        ret |= NSCommandKeyMask;
-    if ((accel_key & Qt::META) == Qt::META)
-        ret |= NSControlKeyMask;
-    if ((accel_key & Qt::ALT) == Qt::ALT)
-        ret |= NSAlternateKeyMask;
-    if ((accel_key & Qt::SHIFT) == Qt::SHIFT)
-        ret |= NSShiftKeyMask;
-    return ret;
+    return constructModifierMask(accel[0]);
 }
 
 void

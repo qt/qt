@@ -157,6 +157,14 @@
            set to true won't be used as a native menubar (e.g, the menubar at
            the top of the main screen on Mac OS X or at the bottom in Windows CE).
 
+    \value AA_MacDontSwapCtrlAndMeta On Mac OS X by default, Qt swaps the
+           Control and Meta (Command) keys (i.e., whenever Control is pressed, Qt
+           sends Meta and whenever Meta is pressed Control is sent. When this
+           attribute is true, Qt will not do the flip. QKeySequence::StandardShortcuts
+           will also flip accordingly (i.e., QKeySequence::Copy will be
+           Command+C on the keyboard regardless of the value set, though what is output for
+           QKeySequence::toString(QKeySequence::PortableText) will be different).
+
     \omitvalue AA_AttributeCount
 */
 
@@ -2668,5 +2676,5 @@
   \value Repeat    Tile the image until there is no more space. May crop the last image.
   \value Round     Like Repeat, but scales the images down to ensure that the last image is not cropped.
 
-  \sa QPixmapBorders, qDrawBorderPixmap()
+  \sa qDrawBorderPixmap()
 */

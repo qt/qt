@@ -1,0 +1,6 @@
+MyContainer {
+    qlistInterfaces: [ 
+        MyQmlObject {},
+        MyQmlObject {}
+    ]
+}

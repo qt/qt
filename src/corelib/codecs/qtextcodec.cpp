@@ -1515,7 +1515,7 @@ QString QTextDecoder::toUnicode(const QByteArray &ba)
     cannot be detected from the content provided, \a defaultCodec is
     returned.
 
-    \sa codecForUtfText
+    \sa codecForUtfText()
 */
 QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba, QTextCodec *defaultCodec)
 {
@@ -1561,7 +1561,7 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba)
     cannot be detected from the content provided, \a defaultCodec is
     returned.
 
-    \sa codecForHtml
+    \sa codecForHtml()
 */
 QTextCodec *QTextCodec::codecForUtfText(const QByteArray &ba, QTextCodec *defaultCodec)
 {

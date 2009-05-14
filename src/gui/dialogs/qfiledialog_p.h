@@ -97,7 +97,7 @@ class Ui_QFileDialog;
   */
 class QFSCompletor :  public QCompleter {
 public:
-    QFSCompletor(QAbstractItemModel *model, QObject *parent = 0) : QCompleter(model, parent), proxyModel(0), sourceModel(0)
+    QFSCompletor(QFileSystemModel *model, QObject *parent = 0) : QCompleter(model, parent), proxyModel(0), sourceModel(model)
     {
 #ifdef Q_OS_WIN
         setCaseSensitivity(Qt::CaseInsensitive);

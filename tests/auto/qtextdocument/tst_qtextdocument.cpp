@@ -161,6 +161,8 @@ private slots:
 
     void testUndoCommandAdded();
 
+    void testUndoBlocks();
+
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
 
@@ -2433,6 +2435,22 @@ void tst_QTextDocument::testUndoCommandAdded()
     cf.setFontItalic(true);
     cursor.mergeCharFormat(cf);
     QCOMPARE(spy.count(), 1);
+}
+
+void tst_QTextDocument::testUndoBlocks()
+{
+    QVERIFY(doc);
+    cursor.insertText("Hello World");
+    cursor.insertText("period");
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString(""));
+    cursor.insertText("Hello World");
+    cursor.insertText("One\nTwo\nThree");
+    QCOMPARE(doc->toPlainText(), QString("Hello WorldOne\nTwo\nThree"));
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString("Hello World"));
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString(""));
 }
 
 QTEST_MAIN(tst_QTextDocument)

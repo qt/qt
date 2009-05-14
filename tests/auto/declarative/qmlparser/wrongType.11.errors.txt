@@ -1,0 +1,1 @@
+2:20:Cannot assign value "apples" to property pointProperty

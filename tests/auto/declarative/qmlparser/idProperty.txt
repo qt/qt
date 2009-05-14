@@ -1,0 +1,7 @@
+MyContainer {
+    property var object : MyObjectId
+
+    MyTypeObject {
+        id: MyObjectId
+    }
+}

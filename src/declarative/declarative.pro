@@ -9,6 +9,9 @@ solaris-cc*:QMAKE_CXXFLAGS_RELEASE -= -O2
 
 unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui QtXml
 
+# QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage
+# LIBS += -lgcov
+
 include(../qbase.pri)
 
 #modules

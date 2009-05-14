@@ -24,6 +24,7 @@
 class QFxView;
 class PreviewDeviceSkin;
 class QFxTestEngine;
+class QProcess;
 
 class QmlViewer : public QMainWindow
 {
@@ -34,6 +35,7 @@ public:
     void setRecordDither(const QString& s) { record_dither = s; }
     void setRecordPeriod(int ms);
     void setRecordFile(const QString&);
+    void setRecordArgs(const QStringList&);
     int recordPeriod() const { return record_period; }
     void setRecording(bool on);
     bool isRecording() const { return recordTimer.isActive(); }
@@ -52,6 +54,7 @@ public slots:
     void takeSnapShot();
     void toggleRecording();
     void toggleRecordingWithSelection();
+    void ffmpegFinished(int code);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);
@@ -67,11 +70,12 @@ private:
     void init(QFxTestEngine::TestMode, const QString &, const QString& fileName);
     QBasicTimer recordTimer;
     QList<QImage*> frames;
-    QIODevice* frame_stream;
+    QProcess* frame_stream;
     QBasicTimer autoStartTimer;
     QTime autoTimer;
     QString record_dither;
     QString record_file;
+    QStringList record_args;
     int record_period;
     int record_autotime;
     bool devicemode;

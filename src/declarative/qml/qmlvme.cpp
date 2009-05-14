@@ -88,7 +88,6 @@ Q_DECLARE_PERFORMANCE_LOG(QFxCompiler) {
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreSignal);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreObjectQmlList);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignConstant);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrAssignSignal);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignSignalObject);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignBinding);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignCompiledBinding);
@@ -138,7 +137,6 @@ Q_DEFINE_PERFORMANCE_LOG(QFxCompiler, "QFxCompiler") {
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreSignal, "StoreSignal");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreObjectQmlList, "StoreObjectQmlList");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignConstant, "AssignConstant");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrAssignSignal, "AssignSignal");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignSignalObject, "AssignSignalObject");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignBinding, "AssignBinding");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignCompiledBinding, "AssignCompiledBinding");
@@ -181,6 +179,7 @@ QmlVME::QmlVME()
         QString str; \
         QDebug d(&str); \
         d << desc; \
+        str = str.trimmed(); \
         QmlError error; \
         error.setDescription(str); \
         error.setLine(instr.line); \
@@ -281,11 +280,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 }
                 if (!stack.isEmpty()) {
                     QObject *parent = stack.top();
-                    if (o->isWidgetType()) {
-                        qobject_cast<QWidget*>(o)->setParent(qobject_cast<QWidget*>(parent));
-                    } else {
-                        o->setParent(parent);
-                    }
+                    o->setParent(parent);
                 }
                 stack.push(o);
             }
@@ -356,37 +351,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 a[0] = (void *)v.data();
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.assignCustomType.propertyIndex, a);
-            }
-            break;
-
-        case QmlInstruction::AssignSignal:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrAssignSignal> cc;
-#endif
-                // Fixup instruction
-                QObject *target = stack.top();
-                int sigIdx = instr.assignSignal.signal;
-                const QByteArray &pr = datas.at(sigIdx);
-
-                QmlMetaProperty prop(target, QLatin1String(pr));
-                if (prop.type() & QmlMetaProperty::SignalProperty) {
-                    int coreIdx = prop.coreIndex();
-                    int primRef = instr.assignSignal.value;
-                    instr.type = QmlInstruction::StoreSignal;
-                    instr.storeSignal.signalIndex = coreIdx;
-                    instr.storeSignal.value = primRef;
-                    --ii;
-                } else if (prop.type() & QmlMetaProperty::Property) {
-                    int prop = sigIdx;
-                    int primRef = instr.assignSignal.value;
-                    instr.type = QmlInstruction::AssignConstant;
-                    instr.assignConstant.property = prop;
-                    instr.assignConstant.constant = primRef;
-                    --ii;
-                } else {
-                    VME_EXCEPTION("Cannot assign a signal to property" << pr);
-                }
             }
             break;
 
@@ -860,7 +824,11 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
 
                 } else {
-                    VME_EXCEPTION("Cannot assign to non-existant property" << property);
+                    if (instr.assignObject.property == -1) {
+                        VME_EXCEPTION("Cannot assign to default property");
+                    } else {
+                        VME_EXCEPTION("Cannot assign to non-existant property" << property);
+                    }
                 }
 
             }

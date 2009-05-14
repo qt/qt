@@ -3,6 +3,7 @@ HEADERS +=
 SOURCES += tst_q3textbrowser.cpp
 
 QT += qt3support
+requires(contains(QT_CONFIG,qt3support))
 
 
 

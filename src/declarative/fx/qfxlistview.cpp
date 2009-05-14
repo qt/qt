@@ -438,6 +438,7 @@ FxListItem *QFxListViewPrivate::createItem(int modelIndex)
         else
             QObject::connect(listItem->item, SIGNAL(widthChanged()), q, SLOT(itemResized()));
     }
+
     return listItem;
 }
 
@@ -484,7 +485,8 @@ void QFxListViewPrivate::refill(qreal from, qreal to)
     int pos = itemEnd + 1;
     while (modelIndex < model->count() && pos <= to) {
         //qDebug() << "refill: append item" << modelIndex;
-        item = getItem(modelIndex);
+        if (!(item = getItem(modelIndex)))
+            break;
         item->setPosition(pos);
         pos += item->size();
         visibleItems.append(item);
@@ -493,7 +495,8 @@ void QFxListViewPrivate::refill(qreal from, qreal to)
     }
     while (visibleIndex > 0 && visibleIndex <= model->count() && visiblePos > from) {
         //qDebug() << "refill: prepend item" << visibleIndex-1 << "current top pos" << visiblePos;
-        item = getItem(visibleIndex-1);
+        if (!(item = getItem(visibleIndex-1)))
+            break;
         --visibleIndex;
         visiblePos -= item->size();
         item->setPosition(visiblePos);
@@ -719,26 +722,30 @@ void QFxListViewPrivate::updateCurrent(int modelIndex)
     currentItem = visibleItem(modelIndex);
     if (!currentItem) {
         currentItem = getItem(modelIndex);
-        if (modelIndex == visibleIndex - 1) {
-            // We can calculate exact postion in this case
-            currentItem->setPosition(visibleItems.first()->position() - currentItem->size());
-        } else {
-            // Create current item now and position as best we can.
-            // Its position will be corrected when it becomes visible.
-            currentItem->setPosition(positionAt(modelIndex));
+        if (currentItem) {
+            if (modelIndex == visibleIndex - 1) {
+                // We can calculate exact postion in this case
+                currentItem->setPosition(visibleItems.first()->position() - currentItem->size());
+            } else {
+                // Create current item now and position as best we can.
+                // Its position will be corrected when it becomes visible.
+                currentItem->setPosition(positionAt(modelIndex));
+            }
         }
     }
     currentIndex = modelIndex;
     fixCurrentVisibility = true;
-    if (oldCurrentItem && oldCurrentItem->item != currentItem->item)
+    if (oldCurrentItem && (!currentItem || oldCurrentItem->item != currentItem->item))
         oldCurrentItem->attached->setIsCurrentItem(false);
-    currentItem->item->setFocus(true);
-    currentItem->attached->setIsCurrentItem(true);
+    if (currentItem) {
+        currentItem->item->setFocus(true);
+        currentItem->attached->setIsCurrentItem(true);
+    }
     updateHighlight();
     emit q->currentIndexChanged();
     // Release the old current item
     if (oldCurrentItem && !visibleItem(oldCurrentIndex)) {
-        if (oldCurrentItem->item == currentItem->item)
+        if (!currentItem || oldCurrentItem->item == currentItem->item)
             delete oldCurrentItem;
         else
             releaseItem(oldCurrentItem);

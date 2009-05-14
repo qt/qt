@@ -48,7 +48,6 @@ Item {
             Script {
                function photoClicked() {
                    ImageDetails.photoTitle = title;
-                   ImageDetails.flickableArea.yPosition = 0;
                    ImageDetails.photoDescription = description;
                    ImageDetails.photoTags = tags;
                    ImageDetails.photoWidth = photoWidth;
@@ -58,7 +57,6 @@ Item {
                    ImageDetails.photoDate = photoDate;
                    ImageDetails.photoUrl = url;
                    ImageDetails.rating = 0;
-                   ImageDetails.slider.handle.x = ImageDetails.slider.xMax;
                    Wrapper.state = "Details";
                }
             }
@@ -194,7 +192,7 @@ Item {
         transitions: [
             Transition {
                 fromState: "*"; toState: "*"
-                NumericAnimation { properties: "y"; duration: 650; easing: "easeOutBounce(amplitude:0.1)" }
+                NumericAnimation { properties: "y"; duration: 1000; easing: "easeOutBounce(amplitude:0.5)" }
             }
         ]
     }
@@ -203,27 +201,6 @@ Item {
         id: CategoryText;  anchors.horizontalCenter: parent.horizontalCenter; y: 15;
         text: "Flickr - " +
             (FeedModel.tags=="" ? "Uploads from everyone" : "Recent Uploads tagged " + FeedModel.tags)
-        font.size: 16; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
-    }
-
-    Image {
-        source: "content/pics/fingerpoint.png"
-        opacity: finger.pressed ? 0 : 1
-        x: finger.mouseX-16
-        y: finger.mouseY-16
-    }
-
-    Image {
-        source: "content/pics/fingerpoint-pressed.png"
-        opacity: finger.pressed ? 1.0 : 0.0
-        x: finger.mouseX-16
-        y: finger.mouseY-16
-    }
-
-    MouseRegion {
-        // this region is just to show where the finger is (good for videos)
-        id: finger
-        absorb: false
-        anchors.fill: parent
+        font.size: 20; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
     }
 }

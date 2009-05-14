@@ -103,6 +103,7 @@ private slots:
     void valuePreservation();
     void errorReporting();
     void testCustomPageSizes();
+    void printDialogCompleter();
 
 private:
 };
@@ -938,6 +939,23 @@ void tst_QPrinter::testCustomPageSizes()
     p2.setPaperSize(customSize, QPrinter::Inch);
     paperSize = p.paperSize(QPrinter::Inch);
     QCOMPARE(paperSize, customSize);
+}
+
+void tst_QPrinter::printDialogCompleter()
+{
+#if defined(QT_NO_COMPLETER) || defined(QT_NO_FILEDIALOG)
+    QSKIP("QT_NO_COMPLETER || QT_NO_FILEDIALOG: Auto-complete turned off in QPrinterDialog.", QTest::SkipAll);
+#else
+    QPrintDialog dialog;
+    dialog.printer()->setOutputFileName("file.pdf");
+    dialog.setEnabledOptions(QAbstractPrintDialog::PrintToFile);
+    dialog.show();
+
+    QTest::qWait(100);
+
+    QTest::keyClick(0, Qt::Key_Tab);
+    QTest::keyClick(0, 'P');
+#endif
 }
 
 QTEST_MAIN(tst_QPrinter)

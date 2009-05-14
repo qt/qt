@@ -93,7 +93,7 @@ int QmlCompiledData::indexForFloat(float *data, int count)
 {
     Q_ASSERT(count > 0);
 
-    for (int ii = 0; ii < floatData.count() - count; ++ii) {
+    for (int ii = 0; ii <= floatData.count() - count; ++ii) {
         bool found = true;
         for (int jj = 0; jj < count; ++jj) {
             if (floatData.at(ii + jj) != data[jj]) {
@@ -117,7 +117,7 @@ int QmlCompiledData::indexForInt(int *data, int count)
 {
     Q_ASSERT(count > 0);
 
-    for (int ii = 0; ii < floatData.count() - count; ++ii) {
+    for (int ii = 0; ii <= intData.count() - count; ++ii) {
         bool found = true;
         for (int jj = 0; jj < count; ++jj) {
             if (intData.at(ii + jj) != data[jj]) {
@@ -240,13 +240,8 @@ QmlCompiler::generateStoreInstruction(QmlCompiledData &cdata,
             {
             instr.type = QmlInstruction::StoreString;
             instr.storeString.propertyIndex = coreIdx;
-            if (string->startsWith(QLatin1Char('\'')) && string->endsWith(QLatin1Char('\''))) {
-                QString unquotedString = string->mid(1, string->length() - 2);
-                primitive = cdata.indexForString(unquotedString);
-            } else {
-                if (primitive == -1)
-                    primitive = cdata.indexForString(*string);
-            }
+            if (primitive == -1)
+                primitive = cdata.indexForString(*string);
             instr.storeString.value = primitive;
             }
             break;
@@ -445,6 +440,7 @@ void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
         exceptionColumn = token->location.start.column;  \
         QDebug d(&exceptionDescription); \
         d << desc;  \
+        exceptionDescription = exceptionDescription.trimmed(); \
         return false; \
     } 
 
@@ -454,6 +450,7 @@ void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
         exceptionColumn = obj->location.start.column;  \
         QDebug d(&exceptionDescription); \
         d << desc;  \
+        exceptionDescription = exceptionDescription.trimmed(); \
         return false; \
     } 
 
@@ -486,18 +483,13 @@ bool QmlCompiler::compile(QmlEngine *engine,
             ref.component = tref.unit->toComponent(engine);
             ref.ref = tref.unit;
             ref.ref->addref();
-        } else if (tref.parser)
-            ref.parser = tref.parser;
+        } 
         ref.className = unit->data.types().at(ii).toLatin1();
         out->types << ref;
     }
 
     Object *root = unit->data.tree();
-    if (!root) {
-        exceptionDescription = QLatin1String("Can't compile because of earlier errors");
-        output = 0;
-        return false;
-    }
+    Q_ASSERT(root);
 
     compileTree(root);
 
@@ -733,51 +725,82 @@ bool QmlCompiler::compileFetchedObject(Object *obj, int ctxt)
     return true;
 }
 
+int QmlCompiler::signalByName(const QMetaObject *mo, const QByteArray &name)
+{
+    int methods = mo->methodCount();
+    for (int ii = methods - 1; ii >= 0; --ii) {
+        QMetaMethod method = mo->method(ii);
+        QByteArray methodName = method.signature();
+        int idx = methodName.indexOf('(');
+        methodName = methodName.left(idx);
+
+        if (methodName == name) 
+            return ii;
+    }
+    return -1;
+}
+
 bool QmlCompiler::compileSignal(Property *prop, Object *obj)
 {
+    Q_ASSERT(obj->metaObject());
+
     if (prop->values.isEmpty() && !prop->value)
         return true;
 
     if (prop->value || prop->values.count() > 1)
         COMPILE_EXCEPTION("Incorrectly specified signal");
 
-    if (prop->values.at(0)->object) {
-        int pr = output->indexForByteArray(prop->name);
+    QByteArray name = prop->name;
+    Q_ASSERT(name.startsWith("on"));
+    name = name.mid(2);
+    if(name[0] >= 'A' && name[0] <= 'Z')
+        name[0] = name[0] - 'A' + 'a';
 
-        bool rv = compileObject(prop->values.at(0)->object, 0);
+    int sigIdx = signalByName(obj->metaObject(), name);
 
-        if (rv) {
-            QmlInstruction assign;
-            assign.type = QmlInstruction::AssignSignalObject;
-            assign.line = prop->values.at(0)->location.start.line;
-            assign.assignSignalObject.signal = pr;
+    if (sigIdx == -1) {
 
-            output->bytecode << assign;
+        COMPILE_CHECK(compileProperty(prop, obj, 0));
 
-            prop->values.at(0)->type = Value::SignalObject;
+    }  else {
+
+        if (prop->values.at(0)->object) {
+            int pr = output->indexForByteArray(prop->name);
+
+            bool rv = compileObject(prop->values.at(0)->object, 0);
+
+            if (rv) {
+                QmlInstruction assign;
+                assign.type = QmlInstruction::AssignSignalObject;
+                assign.line = prop->values.at(0)->location.start.line;
+                assign.assignSignalObject.signal = pr;
+
+                output->bytecode << assign;
+
+                prop->values.at(0)->type = Value::SignalObject;
+            }
+
+            return rv;
+
+        } else {
+            QString script = prop->values.at(0)->value.asScript().trimmed();
+            if (script.isEmpty())
+                return true;
+
+            int idx = output->indexForString(script); 
+
+            QmlInstruction store;
+            store.line = prop->values.at(0)->location.start.line;
+            store.type = QmlInstruction::StoreSignal;
+            store.storeSignal.signalIndex = sigIdx;
+            store.storeSignal.value = idx;
+
+            output->bytecode << store;
+
+            prop->values.at(0)->type = Value::SignalExpression;
         }
-
-        return rv;
-
-    } else {
-        QString script = prop->values.at(0)->value.asScript().trimmed();
-        if (script.isEmpty())
-            return true;
-
-        int idx = output->indexForString(script); 
-        int pr = output->indexForByteArray(prop->name);
-
-        QmlInstruction assign;
-        assign.type = QmlInstruction::AssignSignal;
-        assign.line = prop->values.at(0)->location.start.line;
-        assign.assignSignal.signal = pr;
-        assign.assignSignal.value = idx;
-
-        output->bytecode << assign;
-
-        prop->values.at(0)->type = Value::SignalExpression;
     }
-
+    
     return true;
 }
 
@@ -871,9 +894,9 @@ bool QmlCompiler::compileIdProperty(QmlParser::Property *prop,
                                     QmlParser::Object *obj)
 {
     if (prop->value)
-        COMPILE_EXCEPTION("The 'id' property cannot be fetched");
+        COMPILE_EXCEPTION2(prop,"The id property cannot be fetched");
     if (prop->values.count() > 1)
-        COMPILE_EXCEPTION("The 'id' property cannot be multiset");
+        COMPILE_EXCEPTION2(prop, "The object id may only be set once");
 
     if (prop->values.count() == 1) {
         if (prop->values.at(0)->object)
@@ -1026,6 +1049,7 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
                 if (assignedBinding)
                     COMPILE_EXCEPTION("Can only assign one binding to lists");
 
+                assignedBinding = true;
                 compileBinding(v->value.asScript(), prop, ctxt, 
                                obj->metaObject(), v->location.start.line);
                 v->type = Value::PropertyBinding;
@@ -1313,17 +1337,6 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
             p.defaultValue->isDefault = false;
             COMPILE_CHECK(compileProperty(p.defaultValue, obj, 0));
         }
-
-        if (!p.onValueChanged.isEmpty()) {
-            QmlInstruction assign;
-            assign.type = QmlInstruction::AssignSignal;
-            assign.line = obj->location.start.line;
-            assign.assignSignal.signal = 
-                output->indexForByteArray(p.name + "Changed()");
-            assign.assignSignal.value = 
-                output->indexForString(p.onValueChanged);
-            output->bytecode << assign;
-        }
     }
 
     return true;
@@ -1496,26 +1509,25 @@ QObject *QmlCompiledData::TypeReference::createInstance(QmlContext *ctxt) const
         if (rv)
             QmlEngine::setContextForObject(rv, ctxt);
         return rv;
-    } else if (component) {
+    } else {
+        Q_ASSERT(component);
         QObject *rv = component->create(ctxt);
         QmlContext *ctxt = qmlContext(rv);
         if(ctxt) {
             static_cast<QmlContextPrivate *>(QObjectPrivate::get(ctxt))->typeName = className;
         }
         return rv;
-    } else {
-        return 0;
-    }
+    } 
 }
 
 const QMetaObject *QmlCompiledData::TypeReference::metaObject() const
 {
-    if (type)
+    if (type) {
         return type->metaObject();
-    else if (component)
+    } else {
+        Q_ASSERT(component);
         return &static_cast<QmlComponentPrivate *>(QObjectPrivate::get(component))->cc->root;
-    else
-        return 0;
+    }
 }
 
 QT_END_NAMESPACE

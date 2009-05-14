@@ -1048,6 +1048,8 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SE_TabBarTabRightButton Area for a widget on the right side of a tab in a tab bar.
     \value SE_TabBarTabText Area for the text on a tab in a tab bar.
 
+    \value SE_ToolBarHandle Area for the handle of a tool bar.
+
     \sa subElementRect()
 */
 
@@ -1177,6 +1179,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value SC_All  Special value that matches all sub-controls.
     \omitvalue SC_Q3ListViewBranch
+    \omitvalue SC_CustomBase
 
     \sa ComplexControl
 */
