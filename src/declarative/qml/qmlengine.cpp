@@ -1027,9 +1027,7 @@ QVariant QmlExpression::value()
                 }
                 rv = QVariant::fromValue(list);
             }
-        } /*else if (svalue.isVariant()) {
-            rv = svalue.toVariant();
-        }*/ else if (svalue.isObject()) {
+        } else if (svalue.isObject()) {
             QScriptValue objValue = svalue.data();
             if (objValue.isValid())
                 rv = objValue.toVariant();
