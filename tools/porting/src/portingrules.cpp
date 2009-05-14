@@ -189,7 +189,7 @@ void PortingRules::parseXml(QString fileName)
 
     QString includeFile = xml[QLatin1String("Rules")][QLatin1String("Include")].text();
 
-    if(includeFile != QString()) {
+    if(!includeFile.isNull()) {
         QString resolvedIncludeFile = resolveFileName(fileName, includeFile);
         if (!resolvedIncludeFile.isEmpty())
             parseXml(resolvedIncludeFile);
