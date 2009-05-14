@@ -34,10 +34,10 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace JavaScript {
+
 uint qHash(const JavaScript::NameId &id)
 { return qHash(id.asString()); }
-
-namespace JavaScript {
 
 QString numberToString(double value)
 { return QString::number(value); }
@@ -154,6 +154,37 @@ double integerFromString(const QString &str, int radix)
     QByteArray ba = str.trimmed().toUtf8();
     return integerFromString(ba.constData(), ba.size(), radix);
 }
+
+
+Engine::Engine()
+    : _lexer(0), _nodePool(0)
+{ }
+
+Engine::~Engine()
+{ }
+
+QSet<NameId> Engine::literals() const
+{ return _literals; }
+
+NameId *Engine::intern(const QChar *u, int s)
+{ return const_cast<NameId *>(&*_literals.insert(NameId(u, s))); }
+
+QString Engine::toString(NameId *id)
+{ return id->asString(); }
+
+Lexer *Engine::lexer() const
+{ return _lexer; }
+
+void Engine::setLexer(Lexer *lexer)
+{ _lexer = lexer; }
+
+NodePool *Engine::nodePool() const
+{ return _nodePool; }
+
+void Engine::setNodePool(NodePool *nodePool)
+{ _nodePool = nodePool; }
+
+
 
 } // end of namespace JavaScript
 
